@@ -41,6 +41,7 @@ import { FontFields } from './FontFields'
 import { AdvancedFields } from './AdvancedFields'
 import { McpFields } from './McpFields'
 import { LayoutMenuFields } from './LayoutMenuFields'
+import { FrontFields } from './FrontFields'
 import { FooterField } from './FooterField'
 import { ActivityLogField, ListingFeatureFields, PostFeatureFields } from './FeatureFields'
 import { CommentFields } from './CommentFields'
@@ -72,13 +73,14 @@ const TAB_IDS: Tab[] = ['site', 'layout', 'reading', 'appearance', 'seo', 'conne
 const GRID = 'grid items-start gap-5 xl:grid-cols-2'
 const COL = 'space-y-5'
 
-export function SettingsView({ settings, presets, commentEnv, integrations, posts, pages }: {
+export function SettingsView({ settings, presets, commentEnv, integrations, posts, pages, categories }: {
   settings: SiteSettings
   presets: ThemePreset[]
   commentEnv: CommentEnv
   integrations: IntegrationStatus
   posts: { slug: string; title: string }[]
   pages: { slug: string; title: string }[]
+  categories: string[]
 }) {
   const t = useAdminT()
   const router = useRouter()
@@ -167,6 +169,19 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
             </Card>
           </div>
           <div className={COL}>
+            {/* Only when the site actually serves one. Twenty questions about a front page
+                nobody is showing is how a settings screen becomes something people scroll
+                past. */}
+            {s.home.mode === 'front' && (
+              <Card title={t.cardFront}>
+                <FrontFields
+                  front={s.home.front}
+                  onChange={(front) => update({ home: { ...s.home, front } })}
+                  posts={posts}
+                  categories={categories}
+                />
+              </Card>
+            )}
             <Card title={t.footerContent}>
               <FooterField value={s.footer} onChange={(footer) => update({ footer })} />
             </Card>

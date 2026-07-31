@@ -118,8 +118,9 @@ export function viewRoutes(): OwnerRouter {
   })
 
   routes.get('/api/admin/view/settings', async (c) => {
-    const [settings, commentEnv, integrations, posts, pages] = await Promise.all([
+    const [settings, commentEnv, integrations, posts, pages, categories] = await Promise.all([
       getSettings(), getCommentEnv(), getIntegrationStatus(), getPublicPosts(), getPublicPages(),
+      getCategories(),
     ])
     return c.json({
       data: {
@@ -132,6 +133,8 @@ export function viewRoutes(): OwnerRouter {
         // ...and published pages, for the homepage picker (ADR 0014). Same rule: a draft
         // cannot be the front door, and offering one would only produce the fallback.
         pages: pages.filter((p) => p.status === 'published').map((p) => ({ slug: p.slug, title: p.title })),
+        // Category NAMES, for the front page's strip picker (ADR 0014).
+        categories,
       },
     })
   })

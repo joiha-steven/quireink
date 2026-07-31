@@ -2,6 +2,10 @@ import type { Dict } from './types'
 
 const ko = {
   emptyPosts: '아직 게시물이 없습니다.',
+  frontFeatured: '추천',
+  frontPopular: '많이 읽은 글',
+  frontLatest: '최신',
+  frontAllPosts: '모든 글',
   emptyCategory: '이 카테고리에는 아직 게시물이 없습니다.',
   emptyTag: '이 태그의 게시물이 아직 없습니다.',
   categoryLabel: '카테고리',

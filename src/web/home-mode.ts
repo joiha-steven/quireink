@@ -13,6 +13,7 @@ import { getSettings } from '@/content/settings'
 import { t } from '@/i18n/i18n'
 import { renderArticle } from '@/web/article'
 import { listingPage, renderFeedBody } from '@/web/listing-page'
+import { renderFront } from '@/web/front'
 
 /**
  * Page N of the post list, wherever it currently lives.
@@ -55,6 +56,10 @@ export async function renderHome(): Promise<string | null> {
   if (home.mode === 'page' && home.page) {
     const page = await renderArticle(home.page)
     if (page !== null) return page
+  }
+  if (home.mode === 'front') {
+    const front = await renderFront()
+    if (front !== null) return front
   }
   return renderPostList(1)
 }

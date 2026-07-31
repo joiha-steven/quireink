@@ -1,6 +1,7 @@
 import { describe, it, expect } from '@/test/vitest'
-import { sanitizeEnabledPalettes, sanitizeComments, sanitizeThemes, sanitizeFontUrl, sanitizeHome, sanitizeListPath } from '@/content/settings-sanitize'
+import { sanitizeEnabledPalettes, sanitizeComments, sanitizeThemes, sanitizeFontUrl, sanitizeFront, sanitizeHome, sanitizeListPath } from '@/content/settings-sanitize'
 import { ALL_PALETTE_IDS, defaultThemes } from '@/content/themes'
+import { DEFAULT_SETTINGS } from '@/content/settings'
 
 const COMMENTS_OFF = { enabled: false, turnstile: false, googleAuth: false }
 
@@ -89,17 +90,21 @@ describe('sanitizeFontUrl', () => {
 // ADR 0014. The mode decides what `/` serves, so an unreadable value has to land on the
 // one option that changes nothing rather than on whatever the string happened to say.
 describe('sanitizeHome', () => {
-  const FALLBACK = { mode: 'list' as const, page: '', listPath: '/post' }
+  const FALLBACK = DEFAULT_SETTINGS.home
 
   it('falls back to the list for anything it does not recognise', () => {
     expect(sanitizeHome(undefined, FALLBACK).mode).toBe('list')
-    expect(sanitizeHome({ mode: 'front' }, FALLBACK).mode).toBe('list')
+    expect(sanitizeHome({ mode: 'nonsense' }, FALLBACK).mode).toBe('list')
     expect(sanitizeHome({ mode: 42 }, FALLBACK).mode).toBe('list')
   })
 
-  it('keeps a page mode and strips the slug of leading slashes', () => {
-    expect(sanitizeHome({ mode: 'page', page: '/welcome' }, FALLBACK))
-      .toEqual({ mode: 'page', page: 'welcome', listPath: '/post' })
+  it('keeps the two modes it does recognise', () => {
+    expect(sanitizeHome({ mode: 'page' }, FALLBACK).mode).toBe('page')
+    expect(sanitizeHome({ mode: 'front' }, FALLBACK).mode).toBe('front')
+  })
+
+  it('strips the chosen slug of leading slashes', () => {
+    expect(sanitizeHome({ mode: 'page', page: '/welcome' }, FALLBACK).page).toBe('welcome')
   })
 })
 
@@ -115,5 +120,37 @@ describe('sanitizeListPath', () => {
     expect(sanitizeListPath('/', '/post')).toBe('/post')
     expect(sanitizeListPath('-lead', '/post')).toBe('/post')
     expect(sanitizeListPath(7, '/post')).toBe('/post')
+  })
+})
+
+// The front page's numbers all bound a layout, so an out-of-range one is a broken grid
+// rather than an odd-looking page. ADR 0014.
+describe('sanitizeFront', () => {
+  const F = DEFAULT_SETTINGS.home.front
+
+  it('clamps counts and refuses a column count that is not 1, 2 or 3', () => {
+    const out = sanitizeFront({
+      latest: { on: true, count: 999, columns: 7 },
+      lead: { secondary: 9 },
+    }, F)
+    expect(out.latest.count).toBe(24)
+    expect(out.latest.columns).toBe(F.latest.columns)
+    expect(out.lead.secondary).toBe(3)
+  })
+
+  it('takes only the three windows it can explain', () => {
+    expect(sanitizeFront({ popular: { days: 7 } }, F).popular.days).toBe(7)
+    expect(sanitizeFront({ popular: { days: 0 } }, F).popular.days).toBe(0)
+    expect(sanitizeFront({ popular: { days: 3 } }, F).popular.days).toBe(F.popular.days)
+  })
+
+  it('drops nameless strips and caps how many rows a front page can be', () => {
+    const strips = Array.from({ length: 12 }, (_, i) => ({ category: `C${i}`, count: 3, columns: 3 }))
+    expect(sanitizeFront({ strips: [...strips, { category: '  ' }] }, F).strips.length).toBe(8)
+  })
+
+  it('defaults the kind to the one with images', () => {
+    expect(sanitizeFront({}, F).kind).toBe('image')
+    expect(sanitizeFront({ kind: 'text' }, F).kind).toBe('text')
   })
 })

@@ -2,6 +2,10 @@ import type { Dict } from './types'
 
 const ja = {
   emptyPosts: 'まだ投稿がありません。',
+  frontFeatured: '注目',
+  frontPopular: 'よく読まれている',
+  frontLatest: '最新',
+  frontAllPosts: 'すべての記事',
   emptyCategory: 'このカテゴリーにはまだ投稿がありません。',
   emptyTag: 'このタグの投稿はまだありません。',
   categoryLabel: 'カテゴリー',

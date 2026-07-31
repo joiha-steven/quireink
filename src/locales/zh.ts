@@ -2,6 +2,10 @@ import type { Dict } from './types'
 
 const zh = {
   emptyPosts: '还没有文章。',
+  frontFeatured: '精选',
+  frontPopular: '最多阅读',
+  frontLatest: '最新',
+  frontAllPosts: '全部文章',
   emptyCategory: '该分类下还没有文章。',
   emptyTag: '该标签下还没有文章。',
   categoryLabel: '分类',

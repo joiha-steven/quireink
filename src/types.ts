@@ -274,9 +274,45 @@ export type McpSettings = {
  * front page (`front`) is part 2 and is not in the union until it renders.
  */
 export type HomeSettings = {
-  mode: 'list' | 'page' // 'list' = page 1 of the post list at /; 'page' = a chosen page at /
+  mode: 'list' | 'page' | 'front' // 'list' = page 1 of the post list at /; 'page' = a chosen page; 'front' = the composed front page
   page: string // the slug rendered at / in 'page' mode. Empty, missing, unpublished or trashed falls back to the list
   listPath: string // where the post list is mounted once it leaves / ('/post' by default). Leading slash, no trailing one
+  front: FrontSettings // the composed front page, used only in 'front' mode
+}
+
+/**
+ * The composed front page. ADR 0014.
+ *
+ * The ROW ORDER is fixed in code and is not a setting: this is a prepared layout with
+ * options, not a block composer. What settings choose is which rows appear, how big they
+ * are, and where their posts come from.
+ *
+ * `kind` is the one dial that moves the whole page. It is not two layouts: an image site
+ * leads with a picture and a short standfirst, a text site drops the picture, raises the
+ * headline a step and lets the standfirst run. Measured on the NYT front page, most stories
+ * carry no image at all, so the same grammar serves both.
+ */
+export type FrontSettings = {
+  kind: 'image' | 'text'
+  lead: {
+    on: boolean
+    source: 'latest' | 'pinned' // 'latest' = the newest public post; 'pinned' = `slug`
+    slug: string // the pinned post; ignored (and falls back to latest) when it is not public
+    secondary: number // headline-only posts stacked under the lead, 0-3
+  }
+  featured: { on: boolean; count: number; columns: number } // from settings.featured, the owner's own list
+  strips: FrontStrip[] // one row per category, in this order
+  popular: { on: boolean; count: number; days: number } // days: 7, 30, or 0 for all time
+  latest: { on: boolean; count: number; columns: number }
+  showDate: boolean
+  showReadingTime: boolean
+  tagLinks: boolean // the topic links beside a strip's category label; hidden under 3 tags
+}
+
+export type FrontStrip = {
+  category: string // the category NAME, as stored on posts
+  count: number
+  columns: number
 }
 
 // Motion engine: ONE site-wide switch for all UI animation (public + admin). When

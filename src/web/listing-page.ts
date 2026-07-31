@@ -30,17 +30,26 @@ export type ListingPage = {
   activeHref?: string
   /** Extra geometry this page needs: the gutter timeline. */
   css?: string
+  /**
+   * Drop the discovery rail and run the body full width.
+   *
+   * The front page composes its own rows (ADR 0014), so the rail's blocks would appear
+   * twice on the same screen: most-viewed beside most-viewed. It is the one listing surface
+   * that is not a feed with a sidebar.
+   */
+  noRail?: boolean
 }
 
 /** Wrap listing markup in the site shell. Shared by home, taxonomy, series and search. */
 export async function listingPage(
-  { title, body, canonicalPath, cardTitle, activeHref, css = '' }: ListingPage,
+  { title, body, canonicalPath, cardTitle, activeHref, css = '', noRail = false }: ListingPage,
 ): Promise<string> {
   const settings = await getSettings()
   const site = resolveSiteUrl(settings)
-  const [{ configured: mailConfigured }, sidebar] = await Promise.all([
+  const [{ configured: mailConfigured }, rail] = await Promise.all([
     getMailStatus(), renderSidebar(settings, activeHref),
   ])
+  const sidebar = noRail ? { html: '', css: '' } : rail
   return renderDocument(
     settings,
     {

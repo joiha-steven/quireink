@@ -2,6 +2,10 @@ import type { Dict } from './types'
 
 const de = {
   emptyPosts: 'Noch keine Beiträge.',
+  frontFeatured: 'Empfohlen',
+  frontPopular: 'Meistgelesen',
+  frontLatest: 'Neueste',
+  frontAllPosts: 'Alle Beitraege',
   emptyCategory: 'Noch keine Beiträge in dieser Kategorie.',
   emptyTag: 'Noch keine Beiträge mit diesem Schlagwort.',
   categoryLabel: 'Kategorie',

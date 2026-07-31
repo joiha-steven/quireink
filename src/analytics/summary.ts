@@ -8,6 +8,7 @@
 // answer is a daily rollup table maintained by the flush, not a cleverer query.
 
 import { analyticsQuery } from '@/store/query'
+import { nowMs } from '@/store/db'
 import { bucketRanges, type Bucket } from '@/analytics/buckets'
 import {
   channels, dailySeries, depthBuckets, engagement, facet, topCountries, topReferrers,
@@ -155,6 +156,36 @@ export async function getViewTotals(): Promise<Record<string, number>> {
     return out
   } catch (error) {
     console.error(`[ERROR] analytics.getViewTotals: ${(error as Error).message}`)
+    return {}
+  }
+}
+
+/**
+ * The same totals over a trailing window.
+ *
+ * All-time is the wrong measure for a front page: on a blog that has been running a while,
+ * the top of an all-time list is whatever went viral once and it never moves again, which
+ * is the opposite of what a "popular now" row is for. A window lets the row change without
+ * the owner writing anything (ADR 0014).
+ *
+ * `days <= 0` means all time and skips the filter entirely rather than computing a bound.
+ */
+export async function getViewTotalsSince(days: number): Promise<Record<string, number>> {
+  if (days <= 0) return getViewTotals()
+  try {
+    const out: Record<string, number> = {}
+    const since = nowMs() - days * 24 * 60 * 60 * 1000
+    for (const r of all<{ path: string; c: number }>(
+      `select path, count(*) as c from analytics_events where created_at >= ? group by path`,
+      since,
+    )) {
+      out[r.path] = r.c
+    }
+    return out
+  } catch (error) {
+    // A front page that loses one row is a front page; a 500 is not. Same contract as the
+    // all-time version above, which the sidebar has relied on since it shipped.
+    console.error(`[ERROR] analytics.getViewTotalsSince: ${(error as Error).message}`)
     return {}
   }
 }

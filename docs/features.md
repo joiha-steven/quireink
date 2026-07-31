@@ -26,33 +26,11 @@
 - Adding a mutating trash action → log it (activity actions `*.restore` / `*.purge` /
   `trash.empty`) and keep the i18n keys in sync.
 
-## Homepage mode — `src/web/home-mode.ts`, Admin → Settings → Site → Layout & menu
+## Homepage mode — [`docs/homepage.md`](homepage.md)
 
-What `/` serves. [ADR 0014](decisions/0014-homepage-modes.md). `home.mode` is **`list`
-(default: page 1 of the post list, byte for byte what this always did)** or **`page`
-(a published page renders at `/`)**. The composed front page is part 2 and is not in the
-union yet. Posts keep `/{slug}` in every mode.
-
-- **Both branches resolve per REQUEST, not when the routes are registered.** `createApp()`
-  runs once at boot and the mode is a setting, so a route table built from settings would
-  need a restart to take effect and would quietly serve the old shape until it got one. `/`
-  and the `/{slug}` catch-all each ask `home-mode.ts` instead.
-- **`home.listPath` (default `/post`) is where the post list goes** once it leaves `/`. One
-  segment, no nesting — it shares the `/{slug}` namespace, and one segment is the only shape
-  whose collisions can be checked against that namespace at all. Guarded from **both** sides:
-  `content/slugs.ts` refuses a post or page saved at the list's path, and `PUT /api/settings`
-  returns `list_path_taken` (409) if the list is pointed at a slug something already holds.
-  Whichever of the two lost would simply stop being reachable, with no error anywhere.
-- **`/page/:n` is deliberately left where it is.** The list moves; its pagination does not.
-  Untidy, breaks no existing link, and that was the trade chosen.
-- **A missing homepage falls back to the list rather than 404ing.** `renderArticle` returns
-  null when the chosen page is unset, deleted, unpublished or scheduled forward — four
-  things that happen without anybody revisiting this setting — and a 404 there is the whole
-  site's front door.
-- **The chosen page's own slug 301s to `/`**, and the sitemap names the root, not the slug;
-  it also names `listPath`, which appears in no table and would otherwise be listed nowhere.
-- `warm.ts` now warms `/`. Its comment claimed that long before it was true.
-
+What `/` serves: the post list, a chosen page, or the composed front page. Its own file, both
+because it is long and because it is the one feature somebody installing Quire reads before
+they have a blog to configure. [ADR 0014](decisions/0014-homepage-modes.md).
 ## Reading & discovery
 
 - Features `{ search, toc, related, readingTime, progressBar, activityLog, sidebar, leadPost,
