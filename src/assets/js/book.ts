@@ -17,6 +17,11 @@ import { el, label } from './dom'
 const OUTER_MARGIN = 48 // px, the minimum gap from the spread to the viewport edge
 const MAX_WIDTH = 1400 // px, so the spread does not sprawl on an ultrawide monitor
 const COL_GAP = 56 // px between the two facing pages
+// The narrowest a single page may be. Below twice this the spread becomes ONE page: on a
+// 390px phone, halving the footprint and taking the gutter out of the middle left two
+// columns of 119px, which is about ten characters — photographed with one word per line
+// and a heading broken across three. A phone gets one page and the same sideways turn.
+const MIN_COLUMN = 300
 const FADE_MS = 130 // the spread-to-spread crossfade; 200 (the frozen tree's) read as sluggish
 
 export function book(): void {
@@ -81,16 +86,20 @@ export function book(): void {
         ? innerWidth - Math.round(rail.left) * 2
         : innerWidth - OUTER_MARGIN * 2
       const width = Math.min(MAX_WIDTH, footprint)
-      const column = Math.floor((width - COL_GAP) / 2)
+      const pages = width >= MIN_COLUMN * 2 + COL_GAP ? 2 : 1
+      const column = pages === 2 ? Math.floor((width - COL_GAP) / 2) : width
       flow.style.setProperty('--book-col-w', `${column}px`)
-      viewport.style.width = `${column * 2 + COL_GAP}px`
-      // One spread is TWO column PITCHES. The pitch is the column plus the gap after it,
-      // which is what the viewport width leaves out and what the old step got wrong.
-      step = (column + COL_GAP) * 2
+      viewport.style.width = `${column * pages + COL_GAP * (pages - 1)}px`
+      // Read by the stylesheet, which draws the spine down the CENTRE of the viewport: with
+      // one page that line runs through the middle of the text instead of down a gutter.
+      viewport.dataset.pages = String(pages)
+      // One spread is one column PITCH per page. The pitch is the column plus the gap after
+      // it, which is what the viewport width leaves out and what the old step got wrong.
+      step = (column + COL_GAP) * pages
       // Cap media to one page, so an image can never push a column past the spread.
       flow.style.setProperty('--book-page-h', `${flow.clientHeight}px`)
       const columns = Math.max(1, Math.round(viewport.scrollWidth / (column + COL_GAP)))
-      spreads = Math.max(1, Math.ceil(columns / 2))
+      spreads = Math.max(1, Math.ceil(columns / pages))
       // A narrower window can leave the reader past the end.
       spread = Math.min(spread, spreads - 1)
       viewport.scrollLeft = spread * step

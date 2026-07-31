@@ -20,6 +20,10 @@ import { savePage } from '@/content/pages'
 import { addComment } from '@/comments/comments'
 import { saveSettings, getSettings } from '@/content/settings'
 import { DEFAULT_HOME } from '@/content/settings-sanitize'
+import { bufferEvent, bufferScroll, flushAnalytics } from '@/analytics/buffer'
+import { createUser, setTotpSecret } from '@/auth/users'
+import { generateSecret } from '@/auth/totp'
+import { createSession } from '@/auth/sessions'
 
 const DIR = process.argv[2] ?? './.tmp-drive-data'
 const KIND = (process.argv[3] ?? 'text') as 'image' | 'text'
@@ -33,6 +37,12 @@ openDatabases(DIR)
  * The body deliberately does NOT open with the excerpt. It did at first, and the front page
  * printed the same sentence twice — which is how the duplicate-standfirst bug was found, so
  * the fixture keeps them distinct to show the real shape.
+ *
+ * ONE LINE PER PARAGRAPH, and per list item. The renderer turns a single newline into a
+ * `<br>`, so prose typed at 90 columns comes out ragged — every list item in the first cut
+ * of this fixture broke mid-sentence in the screenshot, which is a defect a demo image must
+ * not show. Same reason the fence below is a real fenced block on its own lines: written
+ * inline it renders as one long span of inline code.
  */
 const body = (_lead: string) => `Every few years a writing platform I liked announces that it has been acquired, or that it is sunsetting its export tool, or that an essay from 2014 now sits behind a counter asking my readers to sign up. None of it is malice. It is what happens when the place your words live is somebody else's business model.
 
@@ -40,22 +50,22 @@ const body = (_lead: string) => `Every few years a writing platform I liked anno
 
 It is worth being precise, because the phrase gets used loosely. Owning your writing means four separate things, and most platforms give you one or two:
 
-1. **The text is yours in a format you can read without the platform.** Markdown in a file
-   beats a proprietary document that needs a running service to render.
-2. **The URL is yours.** A domain you control means the machine underneath can change without
-   breaking a single link anyone ever shared.
+1. **The text is yours in a format you can read without the platform.** Markdown in a file beats a proprietary document that needs a running service to render.
+2. **The URL is yours.** A domain you control means the machine underneath can change without breaking a single link anyone ever shared.
 3. **The readers are yours.** An email list is portable; a follower count is not.
-4. **The shape is yours.** If the type is too small you can change it, rather than file a
-   request and wait.
+4. **The shape is yours.** If the type is too small you can change it, rather than file a request and wait.
 
-> The alternative is not glamorous. You rent a small server, you point a domain at it, and
-> you accept that uptime is now your problem.
+> The alternative is not glamorous. You rent a small server, you point a domain at it, and you accept that uptime is now your problem.
 
 ## What it costs
 
 Roughly five dollars a month and one afternoon. The afternoon is the real price, and it is paid once.
 
-\`\`\`bash git clone https://github.com/joiha-steven/quire-blog bun install && bun run build \`\`\`
+\`\`\`bash
+git clone https://github.com/joiha-steven/quire-blog
+bun install && bun run build:assets
+DATA_DIR=./data SITE_URL=https://example.com bun src/index.ts
+\`\`\`
 
 What you get back is that nothing between you and a reader is negotiable by a third party.
 `
@@ -187,4 +197,73 @@ await saveSettings({
   },
 })
 
+/**
+ * A month of traffic, so the parts of the product that COUNT things have something to count.
+ *
+ * Without it the dashboard reads 0 views / no activity / "No views yet", the analytics page
+ * is five empty charts, and the front page's most-viewed row does not render at all — none
+ * of which is a screenshot of the software, it is a screenshot of an empty database. The
+ * numbers are deterministic (no RNG) so two runs produce the same plate.
+ */
+const VISITS_TOP = 260 // the best-performing post over the window
+const DEVICES = ['mobile', 'desktop', 'mobile', 'tablet']
+const BROWSERS = ['Chrome', 'Safari', 'Firefox', 'Safari']
+const SYSTEMS = ['Android', 'macOS', 'iOS', 'Windows']
+const COUNTRIES = ['VN', 'US', 'DE', 'GB', 'JP', 'SG']
+const SOURCES = [null, null, 'news.ycombinator.com', 'google.com', 'lobste.rs', 'bsky.app']
+const WINDOW_DAYS = 30
+
+for (const [rank, p] of POSTS.entries()) {
+  // A long tail rather than a flat line: the fourth post gets a quarter of the first, which
+  // is the shape real traffic has and the shape a "most viewed" list needs to be worth
+  // drawing at all.
+  const total = Math.round(VISITS_TOP / (rank * 0.55 + 1))
+  for (let i = 0; i < total; i += 1) {
+    const day = i % WINDOW_DAYS
+    bufferEvent({
+      path: `/${p.slug}`,
+      // One visitor id per (post, day, slot) so visitors track views without equalling them.
+      visitor: `v${(rank * 7 + i) % 90}`,
+      referrerHost: SOURCES[(rank + i) % SOURCES.length] ?? null,
+      country: COUNTRIES[(rank * 3 + i) % COUNTRIES.length] ?? null,
+      device: DEVICES[i % DEVICES.length] ?? null,
+      browser: BROWSERS[i % BROWSERS.length] ?? null,
+      os: SYSTEMS[i % SYSTEMS.length] ?? null,
+      createdAt: START - day * DAY + (i % 20) * 3600_000,
+    })
+    // Read depth on every third view: enough samples for the engagement panel, and it keeps
+    // the scroll table from being the same size as the event table.
+    if (i % 3 === 0) {
+      bufferScroll({
+        path: `/${p.slug}`,
+        depth: [28, 55, 74, 96][i % 4] ?? 50,
+        dwellMs: 40_000 + (i % 9) * 25_000,
+        visitor: `v${(rank * 7 + i) % 90}`,
+        createdAt: START - day * DAY,
+      })
+    }
+  }
+  flushAnalytics()
+}
+
+/**
+ * An owner, already signed in.
+ *
+ * The admin is the half of the product a screenshot could never reach: sign-in needs a
+ * password AND a TOTP code, and the session cookie is `__Host-` prefixed so it cannot be
+ * forged from the page's own JavaScript. Minting the session here — in the throwaway
+ * database this script just created — photographs the admin without putting any bypass in
+ * the SERVER, which is the part that would matter. Anyone who can run this already has the
+ * database file, and having the database file is the whole game.
+ */
+const owner = await createUser({
+  username: 'demo',
+  email: 'demo@example.com',
+  // Throwaway, for a database that is deleted at the top of the next run.
+  password: 'quartz-lantern-47-thicket',
+})
+setTotpSecret(owner.id, generateSecret())
+const { token } = createSession(owner.id, { userAgent: 'showcase' })
+
 console.log(`seeded ${DIR}: ${POSTS.length} posts, Literata + JetBrains Mono, IDE chrome, front kind=${KIND}`)
+console.log(`QUIRE_SESSION=${token}`)

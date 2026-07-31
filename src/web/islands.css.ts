@@ -139,7 +139,12 @@ body:has(.book-overlay[open]){overflow:hidden}
 .book-top{border-bottom:1px solid var(--c-rule)}
 .book-title{font-size:var(--fs-small);line-height:var(--lh-small);
   letter-spacing:var(--ls-small);font-weight:400;color:var(--c-meta);text-align:center;
-  max-width:min(70%,720px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  /* The page count and the close button sit in an absolutely positioned box on the right,
+     so they take part in no layout and a centred title runs straight under them. On a phone
+     the running head printed over the counter: "owning your ow1 / 5". 220px reserves the
+     widest that box gets, and only bites on a narrow screen. */
+  max-width:min(70%,calc(100% - 220px),720px);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .book-topright{position:absolute;right:clamp(12px,4vw,44px);top:0;height:100%;
   display:flex;align-items:center;gap:16px}
 .book-x{background:none;border:0;cursor:pointer;color:var(--c-meta);font-size:1rem;
@@ -190,6 +195,8 @@ body:has(.book-overlay[open]){overflow:hidden}
    pages flip beneath it. */
 .book-viewport::after{content:"";position:absolute;top:7%;bottom:7%;left:50%;width:1px;
   background:var(--c-rule);opacity:.7;pointer-events:none}
+/* One page, so there is no gutter for a spine to sit in. */
+.book-viewport[data-pages="1"]::after{display:none}
 .book-arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:2;background:none;
   border:0;cursor:pointer;color:var(--c-meta);font-size:2rem;line-height:1;padding:12px 16px}
 .book-arrow:hover{color:var(--c-heading)}
