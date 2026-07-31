@@ -28,23 +28,35 @@ shape to it.
 The product is **Quire Ink**. `quireink` is the slug: repository, package name, binary,
 domain. **quireINK** is the wordmark.
 
-`quire` (a gathering of folded sheets) and `ink` are the two halves of what the thing is,
-and the wordmark sets them in the project's own two typefaces: **Literata** for `quire`,
-because that is the face a reader reads, and **JetBrains Mono** for `INK`, because that is
-the face the machine talks in. The same pairing already runs the whole product — the IDE
-chrome, the `//` labels, the code blocks — so the logo is the type system stated in two
-words rather than a decoration applied on top of it.
+`quire` (a gathering of folded sheets) and `ink` are the two halves of what the thing is, and
+the wordmark sets them in two of the product's own faces: **Inter** for `quire`, because that
+is the interface face, and **JetBrains Mono** for `INK`, because that is the face the machine
+talks in. The same pairing already runs the whole product, so the logo is the type system
+stated in two words rather than a decoration applied on top of it.
 
-**The wordmark is committed as outlines**, in `src/brand-art.ts`, not as text with a
-`font-family`. Three reasons, in order of weight:
+> Revised the same day. The first cut set `quire` in **Literata**, the reading face, and it
+> was replaced on the owner's call. Two reasons it is the better answer anyway: Literata is
+> the *reader's* face and the logo never appears on a reading page, and Inter is the one
+> family `pageStyles` declares unconditionally, so the outlines and the surrounding UI now
+> agree instead of quietly disagreeing. The wordmark is also set tighter than the text
+> default, which a logo wants and a paragraph does not.
+
+There is **one logo in two sizes**, not a symbol and a word. `Qi` is the compact form, for
+the app icon, the favicon and the collapsed admin rail; `quireINK` is used everywhere else.
+An abstract symbol (two leaves and the fold between them) stood beside the word in the first
+cut, and once the compact mark became the word's own initials, showing both read as a
+stutter. The symbol is retired.
+
+**Both are committed as outlines**, in `src/brand-art.ts`, not as text with a `font-family`.
+Three reasons, in order of weight:
 
 1. `/login` is the one page where "did this load?" is a security question, and a mark that
    arrives on its own request can arrive late or swap face mid-paint. `web/brand.ts` already
-   made this argument for the symbol; it applies harder to the word.
+   made that argument for the symbol; it applies harder to the word.
 2. The admin renders in whatever chrome font the owner picked. As live text the logo would
    have been a different logo per install.
-3. Neither face is guaranteed to be declared on a given page: `pageStyles` emits the owner's
-   chosen faces plus Inter and JetBrains Mono, so Literata is frequently absent.
+3. A logo may not assume a family is declared at all: `pageStyles` emits the owner's chosen
+   faces plus Inter and JetBrains Mono, and nothing else.
 
 The app icon and the favicon are generated from the same file, so they cannot drift from the
 logo the way the `vb` icon did.

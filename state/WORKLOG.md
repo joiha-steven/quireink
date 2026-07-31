@@ -13,11 +13,18 @@ passes its size cap. Rolling is a move, never a rewrite.
 stops doubling as the showroom, and the apex is reserved for later. So the name moved with it.
 
 **The wordmark is quireINK, and it is committed as outlines** in `src/brand-art.ts`: `quire`
-in Literata, `INK` in JetBrains Mono. That is the project's own two-face system stated as a
-logo rather than a decoration laid on top of it. Outlines and not text for three reasons, and
-only the first is aesthetic: /login must not depend on a font arriving, the admin renders in
-whatever chrome font the owner picked (as text it would be a different logo per install), and
-Literata is simply absent from most pages because `pageStyles` emits only the owner's faces.
+in Inter, `INK` in JetBrains Mono, set tighter than the text default because a logo wants
+that and a paragraph does not. That is the product's own type system stated as a logo rather
+than a decoration laid on top of it. Outlines and not text for three reasons, and only the
+first is aesthetic: /login must not depend on a font arriving, the admin renders in whatever
+chrome font the owner picked (as text it would be a different logo per install), and
+`pageStyles` declares only the owner's own faces plus Inter and JetBrains Mono, so nothing
+else can be assumed present.
+
+**The compact form is `Qi`** — the app icon, the favicon, the collapsed rail — and it is the
+same two faces in the same order. The first cut had an abstract symbol beside the word; once
+the compact mark became the word's own initials, showing both read as a stutter, so the
+symbol is retired. One logo, two sizes.
 
 **The app icon still said `vb`** — the name before the name before this one, two renames
 stale, because nobody opens a 512px file. It and the favicon are generated from the same art
