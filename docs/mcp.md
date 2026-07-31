@@ -51,7 +51,8 @@
   to be pointed somewhere and nothing else on the card says where. It prefers `settings.siteUrl`
   and falls back to the browser's origin, since a blank `siteUrl` is resolved from the
   environment, which the admin cannot read.
-- **The consent screen needs an nginx exception**, kept in `scripts/ops/nginx-manhhung.me.conf`:
+- **The consent screen needs an nginx exception**, so anyone putting this behind a proxy with
+  a CSP has to make it too:
   Approving POSTs to `/api/mcp/authorize` and is answered with a 302 to the client's own
   callback, and a browser enforces `form-action` across a form submission's WHOLE redirect
   chain — so under `form-action 'self'` the Approve button did nothing, silently. Only that
