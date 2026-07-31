@@ -1,25 +1,31 @@
 #!/usr/bin/env bash
-# Off-box backup for Quire 2.0: both SQLite databases and the uploads tree, to R2.
+# Off-box backup for Quire Ink: both SQLite databases and the uploads tree, to R2.
+#
+# ONE script, any number of instances. Every value that describes an installation is an
+# environment variable, so two blogs on the same box run the same file with two crontabs.
+# It was called `quire2-backup.sh` and defaulted to `/var/lib/quire2` until 2026-08-01,
+# which is one installation's service name on a script the whole world can read; worse, it
+# invited a second copy per instance, and a second copy is what actually happened.
 #
 # This is parity exception 1 made real. Google Drive backup was dropped on the argument that
 # replication would replace it, and until this ran the only copy of everything the owner had
 # written lived in one directory on one machine.
 #
-# It is a SEPARATE script from `jk-backup.sh` on purpose. That one backs up the money site
-# and four others, it is proven, and it is monitored; adding a sixth engine to it to serve a
-# blog would put those backups at risk for no gain. This reuses its remote, its retention
-# habit and its alert hook, and nothing else of it.
+# It is a SEPARATE script from the one backing up the author's other sites, on purpose. That
+# one is proven and monitored; adding another engine to it to serve a blog would put those
+# backups at risk for no gain. This reuses its remote, its retention habit and its alert
+# hook, and nothing else of it.
 #
 #   Databases : VACUUM INTO, never a file copy. A live SQLite database has a write-ahead log
 #               and copying the file can capture a torn state that only fails on restore.
 #   Uploads   : rclone sync with --backup-dir, so a deleted file is recoverable for 7 days.
 #   Retention : hourly copies for 3 days, daily copies for 30.
 #
-# Install:
-#   install -m 755 quire2-backup.sh /usr/local/bin/
-#   Set the block below, or export the same names from the crontab / an EnvironmentFile.
-#   crontab -e ->  17 * * * * /usr/local/bin/quire2-backup.sh
-#                  40 20 * * * /usr/local/bin/quire2-backup.sh daily
+# Install once per BOX, then one crontab per instance:
+#   install -m 755 quire-backup.sh /usr/local/bin/
+#   /etc/cron.d/<instance>-backup, with the QUIRE_* names below set at the top of the file:
+#     17 * * * * root /usr/local/bin/quire-backup.sh
+#     40 20 * * * root /usr/local/bin/quire-backup.sh daily
 
 set -uo pipefail
 
@@ -28,19 +34,20 @@ set -uo pipefail
 # nothing below needs reading. They are variables rather than literals because this file
 # is in a public repository: a script that names somebody's data directory, their bucket
 # and their alert endpoint publishes all three to everyone who reads it.
-DATA="${QUIRE_DATA:-/var/lib/quire2/data}"
-UPLOADS="${QUIRE_UPLOADS:-/var/lib/quire2/uploads}"
+DATA="${QUIRE_DATA:-/var/lib/quire/data}"
+UPLOADS="${QUIRE_UPLOADS:-/var/lib/quire/uploads}"
 BUN="${QUIRE_BUN:-$HOME/.bun/bin/bun}"
 # An rclone remote and a path under it: `rclone config` names the remote, this points into
 # it. There is no default worth guessing, so an unset value stops the run.
-REMOTE="${QUIRE_BACKUP_REMOTE:?set QUIRE_BACKUP_REMOTE, e.g. r2:my-bucket/quire2}"
-STAGE="${QUIRE_BACKUP_STAGE:-/var/tmp/quire2-backup}"
-LOG="${QUIRE_BACKUP_LOG:-/var/log/quire2-backup.log}"
-LOCK="${QUIRE_BACKUP_LOCK:-/var/lock/quire2-backup.lock}"
+REMOTE="${QUIRE_BACKUP_REMOTE:?set QUIRE_BACKUP_REMOTE, e.g. r2:my-bucket/my-blog}"
+# Per instance, all four, or two blogs on one box will fight over a lock and a log file.
+STAGE="${QUIRE_BACKUP_STAGE:-/var/tmp/quire-backup}"
+LOG="${QUIRE_BACKUP_LOG:-/var/log/quire-backup.log}"
+LOCK="${QUIRE_BACKUP_LOCK:-/var/lock/quire-backup.lock}"
 # A file holding one webhook URL. Absent, a failure is logged and not announced.
-ALERT_HOOK_FILE="${QUIRE_ALERT_HOOK_FILE:-/etc/quire2/alert-webhook}"
+ALERT_HOOK_FILE="${QUIRE_ALERT_HOOK_FILE:-/etc/quire/alert-webhook}"
 # The name this installation calls itself in an alert.
-ALERT_ALIAS="${QUIRE_ALERT_ALIAS:-quire2 backup}"
+ALERT_ALIAS="${QUIRE_ALERT_ALIAS:-quire backup}"
 # ------------------------------------------------------------------------------
 
 MODE="${1:-hourly}"
@@ -66,7 +73,7 @@ fail(){
 exec 9>"$LOCK" || fail "lock"
 flock -n 9 || { log "another run holds the lock; skipping"; exit 0; }
 
-ARCHIVE="$STAGE/quire2-${TAG}.tar.gz"
+ARCHIVE="$STAGE/quire-${TAG}.tar.gz"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP" "$ARCHIVE"' EXIT
 
@@ -81,7 +88,7 @@ done
 [ -n "$(ls -A "$TMP")" ] || fail "no databases found in $DATA"
 
 tar -C "$TMP" -czf "$ARCHIVE" . 2>>"$LOG" || fail "tar"
-rclone copyto "$ARCHIVE" "$REMOTE/db/quire2-${TAG}.tar.gz" 2>>"$LOG" || fail "rclone db"
+rclone copyto "$ARCHIVE" "$REMOTE/db/quire-${TAG}.tar.gz" 2>>"$LOG" || fail "rclone db"
 log "db ($TAG) -> $(du -h "$ARCHIVE" | cut -f1)"
 
 if [ -d "$UPLOADS" ]; then
