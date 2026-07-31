@@ -267,7 +267,7 @@ const vi = {
   typewriterLabel: 'Hiệu ứng máy đánh chữ',
   typewriterDesc: 'Con trỏ dạng khối, phản hồi khi gõ/xóa và tiếng phím nhỏ trong trình soạn thảo. Tắt để dùng con trỏ thường và soạn thảo im lặng.',
   overviewTitle: 'Tổng quan',
-  licenseTitle: 'Quire Blog là mã nguồn mở (MIT). Nội dung blog của bạn vẫn là của bạn (giữ toàn quyền).',
+  licenseTitle: 'Quire Blog miễn phí cho mục đích phi thương mại (PolyForm Noncommercial). Nội dung blog của bạn vẫn là của bạn (giữ toàn quyền).',
   statPosts: 'Bài viết',
   statPages: 'Trang',
   statComments: 'Bình luận',

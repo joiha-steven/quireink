@@ -180,7 +180,7 @@ this was seriously worked through, and what it would have cost, is cheaper than 
 the argument in six months. Everything from here to the end of this phase is **history, not
 direction**.
 
-A **free, hosted** Quire Blog at `quire.app`: same open-source app, run for you. Built
+A **free, hosted** Quire Blog at `quire.app`: same app, run for you. Built
 only AFTER Docker ships, so every hosted blog has a guaranteed eject path - hosted is a
 convenience, not a trap (see "No lock-in" in Decisions locked). This is the **model-A**
 choice: one shared stack, many blogs, isolated by `tenant_id` (true multi-tenant, not

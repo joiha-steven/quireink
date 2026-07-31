@@ -13,7 +13,7 @@ Write and publish from a clean multilingual admin — or hand the keys to an AI 
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178c6?logo=typescript&logoColor=white)
 ![React 19](https://img.shields.io/badge/React_19-20232a?logo=react&logoColor=61dafb)
 ![MCP](https://img.shields.io/badge/MCP-ready-7c3aed)
-![License: MIT](https://img.shields.io/badge/License-MIT-22c55e)
+![License: PolyForm Noncommercial](https://img.shields.io/badge/License-PolyForm_Noncommercial-22c55e)
 
 [**🌐 Live demo**](https://manhhung.me) · [**Get your own copy**](#-get-your-own-copy) · [**Speed, measured**](#-fast-and-here-are-the-numbers) · [**Let an AI run it**](#-let-an-ai-agent-write--publish-mcp) · [**How it works**](./docs/spec/02-structure.md) · [**Changelog**](./CHANGELOG.md) · [**License**](#-license)
 
@@ -31,7 +31,7 @@ Write and publish from a clean multilingual admin — or hand the keys to an AI 
 
 ## ✨ What it is
 
-An **open-source** (MIT), single-owner blog built for people who just want to **write** — and to **own the whole stack**. No SaaS, no vendor lock-in, and as of 2.0, **no infrastructure either**: one process, two SQLite files, a directory of uploads.
+A **source-available** (PolyForm Noncommercial), single-owner blog built for people who just want to **write** — and to **own the whole stack**. Free for personal, hobby, educational and nonprofit use; read it, change it, run it, share it. Commercial use needs a separate licence. No SaaS, no vendor lock-in, and as of 2.0, **no infrastructure either**: one process, two SQLite files, a directory of uploads.
 
 A reading page ships **4.4 KB of JavaScript and no third-party requests at all** ([the rest of the numbers](#-fast-and-here-are-the-numbers)), because the public site is server-rendered HTML with a few hand-written islands and a cache that lives in the process. The whole thing is tuned around **readable typography** — the reading experience is the product — and everything is **adjustable from the admin** (palettes, type scale, menu, fonts) with **no hardcoded values** anywhere, so you make it yours without touching code.
 
@@ -104,7 +104,7 @@ Not adjectives. Recorded from the network on a **cold load of the live site**, w
 
 | | |
 |:---|:---|
-| **vs.&nbsp;a&nbsp;hosted&nbsp;platform** | Your writing lives in two SQLite files on your disk. No account, no plan, no export button to hope still works. MIT-licensed, so nobody can take it away or change the terms |
+| **vs.&nbsp;a&nbsp;hosted&nbsp;platform** | Your writing lives in two SQLite files on your disk. No account, no plan, no export button to hope still works. The source is yours to read and change, so nobody can take it away |
 | **vs.&nbsp;WordPress** | No PHP, no MySQL, no plugin surface to patch. One process and one binary. The whole reader path ships 4 KB of JavaScript |
 | **vs.&nbsp;a&nbsp;static&nbsp;site&nbsp;generator** | You get an actual admin: write, upload, schedule and publish from the browser or your phone, with search, comments, a newsletter and analytics built in. No rebuild, no deploy, no git push to publish a typo fix |
 | **vs.&nbsp;rolling&nbsp;your&nbsp;own** | The unglamorous parts are done and tested: TOTP auth, sessions, image variants, feeds, OG images, redirects, soft-delete, revisions, backups, WordPress import, i18n in six languages |
@@ -254,7 +254,10 @@ See [`state/ROADMAP.md`](./state/ROADMAP.md).
 
 Two separate layers — keep them distinct:
 
-- **Code (this repo) — [MIT](./LICENSE).** Free and open source: use, modify, redistribute, or sell it for any purpose, **no obligation to credit** (MIT only asks the license text travels with copies of the source). Fork it and run your own blog.
-- **Content — © all rights reserved.** The writing published *with* Quire (articles, images on an operator's site, e.g. manhhung.me) belongs to its author, is **not** covered by MIT, does not live in this repo, and may not be reused without permission.
+- **Code (this repo) — [PolyForm Noncommercial 1.0.0](./LICENSE).** Source-available, not open source. **Free for any noncommercial purpose**, and that is meant broadly: personal blogs, hobby projects, study and research, plus charities, schools, public research bodies and government. You may read it, modify it, self-host it, fork it and redistribute it. Keep the licence text and the `Required Notice:` line with any copy you pass on.
+- **Commercial use needs a separate licence.** Running Quire for a business, or selling it or hosting of it, is not covered. Ask and it is usually cheap or free: open an issue, or contact the owner through [their GitHub profile](https://github.com/joiha-steven).
+- **Content — © all rights reserved.** The writing published *with* Quire (articles, images on an operator's site, e.g. manhhung.me) belongs to its author, is **not** covered by the code licence, does not live in this repo, and may not be reused without permission.
 
-> In short: the **software** is open for anyone; the **author's writing** is not.
+> In short: the **software** is free for anyone not making money with it; the **author's writing** is not free at all.
+>
+> **Everything published up to and including v2.0.0 was MIT, and stays MIT forever.** A licence change is not retroactive: any copy taken before this one keeps the rights it was given. The new terms apply from this commit onward. See [ADR 0015](./docs/decisions/0015-relicense-polyform-noncommercial.md).
