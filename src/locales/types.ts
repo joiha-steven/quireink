@@ -3,6 +3,11 @@
 
 export type Dict = {
   emptyPosts: string
+  // The composed front page's row labels. ADR 0014.
+  frontFeatured: string
+  frontPopular: string
+  frontLatest: string
+  frontAllPosts: string
   emptyCategory: string
   emptyTag: string
   categoryLabel: string
@@ -484,12 +489,45 @@ export type AdminStrings = {
   homeModeLabel: string
   homeModeList: string
   homeModePage: string
+  homeModeFront: string
   homeModeHint: string
   homePageLabel: string
   homePageNone: string
   homePageHint: string
   listPathLabel: string
   listPathHint: string
+  // The composed front page's options. ADR 0014.
+  cardFront: string
+  frontKindLabel: string
+  frontKindImage: string
+  frontKindText: string
+  frontKindHint: string
+  frontLead: string
+  frontLeadHint: string
+  frontLeadSource: string
+  frontLeadLatest: string
+  frontLeadPinned: string
+  frontLeadPickPost: string
+  frontSecondary: string
+  frontCount: string
+  frontColumns: string
+  frontFeaturedRow: string
+  frontFeaturedHint: string
+  frontStrips: string
+  frontStripsHint: string
+  frontStripAdd: string
+  frontPopularRow: string
+  frontPopularHint: string
+  frontWindow: string
+  frontWindow7: string
+  frontWindow30: string
+  frontWindowAll: string
+  frontLatestRow: string
+  frontLatestHint: string
+  frontShowDate: string
+  frontShowReading: string
+  frontTagLinks: string
+  frontTagLinksHint: string
   commentsEnable: string
   commentsEnableDesc: string
   commentsTurnstile: string

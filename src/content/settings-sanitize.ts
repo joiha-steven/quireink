@@ -2,7 +2,7 @@
 // back-compat shims). No DB, no Blob, no React. settings.ts depends on this ONE
 // WAY (settings -> settings-sanitize, never back) for its getSettings/saveSettings merge.
 
-import type { BackupSettings, CacheSettings, CommentSettings, FeatureSettings, FontFace, FontSettings, HomeSettings, McpSettings, MenuItem, MotionSettings, SeoSettings, ThemeColors, ThemeSettings, TypeStyle, TypographySettings } from '@/types'
+import type { BackupSettings, CacheSettings, CommentSettings, FeatureSettings, FontFace, FontSettings, FrontSettings, FrontStrip, HomeSettings, McpSettings, MenuItem, MotionSettings, SeoSettings, ThemeColors, ThemeSettings, TypeStyle, TypographySettings } from '@/types'
 import { DEFAULT_PRESET_ID, isPresetId, defaultThemes, THEME_PRESETS, DEFAULT_FONT, TYPE_ROLES, FONT_WEIGHTS } from '@/content/themes'
 
 // Keep only well-formed menu items (label + href both present).
@@ -147,14 +147,95 @@ export function sanitizeListPath(input: unknown, fallback: string): string {
   return /^[a-z0-9][a-z0-9-]*$/.test(slug) ? `/${slug}` : fallback
 }
 
+/** Columns in a row: 1, 2 or 3. Anything else is the fallback rather than a broken grid. */
+const columns = (v: unknown, fallback: number): number =>
+  v === 1 || v === 2 || v === 3 ? v : fallback
+
+export function sanitizeFront(input: unknown, fallback: FrontSettings): FrontSettings {
+  const o = (input ?? {}) as Partial<FrontSettings>
+  const lead = (o.lead ?? {}) as Partial<FrontSettings['lead']>
+  const featured = (o.featured ?? {}) as Partial<FrontSettings['featured']>
+  const popular = (o.popular ?? {}) as Partial<FrontSettings['popular']>
+  const latest = (o.latest ?? {}) as Partial<FrontSettings['latest']>
+  return {
+    kind: o.kind === 'text' ? 'text' : 'image',
+    lead: {
+      on: bool(lead.on, fallback.lead.on),
+      source: lead.source === 'pinned' ? 'pinned' : 'latest',
+      slug: typeof lead.slug === 'string' ? lead.slug.trim().replace(/^\/+/, '').slice(0, 200) : fallback.lead.slug,
+      secondary: clampNumber(lead.secondary, 0, 3, fallback.lead.secondary),
+    },
+    featured: {
+      on: bool(featured.on, fallback.featured.on),
+      count: clampNumber(featured.count, 1, 12, fallback.featured.count),
+      columns: columns(featured.columns, fallback.featured.columns),
+    },
+    // Capped at eight rows. A front page that scrolls past every category is an archive
+    // with extra steps, and each strip costs a reader a screen.
+    strips: Array.isArray(o.strips)
+      ? o.strips
+        .filter((s): s is FrontStrip => !!s && typeof s.category === 'string' && !!s.category.trim())
+        .slice(0, 8)
+        .map((s) => ({
+          category: s.category.trim().slice(0, 100),
+          count: clampNumber(s.count, 1, 12, 3),
+          columns: columns(s.columns, 3),
+        }))
+      : fallback.strips,
+    popular: {
+      on: bool(popular.on, fallback.popular.on),
+      count: clampNumber(popular.count, 1, 12, fallback.popular.count),
+      // Three windows, not a free number: 7, 30, or all time. A window nobody can name is a
+      // window nobody can reason about when the row looks wrong.
+      days: popular.days === 7 || popular.days === 30 || popular.days === 0
+        ? popular.days
+        : fallback.popular.days,
+    },
+    latest: {
+      on: bool(latest.on, fallback.latest.on),
+      count: clampNumber(latest.count, 1, 24, fallback.latest.count),
+      columns: columns(latest.columns, fallback.latest.columns),
+    },
+    showDate: bool(o.showDate, fallback.showDate),
+    showReadingTime: bool(o.showReadingTime, fallback.showReadingTime),
+    tagLinks: bool(o.tagLinks, fallback.tagLinks),
+  }
+}
+
+/**
+ * What a fresh install serves at `/`, and what a front page looks like before anybody has
+ * configured one. ADR 0014.
+ *
+ * `list` is what `/` has always been, so an install that upgrades into this feature sees no
+ * change at all. `strips` starts EMPTY because a category row can only be chosen by the
+ * owner: guessing one would put an arbitrary category on somebody's front page.
+ */
+export const DEFAULT_HOME: HomeSettings = {
+  mode: 'list',
+  page: '',
+  listPath: '/post',
+  front: {
+    kind: 'image',
+    lead: { on: true, source: 'latest', slug: '', secondary: 2 },
+    featured: { on: true, count: 3, columns: 3 },
+    strips: [],
+    popular: { on: false, count: 4, days: 30 },
+    latest: { on: true, count: 6, columns: 3 },
+    showDate: true,
+    showReadingTime: true,
+    tagLinks: true,
+  },
+}
+
 export function sanitizeHome(input: unknown, fallback: HomeSettings): HomeSettings {
   const o = (input ?? {}) as Partial<HomeSettings>
   return {
     // Anything unrecognised is `list`, which is the mode that changes nothing. A settings
     // blob written by a NEWER version naming a mode this build cannot render lands here.
-    mode: o.mode === 'page' ? 'page' : 'list',
+    mode: o.mode === 'page' || o.mode === 'front' ? o.mode : 'list',
     page: typeof o.page === 'string' ? o.page.trim().replace(/^\/+/, '').slice(0, 200) : fallback.page,
     listPath: sanitizeListPath(o.listPath, fallback.listPath),
+    front: sanitizeFront(o.front, fallback.front),
   }
 }
 

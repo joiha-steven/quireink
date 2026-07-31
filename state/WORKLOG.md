@@ -7,6 +7,39 @@ Older entries roll into [`worklog/`](worklog/2026-07-quire-2-rewrite.md) when th
 passes its size cap. Rolling is a move, never a rewrite.
 
 
+## 2026-07-31 — A homepage that is not always the post list (ADR 0014)
+
+`/` had only ever been page 1 of the post list. It now has three modes, and the default is
+still exactly that, byte for byte: an install that upgrades into this sees no change until
+somebody chooses one. Quire is open source and that constraint shaped the rest.
+
+**Part 1, `list` / `page`.** Both branches resolve per REQUEST rather than when the routes
+are registered — `createApp()` runs once at boot and the mode is a setting, so a route table
+built from settings would need a restart and would quietly serve the old shape until it got
+one. `home.listPath` (default `/post`) is guarded from both sides, because it is a third
+occupant of the `/{slug}` namespace and whichever of the two lost would stop being reachable
+with no error anywhere. A chosen page that is unset, trashed, unpublished or scheduled
+forward falls back to the list: a 404 there is the site's front door. `/page/:n` deliberately
+did not move.
+
+**Part 2, the composed front page.** A fixed stack of rows with about twenty options, not a
+block composer. The design came from photographing the NYT front page rather than
+remembering it, and the finding that shaped it was that MOST stories there carry no picture:
+hierarchy is size, then standfirst, then image, then rules. So the two site kinds are one
+grammar with the dials moved, and a site with no images looks finished.
+
+Four things were found by looking at renders rather than at source, and all four were real:
+a three-column row holding one card is two thirds white space; three across inside a 672px
+reading measure is three slivers, not three columns; per-render column CSS lands after the
+sheet and beat its own media queries, handing a phone a grid it could not fit; and a card
+under a category heading repeating that category is noise. A fifth apparent bug — mobile
+overflow — was the screenshot tool not emulating a viewport, proved by shooting an untouched
+post page and seeing the same thing.
+
+`warm.ts` also finally warms `/`, which its own comment had claimed for weeks.
+
+1183 tests, `check:all` green. `docs/homepage.md` split out of `features.md` at its cap.
+
 ## 2026-07-31: importing a real WordPress site broke two things nobody had run into
 
 Migrated a 58-post WordPress blog into a second Quire instance, and doing it for real

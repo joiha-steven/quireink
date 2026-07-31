@@ -2,6 +2,10 @@ import type { Dict } from './types'
 
 const vi = {
   emptyPosts: 'Chưa có bài viết nào.',
+  frontFeatured: 'Nổi bật',
+  frontPopular: 'Đọc nhiều nhất',
+  frontLatest: 'Mới nhất',
+  frontAllPosts: 'Tất cả bài viết',
   emptyCategory: 'Chưa có bài viết trong danh mục này.',
   emptyTag: 'Chưa có bài viết với tag này.',
   categoryLabel: 'Danh mục',

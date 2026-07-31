@@ -24,6 +24,7 @@ Capped at 170 lines and held there by `check:docs`, since it loads every turn.
 | Public rendering, islands, the CSS split | [`docs/spec/04-frontend.md`](./docs/spec/04-frontend.md) |
 | Sign-in, TOTP, sessions | [`docs/spec/06-auth.md`](./docs/spec/06-auth.md) |
 | What a feature does, per area | [`docs/features.md`](./docs/features.md) |
+| What `/` serves: list, a page, or the front page | [`docs/homepage.md`](./docs/homepage.md) |
 | Typography, layout, i18n, releases | [`docs/conventions.md`](./docs/conventions.md) |
 | Fonts, CSS, island JS — the resource-loading law | [`docs/performance.md`](./docs/performance.md) |
 | SEO, feeds, OG, PWA · MCP · agent discovery | [`docs/seo-pwa.md`](./docs/seo-pwa.md) · [`docs/mcp.md`](./docs/mcp.md) · [`docs/agent-ready.md`](./docs/agent-ready.md) |

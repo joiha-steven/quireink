@@ -24,8 +24,8 @@ export function LayoutMenuFields({ s, update, posts, pages }: Props) {
       {/* What `/` serves, and where the post list goes when it is no longer there. ADR 0014. */}
       <div className="space-y-2">
         <span className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">{t.homeModeLabel}</span>
-        <div className="grid grid-cols-2 gap-2">
-          {(['list', 'page'] as const).map((v) => {
+        <div className="grid grid-cols-3 gap-2">
+          {(['list', 'page', 'front'] as const).map((v) => {
             const active = home.mode === v
             return (
               <button
@@ -39,7 +39,7 @@ export function LayoutMenuFields({ s, update, posts, pages }: Props) {
                     : 'border-neutral-300 text-neutral-700 hover:border-neutral-500 dark:border-neutral-700 dark:text-neutral-300'
                 }`}
               >
-                {v === 'list' ? t.homeModeList : t.homeModePage}
+                {v === 'list' ? t.homeModeList : v === 'page' ? t.homeModePage : t.homeModeFront}
               </button>
             )
           })}
@@ -47,22 +47,25 @@ export function LayoutMenuFields({ s, update, posts, pages }: Props) {
         <p className="text-xs text-neutral-400 dark:text-neutral-500">{t.homeModeHint}</p>
       </div>
 
-      {/* Only the page mode needs a page and a new address for the list. Showing either one
-          while the homepage is still the list would be asking about nothing. */}
-      {home.mode === 'page' && (
+      {/* Both of the other modes move the post list, so both need somewhere to move it to.
+          Only one of them needs a page. Asking either question while the homepage is still
+          the list would be asking about nothing. */}
+      {home.mode !== 'list' && (
         <div className="space-y-4 border-l-2 border-neutral-200 pl-4 dark:border-neutral-800">
-          <div className="space-y-1.5">
-            <span className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">{t.homePageLabel}</span>
-            <select
-              value={home.page}
-              onChange={(e) => update({ home: { ...home, page: e.target.value } })}
-              className={MENU_FIELD}
-            >
-              <option value="">{t.homePageNone}</option>
-              {pages.map((p) => <option key={p.slug} value={p.slug}>{p.title}</option>)}
-            </select>
-            <p className="text-xs text-neutral-400 dark:text-neutral-500">{t.homePageHint}</p>
-          </div>
+          {home.mode === 'page' && (
+            <div className="space-y-1.5">
+              <span className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">{t.homePageLabel}</span>
+              <select
+                value={home.page}
+                onChange={(e) => update({ home: { ...home, page: e.target.value } })}
+                className={MENU_FIELD}
+              >
+                <option value="">{t.homePageNone}</option>
+                {pages.map((p) => <option key={p.slug} value={p.slug}>{p.title}</option>)}
+              </select>
+              <p className="text-xs text-neutral-400 dark:text-neutral-500">{t.homePageHint}</p>
+            </div>
+          )}
           <div className="space-y-1.5">
             <Input
               label={t.listPathLabel}

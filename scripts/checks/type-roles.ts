@@ -21,7 +21,7 @@ import { readFileSync } from 'node:fs'
 
 const SHEETS = [
   'src/web/public.css.ts', 'src/web/prose.css.ts', 'src/web/islands.css.ts',
-  'src/web/ide.css.ts',
+  'src/web/ide.css.ts', 'src/web/front.css.ts', 'src/web/utility.css.ts',
 ]
 
 /**

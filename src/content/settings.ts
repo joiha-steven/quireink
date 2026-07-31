@@ -9,7 +9,7 @@ import { one, run } from '@/store/query'
 import { isSiteLang } from '@/locales/langs'
 import { DEFAULT_PRESET_ID, isPresetId, isFontPresetId, defaultThemes, ALL_PALETTE_IDS, DEFAULT_TYPOGRAPHY, DEFAULT_FONT, DEFAULT_FONT_PRESET, isChromeFontId, DEFAULT_CHROME_FONT, TYPE_ROLES } from '@/content/themes'
 import {
-  sanitizeMenu, migrateThemes, sanitizeThemes, sanitizeEnabledPalettes, sanitizeSeo, sanitizeFeatures, sanitizeHome, sanitizeMcp, sanitizeMotion, sanitizeCache,
+  DEFAULT_HOME, sanitizeMenu, migrateThemes, sanitizeThemes, sanitizeEnabledPalettes, sanitizeSeo, sanitizeFeatures, sanitizeHome, sanitizeMcp, sanitizeMotion, sanitizeCache,
   sanitizeBackups, sanitizeComments, sanitizeCss, sanitizeUrl, sanitizeTypography, sanitizeFont, fontFormat, clampNumber,
 } from '@/content/settings-sanitize'
 
@@ -153,9 +153,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   themes: defaultThemes(),
   typography: DEFAULT_TYPOGRAPHY,
   customFont: DEFAULT_FONT,
-  // `list` is what `/` has always been. An install that upgrades into this feature sees no
-  // change at all until somebody chooses otherwise, which is the constraint in ADR 0014.
-  home: { mode: 'list', page: '', listPath: '/post' },
+  home: DEFAULT_HOME,
   seo: DEFAULT_SEO,
   features: DEFAULT_FEATURES,
   comments: DEFAULT_COMMENTS,
