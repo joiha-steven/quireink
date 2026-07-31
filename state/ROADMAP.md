@@ -1,6 +1,6 @@
 # Roadmap
 
-Direction for Quire Blog beyond the current single-owner, self-hosted blog. This is
+Direction for Quire Ink beyond the current single-owner, self-hosted blog. This is
 a planning document — nothing here is built yet unless its status says so. Operational
 detail for shipped features lives in [`CLAUDE.md`](../CLAUDE.md); the *why* of the
 current design is in [`docs/spec/02-structure.md`](../docs/spec/02-structure.md), and the
@@ -16,7 +16,7 @@ current design is in [`docs/spec/02-structure.md`](../docs/spec/02-structure.md)
 
 ## Goal
 
-Make Quire Blog something other people can actually run and live in - not just the
+Make Quire Ink something other people can actually run and live in - not just the
 author's personal instance. Near-term tracks:
 
 1. Run anywhere: **native self-host or Docker**, from one codebase.
@@ -24,7 +24,7 @@ author's personal instance. Near-term tracks:
 3. Optional **AI assist** in the editor (titles, tags, drafting, images).
 
 **There is no long horizon beyond that, and that is a decision.** A free multi-tenant SaaS
-at `quire.app` was fully specified and then abandoned
+at `quireink.com` was fully specified and then abandoned
 ([ADR 0002](../docs/decisions/0002-no-saas-single-instance.md)); Phase 7 below is kept as
 history, not as direction.
 
@@ -108,7 +108,7 @@ it to post fields (for the note-app plugins below), rehosting embedded images.
 
 ### Phase 4 — Obsidian, then Craft `[planned, needs Phase 3]`
 - **Obsidian plugin**: a command that POSTs the active note (frontmatter + body) and
-  its attachments to the ingest API. Quire Blog already stores exactly this format.
+  its attachments to the ingest API. Quire Ink already stores exactly this format.
 - **Craft**: best-effort — Markdown export → paste-import in admin, or pull via the
   Craft API where possible.
 
@@ -180,7 +180,7 @@ this was seriously worked through, and what it would have cost, is cheaper than 
 the argument in six months. Everything from here to the end of this phase is **history, not
 direction**.
 
-A **free, hosted** Quire Blog at `quire.app`: same app, run for you. Built
+A **free, hosted** Quire Ink at `quireink.com`: same app, run for you. Built
 only AFTER Docker ships, so every hosted blog has a guaranteed eject path - hosted is a
 convenience, not a trap (see "No lock-in" in Decisions locked). This is the **model-A**
 choice: one shared stack, many blogs, isolated by `tenant_id` (true multi-tenant, not
@@ -202,8 +202,8 @@ deploy-per-user). It is a large rewrite of the data layer, accepted deliberately
 
 **Auth & routing:**
 - Open signup, owner-per-tenant (replaces the single `AUTHORIZED_EMAIL`).
-- Wildcard `*.quire.app`; middleware resolves the tenant from the host. Admin at
-  `app.quire.app`. Custom domains via the reverse proxy + automated SSL.
+- Wildcard `*.quireink.com`; middleware resolves the tenant from the host. Admin at
+  `app.quireink.com`. Custom domains via the reverse proxy + automated SSL.
 
 **Portability backbone (the headline promise):**
 - Reuse Backup/Restore as the universal interchange format. **Export** = the tenant's

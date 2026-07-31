@@ -2,7 +2,7 @@
 //
 // Every one is imported with `with { type: 'file' }`, which yields a path that `Bun.file`
 // reads and that `bun build --compile` EMBEDS. That is the whole reason they are listed by
-// name rather than read from a directory at runtime: a compiled Quire is one binary, and a
+// name rather than read from a directory at runtime: a compiled Quire Ink is one binary, and a
 // binary that needs a `public/` folder beside it is not one binary.
 //
 // The list is explicit and slightly tedious on purpose. There is no glob import that the

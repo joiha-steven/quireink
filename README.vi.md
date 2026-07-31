@@ -1,6 +1,6 @@
 <div align="center">
 
-# **quire**blog &nbsp;`2.0.0`
+# quire**INK** &nbsp;`2.0.0`
 
 **Nền tảng blog tự host, và một AI agent có thể vận hành thay bạn.**
 Một tiến trình, hai tệp SQLite, không có tài khoản đám mây nào trong đường đi.
@@ -68,7 +68,7 @@ thương mại cần giấy phép riêng, thường là rẻ hoặc miễn phí,
 | 📱&nbsp;**PWA** | cài được, mở ra như ứng dụng riêng |
 
 **Hợp với:** một người, một máy chủ, một blog định giữ lâu dài.
-**Không hợp với:** đội nhiều tác giả cần phân vai và quy trình biên tập. Quire cố ý chỉ có một chủ.
+**Không hợp với:** đội nhiều tác giả cần phân vai và quy trình biên tập. Quire Ink cố ý chỉ có một chủ.
 
 <div align="center">
 
@@ -127,7 +127,7 @@ thoại phải trả:
 
 <div align="center">
 
-<img src="docs/demo-admin.jpg" alt="Trang quản trị Quire: trình soạn bài với bảng thuộc tính, và trang cấu hình giao diện với sáu bảng màu và bốn font đọc" width="960">
+<img src="docs/demo-admin.jpg" alt="Trang quản trị Quire Ink: trình soạn bài với bảng thuộc tính, và trang cấu hình giao diện với sáu bảng màu và bốn font đọc" width="960">
 
 <sub>Bảng màu, font đọc, thang cỡ chữ, bố cục, menu. Là tuỳ chọn, không phải code.</sub>
 
@@ -140,7 +140,7 @@ thoại phải trả:
 Bạn cần [Bun](https://bun.sh) 1.3 trở lên và một máy có thể trỏ tên miền vào. Hết, chỉ vậy.
 
 ```bash
-git clone https://github.com/joiha-steven/quire-blog.git && cd quire-blog
+git clone https://github.com/joiha-steven/quireink.git && cd quireink
 bun install
 bun run build:assets                # đóng gói island + trang quản trị
 DATA_DIR=./data SITE_URL=https://example.com bun src/index.ts
@@ -157,7 +157,7 @@ migration. Hướng dẫn đầy đủ (systemd, nginx, cache header, sao lưu, 
 **[`docs/self-host.md`](./docs/self-host.md)**.
 
 > [!NOTE]
-> `bun run build` cũng tạo ra một tệp thực thi duy nhất ở `dist/quire`, nhưng
+> `bun run build` cũng tạo ra một tệp thực thi duy nhất ở `dist/quireink`, nhưng
 > `bun build --compile` không gói được native module của `sharp`, nên binary đó sẽ lỗi ngay
 > lần đầu resize ảnh. Cho tới khi giải quyết được, hãy **chạy từ mã nguồn**, đúng như site
 > thật đang làm. Lệnh chạy vẫn y hệt.
@@ -199,7 +199,7 @@ không có dịch vụ nào phải mở tài khoản, nên nó làm trọn đư�
 
 ## Để AI agent viết và đăng bài (MCP)
 
-Quire có sẵn một máy chủ **MCP** từ xa, nên agent có thể soạn, sửa, gắn thẻ và đăng thẳng lên
+Quire Ink có sẵn một máy chủ **MCP** từ xa, nên agent có thể soạn, sửa, gắn thẻ và đăng thẳng lên
 site đang chạy. Không git, không deploy: nội dung đi qua đúng lớp dữ liệu, và đúng các luật về
 slug, phiên bản và xoá mềm, mà trang quản trị đang dùng.
 
@@ -210,7 +210,7 @@ slug, phiên bản và xoá mềm, mà trang quản trị đang dùng.
 3. **Ra lệnh cho nó:**
 
 ```text
-Dùng máy chủ MCP của Quire, viết một bài 600 chữ tựa đề
+Dùng máy chủ MCP của Quire Ink, viết một bài 600 chữ tựa đề
 "Những gì tôi học được khi để AI agent vận hành blog", gắn thẻ
 "ai" và "writing", đặt phần tóm tắt thân thiện, rồi đăng.
 ```
@@ -275,10 +275,10 @@ Hai lớp tách bạch, đừng gộp lại:
   trường học, viện nghiên cứu công và cơ quan nhà nước. Bạn được đọc, sửa, tự host, fork và
   phát hành lại. Khi chuyển cho người khác thì giữ nguyên văn bản giấy phép và dòng
   `Required Notice:`.
-- **Dùng cho mục đích thương mại cần giấy phép riêng.** Chạy Quire cho một doanh nghiệp, hoặc
+- **Dùng cho mục đích thương mại cần giấy phép riêng.** Chạy Quire Ink cho một doanh nghiệp, hoặc
   bán nó hay bán dịch vụ host nó, đều không nằm trong giấy phép này. Hãy mở issue hoặc liên hệ
   chủ dự án qua [trang GitHub của họ](https://github.com/joiha-steven).
-- **Nội dung: © bảo lưu mọi quyền.** Những bài viết đăng *bằng* Quire thuộc về tác giả, không
+- **Nội dung: © bảo lưu mọi quyền.** Những bài viết đăng *bằng* Quire Ink thuộc về tác giả, không
   nằm trong giấy phép mã nguồn, và không nằm trong repo này.
 
 > **Mọi thứ phát hành tính đến hết v2.0.0 là MIT, và sẽ mãi là MIT.** Đổi giấy phép không có

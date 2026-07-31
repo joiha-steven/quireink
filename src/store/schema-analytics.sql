@@ -1,4 +1,4 @@
--- Quire 2.0 analytics database (`analytics.db`). Separate file on purpose, see
+-- Quire Ink 2.0 analytics database (`analytics.db`). Separate file on purpose, see
 -- v2/docs/01-schema.md:
 --
 --   * Write patterns differ by orders of magnitude. A pageview must not queue behind a

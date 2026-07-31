@@ -1,6 +1,6 @@
 <div align="center">
 
-# **quire**blog &nbsp;`2.0.0`
+# quire**INK** &nbsp;`2.0.0`
 
 **A self-hosted blog platform an AI agent can run for you.**
 One process, two SQLite files, no cloud account anywhere in the path.
@@ -68,7 +68,7 @@ separate licence, and it is usually cheap or free, so ask.
 | 📱&nbsp;**PWA** | installable, launches standalone |
 
 **Who it is for:** one person, one server, one blog they intend to keep.
-**Not for:** multi-author teams needing roles and editorial workflow. Quire is single-owner by design.
+**Not for:** multi-author teams needing roles and editorial workflow. Quire Ink is single-owner by design.
 
 <div align="center">
 
@@ -126,7 +126,7 @@ on a phone actually pays:
 
 <div align="center">
 
-<img src="docs/demo-admin.jpg" alt="The Quire admin: the post editor with its attributes panel, and the appearance settings showing six colour palettes and four reading fonts" width="960">
+<img src="docs/demo-admin.jpg" alt="The Quire Ink admin: the post editor with its attributes panel, and the appearance settings showing six colour palettes and four reading fonts" width="960">
 
 <sub>Palettes, reading fonts, type scale, layout, menu. Settings, not code.</sub>
 
@@ -140,7 +140,7 @@ You need [Bun](https://bun.sh) 1.3 or newer and a machine you can point a domain
 the whole list.
 
 ```bash
-git clone https://github.com/joiha-steven/quire-blog.git && cd quire-blog
+git clone https://github.com/joiha-steven/quireink.git && cd quireink
 bun install
 bun run build:assets                # bundles the islands + the admin
 DATA_DIR=./data SITE_URL=https://example.com bun src/index.ts
@@ -157,7 +157,7 @@ migration step. Full walkthrough (systemd, nginx, cache headers, backups, upgrad
 **[`docs/self-host.md`](./docs/self-host.md)**.
 
 > [!NOTE]
-> `bun run build` also produces a single compiled executable at `dist/quire`, but
+> `bun run build` also produces a single compiled executable at `dist/quireink`, but
 > `bun build --compile` does not bundle `sharp`'s native module, so that binary throws the
 > first time it resizes an image. Until that is solved, **run from source**, which is what the
 > live site does. Same command either way.
@@ -200,7 +200,7 @@ thing end to end.
 
 ## Let an AI agent write and publish (MCP)
 
-Quire ships a remote **MCP** server, so an agent can draft, edit, tag and publish straight to
+Quire Ink ships a remote **MCP** server, so an agent can draft, edit, tag and publish straight to
 the live site. No git, no deploy: content goes through the same data layer, and the same slug,
 revision and soft-delete rules, that the admin uses.
 
@@ -211,7 +211,7 @@ revision and soft-delete rules, that the admin uses.
 3. **Prompt it:**
 
 ```text
-Using the Quire MCP server, write a 600-word post titled
+Using the Quire Ink MCP server, write a 600-word post titled
 "What I learned shipping a blog with an AI agent", give it the tags
 "ai" and "writing", set a friendly excerpt, and publish it.
 ```
@@ -275,10 +275,10 @@ Two separate layers, and they are not the same:
   projects, study and research, plus charities, schools, public research bodies and
   government. You may read, modify, self-host, fork and redistribute it. Keep the licence text
   and the `Required Notice:` line with any copy you pass on.
-- **Commercial use needs a separate licence.** Running Quire for a business, or selling it or
+- **Commercial use needs a separate licence.** Running Quire Ink for a business, or selling it or
   hosting of it, is not covered. Open an issue or contact the owner through
   [their GitHub profile](https://github.com/joiha-steven).
-- **Content: © all rights reserved.** The writing published *with* Quire belongs to its
+- **Content: © all rights reserved.** The writing published *with* Quire Ink belongs to its
   author, is not covered by the code licence, and does not live in this repository.
 
 > **Everything published up to and including v2.0.0 was MIT, and stays MIT forever.** A licence

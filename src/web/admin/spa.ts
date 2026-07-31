@@ -93,10 +93,10 @@ function adminStyles(settings: SiteSettings): string {
 /**
  * What the browser tab says, and what it shows.
  *
- * "Quire" alone told the owner which PRODUCT they were in, which they knew, and not which
+ * "quireINK" alone told the owner which PRODUCT they were in, which they knew, and not which
  * SITE — the one thing a tab among fifteen tabs is for. The favicon was worse than absent:
  * the shell linked none, so the browser fell back to `/favicon.ico`, which is the icon
- * compiled into the product. An owner who had uploaded their own was looking at Quire's.
+ * compiled into the product. An owner who had uploaded their own was looking at Quire Ink's.
  */
 function tabHead(settings: SiteSettings): string {
   let host = ''
@@ -105,7 +105,7 @@ function tabHead(settings: SiteSettings): string {
   } catch {
     /* not set, or not a URL: the name alone is still better than the product's */
   }
-  const title = host ? `Quire blog · ${host}` : 'Quire blog'
+  const title = host ? `quireINK · ${host}` : 'quireINK'
   const icon = settings.faviconUrl
     ? `<link rel="icon" href="${settings.faviconUrl.replace(/"/g, '&quot;')}">`
     : ''

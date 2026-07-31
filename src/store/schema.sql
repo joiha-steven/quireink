@@ -1,4 +1,4 @@
--- Quire 2.0 content database (`quire.db`). Applied at boot, inside a transaction.
+-- Quire Ink 2.0 content database (`quire.db`). Applied at boot, inside a transaction.
 --
 -- Translated from the Postgres schema (`../../v1/scripts/schema.sql`, 612 lines) per
 -- docs/spec/01-schema.md. Read that document before changing anything here; it records why
@@ -19,7 +19,7 @@
 
 -- ----- migration ledger ------------------------------------------------------
 -- The Postgres migrations are not reused; this ledger started empty because every instance
--- arrived through `import-v1`, which targets this schema directly. There IS a Quire 2.0 in
+-- arrived through `import-v1`, which targets this schema directly. There IS a Quire Ink 2.0 in
 -- the wild now, so steps that move an existing database to the shape below live in
 -- `migrations.sql` and are named here as they are applied.
 create table if not exists schema_migrations (

@@ -62,7 +62,7 @@ It is worth being precise, because the phrase gets used loosely. Owning your wri
 Roughly five dollars a month and one afternoon. The afternoon is the real price, and it is paid once.
 
 \`\`\`bash
-git clone https://github.com/joiha-steven/quire-blog
+git clone https://github.com/joiha-steven/quireink
 bun install && bun run build:assets
 DATA_DIR=./data SITE_URL=https://example.com bun src/index.ts
 \`\`\`

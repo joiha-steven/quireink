@@ -15,13 +15,14 @@ import type { SiteLang } from '@/types'
 import { useAdminT } from './I18nProvider'
 import { SIDEBAR_NAV, SIDEBAR_NAV_ACTIVE } from './headerActions'
 import { CacheButton } from './CacheButton'
+import { BrandMark, BrandWord } from './Wordmark'
 import { ThemeToggle } from '@/admin/ui/ThemeToggle'
 import {
   IconHome, IconAnalytics, IconContent, IconComment, IconMedia, IconNewsletter, IconTrash, IconSettings,
   IconLog, IconExternal, IconCache, IconSignOut, IconChevronLeft, IconHelp,
 } from './navIcons'
 
-const STORE_KEY = 'vb-admin-nav-collapsed'
+const STORE_KEY = 'quireink-admin-nav-collapsed'
 
 export function AdminSidebar({
   lang,
@@ -128,8 +129,8 @@ export function AdminSidebar({
   // Wordmark, plus the compact collapse/expand button (desktop top row only). The
   // chevron points the direction it will move the rail; rotates when collapsed.
   const wordmark = (c: boolean): ReactNode => (
-    <Link href="/admin" onClick={close} className="flex h-10 items-center px-3 text-xl leading-none tracking-tight">
-      {c ? <span className="font-bold">qb</span> : <><span className="font-bold">quire</span>blog</>}
+    <Link href="/admin" onClick={close} className="flex h-10 items-center px-3 leading-none">
+      {c ? <BrandMark /> : <BrandWord />}
     </Link>
   )
 

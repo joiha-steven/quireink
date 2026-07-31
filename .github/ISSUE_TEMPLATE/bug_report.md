@@ -16,7 +16,7 @@ A clear description of the bug.
 What you expected instead.
 
 **Environment**
-- Quire version / commit:
+- Quire Ink version / commit:
 - Deploy: Docker / native
 - Browser + OS (if a UI bug):
 

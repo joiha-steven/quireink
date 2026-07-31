@@ -287,7 +287,7 @@ export function createApp(): Hono {
 
   // `/favicon.ico` is the path a browser asks for when nothing told it otherwise, and what
   // it got was the icon compiled into the PRODUCT — so a bookmark, a feed reader or any tab
-  // whose page carried no icon link showed Quire's mark on somebody else's blog. The owner's
+  // whose page carried no icon link showed Quire Ink's mark on somebody else's blog. The owner's
   // own upload wins when there is one; the bundled file is the fallback, which is the right
   // answer for a fresh install. The redirect itself is not a 200, so `cache-headers.ts`
   // gives it `private, no-store` — which is what a pointer that changes on the next upload

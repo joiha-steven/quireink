@@ -1,6 +1,6 @@
 # docs/ — durable truth
 
-Everything here describes how Quire works **right now**. Out of date here is a bug: fix it
+Everything here describes how Quire Ink works **right now**. Out of date here is a bug: fix it
 in place, in the same commit as the behaviour change that made it wrong.
 
 What does not belong here: anything dated (that is a snapshot, see [`../state/`](../state/README.md)),

@@ -158,14 +158,14 @@ input[type='color']::-moz-color-swatch {
    edge it never reaches: nothing here knows how far along a fetch is, and a bar that
    invents a percentage stalls at it. `data-done` is the finish, and it is a separate rule
    rather than a longer animation so the bar snaps closed the instant the work does. */
-.quire-progress-bar {
+.quireink-progress-bar {
   transform: translateX(-100%);
-  animation: quire-progress-run 6s cubic-bezier(0.05, 0.8, 0.2, 1) forwards;
+  animation: quireink-progress-run 6s cubic-bezier(0.05, 0.8, 0.2, 1) forwards;
 }
-@keyframes quire-progress-run {
+@keyframes quireink-progress-run {
   to { transform: translateX(-12%); }
 }
-.quire-progress-bar[data-done='true'] {
+.quireink-progress-bar[data-done='true'] {
   animation: none;
   transform: translateX(0);
   opacity: 0;
@@ -173,11 +173,11 @@ input[type='color']::-moz-color-swatch {
 }
 /* The site's one motion switch also owns this. Off means the bar still SAYS something is
    happening, it just says it without moving. */
-:root[data-motion='off'] .quire-progress-bar {
+:root[data-motion='off'] .quireink-progress-bar {
   animation: none;
   transform: translateX(-35%);
 }
-:root[data-motion='off'] .quire-progress-bar[data-done='true'] {
+:root[data-motion='off'] .quireink-progress-bar[data-done='true'] {
   transition: opacity 120ms ease-out;
 }
 

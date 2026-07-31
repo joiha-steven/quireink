@@ -1,4 +1,4 @@
-# Quire — router
+# Quire Ink — router
 
 Public, source-available blog platform (PolyForm Noncommercial, ADR 0015). A single
 **Bun + Hono + SQLite** process: `src/` at the

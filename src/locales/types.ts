@@ -828,7 +828,7 @@ export type AdminStrings = {
   navExpand: string
   // sign-in (new in 2.0; see v2/docs/06-auth.md)
   authSignIn: string
-  // Both take {site}. The sign-in page wears the Quire mark, so the blog it opens is named
+  // Both take {site}. The sign-in page wears the Quire Ink mark, so the blog it opens is named
   // in words instead — once under the heading, once in the way back out.
   authSignInLede: string
   authBackTo: string

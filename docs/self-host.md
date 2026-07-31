@@ -1,4 +1,4 @@
-# Self-hosting Quire
+# Self-hosting Quire Ink
 
 One process, two SQLite files, one uploads directory, behind a reverse proxy. There is no
 database server to provision, no container runtime, no migration command, and no
@@ -30,15 +30,15 @@ chown -R quire:quire /var/lib/quire
 
 ```bash
 curl -fsSL https://bun.sh/install | bash        # as the quire user
-git clone https://github.com/joiha-steven/quire-blog.git /home/quire/app
+git clone https://github.com/joiha-steven/quireink.git /home/quire/app
 cd /home/quire/app && bun install && bun run build:assets && bun run build:admin
 ```
 
-**Quire runs from source: `bun src/index.ts`.** The checkout is the deployment, not a build
+**Quire Ink runs from source: `bun src/index.ts`.** The checkout is the deployment, not a build
 input. `build:assets` produces the island bundles and `build:admin` the admin SPA; both are
 read from disk at runtime, so they have to exist before the service starts.
 
-> **`bun run build` also exists and produces a single `dist/quire` binary. Do not deploy it
+> **`bun run build` also exists and produces a single `dist/quireink` binary. Do not deploy it
 > yet.** `bun build --compile` bundles sharp's JavaScript but not its
 > `@img/sharp-<platform>` native module, so the binary comes up fine and then throws on the
 > first image resize — an upload, a variant sweep, an OG card. How the binary should ship is
@@ -72,7 +72,7 @@ entered in the admin and stored in the database.
 ```ini
 # /etc/systemd/system/quire.service
 [Unit]
-Description=Quire
+Description=Quire Ink
 After=network.target
 
 [Service]
@@ -125,7 +125,7 @@ server {
 }
 ```
 
-Note `script-src 'self'` with **no `'unsafe-inline'`**. Quire 2.0 emits no inline script
+Note `script-src 'self'` with **no `'unsafe-inline'`**. Quire Ink 2.0 emits no inline script
 anywhere and that property is covered by a test, so the header can finally say so. Add
 `https://challenges.cloudflare.com` to `script-src`, `connect-src` and `frame-src` if you
 turn on Turnstile.
@@ -196,7 +196,7 @@ nginx (section 5), the CDN note (section 7) and **the cron ticks (section 8)** s
 and so does taking a backup before an upgrade.
 
 ```bash
-git clone https://github.com/joiha-steven/quire-blog.git && cd quire-blog
+git clone https://github.com/joiha-steven/quireink.git && cd quireink
 cp .env.docker.example .env          # set SITE_URL, and that is the whole of it
 docker compose up -d --build
 docker compose exec quire bun run user create --username you --email you@example.com

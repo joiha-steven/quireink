@@ -1,4 +1,4 @@
-// Row transforms from Quire 1.x (Postgres, via PostgREST JSON) to Quire 2.0 (SQLite).
+// Row transforms from Quire 1.x (Postgres, via PostgREST JSON) to Quire Ink 2.0 (SQLite).
 //
 // Pure on purpose. These are the functions where an import silently corrupts data: a
 // timestamp read as seconds, a boolean written as the string "false" (truthy in SQLite's

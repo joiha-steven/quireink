@@ -1,4 +1,4 @@
-# Quire runs two trees out of one repository: the live Bun/Hono/SQLite implementation at
+# Quire Ink runs two trees out of one repository: the live Bun/Hono/SQLite implementation at
 # the root, and the frozen Next.js one in `v1/`. Patterns are deliberately UNANCHORED so a
 # single rule covers both; the anchored `/node_modules` form used before the reshuffle
 # stopped matching the moment the Next tree moved down a level.

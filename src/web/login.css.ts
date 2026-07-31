@@ -22,7 +22,7 @@
 
 export const LOGIN_CSS = `
 *,*::before,*::after{box-sizing:border-box}
-/* Inter, not the blog's chrome face. The sign-in page belongs to Quire and looks the same
+/* Inter, not the blog's chrome face. The sign-in page belongs to Quire Ink and looks the same
    on every install; the blog's own typeface starts at the door it opens. */
 :root{--font-ui:'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-code:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -35,7 +35,10 @@ body{margin:0;background:var(--c-bg);color:var(--c-text);font-family:var(--font-
   justify-content:center;gap:1.75rem;padding:2.5rem 1.25rem}
 .brand{display:flex;align-items:center;gap:.55rem;color:var(--c-heading)}
 .brand-mark{display:block}
-.brand-word{font-size:1.5rem;font-weight:600;letter-spacing:-.02em;line-height:1}
+/* The word is an SVG of outlines, so it needs no size or weight of its own: height on the
+   element sets it and the width follows from the viewBox. width:auto is stated because a
+   bare svg in some resets is handed 100%. */
+.brand-word{display:block;width:auto}
 
 /* flex:0 0 auto is not decoration. The card is a main element, and one line of custom CSS
    naming main would otherwise stretch it again, which is the bug this rewrite fixed. */

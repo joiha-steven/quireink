@@ -29,7 +29,7 @@
 ## Homepage mode — [`docs/homepage.md`](homepage.md)
 
 What `/` serves: the post list, a chosen page, or the composed front page. Its own file, both
-because it is long and because it is the one feature somebody installing Quire reads before
+because it is long and because it is the one feature somebody installing Quire Ink reads before
 they have a blog to configure. [ADR 0014](decisions/0014-homepage-modes.md).
 ## Reading & discovery
 
@@ -533,7 +533,7 @@ they have a blog to configure. [ADR 0014](decisions/0014-homepage-modes.md).
   (`src/render/inline-md.ts` — **bold / italic / underline / link** only, escape-first like
   `comment-md`, link hrefs protocol-checked) authored via `FooterField` (textarea + B/I/U/Link
   toolbar + live preview). `{year}`/`{title}` tokens expand at render. The public layout renders it
-  in `<footer class="site-footer">`; default keeps the "© {year} {title} · powered by Quire Blog" line.
+  in `<footer class="site-footer">`; default keeps the "© {year} {title} · powered by Quire Ink" line.
 - Controlled field groups (no own state/save), per tab: **Site** (identity only, nothing here moves
   a pixel) `SiteFields` + `BrandFields`; **Layout** `LayoutMenuFields` + `FooterField`; **Reading**
   `PostFeatureFields` + `ListingFeatureFields` + `CommentFields` + `ActivityLogField`;
@@ -651,7 +651,7 @@ Google account.
   `ImportFields` uploads the file (multipart) to owner-gated `POST /api/import/wordpress`.
 - **`parseWxr(xml, now)` is PURE** (no I/O; unit-tested in `src/import/wordpress.test.ts`): each `item`
   with `wp:post_type` post/page and a live status → a post/page. HTML `content:encoded` → Markdown
-  (`turndown` + GFM), `<figure><figcaption>` folded INTO the image alt (Quire renders captions from
+  (`turndown` + GFM), `<figure><figcaption>` folded INTO the image alt (Quire Ink renders captions from
   alt). A **gallery** (`figure.wp-block-gallery`, which nests one `<figure><img>` per photo)
   emits EVERY nested image, each tagged `#grid` so `groupGalleries` rebuilds it as a grid —
   reading only the first nested image drops the rest of the gallery on the floor.

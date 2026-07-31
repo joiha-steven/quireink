@@ -1,4 +1,4 @@
-// The Quire 2.0 side of the importer: turns v1 rows into SQLite rows.
+// The Quire Ink 2.0 side of the importer: turns v1 rows into SQLite rows.
 //
 // One INSERT literal per table, all of them run inside a single transaction owned by the
 // caller, so the instance is either fully imported or the file is untouched.

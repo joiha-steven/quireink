@@ -5,7 +5,7 @@ labels: enhancement
 ---
 
 **Problem**
-What are you trying to do that Quire makes hard or impossible today?
+What are you trying to do that Quire Ink makes hard or impossible today?
 
 **Proposed solution**
 What you'd like to happen.
@@ -14,4 +14,4 @@ What you'd like to happen.
 Other approaches, workarounds, or prior art (other blog engines).
 
 **Notes**
-Quire values simplicity — keep the scope tight and self-host-friendly.
+Quire Ink values simplicity — keep the scope tight and self-host-friendly.

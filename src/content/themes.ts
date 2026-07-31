@@ -251,7 +251,7 @@ export function chromeFontCss(id: string): string {
   return f.sans ? `:root{--font-sans:${f.sans}}` : ''
 }
 
-// TRUE neutral grayscale — zero hue, the Quire Blog house style. (Earlier values had a
+// TRUE neutral grayscale — zero hue, the Quire Ink house style. (Earlier values had a
 // faint warm/blue cast: bg/rule read as cream, meta/text leaned blue. All pure gray
 // now; `rule` is a touch lighter so the menu hover reads as a soft, colourless gray.)
 //
