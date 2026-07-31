@@ -29,13 +29,20 @@ export const FRONT_CSS = `
 .front{display:flex;flex-direction:column;gap:2.5rem}
 /* Every row after the first is ruled off. The rule is the section break; there is no box. */
 .front-row+.front-row{border-top:1px solid var(--c-rule);padding-top:2.5rem}
-.front-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:.5rem 1rem;margin:0 0 1.25rem}
-.front-label{font-size:var(--fs-h4);line-height:var(--lh-h4);letter-spacing:var(--ls-h4);
+.front-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:.35rem 1.25rem;margin:0 0 1.5rem}
+/* A row label is a LABEL, so it is smaller than the headlines under it.
+   It started at --fs-h4 and photographed as a competitor: h4 in a monospace chrome face
+   reads wider and heavier than h3 in Literata, so the two sat at the same visual weight and
+   the eye had no order to follow. Dropping it a step puts the headlines back on top, which
+   is what the rest of this page already does with the label on the related-posts block. */
+.front-label{font-size:var(--fs-small);line-height:var(--lh-small);letter-spacing:var(--ls-small);
   font-weight:600;color:var(--c-heading);margin:0}
 .front-label a{color:inherit;text-decoration:none}
-/* The topic links. Wrapped, never scrolled: a row that scrolls sideways on a phone hides
-   half of itself and nothing says so. */
-.front-topics{display:flex;flex-wrap:wrap;gap:.25rem .75rem;margin:0;color:var(--c-meta)}
+/* The topic links, one step quieter again so the label reads first. Wrapped, never scrolled:
+   a row that scrolls sideways on a phone hides half of itself and nothing says so. */
+.front-topics{display:flex;flex-wrap:wrap;gap:.25rem .75rem;margin:0;color:var(--c-meta);
+  font-size:var(--fs-small);line-height:var(--lh-small);letter-spacing:var(--ls-small)}
+.front-topics a{color:inherit}
 .front-grid{display:grid;gap:1.75rem}
 .front-lines{display:flex;flex-direction:column;gap:1rem}
 .front-more{margin:0;padding-top:.5rem}
@@ -54,6 +61,10 @@ export const FRONT_CSS = `
 .fc-deck{margin:.5rem 0 0;color:var(--c-text);
   font-size:var(--fs-small);line-height:var(--lh-small);letter-spacing:var(--ls-small)}
 .fc-meta{margin:.5rem 0 0}
+/* The lead's opening lines. Body size and the reading face, because it IS the body: setting
+   it a step down would read as a second standfirst rather than as the start of the piece. */
+.fc-intro{margin:.75rem 0 0;color:var(--c-text);font-family:var(--font-reading);
+  font-size:var(--fs-body);line-height:var(--lh-body);letter-spacing:var(--ls-body)}
 .fc-media{margin:0 0 .75rem}
 /* Reserve the box before the bytes arrive, so nothing below jumps as images land. A front
    page is mostly images-not-yet-loaded on a first visit, which is when this matters most. */

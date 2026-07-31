@@ -216,7 +216,7 @@ export const DEFAULT_HOME: HomeSettings = {
   listPath: '/post',
   front: {
     kind: 'image',
-    lead: { on: true, source: 'latest', slug: '', secondary: 2 },
+    lead: { on: true, source: 'latest', slug: '', secondary: 3 },
     featured: { on: true, count: 3, columns: 3 },
     strips: [],
     popular: { on: false, count: 4, days: 30 },

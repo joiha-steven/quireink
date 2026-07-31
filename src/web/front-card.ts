@@ -24,8 +24,33 @@ export type ReadyImages = Set<string>
  * roughly twice as much, and the lead prints more than a card in either kind.
  */
 const DECK_CHARS: Record<'image' | 'text', { lead: number; card: number }> = {
-  image: { lead: 130, card: 0 },
-  text: { lead: 240, card: 120 },
+  image: { lead: 150, card: 90 },
+  text: { lead: 260, card: 190 },
+}
+
+/**
+ * How much of the body the lead prints, in characters.
+ *
+ * The text kind gets more for the same reason it gets a longer standfirst: with no picture
+ * in the row, the words are the only thing filling it.
+ */
+const LEAD_INTRO_CHARS: Record<'image' | 'text', number> = { image: 240, text: 420 }
+
+/**
+ * The body with its opening skipped when the standfirst already said it.
+ *
+ * Not a nicety. Quire AUTO-EXTRACTS an excerpt from the first paragraph whenever the author
+ * leaves the field empty, so on a normal blog the standfirst and the first line of the piece
+ * are the same sentence — and printing both puts it on the front page twice, one under the
+ * other. Photographed exactly that way the first time this shipped.
+ *
+ * Compared on collapsed whitespace so a line break in the source does not defeat it.
+ */
+function afterExcerpt(bodyText: string, excerpt: string): string {
+  const body = bodyText.replace(/\s+/g, ' ').trim()
+  const head = excerpt.replace(/\s+/g, ' ').trim()
+  if (!head || !body.toLowerCase().startsWith(head.toLowerCase())) return body
+  return body.slice(head.length).trim()
 }
 
 /** Cut on a word boundary, and only when there is something worth cutting. */
@@ -105,13 +130,21 @@ type Ctx = { settings: SiteSettings; front: FrontSettings; ready: ReadyImages }
  * doing it the other way round means a reader on a phone scrolls past a photograph to find
  * out what it is of.
  */
-export function leadItem(post: Post, ctx: Ctx): string {
+export function leadItem(post: Post, ctx: Ctx, opening = ''): string {
   const { settings, front, ready } = ctx
   const picture = front.kind === 'image'
     ? postImage(post, ready, '(max-width: 900px) 100vw, 60vw')
     : null
+  // The opening lines of the piece itself, under the standfirst. Without them the lead
+  // column ran out of words a third of the way down its own row and the rule underneath sat
+  // in a field of white — visible in every screenshot of it. A standfirst says what a piece
+  // is about; these are the piece, which is what actually makes somebody start reading.
+  const body = afterExcerpt(opening, post.excerpt ?? '')
+  const intro = body
+    ? `<p class="fc-intro reading-font">${escapeHtml(clamp(body, LEAD_INTRO_CHARS[front.kind]))}</p>`
+    : ''
   return `<article class="fc fc-lead${picture ? ' has-media' : ''}">
-<div class="fc-text">${category(post)}${title(post, 'h1')}${deck(post, DECK_CHARS[front.kind].lead)}${meta(post, settings, front)}</div>
+<div class="fc-text">${category(post)}${title(post, 'h1')}${deck(post, DECK_CHARS[front.kind].lead)}${intro}${meta(post, settings, front)}</div>
 ${picture ? `<div class="fc-media">${picture}</div>` : ''}
 </article>`
 }

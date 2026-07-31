@@ -12,16 +12,21 @@
 const CHROME = process.env.CHROME_HEADLESS_SHELL
   ?? `${process.env.HOME}/chrome/chrome-headless-shell-linux64/chrome-headless-shell`
 
-const [url, out, script, width = '1600', height = '1000', settle = '600'] = process.argv.slice(2)
+const [url, out, script, width = '1600', height = '1000', settle = '600', scale = '1'] =
+  process.argv.slice(2)
 if (!url || !out || script === undefined) {
-  console.error('usage: bun run drive <url> <out.png> <js> [width] [height] [settleMs]')
+  console.error('usage: bun run drive <url> <out.png> <js> [width] [height] [settleMs] [scale]')
   process.exit(1)
 }
 
 const PORT = 9222
 const proc = Bun.spawn([
   CHROME, '--headless', '--disable-gpu', '--no-sandbox', '--hide-scrollbars',
-  `--remote-debugging-port=${PORT}`, `--window-size=${width},${height}`, 'about:blank',
+  `--remote-debugging-port=${PORT}`, `--window-size=${width},${height}`,
+  // A capture at 2x for a print-quality plate, WITHOUT lying about the viewport. Shooting a
+  // phone plate by asking for a 780px window instead just laid the desktop out at 780 and
+  // called it a phone; the CSS width has to stay 390 and only the pixels double.
+  `--force-device-scale-factor=${scale}`, 'about:blank',
 ], { stdout: 'ignore', stderr: 'ignore' })
 
 /** The debugging port is not open the instant the process is. Poll rather than sleep. */

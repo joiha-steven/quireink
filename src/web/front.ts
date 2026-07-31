@@ -11,16 +11,28 @@
 // about.
 
 import type { FrontSettings, Post, SiteSettings } from '@/types'
-import { getPublicPosts } from '@/content/posts'
+import { getPost, getPublicPosts } from '@/content/posts'
 import { getSettings } from '@/content/settings'
 import { termSlug } from '@/content/taxonomy'
 import { getViewTotalsSince } from '@/analytics/summary'
 import { getMediaRefs } from '@/media/media-refs'
 import { collapseBlob } from '@/media/blob'
 import { t } from '@/i18n/i18n'
-import { escapeAttr, escapeHtml, isPublicallyVisible } from '@/utils'
+import { escapeAttr, escapeHtml, isPublicallyVisible, toPlainText } from '@/utils'
 import { cardItem, leadItem, lineItem, type ReadyImages } from '@/web/front-card'
 import { listingPage } from '@/web/listing-page'
+
+/**
+ * The prose a piece OPENS with, stopping at its first heading.
+ *
+ * `toPlainText` over the whole body flattens the document into one stream, so a section
+ * heading arrives mid-sentence: "...somebody else's business model. What owning it actually
+ * means It is worth being precise..." — photographed exactly like that. Cutting at the first
+ * heading gives the opening paragraphs and nothing else, which is what a front page wants.
+ */
+function openingProse(markdown: string): string {
+  return toPlainText(markdown.split(/\n#{1,6}\s/)[0] ?? '')
+}
 
 /** How wide a front page runs, against the ~672px the reading column uses. */
 const FRONT_WIDTH = 1120
@@ -99,8 +111,13 @@ async function buildBody(settings: SiteSettings, ready: ReadyImages): Promise<st
     // in `all`, and the newest post is a better answer than an empty front page.
     const [lead] = take(pinned ? [pinned] : all, 1)
     if (lead) {
+      // The body, for the lead alone. `getPublicPosts` is an index and carries no content,
+      // so this is one extra read for one post rather than a heavier index for every page
+      // that uses it. A post that has vanished between the two reads simply has no opening.
+      const full = await getPost(lead.slug)
+      const opening = full ? openingProse(full.content) : ''
       const secondary = take(all, front.lead.secondary)
-      rows.push(`<section class="front-row front-lead-row">${leadItem(lead, ctx)}${
+      rows.push(`<section class="front-row front-lead-row">${leadItem(lead, ctx, opening)}${
         secondary.length ? `<div class="front-secondary">${secondary.map((p) => lineItem(p, ctx)).join('\n')}</div>` : ''
       }</section>`)
     }
