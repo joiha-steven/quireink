@@ -1,5 +1,6 @@
 import { describe, it, expect } from '@/test/vitest'
-import { sanitizeEnabledPalettes, sanitizeComments, sanitizeThemes, sanitizeFontUrl, sanitizeFront, sanitizeHome, sanitizeListPath } from '@/content/settings-sanitize'
+import { sanitizeEnabledPalettes, sanitizeComments, sanitizeThemes, sanitizeFront, sanitizeHome, sanitizeListPath } from '@/content/settings-sanitize'
+import { sanitizeFontUrl } from '@/content/settings-type'
 import { ALL_PALETTE_IDS, defaultThemes } from '@/content/themes'
 import { DEFAULT_SETTINGS } from '@/content/settings'
 
