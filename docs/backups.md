@@ -7,7 +7,7 @@ how an install ends up with two copies of the same protection and none of anothe
 |:--|:--|:--|:--|
 | **Export** | the owner's own machine | "give me a copy I hold" | `GET /api/backup/export` |
 | **Snapshots** | this server, on a schedule | "I broke something an hour ago" | [`src/server/backup.ts`](../src/server/backup.ts) |
-| **Off-box** | R2, hourly + daily | "the machine is gone" | [`scripts/ops/quire2-backup.sh`](../scripts/ops/quire2-backup.sh) |
+| **Off-box** | R2, hourly + daily | "the machine is gone" | [`scripts/ops/quire-backup.sh`](../scripts/ops/quire-backup.sh) |
 
 All three take the same `VACUUM INTO` snapshot of both databases plus the uploads tree. They
 differ only in where the file ends up and who decides when.
@@ -64,12 +64,11 @@ the session signing secret is generated INTO the database (`auth/secret.ts`) and
 password lives in Settings, so both are inside the snapshot already. A restore therefore
 brings its own sessions and its own mail server back with it.
 
-> The service name and paths below (`quire2`, `/var/lib/quire2`) are **this installation's**,
-> because they are the defaults compiled into the script that runs on this box.
-> [`self-host.md`](./self-host.md) uses the generic `quire` and `/var/lib/quire`. Reading both
-> and mixing them gives you a backup pointed at a directory that does not exist; take the
-> names from whichever one you actually followed. Making the script read them from an env file
-> instead is queued.
+> The names below match [`self-host.md`](./self-host.md): service `quire`, data
+> `/var/lib/quire`. They used to disagree — the script defaulted to `quire2`, one
+> installation's service name — and reading both and mixing them gave you a backup pointed at
+> a directory that does not exist. If you named your service something else, everything here
+> is an environment variable; see [Instance configuration](#instance-configuration).
 
 ## Schedule and retention
 
@@ -88,11 +87,14 @@ has to stop: copying a database under a running process is the torn-state proble
 backup itself avoids, in the other direction. That is also why there is no restore button.
 
 ```sh
-tar -xzf quire2-<tag>.tar.gz -C /tmp/restore
+tar -xzf quire-<tag>.tar.gz -C /tmp/restore
 sqlite3 /tmp/restore/quire.db 'pragma integrity_check;'   # expect: ok
 sqlite3 /tmp/restore/quire.db 'select count(*) from posts;'
-systemctl stop quire2 && cp /tmp/restore/*.db /var/lib/quire2/data/ && systemctl start quire2
+systemctl stop quire && cp /tmp/restore/*.db /var/lib/quire/data/ && systemctl start quire
 ```
+
+> Archives written before 2026-08-01 are named `quire2-<tag>.tar.gz`. Same contents; only the
+> prefix changed when the script stopped being named after one installation.
 
 **Do this on a schedule, not only when something is on fire.** The restore was exercised
 end to end when the script was installed — `integrity_check: ok`, 74 posts, 4 pages — and
@@ -106,12 +108,19 @@ crontab, or in a systemd `EnvironmentFile` — whichever the machine already use
 
 | | Default |
 |:--|:--|
-| `QUIRE_DATA` / `QUIRE_UPLOADS` | `/var/lib/quire2/{data,uploads}` |
+| `QUIRE_DATA` / `QUIRE_UPLOADS` | `/var/lib/quire/{data,uploads}` |
 | `QUIRE_BUN` | `$HOME/.bun/bin/bun` |
-| `QUIRE_BACKUP_REMOTE` | **none — the run stops without it.** An rclone remote and a path, e.g. `r2:my-bucket/quire2` |
-| `QUIRE_BACKUP_STAGE` / `_LOG` / `_LOCK` | `/var/tmp/quire2-backup`, `/var/log/quire2-backup.log`, `/var/lock/quire2-backup.lock` |
-| `QUIRE_ALERT_HOOK_FILE` | `/etc/quire2/alert-webhook` — a file holding one URL. Absent, a failure is logged and not announced |
-| `QUIRE_ALERT_ALIAS` | `quire2 backup` — what this installation calls itself in that alert |
+| `QUIRE_BACKUP_REMOTE` | **none — the run stops without it.** An rclone remote and a path, e.g. `r2:my-bucket/my-blog` |
+| `QUIRE_BACKUP_STAGE` / `_LOG` / `_LOCK` | `/var/tmp/quire-backup`, `/var/log/quire-backup.log`, `/var/lock/quire-backup.lock` |
+| `QUIRE_ALERT_HOOK_FILE` | `/etc/quire/alert-webhook` — a file holding one URL. Absent, a failure is logged and not announced |
+| `QUIRE_ALERT_ALIAS` | `quire backup` — what this installation calls itself in that alert |
+
+**Running more than one blog on a box: install the script once, and give each instance its
+own crontab with its own `QUIRE_*` block.** Set all four of `_REMOTE`, `_STAGE`, `_LOG` and
+`_LOCK` per instance — sharing a lock means one blog's backup silently skips because the
+other holds it, and sharing a staging path means they overwrite each other's archive.
+Copying the script per instance also works and is what happens by accident; then a fix
+lands on one copy and not the other, which is exactly how the two diverged here.
 
 They are variables rather than literals because **this repository is public**. A script that
 names somebody's data directory, their bucket and their alert endpoint publishes all three

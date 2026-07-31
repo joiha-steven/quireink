@@ -377,7 +377,7 @@ On any behavior change, update the matching doc in the SAME change (Working prin
   `quireink-private` ([ADR 0017](decisions/0017-move-state-and-instance-config-private.md)).
   Credentials go nowhere but the gitignored `.env`. Where a script must name such a value,
   it takes it from an environment variable and documents the variable, the way
-  [`scripts/ops/quire2-backup.sh`](../scripts/ops/quire2-backup.sh) does.
+  [`scripts/ops/quire-backup.sh`](../scripts/ops/quire-backup.sh) does.
 - **Audits** are dated snapshots, so they are write-only and they live with the author's
   notes rather than here. Read the latest first so a pass starts from the last clean line.
 - **Versioning (owner's rule — do NOT auto-bump):** the version is **`2.0.0`**, released
