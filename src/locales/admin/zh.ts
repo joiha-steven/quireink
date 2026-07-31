@@ -87,6 +87,8 @@ const zh = {
   imgSizeColumn: '列宽',
   imgSizeWide: '大图',
   imgGrid: '网格',
+  imgRatioNatural: '保持原样',
+  imgCaptions: '图片说明',
   captionPlaceholder: '图片说明',
   slug: '别名 (URL)',
   publishDate: '发布日期',

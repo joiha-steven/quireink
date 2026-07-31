@@ -7,6 +7,38 @@ Older entries roll into [`worklog/`](worklog/2026-07-quire-2-rewrite.md) when th
 passes its size cap. Rolling is a move, never a rewrite.
 
 
+## 2026-07-31 — A gallery gets a shape and a caption switch
+
+Reported off `new.edcmeo.com/thu-vien-den-pin-custom`, a page of thirty imported galleries.
+Two things were wrong there and only one of them was the one asked about.
+
+**The rows were ragged.** Tiles keep their own proportions, so one portrait shot in a row of
+landscapes makes its cell as tall as the row and leaves a white void beside every other tile.
+**And the captions were noise:** the WordPress importer folds `figcaption` into the alt, and
+that site's alts are filenames, so 166 captions read `Đèn pin custom kemenes fured 3`.
+
+So a gallery now has two options, on the same src fragment everything else already uses:
+a **ratio** (`#grid-1x1`, `3x2`, `4x3`) that crops every tile with `object-fit:cover` so the
+rows line up, and **`nocap`**, which hides the captions. Absent by default, so the golden
+compare is byte-identical and every existing gallery renders exactly as it did.
+
+Three things worth remembering:
+
+- **The options apply to the WHOLE run, in one transaction** (`applyToGallery`). A per-image
+  button is thirty clicks on a page like that one, and a mosaic with one square tile in it is
+  not a thing anyone sets on purpose. The new value is decided once from the tile that was
+  clicked, so a run that had gone inconsistent heals rather than flip-flopping.
+- **The caption is hidden by CSS, not dropped.** It is the alt: it still serves screen readers
+  and search, it just stops printing under the photo.
+- **`groupGalleries` matched `<figure class="img-grid">` exactly.** Any option appends a class,
+  so the first version silently stopped grouping and the gallery fell into a full-width column
+  with no error anywhere. There is a test for that specific regression now.
+
+Verified by rendering, not by reading: a post with the same four photos in all four modes,
+shot at 1100px. The as-shot mosaic has the void, 1:1 and 3:2 line up. Then in the editor,
+clicking `3:2` on one tile of the 1:1 gallery moved all four of that gallery and left the two
+galleries either side alone.
+
 ## 2026-07-31 — The demo is the front door, and the README shows the site that exists
 
 `demo.quireink.com` is live, so it replaces `manhhung.me` as the "Live demo" link in both

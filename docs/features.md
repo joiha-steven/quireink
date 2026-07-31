@@ -138,6 +138,18 @@ they have a blog to configure. [ADR 0014](decisions/0014-homepage-modes.md).
   file). It ignores composition, modifier/navigation keys, paste, and held repeats. The master
   `settings.motion.enabled` and `prefers-reduced-motion` still gate the visual feedback; disabling
   typewriter feedback makes the editor standard and silent.
+- **Images and galleries** (`CaptionedImage.tsx`): placement rides on the src fragment
+  (a Markdown image whose src ends `#right-wide`) and the caption is the alt, so the node still serializes to plain
+  Markdown. Two or more consecutive `#grid` images become one `.gallery`, column count by count
+  (`galleryCols`). A gallery has two options of its own, also on the fragment: a **ratio**
+  (`#grid-1x1`, `3x2`, `4x3`, absent = the photos keep their own shape) which crops every tile with
+  `object-fit:cover` so rows line up, and **`nocap`**, which hides the captions with CSS. The alt is
+  still emitted either way, so it keeps serving screen readers and search. Both options apply to the
+  WHOLE run in one transaction (`applyToGallery`) rather than to the selected image, and the new
+  value is decided once from the tile that was clicked so an inconsistent run heals instead of
+  flip-flopping. **GOTCHA:** `groupGalleries` matches `img-grid[^"]*`, not `img-grid` exactly. An
+  option appends a class, and matching the old exact string made every gallery with an option
+  silently stop grouping and fall into a full-width column.
 - **BubbleBar:** a floating `BubbleMenu` (`@tiptap/react/menus`) over a text selection or with the
   cursor in a link — bold/italic/underline/strike/code + link edit/remove. `shouldShow` skips node
   selections (image/video) so it never covers their own controls.

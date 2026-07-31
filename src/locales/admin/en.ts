@@ -87,6 +87,8 @@ const en = {
   imgSizeColumn: 'Column',
   imgSizeWide: 'Large',
   imgGrid: 'Grid',
+  imgRatioNatural: 'As shot',
+  imgCaptions: 'Captions',
   captionPlaceholder: 'Image caption',
   slug: 'Slug (URL)',
   publishDate: 'Publish date',

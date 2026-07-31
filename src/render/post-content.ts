@@ -121,6 +121,11 @@ function dedupeHeadingIds(html: string): string {
 // on the <img> reserves the box from the aspect ratio → no CLS.
 export type ImageDims = Map<string, { width: number; height: number }>
 
+// The shapes a gallery tile can be cropped to. Written `1x1` rather than `1:1` because
+// this travels in a URL fragment, where a colon is legal but reads as a scheme separator
+// to every human who looks at it.
+const GRID_RATIOS = new Set(['1x1', '3x2', '4x3'])
+
 // Figure placement from the src fragment: #left|#right (align, default center),
 // #wide (noses right into the gutter on wide screens; every image is full-bleed on phones). Caption = alt.
 function imgClasses(frag: string): string {
@@ -128,7 +133,15 @@ function imgClasses(frag: string): string {
   const tokens = frag.split('-')
   // `#grid` marks a gallery item; groupGalleries() wraps consecutive ones. The
   // grid owns layout, so align/wide are ignored for a grid item.
-  if (tokens.includes('grid')) return 'img-grid'
+  //
+  // Two extra tokens are its own: a ratio crops every tile to one shape, and `nocap`
+  // hides the captions. Both are ABSENT by default, so a gallery written before they
+  // existed renders byte for byte as it did.
+  if (tokens.includes('grid')) {
+    const ratio = tokens.find((t) => GRID_RATIOS.has(t))
+    const opts = [ratio ? `g-${ratio}` : '', tokens.includes('nocap') ? 'g-nocap' : ''].filter(Boolean)
+    return opts.length ? `img-grid ${opts.join(' ')}` : 'img-grid'
+  }
   const align = tokens.includes('left') ? 'img-left' : tokens.includes('right') ? 'img-right' : 'img-center'
   return tokens.includes('wide') ? `${align} img-wide` : align
 }
@@ -145,9 +158,13 @@ function galleryCols(n: number): number {
 // Wrap a run of 2+ consecutive `#grid` figures (separated only by whitespace)
 // into one `.gallery` grid container, with a column count chosen from how many
 // images are in the run. A lone grid image stays a normal figure.
+// `img-grid[^"]*` rather than `img-grid"`, because a tile now carries its ratio and
+// caption classes alongside. Matching the exact old string silently stopped grouping the
+// moment an option was set, and a gallery that quietly falls apart into a column of
+// full-width photos is the kind of break nobody reports as a bug.
 function groupGalleries(html: string): string {
-  return html.replace(/(?:<figure class="img-grid">[\s\S]*?<\/figure>\s*){2,}/g, (run) => {
-    const count = (run.match(/<figure class="img-grid">/g) ?? []).length
+  return html.replace(/(?:<figure class="img-grid[^"]*">[\s\S]*?<\/figure>\s*){2,}/g, (run) => {
+    const count = (run.match(/<figure class="img-grid[^"]*">/g) ?? []).length
     return `<div class="gallery gallery-cols-${galleryCols(count)}">${run.trim()}</div>`
   })
 }

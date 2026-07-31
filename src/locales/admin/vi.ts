@@ -87,6 +87,8 @@ const vi = {
   imgSizeColumn: 'Khung',
   imgSizeWide: 'Ảnh lớn',
   imgGrid: 'Lưới',
+  imgRatioNatural: 'Giữ nguyên',
+  imgCaptions: 'Chú thích',
   captionPlaceholder: 'Chú thích ảnh',
   slug: 'Đường dẫn (slug)',
   publishDate: 'Ngày đăng',

@@ -87,6 +87,8 @@ const ja = {
   imgSizeColumn: 'カラム',
   imgSizeWide: '大',
   imgGrid: 'グリッド',
+  imgRatioNatural: '元のまま',
+  imgCaptions: 'キャプション',
   captionPlaceholder: '画像キャプション',
   slug: 'スラッグ (URL)',
   publishDate: '公開日',

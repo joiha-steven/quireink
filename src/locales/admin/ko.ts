@@ -87,6 +87,8 @@ const ko = {
   imgSizeColumn: '본문 너비',
   imgSizeWide: '크게',
   imgGrid: '그리드',
+  imgRatioNatural: '원본 비율',
+  imgCaptions: '캡션',
   captionPlaceholder: '이미지 설명',
   slug: '슬러그 (URL)',
   publishDate: '게시 날짜',
