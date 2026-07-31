@@ -11,10 +11,10 @@
 # replication would replace it, and until this ran the only copy of everything the owner had
 # written lived in one directory on one machine.
 #
-# It is a SEPARATE script from the one backing up the author's other sites, on purpose. That
-# one is proven and monitored; adding another engine to it to serve a blog would put those
-# backups at risk for no gain. This reuses its remote, its retention habit and its alert
-# hook, and nothing else of it.
+# If the box already backs up other things, resist bolting this onto that script. A working,
+# monitored backup is worth more than a tidy one, and adding an engine to it puts what already
+# works at risk to save a file. Point this at the same remote and the same alert hook instead;
+# that is all the sharing worth having.
 #
 #   Databases : VACUUM INTO, never a file copy. A live SQLite database has a write-ahead log
 #               and copying the file can capture a torn state that only fails on restore.

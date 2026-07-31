@@ -77,8 +77,8 @@ brings its own sessions and its own mail server back with it.
 - Hourly copies kept 3 days, daily copies 30 days, deleted uploads 7 days.
 - One run at a time, held by `flock`. An hourly run overlapping the daily one would have
   both writing the same staging file.
-- Failure posts to the alert webhook the other backups on the box already use. A backup
-  that fails silently is not a backup.
+- Failure posts to a webhook, if `QUIRE_ALERT_HOOK_FILE` names one. A backup that fails
+  silently is not a backup. Point it at whatever already tells you when something breaks.
 
 ## Restoring
 
@@ -96,8 +96,8 @@ systemctl stop quire && cp /tmp/restore/*.db /var/lib/quire/data/ && systemctl s
 > Archives written before 2026-08-01 are named `quire2-<tag>.tar.gz`. Same contents; only the
 > prefix changed when the script stopped being named after one installation.
 
-**Do this on a schedule, not only when something is on fire.** The restore was exercised
-end to end when the script was installed — `integrity_check: ok`, 74 posts, 4 pages — and
+**Do this on a schedule, not only when something is on fire.** Run the two `sqlite3` lines
+above against a real archive and check the post count against what the site actually shows:
 an untested backup is a belief, not a backup.
 
 ## Instance configuration
