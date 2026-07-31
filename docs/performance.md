@@ -47,11 +47,11 @@ the optical range:
 | `literata-latin` | 80,660 | **37,560** | −53% |
 | `literata-vietnamese` | 16,928 | **8,652** | −49% |
 | `sourceserif-latin` | 83,240 | **36,160** | −56% |
-| **`manhhung.me` preload set** (Literata, `vi`) | **97,588** | **46,212** | **−53%** |
+| **a real preload set** (Literata + `language: vi`) | **97,588** | **46,212** | **−53%** |
 
-That last row is the whole point: production runs Literata with `language: vi`, so the LCP
-preload is `literata-latin` **plus** `literata-vietnamese`, and this change takes **51 KB**
-off the critical path.
+That last row is the whole point: an install running Literata with `language: vi` preloads
+`literata-latin` **plus** `literata-vietnamese` for the LCP, so this change takes **51 KB**
+off its critical path. Any non-Latin language pairs the same way.
 
 > ⚠️ **Measure production, not a local build.** A local `.env` points at a dev database whose
 > `settings` row differs from the live one. During this work a local build reported the
