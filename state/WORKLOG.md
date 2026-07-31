@@ -9,10 +9,10 @@ passes its size cap. Rolling is a move, never a rewrite.
 
 ## 2026-08-01 — One screen restyles every gallery on the site
 
-Yesterday's per-gallery options were the right control at the wrong scale: `edcmeo` has
-about thirty imported galleries, so "set it on the gallery" is thirty chores. *Settings →
-Layout → Galleries* now holds the shape and the caption state every gallery follows when it
-has none of its own.
+Yesterday's per-gallery options were the right control at the wrong scale: an archive
+imported from WordPress can carry thirty galleries, so "set it on the gallery" is thirty
+chores. *Settings → Layout → Galleries* now holds the shape and the caption state every
+gallery follows when it has none of its own.
 
 **The default is CSS, not markup, and that is the load-bearing decision.** Rendered Markdown
 is content-addressed in `render_cache` under a hash of its INPUT. A default that rewrote the
@@ -44,13 +44,14 @@ captions.
 
 ## 2026-07-31 — A gallery gets a shape and a caption switch
 
-Reported off `new.edcmeo.com/thu-vien-den-pin-custom`, a page of thirty imported galleries.
-Two things were wrong there and only one of them was the one asked about.
+Found on a page holding thirty galleries imported from WordPress. Two things were wrong
+there and only one of them was the one reported.
 
 **The rows were ragged.** Tiles keep their own proportions, so one portrait shot in a row of
 landscapes makes its cell as tall as the row and leaves a white void beside every other tile.
 **And the captions were noise:** the WordPress importer folds `figcaption` into the alt, and
-that site's alts are filenames, so 166 captions read `Đèn pin custom kemenes fured 3`.
+an archive whose alts are filenames ends up printing a hundred and sixty of them under the
+photos.
 
 So a gallery now has two options, on the same src fragment everything else already uses:
 a **ratio** (`#grid-1x1`, `3x2`, `4x3`) that crops every tile with `object-fit:cover` so the
@@ -81,8 +82,8 @@ READMEs and as the repository's homepage. `manhhung.me` is still named, once, as
 author's own instance; it is no longer the thing a stranger is sent to.
 
 The demo carries none of this. It runs the tagged build unmodified, and its preview bar and
-read-only edge live in a separate private repo (`joiha-steven/quireink-demo`) as one CSS file,
-one JS file and an nginx vhost. Nothing in this repository knows the demo exists.
+read-only edge live in a separate private repo as one CSS file, one JS file and an nginx
+vhost. Nothing in this repository knows the demo exists.
 
 Also swept: `manhhung.me` out of the `Required Notice:` line, the SEO canonical placeholder
 and two code comments, since a product's example URL should not be one person's blog. The
