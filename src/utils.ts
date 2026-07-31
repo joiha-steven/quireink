@@ -89,7 +89,7 @@ export function deriveExcerpt(markdown: string, maxWords = 50): string {
 // All image URLs referenced in a piece of (rendered) content: markdown
 // `![](url)`, HTML `src="url"`, and bare image URLs. De-duped, in order. Used for
 // image SEO (sitemap `<image:image>` + Article schema) so search engines associate
-// every image with the manhhung.me page that embeds it. Expects absolute URLs
+// every image with the page that embeds it. Expects absolute URLs
 // (content from getPost/getPage is already expanded to absolute Blob URLs).
 export function extractImageUrls(content: string): string[] {
   // Match absolute (https://…) AND root-relative (/uploads/media/…) image URLs — self-

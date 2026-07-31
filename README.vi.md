@@ -17,11 +17,13 @@ Một tiến trình, hai tệp SQLite, không có tài khoản đám mây nào t
 
 [English](./README.md) · **Tiếng Việt**
 
-[**Bản chạy thật**](https://manhhung.me) · [**Cài đặt**](#cài-đặt) · [**Số đo**](#nhanh-và-đây-là-số-đo) · [**Giao cho agent**](#để-ai-agent-viết-và-đăng-bài-mcp) · [**Kiến trúc**](./docs/spec/02-structure.md) · [**Changelog**](./CHANGELOG.md) · [**Giấy phép**](#giấy-phép)
+[**Bản demo**](https://demo.quireink.com) · [**Cài đặt**](#cài-đặt) · [**Số đo**](#nhanh-và-đây-là-số-đo) · [**Giao cho agent**](#để-ai-agent-viết-và-đăng-bài-mcp) · [**Kiến trúc**](./docs/spec/02-structure.md) · [**Changelog**](./CHANGELOG.md) · [**Giấy phép**](#giấy-phép)
 
 <br/>
 
 <img src="docs/demo.jpg" alt="Hai ảnh chụp cạnh nhau: trang chủ dạng báo với bài dẫn và các hàng chuyên mục, và trang bài viết của cùng site với cột mục lục bên trái" width="960">
+
+<sub>**[demo.quireink.com](https://demo.quireink.com)** chạy đúng bản này, đặt lại mỗi tháng, không cần đăng nhập và không phải điền gì. Thanh dưới đáy chuyển qua lại giữa trang chủ dạng báo, danh sách, một bài viết, chế độ sách, hai bảng màu và trang quản trị. Thanh đó không thuộc sản phẩm: trang demo chạy nguyên mã nguồn bên dưới, nên nó luôn là bản mới nhất và không có nhánh preview nào phải giữ cho khớp.</sub>
 
 </div>
 
@@ -47,7 +49,8 @@ Ba điểm khiến nó khác những lựa chọn quen thuộc:
 nhân, sở thích, học tập và phi lợi nhuận. Bạn được đọc, sửa, chạy, fork. Dùng cho mục đích
 thương mại cần giấy phép riêng, thường là rẻ hoặc miễn phí, cứ hỏi.
 
-> **2.0.0 là bản ổn định**, phát hành 30/07/2026 và đang chạy bản demo ở trên. Trước đó là một
+> **2.0.0 là bản ổn định**, phát hành 30/07/2026, đang chạy bản demo ở trên và blog riêng của
+> tác giả tại [manhhung.me](https://manhhung.me). Trước đó là một
 > đợt audit đầy đủ về thiết kế, hiệu năng và tính đúng đắn, làm bằng cách **đo site đang chạy**
 > chứ không phải đọc mã nguồn. Mọi thay đổi nằm trong [changelog](./CHANGELOG.md).
 
@@ -74,7 +77,7 @@ thương mại cần giấy phép riêng, thường là rẻ hoặc miễn phí,
 
 <img src="docs/demo-reading.jpg" alt="Chế độ sách: trình đọc hai cột toàn màn hình trên nền giấy, có chữ cái đầu lớn và số trang, bên cạnh là một bài viết ở giao diện tối" width="960">
 
-<sub>Chế độ sách và giao diện tối. Cả hai đều là chính hệ typography của trang đọc, không phải một lớp lọc phủ lên.</sub>
+<sub>Chế độ sách và giao diện tối. Cả hai đều là chính hệ typography của trang đọc, không phải một lớp lọc phủ lên. Font đi kèm được subset cho latin, latin-ext và vietnamese, nên khối mẫu chữ bên trái vẫn hiển thị bằng font đọc chứ không rơi về font hệ thống.</sub>
 
 </div>
 
@@ -108,7 +111,7 @@ thoại phải trả:
 
 <div align="center">
 
-<img src="docs/demo-mobile.jpg" alt="Ba màn hình điện thoại: danh sách bài, một bài viết, và lớp tìm kiếm tức thì đang hiện chín tựa bài khớp" width="960">
+<img src="docs/demo-mobile.jpg" alt="Ba màn hình điện thoại: danh sách bài, một bài viết, và lớp tìm kiếm tức thì đang hiện bảy tựa bài khớp" width="960">
 
 <sub>Không có con số nào ở trên là để lấy điểm benchmark. Chúng dành cho người đọc trên chiếc điện thoại bốn năm tuổi chỉ muốn đọc bốn trăm chữ.</sub>
 
@@ -142,7 +145,7 @@ Bạn cần [Bun](https://bun.sh) 1.3 trở lên và một máy có thể trỏ 
 ```bash
 git clone https://github.com/joiha-steven/quireink.git && cd quireink
 bun install
-bun run build:assets                # đóng gói island + trang quản trị
+bun run build:assets && bun run build:admin     # island, rồi tới SPA quản trị
 DATA_DIR=./data SITE_URL=https://example.com bun src/index.ts
 ```
 
@@ -243,6 +246,7 @@ Nội dung của bạn nằm trong `DATA_DIR` và thư mục uploads, không bao
 
 ```bash
 bun install
+bun run build:admin                 # một lần, và mỗi khi src/admin đổi
 bun run dev                         # http://localhost:3000
 bun run user create --username me --email me@example.com   # rồi đăng nhập ở /login
 ```

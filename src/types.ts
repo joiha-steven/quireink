@@ -176,7 +176,7 @@ export type SiteSettings = {
   language: SiteLang // public site language: drives lang attr, font, labels, dates
   title: string
   description: string
-  siteUrl: string // canonical base URL (e.g. https://manhhung.me); '' -> derive from env
+  siteUrl: string // canonical base URL (e.g. https://example.com); '' -> derive from env
   logoUrl: string // '' when no logo — the ALWAYS-kept original source the owner picked
   logoWidth: number // px, horizontal width of the logo in the header
   logoRenderUrl: string // derived, display-sized WebP (2x for retina) generated from logoUrl at logoWidth; '' = serve original (vector/animated, or none). Regenerated + old one deleted whenever logoUrl/logoWidth change

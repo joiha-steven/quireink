@@ -1,6 +1,6 @@
 # Audit log + procedure
 
-Comprehensive review records for Quire Blog. Each pass checks the whole project for
+Comprehensive review records for Quire Ink. Each pass checks the whole project for
 tech / security / performance / logic / layout / docs issues, fixes what it finds,
 and is written up here as a dated report. This folder is the memory of "what was
 checked, when, and the verdict" so a later pass starts from the last clean line.

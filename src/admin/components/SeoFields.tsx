@@ -35,7 +35,7 @@ export function SeoFields({ s, update }: Props) {
           label={t.seoCanonical}
           value={s.siteUrl}
           onChange={(e) => update({ siteUrl: e.target.value })}
-          placeholder="https://manhhung.me"
+          placeholder="https://example.com"
         />
         <p className="text-xs text-neutral-400 dark:text-neutral-500">{t.seoCanonicalHint}</p>
       </div>
