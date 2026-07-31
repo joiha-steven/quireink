@@ -47,7 +47,7 @@ Có ba thứ định hình nó.
 
 **Agent viết được thay bạn.** Nối Claude hay bất kỳ client MCP nào vào, nó soạn được, gắn thẻ được, hẹn giờ và đăng được, theo đúng những luật mà trang quản trị đang theo.
 
-Bạn được đọc, sửa, chạy và fork theo [PolyForm Noncommercial](./LICENSE). Miễn phí cho bản thân bạn, cho sở thích, cho trường học hay tổ chức phi lợi nhuận. Dùng trong doanh nghiệp thì cần giấy phép riêng, thường là rẻ hoặc miễn phí, cứ hỏi.
+Bạn được đọc, sửa, chạy và fork theo [PolyForm Noncommercial](./LICENSE).
 
 > **2.0.0 ra ngày 30/07/2026**, đang chạy bản demo ở trên và blog riêng của tác giả tại
 > [manhhung.me](https://manhhung.me). Trước khi phát hành, cả dự án được audit bằng cách

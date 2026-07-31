@@ -47,7 +47,7 @@ Three things shaped it.
 
 **An agent can do the writing.** Connect Claude or any MCP client and it can draft, tag, schedule and publish for you, through exactly the rules the admin follows.
 
-You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE). Free for yourself, your hobby, your school or your charity. Using it in a business needs a separate licence, which is usually cheap or free, so just ask.
+You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE).
 
 > **2.0.0 came out on 2026-07-30** and runs the demo above plus the author's own blog at
 > [manhhung.me](https://manhhung.me). Before it shipped, the whole thing was audited by
