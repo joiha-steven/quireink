@@ -7,6 +7,33 @@ Older entries roll into [`worklog/`](worklog/2026-07-quire-2-rewrite.md) when th
 passes its size cap. Rolling is a move, never a rewrite.
 
 
+## 2026-07-31 — The demo is the front door, and the README shows the site that exists
+
+`demo.quireink.com` is live, so it replaces `manhhung.me` as the "Live demo" link in both
+READMEs and as the repository's homepage. `manhhung.me` is still named, once, as the
+author's own instance; it is no longer the thing a stranger is sent to.
+
+The demo carries none of this. It runs the tagged build unmodified, and its preview bar and
+read-only edge live in a separate private repo (`joiha-steven/quireink-demo`) as one CSS file,
+one JS file and an nginx vhost. Nothing in this repository knows the demo exists.
+
+Also swept: `manhhung.me` out of the `Required Notice:` line, the SEO canonical placeholder
+and two code comments, since a product's example URL should not be one person's blog. The
+`open-source` GitHub topic is gone and `source-available` replaces it, which is what
+PolyForm Noncommercial actually is.
+
+**All four README plates were reshot.** The fixture was rewritten earlier the same day and
+the images still showed posts that no longer exist, under the old site title. Two real
+errors turned up on the way:
+
+- **The README's install block ran `build:assets` alone**, with a comment claiming it also
+  bundled the admin. It does not — `build:admin` is a separate script, and `docs/self-host.md`
+  and the Dockerfile both run the pair. Anyone following the README got a server whose
+  `/admin` was an empty page. Fixed in both languages, including the develop block.
+- **The editor route is `/admin/editor/<slug>`, not `/<id>`.** The first pass shot `Not found`
+  and composed it into the plate. Caught by looking at the image, which is the only thing
+  that catches it.
+
 ## 2026-07-31 — The product is Quire Ink (ADR 0016)
 
 `quireink.com` is bought: `demo.quireink.com` will be a public demo instance so `manhhung.me`

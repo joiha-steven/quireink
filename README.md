@@ -17,11 +17,13 @@ One process, two SQLite files, no cloud account anywhere in the path.
 
 **English** · [Tiếng Việt](./README.vi.md)
 
-[**Live demo**](https://manhhung.me) · [**Install**](#install) · [**The numbers**](#fast-and-here-are-the-numbers) · [**Let an agent run it**](#let-an-ai-agent-write-and-publish-mcp) · [**How it works**](./docs/spec/02-structure.md) · [**Changelog**](./CHANGELOG.md) · [**License**](#license)
+[**Live demo**](https://demo.quireink.com) · [**Install**](#install) · [**The numbers**](#fast-and-here-are-the-numbers) · [**Let an agent run it**](#let-an-ai-agent-write-and-publish-mcp) · [**How it works**](./docs/spec/02-structure.md) · [**Changelog**](./CHANGELOG.md) · [**License**](#license)
 
 <br/>
 
 <img src="docs/demo.jpg" alt="Two screenshots side by side: a composed front page with a lead story and section rows, and the same site's article page with a contents rail and a meta column" width="960">
+
+<sub>**[demo.quireink.com](https://demo.quireink.com)** runs this build, reset monthly, with no sign-in and nothing to fill in. A bar along the bottom switches between the front page, the list, an article, book mode, both palettes and the admin. That bar is not part of the product: the demo runs the code below unmodified, so it is always the latest build and there is no preview branch to keep in step.</sub>
 
 </div>
 
@@ -47,7 +49,8 @@ Three things make it different from the obvious alternatives:
 educational and nonprofit use. Read it, change it, run it, fork it. Commercial use needs a
 separate licence, and it is usually cheap or free, so ask.
 
-> **2.0.0 is stable**, released 2026-07-30 and running the demo above. It followed a full
+> **2.0.0 is stable**, released 2026-07-30, running the demo above and the author's own blog
+> at [manhhung.me](https://manhhung.me). It followed a full
 > audit of design, performance and correctness done by measuring the running site rather than
 > reading the source. Everything that changed is in the [changelog](./CHANGELOG.md).
 
@@ -74,7 +77,7 @@ separate licence, and it is usually cheap or free, so ask.
 
 <img src="docs/demo-reading.jpg" alt="Book mode, a fullscreen two-column reader on paper with a drop cap and a page count, beside an article in the dark theme" width="960">
 
-<sub>Book mode and the dark theme. Both are the reading typography itself, not a filter laid over it.</sub>
+<sub>Book mode and the dark theme. Both are the reading typography itself, not a filter laid over it. The bundled fonts are subset for latin, latin-ext and vietnamese, so the specimen on the left is set in the reading face rather than falling back.</sub>
 
 </div>
 
@@ -107,7 +110,7 @@ on a phone actually pays:
 
 <div align="center">
 
-<img src="docs/demo-mobile.jpg" alt="Three phone screens: the post list, an article, and the instant search overlay showing nine matching titles" width="960">
+<img src="docs/demo-mobile.jpg" alt="Three phone screens: the post list, an article, and the instant search overlay showing seven matching titles" width="960">
 
 <sub>None of that is for a benchmark. It is for the reader on a four-year-old phone who wanted four hundred words.</sub>
 
@@ -142,7 +145,7 @@ the whole list.
 ```bash
 git clone https://github.com/joiha-steven/quireink.git && cd quireink
 bun install
-bun run build:assets                # bundles the islands + the admin
+bun run build:assets && bun run build:admin     # the islands, then the admin SPA
 DATA_DIR=./data SITE_URL=https://example.com bun src/index.ts
 ```
 
@@ -244,6 +247,7 @@ server-side. Your content lives in `DATA_DIR` and the uploads directory, never i
 
 ```bash
 bun install
+bun run build:admin                 # once, and again whenever src/admin changes
 bun run dev                         # http://localhost:3000
 bun run user create --username me --email me@example.com   # then sign in at /login
 ```
