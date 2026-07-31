@@ -621,3 +621,40 @@ restart. `35072a1` is live: 30 files in `src/admin/dist` and 3 in `src/assets/di
 counts the runbook expects. Verified at the origin, not through the CDN: health 200,
 `/admin` 302, and the unsubscribe page now URL-encodes a `"><script>` token into its form
 action with nothing raw leaking. Edge cache purged. No errors in the journal.
+
+## 2026-07-31 (later) — the licence stops saying "do whatever you like"
+
+MIT grants the right to sell, and that was never the intent. What was wanted was: read it,
+run it, change it, share it, but do not make money from it. MIT says the opposite of the
+last clause, in the plainest possible words, and had said so since the first commit.
+
+**Two candidates were rejected before PolyForm Noncommercial won, and both rejections are
+worth keeping.** The first phrasing was "no commercial use, and no changing the code" — by
+name CC BY-NC-ND, or PolyForm Strict for software. Under those terms an operator of a
+*self-hosted blog engine* could not patch a security hole, build a container image, or
+publish a fork. "Self-host this" and "do not modify this" cannot both be true.
+
+AGPL looked right and is not. It is a real open-source licence, it lets operators patch, and
+§13 blocks the fork-into-a-closed-SaaS move. But **AGPL does not restrict commercial use at
+all**: sell Quire hosting all you like, just publish your changes. It swaps "nobody may
+profit" for "nobody may close it", which is a different goal. The dependency audit run
+before setting it aside is recorded in ADR 0015 rather than thrown away: all 331 packages
+are copyleft-compatible, so AGPL stays available at zero dependency cost if this is ever
+revisited.
+
+**The honest consequences are written down rather than glossed.** Quire is no longer open
+source; it is source-available, and the OSI definition is unambiguous about why. GitHub will
+show "Other" because PolyForm is in SPDX but not in GitHub's own set. Companies that ban
+noncommercial licences will stay away, which is the point. And the change **cannot** be
+retroactive: everything through v2.0.0 was MIT and stays MIT for anyone who took a copy,
+fork and resale rights included. 0 forks and 2 stars today, so the exposure is small.
+
+The relicense was clean because the repo has exactly one contributor, 544 of 544 commits.
+That property is now load-bearing, so `CONTRIBUTING.md` says a pull request grants the owner
+relicensing rights. Merging one outside PR without that would end the option of ever selling
+a commercial licence, permanently.
+
+Every claim of "open source" in the repository was corrected rather than softened, including
+the admin string in all six languages and the footer of the help guide. `LICENSE` now holds
+the licence text and nothing else, so SPDX matchers can identify it; the code-vs-content
+scope note it used to carry has moved into `README.md`.

@@ -267,7 +267,7 @@ const zh = {
   typewriterLabel: '打字机反馈',
   typewriterDesc: '编辑器中的块状光标、输入/删除反馈和轻微按键声。关闭后恢复普通光标和静音编辑。',
   overviewTitle: '概览',
-  licenseTitle: 'Quire Blog 是开源软件（MIT）。你的博客内容归你所有（保留所有权利）。',
+  licenseTitle: 'Quire Blog 非商业用途免费（PolyForm Noncommercial）。你的博客内容归你所有（保留所有权利）。',
   statPosts: '文章',
   statPages: '页面',
   statComments: '评论',

@@ -267,7 +267,7 @@ const ja = {
   typewriterLabel: 'タイプライター効果',
   typewriterDesc: 'ブロックカーソル、入力・削除の反応、エディター内の小さなキー音。オフにすると通常のカーソルと無音入力になります。',
   overviewTitle: '概要',
-  licenseTitle: 'Quire Blog はオープンソース（MIT）。ブログの内容はあなたのものです（無断転載禁止）。',
+  licenseTitle: 'Quire Blog は非商用なら無償です（PolyForm Noncommercial）。ブログの内容はあなたのものです（無断転載禁止）。',
   statPosts: '投稿',
   statPages: 'ページ',
   statComments: 'コメント',

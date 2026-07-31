@@ -102,7 +102,7 @@ export function HelpGuide({ title, version }: { title: string; version: string }
       </Anchor>
 
       <p className="pt-2 text-center text-xs text-neutral-400 dark:text-neutral-500">
-        <a href={REPO} target="_blank" rel="noopener noreferrer" className={A}>Quire</a> v{version} · open source (MIT) ·{' '}
+        <a href={REPO} target="_blank" rel="noopener noreferrer" className={A}>Quire</a> v{version} · PolyForm Noncommercial ·{' '}
         <Ext href={`${REPO}#readme`}>README</Ext>
       </p>
     </div>

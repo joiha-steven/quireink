@@ -267,7 +267,7 @@ const en = {
   typewriterLabel: 'Typewriter feedback',
   typewriterDesc: 'Block caret, insert/delete response, and quiet key clicks in the editor. Turn off for the normal caret and a silent editor.',
   overviewTitle: 'Overview',
-  licenseTitle: 'Quire Blog is open source under MIT. Your blog content stays yours (all rights reserved).',
+  licenseTitle: 'Quire Blog is free for noncommercial use (PolyForm Noncommercial). Your blog content stays yours (all rights reserved).',
   statPosts: 'Posts',
   statPages: 'Pages',
   statComments: 'Comments',

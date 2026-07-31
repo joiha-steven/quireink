@@ -1,6 +1,7 @@
 # Quire — router
 
-Public, open-source blog platform. A single **Bun + Hono + SQLite** process: `src/` at the
+Public, source-available blog platform (PolyForm Noncommercial, ADR 0015). A single
+**Bun + Hono + SQLite** process: `src/` at the
 repository root is the implementation that serves the live site.
 
 **Zero personal data in this repo.** Real credentials live only in the gitignored `.env`;

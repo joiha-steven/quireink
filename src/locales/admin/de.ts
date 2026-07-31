@@ -267,7 +267,7 @@ const de = {
   typewriterLabel: 'Schreibmaschinen-Feedback',
   typewriterDesc: 'Blockcursor, Reaktion beim Schreiben/Löschen und leise Tastenklicks im Editor. Ausschalten für normalen Cursor und lautloses Schreiben.',
   overviewTitle: 'Übersicht',
-  licenseTitle: 'Quire Blog ist Open Source (MIT). Deine Blog-Inhalte bleiben dein (alle Rechte vorbehalten).',
+  licenseTitle: 'Quire Blog ist für nichtkommerzielle Nutzung kostenlos (PolyForm Noncommercial). Deine Blog-Inhalte bleiben dein (alle Rechte vorbehalten).',
   statPosts: 'Beiträge',
   statPages: 'Seiten',
   statComments: 'Kommentare',

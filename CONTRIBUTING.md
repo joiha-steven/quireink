@@ -4,8 +4,11 @@ Quire is a single-owner, self-hosted blog engine: one Bun process, two SQLite fi
 services behind it. That shape is the point, and it is the first thing a change is measured
 against. Small, correct, well-scoped changes are the easiest to accept.
 
-There is no CLA. Opening a pull request means your contribution ships under the
-[MIT license](./LICENSE).
+Opening a pull request means your contribution ships under the
+[PolyForm Noncommercial license](./LICENSE), and that you grant the project owner the right
+to relicense it, including under commercial terms. That second half is what keeps a paid
+commercial licence possible without having to track down every past contributor; it is
+stated here rather than enforced by a CLA bot.
 
 > **`v1/` takes nothing.** It is the retired Next.js + PostgreSQL implementation, shut down
 > on 2026-07-31 and kept only so the old behaviour stays readable. It receives no changes at
@@ -77,6 +80,7 @@ Bug reports and feature requests have their own templates under
 
 ## Two licenses, kept apart
 
-The **code** in this repository is [MIT](./LICENSE): use it, change it, sell it, no
-obligation to credit. The **writing** published with Quire belongs to its author, is not
-covered by MIT, and is not in this repository.
+The **code** in this repository is [PolyForm Noncommercial](./LICENSE): read it, change it,
+self-host it, share it, for any noncommercial purpose. Commercial use needs a separate
+licence, which is usually cheap or free for the asking. The **writing** published with Quire
+belongs to its author, is not covered by the code licence, and is not in this repository.
