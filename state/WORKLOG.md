@@ -7,6 +7,41 @@ Older entries roll into [`worklog/`](worklog/2026-07-quire-2-rewrite.md) when th
 passes its size cap. Rolling is a move, never a rewrite.
 
 
+## 2026-08-01 — One screen restyles every gallery on the site
+
+Yesterday's per-gallery options were the right control at the wrong scale: `edcmeo` has
+about thirty imported galleries, so "set it on the gallery" is thirty chores. *Settings →
+Layout → Galleries* now holds the shape and the caption state every gallery follows when it
+has none of its own.
+
+**The default is CSS, not markup, and that is the load-bearing decision.** Rendered Markdown
+is content-addressed in `render_cache` under a hash of its INPUT. A default that rewrote the
+HTML would leave every body that had already been rendered serving the old shape until
+something unrelated evicted it, which is a bug that looks like a caching mystery rather than
+like a settings bug. So `pageStyles` emits `--gallery-ratio` / `--gallery-w` / `--gallery-cap`
+on `:root` and the sheet reads them with the OLD behaviour as the `var()` fallback. An
+untouched site emits nothing at all and is byte-identical.
+
+**Each option is three-valued, and the third value is silence.** No token means "follow
+Settings"; `asis` and `cap` were added so a gallery can disagree with a non-default site
+setting out loud. Without them the first click would pin a gallery forever and a later change
+of mind in Settings could never reach it. The editor toolbar therefore leads with `Default`
+in both groups rather than treating "no token" as unreachable.
+
+The override wins on **specificity** (tile class beats `:root`), not source order. There is a
+test for that, because inverting it would silently let a site default overrule every gallery
+that had been set by hand.
+
+Two structural notes: `--gallery-w` travels with every ratio, since a cropped tile has to
+fill its cell and an uncropped one must not be stretched into it, and the two would drift if
+set apart. And `settings-sanitize.ts` hit the 400-line cap, so the typography and font half
+moved to `settings-type.ts` — one question (what the reading text is set in), and the only
+sanitizers here carrying a migration rather than a clamp.
+
+Verified by rendering: with the site set to 4:3 and captions off, an untouched gallery came
+out cropped and silent, and one pinned `asis-cap` beside it kept its proportions and its
+captions.
+
 ## 2026-07-31 — A gallery gets a shape and a caption switch
 
 Reported off `new.edcmeo.com/thu-vien-den-pin-custom`, a page of thirty imported galleries.

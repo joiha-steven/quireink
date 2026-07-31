@@ -123,8 +123,10 @@ export type ImageDims = Map<string, { width: number; height: number }>
 
 // The shapes a gallery tile can be cropped to. Written `1x1` rather than `1:1` because
 // this travels in a URL fragment, where a colon is legal but reads as a scheme separator
-// to every human who looks at it.
-const GRID_RATIOS = new Set(['1x1', '3x2', '4x3'])
+// to every human who looks at it. `asis` is not the absence of a ratio: it is "keep the
+// proportions", which a gallery has to be able to say out loud once a SITE default exists
+// to disagree with.
+const GRID_RATIOS = new Set(['asis', '1x1', '3x2', '4x3'])
 
 // Figure placement from the src fragment: #left|#right (align, default center),
 // #wide (noses right into the gutter on wide screens; every image is full-bleed on phones). Caption = alt.
@@ -134,12 +136,13 @@ function imgClasses(frag: string): string {
   // `#grid` marks a gallery item; groupGalleries() wraps consecutive ones. The
   // grid owns layout, so align/wide are ignored for a grid item.
   //
-  // Two extra tokens are its own: a ratio crops every tile to one shape, and `nocap`
-  // hides the captions. Both are ABSENT by default, so a gallery written before they
-  // existed renders byte for byte as it did.
+  // A gallery may also name its own shape and caption state. Each is three-valued and the
+  // third value is SILENCE: no token means "whatever the site setting says", which is what
+  // lets one screen fix a whole imported archive. The classes only carry an override.
   if (tokens.includes('grid')) {
     const ratio = tokens.find((t) => GRID_RATIOS.has(t))
-    const opts = [ratio ? `g-${ratio}` : '', tokens.includes('nocap') ? 'g-nocap' : ''].filter(Boolean)
+    const cap = tokens.includes('nocap') ? 'g-nocap' : tokens.includes('cap') ? 'g-cap' : ''
+    const opts = [ratio ? `g-${ratio}` : '', cap].filter(Boolean)
     return opts.length ? `img-grid ${opts.join(' ')}` : 'img-grid'
   }
   const align = tokens.includes('left') ? 'img-left' : tokens.includes('right') ? 'img-right' : 'img-center'

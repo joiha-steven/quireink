@@ -249,18 +249,21 @@ figcaption{color:var(--c-meta);font-size:var(--fs-caption);line-height:var(--lh-
 .gallery-cols-2{grid-template-columns:repeat(2,1fr)}
 .gallery-cols-3{grid-template-columns:repeat(3,1fr)}
 .gallery-cols-4{grid-template-columns:repeat(4,1fr)}
-/* Per-gallery options, set in the editor and carried on each tile.
-   A ratio crops every tile to the same shape so the rows line up; without one the photos
-   keep their own proportions and a row is as tall as its tallest member, which is what a
-   mixed set of portrait and landscape shots looks like.
-   The picture wrapper is inline by default, and an inline box is a poor containing block
-   for a percentage width, so it is made a block here. */
+/* Gallery shape and captions, as VARIABLES, so two places can set them without either
+   knowing about the other: the site default on :root (pageStyles, from settings) and a
+   per-gallery override on the tile, which wins on specificity. The var() fallbacks are what
+   a gallery did before any of this existed, so an untouched site is unchanged.
+   picture is inline, and an inline box is a poor containing block for a percentage width. */
 .gallery picture{display:block}
-.gallery figure:is(.g-1x1,.g-3x2,.g-4x3) img{width:100%;object-fit:cover}
-.gallery .g-1x1 img{aspect-ratio:1/1}
-.gallery .g-3x2 img{aspect-ratio:3/2}
-.gallery .g-4x3 img{aspect-ratio:4/3}
-.gallery .g-nocap figcaption{display:none}
+.gallery figure img{aspect-ratio:var(--gallery-ratio,auto);width:var(--gallery-w,auto);object-fit:cover}
+.gallery figcaption{display:var(--gallery-cap,block)}
+/* Width rides with the ratio: a cropped tile fills its cell, an uncropped one must not. */
+.gallery .g-asis{--gallery-ratio:auto;--gallery-w:auto}
+.gallery .g-1x1{--gallery-ratio:1/1;--gallery-w:100%}
+.gallery .g-3x2{--gallery-ratio:3/2;--gallery-w:100%}
+.gallery .g-4x3{--gallery-ratio:4/3;--gallery-w:100%}
+.gallery .g-cap{--gallery-cap:block}
+.gallery .g-nocap{--gallery-cap:none}
 
 .video-embed,.video-file{margin:calc(var(--sp) * 2) 0}
 .video-embed{position:relative;padding-top:56.25%}

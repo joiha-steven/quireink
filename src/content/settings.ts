@@ -9,9 +9,10 @@ import { one, run } from '@/store/query'
 import { isSiteLang } from '@/locales/langs'
 import { DEFAULT_PRESET_ID, isPresetId, isFontPresetId, defaultThemes, ALL_PALETTE_IDS, DEFAULT_TYPOGRAPHY, DEFAULT_FONT, DEFAULT_FONT_PRESET, isChromeFontId, DEFAULT_CHROME_FONT, TYPE_ROLES } from '@/content/themes'
 import {
-  DEFAULT_HOME, sanitizeMenu, migrateThemes, sanitizeThemes, sanitizeEnabledPalettes, sanitizeSeo, sanitizeFeatures, sanitizeHome, sanitizeMcp, sanitizeMotion, sanitizeCache,
-  sanitizeBackups, sanitizeComments, sanitizeCss, sanitizeUrl, sanitizeTypography, sanitizeFont, fontFormat, clampNumber,
+  DEFAULT_HOME, DEFAULT_GALLERY, sanitizeMenu, migrateThemes, sanitizeThemes, sanitizeEnabledPalettes, sanitizeSeo, sanitizeFeatures, sanitizeHome, sanitizeGallery, sanitizeMcp, sanitizeMotion, sanitizeCache,
+  sanitizeBackups, sanitizeComments, sanitizeCss, sanitizeUrl, clampNumber,
 } from '@/content/settings-sanitize'
+import { sanitizeTypography, sanitizeFont, fontFormat } from '@/content/settings-type'
 
 // Re-export so existing importers keep working.
 export { DEFAULT_THEME, themesToCss, getDefaultTheme, DEFAULT_TYPOGRAPHY, DEFAULT_FONT } from '@/content/themes'
@@ -154,6 +155,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   typography: DEFAULT_TYPOGRAPHY,
   customFont: DEFAULT_FONT,
   home: DEFAULT_HOME,
+  gallery: DEFAULT_GALLERY,
   seo: DEFAULT_SEO,
   features: DEFAULT_FEATURES,
   comments: DEFAULT_COMMENTS,
@@ -240,6 +242,7 @@ export async function getSettings(): Promise<SiteSettings> {
       seo: { ...seo, ogFallbackImage: expandBlob(seo.ogFallbackImage) },
       features: sanitizeFeatures(stored.features, DEFAULT_FEATURES),
       home: sanitizeHome(stored.home, DEFAULT_SETTINGS.home),
+      gallery: sanitizeGallery(stored.gallery, DEFAULT_GALLERY),
       comments: sanitizeComments(stored.comments, DEFAULT_COMMENTS),
       mcp: sanitizeMcp(stored.mcp, DEFAULT_SETTINGS.mcp),
       motion: sanitizeMotion(stored.motion, DEFAULT_SETTINGS.motion),
@@ -353,6 +356,7 @@ export async function saveSettings(input: Partial<SiteSettings>): Promise<SiteSe
     seo: sanitizeSeo(input.seo, current.seo),
     features: sanitizeFeatures(input.features, current.features),
     home: sanitizeHome(input.home, current.home),
+    gallery: sanitizeGallery(input.gallery, current.gallery),
     comments: sanitizeComments(input.comments, current.comments),
     mcp: sanitizeMcp(input.mcp, current.mcp),
     motion: sanitizeMotion(input.motion, current.motion),

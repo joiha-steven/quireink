@@ -11,7 +11,7 @@
 //     (`scripts/build-assets.ts`), so a listing pays for the beacon and the header alone
 //     and an article adds one more file. Nothing is inlined, and there is no framework.
 
-import type { SiteSettings } from '@/types'
+import type { GallerySettings, SiteSettings } from '@/types'
 import { fontPreloadHrefs, fontPresetCss, chromeFontCss, themesToCss } from '@/content/themes'
 import { typographyToCss, fontToCss } from '@/content/settings'
 import { singleRailCss } from '@/render/rail-css'
@@ -51,6 +51,22 @@ export type Shell = {
 /** `backToTop` -> `data-back-to-top`. The inverse of the browser's `dataset` mapping. */
 const dataAttr = (key: string) => `data-${key.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}`
 
+/**
+ * The site-wide gallery default, as the two variables `public.css.ts` reads.
+ *
+ * Emitted only when it differs from the built-in behaviour, so a site that has never opened
+ * the setting adds no bytes and the `var()` fallbacks stay in charge. `--gallery-w` travels
+ * with the ratio because a cropped tile has to fill its cell and an uncropped one must not
+ * be stretched into it.
+ */
+function galleryCss(g: GallerySettings): string {
+  const parts = [
+    g.ratio ? `--gallery-ratio:${g.ratio.replace('x', '/')};--gallery-w:100%` : '',
+    g.captions ? '' : '--gallery-cap:none',
+  ].filter(Boolean)
+  return parts.length ? `:root{${parts.join(';')}}` : ''
+}
+
 import { escapeAttr, escapeHtml } from '@/utils'
 
 /**
@@ -83,6 +99,10 @@ export function pageStyles(settings: SiteSettings, extra = ''): string {
     // variable and the breakpoint is COMPUTED from the reading column: the rail only moves
     // into the gutter when there is room for it on BOTH sides, so the column stays centred.
     singleRailCss(settings.contentWidth),
+    // The site default for galleries. In CSS on purpose: rendered Markdown is cached under
+    // a hash of its input, so a default that changed the MARKUP would leave every body that
+    // was already rendered serving the old shape until something unrelated evicted it.
+    galleryCss(settings.gallery),
     // Page-specific geometry: the listing's second rail, the feed's gutter timeline. It
     // comes BEFORE the owner's own settings, so custom CSS still has the last word.
     extra,

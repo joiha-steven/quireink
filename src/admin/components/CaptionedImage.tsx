@@ -13,13 +13,21 @@ import { ReactNodeViewRenderer, NodeViewWrapper, type NodeViewProps } from '@tip
 import { useAdminT } from './I18nProvider'
 
 type Align = 'left' | 'center' | 'right'
-/** '' is "leave the photos their own shape". Must match GRID_RATIOS in post-content.ts. */
-type Ratio = '' | '1x1' | '3x2' | '4x3'
-type GridOpts = { ratio: Ratio; nocap: boolean }
+/**
+ * Both gallery options are three-valued, and the third value is SILENCE.
+ *
+ * '' means "no token", which is not the same as `asis` or `cap`: it means the gallery does
+ * not have an opinion and follows Settings. That is the value an imported archive has, and
+ * it is why one screen can restyle thirty galleries at once. Keeping a way BACK to it
+ * matters as much as the explicit choices, or the first click pins a gallery forever.
+ */
+type Ratio = '' | 'asis' | '1x1' | '3x2' | '4x3'
+type Caption = '' | 'cap' | 'nocap'
+type GridOpts = { ratio: Ratio; caption: Caption }
 
-const RATIOS: Ratio[] = ['', '1x1', '3x2', '4x3']
-// Ratios are written the same way in every language, so they are not translated. Only the
-// word for "no crop" is, and that comes from the locale below.
+const RATIOS: Ratio[] = ['', 'asis', '1x1', '3x2', '4x3']
+const CAPTIONS: Caption[] = ['', 'cap', 'nocap']
+// Ratios read the same in every language, so they are not translated. The words are.
 const RATIO_LABEL: Record<string, string> = { '1x1': '1:1', '3x2': '3:2', '4x3': '4:3' }
 
 type Frag = { clean: string; align: Align; wide: boolean; grid: boolean } & GridOpts
@@ -35,15 +43,15 @@ function parseFrag(src: string): Frag {
     align,
     wide: tokens.includes('wide'),
     grid: tokens.includes('grid'),
-    ratio: (RATIOS.find((r) => r !== '' && tokens.includes(r)) ?? '') as Ratio,
-    nocap: tokens.includes('nocap'),
+    ratio: RATIOS.find((r) => r !== '' && tokens.includes(r)) ?? '',
+    caption: CAPTIONS.find((c) => c !== '' && tokens.includes(c)) ?? '',
   }
 }
 
 // `grid` is exclusive — a gallery item ignores align/wide (the grid lays it out).
 function buildSrc(clean: string, f: Omit<Frag, 'clean'>): string {
   const marker = f.grid
-    ? ['grid', f.ratio, f.nocap ? 'nocap' : ''].filter(Boolean).join('-')
+    ? ['grid', f.ratio, f.caption].filter(Boolean).join('-')
     : [f.align !== 'center' ? f.align : '', f.wide ? 'wide' : ''].filter(Boolean).join('-')
   return marker ? `${clean}#${marker}` : clean
 }
@@ -90,11 +98,11 @@ function CaptionedImageView({ node, updateAttributes, selected, editor, getPos }
   const t = useAdminT()
   const src = (node.attrs.src as string) || ''
   const caption = (node.attrs.alt as string) || ''
-  const { clean, align, wide, grid, ratio, nocap } = parseFrag(src)
+  const { clean, align, wide, grid, ratio, caption: cap } = parseFrag(src)
 
   // Setting align/wide implies leaving grid mode; setGrid toggles membership. All three
   // stay per-image: pulling one photo out of a gallery is about that photo.
-  const rest = { align, wide, grid, ratio, nocap }
+  const rest = { align, wide, grid, ratio, caption: cap }
   const setAlign = (a: Align) => updateAttributes({ src: buildSrc(clean, { ...rest, align: a, grid: false }) })
   const setWide = (w: boolean) => updateAttributes({ src: buildSrc(clean, { ...rest, wide: w, grid: false }) })
   const setGrid = (g: boolean) => updateAttributes({ src: buildSrc(clean, { ...rest, grid: g }) })
@@ -126,23 +134,26 @@ function CaptionedImageView({ node, updateAttributes, selected, editor, getPos }
               <div className={group}>
                 {RATIOS.map((r) => (
                   <button
-                    key={r || 'natural'}
+                    key={r || 'default'}
                     type="button"
                     onClick={() => setGalleryOpts({ ratio: r })}
                     className={btn(ratio === r)}
                   >
-                    {r ? RATIO_LABEL[r] : t.imgRatioNatural}
+                    {r === '' ? t.imgDefault : r === 'asis' ? t.imgRatioNatural : RATIO_LABEL[r]}
                   </button>
                 ))}
               </div>
               <div className={group}>
-                <button
-                  type="button"
-                  onClick={() => setGalleryOpts({ nocap: !nocap })}
-                  className={btn(!nocap)}
-                >
-                  {t.imgCaptions}
-                </button>
+                {CAPTIONS.map((c) => (
+                  <button
+                    key={c || 'default'}
+                    type="button"
+                    onClick={() => setGalleryOpts({ caption: c })}
+                    className={btn(cap === c)}
+                  >
+                    {c === '' ? t.imgDefault : c === 'cap' ? t.imgCaptions : t.imgNoCaptions}
+                  </button>
+                ))}
               </div>
               <div className={group}>
                 <button type="button" onClick={() => setGrid(false)} className={btn(true)}>
@@ -186,7 +197,11 @@ function CaptionedImageView({ node, updateAttributes, selected, editor, getPos }
         alt={caption}
         // The crop is shown here too, so choosing a ratio is a decision you can see rather
         // than one you take on trust and check on the live site.
-        style={grid && ratio ? { aspectRatio: ratio.replace('x', ' / '), objectFit: 'cover' } : undefined}
+        style={
+          grid && ratio && ratio !== 'asis'
+            ? { aspectRatio: ratio.replace('x', ' / '), objectFit: 'cover' }
+            : undefined
+        }
         className={`w-full rounded-lg ${selected ? 'ring-2 ring-neutral-900 dark:ring-white' : ''}`}
       />
       <input
@@ -198,7 +213,7 @@ function CaptionedImageView({ node, updateAttributes, selected, editor, getPos }
         // Still editable with captions off: it is the alt text, so it keeps working for
         // screen readers and for search, it just does not print under the photo.
         className={`mt-1.5 w-full border-0 bg-transparent text-center text-sm outline-none placeholder:text-neutral-300 dark:placeholder:text-neutral-600 ${
-          grid && nocap ? 'text-neutral-300 dark:text-neutral-600' : 'text-neutral-500 dark:text-neutral-400'
+          grid && cap === 'nocap' ? 'text-neutral-300 dark:text-neutral-600' : 'text-neutral-500 dark:text-neutral-400'
         }`}
       />
     </NodeViewWrapper>

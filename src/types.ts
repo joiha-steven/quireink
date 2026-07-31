@@ -208,6 +208,7 @@ export type SiteSettings = {
   typography: TypographySettings // type scale + reading rhythm → CSS vars (--fs-*, --lh-body, --ls-body)
   customFont: FontSettings // owner-uploaded typeface (files/); '' = bundled Inter
   home: HomeSettings // what `/` serves, and where the post list lives when it is not there
+  gallery: GallerySettings // site-wide default shape + caption state for in-body galleries
   seo: SeoSettings // SEO / crawler feature toggles
   features: FeatureSettings // reader-facing feature toggles
   comments: CommentSettings // reader comment system (off by default)
@@ -313,6 +314,25 @@ export type FrontStrip = {
   category: string // the category NAME, as stored on posts
   count: number
   columns: number
+}
+
+/**
+ * How a gallery looks, site-wide.
+ *
+ * These are DEFAULTS, and they are applied as CSS variables rather than baked into the
+ * rendered HTML. That is not a style choice: rendered Markdown is cached under a hash of
+ * its input, so a default that changed the markup would leave every already-rendered body
+ * serving the old shape until something unrelated evicted it.
+ *
+ * A gallery that names its own shape in the image fragment (`#grid-1x1`, `#grid-nocap`)
+ * overrides these. One that says nothing follows them, which is what makes a whole
+ * imported site fixable from one screen.
+ */
+export type GallerySettings = {
+  /** '' = the photos keep their own proportions, so rows are as tall as their tallest tile. */
+  ratio: '' | '1x1' | '3x2' | '4x3'
+  /** Print the alt under each tile. Off hides it in CSS; the alt is still in the HTML. */
+  captions: boolean
 }
 
 // Motion engine: ONE site-wide switch for all UI animation (public + admin). When

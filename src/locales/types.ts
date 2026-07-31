@@ -228,6 +228,14 @@ export type AdminStrings = {
   // live in the component; only these two are words.
   imgRatioNatural: string
   imgCaptions: string
+  imgNoCaptions: string
+  imgDefault: string
+  // Settings -> Layout -> Galleries
+  cardGallery: string
+  galleryRatio: string
+  galleryRatioHint: string
+  galleryCaptions: string
+  galleryCaptionsHint: string
   captionPlaceholder: string
   // post settings panel
   slug: string

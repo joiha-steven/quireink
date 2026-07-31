@@ -43,6 +43,7 @@ import { McpFields } from './McpFields'
 import { LayoutMenuFields } from './LayoutMenuFields'
 import { FrontFields } from './FrontFields'
 import { FooterField } from './FooterField'
+import { GalleryFields } from './GalleryFields'
 import { ActivityLogField, ListingFeatureFields, PostFeatureFields } from './FeatureFields'
 import { CommentFields } from './CommentFields'
 import { CommentIntegrations } from './CommentIntegrations'
@@ -182,6 +183,9 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
                 />
               </Card>
             )}
+            <Card title={t.cardGallery}>
+              <GalleryFields gallery={s.gallery} onChange={(gallery) => update({ gallery })} />
+            </Card>
             <Card title={t.footerContent}>
               <FooterField value={s.footer} onChange={(footer) => update({ footer })} />
             </Card>

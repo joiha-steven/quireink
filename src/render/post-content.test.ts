@@ -175,6 +175,16 @@ describe('markdown render — structure', () => {
     const html = await render('![a](a.jpg#grid-7x5)\n\n![b](b.jpg#grid-7x5)')
     expect(html.match(/<figure class="img-grid">/g)).toHaveLength(2)
   })
+
+  // Silence is a THIRD value, not the same as "as shot". Once a site default exists, a
+  // gallery needs to be able to say "keep the proportions" out loud and disagree with it.
+  it('tells "no opinion" apart from an explicit as-shot and captions-on', async () => {
+    const quiet = await render('![a](a.jpg#grid)\n\n![b](b.jpg#grid)')
+    expect(quiet.match(/<figure class="img-grid">/g)).toHaveLength(2)
+
+    const loud = await render('![a](a.jpg#grid-asis-cap)\n\n![b](b.jpg#grid-asis-cap)')
+    expect(loud.match(/<figure class="img-grid g-asis g-cap">/g)).toHaveLength(2)
+  })
 })
 
 describe('markdown render — ToC anchors stay in sync', () => {
