@@ -117,11 +117,22 @@ describe('the front page', () => {
 })
 
 describe('the two kinds', () => {
-  it('gives the text kind a longer standfirst on a card, and the image kind none', async () => {
-    const image = await front({ kind: 'image', lead: { on: false, source: 'latest', slug: '', secondary: 0 } })
-    const text = await front({ kind: 'text', lead: { on: false, source: 'latest', slug: '', secondary: 0 } })
-    expect(image).not.toContain('The second thing.')
-    expect(text).toContain('The second thing.')
+  // Both kinds print a standfirst on a card; the text kind prints roughly twice as much,
+  // because with no picture in the row the words are the only thing filling it. The image
+  // kind printed NONE until the owner looked at a real page and said it read as mostly white.
+  it('gives the text kind about twice the standfirst of the image kind', async () => {
+    const deck = (html: string) => {
+      const m = html.match(/class="fc-deck reading-font">([^<]*)</)
+      return (m?.[1] ?? '').length
+    }
+    const long = 'A standfirst long enough that the two kinds have to clamp it at different '
+      + 'lengths, which is the whole point of the setting and cannot be seen on a short one.'
+    await savePost({ title: 'Clamped', slug: 'clamped', status: 'published', date: '2020-02-01T00:00:00.000Z',
+      content: 'Body.', excerpt: long })
+    const image = deck(await front({ kind: 'image', lead: { on: false, source: 'latest', slug: '', secondary: 0 } }))
+    const text = deck(await front({ kind: 'text', lead: { on: false, source: 'latest', slug: '', secondary: 0 } }))
+    expect(image).toBeGreaterThan(0)
+    expect(text).toBeGreaterThan(image)
   })
 
   it('marks the kind on the container, since the sheet reads it', async () => {
@@ -136,5 +147,26 @@ describe('what an item says', () => {
     expect(on).toContain('<time')
     const off = await front({ showDate: false, showReadingTime: false })
     expect(off).not.toContain('fc-meta')
+  })
+})
+
+// Quire auto-extracts an excerpt from the first paragraph when the author leaves it empty,
+// so on a normal blog the standfirst IS the first line of the piece. Printing both puts the
+// same sentence on the front page twice, one under the other.
+describe('the lead opening', () => {
+  it('prints the body under the standfirst', async () => {
+    const html = await front({ lead: { on: true, source: 'pinned', slug: 'newest', secondary: 0 } })
+    expect(html).toContain('fc-intro')
+  })
+
+  it('does not repeat the standfirst when the body starts with it', async () => {
+    await savePost({
+      title: 'Doubled', slug: 'doubled', status: 'published', date: day(9),
+      excerpt: 'A sentence that opens the piece.',
+      content: 'A sentence that opens the piece. And then it carries on to a second one.',
+    }, 'doubled')
+    const html = await front({ lead: { on: true, source: 'pinned', slug: 'doubled', secondary: 0 } })
+    expect(html.split('A sentence that opens the piece.').length - 1).toBe(1)
+    expect(html).toContain('And then it carries on')
   })
 })

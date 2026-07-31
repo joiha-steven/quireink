@@ -40,6 +40,7 @@ html[data-ide-chrome=on] header.site .tagline::before,
 html[data-ide-chrome=on] aside.series .series-head::before,
 html[data-ide-chrome=on] .related h2::before,
 html[data-ide-chrome=on] .subscribe-card h2::before,
+html[data-ide-chrome=on] .front-label::before,
 html[data-ide-chrome=on] #comments h2::before,
 html[data-ide-chrome=on] .empty::before,
 /* The one thing in the panel that DOES something rather than states something, so it takes
