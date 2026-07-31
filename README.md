@@ -2,8 +2,8 @@
 
 # quire**INK** &nbsp;`2.0.0`
 
-**A self-hosted blog platform an AI agent can run for you.**
-One process, two SQLite files, no cloud account anywhere in the path.
+**A blog you host yourself, and an AI agent can run for you.**
+One process. Two SQLite files. No cloud account anywhere in the path.
 
 <br/>
 
@@ -17,13 +17,13 @@ One process, two SQLite files, no cloud account anywhere in the path.
 
 **English** · [Tiếng Việt](./README.vi.md)
 
-[**Live demo**](https://demo.quireink.com) · [**Install**](#install) · [**The numbers**](#fast-and-here-are-the-numbers) · [**Let an agent run it**](#let-an-ai-agent-write-and-publish-mcp) · [**How it works**](./docs/spec/02-structure.md) · [**Changelog**](./CHANGELOG.md) · [**License**](#license)
+[**Try it**](https://demo.quireink.com) · [**Install**](#install) · [**Speed**](#speed) · [**Let an agent write**](#let-an-ai-agent-write-for-you-mcp) · [**Changelog**](./CHANGELOG.md) · [**License**](#license)
 
 <br/>
 
 <img src="docs/demo.jpg" alt="Two screenshots side by side: a composed front page with a lead story and section rows, and the same site's article page with a contents rail and a meta column" width="960">
 
-<sub>**[demo.quireink.com](https://demo.quireink.com)** runs this build, reset monthly, with no sign-in and nothing to fill in. A bar along the bottom switches between the front page, the list, an article, book mode, both palettes and the admin. That bar is not part of the product: the demo runs the code below unmodified, so it is always the latest build and there is no preview branch to keep in step.</sub>
+<sub>**[demo.quireink.com](https://demo.quireink.com)** is the real thing. No sign-up, nothing to fill in. Use the bar at the bottom to jump between the front page, the list, an article, book mode, light and dark, and the admin. That bar is the only thing added, and it lives outside the code, so the demo is always the latest build.</sub>
 
 </div>
 
@@ -31,107 +31,112 @@ One process, two SQLite files, no cloud account anywhere in the path.
 
 ## What it is
 
-A blog for **one person who wants to write and to own the whole stack**. No SaaS, no vendor
-lock-in, and since 2.0 no infrastructure either: `bun src/index.ts` behind a reverse proxy,
-and the install is done. No database server, no migration step, no container runtime.
+You write, it publishes, and all of it sits on a server you control.
 
-Three things make it different from the obvious alternatives:
+There is no database to install and nothing to deploy. Point a domain at one command and you have a blog:
 
-- **The reading page is the product.** Typography, palettes, type scale, layout and fonts are
-  all settings. There are no hardcoded sizes or colours in the reader's stylesheet, and a
-  build check fails if one appears.
-- **A reader downloads 4.4 KB of JavaScript and zero third-party requests.** The public site
-  is server-rendered HTML with a few hand-written islands. React never reaches a reader.
-- **An AI agent can run it.** A remote MCP endpoint lets an assistant draft, tag, schedule and
-  publish to the live site through the same rules the admin uses.
+```bash
+bun src/index.ts
+```
 
-**Source-available**, under [PolyForm Noncommercial](./LICENSE): free for personal, hobby,
-educational and nonprofit use. Read it, change it, run it, fork it. Commercial use needs a
-separate licence, and it is usually cheap or free, so ask.
+Three things shaped it.
 
-> **2.0.0 is stable**, released 2026-07-30, running the demo above and the author's own blog
-> at [manhhung.me](https://manhhung.me). It followed a full
-> audit of design, performance and correctness done by measuring the running site rather than
-> reading the source. Everything that changed is in the [changelog](./CHANGELOG.md).
+**The reading page is the product.** Type, colour, size, spacing, layout: all of it is a setting you change in the admin. Not one size or colour is written into the reader's stylesheet, and the build fails if someone puts one there.
 
-| Area | What you get |
+**Readers download 4.4 KB of JavaScript, and nothing from anyone else.** Pages arrive as finished HTML. A few small scripts handle search, the theme switch and book mode. React stays in the admin and never reaches a reader.
+
+**An agent can do the writing.** Connect Claude or any MCP client and it can draft, tag, schedule and publish for you, through exactly the rules the admin follows.
+
+You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE). Free for yourself, your hobby, your school or your charity. Using it in a business needs a separate licence, which is usually cheap or free, so just ask.
+
+> **2.0.0 came out on 2026-07-30** and runs the demo above plus the author's own blog at
+> [manhhung.me](https://manhhung.me). Before it shipped, the whole thing was audited by
+> measuring the running site rather than reading the source. The
+> [changelog](./CHANGELOG.md) has everything that changed.
+
+---
+
+## What you get
+
+| | |
 |:---|:---|
-| 🖋️&nbsp;**Editor** | TipTap 3 + Markdown · sticky one-row toolbar · drag-drop / paste image upload (JPG · PNG · WebP · AVIF · GIF · SVG) with responsive `sharp` variants · captioned figures (column / large / full-bleed / gallery) · tables · video · Spotify and Apple Music embeds · footnotes · callouts · 3-version time machine · offline autosave · draft preview · scheduled publishing |
-| 🏠&nbsp;**Homepage** | the post list, a page of your own, or a **composed front page**: a lead story, featured picks, per-category rows and most-viewed, tuned for a site with pictures or one without ([`docs/homepage.md`](./docs/homepage.md)) |
-| 🎨&nbsp;**Look** | 6 light+dark palettes · one tunable type system (per-role size, leading, tracking) · four reading fonts, or upload your own per weight |
-| 🔍&nbsp;**Reading** | instant search over SQLite FTS · a sidebar rail of categories and tags, or a post's contents · related posts · reading time · progress bar · **book mode**, an opt-in two-column reader on paper with a drop cap |
-| 📈&nbsp;**Built-in** | cookieless analytics with engagement, audience and traffic-source drill-downs · activity log · soft-delete trash · in-app help |
-| 🔎&nbsp;**SEO** | sitemap · RSS · `robots.txt` · `llms.txt` · dynamic OG images · redirects, with an auto-301 on slug rename · per-post SEO fields, all toggleable |
-| 📬&nbsp;**Newsletter** | own-SMTP sign-up with double opt-in · broadcast on publish · comment-reply notifications. Nodemailer, no lock-in |
-| 📚&nbsp;**Series** | ordered multi-part posts, a series box on each part, and a series manager |
-| 💾&nbsp;**Backups** | one-click download of the whole install, plus an off-box cron script ([`docs/backups.md`](./docs/backups.md)) |
-| 📥&nbsp;**Import** | upload a WordPress WXR export and your posts and pages land as Markdown |
-| 🌍&nbsp;**i18n** | admin and site in `en · vi · de · ja · zh · ko` |
-| 🔐&nbsp;**Auth** | your own username and password (argon2id) · **TOTP required** · 10 single-use recovery codes · host-scoped session cookie · no third-party identity provider in the login path |
-| 📱&nbsp;**PWA** | installable, launches standalone |
+| 🖋️&nbsp;**Writing** | A real editor, TipTap 3 over Markdown, with a toolbar that stays put while you scroll. Drop an image in and it gets resized for every screen. Tables, video, footnotes, callouts, Spotify and Apple Music. It saves as you type, keeps your last three versions, and can hold a post until Tuesday morning |
+| 🏠&nbsp;**Your front page** | Show the post list, or any page you wrote, or build a front page: a lead story, a few picks, a row per category, most read. Works for a site full of photos and for one that is only words. [How it works](./docs/homepage.md) |
+| 🎨&nbsp;**How it looks** | Six palettes, each with a light and a dark version. Four reading fonts, or upload your own. Every text size on the page comes from a role you can tune, so one change moves the whole page instead of one heading |
+| 🔍&nbsp;**Reading** | Search that answers as you type. A rail down the side with your categories and tags, or the contents of the post you are in. Related posts, reading time, a progress bar. And **book mode**: two columns on paper, with a drop cap |
+| 📈&nbsp;**Numbers** | Analytics without cookies. Who read what, how far down they got, where they came from. Plus an activity log, a trash you can undo, and a help page that explains the rest |
+| 🔎&nbsp;**Search engines** | Sitemap, RSS, `robots.txt`, `llms.txt`, and an OG image drawn per post. Rename a slug and the old URL keeps working on its own |
+| 📬&nbsp;**Newsletter** | Sign-ups with a confirmation email, an issue sent when you publish, and a note to anyone whose comment got a reply. Your own SMTP, so nothing to sign up for |
+| 📚&nbsp;**Series** | Write in parts, number them, and every part shows the others |
+| 💾&nbsp;**Backups** | One button downloads the whole install. There is also a cron script that ships it off the box. [Details](./docs/backups.md) |
+| 📥&nbsp;**Leaving WordPress** | Upload the XML export. Posts and pages come out as Markdown |
+| 🌍&nbsp;**Languages** | English, Vietnamese, German, Japanese, Chinese and Korean, in the admin and on the site |
+| 🔐&nbsp;**Signing in** | Your own username and password, hashed with argon2id. An authenticator code every time, and ten recovery codes for the day you lose the phone. No Google, no anyone, in the login path |
+| 📱&nbsp;**On a phone** | Install it to the home screen and it opens like an app |
 
-**Who it is for:** one person, one server, one blog they intend to keep.
-**Not for:** multi-author teams needing roles and editorial workflow. Quire Ink is single-owner by design.
+**Made for** one person, one server, one blog they mean to keep.
+**Not made for** a team that needs roles, approvals and an editorial queue. It has one owner on purpose.
 
 <div align="center">
 
 <img src="docs/demo-reading.jpg" alt="Book mode, a fullscreen two-column reader on paper with a drop cap and a page count, beside an article in the dark theme" width="960">
 
-<sub>Book mode and the dark theme. Both are the reading typography itself, not a filter laid over it. The bundled fonts are subset for latin, latin-ext and vietnamese, so the specimen on the left is set in the reading face rather than falling back.</sub>
+<sub>Book mode and the dark theme. Neither is a filter dropped over the page. Both are the reading typography itself. The fonts ship with Vietnamese and Central European accents included, so the specimen on the left is set properly instead of falling back to whatever the system has.</sub>
 
 </div>
 
 ---
 
-## Fast, and here are the numbers
+## Speed
 
-Recorded from the network on a cold load of the live site, which is what a first-time reader
-on a phone actually pays:
+These are off the network, first visit, nothing cached. It is what a stranger on a phone actually waits for.
 
 | | Home | A post | |
 |:---|---:|---:|:---|
 | **Requests** | 11 | 12 | |
-| **Total&nbsp;transferred** | **139 KB** | **140 KB** | of which 86 KB is the reading fonts |
-| **JavaScript** | **4.4 KB** | **9.7 KB** | hand-written islands, no framework |
-| **CSS** | 7.6 KB | 7.6 KB | one hashed, minified, immutable sheet |
-| **Third-party&nbsp;requests** | **0** | **0** | no CDN script, no font host, no tracker |
-| **Repeat&nbsp;visit** | ~23 KB | ~23 KB | everything but the HTML is cached for a year |
+| **Total&nbsp;transferred** | **139 KB** | **140 KB** | 86 KB of that is the fonts |
+| **JavaScript** | **4.4 KB** | **9.7 KB** | written by hand, no framework |
+| **CSS** | 7.6 KB | 7.6 KB | one file, minified, cached forever |
+| **Third-party&nbsp;requests** | **0** | **0** | no CDN, no font host, no tracker |
+| **Coming back** | ~23 KB | ~23 KB | only the HTML is fetched again |
 
-- **Every bundle has a byte budget the build enforces.** A feature that overruns it fails the
-  build instead of quietly costing every reader forever.
-- **The page cache is one `Map`, cleared entirely on any write**, so the invalidation rule is
-  one line and cannot rot. A miss is a sub-millisecond SQLite read plus a render.
-- **Markdown and highlighting are content-addressed in SQLite:** the input is the key, so
-  there is nothing to invalidate. Long-post rendering went from 383 ms to 1 ms.
-- **Fonts are self-hosted and subset per language**, preloaded only for the language being
-  served. Pinning the `opsz` axis took the preload set from 97.6 KB to 46.2 KB.
-- **Scroll-driven CSS** does the reveal and the progress bar: no script, off the main thread,
-  and it degrades to "visible" rather than blank.
+It stays this way because of a few decisions that are hard to walk back.
+
+**Every bundle has a size limit the build enforces.** Go over it and the build fails. A feature cannot quietly start costing every reader a little more forever.
+
+**The page cache is one `Map`, and any write empties all of it.** That is the entire rule, so there is nothing to get subtly wrong. A miss costs a SQLite read and a render, well under a millisecond.
+
+**Rendered Markdown is stored under a hash of its input.** Nothing ever needs invalidating. A long post went from 383 ms to 1 ms.
+
+**Fonts are yours, cut down per language, and only the ones this page needs are preloaded.** Pinning one variable-font axis took that set from 97.6 KB to 46.2 KB.
+
+**The fade-in and the progress bar are pure CSS.** No script, off the main thread, and if the browser is old it just shows the text.
 
 <div align="center">
 
 <img src="docs/demo-mobile.jpg" alt="Three phone screens: the post list, an article, and the instant search overlay showing seven matching titles" width="960">
 
-<sub>None of that is for a benchmark. It is for the reader on a four-year-old phone who wanted four hundred words.</sub>
+<sub>None of this is for a benchmark. It is for someone on a four-year-old phone who wanted to read four hundred words.</sub>
 
 </div>
 
 ---
 
-## Why this, and not the obvious alternatives
+## Why not something else
 
-| | |
-|:---|:---|
-| **vs.&nbsp;a&nbsp;hosted&nbsp;platform** | Your writing lives in two SQLite files on your disk. No account, no plan, no export button to hope still works |
-| **vs.&nbsp;WordPress** | No PHP, no MySQL, no plugin surface to patch. One process and one binary, and the reader path ships 4 KB of JavaScript |
-| **vs.&nbsp;a&nbsp;static&nbsp;site&nbsp;generator** | You get a real admin: write, upload, schedule and publish from a browser or a phone, with search, comments, a newsletter and analytics built in. No rebuild, no deploy, no git push to fix a typo |
-| **vs.&nbsp;rolling&nbsp;your&nbsp;own** | The unglamorous parts are done and tested: TOTP auth, sessions, image variants, feeds, OG images, redirects, soft-delete, revisions, backups, WordPress import, six languages |
+**Instead of a hosted platform.** Your writing is two SQLite files on your own disk. No account, no plan, no export button you have to hope still works in five years.
+
+**Instead of WordPress.** No PHP, no MySQL, no plugins to keep patched. One process, and readers get 4 KB of JavaScript.
+
+**Instead of a static site generator.** You get a real admin. Write, upload a photo, schedule and publish from a laptop or a phone, with search, comments, a newsletter and stats already there. No rebuild, no deploy, no git push to fix a typo.
+
+**Instead of writing your own.** The boring half is done and tested: sign-in with TOTP, sessions, image resizing, feeds, OG images, redirects, an undo for deletes, revisions, backups, a WordPress importer, six languages.
 
 <div align="center">
 
 <img src="docs/demo-admin.jpg" alt="The Quire Ink admin: the post editor with its attributes panel, and the appearance settings showing six colour palettes and four reading fonts" width="960">
 
-<sub>Palettes, reading fonts, type scale, layout, menu. Settings, not code.</sub>
+<sub>Palettes, fonts, sizes, layout, menu. All of it is a setting, none of it is code.</sub>
 
 </div>
 
@@ -139,34 +144,30 @@ on a phone actually pays:
 
 ## Install
 
-You need [Bun](https://bun.sh) 1.3 or newer and a machine you can point a domain at. That is
-the whole list.
+You need [Bun](https://bun.sh) 1.3 or newer and a machine you can point a domain at. That is the list.
 
 ```bash
 git clone https://github.com/joiha-steven/quireink.git && cd quireink
 bun install
-bun run build:assets && bun run build:admin     # the islands, then the admin SPA
+bun run build:assets && bun run build:admin     # the islands, then the admin
 DATA_DIR=./data SITE_URL=https://example.com bun src/index.ts
 ```
 
-Point a reverse proxy with TLS at the port (default `3000`), then create your account:
+Put a reverse proxy with TLS in front of the port, `3000` by default. Then make your account:
 
 ```bash
-bun run user create --username <name> --email <address>   # prints the TOTP secret + recovery codes, once
+bun run user create --username <name> --email <address>   # shows the TOTP secret and recovery codes, once
 ```
 
-That is the whole install. The schema is applied at boot inside a transaction, so there is no
-migration step. Full walkthrough (systemd, nginx, cache headers, backups, upgrades) in
-**[`docs/self-host.md`](./docs/self-host.md)**.
+That is it. The database sets itself up on first boot, so there is no migration step to remember. If you want the full version with systemd, nginx, cache headers, backups and upgrades, it is in **[`docs/self-host.md`](./docs/self-host.md)**.
 
 > [!NOTE]
-> `bun run build` also produces a single compiled executable at `dist/quireink`, but
-> `bun build --compile` does not bundle `sharp`'s native module, so that binary throws the
-> first time it resizes an image. Until that is solved, **run from source**, which is what the
-> live site does. Same command either way.
+> `bun run build` also spits out a single binary at `dist/quireink`, but `bun build --compile`
+> leaves out `sharp`'s native module, so that binary dies the first time it touches an image.
+> Until that is fixed, **run from source**. The live site does, and the command is the same.
 
 <details>
-<summary><b>🐳 &nbsp;Prefer Docker?</b> &nbsp;Same install, two commands</summary>
+<summary><b>🐳 &nbsp;Would rather use Docker?</b> &nbsp;Two commands</summary>
 
 <br/>
 
@@ -176,42 +177,33 @@ docker compose up -d --build
 docker compose exec quire bun run user create --username you --email you@example.com
 ```
 
-One service, two named volumes, no sidecar. The port is published on `127.0.0.1` so a reverse
-proxy still terminates TLS. Notes on volumes, ownership and upgrades:
-[`docs/self-host.md`](./docs/self-host.md#9-docker-instead-of-systemd).
+One service, two volumes, no sidecar. The port only listens on `127.0.0.1`, so a reverse proxy still does TLS. Notes on volumes, ownership and upgrades are in [`docs/self-host.md`](./docs/self-host.md#9-docker-instead-of-systemd).
 
 </details>
 
 <details>
-<summary><b>🤖 &nbsp;Hand the install to an AI agent</b></summary>
+<summary><b>🤖 &nbsp;Or let an agent install it</b></summary>
 
 <br/>
 
-Give an agent SSH to your server and ask it to deploy: clone the repo, build, write the
-systemd unit and the nginx vhost, create your account, return the live URL. There is no OAuth
-client to register and no managed service to sign up for, so it can genuinely do the whole
-thing end to end.
+Give an agent SSH to a fresh server and ask it to set the whole thing up: clone, build, write the systemd unit and the nginx vhost, create your account, hand you back the URL. There is no OAuth client to register and no service to sign up for, so it really can finish the job on its own.
 
 </details>
 
 > [!TIP]
-> Uploads have no size cap on a self-host: the browser posts straight to the server. Put a CDN
-> in front for edge caching and TLS, and let it honour the `cache-control` the app already
-> sends rather than forcing a TTL.
+> Uploads have no size limit when you host it yourself, because the browser posts straight to
+> your server. Put a CDN in front for TLS and edge caching, and let it obey the
+> `cache-control` the app already sends instead of forcing its own.
 
 ---
 
-## Let an AI agent write and publish (MCP)
+## Let an AI agent write for you (MCP)
 
-Quire Ink ships a remote **MCP** server, so an agent can draft, edit, tag and publish straight to
-the live site. No git, no deploy: content goes through the same data layer, and the same slug,
-revision and soft-delete rules, that the admin uses.
+Quire Ink has an **MCP** server built in, so an assistant can draft, edit, tag and publish straight to your live site. No git, no deploy. It goes through the same code the admin does, with the same rules about slugs, revisions and the trash.
 
-1. **Turn it on:** *Admin → Settings → Connections → MCP*, and generate a named token. It is shown
-   once, hashed at rest, and expires in 180 days.
-2. **Connect your agent** to `https://<your-domain>/api/mcp` with `Authorization: Bearer <token>`.
-   OAuth connectors work too.
-3. **Prompt it:**
+1. **Turn it on.** *Admin → Settings → Connections → MCP*, then create a token. You see it once, it is hashed after that, and it dies in 180 days.
+2. **Point your agent** at `https://<your-domain>/api/mcp` with `Authorization: Bearer <token>`. OAuth connectors work too.
+3. **Ask for a post.**
 
 ```text
 Using the Quire Ink MCP server, write a 600-word post titled
@@ -219,27 +211,25 @@ Using the Quire Ink MCP server, write a 600-word post titled
 "ai" and "writing", set a friendly excerpt, and publish it.
 ```
 
-Sensitive settings are blocked over MCP and you stay the sole authority: revoke a token in the
-admin and it is gone.
+The sensitive settings are off limits over MCP, and you stay in charge. Revoke the token in the admin and it stops working immediately.
 
 ---
 
 ## Environment variables
 
-Everything else is configured in the admin, not in the environment.
+These are the only things that live outside the admin.
 
-| Variable | Required | What it is |
+| Variable | Needed | What it does |
 |---|:---:|---|
-| `DATA_DIR` | ✅ | Directory holding `quire.db` + `analytics.db`. Defaults to `./data` |
-| `SITE_URL` | ✅ | Canonical public URL, used by feeds, OG images and email. Empty means "derive per request", which is wrong behind a proxy |
-| `STORAGE_LOCAL_DIR` | ◻️ | Where uploads live, served at `/uploads`. Defaults to `./uploads` |
+| `DATA_DIR` | ✅ | Where `quire.db` and `analytics.db` go. Defaults to `./data` |
+| `SITE_URL` | ✅ | Your public address, used in feeds, OG images and email. Leave it empty and the app guesses per request, which goes wrong behind a proxy |
+| `STORAGE_LOCAL_DIR` | ◻️ | Where uploads go, served at `/uploads`. Defaults to `./uploads` |
 | `PORT` | ◻️ | Defaults to `3000` |
-| `CRON_SECRET` | ◻️ | Protects `/api/cron` (scheduled publishing, variant sweep) |
-| `MCP_OAUTH_SECRET` | ◻️ | Signs MCP OAuth codes. Falls back to a secret the server generates for itself, which is the recommended setting |
-| `ANALYTICS_TZ` | ◻️ | IANA zone for the analytics day boundary. Defaults to UTC |
+| `CRON_SECRET` | ◻️ | Guards `/api/cron`, which publishes scheduled posts and tidies image variants |
+| `MCP_OAUTH_SECRET` | ◻️ | Signs MCP OAuth codes. Leave it out and the server makes its own, which is the recommended way |
+| `ANALYTICS_TZ` | ◻️ | The timezone your analytics day starts in. Defaults to UTC |
 
-SMTP, Turnstile and CDN credentials are entered in **Settings → Connections** and stored
-server-side. Your content lives in `DATA_DIR` and the uploads directory, never in git.
+SMTP, Turnstile and CDN credentials go in **Settings → Connections** and stay on the server. Your posts live in `DATA_DIR` and your uploads folder, never in git.
 
 ---
 
@@ -252,39 +242,31 @@ bun run dev                         # http://localhost:3000
 bun run user create --username me --email me@example.com   # then sign in at /login
 ```
 
-`bun run check:all` must pass before any change is done: typecheck, the static guards, and the
-test suite. Offline, no credentials, no services. Start at
-[`CONTRIBUTING.md`](./CONTRIBUTING.md), which routes to the house rules in
-[`CLAUDE.md`](./CLAUDE.md).
+Nothing is finished until `bun run check:all` passes. It typechecks, runs the static guards and runs the tests, all offline, with no credentials and no services. Start at [`CONTRIBUTING.md`](./CONTRIBUTING.md), which points to the house rules in [`CLAUDE.md`](./CLAUDE.md).
 
-| Path | |
+| Where | What is in it |
 |---|---|
-| `src/` | The implementation: Bun + Hono + SQLite |
-| `docs/` | How it works and why. [`docs/spec/`](./docs/spec/README.md) is the build plan, [`docs/decisions/`](./docs/decisions/README.md) the decision record, including the ones that were reversed |
+| `src/` | The whole thing: Bun, Hono, SQLite. [How the pieces fit](./docs/spec/02-structure.md) |
+| `docs/` | How it works and why. [`docs/spec/`](./docs/spec/README.md) is the plan, [`docs/decisions/`](./docs/decisions/README.md) is every decision, including the ones that were reversed |
 | `state/` | Where things stand: roadmap, tasks, worklog, audits |
-| `golden/` | The rendering contract: fixtures plus 1.x's output for each. One differing byte fails the build |
-| `scripts/checks/` | The guards `check:all` runs. A write route registered outside the owner-gated group fails the build, and so does a hardcoded font size in the reader's stylesheet |
-| `v1/` | Quire 1.5.0, the Next.js + PostgreSQL implementation this replaced. Retired, unsupported, kept as a readable record |
+| `golden/` | The rendering contract. One byte of different output fails the build |
+| `scripts/checks/` | The guards. Register a write route outside the owner-only group and the build stops, same as a hardcoded font size in the reader's stylesheet |
+| `v1/` | Quire 1.5.0, the Next.js and PostgreSQL version this replaced. Retired and unsupported, kept so you can read what it used to do |
 
-Roadmap: [`state/ROADMAP.md`](./state/ROADMAP.md).
+What is planned is in [`state/ROADMAP.md`](./state/ROADMAP.md).
 
 ---
 
 ## License
 
-Two separate layers, and they are not the same:
+Two different things, and they are not covered by the same terms.
 
-- **Code, this repository:** [PolyForm Noncommercial 1.0.0](./LICENSE). Source-available, not
-  open source. Free for any noncommercial purpose, meant broadly: personal blogs, hobby
-  projects, study and research, plus charities, schools, public research bodies and
-  government. You may read, modify, self-host, fork and redistribute it. Keep the licence text
-  and the `Required Notice:` line with any copy you pass on.
-- **Commercial use needs a separate licence.** Running Quire Ink for a business, or selling it or
-  hosting of it, is not covered. Open an issue or contact the owner through
-  [their GitHub profile](https://github.com/joiha-steven).
-- **Content: © all rights reserved.** The writing published *with* Quire Ink belongs to its
-  author, is not covered by the code licence, and does not live in this repository.
+**The code here** is [PolyForm Noncommercial 1.0.0](./LICENSE). Source-available, not open source. Free for anything noncommercial, meant generously: your own blog, a hobby project, study, research, and also charities, schools, public research bodies and government. Read it, change it, host it, fork it, pass it on. Keep the licence text and the `Required Notice:` line with any copy you give someone.
 
-> **Everything published up to and including v2.0.0 was MIT, and stays MIT forever.** A licence
-> change is not retroactive: any copy taken before this one keeps the rights it was given. See
+**Using it commercially needs a separate licence.** Running Quire Ink for a business, or selling it, or selling hosting for it, is not covered. Open an issue or reach the owner through [their GitHub profile](https://github.com/joiha-steven).
+
+**What you write stays yours.** Your posts and images are not covered by the code licence and are not in this repository.
+
+> **Everything up to and including v2.0.0 was MIT, and stays MIT forever.** A licence change
+> does not reach backwards: a copy taken before this one keeps the rights it came with. See
 > [ADR 0015](./docs/decisions/0015-relicense-polyform-noncommercial.md).
