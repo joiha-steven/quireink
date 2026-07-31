@@ -12,8 +12,8 @@
 //      An ADR nobody can find is worse than no ADR.
 //   3. CLAUDE.md stays under its cap. It loads every turn, so it is a router, not a
 //      library; it was 275 lines of restated rules before this check existed.
-//   4. Nothing in docs/ carries a date in its filename. A dated file is a snapshot and
-//      belongs in state/reports/ or state/audits/, which are write-only.
+//   4. Nothing in docs/ carries a date in its filename. A dated file is a snapshot, and
+//      snapshots left this repository with `state/` (ADR 0017).
 //   5. No markdown file over 700 lines, CHANGELOG excepted (append-only by design).
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
@@ -22,18 +22,23 @@ const ROOT = process.cwd()
 const CLAUDE_MD_MAX = 170
 const FILE_MAX = 700
 
-const ROOTS = ['.', 'docs', 'state', 'scripts', '.github', 'v1']
+const ROOTS = ['.', 'docs', 'scripts', '.github', 'v1']
 
 // `golden/corpus/` holds markdown FIXTURES, not documents. Their links point at
 // deliberately fake images and dangerous schemes, because that is exactly what they test.
 const skip = (p: string) =>
   /(^|\/)(node_modules|\.next|\.git|dist)\//.test(p) || p.startsWith('golden/corpus/')
 
-// `state/audits/` and `state/reports/` are WRITE-ONLY: a snapshot records what was true on
-// its date and is never retro-edited, so its links are historical and are allowed to rot.
-// Checking them would force exactly the retro-editing the rule forbids. `scripts/port/`
-// holds the porting ledgers, which are the same kind of thing.
-const frozen = (p: string) => /^(state\/(audits|reports)|scripts\/port)\//.test(p)
+// FROZEN documents: a record of what was true on a date, never retro-edited, so their
+// links are historical and are allowed to rot. Checking them would force exactly the
+// retro-editing the rule forbids.
+//   `scripts/port/` — the porting ledgers.
+//   `v1/`           — the retired Next tree (ADR 0012). It takes no patches at all, security
+//                     included, so a link inside it can never be repaired even in principle.
+//                     It was only passing before because it links into `state/`, which was
+//                     still here; ADR 0017 moved that out and six links went red at once.
+// The audits and reports this also covered left with `state/` (ADR 0017).
+const frozen = (p: string) => /^(scripts\/port|v1)\//.test(p)
 
 const walk = (dir: string): string[] =>
   readdirSync(dir).flatMap((name) => {
@@ -104,14 +109,14 @@ for (const file of files.filter((p) => p.endsWith('CLAUDE.md'))) {
 for (const file of files.filter((p) => p.startsWith('docs/'))) {
   const name = file.split('/').pop() ?? ''
   if (/\d{4}-\d{2}(-\d{2})?/.test(name)) {
-    violations.push(`${file}: dated filename in docs/. Snapshots live in state/reports/ or state/audits/`)
+    violations.push(`${file}: dated filename in docs/. docs/ holds current truth; a snapshot is not a document`)
   }
 }
 
 // 5. Size cap, so a doc gets split before it becomes unreadable. Append-only logs are
 // exempt: they are read newest-first and never front to back, so the cap would buy nothing
-// and the split would only move the problem. `state/worklog/` holds the rolled-out entries.
-const appendOnly = (p: string) => p.endsWith('CHANGELOG.md') || p.startsWith('state/worklog/')
+// and the split would only move the problem.
+const appendOnly = (p: string) => p.endsWith('CHANGELOG.md')
 for (const file of files) {
   if (appendOnly(file)) continue
   const n = lineCount(readFileSync(file, 'utf8'))

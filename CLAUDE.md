@@ -33,16 +33,16 @@ Capped at 170 lines and held there by `check:docs`, since it loads every turn.
 | Running it on your own box | [`docs/self-host.md`](./docs/self-host.md) |
 | Admin visual contract | [`docs/admin-design.md`](./docs/admin-design.md) |
 | **Why was this decided, does it still hold** | [`docs/decisions/`](./docs/decisions/README.md) |
-| Roadmap, tasks, open questions, worklog | [`state/`](./state/README.md) |
 | What was deliberately NOT carried over | [`docs/spec/07-parity.md`](./docs/spec/07-parity.md) |
 
-Anything dated is a snapshot and lives in `state/audits/` or `state/reports/`, which are
-**write-only**: never retro-edited, never swept for current context.
+**Roadmap, tasks, worklog and audits are NOT in this repository** (ADR 0017). They are one
+installation's intent and one installation's dated snapshots, so they live in the private
+`quireink-private`. Nothing dated belongs here at all: `check:docs` rejects a dated filename
+in `docs/`.
 
 ⚠ Several files in `docs/` were written against the frozen tree and carried over because
 their RULES are current and 2.0 follows them. Where one cites a file path, the path is
-`v1/src/…` unless it says otherwise. Refreshing those citations is tracked in
-[`state/TASKS.md`](./state/TASKS.md).
+`v1/src/…` unless it says otherwise.
 
 ## Working principles
 
@@ -117,7 +117,7 @@ opened the page.
 - **Comments explain why, not what.** The Next codebase was unusually good at this; keep the
   standard.
 - **Behaviour change → update its doc in the same commit.** Rules to `docs/`, decisions to
-  `docs/decisions/` (append-only), what happened to `state/WORKLOG.md`.
+  `docs/decisions/` (append-only), what happened to the worklog in `quireink-private`.
 - **Do NOT read CHANGELOG.md while coding.** It is append-only at release time and its
   history is never needed to fix or understand code.
 

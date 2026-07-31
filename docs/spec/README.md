@@ -20,5 +20,5 @@ its area.
 | [06-auth.md](06-auth.md) | Password + TOTP + recovery codes, sessions, the cookie. **Reference** |
 | [07-parity.md](07-parity.md) | What was deliberately NOT carried over, and the argument for each |
 
-The live list of what remains is [`../../state/TASKS.md`](../../state/TASKS.md). These
-documents are not a tracker.
+These documents are not a tracker. The live list of what remains is kept outside this
+repository ([ADR 0017](../decisions/0017-move-state-and-instance-config-private.md)).

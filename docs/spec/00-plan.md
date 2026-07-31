@@ -1,8 +1,8 @@
 # Quire 2.0: master plan
 
 Status: **DELIVERED.** M0 through M4 are done; Quire 2.0 has served `manhhung.me` since
-2026-07-28. `../../state/TASKS.md` is the live list — this document is the plan, not the
-tracker, and where the two disagree the tracker is right.
+2026-07-28. This document is the plan, not the tracker; the live list is kept outside this
+repository (ADR 0017) and where the two disagree the tracker is right.
 
 Supersedes the abandoned Go plan, whose specs were deleted on 2026-07-29 once everything
 worth keeping had been folded into this directory. The record of that reversal is
