@@ -136,10 +136,10 @@ describe('generateSecret', () => {
 describe('otpauthUri', () => {
   test('carries the issuer both in the label and as a parameter', () => {
     const uri = otpauthUri('ABCDEFGH', 'hung')
-    expect(uri.startsWith('otpauth://totp/Quire%3Ahung?')).toBe(true)
+    expect(uri.startsWith('otpauth://totp/QuireInk%3Ahung?')).toBe(true)
     const params = new URL(uri).searchParams
     expect(params.get('secret')).toBe('ABCDEFGH')
-    expect(params.get('issuer')).toBe('Quire')
+    expect(params.get('issuer')).toBe('QuireInk')
     expect(params.get('algorithm')).toBe('SHA1')
     expect(params.get('digits')).toBe('6')
     expect(params.get('period')).toBe('30')
@@ -147,6 +147,6 @@ describe('otpauthUri', () => {
 
   test('escapes a username that would break the label', () => {
     const uri = otpauthUri('ABCDEFGH', 'a:b c')
-    expect(uri).toContain('Quire%3Aa%3Ab%20c')
+    expect(uri).toContain('QuireInk%3Aa%3Ab%20c')
   })
 })

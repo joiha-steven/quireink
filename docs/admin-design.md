@@ -2,7 +2,7 @@
 
 ## Goal
 
-Bring the admin closer to Quire's reading-first identity without changing the public typography, content model, publishing rules, or editor data flow. The new direction treats admin as a quiet editorial workspace rather than a generic analytics dashboard.
+Bring the admin closer to Quire Ink's reading-first identity without changing the public typography, content model, publishing rules, or editor data flow. The new direction treats admin as a quiet editorial workspace rather than a generic analytics dashboard.
 
 ## Design principles
 
@@ -81,7 +81,7 @@ The second visual pass tightened the system after reviewing every admin surface 
 - H1–H5 are restored as always-visible editor controls because they are frequent writing actions.
 - The editor action header uses the same bordered surface and internal padding as the writing frame, rather than a flush edge-to-edge strip.
 - The formatting toolbar has its own sticky offset below the desktop action header; on mobile the action header scrolls away and formatting remains pinned.
-- Admin navigation uses the custom Quire line-icon language. The four public-header glyphs retain their established designs (search circle, three-circle palette, sun/moon, and two-line menu); a July 12 replacement was rejected and reverted.
+- Admin navigation uses the custom Quire Ink line-icon language. The four public-header glyphs retain their established designs (search circle, three-circle palette, sun/moon, and two-line menu); a July 12 replacement was rejected and reverted.
 - Tag labels render lowercase across the public rail, tag archives, post metadata, editor selections, and taxonomy management without mutating stored values.
 - The mobile reading-rail handle is a restrained 16 × 64px edge tab with a 10 × 18px chevron. Keep it narrow; do not restore the earlier 24 × 76px footprint without a mobile review.
 - The formatting toolbar offset is measured from the real action-header height, eliminating viewport- and translation-dependent gaps.

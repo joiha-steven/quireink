@@ -1,6 +1,6 @@
 // The backup panel: the copy the owner takes away, and the copies the server keeps.
 //
-// Quire 2.0 does not back up to Google Drive (parity exception 1), which deleted ~730 lines
+// Quire Ink 2.0 does not back up to Google Drive (parity exception 1), which deleted ~730 lines
 // of OAuth, token refresh and folder bookkeeping. For a while afterwards the schedule and
 // retention fields stayed here pointing at a destination that no longer existed, so this
 // panel offered a setting that did nothing. It now drives snapshots written to a directory

@@ -150,7 +150,7 @@ describe('what an item says', () => {
   })
 })
 
-// Quire auto-extracts an excerpt from the first paragraph when the author leaves it empty,
+// Quire Ink auto-extracts an excerpt from the first paragraph when the author leaves it empty,
 // so on a normal blog the standfirst IS the first line of the piece. Printing both puts the
 // same sentence on the front page twice, one under the other.
 describe('the lead opening', () => {

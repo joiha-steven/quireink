@@ -147,7 +147,7 @@ describe('parseWxr content', () => {
     expect(body).toContain('https://x.test/c.jpg')
   })
 
-  it('marks gallery images #grid so Quire regroups them into a grid', () => {
+  it('marks gallery images #grid so Quire Ink regroups them into a grid', () => {
     const gallery =
       '<figure class="wp-block-gallery has-nested-images columns-2">' +
       '<figure class="wp-block-image"><img src="https://x.test/a.jpg" alt="A"/></figure>' +

@@ -59,7 +59,7 @@ type Props = {
 function BuildLabel({ version, commit }: { version: string; commit: string | null }) {
   return (
     <span className="text-xs text-neutral-400">
-      quireblog v{version}
+      quire<span className="font-bold">INK</span> v{version}
       {commit && (
         <>
           {' · '}

@@ -267,7 +267,7 @@ const ko = {
   typewriterLabel: '타자기 피드백',
   typewriterDesc: '편집기의 블록 커서, 입력/삭제 반응과 작은 키 소리입니다. 끄면 일반 커서와 무음 편집으로 돌아갑니다.',
   overviewTitle: '개요',
-  licenseTitle: 'Quire Blog은 비상업적 용도로 무료입니다(PolyForm Noncommercial). 블로그 내용은 작성자 소유입니다(모든 권리 보유).',
+  licenseTitle: 'Quire Ink은 비상업적 용도로 무료입니다(PolyForm Noncommercial). 블로그 내용은 작성자 소유입니다(모든 권리 보유).',
   statPosts: '게시물',
   statPages: '페이지',
   statComments: '댓글',

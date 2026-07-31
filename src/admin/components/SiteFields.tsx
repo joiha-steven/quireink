@@ -41,7 +41,7 @@ export function SiteFields({ s, update }: Props) {
         </div>
       </Setting>
 
-      <Input label={t.siteTitle} value={s.title} onChange={(e) => update({ title: e.target.value })} placeholder="Quire Blog" />
+      <Input label={t.siteTitle} value={s.title} onChange={(e) => update({ title: e.target.value })} placeholder="Quire Ink" />
 
       <Textarea
         label={t.siteDescription}

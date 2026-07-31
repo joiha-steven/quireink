@@ -1,6 +1,6 @@
-# Contributing to Quire
+# Contributing to Quire Ink
 
-Quire is a single-owner, self-hosted blog engine: one Bun process, two SQLite files, and no
+Quire Ink is a single-owner, self-hosted blog engine: one Bun process, two SQLite files, and no
 services behind it. That shape is the point, and it is the first thing a change is measured
 against. Small, correct, well-scoped changes are the easiest to accept.
 
@@ -82,5 +82,5 @@ Bug reports and feature requests have their own templates under
 
 The **code** in this repository is [PolyForm Noncommercial](./LICENSE): read it, change it,
 self-host it, share it, for any noncommercial purpose. Commercial use needs a separate
-licence, which is usually cheap or free for the asking. The **writing** published with Quire
+licence, which is usually cheap or free for the asking. The **writing** published with Quire Ink
 belongs to its author, is not covered by the code licence, and is not in this repository.

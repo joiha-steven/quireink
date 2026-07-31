@@ -1,7 +1,7 @@
 // Line icons for the admin sidebar — one uniform style (viewBox 24, stroke 1.8,
 // round caps, currentColor) so the rail reads as a single set. Sized by the caller.
 
-// Quire line set: quiet 20px drawings with a lighter 1.55 stroke. Shapes favour
+// Quire Ink line set: quiet 20px drawings with a lighter 1.55 stroke. Shapes favour
 // open contours and asymmetric details so the set feels editorial, not like a
 // generic dashboard icon pack.
 const S = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.55, strokeLinecap: 'round', strokeLinejoin: 'round' } as const

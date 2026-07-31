@@ -76,7 +76,7 @@ export function TopProgress() {
       <div
         key={run}
         data-done={done ? 'true' : undefined}
-        className="quire-progress-bar h-full w-full bg-neutral-900 dark:bg-neutral-100"
+        className="quireink-progress-bar h-full w-full bg-neutral-900 dark:bg-neutral-100"
       />
     </div>
   )

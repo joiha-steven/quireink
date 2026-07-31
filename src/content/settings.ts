@@ -120,7 +120,7 @@ export function fontToCss(f: FontSettings): string {
 
 export const DEFAULT_SETTINGS: SiteSettings = {
   language: 'en',
-  title: 'Quire Blog',
+  title: 'Quire Ink',
   description: '',
   siteUrl: '',
   logoUrl: '',
@@ -143,7 +143,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   excerptLength: 50,
   ideChrome: false,
   customCss: '',
-  footer: '© {year} {title} · [powered by Quire Blog](https://github.com/joiha-steven/quire-blog)',
+  footer: '© {year} {title} · [powered by Quire Ink](https://github.com/joiha-steven/quireink)',
   menu: [],
   featured: [],
   mostViewedCount: 3,

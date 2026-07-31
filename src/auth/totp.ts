@@ -131,7 +131,7 @@ export function verifyCode(
  * what older apps read, the parameter is what current ones read, and apps that read both
  * show a duplicate name if they disagree.
  */
-export function otpauthUri(secret: string, username: string, issuer = 'Quire'): string {
+export function otpauthUri(secret: string, username: string, issuer = 'QuireInk'): string {
   const label = encodeURIComponent(`${issuer}:${username}`)
   const params = new URLSearchParams({
     secret,

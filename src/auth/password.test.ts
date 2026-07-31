@@ -29,7 +29,7 @@ describe('checkPassword', () => {
   })
 
   it('rejects a password containing the site or account name', () => {
-    expect(checkPassword('quireblog2026!!', ['Quire'])).toBe('contains-name')
+    expect(checkPassword('quireink2026!!', ['QuireInk'])).toBe('contains-name')
     expect(checkPassword('somethingHUNGxx', ['hung'])).toBe('contains-name')
   })
 

@@ -1,4 +1,4 @@
-# Quire, self-hosted with Docker. One service. There is nothing to link it to.
+# Quire Ink, self-hosted with Docker. One service. There is nothing to link it to.
 #
 #   cp .env.docker.example .env      # then edit the three values in it
 #   docker compose up -d --build
@@ -26,7 +26,7 @@ services:
       STORAGE_LOCAL_DIR: /var/lib/quire/uploads
       PORT: 3000
 
-    # Bound to loopback ON PURPOSE. Quire expects a reverse proxy in front of it for TLS
+    # Bound to loopback ON PURPOSE. Quire Ink expects a reverse proxy in front of it for TLS
     # and for the security headers in docs/self-host.md, and a plain `3000:3000` publishes
     # the app to the whole internet THROUGH a host firewall: Docker writes its own iptables
     # rules, so ufw showing "deny" is not the protection it looks like. Serving it directly

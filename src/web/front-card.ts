@@ -39,7 +39,7 @@ const LEAD_INTRO_CHARS: Record<'image' | 'text', number> = { image: 240, text: 4
 /**
  * The body with its opening skipped when the standfirst already said it.
  *
- * Not a nicety. Quire AUTO-EXTRACTS an excerpt from the first paragraph whenever the author
+ * Not a nicety. Quire Ink AUTO-EXTRACTS an excerpt from the first paragraph whenever the author
  * leaves the field empty, so on a normal blog the standfirst and the first line of the piece
  * are the same sentence — and printing both puts it on the front page twice, one under the
  * other. Photographed exactly that way the first time this shipped.

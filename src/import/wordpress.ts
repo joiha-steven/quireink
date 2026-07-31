@@ -1,4 +1,4 @@
-// Parse a WordPress export (WXR .xml) into Quire posts + pages. PURE — no I/O; the
+// Parse a WordPress export (WXR .xml) into Quire Ink posts + pages. PURE — no I/O; the
 // API route (api/import/wordpress) persists the result via savePost/savePage. Each
 // post's HTML body is converted to Markdown (turndown + GFM), and categories, tags,
 // dates, status and excerpt are preserved. Image URLs are kept as-is (they point at
@@ -37,7 +37,7 @@ function makeTurndown(): TurndownService {
   const td = new TurndownService({ headingStyle: 'atx', codeBlockStyle: 'fenced', bulletListMarker: '-' })
   td.use(gfm)
   // WordPress wraps captioned images in <figure><img><figcaption>…</figcaption>.
-  // Quire renders a figure caption from the image alt, so fold the caption INTO the
+  // Quire Ink renders a figure caption from the image alt, so fold the caption INTO the
   // alt rather than leaving a separate italic paragraph under the image.
   td.addRule('figureCaption', {
     filter: 'figure',
@@ -48,7 +48,7 @@ function makeTurndown(): TurndownService {
       // whereas the single-image path below reads querySelector('img'), which is the
       // FIRST one, and silently dropped the rest of the gallery. One page here lost 139
       // of its 169 photographs that way. Tag each image `#grid` instead, which is how
-      // Quire regroups a run of images back into a grid.
+      // Quire Ink regroups a run of images back into a grid.
       if ((el.getAttribute('class') ?? '').includes('wp-block-gallery')) {
         return `\n\n${markGridItems(content).trim()}\n\n`
       }

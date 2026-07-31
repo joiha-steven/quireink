@@ -1,10 +1,10 @@
-> Split from CLAUDE.md — the agent-discovery surface: what Quire exposes so AI agents
+> Split from CLAUDE.md — the agent-discovery surface: what Quire Ink exposes so AI agents
 > can find, read, and drive the site (the standards behind Cloudflare's "Is Your Site
 > Agent-Ready?" scan). MCP internals → [`mcp.md`](./mcp.md); SEO/feeds → [`seo-pwa.md`](./seo-pwa.md).
 
 # Agent-ready surface
 
-Quire is built around two things agents want: **content authored in Markdown** and a
+Quire Ink is built around two things agents want: **content authored in Markdown** and a
 **working MCP server** (`/api/mcp`, Streamable HTTP, OAuth 2.0 + PKCE). The endpoints
 below advertise and expose those; most are thin route handlers that describe what
 already exists.

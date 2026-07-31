@@ -1,4 +1,4 @@
-// The M2 gate, at the level it can be held today: for every corpus fixture, Quire 2.0's
+// The M2 gate, at the level it can be held today: for every corpus fixture, Quire Ink 2.0's
 // article body is BYTE-IDENTICAL to the frozen implementation's.
 //
 // The reference HTML in `golden/v1/corpus/` was produced by actually running the frozen

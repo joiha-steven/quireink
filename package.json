@@ -1,5 +1,5 @@
 {
-  "name": "quire",
+  "name": "quireink",
   "version": "2.0.0",
   "private": true,
   "license": "PolyForm-Noncommercial-1.0.0",
@@ -10,7 +10,7 @@
   "scripts": {
     "dev": "bun run build:assets && bun --watch src/index.ts",
     "start": "bun src/index.ts",
-    "build": "bun run build:assets && bun build --compile --minify --outfile dist/quire src/index.ts",
+    "build": "bun run build:assets && bun build --compile --minify --outfile dist/quireink src/index.ts",
     "build:assets": "bun scripts/build-assets.ts",
     "build:admin": "bun scripts/build-admin.ts",
     "test": "bun run build:assets && bun test",
