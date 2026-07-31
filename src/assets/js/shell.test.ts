@@ -115,6 +115,28 @@ describe('book mode', () => {
     expect(document.querySelector('.book-overlay')).toBeNull()
   })
 
+  // A spread is two facing pages until the pages get too narrow to hold words. This shipped
+  // as an unconditional two, so a 390px phone was handed two 119px columns — about ten
+  // characters each, one word per line. Nothing in `check:all` could see it; the screenshot
+  // could, and this is that screenshot turned into an assertion.
+  it('drops to ONE page when a spread would be too narrow to read', () => {
+    page(article, LABELS)
+    const overlay = open()
+    const viewport = overlay.querySelector<HTMLElement>('.book-viewport')!
+    geometry(viewport, 390, 1200)
+
+    window.innerWidth = 390
+    dispatchEvent(new Event('resize'))
+    expect(viewport.dataset.pages).toBe('1')
+    // The whole footprint, not half of it: 390 less the outer margin on both sides.
+    expect(overlay.querySelector<HTMLElement>('.book-flow')!.style
+      .getPropertyValue('--book-col-w')).toBe('294px')
+
+    window.innerWidth = 1200
+    dispatchEvent(new Event('resize'))
+    expect(viewport.dataset.pages).toBe('2')
+  })
+
   it('does nothing when the owner has book mode off, so there is no toggle', () => {
     page('<div class="prose"><p>Body</p></div>', LABELS)
     expect(() => book()).not.toThrow()

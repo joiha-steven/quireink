@@ -31,6 +31,7 @@ data-dev-uploads/
 # test and script scratch
 .tmp-test-*/
 .tmp-drive-data/
+.tmp-shots/
 
 # Written by the deploy so the admin can name the running commit. Never committed:
 # it would change on every commit and mean nothing in the tree.

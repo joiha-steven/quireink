@@ -393,7 +393,7 @@ they have a blog to configure. [ADR 0014](decisions/0014-homepage-modes.md).
 - **How it paginates:** the reader **clones** the already-rendered `.prose` markup (Shiki
   highlight, images, footnotes intact — no re-render), flows it into a CSS `column-width` element
   sized so the spread is exactly as wide as the site's content column at a fixed page height, and
-  reads `scrollWidth` to count columns → spreads = `ceil(cols / 2)`. The flow is itself `.prose`,
+  reads `scrollWidth` to count columns → spreads = `ceil(cols / pages)`. The flow is itself `.prose`,
   so the reading view's indents and justification apply unchanged. **Wide images
   (`figure.img-wide`) render at column width here**, so a wide image never spills into the next
   column. Advancing is one `scrollLeft` assignment plus a 130 ms crossfade — the browser has
@@ -403,6 +403,16 @@ they have a blog to configure. [ADR 0014](decisions/0014-homepage-modes.md).
 - **Media** stays column-width (no full-bleed) and is capped to one page height (`--book-page-h`)
   with `break-inside: avoid`, so images/code/tables never overflow a spread. `--font-reading`
   drives the body; all colours are theme tokens. Respects `prefers-reduced-motion` (no fade).
+- **A spread is TWO pages only while two pages can hold words.** Below `MIN_COLUMN * 2 + COL_GAP`
+  the reader drops to **one** page, `viewport[data-pages="1"]` hides the centre spine, and the
+  page count divides by one instead of two. The spread used to be an unconditional two, which at
+  390px meant two 119px columns of about ten characters each. The toggle is hidden below 767px so
+  a phone does not reach that state, but a narrow window that still shows the rail does: the rail
+  is subtracted from the footprint, so the spread can be far narrower than the window.
+  Pinned by `shell.test.ts`.
+- **The running head reserves room for the page count**, which lives in an absolutely positioned
+  box and therefore takes part in no layout. Without the reservation the centred title ran under
+  it and printed as `owning your ow1 / 5`.
 
 ## Library: Videos tab + self-hosted video — `VideoLibrary.tsx`, `src/render/video.ts`
 

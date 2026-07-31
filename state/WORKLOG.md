@@ -7,6 +7,30 @@ Older entries roll into [`worklog/`](worklog/2026-07-quire-2-rewrite.md) when th
 passes its size cap. Rolling is a move, never a rewrite.
 
 
+## 2026-07-31 — The README, in two languages, and four demo plates that separate
+
+**The images.** The four plates were laid straight onto the site's own `#fcfcfc` paper with no
+edge, which is why the owner could not tell where one screenshot ended and the next began:
+three white pages on white read as one wide page that had been cut up. A panel is now a SHEET
+— a plate one shade darker, a hairline on every panel, a wider gap — and a page that
+continues below the crop **fades out** along its bottom edge instead of ending in a hard cut
+through half a line of type. Labels are sized as a fraction of the plate rather than in
+pixels, because every plate is resized to the same output width from a different starting
+width, and the widest one had been rendering its label at 4px in the README.
+
+**The fixture.** `seed-showcase.ts` now also mints an owner and a live session, which is what
+unblocked the admin plates: sign-in needs a password AND a TOTP code, and the session cookie
+is `__Host-` prefixed, so no bypass in the SERVER was acceptable. It seeds a month of traffic
+too — without it the dashboard reads 0 views and the front page's most-viewed row does not
+render, so the plate is a screenshot of an empty database rather than of the software.
+
+**Two bugs the plates found**, both in book mode and both invisible to `check:all`: a spread
+was an unconditional two pages, so a narrow reader got two ten-character columns, and the
+centred running head printed underneath the page counter. Both fixed, both now pinned.
+
+**The README** is 16% shorter with more in it, and there is a Vietnamese one beside it with a
+language link at the top of each.
+
 ## 2026-07-31 — A homepage that is not always the post list (ADR 0014)
 
 `/` had only ever been page 1 of the post list. It now has three modes, and the default is

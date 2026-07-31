@@ -6,10 +6,12 @@
 // protocol first — navigate, run one expression, wait, capture.
 //
 // Usage:
-//   bun run drive <url> <out.png> <js> [width] [height] [settleMs]
+//   bun run drive <url> <out.png> <js> [width] [height] [settleMs] [scale]
 //   bun run drive http://127.0.0.1:3100/a book.png "document.querySelector('[data-book-open]').click()"
+//
+// Env: CHROME (binary), QUIRE_SESSION (owner cookie value), MOBILE=1 (touch + phone UA hints).
 
-const CHROME = process.env.CHROME_HEADLESS_SHELL
+const CHROME = process.env.CHROME ?? process.env.CHROME_HEADLESS_SHELL
   ?? `${process.env.HOME}/chrome/chrome-headless-shell-linux64/chrome-headless-shell`
 
 const [url, out, script, width = '1600', height = '1000', settle = '600', scale = '1'] =
@@ -22,11 +24,11 @@ if (!url || !out || script === undefined) {
 const PORT = 9222
 const proc = Bun.spawn([
   CHROME, '--headless', '--disable-gpu', '--no-sandbox', '--hide-scrollbars',
-  `--remote-debugging-port=${PORT}`, `--window-size=${width},${height}`,
-  // A capture at 2x for a print-quality plate, WITHOUT lying about the viewport. Shooting a
-  // phone plate by asking for a 780px window instead just laid the desktop out at 780 and
-  // called it a phone; the CSS width has to stay 390 and only the pixels double.
-  `--force-device-scale-factor=${scale}`, 'about:blank',
+  // sRGB and hinting off: two runs of the same shot otherwise differ in colour and in
+  // stem weight depending on the machine, which makes a composite plate look assembled
+  // from two sources.
+  '--force-color-profile=srgb', '--font-render-hinting=none',
+  `--remote-debugging-port=${PORT}`, `--window-size=${width},${height}`, 'about:blank',
 ], { stdout: 'ignore', stderr: 'ignore' })
 
 /** The debugging port is not open the instant the process is. Poll rather than sleep. */
@@ -69,16 +71,31 @@ const send = (method: string, params: Record<string, unknown> = {}) =>
 
 await send('Page.enable')
 
+// The viewport, set over the protocol rather than by `--window-size` + a device-scale flag.
+// The flag route produced a "phone" that was the desktop layout dealt at 780px: the CSS
+// width has to stay 390 and only the PIXELS double, which is what `deviceScaleFactor` does.
+// `mobile` additionally puts the page in the state `@media (hover: none)` tests for, so the
+// drawer and the always-visible copy button are photographed as a phone gets them.
+const mobile = process.env.MOBILE === '1'
+await send('Emulation.setDeviceMetricsOverride', {
+  width: Number(width), height: Number(height), deviceScaleFactor: Number(scale), mobile,
+})
+if (mobile) await send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 })
+
 // An owner-only page needs a session, and the session cookie is HttpOnly — so it cannot be
 // set from the page's own JavaScript and has to go in over the protocol. `QUIRE_SESSION` is
 // the cookie VALUE; nothing is read back out, and it never touches the repository.
+//
+// `url`, not `domain`: the `__Host-` prefix REQUIRES the cookie to carry no Domain
+// attribute, and passing `domain` sets one, so Chrome silently drops the cookie and the
+// screenshot comes back as the login page. Secure is likewise required, and is honoured on
+// http://127.0.0.1 because Chrome counts loopback as a trustworthy origin.
 if (process.env.QUIRE_SESSION) {
-  const { hostname } = new URL(url)
   await send('Network.enable')
   await send('Network.setCookie', {
     name: '__Host-quire_session',
     value: process.env.QUIRE_SESSION,
-    domain: hostname,
+    url,
     path: '/',
     httpOnly: true,
     secure: true,
