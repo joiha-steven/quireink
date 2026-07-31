@@ -249,6 +249,18 @@ figcaption{color:var(--c-meta);font-size:var(--fs-caption);line-height:var(--lh-
 .gallery-cols-2{grid-template-columns:repeat(2,1fr)}
 .gallery-cols-3{grid-template-columns:repeat(3,1fr)}
 .gallery-cols-4{grid-template-columns:repeat(4,1fr)}
+/* Per-gallery options, set in the editor and carried on each tile.
+   A ratio crops every tile to the same shape so the rows line up; without one the photos
+   keep their own proportions and a row is as tall as its tallest member, which is what a
+   mixed set of portrait and landscape shots looks like.
+   The picture wrapper is inline by default, and an inline box is a poor containing block
+   for a percentage width, so it is made a block here. */
+.gallery picture{display:block}
+.gallery figure:is(.g-1x1,.g-3x2,.g-4x3) img{width:100%;object-fit:cover}
+.gallery .g-1x1 img{aspect-ratio:1/1}
+.gallery .g-3x2 img{aspect-ratio:3/2}
+.gallery .g-4x3 img{aspect-ratio:4/3}
+.gallery .g-nocap figcaption{display:none}
 
 .video-embed,.video-file{margin:calc(var(--sp) * 2) 0}
 .video-embed{position:relative;padding-top:56.25%}

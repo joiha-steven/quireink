@@ -148,6 +148,33 @@ describe('markdown render — structure', () => {
     const html = await render('![a](media/a.jpg)\n\n![b](media/b.jpg)')
     expect(html).not.toContain('class="gallery')
   })
+
+  it('crops every tile to the ratio the gallery asked for', async () => {
+    const html = await render('![a](a.jpg#grid-1x1)\n\n![b](b.jpg#grid-1x1)')
+    expect(html.match(/<figure class="img-grid g-1x1">/g)).toHaveLength(2)
+  })
+
+  it('marks a gallery whose captions are off', async () => {
+    const html = await render('![a](a.jpg#grid-4x3-nocap)\n\n![b](b.jpg#grid-4x3-nocap)')
+    expect(html.match(/<figure class="img-grid g-4x3 g-nocap">/g)).toHaveLength(2)
+    // The alt still renders. It is hidden by CSS, not dropped, so it keeps working for a
+    // screen reader and for search.
+    expect(html).toContain('<figcaption>a</figcaption>')
+  })
+
+  // The grouping regex used to match `<figure class="img-grid">` exactly. Setting any
+  // option appends a class, and the gallery silently stopped being a gallery: the photos
+  // fell into a full-width column with no error anywhere.
+  it('still groups tiles that carry gallery options', async () => {
+    const html = await render('![a](a.jpg#grid-3x2)\n\n![b](b.jpg#grid-3x2)\n\n![c](c.jpg#grid-3x2)')
+    expect(html).toContain('<div class="gallery gallery-cols-3">')
+    expect(html.match(/<div class="gallery /g)).toHaveLength(1)
+  })
+
+  it('ignores a ratio that is not one of the three', async () => {
+    const html = await render('![a](a.jpg#grid-7x5)\n\n![b](b.jpg#grid-7x5)')
+    expect(html.match(/<figure class="img-grid">/g)).toHaveLength(2)
+  })
 })
 
 describe('markdown render — ToC anchors stay in sync', () => {

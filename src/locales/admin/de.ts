@@ -87,6 +87,8 @@ const de = {
   imgSizeColumn: 'Spalte',
   imgSizeWide: 'Groß',
   imgGrid: 'Raster',
+  imgRatioNatural: 'Original',
+  imgCaptions: 'Bildunterschriften',
   captionPlaceholder: 'Bildunterschrift',
   slug: 'Slug (URL)',
   publishDate: 'Veröffentlichungsdatum',
