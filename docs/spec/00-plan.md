@@ -305,12 +305,20 @@ Deviations from Quire 1.x that are intentional.
 6. **Tailwind is removed from the public site.** Retained for the admin SPA, where its
    churn is contained and its payload does not matter.
 
-## Audience (settled 2026-07-26)
+## Audience (settled 2026-07-26, and half of it no longer holds)
+
+> ⚠️ **The first paragraph below was true when the rewrite was planned and is not true now.**
+> It is left as written because it explains why several things in this plan were scoped the
+> way they were. There are three instances today, the software ships a self-hosting guide, a
+> Docker image and a public demo, and [ADR 0015](../decisions/0015-relicense-polyform-noncommercial.md)
+> relicensed it for exactly the audience this paragraph says does not exist. Read it as a
+> record of an assumption, not as a statement about the project.
 
 **There are no third-party self-hosters.** Quire runs one instance, `manhhung.me`, used
 by its author. The repository is public, but nobody else depends on it.
 
-**SaaS is not a goal.** Nothing in Quire 2.0 is designed for multi-tenancy.
+**SaaS is not a goal.** Nothing in Quire 2.0 is designed for multi-tenancy. This half still
+holds; [ADR 0002](../decisions/0002-no-saas-single-instance.md) is in force.
 
 Consequences:
 
