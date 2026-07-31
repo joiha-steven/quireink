@@ -54,8 +54,8 @@ fail(){
   log "FAIL: $*"
   local url; url="$(cat "$ALERT_HOOK_FILE" 2>/dev/null)" || true
   if [ -n "${url:-}" ] && command -v jq >/dev/null 2>&1; then
-    jq -n --arg t ":red_circle: *quire2* backup FAIL" --arg d "$1" \
-      '{alias:"backup sv1-usa",emoji:":floppy_disk:",text:$t,attachments:[{color:"#e01b1b",text:$d}]}' \
+    jq -n --arg a "$ALERT_ALIAS" --arg t ":red_circle: *$ALERT_ALIAS* FAIL" --arg d "$1" \
+      '{alias:$a,emoji:":floppy_disk:",text:$t,attachments:[{color:"#e01b1b",text:$d}]}' \
       | curl -sS -m 15 -X POST -H 'Content-Type: application/json' --data @- "$url" >/dev/null 2>&1 || true
   fi
   exit 1

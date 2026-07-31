@@ -42,8 +42,7 @@ read from disk at runtime, so they have to exist before the service starts.
 > yet.** `bun build --compile` bundles sharp's JavaScript but not its
 > `@img/sharp-<platform>` native module, so the binary comes up fine and then throws on the
 > first image resize — an upload, a variant sweep, an OG card. How the binary should ship is
-> the one open question left from the rewrite
-> ([`state/OPEN_QUESTIONS.md`](../state/OPEN_QUESTIONS.md)).
+> the one open question left from the rewrite, and it is still open.
 
 ## 3. Configure
 

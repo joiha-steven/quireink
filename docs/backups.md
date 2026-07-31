@@ -69,7 +69,7 @@ brings its own sessions and its own mail server back with it.
 > [`self-host.md`](./self-host.md) uses the generic `quire` and `/var/lib/quire`. Reading both
 > and mixing them gives you a backup pointed at a directory that does not exist; take the
 > names from whichever one you actually followed. Making the script read them from an env file
-> instead is an open task in [`state/TASKS.md`](../state/TASKS.md).
+> instead is queued.
 
 ## Schedule and retention
 

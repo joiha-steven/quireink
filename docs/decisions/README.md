@@ -38,6 +38,7 @@ abandoned on 2026-07-26, and the only trace was a private memory file.
 | [0014](0014-homepage-modes.md) | A homepage mode: the post list, a chosen page, or a composed front page | 2026-07-31 | ✅ |
 | [0015](0015-relicense-polyform-noncommercial.md) | Relicense from MIT to PolyForm Noncommercial 1.0.0 | 2026-07-31 | ✅ |
 | [0016](0016-rename-to-quire-ink.md) | Rename the product to Quire Ink, on `quireink.com` | 2026-07-31 | ✅ |
+| [0017](0017-move-state-and-instance-config-private.md) | Move `state/` and instance config to a private repository | 2026-08-01 | ✅ |
 
 ## Superseded, and why that matters
 

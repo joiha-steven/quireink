@@ -13,7 +13,7 @@
     // mid-port (noUncheckedIndexedAccess was tried first) turns a pure-motion diff into a
     // motion-plus-rewrite diff across every moved file, which is what the porting rule in
     // CLAUDE.md exists to prevent. Tightening is a separate, reviewable pass once the port
-    // is finished; tracked in state/TASKS.md.
+    // is finished, and is queued.
     "strict": true,
     "noImplicitOverride": true,
     "noFallthroughCasesInSwitch": true,

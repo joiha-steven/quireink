@@ -3,15 +3,16 @@
 Everything here describes how Quire Ink works **right now**. Out of date here is a bug: fix it
 in place, in the same commit as the behaviour change that made it wrong.
 
-What does not belong here: anything dated (that is a snapshot, see [`../state/`](../state/README.md)),
-anything about what we intend to do (that is `state/ROADMAP.md` or `state/TASKS.md`), and
-any rule that is already stated somewhere else. `check:docs` fails on a dated filename in
-this directory.
+What does not belong here: anything dated (that is a snapshot, not a document), anything
+about what we intend to do, and any rule that is already stated somewhere else. Snapshots
+and intent are not in this repository at all
+([ADR 0017](decisions/0017-move-state-and-instance-config-private.md)). `check:docs` fails
+on a dated filename in this directory.
 
 | File | Holds |
 |---|---|
 | [invariants.md](invariants.md) | The 7 load-bearing rules, each with its enforcing code and its guard |
-| [features.md](features.md) | What each feature area does. ~20 areas, one file (see the split task in `state/TASKS.md`) |
+| [features.md](features.md) | What each feature area does. ~20 areas, one file. Splitting it is queued |
 | [conventions.md](conventions.md) | Typography, header alignment, layout, dividers, i18n, releases |
 | [performance.md](performance.md) | The resource-loading law: fonts, CSS split, island JS |
 | [admin-design.md](admin-design.md) | The admin visual contract |

@@ -324,7 +324,7 @@ ambiguous.
   written for the frozen tree and carried over; measured 2026-07-29, `grep -r -- '--dur-' src`
   is empty and every duration in `islands.css.ts` is a literal. The ONE switch below is real
   and is what actually gates motion. Either reintroduce the tokens or delete this bullet —
-  it is on `state/TASKS.md`, and until then it describes nothing.
+  it is queued, and until then it describes nothing.
 - **ONE switch gates ALL visual motion.** `<html data-motion>` is server-rendered from `settings.motion.enabled`
   (no flash, no client JS); `:root[data-motion='off']` AND `@media (prefers-reduced-motion: reduce)`
   zero every `--dur-*`, so everything becomes instant with no per-component branching. Toggle in
@@ -361,8 +361,9 @@ that is the name to use: `bun run build:assets`, `bun run check:all`, `bun run u
 On any behavior change, update the matching doc in the SAME change (Working principle #3):
 - **CLAUDE.md** = a router, and nothing else. **`docs/`** = how it works now, one rule in one
   file. **`docs/decisions/`** = why, append-only. **CHANGELOG.md** = one entry per user-facing
-  change. **README.md** = setup + features. **`state/ROADMAP.md`** = direction. The frozen
-  tree's `ARCHITECTURE.md` and `CHECKLIST.md` moved with it and are now
+  change. **README.md** = setup + features. Direction, dated snapshots and the worklog are
+  **not in this repository** ([ADR 0017](decisions/0017-move-state-and-instance-config-private.md)).
+  The frozen tree's `ARCHITECTURE.md` and `CHECKLIST.md` moved with it and are now
   [`v1/ARCHITECTURE.md`](../v1/ARCHITECTURE.md) and [`v1/CHECKLIST.md`](../v1/CHECKLIST.md);
   neither describes 2.0.
 - **README is the canonical install/usage doc — keep it current.** Its **two install paths**
@@ -370,10 +371,15 @@ On any behavior change, update the matching doc in the SAME change (Working prin
   + the **env-var table** must be updated in the SAME change whenever setup/deploy/env/auth/MCP/backup
   behavior changes (new/renamed env var, a new owner setup step, a changed redirect URI, etc.).
   Never let the README drift from how the app is actually installed and run.
-- Keep personal/instance values (credentials, the live domain) OUT of tracked
-  files — the gitignored `.env` only.
-- **Audits** (`state/audits/`): a full review per `state/audits/README.md` → dated `state/audits/YYYY-MM-DD-<scope>.md`;
-  read the latest first so a pass starts from the last clean line.
+- **Keep personal and instance values out of this repository entirely** — not just
+  credentials, but a host, a unix user, an internal port, a service name or a live domain.
+  This repository is the product; a fact about one installation belongs in the private
+  `quireink-private` ([ADR 0017](decisions/0017-move-state-and-instance-config-private.md)).
+  Credentials go nowhere but the gitignored `.env`. Where a script must name such a value,
+  it takes it from an environment variable and documents the variable, the way
+  [`scripts/ops/quire2-backup.sh`](../scripts/ops/quire2-backup.sh) does.
+- **Audits** are dated snapshots, so they are write-only and they live with the author's
+  notes rather than here. Read the latest first so a pass starts from the last clean line.
 - **Versioning (owner's rule — do NOT auto-bump):** the version is **`2.0.0`**, released
   2026-07-30. From 2.0 onward the number is **semver and means something**, which is the change
   from the 1.5.x era where `x` was a running counter: MAJOR for a break in how the thing is

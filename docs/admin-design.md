@@ -112,7 +112,7 @@ The second visual pass tightened the system after reviewing every admin surface 
 - The prose `contenteditable` must not inherit the global admin focus outline. The surrounding editor card supplies the workspace boundary; focus rings remain on discrete controls.
 - Insert and delete input uses a block-style overlay caret, active-line pulse, and generated mechanical click. Keep visuals compositor-only, selection-safe, IME-safe, and governed by the global motion/reduced-motion settings; keep audio locally generated at the documented 45% internal volume and out of composition updates. The Rendering card switch controls the complete typewriter system and defaults on for existing installs.
 
-The complete implementation record, production corrections, preserved invariants, verification results, and commit sequence for the July 13 work are indexed in [`worklog-2026-07-13.md`](../state/reports/2026-07-13-admin-redesign.md).
+The complete implementation record, production corrections, preserved invariants, verification results, and commit sequence for the July 13 work are a dated report, so they are not in this repository (ADR 0017). What binds is the contract above.
 - Sidebar footer controls always use the same icon + label row structure; the theme control must show its sun/moon glyph before the applied mode label.
 - Palette cards must remain readable in every state. Use neutral border/surface hierarchy for selected, available, and hidden palettes; never lower opacity on the entire card or its labels.
 - Backup scheduling and import controls use shared rounded inputs and buttons. Native file-input chrome must stay visually hidden behind an accessible labeled trigger.

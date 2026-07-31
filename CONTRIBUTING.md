@@ -25,7 +25,7 @@ month. So before writing code, read the file that owns what you are touching.
 | Change something load-bearing | [`docs/invariants.md`](./docs/invariants.md): seven rules, each with its enforcing code and its guard |
 | Touch type, spacing, i18n or a release | [`docs/conventions.md`](./docs/conventions.md) |
 | Ask why it is like this | [`docs/decisions/`](./docs/decisions/README.md), append-only, including the reversals |
-| Pick something up | [`state/TASKS.md`](./state/TASKS.md): what is queued, in order, with why |
+| Pick something up | The [issue tracker](https://github.com/joiha-steven/quireink/issues). The author's own task list is not in this repository (ADR 0017) |
 | Report a vulnerability | [`SECURITY.md`](./SECURITY.md). Privately, and not as a pull request |
 
 ## Getting set up
