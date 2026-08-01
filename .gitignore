@@ -68,3 +68,21 @@ audit/legacy-blob-backup-*/
 # Screenshots taken while driving the site with headless Chromium. Evidence, not source.
 .shots/
 _shots/
+
+# design-sync: staged converter scripts, generated bundle, and machine-local state. All of
+# it is rebuilt from `src/` on every run, so a tracked copy is a second answer to the same
+# question and it is stale the moment a component changes. These rules were written on the
+# `design-sync-admin-ui` branch, where the durable inputs live; main had none of them, so a
+# `git add -A` here swept 794 generated files into a public repository on 2026-08-01. They
+# are gone again, and this is why.
+.ds-sync/
+ds-bundle/
+ds-bundle-reader/
+.design-sync/.cache/
+.design-sync/learnings/
+.design-sync/node_modules
+.design-sync/generated/
+
+# Screenshots taken while driving the site with headless Chromium. Evidence, not source.
+.shots/
+_shots/
