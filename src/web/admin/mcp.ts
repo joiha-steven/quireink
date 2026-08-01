@@ -252,7 +252,7 @@ export function mcpOAuthRoutes(): Hono {
    * with.
    *
    * A CDN terminates TLS and forwards to the origin over plain HTTP, so `c.req.url` is
-   * `http://…` and every URL in these two documents came out `http://manhhung.me/...`. A
+   * `http://…` and every URL in these two documents came out `http://example.com/...`. A
    * connector fetches the discovery document over https, reads an issuer on http, and
    * rejects the pair: RFC 8414 and RFC 9728 both require the issuer to match the origin the
    * document was served from, exactly. That is the whole of why connecting failed.

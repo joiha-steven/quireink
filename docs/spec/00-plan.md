@@ -1,6 +1,6 @@
 # Quire 2.0: master plan
 
-Status: **DELIVERED.** M0 through M4 are done; Quire 2.0 has served `manhhung.me` since
+Status: **DELIVERED.** M0 through M4 are done; Quire 2.0 has served the first instance since
 2026-07-28. This document is the plan, not the tracker; the live list is kept outside this
 repository (ADR 0017) and where the two disagree the tracker is right.
 
@@ -186,7 +186,7 @@ milestone that only runs on localhost does not count as done.
 An explicit exception to the freeze, agreed because the changes are contained and needed
 no matter what happens to the rest of this plan.
 
-Deployed to `manhhung.me` at commit `58cf8f9`.
+Shipped to the live instance ahead of M4, rather than waiting for the milestone.
 
 | Planned | Found | Shipped |
 |---|---|---|
@@ -314,8 +314,8 @@ Deviations from Quire 1.x that are intentional.
 > relicensed it for exactly the audience this paragraph says does not exist. Read it as a
 > record of an assumption, not as a statement about the project.
 
-**There are no third-party self-hosters.** Quire runs one instance, `manhhung.me`, used
-by its author. The repository is public, but nobody else depends on it.
+**There are no third-party self-hosters.** Quire runs one instance, the author's own blog,
+used by its author. The repository is public, but nobody else depends on it.
 
 **SaaS is not a goal.** Nothing in Quire 2.0 is designed for multi-tenancy. This half still
 holds; [ADR 0002](../decisions/0002-no-saas-single-instance.md) is in force.

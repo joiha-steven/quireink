@@ -1,0 +1,159 @@
+[
+  {
+    "sheet": 1,
+    "components": [
+      "ActivityLog",
+      "ActivityLogField",
+      "AdminI18nProvider",
+      "AdminSidebar",
+      "AdvancedFields",
+      "AnalyticsPageDetail",
+      "AnalyticsSection",
+      "AnalyticsView",
+      "BarList",
+      "BrandFields",
+      "BrandMark",
+      "BrandWord",
+      "BubbleBar",
+      "Button",
+      "CacheButton",
+      "CacheFields"
+    ]
+  },
+  {
+    "sheet": 2,
+    "components": [
+      "CacheSection",
+      "Card",
+      "CheckField",
+      "CloudflareFields",
+      "Combobox",
+      "CommentFields",
+      "CommentIntegrations",
+      "CommentsTable",
+      "ContentDashboard",
+      "DashboardWidgets",
+      "Editor",
+      "EmptyState",
+      "ExportFields",
+      "ExternalIcon",
+      "FeaturedField",
+      "FileLibrary"
+    ]
+  },
+  {
+    "sheet": 3,
+    "components": [
+      "FileUploader",
+      "FontFields",
+      "FontUpload",
+      "FooterField",
+      "FrontFields",
+      "GalleryFields",
+      "HelpGuide",
+      "IconAnalytics",
+      "IconCache",
+      "IconChevronLeft",
+      "IconComment",
+      "IconContent",
+      "IconExternal",
+      "IconHelp",
+      "IconHome",
+      "IconLog"
+    ]
+  },
+  {
+    "sheet": 4,
+    "components": [
+      "IconMedia",
+      "IconNewsletter",
+      "IconSettings",
+      "IconSignOut",
+      "IconTrash",
+      "IconUpload",
+      "ImageUploader",
+      "ImportFields",
+      "Input",
+      "LayoutMenuFields",
+      "LibraryTabs",
+      "Link",
+      "ListingFeatureFields",
+      "MarkdownTable",
+      "McpFields",
+      "McpSection"
+    ]
+  },
+  {
+    "sheet": 5,
+    "components": [
+      "MediaLibrary",
+      "MediaSection",
+      "MediaToolbar",
+      "MultiSelect",
+      "NewsletterFields",
+      "NewsletterSend",
+      "NewsletterSubscribers",
+      "NewsletterTest",
+      "NewsletterView",
+      "Overview",
+      "PageForm",
+      "PageHeader",
+      "PageSettings",
+      "PagesTable",
+      "PencilIcon",
+      "PostFeatureFields"
+    ]
+  },
+  {
+    "sheet": 6,
+    "components": [
+      "PostForm",
+      "PostSettings",
+      "PostsTable",
+      "ReadersSection",
+      "RouterProvider",
+      "RowActions",
+      "Select",
+      "SeoFields",
+      "ServerSection",
+      "Setting",
+      "SettingsSection",
+      "SettingsView",
+      "SiteFields",
+      "StatCard",
+      "StatTile",
+      "StatusPill"
+    ]
+  },
+  {
+    "sheet": 7,
+    "components": [
+      "Switch",
+      "TableFrame",
+      "Tabs",
+      "Textarea",
+      "ThemeFields",
+      "ThemeProvider",
+      "ThemeToggle",
+      "TimeMachine",
+      "ToastProvider",
+      "ToggleField",
+      "ToggleRow",
+      "Toolbar",
+      "TopProgress",
+      "TrashIcon",
+      "TrashView",
+      "Trend"
+    ]
+  },
+  {
+    "sheet": 8,
+    "components": [
+      "TrendChart",
+      "TroubleTable",
+      "TypographyFields",
+      "VideoLibrary",
+      "WritingSection"
+    ]
+  }
+]

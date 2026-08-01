@@ -34,7 +34,7 @@ One self-inflicted detour worth recording: the first `tsconfig.json` turned on
 `noUncheckedIndexedAccess`, which the frozen tree does not have. It produced ~20 errors in
 code that compiles cleanly at source, i.e. it converted a pure-motion diff into a
 motion-plus-rewrite diff. Reverted to match the source exactly; tightening is a separate
-pass after the port, tracked in `state/TASKS.md`.
+pass after the port, tracked in the task list outside this repository (ADR 0017).
 
 ## Rewritten, not moved (M1 data layer, 2026-07-27)
 
