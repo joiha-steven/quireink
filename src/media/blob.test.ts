@@ -49,16 +49,16 @@ describe('blob store-relative refs (collapse <-> expand)', () => {
   // Every WordPress site serves images from `/wp-content/uploads/`, so importing one
   // corrupted the body of every post that had a picture in it.
   it('leaves a foreign URL whose path merely contains /uploads/ alone', () => {
-    const foreign = 'https://edcmeo.com/wp-content/uploads/Den-pin-Elzetta.jpg'
+    const foreign = 'https://example.com/wp-content/uploads/photo.jpg'
     expect(collapseBlob(foreign)).toBe(foreign)
     expect(collapseBlob(`![alt](${foreign})`)).toBe(`![alt](${foreign})`)
     expect(collapseBlob(`<img src="${foreign}">`)).toBe(`<img src="${foreign}">`)
   })
 
   it('still collapses our own /uploads/ URL when a foreign one sits beside it', () => {
-    const body = `![a](https://edcmeo.com/wp-content/uploads/x.jpg) ![b](${BASE}/media/b.jpg)`
+    const body = `![a](https://example.com/wp-content/uploads/x.jpg) ![b](${BASE}/media/b.jpg)`
     const stored = collapseBlob(body)
-    expect(stored).toContain('](https://edcmeo.com/wp-content/uploads/x.jpg)')
+    expect(stored).toContain('](https://example.com/wp-content/uploads/x.jpg)')
     expect(stored).toContain('](media/b.jpg)')
   })
 

@@ -1,7 +1,7 @@
 # Port ledger
 
 Every file moved from the frozen tree, and every one deliberately left behind. Kept so a
-module cannot be dropped silently: `v2/docs/07-parity.md` covers behaviour, this covers
+module cannot be dropped silently: `docs/spec/07-parity.md` covers behaviour, this covers
 files.
 
 Closed milestones are split out as they finish, so this file stays the CURRENT one:
@@ -16,7 +16,7 @@ Closed milestones are split out as they finish, so this file stays the CURRENT o
 
 Nothing was moved here. Authentication is the one area of 2.0 that is **not** a port:
 `next-auth` and the Google provider are deleted outright, and password + TOTP is new code
-against `v2/docs/06-auth.md`. So the porting rule does not apply, and the protection it
+against `docs/spec/06-auth.md`. So the porting rule does not apply, and the protection it
 normally buys — a diff that is pure motion — is absent. Everything below is therefore
 covered by tests written alongside it.
 

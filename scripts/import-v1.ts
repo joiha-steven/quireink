@@ -9,6 +9,12 @@
 // One direction only. There is no sync, no dual-write, and no path back. The whole content
 // import runs in ONE transaction: either the instance is fully imported or the file is
 // untouched.
+//
+// It reads a RUNNING 1.x over PostgREST, and the last one was shut down on 2026-07-31, so
+// nothing it can point at exists any more. Kept for the same reason `v1/` is kept (ADR 0017):
+// it is the readable record of how the two data models line up, and `@supabase/postgrest-js`
+// stays a devDependency for it. Do not maintain it; do not delete it to save a dependency
+// that never reaches a build.
 
 import { existsSync, rmSync, statSync } from 'node:fs'
 import { join } from 'node:path'

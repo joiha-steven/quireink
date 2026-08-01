@@ -1,0 +1,9 @@
+{
+  "namespace": "QuireInkReader",
+  "source": "quireink@2.0.0",
+  "shape": "package",
+  "provider": null,
+  "componentCount": 0,
+  "skippedStoryIds": [],
+  "runtimeFontPrefixes": []
+}

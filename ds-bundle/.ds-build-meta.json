@@ -1,0 +1,9 @@
+{
+  "namespace": "QuireInk",
+  "source": "quireink@2.0.0",
+  "shape": "package",
+  "provider": "RouterProvider",
+  "componentCount": 117,
+  "skippedStoryIds": [],
+  "runtimeFontPrefixes": []
+}

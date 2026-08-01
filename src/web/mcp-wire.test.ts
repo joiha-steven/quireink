@@ -149,7 +149,7 @@ describe('the MCP endpoint', () => {
 
 describe('OAuth discovery advertises the origin a CLIENT reaches, not the one it arrived on', () => {
   // The CDN terminates TLS and forwards to the origin over plain HTTP, so `c.req.url` is
-  // `http://…` and both documents came out advertising `http://manhhung.me/...`. A connector
+  // `http://…` and both documents came out advertising `http://example.com/...`. A connector
   // fetches them over https, reads an issuer on http, and rejects the pair — RFC 8414 and
   // RFC 9728 both require the issuer to match the origin the document was served from.
   // That was the whole of why connecting failed.
@@ -160,16 +160,16 @@ describe('OAuth discovery advertises the origin a CLIENT reaches, not the one it
   const PROXY = { 'x-forwarded-proto': 'https' }
 
   it('honours x-forwarded-proto in the protected-resource document', async () => {
-    const body = await json('http://manhhung.me/.well-known/oauth-protected-resource', PROXY)
-    expect(body.resource).toBe('https://manhhung.me/api/mcp')
-    expect(body.authorization_servers).toEqual(['https://manhhung.me'])
+    const body = await json('http://example.com/.well-known/oauth-protected-resource', PROXY)
+    expect(body.resource).toBe('https://example.com/api/mcp')
+    expect(body.authorization_servers).toEqual(['https://example.com'])
   })
 
   it('honours it in the authorization-server document, on every endpoint', async () => {
-    const body = await json('http://manhhung.me/.well-known/oauth-authorization-server', PROXY)
-    expect(body.issuer).toBe('https://manhhung.me')
+    const body = await json('http://example.com/.well-known/oauth-authorization-server', PROXY)
+    expect(body.issuer).toBe('https://example.com')
     for (const key of ['authorization_endpoint', 'token_endpoint', 'registration_endpoint']) {
-      expect(String(body[key])).toStartWith('https://manhhung.me/')
+      expect(String(body[key])).toStartWith('https://example.com/')
     }
   })
 
