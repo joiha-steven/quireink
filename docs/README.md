@@ -19,7 +19,7 @@ on a dated filename in this directory.
 | [seo-pwa.md](seo-pwa.md) | Sitemap, feeds, OG, region, PWA |
 | [agent-ready.md](agent-ready.md) | Markdown negotiation, `.well-known` discovery, Content-Signal |
 | [mcp.md](mcp.md) | MCP server, tokens, OAuth |
-| [backups.md](backups.md) | What is copied off the box, how often, and how to restore it |
+| [backups.md](backups.md) | What is copied off the server, how often, and how to restore it |
 | [self-host.md](self-host.md) | Running it on your own server |
 | [spec/](spec/README.md) | How 2.0 is built: schema, structure, frontend, importer, auth, parity |
 | [decisions/](decisions/README.md) | ADRs, append-only, with a still-in-force index |

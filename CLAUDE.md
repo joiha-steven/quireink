@@ -30,7 +30,7 @@ Capped at 170 lines and held there by `check:docs`, since it loads every turn.
 | Fonts, CSS, island JS — the resource-loading law | [`docs/performance.md`](./docs/performance.md) |
 | SEO, feeds, OG, PWA · MCP · agent discovery | [`docs/seo-pwa.md`](./docs/seo-pwa.md) · [`docs/mcp.md`](./docs/mcp.md) · [`docs/agent-ready.md`](./docs/agent-ready.md) |
 | Backups and restore | [`docs/backups.md`](./docs/backups.md) |
-| Running it on your own box | [`docs/self-host.md`](./docs/self-host.md) |
+| Running it on your own server | [`docs/self-host.md`](./docs/self-host.md) |
 | Admin visual contract | [`docs/admin-design.md`](./docs/admin-design.md) |
 | **Why was this decided, does it still hold** | [`docs/decisions/`](./docs/decisions/README.md) |
 | What was deliberately NOT carried over | [`docs/spec/07-parity.md`](./docs/spec/07-parity.md) |

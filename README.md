@@ -68,7 +68,7 @@ You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE).
 | 🔎&nbsp;**Search engines** | Sitemap, RSS, `robots.txt`, `llms.txt`, and an OG image drawn per post. Rename a slug and the old URL keeps working on its own |
 | 📬&nbsp;**Newsletter** | Sign-ups with a confirmation email, an issue sent when you publish, and a note to anyone whose comment got a reply. Your own SMTP, so nothing to sign up for |
 | 📚&nbsp;**Series** | Write in parts, number them, and every part shows the others |
-| 💾&nbsp;**Backups** | One button downloads the whole install. There is also a cron script that ships it off the box. [Details](./docs/backups.md) |
+| 💾&nbsp;**Backups** | One button downloads the whole install. There is also a cron script that ships it off the server. [Details](./docs/backups.md) |
 | 📥&nbsp;**Leaving WordPress** | Upload the XML export. Posts and pages come out as Markdown |
 | 🌍&nbsp;**Languages** | English, Vietnamese, German, Japanese, Chinese and Korean, in the admin and on the site |
 | 🔐&nbsp;**Signing in** | Your own username and password, hashed with argon2id. An authenticator code every time, and ten recovery codes for the day you lose the phone. No Google, no anyone, in the login path |

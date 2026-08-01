@@ -155,13 +155,13 @@ you a page from two deploys ago while you read source trying to work out why you
 nothing.
 
 When verifying anything, request the origin directly (`curl localhost:3000/...` on the
-box), not the public URL.
+server), not the public URL.
 
 ## 8. The cron ticks
 
 **Nothing inside the process schedules anything.** `/api/cron` is the entry point and an
 external scheduler has to call it, or scheduled posts never go live on time, image variants
-are never finalized, expired sessions and `render_cache` rows accumulate, and the on-box
+are never finalized, expired sessions and `render_cache` rows accumulate, and the on-server
 snapshots in [`backups.md`](backups.md) never run.
 
 ```cron
@@ -186,7 +186,7 @@ Re-run both builds, not just `git pull`: the island bundles and the admin SPA ar
 outputs, and a restart that skips them serves yesterday's JavaScript against today's HTML.
 
 Schema changes are applied at boot, inside a transaction. **Take a backup first anyway** —
-see [`backups.md`](backups.md), which also covers getting a copy off the box on a schedule.
+see [`backups.md`](backups.md), which also covers getting a copy off the server on a schedule.
 
 ## 10. Docker, instead of systemd
 
@@ -201,7 +201,7 @@ docker compose up -d --build
 docker compose exec quire bun run user create --username you --email you@example.com
 ```
 
-The image builds from source and runs `bun src/index.ts`, which is what the box in section 4
+The image builds from source and runs `bun src/index.ts`, which is what the server in section 4
 runs too. It is deliberately NOT the compiled binary: `bun build --compile` does not bundle
 sharp's native module, so a compiled image has to keep a binary and a native addon agreed
 about libc across every base bump, and this way `bun install` resolves sharp for the

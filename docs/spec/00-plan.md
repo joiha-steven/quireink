@@ -48,7 +48,7 @@ The reason is NOT raw speed. It is:
 
 2. **Operations.** Today the instance needs Node, Next, PostgreSQL, PostgREST,
    generated JWT keys, DB roles and grants, and a migration runner, all maintained by
-   one person on one box. Target: one executable and one file.
+   one person on one server. Target: one executable and one file.
 
 3. **Dependency surface.** The current tree pins `next` hard and carries unpatched
    critical advisories that cannot be resolved without breaking the pin. Removing
@@ -207,7 +207,7 @@ kept forever, so that bug would not have been self-correcting.
    font preset as Inter with `lang="en"`, which briefly produced a confident and wrong
    "the plan's premise is false" correction; `.env.local` points at a dev database whose
    `settings` row differs from the live one. Anything settings-dependent must be read off
-   the box.
+   the server.
 2. The Go documents' numbers were measured once and reused as fact. The Literata figure
    held up; **re-measure the others before acting**, including the 182 KB JavaScript figure
    in the Goal section above.
