@@ -259,7 +259,7 @@ Count when written: 214 items.
       browser or on their phone still counted. `analytics/exclude.ts` also drops a request
       from any address a LIVE session was created from (the salted `ip_hash` the sessions
       table already keeps, so nothing new is stored), and any request from a loopback or
-      private address, which is the box talking to itself
+      private address, which is the server talking to itself
 - [x] Kept forever, no rolling window
 - [x] Pageview beacon; scroll depth; dwell sampled on leave
 - [ ] `⚠` Both beacons are deferred until the document is actually viewed (prerender guard,
@@ -391,7 +391,7 @@ Count when written: 214 items.
       v2, parity exception 3)
 - [ ] Cloudflare purge on content writes, using the token from the admin
 - [x] `✂` Google Drive backup removed (parity exception 1). Three things replace it and none
-      of them is an OAuth flow: an off-box cron to R2, scheduled snapshots kept on the server
+      of them is an OAuth flow: an off-server cron to R2, scheduled snapshots kept on the server
       (the `intervalDays`/`keep` fields drive these, as of 2026-07-29), and the manual export
       archive. See [`../backups.md`](../backups.md)
 - [ ] Backup restore into an empty instance, verified end to end

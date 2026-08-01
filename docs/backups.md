@@ -7,7 +7,7 @@ how an install ends up with two copies of the same protection and none of anothe
 |:--|:--|:--|:--|
 | **Export** | the owner's own machine | "give me a copy I hold" | `GET /api/backup/export` |
 | **Snapshots** | this server, on a schedule | "I broke something an hour ago" | [`src/server/backup.ts`](../src/server/backup.ts) |
-| **Off-box** | R2, hourly + daily | "the machine is gone" | [`scripts/ops/quire-backup.sh`](../scripts/ops/quire-backup.sh) |
+| **Off-server** | R2, hourly + daily | "the machine is gone" | [`scripts/ops/quire-backup.sh`](../scripts/ops/quire-backup.sh) |
 
 All three take the same `VACUUM INTO` snapshot of both databases plus the uploads tree. They
 differ only in where the file ends up and who decides when.
@@ -42,10 +42,10 @@ destination that had already been removed.
 - Retention prunes **after** the new archive is written. Pruning first would use less peak
   disk and would delete a good backup to make room for one that then failed.
 - **These are on the same disk as the thing they copy.** They survive a bad edit, a bad
-  import and a bad delete. They do not survive the disk, which is what the off-box copy is
+  import and a bad delete. They do not survive the disk, which is what the off-server copy is
   for. The admin says so, in `exportReplicationNote`.
 
-## Off-box
+## Off-server
 
 Everything below is the cron script beside the process, and it is the one that happens
 whether or not anyone remembers.
@@ -115,7 +115,7 @@ crontab, or in a systemd `EnvironmentFile` — whichever the machine already use
 | `QUIRE_ALERT_HOOK_FILE` | `/etc/quire/alert-webhook` — a file holding one URL. Absent, a failure is logged and not announced |
 | `QUIRE_ALERT_ALIAS` | `quire backup` — what this installation calls itself in that alert |
 
-**Running more than one blog on a box: install the script once, and give each instance its
+**Running more than one blog on a server: install the script once, and give each instance its
 own crontab with its own `QUIRE_*` block.** Set all four of `_REMOTE`, `_STAGE`, `_LOG` and
 `_LOCK` per instance — sharing a lock means one blog's backup silently skips because the
 other holds it, and sharing a staging path means they overwrite each other's archive.

@@ -56,7 +56,7 @@ off its critical path. Any non-Latin language pairs the same way.
 > ⚠️ **Measure production, not a local build.** A local `.env` points at a dev database whose
 > `settings` row differs from the live one. During this work a local build reported the
 > preset as Inter with `lang="en"`, which is not what the site serves. Anything that depends
-> on `settings` (font preset, language, palette, enabled features) must be read off the box:
+> on `settings` (font preset, language, palette, enabled features) must be read off the server:
 > `curl -s http://127.0.0.1:3000/ | grep -o -- '--font-reading:[^;}]*'`.
 
 Narrowing the range instead was measured and is not competitive (`12-24` still costs
@@ -261,7 +261,7 @@ never offer it at all.
 
 ## Rendering — the body cache and the warm
 
-**Measured 2026-07-29, on the live box against a copy of the real database.** The design
+**Measured 2026-07-29, on the live server against a copy of the real database.** The design
 assumed a re-render cost a fraction of a millisecond, which is why `clearCache()` throws
 away every page on any write (Invariant 1) without a second thought. It does not:
 
@@ -275,7 +275,7 @@ So the rendered body is cached in `render_cache` alongside the highlighter, keye
 **build commit + the media facts + the markdown**. Nothing invalidates it: a change is a
 different key. See `docs/spec/01-schema.md` §4 for why the argument against it was wrong.
 
-Measured after, same box, same post: **383 ms → 1 ms** with the page cache cold and the
+Measured after, same server, same post: **383 ms → 1 ms** with the page cache cold and the
 body cache warm, and the full 74-page warm sweep **3,948 ms → 203 ms**.
 
 **Three rules for this cache:**
