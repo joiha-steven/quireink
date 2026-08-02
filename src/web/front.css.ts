@@ -26,10 +26,16 @@ export const FRONT_CSS = `
    .front out fixed that and left the site header and footer still centred on the old narrow
    measure, visibly unrelated to the page under them. The override is emitted per render,
    beside the column counts, because the width is a setting. */
-.front{display:flex;flex-direction:column;gap:2.5rem}
+/* The gap under the lead's category line, declared once because TWO rules need the same
+   number: the kicker's own margin, and the offset that drops the secondary column past it. */
+.front{display:flex;flex-direction:column;gap:2.5rem;--fc-cat-gap:.35rem}
 /* Every row after the first is ruled off. The rule is the section break; there is no box. */
 .front-row+.front-row{border-top:1px solid var(--c-rule);padding-top:2.5rem}
 .front-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:.35rem 1.25rem;margin:0 0 1.5rem}
+/* The way on to the whole archive, on the right of the last heading. An auto left margin
+   rather than a spacer, so it stays at the far edge with the topic links wrapping in front of
+   it and drops to its own line, still at the edge, when the heading runs out of room. */
+.front-more{margin-left:auto;color:var(--c-meta)}
 /* A row label is a LABEL, so it is smaller than the headlines under it.
    It started at --fs-h4 and photographed as a competitor: h4 in a monospace chrome face
    reads wider and heavier than h3 in Literata, so the two sat at the same visual weight and
@@ -45,7 +51,6 @@ export const FRONT_CSS = `
 .front-topics a{color:inherit}
 .front-grid{display:grid;gap:1.75rem}
 .front-lines{display:flex;flex-direction:column;gap:1rem}
-.front-more{margin:0;padding-top:.5rem}
 /* A row that ended up with ONE item still holds a reading measure. Left to fill the grid it
    set a standfirst 1120px wide, which is not a line anybody reads; and a lone full-bleed
    card reads as a mistake rather than as a row. */
@@ -53,7 +58,7 @@ export const FRONT_CSS = `
 
 /* ----- one item ---------------------------------------------------------- */
 .fc{margin:0;min-width:0}
-.fc-cat{margin:0 0 .35rem;color:var(--c-meta)}
+.fc-cat{margin:0 0 var(--fc-cat-gap);color:var(--c-meta)}
 .fc-title{margin:0;font-weight:600;color:var(--c-heading);
   font-size:var(--fs-h3);line-height:var(--lh-h3);letter-spacing:var(--ls-h3)}
 .fc-title a{color:inherit;text-decoration:none}
@@ -121,5 +126,12 @@ export const FRONT_CSS = `
     align-items:start}
   .front-lead-row .front-secondary{border-top:0;border-left:1px solid var(--c-rule);
     padding:0 0 0 1.75rem}
+  /* Two top-aligned columns where only ONE of them opens with a category line put the
+     secondary headlines 30px above the lead headline, measured at 1440, so the smaller
+     column read first. The offset is that line: its size times its leading, plus the gap the
+     kicker itself uses. Only applied when the lead actually prints one — a lead with no
+     category has nothing to align past. */
+  .front-lead-row.has-kicker .front-secondary{
+    padding-top:calc(var(--fs-small) * var(--lh-small) + var(--fc-cat-gap))}
 }
 `.trim()

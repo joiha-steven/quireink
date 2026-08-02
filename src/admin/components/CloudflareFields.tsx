@@ -7,6 +7,7 @@
 import { useState } from 'react'
 import { useRouter } from '@/admin/router'
 import type { ApiResponse } from '@/types'
+import { Button } from '@/admin/ui/Button'
 import { useToast } from '@/admin/ui/Toast'
 import { useAdminT } from './I18nProvider'
 
@@ -72,14 +73,9 @@ export function CloudflareFields({ configured, zoneId }: { configured: boolean; 
         value={keys.cloudflareApiToken}
         onChange={(e) => set('cloudflareApiToken', e.target.value)}
       />
-      <button
-        type="button"
-        onClick={save}
-        disabled={busy}
-        className="rounded-lg bg-neutral-900 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50 dark:bg-white dark:text-neutral-900"
-      >
+      <Button type="button" onClick={save} disabled={busy}>
         {t.commentsKeySave}
-      </button>
+      </Button>
     </div>
   )
 }

@@ -199,12 +199,12 @@ export function PageForm({ initial, contentWidth, typewriterEffects }: Props) {
             {t.localDraftFound} · {formatTime(localRecovered.at)}
           </span>
           <div className="flex gap-2">
-            <button type="button" onClick={restoreLocal} className="bg-neutral-900 px-3 py-1 text-xs font-medium text-white hover:bg-neutral-700 dark:bg-white dark:text-neutral-900">
+            <Button type="button" size="sm" onClick={restoreLocal}>
               {t.localDraftRestore}
-            </button>
-            <button type="button" onClick={dismissLocal} className="px-3 py-1 text-xs font-medium text-neutral-600 hover:bg-neutral-200 dark:text-neutral-300 dark:hover:bg-neutral-800">
+            </Button>
+            <Button type="button" size="sm" variant="ghost" onClick={dismissLocal}>
               {t.localDraftDiscard}
-            </button>
+            </Button>
           </div>
         </div>
       )}

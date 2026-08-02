@@ -7,34 +7,44 @@
 // A comment saying "no backticks" was already in the file when it happened the third time,
 // which is the argument for this being a check instead.
 
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 
-// Every sheet, by the declaration that opens it. This list went stale once already: the
-// public sheet was split in two and renamed, the check kept passing against a constant that
-// no longer existed, and the fourth backtick got through.
-// It went stale a SECOND time: `prose.css.ts` was split out of the public sheet carrying
-// the warning "NO BACKTICKS anywhere below: check:css-literal enforces that" in its own
-// header, and it was never added here. The fifth backtick got through on 2026-07-29, in a
-// comment, around the word `code` — and the check reported ok while the server refused to
-// boot. Splitting a sheet out means adding it here, in the same change.
-const SHEETS: Array<{ file: string; decl: string }> = [
-  { file: 'src/web/public.css.ts', decl: 'const BASE_CSS = ' },
-  { file: 'src/web/prose.css.ts', decl: 'export const PROSE_CSS = ' },
-  { file: 'src/web/islands.css.ts', decl: 'export const ISLANDS_CSS = ' },
-  { file: 'src/web/ide.css.ts', decl: 'export const IDE_CSS = ' },
-  { file: 'src/web/mobile.css.ts', decl: 'export const MOBILE_CSS = ' },
-  { file: 'src/web/login.css.ts', decl: 'export const LOGIN_CSS = ' },
-]
+// The sheets are DISCOVERED, not listed, and that is the whole point of this block.
+//
+// A hand-kept list went stale three times. The public sheet was split in two and renamed,
+// and the check kept passing against a constant that no longer existed: the fourth backtick
+// got through. Then `prose.css.ts` was split out carrying the warning "NO BACKTICKS anywhere
+// below: check:css-literal enforces that" in its own header and was never added here, so the
+// fifth got through on 2026-07-29 while the check reported ok and the server refused to boot.
+// Then `front.css.ts` and `utility.css.ts` shipped unlisted, and the sixth was caught by the
+// type checker instead — the guard reported "ok (6 sheets)" against a file it had never read.
+//
+// A rule that has to be remembered in a second file at the same time as the first one is
+// written is a rule that gets forgotten, so the list is now the directory.
+const SHEET_DIR = 'src/web'
+const SHEETS = readdirSync(SHEET_DIR)
+  .filter((name) => name.endsWith('.css.ts'))
+  .map((name) => `${SHEET_DIR}/${name}`)
+  .sort()
+
+if (SHEETS.length === 0) {
+  console.error(`✗ check:css-literal: no *.css.ts found in ${SHEET_DIR}/, which cannot be right`)
+  process.exit(1)
+}
 
 let failed = false
 
-for (const { file, decl } of SHEETS) {
+for (const file of SHEETS) {
   const source = readFileSync(file, 'utf8')
 
   // Anchored on the declaration, NOT on the first backtick in the file: the module's own
   // doc comment contains several, and the first version of this check reported them and
   // failed on a clean file. A guard that cries wolf gets switched off.
-  const declAt = source.indexOf(decl)
+  //
+  // The FIRST such declaration, which is what makes `public.css.ts` work: it opens with
+  // BASE_CSS and then exports PUBLIC_CSS as an interpolation of it, so anchoring on the last
+  // one would scan a two-line string and miss the sheet entirely.
+  const declAt = source.search(/(?:^|\n)(?:export )?const \w*CSS\w* = `/)
   const open = declAt === -1 ? -1 : source.indexOf('`', declAt)
   // The CLOSE is the terminator that follows the opener, not the last backtick in the
   // file: public.css.ts now ends with an interpolated export, so the last backtick sits

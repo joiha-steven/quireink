@@ -139,7 +139,7 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
     <div className="pb-24">
       <PageHeader title={t.settingsTitle} />
 
-      <Tabs tabs={TABS} value={tab} onChange={setTab} variant="underline" className="mb-3" />
+      <Tabs tabs={TABS} value={tab} onChange={setTab} className="mb-3" />
       {/* The definition, in the open. A tab whose contents you have to guess is a tab you
           open five of. */}
       <p className="mb-6 text-sm text-neutral-500 dark:text-neutral-400">{HINTS[tab]}</p>

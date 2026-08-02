@@ -6,10 +6,27 @@
 // for it the order is decided ONCE, here, and no call site can hold a different opinion.
 // The order is the one rule: what it is, what to know about it, then the control.
 import type { InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from 'react'
-import { NOTE, SETTING_LABEL } from '@/admin/components/kit'
+import { CONTROL, FIELD_W, NOTE, SETTING_LABEL } from '@/admin/components/kit'
 
-const FIELD =
-  'w-full rounded-lg border border-neutral-300 bg-white px-3.5 py-2.5 text-sm text-neutral-900 shadow-sm outline-none transition focus:border-neutral-500 focus:ring-2 focus:ring-neutral-200 placeholder:text-neutral-400 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500 dark:focus:ring-neutral-800 dark:placeholder:text-neutral-500'
+// `CONTROL`, not a copy of it. This file used to declare its own `FIELD` with the same
+// twenty-odd classes, under a comment in `kit.tsx` promising the two matched — which is a
+// promise nothing checked and which had to be re-kept by hand on every change.
+const FIELD = CONTROL
+
+/**
+ * How wide a field is, when nobody said.
+ *
+ * A number field is the case worth naming: the excerpt-length box held two digits in 580px,
+ * next to a site title in 580px and a description in 580px, so three answers of wildly
+ * different shape were drawn as the same question. A field whose content has a known size
+ * gets a width to match; free text still fills its card.
+ *
+ * A caller that states a width keeps it — two competing width classes in one list resolve by
+ * stylesheet order, which is not something a call site can reason about, so exactly one is
+ * ever emitted.
+ */
+const widthFor = (type: string | undefined, className: string): string =>
+  /(^|\s|:)(w-|max-w-)/.test(className) ? '' : type === 'number' ? FIELD_W.short : FIELD_W.full
 
 type InputProps = InputHTMLAttributes<HTMLInputElement> & { label?: string; note?: ReactNode }
 
@@ -18,7 +35,7 @@ export function Input({ label, note, className = '', ...props }: InputProps) {
     <label className="block">
       {label && <span className={SETTING_LABEL}>{label}</span>}
       {note && <span className={`${NOTE} block`}>{note}</span>}
-      <input className={`${FIELD} ${label || note ? 'mt-2' : ''} ${className}`} {...props} />
+      <input className={`${FIELD} ${widthFor(props.type, className)} ${label || note ? 'mt-2' : ''} ${className}`} {...props} />
     </label>
   )
 }
@@ -30,7 +47,7 @@ export function Textarea({ label, note, className = '', ...props }: TextareaProp
     <label className="block">
       {label && <span className={SETTING_LABEL}>{label}</span>}
       {note && <span className={`${NOTE} block`}>{note}</span>}
-      <textarea className={`${FIELD} resize-y ${label || note ? 'mt-2' : ''} ${className}`} {...props} />
+      <textarea className={`${FIELD} ${FIELD_W.full} resize-y ${label || note ? 'mt-2' : ''} ${className}`} {...props} />
     </label>
   )
 }

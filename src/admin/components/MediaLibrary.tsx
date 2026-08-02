@@ -11,6 +11,7 @@ import { formatBytes } from '@/utils'
 import { formatDate } from '@/i18n/i18n'
 import { ImageUploader } from './ImageUploader'
 import { MediaToolbar, type MediaSort } from './MediaToolbar'
+import { EmptyState } from './kit'
 import { useAdminT, useAdminLang } from './I18nProvider'
 
 type Props = {
@@ -333,7 +334,7 @@ export function MediaLibrary({ mode = 'page', multi = false, onSelect, onSelectM
       {loading ? (
         <p className="py-10 text-center text-neutral-400 dark:text-neutral-500">{t.loading}</p>
       ) : items.length === 0 ? (
-        <p className="py-10 text-center text-neutral-400 dark:text-neutral-500">{t.noMedia}</p>
+        <EmptyState title={t.noMedia} />
       ) : view.length === 0 ? (
         <p className="py-10 text-center text-neutral-400 dark:text-neutral-500">{t.mediaNoMatch}</p>
       ) : (

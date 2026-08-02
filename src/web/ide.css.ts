@@ -43,8 +43,11 @@ html[data-ide-chrome=on] .subscribe-card h2::before,
 html[data-ide-chrome=on] .front-label::before,
 html[data-ide-chrome=on] #comments h2::before,
 html[data-ide-chrome=on] .empty::before,
-/* The one thing in the panel that DOES something rather than states something, so it takes
-   the label's marker rather than a literal's brackets. */
+/* The two things that DO something rather than state something, so they take the label's
+   marker rather than a literal's brackets: the panel's book-mode button, and the front
+   page's way on to the whole archive, which sits on a heading row beside a label that is
+   already marked and read as the one unmarked thing in the row without it. */
+html[data-ide-chrome=on] .front-more::before,
 html[data-ide-chrome=on] .info-action::before{content:"// ";color:var(--c-meta)}
 /* ...except in the comment thread. "Be the first to comment" is an invitation to the
    reader, not a label on a section, and the owner asked for the marker off it. */

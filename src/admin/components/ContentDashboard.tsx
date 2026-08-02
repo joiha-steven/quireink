@@ -47,7 +47,7 @@ export function ContentDashboard({
         ) : undefined}
       />
 
-      <Tabs tabs={tabs} value={tab} onChange={setTab} variant="underline" className="mb-6" />
+      <Tabs tabs={tabs} value={tab} onChange={setTab} className="mb-6" />
 
       {tab === 'posts' && (
         <PostsTable initialPosts={posts} views={views} commentCounts={commentCounts} commentsEnabled={commentsEnabled} />

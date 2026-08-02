@@ -9,12 +9,13 @@
 import type { CacheSettings } from '@/types'
 import { ToggleRow } from '@/admin/ui/Switch'
 import { useAdminT } from './I18nProvider'
+import { buttonClass } from '@/admin/ui/Button'
 import { CacheButton } from './CacheButton'
 import { PANEL, Setting, SETTING_GAP } from './kit'
 
-/** The button chrome of `ui/Button`'s secondary variant. CacheButton takes a class, not a variant. */
-const CLEAR_BUTTON =
-  'inline-flex min-h-10 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-neutral-200 bg-white px-4 py-2 text-sm font-medium text-neutral-800 shadow-sm transition hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:hover:bg-neutral-700'
+/** `CacheButton` takes a class rather than a variant, so it asks Button for one. It used to
+    carry a transcription of the secondary variant instead, under a comment saying so. */
+const CLEAR_BUTTON = buttonClass('secondary')
 
 export function CacheFields(
   { cache, onChange }: { cache: CacheSettings; onChange: (c: CacheSettings) => void },

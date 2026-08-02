@@ -4,7 +4,7 @@
 // (neutral scale only), matching the rest of the kit.
 import Link from '@/admin/router'
 import type { ReactNode } from 'react'
-import { CARD } from './kit'
+import { CARD, StatCard } from './kit'
 import type { DailyPoint } from '@/analytics/types'
 
 // Period-over-period change vs the previous window. Null when there's no prior
@@ -37,17 +37,22 @@ export function formatDuration(ms?: number): string {
   return s ? `${m}m ${s}s` : `${m}m`
 }
 
-// One headline metric. Optional trend arrow and a muted sub-line.
+/**
+ * One headline metric, which is `StatCard` with a trend arrow in it.
+ *
+ * It used to be a second copy of the same twelve classes, and the copy had already drifted:
+ * its sub-line was `neutral-400` against the kit's `neutral-500`, so the line under
+ * "Visitors" on Analytics was a shade lighter than the line under "Posts" on the Overview
+ * for no reason anyone chose. The trend is the only real difference and it is now a prop.
+ */
 export function StatTile({ label, value, prev, sub }: { label: ReactNode; value: number | string; prev?: number; sub?: ReactNode }) {
   return (
-    <div className={`${CARD} p-5`}>
-      <div className="text-[1.65rem] font-semibold tracking-tight tabular-nums">
-        {typeof value === 'number' ? value.toLocaleString() : value}
-        {typeof value === 'number' && prev != null && <Trend cur={value} prev={prev} />}
-      </div>
-      <div className="mt-1.5 text-sm text-neutral-500 dark:text-neutral-400">{label}</div>
-      {sub && <div className="mt-0.5 text-xs text-neutral-400 dark:text-neutral-500">{sub}</div>}
-    </div>
+    <StatCard
+      label={label}
+      value={typeof value === 'number' ? value.toLocaleString() : value}
+      after={typeof value === 'number' && prev != null ? <Trend cur={value} prev={prev} /> : undefined}
+      sub={sub}
+    />
   )
 }
 

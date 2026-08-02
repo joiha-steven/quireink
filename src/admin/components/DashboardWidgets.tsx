@@ -3,7 +3,7 @@
 // list (drafts, unused media). All data is gathered server-side in
 // app/admin/page.tsx and passed in — these are presentational only.
 import Link from '@/admin/router'
-import { Card } from './kit'
+import { Card, CARD_GAP, CARD_STACK } from './kit'
 import { useAdminT } from './I18nProvider'
 
 export type DashboardData = {
@@ -44,6 +44,26 @@ function Sparkline({ data }: { data: number[] }) {
 const VIEW_ALL =
   'text-xs text-neutral-500 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-200'
 
+/**
+ * Two numbers that belong together, side by side.
+ *
+ * They used to be `justify-between` inside a card that spans two thirds of the workspace,
+ * which put views at the far left and visitors 800px away at the far right with nothing in
+ * between: two figures about the same thirty days, read as two unrelated facts. Comparing
+ * them means having them within one glance of each other, so they sit at the left in reading
+ * order and the space goes to the right of both.
+ */
+function Figure({ value, label, lead = false }: { value: number; label: string; lead?: boolean }) {
+  return (
+    <div>
+      <div className={`${lead ? 'text-3xl font-bold' : 'text-3xl font-semibold text-neutral-500 dark:text-neutral-400'} tracking-tight tabular-nums`}>
+        {value.toLocaleString()}
+      </div>
+      <div className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">{label}</div>
+    </div>
+  )
+}
+
 function TrafficCard({ traffic }: { traffic: DashboardData['traffic'] }) {
   const t = useAdminT()
   return (
@@ -51,17 +71,11 @@ function TrafficCard({ traffic }: { traffic: DashboardData['traffic'] }) {
       title={t.dashTraffic}
       actions={<Link href="/admin/analytics" className={VIEW_ALL}>{t.dashViewAnalytics}</Link>}
     >
-      <div className="flex items-end justify-between gap-4">
-        <div>
-          <div className="text-3xl font-bold tracking-tight tabular-nums">{traffic.views30.toLocaleString()}</div>
-          <div className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">{t.dashViews30}</div>
-        </div>
-        <div className="text-right">
-          <div className="text-xl font-semibold tabular-nums">{traffic.visitors30.toLocaleString()}</div>
-          <div className="text-xs text-neutral-500 dark:text-neutral-400">{t.dashVisitors30}</div>
-        </div>
+      <div className="flex flex-wrap items-start gap-x-10 gap-y-4">
+        <Figure value={traffic.views30} label={t.dashViews30} lead />
+        <Figure value={traffic.visitors30} label={t.dashVisitors30} />
       </div>
-      <div className="mt-3">
+      <div className="mt-5">
         <Sparkline data={traffic.spark} />
       </div>
       <div className="mt-2 text-xs text-neutral-400 dark:text-neutral-500">
@@ -132,16 +146,29 @@ function NeedsAttentionCard({ needs }: { needs: DashboardData['needs'] }) {
   )
 }
 
+/**
+ * Two column stacks, not three cards dropped into a grid.
+ *
+ * The grid version is the failure `docs/admin-design.md` already describes for the Settings
+ * tabs, reappearing here: a grid lays its children out in ROWS, so "Needs attention" beside a
+ * taller Traffic card was stretched to Traffic's height around two lines of text, and the
+ * next card could not start until BOTH had finished — which is how "Most viewed" ended up a
+ * full-width slab holding one sentence.
+ *
+ * Each stack packs independently, so a short card is short and the card under it comes up to
+ * meet it. Which side a card goes on is a decision, made so the two columns come out close in
+ * height: traffic carries a sparkline and is the tall one on its own.
+ */
 export function DashboardWidgets({ data }: { data: DashboardData }) {
   return (
-    <div className="space-y-4">
-      <div className="grid gap-5 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <TrafficCard traffic={data.traffic} />
-        </div>
-        <NeedsAttentionCard needs={data.needs} />
+    <div className={`grid ${CARD_GAP} lg:grid-cols-2`}>
+      <div className={CARD_STACK}>
+        <TrafficCard traffic={data.traffic} />
       </div>
-      <TopPostsCard posts={data.topPosts} />
+      <div className={CARD_STACK}>
+        <NeedsAttentionCard needs={data.needs} />
+        <TopPostsCard posts={data.topPosts} />
+      </div>
     </div>
   )
 }

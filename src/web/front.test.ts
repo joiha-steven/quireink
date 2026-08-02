@@ -27,6 +27,9 @@ await savePost({ title: 'Third', slug: 'third', status: 'published', date: day(7
   content: 'x', excerpt: 'The third thing.', categories: ['Film'] })
 await savePost({ title: 'Fourth', slug: 'fourth', status: 'published', date: day(6),
   content: 'x', excerpt: 'The fourth thing.', categories: ['Film'] })
+await savePost({ title: 'Tagged', slug: 'tagged', status: 'published', date: day(5),
+  content: 'x', excerpt: 'The tagged thing.', categories: ['Film'],
+  tags: ['the web', 'craft', 'writing'] })
 
 /**
  * Render `/` with a front page built from the DEFAULTS plus this patch.
@@ -116,6 +119,86 @@ describe('the front page', () => {
   })
 })
 
+// A heading is a promise about where it goes, and the continuation is the one way off the
+// page. Both were wrong: every heading linked to the post list, so "Featured" handed the
+// reader every post the blog has, and the way to that list was a bare link stranded under
+// the last row.
+describe('the headings and the way on', () => {
+  it('links a category heading, because a category has a page', async () => {
+    const html = await front({
+      lead: { on: false, source: 'latest', slug: '', secondary: 0 },
+      strips: [{ category: 'Film', count: 3, columns: 3 }],
+      latest: { on: false, count: 6, columns: 3 },
+    })
+    expect(html).toContain(`<h2 class="front-label"><a class="link-accent" href="/category/film">Film</a>`)
+  })
+
+  it('leaves Featured and Most read as plain text, since neither names a page', async () => {
+    const current = await getSettings()
+    await saveSettings({ ...current, featured: ['third'] })
+    const html = await front({
+      lead: { on: false, source: 'latest', slug: '', secondary: 0 },
+      featured: { on: true, count: 3, columns: 3 },
+      latest: { on: false, count: 6, columns: 3 },
+    })
+    expect(html).toContain(`<h2 class="front-label">Featured</h2>`)
+  })
+
+  it('puts exactly one way on to the archive, on the last heading', async () => {
+    const html = await front({
+      lead: { on: true, source: 'latest', slug: '', secondary: 1 },
+      strips: [{ category: 'Film', count: 2, columns: 2 }],
+      latest: { on: true, count: 6, columns: 3 },
+    })
+    expect(html.split('front-more').length - 1).toBe(1)
+    // Inside the LAST row's heading, which is what makes it part of the page rather than a
+    // link left behind under it.
+    const more = html.indexOf('front-more')
+    const lastLabel = html.lastIndexOf('front-label')
+    expect(more).toBeGreaterThan(lastLabel)
+    expect(html.indexOf('front-row', more)).toBe(-1)
+  })
+
+  it('draws no continuation when the only row is the lead', async () => {
+    const html = await front({
+      lead: { on: true, source: 'latest', slug: '', secondary: 3 },
+      featured: { on: false, count: 3, columns: 3 },
+      latest: { on: false, count: 6, columns: 3 },
+    })
+    expect(html).not.toContain('front-more')
+  })
+})
+
+// Four cards across three columns is a full line and then ONE card with two thirds of the
+// row empty beside it, which is what the Latest row looked like on a blog of any real size.
+describe('how many columns a row gets', () => {
+  const cols = (html: string) => [...html.matchAll(/front-grid cols-(\d)/g)].map((m) => m[1])
+
+  it('drops a column rather than leave one card alone on the last line', async () => {
+    const html = await front({
+      lead: { on: false, source: 'latest', slug: '', secondary: 0 },
+      featured: { on: false, count: 3, columns: 3 },
+      latest: { on: true, count: 4, columns: 3 },
+    })
+    expect(cols(html)).toEqual(['2'])
+  })
+
+  it('keeps its columns when dropping one would not help', async () => {
+    // Seven across three leaves one alone; across two it leaves one alone as well, so the
+    // row keeps the three it was asked for rather than trading a ragged line for a taller row.
+    for (const n of [7, 5, 3]) {
+      await savePost({ title: `Filler ${n}`, slug: `filler-${n}`, status: 'published',
+        date: day(1), content: 'x', excerpt: `Filler ${n}.` })
+    }
+    const html = await front({
+      lead: { on: false, source: 'latest', slug: '', secondary: 0 },
+      featured: { on: false, count: 3, columns: 3 },
+      latest: { on: true, count: 5, columns: 3 },
+    })
+    expect(cols(html)).toEqual(['3'])
+  })
+})
+
 describe('the two kinds', () => {
   // Both kinds print a standfirst on a card; the text kind prints roughly twice as much,
   // because with no picture in the row the words are the only thing filling it. The image
@@ -138,6 +221,21 @@ describe('the two kinds', () => {
   it('marks the kind on the container, since the sheet reads it', async () => {
     expect(await front({ kind: 'text' })).toContain('front-text')
     expect(await front({ kind: 'image' })).toContain('front-image')
+  })
+})
+
+describe('the topic links beside a category heading', () => {
+  // Every other tag surface prints a multi-word tag with dashes, because five of them in a
+  // row with only a gap between them read as one sentence. This row was written without it
+  // and shipped "the web" where the listing sidebar and the tag page both say "the-web".
+  it('prints a multi-word tag the way the rest of the site does', async () => {
+    const html = await front({
+      lead: { on: false, source: 'latest', slug: '', secondary: 0 },
+      strips: [{ category: 'Film', count: 3, columns: 3 }],
+      tagLinks: true,
+    })
+    expect(html).toContain('>the-web</a>')
+    expect(html).not.toContain('>the web</a>')
   })
 })
 

@@ -205,3 +205,51 @@ reader feature).
 Corollary: **do not widen a card to fix its contents.** Making the MCP card span both columns
 gave its table room and turned it into a wide slab under a two-column tab, which reads as a
 mistake. A table that does not fit scrolls inside its card.
+
+## One of each — 2026-08-02
+
+Measured on the running admin, not read off the source. What was found was not a wrong design
+but SEVERAL of the same design: the kit says a thing once, a screen says it again slightly
+differently, and the difference is what the owner sees.
+
+**Two gaps, and there is no third.** `SECTION_GAP` (28px) separates the bands of a page;
+`CARD_GAP` / `CARD_STACK` (20px) separates two cards side by side or stacked. The Overview
+column measured 12, 16, 20 and 28 in one scroll, which reads as a page assembled from four
+screens. A component that wants a third number wants one of these two.
+
+**A field is as tall as the button beside it.** `CONTROL` is `min-h-10 py-2`, not `py-2.5`:
+the padded version measured 42px against `ui/Button`'s 40, so every Copy-next-to-a-token and
+Choose-image-next-to-a-filename row sat two pixels out. `ui/Input.tsx` IMPORTS `CONTROL`
+instead of declaring a matching copy, which is what the old comment promised and nothing
+enforced.
+
+**A field is as wide as its answer.** A two-digit excerpt length in 580px, beside a site title
+in 580px and a description in 580px, draws three different questions as one. `Input` gives a
+`type="number"` field `FIELD_W.short` unless the caller states a width, and emits exactly one
+width class — two competing ones resolve by stylesheet order, which no call site can reason
+about.
+
+**One button, two sizes.** There were four: `ui/Button`; the Overview's New post link, which
+copied the classes and lost `shrink-0`, `whitespace-nowrap` and the dark hover; two
+integration cards at `px-3 py-1.5` with no minimum height; and the two editors' restore-draft
+pair with **square corners**, against this document's own rule. `buttonClass()` is exported so
+an `<a>` can wear the button without copying it. `md` is a page action, `sm` is an action
+inside a strip of text (the unsaved-draft notice). A third size is a request to make one
+screen special.
+
+**One tab strip, two sizes.** `Tabs` had a `segment` variant no caller used and an `underline`
+variant that every caller used and that draws no underline; meanwhile Content's
+All/Published/Draft filter was a hand-rolled copy, 40px against the strip above it at 44, with
+no `aria-pressed` and no hover. One implementation, `size='lg'` for a strip that names a
+section of the page and `size='sm'` for a filter subordinate to it.
+
+**One stat tile.** `analytics-kit`'s `StatTile` was a second copy of `StatCard` that had
+already drifted a shade on its sub-line; it now calls `StatCard` and passes the trend arrow.
+
+**One empty state.** `EmptyState` existed and two files used it, while four others hand-rolled
+a message in three different styles.
+
+**Two related numbers go within one glance of each other.** The Traffic card put views at the
+far left and visitors 800px away at the far right of the same card, which reads as two
+unrelated facts about the same thirty days. The same rule moved Content's filter box and its
+status tabs back together: they narrow the same list.

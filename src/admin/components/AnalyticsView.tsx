@@ -6,7 +6,8 @@
 // are plain links (?range=) since admin is already dynamic.
 import Link from '@/admin/router'
 import type { AnalyticsSummary, NameStat } from '@/analytics/types'
-import { PageHeader, Card, TableFrame, THEAD, TROW } from './kit'
+import { Button } from '@/admin/ui/Button'
+import { EmptyState, PageHeader, Card, TableFrame, TAB_TRACK, tabItemClass, THEAD, TROW } from './kit'
 import { BarList, StatTile, TrendChart, flag, formatDuration, type BarRow } from './analytics-kit'
 import { useAdminT } from './I18nProvider'
 
@@ -55,29 +56,26 @@ export function AnalyticsView({ data, range, titles }: { data: AnalyticsSummary;
         title={t.analyticsTitle}
         actions={
           <div className="flex items-center gap-2">
-            {/* Wraps on a phone: 4 range pills + Export are wider than 390px, and the
-                labels themselves stay on one line (`whitespace-nowrap` per pill). */}
-            <div className="flex flex-wrap gap-1 rounded-xl bg-neutral-100 p-1 dark:bg-neutral-800">
+            {/* The kit's tab strip, worn by LINKS: the range lives in the URL, so this cannot
+                be a `<Tabs>` with an onChange. It used to carry its own copy of the markup at
+                a lighter track, one padding step short and with a different hover, so the same
+                control read as two. `TAB_TRACK` wraps on a phone, where four ranges plus
+                Export are wider than 390px. */}
+            <div className={TAB_TRACK}>
               {RANGES.map((r) => (
                 <Link
                   key={r}
                   href={`/admin/analytics?range=${r}`}
-                  className={`whitespace-nowrap rounded-lg px-3 py-1 text-sm font-medium transition ${
-                    r === range ? 'bg-white text-neutral-900 shadow-sm dark:bg-neutral-700 dark:text-white' : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
-                  }`}
+                  aria-current={r === range ? 'page' : undefined}
+                  className={`${tabItemClass(r === range, 'sm')} whitespace-nowrap`}
                 >
                   {rangeLabel[r]}
                 </Link>
               ))}
             </div>
-            <button
-              type="button"
-              onClick={exportCsv}
-              disabled={!hasData}
-              className="whitespace-nowrap rounded-lg border border-neutral-200 px-3 py-1.5 text-sm font-medium text-neutral-600 transition-colors hover:border-neutral-300 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
-            >
+            <Button variant="secondary" onClick={exportCsv} disabled={!hasData}>
               {t.analyticsExportCsv}
-            </button>
+            </Button>
           </div>
         }
       />
@@ -106,7 +104,7 @@ export function AnalyticsView({ data, range, titles }: { data: AnalyticsSummary;
       </div>
 
       {!hasData ? (
-        <p className="py-16 text-center text-neutral-400 dark:text-neutral-500">{t.analyticsNoData}</p>
+        <EmptyState title={t.analyticsNoData} />
       ) : (
         <>
           <Card>
