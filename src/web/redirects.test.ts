@@ -1,0 +1,100 @@
+// Owner-managed redirects, at the layer a reader meets them: a real HTTP redirect from
+// the router, not a row in a table.
+//
+// Its OWN database directory, like every other web test: `openDatabases` holds one
+// connection pair per process, so two test files sharing a directory close each other's.
+import { describe, expect, it, beforeEach, afterAll } from 'bun:test'
+import { freshDatabase, dropDatabase } from '@/test/db'
+import { db } from '@/store/db'
+import { savePost } from '@/content/posts'
+import { saveRedirect, getRedirects } from '@/server/redirects'
+import { clearCache } from '@/server/cache'
+import { createApp } from '@/web/app'
+
+const DIR = './.tmp-test-redirects'
+freshDatabase(DIR)
+afterAll(() => dropDatabase(DIR))
+
+const app = createApp()
+const get = async (path: string): Promise<Response> => app.request(path)
+
+beforeEach(() => {
+  clearCache()
+  for (const t of ['posts', 'pages', 'post_terms', 'post_revisions', 'settings', 'media', 'redirects']) {
+    db().run(`delete from ${t}`)
+  }
+})
+
+describe('redirects are served', () => {
+  it('answers a permanent redirect with 301 and an absolute Location', async () => {
+    await saveRedirect({ source: '/old-slug', destination: '/new-slug' })
+    const res = await get('/old-slug')
+    expect(res.status).toBe(301)
+    expect(res.headers.get('location')).toBe('http://localhost/new-slug')
+  })
+
+  it('answers a temporary redirect with 302', async () => {
+    await saveRedirect({ source: '/moved', destination: '/elsewhere', permanent: false })
+    expect((await get('/moved')).status).toBe(302)
+  })
+
+  it('sends an absolute destination through untouched', async () => {
+    await saveRedirect({ source: '/gone', destination: 'https://example.com/there' })
+    const res = await get('/gone')
+    expect(res.headers.get('location')).toBe('https://example.com/there')
+  })
+
+  it('redirects a multi-segment path, which is what a WordPress import leaves behind', async () => {
+    await saveRedirect({ source: '/2024/01/hello-world', destination: '/hello-world' })
+    const res = await get('/2024/01/hello-world')
+    expect(res.status).toBe(301)
+    expect(res.headers.get('location')).toBe('http://localhost/hello-world')
+  })
+
+  it('matches through the trailing-slash canonicalisation rather than around it', async () => {
+    await saveRedirect({ source: '/old-slug', destination: '/new-slug' })
+    // `canonicalPath` strips the slash first, so this is two hops, and the second one is
+    // the redirect. Both are 301s, so a crawler follows the pair without penalty.
+    const first = await get('/old-slug/')
+    expect(first.status).toBe(301)
+    expect(first.headers.get('location')).toBe('/old-slug')
+    expect((await get('/old-slug')).status).toBe(301)
+  })
+
+  it('renaming a slug leaves a redirect that actually works', async () => {
+    await savePost({ title: 'First name', content: 'body text here', status: 'published', date: '2020-01-01T00:00:00.000Z' })
+    await savePost(
+      { slug: 'second-name', title: 'Second name', content: 'body text here', status: 'published', date: '2020-01-01T00:00:00.000Z' },
+      'first-name',
+    )
+    expect((await getRedirects()).map((r) => r.source)).toContain('/first-name')
+    const res = await get('/first-name')
+    expect(res.status).toBe(301)
+    expect(res.headers.get('location')).toBe('http://localhost/second-name')
+    expect((await get('/second-name')).status).toBe(200)
+  })
+})
+
+describe('what redirects do NOT touch', () => {
+  it('leaves the admin and the API alone', async () => {
+    await saveRedirect({ source: '/admin/old', destination: '/new' })
+    await saveRedirect({ source: '/api/old', destination: '/new' })
+    // The admin bounces a signed-out visitor to sign-in; the API 404s. Neither is a 301,
+    // which is the point: a redirect table cannot reach either surface.
+    expect((await get('/admin/old')).status).not.toBe(301)
+    expect((await get('/api/old')).status).not.toBe(301)
+  })
+
+  it('a URL with no row is still a 404 page, not a redirect', async () => {
+    const res = await get('/never-existed')
+    expect(res.status).toBe(404)
+    expect(res.headers.get('content-type')).toContain('text/html')
+  })
+
+  it('live content at a path wins, because saving there clears the row', async () => {
+    await saveRedirect({ source: '/taken', destination: '/somewhere' })
+    await savePost({ slug: 'taken', title: 'Taken', content: 'body text here', status: 'published', date: '2020-01-01T00:00:00.000Z' })
+    expect((await getRedirects()).map((r) => r.source)).not.toContain('/taken')
+    expect((await get('/taken')).status).toBe(200)
+  })
+})

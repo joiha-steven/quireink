@@ -7,7 +7,7 @@
 // not change.
 
 import { normalizePath, isValidDestination } from '@/server/redirect-path'
-import { all, run } from '@/store/query'
+import { all, one, run } from '@/store/query'
 import { nowMs } from '@/store/db'
 
 export type Redirect = {
@@ -31,6 +31,33 @@ export async function getRedirects(): Promise<Redirect[]> {
   } catch (error) {
     console.error(`[ERROR] redirects.getRedirects: ${(error as Error).message}`)
     return []
+  }
+}
+
+/**
+ * The redirect for a request path, or null. Called on every public request, so it is the
+ * one function here that is synchronous: `source` is unique, which makes this an indexed
+ * read of a local file on the same thread.
+ *
+ * **Fail-open.** A redirect table that cannot be read must not be able to take the site
+ * down with it, so an error is logged and the request carries on to the router.
+ *
+ * The frozen tree cached this for 60 seconds (`v1/src/middleware.ts`). That cache was
+ * paid for by its lookup being an HTTP fetch to PostgREST; here it would buy nothing but
+ * a minute in which a redirect the owner just saved does not work.
+ */
+export function findRedirect(path: string): Redirect | null {
+  const source = normalizePath(path)
+  if (!source) return null
+  try {
+    const row = one<Row>(
+      `select id, source, destination, permanent from redirects where source = ?`,
+      source,
+    )
+    return row === null ? null : toRedirect(row)
+  } catch (error) {
+    console.error(`[ERROR] redirects.findRedirect: ${(error as Error).message}`)
+    return null
   }
 }
 
