@@ -83,13 +83,8 @@ export async function slugRole(slug: string): Promise<SlugRole> {
   return home.mode === 'page' && home.page && slug === home.page ? 'home' : null
 }
 
-/**
- * The path the post list occupies in the `/{slug}` namespace, or null while it owns `/`.
- *
- * Used by the slug guard so a new post cannot be given the list's path, and by the sitemap
- * so it names the list once, at whichever URL is real.
- */
-export async function listSlug(): Promise<string | null> {
-  const { home } = await getSettings()
-  return home.mode === 'list' ? null : home.listPath.slice(1)
-}
+// `listSlug()` used to live here, and its own comment named two callers it did not have:
+// the slug guard and the sitemap each derive the fact inline, in the file that owns the
+// concern, and each needs a different shape of it (`slugs.ts` wants the bare slug, the
+// sitemap wants the path with its slash). A shared helper that neither would use is not
+// deduplication, it is a third place to keep in step.

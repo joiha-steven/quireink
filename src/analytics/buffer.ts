@@ -8,7 +8,6 @@
 // the accepted trade for analytics and NOTHING else in the codebase may use this path.
 
 import { analyticsQuery } from '@/store/query'
-import { nowMs } from '@/store/db'
 
 export type EventRow = {
   path: string

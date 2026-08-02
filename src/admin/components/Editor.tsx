@@ -287,7 +287,7 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
         return true
       },
       // Paste a lone video URL (YouTube/Vimeo/TikTok) -> insert a video embed.
-      handlePaste(view, event) {
+      handlePaste(_view, event) {
         const text = event.clipboardData?.getData('text/plain')?.trim() ?? ''
         if (text && !/\s/.test(text) && isVideoUrl(text)) {
           editorRef.current?.chain().focus().setVideo(text).run()

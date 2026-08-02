@@ -6,7 +6,7 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { book } from './book'
 import { listing } from './listing'
-import { page, stubFetch, useDom } from './test-dom'
+import { page, useDom } from './test-dom'
 
 useDom()
 

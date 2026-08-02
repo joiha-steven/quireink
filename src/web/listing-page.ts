@@ -139,6 +139,45 @@ export async function notFoundPage(): Promise<Response> {
 }
 
 /**
+ * The page a reader gets when a handler threw.
+ *
+ * Until now they got `{"error":"Internal error"}` in the browser window, because `onError`
+ * answered every route the same way and every route includes the reading pages. The three
+ * strings for this page have been in all six locales since the port and nothing printed
+ * them, which is how it was found.
+ *
+ * Dressed exactly like the 404 for the same reason that one is: it is a real page in the
+ * site shell, so a phone gets the viewport meta and does not lay it out at 980px.
+ *
+ * The fallback is not defensive padding. This runs BECAUSE something threw, and the most
+ * likely thing to have thrown is the database — which is what `getSettings` reads. A 500
+ * handler that throws gives the reader a blank connection reset, so the second failure
+ * answers with a fixed, dependency-free page instead.
+ */
+export async function errorPage(): Promise<Response> {
+  const headers = { 'content-type': 'text/html; charset=utf-8' }
+  try {
+    const settings = await getSettings()
+    const s = t(settings.language)
+    const html = await listingPage({
+      title: `${s.errorTitle} · ${settings.title}`,
+      body: `<div class="listing-head"><h1>${escapeHtml(s.errorTitle)}</h1></div>
+<p class="empty">${escapeHtml(s.errorText)}</p>
+<p class="mt-3"><a class="link-accent" href="/">${escapeHtml(s.backHome)}</a></p>`,
+    })
+    return new Response(html, { status: 500, headers })
+  } catch {
+    return new Response(
+      '<!DOCTYPE html><html><head><meta charset="utf-8">'
+      + '<meta name="viewport" content="width=device-width, initial-scale=1">'
+      + '<title>Error</title></head><body><h1>Error</h1>'
+      + '<p>Something went wrong. Please try again.</p></body></html>',
+      { status: 500, headers },
+    )
+  }
+}
+
+/**
  * Serve an HTML route from the page cache, so the cache rule lives in ONE place.
  *
  * The owner can switch the cache off (Settings -> System). Off means neither read nor

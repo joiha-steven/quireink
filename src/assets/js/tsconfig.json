@@ -15,6 +15,9 @@
     // own, so the boundary this file exists to enforce is unaffected.
     "types": ["bun"],
     "strict": true,
+    // Turned on 2026-08-02 with the root project; see the note in the root tsconfig.json.
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "noImplicitOverride": true,
     "noFallthroughCasesInSwitch": true,
     "skipLibCheck": true,

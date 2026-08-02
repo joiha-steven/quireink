@@ -23,9 +23,6 @@ type Comment = {
   replies: Comment[]
 }
 
-const escapeAttr = (s: string) =>
-  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
-
 /**
  * One comment and its replies.
  *

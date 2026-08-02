@@ -217,20 +217,10 @@ describe('Invariant 1: a write clears the whole page cache', () => {
   })
 })
 
-describe('the error handler', () => {
-  // A thrown handler must become a logged, typed 500 - and must NOT pass the exception
-  // message through, since it can carry a path, a SQL fragment or a token.
-  it('turns a throw into a typed 500 without leaking the message', async () => {
-    const { Hono } = await import('hono')
-    const { errorHandler } = await import('@/web/api')
-    const probe = new Hono()
-    probe.onError(errorHandler())
-    probe.get('/boom', () => { throw new Error('secret: /var/lib/quire/token') })
-    const res = await probe.request('/boom')
-    expect(res.status).toBe(500)
-    expect(await res.json()).toEqual({ error: 'Internal error' })
-  })
-})
+// The error handler moved to `errors.test.ts`. It was asserting JSON for a NON-api path,
+// which is the behaviour that turned out to be the bug: a reader on an article got
+// `{"error":"Internal error"}` in the browser window. The new file covers both shapes, the
+// leak, and the cache headers, through the real router rather than a bare probe.
 
 describe('the admin shell carries the owner settings', () => {
   // The frozen tree's admin sat inside the root layout and inherited the language, the

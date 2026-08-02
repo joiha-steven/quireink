@@ -15,6 +15,20 @@
     // CLAUDE.md exists to prevent. Tightening is a separate, reviewable pass once the port
     // is finished, and is queued.
     "strict": true,
+    // `noUnusedLocals` / `noUnusedParameters` were turned on 2026-08-02, once the port was
+    // finished and the "tighten later" note below came due. They found fifteen dead
+    // declarations across the three projects, including two unused imports in `web/app.ts`
+    // and a whole `escapeAttr` in an island bundle whose bytes are budgeted. Prefix a
+    // parameter with `_` when it must stay for its position.
+    //
+    // `noImplicitReturns` was tried in the same pass and NOT taken: its only two findings
+    // were a Hono middleware and a React effect, where falling off the end is the idiomatic
+    // shape and satisfying the flag means writing `return undefined`. A flag you work
+    // around teaches people to work around the compiler.
+    // `noUncheckedIndexedAccess` (120 findings) and `exactOptionalPropertyTypes` (58) are
+    // still queued, and are each their own reviewable pass.
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "noImplicitOverride": true,
     "noFallthroughCasesInSwitch": true,
     "skipLibCheck": true,

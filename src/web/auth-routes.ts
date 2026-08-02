@@ -96,7 +96,6 @@ export async function handleLogin(c: Context): Promise<Response> {
   const { values, wantsHtml } = await readFields(c, ['username', 'password', 'next'])
   const settings = await getSettings()
   const s = adminT(settings.language)
-  const next = safeNext(values.next)
 
   const result = await submitPassword({
     username: values.username,

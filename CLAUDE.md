@@ -101,9 +101,13 @@ opened the page.
 
 - **400 lines per file maximum. No `any`** — use `unknown` and narrow. `any` is acceptable
   only at a JSON boundary that immediately validates into a typed shape.
-- **No SQL string building.** Every query is a literal with bound parameters. The single
-  exception is the analytics facet column, which comes from a fixed lookup table
-  ([`docs/spec/01-schema.md`](./docs/spec/01-schema.md) §3).
+- **No VALUE is ever interpolated into SQL** — values are bound, always, no exceptions. What
+  may be interpolated is a fixed IDENTIFIER, and only from a module constant or a closed set:
+  a column list (`META_COLS`), the `liveOnly()` predicate, a table name, the analytics facet
+  ([`docs/spec/01-schema.md`](./docs/spec/01-schema.md) §3). Sixteen such sites exist and none
+  reads a request. This used to say the facet was the only exception, which was not true of
+  the code the day it was written — and a rule that does not describe the code is one people
+  stop checking against.
 - **Every write route is mounted on the owner-gated router group**, not checked inside the
   handler ([invariant 4](./docs/invariants.md)).
 - **Every handler** times and logs its request, catches and logs errors, and returns a typed
