@@ -69,8 +69,11 @@ Count when written: 214 items.
 - [ ] `⚠` Renaming a slug **auto-adds a 301** so existing links survive
 - [ ] `⚠` Saving content at slug X **deletes any redirect whose source is /X**, so a live URL
       is never shadowed and an A→B→A rename cannot self-loop
-- [ ] Redirects resolve in middleware as a real HTTP redirect before any render, with a 60s
-      in-process cache, fail-open on error
+- [x] Redirects resolve in middleware as a real HTTP redirect before any render, fail-open on
+      error. `✂` The 60s in-process cache is **deliberately not carried over**: it existed
+      because v1's lookup was an HTTP fetch to PostgREST, and against local SQLite it would
+      only buy a minute in which a just-saved redirect does not work. Landed 2026-08-02 —
+      until then the rows were written and read by nothing
 - [ ] `source` normalised (leading slash, no query, no trailing slash); destination is a path
       or an absolute http(s) URL; self-redirect rejected
 - [ ] `/page/1` redirects to the bare path

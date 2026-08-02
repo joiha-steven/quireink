@@ -32,6 +32,7 @@ import { handlePreview } from '@/web/preview'
 import { handleSearch, handleSearchIndex } from '@/web/search-api'
 import { handleSearchPage } from '@/web/search-page'
 import { canonicalPath } from '@/web/canonical-path'
+import { userRedirects } from '@/web/redirects'
 import { cacheHeaders } from '@/web/cache-headers'
 import { securityHeaders } from '@/web/security-headers'
 import { compression } from '@/web/compress'
@@ -113,6 +114,9 @@ export function createApp(): Hono {
   // Nothing here ever sent content-encoding, so every page and every asset left the origin
   // uncompressed. Outermost of the three, so it sees the finished body of every route.
   app.use('*', compression())
+
+  // A URL the owner MOVED answers before any route sees it. See `web/redirects.ts`.
+  app.use('*', userRedirects())
 
   // `/` is the post list, or a page the owner chose. Resolved per request rather than when
   // the routes are built, because the mode is a setting: see `web/home-mode.ts`.

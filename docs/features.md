@@ -209,11 +209,16 @@ they have a blog to configure. [ADR 0014](decisions/0014-homepage-modes.md).
 - **What:** owner-managed 301 (permanent) / 302 (temporary) redirects, plus an automatic
   301 whenever a post/page slug is renamed (so existing links + search results survive a
   move). Rows live in the `redirects` table (`source` unique, `destination`, `permanent`).
-- ⚠ **The rows are stored and nothing serves them yet.** Request-time resolution is a parity
-  item that has not landed ([`spec/07-parity.md`](spec/07-parity.md) §2), so a redirect created
-  in the admin — or auto-created by a rename — does not currently redirect a visitor. The
-  frozen tree resolved it in Next's `middleware.ts`; Hono has no reason it cannot be ordinary
-  middleware, and the stored rows do not change when it is added.
+- **Served as a real HTTP 301/302 before any route runs** (`src/web/redirects.ts`, registered
+  in `app.ts` as the last middleware before the routes). The lookup is skipped for `/admin`,
+  `/api`, `/uploads/` and `/assets/`, and **fails open**: an unreadable table logs and lets the
+  request through rather than taking the site down. `Location` is absolute, resolved against
+  the request, so a stored path and a stored absolute URL behave the same — and the query
+  string is not carried over, because the destination is the whole of the new URL.
+  ⚠ Between the port and 2026-08-02 the rows were stored and **nothing served them**, which
+  made the auto-301 below silently untrue: every rename in that window lost its old URL.
+  There is no in-process cache; the frozen tree's 60s one paid for an HTTP fetch to PostgREST,
+  and here the lookup is an indexed read of a local file on the same thread.
 - **Live content always wins.** Saving a post/page at slug X deletes any redirect whose
   `source` is `/X` (`clearRedirectForPath`), so a live URL is never shadowed by a stale
   redirect and a rename-back (A→B then B→A) cannot create a self-loop.
