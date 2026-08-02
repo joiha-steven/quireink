@@ -93,3 +93,31 @@ describe('a URL no route claims', () => {
     }
   })
 })
+
+// A trailing slash is the same page, and it used to be a 404.
+//
+// Hono does not match a trailing slash and no route here has one, so `/some-post/` missed
+// everything. Every WordPress permalink carries one: measured on the edcmeo export, 468 old
+// URLs of the shape `https://edcmeo.com/{slug}/`. An imported site pointing its domain at
+// Quire would have answered 404 to every inbound link and every search result it already had.
+describe('a trailing slash', () => {
+  it('301s to the same path without it', async () => {
+    const res = await app.request('/some-post/')
+    expect(res.status).toBe(301)
+    expect(res.headers.get('location')).toBe('/some-post')
+  })
+
+  it('keeps the query string and collapses repeats', async () => {
+    expect((await app.request('/tag/edc/?page=2')).headers.get('location')).toBe('/tag/edc?page=2')
+    expect((await app.request('/deep/path///')).headers.get('location')).toBe('/deep/path')
+  })
+
+  // Trimming `/` leaves nothing to redirect to, so the homepage is left alone.
+  it('leaves the homepage alone', async () => {
+    expect((await app.request('/')).status).toBe(200)
+  })
+
+  it('normalises an API path too, rather than 404ing it', async () => {
+    expect((await app.request('/api/search/')).status).toBe(301)
+  })
+})
