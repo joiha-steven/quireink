@@ -31,6 +31,7 @@ import { handleManifest } from '@/web/manifest'
 import { handlePreview } from '@/web/preview'
 import { handleSearch, handleSearchIndex } from '@/web/search-api'
 import { handleSearchPage } from '@/web/search-page'
+import { canonicalPath } from '@/web/canonical-path'
 import { cacheHeaders } from '@/web/cache-headers'
 import { securityHeaders } from '@/web/security-headers'
 import { compression } from '@/web/compress'
@@ -90,6 +91,9 @@ export function createApp(): Hono {
   // ...and the same argument for errors: a handler may throw, and this is the one place
   // that becomes a logged, typed 500.
   app.onError(errorHandler())
+
+  // A trailing slash is the same page, not a miss. See `web/canonical-path.ts`.
+  app.use('*', canonicalPath())
 
   // A URL NO route claims. The `/{slug}` route answers a single-segment miss with the 404
   // page, so that case has always looked right — and it is the only case anyone checked.
