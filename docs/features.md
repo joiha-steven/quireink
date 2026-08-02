@@ -59,12 +59,10 @@ they have a blog to configure. [ADR 0014](decisions/0014-homepage-modes.md).
   `toc`** in a single left rail (full width; the free right gutter stays for wide images). Below the rail
   breakpoint the drawer opens from the **header menu button** (`RailToggle`, mobile only; self-hides on
   pages with no rail) — no separate header dropdown. **The menu ALSO renders on the header row**
-  (`siteMenu` in `web/chrome.ts`, `.site-menu` from 60rem up), in the same right-hand cluster as search
-  and the theme toggle. That is deliberate duplication on a listing page at desktop, where the rail's
-  menu block is visible too: the rail is the only place it used to render, and a listing page is the
-  only place a rail exists — the front page drops it (ADR 0014) and an article's rail is the table of
-  contents, so a configured menu was absent from both. Below 60rem the header copy is hidden and the
-  drawer is the only one. Menu + most-viewed count + featured are edited in
+  (`siteMenu` in `web/chrome.ts`, `.site-menu` from 60rem up, beside search and the theme toggle).
+  On a desktop listing page that IS a deliberate duplicate of the rail block, which used to be the
+  only place it rendered: the front page drops the rail (ADR 0014) and an article's rail is the ToC,
+  so a menu was absent from both. Below 60rem only the drawer has it. Menu + most-viewed count + featured are edited in
   **Admin → Settings → Site → Layout & menu**; `getViewTotals` (`src/analytics/summary.ts`) reads
   `analytics.db` directly and returns `{}` on any error, so a broken analytics database costs the
   block, not the page.
