@@ -84,6 +84,31 @@ function siteTitle(settings: SiteSettings): string {
  */
 const token = (text: string): string => `<span class="btn-token">${escapeHtml(text)}</span>`
 
+/**
+ * The owner's menu, as words in the header's right-hand cluster, ahead of the controls.
+ *
+ * The frozen tree moved this OUT of the header and into the top of the listing rail, which
+ * is still where it renders on a listing page — the two are not a duplicate at any width a
+ * reader sees, because the rail is a gutter at desktop and a drawer below the breakpoint.
+ * The header is where it earns its keep: the front page drops the rail entirely (ADR 0014)
+ * and an article's rail carries its table of contents, so a configured menu appeared on
+ * listing pages and nowhere else.
+ *
+ * Desktop only. Below the breakpoint the header row is the title and up to five controls
+ * already, and words do not fit beside them; the drawer keeps serving that width.
+ */
+function siteMenu(settings: SiteSettings, label: string): string {
+  if (settings.menu.length === 0) return ''
+  const links = settings.menu.map((item) => {
+    // Same rule the rail applies: an external link opens in a new tab, and `noopener`
+    // because `target=_blank` otherwise hands the opened page a handle on this one.
+    const external = /^https?:\/\//.test(item.href)
+    const rel = external ? ' target="_blank" rel="noopener"' : ''
+    return `<a href="${escapeAttr(item.href || '/')}"${rel}>${escapeHtml(item.label)}</a>`
+  }).join('')
+  return `<nav class="site-menu t-small" aria-label="${escapeAttr(label)}">${links}</nav>`
+}
+
 export function siteHeader(settings: SiteSettings, opts: ChromeOptions): string {
   const s = t(settings.language)
   const actions: string[] = []
@@ -125,7 +150,7 @@ export function siteHeader(settings: SiteSettings, opts: ChromeOptions): string 
   // field and nothing to skip) does not call this function at all.
   return `<header class="site">
 <a class="skip-link" href="#content">${escapeHtml(s.skipToContent)}</a>
-<div class="site-bar">${siteTitle(settings)}<nav class="site-actions">${actions.join('')}</nav></div>${
+<div class="site-bar">${siteTitle(settings)}${siteMenu(settings, s.menu)}<nav class="site-actions">${actions.join('')}</nav></div>${
     settings.showDescription && settings.description
       ? `<p class="tagline">${escapeHtml(settings.description)}</p>` : ''
   }</header>`

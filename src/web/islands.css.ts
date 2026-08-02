@@ -232,6 +232,14 @@ body:has(.book-overlay[open]){overflow:hidden}
    40px button centres a 20px glyph, so the glyph sits 10px inside the button edge. Pulling
    the row right by that 10px lands it flush, matching the logo's flush-left edge. */
 .site-actions{display:flex;align-items:center;gap:.125rem;flex-shrink:0;margin-right:-.625rem}
+/* The owner's menu, in the same cluster as the controls, from 60rem up (narrower than that
+   the row is a title and five controls already). The .5rem past the bar's own 1rem gap holds
+   the first control further off than the next link, so it is not read as one of them. */
+.site-menu{display:none}
+@media (min-width:60rem){
+  .site-menu{display:flex;align-items:center;gap:1.25rem;margin-left:auto;min-width:0;padding-right:.5rem}
+  .site-menu a{color:var(--c-meta);text-decoration:none;white-space:nowrap}.site-menu a:hover{color:var(--c-heading)}
+}
 .icon-btn{display:flex;align-items:center;justify-content:center;width:2.5rem;height:2.5rem;
   border:0;border-radius:.5rem;background:none;color:var(--c-meta);cursor:pointer;text-decoration:none}
 .icon-btn:hover{color:var(--c-heading);background:var(--c-rule)}
