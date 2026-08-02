@@ -31,11 +31,16 @@ export function userRedirects(): MiddlewareHandler {
     if (!isExcluded(c.req.path)) {
       const hit = findRedirect(c.req.path)
       if (hit) {
-        // Absolute, resolved against the request, exactly as the frozen tree sent it. A
-        // stored destination may be a path or another site's URL, and `new URL` handles
-        // both — which also means the query string is NOT carried over, because the
-        // destination is the whole of what the owner said the new URL is.
-        return c.redirect(new URL(hit.destination, c.req.url).toString(), hit.permanent ? 301 : 302)
+        // Sent EXACTLY as stored: a path stays a relative `Location`, an absolute URL stays
+        // absolute. The query string is not carried over either way, because the destination
+        // is the whole of what the owner said the new URL is.
+        //
+        // Resolving it against the request first — which is what the frozen tree got for
+        // free from Next — is wrong behind a proxy. TLS terminates at nginx, so `c.req.url`
+        // is `http://…` and every redirect went out pointing at http: an extra round trip
+        // for a browser, and a refusal from any client that will not follow https → http.
+        // A relative Location is resolved by the CLIENT, against the scheme it actually used.
+        return c.redirect(hit.destination, hit.permanent ? 301 : 302)
       }
     }
     await next()

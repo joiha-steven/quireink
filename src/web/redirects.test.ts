@@ -26,11 +26,15 @@ beforeEach(() => {
 })
 
 describe('redirects are served', () => {
-  it('answers a permanent redirect with 301 and an absolute Location', async () => {
+  it('answers a permanent redirect with 301 and a relative Location', async () => {
     await saveRedirect({ source: '/old-slug', destination: '/new-slug' })
     const res = await get('/old-slug')
     expect(res.status).toBe(301)
-    expect(res.headers.get('location')).toBe('http://localhost/new-slug')
+    // Relative on purpose. Resolving against the request would emit the scheme the ORIGIN
+    // saw, which behind TLS-terminating nginx is `http://` — an extra hop for a browser and
+    // a refusal from anything that will not follow https → http. Asserting the absolute form
+    // here is what let that ship: `app.request` speaks plain http, so it looked right.
+    expect(res.headers.get('location')).toBe('/new-slug')
   })
 
   it('answers a temporary redirect with 302', async () => {
@@ -48,7 +52,13 @@ describe('redirects are served', () => {
     await saveRedirect({ source: '/2024/01/hello-world', destination: '/hello-world' })
     const res = await get('/2024/01/hello-world')
     expect(res.status).toBe(301)
-    expect(res.headers.get('location')).toBe('http://localhost/hello-world')
+    expect(res.headers.get('location')).toBe('/hello-world')
+  })
+
+  it('never emits a scheme of its own, whatever the origin saw', async () => {
+    await saveRedirect({ source: '/old-slug', destination: '/new-slug' })
+    const location = (await get('/old-slug')).headers.get('location') ?? ''
+    expect(location.startsWith('http://')).toBe(false)
   })
 
   it('matches through the trailing-slash canonicalisation rather than around it', async () => {
@@ -70,7 +80,7 @@ describe('redirects are served', () => {
     expect((await getRedirects()).map((r) => r.source)).toContain('/first-name')
     const res = await get('/first-name')
     expect(res.status).toBe(301)
-    expect(res.headers.get('location')).toBe('http://localhost/second-name')
+    expect(res.headers.get('location')).toBe('/second-name')
     expect((await get('/second-name')).status).toBe(200)
   })
 })

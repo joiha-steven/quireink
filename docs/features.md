@@ -212,9 +212,11 @@ they have a blog to configure. [ADR 0014](decisions/0014-homepage-modes.md).
 - **Served as a real HTTP 301/302 before any route runs** (`src/web/redirects.ts`, registered
   in `app.ts` as the last middleware before the routes). The lookup is skipped for `/admin`,
   `/api`, `/uploads/` and `/assets/`, and **fails open**: an unreadable table logs and lets the
-  request through rather than taking the site down. `Location` is absolute, resolved against
-  the request, so a stored path and a stored absolute URL behave the same — and the query
-  string is not carried over, because the destination is the whole of the new URL.
+  request through rather than taking the site down. `Location` is the destination **exactly as
+  stored** — a path stays relative, an absolute URL stays absolute — and the query string is
+  not carried over, because the destination is the whole of the new URL. ⚠ Do not "improve"
+  this by resolving against the request: TLS terminates at the proxy, so the origin sees
+  `http://` and every redirect would point there.
   ⚠ Between the port and 2026-08-02 the rows were stored and **nothing served them**, which
   made the auto-301 below silently untrue: every rename in that window lost its old URL.
   There is no in-process cache; the frozen tree's 60s one paid for an HTTP fetch to PostgREST,
