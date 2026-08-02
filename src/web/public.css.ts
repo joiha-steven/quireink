@@ -99,9 +99,14 @@ header.site .title{font-family:var(--font-sans);font-weight:600;color:var(--c-he
 header.site .logo{display:block;height:auto}
 /* When the owner has uploaded a dark twin both are in the markup and exactly one shows.
    The :has() test keeps the light one visible on a site with no dark logo, where
-   .logo-dark is simply absent. */
+   .logo-dark is simply absent.
+
+   :not(.logo-dark) is load-bearing. The dark twin is class="logo logo-dark", so without it
+   the hide rule matched BOTH marks - and at (0,6,2) against the show rule's (0,3,2) it won,
+   so a site with a dark logo had no logo at all in dark mode. It shipped that way because no
+   instance had ever set one: measured on edcmeo the day it became the first. */
 header.site .logo-dark{display:none}
-html.dark header.site .title:has(.logo-dark) .logo{display:none}
+html.dark header.site .title:has(.logo-dark) .logo:not(.logo-dark){display:none}
 html.dark header.site .logo-dark{display:block}
 header.site .tagline{color:var(--c-meta);font-size:var(--fs-small);
   line-height:var(--lh-small);letter-spacing:var(--ls-small);margin:.75rem 0 0}
