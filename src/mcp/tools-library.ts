@@ -151,6 +151,13 @@ function registerSettingsTools(server: McpServer): void {
     async (args) => {
       // Only the allowlisted keys above can reach saveSettings (which merges over
       // current), so nothing sensitive is ever touched.
+      //
+      // That was not true until 2026-08-02. `saveSettings` merges every field EXCEPT three
+      // that hard-coded their default instead of their fallback, so a patch carrying just a
+      // title moved `home.mode` back to `list` and turned off a composed front page. Fixed
+      // in `settings-sanitize.ts` and pinned by "a partial save leaves everything it did not
+      // mention alone" in `content/settings.test.ts`, because this comment is a promise
+      // about a function in another file.
       const patch: Partial<SiteSettings> = {}
       if (args.title !== undefined) patch.title = args.title
       if (args.description !== undefined) patch.description = args.description

@@ -73,4 +73,50 @@ describe('saveSettings', () => {
     await saveSettings({ title: 'B' })
     expect(one<{ n: number }>(`select count(*) n from settings`)!.n).toBe(1)
   })
+
+  // A partial save must not change a field it never mentioned, and "merges over current" was
+  // only ever tested on `title` and `description` — both of which happened to be written
+  // with a fallback. Three union fields were not: `home.mode`, `home.front.kind` and
+  // `home.front.lead.source` each hard-coded their DEFAULT instead, so any patch that
+  // omitted `home` moved the homepage back to the post list.
+  //
+  // Reachable, not theoretical: `update_settings` over MCP builds a patch of at most title,
+  // description and showDescription, under a comment promising that saveSettings merges over
+  // current so nothing sensitive is touched. Changing the site title turned off a composed
+  // front page.
+  describe('a partial save leaves everything it did not mention alone', () => {
+    it('keeps the homepage mode, the front-page kind and the lead source', async () => {
+      await saveSettings({
+        home: {
+          mode: 'front',
+          page: '',
+          listPath: '/post',
+          front: {
+            ...DEFAULT_SETTINGS.home.front,
+            kind: 'text',
+            lead: { on: true, source: 'pinned', slug: 'chosen', secondary: 2 },
+          },
+        },
+      })
+
+      await saveSettings({ title: 'Only the title changed' })
+
+      const s = await getSettings()
+      expect(s.title).toBe('Only the title changed')
+      expect(s.home.mode).toBe('front')
+      expect(s.home.front.kind).toBe('text')
+      expect(s.home.front.lead.source).toBe('pinned')
+      expect(s.home.front.lead.slug).toBe('chosen')
+    })
+
+    // The same function reads the stored blob, where "unrecognised" has to mean the DEFAULT
+    // rather than the current value — there is no current value at that point. Fixing the
+    // save direction must not break the read direction.
+    it('still falls back to the default when the STORED blob names a mode this build cannot render', async () => {
+      write({ title: 'Stored', home: { mode: 'holographic', front: { kind: 'sculpture' } } })
+      const s = await getSettings()
+      expect(s.home.mode).toBe('list')
+      expect(s.home.front.kind).toBe('image')
+    })
+  })
 })
