@@ -74,3 +74,24 @@ describe('the IDE chrome rail', () => {
     expect(ungated).toEqual([])
   })
 })
+
+// The two marks in the header, and which of them shows.
+//
+// `logoDark` is opt-in and no instance had ever set one, so the pair of rules that swaps
+// them had never rendered anywhere. The dark twin is `class="logo logo-dark"`, so the rule
+// hiding the light mark in dark mode matched BOTH — and at (0,6,2) against the show rule's
+// (0,3,2) it won. A site that uploaded a dark logo got no logo at all in dark mode.
+//
+// Asserted on the SHEET rather than on a rendered page because the failure is a cascade
+// result, and `bun test` has no cascade. The proof is the selector: the hide rule has to
+// exclude the twin by name.
+describe('the header logo pair', () => {
+  it('hides only the LIGHT mark in dark mode, never the dark twin', () => {
+    expect(PUBLIC_CSS).toContain('html.dark header.site .title:has(.logo-dark) .logo:not(.logo-dark){display:none}')
+  })
+
+  it('shows the dark twin in dark mode and hides it everywhere else', () => {
+    expect(PUBLIC_CSS).toContain('header.site .logo-dark{display:none}')
+    expect(PUBLIC_CSS).toContain('html.dark header.site .logo-dark{display:block}')
+  })
+})
