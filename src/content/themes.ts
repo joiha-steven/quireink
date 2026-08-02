@@ -343,12 +343,6 @@ export function getDefaultTheme(themes: Record<string, ThemeSettings>, defaultId
 // Every built-in palette id, in display order. The default "everything on" set.
 export const ALL_PALETTE_IDS: string[] = THEME_PRESETS.map((p) => p.id)
 
-// Compact palette list for the client switcher: preset order, display name, and
-// the (customized) light colors used to render the preview swatch.
-export function paletteOptions(themes: Record<string, ThemeSettings>): { id: string; name: string; light: ThemeColors }[] {
-  return THEME_PRESETS.map((p) => ({ id: p.id, name: p.name, light: (themes[p.id] ?? p.theme).light }))
-}
-
 function vars(c: ThemeColors): string {
   return `--c-bg:${c.bg};--c-text:${c.text};--c-heading:${c.heading};--c-meta:${c.meta};--c-link:${c.link};--c-accent:${c.accent};--c-rule:${c.rule}`
 }

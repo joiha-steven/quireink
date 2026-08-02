@@ -12,7 +12,6 @@ export type Dict = {
   emptyTag: string
   categoryLabel: string
   tagLabel: string
-  pageLabel: string
   menu: string
   skipToContent: string
   shortSearch: string
@@ -36,13 +35,11 @@ export type Dict = {
   bookModePrev: string
   bookModeNext: string
   search: string
-  searchPlaceholder: string
   searchHint: string
   searchEmpty: string
   searchResults: string
   pagerNewer: string
   pagerOlder: string
-  tocTitle: string
   tocIndex: string
   categoriesTitle: string
   mostViewedTitle: string
@@ -62,7 +59,6 @@ export type Dict = {
   nlPlaceholder: string
   nlButton: string
   nlSuccess: string
-  nlAlready: string
   nlError: string
   nlConfirmSubject: string
   nlConfirmIntro: string
@@ -89,7 +85,6 @@ export type Dict = {
   notFoundText: string
   errorTitle: string
   errorText: string
-  tryAgain: string
   backHome: string
   backToTop: string
   // image lightbox
@@ -104,11 +99,8 @@ export type Dict = {
   commentEmailNote: string
   commentWebsite: string
   commentBody: string
-  commentFormatHint: string
   commentSubmit: string
-  commentSubmitting: string
   commentReply: string
-  commentCancel: string
   commentDeleted: string
   commentError: string
   commentSignInGoogle: string
@@ -146,7 +138,6 @@ export type AdminStrings = {
   cacheClearDesc: string
   clearCacheFailed: string
   // dashboard
-  dashboardTitle: string
   tabPosts: string
   tabPages: string
   newPost: string
@@ -201,7 +192,6 @@ export type AdminStrings = {
   tbGallery: string
   tbTable: string
   // table editing controls (shown only when the cursor is inside a table)
-  tbTableTools: string
   tbColAdd: string
   tbColDel: string
   tbRowAdd: string
@@ -285,11 +275,9 @@ export type AdminStrings = {
   galleryAdd: string
   copyUrl: string
   download: string
-  downloadOriginal: string
   filesDropzone: string
   noFiles: string
   loadFilesFailed: string
-  confirmDeleteFile: string
   unsupportedType: string
   checkUnused: string
   checkUnusedFailed: string
@@ -357,7 +345,6 @@ export type AdminStrings = {
   menuHint: string
   // appearance
   navAppearance: string
-  appearanceTitle: string
   appearanceHint: string
   themePreset: string
   themePresetHint: string
@@ -437,18 +424,11 @@ export type AdminStrings = {
   typewriterDesc: string
   // overview
   overviewTitle: string
-  licenseTitle: string
   statPosts: string
   statPages: string
   statComments: string
   statMedia: string
-  statVariants: string
-  statFiles: string
   statStorage: string
-  statCategories: string
-  statTags: string
-  statEmpty: string
-  // overview: dashboard widgets (traffic, top posts, needs-attention)
   dashTraffic: string
   dashViewAnalytics: string
   dashViews30: string
@@ -460,23 +440,10 @@ export type AdminStrings = {
   dashAllClear: string
   dashDrafts: string
   // overview: quick actions + recent activity
-  quickTitle: string
   viewSite: string
   recentActivity: string
   recentViewAll: string
   // overview: SEO health + traffic sources widgets
-  seoTitle: string
-  seoNoExcerpt: string
-  seoNoImage: string
-  seoAllGood: string
-  sourcesTitle: string
-  sourcesReferrers: string
-  sourcesCountries: string
-  sourcesDirect: string
-  sourcesEmpty: string
-  sysBackupLast: string
-  sysBackupNever: string
-  // settings cards
   cardGeneral: string
   cardLayout: string
   cardFeatures: string
@@ -626,7 +593,6 @@ export type AdminStrings = {
   analyticsTitle: string
   analyticsViews: string
   analyticsVisitors: string
-  analyticsTopPages: string
   analyticsAvgDepth: string
   analyticsExportCsv: string
   analyticsPeak: string
@@ -636,8 +602,6 @@ export type AdminStrings = {
   analyticsTopCountries: string
   analyticsColPage: string
   analyticsColDepth: string
-  analyticsColSource: string
-  analyticsColCountry: string
   analyticsAvgTime: string
   analyticsBounceRate: string
   analyticsColTime: string
@@ -674,25 +638,6 @@ export type AdminStrings = {
   logClearConfirm: string
   logCleared: string
   // system info panel (Overview)
-  sysTitle: string
-  sysHosting: string
-  sysRegion: string
-  sysEnv: string
-  sysCommit: string
-  sysDatabase: string
-  sysDbStatus: string
-  sysStorage: string
-  sysReachable: string
-  sysUnreachable: string
-  sysMcp: string
-  sysBackup: string
-  sysOn: string
-  sysOff: string
-  sysSite: string
-  sysBranch: string
-  sysRuntime: string
-  sysFramework: string
-  // trash (Admin → Trash) — soft-deleted posts/pages/media/files
   navTrash: string
   trashTitle: string
   trashHint: string
@@ -760,8 +705,6 @@ export type AdminStrings = {
   backupNone: string
   backupLastRun: string
   backupNever: string
-  backupColDate: string
-  backupColSize: string
   backupDeleteConfirm: string
   backupToastOk: string
   backupToastFail: string
@@ -787,7 +730,6 @@ export type AdminStrings = {
   nlSmtpSecure: string
   nlSaveSmtp: string
   nlSmtpSaved: string
-  nlSubscribers: string
   nlConfirmed: string
   nlPending: string
   nlUnsub: string
@@ -864,8 +806,6 @@ export type AdminStrings = {
   authRecoveryHint: string
   authUseAuthenticator: string
   authRestart: string
-  authSignOut: string
-  // first-run enrolment
   authSetUp: string
   authStepOf: string
   authScanTitle: string

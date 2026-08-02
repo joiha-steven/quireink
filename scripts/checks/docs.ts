@@ -62,6 +62,7 @@ const files = [
 ].sort()
 
 const violations: string[] = []
+const approaching: string[] = []
 
 // 1. Relative links resolve. Absolute URLs, anchors and mailto are not our problem.
 for (const file of files.filter((p) => !frozen(p))) {
@@ -121,9 +122,14 @@ for (const file of files) {
   if (appendOnly(file)) continue
   const n = lineCount(readFileSync(file, 'utf8'))
   if (n > FILE_MAX) violations.push(`${file}: ${n} lines, cap ${FILE_MAX}. Split it`)
+  // Same approach warning as check:filesize, for the same reason: a hard cap with no
+  // approach lights blocks whoever happens to add the line that crosses it, about a file
+  // they were not thinking about.
+  else if (n > FILE_MAX * 0.9) approaching.push(`${file}: ${n} of ${FILE_MAX}`)
 }
 
 console.log(`  scanned ${files.length} markdown file(s)`)
+for (const a of approaching) console.log(`  · approaching the cap: ${a}`)
 if (violations.length === 0) {
   console.log('✓ check:docs: ok')
 } else {

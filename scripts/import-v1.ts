@@ -19,7 +19,7 @@
 import { existsSync, rmSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { openDatabases, closeDatabases, db, analyticsDb } from '@/store/db'
-import { CHECKSUM_COLUMNS, CHECKSUM_KEYS, type ChecksumTable } from '@/import/checksum'
+import { CHECKSUM_COLUMNS, type ChecksumTable } from '@/import/checksum'
 import {
   formatFindings, isFatal, verifyChecksums, verifyCounts, verifySearch, verifySemantic,
   verifySpot, type Finding,

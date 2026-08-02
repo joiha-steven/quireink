@@ -143,6 +143,15 @@ which had therefore never applied. `check:css-literal` now counts `/*` against `
 sheet, because nothing about that failure was visible: no error, no log, and the sheet reads
 correctly in the editor.
 
+**The check DISCOVERS the sheets; it does not keep a list of them.** It used to, and the
+list went stale three times — the third time it reported "ok (6 sheets)" while `front.css.ts`
+and `utility.css.ts` had never been read, and a backtick in one of them was caught by the
+type checker instead. `check:type-roles` had the same list and the same hole (`mobile.css.ts`
+was never in it). Both now scan `src/web/*.css.ts`, so a new sheet is covered the moment the
+file exists, and the old rule "add a new sheet to the check in the same commit" is gone
+along with the way to forget it. `type-roles` keeps ONE exclusion, `login.css.ts`, because
+the sign-in page renders with no base sheet and a role reference there resolves to nothing.
+
 ### A fourth sheet: the phone
 
 `web/mobile.css.ts` is appended LAST, after the islands and the IDE chrome, because several

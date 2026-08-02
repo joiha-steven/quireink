@@ -17,21 +17,7 @@
 // picked, and `pageStyles` declares only the owner's own faces, so a logo may not assume
 // any given family is even present. The art lives in `@/brand-art`, which the admin shares.
 
-import { MARK_I, MARK_Q, MARK_VIEWBOX, WORD_INK, WORD_QUIRE, WORD_VIEWBOX } from '@/brand-art'
-
-/**
- * `Qi`, at `size` px tall.
- *
- * Height-driven rather than width-driven, like the word: the letterforms have fixed
- * proportions, so setting the height and letting the width follow is the only sizing that
- * cannot distort them.
- */
-export function quireMark(size = 30): string {
-  return `<svg class="brand-mark" height="${size}" viewBox="${MARK_VIEWBOX}" `
-    + `fill="currentColor" role="img" aria-label="Qi">`
-    + `<path d="${MARK_Q}"/><path d="${MARK_I}"/></svg>`
-}
-
+import { WORD_INK, WORD_QUIRE, WORD_VIEWBOX } from '@/brand-art'
 /** The word: `quire` in Inter, `INK` in JetBrains Mono. */
 export function quireWord(height = 26): string {
   return `<svg class="brand-word" height="${height}" viewBox="${WORD_VIEWBOX}" `

@@ -10,13 +10,13 @@
 
 import { Hono } from 'hono'
 import type { Context } from 'hono'
-import { getPublicPosts, searchPosts } from '@/content/posts'
+import { getPublicPosts } from '@/content/posts'
 import { getPublicPages } from '@/content/pages'
 import { getSettings, resolveSiteUrl } from '@/content/settings'
 import { resolveSeries } from '@/content/series'
 import { resolveTerm, tagText } from '@/content/taxonomy'
 import { t } from '@/i18n/i18n'
-import { escapeHtml, foldAccents } from '@/utils'
+import { escapeHtml } from '@/utils'
 import { renderListing } from '@/web/listing'
 import { cached, listingPage, notFoundPage, renderFeedBody } from '@/web/listing-page'
 import { renderHome, renderPostList, slugRole } from '@/web/home-mode'
@@ -34,7 +34,7 @@ import { handleSearchPage } from '@/web/search-page'
 import { cacheHeaders } from '@/web/cache-headers'
 import { securityHeaders } from '@/web/security-headers'
 import { compression } from '@/web/compress'
-import { errorHandler, requestLogger } from '@/web/api'
+import { errorHandler, notFoundHandler, requestLogger } from '@/web/api'
 import { contentRoutes } from '@/web/admin/content'
 import { siteRoutes } from '@/web/admin/site'
 import { uploadRoutes } from '@/web/admin/uploads'
@@ -90,6 +90,15 @@ export function createApp(): Hono {
   // ...and the same argument for errors: a handler may throw, and this is the one place
   // that becomes a logged, typed 500.
   app.onError(errorHandler())
+
+  // A URL NO route claims. The `/{slug}` route answers a single-segment miss with the 404
+  // page, so that case has always looked right — and it is the only case anyone checked.
+  // Anything with two or more segments matched no route at all and fell through to Hono's
+  // built-in `404 Not Found`, in text/plain, with no viewport meta: measured at 390px, the
+  // exact failure `notFoundPage` was written to prevent. The URLs this hits are not
+  // hypothetical. A WordPress site imported into Quire Ink has every old inbound link
+  // shaped `/2024/01/slug`, and every one of them landed here.
+  app.notFound(notFoundHandler())
 
   // What a shared cache may do with a page, in one rule at the door.
   app.use('*', cacheHeaders())

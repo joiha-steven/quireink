@@ -10,7 +10,7 @@ import { saveSettings } from '@/content/settings'
 import { savePost } from '@/content/posts'
 import {
   isSnapshotName, lastRunAt, listSnapshots, maybeRunBackup, runBackup, snapshotName,
-  snapshotsDir, deleteSnapshot,
+  deleteSnapshot,
 } from '@/server/backup'
 
 const DIR = './.tmp-test-backup'

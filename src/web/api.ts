@@ -8,6 +8,7 @@
 
 import type { Context, MiddlewareHandler } from 'hono'
 import { logActivityError } from '@/server/activity'
+import { errorPage, notFoundPage } from '@/web/listing-page'
 
 /**
  * A successful JSON body.
@@ -46,14 +47,35 @@ export function fail(c: Context, message: string, status = 400): Response {
  *
  * The message is NOT passed through. An exception string can carry a file path, a SQL
  * fragment or a token, and none of that belongs in a response to whoever triggered it.
+ *
+ * What it ANSWERS WITH depends on who asked. This returned JSON to everybody, and everybody
+ * includes a reader on an article: a thrown handler put `{"error":"Internal error"}` in the
+ * browser window, unstyled, with no viewport meta and no way back to the site. The 404 has
+ * been a real page in the site shell for exactly this reason. An API client still gets the
+ * typed envelope it parses — the split is by path, the same line the router already draws.
  */
-export function errorHandler(): (err: Error, c: Context) => Response {
+const isApi = (path: string): boolean => path.startsWith('/api/') || path === '/api'
+
+export function errorHandler(): (err: Error, c: Context) => Response | Promise<Response> {
   return (err, c) => {
     const where = `${c.req.method} ${c.req.path}`
     console.error(`[ERROR] ${where}: ${err.message}\n${err.stack ?? ''}`)
     void logActivityError(where, err.message)
-    return c.json({ error: 'Internal error' }, 500)
+    if (isApi(c.req.path)) return c.json({ error: 'Internal error' }, 500)
+    return errorPage()
   }
+}
+
+/**
+ * A URL no route claims, answered by the same rule: a page for a reader, an envelope for a
+ * client.
+ *
+ * It lives beside `errorHandler` rather than in `app.ts` so the split by path is stated
+ * ONCE. The two are the same decision about the same question, and putting them in
+ * different files is how they came to disagree in the first place.
+ */
+export function notFoundHandler(): (c: Context) => Response | Promise<Response> {
+  return (c) => (isApi(c.req.path) ? c.json({ error: 'Not found' }, 404) : notFoundPage())
 }
 
 /**

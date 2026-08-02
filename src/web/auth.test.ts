@@ -24,13 +24,6 @@ afterAll(() => dropDatabase(DIR))
 const PASSWORD = 'wandering violet cassette'
 const app = createApp()
 
-const form = (data: Record<string, string>): Request =>
-  new Request('http://localhost/x', {
-    method: 'POST',
-    headers: { 'content-type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams(data),
-  })
-
 const post = (path: string, data: Record<string, string>, headers: Record<string, string> = {}) =>
   app.request(path, {
     method: 'POST',

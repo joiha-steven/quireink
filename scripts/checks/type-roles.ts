@@ -14,15 +14,28 @@
 //                                    cap, a dinkus), which stays right at every role size
 //   * a listed exception             below, with a reason
 //
-// `login.css.ts` is NOT scanned. The sign-in page renders with an empty base sheet, so no
-// `--fs-*` variable is defined on it and a role reference there would resolve to nothing.
+// The sheets are DISCOVERED, not listed, for the same reason `check:css-literal`'s are: a
+// hand-kept list of files goes stale in the commit that adds a file, and a guard reading six
+// of eight sheets still prints a tick. `mobile.css.ts` was never in the list here and nobody
+// noticed, because it happens to carry exactly one size and that one is legitimate.
+//
+// `login.css.ts` is the one real exclusion. The sign-in page renders with an empty base
+// sheet, so no `--fs-*` variable is defined on it and a role reference there would resolve
+// to nothing.
 
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 
-const SHEETS = [
-  'src/web/public.css.ts', 'src/web/prose.css.ts', 'src/web/islands.css.ts',
-  'src/web/ide.css.ts', 'src/web/front.css.ts', 'src/web/utility.css.ts',
-]
+const SHEET_DIR = 'src/web'
+const NOT_SCANNED = new Set(['login.css.ts'])
+const SHEETS = readdirSync(SHEET_DIR)
+  .filter((f) => f.endsWith('.css.ts') && !NOT_SCANNED.has(f))
+  .map((f) => `${SHEET_DIR}/${f}`)
+  .sort()
+
+if (SHEETS.length === 0) {
+  console.error(`✗ check:type-roles: no *.css.ts found in ${SHEET_DIR}/, which cannot be right`)
+  process.exit(1)
+}
 
 /**
  * Literal sizes that are NOT text.
@@ -41,6 +54,12 @@ const ALLOWED = new Map<string, string>([
   ['.book-x', 'the × glyph that closes book mode, sized with its padding'],
   ['.book-arrow', 'the page-turn arrows in book mode, sized with their hit targets'],
   ['.search-close', 'the × glyph that closes the search overlay'],
+  [
+    'form.search input,form.subscribe input,.search-input,.comment-form input,.comment-form textarea',
+    'not a size but a FLOOR: max(16px,1em). iOS Safari zooms the whole page when a focused '
+    + 'control sits below 16px and --fs-small measures 14px here, so tapping the sign-up '
+    + 'field shifted the layout sideways and left it there. A larger type role still wins.',
+  ],
 ])
 
 /**

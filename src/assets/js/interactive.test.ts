@@ -8,7 +8,7 @@ import { beforeEach, describe, expect, it } from 'bun:test'
 import { comments as mountComments } from './comments'
 import { search } from './search'
 import { subscribe } from './subscribe'
-import { page, stubFetch, useDom } from './test-dom'
+import { page, useDom } from './test-dom'
 
 useDom()
 
