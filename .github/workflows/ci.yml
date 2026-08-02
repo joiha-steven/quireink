@@ -18,13 +18,19 @@ jobs:
       # package-lock.json for setup-node to cache against — which is exactly how this job
       # was failing. It never reached a test: it died looking for a lockfile that this
       # repository has not had since the cutover.
+      #
+      # PINNED, not `latest`. The golden suite compares article bodies byte for byte, which
+      # is why `marked` and `shiki` carry exact versions with no caret; running that
+      # comparison on whatever runtime shipped this morning gives away the same guarantee at
+      # the other end. A Bun release that changes behaviour should turn this job red in a
+      # commit that says so, not on a random Tuesday. Bump it deliberately.
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: 1.3.14
       - run: bun install --frozen-lockfile
-      # The full offline gate: typecheck, the static guards (filesize / css / routes / type /
-      # docs) and the test suite. Needs no backend env — SQLite is in-process and every test
-      # opens its own database in a temp directory.
+      # The full offline gate: typecheck, the static guards (filesize / css / nul / routes /
+      # type / admin-kit / docs) and the test suite. Needs no backend env — SQLite is
+      # in-process and every test opens its own database in a temp directory.
       - run: bun run check:all
       # And the standalone executable must still compile. `check:all` proves the code is
       # correct; this proves it can be shipped.
