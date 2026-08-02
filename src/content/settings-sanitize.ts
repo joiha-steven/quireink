@@ -158,10 +158,12 @@ export function sanitizeFront(input: unknown, fallback: FrontSettings): FrontSet
   const popular = (o.popular ?? {}) as Partial<FrontSettings['popular']>
   const latest = (o.latest ?? {}) as Partial<FrontSettings['latest']>
   return {
-    kind: o.kind === 'text' ? 'text' : 'image',
+    // `fallback.kind`, for the same reason `mode` takes its fallback: a partial save must
+    // not turn a text-led front page back into an image-led one just by not mentioning it.
+    kind: o.kind === 'text' || o.kind === 'image' ? o.kind : fallback.kind,
     lead: {
       on: bool(lead.on, fallback.lead.on),
-      source: lead.source === 'pinned' ? 'pinned' : 'latest',
+      source: lead.source === 'pinned' || lead.source === 'latest' ? lead.source : fallback.lead.source,
       slug: typeof lead.slug === 'string' ? lead.slug.trim().replace(/^\/+/, '').slice(0, 200) : fallback.lead.slug,
       secondary: clampNumber(lead.secondary, 0, 3, fallback.lead.secondary),
     },
@@ -230,9 +232,18 @@ export const DEFAULT_HOME: HomeSettings = {
 export function sanitizeHome(input: unknown, fallback: HomeSettings): HomeSettings {
   const o = (input ?? {}) as Partial<HomeSettings>
   return {
-    // Anything unrecognised is `list`, which is the mode that changes nothing. A settings
-    // blob written by a NEWER version naming a mode this build cannot render lands here.
-    mode: o.mode === 'page' || o.mode === 'front' ? o.mode : 'list',
+    // Anything unrecognised falls back, which for a READ is `list` (DEFAULT_HOME) and for a
+    // WRITE is whatever the site is already serving. A settings blob written by a NEWER
+    // version naming a mode this build cannot render lands here.
+    //
+    // `fallback`, not the literal `'list'`. This function has two callers and they mean
+    // different things by "unrecognised": reading passes DEFAULT_HOME, saving passes the
+    // CURRENT settings, and `saveSettings` takes a partial. Hard-coding the default meant a
+    // save that never mentioned `home` silently moved the homepage back to the post list —
+    // and the MCP `update_settings` tool builds exactly such a patch, under a comment
+    // promising that saveSettings "merges over current, so nothing sensitive is ever
+    // touched". Changing the site title over MCP turned off a composed front page.
+    mode: o.mode === 'page' || o.mode === 'front' || o.mode === 'list' ? o.mode : fallback.mode,
     page: typeof o.page === 'string' ? o.page.trim().replace(/^\/+/, '').slice(0, 200) : fallback.page,
     listPath: sanitizeListPath(o.listPath, fallback.listPath),
     front: sanitizeFront(o.front, fallback.front),
