@@ -7,7 +7,7 @@ import type { Post, ApiResponse } from '@/types'
 import { useToast } from '@/admin/ui/Toast'
 import { formatDateTimeShort, foldAccents } from '@/utils'
 import { RowActions, StatusPill } from './RowActions'
-import { TableFrame, THEAD, TROW } from './kit'
+import { CONTROL, EmptyState, TableFrame, Tabs, THEAD, TROW } from './kit'
 import { useAdminT } from './I18nProvider'
 
 type StatusFilter = 'all' | 'published' | 'draft'
@@ -55,7 +55,7 @@ export function PostsTable({
   }, [posts, status, needle])
 
   if (posts.length === 0) {
-    return <p className="py-16 text-center text-neutral-500 dark:text-neutral-400">{t.noPosts}</p>
+    return <EmptyState title={t.noPosts} />
   }
 
   const statusTabs: { key: StatusFilter; label: string }[] = [
@@ -66,6 +66,13 @@ export function PostsTable({
 
   return (
     <>
+      {/* A filter box is not a document. It ran `flex-1` and measured 1051px, which says the
+          answer typed into it might be a paragraph; it is two or three words. The kit's
+          `CONTROL` rather than a hand-rolled copy of it, which had a lighter border, a
+          different focus ring and two pixels less height than every other field in the admin.
+
+          The two sit TOGETHER rather than at opposite ends of the row: they narrow the same
+          list, and a thousand pixels between them says they are unrelated controls. */}
       <div className="mb-5 flex flex-wrap items-center gap-3">
         <input
           type="search"
@@ -73,28 +80,13 @@ export function PostsTable({
           onChange={(e) => setQuery(e.target.value)}
           placeholder={t.filterPlaceholder}
           aria-label={t.filterPlaceholder}
-          className="min-h-10 min-w-0 flex-1 rounded-lg border border-neutral-200 bg-white px-3.5 py-2 text-sm shadow-sm outline-none placeholder:text-neutral-400 focus:border-neutral-400 focus:ring-2 focus:ring-neutral-200 dark:border-neutral-700 dark:bg-neutral-900 dark:placeholder:text-neutral-500 dark:focus:ring-neutral-800"
+          className={`${CONTROL} w-full sm:w-80`}
         />
-        <div className="flex gap-1 rounded-xl bg-neutral-200/70 p-1 dark:bg-neutral-800">
-          {statusTabs.map((s) => (
-            <button
-              key={s.key}
-              type="button"
-              onClick={() => setStatus(s.key)}
-              className={`rounded-lg px-3 py-1.5 text-sm font-medium ${
-                status === s.key
-                  ? 'bg-white text-neutral-900 shadow-sm dark:bg-neutral-700 dark:text-white'
-                  : 'text-neutral-500'
-              }`}
-            >
-              {s.label}
-            </button>
-          ))}
-        </div>
+        <Tabs tabs={statusTabs} value={status} onChange={setStatus} size="sm" />
       </div>
 
       {filtered.length === 0 ? (
-        <p className="py-16 text-center text-neutral-500 dark:text-neutral-400">{t.filterEmpty}</p>
+        <EmptyState title={t.filterEmpty} />
       ) : (
     <TableFrame>
         <thead className={THEAD}>

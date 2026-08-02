@@ -10,6 +10,7 @@
 import { useState } from 'react'
 import type { CommentSettings, ApiResponse } from '@/types'
 import type { CommentEnv } from '@/comments/comment-env'
+import { Button } from '@/admin/ui/Button'
 import { ToggleRow } from '@/admin/ui/Switch'
 import { useToast } from '@/admin/ui/Toast'
 import { useAdminT } from './I18nProvider'
@@ -133,14 +134,9 @@ export function CommentIntegrations(
           <input className={INPUT} type="password" placeholder={ph(env.googleConfigured, t.commentsKeyGoogleSecret)} value={keys.googleClientSecret} onChange={(e) => set('googleClientSecret', e.target.value)} />
         </div>
       )}
-      <button
-        type="button"
-        onClick={save}
-        disabled={busy}
-        className="rounded-lg bg-neutral-900 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50 dark:bg-white dark:text-neutral-900"
-      >
+      <Button type="button" onClick={save} disabled={busy}>
         {t.commentsKeySave}
-      </button>
+      </Button>
       </div>
       )}
     </div>

@@ -21,7 +21,7 @@ export function LibraryTabs() {
 
   return (
     <div>
-      <Tabs tabs={tabs} value={tab} onChange={setTab} variant="underline" className="mb-6" />
+      <Tabs tabs={tabs} value={tab} onChange={setTab} className="mb-6" />
       {/* Keep the images tab mounted (it holds upload/scroll state); the videos and
           files tabs are created on first visit. */}
       <div className={tab === 'images' ? '' : 'hidden'}>

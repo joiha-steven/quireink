@@ -3,7 +3,7 @@
 // Reached from the Top pages table in the overview (?path=…). Presentational.
 import Link from '@/admin/router'
 import type { PageSummary } from '@/analytics/types'
-import { PageHeader, Card } from './kit'
+import { EmptyState, PageHeader, Card } from './kit'
 import { BarList, StatTile, TrendChart, flag, formatDuration } from './analytics-kit'
 import { useAdminT } from './I18nProvider'
 import type { Range } from './AnalyticsView'
@@ -57,7 +57,7 @@ export function AnalyticsPageDetail({ data, title, range }: { data: PageSummary;
       </div>
 
       {!hasData ? (
-        <p className="py-16 text-center text-neutral-400 dark:text-neutral-500">{t.analyticsNoData}</p>
+        <EmptyState title={t.analyticsNoData} />
       ) : (
         <>
           <Card>

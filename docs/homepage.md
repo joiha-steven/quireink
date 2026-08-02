@@ -34,8 +34,7 @@ union yet. Posts keep `/{slug}` in every mode.
 
 A fixed stack of rows, configured by options. **Not a block composer**: the ORDER lives in
 code and settings choose only which rows appear, how big they are and where their posts come
-from. Rows, in order: **lead → featured → one per category → most read → latest**, then a link
-to the full list.
+from. Rows, in order: **lead → featured → one per category → most read → latest**.
 
 - **Hierarchy is size, then standfirst, then image, then rules** — measured off the NYT front
   page on 2026-07-31, where most stories carry no picture at all. So `home.front.kind` is one
@@ -45,9 +44,28 @@ to the full list.
 - **A post appears ONCE.** Rows are built in priority order over a shared `used` set, so the
   newest post is the lead OR the first card of its category OR the first of latest, never all
   three. A row left with nothing does not render — no empty headings.
+- **A heading links only when it names a place.** A category has a page, so a strip's heading
+  is a link. "Featured" and "Most read" do not, and pointing them at the post list — which is
+  what shipped — meant clicking a heading called Featured handed the reader every post the
+  blog has ever published. A heading that goes nowhere beats one that goes somewhere else.
+- **One way on to the archive, on the LAST heading.** It was a bare link under the last row,
+  full width with no rule above it, reading as something left behind rather than as part of
+  the page; a newspaper prints a continuation at the end of the section it continues. It is
+  attached to the last row that HAS a heading, so a front page whose only row is the lead
+  shows none — at that size the list holds barely more than the page already does.
 - **The grid clamps its columns to its item count**, because a three-column row holding one
   card is two thirds of a row of white space, and on a small blog that is the common case. A
-  one-item row keeps a 42rem reading measure rather than setting a 1120px line.
+  one-item row keeps a 42rem reading measure rather than setting a 1120px line. It then drops
+  ONE column when the last line would hold a single card (four across three is a full line and
+  then an orphan) — and only when dropping one actually helps, so seven across three keeps its
+  three rather than trading a ragged line for a taller row.
+- **The lead's kicker offsets the secondary column** (`.front-lead-row.has-kicker`). The two
+  columns top-align, so a lead that prints a category line put the right-hand headlines 30px
+  above the lead headline and the smaller column read first. The renderer knows whether the
+  kicker is there, so it says so in a class rather than the sheet guessing with `:has()`.
+- **Topic links print through `tagText`,** like every other tag on the site. This row was
+  written without it and shipped "the web" where the listing sidebar and the tag page both say
+  "the-web": five multi-word tags in a row with only a gap between them read as one sentence.
 - **The page is wider than the reading column** (`--shell-w` → 1120px for the whole document,
   header and footer included). Three across inside a 672px measure is three slivers: measured,
   the secondary headline came out in a 110px column five lines deep.

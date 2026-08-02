@@ -3,8 +3,19 @@ import type { ButtonHTMLAttributes } from 'react'
 
 type Variant = 'primary' | 'secondary' | 'ghost' | 'danger'
 
+/**
+ * Two sizes, and only two.
+ *
+ * `md` is the page's own action: the thing the screen exists to do. `sm` is an action inside
+ * a strip of text — the restore/discard pair in the editor's unsaved-draft notice, which at
+ * full size would be taller than the two lines it interrupts. A third size is a request to
+ * make one screen special, and that is how there came to be four.
+ */
+type Size = 'md' | 'sm'
+
 type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: Variant
+  size?: Size
 }
 
 const STYLES: Record<Variant, string> = {
@@ -26,11 +37,27 @@ const STYLES: Record<Variant, string> = {
 // anything long, a button with neither gets squeezed until its own LABEL wraps: the MCP card
 // shipped "Tạo token" broken across two lines and twice as tall as the row it sat in. A
 // button is a fixed object; it is the text beside it that gives way.
-export function Button({ variant = 'primary', className = '', ...props }: Props) {
-  return (
-    <button
-      className={`inline-flex min-h-10 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50 ${STYLES[variant]} ${className}`}
-      {...props}
-    />
-  )
+const SHAPE =
+  'inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-lg font-medium transition disabled:cursor-not-allowed disabled:opacity-50'
+
+const SIZES: Record<Size, string> = {
+  md: 'min-h-10 px-4 py-2 text-sm',
+  sm: 'min-h-8 px-3 py-1.5 text-xs',
+}
+
+/**
+ * The same button, for something that is a LINK and not a button.
+ *
+ * Exported because the alternative is what was already happening: an `<a>` that wants to look
+ * like the primary action copies the class list by hand and loses part of it. The Overview's
+ * New post link had no `shrink-0`, no `whitespace-nowrap` and no dark hover; two integration
+ * cards used `px-3 py-1.5` with no minimum height; and the two editors' restore-draft buttons
+ * had square corners, in an admin whose stated rule is that square corners belong to the
+ * public reading interface only. Four primary buttons, four sizes.
+ */
+export const buttonClass = (variant: Variant = 'primary', size: Size = 'md', className = ''): string =>
+  `${SHAPE} ${SIZES[size]} ${STYLES[variant]} ${className}`
+
+export function Button({ variant = 'primary', size = 'md', className = '', ...props }: Props) {
+  return <button className={buttonClass(variant, size, className)} {...props} />
 }

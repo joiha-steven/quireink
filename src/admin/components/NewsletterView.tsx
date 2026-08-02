@@ -38,7 +38,7 @@ export function NewsletterView({ posts, mailConfigured }: { posts: SendablePost[
           {t.nlNoSmtpWarning}
         </p>
       )}
-      <Tabs tabs={TABS} value={tab} onChange={setTab} variant="underline" className="mb-6" />
+      <Tabs tabs={TABS} value={tab} onChange={setTab} className="mb-6" />
       {tab === 'people' && <NewsletterSubscribers />}
       {tab === 'send' && <NewsletterSend posts={posts} />}
       {tab === 'test' && <NewsletterTest />}

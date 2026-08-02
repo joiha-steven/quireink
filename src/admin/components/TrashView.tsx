@@ -9,7 +9,7 @@ import { useRouter } from '@/admin/router'
 import type { Post, Page, MediaItem, FileItem, AdminComment, ApiResponse } from '@/types'
 import { useToast } from '@/admin/ui/Toast'
 import { formatDateTimeShort } from '@/utils'
-import { PageHeader, TableFrame, THEAD } from './kit'
+import { EmptyState, PageHeader, TableFrame, Tabs, THEAD } from './kit'
 import { useAdminT } from './I18nProvider'
 
 type Kind = 'posts' | 'pages' | 'media' | 'files' | 'comments'
@@ -113,21 +113,7 @@ export function TrashView({
       <PageHeader title={t.trashTitle} description={t.trashHint} />
 
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap gap-1 rounded-xl bg-neutral-200/70 p-1 dark:bg-neutral-800">
-          {tabs.map((item) => (
-            <button
-              key={item.key}
-              onClick={() => setTab(item.key)}
-              className={`rounded-lg px-3 py-2 text-sm font-medium ${
-                tab === item.key
-                  ? 'bg-white text-neutral-900 shadow-sm dark:bg-neutral-700 dark:text-white'
-                  : 'text-neutral-500'
-              }`}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
+        <Tabs tabs={tabs} value={tab} onChange={setTab} />
         {counts[tab] > 0 && (
           <button type="button" onClick={() => onEmpty(tab)} disabled={pending} className={ACTION_BTN}>
             {t.emptyTrash}
@@ -146,7 +132,7 @@ export function TrashView({
   // ----- per-kind tables (kept inline so they share act/onRestore/onPurge) -----
 
   function Empty() {
-    return <p className="py-16 text-center text-neutral-500 dark:text-neutral-400">{t.trashEmpty}</p>
+    return <EmptyState title={t.trashEmpty} />
   }
 
   function Shell({ head, children }: { head: React.ReactNode; children: React.ReactNode }) {

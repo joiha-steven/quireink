@@ -4,7 +4,8 @@
 import Link from '@/admin/router'
 import type { ActivityEntry } from '@/server/activity'
 import { formatBytes, formatDateTimeShort } from '@/utils'
-import { CARD, PageHeader, StatCard } from './kit'
+import { buttonClass } from '@/admin/ui/Button'
+import { Card, CARD_GAP, PageHeader, SECTION_GAP, StatCard } from './kit'
 import { DashboardWidgets, type DashboardData } from './DashboardWidgets'
 import { useAdminT } from './I18nProvider'
 import { REPO } from './help-kit'
@@ -81,18 +82,18 @@ export function Overview(props: Props) {
   const t = useAdminT()
   const { posts, pages, comments, originals, totalBytes, recent, activityEnabled, version, commit, system, dashboard } = props
   return (
-    <div className="space-y-7">
+    <div className={SECTION_GAP}>
       <PageHeader
         title={t.overviewTitle}
         actions={
           <div className="flex items-center gap-3">
             <BuildLabel version={version} commit={commit} />
-            <Link href="/admin/editor" className="inline-flex min-h-10 items-center rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-neutral-700 dark:bg-white dark:text-neutral-900">{t.newPost}</Link>
+            <Link href="/admin/editor" className={buttonClass()}>{t.newPost}</Link>
           </div>
         }
       />
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+      <div className={`grid grid-cols-2 ${CARD_GAP} sm:grid-cols-3 lg:grid-cols-5`}>
         <StatCard label={t.statPosts} value={posts} href="/admin/content" />
         <StatCard label={t.statPages} value={pages} href="/admin/content" />
         <StatCard label={t.statComments} value={comments} href="/admin/comments" />
@@ -102,11 +103,13 @@ export function Overview(props: Props) {
 
       <DashboardWidgets data={dashboard} />
 
-      <section className={`p-5 sm:p-6 ${CARD}`}>
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-sm font-semibold">{t.recentActivity}</h2>
-          <Link href="/admin/log" className="text-xs text-neutral-500 hover:text-neutral-900 dark:hover:text-white">{t.recentViewAll}</Link>
-        </div>
+      {/* `Card`, not a hand-rolled copy of it. This one was a `<section>` wearing CARD with
+          its own header at `mb-4` and 14px against the kit's `mb-5` and 15px, so the three
+          panels above it and this one were two different components on one screen. */}
+      <Card
+        title={t.recentActivity}
+        actions={<Link href="/admin/log" className="text-xs text-neutral-500 hover:text-neutral-900 dark:hover:text-white">{t.recentViewAll}</Link>}
+      >
         {!activityEnabled || recent.length === 0 ? (
           <p className="text-sm text-neutral-400">{t.logEmpty}</p>
         ) : (
@@ -127,7 +130,7 @@ export function Overview(props: Props) {
             ))}
           </ul>
         )}
-      </section>
+      </Card>
 
       <div className="flex flex-wrap items-center justify-between gap-3 px-1 text-xs text-neutral-400">
         {/* The engine NAME comes from the server. It was the literal string 'PostgreSQL'

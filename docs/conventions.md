@@ -353,8 +353,8 @@ that is the name to use: `bun run build:assets`, `bun run check:all`, `bun run u
   `src/import/wordpress.ts`), NOT a script. `turndown`, `turndown-plugin-gfm` and
   `fast-xml-parser` are runtime **dependencies** because the importer uses them.
 - **`scripts/checks/`** holds the static guards `check:all` runs — `file-size`, `css-literal`,
-  `no-nul`, `routes-guarded`, `type-roles`, `docs`. A new load-bearing rule that a test cannot
-  hold belongs here, not in a comment.
+  `no-nul`, `routes-guarded`, `type-roles`, `admin-kit`, `docs`. A new load-bearing rule that a
+  test cannot hold belongs here, not in a comment.
 
 ## Docs & releases — keep current
 

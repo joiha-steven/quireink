@@ -5,7 +5,7 @@ import { useRouter } from '@/admin/router'
 import type { Page, ApiResponse } from '@/types'
 import { useToast } from '@/admin/ui/Toast'
 import { RowActions, StatusPill } from './RowActions'
-import { TableFrame, THEAD, TROW } from './kit'
+import { EmptyState, TableFrame, THEAD, TROW } from './kit'
 import { useAdminT } from './I18nProvider'
 
 export function PagesTable({ initialPages, views }: { initialPages: Page[]; views: Record<string, number> }) {
@@ -29,7 +29,7 @@ export function PagesTable({ initialPages, views }: { initialPages: Page[]; view
   }
 
   if (pages.length === 0) {
-    return <p className="py-16 text-center text-neutral-500 dark:text-neutral-400">{t.noPages}</p>
+    return <EmptyState title={t.noPages} />
   }
 
   return (

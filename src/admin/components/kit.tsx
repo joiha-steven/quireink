@@ -10,6 +10,20 @@ import type { ReactNode, SelectHTMLAttributes } from 'react'
 export const CARD =
   'rounded-2xl border border-neutral-200/90 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.035)] dark:border-neutral-800 dark:bg-neutral-900 dark:shadow-none'
 
+// --- The two gaps -------------------------------------------------------------------------
+//
+// TWO numbers for the whole admin, and they are here because there were four. One Overview
+// column measured 12px between the stat tiles, 16px inside the widget group, 20px between the
+// widget cards and 28px between the page's sections, which reads as a page assembled from
+// four screens rather than as one grid.
+//
+// SECTION_GAP separates the bands of a page (header, tiles, widgets, table). CARD_GAP is the
+// space between two cards SIDE BY SIDE or stacked within one band. Anything that wants a
+// third number wants one of these two.
+export const SECTION_GAP = 'space-y-7'
+export const CARD_GAP = 'gap-5'
+export const CARD_STACK = 'space-y-5'
+
 // The two surfaces that sit INSIDE a card, both hand-written in several places before
 // they were named here. A settings page is a Card holding a PANEL_LIST of rows; a row that
 // needs its own boxed sub-area uses INSET.
@@ -98,9 +112,21 @@ export const NOTICE =
 
 // Canonical form-control chrome — shared by admin <input> and <select> so height,
 // padding, radius and focus never drift (they were hand-rolled + cramped before).
-// Matches the labeled `FIELD` in ui/Input.tsx. Callers add width (w-full or fixed).
+// `ui/Input.tsx` now IMPORTS this rather than declaring a matching copy, so there is nothing
+// left to keep in step by hand. Callers add width (see FIELD_W).
+//
+// `min-h-10` and `py-2`, which is `ui/Button`'s height and not a rounder-looking `py-2.5`:
+// the padding version measured 42px against the button's 40, so every field standing beside
+// a button — Copy next to a token, Choose image next to a filename — sat two pixels proud of
+// it. A form control and the button that acts on it are one row or they are nothing.
 export const CONTROL =
-  'rounded-lg border border-neutral-300 bg-white px-3.5 py-2.5 text-sm text-neutral-900 shadow-sm outline-none transition focus:border-neutral-500 focus:ring-2 focus:ring-neutral-200 placeholder:text-neutral-400 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500 dark:focus:ring-neutral-800 dark:placeholder:text-neutral-500'
+  'min-h-10 rounded-lg border border-neutral-300 bg-white px-3.5 py-2 text-sm text-neutral-900 shadow-sm outline-none transition focus:border-neutral-500 focus:ring-2 focus:ring-neutral-200 placeholder:text-neutral-400 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500 dark:focus:ring-neutral-800 dark:placeholder:text-neutral-500'
+
+// A field whose CONTENT has a known size does not run to the edge of its card. A three-digit
+// word count in a 580px box, a date in a 580px box and a site title in the same 580px box say
+// the three are the same kind of answer, and they are not. Callers pick one; `w-full` stays
+// the default for anything free-text.
+export const FIELD_W = { short: 'w-28', medium: 'w-64', full: 'w-full' } as const
 
 // Styled <select>: kills the OS-native arrow (`appearance-none`) and draws our own
 // chevron, so a select matches the input chrome + the app font instead of the ugly
@@ -188,58 +214,58 @@ export function PageHeader({
   )
 }
 
-// Tabs — ONE component for both admin tab styles:
-//   'underline' (Settings): bottom-border chips on a rule.
-//   'segment'   (Content):  segmented control on a tinted track.
+// Tabs — a segmented control on a tinted track, and there is ONE of it.
+//
+// There used to be two variants and a hand-rolled third. `variant='segment'` was never called
+// from anywhere; `variant='underline'` was called from all four tab strips and did not draw an
+// underline, so the name described a design that had been replaced and the two variants
+// differed only in the shade of their track. Meanwhile the Content page's All/Published/Draft
+// filter was a copy of this markup with `px-3 py-1.5` instead of `px-4 py-2` — the same
+// control, 40px tall, four pixels short of the tab strip directly above it, with no
+// `aria-pressed` and no hover state.
+//
+// `size` is the one real difference, and it is a size rather than a style: a tab strip that
+// names a SECTION of the page is the page's own navigation, and a filter inside a section is
+// subordinate to it. Both are the same object at two scales.
 export type TabItem<K extends string = string> = { key: K; label: ReactNode }
+export type TabSize = 'lg' | 'sm'
+
+// The track and the item, separately, because Analytics' range control is made of LINKS: the
+// range lives in the URL, so it cannot be a `<Tabs>` with an `onChange`. It had its own copy
+// of this markup, one padding step off and with a different hover, which is how the same
+// control came to look like two. A link-driven strip wears these two and gets the tab strip
+// it was imitating.
+export const TAB_TRACK = 'flex w-fit max-w-full flex-wrap gap-1 rounded-xl bg-neutral-200/70 p-1 dark:bg-neutral-800'
+
+export const tabItemClass = (active: boolean, size: TabSize = 'lg'): string =>
+  `rounded-lg text-sm font-medium transition ${size === 'lg' ? 'px-4 py-2' : 'px-3 py-1.5'} ${
+    active
+      ? 'bg-white text-neutral-950 shadow-sm dark:bg-neutral-700 dark:text-white'
+      : 'text-neutral-500 hover:bg-white/60 hover:text-neutral-900 dark:hover:bg-neutral-700/60 dark:hover:text-neutral-200'
+  }`
 
 export function Tabs<K extends string>({
   tabs,
   value,
   onChange,
-  variant = 'underline',
+  size = 'lg',
   className = '',
 }: {
   tabs: TabItem<K>[]
   value: K
   onChange: (key: K) => void
-  variant?: 'underline' | 'segment'
+  size?: TabSize
   className?: string
 }) {
-  if (variant === 'segment') {
-    return (
-      <div className={`inline-flex gap-1 rounded-xl bg-neutral-100 p-1 dark:bg-neutral-800 ${className}`}>
-        {tabs.map((tb) => (
-          <button
-            key={tb.key}
-            type="button"
-            onClick={() => onChange(tb.key)}
-            aria-pressed={value === tb.key}
-            className={`rounded-lg px-3.5 py-2 text-sm font-medium transition ${
-              value === tb.key
-                ? 'bg-white text-neutral-900 shadow-sm dark:bg-neutral-700 dark:text-white'
-                : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
-            }`}
-          >
-            {tb.label}
-          </button>
-        ))}
-      </div>
-    )
-  }
   return (
-    <div className={`flex w-fit max-w-full flex-wrap gap-1 rounded-xl bg-neutral-200/70 p-1 dark:bg-neutral-800 ${className}`}>
+    <div className={`${TAB_TRACK} ${className}`}>
       {tabs.map((tb) => (
         <button
           key={tb.key}
           type="button"
           onClick={() => onChange(tb.key)}
           aria-pressed={value === tb.key}
-          className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
-            value === tb.key
-              ? 'bg-white text-neutral-950 shadow-sm dark:bg-neutral-700 dark:text-white'
-              : 'text-neutral-500 hover:bg-white/60 hover:text-neutral-900 dark:hover:bg-neutral-700/60 dark:hover:text-neutral-200'
-          }`}
+          className={tabItemClass(value === tb.key, size)}
         >
           {tb.label}
         </button>
@@ -248,25 +274,31 @@ export function Tabs<K extends string>({
   )
 }
 
-// Stat tile for the Overview dashboard. Optional `icon`, `sub` line, and `href`
-// (wraps the whole tile in a link with a hover lift).
+// A headline figure with its label under it. ONE of these, used by the Overview tiles, the
+// Analytics tiles and the newsletter counts — `analytics-kit`'s `StatTile` was a second copy
+// of the same twelve classes that had already drifted by one shade on its sub-line.
+//
+// Optional `icon`, `sub` line, `after` (the analytics trend arrow, which sits inside the
+// figure) and `href` (wraps the whole tile in a link with a hover lift).
 export function StatCard({
   label,
   value,
   sub,
   icon,
+  after,
   href,
 }: {
   label: ReactNode
   value: ReactNode
   sub?: ReactNode
   icon?: ReactNode
+  after?: ReactNode
   href?: string
 }) {
   const inner = (
     <>
       <div className="flex items-start justify-between gap-2">
-        <div className="text-[1.65rem] font-semibold tracking-tight tabular-nums">{value}</div>
+        <div className="text-[1.65rem] font-semibold tracking-tight tabular-nums">{value}{after}</div>
         {icon && <span className="text-neutral-300 dark:text-neutral-600">{icon}</span>}
       </div>
       <div className="mt-1.5 text-sm text-neutral-500 dark:text-neutral-400">{label}</div>
