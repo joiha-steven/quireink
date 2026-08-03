@@ -62,6 +62,6 @@ still holds for everything else in the admin, which moved verbatim.
 - `?tab=` deep links to the old names (`content`, `integrations`) no longer resolve and
   fall back to the first tab. Nothing links to them: the only producer was the Google
   Drive consent redirect, which no longer exists ([parity exception
-  1](../spec/07-parity.md)).
+  1](../spec/00-rationale.md)).
 - The Backup card became the manual archive, because Drive-connect is gone for a separate
   reason recorded there.

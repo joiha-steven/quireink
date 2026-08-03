@@ -18,12 +18,11 @@ import { dirname, join, resolve } from 'node:path'
 
 const ROOT = process.cwd()
 const CLAUDE_MD_MAX = 120
-// 450, down from 700 on 2026-08-03. The old cap was reached by `docs/features.md`, which sat
+// 400, down from 700 on 2026-08-03. The old cap was reached by `docs/features.md`, which sat
 // at exactly 700 for weeks: the next feature line would have broken the build for whoever
-// happened to add it. It is now `docs/features/`, six files by area. The largest remaining
-// document is `spec/07-parity.md` at 434; that is the one holding this above the 400 the
-// repository standard asks for.
-const FILE_MAX = 450
+// happened to add it. Both it and the parity inventory are now directories of files by area,
+// and the largest document left is 318 lines. A file at the cap gets split, not squeezed.
+const FILE_MAX = 400
 
 const ROOTS = ['.', 'docs', 'scripts', '.github']
 

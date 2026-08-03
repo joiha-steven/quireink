@@ -185,7 +185,7 @@ in the 2026-07-29 entry below; the short version:
 - **Four environment variables matter.** Everything else is entered in the admin.
 - **Import your 1.x content** with `bun run import-v1`, which reads a running 1.x over
   PostgREST. What was deliberately not carried over, with reasons, is in
-  [`docs/spec/07-parity.md`](docs/spec/07-parity.md): Google Drive backup, numbered pagination,
+  `docs/spec/07-parity.md`: Google Drive backup, numbered pagination,
   the reader-facing palette switcher, grid-view thumbnails.
 
 The rewrite was a **port, not a reimplementation**
@@ -301,7 +301,7 @@ behaviour goes missing.
   there is no migration step.
 - **Env is down to four things that matter**: `DATA_DIR`, `SITE_URL`, `AUTH_SECRET`,
   `STORAGE_LOCAL_DIR`. Everything else is entered in the admin.
-- **Google Drive backup is gone** ([parity exception 1](docs/spec/07-parity.md)). Backup is
+- **Google Drive backup is gone** ([parity exception 1](docs/spec/00-rationale.md)). Backup is
   now an operational job that keeps working when the application does not: a cron script
   to object storage, plus a one-click download of the whole install from the admin. That
   deleted ~730 lines of OAuth, token refresh and folder bookkeeping. See [docs/backups.md](docs/backups.md).

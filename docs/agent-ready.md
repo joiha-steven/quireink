@@ -31,7 +31,7 @@ fails ([`spec/02-structure.md`](spec/02-structure.md)).
 ## Not carried into 2.0 yet
 
 These existed in the frozen tree and are unchecked parity items
-([`spec/07-parity.md`](spec/07-parity.md) §9). Do not describe them as present:
+([`spec/07-parity-public.md`](spec/07-parity-public.md) §9). Do not describe them as present:
 `/.well-known/mcp/server-card.json`, `/.well-known/api-catalog` (RFC 9727), `/auth.md`,
 the homepage RFC 8288 `Link:` header, and the `Content-Signal` line in `robots.txt`.
 
