@@ -29,6 +29,19 @@ const DEBOUNCE_MS = 3_000
 
 let pending: ReturnType<typeof setTimeout> | null = null
 let running = false
+/**
+ * A write landed while a warm was already in flight, so the whole thing has to run again.
+ *
+ * WITHOUT THIS THE SAVE IS SIMPLY LOST. The guard used to be `if (running) return`, which
+ * reads like a harmless de-duplication and is not one: a warm walks every public post and
+ * measured 8.4s on a 77-post site, and the editor saves far more often than that. Any save
+ * landing inside that window never reached `purgeEdge`, so the CDN went on serving the
+ * previous version of the page — measured at `Age: 824` against an `s-maxage` of 60, because
+ * a shared cache that is never told to drop something keeps it well past the window the
+ * headers ask for. The owner's report was "saving a post does not clear the cache", and this
+ * was it: it cleared the in-process cache every time and skipped the edge some of the time.
+ */
+let again = false
 
 /**
  * Render every public article back into the page cache, plus `/`.
@@ -66,18 +79,35 @@ export async function warmCache(): Promise<{ warmed: number; ms: number }> {
   return { warmed, ms: Math.round(performance.now() - t0) }
 }
 
-/** Warm, then purge the edge — in that order, so the CDN refetches into a warm origin. */
-async function warmThenPurge(reason: string): Promise<void> {
-  if (running) return
+/**
+ * Warm, then purge the edge — in that order, so the CDN refetches into a warm origin.
+ *
+ * Re-entrant by TAIL, not by overlap: a second pass is remembered and run after this one
+ * finishes, rather than started beside it. Two warms at once would race each other into the
+ * same Map and double the render load for one useful result; dropping the second, which is
+ * what this used to do, loses the write. Looping once at the end is the only version that
+ * both serialises the work and guarantees the last write reaches the CDN.
+ */
+export async function warmThenPurge(reason: string): Promise<void> {
+  if (running) {
+    again = true
+    return
+  }
   running = true
   try {
-    const { warmed, ms } = await warmCache()
-    console.log(`cache: warmed ${warmed} page(s) in ${ms}ms (${reason})`)
-    await purgeEdge()
+    do {
+      // Cleared BEFORE the work, so a write arriving mid-pass sets it again and earns
+      // another lap. Clearing it after would swallow exactly that write.
+      again = false
+      const { warmed, ms } = await warmCache()
+      console.log(`cache: warmed ${warmed} page(s) in ${ms}ms (${reason})`)
+      await purgeEdge()
+    } while (again)
   } catch (error) {
     console.error(`[ERROR] warm.warmThenPurge: ${(error as Error).message}`)
   } finally {
     running = false
+    again = false
   }
 }
 

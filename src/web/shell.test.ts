@@ -156,31 +156,56 @@ describe('the reader\'s own text, put back into the page', () => {
 })
 
 describe('the owner menu on the header row', () => {
-  // The menu has always been stored and rendered ONLY into the listing rail, so it appeared
-  // on listing pages and nowhere else: the front page drops the rail (ADR 0014) and an
-  // article's rail carries its table of contents. These assert it is in the header on both.
+  // The menu lives at the top of the listing rail and that is the ONLY place it renders —
+  // except on a page that has no rail to hold it, which today is the composed front page
+  // alone (ADR 0014). It briefly rendered on every page, which put the same links twice on
+  // every listing; the owner called that wrong on 2026-08-03.
   const menu = [{ label: 'Essays', href: '/category/essays' }, { label: 'About', href: '/about' }]
 
-  it('renders the owner links in the header of an article', async () => {
-    await saveSettings({ menu })
+  /** Put the site into newspaper mode and fetch `/`, which is the one rail-less layout. */
+  const front = async (): Promise<string> => {
+    const s = await getSettings()
+    await saveSettings({ home: { ...s.home, mode: 'front' } })
     clearCache()
-    const html = await (await get('/published')).text()
-    const nav = /<nav class="site-menu[^>]*>.*?<\/nav>/s.exec(html)?.[0] ?? ''
+    return (await get('/')).text()
+  }
+
+  const navOf = (html: string) => /<nav class="site-menu[^>]*>.*?<\/nav>/s.exec(html)?.[0] ?? ''
+
+  it('renders the owner links in the header of the newspaper front page', async () => {
+    await saveSettings({ menu })
+    const nav = navOf(await front())
     expect(nav).toContain('href="/category/essays"')
     expect(nav).toContain('>Essays<')
     expect(nav).toContain('href="/about"')
   })
 
-  it('renders nothing at all when the owner has configured no menu', async () => {
-    await saveSettings({ menu: [] })
+  it('keeps the header clear on an article, where the menu is not the header\'s job', async () => {
+    // The regression this guards: the menu on every page. An article has a rail (its table
+    // of contents) and a drawer below the breakpoint, and neither is the header.
+    await saveSettings({ menu })
     clearCache()
     expect(await (await get('/published')).text()).not.toContain('site-menu')
   })
 
+  it('keeps the header clear on a listing, where the rail already carries it', async () => {
+    const s = await getSettings()
+    await saveSettings({ menu, home: { ...s.home, mode: 'list' } })
+    clearCache()
+    const html = await (await get('/')).text()
+    expect(html).not.toContain('site-menu')
+    // …and it really is in the rail on that page, so the links did not simply vanish.
+    expect(html).toContain('href="/category/essays"')
+  })
+
+  it('renders nothing at all when the owner has configured no menu', async () => {
+    await saveSettings({ menu: [] })
+    expect(await front()).not.toContain('site-menu')
+  })
+
   it('opens an external link in a new tab and an internal one in place', async () => {
     await saveSettings({ menu: [{ label: 'Group', href: 'https://example.com/g' }, ...menu] })
-    clearCache()
-    const nav = /<nav class="site-menu[^>]*>.*?<\/nav>/s.exec(await (await get('/published')).text())?.[0] ?? ''
+    const nav = navOf(await front())
     expect(nav).toContain('href="https://example.com/g" target="_blank" rel="noopener"')
     // The internal one carries no target, or every in-site click would spawn a tab.
     expect(/href="\/about"(?! target)/.test(nav)).toBe(true)
@@ -188,8 +213,7 @@ describe('the owner menu on the header row', () => {
 
   it('escapes a label and an href rather than letting them close the tag', async () => {
     await saveSettings({ menu: [{ label: '<img src=x onerror=alert(1)>', href: '/"onmouseover="alert(1)' }] })
-    clearCache()
-    const html = await (await get('/published')).text()
+    const html = await front()
     expect(html).not.toContain('<img src=x')
     expect(html).toContain('&lt;img')
     expect(html).not.toContain('onmouseover="alert(1)"')

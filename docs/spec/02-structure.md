@@ -87,6 +87,13 @@ question at this scale. Cloudflare stays in front and is purged the same way, to
 **Do not reintroduce targeted invalidation.** If a future measurement shows the flush
 matters, add a rollup or a longer edge TTL, not a dependency graph.
 
+The warm-then-purge that hangs off the flush (`server/warm.ts`) is **serialised, never
+skipped**. A write arriving while a pass is in flight sets a flag and earns another lap when
+that pass ends; it must not be dropped. It was dropped, behind an `if (running) return` that
+looked like de-duplication — a warm walks every public post (8.4s measured at 77 posts) and
+any save landing in that window never reached `purgeEdge`, so the in-process cache cleared
+and the CDN kept the old page. That is the whole of "saving does not clear the cache".
+
 ## Concurrency
 
 Single-threaded event loop, and this removes an entire class of design work the Go plan

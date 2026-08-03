@@ -38,6 +38,19 @@ const ICON = {
 export type ChromeOptions = {
   /** The sign-up form only appears when the owner has a working mail server. */
   mailConfigured: boolean
+  /**
+   * Put the owner's menu on the header row, for a page that renders NO rail.
+   *
+   * The menu's home is the top of the listing rail and it stays there. The header copy is
+   * the exception, and it is the exception for exactly one reason: the composed front page
+   * drops the rail entirely (ADR 0014), so without this the menu would have nowhere to go
+   * on the one layout most likely to want it.
+   *
+   * Phrased as "this page has no rail" rather than "this page is the front page" because
+   * that is the actual condition — the day another rail-less layout appears it will need the
+   * menu for the same reason, and nobody will have to remember to add it here.
+   */
+  menuInHeader?: boolean
 }
 
 /**
@@ -87,15 +100,19 @@ const token = (text: string): string => `<span class="btn-token">${escapeHtml(te
 /**
  * The owner's menu, as words in the header's right-hand cluster, ahead of the controls.
  *
- * The frozen tree moved this OUT of the header and into the top of the listing rail, which
- * is still where it renders on a listing page — the two are not a duplicate at any width a
- * reader sees, because the rail is a gutter at desktop and a drawer below the breakpoint.
- * The header is where it earns its keep: the front page drops the rail entirely (ADR 0014)
- * and an article's rail carries its table of contents, so a configured menu appeared on
- * listing pages and nowhere else.
+ * ONE MENU, ONE PLACE, and that place is the rail. This renders only when the page has no
+ * rail to put it in, which today means the composed front page and nothing else — see
+ * `ChromeOptions.menuInHeader`.
  *
- * Desktop only. Below the breakpoint the header row is the title and up to five controls
- * already, and words do not fit beside them; the drawer keeps serving that width.
+ * It briefly rendered on EVERY page, on the argument that an article's rail carries its
+ * table of contents so the menu had nowhere to go there. The argument was true and the
+ * conclusion was wrong: it put the same links in two places on every listing page, and a
+ * reader meets the menu twice on the one layout that already had it. The owner called it,
+ * and the trade is deliberate — a desktop reader on an ARTICLE now has no menu until they
+ * scroll back to a listing or drop below the drawer breakpoint.
+ *
+ * Desktop only either way. Below the breakpoint the header row is the title and up to five
+ * controls already, and words do not fit beside them; the drawer keeps serving that width.
  */
 function siteMenu(settings: SiteSettings, label: string): string {
   if (settings.menu.length === 0) return ''
@@ -150,7 +167,7 @@ export function siteHeader(settings: SiteSettings, opts: ChromeOptions): string 
   // field and nothing to skip) does not call this function at all.
   return `<header class="site">
 <a class="skip-link" href="#content">${escapeHtml(s.skipToContent)}</a>
-<div class="site-bar">${siteTitle(settings)}${siteMenu(settings, s.menu)}<nav class="site-actions">${actions.join('')}</nav></div>${
+<div class="site-bar">${siteTitle(settings)}${opts.menuInHeader ? siteMenu(settings, s.menu) : ''}<nav class="site-actions">${actions.join('')}</nav></div>${
     settings.showDescription && settings.description
       ? `<p class="tagline">${escapeHtml(settings.description)}</p>` : ''
   }</header>`
