@@ -48,7 +48,7 @@ export const POSTS: Seed[] = [
     series: 'Designing a reading page', order: 1, ago: 0,
     body: `Ask why a column is the width it is and you will usually be told about taste. It is not taste. It is the distance the eye can travel and still find the start of the next line without hunting for it.
 
-The return sweep is the whole problem. At the end of a line the eye jumps left and down at the same time, and it lands by estimating. A short column gives it an easy target and a long one gives it a field of near-identical lines to choose from, which is why an over-wide measure makes people re-read the line they have just finished.
+==The return sweep is the whole problem.== At the end of a line the eye jumps left and down at the same time, and it lands by estimating. A short column gives it an easy target and a long one gives it a field of near-identical lines to choose from, which is why ==an over-wide measure makes people re-read the line they have just finished==#blue.
 
 ## The number, and what it is really made of
 
@@ -304,17 +304,17 @@ Plain black for type, rich black for areas. That one rule prevents most print co
     excerpt: 'A palette is two decisions: what the ink is, and what it sits on. Everything else is adjustment.',
     category: 'Printing', tags: ['colour', 'paper', 'palette'],
     ago: 224,
-    body: `Printers did not have palettes. They had an ink and a stock, and everything they could do with colour lived in the relationship between those two.
+    body: `Printers did not have palettes. They had an ink and a stock, and ==everything they could do with colour lived in the relationship between those two==.
 
 That constraint produced better-looking pages than most colour pickers do, because it forced the only two decisions that matter to be made first and deliberately.
 
 ## Paper is a colour
 
-Uncoated paper is not white. It is warm, faintly yellow, and it absorbs ink so the same black reads softer than it does on a coated sheet. Choosing the stock sets the highlight of everything printed on it, which means it sets the contrast of the whole book before a single word is placed.
+==Uncoated paper is not white==#orange. It is warm, faintly yellow, and it absorbs ink so the same black reads softer than it does on a coated sheet. Choosing the stock sets the highlight of everything printed on it, which means ==it sets the contrast of the whole book before a single word is placed==#green.
 
 ## Ink is rarely black
 
-Trade books are commonly printed in a black that has been warmed slightly, because a neutral black on a warm sheet looks like a hole. The adjustment is small enough that no reader would name it and large enough that every reader feels it.
+Trade books are commonly printed in a black that has been warmed slightly, because ==a neutral black on a warm sheet looks like a hole==#pink. The adjustment is small enough that no reader would name it and large enough that every reader feels it.
 
 ## Translating the idea to a screen
 
