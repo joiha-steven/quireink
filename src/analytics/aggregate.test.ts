@@ -13,7 +13,7 @@ import {
 } from '@/analytics/aggregate'
 import type { BucketRange } from '@/analytics/buckets'
 
-const DIR = './.tmp-test-aggregate'
+const DIR = './.tmp/test-aggregate'
 freshDatabase(DIR)
 afterAll(() => dropDatabase(DIR))
 

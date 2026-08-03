@@ -9,7 +9,7 @@ import { freshDatabase, dropDatabase } from '@/test/db'
 import { createApp } from '@/web/app'
 import { t } from '@/i18n/i18n'
 
-const DIR = './.tmp-test-errors'
+const DIR = './.tmp/test-errors'
 freshDatabase(DIR)
 afterAll(() => dropDatabase(DIR))
 

@@ -15,7 +15,7 @@ import { sanitizeHighlight, DEFAULT_HIGHLIGHT, HIGHLIGHT_STROKES } from '@/conte
 import { INKS } from '@/render/ink'
 import type { HighlightSettings } from '@/types'
 
-const DIR = './.tmp-test-ink'
+const DIR = './.tmp/test-ink'
 freshDatabase(DIR)
 afterAll(() => dropDatabase(DIR))
 

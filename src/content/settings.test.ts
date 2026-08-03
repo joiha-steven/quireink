@@ -7,7 +7,7 @@ import { db } from '@/store/db'
 import { one } from '@/store/query'
 import { getSettings, saveSettings, DEFAULT_SETTINGS } from '@/content/settings'
 
-const DIR = './.tmp-test-settings'
+const DIR = './.tmp/test-settings'
 freshDatabase(DIR)
 afterAll(() => dropDatabase(DIR))
 

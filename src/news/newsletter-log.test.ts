@@ -8,7 +8,7 @@ import {
   logSend, statsByEmail, statsByPost, recordOpen, deleteSendsFor, newOpenToken,
 } from '@/news/newsletter-log'
 
-const DIR = './.tmp-test-newsletter-log'
+const DIR = './.tmp/test-newsletter-log'
 freshDatabase(DIR)
 afterAll(() => dropDatabase(DIR))
 

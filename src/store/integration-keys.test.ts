@@ -8,7 +8,7 @@ import {
   getIntegrationKeys, getIntegrationStatus, saveIntegrationKeys,
 } from '@/store/integration-keys'
 
-const DIR = './.tmp-test-integration-keys'
+const DIR = './.tmp/test-integration-keys'
 freshDatabase(DIR)
 afterAll(() => {
   dropDatabase(DIR)

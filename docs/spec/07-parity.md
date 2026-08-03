@@ -1,12 +1,12 @@
 # Parity checklist
 
-M0.5 of [the plan](00-plan.md). One line per user-visible behaviour that Quire 1.x
+Written before the rewrite ([00-rationale.md](00-rationale.md)). One line per user-visible behaviour that Quire 1.x
 has today. **This is the primary defence against silent feature loss**, because the golden
 harness (03-golden.md) only covers rendered public HTML: the admin, the 61 API routes and
 every side effect below are invisible to it.
 
 Sources: `/admin/help` (`HelpGuide` + `HelpSections` + `HelpTables`, written for a
-non-technical owner and therefore already a feature list), `docs/features.md`,
+non-technical owner and therefore already a feature list), `docs/features/`,
 `CLAUDE.md` (invariants + data-layer map), `CHANGELOG.md`.
 
 ## How to use this

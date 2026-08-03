@@ -179,7 +179,7 @@ create table if not exists settings (
 
 -- ----- MCP -------------------------------------------------------------------
 -- Only the SHA-256 hash is stored; the plaintext is shown once. The hash format must be
--- preserved across cutover or AI publishing stops silently (00-plan.md risk register).
+-- preserved across cutover or AI publishing stops silently (docs/spec/00-rationale.md, parity exception #4).
 create table if not exists mcp_tokens (
   id           integer primary key autoincrement,
   name         text not null default '',

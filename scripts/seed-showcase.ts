@@ -26,7 +26,7 @@ import { generateSecret } from '@/auth/totp'
 import { createSession } from '@/auth/sessions'
 import { POSTS } from './seed-content'
 
-const DIR = process.argv[2] ?? './.tmp-drive-data'
+const DIR = process.argv[2] ?? './.tmp/drive-data'
 const KIND = (process.argv[3] ?? 'text') as 'image' | 'text'
 const MODE = process.argv[4] === 'front' ? 'front' : 'list'
 

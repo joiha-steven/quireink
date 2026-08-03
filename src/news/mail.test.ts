@@ -12,7 +12,7 @@ import { db } from '@/store/db'
 import { getSmtpConfig, saveSmtpConfig, isMailConfigured, getMailStatus } from '@/news/mail'
 import { saveIntegrationKeys } from '@/store/integration-keys'
 
-const DIR = './.tmp-test-mail'
+const DIR = './.tmp/test-mail'
 freshDatabase(DIR)
 afterAll(() => {
   dropDatabase(DIR)

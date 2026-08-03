@@ -1,8 +1,9 @@
 # SQLite schema and the Postgres mapping
 
 Source of truth for the current shape: [`src/store/schema.sql`](../../src/store/schema.sql).
-The Postgres original is `v1/scripts/schema.sql` (612 lines), kept for comparison only.
-This document records every decision needed to express it in SQLite, and why.
+The Postgres original (612 lines) is in git history at tag `v1-final`,
+`v1/scripts/schema.sql`. This document records every decision needed to express it in
+SQLite, and why.
 
 ## Global conventions
 
@@ -194,7 +195,7 @@ segmenter.
 Additional gains, free: `bm25()` ranking (today there is no ranking), and `snippet()`
 / `highlight()` for result excerpts (today the excerpt is derived by hand).
 
-This is parity exception #2 in 00-plan.md. Search results will be **better** but not
+This is parity exception #2 in 00-rationale.md. Search results will be **better** but not
 identical, so the golden harness must exclude `/search` from strict comparison and use
 a hand-written expectation set instead.
 
@@ -219,7 +220,7 @@ quotes and double any internal quote. A test fixture set of hostile queries goes
 
 ## 3. The six SQL functions
 
-`v1/scripts/schema.sql` and the analytics migrations define six plpgsql functions (Postgres
+The Postgres schema and its analytics migrations defined six plpgsql functions (Postgres
 only: 2.0 keeps this logic in TypeScript, never in SQL):
 `analytics_summary`, `analytics_page`, `analytics_totals`, `analytics_channel`,
 `analytics_facet`, `restore_tables`. All six move into `src/analytics` and
@@ -351,8 +352,9 @@ existing files are Postgres dialect and are **not** reused. Quire 2.0 starts fro
 single `src/store/schema.sql` representing the final shape, and its own migration ledger
 starting empty.
 
-Rationale: there is no Quire 2.0 instance in the wild to upgrade. Every existing
-instance arrives through `import-v1`, which targets the current schema directly.
+Rationale: when this was written there was no Quire 2.0 instance in the wild to upgrade,
+and the one-shot importer from 1.x targeted the current schema directly. The ledger is
+live now, so a schema change ships as a migration.
 
 Schema and migrations are imported as text (`with { type: 'text' }`) so they compile into
 the executable, and applied at boot inside a transaction. A failed migration aborts

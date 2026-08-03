@@ -12,7 +12,7 @@ import { clearCache } from '@/server/cache'
 import { resetLimits } from '@/server/rate-limit'
 import { createApp } from '@/web/app'
 
-const DIR = './.tmp-test-headers'
+const DIR = './.tmp/test-headers'
 freshDatabase(DIR)
 afterAll(() => dropDatabase(DIR))
 

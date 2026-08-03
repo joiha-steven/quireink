@@ -10,7 +10,7 @@ import {
 } from '@/content/pages'
 import { getRedirects } from '@/server/redirects'
 
-const DIR = './.tmp-test-pages'
+const DIR = './.tmp/test-pages'
 freshDatabase(DIR)
 afterAll(() => dropDatabase(DIR))
 

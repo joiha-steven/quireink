@@ -11,7 +11,7 @@ import { commenterCookie, issueCommenter } from '@/comments/commenter'
 import { clearCache } from '@/server/cache'
 import { createApp } from '@/web/app'
 
-const DIR = './.tmp-test-comment-auth'
+const DIR = './.tmp/test-comment-auth'
 freshDatabase(DIR)
 afterAll(() => dropDatabase(DIR))
 

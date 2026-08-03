@@ -14,7 +14,7 @@ import { DEFAULT_SETTINGS } from '@/content/settings'
 import { sanitizeGallery, DEFAULT_GALLERY } from '@/content/settings-sanitize'
 import type { GallerySettings } from '@/types'
 
-const DIR = './.tmp-test-gallery'
+const DIR = './.tmp/test-gallery'
 freshDatabase(DIR)
 afterAll(() => dropDatabase(DIR))
 

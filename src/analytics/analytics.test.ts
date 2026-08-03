@@ -11,7 +11,7 @@ import { isBot, normalizePath, recordView, recordScroll } from '@/analytics/reco
 import { flushAnalytics, resetAnalyticsBuffer, pendingAnalytics } from '@/analytics/buffer'
 import { channelOf } from '@/analytics/channel'
 
-const DIR = './.tmp-test-analytics'
+const DIR = './.tmp/test-analytics'
 freshDatabase(DIR)
 afterAll(() => dropDatabase(DIR))
 

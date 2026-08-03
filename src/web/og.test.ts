@@ -14,7 +14,7 @@ import { clearCache } from '@/server/cache'
 import { createApp } from '@/web/app'
 import { renderOgCard } from '@/render/og-card'
 
-const DIR = './.tmp-test-og'
+const DIR = './.tmp/test-og'
 freshDatabase(DIR)
 afterAll(() => dropDatabase(DIR))
 

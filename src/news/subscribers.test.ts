@@ -11,7 +11,7 @@ import {
 } from '@/news/subscribers'
 import { logSend } from '@/news/newsletter-log'
 
-const DIR = './.tmp-test-subscribers'
+const DIR = './.tmp/test-subscribers'
 freshDatabase(DIR)
 afterAll(() => dropDatabase(DIR))
 

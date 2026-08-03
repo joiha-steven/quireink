@@ -14,7 +14,7 @@ import { warmCache, warmThenPurge } from '@/server/warm'
 import { purgeEdge } from '@/server/edge-cache'
 import { saveIntegrationKeys } from '@/store/integration-keys'
 
-const DIR = './.tmp-test-cache'
+const DIR = './.tmp/test-cache'
 freshDatabase(DIR)
 afterAll(() => dropDatabase(DIR))
 

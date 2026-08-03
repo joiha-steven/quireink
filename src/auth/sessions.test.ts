@@ -13,7 +13,7 @@ import {
   resolveSession, revokeAllSessions, revokeSession, sessionCookie,
 } from './sessions'
 
-const DIR = './.tmp-test-sessions'
+const DIR = './.tmp/test-sessions'
 freshDatabase(DIR)
 afterAll(() => dropDatabase(DIR))
 

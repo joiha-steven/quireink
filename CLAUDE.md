@@ -1,113 +1,74 @@
-# Quire Ink — router
+# Quire Ink
 
-Public, source-available blog platform (PolyForm Noncommercial, ADR 0015). A single
-**Bun + Hono + SQLite** process: `src/` at the
-repository root is the implementation that serves the live site.
+Public, source-available blog platform (PolyForm Noncommercial, [ADR 0015](./docs/decisions/0015-relicense-polyform-noncommercial.md)).
+One **Bun + Hono + SQLite** process; `src/` at the repository root serves the live site.
 
-**Zero personal data in this repo.** Real credentials live only in the gitignored `.env`;
-never commit them. Personal and instance facts are not tracked in git.
+**Zero personal data in this repo.** No IP, user, port or host, ever: they live in the
+private sibling with the worklog, the tasks and the audits. Credentials live only in the
+gitignored `.env`.
 
-> `v1/` is the **retired Next.js implementation**, replaced on 2026-07-28 (ADR 0012) and
-> shut down on 2026-07-31. It runs nowhere and takes no patches, security included: it is
-> kept as a readable record of the old behaviour, and [`v1/CLAUDE.md`](./v1/CLAUDE.md) says
-> what that means. Read it freely for that. Do not edit it.
+## Verify
 
-## This file is a ROUTER. It restates nothing.
+```
+bun run check:all
+```
 
-One rule lives in exactly one file, because two copies means one is wrong within a month.
-Capped at 170 lines and held there by `check:docs`, since it loads every turn.
+Typecheck, the six static guards (`filesize` · `css` · `nul` · `routes` · `type` ·
+`admin-kit` · `docs`) and `bun test`. About 2 minutes. A change under `src/render` or
+`src/web` also runs the golden compare.
 
-| Looking for | Go to |
+`check:all` proves the code compiles and the seams hold. It cannot tell you a column
+collapsed to `reader@e…` or that three columns are 14px out of alignment. Both shipped,
+because nobody opened the page. **Drive it with headless Chromium**
+([`scripts/drive.ts`](./scripts/drive.ts), [`scripts/shot.ts`](./scripts/shot.ts)) and
+measure. Verify against the **origin**, never through the CDN.
+
+## Read first
+
+| Doing | Read |
 |---|---|
-| Load-bearing rules you must not break | [`docs/invariants.md`](./docs/invariants.md) |
-| How the pieces fit, module map, request flow | [`docs/spec/02-structure.md`](./docs/spec/02-structure.md) |
-| Database schema and the Postgres mapping | [`docs/spec/01-schema.md`](./docs/spec/01-schema.md) · [`src/store/schema.sql`](./src/store/schema.sql) |
-| Public rendering, islands, the CSS split | [`docs/spec/04-frontend.md`](./docs/spec/04-frontend.md) |
-| Sign-in, TOTP, sessions | [`docs/spec/06-auth.md`](./docs/spec/06-auth.md) |
-| What a feature does, per area | [`docs/features.md`](./docs/features.md) |
-| What `/` serves: list, a page, or the front page | [`docs/homepage.md`](./docs/homepage.md) |
-| Typography, layout, i18n, releases | [`docs/conventions.md`](./docs/conventions.md) |
-| Fonts, CSS, island JS — the resource-loading law | [`docs/performance.md`](./docs/performance.md) |
-| SEO, feeds, OG, PWA · MCP · agent discovery | [`docs/seo-pwa.md`](./docs/seo-pwa.md) · [`docs/mcp.md`](./docs/mcp.md) · [`docs/agent-ready.md`](./docs/agent-ready.md) |
-| Backups and restore | [`docs/backups.md`](./docs/backups.md) |
-| Running it on your own server | [`docs/self-host.md`](./docs/self-host.md) |
-| Admin visual contract | [`docs/admin-design.md`](./docs/admin-design.md) |
-| **Why was this decided, does it still hold** | [`docs/decisions/`](./docs/decisions/README.md) |
-| What was deliberately NOT carried over | [`docs/spec/07-parity.md`](./docs/spec/07-parity.md) |
+| Anything at all | [`docs/invariants.md`](./docs/invariants.md) — the 7 load-bearing rules |
+| Understanding how a part fits | [`docs/README.md`](./docs/README.md) — the index of everything below |
+| Touching fonts, CSS or island JS | [`docs/performance.md`](./docs/performance.md) — the resource-loading law |
+| Touching a public view | [`docs/conventions.md`](./docs/conventions.md) · admin: [`docs/admin-design.md`](./docs/admin-design.md) |
+| Touching the schema | [`docs/spec/01-schema.md`](./docs/spec/01-schema.md) · [`src/store/schema.sql`](./src/store/schema.sql) |
+| Wondering whether 1.x did it differently | [`docs/spec/07-parity.md`](./docs/spec/07-parity.md) |
+| Going against a past decision | [`docs/decisions/`](./docs/decisions/README.md) — read the in-force index first |
+| Picking up work, or logging it | the private sibling repo ([ADR 0017](./docs/decisions/0017-move-state-and-instance-config-private.md)) |
 
-**Roadmap, tasks, worklog and audits are NOT in this repository** (ADR 0017). They are one
-installation's intent and one installation's dated snapshots, so they live in the private
-`quireink-private`. Nothing dated belongs here at all: `check:docs` rejects a dated filename
-in `docs/`.
+**Do not read `CHANGELOG.md` while coding.** It is append-only at release time and its
+history is never needed to fix or understand code.
 
-⚠ Several files in `docs/` were written against the frozen tree and carried over because
-their RULES are current and 2.0 follows them. Where one cites a file path, the path is
-`v1/src/…` unless it says otherwise.
-
-## Working principles
-
-**1. Think before coding.** State assumptions. If two readings are possible, present both
-rather than picking silently. If a simpler approach exists, say so and push back when
-warranted. If something is unclear, stop, name what is confusing, and ask.
-
-**2. Simplicity first.** The minimum code that solves the problem. No speculative
-abstractions, no interfaces with one implementation, no error handling for impossible
-states. If 200 lines could be 50, rewrite it.
-
-**3. Surgical changes.** Touch only what the task requires. Do not "improve" adjacent code,
-comments or formatting. **Mandatory exception:** when behaviour changes, update the matching
-doc in the SAME change. That is part of the request, not scope creep.
-
-**4. Definition of Done: `bun run check:all` exits 0.** Typecheck, the static guards
-(`filesize` / `css` / `routes` / `docs`) and `bun test`. No "it compiles" exception.
-Behaviour not covered by `check:all` gets a test in the same commit. A change touching
-`src/render` or `src/web` also runs the golden compare.
-
-**5. RUN what you changed and LOOK at it. Never test against production.** `check:all`
-proves the code compiles and the seams hold. It cannot tell you a column collapsed to
-`reader@e…`, or that three columns are 14px out of alignment. Both shipped, because nobody
-opened the page.
-- **Drive it with headless Chromium** — [`scripts/drive.ts`](./scripts/drive.ts),
-  [`scripts/shot.ts`](./scripts/shot.ts). Navigate, click, screenshot, read the DOM,
-  **measure**. Do NOT reason about rendered CSS from source, and do NOT ask the human for
-  screenshots.
-- **Verify against the ORIGIN, not through the CDN.** A shared cache in front of the site
-  will hand you HTML from two deploys ago and you will debug a fix you already shipped.
-- **Production is not a test environment.** A newsletter cannot be unsent.
-
-## DEBUG ROUTER — when you hit a symptom, read THESE files first
+## Debug router — a symptom, and the files to open first
 
 | Symptom / area | Read these first |
 |---|---|
 | Routing, middleware, what a request does | `src/web/app.ts`, `src/web/guard.ts`, `src/web/cache-headers.ts` |
-| Cache / content not updating | `src/server/cache.ts` (in-process), `src/web/cache-headers.ts` (shared) |
+| Cache, or content not updating | `src/server/cache.ts` (in-process), `src/web/cache-headers.ts` (shared), `src/server/edge-cache.ts` |
 | A page's HTML | `src/web/{layout,chrome,article,listing}.ts`, `src/web/*.css.ts` |
-| Markdown → HTML, code highlighting, footnotes | `src/render/` |
-| Island JS (search, theme, comments, subscribe, book mode) | `src/assets/js/` |
+| Markdown → HTML, highlighting, footnotes | `src/render/` |
+| Island JS: search, theme, comments, subscribe, book mode | `src/assets/js/` |
 | Admin SPA, editor | `src/admin/`, `src/web/admin/` |
 | Sign-in, TOTP, sessions, recovery codes | `src/auth/`, `src/web/auth.ts` |
 | Posts, pages, slugs, series, revisions, settings | `src/content/` |
 | Uploads, image variants, ranges | `src/media/` |
 | Newsletter, broadcast, SMTP | `src/news/` |
-| Comments | `src/comments/` |
-| Analytics | `src/analytics/` (writes go through `buffer.ts`) |
+| Comments · Analytics | `src/comments/` · `src/analytics/` (writes go through `buffer.ts`) |
 | SQL, migrations, the live/trashed predicate | `src/store/` |
 | Scheduled publishing, redirects, rate limit, activity | `src/server/` |
 | MCP server, tokens | `src/mcp/`, `src/web/mcp-wire.ts` |
 | UI strings, translations | `src/i18n/`, `src/locales/` |
-| Importing from the frozen tree | `src/import/`, `scripts/import-v1.ts` |
+| WordPress import | `src/import/wordpress.ts`, `src/web/admin/ops.ts` |
 
-## Hard rules
+## Hard rules — each one is a bug that already shipped
 
-- **400 lines per file maximum. No `any`** — use `unknown` and narrow. `any` is acceptable
-  only at a JSON boundary that immediately validates into a typed shape.
-- **No VALUE is ever interpolated into SQL** — values are bound, always, no exceptions. What
-  may be interpolated is a fixed IDENTIFIER, and only from a module constant or a closed set:
-  a column list (`META_COLS`), the `liveOnly()` predicate, a table name, the analytics facet
-  ([`docs/spec/01-schema.md`](./docs/spec/01-schema.md) §3). Sixteen such sites exist and none
-  reads a request. This used to say the facet was the only exception, which was not true of
-  the code the day it was written — and a rule that does not describe the code is one people
-  stop checking against.
+- **No `any`** — use `unknown` and narrow. Acceptable only at a JSON boundary that
+  immediately validates into a typed shape.
+- **No VALUE is ever interpolated into SQL.** Values are bound, always. What may be
+  interpolated is a fixed IDENTIFIER from a module constant or a closed set: a column list
+  (`META_COLS`), the `liveOnly()` predicate, a table name, the analytics facet
+  ([`docs/spec/01-schema.md`](./docs/spec/01-schema.md) §3). Sixteen such sites exist and
+  none reads a request.
 - **Every write route is mounted on the owner-gated router group**, not checked inside the
   handler ([invariant 4](./docs/invariants.md)).
 - **Every handler** times and logs its request, catches and logs errors, and returns a typed
@@ -116,27 +77,16 @@ opened the page.
   `recovery_codes`, `integration_keys`, `mcp_tokens`.
 - **Public UI colours come ONLY from theme tokens.** Never a hardcoded `neutral-*`, `white`,
   `black` or hex. ONE typeface, no hardcoded sizes, one divider style, never ALL-CAPS.
-- **UI strings live in `src/i18n` only**, all 6 languages in sync (en, then vi, de, ja, zh,
-  ko). Code, comments, identifiers, filenames, commits and docs: **English**.
-- **Comments explain why, not what.** The Next codebase was unusually good at this; keep the
-  standard.
-- **Behaviour change → update its doc in the same commit.** Rules to `docs/`, decisions to
-  `docs/decisions/` (append-only), what happened to the worklog in `quireink-private`.
-- **Do NOT read CHANGELOG.md while coding.** It is append-only at release time and its
-  history is never needed to fix or understand code.
+- **UI strings live in `src/i18n` only**, all 6 languages in sync (en, then vi, de, ja, zh, ko).
 
-## The porting rule — still in force
+## Danger zones
 
-Anything still being moved from `v1/src` is a **port, not a rewrite**. Move it; do not
-improve it, rename its exports, or modernise its idioms on the way. Its tests move with it,
-in the same commit. If the file is genuinely wrong, port it as-is first and fix it in a
-separate commit that says what changed and why. Every "small improvement" made in transit
-is a place a behaviour can vanish without anyone noticing.
-
-## Database
-
-Two SQLite files, `quire.db` and `analytics.db`, joined with `ATTACH` where needed.
-`bun:sqlite` is synchronous and the runtime is single-threaded, so there is exactly one
-writer by construction: no pool, no mutex, no busy-retry. The cost is that a slow query
-blocks everything, so keep the request path indexed. Timestamps are **INTEGER milliseconds
-since epoch, UTC**, everywhere; timezone logic lives in TypeScript, never in SQL.
+- **`golden/v1/corpus/` is not leftover from the retired 1.x tree.** It is captured reference
+  HTML and it is the golden compare's contract; `src/render/golden.test.ts` reads it on every
+  run. Regenerating it is a reviewed change.
+- **The retired Next.js implementation is gone from the tree** ([ADR 0019](./docs/decisions/0019-remove-the-frozen-tree-from-the-working-copy.md)),
+  preserved at tag `v1-final`. Do not reintroduce it, and do not "fix" a doc by pointing at
+  a `v1/` path.
+- **Production is not a test environment.** A newsletter cannot be unsent.
+- **All scratch goes under `.tmp/`.** One gitignored root, deletable at any moment. Never a
+  new scratch directory at the repository root.

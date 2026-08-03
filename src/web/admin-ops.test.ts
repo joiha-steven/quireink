@@ -15,7 +15,7 @@ import { resetLimits } from '@/server/rate-limit'
 import { verifyPreview } from '@/content/preview'
 import { payload } from '@/test/api'
 
-const DIR = './.tmp-test-admin-ops'
+const DIR = './.tmp/test-admin-ops'
 const SNAPSHOTS = `${DIR}-snapshots`
 const UPLOADS = `${DIR}-uploads`
 freshDatabase(DIR)

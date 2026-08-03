@@ -2,9 +2,7 @@
 // than by prose nobody re-reads. See docs/README.md for the layout itself, and ADR 0010
 // for why it exists.
 //
-// Ported from the frozen tree's `scripts/checks/docs.mjs` when the repository was
-// reshuffled (ADR 0012). Same five rules, because the messes they catch are the ones this
-// repository actually had:
+// Five rules, because the messes they catch are the ones this repository actually had:
 //   1. No broken relative link between markdown files. Moving a doc used to leave dangling
 //      links in five other files and nothing noticed. That is precisely what the reshuffle
 //      that produced this file did to forty of them.
@@ -19,26 +17,20 @@ import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 
 const ROOT = process.cwd()
-const CLAUDE_MD_MAX = 170
-const FILE_MAX = 700
+const CLAUDE_MD_MAX = 120
+// 450, down from 700 on 2026-08-03. The old cap was reached by `docs/features.md`, which sat
+// at exactly 700 for weeks: the next feature line would have broken the build for whoever
+// happened to add it. It is now `docs/features/`, six files by area. The largest remaining
+// document is `spec/07-parity.md` at 434; that is the one holding this above the 400 the
+// repository standard asks for.
+const FILE_MAX = 450
 
-const ROOTS = ['.', 'docs', 'scripts', '.github', 'v1']
+const ROOTS = ['.', 'docs', 'scripts', '.github']
 
 // `golden/corpus/` holds markdown FIXTURES, not documents. Their links point at
 // deliberately fake images and dangerous schemes, because that is exactly what they test.
 const skip = (p: string) =>
   /(^|\/)(node_modules|\.next|\.git|dist)\//.test(p) || p.startsWith('golden/corpus/')
-
-// FROZEN documents: a record of what was true on a date, never retro-edited, so their
-// links are historical and are allowed to rot. Checking them would force exactly the
-// retro-editing the rule forbids.
-//   `scripts/port/` — the porting ledgers.
-//   `v1/`           — the retired Next tree (ADR 0012). It takes no patches at all, security
-//                     included, so a link inside it can never be repaired even in principle.
-//                     It was only passing before because it links into `state/`, which was
-//                     still here; ADR 0017 moved that out and six links went red at once.
-// The audits and reports this also covered left with `state/` (ADR 0017).
-const frozen = (p: string) => /^(scripts\/port|v1)\//.test(p)
 
 const walk = (dir: string): string[] =>
   readdirSync(dir).flatMap((name) => {
@@ -53,7 +45,7 @@ const files = [
   ...new Set(
     ROOTS.filter((d) => existsSync(d)).flatMap((d) =>
       // '.' is walked one level deep only; its subdirectories are listed explicitly, so
-      // walking it fully would scan `v1/` twice and `uploads/` once.
+      // walking it fully would scan `uploads/` and every scratch directory as well.
       d === '.'
         ? readdirSync('.').filter((n) => n.endsWith('.md'))
         : walk(d),
@@ -65,7 +57,7 @@ const violations: string[] = []
 const approaching: string[] = []
 
 // 1. Relative links resolve. Absolute URLs, anchors and mailto are not our problem.
-for (const file of files.filter((p) => !frozen(p))) {
+for (const file of files) {
   const src = readFileSync(file, 'utf8')
   for (const [, target] of src.matchAll(/\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g)) {
     if (target === undefined || /^([a-z][a-z0-9+.-]*:|#|<)/i.test(target)) continue

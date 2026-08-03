@@ -1,7 +1,5 @@
-# `bun test` walks the working directory, and the working directory now contains `v1/` —
-# the frozen Next tree, whose ~100 test files are written for vitest and throw on
-# `vi.hoisted` under Bun's runner. Rooting the test run at `src` keeps the frozen tree out
-# without a filter argument, which Bun matches as a substring and which therefore also
-# matches `v1/src`.
+# Tests live beside the code they cover, so the runner is rooted at `src`. Nothing outside
+# it defines a test, and rooting it here stops a stray `.test.ts` under `scripts`, or a file
+# left in a scratch directory, from joining the run by accident.
 [test]
 root = "src"

@@ -9,7 +9,7 @@ import { DEFAULT_TYPOGRAPHY, TYPE_ROLES, getFontPreset } from '@/content/themes'
 import { PUBLIC_CSS } from '@/web/public.css'
 import { MONO_TRACKING } from '@/render/font-faces'
 
-const DIR = './.tmp-test-typography'
+const DIR = './.tmp/test-typography'
 freshDatabase(DIR)
 afterAll(() => dropDatabase(DIR))
 

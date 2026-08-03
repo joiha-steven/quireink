@@ -12,7 +12,7 @@ import { saveSettings } from '@/content/settings'
 import { clearCache } from '@/server/cache'
 import { createApp } from '@/web/app'
 
-const DIR = './.tmp-test-sheet'
+const DIR = './.tmp/test-sheet'
 freshDatabase(DIR)
 afterAll(() => dropDatabase(DIR))
 

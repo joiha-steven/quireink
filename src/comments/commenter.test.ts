@@ -8,7 +8,7 @@ import {
   COMMENTER_COOKIE, clearedCommenterCookie, commenterCookie, issueCommenter, readCommenter,
 } from '@/comments/commenter'
 
-const DIR = './.tmp-test-commenter'
+const DIR = './.tmp/test-commenter'
 freshDatabase(DIR) // the signing secret is generated into `server_secrets` on first use
 afterAll(() => dropDatabase(DIR))
 

@@ -13,7 +13,7 @@ import {
   deleteSnapshot,
 } from '@/server/backup'
 
-const DIR = './.tmp-test-backup'
+const DIR = './.tmp/test-backup'
 const SNAPSHOTS = `${DIR}/snapshots`
 const UPLOADS = `${DIR}/uploads`
 

@@ -12,7 +12,7 @@ import { createApp } from '@/web/app'
 
 // Its own directory: `openDatabases` holds one connection pair per process, so two test
 // files sharing a directory would close each other's.
-const DIR = './.tmp-test-track'
+const DIR = './.tmp/test-track'
 freshDatabase(DIR)
 afterAll(() => dropDatabase(DIR))
 

@@ -11,7 +11,7 @@ import { saveRedirect, getRedirects } from '@/server/redirects'
 import { clearCache } from '@/server/cache'
 import { createApp } from '@/web/app'
 
-const DIR = './.tmp-test-redirects'
+const DIR = './.tmp/test-redirects'
 freshDatabase(DIR)
 afterAll(() => dropDatabase(DIR))
 

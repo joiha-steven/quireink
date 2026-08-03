@@ -18,7 +18,7 @@ import { payload } from '@/test/api'
 
 // Its own directory: `openDatabases` holds one pair of connections per process and closes
 // the previous pair, so two test files sharing a directory would fight over them.
-const DIR = '.test-mcp-wire'
+const DIR = './.tmp/test-mcp-wire'
 
 // Created ONCE and then emptied per test: on Windows the directory cannot be removed
 // while the connections are open, so re-creating it per test fails with EBUSY.
