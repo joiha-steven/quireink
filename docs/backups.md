@@ -14,7 +14,7 @@ differ only in where the file ends up and who decides when.
 
 The frozen tree backed up to the owner's Google Drive from inside the application, with an
 OAuth flow, a `backup_state` table and a destructive in-app restore. 2.0 dropped all of it
-(parity exception 1, [`spec/07-parity.md`](spec/07-parity.md)): backup is an operational
+(parity exception 1, [`spec/00-rationale.md`](spec/00-rationale.md)): backup is an operational
 concern, it should keep working when the application does not, and an application that can
 overwrite every table in itself is a bigger risk than the one it removes.
 

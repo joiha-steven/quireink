@@ -33,7 +33,7 @@
   site shell, and `src/web/cache-headers.ts` refuses a shared cache anything that is not a
   200, so a 404 never outlives the reason for it.
 
-**Not carried over yet** (tracked in [`spec/07-parity.md`](spec/07-parity.md), do not
+**Not carried over yet** (tracked in [`spec/07-parity-public.md`](spec/07-parity-public.md), do not
 document these as present): JSON-LD structured data — `seo.autoSchema` is in the settings
 shape and nothing reads it — the `/page/1` → `/` redirect, the `sitemaps.xml` → `/sitemap.xml`
 redirect, category and tag entries and per-post `<image:image>` entries in the sitemap, and

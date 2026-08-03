@@ -10,7 +10,7 @@
 //
 //   1. A request carrying a LIVE owner session. The frozen tree opened its track route with
 //      `requireOwner()`; 2.0 had no session to ask until M3 and the gap has been open since
-//      (docs/spec/07-parity.md §8). This closes it.
+//      (docs/spec/07-parity-public.md §8). This closes it.
 //   2. A request from an IP that a live session was created from — the owner in a second
 //      browser, in a private window, or on the phone beside the desk, where there is no
 //      cookie to find. This is the "by IP" half.

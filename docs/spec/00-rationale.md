@@ -71,7 +71,7 @@ documents: append, never renumber.**
 
 | Risk | Outcome |
 |---|---|
-| Admin behaviour lost in the SPA extraction | The reason the parity inventory ([07-parity.md](07-parity.md)) exists. Still the standing defence: the golden harness only sees public HTML |
+| Admin behaviour lost in the SPA extraction | The reason the parity inventory ([public](07-parity-public.md) · [admin](07-parity-admin.md)) exists. Still the standing defence: the golden harness only sees public HTML |
 | The 61 API routes more entangled with `next/cache` than the import count suggested | Accepted in advance and paid; the cutover held to schedule |
 | Bun behaviour differences under load: streaming, `sharp` native module, file handles | Why M2 was required to be deployed and publicly reachable rather than benchmarked on localhost |
 | **`sharp` and `satori` native parts do not embed in the compiled executable** | **Confirmed, still true.** `bun build --compile` bundles sharp's JavaScript but not its `@img/sharp-<platform>` native module, and the binary throws "Could not load the sharp module using the win32-x64 runtime" at first call from any directory. "One executable" is really one executable plus a native module directory, or `bun src/index.ts` from source |

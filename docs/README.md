@@ -48,7 +48,8 @@ held up and are the working account.
 | [spec/03-golden.md](spec/03-golden.md) | The rendering contract: fixtures, capture, and what a diff means |
 | [spec/04-frontend.md](spec/04-frontend.md) | Server-rendered HTML, the island model, the CSS split. **Reference** |
 | [spec/06-auth.md](spec/06-auth.md) | Password + TOTP + recovery codes, sessions, the cookie. **Reference** |
-| [spec/07-parity.md](spec/07-parity.md) | Every user-visible 1.x behaviour, with the fragile ones marked. The defence against silent feature loss, since the golden harness only sees public HTML |
+| [spec/07-parity-public.md](spec/07-parity-public.md) | Every reader-facing 1.x behaviour, with the 48 fragile ones marked. The defence against silent feature loss, since the golden harness only sees public HTML |
+| [spec/07-parity-admin.md](spec/07-parity-admin.md) | The same for the admin, editor, settings, MCP, operations and auth, none of which the harness sees at all |
 
 ## Why it is this way
 

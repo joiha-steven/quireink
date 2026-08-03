@@ -32,7 +32,7 @@ measure. Verify against the **origin**, never through the CDN.
 | Touching fonts, CSS or island JS | [`docs/performance.md`](./docs/performance.md) — the resource-loading law |
 | Touching a public view | [`docs/conventions.md`](./docs/conventions.md) · admin: [`docs/admin-design.md`](./docs/admin-design.md) |
 | Touching the schema | [`docs/spec/01-schema.md`](./docs/spec/01-schema.md) · [`src/store/schema.sql`](./src/store/schema.sql) |
-| Wondering whether 1.x did it differently | [`docs/spec/07-parity.md`](./docs/spec/07-parity.md) |
+| Wondering whether 1.x did it differently | [`docs/spec/07-parity-public.md`](./docs/spec/07-parity-public.md) · [owner-facing half](./docs/spec/07-parity-admin.md) |
 | Going against a past decision | [`docs/decisions/`](./docs/decisions/README.md) — read the in-force index first |
 | Picking up work, or logging it | the private sibling repo ([ADR 0017](./docs/decisions/0017-move-state-and-instance-config-private.md)) |
 
