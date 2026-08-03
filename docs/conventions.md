@@ -343,7 +343,7 @@ ambiguous.
 
 `bun scripts/<name>.ts` — idempotent. Every one of them is a `package.json` script too, and
 that is the name to use: `bun run build:assets`, `bun run check:all`, `bun run user`,
-`bun run import-v1`, `bun run shot`, `bun run drive`. Node is not in the toolchain
+`bun run shot`, `bun run drive`. Node is not in the toolchain
 ([ADR 0005](decisions/0005-rewrite-in-bun-hono-sqlite.md)).
 
 - **The schema is not a script.** `src/store/schema.sql` and `src/store/schema-analytics.sql`
@@ -363,9 +363,6 @@ On any behavior change, update the matching doc in the SAME change (Working prin
   file. **`docs/decisions/`** = why, append-only. **CHANGELOG.md** = one entry per user-facing
   change. **README.md** = setup + features. Direction, dated snapshots and the worklog are
   **not in this repository** ([ADR 0017](decisions/0017-move-state-and-instance-config-private.md)).
-  The frozen tree's `ARCHITECTURE.md` and `CHECKLIST.md` moved with it and are now
-  [`v1/ARCHITECTURE.md`](../v1/ARCHITECTURE.md) and [`v1/CHECKLIST.md`](../v1/CHECKLIST.md);
-  neither describes 2.0.
 - **README is the canonical install/usage doc — keep it current.** Its **two install paths**
   (1️⃣ do-it-yourself, 2️⃣ hand-to-an-AI-agent) + the **MCP "let an agent write & publish"** section
   + the **env-var table** must be updated in the SAME change whenever setup/deploy/env/auth/MCP/backup

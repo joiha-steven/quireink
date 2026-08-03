@@ -242,7 +242,7 @@ the seven `next-auth` import sites.
 
 `MCP_OAUTH_SECRET` stays: MCP tokens and the MCP OAuth flow are a separate mechanism for
 a separate client, they are unaffected by this change, and their token hash format must
-be preserved across cutover (00-plan.md risk register).
+be preserved across cutover (00-rationale.md, parity exception #4).
 
 ### `AUTH_SECRET` had a second job
 

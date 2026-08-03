@@ -14,8 +14,8 @@ import { resetSecretCache } from '@/auth/secret'
 import { resetLimits } from '@/server/rate-limit'
 import { payload } from '@/test/api'
 
-const DIR = './.tmp-test-admin-uploads'
-const STORE = './.tmp-test-admin-uploads-store'
+const DIR = './.tmp/test-admin-uploads'
+const STORE = './.tmp/test-admin-uploads-store'
 process.env.STORAGE_LOCAL_DIR = STORE
 // Cleared on load as well as after, so a run that crashed last time does not leave files
 // behind that change the names this one gets.

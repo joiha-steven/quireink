@@ -1,14 +1,14 @@
 // Seed a throwaway database with a post that exercises every island: fenced code for the
 // copy button, two figures for the lightbox, and enough headings to scroll.
 //
-// Development only. It writes wherever DATA_DIR points, so it is run against `.tmp-run`,
+// Development only. It writes wherever DATA_DIR points, so it is run against `.tmp/run`,
 // never against a real data directory.
 
 import { openDatabases } from '@/store/db'
 import { savePost } from '@/content/posts'
 import { getSettings, saveSettings } from '@/content/settings'
 
-openDatabases(process.env.DATA_DIR ?? './.tmp-run')
+openDatabases(process.env.DATA_DIR ?? './.tmp/run')
 
 const { features } = await getSettings()
 await saveSettings({

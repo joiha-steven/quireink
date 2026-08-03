@@ -10,7 +10,7 @@ import { createSession } from '@/auth/sessions'
 import { isInternalIp } from '@/analytics/exclude'
 import { createApp } from '@/web/app'
 
-const DIR = './.tmp-test-exclude'
+const DIR = './.tmp/test-exclude'
 freshDatabase(DIR)
 afterAll(() => dropDatabase(DIR))
 

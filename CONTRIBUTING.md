@@ -10,9 +10,9 @@ to relicense it, including under commercial terms. That second half is what keep
 commercial licence possible without having to track down every past contributor; it is
 stated here rather than enforced by a CLA bot.
 
-> **`v1/` takes nothing.** It is the retired Next.js + PostgreSQL implementation, shut down
-> on 2026-07-31 and kept only so the old behaviour stays readable. It receives no changes at
-> all, security fixes included, so a pull request against `v1/` will be closed.
+> **Quire 1.x takes nothing.** The Next.js + PostgreSQL implementation was shut down on
+> 2026-07-31 and removed from the working tree; it is in git history at tag `v1-final`. It
+> receives no changes at all, security fixes included.
 
 ## This file is an entry point, not the rulebook
 

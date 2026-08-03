@@ -1,14 +1,11 @@
 # What the image build is allowed to see. The Dockerfile copies named paths rather than
 # `COPY . .`, so this is a second fence rather than the only one, and it is what keeps the
-# build context small: `v1/` alone carries a `node_modules` and a `.next` tree.
+# build context small.
 
 .git
 .github
-v1
-attic
 golden
 docs
-state
 
 node_modules
 **/node_modules
@@ -28,11 +25,6 @@ data-dev-uploads
 
 # Local scratch, evidence, and the deploy's commit stamp (the image is not a deploy).
 build-sha
-.tmp-test-*
-.tmp-drive-data
-.tmp-run
-.tmp-binary
-.shots
-_shots
+.tmp
 coverage
 *.tsbuildinfo

@@ -7,7 +7,7 @@ import { join } from 'node:path'
 import { openDatabases, closeDatabases, parseMigrations } from './db'
 import migrations from './migrations.sql' with { type: 'text' }
 
-const DIR = './.tmp-test-migrations'
+const DIR = './.tmp/test-migrations'
 
 afterAll(() => {
   closeDatabases()

@@ -12,7 +12,7 @@ import { SlugConflictError } from '@/content/slugs'
 import { clearCache } from '@/server/cache'
 import { createApp } from '@/web/app'
 
-const DIR = './.tmp-test-home-mode'
+const DIR = './.tmp/test-home-mode'
 freshDatabase(DIR)
 afterAll(() => dropDatabase(DIR))
 

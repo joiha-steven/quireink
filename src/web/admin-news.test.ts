@@ -14,7 +14,7 @@ import { resetSecretCache } from '@/auth/secret'
 import { resetLimits } from '@/server/rate-limit'
 import { payload } from '@/test/api'
 
-const DIR = './.tmp-test-admin-news'
+const DIR = './.tmp/test-admin-news'
 freshDatabase(DIR)
 afterAll(() => dropDatabase(DIR))
 

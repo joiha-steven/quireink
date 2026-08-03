@@ -13,7 +13,7 @@ import {
 import { registerClient, isRedirectAllowed, isLoopbackRedirect } from '@/mcp/clients'
 import { consumeCodeJti } from '@/mcp/used-codes'
 
-const DIR = './.tmp-test-mcp'
+const DIR = './.tmp/test-mcp'
 freshDatabase(DIR)
 afterAll(() => dropDatabase(DIR))
 

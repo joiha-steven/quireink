@@ -22,7 +22,7 @@ const FILE = `${FIXTURE_DIR}/photo.jpg`
 // The router's catch-all `/:slug` reads posts, so a request that falls through to it needs
 // an open database. Without one the traversal test fails with a confusing db error rather
 // than the 404 it is actually asserting.
-const DB_DIR = './.tmp-test-uploads-db'
+const DB_DIR = './.tmp/test-uploads-db'
 freshDatabase(DB_DIR)
 afterAll(() => dropDatabase(DB_DIR))
 

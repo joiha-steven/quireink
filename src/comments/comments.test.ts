@@ -12,7 +12,7 @@ import {
   CommentInputError, MAX_COMMENT_LEN, type CommentRow,
 } from '@/comments/comments'
 
-const DIR = './.tmp-test-comments'
+const DIR = './.tmp/test-comments'
 freshDatabase(DIR)
 afterAll(() => dropDatabase(DIR))
 

@@ -77,7 +77,7 @@ export const WORD_INK =
   + '-51.9Q291.1 -49.4 291.3 -45.8Q291.6 -42.2 291.8 -38.4Q291.9 -34.6 291.9 -31.4V0Z M333.3 '
   + '0V-64.2H344.3V-38.3H352L364 -64.2H376L361.6 -33.4L376.7 0H364.4L351.8 -28.2H344.3V0Z'
 
-// Regenerate with `.tmp-shots/wordmark.py` (throwaway) against the shipped woff2 files:
+// Regenerate with `.tmp/shots/wordmark.py` (throwaway) against the shipped woff2 files:
 //   python wordmark.py word.svg "quire:inter:400:100" "INK:jetbrainsmono:700:88" -20 -6
 //   python wordmark.py mark.svg "Q:inter:500:100"     "i:jetbrainsmono:700:100"  -35 0
 // The trailing numbers are tracking (em/1000, negative tightens) and the gap between the

@@ -1,9 +1,7 @@
 > Split from CLAUDE.md — the **resource-loading law**: how fonts, CSS, and JS reach a
 > reader. One rule set, applied system-wide (every language, every font preset, every
 > uploaded font). Touching `src/web/layout.ts`, the font helpers in `src/content/themes.ts`,
-> the `src/web/*.css.ts` sheets, or adding an island? Read this first. The *why* is in
-> [`v1/ARCHITECTURE.md`](../v1/ARCHITECTURE.md) "Resource loading" — the reasoning was
-> written for the Next implementation and carried over to 2.0 unchanged.
+> the `src/web/*.css.ts` sheets, or adding an island? Read this first.
 
 # Performance — resource loading (fonts · CSS · JS)
 

@@ -17,7 +17,7 @@ import { resetLimits } from '@/server/rate-limit'
 import { saveSettings } from '@/content/settings'
 import { payload } from '@/test/api'
 
-const DIR = './.tmp-test-admin-mcp'
+const DIR = './.tmp/test-admin-mcp'
 freshDatabase(DIR)
 afterAll(() => dropDatabase(DIR))
 

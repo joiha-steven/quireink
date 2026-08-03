@@ -4,7 +4,7 @@ Replaces the Go plan's package spec.
 
 ## Layout
 
-The 2.0 implementation sits at the REPOSITORY ROOT; the frozen Next tree is under `v1/`
+The implementation sits at the REPOSITORY ROOT
 ([ADR 0012](../decisions/0012-flatten-repo-after-cutover.md)).
 
 ```
@@ -35,13 +35,13 @@ src/
     schema.sql          embedded, applied at boot
     schema-analytics.sql
     migrations.sql      one FILE, not a directory
-  import/               reads a live 1.x instance (05-importer.md)
+  import/               WordPress WXR parsing, for the admin's import page
   admin/                the React SPA, ported from the frozen src/components/admin
   assets/
     js/                 core, post, listing + the lazy islands
     static/             fonts and icons
   i18n/ locales/        6 locales
-scripts/                build, checks/, ops/, import-v1.ts, user.ts, drive.ts
+scripts/                build, checks/, ops/, user.ts, drive.ts, shot.ts
 golden/
 docs/
 ```

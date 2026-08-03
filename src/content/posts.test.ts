@@ -13,7 +13,7 @@ import { getRevisions } from '@/content/revisions'
 import { getRedirects } from '@/server/redirects'
 import { addComment, getCommentTree } from '@/comments/comments'
 
-const DIR = './.tmp-test-posts'
+const DIR = './.tmp/test-posts'
 freshDatabase(DIR)
 afterAll(() => dropDatabase(DIR))
 

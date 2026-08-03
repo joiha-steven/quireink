@@ -188,7 +188,7 @@ handling. All of it keeps working because none of it is touched.
 The editor features that must not regress are therefore not a risk register entry any
 more; they are existing code:
 
-- Autosave to `localStorage` only, **never to the server** — see [`../features.md`](../features.md)
+- Autosave to `localStorage` only, **never to the server** — see [`../features/editing.md`](../features/editing.md)
 - Crash recovery offering a newer local draft
 - Conflict detection warning instead of overwriting
 - Revision history (SQLite makes rows cheap, so raising the limit past 3 is now a product

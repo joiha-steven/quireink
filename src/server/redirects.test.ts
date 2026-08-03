@@ -8,7 +8,7 @@ import {
   getRedirects, saveRedirect, deleteRedirect, clearRedirectForPath, RedirectInputError,
 } from '@/server/redirects'
 
-const DIR = './.tmp-test-redirects'
+const DIR = './.tmp/test-redirects'
 freshDatabase(DIR)
 afterAll(() => dropDatabase(DIR))
 

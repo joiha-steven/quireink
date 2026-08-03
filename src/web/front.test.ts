@@ -12,7 +12,7 @@ import { createApp } from '@/web/app'
 import type { FrontSettings } from '@/types'
 import { DEFAULT_HOME } from '@/content/settings-sanitize'
 
-const DIR = './.tmp-test-front'
+const DIR = './.tmp/test-front'
 freshDatabase(DIR)
 afterAll(() => dropDatabase(DIR))
 

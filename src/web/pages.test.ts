@@ -13,7 +13,7 @@ import { getSettings, saveSettings } from '@/content/settings'
 import { clearCache, pageCache } from '@/server/cache'
 import { createApp } from '@/web/app'
 
-const DIR = './.tmp-test-pages'
+const DIR = './.tmp/test-pages'
 freshDatabase(DIR)
 afterAll(() => dropDatabase(DIR))
 

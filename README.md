@@ -247,10 +247,9 @@ Nothing is finished until `bun run check:all` passes. It typechecks, runs the st
 | Where | What is in it |
 |---|---|
 | `src/` | The whole thing: Bun, Hono, SQLite. [How the pieces fit](./docs/spec/02-structure.md) |
-| `docs/` | How it works and why. [`docs/spec/`](./docs/spec/README.md) is the plan, [`docs/decisions/`](./docs/decisions/README.md) is every decision, including the ones that were reversed |
+| `docs/` | How it works and why. [`docs/README.md`](./docs/README.md) indexes it; [`docs/decisions/`](./docs/decisions/README.md) is every decision, including the ones that were reversed |
 | `golden/` | The rendering contract. One byte of different output fails the build |
 | `scripts/checks/` | The guards. Register a write route outside the owner-only group and the build stops, same as a hardcoded font size in the reader's stylesheet |
-| `v1/` | Quire 1.5.0, the Next.js and PostgreSQL version this replaced. Retired and unsupported, kept so you can read what it used to do |
 
 What is planned lives with the author's own notes rather than here, because it is one
 person's intentions for one blog and not a promise to anybody running the software

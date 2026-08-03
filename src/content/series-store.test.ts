@@ -11,7 +11,7 @@ import {
   updateSeries, reorderSeries,
 } from '@/content/series'
 
-const DIR = './.tmp-test-series-store'
+const DIR = './.tmp/test-series-store'
 freshDatabase(DIR)
 afterAll(() => dropDatabase(DIR))
 

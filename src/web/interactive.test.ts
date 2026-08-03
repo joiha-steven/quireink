@@ -13,7 +13,7 @@ import { clearCache } from '@/server/cache'
 import { createApp } from '@/web/app'
 import { payload } from '@/test/api'
 
-const DIR = './.tmp-test-interactive'
+const DIR = './.tmp/test-interactive'
 freshDatabase(DIR)
 afterAll(() => dropDatabase(DIR))
 

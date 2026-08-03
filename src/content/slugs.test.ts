@@ -5,7 +5,7 @@ import { freshDatabase, dropDatabase } from '@/test/db'
 import { db, nowMs } from '@/store/db'
 import { ensureSlugFree, SlugConflictError } from '@/content/slugs'
 
-const DIR = './.tmp-test-slugs'
+const DIR = './.tmp/test-slugs'
 freshDatabase(DIR)
 afterAll(() => dropDatabase(DIR))
 

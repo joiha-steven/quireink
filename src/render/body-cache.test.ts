@@ -12,7 +12,7 @@ import { all } from '@/store/query'
 import { renderPostContent } from '@/render/post-content'
 import { collapseBlob } from '@/media/blob'
 
-const DIR = './.tmp-test-body-cache'
+const DIR = './.tmp/test-body-cache'
 freshDatabase(DIR)
 afterAll(() => dropDatabase(DIR))
 

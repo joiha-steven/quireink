@@ -11,7 +11,7 @@ import {
 } from '@/content/posts'
 import { tagText, termSlug } from '@/content/taxonomy'
 
-const DIR = './.tmp-test-post-terms'
+const DIR = './.tmp/test-post-terms'
 freshDatabase(DIR)
 afterAll(() => dropDatabase(DIR))
 

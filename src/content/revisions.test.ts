@@ -8,7 +8,7 @@ import { db } from '@/store/db'
 import { all } from '@/store/query'
 import { getRevisions, pushRevision, renameRevisions, deleteRevisions } from '@/content/revisions'
 
-const DIR = './.tmp-test-revisions'
+const DIR = './.tmp/test-revisions'
 freshDatabase(DIR)
 afterAll(() => dropDatabase(DIR))
 

@@ -247,10 +247,9 @@ Chưa qua `bun run check:all` thì chưa xong. Nó typecheck, chạy các guard 
 | Ở đâu | Có gì trong đó |
 |---|---|
 | `src/` | Toàn bộ: Bun, Hono, SQLite. [Các mảnh ghép vào nhau ra sao](./docs/spec/02-structure.md) |
-| `docs/` | Nó chạy thế nào và vì sao. [`docs/spec/`](./docs/spec/README.md) là bản kế hoạch, [`docs/decisions/`](./docs/decisions/README.md) là mọi quyết định, kể cả những cái đã bị đảo ngược |
+| `docs/` | Nó chạy thế nào và vì sao. [`docs/README.md`](./docs/README.md) là mục lục; [`docs/decisions/`](./docs/decisions/README.md) là mọi quyết định, kể cả những cái đã bị đảo ngược |
 | `golden/` | Hợp đồng render. Lệch một byte đầu ra là build đỏ |
 | `scripts/checks/` | Các guard. Đăng ký một route ghi ngoài nhóm chỉ-chủ-sở-hữu là build dừng, y như viết cứng một cỡ chữ trong stylesheet trang đọc |
-| `v1/` | Quire 1.5.0, bản Next.js và PostgreSQL mà cái này thay thế. Đã nghỉ hưu, không hỗ trợ, giữ lại để đọc xem ngày xưa nó làm gì |
 
 Dự định sắp tới nằm cùng chỗ với ghi chú riêng của tác giả chứ không ở đây, vì đó là ý định
 của một người cho một cái blog, không phải lời hứa với ai đang chạy phần mềm này

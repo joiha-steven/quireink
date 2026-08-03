@@ -16,7 +16,7 @@ import { saveSmtpConfig } from '@/news/mail'
 import { savePost } from '@/content/posts'
 import { notifyReply } from '@/comments/comment-notify'
 
-const DIR = './.tmp-test-comment-notify'
+const DIR = './.tmp/test-comment-notify'
 freshDatabase(DIR)
 afterAll(() => dropDatabase(DIR))
 

@@ -7,9 +7,7 @@ Each is enforced in ONE place in code and pinned by a test or a static guard, al
 `bun run check:all`. A change that weakens one updates its guard in the SAME commit, which
 is what makes the weakening visible in review.
 
-The reasoning behind each is in [`spec/02-structure.md`](spec/02-structure.md). The frozen
-Next implementation had its own seven, which overlap but are not the same rules — they are
-in [`../v1/docs/invariants.md`](../v1/docs/invariants.md).
+The reasoning behind each is in [`spec/02-structure.md`](spec/02-structure.md).
 
 | # | Rule | Enforced at | Pinned by |
 |---|---|---|---|

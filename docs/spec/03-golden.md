@@ -137,7 +137,7 @@ Present, and expected to stay empty.
 
 Under the Go plan this file was where genuine parser disagreements were recorded. Here,
 any entry means either a porting mistake or an intentional design change that belongs in
-the parity-exceptions list in 00-plan.md instead. Treat a non-empty file as a signal to
+the parity-exceptions list in 00-rationale.md instead. Treat a non-empty file as a signal to
 stop and look, not as a normal working state.
 
 ## Compare and report

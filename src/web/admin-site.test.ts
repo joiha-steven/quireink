@@ -15,7 +15,7 @@ import { pageCache } from '@/server/cache'
 import { blobUrl } from '@/media/blob'
 import { payload } from '@/test/api'
 
-const DIR = './.tmp-test-admin-site'
+const DIR = './.tmp/test-admin-site'
 freshDatabase(DIR)
 afterAll(() => dropDatabase(DIR))
 

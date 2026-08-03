@@ -4,7 +4,7 @@ import { expect, test, afterAll } from 'bun:test'
 import { rmSync } from 'node:fs'
 import { openDatabases, closeDatabases, liveOnly } from './db'
 
-const DIR = './.tmp-test-db'
+const DIR = './.tmp/test-db'
 rmSync(DIR, { recursive: true, force: true })
 let { db, analyticsDb } = openDatabases(DIR)
 

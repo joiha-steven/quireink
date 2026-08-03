@@ -1,4 +1,4 @@
-> Split from `features.md` when that file hit its 700-line cap. What `/` serves, and what
+> Split out of the feature docs when that file hit its 700-line cap. What `/` serves, and what
 > happens to the post list when it is no longer there.
 
 # Homepage mode

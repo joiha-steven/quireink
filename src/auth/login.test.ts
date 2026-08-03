@@ -17,7 +17,7 @@ import {
 import { resetSecretCache } from './secret'
 import { resetLimits } from '@/server/rate-limit'
 
-const DIR = './.tmp-test-login'
+const DIR = './.tmp/test-login'
 freshDatabase(DIR)
 afterAll(() => dropDatabase(DIR))
 

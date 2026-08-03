@@ -8,7 +8,7 @@ import { one } from '@/store/query'
 import { logActivity, logActivityError, getActivity, clearActivity } from '@/server/activity'
 import { saveSettings, DEFAULT_SETTINGS } from '@/content/settings'
 
-const DIR = './.tmp-test-activity'
+const DIR = './.tmp/test-activity'
 freshDatabase(DIR)
 afterAll(() => dropDatabase(DIR))
 

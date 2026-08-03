@@ -5,7 +5,7 @@
 //
 // The hash format is load-bearing across the cutover: it is plain hex SHA-256 of the
 // presented string, exactly as before, so every token the owner's connectors already hold
-// keeps working. Changing it would break AI publishing silently (00-plan.md risk register).
+// keeps working. Changing it would break AI publishing silently (docs/spec/00-rationale.md, parity exception #4).
 
 import { createHash, randomBytes } from 'node:crypto'
 import { all, one, run } from '@/store/query'
