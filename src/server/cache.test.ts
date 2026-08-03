@@ -10,7 +10,7 @@ import { freshDatabase, dropDatabase } from '@/test/db'
 import { db } from '@/store/db'
 import { savePost } from '@/content/posts'
 import { pageCache, clearCache, onFlush } from '@/server/cache'
-import { warmCache } from '@/server/warm'
+import { warmCache, warmThenPurge } from '@/server/warm'
 import { purgeEdge } from '@/server/edge-cache'
 import { saveIntegrationKeys } from '@/store/integration-keys'
 
@@ -74,6 +74,38 @@ describe('warming', () => {
     expect(warmed).toBe(2) // the one live post, plus `/`
     expect(pageCache.has('/draft')).toBe(false)
     expect(pageCache.has('/later')).toBe(false)
+  })
+})
+
+describe('a write that lands while the warmer is already running', () => {
+  it('earns a second pass instead of being dropped', async () => {
+    // THE BUG THIS EXISTS FOR. The guard was `if (running) return`, which reads like
+    // de-duplication and is data loss: a warm walks every public post (8.4s measured on a
+    // 77-post site) and a save landing inside that window never reached `purgeEdge`, so the
+    // CDN went on serving the old page. Reported as "saving a post does not clear the cache".
+    //
+    // Counting PASSES, not inspecting the cache at the end. The obvious version — clear the
+    // cache mid-flight and assert it comes back full — passes against the broken code too,
+    // because the first pass keeps writing after the clear and fills it anyway. That version
+    // was written first and could not go red, which is the only thing wrong with a guard.
+    await savePost({ title: 'One', content: 'body text', status: 'published', date: PAST })
+    await savePost({ title: 'Two', content: 'body text', status: 'published', date: PAST })
+
+    const lines: string[] = []
+    const realLog = console.log
+    console.log = (...args: unknown[]) => { lines.push(args.join(' ')) }
+    try {
+      // `running` is set before the first `await` inside warmThenPurge, so by the time the
+      // next statement runs the first pass is provably in flight. No timing guess.
+      const first = warmThenPurge('first')
+      await warmThenPurge('a write during the first pass')
+      await first
+    } finally {
+      console.log = realLog
+    }
+
+    const passes = lines.filter((l) => l.startsWith('cache: warmed')).length
+    expect(passes).toBe(2)
   })
 })
 

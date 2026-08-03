@@ -58,11 +58,11 @@ they have a blog to configure. [ADR 0014](decisions/0014-homepage-modes.md).
   wins without ordering games). Each block self-hides when empty. **Post/page reading views show ONLY the
   `toc`** in a single left rail (full width; the free right gutter stays for wide images). Below the rail
   breakpoint the drawer opens from the **header menu button** (`RailToggle`, mobile only; self-hides on
-  pages with no rail) — no separate header dropdown. **The menu ALSO renders on the header row**
-  (`siteMenu` in `web/chrome.ts`, `.site-menu` from 60rem up, beside search and the theme toggle).
-  On a desktop listing page that IS a deliberate duplicate of the rail block, which used to be the
-  only place it rendered: the front page drops the rail (ADR 0014) and an article's rail is the ToC,
-  so a menu was absent from both. Below 60rem only the drawer has it. Menu + most-viewed count + featured are edited in
+  pages with no rail) — no separate header dropdown. **The menu is on the header row ONLY where no
+  rail can hold it** — today the composed front page alone (`siteMenu` in `web/chrome.ts` behind
+  `ChromeOptions.menuInHeader`, `.site-menu` from 60rem up). It briefly rendered on every page, which
+  doubled the links on every listing; reverted 2026-08-03. Trade: a desktop ARTICLE has no menu, its
+  rail being the ToC. Below 60rem only the drawer has it. Menu + most-viewed count + featured are edited in
   **Admin → Settings → Site → Layout & menu**; `getViewTotals` (`src/analytics/summary.ts`) reads
   `analytics.db` directly and returns `{}` on any error, so a broken analytics database costs the
   block, not the page.
