@@ -9,6 +9,8 @@
 // NO BACKTICKS anywhere below: this is one template literal and a backtick ends it.
 // `check:css-literal` enforces that.
 
+import { INK_CSS } from '@/web/ink.css'
+
 export const PROSE_CSS = `
 /* The body's rhythm is ONE rule: every sibling gets the same lead, and the headings then
    buy themselves a little more. Margins were bottom-side and fixed in rem here, which does
@@ -98,4 +100,9 @@ export const PROSE_CSS = `
 @media (min-width:600px){
   .book-text .prose p,.book-text .prose li{text-align:justify;hyphens:auto}
 }
+
+/* The highlighter, HERE rather than in the public sheet for the same reason the reading face
+   is here: the editor is a .prose surface too, and a stroke you cannot see while you are
+   writing is a stroke you cannot place. Both sheets are built from this one constant. */
+${INK_CSS}
 `.trim()
