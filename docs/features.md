@@ -356,11 +356,11 @@ they have a blog to configure. [ADR 0014](decisions/0014-homepage-modes.md).
   instead of a 16:9 `video-embed`. Plain `<iframe>` like the video embeds — NO third-party
   script, so no CSP change (the CSP sets no `frame-src`/`default-src`, so iframes are allowed).
   The Apple Music URL is quote-guarded against an `src` breakout.
-- **Intentionally NOT supported:** X / Instagram / gist embeds (need third-party widget scripts
-  + CSP allowances).
+## Highlighter + callouts + copy-code — `src/render/ink.ts`, `src/render/post-content.ts` (`buildCallouts`), `src/assets/js/code-copy.ts`
 
-## Callouts + copy-code — `src/render/post-content.ts` (`buildCallouts`), `src/assets/js/code-copy.ts`
-
+- **Highlighter:** `==text==` → `<mark>`; `==text==#green` → `<mark data-ink=…>` (5 inks). Inline
+  marked extension, so bold/links/code ride under one stroke; `==` may not open/close on space, so
+  `x == y` is untouched. Ink `src/web/ink.css.ts`; 3 shapes = a setting, CSS not markup. ADR 0018.
 - **Callouts:** write a blockquote whose first line is `[!NOTE]` / `[!TIP]` / `[!WARNING]` /
   `[!IMPORTANT]` / `[!CAUTION]`. `buildCallouts` (a post-process on marked's HTML) rewrites it to
   `<div class="callout callout-<type>">` with a bold label; an unknown `[!FOO]` or a plain quote

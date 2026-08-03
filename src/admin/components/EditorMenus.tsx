@@ -11,6 +11,7 @@ import { type Editor as TiptapEditor } from '@tiptap/react'
 import { BubbleMenu } from '@tiptap/react/menus'
 import { NodeSelection, type EditorState } from '@tiptap/pm/state'
 import { useAdminT } from './I18nProvider'
+import { INKS } from '@/render/ink'
 
 const BTN = 'grid h-8 w-8 shrink-0 place-items-center rounded-lg text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800'
 
@@ -141,6 +142,43 @@ export function Toolbar({
   )
 }
 
+// The five pens, as five swatches rather than one button behind a dropdown.
+//
+// A dropdown would be one glyph instead of five, and it would be the wrong trade: choosing
+// the ink IS the gesture here, the way choosing bold is not. The swatches carry the real
+// pigments (the light-mode values from `web/ink.css.ts`), so the bar shows you the pen you
+// are about to pick up rather than a word for it.
+//
+// Clicking the ink already on the selection lifts the pen; clicking a different one
+// recolours in place instead of clearing and re-marking — see `toggleInk`.
+const PEN: Record<string, string> = {
+  yellow: '#d5f856', green: '#aaef83', pink: '#faaad9', blue: '#8ed6f9', orange: '#fac881',
+}
+
+function InkButtons({ editor, hold }: { editor: TiptapEditor; hold: (e: React.MouseEvent) => void }) {
+  const t = useAdminT()
+  const current = editor.isActive('ink') ? (editor.getAttributes('ink').ink as string) : ''
+  return (
+    <>
+      {INKS.map((ink) => (
+        <button
+          key={ink}
+          type="button"
+          title={t.tbHighlight}
+          aria-pressed={current === ink}
+          onMouseDown={hold}
+          onClick={() => editor.chain().focus().toggleInk(ink).run()}
+          className={`grid h-6 w-6 place-items-center rounded ${
+            current === ink ? 'ring-2 ring-neutral-400 dark:ring-neutral-300' : 'hover:bg-neutral-100 dark:hover:bg-neutral-700'
+          }`}
+        >
+          <span className="block h-3.5 w-3.5 rounded-[2px]" style={{ background: PEN[ink] }} />
+        </button>
+      ))}
+    </>
+  )
+}
+
 // Floating menu over a text selection (or with the cursor in a link). An
 // elevated chip that follows light/dark like the toolbar (a fixed dark chip was
 // too harsh on light, and vanished into the dark editor background).
@@ -190,6 +228,8 @@ export function BubbleBar({ editor }: { editor: TiptapEditor }) {
       <button type="button" title={t.tbUnderline} onMouseDown={hold} onClick={() => editor.chain().focus().toggleUnderline().run()} className={cls(editor.isActive('underline'))}><u>U</u></button>
       <button type="button" title={t.tbStrike} onMouseDown={hold} onClick={() => editor.chain().focus().toggleStrike().run()} className={cls(editor.isActive('strike'))}><s>S</s></button>
       <button type="button" title={t.tbCodeInline} onMouseDown={hold} onClick={() => editor.chain().focus().toggleCode().run()} className={`${cls(editor.isActive('code'))} font-mono`}>{'</>'}</button>
+      <span className="mx-0.5 h-5 w-px bg-neutral-200 dark:bg-neutral-700" />
+      <InkButtons editor={editor} hold={hold} />
       <span className="mx-0.5 h-5 w-px bg-neutral-200 dark:bg-neutral-700" />
       <button type="button" title={t.tbLink} onMouseDown={hold} onClick={editLink} className={cls(editor.isActive('link'))}>{t.tbLink}</button>
       {editor.isActive('link') && (

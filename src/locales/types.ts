@@ -203,6 +203,7 @@ export type AdminStrings = {
   tbItalic: string
   tbUnderline: string
   tbStrike: string
+  tbHighlight: string
   tbCodeInline: string
   footerContent: string
   footerHint: string
@@ -226,6 +227,13 @@ export type AdminStrings = {
   galleryRatioHint: string
   galleryCaptions: string
   galleryCaptionsHint: string
+  // Settings -> Layout -> Highlighter
+  cardHighlight: string
+  highlightStroke: string
+  highlightStrokeHint: string
+  strokeMarker: string
+  strokeSwipe: string
+  strokeDouble: string
   captionPlaceholder: string
   // post settings panel
   slug: string

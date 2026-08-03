@@ -1,5 +1,7 @@
 // Pure helpers shared across lib and components. No side effects, no I/O.
 
+import { INK_SYNTAX_GLOBAL } from '@/render/ink'
+
 // HTML-escape every special char so nothing user/author-typed becomes markup. The
 // escape-first half of the limited-markdown security model (Invariant 5): shared by
 // comment-md + inline-md, which then inject only their own whitelisted tags.
@@ -71,6 +73,9 @@ export function toPlainText(markdown: string): string {
     .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ') // images
     .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1') // links -> text
     .replace(/<[^>]+>/g, ' ') // html tags (e.g. video iframes)
+    // Highlights -> the words inside them. BEFORE the bare-character strip below, which
+    // would otherwise eat the `#` of a colour suffix and leave the colour NAME in the prose.
+    .replace(INK_SYNTAX_GLOBAL, '$1')
     .replace(/[#>*_`~]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()

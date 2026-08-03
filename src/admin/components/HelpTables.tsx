@@ -11,6 +11,7 @@ type Row = [syntax: string, does: string]
 const MARKDOWN: Row[] = [
   ['# … ######', 'Headings. The table of contents is built from these.'],
   ['> [!NOTE]', 'Callout box. Also TIP, WARNING, IMPORTANT, CAUTION.'],
+  ['==text==', 'Highlighter pen. ==text==#green picks the ink: yellow, green, pink, blue, orange.'],
   ['text[^1]', 'Footnote reference; define it as [^1]: the note anywhere in the body.'],
   ['![alt](url)', 'Image. Dropping a file into the editor writes this for you.'],
   ['```lang', 'Fenced code, syntax-highlighted on the server (no client JS).'],

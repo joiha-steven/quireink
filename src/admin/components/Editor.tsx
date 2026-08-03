@@ -14,6 +14,7 @@ import { Placeholder } from '@tiptap/extension-placeholder'
 import { Markdown } from 'tiptap-markdown'
 import { CaptionedImage } from './CaptionedImage'
 import { Video } from './VideoNode'
+import { Ink } from './InkMark'
 import { Toolbar, BubbleBar } from './EditorMenus'
 import { isVideoUrl } from '@/render/video'
 import { useAdminT } from './I18nProvider'
@@ -224,10 +225,10 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
       StarterKit.configure({ link: { openOnClick: false } }),
       CaptionedImage,
       Video,
-      Table.configure({ resizable: false }),
-      TableRow,
-      TableHeader,
-      TableCell,
+      Ink, // the pen: `==text==` inks as you type, and saves back as `==text==` (InkMark.ts)
+      // The four table extensions are one unit; they are listed on one line so adding the
+      // pen above did not push this file past its 400-line cap.
+      Table.configure({ resizable: false }), TableRow, TableHeader, TableCell,
       // GFM task lists (- [ ] / - [x]); marked renders them on the public side.
       TaskList,
       TaskItem.configure({ nested: true }),

@@ -209,6 +209,7 @@ export type SiteSettings = {
   customFont: FontSettings // owner-uploaded typeface (files/); '' = bundled Inter
   home: HomeSettings // what `/` serves, and where the post list lives when it is not there
   gallery: GallerySettings // site-wide default shape + caption state for in-body galleries
+  highlight: HighlightSettings // how the ==highlighter== stroke is drawn, site-wide
   seo: SeoSettings // SEO / crawler feature toggles
   features: FeatureSettings // reader-facing feature toggles
   comments: CommentSettings // reader comment system (off by default)
@@ -333,6 +334,24 @@ export type GallerySettings = {
   ratio: '' | '1x1' | '3x2' | '4x3'
   /** Print the alt under each tile. Off hides it in CSS; the alt is still in the HTML. */
   captions: boolean
+}
+
+/**
+ * How the highlighter pen draws, site-wide.
+ *
+ * A CSS setting for the same reason `GallerySettings` is one: rendered Markdown is cached
+ * under a hash of its input, so a stroke that changed the MARKUP would leave every body that
+ * was already rendered wearing the old stroke until something unrelated evicted it. The
+ * markup a highlight produces is therefore fixed — `<mark data-ink="…">` — and only the
+ * geometry moves.
+ *
+ * The three are the three ways a person actually uses a pen, not three decorations:
+ *  - `marker` sweeps the whole word, ascenders and Vietnamese stacked diacritics included.
+ *  - `swipe` is the fast pass that rides the x-height and clips the tops of h, t and đ.
+ *  - `double` lays the stroke twice, and the ink compounds where the two overlap.
+ */
+export type HighlightSettings = {
+  stroke: 'marker' | 'swipe' | 'double'
 }
 
 // Motion engine: ONE site-wide switch for all UI animation (public + admin). When
