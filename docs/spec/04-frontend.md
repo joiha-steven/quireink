@@ -83,7 +83,7 @@ Reasoning, the rejected alternatives, and why 18 was chosen over 14/16/24 live i
 - Subset per script. A Vietnamese reader must not download Cyrillic or Greek ranges.
 - Preload **only** the single face that renders the LCP element, never the family.
 - `font-display: swap` with a metric-matched fallback so the swap does not shift layout.
-- Trim variation axes before shipping a font file (`scripts/subset-font-axes.py`).
+- Trim variation axes before shipping a font file (how, and why 18: `docs/performance.md`).
 
 ## Perceived speed: two zero-JavaScript wins
 

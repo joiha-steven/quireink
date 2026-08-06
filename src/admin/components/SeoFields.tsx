@@ -57,7 +57,6 @@ export function SeoFields({ s, update }: Props) {
         <div className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{t.seoFallbackLabel}</div>
         <div className="flex items-center gap-4">
           {s.seo.ogFallbackImage ? (
-            // eslint-disable-next-line @next/next/no-img-element
             <img src={s.seo.ogFallbackImage} alt="OG" className="h-20 w-36 rounded-lg border border-neutral-200 object-cover dark:border-neutral-800" />
           ) : (
             <div className="flex h-20 w-36 items-center justify-center rounded-lg border border-dashed border-neutral-300 text-xs text-neutral-400 dark:border-neutral-700">

@@ -32,9 +32,14 @@ in `src/content/themes.ts`, called once in `src/web/layout.ts`:**
 
 ### Variation axes are trimmed, not shipped whole
 
-`scripts/subset-font-axes.py` (needs `pip install fonttools brotli`) rewrites the bundled
-files: `wght` clamped to 400-700, **`opsz` pinned to 18**. Run it after replacing any font
-file, and keep the `@font-face` `font-weight` range in `src/render/font-faces.ts` truthful.
+The bundled files are already trimmed: `wght` clamped to 400-700, **`opsz` pinned to 18**
+([ADR 0009](decisions/0009-pin-optical-size-axis.md)). The tool that did it,
+`scripts/subset-font-axes.py`, is NOT in this repository — it lived with the frozen tree —
+so this is a fact about the committed files rather than a command you can run. Replacing a
+font file means reproducing the trim yourself (`fonttools` + `brotli`, `instancer` with
+`opsz=18` and `wght=400:700`) and keeping the `@font-face` `font-weight` range in
+`src/render/font-faces.ts` truthful. Ship an untrimmed face and the numbers below are the
+size you give back.
 
 The `opsz` axis doubled the two book serifs. Literata carries 42% fewer glyphs than Inter
 yet was 2.2× its size, entirely because `gvar` must store deltas for every glyph across

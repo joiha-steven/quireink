@@ -49,14 +49,14 @@ history is never needed to fix or understand code.
 | Markdown → HTML, highlighting, footnotes | `src/render/` |
 | Island JS: search, theme, comments, subscribe, book mode | `src/assets/js/` |
 | Admin SPA, editor | `src/admin/`, `src/web/admin/` |
-| Sign-in, TOTP, sessions, recovery codes | `src/auth/`, `src/web/auth.ts` |
+| Sign-in, TOTP, sessions, recovery codes | `src/auth/`, `src/web/auth-routes.ts` |
 | Posts, pages, slugs, series, revisions, settings | `src/content/` |
 | Uploads, image variants, ranges | `src/media/` |
 | Newsletter, broadcast, SMTP | `src/news/` |
 | Comments · Analytics | `src/comments/` · `src/analytics/` (writes go through `buffer.ts`) |
 | SQL, migrations, the live/trashed predicate | `src/store/` |
 | Scheduled publishing, redirects, rate limit, activity | `src/server/` |
-| MCP server, tokens | `src/mcp/`, `src/web/mcp-wire.ts` |
+| MCP server, tokens | `src/mcp/`, `src/web/admin/mcp-transport.ts`, `src/web/admin/mcp.ts` |
 | UI strings, translations | `src/i18n/`, `src/locales/` |
 | WordPress import | `src/import/wordpress.ts`, `src/web/admin/ops.ts` |
 

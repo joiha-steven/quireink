@@ -190,7 +190,6 @@ export function TrashView({
           <tr key={m.url} className="border-b border-neutral-100 transition-colors last:border-0 hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-800/40">
             <td className="px-4 py-3">
               <div className="flex items-center gap-3">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={m.thumb || m.url} alt="" width={40} height={40} className="h-10 w-10 shrink-0 rounded object-cover" />
                 <span className="truncate font-medium">{m.filename}</span>
               </div>
