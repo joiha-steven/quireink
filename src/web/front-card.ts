@@ -53,11 +53,44 @@ function afterExcerpt(bodyText: string, excerpt: string): string {
   return body.slice(head.length).trim()
 }
 
-/** Cut on a word boundary, and only when there is something worth cutting. */
+/** What ends a sentence, across the scripts this product ships a UI for. */
+const SENTENCE_ENDS = '.!?…。！？'
+/** Punctuation that may follow the stop and still leave the sentence finished. */
+const AFTER_STOP = '"\'”’»)]'
+
+/**
+ * Cut at a SENTENCE if one is near enough, and at a word boundary otherwise.
+ *
+ * Word-boundary alone is where this started, and it ended a front-page teaser on "…a long
+ * one gives it a field of…" — a budget running out on a preposition, which reads as a
+ * broken string rather than as a sentence trailing off. Stopping at a full stop costs a few
+ * characters and buys a complete thought, so the ellipsis is not needed at all.
+ *
+ * No stop-word list, deliberately: dropping a trailing "of" or "the" would mean an English
+ * word list applied to Vietnamese, German, Japanese, Chinese and Korean posts, and this
+ * product ships a UI for all six. A full stop is punctuation, not vocabulary.
+ *
+ * The lookahead reads the FULL text rather than the cut, so a decimal point cannot pass as
+ * a sentence: in "3.14" the character after the stop is a digit whichever way the budget
+ * happens to fall.
+ */
 function clamp(text: string, max: number): string {
   if (max <= 0 || !text) return ''
   if (text.length <= max) return text
   const cut = text.slice(0, max)
+
+  let sentence = -1
+  for (let i = 0; i < cut.length; i++) {
+    if (!SENTENCE_ENDS.includes(cut[i]!)) continue
+    let end = i + 1
+    while (AFTER_STOP.includes(text[end] ?? '')) end++
+    const next = text[end]
+    if (next === undefined || /\s/.test(next)) sentence = end
+  }
+  // Only when it lands in the last 40% of the budget. Nearer the start it would throw away
+  // most of a teaser that had room for more, which is a worse answer than an ellipsis.
+  if (sentence > max * 0.6) return text.slice(0, sentence).trimEnd()
+
   const space = cut.lastIndexOf(' ')
   return `${(space > max * 0.6 ? cut.slice(0, space) : cut).trimEnd()}…`
 }
