@@ -18,6 +18,7 @@
 
 import type { Context } from 'hono'
 import { readEnv } from '@/env'
+import { clientIp, rateLimited } from '@/server/rate-limit'
 import { safeFetch } from '@/server/safe-fetch'
 import { renderOgCard, type OgCard } from '@/render/og-card'
 
@@ -29,6 +30,27 @@ import { renderOgCard, type OgCard } from '@/render/og-card'
  * accepts the connection and then says nothing parks a request per call.
  */
 const FETCH_TIMEOUT_MS = 5_000
+
+/**
+ * Cards per minute per IP.
+ *
+ * The fetch deadline above bounds how long ONE card can be held open and stops there, which
+ * left the render itself — the expensive half — with nothing in front of it. Measured on the
+ * origin: a cached page answers in about 1ms and a card costs about 44ms, and because the
+ * card is a pure function of its query string, changing one character of ?title= is a miss
+ * at the edge AND at the origin. So a single unauthenticated client can ask for arbitrarily
+ * many full-price renders: at 40 concurrent it took the median page from 1.9ms to 10.6ms
+ * here, on a machine with cores to spare. The self-hosting target is a 1-2 vCPU box.
+ *
+ * Every other public endpoint that costs something already has this — search, comments,
+ * subscribe, the tracker, and `/api/cron`, whose cap is deliberately charged BEFORE its
+ * token check for exactly this reason. This route was the expensive one without it.
+ *
+ * 30, because a real caller is a crawler or a chat app unfurling a link it just saw: one
+ * card per shared URL, not thirty a minute. Generous enough that a burst of shares of the
+ * same post never trips, since those are all one URL and answer from the edge.
+ */
+const CARDS_PER_MINUTE = 30
 
 /** Same-origin only. Anything else, including a malformed URL, is dropped. */
 function sameOrigin(candidate: string, origin: string): boolean {
@@ -61,6 +83,11 @@ async function inlineImage(url: string): Promise<string | undefined> {
 }
 
 export async function handleOg(c: Context): Promise<Response> {
+  // Before anything is parsed, fetched or drawn: the work this route does is the reason it
+  // needs a cap, so nothing expensive may happen above the cap.
+  if (rateLimited(`og:${clientIp(c.req.raw)}`, CARDS_PER_MINUTE)) {
+    return c.text('Too many requests', 429, { 'retry-after': '60' })
+  }
   const url = new URL(c.req.url)
   const q = url.searchParams
   // The configured origin when there is one, and the request's own only as a fallback.
