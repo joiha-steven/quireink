@@ -191,7 +191,6 @@ function CaptionedImageView({ node, updateAttributes, selected, editor, getPos }
           )}
         </div>
       )}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={clean}
         alt={caption}

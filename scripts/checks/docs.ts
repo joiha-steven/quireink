@@ -2,7 +2,7 @@
 // than by prose nobody re-reads. See docs/README.md for the layout itself, and ADR 0010
 // for why it exists.
 //
-// Five rules, because the messes they catch are the ones this repository actually had:
+// Six rules, because the messes they catch are the ones this repository actually had:
 //   1. No broken relative link between markdown files. Moving a doc used to leave dangling
 //      links in five other files and nothing noticed. That is precisely what the reshuffle
 //      that produced this file did to forty of them.
@@ -13,6 +13,10 @@
 //   4. Nothing in docs/ carries a date in its filename. A dated file is a snapshot, and
 //      snapshots left this repository with `state/` (ADR 0017).
 //   5. No markdown file over 700 lines, CHANGELOG excepted (append-only by design).
+//   6. A repository path written as code in a LIVE document exists. Rule 1 only sees links
+//      between markdown files, so CLAUDE.md's debug router spent months pointing at two
+//      source files that were not there, and the self-hosting guide documented a migration
+//      command deleted a release earlier. Both were found by reading, not by a check.
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 
@@ -117,6 +121,43 @@ for (const file of files) {
   // approach lights blocks whoever happens to add the line that crosses it, about a file
   // they were not thinking about.
   else if (n > FILE_MAX * 0.9) approaching.push(`${file}: ${n} of ${FILE_MAX}`)
+}
+
+// 6. A backticked repository path in a LIVE document actually exists.
+//
+// Rule 1 catches a broken link between two markdown files. It does not look at
+// `src/web/auth.ts` written as code, and that is how CLAUDE.md's debug router — the first
+// thing anyone opens when something is broken — came to send you to two files that are not
+// there, and how `docs/self-host.md` came to document a migration command that had been
+// deleted a release earlier. Both were found by hand, twice, months apart.
+//
+// LIVE is the operative word. `docs/decisions/` records what was decided when it was
+// decided, and `docs/spec/` records a port from a tree that no longer exists; both name
+// absent paths on purpose ("There is no `src/api/`"), and rewriting them to keep a checker
+// happy would falsify the record. CHANGELOG.md is append-only for the same reason.
+const RECORDS = (p: string) =>
+  p.startsWith('docs/decisions/') || p.startsWith('docs/spec/') || p.endsWith('CHANGELOG.md')
+
+// Paths a live document names BECAUSE they are gone. Listed with the reason, the same way
+// `check:routes` lists each public write route: an exception on the record is a decision,
+// an exception in someone's head is an omission.
+const GONE: Record<string, string> = {
+  'scripts/import-v1.ts': 'removed with the frozen tree (ADR 0019); self-host.md says so explicitly',
+  'scripts/subset-font-axes.py': 'never in this tree; performance.md says so explicitly',
+}
+
+const REPO_PATH = /`((?:src|scripts|golden|docs)\/[A-Za-z0-9._/-]*[A-Za-z0-9._/-])`/g
+
+for (const file of files) {
+  if (RECORDS(file)) continue
+  for (const [, raw] of readFileSync(file, 'utf8').matchAll(REPO_PATH)) {
+    if (raw === undefined) continue
+    const path = raw.replace(/\/$/, '')
+    if (GONE[path] !== undefined) continue
+    // A directory is written with a trailing slash; either form must resolve to something.
+    if (existsSync(join(ROOT, path))) continue
+    violations.push(`${file}: names \`${raw}\`, which does not exist`)
+  }
 }
 
 console.log(`  scanned ${files.length} markdown file(s)`)

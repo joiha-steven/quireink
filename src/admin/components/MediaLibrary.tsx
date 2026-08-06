@@ -216,7 +216,6 @@ export function MediaLibrary({ mode = 'page', multi = false, onSelect, onSelectM
                 aria-label={m.filename}
                 className="absolute inset-0 block"
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={m.thumb ?? m.url} alt={m.filename} className="h-full w-full object-cover" />
               </button>
               {(mode === 'page' || multi) && (
@@ -349,7 +348,6 @@ export function MediaLibrary({ mode = 'page', multi = false, onSelect, onSelectM
       className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-black/80 p-4"
       onClick={() => setZoom(null)}
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={zoom.url}
         alt={zoom.filename}

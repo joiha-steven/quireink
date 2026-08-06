@@ -1,6 +1,6 @@
-> Split from CLAUDE.md — read when touching the MCP server (`/api/mcp`, `src/lib/mcp/`), its tokens, or the OAuth flow.
+> Split from CLAUDE.md — read when touching the MCP server (`/api/mcp`, `src/mcp/`), its tokens, or the OAuth flow.
 
-# MCP server — `/api/mcp` + `src/lib/mcp/`
+# MCP server — `/api/mcp` + `src/mcp/`
 
 - **What it is.** A remote MCP endpoint (Streamable HTTP, `mcp-handler` + `@modelcontextprotocol/sdk`)
   that lets an MCP client (Claude/ChatGPT) operate the blog. Tools are THIN wrappers over the same

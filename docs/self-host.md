@@ -225,22 +225,20 @@ Four things worth knowing before you change anything in `docker-compose.yml`:
 To get data out without a bind mount, use the backup button in the admin (it hands you both
 databases plus every upload), or `docker compose cp quire:/var/lib/quire/data ./data`.
 
-`bun run import-v1` is the one command that does not work in the container: the importer
-needs a package that only the build stage installs. Run it from a source checkout against
-the same `DATA_DIR`, or `bun install` inside the container first.
-
 ## Coming from Quire 1.x
 
-`scripts/import-v1.ts` reads a running 1.x instance over PostgREST and writes the whole
-thing into SQLite: posts, pages, comments, subscribers, media, settings, redirects,
-analytics. It verifies what it wrote and refuses to leave you with a half-migration.
+**The importer is gone, on purpose.** `scripts/import-v1.ts` read a running 1.x instance
+over PostgREST and wrote the whole thing into SQLite, and it was removed with the rest of
+the frozen tree ([ADR 0019](decisions/0019-remove-the-frozen-tree-from-the-working-copy.md))
+because it described a migration that had already happened and cannot happen again: it
+needed a live 1.x instance with PostgREST in front of it, and there is no longer one to
+point it at. The `bun run import-v1` script went with it.
 
-```bash
-POSTGREST_URL=http://127.0.0.1:3001 POSTGREST_TOKEN=<token> \
-DATA_DIR=/var/lib/quire/data bun run import-v1
-```
+If you are still running a 1.x instance of your own, the code that moved it is preserved at
+tag `v1-final` — `git worktree add ../quire-v1 v1-final` gets you a tree you can run it
+from. Nothing in the current tree will do it for you, and this section would be lying if it
+implied otherwise.
 
-Run it while 1.x is still serving, keep 1.x reachable on another hostname afterwards, and
-compare before you switch DNS. The one thing to check by hand: sessions do not carry over,
-because the cookie is `__Host-` prefixed and therefore scoped to a single hostname. You
-will sign in again on the new host.
+Whichever route you take, one thing does not carry over: sessions. The cookie is `__Host-`
+prefixed and therefore scoped to a single hostname, so you will sign in again on the new
+host.

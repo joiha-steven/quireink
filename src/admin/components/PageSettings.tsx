@@ -51,7 +51,6 @@ export function PageSettings({ draft, update, onPickFeatured }: Props) {
         <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{t.featuredImage}</span>
         <p className="text-xs text-neutral-400 dark:text-neutral-500">{t.featuredImageHint}</p>
         {draft.featuredImage ? (
-          // eslint-disable-next-line @next/next/no-img-element
           <img src={draft.featuredImage} alt="" className="aspect-video w-full rounded-lg object-cover" />
         ) : (
           <div className="flex aspect-video w-full items-center justify-center rounded-lg bg-neutral-100 text-xs text-neutral-400 dark:bg-neutral-800 dark:text-neutral-500">

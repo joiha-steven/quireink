@@ -43,7 +43,6 @@ export function IconUpload({ kind, value, onChange, previewClassName }: Props) {
   return (
     <div className="flex items-center gap-3">
       {value ? (
-        // eslint-disable-next-line @next/next/no-img-element
         <img src={value} alt="" className={`bg-neutral-100 object-contain p-1 ${previewClassName}`} />
       ) : (
         <span className="text-xs text-neutral-400 dark:text-neutral-500">{t.noImageSelected}</span>
