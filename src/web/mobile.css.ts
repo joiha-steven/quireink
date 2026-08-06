@@ -23,12 +23,31 @@ export const MOBILE_CSS = `
 form.search input,form.subscribe input,.search-input,
 .comment-form input,.comment-form textarea{font-size:max(16px,1em)}
 
+/* THE GUTTER IS THE MEASURE, on a phone and nowhere else.
+   The shell has always taken 2rem a side. Above the phone breakpoint that padding is dead
+   weight -- the 42rem max-width binds first -- so it only ever spends anything on the one
+   screen with nothing to spare. Measured at 390px: 64px of 390 went to gutters and the
+   article set 33 characters to the line, against 67 on a laptop. Half the measure, on the
+   site whose lead essay argues that 66 is the number.
+   1.5rem, not 1rem. It is the whole win: at 390px both give 37 characters and 9 lines
+   where 2rem gave 33 and 10, so going narrower buys nothing measurable and only pushes the
+   words against the bezel. On a 360px Android the same step goes 30 to 33.
+   max() rather than a plain length, so a notch in landscape still wins. */
+.wrap{padding-left:max(1.5rem,env(safe-area-inset-left,0px));
+  padding-right:max(1.5rem,env(safe-area-inset-right,0px))}
+
 /* The drawer IS the navigation on a phone, and its rows measured 22px tall, 26px apart.
    padding-block rather than a height: a row is a flex line whose label can wrap to two
    lines, and a fixed height would clip the second one. */
 .rail-row{padding-block:.6rem}
 .rail-tags a{padding-block:.4rem}
 footer.site a{display:inline-block;padding-block:.35rem}
+/* The newspaper's own links, which the three rules above did for every other surface and
+   which arrived after them. A kicker and a topic link are standalone links on their own
+   line -- not words inside a sentence -- so the inline-text exemption does not cover them,
+   and they measured 20px tall against the 24px minimum. inline-block because padding-block
+   does nothing to an inline box's hit area. */
+.fc-cat a,.front-topics a,.front-label a{display:inline-block;padding-block:.2rem}
 
 /* Two solid surfaces separated by one hairline. With nothing dimmed, the strip of page left
    beside the open drawer read as part of the drawer itself, so the tap-to-close area was
