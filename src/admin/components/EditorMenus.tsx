@@ -12,6 +12,7 @@ import { BubbleMenu } from '@tiptap/react/menus'
 import { NodeSelection, type EditorState } from '@tiptap/pm/state'
 import { useAdminT } from './I18nProvider'
 import { INKS } from '@/render/ink'
+import { PEN_LIGHT } from '@/render/pen'
 
 const BTN = 'grid h-8 w-8 shrink-0 place-items-center rounded-lg text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800'
 
@@ -161,14 +162,18 @@ export function Toolbar({
 //
 // A dropdown would be one glyph instead of five, and it would be the wrong trade: choosing
 // the ink IS the gesture here, the way choosing bold is not. The swatches carry the real
-// pigments (the light-mode values from `web/ink.css.ts`), so the bar shows you the pen you
-// are about to pick up rather than a word for it.
+// pigments, so the bar shows you the pen you are about to pick up rather than a word for it.
+//
+// READ from `render/pen.ts`, not typed out. All five were written out here a second time,
+// and a swatch that is a near-miss of the ink it applies is the worst kind of wrong: it
+// looks deliberate. The `#` is added here because CSS wants it and the stroke wants the
+// bare hex.
 //
 // Clicking the ink already on the selection lifts the pen; clicking a different one
 // recolours in place instead of clearing and re-marking — see `toggleInk`.
-const PEN: Record<string, string> = {
-  yellow: '#d5f856', green: '#aaef83', pink: '#faaad9', blue: '#8ed6f9', orange: '#fac881',
-}
+const PEN: Record<string, string> = Object.fromEntries(
+  Object.entries(PEN_LIGHT).map(([ink, hex]) => [ink, `#${hex}`]),
+)
 
 function InkButtons({ editor, hold }: { editor: TiptapEditor; hold: (e: React.MouseEvent) => void }) {
   const t = useAdminT()
