@@ -19,13 +19,14 @@
 // `InkMark.ts` follows and for the same reason — the ink syntax drifted between two readers
 // within an hour of being written down twice.
 import { useEffect, useRef, useState } from 'react'
-import { Node } from '@tiptap/core'
+import { Node, InputRule } from '@tiptap/core'
 import { ReactNodeViewRenderer, NodeViewWrapper, type NodeViewProps } from '@tiptap/react'
 import type MarkdownIt from 'markdown-it'
 import type StateInline from 'markdown-it/lib/rules_inline/state_inline.js'
 import type StateBlock from 'markdown-it/lib/rules_block/state_block.js'
 import {
   matchMathAt, matchDisplayBlockAt, mathToMarkdown, renderMath, type MathDelim,
+  INLINE_PAREN_SOURCE, DISPLAY_DOLLAR_SOURCE, DISPLAY_BRACKET_SOURCE,
 } from '@/render/math'
 import { useAdminT } from './I18nProvider'
 
@@ -136,6 +137,29 @@ function MathView({ node, updateAttributes, selected }: NodeViewProps) {
   )
 }
 
+/**
+ * A typing rule that swallows the WHOLE match, delimiters included.
+ *
+ * Tiptap ships `nodeInputRule` and it is the wrong tool here, which is not obvious until it
+ * is measured: it replaces only capture group 1 and leaves everything around it standing. So
+ * typing `\(x^2\)` produced a correct formula node with `\(` and `\)` still sitting either
+ * side of it, and the post saved as `\(\(x^2\)\)`. With `$$…$$` it was worse — the block node
+ * split the paragraph and the stray dollars became two paragraphs of their own.
+ *
+ * `range` is the span of `match[0]`, so deleting it first is what makes the delimiters go.
+ */
+const mathInputRule = (find: RegExp, name: string, display: boolean, delim: MathDelim) =>
+  new InputRule({
+    find,
+    handler: ({ range, match, chain }) => {
+      const tex = (match[1] ?? '').trim()
+      // An empty pair (`$$$$`) is someone typing, not a formula. Leave the characters alone.
+      if (!tex) return null
+      chain().deleteRange(range).insertContent({ type: name, attrs: { tex, display, delim } }).run()
+      return undefined
+    },
+  })
+
 /** Everything both nodes share; only `inline`/`group` and the default delimiter differ. */
 const common = {
   atom: true,
@@ -182,6 +206,27 @@ export const MathInline = Node.create({
       'data-delim': node.attrs.delim,
     }]
   },
+  /**
+   * Typing `\(x\)` sets it on the spot. `$…$` DELIBERATELY DOES NOT, and the asymmetry is
+   * the point.
+   *
+   * An input rule fires on the text already typed, so it cannot see the character coming
+   * next — and the third of Pandoc's guards, "the closing `$` must not be followed by a
+   * digit", is a lookahead at exactly that character. Type `giá $5-$8` and at the instant
+   * the second `$` lands the rule sees `$5-$`, whose content ends on a non-space and so
+   * passes both guards it CAN check. The price would turn into a formula under the writer's
+   * hands, and the guard that exists to stop it has not been given its evidence yet.
+   *
+   * The renderer has no such problem: it reads a finished document. So `$…$` stays valid
+   * everywhere and simply is not a typing gesture — it converts when the post is next
+   * opened, through the markdown-it rule above, where the whole line is known.
+   */
+  addInputRules() {
+    return [
+      mathInputRule(new RegExp(`${INLINE_PAREN_SOURCE}$`), this.name, false, 'paren'),
+    ]
+  },
+
   addCommands() {
     return {
       setMath:
@@ -206,6 +251,14 @@ export const MathBlock = Node.create({
   // A block node is display maths by definition; the shared default is the inline one.
   addAttributes() {
     return { tex: { default: '' }, display: { default: true }, delim: { default: 'dollar' as MathDelim } }
+  },
+
+  /** `$$…$$` on its own is safe to fire on: two dollars in a row are never a price. */
+  addInputRules() {
+    return [
+      mathInputRule(new RegExp(`${DISPLAY_DOLLAR_SOURCE}$`), this.name, true, 'dollar'),
+      mathInputRule(new RegExp(`${DISPLAY_BRACKET_SOURCE}$`), this.name, true, 'bracket'),
+    ]
   },
   parseHTML() {
     return [{ tag: 'div[data-math]', getAttrs: (el) => parseAttrs(el as HTMLElement) }]

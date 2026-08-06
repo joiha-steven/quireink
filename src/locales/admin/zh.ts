@@ -86,6 +86,8 @@ const zh = {
   imgSizeColumn: '列宽',
   imgSizeWide: '大图',
   mathPlaceholder: 'LaTeX 公式',
+  tbMath: '公式',
+  tbMathInline: '行内公式',
   imgGrid: '网格',
   imgRatioNatural: '保持原样',
   imgCaptions: '图片说明',

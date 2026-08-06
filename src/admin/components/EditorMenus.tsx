@@ -125,6 +125,21 @@ export function Toolbar({
       <ToolButton label={t.tbImage} onClick={onPickImage}><Glyph><rect x="3.5" y="4.5" width="17" height="15" rx="1.5" /><circle cx="8" cy="9" r="1.5" /><path d="m4 17 5-5 4 4 3-3 4 4" /></Glyph></ToolButton>
       <ToolButton label={t.tbGallery} onClick={onPickGallery}><Glyph><rect x="5" y="5" width="14" height="14" rx="1.5" /><path d="M8 5V3h13v13h-2M6 16l4-4 3 3 2-2 4 4" /></Glyph></ToolButton>
       <ToolButton label={t.tbTable} onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}><Glyph><rect x="3.5" y="4.5" width="17" height="15" rx="1.5" /><path d="M3.5 10h17M9 4.5v15M15 4.5v15" /></Glyph></ToolButton>
+      {/* Two buttons, not one behind a menu. Display and inline are not two settings of one
+          thing: a standalone equation and a symbol inside a sentence are different gestures,
+          the same argument the five pens make against a colour dropdown. Both drop an EMPTY
+          formula with the caret in its box, so the next thing typed is the TeX. */}
+      {/* The glyph is a pi, and the LINES AROUND IT carry the block/inline distinction: full
+          rules above and below for a formula on its own line, a dash either side for one
+          sitting in a sentence. Chosen by rendering the candidates at 24px and looking —
+          the first pair drawn here read as "I×" and "×≠", and a sigma at this size comes out
+          as the digit 3. */}
+      <ToolButton label={t.tbMath} active={editor.isActive('mathBlock')} onClick={() => editor.chain().focus().setMath(true).run()}>
+        <Glyph><path d="M4 4.5h16M4 19.5h16" /><path d="M7.5 9.5h9M10 9.5v5M14 9.5v5" /></Glyph>
+      </ToolButton>
+      <ToolButton label={t.tbMathInline} active={editor.isActive('mathInline')} onClick={() => editor.chain().focus().setMath(false).run()}>
+        <Glyph><path d="M3 12h3M18 12h3" /><path d="M8 9h8M10.5 9v6M14.5 9v6" /></Glyph>
+      </ToolButton>
       {sep}{toggle}
       {editor.isActive('table') && (
         <>

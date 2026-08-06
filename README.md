@@ -60,7 +60,7 @@ You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE).
 
 | | |
 |:---|:---|
-| 🖋️&nbsp;**Writing** | A real editor, TipTap 3 over Markdown, with a toolbar that stays put while you scroll. Drop an image in and it gets resized for every screen. Tables, video, footnotes, callouts, Spotify and Apple Music. It saves as you type, keeps your last three versions, and can hold a post until Tuesday morning |
+| 🖋️&nbsp;**Writing** | A real editor, TipTap 3 over Markdown, with a toolbar that stays put while you scroll. Drop an image in and it gets resized for every screen. Tables, video, footnotes, callouts, **mathematics**, Spotify and Apple Music. It saves as you type, keeps your last three versions, and can hold a post until Tuesday morning |
 | 🏠&nbsp;**Your front page** | Show the post list, or any page you wrote, or build a front page: a lead story, a few picks, a row per category, most read. Works for a site full of photos and for one that is only words. [How it works](./docs/homepage.md) |
 | 🎨&nbsp;**How it looks** | Six palettes, each with a light and a dark version. Four reading fonts, or upload your own. Every text size on the page comes from a role you can tune, so one change moves the whole page instead of one heading |
 | 🔍&nbsp;**Reading** | Search that answers as you type. A rail down the side with your categories and tags, or the contents of the post you are in. Related posts, reading time, a progress bar. And **book mode**: two columns on paper, with a drop cap |
