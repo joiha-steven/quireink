@@ -21,6 +21,7 @@
 // shared link is opened.
 
 import satori, { type SatoriOptions } from 'satori'
+import { DEFAULT_THEME } from '@/content/themes'
 import { PEN_LIGHT, penStroke } from '@/render/pen'
 import interLatin from '@/render/fonts/inter-latin.woff' with { type: 'file' }
 import interLatinExt from '@/render/fonts/inter-latin-ext.woff' with { type: 'file' }
@@ -70,12 +71,16 @@ type Node = { type: string; props: Record<string, unknown> }
 const div = (style: Record<string, unknown>, children?: unknown): Node =>
   ({ type: 'div', props: children === undefined ? { style } : { style, children } })
 
-/** Paper, ink and the muted line, from the default (mono) light palette in `themes.ts`. */
-const PAPER = '#fcfcfc'
-const HEADING = '#121212'
-const TEXT = '#262626'
-const META = '#747474'
-const RULE = '#ebebeb'
+/**
+ * Paper, ink and the muted line: the default (mono) LIGHT palette, read rather than copied.
+ *
+ * The card is always paper, whatever palette the site is set to, so it takes one specific
+ * theme rather than the reader's — but it took it as five literals, and `#747474` then had
+ * to be corrected in `themes.ts` for contrast and the card kept the old grey. Exactly the
+ * fault the pen had one file over. `.light` is not a choice made here; it is the card's
+ * whole premise.
+ */
+const { bg: PAPER, heading: HEADING, text: TEXT, meta: META, rule: RULE } = DEFAULT_THEME.light
 
 /**
  * The highlighter, exactly as the reader meets it — now literally so.
