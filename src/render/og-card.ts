@@ -21,6 +21,7 @@
 // shared link is opened.
 
 import satori, { type SatoriOptions } from 'satori'
+import { PEN_LIGHT, penStroke } from '@/render/pen'
 import interLatin from '@/render/fonts/inter-latin.woff' with { type: 'file' }
 import interLatinExt from '@/render/fonts/inter-latin-ext.woff' with { type: 'file' }
 import interVietnamese from '@/render/fonts/inter-vietnamese.woff' with { type: 'file' }
@@ -77,23 +78,20 @@ const META = '#747474'
 const RULE = '#ebebeb'
 
 /**
- * The highlighter, exactly as the reader meets it: `web/ink.css.ts` builds this same data
- * URI from this same path and this same measured yellow. Copied rather than imported
- * because that module is a CSS *sheet* — one template literal of rules — and importing it
- * here to slice a URL back out of it would couple the card to the shape of a stylesheet.
- * The two are pinned together by a test instead.
+ * The highlighter, exactly as the reader meets it — now literally so.
+ *
+ * This was a COPY of the path and of the measured yellow, with a comment saying the copy was
+ * pinned to the original by a test. There was no such test, and the copy had drifted: the
+ * second of the two paths — the denser lower band, the one that makes a stroke look like a
+ * second pass rather than a wash — ended at 196,15.6 / L198,28 here and at 199,15.6 /
+ * L200,29.5 on the page. The card was not showing the reader's pen. It was showing one four
+ * numbers away from it, on the picture that represents the site everywhere it is shared.
+ *
+ * `render/pen.ts` holds the pen now, the page reads it from there too, and `og.test.ts`
+ * compares the two — which is what the old comment described and what nothing did.
  */
-export const PEN_YELLOW = 'd5f856'
-const pen = (hex: string) =>
-  'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 200 34\''
-  + ' preserveAspectRatio=\'none\'%3E%3Cpath d=\'M6,6 C40,2.5 70,7.5 104,4.2 C138,1.6 168,6.8'
-  + ' 196,3.6 L200,29.5 C170,32.6 140,27.2 106,30.4 C72,33.2 40,28.2 0,30.8 Z\' fill=\'%23'
-  + hex + '\' opacity=\'.8\'/%3E%3Cpath d=\'M2,17 C40,14.5 70,19.5 104,16.4 C138,13.6 168,18.8'
-  + ' 196,15.6 L198,28 C168,31 138,25.6 104,28.8 C70,31.8 40,26.6 2,29 Z\' fill=\'%23'
-  + hex + '\' opacity=\'.55\'/%3E%3C/svg%3E")'
-
 const STROKE = {
-  backgroundImage: pen(PEN_YELLOW),
+  backgroundImage: penStroke(PEN_LIGHT.yellow),
   backgroundSize: '100% 100%',
   backgroundRepeat: 'no-repeat',
 } as const
