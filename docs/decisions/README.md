@@ -41,6 +41,7 @@ abandoned on 2026-07-26, and the only trace was a private memory file.
 | [0017](0017-move-state-and-instance-config-private.md) | Move `state/` and instance config to a private repository | 2026-08-01 | ⚠️ holds, except its `v1/` bullet: superseded by 0019 |
 | [0018](0018-highlighter-pen.md) | A highlighter pen: `==text==`, drawn as ink rather than as a box | 2026-08-03 | ✅ |
 | [0019](0019-remove-the-frozen-tree-from-the-working-copy.md) | Remove the frozen 1.x tree from the working copy, keep it at tag `v1-final` | 2026-08-03 | ✅ |
+| [0020](0020-mathematics-as-mathml.md) | Mathematics: LaTeX in the source, MathML on the page, and the dollar sign stays money | 2026-08-06 | ✅ |
 
 ## Superseded, and why that matters
 

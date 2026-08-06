@@ -4,6 +4,15 @@
 
 - StarterKit + underline, inline code, bullet/numbered/**task** lists (GFM `- [ ]`), quote,
   code block, hr, link, captioned image, GFM tables, video. `tiptap-markdown` serializes all.
+- **The extension set is `editorExtensions.ts`, not a literal in `Editor.tsx`.** Both round-trip
+  suites (`ink-mark.test.ts`, `math-node.test.ts`) import that one list. They used to rebuild it by
+  hand under a comment claiming it was what the editor mounts, so a node added to the editor was
+  absent from its own test.
+- **Mathematics** (`MathNode.tsx`): atom nodes for inline and display, rendered live with the same
+  `renderMath` the server uses, TeX editable in place when the node is selected. The markdown-it
+  rule registers `before('escape')` and the delimiter the author typed is stored on the node — both
+  are correctness, not polish: without the first, `\(a\)` loses its delimiters on save; without the
+  node at all, every `\times` gains a second backslash. ADR 0020.
 - **Menus live in `EditorMenus.tsx`** (Toolbar + BubbleBar). The editor sets
   `shouldRerenderOnTransaction: true` — TipTap 3 disables it by default, which leaves every
   `isActive()` (toolbar highlights, the table-tools row) stale until an unrelated re-render.

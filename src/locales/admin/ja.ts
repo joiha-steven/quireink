@@ -85,6 +85,7 @@ const ja = {
   imgAlignRight: '右',
   imgSizeColumn: 'カラム',
   imgSizeWide: '大',
+  mathPlaceholder: 'LaTeX 数式',
   imgGrid: 'グリッド',
   imgRatioNatural: '元のまま',
   imgCaptions: 'キャプション',

@@ -1,6 +1,11 @@
 // Pure helpers shared across lib and components. No side effects, no I/O.
 
 import { INK_SYNTAX_GLOBAL } from '@/render/ink'
+import { MATH_SYNTAX_GLOBAL, mathOf, isDisplayMatch } from '@/render/math'
+
+/** TeX source -> the letters and numbers in it: control words, braces, `&` and `\\` go. */
+const stripTex = (tex: string) =>
+  tex.replace(/\\[a-zA-Z]+|\\\\|[{}&]/g, ' ').replace(/\s+/g, ' ').trim()
 
 // HTML-escape every special char so nothing user/author-typed becomes markup. The
 // escape-first half of the limited-markdown security model (Invariant 5): shared by
@@ -76,6 +81,23 @@ export function toPlainText(markdown: string): string {
     // Highlights -> the words inside them. BEFORE the bare-character strip below, which
     // would otherwise eat the `#` of a colour suffix and leave the colour NAME in the prose.
     .replace(INK_SYNTAX_GLOBAL, '$1')
+    // Maths. This is the excerpt, the meta description, the OG card and the RSS summary, and
+    // the failure it prevents is `\times` and `\frac` appearing in all four — the exact shape
+    // of the bug the ink syntax shipped when this function did not know about `==`.
+    //
+    // A DISPLAY formula is dropped whole. It is a standalone equation, not part of a
+    // sentence, and the alternative was read off the rendered page: a post opening with
+    // `$$M \times V = P \times Q$$` produced the deck "M V = P Q Giải mã phương trình…",
+    // which reads as broken prose above the title. Dropping it starts the deck at the first
+    // real sentence, which is what a deck is.
+    //
+    // An INLINE formula keeps its operands, because it sits INSIDE a sentence: `**$M$
+    // (Money Supply):**` must not summarise as " (Money Supply):". The control words go and
+    // the letters stay — deliberately NOT mapped to their symbols, because a table turning
+    // `\times` into × would be a second grammar to keep in step with Temml's, which is the
+    // thing this file's own history argues hardest against.
+    .replace(MATH_SYNTAX_GLOBAL, (...m: (string | undefined)[]) =>
+      isDisplayMatch(m) ? ' ' : stripTex(mathOf(m)))
     .replace(/[#>*_`~]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()

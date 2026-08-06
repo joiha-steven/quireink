@@ -14,23 +14,14 @@ import { GlobalRegistrator } from '@happy-dom/global-registrator'
 beforeAll(() => GlobalRegistrator.register())
 afterAll(() => GlobalRegistrator.unregister())
 
-/** A fresh editor with the extension set `Editor.tsx` actually mounts. */
+/** A fresh editor with the extension set `Editor.tsx` actually mounts — the REAL list, not
+ *  a copy of it. This file used to rebuild the array by hand under a comment making exactly
+ *  that claim, which meant a node added to the editor was silently absent from its own
+ *  round-trip test. `editorExtensions.ts` is now the one list. */
 async function open(content: string) {
   const { Editor } = await import('@tiptap/core')
-  const { default: StarterKit } = await import('@tiptap/starter-kit')
-  const { Markdown } = await import('tiptap-markdown')
-  const { Table, TableRow, TableHeader, TableCell } = await import('@tiptap/extension-table')
-  const { TaskList, TaskItem } = await import('@tiptap/extension-list')
-  const { Ink } = await import('@/admin/components/InkMark')
-  return new Editor({
-    extensions: [
-      StarterKit.configure({ link: { openOnClick: false } }),
-      Table.configure({ resizable: false }), TableRow, TableHeader, TableCell,
-      TaskList, TaskItem.configure({ nested: true }), Ink,
-      Markdown.configure({ html: false }),
-    ],
-    content,
-  })
+  const { editorExtensions } = await import('@/admin/components/editorExtensions')
+  return new Editor({ extensions: editorExtensions(''), content })
 }
 
 async function roundTrip(md: string): Promise<string> {

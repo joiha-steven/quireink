@@ -115,6 +115,12 @@
 - **Highlighter:** `==text==` → `<mark>`; `==text==#green` → `<mark data-ink=…>` (5 inks). Inline
   marked extension, so bold/links/code ride under one stroke; `==` may not open/close on space, so
   `x == y` is untouched. Ink `src/web/ink.css.ts`; 3 shapes = a setting, CSS not markup. ADR 0018.
+- **Mathematics:** `$$…$$` / `\[…\]` display, `$…$` / `\(…\)` inline. Temml renders LaTeX to
+  **MathML at render time**, so a reader downloads no script, no sheet and no font for it. The TeX
+  is never parsed as Markdown (`a_1` would become emphasis). `$…$` carries Pandoc's three guards
+  so `$5 và $10` and `$5-$8` stay money — the failing sentences are tests. A formula Temml cannot
+  parse falls back to the escaped source with no colour of its own. `src/web/math.css.ts` adds one
+  rule that matters: the block scrolls so the page never does. ADR 0020.
 - **Callouts:** write a blockquote whose first line is `[!NOTE]` / `[!TIP]` / `[!WARNING]` /
   `[!IMPORTANT]` / `[!CAUTION]`. `buildCallouts` (a post-process on marked's HTML) rewrites it to
   `<div class="callout callout-<type>">` with a bold label; an unknown `[!FOO]` or a plain quote
