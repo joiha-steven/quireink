@@ -79,6 +79,15 @@ The delimiter the author typed is stored on the node, so `\[…\]` comes back as
 Normalising it to `$$…$$` would have been one attribute cheaper and would mean that opening a
 post silently edits it.
 
+**Typing `\(x\)` or `$$x$$` sets a formula on the spot. `$…$` does not, and the asymmetry is
+deliberate.** An input rule fires on the text already typed, so it cannot see the character
+coming next — and the third guard, *closing `$` not followed by a digit*, is a lookahead at
+exactly that character. Type `giá $5-$8` and at the instant the second `$` lands the rule sees
+`$5-$`, which passes both guards it is able to check; the evidence that would reject it has
+not been typed yet. A price must survive being typed. The renderer has no such problem
+because it reads a finished document, so `$…$` stays valid everywhere and simply is not a
+typing gesture.
+
 ## Consequences
 
 - Readers pay nothing. The admin bundle grows by Temml, which never reaches a reader.

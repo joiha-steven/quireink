@@ -87,6 +87,54 @@ describe('the two measured regressions', () => {
   })
 })
 
+/**
+ * Type into an editor one character at a time, through the plugin a KEYPRESS goes through.
+ * `insertContent` would be one line and would prove nothing: input rules hang off
+ * `handleTextInput`, so anything dispatching a transaction directly skips the code under
+ * test. Same harness, and the same reasoning, as `ink-mark.test.ts`.
+ */
+function type(editor: { state: { selection: { from: number; to: number }; tr: { insertText: (t: string, f: number, to: number) => unknown } }; view: { someProp: (n: string, f: (fn: unknown) => unknown) => unknown; dispatch: (tr: unknown) => void } }, text: string) {
+  for (const ch of text) {
+    const { from, to } = editor.state.selection
+    const handled = editor.view.someProp('handleTextInput', (f) =>
+      (f as (v: unknown, a: number, b: number, t: string) => boolean)(editor.view, from, to, ch))
+    if (!handled) editor.view.dispatch(editor.state.tr.insertText(ch, from, to))
+  }
+}
+
+async function typed(text: string): Promise<string> {
+  const editor = await open('')
+  editor.commands.focus()
+  type(editor as never, text)
+  const out = (editor.storage as unknown as { markdown: { getMarkdown: () => string } }).markdown.getMarkdown()
+  editor.destroy()
+  return out.trim()
+}
+
+describe('typing the syntax sets it on the spot', () => {
+  it('\\(x\\) becomes a formula as it is typed', async () => {
+    expect(await typed('\\(x^2\\)')).toBe('\\(x^2\\)')
+  })
+
+  it('$$x$$ becomes a display formula as it is typed', async () => {
+    expect(await typed('$$x^2$$')).toBe('$$x^2$$')
+  })
+
+  /**
+   * THE ONE THAT JUSTIFIES LEAVING `$…$` OUT OF THE TYPING RULES. At the instant the second
+   * `$` lands the rule can only see `$5-$`, which passes both guards it is able to check;
+   * the guard that would reject it is a lookahead at the `8` the writer has not typed yet.
+   * A price must survive being typed.
+   */
+  it('a price typed character by character stays a price', async () => {
+    expect(await typed('giá $5-$8 hôm nay')).toBe('giá $5-$8 hôm nay')
+  })
+
+  it('and so does a pair of plain prices', async () => {
+    expect(await typed('giá $5 và $10')).toBe('giá $5 và $10')
+  })
+})
+
 describe('prose the editor must leave alone', () => {
   for (const md of ['giá $5 và $10', 'giá $5-$8 hôm nay', 'gói $9.99 và $19.99']) {
     it(JSON.stringify(md), async () => {

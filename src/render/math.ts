@@ -71,6 +71,18 @@ const DISPLAY_DOLLAR = '\\$\\$([\\s\\S]+?)\\$\\$'
 const DISPLAY_BRACKET = '\\\\\\[([\\s\\S]+?)\\\\\\]'
 
 /**
+ * The three forms that are safe to fire a TYPING rule on, exported one at a time.
+ *
+ * The editor's input rules need them separately because each one produces a different
+ * `delim`, and because `$…$` is deliberately not among them — see `addInputRules` in
+ * `admin/components/MathNode.tsx` for why a price would otherwise convert mid-word. Each has
+ * exactly one capture group: the TeX.
+ */
+export const INLINE_PAREN_SOURCE = INLINE_PAREN
+export const DISPLAY_DOLLAR_SOURCE = DISPLAY_DOLLAR
+export const DISPLAY_BRACKET_SOURCE = DISPLAY_BRACKET
+
+/**
  * Every form at once, for the readers that only need to FIND maths rather than parse it
  * (`toPlainText`). Display forms come first so `$$x$$` is never read as an empty `$…$`.
  *

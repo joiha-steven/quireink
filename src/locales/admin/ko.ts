@@ -86,6 +86,8 @@ const ko = {
   imgSizeColumn: '본문 너비',
   imgSizeWide: '크게',
   mathPlaceholder: 'LaTeX 수식',
+  tbMath: '수식',
+  tbMathInline: '인라인 수식',
   imgGrid: '그리드',
   imgRatioNatural: '원본 비율',
   imgCaptions: '캡션',

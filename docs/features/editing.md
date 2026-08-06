@@ -13,6 +13,17 @@
   rule registers `before('escape')` and the delimiter the author typed is stored on the node — both
   are correctness, not polish: without the first, `\(a\)` loses its delimiters on save; without the
   node at all, every `\times` gains a second backslash. ADR 0020.
+  - **Two toolbar buttons**, `tbMath` (display) and `tbMathInline`. Both insert an EMPTY formula
+    with the caret already in its TeX box. The glyph is a pi and the lines around it carry the
+    distinction: full rules above and below for its own line, a dash either side for in-sentence.
+  - **Typing `\(x\)` or `$$x$$` sets it on the spot; `$…$` deliberately does not.** An input rule
+    fires on the text already typed, so it cannot see the next character — and Pandoc's third
+    guard ("closing `$` not followed by a digit") is a lookahead at exactly that. Typing
+    `giá $5-$8`, the rule would see `$5-$` and convert the price mid-word. `$…$` stays valid
+    everywhere and converts when the post is next opened, where the whole line is known.
+  - `nodeInputRule` from Tiptap is the WRONG helper here: it replaces only capture group 1 and
+    leaves the delimiters standing (`\(x\)` saved as `\(\(x\)\)`). `mathInputRule` deletes the
+    whole matched range first.
 - **Menus live in `EditorMenus.tsx`** (Toolbar + BubbleBar). The editor sets
   `shouldRerenderOnTransaction: true` — TipTap 3 disables it by default, which leaves every
   `isActive()` (toolbar highlights, the table-tools row) stale until an unrelated re-render.

@@ -86,6 +86,8 @@ const vi = {
   imgSizeColumn: 'Khung',
   imgSizeWide: 'Ảnh lớn',
   mathPlaceholder: 'Công thức LaTeX',
+  tbMath: 'Công thức',
+  tbMathInline: 'Công thức trong dòng',
   imgGrid: 'Lưới',
   imgRatioNatural: 'Giữ nguyên',
   imgCaptions: 'Chú thích',

@@ -86,6 +86,8 @@ const en = {
   imgSizeColumn: 'Column',
   imgSizeWide: 'Large',
   mathPlaceholder: 'LaTeX formula',
+  tbMath: 'Formula',
+  tbMathInline: 'Inline formula',
   imgGrid: 'Grid',
   imgRatioNatural: 'As shot',
   imgCaptions: 'Captions',

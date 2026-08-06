@@ -86,6 +86,8 @@ const de = {
   imgSizeColumn: 'Spalte',
   imgSizeWide: 'Groß',
   mathPlaceholder: 'LaTeX-Formel',
+  tbMath: 'Formel',
+  tbMathInline: 'Formel im Text',
   imgGrid: 'Raster',
   imgRatioNatural: 'Original',
   imgCaptions: 'Bildunterschriften',
