@@ -6,15 +6,7 @@
 // toggle swaps the formatted view for the raw Markdown source.
 import { useEffect, useRef, useState } from 'react'
 import { useEditor, EditorContent, type Editor as TiptapEditor } from '@tiptap/react'
-import StarterKit from '@tiptap/starter-kit'
-import { Table, TableRow, TableHeader, TableCell } from '@tiptap/extension-table'
-import { TaskList } from '@tiptap/extension-task-list'
-import { TaskItem } from '@tiptap/extension-task-item'
-import { Placeholder } from '@tiptap/extension-placeholder'
-import { Markdown } from 'tiptap-markdown'
-import { CaptionedImage } from './CaptionedImage'
-import { Video } from './VideoNode'
-import { Ink } from './InkMark'
+import { editorExtensions } from './editorExtensions'
 import { Toolbar, BubbleBar } from './EditorMenus'
 import { isVideoUrl } from '@/render/video'
 import { useAdminT } from './I18nProvider'
@@ -216,29 +208,7 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
     // states stay live — TipTap 3 disables this by default, which left the
     // active highlights stale and the contextual table-tools row never showing.
     shouldRerenderOnTransaction: true,
-    extensions: [
-      // StarterKit already ships `link` and `underline` in Tiptap 3. Registering them again
-      // beside it made Tiptap log "Duplicate extension names found: ['link','underline']"
-      // on every editor mount, which is its way of saying two schema entries are fighting
-      // over the same mark. `link` is configured through StarterKit rather than added, and
-      // `underline` needs nothing said about it at all.
-      StarterKit.configure({ link: { openOnClick: false } }),
-      CaptionedImage,
-      Video,
-      Ink, // the pen: `==text==` inks as you type, and saves back as `==text==` (InkMark.ts)
-      // The four table extensions are one unit; they are listed on one line so adding the
-      // pen above did not push this file past its 400-line cap.
-      Table.configure({ resizable: false }), TableRow, TableHeader, TableCell,
-      // GFM task lists (- [ ] / - [x]); marked renders them on the public side.
-      TaskList,
-      TaskItem.configure({ nested: true }),
-      // Per-block placeholder (adds the is-editor-empty class + data-placeholder
-      // the CSS reads). The old root data-placeholder attribute rendered nothing.
-      Placeholder.configure({ placeholder: t.editorPlaceholder }),
-      // html:false -> raw HTML in the source is treated as plain text, never
-      // parsed into nodes. Keeps the blog 100% Markdown.
-      Markdown.configure({ html: false }),
-    ],
+    extensions: editorExtensions(t.editorPlaceholder),
     content: initialContent,
     editorProps: {
       attributes: { class: 'prose max-w-none min-h-[420px] px-4 py-4' },

@@ -85,6 +85,7 @@ const en = {
   imgAlignRight: 'Right',
   imgSizeColumn: 'Column',
   imgSizeWide: 'Large',
+  mathPlaceholder: 'LaTeX formula',
   imgGrid: 'Grid',
   imgRatioNatural: 'As shot',
   imgCaptions: 'Captions',

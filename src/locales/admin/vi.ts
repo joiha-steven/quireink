@@ -85,6 +85,7 @@ const vi = {
   imgAlignRight: 'Phải',
   imgSizeColumn: 'Khung',
   imgSizeWide: 'Ảnh lớn',
+  mathPlaceholder: 'Công thức LaTeX',
   imgGrid: 'Lưới',
   imgRatioNatural: 'Giữ nguyên',
   imgCaptions: 'Chú thích',

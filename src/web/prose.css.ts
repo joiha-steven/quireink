@@ -10,6 +10,7 @@
 // `check:css-literal` enforces that.
 
 import { INK_CSS } from '@/web/ink.css'
+import { MATH_CSS } from '@/web/math.css'
 
 export const PROSE_CSS = `
 /* The body's rhythm is ONE rule: every sibling gets the same lead, and the headings then
@@ -105,4 +106,8 @@ export const PROSE_CSS = `
    is here: the editor is a .prose surface too, and a stroke you cannot see while you are
    writing is a stroke you cannot place. Both sheets are built from this one constant. */
 ${INK_CSS}
+
+/* Maths, here for the third time for the same reason: the editor is a .prose surface, and a
+   formula you cannot see while you are writing is a formula you cannot check. */
+${MATH_CSS}
 `.trim()

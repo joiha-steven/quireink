@@ -85,6 +85,7 @@ const ko = {
   imgAlignRight: '오른쪽',
   imgSizeColumn: '본문 너비',
   imgSizeWide: '크게',
+  mathPlaceholder: 'LaTeX 수식',
   imgGrid: '그리드',
   imgRatioNatural: '원본 비율',
   imgCaptions: '캡션',

@@ -85,6 +85,7 @@ const de = {
   imgAlignRight: 'Rechts',
   imgSizeColumn: 'Spalte',
   imgSizeWide: 'Groß',
+  mathPlaceholder: 'LaTeX-Formel',
   imgGrid: 'Raster',
   imgRatioNatural: 'Original',
   imgCaptions: 'Bildunterschriften',

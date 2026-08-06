@@ -214,6 +214,8 @@ export type AdminStrings = {
   imgAlignRight: string
   imgSizeColumn: string
   imgSizeWide: string
+  /** Placeholder in the editor's formula box, and the label of an empty formula. */
+  mathPlaceholder: string
   imgGrid: string
   // gallery options: the ratio labels (1:1, 3:2, 4:3) are the same in every language and
   // live in the component; only these two are words.
