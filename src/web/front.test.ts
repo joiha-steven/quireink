@@ -124,6 +124,33 @@ describe('the front page', () => {
 // reader every post the blog has, and the way to that list was a bare link stranded under
 // the last row.
 describe('the headings and the way on', () => {
+  /**
+   * The document OUTLINE, which no screenshot shows and no size assertion catches.
+   *
+   * `.fc-title` sets every headline's size by class, so a wrong level is invisible on the
+   * page and wrong in every outline built from it — a screen reader's rotor, a reader-mode
+   * extension, an outline crawler. The lead row prints no label, so its stacked headlines
+   * have nothing but the h1 above them; at h3 the page read h1 → h3 → h3 → h2, skipping a
+   * level and then filing its most important stories below the section names underneath.
+   */
+  it('descends one level at a time, with the lead stack directly under the h1', async () => {
+    const html = await front({
+      lead: { on: true, source: 'latest', slug: '', secondary: 2 },
+      strips: [{ category: 'Film', count: 2, columns: 3 }],
+      latest: { on: false, count: 6, columns: 3 },
+    })
+    const levels = [...html.matchAll(/<h([1-6])[ >]/g)].map((m) => Number(m[1]))
+    expect(levels[0]).toBe(1) // exactly one h1, and it is the lead
+    expect(levels.filter((n) => n === 1)).toHaveLength(1)
+    // No step DOWN the outline may skip a level. A step back up is ordinary.
+    for (let i = 1; i < levels.length; i++) {
+      expect(levels[i] - levels[i - 1]).toBeLessThanOrEqual(1)
+    }
+    // ...and specifically: the lead's stack is h2, level with the section labels that follow
+    // rather than two steps below them.
+    expect(levels.slice(0, 3)).toEqual([1, 2, 2])
+  })
+
   it('links a category heading, because a category has a page', async () => {
     const html = await front({
       lead: { on: false, source: 'latest', slug: '', secondary: 0 },

@@ -171,7 +171,16 @@ ${picture ? `<div class="fc-media">${picture}</div>` : ''}
 /**
  * A headline and its meta, nothing else. Used where a row is a list rather than a grid:
  * under the lead, and in the most-viewed row.
+ *
+ * THE LEVEL IS THE CALLER'S, and it is a required argument rather than a default because
+ * the two callers genuinely differ. Every other row on this page opens with an h2 label
+ * ("Featured", a category name, "Most read"), so its stories are h3 and sit under it. The
+ * lead row has NO label — it is the top of the page — so its headlines have nothing between
+ * them and the h1. Fixed at h3 they produced h1 → h3 → h3 → h3 → h2, which skips a level
+ * and then files the page's most important stories BELOW the section headings that follow
+ * them. Size is set by `.fc-line .fc-title`, never by the tag, so this is outline only:
+ * nothing on the page moves.
  */
-export function lineItem(post: Post, ctx: Ctx): string {
-  return `<article class="fc fc-line">${title(post, 'h3')}${meta(post, ctx.settings, ctx.front)}</article>`
+export function lineItem(post: Post, ctx: Ctx, tag: 'h2' | 'h3'): string {
+  return `<article class="fc fc-line">${title(post, tag)}${meta(post, ctx.settings, ctx.front)}</article>`
 }
