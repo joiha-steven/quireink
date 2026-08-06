@@ -11,9 +11,12 @@ import { db } from '@/store/db'
 import { savePost } from '@/content/posts'
 import { getSettings, saveSettings } from '@/content/settings'
 import { clearCache } from '@/server/cache'
+import { resetLimits } from '@/server/rate-limit'
 import { createApp } from '@/web/app'
 import { renderOgCard, OG_SIZE } from '@/render/og-card'
 import { ogFontsCover } from '@/render/og'
+import { PEN_LIGHT, penStroke } from '@/render/pen'
+import { INK_CSS } from '@/web/ink.css'
 
 const DIR = './.tmp/test-og'
 freshDatabase(DIR)
@@ -26,6 +29,11 @@ const PAST = '2020-01-01T00:00:00.000Z'
 
 beforeEach(() => {
   clearCache()
+  // Every request in this file arrives with no forwarding header, so they all charge the
+  // SAME rate-limit bucket. Without this the file's own card renders exhaust the per-minute
+  // cap partway through and the tests after that point fail on 429 — a suite that breaks
+  // because of how many tests precede it is worse than no suite.
+  resetLimits()
   for (const t of ['posts', 'pages', 'post_terms', 'post_revisions', 'settings']) {
     db().run(`delete from ${t}`)
   }
@@ -281,5 +289,73 @@ describe('a script the card cannot draw', () => {
     expect(ogFontsCover('A Latin title')).toBe(true)
     expect(ogFontsCover('A Latin title 한글 자간')).toBe(false)
     expect(ogFontsCover('Dấu phụ — “quoted”, 2026')).toBe(true)
+  })
+})
+
+/**
+ * The cap on the renders themselves.
+ *
+ * A card costs roughly forty times what a cached page costs, and it is a pure function of
+ * its query string — so an unauthenticated caller who varies ?title= misses the edge and
+ * the origin together and gets a full-price render every time. The fetch deadline inside
+ * the handler bounds a slow BACKGROUND, never the drawing, which is the expensive half.
+ */
+describe('the cap on card renders', () => {
+  it('answers 429 with Retry-After once a caller is past its minute, and draws nothing', async () => {
+    // Distinct titles on purpose: identical URLs are what a shared link looks like and are
+    // answered by the edge in practice. The attack is a caller who never repeats a URL.
+    const ask = (n: number) => app.request(`/og?title=card-${n}`, {
+      headers: { 'cf-connecting-ip': '203.0.113.7' },
+    })
+
+    for (let n = 0; n < 30; n++) expect((await ask(n)).status).toBe(200)
+
+    const refused = await ask(31)
+    expect(refused.status).toBe(429)
+    expect(refused.headers.get('retry-after')).toBe('60')
+    // Not a PNG: the point of the cap is that the render never ran.
+    expect(refused.headers.get('content-type')).not.toContain('image/png')
+  })
+
+  it('charges each caller its own allowance', async () => {
+    const from = (ip: string) => app.request('/og?title=neighbours', {
+      headers: { 'cf-connecting-ip': ip },
+    })
+    for (let n = 0; n < 31; n++) await from('203.0.113.8')
+    expect((await from('203.0.113.8')).status).toBe(429)
+    // A busy neighbour behind the same CDN must not spend somebody else's cards.
+    expect((await from('198.51.100.4')).status).toBe(200)
+  })
+})
+
+/**
+ * The pen on the card IS the pen on the page.
+ *
+ * This is the test og-card.ts's comment said existed. It did not, and in its absence the
+ * card's copy of the stroke drifted from the reader's: same first path, a second path four
+ * numbers away, and the same measured yellow typed out a second time. Both now read
+ * `render/pen.ts`, which the typechecker enforces; what these two assertions add is that
+ * neither side has quietly gone back to a literal of its own.
+ */
+describe('the highlighter, on the card and on the page', () => {
+  it('gives the page the stroke that render/pen.ts draws', () => {
+    // A bare <mark> means yellow, so it is the element's own rule and carries no data-ink.
+    expect(INK_CSS).toContain(`.prose mark{--ink-stroke:${penStroke(PEN_LIGHT.yellow)}}`)
+  })
+
+  it('lays real chartreuse under the card title, not a neutral box', async () => {
+    // Pixels, because the card is drawn by satori and a string comparison would only prove
+    // that a constant was passed to it. The pen is chartreuse (hue 73): under the title its
+    // band must run GREEN of blue by a wide margin. A card with no title is bare paper and
+    // is the control — the same strip, neutral, which is what any grey or missing stroke
+    // would also look like.
+    const [tr, tg, tb] = await strip(await bytes(await get('/og?title=Highlighted')), 0.35, 0.2)
+    const [pr, pg, pb] = await strip(await bytes(await get('/og')), 0.35, 0.2)
+
+    expect(Math.abs(pr - pb)).toBeLessThan(6) // control: paper is neutral
+    expect(Math.abs(pg - pb)).toBeLessThan(6)
+    expect(tg - tb).toBeGreaterThan(12) // ink: green well clear of blue
+    expect(tg - tb).toBeGreaterThan(pg - pb + 10)
+    expect(tr).toBeGreaterThan(tb) // ...and warm of blue too, which is what yellow-green is
   })
 })
