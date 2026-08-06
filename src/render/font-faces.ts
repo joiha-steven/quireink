@@ -135,6 +135,15 @@ const CHROME_TRACKED = [
   'footer.site', '.pager', 'p.tags', '.related', 'aside.series',
   '.rail-sub', '.preview-note', '.subscribe-card', '#comments',
   '.code-copy', '.lightbox-caption', '.lightbox-count',
+  // The newspaper's section headings. The front page arrived after this list and brought
+  // one rule that states --ls-small without carrying `.t-small` in the markup, so it was
+  // the only thing on that page the correction did not reach: measured under a JetBrains
+  // Mono chrome, the word "Typography" set 90.2px as a section label and 82.7px as the
+  // kicker three lines below it. Same font, same size, same screen, 9% apart. The page's
+  // other chrome rules (`.fc-cat`, `.fc-meta`, `.front-topics`) all carry `.t-small` and
+  // were right by inheritance; `.fc-title`, `.fc-deck` and `.fc-intro` are `.reading-font`
+  // and are right by being excluded.
+  '.front-label',
 ]
 
 /**
