@@ -106,10 +106,17 @@ await saveSettings({
     mode: MODE,
     front: {
       ...DEFAULT_HOME.front,
+      // TEXT, never image. The demo's whole argument is that a page of nothing but words
+      // can be worth looking at, and a row of thumbnails is the easiest way to make any
+      // front page look busy — which would prove the opposite thing.
       kind: KIND,
+      // MOST VIEWED, ON. It was off while the seeder went to the trouble of generating a
+      // month of deterministic traffic three screens up — the row the analytics exist to
+      // fill was the one row the fixture never drew.
+      popular: { on: true, count: 4, days: 30 },
       strips: [
         { category: 'Typography', count: 3, columns: 3 },
-        { category: 'Calligraphy', count: 2, columns: 2 },
+        { category: 'Calligraphy', count: 3, columns: 3 },
         { category: 'Printing', count: 3, columns: 3 },
       ],
     },

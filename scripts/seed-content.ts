@@ -81,9 +81,23 @@ A scale is defensible when every size is derived, and when each size belongs to 
 
 ## A ratio, and the honesty to break it
 
-Pick a ratio and generate from the body size. A minor third (1.2) is quiet and works for text-heavy pages; a perfect fourth (1.333) is dramatic and runs out of room quickly on a small screen.
+Every size on the page comes from one body size and one ratio:
+
+$$s_n = s_0 \\times r^{\\,n}$$
+
+where $s_0$ is the body size, $r$ the ratio and $n$ the number of steps away from it. Pick a ratio and generate from the body size. A minor third ($r = 1.2$) is quiet and works for text-heavy pages; a perfect fourth ($r = 1.333$) is dramatic and runs out of room quickly on a small screen.
+
+| Step | Minor third | Perfect fourth |
+|---|---|---|
+| Body | 17 px | 17 px |
+| +1 | 20 px | 23 px |
+| +2 | 24 px | 30 px |
+| +3 | 29 px | 40 px |
 
 Then allow yourself to round. A scale that produces 27.65px is a scale nobody will follow, and the rounding is not a compromise: the eye cannot tell 27.65 from 28, and the person maintaining the page can.
+
+> [!TIP]
+> Round once, at the end. Rounding each step and then generating the next from the rounded value compounds the error, and by the fourth step the scale is no longer the ratio you chose.
 
 ## Leading and tracking travel with the size
 
@@ -243,7 +257,21 @@ For twenty years the honest answer to "why does this look worse on screen" was p
 
 Slightly more leading than you would set in print. A slightly shorter measure, because a screen is read at a less predictable distance. And a size chosen for the worst case rather than the best: someone reading on a bus, one-handed, at arm's length.
 
-None of that is exotic. It is the same craft, applied to a surface that moves.`,
+None of that is exotic. It is the same craft, applied to a surface that moves.
+
+## What that looks like in a stylesheet
+
+Three declarations, and the third is the one everybody forgets:
+
+\`\`\`css
+.prose {
+  max-width: 34rem;      /* the measure, not the window */
+  line-height: 1.7;      /* looser on glass than on paper */
+  hyphens: auto;         /* only once the column is wide enough */
+}
+\`\`\`
+
+Set the measure in \`rem\` rather than in characters: \`ch\` is the width of a zero, and a zero is not the average letter in any language with diacritics.`,
   },
   {
     title: 'Imposition: why page 1 sits beside page 8',
