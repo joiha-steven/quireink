@@ -174,7 +174,7 @@ async function buildBody(settings: SiteSettings, ready: ReadyImages): Promise<st
         head: null,
         cls: `front-lead-row${lead.categories.length ? ' has-kicker' : ''}`,
         inner: `${leadItem(lead, ctx, opening)}${
-          secondary.length ? `<div class="front-secondary">${secondary.map((p) => lineItem(p, ctx)).join('\n')}</div>` : ''
+          secondary.length ? `<div class="front-secondary">${secondary.map((p) => lineItem(p, ctx, 'h2')).join('\n')}</div>` : ''
         }`,
       })
     }
@@ -226,7 +226,7 @@ async function buildBody(settings: SiteSettings, ready: ReadyImages): Promise<st
     if (items.length) {
       rows.push({
         head: { label: tx.frontPopular },
-        inner: `<div class="front-lines">${items.map((p) => lineItem(p, ctx)).join('\n')}</div>`,
+        inner: `<div class="front-lines">${items.map((p) => lineItem(p, ctx, 'h3')).join('\n')}</div>`,
       })
     }
   }
