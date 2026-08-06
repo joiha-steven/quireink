@@ -13,6 +13,7 @@ import { getSettings, saveSettings } from '@/content/settings'
 import { clearCache } from '@/server/cache'
 import { createApp } from '@/web/app'
 import { renderOgCard, OG_SIZE } from '@/render/og-card'
+import { ogFontsCover } from '@/render/og'
 
 const DIR = './.tmp/test-og'
 freshDatabase(DIR)
@@ -246,5 +247,39 @@ describe('open graph tags', () => {
     await savePost({ title: 'Rootless', content: 'body', status: 'published', date: PAST })
     const html = await get('/rootless').then((r) => r.text())
     expect(html).toContain('<meta property="og:image" content="http://localhost:3000/og?')
+  })
+})
+
+describe('a script the card cannot draw', () => {
+  /**
+   * satori has no system fallback. Handed a glyph none of its three Inter subsets carries it
+   * draws a black box reading NO GLYPH — and returns a valid PNG of the right size, so every
+   * structural assertion in this file passed while a Japanese title rendered as twenty boxes
+   * under a highlighter stroke. Found by looking at the picture, which is the only way this
+   * class of bug is ever found.
+   */
+  it('produces no card at all rather than a row of NO GLYPH boxes', async () => {
+    await saveSettings({ title: 'My Blog', siteUrl: SITE })
+    await savePost({
+      title: '文字組みと行間のこと', slug: 'kumihan', content: '日本語の組版について。',
+      status: 'published', date: PAST,
+    })
+    const html = await get('/kumihan').then((r) => r.text())
+    expect(html).not.toContain('/og?')
+  })
+
+  it('still draws one for Vietnamese and for latin-ext, which it does carry', async () => {
+    await saveSettings({ title: 'My Blog', siteUrl: SITE })
+    await savePost({
+      title: 'Dấu phụ tiếng Việt', slug: 'dau-phu', content: 'zażółć gęślą jaźń',
+      status: 'published', date: PAST,
+    })
+    expect(await get('/dau-phu').then((r) => r.text())).toContain('/og?')
+  })
+
+  it('reads every line the card would set, not just the title', () => {
+    expect(ogFontsCover('A Latin title')).toBe(true)
+    expect(ogFontsCover('A Latin title 한글 자간')).toBe(false)
+    expect(ogFontsCover('Dấu phụ — “quoted”, 2026')).toBe(true)
   })
 })
