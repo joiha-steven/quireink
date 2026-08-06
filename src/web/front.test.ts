@@ -299,3 +299,43 @@ describe('the lead opening', () => {
     expect(html).toContain('And then it carries on')
   })
 })
+
+/**
+ * Where a teaser stops.
+ *
+ * The budget is a character count, so it lands wherever it lands — and on the demo's own
+ * lead it landed on "…a long one gives it a field of…", an ellipsis after a preposition,
+ * which reads as a truncated string rather than as a sentence trailing off.
+ */
+describe('a teaser stops at a sentence when one is near', () => {
+  it('ends the front page lead on a full stop rather than mid-clause', async () => {
+    // A lead with a real body. The fixtures at the top of this file carry content 'x', so a
+    // test written against them asserts nothing: there is no intro to clamp.
+    await savePost({
+      title: 'The measure', slug: 'measure-lead', status: 'published', date: day(11),
+      excerpt: 'Opening.', categories: ['Money'],
+      content: 'Opening. ' + 'The eye can travel only so far before it loses the line. '.repeat(7)
+        + 'A short column gives it an easy target and a long one gives it a field of white to hunt across',
+    })
+    const html = await front({ lead: { on: true, source: 'pinned', slug: 'measure-lead', secondary: 0 } })
+    const intro = html.match(/<p class="fc-intro reading-font">([^<]*)</)?.[1] ?? ''
+    expect(intro.length).toBeGreaterThan(0)
+    expect(intro.endsWith('…')).toBe(false)
+    expect(intro.endsWith('.')).toBe(true)
+  })
+
+  it('is language-neutral: no stop-word list decides it', async () => {
+    // A Vietnamese lead is clamped by the same rule as an English one. A trailing-function
+    // -word list would be an English rule quietly applied to five other languages.
+    await savePost({
+      title: 'Dấu phụ', slug: 'dau-phu-lead', status: 'published', date: day(10),
+      excerpt: 'Ngắn.', categories: ['Money'],
+      content: 'Ngắn. ' + 'Chữ Việt có dấu chồng lên nhau và cần khoảng trên. '.repeat(9)
+        + 'Câu cuối rất dài không bao giờ kết thúc trong ngân sách này nên nó phải bị cắt ở đâu đó',
+    })
+    const html = await front({ lead: { on: true, source: 'pinned', slug: 'dau-phu-lead', secondary: 0 } })
+    const intro = html.match(/<p class="fc-intro reading-font">([^<]*)</)?.[1] ?? ''
+    expect(intro.length).toBeGreaterThan(0)
+    expect(intro.endsWith('.')).toBe(true)
+  })
+})
