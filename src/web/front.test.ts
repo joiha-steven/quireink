@@ -92,9 +92,13 @@ describe('the front page', () => {
       strips: [{ category: 'Money', count: 3, columns: 3 }],
       latest: { on: false, count: 6, columns: 3 },
     })
-    // The row HEADER specifically. "Money" still appears on the lead, as its own category
-    // label — asserting on the bare word passes for the wrong reason.
-    expect(html).not.toContain('front-label')
+    // The row HEADER specifically, and matched as an ELEMENT rather than as a class name
+    // loose in the document. "Money" still appears on the lead as its own category label,
+    // so asserting on the bare word passes for the wrong reason — and the class name alone
+    // now also appears in the head, because the mono-chrome tracking correction has to name
+    // `.front-label` in its selector list. A substring test against a whole document will
+    // eventually match the stylesheet; this one did.
+    expect(html).not.toContain('<h2 class="front-label"')
   })
 
   it('draws a category row that still has posts', async () => {
@@ -102,7 +106,7 @@ describe('the front page', () => {
       lead: { on: false, source: 'latest', slug: '', secondary: 0 },
       strips: [{ category: 'Film', count: 3, columns: 3 }],
     })
-    expect(html).toContain('front-label')
+    expect(html).toContain('<h2 class="front-label"')
     expect(html).toContain('>Film</a>')
     expect(html).toContain('Third')
   })
@@ -181,7 +185,7 @@ describe('the headings and the way on', () => {
     // Inside the LAST row's heading, which is what makes it part of the page rather than a
     // link left behind under it.
     const more = html.indexOf('front-more')
-    const lastLabel = html.lastIndexOf('front-label')
+    const lastLabel = html.lastIndexOf('<h2 class="front-label"')
     expect(more).toBeGreaterThan(lastLabel)
     expect(html.indexOf('front-row', more)).toBe(-1)
   })

@@ -124,7 +124,14 @@ describe('the mono-chrome tracking correction', () => {
   // inheriting, so the correction has to name it — and naming the wrong ones is the other
   // half of the same mistake.
   it('reaches the chrome surfaces that state their own tracking', () => {
-    for (const selector of ['footer.site', 'p.tags', '.pager', 'header.site .tagline', '.related']) {
+    // `.front-label` is here because it was the one that got away. The newspaper front page
+    // landed after this list existed, and its section heading is the only chrome rule on
+    // that page which names --ls-small without also carrying `.t-small` in the markup — so
+    // it was the only element there the correction missed. Measured under a JetBrains Mono
+    // chrome: "Typography" set 90.2px as the section label above a card and 82.7px as that
+    // card's own kicker.
+    for (const selector of ['footer.site', 'p.tags', '.pager', 'header.site .tagline', '.related',
+      '.front-label']) {
       expect(MONO_TRACKING).toContain(`html[data-chrome-font="jetbrains-mono"] ${selector}`)
       expect(MONO_TRACKING).toContain(`html[data-chrome-font="plex-mono"] ${selector}`)
     }
@@ -134,7 +141,12 @@ describe('the mono-chrome tracking correction', () => {
     // `figcaption` and `.footnotes` sit inside the article and render in --font-reading.
     // They were being given a MONO adjustment while painting in a book serif, because they
     // inherited it from body. Nothing set in the reading face may appear here.
-    for (const selector of ['figcaption', '.footnotes', '.prose', '.reading-font', '.comment-body']) {
+    // The front page's three reading surfaces are here for the other half of the same
+    // mistake: a headline, a standfirst and the lead's opening lines all render in the book
+    // serif, and a mono correction applied to them is the fault this list was written to
+    // catch when `.deck`, `figcaption` and `.footnotes` had it.
+    for (const selector of ['figcaption', '.footnotes', '.prose', '.reading-font', '.comment-body',
+      '.fc-title', '.fc-deck', '.fc-intro']) {
       expect(MONO_TRACKING).not.toContain(` ${selector}{`)
       expect(MONO_TRACKING).not.toContain(` ${selector},`)
     }
