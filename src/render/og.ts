@@ -15,6 +15,28 @@ function ogFontParam(settings: SiteSettings, base: string, p: URLSearchParams): 
   if (pick?.url) p.set('font', new URL(pick.url, base).toString())
 }
 
+/**
+ * Can the card's bundled faces actually DRAW this text?
+ *
+ * satori is not a browser and has no system fallback: handed a glyph none of its fonts
+ * carry, it draws a black box reading "NO GLYPH" and returns a perfectly valid PNG. A
+ * Japanese title came back as twenty of those boxes under a highlighter stroke, and every
+ * structural test passed — the route answered 200 with an image of the right size.
+ *
+ * The card ships three Inter subsets: latin, latin-ext and vietnamese. So Latin plus the
+ * shared punctuation and digits is exactly what it can draw, and Japanese, Korean, Chinese,
+ * Russian, Greek, Thai and Arabic are exactly what it cannot. Quire Ink ships UI
+ * translations for ja, ko and zh, which means this was reachable by a supported
+ * configuration rather than by an exotic one.
+ *
+ * When the answer is no the site falls back to its own image, or to no card at all. A link
+ * with no preview is a link; a preview that says NO GLYPH twenty times is a broken product
+ * in somebody's timeline.
+ */
+export function ogFontsCover(text: string): boolean {
+  return !/[^\p{Script=Latin}\p{Script=Common}\p{Script=Inherited}]/u.test(text)
+}
+
 export function ogImageUrl(
   settings: SiteSettings,
   base: string,
@@ -22,7 +44,9 @@ export function ogImageUrl(
 ): string | undefined {
   const { ogImage, ogFallbackImage } = settings.seo
   const bg = opts.featuredImage || ogFallbackImage || ''
-  if (ogImage) {
+  // Every line the card would SET has to be drawable, not just the title: a Latin headline
+  // over a Japanese excerpt is the same broken picture with one readable row.
+  if (ogImage && ogFontsCover(`${opts.title} ${opts.desc ?? ''}`)) {
     // A post card shows title + excerpt + date; when neither is given (e.g. a page)
     // it falls back to the site name as the small bottom line.
     const p = new URLSearchParams({ title: opts.title })
@@ -60,7 +84,7 @@ export function ogCardUrl(
   opts: { title: string; site: string },
 ): string | undefined {
   const { ogImage, ogFallbackImage } = settings.seo
-  if (ogImage) {
+  if (ogImage && ogFontsCover(`${opts.title} ${opts.site}`)) {
     const p = new URLSearchParams({ title: opts.title, site: opts.site })
     if (ogFallbackImage) p.set('bg', new URL(ogFallbackImage, base).toString())
     ogFontParam(settings, base, p)
