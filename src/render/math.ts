@@ -240,7 +240,10 @@ export const mathBlockExtension: TokenizerAndRendererExtension = {
   renderer(token) {
     const t = token as Tokens.Generic & { tex: string }
     // The wrapper is what scrolls. A long derivation is wider than the measure and must
-    // take its own scrollbar rather than widen the page — the same rule tables follow.
+    // take its own scrollbar rather than widen the page. Maths gets a wrapper of its own
+    // because it can: a table arrives from `marked` bare, and the byte-identical golden
+    // compare means nothing may wrap it — so `prose.css.ts` scrolls the article around it
+    // instead. Same law, and two mechanisms, because only one of them was free.
     return `<div class="math-block">${renderMath(t.tex, true)}</div>\n`
   },
 }

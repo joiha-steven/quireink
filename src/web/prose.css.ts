@@ -82,6 +82,19 @@ export const PROSE_CSS = `
    document; this is a pause inside it.
    Width in em, so it grows with the reader's type and with book mode's 1.15. */
 .prose hr:not(.fn-rule){width:6em;margin:2.6em auto;border-top:1px solid var(--c-rule)}
+/* A TABLE THAT WILL NOT FIT SCROLLS THE ARTICLE, NEVER THE PAGE.
+   Measured at 390px: a five-column table is 484px at its narrowest, and a table cannot be
+   squeezed below its own content -- so with visible overflow the DOCUMENT went to 516px and
+   every paragraph in the piece panned sideways with it. A pre has carried overflow-x since
+   it was written and .math-block was given it on purpose; this was the third case, and the
+   only one nothing said out loud.
+   The scroll sits on .prose rather than on the table, and that is forced rather than
+   preferred: overflow is ignored on a display:table box, and switching the table to
+   display:block makes the anonymous table inside it shrink-to-fit -- measured 607px down to
+   345px on a laptop, which would quietly restyle every table on every site in order to fix
+   a phone bug. :has() keeps the scroll container off the articles that have no table, and a
+   browser without :has() is left exactly where it is today. */
+.prose:has(table){overflow-x:auto}
 .prose table{border-collapse:collapse;width:100%}
 .prose th,.prose td{border:1px solid var(--c-rule);
   padding:calc(var(--sp) * .4) calc(var(--sp) * .6);text-align:left}

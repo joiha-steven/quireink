@@ -19,8 +19,10 @@ export const MATH_CSS = `
 
 /* THE ONE RULE THAT EARNS ITS PLACE. A derivation is routinely wider than the measure, and
    an element that cannot scroll widens the PAGE instead — which on a phone means every
-   paragraph in the article gets a horizontal scrollbar because of one formula. Same answer
-   the code blocks and tables already give: the wrapper scrolls, the page never does. */
+   paragraph in the article gets a horizontal scrollbar because of one formula. A code block
+   answers this on the element itself; a table cannot be wrapped (the golden compare fixes
+   its markup byte for byte) so prose.css.ts scrolls the article around it. A formula has
+   a wrapper of its own, so it takes the direct answer. In all three the page never moves. */
 .math-block{overflow-x:auto;overflow-y:hidden;margin:1.4em 0}
 
 /* Display maths is centred, which is the convention every printed text follows, and it is
