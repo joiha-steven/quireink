@@ -5,7 +5,20 @@
 // plain objects rather than JSX: satori accepts either, and plain objects avoid giving this
 // one file a different JSX pragma from the rest of the codebase.
 //
-// The layout is a straight port of `app/og/route.tsx`, down to the type sizes.
+// THE CARD IS A PAGE FROM THE SITE, NOT A BANNER. It was a dark gradient with white text on
+// it, which is what every generated card on the web looks like and which said nothing about
+// what a reader would find on the other side of the link. It is now paper, set in the site's
+// own face, with the title and the date under the SAME highlighter stroke the reader meets
+// inside an article — the literal pen from `web/ink.css.ts`, the same measured pigment and
+// the same hand-drawn edges, carried here as the SVG it already is.
+//
+// The pen is the one part of this file that does not follow the palette, and deliberately:
+// ADR 0018 fixes its pigment across every theme because a highlighter is a physical object,
+// not a UI colour. A card built around the pen therefore has no palette to follow either.
+//
+// Rasterised at 2x. satori emits SVG, so the resolution is sharp's to choose (`density`),
+// and 72 DPI was leaving the type visibly soft on any hi-DPI phone — which is where a
+// shared link is opened.
 
 import satori, { type SatoriOptions } from 'satori'
 import interLatin from '@/render/fonts/inter-latin.woff' with { type: 'file' }
@@ -14,15 +27,18 @@ import interVietnamese from '@/render/fonts/inter-vietnamese.woff' with { type: 
 
 export const OG_SIZE = { width: 1200, height: 630 } as const
 
+/** Rasterisation density. 72 is sharp's default for SVG; 144 is the same card at 2x. */
+const DENSITY = 144
+
 export type OgCard = {
   /** The big top line. */
   title: string
-  /** A middle line: a post's excerpt. Clamped to four lines. */
+  /** A middle line: a post's excerpt. Clamped so it cannot push the date off the card. */
   desc?: string
   /** The bottom line. `date` wins over `site` when both are given. */
   date?: string
   site?: string
-  /** Background image, already fetched, as a data URI. Absent means the gradient. */
+  /** Background image, already fetched, as a data URI. Absent means plain paper. */
   bg?: string
   /** The owner's font, already fetched. Absent means Inter. */
   customFont?: ArrayBuffer
@@ -53,59 +69,127 @@ type Node = { type: string; props: Record<string, unknown> }
 const div = (style: Record<string, unknown>, children?: unknown): Node =>
   ({ type: 'div', props: children === undefined ? { style } : { style, children } })
 
-/** The layers over the background: a dark wash so white text stays legible on any image. */
-const OVERLAY = 'linear-gradient(180deg, rgba(28,28,31,0.25) 0%, rgba(28,28,31,0.88) 100%)'
-const GRADIENT = 'linear-gradient(135deg, #2a2a2e 0%, #1c1c1f 100%)'
+/** Paper, ink and the muted line, from the default (mono) light palette in `themes.ts`. */
+const PAPER = '#fcfcfc'
+const HEADING = '#121212'
+const TEXT = '#262626'
+const META = '#747474'
+const RULE = '#ebebeb'
+
+/**
+ * The highlighter, exactly as the reader meets it: `web/ink.css.ts` builds this same data
+ * URI from this same path and this same measured yellow. Copied rather than imported
+ * because that module is a CSS *sheet* — one template literal of rules — and importing it
+ * here to slice a URL back out of it would couple the card to the shape of a stylesheet.
+ * The two are pinned together by a test instead.
+ */
+export const PEN_YELLOW = 'd5f856'
+const pen = (hex: string) =>
+  'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 200 34\''
+  + ' preserveAspectRatio=\'none\'%3E%3Cpath d=\'M6,6 C40,2.5 70,7.5 104,4.2 C138,1.6 168,6.8'
+  + ' 196,3.6 L200,29.5 C170,32.6 140,27.2 106,30.4 C72,33.2 40,28.2 0,30.8 Z\' fill=\'%23'
+  + hex + '\' opacity=\'.8\'/%3E%3Cpath d=\'M2,17 C40,14.5 70,19.5 104,16.4 C138,13.6 168,18.8'
+  + ' 196,15.6 L198,28 C168,31 138,25.6 104,28.8 C70,31.8 40,26.6 2,29 Z\' fill=\'%23'
+  + hex + '\' opacity=\'.55\'/%3E%3C/svg%3E")'
+
+const STROKE = {
+  backgroundImage: pen(PEN_YELLOW),
+  backgroundSize: '100% 100%',
+  backgroundRepeat: 'no-repeat',
+} as const
+
+/**
+ * A phrase under the pen, one stroke PER WORD.
+ *
+ * Not one box around the whole phrase, which is what a wrapping title would otherwise get:
+ * a single rectangle two lines tall, which is a highlighted block and not a stroke. Per word
+ * with the padding and negative margin in the same ratio the sheet uses
+ * (`padding:0 .16em; margin:0 -.12em`) the strokes overlap through the spaces, so a phrase
+ * reads as one sweep and a wrapped line starts a new one — which is precisely what
+ * `box-decoration-break: clone` does for the reader, and what satori has no property for.
+ */
+function marked(text: string, size: number): Node {
+  const words = text.split(/\s+/).filter(Boolean)
+  // Padding .16em out, margin .06em BACK. The margin is negative on purpose and it is the
+  // whole trick: at a positive margin every word gets its own island of yellow with paper
+  // showing between them, which is a set of labels and not a pen. Pulled back, the boxes
+  // overlap, the ink runs through the word space, and what is left is one sweep — the same
+  // arithmetic `.prose mark` uses (padding:0 .16em; margin:0 -.12em).
+  const padX = Math.round(size * 0.16)
+  return div({ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start' },
+    words.map((w) => div({
+      ...STROKE,
+      display: 'flex',
+      color: HEADING,
+      fontSize: size,
+      lineHeight: 1.24,
+      letterSpacing: '-0.02em',
+      padding: `${Math.round(size * 0.04)}px ${padX}px`,
+      marginRight: -Math.round(size * 0.06),
+      marginBottom: Math.round(size * 0.1),
+    }, w)))
+}
 
 function tree(card: OgCard, family: string): Node {
-  // Smaller type for a longer title, so it never overflows the card.
-  const titleSize = card.title.length > 90 ? 52 : card.title.length > 55 ? 60 : 72
+  // Smaller type for a longer title, so it never overflows the card. A photo takes the top
+  // of the card, so a title beside one starts a step down.
+  const long = card.title.length
+  const titleSize = card.bg
+    ? (long > 90 ? 40 : long > 55 ? 46 : 54)
+    : (long > 90 ? 52 : long > 55 ? 60 : 68)
 
-  // `inset: 0` is NOT enough here. satori ignores it, so the overlay collapsed to zero
-  // height and the card came back with white text on a bright photograph — legible in a
-  // test that only checks the response is a PNG, and unreadable on Twitter. Absolute
-  // offsets are spelled out on both layers.
-  const cover = {
-    position: 'absolute', top: 0, left: 0,
-    width: OG_SIZE.width, height: OG_SIZE.height,
-  } as const
+  const rows: unknown[] = []
 
-  const layers: unknown[] = []
+  // The photo, as a band across the top rather than a wash behind everything. A dark
+  // gradient with text over it was the old card, and it made every post look the same;
+  // a band keeps the picture a picture and the words legible without a scrim.
   if (card.bg) {
-    layers.push({
+    rows.push({
       type: 'img',
-      props: {
-        src: card.bg,
-        width: OG_SIZE.width,
-        height: OG_SIZE.height,
-        style: { ...cover, objectFit: 'cover' },
-      },
+      props: { src: card.bg, width: OG_SIZE.width, height: 250, style: { objectFit: 'cover' } },
     })
-    // A dark wash, so white text stays readable over any photograph.
-    layers.push(div({ ...cover, background: OVERLAY }))
   }
 
-  const lines: unknown[] = [
-    div({ fontSize: titleSize, lineHeight: 1.15, color: '#ffffff', letterSpacing: '-0.02em', display: 'flex' },
-      card.title),
-  ]
+  const block: unknown[] = [marked(card.title, titleSize)]
+
   if (card.desc) {
-    lines.push(div({
-      marginTop: 24, fontSize: 28, lineHeight: 1.4, color: 'rgba(255,255,255,0.82)',
-      // Four lines, so a long excerpt cannot push the date off the card.
-      display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+    block.push(div({
+      marginTop: 26,
+      fontSize: card.bg ? 26 : 30,
+      lineHeight: 1.5,
+      color: TEXT,
+      // More of the excerpt than the old card showed: it stopped at four lines of 28px and
+      // the space under it went to the gradient. Six lines on a card with no photo is
+      // roughly the whole 200-character excerpt, which is the point of writing one.
+      display: '-webkit-box',
+      WebkitLineClamp: card.bg ? 3 : 6,
+      WebkitBoxOrient: 'vertical',
+      overflow: 'hidden',
     }, card.desc))
   }
+
+  rows.push(div({
+    display: 'flex', flexDirection: 'column', flexGrow: 1, justifyContent: 'center',
+    padding: card.bg ? '36px 72px 0' : '56px 72px 0',
+  }, block))
+
+  // The foot: the date under its own stroke, and the site name opposite it. A hairline
+  // above, the same weight as the rules inside an article.
   const bottom = card.date || card.site
-  if (bottom) {
-    lines.push(div({ marginTop: 26, fontSize: 26, color: 'rgba(255,255,255,0.55)', display: 'flex' }, bottom))
-  }
-  layers.push(div({ display: 'flex', flexDirection: 'column', padding: 72, position: 'relative' }, lines))
+  rows.push(div({
+    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+    margin: '0 72px', padding: '22px 0 40px', borderTop: `1px solid ${RULE}`,
+  }, [
+    bottom ? marked(bottom, 26) : div({ display: 'flex' }),
+    card.date && card.site
+      ? div({ display: 'flex', fontSize: 24, color: META, letterSpacing: '0.01em' }, card.site)
+      : div({ display: 'flex' }),
+  ]))
 
   return div({
     width: '100%', height: '100%', display: 'flex', flexDirection: 'column',
-    justifyContent: 'flex-end', position: 'relative', background: GRADIENT, fontFamily: family,
-  }, layers)
+    background: PAPER, fontFamily: family,
+  }, rows)
 }
 
 /** Render the card to PNG bytes. */
@@ -126,8 +210,6 @@ export async function renderOgCard(card: OgCard): Promise<Uint8Array> {
   // import that happens during boot and the server never starts — a blog that serves
   // nothing because it cannot draw a social card. Deferred, the same broken install serves
   // every page and fails only `/og`, which the caller turns into a 500 for that one URL.
-  // The packaging decision itself (ship the .node beside the binary, or run from source)
-  // is M4's; this is about which failure the owner gets in the meantime.
   const { default: sharp } = await import('sharp')
-  return new Uint8Array(await sharp(Buffer.from(svg)).png().toBuffer())
+  return new Uint8Array(await sharp(Buffer.from(svg), { density: DENSITY }).png().toBuffer())
 }

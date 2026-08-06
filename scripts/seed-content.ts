@@ -39,7 +39,14 @@ const SPECIMEN = `Every writing system asks something different of a typeface, a
 
 If the accents collide with the line above, the leading is too tight for the language, not for the typeface.`
 
-export const POSTS: Seed[] = [
+import { INTL_POSTS } from './seed-content-intl'
+
+/**
+ * The English core. `POSTS` below is this plus `INTL_POSTS`, and the split is by LANGUAGE
+ * rather than by size: this file's header has always promised Polish, Czech, Turkish and
+ * Icelandic, and until the sibling existed the promise was kept by one blockquote.
+ */
+const CORE: Seed[] = [
   {
     title: 'The measure is the design',
     slug: 'the-measure-is-the-design',
@@ -345,3 +352,5 @@ Body text needs neither. If a paragraph looks too loose or too tight at reading 
 Almost never in text. Sometimes in a headline, where a single bad pair is large enough to be a visible hole, and where you are setting six words rather than six hundred. That is the honest boundary: kerning by hand is a display activity.`,
   },
 ]
+
+export const POSTS: Seed[] = [...CORE, ...INTL_POSTS]
