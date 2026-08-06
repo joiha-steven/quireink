@@ -32,6 +32,12 @@ W źle narysowanym kroju ktoś wziął przecinek i przykleił go pod spodem.
 
 Powiększ ą do stu punktów i popatrz na miejsce styku. Jeśli widać kreskę łączenia — dwa osobne kształty, które się spotkały — to nie jest ogonek, to jest przecinek na dyżurze.
 
+| | Prawdziwy ogonek | Doklejony przecinek |
+|---|---|---|
+| Połączenie | wyrasta z krzywej litery | widoczna kreska styku |
+| Grubość | ta sama w ą i ę | różna, zależnie od litery |
+| Kąt | zgodny z ruchem pióra | zawsze ten sam |
+
 Druga próba: zestaw ą obok ę. W prawdziwym kroju oba ogonki są tej samej grubości i tego samego nachylenia, mimo że wychodzą z zupełnie innych liter. W podróbce jeden z nich zawsze wygląda na doklejony pod złym kątem.
 
 ## Dlaczego to widać w tekście
@@ -53,6 +59,9 @@ Zażółć gęślą jaźń — to zdanie zawiera wszystkie polskie znaki diakryt
 Nad **č**, **ř**, **ž** má háček dost místa: sedí v prostoru nad střední výškou, kam stejně sahají horní dotažnice. Nad **Č**, **Ř**, **Ž** už místo není. Verzálka je vysoká jako celý řádek, a háček musí někam.
 
 Kaligraf to řeší tak, že háček nad verzálkou zplošťuje a posouvá doprava, po směru pera. Typograf to musí vyřešit proklademe — jinak háček z jednoho řádku narazí do dotažnice z předchozího.
+
+>[!WARNING]
+> Nikdy neřešte kolizi háčků tím, že háček zmenšíte. Ztratí váhu okolního písma a slovo pak vypadá vybledle — přesně to, co se stane u falešných kapitálek. Řešením je proklad, ne velikost znaménka.
 
 ## Zkouška, která funguje
 
@@ -80,6 +89,11 @@ Noktasız ı, üzerinde hiçbir şey taşımayan tek küçük harftir; yanındak
 
 Bir başlığı büyük harfe çeviren her kod parçası bu tuzağa düşer. **istanbul** kelimesi Türkçe kurallarla **İSTANBUL** olur, İngilizce kurallarla **ISTANBUL**. İkincisi Türkçede başka bir kelimedir.
 
+\`\`\`js
+'istanbul'.toUpperCase()          // ISTANBUL  — yanlış
+'istanbul'.toLocaleUpperCase('tr') // İSTANBUL  — doğru
+\`\`\`
+
 Bu yüzden başlıkları büyük harfe *çevirmemek* en güvenli yoldur. Zaten okunabilirlik açısından da doğru olan budur: büyük harf bloğu, gözün kelime biçimini tanımak için kullandığı çıkıntıları siler.
 
 Işık, yığın, İstanbul. Üç kelime, dört farklı i.`,
@@ -92,7 +106,10 @@ Işık, yığın, İstanbul. Üç kelime, dört farklı i.`,
     ago: 41,
     body: `Stafirnir **þ** (þorn) og **ð** (eð) eru ekki skraut. Þeir eru tvö ólík hljóð sem latneska stafrófið átti ekkert tákn fyrir, og norrænir skrifarar bjuggu þau til vegna þess að þeir þurftu þau.
 
-Enska notaði þorn líka, öldum saman. Hún missti hann ekki af málfræðilegum ástæðum heldur af prenttæknilegum: fyrstu prentletrin voru flutt inn frá Hollandi og Þýskalandi, og í þeim kössum var enginn þorn. Prentarar settu **y** í staðinn, því formið líktist. Þaðan kemur *ye olde* — sem var aldrei borið fram með ípsíloni.
+Enska notaði þorn líka, öldum saman. Hún missti hann ekki af málfræðilegum ástæðum heldur af prenttæknilegum: fyrstu prentletrin voru flutt inn frá Hollandi og Þýskalandi, og í þeim kössum var enginn þorn. Prentarar settu **y** í staðinn, því formið líktist.[^1] Þaðan kemur *ye olde* — sem var aldrei borið fram með ípsíloni.[^2]
+
+[^1]: Fyrstu ensku prentletrin komu frá Flæmingjalandi og Þýskalandi, þar sem þorn hafði aldrei verið notaður.
+[^2]: Skammstöfunin var rituð með upphækkuðu e yfir þorn, og prentarar settu einfaldlega **ye**.
 
 ## Hvað þetta kennir um leturval
 
