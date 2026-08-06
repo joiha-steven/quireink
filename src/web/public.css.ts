@@ -22,6 +22,15 @@ import { UTILITY_CSS } from '@/web/utility.css'
 const BASE_CSS = `
 *,*::before,*::after{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
+/* The hidden ATTRIBUTE means hidden, and it takes an !important to say so.
+   Its own rule is a UA default of display:none, which any class setting a display value
+   outranks - so setting .hidden = true in script on anything carrying .icon-btn
+   (display:flex) did nothing at all. That shipped: the grid toggle hides itself on a page
+   with no list, and it was visible on every article, every /search and every 404 on the
+   demo, aria-pressed and all. This is the SECOND time the bug was found; the first was
+   patched as .theme-menu[hidden] in islands.css, one component at a time. A general rule
+   is the only version that covers the component nobody has written yet. */
+[hidden]{display:none!important}
 /* TWO font handles, and which one is the DEFAULT matters more than it looks. --font-sans
    is the system chrome face: header, footer, rail, dates, reading times, everything that
    is not the reader's own words. --font-reading is the reader's words, and it is opted

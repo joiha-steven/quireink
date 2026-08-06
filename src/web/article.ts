@@ -26,6 +26,10 @@ import { postInfoPanel, termLinks } from '@/web/post-info'
 
 import { escapeAttr, escapeHtml } from '@/utils'
 
+/** How much of a post the OG card carries. Six lines at the card's body size; the meta
+ *  description stops at 200 because a search engine truncates there, which is a different job. */
+const OG_DESC_MAX = 320
+
 /**
  * Media facts the renderer needs: which originals have responsive variants, and the
  * intrinsic size of each. Read once per render rather than per image.
@@ -259,7 +263,13 @@ export async function renderArticle(slug: string): Promise<string | null> {
       image: ogImageUrl(settings, site, {
         title: post?.metaTitle || item.title,
         featuredImage: post?.featuredImage,
-        desc: post ? description : undefined,
+        // The CARD's description, which is not the search snippet and should not be capped
+        // like one. `description` above is bounded by EXCERPT_MAX_CHARS (200) because a
+        // meta description longer than that is truncated by the engine anyway; the card has
+        // six lines of its own to fill, and a share preview that stops mid-thought after two
+        // of them is the reason it looked thin. An AUTHORED meta description still wins --
+        // those are words somebody chose -- and only the derived case runs longer.
+        desc: post ? clampExcerpt(post.metaDescription || toPlainText(item.content), OG_DESC_MAX) : undefined,
         date: post ? formatDate(post.date, settings.language) : undefined,
       }),
       ogType: post ? 'article' : 'website',

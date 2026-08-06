@@ -12,7 +12,7 @@ import { savePost } from '@/content/posts'
 import { getSettings, saveSettings } from '@/content/settings'
 import { clearCache } from '@/server/cache'
 import { createApp } from '@/web/app'
-import { renderOgCard } from '@/render/og-card'
+import { renderOgCard, OG_SIZE } from '@/render/og-card'
 
 const DIR = './.tmp/test-og'
 freshDatabase(DIR)
@@ -38,8 +38,17 @@ beforeEach(() => {
  * first — without that, every strip returns the same value. And the fourth channel is
  * alpha, a flat 255, which drags every average toward white.
  */
-async function strip(png: Uint8Array, top: number, height: number): Promise<[number, number, number]> {
-  const crop = await sharp(Buffer.from(png)).extract({ left: 0, top, width: 1200, height }).toBuffer()
+async function strip(png: Uint8Array, topFrac: number, heightFrac: number): Promise<[number, number, number]> {
+  // FRACTIONS of the image, not pixels. These were pixel offsets against a 1200x630 card,
+  // so raising the rasterisation density to 2x turned every one of them into a crop of the
+  // top-left quarter -- six tests failed at once, all of them reporting a colour from the
+  // wrong part of the picture rather than saying the size had changed.
+  const meta = await sharp(Buffer.from(png)).metadata()
+  const w = meta.width ?? 0
+  const h = meta.height ?? 0
+  const crop = await sharp(Buffer.from(png))
+    .extract({ left: 0, top: Math.round(h * topFrac), width: w, height: Math.max(1, Math.round(h * heightFrac)) })
+    .toBuffer()
   const { channels } = await sharp(crop).stats()
   return [channels[0]!.mean, channels[1]!.mean, channels[2]!.mean]
 }
@@ -48,33 +57,40 @@ const brightness = (rgb: [number, number, number]) => (rgb[0] + rgb[1] + rgb[2])
 const bytes = async (res: Response) => new Uint8Array(await res.arrayBuffer())
 
 describe('GET /og', () => {
-  it('renders a real 1200x630 PNG', async () => {
+  it('renders a real card at 2x, in the 1.91:1 ratio every scraper expects', async () => {
     const res = await get('/og?title=Hello%20world&site=blog.example.com')
     expect(res.status).toBe(200)
     expect(res.headers.get('content-type')).toBe('image/png')
     expect(res.headers.get('cache-control')).toContain('immutable')
 
+    // 1200x630 is the DESIGN; the PNG is that rasterised at 2x, because a card is opened
+    // on a phone and 72 DPI left the type visibly soft. The ratio is what scrapers key on
+    // and it must survive the change, so it is asserted rather than the width alone.
     const meta = await sharp(Buffer.from(await res.arrayBuffer())).metadata()
     expect(meta.format).toBe('png')
-    expect(meta.width).toBe(1200)
-    expect(meta.height).toBe(630)
+    expect(meta.width).toBe(OG_SIZE.width * 2)
+    expect(meta.height).toBe(OG_SIZE.height * 2)
+    expect(meta.width! / meta.height!).toBeCloseTo(OG_SIZE.width / OG_SIZE.height, 5)
   })
 
   it('draws the title: the card is not a blank rectangle', async () => {
     // The SAME strip on a card with a title and on one without, rather than two strips of
-    // one card: the base gradient runs light-to-dark diagonally, so comparing two bands of
-    // a single card measures the gradient, not the type. White words on a dark card can
-    // only make their own band brighter.
+    // one card: comparing two bands of a single card measures the layout, not the type.
+    //
+    // The comparison INVERTED when the card became paper. Dark words and a yellow stroke on
+    // a light card can only make their own band darker, where white words on the old dark
+    // gradient could only make it brighter. A test that had kept the old direction would
+    // have passed for the wrong reason on a blank card and failed on a good one.
     const titled = await bytes(await get('/og?title=Hello%20world'))
     const blank = await bytes(await get('/og'))
-    const band = (png: Uint8Array) => strip(png, 440, 120).then(brightness)
-    expect(await band(titled)).toBeGreaterThan((await band(blank)) + 8)
+    const band = (png: Uint8Array) => strip(png, 0.35, 0.2).then(brightness)
+    expect(await band(titled)).toBeLessThan((await band(blank)) - 8)
   })
 
   it('survives a title in Vietnamese, which is why three font subsets are loaded', async () => {
     const res = await get(`/og?title=${encodeURIComponent('Đường đi khó, không khó vì ngăn sông')}`)
     expect(res.status).toBe(200)
-    expect((await sharp(Buffer.from(await res.arrayBuffer())).metadata()).width).toBe(1200)
+    expect((await sharp(Buffer.from(await res.arrayBuffer())).metadata()).width).toBe(OG_SIZE.width * 2)
   })
 
   it('renders an empty title rather than failing', async () => {
@@ -87,11 +103,11 @@ describe('GET /og', () => {
     // fetching, a public URL on the blog becomes a way to probe the host's network.
     const res = await get('/og?title=X&bg=http://169.254.169.254/latest/meta-data/')
     expect(res.status).toBe(200)
-    // The untouched gradient is neutral grey, so red and blue sit within a few points of
-    // each other. A fetched background would almost certainly break that.
-    const [r, , b] = await strip(await bytes(res), 0, 120)
+    // With nothing fetched the top of the card is bare paper: neutral (red and blue within
+    // a few points) and light. A fetched background would almost certainly break both.
+    const [r, , b] = await strip(await bytes(res), 0, 0.2)
     expect(Math.abs(r - b)).toBeLessThan(15)
-    expect(brightness([r, 0, 0])).toBeLessThan(30)
+    expect(brightness([r, r, r])).toBeGreaterThan(200)
   })
 
   it('refuses an off-origin font for the same reason', async () => {
@@ -137,26 +153,30 @@ describe('the card over a background image', () => {
     return `data:image/jpeg;base64,${jpeg.toString('base64')}`
   }
 
-  it('darkens the bottom of the card so white text stays readable', async () => {
-    // THE regression this describe block exists for. satori ignores `inset: 0`, so the
-    // first version of the overlay collapsed to zero height and the card came back as
-    // white type on a bright orange photograph: a perfectly valid 1200x630 PNG that nobody
-    // could read. Every structural assertion still passed. Looking at the picture is what
-    // found it, and this is what defends the fix.
+  it('keeps the photograph out of the words: a band on top, paper underneath', async () => {
+    // What replaced the wash, and the same failure it was defending against.
+    //
+    // The old card laid white type over the whole photograph and relied on a dark gradient
+    // to stay legible; satori ignores `inset: 0`, that overlay once collapsed to zero
+    // height, and the result was white words on bright orange -- a perfectly valid PNG that
+    // nobody could read. The picture is now a BAND across the top and the words sit on
+    // paper below it, so there is no scrim to collapse. The assertion is that the two are
+    // actually separate: the photograph's band is the photograph, and where the words are
+    // is paper.
     const png = await renderOgCard({
       title: 'With a cover image', date: 'January 1, 2026', bg: await brightBackground(),
     })
-    const top = brightness(await strip(png, 0, 120))
-    const bottom = brightness(await strip(png, 500, 130))
+    const band = await strip(png, 0.05, 0.2)
+    const words = await strip(png, 0.55, 0.2)
 
-    // The wash runs 0.25 to 0.88, so the bottom must be far darker than the top. Relative
-    // rather than an absolute threshold: the point is the gradient, not one exact colour.
-    expect(bottom).toBeLessThan(top * 0.7)
+    expect(band[0] - band[2]).toBeGreaterThan(60)      // the band is the orange photograph
+    expect(Math.abs(words[0] - words[2])).toBeLessThan(20) // where the words are is neutral
+    expect(brightness(words)).toBeGreaterThan(brightness(band))
   })
 
   it('still shows the image: the card is not just the wash', async () => {
     const png = await renderOgCard({ title: 'With a cover image', bg: await brightBackground() })
-    const [r, , b] = await strip(png, 0, 120)
+    const [r, , b] = await strip(png, 0.05, 0.2)
     // Orange: red far ahead of blue. The fallback gradient is neutral grey, where the two
     // are within a few points, so this fails if the background were silently dropped —
     // which is exactly what happens if the image is passed as a URL instead of a data URI.
@@ -177,7 +197,24 @@ describe('open graph tags', () => {
     expect(html).toContain('<meta name="twitter:card" content="summary_large_image">')
     // The card carries the post's own lines, not the site's.
     expect(html).toContain('title=A+Post')
-    expect(html).toContain('desc=The+excerpt')
+    // ...and its description comes from the BODY, not from the 200-character excerpt that
+    // feeds the deck and the search snippet. The card has six lines to fill and those are
+    // different jobs; a share preview that stopped mid-thought after two lines was the
+    // reason it looked thin. See OG_DESC_MAX in web/article.ts.
+    expect(html).toContain('desc=body')
+  })
+
+  it('lets an authored meta description win over the body', async () => {
+    // The half of that rule which protects the author: words somebody chose are never
+    // replaced by the opening of the article.
+    await saveSettings({ title: 'My Blog', siteUrl: SITE })
+    await savePost({
+      title: 'A Post', content: 'the body text', status: 'published', date: PAST,
+      metaDescription: 'Chosen words',
+    })
+    const html = await get('/a-post').then((r) => r.text())
+    expect(html).toContain('desc=Chosen+words')
+    expect(html).not.toContain('desc=the+body+text')
   })
 
   it('gives a term page its name over the domain', async () => {
