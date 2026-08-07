@@ -32,14 +32,24 @@ in `src/content/themes.ts`, called once in `src/web/layout.ts`:**
 
 ### Variation axes are trimmed, not shipped whole
 
-The bundled files are already trimmed: `wght` clamped to 400-700, **`opsz` pinned to 18**
-([ADR 0009](decisions/0009-pin-optical-size-axis.md)). The tool that did it,
-`scripts/subset-font-axes.py`, is NOT in this repository — it lived with the frozen tree —
-so this is a fact about the committed files rather than a command you can run. Replacing a
-font file means reproducing the trim yourself (`fonttools` + `brotli`, `instancer` with
-`opsz=18` and `wght=400:700`) and keeping the `@font-face` `font-weight` range in
-`src/render/font-faces.ts` truthful. Ship an untrimmed face and the numbers below are the
-size you give back.
+`wght` is clamped to 400-700 and **`opsz` is pinned to 18** ([ADR 0009](decisions/0009-pin-optical-size-axis.md)),
+and the command that does it is [`scripts/ops/subset-fonts.py`](../scripts/ops/subset-fonts.py):
+
+```
+pip install fonttools brotli zopfli
+python3 scripts/ops/subset-fonts.py --check    # report, write nothing
+python3 scripts/ops/subset-fonts.py --write    # rebuild the files
+```
+
+It pulls the upstream faces, instances the axes, subsets to the ranges
+[`src/render/font-faces.ts`](../src/render/font-faces.ts) declares, and refuses to write a
+file that lost a positioning feature or a declared codepoint. Both of those guards exist
+because both failures happened while it was being written: an explicit `--layout-features`
+list drops `kern`/`mark`/`mkmk` and yields a font that measures 26% smaller and sets badly,
+and a Vietnamese subset with no combining marks silently loses mark attachment.
+
+For a long time this section named `scripts/subset-font-axes.py`, which has never been in
+this tree. The one operation the whole font budget rests on was the one nobody could run.
 
 The `opsz` axis doubled the two book serifs. Literata carries 42% fewer glyphs than Inter
 yet was 2.2× its size, entirely because `gvar` must store deltas for every glyph across
