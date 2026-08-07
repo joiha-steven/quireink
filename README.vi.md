@@ -1,6 +1,6 @@
 <div align="center">
 
-# quire**INK** &nbsp;`2.0.0`
+# quire**INK** &nbsp;`2.0.1`
 
 **Một cái blog bạn tự host, và AI agent có thể vận hành thay bạn.**
 Một tiến trình. Hai tệp SQLite. Không tài khoản đám mây nào trong đường đi.
@@ -49,7 +49,7 @@ Có ba thứ định hình nó.
 
 Bạn được đọc, sửa, chạy và fork theo [PolyForm Noncommercial](./LICENSE).
 
-> **2.0.0 ra ngày 30/07/2026**, đang chạy bản demo ở trên và blog riêng của tác giả tại
+> **2.0.1 ra ngày 07/08/2026**, đang chạy bản demo ở trên và blog riêng của tác giả tại
 > [manhhung.me](https://manhhung.me). Trước khi phát hành, cả dự án được audit bằng cách
 > **đo site đang chạy** chứ không phải đọc mã nguồn.
 > [Changelog](./CHANGELOG.md) có đủ những gì đã đổi.
@@ -63,6 +63,7 @@ Bạn được đọc, sửa, chạy và fork theo [PolyForm Noncommercial](./LI
 | 🖋️&nbsp;**Viết** | Một trình soạn thật, TipTap 3 trên nền Markdown, thanh công cụ dính lại khi bạn cuộn. Thả ảnh vào là nó tự cắt đủ cỡ cho mọi màn hình. Bảng, video, cước chú, callout, **công thức toán**, Spotify và Apple Music. Nó tự lưu trong lúc bạn gõ, giữ ba bản gần nhất, và giữ bài lại chờ tới sáng thứ Ba nếu bạn muốn |
 | 🏠&nbsp;**Trang chủ của bạn** | Cho hiện danh sách bài, hoặc một trang bạn tự viết, hoặc dựng hẳn một trang chủ dạng báo: bài dẫn, vài bài chọn, mỗi chuyên mục một hàng, mục đọc nhiều. Hợp cả với site đầy ảnh lẫn site chỉ có chữ. [Xem cách hoạt động](./docs/homepage.md) |
 | 🎨&nbsp;**Nhìn thế nào** | Sáu bảng màu, mỗi bảng có bản sáng và bản tối. Bốn font đọc dựng sẵn, hoặc tải font của bạn lên. Mọi cỡ chữ trên trang đều đến từ một vai trò bạn chỉnh được, nên một lần đổi là cả trang đổi theo chứ không phải sửa từng tiêu đề |
+| 🖍️&nbsp;**Bút dạ quang** | `==chữ==` vẽ một nét bút thật dưới chữ, năm màu mực. Không phải cái hộp màu: là nét SVG đầu vát, xuống dòng thì tách thành từng nét riêng, màu đo từ ảnh chụp hộp bút thật. Tốn của người đọc 1.4 KB, và không tốn gì nếu bạn không dùng |
 | 🔍&nbsp;**Đọc** | Tìm kiếm trả lời ngay trong lúc gõ. Một cột bên lề liệt kê chuyên mục và thẻ, hoặc mục lục của chính bài đang đọc. Bài liên quan, thời gian đọc, thanh tiến độ. Và **chế độ sách**: hai cột trên nền giấy, có chữ cái đầu lớn |
 | 📈&nbsp;**Số liệu** | Thống kê không dùng cookie. Ai đọc bài nào, đọc tới đâu, từ đâu tới. Kèm nhật ký hoạt động, một thùng rác hoàn tác được, và một trang trợ giúp giải thích phần còn lại |
 | 🔎&nbsp;**Máy tìm kiếm** | Sitemap, RSS, `robots.txt`, `llms.txt`, và ảnh OG vẽ riêng cho từng bài. Đổi slug thì URL cũ vẫn tự chạy tiếp |
@@ -91,12 +92,14 @@ Bạn được đọc, sửa, chạy và fork theo [PolyForm Noncommercial](./LI
 
 Đây là số đo từ mạng, lần vào đầu tiên, chưa cache gì. Đúng bằng cái mà một người lạ cầm điện thoại phải chờ.
 
+Hai dòng CSS và JavaScript là artefact của bản build — giống nhau ở mọi bản cài, và đã đo lại cho 2.0.1. Các số tổng thì tuỳ site bạn viết bằng ngôn ngữ nào, vì font được cắt theo bảng chữ và trình duyệt chỉ tải đúng những dải mà trang bạn dùng.
+
 | | Trang chủ | Một bài | |
 |:---|---:|---:|:---|
 | **Số request** | 11 | 12 | |
 | **Tổng&nbsp;tải&nbsp;về** | **139 KB** | **140 KB** | 86 KB trong đó là font |
-| **JavaScript** | **4.4 KB** | **9.7 KB** | viết tay, không framework |
-| **CSS** | 7.6 KB | 7.6 KB | một tệp, đã nén, cache vĩnh viễn |
+| **JavaScript** | **3.3 KB** | **7.6 KB** | viết tay, không framework |
+| **CSS** | 8.0 KB | 8.0 KB | một tệp, đã nén, cache vĩnh viễn |
 | **Request&nbsp;bên&nbsp;thứ&nbsp;ba** | **0** | **0** | không CDN, không font host, không tracker |
 | **Lần vào sau** | ~23 KB | ~23 KB | chỉ tải lại HTML |
 

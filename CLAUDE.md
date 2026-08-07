@@ -13,7 +13,7 @@ gitignored `.env`.
 bun run check:all
 ```
 
-Typecheck, the six static guards (`filesize` · `css` · `nul` · `routes` · `type` ·
+Typecheck, the seven static guards (`filesize` · `css` · `nul` · `routes` · `type` ·
 `admin-kit` · `docs`) and `bun test`. About 2 minutes. A change under `src/render` or
 `src/web` also runs the golden compare.
 
