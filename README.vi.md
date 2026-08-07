@@ -92,16 +92,16 @@ Bạn được đọc, sửa, chạy và fork theo [PolyForm Noncommercial](./LI
 
 Đây là số đo từ mạng, lần vào đầu tiên, chưa cache gì. Đúng bằng cái mà một người lạ cầm điện thoại phải chờ.
 
-Hai dòng CSS và JavaScript là artefact của bản build — giống nhau ở mọi bản cài, và đã đo lại cho 2.0.1. Các số tổng thì tuỳ site bạn viết bằng ngôn ngữ nào, vì font được cắt theo bảng chữ và trình duyệt chỉ tải đúng những dải mà trang bạn dùng.
+Đo lại cho 2.0.1, tại origin chứ không qua CDN. Hai dòng CSS và JavaScript là artefact của bản build, giống nhau ở mọi bản cài; các số tổng là của chính site này — tiếng Việt, Literata để đọc và JetBrains Mono cho phần khung — vì font được cắt theo bảng chữ và trình duyệt chỉ tải đúng những dải trang bạn dùng. Riêng font đã giảm từ 86 KB xuống 67 KB ở 2.0.1 mà không bỏ đi họ chữ nào.
 
 | | Trang chủ | Một bài | |
 |:---|---:|---:|:---|
-| **Số request** | 11 | 12 | |
-| **Tổng&nbsp;tải&nbsp;về** | **139 KB** | **140 KB** | 86 KB trong đó là font |
+| **Số request** | 10 | 10 | |
+| **Tổng&nbsp;tải&nbsp;về** | **106 KB** | **114 KB** | 67 KB trong đó là font |
 | **JavaScript** | **3.3 KB** | **7.6 KB** | viết tay, không framework |
 | **CSS** | 8.0 KB | 8.0 KB | một tệp, đã nén, cache vĩnh viễn |
 | **Request&nbsp;bên&nbsp;thứ&nbsp;ba** | **0** | **0** | không CDN, không font host, không tracker |
-| **Lần vào sau** | ~23 KB | ~23 KB | chỉ tải lại HTML |
+| **Lần vào sau** | ~19 KB | ~24 KB | chỉ tải lại HTML |
 
 Nó giữ được như vậy nhờ vài quyết định khó đảo ngược.
 
