@@ -5,6 +5,11 @@ node_modules/
 dist/
 out/
 build/
+# ...and the scratch file `bun build --compile` leaves beside them: a 61 MB dotfile that
+# nothing cleans up. Untracked and unignored, it made `git status` dirty, and deploy.sh
+# refuses a dirty tree -- so running the build could block the next deploy with a message
+# about a file the deploy has nothing to do with.
+.*.bun-build
 
 # runtime data. SQLite databases and everything a reader or the owner uploaded: this is
 # the instance, not the product, and none of it belongs in a public repository.
