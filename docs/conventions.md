@@ -377,8 +377,8 @@ On any behavior change, update the matching doc in the SAME change (Working prin
   [`scripts/ops/quire-backup.sh`](../scripts/ops/quire-backup.sh) does.
 - **Audits** are dated snapshots, so they are write-only and they live with the author's
   notes rather than here. Read the latest first so a pass starts from the last clean line.
-- **Versioning (owner's rule — do NOT auto-bump):** the version is **`2.0.0`**, released
-  2026-07-30. From 2.0 onward the number is **semver and means something**, which is the change
+- **Versioning (owner's rule — do NOT auto-bump):** the version is **`2.0.1`**, released
+  2026-08-07. From 2.0 onward the number is **semver and means something**, which is the change
   from the 1.5.x era where `x` was a running counter: MAJOR for a break in how the thing is
   installed or run, MINOR for a feature, PATCH for a fix. **Never bump any of the three on your
   own** — a release is the owner's call, and so is the number. Ship the work, write the
@@ -386,6 +386,9 @@ On any behavior change, update the matching doc in the SAME change (Working prin
 - **Cutting a release** (only when asked): `bun run check:all` exits 0 and `bun run build`
   produces the binary; the CHANGELOG entry is written and dated; push `main`; then
   `gh release create v<version> --title "v<version> — <tagline>" --notes-file <file>`.
-  The version lives in exactly **three** tracked places — `package.json`, the README title
-  (`# **quire**blog  <version>`), and this line — plus the CHANGELOG entry heading. Grep the
-  old number before tagging; a stale one in the README is the usual miss.
+  The version lives in exactly **four** tracked places — `package.json`, the title line of
+  **both** READMEs (`# quire**INK** <version>`), and this line — plus the CHANGELOG entry
+  heading. It said three and named `# **quire**blog`, from before the rename and before
+  `README.vi.md` existed, so the instruction for finding the stale copy was itself a stale
+  copy. `grep -rn '<old>' package.json README.md README.vi.md docs/conventions.md` before
+  tagging; a number left behind in a README is the usual miss.

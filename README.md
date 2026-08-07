@@ -1,6 +1,6 @@
 <div align="center">
 
-# quire**INK** &nbsp;`2.0.0`
+# quire**INK** &nbsp;`2.0.1`
 
 **A blog you host yourself, and an AI agent can run for you.**
 One process. Two SQLite files. No cloud account anywhere in the path.
@@ -49,7 +49,7 @@ Three things shaped it.
 
 You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE).
 
-> **2.0.0 came out on 2026-07-30** and runs the demo above plus the author's own blog at
+> **2.0.1 came out on 2026-08-07** and runs the demo above plus the author's own blog at
 > [manhhung.me](https://manhhung.me). Before it shipped, the whole thing was audited by
 > measuring the running site rather than reading the source. The
 > [changelog](./CHANGELOG.md) has everything that changed.
@@ -63,6 +63,7 @@ You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE).
 | 🖋️&nbsp;**Writing** | A real editor, TipTap 3 over Markdown, with a toolbar that stays put while you scroll. Drop an image in and it gets resized for every screen. Tables, video, footnotes, callouts, **mathematics**, Spotify and Apple Music. It saves as you type, keeps your last three versions, and can hold a post until Tuesday morning |
 | 🏠&nbsp;**Your front page** | Show the post list, or any page you wrote, or build a front page: a lead story, a few picks, a row per category, most read. Works for a site full of photos and for one that is only words. [How it works](./docs/homepage.md) |
 | 🎨&nbsp;**How it looks** | Six palettes, each with a light and a dark version. Four reading fonts, or upload your own. Every text size on the page comes from a role you can tune, so one change moves the whole page instead of one heading |
+| 🖍️&nbsp;**A highlighter** | `==text==` draws a real pen stroke under the words, in five inks. Not a coloured box: an SVG stroke with chisel ends that breaks per line, drawn from pigments measured off a photograph of an actual pen box. Costs a reader 1.4 KB, and nothing at all if you never use it |
 | 🔍&nbsp;**Reading** | Search that answers as you type. A rail down the side with your categories and tags, or the contents of the post you are in. Related posts, reading time, a progress bar. And **book mode**: two columns on paper, with a drop cap |
 | 📈&nbsp;**Numbers** | Analytics without cookies. Who read what, how far down they got, where they came from. Plus an activity log, a trash you can undo, and a help page that explains the rest |
 | 🔎&nbsp;**Search engines** | Sitemap, RSS, `robots.txt`, `llms.txt`, and an OG image drawn per post. Rename a slug and the old URL keeps working on its own |
@@ -91,12 +92,14 @@ You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE).
 
 These are off the network, first visit, nothing cached. It is what a stranger on a phone actually waits for.
 
+The CSS and JavaScript rows are build artefacts and are the same bytes on every install; they were re-measured for 2.0.1. The totals depend on what your site is written in, because the fonts are cut per script and a browser fetches only the ranges your pages use.
+
 | | Home | A post | |
 |:---|---:|---:|:---|
 | **Requests** | 11 | 12 | |
 | **Total&nbsp;transferred** | **139 KB** | **140 KB** | 86 KB of that is the fonts |
-| **JavaScript** | **4.4 KB** | **9.7 KB** | written by hand, no framework |
-| **CSS** | 7.6 KB | 7.6 KB | one file, minified, cached forever |
+| **JavaScript** | **3.3 KB** | **7.6 KB** | written by hand, no framework |
+| **CSS** | 8.0 KB | 8.0 KB | one file, minified, cached forever |
 | **Third-party&nbsp;requests** | **0** | **0** | no CDN, no font host, no tracker |
 | **Coming back** | ~23 KB | ~23 KB | only the HTML is fetched again |
 

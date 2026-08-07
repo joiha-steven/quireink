@@ -1,5 +1,258 @@
 # CHANGELOG
 
+## 2026-08-07 — Quire Ink 2.0.1
+
+**The product has a name, a licence and three features it did not have on 2026-07-30.** Sixty-nine
+commits. Most of them are fixes, and nearly every fix in the list below was found the same way:
+by driving the running site in headless Chromium and measuring it, rather than by reading the
+source. `check:all` is 1,273 tests, 7 static guards and 45 golden fixtures compared byte for byte.
+
+The entry dated 2026-07-31 below is part of this release.
+
+### It is called Quire Ink now
+
+`quireink.com` was bought, so [ADR 0016](docs/decisions/0016-rename-to-quire-ink.md) moved the
+name with the domain and **[demo.quireink.com](https://demo.quireink.com)** became a public demo
+instance — `manhhung.me` had been doubling as the showroom. The wordmark is **quireINK**, shipped
+as outlines in `src/brand-art.ts`: `quire` in Inter, `INK` in JetBrains Mono, the project's own
+two-face system stated as a logo. Outlines rather than live text for three reasons, only the
+first aesthetic — `/login` must not wait for a font, the admin renders in whatever chrome face
+the owner picked, and Literata is absent from most pages. `Qi` is the compact mark for the app
+icon, the favicon and the collapsed rail; both are generated from one module, so the icon cannot
+go stale again the way it had (it still read `vb`, two renames back, because nobody opens a 512px
+file).
+
+Three names deliberately did not move: `quire.db` and `analytics.db` (renaming them breaks every
+backup archive already written), the `__Host-` session cookie (renaming it signs everybody out on
+deploy), and the systemd unit.
+
+### Licence: MIT → PolyForm Noncommercial 1.0.0
+
+MIT grants the right to sell, which was never the intent.
+[ADR 0015](docs/decisions/0015-relicense-polyform-noncommercial.md) records the change and the
+dependency audit behind it (331 packages, all copyleft-compatible, so AGPL stays available).
+Use, modification, redistribution and a patent grant are kept for **any noncommercial purpose**,
+read generously: your own blog, a hobby project, study, research, charities, schools, public
+research bodies, government. Commercial use is outside the grant and needs a separate licence.
+
+Quire Ink is therefore **source-available, not open source**, and every claim to the contrary in
+the tree was corrected rather than softened.
+
+**Not retroactive, and it cannot be.** Everything through `v2.0.0` was MIT and stays MIT for any
+copy already taken.
+
+### Mathematics
+
+`$$M \times V = P \times Q$$` used to publish those characters verbatim: the dollar sign means
+nothing in Markdown, so `marked` passed it through. [ADR 0020](docs/decisions/0020-mathematics-as-mathml.md).
+
+**Temml renders the TeX to MathML on the server, so a reader downloads nothing extra for it** —
+no script, no stylesheet, no font file. That is the only affordable answer against a whole-site
+budget of 4.4 KB: KaTeX ships ~23 KB of CSS plus a font family before it draws a glyph, and
+MathJax runs in the reader's browser. KaTeX's own `output: 'mathml'` was the near-miss — that
+mode was built as an accessibility track beside the HTML it actually draws, and standalone it
+renders visibly worse.
+
+`$…$` carries **Pandoc's three guards**, and on a blog that writes about money they are the
+load-bearing part: the first post that needed this was about the quantity theory of money, where
+`$5` and `$10` sit in the same paragraph as `$M \times V$`. A naive `\$(.+?)\$` reads `5 và ` as
+a formula and eats the prose between two prices. Every rejected sentence is a test.
+
+**The editor half was not optional.** With the server renderer complete, opening a post and
+saving it still doubled every backslash (`$$M \times V$$` → `$$M \\times V$$`) and ate `\(…\)`
+delimiters to markdown-it's `escape` rule. Neither throws; both destroy the author's source on a
+save they did not know was a rewrite.
+
+Two toolbar buttons, not one behind a menu — a standalone equation and a symbol inside a sentence
+are different gestures. Typing `\(x\)` or `$$x$$` converts on the spot; **`$…$` deliberately does
+not**, because an input rule fires on text already typed and cannot see the character coming
+next, which is exactly what Pandoc's third guard needs. A price must survive being typed.
+
+### A highlighter pen
+
+Bold and italic mark a word; a blockquote marks a block. Nothing marked the gesture in between —
+the one mark on a page that is a **reader's** rather than a typesetter's. `==text==` is that, and
+`==text==#green` picks one of five inks. [ADR 0018](docs/decisions/0018-highlighter-pen.md).
+
+The stroke is an SVG image, not a gradient and **not a mask**: masking clips the text along with
+the ink, and the first pass rendered "mang dấu vết" as "mang uau vet". Two paths per stroke,
+chisel ends, and `box-decoration-break: clone` so a highlight running past the end of a line
+breaks into one stroke per line instead of a box wrapped around both.
+
+The five pigments are **measured off a photograph of a real pen box**, then verified by reading
+pixels back off the rendered page. The pen is chartreuse (hue 73), not the golden yellow the
+obvious guess reaches for. Dark mode failed AA twice before it worked. Whole cost: **1.4 KB gzip**,
+and the default stroke emits no bytes at all.
+
+### A composed front page
+
+[ADR 0014](docs/decisions/0014-homepage-modes.md), in two parts. `/` can now serve the post list
+(the default, byte for byte what it always served), **any page you wrote**, or a **built front
+page**: a lead story, a few picks, a row per category, most read, latest.
+
+The design came from photographing the NYT front page rather than remembering it, and the finding
+that shaped everything is that **most stories there carry no picture**. Hierarchy is size, then
+standfirst, then image, then rules — so the two site kinds are one grammar with the dials moved,
+and a site with no images looks finished rather than broken.
+
+Both branches resolve **per request**, not when the routes are registered: `createApp()` runs once
+at boot and the mode is a setting, so a route table built from settings would need a restart and
+would serve the old shape until it got one.
+
+### The frozen 1.x tree is gone
+
+[ADR 0019](docs/decisions/0019-remove-the-frozen-tree-from-the-working-copy.md). It was 438
+tracked files against 434 in `src/`, 495 MB on disk, two guards carrying a special case for it,
+and twenty live documents apologising for its paths. **Preserved at tag `v1-final`.** The one-shot
+PostgREST importer went with it, along with `@supabase/postgrest-js` and 972 lines of
+transform/verify/write — it described a migration that had happened and cannot happen again.
+`src/import/wordpress.ts` is unrelated and stays. `golden/v1/corpus/` is **not** part of this: it
+is the golden compare's contract, read on every run.
+
+---
+
+### Fixes: things that were losing data or losing readers
+
+- **A partial settings save reset the homepage mode.** Three sanitizers hard-coded their default
+  where every sibling honoured the `fallback` argument, and `saveSettings` takes a *partial* — so
+  a patch that never mentioned `home` silently moved the homepage back to the post list and
+  turned a text-led front page image-led. Reachable, and not by accident: the MCP
+  `update_settings` tool builds a patch of at most title, description and `showDescription`.
+- **Every redirect the owner had ever stored did nothing.** The table has had full CRUD since the
+  port and no reader, so a redirect created in Settings → SEO appeared in the list and never
+  fired — and the automatic 301 a slug rename adds never fired either. **Every rename since the
+  port quietly threw away the old URL and whatever ranked at it.**
+- **A trailing slash was a 404.** No route ends in a slash and Hono does not match one, so
+  `/some-post/` fell through everything. Fine for a URL somebody typed; fatal for a site that
+  *moved* here, because every WordPress permalink carries one. Measured on a real export: 468 old
+  URLs shaped `https://example.com/{slug}/`, every one of them answering 404.
+- **Redirects pointed at `http://` behind a proxy.** TLS terminates at nginx, so the origin sees
+  `http` and every `Location` was resolved against that. A browser paid an extra hop; a client
+  that refuses https → http simply stopped. The test asserted the absolute form, which is why it
+  shipped.
+- **A save landing mid-warm never purged the CDN.** `warmThenPurge` opened with `if (running)
+  return`, which reads like de-duplication and is data loss: a warm walks every public post and
+  measured 8.4s on a 77-post site, so any save inside that window never reached `purgeEdge`.
+  Measured `Age: 824` against an `s-maxage` of 60.
+- **A 500 on any public page** returned `{"error":"Internal error"}` in the browser window —
+  unstyled, no viewport meta, no way back. The three locale strings for a real error page had
+  been in all six languages since the port with nothing printing them.
+- **A miss on any path of two segments or more** fell through to Hono's built-in `404 Not Found`
+  in `text/plain`. `/{slug}` answers a one-segment miss properly, so the only case anyone checked
+  always looked right — while an imported WordPress site sends every old inbound link shaped
+  `/2024/01/slug` straight here.
+
+### Fixes: the reading surface
+
+- **A five-column table panned the whole article sideways on a phone.** Measured at 390px: a
+  table is 484px at its narrowest and cannot be squeezed below its own content, so the document
+  went to 516px and every paragraph travelled with it. `pre` has carried `overflow-x` since it
+  was written and `.math-block` was given it deliberately; tables were the third case, and two
+  comments in the tree asserted they already scrolled.
+- **A phone gave a sixth of its width to gutters and got half the measure.** The shell padded
+  2rem a side at every width, and above the phone breakpoint that is dead weight because the
+  42rem max-width binds first — so it only ever spent anything where there was nothing spare. At
+  390px the article set **33 characters to the line against 67 on a laptop**. Now 37 and 9 lines
+  where it was 33 and 10; a 360px Android goes 30 to 33.
+- **The newspaper filed its lead stories two levels below the section names.** The outline read
+  h1, h3, h3, h3, h2. Size comes from a class and never from the tag, which is also why no
+  screenshot was ever going to catch it.
+- **The section headings missed the mono-chrome tracking correction.** Under a JetBrains Mono
+  chrome the word "Typography" set 90.2px as a section label and 82.7px as the kicker three lines
+  below it. Same font, same size, same screen, 9% apart.
+- **Every palette was tuned to land exactly on the contrast minimum**, and one landed on it to
+  the decimal — ocean's meta measured 4.50:1 against AA's 4.50. All six clear **5.0:1** now,
+  which is the bar this repository already holds its own highlighter to. The corrections are
+  three to six hex points each. A new test computes the ratio for every role in every preset.
+- **The front page's own links were 20px tall** against the 24px minimum, on a phone, where the
+  mobile sheet already gave the drawer rows, the tag links and the footer a real target.
+- **A teaser ended on "a field of…"** — an ellipsis after a preposition. It prefers a full stop
+  now when one falls in the last 40% of the budget. No stop-word list: this product ships a UI in
+  six languages, and a full stop is punctuation rather than vocabulary.
+- **A site with a dark logo had no logo at all in dark mode.** The rule hiding the light mark
+  matched both marks and won on specificity. It shipped because the path had never rendered —
+  `logoDark` is opt-in and no instance had set one.
+- **The grid toggle was visible on every page that has no list**, announcing
+  `aria-pressed="false"` for a list that was not there. `[hidden]` is a general rule now, not a
+  patch per component.
+- **The mobile sidebar drawer panned 32px on every phone** (2026-07-31, below).
+- The comment thread became a card on the page's own terms, with the body set at the article
+  size instead of two steps smaller, and a date that comes before its time in every locale —
+  Vietnamese had been rendering `lúc 21:58 23 tháng 6, 2026`.
+- Links prefetch eagerly; prerender stays on hover. Measured from a Vietnamese home connection:
+  TTFB is ~145ms on an edge hit, ~185ms on a miss, ~65ms straight to the origin, and `moderate`
+  prerender needs a ~200ms hover dwell that a normal click never waits for.
+
+### Fixes: the share card
+
+- **A Japanese title came back as twenty black boxes reading NO GLYPH.** satori has no system
+  fallback and returns a perfectly valid PNG of the right size, so nothing failed: the route
+  answered 200 and every structural assertion passed. The card ships three Inter subsets, so ja,
+  ko, zh, ru, el, th and ar were all reaching it — and the first three are configurations this
+  product explicitly supports. Both builders check every line they would draw now, and fall back
+  to the site's own image or to no card. Shipping a CJK face is megabytes and stays an open
+  decision rather than something slipped into a bug fix.
+- **The card was a dark gradient with white text**, which is what every generated card on the web
+  looks like and which said nothing about what was on the other side of the link. It is paper
+  now, with the title and the date under the **same highlighter** the reader meets inside an
+  article. Rasterised at 2x — satori emits SVG, so the resolution was always sharp's to choose,
+  and 72 DPI left the type soft on the phone where a shared link is opened.
+- **The pen on the card was not the pen on the page.** A copy of the stroke had drifted from the
+  original — the denser lower band ended four numbers apart — under a comment claiming a test
+  pinned the two together. There was no such test. `render/pen.ts` holds the pen now, and the
+  card's own pixels are asserted.
+
+### Fixes: import, security, abuse
+
+- **A WordPress gallery lost most of its photographs.** The figure rule read
+  `querySelector('img')`, which is the first match anywhere in the subtree, and returned it as
+  the replacement for the whole block: importing a real site brought over **255 of its 407
+  photographs** and said nothing. One page kept 30 of 169.
+- **`collapseBlob` stripped `/uploads/` anywhere it appeared**, so an imported post referencing
+  another site's `/wp-content/uploads/x.jpg` was silently rewritten to `/wp-contentx.jpg` on save.
+- **Every never-published WordPress draft imported dated today**, because WordPress writes a zero
+  GMT date and `??` took the zero.
+- **`/og` was the expensive public route and the only one without a cap.** A cached page answers
+  in ~1ms; a card costs ~44ms, and the card is a pure function of its query string — so changing
+  one character of `?title=` misses the edge and the origin together. At 40 concurrent from one
+  unauthenticated client the median page went from 1.9ms to 10.6ms on a machine with cores to
+  spare; the self-hosting target is a 1–2 vCPU box.
+- Two dead-end code-scanning findings closed for real (a drifted HTML escaper in the newsletter,
+  biased sampling in recovery codes) and one documented as dismissed with the reason.
+
+### The repository stopped describing one blog
+
+`state/` was a worklog, a task list, a roadmap and five audits — all public, all about **one**
+blog: its domain, its server, its service name, what was wrong with it on five dates. None of it
+was a credential and none of it was a leak. It was somebody else's server, published for no
+benefit to any reader. It moved to a private sibling with the two vhosts that named a domain, a
+cert path and an internal port ([ADR 0017](docs/decisions/0017-move-state-and-instance-config-private.md)).
+The backup script stopped being named after one instance, `backups.md` stopped citing the
+author's own post count as evidence, and the delivered plan stopped declaring "there are no
+third-party self-hosters" — a sentence every clause of which had become false.
+
+Also: **794 generated files untracked** (12.5 MB of design-sync output swept in by a `git add -A`),
+the parity checklist's 232 never-ticked boxes replaced by an inventory that reads as one, and
+`docs/features.md` split into a directory at its cap.
+
+### Guards
+
+- **`check:docs` gained a sixth rule**: a repository path written as code in a live document has
+  to exist. Rule 1 only ever resolved links *between* markdown files, which is how CLAUDE.md's
+  debug router — the first thing anyone opens when something breaks — spent months pointing at
+  two source files that are not there. It immediately found worse: `self-host.md` documented a
+  migration command deleted a release earlier, and `performance.md` told you to run a script that
+  has never been in this tree.
+- **`check:admin-kit`** is new: each admin primitive has a signature belonging to exactly one
+  file, and the check fails if a screen re-types it.
+- **`check:css-literal` and `check:type-roles` discover their sheets** instead of listing them.
+  Both lists had gone stale — `front.css.ts` and `utility.css.ts` were never in one of them, so
+  it reported "ok (6 sheets)" against files it had never opened.
+- **`noUnusedLocals` and `noUnusedParameters`** on in all three projects: 15 dead declarations,
+  three dead exports, and **336 dead locale strings** across twelve files.
+- `check:filesize` and `check:docs` warn from 90–95% of a cap, so the person who adds the line
+  that crosses it is not the person blocked by it.
+
 ## 2026-07-31 — the mobile sidebar stopped panning
 
 **The drawer scrolled sideways by 32px on every phone, and two separate mistakes had to line
