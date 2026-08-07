@@ -166,8 +166,8 @@ body:has(.book-overlay[open]){overflow:hidden}
   padding:clamp(4px,2vh,24px) 0;transition:opacity .13s ease}
 .book-flow{height:100%;column-gap:56px;column-width:var(--book-col-w,340px);column-fill:auto;
   max-width:none;
-  /* Western book touches: oldstyle figures and discretionary ligatures where the reading
-     face carries them. A sans quietly ignores both. */
+  /* Oldstyle figures and discretionary ligatures. Both were missing from every subset
+     until scripts/ops/subset-fonts.py put them back, so this had never rendered. */
   font-feature-settings:"onum" 1,"liga" 1,"dlig" 1}
 /* Media stays column-width and never taller than a page, so nothing overflows the spread. */
 .book-flow :is(img,video,iframe,pre,table,blockquote,figure){break-inside:avoid}
