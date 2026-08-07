@@ -71,7 +71,12 @@ type Face = {
  */
 const FACES: Record<string, Face[]> = {
   inter: [{ family: 'Inter', slug: 'inter', weight: '400 700', ranges: TEXT }],
-  sourcesans: [{ family: 'Source Sans 3', slug: 'sourcesans', weight: '200 900', ranges: TEXT }],
+  // 400-700 like every other family, and the range is the file's, not a preference: the
+  // product offers 400/500/600/700 (FONT_WEIGHTS) and nothing else, so 200-900 was storing
+  // variable deltas for eight weights nobody can select. Rebuilt from upstream and clamped,
+  // sourcesans-latin lands UNDER the 200-900 file it replaces while covering 20 more
+  // codepoints -- 35,608 B unclamped against 28,460 clamped, on the same source.
+  sourcesans: [{ family: 'Source Sans 3', slug: 'sourcesans', weight: '400 700', ranges: TEXT }],
   literata: [{ family: 'Literata', slug: 'literata', weight: '400 700', ranges: TEXT }],
   sourceserif: [{ family: 'Source Serif 4', slug: 'sourceserif', weight: '400 700', ranges: TEXT }],
   'jetbrains-mono': [

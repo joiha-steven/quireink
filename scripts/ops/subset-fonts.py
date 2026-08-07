@@ -88,30 +88,44 @@ WGHT_RANGE = (400, 400, 700)
 # and every ASCII digit lives in `latin`, so asking for it on `latin-ext` buys nothing --
 # measured on Literata: +3,700 B for oldstyle forms of numerals that subset does not have.
 # `dlig` costs nothing either way and is left to the default.
+BOOK_SERIFS = ("literata", "sourceserif")
+
+
 def features(slug: str, subset: str) -> str:
     if slug == "jetbrainsmono":
         return "--layout-features-=calt"
-    if subset == "latin":
+    # ...and only the BOOK serifs, because only they have oldstyle figures to restore.
+    # Inter has none and a monospace has none, so asking is not merely useless there, it
+    # makes the build fail its own check for a feature the source never carried.
+    if slug in BOOK_SERIFS and subset == "latin":
         return "--layout-features+=onum,dlig"
     return ""
 
 
-# slug -> (upstream url, or None to re-subset the file already shipped; ranges)
+GF = "https://github.com/google/fonts/raw/main/ofl"
+
+# One entry per FILE the site serves, because the mapping is not one-per-family: IBM Plex
+# Mono has no variable axis, so its two weights are two sources and two outputs. Keyed by
+# the slug src/render/font-faces.ts asks for.
+#
+#   url  -- upstream source, or None to re-subset the file already shipped
+#   axes -- "trim" to instance the variable axes, None to leave a static font alone
+#
+# Everything comes from upstream. The first pass fed the SHIPPED file back in for JetBrains
+# Mono, on the argument that removing one feature from a known-good file is a smaller claim
+# than a rebuild -- true, but it made the script non-idempotent: subsetting its own output
+# re-rolls the compression and every run produced a diff of about thirty bytes. From
+# upstream it is reproducible, 432 B larger, and covers five more of its own declared
+# codepoints.
 FAMILIES = {
-    "literata": (
-        "https://github.com/googlefonts/literata/raw/main/fonts/variable/"
-        "Literata%5Bopsz,wght%5D.ttf",
-        TEXT,
-    ),
-    "sourceserif": (
-        "https://github.com/google/fonts/raw/main/ofl/sourceserif4/"
-        "SourceSerif4%5Bopsz,wght%5D.ttf",
-        TEXT,
-    ),
-    # No upstream: this one is purely SUBTRACTIVE. Re-subsetting the file already shipped
-    # cannot introduce a difference anywhere except the feature being removed, which is a
-    # far smaller claim to have to verify than a rebuild from a source that has moved on.
-    "jetbrainsmono": (None, MONO),
+    "literata": (f"https://github.com/googlefonts/literata/raw/main/fonts/variable/"
+                 f"Literata%5Bopsz,wght%5D.ttf", TEXT, "trim"),
+    "sourceserif": (f"{GF}/sourceserif4/SourceSerif4%5Bopsz,wght%5D.ttf", TEXT, "trim"),
+    "inter": (f"{GF}/inter/Inter%5Bopsz,wght%5D.ttf", TEXT, "trim"),
+    "sourcesans": (f"{GF}/sourcesans3/SourceSans3%5Bwght%5D.ttf", TEXT, "trim"),
+    "plexmono-400": (f"{GF}/ibmplexmono/IBMPlexMono-Regular.ttf", MONO, None),
+    "plexmono-600": (f"{GF}/ibmplexmono/IBMPlexMono-SemiBold.ttf", MONO, None),
+    "jetbrainsmono": (f"{GF}/jetbrainsmono/JetBrainsMono%5Bwght%5D.ttf", MONO, "trim"),
 }
 
 
@@ -125,16 +139,29 @@ def fetch(url: str) -> str:
     return path
 
 
-def build(src: str, dest: str, unicodes: str, feature_arg: str, instance: bool) -> None:
+def build(src: str, dest: str, unicodes: str, feature_arg: str, axis_policy: str | None) -> None:
     from fontTools.ttLib import TTFont
     from fontTools.varLib import instancer
 
     font = TTFont(src)
-    if instance and "fvar" in font:
+    if axis_policy == "trim" and "fvar" in font:
+        # wght is CLAMPED, not pinned: the product sets 400, 500, 600 and 700 (FONT_WEIGHTS
+        # in themes.ts) and nothing outside them, so the deltas past either end are weight
+        # nobody can select. opsz is PINNED, which is the bigger and more contentious saving
+        # -- ADR 0009 records that a 32px heading now draws outlines drawn for 18px.
         axes: dict[str, object] = {"wght": WGHT_RANGE}
         if any(a.axisTag == "opsz" for a in font["fvar"].axes):
             axes["opsz"] = OPSZ_PIN
         font = instancer.instantiateVariableFont(font, axes, updateFontNames=False)
+    # `head` carries a created/modified timestamp and fontTools stamps `modified` with the
+    # clock on every save, so pin both: a rebuild should not differ because of when it ran.
+    #
+    # That does NOT make the output byte-reproducible, and it is worth writing down so the
+    # next person does not go looking. Two runs over the same source still differ by up to
+    # ~0.3% -- measured, and not fixed by PYTHONHASHSEED either, so the variance is inside
+    # woff2 compression rather than anything this script controls. Re-running therefore
+    # produces a small diff even when nothing changed. Do not re-run it for no reason.
+    font["head"].created = font["head"].modified = 0
     tmp = dest + ".tmp.ttf"
     font.save(tmp)
     cmd = [sys.executable, "-m", "fontTools.subset", tmp, f"--unicodes={unicodes}",
@@ -223,7 +250,7 @@ def main() -> int:
     total_before = total_after = 0
     failed = False
 
-    for slug, (url, ranges) in FAMILIES.items():
+    for slug, (url, ranges, axis_policy) in FAMILIES.items():
         print(f"\n{slug}")
         for subset, unicodes in ranges.items():
             arg = features(slug, subset)
@@ -232,7 +259,7 @@ def main() -> int:
             shipped = os.path.join(OUT, f"{slug}-{subset}.woff2")
             src = fetch(url) if url else shipped
             dest = os.path.join(stage, f"{slug}-{subset}.woff2")
-            build(src, dest, unicodes, arg, instance=url is not None)
+            build(src, dest, unicodes, arg, axis_policy)
 
             before = os.path.getsize(shipped) if os.path.exists(shipped) else 0
             after = os.path.getsize(dest)

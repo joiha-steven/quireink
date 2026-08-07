@@ -7,6 +7,9 @@ commits. Most of them are fixes, and nearly every fix in the list below was foun
 by driving the running site in headless Chromium and measuring it, rather than by reading the
 source. `check:all` is 1,273 tests, 7 static guards and 45 golden fixtures compared byte for byte.
 
+A reader on a default install with code in the post downloads **28% less font** than they did
+on 2.0.0, and nothing was removed from the product to get there.
+
 The entry dated 2026-07-31 below is part of this release.
 
 ### It is called Quire Ink now
@@ -98,6 +101,61 @@ and a site with no images looks finished rather than broken.
 Both branches resolve **per request**, not when the routes are registered: `createApp()` runs once
 at boot and the mode is a setting, so a route table built from settings would need a restart and
 would serve the old shape until it got one.
+
+### The webfonts, rebuilt
+
+Every self-hosted face is rebuilt from upstream by
+[`scripts/ops/subset-fonts.py`](scripts/ops/subset-fonts.py), which is committed — the doc
+that told you to run this step had been naming a file that has never existed in this tree,
+so the one operation the whole font budget rests on was the one nobody could reproduce.
+All eight families stay selectable; none was dropped.
+
+**Code ligatures are out of JetBrains Mono, and that is most of the saving.**
+`jetbrainsmono-latin` was 30,164 B for 229 characters, and 26 glyphs plus 138 GSUB lookups
+of it were the `calt` set: the thing that draws `=>` as an arrow and `!==` as a
+struck-through equals **with no exclamation mark left on screen**. Right in an editor,
+where you typed the line; wrong on a page, where a reader copies it. `--font-mono` resolves
+to this family on every install whatever typeface the owner picked, so any post with code
+was paying for it. **30,164 → 14,556 B.**
+
+**Oldstyle figures are back in the two book serifs.** `islands.css.ts` has asked book mode
+for `font-feature-settings:"onum" 1,"dlig" 1` since it was written, under a comment saying
+a sans would ignore it — and every face ignored it, because the subsetting had dropped
+`onum` and `dlig` from Literata and Source Serif alike. The one typographic flourish that
+mode advertises had never rendered. Restored to the `latin` subsets only: `onum`
+substitutes digits, every ASCII digit is in that range, and asking for it on `latin-ext`
+measured +3,700 B of nothing.
+
+**A Vietnamese subset was keeping its diacritics by accident.** `TEXT.vietnamese` declared
+no combining marks while `MONO.vietnamese` declared five, and that was not a slicing
+detail: GPOS `mark` attachment is what puts a tone mark on a vowel, and a subset with no
+mark to attach loses the feature outright. The shipped `latin` files were carrying
+U+0300/0301/0303/0309/0323 **outside their own declared range** to cover for it, so the CSS
+and the files disagreed in both directions at once. Declared properly, the vietnamese files
+keep `mark` and come out smaller. Checked on decomposed (NFD) text, which is what would
+have broken.
+
+**Source Sans stops shipping six weights nobody can pick.** It was the one family still
+carrying `wght 200..900`; the product offers 400/500/600/700 and nothing else. Rebuilt from
+upstream and clamped, `sourcesans-latin` lands under the file it replaces while covering 20
+more codepoints — 35,608 B unclamped against 28,532 clamped, from the same source.
+
+| What a reader downloads in fonts | 2.0.0 | 2.0.1 | |
+|:---|---:|---:|---:|
+| Default install, English, no code | 36,116 | **33,256** | −8% |
+| Default install, English, with code | 66,280 | **47,812** | −28% |
+| Default install, Vietnamese, with code | 79,704 | **60,000** | −25% |
+| Literata + JetBrains chrome, Vietnamese | 81,948 | **68,212** | −17% |
+| Source Sans + Plex Mono, English | 89,232 | **71,668** | −20% |
+
+Across all 21 files on disk: 473,448 → 448,756 B.
+
+Two failures are worth recording, because the script refuses to write on either now. An
+explicit `--layout-features` list drops `kern`/`mark`/`mkmk` along with everything else it
+does not name: that build measured **26% smaller and had no kerning at all**, and it looked
+like a win. And a rebuild that quietly stops covering a declared codepoint is a silent
+fallback face for that character, which is how the shipped files came to be missing eleven
+of their own.
 
 ### The frozen 1.x tree is gone
 
