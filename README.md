@@ -92,16 +92,16 @@ You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE).
 
 These are off the network, first visit, nothing cached. It is what a stranger on a phone actually waits for.
 
-The CSS and JavaScript rows are build artefacts and are the same bytes on every install; they were re-measured for 2.0.1. The totals depend on what your site is written in, because the fonts are cut per script and a browser fetches only the ranges your pages use.
+Re-measured for 2.0.1 against the origin, not through the CDN. The CSS and JavaScript rows are build artefacts and the same bytes on every install; the totals are this site — Vietnamese, Literata to read and JetBrains Mono for the furniture — because the fonts are cut per script and a browser fetches only the ranges your pages actually use. Fonts fell 86 KB to 67 KB in 2.0.1 without a face being dropped.
 
 | | Home | A post | |
 |:---|---:|---:|:---|
-| **Requests** | 11 | 12 | |
-| **Total&nbsp;transferred** | **139 KB** | **140 KB** | 86 KB of that is the fonts |
+| **Requests** | 10 | 10 | |
+| **Total&nbsp;transferred** | **106 KB** | **114 KB** | 67 KB of that is the fonts |
 | **JavaScript** | **3.3 KB** | **7.6 KB** | written by hand, no framework |
 | **CSS** | 8.0 KB | 8.0 KB | one file, minified, cached forever |
 | **Third-party&nbsp;requests** | **0** | **0** | no CDN, no font host, no tracker |
-| **Coming back** | ~23 KB | ~23 KB | only the HTML is fetched again |
+| **Coming back** | ~19 KB | ~24 KB | only the HTML is fetched again |
 
 It stays this way because of a few decisions that are hard to walk back.
 
