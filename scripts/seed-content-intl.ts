@@ -1,12 +1,20 @@
-// The demo's non-English posts, in the languages the bundled subsets actually cover.
+// EVERY non-English post, in the languages the bundled subsets actually cover. The three
+// sibling files split by category; this one splits by language and takes precedence, so a
+// German post about typography is here rather than in `seed-content-type.ts`.
 //
-// `seed-content.ts` has always CLAIMED these: its header names "Polish ogoneks, Czech
-// hačeks, Turkish dotless i and Icelandic eth", and a specimen block inside one post quotes
-// a line of each. What it did not have was a post in any of them, so the front page — the
-// thing anyone actually looks at — carried titles in English, Vietnamese, German and French
-// and nothing else. The claim was true of one blockquote and false of the demo.
+// That rule arrived late and by force. The split started as category-only, and Typography —
+// which is where a demo about letterforms puts most of its posts — came out at 429 lines
+// against a 400-line cap. Pulling the four non-English typography posts across fixed the
+// overflow, and left the two rules each meaning one thing instead of the file boundary
+// meaning "category, except when it does not".
 //
-// So these four exist to be SEEN AS TITLES, at the size a headline is set, where a stacked
+// `seed-content.ts` has always CLAIMED the harder scripts: its header names "Polish ogoneks,
+// Czech hačeks, Turkish dotless i and Icelandic eth", and a specimen block inside one post
+// quotes a line of each. What it did not have was a post in any of them, so the front page —
+// the thing anyone actually looks at — carried titles in English, Vietnamese, German and
+// French and nothing else. The claim was true of one blockquote and false of the demo.
+//
+// So these exist to be SEEN AS TITLES, at the size a headline is set, where a stacked
 // diacritic either has room above it or visibly does not. That is the whole argument for
 // subsetting by `unicode-range` (`src/render/font-faces.ts`), and it cannot be made by a
 // quotation buried three screens down.
@@ -99,6 +107,26 @@ Bu yüzden başlıkları büyük harfe *çevirmemek* en güvenli yoldur. Zaten o
 Işık, yığın, İstanbul. Üç kelime, dört farklı i.`,
   },
   {
+    title: 'Die Kunst der Kapitälchen',
+    slug: 'die-kunst-der-kapitaelchen',
+    excerpt: 'Echte Kapitälchen sind gezeichnet. Alles andere ist verkleinerte Versalschrift und sieht auch so aus.',
+    category: 'Typography', tags: ['small caps', 'craft'],
+    ago: 34,
+    body: `Kapitälchen sind der stillste Akzent, den die Typografie kennt. Sie heben ein Wort hervor, ohne die Zeile zu stören, weil sie die Höhe der Kleinbuchstaben behalten und trotzdem die Form der Großbuchstaben tragen.
+
+Der Unterschied zwischen echten und gefälschten Kapitälchen ist keine Feinheit. Echte sind eigens gezeichnet, mit kräftigeren Strichen und weiterem Abstand. Gefälschte entstehen, indem der Browser Versalien verkleinert — und dabei werden die Striche dünner als die der umgebenden Schrift, sodass das hervorgehobene Wort blasser wirkt als der Text, aus dem es herausstechen soll.
+
+## Wo sie hingehören
+
+An den Anfang eines Kapitels, für die erste Zeile nach einer Initiale. Für Abkürzungen, die sonst als Versalienblock die Zeile zerschneiden. Für Namen in einem Register.
+
+Nicht für ganze Absätze. Kapitälchen sind schwerer zu lesen als Kleinbuchstaben, weil ihnen die Ober- und Unterlängen fehlen, an denen das Auge die Wortform erkennt.
+
+## Ein Wort zur Sperrung
+
+Kapitälchen brauchen mehr Laufweite als Kleinbuchstaben, aus demselben Grund wie Versalien: Ihre Formen sind breiter und gleichmäßiger, und ohne zusätzlichen Raum kleben sie aneinander.`,
+  },
+  {
     title: 'Eð og þorn: tveir stafir sem lifðu af',
     slug: 'ed-og-thorn-tveir-stafir',
     excerpt: 'Þorn og eð stóðu einu sinni í ensku líka. Íslenska hélt þeim, og prentsmiðjurnar borguðu fyrir það.',
@@ -122,5 +150,104 @@ Enska notaði þorn líka, öldum saman. Hún missti hann ekki af málfræðileg
 Þorn og eð eru báðir háir stafir í máli þar sem broddstafir — á, é, í, ó, ú, ý — sitja ofan á miðhæðinni. Línubil sem dugir fyrir ensku dugir sjaldnast fyrir íslensku.
 
 Það þótti æði. Fjögur orð, og letrið er annaðhvort tilbúið eða ekki.`,
+  },
+  {
+    title: 'La chasse, l’approche et le gris typographique',
+    slug: 'la-chasse-et-l-approche',
+    excerpt: 'Trois mots français pour trois choses que l’anglais confond sous le mot spacing.',
+    category: 'Typography', tags: ['kerning', 'tracking', 'craft'],
+    ago: 48,
+    body: `Le français distingue ce que l'anglais mélange. La **chasse** est la largeur propre d'un caractère, gravée dans la fonte. L'**approche** est l'espace entre deux caractères. Le **gris typographique** est la teinte moyenne que produit un bloc de texte quand on le regarde de loin, les yeux mi-clos.
+
+Ces trois notions ne se règlent pas au même endroit, et les confondre est la source de la plupart des pages mal composées.
+
+## Le crénage n'est pas l'interlettrage
+
+Le crénage corrige une paire précise : **AV**, **To**, **Ye**. Il est inscrit dans la fonte par le dessinateur, qui a vu le problème avant vous.
+
+L'interlettrage agit sur tout un bloc. On l'ouvre légèrement pour les capitales et les petites capitales, on le resserre un peu pour les grands corps. Sur un texte courant, y toucher revient presque toujours à abîmer le gris.
+
+## Regarder le gris plutôt que les lettres
+
+Pour juger une composition, éloignez-vous jusqu'à ne plus lire. Les mots deviennent une texture. Si cette texture montre des trous, des rivières blanches qui descendent le long du bloc, le problème est dans la justification, pas dans la police.
+
+Same test, other languages: Íslenska, Čeština, Türkçe. Cùng một phép thử với tiếng Việt.`,
+  },
+  {
+    title: 'Thư pháp và nhịp thở',
+    slug: 'thu-phap-va-nhip-tho',
+    excerpt: 'Nét chữ đẹp không đến từ cổ tay. Nó đến từ chỗ người viết quyết định dừng lại.',
+    category: 'Calligraphy', tags: ['vietnamese', 'practice', 'rhythm'],
+    ago: 96,
+    body: `Người mới học thư pháp thường tập trung vào hình dáng từng chữ. Người viết lâu năm tập trung vào khoảng nghỉ giữa các chữ, vì đó mới là chỗ quyết định cả trang giấy nhìn có sống hay không.
+
+Một dòng chữ đẹp có nhịp. Nét xuống nặng, nét lên nhẹ, rồi một quãng ngắt trước khi bắt đầu chữ tiếp theo. Nhịp ấy đến từ hơi thở của người viết chứ không từ thước kẻ, và đó là lý do một dòng chép lại từ bản mẫu bao giờ cũng cứng hơn bản gốc.
+
+## Ba lỗi thường gặp
+
+Thứ nhất là viết quá chậm. Nét chậm bị run, và mực đọng lại ở chỗ ngòi dừng, làm dày lên những chỗ lẽ ra phải mảnh.
+
+Thứ hai là cố sửa một nét đã viết hỏng. Trong thư pháp không có nút hoàn tác; một nét sửa bao giờ cũng lộ hơn một nét sai.
+
+Thứ ba là canh chữ theo từng chữ thay vì theo cả dòng. Mắt đọc theo dòng, nên một dòng có nhịp đều sẽ đẹp hơn một dòng gồm toàn những chữ đẹp rời rạc.
+
+## Tập gì trước
+
+Tập một nét duy nhất, lặp lại kín một trang, cho tới khi nét thứ năm mươi giống nét đầu tiên. Đó là bài tập chán nhất và cũng là bài tập duy nhất thật sự có tác dụng.`,
+  },
+  {
+    title: 'Dấu phụ tiếng Việt và chiều cao chữ hoa',
+    slug: 'dau-phu-tieng-viet',
+    excerpt: 'Chữ Quốc ngữ chồng hai dấu lên một nguyên âm. Đó là bài kiểm tra khắc nghiệt nhất cho khoảng cách dòng.',
+    category: 'Typography', tags: ['vietnamese', 'diacritics', 'leading'],
+    ago: 104,
+    body: `Tiếng Việt là một trong số ít chữ viết Latinh chồng **hai** dấu lên cùng một nguyên âm: một dấu phụ chỉ âm, một dấu thanh. Chữ **ế** mang mũ rồi mang sắc; chữ **ườ** mang móc rồi mang huyền.
+
+Hệ quả là phần trên của dòng chữ tiếng Việt cao hơn hầu hết các ngôn ngữ khác dùng cùng bộ chữ cái. Một khoảng cách dòng vừa đủ cho tiếng Anh sẽ khiến dấu sắc của dòng dưới chạm vào chân chữ **g** hoặc **y** của dòng trên.
+
+## Ba chỗ hay hỏng
+
+Chữ hoa có dấu là chỗ hỏng đầu tiên: **Ế**, **Ộ**, **Ữ** đẩy dấu lên trên cả chiều cao chữ hoa, nên tiêu đề viết hoa toàn phần gần như luôn phải nới thêm.
+
+Chỗ thứ hai là tiêu đề cỡ lớn, nơi khoảng cách dòng thường bị siết xuống dưới 1.1. Với tiếng Anh thì đẹp, với tiếng Việt thì dấu chồng lên nhau.
+
+Chỗ thứ ba là font không thật sự hỗ trợ tiếng Việt mà chỉ có sẵn vài chữ dựng tạm. Dấu sẽ đúng hình nhưng sai vị trí, và người đọc nhận ra ngay dù không gọi tên được vấn đề.
+
+## Cách kiểm nhanh
+
+Đặt cạnh nhau hai dòng chữ hoa có dấu, để khoảng cách dòng bạn định dùng, rồi nhìn khoảng trống giữa chúng. Nếu phải nhìn kỹ mới thấy nó đủ, tức là chưa đủ.
+
+Deutsch, Polski und Türkçe stellen dieselbe Frage in kleinerem Maßstab: Größe, zażółć, ışık.`,
+  },
+  {
+    title: 'Der Blocksatz und die Lücke',
+    slug: 'der-blocksatz-und-die-luecke',
+    excerpt: 'Blocksatz ohne Silbentrennung ist der häufigste Satzfehler im Web, und er ist in einer Zeile zu beheben.',
+    category: 'Typography', tags: ['justification', 'hyphenation', 'craft'],
+    ago: 112,
+    body: `Blocksatz sieht ordentlich aus, solange die Spalte breit genug ist. Wird sie schmal, verteilt der Browser den fehlenden Platz auf die Wortzwischenräume einer Zeile — und weil er nur ganze Wörter umbrechen kann, entstehen Löcher.
+
+Übereinander stehende Löcher ergeben eine **Gießbachbildung**: ein weißer Fluss, der senkrecht durch den Absatz läuft. Das Auge folgt ihm, statt der Zeile zu folgen.
+
+## Die Ursache ist fast nie der Blocksatz
+
+Sie ist die fehlende Silbentrennung. Ohne sie muss jede Zeile mit ganzen Wörtern gefüllt werden, und im Deutschen sind die Wörter lang.
+
+| Spaltenbreite | Ohne Trennung | Mit Trennung |
+|---|---|---|
+| 30 Zeichen | unbrauchbar | grenzwertig |
+| 45 Zeichen | Gießbäche | brauchbar |
+| 66 Zeichen | brauchbar | gut |
+| 90 Zeichen | gut | zu breit zum Lesen |
+
+## Was zu tun ist
+
+Entweder \`hyphens: auto\` mit korrekt gesetztem \`lang\`-Attribut — ohne das Attribut weiß der Browser nicht, nach welchen Regeln er trennen soll, und trennt gar nicht. Oder Flattersatz.
+
+Flattersatz ist keine Niederlage. Er ist auf schmalen Spalten fast immer die bessere Wahl, weil der Wortabstand konstant bleibt und nur der rechte Rand unruhig wird. Ein unruhiger Rand stört das Lesen deutlich weniger als ein unruhiger Grauwert.
+
+## Der Sonderfall
+
+Bei sehr schmalen Spalten — Bildunterschriften, Marginalien, alles unter etwa 30 Zeichen — ist Blocksatz auch mit Trennung unbrauchbar. Dort gibt es keine Diskussion: Flattersatz, linksbündig, und der Rand darf so ausfransen, wie er will.`,
   },
 ]
