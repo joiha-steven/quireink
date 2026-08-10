@@ -29,9 +29,19 @@ echo "== seed =="
 # The session token is what lets the admin panels be photographed at all: the admin needs a
 # password AND a TOTP code, and the seeder mints a session into the throwaway database it
 # just built. Same trick the demo uses, and it puts no bypass in the server.
-SESSION=$(DATA_DIR=$TMP/list bun scripts/seed-showcase.ts "$TMP/list" text \
+#
+# SEED_NOW PINS THE DATES. The seeder's origin follows the clock so the demo never opens on a
+# four-month-old post; a plate wants the opposite, because otherwise every reshoot produces a
+# different image of the same page and the diff is unreadable. Pinned here and nowhere else.
+#
+# STORAGE_LOCAL_DIR has to be on the SEED too, not just on the servers below. The media
+# library is seeded with generated plates, and without this they land in ./uploads at the
+# repository root while the servers read $TMP/up — so the library photographs as empty, which
+# is the state the plates exist to stop it being in.
+export SEED_NOW=2026-07-30T09:00:00Z
+SESSION=$(DATA_DIR=$TMP/list STORAGE_LOCAL_DIR=$TMP/up bun scripts/seed-showcase.ts "$TMP/list" text \
   | grep '^QUIRE_SESSION=' | cut -d= -f2-)
-DATA_DIR=$TMP/front bun scripts/seed-showcase.ts "$TMP/front" text front > /dev/null
+DATA_DIR=$TMP/front STORAGE_LOCAL_DIR=$TMP/up bun scripts/seed-showcase.ts "$TMP/front" text front > /dev/null
 test -n "$SESSION" || { echo "FAIL: the seeder minted no session"; exit 1; }
 export QUIRE_SESSION="$SESSION"
 

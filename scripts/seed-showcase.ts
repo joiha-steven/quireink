@@ -1,4 +1,5 @@
-// A believable blog in a throwaway database: the fixture every screenshot is taken against.
+// A believable blog in a throwaway database: the fixture every screenshot is taken against,
+// and everything demo.quireink.com serves.
 //
 // Replaces three narrower seeds that each built half a site. The README shots, the front
 // page and the comment thread now come from ONE state, so a screenshot can be reproduced
@@ -9,6 +10,14 @@
 // is what ties the two together. English content on purpose: these end up in a README.
 //
 //   bun scripts/seed-showcase.ts [dir] [text|image] [list|front]
+//   SEED_NOW=2026-07-30T09:00:00Z bun scripts/seed-showcase.ts ...   # pinned, for a plate
+//
+// THIS FILE IS THE MACHINERY. The words are in `seed-content*.ts`, the threads in
+// `seed-comments.ts`, the owner-facing half in `seed-admin.ts`, the owner's own history in
+// `seed-activity.ts`, and the library plates in `seed-media.ts`. It got split when filling
+// the admin's empty screens took it past the 400-line cap, and the split is by AUDIENCE
+// rather than by size: what a reader sees, what the owner sees, and the code that assembles
+// both.
 //
 // `seed-demo.ts` stays: it exists to exercise every island on one post, which is a different
 // job from looking like a blog.
@@ -17,7 +26,6 @@ import { rmSync } from 'node:fs'
 import { openDatabases } from '@/store/db'
 import { savePost } from '@/content/posts'
 import { savePage } from '@/content/pages'
-import { addComment } from '@/comments/comments'
 import { saveSettings, getSettings } from '@/content/settings'
 import { DEFAULT_HOME } from '@/content/settings-sanitize'
 import { bufferEvent, bufferScroll, flushAnalytics } from '@/analytics/buffer'
@@ -25,6 +33,10 @@ import { createUser, setTotpSecret } from '@/auth/users'
 import { generateSecret } from '@/auth/totp'
 import { createSession } from '@/auth/sessions'
 import { POSTS } from './seed-content'
+import { seedComments } from './seed-comments'
+import { seedAdmin } from './seed-admin'
+import { seedActivity } from './seed-activity'
+import { seedMedia } from './seed-media'
 
 const DIR = process.argv[2] ?? './.tmp/drive-data'
 const KIND = (process.argv[3] ?? 'text') as 'image' | 'text'
@@ -34,7 +46,35 @@ rmSync(DIR, { recursive: true, force: true })
 openDatabases(DIR)
 
 const DAY = 24 * 60 * 60 * 1000
-const START = Date.UTC(2026, 6, 30, 9, 0, 0)
+const NOW = Date.now()
+
+/**
+ * The moment the newest post went up. Every other date in the fixture is `START - ago days`.
+ *
+ * IT FOLLOWS THE CLOCK, and it used to be `Date.UTC(2026, 6, 30, 9, 0, 0)`. A fixed origin is
+ * reproducible, which is what a screenshot wants, and it silently rots the thing anyone
+ * actually looks at: the demo reseeds monthly against the same constant, so its newest post
+ * ages a month between refreshes and a visitor in December opens a blog whose latest piece is
+ * dated four months ago. Nothing goes red, it just reads as abandoned.
+ *
+ * `SEED_NOW` pins it for anything that needs two runs to match — `scripts/ops/shoot-readme.sh`
+ * sets it, so the README plates stay reproducible. Eight hours back, not the current
+ * millisecond, so the newest post reads as today rather than as this second, and so no post
+ * can land in the future through clock skew.
+ */
+const pinned = process.env.SEED_NOW
+const START = (pinned ? new Date(pinned).getTime() : NOW) - 8 * 60 * 60 * 1000
+if (Number.isNaN(START)) {
+  console.error(`SEED_NOW is not a date: ${JSON.stringify(pinned)}`)
+  process.exit(1)
+}
+
+/** Resolve a slug to the millisecond it was published, for anything hanging off a post. */
+const postDate = (slug: string): number => {
+  const post = POSTS.find((p) => p.slug === slug)
+  if (!post) throw new Error(`seed: no post with slug ${slug}`)
+  return START - post.ago * DAY
+}
 
 for (let i = 0; i < POSTS.length; i += 1) {
   const p = POSTS[i]!
@@ -60,21 +100,8 @@ await savePage({
     + 'Set in Literata for reading and JetBrains Mono for everything the machine says.',
 })
 
-const top = await addComment({
-  postSlug: 'the-measure-is-the-design', parentId: null,
-  name: 'Marta Vogel', email: 'marta@example.com', website: '', provider: 'manual',
-  content: 'The leading point is the one nobody plans for. I set a beautiful 66-character '
-    + 'measure and then wondered for a week why German copy still felt cramped. It was the '
-    + 'umlauts, every time.',
-  ip: '', country: 'DE',
-})
-await addComment({
-  postSlug: 'the-measure-is-the-design', parentId: top.id,
-  name: 'The author', email: 'author@example.com', website: '', provider: 'manual',
-  content: 'Vietnamese is the same lesson at twice the volume: two marks stacked on one '
-    + 'vowel, so the ascender space a Latin face reserves is simply not enough.',
-  ip: '', country: 'VN',
-})
+const comments = await seedComments(postDate)
+const media = await seedMedia()
 
 const s = await getSettings()
 await saveSettings({
@@ -122,6 +149,13 @@ await saveSettings({
     },
   },
 })
+
+// The owner-facing half. AFTER `saveSettings`, and the order is load-bearing twice over:
+// `seedAdmin` re-saves a published post to leave it a revision history, which needs the post
+// to exist, and `seedActivity` calls the same `logActivity` the routes do — which no-ops
+// unless `features.activityLog` is on in the settings just written.
+const admin = await seedAdmin(START, NOW)
+const activity = await seedActivity(START, NOW)
 
 /**
  * A month of traffic, so the parts of the product that COUNT things have something to count.
@@ -192,4 +226,10 @@ setTotpSecret(owner.id, generateSecret())
 const { token } = createSession(owner.id, { userAgent: 'showcase' })
 
 console.log(`seeded ${DIR}: ${POSTS.length} posts, home=${MODE}, front kind=${KIND}`)
+console.log(
+  `  + ${admin.drafts} draft(s), ${admin.scheduled} scheduled, ${comments} comment(s), `
+  + `${media} media, ${admin.subscribers} subscriber(s), ${admin.redirects} redirect(s), `
+  + `${activity} log entr(ies)`,
+)
+console.log(`  newest post ${new Date(START).toISOString()}${pinned ? ' (SEED_NOW pinned)' : ''}`)
 console.log(`QUIRE_SESSION=${token}`)
