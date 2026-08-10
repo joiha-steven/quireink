@@ -1,6 +1,6 @@
 <div align="center">
 
-# quire**INK** &nbsp;`2.0.1`
+# quire**INK** &nbsp;`2.0.2`
 
 **Một cái blog bạn tự host, và AI agent có thể vận hành thay bạn.**
 Một tiến trình. Hai tệp SQLite. Không tài khoản đám mây nào trong đường đi.
@@ -43,15 +43,17 @@ Có ba thứ định hình nó.
 
 **Trang đọc mới là sản phẩm.** Font, màu, cỡ chữ, khoảng cách, bố cục: tất cả đều là tuỳ chọn bạn chỉnh trong trang quản trị. Không một cỡ chữ hay màu nào viết cứng trong stylesheet của trang đọc, và build sẽ báo đỏ nếu ai đó nhét vào.
 
-**Người đọc tải về 4.4 KB JavaScript, và không tải gì của ai khác.** Trang tới nơi đã là HTML hoàn chỉnh. Vài đoạn script nhỏ lo tìm kiếm, đổi giao diện và chế độ sách. React nằm yên trong trang quản trị, không bao giờ chạm tới người đọc.
+**Người đọc tải về 3.4–7.7 KB JavaScript, và không tải gì từ bên thứ ba.** Trang tới nơi đã là HTML hoàn chỉnh. Vài đoạn script nhỏ lo tìm kiếm, đổi giao diện và chế độ sách. React nằm yên trong trang quản trị, không bao giờ chạm tới người đọc.
 
 **Agent viết được thay bạn.** Nối Claude hay bất kỳ client MCP nào vào, nó soạn được, gắn thẻ được, hẹn giờ và đăng được, theo đúng những luật mà trang quản trị đang theo.
 
 Bạn được đọc, sửa, chạy và fork theo [PolyForm Noncommercial](./LICENSE).
 
-> **2.0.1 ra ngày 07/08/2026**, đang chạy bản demo ở trên và blog riêng của tác giả tại
-> [manhhung.me](https://manhhung.me). Trước khi phát hành, cả dự án được audit bằng cách
-> **đo site đang chạy** chứ không phải đọc mã nguồn.
+> **2.0.2 ra ngày 10/08/2026**, đang chạy bản demo ở trên và blog riêng của tác giả tại
+> [manhhung.me](https://manhhung.me). Bản này gồm mười hai lỗi được sửa, không có tính năng
+> mới — một giới hạn tần suất mà header giả mạo đi qua được, người đọc dùng giao diện tối mở
+> trang nào cũng loé trắng, và tệp CSS bị nén lại từ đầu ở mỗi request. Tất cả tìm ra bằng
+> cách **đo site đang chạy** chứ không phải đọc mã nguồn.
 > [Changelog](./CHANGELOG.md) có đủ những gì đã đổi.
 
 ---
@@ -92,13 +94,13 @@ Bạn được đọc, sửa, chạy và fork theo [PolyForm Noncommercial](./LI
 
 Đây là số đo từ mạng, lần vào đầu tiên, chưa cache gì. Đúng bằng cái mà một người lạ cầm điện thoại phải chờ.
 
-Đo lại cho 2.0.1, tại origin chứ không qua CDN. Hai dòng CSS và JavaScript là artefact của bản build, giống nhau ở mọi bản cài; các số tổng là của chính site này — tiếng Việt, Literata để đọc và JetBrains Mono cho phần khung — vì font được cắt theo bảng chữ và trình duyệt chỉ tải đúng những dải trang bạn dùng. Riêng font đã giảm từ 86 KB xuống 67 KB ở 2.0.1 mà không bỏ đi họ chữ nào.
+Hai dòng CSS và JavaScript là sản phẩm của bản build — giống nhau ở mọi bản cài — và lấy từ bản dựng 2.0.2. Các số tổng đo cho 2.0.1, tại origin chứ không qua CDN, và là của chính site này: tiếng Việt, Literata để đọc và JetBrains Mono cho phần khung. Chúng không phải thuộc tính của phần mềm, vì font được cắt theo bảng chữ và trình duyệt chỉ tải đúng những dải mà trang bạn dùng tới. Riêng font đã giảm từ 86 KB xuống 67 KB ở 2.0.1 mà không bỏ đi họ chữ nào.
 
 | | Trang chủ | Một bài | |
 |:---|---:|---:|:---|
 | **Số request** | 10 | 10 | |
 | **Tổng&nbsp;tải&nbsp;về** | **106 KB** | **114 KB** | 67 KB trong đó là font |
-| **JavaScript** | **3.3 KB** | **7.6 KB** | viết tay, không framework |
+| **JavaScript** | **3.4 KB** | **7.7 KB** | viết tay, không framework |
 | **CSS** | 8.0 KB | 8.0 KB | một tệp, đã nén, cache vĩnh viễn |
 | **Request&nbsp;bên&nbsp;thứ&nbsp;ba** | **0** | **0** | không CDN, không font host, không tracker |
 | **Lần vào sau** | ~19 KB | ~24 KB | chỉ tải lại HTML |
@@ -129,7 +131,7 @@ Nó giữ được như vậy nhờ vài quyết định khó đảo ngược.
 
 **Thay vì một nền tảng có sẵn.** Bài của bạn là hai tệp SQLite trên ổ đĩa của chính bạn. Không tài khoản, không gói cước, không có cái nút export mà bạn phải cầu cho nó vẫn chạy sau năm năm.
 
-**Thay vì WordPress.** Không PHP, không MySQL, không đống plugin phải vá. Một tiến trình, và người đọc nhận 4 KB JavaScript.
+**Thay vì WordPress.** Không PHP, không MySQL, không đống plugin phải vá. Một tiến trình, và người đọc nhận JavaScript chỉ vài KB.
 
 **Thay vì một static site generator.** Bạn có trang quản trị thật. Viết, tải ảnh, hẹn giờ và đăng từ laptop hay điện thoại, với tìm kiếm, bình luận, bản tin và thống kê đã có sẵn. Không build lại, không deploy, không phải git push chỉ để sửa một lỗi chính tả.
 
@@ -231,6 +233,7 @@ Các cấu hình nhạy cảm bị chặn qua MCP, và quyền vẫn nằm ở b
 | `CRON_SECRET` | ◻️ | Canh `/api/cron`, chỗ đăng bài hẹn giờ và dọn biến thể ảnh |
 | `MCP_OAUTH_SECRET` | ◻️ | Ký mã OAuth của MCP. Bỏ trống thì máy chủ tự sinh lấy, và đó là cách nên dùng |
 | `ANALYTICS_TZ` | ◻️ | Múi giờ để tính mốc sang ngày của thống kê. Mặc định UTC |
+| `TRUST_PROXY` | ◻️ | Chỉ đặt `1` khi proxy đứng trước đi tới bạn qua một địa chỉ CÔNG KHAI. Giới hạn tần suất tính theo địa chỉ socket; `CF-Connecting-IP`/`X-Forwarded-For` được tin tự động khi kết nối đến từ loopback hoặc mạng nội bộ |
 
 SMTP, Turnstile và thông tin CDN nhập ở **Cấu hình → Kết nối** và nằm lại trên máy chủ. Bài của bạn sống trong `DATA_DIR` và thư mục upload, không bao giờ nằm trong git.
 
