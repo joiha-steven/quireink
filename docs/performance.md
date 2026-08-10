@@ -197,18 +197,18 @@ paint the page is whatever CSS alone can decide, and the sheet had no `prefers-c
 rule at all (measured: 0 of 429). `system` is the default mode, so **every reader whose
 machine is dark was shown a white page on every navigation.**
 
-The handoff is `data-theme` on `<html>`:
+The handoff is `data-scheme` on `<html>`:
 
-- `themesToCss` emits `@media (prefers-color-scheme:dark){:root:not([data-theme]){…}}` after
-  the base tokens. `:root:not([data-theme])` is 0,2,0 — above `:root` and `[data-palette=…]`,
-  and never in a fight with `.dark`, which only exists once `data-theme` does.
-- The island sets `data-theme` to the RESOLVED `light`/`dark` on its FIRST apply, not only
+- `themesToCss` emits `@media (prefers-color-scheme:dark){:root:not([data-scheme]){…}}` after
+  the base tokens. `:root:not([data-scheme])` is 0,2,0 — above `:root` and `[data-palette=…]`,
+  and never in a fight with `.dark`, which only exists once `data-scheme` does.
+- The island sets `data-scheme` to the RESOLVED `light`/`dark` on its FIRST apply, not only
   when the reader picks something. `system` and `time` are questions; the attribute has to
   be an answer or the CSS cannot use it.
 - `color-scheme` rides along, which is what makes the scrollbar and the form controls follow
   the page instead of staying light under a dark one.
 
-Nothing server-rendered sets `data-theme` and nothing may: the page cache is keyed by URL
+Nothing server-rendered sets `data-scheme` and nothing may: the page cache is keyed by URL
 alone ([invariant 1](invariants.md)), so a server-rendered mode would be the first visitor's
 mode for everyone.
 

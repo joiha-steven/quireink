@@ -356,7 +356,12 @@ function vars(c: ThemeColors): string {
 // shown a white page for the length of one paint on every single navigation. There was no
 // `prefers-color-scheme` rule anywhere in the public sheet: measured at 0 of 429 rules.
 //
-// The handoff is `data-theme` on `<html>`. Nothing server-rendered sets it (the page cache is
+// `data-scheme`, NOT `data-theme`: `<body data-theme="…">` already exists and holds the
+// translated word "Theme" for the island's button label (`assets/js/dom.ts` reads every UI
+// string off `body.dataset`). Two attributes of the same name on parent and child, one a
+// sentence and one a mode, is a mix-up waiting to be made.
+//
+// The handoff is `data-scheme` on `<html>`. Nothing server-rendered sets it (the page cache is
 // keyed by URL alone, Invariant 1, so a server-rendered mode would be the first visitor's
 // mode for everyone), the island sets it to the RESOLVED light/dark the moment it runs, and
 // this block applies only while it is absent. So: no script, correct first paint for the
@@ -380,8 +385,8 @@ export function themesToCss(themes: Record<string, ThemeSettings>, defaultId: st
   for (const [id, t] of Object.entries(themes)) {
     css += `[data-palette="${id}"]{${vars(t.light)}}[data-palette="${id}"].dark{${vars(t.dark)}}`
   }
-  // `:root:not([data-theme])` is 0,2,0 — above both `:root` and `[data-palette="…"]`, and
-  // never in a fight with `.dark`, which only exists once `data-theme` does.
-  css += `@media (prefers-color-scheme:dark){:root:not([data-theme]){color-scheme:dark;${vars(base.dark)}}}`
+  // `:root:not([data-scheme])` is 0,2,0 — above both `:root` and `[data-palette="…"]`, and
+  // never in a fight with `.dark`, which only exists once `data-scheme` does.
+  css += `@media (prefers-color-scheme:dark){:root:not([data-scheme]){color-scheme:dark;${vars(base.dark)}}}`
   return css
 }
