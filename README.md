@@ -117,7 +117,7 @@ It stays this way because of a few decisions that are hard to walk back.
 
 <div align="center">
 
-<img src="docs/demo-mobile.jpg" alt="Three phone screens: the post list, an article, and the instant search overlay showing seven matching titles" width="960">
+<img src="docs/demo-mobile.jpg" alt="Three phone screens: the post list, an article showing its series contents, and the instant search overlay with a query part-typed and the archive already filtered to the titles that match" width="960">
 
 <sub>None of this is for a benchmark. It is for someone on a four-year-old phone who wanted to read four hundred words.</sub>
 

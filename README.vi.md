@@ -117,7 +117,7 @@ Nó giữ được như vậy nhờ vài quyết định khó đảo ngược.
 
 <div align="center">
 
-<img src="docs/demo-mobile.jpg" alt="Ba màn hình điện thoại: danh sách bài, một bài viết, và lớp tìm kiếm tức thì đang hiện bảy tựa bài khớp" width="960">
+<img src="docs/demo-mobile.jpg" alt="Ba màn hình điện thoại: danh sách bài, một bài viết đang hiện mục lục của loạt bài, và lớp tìm kiếm tức thì mới gõ dở đã lọc kho bài xuống còn những tựa khớp" width="960">
 
 <sub>Không con số nào ở trên là để lấy điểm benchmark. Chúng dành cho một người cầm chiếc điện thoại bốn năm tuổi, chỉ muốn đọc bốn trăm chữ.</sub>
 
