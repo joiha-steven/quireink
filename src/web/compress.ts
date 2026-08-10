@@ -68,7 +68,9 @@ const gzipped = new Map<string, Uint8Array>()
  */
 const MAX_ENTRIES = 512
 
-function compress(body: Uint8Array): Uint8Array {
+// `Uint8Array<ArrayBuffer>` rather than a bare `Uint8Array`: the bare form widens to
+// `ArrayBufferLike`, which includes `SharedArrayBuffer`, and `Bun.hash` will not take one.
+function compress(body: Uint8Array<ArrayBuffer>): Uint8Array {
   const key = `${body.byteLength}:${Bun.hash(body)}`
   const hit = gzipped.get(key)
   if (hit) return hit

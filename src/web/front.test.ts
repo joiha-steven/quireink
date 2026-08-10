@@ -253,6 +253,33 @@ describe('the two kinds', () => {
     expect(await front({ kind: 'text' })).toContain('front-text')
     expect(await front({ kind: 'image' })).toContain('front-image')
   })
+
+  /**
+   * The lead's picture is the LCP element — measured at y=411 in a 1000px viewport and y=606
+   * in an 812px one, so it is inside the first screen on a laptop and on a phone. Every
+   * picture on the page was `loading="lazy"`, which takes it out of the preload scanner's
+   * reach and costs a round trip on the one image the page is judged by.
+   *
+   * One image, not two: `fetchpriority` on everything is `fetchpriority` on nothing. Same
+   * rule as `render/post-content.ts` (`seen === 0`) and `web/chrome.ts` (the light logo only).
+   */
+  it('gives the lead picture priority and lazy-loads the rest', async () => {
+    // Dated past everything this file has written, so it is the lead whatever ran before;
+    // and an older one with a picture so the latest grid has a card to compare against —
+    // one image on the page proves nothing about "one of them".
+    await savePost({ title: 'Shot', slug: 'shot', status: 'published', date: '2020-03-02T00:00:00.000Z',
+      content: 'x', excerpt: 'A picture leads.', featuredImage: '/app-icon.png' })
+    await savePost({ title: 'Also shot', slug: 'also-shot', status: 'published', date: day(4),
+      content: 'x', excerpt: 'A picture follows.', featuredImage: '/app-icon.png' })
+    const html = await front({ kind: 'image' })
+    const imgs = html.match(/<img[^>]*>/g) ?? []
+    expect(imgs.filter((i) => i.includes('fetchpriority="high"'))).toHaveLength(1)
+    expect(imgs.filter((i) => i.includes('loading="lazy"')).length).toBeGreaterThan(0)
+    // and the priority one is the lead's, not some card that happens to sort first
+    const lead = /<article class="fc fc-lead[^]*?<\/article>/.exec(html)?.[0] ?? ''
+    expect(lead).toContain('fetchpriority="high"')
+    expect(lead).not.toContain('loading="lazy"')
+  })
 })
 
 describe('the topic links beside a category heading', () => {

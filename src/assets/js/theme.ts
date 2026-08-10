@@ -3,13 +3,21 @@
 // Two controls, one file, because both do the same thing: flip one attribute on `<html>`
 // and let CSS do the rest. Neither re-renders anything.
 //
-// KNOWN COST, and it is the same one the grid toggle carries: the frozen tree applied the
-// saved mode in a pre-paint inline script, so a dark reader never saw a light frame. 2.0
-// has no inline script anywhere — that property is tested, and the article page's script
-// count is a number in an assertion — so the class is applied when `core.js` runs and a
-// dark reader may see one light frame. A cookie would let the server render it, but the
-// page cache is keyed by URL alone (Invariant 1), so a cached page would carry whichever
-// mode the first visitor happened to have.
+// THE FIRST PAINT IS THE STYLESHEET'S, NOT THIS FILE'S. The frozen tree applied the saved
+// mode in a pre-paint inline script; 2.0 has no inline script anywhere — that property is
+// tested, and the article page's script count is a number in an assertion — so for the
+// length of one paint the page is whatever CSS alone can decide. A cookie would let the
+// server decide instead, but the page cache is keyed by URL alone (Invariant 1), so a
+// cached page would carry whichever mode the first visitor happened to have.
+//
+// So CSS decides it, with a `prefers-color-scheme` block that applies only while `<html>`
+// has no `data-theme` (`content/themes.ts`), and this file's job is to set that attribute —
+// which both hands over from the media query and records the reader's actual choice. A
+// system-dark reader on the default mode now opens dark on the first frame; it was a white
+// flash on every navigation.
+//
+// `data-theme` is the RESOLVED light/dark, never the mode: 'system' and 'time' are questions,
+// and the attribute has to be an answer or the CSS cannot use it.
 
 import { el, label } from './dom'
 
@@ -63,7 +71,12 @@ export function theme(): void {
 
   const apply = () => {
     const dark = resolve(mode) === 'dark'
-    document.documentElement.classList.toggle('dark', dark)
+    const html = document.documentElement
+    html.classList.toggle('dark', dark)
+    // Setting this is what takes the `prefers-color-scheme` block out of the cascade, so it
+    // has to happen on the FIRST apply and not only when the reader picks something — until
+    // it exists the sheet is still answering the question on its own.
+    html.dataset.theme = dark ? 'dark' : 'light'
     drawIcon(button, dark)
   }
 

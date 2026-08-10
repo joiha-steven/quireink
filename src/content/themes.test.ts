@@ -7,7 +7,9 @@
 // typo here is invisible in review — pin it.
 
 import { describe, it, expect } from '@/test/vitest'
-import { THEME_PRESETS } from '@/content/themes'
+import {
+  THEME_PRESETS, themesToCss, defaultThemes, getDefaultTheme, DEFAULT_PRESET_ID,
+} from '@/content/themes'
 
 const channel = (v: number) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)
 
@@ -48,4 +50,41 @@ describe('theme presets meet WCAG AA', () => {
       })
     }
   }
+})
+
+/**
+ * The dark reader's first paint.
+ *
+ * `.dark` is applied by a DEFERRED module, so for the length of one paint the page is
+ * whatever the stylesheet alone can decide — and the sheet had no `prefers-color-scheme`
+ * rule at all (measured: 0 of 429). A reader whose system is dark, on the `system` mode that
+ * is the default, was shown a white page on every single navigation.
+ */
+describe('dark before the island runs', () => {
+  const css = themesToCss(defaultThemes(), DEFAULT_PRESET_ID)
+  const base = getDefaultTheme(defaultThemes(), DEFAULT_PRESET_ID)
+
+  it('applies the dark tokens by system preference while `data-theme` is absent', () => {
+    const block = /@media \(prefers-color-scheme:dark\)\{([^@]*)\}$/.exec(css)?.[1] ?? ''
+    expect(block).toContain(':root:not([data-theme])')
+    expect(block).toContain(`--c-bg:${base.dark.bg}`)
+    expect(block).toContain(`--c-text:${base.dark.text}`)
+  })
+
+  /**
+   * The island sets `data-theme` on its first apply, which is what takes this block out of
+   * the cascade. Without the `:not`, an explicit LIGHT choice on a dark system would be
+   * overridden by the reader's OS forever.
+   */
+  it('stands down the moment the island states a resolved mode', () => {
+    expect(css).toContain(':root:not([data-theme])')
+    expect(css).not.toContain('@media (prefers-color-scheme:dark){:root{')
+  })
+
+  /** Without this the scrollbar and every form control stay light under a dark page. */
+  it('declares color-scheme in all three states', () => {
+    expect(css).toContain(':root{color-scheme:light')
+    expect(css).toContain('.dark{color-scheme:dark')
+    expect(css).toContain(':root:not([data-theme]){color-scheme:dark')
+  })
 })

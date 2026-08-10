@@ -106,12 +106,26 @@ function clamp(text: string, max: number): string {
  * for an original whose variants are confirmed. Everything else renders as a plain `<img>`,
  * which always loads. That rule is `post-content.ts`'s and it is not restated by accident:
  * getting it wrong here would blank the image on exactly the posts that are still processing.
+ *
+ * `priority` for the ONE image that is in the first screen — the lead's, and only when the
+ * front page is the image kind. Every picture here was `loading="lazy"`, the lead's included,
+ * and the lead's is the LCP element: measured at y=411 in a 1000px viewport and y=606 in an
+ * 812px one, so it is above the fold on a laptop and on a phone. Lazy takes it out of the
+ * preload scanner's reach, which costs a round trip on the one image the page is judged by.
+ * The rule is `post-content.ts`'s (`seen === 0 ? fetchpriority : lazy`) and `chrome.ts`'s for
+ * the logo; this was the one place that had not read it.
  */
-export function postImage(post: Post, ready: ReadyImages, sizes: string): string | null {
+export function postImage(
+  post: Post,
+  ready: ReadyImages,
+  sizes: string,
+  priority = false,
+): string | null {
   const src = post.featuredImage || post.coverImage
   if (!src) return null
   const alt = escapeAttr(post.title)
-  const img = `<img src="${escapeAttr(src)}" alt="${alt}" loading="lazy" decoding="async">`
+  const loading = priority ? ' fetchpriority="high"' : ' loading="lazy"'
+  const img = `<img src="${escapeAttr(src)}" alt="${alt}"${loading} decoding="async">`
   const m = src.match(/^(.*\/media\/.+)\.(?:jpe?g|png)$/i)
   if (!m || !ready.has(collapseBlob(src))) return `<picture>${img}</picture>`
   const set = (fmt: string) => `${m[1]}-1024.${fmt} 1024w, ${m[1]}-1600.${fmt} 1600w`
@@ -165,8 +179,10 @@ type Ctx = { settings: SiteSettings; front: FrontSettings; ready: ReadyImages }
  */
 export function leadItem(post: Post, ctx: Ctx, opening = ''): string {
   const { settings, front, ready } = ctx
+  // The one image on the page that is above the fold on every width, so the one that gets
+  // `fetchpriority` rather than `loading=lazy`. See `postImage`.
   const picture = front.kind === 'image'
-    ? postImage(post, ready, '(max-width: 900px) 100vw, 60vw')
+    ? postImage(post, ready, '(max-width: 900px) 100vw, 60vw', true)
     : null
   // The opening lines of the piece itself, under the standfirst. Without them the lead
   // column ran out of words a third of the way down its own row and the rule underneath sat

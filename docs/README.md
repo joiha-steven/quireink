@@ -25,7 +25,8 @@ copies of a rule means one is wrong within a month
 | [features/comments.md](features/comments.md) | The tree, tombstones, the markdown subset, notifications |
 | [features/site.md](features/site.md) | Homepage mode and URL redirects |
 | [conventions.md](conventions.md) | Typography, header alignment, layout, dividers, i18n, releases |
-| [performance.md](performance.md) | The resource-loading law: fonts, CSS split, island JS |
+| [performance.md](performance.md) | The resource-loading law: images, fonts, CSS split, island JS |
+| [delivery.md](delivery.md) | What the server does before it answers: the render cache, the switch, the CDN purge, compression |
 | [admin-design.md](admin-design.md) | The admin visual contract |
 | [homepage.md](homepage.md) | What `/` serves: the post list, a page, or a composed front page |
 | [seo-pwa.md](seo-pwa.md) | Sitemap, feeds, OG, region, PWA |

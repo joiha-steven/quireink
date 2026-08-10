@@ -350,11 +350,38 @@ function vars(c: ThemeColors): string {
 // CSS for EVERY palette so the switcher swaps instantly via `<html data-palette>`.
 // Default also lands on :root/.dark (no-JS baseline); mode-qualified
 // `[data-palette].dark` has higher specificity so dark resolves correctly.
+//
+// DARK BEFORE THE ISLAND SPEAKS. `.dark` is applied by `assets/js/theme.ts`, which is a
+// deferred module — so a reader whose system is dark, on the default `system` mode, was
+// shown a white page for the length of one paint on every single navigation. There was no
+// `prefers-color-scheme` rule anywhere in the public sheet: measured at 0 of 429 rules.
+//
+// The handoff is `data-theme` on `<html>`. Nothing server-rendered sets it (the page cache is
+// keyed by URL alone, Invariant 1, so a server-rendered mode would be the first visitor's
+// mode for everyone), the island sets it to the RESOLVED light/dark the moment it runs, and
+// this block applies only while it is absent. So: no script, correct first paint for the
+// system-dark reader, and the island still owns every explicit choice.
+//
+// The honest cost, because there is one: a reader who explicitly chose LIGHT on a dark system
+// now gets the inverse flash, for exactly as long as the dark reader used to get theirs.
+// `system` is the default and by far the common case, so this moves the flash off the many
+// and onto the few. Removing it entirely needs an inline script, which this project does not
+// have anywhere and asserts it does not.
+//
+// `color-scheme` rides along: it is what makes the scrollbar, the form controls and the
+// canvas the browser draws follow the page instead of staying light under a dark one.
+//
+// NOT mirrored per palette. Nothing sets `data-palette` — the rules above are for a reader-
+// facing switcher that does not exist yet — so mirroring twelve rule sets here would double
+// a block that cannot match. If that switcher lands, this is the second half of it.
 export function themesToCss(themes: Record<string, ThemeSettings>, defaultId: string): string {
   const base = getDefaultTheme(themes, defaultId)
-  let css = `:root{${vars(base.light)}}.dark{${vars(base.dark)}}`
+  let css = `:root{color-scheme:light;${vars(base.light)}}.dark{color-scheme:dark;${vars(base.dark)}}`
   for (const [id, t] of Object.entries(themes)) {
     css += `[data-palette="${id}"]{${vars(t.light)}}[data-palette="${id}"].dark{${vars(t.dark)}}`
   }
+  // `:root:not([data-theme])` is 0,2,0 — above both `:root` and `[data-palette="…"]`, and
+  // never in a fight with `.dark`, which only exists once `data-theme` does.
+  css += `@media (prefers-color-scheme:dark){:root:not([data-theme]){color-scheme:dark;${vars(base.dark)}}}`
   return css
 }
