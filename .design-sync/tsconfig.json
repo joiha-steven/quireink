@@ -1,0 +1,24 @@
+{
+  // Nothing type-checks this directory — the root tsconfig's `include` is ["src", "scripts"].
+  // It exists for the BUNDLER. esbuild picks a tsconfig by walking up from each file it
+  // compiles, so `previews/*.tsx` and `entry.tsx` were reaching the root config and being
+  // built with its `jsxImportSource: "hono/jsx"`. The result renders, in the sense that no
+  // build step complains: every preview produced hono elements, React refused them with
+  // "Objects are not valid as a React child", and all five cells came up blank.
+  //
+  // The design-sync bundle is React by definition, so this file stops that walk one level
+  // early. No `jsxImportSource`, which means the default — react.
+  "compilerOptions": {
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "target": "ES2022",
+    "module": "Preserve",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "baseUrl": "..",
+    "paths": { "@/*": ["./src/*"] }
+  },
+  "include": ["."]
+}

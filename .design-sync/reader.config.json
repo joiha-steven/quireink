@@ -1,0 +1,18 @@
+{
+  "projectId": "8a85351c-3970-44f0-89e8-c256ccce83c4",
+  "shape": "package",
+  "pkg": "quireink",
+  "globalName": "QuireInkReader",
+  "buildCmd": "bun .design-sync/gen-reader.ts",
+  "srcDir": "src/web",
+  "cssEntry": ".design-sync/generated/reader.css",
+  "extraFonts": [
+    ".design-sync/generated/reader-fonts.css"
+  ],
+  "readmeHeader": ".design-sync/reader-conventions.md",
+  "guidelinesGlob": [
+    "docs/homepage.md",
+    "docs/performance.md",
+    "docs/seo-pwa.md"
+  ]
+}
