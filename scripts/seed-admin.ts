@@ -279,45 +279,59 @@ Two series run across those: **Designing a reading page** in four parts, and **I
  * reads "never".
  */
 async function seedSubscribers(origin: number, now: number): Promise<number> {
-  const CONFIRMED = [
-    'marta.vogel', 'ellen.prydz', 'petra.nowak', 'rahel.bekele', 'marcus.adeyemi',
-    'helene.roussel', 'ines.vogel', 'marie.dubois', 'yusuf.demir', 'aoife.byrne',
-    'jonas.lindqvist', 'tomas.ferreira', 'sam.okonkwo', 'owen.tremaine', 'brid.nimhaolain',
-    'daniel.kovacs', 'lan.nguyen', 'quocanh.tran', 'ada.oyelaran', 'karel.novotny',
+  /**
+   * The list in ARRIVAL ORDER, oldest first, with the three states mixed through it.
+   *
+   * One ordered list rather than three lists walked in turn, and both halves of that matter.
+   * Walking confirmed-then-pending-then-unsubscribed made every unsubscribe the most recent
+   * signup on the list — a mailing list where the only people who ever left are the ones who
+   * joined last week. Somebody who joined in the spring and left in the summer is the
+   * ordinary case, and it only exists if the order can carry it.
+   *
+   * The two pending at the bottom ARE deliberate: an unconfirmed address is one that arrived
+   * recently enough not to have been swept yet.
+   */
+  const ARRIVALS: [string, 'pending' | 'confirmed' | 'unsubscribed'][] = [
+    ['marta.vogel', 'confirmed'], ['ellen.prydz', 'confirmed'],
+    ['lucas.moreau', 'unsubscribed'], ['petra.nowak', 'confirmed'],
+    ['rahel.bekele', 'confirmed'], ['marcus.adeyemi', 'confirmed'],
+    ['helene.roussel', 'confirmed'], ['ines.vogel', 'confirmed'],
+    ['marie.dubois', 'confirmed'], ['yusuf.demir', 'confirmed'],
+    ['aoife.byrne', 'confirmed'], ['printdeals.offers', 'unsubscribed'],
+    ['jonas.lindqvist', 'confirmed'], ['tomas.ferreira', 'confirmed'],
+    ['sam.okonkwo', 'confirmed'], ['owen.tremaine', 'confirmed'],
+    ['brid.nimhaolain', 'confirmed'], ['daniel.kovacs', 'confirmed'],
+    ['lan.nguyen', 'confirmed'], ['quocanh.tran', 'confirmed'],
+    ['nils.eriksen', 'pending'], ['ada.oyelaran', 'confirmed'],
+    ['karel.novotny', 'confirmed'], ['chiara.rossi', 'pending'],
+    ['foteini.lambrou', 'pending'],
   ]
-  const PENDING = ['nils.eriksen', 'chiara.rossi', 'foteini.lambrou']
-  const UNSUBSCRIBED = ['printdeals.offers', 'lucas.moreau']
 
-  let seq = 0
-  const stamp = (email: string, status: 'pending' | 'confirmed' | 'unsubscribed'): void => {
-    // Spread arrivals back across roughly eight months, oldest first, so the list has a shape
-    // and the "joined" column is not one date repeated forty times.
-    const created = origin - (240 - seq * 11) * DAY
-    seq += 1
-    run(
-      `update subscribers set created_at = ?, confirmed_at = ? where email = ?`,
-      created, status === 'confirmed' ? created + 2 * 60 * 60 * 1000 : null, email,
-    )
-  }
+  // Nine months back to a month ago, oldest first. THE SPAN HAS TO CLEAR THE END OF THE LIST:
+  // this was `240 - seq * 11` over 25 addresses, which crosses zero at the twenty-second and
+  // stamped the last three as joining up to 24 days in the FUTURE. A subscriber who signed up
+  // next week is the kind of detail that reads as broken rather than as seeded.
+  const SPAN_DAYS = 270
+  const STEP_DAYS = 10
+  const joined = (seq: number): number => origin - (SPAN_DAYS - seq * STEP_DAYS) * DAY
+  if (joined(ARRIVALS.length - 1) > origin) throw new Error('seed: subscriber dates run past the origin')
 
   const broadcastSlugs = ['the-golden-canon-and-its-arithmetic']
-  for (const name of CONFIRMED) {
+  const CONFIRMED = ARRIVALS.filter(([, s]) => s === 'confirmed').map(([name]) => name)
+
+  for (const [seq, [name, status]] of ARRIVALS.entries()) {
     const email = `${name}@example.com`
     const { token } = await addSubscriber(email)
-    await confirmSubscriber(token)
-    stamp(email, 'confirmed')
-  }
-  for (const name of PENDING) {
-    const email = `${name}@example.com`
-    await addSubscriber(email)
-    stamp(email, 'pending')
-  }
-  for (const name of UNSUBSCRIBED) {
-    const email = `${name}@example.com`
-    const { token } = await addSubscriber(email)
-    await confirmSubscriber(token)
-    await unsubscribeByToken(token)
-    stamp(email, 'unsubscribed')
+    if (status !== 'pending') await confirmSubscriber(token)
+    if (status === 'unsubscribed') await unsubscribeByToken(token)
+    const created = joined(seq)
+    // An unsubscribed address DID confirm once, so it keeps its confirmation date; only a
+    // pending one has never had it. Blanking it for both made the list say that everyone who
+    // left had also never opted in.
+    run(
+      `update subscribers set created_at = ?, confirmed_at = ? where email = ?`,
+      created, status === 'pending' ? null : created + 2 * 60 * 60 * 1000, email,
+    )
   }
 
   // The issue that went out with the newest post. Two failures in it on purpose: the send log
@@ -339,7 +353,7 @@ async function seedSubscribers(origin: number, now: number): Promise<number> {
     }
   }
 
-  return CONFIRMED.length + PENDING.length + UNSUBSCRIBED.length
+  return ARRIVALS.length
 }
 
 /**

@@ -36,7 +36,7 @@ import { POSTS } from './seed-content'
 import { seedComments } from './seed-comments'
 import { seedAdmin } from './seed-admin'
 import { seedActivity } from './seed-activity'
-import { seedMedia } from './seed-media'
+import { seedMedia, seedFiles } from './seed-media'
 
 const DIR = process.argv[2] ?? './.tmp/drive-data'
 const KIND = (process.argv[3] ?? 'text') as 'image' | 'text'
@@ -102,6 +102,7 @@ await savePage({
 
 const comments = await seedComments(postDate)
 const media = await seedMedia()
+const files = await seedFiles()
 
 const s = await getSettings()
 await saveSettings({
@@ -228,8 +229,8 @@ const { token } = createSession(owner.id, { userAgent: 'showcase' })
 console.log(`seeded ${DIR}: ${POSTS.length} posts, home=${MODE}, front kind=${KIND}`)
 console.log(
   `  + ${admin.drafts} draft(s), ${admin.scheduled} scheduled, ${comments} comment(s), `
-  + `${media} media, ${admin.subscribers} subscriber(s), ${admin.redirects} redirect(s), `
-  + `${activity} log entr(ies)`,
+  + `${media} media, ${files} file(s), ${admin.subscribers} subscriber(s), `
+  + `${admin.redirects} redirect(s), ${activity} log entr(ies)`,
 )
 console.log(`  newest post ${new Date(START).toISOString()}${pinned ? ' (SEED_NOW pinned)' : ''}`)
 console.log(`QUIRE_SESSION=${token}`)
