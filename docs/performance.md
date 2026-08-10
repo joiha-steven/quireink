@@ -234,6 +234,28 @@ appended to the admin bundle by the build (Tailwind cannot import a TypeScript m
 
 **Rule:** an admin-only rule never goes in a `src/web/*.css.ts` sheet.
 
+### The admin's size is the owner's problem, but not on every load
+
+Not budgeted (ADR 0006) — but "the owner pays it" is not the same as "the owner pays it
+again every time". Two things were wrong and both are cheap:
+
+- `main.js` (194 KB) and `admin.css` (68 KB) are the two files Bun does not hash, and they
+  went out `no-cache` with **no validator at all**, so 262 KB came down on every admin load
+  while the twelve hashed chunks beside them were `immutable` and free. They are now served
+  under a fingerprinted URL — `main.<hash>.js`, `admin.<hash>.css` — computed in
+  `web/admin/spa.ts` from the bytes, because `[name]-[hash].js` is already the CHUNK pattern
+  and the chunks are also called `main-…`. The bare names still serve, and still revalidate.
+- The shell linked the entry and nothing else, so the browser found the module graph one
+  level at a time. Measured on the dashboard: **four waves, at 4 / 13 / 24 / 31 ms** — on
+  localhost, where a hop costs a millisecond; on a real connection, four round trips of blank
+  screen. `spa.ts` now walks the entry's STATIC imports transitively at startup and emits a
+  `modulepreload` for each. **Three waves**, and the six boot chunks start with the entry
+  rather than after it. The two that remain are the lazy route and its own deps, which is
+  what code-splitting by route means.
+
+Dynamic imports are deliberately NOT preloaded: `import("./Content-hash.js")` is a screen the
+owner may never open, and preloading all fourteen would trade one problem for a worse one.
+
 ## JS — ship only what's used, only when it's used
 
 1. **Two bundles, and a budget in a test.** `core.js` on every public page, `post.js` added

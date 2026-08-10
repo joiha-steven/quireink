@@ -257,3 +257,53 @@ describe('the admin shell carries the owner settings', () => {
     expect(html).toContain('data-motion="off"')
   })
 })
+
+/**
+ * The two files the bundler does not hash are 194 KB and 68 KB, and they were `no-cache`
+ * with no validator — so the owner re-downloaded 262 KB on every admin load, while the
+ * chunks beside them were `immutable` and free.
+ */
+describe('the admin bundle is cacheable and does not arrive one wave at a time', () => {
+  const shell = async (): Promise<string> =>
+    (await app.request('/admin', { headers: { cookie } })).text()
+
+  it('links the entry and the sheet under a fingerprinted name', async () => {
+    const html = await shell()
+    const entry = /<script type="module" src="([^"]+)">/.exec(html)?.[1] ?? ''
+    const sheet = /<link rel="stylesheet" href="(\/admin\/assets\/[^"]+)">/.exec(html)?.[1] ?? ''
+    expect(entry).toMatch(/^\/admin\/assets\/main\.[a-z0-9]+\.js$/)
+    expect(sheet).toMatch(/^\/admin\/assets\/admin\.[a-z0-9]+\.css$/)
+
+    for (const href of [entry, sheet]) {
+      const res = await app.request(href)
+      expect(res.status).toBe(200)
+      expect(res.headers.get('cache-control')).toContain('immutable')
+    }
+  })
+
+  /** A bookmark, or a tab still holding an older shell. It serves, and it revalidates. */
+  it('still serves the bare names, and does not promise those are immutable', async () => {
+    for (const href of ['/admin/assets/main.js', '/admin/assets/admin.css']) {
+      const res = await app.request(href)
+      expect(res.status).toBe(200)
+      expect(res.headers.get('cache-control')).toBe('no-cache')
+    }
+  })
+
+  /**
+   * Without these the browser discovers the module graph one level at a time — measured at
+   * four waves on the dashboard. Static imports only: a route chunk the owner may never
+   * open must NOT be here.
+   */
+  it('preloads the chunks the entry needs to boot, and no route chunk', async () => {
+    const hrefs = [...(await shell()).matchAll(/<link rel="modulepreload" href="([^"]+)">/g)]
+      .map((m) => m[1] ?? '')
+    expect(hrefs.length).toBeGreaterThan(0)
+    for (const href of hrefs) {
+      expect(href).toMatch(/^\/admin\/assets\/main-[a-z0-9]+\.js$/)
+      expect((await app.request(href)).status).toBe(200)
+    }
+    // The lazy routes are named after their component, and none of them may be preloaded.
+    expect(hrefs.some((h) => /\/(Dashboard|Content|PostEditor|Settings|Media)-/.test(h))).toBe(false)
+  })
+})
