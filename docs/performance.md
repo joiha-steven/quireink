@@ -364,3 +364,30 @@ above. It is also what a reader gets if the CDN is bypassed or removed.
 
 Binary bodies are left alone: an image, a font or a WebP variant is already compressed and
 gzipping it spends CPU to add bytes.
+
+### The same bytes are only gzipped once
+
+The middleware runs OUTSIDE the page cache, which stores HTML strings — so a cache hit still
+paid a full gzip, and `/assets/site.<hash>.css`, which cannot change for the life of a build,
+paid one on every single request. Measured on a warm local instance, requests per second with
+compression off and on:
+
+| | off | on, re-gzipping | on, memoised |
+|---|---:|---:|---:|
+| Front page | 5,510 | 3,325 | **4,445** |
+| Article | 4,897 | 3,509 | **4,943** |
+| `site.<hash>.css` | 11,216 | 3,652 | **8,139** |
+
+Compressed bodies are now kept in a map keyed by the CONTENT — the byte length and a
+`Bun.hash` of the body — rather than by path. Same bytes in, same bytes out, so there is
+nothing to invalidate when a write empties the page cache, which is the property that makes
+it safe to have at all. Hashing costs 0.006 ms on a 31 KB page against 0.090 ms to gzip it.
+
+**Not Brotli.** Measured at quality 4: 7.0 KB → 6.8 KB on an article and 14.5 KB → 14.3 KB on
+the admin sheet, for the same CPU or more. The qualities that compress meaningfully better
+cost several times as much, to save bytes the CDN re-compresses anyway.
+
+A **404 is compressed too**, which it was not: it is 19,650 bytes of rendered site shell and
+it is deliberately not page-cached, so a crawler walking dead links paid for all of it every
+time. A **206 is not**, and must never be: a range response describes a slice of the original,
+and compressing the slice makes `content-range` a lie.
