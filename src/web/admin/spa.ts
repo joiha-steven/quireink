@@ -45,9 +45,71 @@ try {
   // in plain words rather than serving a blank page that looks like a broken admin.
 }
 
-/** The entry point's current name, which carries no hash — the chunks do. */
-const ENTRY = '/admin/assets/main.js'
-const STYLES = '/admin/assets/admin.css'
+/**
+ * The two files the bundler does not hash, served under a name that carries one.
+ *
+ * `main.js` and `admin.css` are 194 KB and 68 KB, and they were `cache-control: no-cache`
+ * with no validator — so the owner re-downloaded 262 KB on every single admin load while
+ * the chunks beside them, which DO carry a hash, were `immutable` and free. The public side
+ * has always done this (`/assets/site.<hash>.css`); this is the same trick.
+ *
+ * The name is computed here rather than in the build because `[name]-[hash].js` is already
+ * the CHUNK pattern and the chunks are also called `main-…`: hashing the entry there would
+ * make the one file that must be found by name indistinguishable from the twelve that must
+ * not. So the URL is virtual and `handleAdminAsset` maps it back. A `.` separator, not a
+ * `-`, for the same reason.
+ *
+ * Relative imports still resolve: the browser resolves `./main-abc.js` against the entry's
+ * URL, which is in the same directory whichever name it wears. `admin.css` references no
+ * files at all — its ten `url()`s are data URIs.
+ */
+function fingerprint(name: string): string {
+  const asset = ASSETS.get(name)
+  // 'dev' when the bundle has not been built: the shell says so in words rather than
+  // linking a name that resolves to nothing.
+  return asset ? Bun.hash(asset.body as Uint8Array<ArrayBuffer>).toString(36) : 'dev'
+}
+
+const ENTRY_NAME = `main.${fingerprint('main.js')}.js`
+const STYLES_NAME = `admin.${fingerprint('admin.css')}.css`
+const ENTRY = `/admin/assets/${ENTRY_NAME}`
+const STYLES = `/admin/assets/${STYLES_NAME}`
+
+/**
+ * Every chunk the entry needs before it can run, found by following STATIC imports.
+ *
+ * Without these the browser discovers the module graph one level at a time, because it
+ * cannot know a chunk exists until it has parsed the file that imports it. Measured on the
+ * dashboard: four waves, at 4ms, 13ms, 24ms and 31ms — on localhost, where a hop is a
+ * millisecond. On a real connection that is four round trips of blank screen.
+ *
+ * STATIC only. `import("./Content-hash.js")` is a route the owner may never open, and
+ * preloading all fourteen of those would trade one problem for a worse one.
+ */
+function bootChunks(): string[] {
+  const found: string[] = []
+  const seen = new Set<string>()
+  const queue = ['main.js']
+  while (queue.length > 0) {
+    const asset = ASSETS.get(queue.shift() ?? '')
+    if (!asset) continue
+    const text = new TextDecoder().decode(asset.body)
+    // `from"./x.js"` and the bare side-effect form `import"./x.js"`. A dynamic import has a
+    // parenthesis between the keyword and the string, so it cannot match.
+    for (const match of text.matchAll(/(?:from|import)\s*"\.\/([^"]+\.js)"/g)) {
+      const dep = match[1] ?? ''
+      if (!dep || seen.has(dep)) continue
+      seen.add(dep)
+      found.push(dep)
+      queue.push(dep)
+    }
+  }
+  return found
+}
+
+const PRELOADS = bootChunks()
+  .map((name) => `<link rel="modulepreload" href="/admin/assets/${name}">`)
+  .join('')
 
 /**
  * The owner's live type and colour settings, for the admin document.
@@ -128,6 +190,7 @@ export function adminShell(settings: SiteSettings): string {
 ${tabHead(settings)}
 <meta name="robots" content="noindex, nofollow">
 <link rel="stylesheet" href="${STYLES}">
+${PRELOADS}
 <style>${adminStyles(settings)}</style>
 </head>
 <!-- The base text colour belongs HERE, with the background it has to be legible on.
@@ -152,11 +215,15 @@ export function adminAsset(name: string): Asset | null {
 
 export function handleAdminAsset(c: Context): Response {
   const name = c.req.path.replace('/admin/assets/', '')
-  const asset = adminAsset(name)
+  // The two virtual names map back to the files they fingerprint. The BARE names still
+  // serve — a bookmark, or a shell an old tab is still holding — and still revalidate,
+  // because only the fingerprinted URL carries the promise that the bytes cannot change.
+  const stored = name === ENTRY_NAME ? 'main.js' : name === STYLES_NAME ? 'admin.css' : name
+  const asset = adminAsset(stored)
   if (!asset) return new Response('Not found', { status: 404 })
-  // The entry point has no hash in its name, so it must revalidate; the chunks it pulls in
-  // do, and can be held forever.
-  const immutable = /-[a-z0-9]{8,}\./.test(name)
+  // Every name the shell emits now carries a hash: the bundler's on a chunk, ours on the
+  // entry and the sheet. Anything else is a bare name and must revalidate.
+  const immutable = stored !== name || /-[a-z0-9]{8,}\./.test(name)
   return new Response(asset.body, {
     headers: {
       'content-type': asset.type,
