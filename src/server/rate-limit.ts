@@ -3,28 +3,65 @@
 // quota. Limits are deliberately generous so a real reader/owner never hits them; the
 // point is only to blunt a script hammering a public endpoint. For a multi-replica
 // hosted deploy this must move to a shared store (Redis); documented, not hidden.
+//
+// TWO WINDOW LENGTHS SHARE THIS MAP and that is the thing to keep in mind when editing it.
+// The public endpoints charge a minute; sign-in charges fifteen, and the recovery codes an
+// hour. A bucket therefore carries the window it was written under, because the alternative
+// — one global window used by whichever caller happens to sweep — silently cut the sign-in
+// lockout down to sixty seconds. See `sweep`.
 
-const buckets = new Map<string, number[]>()
+import type { Context } from 'hono'
+
+/** One key's hits, and the window they were charged under. */
+type Bucket = { windowMs: number; times: number[] }
+
+const buckets = new Map<string, Bucket>()
 let lastSweep = 0
 
-// Drop keys whose every timestamp has aged out, so the Map can't grow unbounded on a
-// long-running server (one key per distinct IP, forever, was a slow memory leak).
-function sweep(now: number, windowMs: number): void {
-  if (now - lastSweep < windowMs) return
+/** How often the sweep runs. Not a window: every bucket is judged by its OWN. */
+const SWEEP_EVERY_MS = 60_000
+
+/**
+ * Drop keys whose every timestamp has aged out, so the Map can't grow unbounded on a
+ * long-running server (one key per distinct IP, forever, was a slow memory leak).
+ *
+ * EACH BUCKET IS JUDGED BY THE WINDOW IT WAS WRITTEN UNDER. This used to take the caller's
+ * `windowMs` and apply it to every key in the map, which made the outcome depend on who
+ * swept last: five failed sign-ins wrote a fifteen-minute lockout, then the next ordinary
+ * search request ninety seconds later swept with a sixty-second window and deleted it. The
+ * lockout was real for a minute and then gone, on any site with traffic, and nothing failed
+ * to say so. Reproduced in `rate-limit.test.ts`, "a short window does not sweep away a long
+ * one".
+ */
+function sweep(now: number): void {
+  if (now - lastSweep < SWEEP_EVERY_MS) return
   lastSweep = now
-  for (const [key, times] of buckets) {
-    if (times.length === 0 || now - times[times.length - 1] >= windowMs) buckets.delete(key)
+  for (const [key, bucket] of buckets) {
+    const newest = bucket.times[bucket.times.length - 1]
+    if (newest === undefined || now - newest >= bucket.windowMs) buckets.delete(key)
   }
+}
+
+/** The hits still inside `windowMs`. Reads only — an absent key stays absent. */
+function recentHits(key: string, now: number, windowMs: number): number[] {
+  const bucket = buckets.get(key)
+  if (!bucket) return []
+  return bucket.times.filter((t) => now - t < windowMs)
+}
+
+/** Record one hit and store the window it was charged under. */
+function charge(key: string, now: number, windowMs: number): number[] {
+  const times = recentHits(key, now, windowMs)
+  times.push(now)
+  buckets.set(key, { windowMs, times })
+  return times
 }
 
 // Returns true when this hit exceeds `max` within `windowMs` (i.e. should be blocked).
 export function rateLimited(key: string, max: number, windowMs = 60_000): boolean {
   const now = Date.now()
-  sweep(now, windowMs)
-  const recent = (buckets.get(key) ?? []).filter((t) => now - t < windowMs)
-  recent.push(now)
-  buckets.set(key, recent)
-  return recent.length > max
+  sweep(now)
+  return charge(key, now, windowMs).length > max
 }
 
 // `rateLimited` above both records the hit and reports the verdict, which is right for a
@@ -35,20 +72,16 @@ export function rateLimited(key: string, max: number, windowMs = 60_000): boolea
 
 /** The verdict alone. Records nothing, so a caller can ask before deciding to charge. */
 export function overLimit(key: string, max: number, windowMs = 60_000): boolean {
-  const now = Date.now()
-  const recent = (buckets.get(key) ?? []).filter((t) => now - t < windowMs)
   // `>=`, not `>`: this is asked BEFORE the attempt, so `max` recorded failures means the
   // allowance is already spent and this attempt is the one to refuse.
-  return recent.length >= max
+  return recentHits(key, Date.now(), windowMs).length >= max
 }
 
 /** Charge one hit against a key. Called after an attempt is known to have failed. */
 export function recordHit(key: string, windowMs = 60_000): void {
   const now = Date.now()
-  sweep(now, windowMs)
-  const recent = (buckets.get(key) ?? []).filter((t) => now - t < windowMs)
-  recent.push(now)
-  buckets.set(key, recent)
+  sweep(now)
+  charge(key, now, windowMs)
 }
 
 /** Forget a key. A successful sign-in clears the failures that preceded it. */
@@ -66,13 +99,90 @@ export function resetLimits(): void {
   lastSweep = 0
 }
 
-// Best-effort client IP. Prefer `CF-Connecting-IP` (set by Cloudflare, the documented
-// front-end, and NOT forwardable by the client) so a spoofed `X-Forwarded-For` can't
-// evade the limiter or poison the analytics hash; fall back to the first XFF hop, then
-// 'unknown'. If you front the app with a different proxy, make it set CF-Connecting-IP
-// or strictly overwrite XFF.
-export function clientIp(req: Request): string {
-  const cf = req.headers.get('cf-connecting-ip')?.trim()
+// ---------------------------------------------------------------------------
+// Who the client is
+// ---------------------------------------------------------------------------
+
+/**
+ * Loopback, private and link-local ranges — the addresses a reverse proxy on the same box
+ * (or the same private network) connects from.
+ *
+ * Bun reports an IPv4 peer as an IPv4-mapped IPv6 address (`::ffff:127.0.0.1`), so the
+ * mapping is stripped before the v4 tests.
+ */
+function isLocalHop(address: string): boolean {
+  const ip = address.replace(/^::ffff:/i, '').toLowerCase()
+  if (ip === '::1' || ip === '') return true
+  if (/^f[cd][0-9a-f]{2}:/.test(ip)) return true // unique-local  fc00::/7
+  if (ip.startsWith('fe80:')) return true // link-local
+  const v4 = ip.split('.')
+  if (v4.length !== 4) return false
+  const [a, b] = [Number(v4[0]), Number(v4[1])]
+  if (a === 127 || a === 10) return true
+  if (a === 172 && b >= 16 && b <= 31) return true
+  if (a === 192 && b === 168) return true
+  if (a === 169 && b === 254) return true
+  return false
+}
+
+/**
+ * `TRUST_PROXY=1` for the deployment whose proxy is NOT on the local network — a tunnel, a
+ * PaaS router, a load balancer on a public address. Without it the rule below is automatic
+ * and needs no configuration on any of the ordinary layouts.
+ */
+const trustProxyAlways = (): boolean => (process.env.TRUST_PROXY ?? '').trim() === '1'
+
+/**
+ * The address to key a limit or an analytics hash by.
+ *
+ * The SOCKET PEER is the ground truth: `Bun.serve` reports who actually connected, and a
+ * client cannot forge it. Proxy headers are believed only when that peer is a trusted hop —
+ * loopback or a private address, i.e. the nginx sitting in front on the same box — or when
+ * `TRUST_PROXY=1` says the proxy is somewhere else.
+ *
+ * BOTH HALVES OF THIS WERE BROKEN, and each in a way that measured:
+ *
+ * - `cf-connecting-ip` was read unconditionally, so a request straight to the origin could
+ *   carry a made-up one. Measured on a local instance: 70 requests against a 60/minute cap,
+ *   a different forged value on each, and not one of them was refused. Cloudflare overwrites
+ *   the header, so the four live instances were covered by their deployment and the software
+ *   itself was not — the same gap `web/security-headers.ts` exists to close.
+ *
+ * - With NO proxy in front (the self-hoster running the binary behind a tunnel, or nothing)
+ *   neither header is present and every visitor shared one bucket called 'unknown'. One
+ *   person searching then rate-limited the whole site. Measured the same way: request 16 of
+ *   70 came back 429 from a second client.
+ *
+ * `unknown` remains as the last resort — a unit test builds a bare `Request` with no server
+ * behind it — and it is now genuinely unreachable in a running process.
+ */
+export function clientIp(c: Context): string {
+  const peer = peerAddress(c)
+  if (peer && !isLocalHop(peer) && !trustProxyAlways()) return peer
+
+  // Prefer `CF-Connecting-IP` (set by Cloudflare, the documented front-end, and NOT
+  // forwardable by the client) over `X-Forwarded-For`, whose first hop is whatever the
+  // client sent when the proxy appends rather than overwrites.
+  const cf = c.req.header('cf-connecting-ip')?.trim()
   if (cf) return cf
-  return (req.headers.get('x-forwarded-for') ?? '').split(',')[0].trim() || 'unknown'
+  const forwarded = (c.req.header('x-forwarded-for') ?? '').split(',')[0]?.trim()
+  if (forwarded) return forwarded
+  return peer || 'unknown'
+}
+
+/**
+ * The peer address, or '' when there is no server to ask.
+ *
+ * `Bun.serve` passes itself as the second argument to `fetch`, which is what Hono surfaces
+ * as `c.env`. In a test the app is driven through `app.request()` and there is no server,
+ * so this has to answer for that case rather than throw.
+ */
+function peerAddress(c: Context): string {
+  const server = c.env as unknown as { requestIP?: (req: Request) => { address: string } | null }
+  if (typeof server?.requestIP !== 'function') return ''
+  try {
+    return server.requestIP(c.req.raw)?.address ?? ''
+  } catch {
+    return ''
+  }
 }

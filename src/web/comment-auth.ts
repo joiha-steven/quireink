@@ -85,7 +85,7 @@ export function commentAuthRoutes(): Hono {
       || !keys.googleClientId || !keys.googleClientSecret) {
       return bounce(`${back}${ERROR_FRAGMENT}`)
     }
-    if (rateLimited(`comment-auth:${clientIp(c.req.raw)}`, PER_MINUTE)) {
+    if (rateLimited(`comment-auth:${clientIp(c)}`, PER_MINUTE)) {
       return bounce(`${back}${ERROR_FRAGMENT}`)
     }
 

@@ -27,7 +27,7 @@ import { escapeAttr, escapeHtml } from '@/utils'
 const PER_MINUTE = 60
 
 export async function handleSearchPage(c: Context): Promise<Response> {
-  if (rateLimited(`search-page:${clientIp(c.req.raw)}`, PER_MINUTE)) {
+  if (rateLimited(`search-page:${clientIp(c)}`, PER_MINUTE)) {
     return c.text('Too many requests', 429)
   }
   const settings = await getSettings()
