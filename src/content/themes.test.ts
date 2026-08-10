@@ -64,20 +64,20 @@ describe('dark before the island runs', () => {
   const css = themesToCss(defaultThemes(), DEFAULT_PRESET_ID)
   const base = getDefaultTheme(defaultThemes(), DEFAULT_PRESET_ID)
 
-  it('applies the dark tokens by system preference while `data-theme` is absent', () => {
+  it('applies the dark tokens by system preference while `data-scheme` is absent', () => {
     const block = /@media \(prefers-color-scheme:dark\)\{([^@]*)\}$/.exec(css)?.[1] ?? ''
-    expect(block).toContain(':root:not([data-theme])')
+    expect(block).toContain(':root:not([data-scheme])')
     expect(block).toContain(`--c-bg:${base.dark.bg}`)
     expect(block).toContain(`--c-text:${base.dark.text}`)
   })
 
   /**
-   * The island sets `data-theme` on its first apply, which is what takes this block out of
+   * The island sets `data-scheme` on its first apply, which is what takes this block out of
    * the cascade. Without the `:not`, an explicit LIGHT choice on a dark system would be
    * overridden by the reader's OS forever.
    */
   it('stands down the moment the island states a resolved mode', () => {
-    expect(css).toContain(':root:not([data-theme])')
+    expect(css).toContain(':root:not([data-scheme])')
     expect(css).not.toContain('@media (prefers-color-scheme:dark){:root{')
   })
 
@@ -85,6 +85,6 @@ describe('dark before the island runs', () => {
   it('declares color-scheme in all three states', () => {
     expect(css).toContain(':root{color-scheme:light')
     expect(css).toContain('.dark{color-scheme:dark')
-    expect(css).toContain(':root:not([data-theme]){color-scheme:dark')
+    expect(css).toContain(':root:not([data-scheme]){color-scheme:dark')
   })
 })

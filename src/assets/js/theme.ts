@@ -11,12 +11,12 @@
 // cached page would carry whichever mode the first visitor happened to have.
 //
 // So CSS decides it, with a `prefers-color-scheme` block that applies only while `<html>`
-// has no `data-theme` (`content/themes.ts`), and this file's job is to set that attribute —
+// has no `data-scheme` (`content/themes.ts`), and this file's job is to set that attribute —
 // which both hands over from the media query and records the reader's actual choice. A
 // system-dark reader on the default mode now opens dark on the first frame; it was a white
 // flash on every navigation.
 //
-// `data-theme` is the RESOLVED light/dark, never the mode: 'system' and 'time' are questions,
+// `data-scheme` is the RESOLVED light/dark, never the mode: 'system' and 'time' are questions,
 // and the attribute has to be an answer or the CSS cannot use it.
 
 import { el, label } from './dom'
@@ -76,7 +76,7 @@ export function theme(): void {
     // Setting this is what takes the `prefers-color-scheme` block out of the cascade, so it
     // has to happen on the FIRST apply and not only when the reader picks something — until
     // it exists the sheet is still answering the question on its own.
-    html.dataset.theme = dark ? 'dark' : 'light'
+    html.dataset.scheme = dark ? 'dark' : 'light'
     drawIcon(button, dark)
   }
 
@@ -101,9 +101,16 @@ export function theme(): void {
 
   // The menu is built once and shown on demand. Its rows carry the same server-translated
   // labels as everything else, so this file holds no language of its own.
-  const menu = el('div', { class: 'theme-menu', hidden: '' })
+  //
+  // A GROUP OF BUTTONS, not `role="menu"`. Which mode is current was marked by a class, and
+  // the tick beside it is drawn by CSS — so a reader using a screen reader heard four
+  // identical buttons and no way to tell which one they were already on. `aria-pressed` is
+  // the honest fix: these are toggle buttons and they behave like toggle buttons. Declaring
+  // `role="menu"` would promise arrow-key navigation that this widget does not implement,
+  // which is worse than plain buttons rather than better.
+  const menu = el('div', { class: 'theme-menu', role: 'group', 'aria-label': label('theme'), hidden: '' })
   for (const m of MODES) {
-    const row = el('button', { type: 'button', 'data-mode': m }, label(LABEL[m]))
+    const row = el('button', { type: 'button', 'data-mode': m, 'aria-pressed': 'false' }, label(LABEL[m]))
     row.addEventListener('click', () => {
       mode = m
       try {
@@ -120,7 +127,10 @@ export function theme(): void {
   }
   const mark = () => {
     for (const row of menu.querySelectorAll<HTMLElement>('button')) {
-      row.classList.toggle('is-current', row.dataset.mode === mode)
+      const current = row.dataset.mode === mode
+      row.classList.toggle('is-current', current)
+      // The class draws the tick; this is the half a screen reader can hear.
+      row.setAttribute('aria-pressed', String(current))
     }
   }
   mark()
@@ -133,7 +143,8 @@ export function theme(): void {
     menu.hidden = true
     button.setAttribute('aria-expanded', 'false')
   }
-  button.setAttribute('aria-expanded', 'false')
+  // `aria-haspopup="true"` and the initial `aria-expanded="false"` are in the markup
+  // (`web/chrome.ts`): they never change, and the reader's bundle is budgeted in bytes.
   button.addEventListener('click', (e) => {
     e.stopPropagation() // otherwise the document handler below shuts it in the same tick
     menu.hidden = !menu.hidden

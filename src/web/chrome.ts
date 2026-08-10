@@ -139,8 +139,13 @@ export function siteHeader(settings: SiteSettings, opts: ChromeOptions): string 
   // The sun is what the server can honestly draw: the reader's mode lives in their own
   // storage, and the page cache is keyed by URL alone (Invariant 1), so a server-rendered
   // moon would be wrong for everyone who did not choose dark. The island swaps it on load.
+  // `aria-haspopup` and the initial `aria-expanded` are STATIC, so they are markup rather
+  // than two `setAttribute` calls in `core.js`. The reader's JS budget is 8,800 bytes and the
+  // accessibility pass that added them put it 59 over; a fact that never changes does not
+  // belong in a bundle that is defended byte by byte.
   actions.push(`<button type="button" class="icon-btn" data-theme-toggle
- aria-label="${escapeAttr(s.theme)}" title="${escapeAttr(s.theme)}">${ICON.sun}${token(s.shortTheme)}</button>`)
+ aria-label="${escapeAttr(s.theme)}" title="${escapeAttr(s.theme)}"
+ aria-haspopup="true" aria-expanded="false">${ICON.sun}${token(s.shortTheme)}</button>`)
   if (settings.features.gridView) {
     // A BUTTON, not a link: there is no server-side URL for "the same list as a grid", and
     // inventing one would be a second URL for the same content. It hides itself on a page

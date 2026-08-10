@@ -26,18 +26,28 @@ export function search(): void {
   let dialog: HTMLDialogElement | null = null
   let latest = 0
 
+  /**
+   * A message where the results go.
+   *
+   * An `<li>`, not a `<p>`: the container is a `<ul>` and the only child a list may have is
+   * a list item. It rendered `<ul><p class="empty">…</p></ul>`, which browsers draw fine and
+   * a screen reader reports as a list of zero items — while a sentence sits on the screen
+   * saying otherwise. `.empty` is a colour rule (`public.css.ts`) and does not care.
+   */
+  const message = (list: HTMLElement, key: 'searchHint' | 'searchEmpty') => {
+    const row = el('li', { class: 'empty' })
+    row.textContent = label(key)
+    list.appendChild(row)
+  }
+
   const show = (results: Result[], list: HTMLElement, query: string) => {
     list.replaceChildren()
     if (!query) {
-      const hint = el('p', { class: 'empty' })
-      hint.textContent = label('searchHint')
-      list.appendChild(hint)
+      message(list, 'searchHint')
       return
     }
     if (!results.length) {
-      const none = el('p', { class: 'empty' })
-      none.textContent = label('searchEmpty')
-      list.appendChild(none)
+      message(list, 'searchEmpty')
       return
     }
     for (const r of results) {
@@ -56,7 +66,11 @@ export function search(): void {
       type: 'search', class: 'search-input', 'aria-label': label('search'),
       placeholder: label('search'), autocomplete: 'off',
     })
-    const list = el('ul', { class: 'search-results' })
+    // `aria-live`, because the results arrive without anything moving the focus: a reader
+    // using a screen reader typed into a box and nothing announced that an answer had come
+    // back, or that none had. `polite` waits for a pause in typing, which is what the
+    // debounce above produces anyway.
+    const list = el('ul', { class: 'search-results', 'aria-live': 'polite' })
     // `lightboxClose` rather than a new `close` key: it already says exactly this in six
     // languages, and a second key with the same meaning is how a locale table drifts.
     const close = el('button', { type: 'button', class: 'search-close', 'aria-label': label('lightboxClose') }, '✕')
