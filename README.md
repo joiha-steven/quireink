@@ -1,6 +1,6 @@
 <div align="center">
 
-# quire**INK** &nbsp;`2.0.1`
+# quire**INK** &nbsp;`2.0.2`
 
 **A blog you host yourself, and an AI agent can run for you.**
 One process. Two SQLite files. No cloud account anywhere in the path.
@@ -43,16 +43,18 @@ Three things shaped it.
 
 **The reading page is the product.** Type, colour, size, spacing, layout: all of it is a setting you change in the admin. Not one size or colour is written into the reader's stylesheet, and the build fails if someone puts one there.
 
-**Readers download 4.4 KB of JavaScript, and nothing from anyone else.** Pages arrive as finished HTML. A few small scripts handle search, the theme switch and book mode. React stays in the admin and never reaches a reader.
+**Readers download between 3.4 KB and 7.7 KB of JavaScript, and nothing from anyone else.** Pages arrive as finished HTML. A few small scripts handle search, the theme switch and book mode. React stays in the admin and never reaches a reader.
 
 **An agent can do the writing.** Connect Claude or any MCP client and it can draft, tag, schedule and publish for you, through exactly the rules the admin follows.
 
 You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE).
 
-> **2.0.1 came out on 2026-08-07** and runs the demo above plus the author's own blog at
-> [manhhung.me](https://manhhung.me). Before it shipped, the whole thing was audited by
-> measuring the running site rather than reading the source. The
-> [changelog](./CHANGELOG.md) has everything that changed.
+> **2.0.2 came out on 2026-08-10** and runs the demo above plus the author's own blog at
+> [manhhung.me](https://manhhung.me). It is twelve fixes and no new features — a rate limit
+> that a forged header could walk past, a dark-mode reader who opened every page on a white
+> one, and a stylesheet that was re-compressed on every request. Found by measuring the
+> running site rather than reading the source, which is how the last release was audited too.
+> The [changelog](./CHANGELOG.md) has everything that changed.
 
 ---
 
@@ -92,13 +94,13 @@ You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE).
 
 These are off the network, first visit, nothing cached. It is what a stranger on a phone actually waits for.
 
-Re-measured for 2.0.1 against the origin, not through the CDN. The CSS and JavaScript rows are build artefacts and the same bytes on every install; the totals are this site — Vietnamese, Literata to read and JetBrains Mono for the furniture — because the fonts are cut per script and a browser fetches only the ranges your pages actually use. Fonts fell 86 KB to 67 KB in 2.0.1 without a face being dropped.
+The CSS and JavaScript rows are build artefacts — the same bytes on every install — and are read off the 2.0.2 build. The totals were measured for 2.0.1 against the origin, not through the CDN, and they are this site: Vietnamese, Literata to read and JetBrains Mono for the furniture. They are not a property of the software, because the fonts are cut per script and a browser fetches only the ranges your pages actually use. Fonts fell 86 KB to 67 KB in 2.0.1 without a face being dropped.
 
 | | Home | A post | |
 |:---|---:|---:|:---|
 | **Requests** | 10 | 10 | |
 | **Total&nbsp;transferred** | **106 KB** | **114 KB** | 67 KB of that is the fonts |
-| **JavaScript** | **3.3 KB** | **7.6 KB** | written by hand, no framework |
+| **JavaScript** | **3.4 KB** | **7.7 KB** | written by hand, no framework |
 | **CSS** | 8.0 KB | 8.0 KB | one file, minified, cached forever |
 | **Third-party&nbsp;requests** | **0** | **0** | no CDN, no font host, no tracker |
 | **Coming back** | ~19 KB | ~24 KB | only the HTML is fetched again |
@@ -129,7 +131,7 @@ It stays this way because of a few decisions that are hard to walk back.
 
 **Instead of a hosted platform.** Your writing is two SQLite files on your own disk. No account, no plan, no export button you have to hope still works in five years.
 
-**Instead of WordPress.** No PHP, no MySQL, no plugins to keep patched. One process, and readers get 4 KB of JavaScript.
+**Instead of WordPress.** No PHP, no MySQL, no plugins to keep patched. One process, and readers get single-digit kilobytes of JavaScript.
 
 **Instead of a static site generator.** You get a real admin. Write, upload a photo, schedule and publish from a laptop or a phone, with search, comments, a newsletter and stats already there. No rebuild, no deploy, no git push to fix a typo.
 

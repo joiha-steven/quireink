@@ -1,5 +1,167 @@
 # CHANGELOG
 
+## 2026-08-10 — Quire Ink 2.0.2
+
+**Twelve commits and not one new feature.** Every entry below is a defect, and eight of them
+were found the same way the 2.0.1 fixes were: by driving the running site and measuring it,
+not by reading the source. The upgrade is a drop-in — same install, same settings, same
+database — and the rate-limit fix is the reason to take it.
+
+One new environment variable, `TRUST_PROXY`, and almost nobody needs to set it.
+
+### The sign-in lockout lasted about a minute, and a forged header defeated the rate limit
+
+Two defects in `server/rate-limit.ts`, both reachable from the internet.
+
+**Every bucket was swept with whichever window the last caller happened to pass.** Public
+endpoints charge a minute, sign-in fifteen, recovery codes an hour — one map, one sweep, and
+the sweep applied the current caller's window to every key in it. So five failed sign-ins
+wrote a fifteen-minute lockout and the next ordinary search request ninety seconds later
+deleted it. On a site with any traffic the lockout was real for about a minute. A bucket now
+carries the window it was written under and is judged by its own.
+
+**`CF-Connecting-IP` was believed from anyone.** True that Cloudflare will not let a client
+forward that header — and false in the one case that matters, a request straight to the
+origin. Measured: 70 requests against a 60-a-minute cap, a different forged value on each,
+all 70 answered. The other half of the same function was as bad in the opposite direction:
+with no proxy at all neither header exists, `clientIp` returned the string `unknown`, and
+every visitor shared one bucket — one person searching rate-limited the whole site, measured
+at request 16 of 70 from a second client.
+
+The socket peer is the ground truth and `Bun.serve` reports it, so that is what is counted. A
+proxy header is believed when the connection came from loopback or a private address — nginx
+on the same box, which is every layout in [`docs/self-host.md`](docs/self-host.md) — or when
+**`TRUST_PROXY=1`** says the hop in front is somewhere public. Existing installs need no
+change.
+
+### A reader whose machine is dark opened every page on a white one
+
+There was no `prefers-color-scheme` rule anywhere in the public stylesheet: measured at 0 of
+429. `.dark` is applied by a deferred module, so for one paint the page is whatever CSS alone
+can decide — and `system` is the default mode. Every dark-mode reader got a white flash on
+every navigation.
+
+The dark tokens now ship under `@media (prefers-color-scheme:dark){:root:not([data-theme])}`,
+and the island sets `data-theme` to the resolved light/dark on its first apply rather than
+only when a reader picks something. Measured after, OS dark and no stored choice: background
+`rgb(14,14,14)`, `color-scheme: dark`, identical to what the island later produces. It was
+`#fcfcfc`.
+
+The cost is stated rather than glossed: a reader who explicitly chose LIGHT on a dark machine
+now gets the inverse flash for exactly as long as the dark reader used to get theirs. That
+moves it off the common case onto the rare one. Removing it altogether needs an inline script,
+which this project does not have anywhere and asserts it does not.
+
+### The front page lazy-loaded its own LCP image
+
+`front-card.ts` set `loading="lazy"` on every image it built, including the lead's — measured
+inside the first screen at both 1000px and 812px viewport heights. Lazy takes the one image
+the page is judged by out of the preload scanner's reach. The rule already existed in two
+other places; this was the one that had not read it.
+
+### Compressing a response cost more than sending it
+
+`web/compress.ts` runs outside the page cache, so every cache hit re-derived a compressed body
+it had already produced. Requests per second on a warm local instance:
+
+| | compression off | re-gzipping | memoised |
+|---|---:|---:|---:|
+| Front page | 5,510 | 3,325 | **4,445** |
+| Article | 4,897 | 3,509 | **4,943** |
+| `site.<hash>.css` | 11,216 | 3,652 | **8,139** |
+
+Compression had been costing 40% of the front page's throughput and two thirds of the
+stylesheet's — on a file that is content-hashed, `immutable`, and cannot change for the life of
+a build. The cache is keyed by the body's bytes rather than by path, so a write that empties the
+page cache has nothing to invalidate here.
+
+A **404 is now compressed**: it is 19,650 bytes of rendered site shell and it is deliberately
+not page-cached, so a crawler walking dead links paid for all of it every time. A 206 still is
+not, because compressing a slice would make `content-range` a lie.
+
+Brotli was measured and declined: quality 4 saves 2.9% on an article and 1.4% on the admin
+sheet for the same CPU or more, to save bytes the CDN re-compresses anyway.
+
+### The owner re-downloaded 262 KB of admin on every load
+
+`main.js` (194 KB) and `admin.css` (68 KB) are the two files the bundler does not hash, and they
+went out `no-cache` with no ETag and no Last-Modified — so both came down in full every time,
+while the twelve hashed chunks beside them were free. They are fingerprinted now, and the bare
+names still serve for a tab holding an older shell.
+
+The shell also linked the entry and nothing else, so the browser discovered the module graph one
+level at a time: four waves, measured at 4 / 13 / 24 / 31 ms on localhost, which on a real
+connection is four round trips of blank screen. The entry's static imports are walked at startup
+and emitted as `modulepreload`; three waves now, and the two that remain are the lazy route and
+its dependencies, which is what splitting by route means. Route chunks are deliberately not
+preloaded.
+
+None of this reaches a reader. The admin's weight is the owner's alone
+([ADR 0006](docs/decisions/0006-admin-stays-react-spa.md)).
+
+### Two things a screen reader got wrong
+
+The search overlay's empty state was a `<p>` inside a `<ul>`. The only child a list may have is
+a list item, so a browser drew it correctly and assistive technology announced "list, 0 items"
+while a sentence sat on screen saying otherwise. Both messages are list items now, and the list
+carries `aria-live="polite"` — results arrive without the focus moving, and nothing had
+announced that an answer came back, or that none had.
+
+The theme menu marked the current mode with a CSS class and drew its tick from CSS, so a reader
+heard four identical buttons and no way to tell which one they were already on. They are toggle
+buttons in a labelled group with `aria-pressed` now — **not** `role="menu"`, which would promise
+arrow-key navigation this widget does not implement.
+
+The accessibility pass put `core.js` 59 bytes over its 8,800-byte budget and the guard stopped
+the build, which is the guard doing its job. It is at 8,780 and the budget did not move.
+
+### Every webfont rebuilt from upstream
+
+The 2.0.1 subsetting left four families alone. Extending it to them, and moving JetBrains Mono
+onto the same upstream path, took **inter −7,572 B** across three subsets and **IBM Plex Mono
+−5,564 B** across six.
+
+Source Sans was the last family still carrying `wght 200..900` for a product that offers
+400/500/600/700. Clamping the already-shipped file was worth 832 B and had been measured and
+dismissed on that basis; from upstream the same clamp is worth **7,076 B**, and the clamped file
+covers 20 more codepoints than the one it replaces. All eight families are still offered in
+Settings — the two Source faces and Plex Mono were rebuilt rather than dropped.
+
+### Smaller things
+
+- **`docs/performance.md` was split.** It crossed the 400-line cap, so
+  [`docs/delivery.md`](docs/delivery.md) now takes what the SERVER does before it answers — the
+  render cache, the CDN purge, compression — and `performance.md` stays the resource-loading
+  law, what a BROWSER fetches.
+- **The README's Speed table was re-measured** against the origin rather than carried forward
+  from 2.0.0. Three of five rows were wrong by more than rounding.
+- **`bun run build` no longer leaves the tree dirty.** `bun build --compile` drops a 61 MB
+  dotfile beside `dist/` that nothing cleans up, and it was untracked and unignored.
+- **`TRUST_PROXY` was missing from the Vietnamese README's environment table.** Added with this
+  release; it had been documented in English only.
+- **The README's headline JavaScript figure contradicted its own Speed table.** It said readers
+  download "4.4 KB", fifty lines above a table reading 3.3 and 7.6 — 4.4 KB was `post.js` on its
+  own, a bundle rather than anything a page costs, and it survived 2.0.1 re-measuring the table
+  underneath it. Both READMEs now give the range a page actually costs, and the artefact rows
+  are read off this build: **3.4 KB** on a listing, **7.7 KB** on an article.
+
+### The demo
+
+Not the product, but it is where most people meet it, so it is in the release.
+[demo.quireink.com](https://demo.quireink.com) went from **18 posts to 28**, and the owner-facing
+half stopped being photographs of absence: nothing had been in Trash, the Media library was a
+drop zone, the subscriber list said "No subscribers yet", and no post was waiting anywhere for
+the scheduled publishing that is a headline feature.
+
+The fixture also had a claim problem. It shipped with four highlights, three footnotes, one
+callout and one equation across eighteen posts — no code fence and no table anywhere — which is
+how a site that renders maths, code, tables and five callout types came to look like a site that
+renders paragraphs. Each new post is written around one of those gaps.
+
+Its dates follow the clock now instead of a pinned constant, so the demo no longer ages a month
+between refreshes; `SEED_NOW` pins them for the README plates, which were themselves pictures of
+the fixture from two releases ago and have been reshot.
+
 ## 2026-08-07 — Quire Ink 2.0.1
 
 **The product has a name, a licence and three features it did not have on 2026-07-30.** Sixty-nine
