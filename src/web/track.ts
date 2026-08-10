@@ -31,7 +31,7 @@ export async function handleTrack(c: Context): Promise<Response> {
     const path = typeof body.path === 'string' ? body.path : ''
     if (!path) return c.body(null, 204)
 
-    const ip = clientIp(c.req.raw)
+    const ip = clientIp(c)
     if (rateLimited(`track:${ip}`, PER_MINUTE)) return c.body(null, 204)
     // Before the rate limiter's own budget is spent on it, and before anything is parsed
     // further: the owner and the box are not readers.

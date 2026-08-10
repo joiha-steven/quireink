@@ -42,7 +42,7 @@ async function readEmail(c: Context): Promise<{ email: string; wantsHtml: boolea
 }
 
 export async function handleSubscribe(c: Context): Promise<Response> {
-  if (rateLimited(`subscribe:${clientIp(c.req.raw)}`, SIGNUPS_PER_MINUTE)) {
+  if (rateLimited(`subscribe:${clientIp(c)}`, SIGNUPS_PER_MINUTE)) {
     return fail(c, 'Too many requests', 429)
   }
   const { email, wantsHtml } = await readEmail(c)

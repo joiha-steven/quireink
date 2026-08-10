@@ -63,6 +63,16 @@ because an optional secret is one an install can be left running without.
 each request, which behind a proxy means feeds, OG images and password-reset links come out
 pointing at an internal hostname.
 
+**`TRUST_PROXY=1` — only if your proxy is not on this machine or this private network.**
+Rate limits and the analytics visitor hash are keyed by the reader's address, and the app
+takes it from the socket, which a client cannot forge. `CF-Connecting-IP` and
+`X-Forwarded-For` are believed only when the connection came from a loopback or private
+address — which is the layout below, and every other layout where a proxy sits in front on
+the same box. Set `TRUST_PROXY=1` when the hop in front reaches you over a public address
+(a tunnel, a PaaS router, a load balancer elsewhere); without it, every reader behind it
+would be counted as that one hop. Do NOT set it on an origin the internet can reach
+directly: it makes the header believable again, and the header is one line of a request.
+
 Everything else — SMTP, Turnstile, Cloudflare, the site's own name and language — is
 entered in the admin and stored in the database.
 

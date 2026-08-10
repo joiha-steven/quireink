@@ -85,7 +85,7 @@ async function inlineImage(url: string): Promise<string | undefined> {
 export async function handleOg(c: Context): Promise<Response> {
   // Before anything is parsed, fetched or drawn: the work this route does is the reason it
   // needs a cap, so nothing expensive may happen above the cap.
-  if (rateLimited(`og:${clientIp(c.req.raw)}`, CARDS_PER_MINUTE)) {
+  if (rateLimited(`og:${clientIp(c)}`, CARDS_PER_MINUTE)) {
     return c.text('Too many requests', 429, { 'retry-after': '60' })
   }
   const url = new URL(c.req.url)

@@ -134,7 +134,7 @@ export function publicOpsRoutes(): Hono {
     // was an unauthenticated lever on the most expensive work the process can do, on a
     // runtime with exactly one thread. A scheduler on the tightest sensible cadence spends
     // one of these a minute; anything past twelve is not a scheduler.
-    if (rateLimited(`cron:${clientIp(c.req.raw)}`, CRON_PER_MINUTE)) {
+    if (rateLimited(`cron:${clientIp(c)}`, CRON_PER_MINUTE)) {
       return fail(c, 'Too many requests', 429)
     }
     // When CRON_SECRET is set, the scheduler sends it as a Bearer token. Unset means open,

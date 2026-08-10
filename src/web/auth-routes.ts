@@ -100,7 +100,7 @@ export async function handleLogin(c: Context): Promise<Response> {
   const result = await submitPassword({
     username: values.username,
     password: values.password,
-    ip: clientIp(c.req.raw),
+    ip: clientIp(c),
   })
 
   if (result.status === 'rate-limited') {
@@ -152,7 +152,7 @@ export async function handleTwoFactor(c: Context): Promise<Response> {
   const result = await submitSecondFactor({
     ticket: values.ticket,
     code: values.code,
-    ip: clientIp(c.req.raw),
+    ip: clientIp(c),
     userAgent: c.req.header('user-agent'),
   })
 
@@ -263,7 +263,7 @@ export async function handleEnrolDone(c: Context): Promise<Response> {
   if (!pendingCodes.has(values.ticket)) return refuse()
 
   const session = completeEnrolment(values.ticket, {
-    ip: clientIp(c.req.raw),
+    ip: clientIp(c),
     userAgent: c.req.header('user-agent'),
   })
   pendingCodes.delete(values.ticket)

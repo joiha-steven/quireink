@@ -54,7 +54,7 @@ export async function handleCommentsPost(c: Context): Promise<Response> {
   const { comments } = await getSettings()
   if (!comments.enabled) return fail(c, 'Comments are disabled', 403)
 
-  const ip = clientIp(c.req.raw)
+  const ip = clientIp(c)
   // Best-effort, from the CDN edge. Absent without one.
   const country = (c.req.header('cf-ipcountry') ?? '').trim()
   if (rateLimited(`comment:${ip}`, PER_MINUTE)) {

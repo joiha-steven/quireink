@@ -211,7 +211,7 @@ export function mcpOAuthRoutes(): Hono {
     // Registration is only useful when MCP is on. Refusing otherwise stops a disabled
     // server being used to grow the clients table.
     if (!(await mcpEnabled())) return corsJson({ error: 'temporarily_unavailable' }, 503)
-    if (rateLimited(`mcp-register:${clientIp(c.req.raw)}`, 5)) {
+    if (rateLimited(`mcp-register:${clientIp(c)}`, 5)) {
       return corsJson({ error: 'too_many_requests' }, 429)
     }
 

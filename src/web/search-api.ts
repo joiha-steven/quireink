@@ -18,7 +18,7 @@ import { fail, json } from '@/web/api'
 const PER_MINUTE = 60
 
 export async function handleSearch(c: Context): Promise<Response> {
-  if (rateLimited(`search:${clientIp(c.req.raw)}`, PER_MINUTE)) {
+  if (rateLimited(`search:${clientIp(c)}`, PER_MINUTE)) {
     return fail(c, 'Too many requests', 429)
   }
   // The same gate the `/search` page honours. Off means off everywhere, not just in the UI.
