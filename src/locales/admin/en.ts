@@ -416,7 +416,7 @@ const en = {
   featBookModeDesc: 'Let readers open a post as a fullscreen two-column book (desktop and iPad).',
   featDeckDesc: 'Show the excerpt under a post title, above the body.',
   seoCanonical: 'Site address (canonical)',
-  seoCanonicalHint: 'Used for sitemap, RSS, schema, llms.txt, OG image and the canonical tag. Leave blank to use your site URL (SITE_URL).',
+  seoCanonicalHint: 'Used for sitemap, RSS, schema, llms.txt, OG image and the canonical tag. Leave blank to use SITE_URL — and if that is not set either, all of them say http://localhost:3000, which readers never see and crawlers always do.',
   seoAutoSchema: 'Auto schema (JSON-LD)',
   seoAutoSchemaDesc: 'Adds structured data for Google: WebSite on the home page, BlogPosting on each post.',
   seoSitemapDesc: 'Lists every post, page, category and tag for full search-engine crawling.',

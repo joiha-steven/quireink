@@ -416,7 +416,7 @@ const vi = {
   featBookModeDesc: 'Cho người đọc mở bài viết dạng sách hai cột toàn màn hình (desktop và iPad).',
   featDeckDesc: 'Hiện phần tóm tắt dưới tiêu đề bài, trên phần thân bài.',
   seoCanonical: 'Địa chỉ trang (canonical)',
-  seoCanonicalHint: 'Dùng cho sitemap, RSS, schema, llms.txt, ảnh OG và thẻ canonical. Để trống sẽ tự dùng URL của trang (SITE_URL).',
+  seoCanonicalHint: 'Dùng cho sitemap, RSS, schema, llms.txt, ảnh OG và thẻ canonical. Để trống sẽ dùng SITE_URL — mà nếu SITE_URL cũng chưa đặt thì tất cả đều ghi http://localhost:3000, người đọc không thấy nhưng công cụ tìm kiếm thì luôn thấy.',
   seoAutoSchema: 'Tự động Schema (JSON-LD)',
   seoAutoSchemaDesc: 'Chèn dữ liệu có cấu trúc cho Google: WebSite ở trang chủ, BlogPosting ở mỗi bài viết.',
   seoSitemapDesc: 'Liệt kê mọi bài viết, trang, danh mục và thẻ để công cụ tìm kiếm thu thập đầy đủ.',

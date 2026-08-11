@@ -416,7 +416,7 @@ const de = {
   featBookModeDesc: 'Leser können einen Beitrag als zweispaltiges Vollbild-Buch öffnen (Desktop und iPad).',
   featDeckDesc: 'Auszug unter dem Titel über dem Fließtext zeigen.',
   seoCanonical: 'Website-Adresse (kanonisch)',
-  seoCanonicalHint: 'Wird für Sitemap, RSS, Schema, llms.txt, OG-Bild und den Canonical-Tag verwendet. Leer lassen, um die Website-URL (SITE_URL) zu nutzen.',
+  seoCanonicalHint: 'Wird für Sitemap, RSS, Schema, llms.txt, OG-Bild und den Canonical-Tag verwendet. Leer lassen, um SITE_URL zu nutzen — ist auch das nicht gesetzt, steht in allen http://localhost:3000, was Leser nie und Crawler immer sehen.',
   seoAutoSchema: 'Auto-Schema (JSON-LD)',
   seoAutoSchemaDesc: 'Fügt strukturierte Daten für Google hinzu: WebSite auf der Startseite, BlogPosting bei jedem Beitrag.',
   seoSitemapDesc: 'Listet jeden Beitrag, jede Seite, Kategorie und jedes Schlagwort für vollständiges Crawling auf.',

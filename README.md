@@ -227,9 +227,10 @@ These are the only things that live outside the admin.
 | Variable | Needed | What it does |
 |---|:---:|---|
 | `DATA_DIR` | ✅ | Where `quire.db` and `analytics.db` go. Defaults to `./data` |
-| `SITE_URL` | ✅ | Your public address, used in feeds, OG images and email. Leave it empty and the app guesses per request, which goes wrong behind a proxy |
+| `SITE_URL` | ✅ | Your public address, used in feeds, OG images and email. Leave it empty and every one of them says `http://localhost:3000` — the site still reads fine, so the only things that notice are crawlers and mail clients. It is deliberately not guessed from the request |
 | `STORAGE_LOCAL_DIR` | ◻️ | Where uploads go, served at `/uploads`. Defaults to `./uploads` |
 | `PORT` | ◻️ | Defaults to `3000` |
+| `HOST` | ◻️ | Which interface to listen on. Defaults to `127.0.0.1`, which is right when a reverse proxy sits in front on the same machine. Set `0.0.0.0` when it does not — another machine, or a container that has to be reachable from outside |
 | `MAX_UPLOAD_MB` | ◻️ | Largest single upload the app will store. Defaults to `64`, matching the `client_max_body_size` in the recommended vhost so the two refuse the same file. `0` = no limit |
 | `STORAGE_QUOTA_GB` | ◻️ | Largest the uploads folder may grow, counting the smaller copies made from each image. Defaults to `5`; an upload that would go past it is refused. `0` = no limit |
 | `CRON_SECRET` | ◻️ | Guards `/api/cron`, which publishes scheduled posts and tidies image variants |
