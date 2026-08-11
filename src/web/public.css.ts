@@ -20,7 +20,7 @@ import { FRONT_CSS } from '@/web/front.css'
 import { UTILITY_CSS } from '@/web/utility.css'
 
 const BASE_CSS = `
-/* MOTION TOKENS. Three durations, and no easing token. docs/conventions.md promised these
+/* MOTION TOKENS. Three durations, and no easing token. docs/conventions/motion.md promised these
    since the frozen tree and 2.0 had none, so every duration in islands.css.ts was a literal.
    Counted before deciding: twelve motion declarations across three files, and FOUR values for
    three intents — .13s and .15s are the same idea written twice, which is exactly the drift a

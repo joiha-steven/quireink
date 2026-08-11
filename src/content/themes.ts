@@ -41,7 +41,7 @@ export const FONT_WEIGHTS = [400, 500, 600, 700] as const
 //    0.83 keeps the hierarchy and stops the furniture reading as fine print.
 //  - `caption` follows it up to 0.875 (14px) for the same reason: it labels a photograph
 //    the reader is looking at, and 13px under an 18px column was a squint.
-// Mirror any change in the table in docs/conventions.md.
+// Mirror any change in the table in docs/conventions/type.md.
 export const DEFAULT_TYPOGRAPHY: TypographySettings = {
   roles: {
     h1: { size: 2.0, line: 1.2, spacing: -0.02 },

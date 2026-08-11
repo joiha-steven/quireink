@@ -42,7 +42,7 @@ For one page, looked at rather than asserted: [`scripts/drive.ts`](./scripts/dri
 | Understanding how a part fits | [`docs/README.md`](./docs/README.md) — the index of everything below |
 | Touching fonts, CSS, images or island JS | [`docs/performance.md`](./docs/performance.md) — the resource-loading law |
 | Touching the cache, the CDN purge or compression | [`docs/delivery.md`](./docs/delivery.md) |
-| Touching a public view | [`docs/conventions.md`](./docs/conventions.md) · admin: [`docs/admin-design.md`](./docs/admin-design.md) |
+| Touching a public view | [`docs/conventions/`](./docs/conventions/README.md) — type · layout · colour · motion · admin: [`docs/admin-design.md`](./docs/admin-design.md) |
 | Touching the schema | [`docs/spec/01-schema.md`](./docs/spec/01-schema.md) · [`src/store/schema.sql`](./src/store/schema.sql) |
 | Wondering whether 1.x did it differently | [`docs/spec/07-parity-public.md`](./docs/spec/07-parity-public.md) · [owner-facing half](./docs/spec/07-parity-admin.md) |
 | Going against a past decision | [`docs/decisions/`](./docs/decisions/README.md) — read the in-force index first |
