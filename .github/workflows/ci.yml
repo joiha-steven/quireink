@@ -35,3 +35,42 @@ jobs:
       # And the standalone executable must still compile. `check:all` proves the code is
       # correct; this proves it can be shipped.
       - run: bun run build
+
+  # The dependency advisories, because NOTHING ELSE HERE LOOKS AT THEM and Dependabot
+  # cannot.
+  #
+  # Measured 2026-08-11: `bun audit` found five advisories — one high (`fast-uri`, reached
+  # through `@modelcontextprotocol/sdk › ajv`) and four on `hono` — while the repository's
+  # Dependabot alert list was empty. The dependency graph GitHub builds for this repository
+  # holds 34 packages, which is `package.json`'s direct dependencies and not a resolved
+  # tree: **`bun.lock` is not parsed**. So a transitive advisory can never raise an alert
+  # here, and a direct one does not either when the caret range in the manifest permits a
+  # patched version while the lockfile pins a vulnerable one — which is exactly the state
+  # `hono` was in. Every alert this repository has ever received named
+  # `v1/package-lock.json`, a tree ADR 0019 deleted.
+  #
+  # `bun audit` reads the lockfile, so it sees what is actually installed. It exits 1 on any
+  # finding, and that is deliberately left at the default level rather than raised to
+  # `--audit-level=high`: a low-severity advisory on a package this application does not
+  # call is still a sentence worth reading once, and the alternative is a job that stays
+  # green while something is true.
+  #
+  # SEPARATE JOB, not a step in `check`, because the two answer different questions. `check`
+  # says the code is correct; this says the tree it runs on has a published problem. A red
+  # `audit` on a green `check` is a real state and the log should be able to show it.
+  #
+  # When this goes red: read the advisory, then establish whether the vulnerable path is
+  # REACHABLE before treating it as an incident. On 2026-08-11 none of the four `hono` ones
+  # was — `hono/cookie` is the only `hono/*` import in the tree, and `memo(`, `hono/cors`,
+  # `hono/language` and `hono/proxy` appear nowhere — so the bump was hygiene. If a finding
+  # is ever unreachable AND unfixable, `bun audit --ignore=<id>` takes it, and the reason
+  # and the date belong in a comment here beside it. Not silently.
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+      - run: bun install --frozen-lockfile
+      - run: bun audit

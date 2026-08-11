@@ -22,7 +22,7 @@
     "check:routes": "bun scripts/checks/routes-guarded.ts",
     "check:docs": "bun scripts/checks/docs.ts",
     "check:type": "bun scripts/checks/type-roles.ts",
-  "check:admin-kit": "bun scripts/checks/admin-kit.ts",
+    "check:admin-kit": "bun scripts/checks/admin-kit.ts",
     "user": "bun scripts/user.ts",
     "shot": "bun scripts/shot.ts",
     "drive": "bun scripts/drive.ts"
@@ -47,16 +47,19 @@
     "tiptap-markdown": "^0.9.0",
     "typescript": "^5.9.0"
   },
+  "overrides": {
+    "fast-uri": "^3.1.5"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.26.0",
     "fast-xml-parser": "^5.10.1",
-    "hono": "^4.12.32",
-    "marked": "18.0.5",
-    "nodemailer": "^9.0.3",
+    "hono": "^4.13.1",
+    "marked": "18.0.9",
+    "nodemailer": "^9.0.5",
     "qrcode-generator": "^2.0.4",
     "satori": "^0.29.0",
     "sharp": "^0.35.3",
-    "shiki": "4.2.0",
+    "shiki": "4.4.3",
     "temml": "^0.13.4",
     "turndown": "^7.2.4",
     "turndown-plugin-gfm": "^1.0.2",
