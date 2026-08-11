@@ -55,6 +55,7 @@ STORAGE_LOCAL_DIR=/var/lib/quire/uploads
 SITE_URL=https://example.com
 MAX_UPLOAD_MB=64
 STORAGE_QUOTA_GB=5
+HOST=127.0.0.1
 ```
 
 **`MAX_UPLOAD_MB` and `STORAGE_QUOTA_GB` are the app's own limits, and they default to 64 MB
@@ -66,13 +67,30 @@ through a proxy at all, including an image the MCP tool fetches from a URL. `0` 
 either. The admin (Settings → System → Storage) can lower them for this blog and can never
 raise them, so on a server you run for somebody else these two lines are the ceiling.
 
+**`HOST` defaults to `127.0.0.1`, and the layout below is why.** nginx proxies to
+`http://127.0.0.1:<port>`, so the app never needs to be reachable from anywhere else. It used
+to listen on every interface — `Bun.serve` does that when nobody says otherwise — while the
+startup line printed `127.0.0.1`, so the only thing an operator would check said the opposite
+of what was true, and the port was closed by a firewall rule rather than by not being open.
+Set `HOST=0.0.0.0` when the proxy is on a different machine, and note that the Docker image
+sets it already: inside a container, loopback is the container's own.
+
 There is no secret to generate. 1.x needed `AUTH_SECRET`; 2.0 creates its own signing
 secrets on first use and stores them in the database ([`src/auth/secret.ts`](../src/auth/secret.ts)),
 because an optional secret is one an install can be left running without.
 
-`SITE_URL` is not optional in practice. Leave it empty and the app derives the origin from
-each request, which behind a proxy means feeds, OG images and password-reset links come out
-pointing at an internal hostname.
+**`SITE_URL` is not optional in practice, and what happens without it is worse than this
+paragraph used to say.** It claimed the app derives the origin from each request. It does not:
+the admin field is asked next, and then the answer is the literal `http://localhost:3000`. So
+an install with neither set serves a sitemap, a feed, every OG tag and every newsletter link
+pointing at localhost — a site that is perfect for a reader and broken for every crawler and
+mail client, with nothing on any page to show it.
+
+It is not derived from the request `Host` on purpose, and that is a security choice rather
+than an omission: the page cache is keyed by path alone, so one request carrying
+`Host: evil.example` would render those URLs and then serve the cached copy to everyone. What
+the app does instead is complain — a `[WARN]` line at boot, and the hint under
+Settings → Search & URLs → Site address.
 
 **`TRUST_PROXY=1` — only if your proxy is not on this machine or this private network.**
 Rate limits and the analytics visitor hash are keyed by the reader's address, and the app

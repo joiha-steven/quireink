@@ -416,7 +416,7 @@ const ko = {
   featBookModeDesc: '독자가 게시물을 전체 화면 2단 책 형태로 열 수 있게 합니다 (데스크톱 및 iPad).',
   featDeckDesc: '글 제목 아래, 본문 위에 요약을 표시합니다.',
   seoCanonical: '사이트 주소(canonical)',
-  seoCanonicalHint: '사이트맵, RSS, 스키마, llms.txt, OG 이미지 및 canonical 태그에 사용됩니다. 비워두면 사이트 URL(SITE_URL)을 사용합니다.',
+  seoCanonicalHint: '사이트맵, RSS, 스키마, llms.txt, OG 이미지 및 canonical 태그에 사용됩니다. 비워두면 SITE_URL을 쓰고, 그것도 설정되지 않았다면 전부 http://localhost:3000으로 나갑니다. 독자는 보지 못하고 크롤러는 항상 봅니다.',
   seoAutoSchema: '자동 스키마(JSON-LD)',
   seoAutoSchemaDesc: 'Google용 구조화 데이터를 추가합니다: 홈페이지에 WebSite, 각 게시물에 BlogPosting.',
   seoSitemapDesc: '모든 게시물, 페이지, 카테고리, 태그를 나열하여 검색 엔진이 완전히 크롤링하도록 합니다.',

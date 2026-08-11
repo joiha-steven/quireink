@@ -416,7 +416,7 @@ const zh = {
   featBookModeDesc: '让读者以全屏双栏书籍方式打开文章（桌面和 iPad）。',
   featDeckDesc: '在文章标题下方、正文上方显示摘要。',
   seoCanonical: '站点地址（canonical）',
-  seoCanonicalHint: '用于站点地图、RSS、schema、llms.txt、OG 图片和 canonical 标签。留空将自动使用站点 URL（SITE_URL）。',
+  seoCanonicalHint: '用于站点地图、RSS、schema、llms.txt、OG 图片和 canonical 标签。留空则使用 SITE_URL；若 SITE_URL 也未设置，它们全都会写成 http://localhost:3000——读者看不到，但爬虫每次都看到。',
   seoAutoSchema: '自动 Schema（JSON-LD）',
   seoAutoSchemaDesc: '为 Google 添加结构化数据：首页用 WebSite，每篇文章用 BlogPosting。',
   seoSitemapDesc: '列出所有文章、页面、分类和标签，供搜索引擎完整抓取。',

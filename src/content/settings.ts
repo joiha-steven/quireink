@@ -16,6 +16,7 @@ import { sanitizeTypography, sanitizeFont, fontFormat } from '@/content/settings
 
 // Re-export so existing importers keep working.
 export { DEFAULT_THEME, themesToCss, getDefaultTheme, DEFAULT_TYPOGRAPHY, DEFAULT_FONT } from '@/content/themes'
+export { resolveSiteUrl, siteUrlIsUnset, resolveAppIcon } from '@/content/settings-resolve'
 
 export const DEFAULT_SEO: SeoSettings = {
   autoSchema: true,
@@ -170,18 +171,6 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   // hour you are changing the look and want to see it, not for permanent use.
   cache: { enabled: true },
   backups: DEFAULT_BACKUPS,
-}
-
-// Canonical base URL: owner value, else the SITE_URL env, else localhost.
-export function resolveSiteUrl(s: SiteSettings): string {
-  if (s.siteUrl) return s.siteUrl
-  if (process.env.SITE_URL) return process.env.SITE_URL
-  return 'http://localhost:3000'
-}
-
-// PWA / home-screen icon: app icon → favicon → bundled `/app-icon.png`.
-export function resolveAppIcon(s: SiteSettings): string {
-  return s.appIconUrl || s.faviconUrl || '/app-icon.png'
 }
 
 // Back-compat: the old boolean `fontChromeInter` (true = Inter chrome, false = chrome

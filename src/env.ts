@@ -4,8 +4,29 @@
 
 export type Env = {
   port: number
+  /**
+   * The interface to listen on. Defaults to `127.0.0.1`.
+   *
+   * It used to be nothing at all: `Bun.serve` with no `hostname` listens on `0.0.0.0`, while
+   * the line printed underneath it said `127.0.0.1`. Measured 2026-08-01 on two servers, all
+   * four instances were `*:port`, and nothing was exposed only because a firewall rule said
+   * so — a defence one rule deep, under a log telling whoever checked the opposite of the
+   * truth. Every instance sits behind nginx on the same box (`proxy_pass http://127.0.0.1:…`
+   * in all four vhosts, checked), so loopback is the right default for every one of them.
+   *
+   * A self-hoster whose proxy is on another machine, or who runs this in a container that has
+   * to be reachable from outside it, sets `HOST=0.0.0.0` and means it.
+   */
+  host: string
   dataDir: string
-  /** Canonical origin for absolute URLs (feeds, OG, emails). Empty = derive per request. */
+  /**
+   * Canonical origin for absolute URLs (feeds, OG, emails).
+   *
+   * Empty means the admin field is asked next and then `http://localhost:3000` is used — NOT
+   * "derive per request", which is what this comment said until 2026-08-11 while nothing
+   * derived anything. `content/settings.ts` has the reason it must stay a constant, and it is
+   * a cache-poisoning one rather than a taste.
+   */
   siteUrl: string
   /**
    * Largest single upload the SOFTWARE will store, in bytes. `0` = no cap.
@@ -53,6 +74,7 @@ export function readEnv(source: NodeJS.ProcessEnv = process.env): Env {
   }
   return {
     port,
+    host: source.HOST || '127.0.0.1',
     // Both database files live here. One directory, so the server and `import-v1` cannot
     // disagree about where they are.
     dataDir: source.DATA_DIR ?? './data',

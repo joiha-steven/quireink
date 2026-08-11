@@ -60,7 +60,14 @@ RUN rm -rf node_modules && bun install --frozen-lockfile --production
 FROM oven/bun:1-slim
 WORKDIR /app
 
+# HOST=0.0.0.0 is REQUIRED here and is the one place it is right by default. The app defaults
+# to 127.0.0.1 (`src/env.ts`), which is correct for a native install with nginx on the same
+# machine and completely wrong inside a container: loopback there is the container's own, so
+# nothing outside it could ever connect and the published port would answer refused. What
+# keeps that from meaning "exposed to the internet" is the PUBLISH side — compose binds
+# 127.0.0.1:3000:3000 on the host, for the reasons written beside it in docker-compose.yml.
 ENV NODE_ENV=production \
+    HOST=0.0.0.0 \
     PORT=3000 \
     DATA_DIR=/var/lib/quire/data \
     STORAGE_LOCAL_DIR=/var/lib/quire/uploads

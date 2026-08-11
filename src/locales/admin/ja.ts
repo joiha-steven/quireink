@@ -416,7 +416,7 @@ const ja = {
   featBookModeDesc: '記事を全画面の2段組みブックとして開けるようにします（デスクトップとiPad）。',
   featDeckDesc: '記事タイトルの下、本文の上に抜粋を表示します。',
   seoCanonical: 'サイトアドレス（canonical）',
-  seoCanonicalHint: 'サイトマップ、RSS、スキーマ、llms.txt、OG画像、canonicalタグに使用されます。空欄の場合はサイトのURL（SITE_URL）を使用します。',
+  seoCanonicalHint: 'サイトマップ、RSS、スキーマ、llms.txt、OG画像、canonicalタグに使用されます。空欄なら SITE_URL を使い、それも未設定ならすべてが http://localhost:3000 になります。読者には見えず、クローラーには必ず見えます。',
   seoAutoSchema: '自動スキーマ（JSON-LD）',
   seoAutoSchemaDesc: 'Google向けの構造化データを追加: トップページにWebSite、各記事にBlogPosting。',
   seoSitemapDesc: 'すべての記事、ページ、カテゴリー、タグを列挙し、検索エンジンが完全にクロールできるようにします。',
