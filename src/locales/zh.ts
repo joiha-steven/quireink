@@ -19,6 +19,7 @@ const zh = {
   shortGrid: '网格',
   shortMail: '@邮件',
   shortMenu: '菜单',
+  shortPalette: '配色',
   gridView: '网格视图',
   listView: '列表视图',
   palette: '配色',

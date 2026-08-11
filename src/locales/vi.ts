@@ -19,6 +19,7 @@ const vi = {
   shortGrid: 'lưới',
   shortMail: '@email',
   shortMenu: 'menu',
+  shortPalette: 'màu',
   gridView: 'Dạng lưới',
   listView: 'Dạng danh sách',
   palette: 'Bảng màu',

@@ -19,6 +19,7 @@ const ko = {
   shortGrid: '그리드',
   shortMail: '@메일',
   shortMenu: '메뉴',
+  shortPalette: '색',
   gridView: '그리드 보기',
   listView: '목록 보기',
   palette: '색상',

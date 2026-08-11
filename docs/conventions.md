@@ -37,9 +37,11 @@
 - Theme default = **system** (no-FOUC script + `ThemeProvider` both `|| 'system'`); the toggle
   reflects the *applied* theme (`useSyncExternalStore` on `<html>.dark`; server snapshot =
   light → no hydration mismatch).
-- Two orthogonal axes: **mode** (`.dark`) × **palette** (`data-palette`). `PaletteToggle` /
-  `ThemeToggle` write localStorage + the attribute; the no-FOUC script applies before paint;
-  all palettes' vars are emitted once. (Mechanism rationale → ARCHITECTURE.md.)
+- Two orthogonal axes: **mode** (`.dark`) × **palette** (`data-palette`). Both controls live in
+  `assets/js/theme.ts` and write localStorage plus the attribute. ⚠️ Two things differ from the
+  frozen tree: there is **no no-FOUC script** (2.0 has no inline script anywhere — CSS decides the
+  first paint, see [performance.md](performance.md)), and only the **enabled** palettes' vars are
+  emitted, not all six.
 
 ## Typography — one source of truth (HARD RULES)
 

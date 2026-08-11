@@ -33,6 +33,9 @@ const ICON = {
   sun: svg('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4'
     + 'M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>'),
   menu: svg('<path d="M5 8h14M8 16h11"/>'),
+  // A painter's palette: the thumb hole is what makes it read as one at 20px.
+  palette: svg('<circle cx="12" cy="12" r="9"/><circle cx="12" cy="17" r="1.6"/>'
+    + '<circle cx="8" cy="10" r="1.2"/><circle cx="16" cy="10" r="1.2"/>'),
 }
 
 export type ChromeOptions = {
@@ -146,6 +149,22 @@ export function siteHeader(settings: SiteSettings, opts: ChromeOptions): string 
   actions.push(`<button type="button" class="icon-btn" data-theme-toggle
  aria-label="${escapeAttr(s.theme)}" title="${escapeAttr(s.theme)}"
  aria-haspopup="true" aria-expanded="false">${ICON.sun}${token(s.shortTheme)}</button>`)
+  // Only above two enabled, which is the same condition `themesToCss` uses to emit the
+  // per-palette rules at all: below it there is one palette and nothing to switch between.
+  //
+  // The ids and their translated names ride on the button as `id:Name|id:Name` so the island
+  // carries no locale table and no list of palettes. The owner's default is named separately
+  // because `enabledPalettes` keeps the picker's display order, in which the default is not
+  // necessarily first. Both are the SAME for every reader, so they are safe in a cached page —
+  // unlike the reader's own choice, which is why that one lives in `localStorage`.
+  if (settings.enabledPalettes.length > 1) {
+    const options = settings.enabledPalettes
+      .map((id) => `${id}:${s.paletteNames[id] ?? id}`).join('|')
+    actions.push(`<button type="button" class="icon-btn" data-palettes="${escapeAttr(options)}"
+ data-palette-default="${escapeAttr(settings.themePreset)}"
+ aria-label="${escapeAttr(s.palette)}" title="${escapeAttr(s.palette)}"
+ aria-haspopup="true" aria-expanded="false">${ICON.palette}${token(s.shortPalette)}</button>`)
+  }
   if (settings.features.gridView) {
     // A BUTTON, not a link: there is no server-side URL for "the same list as a grid", and
     // inventing one would be a second URL for the same content. It hides itself on a page
@@ -230,6 +249,10 @@ export function chromeLabels(settings: SiteSettings): Record<string, string> {
     themeDark: s.themeDark,
     themeSystem: s.themeSystem,
     themeTime: s.themeTime,
+    // The palette menu's own accessible name. Its ROWS are named on the button itself
+    // (`data-palettes`), because which palettes exist is the owner's choice and not a fixed
+    // list the way the four theme modes are.
+    palette: s.palette,
     nlSuccess: s.nlSuccess,
     nlNoMail: s.nlNoMail,
     nlInvalid: s.nlInvalid,

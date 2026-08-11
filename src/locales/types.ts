@@ -19,6 +19,7 @@ export type Dict = {
   shortGrid: string
   shortMail: string
   shortMenu: string
+  shortPalette: string
   gridView: string
   listView: string
   palette: string

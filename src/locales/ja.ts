@@ -19,6 +19,7 @@ const ja = {
   shortGrid: 'グリッド',
   shortMail: '@メール',
   shortMenu: 'メニュー',
+  shortPalette: '配色',
   gridView: 'グリッド表示',
   listView: 'リスト表示',
   palette: 'パレット',
