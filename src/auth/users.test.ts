@@ -39,15 +39,48 @@ describe('createUser', () => {
   })
 
   /**
-   * The escape hatch, and the reason it is a named argument rather than an environment
-   * variable or a count check: a route cannot reach a second account without writing this
-   * word, and a reviewer reading `additional: true` in a request handler knows immediately
-   * that something is wrong.
+   * The escape hatch exists for the two tests that prove a session and a CSRF token do not
+   * carry between accounts. It is a named argument rather than a count check so that a
+   * reviewer reading `additional: true` inside a request handler stops immediately.
    */
   it('allows one when the caller says `additional` in as many words', async () => {
     await createUser(OWNER)
     const second = await createUser({ ...OWNER, username: 'second', email: 's@example.com', additional: true })
     expect(second.username).toBe('second')
+  })
+
+  /**
+   * **And the hatch is nailed shut outside the test runner.** The owner stated the rule as a
+   * law on 2026-08-11 — one owner, never two accounts in one blog — so `additional` is IGNORED
+   * when `NODE_ENV` is not `test`, which is every real instance: a plain `bun src/index.ts`
+   * leaves it undefined and the Docker image sets `production`. A signup route written against
+   * this would pass its own tests and refuse in production, which is the direction to fail in.
+   */
+  it('IGNORES `additional` when not under the test runner', async () => {
+    await createUser(OWNER)
+    const was = process.env.NODE_ENV
+    process.env.NODE_ENV = 'production'
+    try {
+      await expect(createUser({ ...OWNER, username: 'second', email: 's@example.com', additional: true }))
+        .rejects.toThrow(/one owner by design/)
+    } finally {
+      if (was === undefined) delete process.env.NODE_ENV
+      else process.env.NODE_ENV = was
+    }
+    expect(getUserByUsername('second')).toBeNull()
+  })
+
+  /** Undefined, too — the common case for a self-hoster who never set it. */
+  it('IGNORES `additional` when NODE_ENV is unset', async () => {
+    await createUser(OWNER)
+    const was = process.env.NODE_ENV
+    delete process.env.NODE_ENV
+    try {
+      await expect(createUser({ ...OWNER, username: 'second', email: 's@example.com', additional: true }))
+        .rejects.toThrow(/one owner by design/)
+    } finally {
+      if (was !== undefined) process.env.NODE_ENV = was
+    }
   })
 
   it('still refuses a duplicate username through the additional path', async () => {
