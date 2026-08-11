@@ -322,14 +322,18 @@ ambiguous.
 
 ## Motion — one engine, token-gated (HARD RULES)
 
-- ⚠️ **The `--dur-fast/base/slow` + `--ease` tokens do NOT exist in 2.0.** This rule was
-  written for the frozen tree and carried over; measured 2026-07-29, `grep -r -- '--dur-' src`
-  is empty and every duration in `islands.css.ts` is a literal. The ONE switch below is real
-  and is what actually gates motion. Either reintroduce the tokens or delete this bullet —
-  it is queued, and until then it describes nothing.
+- **`--dur-fast` .15s · `--dur-base` .2s · `--dur-slow` .5s**, in `public.css.ts` `BASE_CSS`
+  (2026-08-11; promised here since the frozen tree, absent for all of 2.0). **No `--ease` token:
+  its value would be the keyword `ease`, and the scroll-driven animations must stay `linear`.**
+  The reasoning, and the count that settled it, is at the definition.
+- ⚠️ **The sign-in page has no `--dur-*`** — it is served `pageStyles + LOGIN_CSS`, not the public
+  sheet, so a `var()` there silently drops the transition. `login.css.ts` keeps literals, and says
+  so at the line.
 - **ONE switch gates ALL visual motion.** `<html data-motion>` is server-rendered from `settings.motion.enabled`
-  (no flash, no client JS); `:root[data-motion='off']` AND `@media (prefers-reduced-motion: reduce)`
-  zero every `--dur-*`, so everything becomes instant with no per-component branching. Toggle in
+  (no flash, no client JS); `html[data-motion='off']` AND `@media (prefers-reduced-motion: reduce)`
+  each set `animation:none!important;transition:none!important` on `*` — instant, no branching.
+  ⚠️ They do NOT zero `--dur-*` (measured: still `.2s` with the switch off), so never read a token
+  in script to decide whether to animate; read the media query and the attribute. Toggle in
   Admin → Appearance → Rendering. Don't add a second motion gate.
 - `settings.motion.typewriter` is a scoped editor preference, not another global motion engine. It
   enables the custom caret/line response and synthesized key sound; its visual parts must still obey

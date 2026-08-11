@@ -20,6 +20,22 @@ import { FRONT_CSS } from '@/web/front.css'
 import { UTILITY_CSS } from '@/web/utility.css'
 
 const BASE_CSS = `
+/* MOTION TOKENS. Three durations, and no easing token. docs/conventions.md promised these
+   since the frozen tree and 2.0 had none, so every duration in islands.css.ts was a literal.
+   Counted before deciding: twelve motion declarations across three files, and FOUR values for
+   three intents — .13s and .15s are the same idea written twice, which is exactly the drift a
+   token set exists to stop. So the tiers are named and .13s becomes .15s.
+
+   --ease is DELIBERATELY not here. Its value would have been the keyword ease, which is
+   indirection with no payload; and the three scroll-driven animations must stay linear, since
+   easing a timeline a reader is scrubbing with their thumb is wrong rather than slower.
+   Introduce one when a real curve is chosen, not to complete a set.
+
+   Static, so they live in the immutable sheet rather than the per-page inline half: they are
+   not derived from any setting. data-motion=off and prefers-reduced-motion still switch all of
+   it off in one rule each, at the foot of islands.css.ts. NOTE the sign-in page does not get
+   this sheet — see the comment in login.css.ts. */
+:root{--dur-fast:.15s;--dur-base:.2s;--dur-slow:.5s}
 *,*::before,*::after{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 /* The hidden ATTRIBUTE means hidden, and it takes an !important to say so.
