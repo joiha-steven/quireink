@@ -134,6 +134,9 @@ function adminStyles(settings: SiteSettings): string {
     + `--font-reading:var(--font-sans);`
     + `--font-mono:'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace}`,
     `body{font-family:var(--font-sans), system-ui, -apple-system, 'Segoe UI', sans-serif}`,
+    // No `enabledPalettes` here, deliberately: the public sheet ships only what a reader can
+    // reach, and the admin has to render whatever the owner is EDITING — including a palette
+    // they have turned off, which is exactly when they are looking at it.
     themesToCss(settings.themes, settings.themePreset),
     typographyToCss(settings.typography),
     fontPresetCss(settings.fontPreset),

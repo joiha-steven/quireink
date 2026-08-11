@@ -5,6 +5,11 @@
 
 import type { ThemeColors, ThemeSettings, TypographySettings, TypeRole, TypeStyle, FontSettings } from '@/types'
 
+// The palettes' colour VALUES live in `palettes.ts` (split 2026-08-11, by reader — see its
+// header). Re-exported here so every existing importer of `themes.ts` is unaffected.
+import { THEME_PRESETS } from '@/content/palettes'
+export { THEME_PRESETS }
+
 export type ThemePreset = {
   id: string
   name: string
@@ -251,65 +256,13 @@ export function chromeFontCss(id: string): string {
   return f.sans ? `:root{--font-sans:${f.sans}}` : ''
 }
 
-// TRUE neutral grayscale — zero hue, the Quire Ink house style. (Earlier values had a
-// faint warm/blue cast: bg/rule read as cream, meta/text leaned blue. All pure gray
-// now; `rule` is a touch lighter so the menu hover reads as a soft, colourless gray.)
-//
-// Every LIGHT `meta` (and the scifi/amber `link`) is set to the lightest value that
-// still clears WCAG AA 4.5:1 against its own `bg` — meta is rendered at 14px on post
-// meta lines, card excerpts and the footer, so AA applies. Audited 2026-07-26: the
-// previous values sat at 2.91–3.60:1. Hue and saturation are unchanged; only value
-// moved. Keep new palettes above 4.5:1 (`meta` vs `bg`) or they fail the same way.
-const MONO: ThemeSettings = {
-  light: { bg: '#fcfcfc', text: '#262626', heading: '#121212', meta: '#6d6d6d', link: '#121212', accent: '#121212', rule: '#ebebeb' },
-  dark: { bg: '#0e0e0e', text: '#d6d6d6', heading: '#f2f2f2', meta: '#888888', link: '#f2f2f2', accent: '#f2f2f2', rule: '#262626' },
-}
-
-// Warm paper + brown ink — classic long-read comfort, terracotta accent.
-const SEPIA: ThemeSettings = {
-  light: { bg: '#f6f1e7', text: '#44372a', heading: '#2c2218', meta: '#706657', link: '#955832', accent: '#955832', rule: '#e3d8c4' },
-  dark: { bg: '#211b14', text: '#ddd0bd', heading: '#f2e9d8', meta: '#9c8e79', link: '#d79b6c', accent: '#d79b6c', rule: '#3a3025' },
-}
-
-// Earthy greens — calm, natural, forest-green accent.
-const FOREST: ThemeSettings = {
-  light: { bg: '#f5f7f2', text: '#2c352c', heading: '#1c241c', meta: '#646c60', link: '#3b764a', accent: '#3b764a', rule: '#dde5d8' },
-  dark: { bg: '#0f140f', text: '#cdd6c8', heading: '#e9efe5', meta: '#7e8a78', link: '#79b389', accent: '#79b389', rule: '#252e23' },
-}
-
-// Cool blues — crisp and editorial, ocean-blue accent.
-const OCEAN: ThemeSettings = {
-  light: { bg: '#f4f7fa', text: '#28323d', heading: '#16202b', meta: '#616b74', link: '#2b6cae', accent: '#2b6cae', rule: '#dbe4ec' },
-  dark: { bg: '#0c121a', text: '#c7d2dd', heading: '#e8eef5', meta: '#7c8a98', link: '#6aa9e0', accent: '#6aa9e0', rule: '#202a36' },
-}
-
-// Sci-fi — cool graphite surface with an electric cyan accent. Crisp + techy;
-// the dark mode (deep blue-black + bright cyan) is where it really reads as sci-fi.
-const SCIFI: ThemeSettings = {
-  light: { bg: '#f2f5f7', text: '#1e2a33', heading: '#0d161e', meta: '#5f6a75', link: '#0b7284', accent: '#0b7284', rule: '#dce4ea' },
-  dark: { bg: '#0a0f15', text: '#c3d2dc', heading: '#e7f1f7', meta: '#778591', link: '#36cfe0', accent: '#36cfe0', rule: '#1b2630' },
-}
-
-// Warm-neutral surface with a vivid amber accent — confident and bright.
-const AMBER: ThemeSettings = {
-  light: { bg: '#fcfbf8', text: '#2e2a26', heading: '#1a1714', meta: '#716c66', link: '#9f5c09', accent: '#9f5c09', rule: '#ece7df' },
-  dark: { bg: '#100f0d', text: '#d6d2ca', heading: '#f3f0ea', meta: '#8a857c', link: '#e8a13c', accent: '#e8a13c', rule: '#272420' },
-}
-
-// Order = display order in the picker. First entry is the default.
-export const THEME_PRESETS: ThemePreset[] = [
-  { id: 'mono', name: 'Mono', theme: MONO },
-  { id: 'sepia', name: 'Sepia', theme: SEPIA },
-  { id: 'forest', name: 'Forest', theme: FOREST },
-  { id: 'ocean', name: 'Ocean', theme: OCEAN },
-  { id: 'scifi', name: 'Sci-Fi', theme: SCIFI },
-  { id: 'amber', name: 'Amber', theme: AMBER },
-]
 
 export const DEFAULT_PRESET_ID = 'mono'
 
-// The default palette every fresh install starts from (also the globals.css fallback).
-export const DEFAULT_THEME: ThemeSettings = MONO
+// The default palette every fresh install starts from (also the globals.css fallback). Read
+// off the presets rather than re-naming `MONO`, which is private to `palettes.ts`: one
+// definition of "the first palette is the default", not two that can disagree.
+export const DEFAULT_THEME: ThemeSettings = THEME_PRESETS[0]!.theme
 
 // Look up a preset by id, falling back to the default. Always returns a value.
 export function getPreset(id: string): ThemePreset {
@@ -376,13 +329,41 @@ function vars(c: ThemeColors): string {
 // `color-scheme` rides along: it is what makes the scrollbar, the form controls and the
 // canvas the browser draws follow the page instead of staying light under a dark one.
 //
-// NOT mirrored per palette. Nothing sets `data-palette` — the rules above are for a reader-
-// facing switcher that does not exist yet — so mirroring twelve rule sets here would double
-// a block that cannot match. If that switcher lands, this is the second half of it.
-export function themesToCss(themes: Record<string, ThemeSettings>, defaultId: string): string {
+// NOT mirrored per palette, and now for a smaller reason than before. It used to be that
+// nothing set `data-palette` at all; since 2026-08-11 the per-palette rules are only emitted
+// when two or more are enabled, so on a one-palette blog there is nothing to mirror. On a blog
+// that enables several, mirroring this per palette is the second half of porting the switcher,
+// and it is still not free: it doubles a block per palette.
+/**
+ * `enabled` is `settings.enabledPalettes`: the palettes a reader may switch between, which is
+ * the only set worth emitting rules for.
+ *
+ * It used to emit all six unconditionally — twelve rule sets, ~2 KB on every page — because
+ * `settings.themes` always holds all six so that each is customisable in the admin. Whether a
+ * palette is CUSTOMISABLE and whether a reader can REACH it are different questions, and this
+ * answered the wrong one. A blog with one palette enabled paid for five it had turned off.
+ *
+ * Fewer than two enabled means no switcher (the control hides itself), so `:root` already IS
+ * the palette and no `[data-palette]` block can ever match: emit none. Two or more emits one
+ * per enabled palette, INCLUDING the default — a reader who switches away and back sets
+ * `data-palette` to the default's own id, so it needs a rule of its own to return to.
+ *
+ * Omitting `enabled` keeps every palette, which is what the admin shell wants: its preview
+ * renders whatever the owner is editing, enabled or not.
+ */
+export function themesToCss(
+  themes: Record<string, ThemeSettings>,
+  defaultId: string,
+  enabled?: string[],
+): string {
   const base = getDefaultTheme(themes, defaultId)
   let css = `:root{color-scheme:light;${vars(base.light)}}.dark{color-scheme:dark;${vars(base.dark)}}`
-  for (const [id, t] of Object.entries(themes)) {
+  const reachable = enabled === undefined
+    ? Object.keys(themes)
+    : enabled.length < 2 ? [] : enabled.filter((id) => id in themes)
+  for (const id of reachable) {
+    const t = themes[id]
+    if (t === undefined) continue
     css += `[data-palette="${id}"]{${vars(t.light)}}[data-palette="${id}"].dark{${vars(t.dark)}}`
   }
   // `:root:not([data-scheme])` is 0,2,0 — above both `:root` and `[data-palette="…"]`, and

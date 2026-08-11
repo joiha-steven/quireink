@@ -95,11 +95,15 @@ export function totpStateFor(id: number): { secret: string | null; lastStep: num
  * refused a duplicate USERNAME and was perfectly happy to make a second owner.
  *
  * That is an invariant held by nobody, at the exact moment the hosted tier is being designed
- * — which is when somebody adds a signup route. So the design is now a line of code, and
- * `additional` is the shape on purpose: a second account is still possible, because two tests
- * legitimately need one to prove that a session and a CSRF token do not carry across accounts,
- * but no route can be written that reaches it without saying `additional: true` and having
- * that read in review.
+ * — which is when somebody adds a signup route. So the design is now a line of code.
+ *
+ * **`additional` only works under the test runner, and that is the owner's own wording of the
+ * rule: one owner, and never two accounts in one blog.** Two tests legitimately need a second
+ * account — one proves a session cannot be revoked from another account, the other that a CSRF
+ * token does not travel between them — and those are worth keeping. Everywhere else the flag is
+ * ignored rather than honoured, so there is no argument any running instance can pass to get a
+ * second owner. A signup route could not be written against this even deliberately; it would
+ * pass its own tests and refuse in production, which is the failure direction to want.
  *
  * It is deliberately NOT a check on `id`, and not a `role` column. Both would introduce the
  * concept ADR 0002 spent its length rejecting — that there is more than one kind of account —
@@ -109,10 +113,13 @@ export async function createUser(input: {
   username: string
   email: string
   password: string
-  /** Bypass the one-account rule. Tests and nothing else; see above. */
+  /** Bypass the one-account rule. Honoured ONLY under `bun test`; ignored anywhere else. */
   additional?: boolean
 }): Promise<PublicUser> {
-  if (input.additional !== true && !noUsersYet()) {
+  // `bun test` sets NODE_ENV=test; a plain `bun src/index.ts` leaves it undefined and the
+  // Docker image sets `production`. Measured, not assumed.
+  const underTest = process.env.NODE_ENV === 'test'
+  if (!(input.additional === true && underTest) && !noUsersYet()) {
     throw new Error(
       'createUser: an account already exists, and Quire Ink has one owner by design (ADR 0002).'
       + ' To change its password use `bun run user set-password`.',

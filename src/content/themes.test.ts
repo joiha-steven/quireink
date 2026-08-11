@@ -88,3 +88,67 @@ describe('dark before the island runs', () => {
     expect(css).toContain(':root:not([data-scheme]){color-scheme:dark')
   })
 })
+
+/**
+ * A page ships the palettes a reader can REACH, not every palette the admin can edit.
+ *
+ * `settings.themes` always holds all six so each one is customisable, and `themesToCss` read
+ * that as "emit all six" — twelve rule sets, 2,264 bytes raw and 614 gzipped, on every page,
+ * in the INLINE half of the stylesheet that no cache spares. A blog with one palette enabled
+ * paid for five it had turned off. Measured 2026-08-11: one enabled is 494 bytes raw / 191
+ * gzipped, so 1,770 raw and 423 gzipped come off every page load.
+ *
+ * Whether a palette is customisable and whether a reader can reach it are different questions.
+ * `enabledPalettes` answers the second one.
+ */
+describe('a page ships only the palettes a reader can reach', () => {
+  const themes = defaultThemes()
+  const all = THEME_PRESETS.map((p) => p.id)
+  const blocks = (css: string) => (css.match(/\[data-palette=/g) ?? []).length
+
+  /**
+   * One enabled means the switcher is hidden, so no `[data-palette]` selector can ever match:
+   * `:root` already IS the palette. Emitting the block anyway is bytes that cannot be used.
+   */
+  it('emits NO per-palette rules when only one is enabled', () => {
+    const css = themesToCss(themes, DEFAULT_PRESET_ID, [DEFAULT_PRESET_ID])
+    expect(blocks(css)).toBe(0)
+    // The reader still gets the palette itself, and still gets dark.
+    const base = getDefaultTheme(themes, DEFAULT_PRESET_ID)
+    expect(css).toContain(`--c-bg:${base.light.bg}`)
+    expect(css).toContain('@media (prefers-color-scheme:dark)')
+  })
+
+  it('emits one light+dark pair per enabled palette once there are two or more', () => {
+    const two = [DEFAULT_PRESET_ID, all.find((id) => id !== DEFAULT_PRESET_ID)!]
+    const css = themesToCss(themes, DEFAULT_PRESET_ID, two)
+    expect(blocks(css)).toBe(4) // two palettes × light + dark
+    for (const id of two) expect(css).toContain(`[data-palette="${id}"]`)
+  })
+
+  /**
+   * Including the DEFAULT's own block. A reader who switches away and back sets `data-palette`
+   * to the default's id, so dropping it as "already in `:root`" strands them on the palette
+   * they were trying to leave.
+   */
+  it('includes the default palette in its own right when a switcher exists', () => {
+    const two = [DEFAULT_PRESET_ID, all.find((id) => id !== DEFAULT_PRESET_ID)!]
+    expect(themesToCss(themes, DEFAULT_PRESET_ID, two)).toContain(`[data-palette="${DEFAULT_PRESET_ID}"]{`)
+  })
+
+  it('never emits a palette the owner turned off', () => {
+    const two = all.slice(0, 2)
+    const css = themesToCss(themes, DEFAULT_PRESET_ID, two)
+    for (const id of all.slice(2)) expect(css).not.toContain(`[data-palette="${id}"]`)
+  })
+
+  /** The admin edits palettes that are turned off, so it asks for all of them. */
+  it('keeps every palette when no enabled list is given, for the admin preview', () => {
+    expect(blocks(themesToCss(themes, DEFAULT_PRESET_ID))).toBe(all.length * 2)
+  })
+
+  it('ignores an enabled id that has no theme', () => {
+    const css = themesToCss(themes, DEFAULT_PRESET_ID, [DEFAULT_PRESET_ID, 'not-a-palette'])
+    expect(css).not.toContain('not-a-palette')
+  })
+})
