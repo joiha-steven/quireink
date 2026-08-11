@@ -147,7 +147,9 @@ describe('revocation', () => {
   })
 
   it('refuses to revoke a session belonging to someone else', async () => {
-    const other = await createUser({ username: 'other', email: 'x@example.com', password: 'another passphrase' })
+    // `additional`: a second account exists only to prove a session does not carry across
+    // accounts. `createUser` refuses one otherwise (ADR 0002, one owner).
+    const other = await createUser({ username: 'other', email: 'x@example.com', password: 'another passphrase', additional: true })
     const { token } = createSession(userId)
     const id = createHash('sha256').update(token).digest('hex')
     expect(revokeSession(other.id, id)).toBe(false)

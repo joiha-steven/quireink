@@ -24,6 +24,15 @@ export type OwnerEnv = { Variables: { owner: Owner } }
  * The current owner, or null. Safe to call anywhere, including on public routes that
  * merely want to know (the preview banner, the admin link in the footer).
  */
+/**
+ * ANY account holding a session is the owner. There is one account (ADR 0002), so those are
+ * the same sentence — and what makes them the same sentence is `auth/users.ts`, which refuses
+ * to create a second one, not anything here.
+ *
+ * That is worth knowing before adding a way to sign up. There is no `id = 1` check below and
+ * no role column in the schema, so a second account would be a second owner of the same blog,
+ * and nothing on any screen would say so.
+ */
 export function currentOwner(c: Context): Owner | null {
   const session = resolveSession(getCookie(c, COOKIE_NAME))
   if (session === null) return null
