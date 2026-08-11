@@ -705,6 +705,12 @@ export type AdminStrings = {
   mcpTokenDeleted: string
   mcpLimitReached: string
   mcpCreateFailed: string
+  // storage limits (Settings → System)
+  storageTitle: string
+  maxUploadLabel: string
+  maxUploadHint: string
+  storageQuotaLabel: string
+  storageQuotaHint: string
   // backups (Google Drive)
   backupTitle: string
   exportHint: string

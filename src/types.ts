@@ -192,6 +192,8 @@ export type SiteSettings = {
   chromeFont: string // system-chrome font (lib/themes CHROME_FONTS): 'inter' | 'reading' (follow the reading font) | 'plex-mono' (IBM Plex Mono). Drives --font-sans (header/footer/rail/meta/admin); leaves the article body alone
   faviconUrl: string // browser-tab icon; '' = the bundled default favicon
   appIconUrl: string // PWA / home-screen app icon (square); '' = favicon, else bundled default
+  maxUploadMb: number // largest single upload, in MB (0 = whatever the deployment allows). ONLY EVER NARROWS the MAX_UPLOAD_MB ceiling: the operator's number is the one an upload cannot argue with, and this field can lower it but never raise it (media/limits.ts)
+  storageQuotaGb: number // largest the whole blob store may grow, in GB (0 = whatever the deployment allows). Counts derived variants and icons, because on a photo blog those are most of the disk. Same narrow-only rule as maxUploadMb
   contentWidth: number // px, max width of the content column (desktop)
   postsPerPage: number // posts shown per page on home/category/tag lists
   relatedCount: number // related posts shown at the end of an article (0 = none)

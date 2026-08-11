@@ -13,6 +13,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import type { SiteSettings } from '@/types'
 import { getMedia, addMedia, deleteMedia, restoreMediaBatch, getTrashedMedia } from '@/media/media'
 import { getFiles, deleteFile, restoreFilesBatch, getTrashedFiles } from '@/media/files'
+import { checkUpload, readCapped, uploadLimits } from '@/media/limits'
 import { getSettings, saveSettings } from '@/content/settings'
 import { clearCache } from '@/server/cache'
 import { logActivity } from '@/server/activity'
@@ -59,7 +60,18 @@ function registerMediaTools(server: McpServer): void {
       }
       if (!res.ok) return asError(`Fetch failed (${res.status}): ${url}`)
       const contentType = res.headers.get('content-type')?.split(';')[0]?.trim() ?? ''
-      const body = await res.arrayBuffer()
+      // Capped while READING (media/limits.ts). This is the one byte path no reverse proxy
+      // can cap, because the bytes arrive on a fetch this server made.
+      const { maxFileBytes, storeQuotaBytes } = await uploadLimits()
+      const read = await readCapped(res, maxFileBytes)
+      if ('tooLarge' in read) return asError(`Image is larger than the ${read.limit}-byte upload limit: ${url}`)
+      const body = read.body
+      const refusal = await checkUpload([body.byteLength])
+      if (refusal !== null) {
+        return asError(refusal.reason === 'quota_exceeded'
+          ? `Storage quota reached (${storeQuotaBytes} bytes): ${url}`
+          : `Image is larger than the ${refusal.limit}-byte upload limit: ${url}`)
+      }
       try {
         const item = await addMedia(filename || filenameFromUrl(url), body, contentType)
         await logActivity('media.upload', item.filename)

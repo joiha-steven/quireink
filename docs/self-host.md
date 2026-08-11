@@ -47,13 +47,24 @@ read from disk at runtime, so they have to exist before the service starts.
 ## 3. Configure
 
 Environment only, no config file. The full list is in the
-[README](../README.md#-environment-variables); the four that matter:
+[README](../README.md#-environment-variables); the five that matter:
 
 ```ini
 DATA_DIR=/var/lib/quire/data
 STORAGE_LOCAL_DIR=/var/lib/quire/uploads
 SITE_URL=https://example.com
+MAX_UPLOAD_MB=64
+STORAGE_QUOTA_GB=5
 ```
+
+**`MAX_UPLOAD_MB` and `STORAGE_QUOTA_GB` are the app's own limits, and they default to 64 MB
+and 5 GB whether you set them or not.** Until 2026-08-11 there were none: what refused an
+oversized image was `client_max_body_size` below, so running the binary behind a tunnel, a
+PaaS or nothing at all meant no limit and nothing said so. Keep the proxy's number and this
+one in step — the proxy refuses first and more cheaply, this one refuses what never passes
+through a proxy at all, including an image the MCP tool fetches from a URL. `0` disables
+either. The admin (Settings → System → Storage) can lower them for this blog and can never
+raise them, so on a server you run for somebody else these two lines are the ceiling.
 
 There is no secret to generate. 1.x needed `AUTH_SECRET`; 2.0 creates its own signing
 secrets on first use and stores them in the database ([`src/auth/secret.ts`](../src/auth/secret.ts)),

@@ -39,6 +39,7 @@ import { TypographyFields } from './TypographyFields'
 import { FontUpload } from './FontUpload'
 import { FontFields } from './FontFields'
 import { AdvancedFields } from './AdvancedFields'
+import { StorageFields } from './StorageFields'
 import { McpFields } from './McpFields'
 import { LayoutMenuFields } from './LayoutMenuFields'
 import { FrontFields } from './FrontFields'
@@ -351,6 +352,14 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
           <div className={COL}>
             <Card title={t.backupTitle}>
               <ExportFields backups={s.backups} onChange={(backups) => update({ backups })} />
+            </Card>
+            <Card title={t.storageTitle}>
+              <StorageFields
+                maxUploadMb={s.maxUploadMb}
+                storageQuotaGb={s.storageQuotaGb}
+                onMaxUploadMb={(maxUploadMb) => update({ maxUploadMb })}
+                onStorageQuotaGb={(storageQuotaGb) => update({ storageQuotaGb })}
+              />
             </Card>
           </div>
         </div>

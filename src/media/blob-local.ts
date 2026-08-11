@@ -11,6 +11,12 @@ import { promises as fs, createReadStream, mkdirSync } from 'node:fs'
 import { Readable } from 'node:stream'
 import path from 'node:path'
 
+// `@/env` and nothing more. `media/limits.ts` holds the same ceiling narrowed by the owner's
+// settings, and importing THAT here would pull `content/settings.ts` — which imports the
+// storage facade — into the driver underneath it, for one number that comes from the
+// environment either way.
+import { readEnv } from '@/env'
+
 // Read at USE, not at import. In the Docker image cwd is /app, so the default maps to
 // /app/uploads — mount a volume there to persist binaries across deploys.
 //
@@ -56,12 +62,29 @@ export function resolveSafe(pathname: string): string {
 // the atomic gate that lets two concurrent uploads racing for the same name never
 // overwrite each other (the loser retries a fresh name). Derivatives (thumb/variants)
 // write without it, so a re-run harmlessly overwrites its own identical bytes.
+//
+// It also enforces the DEPLOYMENT'S upload ceiling, because this is the one function every
+// stored byte passes through: the media library, attachments, icons, fonts, the derived
+// variants, and the MCP tool that rehosts an image from a URL. A route that forgets to check
+// still cannot write past it. The routes check first anyway — `media/limits.ts` explains why
+// both — and what reaches here is either a caller that did not, or a size the owner's
+// settings permitted and the operator's did not.
+//
+// The ceiling read here is the ENVIRONMENT'S, not the owner's: `content/settings.ts` imports
+// the storage facade, so reading settings from the driver would close a cycle, and the driver
+// has to keep working during a seed or a restore when there may be no settings row at all.
 export async function put(
   pathname: string,
   body: ArrayBuffer | Buffer,
   opts?: { exclusive?: boolean },
 ): Promise<string> {
   const abs = resolveSafe(pathname)
+  const ceiling = readEnv().maxUploadBytes
+  if (ceiling > 0 && body.byteLength > ceiling) {
+    throw new Error(
+      `Blob too large: ${body.byteLength} bytes for ${pathname} exceeds MAX_UPLOAD_MB (${ceiling} bytes)`,
+    )
+  }
   await fs.mkdir(path.dirname(abs), { recursive: true })
   const buf = Buffer.isBuffer(body) ? body : Buffer.from(body)
   await fs.writeFile(abs, buf, opts?.exclusive ? { flag: 'wx' } : undefined)

@@ -138,10 +138,21 @@
   `createReadStream` into the Response, so a large video never sits in server memory
   (this also de-buffered image serving). `lib/mime.ts` maps video/audio extensions —
   without them the fallback octet-stream makes browsers download instead of play.
-- **Host limits:** the reverse proxy caps upload size (nginx `client_max_body_size`),
-  and proxies/CDNs (e.g. Cloudflare free: 100 MB) cap request bodies — a huge video
-  fails at the edge, not in the app. For long/heavy video, a platform embed
-  (unlisted YouTube/Vimeo) is still the better tool: transcoding + adaptive bitrate.
+- **The app's own limits (`src/media/limits.ts`): `MAX_UPLOAD_MB` (64) and
+  `STORAGE_QUOTA_GB` (5).** Added 2026-08-11, when the only byte limit in the tree turned
+  out to be the WXR import's. A file over the cap gets a 413 and the reason
+  `file_too_large`; one that would push the store past the quota gets `quota_exceeded`.
+  Both are checked from `File.size` **before** the body is read, so an oversized upload
+  never becomes resident memory, and again in `blob-local.put()` — the one function every
+  stored byte passes through — so a route that forgets cannot write past the ceiling.
+  Settings → System → Storage can lower either for this blog and can never raise it.
+- **Host limits, still there and still first:** the reverse proxy caps upload size (nginx
+  `client_max_body_size`), and proxies/CDNs (e.g. Cloudflare free: 100 MB) cap request
+  bodies — a huge video fails at the edge, more cheaply than in the app. What the app's
+  own limits add is every path a proxy never sees: a binary run behind a tunnel or nothing
+  at all, and `add_media_from_url`, where the bytes arrive on a fetch the server made. For
+  long/heavy video, a platform embed (unlisted YouTube/Vimeo) is still the better tool:
+  transcoding + adaptive bitrate.
 
 ## WordPress import — `src/import/wordpress.ts`, Admin → Settings → System
 
