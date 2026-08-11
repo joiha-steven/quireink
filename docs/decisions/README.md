@@ -23,7 +23,7 @@ abandoned on 2026-07-26, and the only trace was a private memory file.
 | # | Decision | Date | In force |
 |:--|:--|:--|:--|
 | [0001](0001-self-hosted-native-postgres.md) | Self-host natively on Postgres + PostgREST, drop Vercel and Supabase cloud | 2026-07-04 | ❌ ended at the 2026-07-28 cutover; 1.x only |
-| [0002](0002-no-saas-single-instance.md) | Quire is one instance for its author. No SaaS, no multi-tenancy | 2026-07-26 | ✅ |
+| [0002](0002-no-saas-single-instance.md) | Quire is one instance for its author. No SaaS, no multi-tenancy | 2026-07-26 | ⚠️ partly superseded by [0021](0021-hosted-quire-ink-one-process-per-blog.md) — a hosted tier is now a goal. Its rejection of `tenant_id` still binds |
 | [0003](0003-freeze-v1-rewrite-as-v2.md) | Freeze the Next tree and rewrite as Quire 2.0 | 2026-07-26 | ✅ |
 | [0004](0004-rewrite-in-go-on-sqlite.md) | Rewrite in Go on SQLite | 2026-07-26 | ❌ superseded by 0005 |
 | [0005](0005-rewrite-in-bun-hono-sqlite.md) | Rewrite in Bun + Hono on SQLite, porting rather than reimplementing | 2026-07-27 | ✅ |
@@ -42,6 +42,7 @@ abandoned on 2026-07-26, and the only trace was a private memory file.
 | [0018](0018-highlighter-pen.md) | A highlighter pen: `==text==`, drawn as ink rather than as a box | 2026-08-03 | ✅ |
 | [0019](0019-remove-the-frozen-tree-from-the-working-copy.md) | Remove the frozen 1.x tree from the working copy, keep it at tag `v1-final` | 2026-08-03 | ✅ |
 | [0020](0020-mathematics-as-mathml.md) | Mathematics: LaTeX in the source, MathML on the page, and the dollar sign stays money | 2026-08-06 | ✅ |
+| [0021](0021-hosted-quire-ink-one-process-per-blog.md) | A hosted Quire Ink, as one process per blog. `tenant_id` stays rejected | 2026-08-11 | ✅ |
 
 ## Superseded, and why that matters
 
