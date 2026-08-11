@@ -23,7 +23,7 @@ month. So before writing code, read the file that owns what you are touching.
 |---|---|
 | Write any code at all | [`CLAUDE.md`](./CLAUDE.md): the house rules, and a debug router that names the files per symptom |
 | Change something load-bearing | [`docs/invariants.md`](./docs/invariants.md): seven rules, each with its enforcing code and its guard |
-| Touch type, spacing, i18n or a release | [`docs/conventions.md`](./docs/conventions.md) |
+| Touch type, spacing, i18n or a release | [`docs/conventions/`](./docs/conventions/README.md), one file per surface |
 | Ask why it is like this | [`docs/decisions/`](./docs/decisions/README.md), append-only, including the reversals |
 | Pick something up | The [issue tracker](https://github.com/joiha-steven/quireink/issues). The author's own task list is not in this repository (ADR 0017) |
 | Report a vulnerability | [`SECURITY.md`](./SECURITY.md). Privately, and not as a pull request |

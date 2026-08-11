@@ -10,7 +10,7 @@
 // rejected 55% for putting three inks in the 3.7-4.4 range. A site cannot hold its
 // highlighter to 5.0 and its dates to 4.5.
 //
-// `--c-meta` in particular is not a minor role. `docs/conventions.md` lists what is set in
+// `--c-meta` in particular is not a minor role. `docs/conventions/type.md` lists what is set in
 // `small`: dates, tags, footnotes, the footer, the related list and the whole comment
 // thread — most of the page that is not the article, at 15px, which is below every
 // large-text exemption there is.

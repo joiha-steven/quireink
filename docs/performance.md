@@ -93,7 +93,7 @@ where reading time goes. The cost is a 36px title rendering in the 18pt design, 
 heavier than before. `font-optical-sizing: auto` stays in the public sheet because an
 uploaded custom font can still have the axis.
 
-Hard invariants (also in [`conventions.md`](./conventions.md) typography):
+Hard invariants (also in [`conventions/type.md`](./conventions/type.md)):
 - **Self-hosted only.** No runtime or build-time fetch to Google (it broke offline/CI).
   Files in `src/assets/static/fonts/`, served at `/fonts/*` by `src/web/static.ts`, subset
   `-latin` / `-latin-ext` / `-vietnamese`.

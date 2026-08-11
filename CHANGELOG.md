@@ -164,8 +164,15 @@ is now readable as a fact instead of being detected by the word "404" appearing 
   author's ledger so the commits stay reachable.
 - `.design-sync/` — the generator inputs for previewing admin components in a design tool.
   Tooling only; nothing in `src/` imports it.
-- The release procedure in `docs/conventions.md` no longer tells you to check for a binary that
-  is no longer built.
+- The release procedure in [`docs/conventions/releases.md`](docs/conventions/releases.md) no
+  longer tells you to check for a binary that is no longer built.
+- `docs/conventions.md` reached 400 of the 400 lines `check:docs` allows, having been squeezed
+  twice in one day to fit. It is now [`docs/conventions/`](docs/conventions/README.md), one file
+  per surface — type, layout, colour, motion, IDE chrome, i18n, scripts, releases — the same cut
+  [ADR 0010](docs/decisions/0010-four-homes-doc-layout.md) made for `docs/features/`. Two rules
+  that had been filed by where their control sits rather than by what they govern moved with it:
+  the font handles are with typography instead of with chrome reuse, and the mode × palette axes
+  are with colour instead of with the header.
 
 ## 2026-08-10 — Quire Ink 2.0.2
 
