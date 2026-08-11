@@ -3,7 +3,7 @@
 // These write real bytes, so each test file gets its own storage directory and the whole
 // thing is torn down after. The behaviours worth pinning are the type gates (a 415 the
 // upload client shows as its own message) and the batch-rejection rule.
-import { describe, it, expect, beforeEach, afterAll } from 'bun:test'
+import { describe, it, expect, beforeEach, afterAll, afterEach } from 'bun:test'
 import { rmSync } from 'node:fs'
 import { freshDatabase, dropDatabase } from '@/test/db'
 import { db } from '@/store/db'
@@ -223,5 +223,88 @@ describe('icons and fonts', () => {
   it('refuses a font that is not one', async () => {
     const res = await upload('/api/files/font', [['not-a-font.png', 'image/png']])
     expect(res.status).toBe(415)
+  })
+})
+
+/**
+ * The size cap and the storage quota (`media/limits.ts`).
+ *
+ * Neither existed in the software until 2026-08-11: what refused an oversized image was
+ * `client_max_body_size` in nginx, so anyone running the binary behind a tunnel, a PaaS or
+ * nothing had no limit at all. These pin the refusal at the route, which is where it becomes
+ * a 413 the upload client can show instead of a 500.
+ */
+describe('upload limits', () => {
+  const ENV = ['MAX_UPLOAD_MB', 'STORAGE_QUOTA_GB'] as const
+  const before = new Map<string, string | undefined>()
+
+  beforeEach(() => {
+    for (const key of ENV) before.set(key, process.env[key])
+  })
+
+  afterEach(() => {
+    for (const key of ENV) {
+      const prev = before.get(key)
+      if (prev === undefined) delete process.env[key]
+      else process.env[key] = prev
+    }
+  })
+
+  /**
+   * Two megabytes of zeros, which is not a decodable PNG — deliberately. The size check runs
+   * BEFORE the bytes are read or decoded, so this returning 413 rather than an image error is
+   * itself the assertion: an oversized upload never becomes resident memory on its way to
+   * being refused.
+   */
+  function big(name: string, mb: number) {
+    const form = new FormData()
+    form.append('file', new File([new Uint8Array(mb * 1024 * 1024)], name, { type: 'image/png' }), name)
+    return form
+  }
+
+  it('refuses a file over the cap with 413 and the string the client shows', async () => {
+    process.env.MAX_UPLOAD_MB = '1'
+    const res = await asOwner('/api/media/upload', { method: 'POST', body: big('huge.png', 2) })
+    expect(res.status).toBe(413)
+    expect(await res.json()).toEqual({ success: false, error: 'file_too_large' })
+    // And nothing landed: the whole batch is refused, as with a bad type.
+    expect((await payload<unknown[]>(asOwner('/api/media'))).length).toBe(0)
+  })
+
+  it('applies the same cap to attachments, icons and fonts', async () => {
+    process.env.MAX_UPLOAD_MB = '1'
+    // The font route gates on type first and a `.png` is not a font, so it answers 415 and
+    // never reaches the size check — which is the right order: the more specific refusal
+    // wins, and either way 2 MB is not stored. The other two do reach it.
+    const expected: Record<string, number> = {
+      '/api/files/attach': 413, // takes any type
+      '/api/files/upload': 413, // image/png is a valid favicon, so the type gate passes
+      '/api/files/font': 415,
+    }
+    for (const [path, status] of Object.entries(expected)) {
+      const res = await asOwner(path, { method: 'POST', body: big('huge.png', 2) })
+      expect(`${path} -> ${res.status}`).toBe(`${path} -> ${status}`)
+    }
+  })
+
+  it('refuses an upload that would push the store past its quota', async () => {
+    delete process.env.MAX_UPLOAD_MB
+    expect((await upload('/api/media/upload', [['first.png', 'image/png']])).status).toBe(201)
+    // A quota below what is already on disk: the next upload cannot fit, whatever its size.
+    process.env.STORAGE_QUOTA_GB = '0.00000001' // ~10 bytes
+    const res = await upload('/api/media/upload', [['second.png', 'image/png']])
+    expect(res.status).toBe(413)
+    expect(await res.json()).toEqual({ success: false, error: 'quota_exceeded' })
+  })
+
+  /**
+   * The backstop. `blob-local.put()` is the one function every stored byte passes through, so
+   * a caller that never asked about limits still cannot write past the deployment's ceiling.
+   */
+  it('refuses at the storage driver even when no route checked', async () => {
+    process.env.MAX_UPLOAD_MB = '0.0001' // ~105 bytes
+    const { uploadFile } = await import('@/media/blob')
+    await expect(uploadFile('media/bypass.bin', new Uint8Array(4096).buffer, 'application/octet-stream'))
+      .rejects.toThrow(/Blob too large/)
   })
 })

@@ -19,6 +19,7 @@ import {
   getSiteIcons, isAllowedIconType, uploadIcon, isAllowedFontType, uploadFont,
 } from '@/media/files'
 import { collapseBlob } from '@/media/blob'
+import { checkUpload } from '@/media/limits'
 import { finalizeVariants } from '@/media/finalize'
 import { clearCache } from '@/server/cache'
 import { logActivity } from '@/server/activity'
@@ -61,6 +62,19 @@ async function formFiles(c: Context): Promise<File[]> {
   return form === null ? [] : form.getAll('file').filter((f): f is File => f instanceof File)
 }
 
+/**
+ * 413 when a batch is over the per-file cap or would push the store past its quota, `null`
+ * to go ahead.
+ *
+ * Called with `File.size` BEFORE any `arrayBuffer()`, which is the difference between
+ * refusing a 900 MB upload and holding 900 MB of it in memory to refuse it. The reason
+ * string is what the upload client shows, in the same shape as `unsupported_type`.
+ */
+async function refuseOversize(c: Context, files: File[]): Promise<Response | null> {
+  const refusal = await checkUpload(files.map((f) => f.size))
+  return refusal === null ? null : fail(c, refusal.reason, 413)
+}
+
 export function uploadRoutes() {
   const router = ownerRouter()
 
@@ -73,6 +87,8 @@ export function uploadRoutes() {
   router.post('/api/media/upload', async (c) => {
     const files = await formFiles(c)
     if (files.length === 0) return fail(c, 'No files provided', 400)
+    const oversize = await refuseOversize(c, files)
+    if (oversize) return oversize
 
     const inputs: { filename: string; body: ArrayBuffer; contentType: string }[] = []
     for (const file of files) {
@@ -146,6 +162,8 @@ export function uploadRoutes() {
   router.post('/api/files/attach', async (c) => {
     const files = await formFiles(c)
     if (files.length === 0) return fail(c, 'No files provided', 400)
+    const oversize = await refuseOversize(c, files)
+    if (oversize) return oversize
     const uploaded = await addFilesBatch(await Promise.all(files.map(async (f) => ({
       filename: f.name,
       body: await f.arrayBuffer(),
@@ -199,6 +217,8 @@ export function uploadRoutes() {
     let contentType = file.type || ''
     if (!isAllowedIconType(contentType) && /\.ico$/i.test(file.name)) contentType = 'image/x-icon'
     if (!isAllowedIconType(contentType)) return fail(c, 'unsupported_type', 415)
+    const oversize = await refuseOversize(c, [file])
+    if (oversize) return oversize
 
     const url = await uploadIcon(kind, await file.arrayBuffer(), contentType)
     clearCache()
@@ -211,6 +231,8 @@ export function uploadRoutes() {
     const file = form?.get('file')
     if (!(file instanceof File)) return fail(c, 'No file provided', 400)
     if (!isAllowedFontType(file.name)) return fail(c, 'unsupported_type', 415)
+    const oversize = await refuseOversize(c, [file])
+    if (oversize) return oversize
 
     // Only the four weights the typography settings offer. Anything else becomes 400,
     // rather than storing a weight no stylesheet will ever ask for.

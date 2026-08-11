@@ -327,3 +327,20 @@ export function clampNumber(value: unknown, min: number, max: number, fallback: 
   if (typeof value !== 'number' || !Number.isFinite(value)) return fallback
   return Math.min(max, Math.max(min, Math.round(value)))
 }
+
+// Featured-post slugs: trimmed, de-duped, capped. Non-array (or absent) → the fallback.
+// Existence/visibility is enforced at render time, not here (a slug can be featured before
+// or after its post is public).
+//
+// Lived in `settings.ts` until 2026-08-11, against that file's own header saying validation
+// lives here. It moved when the file hit its 400-line ceiling, which is the wrong reason to
+// find the right home, so: this is the home.
+export function sanitizeFeatured(v: unknown, fallback: string[]): string[] {
+  if (!Array.isArray(v)) return fallback
+  const out: string[] = []
+  for (const s of v) {
+    const slug = typeof s === 'string' ? s.trim() : ''
+    if (slug && !out.includes(slug)) out.push(slug)
+  }
+  return out.slice(0, 12)
+}

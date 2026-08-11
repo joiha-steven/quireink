@@ -10,7 +10,7 @@ import { isSiteLang } from '@/locales/langs'
 import { DEFAULT_PRESET_ID, isPresetId, isFontPresetId, defaultThemes, ALL_PALETTE_IDS, DEFAULT_TYPOGRAPHY, DEFAULT_FONT, DEFAULT_FONT_PRESET, isChromeFontId, DEFAULT_CHROME_FONT, TYPE_ROLES } from '@/content/themes'
 import {
   DEFAULT_HOME, DEFAULT_GALLERY, DEFAULT_HIGHLIGHT, sanitizeMenu, migrateThemes, sanitizeThemes, sanitizeEnabledPalettes, sanitizeSeo, sanitizeFeatures, sanitizeHome, sanitizeGallery, sanitizeHighlight, sanitizeMcp, sanitizeMotion, sanitizeCache,
-  sanitizeBackups, sanitizeComments, sanitizeCss, sanitizeUrl, clampNumber,
+  sanitizeBackups, sanitizeComments, sanitizeCss, sanitizeUrl, clampNumber, sanitizeFeatured,
 } from '@/content/settings-sanitize'
 import { sanitizeTypography, sanitizeFont, fontFormat } from '@/content/settings-type'
 
@@ -138,6 +138,10 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   chromeFont: DEFAULT_CHROME_FONT,
   faviconUrl: '',
   appIconUrl: '',
+  // 0 = do not narrow the deployment's ceiling. NOT a copy of `MAX_UPLOAD_MB` /
+  // `STORAGE_QUOTA_GB`: two places holding one limit is how they disagree (`media/limits.ts`).
+  maxUploadMb: 0,
+  storageQuotaGb: 0,
   contentWidth: 672,
   postsPerPage: 10,
   relatedCount: 3,
@@ -189,19 +193,6 @@ function resolveChromeFont(stored: Partial<SiteSettings> & { fontChromeInter?: u
   return DEFAULT_CHROME_FONT
 }
 
-// Featured-post slugs: trimmed, de-duped, capped. Non-array (or absent) → the fallback.
-// Existence/visibility is enforced at render time, not here (a slug can be featured before
-// or after its post is public).
-function sanitizeFeatured(v: unknown, fallback: string[]): string[] {
-  if (!Array.isArray(v)) return fallback
-  const out: string[] = []
-  for (const s of v) {
-    const slug = typeof s === 'string' ? s.trim() : ''
-    if (slug && !out.includes(slug)) out.push(slug)
-  }
-  return out.slice(0, 12)
-}
-
 // Settings merged over defaults; defaults on any error.
 export async function getSettings(): Promise<SiteSettings> {
   try {
@@ -225,6 +216,11 @@ export async function getSettings(): Promise<SiteSettings> {
       siteUrl: sanitizeUrl(stored.siteUrl),
       relatedCount: clampNumber(stored.relatedCount, 0, 12, DEFAULT_SETTINGS.relatedCount),
       excerptLength: clampNumber(stored.excerptLength, 10, 100, DEFAULT_SETTINGS.excerptLength),
+      // Generous upper bound on purpose — these only narrow (`media/limits.ts`), so a number
+      // above the deployment's own does nothing. The clamp is against a negative or a NaN
+      // landing as 0, which reads as "no cap": the exact bug the setting exists to prevent.
+      maxUploadMb: clampNumber(stored.maxUploadMb, 0, 4096, DEFAULT_SETTINGS.maxUploadMb),
+      storageQuotaGb: clampNumber(stored.storageQuotaGb, 0, 4096, DEFAULT_SETTINGS.storageQuotaGb),
       customCss: sanitizeCss(stored.customCss),
       themePreset: isPresetId(stored.themePreset) ? stored.themePreset : DEFAULT_PRESET_ID,
       fontPreset: isFontPresetId(stored.fontPreset) ? stored.fontPreset : DEFAULT_FONT_PRESET,
@@ -339,6 +335,8 @@ export async function saveSettings(input: Partial<SiteSettings>): Promise<SiteSe
     postsPerPage: clampNumber(input.postsPerPage, 1, 100, current.postsPerPage),
     relatedCount: clampNumber(input.relatedCount, 0, 12, current.relatedCount),
     excerptLength: clampNumber(input.excerptLength, 10, 100, current.excerptLength),
+    maxUploadMb: clampNumber(input.maxUploadMb, 0, 4096, current.maxUploadMb),
+    storageQuotaGb: clampNumber(input.storageQuotaGb, 0, 4096, current.storageQuotaGb),
     customCss: input.customCss !== undefined ? sanitizeCss(input.customCss) : current.customCss,
     // Footer is rendered through renderInlineMarkdown (escape-first), so here we only
     // trim + cap length; markup safety is the renderer's job.
