@@ -25,7 +25,8 @@
     "check:admin-kit": "bun scripts/checks/admin-kit.ts",
     "user": "bun scripts/user.ts",
     "shot": "bun scripts/shot.ts",
-    "drive": "bun scripts/drive.ts"
+    "drive": "bun scripts/drive.ts",
+    "tour": "scripts/ops/tour.sh"
   },
   "devDependencies": {
     "@happy-dom/global-registrator": "^20.11.1",

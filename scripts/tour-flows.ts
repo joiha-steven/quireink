@@ -1,0 +1,353 @@
+// What the tour actually checks. Thirty-six flows, public first, then the owner's half.
+//
+// Split from `tour.ts` on 2026-08-11 when that file passed its 400-line ceiling, and the seam is
+// by reader: adding a flow means writing one sentence in here and needs to know nothing about the
+// DevTools protocol, while fixing the browser plumbing means opening `tour.ts` and not caring
+// what is being toured.
+//
+// EVERY ASSERTION RUNS IN THE PAGE and returns a string: `ok`, `ok <detail>`, `skip: <why>`, or
+// the reason it is not ok. A flow reads as the sentence it is checking.
+//
+// A flow that WRITES cleans up after itself — drafts, uploads, a settings round-trip — because a
+// tour that leaves rows behind changes what the next run is testing.
+
+import type { Tour } from './tour'
+
+export function registerFlows({ flow, expect }: Tour): void {
+  // ---------------------------------------------------------------------------------------------
+  // PUBLIC — what a reader meets.
+
+
+  flow('home lists posts', () => expect('/', `
+    (() => {
+      const n = document.querySelectorAll('article').length
+      return n > 0 ? 'ok' : 'no <article> on the home page'
+    })()`))
+
+  // The URL comes from the SITEMAP, not from a link in the markup. The first version read
+  // `article a[href^="/"]` and picked up a category link, then reported a perfectly good article
+  // as bodyless — the tour's own aim was wrong, which is the failure mode a tour has to avoid
+  // most: a red line nobody believes.
+  flow('an article renders its body', () => expect('/', `
+    (async () => {
+      const xml = await (await fetch('/sitemap.xml')).text()
+      const urls = [...xml.matchAll(/<loc>([^<]+)<\\/loc>/g)].map((m) => m[1])
+      const post = urls.map((u) => new URL(u).pathname)
+        .find((p) => /^\\/[a-z0-9-]+$/.test(p) && !['/search','/list'].includes(p))
+      if (!post) return 'the sitemap listed no post-shaped URL'
+      const html = await (await fetch(post)).text()
+      return html.includes('class="prose"') ? 'ok (' + post + ')' : post + ' rendered no .prose body'
+    })()`))
+
+  flow('the feed, sitemap, robots and llms all answer', () => expect('/', `
+    (async () => {
+      const bad = []
+      for (const p of ['/feed.xml', '/sitemap.xml', '/robots.txt', '/llms.txt']) {
+        const r = await fetch(p)
+        if (!r.ok) bad.push(p + ' -> ' + r.status)
+      }
+      return bad.length ? bad.join(', ') : 'ok'
+    })()`))
+
+  flow('a missing page is a 404, not a 200', () => expect('/', `
+    (async () => {
+      const r = await fetch('/definitely-not-a-post-' + Date.now())
+      return r.status === 404 ? 'ok' : 'got ' + r.status
+    })()`))
+
+  flow('the theme control switches to dark', () => expect('/', `
+    (() => {
+      const b = document.querySelector('[data-theme-toggle]')
+      if (!b) return 'no theme control in the header'
+      b.click()
+      const row = document.querySelector('.theme-menu [data-id="dark"]')
+      if (!row) return 'the theme menu has no dark row'
+      row.click()
+      return document.documentElement.dataset.scheme === 'dark'
+        ? 'ok' : 'data-scheme is ' + document.documentElement.dataset.scheme
+    })()`))
+
+  flow('the palette control repaints the page', () => expect('/', `
+    (() => {
+      const b = document.querySelector('[data-palettes]')
+      if (!b) return 'skip: one palette enabled, so no control renders'
+      const before = getComputedStyle(document.documentElement).getPropertyValue('--c-bg').trim()
+      const rows = [...b.closest('.theme-wrap').querySelectorAll('.theme-menu button')]
+      const other = rows.find((r) => r.dataset.id !== document.documentElement.dataset.palette)
+      other.click()
+      const after = getComputedStyle(document.documentElement).getPropertyValue('--c-bg').trim()
+      return before !== after ? 'ok' : '--c-bg did not move from ' + before
+    })()`))
+
+  flow('only one header menu opens at a time', () => expect('/', `
+    (() => {
+      const p = document.querySelector('[data-palettes]')
+      const t = document.querySelector('[data-theme-toggle]')
+      if (!p) return 'skip: no palette control'
+      t.click(); p.click()
+      const open = [...document.querySelectorAll('.theme-menu')].filter((m) => !m.hidden)
+      return open.length === 1 ? 'ok' : open.length + ' menus open at once'
+    })()`))
+
+  flow('search answers as you type', () => expect('/', `
+    (async () => {
+      const r = await fetch('/api/search?q=' + encodeURIComponent('the'))
+      if (!r.ok) return '/api/search -> ' + r.status
+      const body = await r.json()
+      const items = body?.data ?? body
+      return Array.isArray(items) ? 'ok' : 'search did not return a list'
+    })()`))
+
+  flow('the search page renders results server-side', () => expect('/search?q=the', `
+    (() => document.body.innerText.trim().length > 40 ? 'ok' : 'the search page came back empty')()`))
+
+  flow('an OG image is drawn', () => expect('/', `
+    (async () => {
+      const r = await fetch('/og?title=' + encodeURIComponent('Tour'))
+      const type = r.headers.get('content-type') ?? ''
+      return r.ok && /image/.test(type) ? 'ok' : r.status + ' ' + type
+    })()`))
+
+  flow('the manifest is installable', () => expect('/', `
+    (async () => {
+      const r = await fetch('/manifest.webmanifest')
+      if (!r.ok) return 'manifest -> ' + r.status
+      const m = await r.json()
+      return m.name && Array.isArray(m.icons) && m.icons.length ? 'ok' : 'manifest has no name or icons'
+    })()`))
+
+  flow('the analytics beacon is accepted', () => expect('/', `
+    (async () => {
+      const r = await fetch('/api/track', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ path: '/tour', ref: '' }),
+      })
+      return r.status === 204 || r.ok ? 'ok' : '/api/track -> ' + r.status
+    })()`))
+
+  // ---------------------------------------------------------------------------------------------
+  // ADMIN — what the owner meets. Every one of these needs the session cookie.
+
+  const ADMIN_PAGES: [string, string][] = [
+    ['/admin', 'dashboard'],
+    ['/admin/content', 'content list'],
+    ['/admin/media', 'library'],
+    ['/admin/comments', 'comments'],
+    ['/admin/newsletter', 'newsletter'],
+    ['/admin/analytics', 'analytics'],
+    ['/admin/log', 'activity log'],
+    ['/admin/trash', 'trash'],
+    ['/admin/settings', 'settings'],
+    ['/admin/help', 'help'],
+  ]
+
+  for (const [path, label] of ADMIN_PAGES) {
+    flow(`admin: ${label} renders`, () => expect(path, `
+      (() => {
+        // The MARKER, not the word: the Help page's troubleshooting table has a row about a URL
+        // that 404s, and matching the text called a working page broken.
+        if (document.querySelector('[data-admin-404]')) return 'the admin router found nothing'
+        if (/Sign in|Đăng nhập/.test(document.body.innerText)) return 'bounced to the sign-in page'
+        // The shell alone is not the page: every admin screen puts something past the nav.
+        const main = document.querySelector('main') ?? document.body
+        return main.innerText.trim().length > 30 ? 'ok' : 'rendered the shell and nothing else'
+      })()`, 900))
+  }
+
+  flow('admin: the settings tabs all have content', () => expect('/admin/settings', `
+    (async () => {
+      const empty = []
+      for (const label of ['Site','Layout','Reading','Appearance','Search & URLs','Connections','System']) {
+        const b = [...document.querySelectorAll('button')].find((x) => x.textContent.trim() === label)
+        if (!b) { empty.push(label + ' (no tab)'); continue }
+        b.click()
+        await new Promise((r) => setTimeout(r, 250))
+        const cards = document.querySelectorAll('h2, h3').length
+        if (cards === 0) empty.push(label + ' (no cards)')
+      }
+      return empty.length ? empty.join(', ') : 'ok'
+    })()`, 1000))
+
+  flow('admin: the Storage card offers both limits', () => expect('/admin/settings', `
+    (async () => {
+      const b = [...document.querySelectorAll('button')].find((x) => x.textContent.trim() === 'System')
+      if (!b) return 'no System tab'
+      b.click()
+      await new Promise((r) => setTimeout(r, 300))
+      const n = document.querySelectorAll('input[type=number][max="4096"]').length
+      return n === 2 ? 'ok' : 'found ' + n + ' storage fields, expected 2'
+    })()`, 1000))
+
+  flow('admin: settings save and come back', () => expect('/admin/settings', `
+    (async () => {
+      // No GET /api/settings exists — PUT is the only verb, and the admin reads settings through
+      // its view endpoint. Both are used here: the view to read, the response to confirm.
+      const read = async () => (await (await fetch('/api/admin/view/settings')).json())?.data?.settings?.excerptLength
+      const before = await read()
+      const target = before === 42 ? 43 : 42
+      const put = await fetch('/api/settings', {
+        method: 'PUT', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ excerptLength: target }),
+      })
+      if (!put.ok) return 'PUT /api/settings -> ' + put.status
+      const after = await read()
+      await fetch('/api/settings', {
+        method: 'PUT', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ excerptLength: before }),
+      })
+      return after === target ? 'ok' : 'wrote ' + target + ', read back ' + after
+    })()`, 900))
+
+  flow('admin: the editor opens with a title field and a body', () => expect('/admin/editor', `
+    (() => {
+      const title = document.querySelector('textarea[placeholder], input[placeholder]')
+      const body = document.querySelector('.ProseMirror')
+      if (!title) return 'no title field'
+      if (!body) return 'no editor surface'
+      return 'ok'
+    })()`, 1200))
+
+  flow('admin: typing marks the post unsaved', () => expect('/admin/editor', `
+    (async () => {
+      localStorage.clear()
+      const ta = document.querySelector('textarea')
+      const set = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set
+      ta.focus(); set.call(ta, 'Tour: a post typed by a script')
+      ta.dispatchEvent(new Event('input', { bubbles: true }))
+      await new Promise((r) => setTimeout(r, 300))
+      return /nsaved|ưa lưu/.test(document.body.innerText) ? 'ok' : 'the save bar never said unsaved'
+    })()`, 1200))
+
+  flow('admin: leaving the editor keeps the work on this device', () => expect('/admin/editor', `
+    (async () => {
+      localStorage.clear()
+      const ta = document.querySelector('textarea')
+      const set = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set
+      ta.focus(); set.call(ta, 'Tour: work that must survive')
+      ta.dispatchEvent(new Event('input', { bubbles: true }))
+      await new Promise((r) => setTimeout(r, 200))
+      // The flush that makes a two-minute interval safe.
+      Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true })
+      document.dispatchEvent(new Event('visibilitychange'))
+      await new Promise((r) => setTimeout(r, 300))
+      const kept = Object.keys(localStorage).length > 0
+      const said = /this device|máy này|Gerät|端末|本机|기기/.test(document.body.innerText)
+      if (!kept) return 'nothing was written to localStorage'
+      return said ? 'ok' : 'a snapshot exists but the bar does not mention it'
+    })()`, 1200))
+
+  flow('admin: a draft saves and appears in the list', () => expect('/admin/editor', `
+    (async () => {
+      const slug = 'tour-draft-' + Date.now()
+      const r = await fetch('/api/posts', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ title: 'Tour draft', slug, content: 'Written by the tour.', status: 'draft', categories: [], tags: [] }),
+      })
+      if (!r.ok) return 'POST /api/posts -> ' + r.status
+      const list = await (await fetch('/api/admin/view/content')).json()
+      const posts = list?.data?.posts ?? []
+      const found = posts.some((p) => p.slug === slug)
+      // Clean up after ourselves: a tour that leaves rows behind changes the next run.
+      await fetch('/api/posts/' + slug, { method: 'DELETE' })
+      return found ? 'ok' : 'the new draft was not in the content list'
+    })()`, 900))
+
+  flow('admin: a published post is reachable publicly', () => expect('/admin/editor', `
+    (async () => {
+      const slug = 'tour-live-' + Date.now()
+      const r = await fetch('/api/posts', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ title: 'Tour live', slug, content: 'Live from the tour.', status: 'published', categories: [], tags: [] }),
+      })
+      if (!r.ok) return 'POST /api/posts -> ' + r.status
+      const page = await fetch('/' + slug)
+      const html = page.ok ? await page.text() : ''
+      await fetch('/api/posts/' + slug, { method: 'DELETE' })
+      if (!page.ok) return 'the published post answered ' + page.status
+      return html.includes('Live from the tour') ? 'ok' : 'the page rendered without its body'
+    })()`, 900))
+
+  flow('admin: the trash takes a post and gives it back', () => expect('/admin/trash', `
+    (async () => {
+      const slug = 'tour-trash-' + Date.now()
+      await fetch('/api/posts', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ title: 'Tour trash', slug, content: 'x', status: 'draft', categories: [], tags: [] }),
+      })
+      await fetch('/api/posts/' + slug, { method: 'DELETE' })
+      const gone = await fetch('/' + slug)
+      const trashed = await (await fetch('/api/admin/view/trash')).json()
+      const inTrash = (trashed?.data?.posts ?? []).some((p) => p.slug === slug)
+      const back = await fetch('/api/trash', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ kind: 'posts', action: 'restore', ids: [slug] }),
+      })
+      await fetch('/api/posts/' + slug, { method: 'DELETE' })
+      if (gone.status !== 404) return 'a trashed post still answers ' + gone.status
+      if (!inTrash) return 'the post was not listed in the trash'
+      return back.ok ? 'ok' : 'restore -> ' + back.status
+    })()`, 900))
+
+  flow('admin: an oversized upload is refused with a reason', () => expect('/admin/media', `
+    (async () => {
+      const before = await (await fetch('/api/settings')).json()
+      const keep = before?.data?.maxUploadMb ?? 0
+      await fetch('/api/settings', {
+        method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ maxUploadMb: 1 }),
+      })
+      const form = new FormData()
+      form.append('file', new File([new Uint8Array(2 * 1024 * 1024)], 'huge.png', { type: 'image/png' }), 'huge.png')
+      const r = await fetch('/api/media/upload', { method: 'POST', body: form })
+      const body = await r.json().catch(() => ({}))
+      await fetch('/api/settings', {
+        method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ maxUploadMb: keep }),
+      })
+      if (r.status !== 413) return 'expected 413, got ' + r.status
+      return body.error === 'file_too_large' ? 'ok' : 'refused with ' + JSON.stringify(body)
+    })()`, 900))
+
+  flow('admin: a real image uploads and lists', () => expect('/admin/media', `
+    (async () => {
+      const png = Uint8Array.from(atob('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='), (c) => c.charCodeAt(0))
+      const form = new FormData()
+      form.append('file', new File([png], 'tour.png', { type: 'image/png' }), 'tour.png')
+      const r = await fetch('/api/media/upload', { method: 'POST', body: form })
+      if (!r.ok) return '/api/media/upload -> ' + r.status
+      const items = (await r.json())?.data ?? []
+      const url = items[0]?.url
+      if (!url) return 'upload returned no url'
+      const served = await fetch(url)
+      await fetch('/api/media/delete', {
+        method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ urls: [url] }),
+      })
+      return served.ok ? 'ok' : 'the stored image answered ' + served.status
+    })()`, 900))
+
+  flow('admin: the cache can be cleared', () => expect('/admin', `
+    (async () => {
+      const r = await fetch('/api/cache/clear', { method: 'POST' })
+      return r.ok ? 'ok' : '/api/cache/clear -> ' + r.status
+    })()`, 900))
+
+  flow('admin: the backup archive builds', () => expect('/admin/settings', `
+    (async () => {
+      const r = await fetch('/api/backup/export')
+      if (!r.ok) return '/api/backup/export -> ' + r.status
+      const buf = await r.arrayBuffer()
+      // A gzip member starts 1f 8b. An empty or HTML answer would not.
+      const head = new Uint8Array(buf.slice(0, 2))
+      return head[0] === 0x1f && head[1] === 0x8b
+        ? 'ok (' + Math.round(buf.byteLength / 1024) + ' KB)'
+        : 'the archive was not gzip: ' + buf.byteLength + ' bytes'
+    })()`, 900))
+
+  flow('the owner gate refuses a write with no session', () => expect('/', `
+    (async () => {
+      // Same-origin, but the cookie is stripped: an owner route must still answer 401.
+      const r = await fetch('/api/settings', {
+        method: 'PUT', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ title: 'nope' }), credentials: 'omit',
+      })
+      return r.status === 401 ? 'ok' : 'a cookieless write got ' + r.status
+    })()`))
+}

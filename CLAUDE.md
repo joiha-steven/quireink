@@ -19,9 +19,20 @@ Typecheck, the seven static guards (`filesize` · `css` · `nul` · `routes` · 
 
 `check:all` proves the code compiles and the seams hold. It cannot tell you a column
 collapsed to `reader@e…` or that three columns are 14px out of alignment. Both shipped,
-because nobody opened the page. **Drive it with headless Chromium**
-([`scripts/drive.ts`](./scripts/drive.ts), [`scripts/shot.ts`](./scripts/shot.ts)) and
-measure. Verify against the **origin**, never through the CDN.
+because nobody opened the page.
+
+```
+bun run tour
+```
+
+Thirty-six flows in a real browser, each with a verdict: the reader's controls, every admin
+page, a draft saved and published and trashed and restored, an upload refused for being too
+large, the archive built. It seeds its own instance on its own port and deletes it after, so it
+never touches a real one. Flows live in [`scripts/tour-flows.ts`](./scripts/tour-flows.ts);
+the browser plumbing is [`scripts/tour.ts`](./scripts/tour.ts).
+
+For one page, looked at rather than asserted: [`scripts/drive.ts`](./scripts/drive.ts) and
+[`scripts/shot.ts`](./scripts/shot.ts). Verify against the **origin**, never through the CDN.
 
 ## Read first
 

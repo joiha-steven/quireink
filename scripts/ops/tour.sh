@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+# The whole tour from nothing: seed a throwaway instance, serve it, drive it, tear it down.
+#
+# THE COMMAND IS THE POINT, for the same reason `shoot-readme.sh` exists. A tour that needs six
+# remembered steps is a tour nobody runs twice, and this one has a real trap in it: the seeder
+# prints the owner's session cookie on its last line, and the admin half of the tour is a tour of
+# the sign-in page without it.
+#
+#   scripts/ops/tour.sh
+#   ONLY=admin scripts/ops/tour.sh      # just the flows whose name contains "admin"
+#
+# Env: CHROME / CHROME_HEADLESS_SHELL — the browser binary, as drive.ts and shot.ts expect.
+#
+# It never touches a real instance: its own DATA_DIR, its own uploads, its own port, all under
+# `.tmp/` and all deleted on the way out. The tour DOES write — drafts, an upload, a settings
+# round-trip — and every flow cleans up after itself, because a tour that leaves rows behind
+# changes what the next run is testing.
+set -euo pipefail
+cd "$(dirname "$0")/../.."
+
+TMP=.tmp/tour
+PORT=${PORT:-3399}
+rm -rf "$TMP"
+mkdir -p "$TMP"
+
+# Assets first: the server reads the island bundles and the admin SPA off disk, so a tour on a
+# stale build is a tour of the last change rather than this one.
+bun run build:assets >/dev/null
+bun run build:admin >/dev/null
+
+SEED_OUT=$(bun scripts/seed-showcase.ts "$TMP/data" 2>&1 | tail -3)
+echo "$SEED_OUT" | sed 's/^/  seed: /'
+SESSION=$(printf '%s' "$SEED_OUT" | sed -n 's/^QUIRE_SESSION=//p' | tail -1)
+if [ -z "$SESSION" ]; then
+  echo "✗ the seeder printed no QUIRE_SESSION — the admin flows would tour the login page" >&2
+  exit 1
+fi
+
+DATA_DIR="$TMP/data" STORAGE_LOCAL_DIR="$TMP/uploads" PORT="$PORT" \
+  SITE_URL="http://127.0.0.1:$PORT" bun src/index.ts > "$TMP/server.log" 2>&1 &
+SERVER=$!
+# Kill the server whatever happens, including a failing tour: `set -e` plus a background process
+# is how a stray `bun` ends up holding the port until somebody notices.
+trap 'kill $SERVER 2>/dev/null || true; rm -rf "$TMP"' EXIT
+
+for _ in $(seq 1 60); do
+  if curl -fsS -o /dev/null "http://127.0.0.1:$PORT/api/health" 2>/dev/null; then break; fi
+  sleep 0.25
+done
+
+QUIRE_SESSION="$SESSION" bun scripts/tour.ts "http://127.0.0.1:$PORT"
