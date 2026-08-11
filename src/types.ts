@@ -192,6 +192,7 @@ export type SiteSettings = {
   chromeFont: string // system-chrome font (lib/themes CHROME_FONTS): 'inter' | 'reading' (follow the reading font) | 'plex-mono' (IBM Plex Mono). Drives --font-sans (header/footer/rail/meta/admin); leaves the article body alone
   faviconUrl: string // browser-tab icon; '' = the bundled default favicon
   appIconUrl: string // PWA / home-screen app icon (square); '' = favicon, else bundled default
+  autosaveSeconds: number // how often the editor stashes a local snapshot while you type, in seconds. NOT a server autosave — see admin/components/useLocalDraft.ts, which rejects one on the grounds that it cannot help when the network is what dropped and would push half-finished edits onto a published post. The floor is 15s: at a long interval the flush on hide is what actually keeps work safe, and that one is not optional
   maxUploadMb: number // largest single upload, in MB (0 = whatever the deployment allows). ONLY EVER NARROWS the MAX_UPLOAD_MB ceiling: the operator's number is the one an upload cannot argue with, and this field can lower it but never raise it (media/limits.ts)
   storageQuotaGb: number // largest the whole blob store may grow, in GB (0 = whatever the deployment allows). Counts derived variants and icons, because on a photo blog those are most of the disk. Same narrow-only rule as maxUploadMb
   contentWidth: number // px, max width of the content column (desktop)

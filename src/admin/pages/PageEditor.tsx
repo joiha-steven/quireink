@@ -7,7 +7,7 @@ import { View } from '@/admin/pages/state'
 import { PageForm } from '@/admin/components/PageForm'
 import type { PageWithContent } from '@/types'
 
-type Props = { page: PageWithContent | null; contentWidth: number; typewriterEffects: boolean }
+type Props = { page: PageWithContent | null; contentWidth: number; typewriterEffects: boolean; autosaveSeconds: number }
 
 export default function PageEditor() {
   const path = usePathname()
@@ -22,6 +22,7 @@ export default function PageEditor() {
           initial={d.page ?? undefined}
           contentWidth={d.contentWidth}
           typewriterEffects={d.typewriterEffects}
+          autosaveSeconds={d.autosaveSeconds}
         />
       )}
     </View>

@@ -12,7 +12,7 @@ import { Editor, type EditorApi } from './Editor'
 import { PostSettings, type Draft } from './PostSettings'
 import { MediaLibrary } from './MediaLibrary'
 import { TimeMachine } from './TimeMachine'
-import { useLocalAutosave, useLocalDraft, useUnsavedGuard } from './useLocalDraft'
+import { saveStatusLine, useLocalAutosave, useLocalDraft, useUnsavedGuard } from './useLocalDraft'
 import { useAdminT } from './I18nProvider'
 import { CARD, NOTICE } from './kit'
 
@@ -23,6 +23,7 @@ type Props = {
   allSeries: string[]
   contentWidth: number
   typewriterEffects: boolean
+  autosaveSeconds: number
 }
 
 type PickTarget = 'editor' | 'gallery' | 'featured' | 'cover'
@@ -54,7 +55,7 @@ function toDraft(initial?: PostWithContent): Draft {
   }
 }
 
-export function PostForm({ initial, allCategories, allTags, allSeries, contentWidth, typewriterEffects }: Props) {
+export function PostForm({ initial, allCategories, allTags, allSeries, contentWidth, typewriterEffects, autosaveSeconds }: Props) {
   const t = useAdminT()
   const router = useRouter()
   const { notify } = useToast()
@@ -194,10 +195,11 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
   // Local (offline) autosave: stash unsaved edits in localStorage on a timer AND whenever the
   // page is hidden or left. It NEVER writes to the server, so editing a published post cannot
   // push half-finished text live; only Save/Publish does that. The hook carries the reasoning.
-  useLocalAutosave(
+  const keptAt = useLocalAutosave(
     () => dirtyRef.current,
     () => ({ ...draftRef.current, content: editorApi.current?.getMarkdown() ?? contentRef.current }),
     saveLocal,
+    autosaveSeconds * 1000,
   )
   useUnsavedGuard(() => dirtyRef.current)
 
@@ -306,7 +308,7 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
           <Link href="/admin/content" className="text-sm text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white">← {t.navDashboard}</Link>
           <span className="hidden h-4 w-px bg-neutral-200 sm:block dark:bg-neutral-800" />
           <span className="text-sm text-neutral-500 dark:text-neutral-400">
-            {saving ? t.saving : savedAt ? `${t.savedAtPrefix} ${formatTime(savedAt)}` : dirty ? t.unsaved : ''}
+            {saveStatusLine(t, saving, savedAt, dirty, keptAt, formatTime)}
           </span>
         </div>
         <div className="flex items-center gap-2">
