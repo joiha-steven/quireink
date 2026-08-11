@@ -43,7 +43,7 @@ Có ba thứ định hình nó.
 
 **Trang đọc mới là sản phẩm.** Font, màu, cỡ chữ, khoảng cách, bố cục: tất cả đều là tuỳ chọn bạn chỉnh trong trang quản trị. Không một cỡ chữ hay màu nào viết cứng trong stylesheet của trang đọc, và build sẽ báo đỏ nếu ai đó nhét vào.
 
-**Người đọc tải về 3.4–7.7 KB JavaScript, và không tải gì từ bên thứ ba.** Trang tới nơi đã là HTML hoàn chỉnh. Vài đoạn script nhỏ lo tìm kiếm, đổi giao diện và chế độ sách. React nằm yên trong trang quản trị, không bao giờ chạm tới người đọc.
+**Người đọc tải về 3.6–7.8 KB JavaScript, và không tải gì từ bên thứ ba.** Trang tới nơi đã là HTML hoàn chỉnh. Vài đoạn script nhỏ lo tìm kiếm, đổi giao diện và chế độ sách. React nằm yên trong trang quản trị, không bao giờ chạm tới người đọc.
 
 **Agent viết được thay bạn.** Nối Claude hay bất kỳ client MCP nào vào, nó soạn được, gắn thẻ được, hẹn giờ và đăng được, theo đúng những luật mà trang quản trị đang theo.
 
@@ -100,7 +100,7 @@ Hai dòng CSS và JavaScript là sản phẩm của bản build — giống nhau
 |:---|---:|---:|:---|
 | **Số request** | 10 | 10 | |
 | **Tổng&nbsp;tải&nbsp;về** | **106 KB** | **114 KB** | 67 KB trong đó là font |
-| **JavaScript** | **3.4 KB** | **7.7 KB** | viết tay, không framework |
+| **JavaScript** | **3.6 KB** | **7.8 KB** | viết tay, không framework |
 | **CSS** | 8.0 KB | 8.0 KB | một tệp, đã nén, cache vĩnh viễn |
 | **Request&nbsp;bên&nbsp;thứ&nbsp;ba** | **0** | **0** | không CDN, không font host, không tracker |
 | **Lần vào sau** | ~19 KB | ~24 KB | chỉ tải lại HTML |

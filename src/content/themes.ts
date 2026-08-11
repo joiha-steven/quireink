@@ -1,6 +1,7 @@
 // Built-in palettes (6 tokens × light+dark, emitted by `themesToCss`). All live in
 // `settings.themes` (id -> ThemeSettings), each owner-customizable; `themePreset`
-// names the visitor default (switchable via PaletteToggle). `name` is the English
+// names the visitor default; a reader switches with the header control in
+// `assets/js/theme.ts` (`palette()`), which renders only above two enabled. `name` is the English
 // fallback — the displayed name is localized via `paletteNames`, keyed by id.
 
 import type { ThemeColors, ThemeSettings, TypographySettings, TypeRole, TypeStyle, FontSettings } from '@/types'
@@ -300,7 +301,9 @@ function vars(c: ThemeColors): string {
   return `--c-bg:${c.bg};--c-text:${c.text};--c-heading:${c.heading};--c-meta:${c.meta};--c-link:${c.link};--c-accent:${c.accent};--c-rule:${c.rule}`
 }
 
-// CSS for EVERY palette so the switcher swaps instantly via `<html data-palette>`.
+// CSS for every ENABLED palette, so the switcher swaps instantly via `<html data-palette>`
+// with nothing to fetch. It emitted all six until 2026-08-11, including on blogs that had
+// turned five off — see `themesToCss`.
 // Default also lands on :root/.dark (no-JS baseline); mode-qualified
 // `[data-palette].dark` has higher specificity so dark resolves correctly.
 //
@@ -329,11 +332,17 @@ function vars(c: ThemeColors): string {
 // `color-scheme` rides along: it is what makes the scrollbar, the form controls and the
 // canvas the browser draws follow the page instead of staying light under a dark one.
 //
-// NOT mirrored per palette, and now for a smaller reason than before. It used to be that
-// nothing set `data-palette` at all; since 2026-08-11 the per-palette rules are only emitted
-// when two or more are enabled, so on a one-palette blog there is nothing to mirror. On a blog
-// that enables several, mirroring this per palette is the second half of porting the switcher,
-// and it is still not free: it doubles a block per palette.
+// NOT mirrored per palette, and with the switcher now ported (2026-08-11) that is settled
+// rather than deferred. It cannot help. Before the island runs there is no `data-palette` at
+// all — the reader's choice is in their own localStorage and the page cache is keyed by URL, so
+// the server cannot know it — which means the only palette this block could possibly be about
+// is the owner's default, and that is exactly the one `base` already carries.
+//
+// After the island runs, `data-scheme` exists, this whole block drops out of the cascade, and
+// `[data-palette="…"].dark` answers instead. So the cost of mirroring is real and the benefit is
+// zero. What remains is one frame of the DEFAULT palette for a reader who chose another and is
+// on a dark machine — the same accepted flash the theme control has, for the same reason: no
+// inline script.
 /**
  * `enabled` is `settings.enabledPalettes`: the palettes a reader may switch between, which is
  * the only set worth emitting rules for.

@@ -69,7 +69,19 @@ const BUDGET: Record<string, number> = {
   // all 68 posts at once with no easing at all: the .reveal class had been in the markup
   // since M2 and no rule ever matched it, and there was nothing to hand the archive back a
   // page at a time. Both are what the frozen tree does.
-  'core.js': 8_800,
+  //
+  // RAISED TO 9,600 on 2026-08-11 for the reader's palette switcher, and this is the
+  // deliberate decision `state/TASKS.md` asked for rather than a number nudged mid-fix. The
+  // owner's call: six palettes had shipped on every page since M2 with nothing able to select
+  // them, and the choice was to make them work rather than to stop shipping them.
+  //
+  // The feature cost 564 bytes, which is what it costs AFTER the theme menu and the palette
+  // menu were made one `dropdown()` instead of two copies of open/close/mark/dismiss — the
+  // duplicate would have cost about as much again. The headroom is 234 bytes rather than the
+  // twenty this budget used to leave, because twenty bytes is not a budget, it is a tripwire:
+  // an accessibility pass went 59 over in one commit and was paid for by moving two static
+  // ARIA attributes into the markup, which is a trick that works once.
+  'core.js': 9_600,
   // /{slug}: back to top, code copy, lightbox, subscribe, comments, the ToC highlight and
   // book mode. Raised from 8,000 when book mode grew its real chrome — a title bar, a page
   // count and side arrows over a clipped viewport, and a spread measured to exactly two

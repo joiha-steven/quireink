@@ -43,7 +43,7 @@ Three things shaped it.
 
 **The reading page is the product.** Type, colour, size, spacing, layout: all of it is a setting you change in the admin. Not one size or colour is written into the reader's stylesheet, and the build fails if someone puts one there.
 
-**Readers download between 3.4 KB and 7.7 KB of JavaScript, and nothing from anyone else.** Pages arrive as finished HTML. A few small scripts handle search, the theme switch and book mode. React stays in the admin and never reaches a reader.
+**Readers download between 3.6 KB and 7.8 KB of JavaScript, and nothing from anyone else.** Pages arrive as finished HTML. A few small scripts handle search, the theme switch and book mode. React stays in the admin and never reaches a reader.
 
 **An agent can do the writing.** Connect Claude or any MCP client and it can draft, tag, schedule and publish for you, through exactly the rules the admin follows.
 
@@ -100,7 +100,7 @@ The CSS and JavaScript rows are build artefacts — the same bytes on every inst
 |:---|---:|---:|:---|
 | **Requests** | 10 | 10 | |
 | **Total&nbsp;transferred** | **106 KB** | **114 KB** | 67 KB of that is the fonts |
-| **JavaScript** | **3.4 KB** | **7.7 KB** | written by hand, no framework |
+| **JavaScript** | **3.6 KB** | **7.8 KB** | written by hand, no framework |
 | **CSS** | 8.0 KB | 8.0 KB | one file, minified, cached forever |
 | **Third-party&nbsp;requests** | **0** | **0** | no CDN, no font host, no tracker |
 | **Coming back** | ~19 KB | ~24 KB | only the HTML is fetched again |

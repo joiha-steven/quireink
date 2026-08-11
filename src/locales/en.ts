@@ -19,6 +19,7 @@ const en = {
   shortGrid: 'grid',
   shortMail: '@mail',
   shortMenu: 'menu',
+  shortPalette: 'hue',
   gridView: 'Grid view',
   listView: 'List view',
   palette: 'Palette',

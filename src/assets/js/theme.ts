@@ -62,6 +62,143 @@ function drawIcon(button: HTMLElement, dark: boolean): void {
     : `<circle cx="12" cy="12" r="4"/><path d="${SUN}"/>`
 }
 
+/**
+ * A header button that opens a menu of choices, one of which is current.
+ *
+ * Shared by the theme control and the palette control, which are the same widget twice: a
+ * button, a list of rows, a tick on the current one, and one attribute on `<html>`. Written
+ * once because the reader's bundle is budgeted in bytes and a second copy of the open/close/
+ * mark/dismiss logic costs about as much as the palette feature itself.
+ *
+ * Returns `mark`, so a caller whose current value can change from outside the menu — the
+ * theme's `system` mode follows the OS — can re-tick the rows.
+ *
+ * A GROUP OF BUTTONS, not `role="menu"`. Which row is current was marked by a class and the
+ * tick is drawn in CSS, so a reader using a screen reader heard identical buttons with no way
+ * to tell which one they were on. `aria-pressed` is the honest fix: these are toggle buttons
+ * and they behave like toggle buttons. `role="menu"` would promise arrow-key navigation this
+ * widget does not implement, which is worse than plain buttons rather than better.
+ */
+/**
+ * Every dropdown's `close`, so opening one shuts the others.
+ *
+ * Found by clicking the header, not by a test: both controls sit at the same corner of the
+ * same row and each stopped its click from reaching the document handler that closes menus, so
+ * the theme menu and the palette menu could be open at once, overlapping. Neither one was
+ * wrong on its own — the bug only exists once there are two.
+ */
+const closers: (() => void)[] = []
+
+function dropdown(
+  button: HTMLElement,
+  name: string,
+  rows: { id: string; text: string }[],
+  currentId: () => string,
+  pick: (id: string) => void,
+): () => void {
+  // `.theme-menu` and `.theme-wrap` for both, deliberately: the palette menu is the same
+  // object at the same corner of the same button, and a second set of rules would be two
+  // definitions of one look. Nothing about those class names is theme-specific but the word.
+  const menu = el('div', { class: 'theme-menu', role: 'group', 'aria-label': label(name), hidden: '' })
+  const mark = () => {
+    for (const row of menu.querySelectorAll<HTMLElement>('button')) {
+      const current = row.dataset.id === currentId()
+      row.classList.toggle('is-current', current)
+      row.setAttribute('aria-pressed', String(current))
+    }
+  }
+  for (const r of rows) {
+    const row = el('button', { type: 'button', 'data-id': r.id, 'aria-pressed': 'false' }, r.text)
+    row.addEventListener('click', () => {
+      pick(r.id)
+      mark()
+      close()
+    })
+    menu.append(row)
+  }
+  mark()
+
+  const wrap = el('div', { class: 'theme-wrap' })
+  button.replaceWith(wrap)
+  wrap.append(button, menu)
+
+  const close = () => {
+    menu.hidden = true
+    button.setAttribute('aria-expanded', 'false')
+  }
+  closers.push(close)
+  // `aria-haspopup="true"` and the initial `aria-expanded="false"` are in the markup
+  // (`web/chrome.ts`): they never change, and the reader's bundle is budgeted in bytes.
+  button.addEventListener('click', (e) => {
+    e.stopPropagation() // otherwise the document handler below shuts it in the same tick
+    const opening = menu.hidden
+    // Shut everything, including this one, then open this one. Cheaper in bytes than tracking
+    // which menu is open, and it makes "only one at a time" true by construction.
+    for (const shut of closers) shut()
+    if (opening) {
+      menu.hidden = false
+      button.setAttribute('aria-expanded', 'true')
+    }
+  })
+  document.addEventListener('click', close)
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') close()
+  })
+  return mark
+}
+
+/**
+ * The reader's palette, when the owner has enabled more than one.
+ *
+ * The ids and their translated names arrive on the button as `id:Name|id:Name`, so this file
+ * carries no locale table and no list of palettes — the same rule as every other string a
+ * script shows. The owner's own default is named separately, because `enabledPalettes` keeps
+ * the picker's display order and the default is not necessarily first in it.
+ *
+ * Setting `data-palette` unconditionally is safe because of what `content/themes.ts` emits:
+ * per-palette rules exist exactly when two or more are enabled, which is exactly when this
+ * control renders — including a block for the default's own id, so a reader who switches away
+ * and back has something to come back to.
+ *
+ * NOT server-rendered, and it cannot be: the page cache is keyed by URL alone (Invariant 1),
+ * so a palette baked into the HTML would be whichever one the first visitor had chosen.
+ */
+export function palette(): void {
+  const button = document.querySelector<HTMLButtonElement>('[data-palettes]')
+  if (!button) return
+  const rows = (button.dataset.palettes ?? '').split('|').filter(Boolean).map((pair) => {
+    const at = pair.indexOf(':')
+    return { id: pair.slice(0, at), text: pair.slice(at + 1) }
+  })
+  // The server only renders the button above two, but a reader is not the only caller of a
+  // page and a one-row menu is a dead control.
+  if (rows.length < 2) return
+
+  const fallback = button.dataset.paletteDefault ?? rows[0]!.id
+  let current = fallback
+  try {
+    const saved = localStorage.getItem('palette')
+    if (saved && rows.some((r) => r.id === saved)) current = saved
+  } catch {
+    /* storage can be denied; the choice is then simply not remembered */
+  }
+
+  const apply = () => {
+    document.documentElement.dataset.palette = current
+  }
+  apply()
+
+  dropdown(button, 'palette', rows, () => current, (id) => {
+    current = id
+    try {
+      localStorage.setItem('palette', id)
+    } catch {
+      /* ignore */
+    }
+    apply()
+  })
+}
+
 export function theme(): void {
   const button = document.querySelector<HTMLButtonElement>('[data-theme-toggle]')
   if (!button) return
@@ -99,60 +236,17 @@ export function theme(): void {
   apply()
   track()
 
-  // The menu is built once and shown on demand. Its rows carry the same server-translated
-  // labels as everything else, so this file holds no language of its own.
-  //
-  // A GROUP OF BUTTONS, not `role="menu"`. Which mode is current was marked by a class, and
-  // the tick beside it is drawn by CSS — so a reader using a screen reader heard four
-  // identical buttons and no way to tell which one they were already on. `aria-pressed` is
-  // the honest fix: these are toggle buttons and they behave like toggle buttons. Declaring
-  // `role="menu"` would promise arrow-key navigation that this widget does not implement,
-  // which is worse than plain buttons rather than better.
-  const menu = el('div', { class: 'theme-menu', role: 'group', 'aria-label': label('theme'), hidden: '' })
-  for (const m of MODES) {
-    const row = el('button', { type: 'button', 'data-mode': m, 'aria-pressed': 'false' }, label(LABEL[m]))
-    row.addEventListener('click', () => {
-      mode = m
-      try {
-        localStorage.setItem(STORAGE_KEY, m)
-      } catch {
-        /* ignore */
-      }
-      apply()
-      track()
-      mark()
-      close()
-    })
-    menu.append(row)
-  }
-  const mark = () => {
-    for (const row of menu.querySelectorAll<HTMLElement>('button')) {
-      const current = row.dataset.mode === mode
-      row.classList.toggle('is-current', current)
-      // The class draws the tick; this is the half a screen reader can hear.
-      row.setAttribute('aria-pressed', String(current))
+  // The rows carry the same server-translated labels as everything else, so this file holds
+  // no language of its own.
+  dropdown(button, 'theme', MODES.map((m) => ({ id: m, text: label(LABEL[m]) })), () => mode, (id) => {
+    mode = id as Mode
+    try {
+      localStorage.setItem(STORAGE_KEY, id)
+    } catch {
+      /* ignore */
     }
-  }
-  mark()
-
-  const wrap = el('div', { class: 'theme-wrap' })
-  button.replaceWith(wrap)
-  wrap.append(button, menu)
-
-  const close = () => {
-    menu.hidden = true
-    button.setAttribute('aria-expanded', 'false')
-  }
-  // `aria-haspopup="true"` and the initial `aria-expanded="false"` are in the markup
-  // (`web/chrome.ts`): they never change, and the reader's bundle is budgeted in bytes.
-  button.addEventListener('click', (e) => {
-    e.stopPropagation() // otherwise the document handler below shuts it in the same tick
-    menu.hidden = !menu.hidden
-    button.setAttribute('aria-expanded', String(!menu.hidden))
-  })
-  document.addEventListener('click', close)
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') close()
+    apply()
+    track()
   })
 }
 

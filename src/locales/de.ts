@@ -19,6 +19,7 @@ const de = {
   shortGrid: 'raster',
   shortMail: '@mail',
   shortMenu: 'menü',
+  shortPalette: 'farbe',
   gridView: 'Rasteransicht',
   listView: 'Listenansicht',
   palette: 'Farbschema',

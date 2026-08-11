@@ -155,9 +155,11 @@
   readers may switch between (`settings.enabledPalettes`), with a note (`themeAdminNote`) explaining
   this. The DEFAULT palette (`themePreset`) is always shown (its checkbox is locked) so the set is
   never empty. The frozen tree filtered a public `PaletteToggle` through
-  `enabledPaletteOptions()`; 2.0 ships no reader-facing palette switcher, so that helper went with
-  the component and `settings.enabledPalettes` is read by the theme island alone. The no-FOUC
-  script ignores a stored palette that is no longer enabled (falls back to the default). Disabled palettes stay fully editable — visibility ≠ customization. Sanitizer
+  `enabledPaletteOptions()`; 2.0's equivalent is the header control in `assets/js/theme.ts`
+  (`palette()`, ported 2026-08-11), which renders only when two or more are enabled and reads its
+  ids and translated names off the button rather than from a bundled table. It ignores a stored
+  palette that is no longer enabled, falling back to the default, because that palette's CSS is no
+  longer emitted. Disabled palettes stay fully editable — visibility ≠ customization. Sanitizer
   (`sanitizeEnabledPalettes`): known ids only, preset order, default forced in; a missing field
   (legacy settings) = all on. Pinned by `settings-sanitize.test.ts`.
 - Tabs lay cards out `grid lg:grid-cols-2 items-start` (explicit columns, NOT CSS `columns`).
