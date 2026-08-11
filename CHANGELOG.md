@@ -1,5 +1,172 @@
 # CHANGELOG
 
+## Unreleased
+
+**Twelve commits since 2.0.2, eleven of them from a pre-release audit, and the four largest are
+jobs this software had left to somebody else.** It had no upload cap, no storage quota, no bind
+address it would admit to, and nothing at all holding the one rule its whole design rests on —
+one blog, one owner. In each case a reverse proxy, a firewall rule or a habit had been covering,
+which is exactly why none of them had ever shown.
+
+**Three new environment variables, and one of them changes what an existing install does at
+boot** — read the first entry before upgrading. The release number is the owner's call and is
+not set here.
+
+### The server listened on every interface, under a log line that said it did not
+
+`Bun.serve` with no `hostname` listens on `0.0.0.0`. The line printed underneath it said
+`127.0.0.1`. Measured across four running instances, every one was bound `*:port`, and nothing
+was reachable only because a firewall rule said so — a defence one rule deep, sitting under a
+log that told whoever checked the opposite of the truth.
+
+**`HOST` now exists and defaults to `127.0.0.1`**, and the boot line prints what `Bun.serve`
+came back with rather than what the code hoped it did. Every layout in
+[`docs/self-host.md`](docs/self-host.md) puts the proxy on the same box, so loopback is right
+for all of them.
+
+**If your proxy is on another machine, or the process runs in a container that has to be
+reachable from outside it, set `HOST=0.0.0.0` before upgrading.** The bundled Docker image sets
+it, because inside a container loopback is the container's own.
+
+### Nothing in this software refused an upload
+
+The only byte limit anywhere in the tree belonged to the WordPress importer. What actually
+refused an oversized image was `client_max_body_size` — whatever the operator's proxy happened
+to say, and nothing at all if there was no proxy.
+
+**`MAX_UPLOAD_MB` (default 64) and `STORAGE_QUOTA_GB` (default 5)**, enforced in the storage
+driver rather than in a route, so a route that forgets cannot write past them. The owner gets
+two admin fields that can **lower** either number and can never raise it: the environment is the
+ceiling, the setting is a preference, and `0` on either side means "no cap from me".
+
+Refusals happen before the bytes are read rather than after: `413`, with `file_too_large` or
+`quota_exceeded`. The worst of the six byte paths was the MCP tool `add_media_from_url`, where
+the bytes arrive on a fetch the server itself made and no proxy has an opinion at all — it
+buffered a whole remote body into memory, and now stops reading at the cap.
+
+### Five advisories sat in the lockfile and nothing was able to see them
+
+`bun audit` found five, one of them high, while the repository's alert list was empty. GitHub
+builds its dependency graph from `package.json` — 34 packages, exactly the direct dependencies —
+and never parses `bun.lock`. So no indirect advisory can produce an alert, and a direct one
+cannot either when the caret range permits a fixed version the lockfile is not on.
+
+**`bun audit` runs in CI as its own job** and fails the build on a finding. The five are
+cleared: `hono` 4.13.1, `nodemailer` 9.0.5, `marked` 18.0.9, `shiki` 4.4.3, and `fast-uri`
+pinned through `overrides` at `^3.1.5` — inside the major `ajv` declares, because `bun update`
+on a transitive package writes it into `dependencies` and jumps to 4.x, which fixes an advisory
+by breaking the library that consumes it. None of the four `hono` advisories was reachable from
+this code, which was established before the bump rather than assumed after it.
+
+### One owner was the design, and nothing in the software held it
+
+Any row in `users` holding a session is the owner: there are no roles and no per-user scoping
+anywhere, by design ([ADR 0002](docs/decisions/0002-no-saas-single-instance.md)). The CLI would
+still create a second account, and a second account on this schema is not two users — it is two
+people sharing one identity.
+
+`createUser` refuses when an account already exists. Its test-only escape hatch is honoured
+**only** under the test runner, so a signup route written against it would pass its own tests
+and refuse in production, which is the failure mode worth having.
+
+### There is no compiled binary, and `bun run build` stops implying one
+
+The last open question from the 2.0 rewrite, now
+[ADR 0022](docs/decisions/0022-ship-from-source-not-a-compiled-binary.md). `bun build --compile`
+bundles `sharp`'s JavaScript and not its native module, and both halves of the old note turned
+out worse than it said: the binary does not throw on the first image call, it **dies on the boot
+path before it ever listens**; and "one executable plus a native module directory beside it"
+does not exist as an option, because `sharp` resolves from the bundle's own `/$bunfs/root/…`
+path, so the real `@img/*` copied next to the executable fails identically.
+
+`bun run build` now builds the two artefacts that actually ship — the island bundles and the
+admin SPA — and nothing else. It had been emitting `dist/quireink` under a note saying not to
+deploy it "yet"; anybody who deployed it anyway was deploying something that has never worked.
+Quire Ink ships as source run by Bun, which is what the Docker image and every documented
+layout already did.
+
+### A feed and a sitemap full of `http://localhost:3000`, with nothing saying so
+
+`SITE_URL` unset does not "derive per request" — a comment claimed that for months while nothing
+derived anything, and the real answer was `http://localhost:3000` in every canonical tag, feed
+and sitemap. It stays a constant deliberately: the page cache is keyed by path alone, so one
+request carrying `Host: evil.example` would poison the sitemap for everyone. Deriving it is
+cache poisoning with extra steps.
+
+What changed is that the absence is loud — a `[WARN]` at boot naming the variable, and an admin
+hint that says what breaks rather than what to type, in all six languages.
+
+### Readers can pick a palette, and a blog ships only the palettes it enables
+
+Six palettes have shipped since 2.0 and no reader could reach any of them: the switcher was
+never ported from 1.x, so `enabledPalettes` was a setting with nothing behind it while the CSS
+for all six sat inline on every page.
+
+`themesToCss` now takes the enabled list. Below two enabled it emits **no** `[data-palette]`
+rules at all, because the switcher hides itself and `:root` already *is* the palette. Measured
+on a served page: one palette is 0 rule blocks and 35,662 bytes, six is 12 blocks and 37,432 —
+**1,770 bytes raw and 423 gzipped off every page load**, in the inline half of the stylesheet
+that no cache spares.
+
+And the switcher is ported, so enabling one now means something: 564 bytes, after the theme menu
+and the palette menu were made one `dropdown()` rather than two. The reader bundle budget moved
+8,800 → 9,600 as a decision rather than a nudge mid-fix, and both READMEs moved with it — the
+reader's JavaScript is 3.6 KB gzipped on a listing and 7.8 KB on a post.
+
+**Driving it in a browser found a bug no test would have.** Both header controls sit in the same
+corner and each stopped its own click from reaching the handler that closes menus, so the theme
+menu and the palette menu could be open at once, overlapping. Neither was wrong alone. Opening
+one now closes the others.
+
+### The editor's save bar never mentioned the copy on your own disk
+
+The local draft snapshot has been written since 2.0 — on an interval, and again on leaving,
+hiding or unmounting the editor — and the bar only ever spoke about the server, so `unsaved` was
+displayed over work that was already on disk. A feature that exists and says nothing reads as a
+feature that does not exist, and this one was asked for twice.
+
+`autosaveSeconds` is a setting now (default 120, floored at 15) and the bar has a fourth state:
+"kept on this device at HH:MM". The floor is the reverse of the obvious worry — a long interval
+is safe *because* the leave, hide and unmount flushes exist, while a very short one would make
+the interval the whole safety net again. It is still not a server autosave, for the reasons in
+`useLocalDraft.ts`.
+
+### Motion durations are three tokens instead of twelve literals
+
+Twelve declarations across three files carried four values for three intents, and `.13s` next to
+`.15s` is the same idea written twice — the drift a token set exists to stop. `--dur-fast` .15s,
+`--dur-base` .2s, `--dur-slow` .5s. No `--ease` token: its value would be the keyword `ease`,
+and the scroll-driven animations must stay `linear`. The sign-in page keeps its literals because
+it never receives the public stylesheet, where a `var()` resolves to nothing and drops the
+transition silently.
+
+### `bun run tour` — thirty-six flows in a real browser, with a verdict each
+
+`check:all` proves the code compiles and the seams hold. It cannot tell you that a column
+collapsed, or that a control the owner switched on has nothing behind it; both of those have
+shipped. The tour seeds its own instance on its own port, drives one browser through the
+reader's controls, every admin page, a draft saved and published and trashed and restored, an
+upload refused for being too large and an archive built — then deletes everything it made.
+
+First run was 32 of 36, and **all four failures were the tour's own assumptions rather than the
+app's behaviour**: a category link mistaken for a post link, the Help page reported broken
+because its troubleshooting table mentions a URL that 404s, and two API routes that do not
+exist. That is the honest result for a suite written this late, and the wrong assertions were
+the useful part — a suite that cries wolf is worse than no suite, so the admin's not-found state
+is now readable as a fact instead of being detected by the word "404" appearing on a page.
+
+### Also
+
+- [ADR 0021](docs/decisions/0021-hosted-quire-ink-one-process-per-blog.md) records how a hosted
+  tier would work if there is one: a control plane starting one process per blog, not a
+  `tenant_id` column threaded through a schema built on one owner. A decision, not a feature.
+- Two remote branches that would have reverted shipped work are deleted, their SHAs kept in the
+  author's ledger so the commits stay reachable.
+- `.design-sync/` — the generator inputs for previewing admin components in a design tool.
+  Tooling only; nothing in `src/` imports it.
+- The release procedure in `docs/conventions.md` no longer tells you to check for a binary that
+  is no longer built.
+
 ## 2026-08-10 — Quire Ink 2.0.2
 
 **Twelve commits and not one new feature.** Every entry below is a defect, and eight of them

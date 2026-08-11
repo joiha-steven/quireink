@@ -389,8 +389,8 @@ On any behavior change, update the matching doc in the SAME change (Working prin
   installed or run, MINOR for a feature, PATCH for a fix. **Never bump any of the three on your
   own** — a release is the owner's call, and so is the number. Ship the work, write the
   CHANGELOG entry under an "Unreleased" heading, and ask.
-- **Cutting a release** (only when asked): `bun run check:all` exits 0 and `bun run build`
-  produces the binary; the CHANGELOG entry is written and dated; push `main`; then
+- **Cutting a release** (only when asked): `bun run check:all` and `bun run build` both exit 0
+  (there is no binary — [ADR 0022](decisions/0022-ship-from-source-not-a-compiled-binary.md)); the CHANGELOG entry is written and dated; push `main`; then
   `gh release create v<version> --title "v<version> — <tagline>" --notes-file <file>`.
   The version lives in exactly **four** tracked places — `package.json`, the title line of
   **both** READMEs (`# quire**INK** <version>`), and this line — plus the CHANGELOG entry
