@@ -43,6 +43,7 @@ abandoned on 2026-07-26, and the only trace was a private memory file.
 | [0019](0019-remove-the-frozen-tree-from-the-working-copy.md) | Remove the frozen 1.x tree from the working copy, keep it at tag `v1-final` | 2026-08-03 | ✅ |
 | [0020](0020-mathematics-as-mathml.md) | Mathematics: LaTeX in the source, MathML on the page, and the dollar sign stays money | 2026-08-06 | ✅ |
 | [0021](0021-hosted-quire-ink-one-process-per-blog.md) | A hosted Quire Ink, as one process per blog. `tenant_id` stays rejected | 2026-08-11 | ✅ |
+| [0022](0022-ship-from-source-not-a-compiled-binary.md) | Quire Ink ships as source run by Bun. There is no compiled binary | 2026-08-11 | ✅ |
 
 ## Superseded, and why that matters
 

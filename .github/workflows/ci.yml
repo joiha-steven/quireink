@@ -32,8 +32,13 @@ jobs:
       # type / admin-kit / docs) and the test suite. Needs no backend env — SQLite is
       # in-process and every test opens its own database in a temp directory.
       - run: bun run check:all
-      # And the standalone executable must still compile. `check:all` proves the code is
-      # correct; this proves it can be shipped.
+      # And what actually gets deployed must still build: the reader's asset bundles and the
+      # admin SPA, which `deploy.sh` ships and the server reads off disk at boot.
+      #
+      # This step used to compile a standalone executable, and exited 0 while producing something
+      # that could not start — `sharp`'s native module does not embed, so the process died before
+      # it listened. A green check on an artefact nobody may deploy is worse than no check.
+      # [ADR 0022](../../docs/decisions/0022-ship-from-source-not-a-compiled-binary.md).
       - run: bun run build
 
   # The dependency advisories, because NOTHING ELSE HERE LOOKS AT THEM and Dependabot

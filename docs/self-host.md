@@ -38,11 +38,13 @@ cd /home/quire/app && bun install && bun run build:assets && bun run build:admin
 input. `build:assets` produces the island bundles and `build:admin` the admin SPA; both are
 read from disk at runtime, so they have to exist before the service starts.
 
-> **`bun run build` also exists and produces a single `dist/quireink` binary. Do not deploy it
-> yet.** `bun build --compile` bundles sharp's JavaScript but not its
-> `@img/sharp-<platform>` native module, so the binary comes up fine and then throws on the
-> first image resize — an upload, a variant sweep, an OG card. How the binary should ship is
-> the one open question left from the rewrite, and it is still open.
+> **`bun run build` builds those two artefacts and nothing else. There is no compiled binary**
+> ([ADR 0022](decisions/0022-ship-from-source-not-a-compiled-binary.md), 2026-08-11). It used to
+> emit `dist/quireink`, under a note saying not to deploy it "yet"; measured, the binary does not
+> come up at all — `sharp` is reached on the boot path, so the process dies before it listens —
+> and copying `@img/*` next to it does not help, because `sharp` resolves from the bundle's own
+> `/$bunfs/root/…` path, which has no sibling directory. Running the source IS the shipping
+> story, and always was: every live instance does it.
 
 ## 3. Configure
 
