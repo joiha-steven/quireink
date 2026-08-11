@@ -15,7 +15,7 @@ export const ISLANDS_CSS = `
    inherit the code face. It is chrome sitting on top of code, not code. */
 .code-copy{position:absolute;top:.4rem;right:.4rem;padding:.15rem .5rem;font-size:var(--fs-caption);
   line-height:var(--lh-caption);letter-spacing:var(--ls-caption);font-family:var(--font-sans);
-  border:1px solid var(--c-rule);background:var(--c-bg);color:var(--c-meta);cursor:pointer;opacity:0;transition:opacity .15s}
+  border:1px solid var(--c-rule);background:var(--c-bg);color:var(--c-meta);cursor:pointer;opacity:0;transition:opacity var(--dur-fast)}
 .prose pre{position:relative}
 .prose pre:hover .code-copy,.code-copy:focus-visible{opacity:1}
 
@@ -36,7 +36,7 @@ export const ISLANDS_CSS = `
 
 .to-top{position:fixed;bottom:1.25rem;right:1.25rem;z-index:40;display:flex;width:2.5rem;height:2.5rem;
   align-items:center;justify-content:center;border:1px solid var(--c-rule);border-radius:999px;
-  background:var(--c-bg);color:var(--c-meta);cursor:pointer;opacity:0;pointer-events:none;transition:opacity .2s,color .2s}
+  background:var(--c-bg);color:var(--c-meta);cursor:pointer;opacity:0;pointer-events:none;transition:opacity var(--dur-base),color var(--dur-base)}
 .to-top.shown{opacity:1;pointer-events:auto}
 .to-top:hover{color:var(--c-heading)}
 
@@ -84,7 +84,7 @@ export const ISLANDS_CSS = `
    above the fold can flash. */
 @media (prefers-reduced-motion:no-preference){
   html[data-reveal-js=on] .reveal:not(.is-in){opacity:0;transform:translateY(24px)}
-  html[data-reveal-js=on] .reveal{transition:opacity .5s ease,transform .5s ease}
+  html[data-reveal-js=on] .reveal{transition:opacity var(--dur-slow) ease,transform var(--dur-slow) ease}
 }
 
 /* Chunked feed. The server renders every card, so a reader with no JavaScript gets the
@@ -163,7 +163,7 @@ body:has(.book-overlay[open]){overflow:hidden}
    which is what "not smooth any more" meant. 200ms, matching the frozen tree, and the
    motion switch above zeroes it like everything else. */
 .book-viewport{position:relative;height:100%;flex:0 0 auto;max-width:100%;overflow:hidden;
-  padding:clamp(4px,2vh,24px) 0;transition:opacity .13s ease}
+  padding:clamp(4px,2vh,24px) 0;transition:opacity var(--dur-fast) ease}
 .book-flow{height:100%;column-gap:56px;column-width:var(--book-col-w,340px);column-fill:auto;
   max-width:none;
   /* Oldstyle figures and discretionary ligatures. Both were missing from every subset

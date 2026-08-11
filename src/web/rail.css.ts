@@ -41,7 +41,7 @@ export const RAIL_CSS = `
 .rail{position:fixed;top:0;bottom:0;left:0;z-index:40;width:min(300px,84vw);
   overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;padding:4.5rem 1.25rem 2rem;
   background:var(--c-bg);border-right:1px solid var(--c-rule);
-  transform:translateX(-100%);transition:transform .25s ease}
+  transform:translateX(-100%);transition:transform var(--dur-base) ease}
 html[data-rail=open] .rail{transform:none}
 /* Two-rail listings only: on mobile there is no gutter, so the LEFT rail is hidden and its
    blocks appear in the right rail's drawer through .drawer-only. */

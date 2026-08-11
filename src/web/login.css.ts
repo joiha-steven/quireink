@@ -58,6 +58,13 @@ body{margin:0;background:var(--c-bg);color:var(--c-text);font-family:var(--font-
 .login-form input[type=text],.login-form input[type=password]{
   width:100%;padding:.625rem .75rem;font:inherit;font-size:.9375rem;color:var(--c-text);
   background:var(--field);border:1px solid var(--c-rule);border-radius:8px;
+  /* Literal, not var(--dur-fast), and checked rather than assumed: the sign-in page is served
+     pageStyles(settings) + LOGIN_CSS and NOT the public sheet, so BASE_CSS's :root{--dur-*} is
+     not on this document. A token here would resolve to nothing and the transition would
+     silently not happen, which is a failure neither this file nor a test can see. Defining the
+     tokens a second time here is the other half of the same problem, and moving them into
+     pageStyles would put a static value in the per-page inline half. One screen, two
+     transitions, its own system on purpose. */
   transition:border-color .12s, box-shadow .12s}
 .login-form input::placeholder{color:var(--c-meta)}
 .login-form input:hover{border-color:color-mix(in srgb, var(--c-text) 22%, var(--c-rule))}
