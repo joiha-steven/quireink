@@ -220,7 +220,9 @@ describe('authorize', () => {
     expect(csrf.length).toBeGreaterThan(10)
 
     // ...is worthless from a different session.
-    const other = await createUser({ username: 'other', email: 'o@example.com', password: 'another long passphrase' })
+    // `additional`: see `auth/users.ts`. One owner is the design; this second account exists
+    // only to prove a CSRF token does not travel between accounts.
+    const other = await createUser({ username: 'other', email: 'o@example.com', password: 'another long passphrase', additional: true })
     const otherCookie = `${COOKIE_NAME}=${createSession(other.id).token}`
     const res = await app.request('/api/mcp/authorize', {
       method: 'POST',

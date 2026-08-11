@@ -111,6 +111,16 @@ try {
       const username = flag('username') ?? die('create: --username is required')
       const email = flag('email') ?? die('create: --email is required')
       if (getUserByUsername(username) !== null) die(`create: "${username}" already exists`)
+      // `createUser` refuses this too, and would throw a sentence written for a developer.
+      // Checked here so the person at the console gets the two commands they actually want.
+      if (!noUsersYet()) {
+        die(
+          'create: an account already exists, and Quire Ink has one owner by design.\n'
+          + '  Forgotten password:  bun run user set-password --username <name>\n'
+          + '  Lost the authenticator: sign in with one of the ten recovery codes.\n'
+          + '  See it:              bun run user list',
+        )
+      }
 
       const password = await promptNewPassword([username, 'quire'])
       const user = await createUser({ username, email, password })

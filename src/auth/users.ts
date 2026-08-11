@@ -85,11 +85,39 @@ export function totpStateFor(id: number): { secret: string | null; lastStep: num
   return row === null ? null : { secret: row.totp_secret, lastStep: row.totp_last_step }
 }
 
+/**
+ * Create an account. Refuses a SECOND one unless the caller says so in as many words.
+ *
+ * ADR 0002 says one owner, permanently — "not a gap waiting to be filled" — and until
+ * 2026-08-11 nothing enforced it. `web/guard.ts` treats ANY row in `users` holding a session
+ * as the owner: no `id = 1`, no role column, none in the schema. What kept there being one
+ * account was that only this function creates them and only the CLI calls it; the CLI itself
+ * refused a duplicate USERNAME and was perfectly happy to make a second owner.
+ *
+ * That is an invariant held by nobody, at the exact moment the hosted tier is being designed
+ * — which is when somebody adds a signup route. So the design is now a line of code, and
+ * `additional` is the shape on purpose: a second account is still possible, because two tests
+ * legitimately need one to prove that a session and a CSRF token do not carry across accounts,
+ * but no route can be written that reaches it without saying `additional: true` and having
+ * that read in review.
+ *
+ * It is deliberately NOT a check on `id`, and not a `role` column. Both would introduce the
+ * concept ADR 0002 spent its length rejecting — that there is more than one kind of account —
+ * to solve a problem that is really about who may CREATE one.
+ */
 export async function createUser(input: {
   username: string
   email: string
   password: string
+  /** Bypass the one-account rule. Tests and nothing else; see above. */
+  additional?: boolean
 }): Promise<PublicUser> {
+  if (input.additional !== true && !noUsersYet()) {
+    throw new Error(
+      'createUser: an account already exists, and Quire Ink has one owner by design (ADR 0002).'
+      + ' To change its password use `bun run user set-password`.',
+    )
+  }
   const at = nowMs()
   const hash = await hashPassword(input.password)
   run(
