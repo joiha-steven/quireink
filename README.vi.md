@@ -167,9 +167,11 @@ bun run user create --username <tên> --email <địa-chỉ>   # in ra mã TOTP 
 Xong. CSDL tự dựng ở lần khởi động đầu, nên không có bước migration nào phải nhớ. Muốn bản đầy đủ với systemd, nginx, cache header, sao lưu và nâng cấp thì xem **[`docs/self-host.md`](./docs/self-host.md)**.
 
 > [!NOTE]
-> `bun run build` cũng nhả ra một tệp nhị phân ở `dist/quireink`, nhưng `bun build --compile`
-> bỏ sót native module của `sharp`, nên tệp đó chết ngay lần đầu đụng vào ảnh. Tới khi nào
-> sửa được thì cứ **chạy từ mã nguồn**. Site thật đang chạy như vậy, và câu lệnh giống hệt.
+> **Chạy trực tiếp từ mã nguồn — đó là toàn bộ việc triển khai**, và site thật cũng chạy như vậy.
+> Không có tệp nhị phân đóng gói sẵn: `bun build --compile`
+> bỏ sót native module của `sharp`, và một tệp nhị phân không resize được ảnh thì không phải
+> thứ để đem đi triển khai
+> ([ADR 0022](./docs/decisions/0022-ship-from-source-not-a-compiled-binary.md)).
 
 <details>
 <summary><b>🐳 &nbsp;Thích dùng Docker hơn?</b> &nbsp;Hai câu lệnh</summary>

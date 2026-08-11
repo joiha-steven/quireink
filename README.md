@@ -167,9 +167,10 @@ bun run user create --username <name> --email <address>   # shows the TOTP secre
 That is it. The database sets itself up on first boot, so there is no migration step to remember. If you want the full version with systemd, nginx, cache headers, backups and upgrades, it is in **[`docs/self-host.md`](./docs/self-host.md)**.
 
 > [!NOTE]
-> `bun run build` also spits out a single binary at `dist/quireink`, but `bun build --compile`
-> leaves out `sharp`'s native module, so that binary dies the first time it touches an image.
-> Until that is fixed, **run from source**. The live site does, and the command is the same.
+> **Run from source — that is the whole deployment**, and it is what the live site does. There is
+> no compiled binary: `bun build --compile` leaves out `sharp`'s native module, and a binary that
+> cannot resize an image is not a shipping artefact
+> ([ADR 0022](./docs/decisions/0022-ship-from-source-not-a-compiled-binary.md)).
 
 <details>
 <summary><b>🐳 &nbsp;Would rather use Docker?</b> &nbsp;Two commands</summary>
