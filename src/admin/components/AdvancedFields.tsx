@@ -1,7 +1,9 @@
-// Rendering/behaviour toggles: font smoothing (anti-aliasing), the IDE chrome, and the
-// site-wide motion engine. Per-role size/line/spacing live in TypographyFields (Appearance);
-// custom CSS is a sibling card. Parent owns save.
+// Rendering/behaviour toggles: font smoothing (anti-aliasing), the IDE chrome, the site-wide
+// motion engine, and how often the editor keeps a local copy of what you are typing. Per-role
+// size/line/spacing live in TypographyFields (Appearance); custom CSS is a sibling card.
+// Parent owns save.
 import type { TypographySettings, MotionSettings } from '@/types'
+import { Input } from '@/admin/ui/Input'
 import { ToggleRow } from '@/admin/ui/Switch'
 import { useAdminT } from './I18nProvider'
 import { PANEL_LIST } from './kit'
@@ -13,9 +15,14 @@ type Props = {
   onIdeChrome: (v: boolean) => void
   motion: MotionSettings
   onMotion: (m: MotionSettings) => void
+  autosaveSeconds: number
+  onAutosaveSeconds: (n: number) => void
 }
 
-export function AdvancedFields({ typography, onTypography, ideChrome, onIdeChrome, motion, onMotion }: Props) {
+export function AdvancedFields({
+  typography, onTypography, ideChrome, onIdeChrome, motion, onMotion,
+  autosaveSeconds, onAutosaveSeconds,
+}: Props) {
   const t = useAdminT()
   return (
     <div className={PANEL_LIST}>
@@ -45,6 +52,22 @@ export function AdvancedFields({ typography, onTypography, ideChrome, onIdeChrom
         desc={t.typewriterDesc}
         checked={motion.typewriter}
         onChange={(typewriter) => onMotion({ ...motion, typewriter })}
+      />
+      {/* The floor is 15s and it is enforced by the settings sanitiser, not only here: the
+          editor also flushes on hide, on leave and on unmount, and those are what make a long
+          interval safe. A very short one would make the interval the whole safety net again. */}
+      <Input
+        label={t.autosaveLabel}
+        note={t.autosaveHint}
+        type="number"
+        min={15}
+        max={600}
+        step={15}
+        value={autosaveSeconds}
+        onChange={(e) => {
+          const n = Number(e.target.value)
+          if (Number.isFinite(n)) onAutosaveSeconds(Math.min(600, Math.max(15, Math.round(n))))
+        }}
       />
     </div>
   )

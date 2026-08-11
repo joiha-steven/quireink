@@ -18,6 +18,7 @@ type Props = {
   allSeries: string[]
   contentWidth: number
   typewriterEffects: boolean
+  autosaveSeconds: number
 }
 
 export default function PostEditor() {
@@ -38,6 +39,7 @@ export default function PostEditor() {
           allSeries={d.allSeries}
           contentWidth={d.contentWidth}
           typewriterEffects={d.typewriterEffects}
+          autosaveSeconds={d.autosaveSeconds}
         />
       )}
     </View>

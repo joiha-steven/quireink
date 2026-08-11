@@ -287,6 +287,8 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
                 onIdeChrome={(ideChrome) => update({ ideChrome })}
                 motion={s.motion}
                 onMotion={(motion) => update({ motion })}
+                autosaveSeconds={s.autosaveSeconds}
+                onAutosaveSeconds={(autosaveSeconds) => update({ autosaveSeconds })}
               />
             </Card>
           </div>

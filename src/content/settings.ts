@@ -139,6 +139,9 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   chromeFont: DEFAULT_CHROME_FONT,
   faviconUrl: '',
   appIconUrl: '',
+  // Two minutes, which is what the owner asked for on 2026-07-30. It was 8 seconds and a
+  // constant; the interval is only half the safety net, the flush on hide is the other half.
+  autosaveSeconds: 120,
   // 0 = do not narrow the deployment's ceiling. NOT a copy of `MAX_UPLOAD_MB` /
   // `STORAGE_QUOTA_GB`: two places holding one limit is how they disagree (`media/limits.ts`).
   maxUploadMb: 0,
@@ -208,6 +211,7 @@ export async function getSettings(): Promise<SiteSettings> {
       // Generous upper bound on purpose — these only narrow (`media/limits.ts`), so a number
       // above the deployment's own does nothing. The clamp is against a negative or a NaN
       // landing as 0, which reads as "no cap": the exact bug the setting exists to prevent.
+      autosaveSeconds: clampNumber(stored.autosaveSeconds, 15, 600, DEFAULT_SETTINGS.autosaveSeconds),
       maxUploadMb: clampNumber(stored.maxUploadMb, 0, 4096, DEFAULT_SETTINGS.maxUploadMb),
       storageQuotaGb: clampNumber(stored.storageQuotaGb, 0, 4096, DEFAULT_SETTINGS.storageQuotaGb),
       customCss: sanitizeCss(stored.customCss),
@@ -324,6 +328,7 @@ export async function saveSettings(input: Partial<SiteSettings>): Promise<SiteSe
     postsPerPage: clampNumber(input.postsPerPage, 1, 100, current.postsPerPage),
     relatedCount: clampNumber(input.relatedCount, 0, 12, current.relatedCount),
     excerptLength: clampNumber(input.excerptLength, 10, 100, current.excerptLength),
+    autosaveSeconds: clampNumber(input.autosaveSeconds, 15, 600, current.autosaveSeconds),
     maxUploadMb: clampNumber(input.maxUploadMb, 0, 4096, current.maxUploadMb),
     storageQuotaGb: clampNumber(input.storageQuotaGb, 0, 4096, current.storageQuotaGb),
     customCss: input.customCss !== undefined ? sanitizeCss(input.customCss) : current.customCss,

@@ -169,6 +169,7 @@ export type AdminStrings = {
   viewPost: string
   saving: string
   savedAtPrefix: string
+  keptLocallyPrefix: string
   saveFailed: string
   slugTaken: string
   needTitle: string
@@ -437,6 +438,8 @@ export type AdminStrings = {
   motionDesc: string
   typewriterLabel: string
   typewriterDesc: string
+  autosaveLabel: string
+  autosaveHint: string
   // overview
   overviewTitle: string
   statPosts: string

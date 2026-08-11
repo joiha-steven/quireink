@@ -11,11 +11,11 @@ import { uploadImages } from '@/admin/upload-client'
 import { Editor, type EditorApi } from './Editor'
 import { PageSettings, type PageDraft } from './PageSettings'
 import { MediaLibrary } from './MediaLibrary'
-import { useLocalAutosave, useLocalDraft, useUnsavedGuard } from './useLocalDraft'
+import { saveStatusLine, useLocalAutosave, useLocalDraft, useUnsavedGuard } from './useLocalDraft'
 import { useAdminT } from './I18nProvider'
 import { CARD, NOTICE } from './kit'
 
-type Props = { initial?: PageWithContent; contentWidth: number; typewriterEffects: boolean }
+type Props = { initial?: PageWithContent; contentWidth: number; typewriterEffects: boolean; autosaveSeconds: number }
 type PickTarget = 'editor' | 'gallery' | 'featured'
 
 function toDraft(initial?: PageWithContent): PageDraft {
@@ -28,7 +28,7 @@ function toDraft(initial?: PageWithContent): PageDraft {
   }
 }
 
-export function PageForm({ initial, contentWidth, typewriterEffects }: Props) {
+export function PageForm({ initial, contentWidth, typewriterEffects, autosaveSeconds }: Props) {
   const t = useAdminT()
   const router = useRouter()
   const { notify } = useToast()
@@ -130,10 +130,11 @@ export function PageForm({ initial, contentWidth, typewriterEffects }: Props) {
 
   // Local (offline) autosave, same contract as the post editor: localStorage only, never the
   // server, so editing a published page cannot push half-finished text live.
-  useLocalAutosave(
+  const keptAt = useLocalAutosave(
     () => dirtyRef.current,
     () => ({ ...draftRef.current, content: editorApi.current?.getMarkdown() ?? contentRef.current }),
     saveLocal,
+    autosaveSeconds * 1000,
   )
   useUnsavedGuard(() => dirtyRef.current)
 
@@ -229,7 +230,7 @@ export function PageForm({ initial, contentWidth, typewriterEffects }: Props) {
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-neutral-200/80 bg-white/90 shadow-[0_-8px_24px_rgba(0,0,0,0.04)] backdrop-blur-xl md:left-[var(--admin-nav-w,13rem)] dark:border-neutral-800 dark:bg-neutral-900/90">
         <div className="mx-auto flex w-full max-w-[1480px] items-center justify-between px-4 py-3 sm:px-7 lg:px-10 xl:px-12">
           <span className="text-sm text-neutral-400 dark:text-neutral-500">
-            {saving ? t.saving : savedAt ? `${t.savedAtPrefix} ${formatTime(savedAt)}` : ''}
+            {saveStatusLine(t, saving, savedAt, dirty, keptAt, formatTime)}
           </span>
           <div className="flex items-center gap-2">
             {draft.status === 'published' && savedSlug && (
