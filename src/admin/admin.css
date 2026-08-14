@@ -83,6 +83,28 @@ body {
   line-height: 1.5;
 }
 
+/* Where the settings search landed you.
+   A smooth scroll with no mark at the end of it leaves the reader looking for what moved,
+   which is the same hunt the search exists to remove. Outline rather than background: a
+   background repaints the card and reads as a state the setting is in, while an outline
+   reads as a pointer and takes no colour from the neutral scale.
+   `--dur-slow` is not available here — the admin does not get the public sheet — so the
+   duration is a literal, as `login.css.ts` documents for the same reason. Honours the
+   owner's motion switch: `data-motion="off"` is a request, not a preference to override. */
+@keyframes setting-found {
+  from { outline-color: currentColor; }
+  to { outline-color: transparent; }
+}
+.setting-found {
+  outline: 2px solid transparent;
+  outline-offset: 6px;
+  border-radius: 4px;
+  animation: setting-found 1.6s ease-out;
+}
+[data-motion="off"] .setting-found {
+  animation: none;
+}
+
 /* Editor preview: the TipTap editor has no .gallery wrapper (grouping happens on
    publish), so make #grid figures flow side-by-side as thumbnails — a gallery
    reads as columns in the editor too, not a vertical stack. Each node view is

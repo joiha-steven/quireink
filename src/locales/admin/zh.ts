@@ -181,6 +181,8 @@ const zh = {
   uploaded: '上传成功',
   uploadFailed: '上传失败',
   settingsTitle: '设置',
+  settingsSearch: '搜索设置…',
+  settingsSearchEmpty: '没有匹配项。试试更短的词。',
   siteLanguage: '站点语言',
   siteLanguageHint: '更改界面语言和日期格式。',
   siteTitle: '站点标题',

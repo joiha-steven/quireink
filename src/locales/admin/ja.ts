@@ -181,6 +181,8 @@ const ja = {
   uploaded: 'アップロードしました',
   uploadFailed: 'アップロードに失敗しました',
   settingsTitle: '設定',
+  settingsSearch: '設定を検索…',
+  settingsSearchEmpty: '一致する項目がありません。短い語で試してください。',
   siteLanguage: 'サイトの言語',
   siteLanguageHint: 'インターフェースの言語と日付形式を変更します。',
   siteTitle: 'サイトタイトル',

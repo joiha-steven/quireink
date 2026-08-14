@@ -181,6 +181,8 @@ const ko = {
   uploaded: '업로드되었습니다',
   uploadFailed: '업로드 실패',
   settingsTitle: '설정',
+  settingsSearch: '설정 검색…',
+  settingsSearchEmpty: '일치하는 항목이 없습니다. 더 짧은 단어로 검색해 보세요.',
   siteLanguage: '사이트 언어',
   siteLanguageHint: '인터페이스 언어와 날짜 형식을 변경합니다.',
   siteTitle: '사이트 제목',
