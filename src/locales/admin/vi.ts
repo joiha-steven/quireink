@@ -181,6 +181,8 @@ const vi = {
   uploaded: 'Đã tải lên thành công',
   uploadFailed: 'Tải lên thất bại',
   settingsTitle: 'Cài đặt',
+  settingsSearch: 'Tìm trong cài đặt…',
+  settingsSearchEmpty: 'Không có mục nào khớp. Thử một từ ngắn hơn.',
   siteLanguage: 'Ngôn ngữ site',
   siteLanguageHint: 'Đổi ngôn ngữ giao diện và định dạng ngày tháng.',
   siteTitle: 'Tiêu đề site',

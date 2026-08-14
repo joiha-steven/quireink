@@ -323,6 +323,8 @@ export type AdminStrings = {
   uploadFailed: string
   // site settings
   settingsTitle: string
+  settingsSearch: string
+  settingsSearchEmpty: string
   siteLanguage: string
   siteLanguageHint: string
   siteTitle: string

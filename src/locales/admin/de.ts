@@ -181,6 +181,8 @@ const de = {
   uploaded: 'Erfolgreich hochgeladen',
   uploadFailed: 'Upload fehlgeschlagen',
   settingsTitle: 'Einstellungen',
+  settingsSearch: 'Einstellungen durchsuchen…',
+  settingsSearchEmpty: 'Nichts passt dazu. Versuchen Sie ein kürzeres Wort.',
   siteLanguage: 'Website-Sprache',
   siteLanguageHint: 'Ändert die Sprache der Oberfläche und das Datumsformat.',
   siteTitle: 'Website-Titel',

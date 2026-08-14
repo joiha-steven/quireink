@@ -21,7 +21,7 @@
 // All settings still live in one state object and save together via PUT /api/settings,
 // which merges — regrouping the UI changed no stored shape.
 
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { useRouter, useSearchParams } from '@/admin/router'
 import type { SiteSettings, ApiResponse } from '@/types'
 import type { ThemePreset } from '@/content/themes'
@@ -31,6 +31,8 @@ import { Button } from '@/admin/ui/Button'
 import { useToast } from '@/admin/ui/Toast'
 import { formatTime } from '@/utils'
 import { Card, PageHeader, Tabs, type TabItem } from './kit'
+import { SettingsSearch } from './SettingsSearch'
+import { useSettingJump } from './useSettingJump'
 import { useAdminT } from './I18nProvider'
 import { SiteFields } from './SiteFields'
 import { BrandFields } from './BrandFields'
@@ -95,6 +97,8 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
   const [tab, setTab] = useState<Tab>(
     (TAB_IDS as string[]).includes(tabParam ?? '') ? (tabParam as Tab) : 'site')
 
+  const jumpToSetting = useSettingJump()
+
   const update = (partial: Partial<SiteSettings>) => setS((prev) => ({ ...prev, ...partial }))
 
   async function save() {
@@ -127,6 +131,8 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
     { key: 'connections', label: t.tabConnections },
     { key: 'system', label: t.tabSystem },
   ]
+  /** A result says WHICH tab, or it has only told you the thing exists. */
+  const TAB_LABEL = (k: Tab): ReactNode => TABS.find((x) => x.key === k)?.label ?? k
   const HINTS: Record<Tab, string> = {
     site: t.tabSiteHint,
     layout: t.tabLayoutHint,
@@ -140,6 +146,14 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
   return (
     <div className="pb-24">
       <PageHeader title={t.settingsTitle} />
+
+      {/* Above the tabs, because it is the way PAST them. ADR 0011 gave each tab a printed
+          question and it was still not enough: fifty settings behind seven doors is fifty
+          things to remember the door of. Typing two letters is the door. */}
+      <SettingsSearch
+        tabLabel={(k) => String(TAB_LABEL(k))}
+        onPick={(entry) => { setTab(entry.tab); jumpToSetting(String(t[entry.label])) }}
+      />
 
       <Tabs tabs={TABS} value={tab} onChange={setTab} className="mb-3" />
       {/* The definition, in the open. A tab whose contents you have to guess is a tab you

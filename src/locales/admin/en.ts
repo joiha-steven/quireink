@@ -181,6 +181,8 @@ const en = {
   uploaded: 'Uploaded successfully',
   uploadFailed: 'Upload failed',
   settingsTitle: 'Settings',
+  settingsSearch: 'Search settings…',
+  settingsSearchEmpty: 'Nothing here matches. Try a shorter word.',
   siteLanguage: 'Site language',
   siteLanguageHint: 'Changes the interface language and date format.',
   siteTitle: 'Site title',
