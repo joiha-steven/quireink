@@ -233,14 +233,32 @@ describe('the admin shell carries the owner settings', () => {
     expect(html).toContain('<html lang="vi"')
   })
 
-  it('points --font-sans at the chosen chrome font and declares its face', async () => {
+  // ⚠️ This asserted the OPPOSITE until 2026-08-14, and the reversal is the point.
+  //
+  // The admin followed `chromeFont` because an owner on a JetBrains Mono site opened an admin
+  // in Inter and said so. Following it was the wrong reading of that report: a mono chrome
+  // font is a branding choice about what a READER sees, and applying it to the tool put a
+  // code face on every label, tab, button and table cell — which, next to the reading face,
+  // the same owner called "rối" (cluttered) and "không hợp để dùng trong admin". He was shown
+  // three photographed versions of one Settings screen and chose this one.
+  //
+  // What the admin still honours is everything about his WORDS — palette, type scale, reading
+  // preset, uploaded face — because the editor is WYSIWYG.
+  it('keeps its own chrome face, whatever the site is set to', async () => {
     await saveSettings({ chromeFont: 'jetbrains-mono' })
     const html = await (await app.request('/admin', { headers: { cookie } })).text()
-    expect(html).toContain('data-chrome-font="jetbrains-mono"')
-    expect(html).toContain("font-family:'JetBrains Mono'")
-    expect(html).toContain("--font-sans:'JetBrains Mono'")
-    // The tracking correction that goes with a mono chrome, missing from 2.0 until now.
-    expect(html).toContain('html[data-chrome-font="jetbrains-mono"] body')
+    expect(html).toContain("--font-sans:'Inter'")
+    expect(html).not.toContain("--font-sans:'JetBrains Mono'")
+    // No attribute either: `MONO_TRACKING` was its only reader, and a hook left behind says
+    // the admin follows a setting it does not.
+    expect(html).not.toContain('data-chrome-font')
+    expect(html).not.toContain('html[data-chrome-font="jetbrains-mono"] body')
+  })
+
+  it('still follows the reading font, because the editor is WYSIWYG', async () => {
+    await saveSettings({ fontPreset: 'literata' })
+    const html = await (await app.request('/admin', { headers: { cookie } })).text()
+    expect(html).toContain("--font-reading:'Literata'")
   })
 
   // The writing surface is a `.prose` surface, and what you type has to be set in the face

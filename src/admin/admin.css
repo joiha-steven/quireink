@@ -87,38 +87,24 @@ body {
 
    `data-prose` stays for a surface where the sentences are not paragraphs: Help is 33 `li`
    and 19 `td` of article. It is a page-level decision, not a per-element one. */
-/* `letter-spacing: normal` is NOT tidiness, and leaving it out is what made the first version
-   of this hard to read. A mono chrome is corrected inward — `MONO_TRACKING` in
-   `render/font-faces.ts` pulls IBM Plex Mono -0.04em and JetBrains Mono -0.05em, because both
-   are wide faces that read airy at zero. That correction is applied to `body` and INHERITS,
-   so the moment a serif is put on a descendant it is set -0.05em too: Literata at 12px came
-   out at -0.8px, letters touching, on every hint in the admin. The owner's word was "sát
-   nhau" and it was the whole complaint.
-
-   The correction's own comment says "the reader's own words carry their own letter-spacing
-   and are left alone", and the public sheet spells that as `.t-small:not(.reading-font)` and
-   `.t-body:not(.reading-font)`. It works there because public reading text is always inside
-   one of those. There is no such wrapper in the admin — reading-face text inherits straight
-   from `body` — so the same exclusion has to be stated here, on the class the public sheet
-   already names. */
 .admin .reading-font,
 .admin [data-prose] :is(p, li, td, dd, blockquote) {
   font-family: var(--font-reading);
-  letter-spacing: normal;
 }
 
-/* A SPECIMEN shows a face as itself, so it takes the face's own tracking and not the chrome
-   correction above — the font pickers paint each tile in the family it offers, and under a
-   JetBrains Mono chrome the Literata and Source Serif tiles were being drawn at -0.05em,
-   which is to say the two serifs were previewed crushed and the owner picked between them
-   that way. The editor title wears it too: it is the reading face at publication size, and
-   `tracking-tight` on it was the sans's -0.025em against the -0.01em a Literata h1 actually
-   publishes at. `check:admin-kit` allows a `fontFamily` only in a file that marks its
-   surface with this, so the two cannot come apart. */
-.admin [data-specimen],
-.admin [data-specimen] * {
-  letter-spacing: normal;
-}
+/* ⚠️ There was a `letter-spacing: normal` on both of those, and on `[data-specimen]`, and
+   they are gone with the reason for them. `MONO_TRACKING` pulls a mono chrome in by -0.05em
+   because JetBrains Mono is a wide face, it was applied to `body`, and it INHERITED — so
+   every serif put on a descendant was set -0.05em too: Literata at 12px drawn at -0.8px,
+   letters touching, on every hint in the admin, and the font picker previewing both serifs
+   crushed. That was "sát nhau", and it was a real bug for as long as the admin wore the
+   site's chrome font.
+
+   It no longer does (`web/admin/spa.ts`, adminStyles): the admin's chrome is Inter, nothing
+   here emits `MONO_TRACKING`, and the shell stops stamping `data-chrome-font`. So the reset
+   now guards nothing, and a rule that guards nothing while carrying a paragraph about why it
+   is load-bearing is the exact thing this file keeps getting wrong. If the admin is ever
+   pointed back at the chrome font, this is the first thing to put back. */
 
 /* Where the settings search landed you.
    A smooth scroll with no mark at the end of it leaves the reader looking for what moved,
