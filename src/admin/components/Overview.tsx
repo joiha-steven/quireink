@@ -11,10 +11,10 @@ import { FirstRun } from './FirstRun'
 import { useAdminT } from './I18nProvider'
 import { REPO } from './help-kit'
 
-type Taxo = { name: string; count: number }
-type SourceRow = { label: string; visitors: number }
-export type SeoHealth = { published: number; noExcerpt: number; noImage: number }
-export type TrafficSources = { referrers: SourceRow[]; countries: SourceRow[] }
+// ⚠️ `Taxo`, `SeoHealth` and `TrafficSources` were declared here and threaded through Props
+// for six values this component never read. The two that were worth showing are now inside
+// `DashboardData`, where the widgets that render them live; the other four are gone, and so
+// is the `tally()` walk over every post that produced two of them.
 export type SystemInfo = {
   hosting: string
   site: string
@@ -35,11 +35,7 @@ type Props = {
   pages: number
   comments: number
   originals: number
-  variants: number
-  files: number
   totalBytes: number
-  categories: Taxo[]
-  tags: Taxo[]
   recent: ActivityEntry[]
   activityEnabled: boolean
   firstRunDone: boolean
@@ -47,8 +43,6 @@ type Props = {
   commit: string | null
   system: SystemInfo
   dashboard: DashboardData
-  seo: SeoHealth
-  sources: TrafficSources
 }
 
 /**

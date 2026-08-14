@@ -14,7 +14,7 @@
 import type { Tour } from './tour'
 import { registerAdminFlows } from './tour-flows-admin'
 
-export function registerFlows({ flow, expect }: Tour): void {
+export function registerFlows({ flow, expect, atWidth }: Tour): void {
   // ---------------------------------------------------------------------------------------------
   // PUBLIC — what a reader meets.
 
@@ -126,5 +126,5 @@ export function registerFlows({ flow, expect }: Tour): void {
       return r.status === 204 || r.ok ? 'ok' : '/api/track -> ' + r.status
     })()`))
 
-  registerAdminFlows({ flow, expect })
+  registerAdminFlows({ flow, expect, atWidth })
 }

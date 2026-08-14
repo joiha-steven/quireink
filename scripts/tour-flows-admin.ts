@@ -7,7 +7,7 @@
 
 import type { Tour } from './tour'
 
-export function registerAdminFlows({ flow, expect }: Tour): void {
+export function registerAdminFlows({ flow, expect, atWidth }: Tour): void {
 
   const ADMIN_PAGES: [string, string][] = [
     ['/admin', 'dashboard'],
@@ -34,6 +34,34 @@ export function registerAdminFlows({ flow, expect }: Tour): void {
         return main.innerText.trim().length > 30 ? 'ok' : 'rendered the shell and nothing else'
       })()`, 900))
   }
+
+  // The Overview could not survive a phone and nothing said so: at 375px its `scrollWidth` was
+  // 422, so 47px of the page was reachable only by dragging it sideways. The cause is a grid
+  // item's automatic minimum size — a `truncate` row's min-content is its full untruncated
+  // headline, so the widget track refused to go below 406px inside a 343px grid.
+  //
+  // ⚠️ `atWidth`, and the first version of this flow is why. It squeezed the GRID's own width
+  // instead of the viewport, ran green against a build with the bug still in it, and would have
+  // shipped as a guard over nothing: the one-column layout is a `lg:` media query, so a narrow
+  // BOX still lays out as two columns and no track ever has to hold a whole card.
+  //
+  // The rule that catches this: a new guard is not finished until it has been watched to FAIL
+  // on the broken build.
+  flow('admin: the dashboard fits a phone', () => atWidth(375, '/admin', `
+    (() => {
+      // The whole PAGE, not one card: the symptom is the Overview scrolling sideways, and the
+      // element responsible has already moved once. scrollWidth on the DOCUMENT sees this;
+      // scrollWidth on a grid whose overflow is visible does not, which cost one green run.
+      // (No backticks in here — this string is itself a template literal.)
+      const doc = document.documentElement
+      const spill = doc.scrollWidth - doc.clientWidth
+      if (spill > 1) {
+        const grid = document.querySelector('.grid.lg\\\\:grid-cols-2')
+        const track = grid ? getComputedStyle(grid).gridTemplateColumns : '?'
+        return 'the dashboard scrolls sideways by ' + spill + 'px at ' + doc.clientWidth + 'px (widget track ' + track + ')'
+      }
+      return 'ok no sideways scroll at ' + doc.clientWidth + 'px'
+    })()`, 1200))
 
   flow('admin: the settings tabs all have content', () => expect('/admin/settings', `
     (async () => {
