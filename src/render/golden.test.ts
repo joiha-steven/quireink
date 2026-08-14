@@ -6,9 +6,15 @@
 // would only test that I transcribed my own port correctly, which is the thing least worth
 // testing.
 //
-// `marked` and `shiki` are pinned to the EXACT versions the frozen tree resolves
-// (18.0.5 and 4.2.0, no caret). A byte comparison against a floating dependency would fail
-// on a patch release and teach everyone to ignore it.
+// `marked` and `shiki` are pinned to EXACT versions in `package.json`, no caret. A byte
+// comparison against a floating dependency would fail on a patch release and teach everyone
+// to ignore it.
+//
+// The pins are no longer the frozen tree's own (18.0.5 / 4.2.0): the 2026-08-11 security
+// pass moved them to 18.0.9 and 4.4.3 and re-ran this gate, which stayed 46/46. That is what
+// the pins are FOR — a bump is a reviewed change that has to prove it moved nothing, not a
+// number nobody may touch. Deliberately not restated here as a version number, because the
+// last one sat in this comment untrue from the day of the bump.
 import { describe, expect, test } from 'bun:test'
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
