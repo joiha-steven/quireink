@@ -18,11 +18,22 @@ import { CARD, CONTROL, NOTE, NOTE_TEXT, READING, SETTING_LABEL, THEAD, TROW } f
 
 const ADMIN_CSS = readFileSync('src/admin/admin.css', 'utf8')
 
+/**
+ * The sheet with its comments removed, for anything asserting what the CSS DOES.
+ *
+ * This file is mostly comments, and they quote the rules they are about — including the ones
+ * that were deleted and why. Matching raw text therefore reports a declaration that is not
+ * there: the `font-size-adjust` assertion below failed against the paragraph explaining that
+ * `font-size-adjust` had been taken out. Same shape as the `fontFamily` rule in
+ * `check:admin-kit`, which failed on a locale key called `fontFamilyLabel`.
+ */
+const DECLARATIONS = ADMIN_CSS.replace(/\/\*[\s\S]*?\*\//g, '')
+
 describe('the reading face travels on a role', () => {
   it('is one class, and the stylesheet points that class at --font-reading', () => {
     expect(READING).toBe('reading-font')
-    expect(ADMIN_CSS).toContain(`.admin .${READING},`)
-    expect(ADMIN_CSS).toContain('font-family: var(--font-reading)')
+    expect(DECLARATIONS).toContain(`.admin .${READING},`)
+    expect(DECLARATIONS).toContain('font-family: var(--font-reading)')
   })
 
   it('carries the hint, whichever primitive places it', () => {
@@ -45,28 +56,48 @@ describe('the reading face travels on a role', () => {
   })
 })
 
-describe('the two faces are normalised to one apparent size', () => {
-  // Measured in the browser, x-height per 1em: JetBrains Mono 0.550, Inter 0.539, IBM Plex
-  // Mono 0.516, Literata 0.508, Source Sans 3 0.486, Source Serif 4 0.481. So a hint set in
-  // the reading face beside a label set in the chrome face is up to 13% smaller at the same
-  // `font-size`, which is what read as the second voice being an afterthought.
-  it('takes the ratio from the chrome font, so an uploaded face is covered too', () => {
-    // `from-font` on body computes to the chrome face's own ratio and INHERITS, so anything
-    // switching to --font-reading is re-sized without either face being named. A lookup
-    // table could not do this: `settings.customFont` accepts a face that does not exist yet.
-    expect(ADMIN_CSS).toContain('font-size-adjust: from-font')
+describe('the reading face keeps its own letter-spacing', () => {
+  // THE bug the owner reported, twice, in different words: "sát nhau" — the letters are on
+  // top of each other. `MONO_TRACKING` pulls a mono chrome in by -0.04/-0.05em because IBM
+  // Plex Mono and JetBrains Mono are wide faces, and it is applied to `body`, so it INHERITS.
+  // Put a serif on any descendant and it is set -0.05em too: Literata at 12px came out at
+  // -0.8px, on every hint in the admin.
+  it('resets tracking wherever it claims the face', () => {
+    // Not a separate rule: the reset sits in the SAME block as the font-family, so a future
+    // selector cannot pick up one without the other.
+    const at = DECLARATIONS.indexOf(`.admin .${READING},`)
+    const block = DECLARATIONS.slice(at, DECLARATIONS.indexOf('}', at))
+    expect(block).toContain('font-family: var(--font-reading)')
+    expect(block).toContain('letter-spacing: normal')
   })
 
-  it('exempts the editor and the pickers, which must show a face as itself', () => {
-    // WYSIWYG: a writing surface 8% larger than the published page is a broken promise, and
-    // a font picker that renders four faces at one apparent size hides what is being chosen.
-    const exempt = ADMIN_CSS.slice(ADMIN_CSS.indexOf('font-size-adjust: none'))
-    expect(ADMIN_CSS).toContain('.admin .prose,')
-    expect(ADMIN_CSS).toContain('[data-specimen]')
-    expect(exempt).toContain('font-size-adjust: none')
-    for (const file of ['FontFields', 'TypographyFields']) {
+  it('is what the public sheet already does, on the same class name', () => {
+    // `.t-small:not(.reading-font)` / `.t-body:not(.reading-font)` — the correction's own
+    // comment says the reader's words "carry their own letter-spacing and are left alone".
+    // It works there because public reading text is always inside one of those wrappers;
+    // there is no wrapper in the admin, which is why it has to be said again here.
+    const faces = readFileSync('src/render/font-faces.ts', 'utf8')
+    expect(faces).toContain(`.t-small:not(.${READING})`)
+    expect(faces).toContain(`.t-body:not(.${READING})`)
+  })
+
+  it('lets a specimen show a face as itself', () => {
+    // A picker tile painted in Literata under a mono chrome was previewing it crushed, which
+    // is the one place the face is the thing being judged.
+    expect(DECLARATIONS).toContain('.admin [data-specimen],')
+    for (const file of ['FontFields', 'TypographyFields', 'PostForm', 'PageForm']) {
       expect(readFileSync(`src/admin/components/${file}.tsx`, 'utf8')).toContain('data-specimen')
     }
+  })
+
+  it('does not reach for font-size-adjust to even the two faces up', () => {
+    // Measured: `line-height` resolves against the COMPUTED font-size, never the adjusted
+    // one — `20px`, unitless `1.6` and `normal` all give an identical line box with the
+    // adjustment on and off, while the glyphs inside grow 8%. So it silently takes 8% of the
+    // leading off every element it touches (12.5% for a Source Serif 4 reading face), and
+    // Tailwind's absolute line-heights mean that is every one of them. The x-height gap is
+    // ordinary typography; text with less air than it was drawn for is what a reader feels.
+    expect(DECLARATIONS).not.toContain('font-size-adjust')
   })
 })
 
@@ -80,7 +111,7 @@ describe('no rule decides a face by HTML tag', () => {
     // elements is `data-prose`, a PAGE-level statement that everything inside is an article,
     // and its selectors open with `[` rather than a tag — so they do not match this pattern
     // by construction and the assertion stays absolute.
-    expect(ADMIN_CSS.match(/^\.admin [a-z][^{,]*,?$/gm) ?? []).toEqual([])
-    expect(ADMIN_CSS).toContain('.admin [data-prose] :is(p, li, td, dd, blockquote)')
+    expect(DECLARATIONS.match(/^\.admin [a-z][^{,]*,?$/gm) ?? []).toEqual([])
+    expect(DECLARATIONS).toContain('.admin [data-prose] :is(p, li, td, dd, blockquote)')
   })
 })
