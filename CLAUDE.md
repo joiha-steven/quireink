@@ -31,6 +31,11 @@ large, the archive built. It seeds its own instance on its own port and deletes 
 never touches a real one. Flows live in [`scripts/tour-flows.ts`](./scripts/tour-flows.ts);
 the browser plumbing is [`scripts/tour.ts`](./scripts/tour.ts).
 
+It then runs [`scripts/restore-check.ts`](./scripts/restore-check.ts), because a browser
+cannot untar an archive or open a SQLite file. The tour proves the backup BUILDS; this opens
+it — `integrity_check` on both databases, no table with fewer rows than before the snapshot,
+every upload byte-identical. A backup nobody has restored is not a backup.
+
 For one page, looked at rather than asserted: [`scripts/drive.ts`](./scripts/drive.ts) and
 [`scripts/shot.ts`](./scripts/shot.ts). Verify against the **origin**, never through the CDN.
 

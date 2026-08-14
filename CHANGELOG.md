@@ -155,6 +155,50 @@ exist. That is the honest result for a suite written this late, and the wrong as
 the useful part — a suite that cries wolf is worse than no suite, so the admin's not-found state
 is now readable as a fact instead of being detected by the word "404" appearing on a page.
 
+### The backup had never been opened, only weighed
+
+The tour's backup flow read the first two bytes of the archive and confirmed a gzip member.
+That proves an export happened; it says nothing about whether the owner's blog comes back out
+of it. Both failure modes this project has actually met are invisible to that check: a
+snapshot taken as a file copy captures a torn write-ahead log that only appears on restore,
+and the uploads tree has been written to one path and read from another for months with
+nothing going red.
+
+`bun run tour` now ends with **`bun scripts/restore-check.ts`** — outside the browser,
+because a page cannot untar an archive or open SQLite. It downloads the export, extracts it,
+and asks the four questions the manual procedure in [`docs/backups.md`](docs/backups.md) asks:
+both databases pass `integrity_check`, every table holds at least the rows it held before the
+snapshot, every upload is byte-identical, and the archive carries all three members.
+
+**It uploads one image first, and that is the point rather than a detail.** The seeded fixture
+writes `media` ROWS and no files, and the tour deletes the image it uploads, so the uploads
+tree is empty by the time this runs: `all 0 upload(s) are in the archive` would have passed
+forever while proving nothing. An empty assertion is worse than no assertion, because it reads
+as coverage. The probe is taken back out afterwards — and taking it out needs TWO calls, since
+`/api/media/delete` is a soft delete that keeps the bytes on purpose.
+
+Two things were found by writing it rather than by running it. Counting the live rows AFTER
+the export reports the export's own `activity_log` row as data loss — the first run said
+`activity_log 48→47` over a perfectly intact archive — so the counts are taken before the
+snapshot and the assertion is one-directional. And the check was made to fail on purpose,
+against a tampered file and a missing one, because a check that has never been red is a
+decoration.
+
+### The two queued compiler flags, measured and declined
+
+`noUncheckedIndexedAccess` and `exactOptionalPropertyTypes` were both queued for "once the
+port is finished". It is finished, so both were run — and both are declined, on the rule
+`noImplicitReturns` was declined under: a flag you work around teaches people to work around
+the compiler.
+
+97 findings and 37 respectively, and every non-test file carrying more than one was read.
+Not one was reachable at runtime: capture groups read after `.exec` returned non-null,
+`?? LIST[0]` on module-constant arrays that are never empty, `split()[0]`, a SHA-1 digest
+indexed inside its own 20 bytes, and seventeen in one file from indexing a `Record<string,
+string>` that the function above it fills with `''` for every key. The reasoning and the
+numbers are now in `tsconfig.json` beside the flags, so the next person meets the measurement
+rather than the queue entry.
+
 ### Also
 
 - [ADR 0021](docs/decisions/0021-hosted-quire-ink-one-process-per-blog.md) records how a hosted

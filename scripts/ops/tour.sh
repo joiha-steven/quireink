@@ -48,4 +48,15 @@ for _ in $(seq 1 60); do
   sleep 0.25
 done
 
-QUIRE_SESSION="$SESSION" bun scripts/tour.ts "http://127.0.0.1:$PORT"
+status=0
+QUIRE_SESSION="$SESSION" bun scripts/tour.ts "http://127.0.0.1:$PORT" || status=$?
+
+# The browser cannot untar an archive or open a SQLite file, so the backup's other half runs
+# here: the tour proves the export is gzip, this proves what is inside it would restore.
+# Deliberately NOT gated on the tour passing — a red flow says nothing about the backup, and
+# the one question worth never leaving unanswered is whether the owner's data comes back.
+echo
+QUIRE_SESSION="$SESSION" DATA_DIR="$TMP/data" STORAGE_LOCAL_DIR="$TMP/uploads" \
+  bun scripts/restore-check.ts "http://127.0.0.1:$PORT" || status=$?
+
+exit $status

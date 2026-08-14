@@ -100,6 +100,18 @@ systemctl stop quire && cp /tmp/restore/*.db /var/lib/quire/data/ && systemctl s
 above against a real archive and check the post count against what the site actually shows:
 an untested backup is a belief, not a backup.
 
+### The same questions, asked automatically
+
+`bun run tour` ends with [`scripts/restore-check.ts`](../scripts/restore-check.ts), which
+takes the export from a throwaway instance and asks what the lines above ask: both databases
+pass `integrity_check`, no table came back with fewer rows than it had before the snapshot,
+and every upload is byte-identical. It uploads one image first, because the seeded fixture
+writes `media` ROWS and no files — without that, the uploads assertion passes over an empty
+directory forever, which reads as coverage and is not.
+
+It is not a substitute for restoring a REAL archive onto a real machine. It is the part that
+can run on every change, so that the part that cannot is the only one left to remember.
+
 ## Instance configuration
 
 One block at the top of the script, and the only part worth reading before installing it
