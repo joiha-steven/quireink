@@ -14,7 +14,7 @@
 import type { GallerySettings } from '@/types'
 import { ToggleRow } from '@/admin/ui/Switch'
 import { useAdminT } from './I18nProvider'
-import { NOTE_TEXT } from './kit'
+import { NOTE_TEXT, SEGMENT_TRACK, tabItemClass } from './kit'
 
 const LABEL = 'block text-sm font-medium text-neutral-700 dark:text-neutral-300'
 
@@ -32,17 +32,13 @@ export function GalleryFields({ gallery, onChange }: {
     <div className="space-y-5">
       <div className="space-y-2">
         <span className={LABEL}>{t.galleryRatio}</span>
-        <div className="inline-flex flex-wrap gap-1 rounded-lg bg-neutral-100 p-1 dark:bg-neutral-800">
+        <div className={`${SEGMENT_TRACK} flex-wrap`}>
           {RATIOS.map((r) => (
             <button
               key={r || 'asis'}
               type="button"
               onClick={() => onChange({ ...gallery, ratio: r })}
-              className={`rounded-lg px-3 py-1.5 text-sm font-medium ${
-                gallery.ratio === r
-                  ? 'bg-white text-neutral-900 shadow-sm dark:bg-neutral-700 dark:text-white'
-                  : 'text-neutral-500'
-              }`}
+              className={tabItemClass(gallery.ratio === r, 'sm')}
             >
               {r ? RATIO_LABEL[r] : t.imgRatioNatural}
             </button>

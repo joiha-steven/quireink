@@ -5,7 +5,7 @@ import { useRouter } from '@/admin/router'
 import type { Page, ApiResponse } from '@/types'
 import { useToast } from '@/admin/ui/Toast'
 import { RowActions, StatusPill } from './RowActions'
-import { EmptyState, READING, TableFrame, THEAD, TROW } from './kit'
+import { EmptyState, TableFrame, THEAD, TROW } from './kit'
 import { useAdminT } from './I18nProvider'
 
 export function PagesTable({ initialPages, views }: { initialPages: Page[]; views: Record<string, number> }) {
@@ -36,8 +36,9 @@ export function PagesTable({ initialPages, views }: { initialPages: Page[]; view
     <TableFrame>
         <thead className={THEAD}>
           <tr>
-            <th className="px-4 py-3 font-medium">{t.colTitle}</th>
-            <th className="px-4 py-3 font-medium">{t.colStatus}</th>
+            {/* The title takes the slack — see `PostsTable`. */}
+            <th className="w-full px-4 py-3 font-medium">{t.colTitle}</th>
+            <th className="whitespace-nowrap px-4 py-3 font-medium">{t.colStatus}</th>
             <th className="hidden px-4 py-3 font-medium text-right sm:table-cell">{t.colViews}</th>
             <th className="hidden px-4 py-3 font-medium sm:table-cell">{t.slug}</th>
             <th className="px-4 py-3" />
@@ -47,7 +48,7 @@ export function PagesTable({ initialPages, views }: { initialPages: Page[]; view
           {pages.map((p) => (
             <tr key={p.slug} className={`transition-colors ${TROW}`}>
               <td className="px-4 py-3 font-medium">
-                <Link href={`/admin/page-editor/${p.slug}`} className={`${READING} hover:underline`}>
+                <Link href={`/admin/page-editor/${p.slug}`} className="hover:underline">
                   {p.title || t.untitled}
                 </Link>
               </td>

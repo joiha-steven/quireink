@@ -117,6 +117,20 @@ export function IconSignOut() {
   )
 }
 // Collapse/expand chevrons (caller rotates by state if desired).
+// The icon switch's own mark: four squares, i.e. "the glyphs". Drawn rather than borrowed
+// because every other glyph here already names a destination, and reusing one would make the
+// footer row read as a link to that screen.
+export function IconGlyphs() {
+  return (
+    <svg viewBox="0 0 24 24" className={C} {...S} aria-hidden>
+      <rect x="4" y="4" width="6.5" height="6.5" rx="1.5" />
+      <rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5" />
+      <rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5" />
+      <rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5" />
+    </svg>
+  )
+}
+
 export function IconChevronLeft() {
   return (
     <svg viewBox="0 0 24 24" className={C} {...S} aria-hidden>

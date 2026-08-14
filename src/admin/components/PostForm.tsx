@@ -312,9 +312,12 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <button type="button" onClick={() => setSettingsOpen((v) => !v)} className="min-h-10 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm font-medium text-neutral-600 shadow-sm hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700">
+          {/* `<Button variant="secondary">`, not a fifth copy of it. This was the whole class
+              list re-typed — one border shade off, its own hover, and a `shadow-sm` in an
+              admin that draws none. */}
+          <Button variant="secondary" type="button" onClick={() => setSettingsOpen((v) => !v)}>
             {settingsOpen ? t.hideAttributes : t.attributes}
-          </button>
+          </Button>
           {savedSlug && <button type="button" onClick={openPreview} className="px-3 py-1.5 text-sm text-neutral-600 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white">{t.previewDraft}</button>}
           <Button variant="secondary" onClick={() => handleSave('draft', t.savedDraft)} disabled={saving || !dirty}>{t.saveDraft}</Button>
           <Button onClick={() => handleSave('published', scheduled ? t.scheduled : t.published)} disabled={saving || (!dirty && draft.status === 'published')}>{scheduled ? t.schedule : t.publish}</Button>

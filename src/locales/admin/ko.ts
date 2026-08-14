@@ -670,6 +670,8 @@ const ko = {
   nlDigestHint: '선택한 {n}개는 한 통의 모아보기 메일로 나갑니다(최신순). 글마다 한 통이 아닙니다.',
   navCollapse: '사이드바 접기',
   navExpand: '사이드바 펼치기',
+  navIconsShow: '아이콘 표시',
+  navIconsHide: '아이콘 숨기기',
   authSignIn: '로그인',
   authSignInLede: '{site} 관리자 페이지입니다.',
   authBackTo: '{site}(으)로 돌아가기',

@@ -6,6 +6,7 @@ import { Node } from '@tiptap/core'
 import { ReactNodeViewRenderer, NodeViewWrapper, type NodeViewProps } from '@tiptap/react'
 import { videoEmbed, videoFileUrl } from '@/render/video'
 import { useAdminT } from './I18nProvider'
+import { SEGMENT_TRACK, tabItemClass } from './kit'
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
@@ -32,15 +33,15 @@ function VideoView({ node, updateAttributes, selected, editor, getPos }: NodeVie
     if (pos != null) editor.commands.setNodeSelection(pos)
   }
   const overlay = <div className="absolute inset-0 cursor-pointer" onMouseDown={selectNode} />
-  const btn = (active: boolean) =>
-    `rounded-lg px-2.5 py-1 text-xs font-medium ${
-      active ? 'bg-white text-neutral-900 shadow-sm dark:bg-neutral-700 dark:text-white' : 'text-neutral-500'
-    }`
+  // `tabItemClass`, not a sixth hand-drawn pill. Four of these existed inside the editor
+  // alone and none was caught, because `check:admin-kit` matched the tab track's exact string
+  // and every copy had chosen `bg-neutral-100` over `bg-neutral-200/70`.
+  const btn = (active: boolean) => tabItemClass(active, 'sm')
   return (
     <NodeViewWrapper as="div" className="my-4" data-drag-handle>
       {selected && (v || file) && (
         <div className="mb-2 flex flex-wrap gap-2" contentEditable={false} onMouseDown={(e) => e.preventDefault()}>
-          <div className="inline-flex gap-1 rounded-lg bg-neutral-100 p-1 dark:bg-neutral-800">
+          <div className={SEGMENT_TRACK}>
             <button type="button" onClick={() => setWide(false)} className={btn(!wide)}>
               {t.imgSizeColumn}
             </button>

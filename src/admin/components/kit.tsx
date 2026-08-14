@@ -6,76 +6,49 @@
 import Link from '@/admin/router'
 import type { ReactNode, SelectHTMLAttributes } from 'react'
 
-// Canonical card surface. ONE radius + border + shadow for every admin panel.
+// --- The sheet -----------------------------------------------------------------------------
+//
+// A card is a SHEET on paper: a hairline edge, a small radius, NO SHADOW. It was `rounded-2xl`
+// + a 1px drop shadow on a #f5f5f5 canvas, which is the costume every generated dashboard
+// wears and what the owner read as "rẻ tiền" on 2026-08-15. Each part does its share: 16px on
+// a 1200px panel is a pill, a shadow says the panel FLOATS, and gray under white makes the
+// page a tray of boxes rather than a document. The reading site next door is the argument —
+// one sheet of paper, hairlines ruled across it, nothing floating — so the canvas is that same
+// paper now (`admin.css`) and the RULE does the dividing, which is what this file's own
+// contract already claimed ("hierarchy comes from spacing and rules, not decoration").
+// ⚠️ Not to be re-added: `docs/admin-design.md` reserves shadows for OVERLAYS, so one on a
+// card spends the only signal that means "this floats above what you were reading".
 export const CARD =
-  'rounded-2xl border border-neutral-200/90 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.035)] dark:border-neutral-800 dark:bg-neutral-900 dark:shadow-none'
-
-// --- The two gaps -------------------------------------------------------------------------
-//
-// TWO numbers for the whole admin, and they are here because there were four. One Overview
-// column measured 12px between the stat tiles, 16px inside the widget group, 20px between the
-// widget cards and 28px between the page's sections, which reads as a page assembled from
-// four screens rather than as one grid.
-//
-// SECTION_GAP separates the bands of a page (header, tiles, widgets, table). CARD_GAP is the
-// space between two cards SIDE BY SIDE or stacked within one band. Anything that wants a
-// third number wants one of these two.
-export const SECTION_GAP = 'space-y-7'
-export const CARD_GAP = 'gap-5'
-export const CARD_STACK = 'space-y-5'
+  'rounded-[10px] border border-neutral-200/80 bg-white dark:border-neutral-800 dark:bg-neutral-900'
 
 // The two surfaces that sit INSIDE a card, both hand-written in several places before
 // they were named here. A settings page is a Card holding a PANEL_LIST of rows; a row that
 // needs its own boxed sub-area uses INSET.
 //
-// `rounded-xl`, not the card's `rounded-2xl`: a box nested inside a rounded box needs the
-// smaller radius or the two curves fight. No background and no shadow, because the card
-// underneath already provides both.
-// --- The second face ----------------------------------------------------------------------
-//
-// The seam between the admin's two typefaces: `--font-reading` is what a PERSON wrote and a
-// person reads, `--font-sans` is what the MACHINE says. A setting's sentence against its
-// label, a post's title against its view count, a comment's words against the address that
-// sent them. It is the reading site's own division (`docs/conventions/type.md`).
-//
-// A ROLE and never a tag — the correction to a `.admin p` rule under which `Setting` (hint in
-// a `<p>`) and `ui/Input` (same hint in a `<span>`) rendered one kind of thing in two faces.
-// A whole PAGE of sentences takes `data-prose`. See `admin.css`, "Two faces".
-export const READING = 'reading-font'
-
-export const PANEL = 'overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-800'
+// One radius step under the sheet's, so a box nested in a rounded box does not fight it. No
+// background and no shadow: the sheet underneath already provides both.
+export const PANEL = 'overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-800'
 export const PANEL_LIST = `divide-y divide-neutral-200 dark:divide-neutral-800 ${PANEL}`
-export const INSET = 'rounded-xl border border-neutral-200 p-4 dark:border-neutral-800'
+export const INSET = 'rounded-lg border border-neutral-200 p-4 dark:border-neutral-800'
+
+// Both scales live in `scale.ts` and are re-exported here, because thirty-eight screens
+// already import them from the kit and the split is a fact about this file's length.
+export { TAB_TRACK, SEGMENT_TRACK, tabItemClass, Tabs, type TabItem, type TabSize } from './tabs'
+export {
+  READING, TITLE, SECTION, SETTING_LABEL, NOTE_TEXT, NOTE, META, FIGURE,
+  SECTION_GAP, CARD_GAP, CARD_STACK, HEADER_GAP, GROUP_GAP, CLUSTER_GAP, SETTING_GAP,
+} from './scale'
+import { FIGURE, HEADER_GAP, META, NOTE, NOTE_TEXT, SECTION, SETTING_LABEL, TITLE } from './scale'
 
 // --- One setting ------------------------------------------------------------------------
 //
-// THE RULE, and it is the only one: a setting reads top to bottom as **what it is, what to
-// know about it, then the control**. Never a hint under the control it explains, never a
-// second note style beside the first, never a caller's own idea of the spacing between them.
-//
-// It is a rule because the screens drifted the moment it was left implicit: the font pickers
-// put their hint below the grid, the palette card carried a tinted callout AND a plain
-// paragraph saying related things, and the gap between a label and its control was 0.5, 1 or
-// 2 depending on the file. Reading a settings page meant re-learning where to look in every
-// card.
-//
-// `SETTING_LABEL` and `NOTE` are exported because `ui/Input.tsx` builds the same three parts
-// for a text field and the two must not drift apart.
-export const SETTING_LABEL = 'block text-sm font-medium text-neutral-800 dark:text-neutral-200'
-/**
- * The hint's TYPE — face, size, leading and colour — with no spacing in it.
- *
- * Split out because thirty-eight screens hand-typed this list rather than import it, and what
- * stopped them importing it was the `mt-1`: a hint standing alone in a `space-y` stack does
- * not want a top margin, so each re-typed the other classes to be rid of one. They drifted,
- * and not only in the way that shows — TWENTY-FIVE carried `text-neutral-400
- * dark:text-neutral-500`, lighter than this in light mode and darker in dark mode.
- */
-export const NOTE_TEXT = `${READING} text-xs leading-5 text-neutral-500 dark:text-neutral-400`
-
-/** A hint directly under the label it explains. `Setting` and `ui/Input` place this one. */
-export const NOTE = `${NOTE_TEXT} mt-1`
-
+// THE RULE, and it is the only one: a setting reads top to bottom as **what it is, what to know
+// about it, then the control**. Never a hint under the control it explains, never a second note
+// style beside the first, never a caller's own idea of the spacing between them. The screens
+// drifted the moment it was implicit: the font pickers put their hint below the grid, the
+// palette card carried a tinted callout AND a plain paragraph, and the gap between a label and
+// its control was 0.5, 1 or 2 depending on the file. `NOTE` lives in `scale.ts`; `ui/Input`
+// builds the same three parts from the same pieces.
 /**
  * One setting whose control is not a plain text field: a picker grid, a switch, a button, a
  * row of them. Pass the control as children; the label and note are placed for you.
@@ -126,9 +99,6 @@ export function Setting({
   )
 }
 
-/** The gap between two settings inside one card. One number, so no card invents its own. */
-export const SETTING_GAP = 'space-y-5'
-
 // The status bar both editors put above the form (scheduled-for, unsaved-changes and the
 // like). Tinted rather than white so it reads as a message about the page, not part of it.
 export const NOTICE =
@@ -144,7 +114,12 @@ export const NOTICE =
 // a button — Copy next to a token, Choose image next to a filename — sat two pixels proud of
 // it. A form control and the button that acts on it are one row or they are nothing.
 export const CONTROL =
-  'min-h-10 rounded-lg border border-neutral-300 bg-white px-3.5 py-2 text-sm text-neutral-900 shadow-sm outline-none transition focus:border-neutral-500 focus:ring-2 focus:ring-neutral-200 placeholder:text-neutral-400 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500 dark:focus:ring-neutral-800 dark:placeholder:text-neutral-500'
+  'min-h-10 rounded-md border border-neutral-300 bg-white px-3.5 py-2 text-sm text-neutral-900 outline-none transition focus:border-neutral-500 focus:ring-2 focus:ring-neutral-200 placeholder:text-neutral-400 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500 dark:focus:ring-neutral-800 dark:placeholder:text-neutral-500'
+
+/** The tick. No `accent-color` does not mean unstyled, it means the OS accent, which is BLUE, in
+ *  an admin of black, white and neutrals. Five shipped so and the two that remembered disagreed
+ *  — three ticks. This is the primary button's fill: a tick is ink, and there is one ink. */
+export const CHECK = 'accent-neutral-900 dark:accent-white'
 
 // A field whose CONTENT has a known size does not run to the edge of its card. A three-digit
 // word count in a 580px box, a date in a 580px box and a site title in the same 580px box say
@@ -202,7 +177,7 @@ export function Card({
     <section className={`${CARD} p-5 sm:p-6 ${className}`}>
       {(title || actions) && (
         <div className="mb-5 flex items-center justify-between gap-3">
-          {title && <h2 className="text-[15px] font-semibold tracking-tight text-neutral-900 dark:text-white">{title}</h2>}
+          {title && <h2 className={SECTION}>{title}</h2>}
           {actions}
         </div>
       )}
@@ -225,75 +200,15 @@ export function PageHeader({
   className?: string
 }) {
   return (
-    <div className={`mb-7 flex flex-wrap items-center justify-between gap-4 ${className}`}>
+    <div className={`${HEADER_GAP} flex flex-wrap items-center justify-between gap-4 ${className}`}>
       <div className="min-w-0">
-        <h1 className="text-[1.65rem] font-semibold leading-tight tracking-tight text-neutral-950 dark:text-white">{title}</h1>
-        {description && <p className={`${READING} mt-1.5 max-w-2xl text-sm leading-6 text-neutral-500 dark:text-neutral-400`}>{description}</p>}
+        <h1 className={TITLE}>{title}</h1>
+        {description && <p className="mt-2 max-w-2xl text-[0.8125rem] leading-[1.6] text-neutral-500 dark:text-neutral-400">{description}</p>}
       </div>
       {/* `flex-wrap`, not `shrink-0`: a wide action set (Analytics' 4 range pills +
           Export) is wider than a phone viewport and would otherwise push the page
           into horizontal scroll instead of dropping onto a second line. */}
       {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
-    </div>
-  )
-}
-
-// Tabs — a segmented control on a tinted track, and there is ONE of it.
-//
-// There used to be two variants and a hand-rolled third. `variant='segment'` was never called
-// from anywhere; `variant='underline'` was called from all four tab strips and did not draw an
-// underline, so the name described a design that had been replaced and the two variants
-// differed only in the shade of their track. Meanwhile the Content page's All/Published/Draft
-// filter was a copy of this markup with `px-3 py-1.5` instead of `px-4 py-2` — the same
-// control, 40px tall, four pixels short of the tab strip directly above it, with no
-// `aria-pressed` and no hover state.
-//
-// `size` is the one real difference, and it is a size rather than a style: a tab strip that
-// names a SECTION of the page is the page's own navigation, and a filter inside a section is
-// subordinate to it. Both are the same object at two scales.
-export type TabItem<K extends string = string> = { key: K; label: ReactNode }
-export type TabSize = 'lg' | 'sm'
-
-// The track and the item, separately, because Analytics' range control is made of LINKS: the
-// range lives in the URL, so it cannot be a `<Tabs>` with an `onChange`. It had its own copy
-// of this markup, one padding step off and with a different hover, which is how the same
-// control came to look like two. A link-driven strip wears these two and gets the tab strip
-// it was imitating.
-export const TAB_TRACK = 'flex w-fit max-w-full flex-wrap gap-1 rounded-xl bg-neutral-200/70 p-1 dark:bg-neutral-800'
-
-export const tabItemClass = (active: boolean, size: TabSize = 'lg'): string =>
-  `rounded-lg text-sm font-medium transition ${size === 'lg' ? 'px-4 py-2' : 'px-3 py-1.5'} ${
-    active
-      ? 'bg-white text-neutral-950 shadow-sm dark:bg-neutral-700 dark:text-white'
-      : 'text-neutral-500 hover:bg-white/60 hover:text-neutral-900 dark:hover:bg-neutral-700/60 dark:hover:text-neutral-200'
-  }`
-
-export function Tabs<K extends string>({
-  tabs,
-  value,
-  onChange,
-  size = 'lg',
-  className = '',
-}: {
-  tabs: TabItem<K>[]
-  value: K
-  onChange: (key: K) => void
-  size?: TabSize
-  className?: string
-}) {
-  return (
-    <div className={`${TAB_TRACK} ${className}`}>
-      {tabs.map((tb) => (
-        <button
-          key={tb.key}
-          type="button"
-          onClick={() => onChange(tb.key)}
-          aria-pressed={value === tb.key}
-          className={tabItemClass(value === tb.key, size)}
-        >
-          {tb.label}
-        </button>
-      ))}
     </div>
   )
 }
@@ -311,6 +226,7 @@ export function StatCard({
   icon,
   after,
   href,
+  bare = false,
 }: {
   label: ReactNode
   value: ReactNode
@@ -318,25 +234,59 @@ export function StatCard({
   icon?: ReactNode
   after?: ReactNode
   href?: string
+  /** Inside a `StatBand`: drop the sheet, the band draws the edges. */
+  bare?: boolean
 }) {
   const inner = (
     <>
       <div className="flex items-start justify-between gap-2">
-        <div className="text-[1.65rem] font-semibold tracking-tight tabular-nums">{value}{after}</div>
+        <div className={FIGURE}>{value}{after}</div>
         {icon && <span className="text-neutral-300 dark:text-neutral-600">{icon}</span>}
       </div>
-      <div className="mt-1.5 text-sm text-neutral-500 dark:text-neutral-400">{label}</div>
-      {sub && <div className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">{sub}</div>}
+      <div className={`${META} mt-2.5`}>{label}</div>
+      {sub && <div className={`${META} mt-1`}>{sub}</div>}
     </>
   )
+  // The hover LIFT is gone with the shadow it lifted into. A tile that rises and casts a
+  // shadow is the dashboard costume again; a tile that darkens its own edge says the same
+  // "this is clickable" without pretending to be a physical object on a tray.
   if (href) {
     return (
-      <Link href={href} className={`${CARD} block p-5 transition duration-200 hover:-translate-y-0.5 hover:border-neutral-300 hover:shadow-md dark:hover:border-neutral-700 dark:hover:bg-neutral-800/40`}>
+      <Link href={href} className={`${bare ? BARE_TILE : `${CARD} p-5`} block transition duration-200 ${bare ? 'hover:bg-neutral-100/70 dark:hover:bg-neutral-800/40' : 'hover:border-neutral-400 dark:hover:border-neutral-600 dark:hover:bg-neutral-800/40'}`}>
         {inner}
       </Link>
     )
   }
-  return <div className={`${CARD} p-5`}>{inner}</div>
+  return <div className={bare ? BARE_TILE : `${CARD} p-5`}>{inner}</div>
+}
+
+/** A tile inside a band: no edge of its own, the band's divider does that job. */
+const BARE_TILE = 'px-5 py-4'
+
+/**
+ * The figures of a page as ONE BAND, divided by hairlines, instead of five floating sheets.
+ *
+ * Measured on the Overview at 1440px: each tile was 98px tall around ~50px of content, so 49%
+ * of every box was empty, and the row of five sat between a 40px gap above and a 40px gap
+ * below. The owner circled exactly that region on 2026-08-15 — *"trên dưới cách nhau cả
+ * khúc"*. Five separate sheets is also the reading the kit's own contract rejects: a card is
+ * for "genuinely independent data", and Posts / Pages / Comments / Images / Storage are five
+ * readings of ONE thing, which is how much blog there is.
+ *
+ * `divide-x` alone is wrong once the grid wraps — it skips only the very first child, so the
+ * first cell of every later ROW keeps a left edge. The border goes on every cell and the
+ * per-row firsts are cleared by column position, which is why the counts are spelled out.
+ */
+export function StatBand({ children }: { children: ReactNode }) {
+  return (
+    <div className={`${CARD} grid grid-cols-2 divide-neutral-200 sm:grid-cols-3 lg:grid-cols-5 dark:divide-neutral-800
+      [&>*]:border-l [&>*]:border-t [&>*]:border-neutral-200 dark:[&>*]:border-neutral-800
+      [&>*:nth-child(-n+2)]:border-t-0 [&>*:nth-child(odd)]:border-l-0
+      sm:[&>*:nth-child(-n+3)]:border-t-0 sm:[&>*:nth-child(odd)]:border-l sm:[&>*:nth-child(3n+1)]:border-l-0
+      lg:[&>*]:border-t-0 lg:[&>*:nth-child(3n+1)]:border-l lg:[&>*:first-child]:border-l-0`}>
+      {children}
+    </div>
+  )
 }
 
 // Empty / zero state — centered muted message, optional icon + action.
@@ -360,28 +310,29 @@ export function EmptyState({
           chrome font. The description explains the state in a sentence, and takes the other
           face — the same split as a label and its note. */}
       <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{title}</p>
-      {description && <p className={`${READING} mt-1 max-w-sm text-sm text-neutral-500 dark:text-neutral-400`}>{description}</p>}
+      {description && <p className={`${NOTE_TEXT} mt-1.5 max-w-sm`}>{description}</p>}
       {action && <div className="mt-4">{action}</div>}
     </div>
   )
 }
 
-// Table chrome — shared so the 4 admin tables stop re-declaring wrapper + head
-// classes. `TableFrame` is the rounded, bordered surface; `TH`/`TD` standardize cells.
+// Table chrome — shared so the 4 admin tables stop re-declaring wrapper + head classes.
 //
-// TWO nested boxes, and the inner one is not decoration. The frame needs
-// `overflow-hidden` or the table's corners square off the rounded card. But
-// `overflow-hidden` on the ONLY box means a table wider than the card is clipped with no
-// way to reach the rest: measured at 390px, the analytics table ran to 426px and its last
-// column (scroll depth) sat entirely past the viewport edge, unreachable, on every phone.
-// The inner `overflow-x-auto` gives that overflow somewhere to go while the outer box
-// keeps the corners.
+// TWO nested boxes, and the inner one is not decoration. The frame needs `overflow-hidden` or
+// the table's corners square off the rounded sheet; but `overflow-hidden` on the ONLY box
+// clips a table wider than the sheet with no way to reach the rest — measured at 390px, the
+// analytics table ran to 426px and its last column sat past the viewport edge, unreachable, on
+// every phone. The inner `overflow-x-auto` gives the overflow somewhere to go.
 export const TABLE_FRAME = `overflow-hidden ${CARD}`
 /** Goes between TABLE_FRAME and the table. Never let a table be the frame's direct child. */
 export const TABLE_SCROLL = 'overflow-x-auto overscroll-x-contain [scrollbar-width:thin]'
+// No fill on the head. `bg-neutral-50` behind the column names is the shadow's instinct again —
+// a tint standing in for a rule — and it made a table read as a spreadsheet widget rather than
+// a list. The rule under it already separates head from body. `text-xs` too: a column NAME is
+// the smallest print on a page and it was set at the same size as the data under it.
 export const THEAD =
-  'whitespace-nowrap border-b border-neutral-200 bg-neutral-50 text-left text-neutral-500 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400'
-export const TROW = 'border-b border-neutral-100 last:border-0 hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-800/40'
+  'whitespace-nowrap border-b border-neutral-200 text-left text-xs text-neutral-500 dark:border-neutral-800 dark:text-neutral-400'
+export const TROW = 'border-b border-neutral-100 last:border-0 hover:bg-neutral-100/60 dark:border-neutral-800 dark:hover:bg-neutral-800/40'
 
 export function TableFrame({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (

@@ -5,7 +5,7 @@ import Link from '@/admin/router'
 import type { ActivityEntry } from '@/server/activity'
 import { formatBytes, formatDateTimeShort } from '@/utils'
 import { buttonClass } from '@/admin/ui/Button'
-import { Card, CARD_GAP, PageHeader, SECTION_GAP, StatCard } from './kit'
+import { Card, PageHeader, SECTION_GAP, StatBand, StatCard } from './kit'
 import { DashboardWidgets, type DashboardData } from './DashboardWidgets'
 import { FirstRun } from './FirstRun'
 import { useAdminT } from './I18nProvider'
@@ -50,27 +50,32 @@ type Props = {
  *
  * `2.0.0-dev` has named every deploy since the cutover, so the version alone cannot answer
  * the only question this line is here for: is the running code what was just shipped. The
- * short SHA links to that exact commit on GitHub. Absent when the deploy left no
- * `build-sha` behind, which is a dev machine or somebody else's install.
+ * short SHA answers it. Absent when the deploy left no `build-sha` behind, which is a dev
+ * machine or somebody else's install.
+ *
+ * ⚠️ The link goes to the PROJECT, not to the commit — the owner's instruction on 2026-08-15:
+ * *"mã commit (link tới dự án, ko phải link tới commit)"*. The SHA is here to be READ (does
+ * this match what I just shipped), and the link is a different job: getting to the repository.
+ * A per-commit URL served neither well — it is a page nobody wants from a dashboard, and it
+ * 404s the moment a SHA is stale or the deploy shipped from a branch that was later rebased.
  */
 function BuildLabel({ version, commit }: { version: string; commit: string | null }) {
   return (
-    <span className="text-xs text-neutral-400">
+    // `hidden sm:inline`, because on a phone this line is not small print, it is a THIRD
+    // thing in the title row: measured at 390px it sat between "Overview" and New post and
+    // took the width off both. It answers "is the running code what was just shipped", which
+    // is a question asked at a desk. It still does not belong beside the page title at all —
+    // `docs/admin-design.md` says system information does not compete on the home page — but
+    // its real home is Settings → System, and moving it there is plumbing, not a class.
+    <a
+      href={REPO}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="hidden text-xs text-neutral-400 hover:text-neutral-900 sm:inline dark:hover:text-white"
+    >
       quire<span className="font-bold">INK</span> v{version}
-      {commit && (
-        <>
-          {' · '}
-          <a
-            href={`${REPO}/commit/${commit}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-mono underline hover:text-neutral-900 dark:hover:text-white"
-          >
-            {commit.slice(0, 7)}
-          </a>
-        </>
-      )}
-    </span>
+      {commit && <span className="tabular-nums"> ({commit.slice(0, 7)})</span>}
+    </a>
   )
 }
 
@@ -102,13 +107,13 @@ export function Overview(props: Props) {
           of zeroes is the least useful thing a new owner can be shown first. */}
       <FirstRun done={firstRunDone} onDone={markFirstRunDone} />
 
-      <div className={`grid grid-cols-2 ${CARD_GAP} sm:grid-cols-3 lg:grid-cols-5`}>
-        <StatCard label={t.statPosts} value={posts} href="/admin/content" />
-        <StatCard label={t.statPages} value={pages} href="/admin/content" />
-        <StatCard label={t.statComments} value={comments} href="/admin/comments" />
-        <StatCard label={t.statMedia} value={originals} href="/admin/media" />
-        <StatCard label={t.statStorage} value={formatBytes(totalBytes)} />
-      </div>
+      <StatBand>
+        <StatCard bare label={t.statPosts} value={posts} href="/admin/content" />
+        <StatCard bare label={t.statPages} value={pages} href="/admin/content" />
+        <StatCard bare label={t.statComments} value={comments} href="/admin/comments" />
+        <StatCard bare label={t.statMedia} value={originals} href="/admin/media" />
+        <StatCard bare label={t.statStorage} value={formatBytes(totalBytes)} />
+      </StatBand>
 
       <DashboardWidgets data={dashboard} />
 
@@ -122,7 +127,15 @@ export function Overview(props: Props) {
         {!activityEnabled || recent.length === 0 ? (
           <p className="text-sm text-neutral-400">{t.logEmpty}</p>
         ) : (
-          <ul className="divide-y divide-neutral-100 dark:divide-neutral-800">
+          // TWO COLUMNS on a wide screen, and it is the emptiness that forces it rather than a
+          // wish for density. Measured at 1440px: the action track is 180px (honest — the
+          // longest action, `auth.recovery.regenerated`, measures 172), the timestamp 85, and
+          // the detail column got the remaining 805px to hold strings like
+          // `registration-target.png` at ~150. Six rows each carrying ~300px of content across
+          // a 1400px band is a card that is three-quarters air, which is what the owner meant
+          // by "trống trải quá mức" on 2026-08-15. Halving the width halves the hole, and it
+          // fills a band that was the last thing on the page.
+          <ul className="grid divide-y divide-neutral-100 xl:grid-cols-2 xl:gap-x-10 dark:divide-neutral-800 [&>li]:border-neutral-100 dark:[&>li]:border-neutral-800 xl:divide-y-0 xl:[&>li]:border-b xl:[&>li:nth-last-child(-n+2)]:border-b-0">
             {recent.slice(0, 6).map((entry) => (
               // 180px, not 120px, and the action truncates. An action is a dotted identifier
               // with nothing to wrap on, and the long ones overran the old track and painted
@@ -131,7 +144,7 @@ export function Overview(props: Props) {
               // tracks: a content-sized column would fix the overlap and then stagger the
               // detail edge from row to row. A fixed track keeps the list aligned, and the
               // truncate is the backstop for whatever action name gets added next.
-              <li key={entry.id} className="grid gap-2 py-3 text-sm sm:grid-cols-[180px_minmax(0,1fr)_auto]">
+              <li key={entry.id} className="grid gap-x-4 gap-y-1 py-2.5 text-sm sm:grid-cols-[minmax(0,180px)_minmax(0,1fr)_auto]">
                 <span className={`truncate ${entry.action === 'error' ? 'font-medium text-neutral-900 dark:text-white' : 'text-neutral-500'}`}>{entry.action}</span>
                 <span className="truncate text-neutral-700 dark:text-neutral-300">{entry.detail}</span>
                 <time className="text-xs text-neutral-400">{formatDateTimeShort(entry.at)}</time>

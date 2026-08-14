@@ -11,6 +11,7 @@
 import Image from '@tiptap/extension-image'
 import { ReactNodeViewRenderer, NodeViewWrapper, type NodeViewProps } from '@tiptap/react'
 import { useAdminT } from './I18nProvider'
+import { SEGMENT_TRACK, tabItemClass } from './kit'
 
 type Align = 'left' | 'center' | 'right'
 /**
@@ -113,11 +114,8 @@ function CaptionedImageView({ node, updateAttributes, selected, editor, getPos }
   }
 
   const figCls = grid ? 'img-grid' : `img-${align}${wide ? ' img-wide' : ''}`
-  const group = 'inline-flex gap-1 rounded-lg bg-neutral-100 p-1 dark:bg-neutral-800'
-  const btn = (active: boolean) =>
-    `rounded-lg px-2.5 py-1 text-xs font-medium ${
-      active ? 'bg-white text-neutral-900 shadow-sm dark:bg-neutral-700 dark:text-white' : 'text-neutral-500'
-    }`
+  const group = SEGMENT_TRACK
+  const btn = (active: boolean) => tabItemClass(active, 'sm')
 
   return (
     <NodeViewWrapper as="figure" className={`my-4 ${figCls}`} data-drag-handle>

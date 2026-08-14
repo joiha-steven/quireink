@@ -8,7 +8,7 @@ import { PostsTable } from './PostsTable'
 import { PagesTable } from './PagesTable'
 import { TaxonomyManager } from './TaxonomyManager'
 import { SeriesManager } from './SeriesManager'
-import { PageHeader, Tabs } from './kit'
+import { GROUP_GAP, PageHeader, Tabs } from './kit'
 import { useAdminT } from './I18nProvider'
 
 type Tab = 'posts' | 'pages' | 'taxonomy' | 'series'
@@ -47,7 +47,7 @@ export function ContentDashboard({
         ) : undefined}
       />
 
-      <Tabs tabs={tabs} value={tab} onChange={setTab} className="mb-6" />
+      <Tabs tabs={tabs} value={tab} onChange={setTab} className={GROUP_GAP} />
 
       {tab === 'posts' && (
         <PostsTable initialPosts={posts} views={views} commentCounts={commentCounts} commentsEnabled={commentsEnabled} />

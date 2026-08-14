@@ -8,7 +8,7 @@
 // already has successful sends needs the resend checkbox before the button unlocks.
 import { useEffect, useState } from 'react'
 import type { ApiResponse } from '@/types'
-import { Card, NOTE_TEXT, READING } from './kit'
+import { Card, CHECK, NOTE_TEXT } from './kit'
 import { Button } from '@/admin/ui/Button'
 import { useToast } from '@/admin/ui/Toast'
 import { useAdminT } from './I18nProvider'
@@ -99,7 +99,7 @@ export function NewsletterSend({ posts }: { posts: SendablePost[] }) {
                   key={p.slug}
                   className="flex cursor-pointer items-start gap-3 border-b border-neutral-100 px-3.5 py-2.5 last:border-0 hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-800/40"
                 >
-                  <input type="checkbox" className="mt-1" checked={picked.includes(p.slug)} onChange={() => toggle(p.slug)} />
+                  <input type="checkbox" className={`mt-1 ${CHECK}`} checked={picked.includes(p.slug)} onChange={() => toggle(p.slug)} />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm text-neutral-800 dark:text-neutral-100">{p.title}</span>
                     <span className="mt-0.5 block text-xs tabular-nums text-neutral-500 dark:text-neutral-400">
@@ -117,9 +117,9 @@ export function NewsletterSend({ posts }: { posts: SendablePost[] }) {
 
           {alreadySent && (
             <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-3 text-sm dark:border-neutral-800 dark:bg-neutral-900">
-              <p className={`${READING} text-neutral-600 dark:text-neutral-400`}>{t.nlAlreadySent.replace('{n}', String(priorSent.length))}</p>
+              <p className="text-neutral-600 dark:text-neutral-400">{t.nlAlreadySent.replace('{n}', String(priorSent.length))}</p>
               <label className="mt-2 flex items-center gap-2 text-neutral-700 dark:text-neutral-300">
-                <input type="checkbox" checked={resend} onChange={(e) => setResend(e.target.checked)} />
+                <input type="checkbox" className={CHECK} checked={resend} onChange={(e) => setResend(e.target.checked)} />
                 {t.nlResendConfirm}
               </label>
             </div>
@@ -142,7 +142,7 @@ export function NewsletterSend({ posts }: { posts: SendablePost[] }) {
           <div className="space-y-3">
             <p className="text-sm">
               <span className="text-neutral-500 dark:text-neutral-400">{t.nlSubjectLabel}: </span>
-              <span className={`${READING} font-medium`}>{preview.subject}</span>
+              <span className="font-medium">{preview.subject}</span>
             </p>
             {/* sandbox with no allow-* tokens: the email HTML cannot run scripts, submit
                 forms or navigate the admin. It is only ever rendered, never trusted. */}

@@ -7,7 +7,7 @@ import type { Post, ApiResponse } from '@/types'
 import { useToast } from '@/admin/ui/Toast'
 import { formatDateTimeShort, foldAccents } from '@/utils'
 import { RowActions, StatusPill } from './RowActions'
-import { CONTROL, EmptyState, READING, TableFrame, Tabs, THEAD, TROW } from './kit'
+import { CLUSTER_GAP, CONTROL, EmptyState, TableFrame, Tabs, THEAD, TROW } from './kit'
 import { useAdminT } from './I18nProvider'
 
 type StatusFilter = 'all' | 'published' | 'draft'
@@ -73,7 +73,7 @@ export function PostsTable({
 
           The two sit TOGETHER rather than at opposite ends of the row: they narrow the same
           list, and a thousand pixels between them says they are unrelated controls. */}
-      <div className="mb-5 flex flex-wrap items-center gap-3">
+      <div className={`${CLUSTER_GAP} flex flex-wrap items-center gap-3`}>
         <input
           type="search"
           value={query}
@@ -91,13 +91,22 @@ export function PostsTable({
     <TableFrame>
         <thead className={THEAD}>
           <tr>
-            <th className="px-4 py-3 font-medium">{t.colTitle}</th>
-            <th className="px-4 py-3 font-medium">{t.colStatus}</th>
+            {/* `w-full` says the SLACK goes to the title, and on its own it fixed nothing,
+                which is the useful half of this note. Measured at 1083px — this admin in a
+                window that is not maximised — the seven columns wanted 794px of a 793px
+                table: Status 100, Views 71, Comments 104, Date 136, Categories 109, actions
+                136. There was no slack to give, so the only cell anybody reads collapsed to
+                its min-content at 138px and every headline wrapped to three or four lines.
+                A priority is worth nothing until something is dropped, so the comment count
+                and the categories now wait for `xl` (the categories still show under the
+                title below that, as they already did on a phone). Title: 138px → 351px. */}
+            <th className="w-full px-4 py-3 font-medium">{t.colTitle}</th>
+            <th className="whitespace-nowrap px-4 py-3 font-medium">{t.colStatus}</th>
             <th className="hidden px-4 py-3 font-medium text-right sm:table-cell">{t.colViews}</th>
-            {commentsEnabled && <th className="hidden px-4 py-3 font-medium text-right sm:table-cell">{t.commentsCount}</th>}
+            {commentsEnabled && <th className="hidden px-4 py-3 font-medium text-right xl:table-cell">{t.commentsCount}</th>}
             {/* Date + categories are secondary — hidden on narrow screens */}
             <th className="hidden px-4 py-3 font-medium sm:table-cell">{t.colDate}</th>
-            <th className="hidden px-4 py-3 font-medium md:table-cell">{t.colCategories}</th>
+            <th className="hidden px-4 py-3 font-medium xl:table-cell">{t.colCategories}</th>
             <th className="px-4 py-3" />
           </tr>
         </thead>
@@ -112,22 +121,22 @@ export function PostsTable({
                 {/* On the LINK and not on the cell: the categories line below is taxonomy,
                     which is chrome, and it would inherit the face from a cell that carried
                     it. */}
-                <Link href={`/admin/editor/${p.slug}`} className={`${READING} hover:underline`}>
+                <Link href={`/admin/editor/${p.slug}`} className="hover:underline">
                   {p.title || t.untitled}
                 </Link>
                 {p.categories.length > 0 && (
-                  <div className="mt-1 text-xs font-normal text-neutral-400 md:hidden">{p.categories.join(', ')}</div>
+                  <div className="mt-1 text-xs font-normal text-neutral-400 xl:hidden">{p.categories.join(', ')}</div>
                 )}
               </td>
-              <td className="px-4 py-3">
+              <td className="whitespace-nowrap px-4 py-3">
                 <StatusPill published={p.status === 'published'} label={p.status === 'published' ? t.statusPublished : t.statusDraft} />
               </td>
               <td className="hidden px-4 py-3 text-right tabular-nums text-neutral-500 sm:table-cell dark:text-neutral-400">{(views[`/${p.slug}`] ?? 0).toLocaleString()}</td>
               {commentsEnabled && (
-                <td className="hidden px-4 py-3 text-right tabular-nums text-neutral-500 sm:table-cell dark:text-neutral-400">{(commentCounts[p.slug] ?? 0).toLocaleString()}</td>
+                <td className="hidden px-4 py-3 text-right tabular-nums text-neutral-500 xl:table-cell dark:text-neutral-400">{(commentCounts[p.slug] ?? 0).toLocaleString()}</td>
               )}
               <td className="hidden whitespace-nowrap px-4 py-3 text-neutral-500 sm:table-cell dark:text-neutral-400">{formatDateTimeShort(p.date)}</td>
-              <td className="hidden px-4 py-3 text-neutral-500 md:table-cell dark:text-neutral-400">{p.categories.join(', ')}</td>
+              <td className="hidden px-4 py-3 text-neutral-500 xl:table-cell dark:text-neutral-400">{p.categories.join(', ')}</td>
               <td className="px-4 py-3">
                 <RowActions
                   editHref={`/admin/editor/${p.slug}`}

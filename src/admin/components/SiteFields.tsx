@@ -11,7 +11,7 @@ import { Input, Textarea } from '@/admin/ui/Input'
 import { ToggleField } from '@/admin/ui/Switch'
 import { SITE_LANGS } from '@/locales/langs'
 import { useAdminT, useSetAdminLang } from './I18nProvider'
-import { Setting, SETTING_GAP } from './kit'
+import { SEGMENT_TRACK, Setting, SETTING_GAP, tabItemClass } from './kit'
 
 type Props = { s: SiteSettings; update: (p: Partial<SiteSettings>) => void }
 
@@ -22,7 +22,7 @@ export function SiteFields({ s, update }: Props) {
   return (
     <div className={SETTING_GAP}>
       <Setting label={t.siteLanguage} note={t.siteLanguageHint}>
-        <div className="flex flex-wrap gap-1 rounded-xl bg-neutral-100 p-1 dark:bg-neutral-800">
+        <div className={`${SEGMENT_TRACK} flex-wrap`}>
           {SITE_LANGS.map((l) => (
             <button
               key={l.value}
@@ -31,9 +31,7 @@ export function SiteFields({ s, update }: Props) {
                 update({ language: l.value })
                 setLang(l.value) // switch the admin UI instantly
               }}
-              className={`rounded-lg px-3 py-1.5 text-sm font-medium ${
-                s.language === l.value ? 'bg-white shadow-sm dark:bg-neutral-700' : 'text-neutral-500'
-              }`}
+              className={tabItemClass(s.language === l.value, 'sm')}
             >
               {l.label}
             </button>

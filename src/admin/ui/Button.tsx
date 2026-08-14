@@ -20,9 +20,9 @@ type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 const STYLES: Record<Variant, string> = {
   primary:
-    'bg-neutral-900 text-white shadow-sm hover:bg-neutral-700 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-200',
+    'bg-neutral-900 text-white hover:bg-neutral-700 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-200',
   secondary:
-    'border border-neutral-200 bg-white text-neutral-800 shadow-sm hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:hover:bg-neutral-700',
+    'border border-neutral-300 bg-white text-neutral-800 hover:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:hover:bg-neutral-700',
   ghost: 'bg-transparent text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800',
   // OUTLINED, where primary is solid. It was byte-identical to primary, which made "Delete
   // forever" the loudest control on its screen and the only thing between it and a deleted
@@ -38,7 +38,7 @@ const STYLES: Record<Variant, string> = {
 // shipped "Tạo token" broken across two lines and twice as tall as the row it sat in. A
 // button is a fixed object; it is the text beside it that gives way.
 const SHAPE =
-  'inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-lg font-medium transition disabled:cursor-not-allowed disabled:opacity-50'
+  'inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-md font-medium transition disabled:cursor-not-allowed disabled:opacity-50'
 
 const SIZES: Record<Size, string> = {
   md: 'min-h-10 px-4 py-2 text-sm',

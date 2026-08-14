@@ -2,8 +2,14 @@
 //
 // The admin printed a version and nothing else, and `2.0.0-dev` has meant every deploy
 // since the cutover — so the one question the line existed to answer, "is what I am looking
-// at what I just shipped", it could not answer. Clicking it went to the repository's front
-// page, which answers it even less.
+// at what I just shipped", it could not answer.
+//
+// ⚠️ This note used to continue "clicking it went to the repository's front page, which answers
+// it even less", and on 2026-08-15 the owner sent it back there on purpose: *"mã commit (link
+// tới dự án, ko phải link tới commit)"*. Both readings were right about different things. The
+// SHA answers the question by being READ, not by being clicked — a per-commit URL is a page
+// nobody opens from a dashboard, and it 404s as soon as the branch it came from is rebased.
+// The link is doing the other job, which is simply getting to the project.
 //
 // The box has no git checkout: the service runs `bun src/index.ts` out of a directory the
 // deploy untars into. So the commit has to ARRIVE with the code, in a `build-sha` file the

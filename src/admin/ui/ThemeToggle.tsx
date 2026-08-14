@@ -45,13 +45,28 @@ function MoonIcon() {
 // `variant` picks the trigger: 'icon' (public header — sun/moon) or 'text'
 // (admin header — the applied theme as a word, styled like the nav links via
 // `triggerClassName`). The dropdown is identical in both.
+//
+// TWO booleans rather than more variants, because the admin rail needs all four combinations
+// and `variant` was being asked to carry three unrelated answers at once — the trigger's
+// class, whether it draws a glyph, and which side the menu opens on. In a COLLAPSED rail this
+// row is a glyph with no word, in an expanded one a word with no glyph, and in both it must be
+// the same 47px row object as every other line in the rail. Measured collapsed on 2026-08-15:
+// the sun sat at x-centre 32 against 36 for the two rows under it, because `variant='icon'`
+// ignored `triggerClassName` and fell back to the PUBLIC header's `ICON_BTN`.
+//
+// `menuSide` stays tied to `variant`: an admin rail is against the left edge, so the menu opens
+// beside it, not under it.
 export function ThemeToggle({
   lang,
   variant = 'icon',
+  showIcon = true,
+  showLabel = true,
   triggerClassName = '',
 }: {
   lang: SiteLang
   variant?: 'icon' | 'text'
+  showIcon?: boolean
+  showLabel?: boolean
   triggerClassName?: string
 }) {
   const { mode, setMode } = useTheme()
@@ -72,12 +87,12 @@ export function ThemeToggle({
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-label={s.theme}
-        className={variant === 'text' ? triggerClassName : ICON_BTN}
+        className={triggerClassName || (variant === 'text' ? '' : ICON_BTN)}
       >
         {variant === 'text' ? (
           <>
-            {isDark ? <MoonIcon /> : <SunIcon />}
-            <span>{isDark ? s.themeDark : s.themeLight}</span>
+            {showIcon && (isDark ? <MoonIcon /> : <SunIcon />)}
+            {showLabel && <span>{isDark ? s.themeDark : s.themeLight}</span>}
           </>
         ) : isDark ? <MoonIcon /> : <SunIcon />}
       </button>

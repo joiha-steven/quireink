@@ -11,7 +11,7 @@ import { formatBytes } from '@/utils'
 import { formatDate } from '@/i18n/i18n'
 import { ImageUploader } from './ImageUploader'
 import { MediaToolbar, type MediaSort } from './MediaToolbar'
-import { EmptyState, READING } from './kit'
+import { CHECK, EmptyState } from './kit'
 import { useAdminT, useAdminLang } from './I18nProvider'
 
 type Props = {
@@ -224,7 +224,7 @@ export function MediaLibrary({ mode = 'page', multi = false, onSelect, onSelectM
                   checked={selected.has(m.url)}
                   onChange={() => toggleSelect(m.url)}
                   aria-label={m.filename}
-                  className={`absolute left-1.5 top-1.5 z-20 h-4 w-4 accent-neutral-900 transition-opacity dark:accent-white ${
+                  className={`absolute left-1.5 top-1.5 z-20 h-4 w-4 transition-opacity ${CHECK} ${
                     selected.has(m.url) ? 'opacity-100' : 'opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100'
                   }`}
                 />
@@ -388,7 +388,7 @@ export function MediaLibrary({ mode = 'page', multi = false, onSelect, onSelectM
           </div>
         </div>
         {multi && (
-          <p className={`${READING} mb-3 text-sm leading-6 text-neutral-500 dark:text-neutral-400`}>{t.galleryPickHint}</p>
+          <p className="mb-3 text-sm leading-6 text-neutral-500 dark:text-neutral-400">{t.galleryPickHint}</p>
         )}
         <div className="overflow-y-auto">{body}</div>
       </div>

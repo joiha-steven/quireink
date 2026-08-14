@@ -42,7 +42,7 @@ export function ImageUploader({ onUploaded }: { onUploaded: (items: MediaItem[])
           setDragging(false)
           handle(Array.from(e.dataTransfer.files))
         }}
-        className={`cursor-pointer rounded-2xl border-2 border-dashed bg-white p-8 text-center text-sm shadow-sm transition-colors dark:bg-neutral-900 ${
+        className={`cursor-pointer rounded-[10px] border border-dashed bg-white p-8 text-center text-sm transition-colors dark:bg-neutral-900 ${
           dragging ? 'border-neutral-900 bg-neutral-50 dark:border-white dark:bg-neutral-800' : 'border-neutral-300 text-neutral-500 dark:border-neutral-700'
         }`}
       >

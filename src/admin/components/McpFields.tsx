@@ -11,7 +11,7 @@ import { ToggleRow } from '@/admin/ui/Switch'
 import { useToast } from '@/admin/ui/Toast'
 import { formatDateTimeShort } from '@/utils'
 import { useAdminT } from './I18nProvider'
-import { PANEL, READING, Setting, TABLE_SCROLL } from './kit'
+import { PANEL, Setting, TABLE_SCROLL } from './kit'
 
 const MAX = 5 // manual tokens only; OAuth-connector tokens are exempt
 
@@ -158,7 +158,7 @@ export function McpFields(
         {/* The just-created plaintext token, shown ONCE. */}
         {created && (
           <div className="space-y-2 rounded-xl border border-neutral-300 bg-neutral-50 p-3 dark:border-neutral-700 dark:bg-neutral-800/60">
-            <p className={`${READING} text-xs font-medium text-neutral-600 dark:text-neutral-300`}>{t.mcpOnceWarning}</p>
+            <p className="text-xs font-medium text-neutral-600 dark:text-neutral-300">{t.mcpOnceWarning}</p>
             <div className="flex items-center gap-2">
               <code className="flex min-h-10 min-w-0 flex-1 items-center truncate rounded-lg border border-neutral-300 bg-white px-3 text-xs dark:border-neutral-700 dark:bg-neutral-900">
                 {created}

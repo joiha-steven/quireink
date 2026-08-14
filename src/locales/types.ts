@@ -824,6 +824,9 @@ export type AdminStrings = {
   // sidebar collapse
   navCollapse: string
   navExpand: string
+  // sidebar icons, OFF by default since 2026-08-15
+  navIconsShow: string
+  navIconsHide: string
   // sign-in (new in 2.0; see v2/docs/06-auth.md)
   authSignIn: string
   // Both take {site}. The sign-in page wears the Quire Ink mark, so the blog it opens is named
