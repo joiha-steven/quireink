@@ -14,9 +14,9 @@
 import type { GallerySettings } from '@/types'
 import { ToggleRow } from '@/admin/ui/Switch'
 import { useAdminT } from './I18nProvider'
+import { NOTE_TEXT } from './kit'
 
 const LABEL = 'block text-sm font-medium text-neutral-700 dark:text-neutral-300'
-const HINT = 'text-xs text-neutral-400 dark:text-neutral-500'
 
 const RATIOS: GallerySettings['ratio'][] = ['', '1x1', '3x2', '4x3']
 // Ratios read the same in every language. Only "as shot" is a word.
@@ -48,7 +48,7 @@ export function GalleryFields({ gallery, onChange }: {
             </button>
           ))}
         </div>
-        <p className={HINT}>{t.galleryRatioHint}</p>
+        <p className={NOTE_TEXT}>{t.galleryRatioHint}</p>
       </div>
 
       <ToggleRow

@@ -10,6 +10,7 @@ import { Button } from '@/admin/ui/Button'
 import { CheckField } from '@/admin/ui/Switch'
 import { useToast } from '@/admin/ui/Toast'
 import { useAdminT } from './I18nProvider'
+import { NOTE_TEXT } from './kit'
 
 type MailStatus = { host: string; port: number; user: string; from: string; secure: boolean; hasPass: boolean; configured: boolean }
 
@@ -61,7 +62,7 @@ export function NewsletterFields() {
 
   return (
     <div className="space-y-5">
-      <p className="text-xs text-neutral-500 dark:text-neutral-400">{t.nlSmtpHint}</p>
+      <p className={NOTE_TEXT}>{t.nlSmtpHint}</p>
       <div className="grid gap-3 sm:grid-cols-2">
         <Input label={t.nlSmtpHost} value={cfg.host} onChange={(e) => field('host', e.target.value)} placeholder="smtp.example.com" />
         <Input label={t.nlSmtpPort} type="number" value={String(cfg.port)} onChange={(e) => setPort(Number(e.target.value) || 587)} />
@@ -72,7 +73,7 @@ export function NewsletterFields() {
       {/* Was a browser-default checkbox, which read as a different application from the
           switches on every other card. `CheckField` is the shared one. */}
       <CheckField label={t.nlSmtpSecure} checked={cfg.secure} onChange={(v) => field('secure', v)} />
-      {mismatch && <p className="text-xs text-neutral-500 dark:text-neutral-400">{t.nlSmtpTlsMismatch}</p>}
+      {mismatch && <p className={NOTE_TEXT}>{t.nlSmtpTlsMismatch}</p>}
       <div className="flex flex-wrap items-center gap-3">
         <Button onClick={save} disabled={busy}>{t.nlSaveSmtp}</Button>
         <Link href="/admin/newsletter" className="text-sm font-medium text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white">

@@ -12,7 +12,7 @@ import { Input } from '@/admin/ui/Input'
 import { ToggleField } from '@/admin/ui/Switch'
 import { useToast } from '@/admin/ui/Toast'
 import { useAdminT } from './I18nProvider'
-import { PANEL_LIST } from './kit'
+import { NOTE, NOTE_TEXT, PANEL_LIST } from './kit'
 import type { ApiResponse, BackupSettings } from '@/types'
 
 type Snapshot = { name: string; size: number; createdAt: string }
@@ -136,7 +136,7 @@ export function ExportFields({
             checked={backups.enabled}
             onChange={(enabled) => onChange({ ...backups, enabled })}
           />
-          <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">{t.backupAutoDesc}</p>
+          <p className={NOTE}>{t.backupAutoDesc}</p>
         </div>
 
         {backups.enabled && (
@@ -198,7 +198,7 @@ export function ExportFields({
           </ul>
         )}
 
-        <p className="text-xs text-neutral-400 dark:text-neutral-500">{t.exportReplicationNote}</p>
+        <p className={NOTE_TEXT}>{t.exportReplicationNote}</p>
       </div>
     </div>
   )

@@ -21,7 +21,7 @@
 // `NotFound.tsx` carries `data-admin-404`.
 import { useState } from 'react'
 import Link from '@/admin/router'
-import { Card } from './kit'
+import { Card, READING } from './kit'
 import { useAdminT } from './I18nProvider'
 import type { AdminStrings } from '@/locales/types'
 
@@ -63,7 +63,10 @@ export function FirstRunSteps() {
             <Link href={s.href} className="text-sm font-medium text-neutral-900 underline-offset-2 hover:underline dark:text-neutral-100">
               {s.label}
             </Link>
-            <p className="mt-0.5 text-sm leading-relaxed text-neutral-600 dark:text-neutral-300">{s.body}</p>
+            {/* The step's NAME is a label (it names a screen you go to); the body under it
+                is a sentence explaining it, so the two take the two faces — the same split
+                as a setting's label and its note. */}
+            <p className={`${READING} mt-0.5 text-sm leading-relaxed text-neutral-600 dark:text-neutral-300`}>{s.body}</p>
           </div>
         </li>
       ))}
@@ -98,7 +101,7 @@ export function FirstRun({ done, onDone }: {
   return (
     <div className="mb-5">
       <Card title={t.firstRunTitle}>
-        <p className="mb-4 text-sm text-neutral-600 dark:text-neutral-300">{t.firstRunIntro}</p>
+        <p className={`${READING} mb-4 text-sm text-neutral-600 dark:text-neutral-300`}>{t.firstRunIntro}</p>
         <FirstRunSteps />
         <div className="mt-5">
           <button

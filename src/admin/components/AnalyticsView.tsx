@@ -7,7 +7,7 @@
 import Link from '@/admin/router'
 import type { AnalyticsSummary, NameStat } from '@/analytics/types'
 import { Button } from '@/admin/ui/Button'
-import { EmptyState, PageHeader, Card, TableFrame, TAB_TRACK, tabItemClass, THEAD, TROW } from './kit'
+import { Card, EmptyState, NOTE_TEXT, PageHeader, READING, TAB_TRACK, tabItemClass, TableFrame, THEAD, TROW } from './kit'
 import { BarList, StatTile, TrendChart, flag, formatDuration, type BarRow } from './analytics-kit'
 import { useAdminT } from './I18nProvider'
 
@@ -80,7 +80,7 @@ export function AnalyticsView({ data, range, titles }: { data: AnalyticsSummary;
         }
       />
 
-      <p className="text-xs text-neutral-400 dark:text-neutral-500">{t.analyticsPrivacyNote}</p>
+      <p className={NOTE_TEXT}>{t.analyticsPrivacyNote}</p>
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
         <StatTile label={t.analyticsViews} value={data.totalViews} prev={data.prevViews} />
@@ -132,8 +132,17 @@ export function AnalyticsView({ data, range, titles }: { data: AnalyticsSummary;
             <tbody>
               {data.topPages.map((p) => (
                 <tr key={p.path} className={TROW}>
+                  {/* The face follows what this cell actually IS, which changes per row: a
+                      post title is the owner's words and takes the reading face, exactly as
+                      the same title does on Overview's Most-viewed list; the bare-path
+                      fallback is an address and stays on the chrome font, where a URL
+                      belongs. */}
                   <td className="w-full max-w-0 px-4 py-2.5">
-                    <Link href={`/admin/analytics?path=${encodeURIComponent(p.path)}&range=${range}`} className="block truncate text-neutral-700 hover:underline dark:text-neutral-200" title={p.path}>
+                    <Link
+                      href={`/admin/analytics?path=${encodeURIComponent(p.path)}&range=${range}`}
+                      className={`block truncate text-neutral-700 hover:underline dark:text-neutral-200 ${titles[p.path] ? READING : ''}`}
+                      title={p.path}
+                    >
                       {titles[p.path] ?? p.path}
                     </Link>
                   </td>

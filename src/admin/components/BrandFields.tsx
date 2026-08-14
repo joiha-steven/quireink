@@ -13,7 +13,7 @@ import { ToggleField } from '@/admin/ui/Switch'
 import { MediaLibrary } from './MediaLibrary'
 import { IconUpload } from './IconUpload'
 import { useAdminT } from './I18nProvider'
-import { Setting, SETTING_GAP } from './kit'
+import { NOTE_TEXT, Setting, SETTING_GAP } from './kit'
 
 type Props = { s: SiteSettings; update: (p: Partial<SiteSettings>) => void }
 
@@ -32,7 +32,7 @@ export function BrandFields({ s, update }: Props) {
             {s.logoUrl ? (
               <img src={s.logoUrl} alt="Logo" className="h-12 w-auto rounded bg-neutral-100 p-1" />
             ) : (
-              <p className="text-xs text-neutral-400 dark:text-neutral-500">{t.noLogo}</p>
+              <p className={NOTE_TEXT}>{t.noLogo}</p>
             )}
             <div className="flex flex-wrap gap-2">
               <Button variant="secondary" type="button" onClick={() => setPicking('light')}>{t.chooseLogo}</Button>
@@ -51,7 +51,7 @@ export function BrandFields({ s, update }: Props) {
                 {s.logoDarkUrl ? (
                   <img src={s.logoDarkUrl} alt="Logo (dark)" className="h-12 w-auto rounded bg-neutral-900 p-1" />
                 ) : (
-                  <p className="text-xs text-neutral-400 dark:text-neutral-500">{t.noLogoDark}</p>
+                  <p className={NOTE_TEXT}>{t.noLogoDark}</p>
                 )}
                 <div className="flex flex-wrap gap-2">
                   <Button variant="secondary" type="button" onClick={() => setPicking('dark')}>{t.chooseLogoDark}</Button>

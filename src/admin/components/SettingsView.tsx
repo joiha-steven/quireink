@@ -30,7 +30,7 @@ import type { IntegrationStatus } from '@/store/integration-keys'
 import { Button } from '@/admin/ui/Button'
 import { useToast } from '@/admin/ui/Toast'
 import { formatTime } from '@/utils'
-import { Card, PageHeader, Tabs, type TabItem } from './kit'
+import { Card, NOTE_TEXT, PageHeader, READING, Tabs, type TabItem } from './kit'
 import { SettingsSearch } from './SettingsSearch'
 import { useSettingJump } from './useSettingJump'
 import { useAdminT } from './I18nProvider'
@@ -158,7 +158,7 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
       <Tabs tabs={TABS} value={tab} onChange={setTab} className="mb-3" />
       {/* The definition, in the open. A tab whose contents you have to guess is a tab you
           open five of. */}
-      <p className="mb-6 text-sm text-neutral-500 dark:text-neutral-400">{HINTS[tab]}</p>
+      <p className={`${READING} mb-6 text-sm leading-6 text-neutral-500 dark:text-neutral-400`}>{HINTS[tab]}</p>
 
       {/* SITE — what this site IS. Identity only: nothing here moves a pixel. */}
       {tab === 'site' && (
@@ -247,7 +247,7 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
         <div className={GRID}>
           <div className={COL}>
             <Card title={t.navAppearance}>
-              <p className="mb-4 rounded-lg bg-neutral-50 px-3 py-2 text-xs text-neutral-500 dark:bg-neutral-800/60 dark:text-neutral-400">
+              <p className={`${NOTE_TEXT} mb-4 rounded-lg bg-neutral-50 px-3 py-2 dark:bg-neutral-800/60`}>
                 {t.themeAdminNote}
               </p>
               <ThemeFields
@@ -270,7 +270,7 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
                   placeholder={'.prose h2 { letter-spacing: -0.01em }'}
                   className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-xs outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
                 />
-                <p className="text-xs text-neutral-400 dark:text-neutral-500">{t.customCssHint}</p>
+                <p className={NOTE_TEXT}>{t.customCssHint}</p>
               </div>
             </Card>
           </div>

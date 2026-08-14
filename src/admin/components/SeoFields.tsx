@@ -7,7 +7,7 @@ import { Button } from '@/admin/ui/Button'
 import { ToggleRow } from '@/admin/ui/Switch'
 import { MediaLibrary } from './MediaLibrary'
 import { useAdminT } from './I18nProvider'
-import { PANEL_LIST } from './kit'
+import { NOTE_TEXT, PANEL_LIST } from './kit'
 
 type Feature = { key: keyof SeoSettings; label: string; desc: string; path: string }
 
@@ -37,7 +37,7 @@ export function SeoFields({ s, update }: Props) {
           onChange={(e) => update({ siteUrl: e.target.value })}
           placeholder="https://example.com"
         />
-        <p className="text-xs text-neutral-400 dark:text-neutral-500">{t.seoCanonicalHint}</p>
+        <p className={NOTE_TEXT}>{t.seoCanonicalHint}</p>
       </div>
 
       <div className={PANEL_LIST}>

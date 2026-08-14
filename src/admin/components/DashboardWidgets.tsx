@@ -3,7 +3,7 @@
 // list (drafts, unused media). All data is gathered server-side in
 // app/admin/page.tsx and passed in — these are presentational only.
 import Link from '@/admin/router'
-import { Card, CARD_GAP, CARD_STACK } from './kit'
+import { Card, CARD_GAP, CARD_STACK, READING } from './kit'
 import { useAdminT } from './I18nProvider'
 
 export type DashboardData = {
@@ -100,7 +100,9 @@ function TopPostsCard({ posts }: { posts: DashboardData['topPosts'] }) {
                 className="-mx-2 flex items-center gap-3 rounded-lg px-2 py-1.5 text-sm hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
               >
                 <span className="w-4 shrink-0 text-right text-xs font-medium text-neutral-400 dark:text-neutral-500">{i + 1}</span>
-                <span className="min-w-0 flex-1 truncate text-neutral-700 dark:text-neutral-200">{p.title}</span>
+                {/* The owner's own headline, so it takes the reading face; the rank and
+                    the view count either side of it are the machine's. */}
+                <span className={`${READING} min-w-0 flex-1 truncate text-neutral-700 dark:text-neutral-200`}>{p.title}</span>
                 <span className="shrink-0 text-xs text-neutral-500 tabular-nums dark:text-neutral-400">{p.views.toLocaleString()}</span>
               </Link>
             </li>

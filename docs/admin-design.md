@@ -17,25 +17,36 @@ character and none of its typographic rules **except one**, below.
 
 - **The public reading interface is out of scope.** Its typography, fonts and type settings
   are deliberate; admin polish never changes them.
-- **TWO FACES, the same division the reading site makes: the chrome font for what you scan,
-  the reading face for what you read.** The one public rule the admin does follow, adopted
+- **TWO FACES, the same division the reading site makes** (`docs/conventions/type.md`):
+  `--font-reading` is what a PERSON wrote and a person reads; `--font-sans`, the owner's
+  chrome font, is what the MACHINE says. The one public rule the admin follows, adopted
   2026-08-14 at the owner's request — *"toàn bộ dùng font giao diện, thay vào đó nên sử dụng
-  2 font chữ, nguyên tắc như frontend"*. Labels, navigation, buttons, tabs, tables, counts
-  and the activity log stay on `--font-sans`, where a monospace's aligned digits are the
-  point. Sentences move to `--font-reading`.
-  It was already half true and nobody had noticed: `adminStyles` has always emitted
-  `fontPresetCss`, so `--font-reading` was resolved and the face was loaded — and exactly
-  one rule used it, `.prose` in the editor. An owner on a mono chrome font therefore wrote
-  their post in Literata and read every hint, every tab description and all 4,600 characters
-  of the Help page in JetBrains Mono.
-  **The rule claims `p`, not `li`, and that is measured rather than assumed.** Across all
-  ten admin screens, 77 of 84 paragraphs are sentences; the seven that are not are short
-  status lines and the typography preview, which the rule *improves* — those samples preview
-  the public roles and were rendering in the chrome font. `li` is the reverse: outside Help
-  it is activity rows, analytics bars and counts. Help carries `data-prose`, because there
-  the lists and table cells ARE the article. **Leading moves with the face** — 12px on a
-  16px line reads fine in a mono and cramped in a serif, so an admin `text-xs` paragraph
-  that named no leading of its own gets 1.5. See `src/admin/admin.css`, "Two faces".
+  2 font chữ, nguyên tắc như frontend"*.
+  On the reading site that line runs between a post title and its date. In here it runs
+  between a setting's sentence and its label, a post's title and its view count, a comment's
+  words and the address that sent them. Navigation, buttons, tabs, table heads, counts,
+  slugs, filenames, timestamps and the activity log stay on the chrome font, where a
+  monospace's aligned digits are the point.
+  **BY ROLE, NEVER BY TAG.** The first attempt was a `.admin p` rule, and a tag is not a
+  role: `Setting` renders its hint as a `<p>` and `ui/Input` renders the identical hint as a
+  `<span>`, so the Site tab shipped *"Changes the interface language and date format."* in
+  Literata four lines above *"Words auto-used as the excerpt…"* in JetBrains Mono — one card,
+  one kind of thing, two faces, and neither call site was wrong. The face now travels on
+  `READING` / `NOTE_TEXT` from `components/kit.tsx`, a whole page of sentences takes
+  `data-prose` (Help: 33 `li` and 19 `td` of article), and `check:admin-kit` fails a screen
+  that hand-types a hint or names a typeface at all.
+  **The two faces are normalised to one apparent size**, by `font-size-adjust: from-font` on
+  `body` — one declaration, because `from-font` resolves there to the chrome face's own
+  x-height ratio and *inherits*, so anything switching to the reading face is re-sized
+  without either face being named. Measured x-height per 1em: JetBrains Mono 0.550, Inter
+  0.539, IBM Plex Mono 0.516, Literata 0.508, Source Sans 3 0.486, Source Serif 4 0.481 — so
+  a 12px hint in Literata beside a 12px label in JetBrains Mono rendered at 92% of it, and
+  the worst pair the settings allow at 87%. That, not leading, is what made the second voice
+  look like an afterthought. A table of ratios was the alternative and it cannot work:
+  `settings.customFont` accepts a face nobody has measured yet. **`.prose`, the editor title
+  and the font/typography pickers opt out** via `data-specimen` — a writing surface must be
+  the published page, and a picker that renders four faces at one apparent size hides the
+  thing being chosen. See `src/admin/admin.css`, "Two faces".
 - **The canvas is a flat neutral light gray** (`#f5f5f5`). No warm cast, no cool blue-gray.
 - **Hierarchy comes from spacing and rules, not decoration.** Cards are for genuinely
   independent data; shadows are for overlays.

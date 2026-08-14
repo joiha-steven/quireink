@@ -6,7 +6,7 @@ import { useState } from 'react'
 import type { AdminComment, ApiResponse } from '@/types'
 import { useToast } from '@/admin/ui/Toast'
 import { formatDateTimeShort } from '@/utils'
-import { PageHeader, TableFrame, THEAD, TROW, EmptyState } from './kit'
+import { PageHeader, READING, TableFrame, THEAD, TROW, EmptyState } from './kit'
 import { useAdminT } from './I18nProvider'
 
 export function CommentsTable({ initial }: { initial: AdminComment[] }) {
@@ -67,7 +67,7 @@ export function CommentsTable({ initial }: { initial: AdminComment[] }) {
                   <button
                     type="button"
                     onClick={() => toggle(c.id)}
-                    className="block w-full text-left text-neutral-700 dark:text-neutral-300"
+                    className={`${READING} block w-full text-left text-neutral-700 dark:text-neutral-300`}
                     aria-expanded={expanded.has(c.id)}
                   >
                     <span className={expanded.has(c.id) ? 'whitespace-pre-wrap break-words' : 'line-clamp-2'}>
@@ -76,7 +76,7 @@ export function CommentsTable({ initial }: { initial: AdminComment[] }) {
                   </button>
                 </td>
                 <td className="hidden max-w-[12rem] px-4 py-3 md:table-cell">
-                  <a href={`/${c.postSlug}`} target="_blank" rel="noopener" className="break-words text-neutral-500 hover:underline dark:text-neutral-400">
+                  <a href={`/${c.postSlug}`} target="_blank" rel="noopener" className={`${READING} break-words text-neutral-500 hover:underline dark:text-neutral-400`}>
                     {c.postTitle}
                   </a>
                 </td>

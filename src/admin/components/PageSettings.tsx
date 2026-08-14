@@ -4,6 +4,7 @@ import type { PostStatus } from '@/types'
 import { Input } from '@/admin/ui/Input'
 import { Button } from '@/admin/ui/Button'
 import { useAdminT } from './I18nProvider'
+import { NOTE_TEXT } from './kit'
 
 export type PageDraft = {
   title: string
@@ -49,7 +50,7 @@ export function PageSettings({ draft, update, onPickFeatured }: Props) {
 
       <div className="space-y-1.5">
         <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{t.featuredImage}</span>
-        <p className="text-xs text-neutral-400 dark:text-neutral-500">{t.featuredImageHint}</p>
+        <p className={NOTE_TEXT}>{t.featuredImageHint}</p>
         {draft.featuredImage ? (
           <img src={draft.featuredImage} alt="" className="aspect-video w-full rounded-lg object-cover" />
         ) : (

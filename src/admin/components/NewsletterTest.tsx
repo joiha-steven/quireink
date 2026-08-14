@@ -3,7 +3,7 @@
 // this is the "did it actually work" step, not a setting.
 import { useState } from 'react'
 import type { ApiResponse } from '@/types'
-import { Card } from './kit'
+import { Card, NOTE_TEXT } from './kit'
 import { Input } from '@/admin/ui/Input'
 import { Button } from '@/admin/ui/Button'
 import { useToast } from '@/admin/ui/Toast'
@@ -38,7 +38,7 @@ export function NewsletterTest() {
   return (
     <Card title={t.nlTestHeading}>
       <div className="space-y-4">
-        <p className="text-xs text-neutral-500 dark:text-neutral-400">{t.nlTestHint}</p>
+        <p className={NOTE_TEXT}>{t.nlTestHint}</p>
         <div className="sm:max-w-sm">
           <Input label={t.nlTestTo} type="email" value={testTo} onChange={(e) => setTestTo(e.target.value)} autoComplete="off" />
         </div>

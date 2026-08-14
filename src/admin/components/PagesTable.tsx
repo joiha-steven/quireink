@@ -5,7 +5,7 @@ import { useRouter } from '@/admin/router'
 import type { Page, ApiResponse } from '@/types'
 import { useToast } from '@/admin/ui/Toast'
 import { RowActions, StatusPill } from './RowActions'
-import { EmptyState, TableFrame, THEAD, TROW } from './kit'
+import { EmptyState, READING, TableFrame, THEAD, TROW } from './kit'
 import { useAdminT } from './I18nProvider'
 
 export function PagesTable({ initialPages, views }: { initialPages: Page[]; views: Record<string, number> }) {
@@ -47,7 +47,7 @@ export function PagesTable({ initialPages, views }: { initialPages: Page[]; view
           {pages.map((p) => (
             <tr key={p.slug} className={`transition-colors ${TROW}`}>
               <td className="px-4 py-3 font-medium">
-                <Link href={`/admin/page-editor/${p.slug}`} className="hover:underline">
+                <Link href={`/admin/page-editor/${p.slug}`} className={`${READING} hover:underline`}>
                   {p.title || t.untitled}
                 </Link>
               </td>

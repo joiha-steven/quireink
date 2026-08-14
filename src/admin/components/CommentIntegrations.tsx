@@ -14,7 +14,7 @@ import { Button } from '@/admin/ui/Button'
 import { ToggleRow } from '@/admin/ui/Switch'
 import { useToast } from '@/admin/ui/Toast'
 import { useAdminT } from './I18nProvider'
-import { INSET, PANEL_LIST } from './kit'
+import { INSET, NOTE, NOTE_TEXT, PANEL_LIST } from './kit'
 
 const INPUT =
   'w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100'
@@ -40,7 +40,7 @@ function Help({ title, text, href, open }: { title: string; text: string; href: 
   return (
     <div>
       <p className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">{title}</p>
-      <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+      <p className={NOTE}>
         {text}{' '}
         <a href={href} target="_blank" rel="noopener" className="font-medium underline hover:text-neutral-900 dark:hover:text-white">
           {open}
@@ -124,7 +124,7 @@ export function CommentIntegrations(
           {/* The exact string Google demands, built from the browser's own origin rather
               than from a setting: a typo here fails the flow AFTER the reader has left,
               with an error page on Google's side that names no cause. */}
-          <p className="text-xs text-neutral-500 dark:text-neutral-400">
+          <p className={NOTE_TEXT}>
             {t.commentsGoogleRedirect}
             <code className="ml-2 select-all rounded bg-neutral-100 px-1.5 py-0.5 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-200">
               {`${location.origin}/comment-auth/google/callback`}

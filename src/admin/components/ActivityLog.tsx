@@ -6,7 +6,7 @@ import type { ApiResponse } from '@/types'
 import type { ActivityEntry } from '@/server/activity'
 import { formatDateTimeShort } from '@/utils'
 import { useToast } from '@/admin/ui/Toast'
-import { PageHeader, TableFrame, THEAD } from './kit'
+import { PageHeader, READING, TableFrame, THEAD } from './kit'
 import { useAdminT } from './I18nProvider'
 
 export function ActivityLog({ entries, enabled }: { entries: ActivityEntry[]; enabled: boolean }) {
@@ -51,7 +51,7 @@ export function ActivityLog({ entries, enabled }: { entries: ActivityEntry[]; en
       />
 
       {!enabled && (
-        <p className="border border-neutral-300 bg-neutral-100 px-4 py-3 text-sm text-neutral-800 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200">
+        <p className={`${READING} border border-neutral-300 bg-neutral-100 px-4 py-3 text-sm leading-6 text-neutral-800 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200`}>
           {t.logDisabled}
         </p>
       )}

@@ -2,7 +2,7 @@
 // posts; it renders in the sidebar "Featured" block (first 5, in this order) between
 // categories and tags. Parent owns state + save. Add from the dropdown, reorder with
 // ↑/↓, remove with ×. A chosen slug whose post is no longer public is dropped on load.
-import { Select } from './kit'
+import { NOTE_TEXT, Select } from './kit'
 import { useAdminT } from './I18nProvider'
 
 type Props = {
@@ -47,7 +47,7 @@ export function FeaturedField({ posts, value, onChange }: Props) {
           ))}
         </Select>
       )}
-      <p className="text-xs text-neutral-400 dark:text-neutral-500">{t.featuredHint}</p>
+      <p className={NOTE_TEXT}>{t.featuredHint}</p>
     </div>
   )
 }
