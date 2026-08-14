@@ -13,10 +13,29 @@ with the measurement that produced each one kept where it is the reason to belie
 ## What the admin is
 
 An application workspace, not a reading surface. It shares the product's quiet, editorial
-character and none of its typographic rules.
+character and none of its typographic rules **except one**, below.
 
 - **The public reading interface is out of scope.** Its typography, fonts and type settings
   are deliberate; admin polish never changes them.
+- **TWO FACES, the same division the reading site makes: the chrome font for what you scan,
+  the reading face for what you read.** The one public rule the admin does follow, adopted
+  2026-08-14 at the owner's request — *"toàn bộ dùng font giao diện, thay vào đó nên sử dụng
+  2 font chữ, nguyên tắc như frontend"*. Labels, navigation, buttons, tabs, tables, counts
+  and the activity log stay on `--font-sans`, where a monospace's aligned digits are the
+  point. Sentences move to `--font-reading`.
+  It was already half true and nobody had noticed: `adminStyles` has always emitted
+  `fontPresetCss`, so `--font-reading` was resolved and the face was loaded — and exactly
+  one rule used it, `.prose` in the editor. An owner on a mono chrome font therefore wrote
+  their post in Literata and read every hint, every tab description and all 4,600 characters
+  of the Help page in JetBrains Mono.
+  **The rule claims `p`, not `li`, and that is measured rather than assumed.** Across all
+  ten admin screens, 77 of 84 paragraphs are sentences; the seven that are not are short
+  status lines and the typography preview, which the rule *improves* — those samples preview
+  the public roles and were rendering in the chrome font. `li` is the reverse: outside Help
+  it is activity rows, analytics bars and counts. Help carries `data-prose`, because there
+  the lists and table cells ARE the article. **Leading moves with the face** — 12px on a
+  16px line reads fine in a mono and cramped in a serif, so an admin `text-xs` paragraph
+  that named no leading of its own gets 1.5. See `src/admin/admin.css`, "Two faces".
 - **The canvas is a flat neutral light gray** (`#f5f5f5`). No warm cast, no cool blue-gray.
 - **Hierarchy comes from spacing and rules, not decoration.** Cards are for genuinely
   independent data; shadows are for overlays.
