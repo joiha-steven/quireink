@@ -46,6 +46,43 @@ body {
   overscroll-behavior-y: contain;
 }
 
+/* Two faces, and it is the SAME division the reading site makes: the chrome font for what
+   you scan, the reading face for what you read. `--font-reading` was already resolved here
+   and already loaded — `adminStyles` emits `fontPresetCss` — and exactly one rule used it,
+   `.prose` in the editor. So the owner wrote their post in Literata and read every hint,
+   every tab description and all 4,600 characters of the Help page in JetBrains Mono.
+
+   `p` AND NOT `li`, which is a measurement rather than a preference. Walking all ten admin
+   screens: of 84 paragraphs, 77 are sentences and the 7 that are not are either short
+   status lines or the typography preview — which this rule IMPROVES, since those samples
+   preview the public roles and were rendering in the chrome font. Of the `li` elements
+   outside Help, almost none are prose: they are activity rows, analytics bars and counts,
+   where the chrome font's aligned digits are the whole point.
+
+   Help is the exception and carries `data-prose` for it: its lists and table cells ARE the
+   article. Anything else that turns out to be a page of sentences takes the attribute too;
+   nothing else takes a font-family. */
+.admin p,
+.admin [data-prose] li,
+.admin [data-prose] td {
+  font-family: var(--font-reading);
+}
+
+/* And the leading with it, or the change is a REGRESSION rather than an improvement.
+   A hint is `text-xs`, which Tailwind ships as 12px on a 16px line — 1.33, which reads fine
+   in a monospace because a mono is wide and airy, and reads cramped the moment a serif with
+   a real x-height moves in. Looked at on the running Settings screen before and after; the
+   two-line hint under "Site width" is the case that shows it.
+
+   `:not([class*="leading-"])` so a caller that CHOSE a leading still wins — two do,
+   `leading-6` and `leading-relaxed` — and `NOTE`'s own `leading-5` keeps its 20px. This is
+   for the ~36 hints that never specified one. It is not a licence to skip the primitive:
+   those hand-typed class lists are a real drift (two of them carry the light and dark greys
+   the wrong way round) and belong on `NOTE`. That is a separate change with its own diff. */
+.admin p.text-xs:not([class*="leading-"]) {
+  line-height: 1.5;
+}
+
 /* Editor preview: the TipTap editor has no .gallery wrapper (grouping happens on
    publish), so make #grid figures flow side-by-side as thumbnails — a gallery
    reads as columns in the editor too, not a vertical stack. Each node view is

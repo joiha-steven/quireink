@@ -37,8 +37,13 @@ const INDEX: [string, string][] = [
 ]
 
 export function HelpGuide({ title, version }: { title: string; version: string }) {
+  // `data-prose`: this page is 4,600 characters of sentences, and unlike the rest of the
+  // admin its LISTS and TABLE CELLS are prose too — 33 of its passages are `li` and 19 are
+  // `td`. The admin-wide rule can only claim `p`, because everywhere else `li` is an
+  // activity row or an analytics bar where the chrome font's aligned digits are the point.
+  // See `admin.css`, "Two faces".
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-prose>
       <PageHeader
         title={title}
         description="Everything this blog can do, and where each thing lives. Start at the top if it is a new site; jump to a section if you are looking something up."
