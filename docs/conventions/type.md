@@ -41,6 +41,20 @@
   and are not true: h5 (1.0rem = 16px) renders BELOW body (1.125rem = 18px), and the
   measure at `contentWidth` 672 is 70 characters in Inter, 71 in Literata and 72 in Source
   Serif — near the 45-75 band's top, not the 66 the note claimed.
+- **THE MEASURE IS A FUNCTION OF THE LANGUAGE, not of `contentWidth` alone**, which is why
+  `siteWidthHint` names no character count in any of the six locales. Same setting, same
+  face, same 18px: the line above measures 71 characters in Literata, and the same column
+  running Vietnamese measures **67**. Vietnamese syllables are short, so a line carries ~16
+  words and therefore ~15 of the narrow glyphs a space is — more characters fit in fewer
+  pixels. CJK is further away again, and a Latin band quoted at a Japanese or Chinese owner
+  would be wrong by more than it is right.
+  Measured 2026-08-14 on a live Vietnamese article, by walking every rendered line box and
+  dropping each paragraph's last (partial) line — 417 to 473 full lines per width:
+  `contentWidth` 720 → 72 · 685 → 68 · **672 → 67** · 665 → 66 · 650 → 64.
+  ⚠️ Two cheaper methods were tried first and BOTH lied. Dividing a paragraph's character
+  count by its line count reads low, because every paragraph ends on a partial line. Laying
+  the text out in an off-screen probe read 80, because the line count was derived from the
+  block height and rounded. Only the per-line-box walk agrees with the 2026-07-29 figure.
 - **Reset restores the CHOSEN FONT's setup, not `DEFAULT_TYPOGRAPHY`.** Each preset carries
   typography tuned for its own face, so resetting to the Inter defaults while reading in
   Literata silently swapped the serif's numbers for a sans's. Text wraps normally (no `text-wrap: balance`/`pretty` — both re-broke lines

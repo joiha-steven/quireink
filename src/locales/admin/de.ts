@@ -197,7 +197,7 @@ const de = {
   logoWidth: 'Logo-Breite im Header (px)',
   logoWidthHint: 'Gilt für das Logo im Header der Startseite (nicht für die Vorschau oben).',
   siteWidth: 'Website-Breite - Desktop (px)',
-  siteWidthHint: 'Maximale Breite der Inhaltsspalte auf großen Bildschirmen (Standard 672).',
+  siteWidthHint: 'Maximale Breite der Inhaltsspalte auf großen Bildschirmen. Der Standard 672 ist auf das Lesen abgestimmt: Die Zeilen bleiben kurz genug, dass das Auge die nächste leicht findet. Breiter passt mehr Wörter in eine Zeile und ermüdet die Lesenden.',
   postsPerPage: 'Beiträge pro Seite',
   postsPerPageHint: 'Wie viele Beiträge auf einer Seite von Start-/Kategorie-/Schlagwort-Listen erscheinen (Standard 10).',
   saveSettings: 'Einstellungen speichern',

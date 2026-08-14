@@ -197,7 +197,7 @@ const zh = {
   logoWidth: '页眉 Logo 宽度 (px)',
   logoWidthHint: '应用于首页页眉显示的 Logo（不影响上方的预览）。',
   siteWidth: '站点宽度 - 桌面 (px)',
-  siteWidthHint: '大屏幕上内容列的最大宽度（默认 672）。',
+  siteWidthHint: '大屏幕上内容列的最大宽度。默认 672 是为阅读调校的宽度：行足够短，眼睛容易找到下一行。更宽会让每行容纳更多文字，读起来更累。',
   postsPerPage: '每页文章数',
   postsPerPageHint: '首页/分类/标签列表每页显示的文章数（默认 10）。',
   saveSettings: '保存设置',
