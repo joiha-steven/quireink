@@ -26,7 +26,8 @@
     "user": "bun scripts/user.ts",
     "shot": "bun scripts/shot.ts",
     "drive": "bun scripts/drive.ts",
-    "tour": "scripts/ops/tour.sh"
+    "tour": "scripts/ops/tour.sh",
+    "restore-check": "bun scripts/restore-check.ts"
   },
   "devDependencies": {
     "@happy-dom/global-registrator": "^20.11.1",

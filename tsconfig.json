@@ -25,8 +25,28 @@
     // were a Hono middleware and a React effect, where falling off the end is the idiomatic
     // shape and satisfying the flag means writing `return undefined`. A flag you work
     // around teaches people to work around the compiler.
-    // `noUncheckedIndexedAccess` (120 findings) and `exactOptionalPropertyTypes` (58) are
-    // still queued, and are each their own reviewable pass.
+    //
+    // `noUncheckedIndexedAccess` and `exactOptionalPropertyTypes` were the two still queued
+    // "once the port is finished". The port IS finished, so both were run and READ rather
+    // than counted — and both are declined, on the same rule as `noImplicitReturns`.
+    //
+    // `noUncheckedIndexedAccess`: 97 findings, and every non-test file carrying more than
+    // one was opened. All of them are shapes where the compiler cannot see what the code
+    // already knows: a capture group read after `.exec` returned non-null; `?? LIST[0]` on a
+    // module-constant array that is never empty (`getPreset`, `getFontPreset`); `split()[0]`,
+    // which cannot be undefined; `digest[offset]` on a SHA-1 digest that is always 20 bytes;
+    // and 17 in `auth-routes.ts` alone from indexing a `Record<string, string>` that the
+    // function three lines above filled with `''` for every key it was asked for. Not one
+    // finding was reachable at runtime. Satisfying it means 97 `!` assertions, which is the
+    // compiler being told to be quiet in exactly the places it is already right to be quiet.
+    //
+    // `exactOptionalPropertyTypes`: 37 findings, all one shape — an optional property being
+    // SET to `undefined` (`featuredImage: row.cover ?? undefined`) instead of omitted. The
+    // fixes are either `| undefined` on every optional field, which is the flag switched off
+    // by hand, or a conditional spread at each of 37 sites. No runtime difference either way.
+    //
+    // Measured 2026-08-14. Reopen either on EVIDENCE — a bug that one of them would have
+    // caught — not on the fact that they are off.
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitOverride": true,
