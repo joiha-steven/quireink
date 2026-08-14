@@ -343,15 +343,13 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
             {/* The title is part of the WRITING SURFACE, not part of the form: it is the
                 post's headline, set in the reading face and aligned to the reading column,
                 and it was coming out in the chrome font directly above a body in Literata.
-                `data-specimen` for the same reason `.prose` carries the exemption — the
-                admin normalises the reading face's x-height to the chrome font's everywhere
-                else, and here that would draw a title larger than the one a reader gets. */}
+                No `tracking-tight` on it either — that was the sans's -0.025em on a serif
+                that publishes at -0.01em. */}
             <textarea
               value={draft.title}
               onChange={(e) => update({ title: e.target.value })}
               placeholder={t.titlePlaceholder}
               rows={1}
-              data-specimen
               className={`${READING} min-h-12 w-full resize-none overflow-hidden bg-transparent text-3xl font-bold leading-tight outline-none [field-sizing:content] placeholder:text-neutral-300 dark:placeholder:text-neutral-600`}
             />
           </div>

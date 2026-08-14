@@ -56,48 +56,42 @@ describe('the reading face travels on a role', () => {
   })
 })
 
-describe('the reading face keeps its own letter-spacing', () => {
-  // THE bug the owner reported, twice, in different words: "sát nhau" — the letters are on
-  // top of each other. `MONO_TRACKING` pulls a mono chrome in by -0.04/-0.05em because IBM
-  // Plex Mono and JetBrains Mono are wide faces, and it is applied to `body`, so it INHERITS.
-  // Put a serif on any descendant and it is set -0.05em too: Literata at 12px came out at
-  // -0.8px, on every hint in the admin.
-  it('resets tracking wherever it claims the face', () => {
-    // Not a separate rule: the reset sits in the SAME block as the font-family, so a future
-    // selector cannot pick up one without the other.
-    const at = DECLARATIONS.indexOf(`.admin .${READING},`)
-    const block = DECLARATIONS.slice(at, DECLARATIONS.indexOf('}', at))
-    expect(block).toContain('font-family: var(--font-reading)')
-    expect(block).toContain('letter-spacing: normal')
+describe('the admin does not wear the site\'s chrome font', () => {
+  // The whole reason the tracking bug existed. `MONO_TRACKING` corrects a wide monospace by
+  // -0.05em, it was applied to `body`, and it INHERITED — so every serif on a descendant was
+  // drawn at -0.05em: Literata at 12px at -0.8px, letters touching, on every hint, and both
+  // serif tiles in the font picker previewed crushed. That was "sát nhau".
+  //
+  // It is fixed at the source rather than patched at each site: the admin has its own chrome
+  // face. A mono chrome font is a branding choice about what a READER sees; the tool the
+  // owner works in is not the place to spend it.
+  it('emits neither the chrome font nor its tracking correction', () => {
+    const spa = readFileSync('src/web/admin/spa.ts', 'utf8')
+    expect(spa).not.toContain('chromeFontCss(')
+    expect(spa).not.toContain('MONO_TRACKING,')
+    expect(spa).not.toContain('data-chrome-font="')
   })
 
-  it('is what the public sheet already does, on the same class name', () => {
-    // `.t-small:not(.reading-font)` / `.t-body:not(.reading-font)` — the correction's own
-    // comment says the reader's words "carry their own letter-spacing and are left alone".
-    // It works there because public reading text is always inside one of those wrappers;
-    // there is no wrapper in the admin, which is why it has to be said again here.
-    const faces = readFileSync('src/render/font-faces.ts', 'utf8')
-    expect(faces).toContain(`.t-small:not(.${READING})`)
-    expect(faces).toContain(`.t-body:not(.${READING})`)
-  })
-
-  it('lets a specimen show a face as itself', () => {
-    // A picker tile painted in Literata under a mono chrome was previewing it crushed, which
-    // is the one place the face is the thing being judged.
-    expect(DECLARATIONS).toContain('.admin [data-specimen],')
-    for (const file of ['FontFields', 'TypographyFields', 'PostForm', 'PageForm']) {
-      expect(readFileSync(`src/admin/components/${file}.tsx`, 'utf8')).toContain('data-specimen')
-    }
+  it('still emits the reading font, because the editor is WYSIWYG', () => {
+    // The line the two faces depend on. Drop this and the editor writes in the chrome face
+    // and publishes in another.
+    expect(readFileSync('src/web/admin/spa.ts', 'utf8')).toContain('fontPresetCss(settings.fontPreset)')
   })
 
   it('does not reach for font-size-adjust to even the two faces up', () => {
     // Measured: `line-height` resolves against the COMPUTED font-size, never the adjusted
     // one — `20px`, unitless `1.6` and `normal` all give an identical line box with the
     // adjustment on and off, while the glyphs inside grow 8%. So it silently takes 8% of the
-    // leading off every element it touches (12.5% for a Source Serif 4 reading face), and
-    // Tailwind's absolute line-heights mean that is every one of them. The x-height gap is
-    // ordinary typography; text with less air than it was drawn for is what a reader feels.
+    // leading off every element it touches, and Tailwind's absolute line-heights mean that is
+    // every one of them. An x-height gap between two faces is ordinary typography; text with
+    // less air than it was drawn for is what a reader feels.
     expect(DECLARATIONS).not.toContain('font-size-adjust')
+  })
+
+  it('marks a surface that names a typeface, which is what check:admin-kit allows one on', () => {
+    for (const file of ['FontFields', 'TypographyFields']) {
+      expect(readFileSync(`src/admin/components/${file}.tsx`, 'utf8')).toContain('data-specimen')
+    }
   })
 })
 

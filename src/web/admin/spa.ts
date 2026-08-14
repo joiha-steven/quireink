@@ -14,8 +14,8 @@ import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { Context } from 'hono'
 import type { SiteSettings } from '@/types'
-import { allFontFaceCss, MONO_TRACKING } from '@/render/font-faces'
-import { fontPresetCss, chromeFontCss, themesToCss } from '@/content/themes'
+import { allFontFaceCss } from '@/render/font-faces'
+import { fontPresetCss, themesToCss } from '@/content/themes'
 import { typographyToCss, fontToCss } from '@/content/settings'
 
 const DIR = join(import.meta.dir, '../../admin/dist')
@@ -116,14 +116,26 @@ const PRELOADS = bootChunks()
  *
  * The frozen tree got these for free: the admin sat inside the root layout, so it inherited
  * `globals.css` (the @font-face declarations and `body{font-family:var(--font-sans)}`) plus
- * the runtime style block the layout injected from settings. There is no root layout here,
- * and `admin.css` hard-coded Inter as a stand-in — which meant the admin ignored the owner's
- * chrome font entirely and stayed Inter on a site set to JetBrains Mono.
+ * the runtime style block the layout injected from settings. There is no root layout here.
  *
- * The order mirrors the frozen layout exactly: palettes first, then the type scale, then the
- * reading preset, then any uploaded face, and the chrome font LAST so it has the final word
- * on `--font-sans`. The owner's custom CSS is deliberately absent, as it was there: it is
- * written against the public page and has no business restyling the tool.
+ * ⚠️ **`chromeFont` is deliberately NOT applied here, and that reverses an earlier fix.**
+ * The admin used to follow it, because an owner on a JetBrains Mono site opened an admin in
+ * Inter and reported it. Following it turned out to be the wrong reading of that report. A
+ * mono chrome font is a BRANDING choice about what a reader sees; the admin is the tool the
+ * owner works in, and letting the branding pick the tool's typeface put a code face on every
+ * label, tab, button and table cell. Set beside the reading face it reads as two loud,
+ * unrelated voices — measured on the owner's own instance, 2026-08-14: *"nhìn rối thiệt, 2
+ * font này có vẻ không hợp để dùng trong admin"*. Three versions of one Settings screen were
+ * photographed and he chose this one.
+ *
+ * So the admin has its OWN chrome face, Inter, and the settings it still honours are the ones
+ * about the owner's WORDS: the palette, the type scale, the reading preset and any uploaded
+ * face — because the editor is WYSIWYG and a post has to be written in the face it publishes
+ * in. `MONO_TRACKING` goes with the chrome font: it corrects a wide monospace, and there is
+ * no longer one here.
+ *
+ * The owner's custom CSS is absent, as it was in the frozen tree: it is written against the
+ * public page and has no business restyling the tool.
  */
 function adminStyles(settings: SiteSettings): string {
   return [
@@ -141,8 +153,6 @@ function adminStyles(settings: SiteSettings): string {
     typographyToCss(settings.typography),
     fontPresetCss(settings.fontPreset),
     fontToCss(settings.customFont),
-    chromeFontCss(settings.chromeFont),
-    MONO_TRACKING,
   ].filter(Boolean).join('\n')
 }
 
@@ -185,8 +195,12 @@ export function adminShell(settings: SiteSettings): string {
   }
   const esc = (s: string) => s.replace(/[<>"&]/g, (c) =>
     ({ '<': '&lt;', '>': '&gt;', '"': '&quot;', '&': '&amp;' })[c] ?? c)
+  // No `data-chrome-font`: the admin does not wear the site's chrome face (see adminStyles),
+  // and the only rule that ever read the attribute was `MONO_TRACKING`, which is no longer
+  // emitted here. Stamping it would leave a hook that says the admin follows a setting it
+  // does not.
   return `<!DOCTYPE html>
-<html lang="${esc(settings.language)}" class="admin" data-motion="${settings.motion.enabled ? 'on' : 'off'}" data-chrome-font="${esc(settings.chromeFont)}">
+<html lang="${esc(settings.language)}" class="admin" data-motion="${settings.motion.enabled ? 'on' : 'off'}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">

@@ -18,45 +18,50 @@ character and none of its typographic rules **except one**, below.
 - **The public reading interface is out of scope.** Its typography, fonts and type settings
   are deliberate; admin polish never changes them.
 - **TWO FACES, the same division the reading site makes** (`docs/conventions/type.md`):
-  `--font-reading` is what a PERSON wrote and a person reads; `--font-sans`, the owner's
-  chrome font, is what the MACHINE says. The one public rule the admin follows, adopted
-  2026-08-14 at the owner's request — *"toàn bộ dùng font giao diện, thay vào đó nên sử dụng
-  2 font chữ, nguyên tắc như frontend"*.
+  `--font-reading` is what a PERSON wrote and a person reads; `--font-sans` is what the
+  MACHINE says. Adopted 2026-08-14 at the owner's request — *"toàn bộ dùng font giao diện,
+  thay vào đó nên sử dụng 2 font chữ, nguyên tắc như frontend"*.
   On the reading site that line runs between a post title and its date. In here it runs
   between a setting's sentence and its label, a post's title and its view count, a comment's
-  words and the address that sent them. Navigation, buttons, tabs, table heads, counts,
-  slugs, filenames, timestamps and the activity log stay on the chrome font, where a
-  monospace's aligned digits are the point.
-  **BY ROLE, NEVER BY TAG.** The first attempt was a `.admin p` rule, and a tag is not a
-  role: `Setting` renders its hint as a `<p>` and `ui/Input` renders the identical hint as a
-  `<span>`, so the Site tab shipped *"Changes the interface language and date format."* in
-  Literata four lines above *"Words auto-used as the excerpt…"* in JetBrains Mono — one card,
-  one kind of thing, two faces, and neither call site was wrong. The face now travels on
-  `READING` / `NOTE_TEXT` from `components/kit.tsx`, a whole page of sentences takes
-  `data-prose` (Help: 33 `li` and 19 `td` of article), and `check:admin-kit` fails a screen
-  that hand-types a hint or names a typeface at all.
-  **THE READING FACE KEEPS ITS OWN TRACKING, and forgetting that is what "sát nhau" was.**
-  `MONO_TRACKING` (`render/font-faces.ts`) pulls a mono chrome in by -0.04em (IBM Plex Mono)
-  or -0.05em (JetBrains Mono), because both are wide faces that read airy at zero. It is
-  applied to `body` and it **inherits**, so a serif put on any descendant is set -0.05em too:
-  Literata at 12px came out at -0.8px, letters touching, on every hint in the admin. The
-  correction's own comment says the reader's words "carry their own letter-spacing and are
-  left alone", and the public sheet spells that as `.t-small:not(.reading-font)` — which
-  works there only because public reading text always sits inside such a wrapper. There is no
-  wrapper in the admin, so the exclusion is stated again in `admin.css`, in the same block
-  that claims the face. **A `data-specimen` surface takes it too**: the font pickers paint
-  each tile in the family it offers, and under a mono chrome the two serif tiles were being
-  previewed crushed — the one place the face itself is what is being judged.
-  ⚠️ **Do not reach for `font-size-adjust` to even the two faces up.** It was tried, on a real
-  measurement — x-height per 1em: JetBrains Mono 0.550, Inter 0.539, IBM Plex Mono 0.516,
-  Literata 0.508, Source Sans 3 0.486, Source Serif 4 0.481, so a 12px serif hint renders at
-  92% of the mono label beside it. But `line-height` resolves against the COMPUTED font-size
-  and never the adjusted one — `20px`, unitless `1.6` and `normal` all give an identical line
-  box with the adjustment on and off, while the glyphs inside grow. Tailwind's line-heights
-  are absolute, so it quietly took the admin's hints from 1.67 leading to 1.54 and would have
-  taken a Source Serif 4 owner to 1.46. An 8% difference in apparent size is ordinary
-  typography; 8% less air than the text was drawn for is what a reader feels.
-  See `src/admin/admin.css`, "Two faces".
+  words and the address that sent them. Navigation, buttons, tabs, table heads, counts, slugs,
+  filenames, timestamps and the activity log stay on the chrome face.
+- **The admin's chrome face is ITS OWN, and it is Inter.** It is not `chromeFont`. It followed
+  that setting for a day and the owner's verdict was *"nhìn rối thiệt, 2 font này có vẻ không
+  hợp để dùng trong admin"*. A chrome font is a branding choice about what a READER sees;
+  spending it on the tool put a monospace code face on every label, tab, button and table
+  cell, and beside a book serif that is two loud unrelated voices rather than one division.
+  Three versions of one Settings screen were photographed — two faces on the mono chrome, one
+  face throughout, and Inter + the reading face — and he chose the third.
+  ⚠️ Do not wire it back. Two things went with it and must stay gone: `MONO_TRACKING`, which
+  corrects a wide monospace and has nothing to correct here, and the `data-chrome-font`
+  attribute on the shell, whose only reader that rule was.
+  **What the admin still follows is everything about the owner's WORDS** — palette, type
+  scale, reading preset, uploaded face — because the editor is WYSIWYG and a post has to be
+  written in the face it publishes in.
+- **BY ROLE, NEVER BY TAG.** The first attempt at the two faces was a `.admin p` rule, and a
+  tag is not a role: `Setting` renders its hint as a `<p>` and `ui/Input` renders the identical
+  hint as a `<span>`, so the Site tab shipped *"Changes the interface language and date
+  format."* in Literata four lines above *"Words auto-used as the excerpt…"* in JetBrains Mono
+  — one card, one kind of thing, two faces, and neither call site was wrong. The face travels
+  on `READING` / `NOTE_TEXT` from `components/kit.tsx`; a whole page of sentences takes
+  `data-prose` (Help: 33 `li` and 19 `td` of article); `check:admin-kit` fails a screen that
+  hand-types a hint or names a typeface at all. The one exception is a `data-specimen`
+  surface, which paints itself in the family it offers and is the only place a `fontFamily`
+  may appear.
+- ⚠️ **Two mechanisms were tried against these symptoms and BOTH were wrong.** They are
+  recorded because each looked right and each was built on a misread.
+  `font-size-adjust: from-font` on `body`, to close the x-height gap — measured per 1em:
+  JetBrains Mono 0.550, Inter 0.539, IBM Plex Mono 0.516, Literata 0.508, Source Sans 3 0.486,
+  Source Serif 4 0.481, so a 12px serif hint really does render at 92% of the mono label
+  beside it. It cannot carry the leading with it and CSS gives no way to make it: `line-height`
+  resolves against the COMPUTED font-size, and `20px`, unitless `1.6` and `normal` all produce
+  an identical line box with the adjustment on and off while the glyphs inside grow. Tailwind's
+  line-heights are absolute, so it took every hint from 1.67 leading to 1.54.
+  Then `letter-spacing: normal` on every reading-face role, to undo the inherited mono
+  tracking. That one WORKED, and it was still a patch at each site for a problem whose source
+  was one line in `adminStyles`. Both are gone. **An x-height gap between two faces is ordinary
+  typography; text with less air than it was drawn for is what a reader feels, and the owner
+  felt it twice before either mechanism was questioned.**
 - **The canvas is a flat neutral light gray** (`#f5f5f5`). No warm cast, no cool blue-gray.
 - **Hierarchy comes from spacing and rules, not decoration.** Cards are for genuinely
   independent data; shadows are for overlays.

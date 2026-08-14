@@ -187,13 +187,11 @@ export function PageForm({ initial, contentWidth, typewriterEffects, autosaveSec
 
   return (
     <div className="pb-24">
-      {/* The page's title, in the face it will be published in — see PostForm for why it
-          also carries `data-specimen`. */}
+      {/* The page's title, in the face it will be published in. See PostForm. */}
       <input
         value={draft.title}
         onChange={(e) => update({ title: e.target.value })}
         placeholder={t.titlePlaceholder}
-        data-specimen
         className={`${READING} mb-6 w-full bg-transparent text-3xl font-bold outline-none placeholder:text-neutral-300 dark:placeholder:text-neutral-600`}
       />
 

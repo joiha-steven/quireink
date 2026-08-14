@@ -84,9 +84,16 @@ font, only the site language's subset(s), never the chrome font or an uploaded c
   stored at `files/font-<weight>-<ms>`, store-relative) overrides `--font-reading` —
   one `@font-face` per weight because faux-bold is disabled (`font-synthesis-weight: none`).
   `/og` renders Inter + the custom font (`src/web/og.ts` `?font=`). Empty = bundled Inter.
-- **Admin chrome does NOT follow the reader's type settings** — it uses Tailwind's standard
-  scale (a fixed design scale); only the admin editor `.prose` mirrors the reader. Don't wire
-  admin chrome to `--fs-*`.
+- **Admin chrome does NOT follow the reader's type settings** — not the scale, and since
+  2026-08-14 not the FACE either. It uses Tailwind's standard scale and its own Inter; only
+  the admin editor `.prose` mirrors the reader. Don't wire admin chrome to `--fs-*`, and don't
+  wire it back to `chromeFont`: the admin followed that setting for a while, and putting a
+  mono code face on every label, tab, button and table cell is what the owner then called
+  "rối" — cluttered — and "không hợp để dùng trong admin". A chrome font is a branding choice
+  about what a READER sees; the tool is not where it is spent. What the admin still follows is
+  everything about the owner's own WORDS — palette, type scale, reading preset, uploaded face
+  — because the editor is WYSIWYG. See `web/admin/spa.ts` `adminStyles` and
+  [`admin-design.md`](../admin-design.md).
 - Editor exposes H1–H5; `marked` renders `####`/`#####` → `h4`/`h5`.
 - **A reader never downloads admin CSS.** The public sheets are hand-written and the admin's is
   the only Tailwind in the project; the rule and the seam live in
@@ -124,7 +131,7 @@ re-substitutes it there. Pinned by `web/typography.test.ts`.
 - **Two font handles — chosen font ≠ site font.** `--font-reading` is the reader's own words (post
   body + title, list cards, comment body, the editor `.prose`) and is what `fontPresetCss` /
   `fontToCss` point (custom upload wins). `--font-sans` is the system-chrome face (dates/reading-time,
-  related/taxonomy, header, footer, rail, admin), driven INDEPENDENTLY by the `chromeFont` selector
+  related/taxonomy, header, footer, rail — **the PUBLIC page only**), driven INDEPENDENTLY by the `chromeFont` selector
   (`CHROME_FONTS` in `src/content/themes.ts`, Admin → Appearance): `inter` (default, no override) ·
   `reading` (points `--font-sans` at `--font-reading` so the chrome follows the reading font) ·
   `plex-mono` (self-hosted IBM Plex Mono — a "code" chrome while the body stays readable; declared
