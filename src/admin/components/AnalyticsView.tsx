@@ -7,7 +7,7 @@
 import Link from '@/admin/router'
 import type { AnalyticsSummary, NameStat } from '@/analytics/types'
 import { Button } from '@/admin/ui/Button'
-import { Card, EmptyState, NOTE_TEXT, PageHeader, READING, TAB_TRACK, tabItemClass, TableFrame, THEAD, TROW } from './kit'
+import { Card, EmptyState, NOTE_TEXT, PageHeader, SEGMENT_TRACK, tabItemClass, TableFrame, THEAD, TROW } from './kit'
 import { BarList, StatTile, TrendChart, flag, formatDuration, type BarRow } from './analytics-kit'
 import { useAdminT } from './I18nProvider'
 
@@ -61,7 +61,7 @@ export function AnalyticsView({ data, range, titles }: { data: AnalyticsSummary;
                 a lighter track, one padding step short and with a different hover, so the same
                 control read as two. `TAB_TRACK` wraps on a phone, where four ranges plus
                 Export are wider than 390px. */}
-            <div className={TAB_TRACK}>
+            <div className={SEGMENT_TRACK}>
               {RANGES.map((r) => (
                 <Link
                   key={r}
@@ -140,7 +140,7 @@ export function AnalyticsView({ data, range, titles }: { data: AnalyticsSummary;
                   <td className="w-full max-w-0 px-4 py-2.5">
                     <Link
                       href={`/admin/analytics?path=${encodeURIComponent(p.path)}&range=${range}`}
-                      className={`block truncate text-neutral-700 hover:underline dark:text-neutral-200 ${titles[p.path] ? READING : ''}`}
+                      className="block truncate text-neutral-700 hover:underline dark:text-neutral-200"
                       title={p.path}
                     >
                       {titles[p.path] ?? p.path}

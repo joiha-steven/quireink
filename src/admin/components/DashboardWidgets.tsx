@@ -3,7 +3,7 @@
 // list (drafts, unused media). All data is gathered server-side in
 // app/admin/page.tsx and passed in — these are presentational only.
 import Link from '@/admin/router'
-import { Card, CARD_GAP, CARD_STACK, READING } from './kit'
+import { Card, CARD_GAP } from './kit'
 import { useAdminT } from './I18nProvider'
 
 export type DashboardData = {
@@ -109,7 +109,7 @@ function TopPostsCard({ posts }: { posts: DashboardData['topPosts'] }) {
                 <span className="w-4 shrink-0 text-right text-xs font-medium text-neutral-400 dark:text-neutral-500">{i + 1}</span>
                 {/* The owner's own headline, so it takes the reading face; the rank and
                     the view count either side of it are the machine's. */}
-                <span className={`${READING} min-w-0 flex-1 truncate text-neutral-700 dark:text-neutral-200`}>{p.title}</span>
+                <span className="min-w-0 flex-1 truncate text-neutral-700 dark:text-neutral-200">{p.title}</span>
                 <span className="shrink-0 text-xs text-neutral-500 tabular-nums dark:text-neutral-400">{p.views.toLocaleString()}</span>
               </Link>
             </li>
@@ -177,7 +177,7 @@ function SourcesCard({ sources }: { sources: DashboardData['sources'] }) {
       actions={<Link href="/admin/analytics" className={VIEW_ALL}>{t.dashViewAnalytics}</Link>}
     >
       {empty ? (
-        <p className={`${READING} text-sm text-neutral-400 dark:text-neutral-500`}>{t.dashSourcesEmpty}</p>
+        <p className="text-sm text-neutral-400 dark:text-neutral-500">{t.dashSourcesEmpty}</p>
       ) : (
         <div className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
           {columns.map((col) => (
@@ -216,6 +216,21 @@ function SourcesCard({ sources }: { sources: DashboardData['sources'] }) {
  * before the next full-width band, and the widest thing on the page was empty. So the left
  * column gets a second card and the numbers are recorded here to be checked against next
  * time: Traffic 225 + Sources ~200 against Needs ~190 + Most viewed 269.
+ *
+ * ── 2026-08-15: the stacks pack, and the SEAM between the two cards does not line up ────────
+ *
+ * Both columns measured 484px, so the band's outer edges were level, and the owner still
+ * circled it as crooked. He was right and the totals were the wrong number to look at: each
+ * stack packs INDEPENDENTLY, so Traffic 275 + Sources 209 against Needs 235 + Most viewed 249
+ * put the horizontal join between card one and card two 37px apart across the middle of the
+ * page. Two long rules that nearly line up read as worse than two that plainly do not.
+ *
+ * So the four cards are ONE 2×2 grid again, with rows stretching — which is the layout the
+ * warning above is about, and the warning does not apply at an EVEN count. Stretching hurt
+ * when there were three cards: the odd one out was stranded full-width around a sentence.
+ * With four, a stretched row is exactly what is wanted, because the pair in it is the thing
+ * being compared. `items-stretch` (the default) is therefore load-bearing here — do not add
+ * `items-start` back without also giving the band an odd number of cards again.
  */
 export function DashboardWidgets({ data }: { data: DashboardData }) {
   return (
@@ -229,14 +244,22 @@ export function DashboardWidgets({ data }: { data: DashboardData }) {
           `min-w-0` on the title span was already there and could not help: it lets the FLEX
           item shrink, and the item was shrinking. It is the grid track that would not.
           Same failure the kit records for the analytics table, one level up. */}
-      <div className={`min-w-0 ${CARD_STACK}`}>
-        <TrafficCard traffic={data.traffic} />
-        <SourcesCard sources={data.sources} />
-      </div>
-      <div className={`min-w-0 ${CARD_STACK}`}>
-        <NeedsAttentionCard needs={data.needs} />
-        <TopPostsCard posts={data.topPosts} />
-      </div>
+      {/* Reading order is by ROW now, so the pairs are the pairs: the two numbers cards on
+          top, the two lists under them.
+
+          `[&>section]:h-full` is the half that aligning the TOPS did not buy. The grid item
+          stretches by default and the `Card` inside it does not, so after the 2×2 change the
+          two cards in a row started together and still ended apart — measured at 1440px:
+          Traffic 285 against Needs attention 245, Sources 288 against Most viewed 338. The
+          owner's word for that was *"nó cứ lệch lệch rất khó chịu"*, and he is describing the
+          right thing: a pair that is almost level reads as a mistake, where a pair that is
+          plainly level reads as a decision. The cost is air inside the shorter card, and that
+          is the correct trade at an EVEN count — it is only wrong when an odd card is left
+          alone to be stretched into a slab, which is the case the note above is about. */}
+      <div className="min-w-0 [&>section]:h-full"><TrafficCard traffic={data.traffic} /></div>
+      <div className="min-w-0 [&>section]:h-full"><NeedsAttentionCard needs={data.needs} /></div>
+      <div className="min-w-0 [&>section]:h-full"><SourcesCard sources={data.sources} /></div>
+      <div className="min-w-0 [&>section]:h-full"><TopPostsCard posts={data.topPosts} /></div>
     </div>
   )
 }

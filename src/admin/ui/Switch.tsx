@@ -1,6 +1,6 @@
 // Shared on/off switch primitives for the settings forms.
 
-import { Setting } from '@/admin/components/kit'
+import { CHECK, Setting } from '@/admin/components/kit'
 
 type SwitchProps = { checked: boolean; onChange: (v: boolean) => void }
 
@@ -69,7 +69,7 @@ export function CheckField({
         checked={checked}
         disabled={disabled}
         onChange={(e) => onChange(e.target.checked)}
-        className="h-4 w-4 shrink-0 rounded border-neutral-300 accent-neutral-900 dark:border-neutral-600 dark:accent-white"
+        className={`h-4 w-4 shrink-0 rounded border-neutral-300 dark:border-neutral-600 ${CHECK}`}
       />
       {label}
     </label>

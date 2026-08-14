@@ -35,33 +35,44 @@ const RULES: Rule[] = [
   },
   {
     what: 'the segmented tab track',
-    signature: 'rounded-xl bg-neutral-200/70 p-1',
-    home: 'src/admin/components/kit.tsx',
-    instead: 'use <Tabs>, with size="sm" for a filter inside a section',
+    signature: 'items-end gap-6 border-b border-neutral-200',
+    home: 'src/admin/components/tabs.tsx',
+    instead: 'use <Tabs>: size="lg" is the underlined section strip, size="sm" the inline filter',
   },
   {
     what: 'the button shape',
-    signature: 'whitespace-nowrap rounded-lg',
+    signature: 'whitespace-nowrap rounded-md',
     home: 'src/admin/ui/Button.tsx',
     instead: 'use <Button>, or buttonClass() for an <a>',
   },
   {
     what: 'the stat tile',
-    signature: 'text-[1.65rem] font-semibold tracking-tight tabular-nums',
-    home: 'src/admin/components/kit.tsx',
+    signature: 'text-[1.875rem] font-medium leading-none tracking-[-0.02em] tabular-nums',
+    home: 'src/admin/components/scale.ts',
     instead: 'use <StatCard> (or <StatTile>, which is StatCard with a trend)',
   },
   {
-    // The one that costs a FACE and not only a shade. The admin is set in two typefaces and
-    // the second one travels on `NOTE_TEXT`; a hand-typed copy of these classes therefore
-    // renders a sentence in the chrome font beside an identical sentence in the reading
-    // font. Thirty-eight screens had done it, plus three files that had gone as far as
-    // declaring `const HINT` with the same string — and twenty-five of the copies carried
-    // `text-neutral-400 dark:text-neutral-500`, lighter than the primitive in light mode and
-    // darker in dark mode, so they were the hardest hints to read in both.
-    what: 'the hint text style',
-    signature: 'text-xs leading-5 text-neutral-500',
+    // The one that costs a COLOUR the admin does not have. A native checkbox or radio with
+    // no `accent-color` is not unstyled — it is painted in the OS accent, which is blue.
+    // Five controls shipped that way (both editors' status radios, the redirect's
+    // "permanent", the newsletter's picker and its resend confirmation) and the two that had
+    // remembered disagreed on the shade, so the admin drew its tick three ways.
+    what: 'the checkbox / radio tick',
+    signature: 'accent-neutral-900 dark:accent-white',
     home: 'src/admin/components/kit.tsx',
+    instead: 'import CHECK from components/kit, or use ui/Switch’s CheckField',
+  },
+  {
+    // Thirty-eight screens hand-typed this rather than import it, plus three that went as far
+    // as declaring `const HINT` with the same string — and twenty-five of the copies carried
+    // `text-neutral-400 dark:text-neutral-500`, lighter than the primitive in light mode and
+    // darker in dark mode, so they were the hardest hints to read in both. It used to cost a
+    // FACE as well as a shade; since the admin went to one face (2026-08-15) a copy costs the
+    // size and the leading, which is still the difference between a readable hint and the
+    // smallest text on the screen.
+    what: 'the hint text style',
+    signature: 'text-[0.8125rem] leading-[1.55] text-neutral-500',
+    home: 'src/admin/components/scale.ts',
     instead: 'import NOTE_TEXT from components/kit — or pass `note` to Setting / ui/Input',
   },
 ]
@@ -107,6 +118,41 @@ for (const rule of RULES) {
   if (!seenAtHome) {
     console.error(`✗ check:admin-kit: ${rule.home} no longer contains ${JSON.stringify(rule.signature)}`)
     console.error('  The rule is guarding nothing. Update the signature in this file.')
+    failed = true
+  }
+}
+
+/**
+ * A RAISED WHITE PILL, by shape rather than by exact string — and this is the rule the exact
+ * strings above could not have caught.
+ *
+ * `signature` matching assumes a copy is a COPY. Six segmented controls proved otherwise: the
+ * site-language picker, the analytics range strip, and four pickers inside the editor (video
+ * size, highlight stroke, image alignment, gallery ratio) all drew the tab strip's pill, and
+ * every one of them had chosen `bg-neutral-100` where the primitive said `bg-neutral-200/70`.
+ * One shade apart, so the check passed for months while the admin carried seven of one
+ * control. They were found by photographing the running admin on 2026-08-15, which is exactly
+ * the thing the check exists so nobody has to do.
+ *
+ * So this matches the IDEA: a white fill lifted on a shadow, which after the 2026-08-15 rework
+ * is not a thing the admin draws anywhere. A raised white chip on a tinted tray is the stock
+ * dashboard's segmented control, and the admin's is `tabItemClass(active, 'sm')`.
+ *
+ * A surface that is `sticky` or `fixed` is exempt, and the exemption is read off the SAME LINE
+ * rather than kept as a list of filenames — a list goes stale silently and says nothing about
+ * why. `docs/admin-design.md` reserves the shadow for overlays, and a bar pinned over content
+ * the owner is scrolling past is genuinely one: the editor's action header earns it, a picker
+ * sitting still in a form does not.
+ */
+const RAISED = /bg-white[^'"`\n]*\bshadow-(sm|md)\b/
+const PINNED = /\b(sticky|fixed)\b/
+for (const file of files) {
+  const path = file.replaceAll('\\', '/')
+  for (const line of readFileSync(file, 'utf8').split('\n')) {
+    if (!RAISED.test(line) || PINNED.test(line)) continue
+    console.error(`✗ check:admin-kit: ${path} raises a white surface on a shadow`)
+    console.error('  The admin draws no shadow except on an overlay. For a segmented control use')
+    console.error('  <Tabs size="sm">; for a panel use CARD, which is a sheet with a hairline.')
     failed = true
   }
 }

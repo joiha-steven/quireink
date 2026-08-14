@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { MediaLibrary } from './MediaLibrary'
 import { VideoLibrary } from './VideoLibrary'
 import { FileLibrary } from './FileLibrary'
-import { Tabs, type TabItem } from './kit'
+import { GROUP_GAP, type TabItem, Tabs } from './kit'
 import { useAdminT } from './I18nProvider'
 
 type Tab = 'images' | 'videos' | 'files'
@@ -21,7 +21,7 @@ export function LibraryTabs() {
 
   return (
     <div>
-      <Tabs tabs={tabs} value={tab} onChange={setTab} className="mb-6" />
+      <Tabs tabs={tabs} value={tab} onChange={setTab} className={GROUP_GAP} />
       {/* Keep the images tab mounted (it holds upload/scroll state); the videos and
           files tabs are created on first visit. */}
       <div className={tab === 'images' ? '' : 'hidden'}>

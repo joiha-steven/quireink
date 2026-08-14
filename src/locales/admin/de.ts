@@ -670,6 +670,8 @@ const de = {
   nlDigestHint: 'Die {n} markierten Beiträge gehen als EINE Sammel-E-Mail raus, neueste zuerst — nicht je eine pro Beitrag.',
   navCollapse: 'Seitenleiste einklappen',
   navExpand: 'Seitenleiste ausklappen',
+  navIconsShow: 'Symbole anzeigen',
+  navIconsHide: 'Symbole ausblenden',
   authSignIn: 'Anmelden',
   authSignInLede: 'Die Verwaltung für {site}.',
   authBackTo: 'Zurück zu {site}',

@@ -21,7 +21,7 @@
 // `NotFound.tsx` carries `data-admin-404`.
 import { useState } from 'react'
 import Link from '@/admin/router'
-import { Card, READING } from './kit'
+import { Card } from './kit'
 import { useAdminT } from './I18nProvider'
 import type { AdminStrings } from '@/locales/types'
 
@@ -66,7 +66,7 @@ export function FirstRunSteps() {
             {/* The step's NAME is a label (it names a screen you go to); the body under it
                 is a sentence explaining it, so the two take the two faces — the same split
                 as a setting's label and its note. */}
-            <p className={`${READING} mt-0.5 text-sm leading-relaxed text-neutral-600 dark:text-neutral-300`}>{s.body}</p>
+            <p className="mt-0.5 text-sm leading-relaxed text-neutral-600 dark:text-neutral-300">{s.body}</p>
           </div>
         </li>
       ))}
@@ -98,10 +98,14 @@ export function FirstRun({ done, onDone }: {
     )
   }
 
+  // No margin of its own. This band sits in the Overview's `SECTION_GAP` stack, and a `mb-5`
+  // here made the gap under it 20px against 40px above — which is the asymmetry the owner
+  // circled on 2026-08-15. Same trap as `NOTE_TEXT`'s `mt-1`: a primitive that carries its own
+  // spacing cannot be stacked by its parent.
   return (
-    <div className="mb-5">
+    <div>
       <Card title={t.firstRunTitle}>
-        <p className={`${READING} mb-4 text-sm text-neutral-600 dark:text-neutral-300`}>{t.firstRunIntro}</p>
+        <p className="mb-4 text-sm text-neutral-600 dark:text-neutral-300">{t.firstRunIntro}</p>
         <FirstRunSteps />
         <div className="mt-5">
           <button

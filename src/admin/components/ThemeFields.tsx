@@ -9,7 +9,7 @@ import type { ThemePreset } from '@/content/themes'
 import { getPreset } from '@/content/themes'
 import { useAdminT } from './I18nProvider'
 import type { AdminStrings } from '@/i18n/admin-i18n'
-import { INSET, Setting, SETTING_GAP } from './kit'
+import { CHECK, INSET, Setting, SETTING_GAP } from './kit'
 
 type ColorKey = keyof ThemeColors
 
@@ -90,7 +90,7 @@ function PresetCard({
           checked={shown}
           disabled={isDefault}
           onChange={onToggleShown}
-          className="h-3.5 w-3.5 rounded border-neutral-300 accent-neutral-900 dark:border-neutral-600 dark:accent-white"
+          className={`h-3.5 w-3.5 rounded border-neutral-300 dark:border-neutral-600 ${CHECK}`}
         />
         {shownLabel}
       </label>

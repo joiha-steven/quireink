@@ -670,6 +670,8 @@ const vi = {
   nlDigestHint: '{n} bài đã tick sẽ đi trong MỘT email gộp, bài mới nhất lên đầu, chứ không phải mỗi bài một email.',
   navCollapse: 'Thu gọn thanh bên',
   navExpand: 'Mở rộng thanh bên',
+  navIconsShow: 'Hiện biểu tượng',
+  navIconsHide: 'Ẩn biểu tượng',
   authSignIn: 'Đăng nhập',
   authSignInLede: 'Trang quản trị của {site}.',
   authBackTo: 'Về {site}',

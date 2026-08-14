@@ -12,7 +12,7 @@
 
 import type { HighlightSettings } from '@/types'
 import { useAdminT } from './I18nProvider'
-import { NOTE_TEXT } from './kit'
+import { NOTE_TEXT, SEGMENT_TRACK, tabItemClass } from './kit'
 
 const LABEL = 'block text-sm font-medium text-neutral-700 dark:text-neutral-300'
 
@@ -32,17 +32,13 @@ export function HighlightFields({ highlight, onChange }: {
   return (
     <div className="space-y-2">
       <span className={LABEL}>{t.highlightStroke}</span>
-      <div className="inline-flex flex-wrap gap-1 rounded-lg bg-neutral-100 p-1 dark:bg-neutral-800">
+      <div className={`${SEGMENT_TRACK} flex-wrap`}>
         {STROKES.map((stroke) => (
           <button
             key={stroke}
             type="button"
             onClick={() => onChange({ ...highlight, stroke })}
-            className={`rounded-lg px-3 py-1.5 text-sm font-medium ${
-              highlight.stroke === stroke
-                ? 'bg-white text-neutral-900 shadow-sm dark:bg-neutral-700 dark:text-white'
-                : 'text-neutral-500'
-            }`}
+            className={tabItemClass(highlight.stroke === stroke, 'sm')}
           >
             {labels[stroke]}
           </button>

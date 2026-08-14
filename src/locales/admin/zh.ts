@@ -670,6 +670,8 @@ const zh = {
   nlDigestHint: '勾选的 {n} 篇会合并成一封邮件发出（最新在前），不是每篇一封。',
   navCollapse: '收起侧边栏',
   navExpand: '展开侧边栏',
+  navIconsShow: '显示图标',
+  navIconsHide: '隐藏图标',
   authSignIn: '登录',
   authSignInLede: '{site} 的管理后台。',
   authBackTo: '返回 {site}',

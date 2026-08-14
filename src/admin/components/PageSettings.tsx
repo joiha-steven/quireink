@@ -4,7 +4,7 @@ import type { PostStatus } from '@/types'
 import { Input } from '@/admin/ui/Input'
 import { Button } from '@/admin/ui/Button'
 import { useAdminT } from './I18nProvider'
-import { NOTE_TEXT } from './kit'
+import { CHECK, NOTE_TEXT } from './kit'
 
 export type PageDraft = {
   title: string
@@ -39,6 +39,7 @@ export function PageSettings({ draft, update, onPickFeatured }: Props) {
               <input
                 type="radio"
                 name="status"
+                className={CHECK}
                 checked={draft.status === s}
                 onChange={() => update({ status: s })}
               />

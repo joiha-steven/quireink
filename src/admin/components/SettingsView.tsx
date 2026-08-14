@@ -30,7 +30,7 @@ import type { IntegrationStatus } from '@/store/integration-keys'
 import { Button } from '@/admin/ui/Button'
 import { useToast } from '@/admin/ui/Toast'
 import { formatTime } from '@/utils'
-import { Card, NOTE_TEXT, PageHeader, READING, Tabs, type TabItem } from './kit'
+import { Card, GROUP_GAP, NOTE_TEXT, PageHeader, Tabs, type TabItem } from './kit'
 import { SettingsSearch } from './SettingsSearch'
 import { useSettingJump } from './useSettingJump'
 import { useAdminT } from './I18nProvider'
@@ -155,10 +155,10 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
         onPick={(entry) => { setTab(entry.tab); jumpToSetting(String(t[entry.label])) }}
       />
 
-      <Tabs tabs={TABS} value={tab} onChange={setTab} className="mb-3" />
+      <Tabs tabs={TABS} value={tab} onChange={setTab} className={GROUP_GAP} />
       {/* The definition, in the open. A tab whose contents you have to guess is a tab you
           open five of. */}
-      <p className={`${READING} mb-6 text-sm leading-6 text-neutral-500 dark:text-neutral-400`}>{HINTS[tab]}</p>
+      <p className={`${NOTE_TEXT} ${GROUP_GAP} max-w-2xl`}>{HINTS[tab]}</p>
 
       {/* SITE — what this site IS. Identity only: nothing here moves a pixel. */}
       {tab === 'site' && (

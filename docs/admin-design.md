@@ -17,37 +17,49 @@ character and none of its typographic rules **except one**, below.
 
 - **The public reading interface is out of scope.** Its typography, fonts and type settings
   are deliberate; admin polish never changes them.
-- **TWO FACES, the same division the reading site makes** (`docs/conventions/type.md`):
-  `--font-reading` is what a PERSON wrote and a person reads; `--font-sans` is what the
-  MACHINE says. Adopted 2026-08-14 at the owner's request — *"toàn bộ dùng font giao diện,
-  thay vào đó nên sử dụng 2 font chữ, nguyên tắc như frontend"*.
-  On the reading site that line runs between a post title and its date. In here it runs
-  between a setting's sentence and its label, a post's title and its view count, a comment's
-  words and the address that sent them. Navigation, buttons, tabs, table heads, counts, slugs,
-  filenames, timestamps and the activity log stay on the chrome face.
+- **ONE FACE. The admin is Inter, everywhere, with one carve-out for the editor.**
+  Set on 2026-08-15 at the owner's request — *"admin chỉ xài 1 font thôi, inter"*, then
+  *"trừ phần editor, khung soạn thảo và tiêu đề soạn thảo vẫn dùng font mà frontend xài"*.
+  It replaces the TWO FACES rule adopted eight days earlier (2026-08-14, *"nên sử dụng 2 font
+  chữ, nguyên tắc như frontend"*), and both are his to set — what is worth writing down is why
+  the division works on the reading site and not here. There, it runs between a post title and
+  its date: two genuinely different kinds of thing, read by someone with time to feel it. In
+  the admin it landed between a setting's LABEL and the sentence under it — two halves of one
+  control, four lines apart, in two typefaces. A form is scanned, not read, and a reader
+  scanning does not experience that as meaning; they experience two voices. Rank by SIZE and
+  WEIGHT instead (`src/admin/components/scale.ts`).
+  **The carve-out is the editor, and it is not a preference:** the editor is WYSIWYG, so the
+  writing surface and the TITLE field must be set in the face the post will publish in. Those
+  two, plus the font picker's own specimen tiles, are the only holders of `.reading-font` —
+  `src/admin/components/one-face.test.ts` fails on a fourth. `--font-reading` and `spa.ts`'s
+  `fontPresetCss` therefore stay; deleting either makes the owner write in Inter and publish
+  in something else.
 - **The admin's chrome face is ITS OWN, and it is Inter.** It is not `chromeFont`. It followed
   that setting for a day and the owner's verdict was *"nhìn rối thiệt, 2 font này có vẻ không
   hợp để dùng trong admin"*. A chrome font is a branding choice about what a READER sees;
   spending it on the tool put a monospace code face on every label, tab, button and table
   cell, and beside a book serif that is two loud unrelated voices rather than one division.
   Three versions of one Settings screen were photographed — two faces on the mono chrome, one
-  face throughout, and Inter + the reading face — and he chose the third.
+  face throughout, and Inter + the reading face — and he chose the third. On 2026-08-15 he
+  chose the SECOND of those three instead (above), which is the same rejection of the mono
+  chrome arriving at a simpler answer.
   ⚠️ Do not wire it back. Two things went with it and must stay gone: `MONO_TRACKING`, which
   corrects a wide monospace and has nothing to correct here, and the `data-chrome-font`
   attribute on the shell, whose only reader that rule was.
   **What the admin still follows is everything about the owner's WORDS** — palette, type
   scale, reading preset, uploaded face — because the editor is WYSIWYG and a post has to be
   written in the face it publishes in.
-- **BY ROLE, NEVER BY TAG.** The first attempt at the two faces was a `.admin p` rule, and a
-  tag is not a role: `Setting` renders its hint as a `<p>` and `ui/Input` renders the identical
-  hint as a `<span>`, so the Site tab shipped *"Changes the interface language and date
-  format."* in Literata four lines above *"Words auto-used as the excerpt…"* in JetBrains Mono
-  — one card, one kind of thing, two faces, and neither call site was wrong. The face travels
-  on `READING` / `NOTE_TEXT` from `components/kit.tsx`; a whole page of sentences takes
-  `data-prose` (Help: 33 `li` and 19 `td` of article); `check:admin-kit` fails a screen that
-  hand-types a hint or names a typeface at all. The one exception is a `data-specimen`
-  surface, which paints itself in the family it offers and is the only place a `fontFamily`
-  may appear.
+- **BY ROLE, NEVER BY TAG** — kept, because it is what made the two-faces era survivable and
+  it is what will catch the next attempt. The first version was a `.admin p` rule, and a tag is
+  not a role: `Setting` renders its hint as a `<p>` and `ui/Input` renders the identical hint as
+  a `<span>`, so the Site tab shipped *"Changes the interface language and date format."* in
+  Literata four lines above *"Words auto-used as the excerpt…"* in JetBrains Mono — one card,
+  one kind of thing, two faces, and neither call site was wrong. Every type decision travels on
+  a role from `components/type.ts`, never on an element; `check:admin-kit` fails a screen that
+  hand-types a hint or names a typeface at all. `data-prose`, the page-level escape hatch, is
+  GONE with the second face — there is nothing left for it to switch to. The one place a
+  `fontFamily` may still appear is a `data-specimen` surface, which paints itself in the family
+  it offers.
 - ⚠️ **Two mechanisms were tried against these symptoms and BOTH were wrong.** They are
   recorded because each looked right and each was built on a misread.
   `font-size-adjust: from-font` on `body`, to close the x-height gap — measured per 1em:
@@ -62,14 +74,33 @@ character and none of its typographic rules **except one**, below.
   was one line in `adminStyles`. Both are gone. **An x-height gap between two faces is ordinary
   typography; text with less air than it was drawn for is what a reader feels, and the owner
   felt it twice before either mechanism was questioned.**
-- **The canvas is a flat neutral light gray** (`#f5f5f5`). No warm cast, no cool blue-gray.
+- **The canvas is PAPER** (`#f7f6f4`), and a card is a SHEET on it: a hairline edge, a 10px
+  radius, and no shadow at all. It was a flat neutral gray (`#f5f5f5`) under `rounded-2xl`
+  white cards carrying a 1px drop shadow, and on 2026-08-15 the owner's verdict on that was
+  *"giao diện vẫn rẻ tiền, chưa xứng tầm"*. The diagnosis was not workmanship: gray canvas +
+  rounded white card + soft shadow + tinted pill tabs is the costume every generated dashboard
+  wears, and **nothing in it came from this product**. The reading site next door is one sheet
+  of paper with hairlines ruled across it and nothing floating anywhere, so the tool is now
+  built from the same three things — paper, a rule, and space.
+  ⚠️ The **font** was not part of this. The admin's chrome face stays Inter and the site's
+  monospace chrome font stays out (see above, and the two rejected mechanisms). What the 2026-08-14
+  pass got wrong was treating "not the mono font" as the whole answer: the face came out and
+  nothing went in, so the admin fell back to the framework's defaults. A typeface and a visual
+  language are different questions.
 - **Hierarchy comes from spacing and rules, not decoration.** Cards are for genuinely
-  independent data; shadows are for overlays.
-- **Square corners are a PUBLIC rule.** Admin uses the shared 16 / 12 / 8px radius
-  hierarchy — never a global square reset, never arbitrary per-component rounding.
+  independent data; shadows are for overlays, and `check:admin-kit` now fails a raised white
+  surface that is not `sticky` or `fixed`.
+- **Square corners are a PUBLIC rule.** Admin uses a 10 / 8 / 6px radius hierarchy — sheet,
+  nested panel, control — never a global square reset, never arbitrary per-component rounding.
+  It was 16 / 12 / 8; a 16px radius on a 1200px panel reads as a pill rather than as a page.
 - **Admin is monochrome**: black, white and the neutral scale. Feedback, status, analytics
   trends, media selection, warnings, destructive actions and recovery banners included. The
   admin theme dropdown's colours are isolated from the site's configurable palette.
+- **The rail is words, not pictures.** Sidebar icons are OFF by default (2026-08-15, *"không
+  cần icon bên sidebar, nó làm cho không cần thiết"*) and switchable from the rail's own
+  footer. The switch governs glyphs BESIDE LABELS; a COLLAPSED rail has no labels, so it stays
+  icon-only and the collapse control is always available. Reading the setting as "no icons
+  anywhere" is what hid the collapse control in the first cut, and the owner could not find it.
 - **Writing is the primary task.** The editor takes the full desktop width and hides the
   global navigation.
 - **Detail lives on its own screen.** Analytics, taxonomy, integrations and system

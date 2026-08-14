@@ -7,7 +7,7 @@ import { Input } from '@/admin/ui/Input'
 import { Button } from '@/admin/ui/Button'
 import { useToast } from '@/admin/ui/Toast'
 import { useAdminT } from './I18nProvider'
-import { NOTE_TEXT } from './kit'
+import { CHECK, NOTE_TEXT } from './kit'
 
 type Redirect = { id: number; source: string; destination: string; permanent: boolean }
 
@@ -120,7 +120,7 @@ export function RedirectsManager() {
       </div>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <label className="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300">
-          <input type="checkbox" checked={permanent} onChange={(e) => setPermanent(e.target.checked)} />
+          <input type="checkbox" className={CHECK} checked={permanent} onChange={(e) => setPermanent(e.target.checked)} />
           {t.redirectPermanent}
         </label>
         <Button onClick={add} disabled={busy || !source.trim() || !destination.trim()}>

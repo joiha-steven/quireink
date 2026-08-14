@@ -6,7 +6,7 @@ import { isScheduled } from '@/utils'
 import { MultiSelect } from './MultiSelect'
 import { Combobox } from './Combobox'
 import { useAdminT } from './I18nProvider'
-import { NOTE_TEXT } from './kit'
+import { CHECK, NOTE_TEXT } from './kit'
 
 export type Draft = {
   title: string
@@ -68,6 +68,7 @@ export function PostSettings({ draft, update, allCategories, allTags, allSeries,
               <input
                 type="radio"
                 name="status"
+                className={CHECK}
                 checked={draft.status === s}
                 onChange={() => update({ status: s })}
               />

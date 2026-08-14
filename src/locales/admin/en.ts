@@ -670,6 +670,8 @@ const en = {
   nlDigestHint: 'The {n} ticked posts go out as ONE digest email, newest first — not one email each.',
   navCollapse: 'Collapse sidebar',
   navExpand: 'Expand sidebar',
+  navIconsShow: 'Show icons',
+  navIconsHide: 'Hide icons',
   authSignIn: 'Sign in',
   authSignInLede: 'The admin for {site}.',
   authBackTo: 'Back to {site}',

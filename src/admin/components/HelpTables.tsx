@@ -79,7 +79,7 @@ export function TroubleTable() {
       <tbody>
         {TROUBLE.map(([a, b]) => (
           <tr key={a} className={TROW}>
-            <td className={`px-4 py-2.5 align-top font-medium text-neutral-800 dark:text-neutral-200`}>{a}</td>
+            <td className="px-4 py-2.5 align-top font-medium text-neutral-800 dark:text-neutral-200">{a}</td>
             <td className={`px-4 py-2.5 align-top ${P}`}>{b}</td>
           </tr>
         ))}

@@ -9,7 +9,7 @@ import { useRouter } from '@/admin/router'
 import type { Post, Page, MediaItem, FileItem, AdminComment, ApiResponse } from '@/types'
 import { useToast } from '@/admin/ui/Toast'
 import { formatDateTimeShort } from '@/utils'
-import { EmptyState, NOTE_TEXT, PageHeader, READING, TableFrame, Tabs, THEAD } from './kit'
+import { EmptyState, NOTE_TEXT, PageHeader, TableFrame, Tabs, THEAD } from './kit'
 import { useAdminT } from './I18nProvider'
 
 type Kind = 'posts' | 'pages' | 'media' | 'files' | 'comments'
@@ -171,7 +171,7 @@ export function TrashView({
       <Shell head="">
         {rows.map((r) => (
           <tr key={r.slug} className="border-b border-neutral-100 transition-colors last:border-0 hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-800/40">
-            <td className={`${READING} px-4 py-3 font-medium`}>{r.title || t.untitled}</td>
+            <td className="px-4 py-3 font-medium">{r.title || t.untitled}</td>
             <td className="hidden whitespace-nowrap px-4 py-3 text-neutral-500 sm:table-cell dark:text-neutral-400">
               {r.deletedAt ? formatDateTimeShort(r.deletedAt) : ''}
             </td>
@@ -228,7 +228,7 @@ export function TrashView({
         {rows.map((c) => (
           <tr key={c.id} className="border-b border-neutral-100 transition-colors last:border-0 hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-800/40">
             <td className="max-w-xs px-4 py-3">
-              <p className={`${READING} line-clamp-1 font-medium`}>{c.content}</p>
+              <p className="line-clamp-1 font-medium">{c.content}</p>
               <p className={NOTE_TEXT}>{c.name} · {c.postTitle}</p>
             </td>
             <td className="hidden whitespace-nowrap px-4 py-3 text-neutral-500 sm:table-cell dark:text-neutral-400">

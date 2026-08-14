@@ -9,7 +9,7 @@ import { formatDate } from '@/i18n/i18n'
 import { isVideoAttachment } from '@/render/video'
 import { FileUploader } from './FileUploader'
 import { useAdminT, useAdminLang } from './I18nProvider'
-import { NOTE_TEXT } from './kit'
+import { CHECK, NOTE_TEXT } from './kit'
 
 // Short uppercase tag from the filename extension (or the MIME subtype).
 function ext(item: FileItem): string {
@@ -82,7 +82,7 @@ export function FileLibrary() {
           type="checkbox"
           checked={selected.has(f.url)}
           onChange={() => toggle(f.url)}
-          className="h-4 w-4 shrink-0 accent-neutral-700 dark:accent-neutral-300"
+          className={`h-4 w-4 shrink-0 ${CHECK}`}
           aria-label={f.filename}
         />
       )}

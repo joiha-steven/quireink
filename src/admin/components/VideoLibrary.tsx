@@ -9,7 +9,7 @@ import { formatDate } from '@/i18n/i18n'
 import { isVideoAttachment } from '@/render/video'
 import { FileUploader } from './FileUploader'
 import { useAdminT, useAdminLang } from './I18nProvider'
-import { NOTE_TEXT } from './kit'
+import { CHECK, NOTE_TEXT } from './kit'
 
 const onlyVideos = (items: FileItem[]) => items.filter((f) => isVideoAttachment(f.filename, f.contentType))
 
@@ -96,7 +96,7 @@ export function VideoLibrary() {
                   type="checkbox"
                   checked={selected.has(f.url)}
                   onChange={() => toggle(f.url)}
-                  className="mt-1 h-4 w-4 shrink-0 accent-neutral-700 dark:accent-neutral-300"
+                  className={`mt-1 h-4 w-4 shrink-0 ${CHECK}`}
                   aria-label={f.filename}
                 />
                 <div className="min-w-0 flex-1">

@@ -19,10 +19,27 @@ import { BrandMark, BrandWord } from './Wordmark'
 import { ThemeToggle } from '@/admin/ui/ThemeToggle'
 import {
   IconHome, IconAnalytics, IconContent, IconComment, IconMedia, IconNewsletter, IconTrash, IconSettings,
-  IconLog, IconExternal, IconCache, IconSignOut, IconChevronLeft, IconHelp,
+  IconLog, IconExternal, IconCache, IconSignOut, IconChevronLeft, IconHelp, IconGlyphs,
 } from './navIcons'
 
 const STORE_KEY = 'quireink-admin-nav-collapsed'
+/**
+ * Whether the rail draws icons BESIDE ITS LABELS. OFF by default since 2026-08-15, at the
+ * owner's request: *"không cần icon bên sidebar, nó làm cho không cần thiết"*. Eleven outline
+ * glyphs down the left edge are eleven things to look at before reading the word that was
+ * always going to be the thing you read; the labels alone are shorter to scan and quieter.
+ *
+ * ⚠️ Beside its LABELS, which is why the collapsed rail ignores it and always draws them. A
+ * collapsed rail has no labels — icons are the only thing it can be. The first version of this
+ * read the setting as "no icons anywhere", so it had to hide the collapse control too, and the
+ * owner's next words were that he could not find it. The two are separate wishes: one is about
+ * how the rail reads, the other is about getting 208px back.
+ *
+ * A DEVICE preference, so it lives in localStorage beside the collapse state rather than in
+ * site settings — the same reason the collapse state is not a setting. Nothing about the blog
+ * changes; this is how one person's rail looks on one machine.
+ */
+const ICONS_KEY = 'quireink-admin-nav-icons'
 
 export function AdminSidebar({
   lang,
@@ -36,6 +53,7 @@ export function AdminSidebar({
   const editorMode = pathname.startsWith('/admin/editor') || pathname.startsWith('/admin/page-editor')
   const [open, setOpen] = useState(false) // mobile drawer
   const [collapsed, setCollapsed] = useState(false) // desktop rail
+  const [icons, setIcons] = useState(false) // glyphs beside the labels
   const close = () => setOpen(false)
 
   // Publish the current desktop rail width as a CSS var so fixed-position chrome
@@ -52,11 +70,21 @@ export function AdminSidebar({
       return
     }
     Promise.resolve().then(() => {
+      const showIcons = localStorage.getItem(ICONS_KEY) === '1'
       const c = localStorage.getItem(STORE_KEY) === '1'
+      setIcons(showIcons)
       setCollapsed(c)
       applyWidthVar(c)
     })
   }, [editorMode])
+
+  function toggleIcons() {
+    setIcons((v) => {
+      const next = !v
+      localStorage.setItem(ICONS_KEY, next ? '1' : '0')
+      return next
+    })
+  }
 
   function toggleCollapsed() {
     setCollapsed((v) => {
@@ -98,12 +126,12 @@ export function AdminSidebar({
           title={c ? l.label : undefined}
           className={rowClass(c, isActive(l.href))}
         >
-          {l.icon}
+          {(c || icons) && l.icon}
           {!c && <span className="truncate">{l.label}</span>}
         </Link>
       ))}
       <a href="/" target="_blank" rel="noopener" onClick={close} title={c ? t.navViewBlog : undefined} className={rowClass(c)}>
-        <IconExternal />
+        {(c || icons) && <IconExternal />}
         {!c && <span className="truncate">{t.navViewBlog}</span>}
       </a>
     </>
@@ -113,12 +141,25 @@ export function AdminSidebar({
   // divider so it reads as the "account" cluster (never confused with collapse).
   const controls = (c: boolean): ReactNode => (
     <>
-      <ThemeToggle lang={lang} variant={c ? 'icon' : 'text'} triggerClassName={c ? undefined : rowClass(false)} />
-      <CacheButton className={rowClass(c)} icon={<IconCache />} collapsed={c} />
+      {/* `variant='text'` in BOTH states, with the word dropped when collapsed. The rail needs
+          one row object, and `variant='icon'` is the public header's — it ignores the row class
+          and drew this line 4px left of the two under it. */}
+      <ThemeToggle lang={lang} variant="text" showIcon={c || icons} showLabel={!c} triggerClassName={rowClass(c)} />
+      <CacheButton className={rowClass(c)} icon={c || icons ? <IconCache /> : null} collapsed={c} />
+      {/* The icon switch, in the footer beside light/dark and Clear cache, because it is the
+          same kind of thing: a preference about this rail on this machine. Not in Settings —
+          nothing about the blog changes. Never shown collapsed, where it would be an unlabelled
+          glyph offering to remove the glyphs. */}
+      {!c && (
+        <button type="button" onClick={toggleIcons} className={rowClass(false)}>
+          {icons && <IconGlyphs />}
+          <span className="truncate">{icons ? t.navIconsHide : t.navIconsShow}</span>
+        </button>
+      )}
       <div className="mt-1 border-t border-neutral-200 pt-1 dark:border-neutral-800">
         <form action={signOut} className="contents">
           <button className={rowClass(c)} title={c ? t.signOut : undefined}>
-            <IconSignOut />
+            {(c || icons) && <IconSignOut />}
             {!c && <span className="truncate">{t.signOut}</span>}
           </button>
         </form>

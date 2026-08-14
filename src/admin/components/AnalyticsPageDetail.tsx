@@ -3,7 +3,7 @@
 // Reached from the Top pages table in the overview (?path=…). Presentational.
 import Link from '@/admin/router'
 import type { PageSummary } from '@/analytics/types'
-import { EmptyState, PageHeader, Card } from './kit'
+import { EmptyState, PageHeader, Card, SEGMENT_TRACK, tabItemClass } from './kit'
 import { BarList, StatTile, TrendChart, flag, formatDuration } from './analytics-kit'
 import { useAdminT } from './I18nProvider'
 import type { Range } from './AnalyticsView'
@@ -33,14 +33,12 @@ export function AnalyticsPageDetail({ data, title, range }: { data: PageSummary;
           </a>
         }
         actions={
-          <div className="flex gap-1 rounded-xl bg-neutral-100 p-1 dark:bg-neutral-800">
+          <div className={SEGMENT_TRACK}>
             {RANGES.map((r) => (
               <Link
                 key={r}
                 href={`/admin/analytics?path=${encodeURIComponent(data.path)}&range=${r}`}
-                className={`rounded-lg px-3 py-1 text-sm font-medium transition ${
-                  r === range ? 'bg-white text-neutral-900 shadow-sm dark:bg-neutral-700 dark:text-white' : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
-                }`}
+                className={tabItemClass(r === range, 'sm')}
               >
                 {rangeLabel[r]}
               </Link>

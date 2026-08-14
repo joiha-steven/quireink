@@ -66,29 +66,30 @@ body {
   overscroll-behavior-y: contain;
 }
 
-/* Two faces, and it is the SAME division the reading site makes — the one in
-   `docs/conventions/type.md`: `--font-reading` is what a PERSON wrote and a person reads,
-   `--font-sans` is what the MACHINE says. On the reading site that line runs between a post
-   title and its date; in here it runs between a setting's sentence and its label.
+/* ONE FACE. The admin is set in Inter and nothing else.
 
-   BY ROLE, NEVER BY TAG. The first version of this claimed `.admin p`, and a tag is not a
-   role: `Setting` renders its hint as `<p>` and `ui/Input` renders the identical hint as
-   `<span>`, so the Site tab shipped "Changes the interface language and date format." in
-   Literata directly above "Words auto-used as the excerpt…" in JetBrains Mono, two hints of
-   one kind on one card in two faces. Nothing was wrong with either call site. The rule was
-   asking the wrong question.
+   It was two — `--font-reading` for what a PERSON wrote, `--font-sans` for what the MACHINE
+   says — adopted 2026-08-14 at the owner's request and RETIRED 2026-08-15 at the owner's
+   request: *"admin chỉ xài 1 font thôi, inter"*. Both instructions are his to give; what is
+   worth keeping is why the second one is right and the first sounded right.
 
-   So the face travels with the ROLE, on `.reading-font` — the same class name the public
-   sheet uses for the same job (`web/utility.css.ts`). Two kinds of thing wear it. The kit's
-   own roles carry it for every screen at once (`NOTE_TEXT`, `PageHeader`'s description,
-   `EmptyState`'s description), and a screen adds `READING` where the words on show are
-   SOMEBODY'S: a post title, a comment, a newsletter subject. A screen cannot forget the
-   first without hand-typing a primitive, which `check:admin-kit` fails.
+   The division is real on the reading site, where a post title and its date are genuinely
+   different kinds of thing and a reader has time to feel it. A tool is not read, it is
+   scanned, and here the same division landed between a setting's LABEL and the sentence under
+   it — two halves of one control, four lines apart, in two typefaces. That is not a division
+   a person experiences as meaning; it is two voices in a form. The admin says one thing in one
+   face and lets SIZE and WEIGHT do the ranking (`components/type.ts`).
 
-   `data-prose` stays for a surface where the sentences are not paragraphs: Help is 33 `li`
-   and 19 `td` of article. It is a page-level decision, not a per-element one. */
-.admin .reading-font,
-.admin [data-prose] :is(p, li, td, dd, blockquote) {
+   TWO EXCEPTIONS, and both are the editor, because the editor is WYSIWYG: a post has to be
+   written in the face it publishes in. `.ProseMirror` gets it from `fontPresetCss` in
+   `web/admin/spa.ts`, and the editor's TITLE field wears `.reading-font` for the same reason —
+   it is the same words, at the same size, that the published page will show. The other holder
+   of the class is `[data-specimen]`, the font picker's own preview tiles, which must paint
+   themselves in the family they are offering or they are not a preview.
+
+   ⚠️ `--font-reading` therefore STAYS DEFINED and `spa.ts` keeps emitting the preset. Deleting
+   either would make the editor write in Inter and publish in the site's face. */
+.admin .reading-font {
   font-family: var(--font-reading);
 }
 
@@ -162,9 +163,20 @@ body {
   pointer-events: none;
 }
 
-/* Admin canvas is a true neutral gray, isolated from public palette tokens. */
+/* PAPER, not a dashboard canvas. Isolated from the public palette tokens either way.
+
+   This was #f5f5f5 — a true neutral gray — with white cards on it. That pairing is the shape
+   every generated admin has: the canvas recedes, the cards float, and the page reads as a tray
+   of boxes. The owner's word for it on 2026-08-15 was "rẻ tiền", and the diagnosis is that
+   nothing in the admin came from this product. The reading site is one sheet of #fcfcfc with
+   hairlines ruled across it and no box floating anywhere.
+
+   So: the same paper, one hair warmer than the sheet a card is drawn on, which leaves exactly
+   enough separation to see an edge and not enough to make the card an object. The card's own
+   shadow came off at the same time (`kit.tsx`, CARD) — with a gray canvas the shadow was
+   redundant, and on paper it would be the only thing casting one. */
 .admin-canvas {
-  background: #f5f5f5;
+  background: #f7f6f4;
 }
 .dark .admin-canvas {
   background: #0f0f0f;
