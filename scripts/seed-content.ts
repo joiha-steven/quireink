@@ -8,9 +8,16 @@
 //
 // SEVERAL LANGUAGES, on purpose. The bundled subsets cover latin, latin-ext and vietnamese
 // (`src/render/font-faces.ts`), so Vietnamese tone marks, German umlauts, Polish ogoneks,
-// Czech hačeks, Turkish dotless i and Icelandic eth all render in the real face. CJK is
-// deliberately absent: no bundled subset carries it, so it would fall back to a system font
-// and demonstrate the opposite of the point.
+// Czech hačeks, Turkish dotless i and Icelandic eth all render in the real face.
+//
+// CJK JOINED THEM on 2026-08-15, reversing a rule this header carried from the start. It
+// said CJK "would fall back to a system font and demonstrate the opposite of the point",
+// which was true of a stack that ended at the generic `serif` keyword — the browser reached
+// past the list to a last-resort face nobody had chosen, and it differed per machine. The
+// stacks now name PingFang, Hiragino, Yu Mincho, Malgun Gothic and the Noto families before
+// the generic (`content/fonts.ts`), so CJK lands in a decided face at zero download. Still
+// nothing CJK is SHIPPED, which was the real constraint and has not moved. The three posts
+// and the full argument are in `seed-content-cjk.ts`.
 //
 // ONE LINE PER PARAGRAPH. The renderer turns a single newline into a `<br>`, so prose typed
 // at 90 columns comes out ragged.
@@ -44,6 +51,7 @@ import { TYPE_POSTS } from './seed-content-type'
 import { HAND_POSTS } from './seed-content-hand'
 import { PRESS_POSTS } from './seed-content-press'
 import { INTL_POSTS } from './seed-content-intl'
+import { CJK_POSTS } from './seed-content-cjk'
 
 /**
  * Every published post in the fixture, newest first once sorted by `ago`.
@@ -53,7 +61,7 @@ import { INTL_POSTS } from './seed-content-intl'
  * is that no two posts share an `ago`, because two posts on the same timestamp make the
  * listing's order depend on SQLite's tie-breaking rather than on the fixture.
  */
-export const POSTS: Seed[] = [...TYPE_POSTS, ...HAND_POSTS, ...PRESS_POSTS, ...INTL_POSTS]
+export const POSTS: Seed[] = [...TYPE_POSTS, ...HAND_POSTS, ...PRESS_POSTS, ...INTL_POSTS, ...CJK_POSTS]
 
 /**
  * The two series, and the parts they run over.

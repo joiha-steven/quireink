@@ -9,12 +9,12 @@ export const PRESS_POSTS: Seed[] = [
   {
     title: 'Paper weights, and the table nobody agrees on',
     slug: 'paper-weights-and-the-table-nobody-agrees-on',
-    excerpt: 'Two paper systems, one of them measuring a quantity that changes depending on what the paper is for. Here is the conversion, and why it cannot be exact.',
+    excerpt: 'Two paper systems, one of them measuring a quantity that changes depending on what the paper is for. Here is the conversion table, and the honest reason it can never be exact for every sheet on it.',
     category: 'Printing', tags: ['paper', 'stock', 'workflow'],
     ago: 130,
     body: `Ask for "80 pound paper" and you have not said anything until you also say what kind. The American basis-weight system weighs a ream of paper *at its basis size*, and the basis size is different for every grade. Text stock is measured at 25 × 38 inches, cover stock at 20 × 26, index at 25.5 × 30.5. So 80 lb text and 80 lb cover are not close: the cover is roughly twice the substance.
 
-The metric system does not have this problem. Grams per square metre is grams per square metre, whatever the sheet is for.
+The metric system does not have this problem. ==Grams per square metre is grams per square metre, whatever the sheet is for.==#green
 
 | Grade | Basis size (in) | 80 lb in gsm | 100 lb in gsm |
 |---|---|---:|---:|
@@ -53,7 +53,7 @@ Paper has a **grain direction**, the way the fibres lie. A book must be bound wi
   {
     title: 'Imposition: why page 1 sits beside page 8',
     slug: 'imposition-why-page-one-sits-beside-page-eight',
-    excerpt: 'Fold a sheet three times and the page order stops being obvious. Printers solved this before 1500.',
+    excerpt: 'Fold a sheet three times and the page order stops being obvious — page one ends up beside page eight, upside down. Printers solved this before 1500, and every book you own is still assembled by their answer.',
     category: 'Printing', tags: ['imposition', 'binding', 'workflow'],
     ago: 141,
     body: `A book is not printed a page at a time. It is printed on large sheets, each carrying many pages, which are then folded, cut and gathered. Working out which page goes where on the sheet, and which way up, is called imposition, and getting it wrong wastes the whole run.
@@ -62,7 +62,7 @@ Take one sheet folded three times: eight pages a side, sixteen in all. On the ou
 
 ## Why it survives digital
 
-Because folding survives. A book printed today on a digital press is still imposed, still folded into gatherings, still trimmed on three edges. The arithmetic did not change when the plates did.
+==Because folding survives.==#yellow A book printed today on a digital press is still imposed, still folded into gatherings, still trimmed on three edges. The arithmetic did not change when the plates did.
 
 ## The part that bites
 
@@ -73,12 +73,12 @@ The fix is to shift each page slightly inward as it approaches the centre of the
   {
     title: 'Trapping, overprint, and the black that is not black',
     slug: 'trapping-and-the-black-that-is-not-black',
-    excerpt: 'Two adjacent colours will not line up perfectly. Trapping is deciding, in advance, which one loses.',
+    excerpt: 'Two adjacent colours will not line up perfectly, not on any press ever built. Trapping is deciding in advance which one loses, and rich black is the same decision made about the darkest thing on the page.',
     category: 'Printing', tags: ['colour', 'press', 'craft'],
     series: 'Ink and press', order: 3, ago: 152,
     body: `Registration is never perfect, so where two solid colours meet there will be a hairline of white paper on one side. Trapping is the deliberate overlap that hides it: one colour is spread slightly under the other, so a small misregistration eats into the overlap instead of showing paper.
 
-Which colour spreads is not arbitrary. The lighter one always spreads under the darker, because the eye reads the darker colour's edge as the shape and will not notice the lighter one moving.
+Which colour spreads is not arbitrary. ==The lighter one always spreads under the darker==#blue, because the eye reads the darker colour's edge as the shape and will not notice the lighter one moving.
 
 ## Overprint is the same idea, taken to its limit
 
@@ -116,12 +116,12 @@ Four sentences, and they are older than every piece of software involved in prod
   {
     title: 'A signature, a gathering, a quire',
     slug: 'a-signature-a-gathering-a-quire',
-    excerpt: 'Three words for nearly the same thing, and the small differences that still matter at the bindery.',
+    excerpt: 'Three words for nearly the same thing, and the small differences that still matter at the bindery. One of them gave this software its name, which seemed worth explaining.',
     category: 'Printing', tags: ['binding', 'vocabulary', 'history'],
     ago: 167,
     body: `A **quire** is a set of sheets folded together and nested one inside another, ready to be sewn. It is one of the oldest units of bookmaking, older than printing, and it is why the pages of a hardback come in clumps rather than as loose leaves.
 
-A **gathering** is the same object, described from the binder's side of the bench. A **signature** is strictly the mark — a letter or number printed in the tail margin of the first page of each gathering, so the person collating them can see at a glance that gathering H follows G. The word slid across to mean the gathering itself, and now all three are used interchangeably by almost everyone.
+A **gathering** is the same object, described from the binder's side of the bench. ==A **signature** is strictly the mark==#green — a letter or number printed in the tail margin of the first page of each gathering, so the person collating them can see at a glance that gathering H follows G. The word slid across to mean the gathering itself, and now all three are used interchangeably by almost everyone.
 
 ## Why the distinction is not pedantry
 
@@ -136,7 +136,7 @@ It is a good word for a thing made of folded sheets. That is what a book is, and
   {
     title: 'Registration, and the millimetre that ruins a spread',
     slug: 'registration-and-the-millimetre',
-    excerpt: 'Four inks, four passes, and one of them a hair out of place. Everything you know about print colour follows from this.',
+    excerpt: 'Four inks, four passes, and one of them a hair out of place. Everything you know about print colour — trapping, rich black, the fear of hairline type in three colours — follows from that single millimetre.',
     category: 'Printing', tags: ['colour', 'press', 'craft'],
     series: 'Ink and press', order: 2, ago: 195,
     body: `A colour page is printed four times: cyan, magenta, yellow, black, one after another. Registration is how precisely those four passes line up, and a misregistration of a fraction of a millimetre is visible to anyone, even people who could not name what they are seeing.
@@ -145,9 +145,15 @@ The tell is a coloured fringe along a hard edge. Black text on a white ground su
 
 ## Why small reversed type is a trap
 
-At small sizes the stems are thinner than the registration tolerance of the press. The letters close up, fill in, or acquire a coloured halo. A design that looked crisp on screen arrives as mud, and no amount of arguing with the printer fixes it.
+==At small sizes the stems are thinner than the registration tolerance of the press.==#orange The letters close up, fill in, or acquire a coloured halo. A design that looked crisp on screen arrives as mud, and no amount of arguing with the printer fixes it.
 
 ## Rich black, and knowing when not to
+
+The arithmetic is unforgiving. A press holding registration to $\\pm t$ on each of two plates can put them out by $2t$ in the worst case, so a stem of width $w$ survives only while
+
+$$w > 2t$$
+
+At $t = 0.05\\,\\text{mm}$ — good commercial work — that is a floor of a tenth of a millimetre, which is a hairline serif at about six point. Below it the letter does not look thin, it looks coloured.
 
 Solid black on a large area looks weak in plain black ink, so printers mix in some cyan to deepen it. That is rich black, and it is right for a filled panel. It is wrong for text, because now the text has two inks to register and you are back to fringed edges.
 
@@ -156,7 +162,7 @@ Plain black for type, rich black for areas. That one rule prevents most print co
   {
     title: 'Ink, paper, and the colour between them',
     slug: 'ink-paper-and-the-colour-between-them',
-    excerpt: 'A palette is two decisions: what the ink is, and what it sits on. Everything else is adjustment.',
+    excerpt: 'A palette is two decisions: what the ink is, and what it sits on. Everything else is adjustment, which is why one hex value can read warm on a cream page and dirty on a white one.',
     category: 'Printing', tags: ['colour', 'paper', 'palette'],
     series: 'Ink and press', order: 1, ago: 224,
     body: `Printers did not have palettes. They had an ink and a stock, and ==everything they could do with colour lived in the relationship between those two==.

@@ -21,10 +21,10 @@
 //
 // Env: CHROME (binary), QUIRE_SESSION (owner cookie value), ONLY=<substring> to run a subset.
 
-const CHROME = process.env.CHROME ?? process.env.CHROME_HEADLESS_SHELL
-  ?? `${process.env.HOME}/chrome/chrome-headless-shell-linux64/chrome-headless-shell`
-
+import { chromePath } from './chrome-path'
 import { registerFlows } from './tour-flows'
+
+const CHROME = chromePath()
 
 const BASE = (process.argv[2] ?? 'http://127.0.0.1:3399').replace(/\/+$/, '')
 const ONLY = process.env.ONLY ?? ''

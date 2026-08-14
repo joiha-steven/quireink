@@ -1,16 +1,16 @@
 # CHANGELOG
 
-## Unreleased
+## 2026-08-15 — Quire Ink 2.0.3
 
-**Twelve commits since 2.0.2, eleven of them from a pre-release audit, and the four largest are
-jobs this software had left to somebody else.** It had no upload cap, no storage quota, no bind
-address it would admit to, and nothing at all holding the one rule its whole design rests on —
-one blog, one owner. In each case a reverse proxy, a firewall rule or a habit had been covering,
-which is exactly why none of them had ever shown.
+**Twenty-six commits since 2.0.2. Eleven were a pre-release audit of jobs this software had
+left to somebody else; the rest are the admin, which had stopped looking like the product it
+belongs to.** The audit half found no upload cap, no storage quota, no bind address the server
+would admit to, and nothing at all holding the one rule the whole design rests on — one blog,
+one owner. In each case a reverse proxy, a firewall rule or a habit had been covering, which is
+exactly why none of them had ever shown.
 
 **Three new environment variables, and one of them changes what an existing install does at
-boot** — read the first entry before upgrading. The release number is the owner's call and is
-not set here.
+boot** — read the first entry before upgrading.
 
 ### The server listened on every interface, under a log line that said it did not
 
@@ -198,6 +198,111 @@ indexed inside its own 20 bytes, and seventeen in one file from indexing a `Reco
 string>` that the function above it fills with `''` for every key. The reasoning and the
 numbers are now in `tsconfig.json` beside the flags, so the next person meets the measurement
 rather than the queue entry.
+
+
+### The admin was wearing the framework's clothes, not the product's
+
+The owner's word for it was *rẻ tiền* — cheap. That is a fair reading of what was there, and
+the fault was not workmanship: a grey canvas, rounded white cards, drop shadows and pill tabs
+is the stock look every dashboard framework hands out, and none of it came from this product,
+whose public side is paper and hairline rules. Twelve screens dressed as somebody else's
+software.
+
+So the vocabulary changed once, in the shared kit, and all twelve moved with it: a **paper**
+canvas, sheets with a hairline instead of a shadow, a 10-8-6 radius ladder, and the shadow
+reserved for something that genuinely floats over content. `check:admin-kit` gained a rule that
+matches the SHAPE rather than the exact class string — a raised white surface on a shadow —
+because six segmented controls had copied the tab strip's pill and every one of them differed
+from the primitive by a single shade, so the existing check passed for months while the admin
+carried seven of one control.
+
+**One typeface.** The chrome font the admin borrowed from the site is gone; it is Inter and
+nothing else, with one deliberate exception — the editor's writing surface and its title stay
+in the reading face, because what you type there is what a reader will see. A test pins the
+exception to four files by name, so a third face cannot arrive quietly.
+
+**Sidebar icons are a preference, off by default**, remembered per machine. Collapse is always
+available: a collapsed rail has no labels, so it always draws glyphs regardless of the setting.
+
+Spacing was re-measured rather than re-guessed — the page rhythm went 32/12/12/24 to 40/16/24/24
+— and two things the owner pointed at were fixed by measurement: the dashboard's stat tiles were
+49% empty air and are now one ruled band, and two cards in a row sat 37px out of line at the
+seam (0px now, top and bottom).
+
+The version label reads `quireINK v2.0.3 (abc1234)`, linking to the **project** rather than to
+the commit. The SHA is there to be read — does this match what was just shipped — and a
+per-commit URL is a page nobody opens from a dashboard and 404s the moment a branch is rebased.
+
+### Every admin screen downloaded a LaTeX engine
+
+Measured on the Comments screen, which has neither an editor nor a formula on it: **212 KB
+unpacked, 63 KB over the wire**, of Temml. Nothing was wrong with the code. `@/utils` needed
+three regex helpers so `toPlainText` could drop a formula out of an excerpt, it took them from
+`render/math.ts`, and an ESM import is not a menu — taking three helpers took the module, and
+that module imports Temml at its top. Fifteen admin files import `@/utils`, so the bundler put
+a LaTeX engine in the chunk every screen shares.
+
+The grammar now lives in `render/math-syntax.ts`, which may never import a renderer; `math.ts`
+re-exports all of it so the parsers that do render still ask one module for both halves. The
+admin's first load drops from 682 KB unpacked to 470 KB, and the editor — the one screen that
+actually renders maths — is unchanged.
+
+### The front page's biggest slot was starved by a cap meant for a `<meta>` tag
+
+An excerpt was clamped to 200 characters when SAVED. The front page's text kind then asked for
+260 for its lead standfirst and could never be given them: the most-looked-at slot on the site
+was bounded by a number chosen because search engines truncate a meta description past ~160.
+
+Storage now keeps **280**, and each surface clamps again on the way out for its own reason —
+the same shape `web/article.ts` already used for the share card. The demo's own standfirsts were
+one line each and have been rewritten; they now run three to four.
+
+### CJK stops being deliberately absent
+
+The fixture said CJK was left out because no bundled subset carries a Han, kana or hangul glyph,
+so it would "fall back to a system font and demonstrate the opposite of the point". That
+confused what we SHIP with what the page RENDERS IN. Nothing CJK is shipped and nothing will be
+— a CJK webfont is megabytes — but a stack that ends at the generic `serif` keyword hands the
+choice to the browser's last-resort face, which differs on every machine and nobody picked.
+
+The reading stacks now name PingFang, Hiragino, Yu Mincho, Malgun Gothic and the Noto families
+before the generic, at zero download. And because 直 is one character drawn three ways, there is
+one tail **per language** with `:lang(zh|ja|ko)` rules to select it, so a Japanese site is not
+set in Chinese letterforms by whichever family the machine happens to have installed first.
+The demo has three new posts — Chinese, Japanese and Korean — to prove it.
+
+### The tour toured the wrong instance, and blamed the code
+
+The tour serves its own seeded instance on port 3399, which is also the port a dev instance
+runs on. With one already bound, the tour's server lost the bind, the health check was answered
+by the OTHER instance, and forty flows ran against a database the tour never seeded: the
+reader-side half passed on the same fixture, and all twenty-six admin flows failed `401` because
+the session belonged to a different database. It reads as a specific, confident regression.
+It cost an hour of bisecting one.
+
+**The tour now refuses to start on a busy port**, before it builds or seeds. And the browser
+binary is found rather than hardcoded: three scripts each carried the same Linux path, so on a
+Mac the project's main verification tool opened with `ENOENT` on a directory with the wrong
+platform in its name. `scripts/chrome-path.ts` looks in the places it is actually installed and
+names the install command when it finds none.
+
+### Smaller things
+
+- The Comments table gave the post title 97px, in which a normal headline wrapped to five lines
+  and made every row 145px tall — sized by the column that matters least, while the comment
+  beside it stayed clamped at two lines inside all that height. A minimum width and a clamp:
+  176px and 65px.
+- Settings has a search box. Seven tabs were defined and the owner still could not find a
+  setting; four links elsewhere in the admin pointed at a tab deleted two weeks earlier.
+- The onboarding steps can be opened again after being dismissed.
+- A hint rendered in two different faces on one card, because the rule that chose the face keyed
+  off the HTML TAG: `Setting`'s hint is a `<p>` and `ui/Input`'s identical hint is a `<span>`.
+  Faces are chosen by ROLE now, and `check:admin-kit` fails a screen that names a typeface.
+- The demo's posts carry 47 highlighter strokes and 67 formulas, against 12 and 5. A renderer
+  feature absent from the fixture is a feature the demo claims and never proves.
+- `content/themes.ts` split: palettes stay, the font presets and their tuned typography move to
+  `content/fonts.ts`. One-way import, and `themes.ts` re-exports, so all 22 callers are
+  unchanged.
 
 ### Also
 

@@ -19,20 +19,22 @@
 // subsetting by `unicode-range` (`src/render/font-faces.ts`), and it cannot be made by a
 // quotation buried three screens down.
 //
-// CJK stays out, deliberately and for the same reason it always has: no bundled subset
-// carries it, so a Japanese title would fall back to a system font and demonstrate the
-// opposite of the point. Every language here is latin or latin-ext (U+0100-02FF), which the
-// real face covers — ogonek, háček, dotless i, eth and thorn included.
+// EVERY LANGUAGE HERE IS LATIN OR LATIN-EXT (U+0100-02FF), which the real face covers —
+// ogonek, háček, dotless i, eth and thorn included. That is the line this file draws, and it
+// is now the only thing it means: CJK moved OUT of "deliberately absent" and into
+// `seed-content-cjk.ts` on 2026-08-15, once the reading stacks named a CJK face to fall to
+// instead of leaving the choice to the browser. Splitting the two keeps one claim per file —
+// here, a glyph the bundled subset really carries; there, a glyph it never will.
 import type { Seed } from './seed-content'
 
 export const INTL_POSTS: Seed[] = [
   {
     title: 'Ogonek nie jest przecinkiem',
     slug: 'ogonek-nie-jest-przecinkiem',
-    excerpt: 'Ogonek rośnie z litery. Przecinek doklejony pod spodem widać z drugiego końca pokoju.',
+    excerpt: 'Ogonek rośnie z litery, po tej samej krzywej, którą kończy się jej brzuszek. Przecinek doklejony pod spodem widać z drugiego końca pokoju — a przy ciasnej interlinii dotyka wersalika z następnego wiersza.',
     category: 'Typography', tags: ['diacritics', 'craft', 'polish'],
     ago: 5,
-    body: `Polski ogonek jest jedynym znakiem diakrytycznym, który nie stoi obok litery ani nad nią. On z niej **wyrasta**. W dobrze narysowanym kroju ą i ę mają ogonek wyprowadzony ze skoku pióra, po tej samej krzywej, którą kończy się brzuszek litery.
+    body: `Polski ogonek jest jedynym znakiem diakrytycznym, który nie stoi obok litery ani nad nią. ==On z niej **wyrasta**.==#green W dobrze narysowanym kroju ą i ę mają ogonek wyprowadzony ze skoku pióra, po tej samej krzywej, którą kończy się brzuszek litery.
 
 W źle narysowanym kroju ktoś wziął przecinek i przykleił go pod spodem.
 
@@ -57,7 +59,7 @@ Zażółć gęślą jaźń — to zdanie zawiera wszystkie polskie znaki diakryt
   {
     title: 'Háček a rytmus české sazby',
     slug: 'hacek-a-rytmus-ceske-sazby',
-    excerpt: 'Háček nad malým písmenem se vejde. Nad velkým se nevejde nikdy, a s tím se musí počítat předem.',
+    excerpt: 'Háček nad malým písmenem se vejde. Nad velkým se nevejde nikdy, a počítat se s tím musí dřív, než se nastaví proklad — jinak se Ř z jednoho řádku dotkne účaří řádku nad ním.',
     category: 'Calligraphy', tags: ['diacritics', 'rhythm', 'czech'],
     ago: 16,
     body: `Čeština klade na sazbu požadavek, který latinka původně neřešila: nad polovinou souhlásek stojí háček, a nad dlouhými samohláskami čárka. Písmo, které s tím nepočítá, se nerozbije — jen začne být o něco těsnější, řádek po řádku, až je stránka nečitelná a nikdo neví proč.
@@ -66,7 +68,7 @@ Zażółć gęślą jaźń — to zdanie zawiera wszystkie polskie znaki diakryt
 
 Nad **č**, **ř**, **ž** má háček dost místa: sedí v prostoru nad střední výškou, kam stejně sahají horní dotažnice. Nad **Č**, **Ř**, **Ž** už místo není. Verzálka je vysoká jako celý řádek, a háček musí někam.
 
-Kaligraf to řeší tak, že háček nad verzálkou zplošťuje a posouvá doprava, po směru pera. Typograf to musí vyřešit proklademe — jinak háček z jednoho řádku narazí do dotažnice z předchozího.
+==Kaligraf to řeší tak, že háček nad verzálkou zplošťuje a posouvá doprava==#green, po směru pera. Typograf to musí vyřešit proklademe — jinak háček z jednoho řádku narazí do dotažnice z předchozího.
 
 >[!WARNING]
 > Nikdy neřešte kolizi háčků tím, že háček zmenšíte. Ztratí váhu okolního písma a slovo pak vypadá vybledle — přesně to, co se stane u falešných kapitálek. Řešením je proklad, ne velikost znaménka.
@@ -80,12 +82,12 @@ Příliš žluťoučký kůň úpěl ďábelské ódy. Deset diakritických znam
   {
     title: 'Noktasız ı ve baş harfin tuzağı',
     slug: 'noktasiz-i-ve-bas-harfin-tuzagi',
-    excerpt: 'Türkçede i ve ı iki ayrı harftir. Yazılımın çoğu bunu bilmez ve İstanbul’u ISTANBUL yapar.',
+    excerpt: 'Türkçede i ve ı iki ayrı harftir, tıpkı o ile ö gibi. Yazılımın çoğu bunu bilmez, İstanbul’u ISTANBUL yapar, ve hatayı kimse bir veri tabanına yazılana kadar fark etmez.',
     category: 'Typography', tags: ['craft', 'letterforms', 'turkish'],
     ago: 27,
     body: `Latin alfabesini kullanan çoğu dilde **i** harfinin büyüğü **I**'dır. Türkçede değil. Türkçede dört harf vardır: noktalı **i** ve onun büyüğü **İ**, noktasız **ı** ve onun büyüğü **I**.
 
-Bu bir incelik değil. Anlamı değiştirir: *açık* ile *acık*, *sıkı* ile *siki*.
+==Bu bir incelik değil. Anlamı değiştirir==#pink: *açık* ile *acık*, *sıkı* ile *siki*.
 
 ## Tipografide nerede görünür
 
@@ -109,12 +111,12 @@ Işık, yığın, İstanbul. Üç kelime, dört farklı i.`,
   {
     title: 'Die Kunst der Kapitälchen',
     slug: 'die-kunst-der-kapitaelchen',
-    excerpt: 'Echte Kapitälchen sind gezeichnet. Alles andere ist verkleinerte Versalschrift und sieht auch so aus.',
+    excerpt: 'Echte Kapitälchen sind gezeichnet: eigene Strichstärke, eigene Laufweite, eigene Höhe. Alles andere ist verkleinerte Versalschrift, wirkt dünn und zu eng — und genau das tut der Browser, wenn die Schrift den Schnitt nicht mitbringt.',
     category: 'Typography', tags: ['small caps', 'craft'],
     ago: 34,
     body: `Kapitälchen sind der stillste Akzent, den die Typografie kennt. Sie heben ein Wort hervor, ohne die Zeile zu stören, weil sie die Höhe der Kleinbuchstaben behalten und trotzdem die Form der Großbuchstaben tragen.
 
-Der Unterschied zwischen echten und gefälschten Kapitälchen ist keine Feinheit. Echte sind eigens gezeichnet, mit kräftigeren Strichen und weiterem Abstand. Gefälschte entstehen, indem der Browser Versalien verkleinert — und dabei werden die Striche dünner als die der umgebenden Schrift, sodass das hervorgehobene Wort blasser wirkt als der Text, aus dem es herausstechen soll.
+==Der Unterschied zwischen echten und gefälschten Kapitälchen ist keine Feinheit.==#yellow Echte sind eigens gezeichnet, mit kräftigeren Strichen und weiterem Abstand. Gefälschte entstehen, indem der Browser Versalien verkleinert — und dabei werden die Striche dünner als die der umgebenden Schrift, sodass das hervorgehobene Wort blasser wirkt als der Text, aus dem es herausstechen soll.
 
 ## Wo sie hingehören
 
@@ -129,10 +131,10 @@ Kapitälchen brauchen mehr Laufweite als Kleinbuchstaben, aus demselben Grund wi
   {
     title: 'Eð og þorn: tveir stafir sem lifðu af',
     slug: 'ed-og-thorn-tveir-stafir',
-    excerpt: 'Þorn og eð stóðu einu sinni í ensku líka. Íslenska hélt þeim, og prentsmiðjurnar borguðu fyrir það.',
+    excerpt: 'Þorn og eð stóðu einu sinni í ensku líka. Íslenskan hélt þeim, og prentsmiðjurnar borguðu fyrir það í heila öld — með stöfum sem þurfti að steypa sérstaklega og týndust jafnóðum úr kassanum.',
     category: 'Printing', tags: ['history', 'letterforms', 'icelandic'],
     ago: 41,
-    body: `Stafirnir **þ** (þorn) og **ð** (eð) eru ekki skraut. Þeir eru tvö ólík hljóð sem latneska stafrófið átti ekkert tákn fyrir, og norrænir skrifarar bjuggu þau til vegna þess að þeir þurftu þau.
+    body: `==Stafirnir **þ** (þorn) og **ð** (eð) eru ekki skraut.==#green Þeir eru tvö ólík hljóð sem latneska stafrófið átti ekkert tákn fyrir, og norrænir skrifarar bjuggu þau til vegna þess að þeir þurftu þau.
 
 Enska notaði þorn líka, öldum saman. Hún missti hann ekki af málfræðilegum ástæðum heldur af prenttæknilegum: fyrstu prentletrin voru flutt inn frá Hollandi og Þýskalandi, og í þeim kössum var enginn þorn. Prentarar settu **y** í staðinn, því formið líktist.[^1] Þaðan kemur *ye olde* — sem var aldrei borið fram með ípsíloni.[^2]
 
@@ -154,12 +156,12 @@ Enska notaði þorn líka, öldum saman. Hún missti hann ekki af málfræðileg
   {
     title: 'La chasse, l’approche et le gris typographique',
     slug: 'la-chasse-et-l-approche',
-    excerpt: 'Trois mots français pour trois choses que l’anglais confond sous le mot spacing.',
+    excerpt: 'Trois mots français pour trois choses que l’anglais confond sous le seul mot spacing. La chasse appartient à la lettre, l’approche au couple, le gris à la page entière — et l’un ne corrige jamais l’autre.',
     category: 'Typography', tags: ['kerning', 'tracking', 'craft'],
     ago: 48,
     body: `Le français distingue ce que l'anglais mélange. La **chasse** est la largeur propre d'un caractère, gravée dans la fonte. L'**approche** est l'espace entre deux caractères. Le **gris typographique** est la teinte moyenne que produit un bloc de texte quand on le regarde de loin, les yeux mi-clos.
 
-Ces trois notions ne se règlent pas au même endroit, et les confondre est la source de la plupart des pages mal composées.
+==Ces trois notions ne se règlent pas au même endroit==#orange, et les confondre est la source de la plupart des pages mal composées.
 
 ## Le crénage n'est pas l'interlettrage
 
@@ -176,10 +178,10 @@ Same test, other languages: Íslenska, Čeština, Türkçe. Cùng một phép th
   {
     title: 'Thư pháp và nhịp thở',
     slug: 'thu-phap-va-nhip-tho',
-    excerpt: 'Nét chữ đẹp không đến từ cổ tay. Nó đến từ chỗ người viết quyết định dừng lại.',
+    excerpt: 'Nét chữ đẹp không đến từ cổ tay. Nó đến từ chỗ người viết quyết định dừng lại, và từ nhịp thở giữa hai nét — thứ không cây bút nào dạy được cho người đang cầm nó.',
     category: 'Calligraphy', tags: ['vietnamese', 'practice', 'rhythm'],
     ago: 96,
-    body: `Người mới học thư pháp thường tập trung vào hình dáng từng chữ. Người viết lâu năm tập trung vào khoảng nghỉ giữa các chữ, vì đó mới là chỗ quyết định cả trang giấy nhìn có sống hay không.
+    body: `Người mới học thư pháp thường tập trung vào hình dáng từng chữ. ==Người viết lâu năm tập trung vào khoảng nghỉ giữa các chữ==#green, vì đó mới là chỗ quyết định cả trang giấy nhìn có sống hay không.
 
 Một dòng chữ đẹp có nhịp. Nét xuống nặng, nét lên nhẹ, rồi một quãng ngắt trước khi bắt đầu chữ tiếp theo. Nhịp ấy đến từ hơi thở của người viết chứ không từ thước kẻ, và đó là lý do một dòng chép lại từ bản mẫu bao giờ cũng cứng hơn bản gốc.
 
@@ -198,7 +200,7 @@ Tập một nét duy nhất, lặp lại kín một trang, cho tới khi nét th
   {
     title: 'Dấu phụ tiếng Việt và chiều cao chữ hoa',
     slug: 'dau-phu-tieng-viet',
-    excerpt: 'Chữ Quốc ngữ chồng hai dấu lên một nguyên âm. Đó là bài kiểm tra khắc nghiệt nhất cho khoảng cách dòng.',
+    excerpt: 'Chữ Quốc ngữ chồng hai dấu lên cùng một nguyên âm: một dấu chất lượng, một dấu thanh. Đó là bài kiểm tra khắc nghiệt nhất cho khoảng cách dòng, và là lý do một trang tiếng Việt cần thoáng hơn tiếng Anh chừng hai phần mười.',
     category: 'Typography', tags: ['vietnamese', 'diacritics', 'leading'],
     ago: 104,
     body: `Tiếng Việt là một trong số ít chữ viết Latinh chồng **hai** dấu lên cùng một nguyên âm: một dấu phụ chỉ âm, một dấu thanh. Chữ **ế** mang mũ rồi mang sắc; chữ **ườ** mang móc rồi mang huyền.
@@ -207,7 +209,7 @@ Hệ quả là phần trên của dòng chữ tiếng Việt cao hơn hầu hế
 
 ## Ba chỗ hay hỏng
 
-Chữ hoa có dấu là chỗ hỏng đầu tiên: **Ế**, **Ộ**, **Ữ** đẩy dấu lên trên cả chiều cao chữ hoa, nên tiêu đề viết hoa toàn phần gần như luôn phải nới thêm.
+==Chữ hoa có dấu là chỗ hỏng đầu tiên==#orange: **Ế**, **Ộ**, **Ữ** đẩy dấu lên trên cả chiều cao chữ hoa, nên tiêu đề viết hoa toàn phần gần như luôn phải nới thêm.
 
 Chỗ thứ hai là tiêu đề cỡ lớn, nơi khoảng cách dòng thường bị siết xuống dưới 1.1. Với tiếng Anh thì đẹp, với tiếng Việt thì dấu chồng lên nhau.
 
@@ -222,7 +224,7 @@ Deutsch, Polski und Türkçe stellen dieselbe Frage in kleinerem Maßstab: Grö�
   {
     title: 'Der Blocksatz und die Lücke',
     slug: 'der-blocksatz-und-die-luecke',
-    excerpt: 'Blocksatz ohne Silbentrennung ist der häufigste Satzfehler im Web, und er ist in einer Zeile zu beheben.',
+    excerpt: 'Blocksatz ohne Silbentrennung ist der häufigste Satzfehler im Web: Löcher, die sich über drei Zeilen zu einem Bach zusammenschließen. Zu beheben ist er in einer einzigen CSS-Zeile, die fast niemand hinschreibt.',
     category: 'Typography', tags: ['justification', 'hyphenation', 'craft'],
     ago: 112,
     body: `Blocksatz sieht ordentlich aus, solange die Spalte breit genug ist. Wird sie schmal, verteilt der Browser den fehlenden Platz auf die Wortzwischenräume einer Zeile — und weil er nur ganze Wörter umbrechen kann, entstehen Löcher.
@@ -231,7 +233,7 @@ Deutsch, Polski und Türkçe stellen dieselbe Frage in kleinerem Maßstab: Grö�
 
 ## Die Ursache ist fast nie der Blocksatz
 
-Sie ist die fehlende Silbentrennung. Ohne sie muss jede Zeile mit ganzen Wörtern gefüllt werden, und im Deutschen sind die Wörter lang.
+==Sie ist die fehlende Silbentrennung.==#green Ohne sie muss jede Zeile mit ganzen Wörtern gefüllt werden, und im Deutschen sind die Wörter lang.
 
 | Spaltenbreite | Ohne Trennung | Mit Trennung |
 |---|---|---|

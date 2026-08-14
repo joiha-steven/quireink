@@ -1,7 +1,11 @@
 // Pure helpers shared across lib and components. No side effects, no I/O.
 
 import { INK_SYNTAX_GLOBAL } from '@/render/ink'
-import { MATH_SYNTAX_GLOBAL, mathOf, isDisplayMatch } from '@/render/math'
+// `math-syntax`, NOT `math`: the grammar, not the renderer. Fifteen admin files import this
+// module, so whatever it reaches for lands in the chunk every admin screen loads — and
+// `render/math.ts` imports Temml. Three regexes cost 212 KB of LaTeX engine until this line
+// pointed one file to the left. See the header of `math-syntax.ts`.
+import { MATH_SYNTAX_GLOBAL, mathOf, isDisplayMatch } from '@/render/math-syntax'
 
 /** TeX source -> the letters and numbers in it: control words, braces, `&` and `\\` go. */
 const stripTex = (tex: string) =>
@@ -68,8 +72,23 @@ export function formatTime(iso: string): string {
   return `${hh}:${mm}`
 }
 
-// Max characters kept from an author-provided excerpt.
-export const EXCERPT_MAX_CHARS = 200
+/**
+ * Max characters kept from an author-provided excerpt.
+ *
+ * 280, and it was 200 until 2026-08-15. The old number was a META DESCRIPTION bound — a
+ * search engine truncates one past ~160 anyway — applied at the point where the excerpt is
+ * SAVED, so it bounded every surface that reads one. The front page's text kind then asked
+ * `deck()` for 260 characters for its lead standfirst (`DECK_CHARS` in `web/front-card.ts`)
+ * and could never be given more than 200: the biggest slot on the most-looked-at page was
+ * starved by a cap set for a `<meta>` tag it has nothing to do with. Visible on the demo as
+ * a two-line deck under a three-line headline, which is what "mô tả ngắn quá" reported.
+ *
+ * The pattern for fixing it was already in the file that broke it: `web/article.ts` had hit
+ * the same wall for the share card and answered it with its own `OG_DESC_MAX`, not by
+ * moving this one. So the rule is now — THIS bounds STORAGE, and a surface with a narrower
+ * need clamps again on the way out. The `<meta name="description">` does exactly that.
+ */
+export const EXCERPT_MAX_CHARS = 280
 
 // Strip markdown/HTML to plain text.
 export function toPlainText(markdown: string): string {

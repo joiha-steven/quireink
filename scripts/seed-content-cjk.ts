@@ -1,0 +1,205 @@
+// The CJK posts: Chinese, Japanese and Korean, and the reversal of a rule that stood until
+// 2026-08-15.
+//
+// WHAT THE RULE WAS. `seed-content.ts` and `-intl.ts` both said CJK stays out, in the same
+// words: no bundled subset carries a Han, kana or hangul glyph, so a Japanese title would
+// "fall back to a system font and demonstrate the opposite of the point". That was a correct
+// reading of a real constraint. A CJK webfont is megabytes; this project budgets a reader's
+// download in single kilobytes (`docs/performance.md`), and no amount of wanting changes it.
+//
+// WHY IT NO LONGER HOLDS. The rule confused two different things — what we SHIP and what the
+// page RENDERS IN. Nothing here ships a CJK face and nothing ever will. What changed is that
+// the reading stacks now END somewhere on purpose: `CJK_SERIF` and `CJK_SANS` in
+// `content/fonts.ts` name PingFang, Hiragino, Yu Mincho, Malgun Gothic and the Noto families
+// after the bundled face, so a Han character lands in a face that was chosen rather than in
+// whatever the browser reaches for last. That was the actual defect behind the old rule: not
+// that CJK looked bad, but that it looked like nobody had decided. Zero bytes are downloaded
+// for any of it.
+//
+// SO WHAT THESE POSTS PROVE is the opposite of what the old note feared: that a page set in
+// Literata can carry a paragraph of 漢字 without either half looking borrowed, and that the
+// mixed-script problems below are real problems this software has an answer for.
+//
+// ONE THING THEY CANNOT PROVE, and it is written down in `content/fonts.ts` too: a Han
+// character is drawn differently in Chinese, Japanese and Korean typography, and a
+// font-family list picks the first INSTALLED family without ever consulting the language of
+// the text. All three posts below therefore render in the same Han face. Fixing it needs a
+// per-post language, which no post has — `<html lang>` is one site-wide setting.
+//
+// ONE LINE PER PARAGRAPH, as everywhere else in the fixture: the renderer turns a single
+// newline into a `<br>`.
+import type { Seed } from './seed-content'
+
+export const CJK_POSTS: Seed[] = [
+  {
+    title: '字面、字身，以及汉字为什么不肯听拉丁字母的话',
+    slug: 'zimian-yu-zishen',
+    excerpt: '拉丁字母的宽度各不相同，汉字却每一个都住在同样大的方框里。'
+      + '真正决定疏密的不是那个框，而是框里那一点留白——字面率。'
+      + '把中文和英文排在同一行时，出问题的几乎永远是这件事。',
+    category: 'Typography', tags: ['han', 'metrics', 'mixed-script'],
+    ago: 3,
+    body: `一个拉丁字母有自己的宽度。i 窄，m 宽，排版时它们各占各的位置，这叫比例宽度。
+
+汉字不是这样。==每一个汉字都住在同样大的一个方框里==，无论它是「一」还是「鬱」。这个框叫**字身框**，它的边长就是字号。
+
+问题在于，笔画真正占到的那一块，比框要小。那一块叫**字面**，两者的比值叫字面率：
+
+$$r = \\frac{\\text{字面}}{\\text{字身}}$$
+
+## 为什么这个比值决定一切
+
+假设字号是 $s$，字面率是 $r$，那么两个相邻汉字之间，天然就存在一段留白：
+
+$$g = s\\,(1 - r)$$
+
+这段留白不是你排出来的，是字体设计师替你决定的。==所以中文正文几乎不需要额外加字距==#green——加了就等于在已经有的留白上再加一层。
+
+| 字面率 | 观感 | 常见于 |
+|---|---|---|
+| 0.88 – 0.92 | 紧、饱满、适合标题 | 黑体、宋体标题字 |
+| 0.83 – 0.87 | 正文的舒适区 | 多数屏幕正文字体 |
+| 0.78 – 0.82 | 疏朗、古典 | 明朝体、老式宋体 |
+
+> [!NOTE]
+> 同样一段话，用 $r = 0.92$ 的字体排出来，会比 $r = 0.82$ 的显得挤——即使两者的字号完全相同。字号相同不代表看起来一样大。
+
+## 混排：真正的麻烦
+
+把 Literata 和汉字排在同一行，两套完全不同的度量就撞在一起了。
+
+拉丁字母的视觉重心落在 x 高度上，汉字的重心落在整个字面的中间。==两者的基线是同一条，视觉中线却不是==#blue，所以英文看起来总是偏低一点。
+
+$$\\Delta \\approx \\frac{s\\,r}{2} - \\frac{x}{2}$$
+
+其中 $x$ 是拉丁字体的 x 高度。这个差值通常在字号的百分之三到百分之六之间——小到说不出哪里不对，大到整行看着就是歪的。
+
+## 能做的三件事
+
+第一，**给拉丁部分单独调字号**。中文 16px 配英文 16px，英文几乎总是显小，因为它的 x 高度只有字身的一半左右。
+
+第二，**在中西文之间留四分之一个字宽**。这是排版界的老规矩，不是审美偏好：没有它，「使用 Literata 排版」这几个字里，「用」和 L 会贴在一起。
+
+第三，**不要指望字距解决它**。字距是全局的，而这个问题是局部的——它只发生在中西文交界的那一处。
+
+> [!TIP]
+> 判断一份中英混排做得好不好，只要看一行里有没有出现「字母紧贴汉字」和「标点后面开了个大口子」这两件事。它们同时出现，说明排版规则里根本没写混排这一条。`,
+  },
+  {
+    title: '約物は半角か、全角か——組版が黙って決めていること',
+    slug: 'yakumono-hankaku-zenkaku',
+    excerpt: '句読点や括弧は、字身の全部を使うわけではない。'
+      + 'それでも全角の枠を持って歩くので、行の中に説明のつかない空きが生まれる。'
+      + '禁則処理と字詰めは、その空きをどう配るかという一つの問題の裏表である。',
+    category: 'Typography', tags: ['japanese', 'punctuation', 'kinsoku'],
+    ago: 7,
+    body: `日本語の組版で、最初につまずくのは文字ではなく**約物**である。句読点、括弧、中黒——読むときには意識しない、あの小さな記号たちだ。
+
+漢字も仮名も、全角の枠をきっちり使う。ところが「。」は、==枠の左下の四分の一しか使っていない==。残りの四分の三は空白のまま、行の中を一緒に流れていく。
+
+## 空きはどこから来るのか
+
+一行の長さを $L$、字送りを $s$、その行に含まれる約物の数を $n$ とすると、意図しない空きの合計はおおよそ
+
+$$W \\approx n \\cdot s \\cdot (1 - c)$$
+
+$c$ はその約物が実際に使っている面積の比率で、句点なら $c \\approx 0.25$ である。
+
+つまり==約物が四つ並べば、字一つぶんの穴が行のどこかに開いている==#orange ことになる。「」。と続く箇所が読みにくいのは、書き手の文章のせいではない。
+
+| 約物 | 全角での使用率 $c$ | 詰めるべきか |
+|---|---|---|
+| 。、 | 約 0.25 | 後ろを半角に |
+| 「」（） | 約 0.5 | 前後どちらか一方 |
+| ・ | 約 0.5 | 原則そのまま |
+| ——（ダッシュ） | 1.0 | 詰めない |
+
+> [!WARNING]
+> 「約物を全部半角にする」は解決ではない。句点のうしろの空きは**文の切れ目**という情報であって、詰めきると文章が一続きの塊になる。
+
+## 禁則処理は空きの配り方の問題
+
+行頭に「。」が来てはいけない、行末に「「」が来てはいけない——禁則処理はふつう禁止事項のリストとして説明される。
+
+実際にやっているのは違う。==禁則とは、はみ出した一文字ぶんの空きを、どの字間に配るかという計算である==#green。
+
+追い込み（前の行に詰める）なら、その行の字間がわずかに狭くなる。追い出し（次の行へ送る）なら、前の行に一文字ぶんの空きが増える。どちらにしても、空きは消えない。移動するだけだ。
+
+$$\\text{追い込み時の字間} = s - \\frac{s}{m - 1}$$
+
+$m$ はその行の文字数。三十字の行なら一字あたり約三パーセントの詰め——ほとんど見えない。十五字の行なら七パーセント近くなり、その行だけ色が濃く見える。
+
+> [!TIP]
+> 短い行長で禁則処理を効かせると、行ごとに濃さが変わって縞になる。段組みの幅を決めるとき、禁則のことまで考えている設計はそう多くない。
+
+## ルビという例外
+
+ルビは行間を食う。しかも、==ルビのある行だけが食う==ので、行送りを固定していないページでは、そこだけ行が離れる。
+
+対策は一つしかない。行送りをルビのぶんまで見込んで最初から決めておくことだ。本文が 16px、行送り 1.8 なら、ルビ付きの行のために必要なのはおおよそ
+
+$$\\text{行送り} \\geq 1.0 + 0.5 + 0.3 = 1.8$$
+
+本文一つぶん、ルビ半分、そして息をつくぶんの余白。この式が偶然ぴったりなのは偶然ではなく、日本語の行送りが 1.75 から 1.8 に落ち着いた理由そのものである。`,
+  },
+  {
+    title: '모아쓰기와 행간: 한글이 라틴 알파벳과 다르게 숨 쉬는 법',
+    slug: 'moaseugi-wa-haenggan',
+    excerpt: '한글은 낱자를 모아 한 글자를 만든다. '
+      + '그래서 같은 크기라도 획이 들어찬 정도가 글자마다 크게 다르고, '
+      + '라틴 알파벳에 맞춘 행간을 그대로 쓰면 페이지가 답답해진다.',
+    category: 'Typography', tags: ['hangul', 'leading', 'measure'],
+    ago: 11,
+    body: `한글은 낱자를 옆으로 늘어놓지 않는다. 초성·중성·종성을 하나의 네모 안에 **모아서** 한 글자를 만든다. 이것을 모아쓰기라고 한다.
+
+결과는 단순하다. =='이'와 '뻻'은 같은 크기의 네모를 차지하지만, 그 안에 든 획의 수는 열 배 가까이 차이 난다==.
+
+## 획밀도가 회색도를 만든다
+
+한 글자에 들어간 획의 수를 $k$, 글자 크기를 $s$라고 하면, 그 글자가 지면에 남기는 잉크의 양은 대략
+
+$$\\rho \\approx \\frac{k \\cdot w}{s^2}$$
+
+$w$는 획의 굵기다. 라틴 알파벳에서 $k$는 대체로 1에서 4 사이를 오간다. 한글에서는 ==2에서 20까지 벌어진다==#pink.
+
+| | 획 수 범위 | 회색도 편차 |
+|---|---|---|
+| 라틴 소문자 | 1 – 4 | 작음 |
+| 한글 음절 | 2 – 20 | 큼 |
+| 한자 | 1 – 30 이상 | 매우 큼 |
+
+그래서 한글 본문은 라틴 본문보다 **줄마다 색이 더 많이 흔들린다**. 받침이 몰린 문장은 진하게, 받침 없는 문장은 옅게 보인다. 이건 글꼴의 결함이 아니라 문자 체계의 성질이다.
+
+> [!NOTE]
+> 이 흔들림은 글자 크기를 키운다고 줄지 않는다. $\\rho$의 분자와 분모가 함께 커지기 때문이다. 줄일 수 있는 건 행간뿐이다.
+
+## 그래서 행간이 더 필요하다
+
+라틴 알파벳의 표준 행간은 글자 크기의 1.4에서 1.5배다. 한글에 그대로 쓰면 좁다.
+
+이유는 두 가지다. 첫째, 받침이 글자 아래쪽까지 내려와서 ==다음 줄의 윗부분과 시각적으로 부딪힌다==#blue. 둘째, 위에서 본 회색도 편차 때문에 눈이 줄을 따라가는 데 더 많은 여백을 요구한다.
+
+$$\\text{행간}_{\\text{한글}} \\approx \\text{행간}_{\\text{라틴}} + 0.2s$$
+
+실무에서 자리잡은 값은 1.6에서 1.8 사이다. 이 사이트의 기본값이 1.7인 것은 그 대역의 한가운데다.
+
+## 한 줄에 몇 자를 담을 것인가
+
+라틴 알파벳의 적정 행폭은 한 줄에 45자에서 75자다. 한글은 다르다. 한 글자가 라틴 두 글자 이상의 폭을 차지하므로, ==같은 단 너비라면 한글은 절반의 글자 수로 채워진다==.
+
+$$n_{\\text{한글}} \\approx \\frac{W}{s} \\qquad n_{\\text{라틴}} \\approx \\frac{W}{0.5s}$$
+
+$W$는 단의 너비다. 672px 단에서 라틴은 약 70자, 한글은 약 35자. 그리고 ==한글의 편안한 범위는 25자에서 40자==#green이므로, 라틴에 맞춰 잡은 단 너비가 한글에서도 대체로 맞아떨어진다.
+
+> [!TIP]
+> 우연이 아니다. 두 범위 모두 눈이 한 번에 훑고 되돌아올 수 있는 물리적 거리에서 나온 값이기 때문이다. 글자 수가 아니라 밀리미터가 기준이다.
+
+## 라틴과 섞을 때
+
+한글 문장에 영어 단어가 들어오면 두 가지가 어긋난다. 시각 중심선과 굵기다.
+
+한글의 시각 중심은 네모의 한가운데에 있고, 라틴 소문자의 중심은 x-height의 절반에 있다. 베이스라인이 같아도 ==영어 쪽이 아래로 가라앉아 보인다==.
+
+굵기는 더 눈에 띈다. 같은 400 두께라도 한글 글꼴의 획은 라틴보다 굵게 그려지는 경우가 많다. 본문에 영어가 자주 섞인다면, 라틴 쪽을 반 단계 굵게 잡는 편이 낫다.`,
+  },
+]

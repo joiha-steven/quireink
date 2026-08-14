@@ -54,7 +54,14 @@ export function CommentsTable({ initial }: { initial: AdminComment[] }) {
             <tr>
               {/* The comment takes the slack — see `PostsTable`. */}
               <th className="w-full px-4 py-3 font-medium">{t.commentsColContent}</th>
-              <th className="hidden px-4 py-3 font-medium md:table-cell">{t.commentsColPost}</th>
+              {/* `min-w`, not `max-w`. The comment column claims every spare pixel, so an
+                  auto-layout table squeezed this one to its longest WORD — measured at 97px,
+                  in which "The golden canon, and the arithmetic under it" wrapped to five
+                  lines and made every row 145px tall. The row was then sized by the column
+                  that matters least, while the comment beside it stayed clamped at two lines
+                  inside all that height. A minimum reserves the width; the clamp below stops
+                  a long title setting the row height ever again. */}
+              <th className="hidden min-w-[11rem] px-4 py-3 font-medium md:table-cell">{t.commentsColPost}</th>
               <th className="hidden px-4 py-3 font-medium sm:table-cell">{t.commentsColTime}</th>
               <th className="px-4 py-3 font-medium">{t.commentsColName}</th>
               <th className="hidden px-4 py-3 font-medium sm:table-cell">{t.commentsColIp}</th>
@@ -76,8 +83,16 @@ export function CommentsTable({ initial }: { initial: AdminComment[] }) {
                     </span>
                   </button>
                 </td>
-                <td className="hidden max-w-[12rem] px-4 py-3 md:table-cell">
-                  <a href={`/${c.postSlug}`} target="_blank" rel="noopener" className="break-words text-neutral-500 hover:underline dark:text-neutral-400">
+                <td className="hidden min-w-[11rem] max-w-[16rem] px-4 py-3 md:table-cell">
+                  {/* Clamped to two lines, and `title` so the rest is still one hover away —
+                      the same bargain the comment cell makes one column to the left. */}
+                  <a
+                    href={`/${c.postSlug}`}
+                    target="_blank"
+                    rel="noopener"
+                    title={c.postTitle}
+                    className="line-clamp-2 break-words text-neutral-500 hover:underline dark:text-neutral-400"
+                  >
                     {c.postTitle}
                   </a>
                 </td>

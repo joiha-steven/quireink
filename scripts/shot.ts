@@ -1,3 +1,4 @@
+import { chromePath } from './chrome-path'
 // Screenshot a page, so a visual change can be LOOKED AT instead of reasoned about.
 //
 // This script exists because its absence cost a milestone. The whole public renderer was
@@ -19,8 +20,7 @@
 //   bun run shot <url> <out.png> [width] [height]
 //   bun run shot http://127.0.0.1:3100/ v2-home.png 1280 2400
 
-const CHROME = process.env.CHROME_HEADLESS_SHELL
-  ?? `${process.env.HOME}/chrome/chrome-headless-shell-linux64/chrome-headless-shell`
+const CHROME = chromePath()
 
 const [url, out, width = '1280', height = '2400'] = process.argv.slice(2)
 

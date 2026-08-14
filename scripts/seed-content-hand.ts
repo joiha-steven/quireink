@@ -8,12 +8,12 @@ export const HAND_POSTS: Seed[] = [
   {
     title: 'The broad-edged pen, and what it still teaches',
     slug: 'the-broad-edged-pen',
-    excerpt: 'Nearly every serif on your screen is a frozen record of a flat nib held at an angle.',
+    excerpt: 'Nearly every serif on your screen is a frozen record of a flat nib held at an angle. Hold a pen at thirty degrees, write an O, and the thick and thin you get is the same modulation a type designer spends a year redrawing.',
     category: 'Calligraphy', tags: ['pen', 'history', 'letterforms'],
     ago: 63,
     body: `Pick up a broad-edged pen, hold it at thirty degrees, and write an **o**. The stroke is thick on the down-left and thin on the up-right, and you did nothing to make it so: the nib is a flat edge, and the width of the mark is simply how much of that edge is facing the direction you are travelling.
 
-That single fact explains most of what a serif typeface looks like. The thick and thin of a Garamond, the axis its round letters lean on, the way the join between bowl and stem thins to nothing — none of it is decoration. It is a record of a tool.
+==That single fact explains most of what a serif typeface looks like.==#yellow The thick and thin of a Garamond, the axis its round letters lean on, the way the join between bowl and stem thins to nothing — none of it is decoration. It is a record of a tool.
 
 ## The angle is the style
 
@@ -30,7 +30,7 @@ That is the jump from writing to type, and it is a much larger jump than drawing
   {
     title: 'Uncials, half-uncials, and the shape of a slow hand',
     slug: 'uncials-and-the-slow-hand',
-    excerpt: 'The roundest letters in the Latin tradition were written by scribes who had all the time in the world and no lower case to write with.',
+    excerpt: 'The roundest letters in the Latin tradition were written by scribes who had all the time in the world and no lower case to write with. What they left is a hand with almost no ascenders and a rhythm nothing since has matched.',
     category: 'Calligraphy', tags: ['history', 'letterforms', 'practice'],
     ago: 71,
     body: `Uncial is what happens when a formal alphabet meets a pen that prefers curves. Roman capitals were cut in stone, and their straight strokes and sharp corners are a chisel's preferences. Move the same alphabet onto vellum with a broad nib and the corners round off, because rounding is faster and the pen resists the turn.
@@ -47,7 +47,7 @@ Insular half-uncial — the Irish and Northumbrian variety, the hand of the Book
 
 Nib angle very flat, between five and fifteen degrees, which is the whole difference from every later hand. Keep the letters wide: an uncial **o** is a full circle, not the oval an italic wants. Resist the urge to add slope. There is none.
 
-The hard part is not the letterforms, it is the pace. Uncial punishes speed in a way a running hand does not, because every curve is a slow, even turn and any hesitation shows as a flat spot on the arc.
+==The hard part is not the letterforms, it is the pace.==#orange Uncial punishes speed in a way a running hand does not, because every curve is a slow, even turn and any hesitation shows as a flat spot on the arc.
 
 ## What it is good for now
 
@@ -59,7 +59,7 @@ Very little, honestly, and that is fine. It is the clearest way to feel what a n
   {
     title: 'Chancery italic in ninety minutes',
     slug: 'chancery-italic-in-ninety-minutes',
-    excerpt: 'The Renaissance hand that became our italic, reduced to four shapes and one angle.',
+    excerpt: 'The Renaissance hand that became our italic, reduced to four shapes and one angle. Ninety minutes gets you a legible page; the remaining decade is spent making it look easy.',
     category: 'Calligraphy', tags: ['italic', 'practice', 'history'],
     ago: 79,
     body: `Cancellaresca, the chancery hand of sixteenth-century Rome, is the ancestor of every italic on your screen. It is also, unusually for a calligraphic hand, learnable in an afternoon, because almost all of it is built from four shapes.
@@ -74,7 +74,7 @@ The third is the **a**, which is the oval with a stem. The fourth is the entry a
 
 ## The angle, and the only rule that matters
 
-Nib angle around forty degrees, slope around five to ten. Then keep both constant. A page of chancery with a wandering slope looks worse than a page of a clumsier hand held steady, because the eye reads inconsistency long before it reads quality.
+Nib angle around forty degrees, slope around five to ten. ==Then keep both constant.==#green A page of chancery with a wandering slope looks worse than a page of a clumsier hand held steady, because the eye reads inconsistency long before it reads quality.
 
 ## Why bother
 
@@ -83,14 +83,14 @@ Because writing the letters teaches you where an italic's weight sits, and after
   {
     title: 'Ruling a page before you write on it',
     slug: 'ruling-a-page-before-you-write-on-it',
-    excerpt: 'A scribe ruled the page first, and the ruling was arithmetic. Nib widths in, line height out.',
+    excerpt: 'A scribe ruled the page before writing a word, and the ruling was arithmetic: nib widths in, line height out. Every margin on this site comes from the same calculation, done by a stylesheet instead of a lead point.',
     category: 'Calligraphy', tags: ['practice', 'layout', 'craft'],
     ago: 88,
     body: `Every formal hand is ruled before a single letter is written, and the ruling is not a matter of taste. It is derived from the nib, because the nib is the only fixed quantity on the desk.
 
 ## The unit is the nib width
 
-Lay the pen flat on the page and step it, corner over corner, up the sheet. Each step is one **nib width**, and every vertical measurement in the hand is a count of them. The x-height of a foundational hand is four nib widths; an uncial is about three and a half; a chancery italic is five.
+Lay the pen flat on the page and step it, corner over corner, up the sheet. ==Each step is one **nib width**==#green, and every vertical measurement in the hand is a count of them. The x-height of a foundational hand is four nib widths; an uncial is about three and a half; a chancery italic is five.
 
 That is why the same hand written with a wider nib is not just larger — it is identically proportioned, which is a stronger guarantee than any point size gives you.
 
