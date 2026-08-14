@@ -53,7 +53,7 @@ export function ReadersSection() {
         <Links>
           <In href="/admin/newsletter">Newsletter</In>
           <In href="/admin/comments">Comments</In>
-          <In href="/admin/settings?tab=integrations">SMTP settings</In>
+          <In href="/admin/settings?tab=connections">SMTP settings</In>
         </Links>
       </Card>
     </Anchor>
@@ -141,7 +141,7 @@ export function McpSection() {
         </p>
         <Links>
           <Ext href={doc('docs/mcp.md')}>MCP docs</Ext>
-          <In href="/admin/settings?tab=integrations">Integrations</In>
+          <In href="/admin/settings?tab=connections">Integrations</In>
           <In href="/admin/log">Activity log</In>
         </Links>
       </Card>

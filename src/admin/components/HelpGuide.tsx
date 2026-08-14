@@ -18,7 +18,7 @@ const STEPS: { href: string; label: string; body: string }[] = [
   { href: '/admin/settings', label: 'Name the site', body: 'Title, logo, language and menu in Settings → Site. It is live the moment you save.' },
   { href: '/admin/editor', label: 'Write the first post', body: 'Markdown and a toolbar. Save keeps it a draft; Publish puts it on the site.' },
   { href: '/admin/settings?tab=appearance', label: 'Choose the look', body: 'Six palettes, a font, and text sizes per role. Readers can switch palette themselves.' },
-  { href: '/admin/settings?tab=integrations', label: 'Turn on what you need', body: 'SMTP for the newsletter, Google Drive for backups, Cloudflare for the edge cache.' },
+  { href: '/admin/settings?tab=connections', label: 'Turn on what you need', body: 'SMTP for the newsletter, Google Drive for backups, Cloudflare for the edge cache.' },
   { href: '/admin/newsletter', label: 'Gather readers', body: 'Once SMTP is set, a sign-up form appears on the site. Sending is always your call.' },
 ]
 

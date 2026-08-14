@@ -27,7 +27,7 @@ export function NewsletterView({ posts, mailConfigured }: { posts: SendablePost[
         title={t.navNewsletter}
         description={t.nlPageHint}
         actions={
-          <Link href="/admin/settings?tab=integrations" className="text-sm font-medium text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white">
+          <Link href="/admin/settings?tab=connections" className="text-sm font-medium text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white">
             {t.nlSmtpSettingsLink} →
           </Link>
         }
