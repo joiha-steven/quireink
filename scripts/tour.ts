@@ -114,13 +114,39 @@ const expect = async (path: string, expr: string, settleMs?: number): Promise<st
   return evaluate(expr)
 }
 
-/** What a flow file is handed. The two verbs, and nothing about the protocol. */
+/**
+ * The same, at a PHONE width.
+ *
+ * The tour ran every flow at 1440 and therefore could not see a whole class of bug the repo has
+ * already been bitten by twice — the analytics table that ran to 426px inside a 390px screen,
+ * and the Overview's widget band, which at 375px sized its grid track to 406px and left 47px of
+ * the page reachable only by dragging it sideways.
+ *
+ * ⚠️ It has to be the VIEWPORT, not the element. The first attempt at that second flow squeezed
+ * the grid's own width instead, and passed against a build with the bug still in it: the
+ * one-column layout is a `lg:` media query, so a narrow BOX still lays out as two columns and
+ * the track never has to hold a whole card. Nothing but a narrow viewport reproduces it.
+ *
+ * `mobile: true` so `@media (hover: none)` matches too, and the override is always cleared —
+ * a flow that leaves the window 375px wide changes every flow after it.
+ */
+const atWidth = async (width: number, path: string, expr: string, settleMs?: number): Promise<string> => {
+  await send('Emulation.setDeviceMetricsOverride', { width, height: 900, deviceScaleFactor: 1, mobile: true })
+  try {
+    return await expect(path, expr, settleMs)
+  } finally {
+    await send('Emulation.clearDeviceMetricsOverride')
+  }
+}
+
+/** What a flow file is handed. The verbs, and nothing about the protocol. */
 export type Tour = {
   flow: (name: string, run: () => Promise<string>) => void
   expect: (path: string, expr: string, settleMs?: number) => Promise<string>
+  atWidth: (width: number, path: string, expr: string, settleMs?: number) => Promise<string>
 }
 
-registerFlows({ flow, expect })
+registerFlows({ flow, expect, atWidth })
 
 // ---------------------------------------------------------------------------------------------
 // Run them, in order, and report.

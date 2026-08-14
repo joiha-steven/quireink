@@ -473,6 +473,10 @@ export type AdminStrings = {
   dashNeedsAttention: string
   dashAllClear: string
   dashDrafts: string
+  dashNoExcerpt: string
+  dashNoImage: string
+  dashSources: string
+  dashSourcesEmpty: string
   // overview: quick actions + recent activity
   viewSite: string
   recentActivity: string

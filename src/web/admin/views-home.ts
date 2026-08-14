@@ -16,15 +16,6 @@ import { storageStats } from '@/media/storage-stats'
 import { db } from '@/store/db'
 import pkg from '../../../package.json' with { type: 'json' }
 
-/** Tally a string[] field across posts into name/count pairs, busiest first. */
-function tally(values: string[]): { name: string; count: number }[] {
-  const map = new Map<string, number>()
-  for (const v of values) map.set(v, (map.get(v) ?? 0) + 1)
-  return [...map.entries()]
-    .map(([name, count]) => ({ name, count }))
-    .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
-}
-
 /**
  * The facts the "System" panel prints. Best-effort throughout: a database hiccup flips a
  * status flag, it never breaks the dashboard.
@@ -106,11 +97,7 @@ export async function dashboardView(): Promise<Record<string, unknown>> {
     pages: pages.length,
     comments: Object.values(commentCounts).reduce((sum, n) => sum + n, 0),
     originals: storage.originals,
-    variants: storage.variants,
-    files: storage.files,
     totalBytes: storage.totalBytes,
-    categories: tally(posts.flatMap((p) => p.categories)),
-    tags: tally(posts.flatMap((p) => p.tags)),
     recent,
     activityEnabled: activityOn,
     firstRunDone: settings.firstRunDone,
@@ -126,16 +113,23 @@ export async function dashboardView(): Promise<Record<string, unknown>> {
         spark: analytics30.daily.map((d) => d.views),
       },
       topPosts,
-      needs: { drafts },
-    },
-    seo: {
-      published: published.length,
-      noExcerpt: published.filter((p) => !p.excerpt?.trim()).length,
-      noImage: published.filter((p) => !p.featuredImage).length,
-    },
-    sources: {
-      referrers: (analytics30.topReferrers ?? []).map((r) => ({ label: r.host, visitors: r.visitors })),
-      countries: (analytics30.topCountries ?? []).map((c) => ({ label: c.country, visitors: c.visitors })),
+      // ⚠️ These two used to be a `seo` prop and a `sources` prop, computed here on every
+      // dashboard load and handed to `Overview`, which rendered NEITHER — along with
+      // `categories`, `tags`, `variants` and `files`, six props in all. `tally()` walked every
+      // post's categories and tags for two of them. Nothing failed, because a prop that is
+      // passed and not read is not an error in TypeScript or in a test; it took the owner
+      // saying the page looked bare to go and look at what the page was already being sent.
+      // They live inside `dashboard` now, which is the shape the widgets actually take, so
+      // there is no second channel to drift out of use again.
+      needs: {
+        drafts,
+        noExcerpt: published.filter((p) => !p.excerpt?.trim()).length,
+        noImage: published.filter((p) => !p.featuredImage).length,
+      },
+      sources: {
+        referrers: (analytics30.topReferrers ?? []).map((r) => ({ label: r.host, visitors: r.visitors })),
+        countries: (analytics30.topCountries ?? []).map((c) => ({ label: c.country, visitors: c.visitors })),
+      },
     },
   }
 }

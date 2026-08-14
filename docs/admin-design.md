@@ -81,6 +81,24 @@ The recurring failure is not a wrong design. It is SEVERAL of the same design: t
 a thing once, a screen says it again slightly differently, and the difference is what the
 owner sees. Every rule here was found by photographing and measuring the running admin.
 
+**A two-column band is two STACKS, and their heights get re-measured.** Cards go into explicit
+column stacks, never straight into the grid — a grid lays its children out in rows, so a short
+card beside a tall one is stretched and the next card cannot start until both have finished.
+That much was already fixed. What was not: which card goes on which side is a decision that
+goes stale. The Overview's comment said "traffic is the tall one on its own" and by the time
+the owner said the page looked uneven it was the SHORT one — measured at 1440px, 225px against
+the other column's 413px, a 188px hole above the next full-width band, and the emptiest card on
+the page (5% of its box was text) sitting in the widest space. Two cards a side now: 467 against
+485, and both numbers are written where the next person will check them.
+
+⚠️ **A grid item needs `min-w-0` or a `truncate` row will not let the column shrink.** A grid
+item's automatic minimum size is its content's min-content width, and `truncate` sets
+`white-space: nowrap`, so one un-truncated headline sets the floor for the whole track. Measured
+at 375px: the Overview's widget track resolved to 406px inside a 343px grid and the page scrolled
+sideways by 47px. `min-w-0` on the title span was already there and could not help — that lets
+the FLEX item shrink, and it was shrinking; the TRACK was not. Same failure as the analytics
+table, one level up. `bun run tour` now checks the dashboard at 375px (`atWidth`).
+
 **Two gaps, and there is no third.** `SECTION_GAP` (28px) separates the bands of a page;
 `CARD_GAP` / `CARD_STACK` (20px) separates two cards side by side or stacked. One Overview
 column measured 12, 16, 20 and 28 in a single scroll, which reads as a page assembled from
