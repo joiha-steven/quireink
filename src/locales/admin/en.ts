@@ -197,7 +197,7 @@ const en = {
   logoWidth: 'Header logo width (px)',
   logoWidthHint: 'Applies to the logo shown in the homepage header (not the preview above).',
   siteWidth: 'Site width - desktop (px)',
-  siteWidthHint: 'Max width of the content column on large screens (default 672).',
+  siteWidthHint: 'Max width of the content column on large screens. The default 672 is the width tuned for reading: it keeps lines short enough that the eye finds the next one easily. Wider fits more words per line and tires the reader.',
   postsPerPage: 'Posts per page',
   postsPerPageHint: 'How many posts show on one page of home/category/tag lists (default 10).',
   saveSettings: 'Save settings',

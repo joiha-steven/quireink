@@ -197,7 +197,7 @@ const vi = {
   logoWidth: 'Bề rộng logo trên header (px)',
   logoWidthHint: 'Áp dụng cho logo hiển thị trên header trang chủ (không ảnh hưởng preview ở trên).',
   siteWidth: 'Bề rộng site - desktop (px)',
-  siteWidthHint: 'Độ rộng tối đa của cột nội dung trên màn lớn (mặc định 672).',
+  siteWidthHint: 'Độ rộng tối đa của cột nội dung trên màn lớn. Mặc định 672 là mức tối ưu cho việc đọc: dòng đủ ngắn để mắt bắt được dòng kế tiếp. Rộng hơn thì mỗi dòng chứa nhiều chữ hơn và làm người đọc mỏi mắt.',
   postsPerPage: 'Số bài mỗi trang',
   postsPerPageHint: 'Số bài hiển thị trên một trang ở trang chủ, danh mục, thẻ (mặc định 10).',
   saveSettings: 'Lưu cài đặt',
