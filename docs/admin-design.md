@@ -35,18 +35,28 @@ character and none of its typographic rules **except one**, below.
   `READING` / `NOTE_TEXT` from `components/kit.tsx`, a whole page of sentences takes
   `data-prose` (Help: 33 `li` and 19 `td` of article), and `check:admin-kit` fails a screen
   that hand-types a hint or names a typeface at all.
-  **The two faces are normalised to one apparent size**, by `font-size-adjust: from-font` on
-  `body` — one declaration, because `from-font` resolves there to the chrome face's own
-  x-height ratio and *inherits*, so anything switching to the reading face is re-sized
-  without either face being named. Measured x-height per 1em: JetBrains Mono 0.550, Inter
-  0.539, IBM Plex Mono 0.516, Literata 0.508, Source Sans 3 0.486, Source Serif 4 0.481 — so
-  a 12px hint in Literata beside a 12px label in JetBrains Mono rendered at 92% of it, and
-  the worst pair the settings allow at 87%. That, not leading, is what made the second voice
-  look like an afterthought. A table of ratios was the alternative and it cannot work:
-  `settings.customFont` accepts a face nobody has measured yet. **`.prose`, the editor title
-  and the font/typography pickers opt out** via `data-specimen` — a writing surface must be
-  the published page, and a picker that renders four faces at one apparent size hides the
-  thing being chosen. See `src/admin/admin.css`, "Two faces".
+  **THE READING FACE KEEPS ITS OWN TRACKING, and forgetting that is what "sát nhau" was.**
+  `MONO_TRACKING` (`render/font-faces.ts`) pulls a mono chrome in by -0.04em (IBM Plex Mono)
+  or -0.05em (JetBrains Mono), because both are wide faces that read airy at zero. It is
+  applied to `body` and it **inherits**, so a serif put on any descendant is set -0.05em too:
+  Literata at 12px came out at -0.8px, letters touching, on every hint in the admin. The
+  correction's own comment says the reader's words "carry their own letter-spacing and are
+  left alone", and the public sheet spells that as `.t-small:not(.reading-font)` — which
+  works there only because public reading text always sits inside such a wrapper. There is no
+  wrapper in the admin, so the exclusion is stated again in `admin.css`, in the same block
+  that claims the face. **A `data-specimen` surface takes it too**: the font pickers paint
+  each tile in the family it offers, and under a mono chrome the two serif tiles were being
+  previewed crushed — the one place the face itself is what is being judged.
+  ⚠️ **Do not reach for `font-size-adjust` to even the two faces up.** It was tried, on a real
+  measurement — x-height per 1em: JetBrains Mono 0.550, Inter 0.539, IBM Plex Mono 0.516,
+  Literata 0.508, Source Sans 3 0.486, Source Serif 4 0.481, so a 12px serif hint renders at
+  92% of the mono label beside it. But `line-height` resolves against the COMPUTED font-size
+  and never the adjusted one — `20px`, unitless `1.6` and `normal` all give an identical line
+  box with the adjustment on and off, while the glyphs inside grow. Tailwind's line-heights
+  are absolute, so it quietly took the admin's hints from 1.67 leading to 1.54 and would have
+  taken a Source Serif 4 owner to 1.46. An 8% difference in apparent size is ordinary
+  typography; 8% less air than the text was drawn for is what a reader feels.
+  See `src/admin/admin.css`, "Two faces".
 - **The canvas is a flat neutral light gray** (`#f5f5f5`). No warm cast, no cool blue-gray.
 - **Hierarchy comes from spacing and rules, not decoration.** Cards are for genuinely
   independent data; shadows are for overlays.

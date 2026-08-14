@@ -40,30 +40,29 @@
 html {
   overscroll-behavior-y: contain;
 }
-/* `font-size-adjust: from-font` is the whole of how two faces sit at one size, and it is one
-   declaration because of what `from-font` COMPUTES to. Body is set in the chrome font, so
-   `from-font` resolves there to that face's own x-height ratio — a NUMBER — and
-   `font-size-adjust` inherits. Every descendant that switches to `--font-reading` is
-   therefore re-sized to the chrome font's x-height without anything naming either face.
+/* ⚠️ `font-size-adjust` WAS HERE, and taking it out is the point of this comment.
 
-   It is needed because a reading face and a chrome face are not the same size at the same
-   `font-size`. Measured in the browser, x-height per 1em: JetBrains Mono 0.550, Inter 0.539,
-   IBM Plex Mono 0.516, Literata 0.508, Source Sans 3 0.486, Source Serif 4 0.481. So a 12px
-   hint in Literata beside a 12px label in JetBrains Mono renders at 92% of it, and the worst
-   pair the settings allow — a JetBrains Mono chrome with a Source Serif 4 reading face —
-   renders at 87%. That is what "the serif looks shrunken" was: not a leading problem, a
-   SIZE problem, and it was read as the second voice being an afterthought.
+   The reasoning for it was sound and the measurement was real: a reading face and a chrome
+   face are not the same size at the same `font-size`. x-height per 1em, measured in the
+   browser — JetBrains Mono 0.550, Inter 0.539, IBM Plex Mono 0.516, Literata 0.508, Source
+   Sans 3 0.486, Source Serif 4 0.481 — so Literata at 12px renders at 92% of a 12px mono
+   label beside it. `font-size-adjust: from-font` on `body` normalises that in one
+   declaration, for any face including one the owner uploads.
 
-   The alternative was a table of measured ratios, and it is wrong for one reason:
-   `settings.customFont` lets the owner upload any face at all, and no table can hold a
-   number for a font that does not exist yet. The browser can. Computed `font-size` is
-   untouched (still 12px), so the admin still stands on Tailwind's fixed scale exactly as
-   `docs/conventions/type.md` requires — what is normalised is the rendered face, not the
-   scale. */
+   It also breaks every leading it touches, and CSS offers no way to stop it. `line-height`
+   resolves against the COMPUTED font-size, never the adjusted one — measured all three forms
+   in Chrome: `20px`, unitless `1.6` and `normal` all produce the identical line box with the
+   adjustment on and off, while the glyphs inside it grow 8%. So the admin's hints went from
+   1.67 leading to 1.54, and a Source Serif 4 reading face would have taken them to 1.46.
+   Tailwind's line-heights are absolute numbers, so this applied to EVERY reading-face
+   element and would have applied to every one added later.
+
+   An 8% difference in apparent size between two faces is ordinary typography. Text with 8%
+   less air than it was designed for is not, and the owner read it immediately. The size
+   difference stands; the leading is what a reader feels. */
 body {
   margin: 0;
   font-family: var(--font-sans);
-  font-size-adjust: from-font;
   overscroll-behavior-y: contain;
 }
 
@@ -88,23 +87,37 @@ body {
 
    `data-prose` stays for a surface where the sentences are not paragraphs: Help is 33 `li`
    and 19 `td` of article. It is a page-level decision, not a per-element one. */
+/* `letter-spacing: normal` is NOT tidiness, and leaving it out is what made the first version
+   of this hard to read. A mono chrome is corrected inward — `MONO_TRACKING` in
+   `render/font-faces.ts` pulls IBM Plex Mono -0.04em and JetBrains Mono -0.05em, because both
+   are wide faces that read airy at zero. That correction is applied to `body` and INHERITS,
+   so the moment a serif is put on a descendant it is set -0.05em too: Literata at 12px came
+   out at -0.8px, letters touching, on every hint in the admin. The owner's word was "sát
+   nhau" and it was the whole complaint.
+
+   The correction's own comment says "the reader's own words carry their own letter-spacing
+   and are left alone", and the public sheet spells that as `.t-small:not(.reading-font)` and
+   `.t-body:not(.reading-font)`. It works there because public reading text is always inside
+   one of those. There is no such wrapper in the admin — reading-face text inherits straight
+   from `body` — so the same exclusion has to be stated here, on the class the public sheet
+   already names. */
 .admin .reading-font,
 .admin [data-prose] :is(p, li, td, dd, blockquote) {
   font-family: var(--font-reading);
+  letter-spacing: normal;
 }
 
-/* What must render a face AS ITSELF, and so must not be normalised.
-
-   The WRITING SURFACE, because it is WYSIWYG: `.prose` and the title above it have to be the
-   published page, and a title silently 8% larger than the one a reader gets is the one place
-   that promise is measurable. The PICKERS, because the size difference is the choice: a tile
-   painted in the face it offers, and a preview of the reader's own roles at the reader's own
-   sizes. Normalise a specimen and all four options look the same size, which is the entire
-   thing being chosen between. Both wear `data-specimen`. */
-.admin .prose,
+/* A SPECIMEN shows a face as itself, so it takes the face's own tracking and not the chrome
+   correction above — the font pickers paint each tile in the family it offers, and under a
+   JetBrains Mono chrome the Literata and Source Serif tiles were being drawn at -0.05em,
+   which is to say the two serifs were previewed crushed and the owner picked between them
+   that way. The editor title wears it too: it is the reading face at publication size, and
+   `tracking-tight` on it was the sans's -0.025em against the -0.01em a Literata h1 actually
+   publishes at. `check:admin-kit` allows a `fontFamily` only in a file that marks its
+   surface with this, so the two cannot come apart. */
 .admin [data-specimen],
 .admin [data-specimen] * {
-  font-size-adjust: none;
+  letter-spacing: normal;
 }
 
 /* Where the settings search landed you.

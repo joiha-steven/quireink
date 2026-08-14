@@ -194,7 +194,7 @@ export function PageForm({ initial, contentWidth, typewriterEffects, autosaveSec
         onChange={(e) => update({ title: e.target.value })}
         placeholder={t.titlePlaceholder}
         data-specimen
-        className={`${READING} mb-6 w-full bg-transparent text-3xl font-bold tracking-tight outline-none placeholder:text-neutral-300 dark:placeholder:text-neutral-600`}
+        className={`${READING} mb-6 w-full bg-transparent text-3xl font-bold outline-none placeholder:text-neutral-300 dark:placeholder:text-neutral-600`}
       />
 
       {localRecovered && (
