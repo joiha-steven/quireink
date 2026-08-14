@@ -3,7 +3,7 @@
 // and mails it; "Test" fires sample sends through the saved SMTP config.
 import { useState } from 'react'
 import Link from '@/admin/router'
-import { PageHeader, Tabs, type TabItem } from './kit'
+import { PageHeader, READING, Tabs, type TabItem } from './kit'
 import { useAdminT } from './I18nProvider'
 import { NewsletterSubscribers } from './NewsletterSubscribers'
 import { NewsletterSend, type SendablePost } from './NewsletterSend'
@@ -34,7 +34,7 @@ export function NewsletterView({ posts, mailConfigured }: { posts: SendablePost[
       />
       {/* One banner, not one per tab: nothing on this page can send without SMTP. */}
       {!mailConfigured && (
-        <p className="mb-6 rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-600 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400">
+        <p className={`${READING} mb-6 rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm leading-6 text-neutral-600 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400`}>
           {t.nlNoSmtpWarning}
         </p>
       )}

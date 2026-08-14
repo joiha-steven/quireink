@@ -8,7 +8,7 @@
 // Why a search rather than a third rearrangement of the tabs: `settings-index.ts`.
 
 import { useState } from 'react'
-import { CONTROL, PANEL_LIST } from './kit'
+import { CONTROL, PANEL_LIST, READING } from './kit'
 import { useAdminT } from './I18nProvider'
 import { searchSettings, type SettingEntry, type SettingsTab } from './settings-index'
 
@@ -41,7 +41,7 @@ export function SettingsSearch({ tabLabel, onPick }: {
       {showing && (
         <div className="mb-6">
           {results.length === 0
-            ? <p className="text-sm text-neutral-500 dark:text-neutral-400">{t.settingsSearchEmpty}</p>
+            ? <p className={`${READING} text-sm text-neutral-500 dark:text-neutral-400`}>{t.settingsSearchEmpty}</p>
             : (
               <ul className={PANEL_LIST}>
                 {results.map((r) => (

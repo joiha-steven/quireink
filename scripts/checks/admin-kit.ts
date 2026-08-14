@@ -51,6 +51,19 @@ const RULES: Rule[] = [
     home: 'src/admin/components/kit.tsx',
     instead: 'use <StatCard> (or <StatTile>, which is StatCard with a trend)',
   },
+  {
+    // The one that costs a FACE and not only a shade. The admin is set in two typefaces and
+    // the second one travels on `NOTE_TEXT`; a hand-typed copy of these classes therefore
+    // renders a sentence in the chrome font beside an identical sentence in the reading
+    // font. Thirty-eight screens had done it, plus three files that had gone as far as
+    // declaring `const HINT` with the same string — and twenty-five of the copies carried
+    // `text-neutral-400 dark:text-neutral-500`, lighter than the primitive in light mode and
+    // darker in dark mode, so they were the hardest hints to read in both.
+    what: 'the hint text style',
+    signature: 'text-xs leading-5 text-neutral-500',
+    home: 'src/admin/components/kit.tsx',
+    instead: 'import NOTE_TEXT from components/kit — or pass `note` to Setting / ui/Input',
+  },
 ]
 
 /** Source only. `dist/` is the built bundle and contains every signature by construction. */
@@ -96,6 +109,34 @@ for (const rule of RULES) {
     console.error('  The rule is guarding nothing. Update the signature in this file.')
     failed = true
   }
+}
+
+/**
+ * The other half of the same idea: no screen names a TYPEFACE.
+ *
+ * Which of the two faces a thing is set in is a question about its ROLE, and the roles are
+ * `NOTE_TEXT` / `READING` / `data-prose`. A `fontFamily` on a screen answers it locally and
+ * permanently, and answering it locally is how the admin ended up deciding faces by HTML TAG:
+ * a `.admin p` rule in `admin.css`, under which `Setting` (whose hint is a `<p>`) and
+ * `ui/Input` (whose identical hint is a `<span>`) rendered two hints of one kind, on one card,
+ * in two different faces.
+ *
+ * The exception is a SPECIMEN: a picker tile painted in the face it offers. It must name a
+ * family, because naming it is the whole control. So a `fontFamily` is allowed only in a file
+ * that also marks that surface `data-specimen` — the same attribute that stops `admin.css`
+ * normalising its x-height, so the two cannot be marked one without the other.
+ */
+// A DECLARATION, not a mention: the colon is required. Without it the check failed on a
+// locale key called `fontFamilyLabel` and on this file's own prose about font families —
+// and a guard that cries wolf is a guard somebody switches off.
+const FAMILY = /fontFamily\s*:|font-family\s*:/
+for (const file of files) {
+  const text = readFileSync(file, 'utf8')
+  if (!FAMILY.test(text) || text.includes('data-specimen')) continue
+  console.error(`✗ check:admin-kit: ${file} names a typeface`)
+  console.error('  A face belongs to a role, not to a screen: use NOTE_TEXT, READING or data-prose.')
+  console.error('  A picker painted in the face it offers marks that surface data-specimen.')
+  failed = true
 }
 
 if (failed) process.exit(1)

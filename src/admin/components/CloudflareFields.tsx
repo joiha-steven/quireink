@@ -10,6 +10,7 @@ import type { ApiResponse } from '@/types'
 import { Button } from '@/admin/ui/Button'
 import { useToast } from '@/admin/ui/Toast'
 import { useAdminT } from './I18nProvider'
+import { NOTE_TEXT } from './kit'
 
 const INPUT =
   'w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100'
@@ -54,7 +55,7 @@ export function CloudflareFields({ configured, zoneId }: { configured: boolean; 
 
   return (
     <div className="space-y-3">
-      <p className="text-xs text-neutral-500 dark:text-neutral-400">
+      <p className={NOTE_TEXT}>
         {t.cfHelp}{' '}
         <a href={LINK} target="_blank" rel="noopener" className="font-medium underline hover:text-neutral-900 dark:hover:text-white">
           {t.commentsHelpOpen}

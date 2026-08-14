@@ -7,7 +7,7 @@ import type { Post, ApiResponse } from '@/types'
 import { useToast } from '@/admin/ui/Toast'
 import { formatDateTimeShort, foldAccents } from '@/utils'
 import { RowActions, StatusPill } from './RowActions'
-import { CONTROL, EmptyState, TableFrame, Tabs, THEAD, TROW } from './kit'
+import { CONTROL, EmptyState, READING, TableFrame, Tabs, THEAD, TROW } from './kit'
 import { useAdminT } from './I18nProvider'
 
 type StatusFilter = 'all' | 'published' | 'draft'
@@ -104,8 +104,15 @@ export function PostsTable({
         <tbody>
           {filtered.map((p) => (
             <tr key={p.slug} className={`transition-colors ${TROW}`}>
+              {/* The title is the OWNER'S OWN WORDS, so it takes the reading face — the same
+                  division the reading site makes, where a list card's title is set in
+                  `--font-reading` and the date beside it is not. Every other cell in this row
+                  is the machine talking: a status, a count, a date, a category. */}
               <td className="px-4 py-3 font-medium">
-                <Link href={`/admin/editor/${p.slug}`} className="hover:underline">
+                {/* On the LINK and not on the cell: the categories line below is taxonomy,
+                    which is chrome, and it would inherit the face from a cell that carried
+                    it. */}
+                <Link href={`/admin/editor/${p.slug}`} className={`${READING} hover:underline`}>
                   {p.title || t.untitled}
                 </Link>
                 {p.categories.length > 0 && (

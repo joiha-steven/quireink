@@ -6,6 +6,7 @@ import { isScheduled } from '@/utils'
 import { MultiSelect } from './MultiSelect'
 import { Combobox } from './Combobox'
 import { useAdminT } from './I18nProvider'
+import { NOTE_TEXT } from './kit'
 
 export type Draft = {
   title: string
@@ -53,7 +54,7 @@ export function PostSettings({ draft, update, allCategories, allTags, allSeries,
           onChange={(e) => update({ date: e.target.value })}
         />
         {isScheduled(draft.status, draft.date) && (
-          <p className="text-xs text-neutral-500 dark:text-neutral-400">
+          <p className={NOTE_TEXT}>
             {t.scheduledForPrefix} {new Date(draft.date).toLocaleString()}
           </p>
         )}
@@ -112,7 +113,7 @@ export function PostSettings({ draft, update, allCategories, allTags, allSeries,
 
       <div className="space-y-1.5">
         <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{t.featuredImage}</span>
-        <p className="text-xs text-neutral-400 dark:text-neutral-500">{t.featuredImageHint}</p>
+        <p className={NOTE_TEXT}>{t.featuredImageHint}</p>
         {draft.featuredImage ? (
           <img src={draft.featuredImage} alt="" className="aspect-video w-full rounded-lg object-cover" />
         ) : (
@@ -143,7 +144,7 @@ export function PostSettings({ draft, update, allCategories, allTags, allSeries,
 
       <div className="space-y-1.5">
         <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{t.coverImageLabel}</span>
-        <p className="text-xs text-neutral-400 dark:text-neutral-500">{t.coverImageHint}</p>
+        <p className={NOTE_TEXT}>{t.coverImageHint}</p>
         {draft.coverImage ? (
           <img src={draft.coverImage} alt="" className="aspect-video w-full rounded-lg object-cover" />
         ) : (
@@ -164,7 +165,7 @@ export function PostSettings({ draft, update, allCategories, allTags, allSeries,
       </div>
 
       <div className="space-y-3 border-t border-neutral-200 pt-4 dark:border-neutral-800">
-        <p className="text-xs text-neutral-400 dark:text-neutral-500">{t.seoSectionHint}</p>
+        <p className={NOTE_TEXT}>{t.seoSectionHint}</p>
         <Input
           label={t.metaTitleLabel}
           value={draft.metaTitle}

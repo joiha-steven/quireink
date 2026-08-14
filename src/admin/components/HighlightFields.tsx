@@ -12,9 +12,9 @@
 
 import type { HighlightSettings } from '@/types'
 import { useAdminT } from './I18nProvider'
+import { NOTE_TEXT } from './kit'
 
 const LABEL = 'block text-sm font-medium text-neutral-700 dark:text-neutral-300'
-const HINT = 'text-xs text-neutral-400 dark:text-neutral-500'
 
 const STROKES: HighlightSettings['stroke'][] = ['marker', 'swipe', 'double']
 
@@ -48,7 +48,7 @@ export function HighlightFields({ highlight, onChange }: {
           </button>
         ))}
       </div>
-      <p className={HINT}>{t.highlightStrokeHint}</p>
+      <p className={NOTE_TEXT}>{t.highlightStrokeHint}</p>
     </div>
   )
 }

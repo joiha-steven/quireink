@@ -31,6 +31,18 @@ export const CARD_STACK = 'space-y-5'
 // `rounded-xl`, not the card's `rounded-2xl`: a box nested inside a rounded box needs the
 // smaller radius or the two curves fight. No background and no shadow, because the card
 // underneath already provides both.
+// --- The second face ----------------------------------------------------------------------
+//
+// The seam between the admin's two typefaces: `--font-reading` is what a PERSON wrote and a
+// person reads, `--font-sans` is what the MACHINE says. A setting's sentence against its
+// label, a post's title against its view count, a comment's words against the address that
+// sent them. It is the reading site's own division (`docs/conventions/type.md`).
+//
+// A ROLE and never a tag — the correction to a `.admin p` rule under which `Setting` (hint in
+// a `<p>`) and `ui/Input` (same hint in a `<span>`) rendered one kind of thing in two faces.
+// A whole PAGE of sentences takes `data-prose`. See `admin.css`, "Two faces".
+export const READING = 'reading-font'
+
 export const PANEL = 'overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-800'
 export const PANEL_LIST = `divide-y divide-neutral-200 dark:divide-neutral-800 ${PANEL}`
 export const INSET = 'rounded-xl border border-neutral-200 p-4 dark:border-neutral-800'
@@ -50,7 +62,19 @@ export const INSET = 'rounded-xl border border-neutral-200 p-4 dark:border-neutr
 // `SETTING_LABEL` and `NOTE` are exported because `ui/Input.tsx` builds the same three parts
 // for a text field and the two must not drift apart.
 export const SETTING_LABEL = 'block text-sm font-medium text-neutral-800 dark:text-neutral-200'
-export const NOTE = 'mt-1 text-xs leading-5 text-neutral-500 dark:text-neutral-400'
+/**
+ * The hint's TYPE — face, size, leading and colour — with no spacing in it.
+ *
+ * Split out because thirty-eight screens hand-typed this list rather than import it, and what
+ * stopped them importing it was the `mt-1`: a hint standing alone in a `space-y` stack does
+ * not want a top margin, so each re-typed the other classes to be rid of one. They drifted,
+ * and not only in the way that shows — TWENTY-FIVE carried `text-neutral-400
+ * dark:text-neutral-500`, lighter than this in light mode and darker in dark mode.
+ */
+export const NOTE_TEXT = `${READING} text-xs leading-5 text-neutral-500 dark:text-neutral-400`
+
+/** A hint directly under the label it explains. `Setting` and `ui/Input` place this one. */
+export const NOTE = `${NOTE_TEXT} mt-1`
 
 /**
  * One setting whose control is not a plain text field: a picker grid, a switch, a button, a
@@ -204,7 +228,7 @@ export function PageHeader({
     <div className={`mb-7 flex flex-wrap items-center justify-between gap-4 ${className}`}>
       <div className="min-w-0">
         <h1 className="text-[1.65rem] font-semibold leading-tight tracking-tight text-neutral-950 dark:text-white">{title}</h1>
-        {description && <p className="mt-1.5 max-w-2xl text-sm leading-6 text-neutral-500 dark:text-neutral-400">{description}</p>}
+        {description && <p className={`${READING} mt-1.5 max-w-2xl text-sm leading-6 text-neutral-500 dark:text-neutral-400`}>{description}</p>}
       </div>
       {/* `flex-wrap`, not `shrink-0`: a wide action set (Analytics' 4 range pills +
           Export) is wider than a phone viewport and would otherwise push the page
@@ -332,8 +356,11 @@ export function EmptyState({
   return (
     <div className={`flex flex-col items-center justify-center px-6 py-16 text-center ${className}`}>
       {icon && <div className="mb-3 text-neutral-300 dark:text-neutral-600">{icon}</div>}
+      {/* The title is a STATE ("No posts yet"), which is the machine talking, so it keeps the
+          chrome font. The description explains the state in a sentence, and takes the other
+          face — the same split as a label and its note. */}
       <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{title}</p>
-      {description && <p className="mt-1 max-w-sm text-sm text-neutral-500 dark:text-neutral-400">{description}</p>}
+      {description && <p className={`${READING} mt-1 max-w-sm text-sm text-neutral-500 dark:text-neutral-400`}>{description}</p>}
       {action && <div className="mt-4">{action}</div>}
     </div>
   )

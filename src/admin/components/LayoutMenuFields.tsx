@@ -4,6 +4,7 @@ import { Input } from '@/admin/ui/Input'
 import { Button } from '@/admin/ui/Button'
 import { FeaturedField } from './FeaturedField'
 import { useAdminT } from './I18nProvider'
+import { NOTE_TEXT } from './kit'
 
 const MENU_FIELD =
   'w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-400'
@@ -44,7 +45,7 @@ export function LayoutMenuFields({ s, update, posts, pages }: Props) {
             )
           })}
         </div>
-        <p className="text-xs text-neutral-400 dark:text-neutral-500">{t.homeModeHint}</p>
+        <p className={NOTE_TEXT}>{t.homeModeHint}</p>
       </div>
 
       {/* Both of the other modes move the post list, so both need somewhere to move it to.
@@ -63,7 +64,7 @@ export function LayoutMenuFields({ s, update, posts, pages }: Props) {
                 <option value="">{t.homePageNone}</option>
                 {pages.map((p) => <option key={p.slug} value={p.slug}>{p.title}</option>)}
               </select>
-              <p className="text-xs text-neutral-400 dark:text-neutral-500">{t.homePageHint}</p>
+              <p className={NOTE_TEXT}>{t.homePageHint}</p>
             </div>
           )}
           <div className="space-y-1.5">
@@ -72,7 +73,7 @@ export function LayoutMenuFields({ s, update, posts, pages }: Props) {
               value={home.listPath}
               onChange={(e) => update({ home: { ...home, listPath: e.target.value } })}
             />
-            <p className="text-xs text-neutral-400 dark:text-neutral-500">{t.listPathHint}</p>
+            <p className={NOTE_TEXT}>{t.listPathHint}</p>
           </div>
         </div>
       )}
@@ -86,7 +87,7 @@ export function LayoutMenuFields({ s, update, posts, pages }: Props) {
           value={s.contentWidth}
           onChange={(e) => update({ contentWidth: Number(e.target.value) })}
         />
-        <p className="text-xs text-neutral-400 dark:text-neutral-500">{t.siteWidthHint}</p>
+        <p className={NOTE_TEXT}>{t.siteWidthHint}</p>
       </div>
 
       <div className="space-y-1.5">
@@ -98,7 +99,7 @@ export function LayoutMenuFields({ s, update, posts, pages }: Props) {
           value={s.postsPerPage}
           onChange={(e) => update({ postsPerPage: Number(e.target.value) })}
         />
-        <p className="text-xs text-neutral-400 dark:text-neutral-500">{t.postsPerPageHint}</p>
+        <p className={NOTE_TEXT}>{t.postsPerPageHint}</p>
       </div>
 
       <div className="space-y-3">
@@ -130,7 +131,7 @@ export function LayoutMenuFields({ s, update, posts, pages }: Props) {
         <Button variant="secondary" type="button" onClick={() => update({ menu: [...s.menu, { label: '', href: '' }] })}>
           {t.menuAdd}
         </Button>
-        <p className="text-xs text-neutral-400 dark:text-neutral-500">{t.menuHint}</p>
+        <p className={NOTE_TEXT}>{t.menuHint}</p>
       </div>
 
       {/* Sidebar layout: one stacked rail (classic) vs two rails + a narrower column. */}
@@ -156,7 +157,7 @@ export function LayoutMenuFields({ s, update, posts, pages }: Props) {
             )
           })}
         </div>
-        <p className="text-xs text-neutral-400 dark:text-neutral-500">{t.sidebarLayoutHint}</p>
+        <p className={NOTE_TEXT}>{t.sidebarLayoutHint}</p>
       </div>
 
       {/* Sidebar blocks: featured picker + how many "most viewed" to show. */}
@@ -174,7 +175,7 @@ export function LayoutMenuFields({ s, update, posts, pages }: Props) {
           value={s.mostViewedCount}
           onChange={(e) => update({ mostViewedCount: Number(e.target.value) })}
         />
-        <p className="text-xs text-neutral-400 dark:text-neutral-500">{t.mostViewedCountHint}</p>
+        <p className={NOTE_TEXT}>{t.mostViewedCountHint}</p>
       </div>
     </div>
   )

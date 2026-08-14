@@ -9,7 +9,7 @@ import { Button } from '@/admin/ui/Button'
 import { useToast } from '@/admin/ui/Toast'
 import { useAdminT } from './I18nProvider'
 import type { AdminStrings } from '@/i18n/admin-i18n'
-import { PANEL_LIST } from './kit'
+import { PANEL_LIST, READING } from './kit'
 
 type Props = {
   value: FontSettings
@@ -60,7 +60,7 @@ export function FontUpload({ value, onChange }: Props) {
 
   return (
     <div className="space-y-3">
-      <p className="text-sm text-neutral-500 dark:text-neutral-400">{t.fontHint}</p>
+      <p className={`${READING} text-sm leading-6 text-neutral-500 dark:text-neutral-400`}>{t.fontHint}</p>
       <div className="text-sm">
         <span className="text-neutral-500 dark:text-neutral-400">{t.fontFamilyLabel}: </span>
         <span className="font-medium text-neutral-800 dark:text-neutral-200">{value.family || t.fontDefault}</span>

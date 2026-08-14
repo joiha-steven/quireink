@@ -7,6 +7,7 @@ import { Input } from '@/admin/ui/Input'
 import { Button } from '@/admin/ui/Button'
 import { useToast } from '@/admin/ui/Toast'
 import { useAdminT } from './I18nProvider'
+import { NOTE_TEXT } from './kit'
 
 type Redirect = { id: number; source: string; destination: string; permanent: boolean }
 
@@ -72,7 +73,7 @@ export function RedirectsManager() {
 
   return (
     <div className="space-y-4">
-      <p className="text-xs text-neutral-500 dark:text-neutral-400">{t.redirectsHint}</p>
+      <p className={NOTE_TEXT}>{t.redirectsHint}</p>
 
       {rows.length === 0 ? (
         <p className="text-sm text-neutral-400 dark:text-neutral-500">{t.redirectEmpty}</p>

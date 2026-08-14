@@ -12,11 +12,11 @@ import { Input } from '@/admin/ui/Input'
 import { Button } from '@/admin/ui/Button'
 import { ToggleRow } from '@/admin/ui/Switch'
 import { useAdminT } from './I18nProvider'
+import { NOTE_TEXT } from './kit'
 
 const FIELD =
   'w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-400'
 const LABEL = 'block text-sm font-medium text-neutral-700 dark:text-neutral-300'
-const HINT = 'text-xs text-neutral-400 dark:text-neutral-500'
 const GROUP = 'space-y-3 border-t border-neutral-200 pt-5 dark:border-neutral-800'
 
 type Props = {
@@ -90,7 +90,7 @@ export function FrontFields({ front, onChange, posts, categories }: Props) {
             </button>
           ))}
         </div>
-        <p className={HINT}>{t.frontKindHint}</p>
+        <p className={NOTE_TEXT}>{t.frontKindHint}</p>
       </div>
 
       {/* ----- the lead ----- */}
@@ -159,7 +159,7 @@ export function FrontFields({ front, onChange, posts, categories }: Props) {
       {/* ----- one row per category ----- */}
       <div className={GROUP}>
         <span className={LABEL}>{t.frontStrips}</span>
-        <p className={HINT}>{t.frontStripsHint}</p>
+        <p className={NOTE_TEXT}>{t.frontStripsHint}</p>
         {front.strips.map((strip, i) => (
           <div key={strip.category} className="space-y-2 border-l-2 border-neutral-200 pl-3 dark:border-neutral-800">
             <div className="flex items-center justify-between gap-2">

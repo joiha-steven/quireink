@@ -9,6 +9,7 @@ import { formatDate } from '@/i18n/i18n'
 import { isVideoAttachment } from '@/render/video'
 import { FileUploader } from './FileUploader'
 import { useAdminT, useAdminLang } from './I18nProvider'
+import { NOTE_TEXT } from './kit'
 
 const onlyVideos = (items: FileItem[]) => items.filter((f) => isVideoAttachment(f.filename, f.contentType))
 
@@ -102,7 +103,7 @@ export function VideoLibrary() {
                   <p className="truncate text-sm font-medium text-neutral-800 dark:text-neutral-200" title={f.filename}>
                     {f.filename}
                   </p>
-                  <p className="text-xs text-neutral-400">
+                  <p className={NOTE_TEXT}>
                     {formatBytes(f.size)} · {formatDate(f.uploadedAt, lang)}
                   </p>
                 </div>

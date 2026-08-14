@@ -27,7 +27,13 @@ export function FontFields({
           drift `Setting` exists to stop: the card's own title names this group, so this one
           needs no label of its own. */}
       <Setting note={t.fontPresetHint}>
-      <div className="grid grid-cols-2 gap-2">
+      {/* `data-specimen`: these tiles are painted in the face they offer, and the admin
+          normalises the x-height of any face that is not the chrome font (`admin.css`,
+          "font-size-adjust"). Normalising a SPECIMEN would render all four options at one
+          apparent size, which is the whole of what is being chosen between — Source Serif 4
+          is 11% smaller than JetBrains Mono at the same `font-size`, and a picker that hides
+          that is lying about the choice. */}
+      <div className="grid grid-cols-2 gap-2" data-specimen>
         {FONT_PRESETS.map((f) => {
           const active = f.id === value
           return (
@@ -57,7 +63,7 @@ export function FontFields({
         {/* Two columns, matching the reading grid above. It was three, and CHROME_FONTS
             grew to four when JetBrains Mono was added — so the fourth choice sat alone on
             a second row, half the width of the others. */}
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-2" data-specimen>
           {CHROME_FONTS.map((f) => {
             const active = f.id === chromeFont
             const label = f.id === 'reading' ? t.chromeFontReading : f.name

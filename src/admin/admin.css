@@ -40,47 +40,71 @@
 html {
   overscroll-behavior-y: contain;
 }
+/* `font-size-adjust: from-font` is the whole of how two faces sit at one size, and it is one
+   declaration because of what `from-font` COMPUTES to. Body is set in the chrome font, so
+   `from-font` resolves there to that face's own x-height ratio — a NUMBER — and
+   `font-size-adjust` inherits. Every descendant that switches to `--font-reading` is
+   therefore re-sized to the chrome font's x-height without anything naming either face.
+
+   It is needed because a reading face and a chrome face are not the same size at the same
+   `font-size`. Measured in the browser, x-height per 1em: JetBrains Mono 0.550, Inter 0.539,
+   IBM Plex Mono 0.516, Literata 0.508, Source Sans 3 0.486, Source Serif 4 0.481. So a 12px
+   hint in Literata beside a 12px label in JetBrains Mono renders at 92% of it, and the worst
+   pair the settings allow — a JetBrains Mono chrome with a Source Serif 4 reading face —
+   renders at 87%. That is what "the serif looks shrunken" was: not a leading problem, a
+   SIZE problem, and it was read as the second voice being an afterthought.
+
+   The alternative was a table of measured ratios, and it is wrong for one reason:
+   `settings.customFont` lets the owner upload any face at all, and no table can hold a
+   number for a font that does not exist yet. The browser can. Computed `font-size` is
+   untouched (still 12px), so the admin still stands on Tailwind's fixed scale exactly as
+   `docs/conventions/type.md` requires — what is normalised is the rendered face, not the
+   scale. */
 body {
   margin: 0;
   font-family: var(--font-sans);
+  font-size-adjust: from-font;
   overscroll-behavior-y: contain;
 }
 
-/* Two faces, and it is the SAME division the reading site makes: the chrome font for what
-   you scan, the reading face for what you read. `--font-reading` was already resolved here
-   and already loaded — `adminStyles` emits `fontPresetCss` — and exactly one rule used it,
-   `.prose` in the editor. So the owner wrote their post in Literata and read every hint,
-   every tab description and all 4,600 characters of the Help page in JetBrains Mono.
+/* Two faces, and it is the SAME division the reading site makes — the one in
+   `docs/conventions/type.md`: `--font-reading` is what a PERSON wrote and a person reads,
+   `--font-sans` is what the MACHINE says. On the reading site that line runs between a post
+   title and its date; in here it runs between a setting's sentence and its label.
 
-   `p` AND NOT `li`, which is a measurement rather than a preference. Walking all ten admin
-   screens: of 84 paragraphs, 77 are sentences and the 7 that are not are either short
-   status lines or the typography preview — which this rule IMPROVES, since those samples
-   preview the public roles and were rendering in the chrome font. Of the `li` elements
-   outside Help, almost none are prose: they are activity rows, analytics bars and counts,
-   where the chrome font's aligned digits are the whole point.
+   BY ROLE, NEVER BY TAG. The first version of this claimed `.admin p`, and a tag is not a
+   role: `Setting` renders its hint as `<p>` and `ui/Input` renders the identical hint as
+   `<span>`, so the Site tab shipped "Changes the interface language and date format." in
+   Literata directly above "Words auto-used as the excerpt…" in JetBrains Mono, two hints of
+   one kind on one card in two faces. Nothing was wrong with either call site. The rule was
+   asking the wrong question.
 
-   Help is the exception and carries `data-prose` for it: its lists and table cells ARE the
-   article. Anything else that turns out to be a page of sentences takes the attribute too;
-   nothing else takes a font-family. */
-.admin p,
-.admin [data-prose] li,
-.admin [data-prose] td {
+   So the face travels with the ROLE, on `.reading-font` — the same class name the public
+   sheet uses for the same job (`web/utility.css.ts`). Two kinds of thing wear it. The kit's
+   own roles carry it for every screen at once (`NOTE_TEXT`, `PageHeader`'s description,
+   `EmptyState`'s description), and a screen adds `READING` where the words on show are
+   SOMEBODY'S: a post title, a comment, a newsletter subject. A screen cannot forget the
+   first without hand-typing a primitive, which `check:admin-kit` fails.
+
+   `data-prose` stays for a surface where the sentences are not paragraphs: Help is 33 `li`
+   and 19 `td` of article. It is a page-level decision, not a per-element one. */
+.admin .reading-font,
+.admin [data-prose] :is(p, li, td, dd, blockquote) {
   font-family: var(--font-reading);
 }
 
-/* And the leading with it, or the change is a REGRESSION rather than an improvement.
-   A hint is `text-xs`, which Tailwind ships as 12px on a 16px line — 1.33, which reads fine
-   in a monospace because a mono is wide and airy, and reads cramped the moment a serif with
-   a real x-height moves in. Looked at on the running Settings screen before and after; the
-   two-line hint under "Site width" is the case that shows it.
+/* What must render a face AS ITSELF, and so must not be normalised.
 
-   `:not([class*="leading-"])` so a caller that CHOSE a leading still wins — two do,
-   `leading-6` and `leading-relaxed` — and `NOTE`'s own `leading-5` keeps its 20px. This is
-   for the ~36 hints that never specified one. It is not a licence to skip the primitive:
-   those hand-typed class lists are a real drift (two of them carry the light and dark greys
-   the wrong way round) and belong on `NOTE`. That is a separate change with its own diff. */
-.admin p.text-xs:not([class*="leading-"]) {
-  line-height: 1.5;
+   The WRITING SURFACE, because it is WYSIWYG: `.prose` and the title above it have to be the
+   published page, and a title silently 8% larger than the one a reader gets is the one place
+   that promise is measurable. The PICKERS, because the size difference is the choice: a tile
+   painted in the face it offers, and a preview of the reader's own roles at the reader's own
+   sizes. Normalise a specimen and all four options look the same size, which is the entire
+   thing being chosen between. Both wear `data-specimen`. */
+.admin .prose,
+.admin [data-specimen],
+.admin [data-specimen] * {
+  font-size-adjust: none;
 }
 
 /* Where the settings search landed you.

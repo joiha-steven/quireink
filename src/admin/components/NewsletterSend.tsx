@@ -8,7 +8,7 @@
 // already has successful sends needs the resend checkbox before the button unlocks.
 import { useEffect, useState } from 'react'
 import type { ApiResponse } from '@/types'
-import { Card } from './kit'
+import { Card, NOTE_TEXT, READING } from './kit'
 import { Button } from '@/admin/ui/Button'
 import { useToast } from '@/admin/ui/Toast'
 import { useAdminT } from './I18nProvider'
@@ -111,13 +111,13 @@ export function NewsletterSend({ posts }: { posts: SendablePost[] }) {
               )
             })}
           </div>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400">
+          <p className={NOTE_TEXT}>
             {picked.length > 1 ? t.nlDigestHint.replace('{n}', String(picked.length)) : t.nlSendHint}
           </p>
 
           {alreadySent && (
             <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-3 text-sm dark:border-neutral-800 dark:bg-neutral-900">
-              <p className="text-neutral-600 dark:text-neutral-400">{t.nlAlreadySent.replace('{n}', String(priorSent.length))}</p>
+              <p className={`${READING} text-neutral-600 dark:text-neutral-400`}>{t.nlAlreadySent.replace('{n}', String(priorSent.length))}</p>
               <label className="mt-2 flex items-center gap-2 text-neutral-700 dark:text-neutral-300">
                 <input type="checkbox" checked={resend} onChange={(e) => setResend(e.target.checked)} />
                 {t.nlResendConfirm}
@@ -142,7 +142,7 @@ export function NewsletterSend({ posts }: { posts: SendablePost[] }) {
           <div className="space-y-3">
             <p className="text-sm">
               <span className="text-neutral-500 dark:text-neutral-400">{t.nlSubjectLabel}: </span>
-              <span className="font-medium">{preview.subject}</span>
+              <span className={`${READING} font-medium`}>{preview.subject}</span>
             </p>
             {/* sandbox with no allow-* tokens: the email HTML cannot run scripts, submit
                 forms or navigate the admin. It is only ever rendered, never trusted. */}
@@ -152,7 +152,7 @@ export function NewsletterSend({ posts }: { posts: SendablePost[] }) {
               srcDoc={preview.html}
               className="h-[34rem] w-full rounded-lg border border-neutral-200 bg-white dark:border-neutral-800"
             />
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">{t.nlPreviewHint}</p>
+            <p className={NOTE_TEXT}>{t.nlPreviewHint}</p>
           </div>
         )}
       </Card>

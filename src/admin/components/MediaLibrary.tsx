@@ -11,7 +11,7 @@ import { formatBytes } from '@/utils'
 import { formatDate } from '@/i18n/i18n'
 import { ImageUploader } from './ImageUploader'
 import { MediaToolbar, type MediaSort } from './MediaToolbar'
-import { EmptyState } from './kit'
+import { EmptyState, READING } from './kit'
 import { useAdminT, useAdminLang } from './I18nProvider'
 
 type Props = {
@@ -388,7 +388,7 @@ export function MediaLibrary({ mode = 'page', multi = false, onSelect, onSelectM
           </div>
         </div>
         {multi && (
-          <p className="mb-3 text-sm text-neutral-500 dark:text-neutral-400">{t.galleryPickHint}</p>
+          <p className={`${READING} mb-3 text-sm leading-6 text-neutral-500 dark:text-neutral-400`}>{t.galleryPickHint}</p>
         )}
         <div className="overflow-y-auto">{body}</div>
       </div>
