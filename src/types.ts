@@ -195,6 +195,8 @@ export type SiteSettings = {
   autosaveSeconds: number // how often the editor stashes a local snapshot while you type, in seconds. NOT a server autosave — see admin/components/useLocalDraft.ts, which rejects one on the grounds that it cannot help when the network is what dropped and would push half-finished edits onto a published post. The floor is 15s: at a long interval the flush on hide is what actually keeps work safe, and that one is not optional
   maxUploadMb: number // largest single upload, in MB (0 = whatever the deployment allows). ONLY EVER NARROWS the MAX_UPLOAD_MB ceiling: the operator's number is the one an upload cannot argue with, and this field can lower it but never raise it (media/limits.ts)
   storageQuotaGb: number // largest the whole blob store may grow, in GB (0 = whatever the deployment allows). Counts derived variants and icons, because on a photo blog those are most of the disk. Same narrow-only rule as maxUploadMb
+  /** Has the owner dismissed the first-run steps? Set once, never unset by the app. */
+  firstRunDone: boolean
   contentWidth: number // px, max width of the content column (desktop)
   postsPerPage: number // posts shown per page on home/category/tag lists
   relatedCount: number // related posts shown at the end of an article (0 = none)

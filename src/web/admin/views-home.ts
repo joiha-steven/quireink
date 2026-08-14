@@ -113,6 +113,7 @@ export async function dashboardView(): Promise<Record<string, unknown>> {
     tags: tally(posts.flatMap((p) => p.tags)),
     recent,
     activityEnabled: activityOn,
+    firstRunDone: settings.firstRunDone,
     version: (pkg as { version: string }).version,
     // Null on a machine the deploy did not stamp. The admin then shows the version alone.
     commit: buildSha(),

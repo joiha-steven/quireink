@@ -7,6 +7,7 @@ import { formatBytes, formatDateTimeShort } from '@/utils'
 import { buttonClass } from '@/admin/ui/Button'
 import { Card, CARD_GAP, PageHeader, SECTION_GAP, StatCard } from './kit'
 import { DashboardWidgets, type DashboardData } from './DashboardWidgets'
+import { FirstRun } from './FirstRun'
 import { useAdminT } from './I18nProvider'
 import { REPO } from './help-kit'
 
@@ -41,6 +42,7 @@ type Props = {
   tags: Taxo[]
   recent: ActivityEntry[]
   activityEnabled: boolean
+  firstRunDone: boolean
   version: string
   commit: string | null
   system: SystemInfo
@@ -80,7 +82,16 @@ function BuildLabel({ version, commit }: { version: string; commit: string | nul
 
 export function Overview(props: Props) {
   const t = useAdminT()
-  const { posts, pages, comments, originals, totalBytes, recent, activityEnabled, version, commit, system, dashboard } = props
+  // One field, merged server-side like every other settings PUT. Fire-and-forget: failing to
+  // record a dismissal is not worth a toast, and the steps simply come back next time.
+  const markFirstRunDone = () => {
+    void fetch('/api/settings', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ firstRunDone: true }),
+    }).catch(() => undefined)
+  }
+  const { posts, pages, comments, originals, totalBytes, recent, activityEnabled, version, commit, system, dashboard, firstRunDone } = props
   return (
     <div className={SECTION_GAP}>
       <PageHeader
@@ -92,6 +103,10 @@ export function Overview(props: Props) {
           </div>
         }
       />
+
+      {/* Above the numbers on purpose: on a fresh install every number is zero, and a screen
+          of zeroes is the least useful thing a new owner can be shown first. */}
+      <FirstRun done={firstRunDone} onDone={markFirstRunDone} />
 
       <div className={`grid grid-cols-2 ${CARD_GAP} sm:grid-cols-3 lg:grid-cols-5`}>
         <StatCard label={t.statPosts} value={posts} href="/admin/content" />

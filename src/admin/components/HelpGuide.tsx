@@ -1,26 +1,21 @@
-// In-admin help. Content is ENGLISH by design (canonical, like the repo docs) — the
-// nav label + page title are localized, the body links out to docs/*.md for depth.
+// In-admin help. The REFERENCE content is English by design (canonical, like the repo docs)
+// and the body links out to docs/*.md for depth. The nav label, the page title and — since
+// 2026-08-14 — the five first-run steps are localized: those are onboarding, and onboarding
+// somebody cannot read is worse than none. They live in `FirstRun.tsx` and render here and
+// on the dashboard from one source.
 // Pure server component (static), so it ships no client JS.
 //
 // Shape: a numbered first-run path at the top (the one thing a new owner needs), a jump
 // index, then reference sections, then two lookup tables. Sections live in
 // `HelpSections`, tables in `HelpTables` — this file is the shell.
 import { PageHeader, Card } from './kit'
-import { Anchor, A, P, Ext, In, REPO } from './help-kit'
+import { FirstRunSteps } from './FirstRun'
+import { Anchor, A, P, Ext, REPO } from './help-kit'
 import { MarkdownTable, TroubleTable } from './HelpTables'
 import {
   WritingSection, MediaSection, ReadersSection, AnalyticsSection,
   SettingsSection, ServerSection, CacheSection, McpSection,
 } from './HelpSections'
-
-// The order a new blog is actually set up in — each step is one link away.
-const STEPS: { href: string; label: string; body: string }[] = [
-  { href: '/admin/settings', label: 'Name the site', body: 'Title, logo, language and menu in Settings → Site. It is live the moment you save.' },
-  { href: '/admin/editor', label: 'Write the first post', body: 'Markdown and a toolbar. Save keeps it a draft; Publish puts it on the site.' },
-  { href: '/admin/settings?tab=appearance', label: 'Choose the look', body: 'Six palettes, a font, and text sizes per role. Readers can switch palette themselves.' },
-  { href: '/admin/settings?tab=connections', label: 'Turn on what you need', body: 'SMTP for the newsletter, Google Drive for backups, Cloudflare for the edge cache.' },
-  { href: '/admin/newsletter', label: 'Gather readers', body: 'Once SMTP is set, a sign-up form appears on the site. Sending is always your call.' },
-]
 
 // Same order as the sections render in, so a chip's position predicts where it lands.
 const INDEX: [string, string][] = [
@@ -36,7 +31,9 @@ const INDEX: [string, string][] = [
   ['trouble', 'Troubleshooting'],
 ]
 
-export function HelpGuide({ title, version }: { title: string; version: string }) {
+export function HelpGuide({ title, version, firstRunTitle }: {
+  title: string; version: string; firstRunTitle: string
+}) {
   // `data-prose`: this page is 4,600 characters of sentences, and unlike the rest of the
   // admin its LISTS and TABLE CELLS are prose too — 33 of its passages are `li` and 19 are
   // `td`. The admin-wide rule can only claim `p`, because everywhere else `li` is an
@@ -49,21 +46,11 @@ export function HelpGuide({ title, version }: { title: string; version: string }
         description="Everything this blog can do, and where each thing lives. Start at the top if it is a new site; jump to a section if you are looking something up."
       />
 
-      <Card title="First five minutes">
-        {/* Numbered so the order reads as a path, not a menu. Each step is the link. */}
-        <ol className="grid gap-x-6 gap-y-4 sm:grid-cols-2">
-          {STEPS.map((s, i) => (
-            <li key={s.href} className="flex gap-3">
-              <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-neutral-300 text-xs font-medium tabular-nums text-neutral-500 dark:border-neutral-700 dark:text-neutral-400">
-                {i + 1}
-              </span>
-              <span className="min-w-0">
-                <In href={s.href}>{s.label}</In>
-                <span className={`mt-0.5 block ${P}`}>{s.body}</span>
-              </span>
-            </li>
-          ))}
-        </ol>
+      {/* THE ONE COPY of the five steps, shared with the dashboard's first-run card. They
+          were written out twice for about an hour and that is exactly how two versions of
+          "how to set this up" end up disagreeing. */}
+      <Card title={firstRunTitle}>
+        <FirstRunSteps />
       </Card>
 
       {/* Jump index — the page is long by design; this keeps it a reference. */}

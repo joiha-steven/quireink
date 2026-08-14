@@ -308,6 +308,48 @@ export function registerAdminFlows({ flow, expect }: Tour): void {
         : missing.length + ' of ' + labels.size + ' not findable: ' + missing.slice(0, 6).join(' | ')
     })()`, 1200))
 
+  // The owner asked for it in two halves and the second is the one that gets forgotten:
+  // shown the first time, and reachable afterwards. A tour you can never re-open is a tour
+  // you have to remember, which is the problem it exists to solve.
+  flow('admin: the first-run steps show, dismiss, and come back', () => expect('/admin', `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      const put = (body) => fetch('/api/settings', {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+      })
+      // No reload to set this up: a reload tears down the very evaluation this flow IS, and
+      // the verdict comes back empty. The seeded instance has never dismissed anything, so
+      // the card is on screen already; the flow puts it back that way on the way out.
+      const steps = document.querySelectorAll('main ol li p')
+      if (steps.length !== 5) return 'expected 5 first-run steps, saw ' + steps.length
+      // Every step is a link, and a link to a tab that exists — the four that pointed at a
+      // deleted tab shipped for two weeks without anything noticing.
+      const hrefs = [...document.querySelectorAll('main ol li a')].slice(0, 5).map((a) => a.getAttribute('href'))
+      // Compared against a list, NOT a regex: this whole flow is a template literal, so a
+      // \\b in it is a backspace character long before it is a word boundary, and the first
+      // version called two perfectly good links dead.
+      const TABS = ['site','layout','reading','appearance','seo','connections','system']
+      const bad = hrefs.filter((h) => h.includes('tab=') && !TABS.includes(h.split('tab=')[1]))
+      if (bad.length) return 'step links at a tab that does not exist: ' + bad.join(', ')
+
+      const dismiss = document.querySelector('[data-first-run-dismiss]')
+      if (!dismiss) return 'no dismiss button under the steps'
+      dismiss.click()
+      await sleep(700)
+      if (document.querySelector('main ol li p')) return 'dismissing left the steps on screen'
+
+      const saved = (await (await fetch('/api/admin/view/dashboard')).json())?.data?.firstRunDone
+      if (saved !== true) return 'dismissal did not reach the settings (firstRunDone=' + saved + ')'
+
+      const reopen = document.querySelector('[data-first-run-reopen]')
+      if (!reopen) return 'dismissed and left no way back'
+      reopen.click()
+      await sleep(400)
+      const back = document.querySelectorAll('main ol li p').length
+      await put({ firstRunDone: false })
+      return back === 5 ? 'ok' : 'reopening showed ' + back + ' steps'
+    })()`, 1500))
+
   flow('the owner gate refuses a write with no session', () => expect('/', `
     (async () => {
       // Same-origin, but the cookie is stripped: an owner route must still answer 401.
