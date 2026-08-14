@@ -13,6 +13,7 @@
 
 import type { GallerySettings, HighlightSettings, SiteSettings } from '@/types'
 import { fontPreloadHrefs, fontPresetCss, chromeFontCss, themesToCss } from '@/content/themes'
+import { cjkLangCss } from '@/content/fonts'
 import { typographyToCss, fontToCss } from '@/content/settings'
 import { singleRailCss } from '@/render/rail-css'
 import { fontFaceCss, MONO_TRACKING } from '@/render/font-faces'
@@ -130,6 +131,12 @@ export function pageStyles(settings: SiteSettings, extra = ''): string {
     // comes BEFORE the owner's own settings, so custom CSS still has the last word.
     extra,
     fontPresetCss(settings.fontPreset),
+    // Straight after the preset it overrides, and before the owner's own CSS can have the
+    // last word. `:lang(zh|ja|ko)` swaps ONLY the CJK tail of the reading stack, so a Han
+    // character is drawn in that language's letterforms instead of whichever CJK family the
+    // machine happens to have installed first (`content/fonts.ts`). Inert on a site whose
+    // language is none of the three — no selector matches, and it is ~700 bytes.
+    cjkLangCss(settings.fontPreset),
     chromeFontCss(settings.chromeFont),
     // `enabledPalettes` third: a reader can only ever reach what the owner turned on, so a
     // blog with one palette ships one rather than all six (`content/themes.ts`).

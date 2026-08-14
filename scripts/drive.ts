@@ -1,3 +1,4 @@
+import { chromePath } from './chrome-path'
 // Screenshot a page AFTER doing something to it.
 //
 // `shot.ts` photographs a URL as the server sent it, which cannot see anything a reader has
@@ -11,8 +12,7 @@
 //
 // Env: CHROME (binary), QUIRE_SESSION (owner cookie value), MOBILE=1 (touch + phone UA hints).
 
-const CHROME = process.env.CHROME ?? process.env.CHROME_HEADLESS_SHELL
-  ?? `${process.env.HOME}/chrome/chrome-headless-shell-linux64/chrome-headless-shell`
+const CHROME = chromePath()
 
 const [url, out, script, width = '1600', height = '1000', settle = '600', scale = '1'] =
   process.argv.slice(2)

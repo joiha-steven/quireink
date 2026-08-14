@@ -25,10 +25,12 @@ because nobody opened the page.
 bun run tour
 ```
 
-Thirty-six flows in a real browser, each with a verdict: the reader's controls, every admin
+Forty flows in a real browser, each with a verdict: the reader's controls, every admin
 page, a draft saved and published and trashed and restored, an upload refused for being too
-large, the archive built. It seeds its own instance on its own port and deletes it after, so it
-never touches a real one. Flows live in [`scripts/tour-flows.ts`](./scripts/tour-flows.ts);
+large, the archive built. It seeds its own instance on **port 3399** and deletes it after, so it
+never touches a real one — and it refuses to start if something already holds that port, because
+a tour on a busy port silently tours the other instance and fails every admin flow on a session
+that database never issued. `PORT=` moves it. Flows live in [`scripts/tour-flows.ts`](./scripts/tour-flows.ts);
 the browser plumbing is [`scripts/tour.ts`](./scripts/tour.ts).
 
 It then runs [`scripts/restore-check.ts`](./scripts/restore-check.ts), because a browser

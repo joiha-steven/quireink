@@ -20,6 +20,21 @@ cd "$(dirname "$0")/../.."
 
 TMP=.tmp/tour
 PORT=${PORT:-3399}
+
+# THE PORT MUST BE FREE, and this check is worth its five lines.
+#
+# 3399 is also the port a dev instance runs on. With one already bound, the tour's own server
+# loses the bind and dies in the background, the health check below is answered by the OTHER
+# instance, and forty flows then run against a database the tour never seeded. The reader-side
+# half passes (same fixture), and all twenty-six admin flows fail 401 because the session the
+# seeder minted belongs to a different database. Nothing says so: it reads as a real, specific
+# regression, and it cost an hour of bisecting one before anybody checked what was on the port.
+if lsof -ti:"$PORT" >/dev/null 2>&1; then
+  echo "✗ port $PORT is already in use — stop it, or run with PORT=<free port>." >&2
+  echo "  A tour on a busy port silently tours the OTHER instance and fails every admin flow." >&2
+  exit 1
+fi
+
 rm -rf "$TMP"
 mkdir -p "$TMP"
 

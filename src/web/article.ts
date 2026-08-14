@@ -28,6 +28,9 @@ import { escapeAttr, escapeHtml } from '@/utils'
 
 /** How much of a post the OG card carries. Six lines at the card's body size; the meta
  *  description stops at 200 because a search engine truncates there, which is a different job. */
+/** What a search engine will actually print. Longer is not wrong, it is just never shown. */
+const META_DESC_MAX = 200
+
 const OG_DESC_MAX = 320
 
 /**
@@ -205,9 +208,15 @@ export async function renderArticle(slug: string): Promise<string | null> {
 
   const { configured: mailConfigured } = await getMailStatus()
 
-  const description = post?.metaDescription
-    || post?.excerpt
-    || clampExcerpt(toPlainText(item.content).slice(0, 300))
+  // Clamped again on the way OUT, and this is the narrower need `EXCERPT_MAX_CHARS` talks
+  // about: an excerpt is stored at up to 280 so the front page's lead standfirst has
+  // something to print, and a search engine truncates a description past ~160 regardless.
+  // Same shape as `OG_DESC_MAX` below — each surface states its own bound, and none of them
+  // reaches back to shorten what everybody else gets.
+  const description = clampExcerpt(
+    post?.metaDescription || post?.excerpt || toPlainText(item.content).slice(0, 300),
+    META_DESC_MAX,
+  )
 
   // The reading-progress bar is markup plus a scroll-driven CSS animation, with no script
   // behind it: it therefore works with JavaScript switched off, and costs nothing on the

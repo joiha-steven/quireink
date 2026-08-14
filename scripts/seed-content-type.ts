@@ -26,7 +26,7 @@ export const TYPE_POSTS: Seed[] = [
   {
     title: 'The golden canon, and the arithmetic under it',
     slug: 'the-golden-canon-and-its-arithmetic',
-    excerpt: 'Medieval scribes placed a text block by drawing nine lines. The proportions that fall out are still the best default anybody has.',
+    excerpt: 'Medieval scribes placed a text block by drawing nine lines and reading the answer off the diagonals. No measuring, no arithmetic, no taste required — and the proportions that fall out are still the best default anybody has for a page of running text.',
     category: 'Typography', tags: ['margins', 'layout', 'proportion'],
     series: 'Designing a reading page', order: 4, ago: 0,
     body: `Nobody in a scriptorium measured a margin. They drew diagonals across the spread, marked where the lines crossed, and put the text block's corners on those marks. Van de Graaf reconstructed the method in the 1940s from books nobody had thought to measure, and what he found was that a construction with no numbers in it produces the same proportions over and over.
@@ -63,7 +63,7 @@ Not for copying. For having somewhere to start that is not the default margin of
   {
     title: 'Optical size, and why 8pt is not 24pt shrunk',
     slug: 'optical-size-is-not-a-scale',
-    excerpt: 'A caption and a headline want different letterforms, not the same letterform at two sizes. Variable fonts finally made that adjustable.',
+    excerpt: 'A caption and a headline want different letterforms, not the same letterform at two sizes. Foundries knew this when type was cut in metal, lost it when photocomposition arrived, and variable fonts have finally made it adjustable again.',
     category: 'Typography', tags: ['scale', 'variable fonts', 'craft'],
     series: 'Designing a reading page', order: 3, ago: 9,
     body: `Metal type was cut at every size it was going to be used at, and the small sizes were not the large ones reduced. They had shorter ascenders, sturdier hairlines, wider spacing and a larger x-height relative to the body. The punchcutter knew that a letter has to survive being small, and drew a different letter.
@@ -93,14 +93,20 @@ Set a line at 8pt and the same line at 48pt, then scale the small one up in a sc
   {
     title: 'What a font subsetter actually removes',
     slug: 'what-a-subsetter-removes',
-    excerpt: 'A webfont is mostly glyphs your pages will never show. Cutting them is the largest single saving available to a text site.',
+    excerpt: 'A webfont is mostly glyphs your pages will never show — alphabets you do not write in, symbols nobody has typed since 1994. Cutting them is the largest single saving available to a text site, and the reader gives up nothing at all for it.',
     category: 'Typography', tags: ['webfonts', 'performance', 'craft'],
     ago: 13,
     body: `A retail text font carries two to three thousand glyphs. A blog in English uses perhaps two hundred of them; add Vietnamese and it is four hundred. Everything else is Greek, Cyrillic, currency for markets you do not serve, and arrows.
 
-Subsetting removes what a page cannot show. It is not compression and it is not a quality trade: the glyphs that stay are byte-identical to the ones the foundry drew.
+Subsetting removes what a page cannot show. ==It is not compression and it is not a quality trade==#green: the glyphs that stay are byte-identical to the ones the foundry drew.
 
 ## Three separate cuts, and they compound
+
+The saving is easy to predict before you run anything. For a face of $G$ glyphs of which a site can show $g$, and a per-glyph cost that is roughly constant within a family,
+
+$$\\text{saved} \\approx 1 - \\frac{g}{G}$$
+
+Two hundred glyphs kept out of twenty-eight hundred is a saving of about ninety-three per cent, before a single variation axis has been touched.
 
 Cut one is the **codepoints**. Keep latin, latin-ext and vietnamese, drop the rest.
 
@@ -149,7 +155,7 @@ Which means the honest number for "how much font does a reader download" is not 
   {
     title: 'A type scale you can defend',
     slug: 'a-type-scale-you-can-defend',
-    excerpt: 'Every size on the page comes from a role, so one setting changes the page rather than one heading.',
+    excerpt: 'Nine roles, one ratio, and no size typed twice. Every measurement on the page comes from what a piece of text IS rather than from where it happens to sit, so one setting changes the whole page instead of one heading.',
     category: 'Typography', tags: ['scale', 'layout', 'craft'],
     series: 'Designing a reading page', order: 2, ago: 21,
     body: `Most type scales are a list of numbers somebody liked. That works until the day you want the whole page a little larger, and you discover the numbers were never related to each other at all.
@@ -183,7 +189,7 @@ The mistake that survives longest is treating leading as one number. Large text 
   {
     title: 'The measure is the design',
     slug: 'the-measure-is-the-design',
-    excerpt: 'Sixty-six characters is not a superstition. It is the width at which the eye stops losing its place.',
+    excerpt: 'Sixty-six characters is not a superstition. It is the width at which the eye still finds the start of the next line without hunting for it, and it decides more about a reading page than the choice of typeface does.',
     category: 'Typography', tags: ['measure', 'reading', 'layout'],
     series: 'Designing a reading page', order: 1, ago: 30,
     body: `Ask why a column is the width it is and you will usually be told about taste. It is not taste. It is the distance the eye can travel and still find the start of the next line without hunting for it.
@@ -205,7 +211,7 @@ And when a design insists on a wide column, break it. Two columns of 45 characte
   {
     title: 'The em, the en, and three dashes',
     slug: 'the-em-the-en-and-three-dashes',
-    excerpt: 'Four horizontal marks that look alike, mean different things, and are wrong on most pages on the web.',
+    excerpt: 'Four horizontal marks that look alike, mean entirely different things, and are wrong on most pages on the web. A hyphen joins, an en dash spans, an em dash interrupts — and a minus sign is none of the three.',
     category: 'Typography', tags: ['punctuation', 'craft', 'detail'],
     ago: 38,
     body: `There are four horizontal marks in ordinary text and they are not interchangeable. Getting them right is the cheapest quality signal available to a page, because it costs nothing and almost nobody bothers.
@@ -226,7 +232,7 @@ The minus sign. Almost every page that shows a negative number shows it with a h
 
 ## Em dash spacing is a house decision
 
-British practice sets a spaced en dash – like this – where American practice sets a closed-up em dash—like this. Both are correct. What is not correct is mixing them within one publication, and the mixing usually happens because the two came in from different sources.
+British practice sets a spaced en dash – like this – where American practice sets a closed-up em dash—like this. Both are correct. ==What is not correct==#pink is mixing them within one publication, and the mixing usually happens because the two came in from different sources.
 
 > [!WARNING]
 > Do not fix this with a find-and-replace across a whole site. A hyphen in a URL, a code sample or a Vietnamese word broken across a line is not a dash, and a blind replacement turns working links into dead ones.
@@ -247,7 +253,7 @@ The names are literal. An em was the width of a cast **M** — actually the widt
   {
     title: 'Five inks, and when to reach for each',
     slug: 'five-inks-and-when-to-reach-for-each',
-    excerpt: 'A highlighter is a reading tool, not a decoration. Which colour you pick is a claim about why the sentence matters.',
+    excerpt: 'A highlighter is a reading tool, not a decoration. Five pigments, and which one you reach for is a claim about why the sentence matters: a definition, a warning and a number all want different colours.',
     category: 'Typography', tags: ['reading', 'colour', 'craft'],
     ago: 55,
     body: `A pen box has five colours in it and a student uses all five, but not at random. Over a term a private grammar develops: one colour for the thing that will be examined, another for the thing that was surprising, a third for the thing to come back to. Nobody writes the grammar down and everybody has one.
@@ -279,14 +285,14 @@ A coloured rectangle behind text is not what a pen does. A real stroke has chise
   {
     title: 'Notes on reading, on paper and on glass',
     slug: 'reading-on-paper-and-glass',
-    excerpt: 'A measure, a leading and a typeface walk into a column. Only one of them is usually blamed.',
+    excerpt: 'A measure, a leading and a typeface walk into a column, and only one of them ever gets blamed. Paper and screen do not disagree about type — they disagree about light, distance, and how long anybody will sit still.',
     category: 'Typography', tags: ['reading', 'screens', 'paper'],
     ago: 118,
     body: `Reading on a screen is not reading on paper with the lights on. The differences are small individually and they compound, and almost all of them push in the same direction: a screen needs more air.
 
 ## Contrast is not the same problem
 
-On paper, ink is darker than anything a screen emits, and the page reflects the light in the room. On a screen the page *is* the light source, so pure black on pure white is harsher than the equivalent on paper. Most well-set screen text is not black; it is a very dark grey, and the reason is comfort rather than style.
+On paper, ink is darker than anything a screen emits, and the page reflects the light in the room. ==On a screen the page *is* the light source==#blue, so pure black on pure white is harsher than the equivalent on paper. Most well-set screen text is not black; it is a very dark grey, and the reason is comfort rather than style.
 
 ## The resolution argument is mostly over
 
@@ -295,6 +301,12 @@ For twenty years the honest answer to "why does this look worse on screen" was p
 ## What actually helps
 
 Slightly more leading than you would set in print. A slightly shorter measure, because a screen is read at a less predictable distance. And a size chosen for the worst case rather than the best: someone reading on a bus, one-handed, at arm's length.
+
+Put a number on it. If $L_t$ is the luminance of the text and $L_b$ that of its background, the contrast ratio is $C = (L_b + 0.05) / (L_t + 0.05)$ — and pure black on pure white gives
+
+$$C = \\frac{1.00 + 0.05}{0.00 + 0.05} = 21$$
+
+which is roughly double what ink on good paper manages. That surplus is not a bonus. It is the glare, and dropping the ground to a paper white takes $C$ back to about seventeen without costing a reader anything they were using.
 
 None of that is exotic. It is the same craft, applied to a surface that moves.
 
@@ -315,7 +327,7 @@ Set the measure in \`rem\` rather than in characters: \`ch\` is the width of a z
   {
     title: 'Kerning is not tracking, and neither is spacing',
     slug: 'kerning-is-not-tracking',
-    excerpt: 'Three controls, three different jobs, and a great deal of type ruined by reaching for the wrong one.',
+    excerpt: 'Three controls, three different jobs, and a great deal of type ruined by reaching for the wrong one. Kerning fixes a pair, tracking colours a paragraph, and letter-spacing is what you do to small caps and to nothing else.',
     category: 'Typography', tags: ['kerning', 'tracking', 'craft'],
     ago: 256,
     body: `**Spacing** is the sidebearing built into each glyph: how much air the designer left on either side of the letter. It applies always, to every pair, and you do not get to change it without editing the font.
@@ -328,7 +340,7 @@ Set the measure in \`rem\` rather than in characters: \`ch\` is the width of a z
 
 Tracking is for display sizes and for capitals. Large text needs slightly negative tracking because the spacing was drawn for reading sizes and looks loose when scaled up. Capitals and small capitals need slightly positive, because their forms are wide and even and they crowd each other.
 
-Body text needs neither. If a paragraph looks too loose or too tight at reading size, the problem is almost always the typeface, the size, or the measure — not the tracking.
+==Body text needs neither.==#green If a paragraph looks too loose or too tight at reading size, the problem is almost always the typeface, the size, or the measure — not the tracking.
 
 ## When to override a kern pair
 
