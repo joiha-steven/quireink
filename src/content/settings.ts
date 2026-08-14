@@ -146,6 +146,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   // `STORAGE_QUOTA_GB`: two places holding one limit is how they disagree (`media/limits.ts`).
   maxUploadMb: 0,
   storageQuotaGb: 0,
+  firstRunDone: false,
   contentWidth: 672,
   postsPerPage: 10,
   relatedCount: 3,
@@ -324,6 +325,9 @@ export async function saveSettings(input: Partial<SiteSettings>): Promise<SiteSe
     showDescription: input.showDescription ?? current.showDescription,
     faviconUrl: input.faviconUrl ?? current.faviconUrl,
     appIconUrl: input.appIconUrl ?? current.appIconUrl,
+    // Never unset by a merge: an owner who dismissed the steps has dismissed them, and a
+    // PUT that omits the flag is every other settings save on the screen.
+    firstRunDone: input.firstRunDone ?? current.firstRunDone,
     contentWidth: clampNumber(input.contentWidth, 360, 1600, current.contentWidth),
     postsPerPage: clampNumber(input.postsPerPage, 1, 100, current.postsPerPage),
     relatedCount: clampNumber(input.relatedCount, 0, 12, current.relatedCount),

@@ -325,6 +325,20 @@ export type AdminStrings = {
   settingsTitle: string
   settingsSearch: string
   settingsSearchEmpty: string
+  firstRunTitle: string
+  firstRunIntro: string
+  firstRunDismiss: string
+  firstRunReopen: string
+  firstRun1Label: string
+  firstRun1Body: string
+  firstRun2Label: string
+  firstRun2Body: string
+  firstRun3Label: string
+  firstRun3Body: string
+  firstRun4Label: string
+  firstRun4Body: string
+  firstRun5Label: string
+  firstRun5Body: string
   siteLanguage: string
   siteLanguageHint: string
   siteTitle: string
