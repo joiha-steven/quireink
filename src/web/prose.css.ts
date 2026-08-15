@@ -68,11 +68,39 @@ export const PROSE_CSS = `
    real token (JetBrains Mono, self-hosted, declared in font-faces.ts). The face costs
    nothing on a post with no code: unicode-range means the browser fetches a file only when
    a glyph actually needs it. */
+/* Declared on .prose rather than :root so a palette swap on the html element re-derives it
+   with no second rule. Read by the block panel below. */
+.prose{--c-code-panel:color-mix(in srgb, var(--c-rule) 20%, var(--c-bg))}
 .prose code{font-family:var(--font-mono);font-size:var(--fs-code);
   line-height:var(--lh-code);letter-spacing:var(--ls-code)}
 .prose :not(pre) > code{background:var(--c-rule);padding:.15em .38em}
+/* A CODE BLOCK IS A PANEL, and until 2026-08-15 it was not one on any palette.
+
+   pre carried padding, a radius and an overflow rule -- and no background of its own,
+   because Shiki writes one as an INLINE style on every block it highlights. Its light theme
+   (vitesse-light) writes #ffffff. This site's paper is #fcfcfc. So a code block was a white
+   rectangle on a near-white page: the radius had nothing to round, the padding read as an
+   indent, and the block differed from the prose around it only by being monospace. Reported
+   as "tu dung thut lui lai thoi chu ko co gi khac biet".
+
+   Two things are wrong with letting Shiki own it, and the colour is the smaller. A hex from
+   a third-party theme is baked into HTML that is CACHED under a hash of its Markdown, so it
+   outlives any palette the reader picks -- the same trap render/math.ts refuses for its
+   error colour, and the rule CLAUDE.md states as public colours coming only from tokens.
+
+   So the panel is derived from the palette: a fifth of the rule colour mixed into the page
+   colour, which is a shade off the paper on every one of the six and stays right in dark
+   with no second declaration. The hairline is the rule the tables already draw with -- a
+   frame rather than a left bar, because the left bar is the blockquote's mark and two things
+   sharing one mark is how a reader stops reading it.
+
+   The important flag is not decoration: an inline style beats any selector without it. Only
+   the block needs one -- measured across the fixture, Shiki emits no span backgrounds here,
+   so a second rule to flatten them would guard nothing. */
 .prose pre{padding:var(--sp);border-radius:.5rem;overflow-x:auto;font-size:var(--fs-code);
-  line-height:var(--lh-code);letter-spacing:var(--ls-code)}
+  line-height:var(--lh-code);letter-spacing:var(--ls-code);
+  background:var(--c-code-panel);border:1px solid var(--c-rule)}
+.prose pre.shiki{background:var(--c-code-panel)!important}
 .prose pre code{font-size:inherit;line-height:inherit;letter-spacing:inherit}
 /* A SECTION BREAK, not a divider. A printed book never rules a line across the text
    block to change subject: it leaves white space, and marks it with something small and

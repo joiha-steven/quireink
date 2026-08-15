@@ -356,7 +356,7 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
               onChange(e.target.value)
             }}
             spellCheck={false}
-            className="min-h-[60vh] w-full resize-none overflow-hidden bg-transparent px-4 py-4 text-sm leading-relaxed text-neutral-800 outline-none dark:text-neutral-200"
+            className="md-source min-h-[60vh] w-full resize-none overflow-hidden bg-transparent px-4 py-4 text-neutral-800 dark:text-neutral-200"
           />
         ) : (
           <div className="typewriter-stage relative">

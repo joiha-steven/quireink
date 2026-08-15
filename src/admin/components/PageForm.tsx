@@ -2,7 +2,6 @@
 // Same flow as PostForm (auto-save + serialized manual save) but hits /api/pages
 // and has no taxonomy or date.
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useRouter } from '@/admin/router'
 import type { PageWithContent, ApiResponse } from '@/types'
 import { Button } from '@/admin/ui/Button'
 import { useToast } from '@/admin/ui/Toast'
@@ -30,7 +29,6 @@ function toDraft(initial?: PageWithContent): PageDraft {
 
 export function PageForm({ initial, contentWidth, typewriterEffects, autosaveSeconds }: Props) {
   const t = useAdminT()
-  const router = useRouter()
   const { notify } = useToast()
   const [draft, setDraft] = useState<PageDraft>(() => toDraft(initial))
   const [saving, setSaving] = useState(false)
@@ -104,9 +102,24 @@ export function PageForm({ initial, contentWidth, typewriterEffects, autosaveSec
         setSavedAt(new Date().toISOString())
         setDirty(false)
         clearLocal() // the server now has it — drop the local recovery copy
+        // THE ADDRESS BAR IS SYNCED HERE, AND THE ROUTER IS DELIBERATELY NOT.
+        //
+        // `router.replace()` would put the new slug into the router's own state, which is
+        // what ``pages/PageEditor.tsx`` reads to build its fetch — and what the form below is `key`ed on.
+        // A rename would therefore refetch and REMOUNT the editor: cursor, selection and the
+        // whole undo stack gone, on the click that saved the work. So the raw history call.
+        //
+        // ⚠️ AND NOTHING MAY CALL `router.refresh()` AFTER IT. There used to be one here,
+        // carried over from the Next.js port with the comment "drop the client Router Cache
+        // so admin lists show this save (no stale RSC)". There is no Router Cache and no RSC
+        // in this admin, and `Route()` in `App.tsx` renders a different component per path —
+        // so every navigation unmounts the page and `useView` refetches on mount anyway. The
+        // call bought nothing, and it cost this: `refresh()` bumps the epoch, `useView` re-runs
+        // with the router's path, and the router's path is the OLD slug. The server answers
+        // 404, the shell swaps the editor for a red "Not found", and the post is on disk the
+        // whole time. Reported 2026-08-15 as "sửa link bài nháp rồi đăng là bị Not found" —
+        // twice, because `PageForm` had the identical two lines.
         window.history.replaceState(null, '', `/admin/page-editor/${json.data.slug}`)
-        // Drop the client Router Cache so the save shows on the next navigation.
-        router.refresh()
         return true
       } catch {
         notify(t.saveFailed, 'error')
@@ -115,7 +128,7 @@ export function PageForm({ initial, contentWidth, typewriterEffects, autosaveSec
         setSaving(false)
       }
     },
-    [notify, t, router, clearLocal],
+    [notify, t, clearLocal],
   )
 
   const enqueueSave = useCallback(

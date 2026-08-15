@@ -6,6 +6,7 @@
 // it is not ok. A flow that WRITES cleans up after itself.
 
 import type { Tour } from './tour'
+import { registerEditorFlows } from './tour-flows-editor'
 
 export function registerAdminFlows({ flow, expect, atWidth }: Tour): void {
 
@@ -107,74 +108,8 @@ export function registerAdminFlows({ flow, expect, atWidth }: Tour): void {
       return after === target ? 'ok' : 'wrote ' + target + ', read back ' + after
     })()`, 900))
 
-  flow('admin: the editor opens with a title field and a body', () => expect('/admin/editor', `
-    (() => {
-      const title = document.querySelector('textarea[placeholder], input[placeholder]')
-      const body = document.querySelector('.ProseMirror')
-      if (!title) return 'no title field'
-      if (!body) return 'no editor surface'
-      return 'ok'
-    })()`, 1200))
-
-  flow('admin: typing marks the post unsaved', () => expect('/admin/editor', `
-    (async () => {
-      localStorage.clear()
-      const ta = document.querySelector('textarea')
-      const set = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set
-      ta.focus(); set.call(ta, 'Tour: a post typed by a script')
-      ta.dispatchEvent(new Event('input', { bubbles: true }))
-      await new Promise((r) => setTimeout(r, 300))
-      return /nsaved|ưa lưu/.test(document.body.innerText) ? 'ok' : 'the save bar never said unsaved'
-    })()`, 1200))
-
-  flow('admin: leaving the editor keeps the work on this device', () => expect('/admin/editor', `
-    (async () => {
-      localStorage.clear()
-      const ta = document.querySelector('textarea')
-      const set = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set
-      ta.focus(); set.call(ta, 'Tour: work that must survive')
-      ta.dispatchEvent(new Event('input', { bubbles: true }))
-      await new Promise((r) => setTimeout(r, 200))
-      // The flush that makes a two-minute interval safe.
-      Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true })
-      document.dispatchEvent(new Event('visibilitychange'))
-      await new Promise((r) => setTimeout(r, 300))
-      const kept = Object.keys(localStorage).length > 0
-      const said = /this device|máy này|Gerät|端末|本机|기기/.test(document.body.innerText)
-      if (!kept) return 'nothing was written to localStorage'
-      return said ? 'ok' : 'a snapshot exists but the bar does not mention it'
-    })()`, 1200))
-
-  flow('admin: a draft saves and appears in the list', () => expect('/admin/editor', `
-    (async () => {
-      const slug = 'tour-draft-' + Date.now()
-      const r = await fetch('/api/posts', {
-        method: 'POST', headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ title: 'Tour draft', slug, content: 'Written by the tour.', status: 'draft', categories: [], tags: [] }),
-      })
-      if (!r.ok) return 'POST /api/posts -> ' + r.status
-      const list = await (await fetch('/api/admin/view/content')).json()
-      const posts = list?.data?.posts ?? []
-      const found = posts.some((p) => p.slug === slug)
-      // Clean up after ourselves: a tour that leaves rows behind changes the next run.
-      await fetch('/api/posts/' + slug, { method: 'DELETE' })
-      return found ? 'ok' : 'the new draft was not in the content list'
-    })()`, 900))
-
-  flow('admin: a published post is reachable publicly', () => expect('/admin/editor', `
-    (async () => {
-      const slug = 'tour-live-' + Date.now()
-      const r = await fetch('/api/posts', {
-        method: 'POST', headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ title: 'Tour live', slug, content: 'Live from the tour.', status: 'published', categories: [], tags: [] }),
-      })
-      if (!r.ok) return 'POST /api/posts -> ' + r.status
-      const page = await fetch('/' + slug)
-      const html = page.ok ? await page.text() : ''
-      await fetch('/api/posts/' + slug, { method: 'DELETE' })
-      if (!page.ok) return 'the published post answered ' + page.status
-      return html.includes('Live from the tour') ? 'ok' : 'the page rendered without its body'
-    })()`, 900))
+  // The editor half, next door — see its header for the seam.
+  registerEditorFlows({ flow, expect, atWidth })
 
   flow('admin: the trash takes a post and gives it back', () => expect('/admin/trash', `
     (async () => {
