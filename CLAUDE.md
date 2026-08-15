@@ -102,7 +102,11 @@ history is never needed to fix or understand code.
 
 - **`golden/v1/corpus/` is not leftover from the retired 1.x tree.** It is captured reference
   HTML and it is the golden compare's contract; `src/render/golden.test.ts` reads it on every
-  run. Regenerating it is a reviewed change.
+  run. **Never regenerate it.** Those files are what 1.x actually printed, captured by running
+  a renderer that no longer exists — overwriting them does not update the reference, it
+  destroys it, and the gate then reports parity against our own output. When output changes on
+  purpose, name the fixture in `DIVERGED` in that test and capture the new answer under
+  `golden/v2/corpus/`; both stay on disk and the other 42 keep the original contract.
 - **The retired Next.js implementation is gone from the tree** ([ADR 0019](./docs/decisions/0019-remove-the-frozen-tree-from-the-working-copy.md)),
   preserved at tag `v1-final`. Do not reintroduce it, and do not "fix" a doc by pointing at
   a `v1/` path.

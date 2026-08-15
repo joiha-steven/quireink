@@ -101,6 +101,20 @@ export const PROSE_CSS = `
   line-height:var(--lh-code);letter-spacing:var(--ls-code);
   background:var(--c-code-panel);border:1px solid var(--c-rule)}
 .prose pre.shiki{background:var(--c-code-panel)!important}
+/* The two marks a block with no language still earns -- see render/plain-code.ts for why
+   these two and nothing else.
+
+   WEIGHT FIRST, COLOUR SECOND, and that order was decided by measuring rather than by taste.
+   Written as colour alone, both marks came out at rgb(18,18,18) and rgb(22,22,22) against
+   body text at rgb(38,38,38) -- invisible, because the DEFAULT palette is monochrome and
+   --c-link and --c-accent are near-black in it on purpose. A device that does nothing on the
+   palette most installs run is not a device.
+
+   So the mark is weight, which every palette has, and the colour rides along for the ones
+   that have a hue to give. Both kinds get the SAME treatment: a quoted literal and a $VAR
+   are one category here -- machine values sitting inside human words -- and inventing a
+   second distinction between them would be the guessing this whole file refuses. */
+.prose pre.plain-code .tk-s,.prose pre.plain-code .tk-v{font-weight:600;color:var(--c-heading)}
 .prose pre code{font-size:inherit;line-height:inherit;letter-spacing:inherit}
 /* A SECTION BREAK, not a divider. A printed book never rules a line across the text
    block to change subject: it leaves white space, and marks it with something small and
