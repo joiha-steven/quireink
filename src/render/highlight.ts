@@ -44,16 +44,23 @@ const cacheKey = (code: string, lang: string): string => renderKey(lang, THEME_K
 // Markdown fence (```ts). Returns null on any failure (unknown lang load error,
 // highlighter init) so the caller falls back to the original escaped block.
 export async function highlightCode(code: string, lang: string): Promise<string | null> {
-  const key = cacheKey(code, lang)
+  // A fence that NAMED a language is obeyed, right or wrong — that is the writer's choice.
+  // Only an unnamed one (marked `text` by the caller) is guessed at, and `detectLang` says
+  // `text` again unless it is sure. See `detect-lang.ts` for why it is deliberately timid.
+  const named = loaded.has(lang) ? lang : null
+  const language = named ?? detectLang(code)
+
+  // KEYED ON THE RESOLVED LANGUAGE, not the one the fence gave. Written the other way first,
+  // and every block already in `render_cache` would have kept serving its uncoloured HTML
+  // until somebody cleared the cache by hand: the key said `text`, the row was a hit, and the
+  // guesser below never ran. Keying on the answer makes the cache self-versioning — a block
+  // that now resolves to `bash` is simply a different key, the old row goes inert, and if
+  // these rules ever change their mind the same thing happens again with nothing to remember.
+  const key = cacheKey(code, language)
   const cached = readRendered(key)
   if (cached !== null) return cached
   try {
     const h = await highlighter()
-    // A fence that NAMED a language is obeyed, right or wrong — that is the writer's choice.
-    // Only an unnamed one (marked `text` by the caller) is guessed at, and `detectLang` says
-    // `text` again unless it is sure. See `detect-lang.ts` for why it is deliberately timid.
-    const named = loaded.has(lang) ? lang : null
-    const language = named ?? detectLang(code)
     const html = h.codeToHtml(code, {
       lang: language,
       themes: THEMES,
