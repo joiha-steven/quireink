@@ -2,16 +2,21 @@
 
 ## 2026-08-15 — Quire Ink 2.0.3
 
-**Twenty-six commits since 2.0.2. Eleven were a pre-release audit of jobs this software had
-left to somebody else; the rest are the admin, which had stopped looking like the product it
-belongs to.** The audit half found no upload cap, no storage quota, no bind address the server
-would admit to, and nothing at all holding the one rule the whole design rests on — one blog,
-one owner. In each case a reverse proxy, a firewall rule or a habit had been covering, which is
-exactly why none of them had ever shown.
+**Thirty-eight commits since 2.0.1, and 2.0.2 is folded into this one.** 2.0.2 went out on 10
+August and stood for five days; everything it shipped is in this release, and its notes are
+below under the line rather than summarised. There is one release to read and one to install.
 
-**Three new environment variables, and one of them changes what an existing install does at
-boot** — read the first entry before upgrading.
+The twenty-six commits since 2.0.2 split in two. Eleven are a pre-release audit of jobs this
+software had left to somebody else — it had no upload cap, no storage quota, no bind address
+the server would admit to, and nothing at all holding the one rule the whole design rests on,
+one blog and one owner. In each case a reverse proxy, a firewall rule or a habit had been
+covering, which is exactly why none of them had ever shown. The rest are the admin, which had
+stopped looking like the product it belongs to.
 
+**Four new environment variables across the two, and one of them changes what an existing
+install does at boot** — read the first entry before upgrading. `HOST`, `MAX_UPLOAD_MB` and
+`STORAGE_QUOTA_GB` are new here; `TRUST_PROXY` arrived in 2.0.2 and almost nobody needs to set
+it. The upgrade is otherwise a drop-in: same install, same settings, same database.
 ### The server listened on every interface, under a log line that said it did not
 
 `Bun.serve` with no `hostname` listens on `0.0.0.0`. The line printed underneath it said
@@ -323,14 +328,14 @@ names the install command when it finds none.
   the font handles are with typography instead of with chrome reuse, and the mode × palette axes
   are with colour instead of with the header.
 
-## 2026-08-10 — Quire Ink 2.0.2
+---
+
+## Folded in from 2.0.2 — withdrawn as a separate release
 
 **Twelve commits and not one new feature.** Every entry below is a defect, and eight of them
 were found the same way the 2.0.1 fixes were: by driving the running site and measuring it,
-not by reading the source. The upgrade is a drop-in — same install, same settings, same
-database — and the rate-limit fix is the reason to take it.
-
-One new environment variable, `TRUST_PROXY`, and almost nobody needs to set it.
+not by reading the source. The notes are unedited from the 2.0.2 release; the rate-limit fix
+is the reason nobody should be left on 2.0.1.
 
 ### The sign-in lockout lasted about a minute, and a forged header defeated the rate limit
 
