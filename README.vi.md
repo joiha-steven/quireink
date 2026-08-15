@@ -67,7 +67,7 @@ Bạn được đọc, sửa, chạy và fork theo [PolyForm Noncommercial](./LI
 | 🖋️&nbsp;**Viết** | Trình soạn thật trên nền Markdown — bảng, video, chú thích chân trang, khung nhấn, **công thức toán**, Spotify. Thả ảnh vào là nó tự cắt cho mọi cỡ màn hình. Lưu trong lúc gõ, giữ ba bản, và giữ bài lại tới sáng thứ Ba. Xem mã Markdown thì dấu cú pháp tự mờ đi |
 | 🏠&nbsp;**Trang&nbsp;chủ** | Danh sách bài, một trang bạn tự viết, hoặc trang dựng sẵn: bài dẫn, vài bài chọn, một hàng cho mỗi chuyên mục, bài đọc nhiều. Hợp cả site nhiều ảnh lẫn site chỉ có chữ. [Cách hoạt động](./docs/homepage.md) |
 | 🎨&nbsp;**Giao&nbsp;diện** | Sáu bảng màu, sáng và tối. Bốn font đọc, hoặc tải font của bạn lên. Mọi cỡ chữ đều sinh ra từ một vai trò, nên sửa một chỗ là cả trang đổi chứ không phải một tiêu đề |
-| 🖍️&nbsp;**Bút&nbsp;dạ** | `==chữ==` với năm màu mực. Không phải ô màu — là nét SVG đầu vát, ngắt theo từng dòng, màu đo từ ảnh chụp một hộp bút thật. Tốn 1,4 KB, và không tốn gì nếu bạn không dùng |
+| 🖍️&nbsp;**Bút&nbsp;dạ** | `==chữ==` với năm màu mực. Không phải ô màu — là nét SVG đầu vát, ngắt theo từng dòng, màu đo từ ảnh chụp một hộp bút thật. Tốn 1,4&nbsp;KB, và không tốn gì nếu bạn không dùng |
 | 💻&nbsp;**Code** | Tô màu ở máy chủ, người đọc không tải bộ tô màu nào. Hai mươi mốt ngôn ngữ, và những tên hay gõ (`typescript`, `sh`) đều nhận ra. Hàng rào không ghi ngôn ngữ thì được đoán — đoán dè dặt, để output của chương trình vẫn để trơn |
 | 🔍&nbsp;**Đọc** | Tìm kiếm trả lời ngay trong lúc gõ. Cột bên có chuyên mục và thẻ, hoặc mục lục của bài đang đọc. Bài liên quan, thời gian đọc, thanh tiến độ. Và **chế độ sách**: hai cột trên nền giấy, có chữ cái đầu lớn |
 | 📈&nbsp;**Số&nbsp;liệu** | Thống kê không dùng cookie. Ai đọc bài nào, đọc tới đâu, đến từ đâu. Kèm nhật ký hoạt động, thùng rác hoàn tác được, và một trang trợ giúp |
@@ -105,12 +105,12 @@ Hai dòng CSS và JavaScript là sản phẩm của bản build — giống nhau
 
 | | Trang chủ | Một bài | |
 |:---|---:|---:|:---|
-| **Số request** | 10 | 10 | |
-| **Tổng&nbsp;tải&nbsp;về** | **106 KB** | **114 KB** | 67 KB trong đó là font |
-| **JavaScript** | **3.6 KB** | **7.8 KB** | viết tay, không framework |
-| **CSS** | 8.0 KB | 8.0 KB | một tệp, đã nén, cache vĩnh viễn |
+| **Số&nbsp;request** | 10 | 10 | |
+| **Tổng&nbsp;tải&nbsp;về** | **106&nbsp;KB** | **114&nbsp;KB** | 67&nbsp;KB trong đó là font |
+| **JavaScript** | **3.6&nbsp;KB** | **7.8&nbsp;KB** | viết tay, không framework |
+| **CSS** | 8.0&nbsp;KB | 8.0&nbsp;KB | một tệp, đã nén, cache vĩnh viễn |
 | **Request&nbsp;bên&nbsp;thứ&nbsp;ba** | **0** | **0** | không CDN, không font host, không tracker |
-| **Lần vào sau** | ~19 KB | ~24 KB | chỉ tải lại HTML |
+| **Lần&nbsp;vào&nbsp;sau** | ~19&nbsp;KB | ~24&nbsp;KB | chỉ tải lại HTML |
 
 Nó giữ được như vậy nhờ vài quyết định khó đảo ngược.
 
