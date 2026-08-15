@@ -48,6 +48,16 @@ const RULES: Rule[] = [
     /^\s*\.\/\S+/m, /\bexit [0-9]/, /2>&1/, /&&\s*\S/, /\|\|\s*[{\S]/,
   ].filter((re) => re.test(all)).length >= 2 },
 
+  // AN EXECUTABLE PATH AT THE START OF A LINE, which is the shape a one-line command has and
+  // the shape the rules above all miss: `/usr/local/share/acme.sh/acme.sh --home … --cron`
+  // names no command from the list, has no `; then`, and is a single line so nothing can be
+  // counted twice. Prose does not open a line with an absolute path and then a long flag.
+  //
+  // Both halves are required. A bare path on its own line is as likely to be a file listing
+  // as a command, and a long flag on its own turns up in prose about command lines — this
+  // very sentence would fire on `--cron` if the path were not also demanded.
+  { lang: 'bash', test: (_l, all) => /^\s*(?:\/|\.{1,2}\/|~\/)[\w./@-]+\s+-{1,2}[\w-]+/m.test(all) },
+
   { lang: 'sql', test: (l) => /^\s*(select|insert into|update|delete from|create (table|index|view)|alter table)\b/i.test(l[0] ?? '') },
 
   { lang: 'python', test: (l) => l.filter((x) => /^\s*(def |class |import |from \S+ import )/.test(x)).length >= 1 },
