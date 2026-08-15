@@ -63,21 +63,21 @@ You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE).
 
 | | |
 |:---|:---|
-| 🖋️&nbsp;**Writing** | A real editor, TipTap 3 over Markdown, with a toolbar that stays put while you scroll. Drop an image in and it gets resized for every screen. Tables, video, footnotes, callouts, **mathematics**, Spotify and Apple Music. It saves as you type, keeps your last three versions, and can hold a post until Tuesday morning. Switch to the Markdown source and the syntax dims out of the way, so `##` and `---` stop reading like the words around them |
-| 🏠&nbsp;**Your front page** | Show the post list, or any page you wrote, or build a front page: a lead story, a few picks, a row per category, most read. Works for a site full of photos and for one that is only words. [How it works](./docs/homepage.md) |
-| 🎨&nbsp;**How it looks** | Six palettes, each with a light and a dark version. Four reading fonts, or upload your own. Every text size on the page comes from a role you can tune, so one change moves the whole page instead of one heading |
-| 🖍️&nbsp;**A highlighter** | `==text==` draws a real pen stroke under the words, in five inks. Not a coloured box: an SVG stroke with chisel ends that breaks per line, drawn from pigments measured off a photograph of an actual pen box. Costs a reader 1.4 KB, and nothing at all if you never use it |
-| 💻&nbsp;**Code** | Highlighted on the server, so a reader downloads no highlighter — twenty-one languages, and the names people actually type (`typescript`, `sh`, `yml`) resolve to them. A fence that names nothing gets guessed at, and only on a signal prose cannot fake: guess wrong and an error message comes out coloured like a program. When the guess declines, the block is still marked for the two things true in any notation — what sits in quotes, and a `$NAME` |
-| 🔍&nbsp;**Reading** | Search that answers as you type. A rail down the side with your categories and tags, or the contents of the post you are in. Related posts, reading time, a progress bar. And **book mode**: two columns on paper, with a drop cap |
-| 📈&nbsp;**Numbers** | Analytics without cookies. Who read what, how far down they got, where they came from. Plus an activity log, a trash you can undo, and a help page that explains the rest |
-| 🔎&nbsp;**Search engines** | Sitemap, RSS, `robots.txt`, `llms.txt`, and an OG image drawn per post. Rename a slug and the old URL keeps working on its own |
-| 📬&nbsp;**Newsletter** | Sign-ups with a confirmation email, an issue sent when you publish, and a note to anyone whose comment got a reply. Your own SMTP, so nothing to sign up for |
+| 🖋️&nbsp;**Writing** | A real editor over Markdown — tables, video, footnotes, callouts, **mathematics**, Spotify. Drop an image in and it is cut for every screen. Saves as you type, keeps three versions, and can hold a post until Tuesday. The Markdown source view dims its own syntax |
+| 🏠&nbsp;**Front&nbsp;page** | The post list, a page you wrote, or a composed front: lead story, picks, a row per category, most read. Works with photographs, and with only words. [How it works](./docs/homepage.md) |
+| 🎨&nbsp;**Looks** | Six palettes, light and dark. Four reading fonts, or upload your own. Every size comes from a role, so one change moves the page instead of one heading |
+| 🖍️&nbsp;**Highlighter** | `==text==` in five inks. Not a coloured box — an SVG stroke with chisel ends that breaks per line, from pigments measured off a photograph of a real pen box. 1.4 KB, and nothing at all if you never use it |
+| 💻&nbsp;**Code** | Highlighted on the server, so the reader downloads no highlighter. Twenty-one languages, and the names people type (`typescript`, `sh`) reach them. A fence naming nothing is guessed at — timidly, so program output stays plain |
+| 🔍&nbsp;**Reading** | Search that answers as you type. A side rail with your categories and tags, or the contents of the post. Related posts, reading time, a progress bar. And **book mode**: two columns on paper, with a drop cap |
+| 📈&nbsp;**Numbers** | Analytics without cookies. Who read what, how far down they got, where they came from. Plus an activity log, a trash you can undo, and a help page |
+| 🔎&nbsp;**Search&nbsp;engines** | Sitemap, RSS, `robots.txt`, `llms.txt`, and an OG image drawn per post. Rename a slug and the old URL keeps working on its own |
+| 📬&nbsp;**Newsletter** | Sign-ups with a confirmation email, an issue sent when you publish, a note when a comment gets a reply. Your own SMTP, so nothing to sign up for |
 | 📚&nbsp;**Series** | Write in parts, number them, and every part shows the others |
-| 💾&nbsp;**Backups** | One button downloads the whole install. There is also a cron script that ships it off the server. [Details](./docs/backups.md) |
-| 📥&nbsp;**Leaving WordPress** | Upload the XML export. Posts and pages come out as Markdown |
-| 🌍&nbsp;**Languages** | English, Vietnamese, German, Japanese, Chinese and Korean, in the admin and on the site. No CJK webfont is shipped — they are megabytes — but the reading stack names a CJK face per language rather than leaving the browser to pick, so 直 is drawn the way a Japanese page draws it on a Japanese site and the way a Chinese page does on a Chinese one |
-| 🔐&nbsp;**Signing in** | Your own username and password, hashed with argon2id. An authenticator code every time, and ten recovery codes for the day you lose the phone. No Google, no anyone, in the login path |
-| 📱&nbsp;**On a phone** | Install it to the home screen and it opens like an app |
+| 💾&nbsp;**Backups** | One button downloads the whole install, and a cron script ships it off the server. [Details](./docs/backups.md) |
+| 📥&nbsp;**WordPress** | Upload the XML export. Posts and pages come out as Markdown |
+| 🌍&nbsp;**Languages** | Six, in the admin and on the site. No CJK webfont ships — they are megabytes — but each of the three names its own face, so 直 is drawn the Japanese way on a Japanese site |
+| 🔐&nbsp;**Sign-in** | Your own username and password, hashed with argon2id. An authenticator code every time, and ten recovery codes for the day you lose the phone. No Google in the login path |
+| 📱&nbsp;**Phone** | Install it to the home screen and it opens like an app |
 
 **Made for** one person, one server, one blog they mean to keep.
 **Not made for** a team that needs roles, approvals and an editorial queue. It has one owner on purpose.
