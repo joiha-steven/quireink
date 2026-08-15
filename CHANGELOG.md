@@ -2,16 +2,16 @@
 
 ## 2026-08-15 — Quire Ink 2.0.3
 
-**Thirty-eight commits since 2.0.1, and 2.0.2 is folded into this one.** 2.0.2 went out on 10
+**Forty-three commits since 2.0.1, and 2.0.2 is folded into this one.** 2.0.2 went out on 10
 August and stood for five days; everything it shipped is in this release, and its notes are
 below under the line rather than summarised. There is one release to read and one to install.
 
-The twenty-six commits since 2.0.2 split in two. Eleven are a pre-release audit of jobs this
+The thirty-four commits since 2.0.2 split in three. Eleven are a pre-release audit of jobs this
 software had left to somebody else — it had no upload cap, no storage quota, no bind address
 the server would admit to, and nothing at all holding the one rule the whole design rests on,
 one blog and one owner. In each case a reverse proxy, a firewall rule or a habit had been
-covering, which is exactly why none of them had ever shown. The rest are the admin, which had
-stopped looking like the product it belongs to.
+covering, which is exactly why none of them had ever shown. Then the admin, which had
+stopped looking like the product it belongs to. Then a run of defects the owner found by using it: a false 404 on a rename, a focus ring drawn for the wrong kind of control, and code blocks that were neither blocks nor coloured.
 
 **Four new environment variables across the two, and one of them changes what an existing
 install does at boot** — read the first entry before upgrading. `HOST`, `MAX_UPLOAD_MB` and
@@ -290,6 +290,78 @@ binary is found rather than hardcoded: three scripts each carried the same Linux
 Mac the project's main verification tool opened with `ENOENT` on a directory with the wrong
 platform in its name. `scripts/chrome-path.ts` looks in the places it is actually installed and
 names the install command when it finds none.
+
+### Renaming a draft and publishing it said "Not found"
+
+The post saved, the address bar updated, and the shell then threw the editor away for a red
+banner. Reported as *"mỗi lần sửa link bài nháp rồi đăng bài là bị Not found"*, and the post
+was on disk the whole time.
+
+A `router.refresh()` left over from the Next.js port, sitting after a raw `history.replaceState`.
+The router keeps its own copy of the path and the raw call does not update it, so `refresh()`
+bumped the epoch and the page re-fetched itself with the OLD slug. Its comment said it was
+dropping "the client Router Cache (no stale RSC)" — neither of which exists here, and
+`Route()` renders a different component per path, so every navigation already refetches on
+mount. It bought nothing. `PageForm` had the identical two lines.
+
+A tour flow drives the real form now and asserts all three symptoms at once. It was checked
+against the bug put back, because a guard nobody has seen fail is not a guard.
+
+### The Markdown source view, which had never been designed
+
+Three things, and the first was a specificity accident rather than a decision: the textarea
+asks for `outline-none`, `.admin-shell :focus-visible` is two classes, and the ring won — so
+clicking into the source drew a 2px rectangle around a column 60vh tall. The rich editor has
+had an explicit exception since it shipped; this surface never got one, and neither did the
+post TITLE, which is the third and was found by photographing the second.
+
+It was also set in Inter at 14px, so `##` and `|` did not line up. It is source: a mono face
+at 15px on a 1.8 line now — the SYSTEM mono, under a name the site's own variables cannot
+override, because measuring the obvious name first showed it resolving to a webfont and
+undoing the admin's one-typeface rule for a mode most owners never open.
+
+And the markers dim. A textarea cannot style part of itself, so the text is drawn twice: a
+mirror underneath with `##`, `---`, `**`, `|` and the pen's `==` wrapped, and the textarea
+over it with its own text made transparent. It stays the only source of truth — caret,
+selection, undo and every keystroke are its own — and the mirror is `aria-hidden`.
+
+### A code block was not a block, and a bare fence had no colours
+
+`pre` carried padding, a radius and an overflow rule and no background, because Shiki writes
+one as an inline style — and `vitesse-light` writes `#ffffff` on a `#fcfcfc` page. So a code
+block was a white rectangle on a near-white one: the radius had nothing to round, the padding
+read as an indent. Worse, that hex is baked into HTML cached under a hash of its Markdown, so
+it outlived every palette a reader can pick. The panel comes off the palette now, with the
+hairline the tables already use.
+
+Then the colours. A fence that names nothing highlights as `text`, which has no tokens, so the
+colour was only ever there for blocks that remembered a word after the backticks. Two answers,
+and both were decided by measuring:
+
+- **A guess, and a timid one.** Terminal output is the commonest untagged block there is, and
+  colouring stray words inside an error message looks broken. Every rule needs a signal prose
+  cannot fake — a shebang, two command lines, shell syntax, an executable path with a flag, an
+  SQL verb, a quoted key. Below that bar it stays `text`.
+- **When the guess declines, mark what is true anyway.** Forcing a grammar was tried and
+  rejected on evidence: through `bash`, Shiki coloured `id` and `nếu` as commands and swallowed
+  six words of Vietnamese as a string off one pair of quotes. So a language-less block gets the
+  two things that survive not knowing the language — a quoted run on one line, and `$NAME` —
+  by WEIGHT rather than colour, because the default palette is monochrome and a colour-only
+  device does nothing on it.
+
+And ```` ```typescript ```` never highlighted at all: the grammar was loaded, the fence said the
+word, and the lookup missed because the id is `ts`. The corpus has had a fixture recording
+exactly that since the port.
+
+### The golden gate moved, for the first time, on purpose
+
+Three of forty-five fixtures stopped matching Quire 1.x — all three the same behaviour, a fence
+whose language could not be used. Their 1.x reference stays on disk **untouched**: those files
+are what a renderer that no longer exists actually printed, so overwriting them would not
+update the reference, it would destroy it, and the gate would go on reporting parity against
+our own output. The new answers live in `golden/v2/`, the three are named in `DIVERGED` with a
+reason each, and forty-two still hold the original contract. `CLAUDE.md` now says never
+regenerate `v1`.
 
 ### Smaller things
 

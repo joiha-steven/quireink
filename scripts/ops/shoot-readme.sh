@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Rebuild the four README plates, from a seeded fixture, in one command.
+# Rebuild the five README plates, from a seeded fixture, in one command.
 #
 # THE COMMAND IS THE POINT. `compose-demo.ts` was written so the images "regenerate from a
 # command rather than an image editor", and then the command itself lived only in whoever
@@ -70,6 +70,19 @@ bun run drive "$L/$POST" "$P/book.png" \
 bun run drive "$L/$POST" "$P/dark.png" \
   "document.documentElement.classList.add('dark')" 1280 860 600 > /dev/null
 
+# MATHS AND CODE, on one post that carries both. It is the plate that shows what the
+# renderer does rather than what the page looks like, and both halves needed one: the
+# formulas are MathML the browser draws itself (no script, no font file), and the code
+# shows the two kinds of block side by side -- a fence that named bash, and under it one
+# that named nothing, marked only where marking cannot be wrong.
+CODEPOST=what-a-subsetter-removes
+bun run drive "$L/$CODEPOST" "$P/maths.png" \
+  "document.querySelector('math').closest('p,div').scrollIntoView({block:'center'})" \
+  1280 720 700 > /dev/null
+bun run drive "$L/$CODEPOST" "$P/code.png" \
+  "document.querySelector('pre.plain-code').scrollIntoView({block:'center'})" \
+  1280 720 700 > /dev/null
+
 echo "== phone panels =="
 # `drive` for all three, not `shot`, and this is not a preference: MOBILE=1 is drive.ts's
 # env var and shot.ts has never read it. Shot at a 390px WINDOW with no device emulation the
@@ -96,8 +109,9 @@ bun scripts/compose-demo.ts docs/demo.jpg         "$P/front.png:the front page" 
 bun scripts/compose-demo.ts docs/demo-reading.jpg "$P/book.png:book mode:full"    "$P/dark.png:the dark theme"
 bun scripts/compose-demo.ts docs/demo-mobile.jpg  "$P/m-list.png:the post list:phone" \
   "$P/m-post.png:a post:phone" "$P/m-search.png:instant search:phone"
+bun scripts/compose-demo.ts docs/demo-code.jpg    "$P/maths.png:mathematics" "$P/code.png:code"
 bun scripts/compose-demo.ts docs/demo-admin.jpg   "$P/editor.png:the editor"      "$P/appearance.png:appearance"
 
 echo
-echo "done. Four plates rebuilt in docs/ — LOOK at them before committing:"
-ls -la docs/demo.jpg docs/demo-reading.jpg docs/demo-mobile.jpg docs/demo-admin.jpg | awk '{print "  " $5, $9}'
+echo "done. Five plates rebuilt in docs/ — LOOK at them before committing:"
+ls -la docs/demo.jpg docs/demo-reading.jpg docs/demo-mobile.jpg docs/demo-admin.jpg docs/demo-code.jpg | awk '{print "  " $5, $9}'
