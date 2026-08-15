@@ -10,6 +10,7 @@ import { editorExtensions } from './editorExtensions'
 import { Toolbar, BubbleBar } from './EditorMenus'
 import { isVideoUrl } from '@/render/video'
 import { useAdminT } from './I18nProvider'
+import { MarkdownSource } from './MarkdownSource'
 import { CARD } from './kit'
 
 export type EditorApi = {
@@ -347,16 +348,14 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
           type wraps exactly like the published article. */}
       <div className="mx-auto w-full" style={{ maxWidth: contentWidth }}>
         {raw ? (
-          <textarea
-            ref={taRef}
+          <MarkdownSource
+            taRef={taRef}
             value={rawText}
-            onChange={(e) => {
-              setRawText(e.target.value)
-              onDirty()
-              onChange(e.target.value)
+            onDirty={onDirty}
+            onChange={(next) => {
+              setRawText(next)
+              onChange(next)
             }}
-            spellCheck={false}
-            className="md-source min-h-[60vh] w-full resize-none overflow-hidden bg-transparent px-4 py-4 text-neutral-800 dark:text-neutral-200"
           />
         ) : (
           <div className="typewriter-stage relative">

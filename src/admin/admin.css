@@ -211,7 +211,13 @@ body {
    tall. Reported 2026-08-15 as "bấm vào để soạn thảo có cái viền đen xấu". Written
    here rather than as `!important` in the component, because the exception belongs
    beside the rule it is an exception to. */
+/* All THREE writing surfaces, and the third was found by photographing the second. The
+   post title is a textarea set at 30px across the reading column; the admin's focus ring is
+   drawn for a discrete control, so clicking into a headline boxed it. Focus is still legible
+   on all three — a caret in a large field is what says where you are, which is the argument
+   the first two shipped under. */
 .admin-shell .ProseMirror:focus-visible,
+.admin-shell .write-surface:focus-visible,
 .admin-shell .md-source:focus-visible {
   outline: none;
 }
@@ -226,11 +232,73 @@ body {
    The mono face is the one already loaded for the editor's code button and its LaTeX
    input, so this costs nothing new — and it is the same face the published page sets a
    code block in, which is the point: source looks like source on both sides. */
-.md-source {
+/* THE ONE PLACE BOTH BOXES ARE MEASURED. `MarkdownSource.tsx` draws the text twice — a
+   mirror that dims the markers, and the textarea you actually type in over it — and the
+   caret sits after the glyph the MIRROR drew. Every property below therefore has to be
+   identical for the two, which is why neither element sets any of them itself and why this
+   is one rule with two selectors rather than two rules that look the same today.
+
+   0.9375rem, up from 0.875: at 14px the source read as fine print beside a rich editor set
+   at reading size, which is what "chữ nên lớn hơn một chút" reported. */
+.md-box {
   font-family: var(--admin-mono);
-  font-size: 0.875rem;
-  line-height: 1.75;
+  font-size: 0.9375rem;
+  line-height: 1.8;
+  letter-spacing: 0;
   tab-size: 2;
+  padding: 1rem;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  word-break: normal;
+  margin: 0;
+  border: 0;
+}
+
+/* The mirror sits UNDER the textarea and is never interactive. `inset: 0` rather than a
+   height: the textarea is in flow and grows itself, so it is what gives the wrapper its
+   size and the mirror simply fills whatever that came to. */
+.md-mirror {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  color: #262626;
+}
+.dark .md-mirror {
+  color: #d4d4d4;
+}
+
+/* The MARKERS: `##`, `---`, the asterisks, the pipes, the pen's `==`. Dimmed rather than
+   coloured, because they are not a second kind of content — they are the scaffolding, and
+   what the writer is reading past them is the prose. Not italic: `<i>` is used for its
+   length, so the style has to be taken back. */
+.md-mirror i {
+  font-style: normal;
+  color: #a3a3a3;
+}
+.dark .md-mirror i {
+  color: #6b6b6b;
+}
+
+/* The typing layer. Its own text is invisible — the mirror is what you read — while the
+   caret has to stay visible, hence the explicit colour rather than `currentColor`, which
+   would resolve to the transparent one.
+
+   The selection tint is SEMI-TRANSPARENT for the same reason: a selection is painted on
+   this layer, above the mirror, so an opaque one would black out the very text it is
+   selecting. Measured at 22% — enough to read as a selection, sheer enough to read through. */
+.md-source {
+  position: relative;
+  background: transparent;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  caret-color: #171717;
+}
+.dark .md-source {
+  caret-color: #e5e5e5;
+}
+.md-source::selection {
+  background: color-mix(in srgb, #3b82f6 22%, transparent);
 }
 .typewriter-stage.has-typewriter-caret .ProseMirror {
   caret-color: transparent;
