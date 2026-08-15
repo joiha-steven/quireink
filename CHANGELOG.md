@@ -383,6 +383,12 @@ regenerate `v1`.
 
 ### Also
 
+- The README's feature table lost a quarter of its words and stopped wrapping its own labels.
+  GitHub gives a markdown table no column widths, so `A highlighter` and `Leaving WordPress`
+  broke across two lines; the labels are one word each now, and the two that need two are
+  joined with a space the renderer cannot break on. The cells had drifted long enough that the
+  table read as an essay with a heading column — a row is for telling somebody whether they
+  want the thing, not for proving it to them.
 - [ADR 0021](docs/decisions/0021-hosted-quire-ink-one-process-per-blog.md) records how a hosted
   tier would work if there is one: a control plane starting one process per blog, not a
   `tenant_id` column threaded through a schema built on one owner. A decision, not a feature.
