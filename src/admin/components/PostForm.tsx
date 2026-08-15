@@ -1,7 +1,6 @@
 // Editor screen: left = TipTap editor, right = settings, bottom = action bar.
 // Handles auto-save, manual save (draft/publish) and the media picker modal.
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useRouter } from '@/admin/router'
 import Link from '@/admin/router'
 import type { PostWithContent, PostRevision, ApiResponse } from '@/types'
 import { Button } from '@/admin/ui/Button'
@@ -57,7 +56,6 @@ function toDraft(initial?: PostWithContent): Draft {
 
 export function PostForm({ initial, allCategories, allTags, allSeries, contentWidth, typewriterEffects, autosaveSeconds }: Props) {
   const t = useAdminT()
-  const router = useRouter()
   const { notify } = useToast()
   const [draft, setDraft] = useState<Draft>(() => toDraft(initial))
   const [saving, setSaving] = useState(false)
@@ -165,11 +163,21 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
         setSavedAt(new Date().toISOString())
         setDirty(false)
         clearLocal() // the server now has it — drop the local recovery copy
-        // Keep the address bar in sync without remounting the editor.
+        // THE ADDRESS BAR IS SYNCED HERE, AND THE ROUTER IS DELIBERATELY NOT.
+        //
+        // `router.replace()` would put the new slug in the router's state, which is what
+        // `pages/PostEditor.tsx` builds its fetch from and what this form is `key`ed on — so a
+        // rename would refetch and REMOUNT the editor, losing cursor, selection and the whole
+        // undo stack on the click that saved the work. Hence the raw history call.
+        //
+        // ⚠️ NOTHING MAY CALL `router.refresh()` AFTER IT. One did, carried over from the
+        // Next.js port to "drop the client Router Cache (no stale RSC)" — neither of which
+        // exists here, and `Route()` in `App.tsx` renders a different component per path, so
+        // every navigation already refetches on mount. It bought nothing and cost this:
+        // `refresh()` bumps the epoch, `useView` re-runs off the router's path, and that path
+        // is still the OLD slug. 404, and the shell swaps the editor for a red "Not found"
+        // while the post sits saved on disk. Reported 2026-08-15; `PageForm` had it too.
         window.history.replaceState(null, '', `/admin/editor/${json.data.slug}`)
-        // Drop the client Router Cache so admin lists + the public site show this
-        // save on the next navigation (no stale RSC). Server purge already ran.
-        router.refresh()
         return true
       } catch {
         notify(t.saveFailed, 'error')
@@ -178,7 +186,7 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
         setSaving(false)
       }
     },
-    [notify, t, router, clearLocal],
+    [notify, t, clearLocal],
   )
 
   // Queue a save behind any in-flight save and return its result.

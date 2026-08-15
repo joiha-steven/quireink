@@ -23,6 +23,17 @@
 :root {
   --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-reading: var(--font-sans);
+  /* `--admin-mono`, NOT `--font-mono`, and the distinct name is the whole point.
+
+     The admin shell inlines the SITE's root variables, and that inline `<style>` sits after
+     this linked sheet — so anything declared here under a name the site also uses is
+     overridden on every install. Written as `--font-mono` first, and measured: it resolved
+     to JetBrains Mono, a webfont, on a fixture whose owner had picked a mono site chrome.
+
+     The admin went to ONE typeface on 2026-08-15. Pulling a second webfont back in to set a
+     source view most owners never open would undo that. A system mono downloads nothing, is
+     installed everywhere, and does the one job asked of it: make `##` and `|` line up. */
+  --admin-mono: ui-monospace, 'SFMono-Regular', Menlo, Consolas, 'Liberation Mono', monospace;
   --c-meta: #6a6a70;
   --c-rule: #e9e9e4;
 }
@@ -191,9 +202,35 @@ body {
 }
 /* The editor is a large writing surface, not a discrete button/input. Its card
    already communicates the active workspace; the global admin focus ring would
-   draw a harsh rectangle around the public-width prose column. */
-.admin-shell .ProseMirror:focus-visible {
+   draw a harsh rectangle around the public-width prose column.
+
+   BOTH surfaces, and the second one was missing for as long as markdown mode has
+   existed. The textarea carries Tailwind's `outline-none`, which loses to the rule
+   above on specificity — a utility is one class, `.admin-shell :focus-visible` is two
+   — so clicking into the markdown source drew a 2px rectangle around a column 60vh
+   tall. Reported 2026-08-15 as "bấm vào để soạn thảo có cái viền đen xấu". Written
+   here rather than as `!important` in the component, because the exception belongs
+   beside the rule it is an exception to. */
+.admin-shell .ProseMirror:focus-visible,
+.admin-shell .md-source:focus-visible {
   outline: none;
+}
+
+/* MARKDOWN SOURCE. The rich surface sets what a reader will see, so it renders in the
+   reading face at reading size (`fontPresetCss`). This one is the opposite: it shows the
+   SOURCE, where a run of `##` or a table's pipes only line up in a face whose characters
+   are all one width. It was inheriting the admin's Inter at 14px, which made a heading
+   marker and a list marker indistinguishable at a glance and left the whole mode reading
+   as a comment box rather than as an editor.
+
+   The mono face is the one already loaded for the editor's code button and its LaTeX
+   input, so this costs nothing new — and it is the same face the published page sets a
+   code block in, which is the point: source looks like source on both sides. */
+.md-source {
+  font-family: var(--admin-mono);
+  font-size: 0.875rem;
+  line-height: 1.75;
+  tab-size: 2;
 }
 .typewriter-stage.has-typewriter-caret .ProseMirror {
   caret-color: transparent;

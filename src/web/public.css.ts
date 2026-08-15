@@ -322,8 +322,14 @@ footer.site{padding:3rem 0;text-align:center;color:var(--c-meta);
 footer.site a{text-decoration:underline;text-underline-offset:2px}
 footer.site a:hover{color:var(--c-text)}
 
-/* Shiki emits a light colour inline and a --shiki-dark var; the dark palette swaps them. */
-.dark .shiki,.dark .shiki span{color:var(--shiki-dark)!important;background-color:var(--shiki-dark-bg)!important}
+/* Shiki emits a light colour inline and a --shiki-dark var; the dark palette swaps them.
+
+   The TOKEN colours only. The background half of this rule used to ride along, painting
+   #121212 from Shiki's dark theme over whatever palette the reader had chosen -- the same
+   defect the light side had (see prose.css.ts), just less visible because a dark theme's
+   grey sits closer to a dark palette's ground. The panel is --c-code-panel on both sides
+   now, so all six palettes own their code block in both modes. */
+.dark .shiki,.dark .shiki span{color:var(--shiki-dark)!important}
 `.trim()
 
 /**
