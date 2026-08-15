@@ -1,6 +1,6 @@
 <div align="center">
 
-# quire**INK** &nbsp;`2.0.2`
+# quire**INK** &nbsp;`2.0.3`
 
 **A blog you host yourself, and an AI agent can run for you.**
 One process. Two SQLite files. No cloud account anywhere in the path.
@@ -49,12 +49,13 @@ Three things shaped it.
 
 You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE).
 
-> **2.0.2 came out on 2026-08-10** and runs the demo above plus the author's own blog at
-> [manhhung.me](https://manhhung.me). It is twelve fixes and no new features — a rate limit
-> that a forged header could walk past, a dark-mode reader who opened every page on a white
-> one, and a stylesheet that was re-compressed on every request. Found by measuring the
-> running site rather than reading the source, which is how the last release was audited too.
-> The [changelog](./CHANGELOG.md) has everything that changed.
+> **2.0.3 came out on 2026-08-15** and runs the demo above plus the author's own blog at
+> [manhhung.me](https://manhhung.me). It folds 2.0.2 in, so there is one release to read.
+> Thirty-eight commits: an audit that found no upload cap, no storage quota and a server
+> listening on every interface under a log line that said otherwise; a rate limit a forged
+> header could walk past; and an admin that had been wearing a dashboard framework's clothes
+> instead of this product's. Almost all of it was found by measuring the running site rather
+> than by reading the source. The [changelog](./CHANGELOG.md) has everything that changed.
 
 ---
 
@@ -94,7 +95,7 @@ You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE).
 
 These are off the network, first visit, nothing cached. It is what a stranger on a phone actually waits for.
 
-The CSS and JavaScript rows are build artefacts — the same bytes on every install — and are read off the 2.0.2 build. The totals were measured for 2.0.1 against the origin, not through the CDN, and they are this site: Vietnamese, Literata to read and JetBrains Mono for the furniture. They are not a property of the software, because the fonts are cut per script and a browser fetches only the ranges your pages actually use. Fonts fell 86 KB to 67 KB in 2.0.1 without a face being dropped.
+The CSS and JavaScript rows are build artefacts — the same bytes on every install — and are read off the 2.0.3 build; nothing in 2.0.2 or 2.0.3 moved them. The totals were measured for 2.0.1 against the origin, not through the CDN, and they are this site: Vietnamese, Literata to read and JetBrains Mono for the furniture. They are not a property of the software, because the fonts are cut per script and a browser fetches only the ranges your pages actually use. Fonts fell 86 KB to 67 KB in 2.0.1 without a face being dropped.
 
 | | Home | A post | |
 |:---|---:|---:|:---|

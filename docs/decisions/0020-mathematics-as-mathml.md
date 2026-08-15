@@ -70,10 +70,20 @@ look at it, so the delimiters are gone and nothing in the saved file records tha
 was ever a formula. Neither throws. Both corrupt the author's source on a save they did not
 know was a rewrite — open a post, close it, and the mathematics is quietly destroyed.
 
-So the grammar lives in `render/math.ts` and every reader of it calls the same two functions
+So the grammar lives in ONE file and every reader of it calls the same two functions
 (`matchMathAt`, `matchDisplayBlockAt`). No caller anywhere sees a capture group. That is the
 lesson of ADR 0018's pen, which drifted between two hand-written copies of its regex within
 an hour and put the word "green" into every excerpt on the site.
+
+> **2026-08-15 — that file is now `render/math-syntax.ts`, and the decision is unchanged.**
+> The grammar and the Temml renderer had shared `render/math.ts`, which was fine until you
+> notice an ESM import is not a menu: `@/utils` wanted three regex helpers so `toPlainText`
+> could drop a formula out of an excerpt, and took a LaTeX engine with them. Fifteen admin
+> files import `@/utils`, so 212 KB of Temml landed in the chunk every admin screen loads —
+> measured on the Comments screen, which has neither an editor nor a formula on it. The
+> split is along the line this ADR already drew: `math-syntax.ts` holds the grammar and may
+> never import a renderer; `math.ts` keeps `renderMath` and the `marked` extensions and
+> re-exports the grammar, so a parser that needs both halves still asks one module.
 
 The delimiter the author typed is stored on the node, so `\[…\]` comes back as `\[…\]`.
 Normalising it to `$$…$$` would have been one attribute cheaper and would mean that opening a

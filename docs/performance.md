@@ -1,6 +1,6 @@
 > Split from CLAUDE.md — the **resource-loading law**: how fonts, CSS, and JS reach a
 > reader. One rule set, applied system-wide (every language, every font preset, every
-> uploaded font). Touching `src/web/layout.ts`, the font helpers in `src/content/themes.ts`,
+> uploaded font). Touching `src/web/layout.ts`, the font helpers in `src/content/fonts.ts`,
 > the `src/web/*.css.ts` sheets, or adding an island? Read this first.
 
 # Performance — resource loading (fonts · CSS · JS)
@@ -34,13 +34,13 @@ rel="preload">` exists ONLY to remove that one swap on the LCP title — so we p
 the file(s) that paint it, and nothing else.
 
 **The rule — one place, `fontPreloadHrefs(fontPreset, language, hasCustomFont, chromeFont)`
-in `src/content/themes.ts`, called once in `src/web/layout.ts`:**
+in `src/content/fonts.ts`, called once in `src/web/layout.ts`:**
 
 | Case | Preload |
 |---|---|
 | Built-in reading font, latin locale (`en`, `de`) | `‹slug›-latin.woff2` |
 | Built-in reading font, `vi` | `‹slug›-latin.woff2` **and** `‹slug›-vietnamese.woff2` (a VN title needs both unicode-ranges) |
-| Built-in reading font, CJK locale (`ja`, `zh`, `ko`) | **nothing** — the built-ins ship no CJK glyphs, so the title renders in a system font; a latin preload it won't use only steals bandwidth |
+| Built-in reading font, CJK locale (`ja`, `zh`, `ko`) | **nothing** — the built-ins ship no CJK glyphs and never will (a CJK webfont is megabytes), so the title renders in a system face; a latin preload it won't use only steals bandwidth. Which system face is not left to the browser: every reading stack ends in a NAMED CJK tail, one per language, selected by `cjkLangCss` on `:lang(zh\|ja\|ko)`. Zero bytes downloaded — see `CJK_ZH` / `CJK_JA` / `CJK_KO` in `src/content/fonts.ts` |
 | **Uploaded custom font** (`settings.customFont`) | **nothing** — the face is unsubsetted (whole charset, often large); a high-priority preload would contend with the render-blocking CSS and hurt LCP. It still wins `--font-reading` via `fontToCss`; `swap` covers the paint |
 | **Chrome font** (Inter default, IBM Plex Mono, "reading") | **NEVER** — not the LCP element; loads at normal priority via its `@font-face` and swaps in |
 
