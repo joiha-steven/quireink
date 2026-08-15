@@ -89,9 +89,9 @@ Bạn được đọc, sửa, chạy và fork theo [PolyForm Noncommercial](./LI
 
 <sub>Chế độ sách và giao diện tối. Không cái nào là một lớp lọc phủ lên trang. Cả hai đều là chính hệ typography của trang đọc. Font đi kèm có sẵn dấu tiếng Việt và dấu của các tiếng Trung Âu, nên khối mẫu chữ bên trái hiện đúng font chứ không rơi về font hệ thống.</sub>
 
-<img src="docs/demo-code.jpg" alt="Hai ảnh chụp: một bài viết có công thức được dựng bằng MathML trong font đọc, và phần code của chính bài đó, một khối được tô màu nhờ tên ngôn ngữ và một khối bên dưới không ghi ngôn ngữ, chỉ đánh dấu phần trong ngoặc kép và tên biến có dấu đô la" width="960">
+<img src="docs/demo-code.jpg" alt="Ba ảnh chụp: một công thức chặn trên độ trôi của thang chữ sau khi làm tròn, dựng bằng MathML trong font đọc; phần code của cùng site, một khối được tô màu nhờ tên ngôn ngữ và một khối bên dưới không ghi ngôn ngữ, chỉ đánh dấu phần trong ngoặc kép và tên biến có dấu đô la; và ba vệt bút dạ vàng, xanh, hồng" width="960">
 
-<sub>Công thức toán là MathML, do chính trình duyệt dựng — không script, không stylesheet, không file font, nên một bài có công thức không tốn thêm gì so với bài không có. Code cũng tô màu ở máy chủ, cùng một lý do. Khối phía dưới không ghi ngôn ngữ: không đoán ra nên không bịa màu, chỉ đánh dấu những gì đúng trong mọi ký pháp.</sub>
+<sub>Công thức toán là MathML, do chính trình duyệt dựng — không script, không stylesheet, không file font, nên một bài có công thức không tốn thêm gì so với bài không có. Code cũng tô màu ở máy chủ, cùng một lý do; khối phía dưới không ghi ngôn ngữ nên không ai bịa màu cho nó, chỉ đánh dấu những gì đúng trong mọi ký pháp. Bút dạ là nét SVG ngắt theo từng dòng, có năm màu mực.</sub>
 
 </div>
 

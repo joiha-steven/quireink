@@ -70,19 +70,32 @@ bun run drive "$L/$POST" "$P/book.png" \
 bun run drive "$L/$POST" "$P/dark.png" \
   "document.documentElement.classList.add('dark')" 1280 860 600 > /dev/null
 
-# MATHS AND CODE, on one post that carries both. It is the plate that shows what the
-# renderer does rather than what the page looks like, and both halves needed one: the
-# formulas are MathML the browser draws itself (no script, no font file), and the code
-# shows the two kinds of block side by side -- a fence that named bash, and under it one
-# that named nothing, marked only where marking cannot be wrong.
+# WHAT THE RENDERER DOES, at a size you can read it at. Three panels, and every number in
+# the two lines below was decided by looking at the result rather than by taste:
+#
+#   • 820 wide, not 1280. At the wider viewport the reading column is 672px in the middle
+#     of the frame with a contents rail beside it and air on the right, so the thing the
+#     panel is ABOUT ends up a third of the picture. At 820 the rails drop and the column
+#     fills it. Not narrower: the point is to see the formula WITH the prose around it.
+#   • scale 2, because `compose-demo.ts` composes at 2x and resizes the plate down at the
+#     end. A panel shot at 1x goes through that halving too and comes out looking like a
+#     screenshot taken from across the room — which is exactly how the first version of
+#     this plate was reported.
+#
+# The maths panel is aimed at the SUM, not at the first formula on the page: the simple
+# one is `s_n = s_0 r^n` and it demonstrates nothing a browser could not have done in 1998.
+MATHPOST=a-type-scale-you-can-defend
 CODEPOST=what-a-subsetter-removes
-bun run drive "$L/$CODEPOST" "$P/maths.png" \
-  "document.querySelector('math').closest('p,div').scrollIntoView({block:'center'})" \
-  1280 720 700 > /dev/null
+PENPOST=five-inks-and-when-to-reach-for-each
+bun run drive "$L/$MATHPOST" "$P/maths.png" \
+  "[...document.querySelectorAll('math')].find(m=>/∑|≤/.test(m.textContent)).closest('p,div').scrollIntoView({block:'center'})" \
+  820 640 800 2 > /dev/null
 bun run drive "$L/$CODEPOST" "$P/code.png" \
   "document.querySelector('pre.plain-code').scrollIntoView({block:'center'})" \
-  1280 720 700 > /dev/null
-
+  820 640 800 2 > /dev/null
+bun run drive "$L/$PENPOST" "$P/pen.png" \
+  "document.querySelector('mark').closest('p,li,div').scrollIntoView({block:'center'})" \
+  820 640 800 2 > /dev/null
 echo "== phone panels =="
 # `drive` for all three, not `shot`, and this is not a preference: MOBILE=1 is drive.ts's
 # env var and shot.ts has never read it. Shot at a 390px WINDOW with no device emulation the
@@ -109,7 +122,7 @@ bun scripts/compose-demo.ts docs/demo.jpg         "$P/front.png:the front page" 
 bun scripts/compose-demo.ts docs/demo-reading.jpg "$P/book.png:book mode:full"    "$P/dark.png:the dark theme"
 bun scripts/compose-demo.ts docs/demo-mobile.jpg  "$P/m-list.png:the post list:phone" \
   "$P/m-post.png:a post:phone" "$P/m-search.png:instant search:phone"
-bun scripts/compose-demo.ts docs/demo-code.jpg    "$P/maths.png:mathematics" "$P/code.png:code"
+bun scripts/compose-demo.ts docs/demo-code.jpg    "$P/maths.png:mathematics" "$P/code.png:code" "$P/pen.png:the pen"
 bun scripts/compose-demo.ts docs/demo-admin.jpg   "$P/editor.png:the editor"      "$P/appearance.png:appearance"
 
 echo
