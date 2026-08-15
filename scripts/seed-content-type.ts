@@ -185,6 +185,20 @@ where $s_0$ is the body size, $r$ the ratio and $n$ the number of steps away fro
 | +2 | 24 px | 30 px |
 | +3 | 29 px | 40 px |
 
+Solving it the other way round is the useful direction. Given a body size and the largest size the page actually needs, $k$ steps above it, the ratio is not a matter of taste at all:
+
+$$r = \\sqrt[k]{\\frac{s_k}{s_0}}$$
+
+And the warning below has a number attached to it, which is the part nobody writes down. Round at every step and each rounding is carried into the next multiplication:
+
+$$\\tilde{s}_n = \\operatorname{round}\\!\\left(\\tilde{s}_{n-1}\\, r\\right), \\qquad \\tilde{s}_0 = s_0$$
+
+Every step adds at most half a pixel, and every earlier half-pixel is multiplied again on the way up — so the drift is a geometric sum, and it has a closed form:
+
+$$\\left|\\, \\tilde{s}_n - s_0\\, r^{\\,n} \\right| \\;\\le\\; \\frac{1}{2} \\sum_{i=1}^{n} r^{\\,n-i} \\;=\\; \\frac{r^{\\,n} - 1}{2\\,(r - 1)}$$
+
+At $r = 1.2$ that is $2.7$ px by the fourth step: a heading a whole rounding apart from the scale it was supposed to have come from.
+
 Then allow yourself to round. A scale that produces 27.65px is a scale nobody will follow, and the rounding is not a compromise: the eye cannot tell 27.65 from 28, and the person maintaining the page can.
 
 > [!TIP]

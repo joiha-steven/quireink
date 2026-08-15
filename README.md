@@ -88,9 +88,9 @@ You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE).
 
 <sub>Book mode and the dark theme. Neither is a filter dropped over the page. Both are the reading typography itself. The fonts ship with Vietnamese and Central European accents included, so the specimen on the left is set properly instead of falling back to whatever the system has.</sub>
 
-<img src="docs/demo-code.jpg" alt="Two screenshots: an article showing a formula rendered as MathML in the reading face, and the same article's code, one block highlighted from its language tag and one below it with no language, where only the quoted text and a dollar-name are marked" width="960">
+<img src="docs/demo-code.jpg" alt="Three screenshots: a formula bounding the drift of a rounded type scale, rendered as MathML in the reading face; the same site's code, one block highlighted from its language tag and one below it with no language where only the quoted text and a dollar-name are marked; and three highlighter strokes in yellow, green and pink" width="960">
 
-<sub>Mathematics is MathML, drawn by the browser's own layout engine — no script, no stylesheet, no font file, so a post with a formula costs a reader nothing over one without. Code is highlighted on the server for the same reason. The lower block named no language: nothing guessed one, so nothing invented colours for it, and only what is true of any notation is marked.</sub>
+<sub>Mathematics is MathML, drawn by the browser's own layout engine — no script, no stylesheet, no font file, so a post with a formula costs a reader nothing over one without. Code is highlighted on the server for the same reason; the lower block named no language, so nothing invented colours for it and only what is true of any notation is marked. The pen is an SVG stroke that breaks per line, in five inks.</sub>
 
 </div>
 
