@@ -16,7 +16,8 @@
   LOOKS wired, which is why review never caught it.
 - 9 roles (`TypeRole`: `h1–h5`, `body`, `small`, `caption`, `code`), each with
   size/line-height/letter-spacing → CSS vars `--fs/--lh/--ls-<role>`, from
-  `DEFAULT_TYPOGRAPHY` in [`src/content/themes.ts`](../../src/content/themes.ts). The owner's
+  `DEFAULT_TYPOGRAPHY` in [`src/content/fonts.ts`](../../src/content/fonts.ts) (re-exported by
+  `themes.ts`, so either import path works). The owner's
   `settings.typography` is emitted by `typographyToCss()` (also applies in the admin editor
   `.prose` = WYSIWYG). `smoothing` adds `-webkit-font-smoothing` on `body`.
 - **`--type-scale` lives inside the variable, not at the call site.** Each `--fs-<role>` is
@@ -121,7 +122,7 @@ re-substitutes it there. Pinned by `web/typography.test.ts`.
 ## Fonts — two handles, four built-in presets
 
 - **Built-in fonts (`fontPreset`).** Four self-hosted families in `FONT_PRESETS`
-  (`src/content/themes.ts`): Inter, Source Sans 3, Literata, Source Serif 4 — each declared per
+  (`src/content/fonts.ts`): Inter, Source Sans 3, Literata, Source Serif 4 — each declared per
   unicode-range in `src/render/font-faces.ts`,
   so a family downloads ONLY when the chosen preset uses it. Each preset carries the typography
   TUNED for it; picking a font in Admin → Appearance drops that setup into the editable roles (still
@@ -132,7 +133,7 @@ re-substitutes it there. Pinned by `web/typography.test.ts`.
   body + title, list cards, comment body, the editor `.prose`) and is what `fontPresetCss` /
   `fontToCss` point (custom upload wins). `--font-sans` is the system-chrome face (dates/reading-time,
   related/taxonomy, header, footer, rail — **the PUBLIC page only**), driven INDEPENDENTLY by the `chromeFont` selector
-  (`CHROME_FONTS` in `src/content/themes.ts`, Admin → Appearance): `inter` (default, no override) ·
+  (`CHROME_FONTS` in `src/content/fonts.ts`, Admin → Appearance): `inter` (default, no override) ·
   `reading` (points `--font-sans` at `--font-reading` so the chrome follows the reading font) ·
   `plex-mono` (self-hosted IBM Plex Mono — a "code" chrome while the body stays readable; declared
   per unicode-range in `src/render/font-faces.ts`, two static weights range-mapped 400/600,

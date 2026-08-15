@@ -1,6 +1,6 @@
 <div align="center">
 
-# quire**INK** &nbsp;`2.0.2`
+# quire**INK** &nbsp;`2.0.3`
 
 **Một cái blog bạn tự host, và AI agent có thể vận hành thay bạn.**
 Một tiến trình. Hai tệp SQLite. Không tài khoản đám mây nào trong đường đi.
@@ -49,11 +49,13 @@ Có ba thứ định hình nó.
 
 Bạn được đọc, sửa, chạy và fork theo [PolyForm Noncommercial](./LICENSE).
 
-> **2.0.2 ra ngày 10/08/2026**, đang chạy bản demo ở trên và blog riêng của tác giả tại
-> [manhhung.me](https://manhhung.me). Bản này gồm mười hai lỗi được sửa, không có tính năng
-> mới — một giới hạn tần suất mà header giả mạo đi qua được, người đọc dùng giao diện tối mở
-> trang nào cũng loé trắng, và tệp CSS bị nén lại từ đầu ở mỗi request. Tất cả tìm ra bằng
-> cách **đo site đang chạy** chứ không phải đọc mã nguồn.
+> **2.0.3 ra ngày 15/08/2026**, đang chạy bản demo ở trên và blog riêng của tác giả tại
+> [manhhung.me](https://manhhung.me). Bản này gộp luôn 2.0.2, nên chỉ còn một bản để đọc.
+> Ba mươi tám commit: một đợt rà soát phát hiện không có giới hạn dung lượng tải lên, không
+> có hạn mức lưu trữ, và một máy chủ lắng nghe trên mọi giao diện mạng dưới một dòng log nói
+> ngược lại; một giới hạn tần suất mà header giả mạo đi qua được; và phần quản trị lâu nay
+> mặc bộ đồ của một framework dashboard chứ không phải của chính sản phẩm này. Gần như tất
+> cả đều tìm ra bằng cách **đo site đang chạy** chứ không phải đọc mã nguồn.
 > [Changelog](./CHANGELOG.md) có đủ những gì đã đổi.
 
 ---
@@ -94,7 +96,7 @@ Bạn được đọc, sửa, chạy và fork theo [PolyForm Noncommercial](./LI
 
 Đây là số đo từ mạng, lần vào đầu tiên, chưa cache gì. Đúng bằng cái mà một người lạ cầm điện thoại phải chờ.
 
-Hai dòng CSS và JavaScript là sản phẩm của bản build — giống nhau ở mọi bản cài — và lấy từ bản dựng 2.0.2. Các số tổng đo cho 2.0.1, tại origin chứ không qua CDN, và là của chính site này: tiếng Việt, Literata để đọc và JetBrains Mono cho phần khung. Chúng không phải thuộc tính của phần mềm, vì font được cắt theo bảng chữ và trình duyệt chỉ tải đúng những dải mà trang bạn dùng tới. Riêng font đã giảm từ 86 KB xuống 67 KB ở 2.0.1 mà không bỏ đi họ chữ nào.
+Hai dòng CSS và JavaScript là sản phẩm của bản build — giống nhau ở mọi bản cài — và lấy từ bản dựng 2.0.3 — 2.0.2 lẫn 2.0.3 đều không làm chúng nhúc nhích. Các số tổng đo cho 2.0.1, tại origin chứ không qua CDN, và là của chính site này: tiếng Việt, Literata để đọc và JetBrains Mono cho phần khung. Chúng không phải thuộc tính của phần mềm, vì font được cắt theo bảng chữ và trình duyệt chỉ tải đúng những dải mà trang bạn dùng tới. Riêng font đã giảm từ 86 KB xuống 67 KB ở 2.0.1 mà không bỏ đi họ chữ nào.
 
 | | Trang chủ | Một bài | |
 |:---|---:|---:|:---|

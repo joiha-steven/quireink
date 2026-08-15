@@ -36,7 +36,18 @@ third-party account, no credentials. The four commands are in
 
 Two more are worth knowing, because the house rule is that you LOOK at what you changed
 instead of reasoning about rendered CSS from the source: `bun run shot` takes a screenshot
-and `bun run drive` drives headless Chromium through a flow.
+and `bun run drive` drives headless Chromium through a flow. `bun run tour` uses the same
+browser for forty flows.
+
+All three need a headless browser, and they find one themselves — `scripts/chrome-path.ts`
+looks for a `@puppeteer/browsers` install, then the usual system paths, then full Chrome.
+If it finds none it names the command rather than throwing a path at you:
+
+```
+bunx @puppeteer/browsers install chrome-headless-shell@stable --path "$HOME/chrome"
+```
+
+`CHROME=/path/to/binary` overrides all of it.
 
 ## Definition of done
 
