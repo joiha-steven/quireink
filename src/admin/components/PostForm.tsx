@@ -361,7 +361,7 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
               onChange={(e) => update({ title: e.target.value })}
               placeholder={t.titlePlaceholder}
               rows={1}
-              className={`${READING} min-h-12 w-full resize-none overflow-hidden bg-transparent text-3xl font-bold leading-tight outline-none [field-sizing:content] placeholder:text-neutral-300 dark:placeholder:text-neutral-600`}
+              className={`${READING} write-surface min-h-12 w-full resize-none overflow-hidden bg-transparent text-3xl font-bold leading-tight [field-sizing:content] placeholder:text-neutral-300 dark:placeholder:text-neutral-600`}
             />
           </div>
           <Editor initialContent={draft.content} onChange={(md) => { contentRef.current = md }} onDirty={() => setDirty(true)} onPickImage={() => setPicker('editor')} onPickGallery={() => setPicker('gallery')} onUploadFile={uploadInline} apiRef={editorApi} contentWidth={contentWidth} toolbarTop={toolbarTop} typewriterEffects={typewriterEffects} />

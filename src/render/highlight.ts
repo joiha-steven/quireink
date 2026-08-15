@@ -14,6 +14,7 @@
 
 import { createHighlighter, type Highlighter } from 'shiki'
 import { readRendered, renderKey, writeRendered } from '@/render/render-cache'
+import { detectLang } from '@/render/detect-lang'
 
 // Curated language set — common on a writing/tech blog. Unknown languages fall
 // back to plain text (still themed, no token colors). Keep this list small: each
@@ -48,7 +49,11 @@ export async function highlightCode(code: string, lang: string): Promise<string 
   if (cached !== null) return cached
   try {
     const h = await highlighter()
-    const language = loaded.has(lang) ? lang : 'text'
+    // A fence that NAMED a language is obeyed, right or wrong — that is the writer's choice.
+    // Only an unnamed one (marked `text` by the caller) is guessed at, and `detectLang` says
+    // `text` again unless it is sure. See `detect-lang.ts` for why it is deliberately timid.
+    const named = loaded.has(lang) ? lang : null
+    const language = named ?? detectLang(code)
     const html = h.codeToHtml(code, {
       lang: language,
       themes: THEMES,
