@@ -66,7 +66,7 @@ You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE).
 | 🖋️&nbsp;**Writing** | A real editor over Markdown — tables, video, footnotes, callouts, **mathematics**, Spotify. Drop an image in and it is cut for every screen. Saves as you type, keeps three versions, and can hold a post until Tuesday. The Markdown source view dims its own syntax |
 | 🏠&nbsp;**Front&nbsp;page** | The post list, a page you wrote, or a composed front: lead story, picks, a row per category, most read. Works with photographs, and with only words. [How it works](./docs/homepage.md) |
 | 🎨&nbsp;**Looks** | Six palettes, light and dark. Four reading fonts, or upload your own. Every size comes from a role, so one change moves the page instead of one heading |
-| 🖍️&nbsp;**Highlighter** | `==text==` in five inks. Not a coloured box — an SVG stroke with chisel ends that breaks per line, from pigments measured off a photograph of a real pen box. 1.4 KB, and nothing at all if you never use it |
+| 🖍️&nbsp;**Highlighter** | `==text==` in five inks. Not a coloured box — an SVG stroke with chisel ends that breaks per line, from pigments measured off a photograph of a real pen box. 1.4&nbsp;KB, and nothing at all if you never use it |
 | 💻&nbsp;**Code** | Highlighted on the server, so the reader downloads no highlighter. Twenty-one languages, and the names people type (`typescript`, `sh`) reach them. A fence naming nothing is guessed at — timidly, so program output stays plain |
 | 🔍&nbsp;**Reading** | Search that answers as you type. A side rail with your categories and tags, or the contents of the post. Related posts, reading time, a progress bar. And **book mode**: two columns on paper, with a drop cap |
 | 📈&nbsp;**Numbers** | Analytics without cookies. Who read what, how far down they got, where they came from. Plus an activity log, a trash you can undo, and a help page |
@@ -105,11 +105,11 @@ The CSS and JavaScript rows are build artefacts — the same bytes on every inst
 | | Home | A post | |
 |:---|---:|---:|:---|
 | **Requests** | 10 | 10 | |
-| **Total&nbsp;transferred** | **106 KB** | **114 KB** | 67 KB of that is the fonts |
-| **JavaScript** | **3.6 KB** | **7.8 KB** | written by hand, no framework |
-| **CSS** | 8.0 KB | 8.0 KB | one file, minified, cached forever |
-| **Third-party&nbsp;requests** | **0** | **0** | no CDN, no font host, no tracker |
-| **Coming back** | ~19 KB | ~24 KB | only the HTML is fetched again |
+| **Total&nbsp;transferred** | **106&nbsp;KB** | **114&nbsp;KB** | 67&nbsp;KB of that is the fonts |
+| **JavaScript** | **3.6&nbsp;KB** | **7.8&nbsp;KB** | written by hand, no framework |
+| **CSS** | 8.0&nbsp;KB | 8.0&nbsp;KB | one file, minified, cached forever |
+| **Third&#8209;party&nbsp;requests** | **0** | **0** | no CDN, no font host, no tracker |
+| **Coming&nbsp;back** | ~19&nbsp;KB | ~24&nbsp;KB | only the HTML is fetched again |
 
 It stays this way because of a few decisions that are hard to walk back.
 
