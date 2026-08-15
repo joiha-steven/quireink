@@ -63,10 +63,11 @@ You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE).
 
 | | |
 |:---|:---|
-| 🖋️&nbsp;**Writing** | A real editor, TipTap 3 over Markdown, with a toolbar that stays put while you scroll. Drop an image in and it gets resized for every screen. Tables, video, footnotes, callouts, **mathematics**, Spotify and Apple Music. It saves as you type, keeps your last three versions, and can hold a post until Tuesday morning |
+| 🖋️&nbsp;**Writing** | A real editor, TipTap 3 over Markdown, with a toolbar that stays put while you scroll. Drop an image in and it gets resized for every screen. Tables, video, footnotes, callouts, **mathematics**, Spotify and Apple Music. It saves as you type, keeps your last three versions, and can hold a post until Tuesday morning. Switch to the Markdown source and the syntax dims out of the way, so `##` and `---` stop reading like the words around them |
 | 🏠&nbsp;**Your front page** | Show the post list, or any page you wrote, or build a front page: a lead story, a few picks, a row per category, most read. Works for a site full of photos and for one that is only words. [How it works](./docs/homepage.md) |
 | 🎨&nbsp;**How it looks** | Six palettes, each with a light and a dark version. Four reading fonts, or upload your own. Every text size on the page comes from a role you can tune, so one change moves the whole page instead of one heading |
 | 🖍️&nbsp;**A highlighter** | `==text==` draws a real pen stroke under the words, in five inks. Not a coloured box: an SVG stroke with chisel ends that breaks per line, drawn from pigments measured off a photograph of an actual pen box. Costs a reader 1.4 KB, and nothing at all if you never use it |
+| 💻&nbsp;**Code** | Highlighted on the server, so a reader downloads no highlighter — twenty-one languages, and the names people actually type (`typescript`, `sh`, `yml`) resolve to them. A fence that names nothing gets guessed at, and only on a signal prose cannot fake: guess wrong and an error message comes out coloured like a program. When the guess declines, the block is still marked for the two things true in any notation — what sits in quotes, and a `$NAME` |
 | 🔍&nbsp;**Reading** | Search that answers as you type. A rail down the side with your categories and tags, or the contents of the post you are in. Related posts, reading time, a progress bar. And **book mode**: two columns on paper, with a drop cap |
 | 📈&nbsp;**Numbers** | Analytics without cookies. Who read what, how far down they got, where they came from. Plus an activity log, a trash you can undo, and a help page that explains the rest |
 | 🔎&nbsp;**Search engines** | Sitemap, RSS, `robots.txt`, `llms.txt`, and an OG image drawn per post. Rename a slug and the old URL keeps working on its own |
@@ -74,7 +75,7 @@ You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE).
 | 📚&nbsp;**Series** | Write in parts, number them, and every part shows the others |
 | 💾&nbsp;**Backups** | One button downloads the whole install. There is also a cron script that ships it off the server. [Details](./docs/backups.md) |
 | 📥&nbsp;**Leaving WordPress** | Upload the XML export. Posts and pages come out as Markdown |
-| 🌍&nbsp;**Languages** | English, Vietnamese, German, Japanese, Chinese and Korean, in the admin and on the site |
+| 🌍&nbsp;**Languages** | English, Vietnamese, German, Japanese, Chinese and Korean, in the admin and on the site. No CJK webfont is shipped — they are megabytes — but the reading stack names a CJK face per language rather than leaving the browser to pick, so 直 is drawn the way a Japanese page draws it on a Japanese site and the way a Chinese page does on a Chinese one |
 | 🔐&nbsp;**Signing in** | Your own username and password, hashed with argon2id. An authenticator code every time, and ten recovery codes for the day you lose the phone. No Google, no anyone, in the login path |
 | 📱&nbsp;**On a phone** | Install it to the home screen and it opens like an app |
 
@@ -86,6 +87,10 @@ You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE).
 <img src="docs/demo-reading.jpg" alt="Book mode, a fullscreen two-column reader on paper with a drop cap and a page count, beside an article in the dark theme" width="960">
 
 <sub>Book mode and the dark theme. Neither is a filter dropped over the page. Both are the reading typography itself. The fonts ship with Vietnamese and Central European accents included, so the specimen on the left is set properly instead of falling back to whatever the system has.</sub>
+
+<img src="docs/demo-code.jpg" alt="Two screenshots: an article showing a formula rendered as MathML in the reading face, and the same article's code, one block highlighted from its language tag and one below it with no language, where only the quoted text and a dollar-name are marked" width="960">
+
+<sub>Mathematics is MathML, drawn by the browser's own layout engine — no script, no stylesheet, no font file, so a post with a formula costs a reader nothing over one without. Code is highlighted on the server for the same reason. The lower block named no language: nothing guessed one, so nothing invented colours for it, and only what is true of any notation is marked.</sub>
 
 </div>
 

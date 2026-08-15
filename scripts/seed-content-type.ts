@@ -123,6 +123,14 @@ pyftsubset Literata.ttf \\
   --flavor=woff2 --output-file=literata-vietnamese.woff2
 \`\`\`
 
+It prints back what it kept, and this block is the other kind — a fence with no language on it, which is what most fences are. Nothing here knows a grammar to colour it with, so only the two things true of any notation are marked: what sits inside quotes, and a $NAME.
+
+\`\`\`
+kept   "latin, latin-ext, vietnamese"   dropped  greek, cyrillic, +19 more
+axes   "wght 400..700"                  dropped  opsz, ital
+wrote  $OUT/literata-vietnamese.woff2   46.2 KB  (was 97.6 KB)
+\`\`\`
+
 ## What the cuts are worth
 
 Measured on this site's own faces, from upstream sources rather than by re-cutting an already-cut file:

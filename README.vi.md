@@ -68,6 +68,7 @@ Bạn được đọc, sửa, chạy và fork theo [PolyForm Noncommercial](./LI
 | 🏠&nbsp;**Trang chủ của bạn** | Cho hiện danh sách bài, hoặc một trang bạn tự viết, hoặc dựng hẳn một trang chủ dạng báo: bài dẫn, vài bài chọn, mỗi chuyên mục một hàng, mục đọc nhiều. Hợp cả với site đầy ảnh lẫn site chỉ có chữ. [Xem cách hoạt động](./docs/homepage.md) |
 | 🎨&nbsp;**Nhìn thế nào** | Sáu bảng màu, mỗi bảng có bản sáng và bản tối. Bốn font đọc dựng sẵn, hoặc tải font của bạn lên. Mọi cỡ chữ trên trang đều đến từ một vai trò bạn chỉnh được, nên một lần đổi là cả trang đổi theo chứ không phải sửa từng tiêu đề |
 | 🖍️&nbsp;**Bút dạ quang** | `==chữ==` vẽ một nét bút thật dưới chữ, năm màu mực. Không phải cái hộp màu: là nét SVG đầu vát, xuống dòng thì tách thành từng nét riêng, màu đo từ ảnh chụp hộp bút thật. Tốn của người đọc 1.4 KB, và không tốn gì nếu bạn không dùng |
+| 💻&nbsp;**Code** | Tô màu ở máy chủ, nên người đọc không tải về bộ tô màu nào — hai mươi mốt ngôn ngữ, và những tên người ta hay gõ (`typescript`, `sh`, `yml`) đều nhận ra. Hàng rào không ghi ngôn ngữ thì được đoán, và chỉ đoán khi có dấu hiệu mà văn xuôi không giả được: đoán sai thì một thông báo lỗi sẽ hiện ra như một chương trình. Khi không đoán nổi, khối vẫn được đánh dấu hai thứ đúng trong mọi ký pháp — phần nằm trong ngoặc, và `$TÊN` |
 | 🔍&nbsp;**Đọc** | Tìm kiếm trả lời ngay trong lúc gõ. Một cột bên lề liệt kê chuyên mục và thẻ, hoặc mục lục của chính bài đang đọc. Bài liên quan, thời gian đọc, thanh tiến độ. Và **chế độ sách**: hai cột trên nền giấy, có chữ cái đầu lớn |
 | 📈&nbsp;**Số liệu** | Thống kê không dùng cookie. Ai đọc bài nào, đọc tới đâu, từ đâu tới. Kèm nhật ký hoạt động, một thùng rác hoàn tác được, và một trang trợ giúp giải thích phần còn lại |
 | 🔎&nbsp;**Máy tìm kiếm** | Sitemap, RSS, `robots.txt`, `llms.txt`, và ảnh OG vẽ riêng cho từng bài. Đổi slug thì URL cũ vẫn tự chạy tiếp |
@@ -75,7 +76,7 @@ Bạn được đọc, sửa, chạy và fork theo [PolyForm Noncommercial](./LI
 | 📚&nbsp;**Loạt bài** | Viết thành nhiều phần, đánh số, và mỗi phần đều hiện các phần còn lại |
 | 💾&nbsp;**Sao lưu** | Một nút tải về nguyên cả bản cài. Có sẵn cả script cron đẩy bản sao ra khỏi máy chủ. [Chi tiết](./docs/backups.md) |
 | 📥&nbsp;**Rời WordPress** | Tải tệp XML export lên. Bài và trang ra thành Markdown |
-| 🌍&nbsp;**Ngôn ngữ** | Tiếng Anh, Việt, Đức, Nhật, Trung và Hàn, cả trong trang quản trị lẫn ngoài site |
+| 🌍&nbsp;**Ngôn ngữ** | Tiếng Anh, Việt, Đức, Nhật, Trung và Hàn, cả trong trang quản trị lẫn ngoài site. Không kèm theo webfont CJK nào — chúng nặng hàng megabyte — nhưng danh sách font đọc gọi tên một mặt chữ CJK riêng cho từng thứ tiếng thay vì để trình duyệt tự chọn, nên chữ 直 được vẽ theo lối Nhật trên site tiếng Nhật và theo lối Trung trên site tiếng Trung |
 | 🔐&nbsp;**Đăng nhập** | Tên và mật khẩu của riêng bạn, băm bằng argon2id. Mã xác thực mỗi lần vào, và mười mã khôi phục cho ngày bạn mất điện thoại. Không Google, không ai khác, trong đường đăng nhập |
 | 📱&nbsp;**Trên điện thoại** | Cài ra màn hình chính là nó mở như một ứng dụng |
 
@@ -87,6 +88,10 @@ Bạn được đọc, sửa, chạy và fork theo [PolyForm Noncommercial](./LI
 <img src="docs/demo-reading.jpg" alt="Chế độ sách: trình đọc hai cột toàn màn hình trên nền giấy, có chữ cái đầu lớn và số trang, bên cạnh là một bài viết ở giao diện tối" width="960">
 
 <sub>Chế độ sách và giao diện tối. Không cái nào là một lớp lọc phủ lên trang. Cả hai đều là chính hệ typography của trang đọc. Font đi kèm có sẵn dấu tiếng Việt và dấu của các tiếng Trung Âu, nên khối mẫu chữ bên trái hiện đúng font chứ không rơi về font hệ thống.</sub>
+
+<img src="docs/demo-code.jpg" alt="Hai ảnh chụp: một bài viết có công thức được dựng bằng MathML trong font đọc, và phần code của chính bài đó, một khối được tô màu nhờ tên ngôn ngữ và một khối bên dưới không ghi ngôn ngữ, chỉ đánh dấu phần trong ngoặc kép và tên biến có dấu đô la" width="960">
+
+<sub>Công thức toán là MathML, do chính trình duyệt dựng — không script, không stylesheet, không file font, nên một bài có công thức không tốn thêm gì so với bài không có. Code cũng tô màu ở máy chủ, cùng một lý do. Khối phía dưới không ghi ngôn ngữ: không đoán ra nên không bịa màu, chỉ đánh dấu những gì đúng trong mọi ký pháp.</sub>
 
 </div>
 
