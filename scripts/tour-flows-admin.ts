@@ -65,6 +65,29 @@ export function registerAdminFlows({ flow, expect, atWidth }: Tour): void {
       return 'ok no sideways scroll at ' + doc.clientWidth + 'px'
     })()`, 1200))
 
+  // The other nine screens, same assertion: the two spills found before this batch (the
+  // Overview above, the analytics table before it) shared one cause — a grid or flex item
+  // whose min-content floor is a truncate row — so the cheap guard is the whole-document
+  // measurement on every screen, not a per-screen investigation. On failure the message
+  // names the widest element, because "scrolls sideways by 47px" alone starts a hunt.
+  for (const [path, label] of ADMIN_PAGES.filter(([p]) => p !== '/admin')) {
+    flow(`admin: ${label} fits a phone`, () => atWidth(375, path, `
+      (() => {
+        const doc = document.documentElement
+        const spill = doc.scrollWidth - doc.clientWidth
+        if (spill <= 1) return 'ok no sideways scroll at ' + doc.clientWidth + 'px'
+        let widest = null
+        for (const el of document.querySelectorAll('*')) {
+          const r = el.getBoundingClientRect()
+          if (r.right > doc.clientWidth + 1 && (!widest || r.right > widest.r)) {
+            widest = { r: r.right, what: el.tagName + '.' + String(el.className).split(' ').slice(0, 3).join('.') }
+          }
+        }
+        return 'scrolls sideways by ' + spill + 'px at ' + doc.clientWidth + 'px' +
+          (widest ? ' (widest: ' + widest.what + ' reaching ' + Math.round(widest.r) + 'px)' : '')
+      })()`, 1200))
+  }
+
   flow('admin: the settings tabs all have content', () => expect('/admin/settings', `
     (async () => {
       const empty = []

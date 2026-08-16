@@ -55,12 +55,11 @@ export function AnalyticsView({ data, range, titles }: { data: AnalyticsSummary;
       <PageHeader
         title={t.analyticsTitle}
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {/* The kit's tab strip, worn by LINKS: the range lives in the URL, so this cannot
-                be a `<Tabs>` with an onChange. It used to carry its own copy of the markup at
-                a lighter track, one padding step short and with a different hover, so the same
-                control read as two. `TAB_TRACK` wraps on a phone, where four ranges plus
-                Export are wider than 390px. */}
+                be a `<Tabs>` with an onChange. Four ranges plus Export are wider than 375px,
+                so THIS row wraps — the segment box cannot (its border is one shared outline),
+                which is what let the whole page scroll sideways by 36px on a phone. */}
             <div className={SEGMENT_TRACK}>
               {RANGES.map((r) => (
                 <Link
