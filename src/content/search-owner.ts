@@ -12,7 +12,7 @@ import { all } from '@/store/query'
 import { liveOnly } from '@/store/db'
 
 /**
- * One result. `PostsTable` imports this with `import type`, which erases at build time —
+ * One result. `WritingList` imports this with `import type`, which erases at build time —
  * `src/types.ts` would be the other home for it, but that file sits one line under the
  * 400-line cap `check:filesize` enforces, and a shared type is not a reason to split the
  * domain types. Keep the admin's import type-only: a value import here would pull the

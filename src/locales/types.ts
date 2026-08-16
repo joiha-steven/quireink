@@ -141,6 +141,8 @@ export type AdminStrings = {
   // dashboard
   tabPosts: string
   tabPages: string
+  /** Singular, and it marks ONE ROW in the writing list, where `tabPages` named a tab. */
+  kindPage: string
   newPost: string
   newPage: string
   noPosts: string
@@ -149,6 +151,8 @@ export type AdminStrings = {
   colTitle: string
   colStatus: string
   colDate: string
+  /** The writing list sorts on the last SAVE, so its column cannot be headed 'Date'. */
+  colTouched: string
   colCategories: string
   colViews: string
   untitled: string

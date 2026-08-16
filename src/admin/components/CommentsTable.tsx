@@ -52,7 +52,7 @@ export function CommentsTable({ initial }: { initial: AdminComment[] }) {
       <TableFrame>
           <thead className={THEAD}>
             <tr>
-              {/* The comment takes the slack — see `PostsTable`. */}
+              {/* The comment takes the slack — see `WritingList`. */}
               <th className="w-full px-4 py-3 font-medium">{t.commentsColContent}</th>
               {/* `min-w`, not `max-w`. The comment column claims every spare pixel, so an
                   auto-layout table squeezed this one to its longest WORD — measured at 97px,
