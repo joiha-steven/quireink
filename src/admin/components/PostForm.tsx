@@ -70,6 +70,8 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
   // mid-sentence, in 340px of the width (ADR 0024, step 5).
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [asking, setAsking] = useState(false)
+  // Mirrors the editor raw/markdown view so the MD switch shows state.
+  const [mdView, setMdView] = useState(false)
   const actionHeaderRef = useRef<HTMLDivElement>(null)
   const toolbarTop = useStickyOffset(actionHeaderRef)
   // Unsaved-changes flag: drives button states, autosave and the exit warning.
@@ -318,6 +320,8 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
         settingsOpen={settingsOpen}
         onToggleSettings={() => setSettingsOpen((v) => !v)}
         savedSlug={savedSlug}
+        mdView={mdView}
+        onToggleMd={() => editorApi.current?.toggleRaw()}
         getText={() => `${draftRef.current.title} ${editorApi.current?.getMarkdown() ?? contentRef.current}`}
         onPreview={openPreview}
         onSaveDraft={() => void handleSave('draft', t.savedDraft)}
@@ -352,6 +356,7 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
         contentWidth={contentWidth}
         toolbarTop={toolbarTop}
         typewriterEffects={typewriterEffects}
+        onRawChange={setMdView}
         header={<SheetTitle value={draft.title} onChange={(title) => update({ title })} placeholder={t.titlePlaceholder} metaLine={metaLine} />}
       />
       {settingsOpen && (
