@@ -138,3 +138,16 @@ export function IconChevronLeft() {
     </svg>
   )
 }
+
+// "Everything else" (ADR 0024 step 6). Three dots, which is the mock's own mark for the row
+// that holds comments, trash, log, settings and help — and the one glyph in this set that
+// names no destination, because that row does not have one.
+export function IconMore() {
+  return (
+    <svg viewBox="0 0 24 24" className={C} {...S} aria-hidden>
+      <circle cx="5.5" cy="12" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="18.5" cy="12" r="1.1" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}

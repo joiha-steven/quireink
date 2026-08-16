@@ -101,10 +101,22 @@ character and none of its typographic rules **except one**, below.
   footer. The switch governs glyphs BESIDE LABELS; a COLLAPSED rail has no labels, so it stays
   icon-only and the collapse control is always available. Reading the setting as "no icons
   anywhere" is what hid the collapse control in the first cut, and the owner could not find it.
+- **The rail holds FOUR destinations**, and everything else sits behind one control on it
+  ([ADR 0024](./decisions/0024-the-admin-is-rebuilt-around-writing.md) step 6): home, write,
+  library, newsletter — then analytics, comments, trash, settings, log, help and View blog
+  under "Everything else". The group opens itself when the current page is inside it, because
+  a rail that hides where you are is worse than a long one. Eleven rows was eleven decisions
+  before the one that matters, and the four are what the owner came to do.
 - **Writing is the primary task.** The editor takes the full desktop width and hides the
   global navigation.
-- **Detail lives on its own screen.** Analytics, taxonomy, integrations and system
-  information do not compete on the home page.
+- **The home carries the numbers; the DETAIL lives on its own screen.** Views, visitors, time
+  per post and read-through are on the home page — that is why Analytics could leave the rail
+  — and the charts, the ranges and the per-page breakdown are one click further, from the
+  cards that show the headline figures. Taxonomy, integrations and system information still do
+  not compete on the home page.
+- **The home hands back the unfinished writing before it shows anything else.** A count of
+  drafts is not the same fact as the drafts; the band names them and opens the editor on one.
+  Administration counts (posts, pages, comments, images, storage) sit BELOW the widgets.
 
 ## One of each
 

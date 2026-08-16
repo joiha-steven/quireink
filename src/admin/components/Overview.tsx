@@ -8,6 +8,7 @@ import { buttonClass } from '@/admin/ui/Button'
 import { Card, PageHeader, SECTION_GAP, StatBand, StatCard } from './kit'
 import { DashboardWidgets, type DashboardData } from './DashboardWidgets'
 import { FirstRun } from './FirstRun'
+import { PickUpBand } from './PickUpBand'
 import { useAdminT } from './I18nProvider'
 import { REPO } from './help-kit'
 
@@ -107,6 +108,17 @@ export function Overview(props: Props) {
           of zeroes is the least useful thing a new owner can be shown first. */}
       <FirstRun done={firstRunDone} onDone={markFirstRunDone} />
 
+      {/* ADR 0024 step 6. The unfinished writing first, then how the finished writing did,
+          and the administration counts last — they used to lead the page. */}
+      <PickUpBand items={dashboard.pickUp.items} total={dashboard.pickUp.total} />
+
+      <DashboardWidgets data={dashboard} />
+
+      {/* Below the widgets since 2026-08-17, and it is the ADR's ordering rather than a taste:
+          posts · pages · comments · images · storage is inventory, and inventory is what the
+          rebuild moves out of the way of the writing. They stay because each one is also the
+          shortest route to its screen — two of which (comments, library) the rail no longer
+          shows at rest. */}
       <StatBand>
         <StatCard bare label={t.statPosts} value={posts} href="/admin/content" />
         <StatCard bare label={t.statPages} value={pages} href="/admin/content" />
@@ -114,8 +126,6 @@ export function Overview(props: Props) {
         <StatCard bare label={t.statMedia} value={originals} href="/admin/media" />
         <StatCard bare label={t.statStorage} value={formatBytes(totalBytes)} />
       </StatBand>
-
-      <DashboardWidgets data={dashboard} />
 
       {/* `Card`, not a hand-rolled copy of it. This one was a `<section>` wearing CARD with
           its own header at `mb-4` and 14px against the kit's `mb-5` and 15px, so the three

@@ -85,8 +85,27 @@ export async function dashboardView(): Promise<Record<string, unknown>> {
     .slice(0, 5)
     .map((x) => ({ slug: x.slug, views: x.views, title: titleBySlug.get(x.slug) ?? x.slug }))
 
-  const drafts = posts.filter((p) => p.status !== 'published').length
-    + pages.filter((p) => p.status !== 'published').length
+  const unfinishedPosts = posts.filter((p) => p.status !== 'published')
+  const unfinishedPages = pages.filter((p) => p.status !== 'published')
+  const drafts = unfinishedPosts.length + unfinishedPages.length
+
+  /**
+   * The pieces to pick up again, most recently touched first (ADR 0024 step 6).
+   *
+   * A COUNT of drafts was already on this page and it is a different fact: it says three
+   * exist, not which three or where they were left. This hands back the writing itself, which
+   * is the one thing the home screen of a writing tool owes its owner.
+   *
+   * `updatedAt` alone, with no `date` fallback: an unpublished piece has no publication date
+   * worth sorting by, and a draft created and never saved again still carries the moment it
+   * was created here.
+   */
+  const pickUpItems = [
+    ...unfinishedPosts.map((p) => ({ title: p.title, href: `/admin/editor/${p.slug}`, touched: p.updatedAt ?? '' })),
+    ...unfinishedPages.map((p) => ({ title: p.title, href: `/admin/page-editor/${p.slug}`, touched: p.updatedAt ?? '' })),
+  ]
+    .sort((a, b) => new Date(b.touched).getTime() - new Date(a.touched).getTime())
+    .slice(0, 4)
 
   // SEO health: metadata-only signals over PUBLISHED posts. No body scan, so it stays
   // cheap enough to sit on the home page.
@@ -111,8 +130,11 @@ export async function dashboardView(): Promise<Record<string, unknown>> {
         visitors30: analytics30.uniqueVisitors,
         views7: analytics30.daily.slice(-7).reduce((sum, d) => sum + d.views, 0),
         spark: analytics30.daily.map((d) => d.views),
+        avgDwellMs: analytics30.avgDwellMs,
+        avgReadDepth: analytics30.avgReadDepth,
       },
       topPosts,
+      pickUp: { items: pickUpItems, total: drafts },
       // ⚠️ These two used to be a `seo` prop and a `sources` prop, computed here on every
       // dashboard load and handed to `Overview`, which rendered NEITHER — along with
       // `categories`, `tags`, `variants` and `files`, six props in all. `tally()` walked every
@@ -122,7 +144,6 @@ export async function dashboardView(): Promise<Record<string, unknown>> {
       // They live inside `dashboard` now, which is the shape the widgets actually take, so
       // there is no second channel to drift out of use again.
       needs: {
-        drafts,
         noExcerpt: published.filter((p) => !p.excerpt?.trim()).length,
         noImage: published.filter((p) => !p.featuredImage).length,
       },
