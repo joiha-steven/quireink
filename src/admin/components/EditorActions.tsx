@@ -7,10 +7,10 @@
 // carries — that the FIRST publish opens the attributes rather than publishing — belongs
 // next to the button that makes it (ADR 0024, step 5).
 //
-// It is a LINE, not a card: the old version was a rounded, bordered, shadowed bar, which
-// made the one piece of chrome on the page the most decorated thing on it. The mock draws
-// a flat row over a hairline. Quiet text controls on the left with the status; the two
-// bordered/solid buttons that END the session on the right, and nothing else raised.
+// It is the SHEET'S top row, not a floating band: the mock's sheettop sits inside the
+// sheet, over a hairline, and the toolbar strip attaches directly under it. The floating
+// version put two light bands a crack apart and the owner's word for it was "kì kì".
+// Quiet text controls on the left with the status; the session-ending buttons right.
 import { useEffect, useState, type RefObject } from 'react'
 import Link from '@/admin/router'
 import { Button } from '@/admin/ui/Button'
@@ -88,7 +88,7 @@ export function EditorActions({
   return (
     <div
       ref={barRef}
-      className="z-20 mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-neutral-200/70 bg-neutral-50/95 px-1 py-2.5 backdrop-blur-xl lg:sticky lg:top-0 dark:border-neutral-800 dark:bg-neutral-950/95"
+      className="z-20 flex flex-wrap items-center justify-between gap-3 rounded-t-2xl border-b border-neutral-200/70 bg-white/95 px-4 py-2.5 backdrop-blur-xl lg:sticky lg:top-0 dark:border-neutral-800 dark:bg-neutral-900/95"
     >
       <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
         <Link href="/admin/content" className={QUIET}>← {t.navWrite}</Link>

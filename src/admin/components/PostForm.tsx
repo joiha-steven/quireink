@@ -303,8 +303,7 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
   // Published but the date is still in the future → queued, not live yet.
   const scheduled = isScheduled(draft.status, draft.date)
 
-  // The mock's line under the title: what this piece IS, and when it was last touched.
-  const touched = savedAt ?? initial?.updatedAt
+  const touched = savedAt ?? initial?.updatedAt // feeds the mock's line under the title
   const metaLine = [
     scheduled ? t.scheduled : draft.status === 'published' ? t.statusPublished : t.statusDraft,
     touched ? formatDateTimeShort(touched) : null,
@@ -312,33 +311,6 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
 
   return (
     <div>
-      <EditorActions
-        barRef={actionHeaderRef}
-        status={saveStatusLine(t, saving, savedAt, dirty, keptAt, formatTime)}
-        saving={saving}
-        dirty={dirty}
-        settingsOpen={settingsOpen}
-        onToggleSettings={() => setSettingsOpen((v) => !v)}
-        savedSlug={savedSlug}
-        mdView={mdView}
-        onToggleMd={() => editorApi.current?.toggleRaw()}
-        getText={() => `${draftRef.current.title} ${editorApi.current?.getMarkdown() ?? contentRef.current}`}
-        onPreview={openPreview}
-        onSaveDraft={() => void handleSave('draft', t.savedDraft)}
-        // The FIRST publish opens the attributes instead of publishing: they are the
-        // publish-time questions, and they all already carry an answer (ADR 0024, step 5).
-        onPublish={() => {
-          if (draft.status !== 'published' && !asking) {
-            setAsking(true)
-            setSettingsOpen(true)
-            return
-          }
-          void handleSave('published', scheduled ? t.scheduled : t.published)
-        }}
-        publishLabel={scheduled ? t.schedule : t.publish}
-        published={draft.status === 'published'}
-      />
-
       {localRecovered && (
         <LocalDraftNotice at={localRecovered.at} onRestore={restoreLocal} onDiscard={dismissLocal} />
       )}
@@ -346,6 +318,34 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
       {/* One column, always: the attributes live on a slide-over now, so opening them no
           longer squeezes the writing into a narrower measure (the mock's sheet). */}
       <Editor
+        actions={
+          <EditorActions
+            barRef={actionHeaderRef}
+            status={saveStatusLine(t, saving, savedAt, dirty, keptAt, formatTime)}
+            saving={saving}
+            dirty={dirty}
+            settingsOpen={settingsOpen}
+            onToggleSettings={() => setSettingsOpen((v) => !v)}
+            savedSlug={savedSlug}
+            mdView={mdView}
+            onToggleMd={() => editorApi.current?.toggleRaw()}
+            getText={() => `${draftRef.current.title} ${editorApi.current?.getMarkdown() ?? contentRef.current}`}
+            onPreview={openPreview}
+            onSaveDraft={() => void handleSave('draft', t.savedDraft)}
+            // The FIRST publish opens the attributes instead of publishing: they are the
+            // publish-time questions, and they all already carry an answer (ADR 0024, step 5).
+            onPublish={() => {
+              if (draft.status !== 'published' && !asking) {
+                setAsking(true)
+                setSettingsOpen(true)
+                return
+              }
+              void handleSave('published', scheduled ? t.scheduled : t.published)
+            }}
+            publishLabel={scheduled ? t.schedule : t.publish}
+            published={draft.status === 'published'}
+          />
+        }
         initialContent={draft.content}
         onChange={(md) => { contentRef.current = md }}
         onDirty={() => setDirty(true)}
