@@ -9,7 +9,6 @@ import { slugify, formatTime, formatDateTimeShort } from '@/utils'
 import { uploadImages } from '@/admin/upload-client'
 import { Editor, type EditorApi } from './Editor'
 import { EditorActions } from './EditorActions'
-import { LocalDraftNotice } from './LocalDraftNotice'
 import { PageSettings, type PageDraft } from './PageSettings'
 import { MediaLibrary } from './MediaLibrary'
 import { SlideOver } from './SlideOver'
@@ -217,9 +216,6 @@ export function PageForm({ initial, contentWidth, typewriterEffects, autosaveSec
   return (
     <div>
 
-      {localRecovered && (
-        <LocalDraftNotice at={localRecovered.at} onRestore={restoreLocal} onDiscard={dismissLocal} />
-      )}
 
       <Editor
         actions={
@@ -233,6 +229,7 @@ export function PageForm({ initial, contentWidth, typewriterEffects, autosaveSec
             savedSlug={null}
             mdView={mdView}
             onToggleMd={() => editorApi.current?.toggleRaw()}
+            recovered={localRecovered ? { at: localRecovered.at, onRestore: restoreLocal, onDiscard: dismissLocal } : null}
             getText={() => `${draftRef.current.title} ${editorApi.current?.getMarkdown() ?? contentRef.current}`}
             onPreview={() => undefined}
             onSaveDraft={() => void handleSave('draft', t.savedDraft)}

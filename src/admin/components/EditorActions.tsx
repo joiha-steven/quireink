@@ -14,6 +14,7 @@
 import { useEffect, useState, type RefObject } from 'react'
 import Link from '@/admin/router'
 import { Button } from '@/admin/ui/Button'
+import { formatTime } from '@/utils'
 import { useAdminT } from './I18nProvider'
 
 /** Quiet text control, shared by everything on the bar that is not Preview/Publish. */
@@ -57,6 +58,7 @@ export function EditorActions({
   onToggleSettings,
   savedSlug,
   getText,
+  recovered,
   mdView,
   onToggleMd,
   onPreview,
@@ -75,6 +77,8 @@ export function EditorActions({
   savedSlug: string | null
   /** Live markdown, read from the form's ref — see useWordStats for why it is polled. */
   getText: () => string
+  /** A newer local snapshot than the server's copy — shown as the bar's second line. */
+  recovered?: { at: string; onRestore: () => void; onDiscard: () => void } | null
   mdView: boolean
   onToggleMd: () => void
   onPreview: () => void
@@ -105,6 +109,23 @@ export function EditorActions({
             </span>
           )}
         </span>
+        {/* The recovered-work line, folded into the bar at the owner's instruction — it was
+            a full banner ABOVE the sheet, a third piece of chrome for one sentence. It wraps
+            to its own line under the status; the two verbs are text links, and Restore is
+            the darker of the pair because it is the one that rescues somebody's words. */}
+        {recovered && (
+          <span className="basis-full text-xs text-neutral-400 dark:text-neutral-500">
+            {t.localDraftFound} · {formatTime(recovered.at)}
+            {' · '}
+            <button type="button" onClick={recovered.onRestore} className="font-medium text-neutral-900 underline underline-offset-2 hover:no-underline dark:text-white">
+              {t.localDraftRestore}
+            </button>
+            {' · '}
+            <button type="button" onClick={recovered.onDiscard} className="underline underline-offset-2 hover:text-neutral-900 hover:no-underline dark:hover:text-white">
+              {t.localDraftDiscard}
+            </button>
+          </span>
+        )}
       </div>
       <div className="flex items-center gap-1.5">
         {/* Quiet, and BEFORE the session-ending pair: these two change what you look AT,

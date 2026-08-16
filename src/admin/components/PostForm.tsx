@@ -10,7 +10,6 @@ import { Editor, type EditorApi } from './Editor'
 import { type Draft } from './PostSettings'
 import { PublishPanel } from './PublishPanel'
 import { EditorActions } from './EditorActions'
-import { LocalDraftNotice } from './LocalDraftNotice'
 import { MediaLibrary } from './MediaLibrary'
 import { TimeMachine } from './TimeMachine'
 import { SheetTitle } from './SheetTitle'
@@ -311,9 +310,6 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
 
   return (
     <div>
-      {localRecovered && (
-        <LocalDraftNotice at={localRecovered.at} onRestore={restoreLocal} onDiscard={dismissLocal} />
-      )}
 
       {/* One column, always: the attributes live on a slide-over now, so opening them no
           longer squeezes the writing into a narrower measure (the mock's sheet). */}
@@ -329,6 +325,7 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
             savedSlug={savedSlug}
             mdView={mdView}
             onToggleMd={() => editorApi.current?.toggleRaw()}
+            recovered={localRecovered ? { at: localRecovered.at, onRestore: restoreLocal, onDiscard: dismissLocal } : null}
             getText={() => `${draftRef.current.title} ${editorApi.current?.getMarkdown() ?? contentRef.current}`}
             onPreview={openPreview}
             onSaveDraft={() => void handleSave('draft', t.savedDraft)}
