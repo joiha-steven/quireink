@@ -80,7 +80,7 @@ export function BrandFields({ s, update }: Props) {
       </Setting>
 
       <Setting label={t.appIcon} note={t.appIconHint}>
-        <IconUpload kind="app-icon" value={s.appIconUrl} onChange={(appIconUrl) => update({ appIconUrl })} previewClassName="h-12 w-12 rounded-xl" />
+        <IconUpload kind="app-icon" value={s.appIconUrl} onChange={(appIconUrl) => update({ appIconUrl })} previewClassName="h-12 w-12 rounded-lg" />
       </Setting>
 
       {picking && (

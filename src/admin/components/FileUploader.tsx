@@ -50,7 +50,7 @@ export function FileUploader({
           setDragging(false)
           handle(Array.from(e.dataTransfer.files))
         }}
-        className={`cursor-pointer rounded-xl border-2 border-dashed p-8 text-center text-sm transition-colors ${
+        className={`cursor-pointer rounded-lg border-2 border-dashed p-8 text-center text-sm transition-colors ${
           dragging ? 'border-neutral-900 bg-neutral-50' : 'border-neutral-300 text-neutral-500'
         }`}
       >

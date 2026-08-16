@@ -260,7 +260,7 @@ export function AdminSidebar({
         {wordmark(false)}
         <button
           type="button"
-          className="flex h-10 w-10 items-center justify-center rounded-xl border border-neutral-200 text-neutral-600 shadow-sm hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
+          className="flex h-10 w-10 items-center justify-center rounded-md border border-neutral-200 text-neutral-600 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
           aria-label={t.navHome}
           aria-expanded={open}
           onClick={() => setOpen((v) => !v)}

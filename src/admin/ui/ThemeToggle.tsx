@@ -99,7 +99,9 @@ export function ThemeToggle({
       {open && (
         <>
           <button className="fixed inset-0 z-40 cursor-default" aria-hidden onClick={() => setOpen(false)} />
-          <div className={`absolute z-50 w-44 overflow-hidden border py-1 shadow-lg ${variant === 'text' ? 'bottom-0 left-full ml-2 border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-900' : 'right-0 mt-2 border-rule bg-bg'}`}>
+          {/* The admin variant wears the popover radius; the public one stays square —
+              square corners are a PUBLIC rule and this component serves both sides. */}
+          <div className={`absolute z-50 w-44 overflow-hidden border py-1 shadow-lg ${variant === 'text' ? 'bottom-0 left-full ml-2 rounded-lg border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-900' : 'right-0 mt-2 border-rule bg-bg'}`}>
             {items.map((it) => (
               <button
                 key={it.key}

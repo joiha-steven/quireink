@@ -57,7 +57,7 @@ function PresetCard({
   onToggleShown: () => void
 }) {
   const state = editing
-    ? 'border-neutral-900 bg-neutral-50 shadow-sm dark:border-white dark:bg-neutral-800'
+    ? 'border-neutral-900 bg-neutral-50 dark:border-white dark:bg-neutral-800'
     : 'border-neutral-200 bg-white hover:border-neutral-400 hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-600 dark:hover:bg-neutral-800'
   return (
     <div className="group">
@@ -65,7 +65,7 @@ function PresetCard({
         type="button"
         onClick={onPick}
         aria-pressed={editing}
-        className={`block w-full rounded-xl border p-2 text-left transition ${state}`}
+        className={`block w-full rounded-lg border p-2 text-left transition ${state}`}
       >
         <div className={`flex h-12 overflow-hidden rounded-lg transition ${shown ? '' : 'grayscale opacity-60'}`}>
           <MiniMode c={theme.light} />

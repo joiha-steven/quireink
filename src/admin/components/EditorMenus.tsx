@@ -15,7 +15,7 @@ import { useAdminT } from './I18nProvider'
 import { INKS } from '@/render/ink'
 import { PEN_LIGHT } from '@/render/pen'
 
-const BTN = 'grid h-9 min-w-9 shrink-0 place-items-center rounded-lg px-1 text-[15px] hover:bg-white dark:hover:bg-neutral-700'
+const BTN = 'grid h-9 min-w-9 shrink-0 place-items-center rounded-md px-1 text-[15px] hover:bg-white dark:hover:bg-neutral-700'
 
 function Glyph({ children }: { children: React.ReactNode }) {
   return (
@@ -162,7 +162,7 @@ function Row({ label, hint, active = false, onClick }: { label: string; hint?: s
       onClick={onClick}
       aria-pressed={active || undefined}
       data-slash-row
-      className={`flex w-full items-baseline justify-between gap-4 rounded-lg px-3 py-1.5 text-left text-sm ${
+      className={`flex w-full items-baseline justify-between gap-4 rounded-md px-3 py-1.5 text-left text-sm ${
         active ? 'bg-neutral-200 text-neutral-950 dark:bg-neutral-700 dark:text-white' : 'text-neutral-700 hover:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-700'
       }`}
     >
@@ -218,7 +218,7 @@ export function SlashMenu({
       role="menu"
       aria-label={t.tbInsert}
       onMouseDown={(e) => e.preventDefault()}
-      className="scroll-fade fixed z-40 max-h-[360px] w-64 overflow-y-auto rounded-xl border border-neutral-200 bg-white p-1 shadow-lg dark:border-neutral-700 dark:bg-neutral-800"
+      className="scroll-fade fixed z-40 max-h-[360px] w-64 overflow-y-auto rounded-lg border border-neutral-200 bg-white p-1 shadow-lg dark:border-neutral-700 dark:bg-neutral-800"
       style={style}
     >
       <Row label={t.tbImage} onClick={() => run(onPickImage)} />
@@ -270,7 +270,7 @@ function InkButtons({ editor, hold }: { editor: TiptapEditor; hold: (e: React.Mo
           aria-pressed={current === ink}
           onMouseDown={hold}
           onClick={() => editor.chain().focus().toggleInk(ink).run()}
-          className={`grid h-6 w-6 place-items-center rounded ${
+          className={`grid h-6 w-6 place-items-center rounded-md ${
             current === ink ? 'ring-2 ring-neutral-400 dark:ring-neutral-300' : 'hover:bg-neutral-100 dark:hover:bg-neutral-700'
           }`}
         >
@@ -287,7 +287,7 @@ function InkButtons({ editor, hold }: { editor: TiptapEditor; hold: (e: React.Mo
 export function BubbleBar({ editor, avoidTop }: { editor: TiptapEditor; avoidTop: number }) {
   const t = useAdminT()
   const cls = (active: boolean) =>
-    `rounded px-2 py-1 text-sm ${active ? 'bg-neutral-200 text-neutral-900 dark:bg-neutral-700 dark:text-white' : 'text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-700'}`
+    `rounded-md px-2 py-1 text-sm ${active ? 'bg-neutral-200 text-neutral-900 dark:bg-neutral-700 dark:text-white' : 'text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-700'}`
   // Keep the selection while clicking (mousedown would otherwise blur the editor
   // and collapse it before the command runs).
   const hold = (e: React.MouseEvent) => e.preventDefault()

@@ -157,7 +157,7 @@ export function McpFields(
 
         {/* The just-created plaintext token, shown ONCE. */}
         {created && (
-          <div className="space-y-2 rounded-xl border border-neutral-300 bg-neutral-50 p-3 dark:border-neutral-700 dark:bg-neutral-800/60">
+          <div className="space-y-2 rounded-lg border border-neutral-300 bg-neutral-50 p-3 dark:border-neutral-700 dark:bg-neutral-800/60">
             <p className="text-xs font-medium text-neutral-600 dark:text-neutral-300">{t.mcpOnceWarning}</p>
             <div className="flex items-center gap-2">
               <code className="flex min-h-10 min-w-0 flex-1 items-center truncate rounded-lg border border-neutral-300 bg-white px-3 text-xs dark:border-neutral-700 dark:bg-neutral-900">

@@ -187,7 +187,7 @@ export function ExportFields({
                   </button>
                   <button
                     type="button"
-                    className="text-red-600 underline hover:text-red-700 dark:text-red-400"
+                    className="underline hover:text-neutral-900 dark:hover:text-white"
                     onClick={() => { void remove(s.name) }}
                   >
                     {t.delete}
