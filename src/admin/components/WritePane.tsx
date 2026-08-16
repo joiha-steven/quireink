@@ -37,6 +37,8 @@ function Rows({
 
   const scopeTabs: { key: WriteScope; label: string }[] = [
     { key: 'all', label: t.filterAll },
+    { key: 'page', label: t.tabPages },
+    { key: 'post', label: t.tabPosts },
     { key: 'published', label: t.statusPublished },
     { key: 'draft', label: t.statusDraft },
   ]
@@ -57,7 +59,7 @@ function Rows({
             <Button size="sm">{t.newPost}</Button>
           </Link>
         </div>
-        <Tabs tabs={scopeTabs} value={scope} onChange={setScope} size="sm" />
+        <Tabs tabs={scopeTabs} value={scope} onChange={setScope} size="sm" dense />
       </div>
 
       {/* "Nothing matches" is only true once the server has answered — saying it while the

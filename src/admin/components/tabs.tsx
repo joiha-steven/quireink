@@ -27,7 +27,7 @@ export type TabSize = 'lg' | 'sm'
 export const TAB_TRACK = 'flex w-full flex-wrap items-end gap-6 border-b border-neutral-200 dark:border-neutral-800'
 export const SEGMENT_TRACK = 'flex w-fit max-w-full overflow-hidden rounded-md border border-neutral-200 dark:border-neutral-800'
 
-export const tabItemClass = (active: boolean, size: TabSize = 'lg'): string =>
+export const tabItemClass = (active: boolean, size: TabSize = 'lg', dense = false): string =>
   size === 'lg'
     // `-mb-px` so the item's own 2px border sits ON the track's hairline rather than under it.
     ? `-mb-px border-b-2 pb-2.5 text-sm font-medium transition ${
@@ -35,7 +35,7 @@ export const tabItemClass = (active: boolean, size: TabSize = 'lg'): string =>
           ? 'border-neutral-900 text-neutral-900 dark:border-white dark:text-white'
           : 'border-transparent text-neutral-500 hover:border-neutral-300 hover:text-neutral-900 dark:hover:border-neutral-600 dark:hover:text-neutral-200'
       }`
-    : `px-3 py-1.5 text-[0.8125rem] font-medium transition ${
+    : `${dense ? 'px-2' : 'px-3'} py-1.5 text-[0.8125rem] font-medium transition ${
         active
           ? 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900'
           : 'text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-neutral-200'
@@ -46,23 +46,30 @@ export function Tabs<K extends string>({
   value,
   onChange,
   size = 'lg',
+  dense = false,
   className = '',
 }: {
   tabs: TabItem<K>[]
   value: K
   onChange: (key: K) => void
   size?: TabSize
+  /**
+   * A tighter `sm`, for a row of five in a 320px pane. Also lets the row wrap: a locale
+   * whose words are longer than the pane (German, Vietnamese) folds to a second line
+   * instead of clipping a tab out of reach.
+   */
+  dense?: boolean
   className?: string
 }) {
   return (
-    <div className={`${size === 'lg' ? TAB_TRACK : SEGMENT_TRACK} ${className}`}>
+    <div className={`${size === 'lg' ? TAB_TRACK : SEGMENT_TRACK} ${dense ? 'flex-wrap' : ''} ${className}`}>
       {tabs.map((tb) => (
         <button
           key={tb.key}
           type="button"
           onClick={() => onChange(tb.key)}
           aria-pressed={value === tb.key}
-          className={tabItemClass(value === tb.key, size)}
+          className={tabItemClass(value === tb.key, size, dense)}
         >
           {tb.label}
         </button>
