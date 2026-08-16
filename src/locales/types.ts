@@ -170,6 +170,8 @@ export type AdminStrings = {
   titlePlaceholder: string
   saveDraft: string
   publish: string
+  /** Sits above the attributes when they open AS the publish sheet (ADR 0024). */
+  publishReview: string
   viewPost: string
   saving: string
   savedAtPrefix: string
@@ -186,6 +188,11 @@ export type AdminStrings = {
   localDraftDiscard: string
   // toolbar
   promptLink: string
+  /** The one control that replaced six heading buttons and four block buttons. */
+  tbBlock: string
+  /** The one control that replaced six insert buttons. */
+  tbInsert: string
+  tbParagraph: string
   tbList: string
   tbListNumbered: string
   tbTask: string

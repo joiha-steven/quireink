@@ -8,6 +8,11 @@ import { useEffect, useRef, useState } from 'react'
 import { useEditor, EditorContent, type Editor as TiptapEditor } from '@tiptap/react'
 import { editorExtensions } from './editorExtensions'
 import { Toolbar, BubbleBar } from './EditorMenus'
+
+// The sticky toolbar's own height: one 32px control plus 8px of padding either side. The
+// bubble bar must not be placed inside this band, because the toolbar is sticky and would
+// cover it — the first line of a post is where that happens.
+const TOOLBAR_HEIGHT = 48
 import { isVideoUrl } from '@/render/video'
 import { useAdminT } from './I18nProvider'
 import { MarkdownSource } from './MarkdownSource'
@@ -343,7 +348,7 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
     <div className={CARD}>
       <Toolbar editor={editor} onPickImage={onPickImage} onPickGallery={onPickGallery} raw={raw} onToggleRaw={toggleRaw} stickyTop={toolbarTop} />
       {/* Floating menu on a text selection / link — not in raw source mode. */}
-      {!raw && <BubbleBar editor={editor} />}
+      {!raw && <BubbleBar editor={editor} avoidTop={toolbarTop + TOOLBAR_HEIGHT} />}
       {/* Center the writing column at the public single-post width so what you
           type wraps exactly like the published article. */}
       <div className="mx-auto w-full" style={{ maxWidth: contentWidth }}>

@@ -172,3 +172,33 @@ export function useUnsavedGuard(isDirty: () => boolean): void {
     return () => window.removeEventListener('beforeunload', handler)
   }, [])
 }
+
+/**
+ * How far down the editor's own sticky toolbar has to sit so it lands UNDER the action bar
+ * instead of behind it — the action bar's measured height, plus its top offset.
+ *
+ * Measured rather than guessed, and re-measured on resize, because the bar wraps to two rows
+ * on a narrow window and the number is different on every wrap. Zero below `lg`, where the
+ * bar is not sticky at all.
+ *
+ * Lifted out of `PostForm` when that file passed its size cap. It is self-contained: one
+ * ref in, one number out.
+ */
+export function useStickyOffset(ref: { current: HTMLElement | null }): number {
+  const [top, setTop] = useState(0)
+  useEffect(() => {
+    const bar = ref.current
+    if (!bar) return
+    const desktop = window.matchMedia('(min-width: 1024px)')
+    const sync = () => setTop(desktop.matches ? Math.ceil(bar.getBoundingClientRect().height + 16) : 0)
+    const observer = new ResizeObserver(sync)
+    observer.observe(bar)
+    desktop.addEventListener('change', sync)
+    sync()
+    return () => {
+      observer.disconnect()
+      desktop.removeEventListener('change', sync)
+    }
+  }, [ref])
+  return top
+}
