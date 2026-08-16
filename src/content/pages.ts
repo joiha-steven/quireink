@@ -9,13 +9,17 @@ import { saveRedirect, clearRedirectForPath } from '@/server/redirects'
 import { all, one, run } from '@/store/query'
 import { liveOnly, nowMs, toIso } from '@/store/db'
 
-const META_COLS = 'slug, title, status, featured_image'
+// `updated_at` joined the list read when the admin stopped sorting by title: one stream of
+// posts AND pages, most recently touched first (ADR 0024), needs pages to carry the same
+// stamp posts always did.
+const META_COLS = 'slug, title, status, featured_image, updated_at'
 
 type PageRow = {
   slug: string
   title: string
   status: string
   featured_image: string | null
+  updated_at?: number | null
   content?: string | null
 }
 
@@ -25,6 +29,7 @@ function rowToMeta(row: PageRow): Page {
     slug: row.slug,
     status: row.status === 'published' ? 'published' : 'draft',
     featuredImage: row.featured_image ? expandBlob(row.featured_image) : undefined,
+    updatedAt: row.updated_at ? toIso(row.updated_at) : undefined,
   }
 }
 

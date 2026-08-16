@@ -214,6 +214,25 @@ export function registerAdminFlows({ flow, expect, atWidth }: Tour): void {
       return 'ok (' + marked.textContent.trim().slice(0, 30) + ')'
     })()`, 1200))
 
+  // ADR 0024, step 2: posts and pages in ONE list. Asserted on the row LINKS rather than on
+  // anything visible, because a row's label is translated and its editor is not: a page row
+  // points at /admin/page-editor and a post row at /admin/editor, in every language.
+  flow('admin: one list holds pages and posts together', () => expect('/admin/content', `
+    (async () => {
+      const view = await (await fetch('/api/admin/view/content')).json()
+      const pages = (view?.data?.pages ?? []).map((p) => p.slug)
+      if (!pages.length) return 'skip: this instance has no pages to merge in'
+      // DEDUPED: every row carries two links to its editor, the title and the row action,
+      // so the raw count reads as twice the number of rows and a tour that reports a wrong
+      // number teaches you to skim its output.
+      const hrefs = [...new Set([...document.querySelectorAll('tbody a')].map((a) => a.getAttribute('href') || ''))]
+      const merged = pages.filter((s) => hrefs.includes('/admin/page-editor/' + s))
+      const posts = hrefs.filter((h) => h.startsWith('/admin/editor/')).length
+      if (!merged.length) return 'no page reached the list; it is still posts-only'
+      if (!posts) return 'no post reached the list'
+      return 'ok (' + merged.length + ' page(s) beside ' + posts + ' post(s))'
+    })()`, 900))
+
   // ADR 0024, step 1, in one assertion: a phrase the owner remembers writing, inside a post
   // whose TITLE carries no word of it. The filter this replaces matched title, tags and
   // categories over an array in the browser, so this row could not have appeared before —

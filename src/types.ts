@@ -42,6 +42,7 @@ export type Page = {
   slug: string
   status: PostStatus
   featuredImage?: string // stored image URL; used only for SEO/social meta, never shown
+  updatedAt?: string // ISO 8601 of the last save; the admin's one list sorts on it
   deletedAt?: string // ISO 8601; set only on trashed (soft-deleted) rows, else undefined
 }
 

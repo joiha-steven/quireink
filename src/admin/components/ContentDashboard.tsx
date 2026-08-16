@@ -1,17 +1,23 @@
-// Unified content dashboard: tabs to switch between Posts and Pages, each with
-// its own "new" button. Replaces the old status-filter tabs.
+// The content screen: ONE list of everything written, and two managers underneath it.
+//
+// It was four tabs — Posts · Pages · Taxonomy · Series — and the owner's verdict on that was
+// that it read as WordPress: to find a thing you had to know which drawer it was in first.
+// ADR 0024 collapses the first two into one stream and demotes the other two, which are not
+// content at all: renaming a category and ordering a series are maintenance, done rarely,
+// and they were taking a quarter of the screen's top-level attention every day.
+//
+// They are still one click away, and nothing about them changed.
 import { useState } from 'react'
 import Link from '@/admin/router'
 import type { Post, Page } from '@/types'
 import { Button } from '@/admin/ui/Button'
-import { PostsTable } from './PostsTable'
-import { PagesTable } from './PagesTable'
+import { WritingList } from './WritingList'
 import { TaxonomyManager } from './TaxonomyManager'
 import { SeriesManager } from './SeriesManager'
-import { GROUP_GAP, PageHeader, Tabs } from './kit'
+import { GROUP_GAP, PageHeader } from './kit'
 import { useAdminT } from './I18nProvider'
 
-type Tab = 'posts' | 'pages' | 'taxonomy' | 'series'
+type Drawer = 'none' | 'taxonomy' | 'series'
 
 export function ContentDashboard({
   posts,
@@ -27,34 +33,47 @@ export function ContentDashboard({
   commentsEnabled: boolean
 }) {
   const t = useAdminT()
-  const [tab, setTab] = useState<Tab>('posts')
+  const [drawer, setDrawer] = useState<Drawer>('none')
 
-  const tabs: { key: Tab; label: string }[] = [
-    { key: 'posts', label: t.tabPosts },
-    { key: 'pages', label: t.tabPages },
-    { key: 'taxonomy', label: t.tabTaxonomy },
-    { key: 'series', label: t.tabSeries },
-  ]
+  const toggle = (which: Exclude<Drawer, 'none'>) => setDrawer((now) => (now === which ? 'none' : which))
 
   return (
     <div>
+      {/* Both "new" buttons, because the list no longer has a tab to tell it which kind you
+          are looking at. A page is the rarer of the two, so it is the quieter button. */}
       <PageHeader
         title={t.navDashboard}
-        actions={tab === 'posts' || tab === 'pages' ? (
-          <Link href={tab === 'posts' ? '/admin/editor' : '/admin/page-editor'}>
-            <Button>{tab === 'posts' ? t.newPost : t.newPage}</Button>
-          </Link>
-        ) : undefined}
+        actions={
+          <div className="flex items-center gap-2">
+            <Link href="/admin/page-editor">
+              <Button variant="secondary">{t.newPage}</Button>
+            </Link>
+            <Link href="/admin/editor">
+              <Button>{t.newPost}</Button>
+            </Link>
+          </div>
+        }
       />
 
-      <Tabs tabs={tabs} value={tab} onChange={setTab} className={GROUP_GAP} />
+      <WritingList
+        initialPosts={posts}
+        initialPages={pages}
+        views={views}
+        commentCounts={commentCounts}
+        commentsEnabled={commentsEnabled}
+      />
 
-      {tab === 'posts' && (
-        <PostsTable initialPosts={posts} views={views} commentCounts={commentCounts} commentsEnabled={commentsEnabled} />
-      )}
-      {tab === 'pages' && <PagesTable initialPages={pages} views={views} />}
-      {tab === 'taxonomy' && <TaxonomyManager posts={posts} />}
-      {tab === 'series' && <SeriesManager posts={posts} />}
+      <div className={`${GROUP_GAP} flex flex-wrap items-center gap-2`}>
+        <Button variant="ghost" size="sm" aria-pressed={drawer === 'taxonomy'} onClick={() => toggle('taxonomy')}>
+          {t.tabTaxonomy}
+        </Button>
+        <Button variant="ghost" size="sm" aria-pressed={drawer === 'series'} onClick={() => toggle('series')}>
+          {t.tabSeries}
+        </Button>
+      </div>
+
+      {drawer === 'taxonomy' && <TaxonomyManager posts={posts} />}
+      {drawer === 'series' && <SeriesManager posts={posts} />}
     </div>
   )
 }
