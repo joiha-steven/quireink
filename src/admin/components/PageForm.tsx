@@ -216,38 +216,40 @@ export function PageForm({ initial, contentWidth, typewriterEffects, autosaveSec
 
   return (
     <div>
-      <EditorActions
-        barRef={actionHeaderRef}
-        status={saveStatusLine(t, saving, savedAt, dirty, keptAt, formatTime)}
-        saving={saving}
-        dirty={dirty}
-        settingsOpen={settingsOpen}
-        onToggleSettings={() => setSettingsOpen((v) => !v)}
-        savedSlug={null}
-        mdView={mdView}
-        onToggleMd={() => editorApi.current?.toggleRaw()}
-        getText={() => `${draftRef.current.title} ${editorApi.current?.getMarkdown() ?? contentRef.current}`}
-        onPreview={() => undefined}
-        onSaveDraft={() => void handleSave('draft', t.savedDraft)}
-        // Same publish contract as a post (ADR 0024, step 5): the first Publish on a page
-        // never published opens its attributes — the slug is a question worth one look.
-        onPublish={() => {
-          if (draft.status !== 'published' && !asking) {
-            setAsking(true)
-            setSettingsOpen(true)
-            return
-          }
-          void handleSave('published', t.published)
-        }}
-        publishLabel={t.publish}
-        published={draft.status === 'published'}
-      />
 
       {localRecovered && (
         <LocalDraftNotice at={localRecovered.at} onRestore={restoreLocal} onDiscard={dismissLocal} />
       )}
 
       <Editor
+        actions={
+          <EditorActions
+            barRef={actionHeaderRef}
+            status={saveStatusLine(t, saving, savedAt, dirty, keptAt, formatTime)}
+            saving={saving}
+            dirty={dirty}
+            settingsOpen={settingsOpen}
+            onToggleSettings={() => setSettingsOpen((v) => !v)}
+            savedSlug={null}
+            mdView={mdView}
+            onToggleMd={() => editorApi.current?.toggleRaw()}
+            getText={() => `${draftRef.current.title} ${editorApi.current?.getMarkdown() ?? contentRef.current}`}
+            onPreview={() => undefined}
+            onSaveDraft={() => void handleSave('draft', t.savedDraft)}
+            // Same publish contract as a post (ADR 0024, step 5): the first Publish on a page
+            // never published opens its attributes — the slug is a question worth one look.
+            onPublish={() => {
+              if (draft.status !== 'published' && !asking) {
+                setAsking(true)
+                setSettingsOpen(true)
+                return
+              }
+              void handleSave('published', t.published)
+            }}
+            publishLabel={t.publish}
+            published={draft.status === 'published'}
+          />
+        }
         initialContent={draft.content}
         onChange={(md) => { contentRef.current = md }}
         onDirty={() => setDirty(true)}

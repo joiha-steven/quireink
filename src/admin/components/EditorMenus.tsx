@@ -71,7 +71,7 @@ export function Toolbar({
   // edges flush with the card. The first cut floated it as an inset rounded chip, and the
   // owner's word for two chrome pieces in two styles a hand apart was "ẩu".
   return (
-    <div className="sticky z-10 rounded-t-2xl border-b border-neutral-200/70 bg-neutral-50/95 backdrop-blur-xl dark:border-neutral-800 dark:bg-neutral-950/95" style={{ top: stickyTop }}>
+    <div className="sticky z-10 border-b border-neutral-200/70 bg-neutral-50/80 backdrop-blur-xl dark:border-neutral-800 dark:bg-neutral-950/60" style={{ top: stickyTop }}>
       <div className="flex flex-wrap items-center justify-center gap-0.5 px-2.5 py-1.5">
       <ToolButton label={t.tbBold} active={editor.isActive('bold')} onClick={() => editor.chain().focus().toggleBold().run()}><strong>B</strong></ToolButton>
       <ToolButton label={t.tbItalic} active={editor.isActive('italic')} onClick={() => editor.chain().focus().toggleItalic().run()}><em>I</em></ToolButton>

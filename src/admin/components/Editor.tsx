@@ -84,6 +84,10 @@ type Props = {
   contentWidth: number
   toolbarTop?: number
   typewriterEffects: boolean
+  /** The action line (back link · status · session buttons), rendered as the SHEET'S OWN
+      top row — the mock's sheettop lives inside the sheet. As a separate floating band it
+      and the toolbar read as two pieces of chrome with a crack of page between them. */
+  actions?: React.ReactNode
   /** The title and its meta line, rendered INSIDE the sheet above the writing (the mock's
       paper holds the title; a title floating above the card was chrome). */
   header?: React.ReactNode
@@ -91,7 +95,7 @@ type Props = {
   onRawChange?: (raw: boolean) => void
 }
 
-export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickGallery, onUploadFile, apiRef, contentWidth, toolbarTop = 0, typewriterEffects, header, onRawChange }: Props) {
+export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickGallery, onUploadFile, apiRef, contentWidth, toolbarTop = 0, typewriterEffects, actions, header, onRawChange }: Props) {
   const t = useAdminT()
   // Markdown source view: edit the raw markdown directly (still saves live).
   const [raw, setRaw] = useState(false)
@@ -288,6 +292,7 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
 
   return (
     <div className={CARD}>
+      {actions}
       {/* Floating menu on a text selection / link — not in raw source mode. */}
       {!raw && <BubbleBar editor={editor} avoidTop={toolbarTop + ACTIONBAR_HEIGHT} />}
       {!raw && slash && (
