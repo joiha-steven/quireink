@@ -109,15 +109,25 @@ export function registerEditorFlows({ flow, expect }: Tour): void {
       dispatchEvent(new PopStateEvent('popstate'))
       await new Promise((r) => setTimeout(r, 1200))
 
+      // The attributes are CLOSED while writing (ADR 0024, step 5), so the slug field is not
+      // on screen yet: pressing Publish on a never-published draft opens them. That press is
+      // now part of this flow's path, and it is the step being tested as much as the rename.
+      const header = [...document.querySelectorAll('button')].find((b) => /publish/i.test(b.textContent || ''))
+      if (!header) return done('no publish button in the action bar')
+      header.click()
+      await new Promise((r) => setTimeout(r, 500))
+
       const field = [...document.querySelectorAll('input')].filter((i) => i.type === 'text')
         .find((i) => i.value === slug)
-      if (!field) return done('the editor did not open on the new draft')
+      if (!field) return done('pressing Publish did not open the attributes on the new draft')
       const set = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set
       set.call(field, slug + '-moved')
       field.dispatchEvent(new Event('input', { bubbles: true }))
 
-      const publish = [...document.querySelectorAll('button')].find((b) => /publish/i.test(b.textContent || ''))
-      if (!publish) return done('no publish button')
+      // The LAST one: the header's button opened the panel, and the panel carries the one
+      // that finishes the job.
+      const publish = [...document.querySelectorAll('button')].filter((b) => /publish/i.test(b.textContent || '')).pop()
+      if (!publish) return done('no publish button in the attributes panel')
       publish.click()
       await new Promise((r) => setTimeout(r, 1800))
 
@@ -131,5 +141,58 @@ export function registerEditorFlows({ flow, expect }: Tour): void {
       if (!stillEditing) return done('the editor was thrown away after its own save')
       return done('ok')
     })()`, 900))
+
+  // The owner found this one by writing: selecting the FIRST line put the formatting bar
+  // under the sticky toolbar, covered and unclickable, so the opening sentence of a post was
+  // the one sentence he could not format. Asserted with `elementFromPoint` rather than by
+  // comparing rectangles: what matters is not whether they overlap, it is which one the mouse
+  // would actually hit.
+  flow('admin: the formatting bar is reachable on the FIRST line', () => expect('/admin/editor', `
+    (async () => {
+     try {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      const slug = 'tour-bubble-' + Date.now()
+      const made = await fetch('/api/posts', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ title: 'Tour bubble', slug, content: 'The first line of the post.\\n\\nAnd a second paragraph.', status: 'draft', categories: [], tags: [] }),
+      })
+      const done = async (verdict) => { await fetch('/api/posts/' + slug, { method: 'DELETE' }); return verdict }
+      if (!made.ok) return 'POST /api/posts -> ' + made.status
+      history.pushState(null, '', '/admin/editor/' + slug)
+      dispatchEvent(new PopStateEvent('popstate'))
+      await sleep(1200)
+
+      const surface = document.querySelector('[contenteditable="true"]')
+      if (!surface) return done('the editor rendered no writing surface')
+      const first = surface.querySelector('p')
+      if (!first) return done('the editor rendered no paragraph')
+      window.scrollTo(0, 0)
+      surface.focus()
+      const range = document.createRange()
+      range.selectNodeContents(first)
+      const sel = window.getSelection()
+      if (!sel) return done('this browser reported no selection object')
+      sel.removeAllRanges()
+      sel.addRange(range)
+      surface.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }))
+      await sleep(700)
+
+      // The B button's PARENT. Scanning divs for one that contains a B finds the page
+      // wrapper first — it contains everything, including the bar — and then every geometry
+      // assertion below is measured on the whole screen and passes for the wrong reason.
+      // The toolbar has no B any more (its formatting moved here), so this button is unique.
+      const boldBtn = [...document.querySelectorAll('button')]
+        .find((b) => b.querySelector('strong') && (b.textContent || '').trim() === 'B')
+      const bar = boldBtn && boldBtn.parentElement
+      if (!bar) return done('no formatting bar appeared for a selection on the first line')
+      const box = bar.getBoundingClientRect()
+      if (box.top < 0) return done('the formatting bar sits above the window, at ' + Math.round(box.top))
+      const onTop = document.elementFromPoint(box.left + 10, box.top + box.height / 2)
+      if (!bar.contains(onTop)) {
+        return done('something else takes the click over the bar: ' + (onTop ? onTop.className || onTop.tagName : 'nothing'))
+      }
+      return done('ok (bar at y=' + Math.round(box.top) + ')')
+     } catch (e) { return 'the flow itself threw: ' + (e && e.message) }
+    })()`, 1200))
 
 }

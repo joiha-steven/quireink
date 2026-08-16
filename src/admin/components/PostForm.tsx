@@ -1,19 +1,20 @@
 // Editor screen: left = TipTap editor, right = settings, bottom = action bar.
 // Handles auto-save, manual save (draft/publish) and the media picker modal.
 import { useCallback, useEffect, useRef, useState } from 'react'
-import Link from '@/admin/router'
 import type { PostWithContent, PostRevision, ApiResponse } from '@/types'
-import { Button } from '@/admin/ui/Button'
 import { useToast } from '@/admin/ui/Toast'
 import { slugify, formatTime, isScheduled } from '@/utils'
 import { uploadImages } from '@/admin/upload-client'
 import { Editor, type EditorApi } from './Editor'
-import { PostSettings, type Draft } from './PostSettings'
+import { type Draft } from './PostSettings'
+import { PublishPanel } from './PublishPanel'
+import { EditorActions } from './EditorActions'
+import { LocalDraftNotice } from './LocalDraftNotice'
 import { MediaLibrary } from './MediaLibrary'
 import { TimeMachine } from './TimeMachine'
-import { saveStatusLine, useLocalAutosave, useLocalDraft, useUnsavedGuard } from './useLocalDraft'
+import { saveStatusLine, useLocalAutosave, useLocalDraft, useStickyOffset, useUnsavedGuard } from './useLocalDraft'
 import { useAdminT } from './I18nProvider'
-import { CARD, NOTICE, READING } from './kit'
+import { READING } from './kit'
 
 type Props = {
   initial?: PostWithContent
@@ -62,9 +63,14 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
   const [savedAt, setSavedAt] = useState<string | null>(null)
   const [picker, setPicker] = useState<PickTarget | null>(null)
   const [timeMachine, setTimeMachine] = useState(false)
-  const [settingsOpen, setSettingsOpen] = useState(true)
-  const [toolbarTop, setToolbarTop] = useState(0)
+  // CLOSED by default, and `asking` is true from the first Publish press until it publishes,
+  // which is what turns the attributes into the publish sheet. They used to be open on every
+  // load, asking about the slug, the date, the terms and two images while the writer was
+  // mid-sentence, in 340px of the width (ADR 0024, step 5).
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [asking, setAsking] = useState(false)
   const actionHeaderRef = useRef<HTMLDivElement>(null)
+  const toolbarTop = useStickyOffset(actionHeaderRef)
   // Unsaved-changes flag: drives button states, autosave and the exit warning.
   const [dirty, setDirty] = useState(false)
   const [savedSlug, setSavedSlug] = useState<string | null>(initial?.slug ?? null)
@@ -104,21 +110,6 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
   // Keep the formatting toolbar joined exactly to the sticky action header.
   // The header height changes with translations and responsive wrapping, so a
   // guessed Tailwind top offset leaves either a gap or an overlap.
-  useEffect(() => {
-    const header = actionHeaderRef.current
-    if (!header) return
-    const desktop = window.matchMedia('(min-width: 1024px)')
-    const sync = () => setToolbarTop(desktop.matches ? Math.ceil(header.getBoundingClientRect().height + 16) : 0)
-    const observer = new ResizeObserver(sync)
-    observer.observe(header)
-    desktop.addEventListener('change', sync)
-    sync()
-    return () => {
-      observer.disconnect()
-      desktop.removeEventListener('change', sync)
-    }
-  }, [])
-
   // One save at a time: every save runs after the previous finishes (chained),
   // so autosave and manual save never race or double-create a post.
   const saveChain = useRef<Promise<unknown>>(Promise.resolve())
@@ -311,41 +302,32 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
 
   return (
     <div>
-      <div ref={actionHeaderRef} className="z-20 mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-neutral-200 bg-white/95 px-4 py-3 shadow-sm backdrop-blur-xl lg:sticky lg:top-4 dark:border-neutral-800 dark:bg-neutral-900/95">
-        <div className="flex min-w-0 items-center gap-3">
-          <Link href="/admin/content" className="text-sm text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white">← {t.navDashboard}</Link>
-          <span className="hidden h-4 w-px bg-neutral-200 sm:block dark:bg-neutral-800" />
-          <span className="text-sm text-neutral-500 dark:text-neutral-400">
-            {saveStatusLine(t, saving, savedAt, dirty, keptAt, formatTime)}
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          {/* `<Button variant="secondary">`, not a fifth copy of it. This was the whole class
-              list re-typed — one border shade off, its own hover, and a `shadow-sm` in an
-              admin that draws none. */}
-          <Button variant="secondary" type="button" onClick={() => setSettingsOpen((v) => !v)}>
-            {settingsOpen ? t.hideAttributes : t.attributes}
-          </Button>
-          {savedSlug && <button type="button" onClick={openPreview} className="px-3 py-1.5 text-sm text-neutral-600 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white">{t.previewDraft}</button>}
-          <Button variant="secondary" onClick={() => handleSave('draft', t.savedDraft)} disabled={saving || !dirty}>{t.saveDraft}</Button>
-          <Button onClick={() => handleSave('published', scheduled ? t.scheduled : t.published)} disabled={saving || (!dirty && draft.status === 'published')}>{scheduled ? t.schedule : t.publish}</Button>
-        </div>
-      </div>
+      <EditorActions
+        barRef={actionHeaderRef}
+        status={saveStatusLine(t, saving, savedAt, dirty, keptAt, formatTime)}
+        saving={saving}
+        dirty={dirty}
+        settingsOpen={settingsOpen}
+        onToggleSettings={() => setSettingsOpen((v) => !v)}
+        savedSlug={savedSlug}
+        onPreview={openPreview}
+        onSaveDraft={() => void handleSave('draft', t.savedDraft)}
+        // The FIRST publish opens the attributes instead of publishing: they are the
+        // publish-time questions, and they all already carry an answer (ADR 0024, step 5).
+        onPublish={() => {
+          if (draft.status !== 'published' && !asking) {
+            setAsking(true)
+            setSettingsOpen(true)
+            return
+          }
+          void handleSave('published', scheduled ? t.scheduled : t.published)
+        }}
+        publishLabel={scheduled ? t.schedule : t.publish}
+        published={draft.status === 'published'}
+      />
 
       {localRecovered && (
-        <div className={`mb-4 ${NOTICE}`}>
-          <span className="text-neutral-800 dark:text-neutral-200">
-            {t.localDraftFound} · {formatTime(localRecovered.at)}
-          </span>
-          <div className="flex gap-2">
-            <Button type="button" size="sm" onClick={restoreLocal}>
-              {t.localDraftRestore}
-            </Button>
-            <Button type="button" size="sm" variant="ghost" onClick={dismissLocal}>
-              {t.localDraftDiscard}
-            </Button>
-          </div>
-        </div>
+        <LocalDraftNotice at={localRecovered.at} onRestore={restoreLocal} onDiscard={dismissLocal} />
       )}
 
       <div className={`grid items-start gap-6 ${settingsOpen ? 'xl:grid-cols-[minmax(0,1fr)_340px]' : ''}`}>
@@ -367,16 +349,25 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
           <Editor initialContent={draft.content} onChange={(md) => { contentRef.current = md }} onDirty={() => setDirty(true)} onPickImage={() => setPicker('editor')} onPickGallery={() => setPicker('gallery')} onUploadFile={uploadInline} apiRef={editorApi} contentWidth={contentWidth} toolbarTop={toolbarTop} typewriterEffects={typewriterEffects} />
         </div>
         {settingsOpen && (
-          <aside className={`p-5 xl:sticky xl:top-24 xl:max-h-[calc(100vh-7rem)] xl:overflow-y-auto ${CARD}`}>
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-sm font-semibold">{t.attributes}</h2>
-              <div className="flex gap-3 text-xs">
+          <PublishPanel
+            draft={draft}
+            update={update}
+            allCategories={allCategories}
+            allTags={allTags}
+            allSeries={allSeries}
+            onPickFeatured={() => setPicker('featured')}
+            onPickCover={() => setPicker('cover')}
+            asking={asking}
+            saving={saving}
+            scheduled={scheduled}
+            onPublish={() => void handleSave('published', scheduled ? t.scheduled : t.published)}
+            links={
+              <>
                 {savedSlug && <button type="button" onClick={() => setTimeMachine(true)} className="text-neutral-500 hover:text-neutral-900 dark:hover:text-white">{t.history}</button>}
                 {draft.status === 'published' && savedSlug && !scheduled && <a href={`/${savedSlug}`} target="_blank" rel="noopener" className="text-neutral-500 hover:text-neutral-900">{t.viewPost}</a>}
-              </div>
-            </div>
-            <PostSettings draft={draft} update={update} allCategories={allCategories} allTags={allTags} allSeries={allSeries} onPickFeatured={() => setPicker('featured')} onPickCover={() => setPicker('cover')} />
-          </aside>
+              </>
+            }
+          />
         )}
       </div>
 
