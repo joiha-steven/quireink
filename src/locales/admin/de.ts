@@ -88,6 +88,7 @@ const de = {
   footerContent: 'Fußzeile',
   footerHint: 'Fett, kursiv, unterstrichen, Links. {year} und {title} werden live ersetzt.',
   editorPlaceholder: 'Schreiben beginnen...',
+  dateNow: 'Jetzt',
   tbHeading: 'Überschrift',
   slashHint: 'Mit / Bild, Tabelle, Code oder Formel einfügen · Text markieren für die Formatleiste',
   edWords: '{n} Wörter',

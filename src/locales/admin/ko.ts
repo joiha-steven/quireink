@@ -88,6 +88,7 @@ const ko = {
   footerContent: '푸터',
   footerHint: '굵게, 기울임, 밑줄, 링크. {year}와 {title}은 자동으로 치환됩니다.',
   editorPlaceholder: '작성을 시작하세요...',
+  dateNow: '지금',
   tbHeading: '제목',
   slashHint: '/ 를 입력해 이미지·표·코드·수식 삽입 · 텍스트를 선택하면 서식 막대가 나타납니다',
   edWords: '{n} 단어',

@@ -88,6 +88,7 @@ const zh = {
   footerContent: '页脚',
   footerHint: '加粗、斜体、下划线、链接。{year} 和 {title} 会自动替换。',
   editorPlaceholder: '开始写作...',
+  dateNow: '现在',
   tbHeading: '标题',
   slashHint: '输入 / 插入图片、表格、代码或公式 · 选中文字即显示格式栏',
   edWords: '{n} 字',

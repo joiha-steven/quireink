@@ -91,7 +91,7 @@ export function NewsletterSend({ posts }: { posts: SendablePost[] }) {
     <div className="grid items-start gap-5 xl:grid-cols-2">
       <Card title={t.nlPickPost}>
         <div className="space-y-4">
-          <div className="max-h-80 overflow-y-auto rounded-lg border border-neutral-200 dark:border-neutral-800">
+          <div className="scroll-fade max-h-80 overflow-y-auto rounded-lg border border-neutral-200 dark:border-neutral-800">
             {posts.map((p) => {
               const done = sentNow.includes(p.slug) || (p.stats?.sent ?? 0) > 0
               return (

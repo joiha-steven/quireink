@@ -392,3 +392,12 @@ input[type='color']::-moz-color-swatch {
     font-size: 16px;
   }
 }
+
+/* A scrollable area that CLIPS mid-row reads as broken — the cut-off chip in the tag
+   cloud was the owner's example. The fade says "there is more" without a border. A MASK,
+   not an overlay gradient: it works over any ground and never tints the content. Applied
+   to every max-height scroller in the admin; the 24px band is small enough that the last
+   line is still readable once scrolled to. */
+.scroll-fade {
+  mask-image: linear-gradient(to bottom, #000 0, #000 calc(100% - 24px), transparent);
+}

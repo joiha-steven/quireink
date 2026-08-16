@@ -1,5 +1,6 @@
 // Right-hand settings panel of the editor screen.
 import type { PostStatus } from '@/types'
+import { DateField } from '@/admin/ui/DateField'
 import { Input, Textarea } from '@/admin/ui/Input'
 import { Button } from '@/admin/ui/Button'
 import { isScheduled } from '@/utils'
@@ -47,11 +48,10 @@ export function PostSettings({ draft, update, allCategories, allTags, allSeries,
       />
 
       <div className="space-y-1.5">
-        <Input
+        <DateField
           label={t.publishDate}
-          type="datetime-local"
           value={draft.date}
-          onChange={(e) => update({ date: e.target.value })}
+          onChange={(date) => update({ date })}
         />
         {isScheduled(draft.status, draft.date) && (
           <p className={NOTE_TEXT}>

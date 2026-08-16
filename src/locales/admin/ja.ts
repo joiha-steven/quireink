@@ -88,6 +88,7 @@ const ja = {
   footerContent: 'フッター',
   footerHint: '太字・斜体・下線・リンク。{year} と {title} は自動で置換されます。',
   editorPlaceholder: '書き始める...',
+  dateNow: '今',
   tbHeading: '見出し',
   slashHint: '/ で画像・表・コード・数式を挿入 · テキストを選択すると書式バーが現れます',
   edWords: '{n} 語',

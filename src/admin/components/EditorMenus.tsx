@@ -218,7 +218,7 @@ export function SlashMenu({
       role="menu"
       aria-label={t.tbInsert}
       onMouseDown={(e) => e.preventDefault()}
-      className="fixed z-40 max-h-[360px] w-64 overflow-y-auto rounded-xl border border-neutral-200 bg-white p-1 shadow-lg dark:border-neutral-700 dark:bg-neutral-800"
+      className="scroll-fade fixed z-40 max-h-[360px] w-64 overflow-y-auto rounded-xl border border-neutral-200 bg-white p-1 shadow-lg dark:border-neutral-700 dark:bg-neutral-800"
       style={style}
     >
       <Row label={t.tbImage} onClick={() => run(onPickImage)} />

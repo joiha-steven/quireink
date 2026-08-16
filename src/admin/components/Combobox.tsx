@@ -52,7 +52,7 @@ export function Combobox({
           className={`${CONTROL} w-full`}
         />
         {open && matches.length > 0 && (
-          <ul className="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-neutral-200 bg-white py-1 shadow-lg dark:border-neutral-700 dark:bg-neutral-900">
+          <ul className="absolute z-20 mt-1 scroll-fade max-h-60 w-full overflow-auto rounded-lg border border-neutral-200 bg-white py-1 shadow-lg dark:border-neutral-700 dark:bg-neutral-900">
             {matches.map((o) => (
               <li key={o}>
                 <button
