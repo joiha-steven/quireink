@@ -88,6 +88,7 @@ const en = {
   footerContent: 'Footer',
   footerHint: 'Bold, italic, underline, links. {year} and {title} are replaced live.',
   editorPlaceholder: 'Start writing...',
+  writeEmpty: 'Pick a piece on the left, or start a new one.',
   dateNow: 'Now',
   tbHeading: 'Heading',
   slashHint: 'Type / to insert an image, table, code or formula · select text to raise the formatting bar',

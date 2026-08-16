@@ -222,6 +222,7 @@ export type AdminStrings = {
   footerContent: string
   footerHint: string
   editorPlaceholder: string
+  writeEmpty: string
   dateNow: string
   tbHeading: string
   slashHint: string
