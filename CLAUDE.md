@@ -1,6 +1,7 @@
 # Quire Ink
 
-Public, source-available blog platform (PolyForm Noncommercial, [ADR 0015](./docs/decisions/0015-relicense-polyform-noncommercial.md)).
+Public, source-available blog platform (PolyForm Noncommercial, [ADR 0015](./docs/decisions/0015-relicense-polyform-noncommercial.md);
+unmodified releases may be run commercially, [ADR 0023](./docs/decisions/0023-commercial-use-of-unmodified-releases.md)).
 One **Bun + Hono + SQLite** process; `src/` at the repository root serves the live site.
 
 **Zero personal data in this repo.** No IP, user, port or host, ever: they live in the
