@@ -26,6 +26,9 @@ export type TabSize = 'lg' | 'sm'
 // control came to look like two. A link-driven strip wears these and gets the real thing.
 export const TAB_TRACK = 'flex w-full flex-wrap items-end gap-6 border-b border-neutral-200 dark:border-neutral-800'
 export const SEGMENT_TRACK = 'flex w-fit max-w-full overflow-hidden rounded-md border border-neutral-200 dark:border-neutral-800'
+// The dense variant is full-width with growing items: five segments whose right edge lands
+// on the pane's own edge instead of stopping short of it ("hụt", the owner called the gap).
+const SEGMENT_TRACK_DENSE = 'flex w-full overflow-hidden rounded-md border border-neutral-200 dark:border-neutral-800'
 
 export const tabItemClass = (active: boolean, size: TabSize = 'lg', dense = false): string =>
   size === 'lg'
@@ -35,7 +38,7 @@ export const tabItemClass = (active: boolean, size: TabSize = 'lg', dense = fals
           ? 'border-neutral-900 text-neutral-900 dark:border-white dark:text-white'
           : 'border-transparent text-neutral-500 hover:border-neutral-300 hover:text-neutral-900 dark:hover:border-neutral-600 dark:hover:text-neutral-200'
       }`
-    : `${dense ? 'px-2' : 'px-3'} py-1.5 text-[0.8125rem] font-medium transition ${
+    : `${dense ? 'grow px-2' : 'px-3'} py-1.5 text-[0.8125rem] font-medium transition ${
         active
           ? 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900'
           : 'text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-neutral-200'
@@ -54,15 +57,15 @@ export function Tabs<K extends string>({
   onChange: (key: K) => void
   size?: TabSize
   /**
-   * A tighter `sm`, for a row of five in a 320px pane. Also lets the row wrap: a locale
-   * whose words are longer than the pane (German, Vietnamese) folds to a second line
-   * instead of clipping a tab out of reach.
+   * A tighter `sm`, for a row of five in a 320px pane. The row does NOT wrap — the owner
+   * called the folded second line crooked — so every caller owes labels short enough to
+   * fit in every language (the write pane carries its own `scope*` strings for this).
    */
   dense?: boolean
   className?: string
 }) {
   return (
-    <div className={`${size === 'lg' ? TAB_TRACK : SEGMENT_TRACK} ${dense ? 'flex-wrap' : ''} ${className}`}>
+    <div className={`${size === 'lg' ? TAB_TRACK : dense ? SEGMENT_TRACK_DENSE : SEGMENT_TRACK} ${className}`}>
       {tabs.map((tb) => (
         <button
           key={tb.key}

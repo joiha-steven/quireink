@@ -271,7 +271,7 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
   // Drop any pending debounce when the editor unmounts.
   useEffect(() => () => { if (flushTimer.current) clearTimeout(flushTimer.current) }, [])
 
-  if (!editor) return <div className="min-h-[480px] animate-pulse rounded-2xl bg-neutral-100 dark:bg-neutral-900" />
+  if (!editor) return <div className="min-h-[480px] animate-pulse rounded-[10px] bg-neutral-100 dark:bg-neutral-900" />
 
   // Review -> Markdown: snapshot the current markdown. Markdown -> Review:
   // re-parse the (possibly edited) markdown back into the formatted editor.
@@ -291,7 +291,10 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
   }
 
   return (
-    <div className={CARD}>
+    // The sheet runs at least the height of the window beside the write pane: a short
+    // draft used to end the paper mid-screen while the list column kept going, which
+    // the owner called ugly. The paper continues; the writing just hasn't reached it.
+    <div className={`${CARD} lg:min-h-[calc(100vh-1.5rem)]`}>
       {actions}
       {/* Floating menu on a text selection / link — not in raw source mode. */}
       {!raw && <BubbleBar editor={editor} avoidTop={toolbarTop + ACTIONBAR_HEIGHT} />}
