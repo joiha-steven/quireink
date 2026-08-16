@@ -7,18 +7,22 @@
 import { useEffect, useRef, useState } from 'react'
 import { useEditor, EditorContent, type Editor as TiptapEditor } from '@tiptap/react'
 import { editorExtensions } from './editorExtensions'
-import { Toolbar, BubbleBar } from './EditorMenus'
+import { BubbleBar, SlashMenu, TableBar } from './EditorMenus'
+import { placeTypewriterCaret, pulseTypewriterInput } from './typewriter'
 
-// The sticky toolbar's own height: one 32px control plus 8px of padding either side. The
-// bubble bar must not be placed inside this band, because the toolbar is sticky and would
-// cover it — the first line of a post is where that happens.
-const TOOLBAR_HEIGHT = 48
+// The sticky ACTION bar's height (the sheet header above the writing surface). The bubble
+// bar must not be placed inside this band, because the bar is sticky and would cover it —
+// the first line of a post is where that happens.
+const ACTIONBAR_HEIGHT = 56
 import { isVideoUrl } from '@/render/video'
 import { useAdminT } from './I18nProvider'
 import { MarkdownSource } from './MarkdownSource'
 import { CARD } from './kit'
 
 export type EditorApi = {
+  // Swap between the formatted view and the raw Markdown source. Lives on the API because
+  // the control that calls it sits in the ACTION BAR now, outside this component.
+  toggleRaw: () => void
   insertImage: (url: string) => void
   // Insert several images as gallery items (#grid) in ONE transaction —
   // consecutive #grid images group into a CSS grid on the public side. Must be a
@@ -65,109 +69,6 @@ function videoUrlsToNodes(editor: TiptapEditor): void {
   editor.view.dispatch(tr)
 }
 
-// Typewriter feedback stays outside ProseMirror's document: a positioned overlay
-// follows its selection while compositor-only pulses touch the current DOM block.
-// No character wrappers, document mutations, or selection changes are involved.
-const typingAnimations = new WeakMap<HTMLElement, Animation>()
-const TYPEWRITER_VOLUME = 0.45
-let typewriterAudio: AudioContext | null = null
-
-function placeTypewriterCaret(view: TiptapEditor['view'], caret: HTMLElement | null): void {
-  if (!caret) return
-  requestAnimationFrame(() => {
-    const stage = caret.parentElement
-    const visible = view.hasFocus() && view.state.selection.empty
-    if (!stage || !visible) {
-      stage?.classList.remove('has-typewriter-caret')
-      return
-    }
-    const cursor = view.coordsAtPos(view.state.selection.head)
-    const stageRect = stage.getBoundingClientRect()
-    caret.style.left = `${cursor.left - stageRect.left}px`
-    caret.style.top = `${cursor.top - stageRect.top}px`
-    caret.style.height = `${Math.max(16, cursor.bottom - cursor.top)}px`
-    stage.classList.add('has-typewriter-caret')
-  })
-}
-
-function playTypewriterSound(deleting: boolean): void {
-  const AudioContextClass = window.AudioContext
-  if (!AudioContextClass) return
-  typewriterAudio ??= new AudioContextClass()
-  const context = typewriterAudio
-  if (context.state === 'suspended') void context.resume()
-
-  // A very short filtered-noise transient reads as a mechanical click instead
-  // of a musical beep. 0.11 × 45% gives a restrained peak gain of 0.0495.
-  const duration = deleting ? 0.032 : 0.024
-  const buffer = context.createBuffer(1, Math.ceil(context.sampleRate * duration), context.sampleRate)
-  const samples = buffer.getChannelData(0)
-  for (let i = 0; i < samples.length; i += 1) {
-    samples[i] = (Math.random() * 2 - 1) * Math.exp(-i / (samples.length * 0.18))
-  }
-  const source = context.createBufferSource()
-  const filter = context.createBiquadFilter()
-  const gain = context.createGain()
-  source.buffer = buffer
-  filter.type = 'bandpass'
-  filter.frequency.value = deleting ? 620 : 1450
-  filter.Q.value = deleting ? 0.7 : 1.1
-  gain.gain.value = 0.11 * TYPEWRITER_VOLUME
-  source.connect(filter).connect(gain).connect(context.destination)
-  source.start()
-}
-
-function pulseTypewriterInput(view: TiptapEditor['view'], event: InputEvent, caret: HTMLElement | null): void {
-  const inputType = event.inputType
-  const deleting = inputType.startsWith('delete')
-  if (!deleting && !inputType.startsWith('insert')) return
-  if (!event.isComposing) playTypewriterSound(deleting)
-  placeTypewriterCaret(view, caret)
-  if (
-    document.documentElement.dataset.motion === 'off' ||
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  ) return
-
-  requestAnimationFrame(() => {
-    const anchor = view.dom.ownerDocument.getSelection()?.anchorNode
-    const origin = anchor?.nodeType === 1 ? (anchor as Element) : anchor?.parentElement
-    const block = origin?.closest<HTMLElement>('p, h1, h2, h3, h4, h5, li, blockquote, pre')
-    if (!block || !view.dom.contains(block)) return
-
-    if (caret) {
-      caret.animate(
-        deleting
-          ? [
-              { opacity: 0.35, transform: 'translateX(-3px) scaleX(0.65)' },
-              { opacity: 1, transform: 'translateX(0) scaleX(1)' },
-            ]
-          : [
-              { opacity: 1, transform: 'translateY(1px) scaleX(1.5)' },
-              { opacity: 1, transform: 'translateY(0) scaleX(1)' },
-            ],
-        { duration: 140, easing: 'cubic-bezier(.2,.8,.2,1)' },
-      )
-    }
-    typingAnimations.get(block)?.cancel()
-    const animation = block.animate(
-      deleting
-        ? [
-            { opacity: 0.86, transform: 'translateX(-0.7px)' },
-            { opacity: 1, transform: 'translateX(0)' },
-          ]
-        : [
-            { opacity: 0.9, transform: 'translateY(0.6px)', textShadow: '0 0 0.3px currentColor' },
-            { opacity: 1, transform: 'translateY(0)', textShadow: '0 0 0 transparent' },
-          ],
-      { duration: 140, easing: 'cubic-bezier(.2,.8,.2,1)' },
-    )
-    typingAnimations.set(block, animation)
-    animation.onfinish = () => {
-      if (typingAnimations.get(block) === animation) typingAnimations.delete(block)
-    }
-  })
-}
-
 type Props = {
   initialContent: string
   // Latest Markdown, pushed on a trailing debounce (keeps fast typing smooth).
@@ -183,13 +84,22 @@ type Props = {
   contentWidth: number
   toolbarTop?: number
   typewriterEffects: boolean
+  /** The title and its meta line, rendered INSIDE the sheet above the writing (the mock's
+      paper holds the title; a title floating above the card was chrome). */
+  header?: React.ReactNode
+  /** Told when the raw/markdown view flips, so the action bar's MD control can show state. */
+  onRawChange?: (raw: boolean) => void
 }
 
-export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickGallery, onUploadFile, apiRef, contentWidth, toolbarTop = 0, typewriterEffects }: Props) {
+export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickGallery, onUploadFile, apiRef, contentWidth, toolbarTop = 0, typewriterEffects, header, onRawChange }: Props) {
   const t = useAdminT()
   // Markdown source view: edit the raw markdown directly (still saves live).
   const [raw, setRaw] = useState(false)
   const [rawText, setRawText] = useState('')
+  // Where the "/" menu is open, in viewport coordinates — null when it is not.
+  const [slash, setSlash] = useState<{ left: number; top: number } | null>(null)
+  const slashRef = useRef(slash)
+  useEffect(() => { slashRef.current = slash }, [slash])
   // Refs so getMarkdown / the debounce read live values without re-subscribing.
   const onChangeRef = useRef(onChange)
   const onDirtyRef = useRef(onDirty)
@@ -207,6 +117,11 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
   useEffect(() => { onDirtyRef.current = onDirty }, [onDirty])
   useEffect(() => { rawRef.current = raw }, [raw])
   useEffect(() => { rawTextRef.current = rawText }, [rawText])
+  // Report raw-view flips from the STATE, not from inside toggleRaw: the toggle is called
+  // through `apiRef` where a captured prop would go stale, and the state is the truth anyway.
+  const onRawChangeRef = useRef(onRawChange)
+  useEffect(() => { onRawChangeRef.current = onRawChange }, [onRawChange])
+  useEffect(() => { onRawChangeRef.current?.(raw) }, [raw])
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -218,6 +133,30 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
     content: initialContent,
     editorProps: {
       attributes: { class: 'prose max-w-none min-h-[420px] px-4 py-4' },
+      // "/" on an empty line CALLS the insert menu rather than typing a character (the
+      // Writing Desk mock's gesture). Anywhere else "/" is just a slash — dates, paths and
+      // fractions keep working.
+      //
+      // `handleTextInput`, not `handleKeyDown`: the text hook sees every way a "/" can
+      // arrive — a keypress, an IME commit, an `insertText` — where the key hook sees only
+      // the first, and it hands over the exact insert position instead of leaving it to be
+      // re-read from a selection that may not have synced yet.
+      handleTextInput(view, from, _to, text) {
+        if (text !== '/') return false
+        const { $from, empty } = view.state.selection
+        if (!empty || $from.parent.type.name !== 'paragraph' || $from.parent.content.size !== 0) return false
+        const caret = view.coordsAtPos(from)
+        setSlash({ left: caret.left, top: caret.top })
+        return true
+      },
+      // Escape closes the menu before it does anything else.
+      handleKeyDown(_view, event) {
+        if (event.key === 'Escape' && slashRef.current) {
+          setSlash(null)
+          return true
+        }
+        return false
+      },
       handleDOMEvents: {
         beforeinput(view, event) {
           if (typewriterEffects && event instanceof InputEvent) pulseTypewriterInput(view, event, caretRef.current)
@@ -302,6 +241,7 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
     if (!editor) return
     editorRef.current = editor // keep the drag-drop / paste closures on the live instance
     apiRef.current = {
+      toggleRaw,
       insertImage: (url: string) =>
         editor.chain().focus().setImage({ src: url, alt: captionFromUrl(url) }).run(),
       // Gallery: empty alt for a clean mosaic; '#grid' groups consecutive ones.
@@ -331,12 +271,16 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
 
   // Review -> Markdown: snapshot the current markdown. Markdown -> Review:
   // re-parse the (possibly edited) markdown back into the formatted editor.
+  // Reads through the REFS: the action bar calls this through `apiRef`, which is installed
+  // once per editor instance, so a closure over the state values would go stale on the
+  // second toggle and hand the editor an old snapshot.
   function toggleRaw() {
     if (!editor) return
-    if (raw) {
-      editor.commands.setContent(rawText)
+    if (rawRef.current) {
+      const text = rawTextRef.current
+      editor.commands.setContent(text)
       videoUrlsToNodes(editor)
-      onChange(rawText)
+      onChangeRef.current(text)
       setRaw(false)
     } else {
       setRawText(readMarkdown(editor))
@@ -345,13 +289,26 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
   }
 
   return (
+    // No permanent toolbar (ADR 0024 step 4, tightened to the mock 2026-08-17): the resting
+    // state is a sheet. Controls arrive when called — a selection raises the bubble, "/" on
+    // an empty line raises the insert menu, a table raises its own bar.
     <div className={CARD}>
-      <Toolbar editor={editor} onPickImage={onPickImage} onPickGallery={onPickGallery} raw={raw} onToggleRaw={toggleRaw} stickyTop={toolbarTop} />
+      <TableBar editor={editor} stickyTop={toolbarTop} />
       {/* Floating menu on a text selection / link — not in raw source mode. */}
-      {!raw && <BubbleBar editor={editor} avoidTop={toolbarTop + TOOLBAR_HEIGHT} />}
+      {!raw && <BubbleBar editor={editor} avoidTop={toolbarTop + ACTIONBAR_HEIGHT} />}
+      {!raw && slash && (
+        <SlashMenu
+          editor={editor}
+          at={slash}
+          onClose={() => setSlash(null)}
+          onPickImage={() => { setSlash(null); onPickImage() }}
+          onPickGallery={() => { setSlash(null); onPickGallery() }}
+        />
+      )}
       {/* Center the writing column at the public single-post width so what you
           type wraps exactly like the published article. */}
       <div className="mx-auto w-full" style={{ maxWidth: contentWidth }}>
+        {header}
         {raw ? (
           <MarkdownSource
             taRef={taRef}
@@ -367,6 +324,11 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
             <EditorContent editor={editor} />
             {typewriterEffects && <span ref={caretRef} className="typewriter-caret" aria-hidden="true" />}
           </div>
+        )}
+        {/* The mock's closing line: the two gestures this screen answers to, said once,
+            quietly, where a first-time writer's eye ends up. */}
+        {!raw && (
+          <p className="px-4 pb-4 pt-6 text-xs text-neutral-400 dark:text-neutral-500">{t.slashHint}</p>
         )}
       </div>
     </div>

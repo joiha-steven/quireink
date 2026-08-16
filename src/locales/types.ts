@@ -222,6 +222,12 @@ export type AdminStrings = {
   footerContent: string
   footerHint: string
   editorPlaceholder: string
+  tbHeading: string
+  slashHint: string
+  edWords: string
+  edReadMinutes: string
+  pubTitle: string
+  pubLater: string
   // in-body image
   imgAlignLeft: string
   imgAlignCenter: string

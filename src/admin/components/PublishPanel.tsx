@@ -1,18 +1,18 @@
 // The attributes, and the moment they arrive.
 //
 // This panel is the same fields it always was — slug, date, terms, series, the two images,
-// the SEO overrides. What changed is WHEN (ADR 0024, step 5): it used to be open on every
-// load, asking all of that while the writer was still mid-sentence and taking 340px of the
-// width to do it. Now it opens when Publish is pressed on something never published, and it
-// carries the button that finishes the job.
+// the SEO overrides. What changed is WHEN (ADR 0024, step 5): it opens when Publish is
+// pressed on something never published, and it carries the button that finishes the job.
 //
-// Split out of `PostForm` when that file passed its 400-line cap, and this is the seam
-// because it is the one part of the screen that is NOT the writing surface.
+// And since 2026-08-17, WHERE: it slides in from the right over a scrim, the Writing Desk
+// mock's `pubsheet`, instead of docking as a 340px column. The column version squeezed the
+// writing to make room for the questions, which is precisely the layout the step existed to
+// end; a sheet ON TOP of the page borrows the space and gives it back.
 import type { ReactNode } from 'react'
 import { Button } from '@/admin/ui/Button'
 import { PostSettings, type Draft } from './PostSettings'
+import { SlideOver } from './SlideOver'
 import { useAdminT } from './I18nProvider'
-import { CARD } from './kit'
 
 export function PublishPanel({
   draft,
@@ -27,6 +27,7 @@ export function PublishPanel({
   saving,
   scheduled,
   onPublish,
+  onClose,
   links,
 }: {
   draft: Draft
@@ -40,17 +41,32 @@ export function PublishPanel({
   saving: boolean
   scheduled: boolean
   onPublish: () => void
+  onClose: () => void
   /** History / view-post, which belong to the post rather than to its attributes. */
   links: ReactNode
 }) {
   const t = useAdminT()
   return (
-    <aside className={`p-5 xl:sticky xl:top-24 xl:max-h-[calc(100vh-7rem)] xl:overflow-y-auto ${CARD}`}>
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-sm font-semibold">{t.attributes}</h2>
-        <div className="flex gap-3 text-xs">{links}</div>
-      </div>
-      {asking && <p className="mb-4 text-xs text-neutral-500 dark:text-neutral-400">{t.publishReview}</p>}
+    <SlideOver
+      label={asking ? t.pubTitle : t.attributes}
+      intro={asking ? t.publishReview : undefined}
+      headerRight={links}
+      onClose={onClose}
+      // The footer holds the pair the mock names: walk away, or finish it. A plain
+      // attributes visit gets only the walk-away, since nothing is being decided.
+      footer={
+        <>
+          <Button variant="secondary" type="button" onClick={onClose}>
+            {asking ? t.pubLater : t.hideAttributes}
+          </Button>
+          {asking && (
+            <Button onClick={onPublish} disabled={saving}>
+              {scheduled ? t.schedule : t.publish}
+            </Button>
+          )}
+        </>
+      }
+    >
       <PostSettings
         draft={draft}
         update={update}
@@ -60,13 +76,6 @@ export function PublishPanel({
         onPickFeatured={onPickFeatured}
         onPickCover={onPickCover}
       />
-      {asking && (
-        <div className="mt-5 flex justify-end">
-          <Button onClick={onPublish} disabled={saving}>
-            {scheduled ? t.schedule : t.publish}
-          </Button>
-        </div>
-      )}
-    </aside>
+    </SlideOver>
   )
 }

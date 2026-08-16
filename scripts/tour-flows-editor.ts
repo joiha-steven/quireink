@@ -142,6 +142,28 @@ export function registerEditorFlows({ flow, expect }: Tour): void {
       return done('ok')
     })()`, 900))
 
+  // The mock's one inserting gesture: "/" on an empty line raises the insert menu, and the
+  // character does NOT land in the text. Driven through execCommand so it exercises the same
+  // `handleTextInput` path a keyboard reaches. Both halves matter — a menu that opens but
+  // also types the slash fails the second assertion.
+  flow('admin: "/" on an empty line raises the insert menu', () => expect('/admin/editor', `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      const surface = document.querySelector('.ProseMirror')
+      if (!surface) return 'no writing surface'
+      surface.focus()
+      document.execCommand('insertText', false, '/')
+      await sleep(400)
+      const rows = document.querySelectorAll('[data-slash-row]').length
+      if (!rows) return 'typing "/" on an empty line raised nothing'
+      if (surface.textContent.includes('/')) return 'the menu opened AND the slash landed in the text'
+      // Escape closes it and leaves the paragraph as it was.
+      surface.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+      await sleep(200)
+      if (document.querySelector('[data-slash-row]')) return 'Escape did not close the menu'
+      return 'ok ' + rows + ' rows'
+    })()`, 1200))
+
   // The owner found this one by writing: selecting the FIRST line put the formatting bar
   // under the sticky toolbar, covered and unclickable, so the opening sentence of a post was
   // the one sentence he could not format. Asserted with `elementFromPoint` rather than by

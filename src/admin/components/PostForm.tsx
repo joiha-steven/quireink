@@ -1,9 +1,10 @@
-// Editor screen: left = TipTap editor, right = settings, bottom = action bar.
+// Editor screen: a sheet of paper (title, meta, writing), one quiet action line above it,
+// and the attributes on a slide-over when they are asked for.
 // Handles auto-save, manual save (draft/publish) and the media picker modal.
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { PostWithContent, PostRevision, ApiResponse } from '@/types'
 import { useToast } from '@/admin/ui/Toast'
-import { slugify, formatTime, isScheduled } from '@/utils'
+import { slugify, formatTime, formatDateTimeShort, isScheduled } from '@/utils'
 import { uploadImages } from '@/admin/upload-client'
 import { Editor, type EditorApi } from './Editor'
 import { type Draft } from './PostSettings'
@@ -12,9 +13,9 @@ import { EditorActions } from './EditorActions'
 import { LocalDraftNotice } from './LocalDraftNotice'
 import { MediaLibrary } from './MediaLibrary'
 import { TimeMachine } from './TimeMachine'
+import { SheetTitle } from './SheetTitle'
 import { saveStatusLine, useLocalAutosave, useLocalDraft, useStickyOffset, useUnsavedGuard } from './useLocalDraft'
 import { useAdminT } from './I18nProvider'
-import { READING } from './kit'
 
 type Props = {
   initial?: PostWithContent
@@ -69,6 +70,8 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
   // mid-sentence, in 340px of the width (ADR 0024, step 5).
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [asking, setAsking] = useState(false)
+  // Mirrors the editor's raw/markdown view, so the action bar's MD control shows state.
+  const [mdView, setMdView] = useState(false)
   const actionHeaderRef = useRef<HTMLDivElement>(null)
   const toolbarTop = useStickyOffset(actionHeaderRef)
   // Unsaved-changes flag: drives button states, autosave and the exit warning.
@@ -300,6 +303,13 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
   // Published but the date is still in the future → queued, not live yet.
   const scheduled = isScheduled(draft.status, draft.date)
 
+  // The mock's line under the title: what this piece IS, and when it was last touched.
+  const touched = savedAt ?? initial?.updatedAt
+  const metaLine = [
+    scheduled ? t.scheduled : draft.status === 'published' ? t.statusPublished : t.statusDraft,
+    touched ? formatDateTimeShort(touched) : null,
+  ].filter(Boolean).join(' · ')
+
   return (
     <div>
       <EditorActions
@@ -310,6 +320,9 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
         settingsOpen={settingsOpen}
         onToggleSettings={() => setSettingsOpen((v) => !v)}
         savedSlug={savedSlug}
+        getText={() => `${draftRef.current.title} ${editorApi.current?.getMarkdown() ?? contentRef.current}`}
+        mdView={mdView}
+        onToggleMd={() => editorApi.current?.toggleRaw()}
         onPreview={openPreview}
         onSaveDraft={() => void handleSave('draft', t.savedDraft)}
         // The FIRST publish opens the attributes instead of publishing: they are the
@@ -330,46 +343,44 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
         <LocalDraftNotice at={localRecovered.at} onRestore={restoreLocal} onDiscard={dismissLocal} />
       )}
 
-      <div className={`grid items-start gap-6 ${settingsOpen ? 'xl:grid-cols-[minmax(0,1fr)_340px]' : ''}`}>
-        <div className="min-w-0">
-          <div className="mx-auto mb-3 w-full" style={{ maxWidth: contentWidth }}>
-            {/* The title is part of the WRITING SURFACE, not part of the form: it is the
-                post's headline, set in the reading face and aligned to the reading column,
-                and it was coming out in the chrome font directly above a body in Literata.
-                No `tracking-tight` on it either — that was the sans's -0.025em on a serif
-                that publishes at -0.01em. */}
-            <textarea
-              value={draft.title}
-              onChange={(e) => update({ title: e.target.value })}
-              placeholder={t.titlePlaceholder}
-              rows={1}
-              className={`${READING} write-surface min-h-12 w-full resize-none overflow-hidden bg-transparent text-3xl font-bold leading-tight [field-sizing:content] placeholder:text-neutral-300 dark:placeholder:text-neutral-600`}
-            />
-          </div>
-          <Editor initialContent={draft.content} onChange={(md) => { contentRef.current = md }} onDirty={() => setDirty(true)} onPickImage={() => setPicker('editor')} onPickGallery={() => setPicker('gallery')} onUploadFile={uploadInline} apiRef={editorApi} contentWidth={contentWidth} toolbarTop={toolbarTop} typewriterEffects={typewriterEffects} />
-        </div>
-        {settingsOpen && (
-          <PublishPanel
-            draft={draft}
-            update={update}
-            allCategories={allCategories}
-            allTags={allTags}
-            allSeries={allSeries}
-            onPickFeatured={() => setPicker('featured')}
-            onPickCover={() => setPicker('cover')}
-            asking={asking}
-            saving={saving}
-            scheduled={scheduled}
-            onPublish={() => void handleSave('published', scheduled ? t.scheduled : t.published)}
-            links={
-              <>
-                {savedSlug && <button type="button" onClick={() => setTimeMachine(true)} className="text-neutral-500 hover:text-neutral-900 dark:hover:text-white">{t.history}</button>}
-                {draft.status === 'published' && savedSlug && !scheduled && <a href={`/${savedSlug}`} target="_blank" rel="noopener" className="text-neutral-500 hover:text-neutral-900">{t.viewPost}</a>}
-              </>
-            }
-          />
-        )}
-      </div>
+      {/* One column, always: the attributes live on a slide-over now, so opening them no
+          longer squeezes the writing into a narrower measure (the mock's sheet). */}
+      <Editor
+        initialContent={draft.content}
+        onChange={(md) => { contentRef.current = md }}
+        onDirty={() => setDirty(true)}
+        onPickImage={() => setPicker('editor')}
+        onPickGallery={() => setPicker('gallery')}
+        onUploadFile={uploadInline}
+        apiRef={editorApi}
+        contentWidth={contentWidth}
+        toolbarTop={toolbarTop}
+        typewriterEffects={typewriterEffects}
+        onRawChange={setMdView}
+        header={<SheetTitle value={draft.title} onChange={(title) => update({ title })} placeholder={t.titlePlaceholder} metaLine={metaLine} />}
+      />
+      {settingsOpen && (
+        <PublishPanel
+          draft={draft}
+          update={update}
+          allCategories={allCategories}
+          allTags={allTags}
+          allSeries={allSeries}
+          onPickFeatured={() => setPicker('featured')}
+          onPickCover={() => setPicker('cover')}
+          asking={asking}
+          saving={saving}
+          scheduled={scheduled}
+          onPublish={() => void handleSave('published', scheduled ? t.scheduled : t.published)}
+          onClose={() => { setSettingsOpen(false); setAsking(false) }}
+          links={
+            <>
+              {savedSlug && <button type="button" onClick={() => setTimeMachine(true)} className="text-neutral-500 hover:text-neutral-900 dark:hover:text-white">{t.history}</button>}
+              {draft.status === 'published' && savedSlug && !scheduled && <a href={`/${savedSlug}`} target="_blank" rel="noopener" className="text-neutral-500 hover:text-neutral-900">{t.viewPost}</a>}
+            </>
+          }
+        />
+      )}
 
       {picker && (
         <MediaLibrary
