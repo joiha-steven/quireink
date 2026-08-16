@@ -11,6 +11,7 @@ import type { OwnerHit } from '@/content/search-owner'
 import { foldAccents } from '@/utils'
 
 export type WriteScope = 'all' | 'page' | 'post' | 'published' | 'draft'
+export type WriteSort = 'updated' | 'created'
 
 /** Posts and pages, flattened to the few things a row actually renders. */
 export type WriteItem = {
@@ -20,6 +21,8 @@ export type WriteItem = {
   status: string
   /** Sort key: last save, falling back to the publication date a post always has. */
   touched: number
+  /** A post's publication date. Pages have no second date, so this repeats `touched`. */
+  created: number
   /** The second line when nothing was searched for: a post's excerpt, a page's address. */
   standing: string
   terms: string
@@ -29,7 +32,7 @@ export type WriteItem = {
 
 const stamp = (iso?: string): number => (iso ? new Date(iso).getTime() : 0)
 
-export function useWritingItems(posts: Post[], pages: Page[], query: string, scope: WriteScope) {
+export function useWritingItems(posts: Post[], pages: Page[], query: string, scope: WriteScope, sort: WriteSort = 'updated') {
   // Where the words were found, keyed by `kind:slug`. Null means the server has not answered
   // for this query yet, which is NOT the same as "nothing matched" — see the empty state.
   const [bodyHits, setBodyHits] = useState<Map<string, string> | null>(null)
@@ -41,6 +44,7 @@ export function useWritingItems(posts: Post[], pages: Page[], query: string, sco
       title: p.title,
       status: p.status,
       touched: stamp(p.updatedAt) || stamp(p.date),
+      created: stamp(p.date),
       standing: p.excerpt ?? '',
       terms: [p.tags.join(' '), p.categories.join(' ')].join(' '),
       editHref: `/admin/editor/${p.slug}`,
@@ -52,13 +56,15 @@ export function useWritingItems(posts: Post[], pages: Page[], query: string, sco
       title: p.title,
       status: p.status,
       touched: stamp(p.updatedAt),
+      created: stamp(p.updatedAt),
       standing: `/${p.slug}`,
       terms: '',
       editHref: `/admin/page-editor/${p.slug}`,
       viewHref: p.status === 'published' ? `/${p.slug}` : undefined,
     }))
-    return [...fromPosts, ...fromPages].sort((a, b) => b.touched - a.touched)
-  }, [posts, pages])
+    const key = sort === 'created' ? (i: WriteItem) => i.created : (i: WriteItem) => i.touched
+    return [...fromPosts, ...fromPages].sort((a, b) => key(b) - key(a))
+  }, [posts, pages, sort])
 
   // The body search is the SERVER's, because the body is not here: this hook is handed
   // metadata and nothing else. Debounced, because it runs per keystroke.

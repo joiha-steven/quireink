@@ -162,6 +162,16 @@ export type AdminStrings = {
   filterPlaceholder: string
   filterAll: string
   filterEmpty: string
+  // The write pane's scope row: five words that must share ONE line in a 320px column,
+  // so each language gets its own deliberately short set instead of reusing the longer
+  // status/kind labels. Measured, not assumed — the row may not wrap.
+  scopePages: string
+  scopePosts: string
+  scopePublished: string
+  scopeDrafts: string
+  // The pane's sort toggle: one quiet button cycling between the two orders.
+  sortUpdated: string
+  sortCreated: string
   edit: string
   delete: string
   confirmDeletePost: string

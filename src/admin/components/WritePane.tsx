@@ -16,7 +16,7 @@ import { formatDateTimeShort } from '@/utils'
 import { Button } from '@/admin/ui/Button'
 import { Tabs } from './kit'
 import { useAdminT } from './I18nProvider'
-import { useWritingItems, type WriteScope } from './useWritingItems'
+import { useWritingItems, type WriteScope, type WriteSort } from './useWritingItems'
 
 type ContentView = {
   posts: Post[]
@@ -33,14 +33,17 @@ function Rows({
   const t = useAdminT()
   const [query, setQuery] = useState('')
   const [scope, setScope] = useState<WriteScope>('all')
-  const { shown, bodyHits } = useWritingItems(posts, pages, query, scope)
+  const [sort, setSort] = useState<WriteSort>('updated')
+  const { shown, bodyHits } = useWritingItems(posts, pages, query, scope, sort)
 
+  // The scope* keys, not tabPages/statusPublished: five words must share ONE line in a
+  // 320px column in every language, so this row carries its own deliberately short set.
   const scopeTabs: { key: WriteScope; label: string }[] = [
     { key: 'all', label: t.filterAll },
-    { key: 'page', label: t.tabPages },
-    { key: 'post', label: t.tabPosts },
-    { key: 'published', label: t.statusPublished },
-    { key: 'draft', label: t.statusDraft },
+    { key: 'page', label: t.scopePages },
+    { key: 'post', label: t.scopePosts },
+    { key: 'published', label: t.scopePublished },
+    { key: 'draft', label: t.scopeDrafts },
   ]
 
   return (
@@ -60,6 +63,16 @@ function Rows({
           </Link>
         </div>
         <Tabs tabs={scopeTabs} value={scope} onChange={setScope} size="sm" dense />
+        {/* One quiet button cycling the order, not a second control row's worth of chrome. */}
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={() => setSort(sort === 'updated' ? 'created' : 'updated')}
+            className="text-xs text-neutral-400 transition hover:text-neutral-900 dark:text-neutral-500 dark:hover:text-neutral-200"
+          >
+            ↓ {sort === 'updated' ? t.sortUpdated : t.sortCreated}
+          </button>
+        </div>
       </div>
 
       {/* "Nothing matches" is only true once the server has answered — saying it while the
@@ -73,6 +86,9 @@ function Rows({
             const under = found ?? it.standing
             const active = it.slug === activeSlug
             const drafty = it.status !== 'published'
+            // The date beside "Published" is the PUBLICATION date — showing the last save
+            // there read as a wrong publish time. A draft's only honest date is its save.
+            const when = !drafty && it.kind === 'post' ? it.created : it.touched
             return (
               <Link
                 key={`${it.kind}:${it.slug}`}
@@ -104,7 +120,7 @@ function Rows({
                     )}
                     <span className="mt-1 block text-xs text-neutral-400 dark:text-neutral-500">
                       {(drafty ? t.statusDraft : t.statusPublished)}
-                      {it.touched ? ` · ${formatDateTimeShort(new Date(it.touched).toISOString())}` : ''}
+                      {when ? ` · ${formatDateTimeShort(new Date(when).toISOString())}` : ''}
                       {!drafty && views[`/${it.slug}`] ? ` · ${views[`/${it.slug}`].toLocaleString()}` : ''}
                     </span>
                   </span>
@@ -128,7 +144,7 @@ export function WritePane({ activeSlug, always = false }: { activeSlug?: string;
     <aside
       className={`${
         always ? 'flex w-full xl:w-80' : 'hidden w-80 xl:flex'
-      } shrink-0 flex-col self-start overflow-hidden rounded-2xl border border-neutral-200/80 bg-neutral-50 xl:sticky xl:top-6 xl:max-h-[calc(100vh-3rem)] dark:border-neutral-800 dark:bg-neutral-950`}
+      } shrink-0 flex-col self-start overflow-hidden rounded-[10px] border border-neutral-200/80 bg-neutral-50 xl:sticky xl:top-0 xl:max-h-[calc(100vh-1.5rem)] dark:border-neutral-800 dark:bg-neutral-950`}
     >
       {data ? (
         <Rows {...data} activeSlug={activeSlug} />

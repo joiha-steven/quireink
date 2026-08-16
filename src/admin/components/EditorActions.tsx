@@ -92,7 +92,7 @@ export function EditorActions({
   return (
     <div
       ref={barRef}
-      className="z-20 flex flex-wrap items-center justify-between gap-3 rounded-t-2xl border-b border-neutral-200/70 bg-white/95 px-4 py-2.5 backdrop-blur-xl lg:sticky lg:top-0 dark:border-neutral-800 dark:bg-neutral-900/95"
+      className="z-20 flex flex-wrap items-center justify-between gap-3 rounded-t-[10px] border-b border-neutral-200/70 bg-white/95 px-4 py-2.5 backdrop-blur-xl lg:sticky lg:top-0 dark:border-neutral-800 dark:bg-neutral-900/95"
     >
       <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
         <Link href="/admin/content" className={QUIET}>← {t.navWrite}</Link>
