@@ -112,7 +112,11 @@ export function registerEditorFlows({ flow, expect }: Tour): void {
       // The attributes are CLOSED while writing (ADR 0024, step 5), so the slug field is not
       // on screen yet: pressing Publish on a never-published draft opens them. That press is
       // now part of this flow's path, and it is the step being tested as much as the rename.
-      const header = [...document.querySelectorAll('button')].find((b) => /publish/i.test(b.textContent || ''))
+      // LAST match, not first: the write pane beside the sheet has a scope tab whose label
+      // is "Published" in English, and .find() clicked that — which filters the list and
+      // never opens anything. The action bar renders after the pane, so its Publish is the
+      // last matching button while the panel is still closed.
+      const header = [...document.querySelectorAll('button')].filter((b) => /publish/i.test(b.textContent || '')).pop()
       if (!header) return done('no publish button in the action bar')
       header.click()
       await new Promise((r) => setTimeout(r, 500))

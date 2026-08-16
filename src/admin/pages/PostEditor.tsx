@@ -9,6 +9,7 @@ import { usePathname } from '@/admin/router'
 import { useView } from '@/admin/useView'
 import { View } from '@/admin/pages/state'
 import { PostForm } from '@/admin/components/PostForm'
+import { WritePane } from '@/admin/components/WritePane'
 import type { PostWithContent } from '@/types'
 
 type Props = {
@@ -28,6 +29,11 @@ export default function PostEditor() {
   return (
     <View state={state}>
       {(d) => (
+        <div className="flex items-start gap-6">
+          {/* The mock's write screen: the list beside the paper. `key`ed remount of the form
+              on navigation keeps the pane mounted — clicking a row swaps only the sheet. */}
+          <WritePane activeSlug={d.post?.slug} />
+          <div className="min-w-0 flex-1">
         <PostForm
           // `key` matters: navigating from one post to another must REMOUNT the editor.
           // Without it Tiptap keeps the previous document and the form silently edits the
@@ -41,6 +47,8 @@ export default function PostEditor() {
           typewriterEffects={d.typewriterEffects}
           autosaveSeconds={d.autosaveSeconds}
         />
+          </div>
+        </div>
       )}
     </View>
   )

@@ -50,7 +50,6 @@ export function AdminSidebar({
 }) {
   const t = useAdminT()
   const pathname = usePathname()
-  const editorMode = pathname.startsWith('/admin/editor') || pathname.startsWith('/admin/page-editor')
   const [open, setOpen] = useState(false) // mobile drawer
   const [collapsed, setCollapsed] = useState(false) // desktop rail
   const [icons, setIcons] = useState(false) // glyphs beside the labels
@@ -66,10 +65,6 @@ export function AdminSidebar({
   // expanded so hydration matches, then we sync). Deferred a microtask so the
   // setState isn't in the effect body.
   useEffect(() => {
-    if (editorMode) {
-      document.documentElement.style.setProperty('--admin-nav-w', '0px')
-      return
-    }
     Promise.resolve().then(() => {
       const showIcons = localStorage.getItem(ICONS_KEY) === '1'
       const c = localStorage.getItem(STORE_KEY) === '1'
@@ -77,7 +72,7 @@ export function AdminSidebar({
       setCollapsed(c)
       applyWidthVar(c)
     })
-  }, [editorMode])
+  }, [])
 
   function toggleIcons() {
     setIcons((v) => {
@@ -247,7 +242,7 @@ export function AdminSidebar({
     <>
       {/* Desktop: sticky full-height left column; width animates on collapse */}
       <aside
-        className={`sticky top-0 h-screen shrink-0 flex-col border-r border-neutral-200/80 bg-white px-3 py-5 transition-[width] duration-200 dark:border-neutral-800 dark:bg-neutral-900 ${editorMode ? 'hidden' : 'hidden md:flex'} ${
+        className={`sticky top-0 h-screen shrink-0 flex-col border-r border-neutral-200/80 bg-white px-3 py-5 transition-[width] duration-200 dark:border-neutral-800 dark:bg-neutral-900 hidden md:flex ${
           collapsed ? 'md:w-[4.5rem]' : 'md:w-52'
         }`}
       >
@@ -261,7 +256,7 @@ export function AdminSidebar({
       </aside>
 
       {/* Mobile: top bar + drawer (always icon+label) */}
-      <header className={`sticky top-0 z-20 items-center justify-between border-b border-neutral-200 bg-white/95 px-4 py-3 backdrop-blur dark:border-neutral-800 dark:bg-neutral-900/95 ${editorMode ? 'hidden' : 'flex md:hidden'}`}>
+      <header className={`sticky top-0 z-20 items-center justify-between border-b border-neutral-200 bg-white/95 px-4 py-3 backdrop-blur dark:border-neutral-800 dark:bg-neutral-900/95 flex md:hidden`}>
         {wordmark(false)}
         <button
           type="button"

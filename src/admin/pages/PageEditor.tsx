@@ -5,6 +5,7 @@ import { usePathname } from '@/admin/router'
 import { useView } from '@/admin/useView'
 import { View } from '@/admin/pages/state'
 import { PageForm } from '@/admin/components/PageForm'
+import { WritePane } from '@/admin/components/WritePane'
 import type { PageWithContent } from '@/types'
 
 type Props = { page: PageWithContent | null; contentWidth: number; typewriterEffects: boolean; autosaveSeconds: number }
@@ -16,6 +17,9 @@ export default function PageEditor() {
   return (
     <View state={state}>
       {(d) => (
+        <div className="flex items-start gap-6">
+          <WritePane activeSlug={d.page?.slug} />
+          <div className="min-w-0 flex-1">
         <PageForm
           // See PostEditor: without a key the editor keeps the previous document.
           key={d.page?.slug ?? 'new'}
@@ -24,6 +28,8 @@ export default function PageEditor() {
           typewriterEffects={d.typewriterEffects}
           autosaveSeconds={d.autosaveSeconds}
         />
+          </div>
+        </div>
       )}
     </View>
   )

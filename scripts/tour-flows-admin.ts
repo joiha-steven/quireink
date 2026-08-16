@@ -226,10 +226,8 @@ export function registerAdminFlows({ flow, expect, atWidth }: Tour): void {
       const view = await (await fetch('/api/admin/view/content')).json()
       const pages = (view?.data?.pages ?? []).map((p) => p.slug)
       if (!pages.length) return 'skip: this instance has no pages to merge in'
-      // DEDUPED: every row carries two links to its editor, the title and the row action,
-      // so the raw count reads as twice the number of rows and a tour that reports a wrong
-      // number teaches you to skim its output.
-      const hrefs = [...new Set([...document.querySelectorAll('tbody a')].map((a) => a.getAttribute('href') || ''))]
+      // The one list is a pane of row-links now (data-write-row), not a table.
+      const hrefs = [...new Set([...document.querySelectorAll('[data-write-row]')].map((a) => a.getAttribute('href') || ''))]
       const merged = pages.filter((s) => hrefs.includes('/admin/page-editor/' + s))
       const posts = hrefs.filter((h) => h.startsWith('/admin/editor/')).length
       if (!merged.length) return 'no page reached the list; it is still posts-only'
@@ -250,9 +248,9 @@ export function registerAdminFlows({ flow, expect, atWidth }: Tour): void {
       setter.call(box, 'widen the leading')
       box.dispatchEvent(new Event('input', { bubbles: true }))
       await sleep(800)
-      const rows = [...document.querySelectorAll('tbody tr')]
+      const rows = [...document.querySelectorAll('[data-write-row]')]
       if (!rows.length) return 'searching a body phrase listed no post at all'
-      const titles = rows.map((r) => (r.querySelector('a') || {}).textContent || '')
+      const titles = rows.map((r) => (r.querySelector('span span span') || {}).textContent || '')
       if (titles.some((t) => /widen|leading/i.test(t))) return 'a TITLE carries the words, so this proves nothing'
       if (!/leading/i.test(rows[0].textContent || '')) return 'the row showed no matching line, only its title'
       return 'ok (' + titles[0] + ')'
