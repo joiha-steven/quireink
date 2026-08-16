@@ -31,7 +31,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           <div
             key={t.id}
             role={t.kind === 'error' ? 'alert' : 'status'}
-            className={`flex items-center gap-2 border px-4 py-2.5 text-sm font-medium shadow-lg ${
+            className={`flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium shadow-lg ${
               t.kind === 'success'
                 ? 'border-neutral-900 bg-neutral-900 text-white dark:border-white dark:bg-white dark:text-neutral-900'
                 : 'border-neutral-900 bg-white text-neutral-900 dark:border-white dark:bg-neutral-900 dark:text-white'

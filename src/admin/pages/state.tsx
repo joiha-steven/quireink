@@ -13,8 +13,11 @@ export function Loading() {
 }
 
 export function Failed({ error }: { error: string }) {
+  // Monochrome like every other feedback surface (docs/admin-design.md): the strong border
+  // and the leading "!" carry "broken" without spending a colour the admin does not have.
   return (
-    <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300">
+    <div className="rounded-[10px] border border-neutral-900 bg-white p-4 text-sm text-neutral-900 dark:border-white dark:bg-neutral-900 dark:text-white">
+      <span aria-hidden="true" className="mr-2 font-semibold">!</span>
       {error}
     </div>
   )

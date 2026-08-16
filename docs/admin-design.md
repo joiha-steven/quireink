@@ -238,19 +238,25 @@ cache stays in the operations footer, reachable from every screen, expanded or c
 
 ## The editor
 
-- Focus mode: the global sidebar is hidden while editing. The chrome is ONE flat sticky
-  line over a hairline (the Writing Desk mock's `sheettop`): back link + save state + word
-  count on the left, quiet MD/attributes text controls and the Preview/Save/Publish buttons
-  on the right. It is never a rounded, bordered, shadowed card — that made the only chrome
-  on the page the most decorated thing on it.
+- The chrome is the SHEET'S OWN top rows (the Writing Desk mock's `sheettop`): the action
+  line — back link + save state + word count on the left, quiet Markdown/Attributes text
+  controls and the Preview/Save/Publish buttons on the right — is the card's first row, and
+  the toolbar sticks directly under it. One piece: a floating band over a crack of page
+  between it and the paper is what the owner called "kì kì" (2026-08-17). Never shadowed.
+  The global sidebar shows again since the two-pane write screen; the write pane (the list
+  column) sits beside the sheet from `xl` up, pinned at the same top as the sheet's chrome.
 - The title lives ON the sheet (`SheetTitle`), in the reading face, with the meta line
   (status · last touched) under it. It aligns with the public reading column, wraps
   naturally, and uses content-driven height so a long one is never clipped.
-- **There is no permanent toolbar** (ADR 0024 step 4, tightened to the mock 2026-08-17).
-  Controls arrive when called: a selection raises the bubble (B I H U S code · five inks ·
-  link), `/` on an empty line raises the insert menu (which prints each block's Markdown
-  shortcut beside its row), and the table tools exist only while the cursor is in a table.
-  The closing line under the writing says the two gestures once.
+- **The toolbar is BACK, by the owner's verdict after writing on the bare version**
+  (2026-08-17, *"ở chế độ bình thường nên có thanh công cụ chứ"* — reversing ADR 0024
+  step 4's removal, which the mock had endorsed). It sits at the top of the sheet under the
+  action line, full-width, its groups centered, wrapping on a narrow window rather than
+  scrolling. The Markdown source view has NO toolbar — raw text needs no formatting
+  buttons. The called controls remain beside it: a selection raises the bubble, `/` on an
+  empty line raises the insert menu (which prints each block's Markdown shortcut beside
+  its row), and the table tools exist only while the cursor is in a table. The closing
+  line under the writing says the two gestures once.
 - The attributes are a right-hand slide-over (`SlideOver`) over a scrim, never a docked
   column — a column squeezed the writing to make room for the questions. The first Publish
   on an unpublished piece opens it as the publish sheet, footered "Later / Publish".
