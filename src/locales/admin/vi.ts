@@ -88,6 +88,7 @@ const vi = {
   footerContent: 'Chân trang',
   footerHint: 'Đậm, nghiêng, gạch dưới, liên kết. {year} và {title} được thay tự động.',
   editorPlaceholder: 'Bắt đầu viết...',
+  dateNow: 'Bây giờ',
   tbHeading: 'Tiêu đề mục',
   slashHint: 'Gõ / để chèn ảnh, bảng, mã, công thức · bôi đen chữ để hiện thanh công cụ',
   edWords: '{n} chữ',

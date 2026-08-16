@@ -52,7 +52,7 @@ export function MultiSelect({ label, value, options, placeholder, onChange, lowe
         className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:focus:border-neutral-400"
       />
       {suggestions.length > 0 && (
-        <div className="flex max-h-40 flex-wrap gap-1.5 overflow-y-auto">
+        <div className="scroll-fade flex max-h-40 flex-wrap gap-1.5 overflow-y-auto pb-4">
           {suggestions.map((o) => (
             <button
               key={o}
