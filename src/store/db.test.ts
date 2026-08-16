@@ -80,3 +80,33 @@ test('post_terms cascade with their post, so a purge leaves no orphan term', () 
 test('liveOnly is one predicate, used by every live read (Invariant 6)', () => {
   expect(liveOnly('posts')).toBe('posts.deleted_at is null')
 })
+
+// The migration path is not the install path: a fresh database RECORDS every step without
+// running it, so `002-pages-fts` only ever executes against a database that already holds
+// somebody's pages — which is every live instance and none of the other tests. It is also
+// the first migration with more than one statement AND a backfill, so what is proved here is
+// that the runner executes all five and that the index is not left empty behind them.
+test('002-pages-fts runs against an EXISTING database, and backfills the pages already in it', () => {
+  const t = Date.now()
+  db.run(`insert into pages (slug,title,content,created_at,updated_at) values ('gioi-thieu','Giới thiệu','một chỗ để viết',?,?)`, [t, t])
+
+  // Rewind this database to before the migration: drop what schema.sql created and forget
+  // the ledger row, which is exactly the shape an instance running 2.0.3 has on disk.
+  for (const trigger of ['pages_fts_ai', 'pages_fts_ad', 'pages_fts_au']) db.run(`drop trigger if exists ${trigger}`)
+  db.run(`drop table if exists pages_fts`)
+  db.run(`delete from schema_migrations where name = '002-pages-fts'`)
+  expect(names(db)).not.toContain('pages_fts')
+
+  ;({ db, analyticsDb } = openDatabases(DIR))
+
+  expect(names(db)).toContain('pages_fts')
+  const found = db.query<{ slug: string }, [string]>(
+    `select g.slug from pages_fts f join pages g on g.rowid = f.rowid where pages_fts match ?`,
+  ).all(`"gioi thieu"`)
+  expect(found.map((r) => r.slug)).toEqual(['gioi-thieu'])
+
+  // And the triggers came back with it: a page saved after the migration is findable too.
+  db.run(`insert into pages (slug,title,content,created_at,updated_at) values ('lien-he','Liên hệ','thư từ gửi về đây',?,?)`, [t, t])
+  const after = db.query<{ n: number }, [string]>(`select count(*) n from pages_fts where pages_fts match ?`).get(`"thu tu"`)!.n
+  expect(after).toBe(1)
+})

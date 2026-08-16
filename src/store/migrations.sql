@@ -20,3 +20,28 @@
 -- entered in the admin like every other integration.
 alter table integration_keys add column google_client_id text;
 alter table integration_keys add column google_client_secret text;
+
+-- migration: 002-pages-fts
+-- The admin's one list searches pages as well as posts (ADR 0024), so pages get the index
+-- posts have had since the port. The virtual table and its triggers are copied verbatim
+-- from `schema.sql`; the last statement is the part a fresh database does NOT need, because
+-- there the table is created before any page exists — an existing instance has pages already
+-- and an empty index is indistinguishable from a page that cannot be found.
+create virtual table if not exists pages_fts using fts5(
+  title,
+  content,
+  content = 'pages',
+  content_rowid = 'rowid',
+  tokenize = "unicode61 remove_diacritics 2"
+);
+create trigger if not exists pages_fts_ai after insert on pages begin
+  insert into pages_fts(rowid, title, content) values (new.rowid, new.title, new.content);
+end;
+create trigger if not exists pages_fts_ad after delete on pages begin
+  insert into pages_fts(pages_fts, rowid, title, content) values ('delete', old.rowid, old.title, old.content);
+end;
+create trigger if not exists pages_fts_au after update of title, content on pages begin
+  insert into pages_fts(pages_fts, rowid, title, content) values ('delete', old.rowid, old.title, old.content);
+  insert into pages_fts(rowid, title, content) values (new.rowid, new.title, new.content);
+end;
+insert into pages_fts(rowid, title, content) select rowid, title, content from pages;

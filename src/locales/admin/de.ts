@@ -29,7 +29,7 @@ const de = {
   untitled: '(ohne Titel)',
   statusPublished: 'Veröffentlicht',
   statusDraft: 'Entwurf',
-  filterPlaceholder: 'Beiträge filtern...',
+  filterPlaceholder: 'Titel und Inhalt durchsuchen...',
   filterAll: 'Alle',
   filterEmpty: 'Keine Beiträge entsprechen dem Filter.',
   edit: 'Bearbeiten',

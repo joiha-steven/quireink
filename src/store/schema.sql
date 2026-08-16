@@ -105,6 +105,31 @@ create table if not exists pages (
 );
 create index if not exists pages_deleted_at_idx on pages (deleted_at);
 
+-- Pages are searched the same way posts are, by the same index shape, because the admin's
+-- one list holds both (ADR 0024) and a second mechanism for eleven rows would be a second
+-- thing to keep in sync. `remove_diacritics 2` matters here for the same reason: the owner
+-- types "gioi thieu" and means "Giới thiệu".
+create virtual table if not exists pages_fts using fts5(
+  title,
+  content,
+  content = 'pages',
+  content_rowid = 'rowid',
+  tokenize = "unicode61 remove_diacritics 2"
+);
+
+-- All three, for the reason posts_fts documents: two of them leave the index drifting, and
+-- drift shows up as a page nobody can find rather than as an error.
+create trigger if not exists pages_fts_ai after insert on pages begin
+  insert into pages_fts(rowid, title, content) values (new.rowid, new.title, new.content);
+end;
+create trigger if not exists pages_fts_ad after delete on pages begin
+  insert into pages_fts(pages_fts, rowid, title, content) values ('delete', old.rowid, old.title, old.content);
+end;
+create trigger if not exists pages_fts_au after update of title, content on pages begin
+  insert into pages_fts(pages_fts, rowid, title, content) values ('delete', old.rowid, old.title, old.content);
+  insert into pages_fts(rowid, title, content) values (new.rowid, new.title, new.content);
+end;
+
 -- ----- post_revisions (time machine: last 3 per post) ------------------------
 create table if not exists post_revisions (
   id       integer primary key autoincrement,

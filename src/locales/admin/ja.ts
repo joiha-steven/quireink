@@ -29,7 +29,7 @@ const ja = {
   untitled: '(無題)',
   statusPublished: '公開済み',
   statusDraft: '下書き',
-  filterPlaceholder: '記事を絞り込む...',
+  filterPlaceholder: 'タイトルと本文を検索...',
   filterAll: 'すべて',
   filterEmpty: 'フィルターに一致する記事がありません。',
   edit: '編集',
