@@ -10,7 +10,7 @@ import type { Post, Page, ApiResponse } from '@/types'
 import type { OwnerHit } from '@/content/search-owner'
 import { foldAccents } from '@/utils'
 
-export type WriteScope = 'all' | 'published' | 'draft'
+export type WriteScope = 'all' | 'page' | 'post' | 'published' | 'draft'
 
 /** Posts and pages, flattened to the few things a row actually renders. */
 export type WriteItem = {
@@ -86,7 +86,11 @@ export function useWritingItems(posts: Post[], pages: Page[], query: string, sco
   const needle = foldAccents(query.trim())
   const shown = useMemo(() => {
     return items.filter((it) => {
-      if (scope !== 'all' && it.status !== scope) return false
+      // Two scopes are a KIND and two are a STATUS; the owner asked for both families
+      // on one row of tabs, so the filter reads which family the word belongs to.
+      if (scope === 'page' || scope === 'post') {
+        if (it.kind !== scope) return false
+      } else if (scope !== 'all' && it.status !== scope) return false
       if (!needle) return true
       if (foldAccents(`${it.title} ${it.terms}`).includes(needle)) return true
       return bodyHits?.has(`${it.kind}:${it.slug}`) ?? false
