@@ -57,8 +57,6 @@ export function EditorActions({
   onToggleSettings,
   savedSlug,
   getText,
-  mdView,
-  onToggleMd,
   onPreview,
   onSaveDraft,
   onPublish,
@@ -75,8 +73,6 @@ export function EditorActions({
   savedSlug: string | null
   /** Live markdown, read from the form's ref — see useWordStats for why it is polled. */
   getText: () => string
-  mdView: boolean
-  onToggleMd: () => void
   onPreview: () => void
   onSaveDraft: () => void
   onPublish: () => void
@@ -107,11 +103,8 @@ export function EditorActions({
         </span>
       </div>
       <div className="flex items-center gap-1.5">
-        {/* Quiet, and BEFORE the session-ending pair: these two change how you look at the
-            piece, not what happens to it. MD shows its state; attributes says what it holds. */}
-        <button type="button" onClick={onToggleMd} aria-pressed={mdView} className={`${QUIET} font-mono text-xs font-bold ${mdView ? 'text-neutral-900 dark:text-white' : ''}`}>
-          MD
-        </button>
+        {/* Quiet, and BEFORE the session-ending pair: it changes what you look AT, not what
+            happens to the piece. (The MD toggle lives in the toolbar, where the owner put it.) */}
         <button type="button" onClick={onToggleSettings} className={QUIET}>
           {settingsOpen ? t.hideAttributes : t.attributes}
         </button>

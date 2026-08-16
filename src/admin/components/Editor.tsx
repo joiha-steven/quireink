@@ -7,22 +7,19 @@
 import { useEffect, useRef, useState } from 'react'
 import { useEditor, EditorContent, type Editor as TiptapEditor } from '@tiptap/react'
 import { editorExtensions } from './editorExtensions'
-import { BubbleBar, SlashMenu, TableBar } from './EditorMenus'
+import { BubbleBar, SlashMenu, Toolbar } from './EditorMenus'
 import { placeTypewriterCaret, pulseTypewriterInput } from './typewriter'
 
-// The sticky ACTION bar's height (the sheet header above the writing surface). The bubble
-// bar must not be placed inside this band, because the bar is sticky and would cover it —
-// the first line of a post is where that happens.
-const ACTIONBAR_HEIGHT = 56
+// The sticky band above the writing: the action line (~56px) plus the toolbar strip that
+// sticks under it (~60px with its margins). The bubble bar must not be placed inside this
+// band, because both are sticky and would cover it — the first line is where that happens.
+const ACTIONBAR_HEIGHT = 116
 import { isVideoUrl } from '@/render/video'
 import { useAdminT } from './I18nProvider'
 import { MarkdownSource } from './MarkdownSource'
 import { CARD } from './kit'
 
 export type EditorApi = {
-  // Swap between the formatted view and the raw Markdown source. Lives on the API because
-  // the control that calls it sits in the ACTION BAR now, outside this component.
-  toggleRaw: () => void
   insertImage: (url: string) => void
   // Insert several images as gallery items (#grid) in ONE transaction —
   // consecutive #grid images group into a CSS grid on the public side. Must be a
@@ -87,11 +84,9 @@ type Props = {
   /** The title and its meta line, rendered INSIDE the sheet above the writing (the mock's
       paper holds the title; a title floating above the card was chrome). */
   header?: React.ReactNode
-  /** Told when the raw/markdown view flips, so the action bar's MD control can show state. */
-  onRawChange?: (raw: boolean) => void
 }
 
-export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickGallery, onUploadFile, apiRef, contentWidth, toolbarTop = 0, typewriterEffects, header, onRawChange }: Props) {
+export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickGallery, onUploadFile, apiRef, contentWidth, toolbarTop = 0, typewriterEffects, header }: Props) {
   const t = useAdminT()
   // Markdown source view: edit the raw markdown directly (still saves live).
   const [raw, setRaw] = useState(false)
@@ -117,11 +112,6 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
   useEffect(() => { onDirtyRef.current = onDirty }, [onDirty])
   useEffect(() => { rawRef.current = raw }, [raw])
   useEffect(() => { rawTextRef.current = rawText }, [rawText])
-  // Report raw-view flips from the STATE, not from inside toggleRaw: the toggle is called
-  // through `apiRef` where a captured prop would go stale, and the state is the truth anyway.
-  const onRawChangeRef = useRef(onRawChange)
-  useEffect(() => { onRawChangeRef.current = onRawChange }, [onRawChange])
-  useEffect(() => { onRawChangeRef.current?.(raw) }, [raw])
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -241,7 +231,6 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
     if (!editor) return
     editorRef.current = editor // keep the drag-drop / paste closures on the live instance
     apiRef.current = {
-      toggleRaw,
       insertImage: (url: string) =>
         editor.chain().focus().setImage({ src: url, alt: captionFromUrl(url) }).run(),
       // Gallery: empty alt for a clean mosaic; '#grid' groups consecutive ones.
@@ -271,9 +260,7 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
 
   // Review -> Markdown: snapshot the current markdown. Markdown -> Review:
   // re-parse the (possibly edited) markdown back into the formatted editor.
-  // Reads through the REFS: the action bar calls this through `apiRef`, which is installed
-  // once per editor instance, so a closure over the state values would go stale on the
-  // second toggle and hand the editor an old snapshot.
+  // Reads through the REFS so repeated toggles never hand the editor a stale snapshot.
   function toggleRaw() {
     if (!editor) return
     if (rawRef.current) {
@@ -289,11 +276,7 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
   }
 
   return (
-    // No permanent toolbar (ADR 0024 step 4, tightened to the mock 2026-08-17): the resting
-    // state is a sheet. Controls arrive when called — a selection raises the bubble, "/" on
-    // an empty line raises the insert menu, a table raises its own bar.
     <div className={CARD}>
-      <TableBar editor={editor} stickyTop={toolbarTop} />
       {/* Floating menu on a text selection / link — not in raw source mode. */}
       {!raw && <BubbleBar editor={editor} avoidTop={toolbarTop + ACTIONBAR_HEIGHT} />}
       {!raw && slash && (
@@ -305,6 +288,10 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
           onPickGallery={() => { setSlash(null); onPickGallery() }}
         />
       )}
+      {/* At the very TOP of the sheet, the full width of it — the owner's second verdict
+          after a day of writing: "đem lên trên cùng, chiều dài ngang, ko phải scroll".
+          Sticky, so it rides up to the action line and stays reachable in a long piece. */}
+      <Toolbar editor={editor} onPickImage={onPickImage} onPickGallery={onPickGallery} raw={raw} onToggleRaw={toggleRaw} stickyTop={toolbarTop} />
       {/* Center the writing column at the public single-post width so what you
           type wraps exactly like the published article. */}
       <div className="mx-auto w-full" style={{ maxWidth: contentWidth }}>

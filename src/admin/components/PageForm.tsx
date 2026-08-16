@@ -41,7 +41,6 @@ export function PageForm({ initial, contentWidth, typewriterEffects, autosaveSec
   const [savedSlug, setSavedSlug] = useState<string | null>(initial?.slug ?? null)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [asking, setAsking] = useState(false)
-  const [mdView, setMdView] = useState(false)
   const actionHeaderRef = useRef<HTMLDivElement>(null)
   const toolbarTop = useStickyOffset(actionHeaderRef)
   // Local (offline) autosave — keyed per page so drafts don't clobber each other.
@@ -224,8 +223,6 @@ export function PageForm({ initial, contentWidth, typewriterEffects, autosaveSec
         onToggleSettings={() => setSettingsOpen((v) => !v)}
         savedSlug={null}
         getText={() => `${draftRef.current.title} ${editorApi.current?.getMarkdown() ?? contentRef.current}`}
-        mdView={mdView}
-        onToggleMd={() => editorApi.current?.toggleRaw()}
         onPreview={() => undefined}
         onSaveDraft={() => void handleSave('draft', t.savedDraft)}
         // Same publish contract as a post (ADR 0024, step 5): the first Publish on a page
@@ -257,7 +254,6 @@ export function PageForm({ initial, contentWidth, typewriterEffects, autosaveSec
         contentWidth={contentWidth}
         toolbarTop={toolbarTop}
         typewriterEffects={typewriterEffects}
-        onRawChange={setMdView}
         header={<SheetTitle value={draft.title} onChange={(title) => update({ title })} placeholder={t.titlePlaceholder} metaLine={metaLine} />}
       />
 

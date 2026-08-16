@@ -1,17 +1,12 @@
 // Editor menus, split out of Editor.tsx to keep it under the size cap:
-//  - SlashMenu: everything that inserts, opened by typing "/" on an empty line.
-//  - TableBar: the table tools, on screen ONLY while the cursor is in a table.
+//  - Toolbar: the full button row under the title (formatted view only) — the owner's
+//    explicit pick, see its header for the round trip it survived.
+//  - SlashMenu: the same inserts, opened at the caret by typing "/" on an empty line.
 //  - BubbleBar: a floating menu that pops up on a text selection or with the
 //    cursor inside a link — formatting + quick link edit/remove.
 // All need the editor to re-render on selection change; Editor.tsx enables
 // `shouldRerenderOnTransaction` so isActive() stays live (off by default in
 // TipTap 3, which is why the table row / active highlights weren't updating).
-//
-// ⚠️ There is NO permanent toolbar any more, and that is the design, not a gap
-// (ADR 0024 step 4, tightened to the Writing Desk mock on 2026-08-17). The resting
-// state of the screen is a sheet of paper: the controls exist the moment they are
-// called — a selection, a "/", a table — and not otherwise. Before reaching for a
-// bar, read the mock (`quireink-private/reports/2026-08-16-writing-desk.md`).
 import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import { type Editor as TiptapEditor } from '@tiptap/react'
 import { BubbleMenu } from '@tiptap/react/menus'
@@ -20,7 +15,7 @@ import { useAdminT } from './I18nProvider'
 import { INKS } from '@/render/ink'
 import { PEN_LIGHT } from '@/render/pen'
 
-const BTN = 'grid h-8 w-8 shrink-0 place-items-center rounded-lg text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800'
+const BTN = 'grid h-9 min-w-9 shrink-0 place-items-center rounded-lg px-1 text-[15px] hover:bg-white dark:hover:bg-neutral-700'
 
 function Glyph({ children }: { children: React.ReactNode }) {
   return (
@@ -38,7 +33,7 @@ function ToolButton({ label, active = false, onClick, children }: { label: strin
       aria-label={label}
       aria-pressed={active || undefined}
       onClick={onClick}
-      className={`${BTN} ${active ? 'bg-neutral-200 text-neutral-950 dark:bg-neutral-700 dark:text-white' : 'text-neutral-600 dark:text-neutral-300'}`}
+      className={`${BTN} ${active ? 'bg-white text-neutral-950 ring-1 ring-neutral-200 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600' : 'text-neutral-600 dark:text-neutral-300'}`}
     >
       {children}
     </button>
@@ -46,24 +41,134 @@ function ToolButton({ label, active = false, onClick, children }: { label: strin
 }
 
 /**
- * The table tools, present only while the cursor is IN a table.
+ * The full toolbar over the writing surface, in the FORMATTED view only.
  *
- * The last survivor of the old permanent toolbar: a table genuinely cannot be worked on
- * with a bubble (its operations act on rows and columns, not on a selection) and "/" cannot
- * reach it either (a cell's paragraph is rarely empty). So the bar the mock removed comes
- * back for exactly as long as a table is under the cursor, which is the rule the whole
- * editor now follows: controls arrive when called.
+ * Its history is a round trip worth recording. Step 4 collapsed these buttons into two
+ * menus; the Writing Desk mock then removed the bar entirely, and the first mock-faithful
+ * cut shipped that. The owner, after writing in both (2026-08-17): *"ở chế độ markdown thì
+ * / ok, nhưng ở chế độ bình thường nên có thanh công cụ chứ"* — and he circled THIS bar,
+ * the original row of plain buttons, as the shape he wants — then asked for it at the TOP
+ * of the sheet, full-width, wrapping instead of scrolling. The Markdown view stays bare. "/" and the selection
+ * bubble remain: the bar is a second door to the same rooms, not the only one.
  */
-export function TableBar({ editor, stickyTop }: { editor: TiptapEditor; stickyTop: number }) {
+export function Toolbar({
+  editor,
+  onPickImage,
+  onPickGallery,
+  raw,
+  onToggleRaw,
+  stickyTop,
+}: {
+  editor: TiptapEditor
+  onPickImage: () => void
+  onPickGallery: () => void
+  raw: boolean
+  onToggleRaw: () => void
+  stickyTop: number
+}) {
   const t = useAdminT()
-  if (!editor.isActive('table')) return null
+  const sep = <span className="mx-1 h-5 w-px shrink-0 bg-neutral-200 dark:bg-neutral-700" />
+  const toggle = (
+    <ToolButton label={raw ? t.tbReview : t.tbMarkdown} onClick={onToggleRaw}>
+      {raw ? (
+        <Glyph><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" /><circle cx="12" cy="12" r="2.5" /></Glyph>
+      ) : <span className="text-[10px] font-bold tracking-tight">MD</span>}
+    </ToolButton>
+  )
+  // The strip the owner circled, tuned by his next two notes: at the TOP of the sheet,
+  // full-width, NO horizontal scroll (a narrow window wraps the row instead) — and the
+  // buttons GROUPED in the middle, not stretched across it: "gom vô giữa được rồi, đừng
+  // căng hết ra, cách xa nhau, UX gì kì quá".
+  const STRIP = 'sticky z-10 mx-4 mt-4 rounded-xl border border-neutral-200 bg-neutral-50/95 backdrop-blur dark:border-neutral-700 dark:bg-neutral-800/95'
+  if (raw) {
+    return (
+      <div className={`${STRIP} flex items-center px-2 py-1`} style={{ top: stickyTop }}>
+        {toggle}
+      </div>
+    )
+  }
   return (
-    <div className="sticky z-10 flex items-center justify-center gap-1 rounded-t-2xl border-b border-neutral-200 bg-white p-2 dark:border-neutral-800 dark:bg-neutral-900" style={{ top: stickyTop }}>
-      <ToolButton label={t.tbColAdd} onClick={() => editor.chain().focus().addColumnAfter().run()}><span className="text-[10px] font-bold">C+</span></ToolButton>
-      <ToolButton label={t.tbColDel} onClick={() => editor.chain().focus().deleteColumn().run()}><span className="text-[10px] font-bold">C−</span></ToolButton>
-      <ToolButton label={t.tbRowAdd} onClick={() => editor.chain().focus().addRowAfter().run()}><span className="text-[10px] font-bold">R+</span></ToolButton>
-      <ToolButton label={t.tbRowDel} onClick={() => editor.chain().focus().deleteRow().run()}><span className="text-[10px] font-bold">R−</span></ToolButton>
-      <ToolButton label={t.tbTableDelete} onClick={() => editor.chain().focus().deleteTable().run()}><Glyph><path d="M5 7h14M9 7V5h6v2M7 7l1 12h8l1-12" /></Glyph></ToolButton>
+    <div className={STRIP} style={{ top: stickyTop }}>
+      <div className="flex flex-wrap items-center justify-center gap-0.5 px-2.5 py-1">
+      <ToolButton label={t.tbBold} active={editor.isActive('bold')} onClick={() => editor.chain().focus().toggleBold().run()}><strong>B</strong></ToolButton>
+      <ToolButton label={t.tbItalic} active={editor.isActive('italic')} onClick={() => editor.chain().focus().toggleItalic().run()}><em>I</em></ToolButton>
+      <ToolButton label={t.tbUnderline} active={editor.isActive('underline')} onClick={() => editor.chain().focus().toggleUnderline().run()}><u>U</u></ToolButton>
+      <ToolButton label="S" active={editor.isActive('strike')} onClick={() => editor.chain().focus().toggleStrike().run()}><s>S</s></ToolButton>
+      <ToolButton label="`" active={editor.isActive('code')} onClick={() => editor.chain().focus().toggleCode().run()}><code>{'`'}</code></ToolButton>
+      {sep}
+      <ToolButton label="P" active={editor.isActive('paragraph')} onClick={() => editor.chain().focus().setParagraph().run()}>P</ToolButton>
+      {([1, 2, 3, 4, 5] as const).map((level) => (
+        <ToolButton key={level} label={`H${level}`} active={editor.isActive('heading', { level })} onClick={() => editor.chain().focus().toggleHeading({ level }).run()}>
+          <span className="text-xs font-medium">H{level}</span>
+        </ToolButton>
+      ))}
+      {sep}
+      <ToolButton label={t.tbList} active={editor.isActive('bulletList')} onClick={() => editor.chain().focus().toggleBulletList().run()}>
+        <Glyph><circle cx="5" cy="7" r="1" fill="currentColor" stroke="none" /><circle cx="5" cy="12" r="1" fill="currentColor" stroke="none" /><circle cx="5" cy="17" r="1" fill="currentColor" stroke="none" /><path d="M9 7h10M9 12h10M9 17h10" /></Glyph>
+      </ToolButton>
+      <ToolButton label={t.tbListNumbered} active={editor.isActive('orderedList')} onClick={() => editor.chain().focus().toggleOrderedList().run()}>
+        <Glyph><path d="M4 6h2v4M4 14h2l-2 4h2M10 7h10M10 12h10M10 17h10" /></Glyph>
+      </ToolButton>
+      <ToolButton label={t.tbTask} active={editor.isActive('taskList')} onClick={() => editor.chain().focus().toggleTaskList().run()}>
+        <Glyph><rect x="3.5" y="4.5" width="6" height="6" rx="1" /><path d="m5 7 1.5 1.5L9 5.5M13 7h7M4 16h5M13 16h7" /></Glyph>
+      </ToolButton>
+      <ToolButton label={t.tbQuote} active={editor.isActive('blockquote')} onClick={() => editor.chain().focus().toggleBlockquote().run()}>
+        <Glyph><path d="M7 8H4v4h4v4H4M17 8h-3v4h4v4h-4" /></Glyph>
+      </ToolButton>
+      <ToolButton label={t.tbCodeBlock} active={editor.isActive('codeBlock')} onClick={() => editor.chain().focus().toggleCodeBlock().run()}>
+        <Glyph><path d="m8 8-4 4 4 4M16 8l4 4-4 4M14 5l-4 14" /></Glyph>
+      </ToolButton>
+      <ToolButton label={t.tbDivider} onClick={() => editor.chain().focus().setHorizontalRule().run()}>
+        <Glyph><path d="M4 12h16" /></Glyph>
+      </ToolButton>
+      {sep}
+      <ToolButton
+        label={t.tbLink}
+        active={editor.isActive('link')}
+        onClick={() => {
+          // Prefill the existing href so an old link can be edited (not just
+          // created). extendMarkRange covers the whole link when the cursor is
+          // merely inside it — no need to first select the linked text.
+          const prev = (editor.getAttributes('link').href as string | undefined) ?? ''
+          const url = window.prompt(t.promptLink, prev)
+          if (url === null) return // cancelled — leave the link untouched
+          const range = editor.chain().focus().extendMarkRange('link')
+          if (url === '') range.unsetLink().run() // cleared the URL -> remove the link
+          else range.setLink({ href: url }).run()
+        }}
+      >
+        <Glyph><path d="M10 13a4.5 4.5 0 0 0 6.4.1l2-2a4.5 4.5 0 0 0-6.4-6.4l-1.1 1.1M14 11a4.5 4.5 0 0 0-6.4-.1l-2 2a4.5 4.5 0 0 0 6.4 6.4l1.1-1.1" /></Glyph>
+      </ToolButton>
+      <ToolButton label={t.tbImage} onClick={onPickImage}><Glyph><rect x="3.5" y="4.5" width="17" height="15" rx="1.5" /><circle cx="8" cy="9" r="1.5" /><path d="m4 17 5-5 4 4 3-3 4 4" /></Glyph></ToolButton>
+      <ToolButton label={t.tbGallery} onClick={onPickGallery}><Glyph><rect x="5" y="5" width="14" height="14" rx="1.5" /><path d="M8 5V3h13v13h-2M6 16l4-4 3 3 2-2 4 4" /></Glyph></ToolButton>
+      <ToolButton label={t.tbTable} onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}><Glyph><rect x="3.5" y="4.5" width="17" height="15" rx="1.5" /><path d="M3.5 10h17M9 4.5v15M15 4.5v15" /></Glyph></ToolButton>
+      {/* Two buttons, not one behind a menu. Display and inline are not two settings of one
+          thing: a standalone equation and a symbol inside a sentence are different gestures,
+          the same argument the five pens make against a colour dropdown. Both drop an EMPTY
+          formula with the caret in its box, so the next thing typed is the TeX. */}
+      {/* The glyph is a pi, and the LINES AROUND IT carry the block/inline distinction: full
+          rules above and below for a formula on its own line, a dash either side for one
+          sitting in a sentence. Chosen by rendering the candidates at 24px and looking —
+          the first pair drawn here read as "I×" and "×≠", and a sigma at this size comes out
+          as the digit 3. */}
+      <ToolButton label={t.tbMath} active={editor.isActive('mathBlock')} onClick={() => editor.chain().focus().setMath(true).run()}>
+        <Glyph><path d="M4 4.5h16M4 19.5h16" /><path d="M7.5 9.5h9M10 9.5v5M14 9.5v5" /></Glyph>
+      </ToolButton>
+      <ToolButton label={t.tbMathInline} active={editor.isActive('mathInline')} onClick={() => editor.chain().focus().setMath(false).run()}>
+        <Glyph><path d="M3 12h3M18 12h3" /><path d="M8 9h8M10.5 9v6M14.5 9v6" /></Glyph>
+      </ToolButton>
+      {sep}{toggle}
+      {editor.isActive('table') && (
+        <>
+          {sep}
+          <ToolButton label={t.tbColAdd} onClick={() => editor.chain().focus().addColumnAfter().run()}><span className="text-[10px] font-bold">C+</span></ToolButton>
+          <ToolButton label={t.tbColDel} onClick={() => editor.chain().focus().deleteColumn().run()}><span className="text-[10px] font-bold">C−</span></ToolButton>
+          <ToolButton label={t.tbRowAdd} onClick={() => editor.chain().focus().addRowAfter().run()}><span className="text-[10px] font-bold">R+</span></ToolButton>
+          <ToolButton label={t.tbRowDel} onClick={() => editor.chain().focus().deleteRow().run()}><span className="text-[10px] font-bold">R−</span></ToolButton>
+          <ToolButton label={t.tbTableDelete} onClick={() => editor.chain().focus().deleteTable().run()}><Glyph><path d="M5 7h14M9 7V5h6v2M7 7l1 12h8l1-12" /></Glyph></ToolButton>
+        </>
+      )}
+      </div>
     </div>
   )
 }
@@ -87,13 +192,9 @@ function Row({ label, hint, active = false, onClick }: { label: string; hint?: s
 
 /**
  * The "/" menu: everything that puts something NEW on the page, opened at the caret by
- * typing "/" on an empty line (the Writing Desk mock's one gesture for inserting).
- *
- * It replaces the toolbar's two permanent dropdowns. What those also carried — block types,
- * lists, quotes — is NOT lost: every one of them has a Markdown shortcut the editor already
- * honours (`#`, `-`, `1.`, `>`, ``` ```, `[ ]`), the shortcut is printed beside its row
- * here, and a heading is one press on the selection bar. The menu teaches the shortcuts
- * rather than replacing them.
+ * typing "/" on an empty line (the Writing Desk mock's gesture — kept alongside the
+ * toolbar; two doors, same rooms). Each block's Markdown shortcut is printed beside its
+ * row, so the menu teaches the gesture that makes itself unnecessary.
  *
  * `onMouseDown` is prevented THROUGHOUT: a mousedown in here would blur the editor and move
  * the caret before the command ran — the same trap the bubble bar documents.
@@ -142,8 +243,6 @@ export function SlashMenu({
       <Row label={t.tbGallery} onClick={() => run(onPickGallery)} />
       <Row label={t.tbTable} onClick={() => run(() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run())} />
       <Row label={t.tbCodeBlock} hint="```" onClick={() => run(() => editor.chain().focus().toggleCodeBlock().run())} />
-      {/* The two formula entries stay two entries, for the reason the five pens stay five
-          swatches: a block formula and a symbol inside a sentence are different gestures. */}
       <Row label={t.tbMath} onClick={() => run(() => editor.chain().focus().setMath(true).run())} />
       <Row label={t.tbMathInline} onClick={() => run(() => editor.chain().focus().setMath(false).run())} />
       <Row label={t.tbDivider} hint="---" onClick={() => run(() => editor.chain().focus().setHorizontalRule().run())} />

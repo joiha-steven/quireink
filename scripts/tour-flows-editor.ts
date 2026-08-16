@@ -202,9 +202,13 @@ export function registerEditorFlows({ flow, expect }: Tour): void {
       // The B button's PARENT. Scanning divs for one that contains a B finds the page
       // wrapper first — it contains everything, including the bar — and then every geometry
       // assertion below is measured on the whole screen and passes for the wrong reason.
-      // The toolbar has no B any more (its formatting moved here), so this button is unique.
+      // ⚠️ The TOOLBAR has a B again (2026-08-17), so "the button whose text is B" now
+      // matches twice and .find() hands back the toolbar's — which the bubble legitimately
+      // floats OVER, so this flow went red against a working editor. The bubble's B is the
+      // one inside the floating chip, found by its z-40 elevation.
       const boldBtn = [...document.querySelectorAll('button')]
-        .find((b) => b.querySelector('strong') && (b.textContent || '').trim() === 'B')
+        .filter((b) => b.querySelector('strong') && (b.textContent || '').trim() === 'B')
+        .find((b) => b.closest('[class*="z-40"]'))
       const bar = boldBtn && boldBtn.parentElement
       if (!bar) return done('no formatting bar appeared for a selection on the first line')
       const box = bar.getBoundingClientRect()
