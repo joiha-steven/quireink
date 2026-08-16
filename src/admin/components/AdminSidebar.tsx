@@ -19,7 +19,7 @@ import { BrandMark, BrandWord } from './Wordmark'
 import { ThemeToggle } from '@/admin/ui/ThemeToggle'
 import {
   IconHome, IconAnalytics, IconContent, IconComment, IconMedia, IconNewsletter, IconTrash, IconSettings,
-  IconLog, IconExternal, IconCache, IconSignOut, IconChevronLeft, IconHelp, IconGlyphs,
+  IconLog, IconExternal, IconCache, IconSignOut, IconChevronLeft, IconHelp, IconGlyphs, IconMore,
 } from './navIcons'
 
 const STORE_KEY = 'quireink-admin-nav-collapsed'
@@ -54,6 +54,7 @@ export function AdminSidebar({
   const [open, setOpen] = useState(false) // mobile drawer
   const [collapsed, setCollapsed] = useState(false) // desktop rail
   const [icons, setIcons] = useState(false) // glyphs beside the labels
+  const [more, setMore] = useState(false) // "everything else" group
   const close = () => setOpen(false)
 
   // Publish the current desktop rail width as a CSS var so fixed-position chrome
@@ -95,13 +96,26 @@ export function AdminSidebar({
     })
   }
 
-  const links = [
+  /**
+   * Four destinations, and everything else one click further (ADR 0024 step 6).
+   *
+   * The rail held eleven rows, which is eleven decisions before the one that matters. These
+   * four are what the owner is here to do: see how it went, write, put a picture in, send it
+   * out. **Analytics is not among them and that is the point** — the numbers moved onto the
+   * home screen, so the rail no longer offers a second door to them; the full screen is still
+   * one click from the cards that show them.
+   */
+  const primary = [
     { href: '/admin', label: t.navHome, icon: <IconHome /> },
-    { href: '/admin/analytics', label: t.navAnalytics, icon: <IconAnalytics /> },
-    { href: '/admin/content', label: t.navDashboard, icon: <IconContent /> },
-    { href: '/admin/comments', label: t.commentsNavTitle, icon: <IconComment /> },
+    { href: '/admin/content', label: t.navWrite, icon: <IconContent /> },
     { href: '/admin/media', label: t.navMedia, icon: <IconMedia /> },
     { href: '/admin/newsletter', label: t.navNewsletter, icon: <IconNewsletter /> },
+  ]
+
+  // "mấy cái tính năng còn lại ngoài soạn thảo nội dung … chỉ là phụ." Not removed — moved.
+  const secondary = [
+    { href: '/admin/analytics', label: t.navAnalytics, icon: <IconAnalytics /> },
+    { href: '/admin/comments', label: t.commentsNavTitle, icon: <IconComment /> },
     { href: '/admin/trash', label: t.navTrash, icon: <IconTrash /> },
     { href: '/admin/settings', label: t.navSettings, icon: <IconSettings /> },
     { href: '/admin/log', label: t.navLog, icon: <IconLog /> },
@@ -111,29 +125,69 @@ export function AdminSidebar({
   const isActive = (href: string): boolean =>
     href === '/admin' ? pathname === '/admin' : pathname === href || pathname.startsWith(`${href}/`)
 
+  const inSecondary = secondary.some((l) => isActive(l.href))
+  // Opened by the owner, or by ARRIVING somewhere inside it: a rail that hides the page you
+  // are on tells you nothing about where you are. Kept as state rather than derived, so the
+  // control still closes the group while standing on one of its pages.
+  useEffect(() => {
+    if (inSecondary) setMore(true)
+  }, [inSecondary])
+
   // `c` = render collapsed (icon-only). Mobile drawer always passes false.
   const rowClass = (c: boolean, active = false): string =>
     `${SIDEBAR_NAV} ${c ? 'justify-center' : 'gap-3'} ${active ? SIDEBAR_NAV_ACTIVE : ''}`
 
+  const navLink = (l: { href: string; label: string; icon: ReactNode }, c: boolean): ReactNode => (
+    <Link
+      key={l.href}
+      href={l.href}
+      onClick={close}
+      aria-current={isActive(l.href) ? 'page' : undefined}
+      title={c ? l.label : undefined}
+      className={rowClass(c, isActive(l.href))}
+    >
+      {(c || icons) && l.icon}
+      {!c && <span className="truncate">{l.label}</span>}
+    </Link>
+  )
+
   const navItems = (c: boolean): ReactNode => (
     <>
-      {links.map((l) => (
-        <Link
-          key={l.href}
-          href={l.href}
-          onClick={close}
-          aria-current={isActive(l.href) ? 'page' : undefined}
-          title={c ? l.label : undefined}
-          className={rowClass(c, isActive(l.href))}
-        >
-          {(c || icons) && l.icon}
-          {!c && <span className="truncate">{l.label}</span>}
-        </Link>
-      ))}
-      <a href="/" target="_blank" rel="noopener" onClick={close} title={c ? t.navViewBlog : undefined} className={rowClass(c)}>
-        {(c || icons) && <IconExternal />}
-        {!c && <span className="truncate">{t.navViewBlog}</span>}
-      </a>
+      {primary.map((l) => navLink(l, c))}
+
+      {/* The one row in this column that names no destination, so it is a button rather than
+          a Link, and the chevron says which way it will move. */}
+      <button
+        type="button"
+        onClick={() => setMore((v) => !v)}
+        aria-expanded={more}
+        title={c ? t.navMore : undefined}
+        className={`${rowClass(c)} ${!c ? 'justify-between' : ''}`}
+      >
+        <span className={`flex min-w-0 items-center ${c ? '' : 'gap-3'}`}>
+          {(c || icons) && <IconMore />}
+          {!c && <span className="truncate">{t.navMore}</span>}
+        </span>
+        {!c && (
+          <span className={`grid place-items-center transition-transform ${more ? 'rotate-90' : '-rotate-90'}`}>
+            <IconChevronLeft />
+          </span>
+        )}
+      </button>
+
+      {more && (
+        // Indented by a rule rather than by padding: `SIDEBAR_NAV` is the one row string every
+        // item in this column shares (`headerActions.ts`), and a per-item `pl-6` here is how
+        // that rule stops being true. Collapsed, there is nothing to indent — the rail is
+        // 72px of centred glyphs — so the wrapper only draws on the wide rail.
+        <div className={c ? 'contents' : 'ml-3 flex flex-col gap-1 border-l border-neutral-200 pl-1 dark:border-neutral-800'}>
+          {secondary.map((l) => navLink(l, c))}
+          <a href="/" target="_blank" rel="noopener" onClick={close} title={c ? t.navViewBlog : undefined} className={rowClass(c)}>
+            {(c || icons) && <IconExternal />}
+            {!c && <span className="truncate">{t.navViewBlog}</span>}
+          </a>
+        </div>
+      )}
     </>
   )
 

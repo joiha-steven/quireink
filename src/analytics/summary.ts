@@ -113,16 +113,23 @@ export async function getAnalytics(days: number, bucket: Bucket = 'day', topN = 
 }
 
 /**
- * The four figures the DASHBOARD shows, and only those.
+ * The figures the DASHBOARD shows, and only those.
  *
  * The dashboard used to call `getAnalytics(30)` and throw ten of its fifteen fields away.
  * Measured against 40,000 events that cost 70ms of the dashboard's 85ms, for a card with a
  * sparkline, two totals and two short lists on it. The Analytics PAGE still calls
  * `getAnalytics`, because it renders all fifteen.
+ *
+ * ⚠️ Engagement joined the list on 2026-08-17 (ADR 0024 step 6) — two more numbers, one more
+ * query, and it is the query the home screen exists to ask now that the rail no longer offers
+ * an Analytics door. `engagement` is one aggregate over `analytics_scroll` in the same window
+ * the rest of this function already scans; it is not a second `getAnalytics` creeping back.
  */
 export async function getDashboardTraffic(days: number, topN = 10): Promise<{
   totalViews: number
   uniqueVisitors: number
+  avgReadDepth: number
+  avgDwellMs: number
   daily: ReturnType<typeof dailySeries>
   topReferrers: ReturnType<typeof topReferrers>
   topCountries: ReturnType<typeof topCountries>
@@ -131,16 +138,19 @@ export async function getDashboardTraffic(days: number, topN = 10): Promise<{
     const now = Date.now()
     const since = now - days * 86_400_000
     const current = windowCounts(since, null, null)
+    const { avgReadDepth, avgDwellMs } = engagement(since, null)
     return {
       totalViews: current.views,
       uniqueVisitors: current.visitors,
+      avgReadDepth,
+      avgDwellMs,
       daily: dailySeries(bucketRanges(since, now, 'day', reportTz()), null),
       topReferrers: topReferrers(since, topN, null),
       topCountries: topCountries(since, topN, null),
     }
   } catch (error) {
     console.error(`[ERROR] analytics.getDashboardTraffic: ${(error as Error).message}`)
-    return { totalViews: 0, uniqueVisitors: 0, daily: [], topReferrers: [], topCountries: [] }
+    return { totalViews: 0, uniqueVisitors: 0, avgReadDepth: 0, avgDwellMs: 0, daily: [], topReferrers: [], topCountries: [] }
   }
 }
 

@@ -42,7 +42,7 @@ export function ContentDashboard({
       {/* Both "new" buttons, because the list no longer has a tab to tell it which kind you
           are looking at. A page is the rarer of the two, so it is the quieter button. */}
       <PageHeader
-        title={t.navDashboard}
+        title={t.navWrite}
         actions={
           <div className="flex items-center gap-2">
             <Link href="/admin/page-editor">

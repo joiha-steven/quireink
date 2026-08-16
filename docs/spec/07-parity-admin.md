@@ -13,6 +13,13 @@ between a line here and the running software is either a bug or an unrecorded `â
 > **This whole section is invisible to the golden harness.** 8,578 lines, 66 components,
 > and the M3 gate requires a scripted headless tour of at least 30 flows. These are the flows.
 
+- `âœ‚` **The SHAPE of the admin is 2.x's own** since
+  [ADR 0024](../decisions/0024-the-admin-is-rebuilt-around-writing.md): the three content tabs
+  are one list, the search reaches the body, the toolbar arrives on a selection, the
+  attributes are asked at publish time, the rail is four destinations with the rest behind one
+  control, and the home carries the reader numbers plus the unfinished writing. Every line
+  below describes **1.x**; where one differs from the running admin, that ADR is the reason and
+  not a bug.
 - Sign in, sign out, unauthorised address bounced
 - Overview: five stat cards, traffic card with sparkline, most viewed, needs-attention
   (draft count only), recent activity, one-line system footer

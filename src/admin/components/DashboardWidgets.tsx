@@ -9,8 +9,14 @@ import { useAdminT } from './I18nProvider'
 export type DashboardData = {
   // 30-day totals + the per-day view series for the sparkline; views7 is the last
   // 7 days summed from the same series (no extra query).
-  traffic: { views30: number; visitors30: number; views7: number; spark: number[] }
+  //
+  // `avgDwellMs` and `avgReadDepth` joined them for ADR 0024 step 6: with Analytics off the
+  // rail, "how many" is no longer the whole answer this screen has to give.
+  traffic: { views30: number; visitors30: number; views7: number; spark: number[]; avgDwellMs: number; avgReadDepth: number }
   topPosts: { title: string; slug: string; views: number }[]
+  // The unfinished pieces, newest first, at most four — and how many there are in all, so a
+  // band showing four of eleven can say so instead of quietly capping.
+  pickUp: { items: { title: string; href: string; touched: string }[]; total: number }
   // Counts the owner may want to act on. Comments have no moderation queue in
   // this app (publish-on-submit + soft-delete), so there is no "pending" here.
   // Unused-media is deliberately excluded — too heavy to compute on every load.
@@ -19,7 +25,12 @@ export type DashboardData = {
   // to `Overview` as a `seo` prop that nothing rendered. They belong here: both are a live
   // post that will look wrong the moment somebody shares it, which is exactly what "needs
   // attention" is for, and the card carried one row before them.
-  needs: { drafts: number; noExcerpt: number; noImage: number }
+  //
+  // ⚠️ A `drafts` COUNT was the third row until ADR 0024 step 6 put the drafts themselves at
+  // the top of the screen. Two things saying "3" a hand's width apart, one of them the actual
+  // three, is not two facts. The count survives as `pickUp.total`, where it is used to say
+  // whether the band is showing all of them.
+  needs: { noExcerpt: number; noImage: number }
   // Same story — computed, passed, and never rendered. Two lists of at most five.
   sources: { referrers: { label: string; visitors: number }[]; countries: { label: string; visitors: number }[] }
 }
@@ -60,15 +71,21 @@ const VIEW_ALL =
  * them means having them within one glance of each other, so they sit at the left in reading
  * order and the space goes to the right of both.
  */
-function Figure({ value, label, lead = false }: { value: number; label: string; lead?: boolean }) {
+function Figure({ value, label, lead = false }: { value: string; label: string; lead?: boolean }) {
   return (
-    <div>
+    <div className="min-w-0">
       <div className={`${lead ? 'text-3xl font-bold' : 'text-3xl font-semibold text-neutral-500 dark:text-neutral-400'} tracking-tight tabular-nums`}>
-        {value.toLocaleString()}
+        {value}
       </div>
       <div className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">{label}</div>
     </div>
   )
+}
+
+/** Average dwell as `m:ss`. Seconds alone read as a serial number at four digits. */
+function minutesSeconds(ms: number): string {
+  const total = Math.max(0, Math.round(ms / 1000))
+  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`
 }
 
 function TrafficCard({ traffic }: { traffic: DashboardData['traffic'] }) {
@@ -76,11 +93,28 @@ function TrafficCard({ traffic }: { traffic: DashboardData['traffic'] }) {
   return (
     <Card
       title={t.dashTraffic}
-      actions={<Link href="/admin/analytics" className={VIEW_ALL}>{t.dashViewAnalytics}</Link>}
+      actions={
+        <div className="flex items-center gap-3">
+          {/* The window, said ONCE. It used to be repeated inside two of the labels ("Views ·
+              30 days", "Visitors · 30 days"), which at four figures wrapped one label to two
+              lines and left the row of numbers sitting on a ragged baseline. */}
+          <span className="text-xs text-neutral-400 dark:text-neutral-500">{t.analyticsRange30}</span>
+          <Link href="/admin/analytics" className={VIEW_ALL}>{t.dashViewAnalytics}</Link>
+        </div>
+      }
     >
-      <div className="flex flex-wrap items-start gap-x-10 gap-y-4">
-        <Figure value={traffic.views30} label={t.dashViews30} lead />
-        <Figure value={traffic.visitors30} label={t.dashVisitors30} />
+      {/* FOUR figures now, and a grid rather than a wrapping flex row: at 1440 the card is
+          ~600px, so four `gap-x-10` items measured 680 and the fourth dropped to a second row
+          under the first — a stagger that reads as three numbers and an afterthought. Two by
+          two under 640px, four across above it, each track sized by the grid instead of by
+          its own content. */}
+      <div className="grid grid-cols-2 gap-x-8 gap-y-4 sm:grid-cols-4">
+        <Figure value={traffic.views30.toLocaleString()} label={t.dashViews} lead />
+        <Figure value={traffic.visitors30.toLocaleString()} label={t.dashVisitors} />
+        {/* The two that say whether anybody READ it, as opposed to how many arrived. They are
+            the reason this card can carry the word "Analytics" without one. */}
+        <Figure value={minutesSeconds(traffic.avgDwellMs)} label={t.dashAvgTime} />
+        <Figure value={`${traffic.avgReadDepth}%`} label={t.dashReadDepth} />
       </div>
       <div className="mt-5">
         <Sparkline data={traffic.spark} />
@@ -122,12 +156,11 @@ function TopPostsCard({ posts }: { posts: DashboardData['topPosts'] }) {
 
 function NeedsAttentionCard({ needs }: { needs: DashboardData['needs'] }) {
   const t = useAdminT()
-  // Drafts first because it is the owner's own unfinished work; the other two are published
-  // and therefore already visible to somebody. A row with a zero still shows — the point of
-  // the card is the whole checklist, and a list that changes length as counts hit zero makes
-  // the page jump and hides which checks are even being run.
+  // Both rows are about a PUBLISHED post that will look wrong the moment somebody shares it —
+  // which is the one kind of problem the owner cannot see by opening his own site. A row with
+  // a zero still shows: the point of the card is the whole checklist, and a list that changes
+  // length as counts hit zero makes the page jump and hides which checks are even being run.
   const items = [
-    { label: t.dashDrafts, count: needs.drafts, href: '/admin/content' },
     { label: t.dashNoExcerpt, count: needs.noExcerpt, href: '/admin/content' },
     { label: t.dashNoImage, count: needs.noImage, href: '/admin/content' },
   ]
@@ -231,6 +264,16 @@ function SourcesCard({ sources }: { sources: DashboardData['sources'] }) {
  * With four, a stretched row is exactly what is wanted, because the pair in it is the thing
  * being compared. `items-stretch` (the default) is therefore load-bearing here — do not add
  * `items-start` back without also giving the band an odd number of cards again.
+ *
+ * ── 2026-08-17, ADR 0024 step 6: RE-MEASURED, because the band changed under it ──────────────
+ *
+ * Traffic gained two figures and "Needs attention" lost its drafts row, so every number above
+ * is now history. At 1440px: Traffic and Needs attention both 222 tall, with 25px and 89px of
+ * air under their last line; Sources and Most viewed both 266, with 71 and 25. The emptiest
+ * card carries 64px of hole — a quarter of its own height, against the 188px that made the
+ * owner call this band uneven on 2026-08-14, and it is the half-width card rather than the
+ * widest thing on the page. At 375px the four stack: 290 · 150 · 358 · 258, `scrollWidth` 375
+ * against a 375 viewport, no sideways drag.
  */
 export function DashboardWidgets({ data }: { data: DashboardData }) {
   return (

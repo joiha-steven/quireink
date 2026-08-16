@@ -113,7 +113,8 @@ export type Dict = {
 export type AdminStrings = {
   // nav
   navHome: string
-  navDashboard: string
+  navWrite: string
+  navMore: string
   navMedia: string
   navSettings: string
   navViewBlog: string
@@ -476,14 +477,16 @@ export type AdminStrings = {
   statStorage: string
   dashTraffic: string
   dashViewAnalytics: string
-  dashViews30: string
-  dashVisitors30: string
+  dashViews: string
+  dashVisitors: string
   dashViews7: string
+  dashAvgTime: string
+  dashReadDepth: string
+  dashPickUp: string
   dashTopPosts: string
   dashTopEmpty: string
   dashNeedsAttention: string
   dashAllClear: string
-  dashDrafts: string
   dashNoExcerpt: string
   dashNoImage: string
   dashSources: string

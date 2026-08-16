@@ -39,6 +39,10 @@ inside it. In book mode the same break becomes the asterism.
   links add `SIDEBAR_NAV_ACTIVE`); the footer holds the **light/dark toggle + Clear cache + Sign out**
   (palette selection moved to the public site); on mobile
   it's a hamburger drawer (always icon+label). (`ADMIN_NAV` is the older horizontal variant.)
+  It lists **four destinations** and puts the rest behind one "Everything else" button
+  ([ADR 0024](../decisions/0024-the-admin-is-rebuilt-around-writing.md) step 6) — the group is
+  indented by a RULE on its wrapper, never by padding on the rows, because those rows share the
+  one class constant this bullet is about.
   Public header's 40px icon buttons → `ICON_BTN` (`ui/iconButton.ts`). Adding an item = reuse the
   constant, never copy a class list.
 - **Editor toolbar stays one row.** Text is reserved for B/I/U/S, P, H1–H5, and compact table

@@ -46,7 +46,7 @@ export function EditorActions({
     >
       <div className="flex min-w-0 items-center gap-3">
         <Link href="/admin/content" className="text-sm text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white">
-          ← {t.navDashboard}
+          ← {t.navWrite}
         </Link>
         <span className="hidden h-4 w-px bg-neutral-200 sm:block dark:bg-neutral-800" />
         <span className="text-sm text-neutral-500 dark:text-neutral-400">{status}</span>

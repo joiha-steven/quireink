@@ -7,6 +7,7 @@
 
 import type { Tour } from './tour'
 import { registerEditorFlows } from './tour-flows-editor'
+import { registerHomeFlows } from './tour-flows-home'
 
 export function registerAdminFlows({ flow, expect, atWidth }: Tour): void {
 
@@ -110,6 +111,9 @@ export function registerAdminFlows({ flow, expect, atWidth }: Tour): void {
 
   // The editor half, next door — see its header for the seam.
   registerEditorFlows({ flow, expect, atWidth })
+
+  // The home screen and the rail (ADR 0024 step 6), likewise.
+  registerHomeFlows({ flow, expect, atWidth })
 
   flow('admin: the trash takes a post and gives it back', () => expect('/admin/trash', `
     (async () => {
