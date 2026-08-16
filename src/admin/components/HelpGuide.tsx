@@ -89,7 +89,8 @@ export function HelpGuide({ title, version, firstRunTitle }: {
       </Anchor>
 
       <p className="pt-2 text-center text-xs text-neutral-400 dark:text-neutral-500">
-        <a href={REPO} target="_blank" rel="noopener noreferrer" className={A}>Quire Ink</a> v{version} · PolyForm Noncommercial ·{' '}
+        <a href={REPO} target="_blank" rel="noopener noreferrer" className={A}>Quire Ink</a> v{version} ·{' '}
+        <Ext href={`${REPO}/blob/main/LICENSE-EXCEPTION.md`}>PolyForm NC + hosting</Ext> ·{' '}
         <Ext href={`${REPO}#readme`}>README</Ext>
       </p>
     </div>

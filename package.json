@@ -2,7 +2,7 @@
   "name": "quireink",
   "version": "2.0.3",
   "private": true,
-  "license": "PolyForm-Noncommercial-1.0.0",
+  "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "engines": {
     "bun": ">=1.3"

@@ -5,7 +5,8 @@ services behind it. That shape is the point, and it is the first thing a change 
 against. Small, correct, well-scoped changes are the easiest to accept.
 
 Opening a pull request means your contribution ships under the
-[PolyForm Noncommercial license](./LICENSE), and that you grant the project owner the right
+[PolyForm Noncommercial license](./LICENSE) and the [additional permission](./LICENSE-EXCEPTION.md)
+that goes with it, and that you grant the project owner the right
 to relicense it, including under commercial terms. That second half is what keeps a paid
 commercial licence possible without having to track down every past contributor; it is
 stated here rather than enforced by a CLA bot.
@@ -92,6 +93,8 @@ Bug reports and feature requests have their own templates under
 ## Two licenses, kept apart
 
 The **code** in this repository is [PolyForm Noncommercial](./LICENSE): read it, change it,
-self-host it, share it, for any noncommercial purpose. Commercial use needs a separate
-licence, which is usually cheap or free for the asking. The **writing** published with Quire Ink
+self-host it, share it, for any noncommercial purpose. An
+[additional permission](./LICENSE-EXCEPTION.md) also allows commercial use — paid hosting
+included — of a published release run unmodified. Commercial use of a *modified* version
+needs a separate licence, which is usually cheap or free for the asking. The **writing** published with Quire Ink
 belongs to its author, is not covered by the code licence, and is not in this repository.

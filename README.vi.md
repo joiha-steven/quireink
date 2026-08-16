@@ -3,6 +3,7 @@
 # quire**INK** &nbsp;`2.0.3`
 
 **Một cái blog bạn tự host, và AI agent có thể vận hành thay bạn.**
+Không thuật toán, không quảng cáo, không nền tảng nào đứng giữa bạn và người đọc.
 Một tiến trình. Hai tệp SQLite. Không tài khoản đám mây nào trong đường đi.
 
 <br/>
@@ -13,7 +14,7 @@ Một tiến trình. Hai tệp SQLite. Không tài khoản đám mây nào trong
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178c6?logo=typescript&logoColor=white)
 ![React 19](https://img.shields.io/badge/React_19-20232a?logo=react&logoColor=61dafb)
 ![MCP](https://img.shields.io/badge/MCP-ready-7c3aed)
-![License: PolyForm Noncommercial](https://img.shields.io/badge/License-PolyForm_Noncommercial-22c55e)
+![License: PolyForm Noncommercial plus paid hosting](https://img.shields.io/badge/License-PolyForm_NC_%2B_paid_hosting-22c55e)
 
 [English](./README.md) · **Tiếng Việt**
 
@@ -33,6 +34,30 @@ Một tiến trình. Hai tệp SQLite. Không tài khoản đám mây nào trong
 
 Bạn viết, nó đăng, và mọi thứ nằm trên máy chủ của bạn.
 
+Mục này viết cho người không rành kỹ thuật. Phần còn lại của trang là cho người sẽ đi dựng nó.
+
+**Nó là một cái blog, đúng nghĩa đen.** Có trang chủ, bài viết, chuyên mục, ô tìm kiếm, phần bình luận, và bản tin tự gửi email cho người theo dõi mỗi khi bạn đăng bài. Cái nó không có: thuật toán quyết định ai được đọc bài bạn, quảng cáo chen ngang, và một công ty có thể đổi luật chơi hoặc đóng cửa vào một ngày nào đó.
+
+**Bạn chỉnh nó bằng cách bấm, không phải bằng cách viết code.** Màu, font, cỡ chữ, bố cục trang chủ, menu — tất cả nằm trong trang quản trị, đăng nhập bằng tài khoản riêng của bạn, và dùng được cả trên điện thoại.
+
+**Trang đọc nhẹ khác thường.** Mở một bài viết tốn khoảng 114 KB — một tấm ảnh chụp bằng điện thoại còn nặng gấp vài chục lần. Người đọc ở chỗ sóng yếu, cầm máy đời cũ, vẫn thấy chữ hiện ra gần như tức thì. Đây là số đo thật chứ không phải lời quảng cáo: [xem bảng](#tốc-độ).
+
+**Đọc cho dễ chịu là chủ đích của cả dự án.** Sáu bảng màu sáng và tối, bốn font đọc, chế độ sách dàn hai cột như trang giấy, và bút dạ quang năm màu mực để tô những câu tâm đắc.
+
+**AI có thể viết và đăng thay bạn.** Nối Claude (hoặc một trợ lý AI khác) vào blog rồi bảo: *"viết một bài 600 chữ về chuyến đi hôm nay, gắn thẻ du lịch, đăng lên"*. Nó soạn và đăng qua đúng những luật mà bạn đang dùng, và bạn thu hồi quyền của nó lúc nào cũng được.
+
+**Cần gì để bắt đầu.** Một tên miền, và một máy chủ thuê ngoài — loại rẻ nhất là đủ. Lần dựng đầu tiên là việc kỹ thuật: nhờ một người biết về máy chủ, hoặc giao hẳn cho một AI agent làm hộ ([mục Cài đặt](#cài-đặt)). Sau đó thì việc hằng ngày — viết, đăng, đổi giao diện, xem thống kê — đều nằm trong trang quản trị; chỉ khi nâng cấp lên bản mới mới cần chạm lại vào dòng lệnh.
+
+**Đổi lại, bạn tự giữ nhà mình.** Không ai sao lưu hộ bạn — có sẵn một nút tải nguyên cả blog về máy, nhưng bấm nó là việc của bạn — và blog sống theo cái máy chủ bạn thuê.
+
+**Miễn phí, và bạn được thu tiền.** Blog cá nhân thì không tốn gì. Dùng trong doanh nghiệp, hay bán dịch vụ host cho mỗi khách một cái blog, cũng được — miễn là bản bạn chạy đúng là bản phát hành ở đây. Chỉ bản *đã sửa code* đem đi kinh doanh mới phải hỏi trước: [xem mục Giấy phép](#giấy-phép).
+
+**Không hợp với ai.** Một toà soạn cần phân vai, duyệt bài và hàng đợi biên tập. Quire Ink cố ý chỉ có một chủ.
+
+---
+
+## Bên dưới nắp máy
+
 Không có CSDL nào phải cài, cũng không có gì phải deploy. Trỏ tên miền vào một câu lệnh là bạn có một cái blog:
 
 ```bash
@@ -47,7 +72,7 @@ Có ba thứ định hình nó.
 
 **Agent viết được thay bạn.** Nối Claude hay bất kỳ client MCP nào vào, nó soạn được, gắn thẻ được, hẹn giờ và đăng được, theo đúng những luật mà trang quản trị đang theo.
 
-Bạn được đọc, sửa, chạy và fork theo [PolyForm Noncommercial](./LICENSE).
+Bạn được đọc, sửa, chạy và fork theo [PolyForm Noncommercial](./LICENSE), và được chạy bản phát hành để kinh doanh — kể cả bán hosting — theo [một cho phép bổ sung](./LICENSE-EXCEPTION.vi.md).
 
 > **2.0.3 ra ngày 15/08/2026**, đang chạy bản demo ở trên và blog riêng của tác giả tại
 > [manhhung.me](https://manhhung.me). Bản này gộp luôn 2.0.2, nên chỉ còn một bản để đọc.
@@ -277,9 +302,13 @@ rồi thì xem [changelog](./CHANGELOG.md).
 
 Hai thứ khác nhau, và chúng không chung điều khoản.
 
-**Mã nguồn ở đây** theo [PolyForm Noncommercial 1.0.0](./LICENSE). Xem được mã nguồn, nhưng không phải open source. Miễn phí cho mọi mục đích phi thương mại, hiểu theo nghĩa rộng: blog của bạn, một dự án chơi cho vui, học tập, nghiên cứu, và cả tổ chức từ thiện, trường học, viện nghiên cứu công và cơ quan nhà nước. Cứ đọc, sửa, tự host, fork, chuyển cho người khác. Chỉ cần giữ nguyên văn bản giấy phép và dòng `Required Notice:` kèm theo mỗi bản bạn đưa đi.
+**Mã nguồn ở đây** theo [PolyForm Noncommercial 1.0.0](./LICENSE), cộng thêm [một cho phép bổ sung](./LICENSE-EXCEPTION.vi.md). Xem được mã nguồn, nhưng không phải open source. Gộp lại thì gọn trong một câu: **cứ chạy, và cứ thu tiền, miễn là bản bạn chạy đúng là bản phát hành ở đây.**
 
-**Dùng cho mục đích thương mại thì cần giấy phép riêng.** Chạy Quire Ink cho một doanh nghiệp, hoặc bán nó, hoặc bán dịch vụ host nó, đều không nằm trong phạm vi trên. Mở một issue hoặc liên hệ chủ sở hữu qua [trang GitHub của họ](https://github.com/joiha-steven).
+**Phi thương mại: được tất.** Blog của bạn, một dự án chơi cho vui, học tập, nghiên cứu, và cả tổ chức từ thiện, trường học, viện nghiên cứu công và cơ quan nhà nước. Cứ đọc, sửa, tự host, fork, chuyển cho người khác. Chỉ cần giữ nguyên văn bản giấy phép và dòng `Required Notice:` kèm theo mỗi bản bạn đưa đi.
+
+**Thương mại: được, nếu không sửa code.** Chạy cho doanh nghiệp, chạy cho khách hàng, bán hosting mà mỗi khách có một cái blog Quire Ink riêng. Đổi lại bốn điều: chạy đúng một bản phát hành với mã nguồn nguyên vẹn — cấu hình, bảng màu, font và nội dung không tính là mã nguồn, vì ở đây giao diện là tuỳ chọn chứ không phải chỗ phải fork — giữ nguyên các dòng ghi chú bản quyền, nói rõ dịch vụ của bạn chạy trên Quire Ink kèm link về đây, và bán dịch vụ chứ không bán phần mềm. Đủ chi tiết nằm trong [`LICENSE-EXCEPTION.vi.md`](./LICENSE-EXCEPTION.vi.md), ngắn thôi.
+
+**Bản đã sửa code đem đi kinh doanh thì cần giấy phép riêng.** Đây là ranh giới duy nhất dự án giữ lại: sửa code rồi đem bán, hoặc chạy một bản đã sửa thành dịch vụ, thì phải hỏi trước. Vá lỗi hay bịt lỗ hổng bảo mật trên bản cài của chính bạn thì được miễn — cứ vá, và báo cho chủ sở hữu trong vòng 30 ngày. Hỏi bằng cách mở một issue, hoặc qua [trang GitHub của chủ sở hữu](https://github.com/joiha-steven).
 
 **Những gì bạn viết vẫn là của bạn.** Bài và ảnh của bạn không thuộc giấy phép mã nguồn và không nằm trong repo này.
 

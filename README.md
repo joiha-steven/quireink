@@ -3,6 +3,7 @@
 # quire**INK** &nbsp;`2.0.3`
 
 **A blog you host yourself, and an AI agent can run for you.**
+No algorithm, no ads, no platform standing between you and your readers.
 One process. Two SQLite files. No cloud account anywhere in the path.
 
 <br/>
@@ -13,7 +14,7 @@ One process. Two SQLite files. No cloud account anywhere in the path.
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178c6?logo=typescript&logoColor=white)
 ![React 19](https://img.shields.io/badge/React_19-20232a?logo=react&logoColor=61dafb)
 ![MCP](https://img.shields.io/badge/MCP-ready-7c3aed)
-![License: PolyForm Noncommercial](https://img.shields.io/badge/License-PolyForm_Noncommercial-22c55e)
+![License: PolyForm Noncommercial plus paid hosting](https://img.shields.io/badge/License-PolyForm_NC_%2B_paid_hosting-22c55e)
 
 **English** · [Tiếng Việt](./README.vi.md)
 
@@ -33,6 +34,30 @@ One process. Two SQLite files. No cloud account anywhere in the path.
 
 You write, it publishes, and all of it sits on a server you control.
 
+This section is for a reader who is not technical. The rest of the page is for whoever sets it up.
+
+**It is a blog, in the plain sense of the word.** A front page, posts, categories, a search box, comments, and a newsletter that emails your subscribers whenever you publish. What it does not have: an algorithm deciding who gets to see your writing, ads cutting across it, and a company that can change the rules or close down one day.
+
+**You change it by clicking, not by writing code.** Colour, type, size, the shape of the front page, the menu — all of it lives in the admin, behind your own sign-in, and works from a phone.
+
+**The reading page is unusually light.** Opening a post costs about 114 KB — a photo from your phone is a few dozen times heavier. Someone on a weak signal with an old handset still sees the words almost at once. These are measurements, not claims: [the table](#speed).
+
+**Reading comfort is the point of the whole project.** Six palettes in light and dark, four reading fonts, a book mode set in two columns like paper, and a five-ink highlighter for the lines worth keeping.
+
+**An AI can write and publish for you.** Connect Claude (or another assistant) and say: *"write a 600-word post about today's trip, tag it travel, publish it"*. It drafts and publishes through exactly the rules you use, and you can take its access away at any moment.
+
+**What you need to start.** A domain, and a rented server — the cheapest tier is enough. The first setup is a technical job: ask someone who knows servers, or hand the whole thing to an AI agent ([Install](#install)). After that the daily work — writing, publishing, changing the look, reading the stats — is all in the admin; only upgrading to a new version needs the command line again.
+
+**In return, you keep your own house.** Nobody backs it up for you — there is a button that downloads the entire blog, but pressing it is your job — and the blog lives as long as the server you rent.
+
+**Free, and you may charge for it.** A personal blog costs nothing. Running it inside a business, or selling hosting where every customer gets their own blog, is allowed too — as long as what you run is the version published here. Only a *modified* version used commercially needs to ask first: [License](#license).
+
+**Not for everyone.** A newsroom with roles, approvals and an editorial queue should look elsewhere. Quire Ink has one owner on purpose.
+
+---
+
+## Under the hood
+
 There is no database to install and nothing to deploy. Point a domain at one command and you have a blog:
 
 ```bash
@@ -47,7 +72,7 @@ Three things shaped it.
 
 **An agent can do the writing.** Connect Claude or any MCP client and it can draft, tag, schedule and publish for you, through exactly the rules the admin follows.
 
-You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE).
+You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE), and run the published version commercially — paid hosting included — under [one additional permission](./LICENSE-EXCEPTION.md).
 
 > **2.0.3 came out on 2026-08-15** and runs the demo above plus the author's own blog at
 > [manhhung.me](https://manhhung.me). It folds 2.0.2 in, so there is one release to read.
@@ -278,9 +303,13 @@ already shipped is in the [changelog](./CHANGELOG.md).
 
 Two different things, and they are not covered by the same terms.
 
-**The code here** is [PolyForm Noncommercial 1.0.0](./LICENSE). Source-available, not open source. Free for anything noncommercial, meant generously: your own blog, a hobby project, study, research, and also charities, schools, public research bodies and government. Read it, change it, host it, fork it, pass it on. Keep the licence text and the `Required Notice:` line with any copy you give someone.
+**The code here** is [PolyForm Noncommercial 1.0.0](./LICENSE) plus [one additional permission](./LICENSE-EXCEPTION.md). Source-available, not open source. Together they come to one sentence: **run it, and charge for running it, as long as the version you run is the one published here.**
 
-**Using it commercially needs a separate licence.** Running Quire Ink for a business, or selling it, or selling hosting for it, is not covered. Open an issue or reach the owner through [their GitHub profile](https://github.com/joiha-steven).
+**Noncommercial: everything.** Your own blog, a hobby project, study, research, and also charities, schools, public research bodies and government. Read it, change it, host it, fork it, pass it on. Keep the licence text and the `Required Notice:` line with any copy you give someone.
+
+**Commercial: yes, unmodified.** Run it for a business, run it for a client, sell hosting where each customer gets their own Quire Ink blog. What that asks of you: run a published release with its source unchanged — settings, palettes, fonts and content are not source, and the look of a site is a setting here rather than a fork — keep the notices, say your service runs Quire Ink and link back, and sell the service rather than the software. It is all in [`LICENSE-EXCEPTION.md`](./LICENSE-EXCEPTION.md), which is short.
+
+**A modified version, used commercially, needs a separate licence.** That is the one line the project holds: changing the code and then selling it, or running a changed copy as a service, is the thing to ask about first. Fixing a bug or a security hole in your own deployment is carved out — patch it, and tell the owner within 30 days. Ask by opening an issue or through [the owner's GitHub profile](https://github.com/joiha-steven).
 
 **What you write stays yours.** Your posts and images are not covered by the code licence and are not in this repository.
 

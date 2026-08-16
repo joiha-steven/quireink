@@ -36,7 +36,7 @@ abandoned on 2026-07-26, and the only trace was a private memory file.
 | [0012](0012-flatten-repo-after-cutover.md) | Flatten the repository after cutover: 2.0 to the root, the Next tree to `v1/` | 2026-07-28 | ⚠️ the flattening holds; the `v1/` half ended at 0019 |
 | [0013](0013-google-sign-in-for-commenters.md) | Bring back Google sign-in, for commenters only | 2026-07-29 | ✅ |
 | [0014](0014-homepage-modes.md) | A homepage mode: the post list, a chosen page, or a composed front page | 2026-07-31 | ✅ |
-| [0015](0015-relicense-polyform-noncommercial.md) | Relicense from MIT to PolyForm Noncommercial 1.0.0 | 2026-07-31 | ✅ |
+| [0015](0015-relicense-polyform-noncommercial.md) | Relicense from MIT to PolyForm Noncommercial 1.0.0 | 2026-07-31 | ⚠️ holds, except its ban on all commercial use: amended by 0023 |
 | [0016](0016-rename-to-quire-ink.md) | Rename the product to Quire Ink, on `quireink.com` | 2026-07-31 | ✅ |
 | [0017](0017-move-state-and-instance-config-private.md) | Move `state/` and instance config to a private repository | 2026-08-01 | ⚠️ holds, except its `v1/` bullet: superseded by 0019 |
 | [0018](0018-highlighter-pen.md) | A highlighter pen: `==text==`, drawn as ink rather than as a box | 2026-08-03 | ✅ |
@@ -44,6 +44,7 @@ abandoned on 2026-07-26, and the only trace was a private memory file.
 | [0020](0020-mathematics-as-mathml.md) | Mathematics: LaTeX in the source, MathML on the page, and the dollar sign stays money | 2026-08-06 | ✅ |
 | [0021](0021-hosted-quire-ink-one-process-per-blog.md) | A hosted Quire Ink, as one process per blog. `tenant_id` stays rejected | 2026-08-11 | ✅ |
 | [0022](0022-ship-from-source-not-a-compiled-binary.md) | Quire Ink ships as source run by Bun. There is no compiled binary | 2026-08-11 | ✅ |
+| [0023](0023-commercial-use-of-unmodified-releases.md) | Commercial use of an unmodified release is allowed. A modified copy sold is not | 2026-08-16 | ✅ |
 
 ## Superseded, and why that matters
 
