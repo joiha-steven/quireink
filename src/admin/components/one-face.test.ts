@@ -86,17 +86,18 @@ describe('the admin wears one face', () => {
   })
 
   it('gives the reading face to the editor and nothing else', () => {
-    // THE list, and it is short on purpose. `PostForm` is the title field — the published
-    // headline being typed, so it has to be the published face. `TypographyFields` is the font
-    // picker's specimen tiles, which are not a preview if they are not painted in the family
-    // they offer. `type.ts` is the declaration. A fourth file means the 2026-08-15 decision is
-    // being re-opened by accident.
+    // THE list, and it is short on purpose. `SheetTitle` is the title field — the published
+    // headline being typed, so it has to be the published face; it moved there from
+    // `PostForm` on 2026-08-17 when both editors started sharing one title block.
+    // `TypographyFields` is the font picker's specimen tiles, which are not a preview if
+    // they are not painted in the family they offer. `scale.ts` is the declaration. A
+    // fourth file means the 2026-08-15 decision is being re-opened by accident.
     const holders = sources('src/admin')
       .filter((f) => /\bREADING\b/.test(code(f)))
       .map((f) => f.replaceAll('\\', '/'))
       .sort()
     expect(holders).toEqual([
-      'src/admin/components/PostForm.tsx',
+      'src/admin/components/SheetTitle.tsx',
       'src/admin/components/TypographyFields.tsx',
       'src/admin/components/kit.tsx', // re-export only
       'src/admin/components/scale.ts',

@@ -238,20 +238,25 @@ cache stays in the operations footer, reachable from every screen, expanded or c
 
 ## The editor
 
-- Focus mode: the global sidebar is hidden while editing. Save, preview, publish and the
-  property controls live in a sticky editor header, framed and aligned to the editor surface
-  rather than as a flush edge-to-edge strip.
-- The title aligns with the public reading column, wraps naturally, and uses content-driven
-  height so a long one is never clipped.
-- The property inspector is collapsible and sticky on wide screens. There is no bottom action
-  bar; it used to cover the end of a long post.
-- **H1–H5 stay visible** in the toolbar. They are frequent writing actions and were rejected
-  once already as a paragraph-style selector.
-- Formatting is a single non-wrapping icon row with horizontal overflow, centred when it fits
-  and starting at the leading edge when it does not. The editor frame must NOT use
-  `overflow-hidden` — it breaks the nested sticky toolbar. The toolbar's sticky offset is
-  measured from the real action-header height, so it does not drift with the viewport or the
-  translation.
+- Focus mode: the global sidebar is hidden while editing. The chrome is ONE flat sticky
+  line over a hairline (the Writing Desk mock's `sheettop`): back link + save state + word
+  count on the left, quiet MD/attributes text controls and the Preview/Save/Publish buttons
+  on the right. It is never a rounded, bordered, shadowed card — that made the only chrome
+  on the page the most decorated thing on it.
+- The title lives ON the sheet (`SheetTitle`), in the reading face, with the meta line
+  (status · last touched) under it. It aligns with the public reading column, wraps
+  naturally, and uses content-driven height so a long one is never clipped.
+- **There is no permanent toolbar** (ADR 0024 step 4, tightened to the mock 2026-08-17).
+  Controls arrive when called: a selection raises the bubble (B I H U S code · five inks ·
+  link), `/` on an empty line raises the insert menu (which prints each block's Markdown
+  shortcut beside its row), and the table tools exist only while the cursor is in a table.
+  The closing line under the writing says the two gestures once.
+- The attributes are a right-hand slide-over (`SlideOver`) over a scrim, never a docked
+  column — a column squeezed the writing to make room for the questions. The first Publish
+  on an unpublished piece opens it as the publish sheet, footered "Later / Publish".
+- The editor frame must NOT use `overflow-hidden` — it breaks the nested sticky bars. The
+  table bar's sticky offset is measured from the real action-header height, so it does not
+  drift with the viewport or the translation.
 - The prose `contenteditable` must not inherit the global focus outline; the surrounding card
   is the boundary. Focus rings stay on discrete controls.
 - Insert and delete use a block-style overlay caret, an active-line pulse and a generated

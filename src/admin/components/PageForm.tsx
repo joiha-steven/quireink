@@ -1,18 +1,21 @@
-// Page editor screen: left = TipTap editor, right = settings, bottom = action bar.
-// Same flow as PostForm (auto-save + serialized manual save) but hits /api/pages
-// and has no taxonomy or date.
+// Page editor screen: the same sheet as the post editor — one quiet action line, the title
+// on the paper, the attributes on a slide-over. Same flow as PostForm (auto-save +
+// serialized manual save) but hits /api/pages and has no taxonomy or date.
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { PageWithContent, ApiResponse } from '@/types'
 import { Button } from '@/admin/ui/Button'
 import { useToast } from '@/admin/ui/Toast'
-import { slugify, formatTime } from '@/utils'
+import { slugify, formatTime, formatDateTimeShort } from '@/utils'
 import { uploadImages } from '@/admin/upload-client'
 import { Editor, type EditorApi } from './Editor'
+import { EditorActions } from './EditorActions'
+import { LocalDraftNotice } from './LocalDraftNotice'
 import { PageSettings, type PageDraft } from './PageSettings'
 import { MediaLibrary } from './MediaLibrary'
-import { saveStatusLine, useLocalAutosave, useLocalDraft, useUnsavedGuard } from './useLocalDraft'
+import { SlideOver } from './SlideOver'
+import { SheetTitle } from './SheetTitle'
+import { saveStatusLine, useLocalAutosave, useLocalDraft, useStickyOffset, useUnsavedGuard } from './useLocalDraft'
 import { useAdminT } from './I18nProvider'
-import { CARD, NOTICE } from './kit'
 
 type Props = { initial?: PageWithContent; contentWidth: number; typewriterEffects: boolean; autosaveSeconds: number }
 type PickTarget = 'editor' | 'gallery' | 'featured'
@@ -36,6 +39,11 @@ export function PageForm({ initial, contentWidth, typewriterEffects, autosaveSec
   const [picker, setPicker] = useState<PickTarget | null>(null)
   const [dirty, setDirty] = useState(false)
   const [savedSlug, setSavedSlug] = useState<string | null>(initial?.slug ?? null)
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [asking, setAsking] = useState(false)
+  const [mdView, setMdView] = useState(false)
+  const actionHeaderRef = useRef<HTMLDivElement>(null)
+  const toolbarTop = useStickyOffset(actionHeaderRef)
   // Local (offline) autosave — keyed per page so drafts don't clobber each other.
   const {
     recovered: localRecovered,
@@ -198,65 +206,87 @@ export function PageForm({ initial, contentWidth, typewriterEffects, autosaveSec
     }
   }
 
+  // The line under the title: what this piece is, and when it was last touched.
+  const touched = savedAt ?? initial?.updatedAt
+  const metaLine = [
+    `${t.kindPage} · ${draft.status === 'published' ? t.statusPublished : t.statusDraft}`,
+    touched ? formatDateTimeShort(touched) : null,
+  ].filter(Boolean).join(' · ')
+
   return (
-    <div className="pb-24">
-      {/* The page's title, in the face it will be published in. See PostForm. */}
-      <input
-        value={draft.title}
-        onChange={(e) => update({ title: e.target.value })}
-        placeholder={t.titlePlaceholder}
-        className="mb-6 w-full bg-transparent text-3xl font-bold outline-none placeholder:text-neutral-300 dark:placeholder:text-neutral-600"
+    <div>
+      <EditorActions
+        barRef={actionHeaderRef}
+        status={saveStatusLine(t, saving, savedAt, dirty, keptAt, formatTime)}
+        saving={saving}
+        dirty={dirty}
+        settingsOpen={settingsOpen}
+        onToggleSettings={() => setSettingsOpen((v) => !v)}
+        savedSlug={null}
+        getText={() => `${draftRef.current.title} ${editorApi.current?.getMarkdown() ?? contentRef.current}`}
+        mdView={mdView}
+        onToggleMd={() => editorApi.current?.toggleRaw()}
+        onPreview={() => undefined}
+        onSaveDraft={() => void handleSave('draft', t.savedDraft)}
+        // Same publish contract as a post (ADR 0024, step 5): the first Publish on a page
+        // never published opens its attributes — the slug is a question worth one look.
+        onPublish={() => {
+          if (draft.status !== 'published' && !asking) {
+            setAsking(true)
+            setSettingsOpen(true)
+            return
+          }
+          void handleSave('published', t.published)
+        }}
+        publishLabel={t.publish}
+        published={draft.status === 'published'}
       />
 
       {localRecovered && (
-        <div className={`mb-4 ${NOTICE}`}>
-          <span className="text-neutral-800 dark:text-neutral-200">
-            {t.localDraftFound} · {formatTime(localRecovered.at)}
-          </span>
-          <div className="flex gap-2">
-            <Button type="button" size="sm" onClick={restoreLocal}>
-              {t.localDraftRestore}
-            </Button>
-            <Button type="button" size="sm" variant="ghost" onClick={dismissLocal}>
-              {t.localDraftDiscard}
-            </Button>
-          </div>
-        </div>
+        <LocalDraftNotice at={localRecovered.at} onRestore={restoreLocal} onDiscard={dismissLocal} />
       )}
 
-      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <Editor
-          initialContent={draft.content}
-          onChange={(md) => { contentRef.current = md }}
-          onDirty={() => setDirty(true)}
-          onPickImage={() => setPicker('editor')}
-          onPickGallery={() => setPicker('gallery')}
-          onUploadFile={uploadInline}
-          apiRef={editorApi}
-          contentWidth={contentWidth}
-          typewriterEffects={typewriterEffects}
-        />
-        <div className={`p-5 lg:sticky lg:top-6 ${CARD}`}>
-          <PageSettings draft={draft} update={update} onPickFeatured={() => setPicker('featured')} />
-        </div>
-      </div>
+      <Editor
+        initialContent={draft.content}
+        onChange={(md) => { contentRef.current = md }}
+        onDirty={() => setDirty(true)}
+        onPickImage={() => setPicker('editor')}
+        onPickGallery={() => setPicker('gallery')}
+        onUploadFile={uploadInline}
+        apiRef={editorApi}
+        contentWidth={contentWidth}
+        toolbarTop={toolbarTop}
+        typewriterEffects={typewriterEffects}
+        onRawChange={setMdView}
+        header={<SheetTitle value={draft.title} onChange={(title) => update({ title })} placeholder={t.titlePlaceholder} metaLine={metaLine} />}
+      />
 
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-neutral-200/80 bg-white/90 shadow-[0_-8px_24px_rgba(0,0,0,0.04)] backdrop-blur-xl md:left-[var(--admin-nav-w,13rem)] dark:border-neutral-800 dark:bg-neutral-900/90">
-        <div className="mx-auto flex w-full max-w-[1480px] items-center justify-between px-4 py-3 sm:px-7 lg:px-10 xl:px-12">
-          <span className="text-sm text-neutral-400 dark:text-neutral-500">
-            {saveStatusLine(t, saving, savedAt, dirty, keptAt, formatTime)}
-          </span>
-          <div className="flex items-center gap-2">
-            {draft.status === 'published' && savedSlug && (
-              <a href={`/${savedSlug}`} target="_blank" rel="noopener" className="px-3 py-1.5 text-sm text-neutral-600 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white">
-                {t.viewPost}
-              </a>
-            )}
-            <Button variant="secondary" onClick={() => handleSave('draft', t.savedDraft)} disabled={saving || !dirty}> {t.saveDraft} </Button>
-            <Button onClick={() => handleSave('published', t.published)} disabled={saving || (!dirty && draft.status === 'published')}> {t.publish} </Button>
-          </div>
-        </div>
-      </div>
+      {settingsOpen && (
+        <SlideOver
+          label={asking ? t.pubTitle : t.attributes}
+          intro={asking ? t.publishReview : undefined}
+          headerRight={
+            draft.status === 'published' && savedSlug ? (
+              <a href={`/${savedSlug}`} target="_blank" rel="noopener" className="text-neutral-500 hover:text-neutral-900">{t.viewPost}</a>
+            ) : undefined
+          }
+          onClose={() => { setSettingsOpen(false); setAsking(false) }}
+          footer={
+            <>
+              <Button variant="secondary" type="button" onClick={() => { setSettingsOpen(false); setAsking(false) }}>
+                {asking ? t.pubLater : t.hideAttributes}
+              </Button>
+              {asking && (
+                <Button onClick={() => void handleSave('published', t.published)} disabled={saving}>
+                  {t.publish}
+                </Button>
+              )}
+            </>
+          }
+        >
+          <PageSettings draft={draft} update={update} onPickFeatured={() => setPicker('featured')} />
+        </SlideOver>
+      )}
 
       {picker && (
         <MediaLibrary
