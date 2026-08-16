@@ -29,7 +29,7 @@ const en = {
   untitled: '(untitled)',
   statusPublished: 'Published',
   statusDraft: 'Draft',
-  filterPlaceholder: 'Filter posts...',
+  filterPlaceholder: 'Search titles and writing...',
   filterAll: 'All',
   filterEmpty: 'No posts match your filter.',
   edit: 'Edit',

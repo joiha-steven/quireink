@@ -1,9 +1,11 @@
 // Posts list (no chrome): rows with per-row edit/delete. Tabs + heading +
 // "new" button live in ContentDashboard, which renders this.
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Link from '@/admin/router'
 import { useRouter } from '@/admin/router'
 import type { Post, ApiResponse } from '@/types'
+// Type-only, and it must stay that way: the module it comes from opens the database.
+import type { OwnerHit } from '@/content/search-owner'
 import { useToast } from '@/admin/ui/Toast'
 import { formatDateTimeShort, foldAccents } from '@/utils'
 import { RowActions, StatusPill } from './RowActions'
@@ -44,15 +46,50 @@ export function PostsTable({
     }
   }
 
-  // Filter by status + a folded substring match over title/tags/categories.
+  // What the words were found IN, keyed by slug, for the rows the title alone did not match.
+  // Null means "no server answer for this query yet", which is not the same as "no matches":
+  // the difference is why an empty state cannot be decided from this value alone.
+  const [bodyHits, setBodyHits] = useState<Map<string, string> | null>(null)
+
+  // The body search is the SERVER's, because the body is not here. This component is handed
+  // metadata for every post and nothing else, which is exactly why its filter could only
+  // ever match titles, tags and categories — the sentence the owner remembers writing was
+  // never in the browser to be found (ADR 0024).
+  //
+  // Debounced, because it runs per keystroke; one character is not a search, it is the
+  // beginning of one, and asking SQLite for every post that contains "t" helps nobody.
+  useEffect(() => {
+    const q = query.trim()
+    if (q.length < 2) {
+      setBodyHits(null)
+      return
+    }
+    const timer = setTimeout(() => {
+      void (async () => {
+        try {
+          const res = await fetch(`/api/admin/search?q=${encodeURIComponent(q)}`)
+          const json = (await res.json()) as ApiResponse<{ hits: OwnerHit[] }>
+          const hits = json.data?.hits ?? []
+          setBodyHits(new Map(hits.filter((h) => h.kind === 'post').map((h) => [h.slug, h.line])))
+        } catch {
+          // A failed search leaves the title filter working rather than emptying the screen.
+          setBodyHits(null)
+        }
+      })()
+    }, 180)
+    return () => clearTimeout(timer)
+  }, [query])
+
+  // Status + (title/tags/categories, matched here) OR (body, matched by the server).
   const needle = foldAccents(query.trim())
   const filtered = useMemo(() => {
     return posts.filter((p) => {
       if (status !== 'all' && p.status !== status) return false
       if (!needle) return true
-      return foldAccents([p.title, p.tags.join(' '), p.categories.join(' ')].join(' ')).includes(needle)
+      if (foldAccents([p.title, p.tags.join(' '), p.categories.join(' ')].join(' ')).includes(needle)) return true
+      return bodyHits?.has(p.slug) ?? false
     })
-  }, [posts, status, needle])
+  }, [posts, status, needle, bodyHits])
 
   if (posts.length === 0) {
     return <EmptyState title={t.noPosts} />
@@ -85,7 +122,10 @@ export function PostsTable({
         <Tabs tabs={statusTabs} value={status} onChange={setStatus} size="sm" />
       </div>
 
-      {filtered.length === 0 ? (
+      {/* "Nothing matches" is only true once the server has answered. Saying it while the
+          body search is still in flight is a lie that corrects itself, which reads as a
+          flicker and teaches the owner to distrust the screen. */}
+      {filtered.length === 0 && (needle.length < 2 || bodyHits !== null) ? (
         <EmptyState title={t.filterEmpty} />
       ) : (
     <TableFrame>
@@ -124,6 +164,14 @@ export function PostsTable({
                 <Link href={`/admin/editor/${p.slug}`} className="hover:underline">
                   {p.title || t.untitled}
                 </Link>
+                {/* The passage the words were found in. Without it a row that matched on its
+                    BODY looks like a row that matched on nothing, and the owner has to open
+                    the post to find out why it is in the list. */}
+                {bodyHits?.get(p.slug) && (
+                  <div className="mt-1 line-clamp-2 text-xs font-normal text-neutral-500 dark:text-neutral-400">
+                    {bodyHits.get(p.slug)}
+                  </div>
+                )}
                 {p.categories.length > 0 && (
                   <div className="mt-1 text-xs font-normal text-neutral-400 xl:hidden">{p.categories.join(', ')}</div>
                 )}

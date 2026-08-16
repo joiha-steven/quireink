@@ -29,7 +29,7 @@ const ko = {
   untitled: '(제목 없음)',
   statusPublished: '게시됨',
   statusDraft: '초안',
-  filterPlaceholder: '글 필터...',
+  filterPlaceholder: '제목과 본문 검색...',
   filterAll: '전체',
   filterEmpty: '필터와 일치하는 글이 없습니다.',
   edit: '편집',

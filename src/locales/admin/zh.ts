@@ -29,7 +29,7 @@ const zh = {
   untitled: '(无标题)',
   statusPublished: '已发布',
   statusDraft: '草稿',
-  filterPlaceholder: '筛选文章...',
+  filterPlaceholder: '搜索标题与正文...',
   filterAll: '全部',
   filterEmpty: '没有符合筛选条件的文章。',
   edit: '编辑',

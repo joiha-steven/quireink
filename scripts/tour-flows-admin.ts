@@ -214,6 +214,27 @@ export function registerAdminFlows({ flow, expect, atWidth }: Tour): void {
       return 'ok (' + marked.textContent.trim().slice(0, 30) + ')'
     })()`, 1200))
 
+  // ADR 0024, step 1, in one assertion: a phrase the owner remembers writing, inside a post
+  // whose TITLE carries no word of it. The filter this replaces matched title, tags and
+  // categories over an array in the browser, so this row could not have appeared before —
+  // and the flow refuses to pass on a title match, because that is what used to work.
+  flow('admin: the content search reaches into the body of a post', () => expect('/admin/content', `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      const box = document.querySelector('input[type=search]')
+      if (!box) return 'no search box on the content screen'
+      const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set
+      setter.call(box, 'widen the leading')
+      box.dispatchEvent(new Event('input', { bubbles: true }))
+      await sleep(800)
+      const rows = [...document.querySelectorAll('tbody tr')]
+      if (!rows.length) return 'searching a body phrase listed no post at all'
+      const titles = rows.map((r) => (r.querySelector('a') || {}).textContent || '')
+      if (titles.some((t) => /widen|leading/i.test(t))) return 'a TITLE carries the words, so this proves nothing'
+      if (!/leading/i.test(rows[0].textContent || '')) return 'the row showed no matching line, only its title'
+      return 'ok (' + titles[0] + ')'
+    })()`, 1200))
+
   flow('admin: every settings label is reachable from the search', () => expect('/admin/settings', `
     (async () => {
       const sleep = (ms) => new Promise((r) => setTimeout(r, ms))

@@ -45,6 +45,7 @@ abandoned on 2026-07-26, and the only trace was a private memory file.
 | [0021](0021-hosted-quire-ink-one-process-per-blog.md) | A hosted Quire Ink, as one process per blog. `tenant_id` stays rejected | 2026-08-11 | ✅ |
 | [0022](0022-ship-from-source-not-a-compiled-binary.md) | Quire Ink ships as source run by Bun. There is no compiled binary | 2026-08-11 | ✅ |
 | [0023](0023-commercial-use-of-unmodified-releases.md) | Commercial use of an unmodified release is allowed. A modified copy sold is not | 2026-08-16 | ✅ |
+| [0024](0024-the-admin-is-rebuilt-around-writing.md) | The admin is rebuilt around writing; everything else moves out of the way | 2026-08-16 | ✅ |
 
 ## Superseded, and why that matters
 

@@ -29,7 +29,7 @@ const vi = {
   untitled: '(không tiêu đề)',
   statusPublished: 'Đã đăng',
   statusDraft: 'Bản nháp',
-  filterPlaceholder: 'Lọc bài viết...',
+  filterPlaceholder: 'Tìm trong tiêu đề và nội dung...',
   filterAll: 'Tất cả',
   filterEmpty: 'Không có bài viết khớp bộ lọc.',
   edit: 'Chỉnh sửa',

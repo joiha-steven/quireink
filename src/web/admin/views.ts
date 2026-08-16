@@ -20,6 +20,7 @@ import { getIndex, getCategories, getTags, getPublicPosts, getTrashedPosts } fro
 import { getPageIndex, getTrashedPages, getPage, getPublicPages } from '@/content/pages'
 import { getPost } from '@/content/posts'
 import { getAllSeriesNames } from '@/content/series'
+import { searchEverything } from '@/content/search-owner'
 import { getSettings } from '@/content/settings'
 import { THEME_PRESETS } from '@/content/themes'
 import { getTrashedMedia } from '@/media/media'
@@ -57,6 +58,14 @@ export function viewRoutes(): OwnerRouter {
       commentsEnabled ? countsByPosts() : Promise.resolve({} as Record<string, number>),
     ])
     return c.json({ data: { posts, pages, views, commentCounts, commentsEnabled } })
+  })
+
+  // The owner's search, over title AND body, drafts included (ADR 0024). Separate from the
+  // content view rather than a parameter on it: that view returns every post so the tables
+  // can render, and this one answers a person typing, which has to stay small and quick.
+  routes.get('/api/admin/search', async (c) => {
+    const q = c.req.query('q') ?? ''
+    return c.json({ data: { hits: await searchEverything(q) } })
   })
 
   // The editor. `slug` empty means a new post: the taxonomy and series lists are still
