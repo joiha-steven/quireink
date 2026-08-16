@@ -99,11 +99,6 @@ export function Setting({
   )
 }
 
-// The status bar both editors put above the form (scheduled-for, unsaved-changes and the
-// like). Tinted rather than white so it reads as a message about the page, not part of it.
-export const NOTICE =
-  'flex flex-wrap items-center justify-between gap-2 rounded-xl border border-neutral-300 bg-neutral-100 px-4 py-2.5 text-sm dark:border-neutral-700 dark:bg-neutral-900'
-
 // Canonical form-control chrome — shared by admin <input> and <select> so height,
 // padding, radius and focus never drift (they were hand-rolled + cramped before).
 // `ui/Input.tsx` now IMPORTS this rather than declaring a matching copy, so there is nothing
