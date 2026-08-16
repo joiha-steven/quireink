@@ -20,6 +20,9 @@ import { MarkdownSource } from './MarkdownSource'
 import { CARD } from './kit'
 
 export type EditorApi = {
+  // Swap between the formatted view and the raw Markdown source. On the API because the
+  // control that calls it is the MD switch in the ACTION LINE, outside this component.
+  toggleRaw: () => void
   insertImage: (url: string) => void
   // Insert several images as gallery items (#grid) in ONE transaction —
   // consecutive #grid images group into a CSS grid on the public side. Must be a
@@ -84,9 +87,11 @@ type Props = {
   /** The title and its meta line, rendered INSIDE the sheet above the writing (the mock's
       paper holds the title; a title floating above the card was chrome). */
   header?: React.ReactNode
+  /** Told when the raw/markdown view flips, so the MD switch in the action line shows state. */
+  onRawChange?: (raw: boolean) => void
 }
 
-export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickGallery, onUploadFile, apiRef, contentWidth, toolbarTop = 0, typewriterEffects, header }: Props) {
+export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickGallery, onUploadFile, apiRef, contentWidth, toolbarTop = 0, typewriterEffects, header, onRawChange }: Props) {
   const t = useAdminT()
   // Markdown source view: edit the raw markdown directly (still saves live).
   const [raw, setRaw] = useState(false)
@@ -112,6 +117,11 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
   useEffect(() => { onDirtyRef.current = onDirty }, [onDirty])
   useEffect(() => { rawRef.current = raw }, [raw])
   useEffect(() => { rawTextRef.current = rawText }, [rawText])
+  // Report raw-view flips from the STATE, not from inside toggleRaw: the toggle is called
+  // through `apiRef` where a captured prop would go stale, and the state is the truth.
+  const onRawChangeRef = useRef(onRawChange)
+  useEffect(() => { onRawChangeRef.current = onRawChange }, [onRawChange])
+  useEffect(() => { onRawChangeRef.current?.(raw) }, [raw])
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -231,6 +241,7 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
     if (!editor) return
     editorRef.current = editor // keep the drag-drop / paste closures on the live instance
     apiRef.current = {
+      toggleRaw,
       insertImage: (url: string) =>
         editor.chain().focus().setImage({ src: url, alt: captionFromUrl(url) }).run(),
       // Gallery: empty alt for a clean mosaic; '#grid' groups consecutive ones.
@@ -288,10 +299,10 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
           onPickGallery={() => { setSlash(null); onPickGallery() }}
         />
       )}
-      {/* At the very TOP of the sheet, the full width of it — the owner's second verdict
-          after a day of writing: "đem lên trên cùng, chiều dài ngang, ko phải scroll".
-          Sticky, so it rides up to the action line and stays reachable in a long piece. */}
-      <Toolbar editor={editor} onPickImage={onPickImage} onPickGallery={onPickGallery} raw={raw} onToggleRaw={toggleRaw} stickyTop={toolbarTop} />
+      {/* At the very TOP of the sheet, the full width of it — the owner's verdicts, one
+          sitting: on top, full-width, wrapping not scrolling, grouped in the middle, and
+          GONE in the Markdown view. Sticky, so it stays reachable in a long piece. */}
+      {!raw && <Toolbar editor={editor} onPickImage={onPickImage} onPickGallery={onPickGallery} stickyTop={toolbarTop} />}
       {/* Center the writing column at the public single-post width so what you
           type wraps exactly like the published article. */}
       <div className="mx-auto w-full" style={{ maxWidth: contentWidth }}>

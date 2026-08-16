@@ -57,6 +57,8 @@ export function EditorActions({
   onToggleSettings,
   savedSlug,
   getText,
+  mdView,
+  onToggleMd,
   onPreview,
   onSaveDraft,
   onPublish,
@@ -73,6 +75,8 @@ export function EditorActions({
   savedSlug: string | null
   /** Live markdown, read from the form's ref — see useWordStats for why it is polled. */
   getText: () => string
+  mdView: boolean
+  onToggleMd: () => void
   onPreview: () => void
   onSaveDraft: () => void
   onPublish: () => void
@@ -84,7 +88,7 @@ export function EditorActions({
   return (
     <div
       ref={barRef}
-      className="z-20 mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-neutral-200/70 bg-neutral-50/95 px-1 py-2.5 backdrop-blur-xl lg:sticky lg:top-0 dark:border-neutral-800 dark:bg-neutral-950/95"
+      className="z-20 mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-neutral-200/70 bg-neutral-50/95 px-1 py-2.5 backdrop-blur-xl lg:sticky lg:top-0 dark:border-neutral-800 dark:bg-neutral-950/95"
     >
       <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
         <Link href="/admin/content" className={QUIET}>← {t.navWrite}</Link>
@@ -103,8 +107,14 @@ export function EditorActions({
         </span>
       </div>
       <div className="flex items-center gap-1.5">
-        {/* Quiet, and BEFORE the session-ending pair: it changes what you look AT, not what
-            happens to the piece. (The MD toggle lives in the toolbar, where the owner put it.) */}
+        {/* Quiet, and BEFORE the session-ending pair: these two change what you look AT,
+            not what happens to the piece. Beside Attributes at the owner's instruction, and
+            SPELLED OUT in the same voice — a bold mono "MD" next to a plain-text word read
+            as a different control ("việc gì làm lệch tone như vậy"). While it is on, the
+            editor shows no toolbar. */}
+        <button type="button" onClick={onToggleMd} aria-pressed={mdView} className={`${QUIET} ${mdView ? 'font-medium text-neutral-900 dark:text-white' : ''}`}>
+          {t.tbMarkdown}
+        </button>
         <button type="button" onClick={onToggleSettings} className={QUIET}>
           {settingsOpen ? t.hideAttributes : t.attributes}
         </button>

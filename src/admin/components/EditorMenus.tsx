@@ -55,41 +55,24 @@ export function Toolbar({
   editor,
   onPickImage,
   onPickGallery,
-  raw,
-  onToggleRaw,
   stickyTop,
 }: {
   editor: TiptapEditor
   onPickImage: () => void
   onPickGallery: () => void
-  raw: boolean
-  onToggleRaw: () => void
   stickyTop: number
 }) {
   const t = useAdminT()
   const sep = <span className="mx-1 h-5 w-px shrink-0 bg-neutral-200 dark:bg-neutral-700" />
-  const toggle = (
-    <ToolButton label={raw ? t.tbReview : t.tbMarkdown} onClick={onToggleRaw}>
-      {raw ? (
-        <Glyph><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" /><circle cx="12" cy="12" r="2.5" /></Glyph>
-      ) : <span className="text-[10px] font-bold tracking-tight">MD</span>}
-    </ToolButton>
-  )
-  // The strip the owner circled, tuned by his next two notes: at the TOP of the sheet,
-  // full-width, NO horizontal scroll (a narrow window wraps the row instead) — and the
-  // buttons GROUPED in the middle, not stretched across it: "gom vô giữa được rồi, đừng
-  // căng hết ra, cách xa nhau, UX gì kì quá".
-  const STRIP = 'sticky z-10 mx-4 mt-4 rounded-xl border border-neutral-200 bg-neutral-50/95 backdrop-blur dark:border-neutral-700 dark:bg-neutral-800/95'
-  if (raw) {
-    return (
-      <div className={`${STRIP} flex items-center px-2 py-1`} style={{ top: stickyTop }}>
-        {toggle}
-      </div>
-    )
-  }
+  // The sheet's own top strip, tuned by the owner's notes in order: on TOP, full-width,
+  // wrapping instead of scrolling, buttons grouped in the middle, FORMATTED view only (the
+  // MD switch sits in the action line, and the Markdown view shows no bar at all) — and
+  // drawn in the SAME language as that action line: the same ground, the same hairline,
+  // edges flush with the card. The first cut floated it as an inset rounded chip, and the
+  // owner's word for two chrome pieces in two styles a hand apart was "ẩu".
   return (
-    <div className={STRIP} style={{ top: stickyTop }}>
-      <div className="flex flex-wrap items-center justify-center gap-0.5 px-2.5 py-1">
+    <div className="sticky z-10 rounded-t-2xl border-b border-neutral-200/70 bg-neutral-50/95 backdrop-blur-xl dark:border-neutral-800 dark:bg-neutral-950/95" style={{ top: stickyTop }}>
+      <div className="flex flex-wrap items-center justify-center gap-0.5 px-2.5 py-1.5">
       <ToolButton label={t.tbBold} active={editor.isActive('bold')} onClick={() => editor.chain().focus().toggleBold().run()}><strong>B</strong></ToolButton>
       <ToolButton label={t.tbItalic} active={editor.isActive('italic')} onClick={() => editor.chain().focus().toggleItalic().run()}><em>I</em></ToolButton>
       <ToolButton label={t.tbUnderline} active={editor.isActive('underline')} onClick={() => editor.chain().focus().toggleUnderline().run()}><u>U</u></ToolButton>
@@ -157,7 +140,6 @@ export function Toolbar({
       <ToolButton label={t.tbMathInline} active={editor.isActive('mathInline')} onClick={() => editor.chain().focus().setMath(false).run()}>
         <Glyph><path d="M3 12h3M18 12h3" /><path d="M8 9h8M10.5 9v6M14.5 9v6" /></Glyph>
       </ToolButton>
-      {sep}{toggle}
       {editor.isActive('table') && (
         <>
           {sep}
