@@ -22,3 +22,10 @@ export const SIDEBAR_NAV =
 
 export const SIDEBAR_NAV_ACTIVE =
   'bg-neutral-100 font-medium text-neutral-950 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.03)] dark:bg-neutral-800 dark:text-white dark:shadow-none'
+
+// The rail's UTILITY register. The footer's rows (theme, cache, sign out) are CONTROLS,
+// and for a while they wore SIDEBAR_NAV — four more destinations, one apparently a page
+// named "Light". A control is smaller and quieter than a place, and it always draws its
+// glyph: the glyph is what says "this does something" when the word alone reads as a name.
+export const SIDEBAR_UTIL =
+  'relative flex h-8 w-full items-center rounded-md px-3 text-left text-xs text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-700 disabled:opacity-50 dark:text-neutral-500 dark:hover:bg-neutral-800 dark:hover:text-neutral-300'

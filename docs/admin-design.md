@@ -237,9 +237,18 @@ scrolls inside its card. Equally: a card holding a five-column table is not a ha
 
 **The workspace** is a 1480px maximum with responsive 16/28/40/48px gutters. The desktop
 sidebar is 208px, 72px collapsed; the mobile menu is a floating rounded drawer that overlays
-rather than pushing content down. Sidebar footer controls always use the same icon + label
-row, and the theme control shows its sun/moon glyph before the applied mode label. Clear
-cache stays in the operations footer, reachable from every screen, expanded or collapsed.
+rather than pushing content down. **The rail holds two registers and they must not dress
+alike** (2026-08-17, *"cái sidebar… bất hợp lý kiểu nào đó"* — and the something was four
+CONTROLS wearing the nav's row, one of them reading as a page named "Light"): destinations
+wear `SIDEBAR_NAV`; the footer's controls (theme, Clear cache, Sign out) wear the smaller,
+quieter `SIDEBAR_UTIL`, and their glyphs are ALWAYS drawn — the "Show icons" switch governs
+decoration beside nav labels, and a control's glyph is not decoration, it is the part that
+says "this does something". That switch itself lives at the bottom of "Everything else",
+not on a permanent footer row. The theme control shows its sun/moon glyph before the
+applied mode label, and its menu opens UPWARD inside the rail (the rail carries `z-30`
+because `sticky` makes it a stacking context the content would otherwise paint over).
+Clear cache stays in the operations footer, reachable from every screen, expanded or
+collapsed.
 
 ## The editor
 
