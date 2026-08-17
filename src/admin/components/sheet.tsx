@@ -36,7 +36,7 @@ export function SheetTop({ children }: { children: ReactNode }) {
 }
 
 /** Numbers standing directly on the paper, divided by vertical hairlines. */
-export function NumBand({ items }: { items: { n: ReactNode; label: ReactNode }[] }) {
+export function NumBand({ items }: { items: { n: ReactNode; label: ReactNode; after?: ReactNode; sub?: ReactNode }[] }) {
   return (
     <div className="flex flex-wrap border-b border-neutral-100 dark:border-neutral-800">
       {items.map((it, i) => (
@@ -44,8 +44,12 @@ export function NumBand({ items }: { items: { n: ReactNode; label: ReactNode }[]
           key={i}
           className="min-w-32 flex-1 border-r border-neutral-100 px-5 py-4 last:border-r-0 dark:border-neutral-800"
         >
-          <b className="block text-2xl font-semibold tracking-tight tabular-nums">{it.n}</b>
-          <span className="text-xs text-neutral-500 dark:text-neutral-400">{it.label}</span>
+          <span className="flex items-baseline gap-2">
+            <b className="text-2xl font-semibold tracking-tight tabular-nums">{it.n}</b>
+            {it.after}
+          </span>
+          <span className="block text-xs text-neutral-500 dark:text-neutral-400">{it.label}</span>
+          {it.sub && <span className="block text-xs text-neutral-400 dark:text-neutral-500">{it.sub}</span>}
         </div>
       ))}
     </div>

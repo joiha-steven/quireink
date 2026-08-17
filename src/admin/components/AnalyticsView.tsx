@@ -6,9 +6,9 @@
 // are plain links (?range=) since admin is already dynamic.
 import Link from '@/admin/router'
 import type { AnalyticsSummary, NameStat } from '@/analytics/types'
-import { Button } from '@/admin/ui/Button'
-import { Card, EmptyState, NOTE_TEXT, PageHeader, SEGMENT_TRACK, tabItemClass, TableFrame, THEAD, TROW } from './kit'
-import { BarList, StatTile, TrendChart, flag, formatDuration, type BarRow } from './analytics-kit'
+import { EmptyState, PageHeader, SEGMENT_TRACK, tabItemClass, TABLE_SCROLL, THEAD, TROW } from './kit'
+import { BarList, Trend, TrendChart, flag, formatDuration, type BarRow } from './analytics-kit'
+import { NumBand, SHEET, SHEET_TOOL, SheetTop } from './sheet'
 import { useAdminT } from './I18nProvider'
 
 const RANGES = [1, 7, 30, 365] as const
@@ -51,68 +51,75 @@ export function AnalyticsView({ data, range, titles }: { data: AnalyticsSummary;
     : null
 
   return (
-    <div className="space-y-6">
+    <div>
+      {/* Export in the page head, quiet — the sheet's first row belongs to the range. */}
       <PageHeader
         title={t.analyticsTitle}
         actions={
-          <div className="flex flex-wrap items-center gap-2">
-            {/* The kit's tab strip, worn by LINKS: the range lives in the URL, so this cannot
-                be a `<Tabs>` with an onChange. Four ranges plus Export are wider than 375px,
-                so THIS row wraps — the segment box cannot (its border is one shared outline),
-                which is what let the whole page scroll sideways by 36px on a phone. */}
-            <div className={SEGMENT_TRACK}>
-              {RANGES.map((r) => (
-                <Link
-                  key={r}
-                  href={`/admin/analytics?range=${r}`}
-                  aria-current={r === range ? 'page' : undefined}
-                  className={`${tabItemClass(r === range, 'sm')} whitespace-nowrap`}
-                >
-                  {rangeLabel[r]}
-                </Link>
-              ))}
-            </div>
-            <Button variant="secondary" onClick={exportCsv} disabled={!hasData}>
-              {t.analyticsExportCsv}
-            </Button>
-          </div>
+          <button type="button" onClick={exportCsv} disabled={!hasData} className={SHEET_TOOL}>
+            {t.analyticsExportCsv}
+          </button>
         }
       />
 
-      <p className={NOTE_TEXT}>{t.analyticsPrivacyNote}</p>
+      {/* ONE SHEET (the admin-pages mock): range on the sheet's first row, the numbers
+          standing directly on the paper, then the chart, the pages, the sources — all
+          divisions drawn by hairlines, nothing floating in its own little card. */}
+      <div className={SHEET}>
+        <SheetTop>
+          {/* The kit's tab strip, worn by LINKS: the range lives in the URL, so this
+              cannot be a `<Tabs>` with an onChange. */}
+          <div className={SEGMENT_TRACK}>
+            {RANGES.map((r) => (
+              <Link
+                key={r}
+                href={`/admin/analytics?range=${r}`}
+                aria-current={r === range ? 'page' : undefined}
+                className={`${tabItemClass(r === range, 'sm')} whitespace-nowrap`}
+              >
+                {rangeLabel[r]}
+              </Link>
+            ))}
+          </div>
+          <span className="flex-1" />
+          <span className="hidden text-xs text-neutral-400 lg:block dark:text-neutral-500">{t.analyticsPrivacyNote}</span>
+        </SheetTop>
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
-        <StatTile label={t.analyticsViews} value={data.totalViews} prev={data.prevViews} />
-        <StatTile
-          label={t.analyticsVisitors}
-          value={data.uniqueVisitors}
-          prev={data.prevVisitors}
-          sub={
-            data.returningVisitors != null ? (
-              <>
-                {t.analyticsNew} <span className="tabular-nums">{Math.max(0, data.uniqueVisitors - data.returningVisitors).toLocaleString()}</span>
-                {' · '}
-                {t.analyticsReturning} <span className="tabular-nums">{data.returningVisitors.toLocaleString()}</span>
-              </>
-            ) : undefined
-          }
+        <NumBand
+          items={[
+            { n: data.totalViews.toLocaleString(), label: t.analyticsViews, after: data.prevViews != null ? <Trend cur={data.totalViews} prev={data.prevViews} /> : undefined },
+            {
+              n: data.uniqueVisitors.toLocaleString(),
+              label: t.analyticsVisitors,
+              after: data.prevVisitors != null ? <Trend cur={data.uniqueVisitors} prev={data.prevVisitors} /> : undefined,
+              sub:
+                data.returningVisitors != null ? (
+                  <>
+                    {t.analyticsNew} <span className="tabular-nums">{Math.max(0, data.uniqueVisitors - data.returningVisitors).toLocaleString()}</span>
+                    {' · '}
+                    {t.analyticsReturning} <span className="tabular-nums">{data.returningVisitors.toLocaleString()}</span>
+                  </>
+                ) : undefined,
+            },
+            { n: formatDuration(data.avgDwellMs), label: t.analyticsAvgTime },
+            { n: `${data.avgReadDepth}%`, label: t.analyticsAvgDepth },
+            { n: bounce == null ? '—' : `${bounce}%`, label: t.analyticsBounceRate },
+          ]}
         />
-        <StatTile label={t.analyticsAvgTime} value={formatDuration(data.avgDwellMs)} />
-        <StatTile label={t.analyticsAvgDepth} value={`${data.avgReadDepth}%`} />
-        <StatTile label={t.analyticsBounceRate} value={bounce == null ? '—' : `${bounce}%`} />
-      </div>
 
       {!hasData ? (
-        <EmptyState title={t.analyticsNoData} />
+        <div className="flex flex-1 items-center justify-center p-10"><EmptyState title={t.analyticsNoData} /></div>
       ) : (
         <>
-          <Card>
+          <div className="border-b border-neutral-100 px-4 pb-2 pt-4 dark:border-neutral-800">
             <TrendChart points={data.daily} peakLabel={t.analyticsPeak} viewsLabel={t.analyticsViews} visitorsLabel={t.analyticsVisitors} />
-          </Card>
+          </div>
 
           {/* Top pages — by title where known, the bare path otherwise. Each row
-              links to that page's drill-down. */}
-          <TableFrame>
+              links to that page's drill-down. In the sheet, the table needs no frame
+              of its own: the hairline under it closes the section. */}
+          <div className={`${TABLE_SCROLL} border-b border-neutral-100 dark:border-neutral-800`}>
+            <table className="w-full text-sm">
             {/* `w-full` on the title column and `w-px` on the four numbers, which is how an
                 auto-layout table is told where the slack goes. Without it the numbers took
                 a quarter of the table each to hold three characters and the titles were
@@ -152,24 +159,28 @@ export function AnalyticsView({ data, range, titles }: { data: AnalyticsSummary;
                 </tr>
               ))}
             </tbody>
-          </TableFrame>
+            </table>
+          </div>
 
           {/* Sources + engagement: traffic channels + top external referrers + read-depth
-              split — three even columns (the row has room for all three). */}
-          <div className="grid gap-4 sm:grid-cols-3">
+              split — three columns divided by vertical hairlines, on the sheet itself. */}
+          <div className="grid border-b border-neutral-100 sm:grid-cols-3 sm:divide-x sm:divide-neutral-100 dark:border-neutral-800 dark:sm:divide-neutral-800">
             <BarList
+              bare
               title={t.analyticsChannels}
               unit={t.analyticsVisitors}
               empty={t.analyticsNoData}
               rows={(data.channels ?? []).map((c) => ({ key: c.channel, label: channelLabel[c.channel] ?? c.channel, value: c.visitors }))}
             />
             <BarList
+              bare
               title={t.analyticsTopReferrers}
               unit={t.analyticsVisitors}
               empty={t.analyticsNoData}
               rows={(data.topReferrers ?? []).map((r) => ({ key: r.host, label: r.host, value: r.visitors }))}
             />
             <BarList
+              bare
               title={t.analyticsDepthDist}
               unit={t.analyticsUnitSamples}
               empty={t.analyticsNoData}
@@ -178,19 +189,21 @@ export function AnalyticsView({ data, range, titles }: { data: AnalyticsSummary;
           </div>
 
           {/* Audience: countries + device / browser / OS breakdown. */}
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid sm:grid-cols-2 sm:divide-x sm:divide-neutral-100 lg:grid-cols-4 dark:sm:divide-neutral-800">
             <BarList
+              bare
               title={t.analyticsTopCountries}
               unit={t.analyticsVisitors}
               empty={t.analyticsNoData}
               rows={(data.topCountries ?? []).map((c) => ({ key: c.country, label: `${flag(c.country)} ${c.country}`, value: c.visitors }))}
             />
-            <BarList title={t.analyticsDevices} unit={t.analyticsVisitors} empty={t.analyticsNoData} rows={facetRows(data.devices, t.analyticsUnknown)} />
-            <BarList title={t.analyticsBrowsers} unit={t.analyticsVisitors} empty={t.analyticsNoData} rows={facetRows(data.browsers, t.analyticsUnknown)} />
-            <BarList title={t.analyticsSystems} unit={t.analyticsVisitors} empty={t.analyticsNoData} rows={facetRows(data.systems, t.analyticsUnknown)} />
+            <BarList bare title={t.analyticsDevices} unit={t.analyticsVisitors} empty={t.analyticsNoData} rows={facetRows(data.devices, t.analyticsUnknown)} />
+            <BarList bare title={t.analyticsBrowsers} unit={t.analyticsVisitors} empty={t.analyticsNoData} rows={facetRows(data.browsers, t.analyticsUnknown)} />
+            <BarList bare title={t.analyticsSystems} unit={t.analyticsVisitors} empty={t.analyticsNoData} rows={facetRows(data.systems, t.analyticsUnknown)} />
           </div>
         </>
       )}
+      </div>
     </div>
   )
 }
