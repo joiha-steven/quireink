@@ -60,10 +60,11 @@ export type BarRow = { key: string; label: ReactNode; value: number; href?: stri
 
 // Horizontal bar list (Plausible-style): the proportional bar is the row's
 // background, label + count sit on top. Bars scale to the biggest value.
-export function BarList({ title, rows, unit, empty }: { title: ReactNode; rows: BarRow[]; unit: ReactNode; empty: ReactNode }) {
+export function BarList({ title, rows, unit, empty, bare = false }: { title: ReactNode; rows: BarRow[]; unit: ReactNode; empty: ReactNode; bare?: boolean }) {
   const max = rows.reduce((m, r) => Math.max(m, r.value), 0) || 1
   return (
-    <div className={`${CARD} p-5`}>
+    // `bare` inside the one-sheet page: the sheet draws the edges, hairlines divide.
+    <div className={bare ? 'p-5' : `${CARD} p-5`}>
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-[15px] font-semibold tracking-tight text-neutral-900 dark:text-white">{title}</h2>
         <span className="text-xs font-medium text-neutral-400 dark:text-neutral-500">{unit}</span>
