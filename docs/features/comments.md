@@ -51,13 +51,14 @@ Google account.
   signed-in NAME only, and is the one public response on the site marked `no-store`.
 - **Post rename / purge:** `renameComments` moves comments with the slug; `deleteCommentsForPost`
   clears them when a post is purged (both wired in `posts.ts`).
-- **Admin:** `/admin/comments` lists live comments (content/post/time/name/IP/delete); the content
-  cell is clamped to two lines and click-toggles to the full text per row (replies are flat rows, so
-  each toggles on its own). The IP column shows the captured commenter IP with the ISO country code
-  in parens (`1.2.3.4 (VN)`) — country is best-effort from the reverse proxy / Cloudflare edge
-  header, blank when absent, and pre-feature rows show `—`. Delete = soft delete via owner-gated
-  `DELETE /api/comments/[id]` → Trash (restore/purge in `TrashView`'s Comments tab). `/admin/content`
-  posts table gains a comment-count column when enabled (`countsByPosts`).
+- **Admin:** `/admin/comments` is a reading queue on one sheet (2026-08-18): each comment is two
+  lines of its text (click toggles the full text per row; replies are flat rows, so each toggles on
+  its own) over one small-print ledger — name, email, post, time, IP with the ISO country in parens
+  (`1.2.3.4 (VN)`, best-effort from the proxy/Cloudflare edge header, blank when absent, `—` on
+  pre-feature rows) — and a quiet Delete at its end. Rows fill two newspaper columns from `lg` up.
+  The sheet-top search reaches the text, the name and the post title (accent-folded) and paints
+  hits with the pen (`Marked`). Delete = soft delete via owner-gated `DELETE /api/comments/[id]`
+  → Trash (restore/purge in `TrashView`'s Comments tab).
 - **Abuse:** manual comments only accept a published, visible post + a per-IP in-memory rate limit
   (6/min). The same IP (+ country) is persisted on the row (`author_ip`/`author_country`) for admin
   moderation — admin-only, NEVER sent to the public comment tree.

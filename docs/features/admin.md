@@ -48,29 +48,43 @@
 ## Admin UI kit — `src/admin/components/kit.tsx`
 
 - ONE source of truth for shared admin chrome so no page hand-rolls its own (radius /
-  padding / shadow / header size used to drift): `Card` (canonical `CARD` surface),
-  `PageHeader` (the title block every screen reuses — was a copy-pasted `<h1>`),
-  `Tabs` (`underline` for Settings + `segment` for Content/Analytics, one component),
-  `StatCard`, `EmptyState`, and table tokens (`TableFrame` / `THEAD` / `TROW`). Admin is
-  monochrome by design — the kit uses the neutral scale, not public theme tokens.
+  padding / shadow / header size used to drift): `Card` (canonical `CARD` surface, plus a
+  `panel` mode for a card living INSIDE a sheet), `PageHeader`, `Tabs` (`lg` underline +
+  `sm` segments, with a `dense` modifier), `StatCard`, `EmptyState`, and table tokens
+  (`TableFrame` / `THEAD` / `TROW`). The one-sheet page itself lives in
+  `components/sheet.tsx` — `SHEET`, `SheetTop`, `NumBand`, `SHEET_FOOT`, `SHEET_TOOL` —
+  with `.paper-cols` (two newspaper columns) in `admin.css`; see "One sheet per page" in
+  `docs/admin-design.md`. Admin is monochrome plus ONE accent (the pen: search hits and
+  work-in-progress dots) — the kit uses the neutral scale, not public theme tokens.
 - **Admin canvas:** `<main>` in the admin layout carries `.admin-canvas` (`src/admin/admin.css`) — a flat,
   quiet neutral surface (one fill per light/dark mode); the sidebar + cards sit on solid surfaces
   above it. (The editorial redesign replaced the old dotted-grid canvas — see
   `docs/admin-design.md`.)
-- **Sidebar (`AdminSidebar`):** the collapse/expand control sits at the TOP next to the
+- **Sidebar (`AdminSidebar`):** four destinations + "Everything else" (which remembers an
+  explicit open/close across sessions). Two registers that must not dress alike: nav rows
+  wear `SIDEBAR_NAV`, the footer's CONTROLS (theme, Clear cache, Sign out) wear the
+  smaller `SIDEBAR_UTIL`. The collapse/expand control sits at the TOP next to the
   wordmark (a compact chrome button, NOT a nav row) so it can't be mistaken for Sign out;
-  Sign out sits alone in the footer under its own divider. Palette selection was REMOVED
-  from the admin chrome — it lives on the public site now; the admin only toggles light/dark.
+  Sign out sits alone under its own divider. The "Show icons" switch (bottom of
+  Everything else) governs the whole rail's glyphs. Palette selection was REMOVED from
+  the admin chrome — it lives on the public site now; the admin only toggles light/dark,
+  and that menu opens upward inside the rail (the rail carries `z-30`: `sticky` makes it
+  a stacking context the content would otherwise paint over).
 
-## Content dashboard (Admin → content)
+## The Write screen (Admin → content)
 
-- 3 tabs: Bài viết / Trang / Phân loại; "new" hidden on taxonomy.
-- `RowActions` (shared): open-in-new (PUBLISHED only) + edit + delete; exports the `ICON_BTN`
-  chrome for reuse. `StatusPill` never wraps.
-- Tables are mobile-responsive by **hiding secondary columns** (not horizontal scroll): posts
-  hide Date (`sm`) + Categories (`md`); pages hide slug (`sm`). Title + Status + actions always show.
-- `PostsTable` filter bar: substring search + All/Published/Draft (client-side).
-- `TaxonomyManager`: rename (merge) / remove terms across all posts → `updateTerm`.
+- `/admin/content` IS the two-pane Write screen (ADR 0024; the Writing Desk mock): the
+  write pane — one stream of posts and pages, most recently touched first — beside an
+  empty sheet inviting the next piece. Opening a row swaps the sheet for that piece's
+  editor; the pane rides along on both editor pages from `xl` up.
+- `WritePane` renders; `useWritingItems` owns the stream: title+terms filtering, the
+  debounced body search (`/api/admin/search`, hits marked with the pen), five scopes on
+  one dense row (All · Pages · Posts · Published · Draft — kind and status are two
+  families, and the pane's own short `scope*` strings keep five words on one line in six
+  languages), and the sort cycle (last-updated / date-created). The date beside
+  "Published" is the PUBLICATION date; a draft's only honest date is its save.
+- Taxonomy and Series open as right-hand `SlideOver`s from the pane's tool line —
+  `TaxonomyManager`: rename (merge) / remove terms across all posts → `updateTerm`.
 
 ## Activity log + Overview (Admin)
 
@@ -83,8 +97,9 @@
 - **Error log (same table):** `errorHandler()` in `src/web/api.ts` — the one handler every route
   falls through to — calls `logActivityError("METHOD /path", message)`, recording an
   `error`-action entry (gated by the same toggle). So unexpected server failures show up in the
-  log, rendered with a red badge in `ActivityLog.tsx`. Only genuine errors land here (validation
-  400s use `fail()`).
+  log, rendered as the inverted (ink-on-ink) chip in `ActivityLog.tsx` — the admin is
+  monochrome, so "error" is the one chip printed in reverse. Only genuine errors land here
+  (validation 400s use `fail()`).
 - **Overview (`Overview.tsx`):** the admin home. A header with a **New post** action, five **stat
   cards** — Posts / Pages / Comments / Images / Storage (each links to its section; Comments = sum of
   `countsByPosts()` when comments are on) — then the **dashboard widgets** (`DashboardWidgets.tsx`): a
