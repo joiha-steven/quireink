@@ -40,6 +40,8 @@ const en = {
   scopeDrafts: 'Drafts',
   sortUpdated: 'Last updated',
   sortCreated: 'Date created',
+  commentsSearch: 'Search comments...',
+  commentsFootHint: 'Click a comment to read it in full. Delete is a soft delete — it moves to Trash.',
   filterEmpty: 'No posts match your filter.',
   edit: 'Edit',
   delete: 'Delete',

@@ -40,6 +40,8 @@ const ja = {
   scopeDrafts: '下書き',
   sortUpdated: '更新順',
   sortCreated: '作成順',
+  commentsSearch: 'コメントを検索...',
+  commentsFootHint: 'コメントをクリックすると全文を表示。削除はソフト削除で、ごみ箱に移動します。',
   filterEmpty: 'フィルターに一致する記事がありません。',
   edit: '編集',
   delete: '削除',

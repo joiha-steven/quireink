@@ -172,6 +172,8 @@ export type AdminStrings = {
   // The pane's sort toggle: one quiet button cycling between the two orders.
   sortUpdated: string
   sortCreated: string
+  commentsSearch: string
+  commentsFootHint: string
   edit: string
   delete: string
   confirmDeletePost: string
