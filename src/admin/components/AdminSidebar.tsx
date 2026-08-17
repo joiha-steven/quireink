@@ -13,7 +13,7 @@ import { usePathname } from '@/admin/router'
 import { useEffect, useState, type ReactNode } from 'react'
 import type { SiteLang } from '@/types'
 import { useAdminT } from './I18nProvider'
-import { SIDEBAR_NAV, SIDEBAR_NAV_ACTIVE } from './headerActions'
+import { SIDEBAR_NAV, SIDEBAR_NAV_ACTIVE, SIDEBAR_UTIL } from './headerActions'
 import { CacheButton } from './CacheButton'
 import { BrandMark, BrandWord } from './Wordmark'
 import { ThemeToggle } from '@/admin/ui/ThemeToggle'
@@ -181,6 +181,17 @@ export function AdminSidebar({
             {(c || icons) && <IconExternal />}
             {!c && <span className="truncate">{t.navViewBlog}</span>}
           </a>
+          {/* The icon switch, last in the drawer of secondary things: a set-once preference
+              about this rail on this machine, which spent a while as a PERMANENT footer row —
+              one more page-looking line for something nobody touches twice a month. Not in
+              Settings (nothing about the blog changes), and never collapsed, where it would
+              be an unlabelled glyph offering to remove the glyphs. */}
+          {!c && (
+            <button type="button" onClick={toggleIcons} className={rowClass(false)}>
+              {icons && <IconGlyphs />}
+              <span className="truncate">{icons ? t.navIconsHide : t.navIconsShow}</span>
+            </button>
+          )}
         </div>
       )}
     </>
@@ -188,27 +199,24 @@ export function AdminSidebar({
 
   // Footer controls: appearance (light/dark) + cache, then Sign out alone under a
   // divider so it reads as the "account" cluster (never confused with collapse).
+  //
+  // These wear SIDEBAR_UTIL, not SIDEBAR_NAV — they are controls, not destinations, and
+  // dressed as nav rows they read as four more pages, one of them named "Light" ("cái
+  // sidebar… bất hợp lý kiểu nào đó", 2026-08-17). Their glyphs are ALWAYS drawn: the
+  // "Show icons" switch governs decoration beside nav LABELS, and a control's glyph is
+  // not decoration — it is the part that says "this does something".
+  const utilClass = (c: boolean): string => `${SIDEBAR_UTIL} ${c ? 'justify-center' : 'gap-2.5'}`
   const controls = (c: boolean): ReactNode => (
     <>
       {/* `variant='text'` in BOTH states, with the word dropped when collapsed. The rail needs
           one row object, and `variant='icon'` is the public header's — it ignores the row class
           and drew this line 4px left of the two under it. */}
-      <ThemeToggle lang={lang} variant="text" showIcon={c || icons} showLabel={!c} triggerClassName={rowClass(c)} />
-      <CacheButton className={rowClass(c)} icon={c || icons ? <IconCache /> : null} collapsed={c} />
-      {/* The icon switch, in the footer beside light/dark and Clear cache, because it is the
-          same kind of thing: a preference about this rail on this machine. Not in Settings —
-          nothing about the blog changes. Never shown collapsed, where it would be an unlabelled
-          glyph offering to remove the glyphs. */}
-      {!c && (
-        <button type="button" onClick={toggleIcons} className={rowClass(false)}>
-          {icons && <IconGlyphs />}
-          <span className="truncate">{icons ? t.navIconsHide : t.navIconsShow}</span>
-        </button>
-      )}
+      <ThemeToggle lang={lang} variant="text" showIcon showLabel={!c} triggerClassName={utilClass(c)} />
+      <CacheButton className={utilClass(c)} icon={<IconCache />} collapsed={c} />
       <div className="mt-1 border-t border-neutral-200 pt-1 dark:border-neutral-800">
         <form action={signOut} className="contents">
-          <button className={rowClass(c)} title={c ? t.signOut : undefined}>
-            {(c || icons) && <IconSignOut />}
+          <button className={utilClass(c)} title={c ? t.signOut : undefined}>
+            <IconSignOut />
             {!c && <span className="truncate">{t.signOut}</span>}
           </button>
         </form>
