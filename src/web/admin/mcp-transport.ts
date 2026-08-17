@@ -11,7 +11,10 @@
 // alternative — one long-lived server plus a session registry — is a cache to invalidate
 // and a leak to bound, bought for nothing.
 
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
+// The SDK is imported inside `handleMcp`, on the first MCP request a process ever serves —
+// not here. Nothing else in the tree pulls it in, so a blog whose owner has not pointed an
+// agent at `/api/mcp` never loads it at all. `registerTools` takes the type from
+// `@/mcp/tools`, which imports it type-only and therefore costs nothing at runtime.
 import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js'
 import type { JSONRPCMessage } from '@modelcontextprotocol/sdk/types.js'
 import type { Context } from 'hono'
@@ -98,6 +101,7 @@ export async function handleMcp(c: Context): Promise<Response> {
     return jsonRpcError(null, -32700, 'Parse error')
   }
 
+  const { McpServer } = await import('@modelcontextprotocol/sdk/server/mcp.js')
   const server = new McpServer({ name: 'quire', version: '2.0' })
   registerTools(server)
   const transport = new SingleExchange()
