@@ -161,13 +161,33 @@ export function Card({
   children,
   className = '',
   bodyClassName = '',
+  panel = false,
 }: {
   title?: ReactNode
   actions?: ReactNode
   children: ReactNode
   className?: string
   bodyClassName?: string
+  /**
+   * A PANEL is a card living INSIDE the one-sheet page (the admin-pages mock): one
+   * radius step under the sheet's, hairline edges, its title on a ruled header row.
+   * A card floating on the canvas keeps the sheet register; a box in a box does not.
+   */
+  panel?: boolean
 }) {
+  if (panel) {
+    return (
+      <section className={`rounded-lg border border-neutral-100 dark:border-neutral-800 ${className}`}>
+        {(title || actions) && (
+          <div className="flex items-center justify-between gap-3 border-b border-neutral-100 px-4 py-2.5 dark:border-neutral-800">
+            {title && <h2 className="text-[13px] font-semibold">{title}</h2>}
+            {actions}
+          </div>
+        )}
+        <div className={`p-4 ${bodyClassName}`}>{children}</div>
+      </section>
+    )
+  }
   return (
     <section className={`${CARD} p-5 sm:p-6 ${className}`}>
       {(title || actions) && (
