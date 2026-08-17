@@ -40,6 +40,8 @@ const de = {
   scopeDrafts: 'Entwürfe',
   sortUpdated: 'Zuletzt geändert',
   sortCreated: 'Erstellt',
+  commentsSearch: 'Kommentare durchsuchen...',
+  commentsFootHint: 'Kommentar anklicken, um ihn ganz zu lesen. Löschen ist ein weiches Löschen — er wandert in den Papierkorb.',
   filterEmpty: 'Keine Beiträge entsprechen dem Filter.',
   edit: 'Bearbeiten',
   delete: 'Löschen',

@@ -40,6 +40,8 @@ const vi = {
   scopeDrafts: 'Nháp',
   sortUpdated: 'Mới cập nhật',
   sortCreated: 'Mới tạo',
+  commentsSearch: 'Tìm trong bình luận...',
+  commentsFootHint: 'Bấm vào lời bình để đọc toàn văn. Xoá là xoá mềm — chuyển vào Thùng rác.',
   filterEmpty: 'Không có bài viết khớp bộ lọc.',
   edit: 'Chỉnh sửa',
   delete: 'Xóa',

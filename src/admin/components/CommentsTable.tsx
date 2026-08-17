@@ -1,12 +1,22 @@
-// Admin comments table: content, post, time, name, IP, delete. Delete is a soft
-// delete (moves to Trash); the row drops from the list on success. The content cell
-// is collapsed to two lines by default — click it to expand to the full text, click
-// again to collapse (each row, replies included, toggles on its own).
+// The moderation queue as ONE SHEET (the admin-pages mock, page 3): the COMMENT is the
+// thing, so each row is two lines of its text with everything the admin knows — who,
+// where, when — as one line of small print underneath. It was a six-column spreadsheet
+// stretched across the workspace, and the owner's verdict on that register was "thua xa
+// trang write": a moderator moderates by READING.
+//
+// Short rows fill TWO newspaper columns from lg up (`.paper-cols`) — one column left
+// half the sheet blank, which the owner read as a hole. The search reaches the text,
+// the name and the post title, and paints its hits with the pen (`Marked`).
+//
+// Delete is a soft delete (moves to Trash); the row drops from the list on success.
+// The text is collapsed to two lines — click it to expand, click again to collapse.
 import { useState } from 'react'
 import type { AdminComment, ApiResponse } from '@/types'
 import { useToast } from '@/admin/ui/Toast'
-import { formatDateTimeShort } from '@/utils'
-import { PageHeader, TableFrame, THEAD, TROW, EmptyState } from './kit'
+import { formatDateTimeShort, foldAccents } from '@/utils'
+import { PageHeader, EmptyState } from './kit'
+import { SHEET, SHEET_FOOT, SHEET_TOOL, SheetTop } from './sheet'
+import { Marked } from './Marked'
 import { useAdminT } from './I18nProvider'
 
 export function CommentsTable({ initial }: { initial: AdminComment[] }) {
@@ -14,6 +24,7 @@ export function CommentsTable({ initial }: { initial: AdminComment[] }) {
   const { notify } = useToast()
   const [rows, setRows] = useState(initial)
   const [expanded, setExpanded] = useState<Set<number>>(new Set())
+  const [query, setQuery] = useState('')
 
   function toggle(id: number) {
     setExpanded((prev) => {
@@ -37,7 +48,12 @@ export function CommentsTable({ initial }: { initial: AdminComment[] }) {
     }
   }
 
-  if (rows.length === 0) {
+  const needle = foldAccents(query.trim())
+  const shown = needle
+    ? rows.filter((c) => foldAccents(`${c.content} ${c.name} ${c.postTitle ?? ''}`).includes(needle))
+    : rows
+
+  if (initial.length === 0) {
     return (
       <div>
         <PageHeader title={t.commentsNavTitle} />
@@ -49,83 +65,72 @@ export function CommentsTable({ initial }: { initial: AdminComment[] }) {
   return (
     <div>
       <PageHeader title={t.commentsNavTitle} />
-      <TableFrame>
-          <thead className={THEAD}>
-            <tr>
-              {/* The comment takes the slack — the widest column owns the leftover width. */}
-              <th className="w-full px-4 py-3 font-medium">{t.commentsColContent}</th>
-              {/* `min-w`, not `max-w`. The comment column claims every spare pixel, so an
-                  auto-layout table squeezed this one to its longest WORD — measured at 97px,
-                  in which "The golden canon, and the arithmetic under it" wrapped to five
-                  lines and made every row 145px tall. The row was then sized by the column
-                  that matters least, while the comment beside it stayed clamped at two lines
-                  inside all that height. A minimum reserves the width; the clamp below stops
-                  a long title setting the row height ever again. */}
-              <th className="hidden min-w-[11rem] px-4 py-3 font-medium md:table-cell">{t.commentsColPost}</th>
-              <th className="hidden px-4 py-3 font-medium sm:table-cell">{t.commentsColTime}</th>
-              <th className="px-4 py-3 font-medium">{t.commentsColName}</th>
-              <th className="hidden px-4 py-3 font-medium sm:table-cell">{t.commentsColIp}</th>
-              <th className="px-4 py-3" />
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((c) => (
-              <tr key={c.id} className={TROW}>
-                <td className="max-w-xs px-4 py-3">
-                  <button
-                    type="button"
-                    onClick={() => toggle(c.id)}
-                    className="block w-full text-left text-neutral-700 dark:text-neutral-300"
-                    aria-expanded={expanded.has(c.id)}
-                  >
-                    <span className={expanded.has(c.id) ? 'whitespace-pre-wrap break-words' : 'line-clamp-2'}>
-                      {c.content}
-                    </span>
-                  </button>
-                </td>
-                <td className="hidden min-w-[11rem] max-w-[16rem] px-4 py-3 md:table-cell">
-                  {/* Clamped to two lines, and `title` so the rest is still one hover away —
-                      the same bargain the comment cell makes one column to the left. */}
+      <div className={SHEET}>
+        <SheetTop>
+          <span className={SHEET_TOOL}>{rows.length.toLocaleString()} {t.commentsNavTitle.toLowerCase()}</span>
+          <span className="flex-1" />
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={t.commentsSearch}
+            aria-label={t.commentsSearch}
+            className="h-8 w-56 rounded-md border border-neutral-200 bg-white px-3 text-sm placeholder:text-neutral-400 dark:border-neutral-700 dark:bg-neutral-900 dark:placeholder:text-neutral-500"
+          />
+        </SheetTop>
+        {shown.length === 0 ? (
+          <p className="px-5 py-8 text-sm text-neutral-400 dark:text-neutral-500">{t.filterEmpty}</p>
+        ) : (
+          <ul className="paper-cols">
+            {shown.map((c) => (
+              <li key={c.id} className="border-b border-neutral-100 px-5 py-4 dark:border-neutral-800">
+                <button
+                  type="button"
+                  onClick={() => toggle(c.id)}
+                  className="block w-full text-left text-sm text-neutral-800 dark:text-neutral-200"
+                  aria-expanded={expanded.has(c.id)}
+                >
+                  <span className={expanded.has(c.id) ? 'whitespace-pre-wrap break-words' : 'line-clamp-2'}>
+                    <Marked text={c.content} needle={query} />
+                  </span>
+                </button>
+                {/* One line of small print, the row's whole ledger. The name leads because
+                    a moderator's second question (after "what does it say") is "who". */}
+                <div className="mt-1.5 flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-xs text-neutral-400 dark:text-neutral-500">
+                  <span className="font-medium text-neutral-600 dark:text-neutral-300"><Marked text={c.name} needle={query} /></span>
+                  {c.email && <span className="truncate">{c.email}</span>}
+                  <span aria-hidden>·</span>
                   <a
                     href={`/${c.postSlug}`}
                     target="_blank"
                     rel="noopener"
                     title={c.postTitle}
-                    className="line-clamp-2 break-words text-neutral-500 hover:underline dark:text-neutral-400"
+                    className="max-w-[16rem] truncate hover:text-neutral-700 hover:underline dark:hover:text-neutral-300"
                   >
-                    {c.postTitle}
+                    <Marked text={c.postTitle ?? c.postSlug} needle={query} />
                   </a>
-                </td>
-                <td className="hidden whitespace-nowrap px-4 py-3 text-neutral-500 sm:table-cell dark:text-neutral-400">
-                  {formatDateTimeShort(c.createdAt)}
-                </td>
-                <td className="px-4 py-3">
-                  <div className="font-medium text-neutral-800 dark:text-neutral-200">{c.name}</div>
-                  {c.email && <div className="text-xs text-neutral-400 dark:text-neutral-500">{c.email}</div>}
-                </td>
-                <td className="hidden whitespace-nowrap px-4 py-3 text-neutral-500 sm:table-cell dark:text-neutral-400">
-                  {c.ip ? (
-                    <span className="text-xs">
-                      {c.ip}
+                  <span aria-hidden>·</span>
+                  <span className="whitespace-nowrap">{formatDateTimeShort(c.createdAt)}</span>
+                  {c.ip && (
+                    <span className="whitespace-nowrap">
+                      · {c.ip}
                       {c.country && ` (${c.country})`}
                     </span>
-                  ) : (
-                    <span className="text-neutral-300 dark:text-neutral-600">—</span>
                   )}
-                </td>
-                <td className="px-4 py-3 text-right">
                   <button
                     type="button"
-                    onClick={() => handleDelete(c.id)}
-                    className="text-xs font-medium text-neutral-700 hover:text-black dark:text-neutral-300 dark:hover:text-white"
+                    onClick={() => { void handleDelete(c.id) }}
+                    className="ml-auto font-medium text-neutral-500 transition hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
                   >
                     {t.commentsColDelete}
                   </button>
-                </td>
-              </tr>
+                </div>
+              </li>
             ))}
-          </tbody>
-      </TableFrame>
+          </ul>
+        )}
+        <div className={SHEET_FOOT}>{t.commentsFootHint}</div>
+      </div>
     </div>
   )
 }
