@@ -51,10 +51,20 @@
   --pen-edge: #93832f;
   --on-pen: #f6f2dd;
 }
+/* Two newspaper columns inside a sheet, with the rule a paper would draw between them.
+   For lists of SHORT rows (comments, subscriber addresses): one column left half the
+   sheet blank, which the owner read as a hole ("nguyên khúc giữa bị trắng"). Collapses
+   to one column below lg, where there is no blank half to fill. */
+.paper-cols { column-count: 2; column-gap: 0; column-rule: 1px solid #f0f0ef; }
+.dark .paper-cols { column-rule-color: #262626; }
+.paper-cols > * { break-inside: avoid; }
+@media (max-width: 1023px) { .paper-cols { column-count: 1; } }
+
 /* The search hit, painted the way the reading site paints a highlight. Scoped to the
    write pane's rows: the editor's own five-ink marks carry inline colours and must not
    inherit a default. */
-[data-write-row] mark {
+[data-write-row] mark,
+.paper-cols mark {
   background: var(--pen);
   color: var(--on-pen);
   border-radius: 2px;
