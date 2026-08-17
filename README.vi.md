@@ -1,6 +1,6 @@
 <div align="center">
 
-# quire**INK** &nbsp;`2.0.3`
+# quire**INK** &nbsp;`2.1.0`
 
 **Một cái blog bạn tự host, và AI agent có thể vận hành thay bạn.**
 Không thuật toán, không quảng cáo, không nền tảng nào đứng giữa bạn và người đọc.
@@ -18,7 +18,7 @@ Một tiến trình. Hai tệp SQLite. Không tài khoản đám mây nào trong
 
 [English](./README.md) · **Tiếng Việt**
 
-[**Xem thử**](https://demo.quireink.com) · [**Cài đặt**](#cài-đặt) · [**Tốc độ**](#tốc-độ) · [**Để agent viết**](#để-ai-agent-viết-thay-bạn-mcp) · [**Changelog**](./CHANGELOG.md) · [**Giấy phép**](#giấy-phép)
+[**quireink.com**](https://quireink.com) · [**Xem thử**](https://demo.quireink.com) · [**Cài đặt**](#cài-đặt) · [**Tốc độ**](#tốc-độ) · [**Để agent viết**](#để-ai-agent-viết-thay-bạn-mcp) · [**Changelog**](./CHANGELOG.md) · [**Giấy phép**](#giấy-phép)
 
 <br/>
 
@@ -74,14 +74,13 @@ Có ba thứ định hình nó.
 
 Bạn được đọc, sửa, chạy và fork theo [PolyForm Noncommercial](./LICENSE), và được chạy bản phát hành để kinh doanh — kể cả bán hosting — theo [một cho phép bổ sung](./LICENSE-EXCEPTION.vi.md).
 
-> **2.0.3 ra ngày 15/08/2026**, đang chạy bản demo ở trên và blog riêng của tác giả tại
-> [manhhung.me](https://manhhung.me). Bản này gộp luôn 2.0.2, nên chỉ còn một bản để đọc.
-> Ba mươi tám commit: một đợt rà soát phát hiện không có giới hạn dung lượng tải lên, không
-> có hạn mức lưu trữ, và một máy chủ lắng nghe trên mọi giao diện mạng dưới một dòng log nói
-> ngược lại; một giới hạn tần suất mà header giả mạo đi qua được; và phần quản trị lâu nay
-> mặc bộ đồ của một framework dashboard chứ không phải của chính sản phẩm này. Gần như tất
-> cả đều tìm ra bằng cách **đo site đang chạy** chứ không phải đọc mã nguồn.
-> [Changelog](./CHANGELOG.md) có đủ những gì đã đổi.
+> **2.1.0 ra ngày 18/08/2026**, đang chạy bản demo ở trên và blog riêng của tác giả tại
+> [manhhung.me](https://manhhung.me). Ba mươi commit, gần như tất cả cho một việc: dựng lại
+> phần quản trị quanh chuyện viết. Màn hình viết bày danh sách mọi thứ đã viết ngay cạnh
+> tờ giấy, mỗi trang còn lại là một tờ duy nhất, tìm kiếm đọc được cả thân bài và không
+> vấp dấu tiếng Việt, và màu duy nhất trong trang quản trị là chính cây bút dạ của sản
+> phẩm. Phía người đọc không đổi một byte nào. Dự án cũng đã có cửa chính tại
+> [quireink.com](https://quireink.com). [Changelog](./CHANGELOG.md) có đủ những gì đã đổi.
 
 ---
 
@@ -126,7 +125,7 @@ Bạn được đọc, sửa, chạy và fork theo [PolyForm Noncommercial](./LI
 
 Đây là số đo từ mạng, lần vào đầu tiên, chưa cache gì. Đúng bằng cái mà một người lạ cầm điện thoại phải chờ.
 
-Hai dòng CSS và JavaScript là sản phẩm của bản build — giống nhau ở mọi bản cài — và lấy từ bản dựng 2.0.3 — 2.0.2 lẫn 2.0.3 đều không làm chúng nhúc nhích. Các số tổng đo cho 2.0.1, tại origin chứ không qua CDN, và là của chính site này: tiếng Việt, Literata để đọc và JetBrains Mono cho phần khung. Chúng không phải thuộc tính của phần mềm, vì font được cắt theo bảng chữ và trình duyệt chỉ tải đúng những dải mà trang bạn dùng tới. Riêng font đã giảm từ 86 KB xuống 67 KB ở 2.0.1 mà không bỏ đi họ chữ nào.
+Hai dòng CSS và JavaScript là sản phẩm của bản build — giống nhau ở mọi bản cài — và lấy từ bản dựng 2.0.3; từ 2.0.1 tới nay chưa bản nào làm chúng nhúc nhích, kể cả 2.1.0, vì 2.1.0 chỉ đụng phần quản trị. Các số tổng đo cho 2.0.1, tại origin chứ không qua CDN, và là của chính site này: tiếng Việt, Literata để đọc và JetBrains Mono cho phần khung. Chúng không phải thuộc tính của phần mềm, vì font được cắt theo bảng chữ và trình duyệt chỉ tải đúng những dải mà trang bạn dùng tới. Riêng font đã giảm từ 86 KB xuống 67 KB ở 2.0.1 mà không bỏ đi họ chữ nào.
 
 | | Trang chủ | Một bài | |
 |:---|---:|---:|:---|

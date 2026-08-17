@@ -1,6 +1,6 @@
 <div align="center">
 
-# quire**INK** &nbsp;`2.0.3`
+# quire**INK** &nbsp;`2.1.0`
 
 **A blog you host yourself, and an AI agent can run for you.**
 No algorithm, no ads, no platform standing between you and your readers.
@@ -18,7 +18,7 @@ One process. Two SQLite files. No cloud account anywhere in the path.
 
 **English** · [Tiếng Việt](./README.vi.md)
 
-[**Try it**](https://demo.quireink.com) · [**Install**](#install) · [**Speed**](#speed) · [**Let an agent write**](#let-an-ai-agent-write-for-you-mcp) · [**Changelog**](./CHANGELOG.md) · [**License**](#license)
+[**quireink.com**](https://quireink.com) · [**Try it**](https://demo.quireink.com) · [**Install**](#install) · [**Speed**](#speed) · [**Let an agent write**](#let-an-ai-agent-write-for-you-mcp) · [**Changelog**](./CHANGELOG.md) · [**License**](#license)
 
 <br/>
 
@@ -74,13 +74,14 @@ Three things shaped it.
 
 You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE), and run the published version commercially — paid hosting included — under [one additional permission](./LICENSE-EXCEPTION.md).
 
-> **2.0.3 came out on 2026-08-15** and runs the demo above plus the author's own blog at
-> [manhhung.me](https://manhhung.me). It folds 2.0.2 in, so there is one release to read.
-> Thirty-eight commits: an audit that found no upload cap, no storage quota and a server
-> listening on every interface under a log line that said otherwise; a rate limit a forged
-> header could walk past; and an admin that had been wearing a dashboard framework's clothes
-> instead of this product's. Almost all of it was found by measuring the running site rather
-> than by reading the source. The [changelog](./CHANGELOG.md) has everything that changed.
+> **2.1.0 came out on 2026-08-18** and runs the demo above plus the author's own blog at
+> [manhhung.me](https://manhhung.me). Thirty commits, nearly all one project: the admin
+> rebuilt around writing. The screen you write on shows the list of everything written
+> beside the paper, every other screen is one sheet per page, search reads the body of the
+> writing and survives Vietnamese diacritics, and the admin's one colour is the product's
+> own highlighter. Nothing on the reader's side moved a byte. The project also has a front
+> door now at [quireink.com](https://quireink.com). The [changelog](./CHANGELOG.md) has
+> everything that changed.
 
 ---
 
@@ -125,7 +126,7 @@ You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE),
 
 These are off the network, first visit, nothing cached. It is what a stranger on a phone actually waits for.
 
-The CSS and JavaScript rows are build artefacts — the same bytes on every install — and are read off the 2.0.3 build; nothing in 2.0.2 or 2.0.3 moved them. The totals were measured for 2.0.1 against the origin, not through the CDN, and they are this site: Vietnamese, Literata to read and JetBrains Mono for the furniture. They are not a property of the software, because the fonts are cut per script and a browser fetches only the ranges your pages actually use. Fonts fell 86 KB to 67 KB in 2.0.1 without a face being dropped.
+The CSS and JavaScript rows are build artefacts — the same bytes on every install — and are read off the 2.0.3 build; nothing since 2.0.1 has moved them, 2.1.0 included, because 2.1.0 touches only the admin. The totals were measured for 2.0.1 against the origin, not through the CDN, and they are this site: Vietnamese, Literata to read and JetBrains Mono for the furniture. They are not a property of the software, because the fonts are cut per script and a browser fetches only the ranges your pages actually use. Fonts fell 86 KB to 67 KB in 2.0.1 without a face being dropped.
 
 | | Home | A post | |
 |:---|---:|---:|:---|
