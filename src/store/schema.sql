@@ -230,7 +230,8 @@ create table if not exists mcp_used_codes (
 create index if not exists mcp_used_codes_expires_idx on mcp_used_codes (expires_at);
 
 -- ----- backup_state -----------------------------------------------------------
--- Google Drive is replaced by litestream (parity exception 1), but the row survives the
+-- Google Drive backup is gone from the application (parity exception 1); what replaced it
+-- is operational and lives outside this schema, in docs/backups.md. The row survives the
 -- import with its token nulled so `last_run_at` history is not lost.
 create table if not exists backup_state (
   id            integer primary key check (id = 1),

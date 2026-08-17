@@ -7,24 +7,51 @@ Replaces the Go plan's frontend spec. Two frontends with opposite budgets.
 - **Admin**: the existing React SPA, built once and embedded. Only the owner loads it, so
   its weight is irrelevant to readers and to SEO.
 
-## Budgets (enforced by a CI check)
+## Budgets
 
-| Page | JS (brotli) | CSS (brotli) | Gate |
+**The gate is per BUNDLE, in raw bytes, in `scripts/build-assets.ts`** — `core.js` 9,600
+and `post.js` 11,200, each with the reason it last moved written beside it, and
+`bun run build:assets` fails the build when either is passed. That file is the authority;
+this section is the intent behind it.
+
+⚠️ **A per-PAGE table stood here until 2026-08-18 claiming "target 0 KB, fail above 3 KB
+(brotli)" on an article page, "enforced by a CI check".** No such check ever existed, and
+the shipped article page has been roughly twice that figure since the islands landed. It
+was the target written before the port, left in the present tense after the port answered
+it. Aspirations belong in prose; a number that says "enforced" has to name what enforces
+it.
+
+Measured 2026-08-18 on a served article page, at the origin, exactly as a browser fetches
+it — **two files and no third**, and no inline script anywhere on the site:
+
+| | raw | gzip (what is served) | brotli |
 |---|---|---|---|
-| Article page, initial | **target 0 KB** | target 8 KB | fail above 3 KB JS |
-| Listing page, initial | target 2 KB | target 8 KB | fail above 5 KB JS |
-| Admin SPA | around 400 KB | around 40 KB | informational only |
+| `core.js` — every public page | 9,406 | **3,681** | 3,147 |
+| `post.js` — added on `/{slug}` | 11,195 | **4,383** | 3,775 |
+| **an article page, total JS** | 20,601 | **8,064** | 6,922 |
 
-For reference, the current article page fetches **182 KB of JS (gzip)** across 12 files,
-of which **143 KB is Next and React**. The islands were never the problem; the framework
-underneath them was.
+The 1.x article page this replaced fetched **182 KB of JS (gzip) across 12 files**, of
+which 143 KB was Next and React — the measurement in
+[00-rationale.md](00-rationale.md) that ended Next.js, and past tense since the
+2026-07-28 cutover. **It cannot be re-measured**: the frozen tree was removed from the
+working copy ([ADR 0019](../decisions/0019-remove-the-frozen-tree-from-the-working-copy.md))
+and `old.manhhung.me` no longer answers — the name still resolves and Cloudflare still
+terminates TLS for it, but the edge returns **522, origin unreachable** (checked
+2026-08-18). The number stands as a dated capture of a site that is gone, which is the
+only thing it can now be.
 
-The Go plan set 15 KB as the failure line. Zero is achievable here and worth aiming at,
-because every kilobyte on an article page is paid by a reader who did not ask for it.
+Zero on an article page remains the direction and is not where this landed: back to top,
+code copy, the lightbox, subscribe, comments, the contents highlight and book mode are all
+real reader features and all cost bytes. What the budget buys is that each of those bytes
+was argued for in a diff somebody read.
 
 ## CSS: hand-written, no Tailwind on the public site
 
-Currently one 63 KB (raw) Tailwind stylesheet covering public and admin.
+1.x shipped one 63 KB (raw) Tailwind stylesheet covering public and admin. As shipped in
+2.0 they are two sheets with nothing in common: the public one is hand-written, **42,890
+raw / 8,265 gzipped**, and the admin keeps Tailwind at 80,262 / 17,241, paid by the owner
+alone (measured 2026-08-18). The line here read "Currently one 63 KB stylesheet covering
+public and admin" until then — the same pre-port present tense as the JS figure above.
 
 **Public CSS is rewritten by hand**, roughly 1,000 lines, built on custom properties.
 Reasons, in order:
