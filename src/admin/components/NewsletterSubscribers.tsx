@@ -4,7 +4,8 @@
 // tracking pixel rides on those); a dash means nothing to measure yet.
 import { useEffect, useState } from 'react'
 import type { ApiResponse } from '@/types'
-import { StatCard, TableFrame, THEAD, TROW, EmptyState } from './kit'
+import { EmptyState } from './kit'
+import { NumBand } from './sheet'
 import { useAdminT } from './I18nProvider'
 
 type Stats = { sent: number; failed: number; opened: number; broadcasts: number; lastAt?: string; lastError?: string }
@@ -42,68 +43,77 @@ export function NewsletterSubscribers() {
     if (j.success) setSubs((s) => (s ? s.filter((x) => x.id !== id) : s))
   }
 
-  if (!subs) return <p className="text-sm text-neutral-400">{t.loading}</p>
+  if (!subs) return <p className="px-5 py-6 text-sm text-neutral-400">{t.loading}</p>
 
   const openRate = (s: Stats | null) =>
-    s && s.broadcasts > 0 ? `${Math.round((s.opened / s.broadcasts) * 100)}%` : '—'
+    s && s.broadcasts > 0 ? `${Math.round((s.opened / s.broadcasts) * 100)}%` : null
 
+  const statusLabel: Record<Subscriber['status'], string> = {
+    confirmed: t.nlConfirmed,
+    pending: t.nlPending,
+    unsubscribed: t.nlUnsub,
+  }
+
+  // Two newspaper columns of one-line ledgers (the admin-pages mock): the address is
+  // the thing, everything the log knows about it follows as small print. The dot ahead
+  // of a PENDING address is the pen's edge — the list's own work-in-progress.
   return (
-    <div className="space-y-6">
-      <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard label={t.nlConfirmed} value={counts.confirmed} />
-        <StatCard label={t.nlPending} value={counts.pending} />
-        <StatCard label={t.nlUnsub} value={counts.unsubscribed} />
-      </div>
-
+    <>
+      <NumBand
+        items={[
+          { n: counts.confirmed.toLocaleString(), label: t.nlConfirmed },
+          {
+            n: counts.pending.toLocaleString(),
+            label: (
+              <>
+                <span aria-hidden className="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-[var(--pen-edge)] align-middle" />
+                {t.nlPending}
+              </>
+            ),
+          },
+          { n: counts.unsubscribed.toLocaleString(), label: t.nlUnsub },
+        ]}
+      />
       {subs.length === 0 ? (
-        <EmptyState title={t.nlNoSubs} description={t.nlNoSubsHint} />
+        <div className="p-8"><EmptyState title={t.nlNoSubs} description={t.nlNoSubsHint} /></div>
       ) : (
-        <TableFrame>
-          <thead className={THEAD}>
-            <tr>
-              <th className="px-4 py-2.5 font-medium">{t.nlColEmail}</th>
-              <th className="px-4 py-2.5 font-medium">{t.nlColStatus}</th>
-              <th className="px-4 py-2.5 font-medium">{t.nlColJoined}</th>
-              <th className="px-4 py-2.5 text-right font-medium">{t.nlColSent}</th>
-              <th className="px-4 py-2.5 text-right font-medium">{t.nlColOpenRate}</th>
-              <th className="px-4 py-2.5 font-medium">{t.nlColLastSend}</th>
-              <th className="px-4 py-2.5" />
-            </tr>
-          </thead>
-          <tbody>
-            {subs.map((s) => (
-              <tr key={s.id} className={TROW}>
-                {/* max-w, not max-w-0: the latter collapses the column to its minimum
-                    and truncates every address even on a near-empty table. */}
-                <td className="max-w-[22rem] truncate px-4 py-2.5" title={s.email}>{s.email}</td>
-                <td className="px-4 py-2.5 text-neutral-500 dark:text-neutral-400">{s.status}</td>
-                <td className="whitespace-nowrap px-4 py-2.5 tabular-nums text-neutral-500 dark:text-neutral-400">{shortDate(s.createdAt)}</td>
-                <td className="px-4 py-2.5 text-right tabular-nums">
-                  {s.stats?.sent ?? 0}
-                  {/* Failures are the whole point of keeping the log — never hide them. */}
-                  {s.stats && s.stats.failed > 0 && (
-                    <span className="ml-1.5 text-xs text-neutral-500 dark:text-neutral-400" title={s.stats.lastError}>
-                      +{s.stats.failed} {t.nlFailedSuffix}
-                    </span>
-                  )}
-                </td>
-                <td className="px-4 py-2.5 text-right tabular-nums">{openRate(s.stats)}</td>
-                <td className="whitespace-nowrap px-4 py-2.5 tabular-nums text-neutral-500 dark:text-neutral-400">{shortDate(s.stats?.lastAt)}</td>
-                <td className="px-4 py-2.5 text-right">
-                  <button
-                    type="button"
-                    onClick={() => removeSub(s.id)}
-                    className="text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
-                    aria-label={t.nlDeleteSub}
-                  >
-                    ✕
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </TableFrame>
+        <ul className="paper-cols">
+          {subs.map((s) => (
+            <li key={s.id} className="border-b border-neutral-100 px-5 py-2.5 dark:border-neutral-800">
+              <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-xs text-neutral-400 dark:text-neutral-500">
+                <span
+                  aria-hidden
+                  className={`inline-block h-1.5 w-1.5 shrink-0 self-center rounded-full ${
+                    s.status === 'pending' ? 'bg-[var(--pen-edge)]' : 'bg-neutral-300 dark:bg-neutral-600'
+                  }`}
+                />
+                <span className="max-w-[18rem] truncate text-sm font-medium text-neutral-800 dark:text-neutral-200" title={s.email}>{s.email}</span>
+                <span aria-hidden>·</span>
+                <span>{statusLabel[s.status]}</span>
+                <span className="whitespace-nowrap">· {shortDate(s.createdAt)}</span>
+                {s.stats && s.stats.sent > 0 && (
+                  <span className="whitespace-nowrap tabular-nums">· {t.nlColSent} {s.stats.sent}</span>
+                )}
+                {/* Failures are the whole point of keeping the log — never hide them. */}
+                {s.stats && s.stats.failed > 0 && (
+                  <span className="whitespace-nowrap" title={s.stats.lastError}>+{s.stats.failed} {t.nlFailedSuffix}</span>
+                )}
+                {openRate(s.stats) && (
+                  <span className="whitespace-nowrap tabular-nums">· {t.nlColOpenRate} {openRate(s.stats)}</span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => removeSub(s.id)}
+                  className="ml-auto text-neutral-400 transition hover:text-neutral-900 dark:hover:text-white"
+                  aria-label={t.nlDeleteSub}
+                >
+                  ✕
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
       )}
-    </div>
+    </>
   )
 }
