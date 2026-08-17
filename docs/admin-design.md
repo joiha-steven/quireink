@@ -102,18 +102,26 @@ character and none of its typographic rules **except one**, below.
   means "your words". The admin theme dropdown's colours are isolated from the site's
   configurable palette.
 - **The rail is words, not pictures.** Sidebar icons are OFF by default (2026-08-15, *"không
-  cần icon bên sidebar, nó làm cho không cần thiết"*) and switchable from the rail's own
-  footer. The switch governs glyphs BESIDE LABELS; a COLLAPSED rail has no labels, so it stays
-  icon-only and the collapse control is always available. Reading the setting as "no icons
-  anywhere" is what hid the collapse control in the first cut, and the owner could not find it.
+  cần icon bên sidebar, nó làm cho không cần thiết"*); the switch lives at the BOTTOM of
+  "Everything else" (2026-08-17 — a set-once device preference does not need a permanent
+  footer row), and it means the WHOLE rail: nav glyphs and the footer controls' glyphs alike
+  (*"ẩn icon mà mấy icon light, xoá cache, log out ko ẩn kìa"* — the always-glyph carve-out
+  tried that day lasted one evening). A COLLAPSED rail has no labels, so it stays icon-only
+  and the collapse control is always available. Reading the setting as "no icons anywhere"
+  is what hid the collapse control in the first cut, and the owner could not find it.
+  The "Everything else" group itself remembers an EXPLICIT open/close across sessions
+  (localStorage); arriving on a page inside it still opens it for the visit, unrecorded.
 - **The rail holds FOUR destinations**, and everything else sits behind one control on it
   ([ADR 0024](./decisions/0024-the-admin-is-rebuilt-around-writing.md) step 6): home, write,
   library, newsletter — then analytics, comments, trash, settings, log, help and View blog
   under "Everything else". The group opens itself when the current page is inside it, because
   a rail that hides where you are is worse than a long one. Eleven rows was eleven decisions
   before the one that matters, and the four are what the owner came to do.
-- **Writing is the primary task.** The editor takes the full desktop width and hides the
-  global navigation.
+- **Writing is the primary task.** Since the two-pane Write screen (2026-08-17) the editor
+  no longer hides the rail: the mock draws it, and the owner circled the whole frame. The
+  write pane — the list of everything written — rides beside the sheet from `xl` up, on
+  the Write screen and both editors alike; on a narrow window the sheet takes the room and
+  the list is one "← Write" away.
 - **The home carries the numbers; the DETAIL lives on its own screen.** Views, visitors, time
   per post and read-through are on the home page — that is why Analytics could leave the rail
   — and the charts, the ranges and the per-page breakdown are one click further, from the
@@ -199,7 +207,10 @@ copying it. `md` is a page action; `sm` is an action inside a strip of text.
 `underline` that drew no underline, while three screens hand-rolled their own track — one of
 them 40px against the strip above it at 44, with no `aria-pressed` and no hover.
 `TAB_TRACK` and `tabItemClass()` are exported for a strip made of LINKS (the analytics range,
-which lives in the URL and so cannot be a `<Tabs>` with an `onChange`).
+which lives in the URL and so cannot be a `<Tabs>` with an `onChange`). `sm` has one
+modifier, `dense` (2026-08-17): tighter padding for the write pane's row of five, whose
+labels are the pane's own deliberately short `scope*` strings so five words share one line
+in all six languages — the row may not wrap.
 
 **One stat tile, one empty state.** `StatTile` was a second copy of `StatCard` that had
 already drifted a shade on its sub-line. `EmptyState` existed and two files used it while
@@ -354,8 +365,11 @@ Analytics 418 → 83ms. Cold load of `/admin` 501 → 329ms.
 
 ## Still open
 
-- Translated strings for editor chrome labels still written in Vietnamese.
-- Very narrow content tables could become stacked list rows.
 - Integrations may need its own secondary navigation if it keeps growing.
 - The editor's link prompt is still `window.prompt`; a small accessible popover would be
   better.
+
+Two items left this list on 2026-08-18: the editor chrome labels have long lived in
+`src/locales` (all six languages), and the narrow content tables DID become stacked list
+rows — the comments queue, the subscriber list, the trash and the activity log are the
+one-sheet pages' two-column ledgers now.

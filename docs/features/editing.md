@@ -27,10 +27,13 @@
 - **Menus live in `EditorMenus.tsx`** (Toolbar + BubbleBar). The editor sets
   `shouldRerenderOnTransaction: true` — TipTap 3 disables it by default, which leaves every
   `isActive()` (toolbar highlights, the table-tools row) stale until an unrelated re-render.
-- **Writing shell:** the title grows instead of clipping; the editor header and document frame share
-  one bounded gutter; the toolbar is sticky, vertically centred, never wraps, and scrolls horizontally
-  on narrow screens. Icon actions keep localized accessible names. Focusing prose must not draw a
-  black outline around the document.
+- **Writing shell:** the sheet carries its own chrome — the action line (back link · save state ·
+  word count · Markdown/Attributes · Preview/Save/Publish) is the card's first row and the toolbar
+  sticks under it, full-width, groups centred, WRAPPING on a narrow window rather than scrolling
+  (three owner verdicts, 2026-08-17). The title grows instead of clipping (`SheetTitle`, reading
+  face). The write pane — the list of everything written — rides beside the sheet from `xl` up.
+  Icon actions keep localized accessible names. Focusing prose must not draw a black outline
+  around the document.
 - **Optional typewriter feedback:** `settings.motion.typewriter` enables the block caret, subtle
   insert/delete response, and a synthesized filtered-noise key click (45% internal volume; no audio
   file). It ignores composition, modifier/navigation keys, paste, and held repeats. The master
