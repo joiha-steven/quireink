@@ -36,10 +36,29 @@
   --admin-mono: ui-monospace, 'SFMono-Regular', Menlo, Consolas, 'Liberation Mono', monospace;
   --c-meta: #6a6a70;
   --c-rule: #e9e9e4;
+  /* The product's highlighter — the admin's ONE accent, taken from the Writing Desk mock:
+     a search hit wears it as a <mark>, and the small dots that mean "work in progress"
+     (a draft's row, the unsaved state) are its edge tone. Everything else stays
+     monochrome; a second use of colour spends the only signal that means "your words". */
+  --pen: #d5f856;
+  --pen-edge: #c3e844;
+  --on-pen: #2c3208;
 }
 .dark {
   --c-meta: #85858c;
   --c-rule: #27272a;
+  --pen: #7e7028;
+  --pen-edge: #93832f;
+  --on-pen: #f6f2dd;
+}
+/* The search hit, painted the way the reading site paints a highlight. Scoped to the
+   write pane's rows: the editor's own five-ink marks carry inline colours and must not
+   inherit a default. */
+[data-write-row] mark {
+  background: var(--pen);
+  color: var(--on-pen);
+  border-radius: 2px;
+  padding: 0 1px;
 }
 /* `overscroll-behavior-y: contain` is the important half, and it is here because of a real
    loss of work: on a phone, scrolling hard at the top of the editor triggers the browser's

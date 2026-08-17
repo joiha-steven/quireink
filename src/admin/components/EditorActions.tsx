@@ -100,7 +100,11 @@ export function EditorActions({
         {/* The mock's saved line: state · size · time to read. One string of small print. */}
         <span className="text-xs text-neutral-400 dark:text-neutral-500">
           {/* Joined, not concatenated: on a fresh load the save status is empty, and a line
-              that begins with a separator reads as a missing word. */}
+              that begins with a separator reads as a missing word. The dot before it is the
+              mock's: the pen's edge, the small light that means "work in progress". */}
+          {status && (
+            <span aria-hidden className="mr-1.5 inline-block h-[5px] w-[5px] rounded-full bg-[var(--pen-edge)] align-middle" />
+          )}
           {status}
           {words > 0 && (
             <span className="hidden sm:inline">

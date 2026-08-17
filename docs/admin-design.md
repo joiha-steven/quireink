@@ -93,9 +93,14 @@ character and none of its typographic rules **except one**, below.
 - **Square corners are a PUBLIC rule.** Admin uses a 10 / 8 / 6px radius hierarchy — sheet,
   nested panel, control — never a global square reset, never arbitrary per-component rounding.
   It was 16 / 12 / 8; a 16px radius on a 1200px panel reads as a pill rather than as a page.
-- **Admin is monochrome**: black, white and the neutral scale. Feedback, status, analytics
-  trends, media selection, warnings, destructive actions and recovery banners included. The
-  admin theme dropdown's colours are isolated from the site's configurable palette.
+- **Admin is monochrome, plus exactly ONE accent: the product's highlighter** (the Writing
+  Desk mock's `--pen`, 2026-08-17). It appears in two roles only — a search hit wears it as
+  a `<mark>` in the write pane, and the small dots that mean "work in progress" (a draft's
+  row, the unsaved state, an unfinished chip on the home screen) are its edge tone. Feedback,
+  status, analytics trends, media selection, warnings, destructive actions and recovery
+  banners stay on the neutral scale: a second use of colour spends the only signal that
+  means "your words". The admin theme dropdown's colours are isolated from the site's
+  configurable palette.
 - **The rail is words, not pictures.** Sidebar icons are OFF by default (2026-08-15, *"không
   cần icon bên sidebar, nó làm cho không cần thiết"*) and switchable from the rail's own
   footer. The switch governs glyphs BESIDE LABELS; a COLLAPSED rail has no labels, so it stays
