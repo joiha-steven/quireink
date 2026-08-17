@@ -30,7 +30,8 @@ import type { IntegrationStatus } from '@/store/integration-keys'
 import { Button } from '@/admin/ui/Button'
 import { useToast } from '@/admin/ui/Toast'
 import { formatTime } from '@/utils'
-import { Card, GROUP_GAP, NOTE_TEXT, PageHeader, Tabs, type TabItem } from './kit'
+import { Card, NOTE_TEXT, PageHeader, Tabs, type TabItem } from './kit'
+import { SHEET, SheetTop } from './sheet'
 import { SettingsSearch } from './SettingsSearch'
 import { useSettingJump } from './useSettingJump'
 import { useAdminT } from './I18nProvider'
@@ -144,44 +145,44 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
   }
 
   return (
+    // ONE SHEET (mock page 7): tabs + the search (the way PAST them, ADR 0011) on the
+    // sheet's first row; every card a hairline PANEL inside.
     <div className="pb-24">
       <PageHeader title={t.settingsTitle} />
-
-      {/* Above the tabs, because it is the way PAST them. ADR 0011 gave each tab a printed
-          question and it was still not enough: fifty settings behind seven doors is fifty
-          things to remember the door of. Typing two letters is the door. */}
-      <SettingsSearch
-        tabLabel={(k) => String(TAB_LABEL(k))}
-        onPick={(entry) => { setTab(entry.tab); jumpToSetting(String(t[entry.label])) }}
-      />
-
-      <Tabs tabs={TABS} value={tab} onChange={setTab} className={GROUP_GAP} />
-      {/* The definition, in the open. A tab whose contents you have to guess is a tab you
-          open five of. */}
-      <p className={`${NOTE_TEXT} ${GROUP_GAP} max-w-2xl`}>{HINTS[tab]}</p>
+      <div className={SHEET}>
+        <SheetTop>
+          <Tabs tabs={TABS} value={tab} onChange={setTab} size="sm" />
+          <span className="flex-1" />
+          <SettingsSearch
+            tabLabel={(k) => String(TAB_LABEL(k))}
+            onPick={(entry) => { setTab(entry.tab); jumpToSetting(String(t[entry.label])) }}
+          />
+        </SheetTop>
+        <div className="p-5">
+      {/* The definition, in the open — a guessed-at tab is a tab you open five of. */}
+      <p className={`${NOTE_TEXT} mb-5 max-w-2xl`}>{HINTS[tab]}</p>
 
       {/* SITE — what this site IS. Identity only: nothing here moves a pixel. */}
       {tab === 'site' && (
         <div className={GRID}>
           <div className={COL}>
-            <Card title={t.cardGeneral}>
+            <Card panel title={t.cardGeneral}>
               <SiteFields s={s} update={update} />
             </Card>
           </div>
           <div className={COL}>
-            <Card title={t.cardBranding}>
+            <Card panel title={t.cardBranding}>
               <BrandFields s={s} update={update} />
             </Card>
           </div>
         </div>
       )}
 
-      {/* LAYOUT — where things sit. The column, the navigation, the footer. Split out of
-          the old "Site" tab, which had no reason to hold both. */}
+      {/* LAYOUT — where things sit; split out of "Site", which had no reason to hold both. */}
       {tab === 'layout' && (
         <div className={GRID}>
           <div className={COL}>
-            <Card title={t.cardLayout}>
+            <Card panel title={t.cardLayout}>
               <LayoutMenuFields s={s} update={update} posts={posts} pages={pages} />
             </Card>
           </div>
@@ -190,7 +191,7 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
                 nobody is showing is how a settings screen becomes something people scroll
                 past. */}
             {s.home.mode === 'front' && (
-              <Card title={t.cardFront}>
+              <Card panel title={t.cardFront}>
                 <FrontFields
                   front={s.home.front}
                   onChange={(front) => update({ home: { ...s.home, front } })}
@@ -199,13 +200,13 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
                 />
               </Card>
             )}
-            <Card title={t.cardGallery}>
+            <Card panel title={t.cardGallery}>
               <GalleryFields gallery={s.gallery} onChange={(gallery) => update({ gallery })} />
             </Card>
-            <Card title={t.cardHighlight}>
+            <Card panel title={t.cardHighlight}>
               <HighlightFields highlight={s.highlight} onChange={(highlight) => update({ highlight })} />
             </Card>
-            <Card title={t.footerContent}>
+            <Card panel title={t.footerContent}>
               <FooterField value={s.footer} onChange={(footer) => update({ footer })} />
             </Card>
           </div>
@@ -216,7 +217,7 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
       {tab === 'reading' && (
         <div className={GRID}>
           <div className={COL}>
-            <Card title={t.cardFeatures}>
+            <Card panel title={t.cardFeatures}>
               <PostFeatureFields
                 features={s.features}
                 onChange={(features) => update({ features })}
@@ -226,27 +227,26 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
             </Card>
           </div>
           <div className={COL}>
-            <Card title={t.cardListing}>
+            <Card panel title={t.cardListing}>
               <ListingFeatureFields features={s.features} onChange={(features) => update({ features })} />
             </Card>
-            <Card title={t.cardComments}>
+            <Card panel title={t.cardComments}>
               <CommentFields comments={s.comments} onChange={(comments) => update({ comments })} />
             </Card>
             {/* Not a reader feature at all: it records what the OWNER changed. It sat in the
                 middle of the reading switches because there was one list to put it in. */}
-            <Card title={t.cardActivity}>
+            <Card panel title={t.cardActivity}>
               <ActivityLogField features={s.features} onChange={(features) => update({ features })} />
             </Card>
           </div>
         </div>
       )}
 
-      {/* APPEARANCE — how it looks. Palette and the escape hatch on the left, the type
-          stack on the right. */}
+      {/* APPEARANCE — palette + escape hatch left, the type stack right. */}
       {tab === 'appearance' && (
         <div className={GRID}>
           <div className={COL}>
-            <Card title={t.navAppearance}>
+            <Card panel title={t.navAppearance}>
               <p className={`${NOTE_TEXT} mb-4 rounded-lg bg-neutral-50 px-3 py-2 dark:bg-neutral-800/60`}>
                 {t.themeAdminNote}
               </p>
@@ -260,7 +260,7 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
                 onChangeEnabled={(enabledPalettes) => update({ enabledPalettes })}
               />
             </Card>
-            <Card title={t.customCss}>
+            <Card panel title={t.customCss}>
               <div className="space-y-1.5">
                 <textarea
                   value={s.customCss}
@@ -275,7 +275,7 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
             </Card>
           </div>
           <div className={COL}>
-            <Card title={t.cardFont}>
+            <Card panel title={t.cardFont}>
               <FontFields
                 value={s.fontPreset}
                 onChange={(fontPreset, typography) => update({ fontPreset, typography })}
@@ -286,14 +286,14 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
                 <FontUpload value={s.customFont} onChange={(customFont) => update({ customFont })} />
               </div>
             </Card>
-            <Card title={t.cardTypography}>
+            <Card panel title={t.cardTypography}>
               <TypographyFields
                 typography={s.typography}
                 fontPreset={s.fontPreset}
                 onChange={(typography) => update({ typography })}
               />
             </Card>
-            <Card title={t.cardRendering}>
+            <Card panel title={t.cardRendering}>
               <AdvancedFields
                 typography={s.typography}
                 onTypography={(typography) => update({ typography })}
@@ -314,12 +314,12 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
       {tab === 'seo' && (
         <div className={GRID}>
           <div className={COL}>
-            <Card title={t.tabSeo}>
+            <Card panel title={t.tabSeo}>
               <SeoFields s={s} update={update} />
             </Card>
           </div>
           <div className={COL}>
-            <Card title={t.redirectsTitle}>
+            <Card panel title={t.redirectsTitle}>
               <RedirectsManager />
             </Card>
           </div>
@@ -331,45 +331,44 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
       {tab === 'connections' && (
         <div className={GRID}>
           <div className={COL}>
-            <Card title={t.cardNewsletter}>
+            <Card panel title={t.cardNewsletter}>
               <NewsletterFields />
             </Card>
-            <Card title={t.cardCloudflare}>
+            <Card panel title={t.cardCloudflare}>
               <CloudflareFields configured={integrations.cloudflareConfigured} zoneId={integrations.cloudflareZoneId} />
             </Card>
           </div>
           <div className={COL}>
-            <Card title={t.cardCommentIntegrations}>
+            <Card panel title={t.cardCommentIntegrations}>
               <CommentIntegrations
                 comments={s.comments}
                 env={commentEnv}
                 onChange={(comments) => update({ comments })}
               />
             </Card>
-            <Card title={t.cardMcp}>
+            <Card panel title={t.cardMcp}>
               <McpFields mcp={s.mcp} siteUrl={s.siteUrl} onChange={(mcp) => update({ mcp })} />
             </Card>
           </div>
         </div>
       )}
 
-      {/* SYSTEM — content in and out. The WordPress importer was under "Content", where it
-          read as a content SETTING rather than the one-time tool it is. */}
+      {/* SYSTEM — content in and out; the WP importer is a one-time tool, not a setting. */}
       {tab === 'system' && (
         <div className={GRID}>
           <div className={COL}>
-            <Card title={t.cardImport}>
+            <Card panel title={t.cardImport}>
               <ImportFields />
             </Card>
-            <Card title={t.cacheTitle}>
+            <Card panel title={t.cacheTitle}>
               <CacheFields cache={s.cache} onChange={(cache) => update({ cache })} />
             </Card>
           </div>
           <div className={COL}>
-            <Card title={t.backupTitle}>
+            <Card panel title={t.backupTitle}>
               <ExportFields backups={s.backups} onChange={(backups) => update({ backups })} />
             </Card>
-            <Card title={t.storageTitle}>
+            <Card panel title={t.storageTitle}>
               <StorageFields
                 maxUploadMb={s.maxUploadMb}
                 storageQuotaGb={s.storageQuotaGb}
@@ -383,6 +382,8 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
 
       {/* One always-reachable save bar, offset past the sidebar via the --admin-nav-w the
           sidebar publishes, so it follows the rail's collapse state. */}
+        </div>
+      </div>
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-neutral-200/80 bg-white/90 shadow-[0_-8px_24px_rgba(0,0,0,0.04)] backdrop-blur-xl md:left-[var(--admin-nav-w,13rem)] dark:border-neutral-800 dark:bg-neutral-900/90">
         <div className="mx-auto flex w-full max-w-[1480px] items-center justify-between px-4 py-3 sm:px-7 lg:px-10 xl:px-12">
           <span className="text-sm text-neutral-400 dark:text-neutral-500">
