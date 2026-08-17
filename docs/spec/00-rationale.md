@@ -54,9 +54,17 @@ be resolved without breaking the pin.
 Deviations from Quire 1.x that are intentional. **The numbering is cited from other
 documents: append, never renumber.**
 
-1. **Google Drive backup is replaced by litestream to R2.** Continuous point-in-time
-   replication instead of scheduled archives. Removes OAuth, refresh-token storage, the
-   cron job and ~730 lines. A manual export/import archive is still provided.
+1. **Google Drive backup is removed from the application.** Removes OAuth, refresh-token
+   storage, the in-app destructive restore and ~730 lines. Backup became an operational
+   concern instead: an owner-triggered export, scheduled on-disk snapshots, and an
+   off-server copy to R2 written by cron — the three in [`../backups.md`](../backups.md).
+   ⚠️ **This entry said "replaced by litestream to R2, continuous point-in-time
+   replication" until 2026-08-18, and litestream was never adopted.** It came from the
+   retired Go plan ([ADR 0004](../decisions/0004-rewrite-in-go-on-sqlite.md)) and outlived
+   it here; the decision that replaced it is recorded in `state/OPEN_QUESTIONS.md` as
+   answered, in the private sibling, where nobody planning a recovery would look. A
+   backup mechanism named in a spec and absent from the machine is the most expensive
+   kind of stale line there is, so it is corrected rather than deleted.
 2. **Search is accent-insensitive at the index level.** FTS5 with `remove_diacritics 2`
    does natively what the 1.x `/search` route bolted on. Ranking changed from "none" to BM25.
 3. **Cache invalidation is total instead of targeted.** See [02-structure.md](02-structure.md).

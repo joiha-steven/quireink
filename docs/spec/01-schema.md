@@ -76,8 +76,8 @@ temp_store   = MEMORY
 
 | File | Contents | Backup |
 |---|---|---|
-| `quire.db` | Everything except analytics | litestream, continuous |
-| `analytics.db` | `analytics_events`, `analytics_scroll` | litestream, lower priority; loss is tolerable |
+| `quire.db` | Everything except analytics | `VACUUM INTO` snapshot, in all three copies ([backups.md](../backups.md)) |
+| `analytics.db` | `analytics_events`, `analytics_scroll` | same snapshot, same schedule; loss is tolerable |
 
 Reasons for the split:
 
