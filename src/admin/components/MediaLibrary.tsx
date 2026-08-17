@@ -267,7 +267,7 @@ export function MediaLibrary({ mode = 'page', multi = false, onSelect, onSelectM
 
   const body = (
     <div className="space-y-5">
-      <ImageUploader onUploaded={(uploaded) => setItems((prev) => [...uploaded, ...prev])} />
+      {/* The tool band FIRST, bled to the sheet's edges — the mock's second chrome row. */}
       {mode === 'page' && items.length > 0 && (
         <MediaToolbar
           count={items.length}
@@ -279,8 +279,10 @@ export function MediaLibrary({ mode = 'page', multi = false, onSelect, onSelectM
           }}
           sort={sort}
           onSort={setSort}
+          className="-mx-4 -mt-4 border-b border-neutral-100 px-5 py-2.5 dark:border-neutral-800"
         />
       )}
+      <ImageUploader onUploaded={(uploaded) => setItems((prev) => [...uploaded, ...prev])} />
       {mode === 'page' && items.length > 0 && (
         <div className="flex flex-wrap justify-end gap-4">
           {selected.size > 0 && (
@@ -288,14 +290,14 @@ export function MediaLibrary({ mode = 'page', multi = false, onSelect, onSelectM
               <button
                 type="button"
                 onClick={() => setSelected(new Set())}
-                className="text-sm text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
+                className="text-xs text-neutral-400 transition hover:text-neutral-900 dark:text-neutral-500 dark:hover:text-neutral-200"
               >
                 {t.clearSelection}
               </button>
               <button
                 type="button"
                 onClick={deleteSelected}
-                className="text-sm font-medium text-neutral-800 hover:text-black dark:text-neutral-200 dark:hover:text-white"
+                className="text-xs font-medium text-neutral-700 transition hover:text-black dark:text-neutral-300 dark:hover:text-white"
               >
                 {t.deleteSelected} ({selected.size})
               </button>
@@ -306,7 +308,7 @@ export function MediaLibrary({ mode = 'page', multi = false, onSelect, onSelectM
               <button
                 type="button"
                 onClick={() => setOnlyUnused((v) => !v)}
-                className="text-sm text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
+                className="text-xs text-neutral-400 transition hover:text-neutral-900 dark:text-neutral-500 dark:hover:text-neutral-200"
               >
                 {onlyUnused ? t.showAll : t.showUnusedOnly}
               </button>
@@ -314,7 +316,7 @@ export function MediaLibrary({ mode = 'page', multi = false, onSelect, onSelectM
                 type="button"
                 onClick={deleteAllUnused}
                 disabled={deletingAll}
-                className="text-sm font-medium text-neutral-800 hover:text-black disabled:opacity-50 dark:text-neutral-200 dark:hover:text-white"
+                className="text-xs font-medium text-neutral-700 transition hover:text-black disabled:opacity-50 dark:text-neutral-300 dark:hover:text-white"
               >
                 {t.deleteAllUnused} ({unused.size})
               </button>
@@ -324,7 +326,7 @@ export function MediaLibrary({ mode = 'page', multi = false, onSelect, onSelectM
             type="button"
             onClick={checkUnused}
             disabled={checking}
-            className="text-sm text-neutral-500 hover:text-neutral-900 disabled:opacity-50 dark:text-neutral-400 dark:hover:text-white"
+            className="text-xs text-neutral-400 transition hover:text-neutral-900 disabled:opacity-50 dark:text-neutral-500 dark:hover:text-neutral-200"
           >
             {t.checkUnused}
           </button>

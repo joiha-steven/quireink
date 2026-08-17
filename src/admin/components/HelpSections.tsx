@@ -6,7 +6,7 @@ import { Anchor, C, Ext, In, Links, P, UL, doc } from './help-kit'
 export function WritingSection() {
   return (
     <Anchor id="writing">
-      <Card title="Writing &amp; publishing">
+      <Card panel title="Writing &amp; publishing">
         <ul className={UL}>
           <li>Markdown plus a toolbar. Drafts <b>autosave in your browser</b> and only reach the site when you Save or Publish, so editing a live post never pushes half-finished text.</li>
           <li><b>Schedule</b> by publishing with a future date: the post stays hidden and goes live on time. It does <b>not</b> email anyone by itself.</li>
@@ -27,7 +27,7 @@ export function WritingSection() {
 export function MediaSection() {
   return (
     <Anchor id="media">
-      <Card title="Media &amp; files">
+      <Card panel title="Media &amp; files">
         <ul className={UL}>
           <li>Drop an image into the editor or the Library. Responsive <b>AVIF and WebP</b> versions plus a thumbnail are generated for you; the original is always kept.</li>
           <li>The Library flags <b>unused</b> files (nothing links them) so a clear-out is safe. It only reports — it never deletes.</li>
@@ -42,7 +42,7 @@ export function MediaSection() {
 export function ReadersSection() {
   return (
     <Anchor id="readers">
-      <Card title="Readers — comments &amp; newsletter">
+      <Card panel title="Readers — comments &amp; newsletter">
         <p className={P}>Both are <b>off until you set them up</b>, and both are yours: no third-party service sits between you and your readers.</p>
         <ul className={`${UL} mt-2`}>
           <li><b>Comments</b> — enable in Settings → Content. Optional Turnstile anti-spam and Google sign-in. Replying emails the person you replied to.</li>
@@ -63,7 +63,7 @@ export function ReadersSection() {
 export function AnalyticsSection() {
   return (
     <Anchor id="analytics">
-      <Card title="Analytics">
+      <Card panel title="Analytics">
         <ul className={UL}>
           <li><b>No cookies, no personal data.</b> A visitor is a salted hash of IP + user agent, and the raw user agent is never stored — only coarse device / browser / OS buckets.</li>
           <li>Bots, admin pages and your own visits are skipped, so the numbers are readers.</li>
@@ -78,7 +78,7 @@ export function AnalyticsSection() {
 export function SettingsSection() {
   return (
     <Anchor id="settings">
-      <Card title="Settings">
+      <Card panel title="Settings">
         <p className={P}>One form, one Save, applied site-wide with <b>no redeploy</b>. Five tabs:</p>
         <ul className={`${P} mt-2 space-y-1 list-disc pl-4`}>
           <li><b>Site</b> — title, logo, header menu, language, content width.</li>
@@ -96,7 +96,7 @@ export function SettingsSection() {
 export function ServerSection() {
   return (
     <Anchor id="server">
-      <Card title="Server, backups &amp; upgrades">
+      <Card panel title="Server, backups &amp; upgrades">
         <ul className={UL}>
           <li>Runs entirely on <b>your own server</b>: two SQLite files for content and analytics, the local filesystem for images. Native or Docker, no cloud account.</li>
           <li><C>/api/health</C> reports the database and the storage directory separately — point your uptime monitor at it. Boot fails fast on a missing required setting.</li>
@@ -115,7 +115,7 @@ export function ServerSection() {
 export function CacheSection() {
   return (
     <Anchor id="cache">
-      <Card title="Cloudflare &amp; cache">
+      <Card panel title="Cloudflare &amp; cache">
         <p className={P}>Put Cloudflare in front for TLS and a global edge cache — the big win when readers are far from your server.</p>
         <ul className={`${UL} mt-2`}>
           <li><b>Cache Rules</b>: bypass <C>/admin</C> and <C>/api</C>, cache everything else at the origin TTL. Turn <b>Rocket Loader off</b> (it breaks React). SSL: Full (Strict).</li>
@@ -135,7 +135,7 @@ export function CacheSection() {
 export function McpSection() {
   return (
     <Anchor id="mcp">
-      <Card title="MCP — let an AI run the blog">
+      <Card panel title="MCP — let an AI run the blog">
         <p className={P}>
           The built-in <b>MCP server</b> gives an AI agent the <b>same rules as the admin</b>: create and update posts and pages, manage media and settings, everything revalidated and written to the activity log exactly like a human action. Turn it on and mint access tokens in Settings → Integrations — tokens are shown once and stored hashed.
         </p>

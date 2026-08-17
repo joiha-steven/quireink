@@ -217,21 +217,22 @@ export function AdminSidebar({
   //
   // These wear SIDEBAR_UTIL, not SIDEBAR_NAV — they are controls, not destinations, and
   // dressed as nav rows they read as four more pages, one of them named "Light" ("cái
-  // sidebar… bất hợp lý kiểu nào đó", 2026-08-17). Their glyphs are ALWAYS drawn: the
-  // "Show icons" switch governs decoration beside nav LABELS, and a control's glyph is
-  // not decoration — it is the part that says "this does something".
+  // sidebar… bất hợp lý kiểu nào đó", 2026-08-17). Their glyphs FOLLOW the "Show icons"
+  // switch, by the owner's correction the same night ("ẩn icon mà mấy icon light, xoá
+  // cache, log out ko ẩn kìa") — one switch means one answer for the whole rail. The
+  // collapsed rail still draws them: with no labels, glyphs are all a rail can be.
   const utilClass = (c: boolean): string => `${SIDEBAR_UTIL} ${c ? 'justify-center' : 'gap-2.5'}`
   const controls = (c: boolean): ReactNode => (
     <>
       {/* `variant='text'` in BOTH states, with the word dropped when collapsed. The rail needs
           one row object, and `variant='icon'` is the public header's — it ignores the row class
           and drew this line 4px left of the two under it. */}
-      <ThemeToggle lang={lang} variant="text" showIcon showLabel={!c} triggerClassName={utilClass(c)} />
-      <CacheButton className={utilClass(c)} icon={<IconCache />} collapsed={c} />
+      <ThemeToggle lang={lang} variant="text" showIcon={c || icons} showLabel={!c} triggerClassName={utilClass(c)} />
+      <CacheButton className={utilClass(c)} icon={c || icons ? <IconCache /> : null} collapsed={c} />
       <div className="mt-1 border-t border-neutral-200 pt-1 dark:border-neutral-800">
         <form action={signOut} className="contents">
           <button className={utilClass(c)} title={c ? t.signOut : undefined}>
-            <IconSignOut />
+            {(c || icons) && <IconSignOut />}
             {!c && <span className="truncate">{t.signOut}</span>}
           </button>
         </form>
