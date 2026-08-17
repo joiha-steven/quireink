@@ -37,6 +37,8 @@ export function PickUpBand({ items, total }: { items: { title: string; href: str
       <div className="flex flex-wrap gap-2">
         {items.map((it) => (
           <Link key={it.href} href={it.href} className={CHIP}>
+            {/* The mock's chip dot: the pen's edge on everything unfinished. */}
+            <span aria-hidden className="h-[5px] w-[5px] shrink-0 self-center rounded-full bg-[var(--pen-edge)]" />
             {/* `truncate` on the TITLE only, so a long headline shortens and the timestamp
                 beside it never gets pushed out of the chip. */}
             <span className="truncate">{it.title || t.untitled}</span>

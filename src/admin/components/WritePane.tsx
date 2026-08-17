@@ -17,6 +17,28 @@ import { Button } from '@/admin/ui/Button'
 import { Tabs } from './kit'
 import { useAdminT } from './I18nProvider'
 import { useWritingItems, type WriteScope, type WriteSort } from './useWritingItems'
+import { foldAccents } from '@/utils'
+
+/**
+ * The matched word wears the product's highlighter (the mock's one accent). Folded per
+ * CHARACTER so the indices found in the folded text line up with the raw text — folding
+ * the whole string at once shifts them wherever a diacritic decomposes.
+ */
+function Marked({ text, needle }: { text: string; needle: string }) {
+  const n = foldAccents(needle.trim())
+  if (!n || !text) return <>{text}</>
+  const hay = Array.from(text, (c) => { const f = foldAccents(c); return f.length === 1 ? f : c.toLowerCase() }).join('')
+  const parts: React.ReactNode[] = []
+  let from = 0
+  for (let at = hay.indexOf(n, from); at !== -1; at = hay.indexOf(n, from)) {
+    if (at > from) parts.push(text.slice(from, at))
+    parts.push(<mark key={at}>{text.slice(at, at + n.length)}</mark>)
+    from = at + n.length
+  }
+  if (parts.length === 0) return <>{text}</>
+  parts.push(text.slice(from))
+  return <>{parts}</>
+}
 
 type ContentView = {
   posts: Post[]
@@ -100,22 +122,22 @@ function Rows({
                 }`}
               >
                 <span className="flex items-baseline gap-2">
-                  {/* The mock's dot: work still on the desk is the marked state; published
-                      is the quiet one. Neutral inks — the admin is monochrome. */}
+                  {/* The mock's dot: work still on the desk wears the pen's edge — the one
+                      accent the admin has — and published is the quiet neutral. */}
                   <span
                     aria-hidden
                     className={`mt-1.5 h-1.5 w-1.5 shrink-0 self-start rounded-full ${
-                      drafty ? 'bg-neutral-900 dark:bg-white' : 'bg-neutral-300 dark:bg-neutral-600'
+                      drafty ? 'bg-[var(--pen-edge)]' : 'bg-neutral-300 dark:bg-neutral-600'
                     }`}
                   />
                   <span className="min-w-0">
                     <span className={`block text-sm ${active ? 'font-semibold' : 'font-medium'} text-neutral-900 dark:text-white ${!it.title ? 'italic text-neutral-400 dark:text-neutral-500' : ''}`}>
-                      {it.title || t.untitled}
+                      {it.title ? <Marked text={it.title} needle={query} /> : t.untitled}
                     </span>
                     {under && (
                       <span className="mt-0.5 line-clamp-2 block text-xs text-neutral-500 dark:text-neutral-400">
                         {it.kind === 'page' && <span className="mr-1 text-neutral-400">{t.kindPage}</span>}
-                        {under}
+                        <Marked text={under} needle={query} />
                       </span>
                     )}
                     <span className="mt-1 block text-xs text-neutral-400 dark:text-neutral-500">
