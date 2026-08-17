@@ -36,13 +36,15 @@ export function HelpGuide({ title, version, firstRunTitle }: {
   title: string; version: string; firstRunTitle: string
 }) {
   return (
-    // ONE SHEET (the admin-pages mock, page 6), and this page is PROSE — so the whole
-    // guide sits in a reading column centred ON the sheet, exactly the way the editor
-    // centres a post on its paper. The page never changes width; the writing does.
+    // ONE SHEET, sections packed TWO columns wide ("nhật ký, hướng dẫn nên chia đôi
+    // giống mấy cái kia" — the owner's verdict on the first centred-column cut). Each
+    // section is a hairline PANEL inside the sheet, and CSS columns pack them: the
+    // panels are wildly different heights, and a grid would leave a dead gap under
+    // every short one.
     <div>
       <PageHeader title={title} />
       <div className={SHEET}>
-        <div className="mx-auto w-full max-w-[72ch] space-y-6 px-5 py-8">
+        <div className="space-y-5 p-5">
       <p className="text-sm text-neutral-500 dark:text-neutral-400">
         Everything this blog can do, and where each thing lives. Start at the top if it is a new site; jump to a section if you are looking something up.
       </p>
@@ -50,7 +52,7 @@ export function HelpGuide({ title, version, firstRunTitle }: {
       {/* THE ONE COPY of the five steps, shared with the dashboard's first-run card. They
           were written out twice for about an hour and that is exactly how two versions of
           "how to set this up" end up disagreeing. */}
-      <Card title={firstRunTitle}>
+      <Card panel title={firstRunTitle}>
         <FirstRunSteps />
       </Card>
 
@@ -67,8 +69,7 @@ export function HelpGuide({ title, version, firstRunTitle }: {
         ))}
       </nav>
 
-      {/* One column: inside the reading measure there is no second column to fill. */}
-      <div className="space-y-4">
+      <div className="columns-1 gap-5 xl:columns-2 [&>*]:mb-5 [&>*]:break-inside-avoid">
         <WritingSection />
         <MediaSection />
         <ReadersSection />
@@ -80,14 +81,14 @@ export function HelpGuide({ title, version, firstRunTitle }: {
       </div>
 
       <Anchor id="markdown">
-        <Card title="Markdown the editor understands">
+        <Card panel title="Markdown the editor understands">
           <p className={`${P} mb-3`}>Standard Markdown, plus these. The toolbar inserts most of them for you.</p>
           <MarkdownTable />
         </Card>
       </Anchor>
 
       <Anchor id="trouble">
-        <Card title="When something looks wrong">
+        <Card panel title="When something looks wrong">
           <p className={`${P} mb-3`}>The problems that actually come up, and what fixes each.</p>
           <TroubleTable />
         </Card>

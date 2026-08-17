@@ -14,6 +14,7 @@ export function MediaToolbar({
   onQuery,
   sort,
   onSort,
+  className,
 }: {
   count: number
   totalSize: number
@@ -21,10 +22,12 @@ export function MediaToolbar({
   onQuery: (v: string) => void
   sort: MediaSort
   onSort: (s: MediaSort) => void
+  /** Override the band's chrome — the one-sheet Library bleeds it to the sheet's edges. */
+  className?: string
 }) {
   const t = useAdminT()
   return (
-    <div className="flex flex-wrap items-center gap-3 border-b border-neutral-200 pb-4 dark:border-neutral-800">
+    <div className={`flex flex-wrap items-center gap-3 ${className ?? 'border-b border-neutral-200 pb-4 dark:border-neutral-800'}`}>
       <span className="text-sm text-neutral-500 dark:text-neutral-400">
         <span className="font-medium text-neutral-700 tabular-nums dark:text-neutral-200">{count.toLocaleString()}</span> {t.mediaTotalImages}
         <span className="text-neutral-300 dark:text-neutral-600"> · </span>
