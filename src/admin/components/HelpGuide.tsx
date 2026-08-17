@@ -9,6 +9,7 @@
 // index, then reference sections, then two lookup tables. Sections live in
 // `HelpSections`, tables in `HelpTables` — this file is the shell.
 import { PageHeader, Card } from './kit'
+import { SHEET } from './sheet'
 import { FirstRunSteps } from './FirstRun'
 import { Anchor, A, P, Ext, REPO } from './help-kit'
 import { MarkdownTable, TroubleTable } from './HelpTables'
@@ -35,11 +36,16 @@ export function HelpGuide({ title, version, firstRunTitle }: {
   title: string; version: string; firstRunTitle: string
 }) {
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title={title}
-        description="Everything this blog can do, and where each thing lives. Start at the top if it is a new site; jump to a section if you are looking something up."
-      />
+    // ONE SHEET (the admin-pages mock, page 6), and this page is PROSE — so the whole
+    // guide sits in a reading column centred ON the sheet, exactly the way the editor
+    // centres a post on its paper. The page never changes width; the writing does.
+    <div>
+      <PageHeader title={title} />
+      <div className={SHEET}>
+        <div className="mx-auto w-full max-w-[72ch] space-y-6 px-5 py-8">
+      <p className="text-sm text-neutral-500 dark:text-neutral-400">
+        Everything this blog can do, and where each thing lives. Start at the top if it is a new site; jump to a section if you are looking something up.
+      </p>
 
       {/* THE ONE COPY of the five steps, shared with the dashboard's first-run card. They
           were written out twice for about an hour and that is exactly how two versions of
@@ -61,9 +67,8 @@ export function HelpGuide({ title, version, firstRunTitle }: {
         ))}
       </nav>
 
-      {/* CSS columns, not a grid: the cards are wildly different heights and a grid
-          aligns rows, leaving a dead gap under every short one. Columns pack them. */}
-      <div className="columns-1 gap-4 lg:columns-2">
+      {/* One column: inside the reading measure there is no second column to fill. */}
+      <div className="space-y-4">
         <WritingSection />
         <MediaSection />
         <ReadersSection />
@@ -93,6 +98,8 @@ export function HelpGuide({ title, version, firstRunTitle }: {
         <Ext href={`${REPO}/blob/main/LICENSE-EXCEPTION.md`}>PolyForm NC + hosting</Ext> ·{' '}
         <Ext href={`${REPO}#readme`}>README</Ext>
       </p>
+        </div>
+      </div>
     </div>
   )
 }
