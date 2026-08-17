@@ -3,99 +3,254 @@
 ## 2026-08-18 — Quire Ink 2.1.0
 
 **Thirty commits since 2.0.3, and nearly all of them are one project: the admin rebuilt
-around writing.** The rebuild ran the way the last one should have — a mock first, the
-owner's verdict on the mock, then the code page by page against it — and the mock's two
-ideas now hold everywhere: the screen you write on shows the list of everything written
-beside the paper, and every other screen is **one sheet per page** rather than a scatter of
-cards on a canvas.
+around writing** ([ADR 0024](docs/decisions/0024-the-admin-is-rebuilt-around-writing.md)).
+2.0.3 made the admin look like the product; this release makes it *behave* like one — a
+writing desk, not a control panel. It ran the way the last redesign should have: a mock
+first, the owner's verdict on the mock, then the code page by page against it, and the
+owner writing on each cut and ruling again. A dozen of these commits exist only because he
+sat down to write and circled what was wrong. The mock's two ideas now hold everywhere: the
+screen you write on shows the list of everything written beside the paper, and every other
+screen is **one sheet per page** rather than a scatter of cards on a canvas.
 
 The upgrade is a drop-in: same install, same settings, same database, **no new environment
-variables**. The one schema change is a search index for pages that the database creates by
-itself at boot, the same way every migration here runs. The reader's pages did not move a
-byte — every bundle, stylesheet and font is the same as 2.0.3 — because all of this is the
-owner's side of the house.
+variables**. The one schema change is a search index for pages (`pages_fts`) that the
+database creates by itself at boot, the same way every migration here runs. The reader's
+pages did not move a byte — every bundle, stylesheet and font is identical to 2.0.3 —
+because all of this is the owner's side of the house.
 
-And the product has a front door now: **[quireink.com](https://quireink.com)** is the
-homepage, and **[demo.quireink.com](https://demo.quireink.com)** remains the running build,
-now with a bar that also links back to this repository.
+And the project has a front door now: **[quireink.com](https://quireink.com)** is the
+homepage — three static pages, no process behind them, which is the product's own taste
+applied to its marketing. **[demo.quireink.com](https://demo.quireink.com)** remains the
+running build, its bar now linking back to this repository.
 
-### The Write screen: the list beside the paper
+### The admin could not find a sentence the owner remembered writing
 
-`/admin/content` is not a dashboard anymore; it is the write screen. The left pane is the
-writing itself — every post and page in one list, a search box, five scope tabs (All ·
-Pages · Posts · Published · Drafts, deliberately short words in all six languages so the
-row never wraps), and a quiet toggle that sorts by last-updated or date-created. The pane
-rides beside **both** editors from wide windows up, marks the row you have open, and keeps
-the Taxonomy and Series managers as tools on its own sort line — they used to live below
-the fold, a door nobody could see.
+That was the first defect of the run, and it set the theme. The content screen's filter
+matched title, tags and categories — over the array the page had already been handed. The
+body text was never in the browser, so a phrase from inside a draft returned nothing, and a
+draft is what the box is most needed for.
 
-The editor stopped carrying furniture the mock never drew, and then got back exactly what
-the owner asked for after writing on it for an afternoon. The chrome is the sheet's own top
-rows now: an action line (back, save state, word count and reading time; Markdown and
-Attributes as quiet words; the three buttons), and under it the full toolbar — in the
-formatted view only, because raw Markdown formats itself. `/` on an empty line raises the
-insert menu at the caret, with each block's Markdown shortcut printed beside it, so the
-menu teaches the gesture that makes itself unnecessary. The attributes moved into a sheet
-that slides in from the right, footered Later / Publish, and it draws **its own calendar**
-— the browser's blue date popup was the one thing on the screen no stylesheet could reach.
-Recovered work is a sentence with two links in the action line, not a banner. Every
-clipped scroller fades at its cut edge instead of cropping a row in half.
+The index had existed the whole time: `posts_fts`, FTS5 over title *and* body with
+`remove_diacritics 2`, serving the reader's `/search` since the port. The admin simply
+never asked it anything. Now it does, with the reader's two filters removed, because the
+person typing wrote the drafts and is allowed to see them. **Pages join the same index**
+(the release's one migration), since the admin's one list holds both. The box keeps its
+instant title match and adds the server's body match behind a 180ms debounce — and a row
+that matched on its body **shows the passage it matched in**, because without that line it
+looks like a row that matched on nothing. Typing `gioi thieu` finds "Giới thiệu"; the
+verification flow types a phrase that appears in no title and must land on the post that
+carries it in its body.
 
-### The search can find a sentence the owner remembered writing
+### Four drawers became one list
 
-Search in the admin reaches the **body text**, not just titles — and pages join posts in
-the same FTS index (`remove_diacritics 2`, so typing `gioi thieu` finds "Giới thiệu"). Hits
-are painted with the product's own highlighter, folded per character so the marks land on
-the right letters in accented Vietnamese. The comments screen gets the same search, over
-the text, the name and the post title.
+Posts · Pages · Taxonomy · Series stood as four equal tabs, and the owner's verdict was
+that it read as WordPress. The mechanism behind the feeling is specific: to look for
+something you had to decide which drawer it was in *before* you could look, and two of the
+four drawers were not content at all — renaming a category and ordering a series are
+maintenance, done rarely, taking a quarter of the screen's attention daily.
+
+Now it is one stream, posts and pages together, most recently touched first. They already
+shared the `/{slug}` namespace and the search index; the split only ever existed in the
+screen. Each row carries a line of the writing under its title — the excerpt normally, the
+matched passage while searching. The date column says "Last touched" in six languages,
+because that is what it holds; a column headed *Date* showing the last save is a small lie
+repeated on every row.
+
+### The editor asked its questions first
+
+The old writing surface put twenty-four buttons over the text, five of them an exact
+duplicate of the bubble bar that has always appeared on a selection, and opened the full
+attributes column — slug, date, status, terms, series, two image pickers, SEO — on every
+load, asking while the writer was mid-sentence and taking 340px of the width.
+
+The attributes are **closed** now, and the first Publish press opens them *instead of
+publishing*: every field already carries an answer, so it is a review, not a form.
+Publishing again publishes. They slide in from the right over a scrim, footered
+Later / Publish, deliberately narrow because the fields are a column of short answers. And
+the sheet draws **its own calendar**: `<input type="datetime-local">` popped the browser's
+blue popup into a monochrome admin, and no stylesheet can reach that popup. The new field
+keeps the native value — every caller and save path untouched — but the grid is
+Monday-first from `Intl`, the picked day is the admin's black pill, and today is a hairline
+ring.
+
+### The toolbar left, and came back the size the owner ruled
+
+The mock-faithful cut removed the toolbar entirely: `/` on an empty line raises the insert
+menu at the caret — image, gallery, table, code, the two formulas, divider, and the block
+types with their Markdown shortcuts printed beside them, so the menu teaches the gesture
+that makes itself unnecessary. Then the owner wrote in that editor for an afternoon and
+ruled three times, and each ruling was applied as said: the **formatted view gets the full
+button row back** ("ở chế độ bình thường nên có thanh công cụ chứ"), at the top of the
+sheet, full width, wrapping on a narrow window instead of hiding half its controls behind a
+horizontal drag, with the buttons grouped in the middle. The Markdown view stays bare —
+raw text formats itself, so a strip of formatting buttons over it is furniture. The switch
+that gets you there is spelled "Markdown", sits beside Attributes in the action line, and
+while it is on the editor draws no toolbar at all. `/` and the selection bubble remain:
+two doors, same rooms.
+
+The chrome became one piece on the way. The action line — back link, save state, word
+count and reading time, the three buttons — is the sheet's **own** top row, the toolbar
+attaches directly beneath it, and the two stay joined while scrolling. The title sits on
+the paper itself, with status and last-touched under it. Recovered work folded into the
+action line as a sentence with two links, Restore the darker of the two because it is the
+one that rescues somebody's words. Every clipped scroller — tag cloud, slide-over,
+combobox, the `/` menu — fades at its cut edge, because a hard crop mid-row reads as
+broken and the fade says *there is more*. And the bug the owner found by writing: selecting
+the **first line** of a post put the bubble bar under the sticky toolbar, covered and
+unclickable — the one sentence he could not format was the opening one. Fixed, with the
+regression flow watched red first.
+
+### The write screen: the list beside the paper
+
+`/admin/content` is not a dashboard anymore; it is the write screen, and it is two panes.
+The left pane is the writing itself — the one list, its body-reaching search, and one dark
+New post button — riding beside **both** editors from wide windows up, marking the row you
+have open. Below the wide breakpoint the sheet takes the room and the list is one "← Write"
+away. Focus mode used to hide all navigation while writing; the rail stays now, because
+the owner circled it on the mock.
+
+Then he used it, and four more verdicts landed in one sitting. The three scope tabs grew to
+**five** — All · Pages · Posts · Published · Drafts, a kind family and a status family on
+one row — and they hold that one row in *all six languages*, each locale given its own
+deliberately short words, the row stretched flush to the pane's edge instead of stopping
+short of it. Scrolled, the pane and the sheet pin at the same top instead of two offsets
+24px apart. The date beside a published post is its **publication** date — the last save
+there read as a wrong publish time — and a quiet button cycles the sort between
+last-updated and date-created. Taxonomy and Series, which had ended up below panes that
+had just grown to window height ("a door nobody can see"), became quiet tools on the
+pane's own sort line, opening as slide-over sheets from the right.
+
+### Eleven doors, when the owner came to write and to see how it went
+
+The rail listed eleven destinations, so the first screen of a writing tool asked for a
+decision about drawers before it offered either the writing or the reading. **The rail is
+four now** — Home, Write, Library, Newsletter — and everything else lives behind one
+"Everything else" button that opens *itself* when the current page is one of them, because
+a rail that hides where you are would be a worse fault than a long one. Nothing was
+removed. The group **remembers the owner's choice** across sessions: an explicit click on
+the row persists, while the visit-driven opening never writes — only the owner's own hand
+records a preference.
+
+Analytics could leave the rail because its numbers moved to the home screen: the Traffic
+card carries views, visitors, time per post and read-through over the window it names once.
+And the writing comes back before anything else does — **"Pick up where you left off"** is
+the four most recently touched unfinished pieces, each chip a click from the cursor, with a
+door to the rest when there are more. The administration counts — posts, pages, comments,
+images, storage — moved below the widgets; they are inventory, and inventory is what this
+rebuild moves out of the way.
+
+The rail also learned it has **two registers**. The footer's controls — theme, Clear
+cache, Sign out — wore the same row dress as the destinations above them, so the rail read
+as nine pages, one of them apparently named "Light". Controls are smaller and quieter now,
+at control radius; destinations keep their size. The theme menu itself had two faults with
+one cause each: its items were 16px in a 14px rail (a public type role that resolves to
+nothing in the admin), and it floated under the content, because a sticky rail is its own
+stacking context and the later sibling painted over it. It opens upward *inside* the rail
+now, at rail size. And the "Show icons" switch moved into Everything else — a set-once
+device preference does not need a permanent footer row — and it governs the whole rail,
+footer glyphs included, by the owner's ruling.
 
 ### Mỗi trang một tờ — every page is one sheet
 
-Library, Analytics, Comments, Newsletter, Trash, Help, Settings and the activity log were
-each rebuilt as one full-width sheet: tools and tabs on the sheet's first row, the headline
-numbers standing directly on the paper, lists as one-line ledgers in two newspaper columns,
-and the page's hint demoted to the sheet's closing small print. Comments became a reading
-queue — each comment is its own text with the who/where/when as small print under it, not a
-six-column spreadsheet. Settings' 26 cards became hairline panels of one page. Trash
-carries posts, pages, media, files and comments in one row shape. Nothing floats in its own
-little card anymore, and every page is the same width on purpose.
+The mock's second idea, applied to the seven remaining pages plus the activity log, each as
+its own commit. Four laws, held by shared primitives rather than by discipline: the page is
+**one full-width sheet**; a page's tools live on the **sheet's own first row** — tabs,
+search, counts, the quiet dangerous verb; headline numbers **stand directly on the paper**
+in a band, not in little boxes; and lists of short rows fill **two newspaper columns** with
+a hairline rule between them, one column on a phone. Every page is the same width on
+purpose — "tôi cũng không muốn chiều ngang trang có cái bự, có cái nhỏ".
 
-### The rail is four doors, and it remembers your choice
-
-Eleven destinations became four — Home, Write, Library, Newsletter — with everything else
-behind one button that opens itself when you are inside it, and that **remembers** whether
-you left it open or closed. The footer's controls (theme, clear cache, sign out) stopped
-dressing as destinations; the theme menu opens inside the rail at rail size instead of
-floating under the content at the wrong size. The numbers that let Analytics leave the rail
-moved to the home screen: the Traffic card carries views, visitors, time per post and
-read-through, and "Pick up where you left off" hands back the four most recently touched
-unfinished pieces.
+- **Library** went first and carried the primitives in: kind tabs on the sheet's first
+  row, the tab's own toolbar (count · search · sort) bleeding to the sheet's edges as a
+  second chrome row — the editor's two-row chrome, worn by a library — and the intro
+  sentence demoted to the sheet's closing small print.
+- **Analytics** stopped floating seven cards: the range strip and the privacy note share
+  the first row, the five headline numbers stand in the band with their trend arrows and
+  the new/returning split riding along, and all seven top-lists went bare — columns
+  divided by vertical hairlines on the sheet itself. Export waits quietly in the page
+  head.
+- **Comments became the reading queue.** Each comment is two lines of its own text — click
+  to read in full — with the whole ledger (who, where, when, from what address) as one
+  line of small print underneath and Delete as a quiet word at its end. The six-column
+  spreadsheet is gone. The queue gets the admin's search, over text, name and post title,
+  its hits painted with the pen.
+- **Newsletter**: three counts on the paper, the SMTP warning as a full-width line, and
+  the subscriber list as one-line ledgers — the address is the thing, the log's facts
+  follow as small print, and the dot ahead of a pending address is the pen's edge tone,
+  the list's own work-in-progress.
+- **Trash**: kind tabs with their counts, "empty this kind" as a quiet tool beside them,
+  and one row shape carrying posts, pages, media, files and comments alike — the thing
+  first, then the deletion date and the two verbs that decide its fate.
+- **Settings**: the tabs and the search that reaches past them share the first row, and
+  all 26 cards became hairline **panels** — one radius step under the sheet's, title on a
+  ruled header row — so a tab reads as sections of one page instead of boxes on a canvas.
+  The always-reachable save bar stays fixed, because a footer Save on a tab three screens
+  tall is a Save nobody can reach.
+- **Help** is prose, so the guide packs its sections as hairline panels in two columns —
+  the owner's ruling, after a centred reading column was tried first.
+- **The activity log** became two columns of one-line ledgers — time, an action chip, the
+  detail — with its count and Clear on the first row. An error is an inverted monochrome
+  chip, not a red badge.
 
 ### Monochrome, plus exactly one colour
 
-The admin's one accent is the product's own highlighter pen: a search hit wears it, and the
-dots that mean work-in-progress are its edge tone. Nothing else is coloured — the last two
-reds left, the stray shadows died, and the radius ladder closed to three steps (sheet,
-panel, control). The style sweep was audited off the running admin's computed styles, not
-just the source.
+The Writing Desk mock is not monochrome — it carries exactly one colour, the product's own
+highlighter, and the build had left it out entirely. **The pen arrives** in its three
+places: a search hit wears it as a mark, folded per *character* so the indices survive
+Vietnamese diacritics; the dots that mean work-in-progress — a draft's row, the unsaved
+state, the unfinished chips on the home screen — are its edge tone; and dark mode uses the
+mock's own dark pen values. A second use of colour would spend the only signal that means
+"your words", so there is none.
 
-### Every admin screen fits a phone
+The style sweep around it was audited two ways — computed styles read out of the running
+admin, page by page and settings tab by settings tab, then a grep of the classes — and
+fixed what either found. The 12px radius tier existed nowhere in the contract and eight
+places in the code; it is gone, and the ladder is three steps: sheet, panel, control. Two
+in-page shadows died (the admin draws none except on overlays). The last two reds left the
+monochrome admin — the error card carries a strong border and a "!", the backup-delete
+link carries the word itself.
 
-One tour flow per screen asserts, at 375px, that the document is no wider than the window —
-and names the widest element when it is. All of them were watched fail against a sabotage
-before being trusted, and the first clean run caught a real spill: analytics scrolled
-sideways by 36px under a comment that claimed the row wraps.
+### Every admin screen fits a phone, and the check that proves it
 
-### The README starts with a reader
+One tour flow per screen now asserts, at 375px, that the whole document is no wider than
+the window — and names the widest element when it is not. All of them were watched fail
+against a deliberate sabotage before being trusted, and the first clean run caught a real
+one: analytics scrolled sideways by 36px, because the range strip sat in a row whose
+comment *said* it wraps and whose classes did not. The browser tour is 57 flows now, up
+from 40 at 2.0.3.
 
-The README led with architecture on line two; it now opens with what the thing **is**, for
-someone who does not run servers, and the licence section answers the operator's actual
-question — run it, and charge for running it, as long as the version you run is the one
-published here.
+### The README starts with a reader, and the licence stops turning operators away
 
-*57 tour flows, 1416 tests, and the seven build guards, all green. The demo's fixture also
-grew: the five seeded posts now carry their plates in the prose, so the library and the
-reading page have something real to show.*
+The README's second line was "One process. Two SQLite files." A person who writes and does
+not deploy stopped there, and everything below was written for somebody who already knew
+what those words meant. "What it is" now opens the page in nine plain sentences — what it
+is like, that you change it by clicking, what a post costs a reader, what an AI can do for
+you, what you need to start, and what you take on in exchange. The technical opening is
+intact one heading below, in both languages.
+
+And the licence said no to the wrong people. The relicense had been written on the
+sentence "nobody may make money from it", which blocked a host that installs published
+releases and sells the operation of them as firmly as it blocked the fork-and-rename it
+was written for. Only the second was ever the point.
+[`LICENSE-EXCEPTION.md`](LICENSE-EXCEPTION.md) now grants commercial use of a **published
+release run unmodified**, on four conditions: notices stay, credit and no passing off,
+sell the service not the software, and security fixes only, reported within 30 days.
+Commercial use of a modified copy still needs asking
+([ADR 0023](docs/decisions/0023-commercial-use-of-unmodified-releases.md)).
+
+### The demo grew pictures, and the docs caught up
+
+The five seeded posts on the demo now carry their plates in the prose — the nib angles in
+the pen post, the imposition sheet and registration target in the press pair, the
+modular-scale bars and the return-sweep diagram in the reading series — so the library and
+the reading page have something real to show, and the pen post closes with an exercise
+anyone can do with two pencils. The README's admin picture was reshot from the sheet-era
+admin, and [`docs/admin-design.md`](docs/admin-design.md) plus the feature docs describe
+the admin that exists rather than the one that used to.
+
+*57 tour flows, 1416 tests, and the seven build guards, all green before the tag.*
+
+
 
 
 
