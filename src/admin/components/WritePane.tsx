@@ -51,7 +51,8 @@ function Rows({
   pages,
   views,
   activeSlug,
-}: ContentView & { activeSlug?: string }) {
+  tools,
+}: ContentView & { activeSlug?: string; tools?: React.ReactNode }) {
   const t = useAdminT()
   const [query, setQuery] = useState('')
   const [scope, setScope] = useState<WriteScope>('all')
@@ -85,8 +86,11 @@ function Rows({
           </Link>
         </div>
         <Tabs tabs={scopeTabs} value={scope} onChange={setScope} size="sm" dense />
-        {/* One quiet button cycling the order, not a second control row's worth of chrome. */}
-        <div className="flex justify-end">
+        {/* One thin line of small print: the pane's tools on the left (the Write screen
+            hangs Taxonomy and Series here — they lived below the fold, where the owner
+            said nobody would ever find them), the sort cycle on the right. */}
+        <div className="flex items-center justify-between gap-3">
+          <span className="flex gap-3">{tools}</span>
           <button
             type="button"
             onClick={() => setSort(sort === 'updated' ? 'created' : 'updated')}
@@ -160,7 +164,7 @@ function Rows({
  * The pane, self-fetching. `activeSlug` marks the open piece's row. The column keeps its
  * own scroll so a long list never scrolls the sheet, and the fade says where it clips.
  */
-export function WritePane({ activeSlug, always = false }: { activeSlug?: string; always?: boolean }) {
+export function WritePane({ activeSlug, always = false, tools }: { activeSlug?: string; always?: boolean; tools?: React.ReactNode }) {
   const { data } = useView<ContentView>('content')
   return (
     <aside
@@ -169,7 +173,7 @@ export function WritePane({ activeSlug, always = false }: { activeSlug?: string;
       } shrink-0 flex-col self-start overflow-hidden rounded-[10px] border border-neutral-200/80 bg-neutral-50 xl:sticky xl:top-0 xl:max-h-[calc(100vh-1.5rem)] dark:border-neutral-800 dark:bg-neutral-950`}
     >
       {data ? (
-        <Rows {...data} activeSlug={activeSlug} />
+        <Rows {...data} activeSlug={activeSlug} tools={tools} />
       ) : (
         <div className="p-4">
           <div className="h-9 animate-pulse rounded-lg bg-neutral-200/60 dark:bg-neutral-800" />

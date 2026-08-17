@@ -2,8 +2,10 @@
 // with an empty sheet beside it inviting the next piece. Opening a row swaps the sheet for
 // that piece's editor; the pane rides along on the editor pages too.
 //
-// The taxonomy and series managers stay one click away UNDER the panes, at every width —
-// they are maintenance, not content, and this is their only home (ADR 0024 step 2).
+// The taxonomy and series managers open as right-hand sheets from the pane's own tool
+// line. They lived UNDER the panes first, and once the panes grew to window height that
+// put them below the fold on every screen — "chỗ dưới đó xấu và ko ai thấy để xài" was
+// the owner's verdict, and he was right: a door nobody can see is not a door.
 import { useState } from 'react'
 import Link from '@/admin/router'
 import { useView } from '@/admin/useView'
@@ -13,7 +15,8 @@ import { Button } from '@/admin/ui/Button'
 import { WritePane } from '@/admin/components/WritePane'
 import { TaxonomyManager } from '@/admin/components/TaxonomyManager'
 import { SeriesManager } from '@/admin/components/SeriesManager'
-import { CARD, GROUP_GAP } from '@/admin/components/kit'
+import { SlideOver } from '@/admin/components/SlideOver'
+import { CARD } from '@/admin/components/kit'
 import { useAdminT } from '@/admin/components/I18nProvider'
 
 type Props = {
@@ -23,17 +26,33 @@ type Props = {
 
 type Drawer = 'none' | 'taxonomy' | 'series'
 
+// Same voice as the sort cycle beside them: one thin line of small print.
+const TOOL =
+  'text-xs text-neutral-400 transition hover:text-neutral-900 dark:text-neutral-500 dark:hover:text-neutral-200'
+
 export default function Content() {
   const t = useAdminT()
   const state = useView<Props>('content')
   const [drawer, setDrawer] = useState<Drawer>('none')
-  const toggle = (which: Exclude<Drawer, 'none'>) => setDrawer((now) => (now === which ? 'none' : which))
+  const close = () => setDrawer('none')
   return (
     <View state={state}>
       {(data) => (
         <div>
           <div className="flex items-start gap-6">
-            <WritePane always />
+            <WritePane
+              always
+              tools={
+                <>
+                  <button type="button" className={TOOL} onClick={() => setDrawer('taxonomy')}>
+                    {t.tabTaxonomy}
+                  </button>
+                  <button type="button" className={TOOL} onClick={() => setDrawer('series')}>
+                    {t.tabSeries}
+                  </button>
+                </>
+              }
+            />
             {/* The sheet's empty state: a quiet invitation, not a dashboard. Hidden where
                 the pane takes the whole width — the list IS the screen there. */}
             <div className={`hidden min-w-0 flex-1 xl:block ${CARD} lg:min-h-[calc(100vh-1.5rem)]`}>
@@ -47,16 +66,15 @@ export default function Content() {
             </div>
           </div>
 
-          <div className={`${GROUP_GAP} flex flex-wrap items-center gap-2`}>
-            <Button variant="ghost" size="sm" aria-pressed={drawer === 'taxonomy'} onClick={() => toggle('taxonomy')}>
-              {t.tabTaxonomy}
-            </Button>
-            <Button variant="ghost" size="sm" aria-pressed={drawer === 'series'} onClick={() => toggle('series')}>
-              {t.tabSeries}
-            </Button>
-          </div>
-          {drawer === 'taxonomy' && <TaxonomyManager posts={data.posts} />}
-          {drawer === 'series' && <SeriesManager posts={data.posts} />}
+          {drawer !== 'none' && (
+            <SlideOver
+              label={drawer === 'taxonomy' ? t.tabTaxonomy : t.tabSeries}
+              onClose={close}
+              footer={<Button variant="secondary" onClick={close}>{t.close}</Button>}
+            >
+              {drawer === 'taxonomy' ? <TaxonomyManager posts={data.posts} /> : <SeriesManager posts={data.posts} />}
+            </SlideOver>
+          )}
         </div>
       )}
     </View>

@@ -100,8 +100,10 @@ export function ThemeToggle({
         <>
           <button className="fixed inset-0 z-40 cursor-default" aria-hidden onClick={() => setOpen(false)} />
           {/* The admin variant wears the popover radius; the public one stays square —
-              square corners are a PUBLIC rule and this component serves both sides. */}
-          <div className={`absolute z-50 w-44 overflow-hidden border py-1 shadow-lg ${variant === 'text' ? 'bottom-0 left-full ml-2 rounded-lg border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-900' : 'right-0 mt-2 border-rule bg-bg'}`}>
+              square corners are a PUBLIC rule and this component serves both sides.
+              It opens UPWARD from the rail's footer, inside the rail, not floating off
+              its right edge over whatever the content happens to show there. */}
+          <div className={`absolute z-50 w-44 overflow-hidden border py-1 shadow-lg ${variant === 'text' ? 'bottom-full left-0 mb-1 rounded-lg border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-900' : 'right-0 mt-2 border-rule bg-bg'}`}>
             {items.map((it) => (
               <button
                 key={it.key}
@@ -110,7 +112,10 @@ export function ThemeToggle({
                   setMode(it.key)
                   setOpen(false)
                 }}
-                className={`flex w-full items-center justify-between px-3 py-2 text-left t-small ${variant === 'text' ? 'hover:bg-neutral-100 dark:hover:bg-neutral-800' : 'hover:bg-rule'} ${
+                // `text-sm` for the admin, `t-small` for the public header: the type roles
+                // live in the PUBLIC sheet, so on the admin `t-small` resolved to nothing
+                // and the menu spoke at 16px inside a 14px rail ("chữ tự nhiên to đùng").
+                className={`flex w-full items-center justify-between px-3 py-2 text-left ${variant === 'text' ? 'text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800' : 't-small hover:bg-rule'} ${
                   mode === it.key
                     ? variant === 'text' ? 'font-semibold text-neutral-900 dark:text-white' : 'font-semibold text-heading'
                     : variant === 'text' ? 'text-neutral-500 dark:text-neutral-400' : 'text-meta'

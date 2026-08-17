@@ -36,7 +36,7 @@ function Section({
   onAct: (kind: Kind, name: string, action: 'rename' | 'delete') => void
 }) {
   return (
-    <div className="overflow-hidden border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
+    <div className="overflow-hidden rounded-lg border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
       <h2 className="border-b border-neutral-200 px-4 py-3 text-sm font-semibold dark:border-neutral-800">{title}</h2>
       {terms.length === 0 ? (
         <p className="px-4 py-6 text-sm text-neutral-500 dark:text-neutral-400">{t.noTerms}</p>
@@ -97,7 +97,10 @@ export function TaxonomyManager({ posts }: { posts: Post[] }) {
   }
 
   return (
-    <div className="grid items-start gap-6 lg:grid-cols-2">
+    // One column: this lives in the right-hand sheet now (384px), where the old
+    // `lg:grid-cols-2` would have squeezed two term lists into ~170px each — the lg:
+    // breakpoint reads the VIEWPORT, not the box it is actually in.
+    <div className="grid items-start gap-6">
       <Section title={t.categories} terms={categories} kind="category" t={t} onAct={act} />
       <Section title={t.tags} terms={tags} kind="tag" t={t} onAct={act} />
     </div>
