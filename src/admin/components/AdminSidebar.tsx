@@ -40,6 +40,14 @@ const STORE_KEY = 'quireink-admin-nav-collapsed'
  * changes; this is how one person's rail looks on one machine.
  */
 const ICONS_KEY = 'quireink-admin-nav-icons'
+/**
+ * Whether "Everything else" stands open. The owner's rule, verbatim: "tôi đóng là mốt mở
+ * lại trang vẫn đóng, tôi mở thì từ đây về sau nó vẫn mở" — an EXPLICIT toggle persists
+ * across sessions. Arriving on a page inside the group still opens it for the visit (a
+ * rail that hides where you are is worse than a long one), but that visit-driven opening
+ * is never WRITTEN: only the owner's own click on the row records a preference.
+ */
+const MORE_KEY = 'quireink-admin-nav-more'
 
 export function AdminSidebar({
   lang,
@@ -71,6 +79,7 @@ export function AdminSidebar({
       setIcons(showIcons)
       setCollapsed(c)
       applyWidthVar(c)
+      if (localStorage.getItem(MORE_KEY) === '1') setMore(true)
     })
   }, [])
 
@@ -154,7 +163,13 @@ export function AdminSidebar({
           a Link, and the chevron says which way it will move. */}
       <button
         type="button"
-        onClick={() => setMore((v) => !v)}
+        onClick={() =>
+          setMore((v) => {
+            const next = !v
+            localStorage.setItem(MORE_KEY, next ? '1' : '0')
+            return next
+          })
+        }
         aria-expanded={more}
         title={c ? t.navMore : undefined}
         className={`${rowClass(c)} ${!c ? 'justify-between' : ''}`}
