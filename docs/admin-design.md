@@ -123,6 +123,31 @@ character and none of its typographic rules **except one**, below.
   drafts is not the same fact as the drafts; the band names them and opens the editor on one.
   Administration counts (posts, pages, comments, images, storage) sit BELOW the widgets.
 
+## One sheet per page ("Mỗi trang một tờ")
+
+Adopted 2026-08-18 from the admin-pages mock, after the owner stopped a page-by-page fix
+session with *"đừng cố fix trong một phiên… vẽ mock từng trang… rồi từ từ làm tiếp"* and
+*"tôi cũng ko muốn chiều ngang trang có cái bự, có cái nhỏ"*. Four laws, held by the
+primitives in `components/sheet.tsx` (`SHEET`, `SheetTop`, `NumBand`, `SHEET_FOOT`,
+`SHEET_TOOL`) and `.paper-cols` in `admin.css`:
+
+1. **Every page is ONE full-width sheet at ONE width**, at least the window tall — the
+   editor's paper, given to every screen. Long prose (Help) takes a reading column INSIDE
+   the sheet; the page never changes size. Never fix a sparse page by narrowing it.
+2. **A page's tools live on the sheet's own first row** (`SheetTop`): scope tabs, search,
+   sort, export, "empty this kind" — never scattered over the paper around the sheet. A
+   second chrome row (the Library's count · search · sort band) is the editor's own
+   two-row precedent.
+3. **Writing first; the numbers are one line of small print after it.** A comment is two
+   lines of its text with one ledger line under it, not a six-column spreadsheet. Where a
+   page IS numbers (Analytics), they stand directly on the paper in a `NumBand` divided by
+   hairlines — not floated in five little cards. Cards INSIDE a sheet become hairline
+   PANELS (`Card panel`), one radius step down, title on a ruled header row.
+4. **Lists of short rows fill two newspaper columns** (`.paper-cols`, with the rule a paper
+   would draw between them) — one column left half the sheet blank, which the owner read
+   as a hole. Comments, subscribers, trash and the activity log all flow this way; the
+   columns collapse to one below `lg`.
+
 ## One of each
 
 The recurring failure is not a wrong design. It is SEVERAL of the same design: the kit says

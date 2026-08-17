@@ -178,6 +178,8 @@ $$s_n = s_0 \\times r^{\\,n}$$
 
 where $s_0$ is the body size, $r$ the ratio and $n$ the number of steps away from it. Pick a ratio and generate from the body size. A minor third ($r = 1.2$) is quiet and works for text-heavy pages; a perfect fourth ($r = 1.333$) is dramatic and runs out of room quickly on a small screen.
 
+![A modular scale drawn as bars: each size is the one below it times the ratio, so the steps agree with each other instead of with a list of numbers](/uploads/media/modular-scale.png)
+
 | Step | Minor third | Perfect fourth |
 |---|---|---|
 | Body | 17 px | 17 px |
@@ -217,6 +219,8 @@ The mistake that survives longest is treating leading as one number. Large text 
     body: `Ask why a column is the width it is and you will usually be told about taste. It is not taste. It is the distance the eye can travel and still find the start of the next line without hunting for it.
 
 ==The return sweep is the whole problem.== At the end of a line the eye jumps left and down at the same time, and it lands by estimating. A short column gives it an easy target and a long one gives it a field of near-identical lines to choose from, which is why ==an over-wide measure makes people re-read the line they have just finished==#blue.
+
+![The return sweep drawn over two columns: from a short measure the eye lands on the next line, from a long one it hunts](/uploads/media/measure-and-return-sweep.png)
 
 ## The number, and what it is really made of
 

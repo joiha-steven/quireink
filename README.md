@@ -170,9 +170,9 @@ It stays this way because of a few decisions that are hard to walk back.
 
 <div align="center">
 
-<img src="docs/demo-admin.jpg" alt="The Quire Ink admin: the post editor with its attributes panel, and the appearance settings showing six colour palettes and four reading fonts" width="960">
+<img src="docs/demo-admin.jpg" alt="The Quire Ink admin: the Write screen with the list of everything written beside the editor's paper — a toolbar, a highlighted sentence and a plate in the post — and the appearance settings as one sheet of panels with six colour palettes and four reading fonts" width="960">
 
-<sub>Palettes, fonts, sizes, layout, menu. All of it is a setting, none of it is code.</sub>
+<sub>The admin is built around writing: the list beside the paper, and everything else one sheet per page. Palettes, fonts, sizes, layout, menu — all of it is a setting, none of it is code.</sub>
 
 </div>
 
