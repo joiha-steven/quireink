@@ -12,7 +12,6 @@ import { savePost } from '@/content/posts'
 import { savePage } from '@/content/pages'
 import { SlugConflictError } from '@/content/slugs'
 import { previewToken } from '@/content/preview'
-import { parseWxr } from '@/import/wordpress'
 import { finalizePendingThumbs, finalizePendingVariants } from '@/media/finalize'
 import { purgeExpiredSessions } from '@/auth/sessions'
 import { pruneRendered } from '@/render/render-cache'
@@ -92,6 +91,11 @@ export function opsRoutes() {
       return fail(c, 'not_a_wordpress_export', 400)
     }
 
+    // Loaded here rather than at the top of the file: the parser pulls turndown, its GFM
+    // plugin and fast-xml-parser, none of which any other route touches. A blog that never
+    // came from WordPress — which is most of them, forever — never loads them. The shape
+    // check above runs first, so a wrong file is rejected without the import.
+    const { parseWxr } = await import('@/import/wordpress')
     const { posts, pages, skipped } = parseWxr(xml, new Date().toISOString())
     let importedPosts = 0
     let importedPages = 0

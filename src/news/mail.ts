@@ -3,7 +3,9 @@
 // payload. Env vars of the same name are a fallback. No-lock-in: the owner points this
 // at their own SMTP server; nothing proprietary. SERVER-ONLY.
 
-import nodemailer from 'nodemailer'
+// Nodemailer is loaded on the FIRST SEND, not at boot — see `sendMail`. This module is on
+// the reader's path (`getMailStatus` decides whether a page draws a subscribe form), so a
+// static import here put the whole SMTP stack into every process that has never sent mail.
 import { logSend, type SendKind } from '@/news/newsletter-log'
 import { clearCache } from '@/server/cache'
 import { one, run } from '@/store/query'
@@ -125,6 +127,9 @@ export async function sendMail(msg: {
     return { sent: false, error: 'smtp_not_configured' }
   }
   try {
+    // After the `isMailConfigured` guard on purpose: a blog with no SMTP configured never
+    // loads nodemailer at all, and one that has it pays the import once per process.
+    const { default: nodemailer } = await import('nodemailer')
     const transport = nodemailer.createTransport({
       host: cfg.host,
       port: cfg.port,

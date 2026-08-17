@@ -1,7 +1,25 @@
 // Image encoding — pure sharp pipeline (Buffer -> Buffer / dimensions). No DB, no
 // storage, no app state. media.ts depends on this ONE WAY (media -> image, never back).
 
-import sharp from 'sharp'
+/**
+ * sharp is loaded on the FIRST image operation, not at boot.
+ *
+ * `og-card.ts` already deferred it and said why (a compiled binary bundles sharp's
+ * JavaScript but not its native module, so a top-level import killed the boot rather than
+ * one route). That deferral bought nothing while THIS file imported it statically: media.ts
+ * is reachable from the route table, so every process loaded sharp at boot anyway and the
+ * comment over there described a protection that was not in force.
+ *
+ * The second reason is the hosted tier. sharp is the largest single import in the tree, and
+ * a blog whose owner has not uploaded an image since the process started should not be
+ * holding an image codec resident. Every export below was already `async`, so deferring it
+ * costs one `await` per call and changes no signature.
+ */
+type Sharp = typeof import('sharp')['default']
+let mod: Sharp | null = null
+async function sharp(): Promise<Sharp> {
+  return (mod ??= (await import('sharp')).default)
+}
 
 export const RASTER = /^image\/(jpeg|png)$/ // full responsive pipeline
 export const PASSTHROUGH = /^image\/(svg\+xml|gif|webp|avif)$/ // stored as-is, no variants (avif is already efficient)
@@ -19,9 +37,9 @@ export async function capOriginal(body: ArrayBuffer | Buffer, contentType: strin
   const buf = Buffer.isBuffer(body) ? body : Buffer.from(body)
   if (!CAPPABLE.test(contentType)) return buf
   try {
-    const { width = 0 } = await sharp(buf, { failOn: 'none' }).rotate().metadata()
+    const { width = 0 } = await (await sharp())(buf, { failOn: 'none' }).rotate().metadata()
     if (!width || width <= ORIGINAL_CAP) return buf
-    const pipe = sharp(buf, { failOn: 'none' }).rotate().resize({ width: ORIGINAL_CAP })
+    const pipe = (await sharp())(buf, { failOn: 'none' }).rotate().resize({ width: ORIGINAL_CAP })
     if (contentType === 'image/png') return pipe.png().toBuffer()
     if (contentType === 'image/webp') return pipe.webp({ quality: 82 }).toBuffer()
     if (contentType === 'image/avif') return pipe.avif({ quality: 55 }).toBuffer()
@@ -35,7 +53,7 @@ export type Variant = { suffix: string; data: Buffer; contentType: string }
 
 // From the original bytes, read pixel dimensions (auto-oriented).
 export async function imageSize(original: Buffer): Promise<{ width: number; height: number }> {
-  const meta = await sharp(original, { failOn: 'none' }).rotate().metadata()
+  const meta = await (await sharp())(original, { failOn: 'none' }).rotate().metadata()
   return { width: meta.width ?? 0, height: meta.height ?? 0 }
 }
 
@@ -51,7 +69,7 @@ export async function safeSize(buf: Buffer): Promise<{ width?: number; height?: 
 
 // Small library thumbnail — cheap, made on upload so the grid renders at once.
 export async function makeThumb(original: Buffer): Promise<Buffer> {
-  return sharp(original, { failOn: 'none' })
+  return (await sharp())(original, { failOn: 'none' })
     .rotate()
     .resize({ width: THUMB_WIDTH, withoutEnlargement: true })
     .webp({ quality: 70 })
@@ -64,7 +82,7 @@ export async function makeDisplay(original: Buffer): Promise<Variant[]> {
   const { width: ow } = await imageSize(original)
   const files: Variant[] = []
   for (const w of SIZES) {
-    const pipe = sharp(original, { failOn: 'none' })
+    const pipe = (await sharp())(original, { failOn: 'none' })
       .rotate()
       .resize({ width: ow ? Math.min(w, ow) : w, withoutEnlargement: true })
     files.push({ suffix: `-${w}.webp`, data: await pipe.clone().webp({ quality: 80 }).toBuffer(), contentType: 'image/webp' })

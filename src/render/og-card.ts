@@ -20,7 +20,7 @@
 // and 72 DPI was leaving the type visibly soft on any hi-DPI phone — which is where a
 // shared link is opened.
 
-import satori, { type SatoriOptions } from 'satori'
+import type { SatoriOptions } from 'satori'
 import { DEFAULT_THEME } from '@/content/themes'
 import { PEN_LIGHT, penStroke } from '@/render/pen'
 import interLatin from '@/render/fonts/inter-latin.woff' with { type: 'file' }
@@ -205,6 +205,11 @@ export async function renderOgCard(card: OgCard): Promise<Uint8Array> {
     : base
   const family = (card.customFont ? 'Site, ' : '') + 'Inter, InterExt, InterVN'
 
+  // satori joins sharp below in being loaded on first use rather than at boot, for the
+  // other reason: this module is reachable from the route table, so a static import put
+  // the whole SVG-layout engine into the resident set of every process, including the
+  // ones nobody has ever asked for a social card.
+  const { default: satori } = await import('satori')
   const svg = await satori(tree(card, family) as never, { ...OG_SIZE, fonts: all })
 
   // sharp is loaded HERE, not at the top of the file, and the reason is measured rather
