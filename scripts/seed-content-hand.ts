@@ -19,13 +19,23 @@ export const HAND_POSTS: Seed[] = [
 
 Hold the pen flatter and the contrast moves: you get the upright, heavy-footed look of an uncial. Hold it steeper and you approach the diagonal stress of an italic. Change nothing but the angle and the letterform changes family.
 
+![The same stroke at three nib angles: flatten the pen and the weight sits upright, steepen it and the stress turns diagonal](/uploads/media/nib-angles.png)
+
 This is why type designers still learn to write with a pen even though nobody sets books with one. The pen teaches which parts of a letter are structural and which are habit.
 
 ## What the pen cannot teach
 
 It cannot teach spacing. A calligrapher spaces by feel, one letter at a time, and every line is different. A typeface has to space every possible pair in advance, forever, without knowing what will sit next to what.
 
-That is the jump from writing to type, and it is a much larger jump than drawing the letters.`,
+That is the jump from writing to type, and it is a much larger jump than drawing the letters.
+
+## Trying it without any equipment
+
+You do not need a nib to feel this. Tape two pencils together, hold them at a steady angle, and write your name slowly. The double line the points draw is the ribbon a broad edge lays down, and every widening and thinning arrives on its own, without a single decision from you.
+
+Now rotate your grip a little and write the name again. The letters are recognisably yours and recognisably different — heavier here, leaner there — and you have just performed, in thirty seconds, the experiment that separates one historical hand from another.
+
+Do it a third time faster and watch the joins start to slur. That slurring, disciplined over a few centuries, is where italic came from. The history of Western letterforms is substantially a history of people in a hurry, and the pen records the hurry as faithfully as it records the angle.`,
   },
   {
     title: 'Uncials, half-uncials, and the shape of a slow hand',

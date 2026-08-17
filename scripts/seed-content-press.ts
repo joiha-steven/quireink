@@ -60,6 +60,10 @@ Paper has a **grain direction**, the way the fibres lie. A book must be bound wi
 
 Take one sheet folded three times: eight pages a side, sixteen in all. On the outer face, page 1 sits beside page 8, because after the fold those two ends meet. Half the pages are printed upside down relative to the other half. Hold a cheap paperback up to the light at the spine and you can still see the logic.
 
+![An imposition sheet: eight pages a side, half of them upside down, all of them exactly where the fold needs them](/uploads/media/imposition-sheet.png)
+
+The scheme has a name for every fold count — folio for one, quarto for two, octavo for three — and the names leaked into everything from book sizes to paper grades. When a bookseller calls a volume an octavo they are quoting, at four hundred years' distance, the number of times a printer folded a sheet.
+
 ## Why it survives digital
 
 ==Because folding survives.==#yellow A book printed today on a digital press is still imposed, still folded into gatherings, still trimmed on three edges. The arithmetic did not change when the plates did.
@@ -142,6 +146,8 @@ It is a good word for a thing made of folded sheets. That is what a book is, and
     body: `A colour page is printed four times: cyan, magenta, yellow, black, one after another. Registration is how precisely those four passes line up, and a misregistration of a fraction of a millimetre is visible to anyone, even people who could not name what they are seeing.
 
 The tell is a coloured fringe along a hard edge. Black text on a white ground survives it, because black text is usually printed in black ink alone. Reversed text — white type knocked out of a coloured panel — does not, because now the edge of every letter is the boundary between four separate impressions.
+
+![A registration target: four passes over one cross, and the fraction of a millimetre they disagree by](/uploads/media/registration-target.png)
 
 ## Why small reversed type is a trap
 
