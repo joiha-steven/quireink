@@ -19,8 +19,8 @@ On any behavior change, update the matching doc in the SAME change (Working prin
   [`scripts/ops/quire-backup.sh`](../../scripts/ops/quire-backup.sh) does.
 - **Audits** are dated snapshots, so they are write-only and they live with the author's
   notes rather than here. Read the latest first so a pass starts from the last clean line.
-- **Versioning (owner's rule — do NOT auto-bump):** the version is **`2.0.2`**, released
-  2026-08-10. From 2.0 onward the number is **semver and means something**, which is the change
+- **Versioning (owner's rule — do NOT auto-bump):** the version is **`2.1.0`**, released
+  2026-08-18. From 2.0 onward the number is **semver and means something**, which is the change
   from the 1.5.x era where `x` was a running counter: MAJOR for a break in how the thing is
   installed or run, MINOR for a feature, PATCH for a fix. **Never bump any of the three on your
   own** — a release is the owner's call, and so is the number. Ship the work, write the
