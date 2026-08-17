@@ -10,7 +10,9 @@ export default function Media() {
   const t = useAdminT()
   return (
     <div>
-      <PageHeader title={t.libraryTitle} description={t.libraryIntro} />
+      {/* The intro sentence moved into the sheet's closing line (LibraryTabs): the
+          page head carries the NAME, the sheet carries the page. */}
+      <PageHeader title={t.libraryTitle} />
       <LibraryTabs />
     </div>
   )
