@@ -242,7 +242,10 @@ export function AdminSidebar({
     <>
       {/* Desktop: sticky full-height left column; width animates on collapse */}
       <aside
-        className={`sticky top-0 h-screen shrink-0 flex-col border-r border-neutral-200/80 bg-white px-3 py-5 transition-[width] duration-200 dark:border-neutral-800 dark:bg-neutral-900 hidden md:flex ${
+        // `z-30`, because `sticky` makes the rail its own stacking context: without a
+        // z-index the CONTENT — a later sibling — painted over the theme menu that opens
+        // from the rail's footer, and the menu read as cut off behind a media card.
+        className={`sticky top-0 z-30 h-screen shrink-0 flex-col border-r border-neutral-200/80 bg-white px-3 py-5 transition-[width] duration-200 dark:border-neutral-800 dark:bg-neutral-900 hidden md:flex ${
           collapsed ? 'md:w-[4.5rem]' : 'md:w-52'
         }`}
       >

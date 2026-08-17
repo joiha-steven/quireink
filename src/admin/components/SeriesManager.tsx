@@ -79,7 +79,7 @@ export function SeriesManager({ posts }: { posts: Post[] }) {
       {entries.map((s) => {
         const slugs = s.parts.map((p) => p.slug)
         return (
-          <div key={s.name} className="overflow-hidden border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
+          <div key={s.name} className="overflow-hidden rounded-lg border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
             <div className="flex items-center gap-2 border-b border-neutral-200 px-4 py-3 dark:border-neutral-800">
               <Link href={`/series/${s.slug}`} className="min-w-0 flex-1 truncate text-sm font-semibold hover:underline">
                 {s.name}
