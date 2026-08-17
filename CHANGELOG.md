@@ -1,6 +1,103 @@
 # CHANGELOG
 
-## 2026-08-15 — Quire Ink 2.0.3
+## 2026-08-18 — Quire Ink 2.1.0
+
+**Thirty commits since 2.0.3, and nearly all of them are one project: the admin rebuilt
+around writing.** The rebuild ran the way the last one should have — a mock first, the
+owner's verdict on the mock, then the code page by page against it — and the mock's two
+ideas now hold everywhere: the screen you write on shows the list of everything written
+beside the paper, and every other screen is **one sheet per page** rather than a scatter of
+cards on a canvas.
+
+The upgrade is a drop-in: same install, same settings, same database, **no new environment
+variables**. The one schema change is a search index for pages that the database creates by
+itself at boot, the same way every migration here runs. The reader's pages did not move a
+byte — every bundle, stylesheet and font is the same as 2.0.3 — because all of this is the
+owner's side of the house.
+
+And the product has a front door now: **[quireink.com](https://quireink.com)** is the
+homepage, and **[demo.quireink.com](https://demo.quireink.com)** remains the running build,
+now with a bar that also links back to this repository.
+
+### The Write screen: the list beside the paper
+
+`/admin/content` is not a dashboard anymore; it is the write screen. The left pane is the
+writing itself — every post and page in one list, a search box, five scope tabs (All ·
+Pages · Posts · Published · Drafts, deliberately short words in all six languages so the
+row never wraps), and a quiet toggle that sorts by last-updated or date-created. The pane
+rides beside **both** editors from wide windows up, marks the row you have open, and keeps
+the Taxonomy and Series managers as tools on its own sort line — they used to live below
+the fold, a door nobody could see.
+
+The editor stopped carrying furniture the mock never drew, and then got back exactly what
+the owner asked for after writing on it for an afternoon. The chrome is the sheet's own top
+rows now: an action line (back, save state, word count and reading time; Markdown and
+Attributes as quiet words; the three buttons), and under it the full toolbar — in the
+formatted view only, because raw Markdown formats itself. `/` on an empty line raises the
+insert menu at the caret, with each block's Markdown shortcut printed beside it, so the
+menu teaches the gesture that makes itself unnecessary. The attributes moved into a sheet
+that slides in from the right, footered Later / Publish, and it draws **its own calendar**
+— the browser's blue date popup was the one thing on the screen no stylesheet could reach.
+Recovered work is a sentence with two links in the action line, not a banner. Every
+clipped scroller fades at its cut edge instead of cropping a row in half.
+
+### The search can find a sentence the owner remembered writing
+
+Search in the admin reaches the **body text**, not just titles — and pages join posts in
+the same FTS index (`remove_diacritics 2`, so typing `gioi thieu` finds "Giới thiệu"). Hits
+are painted with the product's own highlighter, folded per character so the marks land on
+the right letters in accented Vietnamese. The comments screen gets the same search, over
+the text, the name and the post title.
+
+### Mỗi trang một tờ — every page is one sheet
+
+Library, Analytics, Comments, Newsletter, Trash, Help, Settings and the activity log were
+each rebuilt as one full-width sheet: tools and tabs on the sheet's first row, the headline
+numbers standing directly on the paper, lists as one-line ledgers in two newspaper columns,
+and the page's hint demoted to the sheet's closing small print. Comments became a reading
+queue — each comment is its own text with the who/where/when as small print under it, not a
+six-column spreadsheet. Settings' 26 cards became hairline panels of one page. Trash
+carries posts, pages, media, files and comments in one row shape. Nothing floats in its own
+little card anymore, and every page is the same width on purpose.
+
+### The rail is four doors, and it remembers your choice
+
+Eleven destinations became four — Home, Write, Library, Newsletter — with everything else
+behind one button that opens itself when you are inside it, and that **remembers** whether
+you left it open or closed. The footer's controls (theme, clear cache, sign out) stopped
+dressing as destinations; the theme menu opens inside the rail at rail size instead of
+floating under the content at the wrong size. The numbers that let Analytics leave the rail
+moved to the home screen: the Traffic card carries views, visitors, time per post and
+read-through, and "Pick up where you left off" hands back the four most recently touched
+unfinished pieces.
+
+### Monochrome, plus exactly one colour
+
+The admin's one accent is the product's own highlighter pen: a search hit wears it, and the
+dots that mean work-in-progress are its edge tone. Nothing else is coloured — the last two
+reds left, the stray shadows died, and the radius ladder closed to three steps (sheet,
+panel, control). The style sweep was audited off the running admin's computed styles, not
+just the source.
+
+### Every admin screen fits a phone
+
+One tour flow per screen asserts, at 375px, that the document is no wider than the window —
+and names the widest element when it is. All of them were watched fail against a sabotage
+before being trusted, and the first clean run caught a real spill: analytics scrolled
+sideways by 36px under a comment that claimed the row wraps.
+
+### The README starts with a reader
+
+The README led with architecture on line two; it now opens with what the thing **is**, for
+someone who does not run servers, and the licence section answers the operator's actual
+question — run it, and charge for running it, as long as the version you run is the one
+published here.
+
+*57 tour flows, 1416 tests, and the seven build guards, all green. The demo's fixture also
+grew: the five seeded posts now carry their plates in the prose, so the library and the
+reading page have something real to show.*
+
+
 
 **Forty-three commits since 2.0.1, and 2.0.2 is folded into this one.** 2.0.2 went out on 10
 August and stood for five days; everything it shipped is in this release, and its notes are
