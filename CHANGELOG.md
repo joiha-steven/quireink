@@ -250,9 +250,7 @@ the admin that exists rather than the one that used to.
 
 *57 tour flows, 1416 tests, and the seven build guards, all green before the tag.*
 
-
-
-
+## 2026-08-15 — Quire Ink 2.0.3
 
 **Forty-three commits since 2.0.1, and 2.0.2 is folded into this one.** 2.0.2 went out on 10
 August and stood for five days; everything it shipped is in this release, and its notes are
