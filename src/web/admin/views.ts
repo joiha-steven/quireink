@@ -11,7 +11,7 @@
 // must never show a stale snapshot of the reader's own edits.
 
 import { getActivity } from '@/server/activity'
-import { getAnalytics, getViewTotals } from '@/analytics/summary'
+import { getAnalytics, getRightNow, getViewTotals } from '@/analytics/summary'
 import { getPageAnalytics } from '@/analytics/page'
 import { getAdminComments, countsByPosts, getTrashedComments } from '@/comments/comments'
 import { getCommentEnv } from '@/comments/comment-env'
@@ -120,7 +120,16 @@ export function viewRoutes(): OwnerRouter {
         },
       })
     }
-    return c.json({ data: { summary: await getAnalytics(days, bucket), titles, range: days } })
+    return c.json({
+      data: { summary: await getAnalytics(days, bucket), rightNow: await getRightNow(), titles, range: days },
+    })
+  })
+
+  // The live strip's poll: five minutes of rows, nothing else. Separate from the view
+  // above because the poll must not re-run a dashboard's worth of aggregates every few
+  // seconds to refresh one number.
+  routes.get('/api/admin/view/analytics-now', async (c) => {
+    return c.json({ data: await getRightNow() })
   })
 
   routes.get('/api/admin/view/comments', async (c) => {

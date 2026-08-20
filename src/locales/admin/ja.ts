@@ -522,6 +522,8 @@ const ja = {
   analyticsColDepth: '深度',
   analyticsAvgTime: '平均滞在時間',
   analyticsBounceRate: '直帰率',
+  analyticsNowReading: '現在{n}人が閲覧中',
+  analyticsNowQuiet: '現在閲覧中の読者はいません',
   analyticsColTime: '時間',
   analyticsChannels: 'チャネル',
   analyticsChannelDirect: 'ダイレクト',

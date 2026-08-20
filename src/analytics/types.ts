@@ -47,6 +47,15 @@ export type PageSummary = {
   depthBuckets: DepthBucket[]
 }
 
+// The last five minutes, for the live strip on the Analytics page. `pages` is by distinct
+// visitors, so "2 readers on /a" means two people, not one person's reloads.
+export type RightNow = {
+  visitors: number
+  pages: { path: string; visitors: number }[]
+}
+
+export const EMPTY_RIGHT_NOW: RightNow = { visitors: 0, pages: [] }
+
 export const EMPTY_SUMMARY: AnalyticsSummary = {
   totalViews: 0, uniqueVisitors: 0, avgReadDepth: 0, topPages: [], daily: [],
 }

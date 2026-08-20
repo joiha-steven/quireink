@@ -128,12 +128,27 @@
   **distinct visitors** (one person = 1, not page views). **Per-page drill-down** (`?path=`,
   `AnalyticsPageDetail`) repeats the trend + sources + depth for a single URL. Plus a **CSV export**
   of the daily series.
+  - **Right now:** a live strip under the range tabs — distinct visitors over the trailing five
+    minutes and the pages they are on (`getRightNow`, polled every 10 s via
+    `/api/admin/view/analytics-now`; the poll pauses while the tab is hidden). No socket: the flush
+    buffer holds writes for at most 2 s, so one indexed five-minute scan is already honest to real
+    time.
   - **Timezone:** time buckets are truncated in `ANALYTICS_TZ` (an IANA zone, e.g.
-    `Asia/Ho_Chi_Minh`; defaults to UTC) so "days" line up with local midnight, not UTC.
+    `Asia/Ho_Chi_Minh`; defaults to UTC) so "days" line up with local midnight, not UTC. The daily
+    series emits **every bucket, zeros included** — a quiet day is a point on the chart, not a gap.
+  - **Referrer hosts are folded for display** (`canonicalHost`): plumbing labels (`www.`, `m.`,
+    `l.`, `lm.`, `out.`, `away.`, …) peel off, so `l.facebook.com` and `m.facebook.com` count as one
+    `facebook.com` row — folded on the (host, visitor) pairs, so one person through two doors is
+    still one visitor. Identity subdomains (`news.google.com`) survive; the stored rows keep the
+    raw host.
   - **Audience** columns (`device`/`browser`/`os`) are **coarse UA buckets** parsed at insert
     (`src/analytics/ua.ts`) — the raw user-agent is never stored, so no fingerprint (same stance as
-    the salted visitor hash). **Dwell** = ms on the page before leaving, beaconed by
-    `src/assets/js/track.ts` alongside the scroll depth.
+    the salted visitor hash). **Dwell** = ENGAGED ms on the page, metered by
+    `src/assets/js/track.ts` alongside the scroll depth: the clock runs only while the tab is
+    visible and the reader has scrolled, typed or moved within the last three minutes, and the
+    aggregates clamp every stored sample at 30 minutes (`DWELL_CAP_MS`) so the wall-clock samples
+    recorded before the meter existed cannot drag the average — one forgotten 24-hour tab was worth
+    ~3 minutes of "average time on page" on a real instance.
   - There is no migration gate on any of this in 2.0: `src/store/schema-analytics.sql` states the
     final shape and is applied at boot, so every section is present on a fresh install. The
     engagement / channel / audience / drill-down queries live in `src/analytics/`

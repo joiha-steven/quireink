@@ -14,9 +14,13 @@ export function Trend({ cur, prev }: { cur: number; prev?: number }) {
   const pct = Math.round(((cur - prev) / prev) * 100)
   if (pct === 0) return null
   const up = pct > 0
+  // A young site's first real month is "▲12583%" against a near-empty baseline, which
+  // reads as a rendering bug rather than as growth. Past 10x the percentage stops being
+  // information — the number that matters is already printed beside it — so it caps.
+  const label = pct > 999 ? '>999%' : `${Math.abs(pct)}%`
   return (
     <span className="ml-2 align-middle text-xs font-medium text-neutral-500 dark:text-neutral-400">
-      {up ? '▲' : '▼'} {Math.abs(pct)}%
+      {up ? '▲' : '▼'} {label}
     </span>
   )
 }

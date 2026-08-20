@@ -522,6 +522,8 @@ const de = {
   analyticsColDepth: 'Tiefe',
   analyticsAvgTime: 'Ø Verweildauer',
   analyticsBounceRate: 'Absprungrate',
+  analyticsNowReading: '{n} lesen gerade',
+  analyticsNowQuiet: 'Gerade liest niemand',
   analyticsColTime: 'Zeit',
   analyticsChannels: 'Kanäle',
   analyticsChannelDirect: 'Direkt',

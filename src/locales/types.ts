@@ -676,6 +676,8 @@ export type AdminStrings = {
   analyticsColDepth: string
   analyticsAvgTime: string
   analyticsBounceRate: string
+  analyticsNowReading: string
+  analyticsNowQuiet: string
   analyticsColTime: string
   analyticsChannels: string
   analyticsChannelDirect: string

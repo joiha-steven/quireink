@@ -12,6 +12,7 @@ import type { Range } from '@/admin/components/AnalyticsView'
 
 type Summary = {
   summary: ComponentProps<typeof AnalyticsView>['data']
+  rightNow: ComponentProps<typeof AnalyticsView>['rightNow']
   titles: Record<string, string>
   range: Range
 }
@@ -31,7 +32,7 @@ export default function Analytics() {
     <View state={state}>
       {(d) => ('detail' in d
         ? <AnalyticsPageDetail data={d.detail} title={d.title} range={d.range} />
-        : <AnalyticsView data={d.summary} range={d.range} titles={d.titles} />)}
+        : <AnalyticsView data={d.summary} range={d.range} titles={d.titles} rightNow={d.rightNow} />)}
     </View>
   )
 }

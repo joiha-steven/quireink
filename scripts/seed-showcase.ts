@@ -195,7 +195,10 @@ for (const [rank, p] of POSTS.entries()) {
       device: DEVICES[i % DEVICES.length] ?? null,
       browser: BROWSERS[i % BROWSERS.length] ?? null,
       os: SYSTEMS[i % SYSTEMS.length] ?? null,
-      createdAt: START - day * DAY + (i % 20) * 3600_000,
+      // MINUS the hour spread, never plus: START is only eight hours back, so adding up to
+      // nineteen hours pushed day-0 events into the future — and 23 of them into the live
+      // strip's five-minute window, which reported a crowd that was not there.
+      createdAt: START - day * DAY - (i % 20) * 3600_000,
     })
     // Read depth on every third view: enough samples for the engagement panel, and it keeps
     // the scroll table from being the same size as the event table.
@@ -211,6 +214,25 @@ for (const [rank, p] of POSTS.entries()) {
   }
   flushAnalytics()
 }
+
+// Three readers "on the site right now", so the analytics page's live strip has something
+// to be live ABOUT. Real minutes before the real clock, not SEED_NOW: the strip reads the
+// trailing five minutes of wall time, and a pinned origin hours in the past would leave it
+// empty — which is fine for the README (whose admin panels never open Analytics) and wrong
+// for the demo, where the strip is the first thing that makes the page feel alive.
+for (const [i, p] of [POSTS[0]!, POSTS[1]!, POSTS[1]!].entries()) {
+  bufferEvent({
+    path: `/${p.slug}`,
+    visitor: `live${i}`,
+    referrerHost: i === 0 ? 'news.ycombinator.com' : null,
+    country: ['VN', 'US', 'DE'][i] ?? null,
+    device: i === 2 ? 'mobile' : 'desktop',
+    browser: 'Safari',
+    os: i === 2 ? 'iOS' : 'macOS',
+    createdAt: NOW - (i + 1) * 60_000,
+  })
+}
+flushAnalytics()
 
 /**
  * An owner, already signed in.

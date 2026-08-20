@@ -522,6 +522,8 @@ const ko = {
   analyticsColDepth: '깊이',
   analyticsAvgTime: '평균 체류 시간',
   analyticsBounceRate: '이탈률',
+  analyticsNowReading: '지금 {n}명이 읽는 중',
+  analyticsNowQuiet: '지금 읽는 사람이 없습니다',
   analyticsColTime: '시간',
   analyticsChannels: '채널',
   analyticsChannelDirect: '직접',
