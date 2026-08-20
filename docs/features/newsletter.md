@@ -25,7 +25,7 @@
   the send log. A trashed address neither receives broadcasts nor answers its own links;
   re-subscribing it starts over as a fresh pending row with a fresh token.
 - **SMTP (`lib/mail.ts`, Nodemailer).** Config lives on `integration_keys` (server-only secrets,
-  env fallback) — set in Admin → Settings → Integrations (`NewsletterFields`, via `api/mail`).
+  env fallback) — set in Admin → Settings → Connections (`NewsletterFields`, via `api/mail`).
   `sendMail` never throws: `{ sent:false, error:'smtp_not_configured' }` when unset, so subscribe
   still records the pending row. `isMailConfigured` = host + From present.
 - **Sign-up form** (`SubscribeForm`) renders at the foot of a post ONLY when SMTP is configured
@@ -34,7 +34,7 @@
   modal (`SubscribeOverlay`, lazy — Escape / backdrop closes), so a reader can subscribe from any
   page.
 - **Admin → Newsletter** (`/admin/newsletter`, `NewsletterView`) is where the list is worked;
-  Settings → Integrations keeps ONLY the SMTP credentials (`NewsletterFields`, which now derives
+  Settings → Connections keeps ONLY the SMTP credentials (`NewsletterFields`, which now derives
   the TLS checkbox from the port — implicit TLS is 465, 587 is STARTTLS; the wrong pair fails with
   an opaque OpenSSL "wrong version number"). Three tabs:
   - *People* — every subscriber with their send history from the log: emails sent, failures (with

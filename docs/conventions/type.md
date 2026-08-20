@@ -16,7 +16,10 @@
   LOOKS wired, which is why review never caught it.
 - 9 roles (`TypeRole`: `h1–h5`, `body`, `small`, `caption`, `code`), each with
   size/line-height/letter-spacing → CSS vars `--fs/--lh/--ls-<role>`, from
-  `DEFAULT_TYPOGRAPHY` in [`src/content/fonts.ts`](../../src/content/fonts.ts) (re-exported by
+  `DEFAULT_TYPOGRAPHY` in [`src/content/fonts.ts`](../../src/content/fonts.ts) — which is the
+  BASE each preset spreads over, not what a new install starts on: a fresh install takes the
+  DEFAULT FACE's tuned numbers through `INSTALL_TYPOGRAPHY` in `src/content/settings.ts`, and
+  the default face is **Literata** (with **JetBrains Mono** chrome) since 2026-08-21 (re-exported by
   `themes.ts`, so either import path works). The owner's
   `settings.typography` is emitted by `typographyToCss()` (also applies in the admin editor
   `.prose` = WYSIWYG). `smoothing` adds `-webkit-font-smoothing` on `body`.
@@ -112,12 +115,17 @@ font, only the site language's subset(s), never the chrome font or an uploaded c
   the only Tailwind in the project; the rule and the seam live in
   [`performance.md`](../performance.md) "The two sheets".
 
-## Book mode is ONE number, fixed by the owner (HARD RULE)
+## Book mode is ONE number, and the reader may move it (HARD RULE)
 
-    book mode reading text = article reading text x 1.15
-    every gap inside the article  = the same x 1.15
+    book mode reading text = article reading text x the scale
+    every gap inside the article  = the same x the scale
 
-Set on 2026-07-29 and not to be changed. Type and the space around it are one system:
+The RELATION is the hard rule, not the number. The scale was fixed at 1.15 on 2026-07-29 and
+revised by the owner to **1.05** on 2026-08-21 ("mặc định chữ hơi to"), and it is now only a
+DEFAULT: A− / A+ in the overlay chrome move it 0.85–1.35 per reader, persisted under
+`quire-book-scale` and applied as an inline override, so an untouched reader still gets what
+the sheet ships (`src/assets/js/book.ts`). What must not change is the relation below.
+Type and the space around it are one system:
 enlarging the words and leaving the gaps gives crowded reading, not bigger reading. So
 `--sp` (the article's spacing unit) carries `--type-scale` exactly as `--fs-<role>` does,
 and every gap inside the article is a multiple of `--sp`.
@@ -145,11 +153,13 @@ re-substitutes it there. Pinned by `web/typography.test.ts`.
   body + title, list cards, comment body, the editor `.prose`) and is what `fontPresetCss` /
   `fontToCss` point (custom upload wins). `--font-sans` is the system-chrome face (dates/reading-time,
   related/taxonomy, header, footer, rail — **the PUBLIC page only**), driven INDEPENDENTLY by the `chromeFont` selector
-  (`CHROME_FONTS` in `src/content/fonts.ts`, Admin → Appearance): `inter` (default, no override) ·
-  `reading` (points `--font-sans` at `--font-reading` so the chrome follows the reading font) ·
-  `plex-mono` (self-hosted IBM Plex Mono — a "code" chrome while the body stays readable; declared
-  per unicode-range in `src/render/font-faces.ts`, two static weights range-mapped 400/600,
-  preloaded when active).
+  (`CHROME_FONTS` in `src/content/fonts.ts`, Admin → Appearance): `inter` (the stack's own
+  fallback, and what `getChromeFont` returns for an unknown id) · `reading` (points `--font-sans`
+  at `--font-reading` so the chrome follows the reading font) · `plex-mono` (self-hosted IBM Plex
+  Mono — a "code" chrome while the body stays readable) · `jetbrains-mono` (**the install
+  default** since 2026-08-21). Both monos are declared per unicode-range in
+  `src/render/font-faces.ts`, are preloaded when active, and take the tracking correction
+  `MONO_TRACKING` applies to chrome surfaces only.
   `chromeFontCss` emits the override LAST in the layout (after the reading font resolves); the legacy
   boolean `fontChromeInter` migrates on read (`false` → `reading`). Layout also stamps
   `<html data-chrome-font>`; a rule in `font-faces.ts` uses `[data-chrome-font="plex-mono"]` to pull the wide

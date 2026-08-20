@@ -5,7 +5,7 @@
 - **What it is.** A remote MCP endpoint (Streamable HTTP, `mcp-handler` + `@modelcontextprotocol/sdk`)
   that lets an MCP client (Claude/ChatGPT) operate the blog. Tools are THIN wrappers over the same
   `lib/` functions the admin routes use — same slug rules, revisions, soft-delete, revalidation,
-  activity log. **Off unless the owner enables it** (Admin → Settings → Advanced toggle,
+  activity log. **Off unless the owner enables it** (Admin → Settings → Connections toggle,
   `settings.mcp.enabled`); `verifyMcpToken` 401s every call while off.
 - **The 2.0 transport is hand-written** (`src/web/admin/mcp-transport.ts`), because `mcp-handler`
   wraps the SDK for Next's route handlers and could not come along. Stateless: a fresh `McpServer`

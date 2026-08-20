@@ -168,7 +168,9 @@
 - Controlled field groups (no own state/save), per tab: **Site** (identity only, nothing here moves
   a pixel) `SiteFields` + `BrandFields`; **Layout** `LayoutMenuFields` + `FooterField`; **Reading**
   `PostFeatureFields` + `ListingFeatureFields` + `CommentFields` + `ActivityLogField`;
-  **Appearance** `ThemeFields` + custom CSS on the left, the type stack `FontFields` (built-in
+  **Appearance** `ThemeFields` (the **Default appearance** selector — `settings.defaultScheme`,
+  `system` | `light` | `dark`, what a first-time visitor opens in — then the palette grid) +
+  custom CSS on the left, the type stack `FontFields` (built-in
   `fontPreset` picker + `chromeFont` selector) / `FontUpload` / `TypographyFields` /
   `AdvancedFields` (Rendering card: font smoothing, IDE chrome, the **Motion** engine toggle →
   `settings.motion.enabled`, and the editor **Typewriter feedback** option →

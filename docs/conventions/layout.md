@@ -89,7 +89,7 @@ article header is then the title and the deck alone. `post-info.ts` renders it;
   opening on one printed the panel's tag rows across the picture. The gutter cannot hold
   both, and text over a photograph is the worse failure. Two blocks and not one, because the
   panel runs to six rows and the header is only the `h1` when the deck is off.
-- **The same facts are in the markup twice, and exactly one copy has a box at any width.**
+- **The same facts are in the markup twice, and exactly one copy has a box at any width — above 768px.** Below it BOTH copies of the book-mode row are hidden (`.meta-book, .book-mode-toggle{display:none}`), which is why the phone gets its own floating entry (`.book-fab`, `assets/js/book.ts`) rather than a third copy of the row.
   Below the breakpoint there is no gutter: the panel is `display:none` and the meta line
   above the title plus the taxonomy over its rule are what the reader gets, unchanged. Above
   it, `.post-meta,.taxo-rule,.post-taxo{display:none}`. That rule travels with the panel —
