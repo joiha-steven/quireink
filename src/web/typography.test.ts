@@ -348,3 +348,41 @@ describe('the IDE chrome is one switch, and off leaves no trace', () => {
     expect(idelines()).toContain('.tl-year-tag::after{content:"/"')
   })
 })
+
+describe('the page reads like a set book', () => {
+  it('reshapes each local fallback to the reading face\'s own measurements', () => {
+    // The numbers are measured by scripts/ops/font-fallback-metrics.py from the shipped
+    // woff2 subsets against the local face's tables — rerun it when a font file is
+    // re-dropped. What this pins is the CONTRACT: every text family declares a metric
+    // -matched twin, the twin rides in its stack right behind the primary name, and the
+    // swap therefore changes glyphs without moving a line break.
+    const { fontFaceCss } = require('@/render/font-faces') as
+      typeof import('@/render/font-faces')
+    for (const [id, family, local] of [
+      ['inter', 'Inter', 'Arial'],
+      ['source-sans', 'Source Sans 3', 'Arial'],
+      ['literata', 'Literata', 'Georgia'],
+      ['source-serif', 'Source Serif 4', 'Georgia'],
+    ] as const) {
+      const css = fontFaceCss(id, 'inter')
+      expect(css).toContain(`font-family:'${family} Fallback';src:local('${local}')`)
+      expect(css).toMatch(new RegExp(`'${family} Fallback';[^}]*size-adjust:\\d`))
+      expect(css).toMatch(new RegExp(`'${family} Fallback';[^}]*ascent-override:\\d`))
+      expect(css).toMatch(new RegExp(`'${family} Fallback';[^}]*descent-override:\\d`))
+      expect(getFontPreset(id).stack).toContain(`'${family} Fallback'`)
+    }
+    // The monos carry none on purpose: their files only download on pages with code.
+    expect(fontFaceCss('inter', 'jetbrains-mono')).not.toContain(`JetBrains Mono Fallback`)
+  })
+
+  it('hangs opening punctuation into the margin, except in code', () => {
+    expect(PUBLIC_CSS).toContain('hanging-punctuation:first last')
+    expect(PUBLIC_CSS).toContain('.prose pre{hanging-punctuation:none}')
+  })
+
+  it('refuses the hyphen breaks a compositor would refuse', () => {
+    expect(PUBLIC_CSS).toContain('hyphenate-limit-chars:6 3 3')
+    expect(PUBLIC_CSS).toContain('-webkit-hyphenate-limit-before:3')
+    expect(PUBLIC_CSS).toContain('-webkit-hyphenate-limit-after:3')
+  })
+})

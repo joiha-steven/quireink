@@ -21,7 +21,14 @@ export const PROSE_CSS = `
    in JetBrains Mono was published in Literata. */
 .prose{font-family:var(--font-reading);
   font-size:var(--fs-body);line-height:var(--lh-body);
-  letter-spacing:var(--ls-body);color:var(--c-text)}
+  letter-spacing:var(--ls-body);color:var(--c-text);
+  hanging-punctuation:first last}
+/* Hanging punctuation is how a set book treats an opening quote: the mark hangs into the
+   margin so the TEXT edge stays optically straight. Safari only, for now; everyone else
+   ignores the property and keeps today's edge, which is exactly what a progressive
+   enhancement is allowed to do. It inherits, and a code block is the one place it would
+   be wrong — a line starting with a quoted string would slip its indent — so pre opts out. */
+.prose pre{hanging-punctuation:none}
 .prose > * + *{margin-top:1.4em}
 .prose h1,.prose h2,.prose h3,.prose h4,.prose h5{color:var(--c-heading);font-weight:600;
   scroll-margin-top:2rem}
@@ -153,7 +160,15 @@ export const PROSE_CSS = `
 .book-text .prose :is(h1,h2,h3,h4,h5) + p{text-indent:0}
 .book-text .prose li p,.book-text .prose blockquote p{text-indent:0}
 @media (min-width:600px){
-  .book-text .prose p,.book-text .prose li{text-align:justify;hyphens:auto}
+  .book-text .prose p,.book-text .prose li{text-align:justify;hyphens:auto;
+    hyphenate-limit-chars:6 3 3;
+    -webkit-hyphenate-limit-before:3;-webkit-hyphenate-limit-after:3}
+  /* The limits are what keep auto-hyphenation from reading like a ransom note: no word
+     under six letters is broken, and never fewer than three letters on either side of the
+     hyphen — "ty-po" and "a-bout" are the breaks a book's compositor would refuse.
+     Irrelevant to Vietnamese (its syllables never hyphenate) and load-bearing for English
+     and German, where justify without limits breaks greedily. The -webkit- longhands are
+     Safari's older spelling of the same two numbers. */
 }
 
 /* The highlighter is NOT here any more. It weighed ~21 of the public sheet's 29 KB gzipped

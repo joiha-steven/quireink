@@ -110,7 +110,7 @@ export function pageStyles(settings: SiteSettings, extra = ''): string {
     // last handle: code, and only code. It is a constant rather than a setting because
     // there is no code-font picker — the two mono families in CHROME_FONTS are a chrome
     // choice, which is a different question from what a fenced block is set in.
-    `:root{--font-sans:'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;`
+    `:root{--font-sans:'Inter', 'Inter Fallback', system-ui, -apple-system, 'Segoe UI', sans-serif;`
     + `--font-reading:var(--font-sans);`
     + `--font-mono:'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace}`,
     // The reading column, from the owner's setting. A two-rail listing narrows it by

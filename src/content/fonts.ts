@@ -218,7 +218,7 @@ export const FONT_PRESETS: FontPreset[] = [
     id: 'inter',
     slug: 'inter',
     name: 'Inter',
-    stack: `'Inter', system-ui, -apple-system, 'Segoe UI', ${CJK_SANS}, sans-serif`,
+    stack: `'Inter', 'Inter Fallback', system-ui, -apple-system, 'Segoe UI', ${CJK_SANS}, sans-serif`,
     typography: tuned({}),
   },
   {
@@ -252,7 +252,7 @@ export const FONT_PRESETS: FontPreset[] = [
     id: 'source-sans',
     slug: 'sourcesans',
     name: 'Source Sans 3',
-    stack: `'Source Sans 3', system-ui, -apple-system, ${CJK_SANS}, sans-serif`,
+    stack: `'Source Sans 3', 'Source Sans 3 Fallback', system-ui, -apple-system, ${CJK_SANS}, sans-serif`,
     typography: tuned({ body: { size: 1.16, line: 1.62 } }),
   },
   {
@@ -264,7 +264,7 @@ export const FONT_PRESETS: FontPreset[] = [
     id: 'literata',
     slug: 'literata',
     name: 'Literata',
-    stack: `'Literata', Georgia, 'Times New Roman', ${CJK_SERIF}, serif`,
+    stack: `'Literata', 'Literata Fallback', Georgia, 'Times New Roman', ${CJK_SERIF}, serif`,
     readingBold: 600,
     typography: tuned({
       body: { size: 1.125, line: 1.65 },
@@ -279,7 +279,7 @@ export const FONT_PRESETS: FontPreset[] = [
     id: 'source-serif',
     slug: 'sourceserif',
     name: 'Source Serif 4',
-    stack: `'Source Serif 4', Georgia, 'Times New Roman', ${CJK_SERIF}, serif`,
+    stack: `'Source Serif 4', 'Source Serif 4 Fallback', Georgia, 'Times New Roman', ${CJK_SERIF}, serif`,
     readingBold: 600,
     typography: tuned({
       body: { size: 1.15, line: 1.62 },

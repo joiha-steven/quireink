@@ -88,11 +88,45 @@ const FACES: Record<string, Face[]> = {
   ],
 }
 
-const declare = (f: Face): string =>
-  (Object.keys(f.ranges) as (keyof typeof TEXT)[]).map((subset) =>
+/**
+ * Metric-matched fallbacks: the local face each stack falls back to, RESHAPED to the
+ * self-hosted family's own measurements, so the swap `font-display:swap` performs moves
+ * nothing.
+ *
+ * The four numbers are measured, not styled. `size-adjust` is the ratio of the two
+ * families' average advance width over a mixed Vietnamese + English sample, read glyph by
+ * glyph from the shipped woff2 subsets (all three, merged the way `unicode-range` merges
+ * them) against the local face's own tables — NOT from `OS/2.xAvgCharWidth`, which
+ * averages bare a–z and misreads a language whose vowels carry diacritics. The three
+ * overrides are the family's typo ascent/descent/line-gap divided by (upm × size-adjust).
+ * `scripts/ops/font-fallback-metrics.py` recomputes all of it; rerun it when a font file
+ * is re-dropped, and paste the numbers.
+ *
+ * One face per family, weight left at its default: within a family the nearest weight
+ * always matches, so bold text during the swap window renders as synthesized-bold Georgia
+ * or Arial at the right WIDTH — which is the property that keeps the line breaks, and the
+ * line breaks are what keep the layout still. The mono families carry no fallback on
+ * purpose: `unicode-range` means their files only download on pages with code, and a code
+ * block's own box, not its glyphs, sets that layout.
+ */
+const FALLBACKS: Record<string, { local: string, adjust: string, asc: string, desc: string }> = {
+  'Inter': { local: 'Arial', adjust: '104.38%', asc: '92.81%', desc: '23.11%' },
+  'Source Sans 3': { local: 'Arial', adjust: '93.17%', asc: '109.9%', desc: '42.93%' },
+  'Literata': { local: 'Georgia', adjust: '107.56%', asc: '109.43%', desc: '28.64%' },
+  'Source Serif 4': { local: 'Georgia', adjust: '103.01%', asc: '100.57%', desc: '32.52%' },
+}
+
+const declare = (f: Face): string => {
+  const faces = (Object.keys(f.ranges) as (keyof typeof TEXT)[]).map((subset) =>
     `@font-face{font-family:'${f.family}';font-style:normal;font-weight:${f.weight};`
     + `font-display:swap;src:url('/fonts/${f.slug}-${subset}.woff2') format('woff2');`
     + `unicode-range:${f.ranges[subset]}}`).join('')
+  const fb = FALLBACKS[f.family]
+  if (!fb) return faces
+  return faces + `@font-face{font-family:'${f.family} Fallback';src:local('${fb.local}');`
+    + `size-adjust:${fb.adjust};ascent-override:${fb.asc};descent-override:${fb.desc};`
+    + `line-gap-override:0%}`
+}
 
 /**
  * The faces this page needs: the owner's reading font, plus the chrome font when it is a
