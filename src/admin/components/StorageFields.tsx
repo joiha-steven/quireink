@@ -8,7 +8,6 @@
 
 import { Input } from '@/admin/ui/Input'
 import { useAdminT } from './I18nProvider'
-import { PANEL_LIST } from './kit'
 
 /**
  * A size field that accepts being emptied mid-retype, and reads an empty box as 0.
@@ -51,8 +50,11 @@ export function StorageFields({
   onStorageQuotaGb: (n: number) => void
 }) {
   const t = useAdminT()
+  // Plain stacked fields, the same register as ExportFields beside it. PANEL_LIST is for
+  // padded rows (ToggleRow/Setting); bare Inputs inside it drew a second border in the card
+  // with the hairline slicing between unpadded fields.
   return (
-    <div className={PANEL_LIST}>
+    <div className="space-y-5">
       <Size
         label={t.maxUploadLabel}
         note={t.maxUploadHint}
