@@ -108,7 +108,11 @@ const BUDGET: Record<string, number> = {
   // width, and an actions row so the Turnstile widget and the submit stop being two objects
   // stacked with dead space between them. 200 bytes for the section reading as part of the
   // site rather than as something pasted into it.
-  'post.js': 11_200,
+  // Raised to 12_100 for book mode's A−/A+: the reader's own hand on the type size,
+  // persisted per browser, asked for by the owner on 2026-08-21 ("không chỉnh được kích
+  // thước chữ"). 817 bytes raw, ~250 gzipped, and the alternative was a reader stuck at
+  // whatever default the sheet ships.
+  'post.js': 12_100,
   // /login only, and NOT loaded with core.js: the sign-in page carries no beacon, no
   // search overlay and no listing controls, so it pays for the reveal toggle, the caps-lock
   // warning and the one-time-code paste, and nothing else.

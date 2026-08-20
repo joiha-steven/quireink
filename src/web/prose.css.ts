@@ -128,7 +128,7 @@ export const PROSE_CSS = `
    full-width rule stays for the STRUCTURAL separations, which are a different job: the
    footnote rule, the top of the comment thread, the pager. Those are edges of the
    document; this is a pause inside it.
-   Width in em, so it grows with the reader's type and with book mode's 1.15. */
+   Width in em, so it grows with the reader's type and with book mode's scale. */
 .prose hr:not(.fn-rule){width:6em;margin:2.6em auto;border-top:1px solid var(--c-rule)}
 /* A TABLE THAT WILL NOT FIT SCROLLS THE ARTICLE, NEVER THE PAGE.
    Measured at 390px: a five-column table is 484px at its narrowest, and a table cannot be

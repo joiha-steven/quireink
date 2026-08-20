@@ -256,6 +256,8 @@ export async function renderArticle(slug: string): Promise<string | null> {
       bookModePrev: s.bookModePrev,
       bookModeNext: s.bookModeNext,
       bookModeClose: s.bookModeClose,
+      bookModeSmaller: s.bookModeSmaller,
+      bookModeLarger: s.bookModeLarger,
     },
     scripts: scriptTag('core') + scriptTag('post'),
   }

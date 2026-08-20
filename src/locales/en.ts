@@ -35,6 +35,8 @@ const en = {
   bookModeClose: 'Close',
   bookModePrev: 'Previous page',
   bookModeNext: 'Next page',
+  bookModeSmaller: 'Smaller text',
+  bookModeLarger: 'Larger text',
   search: 'Search',
   searchHint: 'Type to search posts.',
   searchEmpty: 'No matching posts found.',

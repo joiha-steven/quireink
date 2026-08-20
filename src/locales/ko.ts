@@ -35,6 +35,8 @@ const ko = {
   bookModeClose: '닫기',
   bookModePrev: '이전 페이지',
   bookModeNext: '다음 페이지',
+  bookModeSmaller: '글자 작게',
+  bookModeLarger: '글자 크게',
   search: '검색',
   searchHint: '키워드를 입력해 게시물을 검색하세요.',
   searchEmpty: '일치하는 게시물이 없습니다.',

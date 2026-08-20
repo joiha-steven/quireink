@@ -22,7 +22,7 @@
   `.prose` = WYSIWYG). `smoothing` adds `-webkit-font-smoothing` on `body`.
 - **`--type-scale` lives inside the variable, not at the call site.** Each `--fs-<role>` is
   emitted as `calc(<size>rem * var(--type-scale, 1))`, so any subtree that overrides
-  `--type-scale` (book mode sets 1.15) scales EVERYTHING inside it. It used to be spelled
+  `--type-scale` (book mode sets 1.05, and its A−/A+ lets the reader override) scales EVERYTHING inside it. It used to be spelled
   per rule, so a rule either had it or did not: book mode enlarged the prose and left
   figcaptions, tags and the comment thread behind.
 - **`small` is most of the page.** Dates, tags, footnotes, the footer, the related list and

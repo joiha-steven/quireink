@@ -66,7 +66,7 @@ describe('the public sheet, minified', () => {
     for (const fragment of [
       'box-sizing:border-box',
       'font-family:var(--font-sans)',
-      '--type-scale:1.15',
+      '--type-scale:1.05',
       'animation-timeline:scroll(root block)',
       '@media (hover:none)',
       'min-width:0',
