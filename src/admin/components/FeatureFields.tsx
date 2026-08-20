@@ -54,6 +54,8 @@ export function PostFeatureFields({ features, onChange, relatedCount, onRelatedC
     { key: 'progressBar', label: t.featProgress, desc: t.featProgressDesc },
     { key: 'deck', label: t.featDeck, desc: t.featDeckDesc },
     { key: 'categoryLabel', label: t.featCategoryLabel, desc: t.featCategoryLabelDesc },
+    { key: 'penUnderline', label: t.featPenUnderline, desc: t.featPenUnderlineDesc },
+    { key: 'penRing', label: t.featPenRing, desc: t.featPenRingDesc },
     { key: 'bookText', label: t.featBookText, desc: t.featBookTextDesc },
     { key: 'bookMode', label: t.featBookMode, desc: t.featBookModeDesc },
   ]

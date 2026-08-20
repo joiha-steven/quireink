@@ -19,6 +19,7 @@ import { Markdown } from 'tiptap-markdown'
 import { CaptionedImage } from './CaptionedImage'
 import { Video } from './VideoNode'
 import { Ink } from './InkMark'
+import { PenRing, PenUnderline } from './PenMarks'
 import { MathInline, MathBlock } from './MathNode'
 
 /**
@@ -30,12 +31,16 @@ export function editorExtensions(placeholder: string): Extensions {
     // StarterKit already ships `link` and `underline` in Tiptap 3. Registering them again
     // beside it made Tiptap log "Duplicate extension names found: ['link','underline']"
     // on every editor mount, which is its way of saying two schema entries are fighting
-    // over the same mark. `link` is configured through StarterKit rather than added, and
-    // `underline` needs nothing said about it at all.
-    StarterKit.configure({ link: { openOnClick: false } }),
+    // over the same mark. `link` is configured through StarterKit rather than added —
+    // and `underline` is now switched OFF, because StarterKit's underline cannot reach
+    // Markdown: pressing U applied a mark the serializer then dropped on save, silently.
+    // `PenMarks.ts` supplies the replacement under the same name and command.
+    StarterKit.configure({ link: { openOnClick: false }, underline: false }),
     CaptionedImage,
     Video,
     Ink, // the pen: `==text==` inks as you type, and saves back as `==text==` (InkMark.ts)
+    PenUnderline, // `++text++`, and the U button that used to lose its work (PenMarks.ts)
+    PenRing, // `@@word@@`, the ballpoint ring (PenMarks.ts)
     // Maths. NOT optional decoration: without these two the serializer doubles every
     // backslash in a formula and deletes `\(…\)` outright on save (MathNode.tsx).
     MathInline,

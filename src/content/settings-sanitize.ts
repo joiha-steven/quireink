@@ -2,7 +2,7 @@
 // back-compat shims). No DB, no Blob, no React. settings.ts depends on this ONE
 // WAY (settings -> settings-sanitize, never back) for its getSettings/saveSettings merge.
 
-import type { BackupSettings, CacheSettings, CommentSettings, FeatureSettings, FrontSettings, FrontStrip, GallerySettings, HighlightSettings, HomeSettings, McpSettings, MenuItem, MotionSettings, SeoSettings, ThemeColors, ThemeSettings } from '@/types'
+import type { BackupSettings, CacheSettings, CommentSettings, FeatureSettings, FrontSettings, FrontStrip, GallerySettings, HomeSettings, McpSettings, MenuItem, MotionSettings, SeoSettings, ThemeColors, ThemeSettings } from '@/types'
 import { DEFAULT_PRESET_ID, isPresetId, defaultThemes, THEME_PRESETS } from '@/content/themes'
 
 // Keep only well-formed menu items (label + href both present).
@@ -113,6 +113,8 @@ export function sanitizeFeatures(input: unknown, fallback: FeatureSettings): Fea
     categoryLabel: bool(o.categoryLabel, fallback.categoryLabel),
     deck: bool(o.deck, fallback.deck),
     bookText: bool(o.bookText, fallback.bookText),
+    penUnderline: bool(o.penUnderline, fallback.penUnderline),
+    penRing: bool(o.penRing, fallback.penRing),
     bookMode: bool(o.bookMode, fallback.bookMode),
     infiniteScroll: bool(o.infiniteScroll, fallback.infiniteScroll),
     gridView: bool(o.gridView, fallback.gridView),
@@ -266,21 +268,6 @@ export function sanitizeGallery(input: unknown, fallback: GallerySettings): Gall
     ratio: ratio ?? fallback.ratio,
     captions: bool(o.captions, fallback.captions),
   }
-}
-
-/** The three strokes. Must match the `--ink-*` blocks in `web/ink.css.ts`. */
-export const HIGHLIGHT_STROKES = ['marker', 'swipe', 'double'] as const
-
-export const DEFAULT_HIGHLIGHT: HighlightSettings = {
-  // The full sweep. It is the only one of the three that never clips a Vietnamese stacked
-  // diacritic, so it is what a site gets before anybody opens the setting.
-  stroke: 'marker',
-}
-
-export function sanitizeHighlight(input: unknown, fallback: HighlightSettings): HighlightSettings {
-  const o = (input ?? {}) as Partial<HighlightSettings>
-  const stroke = HIGHLIGHT_STROKES.find((s) => s === o.stroke)
-  return { stroke: stroke ?? fallback.stroke }
 }
 
 export function sanitizeCache(input: unknown, fallback: CacheSettings): CacheSettings {

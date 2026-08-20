@@ -228,6 +228,7 @@ export type AdminStrings = {
   tbBold: string
   tbItalic: string
   tbUnderline: string
+  tbRing: string
   tbStrike: string
   tbHighlight: string
   tbCodeInline: string
@@ -268,12 +269,6 @@ export type AdminStrings = {
   galleryCaptions: string
   galleryCaptionsHint: string
   // Settings -> Layout -> Highlighter
-  cardHighlight: string
-  highlightStroke: string
-  highlightStrokeHint: string
-  strokeMarker: string
-  strokeSwipe: string
-  strokeDouble: string
   captionPlaceholder: string
   // post settings panel
   slug: string
@@ -632,6 +627,10 @@ export type AdminStrings = {
   featCategoryLabelDesc: string
   featDeck: string
   featDeckDesc: string
+  featPenUnderline: string
+  featPenUnderlineDesc: string
+  featPenRing: string
+  featPenRingDesc: string
   featBookText: string
   featBookTextDesc: string
   featBookMode: string

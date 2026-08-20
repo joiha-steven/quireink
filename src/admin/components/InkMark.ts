@@ -93,7 +93,9 @@ export const Ink = Mark.create({
   },
 
   parseHTML() {
-    return [{ tag: 'mark' }]
+    // `:not([data-form])`, so a ring (`<mark data-form="o">`, PenMarks.ts) never parses as
+    // a highlight — its own rule has the higher priority, and this one refuses the match.
+    return [{ tag: 'mark:not([data-form])' }]
   },
 
   renderHTML({ HTMLAttributes }) {

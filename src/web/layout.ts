@@ -11,7 +11,7 @@
 //     (`scripts/build-assets.ts`), so a listing pays for the beacon and the header alone
 //     and an article adds one more file. Nothing is inlined, and there is no framework.
 
-import type { GallerySettings, HighlightSettings, SiteSettings } from '@/types'
+import type { GallerySettings, SiteSettings, FeatureSettings } from '@/types'
 import { fontPreloadHrefs, fontPresetCss, chromeFontCss, themesToCss } from '@/content/themes'
 import { cjkLangCss } from '@/content/fonts'
 import { typographyToCss, fontToCss } from '@/content/settings'
@@ -60,33 +60,31 @@ const dataAttr = (key: string) => `data-${key.replace(/[A-Z]/g, (c) => `-${c.toL
  * with the ratio because a cropped tile has to fill its cell and an uncropped one must not
  * be stretched into it.
  */
+/**
+ * The pen's line gestures, when an owner turns them OFF. On is the built-in behaviour and
+ * emits nothing — the same no-bytes bargain as the gallery below. The selector lists name
+ * the [data-pen] forms too: the per-variant grip rules in the hashed sheet outrank a bare
+ * `.prose u`, and this inline block only wins the tie because it comes later.
+ */
+function penGesturesCss(f: FeatureSettings): string {
+  const parts = []
+  if (!f.penUnderline) {
+    parts.push('.prose u,.prose u[data-pen]{background-image:none;padding:0;margin:0;'
+      + 'text-decoration:underline;text-decoration-thickness:.05em;text-underline-offset:.16em}')
+  }
+  if (!f.penRing) {
+    parts.push('.prose mark[data-form=o],.prose mark[data-form=o][data-pen]'
+      + '{background-image:none;padding:0;margin:0}')
+  }
+  return parts.join('')
+}
+
 function galleryCss(g: GallerySettings): string {
   const parts = [
     g.ratio ? `--gallery-ratio:${g.ratio.replace('x', '/')};--gallery-w:100%` : '',
     g.captions ? '' : '--gallery-cap:none',
   ].filter(Boolean)
   return parts.length ? `:root{${parts.join(';')}}` : ''
-}
-
-/**
- * The site's highlighter stroke, as the four variables `web/ink.css.ts` reads.
- *
- * `marker` is the built-in behaviour and emits NOTHING, so a site that has never opened the
- * setting adds no bytes and the `var()` fallbacks stay in charge — the same bargain
- * `galleryCss` makes above, and for the same reason: the stroke cannot live in the markup
- * because rendered bodies are cached under a hash of their Markdown.
- *
- * The double pass is the only one that turns on the second layer. Its two bands sit .26em
- * apart, which is close enough that they overlap through the middle of the word and the
- * alpha compounds there on its own — the ink pooling that a real pen leaves on a second
- * stroke. No third colour is involved.
- */
-function highlightCss(h: HighlightSettings): string {
-  if (h.stroke === 'swipe') return `:root{--ink-h0:.8em;--ink-y0:.76em}`
-  if (h.stroke === 'double') {
-    return `:root{--ink-h0:.82em;--ink-y0:.46em;--ink-h2:.88em;--ink-y2:.72em}`
-  }
-  return ''
 }
 
 import { escapeAttr, escapeHtml } from '@/utils'
@@ -125,8 +123,8 @@ export function pageStyles(settings: SiteSettings, extra = ''): string {
     // a hash of its input, so a default that changed the MARKUP would leave every body that
     // was already rendered serving the old shape until something unrelated evicted it.
     galleryCss(settings.gallery),
-    // The highlighter stroke, for the same reason and on the same terms as the gallery above.
-    highlightCss(settings.highlight),
+    // The pen toggles, on the same terms as the gallery above.
+    penGesturesCss(settings.features),
     // Page-specific geometry: the listing's second rail, the feed's gutter timeline. It
     // comes BEFORE the owner's own settings, so custom CSS still has the last word.
     extra,
