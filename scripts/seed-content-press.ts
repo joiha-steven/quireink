@@ -17,7 +17,7 @@ export const PRESS_POSTS: Seed[] = [
     excerpt: 'Two paper systems, one of them measuring a quantity that changes depending on what the paper is for. Here is the conversion table, and the honest reason it can never be exact for every sheet on it.',
     category: 'Printing', tags: ['paper', 'stock', 'workflow'],
     ago: 130,
-    body: `Ask for "80 pound paper" and you have not said anything until you also say what kind. The American basis-weight system weighs a ream of paper *at its basis size*, and the basis size is different for every grade. Text stock is measured at 25 × 38 inches, cover stock at 20 × 26, index at 25.5 × 30.5. So 80 lb text and 80 lb cover are not close: the cover is roughly twice the substance.
+    body: `Ask for "80 pound paper" and ++you have not said anything until you also say what kind++. The American basis-weight system weighs a ream of paper *at its basis size*, and the basis size is different for every grade. Text stock is measured at 25 × 38 inches, cover stock at 20 × 26, index at 25.5 × 30.5. So 80 lb text and 80 lb cover are not close: the cover is roughly twice the substance.
 
 The metric system does not have this problem. ==Grams per square metre is grams per square metre, whatever the sheet is for.==#green
 
@@ -96,7 +96,7 @@ The fix is to shift each page slightly inward as it approaches the centre of the
     excerpt: 'Three words for nearly the same thing, and the small differences that still matter at the bindery. One of them gave this software its name, which seemed worth explaining.',
     category: 'Printing', tags: ['binding', 'vocabulary', 'history'],
     ago: 167,
-    body: `A **quire** is a set of sheets folded together and nested one inside another, ready to be sewn. It is one of the oldest units of bookmaking, older than printing, and it is why the pages of a hardback come in clumps rather than as loose leaves.
+    body: `A @@**quire**@@ is a set of sheets folded together and nested one inside another, ready to be sewn. It is one of the oldest units of bookmaking, ++older than printing++, and it is why the pages of a hardback come in clumps rather than as loose leaves.
 
 A **gathering** is the same object, described from the binder's side of the bench. ==A **signature** is strictly the mark==#green — a letter or number printed in the tail margin of the first page of each gathering, so the person collating them can see at a glance that gathering H follows G. The word slid across to mean the gathering itself, and now all three are used interchangeably by almost everyone.
 
@@ -233,7 +233,7 @@ Four sentences, and they are older than every piece of software involved in prod
 
 ## Four trades, one sheet
 
-Hokusai never touched the finished print. Ukiyo-e was a production line with the labour divided the way a modern press room divides it, and the credit followed the money, not the work:
+++Hokusai never touched the finished print++. Ukiyo-e was a production line with the labour divided the way a modern press room divides it, and the credit followed the money, not the work:
 
 | Trade | Who | Does | Modern equivalent |
 |---|---|---|---|
@@ -242,7 +242,7 @@ Hokusai never touched the finished print. Ukiyo-e was a production line with the
 | Surishi | the printer | inks, registers, pulls each sheet | the press operator |
 | Hanmoto | the publisher | commissions, owns the blocks | the publisher |
 
-The blocks belonged to the publisher, which is why editions kept flowing after an artist's death and why "an original Hokusai print" means an original *impression*, not an original drawing. The drawing was destroyed in the making: it was pasted face-down on the first block and cut through.
+The blocks belonged to the publisher, which is why editions kept flowing after an artist's death and why "an original Hokusai print" means an original @@*impression*@@, not an original drawing. The drawing was destroyed in the making: it was pasted face-down on the first block and cut through.
 
 ## Registration, with two notches
 

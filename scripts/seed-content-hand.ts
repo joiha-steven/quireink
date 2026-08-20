@@ -76,7 +76,7 @@ The table explains the letters' texture better than any stylistic analysis. A qu
     excerpt: 'Nearly every serif on your screen is a frozen record of a flat nib held at an angle. Hold a pen at thirty degrees, write an O, and the thick and thin you get is the same modulation a type designer spends a year redrawing.',
     category: 'Calligraphy', tags: ['pen', 'history', 'letterforms'],
     ago: 63,
-    body: `Pick up a broad-edged pen, hold it at thirty degrees, and write an **o**. The stroke is thick on the down-left and thin on the up-right, and you did nothing to make it so: the nib is a flat edge, and the width of the mark is simply how much of that edge is facing the direction you are travelling.
+    body: `Pick up a broad-edged pen, hold it at thirty degrees, and write an **o**. The stroke is thick on the down-left and thin on the up-right, and you did nothing to make it so: the nib is a flat edge, and ++the width of the mark is simply how much of that edge is facing the direction you are travelling++.
 
 ==That single fact explains most of what a serif typeface looks like.==#yellow The thick and thin of a Garamond, the axis its round letters lean on, the way the join between bowl and stem thins to nothing — none of it is decoration. It is a record of a tool.
 

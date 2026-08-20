@@ -27,13 +27,13 @@ export const PAGE_POSTS: Seed[] = [
     excerpt: 'Medieval scribes placed a text block by drawing nine lines and reading the answer off the diagonals. No measuring, no arithmetic, no taste required — and the proportions that fall out are still the best default anybody has for a page of running text.',
     category: 'Typography', tags: ['margins', 'layout', 'proportion'],
     series: 'Designing a reading page', order: 4, ago: 0,
-    body: `Nobody in a scriptorium measured a margin. They drew diagonals across the spread, marked where the lines crossed, and put the text block's corners on those marks. Van de Graaf reconstructed the method in the 1940s from books nobody had thought to measure, and what he found was that a construction with no numbers in it produces the same proportions over and over.
+    body: `Nobody in a scriptorium measured a margin. They drew diagonals across the spread, marked where the lines crossed, and put the text block's corners on those marks. Van de Graaf reconstructed the method in the 1940s from books nobody had thought to measure, and what he found was that ++a construction with no numbers in it produces the same proportions over and over++.
 
 The result is a text block whose width is exactly two thirds of the page width, sitting on margins in the ratio 2 : 3 : 4 : 6 — inner, top, outer, bottom.
 
 ## Why the inner margin is the small one
 
-Because two facing pages are read as one surface. The inner margins of a spread sit against each other, so half of each adds up to a gutter the same weight as a single outer margin. Set them equal and the spread looks like two pages that happen to be near one another.
+Because two facing pages are read as @@one surface@@. The inner margins of a spread sit against each other, so half of each adds up to a gutter the same weight as a single outer margin. Set them equal and the spread looks like two pages that happen to be near one another.
 
 The bottom margin is the largest, and it is the one people cut first when a page is tight. It is also the one holding the block up: an evenly-margined block appears to sink, because the eye puts the optical centre of a rectangle above its geometric centre.
 
@@ -183,7 +183,7 @@ Read down any column and the trend is monotone. That is the test worth keeping: 
     excerpt: 'Sixty-six characters is not a superstition. It is the width at which the eye still finds the start of the next line without hunting for it, and it decides more about a reading page than the choice of typeface does.',
     category: 'Typography', tags: ['measure', 'reading', 'layout'],
     series: 'Designing a reading page', order: 1, ago: 30,
-    body: `Ask why a column is the width it is and you will usually be told about taste. It is not taste. It is the distance the eye can travel and still find the start of the next line without hunting for it.
+    body: `Ask why a column is the width it is and you will usually be told about taste. It is @@not taste@@. It is the distance the eye can travel and still find the start of the next line without hunting for it.
 
 ==The return sweep is the whole problem.== At the end of a line the eye jumps left and down at the same time, and it lands by estimating. A short column gives it an easy target and a long one gives it a field of near-identical lines to choose from, which is why ==an over-wide measure makes people re-read the line they have just finished==#blue.
 
