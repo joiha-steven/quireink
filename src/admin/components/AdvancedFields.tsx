@@ -55,7 +55,14 @@ export function AdvancedFields({
       />
       {/* The floor is 15s and it is enforced by the settings sanitiser, not only here: the
           editor also flushes on hide, on leave and on unmount, and those are what make a long
-          interval safe. A very short one would make the interval the whole safety net again. */}
+          interval safe. A very short one would make the interval the whole safety net again.
+
+          WRAPPED IN THE ROW'S OWN PADDING, and that is the fix rather than decoration. Every
+          other child of PANEL_LIST is a ToggleRow, which carries `p-4` inside its Setting;
+          a bare Input has none, so this row alone sat flush against the divider and the
+          panel edge while the four above it were inset — reported as "chỗ này bị bể". The
+          divider draws between children, so the padding has to be on the child. */}
+      <div className="p-4">
       <Input
         label={t.autosaveLabel}
         note={t.autosaveHint}
@@ -69,6 +76,7 @@ export function AdvancedFields({
           if (Number.isFinite(n)) onAutosaveSeconds(Math.min(600, Math.max(15, Math.round(n))))
         }}
       />
+      </div>
     </div>
   )
 }

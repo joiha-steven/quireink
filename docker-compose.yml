@@ -43,21 +43,28 @@ services:
       - quire-data:/var/lib/quire/data
       - quire-uploads:/var/lib/quire/uploads
 
-    # `/api/health` checks the two things that actually stop this app serving: the database
-    # answers, and the upload store is writable. It reports 503 rather than failing, which
-    # is the whole point of probing it. curl is not in the image and does not need to be.
-    healthcheck:
-      test:
-        - CMD
-        - bun
-        - --eval
-        # Quoted, and it has to be: the `? 0 : 1` carries a colon-space, which YAML reads as
-        # a mapping inside a plain scalar and rejects with "must be a string".
-        - "process.exit((await fetch('http://127.0.0.1:3000/api/health')).ok ? 0 : 1)"
-      interval: 30s
-      timeout: 5s
-      start_period: 20s
-      retries: 3
+    # The healthcheck is INHERITED from the image (see HEALTHCHECK in the Dockerfile), so
+    # `docker run` gets the same probe and there is one definition rather than two that
+    # drift. Overriding it here is a deliberate act, not a default.
+
+    # Logs are capped, because the default json-file driver is not. A self-hosted blog runs
+    # for years on a small disk, and an uncapped access log is a slow way to fill it: this
+    # keeps at most 30 MB per container and drops the oldest first.
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+    # No new privileges: nothing in this image needs setuid, and saying so costs nothing.
+    # NOTE what is deliberately NOT here: `read_only: true`. The backup route stages the
+    # archive in the system temp directory (`src/server/backup.ts` uses `os.tmpdir()`), so a
+    # read-only root needs a tmpfs at /tmp — and a tmpfs is RAM, which turns a backup of a
+    # site with a few hundred MB of uploads into an OOM on exactly the small box this
+    # section is written for. Hardening that trades the backup button for a tidier flag is
+    # the wrong trade.
+    security_opt:
+      - no-new-privileges:true
 
 volumes:
   quire-data:

@@ -52,9 +52,11 @@ type Props = {
   /** The chosen reading font, so Reset restores ITS setup and not another font's. */
   fontPreset: string
   onChange: (typography: TypographySettings) => void
+  /** Filled with the reset handler, so the CARD HEADER can carry the button (see below). */
+  resetRef?: { current: (() => void) | null }
 }
 
-export function TypographyFields({ typography, fontPreset, onChange }: Props) {
+export function TypographyFields({ typography, fontPreset, onChange, resetRef }: Props) {
   const t = useAdminT()
   const setStyle = (role: TypeRole, patch: Partial<TypeStyle>) =>
     onChange({ ...typography, roles: { ...typography.roles, [role]: { ...typography.roles[role], ...patch } } })
@@ -69,19 +71,20 @@ export function TypographyFields({ typography, fontPreset, onChange }: Props) {
   // unrecognised id still resets to something sane.
   const resetAll = () =>
     onChange({ ...typography, roles: structuredClone(getFontPreset(fontPreset).typography.roles) })
+  // The card header owns the button, so the handler has to travel up. A ref rather than a
+  // callback prop: the parent renders the button and only needs to CALL this, and lifting
+  // the reset itself would move `fontPreset` and `structuredClone` up with it.
+  if (resetRef) resetRef.current = resetAll
 
   return (
     <div className="space-y-4">
-      <div className="flex items-start justify-between gap-3">
-        <p className={`${READING} text-sm leading-6 text-neutral-500 dark:text-neutral-400`}>{t.typographyHint}</p>
-        <button
-          type="button"
-          onClick={resetAll}
-          className="shrink-0 text-xs text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
-        >
-          {t.resetDefault}
-        </button>
-      </div>
+      {/* The note runs the full width, and Reset is NOT beside it. It used to be, and at
+          this column width the note wrapped to two lines while the button floated against
+          its first — so the one control on the card sat on no line of its own and lined up
+          with nothing. The Light mode and Dark mode panels put Reset on the TITLE row; this
+          card now does the same through `SettingsView`'s Card actions slot, so all three
+          reset buttons on the tab sit on the same rail. */}
+      <p className={`${READING} text-sm leading-6 text-neutral-500 dark:text-neutral-400`}>{t.typographyHint}</p>
 
       <div className="overflow-x-auto">
         <table className="w-full border-separate border-spacing-y-1 text-sm">
