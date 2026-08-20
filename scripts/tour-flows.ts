@@ -176,6 +176,17 @@ export function registerFlows({ flow, expect, atWidth }: Tour): void {
       if (n < 2) return 'one-page mode measured ' + n + ' spread(s) for a 700-word article'
       if (getComputedStyle(d.querySelector('.book-title')).display !== 'none')
         return 'the running head is on at 375px and collides with the size buttons'
+      if (getComputedStyle(d.querySelector('.book-next')).display !== 'none')
+        return 'the hover arrows are still on at 375px'
+      // The phone page is the glass minus 20px a side, not the desktop's 48.
+      const col = parseFloat(getComputedStyle(d.querySelector('.book-flow')).columnWidth)
+      if (col < innerWidth - 44) return 'the page is ' + col + 'px on a ' + innerWidth + 'px phone'
+      // A tap in the right third turns the page.
+      d.querySelector('.book-viewport').dispatchEvent(
+        new MouseEvent('click', { clientX: Math.round(innerWidth * 0.85), bubbles: true }))
+      await new Promise((r) => setTimeout(r, 350))
+      if (!d.querySelector('.book-count').textContent.startsWith('2 /'))
+        return 'a right-third tap did not turn the page'
       d.querySelector('.book-x').click()
       return 'ok (' + n + ' pages)'
     })()`, 400))

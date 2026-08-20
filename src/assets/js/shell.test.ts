@@ -130,9 +130,10 @@ describe('book mode', () => {
     window.innerWidth = 390
     dispatchEvent(new Event('resize'))
     expect(viewport.dataset.pages).toBe('1')
-    // The whole footprint, not half of it: 390 less the outer margin on both sides.
+    // The whole footprint, not half of it: 390 less the PHONE margin on both sides — 20px,
+    // not the desktop's 48, which took a quarter of a 375px screen off the words.
     expect(overlay.querySelector<HTMLElement>('.book-flow')!.style
-      .getPropertyValue('--book-col-w')).toBe('294px')
+      .getPropertyValue('--book-col-w')).toBe('350px')
 
     window.innerWidth = 1200
     dispatchEvent(new Event('resize'))

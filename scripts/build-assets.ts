@@ -118,7 +118,9 @@ const BUDGET: Record<string, number> = {
   // And to 12_800 for the Chrome 148 paging fix underneath it all: the turn is a transform
   // and the flow is sized to hold its columns, because the engine stopped scrolling to —
   // and then stopped painting — a multicol's overflow columns (book.ts has the numbers).
-  'post.js': 12_800,
+  // And to 13_250 for the phone's page-turn gestures: swipe and outer-third taps, because
+  // the arrows retire under 640px where they overlaid the margin the phone got back.
+  'post.js': 13_250,
   // /login only, and NOT loaded with core.js: the sign-in page carries no beacon, no
   // search overlay and no listing controls, so it pays for the reveal toggle, the caps-lock
   // warning and the one-time-code paste, and nothing else.

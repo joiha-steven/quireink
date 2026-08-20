@@ -240,6 +240,10 @@ body:has(.book-overlay[open]){overflow:hidden}
 .book-arrow:hover{color:var(--c-heading)}
 .book-prev{left:clamp(4px,2vw,28px)}
 .book-next{right:clamp(4px,2vw,28px)}
+/* Under 640px the arrows retire: they are hover furniture sized for a mouse, and they sat
+   on top of a margin the phone no longer spares. The page turns by swipe or by a tap in
+   the outer thirds (book.ts) — the e-reader gestures a thumb already knows. */
+@media (max-width:639px){.book-arrow{display:none}}
 
 /* Comments and sign-up. The FORM is server-rendered markup, so these rules apply with or
    without JavaScript; the comment thread is built by the island, so its rules only ever

@@ -38,8 +38,13 @@ form.search input,form.subscribe input,.search-input,
 
 /* The drawer IS the navigation on a phone, and its rows measured 22px tall, 26px apart.
    padding-block rather than a height: a row is a flex line whose label can wrap to two
-   lines, and a fixed height would clip the second one. */
+   lines, and a fixed height would clip the second one.
+   margin-top goes to ZERO here, and that is the half that was missing: the desktop list's
+   .5rem row gap ADDED to the touch padding, so the drawer aired out to a ~27px void
+   between rows ("cách xa nhau quá") — the padding alone already separates and already
+   carries the tap target, so the phone drops the desktop gap instead of stacking both. */
 .rail-row{padding-block:.6rem}
+.rail li{margin-top:0}
 .rail-tags a{padding-block:.4rem}
 footer.site a{display:inline-block;padding-block:.35rem}
 /* The newspaper's own links, which the three rules above did for every other surface and
