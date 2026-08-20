@@ -53,6 +53,15 @@ footer.site a{display:inline-block;padding-block:.35rem}
    beside the open drawer read as part of the drawer itself, so the tap-to-close area was
    invisible. Faint on purpose: the drawer is a list, not a modal. */
 .rail-scrim{background:rgba(0,0,0,.15)}
+
+/* A floated 30% figure at 390px is a 107px picture with a 35-character column squeezed to
+   20 beside it -- the wrap costs more than the picture earns. On a phone the figure gives
+   up the float and sits centred at a bit over half the measure, still visibly smaller than
+   a full-width plate, which is the part of its meaning a phone can keep.
+   Doubled class selectors, not a bare .img-third: the float rules are two-class strong and
+   source order alone would lose to them. */
+.img-third,.img-left.img-third,.img-right.img-third{float:none;width:60%;
+  margin:calc(var(--sp) * 2) auto}
 }
 
 /* Copy sat behind pre:hover, and a touch screen never hovers: the button existed on a phone

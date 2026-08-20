@@ -37,6 +37,7 @@ import { seedComments } from './seed-comments'
 import { seedAdmin } from './seed-admin'
 import { seedActivity } from './seed-activity'
 import { seedMedia, seedFiles } from './seed-media'
+import { seedArt } from './seed-art'
 
 const DIR = process.argv[2] ?? './.tmp/drive-data'
 const KIND = (process.argv[3] ?? 'text') as 'image' | 'text'
@@ -101,7 +102,7 @@ await savePage({
 })
 
 const comments = await seedComments(postDate)
-const media = await seedMedia()
+const media = (await seedMedia()) + (await seedArt())
 const files = await seedFiles()
 
 const s = await getSettings()
@@ -118,6 +119,10 @@ await saveSettings({
     { label: 'Calligraphy', href: '/category/calligraphy' },
     { label: 'Printing', href: '/category/printing' },
     { label: 'Colophon', href: '/colophon' },
+    // The way back out. The demo is reached from quireink.com and was a dead end once you
+    // were in it: every menu entry above stays inside the fixture, so a visitor who wanted
+    // the product page back had the browser's history button and nothing else.
+    { label: 'quireink.com', href: 'https://quireink.com' },
   ],
   // The timeline in the listing's right gutter is part of infinite scroll, and it is what
   // the spread-out dates above are for: a month marker per group, a sticky year.

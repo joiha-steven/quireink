@@ -275,6 +275,19 @@ figcaption{color:var(--c-meta);font-size:var(--fs-caption);line-height:var(--lh-
 .img-left img{margin-left:0}
 .img-right img{margin-right:0}
 .img-wide{margin-left:calc(-1 * clamp(0px,4vw,4rem));margin-right:calc(-1 * clamp(0px,4vw,4rem))}
+/* A 30% figure (#third). Alone it is a small centred plate; with an align it floats and the
+   words run around it, magazine-fashion — the one fragment that changes how TEXT lays out.
+   The img fills its figure, so the figure's width is the whole geometry. Floats exist
+   nowhere else in the prose, so headings and the footnote rule clear them: a section
+   boundary should never wrap around a picture from the section before. */
+.img-third{width:30%}
+.img-third img{width:100%}
+.img-center.img-third{margin-left:auto;margin-right:auto}
+.img-left.img-third{float:left;margin:calc(var(--sp) * .35) var(--sp) calc(var(--sp) * .5) 0}
+.img-right.img-third{float:right;margin:calc(var(--sp) * .35) 0 calc(var(--sp) * .5) var(--sp)}
+.img-left.img-third figcaption,.img-right.img-third figcaption{text-align:left}
+.prose h2,.prose h3,.prose .fn-rule{clear:both}
+.prose::after{content:"";display:table;clear:both}
 .gallery{display:grid;gap:calc(var(--sp) * .5);margin:calc(var(--sp) * 2) 0}
 .gallery figure{margin:0}
 .gallery-cols-2{grid-template-columns:repeat(2,1fr)}

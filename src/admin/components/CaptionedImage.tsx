@@ -1,9 +1,10 @@
 // Custom image node: a figure with an editable caption, alignment (left/center/
-// right), a "wide" toggle (noses right into the gutter on wide screens; column
-// width in between; every image is full-bleed on phones), and a "grid" toggle (gallery
-// item — consecutive #grid images render as a CSS grid, see PostContent). Placement
-// is encoded as a fragment on the src (e.g. ![caption](url#right-wide) or url#grid)
-// and the caption lives in the alt, so the node still serializes to plain Markdown.
+// right), a size (column width, 30% — which floats when aligned so the text runs
+// around it — or "wide", nosing into the gutter on wide screens), and a "grid"
+// toggle (gallery item — consecutive #grid images render as a CSS grid, see
+// PostContent). Placement is encoded as a fragment on the src (e.g.
+// ![caption](url#right-wide) or url#grid) and the caption lives in the alt, so
+// the node still serializes to plain Markdown.
 //
 // A gallery has two options of its own, on the same fragment: a ratio that crops every
 // tile to one shape (`#grid-1x1`), and `nocap`, which hides the captions. Both act on the
@@ -31,7 +32,12 @@ const CAPTIONS: Caption[] = ['', 'cap', 'nocap']
 // Ratios read the same in every language, so they are not translated. The words are.
 const RATIO_LABEL: Record<string, string> = { '1x1': '1:1', '3x2': '3:2', '4x3': '4:3' }
 
-type Frag = { clean: string; align: Align; wide: boolean; grid: boolean } & GridOpts
+// Column is the unmarked default; `third` (30%, floats when aligned) and `wide` are the
+// other two sizes, and they are one three-valued choice rather than two booleans because a
+// figure cannot be 30% of the column and wider than it at once.
+type Size = '' | 'third' | 'wide'
+
+type Frag = { clean: string; align: Align; size: Size; grid: boolean } & GridOpts
 
 function parseFrag(src: string): Frag {
   const [clean, frag = ''] = src.split('#')
@@ -42,18 +48,19 @@ function parseFrag(src: string): Frag {
   return {
     clean,
     align,
-    wide: tokens.includes('wide'),
+    // `wide` first, matching the renderer: a fragment carrying both was widened last.
+    size: tokens.includes('wide') ? 'wide' : tokens.includes('third') ? 'third' : '',
     grid: tokens.includes('grid'),
     ratio: RATIOS.find((r) => r !== '' && tokens.includes(r)) ?? '',
     caption: CAPTIONS.find((c) => c !== '' && tokens.includes(c)) ?? '',
   }
 }
 
-// `grid` is exclusive — a gallery item ignores align/wide (the grid lays it out).
+// `grid` is exclusive — a gallery item ignores align/size (the grid lays it out).
 function buildSrc(clean: string, f: Omit<Frag, 'clean'>): string {
   const marker = f.grid
     ? ['grid', f.ratio, f.caption].filter(Boolean).join('-')
-    : [f.align !== 'center' ? f.align : '', f.wide ? 'wide' : ''].filter(Boolean).join('-')
+    : [f.align !== 'center' ? f.align : '', f.size].filter(Boolean).join('-')
   return marker ? `${clean}#${marker}` : clean
 }
 
@@ -99,13 +106,13 @@ function CaptionedImageView({ node, updateAttributes, selected, editor, getPos }
   const t = useAdminT()
   const src = (node.attrs.src as string) || ''
   const caption = (node.attrs.alt as string) || ''
-  const { clean, align, wide, grid, ratio, caption: cap } = parseFrag(src)
+  const { clean, align, size, grid, ratio, caption: cap } = parseFrag(src)
 
-  // Setting align/wide implies leaving grid mode; setGrid toggles membership. All three
+  // Setting align/size implies leaving grid mode; setGrid toggles membership. All three
   // stay per-image: pulling one photo out of a gallery is about that photo.
-  const rest = { align, wide, grid, ratio, caption: cap }
+  const rest = { align, size, grid, ratio, caption: cap }
   const setAlign = (a: Align) => updateAttributes({ src: buildSrc(clean, { ...rest, align: a, grid: false }) })
-  const setWide = (w: boolean) => updateAttributes({ src: buildSrc(clean, { ...rest, wide: w, grid: false }) })
+  const setSize = (s: Size) => updateAttributes({ src: buildSrc(clean, { ...rest, size: s, grid: false }) })
   const setGrid = (g: boolean) => updateAttributes({ src: buildSrc(clean, { ...rest, grid: g }) })
 
   const setGalleryOpts = (opts: Partial<GridOpts>) => {
@@ -113,7 +120,7 @@ function CaptionedImageView({ node, updateAttributes, selected, editor, getPos }
     if (pos !== undefined) applyToGallery(editor, pos, opts)
   }
 
-  const figCls = grid ? 'img-grid' : `img-${align}${wide ? ' img-wide' : ''}`
+  const figCls = grid ? 'img-grid' : `img-${align}${size ? ` img-${size}` : ''}`
   const group = SEGMENT_TRACK
   const btn = (active: boolean) => tabItemClass(active, 'sm')
 
@@ -173,10 +180,15 @@ function CaptionedImageView({ node, updateAttributes, selected, editor, getPos }
                 </button>
               </div>
               <div className={group}>
-                <button type="button" onClick={() => setWide(false)} className={btn(!wide)}>
+                <button type="button" onClick={() => setSize('')} className={btn(size === '')}>
                   {t.imgSizeColumn}
                 </button>
-                <button type="button" onClick={() => setWide(true)} className={btn(wide)}>
+                {/* Not translated: a percentage reads the same in every language, the same
+                    argument RATIO_LABEL already makes for 1:1 and 3:2. */}
+                <button type="button" onClick={() => setSize('third')} className={btn(size === 'third')}>
+                  30%
+                </button>
+                <button type="button" onClick={() => setSize('wide')} className={btn(size === 'wide')}>
                   {t.imgSizeWide}
                 </button>
               </div>

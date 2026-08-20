@@ -123,6 +123,19 @@ describe('markdown render — structure', () => {
     expect(html).toContain('<figcaption>A small cat</figcaption>')
   })
 
+  it('sizes a #third image at 30% and keeps the align class beside it', async () => {
+    const centred = await render('![a](media/a.jpg#third)')
+    expect(centred).toContain('<figure class="img-center img-third">')
+    const floated = await render('![a](media/a.jpg#left-third)')
+    expect(floated).toContain('<figure class="img-left img-third">')
+  })
+
+  it('lets wide win when a fragment carries both sizes', async () => {
+    const html = await render('![a](media/a.jpg#right-third-wide)')
+    expect(html).toContain('<figure class="img-right img-wide">')
+    expect(html).not.toContain('img-third')
+  })
+
   it('groups 2+ consecutive #grid images into one .gallery, cols by count', async () => {
     const html = await render('![a](media/a.jpg#grid)\n\n![b](media/b.jpg#grid)\n\n![c](media/c.jpg#grid)')
     // exactly one gallery wrapper, 3 images -> 3 columns, holding all three figures

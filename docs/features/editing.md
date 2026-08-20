@@ -41,7 +41,10 @@
   typewriter feedback makes the editor standard and silent.
 - **Images and galleries** (`CaptionedImage.tsx`): placement rides on the src fragment
   (a Markdown image whose src ends `#right-wide`) and the caption is the alt, so the node still serializes to plain
-  Markdown. Two or more consecutive `#grid` images become one `.gallery`, column count by count
+  Markdown. Size is a three-way choice: column width (unmarked), `#third` (30% of the
+  column; combined with `left`/`right` the figure floats and the text runs around it —
+  the one fragment that changes how prose lays out), or `#wide`. `wide` beats `third`
+  when a fragment somehow carries both. Two or more consecutive `#grid` images become one `.gallery`, column count by count
   (`galleryCols`). A gallery has two options of its own, also on the fragment: a **ratio**
   (`asis`, `1x1`, `3x2`, `4x3`) which crops every tile with `object-fit:cover` so rows line up, and
   **captions** (`cap` / `nocap`), which show or hide them with CSS. The alt is
