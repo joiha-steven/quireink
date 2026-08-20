@@ -90,10 +90,12 @@ describe('book mode', () => {
   it('turns pages with the arrow keys and counts them', () => {
     page(article, LABELS)
     const overlay = open()
-    // The horizontal scroller is the VIEWPORT now, not the stage: the stage holds the two
-    // side arrows beside it, so it is no longer the box that clips the columns.
-    const viewport = overlay.querySelector<HTMLElement>('.book-viewport')!
-    geometry(viewport, 1000, 4000)
+    // The measured box is the FLOW itself now — the multicol element. Chrome 148 stopped
+    // reporting a multicol's overflow columns on any ancestor (and stopped painting them),
+    // so the island reads flow.scrollWidth and turns pages by transform; the viewport is
+    // only the clip. The stub therefore supplies the flow's geometry.
+    const flowEl = overlay.querySelector<HTMLElement>('.book-flow')!
+    geometry(flowEl, 1000, 4000)
 
     dispatchEvent(new Event('resize'))
     expect(overlay.querySelector('.book-count')!.textContent).toBe('1 / 4')

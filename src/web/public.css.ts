@@ -134,8 +134,10 @@ header.site .logo{display:block;height:auto}
 header.site .logo-dark{display:none}
 html.dark header.site .title:has(.logo-dark) .logo:not(.logo-dark){display:none}
 html.dark header.site .logo-dark{display:block}
+/* Tight to the wordmark: the two are one lockup, and at .75rem the tagline floated far
+   enough to read as a separate element ("slogan với logo xa quá"). */
 header.site .tagline{color:var(--c-meta);font-size:var(--fs-small);
-  line-height:var(--lh-small);letter-spacing:var(--ls-small);margin:.75rem 0 0}
+  line-height:var(--lh-small);letter-spacing:var(--ls-small);margin:.35rem 0 0}
 
 /* The reading face for .prose is in prose.css.ts, with the rest of the .prose rules, so the
    editor gets it too. There is deliberately no "article h1" rule: an article IS also the
