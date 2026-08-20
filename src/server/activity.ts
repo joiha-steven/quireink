@@ -25,8 +25,10 @@ export type ActivityAction =
   | 'import.wordpress'
   // URL redirects (Admin → Settings → SEO).
   | 'redirect.save' | 'redirect.delete'
-  // Newsletter (Admin → Settings → Integrations).
-  | 'subscriber.delete' | 'mail.config' | 'mail.test' | 'newsletter.send'
+  // Newsletter (Admin → Settings → Integrations). Delete is soft; restore/purge are the
+  // Trash's, like every other kind.
+  | 'subscriber.delete' | 'subscriber.restore' | 'subscriber.purge'
+  | 'mail.config' | 'mail.test' | 'newsletter.send'
   // Backups (Admin → Settings → System). The connect/disconnect pair belonged to the
   // Google Drive integration, which 2.0 does not have (parity exception 1). `export` is the
   // copy the owner takes away; `run` and `delete` are the snapshots kept on the server, by

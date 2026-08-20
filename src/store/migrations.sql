@@ -45,3 +45,12 @@ create trigger if not exists pages_fts_au after update of title, content on page
   insert into pages_fts(rowid, title, content) values (new.rowid, new.title, new.content);
 end;
 insert into pages_fts(rowid, title, content) select rowid, title, content from pages;
+
+-- migration: 003-subscriber-hygiene
+-- Subscribers join Invariant 6: deleting one is a soft delete into the Trash's new
+-- Subscribers tab (`deleted_at`), where it can be restored or purged for real. And the
+-- confirm email gets a per-address cooldown (`confirm_sent_at`): re-posting the same
+-- address used to send another confirmation every time, which is the amplifier in a
+-- subscription-bombing run — the rate limit bounds an IP, this bounds the victim.
+alter table subscribers add column deleted_at integer;
+alter table subscribers add column confirm_sent_at integer;

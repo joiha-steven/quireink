@@ -23,6 +23,7 @@ import { usedMediaKeys } from '@/media/media-usage'
 import { collapseBlob } from '@/media/blob'
 import { restoreFilesBatch, purgeFilesBatch, emptyFilesTrash } from '@/media/files'
 import { restoreComment, purgeComment, emptyCommentsTrash } from '@/comments/comments'
+import { restoreSubscriber, purgeSubscriber, emptySubscribersTrash } from '@/news/subscribers'
 import { getRedirects, saveRedirect, deleteRedirect, RedirectInputError } from '@/server/redirects'
 import { purgeEdge } from '@/server/edge-cache'
 import { clearCache } from '@/server/cache'
@@ -36,13 +37,14 @@ const body = async <T>(c: Context): Promise<Partial<T>> =>
 const strings = (value: unknown): string[] =>
   Array.isArray(value) ? value.filter((x): x is string => typeof x === 'string') : []
 
-type Kind = 'posts' | 'pages' | 'media' | 'files' | 'comments'
+type Kind = 'posts' | 'pages' | 'media' | 'files' | 'comments' | 'subscribers'
 type Action = 'restore' | 'purge' | 'empty'
-const KINDS: Kind[] = ['posts', 'pages', 'media', 'files', 'comments']
+const KINDS: Kind[] = ['posts', 'pages', 'media', 'files', 'comments', 'subscribers']
 const ACTIONS: Action[] = ['restore', 'purge', 'empty']
 // The activity log uses singular per-kind verbs, matching the actions that already exist.
 const SINGULAR: Record<Kind, string> = {
   posts: 'post', pages: 'page', media: 'media', files: 'file', comments: 'comment',
+  subscribers: 'subscriber',
 }
 
 export function siteRoutes() {
@@ -231,6 +233,11 @@ export function siteRoutes() {
         if (action === 'restore') await Promise.all(ids.map((id) => restoreComment(Number(id))))
         else if (action === 'purge') await Promise.all(ids.map((id) => purgeComment(Number(id))))
         else count = await emptyCommentsTrash()
+        break
+      case 'subscribers':
+        if (action === 'restore') await Promise.all(ids.map((id) => restoreSubscriber(Number(id))))
+        else if (action === 'purge') await Promise.all(ids.map((id) => purgeSubscriber(Number(id))))
+        else count = await emptySubscribersTrash()
         break
     }
 

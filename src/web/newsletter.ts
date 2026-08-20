@@ -20,6 +20,11 @@ import { fail, json } from '@/web/api'
 /** Tight, unlike the analytics cap: each attempt can send an email to a stranger. */
 const SIGNUPS_PER_MINUTE = 5
 
+/** A form filled faster than this was filled by nothing with hands. */
+const MIN_FILL_MS = 3_000
+
+type Submission = { email: string; wantsHtml: boolean; honeypot: string; renderedAt: number | null }
+
 /**
  * Read the address from either a JSON body or a form post.
  *
@@ -29,23 +34,45 @@ const SIGNUPS_PER_MINUTE = 5
  * the layout shift — which means a reader without JavaScript now CAN submit it. Answering
  * their submit with a page of JSON would be a defect I created, not one I ported. So the
  * endpoint takes both, and replies in kind.
+ *
+ * Both carry the bot traps: `website` is the honeypot (a field no human can see, so a
+ * value in it is a confession) and `ts` is when the form was rendered.
  */
-async function readEmail(c: Context): Promise<{ email: string; wantsHtml: boolean }> {
+async function readEmail(c: Context): Promise<Submission> {
   const type = c.req.header('content-type') ?? ''
-  if (type.includes('form')) {
-    const form = await c.req.parseBody().catch(() => ({}))
-    const value = (form as Record<string, unknown>).email
-    return { email: typeof value === 'string' ? value : '', wantsHtml: true }
+  const fields = type.includes('form')
+    ? ((await c.req.parseBody().catch(() => ({}))) as Record<string, unknown>)
+    : ((await c.req.json().catch(() => ({}))) as Record<string, unknown>)
+  const ts = typeof fields.ts === 'string' ? Number(fields.ts) : NaN
+  return {
+    email: typeof fields.email === 'string' ? fields.email : '',
+    wantsHtml: type.includes('form'),
+    honeypot: typeof fields.website === 'string' ? fields.website : '',
+    renderedAt: Number.isFinite(ts) && ts > 0 ? ts : null,
   }
-  const body = (await c.req.json().catch(() => ({}))) as { email?: unknown }
-  return { email: typeof body.email === 'string' ? body.email : '', wantsHtml: false }
+}
+
+/**
+ * Is this submission a machine's? Two cheap tells, both silent on failure.
+ *
+ * The honeypot is the load-bearing one: it works whatever cached copy of the page the
+ * form came from. The fill-time check only REJECTS too-fast — a missing or ancient `ts`
+ * passes, because the page cache and the CDN legitimately serve forms rendered minutes
+ * ago, and the enhanced (JavaScript) path never sends one at all. Neither tell is told:
+ * a caught bot gets the same cheerful answer a reader gets, because an error message to
+ * a bot author is a specification of the next bot.
+ */
+function looksLikeBot(sub: Submission): boolean {
+  if (sub.honeypot !== '') return true
+  return sub.renderedAt !== null && Date.now() - sub.renderedAt < MIN_FILL_MS
 }
 
 export async function handleSubscribe(c: Context): Promise<Response> {
   if (rateLimited(`subscribe:${clientIp(c)}`, SIGNUPS_PER_MINUTE)) {
     return fail(c, 'Too many requests', 429)
   }
-  const { email, wantsHtml } = await readEmail(c)
+  const sub = await readEmail(c)
+  const { email, wantsHtml } = sub
 
   /** The answer, as JSON for the island and as a page for a plain form post. */
   const reply = async (status: string, title: string, body = ''): Promise<Response> => {
@@ -54,10 +81,18 @@ export async function handleSubscribe(c: Context): Promise<Response> {
     return resultPage(title, body, resolveSiteUrl(settings), settings.title)
   }
 
+  // A bot gets the success page and nothing else: no row, no email, no hint. Before
+  // `addSubscriber`, so a bombing run cannot even fill the pending list with junk.
+  if (looksLikeBot(sub)) {
+    const settings = await getSettings()
+    return reply('sent', t(settings.language).nlSuccess)
+  }
+
   let token: string
   let alreadyConfirmed: boolean
+  let sendConfirm: boolean
   try {
-    ({ token, alreadyConfirmed } = await addSubscriber(email))
+    ({ token, alreadyConfirmed, sendConfirm } = await addSubscriber(email))
   } catch (error) {
     if (!(error instanceof SubscribeError)) throw error
     if (!wantsHtml) return fail(c, 'invalid_email', 400)
@@ -77,6 +112,13 @@ export async function handleSubscribe(c: Context): Promise<Response> {
   }
 
   const tx = t(settings.language)
+
+  // Cooling down: a confirm email already left for this address within the hour. The row
+  // is pending and the earlier email still works, so there is nothing to send — and the
+  // reply says "sent" anyway, because "try again later" addressed to a bombing script is
+  // instructions, and addressed to a reader is a lie (their link IS in the inbox).
+  if (!sendConfirm) return reply('sent', tx.nlSuccess)
+
   const confirmUrl = `${resolveSiteUrl(settings)}/api/newsletter/confirm?token=${encodeURIComponent(token)}`
   const { subject, html } = confirmEmail(tx, emailBrand(settings), confirmUrl)
 

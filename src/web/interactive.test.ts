@@ -165,6 +165,42 @@ describe('POST /api/subscribe', () => {
     expect(fresh.status).toBe(200)
   })
 
+  it('drops a submission whose honeypot is filled — success face, no row, no email', async () => {
+    const res = await post('/api/subscribe', { email: 'victim@example.com', website: 'https://spam.example' }, '198.51.100.30')
+    expect(res.status).toBe(200) // a caught bot learns nothing
+    expect(db().query<{ n: number }, []>(`select count(*) as n from subscribers`).get()?.n).toBe(0)
+  })
+
+  it('drops a form filled faster than hands can fill one', async () => {
+    const res = await app.request('/api/subscribe', {
+      method: 'POST',
+      body: new URLSearchParams({ email: 'victim@example.com', ts: String(Date.now() - 500) }),
+      headers: { 'content-type': 'application/x-www-form-urlencoded', 'x-forwarded-for': '198.51.100.31' },
+    })
+    expect(res.status).toBe(200)
+    expect(db().query<{ n: number }, []>(`select count(*) as n from subscribers`).get()?.n).toBe(0)
+  })
+
+  it('passes a stale ts: a cached page legitimately serves a form rendered minutes ago', async () => {
+    const res = await app.request('/api/subscribe', {
+      method: 'POST',
+      body: new URLSearchParams({ email: 'reader@example.com', ts: String(Date.now() - 10 * 60_000) }),
+      headers: { 'content-type': 'application/x-www-form-urlencoded', 'x-forwarded-for': '198.51.100.32' },
+    })
+    expect(res.status).toBe(200)
+    expect(db().query<{ n: number }, []>(`select count(*) as n from subscribers`).get()?.n).toBe(1)
+  })
+
+  it('cools down per address: the second sign-up inside the hour sends no second email', async () => {
+    await post('/api/subscribe', { email: 'eager@example.com' }, '198.51.100.33')
+    const res = await post('/api/subscribe', { email: 'eager@example.com' }, '198.51.100.34')
+    // Same cheerful answer — but the JSON status is 'sent', not 'pending_no_mail', even
+    // though no mail server is configured: nothing was attempted, so nothing failed.
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as { data?: { status?: string }; status?: string }
+    expect(body.data?.status ?? body.status).toBe('sent')
+  })
+
   it('answers a plain form post with a page, not with JSON', async () => {
     // The form is server-rendered markup with a method and an action, so a reader without
     // JavaScript can submit it. Answering them with a page of JSON would be a defect this

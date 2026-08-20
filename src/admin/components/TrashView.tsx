@@ -13,7 +13,12 @@ import { EmptyState, NOTE_TEXT, PageHeader, Tabs } from './kit'
 import { SHEET, SHEET_FOOT, SHEET_TOOL, SheetTop } from './sheet'
 import { useAdminT } from './I18nProvider'
 
-type Kind = 'posts' | 'pages' | 'media' | 'files' | 'comments'
+type Kind = 'posts' | 'pages' | 'media' | 'files' | 'comments' | 'subscribers'
+
+// The slice of a subscriber the trash row prints. Status rides along so a restored row's
+// meaning is visible before restoring it: putting back a confirmed reader is not the same
+// act as putting back a bot's pending sign-up.
+type TrashedSubscriber = { id: number; email: string; status: string; deletedAt?: string }
 
 export function TrashView({
   posts,
@@ -21,12 +26,14 @@ export function TrashView({
   media,
   files,
   comments,
+  subscribers,
 }: {
   posts: Post[]
   pages: Page[]
   media: MediaItem[]
   files: FileItem[]
   comments: AdminComment[]
+  subscribers: TrashedSubscriber[]
 }) {
   const t = useAdminT()
   const router = useRouter()
@@ -40,6 +47,7 @@ export function TrashView({
     media: media.length,
     files: files.length,
     comments: comments.length,
+    subscribers: subscribers.length,
   }
   const tabs: { key: Kind; label: string }[] = [
     { key: 'posts', label: `${t.tabPosts} (${counts.posts})` },
@@ -47,6 +55,8 @@ export function TrashView({
     { key: 'media', label: `${t.tabImages} (${counts.media})` },
     { key: 'files', label: `${t.tabFiles} (${counts.files})` },
     { key: 'comments', label: `${t.commentsNavTitle} (${counts.comments})` },
+    // The Newsletter screen's own word for the same people, so the two never disagree.
+    { key: 'subscribers', label: `${t.nlTabPeople} (${counts.subscribers})` },
   ]
 
   async function act(
@@ -126,6 +136,7 @@ export function TrashView({
         {tab === 'media' && <MediaTable rows={media} />}
         {tab === 'files' && <FileTable rows={files} />}
         {tab === 'comments' && <CommentTable rows={comments} />}
+        {tab === 'subscribers' && <SubscriberTable rows={subscribers} />}
         <div className={SHEET_FOOT}>{t.trashHint}</div>
       </div>
     </div>
@@ -212,6 +223,23 @@ export function TrashView({
           <Row key={c.id} kind="comments" id={String(c.id)} deletedAt={c.deletedAt}>
             <p className="line-clamp-1 text-sm text-neutral-800 dark:text-neutral-200">{c.content}</p>
             <p className={NOTE_TEXT}>{c.name} · {c.postTitle}</p>
+          </Row>
+        ))}
+      </Rows>
+    )
+  }
+
+  function SubscriberTable({ rows }: { rows: TrashedSubscriber[] }) {
+    if (rows.length === 0) return <Empty />
+    const statusLabel: Record<string, string> = {
+      confirmed: t.nlConfirmed, pending: t.nlPending, unsubscribed: t.nlUnsub,
+    }
+    return (
+      <Rows>
+        {rows.map((s) => (
+          <Row key={s.id} kind="subscribers" id={String(s.id)} deletedAt={s.deletedAt}>
+            <p className="truncate text-sm font-medium text-neutral-800 dark:text-neutral-200" title={s.email}>{s.email}</p>
+            <p className={NOTE_TEXT}>{statusLabel[s.status] ?? s.status}</p>
           </Row>
         ))}
       </Rows>

@@ -21,10 +21,10 @@
 
 import { savePost, deletePost } from '@/content/posts'
 import { savePage, deletePage } from '@/content/pages'
-import { addSubscriber, confirmSubscriber, unsubscribeByToken } from '@/news/subscribers'
+import { addSubscriber, confirmSubscriber, deleteSubscriber, unsubscribeByToken } from '@/news/subscribers'
 import { logSend, newOpenToken } from '@/news/newsletter-log'
 import { saveRedirect } from '@/server/redirects'
-import { run } from '@/store/query'
+import { one, run } from '@/store/query'
 
 const DAY = 24 * 60 * 60 * 1000
 
@@ -324,7 +324,12 @@ async function seedSubscribers(origin: number, now: number): Promise<number> {
     const { token } = await addSubscriber(email)
     if (status !== 'pending') await confirmSubscriber(token)
     if (status === 'unsubscribed') await unsubscribeByToken(token)
-    const created = joined(seq)
+    // Pending rows must sit INSIDE the 30-day sweep window (`sweepPendingSubscribers`):
+    // stamped on the long span like everyone else, all three were older than the cutoff,
+    // and the demo's first hourly cron tick would quietly delete the only rows showing
+    // what "pending" looks like. Recent is also simply truer — a sign-up that has been
+    // "pending" for seventy days is not pending, it is dead, which is the sweep's point.
+    const created = status === 'pending' ? origin - (ARRIVALS.length - seq) * 3 * DAY : joined(seq)
     // An unsubscribed address DID confirm once, so it keeps its confirmation date; only a
     // pending one has never had it. Blanking it for both made the list say that everyone who
     // left had also never opted in.
@@ -333,6 +338,13 @@ async function seedSubscribers(origin: number, now: number): Promise<number> {
       created, status === 'pending' ? null : created + 2 * 60 * 60 * 1000, email,
     )
   }
+
+  // One row for the Trash's Subscribers tab, through the same soft delete the admin's ✕
+  // performs. A dotted local part, because that is what the tab will mostly hold in real
+  // life: the signature of a subscription-bombing bot, removed by the owner.
+  const bot = await addSubscriber('p.r.ize.draw.88@example.com')
+  const botRow = one<{ id: number }>(`select id from subscribers where token = ?`, bot.token)
+  if (botRow) await deleteSubscriber(botRow.id)
 
   // The issue that went out with the newest post. Two failures in it on purpose: the send log
   // exists to show which addresses bounced, and a log where every row succeeded cannot.

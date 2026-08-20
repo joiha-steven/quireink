@@ -224,6 +224,12 @@ export function subscribeCard(settings: SiteSettings): string {
 <form class="subscribe" method="post" action="/api/subscribe">
 <input type="email" name="email" required aria-label="${escapeAttr(s.nlPlaceholder)}"
  placeholder="${escapeAttr(s.nlPlaceholder)}"><button type="submit">${escapeHtml(s.nlButton)}</button>
+<!-- The two bot traps the endpoint reads. "website" is a honeypot: parked off-screen,
+     unlabelled, skipped by tab and by screen readers — the only thing that fills it is a
+     script filling every field. "ts" is when this form was rendered (a cached copy makes
+     it stale, which only ever lets a submission PASS the fill-time check, never fail). -->
+<input class="hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+<input type="hidden" name="ts" value="${Date.now()}">
 </form>
 <p class="subscribe-status" role="status"></p>
 </section>`

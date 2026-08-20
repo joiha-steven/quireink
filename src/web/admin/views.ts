@@ -12,6 +12,7 @@
 
 import { getActivity } from '@/server/activity'
 import { getAnalytics, getRightNow, getViewTotals } from '@/analytics/summary'
+import { getTrashedSubscribers } from '@/news/subscribers'
 import { getPageAnalytics } from '@/analytics/page'
 import { getAdminComments, countsByPosts, getTrashedComments } from '@/comments/comments'
 import { getCommentEnv } from '@/comments/comment-env'
@@ -179,11 +180,11 @@ export function viewRoutes(): OwnerRouter {
   })
 
   routes.get('/api/admin/view/trash', async (c) => {
-    const [posts, pages, media, files, comments] = await Promise.all([
+    const [posts, pages, media, files, comments, subscribers] = await Promise.all([
       getTrashedPosts(), getTrashedPages(), getTrashedMedia(),
-      getTrashedFiles(), getTrashedComments(),
+      getTrashedFiles(), getTrashedComments(), getTrashedSubscribers(),
     ])
-    return c.json({ data: { posts, pages, media, files, comments } })
+    return c.json({ data: { posts, pages, media, files, comments, subscribers } })
   })
 
   // The shell itself: the language the whole admin is drawn in, and the version the Help

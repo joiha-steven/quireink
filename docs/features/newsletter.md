@@ -9,6 +9,21 @@
   unsubscribed. The confirm/unsubscribe routes return a standalone HTML page (`resultPage`) since
   they open from an email. Re-subscribing reuses the row's token; a confirmed address short-
   circuits (no re-send, no membership leak).
+- **Bot defence, three layers, all silent.** The form carries a honeypot (`website`, parked
+  off-screen; a value in it is a confession) and a render timestamp (`ts`; only a
+  faster-than-hands fill REJECTS — missing or stale passes, because cached pages legitimately
+  serve old forms and the JS path sends none). A caught bot gets the normal success answer:
+  an error message to a bot author is a specification of the next bot. Then a per-ADDRESS
+  cooldown (`confirm_sent_at`, one confirm email an hour) caps what a subscription-bombing
+  run can make this site send to one victim, whatever IPs it uses. Finally the hourly cron
+  sweeps pending rows older than 30 days (`sweepPendingSubscribers`) — hard-deleted with
+  their confirm-log rows, not moved to the Trash, because bot droppings swept into a bin the
+  owner must empty by hand is the same chore relocated.
+- **Deleting a subscriber is a soft delete** (Invariant 6): the ✕ in People sends the row to
+  the Trash's Subscribers tab, restorable with its send history intact. Purge — from the
+  Trash only — is the hard delete, and the moment `deleteSendsFor` clears the address from
+  the send log. A trashed address neither receives broadcasts nor answers its own links;
+  re-subscribing it starts over as a fresh pending row with a fresh token.
 - **SMTP (`lib/mail.ts`, Nodemailer).** Config lives on `integration_keys` (server-only secrets,
   env fallback) — set in Admin → Settings → Integrations (`NewsletterFields`, via `api/mail`).
   `sendMail` never throws: `{ sent:false, error:'smtp_not_configured' }` when unset, so subscribe

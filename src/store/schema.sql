@@ -268,12 +268,14 @@ create table if not exists integration_keys (
 
 -- ----- newsletter -------------------------------------------------------------
 create table if not exists subscribers (
-  id           integer primary key autoincrement,
-  email        text not null unique,
-  status       text not null default 'pending' check (status in ('pending','confirmed','unsubscribed')),
-  token        text not null,                -- secret, serves BOTH confirm and unsubscribe
-  created_at   integer not null,
-  confirmed_at integer
+  id              integer primary key autoincrement,
+  email           text not null unique,
+  status          text not null default 'pending' check (status in ('pending','confirmed','unsubscribed')),
+  token           text not null,             -- secret, serves BOTH confirm and unsubscribe
+  created_at      integer not null,
+  confirmed_at    integer,
+  deleted_at      integer,                   -- Invariant 6: the admin's delete is soft (Trash)
+  confirm_sent_at integer                    -- last confirm email, for the per-address cooldown
 );
 create index if not exists subscribers_status_idx on subscribers (status);
 

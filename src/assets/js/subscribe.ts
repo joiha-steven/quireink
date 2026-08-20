@@ -24,8 +24,12 @@ function enhance(form: HTMLFormElement): void {
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault()
-    const email = new FormData(form).get('email')
+    const data = new FormData(form)
+    const email = data.get('email')
     if (typeof email !== 'string' || !email) return
+    // The honeypot travels on this path too. It is empty for every human — the field has
+    // no box — so forwarding it costs nothing and keeps a JS-running form filler caught.
+    const website = data.get('website')
 
     button.disabled = true
     status.textContent = ''
@@ -33,7 +37,7 @@ function enhance(form: HTMLFormElement): void {
       const res = await fetch('/api/subscribe', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, website: typeof website === 'string' ? website : '' }),
       })
       const data = await payload<{ status?: string }>(res).catch(() => ({} as { status?: string }))
       if (!res.ok) {
@@ -63,7 +67,9 @@ function card(): HTMLElement {
     'aria-label': label('nlPlaceholder'), placeholder: label('nlPlaceholder'),
   })
   const form = el('form', { class: 'subscribe', method: 'post', action: '/api/subscribe' },
-    input, el('button', { type: 'submit' }, label('nlButton')))
+    input, el('button', { type: 'submit' }, label('nlButton')),
+    // The same honeypot the server-rendered card carries (see chrome.ts).
+    el('input', { class: 'hp', type: 'text', name: 'website', tabindex: '-1', autocomplete: 'off', 'aria-hidden': 'true' }))
   const section = el('section', { class: 'subscribe-card' },
     el('h2', {}, label('nlHeading')), form, el('p', { class: 'subscribe-status', role: 'status' }))
   enhance(form)
