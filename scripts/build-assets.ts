@@ -89,7 +89,10 @@ const BUDGET: Record<string, number> = {
   // in the last three minutes. It cost ~240 bytes after the activity listeners were folded
   // into one loop; the alternative — keeping the lie small by clamping server-side only —
   // would have left every new sample as wrong as the old ones, just less so.
-  'core.js': 9_900,
+  // Raised to 10_000 for the owner's default light/dark: a blog can now BE dark or light
+  // rather than mirroring each visitor's laptop, and the island has to read that default
+  // off <body> or it overrules the paint the stylesheet just made. 48 bytes.
+  'core.js': 10_000,
   // /{slug}: back to top, code copy, lightbox, subscribe, comments, the ToC highlight and
   // book mode. Raised from 8,000 when book mode grew its real chrome — a title bar, a page
   // count and side arrows over a clipped viewport, and a spread measured to exactly two

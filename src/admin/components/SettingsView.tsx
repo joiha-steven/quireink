@@ -251,9 +251,11 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
                 themes={s.themes}
                 defaultId={s.themePreset}
                 enabled={s.enabledPalettes}
+                scheme={s.defaultScheme}
                 onChangeThemes={(themes) => update({ themes })}
                 onSetDefault={(themePreset) => update({ themePreset })}
                 onChangeEnabled={(enabledPalettes) => update({ enabledPalettes })}
+                onChangeScheme={(defaultScheme) => update({ defaultScheme })}
               />
             </Card>
             <Card panel title={t.customCss}>

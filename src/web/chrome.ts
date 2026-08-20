@@ -254,6 +254,11 @@ export function chromeLabels(settings: SiteSettings): Record<string, string> {
     gridView: s.gridView,
     listView: s.listView,
     theme: s.theme,
+    // NOT a label: the owner's default light/dark, which `assets/js/theme.ts` falls back to
+    // when the reader has never chosen. It travels with the labels because it is the same
+    // journey — server-rendered onto <body>, read off `dataset` — and a second mechanism
+    // for one attribute would be a second thing to keep in step.
+    defaultScheme: settings.defaultScheme,
     themeLight: s.themeLight,
     themeDark: s.themeDark,
     themeSystem: s.themeSystem,

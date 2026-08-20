@@ -41,6 +41,20 @@ export function getPreset(id: string): ThemePreset {
   return THEME_PRESETS.find((p) => p.id === id) ?? THEME_PRESETS[0]
 }
 
+/**
+ * The three answers to "what does a first-time visitor open in".
+ *
+ * 'system' is the default and follows the reader's OS; the other two state a house style,
+ * which is why the setting exists — a blog can BE a dark blog or a light one, and before
+ * this it could only be whatever each visitor's laptop happened to be set to. A reader's
+ * own pick still wins over any of them: this decides the FIRST paint, not the reader's.
+ */
+export const SCHEMES = ['system', 'light', 'dark'] as const
+export type SchemeDefault = (typeof SCHEMES)[number]
+export function isScheme(v: unknown): v is SchemeDefault {
+  return typeof v === 'string' && (SCHEMES as readonly string[]).includes(v)
+}
+
 export function isPresetId(id: unknown): id is string {
   return typeof id === 'string' && THEME_PRESETS.some((p) => p.id === id)
 }
@@ -135,6 +149,7 @@ export function themesToCss(
   themes: Record<string, ThemeSettings>,
   defaultId: string,
   enabled?: string[],
+  defaultScheme: SchemeDefault = 'system',
 ): string {
   const base = getDefaultTheme(themes, defaultId)
   let css = `:root{color-scheme:light;${vars(base.light)}}.dark{color-scheme:dark;${vars(base.dark)}}`
@@ -148,6 +163,21 @@ export function themesToCss(
   }
   // `:root:not([data-scheme])` is 0,2,0 — above both `:root` and `[data-palette="…"]`, and
   // never in a fight with `.dark`, which only exists once `data-scheme` does.
-  css += `@media (prefers-color-scheme:dark){:root:not([data-scheme]){color-scheme:dark;${vars(base.dark)}}}`
+  //
+  // WHICH first paint depends on the owner's `defaultScheme`, and the mechanism is the same
+  // in all three cases: a rule that applies only until the island writes `data-scheme`.
+  //   'system' — the media query, as before: follow the visitor's OS.
+  //   'dark'   — unconditional: the blog IS dark, so every first-time visitor opens dark
+  //              whatever their laptop is set to.
+  //   'light'  — nothing to emit. `:root` already carries the light palette, and adding a
+  //              rule would only be a louder way to say the same thing.
+  // A reader who has chosen for themselves is unaffected in every case: their choice is in
+  // localStorage, the island writes `data-scheme` from it, and every rule here stops
+  // matching the moment that attribute exists.
+  if (defaultScheme === 'system') {
+    css += `@media (prefers-color-scheme:dark){:root:not([data-scheme]){color-scheme:dark;${vars(base.dark)}}}`
+  } else if (defaultScheme === 'dark') {
+    css += `:root:not([data-scheme]){color-scheme:dark;${vars(base.dark)}}`
+  }
   return css
 }

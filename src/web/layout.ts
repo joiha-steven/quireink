@@ -139,7 +139,8 @@ export function pageStyles(settings: SiteSettings, extra = ''): string {
     chromeFontCss(settings.chromeFont),
     // `enabledPalettes` third: a reader can only ever reach what the owner turned on, so a
     // blog with one palette ships one rather than all six (`content/themes.ts`).
-    themesToCss(settings.themes, settings.themePreset, settings.enabledPalettes),
+    themesToCss(settings.themes, settings.themePreset, settings.enabledPalettes,
+      settings.defaultScheme),
     typographyToCss(settings.typography),
     fontToCss(settings.customFont),
     // Keyed on `data-chrome-font`, which `renderDocument` puts on <html>. It has to come

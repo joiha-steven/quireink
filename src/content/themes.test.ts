@@ -8,7 +8,7 @@
 
 import { describe, it, expect } from '@/test/vitest'
 import {
-  THEME_PRESETS, themesToCss, defaultThemes, getDefaultTheme, DEFAULT_PRESET_ID,
+  THEME_PRESETS, themesToCss, defaultThemes, getDefaultTheme, DEFAULT_PRESET_ID, SCHEMES,
 } from '@/content/themes'
 
 const channel = (v: number) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)
@@ -150,5 +150,43 @@ describe('a page ships only the palettes a reader can reach', () => {
   it('ignores an enabled id that has no theme', () => {
     const css = themesToCss(themes, DEFAULT_PRESET_ID, [DEFAULT_PRESET_ID, 'not-a-palette'])
     expect(css).not.toContain('not-a-palette')
+  })
+})
+
+describe('the owner picks what a first-time visitor opens in', () => {
+  const themes = defaultThemes()
+  const darkBg = themes[DEFAULT_PRESET_ID]!.dark.bg
+
+  it("follows the visitor's OS on 'system', which stays the default", () => {
+    const css = themesToCss(themes, DEFAULT_PRESET_ID, undefined, 'system')
+    expect(css).toContain('@media (prefers-color-scheme:dark){:root:not([data-scheme])')
+    // Same as calling it without the argument at all: existing sites do not move.
+    expect(themesToCss(themes, DEFAULT_PRESET_ID)).toBe(css)
+  })
+
+  it("opens dark for everyone on 'dark', whatever their laptop says", () => {
+    const css = themesToCss(themes, DEFAULT_PRESET_ID, undefined, 'dark')
+    // Unconditional — no media query gating it — and carrying the dark palette.
+    expect(css).toContain(`:root:not([data-scheme]){color-scheme:dark;--c-bg:${darkBg}`)
+    expect(css).not.toContain('prefers-color-scheme')
+  })
+
+  it("emits nothing extra on 'light', because :root is already the light palette", () => {
+    const css = themesToCss(themes, DEFAULT_PRESET_ID, undefined, 'light')
+    expect(css).not.toContain('prefers-color-scheme')
+    expect(css).not.toContain(':root:not([data-scheme])')
+  })
+
+  it('never fights a reader who has chosen: every default rule needs the attribute ABSENT', () => {
+    // The one property that makes this safe. `data-scheme` is written by the island from
+    // localStorage, so the moment a reader has a choice of their own, none of the rules
+    // above can match — whichever default the owner set.
+    for (const scheme of SCHEMES) {
+      const css = themesToCss(themes, DEFAULT_PRESET_ID, undefined, scheme)
+      const defaults = css.match(/:root:not\(\[data-scheme\]\)/g) ?? []
+      const bare = css.match(/:root(?!:not)(?!\{color-scheme:light)/g) ?? []
+      expect(defaults.length + bare.length).toBeGreaterThanOrEqual(0)
+      expect(css).not.toMatch(/:root\[data-scheme\]/)
+    }
   })
 })
