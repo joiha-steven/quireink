@@ -65,6 +65,18 @@
   size while the space below was a fixed multiple of the BODY's, so the two converged as
   the level dropped and inverted at h5 — 22px above, 25px below. Measured after the fix:
   h2 44/14, h3 36/11, h4 32/11, h5 27/11.
+- **Every text family declares a metric-matched fallback** (`'<Family> Fallback'` in
+  `src/render/font-faces.ts`, riding each stack right behind the primary name): the local
+  face the stack falls back to — Georgia for the serifs, Arial for the sans — reshaped with
+  `size-adjust`/`ascent-override`/`descent-override` to the family's own measurements, so
+  the `font-display:swap` moment changes glyphs without moving a line break. Verified in
+  the browser: 1,200 chars at 640px set 17 lines/505px in Literata AND in its fallback,
+  where bare Georgia set 16/475 — the swap used to move a full line. The numbers are
+  measured by `scripts/ops/font-fallback-metrics.py` over a Vietnamese + English sample
+  read glyph-by-glyph from the shipped woff2 subsets (NOT `OS/2.xAvgCharWidth`, which
+  averages bare a–z and misreads diacritics); rerun it when a font file is re-dropped. The
+  monos carry no fallback on purpose: their files only download on pages with code, and a
+  code block's box, not its glyphs, sets that layout. Pinned in `typography.test.ts`.
 - **Inter is self-hosted** (`src/assets/static/fonts/inter-{latin,latin-ext,vietnamese}.woff2`,
   variable, declared via `@font-face` + `unicode-range` in `src/render/font-faces.ts`, which is
   also where `--font-inter` is set). **Never fetch a font from Google** at build or at runtime —
