@@ -41,8 +41,17 @@
  *
  * Content cannot cross a newline: a paragraph break is never inside one formula, and letting
  * it run makes a single unbalanced `$` swallow the rest of the document.
+ *
+ * THE CONTENT GROUP MUST STAY UNAMBIGUOUS. It reads `escape pair OR any char that is not a
+ * backslash`, and excluding the backslash from the char class is load-bearing, not style: with
+ * `[^$\n]` there instead, a backslash could be consumed by either alternative, and on an
+ * unclosed formula the engine tries every partition of every `\x` run before giving up —
+ * exponential, measured at 128ms for `$` + 20 escapes and two seconds for 24 (CodeQL js/redos,
+ * alert #22). One pasted 100-character "formula" would freeze the process, which serves every
+ * page. With the backslash excluded, each position parses exactly one way and the same input
+ * fails in microseconds. `math-syntax.test.ts` holds the clock on this.
  */
-const INLINE_DOLLAR = '\\$(?![\\s$])((?:\\\\.|[^$\\n])+?)(?<!\\s)\\$(?!\\d)'
+const INLINE_DOLLAR = '\\$(?![\\s$])((?:\\\\[^\\n]|[^\\\\$\\n])+?)(?<!\\s)\\$(?!\\d)'
 
 /**
  * `\(…\)` — the unambiguous inline form, and the one to prefer in new writing.
