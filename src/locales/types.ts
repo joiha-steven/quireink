@@ -35,6 +35,8 @@ export type Dict = {
   bookModeClose: string
   bookModePrev: string
   bookModeNext: string
+  bookModeSmaller: string
+  bookModeLarger: string
   search: string
   searchHint: string
   searchEmpty: string

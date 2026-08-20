@@ -35,6 +35,8 @@ const de = {
   bookModeClose: 'Schließen',
   bookModePrev: 'Vorherige Seite',
   bookModeNext: 'Nächste Seite',
+  bookModeSmaller: 'Kleinere Schrift',
+  bookModeLarger: 'Größere Schrift',
   search: 'Suche',
   searchHint: 'Tippen, um Beiträge zu suchen.',
   searchEmpty: 'Keine passenden Beiträge gefunden.',

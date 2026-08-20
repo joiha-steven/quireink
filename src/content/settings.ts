@@ -86,7 +86,7 @@ export const DEFAULT_COMMENTS: CommentSettings = {
 //   #c { --scale:2; --unit:calc(10px * var(--scale,1)) }  ->  calc(10px * 2)   <- the fix
 //
 // Re-declaring the identical text on `.book-overlay` re-substitutes it THERE, where the
-// scale is 1.15. The numbers still live in one place: this function. Pinned by
+// scale is 1.05. The numbers still live in one place: this function. Pinned by
 // `web/typography.test.ts`, and the reasoning is in docs/conventions/type.md.
 function scaledVars(t: TypographySettings): string {
   const roles = TYPE_ROLES.map((r) => {

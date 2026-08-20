@@ -35,6 +35,8 @@ const ja = {
   bookModeClose: '閉じる',
   bookModePrev: '前のページ',
   bookModeNext: '次のページ',
+  bookModeSmaller: '文字を小さく',
+  bookModeLarger: '文字を大きく',
   search: '検索',
   searchHint: 'キーワードを入力して投稿を検索します。',
   searchEmpty: '一致する投稿が見つかりません。',

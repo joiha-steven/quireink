@@ -24,6 +24,16 @@ const COL_GAP = 56 // px between the two facing pages
 const MIN_COLUMN = 300
 const FADE_MS = 130 // the spread-to-spread crossfade; 200 (the frozen tree's) read as sluggish
 
+// The reader's type size, as a multiplier over the owner's roles. The DEFAULT lives in the
+// stylesheet (--type-scale on .book-overlay); this island only writes an INLINE override
+// when the reader has actually touched A−/A+, so an untouched reader always follows
+// whatever default the sheet ships. Persisted per browser: a person who needs larger type
+// needs it on every visit, not once.
+const SCALE_KEY = 'quire-book-scale'
+const SCALE_MIN = 0.85
+const SCALE_MAX = 1.35
+const SCALE_STEP = 0.05
+
 export function book(): void {
   // ALL of them. There are two on an article now — the meta line above the title and the
   // info panel in the right gutter — and exactly one has a box at any width. Binding the
@@ -115,6 +125,29 @@ export function book(): void {
       return b
     }
     const close = el('button', { type: 'button', class: 'book-x', 'aria-label': label('bookModeClose') }, '✕')
+
+    // A− / A+. The current scale is read off the dialog's computed style, so the sheet's
+    // default needs no copy here; a stored preference is applied as an inline override
+    // before first measure, and every change re-measures — a bigger glyph is fewer lines
+    // per column, which is a different page count.
+    const smaller = el('button', { type: 'button', class: 'book-size book-smaller',
+      'aria-label': label('bookModeSmaller') }, 'A−')
+    const larger = el('button', { type: 'button', class: 'book-size book-larger',
+      'aria-label': label('bookModeLarger') }, 'A+')
+    const scaleOf = (): number => {
+      const v = parseFloat(getComputedStyle(next).getPropertyValue('--type-scale'))
+      return Number.isFinite(v) ? v : 1
+    }
+    const setScale = (v: number) => {
+      const clamped = Math.round(Math.min(SCALE_MAX, Math.max(SCALE_MIN, v)) * 100) / 100
+      next.style.setProperty('--type-scale', String(clamped))
+      try { localStorage.setItem(SCALE_KEY, String(clamped)) } catch { /* private mode */ }
+      smaller.disabled = clamped <= SCALE_MIN
+      larger.disabled = clamped >= SCALE_MAX
+      measure()
+    }
+    smaller.addEventListener('click', () => setScale(scaleOf() - SCALE_STEP))
+    larger.addEventListener('click', () => setScale(scaleOf() + SCALE_STEP))
     // The title recedes: regular weight, faint, body size, so the article stays the focus.
     const heading = document.querySelector('article > header h1')?.textContent ?? ''
     const stage = el('div', { class: 'book-stage' },
@@ -127,10 +160,17 @@ export function book(): void {
 
     const next = document.createElement('dialog')
     next.className = 'book-overlay'
+    // A reader who has set their size gets it back before anything is measured.
+    let stored = NaN
+    try { stored = parseFloat(localStorage.getItem(SCALE_KEY) ?? '') } catch { /* private mode */ }
+    if (Number.isFinite(stored)) {
+      next.style.setProperty('--type-scale',
+        String(Math.min(SCALE_MAX, Math.max(SCALE_MIN, stored))))
+    }
     next.append(
       el('div', { class: 'book-chrome book-top' },
         el('span', { class: 'book-title' }, heading),
-        el('span', { class: 'book-topright' }, page, close)),
+        el('span', { class: 'book-topright' }, smaller, larger, page, close)),
       stage,
     )
     close.addEventListener('click', () => next.close())
@@ -147,6 +187,9 @@ export function book(): void {
     dialog = next
     next.showModal()
     document.addEventListener('keydown', onKey)
+    // In the document now, so the computed scale is readable — pin the ends of the range.
+    smaller.disabled = scaleOf() <= SCALE_MIN
+    larger.disabled = scaleOf() >= SCALE_MAX
     measure()
     // Images sit off-screen in later columns, so lazy-loading would never fire for them and
     // the measurement would count a spread that later grows.

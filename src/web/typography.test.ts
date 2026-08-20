@@ -167,12 +167,14 @@ describe('the author\'s own words are set in the reading face', () => {
   })
 })
 
-describe('book mode is one number, and the owner asked for it not to move', () => {
+describe('book mode is one number, and the reader may move it', () => {
   const css = typographyToCss(DEFAULT_TYPOGRAPHY)
 
-  // THE FORMULA, fixed by the owner on 2026-07-29:
-  //   book mode reading text = article reading text x 1.15
-  //   every gap inside the article = the same x 1.15
+  // THE FORMULA, fixed by the owner on 2026-07-29 at x1.15 and revised by the owner on
+  // 2026-08-21 ("mặc định chữ hơi to") to x1.05 — with the A-/A+ control in book.ts an
+  // untouched default is all the number decides now:
+  //   book mode reading text = article reading text x the scale
+  //   every gap inside the article = the same x the scale
   // Type and the space around it are one system. Enlarging the words and leaving the gaps
   // gives crowded reading, not bigger reading.
   it('emits every scale-dependent variable TWICE, on :root and on .book-overlay', () => {
@@ -181,7 +183,7 @@ describe('book mode is one number, and the owner asked for it not to move', () =
     // :root — where it is undefined — and overriding the scale on a descendant changes
     // NOTHING. Book mode rendered at exactly the article's size from the port until this
     // was measured. Re-declaring the identical text on .book-overlay re-substitutes it
-    // there, where the scale is 1.15.
+    // there, where the overlay's scale applies.
     const root = /:root\{(.*?)\}/s.exec(css)?.[1] ?? ''
     const book = /\.book-overlay\{(.*?)\}/s.exec(css)?.[1] ?? ''
     expect(root).not.toBe('')
@@ -202,7 +204,7 @@ describe('book mode is one number, and the owner asked for it not to move', () =
 
   it('spends --sp on the article gaps that used to be frozen in rem', () => {
     // Measured 2026-07-29 in a real browser, book mode against the article: every ratio
-    // 1.15 — body, leading, headings, paragraph gap, pre padding, blockquote indent,
+    // equal to the scale — body, leading, headings, paragraph gap, pre padding, blockquote indent,
     // figure margin, table cell padding. Before, every ratio was 1.000.
     for (const frozen of [
       '.prose li{margin:calc(var(--sp) * .25) 0}',

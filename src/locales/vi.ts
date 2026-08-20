@@ -35,6 +35,8 @@ const vi = {
   bookModeClose: 'Đóng',
   bookModePrev: 'Trang trước',
   bookModeNext: 'Trang sau',
+  bookModeSmaller: 'Chữ nhỏ hơn',
+  bookModeLarger: 'Chữ to hơn',
   search: 'Tìm kiếm',
   searchHint: 'Nhập từ khoá để tìm bài viết.',
   searchEmpty: 'Không tìm thấy bài viết phù hợp.',

@@ -122,34 +122,55 @@ body:has(.book-overlay[open]){overflow:hidden}
      it inherits the mono-chrome correction from body and sets a book serif at -0.05em.
      Measured 2026-07-29: the running head was running -0.7px per character. */
   font-family:var(--font-reading);letter-spacing:var(--ls-body);
-  --book-paper:#f9f4ec;--c-bg:var(--book-paper);
-  /* Reading text runs 15% larger in here. It MULTIPLIES the owner's --fs-* roles, so it
-     tracks the site's own type setting rather than replacing it. */
-  --type-scale:1.15;
-  /* --c-meta measured 3.30:1 on this paper at #8d8676, which fails AA, and it is the running
-     head and the page count: the two things a reader checks WITHOUT stopping to read. #6f6a5c
-     is 4.93:1 on the same stock and still reads as pencil beside the ink. */
+  /* The stock was recut 2026-08-21, on the owner's verdict "cổ điển nhưng không cũ kỹ" —
+     classic, not aged. What read as AGE was two things: a paper pulled hard toward yellow
+     (#f9f4ec) and a grain printed at 0.62 opacity, together doing an impression of foxed
+     stock. The paper is now a quiet warm ivory and the grain drops to a texture you feel
+     more than see; the drop cap, the asterism and the spine — the CLASSIC half — stay. */
+  --book-paper:#faf8f3;--c-bg:var(--book-paper);
+  /* Reading text runs 5% larger in here — it MULTIPLIES the owner's --fs-* roles, so it
+     tracks the site's own type setting rather than replacing it. Was 1.15 from 2026-07-29
+     until the owner revised the verdict on 2026-08-21: "mặc định chữ hơi to". 1.05 keeps
+     the reader a touch more generous than the article without the large-print feel, and
+     the A−/A+ control in the chrome (book.ts) now lets each reader move it themselves —
+     that override rides as an inline style, so this remains only the default. */
+  --type-scale:1.05;
+  /* --c-meta measured 3.30:1 at #8d8676 on the OLD paper, which fails AA, and it is the
+     running head and the page count: the two things a reader checks WITHOUT stopping to
+     read. #6f6a5c re-measured 2026-08-21 on the new stock: 5.08:1, and still reads as
+     pencil beside the ink. */
   --c-text:#211f1a;--c-heading:#16130d;--c-meta:#6f6a5c;--c-link:#2f2c25;
-  --c-accent:#2f2c25;--c-rule:#d8cfbc;color:var(--c-text);
+  --c-accent:#2f2c25;--c-rule:#e2ddd2;color:var(--c-text);
   background-color:var(--book-paper);background-blend-mode:multiply;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.62'/%3E%3C/svg%3E")}
-.book-overlay::backdrop{background:#f9f4ec}
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.24'/%3E%3C/svg%3E")}
+.book-overlay::backdrop{background:#faf8f3}
 .book-chrome{position:relative;display:flex;align-items:center;justify-content:center;
   min-height:56px;padding:0 clamp(16px,4vw,48px)}
 .book-top{border-bottom:1px solid var(--c-rule)}
 .book-title{font-size:var(--fs-small);line-height:var(--lh-small);
   letter-spacing:var(--ls-small);font-weight:400;color:var(--c-meta);text-align:center;
-  /* The page count and the close button sit in an absolutely positioned box on the right,
-     so they take part in no layout and a centred title runs straight under them. On a phone
-     the running head printed over the counter: "owning your ow1 / 5". 220px reserves the
-     widest that box gets, and only bites on a narrow screen. */
-  max-width:min(70%,calc(100% - 220px),720px);
+  /* The page count, the size buttons and the close button sit in an absolutely positioned
+     box on the right, so they take part in no layout and a centred title runs straight
+     under them. On a phone the running head printed over the counter: "owning your ow1 / 5".
+     300px reserves the widest that box now gets (A− A+ joined it), and only bites on a
+     narrow screen. */
+  max-width:min(70%,calc(100% - 300px),720px);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .book-topright{position:absolute;right:clamp(12px,4vw,44px);top:0;height:100%;
   display:flex;align-items:center;gap:16px}
 .book-x{background:none;border:0;cursor:pointer;color:var(--c-meta);font-size:1rem;
   line-height:1;padding:8px}
 .book-x:hover{color:var(--c-heading)}
+/* The reader's own hand on the type: A− / A+, set like the close button so the chrome
+   stays one quiet row. The glyphs are the label; size difference between the two As does
+   the explaining, exactly as on an e-reader. */
+.book-size{background:none;border:0;cursor:pointer;color:var(--c-meta);line-height:1;
+  padding:8px 4px;font-family:var(--font-reading)}
+.book-size:hover{color:var(--c-heading)}
+.book-size[disabled]{opacity:.35;cursor:default}
+.book-size[disabled]:hover{color:var(--c-meta)}
+.book-smaller{font-size:.8em}
+.book-larger{font-size:1.1em}
 .book-count{font-size:var(--fs-caption);line-height:var(--lh-caption);
   letter-spacing:var(--ls-caption);color:var(--c-meta);font-variant-numeric:tabular-nums}
 .book-stage{position:relative;display:flex;align-items:center;justify-content:center;

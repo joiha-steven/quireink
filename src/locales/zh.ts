@@ -35,6 +35,8 @@ const zh = {
   bookModeClose: '关闭',
   bookModePrev: '上一页',
   bookModeNext: '下一页',
+  bookModeSmaller: '缩小文字',
+  bookModeLarger: '放大文字',
   search: '搜索',
   searchHint: '输入关键词搜索文章。',
   searchEmpty: '未找到匹配的文章。',
