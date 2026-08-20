@@ -522,6 +522,8 @@ const zh = {
   analyticsColDepth: '深度',
   analyticsAvgTime: '平均停留时间',
   analyticsBounceRate: '跳出率',
+  analyticsNowReading: '当前 {n} 人在读',
+  analyticsNowQuiet: '当前没有人在读',
   analyticsColTime: '时间',
   analyticsChannels: '渠道',
   analyticsChannelDirect: '直接访问',

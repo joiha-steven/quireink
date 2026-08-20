@@ -61,13 +61,20 @@ describe('dailySeries', () => {
     view({ visitor: 'a' })
     view({ visitor: 'a' })
     view({ visitor: 'b' })
-    expect(dailySeries(RANGES, null)).toEqual([{ day: 'first', views: 3, visitors: 2 }])
+    expect(dailySeries(RANGES, null)).toEqual([
+      { day: 'first', views: 3, visitors: 2 },
+      { day: 'second', views: 0, visitors: 0 },
+    ])
   })
 
-  it('drops a bucket with nothing in it rather than emitting a zero', () => {
+  it('emits an explicit zero for a bucket with nothing in it', () => {
     view({ at: T0 + HOUR })
-    // Documented behaviour, and the surprising half: the chart receives ONE point, not two.
-    expect(dailySeries(RANGES, null)).toEqual([{ day: 'second', views: 1, visitors: 1 }])
+    // The chart receives BOTH points: a quiet hour is a fact, not a gap. The port used to
+    // drop it, and the line drew straight across days that had no readers at all.
+    expect(dailySeries(RANGES, null)).toEqual([
+      { day: 'first', views: 0, visitors: 0 },
+      { day: 'second', views: 1, visitors: 1 },
+    ])
   })
 
   it('treats a bucket as lo-inclusive and hi-exclusive', () => {
@@ -83,7 +90,10 @@ describe('dailySeries', () => {
   it('narrows to one page when given a path', () => {
     view({ path: '/a' })
     view({ path: '/b' })
-    expect(dailySeries(RANGES, '/b')).toEqual([{ day: 'first', views: 1, visitors: 1 }])
+    expect(dailySeries(RANGES, '/b')).toEqual([
+      { day: 'first', views: 1, visitors: 1 },
+      { day: 'second', views: 0, visitors: 0 },
+    ])
   })
 })
 

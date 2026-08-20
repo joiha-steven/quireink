@@ -11,10 +11,13 @@ import { analyticsQuery } from '@/store/query'
 import { nowMs } from '@/store/db'
 import { bucketRanges, type Bucket } from '@/analytics/buckets'
 import {
-  channels, dailySeries, depthBuckets, engagement, facet, topCountries, topReferrers,
-  windowCounts,
+  DWELL_CAP_MS, channels, dailySeries, depthBuckets, engagement, facet, topCountries,
+  topReferrers, windowCounts,
 } from '@/analytics/aggregate'
-import { EMPTY_SUMMARY, reportTz, type AnalyticsSummary, type TopPage } from '@/analytics/types'
+import {
+  EMPTY_RIGHT_NOW, EMPTY_SUMMARY, reportTz,
+  type AnalyticsSummary, type RightNow, type TopPage,
+} from '@/analytics/types'
 
 export type { Bucket }
 
@@ -57,10 +60,12 @@ function topPages(since: number, limit: number): TopPage[] {
   if (pages.length === 0) return []
   const depth = new Map(
     all<{ path: string; depth: number | null; dwell: number | null }>(
-      `select path, avg(depth) as depth, avg(dwell_ms) as dwell from analytics_scroll
+      // The same 30-minute dwell ceiling `engagement()` applies, so a page's row in this
+      // table can never disagree with the drill-down it links to.
+      `select path, avg(depth) as depth, avg(min(dwell_ms, $cap)) as dwell from analytics_scroll
         where created_at >= $since and path in (select value from json_each($paths))
         group by path`,
-      { since, paths: JSON.stringify(pages.map((p) => p.path)) },
+      { since, cap: DWELL_CAP_MS, paths: JSON.stringify(pages.map((p) => p.path)) },
     ).map((r) => [r.path, r]),
   )
   return pages.map((p) => ({
@@ -151,6 +156,41 @@ export async function getDashboardTraffic(days: number, topN = 10): Promise<{
   } catch (error) {
     console.error(`[ERROR] analytics.getDashboardTraffic: ${(error as Error).message}`)
     return { totalViews: 0, uniqueVisitors: 0, avgReadDepth: 0, avgDwellMs: 0, daily: [], topReferrers: [], topCountries: [] }
+  }
+}
+
+/**
+ * Who is reading RIGHT NOW: distinct visitors over the trailing five minutes, and the
+ * pages they are on. This is the one read whose freshness matters more than its window —
+ * the flush buffer holds writes for at most two seconds, so the number is honest to within
+ * a breath of real time, with no live socket and no second pipeline: the same table, asked
+ * a smaller question. The admin polls it; the poll is one indexed range scan over five
+ * minutes of rows, which is why polling it every few seconds costs nothing worth naming.
+ */
+export async function getRightNow(topN = 5): Promise<RightNow> {
+  try {
+    // Bounded on BOTH sides. The server stamps every real row itself, so a future row can
+    // only be seeded or imported — and the first fixture that made one put 23 phantom
+    // readers on the live strip. "Right now" must never count a timestamp that has not
+    // happened yet.
+    const now = nowMs()
+    const since = now - 5 * 60_000
+    const visitors = all<{ n: number }>(
+      `select count(distinct visitor) as n from analytics_events
+        where created_at >= $since and created_at <= $now`,
+      { since, now },
+    )[0]?.n ?? 0
+    if (visitors === 0) return EMPTY_RIGHT_NOW
+    const pages = all<{ path: string; visitors: number }>(
+      `select path, count(distinct visitor) as visitors from analytics_events
+        where created_at >= $since and created_at <= $now
+        group by path order by visitors desc, path limit $topN`,
+      { since, now, topN },
+    )
+    return { visitors, pages }
+  } catch (error) {
+    console.error(`[ERROR] analytics.getRightNow: ${(error as Error).message}`)
+    return EMPTY_RIGHT_NOW
   }
 }
 

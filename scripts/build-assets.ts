@@ -81,7 +81,15 @@ const BUDGET: Record<string, number> = {
   // twenty this budget used to leave, because twenty bytes is not a budget, it is a tripwire:
   // an accessibility pass went 59 over in one commit and was paid for by moving two static
   // ARIA attributes into the markup, which is a trick that works once.
-  'core.js': 9_600,
+  //
+  // RAISED TO 9,900 on 2026-08-20 for the engaged-time meter in the beacon. Dwell used to be
+  // wall-clock from load to leave, and on a real instance the wall clock measured furniture:
+  // one tab left open for 24 hours moved the whole site's "average time on page" by minutes.
+  // The meter runs the clock only while the page is visible and the reader has done something
+  // in the last three minutes. It cost ~240 bytes after the activity listeners were folded
+  // into one loop; the alternative — keeping the lie small by clamping server-side only —
+  // would have left every new sample as wrong as the old ones, just less so.
+  'core.js': 9_900,
   // /{slug}: back to top, code copy, lightbox, subscribe, comments, the ToC highlight and
   // book mode. Raised from 8,000 when book mode grew its real chrome — a title bar, a page
   // count and side arrows over a clipped viewport, and a spread measured to exactly two

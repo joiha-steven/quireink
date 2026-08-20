@@ -42,6 +42,15 @@ function depth(): number {
   return Math.max(0, Math.min(100, Math.round((scrollY / scrollable) * 100)))
 }
 
+// Dwell is ENGAGED time, not elapsed time. Wall-clock dwell measured every tab someone
+// walked away from: manhhung.me's table held samples of an hour, six hours, a day — a lit
+// monitor, not a reader — and one 24-hour sample moved the site's average by minutes.
+// So the clock only runs while the page is visible AND the reader has done something in
+// the last three minutes. Three, not one: reading IS idleness punctuated by scrolls, and a
+// long screenful of text takes a couple of minutes before there is any reason to move.
+const IDLE_MS = 180_000
+const TICK_MS = 5_000
+
 export function track(): void {
   const path = location.pathname
   // Defence in depth. The server drops these paths too, but there is no reason to send them.
@@ -50,19 +59,44 @@ export function track(): void {
   whenActivated(() => {
     beacon({ path, referrer: externalReferrer() })
 
+    const now = () => performance.now()
+    let max = depth()
+    let sent = false
+    let engaged = 0
+    let lastActive = now()
+    let lastTick = lastActive
+    const active = () => { lastActive = now() }
+
+    // The accumulator. Ticks are also how throttling is survived: a background tab fires
+    // its timer once a minute at best, so the delta since the last tick can be huge — it
+    // is capped at two ticks' worth, and a hidden or idle page adds nothing at all.
+    // `closing` is for the final slice: by the time the leave handler runs, the page
+    // already reports itself hidden, and without it a five-second visit measured zero.
+    const meter = (closing?: boolean) => {
+      const t = now()
+      const delta = Math.min(t - lastTick, TICK_MS * 2)
+      lastTick = t
+      if ((closing || document.visibilityState === 'visible') && t - lastActive <= IDLE_MS && delta > 0) {
+        engaged += delta
+      }
+    }
+    const interval = setInterval(() => meter(), TICK_MS)
+    for (const kind of ['pointerdown', 'pointermove', 'keydown', 'touchstart'] as const) {
+      addEventListener(kind, active, { passive: true })
+    }
+
     // The depth sample is sent ONCE, when the reader leaves. `pagehide` and a hidden tab
     // both count as leaving, and either can be the last event a browser delivers, so both
     // are wired and `sent` makes the second one a no-op.
-    let max = depth()
-    let sent = false
-    const start = performance.now()
     const send = () => {
       if (sent || max <= 0) return
       sent = true
-      beacon({ path, depth: max, dwell: Math.round(performance.now() - start) })
+      meter(true) // close the open slice, so a quick bounce still measures
+      clearInterval(interval)
+      beacon({ path, depth: max, dwell: Math.round(engaged) })
     }
 
-    addEventListener('scroll', () => { max = Math.max(max, depth()) }, { passive: true })
+    addEventListener('scroll', () => { max = Math.max(max, depth()); active() }, { passive: true })
     addEventListener('pagehide', send)
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'hidden') send()

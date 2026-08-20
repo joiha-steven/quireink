@@ -4,8 +4,10 @@
 // audience breakdown (countries, devices, browsers, systems) + read-depth split.
 // Presentational — the server page fetches the data and passes it in; range tabs
 // are plain links (?range=) since admin is already dynamic.
+import { useEffect, useState } from 'react'
 import Link from '@/admin/router'
-import type { AnalyticsSummary, NameStat } from '@/analytics/types'
+import { view } from '@/admin/api'
+import type { AnalyticsSummary, NameStat, RightNow } from '@/analytics/types'
 import { EmptyState, PageHeader, SEGMENT_TRACK, tabItemClass, TABLE_SCROLL, THEAD, TROW } from './kit'
 import { BarList, Trend, TrendChart, flag, formatDuration, type BarRow } from './analytics-kit'
 import { NumBand, SHEET, SHEET_TOOL, SheetTop } from './sheet'
@@ -25,7 +27,63 @@ function facetRows(stats: NameStat[] | undefined, unknown: string): BarRow[] {
   return (stats ?? []).map((s) => ({ key: s.name, label: s.name === 'Unknown' ? unknown : s.name, value: s.visitors }))
 }
 
-export function AnalyticsView({ data, range, titles }: { data: AnalyticsSummary; range: Range; titles: Record<string, string> }) {
+/**
+ * The live strip: who is on the site right now, refreshed every ten seconds.
+ *
+ * Polling, not a socket. The number is served by one indexed five-minute range scan, and a
+ * poll that stops the moment the tab is hidden costs less than keeping a connection alive
+ * for a page the owner reads a few times a day. The initial value arrives with the view
+ * payload, so the strip is truthful at first paint and the poll only keeps it that way.
+ */
+function LiveNow({ initial, titles }: { initial: RightNow; titles: Record<string, string> }) {
+  const t = useAdminT()
+  const [now, setNow] = useState(initial)
+  useEffect(() => {
+    const poll = () => {
+      if (document.visibilityState !== 'visible') return
+      view<RightNow>('analytics-now').then(setNow).catch(() => { /* keep the last value */ })
+    }
+    const interval = setInterval(poll, 10_000)
+    return () => clearInterval(interval)
+  }, [])
+
+  const live = now.visitors > 0
+  return (
+    <div className="flex items-baseline gap-2 border-b border-neutral-100 px-4 py-2 text-xs dark:border-neutral-800">
+      <span
+        aria-hidden
+        className={`inline-block h-1.5 w-1.5 shrink-0 self-center rounded-full ${
+          live ? 'animate-pulse bg-[var(--pen-edge)]' : 'bg-neutral-300 dark:bg-neutral-600'
+        }`}
+      />
+      {live ? (
+        <>
+          <span className="whitespace-nowrap text-neutral-700 dark:text-neutral-200">
+            {t.analyticsNowReading.replace('{n}', String(now.visitors))}
+          </span>
+          <span className="truncate text-neutral-400 dark:text-neutral-500">
+            {now.pages.slice(0, 3).map((p, i) => (
+              <span key={p.path}>
+                {i > 0 && ' · '}
+                {titles[p.path] ?? p.path}
+                {p.visitors > 1 && <span className="tabular-nums"> ({p.visitors})</span>}
+              </span>
+            ))}
+          </span>
+        </>
+      ) : (
+        <span className="text-neutral-400 dark:text-neutral-500">{t.analyticsNowQuiet}</span>
+      )}
+    </div>
+  )
+}
+
+export function AnalyticsView({ data, range, titles, rightNow }: {
+  data: AnalyticsSummary
+  range: Range
+  titles: Record<string, string>
+  rightNow?: RightNow
+}) {
   const t = useAdminT()
   const rangeLabel: Record<Range, string> = { 1: t.analyticsRange24h, 7: t.analyticsRange7, 30: t.analyticsRange30, 365: t.analyticsRange365 }
   const hasData = data.totalViews > 0
@@ -84,6 +142,8 @@ export function AnalyticsView({ data, range, titles }: { data: AnalyticsSummary;
           <span className="flex-1" />
           <span className="hidden text-xs text-neutral-400 lg:block dark:text-neutral-500">{t.analyticsPrivacyNote}</span>
         </SheetTop>
+
+        {rightNow && <LiveNow initial={rightNow} titles={titles} />}
 
         <NumBand
           items={[

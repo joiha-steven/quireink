@@ -6,13 +6,24 @@
 // keep the rule that no SQL is assembled from parts.
 
 import { analyticsQuery } from '@/store/query'
-import { channelOf } from '@/analytics/channel'
+import { canonicalHost, channelOf } from '@/analytics/channel'
 import type { BucketRange } from '@/analytics/buckets'
 import type {
   ChannelStat, DailyPoint, DepthBucket, NameStat, TopCountry, TopReferrer,
 } from '@/analytics/types'
 
 const { all, one } = analyticsQuery
+
+/**
+ * Dwell samples are averaged with a 30-minute ceiling. A dwell is meant to be time spent
+ * reading, and above half an hour it almost never is: manhhung.me's table held six samples
+ * over an hour and one at the 24-hour clamp — tabs left open on a lit monitor — and that
+ * single sample alone was adding ~3 minutes to a 511-sample average. `min()` rather than
+ * exclusion, so a genuinely long read still counts as a long read instead of vanishing.
+ * The beacon now meters engaged time (assets/js/track.ts), so new samples rarely get here;
+ * the ceiling is what makes the YEARS of already-recorded samples tell the truth too.
+ */
+export const DWELL_CAP_MS = 30 * 60_000
 
 /** Bucket boundaries as ONE bound parameter: `[[lo,hi],[lo,hi],…]`. */
 const boundsJson = (ranges: BucketRange[]) => JSON.stringify(ranges.map((r) => [r.lo, r.hi]))
@@ -22,12 +33,13 @@ const BOUNDS_CTE = `with bounds(i, lo, hi) as (
 )`
 
 /**
- * Views and unique visitors per bucket.
+ * Views and unique visitors per bucket — EVERY bucket, zeros included.
  *
- * Buckets with no rows are DROPPED, which is what `group by date_trunc(...)` did. Emitting
- * explicit zeros would be a better chart, and the boundaries are right here to do it, but
- * it is a change to what the admin receives and this is a port; it belongs in its own
- * commit next to the component that renders it.
+ * The port dropped empty buckets, which is what `group by date_trunc(...)` did, and the
+ * chart inherited the lie: a week with three quiet days drew as a smooth line between the
+ * loud ones, because the quiet days were not points at all. The boundaries are right here,
+ * so the fix is to emit them: a day with no readers is a fact about the week, not a gap in
+ * the data.
  */
 export function dailySeries(ranges: BucketRange[], path: string | null): DailyPoint[] {
   const rows = path === null
@@ -46,25 +58,49 @@ export function dailySeries(ranges: BucketRange[], path: string | null): DailyPo
           group by b.i order by b.i`,
         { bounds: boundsJson(ranges), path },
       )
-  return rows.map((r) => ({ day: ranges[r.i]!.label, views: r.views, visitors: r.visitors }))
+  const byIndex = new Map(rows.map((r) => [r.i, r]))
+  return ranges.map((range, i) => ({
+    day: range.label,
+    views: byIndex.get(i)?.views ?? 0,
+    visitors: byIndex.get(i)?.visitors ?? 0,
+  }))
 }
 
-/** Referrers count DISTINCT VISITORS (one person = 1), not views. */
+/**
+ * Referrers count DISTINCT VISITORS (one person = 1), not views.
+ *
+ * Hosts are folded through `canonicalHost` BEFORE counting, and the fold has to happen on
+ * the (host, visitor) pairs rather than on per-host counts: a reader who arrived once via
+ * `l.facebook.com` and once via `m.facebook.com` is one Facebook visitor, and summing the
+ * two hosts' distinct counts would say two. Same shape `channels()` already uses, for the
+ * same reason.
+ */
 export function topReferrers(since: number, limit: number, path: string | null): TopReferrer[] {
-  return path === null
-    ? all<TopReferrer>(
-        `select referrer_host as host, count(distinct visitor) as visitors from analytics_events
+  const pairs = path === null
+    ? all<{ host: string; visitor: string }>(
+        `select referrer_host as host, visitor from analytics_events
           where created_at >= $since and referrer_host is not null and referrer_host != ''
-          group by referrer_host order by visitors desc limit $limit`,
-        { since, limit },
+          group by referrer_host, visitor`,
+        { since },
       )
-    : all<TopReferrer>(
-        `select referrer_host as host, count(distinct visitor) as visitors from analytics_events
+    : all<{ host: string; visitor: string }>(
+        `select referrer_host as host, visitor from analytics_events
           where created_at >= $since and path = $path
             and referrer_host is not null and referrer_host != ''
-          group by referrer_host order by visitors desc limit $limit`,
-        { since, limit, path },
+          group by referrer_host, visitor`,
+        { since, path },
       )
+  const byHost = new Map<string, Set<string>>()
+  for (const p of pairs) {
+    const host = canonicalHost(p.host)
+    const set = byHost.get(host) ?? new Set<string>()
+    set.add(p.visitor)
+    byHost.set(host, set)
+  }
+  return [...byHost]
+    .map(([host, visitors]) => ({ host, visitors: visitors.size }))
+    .sort((a, b) => b.visitors - a.visitors || a.host.localeCompare(b.host))
+    .slice(0, limit)
 }
 
 export function topCountries(since: number, limit: number, path: string | null): TopCountry[] {
@@ -100,17 +136,18 @@ export function depthBuckets(since: number, path: string | null): DepthBucket[] 
 
 /** Average scroll depth, and average dwell over the samples that measured one. */
 export function engagement(since: number, path: string | null): { avgReadDepth: number; avgDwellMs: number } {
-  // SQLite's avg() already skips NULLs, which is what the original's explicit
-  // `where dwell_ms is not null` amounted to.
+  // SQLite's avg() already skips NULLs (min(NULL, cap) is NULL, so the ceiling does not
+  // resurrect them), which is what the original's explicit `where dwell_ms is not null`
+  // amounted to. The ceiling itself is DWELL_CAP_MS at the top of this file.
   const row = path === null
     ? one<{ depth: number | null; dwell: number | null }>(
-        `select avg(depth) as depth, avg(dwell_ms) as dwell from analytics_scroll where created_at >= $since`,
-        { since },
+        `select avg(depth) as depth, avg(min(dwell_ms, $cap)) as dwell from analytics_scroll where created_at >= $since`,
+        { since, cap: DWELL_CAP_MS },
       )
     : one<{ depth: number | null; dwell: number | null }>(
-        `select avg(depth) as depth, avg(dwell_ms) as dwell from analytics_scroll
+        `select avg(depth) as depth, avg(min(dwell_ms, $cap)) as dwell from analytics_scroll
           where created_at >= $since and path = $path`,
-        { since, path },
+        { since, path, cap: DWELL_CAP_MS },
       )
   return {
     avgReadDepth: Math.round(row?.depth ?? 0),

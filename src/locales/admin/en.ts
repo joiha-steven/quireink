@@ -522,6 +522,8 @@ const en = {
   analyticsColDepth: 'Depth',
   analyticsAvgTime: 'Avg. time on page',
   analyticsBounceRate: 'Bounce rate',
+  analyticsNowReading: '{n} reading now',
+  analyticsNowQuiet: 'No one is reading right now',
   analyticsColTime: 'Time',
   analyticsChannels: 'Channels',
   analyticsChannelDirect: 'Direct',

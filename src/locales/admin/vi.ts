@@ -522,6 +522,8 @@ const vi = {
   analyticsColDepth: 'Độ sâu',
   analyticsAvgTime: 'Thời gian TB trên trang',
   analyticsBounceRate: 'Tỷ lệ thoát',
+  analyticsNowReading: '{n} người đang đọc',
+  analyticsNowQuiet: 'Chưa có ai đang đọc lúc này',
   analyticsColTime: 'Thời gian',
   analyticsChannels: 'Kênh',
   analyticsChannelDirect: 'Trực tiếp',

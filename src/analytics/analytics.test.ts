@@ -5,11 +5,11 @@
 import { describe, it, expect, beforeEach, afterAll } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
 import { analyticsDb } from '@/store/db'
-import { getAnalytics, getViewTotals } from '@/analytics/summary'
+import { getAnalytics, getRightNow, getViewTotals } from '@/analytics/summary'
 import { getPageAnalytics } from '@/analytics/page'
 import { isBot, normalizePath, recordView, recordScroll } from '@/analytics/record'
 import { flushAnalytics, resetAnalyticsBuffer, pendingAnalytics } from '@/analytics/buffer'
-import { channelOf } from '@/analytics/channel'
+import { canonicalHost, channelOf } from '@/analytics/channel'
 
 const DIR = './.tmp/test-analytics'
 freshDatabase(DIR)
@@ -159,8 +159,10 @@ describe('summary', () => {
     view({ visitor: 'v2', host: 'blog.example', country: 'DE' })
     view({ visitor: 'v3', host: null, country: null })
     const s = await getAnalytics(7)
+    // Ties break alphabetically now that the fold sorts in TypeScript — deterministic,
+    // where the SQL group-by order was whatever the engine felt like.
     expect(s.topReferrers).toEqual([
-      { host: 'news.example', visitors: 1 }, { host: 'blog.example', visitors: 1 },
+      { host: 'blog.example', visitors: 1 }, { host: 'news.example', visitors: 1 },
     ])
     expect(s.topCountries!.map((c) => c.country).sort()).toEqual(['DE', 'VN'])
   })
@@ -201,7 +203,10 @@ describe('summary', () => {
 
   it('is empty, not broken, with no data at all', async () => {
     const s = await getAnalytics(7)
-    expect(s).toMatchObject({ totalViews: 0, uniqueVisitors: 0, avgReadDepth: 0, topPages: [], daily: [] })
+    expect(s).toMatchObject({ totalViews: 0, uniqueVisitors: 0, avgReadDepth: 0, topPages: [] })
+    // The chart still receives its full run of buckets — all zero, none missing.
+    expect(s.daily.length).toBeGreaterThanOrEqual(7)
+    expect(s.daily.every((d) => d.views === 0 && d.visitors === 0)).toBe(true)
   })
 })
 
@@ -229,7 +234,83 @@ describe('per-page drill-down', () => {
   })
 
   it('is empty for a page nobody visited', async () => {
-    expect(await getPageAnalytics('/ghost', 7)).toMatchObject({ path: '/ghost', totalViews: 0, daily: [] })
+    const p = await getPageAnalytics('/ghost', 7)
+    expect(p).toMatchObject({ path: '/ghost', totalViews: 0 })
+    expect(p.daily.every((d) => d.views === 0)).toBe(true)
+  })
+})
+
+describe('canonicalHost', () => {
+  it('peels plumbing labels down to the host a reader would name', () => {
+    expect(canonicalHost('l.facebook.com')).toBe('facebook.com')
+    expect(canonicalHost('lm.facebook.com')).toBe('facebook.com')
+    expect(canonicalHost('m.facebook.com')).toBe('facebook.com')
+    expect(canonicalHost('www.bing.com')).toBe('bing.com')
+    expect(canonicalHost('L.M.Facebook.com.')).toBe('facebook.com') // peels twice, case, trailing dot
+    expect(canonicalHost('out.reddit.com')).toBe('reddit.com')
+  })
+
+  it('leaves an identity subdomain alone — wrong is worse than long', () => {
+    expect(canonicalHost('news.google.com')).toBe('news.google.com')
+    expect(canonicalHost('accounts.google.com')).toBe('accounts.google.com')
+    expect(canonicalHost('vn.search.yahoo.com')).toBe('vn.search.yahoo.com')
+    expect(canonicalHost('news.ycombinator.com')).toBe('news.ycombinator.com')
+    // Peeling must stop while what remains is still a domain: `www.com` is a host, not plumbing.
+    expect(canonicalHost('www.com')).toBe('www.com')
+  })
+})
+
+describe('referrer folding in the top list', () => {
+  it("folds one source's plumbing hosts into one row without double-counting a visitor", async () => {
+    view({ visitor: 'v1', host: 'l.facebook.com' })
+    view({ visitor: 'v1', host: 'm.facebook.com' }) // same person, second door: still ONE
+    view({ visitor: 'v2', host: 'www.facebook.com' })
+    view({ visitor: 'v3', host: 'news.ycombinator.com' })
+    const s = await getAnalytics(7)
+    expect(s.topReferrers).toEqual([
+      { host: 'facebook.com', visitors: 2 },
+      { host: 'news.ycombinator.com', visitors: 1 },
+    ])
+  })
+})
+
+describe('dwell ceiling', () => {
+  it('clamps a forgotten tab to 30 minutes instead of letting it move the average', async () => {
+    scroll(50, 60_000)          // a minute of reading
+    scroll(50, 86_400_000)      // a tab left open for a day
+    const s = await getAnalytics(7)
+    // (60s + 30min) / 2, not (60s + 24h) / 2 — the day-long sample counts as a long read.
+    expect(s.avgDwellMs).toBe(Math.round((60_000 + 1_800_000) / 2))
+  })
+
+  it('does not resurrect a sample that never measured a dwell', async () => {
+    scroll(50, 4_000)
+    scroll(80, null) // depth sample without a dwell: avg() must still skip it
+    const s = await getAnalytics(7)
+    expect(s.avgDwellMs).toBe(4_000)
+  })
+})
+
+describe('right now', () => {
+  it('counts distinct visitors over the trailing five minutes, by page', async () => {
+    view({ visitor: 'a', path: '/hot', at: Date.now() - 60_000 })
+    view({ visitor: 'b', path: '/hot', at: Date.now() - 120_000 })
+    view({ visitor: 'a', path: '/hot', at: Date.now() - 30_000 }) // a reload is not a person
+    view({ visitor: 'c', path: '/other', at: Date.now() - 240_000 })
+    view({ visitor: 'd', path: '/stale', at: Date.now() - 6 * 60_000 }) // outside the window
+    expect(await getRightNow()).toEqual({
+      visitors: 3,
+      pages: [{ path: '/hot', visitors: 2 }, { path: '/other', visitors: 1 }],
+    })
+  })
+
+  it('is quiet, not broken, when nobody is there', async () => {
+    expect(await getRightNow()).toEqual({ visitors: 0, pages: [] })
+  })
+
+  it('refuses to count a row from the future', async () => {
+    view({ visitor: 'tomorrow', at: Date.now() + 60_000 }) // seeded/imported, never organic
+    expect(await getRightNow()).toEqual({ visitors: 0, pages: [] })
   })
 })
 
