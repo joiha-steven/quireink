@@ -1,5 +1,5 @@
 // The posts the showcase fixture is built from: the shape of a seeded post, and the order
-// they arrive in. The words themselves are in the four siblings.
+// they arrive in. The words themselves are in the six siblings.
 //
 // ONE SUBJECT: letterforms and the making of pages. Calligraphy, type, layout, printing, and
 // nothing else. A demo whose posts wander across five topics reads as filler; a demo that
@@ -29,10 +29,11 @@
 // site that renders maths, code, tables and five callout types came to look like a site that
 // renders paragraphs. The posts added since are each written around a gap in that list.
 //
-// THE SPLIT IS BY CATEGORY, and the fourth file is the exception: `-intl` is by LANGUAGE,
-// because its four posts exist to prove the latin-ext subsets and their categories are
-// incidental. The other three split at the 400-line cap `check:filesize` enforces, which one
-// file of twenty-eight posts cannot stay under.
+// THE SPLIT IS BY CATEGORY, with two exceptions: `-intl` is by LANGUAGE, because its posts
+// exist to prove the latin-ext subsets and their categories are incidental (`-cjk` likewise),
+// and `-page` is by SERIES, because the reading-page series outgrew the typography file as a
+// unit. Everything splits at the 400-line cap `check:filesize` enforces, which one file of
+// thirty posts cannot stay under.
 
 export type Seed = {
   title: string
@@ -48,6 +49,7 @@ export type Seed = {
 }
 
 import { TYPE_POSTS } from './seed-content-type'
+import { PAGE_POSTS } from './seed-content-page'
 import { HAND_POSTS } from './seed-content-hand'
 import { PRESS_POSTS } from './seed-content-press'
 import { INTL_POSTS } from './seed-content-intl'
@@ -61,7 +63,7 @@ import { CJK_POSTS } from './seed-content-cjk'
  * is that no two posts share an `ago`, because two posts on the same timestamp make the
  * listing's order depend on SQLite's tie-breaking rather than on the fixture.
  */
-export const POSTS: Seed[] = [...TYPE_POSTS, ...HAND_POSTS, ...PRESS_POSTS, ...INTL_POSTS, ...CJK_POSTS]
+export const POSTS: Seed[] = [...TYPE_POSTS, ...PAGE_POSTS, ...HAND_POSTS, ...PRESS_POSTS, ...INTL_POSTS, ...CJK_POSTS]
 
 /**
  * The two series, and the parts they run over.

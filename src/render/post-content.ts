@@ -140,9 +140,12 @@ export type ImageDims = Map<string, { width: number; height: number }>
 const GRID_RATIOS = new Set(['asis', '1x1', '3x2', '4x3'])
 
 // Figure placement from the src fragment: #left|#right (align, default center),
-// #wide (noses right into the gutter on wide screens; every image is full-bleed on phones). Caption = alt.
+// #wide (noses right into the gutter on wide screens; every image is full-bleed on phones),
+// #third (30% of the column; with an align it floats and the text runs around it,
+// magazine-fashion — the one fragment that changes how TEXT lays out, not just the figure).
+// Caption = alt.
 function imgClasses(frag: string): string {
-  // Exact hyphen tokens so `#bright` can't match `right`: left|right|wide|left-wide|right-wide.
+  // Exact hyphen tokens so `#bright` can't match `right`: left|right|wide|third|left-third|….
   const tokens = frag.split('-')
   // `#grid` marks a gallery item; groupGalleries() wraps consecutive ones. The
   // grid owns layout, so align/wide are ignored for a grid item.
@@ -157,7 +160,10 @@ function imgClasses(frag: string): string {
     return opts.length ? `img-grid ${opts.join(' ')}` : 'img-grid'
   }
   const align = tokens.includes('left') ? 'img-left' : tokens.includes('right') ? 'img-right' : 'img-center'
-  return tokens.includes('wide') ? `${align} img-wide` : align
+  // `wide` and `third` are both sizes, so they cannot compose; wide wins because a fragment
+  // carrying both was almost certainly widened last.
+  if (tokens.includes('wide')) return `${align} img-wide`
+  return tokens.includes('third') ? `${align} img-third` : align
 }
 
 // Column count for a gallery of N images — Jetpack-like: small sets get one row,

@@ -191,6 +191,20 @@ body {
   object-fit: cover;
 }
 
+/* A 30% figure previews at its published width. No float in the editor — a ProseMirror
+   node view is a block and text does not wrap around it — so the alignment shows as
+   position only, which is enough to tell the three sizes apart while writing. */
+.ProseMirror .react-renderer:has(> figure.img-third) {
+  width: 30%;
+}
+.ProseMirror .react-renderer:has(> figure.img-third.img-center) {
+  margin-left: auto;
+  margin-right: auto;
+}
+.ProseMirror .react-renderer:has(> figure.img-third.img-right) {
+  margin-left: auto;
+}
+
 /* TipTap empty-state placeholder. */
 .ProseMirror:focus {
   outline: none;

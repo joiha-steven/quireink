@@ -58,3 +58,4 @@ ds-bundle-reader/
 npm-debug.log*
 .pnpm-debug.log*
 media-index-backup-*.json
+.claude/
