@@ -9,9 +9,10 @@
 
 import { describe, expect, it, afterAll } from 'bun:test'
 import { PUBLIC_CSS } from '@/web/public.css'
-import { INK_CSS } from '@/web/ink.css'
+import { INK_CSS, INK_HIGHLIGHT_CSS, INK_LINES_CSS } from '@/web/ink.css'
+import { assetBody, penSheetsFor, PEN_LINES_SHEET, PEN_MARKS_SHEET, PUBLIC_SHEET } from '@/web/assets'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { pageStyles } from '@/web/layout'
+import { pageStyles, renderDocument } from '@/web/layout'
 import { DEFAULT_SETTINGS } from '@/content/settings'
 import { INKS, penSeed } from '@/render/ink'
 import {
@@ -32,23 +33,23 @@ describe('the pen deal', () => {
   it('gives every variant a grip rule, keyed by data-pen', () => {
     expect(PEN_GRIPS.length).toBe(PEN_VARIANT_COUNT)
     for (let i = 0; i < PEN_VARIANT_COUNT; i++) {
-      expect(PUBLIC_CSS).toContain(`.prose mark[data-pen="${i}"]{--ink-h:${PEN_GRIPS[i]!.h}`)
+      expect(INK_HIGHLIGHT_CSS).toContain(`.prose mark[data-pen="${i}"]{--ink-h:${PEN_GRIPS[i]!.h}`)
     }
   })
 
   it('ships a base stroke for every ink, in both light and dark', () => {
     for (const ink of INKS) {
       const selector = ink === 'yellow' ? '.prose mark{' : `.prose mark[data-ink=${ink}]{`
-      expect(PUBLIC_CSS).toContain(selector)
-      expect(PUBLIC_CSS).toContain(`.dark ${selector}`)
+      expect(INK_HIGHLIGHT_CSS).toContain(selector)
+      expect(INK_HIGHLIGHT_CSS).toContain(`.dark ${selector}`)
     }
   })
 
   it('makes every non-default die reachable in every pigment, in both modes', () => {
     for (let d = 1; d < PEN_DIE_COUNT; d++) {
       for (const ink of INKS) {
-        expect(INK_CSS).toContain(`{--ink-stroke:${penStroke(PEN_LIGHT[ink], d)}}`)
-        expect(INK_CSS).toContain(`{--ink-stroke:${penStroke(PEN_DARK[ink], d)}}`)
+        expect(INK_HIGHLIGHT_CSS).toContain(`{--ink-stroke:${penStroke(PEN_LIGHT[ink], d)}}`)
+        expect(INK_HIGHLIGHT_CSS).toContain(`{--ink-stroke:${penStroke(PEN_DARK[ink], d)}}`)
       }
     }
     // And every variant maps to a die that exists.
@@ -59,31 +60,43 @@ describe('the pen deal', () => {
     // A bare `mark[data-pen="…"]` rule would tie with `mark[data-ink=green]` on specificity
     // and, sitting later in the sheet, would win — hence :not([data-ink]) on every yellow
     // die rule. Pin the shape of the selector, not just the outcome.
-    expect(INK_CSS).toMatch(/\.prose mark:not\(\[data-ink\]\)\[data-pen="\d+"\]/)
-    expect(INK_CSS).not.toMatch(/\.prose mark\[data-pen="\d+"\]\[data-ink/)
+    expect(INK_HIGHLIGHT_CSS).toMatch(/\.prose mark:not\(\[data-ink\]\)\[data-pen="\d+"\]/)
+    expect(INK_HIGHLIGHT_CSS).not.toMatch(/\.prose mark\[data-pen="\d+"\]\[data-ink/)
   })
 
   it('drops the multiply blend in dark mode and lifts the words to the heading colour', () => {
     // Multiply on a near-black page turns every ink to mud; `opacity` on the mark would fade
     // the TEXT with it, making a highlighted word dimmer than the words around it.
-    expect(PUBLIC_CSS).toContain('.dark .prose mark{mix-blend-mode:normal;color:var(--c-heading)}')
+    expect(INK_HIGHLIGHT_CSS).toContain('.dark .prose mark{mix-blend-mode:normal;color:var(--c-heading)}')
+  })
+
+  it('keeps the whole pen OUT of the public sheet: it ships in its own two halves', () => {
+    // The split's point: 280 data-URIs stop riding site.css. If a stroke ever leaks back
+    // into PUBLIC_CSS, every unmarked page pays the whole pen case again — and nothing
+    // else would notice, because the marked pages would still look right.
+    expect(PUBLIC_CSS).not.toContain('--ink-stroke')
+    expect(PUBLIC_CSS).not.toContain('--u-stroke')
+    expect(PUBLIC_CSS).not.toContain('--o-set')
+    // The two halves cover the whole pen with nothing dropped between them.
+    expect(INK_CSS).toContain(INK_HIGHLIGHT_CSS)
+    expect(INK_CSS).toContain(INK_LINES_CSS)
   })
 
   it('draws the underline in graphite by default and in ballpoint-strength inks by name', () => {
     // The pastel highlighter pigments vanish as thin lines, so the line gestures carry
     // their own five hues — if a rule ever reaches for PEN_LIGHT here, green underlines
     // go back to being invisible.
-    expect(INK_CSS).toContain(`.prose u{--u-stroke:${penUnder(PEN_AUX_LIGHT.graphite)}}`)
-    expect(INK_CSS).toContain(`.dark .prose u{--u-stroke:${penUnder(PEN_AUX_DARK.graphite)}}`)
+    expect(INK_LINES_CSS).toContain(`.prose u{--u-stroke:${penUnder(PEN_AUX_LIGHT.graphite)}}`)
+    expect(INK_LINES_CSS).toContain(`.dark .prose u{--u-stroke:${penUnder(PEN_AUX_DARK.graphite)}}`)
     for (const ink of INKS) {
-      expect(INK_CSS).toContain(`.prose u[data-ink=${ink}]{--u-stroke:${penUnder(PEN_LINE_LIGHT[ink])}}`)
-      expect(INK_CSS).toContain(`.dark .prose u[data-ink=${ink}]{--u-stroke:${penUnder(PEN_LINE_DARK[ink])}}`)
+      expect(INK_LINES_CSS).toContain(`.prose u[data-ink=${ink}]{--u-stroke:${penUnder(PEN_LINE_LIGHT[ink])}}`)
+      expect(INK_LINES_CSS).toContain(`.dark .prose u[data-ink=${ink}]{--u-stroke:${penUnder(PEN_LINE_DARK[ink])}}`)
     }
     for (const g of UNDER_GRIPS) expect(g.die).toBeLessThan(UNDER_DIE_COUNT)
     // The bottom padding is load-bearing: an inline background clips at the font's
     // descent, which is exactly where an underline lives.
-    expect(INK_CSS).toContain('.prose u{text-decoration:none')
-    expect(INK_CSS).toMatch(/\.prose u\[data-pen="0"\]\{[^}]*padding:0 [^ ]+ \.4em /)
+    expect(INK_LINES_CSS).toContain('.prose u{text-decoration:none')
+    expect(INK_LINES_CSS).toMatch(/\.prose u\[data-pen="0"\]\{[^}]*padding:0 [^ ]+ \.4em /)
   })
 
   it('builds the ring from two fixed caps and one stretching middle, red unless named', () => {
@@ -91,12 +104,12 @@ describe('the pen deal', () => {
     // what keep the end curves round on a long word.
     const set = (hex: string) =>
       `${penRing(hex, 0, 'l')},${penRing(hex, 0, 'm')},${penRing(hex, 0, 'r')}`
-    expect(INK_CSS).toContain(`.prose mark[data-form=o]{--o-set:${set(PEN_AUX_LIGHT.red)}}`)
-    expect(INK_CSS).toContain(
+    expect(INK_LINES_CSS).toContain(`.prose mark[data-form=o]{--o-set:${set(PEN_AUX_LIGHT.red)}}`)
+    expect(INK_LINES_CSS).toContain(
       `.prose mark[data-form=o][data-ink=blue]{--o-set:${set(PEN_LINE_LIGHT.blue)}}`)
-    expect(INK_CSS).toContain(
+    expect(INK_LINES_CSS).toContain(
       `.dark .prose mark[data-form=o]{--o-set:${set(PEN_AUX_DARK.red)}}`)
-    expect(INK_CSS).toMatch(/background-size:\.62em 100%,calc\(100% - \.96em\) 100%,\.62em 100%/)
+    expect(INK_LINES_CSS).toMatch(/background-size:\.62em 100%,calc\(100% - \.96em\) 100%,\.62em 100%/)
     for (const g of RING_GRIPS) expect(g.die).toBeLessThan(RING_DIE_COUNT)
   })
 
@@ -135,5 +148,47 @@ describe('the pen deal', () => {
       expect(n).toBeLessThan(PEN_VARIANT_COUNT)
       expect(Number.isInteger(n)).toBe(true)
     }
+  })
+})
+
+describe('the pen ships only where it wrote something (ADR 0027)', () => {
+  it('reads the page for the elements the gestures render as', () => {
+    expect(penSheetsFor('<p>không một giọt mực</p>')).toEqual([])
+    expect(penSheetsFor('<p><mark data-pen="3">một câu</mark></p>')).toEqual([PEN_MARKS_SHEET])
+    expect(penSheetsFor('<p><u data-pen="1">gạch chân</u></p>')).toEqual([PEN_LINES_SHEET])
+    // A ring is a mark, so a ringed page needs BOTH halves: the loop from the lines sheet
+    // and the base mark rules (blend mode, dark colour) from the highlighter's.
+    expect(penSheetsFor('<mark data-form="o" data-pen="2">cease</mark>'))
+      .toEqual([PEN_MARKS_SHEET, PEN_LINES_SHEET])
+    // `<ul>` is not `<u>`: a list must not pull the pen in.
+    expect(penSheetsFor('<ul><li>một</li></ul>')).toEqual([])
+    // Escaped prose about the pen is prose, not a tag.
+    expect(penSheetsFor('<p>viết chữ &lt;mark&gt; vào bài</p>')).toEqual([])
+  })
+
+  it('links a pen sheet render-blocking on the pages that need it, and never elsewhere', () => {
+    const page = (body: string) => renderDocument(DEFAULT_SETTINGS,
+      { title: 't', stylesheet: PUBLIC_SHEET }, '', body)
+    const marked = page('<div class="prose"><mark data-pen="0">chỗ này</mark></div>')
+    expect(marked).toContain(`<link rel="stylesheet" href="${PUBLIC_SHEET}">`
+      + `<link rel="stylesheet" href="${PEN_MARKS_SHEET}">`)
+    const plain = page('<div class="prose"><p>trang trắng</p></div>')
+    expect(plain).toContain(`<link rel="stylesheet" href="${PUBLIC_SHEET}">`)
+    expect(plain).not.toContain('pen-marks.')
+    expect(plain).not.toContain('pen-lines.')
+    // No stylesheet, no pen: the sign-in page stays exactly one <style> block.
+    expect(renderDocument(DEFAULT_SETTINGS, { title: 't' }, '', '<mark>x</mark>'))
+      .not.toContain('pen-marks.')
+  })
+
+  it('serves both pen sheets at their hashed paths, and answers a stale hash with the current bytes', () => {
+    for (const sheet of [PEN_MARKS_SHEET, PEN_LINES_SHEET]) {
+      expect(assetBody(sheet)).toContain('url("data:image/svg+xml')
+    }
+    // Same grace the site sheet already had: for eleven minutes after a deploy a cached
+    // page still names the previous build's hash, and a 404 there is an inkless page.
+    expect(assetBody('/assets/pen-marks.zzzzzzzzzz.css')).toBe(assetBody(PEN_MARKS_SHEET))
+    expect(assetBody('/assets/pen-lines.zzzzzzzzzz.css')).toBe(assetBody(PEN_LINES_SHEET))
+    expect(assetBody('/assets/pen-marks.zzzzzzzzzz.js')).toBeNull()
   })
 })

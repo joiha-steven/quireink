@@ -137,6 +137,19 @@ So the two halves are split at exactly that seam:
 The order is the load-bearing part: the inline block is allowed to WIN, so it has to come
 second, exactly where it sat when the two were one string.
 
+### The pen rides in two more sheets, and only boards the pages that used it
+
+**Measured 2026-08-21** ([ADR 0027](./decisions/0027-the-pen-ships-only-where-it-wrote.md)):
+the pen's ink — 280 SVG data-URIs after 0025/0026 — had grown to ~21 of `site.css`'s 29 KB
+gzipped, paid by every page including the ones with no ink on them. It now ships as
+`pen-marks.‹hash›.css` (the highlighter) and `pen-lines.‹hash›.css` (underline and ring),
+same immutable footing, linked render-blocking right after `site.css` — but only when
+`penSheetsFor` (`web/assets.ts`) finds the elements they paint in the page's HTML. After
+the split `site.css` is **7.6 KB gzipped**; an inkless page carries nothing of the pen, a
+marked page carries exactly what it shows, and no page's pixels or paint order change.
+Deferred loading was rejected: a stylesheet that arrives late shows bare words before the
+ink lands.
+
 Measured after (origin, `127.0.0.1`, median of three cold loads): HTML per page **60.3 KB
 → 20.7 KB** on the home page and **65.0 KB → 25.4 KB** on a post; the sheet is discovered
 at ~11 ms and done at ~18 ms; LCP 100 ms home / 132 ms post; CLS 0. A loopback measurement

@@ -17,6 +17,7 @@ import { cjkLangCss } from '@/content/fonts'
 import { typographyToCss, fontToCss } from '@/content/settings'
 import { singleRailCss } from '@/render/rail-css'
 import { fontFaceCss, MONO_TRACKING } from '@/render/font-faces'
+import { penSheetsFor } from '@/web/assets'
 
 export type Head = {
   title: string
@@ -186,8 +187,17 @@ export function renderDocument(
   ].filter(Boolean).join('')
   // Before the inline block, because that block is allowed to win: it carries the palette,
   // the type scale and the owner's own CSS, all of which override the sheet.
+  //
+  // The pen's two sheets follow the same rule, and only board the pages that used the pen:
+  // `penSheetsFor` reads the assembled body for the elements the gestures render as
+  // (ADR 0027). Render-blocking like the main sheet on purpose — a deferred stylesheet
+  // shows bare words before the ink lands. After site.css so the cascade reads exactly as
+  // it did when the ink lived inside it, and gated on `head.stylesheet` because a page
+  // that declines the public sheet (sign-in) has no prose to ink.
   const sheet = head.stylesheet
-    ? `<link rel="stylesheet" href="${escapeAttr(head.stylesheet)}">`
+    ? [head.stylesheet, ...penSheetsFor(body)]
+        .map((href) => `<link rel="stylesheet" href="${escapeAttr(href)}">`)
+        .join('')
     : ''
   const icon = settings.faviconUrl ? `<link rel="icon" href="${escapeAttr(settings.faviconUrl)}">` : ''
   // Without this link the manifest route exists and nothing ever asks for it, so the site

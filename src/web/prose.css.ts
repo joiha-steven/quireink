@@ -9,7 +9,6 @@
 // NO BACKTICKS anywhere below: this is one template literal and a backtick ends it.
 // `check:css-literal` enforces that.
 
-import { INK_CSS } from '@/web/ink.css'
 import { MATH_CSS } from '@/web/math.css'
 
 export const PROSE_CSS = `
@@ -157,10 +156,12 @@ export const PROSE_CSS = `
   .book-text .prose p,.book-text .prose li{text-align:justify;hyphens:auto}
 }
 
-/* The highlighter, HERE rather than in the public sheet for the same reason the reading face
-   is here: the editor is a .prose surface too, and a stroke you cannot see while you are
-   writing is a stroke you cannot place. Both sheets are built from this one constant. */
-${INK_CSS}
+/* The highlighter is NOT here any more. It weighed ~21 of the public sheet's 29 KB gzipped
+   — 280 SVG data-URIs — and most pages never show a stroke, so ink.css.ts now builds it as
+   two standalone halves that web/assets.ts hashes into their own immutable files, linked
+   only when a page's HTML contains a mark or an underline (ADR 0027). The editor still
+   sees every stroke: build-admin.ts appends the whole pen (INK_CSS) after this constant,
+   because a stroke you cannot see while you are writing is a stroke you cannot place. */
 
 /* Maths, here for the third time for the same reason: the editor is a .prose surface, and a
    formula you cannot see while you are writing is a formula you cannot check. */

@@ -52,12 +52,11 @@ describe('the public sheet, minified', () => {
   })
 
   it('is a large enough saving to be worth the code', () => {
-    // Was .55 until the pen grew its dies (0025), then its underline and ring (0026): the
-    // sheet is now mostly SVG data-URIs, which the minifier rightly leaves alone, so the
-    // RATIO stopped meaning much — the absolute strip (comments and whitespace, ~60 KB) is
-    // the half that says the minifier earns its keep, and the loose ratio bound only
-    // catches the strip silently breaking altogether.
-    expect(min.length).toBeLessThan(PUBLIC_CSS.length * 0.9)
+    // Was .55, loosened to .9 while the pen's data-URIs lived in this sheet (0025/0026) and
+    // drowned the ratio, and TIGHTENED BACK once ADR 0027 moved the ink into its own two
+    // hashed files: site.css is hand-written prose again, measured at .39 after the split,
+    // so a ratio drifting past .55 means comment text is leaking through the strip.
+    expect(min.length).toBeLessThan(PUBLIC_CSS.length * 0.55)
     expect(PUBLIC_CSS.length - min.length).toBeGreaterThan(40_000)
   })
 

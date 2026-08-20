@@ -9,6 +9,7 @@ import coreJs from '@/assets/dist/core.js' with { type: 'text' }
 import postJs from '@/assets/dist/post.js' with { type: 'text' }
 import loginJs from '@/assets/dist/login.js' with { type: 'text' }
 import { PUBLIC_CSS } from '@/web/public.css'
+import { INK_HIGHLIGHT_CSS, INK_LINES_CSS } from '@/web/ink.css'
 import { minifyCss } from '@/web/css-min'
 
 /** Bundles by logical name. Adding one is an import and a line. */
@@ -53,6 +54,48 @@ const PUBLIC_CSS_SERVED = minifyCss(PUBLIC_CSS)
 export const PUBLIC_SHEET = `/assets/site.${hashOf(PUBLIC_CSS_SERVED)}.css`
 BY_PATH.set(PUBLIC_SHEET, PUBLIC_CSS_SERVED)
 
+/**
+ * The pen, in two sheets of its own — and linked only where it wrote something.
+ *
+ * The ink is 280 SVG data-URIs and it had grown to ~21 of the public sheet's 29 KB
+ * gzipped, paid on every cold visit and re-parsed on every page, highlights or not.
+ * Splitting it out of `site.css` keeps the split invisible: a page that DOES carry a mark
+ * links the sheet render-blocking exactly as before, so not one pixel or paint order
+ * changes there — while the home page, the archive and every unmarked post stop carrying
+ * the whole pen case. Deferred/async loading was rejected outright: it shows bare words
+ * for a beat before the ink lands, and the pen's whole argument is that it never flickers.
+ *
+ * Two halves rather than one, because the gestures travel separately: highlights are
+ * common, underlines and rings are rare. The ring lives in the LINES sheet but its base
+ * box rules ride `<mark>` — a ringed page contains `<mark data-form="o">`, which the
+ * highlighter detection matches too, so both sheets arrive and the cascade reads exactly
+ * as it did when the ink was one string. ADR 0027 records the trade.
+ */
+const PEN_MARKS_CSS_SERVED = minifyCss(INK_HIGHLIGHT_CSS)
+const PEN_LINES_CSS_SERVED = minifyCss(INK_LINES_CSS)
+
+export const PEN_MARKS_SHEET = `/assets/pen-marks.${hashOf(PEN_MARKS_CSS_SERVED)}.css`
+export const PEN_LINES_SHEET = `/assets/pen-lines.${hashOf(PEN_LINES_CSS_SERVED)}.css`
+BY_PATH.set(PEN_MARKS_SHEET, PEN_MARKS_CSS_SERVED)
+BY_PATH.set(PEN_LINES_SHEET, PEN_LINES_CSS_SERVED)
+
+/**
+ * Which pen sheets this HTML needs, decided by looking at the HTML itself.
+ *
+ * The renderer stamps every gesture as an element — `<mark …>` for a highlight or a ring,
+ * `<u …>` for an underline — and rendered bodies are trusted, escaped output: a literal
+ * "<mark" in someone's prose arrives as &lt;mark. So a tag scan is exact, not heuristic.
+ * The `[\\s>]` guard keeps `<u` from matching `<ul>`. Scanning the assembled page costs
+ * microseconds against bodies that are already cached, and it is the reason no route, no
+ * cache key and no setting had to learn what a page contains.
+ */
+export function penSheetsFor(body: string): string[] {
+  const sheets: string[] = []
+  if (/<mark[\s>]/.test(body)) sheets.push(PEN_MARKS_SHEET)
+  if (/<u[\s>]/.test(body) || body.includes('data-form="o"')) sheets.push(PEN_LINES_SHEET)
+  return sheets
+}
+
 /** The hashed URL for a bundle. Callers use this rather than writing paths by hand. */
 export function assetPath(name: keyof typeof BUNDLES & string): string {
   const path = PATHS.get(name)
@@ -84,7 +127,10 @@ export function scriptTag(name: string): string {
  * current URL and never asks again — so no client can observe a URL changing under it.
  */
 function staleSheet(path: string): string | null {
-  return /^\/assets\/site\.[a-z0-9]+\.css$/.test(path) ? PUBLIC_CSS_SERVED : null
+  const m = /^\/assets\/(site|pen-marks|pen-lines)\.[a-z0-9]+\.css$/.exec(path)
+  if (!m) return null
+  return m[1] === 'site' ? PUBLIC_CSS_SERVED
+    : m[1] === 'pen-marks' ? PEN_MARKS_CSS_SERVED : PEN_LINES_CSS_SERVED
 }
 
 /** The bundle served at a request path, or null when nothing matches. */
