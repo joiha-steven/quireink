@@ -17,7 +17,7 @@ export const HAND_POSTS: Seed[] = [
     excerpt: 'Over nine hundred of Van Gogh’s letters survive, and the famous ones are written with the same cut reed he drew with. They are the best free lesson in what a broad-edged tool does when nobody is performing: a working hand, at speed, on cheap paper.',
     category: 'Calligraphy', tags: ['pen', 'letters', 'van gogh'],
     ago: 1,
-    body: `Vincent van Gogh wrote more than nine hundred letters that survive, most of them to his brother Theo, and he wrote the Arles ones with the same instrument he was drawing with: a reed, cut to a broad edge with a pocket knife.[^1] Not a metaphorically similar instrument — the same pen, dipped in the same ink, moving between a sentence and a sketch without being put down.
+    body: `Vincent van Gogh wrote more than nine hundred letters that survive, most of them to his brother Theo, and he wrote the Arles ones with the same instrument he was drawing with: a reed, cut to a broad edge with a pocket knife.[^1] Not a metaphorically similar instrument — ++the same pen, dipped in the same ink++, moving between a sentence and a @@sketch@@ without being put down.
 
 That makes the letters something rare. Formal calligraphy shows you what a broad edge does when someone is being careful. ==The letters show what it does when someone is thinking about something else entirely==#blue — and the tool's behaviour survives the neglect, which is the whole argument for learning tools rather than styles.
 
