@@ -9,7 +9,7 @@ import type { SchemeDefault, ThemePreset } from '@/content/themes'
 import { getPreset, SCHEMES } from '@/content/themes'
 import { useAdminT } from './I18nProvider'
 import type { AdminStrings } from '@/i18n/admin-i18n'
-import { CHECK, INSET, Select, Setting, SETTING_GAP } from './kit'
+import { CHECK, INSET, ResetButton, Select, Setting, SETTING_GAP } from './kit'
 
 type ColorKey = keyof ThemeColors
 
@@ -138,9 +138,7 @@ function ModeBox({
     <div className={`space-y-3 ${INSET}`}>
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-bold">{title}</h3>
-        <button type="button" onClick={onReset} className="text-xs text-neutral-500 hover:text-neutral-900 dark:hover:text-white">
-          {t.resetDefault}
-        </button>
+        <ResetButton onClick={onReset} label={t.resetDefault} />
       </div>
       {FIELDS.map((f) => (
         <ColorRow key={f.key} label={t[f.label] as string} value={colors[f.key]} onChange={(v) => onChange(f.key, v)} />

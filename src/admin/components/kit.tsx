@@ -153,6 +153,22 @@ export function Select({
   )
 }
 
+// The "Reset to default" link, which three panels on the Appearance tab draw: both palette
+// modes and the type scale. One component because it is one control — written out twice it
+// had already drifted into two sizes of hit area, and the third copy was the one that ended
+// up beside a note instead of on a title row.
+export function ResetButton({ onClick, label }: { onClick: () => void; label: string }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="shrink-0 text-xs text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
+    >
+      {label}
+    </button>
+  )
+}
+
 // Card: a titled panel. `title` optional (stat-style panels pass none). `actions`
 // renders on the right of the header row.
 export function Card({
