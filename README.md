@@ -22,7 +22,7 @@ One process. Two SQLite files. No cloud account anywhere in the path.
 
 <br/>
 
-<img src="docs/demo.jpg" alt="Two screenshots side by side: a composed front page with a lead story and section rows, and the same site's article page with a contents rail and a meta column" width="960">
+<img src="docs/demo.jpg" alt="Two screenshots side by side: a composed front page with a lead story and section rows, and the same site's article page with a contents rail, a meta column, and a scanned Van Gogh letter as its first figure" width="960">
 
 <sub>**[demo.quireink.com](https://demo.quireink.com)** is the real thing. No sign-up, nothing to fill in. Use the bar at the bottom to jump between the front page, the list, an article, book mode, light and dark, and the admin. That bar is the only thing added, and it lives outside the code, so the demo is always the latest build.</sub>
 
@@ -110,7 +110,7 @@ You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE),
 
 <div align="center">
 
-<img src="docs/demo-reading.jpg" alt="Book mode, a fullscreen two-column reader on paper with a drop cap and a page count, beside an article in the dark theme" width="960">
+<img src="docs/demo-reading.jpg" alt="Book mode, a fullscreen two-column reader on paper with a drop cap, a captioned letter facsimile and a page count, beside the dark theme showing a two-by-two gallery of Van Gogh paintings above a table" width="960">
 
 <sub>Book mode and the dark theme. Neither is a filter dropped over the page. Both are the reading typography itself. The fonts ship with Vietnamese and Central European accents included, so the specimen on the left is set properly instead of falling back to whatever the system has.</sub>
 
@@ -171,7 +171,7 @@ It stays this way because of a few decisions that are hard to walk back.
 
 <div align="center">
 
-<img src="docs/demo-admin.jpg" alt="The Quire Ink admin: the Write screen with the list of everything written beside the editor's paper — a toolbar, a highlighted sentence and a plate in the post — and the appearance settings as one sheet of panels with six colour palettes and four reading fonts" width="960">
+<img src="docs/demo-admin.jpg" alt="The Quire Ink admin: the Write screen with the list of everything written beside the editor's paper — a toolbar, a highlighted sentence and a scanned letter in the post — and the appearance settings as one sheet of panels with six colour palettes and four reading fonts" width="960">
 
 <sub>The admin is built around writing: the list beside the paper, and everything else one sheet per page. Palettes, fonts, sizes, layout, menu — all of it is a setting, none of it is code.</sub>
 
