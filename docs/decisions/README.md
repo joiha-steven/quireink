@@ -48,6 +48,7 @@ abandoned on 2026-07-26, and the only trace was a private memory file.
 | [0024](0024-the-admin-is-rebuilt-around-writing.md) | The admin is rebuilt around writing; everything else moves out of the way | 2026-08-16 | ✅ |
 | [0025](0025-the-pen-varies-itself.md) | The pen varies itself: grown dies, a per-highlight deal, and the stroke setting retires | 2026-08-20 | ✅ |
 | [0026](0026-the-pen-learns-to-underline-and-ring.md) | The pen learns two more gestures: `++underline++` and `@@ring@@` | 2026-08-20 | ✅ |
+| [0027](0027-the-pen-ships-only-where-it-wrote.md) | The pen's CSS ships in two hashed sheets, linked only on pages that used it | 2026-08-21 | ✅ |
 
 ## Superseded, and why that matters
 

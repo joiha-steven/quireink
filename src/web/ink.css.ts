@@ -132,7 +132,17 @@ const ringGrips = () =>
   RING_GRIPS.map((g, i) => `.prose mark[data-form=o][data-pen="${i}"]`
     + `{padding:${g.pady} ${g.padx};margin:0 ${g.marx}}`).join('\n')
 
-export const INK_CSS = `
+/* ------------------------------------------------------------------------------------- *
+ * The sheet ships in TWO halves, because the pen is heavy and most pages never uncap it.
+ * The highlighter half serves `<mark>` (rings included — a ring rides the mark element and
+ * leans on its base rule); the lines half serves `<u>` and the ring's own loop. `web/assets.ts`
+ * hashes each half into its own immutable file and `web/layout.ts` links one only when the
+ * page's HTML actually contains its element — ADR 0027. The admin editor still takes both
+ * at once (`INK_CSS` below): the writing surface must show every gesture before the owner
+ * has decided which ones a post will use.
+ * ------------------------------------------------------------------------------------- */
+
+export const INK_HIGHLIGHT_CSS = `
 /* A highlight is a stroke of ink UNDER the words, never a box around them. The browser's
    default mark is a solid yellow rectangle with its own text colour; both go. */
 .prose mark{color:inherit;background-color:transparent;background-repeat:no-repeat;
@@ -152,6 +162,9 @@ ${dies(PEN_LIGHT, '.prose')}
 .dark .prose mark{mix-blend-mode:normal;color:var(--c-heading)}
 ${inks(PEN_DARK, '.dark .prose')}
 ${dies(PEN_DARK, '.dark .prose')}
+`.trim()
+
+export const INK_LINES_CSS = `
 /* The underline: a pen line under the words, never the browser's text-decoration — that is
    a perfectly straight rule at 1px, which is the same tell as the box. Descenders cross it,
    exactly as they do on paper. */
@@ -183,3 +196,6 @@ ${ringDies(PEN_LINE_LIGHT, PEN_AUX_LIGHT, '.prose')}
 ${ringInks(PEN_LINE_DARK, PEN_AUX_DARK, '.dark .prose')}
 ${ringDies(PEN_LINE_DARK, PEN_AUX_DARK, '.dark .prose')}
 `.trim()
+
+/** The whole pen, for the one surface that always needs all of it: the admin editor. */
+export const INK_CSS = `${INK_HIGHLIGHT_CSS}\n${INK_LINES_CSS}`
