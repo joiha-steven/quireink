@@ -87,7 +87,7 @@ Příliš žluťoučký kůň úpěl ďábelské ódy. Deset diakritických znam
     ago: 27,
     body: `Latin alfabesini kullanan çoğu dilde **i** harfinin büyüğü **I**'dır. Türkçede değil. Türkçede dört harf vardır: noktalı **i** ve onun büyüğü **İ**, noktasız **ı** ve onun büyüğü **I**.
 
-==Bu bir incelik değil. Anlamı değiştirir==#pink: *açık* ile *acık*, *sıkı* ile *siki*.
+==Bu bir incelik değil. Anlamı değiştirir==#pink: @@*açık*@@ ile *acık*, *sıkı* ile *siki*.
 
 ## Tipografide nerede görünür
 
@@ -116,7 +116,7 @@ Işık, yığın, İstanbul. Üç kelime, dört farklı i.`,
     ago: 34,
     body: `Kapitälchen sind der stillste Akzent, den die Typografie kennt. Sie heben ein Wort hervor, ohne die Zeile zu stören, weil sie die Höhe der Kleinbuchstaben behalten und trotzdem die Form der Großbuchstaben tragen.
 
-==Der Unterschied zwischen echten und gefälschten Kapitälchen ist keine Feinheit.==#yellow Echte sind eigens gezeichnet, mit kräftigeren Strichen und weiterem Abstand. Gefälschte entstehen, indem der Browser Versalien verkleinert — und dabei werden die Striche dünner als die der umgebenden Schrift, sodass das hervorgehobene Wort blasser wirkt als der Text, aus dem es herausstechen soll.
+==Der Unterschied zwischen echten und gefälschten Kapitälchen ist keine Feinheit.==#yellow ++Echte sind eigens gezeichnet++, mit kräftigeren Strichen und weiterem Abstand. Gefälschte entstehen, indem der Browser Versalien verkleinert — und dabei werden die Striche dünner als die der umgebenden Schrift, sodass das hervorgehobene Wort blasser wirkt als der Text, aus dem es herausstechen soll.
 
 ## Wo sie hingehören
 

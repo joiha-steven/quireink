@@ -20,7 +20,7 @@ export const TYPE_POSTS: Seed[] = [
     ago: 13,
     body: `A retail text font carries two to three thousand glyphs. A blog in English uses perhaps two hundred of them; add Vietnamese and it is four hundred. Everything else is Greek, Cyrillic, currency for markets you do not serve, and arrows.
 
-Subsetting removes what a page cannot show. ==It is not compression and it is not a quality trade==#green: the glyphs that stay are byte-identical to the ones the foundry drew.
+++Subsetting removes what a page cannot show++. ==It is not compression and it is not a quality trade==#green: the glyphs that stay are byte-identical to the ones the foundry drew.
 
 ## Three separate cuts, and they compound
 
