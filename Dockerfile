@@ -29,14 +29,38 @@
 #    runtime. The frozen tree shipped EACCES on a fresh install twice; this is the fix that
 #    needs no code. It does NOT extend to bind mounts, which keep the host's ownership:
 #    `docker-compose.yml` uses named volumes for that reason.
+#
+# 4. The PRODUCTION dependencies are their own stage, and the two installs share BuildKit's
+#    cache mount. Measured on this repo: the dev tree is 186 MB and the production one 94 MB,
+#    and the old shape resolved BOTH inside the build stage — so `rm -rf node_modules &&
+#    bun install --production` sat AFTER `COPY src`, and every one-line edit to the app
+#    re-ran a full production install that nothing about the edit had changed. Now the
+#    production set depends on `package.json` and `bun.lock` alone: an upgrade that only
+#    moves source code reuses it, and the two installs stream from one warm package cache
+#    instead of two cold downloads.
 
-# --- build: install everything, produce the bundles, then drop the build-only deps ------
+# --- deps: what the SERVER needs, and nothing the build needed -----------------------------
+#
+# Its own stage rather than a prune at the end of the build, so it depends on the manifest
+# and the lockfile alone. A source-only upgrade — which is most of them — reuses this layer
+# whole. Installing into an EMPTY directory is still what makes it a production set:
+# `bun install --production` over a dev `node_modules` that already matches the lockfile
+# reports "no changes" and removes nothing, which is how the image once shipped React,
+# Tiptap, Tailwind and TypeScript and weighed 535 MB.
+FROM oven/bun:1-slim AS deps
+WORKDIR /app
+COPY package.json bun.lock ./
+RUN --mount=type=cache,target=/root/.bun/install/cache,sharing=locked \
+    bun install --frozen-lockfile --production
+
+# --- build: the dev tree, only to produce the bundles --------------------------------------
 FROM oven/bun:1-slim AS build
 WORKDIR /app
 
 # Dependencies first, so an edit to `src/` does not re-resolve the whole tree.
 COPY package.json bun.lock ./
-RUN bun install --frozen-lockfile
+RUN --mount=type=cache,target=/root/.bun/install/cache,sharing=locked \
+    bun install --frozen-lockfile
 
 COPY tsconfig.json ./
 COPY src ./src
@@ -46,15 +70,6 @@ COPY scripts ./scripts
 # the public island bundles, and the admin SPA with its stylesheet. `build:admin` needs
 # React, Tiptap and the Tailwind CLI, which is the only reason this stage installs them.
 RUN bun run build:assets && bun run build:admin
-
-# Prune to what the SERVER needs, now that the bundles are built.
-#
-# The `rm -rf` is load-bearing and was added after measuring: `bun install --production`
-# against an existing `node_modules` that already matches the lockfile reports "no changes"
-# and removes NOTHING, so the image shipped React, Tiptap, Tailwind and TypeScript and
-# weighed 535 MB. Installing into an empty directory is what actually resolves the
-# production set. It is nearly free, because bun's cache in this stage is already warm.
-RUN rm -rf node_modules && bun install --frozen-lockfile --production
 
 # --- runtime -----------------------------------------------------------------------------
 FROM oven/bun:1-slim
@@ -72,7 +87,7 @@ ENV NODE_ENV=production \
     DATA_DIR=/var/lib/quire/data \
     STORAGE_LOCAL_DIR=/var/lib/quire/uploads
 
-COPY --from=build /app/node_modules ./node_modules
+COPY --from=deps /app/node_modules ./node_modules
 COPY --from=build /app/src ./src
 COPY --from=build /app/scripts ./scripts
 COPY package.json bun.lock tsconfig.json ./
@@ -83,6 +98,18 @@ RUN mkdir -p "$DATA_DIR" "$STORAGE_LOCAL_DIR" && chown -R bun:bun /var/lib/quire
 USER bun
 
 EXPOSE 3000
+
+# The probe lives HERE rather than in `docker-compose.yml`, so `docker run` gets it too and
+# there is one definition to keep true. `/api/health` checks the two things that actually
+# stop this app serving — the database answers, and the upload store is writable — and it
+# reports 503 rather than failing, which is the whole point of probing it.
+#
+# It costs a Bun start per tick, so the interval is 60s rather than 30: this app dies by
+# disk or by database, not by hanging, and on a 1 GB box a second runtime every half minute
+# is a real slice of a small machine. `--smol` runs that probe in the low-memory heap mode.
+# curl is not in the image and does not need to be.
+HEALTHCHECK --interval=60s --timeout=5s --start-period=20s --retries=3 \
+  CMD bun --smol --eval "process.exit((await fetch('http://127.0.0.1:'+(process.env.PORT||3000)+'/api/health')).ok ? 0 : 1)"
 
 # `bun:sqlite` is synchronous and single-threaded by design (one writer by construction),
 # so this is one process and never a cluster. Scale the box, not the process count.

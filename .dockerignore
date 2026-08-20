@@ -23,6 +23,11 @@ data-dev-uploads
 .env.*
 !.env.docker.example
 
+# The demo fixture's artwork: 3.2 MB of public-domain scans that only `seed-art.ts` and the
+# demo content seeders read, and no runtime path touches. It was riding into the image
+# inside `COPY scripts ./scripts`.
+scripts/art
+
 # Local scratch, evidence, and the deploy's commit stamp (the image is not a deploy).
 build-sha
 .tmp

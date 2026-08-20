@@ -21,7 +21,7 @@
 // All settings still live in one state object and save together via PUT /api/settings,
 // which merges — regrouping the UI changed no stored shape.
 
-import { useState, type ReactNode } from 'react'
+import { useRef, useState, type ReactNode } from 'react'
 import { useRouter, useSearchParams } from '@/admin/router'
 import type { SiteSettings, ApiResponse } from '@/types'
 import type { ThemePreset } from '@/content/themes'
@@ -96,6 +96,8 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
   const tabParam = useSearchParams().get('tab')
   const [tab, setTab] = useState<Tab>(
     (TAB_IDS as string[]).includes(tabParam ?? '') ? (tabParam as Tab) : 'site')
+  // Filled by TypographyFields; called by the Reset button in that card's header row.
+  const typographyReset = useRef<(() => void) | null>(null)
 
   const jumpToSetting = useSettingJump()
 
@@ -284,11 +286,26 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
                 <FontUpload value={s.customFont} onChange={(customFont) => update({ customFont })} />
               </div>
             </Card>
-            <Card panel title={t.cardTypography}>
+            {/* Reset rides the TITLE row, like the two palette panels on the left. Beside
+                the note it lined up with nothing at this column width. */}
+            <Card
+              panel
+              title={t.cardTypography}
+              actions={
+                <button
+                  type="button"
+                  onClick={() => typographyReset.current?.()}
+                  className="text-xs text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
+                >
+                  {t.resetDefault}
+                </button>
+              }
+            >
               <TypographyFields
                 typography={s.typography}
                 fontPreset={s.fontPreset}
                 onChange={(typography) => update({ typography })}
+                resetRef={typographyReset}
               />
             </Card>
             <Card panel title={t.cardRendering}>
