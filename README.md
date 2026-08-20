@@ -1,6 +1,6 @@
 <div align="center">
 
-# quire**INK** &nbsp;`2.1.0`
+# quire**INK** &nbsp;`2.1.1`
 
 **A blog you host yourself, and an AI agent can run for you.**
 No algorithm, no ads, no platform standing between you and your readers.
@@ -74,14 +74,15 @@ Three things shaped it.
 
 You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE), and run the published version commercially — paid hosting included — under [one additional permission](./LICENSE-EXCEPTION.md).
 
-> **2.1.0 came out on 2026-08-18** and runs the demo above plus the author's own blog at
-> [manhhung.me](https://manhhung.me). Thirty commits, nearly all one project: the admin
-> rebuilt around writing. The screen you write on shows the list of everything written
-> beside the paper, every other screen is one sheet per page, search reads the body of the
-> writing and survives Vietnamese diacritics, and the admin's one colour is the product's
-> own highlighter. Nothing on the reader's side moved a byte. The project also has a front
-> door now at [quireink.com](https://quireink.com). The [changelog](./CHANGELOG.md) has
-> everything that changed.
+> **2.1.1 came out on 2026-08-20** and runs the demo above plus the author's own blog at
+> [manhhung.me](https://manhhung.me). One project again, this time on the reader's side:
+> the pen learns to draw like a hand. Every highlight used to be one stroke shape stretched
+> to fit; now the shapes are grown from a seeded generator and each phrase keeps its own —
+> tilt, weight, dry patches, pooled ink and all. Two gestures join from any borrowed
+> textbook: `++text++` underlines in pencil and `@@word@@` rings a word in red ballpoint.
+> And the editor's U button, which had been silently dropping underlines on save since it
+> first shipped, now saves what it applies. The [changelog](./CHANGELOG.md) has everything
+> that changed.
 
 ---
 
@@ -92,7 +93,7 @@ You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE),
 | 🖋️&nbsp;**Writing** | A real editor over Markdown — tables, video, footnotes, callouts, **mathematics**, Spotify. Drop an image in and it is cut for every screen. Saves as you type, keeps three versions, and can hold a post until Tuesday. The Markdown source view dims its own syntax |
 | 🏠&nbsp;**Front&nbsp;page** | The post list, a page you wrote, or a composed front: lead story, picks, a row per category, most read. Works with photographs, and with only words. [How it works](./docs/homepage.md) |
 | 🎨&nbsp;**Looks** | Six palettes, light and dark. Four reading fonts, or upload your own. Every size comes from a role, so one change moves the page instead of one heading |
-| 🖍️&nbsp;**Highlighter** | `==text==` in five inks. Not a coloured box — an SVG stroke with chisel ends that breaks per line, from pigments measured off a photograph of a real pen box. 1.4&nbsp;KB, and nothing at all if you never use it |
+| 🖍️&nbsp;**The&nbsp;pen** | `==text==` highlights in five inks, `++text++` underlines in pencil, `@@word@@` rings a word in red ballpoint. Not coloured boxes — strokes grown from a seeded hand, so no two on a page share a shape and every phrase keeps its own. Pigments measured off a photograph of a real pen box |
 | 💻&nbsp;**Code** | Highlighted on the server, so the reader downloads no highlighter. Twenty-one languages, and the names people type (`typescript`, `sh`) reach them. A fence naming nothing is guessed at — timidly, so program output stays plain |
 | 🔍&nbsp;**Reading** | Search that answers as you type. A side rail with your categories and tags, or the contents of the post. Related posts, reading time, a progress bar. And **book mode**: two columns on paper, with a drop cap |
 | 📈&nbsp;**Numbers** | Analytics without cookies. Who read what, how far down they got, where they came from. Plus an activity log, a trash you can undo, and a help page |
@@ -126,7 +127,7 @@ You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE),
 
 These are off the network, first visit, nothing cached. It is what a stranger on a phone actually waits for.
 
-The CSS and JavaScript rows are build artefacts — the same bytes on every install — and are read off the 2.0.3 build; nothing since 2.0.1 has moved them, 2.1.0 included, because 2.1.0 touches only the admin. The totals were measured for 2.0.1 against the origin, not through the CDN, and they are this site: Vietnamese, Literata to read and JetBrains Mono for the furniture. They are not a property of the software, because the fonts are cut per script and a browser fetches only the ranges your pages actually use. Fonts fell 86 KB to 67 KB in 2.0.1 without a face being dropped.
+The CSS and JavaScript rows are build artefacts — the same bytes on every install — and are read off the 2.0.3 build. Nothing between 2.0.1 and 2.1.0 moved them; **2.1.1 moves one**: the stylesheet now carries the pen's stroke shapes and is 29.3 KB gzipped, one immutable request cached for a year. The totals were measured for 2.0.1 against the origin, not through the CDN, and they are this site: Vietnamese, Literata to read and JetBrains Mono for the furniture. They are not a property of the software, because the fonts are cut per script and a browser fetches only the ranges your pages actually use. Fonts fell 86 KB to 67 KB in 2.0.1 without a face being dropped.
 
 | | Home | A post | |
 |:---|---:|---:|:---|

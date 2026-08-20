@@ -1,6 +1,6 @@
 <div align="center">
 
-# quire**INK** &nbsp;`2.1.0`
+# quire**INK** &nbsp;`2.1.1`
 
 **Một cái blog bạn tự host, và AI agent có thể vận hành thay bạn.**
 Không thuật toán, không quảng cáo, không nền tảng nào đứng giữa bạn và người đọc.
@@ -74,13 +74,14 @@ Có ba thứ định hình nó.
 
 Bạn được đọc, sửa, chạy và fork theo [PolyForm Noncommercial](./LICENSE), và được chạy bản phát hành để kinh doanh — kể cả bán hosting — theo [một cho phép bổ sung](./LICENSE-EXCEPTION.vi.md).
 
-> **2.1.0 ra ngày 18/08/2026**, đang chạy bản demo ở trên và blog riêng của tác giả tại
-> [manhhung.me](https://manhhung.me). Ba mươi commit, gần như tất cả cho một việc: dựng lại
-> phần quản trị quanh chuyện viết. Màn hình viết bày danh sách mọi thứ đã viết ngay cạnh
-> tờ giấy, mỗi trang còn lại là một tờ duy nhất, tìm kiếm đọc được cả thân bài và không
-> vấp dấu tiếng Việt, và màu duy nhất trong trang quản trị là chính cây bút dạ của sản
-> phẩm. Phía người đọc không đổi một byte nào. Dự án cũng đã có cửa chính tại
-> [quireink.com](https://quireink.com). [Changelog](./CHANGELOG.md) có đủ những gì đã đổi.
+> **2.1.1 ra ngày 20/08/2026**, đang chạy bản demo ở trên và blog riêng của tác giả tại
+> [manhhung.me](https://manhhung.me). Lại một việc duy nhất, lần này ở phía người đọc:
+> cây bút học cách vẽ như tay người. Trước đây mọi vệt tô là một hình kéo giãn cho vừa;
+> giờ nét được sinh từ một bàn tay có hạt giống, mỗi cụm chữ giữ nét riêng của nó — độ
+> nghiêng, độ đậm, vệt khô mực, mực đọng, đủ cả. Thêm hai cử chỉ quen thuộc từ sách vở
+> mượn về: `++chữ++` gạch dưới bằng bút chì và `@@chữ@@` khoanh tròn bằng bút bi đỏ. Và
+> nút U trong trình soạn — vốn âm thầm làm mất gạch dưới khi lưu từ ngày đầu — giờ lưu
+> đúng cái nó vẽ. [Changelog](./CHANGELOG.md) có đủ những gì đã đổi.
 
 ---
 
@@ -91,7 +92,7 @@ Bạn được đọc, sửa, chạy và fork theo [PolyForm Noncommercial](./LI
 | 🖋️&nbsp;**Viết** | Trình soạn thật trên nền Markdown — bảng, video, chú thích chân trang, khung nhấn, **công thức toán**, Spotify. Thả ảnh vào là nó tự cắt cho mọi cỡ màn hình. Lưu trong lúc gõ, giữ ba bản, và giữ bài lại tới sáng thứ Ba. Xem mã Markdown thì dấu cú pháp tự mờ đi |
 | 🏠&nbsp;**Trang&nbsp;chủ** | Danh sách bài, một trang bạn tự viết, hoặc trang dựng sẵn: bài dẫn, vài bài chọn, một hàng cho mỗi chuyên mục, bài đọc nhiều. Hợp cả site nhiều ảnh lẫn site chỉ có chữ. [Cách hoạt động](./docs/homepage.md) |
 | 🎨&nbsp;**Giao&nbsp;diện** | Sáu bảng màu, sáng và tối. Bốn font đọc, hoặc tải font của bạn lên. Mọi cỡ chữ đều sinh ra từ một vai trò, nên sửa một chỗ là cả trang đổi chứ không phải một tiêu đề |
-| 🖍️&nbsp;**Bút&nbsp;dạ** | `==chữ==` với năm màu mực. Không phải ô màu — là nét SVG đầu vát, ngắt theo từng dòng, màu đo từ ảnh chụp một hộp bút thật. Tốn 1,4&nbsp;KB, và không tốn gì nếu bạn không dùng |
+| 🖍️&nbsp;**Cây&nbsp;bút** | `==chữ==` tô năm màu mực, `++chữ++` gạch dưới bằng bút chì, `@@chữ@@` khoanh tròn bằng bút bi đỏ. Không phải ô màu — nét sinh từ một bàn tay có hạt giống, không hai vệt nào trên trang giống nhau và mỗi cụm chữ giữ nét riêng. Màu mực đo từ ảnh chụp một hộp bút thật |
 | 💻&nbsp;**Code** | Tô màu ở máy chủ, người đọc không tải bộ tô màu nào. Hai mươi mốt ngôn ngữ, và những tên hay gõ (`typescript`, `sh`) đều nhận ra. Hàng rào không ghi ngôn ngữ thì được đoán — đoán dè dặt, để output của chương trình vẫn để trơn |
 | 🔍&nbsp;**Đọc** | Tìm kiếm trả lời ngay trong lúc gõ. Cột bên có chuyên mục và thẻ, hoặc mục lục của bài đang đọc. Bài liên quan, thời gian đọc, thanh tiến độ. Và **chế độ sách**: hai cột trên nền giấy, có chữ cái đầu lớn |
 | 📈&nbsp;**Số&nbsp;liệu** | Thống kê không dùng cookie. Ai đọc bài nào, đọc tới đâu, đến từ đâu. Kèm nhật ký hoạt động, thùng rác hoàn tác được, và một trang trợ giúp |
@@ -125,7 +126,7 @@ Bạn được đọc, sửa, chạy và fork theo [PolyForm Noncommercial](./LI
 
 Đây là số đo từ mạng, lần vào đầu tiên, chưa cache gì. Đúng bằng cái mà một người lạ cầm điện thoại phải chờ.
 
-Hai dòng CSS và JavaScript là sản phẩm của bản build — giống nhau ở mọi bản cài — và lấy từ bản dựng 2.0.3; từ 2.0.1 tới nay chưa bản nào làm chúng nhúc nhích, kể cả 2.1.0, vì 2.1.0 chỉ đụng phần quản trị. Các số tổng đo cho 2.0.1, tại origin chứ không qua CDN, và là của chính site này: tiếng Việt, Literata để đọc và JetBrains Mono cho phần khung. Chúng không phải thuộc tính của phần mềm, vì font được cắt theo bảng chữ và trình duyệt chỉ tải đúng những dải mà trang bạn dùng tới. Riêng font đã giảm từ 86 KB xuống 67 KB ở 2.0.1 mà không bỏ đi họ chữ nào.
+Hai dòng CSS và JavaScript là sản phẩm của bản build — giống nhau ở mọi bản cài — và lấy từ bản dựng 2.0.3. Từ 2.0.1 đến 2.1.0 chưa bản nào làm chúng nhúc nhích; **2.1.1 làm xê dịch một dòng**: stylesheet giờ mang theo hình nét của cây bút, nặng 29,3 KB gzip, một request duy nhất được cache một năm. Các số tổng đo cho 2.0.1, tại origin chứ không qua CDN, và là của chính site này: tiếng Việt, Literata để đọc và JetBrains Mono cho phần khung. Chúng không phải thuộc tính của phần mềm, vì font được cắt theo bảng chữ và trình duyệt chỉ tải đúng những dải mà trang bạn dùng tới. Riêng font đã giảm từ 86 KB xuống 67 KB ở 2.0.1 mà không bỏ đi họ chữ nào.
 
 | | Trang chủ | Một bài | |
 |:---|---:|---:|:---|
