@@ -20,7 +20,13 @@ cd "$(dirname "$0")/../.."
 TMP=.tmp/readme-shoot
 PORT_LIST=3410
 PORT_FRONT=3411
-POST=the-measure-is-the-design
+# The post the desktop, book and editor panels open. It moved from `the-measure-is-the-design`
+# when the fixture gained the Van Gogh post: a plate sells better showing the reed-pen letter,
+# the floated 30% portrait and a four-painting gallery than showing the same feature set on a
+# text-only page. The phone plate keeps a SERIES post (below) so the series box stays shown.
+POST=the-reed-pen-in-van-goghs-letters
+# The phone's article panel: a series box AND a full-width print above the fold.
+MPOST=thirty-six-views-ten-thousand-impressions
 
 rm -rf "$TMP"; mkdir -p "$TMP/panels"
 trap 'kill $(jobs -p) 2>/dev/null || true' EXIT
@@ -67,8 +73,11 @@ bun run drive "$L/$POST" "$P/book.png" \
 # The same height as the book panel. They sit side by side on one plate, and a panel 320px
 # shorter than the one beside it leaves a band of bare plate under it that reads as a
 # missing image rather than as a shorter page.
+# Scrolled to the gallery, so this one panel shows two things: the dark theme, and a 2x2
+# `#grid` gallery of paintings — the feature the fixture had nowhere to photograph before.
 bun run drive "$L/$POST" "$P/dark.png" \
-  "document.documentElement.classList.add('dark')" 1280 860 600 > /dev/null
+  "document.documentElement.classList.add('dark'); document.querySelector('.gallery').scrollIntoView({block:'center'})" \
+  1280 860 600 > /dev/null
 
 # WHAT THE RENDERER DOES, at a size you can read it at. Three panels, and every number in
 # the two lines below was decided by looking at the result rather than by taste:
@@ -103,7 +112,7 @@ echo "== phone panels =="
 # with every headline cut off mid-word at the right edge while the third — the only one
 # driven — wrapped correctly. Two panels of a phone plate that were not phones.
 MOBILE=1 bun run drive "$L/"      "$P/m-list.png" "void 0" 390 844 600 > /dev/null
-MOBILE=1 bun run drive "$L/$POST" "$P/m-post.png" "void 0" 390 844 600 > /dev/null
+MOBILE=1 bun run drive "$L/$MPOST" "$P/m-post.png" "void 0" 390 844 600 > /dev/null
 MOBILE=1 bun run drive "$L/$POST" "$P/m-search.png" \
   "document.querySelector('[data-search-open]').click(); setTimeout(function(){var i=document.querySelector('.search-panel input, input[type=search]'); if(i){i.value='page'; i.dispatchEvent(new Event('input',{bubbles:true}))}}, 200)" \
   390 844 1400 > /dev/null
