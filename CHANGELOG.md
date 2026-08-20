@@ -1,5 +1,75 @@
 # CHANGELOG
 
+## 2026-08-20 — Quire Ink 2.1.1
+
+**The pen learns to draw like a hand.** This release began with photographs: a notebook and
+two textbooks full of real highlighting, put next to the demo with the verdict that the
+demo's strokes looked machine-stamped. They did, for a reason the code could name — every
+highlight on a page was one SVG die stretched to fit, and the geometry jitter that was
+supposed to hide it counted siblings, so on a site where most paragraphs hold one highlight
+it never fired at all. A page of twelve highlights wore one silhouette twelve times.
+
+The upgrade is a drop-in: same install, same settings, same database, no migrations, **no
+new environment variables**. Unlike 2.1.0 this one is all on the reader's side of the
+house, and the costs are stated below.
+
+### The highlighter varies itself ([ADR 0025](docs/decisions/0025-the-pen-varies-itself.md))
+
+The stroke shapes are now **grown from a seeded generator, not drawn**: ten dies varying
+tilt, weight, edge tremor, chisel ends, an occasional taper where the pen lifted, a dry
+lane where the felt split, pooled ink along the top edge, a darker spot where the pen was
+set down — and forty grips deciding how each stroke sits on its words and how far it
+overshoots them, differently at each end. Which variant a highlight wears is decided by a
+hash of its own text, stamped into the markup as `data-pen`: scattered across the page the
+way no sibling-counting selector can manage, and stable across re-renders, because a page
+that reshuffled its ink on every visit would feel haunted rather than hand-made. Two
+highlights now match only if their variant, their length and their line breaks all
+coincide.
+
+**The three-way stroke setting (marker / swipe / double) retires.** A pen that varies
+itself leaves a picker choosing between three uniformities nothing to do, and `swipe` was
+the one option that clipped Vietnamese stacked diacritics. Saved settings keep working; an
+old `highlight` key is simply ignored.
+
+### Two more gestures: `++underline++` and `@@ring@@` ([ADR 0026](docs/decisions/0026-the-pen-learns-to-underline-and-ring.md))
+
+The same photographs show what else a reader does to a page they own: sentences underlined
+in pen under the highlighting, and single load-bearing words ringed in ballpoint. Both are
+now syntax. `++text++` draws a pencil underline — tilt, bow, tail droop, pressure taper,
+sometimes a second re-inked pass — and `@@word@@` rings a word in red ballpoint. Both take
+`#green`-style suffixes, in ballpoint-strength versions of the five inks, because a thin
+line drawn in the highlighter's pastel pigment all but vanishes.
+
+The ring earned its shape the hard way: the first build stretched one loop to the word and
+the owner's verdict was exact — too long, the end curves flattened into a capsule. A hand
+does it the other way round, so the ring is now **two caps at a fixed width and a middle
+that does all the stretching**: the curves stay hand-sized around any word, the loop hugs
+the letters, runs well past both ends, and carries the crossing tail where the pen ran
+over its own start.
+
+Both gestures are **owner toggles** (Settings → Reading), on by default, and the toggle is
+CSS only — cached bodies never re-render, and turning a gesture off swaps the pen line for
+the browser's straight underline or leaves ringed words plain.
+
+### The U button stops losing work
+
+Pressing U in the editor applied StarterKit's underline mark, which has no Markdown
+serialization — the save dropped it silently, every time, since the editor first shipped.
+The editor now owns `underline`: same name, same button, same Mod-U, saved as `++text++`.
+A ring button joins the toolbar beside it, `++`/`@@` ink as you type exactly as `==` does,
+and a pasted ring can never be silently rewritten into a highlight — pinned by test, along
+with 24 other new ones (1,455 total, and the 57-flow tour).
+
+### Costs, measured
+
+The public stylesheet carries the pen's shapes as data-URIs and grew from **6.5 KB to
+29.3 KB gzipped** — one immutable request, cached for a year, and the pigments repeat
+across colourings so the wire cost is a fraction of the raw bytes. Set against the 51 KB
+the Literata subsets already cost a first paint, that bought the signature feature of a
+product named after ink; the known trim, if it is ever needed, is external per-die SVGs.
+Rendered bodies gain ~14 bytes per gesture (`data-pen="…"`). Nothing else moved.
+
+
 ## 2026-08-18 — Quire Ink 2.1.0
 
 **Thirty commits since 2.0.3, and nearly all of them are one project: the admin rebuilt
