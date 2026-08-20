@@ -76,6 +76,7 @@ export function Toolbar({
       <ToolButton label={t.tbBold} active={editor.isActive('bold')} onClick={() => editor.chain().focus().toggleBold().run()}><strong>B</strong></ToolButton>
       <ToolButton label={t.tbItalic} active={editor.isActive('italic')} onClick={() => editor.chain().focus().toggleItalic().run()}><em>I</em></ToolButton>
       <ToolButton label={t.tbUnderline} active={editor.isActive('underline')} onClick={() => editor.chain().focus().toggleUnderline().run()}><u>U</u></ToolButton>
+      <ToolButton label={t.tbRing} active={editor.isActive('ring')} onClick={() => editor.chain().focus().toggleRing().run()}><span className="inline-block rounded-full border border-current px-1 leading-tight">O</span></ToolButton>
       <ToolButton label="S" active={editor.isActive('strike')} onClick={() => editor.chain().focus().toggleStrike().run()}><s>S</s></ToolButton>
       <ToolButton label="`" active={editor.isActive('code')} onClick={() => editor.chain().focus().toggleCode().run()}><code>{'`'}</code></ToolButton>
       {sep}
@@ -342,6 +343,7 @@ export function BubbleBar({ editor, avoidTop }: { editor: TiptapEditor; avoidTop
           post title is the H1 and the deeper levels live behind "/" and their `#` shortcuts. */}
       <button type="button" title={t.tbHeading} onMouseDown={hold} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className={cls(editor.isActive('heading', { level: 2 }))}><span className="font-semibold">H</span></button>
       <button type="button" title={t.tbUnderline} onMouseDown={hold} onClick={() => editor.chain().focus().toggleUnderline().run()} className={cls(editor.isActive('underline'))}><u>U</u></button>
+      <button type="button" title={t.tbRing} onMouseDown={hold} onClick={() => editor.chain().focus().toggleRing().run()} className={cls(editor.isActive('ring'))}><span className="inline-block rounded-full border border-current px-1 leading-tight">O</span></button>
       <button type="button" title={t.tbStrike} onMouseDown={hold} onClick={() => editor.chain().focus().toggleStrike().run()} className={cls(editor.isActive('strike'))}><s>S</s></button>
       <button type="button" title={t.tbCodeInline} onMouseDown={hold} onClick={() => editor.chain().focus().toggleCode().run()} className={`${cls(editor.isActive('code'))} font-mono`}>{'</>'}</button>
       <span className="mx-0.5 h-5 w-px bg-neutral-200 dark:bg-neutral-700" />

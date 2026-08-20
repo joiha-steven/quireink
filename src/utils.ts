@@ -1,6 +1,6 @@
 // Pure helpers shared across lib and components. No side effects, no I/O.
 
-import { INK_SYNTAX_GLOBAL } from '@/render/ink'
+import { INK_SYNTAX_GLOBAL, RING_SYNTAX_GLOBAL, UNDER_SYNTAX_GLOBAL } from '@/render/ink'
 // `math-syntax`, NOT `math`: the grammar, not the renderer. Fifteen admin files import this
 // module, so whatever it reaches for lands in the chunk every admin screen loads — and
 // `render/math.ts` imports Temml. Three regexes cost 212 KB of LaTeX engine until this line
@@ -100,6 +100,10 @@ export function toPlainText(markdown: string): string {
     // Highlights -> the words inside them. BEFORE the bare-character strip below, which
     // would otherwise eat the `#` of a colour suffix and leave the colour NAME in the prose.
     .replace(INK_SYNTAX_GLOBAL, '$1')
+    // The pen's other two gestures, for the same reason: an underline or a ring in the
+    // opening sentence must not leak `++`, `@@` or a colour name into the deck.
+    .replace(UNDER_SYNTAX_GLOBAL, '$1')
+    .replace(RING_SYNTAX_GLOBAL, '$1')
     // Maths. This is the excerpt, the meta description, the OG card and the RSS summary, and
     // the failure it prevents is `\times` and `\frac` appearing in all four — the exact shape
     // of the bug the ink syntax shipped when this function did not know about `==`.

@@ -29,7 +29,7 @@ A reed pen is the oldest broad-edged instrument there is: a length of dried reed
 
 ![Self-portrait, 1889. The beard is drawn in the same directional strokes the reed makes on paper](/uploads/media/van-gogh-self-portrait.jpg#left-third)
 
-Van Gogh cut his own, in several widths, and complained happily about them in the letters. The reed suited him for the reason it frustrates beginners: it holds little ink and gives it up fast, so every stroke starts wet and ends dry. A careful writer fights that. He harvested it — the fading stroke became texture, distance, wind in a field.
+Van Gogh cut his own, in several widths, and complained happily about them in the letters. The reed suited him for the reason it frustrates beginners: it holds little ink and gives it up fast, so every stroke starts wet and ends @@dry@@. A careful writer fights that. He harvested it — ++the fading stroke became texture, distance, wind in a field++.
 
 The floated portrait beside this paragraph is the size feature doing its job, incidentally: a figure at thirty per cent of the column, with the prose running around it, is how a magazine sets a face — and how a letter sets a sketch.
 

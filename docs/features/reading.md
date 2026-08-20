@@ -112,9 +112,16 @@
   The Apple Music URL is quote-guarded against an `src` breakout.
 ## Highlighter + callouts + copy-code — `src/render/ink.ts`, `src/render/post-content.ts` (`buildCallouts`), `src/assets/js/code-copy.ts`
 
-- **Highlighter:** `==text==` → `<mark>`; `==text==#green` → `<mark data-ink=…>` (5 inks). Inline
-  marked extension, so bold/links/code ride under one stroke; `==` may not open/close on space, so
-  `x == y` is untouched. Ink `src/web/ink.css.ts`; 3 shapes = a setting, CSS not markup. ADR 0018.
+- **Highlighter:** `==text==` → `<mark data-pen=…>`; `==text==#green` adds `data-ink=…` (5 inks).
+  Inline marked extension, so bold/links/code ride under one stroke; `==` may not open/close on
+  space, so `x == y` is untouched. The look is CSS, never markup (`src/web/ink.css.ts`): 10 grown
+  dies × 40 grips (`src/render/pen-dies.ts`), dealt per highlight by the `data-pen` hash of its own
+  text — identity in the markup, appearance in the sheet. ADR 0018, amended by 0025.
+- **Underline & ring:** `++text++` → `<u data-pen>` (graphite pencil; `#green` picks a
+  ballpoint-strength ink) and `@@word@@` → `<mark data-form="o" data-pen>` (red ballpoint). Same
+  grammar guards, same hash-dealt dies; the ring is two fixed-width caps plus a stretching middle
+  so its end curves never flatten on a long word. Owner toggles `features.penUnderline` /
+  `features.penRing` flip the CSS only — cached bodies never re-render. ADR 0026.
 - **Mathematics:** `$$…$$` / `\[…\]` display, `$…$` / `\(…\)` inline. Temml renders LaTeX to
   **MathML at render time**, so a reader downloads no script, no sheet and no font for it. The TeX
   is never parsed as Markdown (`a_1` would become emphasis). `$…$` carries Pandoc's three guards

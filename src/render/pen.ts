@@ -54,28 +54,81 @@ export const PEN_DARK: Record<PenInk, string> = {
 }
 
 /**
- * One stroke, in one colour, as a `url()` an element can carry as a background-image.
+ * The desk's other two pens: the graphite pencil an underline defaults to, and the red
+ * ballpoint a ring defaults to. CHOSEN, not measured — unlike the five highlighter pigments
+ * there is no reference box to photograph, so these are picked by eye against the light and
+ * dark pages and reviewed on the proof sheet. Both gestures also take the five highlighter
+ * inks through the same `#colour` suffix.
+ *
+ * The dark values are brighter than the highlighter's dark mixes on purpose: a line does
+ * not sit UNDER the words the way a sweep does, so it owes the page visibility, not a
+ * text-contrast ceiling.
+ */
+export const PEN_AUX_LIGHT = { graphite: '5b574f', red: 'c23b2b' } as const
+export const PEN_AUX_DARK = { graphite: '8f8a80', red: 'a3524a' } as const
+
+/**
+ * The five inks AS LINES. A thin line drawn in the highlighter's pastel pigment all but
+ * vanishes — pale ink over a wide sweep reads because of its area, and a 2px underline has
+ * none — so the line gestures get ballpoint-strength versions of the same five hues.
+ * Chosen like the AUX pair above, and brighter in dark mode for the same reason.
+ */
+export const PEN_LINE_LIGHT: Record<PenInk, string> = {
+  yellow: 'a38c15', green: '3f7d2c', pink: 'c2418f', blue: '2f6fae', orange:'c76b1d',
+}
+export const PEN_LINE_DARK: Record<PenInk, string> = {
+  yellow: 'b6a13c', green: '7fae62', pink: 'd587b8', blue: '77a8d4', orange: 'd09055',
+}
+
+// The die shapes are GROWN from a seeded generator rather than drawn — `pen-dies.ts` holds
+// the hand and the argument for it. This module stays the single place a pigment exists.
+import { DIES, RING_DIES, UNDER_DIES } from '@/render/pen-dies'
+export {
+  PEN_DIE_COUNT, PEN_VARIANT_COUNT, PEN_GRIPS,
+  UNDER_DIE_COUNT, UNDER_GRIPS, RING_DIE_COUNT, RING_GRIPS,
+} from '@/render/pen-dies'
+
+/**
+ * One stroke, in one colour, stamped from one die, as a `url()` an element can carry as a
+ * background-image. Die 0 is the default and the only one the share card uses: satori reads
+ * the same `backgroundImage` grammar a browser does, so the card and the page want identical
+ * strings — which is the whole point of this returning a finished value.
  *
  * IT CANNOT BE A MASK, and the obvious build is the one that fails. Solid ink plus an SVG
  * mask with a hand-drawn edge clips the TEXT as well: `mask` applies to the whole element, so
  * the tops of the letters and every Vietnamese diacritic get cut off along with the ink. That
  * is measured, not predicted — the first pass rendered "mang dấu vết" as "mang uau vet". So
- * the shape carries its own colour and rides in as an image, one per pigment.
+ * the shape carries its own colour and rides in as an image, one per pigment per die.
  *
- * Two paths per stroke: a full sweep at 80% opacity and a denser lower band at 55%, which is
- * the second pass a real pen leaves. The ends are cut on a slant (a chisel tip), the top and
- * bottom edges drift, and `preserveAspectRatio=none` stretches the whole thing to the length
- * of the phrase — so no two highlights on a page are the same shape.
- *
- * The `url(...)` wrapper is shared rather than added by each caller: satori reads the same
- * `backgroundImage` grammar a browser does, so the card and the page want the identical
- * string. That is the whole point of this returning a finished value.
+ * `preserveAspectRatio=none` stretches the die to the length of the phrase, so on top of the
+ * dies the wobble frequency itself varies with how much text sits under the stroke.
  */
-export function penStroke(hex: string): string {
-  return 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 200 34\''
-    + ' preserveAspectRatio=\'none\'%3E%3Cpath d=\'M6,6 C40,2.5 70,7.5 104,4.2 C138,1.6 168,6.8'
-    + ' 196,3.6 L200,29.5 C170,32.6 140,27.2 106,30.4 C72,33.2 40,28.2 0,30.8 Z\' fill=\'%23'
-    + hex + '\' opacity=\'.8\'/%3E%3Cpath d=\'M2,17 C40,14.5 70,19.5 104,16.4 C138,13.6 168,18.8'
-    + ' 199,15.6 L200,29.5 C170,32.6 140,27.2 106,30.4 C72,33.2 40,28.2 0,30.8 Z\' fill=\'%23'
-    + hex + '\' opacity=\'.55\'/%3E%3C/svg%3E")'
+export function penStroke(hex: string, die = 0): string {
+  return penUrl(DIES[die]!, hex, 34)
+}
+
+/** An underline stroke: the same contract as `penStroke`, in the underline's 200×20 box. */
+export function penUnder(hex: string, die = 0): string {
+  return penUrl(UNDER_DIES[die]!, hex, 20)
+}
+
+/**
+ * One PIECE of a ring around a word: the left cap, the stretchable middle, or the right
+ * cap. Three images instead of one because a stretched loop is not a hand-drawn loop — the
+ * caps ride at a fixed em width so their curvature never depends on how long the word is
+ * (`pen-dies.ts` has the full argument). The caps live in a 40-unit box, the middle in a
+ * 100-unit one.
+ */
+export function penRing(hex: string, die = 0, part: 'l' | 'm' | 'r' = 'm'): string {
+  const d = RING_DIES[die]!
+  return penUrl(d[part], hex, 48, undefined, part === 'm' ? 100 : 40)
+}
+
+function penUrl(die: readonly (readonly [string, string])[], hex: string, boxH: number,
+  extra = '', boxW = 200): string {
+  const paths = die
+    .map(([d, o]) => `%3Cpath d='${d}' fill='%23${hex}' opacity='${o}'${extra}/%3E`)
+    .join('')
+  return `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${boxW} ${boxH}'`
+    + ` preserveAspectRatio='none'%3E${paths}%3C/svg%3E")`
 }

@@ -12,6 +12,7 @@
 // CSS (`web/ink.css.ts`), because rendered bodies are cached under a hash of their Markdown:
 // a stroke baked into the HTML could not be restyled without evicting every cached body.
 import type { Tokens, TokenizerAndRendererExtension } from 'marked'
+import { PEN_VARIANT_COUNT } from '@/render/pen-dies'
 
 /**
  * The five pigments, and the order is the order they are offered in.
@@ -123,6 +124,82 @@ export const inkExtension: TokenizerAndRendererExtension = {
     // out would put a colour nobody chose into every cached body, and `<mark>` on its own
     // is already the correct element.
     const ink = t.ink && t.ink !== DEFAULT_INK ? ` data-ink="${t.ink}"` : ''
-    return `<mark${ink}>${inner}</mark>`
+    // `data-pen` is IDENTITY, not appearance — which of the pen's variants this highlight
+    // wears; `web/ink.css.ts` decides what the number looks like, so the rule above holds.
+    // A hash of the highlight's own source, because no sibling-counting selector can deal
+    // strokes across a PAGE: most paragraphs hold one mark, so `:nth-of-type` jitter dealt
+    // every paragraph's first highlight the same card — a page of twelve highlights wearing
+    // one silhouette twelve times, which is the machine look this pen exists to avoid.
+    // Content-addressed, so a phrase keeps its stroke across re-renders and cached bodies
+    // stay deterministic.
+    return `<mark${ink} data-pen="${penSeed(t.raw ?? '')}">${inner}</mark>`
   },
 }
+
+/** FNV-1a, folded to a pen-variant number. Stable by construction — cached bodies carry it. */
+export function penSeed(raw: string): number {
+  let h = 0x811c9dc5
+  for (let i = 0; i < raw.length; i++) {
+    h ^= raw.charCodeAt(i)
+    h = Math.imul(h, 0x01000193)
+  }
+  return (h >>> 0) % PEN_VARIANT_COUNT
+}
+
+/* ------------------------------------------------------------------------------------- *
+ * The pen's other two gestures, same grammar shape, same guards, same four readers:
+ *
+ *   `++text++`  — an underline, drawn in pencil unless a `#colour` names one of the five
+ *                 inks. `<u>` on purpose: it is HTML's "unarticulated annotation", and a
+ *                 feed reader that knows no CSS still shows an underline.
+ *   `@@text@@`  — a ring around a word, drawn in red ballpoint unless a `#colour` says
+ *                 otherwise. `<mark data-form="o">`: ringing a word IS marking it, and the
+ *                 same feed reader degrades it to a visible mark.
+ *
+ * The opening pair may not touch whitespace and a triple is not a gesture, exactly as with
+ * `==` — which keeps `C++ and ++i`, `x @@ y` and email-adjacent `@` runs out of the pen's
+ * reach. Unlike the highlighter, a NAMED default is still an attribute here: `#yellow` on
+ * an underline is a choice (the default is graphite), so it is never elided.
+ * ------------------------------------------------------------------------------------- */
+
+const UNDER = `\\+\\+(?=[^\\s+])([\\s\\S]*?[^\\s+])\\+\\+(?!\\+)`
+const RING = `@@(?=[^\\s@])([\\s\\S]*?[^\\s@])@@(?!@)`
+
+export const UNDER_SYNTAX_SOURCE = `${UNDER}(?:#(${INKS.join('|')})\\b)?`
+export const UNDER_SYNTAX_CONTENT_LAST = `${UNDER}(?:#(?:${INKS.join('|')})\\b)?`
+export const UNDER_SYNTAX_GLOBAL = new RegExp(UNDER_SYNTAX_SOURCE, 'g')
+export const RING_SYNTAX_SOURCE = `${RING}(?:#(${INKS.join('|')})\\b)?`
+export const RING_SYNTAX_CONTENT_LAST = `${RING}(?:#(?:${INKS.join('|')})\\b)?`
+export const RING_SYNTAX_GLOBAL = new RegExp(RING_SYNTAX_SOURCE, 'g')
+
+/** One gesture extension; the three differ only in fence, name and the tag they emit. */
+function gesture(name: string, fence: string, rule: RegExp,
+  open: (ink: Ink | undefined, seed: number) => string, close: string,
+): TokenizerAndRendererExtension {
+  return {
+    name,
+    level: 'inline',
+    start(src: string) {
+      return src.indexOf(fence)
+    },
+    tokenizer(src: string) {
+      const m = rule.exec(src)
+      if (!m) return undefined
+      return { type: name, raw: m[0], ink: m[2] as Ink | undefined,
+        tokens: this.lexer.inlineTokens(m[1]!) }
+    },
+    renderer(token) {
+      const t = token as Tokens.Generic & { ink?: Ink }
+      return open(t.ink, penSeed(t.raw ?? '')) + this.parser.parseInline(t.tokens ?? []) + close
+    },
+  }
+}
+
+export const underExtension = gesture('underline', '++',
+  new RegExp(`^${UNDER_SYNTAX_SOURCE}`),
+  (ink, seed) => `<u${ink ? ` data-ink="${ink}"` : ''} data-pen="${seed}">`, '</u>')
+
+export const ringExtension = gesture('ring', '@@',
+  new RegExp(`^${RING_SYNTAX_SOURCE}`),
+  (ink, seed) => `<mark data-form="o"${ink ? ` data-ink="${ink}"` : ''} data-pen="${seed}">`,
+  '</mark>')

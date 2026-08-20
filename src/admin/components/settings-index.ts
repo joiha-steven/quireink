@@ -93,6 +93,8 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { tab: 'reading', label: 'featCategoryLabel', note: 'featCategoryLabelDesc' },
   { tab: 'reading', label: 'featBookText', note: 'featBookTextDesc' },
   { tab: 'reading', label: 'featBookMode', note: 'featBookModeDesc' },
+  { tab: 'reading', label: 'featPenUnderline', note: 'featPenUnderlineDesc' },
+  { tab: 'reading', label: 'featPenRing', note: 'featPenRingDesc' },
   { tab: 'reading', label: 'featSidebar', note: 'featSidebarDesc' },
   { tab: 'reading', label: 'featSidebarSeries', note: 'featSidebarSeriesDesc' },
   { tab: 'reading', label: 'featInfiniteScroll', note: 'featInfiniteScrollDesc' },

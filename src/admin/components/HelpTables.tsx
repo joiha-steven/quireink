@@ -12,6 +12,8 @@ const MARKDOWN: Row[] = [
   ['# … ######', 'Headings. The table of contents is built from these.'],
   ['> [!NOTE]', 'Callout box. Also TIP, WARNING, IMPORTANT, CAUTION.'],
   ['==text==', 'Highlighter pen. ==text==#green picks the ink: yellow, green, pink, blue, orange.'],
+  ['++text++', 'Pencil underline. ++text++#green draws the line in one of the five inks instead.'],
+  ['@@word@@', 'Ballpoint ring around a word. @@word@@#blue picks the ink; red without one.'],
   ['text[^1]', 'Footnote reference; define it as [^1]: the note anywhere in the body.'],
   ['![alt](url)', 'Image. Dropping a file into the editor writes this for you.'],
   ['```lang', 'Fenced code, syntax-highlighted on the server (no client JS).'],

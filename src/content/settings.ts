@@ -9,7 +9,7 @@ import { one, run } from '@/store/query'
 import { isSiteLang } from '@/locales/langs'
 import { DEFAULT_PRESET_ID, isPresetId, isFontPresetId, defaultThemes, ALL_PALETTE_IDS, DEFAULT_TYPOGRAPHY, DEFAULT_FONT, DEFAULT_FONT_PRESET, isChromeFontId, DEFAULT_CHROME_FONT, TYPE_ROLES } from '@/content/themes'
 import {
-  DEFAULT_HOME, DEFAULT_GALLERY, DEFAULT_HIGHLIGHT, sanitizeMenu, migrateThemes, sanitizeThemes, sanitizeEnabledPalettes, sanitizeSeo, sanitizeFeatures, sanitizeHome, sanitizeGallery, sanitizeHighlight, sanitizeMcp, sanitizeMotion, sanitizeCache,
+  DEFAULT_HOME, DEFAULT_GALLERY, sanitizeMenu, migrateThemes, sanitizeThemes, sanitizeEnabledPalettes, sanitizeSeo, sanitizeFeatures, sanitizeHome, sanitizeGallery, sanitizeMcp, sanitizeMotion, sanitizeCache,
   sanitizeBackups, sanitizeComments, sanitizeCss, sanitizeUrl, clampNumber, sanitizeFeatured,
 } from '@/content/settings-sanitize'
 import { sanitizeTypography, sanitizeFont, fontFormat } from '@/content/settings-type'
@@ -46,6 +46,8 @@ export const DEFAULT_FEATURES: FeatureSettings = {
   leadPost: true,
   categoryLabel: true,
   deck: true,
+  penUnderline: true,
+  penRing: true,
   bookText: false,
   bookMode: true,
   infiniteScroll: false,
@@ -165,7 +167,6 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   customFont: DEFAULT_FONT,
   home: DEFAULT_HOME,
   gallery: DEFAULT_GALLERY,
-  highlight: DEFAULT_HIGHLIGHT,
   seo: DEFAULT_SEO,
   features: DEFAULT_FEATURES,
   comments: DEFAULT_COMMENTS,
@@ -234,7 +235,6 @@ export async function getSettings(): Promise<SiteSettings> {
       features: sanitizeFeatures(stored.features, DEFAULT_FEATURES),
       home: sanitizeHome(stored.home, DEFAULT_SETTINGS.home),
       gallery: sanitizeGallery(stored.gallery, DEFAULT_GALLERY),
-      highlight: sanitizeHighlight(stored.highlight, DEFAULT_HIGHLIGHT),
       comments: sanitizeComments(stored.comments, DEFAULT_COMMENTS),
       mcp: sanitizeMcp(stored.mcp, DEFAULT_SETTINGS.mcp),
       motion: sanitizeMotion(stored.motion, DEFAULT_SETTINGS.motion),
@@ -355,9 +355,6 @@ export async function saveSettings(input: Partial<SiteSettings>): Promise<SiteSe
     features: sanitizeFeatures(input.features, current.features),
     home: sanitizeHome(input.home, current.home),
     gallery: sanitizeGallery(input.gallery, current.gallery),
-    // `current.highlight` as the fallback, not the default: a save that does not mention the
-    // stroke must not quietly put it back to `marker`.
-    highlight: sanitizeHighlight(input.highlight, current.highlight),
     comments: sanitizeComments(input.comments, current.comments),
     mcp: sanitizeMcp(input.mcp, current.mcp),
     motion: sanitizeMotion(input.motion, current.motion),

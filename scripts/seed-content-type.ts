@@ -166,6 +166,14 @@ The point of writing it down is not obedience, it is arbitration: six months in,
 
 The last column earns its place. A grammar is defined at least as much by what a colour must never mark as by what it may, the same way a style guide's banned words do more work than its recommended ones.
 
+## The pencil and the ballpoint
+
+The highlighter is not the only thing on the desk. Two more gestures, straight from any borrowed textbook: ++the sentence worth underlining gets a pencil line under it++, and the single word everything turns on gets @@ringed@@ in ballpoint.
+
+An underline claims less than a highlight — ++it says "noted", not "this will be examined"++ — and it stacks: a sentence can be ==highlighted for the term and underlined on the second pass==, exactly as paper accumulates readings. The line takes a colour when it needs one: ++a conclusion can be underlined in green++#green, ++a warning in orange++#orange.
+
+The ring is for a word, not a sentence. The word that must @@cease@@, the number that is @@wrong@@, the term about to be defined — @@một chữ thôi@@#blue. Ring a whole clause and the loop stops meaning anything.
+
 ## Why it is drawn and not filled
 
 A coloured rectangle behind text is not what a pen does. A real stroke has chisel ends where the nib entered and left, it does not cover the descenders evenly, and it breaks at the end of a line rather than wrapping as one continuous block. Drawing it as an SVG stroke costs a reader 1.4 KB and nothing at all on a page with no highlight on it.`,
