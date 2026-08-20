@@ -22,7 +22,7 @@ One process. Two SQLite files. No cloud account anywhere in the path.
 
 <br/>
 
-<img src="docs/demo.jpg" alt="Two screenshots side by side: a composed front page with a lead story and section rows, and the same site's article page with a contents rail, a meta column, and a scanned Van Gogh letter as its first figure" width="960">
+<img src="docs/demo.jpg" alt="Two screenshots side by side: a composed front page with a lead story and section rows, and the same site's article page with a contents rail, a meta column, a pencil underline, a red ballpoint ring around one word, a blue highlight, and a scanned Van Gogh letter as its first figure" width="960">
 
 <sub>**[demo.quireink.com](https://demo.quireink.com)** is the real thing. No sign-up, nothing to fill in. Use the bar at the bottom to jump between the front page, the list, an article, book mode, light and dark, and the admin. That bar is the only thing added, and it lives outside the code, so the demo is always the latest build.</sub>
 
@@ -172,7 +172,7 @@ It stays this way because of a few decisions that are hard to walk back.
 
 <div align="center">
 
-<img src="docs/demo-admin.jpg" alt="The Quire Ink admin: the Write screen with the list of everything written beside the editor's paper — a toolbar, a highlighted sentence and a scanned letter in the post — and the appearance settings as one sheet of panels with six colour palettes and four reading fonts" width="960">
+<img src="docs/demo-admin.jpg" alt="The Quire Ink admin: the Write screen with the list of everything written beside the editor's paper — a toolbar with underline and ring buttons, a pencil underline, a ringed word and a highlighted sentence in the post — and the appearance settings as one sheet of panels with six colour palettes and four reading fonts" width="960">
 
 <sub>The admin is built around writing: the list beside the paper, and everything else one sheet per page. Palettes, fonts, sizes, layout, menu — all of it is a setting, none of it is code.</sub>
 

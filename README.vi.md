@@ -22,7 +22,7 @@ Một tiến trình. Hai tệp SQLite. Không tài khoản đám mây nào trong
 
 <br/>
 
-<img src="docs/demo.jpg" alt="Hai ảnh chụp cạnh nhau: trang chủ dạng báo với bài dẫn và các hàng chuyên mục, và trang bài viết của cùng site với cột mục lục bên trái, cột thông tin bên phải và bức thư tay Van Gogh làm hình đầu bài" width="960">
+<img src="docs/demo.jpg" alt="Hai ảnh chụp cạnh nhau: trang chủ dạng báo với bài dẫn và các hàng chuyên mục, và trang bài viết của cùng site với cột mục lục bên trái, cột thông tin bên phải, một câu gạch dưới bút chì, một chữ khoanh bút bi đỏ, một câu tô xanh và bức thư tay Van Gogh làm hình đầu bài" width="960">
 
 <sub>**[demo.quireink.com](https://demo.quireink.com)** là bản thật, chạy được. Không đăng ký, không phải điền gì. Dùng thanh dưới đáy để nhảy qua lại giữa trang chủ dạng báo, danh sách bài, một bài viết, chế độ sách, sáng và tối, và trang quản trị. Thanh đó là thứ duy nhất được thêm vào, và nó nằm ngoài mã nguồn, nên trang demo luôn là bản mới nhất.</sub>
 
@@ -171,7 +171,7 @@ Nó giữ được như vậy nhờ vài quyết định khó đảo ngược.
 
 <div align="center">
 
-<img src="docs/demo-admin.jpg" alt="Trang quản trị Quire Ink: trình soạn bài với câu được tô sáng và bức thư tay trong bài, và trang cấu hình giao diện với sáu bảng màu và bốn font đọc" width="960">
+<img src="docs/demo-admin.jpg" alt="Trang quản trị Quire Ink: trình soạn bài với nút gạch dưới và khoanh tròn trên thanh công cụ, câu gạch chì, chữ khoanh đỏ, câu tô sáng và bức thư tay trong bài; bên cạnh là trang cấu hình giao diện với sáu bảng màu và bốn font đọc" width="960">
 
 <sub>Bảng màu, font, cỡ chữ, bố cục, menu. Tất cả đều là tuỳ chọn, không có cái nào là code.</sub>
 
