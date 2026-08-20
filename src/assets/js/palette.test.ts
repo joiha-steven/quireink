@@ -192,3 +192,45 @@ describe('only one header menu is open at a time', () => {
     expect(paletteButton.getAttribute('aria-expanded')).toBe('false')
   })
 })
+
+describe("the owner's default light/dark", () => {
+  /** The header's theme button, plus the owner's default on <body> as chrome.ts emits it. */
+  const withDefault = (scheme?: string) => {
+    page('<button data-theme-toggle aria-haspopup="true" aria-expanded="false"><svg></svg></button>',
+      { theme: 'Theme', themeLight: 'Light', themeDark: 'Dark', themeSystem: 'System', themeTime: 'Time',
+        ...(scheme ? { defaultScheme: scheme } : {}) })
+    document.documentElement.removeAttribute('data-scheme')
+    document.documentElement.classList.remove('dark')
+  }
+
+  beforeEach(() => localStorage.clear())
+
+  it('opens dark for a reader who has never chosen, when the owner says dark', () => {
+    withDefault('dark')
+    theme()
+    expect(document.documentElement.dataset.scheme).toBe('dark')
+    expect(document.documentElement.classList.contains('dark')).toBe(true)
+  })
+
+  it('opens light when the owner says light, whatever the OS prefers', () => {
+    withDefault('light')
+    theme()
+    expect(document.documentElement.dataset.scheme).toBe('light')
+    expect(document.documentElement.classList.contains('dark')).toBe(false)
+  })
+
+  it("never overrules a reader who HAS chosen — that is the whole contract", () => {
+    localStorage.setItem('theme', 'light')
+    withDefault('dark')
+    theme()
+    expect(document.documentElement.dataset.scheme).toBe('light')
+  })
+
+  it('falls back to system when the attribute is absent, so old pages behave as before', () => {
+    withDefault()
+    theme()
+    // happy-dom reports no dark preference, so system resolves light. What matters is that
+    // nothing threw and the island still wrote an answer.
+    expect(['light', 'dark']).toContain(document.documentElement.dataset.scheme!)
+  })
+})

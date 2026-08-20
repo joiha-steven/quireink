@@ -300,6 +300,9 @@ export type AdminStrings = {
   multiPlaceholder: string
   removeAria: string
   paletteNames: Record<string, string>
+  defaultScheme: string
+  defaultSchemeHint: string
+  schemeNames: Record<string, string>
   // media
   libraryTitle: string
   tabImages: string

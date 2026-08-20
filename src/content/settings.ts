@@ -7,7 +7,7 @@ import { collapseBlob, expandBlob, deleteByPathname } from '@/media/blob'
 import { renderLogo } from '@/media/files'
 import { one, run } from '@/store/query'
 import { isSiteLang } from '@/locales/langs'
-import { DEFAULT_PRESET_ID, isPresetId, isFontPresetId, defaultThemes, ALL_PALETTE_IDS, DEFAULT_TYPOGRAPHY, DEFAULT_FONT, DEFAULT_FONT_PRESET, isChromeFontId, DEFAULT_CHROME_FONT, TYPE_ROLES } from '@/content/themes'
+import { DEFAULT_PRESET_ID, isPresetId, isFontPresetId, defaultThemes, ALL_PALETTE_IDS, DEFAULT_FONT, DEFAULT_FONT_PRESET, isChromeFontId, DEFAULT_CHROME_FONT, TYPE_ROLES, isScheme, getFontPreset } from '@/content/themes'
 import {
   DEFAULT_HOME, DEFAULT_GALLERY, sanitizeMenu, migrateThemes, sanitizeThemes, sanitizeEnabledPalettes, sanitizeSeo, sanitizeFeatures, sanitizeHome, sanitizeGallery, sanitizeMcp, sanitizeMotion, sanitizeCache,
   sanitizeBackups, sanitizeComments, sanitizeCss, sanitizeUrl, clampNumber, sanitizeFeatured,
@@ -122,6 +122,19 @@ export function fontToCss(f: FontSettings): string {
   return faces + `:root{--font-reading:'${f.family}', var(--font-inter)}`
 }
 
+/**
+ * The type numbers a fresh install starts with: the DEFAULT FACE's own, never the neutral
+ * `DEFAULT_TYPOGRAPHY`.
+ *
+ * Each preset carries typography tuned for its face — a serif's secondary text runs a shade
+ * larger, its headings drop the sans's negative tracking — so an install defaulting to
+ * Literata while holding Inter's numbers is exactly the mismatch `docs/conventions/type.md`
+ * records for Reset. One constant because BOTH doors have to agree: `DEFAULT_SETTINGS` (no
+ * row in the table) and the `sanitizeTypography` fallback in `fromStored` (a row that names
+ * no typography). They did not, and `settings.test.ts` caught it in seven roles.
+ */
+const INSTALL_TYPOGRAPHY = getFontPreset(DEFAULT_FONT_PRESET).typography
+
 export const DEFAULT_SETTINGS: SiteSettings = {
   language: 'en',
   title: 'Quire Ink',
@@ -160,10 +173,11 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   featured: [],
   mostViewedCount: 3,
   sidebarLayout: 'single',
+  defaultScheme: 'system',
   themePreset: DEFAULT_PRESET_ID,
   enabledPalettes: ALL_PALETTE_IDS,
   themes: defaultThemes(),
-  typography: DEFAULT_TYPOGRAPHY,
+  typography: INSTALL_TYPOGRAPHY,
   customFont: DEFAULT_FONT,
   home: DEFAULT_HOME,
   gallery: DEFAULT_GALLERY,
@@ -217,6 +231,7 @@ export async function getSettings(): Promise<SiteSettings> {
       maxUploadMb: clampNumber(stored.maxUploadMb, 0, 4096, DEFAULT_SETTINGS.maxUploadMb),
       storageQuotaGb: clampNumber(stored.storageQuotaGb, 0, 4096, DEFAULT_SETTINGS.storageQuotaGb),
       customCss: sanitizeCss(stored.customCss),
+      defaultScheme: isScheme(stored.defaultScheme) ? stored.defaultScheme : 'system',
       themePreset: isPresetId(stored.themePreset) ? stored.themePreset : DEFAULT_PRESET_ID,
       fontPreset: isFontPresetId(stored.fontPreset) ? stored.fontPreset : DEFAULT_FONT_PRESET,
       chromeFont: resolveChromeFont(stored),
@@ -226,7 +241,7 @@ export async function getSettings(): Promise<SiteSettings> {
       sidebarLayout: stored.sidebarLayout === 'two' ? 'two' : 'single',
       enabledPalettes: sanitizeEnabledPalettes(stored.enabledPalettes, isPresetId(stored.themePreset) ? stored.themePreset : DEFAULT_PRESET_ID),
       themes: sanitizeThemes(stored.themes, migrateThemes(stored as Record<string, unknown>)),
-      typography: sanitizeTypography(stored.typography, DEFAULT_TYPOGRAPHY),
+      typography: sanitizeTypography(stored.typography, INSTALL_TYPOGRAPHY),
       customFont: (() => {
         const f = sanitizeFont(stored.customFont, DEFAULT_FONT)
         return { ...f, faces: f.faces.map((x) => ({ ...x, url: expandBlob(x.url) })) }
@@ -343,6 +358,7 @@ export async function saveSettings(input: Partial<SiteSettings>): Promise<SiteSe
     featured: sanitizeFeatured(input.featured, current.featured),
     mostViewedCount: clampNumber(input.mostViewedCount, 0, 10, current.mostViewedCount),
     sidebarLayout: input.sidebarLayout === 'two' || input.sidebarLayout === 'single' ? input.sidebarLayout : current.sidebarLayout,
+    defaultScheme: isScheme(input.defaultScheme) ? input.defaultScheme : current.defaultScheme,
     themePreset,
     fontPreset: isFontPresetId(input.fontPreset) ? input.fontPreset : current.fontPreset,
     chromeFont: isChromeFontId(input.chromeFont) ? input.chromeFont : current.chromeFont,

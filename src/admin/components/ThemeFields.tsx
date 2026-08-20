@@ -5,11 +5,11 @@
 // — switchable here with "Set as default". Parent owns state + save.
 import { useState } from 'react'
 import type { ThemeColors, ThemeSettings } from '@/types'
-import type { ThemePreset } from '@/content/themes'
-import { getPreset } from '@/content/themes'
+import type { SchemeDefault, ThemePreset } from '@/content/themes'
+import { getPreset, SCHEMES } from '@/content/themes'
 import { useAdminT } from './I18nProvider'
 import type { AdminStrings } from '@/i18n/admin-i18n'
-import { CHECK, INSET, Setting, SETTING_GAP } from './kit'
+import { CHECK, INSET, Select, Setting, SETTING_GAP } from './kit'
 
 type ColorKey = keyof ThemeColors
 
@@ -154,12 +154,14 @@ type Props = {
   themes: Record<string, ThemeSettings>
   defaultId: string
   enabled: string[]
+  scheme: SchemeDefault
   onChangeThemes: (themes: Record<string, ThemeSettings>) => void
   onSetDefault: (id: string) => void
   onChangeEnabled: (ids: string[]) => void
+  onChangeScheme: (scheme: SchemeDefault) => void
 }
 
-export function ThemeFields({ presets, themes, defaultId, enabled, onChangeThemes, onSetDefault, onChangeEnabled }: Props) {
+export function ThemeFields({ presets, themes, defaultId, enabled, scheme, onChangeThemes, onSetDefault, onChangeEnabled, onChangeScheme }: Props) {
   const t = useAdminT()
   // Which palette is being edited (local UI state — start at the visitor default).
   const [editingId, setEditingId] = useState(defaultId)
@@ -182,6 +184,20 @@ export function ThemeFields({ presets, themes, defaultId, enabled, onChangeTheme
 
   return (
     <div className={SETTING_GAP}>
+      {/* Light or dark comes BEFORE which palette, because it is the coarser question: a
+          visitor meets one of two pages, and the palette only tints whichever they got.
+          'System' stays the default — most blogs want to meet a reader where they are —
+          but a blog that IS dark or IS light can now say so. */}
+      <Setting label={t.defaultScheme} note={t.defaultSchemeHint}>
+        <Select
+          value={scheme}
+          onChange={(e) => onChangeScheme(e.target.value as SchemeDefault)}
+        >
+          {SCHEMES.map((id) => (
+            <option key={id} value={id}>{t.schemeNames[id]}</option>
+          ))}
+        </Select>
+      </Setting>
       {/* THREE notes about the same control used to be spread around it: one above in a
           larger size, two below in a smaller one. They say what a reader needs before
           clicking a palette, so they belong together, above, in one voice. */}

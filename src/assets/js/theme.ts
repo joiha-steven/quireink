@@ -30,12 +30,28 @@ const LABEL: Record<Mode, string> = {
   light: 'themeLight', dark: 'themeDark', system: 'themeSystem', time: 'themeTime',
 }
 
+/**
+ * What the page opens in when the reader has never chosen: the OWNER's default, off
+ * `<body data-default-scheme>` — 'system', 'light' or 'dark'.
+ *
+ * The stylesheet has already painted this same answer (`content/themes.ts` emits the
+ * matching rule), so reading it here is what keeps the island from overruling the paint it
+ * just inherited: without it a blog set to dark flashed dark and then snapped to light the
+ * moment this module ran, because the island's own fallback was hardcoded 'system'.
+ *
+ * A reader's saved pick still wins — it is checked first, and nothing about it changed.
+ */
+const houseDefault = (): Mode => {
+  const v = document.body.dataset.defaultScheme
+  return v === 'light' || v === 'dark' ? v : 'system'
+}
+
 const read = (): Mode => {
   try {
     const saved = localStorage.getItem(STORAGE_KEY)
-    return MODES.includes(saved as Mode) ? (saved as Mode) : 'system'
+    return MODES.includes(saved as Mode) ? (saved as Mode) : houseDefault()
   } catch {
-    return 'system' // storage can be denied; the choice is then simply not remembered
+    return houseDefault() // storage can be denied; the choice is then simply not remembered
   }
 }
 

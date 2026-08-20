@@ -289,7 +289,15 @@ export const FONT_PRESETS: FontPreset[] = [
   },
 ]
 
-export const DEFAULT_FONT_PRESET = 'inter'
+/**
+ * What a FRESH INSTALL reads in. The owner's call on 2026-08-21: Literata to read and
+ * JetBrains Mono for the furniture — the pairing this project's own instances converged on,
+ * so a new blog now starts where they finished rather than at the neutral sans.
+ *
+ * Existing installs are untouched: `getSettings` only reaches for these when the stored
+ * blob names no font at all, and every instance has stored one since its first save.
+ */
+export const DEFAULT_FONT_PRESET = 'literata'
 
 export function getFontPreset(id: string): FontPreset {
   return FONT_PRESETS.find((f) => f.id === id) ?? FONT_PRESETS[0]
@@ -329,7 +337,7 @@ export const CHROME_FONTS: ChromeFont[] = [
   { id: 'jetbrains-mono', name: 'JetBrains Mono', slug: 'jetbrainsmono', sans: `'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace` },
 ]
 
-export const DEFAULT_CHROME_FONT = 'inter'
+export const DEFAULT_CHROME_FONT = 'jetbrains-mono'
 
 export function getChromeFont(id: string): ChromeFont {
   return CHROME_FONTS.find((f) => f.id === id) ?? CHROME_FONTS[0]
