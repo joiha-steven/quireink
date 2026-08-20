@@ -214,7 +214,7 @@ limit ?;
 User input must be escaped before it reaches `MATCH`; FTS5 query syntax treats `"`,
 `*`, `:`, `^`, `-`, `AND`/`OR`/`NOT` as operators. Wrap each user token in double
 quotes and double any internal quote. A test fixture set of hostile queries goes in
-`src/content/search.test.ts`.
+`src/content/search-owner.test.ts`.
 
 ---
 

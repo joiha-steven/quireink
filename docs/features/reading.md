@@ -166,14 +166,23 @@
 ## Book reading mode — `src/assets/js/book.ts`, `features.bookMode`
 
 - **What:** an opt-in "Chế độ đọc sách" link on the post meta line (after the reading time)
-  opens the article as a **fullscreen two-column book spread**, paged horizontally with the
-  arrow keys / on-screen arrows and a soft fade between spreads. Gated by `features.bookMode`
-  (default **on**; toggle in Admin → Settings → Features). **Posts only** (the toggle is emitted
+  opens the article as a **fullscreen two-column book spread**, paged horizontally and with a
+  soft fade between spreads. Gated by `features.bookMode` (default **on**; the "Reading
+  features" card in Admin → Settings → **Reading**). **Posts only** (the toggle is emitted
   from the post branch of `src/web/article.ts`).
+- **The reader sets the type size.** A− / A+ in the overlay chrome move `--type-scale` between
+  0.85 and 1.35 in 0.05 steps, persisted per browser under `quire-book-scale` and written as an
+  INLINE override, so a reader who has never touched it follows whatever the sheet ships. The
+  sheet's own default is **1.05** (it was 1.15 until 2026-08-21). Every change re-measures: a
+  bigger glyph is fewer lines per column, which is a different page count.
 - **Not the Fullscreen API — a `<dialog>`.** Escape, focus trapping and the inert background come
   from the browser instead of from this file, so **desktop and iPad behave identically** and there
-  are no Safari fullscreen quirks. Scroll is locked with `body:has(.book-overlay[open])`. Hidden
-  below the iPad width (`@media (max-width: 767px)`), so mobile never shows it. **Always paper**
+  are no Safari fullscreen quirks. Scroll is locked with `body:has(.book-overlay[open])`.
+  **A phone gets in through a floating button**, not through the meta line: both server-rendered
+  entries hide under 767px (the meta line is cramped there), which left the one width whose
+  one-page mode works with no way to open it. `.book-fab` is a twin of the to-top circle one slot
+  up the same column, on the same scroll trigger, and the stylesheet keeps it off desktop.
+  **Always paper**
   — the `::backdrop` and the overlay's own tokens are a warm-paper palette regardless of the site
   theme or dark mode; closing restores the page's own tokens.
 - **Opened from `[data-book-open]`,** and ALL matches are bound: an article carries two toggles
@@ -186,20 +195,35 @@
   reads `scrollWidth` to count columns → spreads = `ceil(cols / pages)`. The flow is itself `.prose`,
   so the reading view's indents and justification apply unchanged. **Wide images
   (`figure.img-wide`) render at column width here**, so a wide image never spills into the next
-  column. Advancing is one `scrollLeft` assignment plus a 130 ms crossfade — the browser has
+  column. Advancing is one **transform on the flow** plus a 130 ms crossfade — the browser has
   already done the pagination, and re-implementing it is how this becomes a measurement loop that
   fights the layout engine. Recomputes on resize. The base page keeps normal scroll, so **SEO,
   a11y and find-in-page are untouched**.
+- **It was `scrollLeft` until Chrome 148, and that is worth knowing before you "simplify" it
+  back.** The engine stopped treating a multicol's overflow columns as scrollable overflow —
+  measured on the fixture, `flow.scrollWidth` 3,964px against `viewport.scrollWidth` 279px, and
+  an assigned `scrollLeft` snapping straight back to 0 — so every instance showed "1 / 1" of
+  every article with dead arrows and no error anywhere. It also stopped **painting** those
+  columns, so a translated flow came up blank paper past page one. Hence two things in
+  `book.ts`: the turn is a transform, and the flow is explicitly width-sized to hold every
+  column as a real box. The count reads `flow.scrollWidth`, never the viewport's. Two tour
+  flows pin it, desktop and 375px, because 57 green flows said nothing while this was broken.
 - **Media** stays column-width (no full-bleed) and is capped to one page height (`--book-page-h`)
   with `break-inside: avoid`, so images/code/tables never overflow a spread. `--font-reading`
   drives the body; all colours are theme tokens. Respects `prefers-reduced-motion` (no fade).
 - **A spread is TWO pages only while two pages can hold words.** Below `MIN_COLUMN * 2 + COL_GAP`
   the reader drops to **one** page, `viewport[data-pages="1"]` hides the centre spine, and the
   page count divides by one instead of two. The spread used to be an unconditional two, which at
-  390px meant two 119px columns of about ten characters each. The toggle is hidden below 767px so
-  a phone does not reach that state, but a narrow window that still shows the rail does: the rail
-  is subtracted from the footprint, so the spread can be far narrower than the window.
+  390px meant two 119px columns of about ten characters each. A phone reaches that state **on
+  purpose** now, and a narrow window that still shows the rail reaches it too: the rail is
+  subtracted from the footprint, so the spread can be far narrower than the window.
   Pinned by `shell.test.ts`.
+- **A phone is not a narrow desktop, and the chrome says so.** Under 640px the page margin is
+  20px a side rather than the desktop's 48 (which took a quarter of a 375px screen), the
+  mouse-sized hover arrows retire, and the turn is a **swipe** (48px of travel, 1.5× more
+  sideways than down, so an ordinary reading scroll never turns a page) or a **tap in the outer
+  thirds** — links stay links, and the middle third is left for a thumb to rest on. Under 520px
+  the running head goes silent rather than stammering three letters into the size buttons.
 - **The running head reserves room for the page count**, which lives in an absolutely positioned
   box and therefore takes part in no layout. Without the reservation the centred title ran under
   it and printed as `owning your ow1 / 5`.

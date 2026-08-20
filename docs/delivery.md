@@ -83,7 +83,7 @@ stylesheet, every page and every feed left the origin raw. `web/compress.ts` gzi
 responses over 1 KB when the client asked, and sets `Vary: Accept-Encoding`.
 
 Measured at the origin when it shipped, on the un-minified sheet: **61,241 → 19,513 bytes**;
-the minifier above has since taken it to **30,811 raw / 6,519 compressed**, but the ratio is
+the minifier above took it to **30,811 raw / 6,519 compressed** (2026-07-30), and ADR 0027 has since moved the pen's ink out of it again — `site.css` measured **7.6 KB gzipped** on 2026-08-21, but the ratio is
 the point. A reader does not see this directly, since the CDN re-compresses on its way out,
 but the origin-to-edge fetch does, on every cache miss and on every purge above — and it is
 what a reader gets if the CDN is bypassed or removed. Binary bodies are left alone: an image

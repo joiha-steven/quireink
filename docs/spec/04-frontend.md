@@ -9,8 +9,8 @@ Replaces the Go plan's frontend spec. Two frontends with opposite budgets.
 
 ## Budgets
 
-**The gate is per BUNDLE, in raw bytes, in `scripts/build-assets.ts`** — `core.js` 9,600
-and `post.js` 11,200, each with the reason it last moved written beside it, and
+**The gate is per BUNDLE, in raw bytes, in `scripts/build-assets.ts`** — `core.js` 10,000
+and `post.js` 13,250, each with the reason it last moved written beside it, and
 `bun run build:assets` fails the build when either is passed. That file is the authority;
 this section is the intent behind it.
 

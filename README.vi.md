@@ -68,7 +68,7 @@ Có ba thứ định hình nó.
 
 **Trang đọc mới là sản phẩm.** Font, màu, cỡ chữ, khoảng cách, bố cục: tất cả đều là tuỳ chọn bạn chỉnh trong trang quản trị. Không một cỡ chữ hay màu nào viết cứng trong stylesheet của trang đọc, và build sẽ báo đỏ nếu ai đó nhét vào.
 
-**Người đọc tải về 3.6–7.8 KB JavaScript, và không tải gì từ bên thứ ba.** Trang tới nơi đã là HTML hoàn chỉnh. Vài đoạn script nhỏ lo tìm kiếm, đổi giao diện và chế độ sách. React nằm yên trong trang quản trị, không bao giờ chạm tới người đọc.
+**Người đọc tải về 3.8–8.7 KB JavaScript, và không tải gì từ bên thứ ba.** Trang tới nơi đã là HTML hoàn chỉnh. Vài đoạn script nhỏ lo tìm kiếm, đổi giao diện và chế độ sách. React nằm yên trong trang quản trị, không bao giờ chạm tới người đọc.
 
 **Agent viết được thay bạn.** Nối Claude hay bất kỳ client MCP nào vào, nó soạn được, gắn thẻ được, hẹn giờ và đăng được, theo đúng những luật mà trang quản trị đang theo.
 
@@ -126,14 +126,14 @@ Bạn được đọc, sửa, chạy và fork theo [PolyForm Noncommercial](./LI
 
 Đây là số đo từ mạng, lần vào đầu tiên, chưa cache gì. Đúng bằng cái mà một người lạ cầm điện thoại phải chờ.
 
-Hai dòng CSS và JavaScript là sản phẩm của bản build — giống nhau ở mọi bản cài — và lấy từ bản dựng 2.0.3. Từ 2.0.1 đến 2.1.0 chưa bản nào làm chúng nhúc nhích; **2.1.1 làm xê dịch một dòng**: stylesheet giờ mang theo hình nét của cây bút, nặng 29,3 KB gzip, một request duy nhất được cache một năm. Các số tổng đo cho 2.0.1, tại origin chứ không qua CDN, và là của chính site này: tiếng Việt, Literata để đọc và JetBrains Mono cho phần khung. Chúng không phải thuộc tính của phần mềm, vì font được cắt theo bảng chữ và trình duyệt chỉ tải đúng những dải mà trang bạn dùng tới. Riêng font đã giảm từ 86 KB xuống 67 KB ở 2.0.1 mà không bỏ đi họ chữ nào.
+Hai dòng CSS và JavaScript là sản phẩm của bản build — giống nhau ở mọi bản cài — và lấy từ bản dựng 2.0.3. Từ 2.0.1 đến 2.1.0 chưa bản nào làm chúng nhúc nhích; 2.1.1 làm stylesheet phình lên 29,3 KB gzip vì mang theo hình nét của cây bút, và **[ADR 0027](docs/decisions/0027-the-pen-ships-only-where-it-wrote.md) đã tách nó ra lại**: `site.css` còn 7,6 KB gzip, mực bút nằm trong hai tệp bất biến riêng (11,6 + 8,5 KB) chỉ lên xe ở trang thật sự có vệt tô hay gạch chân — trang không mực giờ nhẹ hơn cả trước khi có cây bút. Các số tổng đo cho 2.0.1, tại origin chứ không qua CDN, và là của chính site này: tiếng Việt, Literata để đọc và JetBrains Mono cho phần khung. Chúng không phải thuộc tính của phần mềm, vì font được cắt theo bảng chữ và trình duyệt chỉ tải đúng những dải mà trang bạn dùng tới. Riêng font đã giảm từ 86 KB xuống 67 KB ở 2.0.1 mà không bỏ đi họ chữ nào.
 
 | | Trang chủ | Một bài | |
 |:---|---:|---:|:---|
 | **Số&nbsp;request** | 10 | 10 | |
 | **Tổng&nbsp;tải&nbsp;về** | **106&nbsp;KB** | **114&nbsp;KB** | 67&nbsp;KB trong đó là font |
-| **JavaScript** | **3.6&nbsp;KB** | **7.8&nbsp;KB** | viết tay, không framework |
-| **CSS** | 8.0&nbsp;KB | 8.0&nbsp;KB | một tệp, đã nén, cache vĩnh viễn |
+| **JavaScript** | **3.8&nbsp;KB** | **8.7&nbsp;KB** | viết tay, không framework |
+| **CSS** | 7.6&nbsp;KB | 7.6&nbsp;KB | +20&nbsp;KB chỉ ở trang có vệt bút |
 | **Request&nbsp;bên&nbsp;thứ&nbsp;ba** | **0** | **0** | không CDN, không font host, không tracker |
 | **Lần&nbsp;vào&nbsp;sau** | ~19&nbsp;KB | ~24&nbsp;KB | chỉ tải lại HTML |
 

@@ -42,7 +42,7 @@ in `src/content/fonts.ts`, called once in `src/web/layout.ts`:**
 | Built-in reading font, `vi` | `‹slug›-latin.woff2` **and** `‹slug›-vietnamese.woff2` (a VN title needs both unicode-ranges) |
 | Built-in reading font, CJK locale (`ja`, `zh`, `ko`) | **nothing** — the built-ins ship no CJK glyphs and never will (a CJK webfont is megabytes), so the title renders in a system face; a latin preload it won't use only steals bandwidth. Which system face is not left to the browser: every reading stack ends in a NAMED CJK tail, one per language, selected by `cjkLangCss` on `:lang(zh\|ja\|ko)`. Zero bytes downloaded — see `CJK_ZH` / `CJK_JA` / `CJK_KO` in `src/content/fonts.ts` |
 | **Uploaded custom font** (`settings.customFont`) | **nothing** — the face is unsubsetted (whole charset, often large); a high-priority preload would contend with the render-blocking CSS and hurt LCP. It still wins `--font-reading` via `fontToCss`; `swap` covers the paint |
-| **Chrome font** (Inter default, IBM Plex Mono, "reading") | **NEVER** — not the LCP element; loads at normal priority via its `@font-face` and swaps in |
+| **Chrome font** (JetBrains Mono default, IBM Plex Mono, Inter, "reading") | **NEVER** — not the LCP element; loads at normal priority via its `@font-face` and swaps in |
 
 ### Variation axes are trimmed, not shipped whole
 
@@ -118,7 +118,7 @@ Hard invariants (also in [`conventions/type.md`](./conventions/type.md)):
 - Changing which subsets exist? Keep `fontPreloadHrefs`, the `@font-face` `unicode-range`
   blocks (`src/render/font-faces.ts`) and the served file list (`src/web/static.ts`) in sync.
 
-## CSS — one hashed sheet, plus the settings inline
+## CSS — hashed sheets, plus the settings inline
 
 **Measured 2026-07-29.** The whole stylesheet used to be inlined into every page. That
 removes one round trip on a COLD visit and charges for it on every visit after: of the
@@ -212,9 +212,15 @@ machine is dark was shown a white page on every navigation.**
 
 The handoff is `data-scheme` on `<html>`:
 
-- `themesToCss` emits `@media (prefers-color-scheme:dark){:root:not([data-scheme]){…}}` after
-  the base tokens. `:root:not([data-scheme])` is 0,2,0 — above `:root` and `[data-palette=…]`,
-  and never in a fight with `.dark`, which only exists once `data-scheme` does.
+- `themesToCss(themes, defaultId, enabled, defaultScheme)` decides WHICH rule from the owner's
+  `defaultScheme` setting (Admin → Appearance → Default appearance): **`system`** emits
+  `@media (prefers-color-scheme:dark){:root:not([data-scheme]){…}}` after the base tokens —
+  follow the visitor's OS, and the case the rest of this section describes; **`dark`** emits the
+  same declaration UNCONDITIONALLY, so every first-time visitor opens dark whatever their laptop
+  says; **`light`** emits nothing, because `:root` already carries the light palette. All three
+  require `data-scheme` to be ABSENT, which is what keeps a reader's own choice untouchable.
+  `:root:not([data-scheme])` is 0,2,0 — above `:root` and `[data-palette=…]`, and never in a
+  fight with `.dark`, which only exists once `data-scheme` does.
 - The island sets `data-scheme` to the RESOLVED `light`/`dark` on its FIRST apply, not only
   when the reader picks something. `system` and `time` are questions; the attribute has to
   be an answer or the CSS cannot use it.
@@ -236,7 +242,7 @@ The split is now by implementation, not by a scanner's `@source` list, which is 
 [ADR 0008](./decisions/0008-hand-written-css-no-tailwind-public.md) bought:
 
 - **Public** — hand-written `src/web/*.css.ts`, assembled into `PUBLIC_CSS` and served as
-  the one hashed sheet above. No Tailwind, no scanner, so an admin utility cannot leak into
+  the `site.css` sheet above. No Tailwind, no scanner, so an admin utility cannot leak into
   it by accident.
 - **Admin** — `src/admin/admin.css`, the only Tailwind in the project, compiled by
   `scripts/build-admin.ts` and served under `/admin/assets/*`. A reader never requests that
@@ -351,8 +357,9 @@ never offer it at all.
 - **Reader JS size:** `bun run build:assets` prints each bundle's bytes against its budget
   and exits non-zero when one is over. That is the check; there is nothing to diff by hand.
 - **What a reader loads:** `bun run start`, fetch a post, extract `<script src>` + `<link
-  rel=stylesheet>`; confirm one sheet, `core.js` + `post.js` and nothing else, and the
-  correct font preloads for the site language.
+  rel=stylesheet>`; confirm `site.css` — **plus `pen-marks` / `pen-lines` if and only if the
+  post carries a highlight or an underline** (ADR 0027) — `core.js` + `post.js` and nothing
+  else, and the correct font preloads for the site language.
 - **Critical path / LCP:** Lighthouse "Network dependency tree" — the chain should be HTML →
   public CSS → (at most) the reading font's language subset(s). No chrome font, no unused
   subset, no admin CSS.

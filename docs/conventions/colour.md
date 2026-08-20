@@ -1,6 +1,6 @@
 # Colour — theme tokens, modes and palettes (HARD RULES)
 
-- Theme default = **system** (no-FOUC script + `ThemeProvider` both `|| 'system'`); the toggle
+- Theme default = **the owner's `defaultScheme` setting** (Admin → Appearance → Default appearance: `system` | `light` | `dark`), server-rendered onto `<body data-default-scheme>` and read by `assets/js/theme.ts`, which falls back to `system`. A reader's saved pick always wins; the toggle
   reflects the *applied* theme (`useSyncExternalStore` on `<html>.dark`; server snapshot =
   light → no hydration mismatch).
 - Two orthogonal axes: **mode** (`.dark`) × **palette** (`data-palette`). Both controls live in
