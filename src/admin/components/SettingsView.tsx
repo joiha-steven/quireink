@@ -30,7 +30,7 @@ import type { IntegrationStatus } from '@/store/integration-keys'
 import { Button } from '@/admin/ui/Button'
 import { useToast } from '@/admin/ui/Toast'
 import { formatTime } from '@/utils'
-import { Card, NOTE_TEXT, PageHeader, Tabs, type TabItem } from './kit'
+import { Card, NOTE_TEXT, PageHeader, ResetButton, Tabs, type TabItem } from './kit'
 import { SHEET, SheetTop } from './sheet'
 import { SettingsSearch } from './SettingsSearch'
 import { useSettingJump } from './useSettingJump'
@@ -96,7 +96,7 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
   const tabParam = useSearchParams().get('tab')
   const [tab, setTab] = useState<Tab>(
     (TAB_IDS as string[]).includes(tabParam ?? '') ? (tabParam as Tab) : 'site')
-  // Filled by TypographyFields; called by the Reset button in that card's header row.
+  // Filled by TypographyFields; called by the Reset in that card's header row.
   const typographyReset = useRef<(() => void) | null>(null)
 
   const jumpToSetting = useSettingJump()
@@ -286,26 +286,11 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
                 <FontUpload value={s.customFont} onChange={(customFont) => update({ customFont })} />
               </div>
             </Card>
-            {/* Reset rides the TITLE row, like the two palette panels on the left. Beside
-                the note it lined up with nothing at this column width. */}
-            <Card
-              panel
-              title={t.cardTypography}
-              actions={
-                <button
-                  type="button"
-                  onClick={() => typographyReset.current?.()}
-                  className="text-xs text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
-                >
-                  {t.resetDefault}
-                </button>
-              }
-            >
+            <Card panel title={t.cardTypography}
+              actions={<ResetButton onClick={() => typographyReset.current?.()} label={t.resetDefault} />}>
               <TypographyFields
-                typography={s.typography}
-                fontPreset={s.fontPreset}
+                typography={s.typography} fontPreset={s.fontPreset} resetRef={typographyReset}
                 onChange={(typography) => update({ typography })}
-                resetRef={typographyReset}
               />
             </Card>
             <Card panel title={t.cardRendering}>
