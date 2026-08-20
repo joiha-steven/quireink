@@ -100,11 +100,25 @@ html[data-chunked] .post-list article[data-more]{display:none}
 /* Book mode. Its OWN standard rather than the site theme: paper and ink, not the reader's
    palette, and the same on a dark site as a light one. Carried over from the frozen tree.
    The columns come from column-width, so the BROWSER paginates and turning a page is one
-   scrollLeft assignment rather than a measurement loop fighting the layout engine. */
+   transform on the flow rather than a measurement loop fighting the layout engine. */
 .book-mode-toggle{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;
   text-underline-offset:3px}
 .book-mode-toggle:hover{color:var(--c-heading);text-decoration:underline}
 @media (max-width:767px){.meta-book,.book-mode-toggle{display:none}}
+
+/* The phone's doorway into the reader. The desktop entries (the meta line, the info
+   panel) are hidden under 768px because the meta line is cramped there — so this button
+   is the mobile entry, and it speaks the to-top button's exact language: same circle, same
+   border, same colours, parked one slot above it in the same column, and — the part that
+   keeps it out of the way — the same appearing act: nothing until the reader has scrolled
+   past the first viewport, then a fade-in. A reader who never scrolls never sees it. */
+.book-fab{position:fixed;bottom:4.5rem;right:1.25rem;z-index:40;display:none;width:2.5rem;
+  height:2.5rem;align-items:center;justify-content:center;border:1px solid var(--c-rule);
+  border-radius:999px;background:var(--c-bg);color:var(--c-meta);cursor:pointer;opacity:0;
+  pointer-events:none;transition:opacity var(--dur-base),color var(--dur-base)}
+.book-fab.shown{opacity:1;pointer-events:auto}
+.book-fab:hover{color:var(--c-heading)}
+@media (max-width:767px){.book-fab{display:flex}}
 
 body:has(.book-overlay[open]){overflow:hidden}
 .book-overlay[open]{display:grid}
@@ -158,19 +172,22 @@ body:has(.book-overlay[open]){overflow:hidden}
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .book-topright{position:absolute;right:clamp(12px,4vw,44px);top:0;height:100%;
   display:flex;align-items:center;gap:16px}
+/* On a phone the reserved right box leaves the running head ~75px — three letters and an
+   ellipsis pressed against A−. A chrome that can only stammer the title is better off
+   silent: the reader opened this article seconds ago and the page count keeps the row. */
+@media (max-width:519px){.book-title{display:none}}
 .book-x{background:none;border:0;cursor:pointer;color:var(--c-meta);font-size:1rem;
   line-height:1;padding:8px}
 .book-x:hover{color:var(--c-heading)}
 /* The reader's own hand on the type: A− / A+, set like the close button so the chrome
-   stays one quiet row. The glyphs are the label; size difference between the two As does
-   the explaining, exactly as on an e-reader. */
+   stays one quiet row. ONE size for both — the first cut sized the two As differently the
+   way e-readers do, and at this scale it just read as misaligned ("không thẳng hàng"); the
+   − and + carry the meaning on their own. */
 .book-size{background:none;border:0;cursor:pointer;color:var(--c-meta);line-height:1;
-  padding:8px 4px;font-family:var(--font-reading)}
+  padding:8px 4px;font-family:var(--font-reading);font-size:.9em}
 .book-size:hover{color:var(--c-heading)}
 .book-size[disabled]{opacity:.35;cursor:default}
 .book-size[disabled]:hover{color:var(--c-meta)}
-.book-smaller{font-size:.8em}
-.book-larger{font-size:1.1em}
 .book-count{font-size:var(--fs-caption);line-height:var(--lh-caption);
   letter-spacing:var(--ls-caption);color:var(--c-meta);font-variant-numeric:tabular-nums}
 .book-stage{position:relative;display:flex;align-items:center;justify-content:center;

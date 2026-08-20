@@ -253,6 +253,7 @@ export async function renderArticle(slug: string): Promise<string | null> {
       commentAs: s.commentAs,
       commentSignOut: s.commentSignOut,
       commentSignInError: s.commentSignInError,
+      bookMode: s.bookMode,
       bookModePrev: s.bookModePrev,
       bookModeNext: s.bookModeNext,
       bookModeClose: s.bookModeClose,

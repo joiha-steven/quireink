@@ -5,14 +5,17 @@
 // exists because a long essay reads better in columns than in one tall ribbon.
 //
 // A `<dialog>`, so Escape and the inert background come from the browser. The columns come
-// from CSS `column-width`, and "turning a page" is one `scrollLeft` assignment: the browser
-// has already done the pagination, and re-implementing it in JavaScript is how this kind of
-// feature becomes a measurement loop that fights the layout engine.
+// from CSS `column-width`, and "turning a page" is one transform on the flow under a
+// clipping viewport: the browser has already done the pagination, and re-implementing it
+// in JavaScript is how this kind of feature becomes a measurement loop that fights the
+// layout engine. (It was one `scrollLeft` assignment until Chrome 148 stopped treating a
+// multicol's overflow columns as scrollable overflow — the comment in `goto` has the
+// measurements.)
 //
 // Book mode is its OWN standard rather than the site theme: paper and ink, not the reader's
 // palette. That is deliberate, and carried over from the frozen tree.
 
-import { el, label } from './dom'
+import { el, label, onScrollFrame } from './dom'
 
 const OUTER_MARGIN = 48 // px, the minimum gap from the spread to the viewport edge
 const MAX_WIDTH = 1400 // px, so the spread does not sprawl on an ultrawide monitor
@@ -77,9 +80,18 @@ export function book(): void {
       // Fade out, jump, fade back in - the frozen tree's transition, and the reason a page
       // turn reads as a page turn rather than as a jolt. An instant scroll is what made it
       // feel broken even on the turns that landed correctly.
+      //
+      // A TRANSFORM, not scrollLeft, since 2026-08-21. Chrome 148 stopped counting a
+      // multicol's overflow columns as scrollable overflow: measured on this page,
+      // flow.scrollWidth said 3,964px while viewport.scrollWidth said 279 and an assigned
+      // scrollLeft snapped straight back to 0 — so the reader was shown "1 / 1" of a
+      // twelve-column article and every turn was a dead click, on every instance, with no
+      // error anywhere. The columns are still laid out; only the scroll machinery went
+      // blind to them. Translating the flow under the clipping viewport asks nothing of
+      // scroll semantics, so it cannot regress the same way.
       viewport.style.opacity = '0'
       setTimeout(() => {
-        viewport.scrollLeft = spread * step
+        flow.style.transform = `translateX(${-spread * step}px)`
         viewport.style.opacity = '1'
       }, FADE_MS)
     }
@@ -108,15 +120,29 @@ export function book(): void {
       step = (column + COL_GAP) * pages
       // Cap media to one page, so an image can never push a column past the spread.
       flow.style.setProperty('--book-page-h', `${flow.clientHeight}px`)
-      const columns = Math.max(1, Math.round(viewport.scrollWidth / (column + COL_GAP)))
+      // The FLOW's own scrollWidth, never the viewport's: Chrome 148 reports the overflow
+      // columns on the multicol element itself and nothing on its parent (3,964 vs 279 on
+      // the page this was caught on), and counting spreads off the blind number is how the
+      // whole book silently became one page. Width back to auto first, so a re-measure
+      // (resize, A−/A+) counts the columns the CONTENT wants, not the width set below.
+      flow.style.width = 'auto'
+      const columns = Math.max(1, Math.round(flow.scrollWidth / (column + COL_GAP)))
+      // Then the flow is widened to hold every column as a REAL column box. Chrome lays
+      // overflow columns out (their rects measure correctly) but no longer paints them, so
+      // page 2 of a translated flow came up blank paper: the words were positioned there
+      // and never drawn. Sized to fit, the columns stop being overflow and paint again.
+      flow.style.width = `${columns * (column + COL_GAP) - COL_GAP}px`
       spreads = Math.max(1, Math.ceil(columns / pages))
       // A narrower window can leave the reader past the end.
       spread = Math.min(spread, spreads - 1)
-      viewport.scrollLeft = spread * step
+      flow.style.transform = `translateX(${-spread * step}px)`
       update()
     }
     const update = () => {
       page.textContent = `${spread + 1} / ${spreads}`
+      // A one-spread article has nowhere to turn to: the arrows leave rather than sit
+      // dead at the margins. They come back by the same line when a resize adds pages.
+      prev.hidden = fwd.hidden = spreads <= 1
     }
 
     const nav = (cls: string, glyph: string, delta: number, name: string) => {
@@ -124,6 +150,8 @@ export function book(): void {
       b.addEventListener('click', () => turn(delta))
       return b
     }
+    const prev = nav('book-prev', '‹', -1, 'bookModePrev')
+    const fwd = nav('book-next', '›', 1, 'bookModeNext')
     const close = el('button', { type: 'button', class: 'book-x', 'aria-label': label('bookModeClose') }, '✕')
 
     // A− / A+. The current scale is read off the dialog's computed style, so the sheet's
@@ -150,8 +178,7 @@ export function book(): void {
     larger.addEventListener('click', () => setScale(scaleOf() + SCALE_STEP))
     // The title recedes: regular weight, faint, body size, so the article stays the focus.
     const heading = document.querySelector('article > header h1')?.textContent ?? ''
-    const stage = el('div', { class: 'book-stage' },
-      nav('book-prev', '‹', -1, 'bookModePrev'), viewport, nav('book-next', '›', 1, 'bookModeNext'))
+    const stage = el('div', { class: 'book-stage' }, prev, viewport, fwd)
 
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); turn(1) }
@@ -198,4 +225,22 @@ export function book(): void {
   }
 
   for (const toggle of toggles) toggle.addEventListener('click', open)
+
+  // The phone's doorway. Both server-rendered entries hide under 768px (the meta line is
+  // cramped there), which left the reader no way in at all on the one class of device
+  // where the overlay already runs its one-page mode. The button is a twin of the to-top
+  // circle one slot up the same column — same size, same fade, same trigger — so the two
+  // read as one quiet cluster that only exists once the reader has scrolled past the
+  // first viewport. Desktop never sees it: the stylesheet keeps it display:none there.
+  const fabText = label('bookMode')
+  const fab = el('button', { type: 'button', class: 'book-fab', 'aria-label': fabText, title: fabText })
+  fab.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"'
+    + ' stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+    + '<path d="M12 6.5C10.4 5.2 8.4 4.5 6 4.5H4v13h2c2.4 0 4.4.7 6 2 1.6-1.3 3.6-2 6-2h2v-13h-2c-2.4 0-4.4.7-6 2z"/>'
+    + '<path d="M12 6.5v13"/></svg>'
+  fab.addEventListener('click', open)
+  document.body.appendChild(fab)
+  onScrollFrame(() => {
+    fab.classList.toggle('shown', scrollY > innerHeight)
+  })
 }

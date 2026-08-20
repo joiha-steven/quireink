@@ -126,5 +126,59 @@ export function registerFlows({ flow, expect, atWidth }: Tour): void {
       return r.status === 204 || r.ok ? 'ok' : '/api/track -> ' + r.status
     })()`))
 
+  // Book mode had NO flow when Chrome 148 stopped scrolling to — and painting — a
+  // multicol's overflow columns, so every instance quietly showed "1 / 1" of every article
+  // with dead arrows, and 57 green flows said nothing. These two pin the three things that
+  // broke: the count sees every column, a turn actually moves the flow, and the flow is
+  // sized to hold its columns as real boxes (the sized flow is what makes them paint).
+  flow('book mode paginates a long article and the pages turn', () => expect(
+    '/the-reed-pen-in-van-goghs-letters', `
+    (async () => {
+      const btn = document.querySelector('[data-book-open]')
+      if (!btn) return 'no book toggle on the article'
+      btn.click()
+      await new Promise((r) => setTimeout(r, 400))
+      const d = document.querySelector('.book-overlay[open]')
+      if (!d) return 'the overlay did not open'
+      const count = () => d.querySelector('.book-count').textContent
+      const m = /^1 \\/ (\\d+)$/.exec(count())
+      if (!m) return 'counter reads ' + count()
+      if (+m[1] < 2) return 'a 700-word article measured ' + count() + ' — pagination has gone blind again'
+      if (d.querySelector('.book-prev').hidden) return 'arrows hidden with ' + m[1] + ' spreads'
+      const flowEl = d.querySelector('.book-flow')
+      const vp = d.querySelector('.book-viewport')
+      if (!(parseFloat(flowEl.style.width) > vp.clientWidth))
+        return 'the flow is not sized to hold its columns, so pages past 1 will not paint'
+      const before = flowEl.style.transform
+      d.querySelector('.book-next').click()
+      await new Promise((r) => setTimeout(r, 350))
+      if (!count().startsWith('2 /')) return 'the turn did not advance: ' + count()
+      if (flowEl.style.transform === before) return 'the counter moved but the pages did not'
+      d.querySelector('.book-x').click()
+      return 'ok (' + m[1] + ' spreads)'
+    })()`, 400))
+
+  // The phone: the floating doorway exists (both server-rendered entries hide under 768px),
+  // it opens the one-page reader, and the reserved chrome does not print the title into the
+  // controls.
+  flow('a phone can enter book mode through the floating button', () => atWidth(375,
+    '/the-reed-pen-in-van-goghs-letters', `
+    (async () => {
+      const fab = document.querySelector('.book-fab')
+      if (!fab) return 'no floating book button'
+      if (getComputedStyle(fab).display === 'none') return 'the button is display:none at 375px'
+      fab.click()
+      await new Promise((r) => setTimeout(r, 400))
+      const d = document.querySelector('.book-overlay[open]')
+      if (!d) return 'the overlay did not open'
+      if (d.querySelector('.book-viewport').dataset.pages !== '1') return 'a 375px phone got a two-page spread'
+      const n = +(/\\/ (\\d+)$/.exec(d.querySelector('.book-count').textContent)?.[1] ?? 0)
+      if (n < 2) return 'one-page mode measured ' + n + ' spread(s) for a 700-word article'
+      if (getComputedStyle(d.querySelector('.book-title')).display !== 'none')
+        return 'the running head is on at 375px and collides with the size buttons'
+      d.querySelector('.book-x').click()
+      return 'ok (' + n + ' pages)'
+    })()`, 400))
+
   registerAdminFlows({ flow, expect, atWidth })
 }

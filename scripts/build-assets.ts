@@ -112,7 +112,13 @@ const BUDGET: Record<string, number> = {
   // persisted per browser, asked for by the owner on 2026-08-21 ("không chỉnh được kích
   // thước chữ"). 817 bytes raw, ~250 gzipped, and the alternative was a reader stuck at
   // whatever default the sheet ships.
-  'post.js': 12_100,
+  // Raised to 12_650 the same day for the phone's doorway into the reader: both
+  // server-rendered entries hide under 768px, so phones had a working one-page book mode
+  // and no way to open it. A to-top-twin floating button, 482 bytes with its inline icon.
+  // And to 12_800 for the Chrome 148 paging fix underneath it all: the turn is a transform
+  // and the flow is sized to hold its columns, because the engine stopped scrolling to —
+  // and then stopped painting — a multicol's overflow columns (book.ts has the numbers).
+  'post.js': 12_800,
   // /login only, and NOT loaded with core.js: the sign-in page carries no beacon, no
   // search overlay and no listing controls, so it pays for the reveal toggle, the caps-lock
   // warning and the one-time-code paste, and nothing else.
