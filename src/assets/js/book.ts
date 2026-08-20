@@ -18,6 +18,10 @@
 import { el, label, onScrollFrame } from './dom'
 
 const OUTER_MARGIN = 48 // px, the minimum gap from the spread to the viewport edge
+// A phone cannot afford the desktop's margins: 48px a side took 96 of a 375px screen —
+// a quarter of the glass — and set the page at 279px ("chừa 2 bên nhiều quá"). 20px keeps
+// the page off the bezel and gives the words 335px. Under 640, matching mobile.css.ts.
+const PHONE_MARGIN = 20
 const MAX_WIDTH = 1400 // px, so the spread does not sprawl on an ultrawide monitor
 const COL_GAP = 56 // px between the two facing pages
 // The narrowest a single page may be. Below twice this the spread becomes ONE page: on a
@@ -103,10 +107,11 @@ export function book(): void {
       // The spread spans the SAME footprint the page occupies, gutters included: the ToC
       // rail sits in the left one and the layout is centred, so the right mirrors it.
       // Falling back to near-full width when no rail is on screen.
+      const margin = innerWidth < 640 ? PHONE_MARGIN : OUTER_MARGIN
       const rail = document.querySelector('.rail')?.getBoundingClientRect()
-      const footprint = rail && rail.width > 0 && rail.left >= OUTER_MARGIN
+      const footprint = rail && rail.width > 0 && rail.left >= margin
         ? innerWidth - Math.round(rail.left) * 2
-        : innerWidth - OUTER_MARGIN * 2
+        : innerWidth - margin * 2
       const width = Math.min(MAX_WIDTH, footprint)
       const pages = width >= MIN_COLUMN * 2 + COL_GAP ? 2 : 1
       const column = pages === 2 ? Math.floor((width - COL_GAP) / 2) : width
@@ -184,6 +189,29 @@ export function book(): void {
       if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); turn(1) }
       else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); turn(-1) }
     }
+
+    // The phone turns pages the way every e-reader does: a horizontal swipe, or a tap in
+    // the outer thirds of the page — the stylesheet retires the hover-sized arrows under
+    // 640px, where they were overlaying a margin the phone no longer spares. The swipe
+    // wants a clear horizontal intent (48px, and 1.5x more sideways than down) so an
+    // ordinary reading scroll never turns a page; the tap ignores anything interactive so
+    // a link stays a link, and the middle third stays inert because a thumb needs
+    // somewhere safe to rest.
+    let x0 = 0, y0 = 0
+    viewport.addEventListener('touchstart', (e) => {
+      x0 = e.touches[0]!.clientX; y0 = e.touches[0]!.clientY
+    }, { passive: true })
+    viewport.addEventListener('touchend', (e) => {
+      const dx = e.changedTouches[0]!.clientX - x0, dy = e.changedTouches[0]!.clientY - y0
+      if (Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(dy) * 1.5) turn(dx < 0 ? 1 : -1)
+    }, { passive: true })
+    viewport.addEventListener('click', (e) => {
+      if (innerWidth >= 640) return
+      if ((e.target as HTMLElement).closest('a,button')) return
+      const x = e.clientX / innerWidth
+      if (x < 0.35) turn(-1)
+      else if (x > 0.65) turn(1)
+    })
 
     const next = document.createElement('dialog')
     next.className = 'book-overlay'
