@@ -62,23 +62,40 @@ test('an OLD database gets the columns it was created without', () => {
 
   // The shape this instance had before Google sign-in existed: no google columns, no
   // ledger rows. Written directly, because there is no other way to get one now.
+  //
+  // EVERY table a migration alters has to be here in its OLD shape. A table the fixture
+  // omits is created by schema.sql at the FINAL shape, and the alter then fails on a
+  // duplicate column — which is a fact about this fixture, not about any real database:
+  // a real pre-migration instance has the real pre-migration table.
   const old = new Database(join(dir, 'quire.db'), { create: true })
   old.run(`create table integration_keys (
              id integer primary key check (id = 1),
              turnstile_site_key text, turnstile_secret_key text,
              cloudflare_api_token text, cloudflare_zone_id text)`)
   old.run(`insert into integration_keys (id, turnstile_site_key) values (1, 'keep-me')`)
+  old.run(`create table subscribers (
+             id integer primary key autoincrement,
+             email text not null unique,
+             status text not null default 'pending',
+             token text not null, created_at integer not null, confirmed_at integer)`)
+  old.run(`insert into subscribers (email, status, token, created_at)
+           values ('keep@example.com', 'confirmed', 'tok', 1)`)
   old.close()
 
   const { db } = openDatabases(dir)
   expect(columns(db, 'integration_keys')).toContain('google_client_id')
   expect(columns(db, 'integration_keys')).toContain('google_client_secret')
   expect(applied(db)).toContain('001-google-comment-keys')
-  // The existing row survives, which is the entire difference between a migration and a
+  expect(columns(db, 'subscribers')).toContain('deleted_at')
+  expect(columns(db, 'subscribers')).toContain('confirm_sent_at')
+  // The existing rows survive, which is the entire difference between a migration and a
   // reinstall.
   expect(db.query<{ turnstile_site_key: string }, []>(
     `select turnstile_site_key from integration_keys where id = 1`,
   ).get()!.turnstile_site_key).toBe('keep-me')
+  expect(db.query<{ email: string; deleted_at: number | null }, []>(
+    `select email, deleted_at from subscribers`,
+  ).get()).toEqual({ email: 'keep@example.com', deleted_at: null })
 
   // Booting the same database again must not try to add the columns a second time.
   expect(() => openDatabases(dir)).not.toThrow()

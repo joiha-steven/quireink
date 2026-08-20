@@ -14,6 +14,7 @@ import { SlugConflictError } from '@/content/slugs'
 import { previewToken } from '@/content/preview'
 import { finalizePendingThumbs, finalizePendingVariants } from '@/media/finalize'
 import { purgeExpiredSessions } from '@/auth/sessions'
+import { sweepPendingSubscribers } from '@/news/subscribers'
 import { pruneRendered } from '@/render/render-cache'
 import {
   sweepScheduled, PUBLISH_TICK_LOOKBACK_MS, HOURLY_LOOKBACK_MS,
@@ -198,6 +199,17 @@ export function publicOpsRoutes(): Hono {
       console.error(`[ERROR] cron session purge: ${(error as Error).message}`)
     }
 
+    // Pending sign-ups that never confirmed. Same standing as the session purge: rows that
+    // expire but do not remove themselves, swept here because nothing on the request path
+    // should ever pay for it. Mostly bot droppings — see subscribers.ts for why they are
+    // hard-deleted rather than swept into the Trash.
+    let staleSignups = 0
+    try {
+      staleSignups = await sweepPendingSubscribers()
+    } catch (error) {
+      console.error(`[ERROR] cron subscriber sweep: ${(error as Error).message}`)
+    }
+
     // The render cache is insert-only for the same reason it needs no invalidation, so this
     // is the only thing that ever removes a row from it. Bounded per tick, and it swallows
     // its own failures, so it needs no isolation of its own.
@@ -215,7 +227,7 @@ export function publicOpsRoutes(): Hono {
     }
 
     return json({
-      alive: true, purged: doPurge, finalized, thumbs, published, sessions, renderRows, backup,
+      alive: true, purged: doPurge, finalized, thumbs, published, sessions, staleSignups, renderRows, backup,
     })
   })
 
