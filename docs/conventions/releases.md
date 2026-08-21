@@ -38,9 +38,13 @@ On any behavior change, update the matching doc in the SAME change (Working prin
   copy — and this line itself sat at `2.1.0` while the product was on `2.1.2`, which is the
   same failure a third time. `grep -rn '<old>' package.json README.md README.vi.md docs/conventions/releases.md`
   before tagging; a number left behind in a README is the usual miss.
-  **Docker docs deliberately do NOT carry the patch number**: every `docker pull` example
-  names `:2.1`, the tag we tell people to pin, so a patch release cannot leave a stale
-  command behind in three files.
+  **Docker docs deliberately do NOT carry a version at all**: every `docker pull` and compose
+  example names `:latest`, which the owner made the install tag on 2026-08-21 — the newest
+  release is the one carrying the fixes, and 2.1.3 was the argument, since anyone who had
+  pinned `:2.1.2` that morning would still be running the white screen. So a release cannot
+  leave a stale command behind in four files. The one place a number still appears is the tag
+  table in [`docs/dockerhub-overview.md`](../dockerhub-overview.md), which exists to explain
+  what an exact pin means, and it names the current release.
 
 - **A GitHub release IS a Docker release. There is no second decision** (owner's rule,
   2026-08-21). Pushing a `v*` tag fires [`publish.yml`](../../.github/workflows/publish.yml),
