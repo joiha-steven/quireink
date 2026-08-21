@@ -26,7 +26,7 @@ because nobody opened the page.
 bun run tour
 ```
 
-Fifty-nine flows in a real browser, each with a verdict: the reader's controls, every admin
+Sixty flows in a real browser, each with a verdict: the reader's controls, every admin
 page, a draft saved and published and trashed and restored, an upload refused for being too
 large, the archive built. It seeds its own instance on **port 3399** and deletes it after, so it
 never touches a real one — and it refuses to start if something already holds that port, because

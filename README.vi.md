@@ -1,6 +1,6 @@
 <div align="center">
 
-# quire**INK** &nbsp;`2.1.2`
+# quire**INK** &nbsp;`2.1.3`
 
 **Một cái blog bạn tự host, và AI agent có thể vận hành thay bạn.**
 Không thuật toán, không quảng cáo, không nền tảng nào đứng giữa bạn và người đọc.
@@ -74,15 +74,14 @@ Có ba thứ định hình nó.
 
 Bạn được đọc, sửa, chạy và fork theo [PolyForm Noncommercial](./LICENSE), và được chạy bản phát hành để kinh doanh — kể cả bán hosting — theo [một cho phép bổ sung](./LICENSE-EXCEPTION.vi.md).
 
-> **2.1.2 ra ngày 21/08/2026**, đang chạy bản demo ở trên và blog riêng của tác giả tại
-> [manhhung.me](https://manhhung.me). Bản này **thay cho 2.1.1, đã thu hồi**: bản đó phát
-> hành khi chế độ đọc sách đã chết trên Chrome mới mà không ai biết, vì chưa có phép kiểm
-> nào chạm tới. Mọi thứ 2.1.1 mang lại đều còn đây — cây bút vẽ như tay người, `++chữ++`
-> gạch chì và `@@chữ@@` khoanh bút bi đỏ, cùng nút U thôi làm mất gạch dưới khi lưu — kèm
-> bản sửa, một stylesheet không còn bị mực bút đè nặng, phép đổi font không xê một dòng
-> nào, chế độ đọc sách chỉnh được cỡ chữ, điện thoại lật trang bằng ngón cái, và giao diện
-> sáng/tối mặc định do bạn chọn thay vì phụ thuộc máy của khách.
-> [Changelog](./CHANGELOG.md) có đủ những gì đã đổi.
+> **2.1.3 ra ngày 21/08/2026**, đang chạy bản demo ở trên và blog riêng của tác giả tại
+> [manhhung.me](https://manhhung.me). Đây là một ngày sửa trình soạn thảo chồng lên 2.1.2, tất
+> cả đều lộ ra từ một người viết một bài: dán bài Markdown vào giờ thành bài viết thật chứ
+> không còn là một mớ chữ có dấu gạch chéo, hai đường làm trắng trang đã bịt, trang nào hỏng
+> thì nói ra chứ không gỡ luôn cả trang quản trị, bảng thôi mất công thức — mất ảnh — mất cột
+> mỗi lần lưu, và đăng bài báo cho CDN trong khoảng 50ms thay vì chín giây. Liên kết trong bài
+> giờ được gạch chân bằng nét bút đứt đoạn, vì đo ra màu chữ liên kết chỉ hơn chữ thường
+> 1,24:1. [Changelog](./CHANGELOG.md) có đủ những gì đã đổi.
 
 ---
 

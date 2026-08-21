@@ -1,6 +1,6 @@
 <div align="center">
 
-# quire**INK** &nbsp;`2.1.2`
+# quire**INK** &nbsp;`2.1.3`
 
 **A blog you host yourself, and an AI agent can run for you.**
 No algorithm, no ads, no platform standing between you and your readers.
@@ -74,15 +74,14 @@ Three things shaped it.
 
 You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE), and run the published version commercially — paid hosting included — under [one additional permission](./LICENSE-EXCEPTION.md).
 
-> **2.1.2 came out on 2026-08-21** and runs the demo above plus the author's own blog at
-> [manhhung.me](https://manhhung.me). It **replaces 2.1.1, which is withdrawn**: that release
-> went out with book mode already dead on current Chrome, and nothing here tested that path.
-> Everything 2.1.1 brought is here — the pen that draws like a hand, `++text++` in pencil and
-> `@@word@@` in red ballpoint, and the U button that had been silently dropping underlines
-> since it first shipped — plus the fix, a stylesheet the pen no longer weighs down, a font
-> swap that moves no line, book mode you can resize, a phone that turns pages with its
-> thumbs, and a default light/dark you choose rather than your visitor's laptop.
-> The [changelog](./CHANGELOG.md) has everything that changed.
+> **2.1.3 came out on 2026-08-21** and runs the demo above plus the author's own blog at
+> [manhhung.me](https://manhhung.me). It is a day of editor fixes on top of 2.1.2, all of them
+> found by one person writing one post: pasting a Markdown article now makes a post instead of
+> a wall of escaped text, two ways the writing surface could go blank are closed, a page that
+> fails now says so instead of unmounting the admin, a table stops losing a formula, an image
+> or a column on save, and publishing tells the CDN in about 50ms rather than nine seconds.
+> A body link is now underlined by the pen, in dashes, because colour alone measured 1.24:1
+> against the words around it. The [changelog](./CHANGELOG.md) has everything that changed.
 
 ---
 
