@@ -242,7 +242,7 @@ clone, no Bun on the host, no build step, and `linux/amd64` and `linux/arm64` bo
 docker run -d --name quire -p 127.0.0.1:3000:3000 \
   -e SITE_URL=https://example.com \
   -v quire-data:/var/lib/quire/data -v quire-uploads:/var/lib/quire/uploads \
-  quireink/quireink:2.1.2
+  quireink/quireink:2.1
 docker exec quire bun run user create --username you --email you@example.com
 ```
 
@@ -251,7 +251,7 @@ which is what a NAS search box looks in, and `ghcr.io/joiha-steven/quireink`. On
 run builds once and copies the finished manifest to the second, so a version number cannot
 mean two different images.
 
-Pin the two-part tag (`:2.1`) to take fixes without surprises, the full one (`:2.1.2`) to
+Pin the two-part tag (`:2.1`) to take fixes without surprises, the full three-part one to
 have nothing move at all, and `:latest` only to try it.
 
 **Or build it yourself** from this repository, which is what `docker-compose.yml` does and

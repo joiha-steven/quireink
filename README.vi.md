@@ -217,7 +217,7 @@ Xong. CSDL tự dựng ở lần khởi động đầu, nên không có bước 
 docker run -d --name quire -p 127.0.0.1:3000:3000 \
   -e SITE_URL=https://example.com \
   -v quire-data:/var/lib/quire/data -v quire-uploads:/var/lib/quire/uploads \
-  quireink/quireink:2.1.2
+  quireink/quireink:2.1
 docker exec quire bun run user create --username you --email you@example.com
 ```
 

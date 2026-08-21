@@ -19,8 +19,9 @@ On any behavior change, update the matching doc in the SAME change (Working prin
   [`scripts/ops/quire-backup.sh`](../../scripts/ops/quire-backup.sh) does.
 - **Audits** are dated snapshots, so they are write-only and they live with the author's
   notes rather than here. Read the latest first so a pass starts from the last clean line.
-- **Versioning (owner's rule — do NOT auto-bump):** the version is **`2.1.0`**, released
-  2026-08-18. From 2.0 onward the number is **semver and means something**, which is the change
+- **Versioning (owner's rule — do NOT auto-bump):** the version is **`2.1.2`**, released
+  2026-08-21 (it withdrew `2.1.1`, whose tag and release were deleted a day after they went
+  out; `2.1.1` shipped book mode already broken on current Chrome). From 2.0 onward the number is **semver and means something**, which is the change
   from the 1.5.x era where `x` was a running counter: MAJOR for a break in how the thing is
   installed or run, MINOR for a feature, PATCH for a fix. **Never bump any of the three on your
   own** — a release is the owner's call, and so is the number. Ship the work, write the
@@ -30,7 +31,36 @@ On any behavior change, update the matching doc in the SAME change (Working prin
   `gh release create v<version> --title "v<version> — <tagline>" --notes-file <file>`.
   The version lives in exactly **four** tracked places — `package.json`, the title line of
   **both** READMEs (`# quire**INK** <version>`), and this line — plus the CHANGELOG entry
-  heading. It said three and named `# **quire**blog`, from before the rename and before
+  heading and each README's release-note paragraph, which is rewritten per release anyway.
+  It said three and named `# **quire**blog`, from before the rename and before
   `README.vi.md` existed, so the instruction for finding the stale copy was itself a stale
-  copy. `grep -rn '<old>' package.json README.md README.vi.md docs/conventions/releases.md`
+  copy — and this line itself sat at `2.1.0` while the product was on `2.1.2`, which is the
+  same failure a third time. `grep -rn '<old>' package.json README.md README.vi.md docs/conventions/releases.md`
   before tagging; a number left behind in a README is the usual miss.
+  **Docker docs deliberately do NOT carry the patch number**: every `docker pull` example
+  names `:2.1`, the tag we tell people to pin, so a patch release cannot leave a stale
+  command behind in three files.
+
+- **A GitHub release IS a Docker release. There is no second decision** (owner's rule,
+  2026-08-21). Pushing a `v*` tag fires [`publish.yml`](../../.github/workflows/publish.yml),
+  which builds `linux/amd64` and `linux/arm64` on native runners, stitches them into one
+  manifest, tags it `<major>.<minor>.<patch>` / `<major>.<minor>` / `latest`, publishes to
+  GHCR, and copies the finished manifest to Docker Hub as `quireink/quireink`. Creating a
+  release through the GitHub UI creates the tag, so it fires too. Nothing to remember and
+  nothing to run by hand — but three things are yours to check:
+  1. **Read the public record, not the workflow's green tick.** The API returns 200 for
+     things it did not do; that has now misled this project twice in one day (a `categories`
+     key silently ignored, and a manifest that would have been named `sha256:sha256:…`).
+     Ask an unauthenticated client what the world can actually see:
+     `curl -s https://hub.docker.com/v2/repositories/quireink/quireink/ | jq '{description, categories}'`
+     and pull the tag on a clean machine.
+  2. **Both registries must answer the same digest.** One run builds once and copies, so they
+     cannot drift — if they ever differ, something published out of band.
+  3. **The listing is its own workflow.** [`dockerhub-listing.yml`](../../.github/workflows/dockerhub-listing.yml)
+     pushes the short description, [`docs/dockerhub-overview.md`](../dockerhub-overview.md)
+     and the category, and it runs when that file changes rather than on a release — a typo
+     in prose should not need a version number. Docker Hub resolves no relative link, which
+     is why that overview exists instead of pointing at the README.
+  Docker Hub needs `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` as repository secrets. Without
+  them both workflows skip the Hub and still publish to GHCR: a missing credential must never
+  fail a release.

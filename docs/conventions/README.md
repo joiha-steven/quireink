@@ -19,7 +19,7 @@ governs the reader, the rail or the admin.
 | [ide-chrome.md](ide-chrome.md) | `settings.ideChrome`: what the switch is allowed to touch, and what it must not |
 | [i18n.md](i18n.md) | `src/locales/`, adding a language, adding a string |
 | [scripts.md](scripts.md) | What is a script and what is not |
-| [releases.md](releases.md) | Which doc a change updates, keeping instance values out, versioning, cutting a release |
+| [releases.md](releases.md) | Which doc a change updates, keeping instance values out, versioning, cutting a release — **and that a GitHub release publishes the Docker image, with no second step** |
 
 Two rules govern the set. **One rule lives in exactly one file** — if a rule appears to belong
 in two, it belongs in the one a person would open first, and the other links to it. And **a
