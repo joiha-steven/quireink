@@ -242,7 +242,7 @@ clone, no Bun on the host, no build step, and `linux/amd64` and `linux/arm64` bo
 docker run -d --name quire -p 127.0.0.1:3000:3000 \
   -e SITE_URL=https://example.com \
   -v quire-data:/var/lib/quire/data -v quire-uploads:/var/lib/quire/uploads \
-  quireink/quireink:2.1
+  quireink/quireink:latest
 docker exec quire bun run user create --username you --email you@example.com
 ```
 
@@ -251,8 +251,12 @@ which is what a NAS search box looks in, and `ghcr.io/joiha-steven/quireink`. On
 run builds once and copies the finished manifest to the second, so a version number cannot
 mean two different images.
 
-Pin the two-part tag (`:2.1`) to take fixes without surprises, the full three-part one to
-have nothing move at all, and `:latest` only to try it.
+`:latest` is the tag to install and the one the documentation now uses everywhere: the
+newest release is the one with the fixes in it, and a blog left on an old tag is a blog left
+with the bugs that release fixed. Nothing moves under a running container either way, because
+Docker only changes the image when you pull. The two-part tag (`:2.1`) still takes fixes
+within a line for anyone who wants to step up a major version deliberately, and the
+three-part one (`:2.1.3`) pins one exact release forever.
 
 **Or build it yourself** from this repository, which is what `docker-compose.yml` does and
 what you want if you have changed anything:
