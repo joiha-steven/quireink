@@ -1,74 +1,127 @@
 # CHANGELOG
 
-## 2026-08-20 — Quire Ink 2.1.1
+## 2026-08-21 — Quire Ink 2.1.2
 
-**The pen learns to draw like a hand.** This release began with photographs: a notebook and
-two textbooks full of real highlighting, put next to the demo with the verdict that the
-demo's strokes looked machine-stamped. They did, for a reason the code could name — every
-highlight on a page was one SVG die stretched to fit, and the geometry jitter that was
-supposed to hide it counted siblings, so on a site where most paragraphs hold one highlight
-it never fired at all. A page of twelve highlights wore one silhouette twelve times.
+**This release replaces 2.1.1, which is withdrawn.** 2.1.1 shipped on 2026-08-20 and lived
+one day. It was not wrong about anything it set out to do — the pen work below is its work —
+but it went out with book mode already dead on current Chrome, and it had no way of knowing:
+nothing in this project tested that path. 2.1.2 is everything 2.1.1 was, plus the fix, plus a
+day of work the same review turned up. There is no reason to run 2.1.1, and its tag and
+release are gone; upgrading from 2.1.0 or earlier lands here directly.
 
-The upgrade is a drop-in: same install, same settings, same database, no migrations, **no
-new environment variables**. Unlike 2.1.0 this one is all on the reader's side of the
-house, and the costs are stated below.
+Still a drop-in: same install, same settings, same database, no migrations, **no new
+environment variables**.
 
-### The highlighter varies itself ([ADR 0025](docs/decisions/0025-the-pen-varies-itself.md))
+### Book mode was broken on Chrome 148, on every install
 
-The stroke shapes are now **grown from a seeded generator, not drawn**: ten dies varying
-tilt, weight, edge tremor, chisel ends, an occasional taper where the pen lifted, a dry
-lane where the felt split, pooled ink along the top edge, a darker spot where the pen was
-set down — and forty grips deciding how each stroke sits on its words and how far it
-overshoots them, differently at each end. Which variant a highlight wears is decided by a
-hash of its own text, stamped into the markup as `data-pen`: scattered across the page the
-way no sibling-counting selector can manage, and stable across re-renders, because a page
-that reshuffled its ink on every visit would feel haunted rather than hand-made. Two
-highlights now match only if their variant, their length and their line breaks all
-coincide.
+Every article opened in the reader showed "1 / 1" and both arrows were dead. Chrome stopped
+treating a multi-column element's overflow columns as scrollable overflow — measured, the
+flow reported 3,964px of content while its scroll container reported 279px, and an assigned
+`scrollLeft` snapped back to 0 — so the count was taken from a number that had gone blind and
+every turn was a no-op. Chrome then also stopped **painting** those columns, so the first fix
+produced a blank second page with the words laid out and undrawn.
 
-**The three-way stroke setting (marker / swipe / double) retires.** A pen that varies
-itself leaves a picker choosing between three uniformities nothing to do, and `swipe` was
-the one option that clipped Vietnamese stacked diacritics. Saved settings keep working; an
-old `highlight` key is simply ignored.
+Turning a page is now a transform on the flow under a clipping viewport, the count reads the
+flow's own width, and the flow is sized to hold every column as a real column box, because
+real columns paint. Two browser tour flows pin all three, desktop and phone. The tour had no
+book-mode flow at all, which is how a dead feature stayed green through fifty-seven checks.
 
-### Two more gestures: `++underline++` and `@@ring@@` ([ADR 0026](docs/decisions/0026-the-pen-learns-to-underline-and-ring.md))
+### The pen learns to draw like a hand ([ADR 0025](docs/decisions/0025-the-pen-varies-itself.md), [ADR 0026](docs/decisions/0026-the-pen-learns-to-underline-and-ring.md))
 
-The same photographs show what else a reader does to a page they own: sentences underlined
-in pen under the highlighting, and single load-bearing words ringed in ballpoint. Both are
-now syntax. `++text++` draws a pencil underline — tilt, bow, tail droop, pressure taper,
-sometimes a second re-inked pass — and `@@word@@` rings a word in red ballpoint. Both take
-`#green`-style suffixes, in ballpoint-strength versions of the five inks, because a thin
-line drawn in the highlighter's pastel pigment all but vanishes.
+Carried from 2.1.1 unchanged. It began with photographs: a notebook and two textbooks full of
+real highlighting, put next to the demo with the verdict that the demo's strokes looked
+machine-stamped. They did, for a reason the code could name — every highlight was one SVG die
+stretched to fit, and the jitter meant to hide it counted siblings, so on a site where most
+paragraphs hold one highlight it never fired. A page of twelve highlights wore one silhouette
+twelve times.
 
-The ring earned its shape the hard way: the first build stretched one loop to the word and
-the owner's verdict was exact — too long, the end curves flattened into a capsule. A hand
-does it the other way round, so the ring is now **two caps at a fixed width and a middle
-that does all the stretching**: the curves stay hand-sized around any word, the loop hugs
-the letters, runs well past both ends, and carries the crossing tail where the pen ran
-over its own start.
+Stroke shapes are now **grown from a seeded generator, not drawn**: ten dies varying tilt,
+weight, edge tremor, chisel ends, an occasional taper where the pen lifted, a dry lane where
+the felt split, pooled ink along the top edge, a darker spot where the pen was set down — and
+forty grips deciding how each stroke sits on its words. Which variant a highlight wears comes
+from a hash of its own text, so it is scattered across the page and stable across re-renders:
+a page that reshuffled its ink on every visit would feel haunted rather than hand-made.
 
-Both gestures are **owner toggles** (Settings → Reading), on by default, and the toggle is
-CSS only — cached bodies never re-render, and turning a gesture off swaps the pen line for
-the browser's straight underline or leaves ringed words plain.
+**Two more gestures.** `++text++` draws a pencil underline — bow, droop, taper, sometimes a
+second re-inked pass — and `@@word@@` rings a word in red ballpoint. Both take `#green`-style
+suffixes in ballpoint-strength versions of the five inks, because a thin line in the
+highlighter's pastel pigment all but vanishes. The ring is two caps at a fixed width and a
+middle that does all the stretching, so the curves stay hand-sized around any word. Both are
+owner toggles (Settings → Reading), on by default, CSS only.
 
-### The U button stops losing work
+**The three-way stroke setting (marker / swipe / double) retires.** A pen that varies itself
+leaves a picker between three uniformities nothing to do. Saved settings keep working.
 
-Pressing U in the editor applied StarterKit's underline mark, which has no Markdown
-serialization — the save dropped it silently, every time, since the editor first shipped.
-The editor now owns `underline`: same name, same button, same Mod-U, saved as `++text++`.
-A ring button joins the toolbar beside it, `++`/`@@` ink as you type exactly as `==` does,
-and a pasted ring can never be silently rewritten into a highlight — pinned by test, along
-with 24 other new ones (1,455 total, and the 57-flow tour).
+**The U button stops losing work.** It applied StarterKit's underline mark, which has no
+Markdown serialization, so every save dropped it silently — since the editor first shipped.
+The editor owns `underline` now: same button, same Mod-U, saved as `++text++`.
 
-### Costs, measured
+### The pen ships only to the pages where it wrote ([ADR 0027](docs/decisions/0027-the-pen-ships-only-where-it-wrote.md))
 
-The public stylesheet carries the pen's shapes as data-URIs and grew from **6.5 KB to
-29.3 KB gzipped** — one immutable request, cached for a year, and the pigments repeat
-across colourings so the wire cost is a fraction of the raw bytes. Set against the 51 KB
-the Literata subsets already cost a first paint, that bought the signature feature of a
-product named after ink; the known trim, if it is ever needed, is external per-die SVGs.
-Rendered bodies gain ~14 bytes per gesture (`data-pen="…"`). Nothing else moved.
+All that ink cost bytes: 280 SVG data-URIs had grown to roughly 21 of the public
+stylesheet's 29 KB gzipped, paid by every page including the ones with no ink on them. The
+ink now ships as two hashed, immutable sheets of its own, linked render-blocking but only on
+pages whose HTML actually contains a mark or an underline. `site.css` falls **28.7 → 7.6 KB
+gzipped**; a page with no ink drops 21 KB and roughly 260 KB of CSS parse; a highlighted post
+pays less than the old single sheet, across parallel cached requests. Deferred loading was
+rejected: it shows bare words for a beat before the ink lands.
 
+### The page reads like a set book
+
+**A font swap that moves nothing.** Every text family now declares a metric-matched fallback —
+the local face its stack falls back to, reshaped to the family's own measurements — so when
+the web font arrives, glyphs change and line breaks do not. Measured across all four
+families: 1,200 characters at 640px set the same 17 lines in Literata and in its fallback,
+where bare Georgia set 16. The swap used to cost a full line of reflow.
+
+**Hanging punctuation** hangs an opening quote into the margin the way a set book does, and
+**hyphenation limits** stop justified text breaking words a compositor would refuse.
+
+### Book mode: the reader's hand on the type, and fresher paper
+
+The scale was one fixed number and read large; it is a touch more generous than the article
+now, and **A− / A+** in the reader's chrome move it between 0.85 and 1.35, remembered per
+browser. The paper was pulled hard toward yellow with a heavy grain — together an impression
+of foxed stock rather than a classic page. It is a quiet warm ivory now, the grain is felt
+more than seen, and the drop cap, the asterism and the spine all stay.
+
+### The phone reads with its thumbs
+
+Book mode kept the desktop's 48px side margins on a phone — a quarter of a 375px screen spent
+on air. A phone page is the glass less 20px a side now, the mouse-sized arrows retire, and
+pages turn by swipe or by a tap in the outer thirds, with the middle third left as a safe
+place for a thumb. The reader also finally has a **way in on a phone**: both desktop entries
+hide under 768px, so a working one-page book mode had no door. A floating button, twin to the
+back-to-top circle and appearing on the same scroll, is it. The sidebar drawer's rows were
+stacking a desktop gap on top of touch padding and sat about 27px apart; they close up.
+
+### The owner picks what a first-time visitor opens in
+
+Light or dark was the visitor's laptop and nothing else: a blog could not BE dark or BE
+light, only mirror whoever was looking. **Settings → Appearance** now carries System / Light /
+Dark above the palette grid. A reader who has chosen for themselves is untouched in every
+case. New installs also start in Literata rather than the sans.
+
+### Docker: bind mounts work, and the image is finally verified
+
+The Docker path had no verification of any kind — the `Dockerfile` appeared in no test, no
+tour flow and no workflow. Measured on a Linux daemon: a **root-owned bind mount**, which is
+exactly what a Synology, QNAP or Unraid container UI produces, killed the container on boot
+with `SQLITE_CANTOPEN`. The docs claimed it merely came up degraded; that was wrong.
+
+The image now accepts **`PUID` / `PGID`** (1000:1000 by default, so nothing changes for
+existing installs), adopts the mounted directories only when their ownership is actually
+wrong, and drops privileges before the app starts — the app never runs as root. CI builds the
+image and boots it twice, on a named volume and on a root-owned bind mount, and asserts the
+process is unprivileged.
+
+### Smaller things
+
+A production-dependency stage, so a source-only change stops re-resolving the whole tree.
+Two admin rows that lined up with nothing, and one `ResetButton` in the kit instead of three
+hand-written copies that had already drifted. An audit pass over every markdown file after a
+day that moved the pen's delivery, the fonts, book mode, the first paint and the install
+defaults: fourteen confirmed drifts, corrected.
 
 ## 2026-08-18 — Quire Ink 2.1.0
 

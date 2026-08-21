@@ -1,0 +1,162 @@
+# Publishing the image, on a tag and only on a tag.
+#
+# `ci.yml` already proves the image builds and boots on every push — including on a
+# root-owned bind mount, which is the shape a NAS produces. This workflow is the other half:
+# taking the thing that passed and putting it where somebody can `docker pull` it without
+# cloning the repository, installing Bun or building anything. That is the whole reason it
+# exists, and the audience is specific: a Synology, QNAP or Unraid owner whose container UI
+# offers a name to pull and a folder to mount, and nothing else.
+#
+# TWO NATIVE RUNNERS, NOT QEMU. The obvious shape is one job with `platforms: amd64,arm64`
+# and binfmt emulation, and it would work — slowly. The expensive part of this build is
+# `bun install` twice plus the admin bundle (React, Tiptap, the Tailwind CLI), and that is
+# exactly the sort of CPU-bound work emulation is worst at; a build measured in seconds
+# natively turns into tens of minutes under QEMU, on a job that fires at the worst possible
+# moment, which is a release. GitHub's arm64 runners are free for public repositories, so
+# each architecture is built where it is native and the two are stitched into one manifest
+# afterwards. A reader pulling `quireink/quireink` gets their own architecture and never
+# knows this happened.
+#
+# GHCR IS THE ONE THAT ALWAYS RUNS. It authenticates with the token this workflow already
+# has, so it cannot be broken by a missing secret. Docker Hub is where a NAS search box
+# actually looks, so it matters more for the audience — but it needs credentials a person
+# has to create, and a release that fails because a secret was never added would be a bad
+# trade. So the Hub push is a copy of an image that has already been published, guarded on
+# the secret being present: no secret, no Hub, and the release still happens.
+#
+# To turn the Hub on, add two repository secrets:
+#   DOCKERHUB_USERNAME  the account name
+#   DOCKERHUB_TOKEN     a Read/Write access token from hub.docker.com -> Account settings
+#                       -> Personal access tokens. NOT the account password.
+name: Publish
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  HUB_IMAGE: quireink/quireink
+
+jobs:
+  # One job per architecture, each pushing an untagged blob identified only by its digest.
+  # Tags come later, once both exist: tagging here would mean the two architectures fight
+  # over the same tag and the last one to finish wins, which is how a multi-arch image
+  # quietly becomes single-arch.
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-latest
+            platform: linux/amd64
+          - runner: ubuntu-24.04-arm
+            platform: linux/arm64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push by digest
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: ${{ matrix.platform }}
+          # `provenance: false` deliberately. A provenance attestation rides in the manifest
+          # as an extra entry, and `imagetools create` then has to reason about entries that
+          # are not architectures — which is a known way for this exact pattern to produce a
+          # manifest a puller cannot resolve. Signing the release is worth doing and is not
+          # worth doing badly on the first tag; it is a follow-up, not a silent omission.
+          provenance: false
+          outputs: type=image,name=ghcr.io/${{ github.repository }},push-by-digest=true,name-canonical=true,push=true
+
+      - name: Save the digest for the merge step
+        run: |
+          mkdir -p /tmp/digests
+          touch "/tmp/digests/${{ steps.build.outputs.digest }}"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: digest-${{ strategy.job-index }}
+          path: /tmp/digests/*
+          retention-days: 1
+
+  # One manifest list over both digests, and only now does anything carry a version.
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: /tmp/digests
+          pattern: digest-*
+          merge-multiple: true
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # 2.1.2, 2.1 and latest. The two-part tag is what an owner who wants security fixes
+      # but no surprises pins to; the full one is what an owner who wants nothing to move
+      # pins to; `latest` is for trying it. A pre-release tag (v2.2.0-beta.1) deliberately
+      # does NOT move `latest`.
+      - uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest,enable=${{ !contains(github.ref_name, '-') }}
+
+      - name: Stitch the architectures into one image
+        working-directory: /tmp/digests
+        run: |
+          docker buildx imagetools create \
+            $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+            $(printf 'ghcr.io/${{ github.repository }}@sha256:%s ' *)
+
+      - name: Say what a puller will get
+        run: docker buildx imagetools inspect ghcr.io/${{ github.repository }}:${{ steps.meta.outputs.version }}
+
+      # --- Docker Hub, when it is configured ------------------------------------------------
+      # A copy of the manifest that GHCR already carries, not a second build: same digests,
+      # same bytes, so the two registries can never drift into serving different code under
+      # one version number.
+      - name: Log in to Docker Hub
+        if: ${{ secrets.DOCKERHUB_TOKEN != '' }}
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Copy the image to Docker Hub
+        if: ${{ secrets.DOCKERHUB_TOKEN != '' }}
+        run: |
+          for tag in $(jq -r '.tags[]' <<< "$DOCKER_METADATA_OUTPUT_JSON"); do
+            docker buildx imagetools create \
+              -t "${HUB_IMAGE}:${tag##*:}" \
+              "ghcr.io/${{ github.repository }}:${{ steps.meta.outputs.version }}"
+          done
+          docker buildx imagetools inspect "${HUB_IMAGE}:${{ steps.meta.outputs.version }}"
+
+      - name: Note when the Hub was skipped
+        if: ${{ secrets.DOCKERHUB_TOKEN == '' }}
+        run: |
+          echo "Docker Hub was skipped: no DOCKERHUB_TOKEN secret on this repository." >> "$GITHUB_STEP_SUMMARY"
+          echo "GHCR published ghcr.io/${{ github.repository }}:${{ steps.meta.outputs.version }}." >> "$GITHUB_STEP_SUMMARY"

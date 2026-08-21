@@ -1,6 +1,6 @@
 <div align="center">
 
-# quire**INK** &nbsp;`2.1.1`
+# quire**INK** &nbsp;`2.1.2`
 
 **A blog you host yourself, and an AI agent can run for you.**
 No algorithm, no ads, no platform standing between you and your readers.
@@ -74,15 +74,15 @@ Three things shaped it.
 
 You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE), and run the published version commercially — paid hosting included — under [one additional permission](./LICENSE-EXCEPTION.md).
 
-> **2.1.1 came out on 2026-08-20** and runs the demo above plus the author's own blog at
-> [manhhung.me](https://manhhung.me). One project again, this time on the reader's side:
-> the pen learns to draw like a hand. Every highlight used to be one stroke shape stretched
-> to fit; now the shapes are grown from a seeded generator and each phrase keeps its own —
-> tilt, weight, dry patches, pooled ink and all. Two gestures join from any borrowed
-> textbook: `++text++` underlines in pencil and `@@word@@` rings a word in red ballpoint.
-> And the editor's U button, which had been silently dropping underlines on save since it
-> first shipped, now saves what it applies. The [changelog](./CHANGELOG.md) has everything
-> that changed.
+> **2.1.2 came out on 2026-08-21** and runs the demo above plus the author's own blog at
+> [manhhung.me](https://manhhung.me). It **replaces 2.1.1, which is withdrawn**: that release
+> went out with book mode already dead on current Chrome, and nothing here tested that path.
+> Everything 2.1.1 brought is here — the pen that draws like a hand, `++text++` in pencil and
+> `@@word@@` in red ballpoint, and the U button that had been silently dropping underlines
+> since it first shipped — plus the fix, a stylesheet the pen no longer weighs down, a font
+> swap that moves no line, book mode you can resize, a phone that turns pages with its
+> thumbs, and a default light/dark you choose rather than your visitor's laptop.
+> The [changelog](./CHANGELOG.md) has everything that changed.
 
 ---
 
