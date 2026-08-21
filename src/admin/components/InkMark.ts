@@ -60,7 +60,15 @@ function inkPlugin(md: MarkdownIt): void {
     if (state.src.charCodeAt(state.pos) !== 0x3d) return false
     const m = rule.exec(state.src.slice(state.pos, state.posMax))
     if (!m) return false
-    if (silent) return true
+    // SILENT MODE MUST STILL ADVANCE `state.pos`, and getting this wrong does not produce a
+    // wrong document — it throws. markdown-it scans a link label by running every inline rule
+    // with `silent` set (`skipToken`), and it checks afterwards that a rule which claimed the
+    // match actually moved the cursor: `inline rule didn't increment state.pos`. A bare
+    // `return true` claims and does not move, so the whole parse dies — inside `setContent`,
+    // inside a React render, which is a white admin. It needs a link whose LABEL carries one
+    // of these delimiters to happen at all, e.g. `[**@@Quire Ink@@**](https://…)`, which is
+    // why it hid behind the pen's other bug for a day. Measured on a real draft.
+    if (silent) { state.pos += m[0].length; return true }
 
     const open = state.push('ink_open', 'mark', 1)
     if (m[2] && m[2] !== DEFAULT_INK) open.attrSet('data-ink', m[2])

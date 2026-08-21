@@ -98,3 +98,20 @@ describe('a gesture that follows bold', () => {
     expect(await roundTrip('++gạch cả **đậm** bên trong++')).toBe('++gạch cả **đậm** bên trong++')
   })
 })
+
+describe('a gesture inside a link label', () => {
+  // The other half of the second blank page — same silent-mode contract, same three rules.
+  // `ink-mark.test.ts` carries the explanation.
+  it('does not kill the parse', async () => {
+    expect(await roundTrip('Xem [++tài liệu++](https://a.test) ở đây.')).toBe('Xem [++tài liệu++](https://a.test) ở đây.')
+    expect(await roundTrip('Xem [@@tài liệu@@](https://a.test) ở đây.')).toBe('Xem [@@tài liệu@@](https://a.test) ở đây.')
+    // A label that is NOT a link after all: the scan still runs, and what matters is that the
+    // parse survives and the gesture is intact. The brackets come back escaped — which is the
+    // serializer's treatment of ANY stray bracket, pen or no pen (`[chỉ là ngoặc] thôi`
+    // round-trips to `\\[chỉ là ngoặc\\]` just the same), it renders identically, and it is a
+    // fixed point rather than something that grows a backslash per save. Measured, not assumed.
+    const once = await roundTrip('[@@chỉ là ngoặc@@] thôi')
+    expect(once).toContain('@@chỉ là ngoặc@@')
+    expect(await roundTrip(once)).toBe(once)
+  })
+})

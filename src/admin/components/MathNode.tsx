@@ -57,7 +57,9 @@ function mathPlugin(md: MarkdownIt): void {
     if (ch !== 0x24 && ch !== 0x5c) return false
     const m = matchMathAt(state.src.slice(state.pos, state.posMax))
     if (!m) return false
-    if (silent) return true
+    // Silent mode still has to move the cursor — see the note in `InkMark.ts`. A formula
+    // inside a link label (`[giá $5$ đây](/x)`) is the shape that reaches this.
+    if (silent) { state.pos += m.raw.length; return true }
     // An OPEN/CLOSE pair, not one self-closing token. markdown-it renders a `nesting: 0`
     // token as a bare `<span …>` with nothing after it, and an unclosed span swallows the
     // rest of the paragraph into an atom node that discards its children — so

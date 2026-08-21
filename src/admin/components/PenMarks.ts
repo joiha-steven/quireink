@@ -52,7 +52,9 @@ function gesturePlugin(name: string, first: number, source: string, tag: string,
       if (state.src.charCodeAt(state.pos) !== first) return false
       const m = rule.exec(state.src.slice(state.pos, state.posMax))
       if (!m) return false
-      if (silent) return true
+      // See the note in `InkMark.ts`: a silent claim that does not move the cursor makes
+      // markdown-it throw while it scans a link label.
+      if (silent) { state.pos += m[0].length; return true }
       const open = state.push(`${name}_open`, tag, 1)
       for (const [k, v] of attrs) open.attrSet(k, v)
       if (m[2]) open.attrSet('data-ink', m[2])
