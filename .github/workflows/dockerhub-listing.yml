@@ -51,8 +51,16 @@ jobs:
 
       # The category is not part of that action, and it is what the Hub's own filters use.
       # `content-management-system` is the whole list on purpose: it is what this is, and
-      # padding the list with `web-servers` to widen the net would put a blog engine in the
-      # aisle where people are looking for nginx.
+      # padding it with `web-servers` to widen the net would put a blog engine in the aisle
+      # where people are looking for nginx.
+      #
+      # PATCH on `/categories/`, NOT on the repository itself — the first cut patched the
+      # repository root, which takes the description happily and silently ignores a
+      # `categories` key. Found by probing both paths unauthenticated: the repository root
+      # and `/categories/` both answer 401 to PATCH (they exist), while PUT and POST on
+      # `/categories/` answer 405, which is the shape of the endpoint stating its own verb.
+      # The body shape is not documented, so both plausible ones are tried and the code is
+      # printed either way.
       - name: The category
         if: env.HAS_HUB == 'true'
         env:
@@ -64,14 +72,19 @@ jobs:
             -H 'Content-Type: application/json' \
             -d "$(jq -n --arg u "$USERNAME" --arg p "$TOKEN" '{username:$u,password:$p}')" \
             | jq -r .token)
-          # Not `set -e`-fatal: the listing is cosmetic, and a release-adjacent workflow going
-          # red over a category would be a worse outcome than a category that did not take.
-          # Whether it took is asserted below, from the PUBLIC record rather than this reply.
-          curl -fsS -X PATCH "https://hub.docker.com/v2/repositories/${REPO}/" \
-            -H "Authorization: JWT ${jwt}" \
-            -H 'Content-Type: application/json' \
-            -d '{"categories":[{"name":"Content management system","slug":"content-management-system"}]}' \
-            -o /dev/null || echo "PATCH refused the category; see the check below."
+          body_obj='{"categories":[{"name":"Content management system","slug":"content-management-system"}]}'
+          body_arr='[{"name":"Content management system","slug":"content-management-system"}]'
+          for body in "$body_obj" "$body_arr"; do
+            code=$(curl -s -o /tmp/cat-resp.json -w '%{http_code}' -X PATCH \
+              "https://hub.docker.com/v2/repositories/${REPO}/categories/" \
+              -H "Authorization: JWT ${jwt}" \
+              -H 'Content-Type: application/json' \
+              -d "$body")
+            echo "PATCH /categories/ -> ${code}"
+            head -c 300 /tmp/cat-resp.json || true
+            echo
+            case "$code" in 2*) echo "accepted"; break ;; esac
+          done
 
       - name: What the world can actually see now
         if: env.HAS_HUB == 'true'
