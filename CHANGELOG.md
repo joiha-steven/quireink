@@ -1,5 +1,129 @@
 # CHANGELOG
 
+## 2026-08-21 — Quire Ink 2.1.3
+
+A day of editor bugs, all found by one person writing one post. The owner pasted a Markdown
+article into the writing surface and got a white screen; every fix below came out of chasing
+that, and three of them were found by the tests written to catch the first two.
+
+Nothing here changes how the thing is installed or run. Still a drop-in: same install, same
+settings, same database, no migrations, **no new environment variables**.
+
+### Pasting a Markdown article now makes a post
+
+It did not. Pasted text arrived verbatim — the headings kept their `#`, a table stayed a wall
+of pipes, a fence stayed three backticks — and it saved worse than it looked: the serializer
+escapes what it is handed, so the draft that reached the database read `\# Heading` and
+`&gt; quote`, and the post published as its own source code. One option in the Markdown
+extension had never been switched on. A paste inside a code block, and a paste made with Shift
+held, still arrive as plain text, which is what both gestures mean.
+
+### The editor stopped going blank, twice
+
+Both were the same shape of mistake in the pen's own Markdown rules, and both ended the same
+way: a throw inside the parse, inside a React render, and an admin that unmounted itself into
+a white page with nothing in the console that a writer could act on.
+
+**`**bold** and ==ink==` in one paragraph.** The rule that parses a stroke's contents handed
+the nested parse the token array the outer parse was still holding indices into; markdown-it
+finishes an inline pass by splicing that array, every recorded index shifted, and the next
+lookup threw. Emphasis BEFORE the stroke was required to reach it, which is why `==ink== and
+**bold**` had always been fine and nothing anybody wrote deliberately ever hit it.
+
+**A stroke inside a link label** — `[**@@Quire Ink@@**](https://…)`. markdown-it scans a link
+label by running every inline rule in silent mode and then checking that a rule which claimed
+a match moved the cursor. All three pen rules, and the inline maths rule, claimed without
+moving. It needs the delimiter to be INSIDE the brackets, so a day of round-trip fixtures that
+put the stroke beside a link walked past it.
+
+### A page that fails no longer takes the admin with it
+
+There was no error boundary anywhere in the admin, so any error thrown while a page rendered
+unmounted the entire tree — sidebar, rail, everything. That is what turned a parser bug into a
+blank browser tab. A failing page now becomes a sheet that says what happened, says the work
+is still held on the device, offers to reload or to leave, and shows the error's own message
+so a report can be more than "it went blank". It sits inside the canvas and outside the
+sidebar, so the rail keeps working and leaving the page is what clears it.
+
+### Tables stopped losing cells
+
+Four of these, all of them a save rather than an edit, which means the writer does nothing
+wrong and finds out later:
+
+| Written | Saved, before |
+|---|---|
+| `\| $x^2$ \| hai \|` | `\|  \| hai \|` |
+| a cell holding an image | the same, emptied |
+| a cell holding an escaped pipe | one column fewer, and again on the next save |
+| a merged cell, or a cell of two blocks | the literal text `[table]` — the whole table |
+
+The first two are one cause: the serializer asked whether a cell had TEXT before writing it,
+and a formula keeps its TeX in an attribute while an image is a leaf block with no text at
+all. The third is that a pipe inside a cell was written bare, so the next open re-cut the row.
+The fourth was a fallback that replaced an entire table with seven characters — reachable by
+pasting a table from a web page, by pressing Enter inside a cell, or by deleting the header
+row with the button that offers to. A table Markdown cannot express is now downgraded rather
+than deleted: the shape is lost, the words are kept, the columns stay aligned.
+
+### A list that mixes bullets and checkboxes stopped growing
+
+`- một` / `- hai` / `- [x] ba` is one list in Markdown, and the whole list was being marked as
+checkboxes because one item was. The two plain items were lifted out, the empty checkbox list
+that remained had to be given an item, and the post gained a `- [ ]` nobody wrote — which
+parsed on the next open as an empty task item, saved as `- \[ \]`, and grew from there. The
+runs are now split into a list each, in the order they were written.
+
+### Publishing reaches readers immediately
+
+Measured from the owner's own publish: nine seconds passed between pressing Publish and the
+CDN being told to drop its copy, because the purge was the last step of a walk that re-renders
+every public page — 79 pages, 6.5 seconds, a number that grows with the archive. Meanwhile the
+manual "Clear cache" button did it in 183ms. The two jobs were never one job: the warm is for
+origin latency and can take as long as it likes, the purge is what makes readers see the new
+post. The purge now fires about 50ms after the write; a bulk import still purges at most
+twice.
+
+### A link is underlined by the pen, in dashes ([ADR 0028](docs/decisions/0028-a-link-is-a-pen-gesture.md))
+
+A body link was invisible, and measurably so: `--c-link` against body text is 1.24:1 on the
+default palette and never reaches the 3:1 that colour-as-the-only-cue wants, while the
+hairline under it sat at 1.16–1.33:1 across all twelve palette-and-mode pairs. Colour set
+darker and a heavier weight were both built and refused by measurement. A link now carries the
+mark a reader draws under a line they mean to come back to — dashes, tiling rather than
+stretching, so a longer link gets more of them rather than bigger ones, and visibly not the
+solid `++underline++` a writer draws. It costs 0.99 KB gzipped and rides in the sheet every
+page already loads.
+
+### How the editor is tested now
+
+The two blank pages were found by the owner, not by 1,485 tests, and the reason was
+structural. `golden/corpus/` holds 45 Markdown fixtures and this project has two parsers —
+one for the reader's page, gated by the golden compare, and one for the WRITER'S page, which
+had never been handed a single fixture. Half the software was untested against the corpus.
+And every fixture written for the pen tested one gesture in one sentence, while both bugs
+lived in combinations.
+
+So the corpus now runs through the editor as well, alongside 186 generated cases — six
+gestures against sixteen containers, including the two that mattered: after emphasis, and
+inside a link label. The law asserted is a fixed point rather than an exact string: opening
+and saving may normalise, but a document that keeps changing every time it is opened is
+silent corruption on a timer, and a parse that throws is a white screen. That suite found the
+table bugs on its first run. A post containing every shape that has ever broken the editor is
+also opened in a real browser by the tour and saved twice, because a DOM shim never mounts
+React the way a browser does and both white pages ENDED in React.
+
+1,736 tests, sixty browser flows.
+
+### Docker Hub, for the people the image exists for
+
+The image is published to Docker Hub as `quireink/quireink` as well as GHCR — the same bytes,
+built once and copied, so a version number cannot come to mean two different images — because
+GHCR cannot be searched from a Synology or QNAP container UI at all. Its page had an empty
+description, no overview and no category, which is what Docker Hub's search reads, so the
+image was unfindable for exactly the audience it was published for. Both READMEs and the
+self-hosting guide now lead with a pull rather than a clone-and-build, and name the NAS case
+where a NAS owner will look.
+
 ## 2026-08-21 — Quire Ink 2.1.2
 
 **This release replaces 2.1.1, which is withdrawn.** 2.1.1 shipped on 2026-08-20 and lived
