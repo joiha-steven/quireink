@@ -44,15 +44,15 @@ function mulberry(seed: number): () => number {
   }
 }
 
-const r1 = (n: number) => Math.round(n * 10) / 10
-const o2 = (n: number) => String(Math.round(n * 100) / 100).replace(/^0/, '')
+export const r1 = (n: number) => Math.round(n * 10) / 10
+export const o2 = (n: number) => String(Math.round(n * 100) / 100).replace(/^0/, '')
 
 /**
  * A wavy run of cubics from x0 to x1 along the line `y(x)`, anchors alternating across it.
  * The amplitude is per-segment random, which is what keeps a long stretched stroke from
  * reading as a tidy sine wave.
  */
-function wavy(x0: number, x1: number, y: (x: number) => number, amp: number, segs: number,
+export function wavy(x0: number, x1: number, y: (x: number) => number, amp: number, segs: number,
   r: () => number): string {
   const dx = (x1 - x0) / segs
   let out = ''

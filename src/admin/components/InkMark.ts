@@ -29,6 +29,7 @@ import type MarkdownIt from 'markdown-it'
 // one, and it is the same class.
 import type StateInline from 'markdown-it/lib/rules_inline/state_inline.js'
 import { INKS, DEFAULT_INK, isInk, inkOf, INK_SYNTAX_SOURCE, INK_SYNTAX_CONTENT_LAST } from '@/render/ink'
+import { parseInlineInto } from './markdown-nested'
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
@@ -46,9 +47,11 @@ declare module '@tiptap/core' {
  * through the schema's `parseHTML`, so this rule only has to produce a `<mark>` token pair —
  * TipTap does the rest.
  *
- * `state.md.inline.parse` on the inner text is what lets bold, a link and a code span live
+ * The nested inline parse on the inner text is what lets bold, a link and a code span live
  * under the stroke. Pushing the content as one plain text token would have been three lines
- * shorter and would silently flatten every one of them.
+ * shorter and would silently flatten every one of them. It goes through `parseInlineInto`
+ * rather than `state.md.inline.parse` directly, and that file says why: handing the nested
+ * parse the outer token array is what used to blank the admin on `**bold** and ==ink==`.
  */
 function inkPlugin(md: MarkdownIt): void {
   const rule = new RegExp(`^${INK_SYNTAX_SOURCE}`)
@@ -61,7 +64,7 @@ function inkPlugin(md: MarkdownIt): void {
 
     const open = state.push('ink_open', 'mark', 1)
     if (m[2] && m[2] !== DEFAULT_INK) open.attrSet('data-ink', m[2])
-    state.md.inline.parse(m[1], state.md, state.env, state.tokens)
+    parseInlineInto(state, m[1])
     state.push('ink_close', 'mark', -1)
     state.pos += m[0].length
     return true
