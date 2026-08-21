@@ -11,7 +11,8 @@
 // running against.
 import type { Extensions } from '@tiptap/core'
 import StarterKit from '@tiptap/starter-kit'
-import { Table, TableRow, TableHeader, TableCell } from '@tiptap/extension-table'
+import { TableRow, TableHeader, TableCell } from '@tiptap/extension-table'
+import { MarkdownTable } from './TableMarkdown'
 import { TaskList } from '@tiptap/extension-task-list'
 import { TaskItem } from '@tiptap/extension-task-item'
 import { Placeholder } from '@tiptap/extension-placeholder'
@@ -45,7 +46,10 @@ export function editorExtensions(placeholder: string): Extensions {
     // backslash in a formula and deletes `\(…\)` outright on save (MathNode.tsx).
     MathInline,
     MathBlock,
-    Table.configure({ resizable: false }),
+    // NOT `Table` from the package: `TableMarkdown.ts` replaces the library's serializer,
+    // which deletes a cell holding only a formula or an image and lets an escaped pipe
+    // re-cut the row on the next save. Same configuration, one method different.
+    MarkdownTable,
     TableRow,
     TableHeader,
     TableCell,
