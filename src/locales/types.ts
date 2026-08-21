@@ -904,4 +904,12 @@ export type AdminStrings = {
   authCodesDownload: string
   authCodesSaved: string
   authDone: string
+  // The error boundary's sheet (`admin/ui/ErrorBoundary.tsx`). Written for someone who was
+  // in the middle of a draft, not for whoever will read the stack: say what happened, say
+  // that the work is not gone, then offer the two things that actually help.
+  crashTitle: string
+  crashText: string
+  crashDetail: string
+  crashReload: string
+  crashHome: string
 }

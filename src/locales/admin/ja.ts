@@ -732,6 +732,11 @@ const ja = {
   authCodesDownload: 'ダウンロード',
   authCodesSaved: 'コードを保存しました',
   authDone: '完了',
+  crashTitle: 'この画面は停止しました',
+  crashText: 'このページの描画中に問題が起きたため、真っ白になる代わりにここで停止しました。入力した内容はこの端末に残っており、ページを開き直すと復元を提案します。管理画面のほかの部分は無事で、サイドバーはそのまま使えます。',
+  crashDetail: '問題の内容',
+  crashReload: 'このページを再読み込み',
+  crashHome: 'ダッシュボードへ',
 } satisfies AdminStrings
 
 export default ja

@@ -732,6 +732,11 @@ const de = {
   authCodesDownload: 'Herunterladen',
   authCodesSaved: 'Ich habe diese Codes gespeichert',
   authDone: 'Fertigstellen',
+  crashTitle: 'Diese Seite hat angehalten',
+  crashText: 'Beim Aufbau dieser Seite ist etwas fehlgeschlagen, deshalb hält die Verwaltung hier an, statt weiß zu bleiben. Was Sie geschrieben haben, liegt weiterhin auf diesem Gerät und wird beim erneuten Öffnen zur Wiederherstellung angeboten. Der Rest der Verwaltung ist nicht betroffen: die Seitenleiste funktioniert weiter.',
+  crashDetail: 'Was fehlschlug',
+  crashReload: 'Diese Seite neu laden',
+  crashHome: 'Zur Übersicht',
 } satisfies AdminStrings
 
 export default de

@@ -732,6 +732,11 @@ const en = {
   authCodesDownload: 'Download',
   authCodesSaved: 'I have saved these codes',
   authDone: 'Finish',
+  crashTitle: 'This screen stopped',
+  crashText: 'Something in this page failed while it was drawing, so the admin stopped here instead of going blank. Anything you had typed is still held on this device and will be offered back when the page reopens. The rest of the admin is unaffected: the sidebar still works.',
+  crashDetail: 'What broke',
+  crashReload: 'Reload this page',
+  crashHome: 'Go to the dashboard',
 } satisfies AdminStrings
 
 export default en

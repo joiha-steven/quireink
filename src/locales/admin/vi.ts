@@ -732,6 +732,11 @@ const vi = {
   authCodesDownload: 'Tải về',
   authCodesSaved: 'Tôi đã lưu các mã này',
   authDone: 'Hoàn tất',
+  crashTitle: 'Màn hình này đã dừng',
+  crashText: 'Một thứ trong trang này hỏng lúc đang vẽ ra, nên trình quản trị dừng ở đây thay vì để trắng trang. Những gì bạn đã gõ vẫn được giữ trên máy này và sẽ được mời khôi phục khi mở lại trang. Phần còn lại của trình quản trị không sao: thanh bên vẫn dùng được.',
+  crashDetail: 'Chỗ hỏng',
+  crashReload: 'Tải lại trang này',
+  crashHome: 'Về bảng điều khiển',
 } satisfies AdminStrings
 
 export default vi

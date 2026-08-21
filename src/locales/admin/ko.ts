@@ -732,6 +732,11 @@ const ko = {
   authCodesDownload: '다운로드',
   authCodesSaved: '복구 코드를 저장했습니다',
   authDone: '완료',
+  crashTitle: '이 화면이 멈췄습니다',
+  crashText: '이 페이지를 그리는 중 문제가 생겨, 흰 화면이 되는 대신 여기서 멈췄습니다. 입력하신 내용은 이 기기에 남아 있으며 페이지를 다시 열면 복구를 제안합니다. 관리 화면의 나머지는 멀쩡하고 사이드바도 그대로 쓸 수 있습니다.',
+  crashDetail: '무엇이 잘못됐는지',
+  crashReload: '이 페이지 새로고침',
+  crashHome: '대시보드로 가기',
 } satisfies AdminStrings
 
 export default ko
