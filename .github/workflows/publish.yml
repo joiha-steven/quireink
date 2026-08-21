@@ -88,7 +88,11 @@ jobs:
       - name: Save the digest for the merge step
         run: |
           mkdir -p /tmp/digests
-          touch "/tmp/digests/${{ steps.build.outputs.digest }}"
+          # The FILENAME is the bare hex, with `sha256:` stripped — the merge step puts that
+          # prefix back when it builds `name@sha256:<hex>`, and leaving it on here produces
+          # `@sha256:sha256:<hex>`, which the registry rejects.
+          digest='${{ steps.build.outputs.digest }}'
+          touch "/tmp/digests/${digest#sha256:}"
 
       - uses: actions/upload-artifact@v4
         with:
