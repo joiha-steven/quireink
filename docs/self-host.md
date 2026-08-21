@@ -235,6 +235,23 @@ Same app, same layout, nothing extra to run beside it. This replaces sections 1,
 nginx (section 5), the CDN note (section 7) and **the cron ticks (section 8)** still apply,
 and so does taking a backup before an upgrade.
 
+There are two ways in. **Pull the published image** if you just want it running — nothing to
+clone, no Bun on the host, no build step, and `linux/amd64` and `linux/arm64` both exist:
+
+```bash
+docker run -d --name quire -p 127.0.0.1:3000:3000 \
+  -e SITE_URL=https://example.com \
+  -v quire-data:/var/lib/quire/data -v quire-uploads:/var/lib/quire/uploads \
+  ghcr.io/joiha-steven/quireink:2.1.2
+docker exec quire bun run user create --username you --email you@example.com
+```
+
+Pin the two-part tag (`:2.1`) to take fixes without surprises, the full one (`:2.1.2`) to
+have nothing move at all, and `:latest` only to try it.
+
+**Or build it yourself** from this repository, which is what `docker-compose.yml` does and
+what you want if you have changed anything:
+
 ```bash
 git clone https://github.com/joiha-steven/quireink.git && cd quireink
 cp .env.docker.example .env          # set SITE_URL, and that is the whole of it
