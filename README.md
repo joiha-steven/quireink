@@ -206,9 +206,21 @@ That is it. The database sets itself up on first boot, so there is no migration 
 > ([ADR 0022](./docs/decisions/0022-ship-from-source-not-a-compiled-binary.md)).
 
 <details>
-<summary><b>🐳 &nbsp;Would rather use Docker?</b> &nbsp;Two commands</summary>
+<summary><b>🐳 &nbsp;Would rather use Docker?</b> &nbsp;Pull the image, or build it</summary>
 
 <br/>
+
+**Pull it.** Nothing to clone, no Bun, no build step — `linux/amd64` and `linux/arm64`:
+
+```bash
+docker run -d --name quire -p 127.0.0.1:3000:3000 \
+  -e SITE_URL=https://example.com \
+  -v quire-data:/var/lib/quire/data -v quire-uploads:/var/lib/quire/uploads \
+  ghcr.io/joiha-steven/quireink:2.1.2
+docker exec quire bun run user create --username you --email you@example.com
+```
+
+**Or build it from this repository**, which is what `docker-compose.yml` does:
 
 ```bash
 cp .env.docker.example .env          # set SITE_URL
@@ -216,7 +228,9 @@ docker compose up -d --build
 docker compose exec quire bun run user create --username you --email you@example.com
 ```
 
-One service, two volumes, no sidecar. The port only listens on `127.0.0.1`, so a reverse proxy still does TLS. Notes on volumes, ownership and upgrades are in [`docs/self-host.md`](./docs/self-host.md#10-docker-instead-of-systemd).
+One service, two volumes, no sidecar. The port only listens on `127.0.0.1`, so a reverse proxy still does TLS.
+
+**On a NAS** (Synology, QNAP, Unraid), mount real folders and set `PUID`/`PGID` to whoever owns them — the container adopts them on first boot and never runs as root. Notes on volumes, ownership and upgrades are in [`docs/self-host.md`](./docs/self-host.md#10-docker-instead-of-systemd).
 
 </details>
 

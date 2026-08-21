@@ -207,9 +207,21 @@ Xong. CSDL tự dựng ở lần khởi động đầu, nên không có bước 
 > ([ADR 0022](./docs/decisions/0022-ship-from-source-not-a-compiled-binary.md)).
 
 <details>
-<summary><b>🐳 &nbsp;Thích dùng Docker hơn?</b> &nbsp;Hai câu lệnh</summary>
+<summary><b>🐳 &nbsp;Thích dùng Docker hơn?</b> &nbsp;Kéo image về, hoặc tự dựng</summary>
 
 <br/>
+
+**Kéo về dùng luôn.** Không cần clone, không cần Bun, không phải dựng gì — có sẵn cho `linux/amd64` và `linux/arm64`:
+
+```bash
+docker run -d --name quire -p 127.0.0.1:3000:3000 \
+  -e SITE_URL=https://example.com \
+  -v quire-data:/var/lib/quire/data -v quire-uploads:/var/lib/quire/uploads \
+  ghcr.io/joiha-steven/quireink:2.1.2
+docker exec quire bun run user create --username you --email you@example.com
+```
+
+**Hoặc tự dựng từ repo này**, đúng như `docker-compose.yml` làm:
 
 ```bash
 cp .env.docker.example .env          # điền SITE_URL
@@ -217,7 +229,9 @@ docker compose up -d --build
 docker compose exec quire bun run user create --username you --email you@example.com
 ```
 
-Một service, hai volume, không sidecar. Cổng chỉ mở trên `127.0.0.1`, nên reverse proxy vẫn là chỗ xử lý TLS. Ghi chú về volume, quyền sở hữu và nâng cấp nằm ở [`docs/self-host.md`](./docs/self-host.md#9-docker-instead-of-systemd).
+Một service, hai volume, không sidecar. Cổng chỉ mở trên `127.0.0.1`, nên reverse proxy vẫn là chỗ xử lý TLS.
+
+**Trên NAS** (Synology, QNAP, Unraid), hãy gắn thư mục thật và đặt `PUID`/`PGID` theo người sở hữu thư mục đó — container tự nhận quyền ở lần khởi động đầu và không bao giờ chạy bằng root. Ghi chú về volume, quyền sở hữu và nâng cấp nằm ở [`docs/self-host.md`](./docs/self-host.md#10-docker-instead-of-systemd).
 
 </details>
 
