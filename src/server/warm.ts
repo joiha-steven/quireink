@@ -27,6 +27,16 @@ import { purgeEdge } from '@/server/edge-cache'
 /** Wait this long after the LAST write before warming: a bulk import is one burst. */
 const DEBOUNCE_MS = 3_000
 
+/**
+ * The shortest gap between two purges fired by the LEADING edge of a burst.
+ *
+ * Cloudflare rate-limits purge-everything, and a bulk import is a thousand writes. The
+ * trailing purge below is deliberately NOT held by this: the last write of a burst must reach
+ * the edge whatever the clock says, which is the whole point of the re-entrant tail.
+ */
+const PURGE_GAP_MS = 3_000
+let lastPurgeAt = 0
+
 let pending: ReturnType<typeof setTimeout> | null = null
 let running = false
 /**
@@ -80,6 +90,43 @@ export async function warmCache(): Promise<{ warmed: number; ms: number }> {
 }
 
 /**
+ * Drop the reader's copy NOW, without waiting for the warm.
+ *
+ * THE BUG THIS EXISTS FOR, measured on the live site 2026-08-21 from the owner's own publish:
+ *
+ *     14:44:00  PUT /api/posts/…              the post is published
+ *     14:44:03  (debounce elapses)            the warm starts
+ *     14:44:09  cache: warmed 79 pages        6.5 seconds of rendering
+ *     14:44:09  edge-cache: purged            <- only now do readers stop seeing the old page
+ *
+ * Nine seconds, and the number grows with the archive: the purge was queued behind a warm of
+ * every public page. The owner refreshed the home page inside that window, did not see his
+ * post, and pressed "Clear cache" — which purges in 183ms, because that route calls
+ * `purgeEdge()` directly. The manual button was fast and the automatic path was not, which is
+ * exactly what "the cache is broken" feels like from the outside.
+ *
+ * The two jobs were never the same job. The warm is for ORIGIN LATENCY: it stops the next
+ * reader paying for a re-render, and it can take as long as it likes. The purge is for
+ * CORRECTNESS: until it runs, every reader behind the CDN is served a page that is wrong.
+ * Making the second wait for the first traded the thing that matters for the thing that does
+ * not.
+ *
+ * So the purge now fires on the LEADING edge of a burst, ~50ms after the write, and the
+ * trailing one after the warm stays exactly as it was. A publish reaches readers immediately;
+ * an import still purges at most twice.
+ */
+/**
+ * @param now Injected so the gap can be tested without a three-second sleep, and without a
+ * reset function that exists only for tests. Callers pass nothing.
+ */
+export async function purgeAfterWrite(now: number = Date.now()): Promise<'purged' | 'held'> {
+  if (now - lastPurgeAt < PURGE_GAP_MS) return 'held'
+  lastPurgeAt = now
+  await purgeEdge()
+  return 'purged'
+}
+
+/**
  * Warm, then purge the edge — in that order, so the CDN refetches into a warm origin.
  *
  * Re-entrant by TAIL, not by overlap: a second pass is remembered and run after this one
@@ -101,6 +148,10 @@ export async function warmThenPurge(reason: string): Promise<void> {
       again = false
       const { warmed, ms } = await warmCache()
       console.log(`cache: warmed ${warmed} page(s) in ${ms}ms (${reason})`)
+      // Unconditional. `purgeAfterWrite`'s gap does not apply here: this is the purge that
+      // carries the LAST write of a burst, and skipping it is the 2026-08-19 data-staleness
+      // bug the `again` flag above exists to prevent.
+      lastPurgeAt = Date.now()
       await purgeEdge()
     } while (again)
   } catch (error) {
@@ -119,6 +170,9 @@ export async function warmThenPurge(reason: string): Promise<void> {
  */
 export function enableBackgroundCache(): void {
   onFlush(() => {
+    // First, and not awaited: the reader's copy is wrong from this instant and the warm has
+    // nothing to do with that. See `purgeAfterWrite`.
+    void purgeAfterWrite()
     if (pending) clearTimeout(pending)
     pending = setTimeout(() => {
       pending = null
