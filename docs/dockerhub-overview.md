@@ -58,7 +58,7 @@ services:
 
 | Tag | What it means |
 |---|---|
-| `2.1.2` | Exactly this release. Nothing moves, ever. |
+| `2.1.2` | One exact release. Nothing moves, ever. |
 | `2.1` | Fixes within the 2.1 line, no feature surprises. **The one to pin.** |
 | `latest` | The newest release. Fine for trying it, not for a blog you care about. |
 

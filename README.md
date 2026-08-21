@@ -216,7 +216,7 @@ That is it. The database sets itself up on first boot, so there is no migration 
 docker run -d --name quire -p 127.0.0.1:3000:3000 \
   -e SITE_URL=https://example.com \
   -v quire-data:/var/lib/quire/data -v quire-uploads:/var/lib/quire/uploads \
-  quireink/quireink:2.1.2
+  quireink/quireink:2.1
 docker exec quire bun run user create --username you --email you@example.com
 ```
 
