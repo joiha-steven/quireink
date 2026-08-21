@@ -216,9 +216,12 @@ That is it. The database sets itself up on first boot, so there is no migration 
 docker run -d --name quire -p 127.0.0.1:3000:3000 \
   -e SITE_URL=https://example.com \
   -v quire-data:/var/lib/quire/data -v quire-uploads:/var/lib/quire/uploads \
-  ghcr.io/joiha-steven/quireink:2.1.2
+  quireink/quireink:2.1.2
 docker exec quire bun run user create --username you --email you@example.com
 ```
+
+Also on GHCR as `ghcr.io/joiha-steven/quireink` — the same image, pushed by the same run and
+carrying the same digest, so the two can never drift.
 
 **Or build it from this repository**, which is what `docker-compose.yml` does:
 

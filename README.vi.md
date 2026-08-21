@@ -217,9 +217,12 @@ Xong. CSDL tự dựng ở lần khởi động đầu, nên không có bước 
 docker run -d --name quire -p 127.0.0.1:3000:3000 \
   -e SITE_URL=https://example.com \
   -v quire-data:/var/lib/quire/data -v quire-uploads:/var/lib/quire/uploads \
-  ghcr.io/joiha-steven/quireink:2.1.2
+  quireink/quireink:2.1.2
 docker exec quire bun run user create --username you --email you@example.com
 ```
+
+Cũng có trên GHCR là `ghcr.io/joiha-steven/quireink` — cùng một image, do cùng một lần chạy
+đẩy lên và mang cùng digest, nên hai nơi không thể lệch nhau.
 
 **Hoặc tự dựng từ repo này**, đúng như `docker-compose.yml` làm:
 

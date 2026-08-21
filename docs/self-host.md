@@ -242,9 +242,14 @@ clone, no Bun on the host, no build step, and `linux/amd64` and `linux/arm64` bo
 docker run -d --name quire -p 127.0.0.1:3000:3000 \
   -e SITE_URL=https://example.com \
   -v quire-data:/var/lib/quire/data -v quire-uploads:/var/lib/quire/uploads \
-  ghcr.io/joiha-steven/quireink:2.1.2
+  quireink/quireink:2.1.2
 docker exec quire bun run user create --username you --email you@example.com
 ```
+
+Two registries carry it and they are the same bytes: `quireink/quireink` on Docker Hub,
+which is what a NAS search box looks in, and `ghcr.io/joiha-steven/quireink`. One workflow
+run builds once and copies the finished manifest to the second, so a version number cannot
+mean two different images.
 
 Pin the two-part tag (`:2.1`) to take fixes without surprises, the full one (`:2.1.2`) to
 have nothing move at all, and `:latest` only to try it.
