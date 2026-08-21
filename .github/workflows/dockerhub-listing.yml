@@ -1,0 +1,96 @@
+# The Docker Hub shop window: the short line, the overview, and the category.
+#
+# SEPARATE FROM `publish.yml` on purpose. The listing is prose, not an artefact — fixing a
+# typo in the overview should not require cutting a release, and cutting a release should not
+# depend on Docker Hub's description API being up. So this runs when the overview file
+# changes, and by hand.
+#
+# It exists because the page was BARE: measured on 2026-08-21, `quireink/quireink` had an
+# empty description, no overview and no category. Docker Hub's own search — the one a
+# Synology or QNAP container UI puts in front of its owner — reads exactly those fields, so a
+# blank listing is an image nobody can find and, if they do find it, nobody can evaluate.
+#
+# The overview is its OWN file rather than the README, and that is not duplication for its
+# own sake: Docker Hub renders Markdown but resolves no relative link, so every path in the
+# README (`./docs/self-host.md`, the screenshots, the badges) would arrive broken. The file
+# it reads uses absolute URLs throughout.
+name: Docker Hub listing
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/dockerhub-overview.md'
+      - '.github/workflows/dockerhub-listing.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  describe:
+    runs-on: ubuntu-latest
+    # Same guard as the publish workflow: `secrets` is not readable from a step's `if`, so it
+    # comes through `env` first. A fork, or this repository before the credentials existed,
+    # skips the whole thing rather than failing.
+    env:
+      HAS_HUB: ${{ secrets.DOCKERHUB_TOKEN != '' }}
+      REPO: quireink/quireink
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: The short line and the overview
+        if: env.HAS_HUB == 'true'
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: quireink/quireink
+          short-description: 'A blog you host yourself: one process, two SQLite files, no cloud account in the path.'
+          readme-filepath: ./docs/dockerhub-overview.md
+
+      # The category is not part of that action, and it is what the Hub's own filters use.
+      # `content-management-system` is the whole list on purpose: it is what this is, and
+      # padding the list with `web-servers` to widen the net would put a blog engine in the
+      # aisle where people are looking for nginx.
+      - name: The category
+        if: env.HAS_HUB == 'true'
+        env:
+          USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          jwt=$(curl -fsS -X POST https://hub.docker.com/v2/users/login \
+            -H 'Content-Type: application/json' \
+            -d "$(jq -n --arg u "$USERNAME" --arg p "$TOKEN" '{username:$u,password:$p}')" \
+            | jq -r .token)
+          # Not `set -e`-fatal: the listing is cosmetic, and a release-adjacent workflow going
+          # red over a category would be a worse outcome than a category that did not take.
+          # Whether it took is asserted below, from the PUBLIC record rather than this reply.
+          curl -fsS -X PATCH "https://hub.docker.com/v2/repositories/${REPO}/" \
+            -H "Authorization: JWT ${jwt}" \
+            -H 'Content-Type: application/json' \
+            -d '{"categories":[{"name":"Content management system","slug":"content-management-system"}]}' \
+            -o /dev/null || echo "PATCH refused the category; see the check below."
+
+      - name: What the world can actually see now
+        if: env.HAS_HUB == 'true'
+        run: |
+          set -euo pipefail
+          curl -fsS "https://hub.docker.com/v2/repositories/${REPO}/" > /tmp/repo.json
+          {
+            echo "### ${REPO} listing"
+            echo
+            echo "- short description: $(jq -r 'if (.description // "") == "" then "**still empty**" else .description end' /tmp/repo.json)"
+            echo "- overview: $(jq -r 'if (.full_description // "") == "" then "**still empty**" else ((.full_description | length | tostring) + " characters") end' /tmp/repo.json)"
+            cats=$(jq -r '[.categories[].name] | join(", ")' /tmp/repo.json)
+            if [ -z "$cats" ]; then
+              cats="**still empty** - set them by hand at https://hub.docker.com/repository/docker/${REPO}/settings"
+            fi
+            echo "- categories: ${cats}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Note when the Hub was skipped
+        if: env.HAS_HUB != 'true'
+        run: |
+          echo "Skipped - no DOCKERHUB_TOKEN secret on this repository." >> "$GITHUB_STEP_SUMMARY"
