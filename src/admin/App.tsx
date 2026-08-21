@@ -12,6 +12,7 @@ import { AdminI18nProvider } from '@/admin/components/I18nProvider'
 import { ToastProvider } from '@/admin/ui/Toast'
 import { ThemeProvider } from '@/admin/ui/ThemeProvider'
 import { TopProgress } from '@/admin/ui/TopProgress'
+import { ErrorBoundary } from '@/admin/ui/ErrorBoundary'
 import { AdminSidebar } from '@/admin/components/AdminSidebar'
 import type { SiteLang } from '@/types'
 
@@ -135,6 +136,9 @@ function Shell() {
   // frozen tree read them in the layout's server component; there is nowhere else to put
   // them now, and a language flash is worse than a blank frame.
   const { data } = useView<{ language: SiteLang; version: string }>('shell')
+  // Read here rather than inside the boundary: it is the boundary's KEY, so it has to change
+  // in the tree that renders it.
+  const path = usePathname()
   if (!data) return <div className="min-h-screen bg-neutral-100 dark:bg-neutral-950" />
   return (
     <AdminI18nProvider lang={data.language}>
@@ -143,12 +147,19 @@ function Shell() {
         <div className="admin-shell min-h-screen bg-neutral-100 md:flex dark:bg-neutral-950">
           <AdminSidebar lang={data.language} signOut={signOut} />
           <Canvas>
-            {/* Reached on the FIRST paint only. Every later route change runs inside a
-                transition, which keeps the current page on screen instead of falling back
-                here — see the note in `router.tsx`. */}
-            <Suspense fallback={<div className="py-16 text-center text-sm text-neutral-400">…</div>}>
-              <Route />
-            </Suspense>
+            {/* One page may fail without taking the admin with it. INSIDE the canvas and
+                outside the sidebar, so the rail still works and the owner can leave; keyed by
+                path, so leaving is also what resets it. Before this existed, a parser that
+                threw while opening a post unmounted everything and left a white page
+                (`ui/ErrorBoundary.tsx`). */}
+            <ErrorBoundary key={path}>
+              {/* Reached on the FIRST paint only. Every later route change runs inside a
+                  transition, which keeps the current page on screen instead of falling back
+                  here — see the note in `router.tsx`. */}
+              <Suspense fallback={<div className="py-16 text-center text-sm text-neutral-400">…</div>}>
+                <Route />
+              </Suspense>
+            </ErrorBoundary>
           </Canvas>
         </div>
       </ToastProvider>

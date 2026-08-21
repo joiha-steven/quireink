@@ -732,6 +732,11 @@ const zh = {
   authCodesDownload: '下载',
   authCodesSaved: '我已保存这些恢复码',
   authDone: '完成',
+  crashTitle: '此页面已停止',
+  crashText: '本页在绘制时出了问题，因此后台停在这里，而不是变成一片空白。您输入的内容仍保存在这台设备上，重新打开页面时会提示恢复。后台其余部分不受影响，侧边栏仍可使用。',
+  crashDetail: '出错的地方',
+  crashReload: '重新加载此页',
+  crashHome: '回到仪表板',
 } satisfies AdminStrings
 
 export default zh
