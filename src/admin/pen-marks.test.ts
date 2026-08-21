@@ -83,3 +83,18 @@ describe('the two gestures round-trip', () => {
     editor.destroy()
   })
 })
+
+describe('a gesture that follows bold', () => {
+  // The other half of the blank-page bug pinned in `ink-mark.test.ts`. All three gestures
+  // shared one line of markdown-it plumbing — the nested inline parse — so all three took
+  // the editor down on the same shape of sentence: emphasis first, gesture second, one
+  // paragraph. `markdown-nested.ts` holds the fix and the explanation.
+  it('opens instead of unmounting the admin', async () => {
+    expect(await roundTrip('**đậm** và ++gạch++')).toBe('**đậm** và ++gạch++')
+    expect(await roundTrip('**đậm** và @@vòng@@')).toBe('**đậm** và @@vòng@@')
+    // Bold, pencil and ballpoint in one line — the sentence that reproduced it fastest.
+    expect(await roundTrip('Ghi **rõ**, ++gạch++ và @@vòng@@ lại.')).toBe('Ghi **rõ**, ++gạch++ và @@vòng@@ lại.')
+    // And the nesting the shared parse exists for is still nesting.
+    expect(await roundTrip('++gạch cả **đậm** bên trong++')).toBe('++gạch cả **đậm** bên trong++')
+  })
+})

@@ -57,6 +57,19 @@ export function editorExtensions(placeholder: string): Extensions {
     Placeholder.configure({ placeholder }),
     // html:false -> raw HTML in the source is treated as plain text, never
     // parsed into nodes. Keeps the blog 100% Markdown.
-    Markdown.configure({ html: false }),
+    //
+    // `transformPastedText` IS NOT A PREFERENCE. Off — its default — a Markdown article
+    // pasted into the writing surface lands as literal text: the headings keep their `#`,
+    // the table stays a wall of pipes, the fence stays three backticks. Worse than looking
+    // wrong, it SAVES wrong: the serializer escapes what it has been handed, so the post
+    // that reaches the database reads `\# Heading` and `&gt; quote`, and it publishes that
+    // way. Measured 2026-08-21 on a draft pasted in whole.
+    //
+    // On, the pasted text goes through the same markdown-it the editor already uses to open
+    // a post — same rules, same extensions, so `$…$`, `==ink==` and the tables arrive as the
+    // nodes they are. Two things it deliberately does not touch: a paste inside a code block
+    // (ProseMirror hands `code` context plain text before any parser is consulted), and a
+    // paste made with Shift held, which is the browser's own "as plain text" gesture.
+    Markdown.configure({ html: false, transformPastedText: true }),
   ]
 }

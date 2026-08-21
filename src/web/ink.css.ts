@@ -22,7 +22,8 @@
 // the card's copy of the path had already drifted four numbers from this one.
 import { PEN_DARK, PEN_LIGHT, penStroke as pen } from '@/render/pen'
 import {
-  PEN_AUX_DARK, PEN_AUX_LIGHT, PEN_LINE_DARK, PEN_LINE_LIGHT, penRing, penUnder,
+  PEN_AUX_DARK, PEN_AUX_LIGHT, PEN_LINE_DARK, PEN_LINE_LIGHT, penDash, penRing,
+  penSolidRule, penUnder,
 } from '@/render/pen'
 import {
   PEN_DIE_COUNT, PEN_GRIPS, RING_DIE_COUNT, RING_GRIPS, UNDER_DIE_COUNT, UNDER_GRIPS,
@@ -195,6 +196,42 @@ ${ringInks(PEN_LINE_LIGHT, PEN_AUX_LIGHT, '.prose')}
 ${ringDies(PEN_LINE_LIGHT, PEN_AUX_LIGHT, '.prose')}
 ${ringInks(PEN_LINE_DARK, PEN_AUX_DARK, '.dark .prose')}
 ${ringDies(PEN_LINE_DARK, PEN_AUX_DARK, '.dark .prose')}
+`.trim()
+
+/* ------------------------------------------------------------------------------------- *
+ * The link's dashes. NOT part of either half above, and that is the point: the two pen
+ * sheets only board pages whose HTML carries a mark or an underline (ADR 0027), while a
+ * link is on nearly every page ever rendered. So this rides in `prose.css.ts`, with the
+ * rest of the always-loaded article typography.
+ *
+ * It costs two data-URIs per mode rather than the pen's 280: one ink, one die, tiled.
+ * ------------------------------------------------------------------------------------- */
+export const LINK_INK_CSS = `
+/* The word keeps the palette's colour; the mark under it is the pen's graphite, because a
+   hex baked into an SVG cannot read a CSS variable and this is the trade ADR 0018 already
+   made for the pigments. Measured across all six palettes in both modes: 4.97:1 to 7.01:1
+   against the paper, where the hairline it replaces sat at 1.16-1.33:1.
+   
+   repeat-x, and a size in em: the dashes are a physical thing the hand made, so a long link
+   gets MORE of them rather than longer ones. box-decoration-break makes a link that wraps
+   start its run again on the next line, exactly as the pen does for a highlight.
+   
+   The bottom padding is load-bearing for the same reason it is on the u element: an inline background
+   clips at the font's descent, and this line lives just under the baseline. */
+.prose a{color:var(--c-link);text-decoration:none;
+  background-repeat:repeat-x;background-size:4.6em .3em;background-position:0 1.22em;
+  -webkit-box-decoration-break:clone;box-decoration-break:clone;
+  padding-bottom:.42em;
+  background-image:${penDash(PEN_AUX_LIGHT.graphite)}}
+/* Under the cursor the hand presses down and the run closes up. Same ink, same box, so the
+   line does not move by a pixel between the two states. */
+.prose a:hover,.prose a:focus-visible{background-image:${penSolidRule(PEN_AUX_LIGHT.graphite)}}
+.dark .prose a{background-image:${penDash(PEN_AUX_DARK.graphite)}}
+.dark .prose a:hover,.dark .prose a:focus-visible{background-image:${penSolidRule(PEN_AUX_DARK.graphite)}}
+/* A footnote marker and a heading anchor are not prose links and must not be underlined:
+   the first is a superscript numeral, the second is the heading itself. */
+.prose a.fn-ref,.prose sup a,.prose h1 a,.prose h2 a,.prose h3 a,.prose h4 a,.prose h5 a{
+  background-image:none;padding-bottom:0}
 `.trim()
 
 /** The whole pen, for the one surface that always needs all of it: the admin editor. */

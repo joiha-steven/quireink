@@ -21,6 +21,7 @@ import {
   UNDER_SYNTAX_CONTENT_LAST, UNDER_SYNTAX_SOURCE,
 } from '@/render/ink'
 import type { Ink } from '@/render/ink'
+import { parseInlineInto } from './markdown-nested'
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
@@ -55,7 +56,7 @@ function gesturePlugin(name: string, first: number, source: string, tag: string,
       const open = state.push(`${name}_open`, tag, 1)
       for (const [k, v] of attrs) open.attrSet(k, v)
       if (m[2]) open.attrSet('data-ink', m[2])
-      state.md.inline.parse(m[1]!, state.md, state.env, state.tokens)
+      parseInlineInto(state, m[1]!)
       state.push(`${name}_close`, tag, -1)
       state.pos += m[0].length
       return true

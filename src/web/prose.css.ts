@@ -9,6 +9,7 @@
 // NO BACKTICKS anywhere below: this is one template literal and a backtick ends it.
 // `check:css-literal` enforces that.
 
+import { LINK_INK_CSS } from '@/web/ink.css'
 import { MATH_CSS } from '@/web/math.css'
 
 export const PROSE_CSS = `
@@ -57,11 +58,7 @@ export const PROSE_CSS = `
 /* Bold is EMPHASIS in the body colour. A book serif's 700 is blacker than the 600 of the
    headings, so a preset can dial it back through --reading-bold. */
 .prose strong,.prose b{font-weight:var(--reading-bold, 700)}
-/* A body link carries a permanent faint rule that warms to the accent on hover, which is
-   the opposite signature to the chrome links (.link-accent) and deliberately so. */
-.prose a{color:var(--c-link);text-decoration:underline;text-underline-offset:.18em;
-  text-decoration-thickness:1px;text-decoration-color:var(--c-rule)}
-.prose a:hover{text-decoration-color:var(--c-accent)}
+${LINK_INK_CSS}
 .prose ul{list-style:disc;padding-left:1.4em}
 .prose ol{list-style:decimal;padding-left:1.4em}
 .prose li{margin:calc(var(--sp) * .25) 0}

@@ -133,6 +133,27 @@ describe('the highlighter in the editor', () => {
     editor.destroy()
   })
 
+  it('survives a stroke that follows bold in the same paragraph', async () => {
+    // THE BLANK-PAGE BUG, and it is here rather than in a file about parsers because this is
+    // the sentence that did it: one emphasis run, then one stroke. `inkPlugin` parsed the
+    // stroke's contents into the token array the OUTER parse was still holding indices into,
+    // markdown-it's `text_collapse` spliced that array, and the next delimiter lookup threw
+    // `undefined is not an object (evaluating 'token.type = "s_open"')` out of markdown-it —
+    // through `setContent`, into a React handler with no boundary above it. The admin
+    // unmounted and the owner got a white screen with nothing in the console to explain it.
+    //
+    // The order is the whole trick: `==mực== và **đậm**` never failed, and neither did either
+    // one on its own, so nothing anybody wrote deliberately to test the pen ever hit it.
+    expect(await html('**đậm** và ==mực==')).toBe('<p><strong>đậm</strong> và <mark>mực</mark></p>')
+    expect(await html('# Tiêu đề **đậm** và ==mực==')).toContain('<mark>mực</mark>')
+    expect(await roundTrip('Chi phí **thấp** và ==tiết kiệm== nhiều.')).toBe('Chi phí **thấp** và ==tiết kiệm== nhiều.')
+    // The nested parse still nests: what the stroke contains keeps its own marks, and the
+    // whole line survives a save. (The HTML shape is ProseMirror's — one `<mark>` per text
+    // node — so the round trip, not the markup, is what says the document is intact.)
+    expect(await html('==chữ **đậm** trong mực==')).toContain('<strong><mark>đậm</mark></strong>')
+    expect(await roundTrip('==chữ **đậm** trong mực==')).toBe('==chữ **đậm** trong mực==')
+  })
+
   it('ends the stroke at an inline code span, stably', async () => {
     // The documented limit, pinned so it stays a KNOWN shortfall rather than becoming a
     // surprise. `code` excludes every other mark at the schema level (see InkMark.ts), so

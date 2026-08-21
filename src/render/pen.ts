@@ -83,6 +83,7 @@ export const PEN_LINE_DARK: Record<PenInk, string> = {
 // The die shapes are GROWN from a seeded generator rather than drawn — `pen-dies.ts` holds
 // the hand and the argument for it. This module stays the single place a pigment exists.
 import { DIES, RING_DIES, UNDER_DIES } from '@/render/pen-dies'
+import { LINK_DASH_DIE, LINK_SOLID_DIE } from '@/render/pen-link'
 export {
   PEN_DIE_COUNT, PEN_VARIANT_COUNT, PEN_GRIPS,
   UNDER_DIE_COUNT, UNDER_GRIPS, RING_DIE_COUNT, RING_GRIPS,
@@ -122,6 +123,17 @@ export function penUnder(hex: string, die = 0): string {
 export function penRing(hex: string, die = 0, part: 'l' | 'm' | 'r' = 'm'): string {
   const d = RING_DIES[die]!
   return penUrl(d[part], hex, 48, undefined, part === 'm' ? 100 : 40)
+}
+
+/**
+ * A link's underline: a tiled run of hand-drawn dashes, or the solid run it becomes under
+ * the cursor. 240x16, and it TILES rather than stretching — see `pen-dies.ts` for why.
+ */
+export function penDash(hex: string): string {
+  return penUrl(LINK_DASH_DIE, hex, 16, undefined, 240)
+}
+export function penSolidRule(hex: string): string {
+  return penUrl(LINK_SOLID_DIE, hex, 16, undefined, 240)
 }
 
 function penUrl(die: readonly (readonly [string, string])[], hex: string, boxH: number,
