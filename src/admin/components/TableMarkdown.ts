@@ -26,11 +26,20 @@
 //      a fixture for exactly this (`golden/corpus/gfm-table-pipes.md`) and it passed for a
 //      year, because it was only ever handed to the READER'S parser.
 //
-// WHAT IS DELIBERATELY UNCHANGED: a table GFM cannot express — merged cells, or a cell holding
-// more than one block — still serializes to the literal text `[table]`, which is the library's
-// `html: false` fallback and is also total loss. It is left alone here because fixing it means
-// deciding what a merged cell BECOMES in a format that has no merged cells, and that is the
-// owner's call, not a bug fix. It is pinned by a test so it stays a known shortfall.
+//   3. A TABLE GFM CANNOT EXPRESS IS THROWN AWAY WHOLE. With `html: false` the library's
+//      fallback for a merged cell, a cell holding two blocks, or a table whose first row is
+//      not headers, is to write the literal text `[table]` — the entire table, every row of
+//      it, replaced by seven characters. All three are two clicks away: paste a table from a
+//      web page and it arrives with `colspan`; press Enter inside a cell; delete the header
+//      row with the button that offers to.
+//
+//      GFM has no merged cells and no multi-line cell, so something must be lost. What is
+//      chosen here is to lose the SHAPE and keep the WORDS: a spanned cell writes its content
+//      once and pads the row with empty cells so the columns still line up, a cell of several
+//      blocks joins them with a space, and a table without a header row promotes its first
+//      row — which is what the reader's parser would do with it anyway, since GFM has no
+//      headerless table either. Every one of those is a downgrade; none of them is a deletion,
+//      and `[table]` was a deletion.
 import { Table } from '@tiptap/extension-table'
 import type { Node as PMNode } from '@tiptap/pm/model'
 
@@ -60,56 +69,40 @@ const children = (node: PMNode): PMNode[] => {
   return out
 }
 
-const spans = (cell: PMNode): boolean =>
-  Number(cell.attrs.colspan ?? 1) > 1 || Number(cell.attrs.rowspan ?? 1) > 1
+/** How many columns a row occupies once its spans are counted. */
+const widthOf = (row: PMNode): number =>
+  children(row).reduce((n, cell) => n + Math.max(1, Number(cell.attrs.colspan ?? 1)), 0)
 
 /**
- * Can this table be written as GFM at all? The library's rule, kept whole: a header row of
- * header cells, body rows of body cells, no spans, one block per cell.
- */
-function isGfmShaped(table: PMNode): boolean {
-  const rows = children(table)
-  const [head, ...body] = rows
-  if (!head) return false
-  if (children(head).some((c) => c.type.name !== 'tableHeader' || spans(c) || c.childCount > 1)) return false
-  return !body.some((row) =>
-    children(row).some((c) => c.type.name === 'tableHeader' || spans(c) || c.childCount > 1))
-}
-
-/**
- * Render one cell, then escape every pipe it produced.
+ * Render one BLOCK of a cell, whatever kind it is, onto one line.
  *
- * The escaping is done on the OUTPUT rather than on the text nodes, and that is the point: a
- * pipe can arrive from a text node, from a link's URL, or from inside a code span, and inside
- * a table every one of them has to be `\|`. Taking the slice this cell just appended catches
- * all three without teaching the escaper about tables.
+ * Three doors, because a cell can hold three shapes. A paragraph is inline content and goes
+ * through `renderInline`. An image is a leaf block with no inline content at all and has to go
+ * through its own node serializer, or it writes nothing (see the header). Anything else — a
+ * list, a quote, a code block someone pasted into a cell — is rendered as itself and then
+ * FLATTENED, because a newline inside a row would end the row.
  *
- * A backslash already in the text has been doubled by `esc()` before this runs, so escaping
- * the pipe after it cannot merge with it into something else.
+ * `closed` is put back afterwards: a block serializer signals "a blank line goes here next",
+ * and the next thing written is the rest of the row.
  */
-function renderCell(state: SerializerState, block: PMNode): void {
+function renderBlock(state: SerializerState, block: PMNode, cell: PMNode, index: number): void {
   const before = state.out.length
-  state.renderInline(block)
-  escapePipesSince(state, before)
-}
-
-/**
- * A cell whose single child is a LEAF BLOCK — in practice an image, which is a block node in
- * this schema and replaces the cell's paragraph rather than sitting inside one. It has no
- * inline content to render, so `renderInline` writes nothing and the image disappears; this
- * is the third shape of the same deletion the file header describes.
- *
- * It is rendered through the node's OWN serializer rather than by writing `![alt](src)` here,
- * because `CaptionedImage` owns a syntax with suffixes (`#grid`, alignment) and a second
- * writer of it would drift from the first. What is undone afterwards is only the BLOCK part:
- * the trailing newline, and the `closed` flag that would otherwise open a blank line in the
- * middle of the row.
- */
-function renderLeafCell(state: SerializerState, block: PMNode, cell: PMNode): void {
-  const before = state.out.length
-  state.render(block, cell, 0)
+  if (block.isTextblock && !block.isLeaf) state.renderInline(block)
+  else state.render(block, cell, index)
   state.closed = null
-  state.out = state.out.slice(0, before) + state.out.slice(before).replace(/\n+$/, '')
+  const flattened = state.out.slice(before).replace(/\s*\n+\s*/g, ' ').trimEnd()
+  state.out = state.out.slice(0, before) + flattened
+}
+
+/** Everything in one cell, on one line, with its pipes escaped. */
+function renderCell(state: SerializerState, cell: PMNode): void {
+  const before = state.out.length
+  cell.forEach((block, _offset, index) => {
+    // A space between blocks that both wrote something, so two paragraphs do not run together
+    // into one word.
+    if (state.out.length > before) state.write(' ')
+    renderBlock(state, block, cell, index)
+  })
   escapePipesSince(state, before)
 }
 
@@ -119,29 +112,46 @@ function escapePipesSince(state: SerializerState, from: number): void {
   if (written.includes('|')) state.out = state.out.slice(0, from) + written.replaceAll('|', '\\|')
 }
 
+/**
+ * The whole table, always as GFM.
+ *
+ * The column count is the WIDEST row, and every row is padded out to it. That one rule covers
+ * both halves of a merge: a `colspan` cell writes once and leaves empty cells behind it, and
+ * the rows a `rowspan` reaches down into are simply short and get padded. A ragged table —
+ * which ProseMirror can hold and Markdown cannot — comes out square.
+ */
 function serializeTable(state: SerializerState, node: PMNode): void {
-  if (!isGfmShaped(node)) {
-    // Unchanged from the library, including the loss. See the note at the top.
-    state.write('[table]')
+  const rows = children(node)
+  const width = rows.reduce((n, row) => Math.max(n, widthOf(row)), 0)
+  if (width === 0) {
     state.closeBlock(node)
     return
   }
   state.inTable = true
-  node.forEach((row, _offset, rowIndex) => {
+  rows.forEach((row, rowIndex) => {
     state.write('| ')
-    row.forEach((cell, _o, cellIndex) => {
-      if (cellIndex) state.write(' | ')
-      const block = cell.firstChild
-      // `content.size`, NOT `textContent`: a formula is content without text. And a leaf
-      // block (an image) has neither, which is why it needs the other door.
-      if (!block) return
-      if (block.isLeaf) renderLeafCell(state, block, cell)
-      else if (block.content.size > 0) renderCell(state, block)
+    let written = 0
+    row.forEach((cell) => {
+      if (written) state.write(' | ')
+      renderCell(state, cell)
+      written += 1
+      // The columns a spanned cell covers exist in Markdown; they are just empty.
+      for (let extra = Math.max(1, Number(cell.attrs.colspan ?? 1)); extra > 1; extra--) {
+        state.write(' | ')
+        written += 1
+      }
     })
+    while (written < width) {
+      state.write(' | ')
+      written += 1
+    }
     state.write(' |')
     state.ensureNewLine()
     if (rowIndex === 0) {
-      state.write(`| ${children(row).map(() => '---').join(' | ')} |`)
+      // Written whether or not the first row is made of header cells: GFM has no table
+      // without a header, so a headerless one is read as having this row for a header by every
+      // parser that will ever see it, including this repo's own.
+      state.write(`| ${Array.from({ length: width }, () => '---').join(' | ')} |`)
       state.ensureNewLine()
     }
   })
