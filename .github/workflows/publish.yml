@@ -33,6 +33,10 @@ name: Publish
 on:
   push:
     tags: ['v*']
+  # So a release that failed on plumbing can be retried against the SAME tag, without
+  # deleting and re-pushing it — moving a tag people may already have fetched to work around
+  # a broken workflow is a bad trade.
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -96,6 +100,12 @@ jobs:
   publish:
     needs: build
     runs-on: ubuntu-latest
+    # `secrets` is NOT one of the contexts a step-level `if` may read — the first cut of this
+    # file used `if: secrets.DOCKERHUB_TOKEN != ''` and GitHub refused the whole workflow
+    # before running a line of it. A secret CAN be read here, into an env var, and `env` is
+    # readable from `if`. The value is a string, hence the comparison against 'true'.
+    env:
+      HAS_HUB: ${{ secrets.DOCKERHUB_TOKEN != '' }}
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -139,14 +149,14 @@ jobs:
       # same bytes, so the two registries can never drift into serving different code under
       # one version number.
       - name: Log in to Docker Hub
-        if: ${{ secrets.DOCKERHUB_TOKEN != '' }}
+        if: env.HAS_HUB == 'true'
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Copy the image to Docker Hub
-        if: ${{ secrets.DOCKERHUB_TOKEN != '' }}
+        if: env.HAS_HUB == 'true'
         run: |
           for tag in $(jq -r '.tags[]' <<< "$DOCKER_METADATA_OUTPUT_JSON"); do
             docker buildx imagetools create \
@@ -156,7 +166,7 @@ jobs:
           docker buildx imagetools inspect "${HUB_IMAGE}:${{ steps.meta.outputs.version }}"
 
       - name: Note when the Hub was skipped
-        if: ${{ secrets.DOCKERHUB_TOKEN == '' }}
+        if: env.HAS_HUB != 'true'
         run: |
           echo "Docker Hub was skipped: no DOCKERHUB_TOKEN secret on this repository." >> "$GITHUB_STEP_SUMMARY"
           echo "GHCR published ghcr.io/${{ github.repository }}:${{ steps.meta.outputs.version }}." >> "$GITHUB_STEP_SUMMARY"
