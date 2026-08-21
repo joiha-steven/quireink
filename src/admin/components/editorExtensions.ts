@@ -22,6 +22,7 @@ import { Video } from './VideoNode'
 import { Ink } from './InkMark'
 import { PenRing, PenUnderline } from './PenMarks'
 import { MathInline, MathBlock } from './MathNode'
+import { MixedList } from './MixedList'
 
 /**
  * @param placeholder The per-block placeholder text, which is the one thing here that has to
@@ -56,6 +57,10 @@ export function editorExtensions(placeholder: string): Extensions {
     // GFM task lists (- [ ] / - [x]); marked renders them on the public side.
     TaskList,
     TaskItem.configure({ nested: true }),
+    // One list that is part bullets and part checkboxes arrives tagged as all checkboxes, and
+    // the repair ProseMirror makes for that adds an empty `- [ ]` to the post on every save
+    // (MixedList.ts). It splits the runs before the schema sees them.
+    MixedList,
     // Per-block placeholder (adds the is-editor-empty class + data-placeholder
     // the CSS reads). The old root data-placeholder attribute rendered nothing.
     Placeholder.configure({ placeholder }),

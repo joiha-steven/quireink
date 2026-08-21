@@ -12,6 +12,7 @@
 // have seen it.
 
 import type { Tour } from './tour'
+import { KITCHEN_SINK } from './tour-kitchen-sink'
 
 export function registerEditorFlows({ flow, expect }: Tour): void {
 
@@ -144,6 +145,96 @@ export function registerEditorFlows({ flow, expect }: Tour): void {
       if (shouted) return done('the shell showed "Not found" for a post that saved')
       if (!stillEditing) return done('the editor was thrown away after its own save')
       return done('ok')
+    })()`, 900))
+
+  // THE ONE THAT OPENS A REAL POST FULL OF EVERYTHING, in a real browser, and saves it twice.
+  //
+  // `editor-corpus.test.ts` runs the same shapes under happy-dom and is faster and finer. What
+  // it cannot reach is the half of the editor that only exists once React draws — a node view
+  // that throws while rendering unmounts the admin, and a DOM shim never mounts React the way a
+  // browser does. Both of the blank pages of 2026-08-21 ENDED there, whatever their cause.
+  //
+  // Two saves is the assertion, not one. A serializer that rewrites the document does it
+  // quietly and identically every time, so comparing a save to its source proves nothing about
+  // stability; comparing the second save to the first is what catches a post that drifts a
+  // little further every time it is opened. Three of the four bugs found this month were
+  // exactly that shape.
+  flow('admin: a post of every shape opens, and saving it twice changes nothing', () => expect('/admin/editor', `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      const slug = 'tour-kitchen-' + Date.now()
+      const body = ${JSON.stringify(KITCHEN_SINK)}
+      const made = await fetch('/api/posts', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ title: 'Tour: bài kiểm tất cả', slug, content: body, status: 'draft', categories: [], tags: [] }),
+      })
+      if (!made.ok) return 'POST /api/posts -> ' + made.status
+      const done = async (verdict) => { await fetch('/api/posts/' + slug, { method: 'DELETE' }); return verdict }
+      const stored = async () => (await (await fetch('/api/admin/view/editor?slug=' + slug)).json())?.data?.post?.content ?? ''
+      const save = async () => {
+        const button = [...document.querySelectorAll('button')].find((b) => /save draft|lưu nháp/i.test(b.textContent || ''))
+        if (!button) return 'no Save draft button'
+        button.click()
+        await sleep(1200)
+        return null
+      }
+
+      localStorage.clear()
+      history.pushState(null, '', '/admin/editor/' + slug)
+      dispatchEvent(new PopStateEvent('popstate'))
+      await sleep(2000)
+
+      // 1. THE ADMIN IS STILL THERE. This is the white page, asserted directly: a throw during
+      //    render leaves #admin empty and every one of these null.
+      const root = document.getElementById('admin')
+      if (!root || root.innerHTML.length < 500) return done('the admin unmounted while opening the post')
+      if (!document.querySelector('nav, aside, .admin-shell')) return done('the shell is gone')
+      const surface = document.querySelector('.ProseMirror')
+      if (!surface) return done('no writing surface')
+
+      // 2. THE SHAPES BECAME NODES, not text. Each of these was a bug: the mark is the pen, the
+      //    table is where three deletions hid, the math span is an atom with no text in it.
+      const missing = []
+      if (!surface.querySelector('mark')) missing.push('pen stroke')
+      if (!surface.querySelector('table')) missing.push('table')
+      if (!surface.querySelector('pre')) missing.push('code block')
+      if (!surface.querySelector('[data-math], math')) missing.push('formula')
+      if (!surface.querySelector('a[href]')) missing.push('link')
+      if (!surface.querySelector('[data-type=taskList]')) missing.push('task list')
+      if (missing.length) return done('the editor built no ' + missing.join(', '))
+
+      // 3. TWO SAVES CHANGE NOTHING. The first may normalise; the second must not.
+      const failedFirst = await save()
+      if (failedFirst) return done(failedFirst)
+      const first = await stored()
+      if (!first) return done('the post had no content after the first save')
+
+      history.pushState(null, '', '/admin/content')
+      dispatchEvent(new PopStateEvent('popstate'))
+      await sleep(400)
+      localStorage.clear()
+      history.pushState(null, '', '/admin/editor/' + slug)
+      dispatchEvent(new PopStateEvent('popstate'))
+      await sleep(2000)
+      const failedSecond = await save()
+      if (failedSecond) return done(failedSecond)
+      const second = await stored()
+      if (second !== first) {
+        let i = 0
+        while (i < first.length && i < second.length && first[i] === second[i]) i++
+        return done('the second save rewrote the post at char ' + i + ': ' + JSON.stringify(first.slice(Math.max(0, i - 40), i + 40)) + ' -> ' + JSON.stringify(second.slice(Math.max(0, i - 40), i + 40)))
+      }
+
+      // 4. AND NOTHING WAS QUIETLY DROPPED on the way through.
+      const gone = []
+      if (!first.includes('==')) gone.push('the pen')
+      if (!first.includes('\\\\|')) gone.push('the escaped pipe')
+      if (!first.includes('$x^2$')) gone.push('the formula in a table cell')
+      if (!first.includes('![')) gone.push('the image in a table cell')
+      if (first.trimStart().startsWith('- [ ]')) gone.push('(and a checkbox appeared from nowhere)')
+      if (gone.length) return done('the round trip lost ' + gone.join(', '))
+
+      return done('ok ' + first.length + ' bytes, unchanged by a second save')
     })()`, 900))
 
   // The mock's one inserting gesture: "/" on an empty line raises the insert menu, and the
