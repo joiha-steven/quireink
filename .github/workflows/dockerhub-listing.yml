@@ -46,7 +46,12 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           repository: quireink/quireink
-          short-description: 'A blog you host yourself: one process, two SQLite files, no cloud account in the path.'
+          # 100 characters is the Hub's ceiling and this is 90. It names NAS because the
+          # search that reads this line is the one inside a Synology or QNAP container UI,
+          # and it spends its second sentence on the one thing no other blog image offers.
+          # The architecture — one process, two SQLite files — is the FIRST line of the
+          # overview immediately below, where there is room for a proof.
+          short-description: 'A blog you host yourself, small enough for a NAS. An AI agent can write and publish to it.'
           readme-filepath: ./docs/dockerhub-overview.md
 
       # The category is not part of that action, and it is what the Hub's own filters use.

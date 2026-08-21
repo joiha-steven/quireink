@@ -1,6 +1,6 @@
 # Quire Ink
 
-**A blog you host yourself, and an AI agent can run for you.** One process, two SQLite files,
+**A blog you host yourself, and an AI agent can write and publish to.** One process, two SQLite files,
 no cloud account anywhere in the path. No algorithm deciding who sees your writing, no ads
 across it, and no company that can change the rules.
 
