@@ -23,12 +23,20 @@
 #    has a backup button that fails at the moment you need it. It is part of Debian's
 #    essential set, which is why nothing here installs it.
 #
-# 3. The data directories are created and chowned IN THE IMAGE, before `USER bun`. Docker
-#    seeds a fresh named volume from the image's own directory, ownership included, so the
-#    unprivileged user can write to it on first boot without an entrypoint that chowns at
-#    runtime. The frozen tree shipped EACCES on a fresh install twice; this is the fix that
-#    needs no code. It does NOT extend to bind mounts, which keep the host's ownership:
-#    `docker-compose.yml` uses named volumes for that reason.
+# 3. The data directories are created and chowned IN THE IMAGE. Docker seeds a fresh named
+#    volume from the image's own directory, ownership included, so `docker compose up` gives
+#    the unprivileged user a writable volume on first boot with nothing else running. That
+#    part is unchanged and still carries the common case.
+#
+#    What it never covered is a BIND mount, which keeps the host's ownership — and that is
+#    the normal shape on the NAS boxes this image is meant to be easy on, because their
+#    container UIs mount a real folder and their backup jobs need to see it. Measured on a
+#    Linux daemon on 2026-08-21, a root-owned bind mount does not degrade, it kills the
+#    container on boot with `SQLITE_CANTOPEN` and a `bun:sqlite` stack trace — a diagnosis
+#    nobody should have to make from a NAS web UI. So there IS an entrypoint now
+#    (`docker-entrypoint.sh`): it adopts PUID/PGID, chowns only when ownership is actually
+#    wrong, and drops privileges with `setpriv` from util-linux, which Debian already has.
+#    `docker run --user 1000:1000` still bypasses all of it and behaves exactly as before.
 #
 # 4. The PRODUCTION dependencies are their own stage, and the two installs share BuildKit's
 #    cache mount. Measured on this repo: the dev tree is 186 MB and the production one 94 MB,
@@ -95,7 +103,15 @@ COPY package.json bun.lock tsconfig.json ./
 # See note 3 above. Both paths are ENV defaults, so overriding them in compose without
 # mounting something writable there is the one way to get this wrong.
 RUN mkdir -p "$DATA_DIR" "$STORAGE_LOCAL_DIR" && chown -R bun:bun /var/lib/quire
-USER bun
+
+# NO `USER bun` HERE, and that is the entrypoint's whole reason for existing: a process that
+# is already unprivileged cannot fix the ownership of a bind mount it cannot write to. The
+# container starts as root, spends one shell script adopting PUID/PGID (1000:1000 by
+# default, which is `bun` — so the default is byte-for-byte the old behaviour), and execs
+# the app as that user. The app itself never runs as root, and compose keeps
+# `no-new-privileges` on top of that.
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 
 EXPOSE 3000
 

@@ -41,6 +41,69 @@ jobs:
       # [ADR 0022](../../docs/decisions/0022-ship-from-source-not-a-compiled-binary.md).
       - run: bun run build
 
+  # THE IMAGE, built and actually started. Nothing else in this repository looks at the
+  # Docker path: measured 2026-08-21, `Dockerfile` appeared in no test, no tour flow and no
+  # workflow, so it could have stopped building weeks earlier and every check here would
+  # still have been green. That is the same shape as the book-mode regression found the same
+  # day — a feature with no flow is a feature that can die quietly — and it matters more
+  # here, because the people this image is for are the least able to debug it.
+  #
+  # It BOOTS the container rather than only building it, and boots it the way a NAS does.
+  # `docker compose up` mounts named volumes, which Docker seeds from the image with the
+  # right ownership, so that path was never going to fail; a Synology, QNAP or Unraid box
+  # bind-mounts a real root-owned folder instead, and on 2026-08-21 that killed the
+  # container on boot with `SQLITE_CANTOPEN`. Both shapes are asserted below, and the
+  # bind-mount one is the reason this job exists at all.
+  #
+  # Ubuntu, so the ownership is REAL. The same test on a Mac passes against a broken image:
+  # Docker Desktop maps ownership across its file share, so a root-owned bind mount silently
+  # behaves as if it belonged to the container user. Do not "simplify" this onto a developer
+  # machine and believe the result.
+  image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - run: docker build -t quireink:ci .
+
+      # A root-owned bind mount: what a NAS container UI produces, and what used to crash.
+      - name: it boots on a root-owned bind mount
+        run: |
+          sudo mkdir -p /srv/nas-sim/data /srv/nas-sim/uploads
+          docker run -d --name qi-bind -e SITE_URL=http://localhost:3000 \
+            -p 127.0.0.1:3000:3000 \
+            -v /srv/nas-sim/data:/var/lib/quire/data \
+            -v /srv/nas-sim/uploads:/var/lib/quire/uploads quireink:ci
+          for i in $(seq 1 30); do
+            [ "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/api/health)" = 200 ] && break
+            sleep 2
+          done
+          curl -fsS http://127.0.0.1:3000/api/health | tee /dev/stderr | grep -q '"status":"ok"' \
+            || { docker logs qi-bind; exit 1; }
+          # And it is not root that got it working. The app running as UID 0 would pass the
+          # health check just as well, which is exactly why this is asserted separately.
+          test "$(docker exec qi-bind sh -c 'grep ^Uid: /proc/1/status' | awk '{print $2}')" = 1000 \
+            || { echo 'the app is running as root'; exit 1; }
+          docker rm -f qi-bind
+
+      # The compose path, unchanged by any of the above: named volumes, no chown, no adopt.
+      - name: it boots on named volumes without adopting anything
+        run: |
+          docker run -d --name qi-vol -e SITE_URL=http://localhost:3000 \
+            -p 127.0.0.1:3000:3000 \
+            -v qi-d:/var/lib/quire/data -v qi-u:/var/lib/quire/uploads quireink:ci
+          for i in $(seq 1 30); do
+            [ "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/api/health)" = 200 ] && break
+            sleep 2
+          done
+          curl -fsS http://127.0.0.1:3000/api/health | grep -q '"status":"ok"' \
+            || { docker logs qi-vol; exit 1; }
+          # `if`, not `A && B`: Actions runs these with `bash -e`, and a plain `grep -q ...
+          # && { exit 1; }` fails the STEP on the good path, where grep finds nothing.
+          if docker logs qi-vol 2>&1 | grep -q adopting; then
+            echo 'chowned a volume that was already correct'; exit 1
+          fi
+          docker rm -f qi-vol
+
   # The dependency advisories, because NOTHING ELSE HERE LOOKS AT THEM and Dependabot
   # cannot.
   #

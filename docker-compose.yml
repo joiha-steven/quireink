@@ -34,11 +34,15 @@ services:
     ports:
       - "127.0.0.1:3000:3000"
 
-    # NAMED volumes, not bind mounts. A fresh named volume inherits the ownership of the
-    # image's directory, which is how the unprivileged `bun` user can write to it with no
-    # entrypoint chown. Point these at host paths and you own that problem: the directories
-    # must already exist and belong to UID 1000. `docker compose cp` and the backup route
-    # both get data out without a bind mount.
+    # NAMED volumes, and they stay the default because they need no decisions: a fresh one
+    # inherits the ownership of the image's directory, so the app can write to it on first
+    # boot with nothing else running. `docker compose cp` and the backup route both get data
+    # out without a bind mount.
+    #
+    # Bind mounts ARE supported now, which they were not before 2026-08-21 — a root-owned
+    # host directory used to kill the container on boot. Point these at host paths and set
+    # `PUID`/`PGID` to whoever owns them (see `.env.docker.example`); the entrypoint adopts
+    # the directories once and drops to that user. That is the shape a NAS wants.
     volumes:
       - quire-data:/var/lib/quire/data
       - quire-uploads:/var/lib/quire/uploads
