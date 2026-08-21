@@ -1,6 +1,6 @@
 <div align="center">
 
-# quire**INK** &nbsp;`2.1.1`
+# quire**INK** &nbsp;`2.1.2`
 
 **Một cái blog bạn tự host, và AI agent có thể vận hành thay bạn.**
 Không thuật toán, không quảng cáo, không nền tảng nào đứng giữa bạn và người đọc.
@@ -74,14 +74,15 @@ Có ba thứ định hình nó.
 
 Bạn được đọc, sửa, chạy và fork theo [PolyForm Noncommercial](./LICENSE), và được chạy bản phát hành để kinh doanh — kể cả bán hosting — theo [một cho phép bổ sung](./LICENSE-EXCEPTION.vi.md).
 
-> **2.1.1 ra ngày 20/08/2026**, đang chạy bản demo ở trên và blog riêng của tác giả tại
-> [manhhung.me](https://manhhung.me). Lại một việc duy nhất, lần này ở phía người đọc:
-> cây bút học cách vẽ như tay người. Trước đây mọi vệt tô là một hình kéo giãn cho vừa;
-> giờ nét được sinh từ một bàn tay có hạt giống, mỗi cụm chữ giữ nét riêng của nó — độ
-> nghiêng, độ đậm, vệt khô mực, mực đọng, đủ cả. Thêm hai cử chỉ quen thuộc từ sách vở
-> mượn về: `++chữ++` gạch dưới bằng bút chì và `@@chữ@@` khoanh tròn bằng bút bi đỏ. Và
-> nút U trong trình soạn — vốn âm thầm làm mất gạch dưới khi lưu từ ngày đầu — giờ lưu
-> đúng cái nó vẽ. [Changelog](./CHANGELOG.md) có đủ những gì đã đổi.
+> **2.1.2 ra ngày 21/08/2026**, đang chạy bản demo ở trên và blog riêng của tác giả tại
+> [manhhung.me](https://manhhung.me). Bản này **thay cho 2.1.1, đã thu hồi**: bản đó phát
+> hành khi chế độ đọc sách đã chết trên Chrome mới mà không ai biết, vì chưa có phép kiểm
+> nào chạm tới. Mọi thứ 2.1.1 mang lại đều còn đây — cây bút vẽ như tay người, `++chữ++`
+> gạch chì và `@@chữ@@` khoanh bút bi đỏ, cùng nút U thôi làm mất gạch dưới khi lưu — kèm
+> bản sửa, một stylesheet không còn bị mực bút đè nặng, phép đổi font không xê một dòng
+> nào, chế độ đọc sách chỉnh được cỡ chữ, điện thoại lật trang bằng ngón cái, và giao diện
+> sáng/tối mặc định do bạn chọn thay vì phụ thuộc máy của khách.
+> [Changelog](./CHANGELOG.md) có đủ những gì đã đổi.
 
 ---
 
