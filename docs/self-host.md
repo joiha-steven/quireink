@@ -256,15 +256,41 @@ Four things worth knowing before you change anything in `docker-compose.yml`:
   winning over it. They are where the volumes are mounted; a `.env` that redefines them
   points the app at an unmounted directory, where the database it writes disappears with the
   container.
-- **The volumes are named volumes, not bind mounts.** The container runs unprivileged, and a
-  fresh named volume inherits the image's ownership, which is what makes it writable with no
-  chown at startup. If you bind-mount host directories instead, create them first and give
-  them to UID 1000, or the app comes up reporting degraded storage.
+- **The volumes are named volumes by default, and bind mounts now work too.** A fresh named
+  volume inherits the image's ownership, which is what makes it writable with nothing else
+  running. A bind mount keeps the HOST's ownership instead, and that used to be fatal rather
+  than degraded: measured on 2026-08-21, a root-owned host directory killed the container on
+  boot with `SQLITE_CANTOPEN` and a `bun:sqlite` stack trace. The image now starts as root,
+  adopts `PUID`/`PGID` (1000:1000 by default), chowns the two directories **only when the
+  ownership is actually wrong**, and drops to that user before the app starts — so the app
+  itself never runs as root. `docker run --user 1000:1000` skips all of it and behaves as it
+  always did.
 - **Upgrades are `git pull && docker compose up -d --build`.** The schema is applied at boot
   as usual. Your content is in the volumes and is not touched by a rebuild.
 
 To get data out without a bind mount, use the backup button in the admin (it hands you both
 databases plus every upload), or `docker compose cp quire:/var/lib/quire/data ./data`.
+
+### On a NAS (Synology, QNAP, Unraid)
+
+Their container UIs mount real folders rather than named volumes, because that is what their
+own backup jobs can see. Point both mounts at a folder you created, and set the UID and GID
+that own it — on a Synology, look under Control Panel → User & Group; 1026 and 100 are
+typical for the first non-admin user:
+
+```yaml
+    environment:
+      PUID: 1026
+      PGID: 100
+    volumes:
+      - /volume1/docker/quireink/data:/var/lib/quire/data
+      - /volume1/docker/quireink/uploads:/var/lib/quire/uploads
+```
+
+Nothing else changes. The first boot prints one `entrypoint: adopting …` line per directory
+and later boots print none, because the check is one `stat` and the walk only happens when
+the answer is wrong — a re-chown of a large uploads tree on every restart would turn a
+restart into an outage.
 
 ## Coming from Quire 1.x
 

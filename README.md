@@ -216,7 +216,7 @@ docker compose up -d --build
 docker compose exec quire bun run user create --username you --email you@example.com
 ```
 
-One service, two volumes, no sidecar. The port only listens on `127.0.0.1`, so a reverse proxy still does TLS. Notes on volumes, ownership and upgrades are in [`docs/self-host.md`](./docs/self-host.md#9-docker-instead-of-systemd).
+One service, two volumes, no sidecar. The port only listens on `127.0.0.1`, so a reverse proxy still does TLS. Notes on volumes, ownership and upgrades are in [`docs/self-host.md`](./docs/self-host.md#10-docker-instead-of-systemd).
 
 </details>
 
