@@ -154,6 +154,25 @@ describe('the highlighter in the editor', () => {
     expect(await roundTrip('==chữ **đậm** trong mực==')).toBe('==chữ **đậm** trong mực==')
   })
 
+  it('survives a stroke inside a link label', async () => {
+    // THE SECOND BLANK PAGE, found in the owner's own draft after the first one was fixed and
+    // shipped. markdown-it scans a link's LABEL by running every inline rule in silent mode
+    // and then checking that the rule which claimed a match moved the cursor. `if (silent)
+    // return true` claims without moving, so markdown-it throws
+    // `inline rule didn't increment state.pos` — not a wrong document, a dead parse, inside a
+    // React render, which is a white admin again.
+    //
+    // It needs a delimiter INSIDE `[...]` to happen at all, which is why a day of round-trip
+    // tests never touched it: every fixture put the stroke beside the link, not in it.
+    expect(await roundTrip('Xem [==tài liệu==](https://a.test) ở đây.')).toBe('Xem [==tài liệu==](https://a.test) ở đây.')
+    expect(await html('[==tô đậm==](https://a.test)')).toContain('<mark>')
+    // Bold and a ring in one label — the owner's line, near enough.
+    expect(await roundTrip('dựng [**@@Quire Ink@@**](https://a.test) lên NAS'))
+      .toBe('dựng [**@@Quire Ink@@**](https://a.test) lên NAS')
+    // And a formula in a label, the same rule in `MathNode.tsx`.
+    expect(await roundTrip('giá [$x^2$](https://a.test) đây')).toBe('giá [$x^2$](https://a.test) đây')
+  })
+
   it('ends the stroke at an inline code span, stably', async () => {
     // The documented limit, pinned so it stays a KNOWN shortfall rather than becoming a
     // surprise. `code` excludes every other mark at the schema level (see InkMark.ts), so
