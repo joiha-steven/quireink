@@ -10,7 +10,7 @@ import { freshDatabase, dropDatabase } from '@/test/db'
 import { db } from '@/store/db'
 import { savePost } from '@/content/posts'
 import { pageCache, clearCache, onFlush } from '@/server/cache'
-import { warmCache, warmThenPurge } from '@/server/warm'
+import { warmCache, warmThenPurge, purgeAfterWrite } from '@/server/warm'
 import { purgeEdge } from '@/server/edge-cache'
 import { saveIntegrationKeys } from '@/store/integration-keys'
 
@@ -106,6 +106,70 @@ describe('a write that lands while the warmer is already running', () => {
 
     const passes = lines.filter((l) => l.startsWith('cache: warmed')).length
     expect(passes).toBe(2)
+  })
+})
+
+describe('a publish reaches readers before the warm finishes', () => {
+  // MEASURED ON THE LIVE SITE, from the owner's own publish on 2026-08-21:
+  //
+  //     14:44:00  PUT /api/posts/…          published
+  //     14:44:09  cache: warmed 79 pages    6.5s of rendering, after a 3s debounce
+  //     14:44:09  edge-cache: purged        readers stop seeing the old page HERE
+  //
+  // Nine seconds, growing with the archive, because the purge was the last step of the warm.
+  // The owner refreshed inside that window, did not see his post on the home page, and pressed
+  // Clear cache — a route that purges in 183ms because it calls `purgeEdge()` directly. The
+  // manual path was fast and the automatic one was not, and that gap IS the bug report.
+  //
+  // What is asserted here is the separation: the purge no longer waits for anything.
+
+  it('purges on the leading edge, and holds the next one for a moment', async () => {
+    // A burst is one purge, not one per write: Cloudflare rate-limits purge-everything and an
+    // import is a thousand saves. The FIRST write of a burst is the one that fires.
+    //
+    // The clock is passed in rather than slept through: a three-second sleep in a suite is a
+    // three-second sleep on every run forever, and a reset function would be an export that
+    // exists only for this file.
+    const t = Date.now() + 600_000
+    expect(await purgeAfterWrite(t)).toBe('purged')
+    expect(await purgeAfterWrite(t + 100)).toBe('held')
+    expect(await purgeAfterWrite(t + 2_999)).toBe('held')
+    // And the gap is a gap, not a lock: the next burst purges again.
+    expect(await purgeAfterWrite(t + 3_000)).toBe('purged')
+  })
+
+  it('never lets the trailing purge be held, because it carries the last write', async () => {
+    // The tail is what the 2026-08-19 fix added and it must stay unconditional: a burst's last
+    // save arrives inside the gap, so a shared rate limit between the two would drop exactly
+    // the write that mattered and leave the CDN serving the previous version.
+    await savePost({ title: 'One', content: 'body text', status: 'published', date: PAST })
+    await purgeAfterWrite() // put the gap in force
+
+    const lines: string[] = []
+    const realLog = console.log
+    console.log = (...args: unknown[]) => { lines.push(args.join(' ')) }
+    try {
+      await warmThenPurge('immediately after a leading purge')
+    } finally {
+      console.log = realLog
+    }
+    // It ran the whole pass rather than returning early on the clock.
+    expect(lines.some((l) => l.startsWith('cache: warmed'))).toBe(true)
+  })
+
+  it('is wired to the flush, not to the warm', async () => {
+    // The seam, asserted against the source: the ordering is the fix, and a refactor that puts
+    // `purgeAfterWrite` back inside `warmThenPurge` would restore the nine seconds while every
+    // other test in this file stayed green.
+    const source = await Bun.file('src/server/warm.ts').text()
+    const hook = source.indexOf('onFlush(')
+    const leading = source.indexOf('void purgeAfterWrite()')
+    const debounce = source.indexOf('setTimeout')
+    expect(hook).toBeGreaterThan(-1)
+    expect(leading).toBeGreaterThan(hook)
+    // Before the timer is armed, so it cannot be mistaken for part of the debounced work.
+    expect(leading).toBeLessThan(source.indexOf('setTimeout', hook))
+    expect(debounce).toBeGreaterThan(-1)
   })
 })
 
