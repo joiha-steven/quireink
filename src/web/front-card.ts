@@ -140,10 +140,10 @@ function meta(post: Post, settings: SiteSettings, front: FrontSettings): string 
   const tx = t(settings.language)
   const parts: string[] = []
   if (front.showDate) {
-    parts.push(`<time datetime="${escapeAttr(post.date)}">${escapeHtml(formatDate(post.date, settings.language, settings.timezone))}</time>`)
+    parts.push(`<time class="meta-part" datetime="${escapeAttr(post.date)}">${escapeHtml(formatDate(post.date, settings.language, settings.timezone))}</time>`)
   }
   if (front.showReadingTime && post.readingMinutes) {
-    parts.push(`<span class="num">${post.readingMinutes}</span> ${escapeHtml(tx.readingSuffix)}`)
+    parts.push(`<span class="meta-part"><span class="num">${post.readingMinutes}</span> ${escapeHtml(tx.readingSuffix)}</span>`)
   }
   return parts.length ? `<p class="fc-meta t-small text-meta">${parts.join(' · ')}</p>` : ''
 }

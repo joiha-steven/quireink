@@ -21,6 +21,12 @@ export const UTILITY_CSS = `
 .t-small{font-size:var(--fs-small);line-height:var(--lh-small);letter-spacing:var(--ls-small)}
 .t-body{font-size:var(--fs-body);line-height:var(--lh-body);letter-spacing:var(--ls-body)}
 .text-meta{color:var(--c-meta)}
+/* One fact of a meta line stays on one line. The reading time is a bracketed number and
+   then two words, and at 390px it broke between them on EVERY card of every listing —
+   "[4]" orphaned at the end of one line and "min read" starting the next. Measured
+   2026-08-22. The line as a whole still wraps between its facts, which is what it should do;
+   this only stops a fact wrapping through its own middle. */
+.meta-part{white-space:nowrap}
 .text-text{color:var(--c-text)}
 .reading-font{font-family:var(--font-reading)}
 .font-semibold{font-weight:600}

@@ -47,7 +47,7 @@ function card(post: Post, settings: SiteSettings, opts: CardOptions = {}): strin
   // Vietnamese blog said "38 min" where every other surface said "38 phút đọc".
   // The figure is wrapped and the unit is not, so the IDE chrome can set the literal apart.
   const minutes = readingTime && post.readingMinutes
-    ? ` · <span class="num">${post.readingMinutes}</span> ${escapeHtml(tx.readingSuffix)}`
+    ? ` · <span class="meta-part"><span class="num">${post.readingMinutes}</span> ${escapeHtml(tx.readingSuffix)}</span>`
     : ''
   const Title = opts.lead ? 'h1' : 'h2'
   const size = opts.lead ? 'fs-h1' : 'fs-h2'
@@ -62,7 +62,7 @@ function card(post: Post, settings: SiteSettings, opts: CardOptions = {}): strin
   // `data-more` marks a card past the first page. The island hides those and reveals them
   // a chunk at a time; with no JavaScript nothing hides them and the whole archive renders.
   return `<article class="reveal"${opts.lead ? ' data-lead' : ''}${opts.more ? ' data-more' : ''}>${mark}
-<p class="t-small text-meta">${categoryLink}<time datetime="${escapeAttr(post.date)}">${escapeHtml(formatDate(post.date, settings.language, settings.timezone))}</time>${minutes}</p>
+<p class="t-small text-meta">${categoryLink}<time class="meta-part" datetime="${escapeAttr(post.date)}">${escapeHtml(formatDate(post.date, settings.language, settings.timezone))}</time>${minutes}</p>
 <${Title} class="reading-font mt-2 ${size} font-semibold"><a class="link-accent" href="/${escapeAttr(post.slug)}">${escapeHtml(post.title)}</a></${Title}>
 ${post.excerpt ? `<p class="reading-font mt-3 t-body text-text">${escapeHtml(post.excerpt)}</p>` : ''}
 </article>`
