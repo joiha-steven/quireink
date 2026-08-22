@@ -1,6 +1,6 @@
 <div align="center">
 
-# quire**INK** &nbsp;`2.1.3`
+# quire**INK** &nbsp;`2.1.4`
 
 **A blog you host yourself, and an AI agent can run for you.**
 No algorithm, no ads, no platform standing between you and your readers.
@@ -74,14 +74,14 @@ Three things shaped it.
 
 You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE), and run the published version commercially — paid hosting included — under [one additional permission](./LICENSE-EXCEPTION.md).
 
-> **2.1.3 came out on 2026-08-21** and runs the demo above plus the author's own blog at
-> [manhhung.me](https://manhhung.me). It is a day of editor fixes on top of 2.1.2, all of them
-> found by one person writing one post: pasting a Markdown article now makes a post instead of
-> a wall of escaped text, two ways the writing surface could go blank are closed, a page that
-> fails now says so instead of unmounting the admin, a table stops losing a formula, an image
-> or a column on save, and publishing tells the CDN in about 50ms rather than nine seconds.
-> A body link is now underlined by the pen, in dashes, because colour alone measured 1.24:1
-> against the words around it. The [changelog](./CHANGELOG.md) has everything that changed.
+> **2.1.4 came out on 2026-08-22** and runs the demo above plus the author's own blog at
+> [manhhung.me](https://manhhung.me). It is the audit release, the day after the editor day:
+> the dashboard's version now wears a dot — amber when a newer release is out, green when you
+> are on it — fed by one request a day that also counts your blog as one being used, carries
+> nothing personal, and turns off with one switch; the whole site follows one timezone you
+> pick in Settings instead of the server's clock; an uploaded SVG can no longer run script on
+> your origin; and the admin's smallest buttons grew to thumb size without moving a pixel of
+> ink. The [changelog](./CHANGELOG.md) has everything that changed.
 
 ---
 

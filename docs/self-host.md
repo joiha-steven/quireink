@@ -268,7 +268,7 @@ newest release is the one with the fixes in it, and a blog left on an old tag is
 with the bugs that release fixed. Nothing moves under a running container either way, because
 Docker only changes the image when you pull. The two-part tag (`:2.1`) still takes fixes
 within a line for anyone who wants to step up a major version deliberately, and the
-three-part one (`:2.1.3`) pins one exact release forever.
+three-part one (`:2.1.4`) pins one exact release forever.
 
 **Or build it yourself** from this repository, which is what `docker-compose.yml` does and
 what you want if you have changed anything:
@@ -340,7 +340,7 @@ process — a blog nobody reads never asks, and is never counted, which is the p
 This is the whole request:
 
 ```
-GET https://check.quireink.com/releases.json?v=2.1.3&t=8f2c91a04b7e&d=1&new=1
+GET https://check.quireink.com/releases.json?v=2.1.4&t=8f2c91a04b7e&d=1&new=1
 ```
 
 | | |
