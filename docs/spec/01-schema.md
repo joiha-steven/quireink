@@ -236,8 +236,16 @@ regex literals are copied verbatim so classification does not shift.
 
 `select coalesce(nullif(col,''),'Unknown'), count(distinct visitor) ... group by 1
 order by 2 desc limit ?` over one of `device`, `browser`, `os`. The column name comes
-from a fixed lookup table, never interpolated from input. This is the **one** place in
-the codebase allowed to assemble SQL from a variable, and the allowlist is the reason.
+from a fixed lookup table, never interpolated from input. This is the one place allowed to
+assemble SQL from a variable **on the request path**, and the allowlist is the reason.
+
+There is exactly one other site in the codebase, found by a sweep on 2026-08-22 while this
+paragraph still said "the one place": `server/backup.ts` builds `vacuum into '<path>'`.
+SQLite accepts no bound parameter for that filename, so there is no parameterised form to
+reach for; the path is one this process just made with `mkdtemp`, never a request or a
+setting, and its quotes are doubled. `store/db.ts` interpolates two `pragma` statements as
+well, and those are inside the rule already — a module constant and a closed `'FULL' |
+'NORMAL'` union, both fixed identifiers rather than values.
 
 ### `analytics_summary` / `analytics_page`
 
