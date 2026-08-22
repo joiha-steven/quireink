@@ -41,6 +41,26 @@ const safeHref = (href: string): string => {
   return /^(?:javascript|data|vbscript):/i.test(cleaned) ? '#' : cleaned
 }
 
+/**
+ * The same guard for an image's `src`, minus the part that would break a real image.
+ *
+ * The LINK path has been scheme-checked since the port and the IMAGE path never was, so
+ * `![x](javascript:alert(1))` came out as `<img src="javascript:alert(1)">`. No browser
+ * executes that — a `javascript:` URL in `src` is dead — so this closes an inconsistency
+ * rather than a hole, and it is worth closing precisely because the next person to move
+ * this URL somewhere executable would inherit the gap rather than the guard.
+ *
+ * `data:` is deliberately NOT blocked here, unlike in `safeHref`: `data:image/png;base64,…`
+ * is a legitimate inline image and blocking it would break real posts to prevent nothing.
+ * Script inside an SVG does not run when the SVG is loaded as an `<img>`; the case where it
+ * DOES run — the SVG opened as its own document — is handled where that is served
+ * (`web/uploads.ts`).
+ */
+const safeImageSrc = (src: string): string => {
+  const cleaned = src.trim().replace(/[\u0000-\u001F\u007F]/g, '')
+  return /^(?:javascript|vbscript):/i.test(cleaned) ? '' : cleaned
+}
+
 // Reverse of escapeHtml — Shiki needs the raw text back before re-highlighting.
 const unescapeHtml = (s: string) =>
   s.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&')
@@ -211,7 +231,8 @@ function buildFigures(html: string, ready: Set<string>, dims: ImageDims): string
       const src = tag.match(/\bsrc="([^"]*)"/)?.[1]
       if (!src) return tag
       const alt = tag.match(/\balt="([^"]*)"/)?.[1] ?? ''
-      const [cleanSrc, frag = ''] = src.split('#')
+      const [rawSrc, frag = ''] = src.split('#')
+      const cleanSrc = safeImageSrc(rawSrc ?? '')
       const caption = alt ? `<figcaption>${alt}</figcaption>` : ''
       // Intrinsic size (when known) reserves the box -> no CLS as it loads.
       const d = dims.get(collapseBlob(cleanSrc))
