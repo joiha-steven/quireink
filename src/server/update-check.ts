@@ -55,23 +55,54 @@ export type Release = { latest: string; url: string; date: string }
 let decidedEpochDay = -1
 
 /**
- * Why this deployment is not reporting, or null when it is. Memoised: neither variable can
- * change under a running process.
+ * Why this deployment is not reporting, or null when it is.
  *
- * TWO reasons, named separately, because a screen that gives the wrong one is worse than a
- * screen that gives none. The admin printed `UPDATE_CHECK=0` for both until a screenshot on
- * 2026-08-22 showed it saying so on an instance that had never set the variable — the real
- * cause was a missing `NODE_ENV`, which is a different fix entirely.
+ * **INVERTED on 2026-08-22, owner's call, and the reason is worth keeping.** The rule was
+ * "report only when `NODE_ENV=production`". The Docker image sets that; the systemd unit in
+ * `docs/self-host.md` never did — so every from-source install would have been silent
+ * FOREVER while looking perfectly healthy, and the number would have counted Docker and
+ * nothing else without anything on any screen saying so.
+ *
+ * So the question is now the honest one: is this clearly NOT a real install? Each answer
+ * below was measured on Bun 1.3.14 rather than assumed, because the whole trap was an
+ * assumption about what sets `NODE_ENV`:
+ *
+ *   bun src/index.ts           NODE_ENV unset       execArgv []           <- systemd: REPORTS
+ *   bun --watch src/index.ts   NODE_ENV unset       execArgv ['--watch']  <- `bun run dev`: silent
+ *   bun test                   NODE_ENV 'test'      execArgv []           <- silent
+ *   the Docker image           NODE_ENV 'production'                      <- REPORTS
+ *
+ * `--watch` is what separates the two cases that share an empty `NODE_ENV`, and it is the
+ * flag `bun run dev` is defined with in `package.json`.
+ *
+ * **There is a second net under this one, and it is why loosening the first is safe.** A
+ * developer's machine has no public `SITE_URL`, so anything that slips through arrives as
+ * `d=0` and lands on the TRIAL line, which is kept out of "blogs alive" on the receiving
+ * end precisely because a trial is deleted and recreated all week.
+ *
+ * Memoised: none of these can change under a running process.
+ *
+ * TWO KINDS of answer, named separately, because a screen that gives the wrong one is worse
+ * than a screen that gives none. The admin printed `UPDATE_CHECK=0` for every case until a
+ * screenshot on 2026-08-22 showed it saying so on an instance that had never set the
+ * variable — the real cause was a missing `NODE_ENV`, which is a different fix entirely.
  */
 let blocked: string | null | undefined
 
+/** `NODE_ENV` values that mean somebody is working on the software rather than running it. */
+const DEV_ENVS = new Set(['test', 'development', 'dev', 'ci'])
+
+/** Bun's own reload flags. Either one means a person is editing the files underneath. */
+const WATCH_FLAGS = new Set(['--watch', '--hot'])
+
 function blockedBy(): string | null {
-  if (blocked === undefined) {
-    blocked = process.env.UPDATE_CHECK === '0' ? 'UPDATE_CHECK=0'
-      : process.env.NODE_ENV !== 'production' ? 'NODE_ENV≠production'
-        : null
-  }
-  return blocked
+  if (blocked !== undefined) return blocked
+  if (process.env.UPDATE_CHECK === '0') return (blocked = 'UPDATE_CHECK=0')
+  const env = (process.env.NODE_ENV ?? '').trim().toLowerCase()
+  if (DEV_ENVS.has(env)) return (blocked = `NODE_ENV=${env}`)
+  const watch = process.execArgv.find((flag) => WATCH_FLAGS.has(flag))
+  if (watch !== undefined) return (blocked = watch)
+  return (blocked = null)
 }
 
 function reportingAllowed(): boolean {
@@ -289,25 +320,48 @@ export async function runUpdateCheck(secret: string, now: number): Promise<void>
 }
 
 /**
- * What the admin needs to draw the panel: whether this deployment permits the check at all,
- * and the newest release it has heard of.
+ * The three answers the admin can honestly give about this install's version, and the fact
+ * that there are THREE is the whole point.
  *
- * `blockedBy` is separate from the owner's switch on purpose, and it names WHICH of the two
- * deployment rules is in the way. An operator running blogs for other people sets
- * `UPDATE_CHECK=0` and the switch in Settings then has no effect; a build started without
- * `NODE_ENV=production` is silent for an unrelated reason and needs an unrelated fix. Either
- * way the screen says so, rather than showing an ON switch beside a check that never runs.
+ * `unknown` is not a rounding of `current`. "You are up to date" is a claim, and it can only
+ * be made from an answer this instance actually received and received RECENTLY. A blog whose
+ * check is off, or which has never reached the internet, or which has had no readers for a
+ * fortnight, knows nothing — and a green dot on that is worse than no dot at all, because it
+ * is the one state a person acts on by doing nothing.
+ *
+ * Hence the staleness window. A release can happen in a week; an answer from before it
+ * cannot rule that out.
  */
-export function updateCheckStatus(): { blockedBy: string | null; newer: Release | null } {
-  return { blockedBy: blockedBy(), newer: newerRelease() }
+export type UpdateState =
+  | { state: 'behind'; release: Release }
+  | { state: 'current' }
+  | { state: 'unknown' }
+
+const STALE_MS = 7 * DAY_MS
+
+export function updateState(now: number = Date.now()): UpdateState {
+  const row = readRow()
+  if (!row?.latest || !row.latest_url || !row.latest_date || !row.checked_at) return { state: 'unknown' }
+  if (now - row.checked_at > STALE_MS) return { state: 'unknown' }
+  if (isNewer(row.latest, VERSION)) {
+    return { state: 'behind', release: { latest: row.latest, url: row.latest_url, date: row.latest_date } }
+  }
+  return { state: 'current' }
 }
 
-/** The newest release this instance has been told about, or null when it has not been told
-    or is already running it. Read by the admin, which is the only reason the answer is
-    kept at all. */
-export function newerRelease(): Release | null {
-  const row = readRow()
-  if (!row?.latest || !row.latest_url || !row.latest_date) return null
-  if (!isNewer(row.latest, VERSION)) return null
-  return { latest: row.latest, url: row.latest_url, date: row.latest_date }
+/**
+ * What the admin needs to draw the Updates card: whether this deployment permits the check
+ * at all, and what it currently knows about the version.
+ *
+ * `blockedBy` is separate from the owner's switch on purpose, and it names WHICH deployment
+ * rule is in the way. An operator running blogs for other people sets `UPDATE_CHECK=0` and
+ * the switch in Settings then has no effect; a process started with `--watch` is silent for
+ * an unrelated reason and needs an unrelated fix. Either way the screen says so, rather than
+ * showing an ON switch beside a check that never runs.
+ */
+export function updateCheckStatus(now: number = Date.now()): {
+  blockedBy: string | null
+  update: UpdateState
+} {
+  return { blockedBy: blockedBy(), update: updateState(now) }
 }

@@ -2,6 +2,7 @@
 // already have dedicated screens; the home only surfaces state that helps the
 // owner decide what to do next.
 import Link from '@/admin/router'
+import type { UpdateState } from '@/server/update-check'
 import type { ActivityEntry } from '@/server/activity'
 import { formatBytes, formatDateTimeShort } from '@/utils'
 import { buttonClass } from '@/admin/ui/Button'
@@ -42,6 +43,7 @@ type Props = {
   firstRunDone: boolean
   version: string
   commit: string | null
+  update: UpdateState
   system: SystemInfo
   dashboard: DashboardData
 }
@@ -60,7 +62,39 @@ type Props = {
  * A per-commit URL served neither well — it is a page nobody wants from a dashboard, and it
  * 404s the moment a SHA is stale or the deploy shipped from a branch that was later rebased.
  */
-function BuildLabel({ version, commit }: { version: string; commit: string | null }) {
+/**
+ * The version's own traffic light: amber when a newer release exists, green when this
+ * install is on the newest one, and NOTHING when the answer is not known.
+ *
+ * ⚠️ **This is the first colour in the admin outside the highlighter**, and
+ * `docs/admin-design.md` says status stays on the neutral scale. Owner's call on
+ * 2026-08-22, asked for in those words ("chấm cam" / "chấm xanh"), and the exception is
+ * written into that document rather than left as a surprise for whoever reads the rule next.
+ *
+ * The three states are the point, and the third is not decoration. "Up to date" is a CLAIM,
+ * and it can only be made from an answer this instance received recently — a blog whose
+ * check is off, or that has never reached the internet, or that has had no readers for a
+ * fortnight, knows nothing. Green on that is the worst of the three, because it is the one
+ * state a person acts on by doing nothing. So it draws no dot at all.
+ */
+function VersionDot({ update }: { update: UpdateState }) {
+  const t = useAdminT()
+  if (update.state === 'unknown') return null
+  const behind = update.state === 'behind'
+  return (
+    <span
+      aria-hidden
+      title={behind ? t.updateAvailable.replace('{v}', update.release.latest) : t.updateCurrent}
+      className={`mr-1.5 inline-block h-[6px] w-[6px] rounded-full align-middle ${
+        behind ? 'bg-amber-500' : 'bg-emerald-500'}`}
+    />
+  )
+}
+
+function BuildLabel({ version, commit, update }: {
+  version: string; commit: string | null; update: UpdateState
+}) {
+  const behind = update.state === 'behind'
   return (
     // `hidden sm:inline`, because on a phone this line is not small print, it is a THIRD
     // thing in the title row: measured at 390px it sat between "Overview" and New post and
@@ -72,8 +106,13 @@ function BuildLabel({ version, commit }: { version: string; commit: string | nul
       href={REPO}
       target="_blank"
       rel="noopener noreferrer"
-      className="hidden text-xs text-neutral-400 hover:text-neutral-900 sm:inline dark:hover:text-white"
+      // Desktop-only at rest, for the reason above — but an update is not small print, so
+      // a behind install shows the line on a phone too. The Updates card in Settings carries
+      // the same fact with the release link, which is where somebody acts on it.
+      className={`text-xs text-neutral-400 hover:text-neutral-900 dark:hover:text-white ${
+        behind ? 'inline' : 'hidden sm:inline'}`}
     >
+      <VersionDot update={update} />
       quire<span className="font-bold">INK</span> v{version}
       {commit && <span className="tabular-nums"> ({commit.slice(0, 7)})</span>}
     </a>
@@ -91,14 +130,14 @@ export function Overview(props: Props) {
       body: JSON.stringify({ firstRunDone: true }),
     }).catch(() => undefined)
   }
-  const { posts, pages, comments, originals, totalBytes, recent, activityEnabled, version, commit, system, dashboard, firstRunDone } = props
+  const { posts, pages, comments, originals, totalBytes, recent, activityEnabled, version, commit, update, system, dashboard, firstRunDone } = props
   return (
     <div className={SECTION_GAP}>
       <PageHeader
         title={t.overviewTitle}
         actions={
           <div className="flex items-center gap-3">
-            <BuildLabel version={version} commit={commit} />
+            <BuildLabel version={version} commit={commit} update={update} />
             <Link href="/admin/editor" className={buttonClass()}>{t.newPost}</Link>
           </div>
         }

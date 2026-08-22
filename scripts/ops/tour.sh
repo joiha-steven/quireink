@@ -51,7 +51,10 @@ if [ -z "$SESSION" ]; then
   exit 1
 fi
 
-DATA_DIR="$TMP/data" STORAGE_LOCAL_DIR="$TMP/uploads" PORT="$PORT" \
+# UPDATE_CHECK=0 because this IS a real server started the real way: since 2026-08-22 the
+# check reports from a plain `bun src/index.ts` (that is the from-source install), and a tour
+# would otherwise put a real request on check.quireink.com on every run.
+DATA_DIR="$TMP/data" STORAGE_LOCAL_DIR="$TMP/uploads" PORT="$PORT" UPDATE_CHECK=0 \
   SITE_URL="http://127.0.0.1:$PORT" bun src/index.ts > "$TMP/server.log" 2>&1 &
 SERVER=$!
 # Kill the server whatever happens, including a failing tour: `set -e` plus a background process

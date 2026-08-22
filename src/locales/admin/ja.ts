@@ -21,6 +21,7 @@ const ja = {
   updateAvailable: 'Quire Ink {v} が公開されました',
   updateAvailableNote: '古いバージョンを実行しています。自動更新は行いません。時期はご自身で決めてください。',
   updateAvailableLink: '変更点を読む',
+  updateCurrent: '最新版です',
   tabPosts: '投稿',
   tabPages: 'ページ',
   kindPage: 'ページ',

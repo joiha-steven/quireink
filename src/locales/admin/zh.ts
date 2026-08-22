@@ -21,6 +21,7 @@ const zh = {
   updateAvailable: 'Quire Ink {v} 已发布',
   updateAvailableNote: '你运行的是较旧的版本。没有任何东西会自动更新——何时升级由你决定。',
   updateAvailableLink: '查看更新内容',
+  updateCurrent: '已是最新版本',
   tabPosts: '文章',
   tabPages: '页面',
   kindPage: '页面',
