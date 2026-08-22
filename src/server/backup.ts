@@ -72,6 +72,18 @@ export async function buildArchive(dest: string): Promise<number> {
   try {
     // VACUUM INTO takes a consistent snapshot of a live database, WAL included, and writes
     // a single compact file. This is the reason not to copy quire.db directly.
+    //
+    // ⚠️ THE ONE PLACE OUTSIDE `analytics/aggregate.ts` THAT ASSEMBLES SQL FROM A VARIABLE,
+    // and it is deliberate rather than an oversight — noted here on 2026-08-22, when a sweep
+    // found the schema doc still calling that the codebase's only such site.
+    //
+    // `VACUUM INTO` takes a filename, and SQLite does not accept a bound parameter there:
+    // there is no parameterised form of this statement to reach for. What goes in is a path
+    // this process just made with `mkdtemp` under the system temp directory — never a
+    // request, never a setting, never anything a reader can touch — and the single quotes
+    // are doubled, which is SQLite's own escape for a string literal.
+    //
+    // Do not generalise from it. The rule in CLAUDE.md stands: a VALUE is bound, always.
     db().exec(`vacuum into '${join(stage, 'quire.db').replace(/'/g, "''")}'`)
     analyticsDb().exec(`vacuum into '${join(stage, 'analytics.db').replace(/'/g, "''")}'`)
 
