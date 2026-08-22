@@ -1,0 +1,19 @@
+# Line endings, and the one directory that must never be touched by them.
+#
+# Written 2026-08-22, after a one-line edit to `FileLibrary.tsx` produced a 157-insertion,
+# 157-deletion diff: the file held MIXED endings, the editing script read and rewrote it, and
+# the real change disappeared into the noise. 98 files were in that state and nothing had
+# ever said which was correct, so every tool that rewrote one silently rewrote all of it.
+
+# Source is LF, decided here rather than left to each machine's `core.autocrlf`.
+* text=auto eol=lf
+
+# ⚠️ `golden/` IS A BYTE CONTRACT, and this line is what keeps it one.
+#
+# `docs/spec/03-golden.md`: "if an article body differs by one byte, a template was ported
+# wrong. There is nothing to review and nothing to accept." Those files are what Quire 1.x
+# actually printed, captured by a renderer that no longer exists — and `golden/corpus/crlf.md`
+# is deliberately CRLF, because CRLF input is the thing it tests. Normalising it would not
+# update the reference, it would destroy it, and the gate would then be comparing our output
+# against our own. `-text` means git performs NO conversion here, in either direction.
+golden/** -text
