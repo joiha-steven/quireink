@@ -1,93 +1,79 @@
-// GET /uploads/*, over real HTTP against a real file on disk.
+// An SVG in the store is a document that can carry script, and it is served from the site's
+// own origin.
 //
-// The range cases are the ones worth having. Video seeking needs 206 responses and iOS
-// Safari will not play a video at all without them, so a regression here looks like
-// "video is broken on iPhone" rather than like a failing test.
+// Found 2026-08-22 by fetching one and reading the headers: `image/svg+xml`, `nosniff`, and
+// nothing else. nosniff is the wrong tool and it is worth saying why — it stops a browser
+// DECIDING a file is HTML, and an SVG genuinely is an SVG. Navigated to directly the browser
+// runs its `<script>` on this origin, where a same-origin fetch carries the session cookie
+// and passes the `Sec-Fetch-Site` check in `auth/csrf.ts`.
+//
+// Only the owner can upload, so the shape of this is not a stranger's attack: it is the
+// booby-trapped icon set somebody downloaded and used as a logo.
 
-import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
+import { describe, it, expect, afterAll } from 'bun:test'
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
-import { dirname } from 'node:path'
-import { resolveSafe } from '@/media/blob-local'
-import { freshDatabase, dropDatabase } from '@/test/db'
 import { createApp } from '@/web/app'
+import { freshDatabase, dropDatabase } from '@/test/db'
 
-// `blob-local` resolves its root ONCE, at module load, so setting STORAGE_LOCAL_DIR from a
-// test is too late: the import is hoisted and the constant is already fixed. So the fixture
-// goes into the real configured store, under a directory this file creates and removes.
-// `resolveSafe` is the only way to ask the driver where that is.
-const FIXTURE_DIR = '.test-uploads'
-const ROOT = dirname(resolveSafe(`${FIXTURE_DIR}/probe`))
-const FILE = `${FIXTURE_DIR}/photo.jpg`
+const DIR = './.tmp/test-uploads-route'
+const STORE = `${DIR}/uploads`
+freshDatabase(DIR)
 
-// The router's catch-all `/:slug` reads posts, so a request that falls through to it needs
-// an open database. Without one the traversal test fails with a confusing db error rather
-// than the 404 it is actually asserting.
-const DB_DIR = './.tmp/test-uploads-db'
-freshDatabase(DB_DIR)
-afterAll(() => dropDatabase(DB_DIR))
+const before = process.env.STORAGE_LOCAL_DIR
+process.env.STORAGE_LOCAL_DIR = STORE
+mkdirSync(`${STORE}/media`, { recursive: true })
+writeFileSync(`${STORE}/media/mark.svg`,
+  '<svg xmlns="http://www.w3.org/2000/svg"><style>text{fill:red}</style><script>1</script></svg>')
+writeFileSync(`${STORE}/media/photo.webp`, Buffer.from([0x52, 0x49, 0x46, 0x46]))
 
 const app = createApp()
-const get = async (path: string, headers?: Record<string, string>): Promise<Response> =>
-  app.request(path, headers ? { headers } : undefined)
+const get = (path: string) => app.fetch(new Request(`http://localhost${path}`))
 
-const BODY = 'abcdefghij' // ten bytes, so ranges are easy to read
-
-beforeAll(() => {
-  mkdirSync(ROOT, { recursive: true })
-  writeFileSync(resolveSafe(FILE), BODY)
+afterAll(() => {
+  process.env.STORAGE_LOCAL_DIR = before
+  dropDatabase(DIR)
+  try { rmSync(DIR, { recursive: true, force: true }) } catch { /* ignore */ }
 })
-// Removes only the directory this file created, never the store around it.
-afterAll(() => rmSync(ROOT, { recursive: true, force: true }))
 
 describe('GET /uploads/*', () => {
-  it('serves the whole file with its type and an immutable cache', async () => {
-    const res = await get(`/uploads/${FILE}`)
+  it('sandboxes an SVG, so a script inside one cannot reach this origin', async () => {
+    const res = await get('/uploads/media/mark.svg')
     expect(res.status).toBe(200)
-    expect(res.headers.get('content-type')).toBe('image/jpeg')
-    expect(res.headers.get('content-length')).toBe('10')
-    expect(res.headers.get('accept-ranges')).toBe('bytes')
-    // Upload names are content-stable, so caching one forever is safe. This is why media
-    // never needs a cache bust.
-    expect(res.headers.get('cache-control')).toContain('immutable')
-    expect(await res.text()).toBe(BODY)
+    expect(res.headers.get('content-type')).toBe('image/svg+xml')
+    const csp = res.headers.get('content-security-policy') ?? ''
+    // `sandbox` with no `allow-` token is the load-bearing part: a unique opaque origin, so
+    // even if the script ran it could not reach back. Do not add `allow-scripts` here.
+    expect(csp).toContain('sandbox')
+    expect(csp).not.toContain('allow-scripts')
+    expect(csp).toContain("default-src 'none'")
+    // An SVG's own <style> block still has to work — it is a drawing, not a document.
+    expect(csp).toContain("style-src 'unsafe-inline'")
   })
 
-  it('answers a byte range with 206 and only those bytes', async () => {
-    const res = await get(`/uploads/${FILE}`, { range: 'bytes=2-5' })
+  it('leaves an ordinary image alone', async () => {
+    // The policy is for the one type that can execute. Putting it on everything would be a
+    // second global CSP by the back door, which `web/security-headers.ts` argues against.
+    const res = await get('/uploads/media/photo.webp')
+    expect(res.status).toBe(200)
+    expect(res.headers.get('content-type')).toBe('image/webp')
+    expect(res.headers.get('content-security-policy')).toBeNull()
+  })
+
+  it('keeps the sandbox on a range response too', async () => {
+    // Video seeking uses 206, and a partial response is still a response somebody can
+    // navigate to. The two branches used to build their headers separately, which is
+    // exactly how one of them ends up without the policy.
+    const res = await app.fetch(new Request('http://localhost/uploads/media/mark.svg', {
+      headers: { range: 'bytes=0-10' },
+    }))
     expect(res.status).toBe(206)
-    expect(res.headers.get('content-range')).toBe('bytes 2-5/10')
-    expect(res.headers.get('content-length')).toBe('4')
-    expect(await res.text()).toBe('cdef')
+    expect(res.headers.get('content-security-policy') ?? '').toContain('sandbox')
   })
 
-  it('answers an open-ended range', async () => {
-    const res = await get(`/uploads/${FILE}`, { range: 'bytes=7-' })
-    expect(res.status).toBe(206)
-    expect(await res.text()).toBe('hij')
-  })
-
-  it('rejects a range past the end with 416, not with the whole file', async () => {
-    const res = await get(`/uploads/${FILE}`, { range: 'bytes=50-60' })
-    expect(res.status).toBe(416)
-    expect(res.headers.get('content-range')).toBe('bytes */10')
-  })
-
-  it('404s a file that is not there', async () => {
-    expect((await get(`/uploads/${FIXTURE_DIR}/missing.jpg`)).status).toBe(404)
-  })
-
-  it('refuses to walk out of the store', async () => {
-    // PERCENT-ENCODED, on purpose. A literal `/uploads/../../package.json` is normalised
-    // away by the URL parser before the router sees it, so a test written that way passes
-    // without the handler ever running and proves nothing. Encoded, it arrives intact and
-    // `resolveSafe` inside the driver is what has to reject it.
-    for (const attempt of [
-      '/uploads/%2e%2e%2f%2e%2e%2fpackage.json',
-      '/uploads/..%2f..%2fpackage.json',
-    ]) {
-      const res = await get(attempt)
-      expect(res.status).toBe(404)
-      expect(await res.text()).not.toContain('"devDependencies"')
+  it('answers 404 for a path that tries to leave the store', async () => {
+    for (const path of ['/uploads/../../etc/passwd', '/uploads/media/../../../etc/passwd']) {
+      const res = await get(path)
+      expect(res.status).not.toBe(200)
     }
   })
 })

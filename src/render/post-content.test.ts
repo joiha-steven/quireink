@@ -219,3 +219,41 @@ describe('markdown render — ToC anchors stay in sync', () => {
     expect(renderedIds).toEqual(['intro', 'outro'])
   })
 })
+
+// The link path has been scheme-checked since the port and the image path never was, so
+// `![x](javascript:…)` came out as `<img src="javascript:…">`. No browser executes that,
+// which is why this closed an inconsistency rather than a hole — and why it is worth
+// having a test: the next person to move an image URL somewhere executable inherits the
+// guard instead of the gap. Found 2026-08-22 by feeding the renderer the payloads
+// directly.
+describe('markdown render — an image src cannot carry a script scheme', () => {
+  const srcOf = (html: string) => html.match(/<img[^>]*\bsrc="([^"]*)"/)?.[1]
+
+  it('empties a javascript: or vbscript: image', async () => {
+    expect(srcOf(await render('![i](javascript:alert(1))'))).toBe('')
+    expect(srcOf(await render('![i](VBScript:alert(1))'))).toBe('')
+  })
+
+  it('never lets a script scheme reach a src, however it is spelt', async () => {
+    // `java\tscript:` is not an image to marked at all — it stays literal text, which is
+    // its own kind of safe. So the assertion is the OUTCOME that matters rather than the
+    // route to it: no `src` anywhere in the output carries an executable scheme.
+    for (const md of [
+      '![i](javascript:alert(1))', '![i](JAVASCRIPT:alert(1))',
+      '![i](java\tscript:alert(1))', '![i](  javascript:alert(1))',
+      '![i](vbscript:msgbox(1))',
+    ]) {
+      const html = await render(md)
+      expect(html).not.toMatch(/src="[^"]*(?:javascript|vbscript):/i)
+    }
+  })
+
+  it('leaves every legitimate image exactly as it was', async () => {
+    // `data:` is NOT blocked here, unlike in `safeHref`: an inline PNG is a real image, and
+    // script inside an SVG does not run when the SVG is loaded as an <img>.
+    expect(srcOf(await render('![i](/uploads/media/a.png)'))).toBe('/uploads/media/a.png')
+    expect(srcOf(await render('![i](https://x.example/a.jpg)'))).toBe('https://x.example/a.jpg')
+    expect(srcOf(await render('![i](data:image/png;base64,iVBORw0KGgo=)')))
+      .toBe('data:image/png;base64,iVBORw0KGgo=')
+  })
+})
