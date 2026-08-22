@@ -8,11 +8,12 @@ import type { MediaItem, ApiResponse } from '@/types'
 import { Button } from '@/admin/ui/Button'
 import { useToast } from '@/admin/ui/Toast'
 import { formatBytes } from '@/utils'
-import { formatDate } from '@/i18n/i18n'
 import { ImageUploader } from './ImageUploader'
 import { MediaToolbar, type MediaSort } from './MediaToolbar'
-import { CHECK, EmptyState } from './kit'
+import {EmptyState } from './kit'
 import { useAdminT, useAdminLang } from './I18nProvider'
+import { SHEET_TOOL } from './sheet'
+import { MediaCard } from './MediaCard'
 
 type Props = {
   mode?: 'page' | 'picker'
@@ -198,67 +199,20 @@ export function MediaLibrary({ mode = 'page', multi = false, onSelect, onSelectM
           truncating (5 cols at desktop). */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
         {view.slice(0, visible).map((m) => (
-          <figure
+          <MediaCard
             key={m.url}
-            className={`group relative overflow-hidden rounded-lg border bg-white dark:bg-neutral-900 ${
-              (mode === 'page' || multi) && selected.has(m.url)
-                ? 'border-neutral-900 ring-2 ring-neutral-900 dark:border-white dark:ring-white'
-                : 'border-neutral-200 dark:border-neutral-800'
-            }`}
-          >
-            {/* Image region. The click target fills it; the checkbox + action bar
-                sit ON the image (absolute) so they cost zero layout height. */}
-            <div className="relative aspect-[3/2] w-full bg-neutral-100 dark:bg-neutral-800">
-              <button
-                type="button"
-                // Page mode: click to zoom. Picker: click to select (toggle in multi).
-                onClick={() => (mode === 'picker' ? (multi ? toggleSelect(m.url) : onSelect?.(m.url)) : setZoom(m))}
-                aria-label={m.filename}
-                className="absolute inset-0 block"
-              >
-                <img src={m.thumb ?? m.url} alt={m.filename} className="h-full w-full object-cover" />
-              </button>
-              {(mode === 'page' || multi) && (
-                <input
-                  type="checkbox"
-                  checked={selected.has(m.url)}
-                  onChange={() => toggleSelect(m.url)}
-                  aria-label={m.filename}
-                  className={`absolute left-1.5 top-1.5 z-20 h-4 w-4 transition-opacity ${CHECK} ${
-                    selected.has(m.url) ? 'opacity-100' : 'opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100'
-                  }`}
-                />
-              )}
-              {unused?.has(m.url) && (
-                <span className="absolute right-1.5 top-1.5 z-10 bg-neutral-900 px-1.5 py-0.5 text-xs font-medium text-white dark:bg-white dark:text-neutral-900">
-                  {t.unusedBadge}
-                </span>
-              )}
-              {/* Actions overlay the image bottom (always on touch, hover on desktop). */}
-              {mode === 'page' && (
-                <div className="absolute inset-x-0 bottom-0 z-10 flex items-center justify-end gap-2.5 bg-gradient-to-t from-black/70 via-black/35 to-transparent px-2 py-1.5 text-xs opacity-100 transition-opacity duration-150 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
-                  <button type="button" onClick={() => copyUrl(m.url)} className="text-white/90 hover:text-white">
-                    {t.copyUrl}
-                  </button>
-                  <a href={m.url} download={m.filename} className="text-white/90 hover:text-white">
-                    {t.download}
-                  </a>
-                  <button type="button" onClick={() => handleDelete(m.url)} className="font-medium text-white">
-                    {t.delete}
-                  </button>
-                </div>
-              )}
-            </div>
-            <figcaption className="space-y-0.5 p-2 text-xs">
-              <p className="truncate font-medium text-neutral-700 dark:text-neutral-300" title={m.filename}>
-                {m.filename}
-              </p>
-              <p className="truncate text-neutral-400" title={`${m.width && m.height ? `${m.width}×${m.height} · ` : ''}${formatBytes(m.size)} · ${formatDate(m.uploadedAt, lang)}`}>
-                {m.width && m.height ? `${m.width}×${m.height} · ` : ''}
-                {formatBytes(m.size)} · {compactDate(m.uploadedAt, lang)}
-              </p>
-            </figcaption>
-          </figure>
+            m={m}
+            mode={mode}
+            multi={multi}
+            selected={selected.has(m.url)}
+            lang={lang}
+            compactDate={compactDate}
+            unused={unused?.has(m.url) ?? false}
+            onOpen={() => (mode === 'picker' ? (multi ? toggleSelect(m.url) : onSelect?.(m.url)) : setZoom(m))}
+            onToggle={() => toggleSelect(m.url)}
+            onCopy={() => copyUrl(m.url)}
+            onDelete={() => handleDelete(m.url)}
+          />
         ))}
       </div>
       {visible < view.length && <div ref={sentinel} className="h-10" />}
@@ -290,7 +244,7 @@ export function MediaLibrary({ mode = 'page', multi = false, onSelect, onSelectM
               <button
                 type="button"
                 onClick={() => setSelected(new Set())}
-                className="text-xs text-neutral-400 transition hover:text-neutral-900 dark:text-neutral-500 dark:hover:text-neutral-200"
+                className={SHEET_TOOL}
               >
                 {t.clearSelection}
               </button>
@@ -308,7 +262,7 @@ export function MediaLibrary({ mode = 'page', multi = false, onSelect, onSelectM
               <button
                 type="button"
                 onClick={() => setOnlyUnused((v) => !v)}
-                className="text-xs text-neutral-400 transition hover:text-neutral-900 dark:text-neutral-500 dark:hover:text-neutral-200"
+                className={SHEET_TOOL}
               >
                 {onlyUnused ? t.showAll : t.showUnusedOnly}
               </button>
@@ -326,7 +280,7 @@ export function MediaLibrary({ mode = 'page', multi = false, onSelect, onSelectM
             type="button"
             onClick={checkUnused}
             disabled={checking}
-            className="text-xs text-neutral-400 transition hover:text-neutral-900 disabled:opacity-50 dark:text-neutral-500 dark:hover:text-neutral-200"
+            className={SHEET_TOOL}
           >
             {t.checkUnused}
           </button>

@@ -18,6 +18,7 @@ import { Tabs } from './kit'
 import { useAdminT } from './I18nProvider'
 import { useWritingItems, type WriteScope, type WriteSort } from './useWritingItems'
 import { Marked } from './Marked'
+import { SHEET_TOOL } from './sheet'
 
 type ContentView = {
   posts: Post[]
@@ -73,7 +74,7 @@ function Rows({
           <button
             type="button"
             onClick={() => setSort(sort === 'updated' ? 'created' : 'updated')}
-            className="text-xs text-neutral-400 transition hover:text-neutral-900 dark:text-neutral-500 dark:hover:text-neutral-200"
+            className={SHEET_TOOL}
           >
             ↓ {sort === 'updated' ? t.sortUpdated : t.sortCreated}
           </button>

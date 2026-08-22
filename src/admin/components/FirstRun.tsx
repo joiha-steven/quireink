@@ -21,7 +21,7 @@
 // `NotFound.tsx` carries `data-admin-404`.
 import { useState } from 'react'
 import Link from '@/admin/router'
-import { Card } from './kit'
+import { Card, TAP } from './kit'
 import { useAdminT } from './I18nProvider'
 import type { AdminStrings } from '@/locales/types'
 
@@ -112,7 +112,7 @@ export function FirstRun({ done, onDone }: {
             type="button"
             data-first-run-dismiss
             onClick={() => { setOpen(false); if (!done) onDone() }}
-            className="text-sm font-medium text-neutral-500 underline-offset-2 hover:text-neutral-900 hover:underline dark:text-neutral-400 dark:hover:text-white"
+            className={`${TAP} text-sm font-medium text-neutral-500 underline-offset-2 hover:text-neutral-900 hover:underline dark:text-neutral-400 dark:hover:text-white`}
           >
             {t.firstRunDismiss}
           </button>

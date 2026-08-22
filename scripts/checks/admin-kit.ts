@@ -28,6 +28,16 @@ type Rule = {
 
 const RULES: Rule[] = [
   {
+    // Added 2026-08-22, after MediaLibrary was found carrying a byte-identical copy of this
+    // string. The copy had also missed the tap-target padding that went onto the original,
+    // which is exactly the drift this file exists to stop: a screen re-types a primitive,
+    // the primitive later grows, and the copy stays behind where nothing can see it.
+    what: 'the quiet sheet-top tool',
+    signature: 'text-xs text-neutral-400 transition hover:text-neutral-900',
+    home: 'src/admin/components/sheet.tsx',
+    instead: 'import SHEET_TOOL from components/sheet',
+  },
+  {
     what: 'the form-control chrome',
     signature: 'focus:ring-2 focus:ring-neutral-200',
     home: 'src/admin/components/kit.tsx',
