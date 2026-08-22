@@ -17,6 +17,10 @@ import { one, run } from '@/store/query'
  */
 export type SecretName =
   | 'analytics-visitor' | 'session-ip' | 'mcp-oauth' | 'preview-link' | 'commenter-session'
+  // The daily token in `server/update-check.ts`. Its own salt like every other: the
+  // token leaves the machine, and one that shared the analytics salt would let anybody
+  // holding it test guesses against the visitor hashes in the database.
+  | 'update-check'
 
 // Memoised: these are read on the analytics path, which runs on every public request, and
 // the value cannot change during a process's life.

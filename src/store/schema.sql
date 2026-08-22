@@ -349,6 +349,29 @@ create table if not exists server_secrets (
   value text not null
 ) without rowid;
 
+-- ----- update_check -----------------------------------------------------------
+-- What this instance has already told check.quireink.com, and what it was told back.
+-- `server/update-check.ts` is the whole feature; this is the part that has to survive a
+-- restart, and every column here exists because a process-local variable got one of these
+-- questions wrong.
+--
+-- `last_day` is the lock. It is written by a CONDITIONAL update so that two requests in the
+-- same millisecond cannot both take the day, and it is put BACK when the call does not
+-- arrive, so a blog that was offline at the time may try again after a restart.
+--
+-- `first_done` is why `new=1` means "install" rather than "boot": it lives in the database,
+-- so restoring a backup or moving the blog to another machine carries it along and is not
+-- counted as a new install. That is the intended reading, not a limitation.
+create table if not exists update_check (
+  id          integer primary key check (id = 1),
+  last_day    text,                          -- UTC YYYY-MM-DD of the last call taken
+  first_done  integer not null default 0,    -- has `new=1` ever been sent
+  latest      text,                          -- newest release the answer named
+  latest_url  text,
+  latest_date text,
+  checked_at  integer
+);
+
 -- ----- auth (new in 2.0; see v2/docs/06-auth.md) ------------------------------
 -- One owner, but a one-row table costs nothing and a hard-coded singleton costs a rewrite.
 -- `password_hash` and `totp_secret` are secrets and never reach a client-bound payload.

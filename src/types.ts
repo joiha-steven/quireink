@@ -225,6 +225,7 @@ export type SiteSettings = {
   motion: MotionSettings // site-wide motion/animation engine toggle
   cache: CacheSettings // page cache + shared-cache headers for public HTML
   backups: BackupSettings // Google Drive backup config (secrets live in backup_state)
+  updateCheck: boolean // ask check.quireink.com once a day what the newest release is, and be counted by asking. ON by default: a number nobody opts into is a number that means nothing, and the owner knew that when they chose the default. Off = the blog never calls out at all. `server/update-check.ts` states exactly what the call carries; `UPDATE_CHECK=0` turns it off for every instance on a box, whatever this says
 }
 
 // Reader comment system. Booleans only — NO secrets here (this object is sent to

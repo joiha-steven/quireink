@@ -141,6 +141,13 @@ export type AdminStrings = {
   cacheEnableDesc: string
   cacheClearDesc: string
   clearCacheFailed: string
+  // Settings -> System -> Updates. `updateAvailable` carries {v}, the newer version.
+  updateTitle: string
+  updateCheckLabel: string
+  updateCheckDesc: string
+  updateAvailable: string
+  updateAvailableNote: string
+  updateAvailableLink: string
   // dashboard
   tabPosts: string
   tabPages: string
