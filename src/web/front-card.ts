@@ -140,7 +140,7 @@ function meta(post: Post, settings: SiteSettings, front: FrontSettings): string 
   const tx = t(settings.language)
   const parts: string[] = []
   if (front.showDate) {
-    parts.push(`<time datetime="${escapeAttr(post.date)}">${escapeHtml(formatDate(post.date, settings.language))}</time>`)
+    parts.push(`<time datetime="${escapeAttr(post.date)}">${escapeHtml(formatDate(post.date, settings.language, settings.timezone))}</time>`)
   }
   if (front.showReadingTime && post.readingMinutes) {
     parts.push(`<span class="num">${post.readingMinutes}</span> ${escapeHtml(tx.readingSuffix)}`)

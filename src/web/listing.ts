@@ -62,7 +62,7 @@ function card(post: Post, settings: SiteSettings, opts: CardOptions = {}): strin
   // `data-more` marks a card past the first page. The island hides those and reveals them
   // a chunk at a time; with no JavaScript nothing hides them and the whole archive renders.
   return `<article class="reveal"${opts.lead ? ' data-lead' : ''}${opts.more ? ' data-more' : ''}>${mark}
-<p class="t-small text-meta">${categoryLink}<time datetime="${escapeAttr(post.date)}">${escapeHtml(formatDate(post.date, settings.language))}</time>${minutes}</p>
+<p class="t-small text-meta">${categoryLink}<time datetime="${escapeAttr(post.date)}">${escapeHtml(formatDate(post.date, settings.language, settings.timezone))}</time>${minutes}</p>
 <${Title} class="reading-font mt-2 ${size} font-semibold"><a class="link-accent" href="/${escapeAttr(post.slug)}">${escapeHtml(post.title)}</a></${Title}>
 ${post.excerpt ? `<p class="reading-font mt-3 t-body text-text">${escapeHtml(post.excerpt)}</p>` : ''}
 </article>`
@@ -115,7 +115,7 @@ function timeline(posts: Post[], settings: SiteSettings, lead: boolean): string 
       const firstOfMonth = !prev || monthOf(prev.date) !== monthOf(post.date)
       return card(post, settings, {
         lead: lead && i === 0,
-        month: firstOfMonth && !firstOfYear ? formatMonth(post.date, settings.language) : undefined,
+        month: firstOfMonth && !firstOfYear ? formatMonth(post.date, settings.language, settings.timezone) : undefined,
         more: i >= chunk,
       })
     }).join('\n')

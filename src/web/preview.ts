@@ -35,7 +35,7 @@ export async function handlePreview(c: Context): Promise<Response> {
   const body = await renderPostContent({ markdown: entry.content })
   const meta = post
     ? `<p class="meta"><time datetime="${escapeAttr(post.date)}">${
-        escapeHtml(formatDate(post.date, settings.language))}</time></p>`
+        escapeHtml(formatDate(post.date, settings.language, settings.timezone))}</time></p>`
     : ''
 
   const html = renderDocument(

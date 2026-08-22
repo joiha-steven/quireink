@@ -11,6 +11,7 @@ import { DEFAULT_PRESET_ID, isPresetId, isFontPresetId, defaultThemes, ALL_PALET
 import {
   DEFAULT_HOME, DEFAULT_GALLERY, sanitizeMenu, migrateThemes, sanitizeThemes, sanitizeEnabledPalettes, sanitizeSeo, sanitizeFeatures, sanitizeHome, sanitizeGallery, sanitizeMcp, sanitizeMotion, sanitizeCache,
   sanitizeBackups, sanitizeComments, sanitizeCss, sanitizeUrl, clampNumber, sanitizeFeatured,
+  sanitizeTimezone,
 } from '@/content/settings-sanitize'
 import { sanitizeTypography, sanitizeFont } from '@/content/settings-type'
 
@@ -103,6 +104,10 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   firstRunDone: false,
   // On, and the reason is in `types.ts`. An operator who disagrees has one environment
   // variable; an owner who disagrees has one switch.
+  // Empty, not 'UTC': an operator who set ANALYTICS_TZ on an existing install keeps their
+  // answer, and a blank field reads as "whatever this server was told" rather than as a
+  // choice nobody made.
+  timezone: '',
   updateCheck: true,
   contentWidth: 672,
   postsPerPage: 10,
@@ -200,6 +205,7 @@ export async function getSettings(): Promise<SiteSettings> {
       // Only an explicit `false` turns it off. A settings blob written before this
       // existed has no key at all, and `=== true` would read that silence as a refusal
       // for every instance that upgraded into this version.
+      timezone: sanitizeTimezone(stored.timezone, ''),
       updateCheck: stored.updateCheck !== false,
     }
   } catch (error) {
@@ -322,6 +328,7 @@ export async function saveSettings(input: Partial<SiteSettings>): Promise<SiteSe
     motion: sanitizeMotion(input.motion, current.motion),
     cache: sanitizeCache(input.cache, current.cache),
     backups: sanitizeBackups(input.backups, current.backups),
+    timezone: input.timezone !== undefined ? sanitizeTimezone(input.timezone, current.timezone) : current.timezone,
     updateCheck: typeof input.updateCheck === 'boolean' ? input.updateCheck : current.updateCheck,
   }
   // Persist image refs store-relative (collapse); keep `next` absolute for the client.

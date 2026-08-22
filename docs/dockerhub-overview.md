@@ -78,7 +78,7 @@ and the analytics settings are all entered in the admin and stored in the databa
 | `DATA_DIR` | `/var/lib/quire/data` | Both SQLite files. Mount it or lose your blog. |
 | `STORAGE_LOCAL_DIR` | `/var/lib/quire/uploads` | Images and files. Mount it too. |
 | `CRON_SECRET` | — | Protects `/api/cron`, the scheduled-publishing sweep. |
-| `ANALYTICS_TZ` | `UTC` | The zone the analytics day boundary uses. |
+| `ANALYTICS_TZ` | `UTC` | The site's default timezone, until one is picked in Settings → Site. |
 
 The [environment table](https://github.com/joiha-steven/quireink/blob/main/docs/self-host.md)
 has the rest.

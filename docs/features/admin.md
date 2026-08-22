@@ -133,8 +133,12 @@
     `/api/admin/view/analytics-now`; the poll pauses while the tab is hidden). No socket: the flush
     buffer holds writes for at most 2 s, so one indexed five-minute scan is already honest to real
     time.
-  - **Timezone:** time buckets are truncated in `ANALYTICS_TZ` (an IANA zone, e.g.
-    `Asia/Ho_Chi_Minh`; defaults to UTC) so "days" line up with local midnight, not UTC. The daily
+  - **Timezone:** time buckets are truncated in the site's zone — **Settings → Site →
+    Timezone**, falling back to the `ANALYTICS_TZ` variable and then to UTC — so "days" line
+    up with local midnight rather than with UTC. Since 2026-08-22 that one setting is the
+    whole site's clock and not just this chart's: it also decides the date printed under
+    every post, which until then was read off the SERVER's timezone and therefore changed
+    if the site moved machine. The daily
     series emits **every bucket, zeros included** — a quiet day is a point on the chart, not a gap.
   - **Referrer hosts are folded for display** (`canonicalHost`): plumbing labels (`www.`, `m.`,
     `l.`, `lm.`, `out.`, `away.`, …) peel off, so `l.facebook.com` and `m.facebook.com` count as one

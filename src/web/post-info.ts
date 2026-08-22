@@ -44,7 +44,7 @@ export function postInfoPanel(post: PostWithContent, settings: SiteSettings, s: 
   const { features } = settings
   const rows: string[] = [
     `<p><time datetime="${escapeAttr(post.date)}">${
-      escapeHtml(formatDate(post.date, settings.language))}</time></p>`,
+      escapeHtml(formatDate(post.date, settings.language, settings.timezone))}</time></p>`,
   ]
   if (features.readingTime) {
     // The figures are wrapped and the units are not, the same way the meta line does it, so

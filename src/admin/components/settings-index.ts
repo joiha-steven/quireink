@@ -59,6 +59,7 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { tab: 'site', label: 'siteTitle' },
   { tab: 'site', label: 'siteDescription' },
   { tab: 'site', label: 'siteLanguage' },
+  { tab: 'site', label: 'siteTimezone', note: 'siteTimezoneHint' },
   { tab: 'site', label: 'showDescription' },
   { tab: 'site', label: 'excerptLength' },
   { tab: 'site', label: 'showLogo' },
@@ -141,6 +142,7 @@ export const SETTINGS_INDEX: SettingEntry[] = [
 
   // System — moving content in and out
   { tab: 'system', label: 'cacheEnable' },
+  { tab: 'system', label: 'updateCheckLabel', note: 'updateCheckDesc' },
   { tab: 'system', label: 'clearCache' },
   { tab: 'system', label: 'backupAuto' },
   { tab: 'system', label: 'backupIntervalLabel' },
