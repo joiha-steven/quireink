@@ -21,6 +21,7 @@ const de = {
   updateAvailable: 'Quire Ink {v} ist da',
   updateAvailableNote: 'Sie nutzen eine ältere Version. Nichts aktualisiert sich von selbst — Sie entscheiden wann.',
   updateAvailableLink: 'Nachlesen, was sich geändert hat',
+  updateCurrent: 'Auf dem neuesten Stand',
   tabPosts: 'Beiträge',
   tabPages: 'Seiten',
   kindPage: 'Seite',

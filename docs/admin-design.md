@@ -101,6 +101,14 @@ character and none of its typographic rules **except one**, below.
   banners stay on the neutral scale: a second use of colour spends the only signal that
   means "your words". The admin theme dropdown's colours are isolated from the site's
   configurable palette.
+  **ONE exception, owner's call 2026-08-22: the dot beside the version on the dashboard** is
+  amber when a newer release exists and green when this install is on the newest, asked for
+  in those words. It is the only place in the admin where colour carries a status, and the
+  argument for it is that this particular status is rare, actionable, and often a security
+  fix — the thing the rule protects ("your words") is not competing for attention on a line
+  of build metadata. A third state exists and draws NO dot: not knowing is not the same as
+  being current. Adding a second such exception is how the rule stops meaning anything, so
+  the next one is a decision rather than a precedent.
 - **The rail is words, not pictures.** Sidebar icons are OFF by default (2026-08-15, *"không
   cần icon bên sidebar, nó làm cho không cần thiết"*); the switch lives at the BOTTOM of
   "Everything else" (2026-08-17 — a set-once device preference does not need a permanent

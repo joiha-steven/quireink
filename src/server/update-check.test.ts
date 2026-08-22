@@ -16,8 +16,8 @@ import { one } from '@/store/query'
 import { saveSettings } from '@/content/settings'
 import { resetSecretCache, serverSecret } from '@/auth/secret'
 import {
-  dailyToken, dayKey, isNewer, isPublicAddress, maybeRunUpdateCheck, newerRelease,
-  parseRelease, resetUpdateCheck, runUpdateCheck, spreadMinutes, updateCheckStatus,
+  dailyToken, dayKey, isNewer, isPublicAddress, maybeRunUpdateCheck, parseRelease,
+  resetUpdateCheck, runUpdateCheck, spreadMinutes, updateCheckStatus, updateState,
 } from '@/server/update-check'
 import { countsAsReader } from '@/web/update-ping'
 
@@ -194,16 +194,25 @@ describe('the call', () => {
     expect(new URL(calls[1]!).searchParams.get('new')).toBeNull()
   })
 
-  it('keeps the newest release for the admin, and offers nothing when it is not newer', async () => {
+  it('tells the admin behind, current or unknown — and never guesses current', async () => {
+    // Nothing has been asked yet. NOT "current": the dot a person acts on by doing nothing
+    // is the one that must never be drawn from an absence of information.
+    expect(updateState(NOON)).toEqual({ state: 'unknown' })
+
     stubFetch(ok())
     await runUpdateCheck(SECRET, NOON)
-    expect(newerRelease()).toEqual(ANSWER)
+    expect(updateState(NOON)).toEqual({ state: 'behind', release: ANSWER })
 
     db().run(`delete from update_check`)
     resetUpdateCheck()
     stubFetch(ok({ ...ANSWER, latest: '0.0.1' }))
     await runUpdateCheck(SECRET, NOON)
-    expect(newerRelease()).toBeNull()
+    expect(updateState(NOON)).toEqual({ state: 'current' })
+
+    // ...and an answer from over a week ago cannot say "up to date" any more: a release may
+    // have happened since, and this blog either had no readers or could not reach out.
+    expect(updateState(NOON + 8 * 86_400_000)).toEqual({ state: 'unknown' })
+    expect(updateState(NOON + 6 * 86_400_000)).toEqual({ state: 'current' })
   })
 
   it('does nothing at all when the owner turns it off', async () => {
@@ -236,26 +245,60 @@ describe('what triggers it', () => {
     }
   }
 
-  it('stays silent outside production', async () => {
+  it('stays silent while somebody is working on the software', async () => {
     const { calls } = stubFetch(ok())
-    await withEnv({ NODE_ENV: 'test' }, () => maybeRunUpdateCheck(NOON))
-    await withEnv({ NODE_ENV: 'development' }, () => maybeRunUpdateCheck(NOON))
+    for (const env of ['test', 'development', 'dev', 'ci', 'TEST']) {
+      await withEnv({ NODE_ENV: env }, () => {
+        maybeRunUpdateCheck(NOON)
+        expect(updateCheckStatus().blockedBy).toBe(`NODE_ENV=${env.toLowerCase()}`)
+      })
+    }
     expect(calls).toEqual([])
-    expect(updateCheckStatus().blockedBy).toBe('NODE_ENV≠production')
   })
 
-  it('stays silent when the operator sets UPDATE_CHECK=0', async () => {
+  it('stays silent under --watch, which is what `bun run dev` is', async () => {
+    // The ONE signal separating `bun run dev` from a systemd install: both leave NODE_ENV
+    // empty, and only one of them is somebody editing the files underneath. Measured on Bun
+    // 1.3.14 — `bun --watch x.ts` puts '--watch' in execArgv, `bun x.ts` leaves it empty.
+    const realArgv = process.execArgv
     const { calls } = stubFetch(ok())
-    await withEnv({ NODE_ENV: 'production', UPDATE_CHECK: '0' }, () => maybeRunUpdateCheck(NOON))
+    try {
+      process.execArgv = ['--watch']
+      await withEnv({ NODE_ENV: undefined, UPDATE_CHECK: undefined }, () => {
+        maybeRunUpdateCheck(NOON)
+        expect(updateCheckStatus().blockedBy).toBe('--watch')
+      })
+      process.execArgv = ['--hot']
+      await withEnv({ NODE_ENV: undefined, UPDATE_CHECK: undefined }, () => {
+        expect(updateCheckStatus().blockedBy).toBe('--hot')
+      })
+    } finally {
+      process.execArgv = realArgv
+    }
     expect(calls).toEqual([])
-    await withEnv({ NODE_ENV: 'production', UPDATE_CHECK: '0' }, () => {
-      // The variable actually in the way, not merely "off". The two causes have two different
-      // fixes, and a screenshot on 2026-08-22 caught the admin printing the wrong one.
-      expect(updateCheckStatus().blockedBy).toBe('UPDATE_CHECK=0')
+  })
+
+  it('REPORTS from a plain `bun src/index.ts`, which is the systemd install', async () => {
+    // The whole point of the 2026-08-22 inversion. The unit in docs/self-host.md sets no
+    // NODE_ENV, so under the old rule every from-source install was silent forever while
+    // looking perfectly healthy — and nothing on any screen said so.
+    await withEnv({ NODE_ENV: undefined, UPDATE_CHECK: undefined }, () => {
+      expect(updateCheckStatus().blockedBy).toBeNull()
     })
     await withEnv({ NODE_ENV: 'production', UPDATE_CHECK: undefined }, () => {
       expect(updateCheckStatus().blockedBy).toBeNull()
     })
+  })
+
+  it('stays silent when the operator sets UPDATE_CHECK=0, whatever else is true', async () => {
+    const { calls } = stubFetch(ok())
+    await withEnv({ NODE_ENV: 'production', UPDATE_CHECK: '0' }, () => {
+      maybeRunUpdateCheck(NOON)
+      // The variable actually in the way, not merely "off". The causes have different fixes,
+      // and a screenshot on 2026-08-22 caught the admin printing the wrong one.
+      expect(updateCheckStatus().blockedBy).toBe('UPDATE_CHECK=0')
+    })
+    expect(calls).toEqual([])
   })
 
   it('waits for this instance\'s own minute of the day before it fires', async () => {

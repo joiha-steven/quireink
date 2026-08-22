@@ -8,12 +8,12 @@
 // states it again for somebody deciding whether to allow it. Neither sentence belongs here
 // in full — this is the summary the note carries, and the deep answer is one link away.
 
-import type { Release } from '@/server/update-check'
+import type { UpdateState } from '@/server/update-check'
 import { ToggleRow } from '@/admin/ui/Switch'
 import { useAdminT } from './I18nProvider'
 import { NOTE_TEXT, PANEL, Setting, SETTING_GAP } from './kit'
 
-export type UpdateStatus = { blockedBy: string | null; newer: Release | null }
+export type UpdateStatus = { blockedBy: string | null; update: UpdateState }
 
 export function UpdateFields(
   { updateCheck, status, onChange }:
@@ -38,15 +38,18 @@ export function UpdateFields(
           onChange={onChange}
         />
       </div>
-      {status.newer && (
-        <Setting label={t.updateAvailable.replace('{v}', status.newer.latest)} note={t.updateAvailableNote}>
+      {status.update.state === 'behind' && (
+        <Setting
+          label={t.updateAvailable.replace('{v}', status.update.release.latest)}
+          note={t.updateAvailableNote}
+        >
           <a
-            href={status.newer.url}
+            href={status.update.release.url}
             target="_blank"
             rel="noopener noreferrer"
             className={`${NOTE_TEXT} underline underline-offset-2 hover:text-neutral-900 dark:hover:text-white`}
           >
-            {t.updateAvailableLink} ({status.newer.date}) ↗
+            {t.updateAvailableLink} ({status.update.release.date}) ↗
           </a>
         </Setting>
       )}

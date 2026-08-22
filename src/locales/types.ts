@@ -148,6 +148,8 @@ export type AdminStrings = {
   updateAvailable: string
   updateAvailableNote: string
   updateAvailableLink: string
+  /** Tooltip on the green dot beside the version. */
+  updateCurrent: string
   // dashboard
   tabPosts: string
   tabPages: string

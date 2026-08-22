@@ -21,6 +21,7 @@ const ko = {
   updateAvailable: 'Quire Ink {v} 출시',
   updateAvailableNote: '이전 버전을 실행 중입니다. 자동으로 업데이트되는 것은 없으며, 시점은 직접 정합니다.',
   updateAvailableLink: '변경 사항 보기',
+  updateCurrent: '최신 버전입니다',
   tabPosts: '게시물',
   tabPages: '페이지',
   kindPage: '페이지',

@@ -7,6 +7,7 @@
 import { getActivity } from '@/server/activity'
 import { lastRunAt } from '@/server/backup'
 import { buildSha } from '@/server/build-info'
+import { updateState } from '@/server/update-check'
 import { getDashboardTraffic, getViewTotals } from '@/analytics/summary'
 import { countsByPosts } from '@/comments/comments'
 import { getIndex } from '@/content/posts'
@@ -123,6 +124,9 @@ export async function dashboardView(): Promise<Record<string, unknown>> {
     version: (pkg as { version: string }).version,
     // Null on a machine the deploy did not stamp. The admin then shows the version alone.
     commit: buildSha(),
+    // Behind / current / unknown, for the dot beside the version. `unknown` is its own
+    // answer and not a rounding of `current`: see `server/update-check.ts`.
+    update: updateState(),
     system,
     dashboard: {
       traffic: {

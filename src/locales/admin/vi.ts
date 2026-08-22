@@ -21,6 +21,7 @@ const vi = {
   updateAvailable: 'Đã có Quire Ink {v}',
   updateAvailableNote: 'Bạn đang chạy bản cũ hơn. Không có gì tự cập nhật — nâng cấp lúc nào là bạn quyết.',
   updateAvailableLink: 'Xem bản mới đổi gì',
+  updateCurrent: 'Đang chạy bản mới nhất',
   tabPosts: 'Bài viết',
   tabPages: 'Trang',
   kindPage: 'Trang',

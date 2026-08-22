@@ -21,6 +21,7 @@ const en = {
   updateAvailable: 'Quire Ink {v} is out',
   updateAvailableNote: 'You are running an older version. Nothing updates itself — you decide when.',
   updateAvailableLink: 'Read what changed',
+  updateCurrent: 'Up to date',
   tabPosts: 'Posts',
   tabPages: 'Pages',
   kindPage: 'Page',

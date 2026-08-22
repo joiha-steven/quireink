@@ -138,12 +138,11 @@ WantedBy=multi-user.target
 to the checkout, so the unit must start inside it. Use the absolute path to `bun` —
 systemd has no login shell and will not find it on `PATH`.
 
-**`NODE_ENV=production` was added to this unit on 2026-08-22, and an install made before
-then does not have it.** The Docker image sets it; a from-source install has nothing that
-would, because `bun src/index.ts` is the same command in both cases. Nothing about the site
-changes either way. What it decides is the update check in section 11 — without the line the
-blog never asks, so it never learns a release exists and is never counted as one that is
-running. Settings → System → Updates says `NODE_ENV≠production` when this is the reason.
+`NODE_ENV=production` is conventional rather than load-bearing: an install without it
+behaves identically, including the update check in section 11, which asks whether this looks
+like somebody EDITING the software (`bun --watch`, `bun test`) rather than whether a variable
+was set. That rule was inverted on 2026-08-22 for exactly this unit — requiring the variable
+would have made every from-source install silent forever while looking perfectly healthy.
 
 ```bash
 systemctl daemon-reload && systemctl enable --now quire
@@ -363,6 +362,13 @@ Turn it off with `UPDATE_CHECK=0` in the environment, or in Settings → System 
 Off means your blog makes no outbound request of any kind. Nothing updates itself either
 way: knowing a release exists and installing it are separate acts, and the second one is
 yours ([section 9](#9-upgrading)).
+
+**It also stays quiet on its own while somebody is working on the software** — under
+`bun --watch` (which is what `bun run dev` is) and under `bun test`. An afternoon of
+development is not an install, and the software works that out rather than asking you to
+declare it. The dashboard shows a dot beside the version once it knows: amber when a newer
+release is out, green when you are on it, and nothing at all when it has not been told
+recently, because "up to date" is a claim and a stale answer cannot make it.
 
 The code is [`src/server/update-check.ts`](../src/server/update-check.ts), which is short
 and says the same thing this section does.
