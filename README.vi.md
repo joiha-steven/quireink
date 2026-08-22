@@ -1,6 +1,6 @@
 <div align="center">
 
-# quire**INK** &nbsp;`2.1.3`
+# quire**INK** &nbsp;`2.1.4`
 
 **Một cái blog bạn tự host, và AI agent có thể vận hành thay bạn.**
 Không thuật toán, không quảng cáo, không nền tảng nào đứng giữa bạn và người đọc.
@@ -74,14 +74,15 @@ Có ba thứ định hình nó.
 
 Bạn được đọc, sửa, chạy và fork theo [PolyForm Noncommercial](./LICENSE), và được chạy bản phát hành để kinh doanh — kể cả bán hosting — theo [một cho phép bổ sung](./LICENSE-EXCEPTION.vi.md).
 
-> **2.1.3 ra ngày 21/08/2026**, đang chạy bản demo ở trên và blog riêng của tác giả tại
-> [manhhung.me](https://manhhung.me). Đây là một ngày sửa trình soạn thảo chồng lên 2.1.2, tất
-> cả đều lộ ra từ một người viết một bài: dán bài Markdown vào giờ thành bài viết thật chứ
-> không còn là một mớ chữ có dấu gạch chéo, hai đường làm trắng trang đã bịt, trang nào hỏng
-> thì nói ra chứ không gỡ luôn cả trang quản trị, bảng thôi mất công thức — mất ảnh — mất cột
-> mỗi lần lưu, và đăng bài báo cho CDN trong khoảng 50ms thay vì chín giây. Liên kết trong bài
-> giờ được gạch chân bằng nét bút đứt đoạn, vì đo ra màu chữ liên kết chỉ hơn chữ thường
-> 1,24:1. [Changelog](./CHANGELOG.md) có đủ những gì đã đổi.
+> **2.1.4 ra ngày 22/08/2026**, đang chạy bản demo ở trên và blog riêng của tác giả tại
+> [manhhung.me](https://manhhung.me). Đây là bản rà soát, ra sau ngày sửa trình soạn thảo:
+> số phiên bản trong trang quản trị giờ đeo một chấm — cam khi có bản mới, xanh khi bạn đang
+> ở bản mới nhất — nuôi bằng một cú hỏi mỗi ngày, cú hỏi đó cũng là cách blog của bạn được
+> đếm là một blog đang dùng, không mang theo gì riêng tư, và tắt được bằng một công tắc; cả
+> site theo một múi giờ bạn tự chọn trong Settings thay vì theo đồng hồ máy chủ; SVG tải lên
+> hết chạy được script trên origin của site; và những nút nhỏ nhất trong trang quản trị đã
+> nở ra vừa ngón tay cái mà chữ không xê dịch một pixel.
+> [Changelog](./CHANGELOG.md) có đủ những gì đã đổi.
 
 ---
 

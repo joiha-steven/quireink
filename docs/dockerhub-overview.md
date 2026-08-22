@@ -60,7 +60,7 @@ services:
 |---|---|
 | `latest` | The newest release. **The one to install**, because the newest release is the one carrying the fixes. |
 | `2.1` | Fixes within the 2.1 line, no feature surprises. For anyone who would rather step up a major version by hand. |
-| `2.1.3` | One exact release. Nothing moves, ever. |
+| `2.1.4` | One exact release. Nothing moves, ever. |
 
 `linux/amd64` and `linux/arm64`, each built on its own native runner. The same image is on
 GHCR as `ghcr.io/joiha-steven/quireink`, pushed by the same run with the same digest.

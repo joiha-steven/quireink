@@ -1,5 +1,75 @@
 # CHANGELOG
 
+## 2026-08-22 — Quire Ink 2.1.4
+
+The day after the editor day, spent auditing rather than writing: the whole source, the
+analytics behind it, and every screen at four widths — phone, iPad upright, iPad sideways,
+desktop. What the audit found is below. Still a drop-in: same install, same settings, same
+database, no migrations. **One new environment variable**, `UPDATE_CHECK`, which exists so
+you can turn a new behaviour off.
+
+### Your blog now knows when a release is out
+
+Once a day, on the first visit it gets, your blog asks `check.quireink.com` what the newest
+release is, and the dashboard wears the answer as a dot beside the version: amber when a
+newer release exists, green when you are on it, and nothing at all when it has not asked
+recently — "up to date" is a claim, and a stale answer cannot make it. Nothing updates
+itself: knowing a release exists and installing it are separate acts, and the second one
+stays yours.
+
+The same request is how a running blog is counted, and the request was designed around
+that: what goes out is the version, a code rebuilt from a new date every midnight so no two
+days can be linked, and whether the site has a public address yet. Not your address, not
+your posts, not your readers, not your figures — the whole request is one line, written out
+in [the self-hosting guide](./docs/self-host.md#11-what-this-blog-tells-us-and-how-to-stop-it).
+Turn it off in Settings → System or with `UPDATE_CHECK=0`, and it stays quiet on its own
+under `bun --watch` and `bun test`, because an afternoon of development is not an install.
+
+### One clock for the whole site, and you choose it
+
+The date under a post was the server's date. A public page is rendered once and cached, so
+a post published at 18:00 UTC read "August 22" from a machine in London and "August 23"
+from one in Hanoi — and moving the server silently moved every date on the site. The zone
+is now a setting, **Settings → Site → Timezone**, and it is the site's whole clock: the
+date under every post, the month markers in the archive, the newsletter's date line, and
+the day an analytics chart starts on. `ANALYTICS_TZ` keeps working as the default until you
+pick one. The picker offers what the runtime's own timezone database knows rather than
+carrying a copy of it, and a typo cannot take a page down — an unknown zone falls back
+instead of throwing.
+
+### An uploaded SVG no longer gets to act on your site
+
+An SVG is a drawing that is allowed to carry script, and `/uploads/` served one like any
+other image. Opened directly in a tab, the browser ran that script on your blog's own
+origin, where a fetch carries the owner's session cookie. Only the owner can upload, so the
+shape of this is not a stranger's attack — it is the booby-trapped icon set you downloaded
+and used as a logo. SVG responses now go out sandboxed. Used as an image on a page, nothing
+changes: an `<img>` never ran script in the first place.
+
+### Buttons sized for thumbs
+
+Six controls in the admin — Export CSV among the analytics, the taxonomy tools, Copy URL
+and Delete in the media library, the tour's "Got it" — were exactly as tall as their own
+text: 16 pixels, on screens where a fingertip is 40. Each now has a full-size hit area
+without its ink moving a pixel, and the checkboxes — where a browser silently ignores
+padding on the native widget — carry their label as part of the target.
+
+### A meta line wraps between its facts
+
+At phone width the reading time on every card could break in the middle of itself — "4" at
+the end of one line, "min read" opening the next — and a date could split across its own
+comma. Each fact now holds together, and the line breaks between facts.
+
+### Two untrue sentences, and line endings
+
+The self-hosting guide's systemd unit produced an install that would never have been
+counted, because the update check originally demanded an environment variable the unit
+never set; the check now recognises a real install by what it is rather than by a
+declaration, so the unit works as written. The schema doc claimed there was exactly one
+place that assembles SQL from a variable when there were two — the second, `vacuum into`,
+is now documented at both ends. And the repository pins its line endings: 98 files carried
+a mix of CRLF and LF, which made a one-line edit read as a rewrite.
+
 ## 2026-08-21 — Quire Ink 2.1.3
 
 A day of editor bugs, all found by one person writing one post. The owner pasted a Markdown
