@@ -150,6 +150,10 @@ export type AdminStrings = {
   updateAvailableLink: string
   /** Tooltip on the green dot beside the version. */
   updateCurrent: string
+  // Settings -> Site. One zone for the whole site: post dates, month markers, analytics days.
+  siteTimezone: string
+  siteTimezoneHint: string
+  siteTimezoneServer: string
   // dashboard
   tabPosts: string
   tabPages: string

@@ -225,6 +225,7 @@ export type SiteSettings = {
   motion: MotionSettings // site-wide motion/animation engine toggle
   cache: CacheSettings // page cache + shared-cache headers for public HTML
   backups: BackupSettings // Google Drive backup config (secrets live in backup_state)
+  timezone: string // IANA zone the WHOLE site reads its clock in: the date under a post, the month markers, and the day an analytics bucket starts on. Empty = the `ANALYTICS_TZ` variable, then UTC. It is a SETTING and not the machine's own zone on purpose — a page is rendered once and cached, so the server's timezone would otherwise decide what date every reader sees, and moving the box would silently move every date on the site
   updateCheck: boolean // ask check.quireink.com once a day what the newest release is, and be counted by asking. ON by default: a number nobody opts into is a number that means nothing, and the owner knew that when they chose the default. Off = the blog never calls out at all. `server/update-check.ts` states exactly what the call carries; `UPDATE_CHECK=0` turns it off for every instance on a box, whatever this says
 }
 

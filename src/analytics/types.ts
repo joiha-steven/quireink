@@ -1,3 +1,4 @@
+import { one } from '@/store/query'
 // Shapes the admin reads. Unchanged from the frozen tree, including the optional fields:
 // they were optional because the pre-v2 migration might not have run yet, and the admin
 // hides each section until its data shows up. There is one schema in 2.0, so every field
@@ -65,11 +66,31 @@ export const EMPTY_PAGE = (path: string): PageSummary => ({
   daily: [], topReferrers: [], topCountries: [], depthBuckets: [],
 })
 
-// IANA zone the admin time buckets are truncated in (so "days" match local midnight, not
-// UTC). Set ANALYTICS_TZ per instance; defaults to UTC. The shape check is kept from the
-// frozen tree, where it stopped a bad value reaching Postgres as SQL; here nothing is
-// interpolated, and `safeTimeZone` catches a well-shaped but unknown zone.
+/**
+ * IANA zone the admin time buckets are truncated in, so a "day" matches local midnight
+ * rather than UTC.
+ *
+ * THREE sources, in order: the owner's setting, then `ANALYTICS_TZ`, then UTC. It became a
+ * setting on 2026-08-22 — an environment variable is the operator's answer and the owner
+ * is the one reading the chart, and the same zone now also decides the date printed under
+ * every post (`i18n/i18n.ts`), which was reading the SERVER's zone until that day.
+ *
+ * Read from the row directly rather than through `getSettings()`, which is async and would
+ * make six pure bucket functions async to reach it. This runs once per analytics request,
+ * nowhere near a reader's path, against a one-row table.
+ *
+ * The shape check is kept from the frozen tree, where it stopped a bad value reaching
+ * Postgres as SQL; here nothing is interpolated, and `safeTimeZone` in `buckets.ts` catches
+ * a well-shaped but unknown zone before `Intl` can throw on it.
+ */
 export function reportTz(): string {
-  const tz = (process.env.ANALYTICS_TZ ?? '').trim()
+  let stored = ''
+  try {
+    const row = one<{ data: string }>(`select data from settings where id = 1`)
+    if (row) stored = String((JSON.parse(row.data) as { timezone?: unknown }).timezone ?? '')
+  } catch {
+    /* an unreadable settings row is not a reason to fail a chart */
+  }
+  const tz = (stored || process.env.ANALYTICS_TZ || '').trim()
   return /^[A-Za-z0-9_+/-]{1,40}$/.test(tz) ? tz : 'UTC'
 }

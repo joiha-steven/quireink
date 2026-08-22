@@ -42,7 +42,7 @@ export async function handleMarkdown(c: Context): Promise<Response> {
   const [post, page, settings] = await Promise.all([getPost(slug), getPage(slug), getSettings()])
 
   if (post && isPublicallyVisible(post.status, post.date)) {
-    const parts = [formatDate(post.date, settings.language)]
+    const parts = [formatDate(post.date, settings.language, settings.timezone)]
     if (post.categories.length) parts.push(post.categories.join(', '))
     return document(post.title, `*${parts.join(' · ')}*`, post.content)
   }

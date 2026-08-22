@@ -98,7 +98,7 @@ export async function renderArticle(slug: string): Promise<string | null> {
 <p class="t-small text-meta post-meta">${category
       ? `<a class="link-accent" href="/category/${escapeAttr(termSlug(category))}">${escapeHtml(category)}</a> · `
       : ''}<time datetime="${escapeAttr(post.date)}">${
-      escapeHtml(formatDate(post.date, settings.language))}</time>${length}${book}</p>
+      escapeHtml(formatDate(post.date, settings.language, settings.timezone))}</time>${length}${book}</p>
 <h1 class="reading-font mt-2 fs-h1 font-semibold">${escapeHtml(item.title)}</h1>${
       // Standfirst: the excerpt, so a long read opens on a sentence rather than a wall.
       features.deck && post.excerpt ? `
@@ -145,7 +145,7 @@ export async function renderArticle(slug: string): Promise<string | null> {
     const relatedBlock = related.length
       ? `<hr><section class="related"><h2>${escapeHtml(s.relatedTitle)}</h2><ul>${
           related.map((r) => `<li><a class="link-accent" href="/${escapeAttr(r.slug)}">${escapeHtml(r.title)}</a>`
-            + `<p class="t-small text-meta">${escapeHtml(formatDate(r.date, settings.language))}</p></li>`).join('')
+            + `<p class="t-small text-meta">${escapeHtml(formatDate(r.date, settings.language, settings.timezone))}</p></li>`).join('')
         }</ul></section>`
       : ''
     // The right gutter, above the rail breakpoint only. It carries the same facts as the
@@ -282,7 +282,7 @@ export async function renderArticle(slug: string): Promise<string | null> {
         // of them is the reason it looked thin. An AUTHORED meta description still wins --
         // those are words somebody chose -- and only the derived case runs longer.
         desc: post ? clampExcerpt(post.metaDescription || toPlainText(item.content), OG_DESC_MAX) : undefined,
-        date: post ? formatDate(post.date, settings.language) : undefined,
+        date: post ? formatDate(post.date, settings.language, settings.timezone) : undefined,
       }),
       ogType: post ? 'article' : 'website',
       stylesheet: PUBLIC_SHEET,

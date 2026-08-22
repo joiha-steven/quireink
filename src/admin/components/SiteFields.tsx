@@ -11,7 +11,24 @@ import { Input, Textarea } from '@/admin/ui/Input'
 import { ToggleField } from '@/admin/ui/Switch'
 import { SITE_LANGS } from '@/locales/langs'
 import { useAdminT, useSetAdminLang } from './I18nProvider'
-import { SEGMENT_TRACK, Setting, SETTING_GAP, tabItemClass } from './kit'
+import { FIELD_W, SEGMENT_TRACK, Select, Setting, SETTING_GAP, tabItemClass } from './kit'
+
+/**
+ * Every zone the RUNTIME knows, asked for rather than listed.
+ *
+ * A list written here would be a second copy of the IANA database, staler than the one the
+ * browser already ships and wrong the first time a country changes its rules — which they
+ * do, several times a decade. `supportedValuesOf` has been in every current browser since
+ * 2022; the fallback is not a shorter list but the ONE zone that is always right, because a
+ * half-list would quietly hide somebody's own country from them.
+ */
+const ZONES: string[] = (() => {
+  try {
+    return Intl.supportedValuesOf('timeZone')
+  } catch {
+    return ['UTC']
+  }
+})()
 
 type Props = { s: SiteSettings; update: (p: Partial<SiteSettings>) => void }
 
@@ -37,6 +54,18 @@ export function SiteFields({ s, update }: Props) {
             </button>
           ))}
         </div>
+      </Setting>
+
+      <Setting label={t.siteTimezone} note={t.siteTimezoneHint}>
+        <Select
+          className={FIELD_W.full}
+          wrapClassName="flex"
+          value={s.timezone}
+          onChange={(e) => update({ timezone: e.target.value })}
+        >
+          <option value="">{t.siteTimezoneServer}</option>
+          {ZONES.map((z) => <option key={z} value={z}>{z}</option>)}
+        </Select>
       </Setting>
 
       <Input label={t.siteTitle} value={s.title} onChange={(e) => update({ title: e.target.value })} placeholder="Quire Ink" />

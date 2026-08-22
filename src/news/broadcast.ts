@@ -37,7 +37,7 @@ const keyList = (keys: string[]) => JSON.stringify(keys)
 // Read the chosen posts, IN THE ORDER GIVEN (the admin lists newest-first, so the lead
 // of a digest is whatever the owner ticked first). Only publicly-visible posts can be
 // mailed — the email links straight to them.
-async function readSendablePosts(slugs: string[], lang: SiteLang): Promise<EmailPost[]> {
+async function readSendablePosts(slugs: string[], lang: SiteLang, tz: string): Promise<EmailPost[]> {
   if (slugs.length === 0) throw new BroadcastError('no_posts')
   const rows = all<Row>(
     `select slug, title, excerpt, cover_image, status, date from posts
@@ -56,7 +56,7 @@ async function readSendablePosts(slugs: string[], lang: SiteLang): Promise<Email
       excerpt: row.excerpt,
       // Cover refs are stored store-relative (Invariant 3) — an email needs the real URL.
       coverImage: row.cover_image ? expandBlob(row.cover_image) : null,
-      dateLabel: formatDate(date, lang),
+      dateLabel: formatDate(date, lang, tz),
     }
   })
 }
@@ -65,7 +65,7 @@ async function readSendablePosts(slugs: string[], lang: SiteLang): Promise<Email
 // with a placeholder unsubscribe token — for the admin preview pane.
 export async function previewBroadcast(slugs: string[]): Promise<{ subject: string; html: string }> {
   const settings = await getSettings()
-  const posts = await readSendablePosts(slugs, settings.language)
+  const posts = await readSendablePosts(slugs, settings.language, settings.timezone)
   return broadcastEmail(t(settings.language), emailBrand(settings), posts, 'preview-token')
 }
 
@@ -76,7 +76,7 @@ export async function broadcastPosts(
   opts: { force?: boolean } = {},
 ): Promise<{ sent: number; failed: number; recipients: number }> {
   const settings = await getSettings()
-  const posts = await readSendablePosts(slugs, settings.language)
+  const posts = await readSendablePosts(slugs, settings.language, settings.timezone)
   if (!opts.force) {
     const prior = await statsByPost()
     if (slugs.some((s) => (prior.get(s)?.sent ?? 0) > 0)) throw new BroadcastError('already_sent')

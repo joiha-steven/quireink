@@ -270,6 +270,26 @@ export function sanitizeGallery(input: unknown, fallback: GallerySettings): Gall
   }
 }
 
+/**
+ * An IANA zone name, or '' meaning "fall back to the deployment's own default".
+ *
+ * Validated by ASKING Intl rather than by a list: the zone database ships with the runtime
+ * and changes with it, so any list here would be a second, staler copy. A well-shaped but
+ * unknown name (`Asia/Atlantis`) throws on the first format and would take a page down with
+ * it, which is why the check is a real call and not a regular expression.
+ */
+export function sanitizeTimezone(input: unknown, fallback: string): string {
+  if (typeof input !== 'string') return fallback
+  const tz = input.trim()
+  if (!tz) return ''
+  try {
+    new Intl.DateTimeFormat('en-US', { timeZone: tz }).format(0)
+    return tz
+  } catch {
+    return fallback
+  }
+}
+
 export function sanitizeCache(input: unknown, fallback: CacheSettings): CacheSettings {
   const o = (input ?? {}) as Partial<CacheSettings>
   return { enabled: bool(o.enabled, fallback.enabled) }
