@@ -13,7 +13,7 @@
 //      hairlines — not floated in five little cards.
 //   4. One accent: the pen. Search hits and work-in-progress dots only.
 import type { ReactNode } from 'react'
-import { CARD } from './kit'
+import { CARD, TAP } from './kit'
 
 /** The sheet itself. Height matches the editor's paper so every page stands as tall. */
 export const SHEET = `${CARD} flex flex-col lg:min-h-[calc(100vh-1.5rem)]`
@@ -24,7 +24,7 @@ export const SHEET_FOOT =
 
 /** A quiet tool on the sheet-top row — same voice as the write pane's sort cycle. */
 export const SHEET_TOOL =
-  'text-xs text-neutral-400 transition hover:text-neutral-900 disabled:opacity-50 dark:text-neutral-500 dark:hover:text-neutral-200'
+  `${TAP} text-xs text-neutral-400 transition hover:text-neutral-900 disabled:opacity-50 dark:text-neutral-500 dark:hover:text-neutral-200`
 
 /** The sheet's first row: the page's tools on one thin band over a hairline. */
 export function SheetTop({ children }: { children: ReactNode }) {

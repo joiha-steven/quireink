@@ -18,6 +18,7 @@ import { SeriesManager } from '@/admin/components/SeriesManager'
 import { SlideOver } from '@/admin/components/SlideOver'
 import { CARD } from '@/admin/components/kit'
 import { useAdminT } from '@/admin/components/I18nProvider'
+import { SHEET_TOOL } from '@/admin/components/sheet'
 
 type Props = {
   posts: Post[]
@@ -26,9 +27,10 @@ type Props = {
 
 type Drawer = 'none' | 'taxonomy' | 'series'
 
-// Same voice as the sort cycle beside them: one thin line of small print.
-const TOOL =
-  'text-xs text-neutral-400 transition hover:text-neutral-900 dark:text-neutral-500 dark:hover:text-neutral-200'
+// Same voice as the sort cycle beside them: one thin line of small print. It was a
+// hand-copy of `SHEET_TOOL` missing only its `disabled:opacity-50` — and later its tap-target
+// padding, which is the drift `check:admin-kit` now guards this string against.
+const TOOL = SHEET_TOOL
 
 export default function Content() {
   const t = useAdminT()

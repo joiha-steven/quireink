@@ -9,7 +9,7 @@ import { formatDate } from '@/i18n/i18n'
 import { isVideoAttachment } from '@/render/video'
 import { FileUploader } from './FileUploader'
 import { useAdminT, useAdminLang } from './I18nProvider'
-import { CHECK, NOTE_TEXT } from './kit'
+import { CHECK, NOTE_TEXT, TAP } from './kit'
 
 // Short uppercase tag from the filename extension (or the MIME subtype).
 function ext(item: FileItem): string {
@@ -104,7 +104,7 @@ export function FileLibrary() {
           </span>
         ) : (
           <>
-            <button onClick={() => copyUrl(f.url)} className="text-neutral-600 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white">
+            <button onClick={() => copyUrl(f.url)} className={`${TAP} text-neutral-600 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white`}>
               {t.copyUrl}
             </button>
             <a href={f.url} download={f.filename} className="text-neutral-600 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white">

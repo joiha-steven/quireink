@@ -4,7 +4,7 @@
 import { useState } from 'react'
 import Link from '@/admin/router'
 import { PageHeader, type TabItem, Tabs } from './kit'
-import { SHEET, SHEET_FOOT, SheetTop } from './sheet'
+import { SHEET, SHEET_FOOT, SheetTop, SHEET_TOOL } from './sheet'
 import { useAdminT } from './I18nProvider'
 import { NewsletterSubscribers } from './NewsletterSubscribers'
 import { NewsletterSend, type SendablePost } from './NewsletterSend'
@@ -29,7 +29,7 @@ export function NewsletterView({ posts, mailConfigured }: { posts: SendablePost[
       <PageHeader
         title={t.navNewsletter}
         actions={
-          <Link href="/admin/settings?tab=connections" className="text-xs text-neutral-400 transition hover:text-neutral-900 dark:text-neutral-500 dark:hover:text-neutral-200">
+          <Link href="/admin/settings?tab=connections" className={SHEET_TOOL}>
             {t.nlSmtpSettingsLink} →
           </Link>
         }
