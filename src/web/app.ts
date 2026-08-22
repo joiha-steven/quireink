@@ -11,8 +11,7 @@
 import { Hono } from 'hono'
 import type { Context } from 'hono'
 import { getPublicPosts } from '@/content/posts'
-import { getPublicPages } from '@/content/pages'
-import { getSettings, resolveSiteUrl } from '@/content/settings'
+import { getSettings } from '@/content/settings'
 import { resolveSeries } from '@/content/series'
 import { resolveTerm, tagText } from '@/content/taxonomy'
 import { t } from '@/i18n/i18n'
@@ -20,7 +19,7 @@ import { escapeHtml } from '@/utils'
 import { renderListing } from '@/web/listing'
 import { cached, listingPage, notFoundPage, renderFeedBody } from '@/web/listing-page'
 import { renderHome, renderPostList, slugRole } from '@/web/home-mode'
-import { renderFeed, renderLlms, renderRobots, renderSitemap } from '@/web/feeds'
+import { registerFeedRoutes } from '@/web/feed-routes'
 import { renderArticle } from '@/web/article'
 import { assetBody } from '@/web/assets'
 import { handleOg } from '@/web/og'
@@ -35,6 +34,7 @@ import { canonicalPath } from '@/web/canonical-path'
 import { userRedirects } from '@/web/redirects'
 import { cacheHeaders } from '@/web/cache-headers'
 import { securityHeaders } from '@/web/security-headers'
+import { updatePing } from '@/web/update-ping'
 import { compression } from '@/web/compress'
 import { errorHandler, notFoundHandler, requestLogger } from '@/web/api'
 import { contentRoutes } from '@/web/admin/content'
@@ -117,6 +117,11 @@ export function createApp(): Hono {
 
   // A URL the owner MOVED answers before any route sees it. See `web/redirects.ts`.
   app.use('*', userRedirects())
+
+  // A reader arriving is what triggers the once-a-day update check, and this is the only
+  // line of it on the request path. See `web/update-ping.ts` for why it is a reader rather
+  // than a timer, and `server/update-check.ts` for what the call carries.
+  app.use('*', updatePing())
 
   // `/` is the post list, or a page the owner chose. Resolved per request rather than when
   // the routes are built, because the mode is a setting: see `web/home-mode.ts`.
@@ -342,42 +347,11 @@ export function createApp(): Hono {
   })
 
   // ----- machine-readable -----------------------------------------------------
+  // The feed, the sitemap, robots.txt and llms.txt. In their own file since 2026-08-22:
+  // they are the only routes here answering a program rather than a person, and this one
+  // reached its line ceiling.
 
-  const feedRoute = (
-    path: string,
-    enabled: (s: Awaited<ReturnType<typeof getSettings>>) => boolean,
-    type: string,
-    build: (args: {
-      posts: Awaited<ReturnType<typeof getPublicPosts>>
-      pages: Awaited<ReturnType<typeof getPublicPages>>
-      settings: Awaited<ReturnType<typeof getSettings>>
-      site: string
-    }) => string,
-  ) => {
-    app.get(path, async (c) => {
-      const settings = await getSettings()
-      // A disabled feed 404s rather than serving an empty document: an empty feed looks
-      // like a broken site to an aggregator, a 404 looks like what it is.
-      if (!enabled(settings)) return c.text('Not found', 404)
-      const [posts, pages] = await Promise.all([getPublicPosts(), getPublicPages()])
-      const body = build({ posts, pages, settings, site: resolveSiteUrl(settings) })
-      // These sent no cache-control at all, so every feed reader's poll and every crawler
-      // hit came all the way to the origin and rebuilt the document. Five minutes, and a
-      // write purges the zone anyway, so a subscriber never waits on the window.
-      return new Response(body, {
-        headers: { 'content-type': type, 'cache-control': 'public, s-maxage=300, stale-while-revalidate=600' },
-      })
-    })
-  }
-
-  feedRoute('/feed.xml', (s) => s.seo.rss, 'application/rss+xml; charset=utf-8',
-    ({ posts, settings, site }) => renderFeed(posts, settings, site))
-  feedRoute('/sitemap.xml', (s) => s.seo.sitemap, 'application/xml; charset=utf-8',
-    ({ posts, pages, settings, site }) => renderSitemap(posts, pages, site, settings.home))
-  feedRoute('/robots.txt', (s) => s.seo.robots, 'text/plain; charset=utf-8',
-    ({ settings, site }) => renderRobots(settings, site))
-  feedRoute('/llms.txt', (s) => s.seo.llms, 'text/plain; charset=utf-8',
-    ({ posts, pages, settings, site }) => renderLlms(posts, pages, settings, site))
+  registerFeedRoutes(app)
 
   // ----- the catch-all: one /{slug} namespace for posts AND pages -------------
 

@@ -17,6 +17,7 @@ import { getPageAnalytics } from '@/analytics/page'
 import { getAdminComments, countsByPosts, getTrashedComments } from '@/comments/comments'
 import { getCommentEnv } from '@/comments/comment-env'
 import { getIntegrationStatus } from '@/store/integration-keys'
+import { updateCheckStatus } from '@/server/update-check'
 import { getIndex, getCategories, getTags, getPublicPosts, getTrashedPosts } from '@/content/posts'
 import { getPageIndex, getTrashedPages, getPage, getPublicPages } from '@/content/pages'
 import { getPost } from '@/content/posts'
@@ -156,6 +157,10 @@ export function viewRoutes(): OwnerRouter {
         pages: pages.filter((p) => p.status === 'published').map((p) => ({ slug: p.slug, title: p.title })),
         // Category NAMES, for the front page's strip picker (ADR 0014).
         categories,
+        // Whether this deployment permits the daily update check, and the newest release it
+        // has been told about. Read here rather than from a route of its own: it is one
+        // small fact belonging to one card, and the settings screen already round-trips.
+        update: updateCheckStatus(),
       },
     })
   })

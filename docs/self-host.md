@@ -104,6 +104,11 @@ the same box. Set `TRUST_PROXY=1` when the hop in front reaches you over a publi
 would be counted as that one hop. Do NOT set it on an origin the internet can reach
 directly: it makes the header believable again, and the header is one line of a request.
 
+**`UPDATE_CHECK=0` turns off the one request this software makes on its own** — the daily
+question of what the newest release is, which is also how a blog is counted as being used
+(section 11 says exactly what it carries). It is on without this line, and this line beats
+the owner's own switch: it is here for an operator running blogs for other people.
+
 Everything else — SMTP, Turnstile, Cloudflare, the site's own name and language — is
 entered in the admin and stored in the database.
 
@@ -118,6 +123,7 @@ After=network.target
 [Service]
 Type=simple
 User=quire
+Environment=NODE_ENV=production
 WorkingDirectory=/home/quire/app
 EnvironmentFile=/home/quire/app/.env
 ExecStart=/home/quire/.bun/bin/bun src/index.ts
@@ -131,6 +137,13 @@ WantedBy=multi-user.target
 `WorkingDirectory` is load-bearing: the app resolves its bundles and static files relative
 to the checkout, so the unit must start inside it. Use the absolute path to `bun` —
 systemd has no login shell and will not find it on `PATH`.
+
+**`NODE_ENV=production` was added to this unit on 2026-08-22, and an install made before
+then does not have it.** The Docker image sets it; a from-source install has nothing that
+would, because `bun src/index.ts` is the same command in both cases. Nothing about the site
+changes either way. What it decides is the update check in section 11 — without the line the
+blog never asks, so it never learns a release exists and is never counted as one that is
+running. Settings → System → Updates says `NODE_ENV≠production` when this is the reason.
 
 ```bash
 systemctl daemon-reload && systemctl enable --now quire
@@ -317,6 +330,42 @@ Nothing else changes. The first boot prints one `entrypoint: adopting …` line 
 and later boots print none, because the check is one `stat` and the walk only happens when
 the answer is wrong — a re-chown of a large uploads tree on every restart would turn a
 restart into an outage.
+
+## 11. What this blog tells us, and how to stop it
+
+Once a day, on the first visit your blog gets, it asks `check.quireink.com` what the newest
+release is. That one request does two jobs: you find out an update exists, and by asking,
+your blog is counted as one that is being used. There is no second call and no background
+process — a blog nobody reads never asks, and is never counted, which is the point.
+
+This is the whole request:
+
+```
+GET https://check.quireink.com/releases.json?v=2.1.3&t=8f2c91a04b7e&d=1&new=1
+```
+
+| | |
+|---|---|
+| `v` | the version you are running |
+| `t` | `sha256(a secret only your blog has + today's date)`, first 12 characters |
+| `d` | `1` if your site has a public address, `0` if it is still on a laptop |
+| `new` | sent once ever, on the first check a new database makes |
+
+**`t` is rebuilt from a new date every midnight**, so today's count is exact and nothing
+links it to yesterday's. Counting by address would have been the easy way and it is wrong
+here: one machine can run a hundred blogs, and then a hundred blogs count as one.
+
+**Not sent, at all:** your address, your blog's name, your posts, your readers, your traffic
+figures, your email, your IP. The answer is a static file naming the newest release, and it
+is the same file for everybody.
+
+Turn it off with `UPDATE_CHECK=0` in the environment, or in Settings → System → Updates.
+Off means your blog makes no outbound request of any kind. Nothing updates itself either
+way: knowing a release exists and installing it are separate acts, and the second one is
+yours ([section 9](#9-upgrading)).
+
+The code is [`src/server/update-check.ts`](../src/server/update-check.ts), which is short
+and says the same thing this section does.
 
 ## Coming from Quire 1.x
 

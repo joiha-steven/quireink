@@ -42,7 +42,6 @@ import { TypographyFields } from './TypographyFields'
 import { FontUpload } from './FontUpload'
 import { FontFields } from './FontFields'
 import { AdvancedFields } from './AdvancedFields'
-import { StorageFields } from './StorageFields'
 import { McpFields } from './McpFields'
 import { LayoutMenuFields } from './LayoutMenuFields'
 import { FrontFields } from './FrontFields'
@@ -52,9 +51,8 @@ import { ActivityLogField, ListingFeatureFields, PostFeatureFields } from './Fea
 import { CommentFields } from './CommentFields'
 import { CommentIntegrations } from './CommentIntegrations'
 import { CloudflareFields } from './CloudflareFields'
-import { ImportFields } from './ImportFields'
-import { ExportFields } from './ExportFields'
-import { CacheFields } from './CacheFields'
+import { SettingsSystemTab } from './SettingsSystemTab'
+import type { UpdateStatus } from './UpdateFields'
 import { SeoFields } from './SeoFields'
 import { RedirectsManager } from './RedirectsManager'
 import { NewsletterFields } from './NewsletterFields'
@@ -78,7 +76,7 @@ const TAB_IDS: Tab[] = ['site', 'layout', 'reading', 'appearance', 'seo', 'conne
 const GRID = 'grid items-start gap-5 xl:grid-cols-2'
 const COL = 'space-y-5'
 
-export function SettingsView({ settings, presets, commentEnv, integrations, posts, pages, categories }: {
+export function SettingsView({ settings, presets, commentEnv, integrations, posts, pages, categories, update: updateStatus }: {
   settings: SiteSettings
   presets: ThemePreset[]
   commentEnv: CommentEnv
@@ -86,6 +84,9 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
   posts: { slug: string; title: string }[]
   pages: { slug: string; title: string }[]
   categories: string[]
+  // Not a setting: what the DEPLOYMENT permits, and what the last check was told. The switch
+  // beside it is `settings.updateCheck` like every other field on this screen.
+  update: UpdateStatus
 }) {
   const t = useAdminT()
   const router = useRouter()
@@ -353,31 +354,10 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
         </div>
       )}
 
-      {/* SYSTEM — content in and out; the WP importer is a one-time tool, not a setting. */}
+      {/* SYSTEM — content in and out, and the state of the install. Its own file since
+          2026-08-22, when this one reached its line ceiling. */}
       {tab === 'system' && (
-        <div className={GRID}>
-          <div className={COL}>
-            <Card panel title={t.cardImport}>
-              <ImportFields />
-            </Card>
-            <Card panel title={t.cacheTitle}>
-              <CacheFields cache={s.cache} onChange={(cache) => update({ cache })} />
-            </Card>
-          </div>
-          <div className={COL}>
-            <Card panel title={t.backupTitle}>
-              <ExportFields backups={s.backups} onChange={(backups) => update({ backups })} />
-            </Card>
-            <Card panel title={t.storageTitle}>
-              <StorageFields
-                maxUploadMb={s.maxUploadMb}
-                storageQuotaGb={s.storageQuotaGb}
-                onMaxUploadMb={(maxUploadMb) => update({ maxUploadMb })}
-                onStorageQuotaGb={(storageQuotaGb) => update({ storageQuotaGb })}
-              />
-            </Card>
-          </div>
-        </div>
+        <SettingsSystemTab s={s} update={update} updateStatus={updateStatus} grid={GRID} col={COL} />
       )}
 
       {/* One always-reachable save bar, offset past the sidebar via the --admin-nav-w the

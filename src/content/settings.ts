@@ -2,21 +2,22 @@
 // defaults on any failure so the header/<title> never crash. Image refs stored
 // store-relative, binaries on Blob. Validation/migration lives in settings-sanitize.ts.
 
-import type { BackupSettings, CommentSettings, FeatureSettings, FontSettings, SeoSettings, SiteSettings, TypographySettings } from '@/types'
+import type { BackupSettings, CommentSettings, FeatureSettings, SeoSettings, SiteSettings } from '@/types'
 import { collapseBlob, expandBlob, deleteByPathname } from '@/media/blob'
 import { renderLogo } from '@/media/files'
 import { one, run } from '@/store/query'
 import { isSiteLang } from '@/locales/langs'
-import { DEFAULT_PRESET_ID, isPresetId, isFontPresetId, defaultThemes, ALL_PALETTE_IDS, DEFAULT_FONT, DEFAULT_FONT_PRESET, isChromeFontId, DEFAULT_CHROME_FONT, TYPE_ROLES, isScheme, getFontPreset } from '@/content/themes'
+import { DEFAULT_PRESET_ID, isPresetId, isFontPresetId, defaultThemes, ALL_PALETTE_IDS, DEFAULT_FONT, DEFAULT_FONT_PRESET, isChromeFontId, DEFAULT_CHROME_FONT, isScheme, getFontPreset } from '@/content/themes'
 import {
   DEFAULT_HOME, DEFAULT_GALLERY, sanitizeMenu, migrateThemes, sanitizeThemes, sanitizeEnabledPalettes, sanitizeSeo, sanitizeFeatures, sanitizeHome, sanitizeGallery, sanitizeMcp, sanitizeMotion, sanitizeCache,
   sanitizeBackups, sanitizeComments, sanitizeCss, sanitizeUrl, clampNumber, sanitizeFeatured,
 } from '@/content/settings-sanitize'
-import { sanitizeTypography, sanitizeFont, fontFormat } from '@/content/settings-type'
+import { sanitizeTypography, sanitizeFont } from '@/content/settings-type'
 
 // Re-export so existing importers keep working.
 export { DEFAULT_THEME, themesToCss, getDefaultTheme, DEFAULT_TYPOGRAPHY, DEFAULT_FONT } from '@/content/themes'
 export { resolveSiteUrl, siteUrlIsUnset, resolveAppIcon } from '@/content/settings-resolve'
+export { typographyToCss, fontToCss } from '@/content/settings-css'
 
 export const DEFAULT_SEO: SeoSettings = {
   autoSchema: true,
@@ -60,68 +61,6 @@ export const DEFAULT_COMMENTS: CommentSettings = {
   googleAuth: false,
 }
 
-// Per-role type CSS vars on :root (+ optional font-smoothing). Injected after
-// globals.css (same defaults), so a saved scale wins and a fresh install still works.
-//
-// BOOK MODE IS ONE NUMBER, AND IT IS EMITTED TWICE. Do not "simplify" this to one block.
-//
-// The rule the owner asked for: in book mode the reading text runs 15% larger than the
-// article, and every gap around it moves by the same 15%. Type and the space between it are
-// one system; enlarging the words alone gives you crowded reading, not bigger reading. So
-// `--sp`, the article's spacing unit, carries the scale exactly as `--fs-<role>` does, and
-// every gap inside the article is a multiple of it.
-//
-// Emitting the block a SECOND time on `.book-overlay` is the whole mechanism, and it is
-// there because the obvious version does not work. A `var()` inside a custom property is
-// substituted where that property is DECLARED, not where it is used — so `--fs-body`
-// declared on `:root` resolves `var(--type-scale, 1)` against `:root`, where the scale is
-// undefined, and the resolved `calc(1.13rem * 1)` is what inherits. Overriding
-// `--type-scale` on a descendant then changes nothing at all. This file used to claim the
-// opposite in a comment, and book mode had been rendering at EXACTLY the article's size
-// since the port. Measured 2026-07-29, every ratio 1.000: body, leading, headings, and
-// every gap.
-//
-//   #a { --scale:1; --unit:calc(10px * var(--scale,1)) }  ->  calc(10px * 1)
-//   #b { --scale:2 }                        (inherits #a's) ->  calc(10px * 1)   <- the trap
-//   #c { --scale:2; --unit:calc(10px * var(--scale,1)) }  ->  calc(10px * 2)   <- the fix
-//
-// Re-declaring the identical text on `.book-overlay` re-substitutes it THERE, where the
-// scale is 1.05. The numbers still live in one place: this function. Pinned by
-// `web/typography.test.ts`, and the reasoning is in docs/conventions/type.md.
-function scaledVars(t: TypographySettings): string {
-  const roles = TYPE_ROLES.map((r) => {
-    const s = t.roles[r]
-    return `--fs-${r}:calc(${s.size}rem * var(--type-scale, 1))`
-      + `;--lh-${r}:${s.line};--ls-${r}:${s.spacing}em`
-  }).join(';')
-  // The article's spacing unit. Scale-dependent, so it belongs in this block and nowhere
-  // else: a second definition on :root elsewhere would win or lose by source order and the
-  // book overlay would go back to unscaled gaps.
-  return `${roles};--sp:calc(1rem * var(--type-scale, 1))`
-}
-
-export function typographyToCss(t: TypographySettings): string {
-  const vars = scaledVars(t)
-  const smooth = t.smoothing ? `body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}` : ''
-  return `:root{${vars}}.book-overlay{${vars}}${smooth}`
-}
-
-// Emit one @font-face per uploaded weight for the owner typeface and point
-// --font-reading at it (Inter stays the fallback). Empty when no font is set.
-export function fontToCss(f: FontSettings): string {
-  if (!f.family || f.faces.length === 0) return ''
-  const faces = f.faces
-    .map((face) => {
-      const fmt = fontFormat(face.url)
-      const src = `url('${face.url}')${fmt ? ` format('${fmt}')` : ''}`
-      return `@font-face{font-family:'${f.family}';font-weight:${face.weight};font-style:normal;src:${src};font-display:swap}`
-    })
-    .join('')
-  // An uploaded custom font styles the reader's words (article, comments, editor),
-  // matching the built-in fontPreset scope — the chrome stays Inter.
-  return faces + `:root{--font-reading:'${f.family}', var(--font-inter)}`
-}
-
 /**
  * The type numbers a fresh install starts with: the DEFAULT FACE's own, never the neutral
  * `DEFAULT_TYPOGRAPHY`.
@@ -162,6 +101,9 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   maxUploadMb: 0,
   storageQuotaGb: 0,
   firstRunDone: false,
+  // On, and the reason is in `types.ts`. An operator who disagrees has one environment
+  // variable; an owner who disagrees has one switch.
+  updateCheck: true,
   contentWidth: 672,
   postsPerPage: 10,
   relatedCount: 3,
@@ -255,6 +197,10 @@ export async function getSettings(): Promise<SiteSettings> {
       motion: sanitizeMotion(stored.motion, DEFAULT_SETTINGS.motion),
       cache: sanitizeCache(stored.cache, DEFAULT_SETTINGS.cache),
       backups: sanitizeBackups(stored.backups, DEFAULT_BACKUPS),
+      // Only an explicit `false` turns it off. A settings blob written before this
+      // existed has no key at all, and `=== true` would read that silence as a refusal
+      // for every instance that upgraded into this version.
+      updateCheck: stored.updateCheck !== false,
     }
   } catch (error) {
     console.error(`[ERROR] settings.getSettings: ${(error as Error).message}`)
@@ -376,6 +322,7 @@ export async function saveSettings(input: Partial<SiteSettings>): Promise<SiteSe
     motion: sanitizeMotion(input.motion, current.motion),
     cache: sanitizeCache(input.cache, current.cache),
     backups: sanitizeBackups(input.backups, current.backups),
+    updateCheck: typeof input.updateCheck === 'boolean' ? input.updateCheck : current.updateCheck,
   }
   // Persist image refs store-relative (collapse); keep `next` absolute for the client.
   const stored: SiteSettings = {
