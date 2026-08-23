@@ -103,7 +103,11 @@ export async function handleMcp(c: Context): Promise<Response> {
 
   const { McpServer } = await import('@modelcontextprotocol/sdk/server/mcp.js')
   const server = new McpServer({ name: 'quire', version: '2.0' })
-  registerTools(server)
+  // The cast is one-way narrowing, not a lie: ToolHost is the SUBSET of registerTool the
+  // tool files use (the SDK's config is a superset, and a callback that ignores the SDK's
+  // second `extra` argument is an ordinary JS callback). TS refuses to prove generic
+  // method assignability here; the wire test proves the part that matters.
+  registerTools(server as unknown as import('@/mcp/registry').ToolHost)
   const transport = new SingleExchange()
   await server.connect(transport)
 

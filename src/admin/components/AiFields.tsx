@@ -143,15 +143,21 @@ export function AiFields({ configured, provider, model, ai, onChangeAi }: {
           configured, because a switch wired to nothing should look like one. */}
       <div className="border-t border-neutral-200 pt-3 dark:border-neutral-800">
         <p className={`${NOTE_TEXT} mb-2`}>{t.aiTasksLabel}</p>
-        <label className={`flex items-center gap-2 text-sm ${configured ? 'text-neutral-700 dark:text-neutral-200' : 'text-neutral-400 dark:text-neutral-600'}`}>
-          <input
-            type="checkbox"
-            checked={configured ? ai.altText : false}
-            disabled={!configured}
-            onChange={(e) => onChangeAi({ ...ai, altText: e.target.checked })}
-          />
-          {t.aiTaskAltText}
-        </label>
+        {([
+          ['altText', t.aiTaskAltText],
+          ['excerpt', t.aiTaskExcerpt],
+          ['commentGuard', t.aiTaskComments],
+        ] as const).map(([job, label]) => (
+          <label key={job} className={`flex items-center gap-2 py-1 text-sm ${configured ? 'text-neutral-700 dark:text-neutral-200' : 'text-neutral-400 dark:text-neutral-600'}`}>
+            <input
+              type="checkbox"
+              checked={configured ? ai[job] : false}
+              disabled={!configured}
+              onChange={(e) => onChangeAi({ ...ai, [job]: e.target.checked })}
+            />
+            {label}
+          </label>
+        ))}
       </div>
     </div>
   )

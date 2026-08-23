@@ -10,6 +10,7 @@ import { pushRevision, renameRevisions, deleteRevisions } from '@/content/revisi
 import { renameComments, deleteCommentsForPost } from '@/comments/comments'
 import { saveRedirect, clearRedirectForPath } from '@/server/redirects'
 import { getSettings } from '@/content/settings'
+import { writeExcerpt } from '@/content/ai-excerpt'
 import { TERM_SELECT, parseTerms, writeTerms, updateTermRows, type TermKind } from '@/content/post-terms'
 import { all, one, run, tx } from '@/store/query'
 import { liveOnly, nowMs, toIso, fromIso } from '@/store/db'
@@ -265,6 +266,14 @@ export async function savePost(
   // This slug is now live content, so any redirect that used it as a SOURCE is stale
   // (live content must win over a redirect; also breaks a rename-back self-loop).
   await clearRedirectForPath(`/${post.slug}`)
+
+  // The AUTHOR left the excerpt blank on a published post — normalize() has already
+  // stored the mechanical fifty-word fallback, and only this save path knows the field
+  // was blank. Fire-and-forget: the job declines instantly unless a key and its switch
+  // are both on, and its write-back is guarded so an author edit always wins.
+  if (post.status === 'published' && !input.excerpt?.trim()) {
+    void writeExcerpt(post.slug, post.excerpt ?? '', post.content)
+  }
 
   return toMeta(post)
 }

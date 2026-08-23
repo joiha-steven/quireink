@@ -145,7 +145,7 @@ describe('parseModels', () => {
 describe('the per-job switch', () => {
   it('a configured key still describes nothing while the owner has the job off', async () => {
     await saveIntegrationKeys({ aiProvider: 'anthropic', aiApiKey: 'sk-test' })
-    await saveSettings({ ai: { altText: false } })
+    await saveSettings({ ai: { altText: false, excerpt: true, commentGuard: true } })
     let called = 0
     globalThis.fetch = (async () => { called++; return new Response('{}') }) as unknown as typeof fetch
     plantMedia('media/switched-off.webp')

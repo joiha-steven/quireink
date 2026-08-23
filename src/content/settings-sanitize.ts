@@ -137,7 +137,11 @@ export function sanitizeMcp(input: unknown, fallback: McpSettings): McpSettings 
 
 export function sanitizeAi(input: unknown, fallback: AiSettings): AiSettings {
   const o = (input ?? {}) as Partial<AiSettings>
-  return { altText: bool(o.altText, fallback.altText) }
+  return {
+    altText: bool(o.altText, fallback.altText),
+    excerpt: bool(o.excerpt, fallback.excerpt),
+    commentGuard: bool(o.commentGuard, fallback.commentGuard),
+  }
 }
 
 /**

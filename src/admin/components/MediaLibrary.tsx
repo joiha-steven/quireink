@@ -129,6 +129,24 @@ export function MediaLibrary({ mode = 'page', multi = false, onSelect, onSelectM
     }
   }
 
+  // Backfill alt text for every never-described image (Settings → AI must hold a key).
+  // The server answers with the queue size and works on; results land in the rows as
+  // they arrive, so a reload shows progress and the activity log shows the total.
+  const [describing, setDescribing] = useState(false)
+  async function describeMissing() {
+    setDescribing(true)
+    try {
+      const res = await fetch('/api/media/describe-missing', { method: 'POST' })
+      const json = (await res.json()) as ApiResponse<{ queued: number }>
+      if (!json.success || !json.data) throw new Error(json.error)
+      notify(`${t.aiDescribeAllStarted}: ${json.data.queued}`)
+    } catch {
+      notify(t.aiNotConfigured, 'error')
+    } finally {
+      setDescribing(false)
+    }
+  }
+
   // Delete EVERY currently-flagged unused image in one atomic request (one
   // manifest write) — no per-image race, and far faster than clicking each.
   const [deletingAll, setDeletingAll] = useState(false)
@@ -283,6 +301,14 @@ export function MediaLibrary({ mode = 'page', multi = false, onSelect, onSelectM
             className={SHEET_TOOL}
           >
             {t.checkUnused}
+          </button>
+          <button
+            type="button"
+            onClick={describeMissing}
+            disabled={describing}
+            className={SHEET_TOOL}
+          >
+            {t.aiDescribeAll}
           </button>
         </div>
       )}

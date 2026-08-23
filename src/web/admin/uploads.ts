@@ -18,7 +18,11 @@ import {
   getFiles, addFilesBatch, registerFilesBatch, deleteFilesBatch, deleteFile,
   getSiteIcons, isAllowedIconType, uploadIcon, isAllowedFontType, uploadFont,
 } from '@/media/files'
-import { collapseBlob } from '@/media/blob'
+import { collapseBlob, readBlob } from '@/media/blob'
+import { mimeOf } from '@/media/mime'
+import { describeUpload } from '@/media/alt-text'
+import { getIntegrationKeys } from '@/store/integration-keys'
+import { all } from '@/store/query'
 import { checkUpload } from '@/media/limits'
 import { finalizeVariants } from '@/media/finalize'
 import { clearCache } from '@/server/cache'
@@ -145,6 +149,31 @@ export function uploadRoutes() {
   // Non-destructive: returns what nothing references so the owner can review. It never
   // deletes, which is the whole difference from the destructive sweeper it replaced.
   router.get('/api/media/unused', async () => json(await findUnusedMedia()))
+
+  // Describe every image that has never been described (alt IS NULL — a cleared '' is a
+  // decision and stays cleared). Answers immediately with the queue size and works in the
+  // background: a five-hundred-image backfill is a coffee, not a spinner. One at a time,
+  // deliberately — this is a batch job on the owner's paid API, not a stampede.
+  router.post('/api/media/describe-missing', async (c) => {
+    const keys = await getIntegrationKeys()
+    if (!keys.aiProvider || !keys.aiApiKey) return fail(c, 'ai_not_configured', 400)
+    const rows = all<{ path: string }>(
+      `select path from media where alt is null and deleted_at is null order by uploaded_at desc`,
+    )
+    const images = rows.filter((r) => /\.(jpe?g|png|webp|gif)$/i.test(r.path))
+    void (async () => {
+      let done = 0
+      for (const r of images) {
+        try {
+          const buf = await readBlob(r.path)
+          await describeUpload(r.path, buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer, mimeOf(r.path))
+          done++
+        } catch { /* one bad file must not stop the batch */ }
+      }
+      void logActivity('media.upload', `alt backfill: ${done}/${images.length}`)
+    })()
+    return json({ queued: images.length })
+  })
 
   router.get('/api/media/debug', async (c) => {
     const url = c.req.query('url') ?? ''

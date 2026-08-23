@@ -283,6 +283,8 @@ export type AdminComment = {
  */
 export type AiSettings = {
   altText: boolean // describe uploaded images in the site's language
+  excerpt: boolean // write the excerpt when a post publishes with the field left blank
+  commentGuard: boolean // hold spam comments in the Trash for review
 }
 
 export type McpSettings = {

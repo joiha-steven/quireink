@@ -141,6 +141,8 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { tab: 'ai', label: 'mcpTokensTitle' },
   { tab: 'ai', label: 'cardAi' },
   { tab: 'ai', label: 'aiTaskAltText' },
+  { tab: 'ai', label: 'aiTaskExcerpt' },
+  { tab: 'ai', label: 'aiTaskComments' },
 
   // System — moving content in and out
   { tab: 'system', label: 'cacheEnable' },

@@ -132,7 +132,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   features: DEFAULT_FEATURES,
   comments: DEFAULT_COMMENTS,
   mcp: { enabled: false },
-  ai: { altText: true },
+  ai: { altText: true, excerpt: true, commentGuard: true },
   motion: { enabled: true, typewriter: true },
   // On, because a blog that is fast for readers is the default. The switch exists for the
   // hour you are changing the look and want to see it, not for permanent use.
