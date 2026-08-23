@@ -3,65 +3,21 @@
 // post's HTML body is converted to Markdown (turndown + GFM), and categories, tags,
 // dates, status and excerpt are preserved. Image URLs are kept as-is (they point at
 // the source site) — the importer does not download/rehost binaries.
+//
+// The Markdown pipe, the entity decoder and the slug allocator moved to `convert.ts`
+// on 2026-08-23, when Ghost, Substack and Medium arrived and would otherwise each have
+// carried a hand copy. This file keeps only what is WordPress: WXR's field names, its
+// zero dates, and its shortcode habits (handled inside the shared cleanup).
 
 import { XMLParser } from 'fast-xml-parser'
-import TurndownService from 'turndown'
-import { gfm } from 'turndown-plugin-gfm'
-import { slugify, deriveExcerpt } from '@/utils'
+import {
+  makeTurndown, htmlToMarkdown, slugTracker, decodeEntities, deriveExcerpt,
+  type ImportedPost, type ImportedPage, type ImportResult,
+} from '@/import/convert'
+import { slugify } from '@/utils'
 
-export type ImportedPost = {
-  title: string
-  slug: string
-  date: string
-  status: 'draft' | 'published'
-  categories: string[]
-  tags: string[]
-  excerpt: string
-  content: string
-}
-export type ImportedPage = { title: string; slug: string; status: 'draft' | 'published'; content: string }
-export type WxrResult = { posts: ImportedPost[]; pages: ImportedPage[]; skipped: number }
-
-// A single figure/img subtree, narrowed from turndown's DOM node (no `any`).
-type FigureEl = {
-  getAttribute(name: string): string | null
-  querySelector(sel: string): { getAttribute(name: string): string | null; textContent: string | null } | null
-}
-
-/** Tag every markdown image in a converted subtree as a gallery item. */
-function markGridItems(md: string): string {
-  return md.replace(/(!\[[^\]]*\]\([^)\s]+?)\)/g, '$1#grid)')
-}
-
-function makeTurndown(): TurndownService {
-  const td = new TurndownService({ headingStyle: 'atx', codeBlockStyle: 'fenced', bulletListMarker: '-' })
-  td.use(gfm)
-  // WordPress wraps captioned images in <figure><img><figcaption>…</figcaption>.
-  // Quire Ink renders a figure caption from the image alt, so fold the caption INTO the
-  // alt rather than leaving a separate italic paragraph under the image.
-  td.addRule('figureCaption', {
-    filter: 'figure',
-    replacement: (content, node) => {
-      const el = node as unknown as FigureEl
-      // A WordPress gallery is a <figure> wrapping one nested <figure><img> per photo.
-      // Turndown has already converted those children, so `content` holds all of them —
-      // whereas the single-image path below reads querySelector('img'), which is the
-      // FIRST one, and silently dropped the rest of the gallery. One page here lost 139
-      // of its 169 photographs that way. Tag each image `#grid` instead, which is how
-      // Quire Ink regroups a run of images back into a grid.
-      if ((el.getAttribute('class') ?? '').includes('wp-block-gallery')) {
-        return `\n\n${markGridItems(content).trim()}\n\n`
-      }
-      const img = el.querySelector('img')
-      const src = img?.getAttribute('src') ?? ''
-      if (!src) return content
-      const cap = el.querySelector('figcaption')?.textContent ?? img?.getAttribute('alt') ?? ''
-      const alt = cap.replace(/[[\]]/g, '').replace(/\s+/g, ' ').trim()
-      return `\n\n![${alt}](${src})\n\n`
-    },
-  })
-  return td
-}
+export type { ImportedPost, ImportedPage }
+export type WxrResult = ImportResult
 
 // ---- WXR field helpers (the parser yields untyped nodes) --------------------
 
@@ -75,23 +31,6 @@ function raw(v: unknown): string {
     return t == null ? '' : String(t)
   }
   return String(v)
-}
-
-// Decode HTML entities WordPress leaves in plain-text fields (titles/excerpts),
-// including double-encoded ones (&amp;amp; → &). Two passes.
-const NAMED: Record<string, string> = {
-  amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ', hellip: '…',
-  ndash: '–', mdash: '—', rsquo: '’', lsquo: '‘', ldquo: '“', rdquo: '”',
-}
-function decodeEntities(s: string): string {
-  let out = s
-  for (let i = 0; i < 2; i++) {
-    out = out
-      .replace(/&#x([0-9a-f]+);/gi, (_, h: string) => String.fromCodePoint(parseInt(h, 16)))
-      .replace(/&#(\d+);/g, (_, n: string) => String.fromCodePoint(parseInt(n, 10)))
-      .replace(/&([a-z]+);/gi, (m, name: string) => NAMED[name.toLowerCase()] ?? m)
-  }
-  return out
 }
 const text = (v: unknown): string => decodeEntities(raw(v))
 
@@ -110,14 +49,7 @@ export function parseWxr(xml: string, now: string): WxrResult {
   const doc = parser.parse(xml) as { rss?: { channel?: { item?: unknown } } }
   const items = asArray(doc?.rss?.channel?.item) as Record<string, unknown>[]
 
-  const used = new Set<string>()
-  const uniqueSlug = (base: string): string => {
-    let slug = base || 'untitled'
-    let n = 2
-    while (used.has(slug)) slug = `${base}-${n++}`
-    used.add(slug)
-    return slug
-  }
+  const uniqueSlug = slugTracker()
 
   const posts: ImportedPost[] = []
   const pages: ImportedPage[] = []
@@ -133,7 +65,7 @@ export function parseWxr(xml: string, now: string): WxrResult {
     const title = text(item.title).trim() || 'Untitled'
     const slug = uniqueSlug(slugify(text(item['wp:post_name']) || title))
     const html = raw(item['content:encoded'])
-    const body = html ? td.turndown(html).trim() : ''
+    const body = htmlToMarkdown(td, html)
     const mappedStatus = status === 'publish' ? 'published' : 'draft'
 
     if (type === 'page') {

@@ -80,6 +80,13 @@ test('an OLD database gets the columns it was created without', () => {
              token text not null, created_at integer not null, confirmed_at integer)`)
   old.run(`insert into subscribers (email, status, token, created_at)
            values ('keep@example.com', 'confirmed', 'tok', 1)`)
+  // The media table as it stood before the AI describer: no alt column.
+  old.run(`create table media (
+             path text primary key, filename text not null,
+             size integer not null default 0, uploaded_at integer not null,
+             width integer, height integer, thumb text,
+             variants integer not null default 0, deleted_at integer)`)
+  old.run(`insert into media (path, filename, size, uploaded_at) values ('media/old.webp', 'old.webp', 5, 1)`)
   old.close()
 
   const { db } = openDatabases(dir)
@@ -88,6 +95,8 @@ test('an OLD database gets the columns it was created without', () => {
   expect(applied(db)).toContain('001-google-comment-keys')
   expect(columns(db, 'subscribers')).toContain('deleted_at')
   expect(columns(db, 'subscribers')).toContain('confirm_sent_at')
+  expect(columns(db, 'media')).toContain('alt')
+  expect(columns(db, 'integration_keys')).toContain('ai_api_key')
   // The existing rows survive, which is the entire difference between a migration and a
   // reinstall.
   expect(db.query<{ turnstile_site_key: string }, []>(

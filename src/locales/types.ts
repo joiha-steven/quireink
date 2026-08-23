@@ -748,6 +748,10 @@ export type AdminStrings = {
   // MCP server (Admin → Settings → Advanced)
   cardMcp: string
   cardCloudflare: string
+  cardAi: string
+  aiHelp: string
+  aiKeyPh: string
+  aiProviderOff: string
   cardCommentIntegrations: string
   cfHelp: string
   cfZoneId: string

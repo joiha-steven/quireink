@@ -61,6 +61,7 @@ export type MediaItem = {
   height?: number
   thumb?: string // library thumbnail — store-relative, absolute on read
   variants?: boolean // true if responsive -1024/-1600 (avif+webp) were generated
+  alt?: string // AI-suggested or owner-edited description; the editor's default alt
   deletedAt?: string // ISO 8601; set only on trashed (soft-deleted) rows, else undefined
 }
 

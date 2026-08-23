@@ -23,6 +23,26 @@ reader under the owner's name and emails them like a reply typed on the page,
 parameter, and the real broadcast is deliberately not a tool — and `create_snapshot`
 takes the scheduler's own backup before anything big.
 
+### Every picture can have words now
+
+Paste an API key — Anthropic, OpenAI or Gemini, your pick, your bill — into Settings →
+Connections, and every image you upload gets alt text written for it, in the site's own
+language, in the background, by the time you go looking. Pasting the key IS the switch:
+without one, no request ever leaves your server, which keeps the promise this software
+already makes elsewhere. The suggestion lands on the image in the library, flows into the
+editor as the default alt when you insert it, and stays yours to edit — clear it and the
+machine never refills it, because '' is a decision and NULL is an absence.
+
+### Three more front doors
+
+The importer used to speak only WordPress. It now takes a Ghost export (.json), a
+Substack export or a Medium export (the .zip they email you) through the same one file
+input — the server tells the archives apart by structure, because nobody remembers whose
+zip is whose. And every import, WordPress included, now passes a deterministic cleanup:
+dead shortcodes swept, captions folded into their images, non-breaking-space debris and
+blank-line pileups gone. No AI touches your words on the way in; an assistant connected
+over MCP can polish further, post by post, through the same revisioned saves as any edit.
+
 ## 2026-08-22 — Quire Ink 2.1.4
 
 The day after the editor day, spent auditing rather than writing: the whole source, the

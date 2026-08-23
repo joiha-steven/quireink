@@ -89,7 +89,7 @@ You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE),
 
 | | |
 |:---|:---|
-| 🖋️&nbsp;**Writing** | A real editor over Markdown — tables, video, footnotes, callouts, **mathematics**, Spotify. Drop an image in and it is cut for every screen. Saves as you type, keeps three versions, and can hold a post until Tuesday. The Markdown source view dims its own syntax |
+| 🖋️&nbsp;**Writing** | A real editor over Markdown — tables, video, footnotes, callouts, **mathematics**, Spotify. Drop an image in and it is cut for every screen — and described for you, if you give Settings an AI key (Anthropic, OpenAI or Gemini; yours, so your bill). Saves as you type, keeps three versions, and can hold a post until Tuesday |
 | 🏠&nbsp;**Front&nbsp;page** | The post list, a page you wrote, or a composed front: lead story, picks, a row per category, most read. Works with photographs, and with only words. [How it works](./docs/homepage.md) |
 | 🎨&nbsp;**Looks** | Six palettes, light and dark. Four reading fonts, or upload your own. Every size comes from a role, so one change moves the page instead of one heading |
 | 🖍️&nbsp;**The&nbsp;pen** | `==text==` highlights in five inks, `++text++` underlines in pencil, `@@word@@` rings a word in red ballpoint. Not coloured boxes — strokes grown from a seeded hand, so no two on a page share a shape and every phrase keeps its own. Pigments measured off a photograph of a real pen box |
@@ -100,7 +100,7 @@ You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE),
 | 📬&nbsp;**Newsletter** | Sign-ups with a confirmation email, an issue sent when you publish, a note when a comment gets a reply. Your own SMTP, so nothing to sign up for |
 | 📚&nbsp;**Series** | Write in parts, number them, and every part shows the others |
 | 💾&nbsp;**Backups** | One button downloads the whole install, and a cron script ships it off the server. [Details](./docs/backups.md) |
-| 📥&nbsp;**WordPress** | Upload the XML export. Posts and pages come out as Markdown |
+| 📥&nbsp;**Moving&nbsp;in** | Upload a WordPress XML, a Ghost JSON, or the ZIP Substack or Medium emailed you — the server works out whose it is. Everything becomes Markdown, dead shortcodes are swept on the way in |
 | 🌍&nbsp;**Languages** | Six, in the admin and on the site. No CJK webfont ships — they are megabytes — but each of the three names its own face, so 直 is drawn the Japanese way on a Japanese site |
 | 🔐&nbsp;**Sign-in** | Your own username and password, hashed with argon2id. An authenticator code every time, and ten recovery codes for the day you lose the phone. No Google in the login path |
 | 📱&nbsp;**Phone** | Install it to the home screen and it opens like an app |

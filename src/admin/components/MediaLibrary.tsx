@@ -18,7 +18,7 @@ import { MediaCard } from './MediaCard'
 type Props = {
   mode?: 'page' | 'picker'
   multi?: boolean
-  onSelect?: (url: string) => void
+  onSelect?: (url: string, alt?: string) => void
   onSelectMany?: (urls: string[]) => void
   onClose?: () => void
 }
@@ -208,7 +208,7 @@ export function MediaLibrary({ mode = 'page', multi = false, onSelect, onSelectM
             lang={lang}
             compactDate={compactDate}
             unused={unused?.has(m.url) ?? false}
-            onOpen={() => (mode === 'picker' ? (multi ? toggleSelect(m.url) : onSelect?.(m.url)) : setZoom(m))}
+            onOpen={() => (mode === 'picker' ? (multi ? toggleSelect(m.url) : onSelect?.(m.url, m.alt)) : setZoom(m))}
             onToggle={() => toggleSelect(m.url)}
             onCopy={() => copyUrl(m.url)}
             onDelete={() => handleDelete(m.url)}

@@ -51,6 +51,7 @@ import { ActivityLogField, ListingFeatureFields, PostFeatureFields } from './Fea
 import { CommentFields } from './CommentFields'
 import { CommentIntegrations } from './CommentIntegrations'
 import { CloudflareFields } from './CloudflareFields'
+import { AiFields } from './AiFields'
 import { SettingsSystemTab } from './SettingsSystemTab'
 import type { UpdateStatus } from './UpdateFields'
 import { SeoFields } from './SeoFields'
@@ -337,6 +338,9 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
             </Card>
             <Card panel title={t.cardCloudflare}>
               <CloudflareFields configured={integrations.cloudflareConfigured} zoneId={integrations.cloudflareZoneId} />
+            </Card>
+            <Card panel title={t.cardAi}>
+              <AiFields configured={integrations.aiConfigured} provider={integrations.aiProvider} model={integrations.aiModel} />
             </Card>
           </div>
           <div className={COL}>

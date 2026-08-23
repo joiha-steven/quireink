@@ -25,6 +25,7 @@ describe('getIntegrationKeys', () => {
     expect(await getIntegrationKeys()).toEqual({
       turnstileSiteKey: '', turnstileSecretKey: '', cloudflareApiToken: '', cloudflareZoneId: '',
       googleClientId: '', googleClientSecret: '',
+      aiProvider: '', aiApiKey: '', aiModel: '',
     })
   })
 
@@ -69,6 +70,7 @@ describe('getIntegrationStatus', () => {
       turnstileConfigured: true, turnstileSiteKey: 'site',
       cloudflareConfigured: true, cloudflareZoneId: 'zone',
       googleConfigured: false,
+      aiConfigured: false, aiProvider: '', aiModel: '',
     })
     expect(JSON.stringify(status)).not.toContain('secret')
     expect(JSON.stringify(status)).not.toContain('token')

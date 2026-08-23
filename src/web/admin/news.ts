@@ -224,5 +224,18 @@ export function newsRoutes() {
     return json({ saved: true })
   })
 
+  router.post('/api/integrations/ai', async (c) => {
+    const input = await body<IntegrationKeys>(c)
+    const provider = str(input.aiProvider) ?? ''
+    // The one enum the schema also checks; anything else becomes "off" rather than a 500.
+    await saveIntegrationKeys({
+      aiProvider: ['anthropic', 'openai', 'gemini'].includes(provider) ? provider : '',
+      aiApiKey: str(input.aiApiKey),
+      aiModel: str(input.aiModel),
+    })
+    void logActivity('settings.save', 'ai keys')
+    return json({ saved: true })
+  })
+
   return router
 }
