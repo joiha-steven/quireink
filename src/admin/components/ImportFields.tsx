@@ -1,7 +1,8 @@
-// WordPress import (Admin → Settings → Integrations). Uploads a WXR .xml export to
-// /api/import/wordpress, which converts posts + pages to Markdown and adds them
-// (slug collisions get a numeric suffix; nothing is overwritten). Images keep their
-// source URLs. Owner-only via the route's requireOwner().
+// Content import (Admin → Settings → System). One file input, four platforms: a
+// WordPress .xml goes to /api/import/wordpress, a Ghost .json to /api/import/ghost, and
+// a Substack or Medium .zip to /api/import/archive, where the server tells the two apart
+// by structure. Everything converts to Markdown and is ADDED (slug collisions get a
+// numeric suffix; nothing is overwritten). Images keep their source URLs.
 import { useRef, useState } from 'react'
 import { useRouter } from '@/admin/router'
 import type { ApiResponse } from '@/types'
@@ -25,7 +26,11 @@ export function ImportFields() {
     try {
       const body = new FormData()
       body.append('file', file)
-      const res = await fetch('/api/import/wordpress', { method: 'POST', body })
+      const name = file.name.toLowerCase()
+      const endpoint = name.endsWith('.json') ? '/api/import/ghost'
+        : name.endsWith('.zip') ? '/api/import/archive'
+        : '/api/import/wordpress'
+      const res = await fetch(endpoint, { method: 'POST', body })
       const json = (await res.json()) as ApiResponse<ImportResult>
       if (!json.success || !json.data) throw new Error(json.error)
       const d = json.data
@@ -46,7 +51,7 @@ export function ImportFields() {
       <input
         ref={inputRef}
         type="file"
-        accept=".xml,text/xml,application/xml"
+        accept=".xml,.json,.zip,text/xml,application/xml,application/json,application/zip"
         onChange={(e) => setFile(e.target.files?.[0] ?? null)}
         className="hidden"
       />

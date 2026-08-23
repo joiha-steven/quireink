@@ -14,6 +14,9 @@ export type IntegrationKeys = {
   cloudflareZoneId: string // not secret — the zone to purge
   googleClientId: string // PUBLIC (it travels in the authorize URL the reader follows)
   googleClientSecret: string // secret
+  aiProvider: string // 'anthropic' | 'openai' | 'gemini' | '' — not secret
+  aiApiKey: string // secret
+  aiModel: string // '' = the provider's default in media/alt-text.ts — not secret
 }
 
 // What the admin UI may see: which secrets are set + the PUBLIC values (Turnstile
@@ -24,6 +27,9 @@ export type IntegrationStatus = {
   cloudflareConfigured: boolean
   cloudflareZoneId: string
   googleConfigured: boolean
+  aiConfigured: boolean
+  aiProvider: string
+  aiModel: string
 }
 
 type Row = {
@@ -33,6 +39,9 @@ type Row = {
   cloudflare_zone_id: string | null
   google_client_id: string | null
   google_client_secret: string | null
+  ai_provider: string | null
+  ai_api_key: string | null
+  ai_model: string | null
 }
 
 const env = (k: string) => process.env[k] ?? ''
@@ -40,7 +49,7 @@ const env = (k: string) => process.env[k] ?? ''
 function readRow(): Row | null {
   return one<Row>(
     `select turnstile_site_key, turnstile_secret_key, cloudflare_api_token, cloudflare_zone_id,
-            google_client_id, google_client_secret
+            google_client_id, google_client_secret, ai_provider, ai_api_key, ai_model
        from integration_keys where id = 1`,
   )
 }
@@ -62,6 +71,9 @@ export async function getIntegrationKeys(): Promise<IntegrationKeys> {
     // working without the owner re-pasting anything.
     googleClientId: row?.google_client_id || env('AUTH_GOOGLE_ID'),
     googleClientSecret: row?.google_client_secret || env('AUTH_GOOGLE_SECRET'),
+    aiProvider: row?.ai_provider || env('AI_PROVIDER'),
+    aiApiKey: row?.ai_api_key || env('AI_API_KEY'),
+    aiModel: row?.ai_model || env('AI_MODEL'),
   }
 }
 
@@ -76,6 +88,10 @@ export async function getIntegrationStatus(): Promise<IntegrationStatus> {
     // BOTH halves. An id without a secret cannot complete the code exchange, so a flow
     // offered on that basis would fail after the reader has already left for Google.
     googleConfigured: !!(k.googleClientId && k.googleClientSecret),
+    // Both halves, like Google above: a provider without a key describes nothing.
+    aiConfigured: !!(k.aiProvider && k.aiApiKey),
+    aiProvider: k.aiProvider,
+    aiModel: k.aiModel,
   }
 }
 
@@ -95,15 +111,20 @@ export async function saveIntegrationKeys(input: Partial<IntegrationKeys>): Prom
   run(
     `insert into integration_keys (id, turnstile_site_key, turnstile_secret_key,
                                    cloudflare_api_token, cloudflare_zone_id,
-                                   google_client_id, google_client_secret)
-     values (1, $siteKey, $secretKey, $apiToken, $zoneId, $googleId, $googleSecret)
+                                   google_client_id, google_client_secret,
+                                   ai_provider, ai_api_key, ai_model)
+     values (1, $siteKey, $secretKey, $apiToken, $zoneId, $googleId, $googleSecret,
+             $aiProvider, $aiApiKey, $aiModel)
      on conflict(id) do update set
        turnstile_site_key   = excluded.turnstile_site_key,
        turnstile_secret_key = excluded.turnstile_secret_key,
        cloudflare_api_token = excluded.cloudflare_api_token,
        cloudflare_zone_id   = excluded.cloudflare_zone_id,
        google_client_id     = excluded.google_client_id,
-       google_client_secret = excluded.google_client_secret`,
+       google_client_secret = excluded.google_client_secret,
+       ai_provider          = excluded.ai_provider,
+       ai_api_key           = excluded.ai_api_key,
+       ai_model             = excluded.ai_model`,
     {
       siteKey: pick(input.turnstileSiteKey, current?.turnstile_site_key),
       secretKey: pick(input.turnstileSecretKey, current?.turnstile_secret_key),
@@ -111,6 +132,9 @@ export async function saveIntegrationKeys(input: Partial<IntegrationKeys>): Prom
       zoneId: pick(input.cloudflareZoneId, current?.cloudflare_zone_id),
       googleId: pick(input.googleClientId, current?.google_client_id),
       googleSecret: pick(input.googleClientSecret, current?.google_client_secret),
+      aiProvider: pick(input.aiProvider, current?.ai_provider),
+      aiApiKey: pick(input.aiApiKey, current?.ai_api_key),
+      aiModel: pick(input.aiModel, current?.ai_model),
     },
   )
   clearCache()

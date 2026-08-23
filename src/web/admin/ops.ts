@@ -114,6 +114,70 @@ export function opsRoutes() {
     return json({ posts: importedPosts, pages: importedPages, skipped })
   })
 
+  // One save loop for every importer that is not WordPress; the parsers are pure and the
+  // persistence is identical, so the difference between routes is only "who parsed it".
+  const persist = async (
+    result: { posts: import('@/import/convert').ImportedPost[]; pages: import('@/import/convert').ImportedPage[]; skipped: number },
+    source: string,
+  ) => {
+    let importedPosts = 0
+    let importedPages = 0
+    for (const { slug, ...rest } of result.posts) {
+      await saveUnique(slug, (s) => savePost({ ...rest, slug: s }))
+      importedPosts += 1
+    }
+    for (const { slug, ...rest } of result.pages) {
+      await saveUnique(slug, (s) => savePage({ ...rest, slug: s }))
+      importedPages += 1
+    }
+    if (importedPosts + importedPages > 0) clearCache()
+    void logActivity('import.wordpress', `${source}: ${importedPosts} posts + ${importedPages} pages`)
+    return { posts: importedPosts, pages: importedPages, skipped: result.skipped }
+  }
+
+  router.post('/api/import/ghost', async (c) => {
+    const form = await c.req.formData().catch(() => null)
+    const file = form?.get('file')
+    if (!(file instanceof File)) return fail(c, 'no_file', 400)
+    if (file.size > MAX_IMPORT_BYTES) return fail(c, 'file_too_large', 413)
+    let doc: unknown
+    try {
+      doc = JSON.parse(await file.text())
+    } catch {
+      return fail(c, 'not_a_ghost_export', 400)
+    }
+    const { looksLikeGhost, parseGhost } = await import('@/import/ghost')
+    if (!looksLikeGhost(doc)) return fail(c, 'not_a_ghost_export', 400)
+    return json(await persist(parseGhost(doc, new Date().toISOString()), 'ghost'))
+  })
+
+  router.post('/api/import/archive', async (c) => {
+    const form = await c.req.formData().catch(() => null)
+    const file = form?.get('file')
+    if (!(file instanceof File)) return fail(c, 'no_file', 400)
+    if (file.size > MAX_IMPORT_BYTES) return fail(c, 'file_too_large', 413)
+
+    // Substack and Medium both hand people a ZIP; nobody remembers which is which, so
+    // the server tells them apart by structure (posts.csv vs h-entry markup), not by
+    // asking. Only .html/.csv entries are read as text; images and everything else in
+    // the archive stay untouched — this importer, like the others, keeps image URLs.
+    const { unzipSync } = await import('fflate')
+    let entries: { name: string; text: string }[]
+    try {
+      const files = unzipSync(new Uint8Array(await file.arrayBuffer()))
+      entries = Object.entries(files)
+        .filter(([name]) => /\.(html|csv)$/i.test(name))
+        .map(([name, data]) => ({ name, text: new TextDecoder().decode(data) }))
+    } catch {
+      return fail(c, 'not_a_zip', 400)
+    }
+    const { isSubstack, isMedium, parseSubstack, parseMedium } = await import('@/import/archive')
+    const now = new Date().toISOString()
+    if (isSubstack(entries)) return json(await persist(parseSubstack(entries, now), 'substack'))
+    if (isMedium(entries)) return json(await persist(parseMedium(entries, now), 'medium'))
+    return fail(c, 'not_a_recognised_export', 400)
+  })
+
   return router
 }
 

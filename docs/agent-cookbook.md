@@ -85,6 +85,19 @@ owner's own screens offer. `send_test_newsletter` mails **only the owner**; the 
 is not something an agent can choose, and the real broadcast is not available over MCP
 at all. Don't like the look on Monday? One sentence switches it back.
 
+## The import polish
+
+```text
+I just imported my old blog. Go through the imported posts one by one: fix FORMATTING
+only — broken emphasis, stray shortcode remains, tables that lost their shape. Never
+change a word of my writing. Show me a summary of what you touched.
+```
+
+The importer already sweeps dead shortcodes and debris deterministically; this is for
+what only judgement can see. Every save keeps three revisions, so anything the agent
+touches can be rolled back post by post — which is exactly why "never change a word"
+is an instruction you can afford to give.
+
 ## The standing habits
 
 Ask once in a client that supports schedules (Claude's own scheduled tasks, or a cron

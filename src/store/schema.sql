@@ -149,6 +149,10 @@ create table if not exists media (
   height      integer,
   thumb       text,
   variants    integer not null default 0 check (variants in (0,1)),
+  -- Written by the optional AI describer on upload (media/alt-text.ts), editable by the
+  -- owner, used as the default alt when the editor inserts the image. NULL = never
+  -- described; '' = the owner cleared it and the describer must not refill it.
+  alt         text,
   -- Soft delete KEEPS the blob, so a published post linking a trashed image keeps
   -- rendering. The bytes go only on purge.
   deleted_at  integer
@@ -263,7 +267,13 @@ create table if not exists integration_keys (
   -- silently force implicit TLS on any install that had ever saved an unrelated key on
   -- this row, and a port-587 STARTTLS server would stop accepting mail with no setting
   -- having been touched. Found while porting mail.ts.
-  smtp_secure          integer check (smtp_secure in (0,1))
+  smtp_secure          integer check (smtp_secure in (0,1)),
+  -- The optional AI describer (media/alt-text.ts). Pasting a key here IS the opt-in:
+  -- no key, no request, ever. The key is a secret; provider and model are not, and the
+  -- admin status endpoint may show those two.
+  ai_provider          text check (ai_provider in ('anthropic','openai','gemini')),
+  ai_api_key           text,
+  ai_model             text
 );
 
 -- ----- newsletter -------------------------------------------------------------

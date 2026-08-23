@@ -215,10 +215,10 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
   }
 
   // Single pick (image / featured). Gallery uses multi-select -> onPickedMany.
-  function onPicked(url: string) {
+  function onPicked(url: string, alt?: string) {
     if (picker === 'featured') update({ featuredImage: url })
     else if (picker === 'cover') update({ coverImage: url })
-    else editorApi.current?.insertImage(url)
+    else editorApi.current?.insertImage(url, alt)
     setPicker(null)
   }
 

@@ -23,7 +23,7 @@ export type EditorApi = {
   // Swap between the formatted view and the raw Markdown source. On the API because the
   // control that calls it is the MD switch in the ACTION LINE, outside this component.
   toggleRaw: () => void
-  insertImage: (url: string) => void
+  insertImage: (url: string, alt?: string) => void
   // Insert several images as gallery items (#grid) in ONE transaction —
   // consecutive #grid images group into a CSS grid on the public side. Must be a
   // single insert: setImage selects the node it inserts, so calling it in a loop
@@ -246,8 +246,10 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
     editorRef.current = editor // keep the drag-drop / paste closures on the live instance
     apiRef.current = {
       toggleRaw,
-      insertImage: (url: string) =>
-        editor.chain().focus().setImage({ src: url, alt: captionFromUrl(url) }).run(),
+      // The described alt (media/alt-text.ts) wins when the library hands one over;
+      // the filename-derived caption stays the fallback, as it always was.
+      insertImage: (url: string, alt?: string) =>
+        editor.chain().focus().setImage({ src: url, alt: alt || captionFromUrl(url) }).run(),
       // Gallery: empty alt for a clean mosaic; '#grid' groups consecutive ones.
       // One insertContent of an array keeps all images (a per-image loop would
       // leave only the last — each setImage replaces the selected prior node).

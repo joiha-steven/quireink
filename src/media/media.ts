@@ -5,6 +5,7 @@
 // names by convention.
 
 import type { MediaItem } from '@/types'
+import { describeUpload } from '@/media/alt-text'
 import {
   uploadFile, readBlob, deleteByPathname, collapseBlob, expandBlob, listBlobs,
 } from '@/media/blob'
@@ -27,6 +28,7 @@ type MediaRow = {
   height: number | null
   thumb: string | null
   variants: number
+  alt?: string | null
   deleted_at?: number | null
 }
 
@@ -41,6 +43,7 @@ function rowToItem(row: MediaRow): MediaItem {
     height: row.height ?? undefined,
     thumb: row.thumb ? expandBlob(row.thumb) : undefined,
     variants: !!row.variants,
+    alt: row.alt || undefined,
     deletedAt: row.deleted_at == null ? undefined : toIso(row.deleted_at),
   }
 }
@@ -179,6 +182,12 @@ export async function addMediaBatch(
     rows.push(await processFile(f.filename, f.body, f.contentType, taken))
   }
   insertRows(rows)
+  // Background, per file, with the bytes this function already holds — no re-read, no
+  // waiting: the upload response is long gone by the time a provider answers, and the
+  // describer declines silently unless the owner pasted a key (media/alt-text.ts).
+  for (let i = 0; i < rows.length; i++) {
+    void describeUpload(rows[i]!.path, files[i]!.body, files[i]!.contentType)
+  }
   return rows.map(rowToItem)
 }
 
@@ -196,11 +205,13 @@ export async function addMedia(
 // to read dims + make the thumb, then insert the row. Variants stay deferred.
 export async function registerMediaBatch(items: { url: string; filename: string }[]): Promise<MediaItem[]> {
   const rows: MediaRow[] = []
+  const bytes = new Map<string, { buf: Buffer; contentType: string }>()
   for (const it of items) {
     const path = collapseBlob(it.url)
     if (!/^media\//.test(path)) continue
     const buf = await readBlob(path) // direct store read — see readOriginal
     const contentType = mimeOf(path)
+    bytes.set(path, { buf, contentType })
     const stem = path.replace(/\.[^.]+$/, '')
     const isRaster = RASTER.test(contentType) || /\.(jpe?g|png)$/i.test(path)
     let width: number | null = null
@@ -230,6 +241,10 @@ export async function registerMediaBatch(items: { url: string; filename: string 
   }
   if (rows.length === 0) return []
   insertRows(rows)
+  for (const r of rows) {
+    const b = bytes.get(r.path)
+    if (b) void describeUpload(r.path, b.buf.buffer.slice(b.buf.byteOffset, b.buf.byteOffset + b.buf.byteLength) as ArrayBuffer, b.contentType)
+  }
   return rows.map(rowToItem)
 }
 

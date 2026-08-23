@@ -54,3 +54,14 @@ insert into pages_fts(rowid, title, content) select rowid, title, content from p
 -- subscription-bombing run — the rate limit bounds an IP, this bounds the victim.
 alter table subscribers add column deleted_at integer;
 alter table subscribers add column confirm_sent_at integer;
+
+-- migration: 004-ai-alt-text
+-- The optional AI describer: an alt column on media (NULL = never described, '' = the
+-- owner cleared it on purpose), and the provider/key/model trio beside the other
+-- owner-pasted secrets. The check constraint is not carried here: SQLite cannot add a
+-- CHECK via alter table, and the writer (`integration-keys.ts`) only offers the three
+-- values anyway.
+alter table media add column alt text;
+alter table integration_keys add column ai_provider text;
+alter table integration_keys add column ai_api_key text;
+alter table integration_keys add column ai_model text;

@@ -90,7 +90,7 @@ Bạn được đọc, sửa, chạy và fork theo [PolyForm Noncommercial](./LI
 
 | | |
 |:---|:---|
-| 🖋️&nbsp;**Viết** | Trình soạn thật trên nền Markdown — bảng, video, chú thích chân trang, khung nhấn, **công thức toán**, Spotify. Thả ảnh vào là nó tự cắt cho mọi cỡ màn hình. Lưu trong lúc gõ, giữ ba bản, và giữ bài lại tới sáng thứ Ba. Xem mã Markdown thì dấu cú pháp tự mờ đi |
+| 🖋️&nbsp;**Viết** | Trình soạn thật trên nền Markdown — bảng, video, chú thích chân trang, khung nhấn, **công thức toán**, Spotify. Thả ảnh vào là nó tự cắt cho mọi cỡ màn hình — và tự được mô tả, nếu bạn đưa Settings một API key (Anthropic, OpenAI hoặc Gemini; key của bạn, hoá đơn của bạn). Lưu trong lúc gõ, giữ ba bản, và giữ bài lại tới sáng thứ Ba |
 | 🏠&nbsp;**Trang&nbsp;chủ** | Danh sách bài, một trang bạn tự viết, hoặc trang dựng sẵn: bài dẫn, vài bài chọn, một hàng cho mỗi chuyên mục, bài đọc nhiều. Hợp cả site nhiều ảnh lẫn site chỉ có chữ. [Cách hoạt động](./docs/homepage.md) |
 | 🎨&nbsp;**Giao&nbsp;diện** | Sáu bảng màu, sáng và tối. Bốn font đọc, hoặc tải font của bạn lên. Mọi cỡ chữ đều sinh ra từ một vai trò, nên sửa một chỗ là cả trang đổi chứ không phải một tiêu đề |
 | 🖍️&nbsp;**Cây&nbsp;bút** | `==chữ==` tô năm màu mực, `++chữ++` gạch dưới bằng bút chì, `@@chữ@@` khoanh tròn bằng bút bi đỏ. Không phải ô màu — nét sinh từ một bàn tay có hạt giống, không hai vệt nào trên trang giống nhau và mỗi cụm chữ giữ nét riêng. Màu mực đo từ ảnh chụp một hộp bút thật |
@@ -101,7 +101,7 @@ Bạn được đọc, sửa, chạy và fork theo [PolyForm Noncommercial](./LI
 | 📬&nbsp;**Bản&nbsp;tin** | Đăng ký có email xác nhận, một số gửi đi khi bạn đăng bài, và một lời nhắn khi bình luận được trả lời. SMTP của riêng bạn |
 | 📚&nbsp;**Loạt&nbsp;bài** | Viết thành nhiều phần, đánh số, và phần nào cũng chỉ ra các phần kia |
 | 💾&nbsp;**Sao&nbsp;lưu** | Một nút tải về nguyên cả bản cài, và một script cron đẩy nó ra khỏi máy chủ. [Chi tiết](./docs/backups.md) |
-| 📥&nbsp;**WordPress** | Tải tệp XML export lên. Bài và trang ra thành Markdown |
+| 📥&nbsp;**Dọn&nbsp;nhà&nbsp;sang** | Tải lên XML của WordPress, JSON của Ghost, hay tệp ZIP mà Substack/Medium gửi qua email — máy chủ tự nhận ra của ai. Tất cả thành Markdown, shortcode chết được quét sạch trên đường vào |
 | 🌍&nbsp;**Ngôn&nbsp;ngữ** | Sáu thứ tiếng, cả trong quản trị lẫn ngoài site. Không kèm webfont CJK nào — chúng nặng hàng megabyte — nhưng mỗi thứ tiếng gọi tên mặt chữ riêng, nên 直 được vẽ theo lối Nhật trên site tiếng Nhật |
 | 🔐&nbsp;**Đăng&nbsp;nhập** | Tên và mật khẩu của riêng bạn, băm bằng argon2id. Mã xác thực mỗi lần vào, và mười mã khôi phục cho ngày mất điện thoại. Không có Google trong đường đăng nhập |
 | 📱&nbsp;**Điện&nbsp;thoại** | Cài ra màn hình chính là nó mở như một ứng dụng |
