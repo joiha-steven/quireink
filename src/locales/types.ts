@@ -763,6 +763,12 @@ export type AdminStrings = {
   aiDescribeAll: string
   aiDescribeAllStarted: string
   aiNotConfigured: string
+  navAssistant: string
+  assistantIntro: string
+  assistantPlaceholder: string
+  assistantSend: string
+  assistantBusy: string
+  assistantFailed: string
   cardCommentIntegrations: string
   cfHelp: string
   cfZoneId: string
