@@ -29,7 +29,13 @@ Settings grew an **AI tab** — the model, the jobs it does automatically, and t
 door an agent connects through, all in one place. Paste an API key — Anthropic, OpenAI
 or Gemini, your pick, your bill — and **the models list themselves** for you to choose
 from, which also proves the key works before you save it. From then on every image you
-upload gets alt text written for it, in the site's own
+upload gets alt text written for it — and two more jobs joined it, each with its own
+switch: a post published with the excerpt left blank gets a real one written in your
+tone (the mechanical first-fifty-words was never an excerpt, it was a shrug), and every
+comment arriving through the public door is read once — spam moves to the Trash where
+you can restore it, and when the model mumbles, the reader wins. The library also grew
+a button: describe every image that has never been described, for the blog that just
+moved in with five hundred pictures. Each image gets alt text written for it, in the site's own
 language, in the background, by the time you go looking. Pasting the key IS the switch:
 without one, no request ever leaves your server, which keeps the promise this software
 already makes elsewhere. The suggestion lands on the image in the library, flows into the

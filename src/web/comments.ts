@@ -17,6 +17,7 @@ import { getCookie } from 'hono/cookie'
 import { addComment, getCommentTree, CommentInputError, MAX_COMMENT_LEN } from '@/comments/comments'
 import { COMMENTER_COOKIE, readCommenter } from '@/comments/commenter'
 import { notifyReply } from '@/comments/comment-notify'
+import { guardComment } from '@/comments/comment-guard'
 import { getCommentEnv } from '@/comments/comment-env'
 import { verifyTurnstile } from '@/auth/turnstile'
 import { getPost } from '@/content/posts'
@@ -117,6 +118,8 @@ export async function handleCommentsPost(c: Context): Promise<Response> {
   }
 
   await logActivity('comment.create', postSlug)
+  // The spam gate (comments/comment-guard.ts): background, hold-in-Trash, never delete.
+  void guardComment(created.id, name, content, website)
   // A reply emails the parent commenter. Best-effort and awaited: without SMTP it is a
   // no-op, and with it the send is fast enough not to be worth deferring past a response
   // that is already writing to the database.

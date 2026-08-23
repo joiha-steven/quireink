@@ -58,6 +58,12 @@
   chain — so under `form-action 'self'` the Approve button did nothing, silently. Only that
   directive is relaxed, and only on that location. **An `add_header` inside a `location`
   REPLACES the inherited ones**, so all five headers are repeated there.
+- **The tool surface is a neutral registry** (`src/mcp/registry.ts`): every tool file
+  registers against `ToolHost`, which `McpServer` satisfies, and `collectTools()` hands
+  the same list out as data for any OTHER door (the planned in-admin assistant). One
+  list, many doors, one rulebook — a door must never grow a private tool, and
+  `registry.test.ts` pins the forbidden names (broadcast, token minting) at the registry
+  level so they are absent from every door at once.
 - **Tools** (`src/mcp/tools.ts` posts/pages/taxonomy, `src/mcp/tools-library.ts`
   media/files/settings, `src/mcp/tools-insight.ts` the READING half — traffic, audience
   counts, comments, owner search, update status — and `src/mcp/tools-steward.ts` the

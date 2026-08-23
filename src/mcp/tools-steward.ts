@@ -15,7 +15,7 @@
 //    exactly like a reply typed into the page — same data path, same activity line.
 
 import { z } from 'zod'
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
+import type { ToolHost } from '@/mcp/registry'
 import type { FrontSettings } from '@/types'
 import { getSettings, saveSettings } from '@/content/settings'
 import { THEME_PRESETS } from '@/content/palettes'
@@ -38,7 +38,7 @@ const paletteIds = THEME_PRESETS.map((p) => p.id) as [string, ...string[]]
 const fontIds = FONT_PRESETS.map((f) => f.id) as [string, ...string[]]
 const chromeIds = CHROME_FONTS.map((f) => f.id) as [string, ...string[]]
 
-export function registerStewardTools(server: McpServer): void {
+export function registerStewardTools(server: ToolHost): void {
   server.registerTool(
     'update_appearance',
     {

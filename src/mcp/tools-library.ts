@@ -9,7 +9,7 @@
 // be changed over MCP at all.
 
 import { z } from 'zod'
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
+import type { ToolHost } from '@/mcp/registry'
 import type { SiteSettings } from '@/types'
 import { getMedia, addMedia, deleteMedia, restoreMediaBatch, getTrashedMedia } from '@/media/media'
 import { getFiles, deleteFile, restoreFilesBatch, getTrashedFiles } from '@/media/files'
@@ -30,13 +30,13 @@ function filenameFromUrl(url: string): string {
   }
 }
 
-export function registerLibraryTools(server: McpServer): void {
+export function registerLibraryTools(server: ToolHost): void {
   registerMediaTools(server)
   registerFileTools(server)
   registerSettingsTools(server)
 }
 
-function registerMediaTools(server: McpServer): void {
+function registerMediaTools(server: ToolHost): void {
   server.registerTool(
     'list_media',
     { description: 'List the live media library (images), newest first.', inputSchema: {} },
@@ -109,7 +109,7 @@ function registerMediaTools(server: McpServer): void {
   )
 }
 
-function registerFileTools(server: McpServer): void {
+function registerFileTools(server: ToolHost): void {
   server.registerTool(
     'list_files',
     { description: 'List the live file attachment library (non-image files), newest first.', inputSchema: {} },
@@ -143,7 +143,7 @@ function registerFileTools(server: McpServer): void {
   )
 }
 
-function registerSettingsTools(server: McpServer): void {
+function registerSettingsTools(server: ToolHost): void {
   server.registerTool(
     'get_settings',
     { description: 'Read the full site settings (read-only).', inputSchema: {} },

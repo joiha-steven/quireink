@@ -8,7 +8,7 @@
 // the rest of the app; permanent removal is owner-only via the Trash UI.
 
 import { z } from 'zod'
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
+import type { ToolHost } from '@/mcp/registry'
 import type { PostWithContent, PageWithContent } from '@/types'
 import { getIndex, getPost, savePost, deletePost, restorePost, getTrashedPosts, getCategories, getTags } from '@/content/posts'
 import { getPageIndex, getPage, savePage, deletePage, restorePage, getTrashedPages } from '@/content/pages'
@@ -41,7 +41,7 @@ const pageFields = {
   featuredImage: z.string().optional(),
 }
 
-export function registerTools(server: McpServer): void {
+export function registerTools(server: ToolHost): void {
   registerPostTools(server)
   registerPageTools(server)
   registerTaxonomyTools(server)
@@ -50,7 +50,7 @@ export function registerTools(server: McpServer): void {
   registerStewardTools(server)
 }
 
-function registerPostTools(server: McpServer): void {
+function registerPostTools(server: ToolHost): void {
   server.registerTool(
     'list_posts',
     { description: 'List all posts (drafts included) with metadata, newest first.', inputSchema: { status: z.enum(['draft', 'published']).optional() } },
@@ -154,7 +154,7 @@ function registerPostTools(server: McpServer): void {
   )
 }
 
-function registerPageTools(server: McpServer): void {
+function registerPageTools(server: ToolHost): void {
   server.registerTool(
     'list_pages',
     { description: 'List all static pages (drafts included).', inputSchema: {} },
@@ -232,7 +232,7 @@ function registerPageTools(server: McpServer): void {
   )
 }
 
-function registerTaxonomyTools(server: McpServer): void {
+function registerTaxonomyTools(server: ToolHost): void {
   server.registerTool(
     'list_categories',
     { description: 'List all distinct post categories.', inputSchema: {} },

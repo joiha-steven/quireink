@@ -13,7 +13,7 @@
 //    moderation needs the words, the name and the post, not the identity trail.
 
 import { z } from 'zod'
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
+import type { ToolHost } from '@/mcp/registry'
 import { getAnalytics } from '@/analytics/summary'
 import { subscriberCounts } from '@/news/subscribers'
 import { getAdminComments, softDeleteComment } from '@/comments/comments'
@@ -25,7 +25,7 @@ import pkg from '../../package.json' with { type: 'json' }
 
 const VERSION = (pkg as { version: string }).version
 
-export function registerInsightTools(server: McpServer): void {
+export function registerInsightTools(server: ToolHost): void {
   server.registerTool(
     'get_traffic',
     {
