@@ -139,7 +139,14 @@ export function McpSection() {
         <p className={P}>
           The built-in <b>MCP server</b> gives an AI agent the <b>same rules as the admin</b>: create and update posts and pages, manage media and settings, everything revalidated and written to the activity log exactly like a human action. Turn it on and mint access tokens in Settings → Integrations — tokens are shown once and stored hashed.
         </p>
+        <p className={P}>
+          The agent <b>reads and stewards</b>, too: your traffic compared to last week, comments swept into the Trash, the archive searched (drafts included), the front page recomposed around what people actually read, the look restyled from the curated palettes, a test issue of the newsletter sent to you alone. Ask your assistant <i>"how did my blog do this week?"</i> and it answers with the dashboard's own numbers — the <b>cookbook</b> below is a page of prompts that do real jobs.
+        </p>
+        <p className={P}>
+          Where the lines are: subscriber addresses and commenters' identities never cross MCP; appearance accepts the preset menus only, never free-form color; deletes go to the Trash, not away; and the real newsletter broadcast is <b>deliberately not a tool</b> — an email cannot be unsent, so that button stays yours.
+        </p>
         <Links>
+          <Ext href={doc('docs/agent-cookbook.md')}>Agent cookbook</Ext>
           <Ext href={doc('docs/mcp.md')}>MCP docs</Ext>
           <In href="/admin/settings?tab=connections">Integrations</In>
           <In href="/admin/log">Activity log</In>
