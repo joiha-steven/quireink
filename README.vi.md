@@ -70,7 +70,7 @@ Có ba thứ định hình nó.
 
 **Người đọc tải về 3.8–8.7 KB JavaScript, và không tải gì từ bên thứ ba.** Trang tới nơi đã là HTML hoàn chỉnh. Vài đoạn script nhỏ lo tìm kiếm, đổi giao diện và chế độ sách. React nằm yên trong trang quản trị, không bao giờ chạm tới người đọc.
 
-**Agent viết được thay bạn.** Nối Claude hay bất kỳ client MCP nào vào, nó soạn được, gắn thẻ được, hẹn giờ và đăng được, theo đúng những luật mà trang quản trị đang theo.
+**Agent viết được thay bạn — và trông nom được cho bạn.** Nối Claude hay bất kỳ client MCP nào vào, nó soạn, gắn thẻ, hẹn giờ, đăng — và đọc được lượng truy cập, dọn bình luận rác, rà cả kho bài — theo đúng những luật mà trang quản trị đang theo.
 
 Bạn được đọc, sửa, chạy và fork theo [PolyForm Noncommercial](./LICENSE), và được chạy bản phát hành để kinh doanh — kể cả bán hosting — theo [một cho phép bổ sung](./LICENSE-EXCEPTION.vi.md).
 
@@ -270,6 +270,8 @@ Dùng máy chủ MCP của Quire Ink, viết một bài 600 chữ tựa đề
 "Những gì tôi học được khi dựng blog cùng AI agent", gắn thẻ
 "ai" và "writing", đặt một đoạn tóm tắt dễ chịu, rồi đăng.
 ```
+
+Viết mới là một nửa. Agent còn đọc được lượng truy cập và so với tuần trước, đếm người đăng ký (không bao giờ thấy địa chỉ email của họ), quét bình luận rác (vào thùng rác, không mất hẳn), tìm khắp kho bài, và cho bạn biết có bản mới chưa. [Sổ tay agent](./docs/agent-cookbook.md) là một trang các câu lệnh làm việc thật — báo cáo sáng thứ Hai, nháp bản tin, rà kho bài.
 
 Các cấu hình nhạy cảm bị chặn qua MCP, và quyền vẫn nằm ở bạn. Thu hồi token trong trang quản trị là nó chết ngay.
 

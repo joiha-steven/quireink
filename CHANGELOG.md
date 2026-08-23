@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## Unreleased
+
+### An agent can now read the blog, not just write it
+
+Six new MCP tools — the reading half of the surface: `get_traffic` (the dashboard's own
+numbers, with the window before for comparison), `get_audience` (subscriber and comment
+counts), `list_comments` and `delete_comment` (moderation, soft delete into the Trash),
+`search_posts` (the owner's full-text search, drafts included) and `get_update_status`
+(the amber/green dot, answerable by an assistant). Two things stay unreachable over MCP
+on purpose, held by tests: subscriber addresses, and commenters' emails and IPs. A new
+[agent cookbook](./docs/agent-cookbook.md) shows prompts that do real jobs with all this.
+
 ## 2026-08-22 — Quire Ink 2.1.4
 
 The day after the editor day, spent auditing rather than writing: the whole source, the
