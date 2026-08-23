@@ -769,6 +769,20 @@ export type AdminStrings = {
   assistantSend: string
   assistantBusy: string
   assistantFailed: string
+  aiProviderLabel: string
+  aiKeyLabel: string
+  aiKeyStored: string
+  aiModelLabel: string
+  aiTasksNeedModel: string
+  assistantEmpty: string
+  assistantNeedsModel: string
+  assistantModelOn: string
+  assistantNew: string
+  assistantEg1: string
+  assistantEg2: string
+  assistantEg3: string
+  assistantNoModel: string
+  assistantOpenAi: string
   cardCommentIntegrations: string
   cfHelp: string
   cfZoneId: string

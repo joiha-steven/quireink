@@ -5,14 +5,19 @@ import { CHECK, Setting } from '@/admin/components/kit'
 type SwitchProps = { checked: boolean; onChange: (v: boolean) => void }
 
 // The bare toggle.
-export function Switch({ checked, onChange }: SwitchProps) {
+//
+// `disabled` is not decoration either: a switch whose feature has no engine behind it —
+// the AI jobs with no model connected — has to look unavailable rather than off, or the
+// owner flips it, sees it flip back, and concludes the admin is broken.
+export function Switch({ checked, onChange, disabled = false }: SwitchProps & { disabled?: boolean }) {
   return (
     <button
       type="button"
       role="switch"
       aria-checked={checked}
+      disabled={disabled}
       onClick={() => onChange(!checked)}
-      className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${checked ? 'bg-neutral-900 dark:bg-white' : 'bg-neutral-300 dark:bg-neutral-700'}`}
+      className={`relative h-6 w-11 shrink-0 rounded-full transition-colors disabled:cursor-not-allowed ${checked ? 'bg-neutral-900 dark:bg-white' : 'bg-neutral-300 dark:bg-neutral-700'}`}
     >
       <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-all dark:bg-neutral-900 ${checked ? 'left-[22px]' : 'left-0.5'}`} />
     </button>
@@ -25,6 +30,9 @@ export function Switch({ checked, onChange }: SwitchProps) {
  * Built on `Setting` rather than laid out here, so the label size, the note style and the
  * gap between them are the ones every other setting uses. It was three hand-written
  * classes that had already drifted from the fields beside them.
+ *
+ * A disabled row dims as ONE thing — label, note and switch together. Dimming only the
+ * control leaves a black label over a grey switch, which reads as a rendering fault.
  */
 export function ToggleRow({
   label,
@@ -32,10 +40,11 @@ export function ToggleRow({
   badge,
   checked,
   onChange,
-}: SwitchProps & { label: string; desc?: string; badge?: string }) {
+  disabled = false,
+}: SwitchProps & { label: string; desc?: string; badge?: string; disabled?: boolean }) {
   return (
-    <Setting label={label} note={desc} badge={badge} inline className="p-4">
-      <Switch checked={checked} onChange={onChange} />
+    <Setting label={label} note={desc} badge={badge} inline className={`p-4 ${disabled ? 'opacity-50' : ''}`}>
+      <Switch checked={checked} onChange={onChange} disabled={disabled} />
     </Setting>
   )
 }

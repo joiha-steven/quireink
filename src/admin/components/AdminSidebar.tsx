@@ -112,13 +112,19 @@ export function AdminSidebar({
   const primary = [
     { href: '/admin', label: t.navHome, icon: <IconHome /> },
     { href: '/admin/content', label: t.navWrite, icon: <IconContent /> },
-    { href: '/admin/assistant', label: t.navAssistant, icon: <IconAssistant /> },
     { href: '/admin/media', label: t.navMedia, icon: <IconMedia /> },
     { href: '/admin/newsletter', label: t.navNewsletter, icon: <IconNewsletter /> },
   ]
 
   // "mấy cái tính năng còn lại ngoài soạn thảo nội dung … chỉ là phụ." Not removed — moved.
+  //
+  // The assistant is FIRST here and not in the four above, which is where it was put on
+  // 2026-08-23 and where the tour caught it on 2026-08-24: `the rail is four` failed with
+  // "the rail offers 5 destinations at rest". The rule is not a formality — the rail held
+  // eleven rows once, and every addition since has had an argument as good as this one.
+  // Promoting it is the owner's call to make, not a side effect of building it.
   const secondary = [
+    { href: '/admin/assistant', label: t.navAssistant, icon: <IconAssistant /> },
     { href: '/admin/analytics', label: t.navAnalytics, icon: <IconAnalytics /> },
     { href: '/admin/comments', label: t.commentsNavTitle, icon: <IconComment /> },
     { href: '/admin/trash', label: t.navTrash, icon: <IconTrash /> },

@@ -14,8 +14,27 @@ import { describe, expect, it } from 'bun:test'
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 
-/** The seven, as `SettingsView` keys them. Kept here as the literal it is checking against. */
-const TABS = ['site', 'layout', 'reading', 'appearance', 'seo', 'connections', 'system']
+/**
+ * The tabs, READ OUT OF `SettingsView` rather than copied here.
+ *
+ * It was a copy, and on 2026-08-24 the copy was stale in exactly the way this file exists to
+ * catch: the AI tab had been shipped for a day, `TAB_IDS` in `SettingsView` had never been
+ * told about it either, and the two agreed with each other while both disagreed with the
+ * screen. Two hand-typed copies of one list do not check each other; they only make the
+ * wrong answer look confirmed. There is one list now, and this reads it.
+ */
+function tabIds(): string[] {
+  const src = readFileSync(join(import.meta.dir, 'SettingsView.tsx'), 'utf8')
+  const block = src.match(/const TAB_IDS: Tab\[\] = \[([\s\S]*?)\]/)
+  if (!block) throw new Error('settings-tab-links: no TAB_IDS in SettingsView.tsx')
+  const ids = [...block[1]!.matchAll(/'([a-z-]+)'/g)].map((m) => m[1]!)
+  // A parse that quietly returns nothing would call every link in the admin broken, which
+  // is the loud failure — but half a list would call SOME of them broken, which is worse.
+  if (ids.length < 5) throw new Error(`settings-tab-links: read only ${ids.length} tabs`)
+  return ids
+}
+
+const TABS = tabIds()
 
 function sourceFiles(dir: string): string[] {
   const out: string[] = []

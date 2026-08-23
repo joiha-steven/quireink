@@ -19,6 +19,7 @@ import { MOBILE_CSS } from '@/web/mobile.css'
 import { PROSE_CSS } from '@/web/prose.css'
 import { FRONT_CSS } from '@/web/front.css'
 import { UTILITY_CSS } from '@/web/utility.css'
+import { PRINT_CSS } from '@/web/print.css'
 
 const BASE_CSS = `
 /* MOTION TOKENS. Three durations, and no easing token. docs/conventions/motion.md promised these
@@ -353,6 +354,9 @@ footer.site a:hover{color:var(--c-text)}
  *
  * The phone sheet is LAST because several of its rules win on a specificity tie alone: it
  * raises a floor on a control that already states its size, and undoes a hover-only opacity.
+ *
+ * ...except the PRINT sheet, which is after it for the same reason one step further: it has
+ * to win against everything above, on paper, and it can only affect paper.
  */
 export const PUBLIC_CSS = `${BASE_CSS}
 
@@ -361,4 +365,5 @@ ${ISLANDS_CSS}
 ${SUBSCRIBE_CSS}
 ${FRONT_CSS}
 ${IDE_CSS}
-${MOBILE_CSS}`
+${MOBILE_CSS}
+${PRINT_CSS}`

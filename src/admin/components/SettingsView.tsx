@@ -58,7 +58,14 @@ import { RedirectsManager } from './RedirectsManager'
 import { NewsletterFields } from './NewsletterFields'
 
 type Tab = 'site' | 'layout' | 'reading' | 'appearance' | 'seo' | 'connections' | 'ai' | 'system'
-const TAB_IDS: Tab[] = ['site', 'layout', 'reading', 'appearance', 'seo', 'connections', 'system']
+// Every member of `Tab`, and the list is what `?tab=` is validated against — so a tab
+// missing here is a tab no link can reach. 'ai' was left out when the tab was added on
+// 2026-08-23, which made `/admin/settings?tab=ai` land silently on Site: the address the
+// assistant's own error message hands the owner, and the one the guide on quireink.com
+// prints. Derived from the type so the next tab cannot repeat it.
+const TAB_IDS: Tab[] = [
+  'site', 'layout', 'reading', 'appearance', 'seo', 'connections', 'ai', 'system',
+]
 
 /**
  * Two columns on a wide screen, one on a narrow one.
