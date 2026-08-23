@@ -192,6 +192,14 @@ export function viewRoutes(): OwnerRouter {
     return c.json({ data: { posts, pages, media, files, comments, subscribers } })
   })
 
+  // The assistant page. The conversation is client state, so this is everything the page
+  // wants from the server — and it does want it: "no model connected" has to be visible
+  // BEFORE a question is typed, not delivered as an error five seconds after sending one.
+  routes.get('/api/admin/view/assistant', async (c) => {
+    const ai = await getIntegrationStatus()
+    return c.json({ data: { configured: ai.aiConfigured, model: ai.aiModel } })
+  })
+
   // The shell itself: the language the whole admin is drawn in, and the version the Help
   // page and the dashboard both print. Fetched once, before anything else renders.
   routes.get('/api/admin/view/shell', async (c) => {

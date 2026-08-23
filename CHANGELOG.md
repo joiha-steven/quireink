@@ -64,6 +64,40 @@ dead shortcodes swept, captions folded into their images, non-breaking-space deb
 blank-line pileups gone. No AI touches your words on the way in; an assistant connected
 over MCP can polish further, post by post, through the same revisioned saves as any edit.
 
+### Your essays print like pages, not like web pages
+
+Press Ctrl+P on a post — or save it as a PDF — and you get the essay. Before this there
+was not one print rule in the whole stylesheet, so paper got the screen: the reading
+progress bar, the [search] [dark] [palette] [menu] buttons, a "book mode" link that does
+nothing on paper, then the related posts, the entire comment thread, the subscribe card
+and the footer. Ten sheets for a four-page piece, and four dead buttons at the top of it.
+
+Now the page carries the masthead as one line of provenance, the essay, its notes, its
+tags — and stops. The measure is set for paper rather than for a viewport, headings do
+not sit alone at the foot of a page, tables and code and figures are not cut in half,
+code wraps instead of losing its right-hand end, and a link that leaves the site prints
+its address so a paper copy is still a lead. Your own type settings come with it, at the
+size you chose. A reader printing at night gets ink on paper rather than a black page.
+The pen marks are the one thing that keeps its colour, because they are the reason a page
+off this site looks like this site.
+
+### Small things
+
+The Assistant page and the AI tab were both rebuilt after being looked at rather than
+reasoned about: the tab was drawing browser-default dropdowns and OS-blue checkboxes
+beside the switches on the card next to it, and had no labels on any of its three fields;
+the chat had its composer stranded two thirds of the way down the page with empty paper
+under it, said nothing about which model would answer, and let you type a question before
+telling you no model was connected. Both are made from the same kit as every other screen
+now, and the assistant names its model, offers a few openers, keeps the composer where
+your hands are, and lets you start over.
+
+Two links that went nowhere: `Settings → AI` reached from anywhere outside the settings
+screen quietly landed on the Site tab (the tab list the address is checked against had
+never been told the AI tab exists — it is read from the source of truth now), and the
+Assistant had taken a fifth seat in a sidebar whose rule is four. It sits with the rest
+of "everything else", one click away.
+
 ## 2026-08-22 — Quire Ink 2.1.4
 
 The day after the editor day, spent auditing rather than writing: the whole source, the

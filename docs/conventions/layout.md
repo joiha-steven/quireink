@@ -123,3 +123,33 @@ Display only. The stored term, `termSlug()` and every link keep the real name, s
 URL, a bookmark or a lookup depends on changes. **Categories are proper names and are never
 hyphenated.** The Vietnamese label is "Tag", not "Thẻ" — the owner reads the translation as
 ambiguous.
+
+## Paper is a surface (`print.css.ts`)
+
+A reader who prints an essay, or saves it as a PDF, is reading it. Until 2026-08-24 there
+was not one `@media print` rule in the twelve sheets, so what they got was the screen: the
+progress bar, the site bar's four controls, a "book mode" button, the related posts, the
+whole comment thread, the subscribe card and the footer — ten sheets of paper for a
+four-page piece.
+
+Three rules govern the print sheet, and they are the same three any change to it should
+answer to:
+
+1. **What is left out is anything you DO.** Controls, the conversation, the invitations to
+   subscribe. A related-posts list you cannot click is not a courtesy on paper.
+2. **The palette is redefined, never the rules.** `--c-bg`, `--c-text`, `--c-heading`,
+   `--c-meta`, `--c-link` and `--c-rule` are set to ink-on-paper inside the print block, so
+   every existing rule keeps painting in `var(--c-*)` and nothing downstream has to know
+   paper exists. `--c-accent` is deliberately NOT overridden: the pen marks are the site's
+   signature and a colour printer should give the reader the ones the writer drew.
+   `!important` is used, and only here — the settings layer is inline and lands after this
+   sheet, so `html.dark` would otherwise win and print a black page.
+3. **The owner's type prints.** `check:type-roles` refuses a size on the reader's page that
+   the owner cannot set, and it is right about paper too — a blog set large is usually set
+   large on purpose. The print sheet sets the MEASURE (150mm, about 70 characters at the
+   12pt a default 16px body prints as) and hyphenation, and leaves size and leading alone.
+
+The hide-list is checked by `src/web/print.test.ts`: every selector it silences has to be
+one this site still uses, on a rendered page or in the screen half of the sheet. A print
+rule that stops matching fails silently forever otherwise — nobody prints a page to check a
+refactor.

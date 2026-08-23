@@ -18,6 +18,22 @@ import { CARD, TAP } from './kit'
 /** The sheet itself. Height matches the editor's paper so every page stands as tall. */
 export const SHEET = `${CARD} flex flex-col lg:min-h-[calc(100vh-1.5rem)]`
 
+/**
+ * The sheet for a page that must fit the WINDOW instead of growing past it.
+ *
+ * `SHEET` sets a FLOOR, so a page taller than the fold simply scrolls — right for every
+ * screen whose content is a list. It is wrong for a conversation: the composer belongs to
+ * the sheet's bottom edge, and with a floor that edge walks off the screen the moment the
+ * transcript is longer than the window. Here the sheet is exactly as tall as the room it
+ * has and the TRANSCRIPT scrolls inside it.
+ *
+ * The 9rem is the chrome above and below, measured rather than guessed: the canvas pads
+ * `lg:py-9` (36 top, 36 bottom) and `PageHeader` is a 22px title on `mb-10` (~68). 144px
+ * covers it with a few pixels to spare, and being a few pixels out costs a few pixels of
+ * scroll rather than a broken layout. Below `lg` the page scrolls as pages do.
+ */
+export const SHEET_FIXED = `${CARD} flex flex-col min-h-[70vh] lg:h-[calc(100vh-9rem)]`
+
 /** The sheet's closing line of small print: counts, hints, what a click does. */
 export const SHEET_FOOT =
   'mt-auto border-t border-neutral-100 px-4 py-2.5 text-xs text-neutral-400 dark:border-neutral-800 dark:text-neutral-500'
