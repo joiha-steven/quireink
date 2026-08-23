@@ -1,6 +1,6 @@
 > Split from CLAUDE.md — the agent-discovery surface: what Quire Ink exposes so AI agents
 > can find, read, and drive the site (the standards behind Cloudflare's "Is Your Site
-> Agent-Ready?" scan). MCP internals → [`mcp.md`](./mcp.md); SEO/feeds → [`seo-pwa.md`](./seo-pwa.md).
+> Agent-Ready?" scan). MCP internals → [`mcp.md`](./mcp.md); worked prompts → [`agent-cookbook.md`](./agent-cookbook.md); SEO/feeds → [`seo-pwa.md`](./seo-pwa.md).
 
 # Agent-ready surface
 

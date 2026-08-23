@@ -59,7 +59,12 @@
   directive is relaxed, and only on that location. **An `add_header` inside a `location`
   REPLACES the inherited ones**, so all five headers are repeated there.
 - **Tools** (`src/mcp/tools.ts` posts/pages/taxonomy, `src/mcp/tools-library.ts`
-  media/files/settings; results via `src/mcp/result.ts`). Content is Markdown verbatim — no HTML
+  media/files/settings, `src/mcp/tools-insight.ts` the READING half — traffic, audience
+  counts, comments, owner search, update status; results via `src/mcp/result.ts`).
+  **The reading half strips identities on purpose:** `get_audience` returns counts and
+  never a subscriber address; `list_comments` drops the email and IP the admin shape
+  carries. That line is held by `tools-insight.test.ts`, not by prose. Worked examples
+  for owners: [`agent-cookbook.md`](./agent-cookbook.md). Content is Markdown verbatim — no HTML
   conversion. Deletes are soft (→ Trash). **`update_post` REPLACES the whole post; `patch_post`
   merges only the passed fields over the current post (body preserved)** — use it to change just
   the title/tags/categories/etc. **`update_settings` exposes only a safe allowlist

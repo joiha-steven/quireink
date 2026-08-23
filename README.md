@@ -70,7 +70,7 @@ Three things shaped it.
 
 **Readers download between 3.8 KB and 8.7 KB of JavaScript, and nothing from anyone else.** Pages arrive as finished HTML. A few small scripts handle search, the theme switch and book mode. React stays in the admin and never reaches a reader.
 
-**An agent can do the writing.** Connect Claude or any MCP client and it can draft, tag, schedule and publish for you, through exactly the rules the admin follows.
+**An agent can do the writing — and the stewarding.** Connect Claude or any MCP client and it can draft, tag, schedule and publish for you, read your traffic, moderate comments and audit the archive, through exactly the rules the admin follows.
 
 You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE), and run the published version commercially — paid hosting included — under [one additional permission](./LICENSE-EXCEPTION.md).
 
@@ -268,6 +268,8 @@ Using the Quire Ink MCP server, write a 600-word post titled
 "What I learned shipping a blog with an AI agent", give it the tags
 "ai" and "writing", set a friendly excerpt, and publish it.
 ```
+
+Writing is half of it. The agent can also read your traffic and compare it to last week, count your subscribers (never see their addresses), sweep comments for spam (into the trash, not gone), search your whole archive and tell you whether a newer release is out. The [agent cookbook](./docs/agent-cookbook.md) is a page of prompts that do real jobs — a Monday report, a newsletter draft, an archive audit.
 
 The sensitive settings are off limits over MCP, and you stay in charge. Revoke the token in the admin and it stops working immediately.
 
