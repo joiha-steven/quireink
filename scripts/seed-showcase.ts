@@ -115,9 +115,11 @@ await saveSettings({
   chromeFont: 'jetbrains-mono',
   ideChrome: true,
   menu: [
+    // Typography and Calligraphy carry the fixture's two voices (machine type, the hand);
+    // Printing still exists as a category and in the archive, but the owner cut it from
+    // the menu on 2026-08-23 — five entries read as clutter, and the menu is the pitch.
     { label: 'Typography', href: '/category/typography' },
     { label: 'Calligraphy', href: '/category/calligraphy' },
-    { label: 'Printing', href: '/category/printing' },
     { label: 'Colophon', href: '/colophon' },
     // The way back out. The demo is reached from quireink.com and was a dead end once you
     // were in it: every menu entry above stays inside the fixture, so a visitor who wanted
