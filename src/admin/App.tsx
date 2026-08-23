@@ -37,6 +37,7 @@ const load = {
   trash: () => import('@/admin/pages/Trash'),
   settings: () => import('@/admin/pages/Settings'),
   help: () => import('@/admin/pages/Help'),
+  assistant: () => import('@/admin/pages/Assistant'),
   notFound: () => import('@/admin/pages/NotFound'),
 } satisfies Record<string, Loader>
 
@@ -53,6 +54,7 @@ const Trash = lazy(load.trash)
 const Settings = lazy(load.settings)
 const Help = lazy(load.help)
 const NotFound = lazy(load.notFound)
+const Assistant = lazy(load.assistant)
 
 /** Which loader serves a path. The single place the route table's shape is decided. */
 function loaderFor(path: string): Loader {
@@ -69,6 +71,7 @@ function loaderFor(path: string): Loader {
   if (p === '/admin/trash') return load.trash
   if (p === '/admin/settings') return load.settings
   if (p === '/admin/help') return load.help
+  if (p === '/admin/assistant') return load.assistant
   return load.notFound
 }
 
@@ -105,6 +108,7 @@ function Route(): ReactNode {
   if (path === '/admin/trash') return <Trash />
   if (path === '/admin/settings') return <Settings />
   if (path === '/admin/help') return <Help />
+  if (path === '/admin/assistant') return <Assistant />
   return <NotFound />
 }
 

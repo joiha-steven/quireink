@@ -42,6 +42,18 @@ already makes elsewhere. The suggestion lands on the image in the library, flows
 editor as the default alt when you insert it, and stays yours to edit — clear it and the
 machine never refills it, because '' is a decision and NULL is an absence.
 
+### An assistant moved into the admin
+
+The sidebar grew an **Assistant** page: a chat that runs on the model you plugged into
+Settings → AI and acts through **exactly the tools an MCP agent gets** — the same
+registry, the same limits, the same activity log. "How did the blog do this week?",
+"sweep the comments for spam", "switch to the sepia palette" — asked in a sentence,
+inside the admin, no MCP client required. Every tool it runs shows as a chip under the
+reply, arguments are checked against each tool's own schema before anything executes,
+and the conversation lives in your open tab and nowhere else — the blog's database
+holds posts, not chats. Two doors now, one rulebook: whoever has a Claude subscription
+connects over MCP; whoever plugged in a key talks to the blog directly.
+
 ### Three more front doors
 
 The importer used to speak only WordPress. It now takes a Ghost export (.json), a

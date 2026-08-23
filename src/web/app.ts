@@ -42,6 +42,7 @@ import { siteRoutes } from '@/web/admin/site'
 import { uploadRoutes } from '@/web/admin/uploads'
 import { newsRoutes } from '@/web/admin/news'
 import { opsRoutes, publicOpsRoutes } from '@/web/admin/ops'
+import { assistantRoutes } from '@/web/admin/assistant'
 import { mcpAdminRoutes, mcpOAuthRoutes } from '@/web/admin/mcp'
 import { viewRoutes } from '@/web/admin/views'
 import { backupRoutes } from '@/web/admin/backup'
@@ -263,6 +264,7 @@ export function createApp(): Hono {
   app.route('/', uploadRoutes().routes)
   app.route('/', newsRoutes().routes)
   app.route('/', opsRoutes().routes)
+  app.route('/', assistantRoutes().routes)
   app.route('/', publicOpsRoutes())
   app.route('/', mcpAdminRoutes().routes)
   app.route('/', mcpOAuthRoutes())

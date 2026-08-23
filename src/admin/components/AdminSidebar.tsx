@@ -19,7 +19,7 @@ import { BrandMark, BrandWord } from './Wordmark'
 import { ThemeToggle } from '@/admin/ui/ThemeToggle'
 import {
   IconHome, IconAnalytics, IconContent, IconComment, IconMedia, IconNewsletter, IconTrash, IconSettings,
-  IconLog, IconExternal, IconCache, IconSignOut, IconChevronLeft, IconHelp, IconGlyphs, IconMore,
+  IconLog, IconExternal, IconCache, IconSignOut, IconChevronLeft, IconHelp, IconGlyphs, IconMore, IconAssistant,
 } from './navIcons'
 
 const STORE_KEY = 'quireink-admin-nav-collapsed'
@@ -112,6 +112,7 @@ export function AdminSidebar({
   const primary = [
     { href: '/admin', label: t.navHome, icon: <IconHome /> },
     { href: '/admin/content', label: t.navWrite, icon: <IconContent /> },
+    { href: '/admin/assistant', label: t.navAssistant, icon: <IconAssistant /> },
     { href: '/admin/media', label: t.navMedia, icon: <IconMedia /> },
     { href: '/admin/newsletter', label: t.navNewsletter, icon: <IconNewsletter /> },
   ]

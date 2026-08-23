@@ -151,3 +151,13 @@ export function IconMore() {
     </svg>
   )
 }
+export function IconAssistant() {
+  // A quill nib over a spark: the steward writes, and something electric helps.
+  return (
+    <svg viewBox="0 0 24 24" className={C} {...S} aria-hidden>
+      <path d="M12 4.5c.9 2.6 2 3.7 4.5 4.5-2.5.8-3.6 1.9-4.5 4.5-.9-2.6-2-3.7-4.5-4.5 2.5-.8 3.6-1.9 4.5-4.5Z" />
+      <path d="M5.5 14.5c.5 1.4 1.1 2 2.5 2.5-1.4.5-2 1.1-2.5 2.5-.5-1.4-1.1-2-2.5-2.5 1.4-.5 2-1.1 2.5-2.5Z" />
+      <path d="M14 17.5h7M14 20.5h5" />
+    </svg>
+  )
+}
