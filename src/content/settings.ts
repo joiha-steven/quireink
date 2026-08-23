@@ -11,7 +11,7 @@ import { DEFAULT_PRESET_ID, isPresetId, isFontPresetId, defaultThemes, ALL_PALET
 import {
   DEFAULT_HOME, DEFAULT_GALLERY, sanitizeMenu, migrateThemes, sanitizeThemes, sanitizeEnabledPalettes, sanitizeSeo, sanitizeFeatures, sanitizeHome, sanitizeGallery, sanitizeMcp, sanitizeMotion, sanitizeCache,
   sanitizeBackups, sanitizeComments, sanitizeCss, sanitizeUrl, clampNumber, sanitizeFeatured,
-  sanitizeTimezone,
+  sanitizeTimezone, sanitizeAi,
 } from '@/content/settings-sanitize'
 import { sanitizeTypography, sanitizeFont } from '@/content/settings-type'
 
@@ -132,6 +132,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   features: DEFAULT_FEATURES,
   comments: DEFAULT_COMMENTS,
   mcp: { enabled: false },
+  ai: { altText: true },
   motion: { enabled: true, typewriter: true },
   // On, because a blog that is fast for readers is the default. The switch exists for the
   // hour you are changing the look and want to see it, not for permanent use.
@@ -199,6 +200,7 @@ export async function getSettings(): Promise<SiteSettings> {
       gallery: sanitizeGallery(stored.gallery, DEFAULT_GALLERY),
       comments: sanitizeComments(stored.comments, DEFAULT_COMMENTS),
       mcp: sanitizeMcp(stored.mcp, DEFAULT_SETTINGS.mcp),
+      ai: sanitizeAi(stored.ai, DEFAULT_SETTINGS.ai),
       motion: sanitizeMotion(stored.motion, DEFAULT_SETTINGS.motion),
       cache: sanitizeCache(stored.cache, DEFAULT_SETTINGS.cache),
       backups: sanitizeBackups(stored.backups, DEFAULT_BACKUPS),
@@ -325,6 +327,7 @@ export async function saveSettings(input: Partial<SiteSettings>): Promise<SiteSe
     gallery: sanitizeGallery(input.gallery, current.gallery),
     comments: sanitizeComments(input.comments, current.comments),
     mcp: sanitizeMcp(input.mcp, current.mcp),
+    ai: sanitizeAi(input.ai, current.ai),
     motion: sanitizeMotion(input.motion, current.motion),
     cache: sanitizeCache(input.cache, current.cache),
     backups: sanitizeBackups(input.backups, current.backups),

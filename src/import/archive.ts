@@ -106,6 +106,20 @@ export const isMedium = (entries: Entry[]): boolean =>
 
 const first = (html: string, re: RegExp): string => html.match(re)?.[1] ?? ''
 
+// Tag-stripping by regex is only honest as a FIXPOINT: one pass turns `<scr<b>ipt>` into
+// `<script>`, which is precisely the shape CodeQL's "incomplete multi-character
+// sanitization" rule exists to catch. Loop until a pass changes nothing. The result is
+// plain TEXT for a title — it is stored as Markdown and escaped again on render — so the
+// stakes here are tidiness, but an alert that stays open teaches people to ignore alerts.
+function stripTags(s: string): string {
+  let prev = ''
+  while (prev !== s) {
+    prev = s
+    s = s.replace(/<[^>]*>/g, '')
+  }
+  return s
+}
+
 export function parseMedium(entries: Entry[], now: string): ImportResult {
   const uniqueSlug = slugTracker()
   const td = makeTurndown()
@@ -118,7 +132,7 @@ export function parseMedium(entries: Entry[], now: string): ImportResult {
     if (!e.text.includes('class="h-entry"')) { skipped++; continue }
 
     const title = decodeEntities(
-      first(e.text, /<h1[^>]*class="[^"]*p-name[^"]*"[^>]*>([\s\S]*?)<\/h1>/).replace(/<[^>]+>/g, '').trim()
+      stripTags(first(e.text, /<h1[^>]*class="[^"]*p-name[^"]*"[^>]*>([\s\S]*?)<\/h1>/)).trim()
       || first(e.text, /<title[^>]*>([\s\S]*?)<\/title>/).trim(),
     ) || 'Untitled'
 

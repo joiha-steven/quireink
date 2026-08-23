@@ -752,6 +752,12 @@ export type AdminStrings = {
   aiHelp: string
   aiKeyPh: string
   aiProviderOff: string
+  tabAi: string
+  tabAiHint: string
+  aiTasksLabel: string
+  aiTaskAltText: string
+  aiModelsLoading: string
+  aiModelsFailed: string
   cardCommentIntegrations: string
   cfHelp: string
   cfZoneId: string

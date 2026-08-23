@@ -111,7 +111,8 @@ export async function describeUpload(path: string, body: ArrayBuffer, mime: stri
     const model = keys.aiModel || DEFAULT_MODELS[keys.aiProvider]
     if (!model) return
 
-    const { language } = await getSettings()
+    const { language, ai } = await getSettings()
+    if (!ai.altText) return // the owner's per-job switch (Settings → AI)
     const req = buildRequest(keys.aiProvider, model, keys.aiApiKey, mime, Buffer.from(body).toString('base64'), language)
     if (!req) return
 
@@ -132,4 +133,58 @@ export async function describeUpload(path: string, body: ArrayBuffer, mime: stri
   } catch (error) {
     console.error(`[ERROR] alt-text: ${(error as Error).message}`)
   }
+}
+
+// ---- the model menu ---------------------------------------------------------------------
+// "Paste the key, and the models list themselves" — the admin's AI card calls this via
+// /api/integrations/ai/models the moment a key lands, so the owner picks from what their
+// account can actually see instead of typing a model id from memory.
+
+export type ModelChoice = { id: string; label: string }
+
+// OpenAI's /v1/models returns every family they have ever shipped; most cannot look at
+// an image or are not chat models at all. Names, because capability is not in the API.
+const OPENAI_SKIP = /embed|whisper|tts|audio|dall-e|davinci|babbage|moderation|realtime|transcribe|image/
+
+export async function listModels(provider: string, key: string): Promise<ModelChoice[] | null> {
+  let url = ''
+  let headers: Record<string, string> = {}
+  if (provider === 'anthropic') {
+    url = 'https://api.anthropic.com/v1/models?limit=100'
+    headers = { 'x-api-key': key, 'anthropic-version': '2023-06-01' }
+  } else if (provider === 'openai') {
+    url = 'https://api.openai.com/v1/models'
+    headers = { authorization: `Bearer ${key}` }
+  } else if (provider === 'gemini') {
+    url = 'https://generativelanguage.googleapis.com/v1beta/models?pageSize=200'
+    headers = { 'x-goog-api-key': key }
+  } else return null
+
+  const res = await fetch(url, { headers, signal: AbortSignal.timeout(15_000) })
+  if (!res.ok) return null
+  return parseModels(provider, await res.json())
+}
+
+/** Pure: each provider's listing shape into one menu, newest first where the API says. */
+export function parseModels(provider: string, json: unknown): ModelChoice[] {
+  const j = json as Record<string, any>
+  if (provider === 'anthropic') {
+    return ((j?.data ?? []) as Record<string, any>[])
+      .map((m) => ({ id: String(m.id ?? ''), label: String(m.display_name || m.id || '') }))
+      .filter((m) => m.id)
+  }
+  if (provider === 'openai') {
+    return ((j?.data ?? []) as Record<string, any>[])
+      .map((m) => String(m.id ?? ''))
+      .filter((id) => id && !OPENAI_SKIP.test(id))
+      .sort()
+      .map((id) => ({ id, label: id }))
+  }
+  if (provider === 'gemini') {
+    return ((j?.models ?? []) as Record<string, any>[])
+      .filter((m) => (m.supportedGenerationMethods ?? []).includes('generateContent'))
+      .map((m) => ({ id: String(m.name ?? '').replace(/^models\//, ''), label: String(m.displayName || m.name || '') }))
+      .filter((m) => m.id)
+  }
+  return []
 }

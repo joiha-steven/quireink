@@ -17,7 +17,7 @@ import { BroadcastError, broadcastPosts, previewBroadcast } from '@/news/broadca
 import { listSubscribers, subscriberCounts, deleteSubscriber } from '@/news/subscribers'
 import { statsByEmail } from '@/news/newsletter-log'
 import { softDeleteComment } from '@/comments/comments'
-import { saveIntegrationKeys } from '@/store/integration-keys'
+import { getIntegrationKeys, saveIntegrationKeys } from '@/store/integration-keys'
 import { getPublicPosts } from '@/content/posts'
 import { getSettings, resolveSiteUrl } from '@/content/settings'
 import { t } from '@/i18n/i18n'
@@ -235,6 +235,23 @@ export function newsRoutes() {
     })
     void logActivity('settings.save', 'ai keys')
     return json({ saved: true })
+  })
+
+  router.post('/api/integrations/ai/models', async (c) => {
+    const input = await body<{ provider: unknown; apiKey: unknown }>(c)
+    const provider = str(input.provider) ?? ''
+    if (!['anthropic', 'openai', 'gemini'].includes(provider)) return fail(c, 'unknown_provider', 400)
+    // A freshly pasted key is tried BEFORE it is saved — that is the whole point: the
+    // owner sees the menu appear and knows the key works before committing it.
+    const typed = str(input.apiKey)
+    const stored = (await getIntegrationKeys()).aiApiKey
+    const key = typed || stored
+    if (!key) return fail(c, 'no_key', 400)
+    const { listModels } = await import('@/media/alt-text')
+    const models = await listModels(provider, key).catch(() => null)
+    // 502, like the SMTP test: the failure is the provider's (or the key's), not a bug.
+    if (models === null) return fail(c, 'model_list_failed', 502)
+    return json({ models })
   })
 
   return router

@@ -42,7 +42,6 @@ import { TypographyFields } from './TypographyFields'
 import { FontUpload } from './FontUpload'
 import { FontFields } from './FontFields'
 import { AdvancedFields } from './AdvancedFields'
-import { McpFields } from './McpFields'
 import { LayoutMenuFields } from './LayoutMenuFields'
 import { FrontFields } from './FrontFields'
 import { FooterField } from './FooterField'
@@ -51,14 +50,14 @@ import { ActivityLogField, ListingFeatureFields, PostFeatureFields } from './Fea
 import { CommentFields } from './CommentFields'
 import { CommentIntegrations } from './CommentIntegrations'
 import { CloudflareFields } from './CloudflareFields'
-import { AiFields } from './AiFields'
+import { SettingsAiTab } from './SettingsAiTab'
 import { SettingsSystemTab } from './SettingsSystemTab'
 import type { UpdateStatus } from './UpdateFields'
 import { SeoFields } from './SeoFields'
 import { RedirectsManager } from './RedirectsManager'
 import { NewsletterFields } from './NewsletterFields'
 
-type Tab = 'site' | 'layout' | 'reading' | 'appearance' | 'seo' | 'connections' | 'system'
+type Tab = 'site' | 'layout' | 'reading' | 'appearance' | 'seo' | 'connections' | 'ai' | 'system'
 const TAB_IDS: Tab[] = ['site', 'layout', 'reading', 'appearance', 'seo', 'connections', 'system']
 
 /**
@@ -133,6 +132,7 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
     { key: 'appearance', label: t.tabAppearance },
     { key: 'seo', label: t.tabSeo },
     { key: 'connections', label: t.tabConnections },
+    { key: 'ai', label: t.tabAi },
     { key: 'system', label: t.tabSystem },
   ]
   /** A result says WHICH tab, or it has only told you the thing exists. */
@@ -144,6 +144,7 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
     appearance: t.tabAppearanceHint,
     seo: t.tabSeoHint,
     connections: t.tabConnectionsHint,
+    ai: t.tabAiHint,
     system: t.tabSystemHint,
   }
 
@@ -339,9 +340,6 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
             <Card panel title={t.cardCloudflare}>
               <CloudflareFields configured={integrations.cloudflareConfigured} zoneId={integrations.cloudflareZoneId} />
             </Card>
-            <Card panel title={t.cardAi}>
-              <AiFields configured={integrations.aiConfigured} provider={integrations.aiProvider} model={integrations.aiModel} />
-            </Card>
           </div>
           <div className={COL}>
             <Card panel title={t.cardCommentIntegrations}>
@@ -351,11 +349,13 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
                 onChange={(comments) => update({ comments })}
               />
             </Card>
-            <Card panel title={t.cardMcp}>
-              <McpFields mcp={s.mcp} siteUrl={s.siteUrl} onChange={(mcp) => update({ mcp })} />
-            </Card>
           </div>
         </div>
+      )}
+
+      {/* AI — its own file; see SettingsAiTab for why it is one subject. */}
+      {tab === 'ai' && (
+        <SettingsAiTab s={s} update={update} integrations={integrations} grid={GRID} col={COL} />
       )}
 
       {/* SYSTEM — content in and out, and the state of the install. Its own file since

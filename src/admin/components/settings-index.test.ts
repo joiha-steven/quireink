@@ -65,7 +65,7 @@ describe('searchSettings', () => {
 
 describe('the index itself', () => {
   it('names a tab that exists for every entry', () => {
-    const tabs = new Set(['site', 'layout', 'reading', 'appearance', 'seo', 'connections', 'system'])
+    const tabs = new Set(['site', 'layout', 'reading', 'appearance', 'seo', 'connections', 'ai', 'system'])
     expect(SETTINGS_INDEX.filter((e) => !tabs.has(e.tab))).toEqual([])
   })
 
