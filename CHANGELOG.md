@@ -12,6 +12,17 @@ counts), `list_comments` and `delete_comment` (moderation, soft delete into the 
 on purpose, held by tests: subscriber addresses, and commenters' emails and IPs. A new
 [agent cookbook](./docs/agent-cookbook.md) shows prompts that do real jobs with all this.
 
+### And steward it
+
+Six more: `compose_homepage` curates the composed front page (which rows, what size,
+where their posts come from — the layout grammar stays the product's), `update_appearance`
+restyles the site strictly from the curated menus (an agent has no eyes, so it gets preset
+ids, never a color), `get_post_traffic` answers for one post, `reply_comment` answers a
+reader under the owner's name and emails them like a reply typed on the page,
+`send_test_newsletter` sends the next issue to the owner alone — the recipient is not a
+parameter, and the real broadcast is deliberately not a tool — and `create_snapshot`
+takes the scheduler's own backup before anything big.
+
 ## 2026-08-22 — Quire Ink 2.1.4
 
 The day after the editor day, spent auditing rather than writing: the whole source, the

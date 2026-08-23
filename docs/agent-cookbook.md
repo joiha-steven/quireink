@@ -59,6 +59,32 @@ each other. Give me a table of what is missing, worst first — change nothing y
 `search_posts` is the owner's own full-text search (drafts included), which is what makes
 "find the posts that should link to each other" possible without downloading the archive.
 
+## The front-page editor
+
+```text
+Look at my traffic for the last 30 days. Then recompose my front page: pin the post
+that best represents the blog as the lead, order the category strips by which
+categories people actually read, and keep the popular row on 30 days.
+```
+
+`compose_homepage` curates the composed front the owner designed — which rows, what size,
+where their posts come from. The layout grammar itself is not negotiable, which is exactly
+why an agent can be trusted with it. It also warns when a strip names a category with no
+posts, rather than silently rendering an empty row.
+
+## The Friday evening makeover
+
+```text
+It's autumn. Switch the blog to the sepia palette with Literata as the reading font,
+then send me the next newsletter issue as a test so I can see the look in email too.
+```
+
+`update_appearance` only offers the curated menus — six palettes, the font presets —
+because an agent never sees the rendered page, and every option on the menu is one the
+owner's own screens offer. `send_test_newsletter` mails **only the owner**; the recipient
+is not something an agent can choose, and the real broadcast is not available over MCP
+at all. Don't like the look on Monday? One sentence switches it back.
+
 ## The standing habits
 
 Ask once in a client that supports schedules (Claude's own scheduled tasks, or a cron
@@ -79,3 +105,9 @@ calling the client) and the job repeats:
 - **`get_update_status`** tells the agent which version you run and whether a newer release
   exists — the same amber/green dot the admin wears — so "is my blog up to date?" is a
   question your assistant can answer.
+- **Appearance is a menu, not a palette.** No hex colors, no CSS over MCP — preset ids
+  only, because every preset is already a good screen.
+- **The newsletter's send button stays human.** The agent can draft and can send a test
+  to you alone; the broadcast to your readers is yours to press.
+- **`create_snapshot`** before anything big — the agent can take the same backup the
+  scheduler takes.

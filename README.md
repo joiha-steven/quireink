@@ -269,7 +269,7 @@ Using the Quire Ink MCP server, write a 600-word post titled
 "ai" and "writing", set a friendly excerpt, and publish it.
 ```
 
-Writing is half of it. The agent can also read your traffic and compare it to last week, count your subscribers (never see their addresses), sweep comments for spam (into the trash, not gone), search your whole archive and tell you whether a newer release is out. The [agent cookbook](./docs/agent-cookbook.md) is a page of prompts that do real jobs — a Monday report, a newsletter draft, an archive audit.
+Writing is half of it. The agent can also read your traffic and compare it to last week, count your subscribers (never see their addresses), sweep comments for spam (into the trash, not gone), search your whole archive and tell you whether a newer release is out. And it can steward: recompose the front page around what people actually read, restyle the site from the curated palettes and fonts (never free-form color — an agent has no eyes), reply to a comment under your name, send the next newsletter issue as a test to you alone, and take a backup snapshot before anything big. The [agent cookbook](./docs/agent-cookbook.md) is a page of prompts that do real jobs — a Monday report, a newsletter draft, an archive audit.
 
 The sensitive settings are off limits over MCP, and you stay in charge. Revoke the token in the admin and it stops working immediately.
 

@@ -60,7 +60,14 @@
   REPLACES the inherited ones**, so all five headers are repeated there.
 - **Tools** (`src/mcp/tools.ts` posts/pages/taxonomy, `src/mcp/tools-library.ts`
   media/files/settings, `src/mcp/tools-insight.ts` the READING half — traffic, audience
-  counts, comments, owner search, update status; results via `src/mcp/result.ts`).
+  counts, comments, owner search, update status — and `src/mcp/tools-steward.ts` the
+  STEWARD half: front-page curation, appearance from the curated menus, per-post traffic,
+  owner replies, the test send, snapshots; results via `src/mcp/result.ts`).
+  **The steward half assumes an agent has no eyes**: appearance accepts preset ids only
+  (the zod enums are built from `THEME_PRESETS`/`FONT_PRESETS`, so the schema tracks the
+  menus), never free-form color. **`send_test_newsletter` mails only the owner** — the
+  recipient is not a parameter — **and the real broadcast is deliberately not a tool**:
+  an email cannot be unsent.
   **The reading half strips identities on purpose:** `get_audience` returns counts and
   never a subscriber address; `list_comments` drops the email and IP the admin shape
   carries. That line is held by `tools-insight.test.ts`, not by prose. Worked examples

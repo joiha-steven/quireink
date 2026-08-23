@@ -271,7 +271,7 @@ Dùng máy chủ MCP của Quire Ink, viết một bài 600 chữ tựa đề
 "ai" và "writing", đặt một đoạn tóm tắt dễ chịu, rồi đăng.
 ```
 
-Viết mới là một nửa. Agent còn đọc được lượng truy cập và so với tuần trước, đếm người đăng ký (không bao giờ thấy địa chỉ email của họ), quét bình luận rác (vào thùng rác, không mất hẳn), tìm khắp kho bài, và cho bạn biết có bản mới chưa. [Sổ tay agent](./docs/agent-cookbook.md) là một trang các câu lệnh làm việc thật — báo cáo sáng thứ Hai, nháp bản tin, rà kho bài.
+Viết mới là một nửa. Agent còn đọc được lượng truy cập và so với tuần trước, đếm người đăng ký (không bao giờ thấy địa chỉ email của họ), quét bình luận rác (vào thùng rác, không mất hẳn), tìm khắp kho bài, và cho bạn biết có bản mới chưa. Và nó trông nom được: sắp lại trang nhất theo bài người ta thật sự đọc, đổi diện mạo trong bộ màu và font đã tuyển sẵn (không bao giờ nhận màu tự do — agent không có mắt), trả lời bình luận nhân danh bạn, gửi bản tin thử về đúng hộp thư của bạn, và sao lưu trước khi làm gì lớn. [Sổ tay agent](./docs/agent-cookbook.md) là một trang các câu lệnh làm việc thật — báo cáo sáng thứ Hai, nháp bản tin, rà kho bài.
 
 Các cấu hình nhạy cảm bị chặn qua MCP, và quyền vẫn nằm ở bạn. Thu hồi token trong trang quản trị là nó chết ngay.
 
