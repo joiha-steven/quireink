@@ -6,7 +6,8 @@ import { freshDatabase, dropDatabase } from '@/test/db'
 import { db } from '@/store/db'
 import { one } from '@/store/query'
 import { saveIntegrationKeys } from '@/store/integration-keys'
-import { buildRequest, parseAlt, describeUpload, DEFAULT_MODELS } from './alt-text'
+import { buildRequest, parseAlt, parseModels, describeUpload, DEFAULT_MODELS } from './alt-text'
+import { saveSettings } from '@/content/settings'
 
 const DIR = './.tmp/test-alt-text'
 freshDatabase(DIR)
@@ -122,5 +123,34 @@ describe('describeUpload', () => {
     for (const [provider, model] of Object.entries(DEFAULT_MODELS)) {
       expect(buildRequest(provider, model, 'k', 'image/png', B64, 'en')).not.toBeNull()
     }
+  })
+})
+
+describe('parseModels', () => {
+  it('reads each provider listing, filters what cannot chat or see', () => {
+    expect(parseModels('anthropic', { data: [{ id: 'claude-haiku-4-5', display_name: 'Claude Haiku 4.5' }] }))
+      .toEqual([{ id: 'claude-haiku-4-5', label: 'Claude Haiku 4.5' }])
+    const openai = parseModels('openai', { data: [
+      { id: 'gpt-4o-mini' }, { id: 'text-embedding-3-small' }, { id: 'whisper-1' }, { id: 'dall-e-3' },
+    ] })
+    expect(openai).toEqual([{ id: 'gpt-4o-mini', label: 'gpt-4o-mini' }])
+    const gemini = parseModels('gemini', { models: [
+      { name: 'models/gemini-2.0-flash', displayName: 'Gemini 2.0 Flash', supportedGenerationMethods: ['generateContent'] },
+      { name: 'models/text-embedding-004', displayName: 'Embedding', supportedGenerationMethods: ['embedContent'] },
+    ] })
+    expect(gemini).toEqual([{ id: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash' }])
+  })
+})
+
+describe('the per-job switch', () => {
+  it('a configured key still describes nothing while the owner has the job off', async () => {
+    await saveIntegrationKeys({ aiProvider: 'anthropic', aiApiKey: 'sk-test' })
+    await saveSettings({ ai: { altText: false } })
+    let called = 0
+    globalThis.fetch = (async () => { called++; return new Response('{}') }) as unknown as typeof fetch
+    plantMedia('media/switched-off.webp')
+    await describeUpload('media/switched-off.webp', new ArrayBuffer(10), 'image/webp')
+    expect(called).toBe(0)
+    expect(altOf('media/switched-off.webp')).toBeNull()
   })
 })

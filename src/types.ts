@@ -223,6 +223,7 @@ export type SiteSettings = {
   features: FeatureSettings // reader-facing feature toggles
   comments: CommentSettings // reader comment system (off by default)
   mcp: McpSettings // MCP server toggle (tokens are managed separately)
+  ai: AiSettings // which jobs the AI model does automatically (the key lives server-only)
   motion: MotionSettings // site-wide motion/animation engine toggle
   cache: CacheSettings // page cache + shared-cache headers for public HTML
   backups: BackupSettings // Google Drive backup config (secrets live in backup_state)
@@ -275,6 +276,15 @@ export type AdminComment = {
 
 // MCP server settings. Just an on/off switch — the access tokens live in their own
 // `mcp_tokens` table (hashed), managed from Admin → Settings → Advanced.
+/**
+ * The automatic jobs, not the credentials: provider/key/model live in `integration_keys`
+ * and never reach a client payload. Every switch here defaults ON — the master switch is
+ * the key itself, and without one no job runs regardless of what these say.
+ */
+export type AiSettings = {
+  altText: boolean // describe uploaded images in the site's language
+}
+
 export type McpSettings = {
   enabled: boolean // when false, /api/mcp + the OAuth flow are disabled
 }

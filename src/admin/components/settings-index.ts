@@ -24,7 +24,7 @@ import type { AdminStrings } from '@/locales/types'
 
 /** The seven tabs, as `SettingsView` keys them. */
 export type SettingsTab =
-  'site' | 'layout' | 'reading' | 'appearance' | 'seo' | 'connections' | 'system'
+  'site' | 'layout' | 'reading' | 'appearance' | 'seo' | 'connections' | 'ai' | 'system'
 
 /**
  * Dictionary keys whose value is a STRING.
@@ -136,9 +136,11 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { tab: 'connections', label: 'nlSmtpSecure' },
   { tab: 'connections', label: 'commentsTurnstile' },
   { tab: 'connections', label: 'commentsGoogleAuth' },
-  { tab: 'connections', label: 'mcpEnable' },
-  { tab: 'connections', label: 'mcpUrlLabel' },
-  { tab: 'connections', label: 'mcpTokensTitle' },
+  { tab: 'ai', label: 'mcpEnable' },
+  { tab: 'ai', label: 'mcpUrlLabel' },
+  { tab: 'ai', label: 'mcpTokensTitle' },
+  { tab: 'ai', label: 'cardAi' },
+  { tab: 'ai', label: 'aiTaskAltText' },
 
   // System — moving content in and out
   { tab: 'system', label: 'cacheEnable' },

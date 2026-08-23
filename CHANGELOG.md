@@ -25,8 +25,11 @@ takes the scheduler's own backup before anything big.
 
 ### Every picture can have words now
 
-Paste an API key — Anthropic, OpenAI or Gemini, your pick, your bill — into Settings →
-Connections, and every image you upload gets alt text written for it, in the site's own
+Settings grew an **AI tab** — the model, the jobs it does automatically, and the MCP
+door an agent connects through, all in one place. Paste an API key — Anthropic, OpenAI
+or Gemini, your pick, your bill — and **the models list themselves** for you to choose
+from, which also proves the key works before you save it. From then on every image you
+upload gets alt text written for it, in the site's own
 language, in the background, by the time you go looking. Pasting the key IS the switch:
 without one, no request ever leaves your server, which keeps the promise this software
 already makes elsewhere. The suggestion lands on the image in the library, flows into the
