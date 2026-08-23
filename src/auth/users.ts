@@ -11,6 +11,16 @@ import { one, run } from '@/store/query'
 import { nowMs } from '@/store/db'
 import { hashPassword } from './password'
 
+/**
+ * The one account's email. The blog has a single owner by design, so "the owner" is a
+ * question with one answer; MCP's test-send tool uses this as its ONLY possible recipient,
+ * which is what keeps that tool from being a mail cannon.
+ */
+export function ownerEmail(): string | null {
+  const r = one<{ email: string }>(`select email from users order by id limit 1`)
+  return r?.email ?? null
+}
+
 /** Safe to serialise into any response. Deliberately has no secret-shaped field. */
 export type PublicUser = {
   id: number

@@ -18,6 +18,7 @@ import { SlugConflictError } from '@/content/slugs'
 import { asText, asJson, asError } from '@/mcp/result'
 import { registerLibraryTools } from '@/mcp/tools-library'
 import { registerInsightTools } from '@/mcp/tools-insight'
+import { registerStewardTools } from '@/mcp/tools-steward'
 
 // Shared input shape for create/update of a post (all optional; savePost normalizes).
 const postFields = {
@@ -46,6 +47,7 @@ export function registerTools(server: McpServer): void {
   registerTaxonomyTools(server)
   registerLibraryTools(server)
   registerInsightTools(server)
+  registerStewardTools(server)
 }
 
 function registerPostTools(server: McpServer): void {
