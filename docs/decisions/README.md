@@ -39,7 +39,7 @@ abandoned on 2026-07-26, and the only trace was a private memory file.
 | [0015](0015-relicense-polyform-noncommercial.md) | Relicense from MIT to PolyForm Noncommercial 1.0.0 | 2026-07-31 | ⚠️ holds, except its ban on all commercial use: amended by 0023 |
 | [0016](0016-rename-to-quire-ink.md) | Rename the product to Quire Ink, on `quireink.com` | 2026-07-31 | ✅ |
 | [0017](0017-move-state-and-instance-config-private.md) | Move `state/` and instance config to a private repository | 2026-08-01 | ⚠️ holds, except its `v1/` bullet: superseded by 0019 |
-| [0018](0018-highlighter-pen.md) | A highlighter pen: `==text==`, drawn as ink rather than as a box | 2026-08-03 | ⚠️ holds, except its three-stroke site setting: amended by 0025 |
+| [0018](0018-highlighter-pen.md) | A highlighter pen: `==text==`, drawn as ink rather than as a box | 2026-08-03 | ⚠️ holds, except its three-stroke site setting (amended by 0025) and its "the colours are NOT a setting" (amended by 0029) |
 | [0019](0019-remove-the-frozen-tree-from-the-working-copy.md) | Remove the frozen 1.x tree from the working copy, keep it at tag `v1-final` | 2026-08-03 | ✅ |
 | [0020](0020-mathematics-as-mathml.md) | Mathematics: LaTeX in the source, MathML on the page, and the dollar sign stays money | 2026-08-06 | ✅ |
 | [0021](0021-hosted-quire-ink-one-process-per-blog.md) | A hosted Quire Ink, as one process per blog. `tenant_id` stays rejected | 2026-08-11 | ✅ |
@@ -50,6 +50,7 @@ abandoned on 2026-07-26, and the only trace was a private memory file.
 | [0026](0026-the-pen-learns-to-underline-and-ring.md) | The pen learns two more gestures: `++underline++` and `@@ring@@` | 2026-08-20 | ✅ |
 | [0027](0027-the-pen-ships-only-where-it-wrote.md) | The pen's CSS ships in two hashed sheets, linked only on pages that used it | 2026-08-21 | ✅ |
 | [0028](0028-a-link-is-a-pen-gesture.md) | A link is underlined by the pen, in dashes, in the pen's own ink | 2026-08-21 | ✅ |
+| [0029](0029-the-pen-becomes-the-owners.md) | The pen's colours become the owner's, and the defaults stay measured | 2026-08-24 | ✅ |
 
 ## Superseded, and why that matters
 

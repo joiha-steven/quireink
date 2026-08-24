@@ -20,14 +20,15 @@
 // The pen's pigments and its stroke are DATA, and they live in `render/pen.ts`. They were
 // written out here, again on the share card and a third time in the editor's swatches, and
 // the card's copy of the path had already drifted four numbers from this one.
-import { PEN_DARK, PEN_LIGHT, penStroke as pen } from '@/render/pen'
+import { penStroke as pen } from '@/render/pen'
 import {
-  PEN_AUX_DARK, PEN_AUX_LIGHT, PEN_LINE_DARK, PEN_LINE_LIGHT, penDash, penRing,
-  penSolidRule, penUnder,
+  PEN_AUX_DARK, PEN_AUX_LIGHT, penDash, penRing, penSolidRule, penUnder,
 } from '@/render/pen'
 import {
   PEN_DIE_COUNT, PEN_GRIPS, RING_DIE_COUNT, RING_GRIPS, UNDER_DIE_COUNT, UNDER_GRIPS,
 } from '@/render/pen-dies'
+// The palette this sheet is drawn in — the built-ins unless the owner has chosen otherwise.
+import { BUILT_IN_INKS, type InkPalette } from '@/render/ink-palette'
 
 const inks = (set: Record<string, string>, prefix: string) =>
   Object.entries(set)
@@ -143,7 +144,16 @@ const ringGrips = () =>
  * has decided which ones a post will use.
  * ------------------------------------------------------------------------------------- */
 
-export const INK_HIGHLIGHT_CSS = `
+/**
+ * The highlighter half, in whichever inks this site writes with.
+ *
+ * A FUNCTION since 2026-08-24, when the owner asked for the pen's colours to be his to
+ * choose. It still defaults to the measured pigments, and an install that has changed
+ * nothing gets a byte-identical sheet under the same hash — which is the property that
+ * matters, because the sheet is served immutable under a hash of its own content.
+ */
+export function inkHighlightCss(p: InkPalette = BUILT_IN_INKS): string {
+  return `
 /* A highlight is a stroke of ink UNDER the words, never a box around them. The browser's
    default mark is a solid yellow rectangle with its own text colour; both go. */
 .prose mark{color:inherit;background-color:transparent;background-repeat:no-repeat;
@@ -158,14 +168,17 @@ export const INK_HIGHLIGHT_CSS = `
    line. That is box-decoration-break above; without it the whole span gets one box wrapped
    around both lines, which is the tell that gives away every CSS highlight on the web. */
 ${grips()}
-${inks(PEN_LIGHT, '.prose')}
-${dies(PEN_LIGHT, '.prose')}
+${inks(p.light, '.prose')}
+${dies(p.light, '.prose')}
 .dark .prose mark{mix-blend-mode:normal;color:var(--c-heading)}
-${inks(PEN_DARK, '.dark .prose')}
-${dies(PEN_DARK, '.dark .prose')}
+${inks(p.dark, '.dark .prose')}
+${dies(p.dark, '.dark .prose')}
 `.trim()
+}
 
-export const INK_LINES_CSS = `
+/** The lines half: the underline and the ring, in this site's inks. */
+export function inkLinesCss(p: InkPalette = BUILT_IN_INKS): string {
+  return `
 /* The underline: a pen line under the words, never the browser's text-decoration — that is
    a perfectly straight rule at 1px, which is the same tell as the box. Descenders cross it,
    exactly as they do on paper. */
@@ -177,11 +190,11 @@ export const INK_LINES_CSS = `
   background-size:100% var(--u-h,.42em);
   background-position:0 var(--u-y,.94em)}
 ${underGrips()}
-${underInks(PEN_LINE_LIGHT, PEN_AUX_LIGHT, '.prose')}
-${underDies(PEN_LINE_LIGHT, PEN_AUX_LIGHT, '.prose')}
+${underInks(p.lineLight, p.auxLight, '.prose')}
+${underDies(p.lineLight, p.auxLight, '.prose')}
 .dark .prose u{mix-blend-mode:normal}
-${underInks(PEN_LINE_DARK, PEN_AUX_DARK, '.dark .prose')}
-${underDies(PEN_LINE_DARK, PEN_AUX_DARK, '.dark .prose')}
+${underInks(p.lineDark, p.auxDark, '.dark .prose')}
+${underDies(p.lineDark, p.auxDark, '.dark .prose')}
 /* The ring. Everything below outranks every highlight rule above (the extra
    [data-form=o]) and replaces the sweep with the loop's three pieces: two caps at a FIXED
    em width, so their curvature never stretches with the word, and a middle that does all
@@ -192,11 +205,16 @@ ${underDies(PEN_LINE_DARK, PEN_AUX_DARK, '.dark .prose')}
   background-size:.62em 100%,calc(100% - .96em) 100%,.62em 100%;
   background-position:0 50%,50% 50%,100% 50%}
 ${ringGrips()}
-${ringInks(PEN_LINE_LIGHT, PEN_AUX_LIGHT, '.prose')}
-${ringDies(PEN_LINE_LIGHT, PEN_AUX_LIGHT, '.prose')}
-${ringInks(PEN_LINE_DARK, PEN_AUX_DARK, '.dark .prose')}
-${ringDies(PEN_LINE_DARK, PEN_AUX_DARK, '.dark .prose')}
+${ringInks(p.lineLight, p.auxLight, '.prose')}
+${ringDies(p.lineLight, p.auxLight, '.prose')}
+${ringInks(p.lineDark, p.auxDark, '.dark .prose')}
+${ringDies(p.lineDark, p.auxDark, '.dark .prose')}
 `.trim()
+}
+
+/** The built-in sheets, for every caller that has no opinion about ink. */
+export const INK_HIGHLIGHT_CSS = inkHighlightCss()
+export const INK_LINES_CSS = inkLinesCss()
 
 /* ------------------------------------------------------------------------------------- *
  * The link's dashes. NOT part of either half above, and that is the point: the two pen

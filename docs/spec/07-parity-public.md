@@ -131,6 +131,11 @@ which was never true. The boxes came off on 2026-08-03; **not one line of conten
 - Mobile: one drawer, left-rail blocks duplicated into it, order menu → most viewed →
   featured → categories → tags
 - Each rail block self-hides when empty
+- The pen's colours are the owner's (2026-08-24, ADR 0029): five highlighter pigments, the
+  ring and the underline, each defaulting to the measured ink and each deriving its own dark
+  and line versions when set. A site that has chosen nothing serves the same immutable sheets
+  it always has. Selected text is black on a light page and the palette's mid grey on a dark
+  one, both overridable
 - Quote gesture (2026-08-24, ADDED HERE — the frozen tree had nothing like it): selecting
   twelve characters or more inside `.prose` raises one control that copies the sentence and
   a `#:~:text=` link to it. Above the selection on a mouse, BELOW it on a touch screen where

@@ -98,7 +98,15 @@ function PresetCard({
   )
 }
 
-function ColorRow({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+/**
+ * One colour: the swatch and the hex, side by side.
+ *
+ * Exported since 2026-08-24 because the ink card wants the same row, and a second copy of
+ * these twelve classes is exactly the drift `check:admin-kit` exists to catch. It stays
+ * here rather than moving to the kit: the kit is the chrome every screen shares, and this
+ * is a control two colour editors share.
+ */
+export function ColorRow({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
     <label className="flex items-center justify-between gap-3">
       <span className="text-sm text-neutral-700 dark:text-neutral-300">{label}</span>

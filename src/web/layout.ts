@@ -11,7 +11,7 @@
 //     (`scripts/build-assets.ts`), so a listing pays for the beacon and the header alone
 //     and an article adds one more file. Nothing is inlined, and there is no framework.
 
-import type { GallerySettings, SiteSettings, FeatureSettings } from '@/types'
+import type { GallerySettings, SiteSettings, FeatureSettings, InkSettings } from '@/types'
 import { fontPreloadHrefs, fontPresetCss, chromeFontCss, themesToCss } from '@/content/themes'
 import { cjkLangCss } from '@/content/fonts'
 import { typographyToCss, fontToCss } from '@/content/settings'
@@ -67,6 +67,30 @@ const dataAttr = (key: string) => `data-${key.replace(/[A-Z]/g, (c) => `-${c.toL
  * the [data-pen] forms too: the per-variant grip rules in the hashed sheet outrank a bare
  * `.prose u`, and this inline block only wins the tie because it comes later.
  */
+/**
+ * What a text selection looks like, when the owner has said.
+ *
+ * Emits NOTHING by default, which is the same no-bytes bargain as the gallery and the pen
+ * gestures: the sheet's own rule (black on paper, the palette's mid grey on a dark page)
+ * is the default, and this only overrides it. Two fields rather than one because the two
+ * modes are genuinely different decisions — the value that reads as a marker on paper is a
+ * flashbulb on a dark page.
+ *
+ * `html.dark` for the explicit case and the media query for the reader whose SYSTEM is dark
+ * before the island has run, mirroring `content/themes.ts` exactly. Without the second one
+ * a customised light selection paints over a dark page for one paint.
+ */
+function selectionCss(inks: InkSettings): string {
+  const parts: string[] = []
+  if (inks.selection) parts.push(`::selection{background:${inks.selection}}`)
+  if (inks.selectionDark) {
+    const rule = `::selection{background:${inks.selectionDark}}`
+    parts.push(`html.dark ${rule}`)
+    parts.push(`@media (prefers-color-scheme:dark){html:not([data-scheme]) ${rule}}`)
+  }
+  return parts.join('')
+}
+
 function penGesturesCss(f: FeatureSettings): string {
   const parts = []
   if (!f.penUnderline) {
@@ -126,6 +150,7 @@ export function pageStyles(settings: SiteSettings, extra = ''): string {
     galleryCss(settings.gallery),
     // The pen toggles, on the same terms as the gallery above.
     penGesturesCss(settings.features),
+    selectionCss(settings.inks),
     // Page-specific geometry: the listing's second rail, the feed's gutter timeline. It
     // comes BEFORE the owner's own settings, so custom CSS still has the last word.
     extra,
@@ -196,7 +221,7 @@ export function renderDocument(
   // it did when the ink lived inside it, and gated on `head.stylesheet` because a page
   // that declines the public sheet (sign-in) has no prose to ink.
   const sheet = head.stylesheet
-    ? [head.stylesheet, ...penSheetsFor(body)]
+    ? [head.stylesheet, ...penSheetsFor(body, settings.inks)]
         .map((href) => `<link rel="stylesheet" href="${escapeAttr(href)}">`)
         .join('')
     : ''

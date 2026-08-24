@@ -3,6 +3,7 @@
 // store-relative, binaries on Blob. Validation/migration lives in settings-sanitize.ts.
 
 import type { BackupSettings, CommentSettings, FeatureSettings, SeoSettings, SiteSettings } from '@/types'
+import { DEFAULT_INKS } from '@/render/ink-palette'
 import { collapseBlob, expandBlob, deleteByPathname } from '@/media/blob'
 import { renderLogo } from '@/media/files'
 import { one, run } from '@/store/query'
@@ -11,7 +12,7 @@ import { DEFAULT_PRESET_ID, isPresetId, isFontPresetId, defaultThemes, ALL_PALET
 import {
   DEFAULT_HOME, DEFAULT_GALLERY, sanitizeMenu, migrateThemes, sanitizeThemes, sanitizeEnabledPalettes, sanitizeSeo, sanitizeFeatures, sanitizeHome, sanitizeGallery, sanitizeMcp, sanitizeMotion, sanitizeCache,
   sanitizeBackups, sanitizeComments, sanitizeCss, sanitizeUrl, clampNumber, sanitizeFeatured,
-  sanitizeTimezone, sanitizeAi,
+  sanitizeTimezone, sanitizeAi, sanitizeInks,
 } from '@/content/settings-sanitize'
 import { sanitizeTypography, sanitizeFont } from '@/content/settings-type'
 
@@ -133,6 +134,9 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   comments: DEFAULT_COMMENTS,
   mcp: { enabled: false },
   ai: { altText: true, excerpt: true, commentGuard: true },
+  // Every ink empty: the built-ins are measured values (ADR 0018) and belong in the code
+  // where they can still be corrected, not copied into every install's database.
+  inks: { ...DEFAULT_INKS },
   motion: { enabled: true, typewriter: true },
   // On, because a blog that is fast for readers is the default. The switch exists for the
   // hour you are changing the look and want to see it, not for permanent use.
@@ -201,6 +205,7 @@ export async function getSettings(): Promise<SiteSettings> {
       comments: sanitizeComments(stored.comments, DEFAULT_COMMENTS),
       mcp: sanitizeMcp(stored.mcp, DEFAULT_SETTINGS.mcp),
       ai: sanitizeAi(stored.ai, DEFAULT_SETTINGS.ai),
+      inks: sanitizeInks(stored.inks, DEFAULT_SETTINGS.inks),
       motion: sanitizeMotion(stored.motion, DEFAULT_SETTINGS.motion),
       cache: sanitizeCache(stored.cache, DEFAULT_SETTINGS.cache),
       backups: sanitizeBackups(stored.backups, DEFAULT_BACKUPS),
@@ -328,6 +333,7 @@ export async function saveSettings(input: Partial<SiteSettings>): Promise<SiteSe
     comments: sanitizeComments(input.comments, current.comments),
     mcp: sanitizeMcp(input.mcp, current.mcp),
     ai: sanitizeAi(input.ai, current.ai),
+    inks: sanitizeInks(input.inks, current.inks),
     motion: sanitizeMotion(input.motion, current.motion),
     cache: sanitizeCache(input.cache, current.cache),
     backups: sanitizeBackups(input.backups, current.backups),

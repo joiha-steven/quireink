@@ -9,7 +9,9 @@ import coreJs from '@/assets/dist/core.js' with { type: 'text' }
 import postJs from '@/assets/dist/post.js' with { type: 'text' }
 import loginJs from '@/assets/dist/login.js' with { type: 'text' }
 import { PUBLIC_CSS } from '@/web/public.css'
-import { INK_HIGHLIGHT_CSS, INK_LINES_CSS } from '@/web/ink.css'
+import { INK_HIGHLIGHT_CSS, INK_LINES_CSS, inkHighlightCss, inkLinesCss } from '@/web/ink.css'
+import { inkSignature, resolveInks } from '@/render/ink-palette'
+import type { InkSettings } from '@/types'
 import { minifyCss } from '@/web/css-min'
 
 /** Bundles by logical name. Adding one is an import and a line. */
@@ -89,11 +91,59 @@ BY_PATH.set(PEN_LINES_SHEET, PEN_LINES_CSS_SERVED)
  * microseconds against bodies that are already cached, and it is the reason no route, no
  * cache key and no setting had to learn what a page contains.
  */
-export function penSheetsFor(body: string): string[] {
+export function penSheetsFor(body: string, inks?: InkSettings): string[] {
+  const { marks, lines } = inks ? penSheets(inks) : { marks: PEN_MARKS_SHEET, lines: PEN_LINES_SHEET }
   const sheets: string[] = []
-  if (/<mark[\s>]/.test(body)) sheets.push(PEN_MARKS_SHEET)
-  if (/<u[\s>]/.test(body) || body.includes('data-form="o"')) sheets.push(PEN_LINES_SHEET)
+  if (/<mark[\s>]/.test(body)) sheets.push(marks)
+  if (/<u[\s>]/.test(body) || body.includes('data-form="o"')) sheets.push(lines)
   return sheets
+}
+
+/**
+ * The pen sheets for a site that has CHOSEN its inks.
+ *
+ * An install that has chosen nothing never reaches the second half of this function: it
+ * keeps the two sheets built at module load, with the hashes they have always had, and
+ * nothing about it costs a byte or a millisecond more than before the colours became a
+ * setting. That is what `inkSignature` returning '' is for.
+ *
+ * When they HAVE been chosen, the sheets are rebuilt — 280 data-URIs, about 270 KB before
+ * minifying — and cached under the signature. Two are kept, not one: a page rendered a
+ * moment before the owner pressed Save names the OLD sheet in its HTML, and that fetch has
+ * to still resolve or the marks on it arrive unpainted. Three would only widen a window
+ * that is already generous; the memory is real (roughly half a megabyte for the pair).
+ */
+const CUSTOM_PEN = new Map<string, { marks: string; lines: string }>()
+
+export function penSheets(inks: InkSettings): { marks: string; lines: string } {
+  const signature = inkSignature(inks)
+  if (!signature) return { marks: PEN_MARKS_SHEET, lines: PEN_LINES_SHEET }
+  const cached = CUSTOM_PEN.get(signature)
+  if (cached) return cached
+
+  const palette = resolveInks(inks)
+  const marksCss = minifyCss(inkHighlightCss(palette))
+  const linesCss = minifyCss(inkLinesCss(palette))
+  const made = {
+    marks: `/assets/pen-marks.${hashOf(marksCss)}.css`,
+    lines: `/assets/pen-lines.${hashOf(linesCss)}.css`,
+  }
+  BY_PATH.set(made.marks, marksCss)
+  BY_PATH.set(made.lines, linesCss)
+  CUSTOM_PEN.set(signature, made)
+
+  if (CUSTOM_PEN.size > 2) {
+    const [oldest] = CUSTOM_PEN.keys()
+    const gone = CUSTOM_PEN.get(oldest!)
+    if (gone) {
+      // Never evict the built-ins: a custom pen can hash to the same bytes as the default
+      // one if every override happens to match a measured value.
+      if (gone.marks !== PEN_MARKS_SHEET) BY_PATH.delete(gone.marks)
+      if (gone.lines !== PEN_LINES_SHEET) BY_PATH.delete(gone.lines)
+    }
+    CUSTOM_PEN.delete(oldest!)
+  }
+  return made
 }
 
 /** The hashed URL for a bundle. Callers use this rather than writing paths by hand. */

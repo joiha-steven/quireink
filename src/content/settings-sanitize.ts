@@ -2,7 +2,7 @@
 // back-compat shims). No DB, no Blob, no React. settings.ts depends on this ONE
 // WAY (settings -> settings-sanitize, never back) for its getSettings/saveSettings merge.
 
-import type { BackupSettings, CacheSettings, CommentSettings, FeatureSettings, FrontSettings, FrontStrip, GallerySettings, HomeSettings, McpSettings, MenuItem, MotionSettings, SeoSettings, ThemeColors, ThemeSettings, AiSettings } from '@/types'
+import type { BackupSettings, CacheSettings, CommentSettings, FeatureSettings, FrontSettings, FrontStrip, GallerySettings, HomeSettings, McpSettings, MenuItem, MotionSettings, SeoSettings, ThemeColors, ThemeSettings, AiSettings, InkSettings } from '@/types'
 import { DEFAULT_PRESET_ID, isPresetId, defaultThemes, THEME_PRESETS } from '@/content/themes'
 
 // Keep only well-formed menu items (label + href both present).
@@ -133,6 +133,31 @@ export function sanitizeComments(input: unknown, fallback: CommentSettings): Com
 export function sanitizeMcp(input: unknown, fallback: McpSettings): McpSettings {
   const o = (input ?? {}) as Partial<McpSettings>
   return { enabled: bool(o.enabled, fallback.enabled) }
+}
+
+/**
+ * A colour the owner typed, or '' — and '' is a DECISION, not an absence: it means "use the
+ * built-in ink". A malformed value falls back to the current one rather than to empty, for
+ * the same reason `sanitizeTimezone` does: one bad paste should not silently reset a colour
+ * the owner picked weeks ago.
+ */
+const hexOr = (value: unknown, fallback: string): string => {
+  if (typeof value !== 'string') return fallback
+  const trimmed = value.trim()
+  if (trimmed === '') return '' // cleared on purpose: back to the built-in
+  return /^#?[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$/.test(trimmed)
+    ? `#${trimmed.replace(/^#/, '').toLowerCase()}`
+    : fallback
+}
+
+export function sanitizeInks(input: unknown, fallback: InkSettings): InkSettings {
+  const o = (input ?? {}) as Partial<InkSettings>
+  const keys: (keyof InkSettings)[] = [
+    'yellow', 'green', 'pink', 'blue', 'orange', 'ring', 'underline', 'selection', 'selectionDark',
+  ]
+  const out = {} as InkSettings
+  for (const key of keys) out[key] = hexOr(o[key], fallback[key])
+  return out
 }
 
 export function sanitizeAi(input: unknown, fallback: AiSettings): AiSettings {
