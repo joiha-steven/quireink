@@ -135,17 +135,24 @@ export type InkSettings = {
 
 /**
  * What the editor does when a key lands, and it is a CHOICE OF INSTRUMENT rather than a
- * switch (owner's call, 2026-08-24). The three are not three volumes of one sound:
+ * switch (owner's call, 2026-08-24).
  *
- *  - `typewriter` — the machine that moves. A bright, hard strike, and the caret takes a
- *    small step with it, because on a typewriter the carriage is the thing that responds.
- *  - `tactile` — a mechanical keyboard with a bump partway down: two transients a few
- *    milliseconds apart, the bump and then the bottom-out.
- *  - `linear` — the same board with no bump: one softer, lower thock, and nothing moves.
+ * ⚠️ THE NAMES ARE NOT THE NAMES OF REAL MACHINES, and that is deliberate as of 2026-08-25.
+ * They were: `typewriter`, `tactile`, `linear`. The synthesis is genuinely modelled on those
+ * three mechanisms and says so at length in `key-voices.ts` — but the owner listened and
+ * said the honest thing: *"nghe chưa giống đồ thiệt cho lắm... đừng nên gọi tên thiệt, vì ko
+ * làm giống được"*. A name that promises a Underwood and delivers a good synthesised knock
+ * is a name that makes the sound worse by comparison. So they are named for what they ARE:
+ *
+ *  - `woody` — the deep, wooden one. A lever, something striking a hard surface, and a small
+ *    bright mechanism finishing after it. Three events across 60ms.
+ *  - `crisp` — the sharp one. Two transients 14ms apart, bright, gone in 40ms.
+ *  - `deep`  — the round one. A blunt onset, a low body letting go slowly, one quiet tick as
+ *    it comes back.
  *
  * `off` is the browser's own caret and silence.
  */
-export type KeyFeedback = 'off' | 'typewriter' | 'tactile' | 'linear'
+export type KeyFeedback = 'off' | 'woody' | 'crisp' | 'deep'
 
 export type MotionSettings = {
   enabled: boolean

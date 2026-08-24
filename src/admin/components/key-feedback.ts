@@ -57,7 +57,7 @@ function holdBlink(caret: HTMLElement | null): void {
 /**
  * One keystroke's worth of feedback.
  *
- * The caret moves and, in `typewriter` alone, takes a small step as it goes — that is the
+ * The caret moves and, in `woody` alone, takes a small step as it goes — that is the
  * carriage, and it is the one motion left in this file. A keyboard does not move the page,
  * so the two mechanical voices leave it alone.
  */
@@ -90,7 +90,7 @@ export function pulseInput(
   holdBlink(caret)
 
   if (
-    sound.mode !== 'typewriter' ||
+    sound.mode !== 'woody' ||
     !caret ||
     document.documentElement.dataset.motion === 'off' ||
     window.matchMedia('(prefers-reduced-motion: reduce)').matches

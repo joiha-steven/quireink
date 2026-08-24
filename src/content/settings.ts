@@ -140,7 +140,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   // 60, on a scale rebuilt on 2026-08-25 to be much louder than the one before it: measured
   // A-weighted, a letter here is about four times the amplitude of the OLD scale's maximum,
   // and the slider still has forty points left above it.
-  motion: { enabled: true, keys: 'typewriter', keyVolume: 60 },
+  motion: { enabled: true, keys: 'woody', keyVolume: 60 },
   // On, because a blog that is fast for readers is the default. The switch exists for the
   // hour you are changing the look and want to see it, not for permanent use.
   cache: { enabled: true },

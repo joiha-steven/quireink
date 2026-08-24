@@ -151,23 +151,24 @@ Nothing about the balance moves with it: a space stays deeper than a letter, and
 bump stays under its bottom-out, wherever you put the slider. **Zero is a real setting** —
 the caret without the sound — and it is not the same as turning the instrument Off.
 
-### Three keyboards that are actually three keyboards
+### Three sounds that are actually three sounds
 
 The first attempt was not three instruments. It was one burst of noise through one filter,
 three times, at three centre frequencies — which is one sound with three EQ settings, and it
 sounded like it. This is a rebuild from the machines outward.
 
-**The typewriter** is not a keyboard at all, and now it does not pretend to be one. Pressing
-a letter runs a lever, throws a typebar at the platen through an inked ribbon, and lets the
-carriage step one place: three events across sixty milliseconds, a low wooden thump with a
-metal ring over it, and the escapement ticking after. The **space bar** strikes nothing — it
-only moves the carriage, so it is a dull knock and a tick. **Return** throws the carriage
-all the way back across the machine, accelerating, and it hits the stop.
+They are called **Woody**, **Crisp** and **Deep**, and they used to be called after the
+machines they are modelled on. They are not called that any more, because they are not
+recordings and they are not going to fool anybody: a name that promises a 1940s Underwood
+makes a good synthesised knock sound worse than it is. So they are named for what you hear.
 
-**Tactile** is the leaf snapping past the ramp and then the bottom-out fourteen milliseconds
-later: bright, hard, and over in forty milliseconds. **Linear** has no snap at all — a
-blunted onset, a low body letting go slowly, and the key meeting the top housing on its way
-back up. The space bar on both is stabilised, and you can hear the bar rattle.
+**Woody** is built like a machine that strikes: a lever, something hitting a hard surface
+through a ribbon, and a small bright mechanism finishing the job a moment later — three
+events across sixty milliseconds. Its space bar strikes nothing at all, so it is a dull
+knock and a tick, and its return key sends the whole thing back across and into the stop.
+**Crisp** is a snap and then a landing fourteen milliseconds after it: bright, hard, over in
+forty. **Deep** has no snap — a blunt start, a low body letting go slowly, and one quiet
+tick as the key comes back up.
 
 Every key has three separate takes, matched in level so they differ in grain and not in
 force, and each one plays back a few percent off pitch. Forty keys in a line never repeat.
@@ -176,7 +177,14 @@ force, and each one plays back a few percent off pitch. Forty keys in a line nev
 one reached at ITS top, and the default sits well above where the old one ever went. The
 three are levelled against each other by measurement rather than by eye — weighted for what
 the ear is sensitive to, and again for what a laptop speaker can actually reproduce — so
-switching instrument changes the sound and not the volume.
+switching sound changes the sound and not the volume.
+
+**Play a few keys** now sits beside the volume. Dragging the slider plays one key, which
+turns out to be easy to miss; six of them in a row is not, and a run is the only way to hear
+what separates these three anyway. If your browser had not yet let a page make a sound, the
+first key you asked for used to be swallowed. It is not any more.
+
+Whatever you had chosen stays chosen.
 
 ### The pen is yours now
 

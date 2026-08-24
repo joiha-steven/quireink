@@ -39,20 +39,25 @@ that file first; this one only adds what is true here.
   drift with the viewport or the translation.
 - The prose `contenteditable` must not inherit the global focus outline; the surrounding card
   is the boundary. Focus rings stay on discrete controls.
-- **Key feedback is a CHOICE OF INSTRUMENT, not a switch** (2026-08-24): typewriter,
-  mechanical-tactile, mechanical-linear, off. It defaults to typewriter, is stored as
-  `motion.keys`, and reads the pre-2026-08-24 `motion.typewriter` boolean as the choice it
-  stood for. The click is generated locally: no audio files anywhere, ever.
+- **Key feedback is a CHOICE OF INSTRUMENT, not a switch** (2026-08-24): `woody`, `crisp`,
+  `deep`, `off`. It defaults to `woody`, is stored as `motion.keys`, and migrates BOTH older
+  spellings — the pre-2026-08-24 `motion.typewriter` boolean, and the machine names
+  (`typewriter` / `tactile` / `linear`) it shipped under until 2026-08-25.
+  ⚠️ **The names are not the names of real machines, on purpose.** The synthesis is modelled
+  on those three mechanisms and says so at length in `key-voices.ts`, but the owner listened
+  and said the honest thing — *"nghe chưa giống đồ thiệt cho lắm... đừng nên gọi tên thiệt,
+  vì ko làm giống được"*. A label promising an Underwood and delivering a good synthesised
+  knock makes the sound worse by comparison. They are named for what they are. The click is generated locally: no audio files anywhere, ever.
   ⚠️ **The three are three MACHINES, not three filter settings**, and this is the correction
   of 2026-08-25 (*"3 loại tiếng ko khác gì nhau"* — and they did not, because they were one
   noise burst through one bandpass at 1840 / 1144 / 972 Hz). A strike is now a SEQUENCE OF
   EVENTS, written as physics in `key-voices.ts`:
-  a **typewriter** runs a lever, throws a typebar at the platen through a ribbon, and lets
+  **woody** runs a lever, throws a typebar at the platen through a ribbon, and lets
   the carriage step — three events over 60ms, a low wooden thump with an inharmonic metal
   ring on it, and a bright escapement tick after; the **space bar** strikes nothing at all
   and **return** throws the carriage all the way back;
-  a **tactile** switch snaps its leaf and then bottoms out 14ms later, bright and gone in
-  40ms; a **linear** one has no bump, a blunted onset, and a quiet upstroke 62ms later.
+  **crisp** snaps a leaf and then bottoms out 14ms later, bright and gone in 40ms;
+  **deep** has no bump, a blunted onset, and a quiet upstroke 62ms later.
   Measured, and held there by `key-render.test.ts`: brightness (energy above 2 kHz) is
   0.37 / 0.08 / 0.00, and the spectral centre is 2236 / 460 / 226 Hz. Every fundamental sits
   above 200 Hz **because of the speaker, not the ear** — a laptop is down hard by then, and a

@@ -503,11 +503,12 @@ export type AdminStrings = {
   keyFeedbackLabel: string
   keyFeedbackDesc: string
   keyFeedbackOff: string
-  keyFeedbackTypewriter: string
-  keyFeedbackTactile: string
-  keyFeedbackLinear: string
+  keyFeedbackWoody: string
+  keyFeedbackCrisp: string
+  keyFeedbackDeep: string
   keyVolumeLabel: string
   keyVolumeDesc: string
+  keyHear: string
   autosaveLabel: string
   autosaveHint: string
   // overview

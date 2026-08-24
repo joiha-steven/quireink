@@ -165,24 +165,34 @@ describe('sanitizeFront', () => {
  * the worse of the two, because somebody turned it off for a reason.
  */
 describe('sanitizeMotion, upgrading from the old boolean', () => {
-  const M = { enabled: true, keys: 'typewriter', keyVolume: 60 } as const
+  const M = { enabled: true, keys: 'woody', keyVolume: 60 } as const
 
   it('reads the old switch as the choice it stood for', () => {
-    expect(sanitizeMotion({ enabled: true, typewriter: true }, M).keys).toBe('typewriter')
+    expect(sanitizeMotion({ enabled: true, typewriter: true }, M).keys).toBe('woody')
     expect(sanitizeMotion({ enabled: true, typewriter: false }, M).keys).toBe('off')
   })
 
   it('lets an explicit choice win over a boolean sent beside it', () => {
-    expect(sanitizeMotion({ keys: 'linear', typewriter: false }, M).keys).toBe('linear')
+    expect(sanitizeMotion({ keys: 'deep', typewriter: false }, M).keys).toBe('deep')
   })
 
   it('keeps the current setting for a value it cannot read', () => {
-    expect(sanitizeMotion({ keys: 'clicky' }, M).keys).toBe('typewriter')
-    expect(sanitizeMotion({}, { enabled: true, keys: 'tactile', keyVolume: 60 }).keys).toBe('tactile')
+    expect(sanitizeMotion({ keys: 'clicky' }, M).keys).toBe('woody')
+    expect(sanitizeMotion({}, { enabled: true, keys: 'crisp', keyVolume: 60 }).keys).toBe('crisp')
+  })
+
+  // The three carried the names of the machines they are modelled on until 2026-08-25, when
+  // the owner said they were not close enough to earn them. Every settings row on every
+  // install still says the old ones, and dropping them on the floor would silently reset
+  // three people's choice to the default.
+  it('reads the machine names it used to ship as the sounds they became', () => {
+    expect(sanitizeMotion({ keys: 'typewriter' }, M).keys).toBe('woody')
+    expect(sanitizeMotion({ keys: 'tactile' }, M).keys).toBe('crisp')
+    expect(sanitizeMotion({ keys: 'linear' }, M).keys).toBe('deep')
   })
 
   it('takes all four, and they are the four the editor knows', () => {
-    for (const keys of ['off', 'typewriter', 'tactile', 'linear'] as const) {
+    for (const keys of ['off', 'woody', 'crisp', 'deep'] as const) {
       expect(sanitizeMotion({ keys }, M).keys).toBe(keys)
     }
   })
@@ -190,12 +200,12 @@ describe('sanitizeMotion, upgrading from the old boolean', () => {
   // The volume arrived a day after the instrument, so every stored row in the world is a row
   // without one — including the three this product actually runs on.
   it('gives a settings row that predates the volume the default one', () => {
-    expect(sanitizeMotion({ keys: 'linear' }, M).keyVolume).toBe(60)
+    expect(sanitizeMotion({ keys: 'deep' }, M).keyVolume).toBe(60)
     expect(sanitizeMotion({ enabled: true, typewriter: true }, M).keyVolume).toBe(60)
   })
 
   it('keeps silence, because 0 is an answer and not a missing value', () => {
-    expect(sanitizeMotion({ keys: 'linear', keyVolume: 0 }, M).keyVolume).toBe(0)
+    expect(sanitizeMotion({ keys: 'deep', keyVolume: 0 }, M).keyVolume).toBe(0)
   })
 
   it('clamps and rounds anything else', () => {

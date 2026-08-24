@@ -75,10 +75,10 @@ describe('how loud a key is', () => {
   })
 
   it('carries the setting all the way to the gain', () => {
-    playKey({ mode: 'typewriter', volume: 30 }, 'tap')
+    playKey({ mode: 'woody', volume: 30 }, 'tap')
     const quiet = built.gains.at(-1)!
     built.gains = []
-    playKey({ mode: 'typewriter', volume: 100 }, 'tap')
+    playKey({ mode: 'woody', volume: 100 }, 'tap')
     const loud = built.gains.at(-1)!
     // 3.33x nominal; the per-strike level jitter is +-8% on each draw, so the worst honest
     // pair is still clear of 2. An assertion on the exact ratio would fail on the jitter
@@ -88,8 +88,8 @@ describe('how loud a key is', () => {
 
   it('at zero makes no sound and does not open an audio context', () => {
     const before = built.contexts
-    playKey({ mode: 'linear', volume: 0 }, 'tap')
-    previewKey({ mode: 'linear', volume: 0 })
+    playKey({ mode: 'deep', volume: 0 }, 'tap')
+    previewKey({ mode: 'deep', volume: 0 })
     expect(built.starts).toBe(0)
     expect(built.contexts).toBe(before)
   })
@@ -110,17 +110,17 @@ describe('the measured level table', () => {
   it('spreads the three peaks wide, because it matched their loudness instead', () => {
     const peak = (m: Instrument, k: Strike = 'tap') =>
       Math.max(...takes(m, k, 48_000).map(peakOf)) * LEVEL[m]
-    expect(peak('tactile')).toBeGreaterThan(peak('typewriter'))
-    expect(peak('typewriter')).toBeGreaterThan(peak('linear'))
+    expect(peak('crisp')).toBeGreaterThan(peak('woody'))
+    expect(peak('woody')).toBeGreaterThan(peak('deep'))
     // Measured 2026-08-25: 3.01 / 1.53 / 0.62. If a later change brings these together, one
     // of two things has happened and both are bad.
-    expect(peak('tactile')).toBeGreaterThan(peak('linear') * 3)
+    expect(peak('crisp')).toBeGreaterThan(peak('deep') * 3)
   })
 
   it('keeps the loudest key on the loudest instrument inside the limiter', () => {
     // At the top of the slider, with the level jitter at its most generous.
     let worst = 0
-    for (const mode of ['typewriter', 'tactile', 'linear'] as Instrument[]) {
+    for (const mode of ['woody', 'crisp', 'deep'] as Instrument[]) {
       for (const kind of ['tap', 'back', 'space', 'return'] as Strike[]) {
         for (const take of takes(mode, kind, 48_000)) {
           worst = Math.max(worst, peakOf(take) * LEVEL[mode] * gainFor(100) * 1.08)
@@ -137,9 +137,9 @@ describe('the measured level table', () => {
 
 describe('the graph', () => {
   it('puts one soft ceiling in front of the destination, once', () => {
-    playKey({ mode: 'tactile', volume: 60 }, 'tap')
+    playKey({ mode: 'crisp', volume: 60 }, 'tap')
     const after = built.shapers
-    playKey({ mode: 'tactile', volume: 60 }, 'tap')
+    playKey({ mode: 'crisp', volume: 60 }, 'tap')
     expect(after).toBeLessThanOrEqual(1)
     expect(built.shapers).toBe(after)
   })
@@ -147,14 +147,14 @@ describe('the graph', () => {
   it('does not play the same recording of a key twice in a row every time', () => {
     // Three renderings per key, picked at random, plus a few percent of pitch. Forty
     // identical clicks in a line stop reading as typing and start reading as a fault.
-    for (let i = 0; i < 40; i += 1) playKey({ mode: 'linear', volume: 60 }, 'tap')
+    for (let i = 0; i < 40; i += 1) playKey({ mode: 'deep', volume: 60 }, 'tap')
     expect(new Set(built.buffers).size).toBe(3)
     expect(new Set(built.rates).size).toBeGreaterThan(20)
   })
 
   it('gives the four keys four different recordings', () => {
     for (const kind of ['tap', 'back', 'space', 'return'] as Strike[]) {
-      playKey({ mode: 'typewriter', volume: 60 }, kind)
+      playKey({ mode: 'woody', volume: 60 }, kind)
     }
     const lengths = built.buffers.map((b) => (b as { length: number }).length)
     expect(new Set(lengths).size).toBe(4)
