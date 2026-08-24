@@ -14,6 +14,7 @@
 // words hold still. On a real machine the paper moves and the words do not.
 import { type Editor as TiptapEditor } from '@tiptap/react'
 import { playKey, type KeySound } from './key-sound'
+import type { Strike } from './key-voices'
 
 /**
  * How long the caret holds still after the last keystroke before it starts blinking again.
@@ -60,6 +61,19 @@ function holdBlink(caret: HTMLElement | null): void {
  * carriage, and it is the one motion left in this file. A keyboard does not move the page,
  * so the two mechanical voices leave it alone.
  */
+/**
+ * Which key this was, as far as any of the three instruments is concerned.
+ *
+ * A return is its own answer and not a loud space, because on a typewriter it is not even
+ * the same mechanism: the space bar lets the carriage step once, and the return throws it
+ * all the way back across the machine and into the stop.
+ */
+function strikeOf(inputType: string, data: string | null, deleting: boolean): Strike {
+  if (deleting) return 'back'
+  if (inputType === 'insertParagraph' || inputType === 'insertLineBreak') return 'return'
+  return data === ' ' ? 'space' : 'tap'
+}
+
 export function pulseInput(
   view: TiptapEditor['view'],
   event: InputEvent,
@@ -71,11 +85,7 @@ export function pulseInput(
   const deleting = inputType.startsWith('delete')
   if (!deleting && !inputType.startsWith('insert')) return
 
-  if (!event.isComposing) {
-    // A space and a return come off the two biggest keys on the board and sound like it.
-    const wide = event.data === ' ' || inputType === 'insertParagraph' || inputType === 'insertLineBreak'
-    playKey(sound, deleting ? 'back' : wide ? 'space' : 'tap')
-  }
+  if (!event.isComposing) playKey(sound, strikeOf(inputType, event.data, deleting))
   placeCaret(view, caret)
   holdBlink(caret)
 

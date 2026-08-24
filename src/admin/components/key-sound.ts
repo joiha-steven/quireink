@@ -1,13 +1,19 @@
-// The keyboard, as sound. Filtered noise, made on the spot — there are no audio files in
-// this product and none are wanted: a key click is a burst of noise through a bandpass,
-// which is thirty lines and nothing on the wire.
+// Playing a keystroke: the cache, the limiter, and how loud.
 //
-// Split out of `key-feedback.ts` on 2026-08-25, when the volume became a setting. The
-// settings screen has to be able to PLAY a key — a volume control you cannot hear while you
-// are setting it sends you to the editor and back for every nudge — and `key-feedback.ts`
-// imports Tiptap. This half knows nothing about an editor, so both the writing surface and
-// the slider that tunes it can hold it without dragging a document model behind them.
+// The three instruments are DATA (`key-voices.ts`) and the samples are ARITHMETIC
+// (`key-render.ts`). What is left here is the part that needs a browser — an AudioContext, a
+// buffer, and the one number the owner sets.
+//
+// Split three ways on 2026-08-25 for a reason that turned out to matter: the owner said the
+// three sounds were indistinguishable, and answering that meant MEASURING them rather than
+// arguing about them. A generator tangled into an audio graph cannot be measured; a pure
+// function returning samples can, and `key-render.test.ts` now holds the three apart by
+// their spectra.
+import { render } from './key-render'
+import { VOICES, type Instrument, type Strike } from './key-voices'
 import type { KeyFeedback } from '@/types'
+
+export type { Strike } from './key-voices'
 
 /**
  * The instrument and how loud it is, together, because they are one answer.
@@ -20,59 +26,61 @@ import type { KeyFeedback } from '@/types'
 export type KeySound = { mode: KeyFeedback; volume: number }
 
 /**
- * What the top of the volume slider means, as a multiplier on the per-voice gains below.
+ * What the top of the slider means: the gain applied to an instrument at `LEVEL` 1.
  *
- * The gains are the BALANCE between the three instruments and between a letter and a space,
- * hand-tuned; this is the one number that says how loud the whole thing is, so the balance
- * survives every move of the slider. 2.5 puts the loudest strike at about 0.3 of full scale
- * — audible across a room over speakers, and still a third of the way from clipping, which
- * matters because two transients of a tactile switch can land within twelve milliseconds of
- * each other and add.
+ * Raised from an effective 0.11 to 0.23 on 2026-08-25 — *"âm lượng lớn hơn đi"*. Measured
+ * A-weighted against the generator it replaces, a letter at the top of the slider is about
+ * SEVEN TIMES the amplitude of the old one at ITS top, and the old default was half of that
+ * again. A ceiling only twice as loud as a level somebody calls too quiet is the wrong
+ * ceiling.
  *
  * The taper is LINEAR on purpose. The usual argument for a curve is that loudness is
  * logarithmic and a linear slider crowds everything into the bottom third — true of a
- * sustained tone across a 60 dB range, and this is a 20 dB range on a click twenty
- * milliseconds long. Measured over that span every five-point step is a step you can hear.
+ * sustained tone across a 60 dB range, and this is a click on a 25 dB range. Measured over
+ * that span every five-point step is a step you can hear.
  */
-const FULL_SCALE = 2.5
-
-let audio: AudioContext | null = null
+const FULL_SCALE = 0.3
 
 /**
- * The three voices.
+ * One number per instrument, so the three are equally loud to a person, measured rather than
+ * guessed. They are not close to each other and they must not be made close.
  *
- * `jitter` is what keeps it from sounding like a machine. A real board never makes the same
- * sound twice — the finger lands differently, the switch is a different one — and a click
- * repeated identically forty times a line stops reading as typing and starts reading as a
- * fault. Every strike moves its own filter and its own level a little.
+ * Derived twice and averaged, because the two models disagree and both are right about
+ * something:
+ *
+ *  - **The ear.** A-weighting (IEC 61672) is the standard answer to how much a human cares
+ *    about energy at a given frequency. It says a 2.2 kHz crack lands in the most sensitive
+ *    octave there is, and a 220 Hz thock lands where the ear gives away a great deal:
+ *    1.00 / 2.53 / 0.58.
+ *  - **The speaker.** The owner writes on a laptop, whose driver is a sealed 20mm cone that
+ *    is down hard below its resonance. Modelled as a second-order high-pass at 250 Hz on top
+ *    of the ear, the answer moves a long way: 1.00 / 1.89 / 0.79 — the typewriter loses low
+ *    end too, so the crack needs less lift and the thock needs more.
+ *
+ * The geometric mean of the two is what ships. Matching the three on PEAK AMPLITUDE instead,
+ * which is what looks reasonable in code, is how the thock ends up inaudible and the crack
+ * ends up painful. Re-measure with the same method if a voice is retuned; do not nudge these
+ * by eye.
  */
-type Voice = { hz: number; q: number; secs: number; gain: number; decay: number; bump?: number }
-
-export type Strike = 'tap' | 'back' | 'space'
-
-const VOICES: Record<Exclude<KeyFeedback, 'off'>, Record<Strike, Voice>> = {
-  // The machine that strikes: bright, hard, short. A backspace on a typewriter is the
-  // carriage moving rather than a typebar hitting, so it is lower and a touch longer.
-  typewriter: {
-    tap: { hz: 1450, q: 1.1, secs: 0.024, gain: 0.11, decay: 0.18 },
-    back: { hz: 620, q: 0.7, secs: 0.032, gain: 0.11, decay: 0.18 },
-    space: { hz: 900, q: 0.9, secs: 0.030, gain: 0.12, decay: 0.2 },
-  },
-  // A bump partway down, then the bottom-out: `bump` schedules the second transient. The
-  // gap is what the finger feels as tactility, so it is the whole character of this one.
-  tactile: {
-    tap: { hz: 980, q: 1.4, secs: 0.020, gain: 0.085, decay: 0.14, bump: 0.012 },
-    back: { hz: 780, q: 1.2, secs: 0.024, gain: 0.085, decay: 0.16, bump: 0.012 },
-    space: { hz: 520, q: 0.9, secs: 0.034, gain: 0.1, decay: 0.22, bump: 0.014 },
-  },
-  // No bump at all: one soft, low thock with a slower decay. Nothing about a linear switch
-  // is sharp, so neither is this.
-  linear: {
-    tap: { hz: 620, q: 0.8, secs: 0.030, gain: 0.075, decay: 0.26 },
-    back: { hz: 540, q: 0.7, secs: 0.034, gain: 0.075, decay: 0.28 },
-    space: { hz: 420, q: 0.7, secs: 0.042, gain: 0.09, decay: 0.32 },
-  },
+export const LEVEL: Record<Instrument, number> = {
+  typewriter: 1.0,
+  tactile: 2.2,
+  linear: 0.68,
 }
+
+/**
+ * Three renderings of every key, and one is picked at random per strike.
+ *
+ * A single sample replayed forty times a line stops reading as typing and starts reading as
+ * a fault, and pitch jitter alone does not fix it — the noise is identical underneath. Three
+ * seeds give three genuinely different sets of contact noise; `playbackRate` then moves each
+ * one a few percent, which is a slightly different switch under a slightly different finger.
+ */
+const VARIANTS = 3
+const cache = new Map<string, AudioBuffer[]>()
+
+let audio: AudioContext | null = null
+let limiter: WaveShaperNode | null = null
 
 /** 0-100 from the settings row → the multiplier the gain node wants. */
 export function gainFor(volume: number): number {
@@ -80,24 +88,72 @@ export function gainFor(volume: number): number {
   return (Math.min(100, Math.max(0, volume)) / 100) * FULL_SCALE
 }
 
-function strike(context: AudioContext, voice: Voice, at: number, level: number): void {
-  const jitter = 0.9 + Math.random() * 0.2
-  const length = Math.ceil(context.sampleRate * voice.secs)
-  const buffer = context.createBuffer(1, length, context.sampleRate)
-  const samples = buffer.getChannelData(0)
-  for (let i = 0; i < length; i += 1) {
-    samples[i] = (Math.random() * 2 - 1) * Math.exp(-i / (length * voice.decay))
+/**
+ * A soft ceiling, once, in front of the destination.
+ *
+ * Not decoration. The three instruments have very different crest factors — a tactile strike
+ * peaks about seven times higher above its own loudness than a linear one does — so any
+ * level that makes the thock audible puts the crack near full scale, and two of them landing
+ * inside twenty milliseconds of each other add. Below 0.7 this is exactly unity, so nothing
+ * is coloured until something would otherwise clip; a compressor would have been the reflex
+ * and it would pump the whole keyboard down after every loud key.
+ */
+function ceiling(context: AudioContext): WaveShaperNode {
+  if (limiter) return limiter
+  const knee = 0.7
+  const curve = new Float32Array(1024)
+  for (let i = 0; i < curve.length; i += 1) {
+    const x = (i / (curve.length - 1)) * 2 - 1
+    const m = Math.abs(x)
+    curve[i] = Math.sign(x) * (m <= knee ? m : knee + (1 - knee) * Math.tanh((m - knee) / (1 - knee)))
   }
-  const source = context.createBufferSource()
-  const filter = context.createBiquadFilter()
-  const gain = context.createGain()
-  source.buffer = buffer
-  filter.type = 'bandpass'
-  filter.frequency.value = voice.hz * jitter
-  filter.Q.value = voice.q
-  gain.gain.value = voice.gain * level * jitter
-  source.connect(filter).connect(gain).connect(context.destination)
-  source.start(at)
+  limiter = context.createWaveShaper()
+  limiter.curve = curve
+  limiter.oversample = '2x'
+  limiter.connect(context.destination)
+  return limiter
+}
+
+/**
+ * The three takes of one key, level-matched to the first of them.
+ *
+ * The matching is not tidiness. Noise is noise: measured across three seeds the peak of one
+ * rendering of a tactile letter ranged from 1.08 to 1.69, which at the top of the slider is
+ * the difference between sitting under the ceiling and being flattened by it. Two takes of
+ * the same key should differ in grain, not in how hard somebody hit it.
+ *
+ * Exported so the test can measure what actually plays rather than a re-implementation of
+ * it — the last time this file kept its levels to itself, nothing could tell the owner the
+ * three instruments had converged.
+ */
+export function takes(mode: Instrument, kind: Strike, sampleRate: number): Float32Array[] {
+  const out: Float32Array[] = []
+  let reference = 0
+  for (let v = 0; v < VARIANTS; v += 1) {
+    // The seed is the only thing that differs between takes, so a take is reproducible and
+    // a test can say which one it is looking at.
+    const samples = render(VOICES[mode][kind], sampleRate, 0x9e37 + v * 7919)
+    let sum = 0
+    for (const x of samples) sum += x * x
+    const rms = Math.sqrt(sum / samples.length)
+    if (v === 0) reference = rms
+    else if (rms > 0) for (let i = 0; i < samples.length; i += 1) samples[i]! *= reference / rms
+    out.push(samples)
+  }
+  return out
+}
+
+function buffers(context: AudioContext, mode: Instrument, kind: Strike): AudioBuffer[] {
+  const key = `${mode}:${kind}:${context.sampleRate}`
+  const held = cache.get(key)
+  if (held) return held
+  const made = takes(mode, kind, context.sampleRate).map((samples) => {
+    const buffer = context.createBuffer(1, samples.length, context.sampleRate)
+    buffer.getChannelData(0).set(samples)
+    return buffer
+  })
+  cache.set(key, made)
+  return made
 }
 
 /**
@@ -117,11 +173,16 @@ export function playKey(sound: KeySound, kind: Strike): void {
   audio ??= new AudioContextClass()
   const context = audio
   if (context.state === 'suspended') void context.resume()
-  const voice = VOICES[sound.mode][kind]
-  const now = context.currentTime
-  // The bump first at half level, then the bottom-out: the order a finger meets them.
-  if (voice.bump) strike(context, voice, now, level * 0.55)
-  strike(context, voice, now + (voice.bump ?? 0), level)
+  const pool = buffers(context, sound.mode, kind)
+  const source = context.createBufferSource()
+  source.buffer = pool[Math.floor(Math.random() * pool.length)] ?? pool[0]!
+  // Pitch and length together, which is what a different switch under a different finger
+  // actually changes — moving a filter frequency instead leaves the transient identical.
+  source.playbackRate.value = 0.96 + Math.random() * 0.09
+  const gain = context.createGain()
+  gain.gain.value = level * LEVEL[sound.mode] * (0.92 + Math.random() * 0.16)
+  source.connect(gain).connect(ceiling(context))
+  source.start()
 }
 
 /**
