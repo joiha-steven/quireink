@@ -1,0 +1,59 @@
+# The editor's own contract
+
+The rules that are true of the WRITING SURFACE and of nothing else in the admin. Split out
+of [`admin-design.md`](./admin-design.md) on 2026-08-24, when the key-feedback rework put
+that file over its 400-line cap.
+
+The seam is real rather than arithmetic. Every other screen in this admin is a form or a
+list, and the visual contract next door is written for those: cards, gaps, one setting, one
+of each. The editor is the one place that carries a second typeface (it is WYSIWYG, so it
+must write in the face it publishes in), a caret this product draws itself, and a sound. Read
+that file first; this one only adds what is true here.
+
+## The editor
+
+- The chrome is the SHEET'S OWN top rows (the Writing Desk mock's `sheettop`): the action
+  line — back link + save state + word count on the left, quiet Markdown/Attributes text
+  controls and the Preview/Save/Publish buttons on the right — is the card's first row, and
+  the toolbar sticks directly under it. One piece: a floating band over a crack of page
+  between it and the paper is what the owner called "kì kì" (2026-08-17). Never shadowed.
+  The global sidebar shows again since the two-pane write screen; the write pane (the list
+  column) sits beside the sheet from `xl` up, pinned at the same top as the sheet's chrome.
+- The title lives ON the sheet (`SheetTitle`), in the reading face, with the meta line
+  (status · last touched) under it. It aligns with the public reading column, wraps
+  naturally, and uses content-driven height so a long one is never clipped.
+- **The toolbar is BACK, by the owner's verdict after writing on the bare version**
+  (2026-08-17, *"ở chế độ bình thường nên có thanh công cụ chứ"* — reversing ADR 0024
+  step 4's removal, which the mock had endorsed). It sits at the top of the sheet under the
+  action line, full-width, its groups centered, wrapping on a narrow window rather than
+  scrolling. The Markdown source view has NO toolbar — raw text needs no formatting
+  buttons. The called controls remain beside it: a selection raises the bubble, `/` on an
+  empty line raises the insert menu (which prints each block's Markdown shortcut beside
+  its row), and the table tools exist only while the cursor is in a table. The closing
+  line under the writing says the two gestures once.
+- The attributes are a right-hand slide-over (`SlideOver`) over a scrim, never a docked
+  column — a column squeezed the writing to make room for the questions. The first Publish
+  on an unpublished piece opens it as the publish sheet, footered "Later / Publish".
+- The editor frame must NOT use `overflow-hidden` — it breaks the nested sticky bars. The
+  table bar's sticky offset is measured from the real action-header height, so it does not
+  drift with the viewport or the translation.
+- The prose `contenteditable` must not inherit the global focus outline; the surrounding card
+  is the boundary. Focus rings stay on discrete controls.
+- **Key feedback is a CHOICE OF INSTRUMENT, not a switch** (2026-08-24): typewriter,
+  mechanical-tactile, mechanical-linear, off. It defaults to typewriter, is stored as
+  `motion.keys`, and reads the pre-2026-08-24 `motion.typewriter` boolean as the choice it
+  stood for. The click is generated locally (no audio files anywhere), at 45% internal
+  volume, with per-strike jitter so forty keys in a line do not sound like one sample
+  repeated, and with a deeper voice for the space bar and the return. Tactile fires two
+  transients 12ms apart — the bump, then the bottom-out — and linear one softer, lower one.
+  Selection-safe, IME-safe, and skipped entirely during composition.
+  ⚠️ **Nothing animates the TEXT.** Until 2026-08-24 every keystroke animated the whole
+  block's opacity from 0.9 and nudged it 0.6px, which at sixty words a minute is a paragraph
+  strobing five times a second — reported as "nháy". The sound carries the keystroke, the
+  caret carries the position, and the words hold still. Do not put a pulse back on the block.
+- **The caret stops blinking while the hands are moving**, and fades rather than switching:
+  700ms past the last keystroke before it resumes, 1.2s ease-in-out, and never all the way
+  to zero. A blink means "the cursor is here and nothing is happening", and during a burst of
+  typing something plainly is.
+- Autosave, revisions, preview tokens, media picking, taxonomy and publish behaviour are
+  unchanged by any visual pass.

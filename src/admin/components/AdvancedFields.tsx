@@ -2,11 +2,11 @@
 // motion engine, and how often the editor keeps a local copy of what you are typing. Per-role
 // size/line/spacing live in TypographyFields (Appearance); custom CSS is a sibling card.
 // Parent owns save.
-import type { TypographySettings, MotionSettings } from '@/types'
+import type { TypographySettings, MotionSettings, KeyFeedback } from '@/types'
 import { Input } from '@/admin/ui/Input'
 import { ToggleRow } from '@/admin/ui/Switch'
 import { useAdminT } from './I18nProvider'
-import { PANEL_LIST } from './kit'
+import { FIELD_W, PANEL_LIST, Select, Setting } from './kit'
 
 type Props = {
   typography: TypographySettings
@@ -47,12 +47,23 @@ export function AdvancedFields({
         checked={motion.enabled}
         onChange={(enabled) => onMotion({ ...motion, enabled })}
       />
-      <ToggleRow
-        label={t.typewriterLabel}
-        desc={t.typewriterDesc}
-        checked={motion.typewriter}
-        onChange={(typewriter) => onMotion({ ...motion, typewriter })}
-      />
+      {/* A CHOICE, not a switch, since 2026-08-24: three instruments and silence. It sits in
+          the row's own padding for the same reason the autosave field below does — every
+          other child of this list is a ToggleRow, which carries `p-4` inside its Setting. */}
+      <div className="p-4">
+        <Setting label={t.keyFeedbackLabel} note={t.keyFeedbackDesc}>
+          <Select
+            className={FIELD_W.medium}
+            value={motion.keys}
+            onChange={(e) => onMotion({ ...motion, keys: e.target.value as KeyFeedback })}
+          >
+            <option value="off">{t.keyFeedbackOff}</option>
+            <option value="typewriter">{t.keyFeedbackTypewriter}</option>
+            <option value="tactile">{t.keyFeedbackTactile}</option>
+            <option value="linear">{t.keyFeedbackLinear}</option>
+          </Select>
+        </Setting>
+      </div>
       {/* The floor is 15s and it is enforced by the settings sanitiser, not only here: the
           editor also flushes on hide, on leave and on unmount, and those are what make a long
           interval safe. A very short one would make the interval the whole safety net again.

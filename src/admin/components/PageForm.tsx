@@ -2,7 +2,7 @@
 // on the paper, the attributes on a slide-over. Same flow as PostForm (auto-save +
 // serialized manual save) but hits /api/pages and has no taxonomy or date.
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { PageWithContent, ApiResponse } from '@/types'
+import type { PageWithContent, ApiResponse, KeyFeedback } from '@/types'
 import { Button } from '@/admin/ui/Button'
 import { useToast } from '@/admin/ui/Toast'
 import { slugify, formatTime, formatDateTimeShort } from '@/utils'
@@ -16,7 +16,7 @@ import { SheetTitle } from './SheetTitle'
 import { saveStatusLine, useLocalAutosave, useLocalDraft, useStickyOffset, useUnsavedGuard } from './useLocalDraft'
 import { useAdminT } from './I18nProvider'
 
-type Props = { initial?: PageWithContent; contentWidth: number; typewriterEffects: boolean; autosaveSeconds: number }
+type Props = { initial?: PageWithContent; contentWidth: number; keyFeedback: KeyFeedback; autosaveSeconds: number }
 type PickTarget = 'editor' | 'gallery' | 'featured'
 
 function toDraft(initial?: PageWithContent): PageDraft {
@@ -29,7 +29,7 @@ function toDraft(initial?: PageWithContent): PageDraft {
   }
 }
 
-export function PageForm({ initial, contentWidth, typewriterEffects, autosaveSeconds }: Props) {
+export function PageForm({ initial, contentWidth, keyFeedback, autosaveSeconds }: Props) {
   const t = useAdminT()
   const { notify } = useToast()
   const [draft, setDraft] = useState<PageDraft>(() => toDraft(initial))
@@ -256,7 +256,7 @@ export function PageForm({ initial, contentWidth, typewriterEffects, autosaveSec
         apiRef={editorApi}
         contentWidth={contentWidth}
         toolbarTop={toolbarTop}
-        typewriterEffects={typewriterEffects}
+        keyFeedback={keyFeedback}
         onRawChange={setMdView}
         header={<SheetTitle value={draft.title} onChange={(title) => update({ title })} placeholder={t.titlePlaceholder} metaLine={metaLine} />}
       />

@@ -2,7 +2,7 @@
 // back-compat shims). No DB, no Blob, no React. settings.ts depends on this ONE
 // WAY (settings -> settings-sanitize, never back) for its getSettings/saveSettings merge.
 
-import type { BackupSettings, CacheSettings, CommentSettings, FeatureSettings, FrontSettings, FrontStrip, GallerySettings, HomeSettings, McpSettings, MenuItem, MotionSettings, SeoSettings, ThemeColors, ThemeSettings, AiSettings, InkSettings } from '@/types'
+import type { BackupSettings, CacheSettings, CommentSettings, FeatureSettings, FrontSettings, FrontStrip, GallerySettings, HomeSettings, McpSettings, MenuItem, MotionSettings, SeoSettings, ThemeColors, ThemeSettings, AiSettings, InkSettings, KeyFeedback } from '@/types'
 import { DEFAULT_PRESET_ID, isPresetId, defaultThemes, THEME_PRESETS } from '@/content/themes'
 
 // Keep only well-formed menu items (label + href both present).
@@ -329,11 +329,19 @@ export function sanitizeCache(input: unknown, fallback: CacheSettings): CacheSet
   return { enabled: bool(o.enabled, fallback.enabled) }
 }
 
+const KEY_FEEDBACK: KeyFeedback[] = ['off', 'typewriter', 'tactile', 'linear']
+
 export function sanitizeMotion(input: unknown, fallback: MotionSettings): MotionSettings {
-  const o = (input ?? {}) as Partial<MotionSettings>
+  const o = (input ?? {}) as Partial<MotionSettings> & { typewriter?: unknown }
+  // `typewriter: true|false` WAS the whole setting until 2026-08-24, and a stored settings
+  // row still carries it. Read it as the choice it stood for rather than dropping the
+  // owner's preference on the floor at upgrade — but only when no explicit choice is
+  // present, so a client that knows about `keys` always wins.
+  const legacy = typeof o.typewriter === 'boolean' ? (o.typewriter ? 'typewriter' : 'off') : null
+  const chosen = KEY_FEEDBACK.includes(o.keys as KeyFeedback) ? (o.keys as KeyFeedback) : null
   return {
     enabled: bool(o.enabled, fallback.enabled),
-    typewriter: bool(o.typewriter, fallback.typewriter),
+    keys: chosen ?? legacy ?? fallback.keys,
   }
 }
 

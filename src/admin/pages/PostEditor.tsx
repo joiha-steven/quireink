@@ -11,7 +11,7 @@ import { View } from '@/admin/pages/state'
 import { PostForm } from '@/admin/components/PostForm'
 import { WritePane } from '@/admin/components/WritePane'
 import { useFocusMode } from '@/admin/components/useFocusMode'
-import type { PostWithContent } from '@/types'
+import type { PostWithContent, KeyFeedback } from '@/types'
 
 type Props = {
   post: PostWithContent | null
@@ -19,7 +19,7 @@ type Props = {
   allTags: string[]
   allSeries: string[]
   contentWidth: number
-  typewriterEffects: boolean
+  keyFeedback: KeyFeedback
   autosaveSeconds: number
 }
 
@@ -48,7 +48,7 @@ export default function PostEditor() {
           allTags={d.allTags}
           allSeries={d.allSeries}
           contentWidth={d.contentWidth}
-          typewriterEffects={d.typewriterEffects}
+          keyFeedback={d.keyFeedback}
           autosaveSeconds={d.autosaveSeconds}
         />
           </div>

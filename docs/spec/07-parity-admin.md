@@ -63,8 +63,10 @@ between a line here and the running software is either a bug or an unrecorded `�
 - SEO section: meta title, meta description, cover, featured image
 - Settings panel: series field with datalist, order number, publish date
 - Preview draft opens the preview URL after saving pending edits
-- `⚠` Optional typewriter feedback: block caret, insert/delete response, synthesized key
-  click. Ignores composition, modifiers, navigation keys, paste and held repeats
+- `⚠` Key feedback, as a choice of four (2026-08-24): typewriter, mechanical-tactile,
+  mechanical-linear, off. A block caret that holds still while you type, and a synthesized
+  click — no audio files. Ignores composition, modifiers, navigation keys, paste and held
+  repeats. Nothing animates the text itself
 - `⚠` **Vietnamese IME (Telex) must be tested explicitly.** Toolbar and autosave must not
   interfere mid-composition
 - Title grows instead of clipping; toolbar sticky, never wraps, scrolls horizontally on
@@ -80,7 +82,7 @@ between a line here and the running software is either a bug or an unrecorded `�
   escape-first, protocol-checked) with `{year}` and `{title}` tokens
 - Content: reader feature toggles, comments, WordPress import
 - Appearance: 6 palettes, which palettes readers may switch, font preset, chrome font, custom
-  font upload, per-role type sizes, font smoothing, motion engine, typewriter, custom CSS
+  font upload, per-role type sizes, font smoothing, motion engine, key feedback, custom CSS
 - `⚠` The DEFAULT palette's checkbox is locked so the enabled set is never empty; the
   no-FOUC script ignores a stored palette that is no longer enabled; disabled palettes stay
   fully editable

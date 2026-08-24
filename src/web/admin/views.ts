@@ -83,7 +83,7 @@ export function viewRoutes(): OwnerRouter {
       data: {
         post, allCategories, allTags, allSeries,
         contentWidth: settings.contentWidth,
-        typewriterEffects: settings.motion.typewriter,
+        keyFeedback: settings.motion.keys,
         autosaveSeconds: settings.autosaveSeconds,
       },
     })
@@ -99,7 +99,7 @@ export function viewRoutes(): OwnerRouter {
       data: {
         page,
         contentWidth: settings.contentWidth,
-        typewriterEffects: settings.motion.typewriter,
+        keyFeedback: settings.motion.keys,
         autosaveSeconds: settings.autosaveSeconds,
       },
     })

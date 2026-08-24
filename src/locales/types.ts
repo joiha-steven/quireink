@@ -500,8 +500,12 @@ export type AdminStrings = {
   ideChromeDesc: string
   motionLabel: string
   motionDesc: string
-  typewriterLabel: string
-  typewriterDesc: string
+  keyFeedbackLabel: string
+  keyFeedbackDesc: string
+  keyFeedbackOff: string
+  keyFeedbackTypewriter: string
+  keyFeedbackTactile: string
+  keyFeedbackLinear: string
   autosaveLabel: string
   autosaveHint: string
   // overview
