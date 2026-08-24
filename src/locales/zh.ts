@@ -90,6 +90,8 @@ const zh = {
   errorText: '发生了意外错误，请重试。',
   backHome: '返回首页',
   backToTop: '回到顶部',
+  quoteCopy: '复制引用',
+  quoteCopied: '已复制',
   lightboxPrev: '上一张',
   lightboxNext: '下一张',
   lightboxClose: '关闭',

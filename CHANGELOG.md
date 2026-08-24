@@ -98,6 +98,31 @@ never been told the AI tab exists — it is read from the source of truth now), 
 Assistant had taken a fifth seat in a sidebar whose rule is four. It sits with the rest
 of "everything else", one click away.
 
+### Select a sentence, and take it with you
+
+Highlight anything in a post and one small control appears: **Copy quote**. It puts the
+sentence on your clipboard with a link that opens the post *at that sentence*, scrolled to
+it and highlighted by the reader's own browser. Paste it into a message and the person on
+the other end lands exactly where you were, not at the top of a long essay.
+
+It is not a share button. Nothing is sent anywhere, no account is involved and no third
+party is contacted: the link is an ordinary URL with a text fragment on the end, so a
+browser that does not know the trick simply opens the post. On a phone it sits *below* the
+selection, where the operating system's own Copy menu is not.
+
+### A switch that clears the desk
+
+The editor grew a **Focus** switch (and `Ctrl/Cmd + \`): one press takes the list of your
+writing and the whole button row off the screen and leaves the paper. Nothing is lost while
+it is on, because selecting text still raises the formatting bar and "/" still opens the
+inserts. The default is unchanged.
+
+The same pass fixed what a 13-inch laptop was actually looking at. The list of your writing
+used to sit beside the editor from 1280px, which left the button row 630 pixels to fit 787
+into: it wrapped to two lines, the line above it wrapped to two more, and there were three
+tiers of chrome above the first word. The list now joins the editor at 1640px, where there
+is room for both, and below that the paper gets the window.
+
 ## 2026-08-22 — Quire Ink 2.1.4
 
 The day after the editor day, spent auditing rather than writing: the whole source, the

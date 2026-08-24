@@ -15,11 +15,13 @@ import { book } from './book'
 import { codeCopy } from './code-copy'
 import { comments } from './comments'
 import { lightbox } from './lightbox'
+import { quote } from './quote'
 import { toc } from './toc'
 
 backToTop()
 codeCopy()
 lightbox()
 toc()
+quote()
 comments()
 book()

@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useEditor, EditorContent, type Editor as TiptapEditor } from '@tiptap/react'
 import { editorExtensions } from './editorExtensions'
 import { BubbleBar, SlashMenu, Toolbar } from './EditorMenus'
+import { useFocusMode } from './useFocusMode'
 import { placeTypewriterCaret, pulseTypewriterInput } from './typewriter'
 
 // The sticky band above the writing: the action line (~56px) plus the toolbar strip that
@@ -99,6 +100,10 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
   const t = useAdminT()
   // Markdown source view: edit the raw markdown directly (still saves live).
   const [raw, setRaw] = useState(false)
+  // Read straight from the shared switch rather than as a prop: the two forms above this
+  // one have no interest in it, and a prop threaded through a component that does not care
+  // is how the next person ends up with two of them.
+  const [focus] = useFocusMode()
   const [rawText, setRawText] = useState('')
   // Where the "/" menu is open, in viewport coordinates — null when it is not.
   const [slash, setSlash] = useState<{ left: number; top: number } | null>(null)
@@ -312,7 +317,10 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
       {/* At the very TOP of the sheet, the full width of it — the owner's verdicts, one
           sitting: on top, full-width, wrapping not scrolling, grouped in the middle, and
           GONE in the Markdown view. Sticky, so it stays reachable in a long piece. */}
-      {!raw && <Toolbar editor={editor} onPickImage={onPickImage} onPickGallery={onPickGallery} stickyTop={toolbarTop} />}
+      {/* Focus mode takes the row away; the bubble bar and "/" still carry every command
+          it holds, which is the arrangement Medium made famous and the reason putting it
+          away costs nothing. */}
+      {!raw && !focus && <Toolbar editor={editor} onPickImage={onPickImage} onPickGallery={onPickGallery} stickyTop={toolbarTop} />}
       {/* Center the writing column at the public single-post width so what you
           type wraps exactly like the published article. */}
       <div className="mx-auto w-full" style={{ maxWidth: contentWidth }}>

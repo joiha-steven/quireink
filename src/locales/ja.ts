@@ -90,6 +90,8 @@ const ja = {
   errorText: '予期しないエラーが発生しました。もう一度お試しください。',
   backHome: 'ホームに戻る',
   backToTop: 'トップへ戻る',
+  quoteCopy: '引用をコピー',
+  quoteCopied: 'コピーしました',
   lightboxPrev: '前の画像',
   lightboxNext: '次の画像',
   lightboxClose: '閉じる',

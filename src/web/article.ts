@@ -235,6 +235,8 @@ export async function renderArticle(slug: string): Promise<string | null> {
       copyCode: s.copyCode,
       copiedCode: s.copiedCode,
       backToTop: s.backToTop,
+      quoteCopy: s.quoteCopy,
+      quoteCopied: s.quoteCopied,
       lightboxPrev: s.lightboxPrev,
       lightboxNext: s.lightboxNext,
       lightboxClose: s.lightboxClose,

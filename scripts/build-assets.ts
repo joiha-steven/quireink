@@ -123,7 +123,19 @@ const BUDGET: Record<string, number> = {
   // and then stopped painting — a multicol's overflow columns (book.ts has the numbers).
   // And to 13_250 for the phone's page-turn gestures: swipe and outer-third taps, because
   // the arrows retire under 640px where they overlaid the margin the phone got back.
-  'post.js': 13_250,
+  //
+  // RAISED TO 14_800 on 2026-08-24 for the quote gesture, and this is the owner's call
+  // rather than a number nudged mid-fix: he named the reading experience as one of the two
+  // things this product IS, and selecting a sentence here did nothing at all while it is the
+  // one interaction the platforms he measures this against are known for.
+  // 1,302 bytes raw, roughly 600 gzipped, after the first cut was made 356 bytes smaller by
+  // collapsing three listeners (selectionchange + mouseup + keyup) into one debounced
+  // selectionchange and dropping a resize handler that scroll already covered. What it buys
+  // is a link, not a share button: the sentence plus a `#:~:text=` fragment that opens the
+  // post AT that sentence, which needs no account, no third party and — because the
+  // fragment is a browser feature rather than markup — not one byte of change in the
+  // renderer whose output `golden/` pins.
+  'post.js': 14_800,
   // /login only, and NOT loaded with core.js: the sign-in page carries no beacon, no
   // search overlay and no listing controls, so it pays for the reveal toggle, the caps-lock
   // warning and the one-time-code paste, and nothing else.

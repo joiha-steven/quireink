@@ -112,6 +112,7 @@ const en = {
   tbHeading: 'Heading',
   slashHint: 'Type / to insert an image, table, code or formula · select text to raise the formatting bar',
   edWords: '{n} words',
+  edFocus: 'Focus',
   edReadMinutes: '{n} min read',
   pubTitle: 'Publish this',
   pubLater: 'Later',

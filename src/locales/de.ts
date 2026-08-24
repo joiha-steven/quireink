@@ -90,6 +90,8 @@ const de = {
   errorText: 'Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es erneut.',
   backHome: 'Zur Startseite',
   backToTop: 'Nach oben',
+  quoteCopy: 'Zitat kopieren',
+  quoteCopied: 'Kopiert',
   lightboxPrev: 'Vorheriges Bild',
   lightboxNext: 'Nächstes Bild',
   lightboxClose: 'Schließen',

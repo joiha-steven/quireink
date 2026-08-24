@@ -90,6 +90,8 @@ const en = {
   errorText: 'An unexpected error occurred. Please try again.',
   backHome: 'Back home',
   backToTop: 'Back to top',
+  quoteCopy: 'Copy quote',
+  quoteCopied: 'Copied',
   lightboxPrev: 'Previous image',
   lightboxNext: 'Next image',
   lightboxClose: 'Close',

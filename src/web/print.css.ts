@@ -32,7 +32,7 @@ export const PRINT_CSS = `
    .rail-toggle is NOT in this list and does not need to be: chrome.ts pushes it into the
    .site-actions nav above, so it is already gone. The test that checks every selector here
    is a selector the site still uses is what said so. */
-.progress,.site-actions,.toc,.to-top,.book-fab,.meta-book,.skip-link,
+.progress,.site-actions,.toc,.to-top,.book-fab,.meta-book,.skip-link,.quote-copy,
 .book-overlay,.lightbox,.subscribe-overlay,.subscribe-card,form.subscribe,
 #comments,.related,footer.site{display:none!important}
 /* ...and the rule drawn ABOVE each of them, which would otherwise be left ruling off the

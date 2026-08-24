@@ -90,6 +90,8 @@ const ko = {
   errorText: '예기치 않은 오류가 발생했습니다. 다시 시도해 주세요.',
   backHome: '홈으로',
   backToTop: '맨 위로',
+  quoteCopy: '인용 복사',
+  quoteCopied: '복사됨',
   lightboxPrev: '이전 이미지',
   lightboxNext: '다음 이미지',
   lightboxClose: '닫기',
