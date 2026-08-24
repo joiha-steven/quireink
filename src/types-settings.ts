@@ -150,6 +150,16 @@ export type KeyFeedback = 'off' | 'typewriter' | 'tactile' | 'linear'
 export type MotionSettings = {
   enabled: boolean
   keys: KeyFeedback // admin editor: the caret, and what a keystroke sounds like
+  /**
+   * How loud that keystroke is, 0-100, as a plain fraction of full volume.
+   *
+   * A setting rather than a constant since 2026-08-25: it shipped at a fixed level and the
+   * owner's verdict was "tiếng có vẻ nhỏ". Loudness is not a thing that has a right answer
+   * — it is a room, a pair of speakers and a person, and the person is the only one of the
+   * three this program can ask. 0 leaves the caret and takes the sound away, which is a
+   * different thing from `keys: 'off'` and worth having: some people want the caret.
+   */
+  keyVolume: number
 }
 
 // Google Drive backup config (non-secret, lives in settings.data). The Drive

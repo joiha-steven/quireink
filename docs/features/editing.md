@@ -34,11 +34,13 @@
   face). The write pane — the list of everything written — rides beside the sheet from `xl` up.
   Icon actions keep localized accessible names. Focusing prose must not draw a black outline
   around the document.
-- **Optional typewriter feedback:** `settings.motion.typewriter` enables the block caret, subtle
-  insert/delete response, and a synthesized filtered-noise key click (45% internal volume; no audio
-  file). It ignores composition, modifier/navigation keys, paste, and held repeats. The master
-  `settings.motion.enabled` and `prefers-reduced-motion` still gate the visual feedback; disabling
-  typewriter feedback makes the editor standard and silent.
+- **Key feedback, as a choice of instrument:** `settings.motion.keys` — typewriter,
+  mechanical-tactile, mechanical-linear, off — draws the caret this product owns and plays a
+  synthesized filtered-noise click (no audio file), at `settings.motion.keyVolume` out of 100.
+  It ignores composition, modifier/navigation keys, paste, and held repeats. The master
+  `settings.motion.enabled` and `prefers-reduced-motion` still gate the visual half; `off`
+  makes the editor standard and silent, and a volume of 0 keeps the caret without the sound.
+  Nothing animates the text itself — see [admin-editor.md](../admin-editor.md).
 - **Images and galleries** (`CaptionedImage.tsx`): placement rides on the src fragment
   (a Markdown image whose src ends `#right-wide`) and the caption is the alt, so the node still serializes to plain
   Markdown. Size is a three-way choice: column width (unmarked), `#third` (30% of the

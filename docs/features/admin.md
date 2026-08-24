@@ -177,8 +177,9 @@
   custom CSS on the left, the type stack `FontFields` (built-in
   `fontPreset` picker + `chromeFont` selector) / `FontUpload` / `TypographyFields` /
   `AdvancedFields` (Rendering card: font smoothing, IDE chrome, the **Motion** engine toggle →
-  `settings.motion.enabled`, and the editor **Typewriter feedback** option →
-  `settings.motion.typewriter`) on the right; **Search & URLs** `SeoFields` + `RedirectsManager`
+  `settings.motion.enabled`, the editor **Key feedback** instrument → `settings.motion.keys`
+  and its **Key volume** slider → `settings.motion.keyVolume`, which plays a key as it moves)
+  on the right; **Search & URLs** `SeoFields` + `RedirectsManager`
   (an old address is a search-engine concern before it is anything else); **Connections**
   `NewsletterFields` + `CloudflareFields` + `CommentIntegrations` + `McpFields` — every credential
   here is written to the server and never read back, which is why these cards show status rather

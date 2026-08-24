@@ -83,7 +83,7 @@ export function viewRoutes(): OwnerRouter {
       data: {
         post, allCategories, allTags, allSeries,
         contentWidth: settings.contentWidth,
-        keyFeedback: settings.motion.keys,
+        keySound: { mode: settings.motion.keys, volume: settings.motion.keyVolume },
         autosaveSeconds: settings.autosaveSeconds,
       },
     })
@@ -99,7 +99,7 @@ export function viewRoutes(): OwnerRouter {
       data: {
         page,
         contentWidth: settings.contentWidth,
-        keyFeedback: settings.motion.keys,
+        keySound: { mode: settings.motion.keys, volume: settings.motion.keyVolume },
         autosaveSeconds: settings.autosaveSeconds,
       },
     })

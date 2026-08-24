@@ -118,6 +118,7 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { tab: 'appearance', label: 'ideChromeLabel' },
   { tab: 'appearance', label: 'motionLabel' },
   { tab: 'appearance', label: 'keyFeedbackLabel', note: 'keyFeedbackDesc' },
+  { tab: 'appearance', label: 'keyVolumeLabel', note: 'keyVolumeDesc' },
   { tab: 'appearance', label: 'autosaveLabel', note: 'autosaveHint' },
 
   // Search & URLs — how machines see it

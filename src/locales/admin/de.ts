@@ -333,6 +333,8 @@ const de = {
   keyFeedbackTypewriter: 'Schreibmaschine',
   keyFeedbackTactile: 'Mechanisch, taktil',
   keyFeedbackLinear: 'Mechanisch, linear',
+  keyVolumeLabel: 'Anschlaglautstärke',
+  keyVolumeDesc: 'Wie laut dieses Klicken ist, von Stille bis ans obere Ende. Beim Schieben erklingt eine Taste, damit Sie hören, wohin Sie sie stellen.',
   autosaveLabel: 'Lokale Kopie sichern alle',
   autosaveHint: 'Sekunden zwischen lokalen Schnappschüssen beim Schreiben, von 15 bis 600. Nichts geht an den Server, bis Sie auf Speichern drücken — das ist die Kopie, die einen abgestürzten Tab oder ein neu geladenes Handy überlebt. Gesichert wird auch beim Verlassen oder Wechseln, ein langes Intervall ist also sicher.',
   overviewTitle: 'Übersicht',

@@ -13,10 +13,7 @@
 // TEXT survives: the sound carries the keystroke, the caret carries the position, and the
 // words hold still. On a real machine the paper moves and the words do not.
 import { type Editor as TiptapEditor } from '@tiptap/react'
-import type { KeyFeedback } from '@/types'
-
-const OVERALL_VOLUME = 0.45
-let audio: AudioContext | null = null
+import { playKey, type KeySound } from './key-sound'
 
 /**
  * How long the caret holds still after the last keystroke before it starts blinking again.
@@ -57,75 +54,6 @@ function holdBlink(caret: HTMLElement | null): void {
 }
 
 /**
- * The three voices, as filtered noise. No audio files anywhere in this product, and none
- * are wanted: a click is a burst of noise through a filter, which is fifteen lines and no
- * bytes on the wire.
- *
- * `jitter` is what keeps it from sounding like a machine. A real board never makes the same
- * sound twice — the finger lands differently, the switch is a different one — and a click
- * repeated identically forty times a line stops reading as typing and starts reading as a
- * fault. Every strike moves its own filter and its own level a little.
- */
-type Voice = { hz: number; q: number; secs: number; gain: number; decay: number; bump?: number }
-
-const VOICES: Record<Exclude<KeyFeedback, 'off'>, { tap: Voice; back: Voice; space: Voice }> = {
-  // The machine that strikes: bright, hard, short. A backspace on a typewriter is the
-  // carriage moving rather than a typebar hitting, so it is lower and a touch longer.
-  typewriter: {
-    tap: { hz: 1450, q: 1.1, secs: 0.024, gain: 0.11, decay: 0.18 },
-    back: { hz: 620, q: 0.7, secs: 0.032, gain: 0.11, decay: 0.18 },
-    space: { hz: 900, q: 0.9, secs: 0.030, gain: 0.12, decay: 0.2 },
-  },
-  // A bump partway down, then the bottom-out: `bump` schedules the second transient. The
-  // gap is what the finger feels as tactility, so it is the whole character of this one.
-  tactile: {
-    tap: { hz: 980, q: 1.4, secs: 0.020, gain: 0.085, decay: 0.14, bump: 0.012 },
-    back: { hz: 780, q: 1.2, secs: 0.024, gain: 0.085, decay: 0.16, bump: 0.012 },
-    space: { hz: 520, q: 0.9, secs: 0.034, gain: 0.1, decay: 0.22, bump: 0.014 },
-  },
-  // No bump at all: one soft, low thock with a slower decay. Nothing about a linear switch
-  // is sharp, so neither is this.
-  linear: {
-    tap: { hz: 620, q: 0.8, secs: 0.030, gain: 0.075, decay: 0.26 },
-    back: { hz: 540, q: 0.7, secs: 0.034, gain: 0.075, decay: 0.28 },
-    space: { hz: 420, q: 0.7, secs: 0.042, gain: 0.09, decay: 0.32 },
-  },
-}
-
-function strike(context: AudioContext, voice: Voice, at: number, level = 1): void {
-  const jitter = 0.9 + Math.random() * 0.2
-  const length = Math.ceil(context.sampleRate * voice.secs)
-  const buffer = context.createBuffer(1, length, context.sampleRate)
-  const samples = buffer.getChannelData(0)
-  for (let i = 0; i < length; i += 1) {
-    samples[i] = (Math.random() * 2 - 1) * Math.exp(-i / (length * voice.decay))
-  }
-  const source = context.createBufferSource()
-  const filter = context.createBiquadFilter()
-  const gain = context.createGain()
-  source.buffer = buffer
-  filter.type = 'bandpass'
-  filter.frequency.value = voice.hz * jitter
-  filter.Q.value = voice.q
-  gain.gain.value = voice.gain * OVERALL_VOLUME * level * jitter
-  source.connect(filter).connect(gain).connect(context.destination)
-  source.start(at)
-}
-
-function play(mode: Exclude<KeyFeedback, 'off'>, kind: 'tap' | 'back' | 'space'): void {
-  const AudioContextClass = window.AudioContext
-  if (!AudioContextClass) return
-  audio ??= new AudioContextClass()
-  const context = audio
-  if (context.state === 'suspended') void context.resume()
-  const voice = VOICES[mode][kind]
-  const now = context.currentTime
-  // The bump first at half level, then the bottom-out: the order a finger meets them.
-  if (voice.bump) strike(context, voice, now, 0.55)
-  strike(context, voice, now + (voice.bump ?? 0))
-}
-
-/**
  * One keystroke's worth of feedback.
  *
  * The caret moves and, in `typewriter` alone, takes a small step as it goes — that is the
@@ -136,9 +64,9 @@ export function pulseInput(
   view: TiptapEditor['view'],
   event: InputEvent,
   caret: HTMLElement | null,
-  mode: KeyFeedback,
+  sound: KeySound,
 ): void {
-  if (mode === 'off') return
+  if (sound.mode === 'off') return
   const inputType = event.inputType
   const deleting = inputType.startsWith('delete')
   if (!deleting && !inputType.startsWith('insert')) return
@@ -146,13 +74,13 @@ export function pulseInput(
   if (!event.isComposing) {
     // A space and a return come off the two biggest keys on the board and sound like it.
     const wide = event.data === ' ' || inputType === 'insertParagraph' || inputType === 'insertLineBreak'
-    play(mode, deleting ? 'back' : wide ? 'space' : 'tap')
+    playKey(sound, deleting ? 'back' : wide ? 'space' : 'tap')
   }
   placeCaret(view, caret)
   holdBlink(caret)
 
   if (
-    mode !== 'typewriter' ||
+    sound.mode !== 'typewriter' ||
     !caret ||
     document.documentElement.dataset.motion === 'off' ||
     window.matchMedia('(prefers-reduced-motion: reduce)').matches

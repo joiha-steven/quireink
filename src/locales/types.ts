@@ -506,6 +506,8 @@ export type AdminStrings = {
   keyFeedbackTypewriter: string
   keyFeedbackTactile: string
   keyFeedbackLinear: string
+  keyVolumeLabel: string
+  keyVolumeDesc: string
   autosaveLabel: string
   autosaveHint: string
   // overview

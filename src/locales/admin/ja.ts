@@ -333,6 +333,8 @@ const ja = {
   keyFeedbackTypewriter: 'タイプライター',
   keyFeedbackTactile: 'メカニカル・タクタイル',
   keyFeedbackLinear: 'メカニカル・リニア',
+  keyVolumeLabel: '打鍵音の大きさ',
+  keyVolumeDesc: 'その音をどこまで大きくするか。無音から上限まで、動かすたびに一打鳴るので、置いた場所がそのまま聞こえます。',
   autosaveLabel: 'この端末に保存する間隔',
   autosaveHint: '入力中にローカルへ保存する間隔（秒）。15〜600。保存を押すまでサーバーには何も送りません — タブが落ちたり、スマートフォンが再読み込みされても残るのはこの控えです。離れたとき・切り替えたときにも保存するので、長い間隔でも安全です。',
   overviewTitle: '概要',
