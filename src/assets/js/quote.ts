@@ -18,20 +18,44 @@ import { el, label } from './dom'
 
 /** Below this, a selection is a click that slipped rather than a quote. */
 const MIN_CHARS = 12
-/** Longer than this goes as start,end — the fragment syntax's own answer to long ranges. */
-const MAX_FRAGMENT = 60
+/** Longer than this is anchored on its ends instead of carried whole. */
+const MAX_WHOLE = 44
+/** How much of each end anchors a long quote. Four Vietnamese words, give or take. */
+const ANCHOR = 20
+
+/**
+ * Escape ONLY what the fragment syntax cannot carry, and leave every letter alone.
+ *
+ * `encodeURIComponent` was the first version and it is what made the link unreadable: it
+ * percent-encodes every non-ASCII byte, so one Vietnamese word became nine characters of
+ * hex and a quoted sentence came out as a wall of %E1%BA%BF. Nothing requires that. A URL
+ * fragment may carry UTF-8 as it is; what it may NOT carry is whitespace, and what this
+ * particular syntax may not carry is `-` (it separates a prefix from its text), `,` (it
+ * separates start from end) and `#` (it would end the fragment). `%` goes first or the
+ * escapes would escape each other, and the three angle-and-quote characters go too because
+ * a URL that lands in HTML somewhere should not be able to open a tag.
+ */
+const enc = (part: string) =>
+  part.replace(/[%&,\-#"<>`\s]/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase().padStart(2, '0')}`)
+
+/** Trim a slice back to a whole word, unless that would leave nothing. */
+const words = (slice: string, from: 'start' | 'end') => {
+  const cut = from === 'start' ? slice.replace(/\s+\S*$/, '') : slice.replace(/^\S*\s+/, '')
+  return cut || slice
+}
 
 /**
  * The `#:~:text=` fragment for a quote.
  *
- * Percent-encoding is not optional and `encodeURIComponent` is not enough on its own: `-`
- * is the fragment syntax's separator between prefix and text and `,` splits start from end,
- * so both have to be escaped even though the encoder leaves them alone.
+ * Short quotes travel whole, so the reader who follows the link sees exactly the sentence
+ * that was quoted. A long one is anchored on its two ends — the syntax's own answer, and
+ * the reason a link to a paragraph is not a paragraph of link.
  */
 function fragment(quote: string): string {
-  const enc = (part: string) => encodeURIComponent(part).replace(/-/g, '%2D').replace(/,/g, '%2C')
-  if (quote.length <= MAX_FRAGMENT) return `:~:text=${enc(quote)}`
-  return `:~:text=${enc(quote.slice(0, 30).replace(/\s+\S*$/, ''))},${enc(quote.slice(-30).replace(/^\S*\s+/, ''))}`
+  if (quote.length <= MAX_WHOLE) return `:~:text=${enc(quote)}`
+  const head = words(quote.slice(0, ANCHOR), 'start')
+  const tail = words(quote.slice(-ANCHOR), 'end')
+  return `:~:text=${enc(head)},${enc(tail)}`
 }
 
 export function quote(): void {
@@ -88,11 +112,14 @@ export function quote(): void {
 
   button.addEventListener('mousedown', (e) => e.preventDefault()) // keep the selection alive
   button.addEventListener('click', () => {
-    const url = new URL(location.href)
-    url.hash = fragment(picked)
+    // Built by hand rather than through `new URL()`, and that is the whole point: the URL
+    // serializer percent-encodes every non-ASCII code point in a fragment, which is what
+    // turned a Vietnamese sentence into 200 characters of hex. `location.href` minus any
+    // fragment it already carries, plus this one.
+    const link = location.href.split('#')[0] + '#' + fragment(picked)
     // Two lines, because that is how a quote is pasted into a message: the words, then
     // where they came from.
-    void navigator.clipboard.writeText(`“${picked}”\n${url.href}`).then(() => {
+    void navigator.clipboard.writeText(`“${picked}”\n${link}`).then(() => {
       button.textContent = label('quoteCopied') || text
       timer = window.setTimeout(hide, 1200)
     }, hide)
