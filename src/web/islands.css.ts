@@ -41,18 +41,20 @@ export const ISLANDS_CSS = `
 .to-top:hover{color:var(--c-heading)}
 
 /* The quote control, raised on a selection (assets/js/quote.ts).
-   It speaks the to-top button's language on purpose — same hairline, same paper ground,
-   same two colours — because they are the same KIND of thing: a small control the page
-   offers a reader, drawn in the chrome face so it never reads as part of the writing.
-   A pill rather than a circle only because it holds a word.
+   SOLID INK, and the first cut was not: it borrowed the to-top button's hairline-on-paper
+   and came out a pale grey pill sitting on top of grey text, which the owner's word for was
+   "khó nhìn". The to-top button can be quiet because it waits in an empty corner; this one
+   appears IN the text, over the words, for two seconds. A control that interrupts reading
+   has to look deliberate or it reads as a rendering fault. Ink and paper, inverted, is the
+   loudest thing this palette can say without introducing a colour.
    Positioned in DOCUMENT space (absolute, not fixed): a fixed control has to be re-placed
    on every scroll frame, and this one is dismissed by scrolling anyway. */
-.quote-copy{position:absolute;z-index:40;padding:.3rem .7rem;border:1px solid var(--c-rule);
-  border-radius:999px;background:var(--c-bg);color:var(--c-meta);cursor:pointer;
+.quote-copy{position:absolute;z-index:40;padding:.34rem .8rem;border:0;
+  border-radius:999px;background:var(--c-heading);color:var(--c-bg);cursor:pointer;
   font-family:var(--font-sans);font-size:var(--fs-small);line-height:var(--lh-small);
   white-space:nowrap;
-  letter-spacing:var(--ls-small);transition:color var(--dur-base)}
-.quote-copy:hover{color:var(--c-heading)}
+  letter-spacing:var(--ls-small);transition:opacity var(--dur-base)}
+.quote-copy:hover{opacity:.85}
 .quote-copy[hidden]{display:none}
 
 /* A <dialog>, so Escape, focus trapping and the inert background come from the browser.

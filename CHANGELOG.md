@@ -110,6 +110,18 @@ party is contacted: the link is an ordinary URL with a text fragment on the end,
 browser that does not know the trick simply opens the post. On a phone it sits *below* the
 selection, where the operating system's own Copy menu is not.
 
+The link stays readable, which took some care: the usual way of building one percent-encodes
+every non-Latin letter, so a Vietnamese sentence came out as two hundred characters of hex.
+Only whitespace and the three characters the syntax reserves are escaped now, and a long
+quote is anchored on its two ends rather than carried whole.
+
+### Selecting text looks like this site
+
+Drag across a sentence and the highlight is black on a light page and grey on a dark one,
+in place of the browser's blue. That blue was the one colour on the page that came from
+nowhere: everything else down to the hairline is the palette you chose, and the most
+physical gesture a reader makes was borrowing the operating system's accent.
+
 ### A switch that clears the desk
 
 The editor grew a **Focus** switch (and `Ctrl/Cmd + \`): one press takes the list of your

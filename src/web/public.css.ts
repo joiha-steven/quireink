@@ -88,6 +88,25 @@ a:hover{color:var(--c-heading)}
 :focus-visible{outline:2px solid var(--c-accent);outline-offset:2px}
 hr{border:0;border-top:1px solid var(--c-rule);margin:2.5rem 0}
 
+/* WHAT A SELECTION LOOKS LIKE. Owner's call, 2026-08-24: black on a light page, grey on a
+   dark one, in place of the browser's blue.
+   The blue is the one colour on the whole reading page that came from nowhere: this site
+   sets its palette down to the hairline and then hands the most physical gesture a reader
+   makes — dragging across a sentence — to the operating system's accent. Ink on paper is
+   what the rest of the page already is, and inverted it reads like a marker.
+   Dark mode takes --c-meta rather than --c-heading on purpose: heading is near-white in
+   every dark palette, and a white block over dark text is a flashbulb in the middle of a
+   paragraph. The mid-grey reads as a mark; the text on it stays the page's own ground.
+   Three selectors and not one, for the same reason content/themes.ts writes three: the
+   island sets .dark and data-scheme, and before it runs, a reader whose SYSTEM is dark
+   is on the dark palette with neither attribute set. Without the media query that reader
+   gets a black block on a black page for one paint, which is a selection they cannot see. */
+::selection{background:var(--c-heading);color:var(--c-bg)}
+html.dark ::selection{background:var(--c-meta);color:var(--c-bg)}
+@media (prefers-color-scheme:dark){
+  html:not([data-scheme]) ::selection{background:var(--c-meta);color:var(--c-bg)}
+}
+
 /* The column width is --shell-w, not a constant: the layout sets it from the owner's
    contentWidth and a two-rail listing overrides it with something narrower. It read
    --content-width, which nothing ever set, so every page has been 42rem wide regardless
