@@ -147,10 +147,36 @@ drag it, and it plays a key as it goes, so you are listening to the thing you ar
 instead of walking to the editor and back to find out. Picking an instrument plays it too —
 tactile and linear are a difference you hear or you do not hear at all.
 
-It starts in the middle, which is around two and a half times the old fixed level. Nothing
-about the balance moves with it: a space stays deeper than a letter, and the tactile bump
-stays under its bottom-out, wherever you put the slider. **Zero is a real setting** — the
-caret without the sound — and it is not the same as turning the instrument Off.
+Nothing about the balance moves with it: a space stays deeper than a letter, and the tactile
+bump stays under its bottom-out, wherever you put the slider. **Zero is a real setting** —
+the caret without the sound — and it is not the same as turning the instrument Off.
+
+### Three keyboards that are actually three keyboards
+
+The first attempt was not three instruments. It was one burst of noise through one filter,
+three times, at three centre frequencies — which is one sound with three EQ settings, and it
+sounded like it. This is a rebuild from the machines outward.
+
+**The typewriter** is not a keyboard at all, and now it does not pretend to be one. Pressing
+a letter runs a lever, throws a typebar at the platen through an inked ribbon, and lets the
+carriage step one place: three events across sixty milliseconds, a low wooden thump with a
+metal ring over it, and the escapement ticking after. The **space bar** strikes nothing — it
+only moves the carriage, so it is a dull knock and a tick. **Return** throws the carriage
+all the way back across the machine, accelerating, and it hits the stop.
+
+**Tactile** is the leaf snapping past the ramp and then the bottom-out fourteen milliseconds
+later: bright, hard, and over in forty milliseconds. **Linear** has no snap at all — a
+blunted onset, a low body letting go slowly, and the key meeting the top housing on its way
+back up. The space bar on both is stabilised, and you can hear the bar rattle.
+
+Every key has three separate takes, matched in level so they differ in grain and not in
+force, and each one plays back a few percent off pitch. Forty keys in a line never repeat.
+
+**And it is much louder.** The top of the slider is about six times the amplitude the old
+one reached at ITS top, and the default sits well above where the old one ever went. The
+three are levelled against each other by measurement rather than by eye — weighted for what
+the ear is sensitive to, and again for what a laptop speaker can actually reproduce — so
+switching instrument changes the sound and not the volume.
 
 ### The pen is yours now
 

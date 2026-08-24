@@ -42,22 +42,41 @@ that file first; this one only adds what is true here.
 - **Key feedback is a CHOICE OF INSTRUMENT, not a switch** (2026-08-24): typewriter,
   mechanical-tactile, mechanical-linear, off. It defaults to typewriter, is stored as
   `motion.keys`, and reads the pre-2026-08-24 `motion.typewriter` boolean as the choice it
-  stood for. The click is generated locally (no audio files anywhere), with per-strike jitter
-  so forty keys in a line do not sound like one sample repeated, and with a deeper voice for
-  the space bar and the return. Tactile fires two transients 12ms apart — the bump, then the
-  bottom-out — and linear one softer, lower one. Selection-safe, IME-safe, and skipped
-  entirely during composition.
+  stood for. The click is generated locally: no audio files anywhere, ever.
+  ⚠️ **The three are three MACHINES, not three filter settings**, and this is the correction
+  of 2026-08-25 (*"3 loại tiếng ko khác gì nhau"* — and they did not, because they were one
+  noise burst through one bandpass at 1840 / 1144 / 972 Hz). A strike is now a SEQUENCE OF
+  EVENTS, written as physics in `key-voices.ts`:
+  a **typewriter** runs a lever, throws a typebar at the platen through a ribbon, and lets
+  the carriage step — three events over 60ms, a low wooden thump with an inharmonic metal
+  ring on it, and a bright escapement tick after; the **space bar** strikes nothing at all
+  and **return** throws the carriage all the way back;
+  a **tactile** switch snaps its leaf and then bottoms out 14ms later, bright and gone in
+  40ms; a **linear** one has no bump, a blunted onset, and a quiet upstroke 62ms later.
+  Measured, and held there by `key-render.test.ts`: brightness (energy above 2 kHz) is
+  0.37 / 0.08 / 0.00, and the spectral centre is 2236 / 460 / 226 Hz. Every fundamental sits
+  above 200 Hz **because of the speaker, not the ear** — a laptop is down hard by then, and a
+  thock drawn at 150 Hz measures beautifully and is inaudible on the machine it is for.
+  Four keys, three takes of each (level-matched to the first, so takes differ in grain and
+  not in force), plus a few percent of playback rate: forty keys in a line never repeat.
+  Selection-safe, IME-safe, and skipped entirely during composition.
   ⚠️ **Nothing animates the TEXT.** Until 2026-08-24 every keystroke animated the whole
   block's opacity from 0.9 and nudged it 0.6px, which at sixty words a minute is a paragraph
   strobing five times a second — reported as "nháy". The sound carries the keystroke, the
   caret carries the position, and the words hold still. Do not put a pulse back on the block.
 - **How loud it is, is the owner's** (2026-08-25, *"tiếng có vẻ nhỏ"*): `motion.keyVolume`,
-  0-100, a plain linear fraction of a full scale defined once in `key-sound.ts`. The
-  per-voice gains are the BALANCE between the instruments and between a letter and a space;
+  0-100, a plain linear fraction of a full scale defined once in `key-sound.ts`. The voice
+  table holds the BALANCE — between the instruments, and between a letter and a space — and
   the slider is the only number that says how loud the whole thing is, so nothing about that
-  balance changes when it moves. A row with no volume stored reads as the default 50, which
-  is roughly two and a half times the fixed level this replaced. 0 is a real answer — the
-  caret with the sound off — and is not the same setting as `keys: 'off'`.
+  balance changes when it moves. A row with no volume stored reads as the default 60. 0 is a
+  real answer — the caret with the sound off — and is not the same setting as `keys: 'off'`.
+- **The three instruments are levelled by measurement, not by eye** (`LEVEL` in
+  `key-sound.ts`): A-weighting for the ear, plus a second-order high-pass at 250 Hz for the
+  laptop speaker, geometric mean of the two. Their PEAKS therefore differ by 5:1 and that is
+  correct — matching peaks is how the thock ends up inaudible and the crack ends up painful.
+  A soft ceiling (`WaveShaper`, unity below 0.7) sits in front of the destination once,
+  because the crest factors differ by 5× and two transients can land 14ms apart and add.
+  Re-measure with the same method if a voice is retuned.
   The synthesis lives in `key-sound.ts`, apart from `key-feedback.ts`, because the settings
   screen plays a key as you drag the slider and must not pull Tiptap into its bundle to do
   it. A volume control you cannot hear while setting it is a trip to the editor per nudge.
