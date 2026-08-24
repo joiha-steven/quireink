@@ -6,8 +6,16 @@
 //
 // It fetches the content view itself so the editor pages can drop it in beside any sheet
 // without threading list props through their own views. Beside an editor it appears from
-// xl up — on a narrow window the sheet takes the room and the list is one "← Viết" away;
-// on the Write screen itself (`always`) it is the page at every width.
+// 1640px up — on a narrower window the sheet takes the room and the list is one "← Viết"
+// away; on the Write screen itself (`always`) it is the page at every width.
+//
+// ⚠️ 1640 is MEASURED, not chosen. It was `xl` (1280), and at 1280 the editor's button row
+// had 630px of sheet to sit in and needed 787: it wrapped to two rows, the action line above
+// it wrapped to two more, and a writer on a 13-inch laptop met THREE tiers of chrome before
+// the first word. The pane is 320px and the shell takes 330, so the sheet is the window less
+// 650; the row needs ~950 with air around it. Below 1640 there is not room for both, and
+// between the two the writing wins — which is what `docs/admin-design.md` says out loud.
+// Focus mode (`useFocusMode.ts`) puts the pane away at ANY width, on purpose.
 import { useState } from 'react'
 import Link from '@/admin/router'
 import { useView } from '@/admin/useView'
@@ -149,7 +157,7 @@ export function WritePane({ activeSlug, always = false, tools }: { activeSlug?: 
   return (
     <aside
       className={`${
-        always ? 'flex w-full xl:w-80' : 'hidden w-80 xl:flex'
+        always ? 'flex w-full xl:w-80' : 'hidden w-80 min-[1640px]:flex'
       } shrink-0 flex-col self-start overflow-hidden rounded-[10px] border border-neutral-200/80 bg-neutral-50 xl:sticky xl:top-0 xl:max-h-[calc(100vh-1.5rem)] dark:border-neutral-800 dark:bg-neutral-950`}
     >
       {data ? (

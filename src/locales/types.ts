@@ -90,6 +90,8 @@ export type Dict = {
   errorText: string
   backHome: string
   backToTop: string
+  quoteCopy: string
+  quoteCopied: string
   // image lightbox
   lightboxPrev: string
   lightboxNext: string
@@ -255,6 +257,7 @@ export type AdminStrings = {
   tbHeading: string
   slashHint: string
   edWords: string
+  edFocus: string
   edReadMinutes: string
   pubTitle: string
   pubLater: string

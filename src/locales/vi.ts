@@ -90,6 +90,8 @@ const vi = {
   errorText: 'Có lỗi không mong muốn. Vui lòng thử lại.',
   backHome: 'Về trang chủ',
   backToTop: 'Lên đầu trang',
+  quoteCopy: 'Chép câu trích',
+  quoteCopied: 'Đã chép',
   lightboxPrev: 'Ảnh trước',
   lightboxNext: 'Ảnh sau',
   lightboxClose: 'Đóng',

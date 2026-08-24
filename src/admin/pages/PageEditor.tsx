@@ -6,11 +6,13 @@ import { useView } from '@/admin/useView'
 import { View } from '@/admin/pages/state'
 import { PageForm } from '@/admin/components/PageForm'
 import { WritePane } from '@/admin/components/WritePane'
+import { useFocusMode } from '@/admin/components/useFocusMode'
 import type { PageWithContent } from '@/types'
 
 type Props = { page: PageWithContent | null; contentWidth: number; typewriterEffects: boolean; autosaveSeconds: number }
 
 export default function PageEditor() {
+  const [focus] = useFocusMode()
   const path = usePathname()
   const slug = decodeURIComponent(path.replace(/^\/admin\/page-editor\/?/, ''))
   const state = useView<Props>('page-editor', slug ? `?slug=${encodeURIComponent(slug)}` : '')
@@ -18,7 +20,7 @@ export default function PageEditor() {
     <View state={state}>
       {(d) => (
         <div className="flex items-start gap-6">
-          <WritePane activeSlug={d.page?.slug} />
+          {!focus && <WritePane activeSlug={d.page?.slug} />}
           <div className="min-w-0 flex-1">
         <PageForm
           // See PostEditor: without a key the editor keeps the previous document.

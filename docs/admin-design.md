@@ -127,9 +127,23 @@ character and none of its typographic rules **except one**, below.
   before the one that matters, and the four are what the owner came to do.
 - **Writing is the primary task.** Since the two-pane Write screen (2026-08-17) the editor
   no longer hides the rail: the mock draws it, and the owner circled the whole frame. The
-  write pane — the list of everything written — rides beside the sheet from `xl` up, on
-  the Write screen and both editors alike; on a narrow window the sheet takes the room and
-  the list is one "← Write" away.
+  write pane — the list of everything written — rides beside the sheet on the Write screen
+  at every width, and **beside an EDITOR only from 1640px**; on a narrower window the sheet
+  takes the room and the list is one "← Write" away.
+  ⚠️ **1640 is measured, and it was `xl` (1280) until 2026-08-24.** At 1280 the pane left
+  the sheet 630px and the editor's button row needs 787: the row wrapped to two lines, the
+  action line above it wrapped to two more, and a writer on a 13-inch laptop met THREE tiers
+  of chrome before the first word. The pane is 320 and the shell takes 330, so the sheet is
+  the window less 650 and the row needs ~950 with air around it. Both the pane and the row
+  are the owner's explicit picks; below 1640 they do not both fit, and the writing wins.
+  Do not put it back to `xl` without re-measuring the row.
+- **Focus mode is the other half of that** (`components/useFocusMode.ts`, 2026-08-24). One
+  switch in the action line, `Ctrl/Cmd + \`, takes the pane AND the button row off the
+  screen at any width and leaves the paper. It is a device preference in localStorage, not a
+  setting: it is a fact about this person at this desk, like the rail's icon switch. The
+  default does not change. Nothing is lost while it is on — the bubble bar on a selection and
+  "/" at the caret carry every command the row holds, which is the arrangement Medium is
+  known for and the reason putting the row away costs nothing.
 - **The home carries the numbers; the DETAIL lives on its own screen.** Views, visitors, time
   per post and read-through are on the home page — that is why Analytics could leave the rail
   — and the charts, the ranges and the per-page breakdown are one click further, from the

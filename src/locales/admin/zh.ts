@@ -112,6 +112,7 @@ const zh = {
   tbHeading: '标题',
   slashHint: '输入 / 插入图片、表格、代码或公式 · 选中文字即显示格式栏',
   edWords: '{n} 字',
+  edFocus: '专注',
   edReadMinutes: '阅读 {n} 分钟',
   pubTitle: '发布这篇',
   pubLater: '以后再说',

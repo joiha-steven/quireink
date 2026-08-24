@@ -131,6 +131,12 @@ which was never true. The boxes came off on 2026-08-03; **not one line of conten
 - Mobile: one drawer, left-rail blocks duplicated into it, order menu → most viewed →
   featured → categories → tags
 - Each rail block self-hides when empty
+- Quote gesture (2026-08-24, ADDED HERE — the frozen tree had nothing like it): selecting
+  twelve characters or more inside `.prose` raises one control that copies the sentence and
+  a `#:~:text=` link to it. Above the selection on a mouse, BELOW it on a touch screen where
+  the OS puts its own callout above. Never drawn where `navigator.clipboard` is missing
+  (any plain-http page), and it is not a share button: no third party, no account, no
+  network call at all
 - Post and page views show ONLY the ToC, in a single left rail
 - ToC shows when a post has headings or an in-page jump, otherwise renders nothing
 - ToC mixed-level styling (`.rail-lead` with a dot, `.rail-sub` without); uniform when all

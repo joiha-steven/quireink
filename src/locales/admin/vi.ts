@@ -112,6 +112,7 @@ const vi = {
   tbHeading: 'Tiêu đề mục',
   slashHint: 'Gõ / để chèn ảnh, bảng, mã, công thức · bôi đen chữ để hiện thanh công cụ',
   edWords: '{n} chữ',
+  edFocus: 'Tập trung',
   edReadMinutes: 'đọc {n} phút',
   pubTitle: 'Đăng bài này',
   pubLater: 'Để sau',

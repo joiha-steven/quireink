@@ -112,6 +112,7 @@ const de = {
   tbHeading: 'Überschrift',
   slashHint: 'Mit / Bild, Tabelle, Code oder Formel einfügen · Text markieren für die Formatleiste',
   edWords: '{n} Wörter',
+  edFocus: 'Fokus',
   edReadMinutes: '{n} Min. Lesezeit',
   pubTitle: 'Diesen Beitrag veröffentlichen',
   pubLater: 'Später',

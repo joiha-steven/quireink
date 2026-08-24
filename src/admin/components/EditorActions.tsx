@@ -11,11 +11,12 @@
 // sheet, over a hairline, and the toolbar strip attaches directly under it. The floating
 // version put two light bands a crack apart and the owner's word for it was "kì kì".
 // Quiet text controls on the left with the status; the session-ending buttons right.
-import { useEffect, useState, type RefObject } from 'react'
+import { useEffect, useRef, useState, type RefObject } from 'react'
 import Link from '@/admin/router'
 import { Button } from '@/admin/ui/Button'
 import { formatTime } from '@/utils'
 import { useAdminT } from './I18nProvider'
+import { useFocusMode } from './useFocusMode'
 
 /** Quiet text control, shared by everything on the bar that is not Preview/Publish. */
 const QUIET =
@@ -47,6 +48,16 @@ function countWords(markdown: string): number {
     .replace(/[#>*_`~[\]()!-]/g, ' ')
   const matched = text.match(/\S+/g)
   return matched ? matched.length : 0
+}
+
+/**
+ * What to call the modifier in a tooltip. Read off the platform because the whole point of
+ * printing it is that the reader can press it: "Ctrl" on a Mac keyboard is a different key.
+ * `navigator.platform` is deprecated and still the only thing every browser answers.
+ */
+function modKey(): string {
+  const p = typeof navigator === 'undefined' ? '' : navigator.platform || navigator.userAgent
+  return /Mac|iPhone|iPad/.test(p) ? '\u2318' : 'Ctrl'
 }
 
 export function EditorActions({
@@ -89,6 +100,26 @@ export function EditorActions({
 }) {
   const t = useAdminT()
   const { words, minutes } = useWordStats(getText)
+  const [focus, setFocus] = useFocusMode()
+
+  // The listener below is registered once, so it must not close over a stale flag.
+  const focusRef = useRef(focus)
+  useEffect(() => { focusRef.current = focus }, [focus])
+
+  // The shortcut, registered once per editor. Ctrl/Cmd + backslash because it is what a
+  // writer's hands know from every other tool that hides a sidebar, and because nothing in
+  // TipTap or the browser claims it. Ignored while a modifier combination is being used
+  // for anything else — `metaKey || ctrlKey` alone is the whole test.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === '\\' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault()
+        setFocus(!focusRef.current)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [setFocus])
   return (
     <div
       ref={barRef}
@@ -142,6 +173,19 @@ export function EditorActions({
         </button>
         <button type="button" onClick={onToggleSettings} className={QUIET}>
           {settingsOpen ? t.hideAttributes : t.attributes}
+        </button>
+        {/* The third of the look-at-it group. It takes the button row and the write pane
+            off the screen and leaves the paper; the bubble bar and "/" keep every command
+            the row held. The shortcut is in the title because a switch nobody can find
+            twice is a switch that gets used once. */}
+        <button
+          type="button"
+          onClick={() => setFocus(!focus)}
+          aria-pressed={focus}
+          title={`${t.edFocus} (${modKey()} \\)`}
+          className={`${QUIET} ${focus ? 'font-medium text-neutral-900 dark:text-white' : ''}`}
+        >
+          {t.edFocus}
         </button>
         {savedSlug && (
           <Button variant="secondary" type="button" onClick={onPreview}>

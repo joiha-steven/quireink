@@ -112,6 +112,7 @@ const ja = {
   tbHeading: '見出し',
   slashHint: '/ で画像・表・コード・数式を挿入 · テキストを選択すると書式バーが現れます',
   edWords: '{n} 語',
+  edFocus: '集中',
   edReadMinutes: '読了 {n} 分',
   pubTitle: 'この記事を公開',
   pubLater: 'あとで',

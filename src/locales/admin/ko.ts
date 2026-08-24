@@ -112,6 +112,7 @@ const ko = {
   tbHeading: '제목',
   slashHint: '/ 를 입력해 이미지·표·코드·수식 삽입 · 텍스트를 선택하면 서식 막대가 나타납니다',
   edWords: '{n} 단어',
+  edFocus: '집중',
   edReadMinutes: '읽기 {n}분',
   pubTitle: '이 글 발행',
   pubLater: '나중에',

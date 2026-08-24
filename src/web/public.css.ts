@@ -13,6 +13,7 @@
 
 import { RAIL_CSS } from '@/web/rail.css'
 import { ISLANDS_CSS } from '@/web/islands.css'
+import { BOOK_CSS } from '@/web/book.css'
 import { SUBSCRIBE_CSS } from '@/web/subscribe.css'
 import { IDE_CSS } from '@/web/ide.css'
 import { MOBILE_CSS } from '@/web/mobile.css'
@@ -362,6 +363,7 @@ export const PUBLIC_CSS = `${BASE_CSS}
 
 ${RAIL_CSS}
 ${ISLANDS_CSS}
+${BOOK_CSS}
 ${SUBSCRIBE_CSS}
 ${FRONT_CSS}
 ${IDE_CSS}
