@@ -14,7 +14,7 @@ import { render, peakOf } from '@/admin/components/key-render'
 import { VOICES, type Instrument, type Strike } from '@/admin/components/key-voices'
 
 const SR = 48_000
-const MODES: Instrument[] = ['typewriter', 'tactile', 'linear']
+const MODES: Instrument[] = ['woody', 'crisp', 'deep']
 const KINDS: Strike[] = ['tap', 'back', 'space', 'return']
 
 /** Power at a probe frequency, by hand: a whole FFT to answer one question is not needed. */
@@ -97,20 +97,20 @@ describe('the three instruments are three instruments', () => {
   it('puts their energy in three different places', () => {
     // Measured 2026-08-25: 1968 / 460 / 206 Hz unweighted. Generous margins on purpose —
     // this is meant to catch CONVERGENCE, not to freeze a tuning.
-    expect(centroid(tap.tactile)).toBeGreaterThan(centroid(tap.typewriter) * 3)
-    expect(centroid(tap.typewriter)).toBeGreaterThan(centroid(tap.linear) * 1.8)
-    expect(centroid(tap.tactile)).toBeGreaterThan(1500)
-    expect(centroid(tap.linear)).toBeLessThan(400)
+    expect(centroid(tap.crisp)).toBeGreaterThan(centroid(tap.woody) * 3)
+    expect(centroid(tap.woody)).toBeGreaterThan(centroid(tap.deep) * 1.8)
+    expect(centroid(tap.crisp)).toBeGreaterThan(1500)
+    expect(centroid(tap.deep)).toBeLessThan(400)
   })
 
   it('gives one a crack, one a ring and one none at all', () => {
     // Brightness — the share of energy above 2 kHz — is what "đanh" actually means, and it
     // is the number the version the owner rejected had no spread in at all.
     // Measured: 0.308 / 0.083 / 0.000.
-    expect(brightness(tap.tactile)).toBeGreaterThan(0.2)
-    expect(brightness(tap.typewriter)).toBeGreaterThan(0.03)
-    expect(brightness(tap.typewriter)).toBeLessThan(brightness(tap.tactile) / 2)
-    expect(brightness(tap.linear)).toBeLessThan(0.01)
+    expect(brightness(tap.crisp)).toBeGreaterThan(0.2)
+    expect(brightness(tap.woody)).toBeGreaterThan(0.03)
+    expect(brightness(tap.woody)).toBeLessThan(brightness(tap.crisp) / 2)
+    expect(brightness(tap.deep)).toBeLessThan(0.01)
   })
 
   it('keeps every fundamental above what a laptop speaker can reproduce', () => {
@@ -133,9 +133,9 @@ describe('the three instruments are three instruments', () => {
 
   it('gives the crisp one a short life and the deep one a long one', () => {
     // Crispness is as much about how fast it is gone as about how bright it is.
-    expect(tailMs(tap.tactile)).toBeLessThan(40)
-    expect(tailMs(tap.linear)).toBeGreaterThan(70)
-    expect(tailMs(tap.typewriter)).toBeGreaterThan(tailMs(tap.tactile))
+    expect(tailMs(tap.crisp)).toBeLessThan(40)
+    expect(tailMs(tap.deep)).toBeGreaterThan(70)
+    expect(tailMs(tap.woody)).toBeGreaterThan(tailMs(tap.crisp))
   })
 
   it('lets the escapement be heard after the typebar has landed', () => {
@@ -143,21 +143,21 @@ describe('the three instruments are three instruments', () => {
     // what stops a typewriter sounding like a drum. It carries about 3% of the energy and it
     // is unmissable, which is why this asks whether the LATE window is bright rather than
     // whether it is loud.
-    const late = tap.typewriter.slice(Math.round(SR * 0.045), Math.round(SR * 0.075))
+    const late = tap.woody.slice(Math.round(SR * 0.045), Math.round(SR * 0.075))
     expect(brightness(late)).toBeGreaterThan(0.3)
     // A switch has nothing at all going on that late.
-    const quiet = tap.tactile.slice(Math.round(SR * 0.045))
-    expect(peakOf(quiet)).toBeLessThan(peakOf(tap.tactile) * 0.05)
+    const quiet = tap.crisp.slice(Math.round(SR * 0.045))
+    expect(peakOf(quiet)).toBeLessThan(peakOf(tap.crisp) * 0.05)
   })
 
   it('counts the events each machine actually performs', () => {
     // A tactile switch: the bump, then the bottom-out. A linear one: the bottom-out, and its
     // quiet upstroke buried in the ring. A typewriter: the typebar and then the carriage.
-    expect(events(tap.tactile)).toBe(2)
-    expect(events(tap.linear)).toBe(1)
-    expect(events(tap.typewriter)).toBeGreaterThanOrEqual(2)
+    expect(events(tap.crisp)).toBe(2)
+    expect(events(tap.deep)).toBe(1)
+    expect(events(tap.woody)).toBeGreaterThanOrEqual(2)
     // The carriage flying back across the machine is a run of them and nothing else is.
-    expect(events(render(VOICES.typewriter.return, SR, 1))).toBeGreaterThanOrEqual(5)
+    expect(events(render(VOICES.woody.return, SR, 1))).toBeGreaterThanOrEqual(5)
   })
 })
 
@@ -177,8 +177,8 @@ describe('the strikes inside one instrument', () => {
   it('gives every variant its own noise', () => {
     // The TONES are the same between variants — a body rings the way it rings — so the two
     // are compared by how much they differ, not by how many samples match.
-    const a = render(VOICES.tactile.tap, SR, 0x9e37)
-    const b = render(VOICES.tactile.tap, SR, 0x9e37 + 7919)
+    const a = render(VOICES.crisp.tap, SR, 0x9e37)
+    const b = render(VOICES.crisp.tap, SR, 0x9e37 + 7919)
     let diff = 0
     let base = 0
     for (let i = 0; i < a.length; i += 1) {
@@ -189,8 +189,8 @@ describe('the strikes inside one instrument', () => {
   })
 
   it('renders the same samples for the same seed, so a cached strike is reproducible', () => {
-    const a = render(VOICES.linear.tap, SR, 42)
-    const b = render(VOICES.linear.tap, SR, 42)
+    const a = render(VOICES.deep.tap, SR, 42)
+    const b = render(VOICES.deep.tap, SR, 42)
     expect(Array.from(a.slice(0, 200))).toEqual(Array.from(b.slice(0, 200)))
   })
 })

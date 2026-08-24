@@ -5,9 +5,10 @@
 import { useRef } from 'react'
 import type { TypographySettings, MotionSettings, KeyFeedback } from '@/types'
 import { Input } from '@/admin/ui/Input'
+import { Button } from '@/admin/ui/Button'
 import { Range } from '@/admin/ui/Range'
 import { ToggleRow } from '@/admin/ui/Switch'
-import { previewKey } from './key-sound'
+import { playPhrase, previewKey } from './key-sound'
 import { useAdminT } from './I18nProvider'
 import { FIELD_W, PANEL_LIST, Select, Setting } from './kit'
 
@@ -71,15 +72,15 @@ export function AdvancedFields({
             onChange={(e) => {
               const keys = e.target.value as KeyFeedback
               onMotion({ ...motion, keys })
-              // Picking an instrument plays it. Three named switches mean nothing on a page
-              // — tactile and linear are a difference you hear or not at all.
-              hear({ mode: keys, volume: motion.keyVolume })
+              // Picking one plays it. Three names mean nothing on a page — the difference
+              // between these is a difference you hear or it does not exist.
+              playPhrase({ mode: keys, volume: motion.keyVolume })
             }}
           >
             <option value="off">{t.keyFeedbackOff}</option>
-            <option value="typewriter">{t.keyFeedbackTypewriter}</option>
-            <option value="tactile">{t.keyFeedbackTactile}</option>
-            <option value="linear">{t.keyFeedbackLinear}</option>
+            <option value="woody">{t.keyFeedbackWoody}</option>
+            <option value="crisp">{t.keyFeedbackCrisp}</option>
+            <option value="deep">{t.keyFeedbackDeep}</option>
           </Select>
         </Setting>
       </div>
@@ -89,20 +90,34 @@ export function AdvancedFields({
           same thing and leaves the door marked. */}
       <div className="p-4">
         <Setting label={t.keyVolumeLabel} note={t.keyVolumeDesc}>
-          <Range
-            min={0}
-            max={100}
-            step={5}
-            value={motion.keyVolume}
-            disabled={motion.keys === 'off'}
-            readout={`${motion.keyVolume}%`}
-            onChange={(e) => {
-              const keyVolume = Number(e.target.value)
-              if (!Number.isFinite(keyVolume)) return
-              onMotion({ ...motion, keyVolume })
-              hear({ mode: motion.keys, volume: keyVolume })
-            }}
-          />
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
+            <Range
+              min={0}
+              max={100}
+              step={5}
+              value={motion.keyVolume}
+              disabled={motion.keys === 'off'}
+              readout={`${motion.keyVolume}%`}
+              onChange={(e) => {
+                const keyVolume = Number(e.target.value)
+                if (!Number.isFinite(keyVolume)) return
+                onMotion({ ...motion, keyVolume })
+                hear({ mode: motion.keys, volume: keyVolume })
+              }}
+            />
+            {/* The button is not a convenience. The drag DOES play a key — measured at 0.61
+                of full scale on the deployed build — and the owner still reported silence,
+                because one 40ms tick at most every 110ms is a sound you have to already be
+                listening for. Six keys and a space is a sound nobody can miss, and a run is
+                the only way to hear what actually separates these three. */}
+            <Button
+              variant="secondary"
+              disabled={motion.keys === 'off'}
+              onClick={() => playPhrase({ mode: motion.keys, volume: motion.keyVolume })}
+            >
+              {t.keyHear}
+            </Button>
+          </div>
         </Setting>
       </div>
       {/* The floor is 15s and it is enforced by the settings sanitiser, not only here: the

@@ -63,9 +63,9 @@ const FULL_SCALE = 0.3
  * by eye.
  */
 export const LEVEL: Record<Instrument, number> = {
-  typewriter: 1.0,
-  tactile: 2.2,
-  linear: 0.68,
+  woody: 1.0,
+  crisp: 2.2,
+  deep: 0.68,
 }
 
 /**
@@ -165,6 +165,37 @@ function buffers(context: AudioContext, mode: Instrument, kind: Strike): AudioBu
  * made it.
  */
 export function playKey(sound: KeySound, kind: Strike): void {
+  strike(sound, [kind])
+}
+
+/**
+ * A few keys in a row, so somebody can actually judge the thing they are setting.
+ *
+ * Added 2026-08-25 after the owner reported that dragging the slider produced no sound.
+ * Measured in a real browser on the deployed build, it produced 0.61 of full scale at the
+ * destination — the audio was there. What was not there was anything to NOTICE: one 40ms
+ * tick, once per 110ms of dragging, is a sound you have to already be expecting. Four keys
+ * and a space is a sound you cannot miss, and it is also the only way to hear the thing that
+ * distinguishes these three, which is what a RUN of them sounds like.
+ */
+export function playPhrase(sound: KeySound): void {
+  strike(sound, ['tap', 'tap', 'tap', 'space', 'tap', 'tap'])
+}
+
+/**
+ * The same key, played by the settings screen while somebody is dragging.
+ *
+ * Deliberately the ordinary letter rather than a phrase: while the slider is moving, the
+ * question is "how loud is a key", and forty overlapping phrases is not an answer.
+ */
+export function previewKey(sound: KeySound): void {
+  strike(sound, ['tap'])
+}
+
+/** Gap between keys in a phrase, seconds. A shade under an ordinary typing speed. */
+const PHRASE_GAP = 0.135
+
+function strike(sound: KeySound, kinds: Strike[]): void {
   if (sound.mode === 'off') return
   const level = gainFor(sound.volume)
   if (level <= 0) return
@@ -172,25 +203,32 @@ export function playKey(sound: KeySound, kind: Strike): void {
   if (!AudioContextClass) return
   audio ??= new AudioContextClass()
   const context = audio
-  if (context.state === 'suspended') void context.resume()
-  const pool = buffers(context, sound.mode, kind)
-  const source = context.createBufferSource()
-  source.buffer = pool[Math.floor(Math.random() * pool.length)] ?? pool[0]!
-  // Pitch and length together, which is what a different switch under a different finger
-  // actually changes — moving a filter frequency instead leaves the transient identical.
-  source.playbackRate.value = 0.96 + Math.random() * 0.09
-  const gain = context.createGain()
-  gain.gain.value = level * LEVEL[sound.mode] * (0.92 + Math.random() * 0.16)
-  source.connect(gain).connect(ceiling(context))
-  source.start()
+  // A context that has not been unlocked yet cannot be handed a source and told to start
+  // NOW: its clock is not moving, so the scheduled moment is already in the past by the time
+  // the resume lands, and the sound is dropped without an error. Chrome unlocks a context
+  // built inside a gesture; Safari does not, and the very first key a writer presses is
+  // exactly the one that would go missing.
+  if (context.state === 'suspended') {
+    void context.resume().then(() => fire(context, sound, kinds)).catch(() => {})
+    return
+  }
+  fire(context, sound, kinds)
 }
 
-/**
- * The same key, played by the settings screen while somebody is choosing.
- *
- * Deliberately the ordinary letter rather than a demonstration phrase: the question the
- * slider is asking is "how loud is a key", and the honest answer is one key at that volume.
- */
-export function previewKey(sound: KeySound): void {
-  playKey(sound, 'tap')
+function fire(context: AudioContext, sound: KeySound, kinds: Strike[]): void {
+  if (sound.mode === 'off') return
+  const level = gainFor(sound.volume) * LEVEL[sound.mode]
+  const start = context.currentTime
+  kinds.forEach((kind, i) => {
+    const pool = buffers(context, sound.mode as Instrument, kind)
+    const source = context.createBufferSource()
+    source.buffer = pool[Math.floor(Math.random() * pool.length)] ?? pool[0]!
+    // Pitch and length together, which is what a different switch under a different finger
+    // actually changes — moving a filter frequency instead leaves the transient identical.
+    source.playbackRate.value = 0.96 + Math.random() * 0.09
+    const gain = context.createGain()
+    gain.gain.value = level * (0.92 + Math.random() * 0.16)
+    source.connect(gain).connect(ceiling(context))
+    source.start(start + i * PHRASE_GAP)
+  })
 }

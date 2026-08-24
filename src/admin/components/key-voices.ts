@@ -25,7 +25,7 @@ export type Voice = { secs: number; parts: Part[] }
 
 export type Strike = 'tap' | 'back' | 'space' | 'return'
 
-export type Instrument = 'typewriter' | 'tactile' | 'linear'
+export type Instrument = 'woody' | 'crisp' | 'deep'
 
 /**
  * The carriage thrown back across the machine: it accelerates, so the escapement ticks come
@@ -57,7 +57,7 @@ export const VOICES: Record<Instrument, Record<Strike, Voice>> = {
    * struck bar has inharmonic modes, and partials in tune with each other read as a musical
    * note rather than as metal.
    */
-  typewriter: {
+  woody: {
     tap: {
       secs: 0.17,
       parts: [
@@ -134,7 +134,7 @@ export const VOICES: Record<Instrument, Record<Strike, Voice>> = {
    * housing floor. Neither one has a blunted attack, because plastic hitting plastic does
    * not have one.
    */
-  tactile: {
+  crisp: {
     tap: {
       secs: 0.075,
       parts: [
@@ -214,7 +214,7 @@ export const VOICES: Record<Instrument, Record<Strike, Voice>> = {
    * actually writes on. Deep here means "the darkest of the three", not "the lowest
    * frequency a formula allows".
    */
-  linear: {
+  deep: {
     tap: {
       secs: 0.17,
       parts: [
