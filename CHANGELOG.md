@@ -139,6 +139,19 @@ moving, something is.
 
 If you had the old switch on, you have the typewriter. If you had it off, you have Off.
 
+### And you set how loud it is
+
+The click shipped at one fixed level, and one level is a guess about a room, a pair of
+speakers and a person. **Key volume** sits under the instrument in Settings → Appearance:
+drag it, and it plays a key as it goes, so you are listening to the thing you are setting
+instead of walking to the editor and back to find out. Picking an instrument plays it too —
+tactile and linear are a difference you hear or you do not hear at all.
+
+It starts in the middle, which is around two and a half times the old fixed level. Nothing
+about the balance moves with it: a space stays deeper than a letter, and the tactile bump
+stays under its bottom-out, wherever you put the slider. **Zero is a real setting** — the
+caret without the sound — and it is not the same as turning the instrument Off.
+
 ### The pen is yours now
 
 Settings → Appearance grew a card called **The pen**: the five highlighter pigments, the

@@ -42,15 +42,27 @@ that file first; this one only adds what is true here.
 - **Key feedback is a CHOICE OF INSTRUMENT, not a switch** (2026-08-24): typewriter,
   mechanical-tactile, mechanical-linear, off. It defaults to typewriter, is stored as
   `motion.keys`, and reads the pre-2026-08-24 `motion.typewriter` boolean as the choice it
-  stood for. The click is generated locally (no audio files anywhere), at 45% internal
-  volume, with per-strike jitter so forty keys in a line do not sound like one sample
-  repeated, and with a deeper voice for the space bar and the return. Tactile fires two
-  transients 12ms apart — the bump, then the bottom-out — and linear one softer, lower one.
-  Selection-safe, IME-safe, and skipped entirely during composition.
+  stood for. The click is generated locally (no audio files anywhere), with per-strike jitter
+  so forty keys in a line do not sound like one sample repeated, and with a deeper voice for
+  the space bar and the return. Tactile fires two transients 12ms apart — the bump, then the
+  bottom-out — and linear one softer, lower one. Selection-safe, IME-safe, and skipped
+  entirely during composition.
   ⚠️ **Nothing animates the TEXT.** Until 2026-08-24 every keystroke animated the whole
   block's opacity from 0.9 and nudged it 0.6px, which at sixty words a minute is a paragraph
   strobing five times a second — reported as "nháy". The sound carries the keystroke, the
   caret carries the position, and the words hold still. Do not put a pulse back on the block.
+- **How loud it is, is the owner's** (2026-08-25, *"tiếng có vẻ nhỏ"*): `motion.keyVolume`,
+  0-100, a plain linear fraction of a full scale defined once in `key-sound.ts`. The
+  per-voice gains are the BALANCE between the instruments and between a letter and a space;
+  the slider is the only number that says how loud the whole thing is, so nothing about that
+  balance changes when it moves. A row with no volume stored reads as the default 50, which
+  is roughly two and a half times the fixed level this replaced. 0 is a real answer — the
+  caret with the sound off — and is not the same setting as `keys: 'off'`.
+  The synthesis lives in `key-sound.ts`, apart from `key-feedback.ts`, because the settings
+  screen plays a key as you drag the slider and must not pull Tiptap into its bundle to do
+  it. A volume control you cannot hear while setting it is a trip to the editor per nudge.
+  The sound is NOT gated by the motion engine or by reduced-motion: somebody who asked for
+  less movement did not ask for silence, and those are not the same request.
 - **The caret stops blinking while the hands are moving**, and fades rather than switching:
   700ms past the last keystroke before it resumes, 1.2s ease-in-out, and never all the way
   to zero. A blink means "the cursor is here and nothing is happening", and during a burst of

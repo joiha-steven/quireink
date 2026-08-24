@@ -333,6 +333,8 @@ const ko = {
   keyFeedbackTypewriter: '타자기',
   keyFeedbackTactile: '기계식, 택타일',
   keyFeedbackLinear: '기계식, 리니어',
+  keyVolumeLabel: '타건음 크기',
+  keyVolumeDesc: '그 소리를 얼마나 크게 낼지, 무음부터 최대까지. 움직일 때마다 한 번씩 울리므로 지금 어디에 두었는지 바로 들립니다.',
   autosaveLabel: '이 기기에 저장하는 간격',
   autosaveHint: '입력 중 로컬에 저장하는 간격(초), 15에서 600까지. 저장을 누르기 전에는 서버로 아무것도 보내지 않습니다 — 탭이 죽거나 휴대폰이 새로 고쳐졌을 때 남는 것이 이 사본입니다. 떠날 때와 전환할 때도 저장하므로 간격이 길어도 안전합니다.',
   overviewTitle: '개요',

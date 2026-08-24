@@ -7,9 +7,10 @@ import { View } from '@/admin/pages/state'
 import { PageForm } from '@/admin/components/PageForm'
 import { WritePane } from '@/admin/components/WritePane'
 import { useFocusMode } from '@/admin/components/useFocusMode'
-import type { PageWithContent, KeyFeedback } from '@/types'
+import type { PageWithContent } from '@/types'
+import type { KeySound } from '@/admin/components/key-sound'
 
-type Props = { page: PageWithContent | null; contentWidth: number; keyFeedback: KeyFeedback; autosaveSeconds: number }
+type Props = { page: PageWithContent | null; contentWidth: number; keySound: KeySound; autosaveSeconds: number }
 
 export default function PageEditor() {
   const [focus] = useFocusMode()
@@ -27,7 +28,7 @@ export default function PageEditor() {
           key={d.page?.slug ?? 'new'}
           initial={d.page ?? undefined}
           contentWidth={d.contentWidth}
-          keyFeedback={d.keyFeedback}
+          keySound={d.keySound}
           autosaveSeconds={d.autosaveSeconds}
         />
           </div>

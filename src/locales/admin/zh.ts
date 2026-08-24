@@ -333,6 +333,8 @@ const zh = {
   keyFeedbackTypewriter: '打字机',
   keyFeedbackTactile: '机械轴，段落',
   keyFeedbackLinear: '机械轴，线性',
+  keyVolumeLabel: '按键音量',
+  keyVolumeDesc: '那一声敲击有多响，从静音到最大。拖动时就会响一下，你放在哪儿就听见哪儿。',
   autosaveLabel: '本机保存间隔',
   autosaveHint: '输入时保存到本机的间隔秒数，15 到 600。在你按下保存之前不会向服务器发送任何内容——标签页崩溃或手机自动重载后，留下来的就是这份副本。离开或切走时也会保存，所以间隔长一点也安全。',
   overviewTitle: '概览',

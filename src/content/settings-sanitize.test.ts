@@ -165,7 +165,7 @@ describe('sanitizeFront', () => {
  * the worse of the two, because somebody turned it off for a reason.
  */
 describe('sanitizeMotion, upgrading from the old boolean', () => {
-  const M = { enabled: true, keys: 'typewriter' } as const
+  const M = { enabled: true, keys: 'typewriter', keyVolume: 50 } as const
 
   it('reads the old switch as the choice it stood for', () => {
     expect(sanitizeMotion({ enabled: true, typewriter: true }, M).keys).toBe('typewriter')
@@ -178,12 +178,31 @@ describe('sanitizeMotion, upgrading from the old boolean', () => {
 
   it('keeps the current setting for a value it cannot read', () => {
     expect(sanitizeMotion({ keys: 'clicky' }, M).keys).toBe('typewriter')
-    expect(sanitizeMotion({}, { enabled: true, keys: 'tactile' }).keys).toBe('tactile')
+    expect(sanitizeMotion({}, { enabled: true, keys: 'tactile', keyVolume: 50 }).keys).toBe('tactile')
   })
 
   it('takes all four, and they are the four the editor knows', () => {
     for (const keys of ['off', 'typewriter', 'tactile', 'linear'] as const) {
       expect(sanitizeMotion({ keys }, M).keys).toBe(keys)
     }
+  })
+
+  // The volume arrived a day after the instrument, so every stored row in the world is a row
+  // without one — including the three this product actually runs on.
+  it('gives a settings row that predates the volume the default one', () => {
+    expect(sanitizeMotion({ keys: 'linear' }, M).keyVolume).toBe(50)
+    expect(sanitizeMotion({ enabled: true, typewriter: true }, M).keyVolume).toBe(50)
+  })
+
+  it('keeps silence, because 0 is an answer and not a missing value', () => {
+    expect(sanitizeMotion({ keys: 'linear', keyVolume: 0 }, M).keyVolume).toBe(0)
+  })
+
+  it('clamps and rounds anything else', () => {
+    expect(sanitizeMotion({ keyVolume: 240 }, M).keyVolume).toBe(100)
+    expect(sanitizeMotion({ keyVolume: -20 }, M).keyVolume).toBe(0)
+    expect(sanitizeMotion({ keyVolume: 62.4 }, M).keyVolume).toBe(62)
+    expect(sanitizeMotion({ keyVolume: 'loud' }, M).keyVolume).toBe(50)
+    expect(sanitizeMotion({ keyVolume: Number.NaN }, M).keyVolume).toBe(50)
   })
 })

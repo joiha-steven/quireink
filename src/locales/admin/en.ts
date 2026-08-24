@@ -333,6 +333,8 @@ const en = {
   keyFeedbackTypewriter: 'Typewriter',
   keyFeedbackTactile: 'Mechanical, tactile',
   keyFeedbackLinear: 'Mechanical, linear',
+  keyVolumeLabel: 'Key volume',
+  keyVolumeDesc: 'How loud that click is, from silence to the top of the range. Moving it plays a key, so you can hear where you are putting it.',
   autosaveLabel: 'Keep a local copy every',
   autosaveHint: 'Seconds between local snapshots while you type, from 15 to 600. Nothing is sent to the server until you press Save — this is the copy that survives a crashed tab or a phone that reloaded under your thumb. It also saves whenever you leave or switch away, so a long interval is safe.',
   overviewTitle: 'Overview',

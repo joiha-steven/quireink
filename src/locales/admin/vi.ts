@@ -333,6 +333,8 @@ const vi = {
   keyFeedbackTypewriter: 'Máy đánh chữ',
   keyFeedbackTactile: 'Phím cơ, tactile',
   keyFeedbackLinear: 'Phím cơ, linear',
+  keyVolumeLabel: 'Độ to tiếng gõ',
+  keyVolumeDesc: 'Tiếng lách ấy to đến đâu, từ im lặng đến hết nấc. Kéo tới đâu nghe tới đó, khỏi phải sang trình soạn thảo thử.',
   autosaveLabel: 'Giữ bản nháp trên máy mỗi',
   autosaveHint: 'Số giây giữa hai lần lưu tạm khi anh đang gõ, từ 15 đến 600. Không có gì được gửi lên máy chủ cho tới khi anh bấm Lưu — đây là bản sống sót khi tab sập hoặc điện thoại tự tải lại. Nó cũng lưu mỗi khi anh rời trang hoặc chuyển sang việc khác, nên để lâu vẫn an toàn.',
   overviewTitle: 'Tổng quan',

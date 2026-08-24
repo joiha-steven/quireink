@@ -13,10 +13,13 @@
   ⚠️ They do NOT zero `--dur-*` (measured: still `.2s` with the switch off), so never read a token
   in script to decide whether to animate; read the media query and the attribute. Toggle in
   Admin → Appearance → Rendering. Don't add a second motion gate.
-- `settings.motion.typewriter` is a scoped editor preference, not another global motion engine. It
+- `settings.motion.keys` is a scoped editor preference, not another global motion engine. It
   enables the custom caret/line response and synthesized key sound; its visual parts must still obey
-  the master motion gate and reduced-motion preference. Audio is generated locally at 45% internal
-  volume and must ignore IME composition, modifiers/navigation, paste, and held-key repeats.
+  the master motion gate and reduced-motion preference. Audio is generated locally, at the level
+  `settings.motion.keyVolume` names, and must ignore IME composition, modifiers/navigation, paste
+  and held-key repeats. ⚠️ Sound is NOT gated by the motion engine or by reduced-motion: a person
+  who asked for less movement did not ask for silence, and the two settings are not the same
+  request. Nothing in that path may animate the text.
 - **Cheap properties only** (`opacity`/`transform`/colour) so motion never causes CLS or jank; entrance
   effects must default to fully-visible (e.g. `.reveal` is gated behind `@supports (animation-timeline)`
   + `data-motion='on'`) so unsupported browsers / motion-off never hide content. There is no page-nav

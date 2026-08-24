@@ -67,6 +67,8 @@ between a line here and the running software is either a bug or an unrecorded `�
   mechanical-linear, off. A block caret that holds still while you type, and a synthesized
   click — no audio files. Ignores composition, modifiers, navigation keys, paste and held
   repeats. Nothing animates the text itself
+- `⚠` Key volume (2026-08-25): 0-100, set by a slider that plays a key as it moves, stored as
+  `motion.keyVolume`. 1.x had no sound at all, so there is nothing to be at parity with
 - `⚠` **Vietnamese IME (Telex) must be tested explicitly.** Toolbar and autosave must not
   interfere mid-composition
 - Title grows instead of clipping; toolbar sticky, never wraps, scrolls horizontally on

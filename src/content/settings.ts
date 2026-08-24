@@ -137,7 +137,10 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   // Every ink empty: the built-ins are measured values (ADR 0018) and belong in the code
   // where they can still be corrected, not copied into every install's database.
   inks: { ...DEFAULT_INKS },
-  motion: { enabled: true, keys: 'typewriter' },
+  // 50 is the middle of the slider, and the middle is deliberate: the fixed level this
+  // replaced sits at about 18 on the same scale, and the owner's report was that it was too
+  // quiet. Anyone who liked the whisper can go back down to it.
+  motion: { enabled: true, keys: 'typewriter', keyVolume: 50 },
   // On, because a blog that is fast for readers is the default. The switch exists for the
   // hour you are changing the look and want to see it, not for permanent use.
   cache: { enabled: true },
