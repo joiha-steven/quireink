@@ -752,6 +752,23 @@ export type AdminStrings = {
   cardMcp: string
   cardCloudflare: string
   cardAi: string
+  cardInk: string
+  inkHelp: string
+  inkHighlighter: string
+  inkYellow: string
+  inkGreen: string
+  inkPink: string
+  inkBlue: string
+  inkOrange: string
+  inkTooDark: string
+  inkLines: string
+  inkLinesHint: string
+  inkRing: string
+  inkUnderline: string
+  inkSelection: string
+  inkSelectionHint: string
+  inkSelectionLight: string
+  inkSelectionDark: string
   aiHelp: string
   aiKeyPh: string
   aiProviderOff: string

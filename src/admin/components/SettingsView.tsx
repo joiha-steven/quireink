@@ -30,18 +30,13 @@ import type { IntegrationStatus } from '@/store/integration-keys'
 import { Button } from '@/admin/ui/Button'
 import { useToast } from '@/admin/ui/Toast'
 import { formatTime } from '@/utils'
-import { Card, NOTE_TEXT, PageHeader, ResetButton, Tabs, type TabItem } from './kit'
+import { Card, NOTE_TEXT, PageHeader, Tabs, type TabItem } from './kit'
 import { SHEET, SheetTop } from './sheet'
 import { SettingsSearch } from './SettingsSearch'
 import { useSettingJump } from './useSettingJump'
 import { useAdminT } from './I18nProvider'
 import { SiteFields } from './SiteFields'
 import { BrandFields } from './BrandFields'
-import { ThemeFields } from './ThemeFields'
-import { TypographyFields } from './TypographyFields'
-import { FontUpload } from './FontUpload'
-import { FontFields } from './FontFields'
-import { AdvancedFields } from './AdvancedFields'
 import { LayoutMenuFields } from './LayoutMenuFields'
 import { FrontFields } from './FrontFields'
 import { FooterField } from './FooterField'
@@ -54,6 +49,7 @@ import { SettingsAiTab } from './SettingsAiTab'
 import { SettingsSystemTab } from './SettingsSystemTab'
 import type { UpdateStatus } from './UpdateFields'
 import { SeoFields } from './SeoFields'
+import { SettingsAppearanceTab } from './SettingsAppearanceTab'
 import { RedirectsManager } from './RedirectsManager'
 import { NewsletterFields } from './NewsletterFields'
 
@@ -252,71 +248,10 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
 
       {/* APPEARANCE — palette + escape hatch left, the type stack right. */}
       {tab === 'appearance' && (
-        <div className={GRID}>
-          <div className={COL}>
-            <Card panel title={t.navAppearance}>
-              <p className={`${NOTE_TEXT} mb-4 rounded-lg bg-neutral-50 px-3 py-2 dark:bg-neutral-800/60`}>
-                {t.themeAdminNote}
-              </p>
-              <ThemeFields
-                presets={presets}
-                themes={s.themes}
-                defaultId={s.themePreset}
-                enabled={s.enabledPalettes}
-                scheme={s.defaultScheme}
-                onChangeThemes={(themes) => update({ themes })}
-                onSetDefault={(themePreset) => update({ themePreset })}
-                onChangeEnabled={(enabledPalettes) => update({ enabledPalettes })}
-                onChangeScheme={(defaultScheme) => update({ defaultScheme })}
-              />
-            </Card>
-            <Card panel title={t.customCss}>
-              <div className="space-y-1.5">
-                <textarea
-                  value={s.customCss}
-                  onChange={(e) => update({ customCss: e.target.value })}
-                  rows={8}
-                  spellCheck={false}
-                  placeholder={'.prose h2 { letter-spacing: -0.01em }'}
-                  className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-xs outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
-                />
-                <p className={NOTE_TEXT}>{t.customCssHint}</p>
-              </div>
-            </Card>
-          </div>
-          <div className={COL}>
-            <Card panel title={t.cardFont}>
-              <FontFields
-                value={s.fontPreset}
-                onChange={(fontPreset, typography) => update({ fontPreset, typography })}
-                chromeFont={s.chromeFont}
-                onChromeFont={(chromeFont) => update({ chromeFont })}
-              />
-              <div className="mt-4 border-t border-neutral-200 pt-4 dark:border-neutral-800">
-                <FontUpload value={s.customFont} onChange={(customFont) => update({ customFont })} />
-              </div>
-            </Card>
-            <Card panel title={t.cardTypography}
-              actions={<ResetButton onClick={() => typographyReset.current?.()} label={t.resetDefault} />}>
-              <TypographyFields
-                typography={s.typography} fontPreset={s.fontPreset} resetRef={typographyReset}
-                onChange={(typography) => update({ typography })}
-              />
-            </Card>
-            <Card panel title={t.cardRendering}>
-              <AdvancedFields
-                typography={s.typography}
-                onTypography={(typography) => update({ typography })}
-                ideChrome={s.ideChrome}
-                onIdeChrome={(ideChrome) => update({ ideChrome })}
-                motion={s.motion}
-                onMotion={(motion) => update({ motion })}
-                autosaveSeconds={s.autosaveSeconds}
-                onAutosaveSeconds={(autosaveSeconds) => update({ autosaveSeconds })}
-              />
-            </Card>
-          </div>
-        </div>
+        <SettingsAppearanceTab
+          s={s} update={update} presets={presets}
+          typographyReset={typographyReset} grid={GRID} col={COL}
+        />
       )}
 
       {/* SEARCH & URLS — the machine-facing surface. Redirects belong with it: an old

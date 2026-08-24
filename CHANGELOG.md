@@ -115,6 +115,26 @@ every non-Latin letter, so a Vietnamese sentence came out as two hundred charact
 Only whitespace and the three characters the syntax reserves are escaped now, and a long
 quote is anchored on its two ends rather than carried whole.
 
+### The pen is yours now
+
+Settings → Appearance grew a card called **The pen**: the five highlighter pigments, the
+ring, the underline, and what selected text looks like on a light page and on a dark one.
+Every field starts empty, and empty means the ink that is there today, so nothing changes
+until you change it and **Reset to default** puts all nine back.
+
+Pick a colour and it brings its own family with it. A highlighter pigment is really four
+values: the sweep, the same sweep pre-mixed into a dark page, and two ballpoint-strength
+versions for the ring and the underline, because a pale sweep is invisible as a 2px line.
+You choose one; the other three are worked out from it, by the same rule the built-in inks
+were measured against. If the colour you pick is dark enough to swallow the words under it,
+the card says so rather than stopping you: it is your pen, and it is also the contrast floor
+the rest of the site is held to.
+
+The inks that ship stay measured off a photograph of a real pen box, and a blog that never
+opens the card serves the exact same stylesheet, under the exact same address, that it
+served before any of this existed. [ADR 0029](./docs/decisions/0029-the-pen-becomes-the-owners.md)
+records the trade, and amends the decision that said these colours would never be a setting.
+
 ### Selecting text looks like this site
 
 Drag across a sentence and the highlight is black on a light page and grey on a dark one,

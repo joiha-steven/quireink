@@ -37,6 +37,10 @@ stroke twice so the ink pools where the two bands overlap. `marker` is the defau
 only one of the three that never clips a Vietnamese stacked diacritic.
 
 **The colours are NOT a setting**, and they are hardcoded hex rather than theme tokens.
+⚠️ **Amended by [0029](0029-the-pen-becomes-the-owners.md) on 2026-08-24**: the owner may now
+choose them, as overrides whose empty default is everything below. The half of this paragraph
+that still holds is the half about the PALETTE — one pen for the whole site, never a mark
+that restyles itself per theme.
 This is a deliberate exception to "public UI colours come only from theme tokens"
 (`CLAUDE.md`). A highlighter is not UI. It is a physical object dragged across the paper, and
 its pigment is the same fluorescent yellow whether the page around it is mono, sepia, ocean
