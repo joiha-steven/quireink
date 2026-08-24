@@ -133,9 +133,23 @@ export type InkSettings = {
   selectionDark: string // ...and on a dark one; '' = the palette's mid grey
 }
 
+/**
+ * What the editor does when a key lands, and it is a CHOICE OF INSTRUMENT rather than a
+ * switch (owner's call, 2026-08-24). The three are not three volumes of one sound:
+ *
+ *  - `typewriter` — the machine that moves. A bright, hard strike, and the caret takes a
+ *    small step with it, because on a typewriter the carriage is the thing that responds.
+ *  - `tactile` — a mechanical keyboard with a bump partway down: two transients a few
+ *    milliseconds apart, the bump and then the bottom-out.
+ *  - `linear` — the same board with no bump: one softer, lower thock, and nothing moves.
+ *
+ * `off` is the browser's own caret and silence.
+ */
+export type KeyFeedback = 'off' | 'typewriter' | 'tactile' | 'linear'
+
 export type MotionSettings = {
   enabled: boolean
-  typewriter: boolean // admin editor: custom caret, insert/delete response + key sound
+  keys: KeyFeedback // admin editor: the caret, and what a keystroke sounds like
 }
 
 // Google Drive backup config (non-secret, lives in settings.data). The Drive

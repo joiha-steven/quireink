@@ -4,12 +4,13 @@
 // (align + wide + grid gallery), GFM tables, and video (paste a YouTube/Vimeo/TikTok URL).
 // Drag an image file in -> auto-uploads -> inserts at the drop point. A Markdown/Review
 // toggle swaps the formatted view for the raw Markdown source.
+import type { KeyFeedback } from '@/types'
 import { useEffect, useRef, useState } from 'react'
 import { useEditor, EditorContent, type Editor as TiptapEditor } from '@tiptap/react'
 import { editorExtensions } from './editorExtensions'
 import { BubbleBar, SlashMenu, Toolbar } from './EditorMenus'
 import { useFocusMode } from './useFocusMode'
-import { placeTypewriterCaret, pulseTypewriterInput } from './typewriter'
+import { placeCaret, pulseInput } from './key-feedback'
 
 // The sticky band above the writing: the action line (~56px) plus the toolbar strip that
 // sticks under it (~60px with its margins). The bubble bar must not be placed inside this
@@ -84,7 +85,7 @@ type Props = {
   // Width of the public single-post column, so typing mirrors the live layout.
   contentWidth: number
   toolbarTop?: number
-  typewriterEffects: boolean
+  keyFeedback: KeyFeedback
   /** The action line (back link · status · session buttons), rendered as the SHEET'S OWN
       top row — the mock's sheettop lives inside the sheet. As a separate floating band it
       and the toolbar read as two pieces of chrome with a crack of page between them. */
@@ -96,7 +97,7 @@ type Props = {
   onRawChange?: (raw: boolean) => void
 }
 
-export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickGallery, onUploadFile, apiRef, contentWidth, toolbarTop = 0, typewriterEffects, actions, header, onRawChange }: Props) {
+export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickGallery, onUploadFile, apiRef, contentWidth, toolbarTop = 0, keyFeedback, actions, header, onRawChange }: Props) {
   const t = useAdminT()
   // Markdown source view: edit the raw markdown directly (still saves live).
   const [raw, setRaw] = useState(false)
@@ -168,11 +169,11 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
       },
       handleDOMEvents: {
         beforeinput(view, event) {
-          if (typewriterEffects && event instanceof InputEvent) pulseTypewriterInput(view, event, caretRef.current)
+          if (event instanceof InputEvent) pulseInput(view, event, caretRef.current, keyFeedback)
           return false
         },
         focus(view) {
-          if (typewriterEffects) placeTypewriterCaret(view, caretRef.current)
+          if (keyFeedback !== 'off') placeCaret(view, caretRef.current)
           return false
         },
         blur() {
@@ -180,11 +181,11 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
           return false
         },
         keyup(view) {
-          if (typewriterEffects) placeTypewriterCaret(view, caretRef.current)
+          if (keyFeedback !== 'off') placeCaret(view, caretRef.current)
           return false
         },
         mouseup(view) {
-          if (typewriterEffects) placeTypewriterCaret(view, caretRef.current)
+          if (keyFeedback !== 'off') placeCaret(view, caretRef.current)
           return false
         },
       },
@@ -225,7 +226,7 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
       videoUrlsToNodes(editor)
     },
     onSelectionUpdate({ editor }) {
-      if (typewriterEffects) placeTypewriterCaret(editor.view, caretRef.current)
+      if (keyFeedback !== 'off') placeCaret(editor.view, caretRef.current)
     },
     onUpdate({ editor }) {
       // Per-keystroke work is kept tiny: flag dirty now, serialize the whole
@@ -338,7 +339,7 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
         ) : (
           <div className="typewriter-stage relative">
             <EditorContent editor={editor} />
-            {typewriterEffects && <span ref={caretRef} className="typewriter-caret" aria-hidden="true" />}
+            {keyFeedback !== 'off' && <span ref={caretRef} className="typewriter-caret" aria-hidden="true" />}
           </div>
         )}
         {/* The mock's closing line: the two gestures this screen answers to, said once,

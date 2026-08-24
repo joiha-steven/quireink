@@ -28,6 +28,7 @@ copies of a rule means one is wrong within a month
 | [performance.md](performance.md) | The resource-loading law: images, fonts, CSS split, island JS |
 | [delivery.md](delivery.md) | What the server does before it answers: the render cache, the switch, the CDN purge, compression |
 | [admin-design.md](admin-design.md) | The admin visual contract |
+| [admin-editor.md](admin-editor.md) | The editor's own contract: the writing surface, the caret, the key feedback |
 | [homepage.md](homepage.md) | What `/` serves: the post list, a page, or a composed front page |
 | [seo-pwa.md](seo-pwa.md) | Sitemap, feeds, OG, region, PWA |
 | [agent-ready.md](agent-ready.md) | Markdown negotiation, `.well-known` discovery, Content-Signal |

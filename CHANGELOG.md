@@ -115,6 +115,30 @@ every non-Latin letter, so a Vietnamese sentence came out as two hundred charact
 Only whitespace and the three characters the syntax reserves are escaped now, and a long
 quote is anchored on its two ends rather than carried whole.
 
+### The keyboard under your fingers, and a caret that stops flickering
+
+**Typewriter feedback** was one switch. It is now a choice of instrument in Settings →
+Appearance: **Typewriter**, **Mechanical, tactile**, **Mechanical, linear**, or **Off**.
+The typewriter strikes bright and hard. The tactile board gives you the bump and then the
+bottom-out, twelve milliseconds apart, which is the thing your finger is actually feeling.
+The linear one has no bump at all: one soft, low thock. The space bar and the return are
+deeper than the letters on all three, because they are the two biggest keys on any board,
+and no two strikes are identical — a click repeated exactly stops sounding like typing.
+Nothing is downloaded for any of it; the sound is made in the browser, as it always was.
+
+**And the flicker is gone.** Every keystroke used to animate the whole paragraph you were
+typing into: its opacity dropped to 0.9 and it moved by half a pixel. At an ordinary typing
+speed that is a paragraph strobing five times a second under your eyes. Nothing moves the
+text now. The sound carries the keystroke, the caret carries the position, and the words
+hold still — which is what a real machine does, where the paper moves and the letters do not.
+
+**The caret stops blinking while you are typing**, and starts again about two thirds of a
+second after you stop. It fades rather than switching on and off, and never fades all the
+way out. A blink means "the cursor is here and nothing is happening"; while your hands are
+moving, something is.
+
+If you had the old switch on, you have the typewriter. If you had it off, you have Off.
+
 ### The pen is yours now
 
 Settings → Appearance grew a card called **The pen**: the five highlighter pigments, the

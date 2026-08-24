@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@/test/vitest'
-import { sanitizeEnabledPalettes, sanitizeComments, sanitizeThemes, sanitizeFront, sanitizeHome, sanitizeListPath } from '@/content/settings-sanitize'
+import { sanitizeEnabledPalettes, sanitizeComments, sanitizeThemes, sanitizeFront, sanitizeHome, sanitizeListPath, sanitizeMotion } from '@/content/settings-sanitize'
 import { sanitizeFontUrl } from '@/content/settings-type'
 import { ALL_PALETTE_IDS, defaultThemes } from '@/content/themes'
 import { DEFAULT_SETTINGS } from '@/content/settings'
@@ -153,5 +153,37 @@ describe('sanitizeFront', () => {
   it('defaults the kind to the one with images', () => {
     expect(sanitizeFront({}, F).kind).toBe('image')
     expect(sanitizeFront({ kind: 'text' }, F).kind).toBe('text')
+  })
+})
+
+/**
+ * The upgrade path, which is the only part of the key-feedback change that can hurt anyone.
+ *
+ * `motion.typewriter` was a boolean until 2026-08-24 and every settings row in the world
+ * still holds one. Reading it as "no opinion" would silently switch the sound off for every
+ * install that had it on, and back on for every install that had turned it off — which is
+ * the worse of the two, because somebody turned it off for a reason.
+ */
+describe('sanitizeMotion, upgrading from the old boolean', () => {
+  const M = { enabled: true, keys: 'typewriter' } as const
+
+  it('reads the old switch as the choice it stood for', () => {
+    expect(sanitizeMotion({ enabled: true, typewriter: true }, M).keys).toBe('typewriter')
+    expect(sanitizeMotion({ enabled: true, typewriter: false }, M).keys).toBe('off')
+  })
+
+  it('lets an explicit choice win over a boolean sent beside it', () => {
+    expect(sanitizeMotion({ keys: 'linear', typewriter: false }, M).keys).toBe('linear')
+  })
+
+  it('keeps the current setting for a value it cannot read', () => {
+    expect(sanitizeMotion({ keys: 'clicky' }, M).keys).toBe('typewriter')
+    expect(sanitizeMotion({}, { enabled: true, keys: 'tactile' }).keys).toBe('tactile')
+  })
+
+  it('takes all four, and they are the four the editor knows', () => {
+    for (const keys of ['off', 'typewriter', 'tactile', 'linear'] as const) {
+      expect(sanitizeMotion({ keys }, M).keys).toBe(keys)
+    }
   })
 })

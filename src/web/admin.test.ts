@@ -270,7 +270,7 @@ describe('the admin shell carries the owner settings', () => {
   })
 
   it('publishes the motion switch the owner set', async () => {
-    await saveSettings({ motion: { enabled: false, typewriter: false } })
+    await saveSettings({ motion: { enabled: false, keys: 'off' } })
     const html = await (await app.request('/admin', { headers: { cookie } })).text()
     expect(html).toContain('data-motion="off"')
   })

@@ -2,7 +2,7 @@
 // and the attributes on a slide-over when they are asked for.
 // Handles auto-save, manual save (draft/publish) and the media picker modal.
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { PostWithContent, PostRevision, ApiResponse } from '@/types'
+import type { PostWithContent, PostRevision, ApiResponse, KeyFeedback } from '@/types'
 import { useToast } from '@/admin/ui/Toast'
 import { slugify, formatTime, formatDateTimeShort, isScheduled } from '@/utils'
 import { uploadImages } from '@/admin/upload-client'
@@ -22,7 +22,7 @@ type Props = {
   allTags: string[]
   allSeries: string[]
   contentWidth: number
-  typewriterEffects: boolean
+  keyFeedback: KeyFeedback
   autosaveSeconds: number
 }
 
@@ -55,7 +55,7 @@ function toDraft(initial?: PostWithContent): Draft {
   }
 }
 
-export function PostForm({ initial, allCategories, allTags, allSeries, contentWidth, typewriterEffects, autosaveSeconds }: Props) {
+export function PostForm({ initial, allCategories, allTags, allSeries, contentWidth, keyFeedback, autosaveSeconds }: Props) {
   const t = useAdminT()
   const { notify } = useToast()
   const [draft, setDraft] = useState<Draft>(() => toDraft(initial))
@@ -352,7 +352,7 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
         apiRef={editorApi}
         contentWidth={contentWidth}
         toolbarTop={toolbarTop}
-        typewriterEffects={typewriterEffects}
+        keyFeedback={keyFeedback}
         onRawChange={setMdView}
         header={<SheetTitle value={draft.title} onChange={(title) => update({ title })} placeholder={t.titlePlaceholder} metaLine={metaLine} />}
       />

@@ -364,15 +364,31 @@ body {
 .typewriter-stage.has-typewriter-caret .typewriter-caret {
   opacity: 1;
 }
+/* THE BLINK, reworked 2026-08-24 on the owner's report that typing "nháy" — flickered.
+   Two changes, and the second is the one that matters.
+
+   It FADES rather than switching. `steps(1, end)` is a hard on/off, which is the strobe a
+   terminal cursor makes; over 1.2s with an ease it reads as breathing instead. It also
+   never reaches zero — a caret that disappears completely has to reappear, and the
+   reappearance is the flash. 0.18 is faint enough to read as "gone".
+
+   And it STOPS while the hands are moving (`is-typing`, held for 700ms past the last
+   keystroke by `key-feedback.ts`). A blink means "the cursor is here and nothing is
+   happening"; during a burst of typing something plainly is, so the blink is competing
+   with the writing for the same corner of the eye. A fast writer now never sees it. */
 @media (prefers-reduced-motion: no-preference) {
   :root[data-motion='on'] .typewriter-stage.has-typewriter-caret .typewriter-caret {
-    animation: typewriter-caret-blink 1.05s steps(1, end) infinite;
+    animation: typewriter-caret-blink 1.2s ease-in-out infinite;
+  }
+  :root[data-motion='on'] .typewriter-stage.has-typewriter-caret .typewriter-caret.is-typing {
+    animation: none;
+    opacity: 1;
   }
 }
 @keyframes typewriter-caret-blink {
-  0%, 52% { opacity: 1; }
-  53%, 78% { opacity: 0.22; }
-  79%, 100% { opacity: 1; }
+  0%, 42% { opacity: 1; }
+  71% { opacity: 0.18; }
+  100% { opacity: 1; }
 }
 
 /* Native colour picker (admin theme): strip the default inner padding/border so
