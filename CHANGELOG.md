@@ -1,6 +1,61 @@
 # CHANGELOG
 
-## Unreleased
+## 2026-08-25 — Quire Ink 2.2.0
+
+### The install guide taught a step the software had stopped taking
+
+Setting a blog up moved into the browser earlier the same day, and exactly one file learned
+it: the self-hosting guide. **The README — which this repository's own rules call the
+canonical install doc — still opened a terminal**, and so did `docker-compose.yml`, the
+Docker page, the Docker Hub overview and the install guide on quireink.com. Those are the
+files the feature was built for: the people on a NAS, a PaaS or somebody else's Docker host,
+who are the ones reading them.
+
+They now read the log. Every route says the same thing, and none of them needs `docker exec`
+or an interactive terminal — the CLI is named at the end of each as the alternative it now is.
+
+Worse than stale: **quireink.com told people the command prints their TOTP secret and ten
+recovery codes.** It prints neither, and has not since two-factor moved to the browser at
+first sign-in. Anybody following it saw a bare `created` and had every reason to think it had
+half-failed. The structured data Google reads carried the same claim. And the page's advice
+for a reader who had lost their recovery codes was to *"make a second owner account"* — which
+the software refuses to do, by design, so the instruction could only ever end in an error.
+
+### Smaller things
+
+- **The first line of every log said `quire 2.0`.** A literal, carried from the rewrite
+  through every release since, in the line an operator quotes in a bug report — and since
+  this morning it sits directly above the setup link that the Docker and NAS instructions
+  send people to `docker logs` for, where a wrong number reads as the version they just
+  installed. It reads the real one now, the way the dashboard and the update check already do.
+- **The language select was 2.5px shorter than the three inputs beside it.** The pass that
+  rebuilt it compared border, radius, padding, font and background — all identical — and did
+  not compare height. The lever is not `line-height`: **Chrome forces `line-height:normal` on
+  a select and ignores the declaration even inline with `!important`**, measured rather than
+  assumed. It is a `min-height` restating the input's own box, so the two move together when a
+  token moves.
+- **`bun run tour` had never seen an image.** The seeder wrote the twenty-one seeded pictures
+  to the repository's own `uploads/` while the tour's server was told to serve its throwaway
+  one, so every picture on every toured page 404'd — and all sixty flows passed anyway,
+  because none of them asserts that an image loads. The same blindness reached the backup
+  check standing next to it: it was proving that a 260 KB archive of twelve files restored
+  byte-identically. It now proves it for 54 files and 3.9 MB, images included.
+- **Four links pointed at a section number that no longer exists**, after the Docker section
+  left the self-hosting guide and stopped being numbered — including the guide's own two
+  references to itself. A link checker over all 79 markdown files found two more: a
+  `#-run-locally-dev` anchor in `CONTRIBUTING.md` naming a heading that has never existed
+  under that name, and a Vietnamese README still pointing into a file the Docker section had
+  moved out of.
+- **The admin documentation said Settings has seven tabs.** It has had eight since the AI tab
+  arrived. The assistant that now lives in the admin had no entry in the admin feature doc at
+  all, and neither the print stylesheet nor Copy quote had one in the reading doc; all three
+  are written up now.
+- **The README grew a picture of setup** — the three screens after the log line, side by side.
+- **ADR 0007's flat "mandatory" two-factor is amended** by
+  [ADR 0030](docs/decisions/0030-two-factor-can-wait-until-there-is-an-address.md), which
+  writes down the one exception the code has carried since this morning, why it opens nothing
+  that was shut, and why it closes itself. The house rule is that loosening a rule edits the
+  rule in the same commit; this is that debt paid.
 
 ### Setting up a blog no longer needs a terminal
 
@@ -426,7 +481,7 @@ The same request is how a running blog is counted, and the request was designed 
 that: what goes out is the version, a code rebuilt from a new date every midnight so no two
 days can be linked, and whether the site has a public address yet. Not your address, not
 your posts, not your readers, not your figures — the whole request is one line, written out
-in [the self-hosting guide](./docs/self-host.md#11-what-this-blog-tells-us-and-how-to-stop-it).
+in [the self-hosting guide](./docs/self-host.md#10-what-this-blog-tells-us-and-how-to-stop-it).
 Turn it off in Settings → System or with `UPDATE_CHECK=0`, and it stays quiet on its own
 under `bun --watch` and `bun test`, because an afternoon of development is not an install.
 

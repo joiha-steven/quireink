@@ -12,6 +12,7 @@ import { openDatabases, closeDatabases } from '@/store/db'
 import { ensureBlobStore } from '@/media/blob-local'
 import { flushAnalytics, resetAnalyticsBuffer } from '@/analytics/buffer'
 import { createApp } from '@/web/app'
+import pkg from '../package.json' with { type: 'json' }
 import { enableBackgroundCache } from '@/server/warm'
 
 const env = readEnv()
@@ -40,7 +41,13 @@ const server = Bun.serve({
   idleTimeout: 120,
   fetch: app.fetch,
 })
-console.log(`quire 2.0 listening on http://${server.hostname}:${server.port}`)
+// The REAL version, read from package.json the way the dashboard and the update check
+// already read it, rather than the literal `2.0` this line carried from the rewrite through
+// every release since. It is the first line of every log this software writes, it is what an
+// operator quotes in a bug report, and since 2026-08-25 it sits directly above the setup link
+// that the Docker and NAS instructions send people to `docker logs` for — so a wrong number
+// there is read as the version they just installed.
+console.log(`quire ${(pkg as { version: string }).version} listening on http://${server.hostname}:${server.port}`)
 
 // Say it once, at boot, when nobody has said what this site's address is.
 //

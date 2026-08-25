@@ -1,6 +1,6 @@
 <div align="center">
 
-# quire**INK** &nbsp;`2.1.4`
+# quire**INK** &nbsp;`2.2.0`
 
 **A blog you host yourself, and an AI agent can run for you.**
 No algorithm, no ads, no platform standing between you and your readers.
@@ -74,14 +74,16 @@ Three things shaped it.
 
 You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE), and run the published version commercially — paid hosting included — under [one additional permission](./LICENSE-EXCEPTION.md).
 
-> **2.1.4 came out on 2026-08-22** and runs the demo above plus the author's own blog at
-> [manhhung.me](https://manhhung.me). It is the audit release, the day after the editor day:
-> the dashboard's version now wears a dot — amber when a newer release is out, green when you
-> are on it — fed by one request a day that also counts your blog as one being used, carries
-> nothing personal, and turns off with one switch; the whole site follows one timezone you
-> pick in Settings instead of the server's clock; an uploaded SVG can no longer run script on
-> your origin; and the admin's smallest buttons grew to thumb size without moving a pixel of
-> ink. The [changelog](./CHANGELOG.md) has everything that changed.
+> **2.2.0 came out on 2026-08-25** and runs the demo above plus the author's own blog at
+> [manhhung.me](https://manhhung.me). It is the largest release since 2.0. **Setting a blog up
+> no longer needs a terminal** — an unclaimed blog prints a one-time link in its own log and
+> the rest is a browser, which is what a NAS with a log panel and no TTY needed. An **agent can
+> now read and steward** the blog as well as write to it, and **an assistant moved into the
+> admin** for anyone without an MCP client: same tools, same rules, your key. **Essays print
+> like pages** rather than like web pages. **The pen's five inks became yours to set**, the
+> editor grew **three keyboards and a volume**, selecting a sentence offers to **copy it with a
+> link back to that exact sentence**, and search engines get **JSON-LD** with a description
+> written per page. The [changelog](./CHANGELOG.md) has everything that changed.
 
 ---
 
@@ -190,11 +192,26 @@ bun run build:assets && bun run build:admin     # the islands, then the admin
 DATA_DIR=./data SITE_URL=https://example.com bun src/index.ts
 ```
 
-Put a reverse proxy with TLS in front of the port, `3000` by default. Then make your account:
+Put a reverse proxy with TLS in front of the port, `3000` by default. Then **read the log** — a blog nobody owns yet prints the link that claims it, every time it starts:
 
-```bash
-bun run user create --username <name> --email <address>   # shows the TOTP secret and recovery codes, once
 ```
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │  This blog has no owner yet. Open the link below to claim it.           │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+  https://example.com/setup?token=…
+```
+
+Open it and the rest is a browser: username, email, password, then the QR code for an authenticator and ten recovery codes, once. The token lives in memory, so a restart mints a new one and the old line stops being a secret; `/setup` answers 404 the moment an account exists. Prefer the terminal? `bun run user create --username <name> --email <address>` still does the same job.
+
+
+<div align="center">
+
+<img src="docs/demo-setup.jpg" alt="Three first-run screens side by side: Claim this blog, with username, email and password fields; Your site, with the name, language, a time zone already filled in as Asia/Saigon and a site address already filled in as https://example.com; and The front page, offering two small drawings to choose between, a list of posts or a composed newspaper front" width="960">
+
+<sub>The whole of setup after the log line. The time zone and the address arrive already filled in — the browser knows both, and both are wrong by default and silent about it. What is <b>not</b> asked is the design: palettes, fonts, book mode and the feature switches all stay on a dashboard card you can reopen, because nobody can judge them before the site has a single post on it.</sub>
+
+</div>
 
 That is it. The database sets itself up on first boot, so there is no migration step to remember. If you want the full version with systemd, nginx, cache headers, backups and upgrades, it is in **[`docs/self-host.md`](./docs/self-host.md)**.
 
@@ -216,7 +233,7 @@ docker run -d --name quire -p 127.0.0.1:3000:3000 \
   -e SITE_URL=https://example.com \
   -v quire-data:/var/lib/quire/data -v quire-uploads:/var/lib/quire/uploads \
   quireink/quireink:latest
-docker exec quire bun run user create --username you --email you@example.com
+docker logs quire            # prints the link that claims the blog — open it in a browser
 ```
 
 `:latest` on purpose: it is the newest release, and the newest release is the one with the
@@ -230,10 +247,10 @@ carrying the same digest, so the two can never drift.
 ```bash
 cp .env.docker.example .env          # set SITE_URL
 docker compose up -d --build
-docker compose exec quire bun run user create --username you --email you@example.com
+docker compose logs quire            # the claim link, same as above
 ```
 
-One service, two volumes, no sidecar. The port only listens on `127.0.0.1`, so a reverse proxy still does TLS.
+**No `docker exec` and no interactive terminal anywhere in that** — which is the point, because a NAS container UI has a log panel and no TTY. One service, two volumes, no sidecar. The port only listens on `127.0.0.1`, so a reverse proxy still does TLS.
 
 **On a NAS** (Synology, QNAP, Unraid), mount real folders and set `PUID`/`PGID` to whoever owns them — the container adopts them on first boot and never runs as root. Notes on volumes, ownership and upgrades are in [`docs/self-host-docker.md`](./docs/self-host-docker.md).
 
@@ -304,7 +321,7 @@ SMTP, Turnstile and CDN credentials go in **Settings → Connections** and stay 
 bun install
 bun run build:admin                 # once, and again whenever src/admin changes
 bun run dev                         # http://localhost:3000
-bun run user create --username me --email me@example.com   # then sign in at /login
+# the log prints a /setup link to claim it; or: bun run user create --username me --email me@example.com
 ```
 
 Nothing is finished until `bun run check:all` passes. It typechecks, runs the static guards and runs the tests, all offline, with no credentials and no services. Start at [`CONTRIBUTING.md`](./CONTRIBUTING.md), which points to the house rules in [`CLAUDE.md`](./CLAUDE.md).

@@ -49,7 +49,13 @@ mkdir -p "$TMP"
 bun run build:assets >/dev/null
 bun run build:admin >/dev/null
 
-SEED_OUT=$(bun scripts/seed-showcase.ts "$TMP/data" 2>&1 | tail -3)
+# STORAGE_LOCAL_DIR on the SEEDER too, and it is not decoration. Without it the seeder
+# resolves `./uploads` (the repo's own) while the server below is told to serve
+# "$TMP/uploads" — so every one of the twenty-one seeded pictures 404s for the whole tour,
+# on every page that has one. Sixty flows passed anyway, because none of them asserts that
+# an image loads, which is exactly how a hole like this stays open: the harness was blind
+# to the thing it was standing in front of. Measured 2026-08-25.
+SEED_OUT=$(STORAGE_LOCAL_DIR="$TMP/uploads" bun scripts/seed-showcase.ts "$TMP/data" 2>&1 | tail -3)
 echo "$SEED_OUT" | sed 's/^/  seed: /'
 SESSION=$(printf '%s' "$SEED_OUT" | sed -n 's/^QUIRE_SESSION=//p' | tail -1)
 if [ -z "$SESSION" ]; then

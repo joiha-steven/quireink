@@ -19,13 +19,18 @@ On any behavior change, update the matching doc in the SAME change (Working prin
   [`scripts/ops/quire-backup.sh`](../../scripts/ops/quire-backup.sh) does.
 - **Audits** are dated snapshots, so they are write-only and they live with the author's
   notes rather than here. Read the latest first so a pass starts from the last clean line.
-- **Versioning (owner's rule — do NOT auto-bump):** the version is **`2.1.4`**, released
-  2026-08-22 (the audit day after the editor day: the update check with its version dot, the
-  site-wide timezone setting, the SVG sandbox and the thumb-size pass. Under the semver rule
-  below those features would have made it `2.2.0`; the owner called `2.1.4`, and the number
-  is the owner's call — which is the rule this bullet opens with. `2.1.3` was a day of editor
-  fixes on `2.1.2`; `2.1.2` had withdrawn `2.1.1`, whose tag and release were deleted a day
-  after they went out, having shipped book mode already broken on current Chrome). From 2.0 onward the number is **semver and means something**, which is the change
+- **Versioning (owner's rule — do NOT auto-bump):** the version is **`2.2.0`**, released
+  2026-08-25 — the largest release since 2.0, and the owner asked for the number and for the
+  checking pass that went with it: setup in a browser, the agent's reading and stewarding
+  halves, the in-admin assistant, the print sheet, the pen becoming the owner's, three
+  keyboards with a volume, JSON-LD, and a documentation sweep that found the install guide
+  still teaching a step the software had stopped taking. (`2.1.4`, 2026-08-22, was the audit
+  day after the editor day: the update check with its version dot, the site-wide timezone
+  setting, the SVG sandbox and the thumb-size pass — features that under the semver rule
+  below would have made it `2.2.0`, and the owner called `2.1.4`, which is this bullet's own
+  rule at work. `2.1.3` was a day of editor fixes on `2.1.2`; `2.1.2` had withdrawn `2.1.1`,
+  whose tag and release were deleted a day after they went out, having shipped book mode
+  already broken on current Chrome.) From 2.0 onward the number is **semver and means something**, which is the change
   from the 1.5.x era where `x` was a running counter: MAJOR for a break in how the thing is
   installed or run, MINOR for a feature, PATCH for a fix. **Never bump any of the three on your
   own** — a release is the owner's call, and so is the number. Ship the work, write the

@@ -63,7 +63,7 @@ body{margin:0;background:var(--c-bg);color:var(--c-text);font-family:var(--font-
    browser's default border beside two filled siblings, and neither a type-check nor a test
    could see it. Excluding the one exception says the same thing and stays true. */
 .login-form input:not([type=checkbox]){
-  width:100%;padding:.625rem .75rem;font:inherit;font-size:.9375rem;color:var(--c-text);
+  width:100%;padding:.625rem .75rem;font:inherit;font-size:.9375rem;line-height:1.5;color:var(--c-text);
   background:var(--field);border:1px solid var(--c-rule);border-radius:8px;
   /* Literal, not var(--dur-fast), and checked rather than assumed: the sign-in page is served
      pageStyles(settings) + LOGIN_CSS and NOT the public sheet, so BASE_CSS's :root{--dur-*} is
@@ -163,8 +163,19 @@ body{margin:0;background:var(--c-bg);color:var(--c-text);font-family:var(--font-
    with its own rounded rem values, it came out 7.2px where its neighbours were 8px, padded
    9.6/11.2 against their 10/12, and on a different background formula — four fields in a
    column, one of them almost right, which reads as a mistake rather than as a choice.
-   Same tokens, same numbers, same focus ring as the inputs above. */
+   Same tokens, same numbers, same focus ring as the inputs above.
+
+   min-height is the last 2.5px of that, and it is here because LINE-HEIGHT CANNOT DO IT:
+   Chrome forces line-height:normal on a select and ignores the declaration even inline
+   with !important — measured, not assumed. So the select sat at 42px beside three inputs
+   at 44.5px, matching on every property the first pass compared and still visibly shorter.
+   The value is not a magic number: it is the input's own box restated — content
+   (1.5 x .9375rem) + padding (2 x .625rem) + border (2 x 1px) — so the two move together
+   when a token moves. The inputs above pin line-height:1.5 for the same reason: without
+   it their content box is whatever normal means in the current face, and this sum stops
+   being true. */
 .login-form select{width:100%;padding:.625rem .75rem;font:inherit;font-size:.9375rem;
+  min-height:calc(1.5 * .9375rem + 2 * .625rem + 2px);
   color:var(--c-text);background:var(--field);border:1px solid var(--c-rule);
   border-radius:8px;transition:border-color .12s, box-shadow .12s}
 .login-form select:hover{border-color:color-mix(in srgb, var(--c-text) 22%, var(--c-rule))}

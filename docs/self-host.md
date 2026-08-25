@@ -5,7 +5,7 @@ database server to provision, no container runtime, no migration command, and no
 third-party account anywhere in the path.
 
 Commands assume Ubuntu/Debian and `root` (or `sudo`). Adjust the paths. If you would rather
-not install Bun on the host, [Docker](#10-docker-instead-of-systemd) is the same install in
+not install Bun on the host, [Docker](#docker-instead-of-systemd) is the same install in
 two commands, and sections 5 and 7 still apply to it.
 
 ```
@@ -49,7 +49,7 @@ read from disk at runtime, so they have to exist before the service starts.
 ## 3. Configure
 
 Environment only, no config file. The full list is in the
-[README](../README.md#-environment-variables); the five that matter:
+[README](../README.md#environment-variables); the five that matter:
 
 ```ini
 DATA_DIR=/var/lib/quire/data
@@ -106,7 +106,7 @@ directly: it makes the header believable again, and the header is one line of a 
 
 **`UPDATE_CHECK=0` turns off the one request this software makes on its own** — the daily
 question of what the newest release is, which is also how a blog is counted as being used
-(section 11 says exactly what it carries). It is on without this line, and this line beats
+(section 10 says exactly what it carries). It is on without this line, and this line beats
 the owner's own switch: it is here for an operator running blogs for other people.
 
 Everything else — SMTP, Turnstile, Cloudflare, the site's own name and language — is
@@ -139,7 +139,7 @@ to the checkout, so the unit must start inside it. Use the absolute path to `bun
 systemd has no login shell and will not find it on `PATH`.
 
 `NODE_ENV=production` is conventional rather than load-bearing: an install without it
-behaves identically, including the update check in section 11, which asks whether this looks
+behaves identically, including the update check in section 10, which asks whether this looks
 like somebody EDITING the software (`bun --watch`, `bun test`) rather than whether a variable
 was set. That rule was inverted on 2026-08-22 for exactly this unit — requiring the variable
 would have made every from-source install silent forever while looking perfectly healthy.
@@ -292,7 +292,7 @@ process — a blog nobody reads never asks, and is never counted, which is the p
 This is the whole request:
 
 ```
-GET https://check.quireink.com/releases.json?v=2.1.4&t=8f2c91a04b7e&d=1&new=1
+GET https://check.quireink.com/releases.json?v=2.2.0&t=8f2c91a04b7e&d=1&new=1
 ```
 
 | | |

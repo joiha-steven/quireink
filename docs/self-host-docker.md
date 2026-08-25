@@ -6,9 +6,9 @@
 > rather than a step inside it.
 
 The native guide's sections **1, 2, 4 and 9** are replaced by what follows. Still yours to
-do from [`self-host.md`](self-host.md): **nginx** (section 5), **your account** (section 6),
-**the CDN note** (section 7), **the cron ticks** (section 8), and taking a backup before an
-upgrade.
+do from [`self-host.md`](self-host.md): **nginx** (section 5), **your account** (section 6 —
+a link the log prints, not a shell command), **the CDN note** (section 7), **the cron ticks**
+(section 8), and taking a backup before an upgrade.
 
 There are two ways in. **Pull the published image** if you just want it running — nothing to
 clone, no Bun on the host, no build step, and `linux/amd64` and `linux/arm64` both exist:
@@ -18,8 +18,13 @@ docker run -d --name quire -p 127.0.0.1:3000:3000 \
   -e SITE_URL=https://example.com \
   -v quire-data:/var/lib/quire/data -v quire-uploads:/var/lib/quire/uploads \
   quireink/quireink:latest
-docker exec quire bun run user create --username you --email you@example.com
+docker logs quire            # prints the link that claims the blog
 ```
+
+**That second line is the account step**, and it is a log read rather than a shell: a blog
+nobody owns prints a one-time `/setup` link every time it starts, so a NAS with a log panel
+and no TTY can finish the install in a browser. Section 6 of
+[`self-host.md`](self-host.md#6-your-account) has the whole of it, the CLI included.
 
 Two registries carry it and they are the same bytes: `quireink/quireink` on Docker Hub,
 which is what a NAS search box looks in, and `ghcr.io/joiha-steven/quireink`. One workflow
@@ -29,9 +34,9 @@ mean two different images.
 `:latest` is the tag to install and the one the documentation now uses everywhere: the
 newest release is the one with the fixes in it, and a blog left on an old tag is a blog left
 with the bugs that release fixed. Nothing moves under a running container either way, because
-Docker only changes the image when you pull. The two-part tag (`:2.1`) still takes fixes
+Docker only changes the image when you pull. The two-part tag (`:2.2`) still takes fixes
 within a line for anyone who wants to step up a major version deliberately, and the
-three-part one (`:2.1.4`) pins one exact release forever.
+three-part one (`:2.2.0`) pins one exact release forever.
 
 **Or build it yourself** from this repository, which is what `docker-compose.yml` does and
 what you want if you have changed anything:
@@ -40,7 +45,7 @@ what you want if you have changed anything:
 git clone https://github.com/joiha-steven/quireink.git && cd quireink
 cp .env.docker.example .env          # set SITE_URL, and that is the whole of it
 docker compose up -d --build
-docker compose exec quire bun run user create --username you --email you@example.com
+docker compose logs quire            # the claim link, same as above
 ```
 
 The image builds from source and runs `bun src/index.ts`, which is what the server in section 4

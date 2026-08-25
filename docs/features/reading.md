@@ -163,6 +163,46 @@
   `resolveSeries` (like categories/tags). Held in the page cache like every other public page, so
   an admin save empties it along with everything else (Invariant 1).
 
+## The printed page — `src/web/print.css.ts` (inlined into `public.css.ts`)
+
+- **What:** a post printed, or saved as PDF, gets the essay and nothing else. There was no
+  `@media print` rule anywhere in the repository until 2026-08-24 — measured, zero across
+  twelve sheets — so paper got the screen: the reading-progress bar, the site bar's
+  [search] [dark] [palette] [menu] controls, a book-mode link that does nothing on paper,
+  then the related posts, the whole comment thread, the subscribe card and the footer. Ten
+  sheets for a four-page piece, with four dead buttons at the top.
+- **What survives:** the masthead as one line of provenance, the article, its footnotes, its
+  tags. Nothing else.
+- **The rules divide into three:** what a screen needs and paper does not (removed), the
+  palette a sheet of paper actually has (a dark-mode reader gets ink on paper rather than a
+  black page), and the breaks a page has to respect — no heading orphaned at the foot, no
+  table, figure or code block cut in half, code wrapped rather than losing its right-hand
+  end, and an off-site link printing its address so a paper copy is still a lead.
+- **The owner's type settings come with it**, at the size they chose: the measure is set for
+  paper rather than for a viewport. **The pen marks keep their colour** — they are the reason
+  a page off this site looks like this site.
+- **No separate stylesheet and no `media="print"` link.** `PRINT_CSS` is appended inside
+  `public.css.ts`, so it ships in the one sheet the page already downloads and costs a reader
+  no extra request. Held by `src/web/print.test.ts`.
+
+## Copy a quote — `src/assets/js/quote.ts`
+
+- **What:** select text inside a post and one control appears — **Copy quote**. It puts the
+  sentence on the clipboard with a link that opens the post *at that sentence*, scrolled to
+  it and highlighted by the reader's own browser.
+- **Not a share button.** Nothing is sent anywhere, no account is involved and no third party
+  is contacted: the link is an ordinary URL with a `#:~:text=` fragment, so a browser that
+  does not know the trick simply opens the post.
+- **On a phone it sits BELOW the selection**, which is where the operating system's own Copy
+  menu is not.
+- **The link stays readable.** The obvious way to build one percent-encodes every non-Latin
+  letter, which turned a Vietnamese sentence into two hundred characters of hex — a URL
+  fragment carries UTF-8 as it is. Escaped instead: whitespace, the three characters this
+  syntax reserves (`-` `,` `#`), `%` first so the escapes cannot escape each other, and
+  `&` `"` `<` `>` `` ` `` so a URL that lands in HTML somewhere cannot open a tag. A long
+  quote is anchored on its two ends rather than carried whole, each end trimmed back to a
+  whole word.
+
 ## Book reading mode — `src/assets/js/book.ts`, `features.bookMode`
 
 - **What:** an opt-in "Chế độ đọc sách" link on the post meta line (after the reading time)
