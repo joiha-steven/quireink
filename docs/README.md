@@ -36,6 +36,7 @@ copies of a rule means one is wrong within a month
 | [agent-cookbook.md](agent-cookbook.md) | Prompts that do real jobs with a connected agent, and where the lines are |
 | [backups.md](backups.md) | What is copied off the server, how often, and how to restore it |
 | [self-host.md](self-host.md) | Running it on your own server |
+| [self-host-docker.md](self-host-docker.md) | The same thing in a container, and on a NAS |
 
 ## How it is built
 

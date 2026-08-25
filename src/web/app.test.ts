@@ -71,11 +71,19 @@ describe('article page', () => {
     // The budget is a number, not a vibe: the moment a third bundle or an inline block
     // appears on an article page, this fails. `core` is the analytics beacon, which every
     // public page carries; `post` is the islands.
-    const tags = html.match(/<script/g) ?? []
-    expect(tags.length).toBe(2)
+    //
+    // EXECUTABLE scripts, which is the property the recommended CSP depends on. A
+    // `type="application/ld+json"` block is a DATA block: the browser never executes it and
+    // `script-src 'self'` does not touch it. Measured 2026-08-25 in a real browser against a
+    // page carrying `script-src 'self'` with no `'unsafe-inline'` — the block parsed and the
+    // console stayed empty. Counting every `<script` instead made this test fail the day
+    // structured data arrived, which is a test failing for being imprecise, not for a bug.
+    const executable = html.match(/<script(?![^>]*\btype="application\/ld\+json")/g) ?? []
+    expect(executable.length).toBe(2)
     expect(html).toMatch(/<script src="\/assets\/core\.[a-z0-9]+\.js" defer><\/script>/)
     expect(html).toMatch(/<script src="\/assets\/post\.[a-z0-9]+\.js" defer><\/script>/)
-    expect(html).not.toMatch(/<script(?![^>]*\bsrc=)/) // no inline block
+    // No inline block that a browser would RUN.
+    expect(html).not.toMatch(/<script(?![^>]*\b(?:src=|type="application\/ld\+json"))/)
     expect(html).not.toContain('onload=')
     expect(html).not.toContain('onclick=')
   })
@@ -112,7 +120,7 @@ describe('article page', () => {
   it('gives a listing the beacon and nothing else', async () => {
     await savePost({ title: 'Listed', content: 'body', status: 'published', date: PAST })
     const html = await get('/').then((r) => r.text())
-    expect((html.match(/<script/g) ?? []).length).toBe(1)
+    expect((html.match(/<script(?![^>]*\btype="application\/ld\+json")/g) ?? []).length).toBe(1)
     expect(html).toMatch(/<script src="\/assets\/core\./)
     expect(html).not.toContain('/assets/post.') // no island code where there are no islands
   })

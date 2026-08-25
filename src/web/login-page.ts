@@ -39,7 +39,7 @@ function shell(settings: SiteSettings, title: string, body: string): string {
     // `noindex`: a sign-in page in search results is a phishing target and useless to a
     // reader. The public pages want the opposite, which is why this is set here and not
     // in the shared layout.
-    { title: `${title} · ${settings.title}`, extra: '<meta name="robots" content="noindex">' },
+    { title: `${title} · ${settings.title}`, robots: 'noindex' },
     // An empty base sheet: `pageStyles` still supplies the palette, so the door matches the
     // house, and LOGIN_CSS supplies everything else.
     `${pageStyles(settings)}\n${LOGIN_CSS}`,

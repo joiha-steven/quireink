@@ -118,8 +118,10 @@
   the SEO-only `featured_image`). Distinct roles: featured = social-only/hidden, cover = shown.
 - **Real `dateModified`**: the meta line shows "Updated <date>" only when `updated_at` is >24h after
   `date` (so a save right after publishing adds no noise). Read through `posts.ts` `rowToMeta`
-  (`updatedAt` etc.). The JSON-LD half of this is **not ported** — see
-  [`seo-pwa.md`](../seo-pwa.md).
+  (`updatedAt` etc.). The JSON-LD half landed on 2026-08-25 and reads the same column, with
+  the same judgement in a second place: `dateModified` is emitted only when `updatedAt`
+  differs from `date`, so a post that was never saved again does not claim it was edited on
+  the day it appeared. See [`seo-pwa.md`](../seo-pwa.md).
 
 ## Library: Videos tab + self-hosted video — `VideoLibrary.tsx`, `src/render/video.ts`
 

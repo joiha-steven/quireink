@@ -27,6 +27,19 @@ export type Head = {
   image?: string
   /** `article` for a post, `website` for everything else. */
   ogType?: 'article' | 'website'
+  /**
+   * `<meta name="robots">`, when a page has to say it is not for the index. A search
+   * results page and the sign-in page both do: the results page mints a URL per query, so
+   * without this a crawler is invited to index an unbounded set of near-duplicates of the
+   * same list.
+   */
+  robots?: string
+  /**
+   * JSON-LD, as the JSON payload alone — `render/schema.ts` builds it and this wraps it in
+   * the script element. Gated on `seo.autoSchema` by the caller, because the setting is
+   * per-site and this file has no opinion about it.
+   */
+  jsonLd?: string
   /** Rendered verbatim into <head>. Callers pass already-escaped markup. */
   extra?: string
   /**
@@ -193,6 +206,13 @@ export function renderDocument(
     ? `<meta name="description" content="${escapeAttr(head.description)}">`
     : ''
   const canonical = head.canonical ? `<link rel="canonical" href="${escapeAttr(head.canonical)}">` : ''
+  const robots = head.robots ? `<meta name="robots" content="${escapeAttr(head.robots)}">` : ''
+  // Not escaped, and it does not need to be: `schema.ts` emits JSON with every `<` replaced
+  // by its unicode escape, so nothing in it can close this element. Escaping it as HTML
+  // here would corrupt the JSON instead, which is the mistake this comment exists to stop.
+  const jsonLd = head.jsonLd
+    ? `<script type="application/ld+json">${head.jsonLd}</script>`
+    : ''
 
   // Open Graph and Twitter. Written out rather than generated from a map: there are seven
   // of them, they are not going to become a hundred, and a loop here would be harder to
@@ -254,7 +274,7 @@ export function renderDocument(
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${escapeHtml(head.title)}</title>
-${description}${canonical}${icon}${manifest}${feed}${og}${sheet}${preloads}
+${description}${canonical}${robots}${icon}${manifest}${feed}${og}${sheet}${preloads}${jsonLd}
 <style>${styles}</style>
 ${head.extra ?? ''}
 </head>

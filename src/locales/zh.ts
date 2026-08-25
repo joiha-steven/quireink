@@ -44,6 +44,8 @@ const zh = {
   pagerNewer: '较新',
   pagerOlder: '较旧',
   pagerLabel: '分页导航',
+  metaTerm: '{site} 上归入{name}的全部文章。',
+  metaSeries: '{name}：{site} 的一个系列，按适合阅读的顺序排列。',
   tocIndex: '目录',
   categoriesTitle: '分类',
   mostViewedTitle: '最多阅读',

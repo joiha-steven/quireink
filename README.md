@@ -235,7 +235,7 @@ docker compose exec quire bun run user create --username you --email you@example
 
 One service, two volumes, no sidecar. The port only listens on `127.0.0.1`, so a reverse proxy still does TLS.
 
-**On a NAS** (Synology, QNAP, Unraid), mount real folders and set `PUID`/`PGID` to whoever owns them — the container adopts them on first boot and never runs as root. Notes on volumes, ownership and upgrades are in [`docs/self-host.md`](./docs/self-host.md#10-docker-instead-of-systemd).
+**On a NAS** (Synology, QNAP, Unraid), mount real folders and set `PUID`/`PGID` to whoever owns them — the container adopts them on first boot and never runs as root. Notes on volumes, ownership and upgrades are in [`docs/self-host-docker.md`](./docs/self-host-docker.md).
 
 </details>
 
@@ -292,7 +292,7 @@ These are the only things that live outside the admin.
 | `MCP_OAUTH_SECRET` | ◻️ | Signs MCP OAuth codes. Leave it out and the server makes its own, which is the recommended way |
 | `ANALYTICS_TZ` | ◻️ | The site's DEFAULT timezone, used until somebody picks one in **Settings → Site → Timezone**. That setting is the site's whole clock — the date under a post, the month markers, and the day an analytics chart starts on — and it exists because a public page is rendered once and cached, so without it the SERVER's timezone decided what date every reader saw. Defaults to UTC |
 | `TRUST_PROXY` | ◻️ | Set to `1` only when the proxy in front reaches you over a PUBLIC address. Rate limits key on the socket address; `CF-Connecting-IP`/`X-Forwarded-For` are believed automatically when the connection came from loopback or a private network |
-| `UPDATE_CHECK` | ◻️ | Set to `0` to stop the one request this software makes on its own: once a day, on the first visit your blog gets, it asks what the newest release is — and by asking, it is counted as a blog being used. What goes out is the version you run, a code rebuilt from a new date every midnight, and whether your site has a public address. Never your address, your posts, your readers or your figures. On by default, and quiet on its own under `bun --watch` and `bun test` — a development afternoon is not an install. [The whole request is written out here](./docs/self-host.md#11-what-this-blog-tells-us-and-how-to-stop-it). The owner has the same switch in Settings → System |
+| `UPDATE_CHECK` | ◻️ | Set to `0` to stop the one request this software makes on its own: once a day, on the first visit your blog gets, it asks what the newest release is — and by asking, it is counted as a blog being used. What goes out is the version you run, a code rebuilt from a new date every midnight, and whether your site has a public address. Never your address, your posts, your readers or your figures. On by default, and quiet on its own under `bun --watch` and `bun test` — a development afternoon is not an install. [The whole request is written out here](./docs/self-host.md#10-what-this-blog-tells-us-and-how-to-stop-it). The owner has the same switch in Settings → System |
 
 SMTP, Turnstile and CDN credentials go in **Settings → Connections** and stay on the server. Your posts live in `DATA_DIR` and your uploads folder, never in git.
 

@@ -12,7 +12,8 @@
 
 import type { FrontSettings, Post, SiteSettings } from '@/types'
 import { getPost, getPublicPosts } from '@/content/posts'
-import { getSettings } from '@/content/settings'
+import { getSettings, resolveSiteUrl } from '@/content/settings'
+import { websiteSchema } from '@/render/schema'
 import { tagText, termSlug } from '@/content/taxonomy'
 import { getViewTotalsSince } from '@/analytics/summary'
 import { getMediaRefs } from '@/media/media-refs'
@@ -276,6 +277,9 @@ export async function renderFront(): Promise<string | null> {
   const body = await buildBody(settings, ready)
   return listingPage({
     title: settings.title,
+    jsonLd: settings.seo.autoSchema
+      ? websiteSchema(settings, resolveSiteUrl(settings)) ?? undefined
+      : undefined,
     body,
     css: frontCss(),
     canonicalPath: '/',

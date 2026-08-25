@@ -24,6 +24,19 @@ type Posts = ListingView['paged']['items']
 export type ListingPage = {
   title: string
   body: string
+  /**
+   * The meta description, when the page can say something truer than the site's own line.
+   *
+   * The default is `settings.description`, and for the home page that is exactly right — it
+   * IS the site. Everywhere else it was a bug wearing a default: search, every tag, every
+   * category, every series and the 404 all shipped the SAME sentence, so four indexable page
+   * kinds carried an identical snippet that described none of them.
+   */
+  description?: string
+  /** Keep this page out of the index. A search results page mints one URL per query. */
+  noindex?: boolean
+  /** JSON-LD payload from `render/schema.ts`; the caller has already checked the setting. */
+  jsonLd?: string
   canonicalPath?: string
   cardTitle?: string
   /** A category or tag page marks its own row in the rail. */
@@ -42,7 +55,8 @@ export type ListingPage = {
 
 /** Wrap listing markup in the site shell. Shared by home, taxonomy, series and search. */
 export async function listingPage(
-  { title, body, canonicalPath, cardTitle, activeHref, css = '', noRail = false }: ListingPage,
+  { title, body, description, noindex = false, jsonLd, canonicalPath, cardTitle, activeHref,
+    css = '', noRail = false }: ListingPage,
 ): Promise<string> {
   const settings = await getSettings()
   const site = resolveSiteUrl(settings)
@@ -54,7 +68,11 @@ export async function listingPage(
     settings,
     {
       title,
-      description: settings.description,
+      description: description ?? settings.description,
+      // `follow` and not `none`: the links on a results page are the real posts, and telling
+      // a crawler to ignore them would waste the one useful thing the page offers.
+      robots: noindex ? 'noindex, follow' : undefined,
+      jsonLd,
       canonical: site && canonicalPath !== undefined ? `${site}${canonicalPath}` : undefined,
       // A listing card is two explicit lines rather than a post's title/excerpt/date.
       // Home reads as domain over description; a term page as its name over the domain.
@@ -126,6 +144,7 @@ export async function notFoundPage(): Promise<Response> {
   const s = t(settings.language)
   const html = await listingPage({
     title: `${s.notFoundTitle} · ${settings.title}`,
+    description: s.notFoundText,
     // The archive heading, the empty-state voice and the site's one link signature: a miss
     // is an empty listing, so it is dressed as one rather than as a new kind of page.
     body: `<div class="listing-head"><h1>${escapeHtml(s.notFoundTitle)}</h1></div>
@@ -161,6 +180,7 @@ export async function errorPage(): Promise<Response> {
     const s = t(settings.language)
     const html = await listingPage({
       title: `${s.errorTitle} · ${settings.title}`,
+      description: s.errorText,
       body: `<div class="listing-head"><h1>${escapeHtml(s.errorTitle)}</h1></div>
 <p class="empty">${escapeHtml(s.errorText)}</p>
 <p class="mt-3"><a class="link-accent" href="/">${escapeHtml(s.backHome)}</a></p>`,

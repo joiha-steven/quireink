@@ -9,7 +9,8 @@
 // exist: `/` and the `/{slug}` catch-all.
 
 import { getPublicPosts } from '@/content/posts'
-import { getSettings } from '@/content/settings'
+import { getSettings, resolveSiteUrl } from '@/content/settings'
+import { websiteSchema } from '@/render/schema'
 import { t } from '@/i18n/i18n'
 import { renderArticle } from '@/web/article'
 import { listingPage, renderFeedBody } from '@/web/listing-page'
@@ -29,8 +30,15 @@ export async function renderPostList(page: number): Promise<string | null> {
   })
   if (!built) return null
   const listRoot = settings.home.mode === 'list' ? '/' : settings.home.listPath
+  // `WebSite` belongs to the home page and only to the home page — page 2 of the list is not
+  // the site. When the list is NOT the homepage (`front` mode owns `/`), this surface is a
+  // listing like any other and `renderFront` carries the object instead.
+  const isHome = page === 1 && listRoot === '/'
   return listingPage({
     title: page === 1 ? settings.title : `${settings.title} · page ${page}`,
+    jsonLd: isHome && settings.seo.autoSchema
+      ? websiteSchema(settings, resolveSiteUrl(settings)) ?? undefined
+      : undefined,
     body: built.body,
     css: built.css,
     canonicalPath: page === 1 ? listRoot : `/page/${page}`,
