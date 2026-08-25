@@ -2,6 +2,33 @@
 
 ## Unreleased
 
+### Three repairs a screen reader notices, and a description that fits in the result
+
+Found by auditing the rendered pages against the [Front-End Checklist](https://frontendchecklist.io)
+(387 rules), not by reading the source — which is why they had survived this long.
+
+**Every navigation region says which one it is.** A page carried two or three `<nav>`
+landmarks and a screen reader lists them by label alone, so they all read as "navigation"
+and none of them told you which. The contents rail already got this right; the sidebar menu
+and the pager now do too. The header's control cluster went the other way: search, theme,
+palette, grid, subscribe and the drawer toggle are buttons, not links to anywhere, so
+announcing them as a navigation landmark sent people to a toolbar. It is a `<div>` now.
+Nothing moved on screen — the class carried all the styling.
+
+**A table header says it is one.** Every `<th>` a Markdown table produces now carries
+`scope="col"`. In a simple table a screen reader can infer the column from position; `scope`
+is what WCAG asks for by name, and in a table with merged cells it is the only association
+there is. This is the second deliberate divergence from what 1.x printed, recorded in
+`golden/` the way the first one was: 1.x's answer stays untouched on disk, the new answer
+sits beside it, and eleven changed lines across five fixtures were checked one by one to
+differ by that attribute and nothing else.
+
+**Meta descriptions stopped being written past the point anybody reads them.** The bound was
+200 characters under a comment saying a search engine truncates there, while a second comment
+eleven lines below said the wall is about 160. The second one was right: five of ten sampled
+pages shipped a description with a tail that Google cuts off. It is 157 now — 160 less the
+ellipsis that says it was cut — and the two comments agree.
+
 ### An agent can now read the blog, not just write it
 
 Six new MCP tools — the reading half of the surface: `get_traffic` (the dashboard's own

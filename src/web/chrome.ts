@@ -184,6 +184,13 @@ export function siteHeader(settings: SiteSettings, opts: ChromeOptions): string 
   actions.push(`<button type="button" class="icon-btn rail-toggle" data-rail-toggle
  aria-expanded="false" aria-label="${escapeAttr(s.menu)}">${ICON.menu}${token(s.shortMenu)}</button>`)
 
+  // `.site-actions` is a DIV and not a <nav>. Every control in it — search, theme, palette,
+  // grid, subscribe, the rail toggle — already carries its own `aria-label`, and none of them
+  // is a link to somewhere else in the site; two are anchors and one of those points at a
+  // card further down THIS page. As a <nav> it announced a navigation landmark and then
+  // offered six buttons, so a screen-reader user navigating by landmark was sent to a
+  // toolbar. The class carries all the styling, so nothing visual moved.
+
   // FIRST in the tab order on every public page, which is the whole point of it: without it
   // a keyboard reader tabs through four header controls, the entire contents rail and the
   // info panel before reaching the article. It lives here rather than in the two page shells
@@ -191,7 +198,7 @@ export function siteHeader(settings: SiteSettings, opts: ChromeOptions): string 
   // field and nothing to skip) does not call this function at all.
   return `<header class="site">
 <a class="skip-link" href="#content">${escapeHtml(s.skipToContent)}</a>
-<div class="site-bar">${siteTitle(settings)}${opts.menuInHeader ? siteMenu(settings, s.menu) : ''}<nav class="site-actions">${actions.join('')}</nav></div>${
+<div class="site-bar">${siteTitle(settings)}${opts.menuInHeader ? siteMenu(settings, s.menu) : ''}<div class="site-actions">${actions.join('')}</div></div>${
     settings.showDescription && settings.description
       ? `<p class="tagline">${escapeHtml(settings.description)}</p>` : ''
   }</header>`

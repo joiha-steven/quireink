@@ -43,6 +43,7 @@ const ko = {
   searchResults: '“{q}” 검색 결과 {n}개',
   pagerNewer: '최신',
   pagerOlder: '이전',
+  pagerLabel: '페이지 매김',
   tocIndex: '목차',
   categoriesTitle: '카테고리',
   mostViewedTitle: '많이 본 글',

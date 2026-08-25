@@ -82,7 +82,7 @@ function pager(paged: Paged<Post>, basePath: string, tx: Dict): string {
   const next = paged.page < paged.totalPages
     ? `<a rel="next" href="${escapeAttr(href(paged.page + 1))}">${escapeHtml(tx.pagerOlder)}</a>`
     : '<span></span>'
-  return `<nav class="pager">${prev}<span class="pager-count">${paged.page} / ${paged.totalPages}</span>${next}</nav>`
+  return `<nav class="pager" aria-label="${escapeAttr(tx.pagerLabel)}">${prev}<span class="pager-count">${paged.page} / ${paged.totalPages}</span>${next}</nav>`
 }
 
 /**

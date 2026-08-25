@@ -43,6 +43,9 @@ export type Dict = {
   searchResults: string
   pagerNewer: string
   pagerOlder: string
+  // The pager's own landmark name. A page can carry two or three <nav> regions and a
+  // screen reader lists them by label alone; unlabelled they all read as "navigation".
+  pagerLabel: string
   tocIndex: string
   categoriesTitle: string
   mostViewedTitle: string

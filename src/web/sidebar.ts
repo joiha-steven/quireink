@@ -85,7 +85,7 @@ function termCloud(
  * Headingless: the nav leads the rail. Rows reuse `rail-row`, so they range right in the
  * desktop gutter and left in the mobile drawer with no per-surface handling.
  */
-function menuBlock(items: MenuItem[]): string {
+function menuBlock(items: MenuItem[], label: string): string {
   if (items.length === 0) return ''
   const rows = items.map((item) => {
     // An external link opens in a new tab; an internal one does not. `noopener` because
@@ -95,7 +95,7 @@ function menuBlock(items: MenuItem[]): string {
     return `<li><a class="rail-row link-accent t-small" href="${escapeAttr(item.href || '/')}"${rel}>`
       + `<span>${escapeHtml(item.label)}</span></a></li>`
   }).join('')
-  return `<nav><ul>${rows}</ul></nav>`
+  return `<nav aria-label="${escapeAttr(label)}"><ul>${rows}</ul></nav>`
 }
 
 const rail = (variant: string, blocks: string) =>
@@ -175,7 +175,7 @@ export async function renderSidebar(
   // Single (the default): one left rail, everything stacked, full-width column. The
   // layout's own `singleRailCss` already positions `.rail`, so this needs no extra sheet.
   if (layout !== 'two') {
-    return { html: rail('', menuBlock(settings.menu) + discovery + nav), css: '' }
+    return { html: rail('', menuBlock(settings.menu, labels.menu) + discovery + nav), css: '' }
   }
 
   // Two: discovery left, nav right, narrower column. The right rail is also the mobile
@@ -183,7 +183,7 @@ export async function renderSidebar(
   // drawer would lose them entirely on a phone, where the left rail does not exist.
   return {
     html: rail(' rail-left', discovery)
-      + rail(' rail-right', menuBlock(settings.menu)
+      + rail(' rail-right', menuBlock(settings.menu, labels.menu)
         + `<div class="drawer-only">${discovery}</div>` + nav),
     css: listingRailCss(Math.round(settings.contentWidth * LISTING_WIDTH_RATIO)),
   }

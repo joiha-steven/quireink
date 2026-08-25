@@ -30,7 +30,7 @@ export const PRINT_CSS = `
    display:grid, nav.toc.rail outranks .toc on specificity, and .to-top.shown re-enables what
    .to-top left off. Losing any one of those puts a fixed black circle over the text.
    .rail-toggle is NOT in this list and does not need to be: chrome.ts pushes it into the
-   .site-actions nav above, so it is already gone. The test that checks every selector here
+   .site-actions div above, so it is already gone. The test that checks every selector here
    is a selector the site still uses is what said so. */
 .progress,.site-actions,.toc,.to-top,.book-fab,.meta-book,.skip-link,.quote-copy,
 .book-overlay,.lightbox,.subscribe-overlay,.subscribe-card,form.subscribe,
