@@ -14,6 +14,7 @@ import { resetPending } from '@/auth/login'
 import { resetEnrolment } from '@/web/auth-routes'
 import { resetLimits } from '@/server/rate-limit'
 import { setupToken, forgetSetupToken } from '@/server/setup-token'
+import { getSettings } from '@/content/settings'
 
 const DIR = './.tmp/test-setup'
 freshDatabase(DIR)
@@ -154,5 +155,97 @@ describe('deferring two-factor', () => {
     await post('/api/auth/enrol/skip', { ticket })
     const again = await post('/api/auth/login', { username: 'owner', password: PASSWORD })
     expect(await again.text()).toContain('/api/auth/enrol')
+  })
+})
+
+describe('where enrolment lets you out', () => {
+  const claimAndSkip = async (): Promise<string> => {
+    const ticket = (await (await claim()).text()).match(/name="ticket" value="([^"]+)"/)?.[1] ?? ''
+    const res = await post('/api/auth/enrol/skip', { ticket })
+    return res.headers.get('location') ?? ''
+  }
+
+  it('goes to the site step while no address is set', async () => {
+    expect(await claimAndSkip()).toBe('/setup/site')
+  })
+
+  it('goes straight to the admin once there is one', async () => {
+    // An owner re-enrolling after a TOTP reset must not be dragged back through setup.
+    await saveSettings({ siteUrl: 'https://example.com' })
+    db().run(`delete from users`)
+    forgetSetupToken()
+    const ticket = (await (await claim()).text()).match(/name="ticket" value="([^"]+)"/)?.[1] ?? ''
+    // The skip is refused with an address set, so finish enrolment the long way instead.
+    expect((await post('/api/auth/enrol/skip', { ticket })).status).toBe(401)
+  })
+})
+
+describe('the two questions after the account', () => {
+  const session = async (): Promise<string> => {
+    const ticket = (await (await claim()).text()).match(/name="ticket" value="([^"]+)"/)?.[1] ?? ''
+    const res = await post('/api/auth/enrol/skip', { ticket })
+    return (res.headers.get('set-cookie') ?? '').split(';')[0] ?? ''
+  }
+
+  // `sec-fetch-site` because a real browser always sends it, and `auth/csrf.ts` insists on
+  // it: a state-changing request with neither that nor an Origin is a non-browser client,
+  // which has the token path and no business on a cookie-authenticated route. Leaving it off
+  // here made the test 403 against code that is correct — the harness was the unrealistic
+  // half, not the guard.
+  const asOwner = (path: string, data?: Record<string, string>) => async (cookie: string) =>
+    app.request(path, data === undefined ? { headers: { cookie } } : {
+      method: 'POST',
+      headers: {
+        cookie,
+        'content-type': 'application/x-www-form-urlencoded',
+        'sec-fetch-site': 'same-origin',
+      },
+      body: new URLSearchParams(data),
+    })
+
+  it('refuses both steps without a session, because they write settings', async () => {
+    // Invariant 4: they are protected by the router they are registered on, not by a check
+    // inside them, and this is the assertion that would notice if they moved.
+    expect((await app.request('/setup/site')).status).toBe(401)
+    expect((await app.request('/setup/face')).status).toBe(401)
+  })
+
+  it('saves the site step and moves on to the face', async () => {
+    const cookie = await session()
+    const res = await asOwner('/setup/site', {
+      title: 'A Quiet Press', language: 'vi', timezone: 'Asia/Ho_Chi_Minh',
+      siteUrl: 'https://quiet.example',
+    })(cookie)
+    expect(res.status).toBe(303)
+    expect(res.headers.get('location')).toBe('/setup/face')
+    const saved = await getSettings()
+    expect(saved.title).toBe('A Quiet Press')
+    expect(saved.language).toBe('vi')
+    expect(saved.timezone).toBe('Asia/Ho_Chi_Minh')
+    expect(saved.siteUrl).toBe('https://quiet.example')
+  })
+
+  it('saves the face and ends in the editor, not the dashboard', async () => {
+    const cookie = await session()
+    const res = await asOwner('/setup/face', { mode: 'front' })(cookie)
+    expect(res.headers.get('location')).toBe('/admin/editor')
+    expect((await getSettings()).home.mode).toBe('front')
+  })
+
+  it('reads anything that is not the newspaper as the list', async () => {
+    const cookie = await session()
+    await asOwner('/setup/face', { mode: 'nonsense' })(cookie)
+    expect((await getSettings()).home.mode).toBe('list')
+  })
+
+  it('offers the address of the host actually being used', async () => {
+    const cookie = await session()
+    const res = await app.request('http://blog.example/setup/site', {
+      headers: { cookie, 'x-forwarded-proto': 'https' },
+    })
+    // The one field, not the whole page: a `toContain` over a rendered document prints the
+    // document when it fails, which buries the reason it failed.
+    const value = (await res.text()).match(/id="siteUrl"[^>]*value="([^"]*)"/s)?.[1]
+    expect(value).toBe('https://blog.example')
   })
 })

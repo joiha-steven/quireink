@@ -31,7 +31,12 @@ const fill = (template: string, values: Record<string, string | number>): string
   template.replace(/\{(\w+)\}/g, (whole, key: string) =>
     key in values ? String(values[key]) : whole)
 
-function shell(settings: SiteSettings, title: string, body: string): string {
+/**
+ * Exported for `setup-page.ts`, which is the same door with two more rooms behind it. The
+ * first-run screens have to look like the sign-in screens because they ARE the sign-in
+ * screens' neighbours — a wizard in a second visual language would read as a different site.
+ */
+export function loginShell(settings: SiteSettings, title: string, body: string): string {
   const s = adminT(settings.language)
   const back = `<a class="login-back" href="/">${escapeHtml(fill(s.authBackTo, { site: settings.title }))}</a>`
   return renderDocument(
@@ -69,7 +74,7 @@ export function passwordScreen(
 ): string {
   const s = adminT(settings.language)
   const next = opts.next === undefined ? '' : `<input type="hidden" name="next" value="${escapeAttr(opts.next)}">`
-  return shell(settings, s.authSignIn, `
+  return loginShell(settings, s.authSignIn, `
 <h1>${escapeHtml(s.authSignIn)}</h1>
 <p class="login-lede">${escapeHtml(fill(s.authSignInLede, { site: settings.title }))}</p>
 ${errorBox(opts.error)}
@@ -118,7 +123,7 @@ export function twoFactorScreen(
     ? `<a href="/login/2fa?ticket=${encodeURIComponent(opts.ticket)}">${escapeHtml(s.authUseAuthenticator)}</a>`
     : `<a href="/login/2fa?ticket=${encodeURIComponent(opts.ticket)}&amp;recovery=1">${escapeHtml(s.authUseRecovery)}</a>`
 
-  return shell(settings, s.authTwoFactor, `
+  return loginShell(settings, s.authTwoFactor, `
 <h1>${escapeHtml(recovery ? s.authRecoveryCode : s.authTwoFactor)}</h1>
 <p class="login-hint">${escapeHtml(recovery ? s.authRecoveryHint : s.authTwoFactorHint)}</p>
 ${errorBox(opts.error)}
@@ -147,7 +152,7 @@ export function enrolScreen(
   const grouped = (opts.secret.match(/.{1,4}/g) ?? []).join(' ')
   const qr = opts.qr === undefined ? '' : `<div class="login-qr">${opts.qr}</div>`
 
-  return shell(settings, s.authSetUp, `
+  return loginShell(settings, s.authSetUp, `
 <h1>${escapeHtml(s.authSetUp)}</h1>
 <p class="login-step">${escapeHtml(fill(s.authStepOf, { n: 1, total: 2 }))}</p>
 <h2>${escapeHtml(s.authScanTitle)}</h2>
@@ -182,7 +187,7 @@ export function recoveryCodesScreen(
 ): string {
   const s = adminT(settings.language)
   const list = opts.codes.map((code) => `<li><code>${escapeHtml(code)}</code></li>`).join('')
-  return shell(settings, s.authCodesTitle, `
+  return loginShell(settings, s.authCodesTitle, `
 <h1>${escapeHtml(s.authCodesTitle)}</h1>
 <p class="login-step">${escapeHtml(fill(s.authStepOf, { n: 2, total: 2 }))}</p>
 <p class="login-hint">${escapeHtml(s.authCodesHint)}</p>
@@ -209,7 +214,7 @@ export function recoveryCodesScreen(
  */
 export function unclaimedScreen(settings: SiteSettings, opts: { error?: string } = {}): string {
   const s = adminT(settings.language)
-  return shell(settings, s.setupUnclaimedTitle, `
+  return loginShell(settings, s.setupUnclaimedTitle, `
 <h1>${escapeHtml(s.setupUnclaimedTitle)}</h1>
 <p class="login-lede">${escapeHtml(s.setupUnclaimedLede)}</p>
 ${errorBox(opts.error)}
@@ -229,7 +234,7 @@ export function claimScreen(
   opts: { token: string; error?: string; username?: string; email?: string },
 ): string {
   const s = adminT(settings.language)
-  return shell(settings, s.setupTitle, `
+  return loginShell(settings, s.setupTitle, `
 <h1>${escapeHtml(s.setupTitle)}</h1>
 <p class="login-lede">${escapeHtml(s.setupLede)}</p>
 ${errorBox(opts.error)}

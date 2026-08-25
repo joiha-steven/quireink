@@ -60,7 +60,7 @@ import {
   handleEnrol, handleEnrolDone, handleEnrolSkip, handleLogin, handleLoginPage, handleLogout,
   handleTwoFactor, handleTwoFactorPage,
 } from '@/web/auth-routes'
-import { handleSetupClaim, handleSetupPage } from '@/web/setup-routes'
+import { handleSetupClaim, handleSetupPage, setupWizardRoutes } from '@/web/setup-routes'
 
 /**
  * The admin shell, for the owner, or a redirect to sign in.
@@ -279,6 +279,7 @@ export function createApp(): Hono {
   app.route('/', newsRoutes().routes)
   app.route('/', opsRoutes().routes)
   app.route('/', assistantRoutes().routes)
+  app.route('/', setupWizardRoutes().routes)
   app.route('/', publicOpsRoutes())
   app.route('/', mcpAdminRoutes().routes)
   app.route('/', mcpOAuthRoutes())

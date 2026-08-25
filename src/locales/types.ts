@@ -1007,6 +1007,26 @@ export type AdminStrings = {
   setupPwShort: string
   setupPwCommon: string
   setupPwName: string
+  // ----- first run, after the account: the two questions worth asking ------------
+  // Deliberately only two screens. Palettes, fonts, book mode and the feature switches are
+  // NOT here: nobody can judge them before the site has a single post, and a choice made
+  // blind is worse than a default, because a default still reads as "not chosen yet". Those
+  // live on the dashboard's re-openable "first five minutes" card instead.
+  siteStepTitle: string
+  siteStepLede: string
+  siteStepName: string
+  siteStepLanguage: string
+  siteStepTz: string
+  siteStepTzHint: string
+  siteStepAddress: string
+  siteStepAddressHint: string
+  faceStepTitle: string
+  faceStepLede: string
+  faceList: string
+  faceListHint: string
+  faceFront: string
+  faceFrontHint: string
+  setupFinish: string
   // Shown on the enrolment screen ONLY while the blog has no public address. Before anyone
   // has enrolled, two-factor protects nothing — whoever has the password first enrols their
   // own authenticator — so skipping on a laptop trial widens nothing. Setting a real address
