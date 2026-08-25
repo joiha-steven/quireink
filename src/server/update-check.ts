@@ -4,7 +4,7 @@
 // jobs, so there is no telemetry service to keep alive and nothing running when nobody is
 // reading. What leaves the process is four fields wide:
 //
-//     GET https://check.quireink.com/releases.json?v=2.1.4&t=8f2c91a04b7e&d=1&new=1
+//     GET https://check.quireink.com/releases.json?v=2.2.0&t=8f2c91a04b7e&d=1&new=1
 //
 //   v    the version this instance runs
 //   t    sha256(this instance's own secret + today's UTC date), first 12 hex characters

@@ -1,6 +1,6 @@
 <div align="center">
 
-# quire**INK** &nbsp;`2.1.4`
+# quire**INK** &nbsp;`2.2.0`
 
 **Một cái blog bạn tự host, và AI agent có thể vận hành thay bạn.**
 Không thuật toán, không quảng cáo, không nền tảng nào đứng giữa bạn và người đọc.
@@ -74,14 +74,16 @@ Có ba thứ định hình nó.
 
 Bạn được đọc, sửa, chạy và fork theo [PolyForm Noncommercial](./LICENSE), và được chạy bản phát hành để kinh doanh — kể cả bán hosting — theo [một cho phép bổ sung](./LICENSE-EXCEPTION.vi.md).
 
-> **2.1.4 ra ngày 22/08/2026**, đang chạy bản demo ở trên và blog riêng của tác giả tại
-> [manhhung.me](https://manhhung.me). Đây là bản rà soát, ra sau ngày sửa trình soạn thảo:
-> số phiên bản trong trang quản trị giờ đeo một chấm — cam khi có bản mới, xanh khi bạn đang
-> ở bản mới nhất — nuôi bằng một cú hỏi mỗi ngày, cú hỏi đó cũng là cách blog của bạn được
-> đếm là một blog đang dùng, không mang theo gì riêng tư, và tắt được bằng một công tắc; cả
-> site theo một múi giờ bạn tự chọn trong Settings thay vì theo đồng hồ máy chủ; SVG tải lên
-> hết chạy được script trên origin của site; và những nút nhỏ nhất trong trang quản trị đã
-> nở ra vừa ngón tay cái mà chữ không xê dịch một pixel.
+> **2.2.0 ra ngày 25/08/2026**, đang chạy bản demo ở trên và blog riêng của tác giả tại
+> [manhhung.me](https://manhhung.me). Đây là bản lớn nhất kể từ 2.0. **Dựng một blog không còn
+> cần terminal nữa** — blog chưa có chủ tự in một đường dẫn dùng một lần ra log của chính nó,
+> phần còn lại nằm trong trình duyệt, đúng thứ mà một cái NAS có bảng xem log mà không có TTY
+> cần. **Agent giờ đọc và trông coi được blog** chứ không chỉ viết, và **một trợ lý dọn vào
+> trang quản trị** cho ai không dùng MCP: cùng bộ công cụ, cùng luật, khoá API của bạn. **Bài
+> viết in ra như trang sách** chứ không như trang web. **Năm màu mực của cây bút giờ là của
+> bạn**, trình soạn thảo có thêm **ba bàn phím và một núm âm lượng**, bôi đen một câu là có
+> ngay nút **chép kèm đường dẫn mở đúng câu đó**, và máy tìm kiếm nhận được **JSON-LD** cùng
+> một câu mô tả riêng cho từng trang.
 > [Changelog](./CHANGELOG.md) có đủ những gì đã đổi.
 
 ---
@@ -191,11 +193,26 @@ bun run build:assets && bun run build:admin     # island, rồi tới trang qu�
 DATA_DIR=./data SITE_URL=https://example.com bun src/index.ts
 ```
 
-Đặt một reverse proxy có TLS trước cổng, mặc định là `3000`. Rồi tạo tài khoản:
+Đặt một reverse proxy có TLS trước cổng, mặc định là `3000`. Rồi **đọc log** — blog chưa có chủ sẽ in ra đường dẫn để nhận blog, mỗi lần khởi động:
 
-```bash
-bun run user create --username <tên> --email <địa-chỉ>   # in ra mã TOTP và mã khôi phục, đúng một lần
 ```
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │  This blog has no owner yet. Open the link below to claim it.           │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+  https://example.com/setup?token=…
+```
+
+Mở nó ra là xong phần còn lại ngay trong trình duyệt: tên đăng nhập, email, mật khẩu, rồi mã QR cho ứng dụng xác thực và mười mã khôi phục, hiện đúng một lần. Token nằm trong bộ nhớ nên khởi động lại là có token mới và dòng cũ trong log hết là bí mật; `/setup` trả 404 ngay khi đã có tài khoản. Thích dùng terminal hơn? `bun run user create --username <tên> --email <địa-chỉ>` vẫn làm đúng việc đó.
+
+
+<div align="center">
+
+<img src="docs/demo-setup.jpg" alt="Ba màn hình đầu tiên đặt cạnh nhau: Claim this blog với ô tên đăng nhập, email và mật khẩu; Your site với tên site, ngôn ngữ, múi giờ đã điền sẵn Asia/Saigon và địa chỉ site đã điền sẵn https://example.com; và The front page với hai hình vẽ nhỏ để chọn, danh sách bài hoặc trang nhất kiểu báo" width="960">
+
+<sub>Toàn bộ phần cài đặt sau dòng log. Múi giờ và địa chỉ đến nơi đã điền sẵn — trình duyệt biết cả hai, mà cả hai đều sai mặc định và không nói gì khi sai. Thứ <b>không</b> được hỏi mới là thiết kế: bảng màu, phông chữ, chế độ sách và các công tắc tính năng đều ở lại một thẻ trên bảng điều khiển mở lại được, vì chưa có bài nào thì chưa ai đánh giá nổi.</sub>
+
+</div>
 
 Xong. CSDL tự dựng ở lần khởi động đầu, nên không có bước migration nào phải nhớ. Muốn bản đầy đủ với systemd, nginx, cache header, sao lưu và nâng cấp thì xem **[`docs/self-host.md`](./docs/self-host.md)**.
 
@@ -218,7 +235,7 @@ docker run -d --name quire -p 127.0.0.1:3000:3000 \
   -e SITE_URL=https://example.com \
   -v quire-data:/var/lib/quire/data -v quire-uploads:/var/lib/quire/uploads \
   quireink/quireink:latest
-docker exec quire bun run user create --username you --email you@example.com
+docker logs quire            # in ra đường dẫn nhận blog — mở nó trong trình duyệt
 ```
 
 Cố ý dùng `:latest`: đó là bản mới nhất, và bản mới nhất là bản đã có các lỗi được sửa.
@@ -232,12 +249,12 @@ Cũng có trên GHCR là `ghcr.io/joiha-steven/quireink` — cùng một image, 
 ```bash
 cp .env.docker.example .env          # điền SITE_URL
 docker compose up -d --build
-docker compose exec quire bun run user create --username you --email you@example.com
+docker compose logs quire            # đường dẫn nhận blog, y như trên
 ```
 
-Một service, hai volume, không sidecar. Cổng chỉ mở trên `127.0.0.1`, nên reverse proxy vẫn là chỗ xử lý TLS.
+**Không có `docker exec`, không cần terminal tương tác ở đâu cả** — và đó chính là chủ ý, vì giao diện container của NAS có bảng xem log chứ không có TTY. Một service, hai volume, không sidecar. Cổng chỉ mở trên `127.0.0.1`, nên reverse proxy vẫn là chỗ xử lý TLS.
 
-**Trên NAS** (Synology, QNAP, Unraid), hãy gắn thư mục thật và đặt `PUID`/`PGID` theo người sở hữu thư mục đó — container tự nhận quyền ở lần khởi động đầu và không bao giờ chạy bằng root. Ghi chú về volume, quyền sở hữu và nâng cấp nằm ở [`docs/self-host.md`](./docs/self-host.md#10-docker-instead-of-systemd).
+**Trên NAS** (Synology, QNAP, Unraid), hãy gắn thư mục thật và đặt `PUID`/`PGID` theo người sở hữu thư mục đó — container tự nhận quyền ở lần khởi động đầu và không bao giờ chạy bằng root. Ghi chú về volume, quyền sở hữu và nâng cấp nằm ở [`docs/self-host-docker.md`](./docs/self-host-docker.md).
 
 </details>
 
@@ -291,7 +308,7 @@ Các cấu hình nhạy cảm bị chặn qua MCP, và quyền vẫn nằm ở b
 | `MCP_OAUTH_SECRET` | ◻️ | Ký mã OAuth của MCP. Bỏ trống thì máy chủ tự sinh lấy, và đó là cách nên dùng |
 | `ANALYTICS_TZ` | ◻️ | Múi giờ MẶC ĐỊNH của site, dùng cho tới khi có người chọn ở **Settings → Site → Múi giờ**. Setting đó là đồng hồ của cả site — ngày dưới mỗi bài, mốc tháng, và ngày bắt đầu của biểu đồ thống kê — và nó tồn tại vì trang được dựng một lần rồi cache, nên không có nó thì múi giờ của MÁY CHỦ quyết định người đọc thấy ngày nào. Mặc định UTC |
 | `TRUST_PROXY` | ◻️ | Chỉ đặt `1` khi proxy đứng trước đi tới bạn qua một địa chỉ CÔNG KHAI. Giới hạn tần suất tính theo địa chỉ socket; `CF-Connecting-IP`/`X-Forwarded-For` được tin tự động khi kết nối đến từ loopback hoặc mạng nội bộ |
-| `UPDATE_CHECK` | ◻️ | Đặt `0` để tắt cú gọi duy nhất mà phần mềm này tự thực hiện: mỗi ngày một lần, vào lượt khách đầu tiên, blog hỏi bản mới nhất là bản nào — và chính lúc hỏi thì được đếm là một blog đang được dùng. Thứ gửi đi là phiên bản đang chạy, một mã sinh lại theo ngày mới mỗi nửa đêm, và blog đã có tên miền thật hay chưa. Không có địa chỉ, bài viết, người đọc hay số liệu của bạn. Mặc định bật, và tự im khi chạy `bun --watch` hoặc `bun test` — một buổi chiều của thợ không phải một lượt cài. [Toàn bộ nội dung cú gọi viết ở đây](./docs/self-host.md#11-what-this-blog-tells-us-and-how-to-stop-it). Chủ blog có công tắc tương đương ở Settings → System |
+| `UPDATE_CHECK` | ◻️ | Đặt `0` để tắt cú gọi duy nhất mà phần mềm này tự thực hiện: mỗi ngày một lần, vào lượt khách đầu tiên, blog hỏi bản mới nhất là bản nào — và chính lúc hỏi thì được đếm là một blog đang được dùng. Thứ gửi đi là phiên bản đang chạy, một mã sinh lại theo ngày mới mỗi nửa đêm, và blog đã có tên miền thật hay chưa. Không có địa chỉ, bài viết, người đọc hay số liệu của bạn. Mặc định bật, và tự im khi chạy `bun --watch` hoặc `bun test` — một buổi chiều của thợ không phải một lượt cài. [Toàn bộ nội dung cú gọi viết ở đây](./docs/self-host.md#10-what-this-blog-tells-us-and-how-to-stop-it). Chủ blog có công tắc tương đương ở Settings → System |
 
 SMTP, Turnstile và thông tin CDN nhập ở **Cấu hình → Kết nối** và nằm lại trên máy chủ. Bài của bạn sống trong `DATA_DIR` và thư mục upload, không bao giờ nằm trong git.
 
@@ -303,7 +320,7 @@ SMTP, Turnstile và thông tin CDN nhập ở **Cấu hình → Kết nối** v�
 bun install
 bun run build:admin                 # một lần, và mỗi khi src/admin đổi
 bun run dev                         # http://localhost:3000
-bun run user create --username me --email me@example.com   # rồi đăng nhập ở /login
+# log in ra đường dẫn /setup để nhận blog; hoặc: bun run user create --username me --email me@example.com
 ```
 
 Chưa qua `bun run check:all` thì chưa xong. Nó typecheck, chạy các guard tĩnh và chạy test, tất cả offline, không cần thông tin đăng nhập, không cần dịch vụ nào. Bắt đầu ở [`CONTRIBUTING.md`](./CONTRIBUTING.md), từ đó dẫn tới luật nhà trong [`CLAUDE.md`](./CLAUDE.md).

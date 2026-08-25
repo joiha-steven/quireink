@@ -21,11 +21,26 @@ docker run -d --name quire \
   quireink/quireink:latest
 ```
 
-Then create your owner account:
+Then read the log. A blog nobody owns yet prints the link that claims it, every time it
+starts:
 
 ```bash
-docker exec quire bun run user create --username you --email you@example.com
+docker logs quire
 ```
+
+```
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │  This blog has no owner yet. Open the link below to claim it.           │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+  https://example.com/setup?token=…
+```
+
+Open it and the rest is a browser: username, email, password, then two-factor. **No `docker
+exec`, no interactive terminal** — a NAS log panel is enough. The token lives in memory, so a
+restart mints a new one, and `/setup` answers 404 the moment an account exists. Anyone who
+would rather use the shell still can:
+`docker exec quire bun run user create --username you --email you@example.com`.
 
 Put a reverse proxy in front of it for TLS — the port is bound to `127.0.0.1` on purpose, and
 [the setup guide](https://github.com/joiha-steven/quireink/blob/main/docs/self-host.md) has an
@@ -59,8 +74,8 @@ services:
 | Tag | What it means |
 |---|---|
 | `latest` | The newest release. **The one to install**, because the newest release is the one carrying the fixes. |
-| `2.1` | Fixes within the 2.1 line, no feature surprises. For anyone who would rather step up a major version by hand. |
-| `2.1.4` | One exact release. Nothing moves, ever. |
+| `2.2` | Fixes within the 2.2 line, no feature surprises. For anyone who would rather step up a major version by hand. |
+| `2.2.0` | One exact release. Nothing moves, ever. |
 
 `linux/amd64` and `linux/arm64`, each built on its own native runner. The same image is on
 GHCR as `ghcr.io/joiha-steven/quireink`, pushed by the same run with the same digest.

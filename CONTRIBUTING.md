@@ -33,7 +33,7 @@ month. So before writing code, read the file that owns what you are touching.
 
 Bun 1.3 or newer, and nothing else: no database server, no container runtime, no
 third-party account, no credentials. The four commands are in
-[README, run locally](./README.md#-run-locally-dev).
+[README, develop](./README.md#develop).
 
 Two more are worth knowing, because the house rule is that you LOOK at what you changed
 instead of reasoning about rendered CSS from the source: `bun run shot` takes a screenshot

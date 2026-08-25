@@ -28,7 +28,7 @@ abandoned on 2026-07-26, and the only trace was a private memory file.
 | [0004](0004-rewrite-in-go-on-sqlite.md) | Rewrite in Go on SQLite | 2026-07-26 | ❌ superseded by 0005 |
 | [0005](0005-rewrite-in-bun-hono-sqlite.md) | Rewrite in Bun + Hono on SQLite, porting rather than reimplementing | 2026-07-27 | ✅ |
 | [0006](0006-admin-stays-react-spa.md) | Keep the admin as an embedded React SPA | 2026-07-27 | ✅ |
-| [0007](0007-self-hosted-password-totp-auth.md) | Replace Google login with password + TOTP + recovery codes | 2026-07-27 | ✅ |
+| [0007](0007-self-hosted-password-totp-auth.md) | Replace Google login with password + TOTP + recovery codes | 2026-07-27 | ⚠️ holds, except its flat **mandatory** TOTP: amended by [0030](0030-two-factor-can-wait-until-there-is-an-address.md) — skippable only while the blog has no public address |
 | [0008](0008-hand-written-css-no-tailwind-public.md) | Hand-write the public CSS, drop Tailwind from the reader path | 2026-07-27 | ✅ |
 | [0009](0009-pin-optical-size-axis.md) | Pin the `opsz` axis in the bundled variable fonts | 2026-07-27 | ✅ |
 | [0010](0010-four-homes-doc-layout.md) | Adopt the four-homes documentation layout | 2026-07-27 | ✅ |
@@ -51,6 +51,7 @@ abandoned on 2026-07-26, and the only trace was a private memory file.
 | [0027](0027-the-pen-ships-only-where-it-wrote.md) | The pen's CSS ships in two hashed sheets, linked only on pages that used it | 2026-08-21 | ✅ |
 | [0028](0028-a-link-is-a-pen-gesture.md) | A link is underlined by the pen, in dashes, in the pen's own ink | 2026-08-21 | ✅ |
 | [0029](0029-the-pen-becomes-the-owners.md) | The pen's colours become the owner's, and the defaults stay measured | 2026-08-24 | ✅ |
+| [0030](0030-two-factor-can-wait-until-there-is-an-address.md) | Two-factor can wait, but only until the blog has a public address | 2026-08-25 | ✅ |
 
 ## Superseded, and why that matters
 

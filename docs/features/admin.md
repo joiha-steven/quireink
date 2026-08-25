@@ -158,12 +158,43 @@
     engagement / channel / audience / drill-down queries live in `src/analytics/`
     (`summary.ts`, `aggregate.ts`, `channel.ts`, `page.ts`).
 
+## The assistant (Admin → Assistant) — `src/server/assistant.ts`, `src/web/admin/assistant.ts`
+
+- **What:** a chat box in the admin whose every ability is a tool from
+  [`src/mcp/registry.ts`](../mcp.md) — the SAME surface an MCP client gets. Somebody with a
+  Claude subscription connects over MCP and never needs this; somebody who put an API key in
+  Settings → AI gets the same steward without leaving the admin.
+- **One list, two doors, one rulebook.** The assistant cannot do anything MCP cannot, by
+  construction: it holds no private tool, so a tool absent from the registry (the newsletter
+  broadcast, token minting) is absent from both doors at once. That is what keeps the security
+  story reviewable, and `registry.test.ts` pins the forbidden names at the registry level.
+- **The loop is small on purpose:** at most 8 tool rounds per message, and **every argument is
+  validated against the tool's own zod schema before the handler runs** — a model's JSON is a
+  guess, not a contract. Results are truncated before they ride back.
+- **No server-side conversation.** The history lives in the open admin tab and is posted back
+  each turn (`POST /api/assistant`, owner-gated, capped at 60 turns). Close the tab and it is
+  gone. Short memory, no web access, and as clever as the model the owner chose — the in-product
+  help says exactly that rather than implying an agent.
+- **It is the owner acting.** Tools run on the server under the owner's session and are logged
+  like every other admin action, deletes go to the Trash, and the system prompt tells the model
+  to name a destructive or bulk action and ask once before doing it.
+
 ## Settings (Admin → settings) — `SettingsView.tsx`
 
-- **ONE form, ONE save button, SEVEN task-based tabs** (`site | layout | reading | appearance |
-  seo | connections | system`; tab state not persisted, but `?tab=` deep-links). Each tab answers
-  exactly one question and prints that question under itself — [ADR 0011](../decisions/0011-settings-regrouped-into-seven.md)
-  is the argument. One `useState<SiteSettings>` → one PUT `/api/settings`.
+- **ONE form, ONE save button, EIGHT task-based tabs** (`site | layout | reading | appearance |
+  seo | connections | ai | system`; tab state not persisted, but `?tab=` deep-links). Each tab
+  answers exactly one question and prints that question under itself —
+  [ADR 0011](../decisions/0011-settings-regrouped-into-seven.md) is the argument, and it was
+  seven when that decision was written; `ai` joined them on 2026-08-23 when the key stopped
+  being a single field and became a provider, a model and three jobs. One
+  `useState<SiteSettings>` → one PUT `/api/settings`.
+- **AI tab** — the provider (Anthropic / OpenAI / Gemini), the key, the model, and which jobs
+  the model does on its own: `ai.altText` (describe an uploaded image), `ai.excerpt` (write the
+  excerpt when a post publishes with the field blank), `ai.commentGuard` (hold spam in the
+  Trash). **The key is the master switch**: with none stored, every job is off whatever its own
+  toggle says. Like the other credentials it is written and never read back. The model list is
+  the provider's own, with a measured default per provider (`DEFAULT_MODELS` in
+  `src/server/ai-provider.ts`).
 - **Footer is owner-editable** (Layout tab): `settings.footer` is limited inline markdown
   (`src/render/inline-md.ts` — **bold / italic / underline / link** only, escape-first like
   `comment-md`, link hrefs protocol-checked) authored via `FooterField` (textarea + B/I/U/Link
