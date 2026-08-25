@@ -57,9 +57,10 @@ import {
   handleConfirm, handleOpenPixel, handleSubscribe, handleUnsubscribeGet, handleUnsubscribePost,
 } from '@/web/newsletter'
 import {
-  handleEnrol, handleEnrolDone, handleLogin, handleLoginPage, handleLogout,
+  handleEnrol, handleEnrolDone, handleEnrolSkip, handleLogin, handleLoginPage, handleLogout,
   handleTwoFactor, handleTwoFactorPage,
 } from '@/web/auth-routes'
+import { handleSetupClaim, handleSetupPage } from '@/web/setup-routes'
 
 /**
  * The admin shell, for the owner, or a redirect to sign in.
@@ -258,6 +259,12 @@ export function createApp(): Hono {
   app.post('/api/auth/2fa', handleTwoFactor)
   app.post('/api/auth/enrol', handleEnrol)
   app.post('/api/auth/enrol/done', handleEnrolDone)
+  app.post('/api/auth/enrol/skip', handleEnrolSkip)
+
+  // First run. Both refuse the moment an account exists, so on a claimed blog these are two
+  // more 404s rather than a door left standing open with nothing behind it.
+  app.get('/setup', handleSetupPage)
+  app.post('/api/setup/claim', handleSetupClaim)
   app.post('/api/auth/logout', handleLogout)
 
   // ----- the admin API --------------------------------------------------------

@@ -29,7 +29,13 @@ PORT=${PORT:-3399}
 # half passes (same fixture), and all twenty-six admin flows fail 401 because the session the
 # seeder minted belongs to a different database. Nothing says so: it reads as a real, specific
 # regression, and it cost an hour of bisecting one before anybody checked what was on the port.
-if lsof -ti:"$PORT" >/dev/null 2>&1; then
+#
+# `-sTCP:LISTEN`, and it is not a detail. Without it `lsof` matches ANY socket touching the
+# port, including a browser's own CLOSED client connections to a dev server that has already
+# been stopped — so the tour refused to start with nothing listening, and the message sent
+# whoever read it hunting for a server that was not there. Refuse for a LISTENER, which is
+# the thing that would actually steal the bind.
+if lsof -ti:"$PORT" -sTCP:LISTEN >/dev/null 2>&1; then
   echo "✗ port $PORT is already in use — stop it, or run with PORT=<free port>." >&2
   echo "  A tour on a busy port silently tours the OTHER instance and fails every admin flow." >&2
   exit 1

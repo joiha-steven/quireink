@@ -44,6 +44,10 @@ export type ActivityAction =
   // activityLog toggle — see there for why.
   | 'auth.login' | 'auth.login.failed' | 'auth.totp.failed' | 'auth.recovery.used'
   | 'auth.password.changed' | 'auth.totp.enrolled' | 'auth.recovery.regenerated'
+  // First run. `owner.claimed` happens exactly once in the life of a blog, and
+  // `totp.deferred` is the one way in without a second factor — both belong in the log
+  // precisely because they are rare enough that nobody would think to look for them.
+  | 'auth.owner.claimed' | 'auth.totp.deferred'
   | 'auth.logout' | 'auth.sessions.revoked'
 
 export type ActivityEntry = {

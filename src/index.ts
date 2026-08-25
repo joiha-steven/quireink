@@ -5,7 +5,9 @@
 // clear error at startup rather than a confusing one on the first request.
 
 import { readEnv } from '@/env'
-import { getSettings, siteUrlIsUnset } from '@/content/settings'
+import { getSettings, siteUrlIsUnset, resolveSiteUrl } from '@/content/settings'
+import { noUsersYet } from '@/auth/users'
+import { setupBanner } from '@/web/setup-routes'
 import { openDatabases, closeDatabases } from '@/store/db'
 import { ensureBlobStore } from '@/media/blob-local'
 import { flushAnalytics, resetAnalyticsBuffer } from '@/analytics/buffer'
@@ -47,6 +49,22 @@ console.log(`quire 2.0 listening on http://${server.hostname}:${server.port}`)
 // site works perfectly for a reader while being broken for every crawler and every mail
 // client. It cannot be fixed by guessing from the request — `content/settings.ts` has the
 // cache-poisoning reason — so the only honest option is to be loud about it.
+// Nobody owns this install: print the way in, loudly, and print it EVERY boot.
+//
+// Not once and stored: the token lives in memory (`server/setup-token.ts`), so a restart
+// mints a new one and the old line in the log stops being a secret. Printed before the
+// site-address warning below because on a fresh install this is the only thing the operator
+// can act on — the address is set from inside, and there is no inside yet.
+if (noUsersYet()) {
+  // The bound socket, not `resolveSiteUrl`: on a fresh install there IS no site address yet,
+  // and its fallback is a hardcoded `localhost:3000` that ignores the port in front of it.
+  const settings = await getSettings()
+  const reachable = siteUrlIsUnset(settings)
+    ? `http://${server.hostname}:${server.port}`
+    : resolveSiteUrl(settings)
+  console.log(setupBanner(reachable))
+}
+
 if (siteUrlIsUnset(await getSettings())) {
   console.warn(
     '[WARN] No site address is set. Feeds, the sitemap, OG images and newsletter links will'

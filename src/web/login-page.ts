@@ -139,7 +139,7 @@ ${field}
  */
 export function enrolScreen(
   settings: SiteSettings,
-  opts: { ticket: string; secret: string; qr?: string; error?: string },
+  opts: { ticket: string; secret: string; qr?: string; error?: string; skippable?: boolean },
 ): string {
   const s = adminT(settings.language)
   // Grouped in fours: a 32-character key read off a screen and typed into a phone is
@@ -162,7 +162,12 @@ ${errorBox(opts.error)}
 <input id="code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code"
        pattern="[0-9]*" maxlength="7" required autofocus>
 <button type="submit" class="login-submit">${escapeHtml(s.authConfirmCode)}</button>
-</form>`)
+</form>
+${opts.skippable === true ? `<form method="post" action="/api/auth/enrol/skip" class="login-alt">
+<input type="hidden" name="ticket" value="${escapeAttr(opts.ticket)}">
+<button type="submit" class="login-linkish">${escapeHtml(s.authSkipNow)}</button>
+<p class="login-hint">${escapeHtml(s.authSkipWhy)}</p>
+</form>` : ''}`)
 }
 
 /**
@@ -191,6 +196,65 @@ export function recoveryCodesScreen(
   <span>${escapeHtml(s.authCodesSaved)}</span>
 </label>
 <button type="submit" class="login-submit">${escapeHtml(s.authDone)}</button>
+</form>`)
+}
+
+/**
+ * What a browser gets at `/setup` on an install nobody has claimed, WITHOUT the link.
+ *
+ * It has to say two things and leak nothing: that the install is unclaimed, and where the
+ * link is. Naming the log is the whole point — before this page a fresh install answered a
+ * sign-in form to credentials that could not exist, which is indistinguishable from having
+ * forgotten your own password on a blog you never made.
+ */
+export function unclaimedScreen(settings: SiteSettings, opts: { error?: string } = {}): string {
+  const s = adminT(settings.language)
+  return shell(settings, s.setupUnclaimedTitle, `
+<h1>${escapeHtml(s.setupUnclaimedTitle)}</h1>
+<p class="login-lede">${escapeHtml(s.setupUnclaimedLede)}</p>
+${errorBox(opts.error)}
+<p class="login-hint">${escapeHtml(s.setupWhereToLook)}</p>`)
+}
+
+/**
+ * The claim form: the step that used to be a terminal.
+ *
+ * `autocomplete="new-password"` and not `current-password`, so a password manager offers to
+ * GENERATE one rather than searching for a saved password that cannot exist yet. The token
+ * rides in a hidden field rather than staying in the query string, so submitting the form
+ * does not put it in the next page's referrer.
+ */
+export function claimScreen(
+  settings: SiteSettings,
+  opts: { token: string; error?: string; username?: string; email?: string },
+): string {
+  const s = adminT(settings.language)
+  return shell(settings, s.setupTitle, `
+<h1>${escapeHtml(s.setupTitle)}</h1>
+<p class="login-lede">${escapeHtml(s.setupLede)}</p>
+${errorBox(opts.error)}
+<form method="post" action="/api/setup/claim" class="login-form">
+<input type="hidden" name="token" value="${escapeAttr(opts.token)}">
+<label for="username">${escapeHtml(s.authUsername)}</label>
+<input id="username" name="username" type="text" autocomplete="username" autocapitalize="none"
+       spellcheck="false" required autofocus value="${escapeAttr(opts.username ?? '')}">
+
+<label for="email">${escapeHtml(s.setupEmail)}</label>
+<input id="email" name="email" type="email" autocomplete="email" autocapitalize="none"
+       spellcheck="false" required value="${escapeAttr(opts.email ?? '')}">
+<p class="login-hint">${escapeHtml(s.setupEmailHint)}</p>
+
+<label for="password">${escapeHtml(s.authPassword)}</label>
+<div class="login-reveal">
+  <input id="password" name="password" type="password" autocomplete="new-password" required>
+  <button type="button" data-reveal
+          data-show="${escapeAttr(s.authShowPassword)}"
+          data-hide="${escapeAttr(s.authHidePassword)}"
+          aria-label="${escapeAttr(s.authShowPassword)}">${EYE}</button>
+</div>
+<p class="login-caps" data-caps hidden>${escapeHtml(s.authCapsLock)}</p>
+
+<button type="submit" class="login-submit">${escapeHtml(s.setupCreate)}</button>
 </form>`)
 }
 

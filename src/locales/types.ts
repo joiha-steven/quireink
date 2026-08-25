@@ -988,6 +988,31 @@ export type AdminStrings = {
   authCodesDownload: string
   authCodesSaved: string
   authDone: string
+  // ----- first run: claiming an install that has no owner yet -------------------
+  // The only step that used to need a terminal. `setupWhereToLook` names both ways of
+  // reading the log because the two audiences never overlap: a Docker user has never run
+  // journalctl, and a systemd user has no container to look in.
+  setupTitle: string
+  setupLede: string
+  setupEmail: string
+  setupEmailHint: string
+  setupCreate: string
+  setupClaimed: string
+  setupUnclaimedTitle: string
+  setupUnclaimedLede: string
+  setupWhereToLook: string
+  setupBadLink: string
+  // One message per rule the password check can fail, because "that password will not do"
+  // without saying which rule leaves a person guessing. `{n}` is the minimum length.
+  setupPwShort: string
+  setupPwCommon: string
+  setupPwName: string
+  // Shown on the enrolment screen ONLY while the blog has no public address. Before anyone
+  // has enrolled, two-factor protects nothing — whoever has the password first enrols their
+  // own authenticator — so skipping on a laptop trial widens nothing. Setting a real address
+  // takes the button away and the next sign-in asks again.
+  authSkipNow: string
+  authSkipWhy: string
   // The error boundary's sheet (`admin/ui/ErrorBoundary.tsx`). Written for someone who was
   // in the middle of a draft, not for whoever will read the stack: say what happened, say
   // that the work is not gone, then offer the two things that actually help.
