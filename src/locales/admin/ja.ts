@@ -652,7 +652,7 @@ const ja = {
   cfToken: 'API トークン',
   cardImport: 'コンテンツをインポート',
   importHelp: "WordPress（.xml — Tools → Export）、Ghost（.json — Labs → Export）、Substack または Medium（メールで届く .zip）から投稿とページを取り込みます。ファイルを置くだけで、どのプラットフォームのものかサーバーが判別します。内容は Markdown になり、死んだショートコードは除去され、画像は元の URL のままです。",
-  importChoose: 'WordPress エクスポート（.xml）',
+  importChoose: 'ファイルを選ぶ（.xml、.json、.zip）',
   importRun: 'インポート',
   importDone: 'インポートしました',
   mcpEnable: 'MCP サーバーを有効化',

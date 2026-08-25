@@ -14,7 +14,7 @@
 import type { GallerySettings, SiteSettings, FeatureSettings, InkSettings } from '@/types'
 import { fontPreloadHrefs, fontPresetCss, chromeFontCss, themesToCss } from '@/content/themes'
 import { cjkLangCss } from '@/content/fonts'
-import { typographyToCss, fontToCss } from '@/content/settings'
+import { typographyToCss, fontToCss, resolveAppIcon } from '@/content/settings'
 import { singleRailCss } from '@/render/rail-css'
 import { fontFaceCss, MONO_TRACKING } from '@/render/font-faces'
 import { penSheetsFor } from '@/web/assets'
@@ -245,7 +245,18 @@ export function renderDocument(
         .map((href) => `<link rel="stylesheet" href="${escapeAttr(href)}">`)
         .join('')
     : ''
-  const icon = settings.faviconUrl ? `<link rel="icon" href="${escapeAttr(settings.faviconUrl)}">` : ''
+  // `rel="icon"` stays conditional ON PURPOSE, and an audit that wants it unconditional is
+  // asking for bytes that buy nothing: `/favicon.ico` is the path a browser asks for when
+  // nothing tells it otherwise, and `app.ts` answers there whether or not the owner has set
+  // one. Naming the conventional path in the head only repeats what the browser was going
+  // to do anyway.
+  //
+  // `apple-touch-icon` is different and is why this line moved at all. Nothing else on the
+  // page points iOS at `/app-icon.png`: the manifest does, and iOS has only read manifest
+  // icons since 16.4, so on anything older "Add to Home Screen" takes a screenshot of the
+  // page instead of the site's own mark. One tag, and it is the only route to that icon.
+  const icon = (settings.faviconUrl ? `<link rel="icon" href="${escapeAttr(settings.faviconUrl)}">` : '')
+    + `<link rel="apple-touch-icon" href="${escapeAttr(resolveAppIcon(settings))}">`
   // Without this link the manifest route exists and nothing ever asks for it, so the site
   // is not installable no matter what the route returns.
   const manifest = '<link rel="manifest" href="/manifest.webmanifest">'

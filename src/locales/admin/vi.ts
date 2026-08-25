@@ -652,7 +652,7 @@ const vi = {
   cfToken: 'API token',
   cardImport: 'Nhập nội dung',
   importHelp: "Nhập bài viết và trang từ WordPress (.xml — Tools → Export), Ghost (.json — Labs → Export), Substack hoặc Medium (file .zip họ gửi qua email). Thả file vào, máy chủ tự nhận ra của nền tảng nào. Nội dung chuyển sang Markdown, shortcode chết được dọn sạch, ảnh giữ nguyên URL gốc.",
-  importChoose: 'File xuất WordPress (.xml)',
+  importChoose: 'Chọn tệp (.xml, .json, .zip)',
   importRun: 'Nhập',
   importDone: 'Đã nhập',
   mcpEnable: 'Bật máy chủ MCP',

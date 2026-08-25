@@ -652,7 +652,7 @@ const ko = {
   cfToken: 'API 토큰',
   cardImport: '콘텐츠 가져오기',
   importHelp: "WordPress(.xml — Tools → Export), Ghost(.json — Labs → Export), Substack 또는 Medium(이메일로 받은 .zip)에서 글과 페이지를 가져옵니다. 파일을 놓으면 서버가 어느 플랫폼의 것인지 스스로 알아냅니다. 내용은 Markdown이 되고, 죽은 쇼트코드는 정리되며, 이미지는 원래 URL을 유지합니다.",
-  importChoose: 'WordPress 내보내기 (.xml)',
+  importChoose: '파일 선택 (.xml, .json, .zip)',
   importRun: '가져오기',
   importDone: '가져옴',
   mcpEnable: 'MCP 서버 활성화',

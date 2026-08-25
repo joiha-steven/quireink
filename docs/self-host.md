@@ -158,10 +158,12 @@ server {
     ssl_certificate     /etc/nginx/ssl/example.com.pem;
     ssl_certificate_key /etc/nginx/ssl/example.com.key;
 
+    # Only these two. `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy` and
+    # `Permissions-Policy` come from the application itself (`src/web/security-headers.ts`),
+    # so repeating them here sends each one TWICE and the browser picks the last by accident
+    # rather than by decision. HSTS and CSP stay with the proxy: HSTS is about the hostname
+    # and its certificate, and a CSP has to name whatever you embed.
     add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
-    add_header X-Frame-Options "DENY" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
     add_header Content-Security-Policy "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data: blob: https:; font-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; media-src 'self' blob: https:; worker-src 'self' blob:; manifest-src 'self'; upgrade-insecure-requests" always;
 
     client_max_body_size 64M;
