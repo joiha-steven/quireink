@@ -23,7 +23,21 @@ const app = createApp()
 // `hostname` explicitly, and the log prints what `Bun.serve` came back with rather than a
 // literal. Without the option Bun listens on 0.0.0.0 while this line said 127.0.0.1, so the
 // one place anybody would look to check was the one place that could not be wrong out loud.
-const server = Bun.serve({ hostname: env.host, port: env.port, fetch: app.fetch })
+//
+// `idleTimeout` is stated for the same reason `hostname` is: the default is 10 SECONDS, it
+// is nowhere in this file, and the one route the documentation tells every operator to
+// schedule (`/api/cron`, self-host.md section 8) is also the only one that can legitimately
+// run longer than that. On 2026-08-25 it did — the tick encoding a backlog of images was cut
+// off mid-sweep and answered `curl: (52) Empty reply from server`, which reads like a dead
+// process rather than a working one being interrupted. The sweep now bounds itself
+// (`VARIANT_BUDGET_MS`), so this is headroom rather than the fix: a backup export or a large
+// range request should not be racing a number nobody chose.
+const server = Bun.serve({
+  hostname: env.host,
+  port: env.port,
+  idleTimeout: 120,
+  fetch: app.fetch,
+})
 console.log(`quire 2.0 listening on http://${server.hostname}:${server.port}`)
 
 // Say it once, at boot, when nobody has said what this site's address is.

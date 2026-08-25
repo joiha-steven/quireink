@@ -44,6 +44,24 @@ describe('the headers the app owes every response', () => {
     expect((await get('/uploads/nope.jpg')).headers.get('x-content-type-options')).toBe('nosniff')
   })
 
+  it('denies the features a blog has no use for, and leaves the media ones alone', async () => {
+    // The short list is the design: everything named is something nothing in this software
+    // asks for and no proxy would want to allow more of. What is ABSENT matters as much —
+    // `fullscreen`, `autoplay`, `picture-in-picture` and `clipboard-write` are left at their
+    // defaults so an embedded YouTube player keeps its fullscreen button and the copy
+    // buttons keep working. A policy is combined by taking the most restrictive, so naming
+    // one of those here would break an owner's page from a file they never edited.
+    await savePost({ title: 'Perms', content: 'body', status: 'published', date: PAST })
+    const policy = (await get('/perms')).headers.get('permissions-policy') ?? ''
+    for (const denied of ['camera=()', 'microphone=()', 'geolocation=()', 'payment=()',
+      'usb=()', 'browsing-topics=()']) {
+      expect(policy).toContain(denied)
+    }
+    for (const absent of ['fullscreen', 'autoplay', 'picture-in-picture', 'clipboard-write']) {
+      expect(policy).not.toContain(absent)
+    }
+  })
+
   it('sends NO Content-Security-Policy, on purpose', async () => {
     // A browser enforces the intersection of every CSP it receives, so a second policy
     // from the app would silently narrow the tuned one a proxy sends. It stays a

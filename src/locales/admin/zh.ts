@@ -652,7 +652,7 @@ const zh = {
   cfToken: 'API 令牌',
   cardImport: '导入内容',
   importHelp: "从 WordPress（.xml — Tools → Export）、Ghost（.json — Labs → Export）、Substack 或 Medium（他们通过邮件发送的 .zip）导入文章和页面。放入文件，服务器会自行识别来源平台。内容转换为 Markdown，失效的短代码会被清除，图片保留原始 URL。",
-  importChoose: 'WordPress 导出文件（.xml）',
+  importChoose: '选择文件（.xml、.json、.zip）',
   importRun: '导入',
   importDone: '已导入',
   mcpEnable: '启用 MCP 服务器',

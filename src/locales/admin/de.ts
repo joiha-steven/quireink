@@ -652,7 +652,7 @@ const de = {
   cfToken: 'API-Token',
   cardImport: 'Inhalte importieren',
   importHelp: "Importiert Beiträge und Seiten aus WordPress (.xml — Tools → Export), Ghost (.json — Labs → Export), Substack oder Medium (die per E-Mail erhaltene .zip). Datei ablegen, der Server erkennt selbst, von welcher Plattform sie stammt. Inhalte werden zu Markdown, tote Shortcodes werden entfernt, Bilder behalten ihre Original-URLs.",
-  importChoose: 'WordPress-Export (.xml)',
+  importChoose: 'Datei wählen (.xml, .json, .zip)',
   importRun: 'Importieren',
   importDone: 'Importiert',
   mcpEnable: 'MCP-Server aktivieren',

@@ -2,6 +2,44 @@
 
 ## Unreleased
 
+### The maintenance tick can finish, and says so when it cannot
+
+`/api/cron` is the one route this software tells every operator to schedule, and the one
+route that can legitimately run for minutes: it encodes image variants with sharp. `Bun.serve`
+closes a request that has produced nothing for its **default ten seconds**, and that default
+was nowhere in this repository. A tick sweeping a backlog was cut off mid-encode and answered
+`curl: (52) Empty reply from server` — which reads like a dead process rather than a working
+one being interrupted, and left the rest of the backlog looking like a bug that was never
+there.
+
+Two changes, and the first is the real one. The sweep now bounds itself by **time** rather
+than by count: it stops after six seconds and leaves the rest for the next tick, which is
+idempotent by construction. A count would need tuning per box and per image size; a deadline
+tunes itself. And `idleTimeout` is now stated out loud in `src/index.ts` at 120 seconds, so a
+backup export or a large range request is not racing a number nobody chose.
+
+### A Permissions-Policy, and a short one on purpose
+
+Every feature named in it is one nothing here asks for and no proxy in front would want to
+allow more of: camera, microphone, geolocation, payment, USB, MIDI, the motion sensors, and
+Chrome's Topics API. What is **absent** matters as much. `fullscreen`, `autoplay`,
+`picture-in-picture` and `clipboard-write` are left at their defaults, because a browser
+combines policies by taking the most restrictive — naming `fullscreen` here would quietly
+take the fullscreen button off an owner's embedded YouTube player, and naming
+`clipboard-write` would break the copy button on every code block.
+
+The recommended nginx block in the self-hosting guide stops repeating the three headers the
+application already sends. It was telling operators to send each one twice.
+
+### Small things
+
+- **An `apple-touch-icon`**, which was the only thing missing from the icon set: nothing else
+  on the page points iOS at the site's own mark, and Safari has only read manifest icons
+  since 16.4. `rel="icon"` stays conditional deliberately — `/favicon.ico` is the path a
+  browser asks for anyway, so naming it repeats what was going to happen.
+- **The import button said "WordPress export (.xml)"** while the file input beside it accepted
+  four formats and the help text described all four. It names them now.
+
 ### The Auto schema switch does something now
 
 It shipped in the settings shape, defaulted to ON, and told the owner in plain words that it
