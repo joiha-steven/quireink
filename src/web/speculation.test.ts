@@ -75,11 +75,14 @@ describe('the header', () => {
     expect(res.headers.get('speculation-rules')).toBeNull()
   })
 
-  // The whole point of the header form: the public site still ships no inline script, so
-  // the recommended CSP can keep refusing `unsafe-inline`.
-  it('adds no inline script to the page', async () => {
+  // The whole point of the header form: the public site still ships no inline script a
+  // browser would RUN, so the recommended CSP can keep refusing `unsafe-inline`. The
+  // structured-data block is not one — `script-src` governs execution, and a
+  // `type="application/ld+json"` block is never executed. Measured in a real browser under
+  // `script-src 'self'` on 2026-08-25: parsed fine, console clean.
+  it('adds no executable inline script to the page', async () => {
     const html = await (await app.request('/a-post')).text()
     expect(html).not.toContain('speculationrules')
-    expect(html).not.toMatch(/<script(?![^>]*\ssrc=)[^>]*>/)
+    expect(html).not.toMatch(/<script(?![^>]*(?:\ssrc=|\stype="application\/ld\+json"))[^>]*>/)
   })
 })

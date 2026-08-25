@@ -51,6 +51,12 @@ export async function handleSearchPage(c: Context): Promise<Response> {
 </form>`
   return c.html(await listingPage({
     title: `${tx.search} · ${settings.title}`,
+    // Out of the index, and this is the one page on the site that has to say so: `/search?q=`
+    // mints a URL per query, so a crawler that follows the form finds an unbounded set of
+    // near-duplicate listings. There is no canonical here either (`canonicalPath` is left
+    // undefined on purpose), and a page with neither was an invitation.
+    noindex: true,
+    description: tx.searchHint,
     body: form + body,
   }))
 }

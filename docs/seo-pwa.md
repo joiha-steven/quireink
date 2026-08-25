@@ -33,9 +33,34 @@
   site shell, and `src/web/cache-headers.ts` refuses a shared cache anything that is not a
   200, so a 404 never outlives the reason for it.
 
+- **JSON-LD, when `seo.autoSchema` is on** (`src/render/schema.ts`). Two shapes and no more,
+  matching what the setting promises the owner: `WebSite` on the home page — with a
+  `SearchAction` only when search is switched on, because describing an endpoint that answers
+  404 is worse than describing none — and `BlogPosting` on each post, carrying the real
+  `dateModified` and only when there IS one. A static page gets none: a `WebPage` object that
+  restates the title and the canonical adds no fact the tags beside it did not. No `author`,
+  because this software has no owner-name setting and the only name on record is
+  `users.username`, which is half a credential; `publisher` names the site instead. Absolute
+  URLs or nothing, the same rule as the canonical.
+  **This is the setting that was in the shape, defaulted to `true`, described in the admin,
+  and read by nothing** until 2026-08-25 — an owner looking at the switch saw a feature that
+  was on. Wiring it was the fix; hiding it would also have been one.
+- **A page that should not be indexed says so.** `Head.robots` prints
+  `<meta name="robots">`, and two pages use it: sign-in, and `/search`. The results page mints
+  a URL per query and had no canonical either, so a crawler following the form found an
+  unbounded set of near-duplicate listings with nothing telling it to stop. `noindex, follow`
+  rather than `noindex, none`: the links on that page are the real posts.
+- **A listing describes itself.** `listingPage` takes a `description`; the default is
+  `settings.description` and for the home page that is exactly right, because it IS the site.
+  Everywhere else it was a bug wearing a default — search, every tag, every category, every
+  series and the 404 shipped one identical sentence. Term pages and series pages now build
+  theirs from `metaTerm` / `metaSeries` in `src/locales/`, and the 404 and search use the
+  strings already on the page. They are SHORT by SEO convention's 120-160, and deliberately:
+  reaching 120 on a tag page means inventing words about it, and a padded sentence that is
+  the same shape on ninety pages is the problem this fixed, not the cure.
+
 **Not carried over yet** (tracked in [`spec/07-parity-public.md`](spec/07-parity-public.md), do not
-document these as present): JSON-LD structured data — `seo.autoSchema` is in the settings
-shape and nothing reads it — the `/page/1` → `/` redirect, the `sitemaps.xml` → `/sitemap.xml`
+document these as present): the `/page/1` → `/` redirect, the `sitemaps.xml` → `/sitemap.xml`
 redirect, category and tag entries and per-post `<image:image>` entries in the sitemap, and
 the three-group crawler policy (search / AI / scraper bot lists) the frozen tree's `robots.ts`
 carried.

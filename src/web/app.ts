@@ -163,6 +163,11 @@ export function createApp(): Hono {
       if (!built) return null
       return listingPage({
         title: `${name} · ${settings.title}`,
+        // Its own sentence. Every term page used to inherit the site description, so a
+        // hundred tag pages shipped one identical snippet and Google had nothing to tell
+        // them apart with.
+        description: t(settings.language).metaTerm
+          .replace('{site}', settings.title).replace('{name}', name),
         body: built.body,
         css: built.css,
         canonicalPath: `/${kind}/${slug}`,
@@ -195,6 +200,8 @@ export function createApp(): Hono {
       // timeline — its order is the owner's, not the calendar's.
       return listingPage({
         title: `${name} · ${settings.title}`,
+        description: t(settings.language).metaSeries
+          .replace('{site}', settings.title).replace('{name}', name),
         body: renderListing({
           heading: `${escapeHtml(t(settings.language).seriesLabel)}: ${escapeHtml(name)}`,
           paged: { items: posts, page: 1, totalPages: 1 },

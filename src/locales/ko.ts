@@ -44,6 +44,8 @@ const ko = {
   pagerNewer: '최신',
   pagerOlder: '이전',
   pagerLabel: '페이지 매김',
+  metaTerm: '{site}에서 {name}(으)로 분류된 모든 글.',
+  metaSeries: '{name}: {site}의 시리즈, 읽어야 할 순서대로.',
   tocIndex: '목차',
   categoriesTitle: '카테고리',
   mostViewedTitle: '많이 본 글',

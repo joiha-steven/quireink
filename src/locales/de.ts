@@ -44,6 +44,8 @@ const de = {
   pagerNewer: 'Neuer',
   pagerOlder: 'Älter',
   pagerLabel: 'Seitennavigation',
+  metaTerm: 'Alle Beiträge auf {site}, die unter {name} stehen.',
+  metaSeries: '{name}: eine Reihe auf {site}, in der Reihenfolge, in der sie gelesen werden will.',
   tocIndex: 'Inhalt',
   categoriesTitle: 'Kategorien',
   mostViewedTitle: 'Meistgelesen',

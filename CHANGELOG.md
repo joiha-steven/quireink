@@ -2,6 +2,37 @@
 
 ## Unreleased
 
+### The Auto schema switch does something now
+
+It shipped in the settings shape, defaulted to ON, and told the owner in plain words that it
+"adds structured data for Google: WebSite on the home page, BlogPosting on each post". Nothing
+read it. `grep -rn 'ld+json' src/` returned nothing at all. The docs recorded the gap honestly;
+the switch in front of the owner did not, so it read as a feature that was working.
+
+It is wired. **`WebSite`** on the home page, carrying the sitelinks search box only when search
+is actually switched on — describing an endpoint that answers 404 is worse than describing
+none. **`BlogPosting`** on each post, with the real `dateModified` and only when the post was
+genuinely saved again, so nothing claims to have been edited on the day it appeared. A static
+page gets none: an object restating the title and the canonical tells a crawler nothing the
+tags beside it already did. No author, because there is no owner-name setting in this
+software and the only name on record is the sign-in username; the site is named as publisher
+instead. And no schema at all when `siteUrl` is unset — the same rule the canonical follows,
+because `http://localhost:3000` has reached production in a feed and a sitemap before.
+
+### Every listing describes itself
+
+Search, every tag, every category, every series and the 404 page all shipped **the same meta
+description**: the site's own one-line summary, which describes none of them. Four indexable
+page kinds, one identical snippet. Term and series pages now build their own from the six
+locales, and the 404 and search pages use the sentences already on them. The home page keeps
+the site description, because there it is the right answer.
+
+### A search results page is no longer an invitation to a crawler
+
+`/search?q=` mints a URL per query and carried no canonical and nothing else to stop an
+indexer either. It sends `noindex, follow` now — follow, because the links on that page are
+the real posts and there is no reason to waste them.
+
 ### Three repairs a screen reader notices, and a description that fits in the result
 
 Found by auditing the rendered pages against the [Front-End Checklist](https://frontendchecklist.io)

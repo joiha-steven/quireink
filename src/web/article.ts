@@ -22,6 +22,7 @@ import { PUBLIC_SHEET, scriptTag } from '@/web/assets'
 import { ogImageUrl } from '@/render/og'
 import { isPublicallyVisible, clampExcerpt, readingMinutes, toPlainText, wordCount } from '@/utils'
 import { renderDocument, pageStyles } from '@/web/layout'
+import { blogPostingSchema } from '@/render/schema'
 import { postInfoPanel, termLinks } from '@/web/post-info'
 
 import { escapeAttr, escapeHtml } from '@/utils'
@@ -286,7 +287,7 @@ export async function renderArticle(slug: string): Promise<string | null> {
         title: post?.metaTitle || item.title,
         featuredImage: post?.featuredImage,
         // The CARD's description, which is not the search snippet and should not be capped
-        // like one. `description` above is bounded by EXCERPT_MAX_CHARS (200) because a
+        // like one. `description` above is bounded by META_DESC_MAX (157) because a
         // meta description longer than that is truncated by the engine anyway; the card has
         // six lines of its own to fill, and a share preview that stops mid-thought after two
         // of them is the reason it looked thin. An AUTHORED meta description still wins --
@@ -295,6 +296,20 @@ export async function renderArticle(slug: string): Promise<string | null> {
         date: post ? formatDate(post.date, settings.language, settings.timezone) : undefined,
       }),
       ogType: post ? 'article' : 'website',
+      // Only a POST, and only when the owner has the setting on. A page (About, Colophon)
+      // gets none: a `WebPage` object restating the title and the canonical tells a crawler
+      // nothing the tags beside it did not already say.
+      jsonLd: post && settings.seo.autoSchema
+        ? blogPostingSchema(post, settings, site, {
+            description,
+            // The same card the OG tags point at, so the two never disagree about what the
+            // picture for this post is.
+            image: ogImageUrl(settings, site, {
+              title: post.metaTitle || item.title,
+              featuredImage: post.featuredImage,
+            }),
+          }) ?? undefined
+        : undefined,
       stylesheet: PUBLIC_SHEET,
     },
     pageStyles(settings),

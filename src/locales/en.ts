@@ -44,6 +44,8 @@ const en = {
   pagerNewer: 'Newer',
   pagerOlder: 'Older',
   pagerLabel: 'Pagination',
+  metaTerm: 'Every post on {site} filed under {name}.',
+  metaSeries: '{name}: a series on {site}, in the order it is meant to be read.',
   tocIndex: 'Contents',
   categoriesTitle: 'Categories',
   mostViewedTitle: 'Most viewed',
