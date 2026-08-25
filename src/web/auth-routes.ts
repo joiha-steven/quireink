@@ -223,6 +223,20 @@ export function rememberEnrolmentSecret(ticket: string, secret: string): void {
  * at the very next sign-in, which still asks for enrolment because `totp_secret` is null.
  * No new column, no new state, nothing to migrate: the prompt simply comes back.
  */
+/**
+ * Where a session that has just come through enrolment lands.
+ *
+ * `/setup/site` only while the site address is unset, which is the same signal the boot
+ * warning uses and the one thing that step exists to fix. An established owner who enrolled
+ * again — after a TOTP reset, say — has an address by then and goes straight to the admin,
+ * so re-enrolling never drags anybody back through setup. An explicit `next` always wins:
+ * somebody who followed a link to a particular page asked for that page.
+ */
+function firstRunNext(settings: SiteSettings, next: string): string {
+  if (next !== '') return safeNext(next)
+  return siteUrlIsUnset(settings) ? '/setup/site' : '/admin'
+}
+
 export function enrolmentSkippable(settings: SiteSettings): boolean {
   return siteUrlIsUnset(settings)
 }
@@ -305,7 +319,7 @@ export async function handleEnrolDone(c: Context): Promise<Response> {
   if (!wantsHtml) return new Response(JSON.stringify({ status: 'ok' }), {
     headers: { ...Object.fromEntries(headers), 'content-type': 'application/json; charset=utf-8' },
   })
-  headers.set('location', safeNext(values.next))
+  headers.set('location', firstRunNext(settings, values.next))
   return new Response(null, { status: 303, headers })
 }
 
@@ -346,7 +360,7 @@ export async function handleEnrolSkip(c: Context): Promise<Response> {
   if (!wantsHtml) return new Response(JSON.stringify({ status: 'ok' }), {
     headers: { ...Object.fromEntries(headers), 'content-type': 'application/json; charset=utf-8' },
   })
-  headers.set('location', safeNext(values.next))
+  headers.set('location', firstRunNext(settings, values.next))
   return new Response(null, { status: 303, headers })
 }
 

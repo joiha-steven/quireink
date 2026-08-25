@@ -67,6 +67,29 @@ function otpPaste(): void {
   })
 }
 
+/**
+ * Fill the time zone on the first-run site step, from the one place that knows it.
+ *
+ * The server cannot: a page is rendered once and cached, so it would be guessing from
+ * whoever asked first. Asking the owner to pick their own zone out of four hundred IANA
+ * names is a worse question than not asking. The browser has the answer already.
+ *
+ * Only when the field is EMPTY. A blog that already has a zone set has an owner who chose
+ * it, possibly deliberately different from the machine they happen to be sitting at, and
+ * overwriting that would be the island deciding something it was not asked to decide.
+ */
+function timezone(): void {
+  const input = document.querySelector<HTMLInputElement>('input[data-tz]')
+  if (input === null || input.value !== '') return
+  try {
+    input.value = Intl.DateTimeFormat().resolvedOptions().timeZone ?? ''
+  } catch {
+    // An engine without a full ICU build has no zone to give. The field stays empty and
+    // typeable, which is what it was before this function existed.
+  }
+}
+
 reveal()
 capsLock()
 otpPaste()
+timezone()

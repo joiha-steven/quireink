@@ -55,13 +55,14 @@ body{margin:0;background:var(--c-bg);color:var(--c-text);font-family:var(--font-
 .login-form label{margin:1rem 0 .35rem;font-size:.8125rem;font-weight:500;color:var(--c-heading)}
 /* first-of-type, not first-child: the hidden ticket and next fields sit ahead of it. */
 .login-form>label:first-of-type{margin-top:0}
-/* The email type joined the list when the claim form arrived. Naming the types rather
-   than using a bare input selector is deliberate — the checkbox on the recovery-codes
-   screen must not get a text field's box — but it means a NEW type is invisible until
-   somebody opens the page, which is exactly how the claim form's email field first
-   rendered, wearing the browser's default border beside two filled siblings. */
-.login-form input[type=text],.login-form input[type=password],
-.login-form input[type=email]{
+/* Every input EXCEPT the checkbox, rather than a list of the types that exist today.
+   The list was the original design and the reason was sound — the checkbox on the
+   recovery-codes screen must not be given a text field's box — but a list means each new
+   type is invisible until somebody opens the page. It happened twice in one afternoon: the
+   claim form's email field and then the setup form's url field both rendered wearing the
+   browser's default border beside two filled siblings, and neither a type-check nor a test
+   could see it. Excluding the one exception says the same thing and stays true. */
+.login-form input:not([type=checkbox]){
   width:100%;padding:.625rem .75rem;font:inherit;font-size:.9375rem;color:var(--c-text);
   background:var(--field);border:1px solid var(--c-rule);border-radius:8px;
   /* Literal, not var(--dur-fast), and checked rather than assumed: the sign-in page is served
@@ -121,6 +122,54 @@ body{margin:0;background:var(--c-bg);color:var(--c-text);font-family:var(--font-
 .login-linkish{background:none;border:0;padding:0;font:inherit;color:var(--c-link);
   text-decoration:none;cursor:pointer}
 .login-linkish:hover{text-decoration:underline}
+
+/* First run, step two: two drawings of a front page, side by side.
+   Bars and blocks rather than screenshots. The difference between a list and a composed
+   front page is coarse enough that a diagram carries it, and a screenshot would be a build
+   step, a cache and one more thing to keep in sync for a single screen. */
+.face-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin:.25rem 0 .25rem}
+@media (max-width:28rem){.face-grid{grid-template-columns:1fr}}
+.face-choice{display:block;padding:.7rem;border:1px solid var(--c-rule);border-radius:.5rem;
+  cursor:pointer;background:var(--c-bg)}
+.face-choice:hover{border-color:color-mix(in srgb, var(--c-text) 22%, var(--c-rule))}
+/* The radio is the mechanism and must stay reachable by keyboard, so it is moved off screen
+   rather than display:none — which would take it out of the tab order and out of the
+   accessibility tree with it. */
+.face-choice input{position:absolute;opacity:0;pointer-events:none}
+.face-choice:has(input:checked){border-color:var(--c-accent);
+  box-shadow:0 0 0 1px var(--c-accent)}
+.face-choice:has(input:focus-visible){outline:2px solid var(--c-accent);outline-offset:2px}
+.face-art{display:flex;flex-direction:column;gap:.28rem;height:4.6rem;padding:.45rem;
+  border-radius:.3rem;background:color-mix(in srgb, var(--c-text) 4%, transparent)}
+.face-art span{display:block;background:color-mix(in srgb, var(--c-text) 20%, transparent);
+  border-radius:.1rem}
+.face-row{height:.34rem}
+.face-wide{width:62%}
+/* Scoped through the parent class, and it is not decoration. The rule two lines up is
+   (0,1,1) and a bare face-cols is (0,1,0), so display:block won and the flex row never
+   happened: the three columns stacked, each as wide as the card, and the newspaper drawing
+   rendered as one grey slab that looked nothing like a newspaper. Measured rather than
+   noticed - the boxes came back 118x21 each inside a card 110px wide.
+   (No backticks anywhere in this file. It is one template literal; see the top.) */
+.face-art .face-item{display:flex;flex-direction:column;gap:.18rem;background:none}
+.face-line{height:.22rem}
+.face-short{width:45%}
+.face-lead{height:1.5rem}
+.face-art .face-cols{display:flex;flex-direction:row;gap:.28rem;background:none;flex:1}
+.face-art .face-cols>span{flex:1 1 0;height:100%}
+.face-name{display:block;margin:.5rem 0 .1rem;font-weight:600;font-size:.9rem}
+.face-hint{display:block;font-size:.8rem;color:var(--c-meta);line-height:1.45}
+/* The select repeats the input's box EXACTLY rather than approximating it. Written first
+   with its own rounded rem values, it came out 7.2px where its neighbours were 8px, padded
+   9.6/11.2 against their 10/12, and on a different background formula — four fields in a
+   column, one of them almost right, which reads as a mistake rather than as a choice.
+   Same tokens, same numbers, same focus ring as the inputs above. */
+.login-form select{width:100%;padding:.625rem .75rem;font:inherit;font-size:.9375rem;
+  color:var(--c-text);background:var(--field);border:1px solid var(--c-rule);
+  border-radius:8px;transition:border-color .12s, box-shadow .12s}
+.login-form select:hover{border-color:color-mix(in srgb, var(--c-text) 22%, var(--c-rule))}
+.login-form select:focus{outline:none;border-color:var(--c-accent);
+  box-shadow:0 0 0 3px color-mix(in srgb, var(--c-accent) 16%, transparent)}
 .login-back{font-size:.8125rem;color:var(--c-meta);text-decoration:none}
 .login-back:hover{color:var(--c-text)}
 

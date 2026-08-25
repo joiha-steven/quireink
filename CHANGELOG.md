@@ -32,6 +32,27 @@ And a browser visitor to an unclaimed blog is finally told so. Before this, a fr
 answered a sign-in form for an account that could not exist — indistinguishable from having
 forgotten the password to a blog you never made.
 
+### And then the two questions worth interrupting somebody for
+
+Setup does not end at the account. Two more screens, and the list of what is NOT on them is
+the design: palettes, fonts, book mode and the feature switches are all absent, because
+nobody can judge them before the site has a single post on it. Asking is asking a person to
+pick the binding for a book they have not written, and a choice made blind is worse than a
+default — a default still reads as "not decided yet", while something you clicked reads as
+decided. Those stay on the dashboard's re-openable first-five-minutes card, which is the
+right shape for them.
+
+What is left earns its place on one of two grounds. **The site address and the time zone are
+wrong by default and silent about it**: one makes every feed, sitemap, share card and
+newsletter link say `localhost:3000`, the other makes every date on the site read in the
+server's timezone rather than yours. The browser knows both, so both arrive filled in — the
+address from the one you are standing on, the zone from `Intl`. **And the front page** is the
+one honest coin-flip, because it decides what `/` even is; it is SHOWN as two small drawings
+rather than described, since a sentence is the wrong medium for a choice about a look.
+
+The last screen ends in the editor, not the dashboard. The first post is the reason anybody
+installed this.
+
 ### "Set this up later", but only where later is honest
 
 Two-factor stays mandatory ([ADR 0007](docs/decisions/0007-self-hosted-password-totp-auth.md)),
@@ -47,6 +68,15 @@ rendered is not a check.
 
 ### Smaller things
 
+- **Two fields wore the browser's default border** beside their filled siblings, one after
+  the other, because the sign-in stylesheet named input types one by one and each new type
+  was invisible until somebody opened the page. It excludes the checkbox instead, which says
+  the same thing and stays true. The language select was rebuilt on the same numbers as the
+  inputs rather than its own rounded ones: four fields in a column, one almost right, reads
+  as a mistake rather than a choice.
+- **The newspaper drawing rendered as a grey slab.** Its three columns lost the flex row to a
+  more specific rule above them and stacked, each as wide as the card. Found by measuring the
+  boxes, not by looking: 118x21 apiece inside a card 110px wide.
 - **The tour refused to start when nothing was running.** Its port check matched *any* socket
   touching 3399, including a browser's own closed connections to a dev server already stopped
   — so it reported the port busy and sent whoever read it hunting for a server that was not

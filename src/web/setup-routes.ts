@@ -23,6 +23,10 @@ import { qrSvg } from '@/render/qr'
 import { claimScreen, enrolScreen, unclaimedScreen, fillTemplate } from '@/web/login-page'
 import { rememberEnrolmentSecret, enrolmentSkippable } from '@/web/auth-routes'
 import { fail, json } from '@/web/api'
+import { ownerRouter, type OwnerRouter } from '@/web/guard'
+import { saveSettings } from '@/content/settings'
+import { isSiteLang } from '@/locales/langs'
+import { siteStepScreen, faceStepScreen } from '@/web/setup-page'
 
 const html = (body: string, status = 200): Response =>
   new Response(body, { status, headers: { 'content-type': 'text/html; charset=utf-8' } })
@@ -143,4 +147,67 @@ export function setupBanner(base: string): string {
     '  The link is good until this service restarts, and once only.',
     '',
   ].join('\n')
+}
+
+
+/**
+ * The two questions after the account, on the OWNER-GATED router (Invariant 4).
+ *
+ * They are ordinary settings writes made by somebody who is already signed in, so they are
+ * protected because of where they are registered rather than by anything inside them. That
+ * is also why they are not in the public list in `routes-guarded.ts`: they do not belong
+ * there and never did.
+ *
+ * Nothing forces a first-run owner through these — `handleEnrolDone` only sends them here
+ * while the site address is unset. Reaching them later is harmless: they are two small
+ * settings forms holding what is already saved.
+ */
+export function setupWizardRoutes(): OwnerRouter {
+  const router = ownerRouter()
+
+  router.get('/setup/site', async (c) => {
+    // The address the owner is ACTUALLY on, offered as the answer. `resolveSiteUrl` would
+    // hand back its `localhost:3000` fallback here, which is the exact wrong answer and the
+    // one this step exists to stop being saved by accident.
+    //
+    // From the request URL rather than the `Host` header: Hono has already reconciled the
+    // two, and a synthetic request (a test, an internal call) has a URL when it has no
+    // header. `x-forwarded-proto` still wins for the scheme, because behind a proxy the
+    // origin speaks http to something the reader reached over https, and saving `http://`
+    // here would put it in every feed and every share card.
+    const url = new URL(c.req.url)
+    const proto = c.req.header('x-forwarded-proto') ?? url.protocol.replace(':', '')
+    const address = url.host === '' ? '' : `${proto}://${url.host}`
+    return html(siteStepScreen(await getSettings(), { address }))
+  })
+
+  router.post('/setup/site', async (c) => {
+    const form = await c.req.parseBody().catch(() => ({})) as Record<string, unknown>
+    const get = (k: string): string =>
+      typeof form[k] === 'string' ? (form[k] as string).trim() : ''
+    const language = get('language')
+    await saveSettings({
+      title: get('title') || undefined,
+      // The sanitizer keeps the current value for anything it does not recognise, so a
+      // hand-typed zone that is not a real IANA name cannot wedge the site.
+      timezone: get('timezone'),
+      siteUrl: get('siteUrl'),
+      ...(isSiteLang(language) ? { language } : {}),
+    })
+    return c.redirect('/setup/face', 303)
+  })
+
+  router.get('/setup/face', async () => html(faceStepScreen(await getSettings())))
+
+  router.post('/setup/face', async (c) => {
+    const form = await c.req.parseBody().catch(() => ({})) as Record<string, unknown>
+    const mode = form.mode === 'front' ? 'front' : 'list'
+    const current = await getSettings()
+    await saveSettings({ home: { ...current.home, mode } })
+    // Into the editor, not the dashboard. The last thing setup should do is hand somebody a
+    // control panel; the first post is the reason they installed this.
+    return c.redirect('/admin/editor', 303)
+  })
+
+  return router
 }
