@@ -198,8 +198,14 @@ shows does not say so.
 sudo -u quire bash -lc 'cd /home/quire/app && DATA_DIR=/var/lib/quire/data bun run user create --username you --email you@example.com'
 ```
 
-It prints a TOTP secret and ten recovery codes **once**. TOTP is required, not optional.
-Store the recovery codes somewhere that is not the machine.
+It asks for a password and prints nothing else. **Two-factor enrolment happens in the
+BROWSER, at first sign-in**: the app shows a QR code, then the ten recovery codes, once. The
+admin is unreachable until that is done, so keep the browser handy. Store the recovery codes
+somewhere that is not the machine.
+
+*(This paragraph described the CLI printing the secret and the codes itself. It stopped doing
+that and the guide did not follow, so anybody running the command saw a bare `✓ created` and
+had every reason to think it had half-failed.)*
 
 ⚠ Set `DATA_DIR` when running any CLI command. Without it the CLI opens `./data`, which is
 a *different, empty* database, and it will cheerfully tell you there are no accounts.
