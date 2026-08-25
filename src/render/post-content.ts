@@ -106,6 +106,18 @@ marked.use({
       const id = slug ? ` id="${slug}"` : ''
       return `<h${level}${id}>${inner}</h${level}>\n`
     },
+    // A column header that SAYS it is one. marked prints a bare `<th>`, which a screen
+    // reader can still associate by position in a simple table — `scope="col"` is the thing
+    // WCAG 1.3.1 asks for by name, and it is the only association a complex table gets at
+    // all. Everything else about the cell is marked's own output, attribute order included,
+    // so the golden diff is exactly this one attribute and nothing else.
+    tablecell(token: Tokens.TableCell) {
+      const inner = this.parser.parseInline(token.tokens)
+      const tag = token.header ? 'th' : 'td'
+      const scope = token.header ? ' scope="col"' : ''
+      const align = token.align ? ` align="${token.align}"` : ''
+      return `<${tag}${scope}${align}>${inner}</${tag}>\n`
+    },
     // Sanitize link hrefs (drop javascript:/data:/vbscript:); marked no longer does.
     link(token: Tokens.Link) {
       const inner = this.parser.parseInline(token.tokens)

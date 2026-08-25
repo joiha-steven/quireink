@@ -26,11 +26,18 @@ import { postInfoPanel, termLinks } from '@/web/post-info'
 
 import { escapeAttr, escapeHtml } from '@/utils'
 
-/** How much of a post the OG card carries. Six lines at the card's body size; the meta
- *  description stops at 200 because a search engine truncates there, which is a different job. */
-/** What a search engine will actually print. Longer is not wrong, it is just never shown. */
-const META_DESC_MAX = 200
+/** What a search engine will actually print, and the whole reason this number exists.
+ *  It was 200 under a comment that said "a search engine truncates there" — and eleven lines
+ *  further down, a second comment said the wall is "~160". Both could not be right, and the
+ *  one at 200 was the one the constant followed, so five of ten pages shipped a description
+ *  whose tail was written and never read (measured 2026-08-25). 160 is where Google stops;
+ *  `clampExcerpt` cuts at the last whole word before this and then ADDS a three-character
+ *  ellipsis, so the bound is 157 and not 160: at 160 the printed string measured 161-162,
+ *  which is over the wall by exactly the punctuation that says it was cut. */
+const META_DESC_MAX = 157
 
+/** How much of a post the share card carries: six lines at the card's body size. A card is
+ *  read whole, so it is not bound by where a search result stops. */
 const OG_DESC_MAX = 320
 
 /**
@@ -211,6 +218,7 @@ export async function renderArticle(slug: string): Promise<string | null> {
   // Clamped again on the way OUT, and this is the narrower need `EXCERPT_MAX_CHARS` talks
   // about: an excerpt is stored at up to 280 so the front page's lead standfirst has
   // something to print, and a search engine truncates a description past ~160 regardless.
+  // That sentence was true while the constant above said 200. They agree now.
   // Same shape as `OG_DESC_MAX` below — each surface states its own bound, and none of them
   // reaches back to shorten what everybody else gets.
   const description = clampExcerpt(

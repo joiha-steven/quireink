@@ -43,6 +43,7 @@ const en = {
   searchResults: '{n} results for "{q}"',
   pagerNewer: 'Newer',
   pagerOlder: 'Older',
+  pagerLabel: 'Pagination',
   tocIndex: 'Contents',
   categoriesTitle: 'Categories',
   mostViewedTitle: 'Most viewed',

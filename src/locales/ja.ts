@@ -43,6 +43,7 @@ const ja = {
   searchResults: '「{q}」の検索結果 {n} 件',
   pagerNewer: '新しい記事',
   pagerOlder: '古い記事',
+  pagerLabel: 'ページ送り',
   tocIndex: '目次',
   categoriesTitle: 'カテゴリー',
   mostViewedTitle: 'よく読まれている',

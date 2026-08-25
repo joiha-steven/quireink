@@ -43,6 +43,7 @@ const vi = {
   searchResults: '{n} kết quả cho "{q}"',
   pagerNewer: 'Mới hơn',
   pagerOlder: 'Cũ hơn',
+  pagerLabel: 'Phân trang',
   tocIndex: 'Mục lục',
   categoriesTitle: 'Danh mục',
   mostViewedTitle: 'Xem nhiều nhất',

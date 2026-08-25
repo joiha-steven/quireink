@@ -43,6 +43,7 @@ const zh = {
   searchResults: '“{q}” 的 {n} 条结果',
   pagerNewer: '较新',
   pagerOlder: '较旧',
+  pagerLabel: '分页导航',
   tocIndex: '目录',
   categoriesTitle: '分类',
   mostViewedTitle: '最多阅读',
