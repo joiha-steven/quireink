@@ -194,18 +194,40 @@ shows does not say so.
 
 ## 6. Your account
 
+**Read the log.** On a blog nobody owns yet, every start prints the link that claims it:
+
+```
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │  This blog has no owner yet. Open the link below to claim it.           │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+  https://example.com/setup?token=…
+```
+
+`journalctl -u quire | grep -A4 'no owner'`, or `docker logs quire` for a container. Open it
+and the rest is a browser: username, email, password, then the QR code for an authenticator
+and the ten recovery codes, once. **Store the recovery codes somewhere that is not the
+machine.**
+
+The token lives in memory, so a restart mints a new one and the old line stops being a
+secret. Reading it still proves you have the machine, which is the whole reason setup is not
+simply a page anyone could find: between first boot and the owner typing a password there
+would otherwise be a window, and whoever found the URL first would own the blog.
+
+Prefer the terminal, or automating it? The CLI still does the same job:
+
 ```bash
 sudo -u quire bash -lc 'cd /home/quire/app && DATA_DIR=/var/lib/quire/data bun run user create --username you --email you@example.com'
 ```
 
-It asks for a password and prints nothing else. **Two-factor enrolment happens in the
-BROWSER, at first sign-in**: the app shows a QR code, then the ten recovery codes, once. The
-admin is unreachable until that is done, so keep the browser handy. Store the recovery codes
-somewhere that is not the machine.
+It asks for a password and prints nothing else — two-factor enrolment happens in the browser
+at first sign-in either way, and the admin is unreachable until it is done.
 
-*(This paragraph described the CLI printing the secret and the codes itself. It stopped doing
-that and the guide did not follow, so anybody running the command saw a bare `✓ created` and
-had every reason to think it had half-failed.)*
+**Trying it on your own machine?** While no site address is set, the enrolment screen offers
+*"Set this up later"*. Before anyone has enrolled, two-factor protects nothing — whoever
+reaches that screen with the password enrols their own authenticator — so skipping on a
+laptop widens nothing. Set an address and the way out disappears at the next sign-in, which
+asks for enrolment again.
 
 ⚠ Set `DATA_DIR` when running any CLI command. Without it the CLI opens `./data`, which is
 a *different, empty* database, and it will cheerfully tell you there are no accounts.

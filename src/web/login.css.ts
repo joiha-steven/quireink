@@ -55,7 +55,13 @@ body{margin:0;background:var(--c-bg);color:var(--c-text);font-family:var(--font-
 .login-form label{margin:1rem 0 .35rem;font-size:.8125rem;font-weight:500;color:var(--c-heading)}
 /* first-of-type, not first-child: the hidden ticket and next fields sit ahead of it. */
 .login-form>label:first-of-type{margin-top:0}
-.login-form input[type=text],.login-form input[type=password]{
+/* The email type joined the list when the claim form arrived. Naming the types rather
+   than using a bare input selector is deliberate — the checkbox on the recovery-codes
+   screen must not get a text field's box — but it means a NEW type is invisible until
+   somebody opens the page, which is exactly how the claim form's email field first
+   rendered, wearing the browser's default border beside two filled siblings. */
+.login-form input[type=text],.login-form input[type=password],
+.login-form input[type=email]{
   width:100%;padding:.625rem .75rem;font:inherit;font-size:.9375rem;color:var(--c-text);
   background:var(--field);border:1px solid var(--c-rule);border-radius:8px;
   /* Literal, not var(--dur-fast), and checked rather than assumed: the sign-in page is served
@@ -109,6 +115,12 @@ body{margin:0;background:var(--c-bg);color:var(--c-text);font-family:var(--font-
 .login-alt{margin:1.25rem 0 0;font-size:.875rem;text-align:center}
 .login-alt a{color:var(--c-link);text-decoration:none}
 .login-alt a:hover{text-decoration:underline}
+/* A button that has to read as a way out rather than as the answer. It is a real <button>
+   because it POSTs — a link cannot — but it must not look like the submit above it, or the
+   screen offers two equal doors and the safe one stops being obvious. */
+.login-linkish{background:none;border:0;padding:0;font:inherit;color:var(--c-link);
+  text-decoration:none;cursor:pointer}
+.login-linkish:hover{text-decoration:underline}
 .login-back{font-size:.8125rem;color:var(--c-meta);text-decoration:none}
 .login-back:hover{color:var(--c-text)}
 

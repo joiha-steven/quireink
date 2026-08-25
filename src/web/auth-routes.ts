@@ -9,8 +9,9 @@
 // owner — so each is listed in `scripts/checks/routes-guarded.ts` with its reason.
 
 import type { Context } from 'hono'
+import type { SiteSettings } from '@/types'
 import { getCookie } from 'hono/cookie'
-import { getSettings } from '@/content/settings'
+import { getSettings, siteUrlIsUnset } from '@/content/settings'
 import { adminT } from '@/i18n/admin-i18n'
 import { clientIp } from '@/server/rate-limit'
 import { logAuthEvent } from '@/server/activity'
@@ -134,6 +135,7 @@ export async function handleLogin(c: Context): Promise<Response> {
       ticket: result.ticket,
       secret,
       qr: qrSvg(otpauthUri(secret, values.username.trim())),
+      skippable: enrolmentSkippable(settings),
     }))
   }
 
@@ -194,6 +196,36 @@ export async function handleTwoFactor(c: Context): Promise<Response> {
  * finished setting up, and the only way out of that is the command line.
  */
 const pendingSecrets = new Map<string, string>()
+
+/**
+ * `setup-routes.ts` needs to put a secret here, because claiming an install walks straight
+ * into enrolment without passing through `/api/auth/login` first. Exported rather than
+ * moved: this map and the ticket it is keyed by belong to the enrolment flow, and the flow
+ * lives here.
+ */
+export function rememberEnrolmentSecret(ticket: string, secret: string): void {
+  pendingSecrets.set(ticket, secret)
+}
+
+/**
+ * Whether the "set this up later" way out is offered — the middle path on 2FA, and the
+ * reasoning is the whole of it.
+ *
+ * [ADR 0007](../../docs/decisions/0007-self-hosted-password-totp-auth.md) made TOTP
+ * mandatory and that stands for any blog with readers. But **before anyone has enrolled,
+ * two-factor protects nothing**: whoever reaches the enrolment screen first with the
+ * password enrols their own authenticator, so refusing to let the owner in without it
+ * closes no door that was open. What it does do is make `docker run` on a laptop, to look
+ * at the thing for ten minutes, require a phone.
+ *
+ * So the gate is the SITE ADDRESS, not the account: no public address means nobody is
+ * reading this blog yet. Set one — which is a step of setup itself — and the button is gone
+ * at the very next sign-in, which still asks for enrolment because `totp_secret` is null.
+ * No new column, no new state, nothing to migrate: the prompt simply comes back.
+ */
+export function enrolmentSkippable(settings: SiteSettings): boolean {
+  return siteUrlIsUnset(settings)
+}
 /** Recovery codes shown but not yet acknowledged, keyed the same way. */
 const pendingCodes = new Map<string, string[]>()
 
@@ -268,6 +300,47 @@ export async function handleEnrolDone(c: Context): Promise<Response> {
   })
   pendingCodes.delete(values.ticket)
   if (session === null) return refuse()
+
+  const headers = new Headers({ 'set-cookie': sessionCookie(session.token, session.expiresAt) })
+  if (!wantsHtml) return new Response(JSON.stringify({ status: 'ok' }), {
+    headers: { ...Object.fromEntries(headers), 'content-type': 'application/json; charset=utf-8' },
+  })
+  headers.set('location', safeNext(values.next))
+  return new Response(null, { status: 303, headers })
+}
+
+/**
+ * `POST /api/auth/enrol/skip`: in without an authenticator, once, and only on a blog with
+ * no public address.
+ *
+ * The gate is checked HERE and not merely hidden in the template. A button that is not
+ * rendered is not a check — the route is reachable by anyone who can read the HTML of a
+ * different install, and this one has to refuse on its own.
+ *
+ * Nothing is written. `totp_secret` stays null, so the very next sign-in returns
+ * `need-enrolment` and asks again — which is the design, not a gap: "later" has to keep
+ * meaning later, or it quietly means never.
+ */
+export async function handleEnrolSkip(c: Context): Promise<Response> {
+  const { values, wantsHtml } = await readFields(c, ['ticket', 'next'])
+  const settings = await getSettings()
+  const s = adminT(settings.language)
+
+  const refuse = (): Response => {
+    if (!wantsHtml) return fail(c, s.authRestart, 401)
+    return html(passwordScreen(settings, { error: s.authRestart }), 401)
+  }
+
+  if (!enrolmentSkippable(settings)) return refuse()
+  if (pendingUser(values.ticket) === null) return refuse()
+
+  const session = completeEnrolment(values.ticket, {
+    ip: clientIp(c),
+    userAgent: c.req.header('user-agent'),
+  })
+  pendingSecrets.delete(values.ticket)
+  if (session === null) return refuse()
+  logAuthEvent('auth.totp.deferred', 'no public site address')
 
   const headers = new Headers({ 'set-cookie': sessionCookie(session.token, session.expiresAt) })
   if (!wantsHtml) return new Response(JSON.stringify({ status: 'ok' }), {

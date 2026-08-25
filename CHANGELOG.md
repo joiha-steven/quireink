@@ -2,6 +2,59 @@
 
 ## Unreleased
 
+### Setting up a blog no longer needs a terminal
+
+Everything after the account was already in the browser — the QR code, the recovery codes —
+and the account itself was a shell command. That one step is where a person on a NAS, on a
+PaaS, or on somebody else's Docker host gave up.
+
+Now every start of an unclaimed blog prints the link that claims it:
+
+```
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │  This blog has no owner yet. Open the link below to claim it.           │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+  https://example.com/setup?token=…
+```
+
+Open it and the rest is a browser: username, email, password, then straight into two-factor
+without being asked for that password a second time.
+
+**The shell was never an oversight — it was the proof**, and the proof is kept. Whoever can
+read the log has the machine, so the account they make is theirs by definition. A plain
+"create the owner" page on the open web throws that away: between `docker compose up` and the
+owner typing a password there is a window, and whoever finds the URL first owns the blog. The
+token lives in memory only, so a restart mints a new one and the old line in the log stops
+being a secret. `/setup` answers 404 the moment an account exists.
+
+And a browser visitor to an unclaimed blog is finally told so. Before this, a fresh install
+answered a sign-in form for an account that could not exist — indistinguishable from having
+forgotten the password to a blog you never made.
+
+### "Set this up later", but only where later is honest
+
+Two-factor stays mandatory ([ADR 0007](docs/decisions/0007-self-hosted-password-totp-auth.md)),
+with one opening: while a blog has **no public address**, the enrolment screen offers a way
+past it. The reasoning is narrow on purpose. Before anyone has enrolled, two-factor protects
+nothing — whoever reaches that screen with the password enrols their own authenticator — so
+skipping on a laptop you are trying the software on widens no door that was shut. Setting an
+address takes the offer away, and because nothing is written, the next sign-in asks for
+enrolment again. Later keeps meaning later.
+
+The route refuses on its own, not just when the button is missing: a button that is not
+rendered is not a check.
+
+### Smaller things
+
+- **The tour refused to start when nothing was running.** Its port check matched *any* socket
+  touching 3399, including a browser's own closed connections to a dev server already stopped
+  — so it reported the port busy and sent whoever read it hunting for a server that was not
+  there. It looks for a listener now.
+- The self-hosting guide's account section described a CLI that had stopped printing the TOTP
+  secret and the recovery codes. It now leads with the setup link, and says where the codes
+  really appear.
+
 ### The maintenance tick can finish, and says so when it cannot
 
 `/api/cron` is the one route this software tells every operator to schedule, and the one
