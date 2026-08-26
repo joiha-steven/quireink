@@ -266,4 +266,11 @@
   the running head goes silent rather than stammering three letters into the size buttons.
 - **The running head reserves room for the page count**, which lives in an absolutely positioned
   box and therefore takes part in no layout. Without the reservation the centred title ran under
-  it and printed as `owning your ow1 / 5`.
+  it and printed as `owning your ow1 / 5`. The reservation is 330px since 2026-08-27, when the
+  size pair grew a box.
+- **The chrome is three things, and is spaced to say so** (2026-08-27, owner's report: "thiếu
+  trực quan, xấu vô cùng"). A− and A+ are ONE control and are drawn as one — a single hairline
+  around the pair with a rule between them, tinted with the page's own `--c-rule`. The page
+  count sits 18px away, and the close button 26px further, as a round target that fills under
+  the pointer. Before this they were four items at one weight, one colour and equal gaps, which
+  reads as a string of characters rather than as controls.
