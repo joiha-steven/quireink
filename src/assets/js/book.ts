@@ -157,16 +157,17 @@ export function book(): void {
     }
     const prev = nav('book-prev', '‹', -1, 'bookModePrev')
     const fwd = nav('book-next', '›', 1, 'bookModeNext')
-    const close = el('button', { type: 'button', class: 'book-x', 'aria-label': label('bookModeClose') }, '✕')
+    const close = el('button', { type: 'button', class: 'book-x',
+      'aria-label': label('bookModeClose'), title: label('bookModeClose') }, '✕')
 
     // A− / A+. The current scale is read off the dialog's computed style, so the sheet's
     // default needs no copy here; a stored preference is applied as an inline override
     // before first measure, and every change re-measures — a bigger glyph is fewer lines
     // per column, which is a different page count.
     const smaller = el('button', { type: 'button', class: 'book-size book-smaller',
-      'aria-label': label('bookModeSmaller') }, 'A−')
+      'aria-label': label('bookModeSmaller'), title: label('bookModeSmaller') }, 'A−')
     const larger = el('button', { type: 'button', class: 'book-size book-larger',
-      'aria-label': label('bookModeLarger') }, 'A+')
+      'aria-label': label('bookModeLarger'), title: label('bookModeLarger') }, 'A+')
     const scaleOf = (): number => {
       const v = parseFloat(getComputedStyle(next).getPropertyValue('--type-scale'))
       return Number.isFinite(v) ? v : 1
@@ -225,7 +226,13 @@ export function book(): void {
     next.append(
       el('div', { class: 'book-chrome book-top' },
         el('span', { class: 'book-title' }, heading),
-        el('span', { class: 'book-topright' }, smaller, larger, page, close)),
+        el('span', { class: 'book-topright' },
+          // The two size buttons are ONE control and now look like it. Four evenly spaced
+          // glyphs in a row (A− A+ 1/3 ✕) read as a string of characters rather than as
+          // three separate things, which is what the owner saw: "thiếu trực quan".
+          el('span', { class: 'book-sizes' }, smaller, larger),
+          page,
+          close)),
       stage,
     )
     close.addEventListener('click', () => next.close())

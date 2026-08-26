@@ -84,26 +84,51 @@ body:has(.book-overlay[open]){overflow:hidden}
      under them. On a phone the running head printed over the counter: "owning your ow1 / 5".
      300px reserves the widest that box now gets (A− A+ joined it), and only bites on a
      narrow screen. */
-  max-width:min(70%,calc(100% - 300px),720px);
+  max-width:min(70%,calc(100% - 330px),720px);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* Three THINGS, not four glyphs: the size control, the page count, the way out. The gaps
+   say so — the pair is one box, the count sits at arm's length from it, and the close
+   button is further still. Before this they were four items 16px apart in one weight and
+   one colour, which reads as a string of characters ("A− A+ 1/3 ✕") rather than as
+   controls, and that is exactly what the owner reported on 2026-08-27. */
 .book-topright{position:absolute;right:clamp(12px,4vw,44px);top:0;height:100%;
-  display:flex;align-items:center;gap:16px}
+  display:flex;align-items:center;gap:18px}
 /* On a phone the reserved right box leaves the running head ~75px — three letters and an
    ellipsis pressed against A−. A chrome that can only stammer the title is better off
    silent: the reader opened this article seconds ago and the page count keeps the row. */
 @media (max-width:519px){.book-title{display:none}}
-.book-x{background:none;border:0;cursor:pointer;color:var(--c-meta);font-size:1rem;
-  line-height:1;padding:8px}
-.book-x:hover{color:var(--c-heading)}
+/* The way out, and it should look like a button rather than another character in the row:
+   a round target the pointer can find, which fills faintly under the hand. 34px is the
+   smallest circle that still swallows a fingertip on the tablet this mode is really for. */
+/* Further out than the gap between the pair and the count: leaving is not the third item
+   in a set of reading controls, and the extra 8px is the whole difference between reading
+   the row as "size, page, close" and as three equal buttons. */
+.book-x{margin-left:8px;
+  background:none;border:0;cursor:pointer;color:var(--c-meta);font-size:1rem;
+  line-height:1;width:34px;height:34px;padding:0;border-radius:999px;
+  display:flex;align-items:center;justify-content:center;
+  transition:background-color .12s ease,color .12s ease}
+.book-x:hover{color:var(--c-heading);background:color-mix(in srgb,var(--c-rule) 55%,transparent)}
+@media (prefers-reduced-motion:reduce){.book-x{transition:none}}
 /* The reader's own hand on the type: A− / A+, set like the close button so the chrome
    stays one quiet row. ONE size for both — the first cut sized the two As differently the
    way e-readers do, and at this scale it just read as misaligned ("không thẳng hàng"); the
    − and + carry the meaning on their own. */
+/* ONE control with two ends, drawn as one: a single hairline around the pair and a rule
+   between them, the way a segmented control has always been drawn. The tint is the page's
+   own rule colour at a fraction, so nothing new enters the palette. */
+.book-sizes{display:flex;align-items:stretch;border:1px solid var(--c-rule);
+  border-radius:999px;overflow:hidden;
+  background:color-mix(in srgb,var(--c-rule) 28%,transparent)}
 .book-size{background:none;border:0;cursor:pointer;color:var(--c-meta);line-height:1;
-  padding:8px 4px;font-family:var(--font-reading);font-size:.9em}
-.book-size:hover{color:var(--c-heading)}
-.book-size[disabled]{opacity:.35;cursor:default}
-.book-size[disabled]:hover{color:var(--c-meta)}
+  padding:0 14px;height:34px;min-width:44px;font-family:var(--font-reading);font-size:.95em;
+  display:flex;align-items:center;justify-content:center;
+  transition:background-color .12s ease,color .12s ease}
+.book-size + .book-size{border-left:1px solid var(--c-rule)}
+.book-size:hover:not([disabled]){color:var(--c-heading);
+  background:color-mix(in srgb,var(--c-rule) 55%,transparent)}
+.book-size[disabled]{opacity:.4;cursor:default}
+@media (prefers-reduced-motion:reduce){.book-size{transition:none}}
 .book-count{font-size:var(--fs-caption);line-height:var(--lh-caption);
   letter-spacing:var(--ls-caption);color:var(--c-meta);font-variant-numeric:tabular-nums}
 .book-stage{position:relative;display:flex;align-items:center;justify-content:center;
