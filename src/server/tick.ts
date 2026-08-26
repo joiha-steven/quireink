@@ -175,9 +175,23 @@ export function startClock(): () => void {
   }, PUBLISH_EVERY_MS)
 
   let full: ReturnType<typeof setInterval> | undefined
+  // ONE line, on the first sweep only, and it exists because of what the log could not say.
+  // A stopped clock and a running one looked identical from outside: the only evidence was
+  // the ABSENCE of the "clock off" line at boot, which proves the timer was created and
+  // nothing about whether it ever fired. An operator asking "is this thing sweeping?" now
+  // has an answer that is not an inference. Every sweep after it stays silent, because a
+  // line an hour for years is how a log stops being read.
+  let announced = false
   const first = setTimeout(() => {
     const run = () => {
-      void fullTick().catch((error: unknown) => {
+      void fullTick().then((result) => {
+        if (announced) return
+        announced = true
+        console.log(
+          `clock: first sweep done (published ${result.published}, variants ${result.finalized},`
+          + ` sessions ${result.sessions}, cached rows ${result.renderRows})`,
+        )
+      }).catch((error: unknown) => {
         console.error(`[ERROR] clock full: ${(error as Error).message}`)
       })
     }

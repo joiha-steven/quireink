@@ -271,6 +271,15 @@ the moment its time arrives, because there is no separate `scheduled` status. It
 page cache has no TTL: with nothing sweeping it, the front page, the list and the feed go on
 serving the version without that post in it, **while the admin shows it published**.
 
+Two minutes after it starts, the log says so once:
+
+```
+clock: first sweep done (published 0, variants 0, sessions 3, cached rows 0)
+```
+
+That line is how you know the clock is running rather than merely un-disabled. It is printed
+once per boot; the sweeps after it are silent.
+
 **Prefer your own scheduler?** Set `CRON_INTERNAL=0` and the process starts no timers, then
 call the same two ticks yourself. `/api/cron` is unchanged and always available:
 

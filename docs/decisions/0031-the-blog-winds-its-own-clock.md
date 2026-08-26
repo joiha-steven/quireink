@@ -81,6 +81,11 @@ The second row is what every install without a crontab has been doing.
 - **Two clocks are possible** if somebody keeps their crontab and does not set the variable.
   It is harmless — the sweeps are idempotent and the frequent one is a single indexed query
   — but the self-hosting guide now says which to keep.
+- **The clock says so once.** A running clock and a stopped one looked identical from
+  outside — the only evidence was the absence of the `clock off` line, which proves a timer
+  was created and nothing about whether it ever fired. The first sweep now prints one line
+  with what it did, and every sweep after it is silent. Added the same day this shipped,
+  after the deployment check could only infer the answer.
 - **The first full tick runs two minutes after boot**, not at boot: a restart loop would
   otherwise run backups and image sweeps on every crash. After that it is hourly, so a
   process that restarts more often than once an hour still gets its hourly work done.
