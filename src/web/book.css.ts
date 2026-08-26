@@ -82,9 +82,12 @@ body:has(.book-overlay[open]){overflow:hidden}
   /* The page count, the size buttons and the close button sit in an absolutely positioned
      box on the right, so they take part in no layout and a centred title runs straight
      under them. On a phone the running head printed over the counter: "owning your ow1 / 5".
-     300px reserves the widest that box now gets (A− A+ joined it), and only bites on a
-     narrow screen. */
-  max-width:min(70%,calc(100% - 330px),720px);
+     THE RESERVATION IS TWICE THE BOX, and getting that wrong is how the title landed on top
+     of A− again on 2026-08-27: the head is CENTRED, so half of whatever width it is allowed
+     grows to the right of the middle. Reserving the box once leaves the right half of a wide
+     title free to run under it. The box is ~208px plus its clamp(12px,4vw,44px) offset and a
+     gap, so 540 = 2 x 270. Only bites on a narrow screen. */
+  max-width:min(70%,calc(100% - 540px),720px);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 /* Three THINGS, not four glyphs: the size control, the page count, the way out. The gaps
    say so — the pair is one box, the count sits at arm's length from it, and the close
