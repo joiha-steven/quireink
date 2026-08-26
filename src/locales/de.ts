@@ -109,6 +109,7 @@ const de = {
   commentReply: 'Antworten',
   commentDeleted: '[Kommentar gelöscht]',
   commentError: 'Kommentar konnte nicht gesendet werden. Bitte erneut versuchen.',
+  commentChecking: 'Browser wird geprüft, einen Moment.',
   commentSignInGoogle: 'Mit Google anmelden',
   commentAs: 'Kommentieren als',
   commentSignOut: 'Abmelden',

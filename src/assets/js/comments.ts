@@ -11,6 +11,7 @@
 
 import { el, label, payload } from './dom'
 import { mountTurnstile } from './turnstile'
+import { startSolving, takeSolution, solveFresh } from './stamp'
 
 type Comment = {
   id: number
@@ -181,6 +182,9 @@ function buildForm(postSlug: string, parentId: number | null): HTMLFormElement {
   // A signed-in reader skips it, exactly as the server does.
   const siteKey = root?.dataset.turnstile
   if (siteKey && signedInAs === null) mountTurnstile(form, siteKey)
+  // No widget, no account, no request: the stamp (ADR 0032) is solved in the background
+  // from the moment a form exists, so it is ready long before anybody presses send.
+  else if (signedInAs === null) startSolving(root)
 
   form.addEventListener('submit', (e) => {
     e.preventDefault()
@@ -211,11 +215,18 @@ async function submit(
   button.disabled = true
   status.textContent = ''
   try {
-    const res = await fetch('/api/comments', {
+    const send = (stamp: unknown): Promise<Response> => fetch('/api/comments', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ ...data, postSlug, parentId }),
+      body: JSON.stringify({ ...data, postSlug, parentId, stamp }),
     })
+    let res = await send(await takeSolution())
+    // One retry, and only for a stale challenge: a page can sit in a cache or in a tab for
+    // longer than a stamp lives, and losing what somebody wrote to that is unforgivable.
+    if (res.status === 409) {
+      status.textContent = label('commentChecking')
+      res = await send(await solveFresh())
+    }
     if (!res.ok) {
       // The server's message, not a generic one: it says which field is wrong, and the
       // reader has to fix it themselves.

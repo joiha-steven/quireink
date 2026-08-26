@@ -1,0 +1,69 @@
+# Quire Ink with HTTPS, in one command.
+#
+#   cp .env.docker.example .env    # set SITE_URL and CADDY_DOMAIN in it
+#   docker compose -f docker-compose.caddy.yml up -d
+#   docker compose -f docker-compose.caddy.yml logs quire   # the link that claims the blog
+#
+# The difference from `docker-compose.yml` is one service: Caddy in front, which gets a
+# certificate from Let's Encrypt on its own and renews it on its own, with nothing
+# scheduled and no certbot. That is the step people get stuck on, and it is the only
+# reason this file exists.
+#
+# Use the other file when something else already terminates TLS — an existing nginx, a
+# tunnel, a load balancer — because two things fighting over ports 80 and 443 is a worse
+# problem than the one this solves.
+#
+# What this does NOT do: publish anything but 80 and 443, run as root inside the app
+# container, or schedule a cron. The blog keeps its own clock (ADR 0031).
+
+services:
+  quire:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATA_DIR: /var/lib/quire/data
+      STORAGE_LOCAL_DIR: /var/lib/quire/uploads
+      PORT: 3000
+      # Caddy reaches it over the compose network, so loopback would refuse that connection.
+      # Nothing outside the network can: no `ports:` here at all.
+      HOST: 0.0.0.0
+      # Caddy sits on this machine and speaks to the app over a private network, so the
+      # forwarded address is already believed. Stated for the reader rather than set.
+      # TRUST_PROXY is for a proxy that reaches the app over a PUBLIC address.
+    volumes:
+      - quire-data:/var/lib/quire/data
+      - quire-uploads:/var/lib/quire/uploads
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+    security_opt:
+      - no-new-privileges:true
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on: [quire]
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"      # HTTP/3
+    environment:
+      # The name the certificate is issued for. It must already point at this machine, or
+      # the certificate cannot be issued and Caddy will say so in its log.
+      CADDY_DOMAIN: ${CADDY_DOMAIN:?set CADDY_DOMAIN in .env, e.g. example.com}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # Named, and worth keeping: it holds the certificates and the account key. Losing it
+      # means new certificates on the next start, which Let's Encrypt rate-limits.
+      - caddy-data:/data
+      - caddy-config:/config
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+volumes:
+  quire-data:
+  quire-uploads:
+  caddy-data:
+  caddy-config:

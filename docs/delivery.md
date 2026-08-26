@@ -70,6 +70,14 @@ Measured through the CDN before writing any code, because a gap has to be real f
 `cf-cache-status: HIT`, `Age: 165` against `s-maxage=60, stale-while-revalidate=600`.
 Unconfigured is a no-op, which is the normal state of a self-hosted install.
 
+**And any other CDN** ([ADR 0033](decisions/0033-purging-an-edge-that-is-not-cloudflare.md)):
+`purgeWebhookUrl` is one URL the blog POSTs `{"purge":"everything","source":"quireink"}` to
+on the same occasions. Both fire when both are set, because they are two edges in front of
+one blog rather than two names for one edge. It is not a provider list on purpose — Bunny,
+Fastly and a script in front of nginx differ in the URL and the header and agree on
+answering a POST — and the URL is treated as a secret and never logged, because a purge
+endpoint usually carries its own token.
+
 It is the **only** purge path: the scheduled sweep, `/api/cron?purge=1` and the admin cache
 button all call it. They used to call a second, ported implementation (`server/cdn.ts`)
 that purged the same zone with no request timeout and logged Cloudflare's response body on

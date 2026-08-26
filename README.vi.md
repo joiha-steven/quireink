@@ -324,6 +324,8 @@ Các cấu hình nhạy cảm bị chặn qua MCP, và quyền vẫn nằm ở b
 | `STORAGE_LOCAL_DIR` | ◻️ | Chỗ để tệp tải lên, phục vụ ở `/uploads`. Mặc định `./uploads` |
 | `PORT` | ◻️ | Mặc định `3000` |
 | `CRON_SECRET` | ◻️ | Canh `/api/cron`, chỗ đăng bài hẹn giờ và dọn biến thể ảnh |
+| `PURGE_WEBHOOK_URL` | ◻️ | Địa chỉ mà blog sẽ POST tới mỗi lần nó dọn cache của chính nó, dành cho CDN không phải Cloudflare ([ADR 0033](./docs/decisions/0033-purging-an-edge-that-is-not-cloudflare.md)). Bình thường thì nhập trong Cấu hình → Tích hợp |
+| `CRON_INTERNAL` | ◻️ | Đặt `0` để tiến trình KHÔNG tự chạy đồng hồ bảo trì, khi bạn muốn tự hẹn giờ gọi `/api/cron`. Mặc định là bật, theo [ADR 0031](./docs/decisions/0031-the-blog-winds-its-own-clock.md); nó không bao giờ chạy dưới `bun test` hay `bun --watch` |
 | `MCP_OAUTH_SECRET` | ◻️ | Ký mã OAuth của MCP. Bỏ trống thì máy chủ tự sinh lấy, và đó là cách nên dùng |
 | `ANALYTICS_TZ` | ◻️ | Múi giờ MẶC ĐỊNH của site, dùng cho tới khi có người chọn ở **Settings → Site → Múi giờ**. Setting đó là đồng hồ của cả site — ngày dưới mỗi bài, mốc tháng, và ngày bắt đầu của biểu đồ thống kê — và nó tồn tại vì trang được dựng một lần rồi cache, nên không có nó thì múi giờ của MÁY CHỦ quyết định người đọc thấy ngày nào. Mặc định UTC |
 | `TRUST_PROXY` | ◻️ | Chỉ đặt `1` khi proxy đứng trước đi tới bạn qua một địa chỉ CÔNG KHAI. Giới hạn tần suất tính theo địa chỉ socket; `CF-Connecting-IP`/`X-Forwarded-For` được tin tự động khi kết nối đến từ loopback hoặc mạng nội bộ |

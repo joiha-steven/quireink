@@ -21,6 +21,9 @@ export type SecretName =
   // token leaves the machine, and one that shared the analytics salt would let anybody
   // holding it test guesses against the visitor hashes in the database.
   | 'update-check'
+  // The comment stamp (ADR 0032). Its signature travels in public HTML on every page with a
+  // comment form, so it gets its own salt like everything else that leaves the machine.
+  | 'comment-stamp'
 
 // Memoised: these are read on the analytics path, which runs on every public request, and
 // the value cannot change during a process's life.

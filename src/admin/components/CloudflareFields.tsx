@@ -16,10 +16,13 @@ const INPUT =
   'w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100'
 const LINK = 'https://dash.cloudflare.com/profile/api-tokens'
 
-type Keys = { cloudflareZoneId: string; cloudflareApiToken: string }
-const EMPTY: Keys = { cloudflareZoneId: '', cloudflareApiToken: '' }
+type Keys = { cloudflareZoneId: string; cloudflareApiToken: string; purgeWebhookUrl: string }
+const EMPTY: Keys = { cloudflareZoneId: '', cloudflareApiToken: '', purgeWebhookUrl: '' }
 
-export function CloudflareFields({ configured, zoneId }: { configured: boolean; zoneId: string }) {
+export function CloudflareFields(
+  { configured, zoneId, webhookConfigured }:
+  { configured: boolean; zoneId: string; webhookConfigured: boolean },
+) {
   const t = useAdminT()
   const router = useRouter()
   const { notify } = useToast()
@@ -73,6 +76,17 @@ export function CloudflareFields({ configured, zoneId }: { configured: boolean; 
         placeholder={ph(configured, t.cfToken)}
         value={keys.cloudflareApiToken}
         onChange={(e) => set('cloudflareApiToken', e.target.value)}
+      />
+      {/* Any other CDN (ADR 0033). One URL this blog POSTs to when it flushes, so an
+          install behind Bunny, Fastly or a script in front of nginx gets what a Cloudflare
+          install has had. Password-typed because a purge URL usually carries its own token. */}
+      <p className={NOTE_TEXT}>{t.cfWebhookHelp}</p>
+      <input
+        className={INPUT}
+        type="password"
+        placeholder={ph(webhookConfigured, t.cfWebhook)}
+        value={keys.purgeWebhookUrl}
+        onChange={(e) => set('purgeWebhookUrl', e.target.value)}
       />
       <Button type="button" onClick={save} disabled={busy}>
         {t.commentsKeySave}

@@ -14,6 +14,7 @@ import { flushAnalytics, resetAnalyticsBuffer } from '@/analytics/buffer'
 import { createApp } from '@/web/app'
 import pkg from '../package.json' with { type: 'json' }
 import { enableBackgroundCache } from '@/server/warm'
+import { startClock, clockBlockedBy } from '@/server/tick'
 
 const env = readEnv()
 openDatabases(env.dataDir)
@@ -84,11 +85,20 @@ if (siteUrlIsUnset(await getSettings())) {
 // plain Map.clear() and nothing else.
 enableBackgroundCache()
 
+// The clock (ADR 0031). Publishing a post at 09:00 and finalising an image are the blog's
+// own business, and a fresh install should do them without an operator remembering a
+// crontab. `CRON_INTERNAL=0` hands the job back to an external scheduler; `bun test` and
+// `bun --watch` never start it. `/api/cron` keeps working either way.
+const stopClock = startClock()
+const clockOff = clockBlockedBy()
+if (clockOff !== null) console.log(`  clock off (${clockOff}); schedule /api/cron yourself`)
+
 // Analytics buffers in memory (Invariant 7), so a shutdown that skips this loses the
 // pageviews recorded since the last flush. Two seconds of them, but there is no reason to.
 function shutdown(signal: string): void {
   console.log(`\n${signal}: flushing and closing`)
   try {
+    stopClock()
     flushAnalytics()
   } finally {
     resetAnalyticsBuffer()

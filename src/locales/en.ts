@@ -109,6 +109,7 @@ const en = {
   commentReply: 'Reply',
   commentDeleted: '[comment deleted]',
   commentError: 'Could not post your comment. Please try again.',
+  commentChecking: 'Checking your browser, one moment.',
   commentSignInGoogle: 'Sign in with Google',
   commentAs: 'Commenting as',
   commentSignOut: 'Sign out',

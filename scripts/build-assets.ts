@@ -135,7 +135,16 @@ const BUDGET: Record<string, number> = {
   // post AT that sentence, which needs no account, no third party and — because the
   // fragment is a browser feature rather than markup — not one byte of change in the
   // renderer whose output `golden/` pins.
-  'post.js': 14_800,
+  //
+  // RAISED TO 15_800 on 2026-08-27 for the comment stamp (ADR 0032), which cost 761 bytes:
+  // the loop that answers the server's signed puzzle, and the one retry when a long-cached
+  // page hands back a stale one. It is the best-value 761 bytes in this file. Before it, a
+  // blog that wanted its comments protected had to put Cloudflare Turnstile in front of
+  // them, which is an account, two keys, and ~60 KB fetched from challenges.cloudflare.com
+  // on every page carrying a form — on a site whose whole claim is zero third-party
+  // requests. Turnstile still wins when its keys are set; every other install now has a
+  // gate that costs a reader under a kilobyte and costs a bot real arithmetic.
+  'post.js': 15_800,
   // /login only, and NOT loaded with core.js: the sign-in page carries no beacon, no
   // search overlay and no listing controls, so it pays for the reveal toggle, the caps-lock
   // warning and the one-time-code paste, and nothing else.

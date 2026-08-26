@@ -1,0 +1,34 @@
+# The reverse proxy for docker-compose.caddy.yml. Caddy gets and renews the certificate
+# itself; there is nothing to schedule and nothing to remember.
+#
+# The security headers are the same set docs/self-host.md documents for nginx, and the CSP
+# is the one the app is tested against: it allows the site's own scripts and styles and
+# nothing from anybody else, which is what a Quire Ink page needs and all it needs.
+#
+# Turnstile is the single exception, and it is opt-in: an owner who enters Cloudflare keys
+# has to widen script-src and frame-src to challenges.cloudflare.com, which is what the
+# commented block below does. Every other install is stricter without it.
+
+{$CADDY_DOMAIN} {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		X-Frame-Options "SAMEORIGIN"
+		Content-Security-Policy "default-src 'self'; img-src 'self' data: blob:; media-src 'self' data: blob:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self'; frame-src 'self' https://open.spotify.com https://www.youtube-nocookie.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
+		-Server
+	}
+
+	# With Turnstile keys in Settings, replace the line above with this one:
+	# Content-Security-Policy "default-src 'self'; img-src 'self' data: blob:; media-src 'self' data: blob:; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self'; frame-src 'self' https://challenges.cloudflare.com https://open.spotify.com https://www.youtube-nocookie.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
+
+	# Match the app's own upload ceiling (MAX_UPLOAD_MB, 64 by default) so the two refuse
+	# the same file rather than one of them being the only thing that does.
+	request_body {
+		max_size 64MB
+	}
+
+	reverse_proxy quire:3000
+}

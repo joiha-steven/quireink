@@ -20,11 +20,28 @@ beforeEach(() => {
   delete process.env.TURNSTILE_SECRET_KEY
 })
 
+describe('the purge webhook (ADR 0033)', () => {
+  it('is unset until somebody sets it, and then reports configured without leaking it', async () => {
+    expect((await getIntegrationStatus()).purgeWebhookConfigured).toBe(false)
+    await saveIntegrationKeys({ purgeWebhookUrl: 'https://cdn.example.com/purge?key=abc123' })
+    const status = await getIntegrationStatus()
+    expect(status.purgeWebhookConfigured).toBe(true)
+    // The URL carries a token; the client-safe view must not contain it anywhere.
+    expect(JSON.stringify(status)).not.toContain('abc123')
+  })
+
+  it('survives a blank save, like every other write-to-set key', async () => {
+    await saveIntegrationKeys({ purgeWebhookUrl: 'https://cdn.example.com/purge' })
+    await saveIntegrationKeys({ cloudflareZoneId: 'zone' })
+    expect((await getIntegrationKeys()).purgeWebhookUrl).toBe('https://cdn.example.com/purge')
+  })
+})
+
 describe('getIntegrationKeys', () => {
   it('returns empty strings when nothing is stored and no env var is set', async () => {
     expect(await getIntegrationKeys()).toEqual({
       turnstileSiteKey: '', turnstileSecretKey: '', cloudflareApiToken: '', cloudflareZoneId: '',
-      googleClientId: '', googleClientSecret: '',
+      purgeWebhookUrl: '', googleClientId: '', googleClientSecret: '',
       aiProvider: '', aiApiKey: '', aiModel: '',
     })
   })
@@ -69,6 +86,7 @@ describe('getIntegrationStatus', () => {
     expect(status).toEqual({
       turnstileConfigured: true, turnstileSiteKey: 'site',
       cloudflareConfigured: true, cloudflareZoneId: 'zone',
+      purgeWebhookConfigured: false,
       googleConfigured: false,
       aiConfigured: false, aiProvider: '', aiModel: '',
     })

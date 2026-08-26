@@ -65,3 +65,9 @@ alter table media add column alt text;
 alter table integration_keys add column ai_provider text;
 alter table integration_keys add column ai_api_key text;
 alter table integration_keys add column ai_model text;
+
+-- migration: 005-purge-webhook
+-- Purging the edge stopped being a Cloudflare-only idea (ADR 0033). One URL the blog POSTs
+-- to when it flushes, so an install behind Bunny, Fastly or a script in front of nginx has
+-- the same "an edit is live without a manual purge" that a Cloudflare install has had.
+alter table integration_keys add column purge_webhook_url text;

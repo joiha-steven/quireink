@@ -20,6 +20,7 @@ import { notifyReply } from '@/comments/comment-notify'
 import { guardComment } from '@/comments/comment-guard'
 import { getCommentEnv } from '@/comments/comment-env'
 import { verifyTurnstile } from '@/auth/turnstile'
+import { verifyStamp, issueStamp } from '@/comments/stamp'
 import { getPost } from '@/content/posts'
 import { getSettings } from '@/content/settings'
 import { logActivity } from '@/server/activity'
@@ -49,6 +50,18 @@ export async function handleCommentsGet(c: Context): Promise<Response> {
   // An empty list rather than an error: the island renders nothing and the page is fine.
   if (!comments.enabled || !slug) return json({ comments: [] })
   return json({ comments: await getCommentTree(slug) })
+}
+
+/**
+ * A fresh challenge, for a page whose own one has expired (ADR 0032).
+ *
+ * Public and uncached by definition — it is one request on an unusual path, rather than a
+ * request every reader pays for. It hands out nothing but a signed puzzle.
+ */
+export async function handleStampGet(): Promise<Response> {
+  const { comments } = await getSettings()
+  if (!comments.enabled) return json({ stamp: null })
+  return json({ stamp: issueStamp() })
 }
 
 export async function handleCommentsPost(c: Context): Promise<Response> {
@@ -100,6 +113,15 @@ export async function handleCommentsPost(c: Context): Promise<Response> {
     const { turnstileConfigured } = await getCommentEnv()
     if (comments.turnstile && turnstileConfigured) {
       if (!(await verifyTurnstile(turnstileToken, ip))) {
+        return fail(c, 'Verification failed — please try again', 400)
+      }
+    } else {
+      // The blog's own gate (ADR 0032). 409 for a stale challenge is a SEPARATE answer from
+      // 400 on purpose: the island re-solves a fresh one and sends again, so a page that sat
+      // in a cache does not cost somebody the paragraph they just wrote.
+      const verdict = verifyStamp(body.stamp)
+      if (verdict === 'expired') return fail(c, 'This page has been open a while — sending again', 409)
+      if (verdict !== 'ok') {
         return fail(c, 'Verification failed — please try again', 400)
       }
     }

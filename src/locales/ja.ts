@@ -109,6 +109,7 @@ const ja = {
   commentReply: '返信',
   commentDeleted: '[削除されたコメント]',
   commentError: 'コメントを送信できませんでした。もう一度お試しください。',
+  commentChecking: 'ブラウザーを確認しています。少々お待ちください。',
   commentSignInGoogle: 'Googleでログイン',
   commentAs: 'コメント投稿者',
   commentSignOut: 'ログアウト',

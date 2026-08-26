@@ -93,6 +93,12 @@ export function CommentIntegrations(
 
   return (
     <div className="space-y-4">
+      {/* Which gate is actually standing, said plainly. The owner's rule, 2026-08-27:
+          whoever enters a Turnstile key gets Turnstile, everybody else gets the blog's own
+          gate — and this line is where they find out which one that is. */}
+      <p className={NOTE}>
+        {comments.turnstile && env.turnstileConfigured ? t.commentsGateTurnstile : t.commentsGateStamp}
+      </p>
       <div className={PANEL_LIST}>
         <ToggleRow
           label={t.commentsTurnstile}

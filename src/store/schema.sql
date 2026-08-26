@@ -255,6 +255,10 @@ create table if not exists integration_keys (
   turnstile_secret_key text,
   cloudflare_api_token text,
   cloudflare_zone_id   text,
+  -- Any other CDN: one URL this blog POSTs to when it wants the edge flushed. Bunny,
+  -- Fastly, a script in front of nginx — whatever answers it. Treated as a secret because
+  -- a purge URL usually carries its own token.
+  purge_webhook_url    text,
   google_client_id     text,   -- comment sign-in; public half, still pasted by the owner
   google_client_secret text,
   smtp_host            text,

@@ -59,6 +59,17 @@ Google account.
   The sheet-top search reaches the text, the name and the post title (accent-folded) and paints
   hits with the pen (`Marked`). Delete = soft delete via owner-gated `DELETE /api/comments/[id]`
   → Trash (restore/purge in `TrashView`'s Comments tab).
+- **The gate — `src/comments/stamp.ts`, `src/assets/js/stamp.ts` ([ADR 0032](../decisions/0032-the-comment-gate-needs-no-account.md)).**
+  Manual comments carry a **stamp**: a challenge the server signs into the comments mount point,
+  solved in the reader's browser with `crypto.subtle` while they type, and spent on send. No
+  account, no third-party request, no state — the HMAC is the storage, and only a Map of spent
+  salts is kept. Verdicts are separate on purpose: `expired` answers **409** so the island
+  re-solves a fresh challenge and sends again (a page can sit in a cache longer than a stamp
+  lives), everything else answers 400. The issue time doubles as a floor — under three seconds
+  was not typed. **Turnstile takes over whenever its keys are set** (owner's rule, 2026-08-27);
+  Settings → Connections says which gate is standing. A signed-in Google reader skips both.
+  Without a secure context there is no `crypto.subtle`, so only the age check stands: that
+  install needs TLS.
 - **Abuse:** manual comments only accept a published, visible post + a per-IP in-memory rate limit
   (6/min). The same IP (+ country) is persisted on the row (`author_ip`/`author_country`) for admin
   moderation — admin-only, NEVER sent to the public comment tree.

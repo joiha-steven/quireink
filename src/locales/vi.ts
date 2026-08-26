@@ -109,6 +109,7 @@ const vi = {
   commentReply: 'Trả lời',
   commentDeleted: '[bình luận đã xoá]',
   commentError: 'Không gửi được bình luận. Vui lòng thử lại.',
+  commentChecking: 'Đang kiểm tra trình duyệt của bạn, chờ một chút.',
   commentSignInGoogle: 'Đăng nhập Google',
   commentAs: 'Bình luận với tên',
   commentSignOut: 'Đăng xuất',

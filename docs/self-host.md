@@ -258,12 +258,21 @@ nothing.
 When verifying anything, request the origin directly (`curl localhost:3000/...` on the
 server), not the public URL.
 
-## 8. The cron ticks
+## 8. The ticks — nothing to do, unless you want to
 
-**Nothing inside the process schedules anything.** `/api/cron` is the entry point and an
-external scheduler has to call it, or scheduled posts never go live on time, image variants
-are never finalized, expired sessions and `render_cache` rows accumulate, and the on-server
-snapshots in [`backups.md`](backups.md) never run.
+**The process runs its own clock** ([ADR 0031](decisions/0031-the-blog-winds-its-own-clock.md)):
+every minute it flips due scheduled posts into the caches in front of them, and hourly it
+finalises image variants, purges expired sessions and unconfirmed sign-ups, prunes
+`render_cache` and takes the on-server snapshot from [`backups.md`](backups.md). There is
+nothing to install and nothing to remember. Skip to section 9.
+
+What it protects you from is not "posts publish late" — a post with a future date is public
+the moment its time arrives, because there is no separate `scheduled` status. It is that the
+page cache has no TTL: with nothing sweeping it, the front page, the list and the feed go on
+serving the version without that post in it, **while the admin shows it published**.
+
+**Prefer your own scheduler?** Set `CRON_INTERNAL=0` and the process starts no timers, then
+call the same two ticks yourself. `/api/cron` is unchanged and always available:
 
 ```cron
 */5 * * * *  curl -fsS -H "Authorization: Bearer $CRON_SECRET" 'http://127.0.0.1:3000/api/cron?publish=1' >/dev/null
@@ -273,6 +282,9 @@ snapshots in [`backups.md`](backups.md) never run.
 The five-minute tick only flips due posts live; the hourly one does everything else. Set
 `CRON_SECRET` in the environment — the route is **open when it is unset**, and it is the most
 expensive lever in the process. It is rate-limited to 12 calls a minute regardless.
+
+Running both is harmless (every sweep is idempotent) but pointless: pick one, and if you
+keep the crontab, set `CRON_INTERNAL=0` so the numbers in your logs mean what you think.
 
 Add `&purge=1` to a one-off call after a deploy to clear the CDN.
 

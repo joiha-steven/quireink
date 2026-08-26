@@ -88,6 +88,16 @@ Other proxy facts that are decisions, not defaults: the container publishes to
 "deny" is not protecting a `3000:3000` publish), and `TRUST_PROXY=1` belongs **only** when
 the proxy reaches the app over a public address.
 
+## What you do NOT have to set up
+
+**No crontab.** The process runs its own maintenance clock since
+[ADR 0031](../../../docs/decisions/0031-the-blog-winds-its-own-clock.md): due posts every
+minute, everything else hourly. Do not add a cron entry "to be safe" — set `CRON_INTERNAL=0`
+first if the operator wants their own scheduler, or you get two clocks and logs that mean
+nothing. `/api/cron` still exists for that case, and for a deploy hook (`?purge=1`).
+
+**No CDN, no Cloudflare account.** Both are optional and unconfigured is a no-op.
+
 ## Prove it before saying it works
 
 Never report success from a `docker ps` line or an HTTP 200 through a CDN. Check, in order:

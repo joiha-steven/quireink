@@ -10,6 +10,7 @@ import { getMediaRefs } from '@/media/media-refs'
 import { getSettings, resolveSiteUrl } from '@/content/settings'
 import { getMailStatus } from '@/news/mail'
 import { getCommentEnv } from '@/comments/comment-env'
+import { issueStamp } from '@/comments/stamp'
 import { chromeLabels, siteFooter, siteHeader, subscribeCard } from '@/web/chrome'
 import { getSeriesForPost } from '@/content/series'
 import { collapseBlob } from '@/media/blob'
@@ -202,8 +203,16 @@ export async function renderArticle(slug: string): Promise<string | null> {
   // The site key rides on the mount point, so the island can put up the widget without a
   // second round trip. It is a PUBLIC key by design; the secret half never leaves here.
   const commentEnv = post && settings.comments.enabled ? await getCommentEnv() : null
-  const turnstile = settings.comments.turnstile && commentEnv?.turnstileConfigured
+  const usingTurnstile = settings.comments.turnstile && commentEnv?.turnstileConfigured === true
+  const turnstile = usingTurnstile
     ? ` data-turnstile="${escapeAttr(commentEnv.turnstileSiteKey)}"`
+    : ''
+  // No Turnstile means the blog's own gate (ADR 0032): a signed challenge, minted here so
+  // the island needs no round trip. It is per-render and therefore per-cached-page, which
+  // is why the island can ask for a fresh one when a long-cached page hands back a stale
+  // stamp — the page stays cacheable and nothing is stored server-side.
+  const stamp = commentEnv && !usingTurnstile
+    ? ` data-stamp="${escapeAttr(JSON.stringify(issueStamp()))}"`
     : ''
   // A flag, not a key: the island only needs to know whether to draw the Google button and
   // ask who the reader is. The client id lives on the server and travels in the redirect.
@@ -211,7 +220,7 @@ export async function renderArticle(slug: string): Promise<string | null> {
     ? ' data-google="1"'
     : ''
   const commentsMount = post && settings.comments.enabled
-    ? `<section id="comments" data-post="${escapeAttr(post.slug)}"${turnstile}${googleAuth}></section>`
+    ? `<section id="comments" data-post="${escapeAttr(post.slug)}"${turnstile}${stamp}${googleAuth}></section>`
     : ''
 
   const { configured: mailConfigured } = await getMailStatus()
@@ -260,6 +269,7 @@ export async function renderArticle(slug: string): Promise<string | null> {
       commentBody: s.commentBody,
       commentSubmit: s.commentSubmit,
       commentError: s.commentError,
+      commentChecking: s.commentChecking,
       commentSignInGoogle: s.commentSignInGoogle,
       commentAs: s.commentAs,
       commentSignOut: s.commentSignOut,

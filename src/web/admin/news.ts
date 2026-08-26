@@ -220,6 +220,8 @@ export function newsRoutes() {
     await saveIntegrationKeys({
       cloudflareApiToken: str(input.cloudflareApiToken),
       cloudflareZoneId: str(input.cloudflareZoneId),
+      // Any other CDN (ADR 0033). Same write-to-set rule: blank leaves the stored one alone.
+      purgeWebhookUrl: str(input.purgeWebhookUrl),
     })
     return json({ saved: true })
   })

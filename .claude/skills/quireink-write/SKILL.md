@@ -73,7 +73,8 @@ need one of those, say so and hand it back — do not look for a way around it.
   tags, plus pairs that cover overlapping ground and should link to each other. Report
   first, change nothing until told.
 - **The moderation sweep.** `list_comments`, flag spam or abuse **with the reason**, and
-  trash only after the owner confirms.
+  trash only after the owner confirms. Comments already pass a gate the blog runs itself
+  (ADR 0032), so what reaches the queue is what got through it, not the raw firehose.
 - **The front page.** `compose_homepage` curates the composed front the owner designed.
   Order the rows by what people actually read; do not invent a new layout for them.
 - **Before anything destructive**, `create_snapshot`.

@@ -109,6 +109,7 @@ const ko = {
   commentReply: '답글',
   commentDeleted: '[삭제된 댓글]',
   commentError: '댓글을 등록하지 못했습니다. 다시 시도해 주세요.',
+  commentChecking: '브라우저를 확인하는 중입니다. 잠시만 기다려 주세요.',
   commentSignInGoogle: 'Google로 로그인',
   commentAs: '댓글 작성자',
   commentSignOut: '로그아웃',

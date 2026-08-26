@@ -109,6 +109,7 @@ const zh = {
   commentReply: '回复',
   commentDeleted: '[评论已删除]',
   commentError: '评论发送失败，请重试。',
+  commentChecking: '正在检查你的浏览器，请稍候。',
   commentSignInGoogle: '用 Google 登录',
   commentAs: '评论身份',
   commentSignOut: '退出登录',
