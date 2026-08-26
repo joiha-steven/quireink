@@ -31,7 +31,7 @@ copies of a rule means one is wrong within a month
 | [admin-editor.md](admin-editor.md) | The editor's own contract: the writing surface, the caret, the key feedback |
 | [homepage.md](homepage.md) | What `/` serves: the post list, a page, or a composed front page |
 | [seo-pwa.md](seo-pwa.md) | Sitemap, feeds, OG, region, PWA |
-| [agent-ready.md](agent-ready.md) | Markdown negotiation, `.well-known` discovery, Content-Signal |
+| [agent-ready.md](agent-ready.md) | Markdown negotiation, `.well-known` discovery, the three shipped skills, Content-Signal |
 | [mcp.md](mcp.md) | MCP server, tokens, OAuth |
 | [agent-cookbook.md](agent-cookbook.md) | Prompts that do real jobs with a connected agent, and where the lines are |
 | [backups.md](backups.md) | What is copied off the server, how often, and how to restore it |

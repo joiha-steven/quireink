@@ -58,4 +58,9 @@ ds-bundle-reader/
 npm-debug.log*
 .pnpm-debug.log*
 media-index-backup-*.json
-.claude/
+
+# The agent's own directory is private (launch.json, settings.local.json, transcripts) —
+# except the skills, which SHIP: they are how an agent that has just cloned this repository
+# knows how to install it, work it over MCP and move a blog into it.
+.claude/*
+!.claude/skills/

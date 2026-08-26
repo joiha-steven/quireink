@@ -10,6 +10,10 @@ On any behavior change, update the matching doc in the SAME change (Working prin
   + the **env-var table** must be updated in the SAME change whenever setup/deploy/env/auth/MCP/backup
   behavior changes (new/renamed env var, a new owner setup step, a changed redirect URI, etc.).
   Never let the README drift from how the app is actually installed and run.
+  **The three shipped skills (`.claude/skills/`) are on that list too.** An agent acts on a
+  skill without reading further, so a stale one is worse than no skill: a change to
+  installing, claiming, upgrading, the MCP surface or the importers means opening the
+  matching `SKILL.md` in the same session.
 - **Keep personal and instance values out of this repository entirely** — not just
   credentials, but a host, a unix user, an internal port, a service name or a live domain.
   This repository is the product; a fact about one installation belongs in the private
