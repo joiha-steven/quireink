@@ -28,7 +28,10 @@ const CLAUDE_MD_MAX = 120
 // and the largest document left is 318 lines. A file at the cap gets split, not squeezed.
 const FILE_MAX = 400
 
-const ROOTS = ['.', 'docs', 'scripts', '.github']
+// `.claude/skills` and not `.claude`: the skills ship with the repository and are read by
+// an agent that has just cloned it, so they get the same link and size guards as docs/.
+// The rest of that directory is one machine's private settings and is not in git.
+const ROOTS = ['.', 'docs', 'scripts', '.github', '.claude/skills']
 
 // `golden/corpus/` holds markdown FIXTURES, not documents. Their links point at
 // deliberately fake images and dangerous schemes, because that is exactly what they test.

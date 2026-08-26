@@ -185,6 +185,23 @@ It stays this way because of a few decisions that are hard to walk back.
 
 You need [Bun](https://bun.sh) 1.3 or newer and a machine you can point a domain at. That is the list.
 
+**One command**, which clones, installs, builds and starts it:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/joiha-steven/quireink/main/install.sh | bash
+```
+
+It never uses `sudo`, never installs Bun behind your back and never touches systemd; it refuses to run as root, and running it again on the same directory updates and rebuilds instead of failing. Settings go in front of `bash` — the far side of the pipe, since anything in front of `curl` belongs to the download:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/joiha-steven/quireink/main/install.sh \
+  | SITE_URL=https://example.com QUIREINK_DIR=/srv/blog bash
+```
+
+`NO_RUN=1` stops it short of starting the blog, and [the script itself](./install.sh) is 120 readable lines if you would rather look before you pipe.
+
+**Or the same thing by hand**, which is all it does:
+
 ```bash
 git clone https://github.com/joiha-steven/quireink.git && cd quireink
 bun install
@@ -289,6 +306,8 @@ Using the Quire Ink MCP server, write a 600-word post titled
 Writing is half of it. The agent can also read your traffic and compare it to last week, count your subscribers (never see their addresses), sweep comments for spam (into the trash, not gone), search your whole archive and tell you whether a newer release is out. And it can steward: recompose the front page around what people actually read, restyle the site from the curated palettes and fonts (never free-form color — an agent has no eyes), reply to a comment under your name, send the next newsletter issue as a test to you alone, and take a backup snapshot before anything big. The [agent cookbook](./docs/agent-cookbook.md) is a page of prompts that do real jobs — a Monday report, a newsletter draft, an archive audit.
 
 The sensitive settings are off limits over MCP, and you stay in charge. Revoke the token in the admin and it stops working immediately.
+
+**And the repository teaches the agent.** Three skills ship in `.claude/skills/`, so an assistant that has just cloned this repo already knows how to install a blog, work one over MCP, and move an existing blog in from WordPress, Ghost, Substack or Medium — including the jobs the importer deliberately leaves to a human. Nothing to install: clone it and ask. [What they cover](./docs/agent-ready.md#skills-that-ship-in-the-repository).
 
 ---
 

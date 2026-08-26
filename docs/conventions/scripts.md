@@ -5,6 +5,11 @@ that is the name to use: `bun run build:assets`, `bun run check:all`, `bun run u
 `bun run shot`, `bun run drive`. Node is not in the toolchain
 ([ADR 0005](../decisions/0005-rewrite-in-bun-hono-sqlite.md)).
 
+- **`install.sh` sits at the repository root, and is shell rather than `bun scripts/…`,**
+  because it runs before there is a checkout to run anything from. It is the one-command
+  form of the README's install path and does exactly what that path does — clone, install,
+  build both artefacts, start the server — so a change to either means changing both. It
+  never uses `sudo`, refuses to run as root, and is idempotent on the directory it is given.
 - **The schema is not a script.** `src/store/schema.sql` and `src/store/schema-analytics.sql`
   are embedded and applied at boot; `src/store/migrations.sql` is one file, not a directory.
   Nothing has to be run by hand on a fresh install.

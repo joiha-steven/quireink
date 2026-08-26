@@ -34,6 +34,20 @@ git clone https://github.com/joiha-steven/quireink.git /home/quire/app
 cd /home/quire/app && bun install && bun run build:assets && bun run build:admin
 ```
 
+Those three lines are also one line, and it is the same three:
+[`install.sh`](../install.sh) clones, installs, builds, and starts the blog so the log prints
+the claim link. It refuses to run as root, never uses `sudo` and touches nothing outside the
+directory you give it, which is why the rest of this guide — the user, the service, the proxy
+— is still yours to do.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/joiha-steven/quireink/main/install.sh \
+  | QUIREINK_DIR=/home/quire/app NO_RUN=1 bash
+```
+
+The variables go in front of `bash`, not in front of `curl`: on this side of a pipe they
+would belong to the download and never reach the script.
+
 **Quire Ink runs from source: `bun src/index.ts`.** The checkout is the deployment, not a build
 input. `build:assets` produces the island bundles and `build:admin` the admin SPA; both are
 read from disk at runtime, so they have to exist before the service starts.

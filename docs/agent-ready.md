@@ -45,6 +45,33 @@ ALL `/.well-known/*` and returns a disk 404, so discovery silently breaks. Narro
 proxy. (Also purge the CDN once — a cached 404 outlives the fix.) See the deploy notes
 in the ops repo / memory.
 
+## Skills that ship in the repository
+
+`.claude/skills/` holds three Agent Skills, and they are in git on purpose: an agent that
+has just cloned this repository already knows how to run it. They are the only part of
+`.claude/` that is not private.
+
+| Skill | For |
+|---|---|
+| [`quireink-install`](../.claude/skills/quireink-install/SKILL.md) | Installing, upgrading or repairing a self-hosted blog: Docker or Bun under systemd, the proxy, the claim link, the post-install checks |
+| [`quireink-write`](../.claude/skills/quireink-write/SKILL.md) | Working a live blog over MCP: drafting, publishing, media, the front page, traffic, moderation, and where the lines are |
+| [`quireink-move-in`](../.claude/skills/quireink-move-in/SKILL.md) | Migrating from WordPress, Ghost, Substack or Medium, including the four jobs the importer deliberately leaves undone |
+
+They summarise documents in `docs/` rather than restating rules
+([ADR 0010](decisions/0010-four-homes-doc-layout.md)), and `check:docs` guards their links
+and their size like any other document. Keeping them true is the release rule in
+[`conventions/releases.md`](conventions/releases.md), beside the README's install paths.
+
+Owners who drive the blog from somewhere else copy the operating one into their own agent:
+
+```bash
+cp -r .claude/skills/quireink-write ~/.claude/skills/
+```
+
+This is a file in a repository, not a network surface. The **Agent Skills index** listed as
+deliberately absent below is a different thing: an HTTP endpoint advertising skills to
+strangers, which is still not what this blog needs.
+
 ## Content-usage policy (Content-Signal)
 
 The frozen tree's `robots.txt` declared `search=yes, ai-train=yes, ai-input=yes`, matching
@@ -58,7 +85,8 @@ than a constant.
 Emerging/low-fit standards left out, with the reason — revisit if a real agent needs one:
 - **DNS-AID** (DNS SVCB discovery records) — infra, not code: publish `_index._agents`
   / `_a2a._agents` SVCB records at the DNS provider (Cloudflare) + DNSSEC.
-- **Agent Skills index**, **A2A Agent Card**, **WebMCP** — the MCP server already covers
+- **Agent Skills index** (the discovery ENDPOINT, not the files above), **A2A Agent
+  Card**, **WebMCP** — the MCP server already covers
   agent tool-use; these are early specs (unstable schemas / Chrome-only) that don't map
   cleanly onto a blog. The MCP Server Card is the stable equivalent.
 - **Web Bot Auth** (HTTP message-signature verification) — niche; adds request-signing

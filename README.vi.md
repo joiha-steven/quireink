@@ -186,6 +186,23 @@ Nó giữ được như vậy nhờ vài quyết định khó đảo ngược.
 
 Bạn cần [Bun](https://bun.sh) 1.3 trở lên và một máy trỏ tên miền vào được. Hết danh sách.
 
+**Một lệnh**, nó tự tải mã nguồn, cài, dựng và chạy blog lên:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/joiha-steven/quireink/main/install.sh | bash
+```
+
+Nó không dùng `sudo`, không tự cài Bun sau lưng bạn, không đụng tới systemd; nó từ chối chạy dưới quyền root, và chạy lại lần nữa trên cùng thư mục thì nó cập nhật rồi dựng lại chứ không báo lỗi. Tuỳ chọn đặt trước `bash`, tức là ở đầu bên kia của ống — đặt trước `curl` thì biến thuộc về lệnh tải chứ không tới được script:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/joiha-steven/quireink/main/install.sh \
+  | SITE_URL=https://example.com QUIREINK_DIR=/srv/blog bash
+```
+
+`NO_RUN=1` để dừng lại trước bước chạy, và [bản thân cái script](./install.sh) dài 120 dòng đọc được, nếu bạn muốn xem trước khi đưa nó vào shell.
+
+**Hoặc làm tay từng bước**, đúng những gì nó làm:
+
 ```bash
 git clone https://github.com/joiha-steven/quireink.git && cd quireink
 bun install
@@ -291,6 +308,8 @@ Dùng máy chủ MCP của Quire Ink, viết một bài 600 chữ tựa đề
 Viết mới là một nửa. Agent còn đọc được lượng truy cập và so với tuần trước, đếm người đăng ký (không bao giờ thấy địa chỉ email của họ), quét bình luận rác (vào thùng rác, không mất hẳn), tìm khắp kho bài, và cho bạn biết có bản mới chưa. Và nó trông nom được: sắp lại trang nhất theo bài người ta thật sự đọc, đổi diện mạo trong bộ màu và font đã tuyển sẵn (không bao giờ nhận màu tự do — agent không có mắt), trả lời bình luận nhân danh bạn, gửi bản tin thử về đúng hộp thư của bạn, và sao lưu trước khi làm gì lớn. [Sổ tay agent](./docs/agent-cookbook.md) là một trang các câu lệnh làm việc thật — báo cáo sáng thứ Hai, nháp bản tin, rà kho bài.
 
 Các cấu hình nhạy cảm bị chặn qua MCP, và quyền vẫn nằm ở bạn. Thu hồi token trong trang quản trị là nó chết ngay.
+
+**Và kho mã này dạy luôn cho agent.** Ba bộ kỹ năng nằm sẵn trong `.claude/skills/`, nên một trợ lý vừa clone kho về là đã biết cách dựng một blog, vận hành nó qua MCP, và dọn nhà từ WordPress, Ghost, Substack hay Medium sang — kể cả những việc mà bộ nhập liệu cố ý để lại cho người làm. Không phải cài gì thêm: clone về rồi hỏi. [Chúng gồm những gì](./docs/agent-ready.md#skills-that-ship-in-the-repository).
 
 ---
 
