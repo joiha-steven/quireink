@@ -12,6 +12,9 @@ import { getSettings, saveSettings } from '@/content/settings'
 import { clearCache } from '@/server/cache'
 import { createApp } from '@/web/app'
 import { payload } from '@/test/api'
+import { createHash, createHmac } from 'node:crypto'
+import { serverSecret } from '@/auth/secret'
+import { issueStamp, resetStamps } from '@/comments/stamp'
 
 const DIR = './.tmp/test-interactive'
 freshDatabase(DIR)
@@ -40,6 +43,25 @@ const get = async (path: string): Promise<Response> => app.request(path)
 const COMMENT = { name: 'Reader', email: 'reader@example.com', content: 'Nice post' }
 
 /**
+ * A comment body carrying a solved stamp, the way a browser sends one (ADR 0032).
+ *
+ * Every case below is about what the route does with the CONTENT, so each one needs a
+ * stamp that passes: without one the gate answers 400 first and the assertion under test
+ * never runs. The stamp's own rules — a forged signature, a replay, one sent in half a
+ * second — are `comments/stamp.test.ts`.
+ */
+function stamped(body: Record<string, unknown>): Record<string, unknown> {
+  const s = issueStamp()
+  const issued = Date.now() - 10_000
+  const signature = createHmac('sha256', serverSecret('comment-stamp'))
+    .update(`${s.salt}.${s.target}.${issued}.${s.range}`)
+    .digest('hex')
+  let answer = 0
+  while (createHash('sha256').update(`${s.salt}${answer}`).digest('hex') !== s.target) answer++
+  return { ...body, stamp: { ...s, issued, signature, answer } }
+}
+
+/**
  * Put a subscriber straight into the table.
  *
  * Via `query().run()` rather than `db().run()`: the latter types its rest parameter as an
@@ -53,6 +75,7 @@ const seedSubscriber = (email: string, status: string, token: string) =>
 
 beforeEach(async () => {
   clearCache()
+  resetStamps()
   for (const t of ['posts', 'pages', 'post_terms', 'post_revisions', 'settings', 'comments', 'subscribers']) {
     db().run(`delete from ${t}`)
   }
@@ -63,9 +86,24 @@ beforeEach(async () => {
 describe('POST /api/comments', () => {
   const publish = () => savePost({ title: 'A Post', content: 'body', status: 'published', date: PAST })
 
+  it('refuses a comment with no stamp at all — the gate is the default, not an option', async () => {
+    await publish()
+    // Exactly what a script that POSTs the JSON it saw in devtools would send.
+    const res = await post('/api/comments', { postSlug: 'a-post', ...COMMENT }, '203.0.113.31')
+    expect(res.status).toBe(400)
+    expect(await get('/api/comments?post=a-post').then((r) => r.text())).not.toContain('Nice post')
+  })
+
+  it('refuses a comment whose stamp was already spent', async () => {
+    await publish()
+    const body = stamped({ postSlug: 'a-post', ...COMMENT })
+    expect((await post('/api/comments', body, '203.0.113.32')).status).toBe(200)
+    expect((await post('/api/comments', body, '203.0.113.33')).status).toBe(400)
+  })
+
   it('accepts a comment on a published post', async () => {
     await publish()
-    const res = await post('/api/comments', { postSlug: 'a-post', ...COMMENT }, '203.0.113.11')
+    const res = await post('/api/comments', stamped({ postSlug: 'a-post', ...COMMENT }), '203.0.113.11')
     expect(res.status).toBe(200)
     const { comment } = await payload<{ comment: Record<string, unknown> }>(res)
     expect(comment.name).toBe('Reader')
@@ -74,7 +112,7 @@ describe('POST /api/comments', () => {
 
   it('never returns an email address to a reader', async () => {
     await publish()
-    await post('/api/comments', { postSlug: 'a-post', ...COMMENT }, '203.0.113.12')
+    await post('/api/comments', stamped({ postSlug: 'a-post', ...COMMENT }), '203.0.113.12')
     const body = await get('/api/comments?post=a-post').then((r) => r.text())
     // The address is stored, for reply notifications. It must not leave the server.
     expect(body).toContain('Nice post')
@@ -85,9 +123,9 @@ describe('POST /api/comments', () => {
     await savePost({ title: 'Draft', content: 'x', status: 'draft', date: PAST })
     await savePost({ title: 'Later', content: 'x', status: 'published', date: FUTURE })
     // Otherwise an unpublished slug is a place to store text on someone else's server.
-    expect((await post('/api/comments', { postSlug: 'draft', ...COMMENT }, '203.0.113.13')).status).toBe(404)
-    expect((await post('/api/comments', { postSlug: 'later', ...COMMENT }, '203.0.113.14')).status).toBe(404)
-    expect((await post('/api/comments', { postSlug: 'nope', ...COMMENT }, '203.0.113.15')).status).toBe(404)
+    expect((await post('/api/comments', stamped({ postSlug: 'draft', ...COMMENT }), '203.0.113.13')).status).toBe(404)
+    expect((await post('/api/comments', stamped({ postSlug: 'later', ...COMMENT }), '203.0.113.14')).status).toBe(404)
+    expect((await post('/api/comments', stamped({ postSlug: 'nope', ...COMMENT }), '203.0.113.15')).status).toBe(404)
   })
 
   it('requires a name and a plausible email', async () => {
@@ -99,16 +137,16 @@ describe('POST /api/comments', () => {
       { ...COMMENT, content: '' },
     ]
     for (const [i, body] of bad.entries()) {
-      expect((await post('/api/comments', { postSlug: 'a-post', ...body }, `203.0.113.2${i}`)).status).toBe(400)
+      expect((await post('/api/comments', stamped({ postSlug: 'a-post', ...body }), `203.0.113.2${i}`)).status).toBe(400)
     }
   })
 
   it('strips a javascript: website rather than storing it', async () => {
     await publish()
     // A stored `javascript:` URL rendered as a link is an XSS on every reader of the post.
-    const res = await post('/api/comments', {
+    const res = await post('/api/comments', stamped({
       postSlug: 'a-post', ...COMMENT, website: 'javascript:alert(1)',
-    }, '203.0.113.16')
+    }), '203.0.113.16')
     expect(res.status).toBe(200)
     const body = await get('/api/comments?post=a-post').then((r) => r.text())
     expect(body).not.toContain('javascript:')
@@ -116,7 +154,7 @@ describe('POST /api/comments', () => {
 
   it('keeps an http website', async () => {
     await publish()
-    await post('/api/comments', { postSlug: 'a-post', ...COMMENT, website: 'https://example.com' }, '203.0.113.17')
+    await post('/api/comments', stamped({ postSlug: 'a-post', ...COMMENT, website: 'https://example.com' }), '203.0.113.17')
     expect(await get('/api/comments?post=a-post').then((r) => r.text())).toContain('example.com')
   })
 
@@ -124,7 +162,7 @@ describe('POST /api/comments', () => {
     await publish()
     const statuses: number[] = []
     for (let i = 0; i < 9; i++) {
-      statuses.push((await post('/api/comments', { postSlug: 'a-post', ...COMMENT, content: `c${i}` }, '198.51.100.9')).status)
+      statuses.push((await post('/api/comments', stamped({ postSlug: 'a-post', ...COMMENT, content: `c${i}` }), '198.51.100.9')).status)
     }
     expect(statuses.filter((s) => s === 429).length).toBeGreaterThan(0)
   })
@@ -133,7 +171,7 @@ describe('POST /api/comments', () => {
     await publish()
     const { comments } = await getSettings()
     await saveSettings({ comments: { ...comments, enabled: false } })
-    expect((await post('/api/comments', { postSlug: 'a-post', ...COMMENT }, '203.0.113.18')).status).toBe(403)
+    expect((await post('/api/comments', stamped({ postSlug: 'a-post', ...COMMENT }), '203.0.113.18')).status).toBe(403)
     // And the read side returns an empty list rather than an error, so the island renders
     // nothing and the page is unaffected.
     expect(await payload<{ comments: unknown[] }>(get('/api/comments?post=a-post'))).toEqual({ comments: [] })

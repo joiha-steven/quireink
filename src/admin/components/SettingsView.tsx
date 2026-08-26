@@ -280,7 +280,7 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
               <NewsletterFields />
             </Card>
             <Card panel title={t.cardCloudflare}>
-              <CloudflareFields configured={integrations.cloudflareConfigured} zoneId={integrations.cloudflareZoneId} />
+              <CloudflareFields configured={integrations.cloudflareConfigured} zoneId={integrations.cloudflareZoneId} webhookConfigured={integrations.purgeWebhookConfigured} />
             </Card>
           </div>
           <div className={COL}>

@@ -29,6 +29,50 @@ export function registerFlows({ flow, expect, atWidth }: Tour): void {
   // `article a[href^="/"]` and picked up a category link, then reported a perfectly good article
   // as bodyless — the tour's own aim was wrong, which is the failure mode a tour has to avoid
   // most: a red line nobody believes.
+  // The comment gate (ADR 0032), end to end, in the browser it has to work in. `check:all`
+  // proves the arithmetic; only this proves that a reader can leave a comment — the island
+  // solving a real challenge with the browser's own crypto, and the same POST refused when
+  // nobody solved anything. It was watched RED against a build with the island removed.
+  flow('a reader can comment, and a script cannot', () => expect('/', `
+    (async () => {
+      const xml = await (await fetch('/sitemap.xml')).text()
+      const urls = [...xml.matchAll(/<loc>([^<]+)<\\/loc>/g)].map((m) => m[1])
+      const post = urls.map((u) => new URL(u).pathname)
+        .find((p) => /^\\/[a-z0-9-]+$/.test(p) && !['/search','/list'].includes(p))
+      if (!post) return 'the sitemap listed no post-shaped URL'
+      const slug = post.slice(1)
+
+      // What a bot does: the JSON, with nothing solved.
+      const bare = await fetch('/api/comments', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ postSlug: slug, name: 'Bot', email: 'bot@example.com', content: 'buy things' }),
+      })
+      if (bare.ok) return 'a comment with no stamp was ACCEPTED'
+
+      // What a reader does: the page's own challenge, solved here the way the island does.
+      const html = await (await fetch(post)).text()
+      const raw = html.match(/data-stamp="([^"]*)"/)
+      if (!raw) return post + ' carried no challenge'
+      const stamp = JSON.parse(raw[1].replace(/&quot;/g, '"').replace(/&amp;/g, '&'))
+      const enc = new TextEncoder()
+      let answer = -1
+      for (let n = 0; n < stamp.range; n++) {
+        const d = await crypto.subtle.digest('SHA-256', enc.encode(stamp.salt + n))
+        const hex = [...new Uint8Array(d, 0, 8)].map((b) => b.toString(16).padStart(2, '0')).join('')
+        if (hex === stamp.target.slice(0, 16)) { answer = n; break }
+      }
+      if (answer < 0) return 'the challenge had no answer inside its own range'
+      const real = await fetch('/api/comments', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          postSlug: slug, name: 'Tour', email: 'tour@example.com',
+          content: 'Left by the tour, through the gate.', stamp: { ...stamp, answer },
+        }),
+      })
+      if (!real.ok) return 'a solved comment was refused: ' + real.status
+      return 'ok (bot ' + bare.status + ', reader 200, answer ' + answer + ')'
+    })()`, 4000))
+
   flow('an article renders its body', () => expect('/', `
     (async () => {
       const xml = await (await fetch('/sitemap.xml')).text()

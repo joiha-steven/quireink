@@ -52,6 +52,9 @@ abandoned on 2026-07-26, and the only trace was a private memory file.
 | [0028](0028-a-link-is-a-pen-gesture.md) | A link is underlined by the pen, in dashes, in the pen's own ink | 2026-08-21 | ✅ |
 | [0029](0029-the-pen-becomes-the-owners.md) | The pen's colours become the owner's, and the defaults stay measured | 2026-08-24 | ✅ |
 | [0030](0030-two-factor-can-wait-until-there-is-an-address.md) | Two-factor can wait, but only until the blog has a public address | 2026-08-25 | ✅ |
+| [0031](0031-the-blog-winds-its-own-clock.md) | The process schedules its own ticks; `/api/cron` stays for external schedulers | 2026-08-27 | ✅ |
+| [0032](0032-the-comment-gate-needs-no-account.md) | A signed proof-of-work gate on comments by default; Turnstile takes over when its keys are set | 2026-08-27 | ✅ |
+| [0033](0033-purging-an-edge-that-is-not-cloudflare.md) | A purge webhook beside the Cloudflare pair, so any CDN can be flushed | 2026-08-27 | ✅ |
 
 ## Superseded, and why that matters
 

@@ -117,6 +117,8 @@ export type Dict = {
   commentReply: string
   commentDeleted: string
   commentError: string
+  /** Shown for the moment a stale comment stamp is being re-solved (ADR 0032). */
+  commentChecking: string
   commentSignInGoogle: string
   commentAs: string
   commentSignOut: string
@@ -615,6 +617,10 @@ export type AdminStrings = {
   commentsEnableDesc: string
   commentsTurnstile: string
   commentsTurnstileDesc: string
+  /** Which comment gate is standing right now (ADR 0032): Turnstile when its keys are
+   *  set, and the blog's own signed puzzle otherwise. */
+  commentsGateTurnstile: string
+  commentsGateStamp: string
   commentsNeedsKey: string
   commentsGoogleAuth: string
   commentsAuthDesc: string
@@ -823,6 +829,9 @@ export type AdminStrings = {
   cfHelp: string
   cfZoneId: string
   cfToken: string
+  /** The purge webhook for any CDN that is not Cloudflare (ADR 0033). */
+  cfWebhook: string
+  cfWebhookHelp: string
   // WordPress import (Admin → Settings → Integrations)
   cardImport: string
   importHelp: string

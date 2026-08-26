@@ -50,7 +50,7 @@ import { handleMcp } from '@/web/admin/mcp-transport'
 import { adminShell, handleAdminAsset } from '@/web/admin/spa'
 import { currentOwner } from '@/web/guard'
 import { staticFile, staticPaths } from '@/web/static'
-import { handleCommentsGet, handleCommentsPost } from '@/web/comments'
+import { handleCommentsGet, handleCommentsPost, handleStampGet } from '@/web/comments'
 import { commentAuthRoutes } from '@/web/comment-auth'
 import { SPECULATION_PATH, speculationRules } from '@/web/speculation'
 import {
@@ -230,6 +230,7 @@ export function createApp(): Hono {
 
   app.get('/api/search/index', handleSearchIndex)
   app.get('/api/comments', handleCommentsGet)
+  app.get('/api/comments/stamp', handleStampGet)
   app.post('/api/comments', handleCommentsPost)
   // Reader sign-in, which is not the owner's: it grants a filled-in name and a skipped
   // captcha, nothing more. Mounted here rather than with `/api/auth` for that reason.

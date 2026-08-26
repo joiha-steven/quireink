@@ -12,15 +12,8 @@ import { savePost } from '@/content/posts'
 import { savePage } from '@/content/pages'
 import { SlugConflictError } from '@/content/slugs'
 import { previewToken } from '@/content/preview'
-import { finalizePendingThumbs, finalizePendingVariants } from '@/media/finalize'
-import { purgeExpiredSessions } from '@/auth/sessions'
-import { sweepPendingSubscribers } from '@/news/subscribers'
-import { pruneRendered } from '@/render/render-cache'
-import {
-  sweepScheduled, PUBLISH_TICK_LOOKBACK_MS, HOURLY_LOOKBACK_MS,
-} from '@/server/scheduled'
-import { maybeRunBackup } from '@/server/backup'
-import { purgeEdge } from '@/server/edge-cache'
+import { publishTick, fullTick } from '@/server/tick'
+// Still here for the importers below, which empty the page cache after a bulk insert.
 import { clearCache } from '@/server/cache'
 import { clientIp, rateLimited } from '@/server/rate-limit'
 import { logActivity } from '@/server/activity'
@@ -197,7 +190,7 @@ export function publicOpsRoutes(): Hono {
 
   app.get('/api/cron', async (c) => {
     // A cap BEFORE the token check, and the reason is what this route does rather than what
-    // it returns: one call clears the page cache, calls Cloudflare's purge API, runs sharp
+    // it returns: one call clears the page cache, purges the CDN if one is configured, runs sharp
     // over any pending image variants and may take a full backup of both databases and the
     // uploads tree. On a fresh install CRON_SECRET is unset and the route is open — so it
     // was an unauthenticated lever on the most expensive work the process can do, on a
@@ -213,86 +206,12 @@ export function publicOpsRoutes(): Hono {
       return fail(c, 'Unauthorized', 401)
     }
 
-    // Keep-alive: the cheapest possible read, which doubles as a liveness probe.
-    one<{ id: number }>(`select id from settings limit 1`)
-
-    // The frequent (5-minute) tick only flips due scheduled posts live. Its short lookback
-    // matches the cadence; the hourly run below uses a wider one as a backstop.
+    // What a tick does lives in `server/tick.ts`, because since ADR 0031 the process runs
+    // the same two ticks on its own clock and two copies of this would drift.
     if (c.req.query('publish') === '1') {
-      const published = await sweepScheduled(PUBLISH_TICK_LOOKBACK_MS)
-      if (published > 0) clearCache()
-      return json({ alive: true, published })
+      return json({ alive: true, published: await publishTick() })
     }
-
-    // Deploy hook. A code deploy runs no admin write, so nothing would otherwise flush the
-    // edge; `?purge=1` does it. The origin cache is a Map and empties for free.
-    const doPurge = c.req.query('purge') === '1'
-    if (doPurge) {
-      clearCache()
-      await purgeEdge().catch(() => { /* the edge is best-effort */ })
-    }
-
-    // Each step is isolated: a finalize failure must not skip the publish sweep, and
-    // neither must skip the session purge. That isolation is why these are not one try.
-    let finalized = 0
-    let thumbs = 0
-    try {
-      finalized = await finalizePendingVariants()
-      thumbs = await finalizePendingThumbs()
-    } catch (error) {
-      console.error(`[ERROR] cron finalize: ${(error as Error).message}`)
-    }
-    // A finalised straggler changes rendered output (a plain <img> becomes a <picture>),
-    // and the pages embedding it were cached without those sources.
-    if (finalized > 0) clearCache()
-
-    let published = 0
-    try {
-      published = await sweepScheduled(HOURLY_LOOKBACK_MS)
-      if (published > 0) clearCache()
-    } catch (error) {
-      console.error(`[ERROR] cron publish sweep: ${(error as Error).message}`)
-    }
-
-    // New in 2.0: sessions expire but their rows do not remove themselves, and the request
-    // path deliberately only deletes the one it has in hand.
-    let sessions = 0
-    try {
-      sessions = purgeExpiredSessions()
-    } catch (error) {
-      console.error(`[ERROR] cron session purge: ${(error as Error).message}`)
-    }
-
-    // Pending sign-ups that never confirmed. Same standing as the session purge: rows that
-    // expire but do not remove themselves, swept here because nothing on the request path
-    // should ever pay for it. Mostly bot droppings — see subscribers.ts for why they are
-    // hard-deleted rather than swept into the Trash.
-    let staleSignups = 0
-    try {
-      staleSignups = await sweepPendingSubscribers()
-    } catch (error) {
-      console.error(`[ERROR] cron subscriber sweep: ${(error as Error).message}`)
-    }
-
-    // The render cache is insert-only for the same reason it needs no invalidation, so this
-    // is the only thing that ever removes a row from it. Bounded per tick, and it swallows
-    // its own failures, so it needs no isolation of its own.
-    const renderRows = pruneRendered()
-
-    // Last, and isolated like the rest: a snapshot is the slowest thing in the tick (it
-    // reads both databases and the whole uploads tree), and nothing above it should be
-    // waiting on that or skipped by its failure.
-    let backup: { ran: boolean; name?: string; error?: string } = { ran: false }
-    try {
-      backup = await maybeRunBackup()
-    } catch (error) {
-      backup = { ran: false, error: (error as Error).message }
-      console.error(`[ERROR] cron backup: ${(error as Error).message}`)
-    }
-
-    return json({
-      alive: true, purged: doPurge, finalized, thumbs, published, sessions, staleSignups, renderRows, backup,
-    })
+    return json({ alive: true, ...await fullTick({ purge: c.req.query('purge') === '1' }) })
   })
 
   // ----- the health probe -----------------------------------------------------

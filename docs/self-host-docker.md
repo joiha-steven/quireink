@@ -38,6 +38,23 @@ Docker only changes the image when you pull. The two-part tag (`:2.2`) still tak
 within a line for anyone who wants to step up a major version deliberately, and the
 three-part one (`:2.2.0`) pins one exact release forever.
 
+**Or take HTTPS with it.** [`docker-compose.caddy.yml`](../docker-compose.caddy.yml) is the
+same service with Caddy in front, which gets a certificate from Let's Encrypt and renews it
+by itself: no certbot, nothing scheduled, and section 5's nginx block is not needed at all.
+Point the domain at the machine first, then:
+
+```bash
+cp .env.docker.example .env       # set SITE_URL and CADDY_DOMAIN
+docker compose -f docker-compose.caddy.yml up -d
+docker compose -f docker-compose.caddy.yml logs quire     # the link that claims the blog
+```
+
+The [`Caddyfile`](../Caddyfile) beside it carries the same security headers the nginx block
+does, including the content security policy the app is tested against. Use the plain compose
+file instead when something else already terminates TLS — an existing nginx, a tunnel, a
+load balancer — because two of them fighting over ports 80 and 443 is a worse problem than
+the one this solves.
+
 **Or build it yourself** from this repository, which is what `docker-compose.yml` does and
 what you want if you have changed anything:
 
