@@ -17,12 +17,13 @@
 // picked, and `pageStyles` declares only the owner's own faces, so a logo may not assume
 // any given family is even present. The art lives in `@/brand-art`, which the admin shares.
 
-import { WORD_INK, WORD_QUIRE, WORD_VIEWBOX } from '@/brand-art'
-/** The word: `quire` in Inter, `INK` in JetBrains Mono. */
+import { BRAND_RED, WORD_DOT, WORD_INK, WORD_QUIRE, WORD_VIEWBOX } from '@/brand-art'
+/** The word: `quire` in Literata, `INK` in JetBrains Mono, and a full stop in ink. */
 export function quireWord(height = 26): string {
   return `<svg class="brand-word" height="${height}" viewBox="${WORD_VIEWBOX}" `
     + `fill="currentColor" role="img" aria-label="quireINK">`
-    + `<path d="${WORD_QUIRE}"/><path d="${WORD_INK}"/></svg>`
+    + `<path d="${WORD_QUIRE}"/><path d="${WORD_INK}"/>`
+    + `<circle cx="${WORD_DOT.cx}" cy="${WORD_DOT.cy}" r="${WORD_DOT.r}" fill="${BRAND_RED}"/></svg>`
 }
 
 /**

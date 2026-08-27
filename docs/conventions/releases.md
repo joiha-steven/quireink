@@ -46,9 +46,11 @@ On any behavior change, update the matching doc in the SAME change (Working prin
 - **Cutting a release** (only when asked): `bun run check:all` and `bun run build` both exit 0
   (there is no binary — [ADR 0022](../decisions/0022-ship-from-source-not-a-compiled-binary.md)); the CHANGELOG entry is written and dated; push `main`; then
   `gh release create v<version> --title "v<version> — <tagline>" --notes-file <file>`.
-  The version lives in exactly **four** tracked places — `package.json`, the title line of
-  **both** READMEs (`# quire**INK** <version>`), and this line — plus the CHANGELOG entry
-  heading and each README's release-note paragraph, which is rewritten per release anyway.
+  The version lives in exactly **four** tracked places — `package.json`, the version chip
+  right under the wordmark at the top of **both** READMEs (a line that is just `` `<version>` ``
+  — the text title left when the wordmark image arrived, 2026-08-27), and this line — plus
+  the CHANGELOG entry heading and each README's release-note paragraph, which is rewritten
+  per release anyway.
   It said three and named `# **quire**blog`, from before the rename and before
   `README.vi.md` existed, so the instruction for finding the stale copy was itself a stale
   copy — and this line itself sat at `2.1.0` while the product was on `2.1.2`, which is the

@@ -5,11 +5,11 @@
 // the admin renders in whatever chrome font the owner picked: as text this would have been a
 // different logo per install.
 //
-// Collapsed shows `Qi`, which is the same logo at the size where the word would be a smear.
+// Collapsed shows `Q.`, which is the same logo at the size where the word would be a smear.
 // The old rail printed the initials "qb" instead, which was a second mark that existed only
 // in the collapsed state and only in this file.
 
-import { MARK_I, MARK_Q, MARK_VIEWBOX, WORD_INK, WORD_QUIRE, WORD_VIEWBOX } from '@/brand-art'
+import { BRAND_RED, MARK_DOT, MARK_Q, MARK_VIEWBOX, WORD_DOT, WORD_INK, WORD_QUIRE, WORD_VIEWBOX } from '@/brand-art'
 
 /**
  * Height-driven, both of them: the letterforms have fixed proportions, so setting the height
@@ -17,9 +17,9 @@ import { MARK_I, MARK_Q, MARK_VIEWBOX, WORD_INK, WORD_QUIRE, WORD_VIEWBOX } from
  */
 export function BrandMark({ height = 22 }: { height?: number }) {
   return (
-    <svg viewBox={MARK_VIEWBOX} height={height} fill="currentColor" className="w-auto shrink-0" role="img" aria-label="Qi">
+    <svg viewBox={MARK_VIEWBOX} height={height} fill="currentColor" className="w-auto shrink-0" role="img" aria-label="Q.">
       <path d={MARK_Q} />
-      <path d={MARK_I} />
+      <circle cx={MARK_DOT.cx} cy={MARK_DOT.cy} r={MARK_DOT.r} fill={BRAND_RED} />
     </svg>
   )
 }
@@ -29,6 +29,7 @@ export function BrandWord({ height = 20 }: { height?: number }) {
     <svg viewBox={WORD_VIEWBOX} height={height} fill="currentColor" className="w-auto" role="img" aria-label="quireINK">
       <path d={WORD_QUIRE} />
       <path d={WORD_INK} />
+      <circle cx={WORD_DOT.cx} cy={WORD_DOT.cy} r={WORD_DOT.r} fill={BRAND_RED} />
     </svg>
   )
 }

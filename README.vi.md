@@ -2,10 +2,10 @@
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/brand/wordmark-dark.svg">
-  <img src="docs/brand/wordmark-light.svg" alt="quireINK" width="340">
+  <img src="docs/brand/wordmark-light.svg" alt="quireINK" width="360">
 </picture>
 
-# quire**INK** &nbsp;`2.2.1`
+`2.2.1`
 
 **Một cái blog bạn tự host, và AI agent có thể vận hành thay bạn.**
 Không thuật toán, không quảng cáo, không nền tảng nào đứng giữa bạn và người đọc.
