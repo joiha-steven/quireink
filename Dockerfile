@@ -115,6 +115,11 @@ RUN mkdir -p "$DATA_DIR" "$STORAGE_LOCAL_DIR" && chown -R bun:bun /var/lib/quire
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 
+# How the official MCP registry proves this image is ours: the value must match `name` in
+# `server.json`, and the registry reads it off the published manifest. It is a label and
+# nothing reads it at runtime, so it costs a layer of metadata and no bytes that run.
+LABEL io.modelcontextprotocol.server.name="com.quireink/blog"
+
 EXPOSE 3000
 
 # The probe lives HERE rather than in `docker-compose.yml`, so `docker run` gets it too and
