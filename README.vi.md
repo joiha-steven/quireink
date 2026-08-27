@@ -249,6 +249,11 @@ Các thẻ theo số phiên bản ở dưới dành cho ai muốn tự tay quy�
 Cũng có trên GHCR là `ghcr.io/joiha-steven/quireink` — cùng một image, do cùng một lần chạy
 đẩy lên và mang cùng digest, nên hai nơi không thể lệch nhau.
 
+**Trên droplet DigitalOcean mới tinh** (hay VM Ubuntu nào có cloud-init): dán
+[`deploy/digitalocean/user-data.sh`](./deploy/digitalocean/user-data.sh) vào ô
+initialization script ở trang tạo droplet — ba phút sau khi máy nổ là blog đã chạy, kèm
+sẵn link nhận chủ — [cách làm và lý do](./deploy/digitalocean/README.md).
+
 **Hoặc tự dựng từ repo này**, đúng như `docker-compose.yml` làm:
 
 ```bash

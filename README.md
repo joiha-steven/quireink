@@ -249,6 +249,11 @@ fixes in it. The version tags below exist for anyone who wants to move by hand i
 Also on GHCR as `ghcr.io/joiha-steven/quireink` — the same image, pushed by the same run and
 carrying the same digest, so the two can never drift.
 
+**On a fresh DigitalOcean droplet** (or any Ubuntu VM with cloud-init): paste
+[`deploy/digitalocean/user-data.sh`](./deploy/digitalocean/user-data.sh) into the
+droplet-create page's initialization-script box and the blog is serving three minutes
+after boot, claim link included — [how and why](./deploy/digitalocean/README.md).
+
 **Or build it from this repository**, which is what `docker-compose.yml` does:
 
 ```bash
