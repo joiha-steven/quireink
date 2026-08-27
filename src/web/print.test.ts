@@ -75,4 +75,18 @@ describe('the print sheet', () => {
     expect(PRINT).toContain('.prose a[href^="http"]::after')
     expect(PRINT).toContain('.prose a[href^="#"]::after,.prose a.footnote-ref::after')
   })
+
+  // The one that got away. Every rule above was written and checked against an ARTICLE, and
+  // an article carries no listing cards — so nothing here noticed that a LISTING prints its
+  // cards at whatever opacity the scroll reveal had reached, which for everything below the
+  // fold is zero. Measured on the front page 2026-08-27: five of ten cards at opacity 0,
+  // still taking their space. Two posts and a wall of white, over three sheets.
+  it('undoes the scroll reveal, which on paper never scrolls', async () => {
+    expect(PRINT).toContain('.reveal{animation:none!important;opacity:1!important;transform:none!important}')
+
+    // ...and the class is really the one a listing writes, so this cannot rot into a rule
+    // that silences nothing the way the hide-list above could.
+    const html = await (await app.request('/')).text()
+    expect(html).toContain('class="reveal"')
+  })
 })

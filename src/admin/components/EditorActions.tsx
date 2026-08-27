@@ -162,7 +162,13 @@ export function EditorActions({
           </span>
         )}
       </div>
-      <div className="flex items-center gap-1.5">
+      {/* flex-wrap, and it is load-bearing rather than tidy. The BAR wraps, so this group
+          drops onto a line of its own on a narrow screen — and then sits there as one
+          551px row inside a 390px phone, with Save draft and Publish off the right-hand
+          edge and the whole admin scrolling sideways to reach them. Measured 2026-08-27:
+          584px of scroll width on a 390px viewport, editing an existing post. justify-end
+          keeps the pair that ENDS the session on the reading edge whether it wraps or not. */}
+      <div className="flex flex-wrap items-center justify-end gap-1.5">
         {/* Quiet, and BEFORE the session-ending pair: these two change what you look AT,
             not what happens to the piece. Beside Attributes at the owner's instruction, and
             SPELLED OUT in the same voice — a bold mono "MD" next to a plain-text word read

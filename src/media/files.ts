@@ -9,6 +9,7 @@ import {
 } from '@/media/blob'
 import { slugify } from '@/utils'
 import { safeFetch } from '@/server/safe-fetch'
+import { readCapped, uploadLimits } from '@/media/limits'
 import { all, run, tx } from '@/store/query'
 import { liveOnly, nowMs, toIso } from '@/store/db'
 
@@ -68,7 +69,14 @@ export async function renderLogo(
   const contentType = res.headers.get('content-type') ?? ''
   const isRaster = LOGO_RASTER.test(contentType) || (!contentType && LOGO_EXT_RASTER.test(sourceUrl))
   if (!isRaster) return null // svg / gif / unknown: serve original untouched
-  const src = Buffer.from(await res.arrayBuffer())
+  // Capped WHILE reading, like every other byte path that starts with a URL somebody typed.
+  // This one was reading the whole response into memory first and asking nothing, so a
+  // logo address pointing at a large file was a way to make the process eat it — and the
+  // reverse proxy cannot see a fetch this server made. The same cap the upload form uses.
+  const { maxFileBytes } = await uploadLimits()
+  const read = await readCapped(res, maxFileBytes)
+  if ('tooLarge' in read) return null // caller serves the original untouched
+  const src = Buffer.from(read.body)
   // PORT NOTE: sharp is imported here rather than at the top of the file. It is the only
   // sharp user reachable from `content/settings.ts`, which every request touches, so a
   // top-level import put it on the BOOT path — and `bun build --compile` bundles sharp's
