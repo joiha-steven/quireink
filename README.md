@@ -181,7 +181,7 @@ It stays this way because of a few decisions that are hard to walk back.
 
 - **A rented VPS** — the cheapest tier is enough. The one command below, or Docker.
 - **A DigitalOcean droplet** — paste [one file](./deploy/digitalocean/user-data.sh) into the droplet-create page and it is serving three minutes after boot ([how and why](./deploy/digitalocean/README.md)).
-- **A NAS in your house** — Synology, QNAP, Unraid: the Docker image, with `PUID`/`PGID` so it never runs as root ([notes](./docs/self-host-docker.md); Unraid also has [a template](https://github.com/joiha-steven/unraid-templates)).
+- **A NAS in your house** — on **Unraid** search `QuireInk` in Community Applications; on **Synology** (DSM 7.2+) paste the compose into Container Manager, and QNAP's Container Station takes the same. No shell on any of them: the blog prints its claim link to the container log. [Step by step, per box](./docs/self-host-docker.md#on-a-nas-or-a-home-server).
 - **Any machine with Docker** — pull `quireink/quireink`, `amd64` and `arm64` both.
 
 For the first path you need [Bun](https://bun.sh) 1.3 or newer and a machine you can point a domain at. That is the list.
