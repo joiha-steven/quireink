@@ -2,8 +2,8 @@
 //
 // No route in this app ends in a slash and Hono does not match one, so `/some-post/` missed
 // every route and fell through. That is fine for a URL somebody typed and fatal for a site
-// that MOVED here: every WordPress permalink carries a trailing slash. Measured on the
-// edcmeo export, 468 old URLs of the shape `https://edcmeo.com/{slug}/` — so pointing an
+// that MOVED here: every WordPress permalink carries a trailing slash. Measured on a real
+// WordPress export: 468 old URLs, every one of the shape `https://example.com/{slug}/` — so pointing an
 // imported domain at Quire would have answered 404 to every inbound link and every search
 // result the site already had, which is most of what an import is for.
 //
