@@ -1,0 +1,37 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "com.quireink/blog",
+  "title": "Quire Ink",
+  "description": "Write, publish and steward a self-hosted Quire Ink blog: posts, front page, traffic, comments.",
+  "version": "2.2.1",
+  "websiteUrl": "https://quireink.com",
+  "repository": {
+    "url": "https://github.com/joiha-steven/quireink",
+    "source": "github"
+  },
+  "packages": [
+    {
+      "registryType": "oci",
+      "identifier": "docker.io/quireink/quireink:2.2.1",
+      "transport": {
+        "type": "streamable-http",
+        "url": "https://{SITE_URL}/api/mcp",
+        "headers": [
+          {
+            "name": "Authorization",
+            "description": "Bearer <token>, minted in the blog's admin under Settings → Connections → MCP. The token is shown once and can be revoked at any time.",
+            "isSecret": true,
+            "isRequired": true
+          }
+        ]
+      },
+      "environmentVariables": [
+        {
+          "name": "SITE_URL",
+          "description": "The public address of your blog, e.g. https://example.com. Feeds, share cards and the MCP endpoint are all built from it.",
+          "isRequired": true
+        }
+      ]
+    }
+  ]
+}
