@@ -178,7 +178,12 @@ export function setupWizardRoutes(): OwnerRouter {
     const url = new URL(c.req.url)
     const proto = c.req.header('x-forwarded-proto') ?? url.protocol.replace(':', '')
     const address = url.host === '' ? '' : `${proto}://${url.host}`
-    return html(siteStepScreen(await getSettings(), { address }))
+    // `?lang=` renders THIS screen in the picked language before anything is saved —
+    // the island reloads with it when the select changes. The choice only persists when
+    // the form is submitted, through the same field.
+    const settings = await getSettings()
+    const lang = c.req.query('lang')
+    return html(siteStepScreen(isSiteLang(lang) ? { ...settings, language: lang } : settings, { address }))
   })
 
   router.post('/setup/site', async (c) => {

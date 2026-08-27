@@ -39,7 +39,19 @@ export function escapeHtml(s: string): string {
  */
 export const escapeAttr = escapeHtml
 
-// Convert arbitrary text to a URL-safe slug (supports Vietnamese diacritics).
+// Cyrillic -> latin, one lowercase letter at a time (BGN/PCGN-style). Added with the
+// Russian locale (2026-08-28): a fully-Cyrillic title used to slugify to NOTHING and
+// fall back to `post-<timestamp>`, which is a URL nobody can read aloud. Cyrillic maps
+// cleanly; CJK deliberately still falls through to the timestamp, because romanizing
+// Chinese or Japanese is a judgment call this function has no business making.
+const CYRILLIC: Record<string, string> = {
+  а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'e', ж: 'zh', з: 'z', и: 'i',
+  й: 'i', к: 'k', л: 'l', м: 'm', н: 'n', о: 'o', п: 'p', р: 'r', с: 's', т: 't',
+  у: 'u', ф: 'f', х: 'kh', ц: 'ts', ч: 'ch', ш: 'sh', щ: 'shch', ъ: '', ы: 'y',
+  ь: '', э: 'e', ю: 'yu', я: 'ya',
+}
+
+// Convert arbitrary text to a URL-safe slug (supports Vietnamese diacritics + Cyrillic).
 export function slugify(input: string): string {
   return input
     .normalize('NFD')
@@ -47,6 +59,7 @@ export function slugify(input: string): string {
     .replace(/đ/g, 'd')
     .replace(/Đ/g, 'D')
     .toLowerCase()
+    .replace(/[\u0430-\u044f\u0451]/g, (c) => CYRILLIC[c] ?? '')
     .trim()
     .replace(/[^a-z0-9\s-]/g, '')
     .replace(/[\s-]+/g, '-')

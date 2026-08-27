@@ -54,7 +54,7 @@
   `settings.description` and for the home page that is exactly right, because it IS the site.
   Everywhere else it was a bug wearing a default — search, every tag, every category, every
   series and the 404 shipped one identical sentence. Term pages and series pages now build
-  theirs from `metaTerm` / `metaSeries` in `src/locales/`, and the 404 and search use the
+  theirs from `metaTerm` / `metaSeries` in `locales/`, and the 404 and search use the
   strings already on the page. They are SHORT by SEO convention's 120-160, and deliberately:
   reaching 120 on a tag page means inventing words about it, and a padded sentence that is
   the same shape on ninety pages is the problem this fixed, not the cure.

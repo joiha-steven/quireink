@@ -26,6 +26,7 @@ import { PEN_LIGHT, penStroke } from '@/render/pen'
 import interLatin from '@/render/fonts/inter-latin.woff' with { type: 'file' }
 import interLatinExt from '@/render/fonts/inter-latin-ext.woff' with { type: 'file' }
 import interVietnamese from '@/render/fonts/inter-vietnamese.woff' with { type: 'file' }
+import interCyrillic from '@/render/fonts/inter-cyrillic.woff' with { type: 'file' }
 
 export const OG_SIZE = { width: 1200, height: 630 } as const
 
@@ -46,15 +47,16 @@ export type OgCard = {
   customFont?: ArrayBuffer
 }
 
-// Loaded once. Three subsets, because a title can mix Vietnamese and ASCII and Inter ships
+// Loaded once. Four subsets, because a title can mix Vietnamese and ASCII and Inter ships
 // them separately.
 let fonts: SatoriOptions['fonts'] | null = null
 async function interFonts(): Promise<SatoriOptions['fonts']> {
   if (fonts) return fonts
-  const [latin, latinExt, vietnamese] = await Promise.all([
+  const [latin, latinExt, vietnamese, cyrillic] = await Promise.all([
     Bun.file(interLatin).arrayBuffer(),
     Bun.file(interLatinExt).arrayBuffer(),
     Bun.file(interVietnamese).arrayBuffer(),
+    Bun.file(interCyrillic).arrayBuffer(),
   ])
   // DISTINCT names with an explicit fallback chain. Under ONE name satori treats
   // overlapping subsets as a single font and double-renders any glyph present in more than
@@ -63,6 +65,11 @@ async function interFonts(): Promise<SatoriOptions['fonts']> {
     { name: 'Inter', data: latin, weight: 600, style: 'normal' },
     { name: 'InterExt', data: latinExt, weight: 600, style: 'normal' },
     { name: 'InterVN', data: vietnamese, weight: 600, style: 'normal' },
+    // Cyrillic joined when the site grew Russian (2026-08-28): 10 KB, official Google
+    // subset, converted woff2 -> woff because satori reads woff. Without it a Russian
+    // title rendered as tofu on every share card. (CJK titles still do — a CJK face is
+    // megabytes, and that trade is documented in content/fonts.ts.)
+    { name: 'InterCyr', data: cyrillic, weight: 600, style: 'normal' },
   ]
   return fonts
 }
@@ -203,7 +210,7 @@ export async function renderOgCard(card: OgCard): Promise<Uint8Array> {
   const all = card.customFont
     ? [{ name: 'Site', data: card.customFont, weight: 600 as const, style: 'normal' as const }, ...base]
     : base
-  const family = (card.customFont ? 'Site, ' : '') + 'Inter, InterExt, InterVN'
+  const family = (card.customFont ? 'Site, ' : '') + 'Inter, InterExt, InterVN, InterCyr'
 
   // satori joins sharp below in being loaded on first use rather than at boot, for the
   // other reason: this module is reachable from the route table, so a static import put

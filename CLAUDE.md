@@ -78,7 +78,7 @@ history is never needed to fix or understand code.
 | SQL, migrations, the live/trashed predicate | `src/store/` |
 | Scheduled publishing, redirects, rate limit, activity | `src/server/` |
 | MCP server, tokens | `src/mcp/`, `src/web/admin/mcp-transport.ts`, `src/web/admin/mcp.ts` |
-| UI strings, translations | `src/i18n/`, `src/locales/` |
+| UI strings, translations | `src/i18n/`, `locales/` (repo root, so translators can find it) |
 | Imports (WordPress/Ghost/…), image rescue | `src/import/`, `src/web/admin/ops.ts` |
 
 ## Hard rules — each one is a bug that already shipped
@@ -98,7 +98,7 @@ history is never needed to fix or understand code.
   `recovery_codes`, `integration_keys`, `mcp_tokens`.
 - **Public UI colours come ONLY from theme tokens.** Never a hardcoded `neutral-*`, `white`,
   `black` or hex. ONE typeface, no hardcoded sizes, one divider style, never ALL-CAPS.
-- **UI strings live in `src/i18n` only**, all 6 languages in sync (en, then vi, de, ja, zh, ko).
+- **UI strings live in `locales/` only** (repo root), every language in sync — the compiler enforces the keys; `locales/langs.ts` is the list.
 
 ## Danger zones
 

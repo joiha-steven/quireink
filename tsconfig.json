@@ -56,10 +56,14 @@
 
     "baseUrl": ".",
     "paths": {
+      // The translations live at the repository ROOT (`locales/`) so the community can
+      // find them without knowing the tree — the specifier stays `@/locales/*` on purpose,
+      // and the longest-prefix rule makes this entry win over the generic one below.
+      "@/locales/*": ["./locales/*"],
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src", "scripts"],
+  "include": ["src", "scripts", "locales"],
   // `src/assets/js` is BROWSER code and has its own tsconfig with DOM types. Excluding it
   // here is what stops a server module reaching for `document`: the root project has no
   // DOM lib, so such a reference fails to compile instead of failing on a request.

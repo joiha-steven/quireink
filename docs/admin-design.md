@@ -363,6 +363,6 @@ Analytics 418 → 83ms. Cold load of `/admin` 501 → 329ms.
   better.
 
 Two items left this list on 2026-08-18: the editor chrome labels have long lived in
-`src/locales` (all six languages), and the narrow content tables DID become stacked list
+`locales` (all six languages), and the narrow content tables DID become stacked list
 rows — the comments queue, the subscriber list, the trash and the activity log are the
 one-sheet pages' two-column ledgers now.
