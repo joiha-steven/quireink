@@ -40,6 +40,18 @@ export const ISLANDS_CSS = `
 .to-top.shown{opacity:1;pointer-events:auto}
 .to-top:hover{color:var(--c-heading)}
 
+/* The way back into a half-read post (assets/js/resume.ts). The to-top button's own
+   manners: paper, hairline, quiet corner — bottom CENTRE, because it speaks about the
+   reader's place in the text rather than about the page. It leaves on its own the moment
+   the reader starts scrolling; a control that answers a question nobody asked has to go
+   quietly. */
+.resume-pill{position:fixed;bottom:1.25rem;left:50%;transform:translateX(-50%);z-index:40;
+  max-width:min(92vw,26rem);padding:.55rem 1.1rem;border:1px solid var(--c-rule);border-radius:999px;
+  background:var(--c-bg);color:var(--c-body);cursor:pointer;font-size:var(--fs-small);
+  line-height:var(--lh-small);letter-spacing:var(--ls-small);opacity:0;pointer-events:none;transition:opacity var(--dur-base),color var(--dur-base)}
+.resume-pill.shown{opacity:1;pointer-events:auto}
+.resume-pill:hover{color:var(--c-heading)}
+
 /* The quote control, raised on a selection (assets/js/quote.ts).
    SOLID INK, and the first cut was not: it borrowed the to-top button's hairline-on-paper
    and came out a pale grey pill sitting on top of grey text, which the owner's word for was

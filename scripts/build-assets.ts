@@ -144,7 +144,13 @@ const BUDGET: Record<string, number> = {
   // on every page carrying a form — on a site whose whole claim is zero third-party
   // requests. Turnstile still wins when its keys are set; every other install now has a
   // gate that costs a reader under a kilobyte and costs a bot real arithmetic.
-  'post.js': 15_800,
+  //
+  // RAISED TO 17_000 on 2026-08-27 for the reading position (assets/js/resume.ts), which
+  // cost ~1.1 KB: a forty-minute read is never one sitting, and the way back — stored in
+  // the reader's own browser, offered once, withdrawn on the first scroll — is the second
+  // of the two reader features the owner approved that day (the other, "read next", is
+  // server markup and costs this bundle nothing).
+  'post.js': 17_000,
   // /login only, and NOT loaded with core.js: the sign-in page carries no beacon, no
   // search overlay and no listing controls, so it pays for the reveal toggle, the caps-lock
   // warning and the one-time-code paste, and nothing else.

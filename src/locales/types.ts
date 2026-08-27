@@ -58,6 +58,9 @@ export type Dict = {
   featuredTitle: string
   tagsTitle: string
   relatedTitle: string
+  readNext: string
+  readNextSeries: string
+  resumePrompt: string
   seriesLabel: string
   seriesPartPrefix: string
   seriesTitle: string
@@ -678,6 +681,10 @@ export type AdminStrings = {
   featBookTextDesc: string
   featBookMode: string
   featBookModeDesc: string
+  featReadNext: string
+  featReadNextDesc: string
+  featResume: string
+  featResumeDesc: string
   // SEO fields
   seoCanonical: string
   seoCanonicalHint: string

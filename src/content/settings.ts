@@ -53,6 +53,8 @@ export const DEFAULT_FEATURES: FeatureSettings = {
   penRing: true,
   bookText: false,
   bookMode: true,
+  readNext: true,
+  resume: true,
   infiniteScroll: false,
   gridView: true,
 }

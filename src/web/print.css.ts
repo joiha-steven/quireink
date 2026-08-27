@@ -34,7 +34,7 @@ export const PRINT_CSS = `
    is a selector the site still uses is what said so. */
 .progress,.site-actions,.toc,.to-top,.book-fab,.meta-book,.skip-link,.quote-copy,
 .book-overlay,.lightbox,.subscribe-overlay,.subscribe-card,form.subscribe,
-#comments,.related,footer.site{display:none!important}
+#comments,.related,.read-next,.resume-pill,footer.site{display:none!important}
 /* ...and the rule drawn ABOVE each of them, which would otherwise be left ruling off the
    end of the essay against nothing. The divider belongs to the block it introduces, and
    :has is how a stylesheet says that without the renderer having to know. */

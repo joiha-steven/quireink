@@ -4,7 +4,8 @@
 // is not publicly readable, and the caller turns that into a 404 — a renderer that decides
 // status codes is a renderer that eventually returns a 200 with an apology on it.
 
-import { getPost, getRelatedPosts } from '@/content/posts'
+import type { Post } from '@/types'
+import { getPost, getPublicPosts, getRelatedPosts } from '@/content/posts'
 import { getPage } from '@/content/pages'
 import { getMediaRefs } from '@/media/media-refs'
 import { getSettings, resolveSiteUrl } from '@/content/settings'
@@ -150,6 +151,29 @@ export async function renderArticle(slug: string): Promise<string | null> {
       ? `${anchors}<hr class="taxo-rule"><footer class="post-taxo t-small text-meta">${taxo}</footer>`
       : ''
 
+    // One pointer forward, right where the reader finishes (approved 2026-08-27). The
+    // next part of the series when there is one, else the ADJACENT post — the older
+    // neighbour first, because the index is newest-first and a reader who just finished
+    // this post is walking back through the archive; only the oldest post points forward.
+    let readNextBlock = ''
+    if (features.readNext) {
+      let target: Post | null = null
+      let readLabel = s.readNext
+      if (series && series.currentIndex >= 0 && series.currentIndex < series.posts.length - 1) {
+        target = series.posts[series.currentIndex + 1] ?? null
+        readLabel = s.readNextSeries
+      } else {
+        const all = await getPublicPosts()
+        const at = all.findIndex((p) => p.slug === post.slug)
+        target = at >= 0 ? all[at + 1] ?? all[at - 1] ?? null : null
+      }
+      if (target) {
+        readNextBlock = `<hr><section class="read-next"><p class="read-next-label">${
+          escapeHtml(readLabel)}</p><p class="read-next-title reading-font"><a class="link-accent" href="/${
+          escapeAttr(target.slug)}">${escapeHtml(target.title)}</a></p></section>`
+      }
+    }
+
     const related = features.related ? await getRelatedPosts(post.slug, settings.relatedCount) : []
     const relatedBlock = related.length
       ? `<hr><section class="related"><h2>${escapeHtml(s.relatedTitle)}</h2><ul>${
@@ -160,7 +184,7 @@ export async function renderArticle(slug: string): Promise<string | null> {
     // The right gutter, above the rail breakpoint only. It carries the same facts as the
     // meta line and the taxonomy, so both of those are hidden at that width.
     lead = postInfoPanel(post, settings, s) + seriesBox
-    footer = taxoBlock + relatedBlock
+    footer = taxoBlock + readNextBlock + relatedBlock
   }
 
   // The table of contents is server-rendered markup, so a reader without JavaScript still
@@ -280,6 +304,7 @@ export async function renderArticle(slug: string): Promise<string | null> {
       bookModeClose: s.bookModeClose,
       bookModeSmaller: s.bookModeSmaller,
       bookModeLarger: s.bookModeLarger,
+      ...(post && settings.features.resume ? { resumePrompt: s.resumePrompt } : {}),
     },
     scripts: scriptTag('core') + scriptTag('post'),
   }
