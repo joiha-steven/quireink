@@ -151,7 +151,7 @@ header.site .logo{display:block;height:auto}
    :not(.logo-dark) is load-bearing. The dark twin is class="logo logo-dark", so without it
    the hide rule matched BOTH marks - and at (0,6,2) against the show rule's (0,3,2) it won,
    so a site with a dark logo had no logo at all in dark mode. It shipped that way because no
-   instance had ever set one: measured on edcmeo the day it became the first. */
+   instance had ever set one: found on the first live site that did. */
 header.site .logo-dark{display:none}
 html.dark header.site .title:has(.logo-dark) .logo:not(.logo-dark){display:none}
 html.dark header.site .logo-dark{display:block}

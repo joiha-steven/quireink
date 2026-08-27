@@ -35,19 +35,20 @@ coverage/
 .env*
 !.env.docker.example
 
-# design-sync: staged converter scripts, generated bundle, and machine-local state. All of
-# it is rebuilt from `src/` on every run, so a tracked copy is a second answer to the same
-# question and it is stale the moment a component changes. These rules were written on the
+# design-sync: the Claude Design converter, its configs and its preview wrappers. The whole
+# directory moved to the private sibling on 2026-08-27 — its `projectId`s identify one
+# account's design projects, and no build, test or guard in this repository ever read any of
+# it, so a contributor who clones this cannot use it and does not need it.
+#
+# The generated halves were already ignored, for a different reason worth keeping: they are
+# rebuilt from `src/` on every run, so a tracked copy is a second answer to the same question
+# and it is stale the moment a component changes. The rules were written on the
 # `design-sync-admin-ui` branch, where the durable inputs live; main had none of them, so a
-# `git add -A` here swept 794 generated files into a public repository on 2026-08-01. They
-# are gone again, and this is why.
+# `git add -A` here swept 794 generated files into a public repository on 2026-08-01.
 .ds-sync/
 ds-bundle/
 ds-bundle-reader/
-.design-sync/.cache/
-.design-sync/learnings/
-.design-sync/node_modules
-.design-sync/generated/
+.design-sync/
 
 # typescript
 *.tsbuildinfo
