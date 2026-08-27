@@ -22,7 +22,8 @@
     "skipLibCheck": true,
     "noEmit": true,
     "baseUrl": "../..",
-    "paths": { "@/*": ["./src/*"] }
+    // `@/locales/*` points at the repo-root translations folder; see the root tsconfig.
+    "paths": { "@/locales/*": ["./locales/*"], "@/*": ["./src/*"] }
   },
   // The ambient declarations live outside this folder, and every server module the admin
   // type-imports leans on them. Without this line those modules fail to resolve their

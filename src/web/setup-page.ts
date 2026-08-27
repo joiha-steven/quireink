@@ -43,12 +43,12 @@ export function siteStepScreen(
 <p class="login-lede">${escapeHtml(s.siteStepLede)}</p>
 <form method="post" action="/setup/site" class="login-form">
 
+<label for="language">${escapeHtml(s.siteStepLanguage)}</label>
+<select id="language" name="language" data-setup-lang>${langs}</select>
+
 <label for="title">${escapeHtml(s.siteStepName)}</label>
 <input id="title" name="title" type="text" required autofocus
        value="${escapeAttr(settings.title)}">
-
-<label for="language">${escapeHtml(s.siteStepLanguage)}</label>
-<select id="language" name="language">${langs}</select>
 
 <label for="timezone">${escapeHtml(s.siteStepTz)}</label>
 <input id="timezone" name="timezone" type="text" data-tz autocapitalize="none"

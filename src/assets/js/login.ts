@@ -89,7 +89,26 @@ function timezone(): void {
   }
 }
 
+/**
+ * Switch the setup step's own language the moment it is picked.
+ *
+ * The select is a real form field and saves with the form either way; this only reloads
+ * the page with `?lang=` so the QUESTIONS immediately speak the language that was just
+ * chosen — a person who picked Русский should not have to finish setup in English. The
+ * field sits first in the form, so nothing typed is lost to the reload.
+ */
+function setupLanguage(): void {
+  const select = document.querySelector<HTMLSelectElement>('select[data-setup-lang]')
+  if (select === null) return
+  select.addEventListener('change', () => {
+    const url = new URL(location.href)
+    url.searchParams.set('lang', select.value)
+    location.assign(url.toString())
+  })
+}
+
 reveal()
 capsLock()
 otpPaste()
 timezone()
+setupLanguage()

@@ -83,6 +83,10 @@ export type FontPreset = {
 //     unused weights are never preloaded (variable file carries every weight).
 //   • CJK locale (ja/zh/ko) → NOTHING: the built-ins ship no CJK glyphs, so the title
 //     renders in a system font; preloading a latin file it won't use only steals bandwidth.
+//   • ru → the same, for the same reason: the preset subsets carry no Cyrillic, and the
+//     system serif/sans at the end of every stack draws Cyrillic natively (no Han-style
+//     per-language ambiguity, so no ru tail is needed either). Shipping cyrillic subsets
+//     for the presets is a possible follow-up; the OG card already carries one for Inter.
 //   • custom uploaded font → NOTHING: the face is unsubsetted (whole charset, often
 //     large), so a high-priority preload would contend with the render-blocking CSS and
 //     hurt LCP; swap covers it. (It wins --font-reading via fontToCss regardless.)
@@ -92,7 +96,7 @@ export type FontPreset = {
 export function fontPreloadHrefs(
   id: string, lang: string, hasCustomFont: boolean, chromeFont: string,
 ): string[] {
-  if (lang === 'ja' || lang === 'zh' || lang === 'ko') return []
+  if (lang === 'ja' || lang === 'zh' || lang === 'ko' || lang === 'ru') return []
   const subsets = (slug: string): string[] => (lang === 'vi'
     ? [`/fonts/${slug}-latin.woff2`, `/fonts/${slug}-vietnamese.woff2`]
     : [`/fonts/${slug}-latin.woff2`])

@@ -103,7 +103,7 @@ You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE),
 | 📚&nbsp;**Series** | Write in parts, number them, and every part shows the others |
 | 💾&nbsp;**Backups** | One button downloads the whole install, scheduled snapshots kept on the server, and every snapshot also shipped to your own R2/S3 bucket. [Details](./docs/backups.md) |
 | 📥&nbsp;**Moving&nbsp;in** | Upload a WordPress XML, a Ghost JSON, or the ZIP Substack or Medium emailed you — the server works out whose it is. Everything becomes Markdown, dead shortcodes are swept on the way in, the old URLs answer with redirects, and the images are fetched into your own library |
-| 🌍&nbsp;**Languages** | Six, in the admin and on the site. No CJK webfont ships — they are megabytes — but each of the three names its own face, so 直 is drawn the Japanese way on a Japanese site |
+| 🌍&nbsp;**Languages** | Eleven, in the admin and on the site — and the community can add more, one file per language. No CJK webfont ships — they are megabytes — but each of the three names its own face, so 直 is drawn the Japanese way on a Japanese site |
 | 🔐&nbsp;**Sign-in** | Your own username and password, hashed with argon2id. An authenticator code every time, and ten recovery codes for the day you lose the phone. No Google in the login path |
 | 📱&nbsp;**Phone** | Install it to the home screen and it opens like an app |
 
@@ -169,7 +169,7 @@ It stays this way because of a few decisions that are hard to walk back.
 
 **Instead of a static site generator.** You get a real admin. Write, upload a photo, schedule and publish from a laptop or a phone, with search, comments, a newsletter and stats already there. No rebuild, no deploy, no git push to fix a typo.
 
-**Instead of writing your own.** The boring half is done and tested: sign-in with TOTP, sessions, image resizing, feeds, OG images, redirects, an undo for deletes, revisions, backups, importers for WordPress, Ghost, Substack and Medium, six languages.
+**Instead of writing your own.** The boring half is done and tested: sign-in with TOTP, sessions, image resizing, feeds, OG images, redirects, an undo for deletes, revisions, backups, importers for WordPress, Ghost, Substack and Medium, eleven languages.
 
 <div align="center">
 
@@ -334,6 +334,12 @@ These are the only things that live outside the admin.
 | `UPDATE_CHECK` | ◻️ | Set to `0` to stop the one request this software makes on its own: once a day, on the first visit your blog gets, it asks what the newest release is — and by asking, it is counted as a blog being used. What goes out is the version you run, a code rebuilt from a new date every midnight, and whether your site has a public address. Never your address, your posts, your readers or your figures. On by default, and quiet on its own under `bun --watch` and `bun test` — a development afternoon is not an install. [The whole request is written out here](./docs/self-host.md#10-what-this-blog-tells-us-and-how-to-stop-it). The owner has the same switch in Settings → System |
 
 SMTP, Turnstile and CDN credentials go in **Settings → Connections** and stay on the server. Your posts live in `DATA_DIR` and your uploads folder, never in git.
+
+## Translations
+
+The interface speaks **eleven languages** — English, Tiếng Việt, Deutsch, 日本語, 简体中文, 한국어, Français, Español, Português (Brasil), Italiano, Русский — on the reader's side and in the admin, and the first question of setup is which one this blog speaks.
+
+**Help translate.** Every language is one folder at the repository root: [`locales/`](./locales). To improve a translation, edit `locales/<code>.ts` (what readers see) and `locales/admin/<code>.ts` (what the owner sees) — plain files of quoted strings. To add a language, copy the two `en` files, translate, and register the code in `locales/langs.ts` + `src/types.ts`; the compiler refuses to build until every key exists, so a half-done translation cannot ship silently. Pull requests welcome — a native speaker's ear beats ours.
 
 ---
 

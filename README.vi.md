@@ -104,7 +104,7 @@ Bạn được đọc, sửa, chạy và fork theo [PolyForm Noncommercial](./LI
 | 📚&nbsp;**Loạt&nbsp;bài** | Viết thành nhiều phần, đánh số, và phần nào cũng chỉ ra các phần kia |
 | 💾&nbsp;**Sao&nbsp;lưu** | Một nút tải cả blog về máy bạn, snapshot theo lịch giữ trên máy chủ, và mỗi snapshot cũng được gửi lên bucket R2/S3 của chính bạn. [Chi tiết](./docs/backups.md) |
 | 📥&nbsp;**Dọn&nbsp;nhà&nbsp;sang** | Tải lên XML của WordPress, JSON của Ghost, hay tệp ZIP mà Substack/Medium gửi qua email — máy chủ tự nhận ra của ai. Tất cả thành Markdown, shortcode chết được quét sạch trên đường vào, URL cũ được chuyển hướng sẵn, và ảnh được tải về thư viện của bạn |
-| 🌍&nbsp;**Ngôn&nbsp;ngữ** | Sáu thứ tiếng, cả trong quản trị lẫn ngoài site. Không kèm webfont CJK nào — chúng nặng hàng megabyte — nhưng mỗi thứ tiếng gọi tên mặt chữ riêng, nên 直 được vẽ theo lối Nhật trên site tiếng Nhật |
+| 🌍&nbsp;**Ngôn&nbsp;ngữ** | Mười một thứ tiếng, cả trong quản trị lẫn ngoài site — và cộng đồng có thể thêm nữa, mỗi ngôn ngữ một file. Không kèm webfont CJK nào — chúng nặng hàng megabyte — nhưng mỗi thứ tiếng gọi tên mặt chữ riêng, nên 直 được vẽ theo lối Nhật trên site tiếng Nhật |
 | 🔐&nbsp;**Đăng&nbsp;nhập** | Tên và mật khẩu của riêng bạn, băm bằng argon2id. Mã xác thực mỗi lần vào, và mười mã khôi phục cho ngày mất điện thoại. Không có Google trong đường đăng nhập |
 | 📱&nbsp;**Điện&nbsp;thoại** | Cài ra màn hình chính là nó mở như một ứng dụng |
 
@@ -170,7 +170,7 @@ Nó giữ được như vậy nhờ vài quyết định khó đảo ngược.
 
 **Thay vì một static site generator.** Bạn có trang quản trị thật. Viết, tải ảnh, hẹn giờ và đăng từ laptop hay điện thoại, với tìm kiếm, bình luận, bản tin và thống kê đã có sẵn. Không build lại, không deploy, không phải git push chỉ để sửa một lỗi chính tả.
 
-**Thay vì tự viết lấy.** Nửa phần chán đã làm xong và có test: đăng nhập TOTP, phiên, cắt ảnh, feed, ảnh OG, redirect, hoàn tác khi xoá, lịch sử phiên bản, sao lưu, bộ nhập từ WordPress, Ghost, Substack và Medium, sáu ngôn ngữ.
+**Thay vì tự viết lấy.** Nửa phần chán đã làm xong và có test: đăng nhập TOTP, phiên, cắt ảnh, feed, ảnh OG, redirect, hoàn tác khi xoá, lịch sử phiên bản, sao lưu, bộ nhập từ WordPress, Ghost, Substack và Medium, mười một ngôn ngữ.
 
 <div align="center">
 
@@ -333,6 +333,12 @@ Các cấu hình nhạy cảm bị chặn qua MCP, và quyền vẫn nằm ở b
 | `UPDATE_CHECK` | ◻️ | Đặt `0` để tắt cú gọi duy nhất mà phần mềm này tự thực hiện: mỗi ngày một lần, vào lượt khách đầu tiên, blog hỏi bản mới nhất là bản nào — và chính lúc hỏi thì được đếm là một blog đang được dùng. Thứ gửi đi là phiên bản đang chạy, một mã sinh lại theo ngày mới mỗi nửa đêm, và blog đã có tên miền thật hay chưa. Không có địa chỉ, bài viết, người đọc hay số liệu của bạn. Mặc định bật, và tự im khi chạy `bun --watch` hoặc `bun test` — một buổi chiều của thợ không phải một lượt cài. [Toàn bộ nội dung cú gọi viết ở đây](./docs/self-host.md#10-what-this-blog-tells-us-and-how-to-stop-it). Chủ blog có công tắc tương đương ở Settings → System |
 
 SMTP, Turnstile và thông tin CDN nhập ở **Cấu hình → Kết nối** và nằm lại trên máy chủ. Bài của bạn sống trong `DATA_DIR` và thư mục upload, không bao giờ nằm trong git.
+
+## Bản dịch
+
+Giao diện nói **mười một thứ tiếng** — English, Tiếng Việt, Deutsch, 日本語, 简体中文, 한국어, Français, Español, Português (Brasil), Italiano, Русский — cả phía người đọc lẫn trang quản trị, và câu hỏi đầu tiên khi cài đặt là blog này nói tiếng gì.
+
+**Mời bạn góp bản dịch.** Mỗi ngôn ngữ là một thư mục ngay gốc repo: [`locales/`](./locales). Muốn sửa một bản dịch, mở `locales/<mã>.ts` (chữ người đọc thấy) và `locales/admin/<mã>.ts` (chữ chủ blog thấy) — file chữ thuần, không cần biết lập trình. Muốn thêm ngôn ngữ mới: chép đôi file `en`, dịch, rồi đăng ký mã trong `locales/langs.ts` + `src/types.ts`; trình biên dịch từ chối build khi còn thiếu một chuỗi, nên bản dịch dở dang không thể lọt ra ngoài. Rất hoan nghênh pull request — tai người bản xứ hơn tai chúng tôi.
 
 ---
 

@@ -81,7 +81,7 @@ export type FileItem = {
 }
 
 // Site-wide settings, stored at settings/site.json.
-export type SiteLang = 'vi' | 'en' | 'de' | 'ja' | 'zh' | 'ko'
+export type SiteLang = 'vi' | 'en' | 'de' | 'ja' | 'zh' | 'ko' | 'fr' | 'es' | 'pt' | 'it' | 'ru'
 
 // One configurable header navigation link (page, category, or custom URL).
 export type MenuItem = {

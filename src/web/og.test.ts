@@ -288,6 +288,9 @@ describe('a script the card cannot draw', () => {
   it('reads every line the card would set, not just the title', () => {
     expect(ogFontsCover('A Latin title')).toBe(true)
     expect(ogFontsCover('A Latin title 한글 자간')).toBe(false)
+    // Cyrillic draws since the card gained its Inter subset (2026-08-28).
+    expect(ogFontsCover('Почерк и время: зачем писать медленно')).toBe(true)
+    expect(ogFontsCover('Кириллица с 漢字 внутри')).toBe(false)
     expect(ogFontsCover('Dấu phụ — “quoted”, 2026')).toBe(true)
   })
 })

@@ -34,7 +34,11 @@ function ogFontParam(settings: SiteSettings, base: string, p: URLSearchParams): 
  * in somebody's timeline.
  */
 export function ogFontsCover(text: string): boolean {
-  return !/[^\p{Script=Latin}\p{Script=Common}\p{Script=Inherited}]/u.test(text)
+  // Cyrillic joined when the site grew Russian (2026-08-28): the card carries an Inter
+  // cyrillic subset now (render/og-card.ts), so Russian titles draw instead of being
+  // declined. CJK still declines here — no CJK face ships, and the fallback below is
+  // exactly what makes that honest.
+  return !/[^\p{Script=Latin}\p{Script=Cyrillic}\p{Script=Common}\p{Script=Inherited}]/u.test(text)
 }
 
 export function ogImageUrl(

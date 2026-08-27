@@ -6,10 +6,15 @@ import de from '@/locales/de'
 import ja from '@/locales/ja'
 import zh from '@/locales/zh'
 import ko from '@/locales/ko'
+import fr from '@/locales/fr'
+import es from '@/locales/es'
+import pt from '@/locales/pt'
+import it from '@/locales/it'
+import ru from '@/locales/ru'
 
 export type { Dict }
 
-const LOCALES: Record<SiteLang, Dict> = { en, vi, de, ja, zh, ko }
+const LOCALES: Record<SiteLang, Dict> = { en, vi, de, ja, zh, ko, fr, es, pt, it, ru }
 
 // English is the default fallback.
 export function t(lang: SiteLang): Dict {
@@ -24,6 +29,11 @@ const DATE_LOCALE: Record<SiteLang, string> = {
   ja: 'ja-JP',
   zh: 'zh-CN',
   ko: 'ko-KR',
+  fr: 'fr-FR',
+  es: 'es-ES',
+  pt: 'pt-BR',
+  it: 'it-IT',
+  ru: 'ru-RU',
 }
 
 // Group a plain integer (e.g. a word count) for the reader's language: 1234 -> "1.234"

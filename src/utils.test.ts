@@ -15,6 +15,15 @@ describe('slugify', () => {
     expect(slugify('Suy nghĩ về Đời')).toBe('suy-nghi-ve-doi')
   })
 
+  it('transliterates Cyrillic, so a Russian title is a readable URL', () => {
+    expect(slugify('Почерк и время: зачем писать медленно')).toBe('pocherk-i-vremya-zachem-pisat-medlenno')
+    expect(slugify('Щи да каша')).toBe('shchi-da-kasha')
+  })
+
+  it('still yields nothing for CJK — the timestamp fallback is deliberate there', () => {
+    expect(slugify('中文标题')).toBe('')
+  })
+
   it('collapses spaces/symbols and trims leading/trailing hyphens', () => {
     expect(slugify('  Hello, World!  ')).toBe('hello-world')
   })
