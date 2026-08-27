@@ -22,7 +22,7 @@ export type ActivityAction =
   // MCP access tokens (Admin → Settings → Advanced).
   | 'mcp.token.create' | 'mcp.token.delete'
   // Content import (Admin → Settings → Integrations).
-  | 'import.wordpress'
+  | 'import.wordpress' | 'import.images'
   // URL redirects (Admin → Settings → SEO).
   | 'redirect.save' | 'redirect.delete'
   // Newsletter (Admin → Settings → Integrations). Delete is soft; restore/purge are the

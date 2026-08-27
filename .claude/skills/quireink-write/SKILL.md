@@ -29,8 +29,10 @@ debugging: ask the owner to check the toggle and the token's age.
 most-read) · `update_appearance` (palette, fonts, sizes) · `get_settings`
 `update_settings` (a safe slice only)
 
-**Media and files.** `add_media_from_url` `list_media` `delete_media` · `list_files`
-`delete_file`
+**Media and files.** `add_media_from_url` `list_media` `delete_media` · `import_images`
+(one batch per call: fetch images still loading from other hosts into the library and
+rewrite the references; loop until `remaining` is 0, stop early on `moved: 0`) ·
+`list_files` `delete_file`
 
 **Reading the blog.** `get_traffic` `get_post_traffic` `get_audience` `search_posts`
 (the owner's own full-text search, drafts included) `get_update_status`

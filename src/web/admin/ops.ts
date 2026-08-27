@@ -8,9 +8,11 @@
 import { timingSafeEqual } from 'node:crypto'
 import { Hono } from 'hono'
 import { one } from '@/store/query'
-import { savePost } from '@/content/posts'
-import { savePage } from '@/content/pages'
+import { savePost, getPost } from '@/content/posts'
+import { savePage, getPage } from '@/content/pages'
 import { SlugConflictError } from '@/content/slugs'
+import { saveRedirect } from '@/server/redirects'
+import { normalizePath } from '@/server/redirect-path'
 import { previewToken } from '@/content/preview'
 import { publishTick, fullTick } from '@/server/tick'
 // Still here for the importers below, which empty the page cache after a bulk insert.
@@ -90,42 +92,52 @@ export function opsRoutes() {
     // came from WordPress — which is most of them, forever — never loads them. The shape
     // check above runs first, so a wrong file is rejected without the import.
     const { parseWxr } = await import('@/import/wordpress')
-    const { posts, pages, skipped } = parseWxr(xml, new Date().toISOString())
-    let importedPosts = 0
-    let importedPages = 0
-    for (const { slug, ...rest } of posts) {
-      await saveUnique(slug, (s) => savePost({ ...rest, slug: s }))
-      importedPosts += 1
-    }
-    for (const { slug, ...rest } of pages) {
-      await saveUnique(slug, (s) => savePage({ ...rest, slug: s }))
-      importedPages += 1
-    }
-
-    if (importedPosts + importedPages > 0) clearCache()
-    void logActivity('import.wordpress', `${importedPosts} posts + ${importedPages} pages`)
-    return json({ posts: importedPosts, pages: importedPages, skipped })
+    return json(await persist(parseWxr(xml, new Date().toISOString()), 'wordpress'))
   })
 
-  // One save loop for every importer that is not WordPress; the parsers are pure and the
-  // persistence is identical, so the difference between routes is only "who parsed it".
+  // One save loop for every importer; the parsers are pure and the persistence is
+  // identical, so the difference between routes is only "who parsed it".
+  // A published item that lived at some other path — WordPress's /2020/05/hello/ shape,
+  // most of the time — gets a 301 from that path to its new slug, so the day the old
+  // domain points here, every old link and search result still lands. `saveRedirect`
+  // refuses the odd degenerate source; one bad path must not fail the import.
+  const redirectOldPath = async (path: string | undefined, slug: string): Promise<number> => {
+    if (!path) return 0
+    const source = normalizePath(path)
+    if (!source || source === `/${slug}`) return 0
+    // Never shadow live content: the redirect middleware answers BEFORE the router, so
+    // an import whose `hello` became `hello-2` must not put a redirect on /hello — the
+    // post already living there wins. Only a single-segment source can collide.
+    const sourceSlug = source.slice(1)
+    if (!sourceSlug.includes('/') && (await getPost(sourceSlug) !== null || await getPage(sourceSlug) !== null)) return 0
+    try {
+      await saveRedirect({ source, destination: `/${slug}`, permanent: true })
+      return 1
+    } catch {
+      return 0
+    }
+  }
+
   const persist = async (
     result: { posts: import('@/import/convert').ImportedPost[]; pages: import('@/import/convert').ImportedPage[]; skipped: number },
     source: string,
   ) => {
     let importedPosts = 0
     let importedPages = 0
-    for (const { slug, ...rest } of result.posts) {
-      await saveUnique(slug, (s) => savePost({ ...rest, slug: s }))
+    let redirects = 0
+    for (const { slug, path, ...rest } of result.posts) {
+      const finalSlug = await saveUnique(slug, (s) => savePost({ ...rest, slug: s }))
+      redirects += await redirectOldPath(path, finalSlug)
       importedPosts += 1
     }
-    for (const { slug, ...rest } of result.pages) {
-      await saveUnique(slug, (s) => savePage({ ...rest, slug: s }))
+    for (const { slug, path, ...rest } of result.pages) {
+      const finalSlug = await saveUnique(slug, (s) => savePage({ ...rest, slug: s }))
+      redirects += await redirectOldPath(path, finalSlug)
       importedPages += 1
     }
     if (importedPosts + importedPages > 0) clearCache()
     void logActivity('import.wordpress', `${source}: ${importedPosts} posts + ${importedPages} pages`)
-    return { posts: importedPosts, pages: importedPages, skipped: result.skipped }
+    return { posts: importedPosts, pages: importedPages, skipped: result.skipped, redirects }
   }
 
   router.post('/api/import/ghost', async (c) => {
@@ -169,6 +181,16 @@ export function opsRoutes() {
     if (isSubstack(entries)) return json(await persist(parseSubstack(entries, now), 'substack'))
     if (isMedium(entries)) return json(await persist(parseMedium(entries, now), 'medium'))
     return fail(c, 'not_a_recognised_export', 400)
+  })
+
+  // After the words have moved, the pictures. One small batch per call; the admin
+  // client (and the MCP tool) loop until `remaining` is 0 or a call moves nothing —
+  // import/images.ts explains why this is not done inside the upload request.
+  router.post('/api/import/images', async () => {
+    const { bringImagesHome } = await import('@/import/images')
+    const report = await bringImagesHome()
+    if (report.moved > 0) void logActivity('import.images', `${report.moved} moved, ${report.remaining} left`)
+    return json(report)
   })
 
   return router

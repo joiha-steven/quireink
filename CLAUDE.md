@@ -79,7 +79,7 @@ history is never needed to fix or understand code.
 | Scheduled publishing, redirects, rate limit, activity | `src/server/` |
 | MCP server, tokens | `src/mcp/`, `src/web/admin/mcp-transport.ts`, `src/web/admin/mcp.ts` |
 | UI strings, translations | `src/i18n/`, `src/locales/` |
-| WordPress import | `src/import/wordpress.ts`, `src/web/admin/ops.ts` |
+| Imports (WordPress/Ghost/…), image rescue | `src/import/`, `src/web/admin/ops.ts` |
 
 ## Hard rules — each one is a bug that already shipped
 

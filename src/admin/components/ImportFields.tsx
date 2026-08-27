@@ -2,7 +2,9 @@
 // WordPress .xml goes to /api/import/wordpress, a Ghost .json to /api/import/ghost, and
 // a Substack or Medium .zip to /api/import/archive, where the server tells the two apart
 // by structure. Everything converts to Markdown and is ADDED (slug collisions get a
-// numeric suffix; nothing is overwritten). Images keep their source URLs.
+// numeric suffix; nothing is overwritten). After the words, the pictures: the client
+// loops /api/import/images in small batches until every remote image is stored locally,
+// so the pace shows in the button and no single request runs long.
 import { useRef, useState } from 'react'
 import { useRouter } from '@/admin/router'
 import type { ApiResponse } from '@/types'
@@ -11,6 +13,7 @@ import { Button } from '@/admin/ui/Button'
 import { useAdminT } from './I18nProvider'
 
 type ImportResult = { posts: number; pages: number; skipped: number }
+type ImagesReport = { found: number; moved: number; remaining: number; failed: { url: string; reason: string }[] }
 
 export function ImportFields() {
   const t = useAdminT()
@@ -19,6 +22,27 @@ export function ImportFields() {
   const inputRef = useRef<HTMLInputElement>(null)
   const [file, setFile] = useState<File | null>(null)
   const [busy, setBusy] = useState(false)
+  const [progress, setProgress] = useState('')
+
+  // Batch by batch until nothing remote remains — or a batch moves nothing, which means
+  // what is left only fails and asking again buys the same errors.
+  async function fetchImages() {
+    let moved = 0
+    for (;;) {
+      const res = await fetch('/api/import/images', { method: 'POST' })
+      const json = (await res.json()) as ApiResponse<ImagesReport>
+      if (!json.success || !json.data) return
+      const r = json.data
+      moved += r.moved
+      setProgress(`${t.importImages}… ${moved}/${moved + r.remaining}`)
+      if (r.remaining === 0 || r.moved === 0) {
+        notify(r.failed.length > 0
+          ? `${t.importImagesDone}: ${moved} · ${r.failed.length} ${t.importImagesFailed}`
+          : `${t.importImagesDone}: ${moved}`)
+        return
+      }
+    }
+  }
 
   async function run() {
     if (!file) return
@@ -38,10 +62,12 @@ export function ImportFields() {
       setFile(null)
       if (inputRef.current) inputRef.current.value = ''
       router.refresh() // surface the new posts/pages in the admin lists at once
+      await fetchImages()
     } catch {
       notify(t.deleteFailed, 'error')
     } finally {
       setBusy(false)
+      setProgress('')
     }
   }
 
@@ -64,7 +90,7 @@ export function ImportFields() {
         </div>
       </div>
       <Button type="button" onClick={run} disabled={busy || !file}>
-        {busy ? `${t.importRun}…` : t.importRun}
+        {busy ? progress || `${t.importRun}…` : t.importRun}
       </Button>
     </div>
   )

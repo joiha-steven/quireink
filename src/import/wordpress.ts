@@ -34,6 +34,20 @@ function raw(v: unknown): string {
 }
 const text = (v: unknown): string => decodeEntities(raw(v))
 
+// The path of the item's public URL. Only a PUBLISHED item ever had one — WordPress
+// fills <link> on drafts with a ?p=123 guess that nothing ever linked to — and the
+// domain half is dropped on purpose: a redirect only matters once the old domain
+// points at this blog, and then only the path identifies the page.
+function oldPath(link: unknown, published: boolean): string | undefined {
+  if (!published) return undefined
+  try {
+    const path = new URL(text(link)).pathname
+    return path && path !== '/' ? path : undefined
+  } catch {
+    return undefined
+  }
+}
+
 function toIso(wpDate: unknown, fallback: string): string {
   const s = text(wpDate)
   if (!s || s.startsWith('0000')) return fallback
@@ -67,9 +81,10 @@ export function parseWxr(xml: string, now: string): WxrResult {
     const html = raw(item['content:encoded'])
     const body = htmlToMarkdown(td, html)
     const mappedStatus = status === 'publish' ? 'published' : 'draft'
+    const path = oldPath(item.link, mappedStatus === 'published')
 
     if (type === 'page') {
-      pages.push({ title, slug, status: mappedStatus, content: body })
+      pages.push({ title, slug, status: mappedStatus, content: body, path })
       continue
     }
 
@@ -96,6 +111,7 @@ export function parseWxr(xml: string, now: string): WxrResult {
       tags: [...new Set(tags)],
       excerpt: text(item['excerpt:encoded']).trim() || deriveExcerpt(body),
       content: body,
+      path,
     })
   }
   return { posts, pages, skipped }

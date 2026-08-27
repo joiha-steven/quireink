@@ -18,17 +18,8 @@ import { getSettings, saveSettings } from '@/content/settings'
 import { clearCache } from '@/server/cache'
 import { logActivity } from '@/server/activity'
 import { safeFetch, BlockedUrlError } from '@/server/safe-fetch'
+import { bringImagesHome, filenameFromUrl } from '@/import/images'
 import { asText, asJson, asError } from '@/mcp/result'
-
-// Filename from a URL's last path segment (fallback when none is supplied).
-function filenameFromUrl(url: string): string {
-  try {
-    const name = new URL(url).pathname.split('/').filter(Boolean).pop()
-    return name || 'image'
-  } catch {
-    return 'image'
-  }
-}
 
 export function registerLibraryTools(server: ToolHost): void {
   registerMediaTools(server)
@@ -79,6 +70,19 @@ function registerMediaTools(server: ToolHost): void {
       } catch (e) {
         return asError((e as Error).message)
       }
+    },
+  )
+
+  server.registerTool(
+    'import_images',
+    {
+      description: 'Bring remote images home: fetch one batch of images that posts/pages still load from OTHER hosts, store them in the media library, and rewrite every reference. Call repeatedly until `remaining` is 0 — stop early when a call reports `moved: 0`, because what is left only fails.',
+      inputSchema: {},
+    },
+    async () => {
+      const report = await bringImagesHome()
+      if (report.moved > 0) await logActivity('import.images', `${report.moved} moved, ${report.remaining} left`)
+      return asJson(report)
     },
   )
 

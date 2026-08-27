@@ -23,8 +23,10 @@ export type ImportedPost = {
   tags: string[]
   excerpt: string
   content: string
+  /** URL path this item lived at on the platform it left — the persister 301s it to the new slug. */
+  path?: string
 }
-export type ImportedPage = { title: string; slug: string; status: 'draft' | 'published'; content: string }
+export type ImportedPage = { title: string; slug: string; status: 'draft' | 'published'; content: string; path?: string }
 export type ImportResult = { posts: ImportedPost[]; pages: ImportedPage[]; skipped: number }
 
 // A single figure/img subtree, narrowed from turndown's DOM node (no `any`).

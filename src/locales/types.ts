@@ -838,6 +838,9 @@ export type AdminStrings = {
   importChoose: string
   importRun: string
   importDone: string
+  importImages: string
+  importImagesDone: string
+  importImagesFailed: string
   mcpEnable: string
   mcpEnableDesc: string
   mcpUrlLabel: string

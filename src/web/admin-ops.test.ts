@@ -1,4 +1,5 @@
-// The cron tick, the health probe, the preview link and the WordPress import.
+// The cron tick, the health probe, the preview link and the backups. (The import
+// routes have their own file: admin-import.test.ts.)
 //
 // The bearer check is the one worth the most attention: `/api/cron` is reachable without a
 // session, so the secret is the only thing between an external caller and a maintenance
@@ -51,7 +52,7 @@ const app = createApp()
 let cookie = ''
 
 beforeEach(async () => {
-  for (const t of ['sessions', 'users', 'posts', 'pages', 'post_terms', 'activity_log', 'settings', 'server_secrets']) {
+  for (const t of ['sessions', 'users', 'posts', 'pages', 'post_terms', 'activity_log', 'settings', 'server_secrets', 'redirects', 'media']) {
     db().run(`delete from ${t}`)
   }
   delete process.env.CRON_SECRET
@@ -180,67 +181,6 @@ describe('the preview link', () => {
 
   it('requires a slug', async () => {
     expect((await asOwner('/api/preview-link')).status).toBe(400)
-  })
-})
-
-describe('the WordPress import', () => {
-  const wxr = (items: string) => `<?xml version="1.0"?>
-<rss version="2.0" xmlns:wp="http://wordpress.org/export/1.2/"
-     xmlns:content="http://purl.org/rss/1.0/modules/content/"
-     xmlns:excerpt="http://wordpress.org/export/1.2/excerpt/">
-<channel>${items}</channel></rss>`
-
-  const item = (title: string, type = 'post', slug = '') => `
-<item>
-  <title>${title}</title>
-  <wp:post_name>${slug}</wp:post_name>
-  <wp:post_type>${type}</wp:post_type>
-  <wp:status>publish</wp:status>
-  <content:encoded><![CDATA[<p>Body of <strong>${title}</strong>.</p>]]></content:encoded>
-</item>`
-
-  const send = (xml: string, name = 'export.xml') => {
-    const form = new FormData()
-    form.append('file', new File([xml], name, { type: 'text/xml' }), name)
-    return asOwner('/api/import/wordpress', { method: 'POST', body: form })
-  }
-
-  it('imports posts and pages and converts the HTML to markdown', async () => {
-    const res = await send(wxr(item('First Post') + item('About', 'page')))
-    expect(res.status).toBe(200)
-    const result = await payload<{ posts: number; pages: number }>(res)
-    expect(result.posts).toBe(1)
-    expect(result.pages).toBe(1)
-
-    const list = await payload<Array<{ slug: string }>>(asOwner('/api/posts'))
-    const full = await payload<{ content: string }>(asOwner(`/api/posts/${list[0].slug}`))
-    expect(full.content).toContain('**First Post**')
-    expect(full.content).not.toContain('<strong>')
-  })
-
-  /**
-   * Nothing is ever overwritten: an import ADDS. Posts and pages share one namespace
-   * (Invariant 2), so the suffix has to be found against both.
-   */
-  it('suffixes a slug that already exists rather than overwriting', async () => {
-    await send(wxr(item('Same Title')))
-    await send(wxr(item('Same Title')))
-    const list = await payload<Array<{ slug: string }>>(asOwner('/api/posts'))
-    expect(list.length).toBe(2)
-    expect(new Set(list.map((p) => p.slug)).size).toBe(2)
-  })
-
-  it('rejects a file that is not a WordPress export, with a specific message', async () => {
-    const res = await send('<html><body>not an export</body></html>')
-    expect(res.status).toBe(400)
-    // "import failed" on the wrong file is the least useful thing to say to someone.
-    expect(await res.json()).toEqual({ success: false, error: 'not_a_wordpress_export' })
-  })
-
-  it('rejects a request with no file', async () => {
-    const res = await asOwner('/api/import/wordpress', { method: 'POST', body: new FormData() })
-    expect(res.status).toBe(400)
-    expect(await res.json()).toEqual({ success: false, error: 'no_file' })
   })
 })
 
