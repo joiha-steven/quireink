@@ -1,5 +1,136 @@
 # CHANGELOG
 
+## 2026-08-27 — Quire Ink 2.2.1
+
+The number is the owner's, per the rule in `releases.md`: under plain semver the languages
+alone would have made this a minor, and he chose to keep the shelf stocked.
+
+### The interface speaks eleven languages
+
+Five new languages, picked for where the writing communities live: **Français, Español,
+Português (Brasil), Italiano and Русский** join English, Tiếng Việt, Deutsch, 日本語,
+简体中文 and 한국어 — about 970 strings each, reader-facing and admin, each written in its
+own software register (French says *vous*, Spanish and Italian *tú*/*tu*, Brazilian
+Portuguese *você*, Russian *вы*). Readers still pay nothing for any of it: their strings are
+rendered on the server, and the admin dictionaries load only for the owner.
+
+**The translations moved from `src/locales/` to `locales/` at the repository root**, so a
+translator finds them without learning the tree, and both READMEs now have a Translations
+section saying plainly that community translations are welcome — one file per language, and
+the compiler's every-key-in-every-language guarantee is what makes a half-finished
+contribution unshippable rather than half-shipped.
+
+**Every old translation got an editor's pass** — the review none of them had had since
+arriving. Thirty-two real fixes. German was the worst: ASCII umlauts where ä and ü
+belonged, and du/Sie mixed in both directions — the admin now consistently says *Sie*,
+reader-facing strings consistently *du*, and that split is documented as deliberate.
+Chinese dropped 您 for 你. Vietnamese had one string addressing every owner as *anh*.
+Japanese normalised its エディター/ブラウザー long vowels.
+
+Russian earned three product fixes on the way in. **A Russian title used to slug to
+nothing** and fall back to a timestamp URL — slugify now transliterates Cyrillic (CJK keeps
+its deliberate timestamp fallback). **A Russian post got no share card at all** — the OG
+guard only recognised Latin scripts; the card renderer now carries a Cyrillic Inter subset
+and draws Русский as well as it draws English. And the font preloader stops preloading
+Latin subsets a Russian page will not use.
+
+**Setup asks the language first now.** It is the opening question of the site step, and
+answering it re-renders the step in the language just picked, so the rest of setup is read
+in the owner's own words.
+
+### The snapshot leaves the machine
+
+[ADR 0035](docs/decisions/0035-the-snapshot-leaves-the-machine.md). Every archive the
+schedule or the Back up button writes is also PUT into any S3-compatible bucket — **R2, S3,
+MinIO: one protocol**, Bun's own client, no new dependency — and the remote copies are
+pruned to the same keep-count, touching only this blog's prefix and name shape so a shared
+bucket keeps whatever else it holds. What the usual Drive integration gets wrong is not
+repeated here: no OAuth, no state table, no in-app restore theatre; a failed upload logs
+`backup.offsite` and never fails the backup itself. Four pasted values in Settings → System
+(with env fallbacks for a fleet), and a **Test the bucket** button that writes and deletes
+one marker while the owner is still at the keyboard. Proven twice in the suite: a fake
+bucket for the pruning discipline, and a real S3 wire against a live stub server for the
+seams a fake bypasses.
+
+### The import finishes the move
+
+[ADR 0034](docs/decisions/0034-the-import-finishes-the-move.md). Two gaps the comparison
+page used to admit in public are now the software's job. **The old URLs**: a published
+WordPress item's path and a Substack `/p/` path become 301s at import time, in the owner's
+own redirects table, refused when they would shadow live content. **The images**: the
+importer re-reads what it wrote, asks "what is still remote?", fetches in batches of five
+through the SSRF guard and the upload caps, stores the files in the media library and
+rewrites every reference. The admin loops it after an upload with a live count on the
+button; the `import_images` MCP tool is the same loop for an agent. Stateless by rescan — a
+crash loses nothing, and a blog imported last month can be brought home today.
+
+### Nothing here needs a Cloudflare account
+
+Three ADRs with one question behind them: install this and it works, with no account
+anywhere in the path.
+
+- **The blog winds its own clock**
+  ([ADR 0031](docs/decisions/0031-the-blog-winds-its-own-clock.md)). The process had no
+  timers at all — an assumption inherited from a platform that could not keep one. It now
+  runs its own ticks: due posts every minute, housekeeping hourly. The failure this removes
+  is worse than "a scheduled post is late": with no sweep, the cached front page and feed
+  kept serving the world a version without the post **while the admin showed it published**.
+  `CRON_INTERNAL=0` hands the job to an external scheduler and `/api/cron` is unchanged.
+  Two minutes after boot the log says once what the first sweep did, so a running clock and
+  a stopped one no longer look identical from outside.
+- **The comment gate is its own**
+  ([ADR 0032](docs/decisions/0032-the-comment-gate-needs-no-account.md)). The only real
+  spam gate used to be Turnstile — a Cloudflare account, and ~60 KB fetched from a third
+  party on every page with a form, on a product whose claim is no third-party request
+  anywhere. The blog now signs its own challenge into the page; the reader's browser solves
+  it quietly while they type; sending spends it. 761 bytes, no account, no server state
+  beyond spent salts. Turnstile still takes over whenever its keys are set, and Settings
+  says which gate is standing.
+- **Purging an edge that is not Cloudflare**
+  ([ADR 0033](docs/decisions/0033-purging-an-edge-that-is-not-cloudflare.md)). One webhook
+  URL beside the Cloudflare pair, POSTed to on every cache flush — Bunny, Fastly and a
+  script in front of nginx differ in the URL and agree on answering a POST.
+- **HTTPS in one command.** `docker-compose.caddy.yml` + a Caddyfile: the blog and Caddy
+  together, the same security headers as the documented nginx block, certificate and
+  renewal included.
+
+### Reading
+
+- **Read next.** Every post now ends with one pointer forward — the next part of its
+  series, else the adjacent post. A text block in the page's own type, not a widget.
+- **Resume.** The blog keeps the reader's place in *their* browser and offers it back as
+  one quiet pill that withdraws the moment they scroll; finishing a post forgets it.
+  Nothing is sent anywhere.
+- **Book mode's size control is plain type.** A small *a* and a large *A* on one baseline —
+  no pill, no divider. The "black seam" the pill wore on first open was `showModal()`'s
+  focus ring squeezed through its overflow; initial focus lands on the page itself now. The
+  chosen size is remembered per browser. The running head also learned to reserve twice the
+  control-box width it had been reserving — it is centred, so half of any allowance runs to the
+  right — measured at three widths with the title that broke it.
+
+### The repository teaches the agent
+
+Three Agent Skills ship in `.claude/skills/` — installing, working a live blog over MCP,
+and moving one in from WordPress, Ghost, Substack or Medium — so an assistant that has just
+cloned the repository knows the job instead of inferring it from four hundred lines of
+prose. `install.sh` is the README's install path as one command: clone, install, build,
+start, and the claim link in the log; deliberately none of the half with consequences (no
+sudo, no systemd, and it refuses root).
+
+### Smaller things
+
+- **The Docker image had stopped building** the day the translations moved to the
+  repository root: both Dockerfile stages copy named paths, and neither named the new
+  folder. CI's image job caught it; both stages copy `locales/` now. The same move was
+  taught to the deploy tooling the same day it happened — the image was the copy that
+  lagged.
+- **All six README plates are reshot against this release** — book mode shows its new
+  chrome, the setup plate shows the language question first — and the sixth plate joined
+  `scripts/ops/shoot-readme.sh`, so every picture in the README now regenerates from one
+  command.
+- **The log says once that the clock is running.** Two minutes in, the first sweep prints
+  what it did and then stays quiet — a line an hour for years is how a log stops being read.
+
 ## 2026-08-25 — Quire Ink 2.2.0
 
 ### The install guide taught a step the software had stopped taking

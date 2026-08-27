@@ -1,6 +1,6 @@
 <div align="center">
 
-# quire**INK** &nbsp;`2.2.0`
+# quire**INK** &nbsp;`2.2.1`
 
 **A blog you host yourself, and an AI agent can run for you.**
 No algorithm, no ads, no platform standing between you and your readers.
@@ -74,16 +74,18 @@ Three things shaped it.
 
 You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE), and run the published version commercially — paid hosting included — under [one additional permission](./LICENSE-EXCEPTION.md).
 
-> **2.2.0 came out on 2026-08-25** and runs the demo above plus the author's own blog at
-> [manhhung.me](https://manhhung.me). It is the largest release since 2.0. **Setting a blog up
-> no longer needs a terminal** — an unclaimed blog prints a one-time link in its own log and
-> the rest is a browser, which is what a NAS with a log panel and no TTY needed. An **agent can
-> now read and steward** the blog as well as write to it, and **an assistant moved into the
-> admin** for anyone without an MCP client: same tools, same rules, your key. **Essays print
-> like pages** rather than like web pages. **The pen's five inks became yours to set**, the
-> editor grew **three keyboards and a volume**, selecting a sentence offers to **copy it with a
-> link back to that exact sentence**, and search engines get **JSON-LD** with a description
-> written per page. The [changelog](./CHANGELOG.md) has everything that changed.
+> **2.2.1 came out on 2026-08-27** and runs the demo above plus the author's own blog at
+> [manhhung.me](https://manhhung.me). **The interface now speaks eleven languages** — five new
+> (Français, Español, Português (Brasil), Italiano, Русский), the translations moved to
+> [`locales/`](./locales/) where a contributor can find them, and every old one got an
+> editor's pass. **Backups leave the machine**: every snapshot is also written to any
+> S3-compatible bucket — R2, S3, MinIO — with a Test button and no OAuth anywhere. **The
+> import finishes the move**: old WordPress and Substack URLs become your redirects, and
+> images still pointing at the old host are fetched into your own library. **Nothing needs a
+> Cloudflare account** — the blog winds its own clock, signs its own comment challenge, and
+> can purge any edge by webhook. Posts end with **read next**, offer your place back with
+> **resume**, and book mode's size control became plain type. The
+> [changelog](./CHANGELOG.md) has everything that changed.
 
 ---
 

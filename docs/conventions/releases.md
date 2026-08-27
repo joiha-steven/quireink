@@ -23,12 +23,16 @@ On any behavior change, update the matching doc in the SAME change (Working prin
   [`scripts/ops/quire-backup.sh`](../../scripts/ops/quire-backup.sh) does.
 - **Audits** are dated snapshots, so they are write-only and they live with the author's
   notes rather than here. Read the latest first so a pass starts from the last clean line.
-- **Versioning (owner's rule — do NOT auto-bump):** the version is **`2.2.0`**, released
-  2026-08-25 — the largest release since 2.0, and the owner asked for the number and for the
-  checking pass that went with it: setup in a browser, the agent's reading and stewarding
-  halves, the in-admin assistant, the print sheet, the pen becoming the owner's, three
-  keyboards with a volume, JSON-LD, and a documentation sweep that found the install guide
-  still teaching a step the software had stopped taking. (`2.1.4`, 2026-08-22, was the audit
+- **Versioning (owner's rule — do NOT auto-bump):** the version is **`2.2.1`**, released
+  2026-08-27 — eleven languages, offsite snapshots, the import finishing the move and the
+  no-account trio, any one of which the rule below would have called a minor; the owner
+  chose the patch slot to keep numbers in reserve, which is this bullet's own rule at work.
+  (`2.2.0`, 2026-08-25, was the largest release since 2.0, and the owner asked for the
+  number and for the checking pass that went with it: setup in a browser, the agent's
+  reading and stewarding halves, the in-admin assistant, the print sheet, the pen becoming
+  the owner's, three keyboards with a volume, JSON-LD, and a documentation sweep that found
+  the install guide still teaching a step the software had stopped taking. `2.1.4`,
+  2026-08-22, was the audit
   day after the editor day: the update check with its version dot, the site-wide timezone
   setting, the SVG sandbox and the thumb-size pass — features that under the semver rule
   below would have made it `2.2.0`, and the owner called `2.1.4`, which is this bullet's own
