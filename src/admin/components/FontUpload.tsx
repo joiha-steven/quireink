@@ -86,7 +86,7 @@ export function FontUpload({ value, onChange }: Props) {
                 {t[WEIGHT_LABEL[w]] as string} · {w}
               </span>
               <span className="flex items-center gap-2">
-                <span className={`text-xs ${has ? 'text-neutral-500 dark:text-neutral-400' : 'text-neutral-400 dark:text-neutral-600'}`}>
+                <span className={`text-xs ${has ? 'text-neutral-500 dark:text-neutral-400' : 'text-neutral-500 dark:text-neutral-600'}`}>
                   {has ? t.fontUploaded : '—'}
                 </span>
                 <Button

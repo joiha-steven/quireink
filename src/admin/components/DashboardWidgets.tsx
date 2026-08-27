@@ -98,7 +98,7 @@ function TrafficCard({ traffic }: { traffic: DashboardData['traffic'] }) {
           {/* The window, said ONCE. It used to be repeated inside two of the labels ("Views ·
               30 days", "Visitors · 30 days"), which at four figures wrapped one label to two
               lines and left the row of numbers sitting on a ragged baseline. */}
-          <span className="text-xs text-neutral-400 dark:text-neutral-500">{t.analyticsRange30}</span>
+          <span className="text-xs text-neutral-500 dark:text-neutral-400">{t.analyticsRange30}</span>
           <Link href="/admin/analytics" className={VIEW_ALL}>{t.dashViewAnalytics}</Link>
         </div>
       }
@@ -119,7 +119,7 @@ function TrafficCard({ traffic }: { traffic: DashboardData['traffic'] }) {
       <div className="mt-5">
         <Sparkline data={traffic.spark} />
       </div>
-      <div className="mt-2 text-xs text-neutral-400 dark:text-neutral-500">
+      <div className="mt-2 text-xs text-neutral-500 dark:text-neutral-400">
         {t.dashViews7}: <span className="tabular-nums">{traffic.views7.toLocaleString()}</span>
       </div>
     </Card>
@@ -131,7 +131,7 @@ function TopPostsCard({ posts }: { posts: DashboardData['topPosts'] }) {
   return (
     <Card title={t.dashTopPosts}>
       {posts.length === 0 ? (
-        <p className="text-sm text-neutral-400 dark:text-neutral-500">{t.dashTopEmpty}</p>
+        <p className="text-sm text-neutral-500 dark:text-neutral-400">{t.dashTopEmpty}</p>
       ) : (
         <ol className="space-y-1">
           {posts.map((p, i) => (
@@ -140,7 +140,7 @@ function TopPostsCard({ posts }: { posts: DashboardData['topPosts'] }) {
                 href={`/${p.slug}`}
                 className="-mx-2 flex items-center gap-3 rounded-lg px-2 py-1.5 text-sm hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
               >
-                <span className="w-4 shrink-0 text-right text-xs font-medium text-neutral-400 dark:text-neutral-500">{i + 1}</span>
+                <span className="w-4 shrink-0 text-right text-xs font-medium text-neutral-500 dark:text-neutral-400">{i + 1}</span>
                 {/* The owner's own headline, so it takes the reading face; the rank and
                     the view count either side of it are the machine's. */}
                 <span className="min-w-0 flex-1 truncate text-neutral-700 dark:text-neutral-200">{p.title}</span>
@@ -168,7 +168,7 @@ function NeedsAttentionCard({ needs }: { needs: DashboardData['needs'] }) {
   return (
     <Card title={t.dashNeedsAttention}>
       {allClear ? (
-        <p className="text-sm text-neutral-400 dark:text-neutral-500">{t.dashAllClear}</p>
+        <p className="text-sm text-neutral-500 dark:text-neutral-400">{t.dashAllClear}</p>
       ) : (
         <ul className="space-y-1">
           {items.map((i) => (
@@ -182,7 +182,7 @@ function NeedsAttentionCard({ needs }: { needs: DashboardData['needs'] }) {
                   className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium tabular-nums ${
                     i.count > 0
                       ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900'
-                      : 'bg-neutral-100 text-neutral-400 dark:bg-neutral-800 dark:text-neutral-500'
+                      : 'bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400'
                   }`}
                 >
                   {i.count}
@@ -210,12 +210,12 @@ function SourcesCard({ sources }: { sources: DashboardData['sources'] }) {
       actions={<Link href="/admin/analytics" className={VIEW_ALL}>{t.dashViewAnalytics}</Link>}
     >
       {empty ? (
-        <p className="text-sm text-neutral-400 dark:text-neutral-500">{t.dashSourcesEmpty}</p>
+        <p className="text-sm text-neutral-500 dark:text-neutral-400">{t.dashSourcesEmpty}</p>
       ) : (
         <div className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
           {columns.map((col) => (
             <div key={String(col.heading)}>
-              <div className="mb-1.5 text-xs font-medium text-neutral-400 dark:text-neutral-500">{col.heading}</div>
+              <div className="mb-1.5 text-xs font-medium text-neutral-500 dark:text-neutral-400">{col.heading}</div>
               <ul className="space-y-1">
                 {col.rows.length === 0 && <li className="py-1 text-sm text-neutral-300 dark:text-neutral-600">—</li>}
                 {col.rows.map((r) => (

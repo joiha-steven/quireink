@@ -59,7 +59,7 @@ export default function Content() {
                 the pane takes the whole width — the list IS the screen there. */}
             <div className={`hidden min-w-0 flex-1 xl:block ${CARD} lg:min-h-[calc(100vh-1.5rem)]`}>
               <div className="flex min-h-[calc(100vh-1.5rem)] flex-col items-center justify-center gap-4 p-10 text-center">
-                <p className="text-sm text-neutral-400 dark:text-neutral-500">{t.writeEmpty}</p>
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">{t.writeEmpty}</p>
                 <div className="flex items-center gap-2">
                   <Link href="/admin/page-editor"><Button variant="secondary">{t.newPage}</Button></Link>
                   <Link href="/admin/editor"><Button>{t.newPost}</Button></Link>

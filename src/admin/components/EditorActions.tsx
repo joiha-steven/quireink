@@ -129,7 +129,7 @@ export function EditorActions({
         <Link href="/admin/content" className={QUIET}>← {t.navWrite}</Link>
         <span className="hidden h-4 w-px bg-neutral-200 sm:block dark:bg-neutral-800" />
         {/* The mock's saved line: state · size · time to read. One string of small print. */}
-        <span className="text-xs text-neutral-400 dark:text-neutral-500">
+        <span className="text-xs text-neutral-500 dark:text-neutral-400">
           {/* Joined, not concatenated: on a fresh load the save status is empty, and a line
               that begins with a separator reads as a missing word. The dot before it is the
               mock's: the pen's edge, the small light that means "work in progress". */}
@@ -149,7 +149,7 @@ export function EditorActions({
             to its own line under the status; the two verbs are text links, and Restore is
             the darker of the pair because it is the one that rescues somebody's words. */}
         {recovered && (
-          <span className="basis-full text-xs text-neutral-400 dark:text-neutral-500">
+          <span className="basis-full text-xs text-neutral-500 dark:text-neutral-400">
             {t.localDraftFound} · {formatTime(recovered.at)}
             {' · '}
             <button type="button" onClick={recovered.onRestore} className="font-medium text-neutral-900 underline underline-offset-2 hover:no-underline dark:text-white">

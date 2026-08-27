@@ -92,7 +92,7 @@ function Rows({
       {/* "Nothing matches" is only true once the server has answered — saying it while the
           body search is in flight is a lie that corrects itself, which reads as a flicker. */}
       {shown.length === 0 && (query.trim().length < 2 || bodyHits !== null) ? (
-        <p className="px-4 py-6 text-sm text-neutral-400 dark:text-neutral-500">{t.filterEmpty}</p>
+        <p className="px-4 py-6 text-sm text-neutral-500 dark:text-neutral-400">{t.filterEmpty}</p>
       ) : (
         <div className="scroll-fade min-h-0 flex-1 overflow-y-auto pb-6">
           {shown.map((it) => {
@@ -123,16 +123,16 @@ function Rows({
                     }`}
                   />
                   <span className="min-w-0">
-                    <span className={`block text-sm ${active ? 'font-semibold' : 'font-medium'} text-neutral-900 dark:text-white ${!it.title ? 'italic text-neutral-400 dark:text-neutral-500' : ''}`}>
+                    <span className={`block text-sm ${active ? 'font-semibold' : 'font-medium'} text-neutral-900 dark:text-white ${!it.title ? 'italic text-neutral-500 dark:text-neutral-400' : ''}`}>
                       {it.title ? <Marked text={it.title} needle={query} /> : t.untitled}
                     </span>
                     {under && (
                       <span className="mt-0.5 line-clamp-2 block text-xs text-neutral-500 dark:text-neutral-400">
-                        {it.kind === 'page' && <span className="mr-1 text-neutral-400">{t.kindPage}</span>}
+                        {it.kind === 'page' && <span className="mr-1 text-neutral-500 dark:text-neutral-400">{t.kindPage}</span>}
                         <Marked text={under} needle={query} />
                       </span>
                     )}
-                    <span className="mt-1 block text-xs text-neutral-400 dark:text-neutral-500">
+                    <span className="mt-1 block text-xs text-neutral-500 dark:text-neutral-400">
                       {(drafty ? t.statusDraft : t.statusPublished)}
                       {when ? ` · ${formatDateTimeShort(new Date(when).toISOString())}` : ''}
                       {!drafty && views[`/${it.slug}`] ? ` · ${views[`/${it.slug}`].toLocaleString()}` : ''}

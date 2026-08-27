@@ -58,12 +58,12 @@ export function ActivityLog({ entries, enabled }: { entries: ActivityEntry[]; en
         )}
 
         {entries.length === 0 ? (
-          <p className="px-5 py-8 text-sm text-neutral-400 dark:text-neutral-500">{t.logEmpty}</p>
+          <p className="px-5 py-8 text-sm text-neutral-500 dark:text-neutral-400">{t.logEmpty}</p>
         ) : (
           <ul className="paper-cols">
             {entries.map((e) => (
               <li key={e.id} className="flex items-baseline gap-2.5 border-b border-neutral-100 px-5 py-2 text-xs dark:border-neutral-800">
-                <span className="whitespace-nowrap tabular-nums text-neutral-400 dark:text-neutral-500">{formatDateTimeShort(e.at)}</span>
+                <span className="whitespace-nowrap tabular-nums text-neutral-500 dark:text-neutral-400">{formatDateTimeShort(e.at)}</span>
                 <span
                   className={`whitespace-nowrap rounded-full px-2 py-0.5 ${
                     e.action === 'error'

@@ -122,7 +122,7 @@ export function LayoutMenuFields({ s, update, posts, pages }: Props) {
               type="button"
               onClick={() => update({ menu: s.menu.filter((_, idx) => idx !== i) })}
               aria-label={t.delete}
-              className="shrink-0 rounded-lg px-2 text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+              className="shrink-0 rounded-lg px-2 text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800"
             >
               ×
             </button>

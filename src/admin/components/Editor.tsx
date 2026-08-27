@@ -345,7 +345,7 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
         {/* The mock's closing line: the two gestures this screen answers to, said once,
             quietly, where a first-time writer's eye ends up. */}
         {!raw && (
-          <p className="px-4 pb-4 pt-6 text-xs text-neutral-400 dark:text-neutral-500">{t.slashHint}</p>
+          <p className="px-4 pb-4 pt-6 text-xs text-neutral-500 dark:text-neutral-400">{t.slashHint}</p>
         )}
       </div>
     </div>

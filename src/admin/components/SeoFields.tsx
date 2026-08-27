@@ -59,7 +59,7 @@ export function SeoFields({ s, update }: Props) {
           {s.seo.ogFallbackImage ? (
             <img src={s.seo.ogFallbackImage} alt="OG" className="h-20 w-36 rounded-lg border border-neutral-200 object-cover dark:border-neutral-800" />
           ) : (
-            <div className="flex h-20 w-36 items-center justify-center rounded-lg border border-dashed border-neutral-300 text-xs text-neutral-400 dark:border-neutral-700">
+            <div className="flex h-20 w-36 items-center justify-center rounded-lg border border-dashed border-neutral-300 text-xs text-neutral-500 dark:text-neutral-400 dark:border-neutral-700">
               {t.noImageSelected}
             </div>
           )}

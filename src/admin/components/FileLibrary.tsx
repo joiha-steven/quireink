@@ -132,9 +132,9 @@ export function FileLibrary() {
       )}
 
       {loading ? (
-        <p className="py-10 text-center text-neutral-400 dark:text-neutral-500">{t.loading}</p>
+        <p className="py-10 text-center text-neutral-500 dark:text-neutral-400">{t.loading}</p>
       ) : items.length === 0 && icons.length === 0 ? (
-        <p className="py-10 text-center text-neutral-400 dark:text-neutral-500">{t.noFiles}</p>
+        <p className="py-10 text-center text-neutral-500 dark:text-neutral-400">{t.noFiles}</p>
       ) : (
         <div className="space-y-6">
           {items.length > 0 && (
@@ -144,7 +144,7 @@ export function FileLibrary() {
           )}
           {icons.length > 0 && (
             <div className="space-y-2">
-              <h3 className="text-xs font-semibold text-neutral-400 dark:text-neutral-500">{t.iconsGroupTitle}</h3>
+              <h3 className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">{t.iconsGroupTitle}</h3>
               <ul className="divide-y divide-neutral-200 overflow-hidden rounded-lg border border-neutral-200 dark:divide-neutral-800 dark:border-neutral-800">
                 {icons.map((f) => row(f, true))}
               </ul>

@@ -43,7 +43,7 @@ export function NewsletterSubscribers() {
     if (j.success) setSubs((s) => (s ? s.filter((x) => x.id !== id) : s))
   }
 
-  if (!subs) return <p className="px-5 py-6 text-sm text-neutral-400">{t.loading}</p>
+  if (!subs) return <p className="px-5 py-6 text-sm text-neutral-500 dark:text-neutral-400">{t.loading}</p>
 
   const openRate = (s: Stats | null) =>
     s && s.broadcasts > 0 ? `${Math.round((s.opened / s.broadcasts) * 100)}%` : null
@@ -80,7 +80,7 @@ export function NewsletterSubscribers() {
         <ul className="paper-cols">
           {subs.map((s) => (
             <li key={s.id} className="border-b border-neutral-100 px-5 py-2.5 dark:border-neutral-800">
-              <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-xs text-neutral-400 dark:text-neutral-500">
+              <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-xs text-neutral-500 dark:text-neutral-400">
                 <span
                   aria-hidden
                   className={`inline-block h-1.5 w-1.5 shrink-0 self-center rounded-full ${
@@ -109,7 +109,7 @@ export function NewsletterSubscribers() {
                 <button
                   type="button"
                   onClick={() => removeSub(s.id)}
-                  className="-my-1.5 -mr-1.5 ml-auto shrink-0 rounded px-2 py-1.5 text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-white"
+                  className="-my-1.5 -mr-1.5 ml-auto shrink-0 rounded px-2 py-1.5 text-neutral-500 dark:text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-white"
                   aria-label={t.nlDeleteSub}
                 >
                   ✕

@@ -12,6 +12,7 @@ import { FirstRun } from './FirstRun'
 import { PickUpBand } from './PickUpBand'
 import { useAdminT } from './I18nProvider'
 import { REPO } from './help-kit'
+import { META_ON_CANVAS } from './scale'
 
 // ⚠️ `Taxo`, `SeoHealth` and `TrafficSources` were declared here and threaded through Props
 // for six values this component never read. The two that were worth showing are now inside
@@ -109,7 +110,7 @@ function BuildLabel({ version, commit, update }: {
       // Desktop-only at rest, for the reason above — but an update is not small print, so
       // a behind install shows the line on a phone too. The Updates card in Settings carries
       // the same fact with the release link, which is where somebody acts on it.
-      className={`text-xs text-neutral-400 hover:text-neutral-900 dark:hover:text-white ${
+      className={`${META_ON_CANVAS} hover:text-neutral-900 dark:hover:text-white ${
         behind ? 'inline' : 'hidden sm:inline'}`}
     >
       <VersionDot update={update} />
@@ -171,10 +172,10 @@ export function Overview(props: Props) {
           panels above it and this one were two different components on one screen. */}
       <Card
         title={t.recentActivity}
-        actions={<Link href="/admin/log" className="text-xs text-neutral-500 hover:text-neutral-900 dark:hover:text-white">{t.recentViewAll}</Link>}
+        actions={<Link href="/admin/log" className="text-xs text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white">{t.recentViewAll}</Link>}
       >
         {!activityEnabled || recent.length === 0 ? (
-          <p className="text-sm text-neutral-400">{t.logEmpty}</p>
+          <p className="text-sm text-neutral-500 dark:text-neutral-400">{t.logEmpty}</p>
         ) : (
           // TWO COLUMNS on a wide screen, and it is the emptiness that forces it rather than a
           // wish for density. Measured at 1440px: the action track is 180px (honest — the
@@ -194,16 +195,16 @@ export function Overview(props: Props) {
               // detail edge from row to row. A fixed track keeps the list aligned, and the
               // truncate is the backstop for whatever action name gets added next.
               <li key={entry.id} className="grid gap-x-4 gap-y-1 py-2.5 text-sm sm:grid-cols-[minmax(0,180px)_minmax(0,1fr)_auto]">
-                <span className={`truncate ${entry.action === 'error' ? 'font-medium text-neutral-900 dark:text-white' : 'text-neutral-500'}`}>{entry.action}</span>
+                <span className={`truncate ${entry.action === 'error' ? 'font-medium text-neutral-900 dark:text-white' : 'text-neutral-500 dark:text-neutral-400'}`}>{entry.action}</span>
                 <span className="truncate text-neutral-700 dark:text-neutral-300">{entry.detail}</span>
-                <time className="text-xs text-neutral-400">{formatDateTimeShort(entry.at)}</time>
+                <time className="text-xs text-neutral-500 dark:text-neutral-400">{formatDateTimeShort(entry.at)}</time>
               </li>
             ))}
           </ul>
         )}
       </Card>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 px-1 text-xs text-neutral-400">
+      <div className={`flex flex-wrap items-center justify-between gap-3 px-1 ${META_ON_CANVAS}`}>
         {/* The engine NAME comes from the server. It was the literal string 'PostgreSQL'
             here, left behind by the port, so the dashboard of a SQLite install reported a
             database it does not have. */}

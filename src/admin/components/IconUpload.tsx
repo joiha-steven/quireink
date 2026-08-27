@@ -45,7 +45,7 @@ export function IconUpload({ kind, value, onChange, previewClassName }: Props) {
       {value ? (
         <img src={value} alt="" className={`bg-neutral-100 object-contain p-1 ${previewClassName}`} />
       ) : (
-        <span className="text-xs text-neutral-400 dark:text-neutral-500">{t.noImageSelected}</span>
+        <span className="text-xs text-neutral-500 dark:text-neutral-400">{t.noImageSelected}</span>
       )}
       <input
         ref={inputRef}

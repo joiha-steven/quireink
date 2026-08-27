@@ -312,7 +312,7 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
       </div>
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-neutral-200/80 bg-white/90 shadow-[0_-8px_24px_rgba(0,0,0,0.04)] backdrop-blur-xl md:left-[var(--admin-nav-w,13rem)] dark:border-neutral-800 dark:bg-neutral-900/90">
         <div className="mx-auto flex w-full max-w-[1480px] items-center justify-between px-4 py-3 sm:px-7 lg:px-10 xl:px-12">
-          <span className="text-sm text-neutral-400 dark:text-neutral-500">
+          <span className="text-sm text-neutral-500 dark:text-neutral-400">
             {saving ? t.saving : savedAt ? `${t.savedAtPrefix} ${formatTime(savedAt)}` : ''}
           </span>
           <Button onClick={save} disabled={saving}>

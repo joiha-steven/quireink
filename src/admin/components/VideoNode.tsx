@@ -64,7 +64,7 @@ function VideoView({ node, updateAttributes, selected, editor, getPos }: NodeVie
           {overlay}
         </div>
       ) : (
-        <p className="break-all text-sm text-neutral-500">{src}</p>
+        <p className="break-all text-sm text-neutral-500 dark:text-neutral-400">{src}</p>
       )}
     </NodeViewWrapper>
   )

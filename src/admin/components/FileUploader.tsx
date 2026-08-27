@@ -51,7 +51,7 @@ export function FileUploader({
           handle(Array.from(e.dataTransfer.files))
         }}
         className={`cursor-pointer rounded-lg border-2 border-dashed p-8 text-center text-sm transition-colors ${
-          dragging ? 'border-neutral-900 bg-neutral-50' : 'border-neutral-300 text-neutral-500'
+          dragging ? 'border-neutral-900 bg-neutral-50' : 'border-neutral-300 text-neutral-500 dark:text-neutral-400'
         }`}
       >
         {label ?? t.filesDropzone}

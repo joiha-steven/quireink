@@ -48,7 +48,7 @@ function Section({
               className="flex items-center gap-2 border-b border-neutral-100 px-4 py-2.5 last:border-0 dark:border-neutral-800"
             >
               <span className={`min-w-0 flex-1 truncate text-sm ${kind === 'tag' ? 'lowercase' : ''}`}>{term.name}</span>
-              <span className="shrink-0 text-xs text-neutral-400 dark:text-neutral-500">{term.count}</span>
+              <span className="shrink-0 text-xs text-neutral-500 dark:text-neutral-400">{term.count}</span>
               <button type="button" onClick={() => onAct(kind, term.name, 'rename')} aria-label={t.rename} title={t.rename} className={ICON_BTN}>
                 <PencilIcon />
               </button>

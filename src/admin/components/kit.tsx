@@ -162,7 +162,7 @@ export function Select({
         strokeWidth="1.8"
         strokeLinecap="round"
         strokeLinejoin="round"
-        className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400 dark:text-neutral-500"
+        className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-500 dark:text-neutral-400"
       >
         <path d="m6 9 6 6 6-6" />
       </svg>
@@ -179,7 +179,7 @@ export function ResetButton({ onClick, label }: { onClick: () => void; label: st
     <button
       type="button"
       onClick={onClick}
-      className="shrink-0 text-xs text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
+      className="shrink-0 text-xs text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
     >
       {label}
     </button>

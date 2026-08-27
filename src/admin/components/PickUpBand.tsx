@@ -43,7 +43,7 @@ export function PickUpBand({ items, total }: { items: { title: string; href: str
                 beside it never gets pushed out of the chip. */}
             <span className="truncate">{it.title || t.untitled}</span>
             {it.touched && (
-              <span className="shrink-0 text-xs text-neutral-400 dark:text-neutral-500">
+              <span className="shrink-0 text-xs text-neutral-500 dark:text-neutral-400">
                 {formatDateTimeShort(it.touched)}
               </span>
             )}

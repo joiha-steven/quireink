@@ -160,7 +160,7 @@ function Shell() {
               {/* Reached on the FIRST paint only. Every later route change runs inside a
                   transition, which keeps the current page on screen instead of falling back
                   here — see the note in `router.tsx`. */}
-              <Suspense fallback={<div className="py-16 text-center text-sm text-neutral-400">…</div>}>
+              <Suspense fallback={<div className="py-16 text-center text-sm text-neutral-500 dark:text-neutral-400">…</div>}>
                 <Route />
               </Suspense>
             </ErrorBoundary>

@@ -84,7 +84,7 @@ export function SeriesManager({ posts }: { posts: Post[] }) {
               <Link href={`/series/${s.slug}`} className="min-w-0 flex-1 truncate text-sm font-semibold hover:underline">
                 {s.name}
               </Link>
-              <span className="shrink-0 text-xs text-neutral-400 dark:text-neutral-500">{s.parts.length}</span>
+              <span className="shrink-0 text-xs text-neutral-500 dark:text-neutral-400">{s.parts.length}</span>
               <button type="button" onClick={() => rename(s.name)} aria-label={t.rename} title={t.rename} className={ICON_BTN}>
                 <PencilIcon />
               </button>
@@ -98,7 +98,7 @@ export function SeriesManager({ posts }: { posts: Post[] }) {
                   key={p.slug}
                   className="flex items-center gap-2 border-b border-neutral-100 px-4 py-2.5 last:border-0 dark:border-neutral-800"
                 >
-                  <span className="w-6 shrink-0 text-xs tabular-nums text-neutral-400 dark:text-neutral-500">{i + 1}.</span>
+                  <span className="w-6 shrink-0 text-xs tabular-nums text-neutral-500 dark:text-neutral-400">{i + 1}.</span>
                   <Link href={`/admin/editor/${p.slug}`} className="min-w-0 flex-1 truncate text-sm hover:underline">
                     {p.title}
                   </Link>
