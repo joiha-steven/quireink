@@ -163,7 +163,9 @@ let x = PAD
 const labels: string[] = []
 const composite: OverlayOptions[] = []
 for (const p of panels) {
-  labels.push(
+  // An empty label draws nothing at all: the setup plate labels itself ("Claim this
+  // blog", "Your site"), and a bare comment marker over it read as a typo.
+  if (p.label !== '') labels.push(
     `<text x="${x}" y="${PAD + LABEL_H - Math.round(labelPx * 0.75)}" fill="${INK}" `
     + `font-family="JetBrains Mono, ui-monospace, monospace" font-size="${labelPx}">`
     + `// ${p.label}</text>`,
