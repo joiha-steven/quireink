@@ -25,7 +25,7 @@
   `.prose` = WYSIWYG). `smoothing` adds `-webkit-font-smoothing` on `body`.
 - **`--type-scale` lives inside the variable, not at the call site.** Each `--fs-<role>` is
   emitted as `calc(<size>rem * var(--type-scale, 1))`, so any subtree that overrides
-  `--type-scale` (book mode sets 1.05, and its A−/A+ lets the reader override) scales EVERYTHING inside it. It used to be spelled
+  `--type-scale` (book mode sets 1.05, and its a/A pair lets the reader override) scales EVERYTHING inside it. It used to be spelled
   per rule, so a rule either had it or did not: book mode enlarged the prose and left
   figcaptions, tags and the comment thread behind.
 - **`small` is most of the page.** Dates, tags, footnotes, the footer, the related list and
@@ -122,7 +122,7 @@ font, only the site language's subset(s), never the chrome font or an uploaded c
 
 The RELATION is the hard rule, not the number. The scale was fixed at 1.15 on 2026-07-29 and
 revised by the owner to **1.05** on 2026-08-21 ("mặc định chữ hơi to"), and it is now only a
-DEFAULT: A− / A+ in the overlay chrome move it 0.85–1.35 per reader, persisted under
+DEFAULT: the a/A pair in the overlay chrome moves it 0.85–1.35 per reader, persisted under
 `quire-book-scale` and applied as an inline override, so an untouched reader still gets what
 the sheet ships (`src/assets/js/book.ts`). What must not change is the relation below.
 Type and the space around it are one system:

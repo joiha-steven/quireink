@@ -259,6 +259,14 @@ create table if not exists integration_keys (
   -- Fastly, a script in front of nginx — whatever answers it. Treated as a secret because
   -- a purge URL usually carries its own token.
   purge_webhook_url    text,
+  -- Off-server snapshots (ADR 0035): any S3-compatible bucket — R2, S3, MinIO. Endpoint
+  -- empty = AWS. The pair of keys is the secret; bucket/region/prefix merely say where.
+  s3_endpoint          text,
+  s3_region            text,
+  s3_bucket            text,
+  s3_prefix            text,
+  s3_access_key_id     text,
+  s3_secret_access_key text,
   google_client_id     text,   -- comment sign-in; public half, still pasted by the owner
   google_client_secret text,
   smtp_host            text,

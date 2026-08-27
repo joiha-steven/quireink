@@ -7,7 +7,8 @@ how an install ends up with two copies of the same protection and none of anothe
 |:--|:--|:--|:--|
 | **Export** | the owner's own machine | "give me a copy I hold" | `GET /api/backup/export` |
 | **Snapshots** | this server, on a schedule | "I broke something an hour ago" | [`src/server/backup.ts`](../src/server/backup.ts) |
-| **Off-server** | R2, hourly + daily | "the machine is gone" | [`scripts/ops/quire-backup.sh`](../scripts/ops/quire-backup.sh) |
+| **Off-server, built in** | any S3-compatible bucket (R2, S3, MinIO) | "the machine is gone" | [`src/server/backup-offsite.ts`](../src/server/backup-offsite.ts) (ADR 0035) |
+| **Off-server, ops script** | R2, hourly + daily tiers | the same, for a fleet running its own shipping | [`scripts/ops/quire-backup.sh`](../scripts/ops/quire-backup.sh) |
 
 All three take the same `VACUUM INTO` snapshot of both databases plus the uploads tree. They
 differ only in where the file ends up and who decides when.
@@ -45,10 +46,28 @@ destination that had already been removed.
   import and a bad delete. They do not survive the disk, which is what the off-server copy is
   for. The admin says so, in `exportReplicationNote`.
 
-## Off-server
+## Off-server, built in (ADR 0035)
 
-Everything below is the cron script beside the process, and it is the one that happens
-whether or not anyone remembers.
+**Settings → System → Off-server copy.** Paste a bucket, an access key pair, and (for
+R2/MinIO) the endpoint — every archive the schedule or the "take one now" button writes is
+also PUT into the bucket, and the remote copies are pruned to the same `keep` as the local
+directory. Env fallbacks exist for a fleet: `S3_ENDPOINT`, `S3_REGION`, `S3_BUCKET`,
+`S3_PREFIX`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` (the stored value wins).
+
+What Google Drive got wrong is deliberately not repeated: no OAuth, no state table, **no
+in-app restore** — the bucket is written and pruned, never read back into the application;
+restoring from it means downloading the archive and following [Restoring](#restoring)
+exactly as for a local snapshot. A failed upload is logged (`backup.offsite` in the
+activity log) and never fails the backup: the local archive is already on disk. Pruning
+touches only keys under this blog's prefix whose basename is a snapshot name, so a shared
+bucket keeps everything else it holds. The **Test** button writes and deletes one marker
+object — a wrong paste is found while you are at the keyboard.
+
+## Off-server, the ops script
+
+Everything below is the cron script beside the process — for a fleet that already runs its
+own shipping, alerting and retention tiers. The two paths write the same archives and do
+not know about each other; running both against one bucket is harmless but pointless.
 
 ## What it copies
 

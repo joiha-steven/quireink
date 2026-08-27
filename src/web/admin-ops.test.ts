@@ -224,7 +224,7 @@ describe('the manual archive', () => {
     }
     // 403 rather than 401 on the writes: the gate checks the origin BEFORE the session, so
     // a request that can prove neither is refused as cross-site. Signing in would not help.
-    for (const path of ['/api/backup/run', '/api/backup/delete']) {
+    for (const path of ['/api/backup/run', '/api/backup/delete', '/api/backup/offsite-test']) {
       expect((await app.request(path, { method: 'POST' })).status).toBe(403)
     }
   })
@@ -256,6 +256,14 @@ describe('snapshots kept on the server', () => {
 
   // The name arrives in a query string and in a JSON body. Both are a path if nothing
   // stops them being one.
+  it('names the missing bucket instead of saying "failed"', async () => {
+    // Unconfigured: the one state every fresh install is in. The transport's own words
+    // come back on a real misconfiguration; this path just proves the wiring answers.
+    const res = await asOwner('/api/backup/offsite-test', { method: 'POST' })
+    expect(res.status).toBe(400)
+    expect(await res.json()).toEqual({ success: false, error: 'not configured' })
+  })
+
   it('refuses a name that is a path, on download and on delete', async () => {
     for (const bad of ['../../package.json', '/etc/passwd', 'notes.txt', '']) {
       const read = await asOwner(`/api/backup/download?name=${encodeURIComponent(bad)}`)

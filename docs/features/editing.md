@@ -180,6 +180,15 @@
   status `publish`→`published` else `draft`; excerpt from `excerpt:encoded` or `deriveExcerpt`.
 - **The route persists** via `savePost`/`savePage` — new content is ADDED, a slug that collides with
   existing content gets a numeric suffix (nothing overwritten). One `clearCache()` at the
-  end; logged as `import.wordpress`. **Images keep their source URLs** (not rehosted).
+  end; logged as `import.wordpress`. **A published item's old path becomes a 301** in the
+  owner's redirects table (WXR `<link>`, Substack `/p/<slug>`; refused when it would shadow
+  live content, because the redirect middleware answers before the router — ADR 0034).
+- **Images come home in batches** (`src/import/images.ts`, since 2.2.1): the admin client loops
+  `POST /api/import/images` after the upload — each call rescans "what is still remote?",
+  fetches up to five images through the SSRF guard and the upload caps, stores them in the
+  media library and rewrites every reference; the MCP `import_images` tool is the same loop
+  for an agent. Stateless by rescan (a crash loses nothing; a blog imported earlier is served
+  the same); failures are reported once, not retried forever — the failure list is the
+  owner's checklist before the old hosting lapses. Logged as `import.images`.
 - `turndown`/`turndown-plugin-gfm`/`fast-xml-parser` are runtime deps. Max upload 100MB; non-WXR
   files are rejected.

@@ -122,7 +122,8 @@ between a line here and the running software is either a bug or an unrecorded `â
 - Backup restore into an empty instance, verified end to end
 - WordPress import: WXR upload, HTML to Markdown, figcaption folded into alt, categories and
   tags split, `Uncategorized` dropped, status mapping, slug collision gets a numeric suffix,
-  nothing overwritten, images keep their source URLs
+  nothing overwritten. (Images kept their source URLs until 2.2.1, when the import began
+  writing the old URLs' 301s and fetching the images home â€” ADR 0034, beyond parity)
 - Rate limits on public `track`, `search`, `subscribe`, `comments`, `mcp/register`
 - Activity log entry for every mutating route
 

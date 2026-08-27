@@ -3,7 +3,7 @@
 ## Comments — `src/comments/`, `src/web/comments.ts`, `src/assets/js/comments.ts`
 
 Text-only reader comments, **off by default** (`settings.comments.enabled`). Identity is either
-manual (name + email + optional website, optionally behind Cloudflare Turnstile) or a signed-in
+manual (name + email + optional website, behind the blog's own stamp gate — or Turnstile when keyed, ADR 0032) or a signed-in
 Google account.
 
 - **The form is a card, on the same terms as the newsletter block above it** (border, radius and

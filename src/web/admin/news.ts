@@ -226,6 +226,20 @@ export function newsRoutes() {
     return json({ saved: true })
   })
 
+  router.post('/api/integrations/s3', async (c) => {
+    const input = await body<IntegrationKeys>(c)
+    await saveIntegrationKeys({
+      s3Endpoint: str(input.s3Endpoint),
+      s3Region: str(input.s3Region),
+      s3Bucket: str(input.s3Bucket),
+      s3Prefix: str(input.s3Prefix),
+      s3AccessKeyId: str(input.s3AccessKeyId),
+      s3SecretAccessKey: str(input.s3SecretAccessKey),
+    })
+    void logActivity('settings.save', 'offsite bucket')
+    return json({ saved: true })
+  })
+
   router.post('/api/integrations/ai', async (c) => {
     const input = await body<IntegrationKeys>(c)
     const provider = str(input.aiProvider) ?? ''

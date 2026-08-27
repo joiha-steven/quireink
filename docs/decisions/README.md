@@ -56,6 +56,7 @@ abandoned on 2026-07-26, and the only trace was a private memory file.
 | [0032](0032-the-comment-gate-needs-no-account.md) | A signed proof-of-work gate on comments by default; Turnstile takes over when its keys are set | 2026-08-27 | ✅ |
 | [0033](0033-purging-an-edge-that-is-not-cloudflare.md) | A purge webhook beside the Cloudflare pair, so any CDN can be flushed | 2026-08-27 | ✅ |
 | [0034](0034-the-import-finishes-the-move.md) | Imports write the old URLs' 301s and bring remote images home in batches | 2026-08-27 | ✅ |
+| [0035](0035-the-snapshot-leaves-the-machine.md) | Snapshots also ship to any S3-compatible bucket; restore stays a shell act | 2026-08-27 | ✅ |
 
 ## Superseded, and why that matters
 

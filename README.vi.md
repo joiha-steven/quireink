@@ -102,8 +102,8 @@ Bạn được đọc, sửa, chạy và fork theo [PolyForm Noncommercial](./LI
 | 🔎&nbsp;**Máy&nbsp;tìm&nbsp;kiếm** | Sitemap, RSS, `robots.txt`, `llms.txt`, và ảnh chia sẻ vẽ riêng cho từng bài. Đổi đường dẫn thì link cũ vẫn tự chạy |
 | 📬&nbsp;**Bản&nbsp;tin** | Đăng ký có email xác nhận, một số gửi đi khi bạn đăng bài, và một lời nhắn khi bình luận được trả lời. SMTP của riêng bạn |
 | 📚&nbsp;**Loạt&nbsp;bài** | Viết thành nhiều phần, đánh số, và phần nào cũng chỉ ra các phần kia |
-| 💾&nbsp;**Sao&nbsp;lưu** | Một nút tải về nguyên cả bản cài, và một script cron đẩy nó ra khỏi máy chủ. [Chi tiết](./docs/backups.md) |
-| 📥&nbsp;**Dọn&nbsp;nhà&nbsp;sang** | Tải lên XML của WordPress, JSON của Ghost, hay tệp ZIP mà Substack/Medium gửi qua email — máy chủ tự nhận ra của ai. Tất cả thành Markdown, shortcode chết được quét sạch trên đường vào |
+| 💾&nbsp;**Sao&nbsp;lưu** | Một nút tải cả blog về máy bạn, snapshot theo lịch giữ trên máy chủ, và mỗi snapshot cũng được gửi lên bucket R2/S3 của chính bạn. [Chi tiết](./docs/backups.md) |
+| 📥&nbsp;**Dọn&nbsp;nhà&nbsp;sang** | Tải lên XML của WordPress, JSON của Ghost, hay tệp ZIP mà Substack/Medium gửi qua email — máy chủ tự nhận ra của ai. Tất cả thành Markdown, shortcode chết được quét sạch trên đường vào, URL cũ được chuyển hướng sẵn, và ảnh được tải về thư viện của bạn |
 | 🌍&nbsp;**Ngôn&nbsp;ngữ** | Sáu thứ tiếng, cả trong quản trị lẫn ngoài site. Không kèm webfont CJK nào — chúng nặng hàng megabyte — nhưng mỗi thứ tiếng gọi tên mặt chữ riêng, nên 直 được vẽ theo lối Nhật trên site tiếng Nhật |
 | 🔐&nbsp;**Đăng&nbsp;nhập** | Tên và mật khẩu của riêng bạn, băm bằng argon2id. Mã xác thực mỗi lần vào, và mười mã khôi phục cho ngày mất điện thoại. Không có Google trong đường đăng nhập |
 | 📱&nbsp;**Điện&nbsp;thoại** | Cài ra màn hình chính là nó mở như một ứng dụng |
@@ -170,7 +170,7 @@ Nó giữ được như vậy nhờ vài quyết định khó đảo ngược.
 
 **Thay vì một static site generator.** Bạn có trang quản trị thật. Viết, tải ảnh, hẹn giờ và đăng từ laptop hay điện thoại, với tìm kiếm, bình luận, bản tin và thống kê đã có sẵn. Không build lại, không deploy, không phải git push chỉ để sửa một lỗi chính tả.
 
-**Thay vì tự viết lấy.** Nửa phần chán đã làm xong và có test: đăng nhập TOTP, phiên, cắt ảnh, feed, ảnh OG, redirect, hoàn tác khi xoá, lịch sử phiên bản, sao lưu, bộ nhập từ WordPress, sáu ngôn ngữ.
+**Thay vì tự viết lấy.** Nửa phần chán đã làm xong và có test: đăng nhập TOTP, phiên, cắt ảnh, feed, ảnh OG, redirect, hoàn tác khi xoá, lịch sử phiên bản, sao lưu, bộ nhập từ WordPress, Ghost, Substack và Medium, sáu ngôn ngữ.
 
 <div align="center">
 
@@ -309,7 +309,7 @@ Viết mới là một nửa. Agent còn đọc được lượng truy cập và
 
 Các cấu hình nhạy cảm bị chặn qua MCP, và quyền vẫn nằm ở bạn. Thu hồi token trong trang quản trị là nó chết ngay.
 
-**Và kho mã này dạy luôn cho agent.** Ba bộ kỹ năng nằm sẵn trong `.claude/skills/`, nên một trợ lý vừa clone kho về là đã biết cách dựng một blog, vận hành nó qua MCP, và dọn nhà từ WordPress, Ghost, Substack hay Medium sang — kể cả những việc mà bộ nhập liệu cố ý để lại cho người làm. Không phải cài gì thêm: clone về rồi hỏi. [Chúng gồm những gì](./docs/agent-ready.md#skills-that-ship-in-the-repository).
+**Và kho mã này dạy luôn cho agent.** Ba bộ kỹ năng nằm sẵn trong `.claude/skills/`, nên một trợ lý vừa clone kho về là đã biết cách dựng một blog, vận hành nó qua MCP, và dọn nhà từ WordPress, Ghost, Substack hay Medium sang — bộ nhập tự viết chuyển hướng cho URL cũ và tự tải ảnh về; kỹ năng này lo phần còn lại, bắt đầu từ danh sách ảnh không tải được. Không phải cài gì thêm: clone về rồi hỏi. [Chúng gồm những gì](./docs/agent-ready.md#skills-that-ship-in-the-repository).
 
 ---
 
@@ -325,6 +325,7 @@ Các cấu hình nhạy cảm bị chặn qua MCP, và quyền vẫn nằm ở b
 | `PORT` | ◻️ | Mặc định `3000` |
 | `CRON_SECRET` | ◻️ | Canh `/api/cron`, chỗ đăng bài hẹn giờ và dọn biến thể ảnh |
 | `PURGE_WEBHOOK_URL` | ◻️ | Địa chỉ mà blog sẽ POST tới mỗi lần nó dọn cache của chính nó, dành cho CDN không phải Cloudflare ([ADR 0033](./docs/decisions/0033-purging-an-edge-that-is-not-cloudflare.md)). Bình thường thì nhập trong Cấu hình → Tích hợp |
+| `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` (+`S3_ENDPOINT`, `S3_REGION`, `S3_PREFIX`) | ◻️ | Bucket chuẩn S3 nhận thêm một bản của mỗi snapshot ([ADR 0035](./docs/decisions/0035-the-snapshot-leaves-the-machine.md)). Bình thường nhập ở Cấu hình → Hệ thống |
 | `CRON_INTERNAL` | ◻️ | Đặt `0` để tiến trình KHÔNG tự chạy đồng hồ bảo trì, khi bạn muốn tự hẹn giờ gọi `/api/cron`. Mặc định là bật, theo [ADR 0031](./docs/decisions/0031-the-blog-winds-its-own-clock.md); nó không bao giờ chạy dưới `bun test` hay `bun --watch` |
 | `MCP_OAUTH_SECRET` | ◻️ | Ký mã OAuth của MCP. Bỏ trống thì máy chủ tự sinh lấy, và đó là cách nên dùng |
 | `ANALYTICS_TZ` | ◻️ | Múi giờ MẶC ĐỊNH của site, dùng cho tới khi có người chọn ở **Settings → Site → Múi giờ**. Setting đó là đồng hồ của cả site — ngày dưới mỗi bài, mốc tháng, và ngày bắt đầu của biểu đồ thống kê — và nó tồn tại vì trang được dựng một lần rồi cache, nên không có nó thì múi giờ của MÁY CHỦ quyết định người đọc thấy ngày nào. Mặc định UTC |

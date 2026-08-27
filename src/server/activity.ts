@@ -33,7 +33,7 @@ export type ActivityAction =
   // Google Drive integration, which 2.0 does not have (parity exception 1). `export` is the
   // copy the owner takes away; `run` and `delete` are the snapshots kept on the server, by
   // hand or by the cron tick.
-  | 'backup.export' | 'backup.run' | 'backup.delete'
+  | 'backup.export' | 'backup.run' | 'backup.delete' | 'backup.offsite'
   // Reader comments (create is public; restore/purge from the admin Trash).
   | 'comment.create' | 'comment.delete' | 'comment.restore' | 'comment.purge'
   // Server errors (unexpected failures from route handlers) — the error log.
