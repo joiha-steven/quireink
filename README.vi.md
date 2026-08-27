@@ -28,8 +28,6 @@ Một tiến trình. Hai tệp SQLite. Không tài khoản đám mây nào trong
 
 </div>
 
----
-
 ## Nó là gì
 
 Bạn viết, nó đăng, và mọi thứ nằm trên máy chủ của bạn.
@@ -53,8 +51,6 @@ Mục này viết cho người không rành kỹ thuật. Phần còn lại củ
 **Miễn phí, và bạn được thu tiền.** Blog cá nhân thì không tốn gì. Dùng trong doanh nghiệp, hay bán dịch vụ host cho mỗi khách một cái blog, cũng được — miễn là bản bạn chạy đúng là bản phát hành ở đây. Chỉ bản *đã sửa code* đem đi kinh doanh mới phải hỏi trước: [xem mục Giấy phép](#giấy-phép).
 
 **Không hợp với ai.** Một toà soạn cần phân vai, duyệt bài và hàng đợi biên tập. Quire Ink cố ý chỉ có một chủ.
-
----
 
 ## Bên dưới nắp máy
 
@@ -86,11 +82,9 @@ Bạn được đọc, sửa, chạy và fork theo [PolyForm Noncommercial](./LI
 > dở được **mời quay lại**, và nút chỉnh cỡ chữ chế độ sách thành chữ trần.
 > [Changelog](./CHANGELOG.md) có đủ những gì đã đổi.
 
----
-
 ## Bạn được gì
 
-| | |
+| Phần | Làm được gì |
 |:---|:---|
 | 🖋️&nbsp;**Viết** | Trình soạn thật trên nền Markdown — bảng, video, chú thích chân trang, khung nhấn, **công thức toán**, Spotify. Thả ảnh vào là nó tự cắt cho mọi cỡ màn hình — và tự được mô tả, nếu bạn đưa Settings một API key (Anthropic, OpenAI hoặc Gemini; key của bạn, hoá đơn của bạn). Lưu trong lúc gõ, giữ ba bản, và giữ bài lại tới sáng thứ Ba |
 | 🏠&nbsp;**Trang&nbsp;chủ** | Danh sách bài, một trang bạn tự viết, hoặc trang dựng sẵn: bài dẫn, vài bài chọn, một hàng cho mỗi chuyên mục, bài đọc nhiều. Hợp cả site nhiều ảnh lẫn site chỉ có chữ. [Cách hoạt động](./docs/homepage.md) |
@@ -122,8 +116,6 @@ Bạn được đọc, sửa, chạy và fork theo [PolyForm Noncommercial](./LI
 <sub>Công thức toán là MathML, do chính trình duyệt dựng — không script, không stylesheet, không file font, nên một bài có công thức không tốn thêm gì so với bài không có. Code cũng tô màu ở máy chủ, cùng một lý do; khối phía dưới không ghi ngôn ngữ nên không ai bịa màu cho nó, chỉ đánh dấu những gì đúng trong mọi ký pháp. Bút dạ là nét SVG ngắt theo từng dòng, có năm màu mực.</sub>
 
 </div>
-
----
 
 ## Tốc độ
 
@@ -160,8 +152,6 @@ Nó giữ được như vậy nhờ vài quyết định khó đảo ngược.
 
 </div>
 
----
-
 ## Vì sao không dùng thứ khác
 
 **Thay vì một nền tảng có sẵn.** Bài của bạn là hai tệp SQLite trên ổ đĩa của chính bạn. Không tài khoản, không gói cước, không có cái nút export mà bạn phải cầu cho nó vẫn chạy sau năm năm.
@@ -179,8 +169,6 @@ Nó giữ được như vậy nhờ vài quyết định khó đảo ngược.
 <sub>Bảng màu, font, cỡ chữ, bố cục, menu. Tất cả đều là tuỳ chọn, không có cái nào là code.</sub>
 
 </div>
-
----
 
 ## Cài đặt
 
@@ -289,8 +277,6 @@ docker compose logs quire            # đường dẫn nhận blog, y như trên
 > bạn. Đặt CDN ở trước để lo TLS và cache ở biên, và để nó tôn trọng `cache-control` mà app
 > đã gửi sẵn thay vì tự áp TTL riêng.
 
----
-
 ## Để AI agent viết thay bạn (MCP)
 
 Quire Ink có sẵn một máy chủ **MCP**, nên trợ lý soạn, sửa, gắn thẻ và đăng thẳng lên site đang chạy của bạn được. Không git, không deploy. Nó đi qua đúng đoạn code mà trang quản trị đi qua, theo cùng luật về slug, phiên bản và thùng rác.
@@ -310,8 +296,6 @@ Viết mới là một nửa. Agent còn đọc được lượng truy cập và
 Các cấu hình nhạy cảm bị chặn qua MCP, và quyền vẫn nằm ở bạn. Thu hồi token trong trang quản trị là nó chết ngay.
 
 **Và kho mã này dạy luôn cho agent.** Ba bộ kỹ năng nằm sẵn trong `.claude/skills/`, nên một trợ lý vừa clone kho về là đã biết cách dựng một blog, vận hành nó qua MCP, và dọn nhà từ WordPress, Ghost, Substack hay Medium sang — bộ nhập tự viết chuyển hướng cho URL cũ và tự tải ảnh về; kỹ năng này lo phần còn lại, bắt đầu từ danh sách ảnh không tải được. Không phải cài gì thêm: clone về rồi hỏi. [Chúng gồm những gì](./docs/agent-ready.md#skills-that-ship-in-the-repository).
-
----
 
 ## Biến môi trường
 
@@ -340,8 +324,6 @@ Giao diện nói **mười một thứ tiếng** — English, Tiếng Việt, De
 
 **Mời bạn góp bản dịch.** Mỗi ngôn ngữ là một thư mục ngay gốc repo: [`locales/`](./locales). Muốn sửa một bản dịch, mở `locales/<mã>.ts` (chữ người đọc thấy) và `locales/admin/<mã>.ts` (chữ chủ blog thấy) — file chữ thuần, không cần biết lập trình. Muốn thêm ngôn ngữ mới: chép đôi file `en`, dịch, rồi đăng ký mã trong `locales/langs.ts` + `src/types.ts`; trình biên dịch từ chối build khi còn thiếu một chuỗi, nên bản dịch dở dang không thể lọt ra ngoài. Rất hoan nghênh pull request — tai người bản xứ hơn tai chúng tôi.
 
----
-
 ## Chạy để phát triển
 
 ```bash
@@ -364,8 +346,6 @@ Dự định sắp tới nằm cùng chỗ với ghi chú riêng của tác gi�
 của một người cho một cái blog, không phải lời hứa với ai đang chạy phần mềm này
 ([ADR 0017](./docs/decisions/0017-move-state-and-instance-config-private.md)). Cái gì đã ra
 rồi thì xem [changelog](./CHANGELOG.md).
-
----
 
 ## Giấy phép
 

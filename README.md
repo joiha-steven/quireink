@@ -28,8 +28,6 @@ One process. Two SQLite files. No cloud account anywhere in the path.
 
 </div>
 
----
-
 ## What it is
 
 You write, it publishes, and all of it sits on a server you control.
@@ -53,8 +51,6 @@ This section is for a reader who is not technical. The rest of the page is for w
 **Free, and you may charge for it.** A personal blog costs nothing. Running it inside a business, or selling hosting where every customer gets their own blog, is allowed too — as long as what you run is the version published here. Only a *modified* version used commercially needs to ask first: [License](#license).
 
 **Not for everyone.** A newsroom with roles, approvals and an editorial queue should look elsewhere. Quire Ink has one owner on purpose.
-
----
 
 ## Under the hood
 
@@ -87,11 +83,9 @@ You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE),
 > **resume**, and book mode's size control became plain type. The
 > [changelog](./CHANGELOG.md) has everything that changed.
 
----
-
 ## What you get
 
-| | |
+| The part | What it does |
 |:---|:---|
 | 🖋️&nbsp;**Writing** | A real editor over Markdown — tables, video, footnotes, callouts, **mathematics**, Spotify. Drop an image in and it is cut for every screen — and described for you, if you give Settings an AI key (Anthropic, OpenAI or Gemini; yours, so your bill). Saves as you type, keeps three versions, and can hold a post until Tuesday |
 | 🏠&nbsp;**Front&nbsp;page** | The post list, a page you wrote, or a composed front: lead story, picks, a row per category, most read. Works with photographs, and with only words. [How it works](./docs/homepage.md) |
@@ -123,8 +117,6 @@ You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE),
 <sub>Mathematics is MathML, drawn by the browser's own layout engine — no script, no stylesheet, no font file, so a post with a formula costs a reader nothing over one without. Code is highlighted on the server for the same reason; the lower block named no language, so nothing invented colours for it and only what is true of any notation is marked. The pen is an SVG stroke that breaks per line, in five inks.</sub>
 
 </div>
-
----
 
 ## Speed
 
@@ -161,8 +153,6 @@ It stays this way because of a few decisions that are hard to walk back.
 
 </div>
 
----
-
 ## Why not something else
 
 **Instead of a hosted platform.** Your writing is two SQLite files on your own disk. No account, no plan, no export button you have to hope still works in five years.
@@ -180,8 +170,6 @@ It stays this way because of a few decisions that are hard to walk back.
 <sub>The admin is built around writing: the list beside the paper, and everything else one sheet per page. Palettes, fonts, sizes, layout, menu — all of it is a setting, none of it is code.</sub>
 
 </div>
-
----
 
 ## Install
 
@@ -289,8 +277,6 @@ Give an agent SSH to a fresh server and ask it to set the whole thing up: clone,
 > your server. Put a CDN in front for TLS and edge caching, and let it obey the
 > `cache-control` the app already sends instead of forcing its own.
 
----
-
 ## Let an AI agent write for you (MCP)
 
 Quire Ink has an **MCP** server built in, so an assistant can draft, edit, tag and publish straight to your live site. No git, no deploy. It goes through the same code the admin does, with the same rules about slugs, revisions and the trash.
@@ -310,8 +296,6 @@ Writing is half of it. The agent can also read your traffic and compare it to la
 The sensitive settings are off limits over MCP, and you stay in charge. Revoke the token in the admin and it stops working immediately.
 
 **And the repository teaches the agent.** Three skills ship in `.claude/skills/`, so an assistant that has just cloned this repo already knows how to install a blog, work one over MCP, and move an existing blog in from WordPress, Ghost, Substack or Medium — the import writes the old URLs' redirects and fetches the images itself; the skill walks what remains, starting with the list of images it could not fetch. Nothing to install: clone it and ask. [What they cover](./docs/agent-ready.md#skills-that-ship-in-the-repository).
-
----
 
 ## Environment variables
 
@@ -343,8 +327,6 @@ The interface speaks **eleven languages** — English, Tiếng Việt, Deutsch, 
 
 **Help translate.** Every language is one folder at the repository root: [`locales/`](./locales). To improve a translation, edit `locales/<code>.ts` (what readers see) and `locales/admin/<code>.ts` (what the owner sees) — plain files of quoted strings. To add a language, copy the two `en` files, translate, and register the code in `locales/langs.ts` + `src/types.ts`; the compiler refuses to build until every key exists, so a half-done translation cannot ship silently. Pull requests welcome — a native speaker's ear beats ours.
 
----
-
 ## Develop
 
 ```bash
@@ -367,8 +349,6 @@ What is planned lives with the author's own notes rather than here, because it i
 person's intentions for one blog and not a promise to anybody running the software
 ([ADR 0017](./docs/decisions/0017-move-state-and-instance-config-private.md)). What has
 already shipped is in the [changelog](./CHANGELOG.md).
-
----
 
 ## License
 
