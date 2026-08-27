@@ -1,6 +1,6 @@
 <div align="center">
 
-# quire**INK** &nbsp;`2.2.0`
+# quire**INK** &nbsp;`2.2.1`
 
 **Một cái blog bạn tự host, và AI agent có thể vận hành thay bạn.**
 Không thuật toán, không quảng cáo, không nền tảng nào đứng giữa bạn và người đọc.
@@ -74,16 +74,16 @@ Có ba thứ định hình nó.
 
 Bạn được đọc, sửa, chạy và fork theo [PolyForm Noncommercial](./LICENSE), và được chạy bản phát hành để kinh doanh — kể cả bán hosting — theo [một cho phép bổ sung](./LICENSE-EXCEPTION.vi.md).
 
-> **2.2.0 ra ngày 25/08/2026**, đang chạy bản demo ở trên và blog riêng của tác giả tại
-> [manhhung.me](https://manhhung.me). Đây là bản lớn nhất kể từ 2.0. **Dựng một blog không còn
-> cần terminal nữa** — blog chưa có chủ tự in một đường dẫn dùng một lần ra log của chính nó,
-> phần còn lại nằm trong trình duyệt, đúng thứ mà một cái NAS có bảng xem log mà không có TTY
-> cần. **Agent giờ đọc và trông coi được blog** chứ không chỉ viết, và **một trợ lý dọn vào
-> trang quản trị** cho ai không dùng MCP: cùng bộ công cụ, cùng luật, khoá API của bạn. **Bài
-> viết in ra như trang sách** chứ không như trang web. **Năm màu mực của cây bút giờ là của
-> bạn**, trình soạn thảo có thêm **ba bàn phím và một núm âm lượng**, bôi đen một câu là có
-> ngay nút **chép kèm đường dẫn mở đúng câu đó**, và máy tìm kiếm nhận được **JSON-LD** cùng
-> một câu mô tả riêng cho từng trang.
+> **2.2.1 ra ngày 27/08/2026**, đang chạy bản demo ở trên và blog riêng của tác giả tại
+> [manhhung.me](https://manhhung.me). **Giao diện giờ nói mười một thứ tiếng** — thêm năm
+> (Pháp, Tây Ban Nha, Bồ Đào Nha giọng Brazil, Ý, Nga), kho bản dịch dời ra
+> [`locales/`](./locales/) cho người đóng góp dễ tìm, và mọi bản dịch cũ được biên tập lại
+> một lượt. **Bản sao lưu rời khỏi máy**: mỗi bản chụp cũng được ghi lên bucket chuẩn S3 bất
+> kỳ — R2, S3, MinIO — có nút Test, không OAuth. **Cuộc nhập dọn nhà trọn gói**: URL cũ bên
+> WordPress/Substack thành redirect của bạn, ảnh còn nằm ở host cũ được kéo về thư viện của
+> chính bạn. **Không cần tài khoản Cloudflare** — blog tự lên dây đồng hồ, tự ký thử thách
+> chống spam bình luận, và purge được mọi CDN qua webhook. Cuối bài có **đọc tiếp**, chỗ đọc
+> dở được **mời quay lại**, và nút chỉnh cỡ chữ chế độ sách thành chữ trần.
 > [Changelog](./CHANGELOG.md) có đủ những gì đã đổi.
 
 ---
