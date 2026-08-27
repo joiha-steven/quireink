@@ -79,7 +79,7 @@ export function CommentsTable({ initial }: { initial: AdminComment[] }) {
           />
         </SheetTop>
         {shown.length === 0 ? (
-          <p className="px-5 py-8 text-sm text-neutral-400 dark:text-neutral-500">{t.filterEmpty}</p>
+          <p className="px-5 py-8 text-sm text-neutral-500 dark:text-neutral-400">{t.filterEmpty}</p>
         ) : (
           <ul className="paper-cols">
             {shown.map((c) => (
@@ -96,7 +96,7 @@ export function CommentsTable({ initial }: { initial: AdminComment[] }) {
                 </button>
                 {/* One line of small print, the row's whole ledger. The name leads because
                     a moderator's second question (after "what does it say") is "who". */}
-                <div className="mt-1.5 flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-xs text-neutral-400 dark:text-neutral-500">
+                <div className="mt-1.5 flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-xs text-neutral-500 dark:text-neutral-400">
                   <span className="font-medium text-neutral-600 dark:text-neutral-300"><Marked text={c.name} needle={query} /></span>
                   {c.email && <span className="truncate">{c.email}</span>}
                   <span aria-hidden>·</span>

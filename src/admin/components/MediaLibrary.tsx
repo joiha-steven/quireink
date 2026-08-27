@@ -313,11 +313,11 @@ export function MediaLibrary({ mode = 'page', multi = false, onSelect, onSelectM
         </div>
       )}
       {loading ? (
-        <p className="py-10 text-center text-neutral-400 dark:text-neutral-500">{t.loading}</p>
+        <p className="py-10 text-center text-neutral-500 dark:text-neutral-400">{t.loading}</p>
       ) : items.length === 0 ? (
         <EmptyState title={t.noMedia} />
       ) : view.length === 0 ? (
-        <p className="py-10 text-center text-neutral-400 dark:text-neutral-500">{t.mediaNoMatch}</p>
+        <p className="py-10 text-center text-neutral-500 dark:text-neutral-400">{t.mediaNoMatch}</p>
       ) : (
         grid
       )}

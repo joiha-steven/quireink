@@ -9,7 +9,7 @@ import type { ReactNode } from 'react'
 import type { ViewState } from '@/admin/useView'
 
 export function Loading() {
-  return <div className="py-16 text-center text-sm text-neutral-400 dark:text-neutral-500">…</div>
+  return <div className="py-16 text-center text-sm text-neutral-500 dark:text-neutral-400">…</div>
 }
 
 export function Failed({ error }: { error: string }) {

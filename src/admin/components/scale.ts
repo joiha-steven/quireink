@@ -78,7 +78,7 @@ export const SETTING_LABEL = 'block text-sm font-medium text-neutral-800 dark:te
  * Split from `NOTE` because thirty-eight screens hand-typed this list rather than import it,
  * and what stopped them was the `mt-1`: a hint standing alone in a `space-y` stack does not
  * want a top margin, so each re-typed the other classes to be rid of one. They drifted, and
- * TWENTY-FIVE carried `text-neutral-400 dark:text-neutral-500` — lighter than this in light
+ * TWENTY-FIVE carried `text-neutral-500 dark:text-neutral-400` — lighter than this in light
  * mode and darker in dark mode, so they were the hardest hints to read in both.
  */
 export const NOTE_TEXT = 'text-[0.8125rem] leading-[1.55] text-neutral-500 dark:text-neutral-400'
@@ -88,6 +88,20 @@ export const NOTE = `${NOTE_TEXT} mt-1.5`
 
 /** The machine's smallest print: a table head, a count, a timestamp, a filename. */
 export const META = 'text-xs text-neutral-500 dark:text-neutral-400'
+
+/**
+ * The same small print, one notch darker, for text that sits on the CANVAS rather than
+ * inside a card.
+ *
+ * Not a second opinion about the voice — the same voice, on a different ground. The canvas
+ * is tinted (#f7f6f4, the paper this admin is printed on) and a card is white, and that tint
+ * is worth 0.2 of a contrast ratio: `META` measures 4.61:1 on a card and 4.39:1 on the
+ * canvas, either side of the 4.5:1 a 12px line has to clear. Four places sat on the wrong
+ * side of it — the version chip, the storage line under the dashboard, Export CSV, the SMTP
+ * link — and every one of them was correct except for what happened to be behind it.
+ * Dark mode needs no notch: there the canvas is DARKER than the cards, so it helps.
+ */
+export const META_ON_CANVAS = 'text-xs text-neutral-600 dark:text-neutral-400'
 
 /**
  * A number that is itself the content, in a stat tile.

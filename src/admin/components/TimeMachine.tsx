@@ -51,9 +51,9 @@ export function TimeMachine({ slug, onRestore, onClose }: Props) {
 
         <div className="overflow-y-auto">
           {revisions === null ? (
-            <p className="py-10 text-center text-neutral-400 dark:text-neutral-500">{t.loading}</p>
+            <p className="py-10 text-center text-neutral-500 dark:text-neutral-400">{t.loading}</p>
           ) : revisions.length === 0 ? (
-            <p className="py-10 text-center text-neutral-400 dark:text-neutral-500">{t.tmEmpty}</p>
+            <p className="py-10 text-center text-neutral-500 dark:text-neutral-400">{t.tmEmpty}</p>
           ) : (
             <ul className="space-y-3">
               {revisions.map((rev, i) => (

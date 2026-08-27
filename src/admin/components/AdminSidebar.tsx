@@ -261,7 +261,7 @@ export function AdminSidebar({
       onClick={toggleCollapsed}
       title={collapsed ? t.navExpand : t.navCollapse}
       aria-label={collapsed ? t.navExpand : t.navCollapse}
-      className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-transparent text-neutral-400 transition-colors hover:border-neutral-200 hover:bg-neutral-50 hover:text-neutral-700 dark:text-neutral-500 dark:hover:border-neutral-700 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
+      className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-transparent text-neutral-500 transition-colors hover:border-neutral-200 hover:bg-neutral-50 hover:text-neutral-700 dark:text-neutral-400 dark:hover:border-neutral-700 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
     >
       <span className={`grid place-items-center transition-transform ${collapsed ? 'rotate-180' : ''}`}>
         <IconChevronLeft />

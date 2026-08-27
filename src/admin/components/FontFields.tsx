@@ -50,7 +50,7 @@ export function FontFields({
               style={{ fontFamily: f.stack }}
             >
               <span className="block text-base leading-tight">{f.name}</span>
-              <span className={`block text-xs ${active ? 'opacity-70' : 'text-neutral-400 dark:text-neutral-500'}`}>
+              <span className={`block text-xs ${active ? 'opacity-70' : 'text-neutral-500 dark:text-neutral-400'}`}>
                 Aa · 1793
               </span>
             </button>

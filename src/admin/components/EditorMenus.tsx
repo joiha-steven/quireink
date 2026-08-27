@@ -168,7 +168,7 @@ function Row({ label, hint, active = false, onClick }: { label: string; hint?: s
       }`}
     >
       <span>{label}</span>
-      {hint && <span className="shrink-0 font-mono text-[11px] text-neutral-400 dark:text-neutral-500">{hint}</span>}
+      {hint && <span className="shrink-0 font-mono text-[11px] text-neutral-500 dark:text-neutral-400">{hint}</span>}
     </button>
   )
 }

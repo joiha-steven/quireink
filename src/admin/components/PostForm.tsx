@@ -373,8 +373,8 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
           onClose={() => { setSettingsOpen(false); setAsking(false) }}
           links={
             <>
-              {savedSlug && <button type="button" onClick={() => setTimeMachine(true)} className="text-neutral-500 hover:text-neutral-900 dark:hover:text-white">{t.history}</button>}
-              {draft.status === 'published' && savedSlug && !scheduled && <a href={`/${savedSlug}`} target="_blank" rel="noopener" className="text-neutral-500 hover:text-neutral-900">{t.viewPost}</a>}
+              {savedSlug && <button type="button" onClick={() => setTimeMachine(true)} className="text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white">{t.history}</button>}
+              {draft.status === 'published' && savedSlug && !scheduled && <a href={`/${savedSlug}`} target="_blank" rel="noopener" className="text-neutral-500 dark:text-neutral-400 hover:text-neutral-900">{t.viewPost}</a>}
             </>
           }
         />

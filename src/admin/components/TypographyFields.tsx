@@ -89,7 +89,7 @@ export function TypographyFields({ typography, fontPreset, onChange, resetRef }:
       <div className="overflow-x-auto">
         <table className="w-full border-separate border-spacing-y-1 text-sm">
           <thead>
-            <tr className="text-xs text-neutral-400 dark:text-neutral-500">
+            <tr className="text-xs text-neutral-500 dark:text-neutral-400">
               <th className="text-left font-medium" />
               <th className="px-1 text-right font-medium">{t.colSize}</th>
               <th className="px-1 text-right font-medium">{t.colLine}</th>

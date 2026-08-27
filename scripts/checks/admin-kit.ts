@@ -33,7 +33,7 @@ const RULES: Rule[] = [
     // which is exactly the drift this file exists to stop: a screen re-types a primitive,
     // the primitive later grows, and the copy stays behind where nothing can see it.
     what: 'the quiet sheet-top tool',
-    signature: 'text-xs text-neutral-400 transition hover:text-neutral-900',
+    signature: 'text-xs text-neutral-500 transition hover:text-neutral-900',
     home: 'src/admin/components/sheet.tsx',
     instead: 'import SHEET_TOOL from components/sheet',
   },

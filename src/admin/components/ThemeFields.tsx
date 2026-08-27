@@ -84,7 +84,7 @@ function PresetCard({
       </button>
       {/* Visibility toggle. The default palette is always shown (locked), so the
           visitor never ends up with zero palettes. */}
-      <label className={`mt-1.5 flex items-center gap-1.5 px-1 text-xs ${isDefault ? 'cursor-not-allowed text-neutral-400 dark:text-neutral-600' : 'cursor-pointer text-neutral-600 dark:text-neutral-400'}`}>
+      <label className={`mt-1.5 flex items-center gap-1.5 px-1 text-xs ${isDefault ? 'cursor-not-allowed text-neutral-500 dark:text-neutral-600' : 'cursor-pointer text-neutral-600 dark:text-neutral-400'}`}>
         <input
           type="checkbox"
           checked={shown}

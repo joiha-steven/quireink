@@ -71,10 +71,10 @@ export function BarList({ title, rows, unit, empty, bare = false }: { title: Rea
     <div className={bare ? 'p-5' : `${CARD} p-5`}>
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-[15px] font-semibold tracking-tight text-neutral-900 dark:text-white">{title}</h2>
-        <span className="text-xs font-medium text-neutral-400 dark:text-neutral-500">{unit}</span>
+        <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400">{unit}</span>
       </div>
       {rows.length === 0 ? (
-        <p className="py-6 text-center text-sm text-neutral-400 dark:text-neutral-500">{empty}</p>
+        <p className="py-6 text-center text-sm text-neutral-500 dark:text-neutral-400">{empty}</p>
       ) : (
         <ul className="space-y-1">
           {rows.map((r) => {
@@ -135,7 +135,7 @@ export function TrendChart({
 
   return (
     <div className="w-full">
-      <div className="mb-2 flex items-center justify-between text-xs text-neutral-400 dark:text-neutral-500">
+      <div className="mb-2 flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-400">
         <div className="flex items-center gap-3">
           <span className="flex items-center gap-1.5"><i className="inline-block h-2 w-2 rounded-sm bg-neutral-400 dark:bg-neutral-500" />{viewsLabel}</span>
           <span className="flex items-center gap-1.5"><i className="inline-block h-2 w-2 rounded-sm bg-neutral-800 dark:bg-neutral-200" />{visitorsLabel}</span>
@@ -153,7 +153,7 @@ export function TrendChart({
         ))}
       </svg>
       {points.length > 1 && (
-        <div className="mt-1.5 flex justify-between text-xs text-neutral-400 dark:text-neutral-500">
+        <div className="mt-1.5 flex justify-between text-xs text-neutral-500 dark:text-neutral-400">
           <span className="tabular-nums">{points[0].day}</span>
           <span className="tabular-nums">{points[points.length - 1].day}</span>
         </div>

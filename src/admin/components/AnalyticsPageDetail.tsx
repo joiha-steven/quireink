@@ -21,7 +21,7 @@ export function AnalyticsPageDetail({ data, title, range }: { data: PageSummary;
       <PageHeader
         title={
           <span className="flex flex-col gap-1">
-            <Link href={`/admin/analytics?range=${range}`} className="text-xs font-medium text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300">
+            <Link href={`/admin/analytics?range=${range}`} className="text-xs font-medium text-neutral-500 hover:text-neutral-600 dark:text-neutral-400 dark:hover:text-neutral-300">
               ← {t.analyticsAllPages}
             </Link>
             <span className="truncate">{title}</span>

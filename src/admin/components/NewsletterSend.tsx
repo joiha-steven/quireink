@@ -85,7 +85,7 @@ export function NewsletterSend({ posts }: { posts: SendablePost[] }) {
     }
   }
 
-  if (posts.length === 0) return <p className="text-sm text-neutral-400">{t.nlNoPosts}</p>
+  if (posts.length === 0) return <p className="text-sm text-neutral-500 dark:text-neutral-400">{t.nlNoPosts}</p>
 
   return (
     <div className="grid items-start gap-5 xl:grid-cols-2">
@@ -133,11 +133,11 @@ export function NewsletterSend({ posts }: { posts: SendablePost[] }) {
 
       <Card title={t.nlPreview}>
         {picked.length === 0 ? (
-          <p className="text-sm text-neutral-400">{t.nlPreviewEmpty}</p>
+          <p className="text-sm text-neutral-500 dark:text-neutral-400">{t.nlPreviewEmpty}</p>
         ) : loading ? (
-          <p className="text-sm text-neutral-400">{t.loading}</p>
+          <p className="text-sm text-neutral-500 dark:text-neutral-400">{t.loading}</p>
         ) : !preview ? (
-          <p className="text-sm text-neutral-400">{t.nlPreviewFailed}</p>
+          <p className="text-sm text-neutral-500 dark:text-neutral-400">{t.nlPreviewFailed}</p>
         ) : (
           <div className="space-y-3">
             <p className="text-sm">

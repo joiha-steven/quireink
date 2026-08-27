@@ -28,7 +28,7 @@ export function SheetTitle({
         rows={1}
         className={`${READING} write-surface min-h-12 w-full resize-none overflow-hidden bg-transparent text-3xl font-semibold leading-tight [field-sizing:content] placeholder:italic placeholder:font-normal placeholder:text-neutral-300 dark:placeholder:text-neutral-600`}
       />
-      <p className="mb-2 mt-1 text-xs text-neutral-400 dark:text-neutral-500">{metaLine}</p>
+      <p className="mb-2 mt-1 text-xs text-neutral-500 dark:text-neutral-400">{metaLine}</p>
     </div>
   )
 }

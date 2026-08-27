@@ -104,7 +104,7 @@ export function MediaCard({
             <p className="truncate font-medium text-neutral-700 dark:text-neutral-300" title={m.filename}>
               {m.filename}
             </p>
-            <p className="truncate text-neutral-400" title={`${m.width && m.height ? `${m.width}×${m.height} · ` : ''}${formatBytes(m.size)} · ${formatDate(m.uploadedAt, lang)}`}>
+            <p className="truncate text-neutral-500 dark:text-neutral-400" title={`${m.width && m.height ? `${m.width}×${m.height} · ` : ''}${formatBytes(m.size)} · ${formatDate(m.uploadedAt, lang)}`}>
               {m.width && m.height ? `${m.width}×${m.height} · ` : ''}
               {formatBytes(m.size)} · {compactDate(m.uploadedAt, lang)}
             </p>

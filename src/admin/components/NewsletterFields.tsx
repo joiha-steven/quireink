@@ -56,7 +56,7 @@ export function NewsletterFields() {
     }
   }
 
-  if (!cfg) return <p className="text-sm text-neutral-400">{t.loading}</p>
+  if (!cfg) return <p className="text-sm text-neutral-500 dark:text-neutral-400">{t.loading}</p>
 
   const mismatch = cfg.secure !== secureForPort(cfg.port)
 

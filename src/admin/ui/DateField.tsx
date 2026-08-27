@@ -87,7 +87,7 @@ export function DateField({
         className={`${CONTROL} mt-2 flex w-full items-center justify-between text-left`}
       >
         <span>{valid ? new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(picked) : '—'}</span>
-        <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-neutral-400" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden>
+        <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-neutral-500 dark:text-neutral-400" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden>
           <rect x="4" y="5.5" width="16" height="14" rx="1.5" /><path d="M4 9.5h16M8.5 3.5v3M15.5 3.5v3" />
         </svg>
       </button>
@@ -105,7 +105,7 @@ export function DateField({
               </button>
             </div>
           </div>
-          <div className="grid grid-cols-7 text-center text-xs text-neutral-400 dark:text-neutral-500">
+          <div className="grid grid-cols-7 text-center text-xs text-neutral-500 dark:text-neutral-400">
             {weekdayInitials().map((w, i) => <span key={i} className="py-1">{w}</span>)}
           </div>
           <div className="grid grid-cols-7">

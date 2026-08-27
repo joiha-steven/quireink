@@ -10,7 +10,7 @@ import { view } from '@/admin/api'
 import type { AnalyticsSummary, NameStat, RightNow } from '@/analytics/types'
 import { EmptyState, PageHeader, SEGMENT_TRACK, tabItemClass, TABLE_SCROLL, THEAD, TROW } from './kit'
 import { BarList, Trend, TrendChart, flag, formatDuration, type BarRow } from './analytics-kit'
-import { NumBand, SHEET, SHEET_TOOL, SheetTop } from './sheet'
+import { NumBand, SHEET, SHEET_TOOL_ON_CANVAS, SheetTop } from './sheet'
 import { useAdminT } from './I18nProvider'
 
 const RANGES = [1, 7, 30, 365] as const
@@ -61,7 +61,7 @@ function LiveNow({ initial, titles }: { initial: RightNow; titles: Record<string
           <span className="whitespace-nowrap text-neutral-700 dark:text-neutral-200">
             {t.analyticsNowReading.replace('{n}', String(now.visitors))}
           </span>
-          <span className="truncate text-neutral-400 dark:text-neutral-500">
+          <span className="truncate text-neutral-500 dark:text-neutral-400">
             {now.pages.slice(0, 3).map((p, i) => (
               <span key={p.path}>
                 {i > 0 && ' · '}
@@ -72,7 +72,7 @@ function LiveNow({ initial, titles }: { initial: RightNow; titles: Record<string
           </span>
         </>
       ) : (
-        <span className="text-neutral-400 dark:text-neutral-500">{t.analyticsNowQuiet}</span>
+        <span className="text-neutral-500 dark:text-neutral-400">{t.analyticsNowQuiet}</span>
       )}
     </div>
   )
@@ -114,7 +114,7 @@ export function AnalyticsView({ data, range, titles, rightNow }: {
       <PageHeader
         title={t.analyticsTitle}
         actions={
-          <button type="button" onClick={exportCsv} disabled={!hasData} className={SHEET_TOOL}>
+          <button type="button" onClick={exportCsv} disabled={!hasData} className={SHEET_TOOL_ON_CANVAS}>
             {t.analyticsExportCsv}
           </button>
         }
@@ -140,7 +140,7 @@ export function AnalyticsView({ data, range, titles, rightNow }: {
             ))}
           </div>
           <span className="flex-1" />
-          <span className="hidden text-xs text-neutral-400 lg:block dark:text-neutral-500">{t.analyticsPrivacyNote}</span>
+          <span className="hidden text-xs text-neutral-500 lg:block dark:text-neutral-400">{t.analyticsPrivacyNote}</span>
         </SheetTop>
 
         {rightNow && <LiveNow initial={rightNow} titles={titles} />}

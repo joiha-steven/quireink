@@ -268,7 +268,7 @@ export function PageForm({ initial, contentWidth, keySound, autosaveSeconds }: P
           intro={asking ? t.publishReview : undefined}
           headerRight={
             draft.status === 'published' && savedSlug ? (
-              <a href={`/${savedSlug}`} target="_blank" rel="noopener" className="text-neutral-500 hover:text-neutral-900">{t.viewPost}</a>
+              <a href={`/${savedSlug}`} target="_blank" rel="noopener" className="text-neutral-500 dark:text-neutral-400 hover:text-neutral-900">{t.viewPost}</a>
             ) : undefined
           }
           onClose={() => { setSettingsOpen(false); setAsking(false) }}

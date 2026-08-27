@@ -36,12 +36,12 @@ export const tabItemClass = (active: boolean, size: TabSize = 'lg', dense = fals
     ? `-mb-px border-b-2 pb-2.5 text-sm font-medium transition ${
         active
           ? 'border-neutral-900 text-neutral-900 dark:border-white dark:text-white'
-          : 'border-transparent text-neutral-500 hover:border-neutral-300 hover:text-neutral-900 dark:hover:border-neutral-600 dark:hover:text-neutral-200'
+          : 'border-transparent text-neutral-500 dark:text-neutral-400 hover:border-neutral-300 hover:text-neutral-900 dark:hover:border-neutral-600 dark:hover:text-neutral-200'
       }`
     : `${dense ? 'grow px-2' : 'px-3'} py-1.5 text-[0.8125rem] font-medium transition ${
         active
           ? 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900'
-          : 'text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-neutral-200'
+          : 'text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-neutral-200'
       }`
 
 export function Tabs<K extends string>({

@@ -170,12 +170,12 @@ export function McpFields(
         )}
 
         {tokens.length === 0 ? (
-          <p className="py-6 text-center text-sm text-neutral-400 dark:text-neutral-500">{t.mcpNoTokens}</p>
+          <p className="py-6 text-center text-sm text-neutral-500 dark:text-neutral-400">{t.mcpNoTokens}</p>
         ) : (
           <div className={PANEL}>
             <div className={TABLE_SCROLL}>
             <table className="w-full text-sm">
-              <thead className="border-b border-neutral-200 bg-neutral-50 text-left text-neutral-500 dark:border-neutral-800 dark:bg-neutral-900">
+              <thead className="border-b border-neutral-200 bg-neutral-50 text-left text-neutral-500 dark:text-neutral-400 dark:border-neutral-800 dark:bg-neutral-900">
                 <tr>
                   <th className="px-3 py-2 font-medium">{t.mcpColName}</th>
                   <th className="hidden px-3 py-2 font-medium sm:table-cell">{t.mcpColCreated}</th>
@@ -189,7 +189,7 @@ export function McpFields(
                   <tr key={tok.id} className="border-b border-neutral-100 last:border-0 dark:border-neutral-800">
                     <td className="px-3 py-2">
                       <span className="font-medium">{tok.name}</span>
-                      <code className="ml-2 text-xs text-neutral-400 dark:text-neutral-500">{tok.prefix}…</code>
+                      <code className="ml-2 text-xs text-neutral-500 dark:text-neutral-400">{tok.prefix}…</code>
                     </td>
                     <td className="hidden whitespace-nowrap px-3 py-2 text-neutral-500 sm:table-cell dark:text-neutral-400">
                       {formatDateTimeShort(tok.createdAt)}

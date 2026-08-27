@@ -154,7 +154,7 @@ export function TrashView({
     return (
       <li className="border-b border-neutral-100 px-5 py-3 hover:bg-neutral-50/60 dark:border-neutral-800 dark:hover:bg-neutral-800/30">
         {children}
-        <div className="mt-1 flex flex-wrap items-baseline gap-x-2 text-xs text-neutral-400 dark:text-neutral-500">
+        <div className="mt-1 flex flex-wrap items-baseline gap-x-2 text-xs text-neutral-500 dark:text-neutral-400">
           {deletedAt && <span className="whitespace-nowrap">{t.colDeletedAt} {formatDateTimeShort(deletedAt)}</span>}
           <span className="ml-auto flex gap-3">
             <button type="button" onClick={() => onRestore(kind, id)} disabled={pending} className={SHEET_TOOL}>

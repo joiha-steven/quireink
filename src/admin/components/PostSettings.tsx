@@ -118,7 +118,7 @@ export function PostSettings({ draft, update, allCategories, allTags, allSeries,
         {draft.featuredImage ? (
           <img src={draft.featuredImage} alt="" className="aspect-video w-full rounded-lg object-cover" />
         ) : (
-          <div className="flex aspect-video w-full items-center justify-center rounded-lg bg-neutral-100 text-xs text-neutral-400 dark:bg-neutral-800 dark:text-neutral-500 dark:text-neutral-500">
+          <div className="flex aspect-video w-full items-center justify-center rounded-lg bg-neutral-100 text-xs text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400 dark:text-neutral-400">
             {t.noImageSelected}
           </div>
         )}
@@ -149,7 +149,7 @@ export function PostSettings({ draft, update, allCategories, allTags, allSeries,
         {draft.coverImage ? (
           <img src={draft.coverImage} alt="" className="aspect-video w-full rounded-lg object-cover" />
         ) : (
-          <div className="flex aspect-video w-full items-center justify-center rounded-lg bg-neutral-100 text-xs text-neutral-400 dark:bg-neutral-800 dark:text-neutral-500">
+          <div className="flex aspect-video w-full items-center justify-center rounded-lg bg-neutral-100 text-xs text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400">
             {t.noImageSelected}
           </div>
         )}

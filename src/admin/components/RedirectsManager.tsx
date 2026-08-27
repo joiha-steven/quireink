@@ -76,14 +76,14 @@ export function RedirectsManager() {
       <p className={NOTE_TEXT}>{t.redirectsHint}</p>
 
       {rows.length === 0 ? (
-        <p className="text-sm text-neutral-400 dark:text-neutral-500">{t.redirectEmpty}</p>
+        <p className="text-sm text-neutral-500 dark:text-neutral-400">{t.redirectEmpty}</p>
       ) : (
         <ul className="divide-y divide-neutral-200 dark:divide-neutral-800">
           {rows.map((r) => (
             <li key={r.id} className="flex items-center gap-3 py-2 text-sm">
               <span className="min-w-0 flex-1 truncate">
                 <code className="text-neutral-800 dark:text-neutral-200">{r.source}</code>
-                <span className="mx-1.5 text-neutral-400">→</span>
+                <span className="mx-1.5 text-neutral-500 dark:text-neutral-400">→</span>
                 <code className="text-neutral-600 dark:text-neutral-400">{r.destination}</code>
               </span>
               <span className="shrink-0 rounded border border-neutral-200 px-1.5 py-0.5 text-xs text-neutral-500 dark:border-neutral-700 dark:text-neutral-400">
@@ -93,7 +93,7 @@ export function RedirectsManager() {
                 type="button"
                 onClick={() => remove(r.id)}
                 disabled={busy}
-                className="shrink-0 text-neutral-400 hover:text-neutral-900 disabled:opacity-50 dark:hover:text-white"
+                className="shrink-0 text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 disabled:opacity-50 dark:hover:text-white"
                 aria-label={t.redirectDelete}
                 title={t.redirectDelete}
               >

@@ -82,9 +82,9 @@ export function VideoLibrary() {
       )}
 
       {loading ? (
-        <p className="py-10 text-center text-neutral-400 dark:text-neutral-500">{t.loading}</p>
+        <p className="py-10 text-center text-neutral-500 dark:text-neutral-400">{t.loading}</p>
       ) : items.length === 0 ? (
-        <p className="py-10 text-center text-neutral-400 dark:text-neutral-500">{t.noVideos}</p>
+        <p className="py-10 text-center text-neutral-500 dark:text-neutral-400">{t.noVideos}</p>
       ) : (
         <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((f) => (
