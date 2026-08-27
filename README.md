@@ -2,10 +2,10 @@
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/brand/wordmark-dark.svg">
-  <img src="docs/brand/wordmark-light.svg" alt="quireINK" width="340">
+  <img src="docs/brand/wordmark-light.svg" alt="quireINK" width="360">
 </picture>
 
-# quire**INK** &nbsp;`2.2.1`
+`2.2.1`
 
 **A blog you host yourself, and an AI agent can run for you.**
 No algorithm, no ads, no platform standing between you and your readers.
