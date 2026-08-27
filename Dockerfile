@@ -72,6 +72,7 @@ RUN --mount=type=cache,target=/root/.bun/install/cache,sharing=locked \
 
 COPY tsconfig.json ./
 COPY src ./src
+COPY locales ./locales
 COPY scripts ./scripts
 
 # Neither output is committed (`.gitignore` ignores every `dist/`), so both are built here:
@@ -97,6 +98,7 @@ ENV NODE_ENV=production \
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=build /app/src ./src
+COPY --from=build /app/locales ./locales
 COPY --from=build /app/scripts ./scripts
 COPY package.json bun.lock tsconfig.json ./
 
