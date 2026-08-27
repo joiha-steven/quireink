@@ -116,6 +116,8 @@ export function sanitizeFeatures(input: unknown, fallback: FeatureSettings): Fea
     penUnderline: bool(o.penUnderline, fallback.penUnderline),
     penRing: bool(o.penRing, fallback.penRing),
     bookMode: bool(o.bookMode, fallback.bookMode),
+    readNext: bool(o.readNext, fallback.readNext),
+    resume: bool(o.resume, fallback.resume),
     infiniteScroll: bool(o.infiniteScroll, fallback.infiniteScroll),
     gridView: bool(o.gridView, fallback.gridView),
   }

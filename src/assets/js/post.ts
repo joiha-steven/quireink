@@ -16,6 +16,7 @@ import { codeCopy } from './code-copy'
 import { comments } from './comments'
 import { lightbox } from './lightbox'
 import { quote } from './quote'
+import { resume } from './resume'
 import { toc } from './toc'
 
 backToTop()
@@ -23,5 +24,6 @@ codeCopy()
 lightbox()
 toc()
 quote()
+resume()
 comments()
 book()

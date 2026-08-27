@@ -113,29 +113,30 @@ body:has(.book-overlay[open]){overflow:hidden}
   transition:background-color .12s ease,color .12s ease}
 .book-x:hover{color:var(--c-heading);background:color-mix(in srgb,var(--c-rule) 55%,transparent)}
 @media (prefers-reduced-motion:reduce){.book-x{transition:none}}
-/* The reader's own hand on the type: A− / A+, set like the close button so the chrome
-   stays one quiet row. ONE size for both — the first cut sized the two As differently the
-   way e-readers do, and at this scale it just read as misaligned ("không thẳng hàng"); the
-   − and + carry the meaning on their own. */
-/* ONE control with two ends, drawn as one: a single hairline around the pair and a rule
-   between them, the way a segmented control has always been drawn. The tint is the page's
-   own rule colour at a fraction, so nothing new enters the palette. */
-.book-sizes{display:flex;align-items:stretch;border:1px solid var(--c-rule);
-  border-radius:999px;overflow:hidden;
-  background:color-mix(in srgb,var(--c-rule) 28%,transparent)}
+/* The reader's own hand on the type: a small a and a large A, plain glyphs on the paper.
+   The pill-with-a-rule cut before this one drew a segmented control, and the owner read
+   it as exactly that — buttons, with a dark seam between them on first paint. The size
+   difference IS the label, so nothing else is drawn.
+   The two font sizes would misalign under flex centering (an earlier cut shipped that,
+   "không thẳng hàng") — so both glyphs sit on the SAME baseline instead: line-height 1,
+   both buttons bottom-aligned with one shared padding, and neither glyph has a descender,
+   which makes the bottoms the baseline. */
+.book-sizes{display:flex;align-items:flex-end}
 .book-size{background:none;border:0;cursor:pointer;color:var(--c-meta);line-height:1;
-  padding:0 14px;height:34px;min-width:44px;font-family:var(--font-reading);font-size:.95em;
-  display:flex;align-items:center;justify-content:center;
-  transition:background-color .12s ease,color .12s ease}
-.book-size + .book-size{border-left:1px solid var(--c-rule)}
-.book-size:hover:not([disabled]){color:var(--c-heading);
-  background:color-mix(in srgb,var(--c-rule) 55%,transparent)}
+  font-family:var(--font-reading);height:34px;min-width:32px;padding:0 7px 9px;
+  display:flex;align-items:flex-end;justify-content:center;
+  transition:color .12s ease}
+.book-smaller{font-size:.8em}
+.book-larger{font-size:1.2em}
+.book-size:hover:not([disabled]){color:var(--c-heading)}
 .book-size[disabled]{opacity:.4;cursor:default}
 @media (prefers-reduced-motion:reduce){.book-size{transition:none}}
 .book-count{font-size:var(--fs-caption);line-height:var(--lh-caption);
   letter-spacing:var(--ls-caption);color:var(--c-meta);font-variant-numeric:tabular-nums}
+/* Holds the dialog's initial focus (see book.ts) — a reading surface, not a control,
+   so it never wears a ring. */
 .book-stage{position:relative;display:flex;align-items:center;justify-content:center;
-  min-height:0;padding:clamp(20px,4vh,52px) 0}
+  min-height:0;padding:clamp(20px,4vh,52px) 0;outline:none}
 /* The reading area just CLIPS the flowing columns: no sheet, no shadow, so the one paper
    background and its grain show through everywhere. */
 /* A flex:1 here silently beat the measured width — a flex item with a basis of 0 and

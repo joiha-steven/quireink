@@ -88,6 +88,8 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { tab: 'reading', label: 'featSearch', note: 'featSearchDesc' },
   { tab: 'reading', label: 'featToc', note: 'featTocDesc' },
   { tab: 'reading', label: 'featRelated', note: 'featRelatedDesc' },
+  { tab: 'reading', label: 'featReadNext', note: 'featReadNextDesc' },
+  { tab: 'reading', label: 'featResume', note: 'featResumeDesc' },
   { tab: 'reading', label: 'featReadingTime', note: 'featReadingTimeDesc' },
   { tab: 'reading', label: 'featProgress', note: 'featProgressDesc' },
   { tab: 'reading', label: 'featDeck', note: 'featDeckDesc' },

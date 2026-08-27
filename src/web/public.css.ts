@@ -206,6 +206,12 @@ article > header .t-small{margin:0}
    So the label, the titles and the dates are all --fs-small and nothing here competes with
    the article; weight and colour do the separating, which is how a book sets its back
    matter. */
+/* One pointer forward at the article's end. The label whispers like .related's heading;
+   the title is the only thing at reading size, because the title is the offer. */
+.read-next-label{font-size:var(--fs-small);line-height:var(--lh-small);
+  letter-spacing:var(--ls-small);font-weight:600;color:var(--c-meta);margin:0 0 .5rem}
+.read-next-title{margin:0;font-size:var(--fs-h3);line-height:var(--lh-h3);letter-spacing:var(--ls-h3)}
+.read-next-title a{font-weight:600;color:var(--c-heading)}
 .related{font-size:var(--fs-small);line-height:var(--lh-small);
   letter-spacing:var(--ls-small)}
 /* The size is stated even though the block already sets it: an h2 carries a UA default of

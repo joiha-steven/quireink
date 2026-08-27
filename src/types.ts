@@ -176,6 +176,8 @@ export type FeatureSettings = {
   penUnderline: boolean // ++text++ drawn as a hand-drawn pen line; off = the browser's straight underline
   penRing: boolean // @@word@@ drawn as a ballpoint ring; off = the words stay plain
   bookMode: boolean // reader can open a post as a fullscreen 2-column "book" (desktop/iPad)
+  readNext: boolean // one pointer at the end of an article: the next part of its series, else the adjacent post
+  resume: boolean // coming back to a half-read post offers the reader's own last position (their browser only)
   infiniteScroll: boolean // reveal posts on scroll instead of pagination; adds a date timeline in the right gutter (desktop)
   gridView: boolean // reader can switch the listing to a card grid (header grid/list toggle); off = list only
 }

@@ -160,14 +160,17 @@ export function book(): void {
     const close = el('button', { type: 'button', class: 'book-x',
       'aria-label': label('bookModeClose'), title: label('bookModeClose') }, '✕')
 
-    // A− / A+. The current scale is read off the dialog's computed style, so the sheet's
-    // default needs no copy here; a stored preference is applied as an inline override
-    // before first measure, and every change re-measures — a bigger glyph is fewer lines
-    // per column, which is a different page count.
+    // a / A — the size itself is the label, the way every e-reader draws it, and the pair
+    // is plain type rather than a control (the owner's call: the pill + divider "read as
+    // buttons", and a black seam showed between them on first paint). The current scale is
+    // read off the dialog's computed style, so the sheet's default needs no copy here; a
+    // stored preference is applied as an inline override before first measure, and every
+    // change re-measures — a bigger glyph is fewer lines per column, which is a different
+    // page count.
     const smaller = el('button', { type: 'button', class: 'book-size book-smaller',
-      'aria-label': label('bookModeSmaller'), title: label('bookModeSmaller') }, 'A−')
+      'aria-label': label('bookModeSmaller'), title: label('bookModeSmaller') }, 'a')
     const larger = el('button', { type: 'button', class: 'book-size book-larger',
-      'aria-label': label('bookModeLarger'), title: label('bookModeLarger') }, 'A+')
+      'aria-label': label('bookModeLarger'), title: label('bookModeLarger') }, 'A')
     const scaleOf = (): number => {
       const v = parseFloat(getComputedStyle(next).getPropertyValue('--type-scale'))
       return Number.isFinite(v) ? v : 1
@@ -184,7 +187,11 @@ export function book(): void {
     larger.addEventListener('click', () => setScale(scaleOf() + SCALE_STEP))
     // The title recedes: regular weight, faint, body size, so the article stays the focus.
     const heading = document.querySelector('article > header h1')?.textContent ?? ''
-    const stage = el('div', { class: 'book-stage' }, prev, viewport, fwd)
+    // `autofocus` steers showModal(): without it the dialog focuses the FIRST focusable
+    // element, which is the size control — and the focus ring around that little glyph is
+    // the "black seam" the owner photographed. Initial focus belongs on the stage (where
+    // the arrow keys already live); tabbing still reaches every button, ring intact.
+    const stage = el('div', { class: 'book-stage', tabindex: '-1', autofocus: '' }, prev, viewport, fwd)
 
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); turn(1) }
