@@ -94,7 +94,10 @@ Four things worth knowing before you change anything in `docker-compose.yml`:
 To get data out without a bind mount, use the backup button in the admin (it hands you both
 databases plus every upload), or `docker compose cp quire:/var/lib/quire/data ./data`.
 
-## On a NAS (Synology, QNAP, Unraid)
+## On a NAS or a home server
+
+Every box below runs the same published image and none of them needs a shell. What they
+share is one trap, so it comes first.
 
 Their container UIs mount real folders rather than named volumes, because that is what their
 own backup jobs can see. Point both mounts at a folder you created, and set the UID and GID
@@ -114,3 +117,41 @@ Nothing else changes. The first boot prints one `entrypoint: adopting …` line 
 and later boots print none, because the check is one `stat` and the walk only happens when
 the answer is wrong — a re-chown of a large uploads tree on every restart would turn a
 restart into an outage.
+
+### Unraid
+
+**Apps → search `QuireInk`.** The template is in Community Applications, so the image, the
+icon, the WebUI link and both paths arrive filled in; what you set is where the two paths
+point and, if you are reaching the blog from outside, `SITE_URL`.
+
+### Synology (DSM 7.2 and later)
+
+Container Manager is Synology's own Docker, and it reads a compose file directly, so there
+is nothing here that is Synology-shaped.
+
+1. In **File Station**, make the folder the blog will live in — say
+   `docker/quireink`, with `data` and `uploads` inside it.
+2. In **Container Manager → Project**, create a project, point it at that folder, and choose
+   to write a `docker-compose.yml`. Paste the compose from the top of this file, with the
+   two bind mounts and the `PUID`/`PGID` above.
+3. Build it, then open the project's **log**. The claim link is in there — that is the
+   account step, and it is why this install needs no terminal.
+4. To reach it from outside, put it behind **Control Panel → Login Portal → Advanced →
+   Reverse Proxy** and set `SITE_URL` to the address you gave it. Feeds, the sitemap, share
+   images and newsletter links are all built from that one value.
+
+Older DSM has **Docker** rather than Container Manager, and no compose UI; use the
+`docker run` at the top of this file over SSH instead.
+
+### QNAP
+
+**Container Station → Applications → Create**, and paste the same compose. The mount and
+`PUID`/`PGID` advice above applies unchanged; QNAP's first non-admin user is usually
+`1000:100`, which you can confirm under Control Panel → Privilege.
+
+### Runtipi
+
+Runtipi's official app store [stopped accepting new
+applications](https://github.com/runtipi/runtipi/issues/2317), so there is no Quire Ink
+entry to search for and there is not going to be one. Use **Add custom app** and give it the
+compose above — the result is the same container, managed by Runtipi like any other app.

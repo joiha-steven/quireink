@@ -180,7 +180,7 @@ Nó giữ được như vậy nhờ vài quyết định khó đảo ngược.
 
 - **Một VPS thuê ngoài** — gói rẻ nhất là đủ. Một lệnh bên dưới, hoặc Docker.
 - **Droplet DigitalOcean** — dán [một file](./deploy/digitalocean/user-data.sh) vào trang tạo droplet, ba phút sau khi máy nổ là blog đã chạy ([cách làm và lý do](./deploy/digitalocean/README.md)).
-- **NAS trong nhà** — Synology, QNAP, Unraid: image Docker, với `PUID`/`PGID` nên không bao giờ chạy bằng root ([ghi chú](./docs/self-host-docker.md); Unraid có sẵn [template](https://github.com/joiha-steven/unraid-templates)).
+- **NAS trong nhà** — trên **Unraid** tìm `QuireInk` trong Community Applications; trên **Synology** (DSM 7.2 trở lên) dán file compose vào Container Manager, Container Station của QNAP cũng nhận đúng file đó. Không cần dòng lệnh ở máy nào: blog in đường dẫn nhận quyền ra log của container. [Từng bước, theo từng loại máy](./docs/self-host-docker.md#on-a-nas-or-a-home-server).
 - **Máy nào có Docker** — kéo `quireink/quireink` về, có đủ `amd64` và `arm64`.
 
 Đường thứ nhất cần [Bun](https://bun.sh) 1.3 trở lên và một máy trỏ tên miền vào được. Hết danh sách.
