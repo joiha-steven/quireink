@@ -7,7 +7,7 @@
 
 `2.2.1`
 
-**A blog you host yourself, and an AI agent can run for you.**
+**A blog you host yourself, and an AI agent can run it for you.**
 No algorithm, no ads, no platform standing between you and your readers.
 One process. Two SQLite files. No cloud account anywhere in the path.
 
@@ -43,7 +43,7 @@ This section is for a reader who is not technical. The rest of the page is for w
 
 **You change it by clicking, not by writing code.** Colour, type, size, the shape of the front page, the menu — all of it lives in the admin, behind your own sign-in, and works from a phone.
 
-**The reading page is unusually light.** Opening a post costs about 114 KB — a photo from your phone is a few dozen times heavier. Someone on a weak signal with an old handset still sees the words almost at once. These are measurements, not claims: [the table](#speed).
+**The reading page is unusually light.** Opening a post costs about 100 KB — a photo from your phone is a few dozen times heavier. Someone on a weak signal with an old handset still sees the words almost at once. These are measurements, not claims: [the table](#speed).
 
 **Reading comfort is the point of the whole project.** Six palettes in light and dark, four reading fonts, a book mode set in two columns like paper, and a five-ink highlighter for the lines worth keeping.
 
@@ -54,8 +54,6 @@ This section is for a reader who is not technical. The rest of the page is for w
 **In return, you keep your own house.** Nobody backs it up for you — there is a button that downloads the entire blog, but pressing it is your job — and the blog lives as long as the server you rent.
 
 **Free, and you may charge for it.** A personal blog costs nothing. Running it inside a business, or selling hosting where every customer gets their own blog, is allowed too — as long as what you run is the version published here. Only a *modified* version used commercially needs to ask first: [License](#license).
-
-**Not for everyone.** A newsroom with roles, approvals and an editorial queue should look elsewhere. Quire Ink has one owner on purpose.
 
 ## Under the hood
 
@@ -69,7 +67,7 @@ Three things shaped it.
 
 **The reading page is the product.** Type, colour, size, spacing, layout: all of it is a setting you change in the admin. Not one size or colour is written into the reader's stylesheet, and the build fails if someone puts one there.
 
-**Readers download between 3.8 KB and 8.7 KB of JavaScript, and nothing from anyone else.** Pages arrive as finished HTML. A few small scripts handle search, the theme switch and book mode. React stays in the admin and never reaches a reader.
+**Readers download between 3.9 KB and 10.4 KB of JavaScript, and nothing from anyone else.** Pages arrive as finished HTML. A few small scripts handle search, the theme switch and book mode. React stays in the admin and never reaches a reader.
 
 **An agent can do the writing — and the stewarding.** Connect Claude or any MCP client and it can draft, tag, schedule and publish for you, read your traffic, moderate comments and audit the archive, through exactly the rules the admin follows.
 
@@ -97,8 +95,9 @@ You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE),
 | 🎨&nbsp;**Looks** | Six palettes, light and dark. Four reading fonts, or upload your own. Every size comes from a role, so one change moves the page instead of one heading |
 | 🖍️&nbsp;**The&nbsp;pen** | `==text==` highlights in five inks, `++text++` underlines in pencil, `@@word@@` rings a word in red ballpoint. Not coloured boxes — strokes grown from a seeded hand, so no two on a page share a shape and every phrase keeps its own. Pigments measured off a photograph of a real pen box |
 | 💻&nbsp;**Code** | Highlighted on the server, so the reader downloads no highlighter. Twenty-one languages, and the names people type (`typescript`, `sh`) reach them. A fence naming nothing is guessed at — timidly, so program output stays plain |
-| 🔍&nbsp;**Reading** | Search that answers as you type. A side rail with your categories and tags, or the contents of the post. Related posts, reading time, a progress bar. And **book mode**: two columns on paper, with a drop cap |
+| 🔍&nbsp;**Reading** | Search that answers as you type. A side rail with your categories and tags, or the contents of the post. Related posts, reading time, a progress bar. And **book mode**: two columns on paper, with a drop cap. A post ends with read next, and your place is kept for when you come back |
 | 📈&nbsp;**Numbers** | Analytics without cookies. Who read what, how far down they got, where they came from. Plus an activity log, a trash you can undo, and a help page |
+| 💬&nbsp;**Comments** | Readers comment without an account. The page signs its own spam challenge — no third party, and Turnstile takes over only if you add its keys. Sweeping is a trip to the trash, not a deletion |
 | 🔎&nbsp;**Search&nbsp;engines** | Sitemap, RSS, `robots.txt`, `llms.txt`, and an OG image drawn per post. Rename a slug and the old URL keeps working on its own |
 | 📬&nbsp;**Newsletter** | Sign-ups with a confirmation email, an issue sent when you publish, a note when a comment gets a reply. Your own SMTP, so nothing to sign up for |
 | 📚&nbsp;**Series** | Write in parts, number them, and every part shows the others |
@@ -127,16 +126,16 @@ You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE),
 
 These are off the network, first visit, nothing cached. It is what a stranger on a phone actually waits for.
 
-The CSS and JavaScript rows are build artefacts — the same bytes on every install — and are read off the 2.0.3 build. Nothing between 2.0.1 and 2.1.0 moved them; 2.1.1 grew the stylesheet to 29.3 KB gzipped with the pen's stroke shapes, since split back down ([ADR 0027](docs/decisions/0027-the-pen-ships-only-where-it-wrote.md)): `site.css` is 7.6 KB gzipped, and the pen rides in two further immutable sheets (11.6 + 8.5 KB) that only board the pages carrying a mark or an underline — an inkless page is lighter than it was before the pen existed. The totals were measured for 2.0.1 against the origin, not through the CDN, and they are this site: Vietnamese, Literata to read and JetBrains Mono for the furniture. They are not a property of the software, because the fonts are cut per script and a browser fetches only the ranges your pages actually use. Fonts fell 86 KB to 67 KB in 2.0.1 without a face being dropped.
+The CSS and JavaScript rows are build artefacts — the same bytes on every install — read off the 2.2.1 build. The totals were measured on 2026-08-27 against this site: Vietnamese, Literata to read and JetBrains Mono for the furniture. They are not a property of the software, because the fonts are cut per script and a browser fetches only the ranges your pages actually use. The pen's stroke shapes ride in two further immutable sheets (~20 KB together) that only board a page carrying a mark or an underline ([ADR 0027](docs/decisions/0027-the-pen-ships-only-where-it-wrote.md)) — an inkless page never pays for them.
 
 | | Home | A post | |
 |:---|---:|---:|:---|
-| **Requests** | 10 | 10 | |
-| **Total&nbsp;transferred** | **106&nbsp;KB** | **114&nbsp;KB** | 67&nbsp;KB of that is the fonts |
-| **JavaScript** | **3.8&nbsp;KB** | **8.7&nbsp;KB** | written by hand, no framework |
-| **CSS** | 7.6&nbsp;KB | 7.6&nbsp;KB | +20&nbsp;KB only on a page carrying the pen |
+| **Requests** | 8 | 9 | |
+| **Total&nbsp;transferred** | **102&nbsp;KB** | **100&nbsp;KB** | 68&nbsp;KB of that is the fonts |
+| **JavaScript** | **3.9&nbsp;KB** | **10.4&nbsp;KB** | written by hand, no framework |
+| **CSS** | 9.6&nbsp;KB | 9.6&nbsp;KB | +20&nbsp;KB only on a page carrying the pen |
 | **Third&#8209;party&nbsp;requests** | **0** | **0** | no CDN, no font host, no tracker |
-| **Coming&nbsp;back** | ~19&nbsp;KB | ~24&nbsp;KB | only the HTML is fetched again |
+| **Coming&nbsp;back** | ~20&nbsp;KB | ~11&nbsp;KB | only the HTML is fetched again; a long post carries more |
 
 It stays this way because of a few decisions that are hard to walk back.
 
@@ -301,7 +300,7 @@ Using the Quire Ink MCP server, write a 600-word post titled
 "ai" and "writing", set a friendly excerpt, and publish it.
 ```
 
-Writing is half of it. The agent can also read your traffic and compare it to last week, count your subscribers (never see their addresses), sweep comments for spam (into the trash, not gone), search your whole archive and tell you whether a newer release is out. And it can steward: recompose the front page around what people actually read, restyle the site from the curated palettes and fonts (never free-form color — an agent has no eyes), reply to a comment under your name, send the next newsletter issue as a test to you alone, and take a backup snapshot before anything big. The [agent cookbook](./docs/agent-cookbook.md) is a page of prompts that do real jobs — a Monday report, a newsletter draft, an archive audit.
+Writing is half of it. The agent can also read your traffic and compare it to last week, count your subscribers (never see their addresses), sweep comments for spam (into the trash, not gone), search your whole archive and tell you whether a newer release is out. And it can steward: recompose the front page around what people actually read, restyle the site from the curated palettes and fonts (never free-form colour — an agent has no eyes), reply to a comment under your name, send the next newsletter issue as a test to you alone, and take a backup snapshot before anything big. The [agent cookbook](./docs/agent-cookbook.md) is a page of prompts that do real jobs — a Monday report, a newsletter draft, an archive audit.
 
 The sensitive settings are off limits over MCP, and you stay in charge. Revoke the token in the admin and it stops working immediately.
 

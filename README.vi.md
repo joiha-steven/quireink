@@ -43,7 +43,7 @@ Mục này viết cho người không rành kỹ thuật. Phần còn lại củ
 
 **Bạn chỉnh nó bằng cách bấm, không phải bằng cách viết code.** Màu, font, cỡ chữ, bố cục trang chủ, menu — tất cả nằm trong trang quản trị, đăng nhập bằng tài khoản riêng của bạn, và dùng được cả trên điện thoại.
 
-**Trang đọc nhẹ khác thường.** Mở một bài viết tốn khoảng 114 KB — một tấm ảnh chụp bằng điện thoại còn nặng gấp vài chục lần. Người đọc ở chỗ sóng yếu, cầm máy đời cũ, vẫn thấy chữ hiện ra gần như tức thì. Đây là số đo thật chứ không phải lời quảng cáo: [xem bảng](#tốc-độ).
+**Trang đọc nhẹ khác thường.** Mở một bài viết tốn khoảng 100 KB — một tấm ảnh chụp bằng điện thoại còn nặng gấp vài chục lần. Người đọc ở chỗ sóng yếu, cầm máy đời cũ, vẫn thấy chữ hiện ra gần như tức thì. Đây là số đo thật chứ không phải lời quảng cáo: [xem bảng](#tốc-độ).
 
 **Đọc cho dễ chịu là chủ đích của cả dự án.** Sáu bảng màu sáng và tối, bốn font đọc, chế độ sách dàn hai cột như trang giấy, và bút dạ quang năm màu mực để tô những câu tâm đắc.
 
@@ -54,8 +54,6 @@ Mục này viết cho người không rành kỹ thuật. Phần còn lại củ
 **Đổi lại, bạn tự giữ nhà mình.** Không ai sao lưu hộ bạn — có sẵn một nút tải nguyên cả blog về máy, nhưng bấm nó là việc của bạn — và blog sống theo cái máy chủ bạn thuê.
 
 **Miễn phí, và bạn được thu tiền.** Blog cá nhân thì không tốn gì. Dùng trong doanh nghiệp, hay bán dịch vụ host cho mỗi khách một cái blog, cũng được — miễn là bản bạn chạy đúng là bản phát hành ở đây. Chỉ bản *đã sửa code* đem đi kinh doanh mới phải hỏi trước: [xem mục Giấy phép](#giấy-phép).
-
-**Không hợp với ai.** Một toà soạn cần phân vai, duyệt bài và hàng đợi biên tập. Quire Ink cố ý chỉ có một chủ.
 
 ## Bên dưới nắp máy
 
@@ -69,7 +67,7 @@ Có ba thứ định hình nó.
 
 **Trang đọc mới là sản phẩm.** Font, màu, cỡ chữ, khoảng cách, bố cục: tất cả đều là tuỳ chọn bạn chỉnh trong trang quản trị. Không một cỡ chữ hay màu nào viết cứng trong stylesheet của trang đọc, và build sẽ báo đỏ nếu ai đó nhét vào.
 
-**Người đọc tải về 3.8–8.7 KB JavaScript, và không tải gì từ bên thứ ba.** Trang tới nơi đã là HTML hoàn chỉnh. Vài đoạn script nhỏ lo tìm kiếm, đổi giao diện và chế độ sách. React nằm yên trong trang quản trị, không bao giờ chạm tới người đọc.
+**Người đọc tải về 3,9–10,4 KB JavaScript, và không tải gì từ bên thứ ba.** Trang tới nơi đã là HTML hoàn chỉnh. Vài đoạn script nhỏ lo tìm kiếm, đổi giao diện và chế độ sách. React nằm yên trong trang quản trị, không bao giờ chạm tới người đọc.
 
 **Agent viết được thay bạn — và trông nom được cho bạn.** Nối Claude hay bất kỳ client MCP nào vào, nó soạn, gắn thẻ, hẹn giờ, đăng — và đọc được lượng truy cập, dọn bình luận rác, rà cả kho bài — theo đúng những luật mà trang quản trị đang theo.
 
@@ -96,8 +94,9 @@ Bạn được đọc, sửa, chạy và fork theo [PolyForm Noncommercial](./LI
 | 🎨&nbsp;**Giao&nbsp;diện** | Sáu bảng màu, sáng và tối. Bốn font đọc, hoặc tải font của bạn lên. Mọi cỡ chữ đều sinh ra từ một vai trò, nên sửa một chỗ là cả trang đổi chứ không phải một tiêu đề |
 | 🖍️&nbsp;**Cây&nbsp;bút** | `==chữ==` tô năm màu mực, `++chữ++` gạch dưới bằng bút chì, `@@chữ@@` khoanh tròn bằng bút bi đỏ. Không phải ô màu — nét sinh từ một bàn tay có hạt giống, không hai vệt nào trên trang giống nhau và mỗi cụm chữ giữ nét riêng. Màu mực đo từ ảnh chụp một hộp bút thật |
 | 💻&nbsp;**Code** | Tô màu ở máy chủ, người đọc không tải bộ tô màu nào. Hai mươi mốt ngôn ngữ, và những tên hay gõ (`typescript`, `sh`) đều nhận ra. Hàng rào không ghi ngôn ngữ thì được đoán — đoán dè dặt, để output của chương trình vẫn để trơn |
-| 🔍&nbsp;**Đọc** | Tìm kiếm trả lời ngay trong lúc gõ. Cột bên có chuyên mục và thẻ, hoặc mục lục của bài đang đọc. Bài liên quan, thời gian đọc, thanh tiến độ. Và **chế độ sách**: hai cột trên nền giấy, có chữ cái đầu lớn |
+| 🔍&nbsp;**Đọc** | Tìm kiếm trả lời ngay trong lúc gõ. Cột bên có chuyên mục và thẻ, hoặc mục lục của bài đang đọc. Bài liên quan, thời gian đọc, thanh tiến độ. Và **chế độ sách**: hai cột trên nền giấy, có chữ cái đầu lớn. Cuối bài có đọc tiếp, và chỗ đọc dở được giữ cho lần quay lại |
 | 📈&nbsp;**Số&nbsp;liệu** | Thống kê không dùng cookie. Ai đọc bài nào, đọc tới đâu, đến từ đâu. Kèm nhật ký hoạt động, thùng rác hoàn tác được, và một trang trợ giúp |
+| 💬&nbsp;**Bình&nbsp;luận** | Người đọc bình luận không cần tài khoản. Trang tự ký thử thách chống spam — không bên thứ ba nào; có khoá Turnstile thì Turnstile tiếp quản. Dọn rác là đưa vào thùng, không phải xoá hẳn |
 | 🔎&nbsp;**Máy&nbsp;tìm&nbsp;kiếm** | Sitemap, RSS, `robots.txt`, `llms.txt`, và ảnh chia sẻ vẽ riêng cho từng bài. Đổi đường dẫn thì link cũ vẫn tự chạy |
 | 📬&nbsp;**Bản&nbsp;tin** | Đăng ký có email xác nhận, một số gửi đi khi bạn đăng bài, và một lời nhắn khi bình luận được trả lời. SMTP của riêng bạn |
 | 📚&nbsp;**Loạt&nbsp;bài** | Viết thành nhiều phần, đánh số, và phần nào cũng chỉ ra các phần kia |
@@ -126,16 +125,16 @@ Bạn được đọc, sửa, chạy và fork theo [PolyForm Noncommercial](./LI
 
 Đây là số đo từ mạng, lần vào đầu tiên, chưa cache gì. Đúng bằng cái mà một người lạ cầm điện thoại phải chờ.
 
-Hai dòng CSS và JavaScript là sản phẩm của bản build — giống nhau ở mọi bản cài — và lấy từ bản dựng 2.0.3. Từ 2.0.1 đến 2.1.0 chưa bản nào làm chúng nhúc nhích; 2.1.1 làm stylesheet phình lên 29,3 KB gzip vì mang theo hình nét của cây bút, và **[ADR 0027](docs/decisions/0027-the-pen-ships-only-where-it-wrote.md) đã tách nó ra lại**: `site.css` còn 7,6 KB gzip, mực bút nằm trong hai tệp bất biến riêng (11,6 + 8,5 KB) chỉ lên xe ở trang thật sự có vệt tô hay gạch chân — trang không mực giờ nhẹ hơn cả trước khi có cây bút. Các số tổng đo cho 2.0.1, tại origin chứ không qua CDN, và là của chính site này: tiếng Việt, Literata để đọc và JetBrains Mono cho phần khung. Chúng không phải thuộc tính của phần mềm, vì font được cắt theo bảng chữ và trình duyệt chỉ tải đúng những dải mà trang bạn dùng tới. Riêng font đã giảm từ 86 KB xuống 67 KB ở 2.0.1 mà không bỏ đi họ chữ nào.
+Hai dòng CSS và JavaScript là sản phẩm của bản build — giống nhau ở mọi bản cài — lấy từ bản dựng 2.2.1. Các số tổng đo ngày 27/08/2026 trên chính site này: tiếng Việt, Literata để đọc và JetBrains Mono cho phần khung. Chúng không phải thuộc tính của phần mềm, vì font được cắt theo bảng chữ và trình duyệt chỉ tải đúng những dải mà trang bạn dùng tới. Hình nét của cây bút nằm trong hai tệp bất biến riêng (~20 KB cả cặp) chỉ lên xe ở trang thật sự có vệt tô hay gạch chân ([ADR 0027](docs/decisions/0027-the-pen-ships-only-where-it-wrote.md)) — trang không mực không phải trả đồng nào cho chúng.
 
 | | Trang chủ | Một bài | |
 |:---|---:|---:|:---|
-| **Số&nbsp;request** | 10 | 10 | |
-| **Tổng&nbsp;tải&nbsp;về** | **106&nbsp;KB** | **114&nbsp;KB** | 67&nbsp;KB trong đó là font |
-| **JavaScript** | **3.8&nbsp;KB** | **8.7&nbsp;KB** | viết tay, không framework |
-| **CSS** | 7.6&nbsp;KB | 7.6&nbsp;KB | +20&nbsp;KB chỉ ở trang có vệt bút |
+| **Số&nbsp;request** | 8 | 9 | |
+| **Tổng&nbsp;tải&nbsp;về** | **102&nbsp;KB** | **100&nbsp;KB** | 68&nbsp;KB trong đó là font |
+| **JavaScript** | **3,9&nbsp;KB** | **10,4&nbsp;KB** | viết tay, không framework |
+| **CSS** | 9,6&nbsp;KB | 9,6&nbsp;KB | +20&nbsp;KB chỉ ở trang có vệt bút |
 | **Request&nbsp;bên&nbsp;thứ&nbsp;ba** | **0** | **0** | không CDN, không font host, không tracker |
-| **Lần&nbsp;vào&nbsp;sau** | ~19&nbsp;KB | ~24&nbsp;KB | chỉ tải lại HTML |
+| **Lần&nbsp;vào&nbsp;sau** | ~20&nbsp;KB | ~11&nbsp;KB | chỉ tải lại HTML; bài dài thì nặng hơn |
 
 Nó giữ được như vậy nhờ vài quyết định khó đảo ngược.
 
@@ -171,7 +170,7 @@ Nó giữ được như vậy nhờ vài quyết định khó đảo ngược.
 
 <img src="docs/demo-admin.jpg" alt="Trang quản trị Quire Ink: trình soạn bài với nút gạch dưới và khoanh tròn trên thanh công cụ, câu gạch chì, chữ khoanh đỏ, câu tô sáng và bức thư tay trong bài; bên cạnh là trang cấu hình giao diện với sáu bảng màu và bốn font đọc" width="960">
 
-<sub>Bảng màu, font, cỡ chữ, bố cục, menu. Tất cả đều là tuỳ chọn, không có cái nào là code.</sub>
+<sub>Trang quản trị xoay quanh việc viết: danh sách bài nằm cạnh trang giấy, mọi thứ còn lại mỗi việc một tấm. Bảng màu, font, cỡ chữ, bố cục, menu — tất cả đều là tuỳ chọn, không có cái nào là code.</sub>
 
 </div>
 
@@ -314,9 +313,12 @@ Các cấu hình nhạy cảm bị chặn qua MCP, và quyền vẫn nằm ở b
 | Biến | Bắt buộc | Nó làm gì |
 |---|:---:|---|
 | `DATA_DIR` | ✅ | Chỗ để `quire.db` và `analytics.db`. Mặc định `./data` |
-| `SITE_URL` | ✅ | Địa chỉ công khai của bạn, dùng trong feed, ảnh OG và email. Để trống thì app tự đoán theo từng request, và sau proxy là đoán sai |
+| `SITE_URL` | ✅ | Địa chỉ công khai của bạn, dùng trong feed, ảnh OG và email. Để trống thì tất cả những chỗ đó ghi `http://localhost:3000` — site vẫn đọc bình thường, chỉ crawler và trình đọc mail là nhận ra. Nó cố ý không được đoán từ request |
 | `STORAGE_LOCAL_DIR` | ◻️ | Chỗ để tệp tải lên, phục vụ ở `/uploads`. Mặc định `./uploads` |
 | `PORT` | ◻️ | Mặc định `3000` |
+| `HOST` | ◻️ | Nghe trên interface nào. Mặc định `127.0.0.1`, đúng khi reverse proxy đứng cùng máy. Đặt `0.0.0.0` khi không phải vậy — máy khác, hoặc container cần với tới từ bên ngoài |
+| `MAX_UPLOAD_MB` | ◻️ | Tệp tải lên lớn nhất được nhận. Mặc định `64`, khớp `client_max_body_size` trong vhost mẫu để hai bên từ chối cùng một tệp. `0` = không giới hạn |
+| `STORAGE_QUOTA_GB` | ◻️ | Thư mục upload được phình tối đa bao nhiêu, tính cả các bản thu nhỏ cắt từ mỗi ảnh. Mặc định `5`; tệp nào đưa nó vượt mức là bị từ chối. `0` = không giới hạn |
 | `CRON_SECRET` | ◻️ | Canh `/api/cron`, chỗ đăng bài hẹn giờ và dọn biến thể ảnh |
 | `PURGE_WEBHOOK_URL` | ◻️ | Địa chỉ mà blog sẽ POST tới mỗi lần nó dọn cache của chính nó, dành cho CDN không phải Cloudflare ([ADR 0033](./docs/decisions/0033-purging-an-edge-that-is-not-cloudflare.md)). Bình thường thì nhập trong Cấu hình → Tích hợp |
 | `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` (+`S3_ENDPOINT`, `S3_REGION`, `S3_PREFIX`) | ◻️ | Bucket chuẩn S3 nhận thêm một bản của mỗi snapshot ([ADR 0035](./docs/decisions/0035-the-snapshot-leaves-the-machine.md)). Bình thường nhập ở Cấu hình → Hệ thống |
