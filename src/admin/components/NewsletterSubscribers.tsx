@@ -101,10 +101,15 @@ export function NewsletterSubscribers() {
                 {openRate(s.stats) && (
                   <span className="whitespace-nowrap tabular-nums">· {t.nlColOpenRate} {openRate(s.stats)}</span>
                 )}
+                {/* A 9px-wide glyph was the whole target, measured on a 390px screen — a
+                    thumb cannot hit it, and the near-misses land on the address link beside
+                    it. The GLYPH stays the size it is; the padding around it is what the
+                    finger gets, and -mr-1.5 pulls the box back so the row's right edge does
+                    not move. */}
                 <button
                   type="button"
                   onClick={() => removeSub(s.id)}
-                  className="ml-auto text-neutral-400 transition hover:text-neutral-900 dark:hover:text-white"
+                  className="-my-1.5 -mr-1.5 ml-auto shrink-0 rounded px-2 py-1.5 text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-white"
                   aria-label={t.nlDeleteSub}
                 >
                   ✕

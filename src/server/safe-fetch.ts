@@ -122,6 +122,20 @@ export async function assertUrlAllowed(url: string): Promise<URL> {
 
 const MAX_REDIRECT_HOPS = 5
 
+/**
+ * The wall clock every outbound fetch runs against, unless the caller sets its own signal.
+ *
+ * The SSRF guard answers "may we talk to this host". It never answered "for how long", and
+ * a host is not obliged to hang up: accept the connection, send a byte a minute, and the
+ * request handler waiting on it is held for as long as the attacker likes. Three of the four
+ * call sites passed no signal at all — the MCP add-media tool, the importer's per-image
+ * fetch, and the logo render, all of them reachable by a URL somebody else chose.
+ *
+ * 15s rather than the og card's 5s: these are whole images off other people's hosts, and a
+ * slow-but-real CDN should not read as a failure. It is a ceiling, not a budget.
+ */
+const DEFAULT_TIMEOUT_MS = 15_000
+
 // SSRF-safe fetch. Validates the scheme + host (literal or DNS-resolved) of the
 // initial URL AND of every redirect hop before following it, so an attacker URL
 // that 3xx-redirects to an internal address (e.g. 169.254.169.254) can't slip
@@ -135,9 +149,13 @@ const MAX_REDIRECT_HOPS = 5
 // always force manual redirect handling.
 export async function safeFetch(url: string, init?: RequestInit): Promise<Response> {
   let current = url
+  // ONE signal for the whole chain, not one per hop: five redirects each given the full
+  // timeout is five times the ceiling, and the clock a caller cares about is the one on
+  // the call they made.
+  const signal = init?.signal ?? AbortSignal.timeout(DEFAULT_TIMEOUT_MS)
   for (let hop = 0; hop <= MAX_REDIRECT_HOPS; hop++) {
     const parsed = await assertUrlAllowed(current)
-    const res = await fetch(current, { ...init, redirect: 'manual' })
+    const res = await fetch(current, { ...init, signal, redirect: 'manual' })
     const location = res.status >= 300 && res.status < 400 ? res.headers.get('location') : null
     if (!location) return res // not a redirect (or no target) → final response
     // Resolve a possibly-relative Location against the current URL; the next

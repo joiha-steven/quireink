@@ -9,12 +9,20 @@ type SwitchProps = { checked: boolean; onChange: (v: boolean) => void }
 // `disabled` is not decoration either: a switch whose feature has no engine behind it —
 // the AI jobs with no model connected — has to look unavailable rather than off, or the
 // owner flips it, sees it flip back, and concludes the admin is broken.
-export function Switch({ checked, onChange, disabled = false }: SwitchProps & { disabled?: boolean }) {
+//
+// `label` is REQUIRED, and that is the point of it. The switch draws no text of its own, so
+// its name has to be handed to it; the row's own label is a SIBLING, and a sibling names
+// nothing — a `<label>` element cannot name a `<button>` either, which is why wrapping the
+// one in ToggleField was not enough. Every switch in Settings announced itself as "switch,
+// on" with no word for WHAT was on, measured 2026-08-27 across twenty-six of them. Required
+// rather than optional so the next one cannot be added without a name.
+export function Switch({ checked, onChange, label, disabled = false }: SwitchProps & { label: string; disabled?: boolean }) {
   return (
     <button
       type="button"
       role="switch"
       aria-checked={checked}
+      aria-label={label}
       disabled={disabled}
       onClick={() => onChange(!checked)}
       className={`relative h-6 w-11 shrink-0 rounded-full transition-colors disabled:cursor-not-allowed ${checked ? 'bg-neutral-900 dark:bg-white' : 'bg-neutral-300 dark:bg-neutral-700'}`}
@@ -44,7 +52,7 @@ export function ToggleRow({
 }: SwitchProps & { label: string; desc?: string; badge?: string; disabled?: boolean }) {
   return (
     <Setting label={label} note={desc} badge={badge} inline className={`p-4 ${disabled ? 'opacity-50' : ''}`}>
-      <Switch checked={checked} onChange={onChange} disabled={disabled} />
+      <Switch checked={checked} onChange={onChange} label={label} disabled={disabled} />
     </Setting>
   )
 }
@@ -54,7 +62,7 @@ export function ToggleField({ label, checked, onChange }: SwitchProps & { label:
   return (
     <label className="flex cursor-pointer items-center justify-between gap-4">
       <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{label}</span>
-      <Switch checked={checked} onChange={onChange} />
+      <Switch checked={checked} onChange={onChange} label={label} />
     </label>
   )
 }

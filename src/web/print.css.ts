@@ -40,6 +40,18 @@ export const PRINT_CSS = `
    :has is how a stylesheet says that without the renderer having to know. */
 hr:has(+ .related),hr:has(+ #comments){display:none!important}
 
+/* The scroll reveal, undone. A listing card eases in as it crosses the viewport, and the
+   progress of a view() timeline on paper is whatever it was on screen - which for every card
+   below the fold is zero. Measured 2026-08-27 on the front page: of the ten cards the feed
+   had rendered, seven printed at less than full opacity and five at opacity 0. They still
+   took their space, so the sheet was two posts and a wall of white, and the reader who
+   pressed Print got three pages of it.
+   This sheet was written against an ARTICLE, which carries no reveal class at all, and that
+   is how the hole stayed open: the one page that was tested was the one page immune to it.
+   Every listing prints - the front page, a category, a tag, the archive, a search result.
+   The JS fallback's hidden state is undone too, for an engine with no view() timelines. */
+.reveal{animation:none!important;opacity:1!important;transform:none!important}
+
 /* ── 2. The palette of a sheet of paper ───────────────────────────────────────────────
    The TOKENS are redefined, not the rules: every public rule already paints in var(--c-*),
    so one block turns the whole site into ink on paper and nothing downstream has to know.

@@ -14,7 +14,10 @@ export async function verifyTurnstile(token: string, ip?: string): Promise<boole
   try {
     const body = new URLSearchParams({ secret: turnstileSecretKey, response: token })
     if (ip) body.set('remoteip', ip)
-    const res = await fetch(SITEVERIFY, { method: 'POST', body })
+    // A reader's comment waits on this call. Cloudflare answering slowly must not hold the
+    // request handler open, and failing closed is already this function's contract, so an
+    // abort lands in the catch below and the comment is refused rather than hung.
+    const res = await fetch(SITEVERIFY, { method: 'POST', body, signal: AbortSignal.timeout(10_000) })
     const data = (await res.json()) as { success?: boolean }
     return data.success === true
   } catch (error) {

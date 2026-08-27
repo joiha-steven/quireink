@@ -98,6 +98,9 @@ export async function exchangeCode(
 ): Promise<GoogleIdentity> {
   const res = await fetch(TOKEN, {
     method: 'POST',
+    // The reader is sitting on the callback URL while this runs. Google not answering has
+    // to become a failed sign-in, not a request that never returns.
+    signal: AbortSignal.timeout(10_000),
     headers: { 'content-type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({
       code,
