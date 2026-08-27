@@ -85,15 +85,21 @@ export function parseSubstack(entries: Entry[], now: string): ImportResult {
     const content = htmlToMarkdown(td, body)
     const excerpt = decodeEntities((r[subC] ?? '').trim()) || deriveExcerpt(content)
     const d = new Date(r[dateC] ?? '')
+    const publicSlug = slugify(slugPart) || slugify(title)
+    const isPublished = (r[pubC] ?? '').toLowerCase() === 'true'
     posts.push({
       title,
-      slug: uniqueSlug(slugify(slugPart) || slugify(title)),
+      slug: uniqueSlug(publicSlug),
       date: Number.isNaN(d.getTime()) ? now : d.toISOString(),
-      status: (r[pubC] ?? '').toLowerCase() === 'true' ? 'published' : 'draft',
+      status: isPublished ? 'published' : 'draft',
       categories: [],
       tags: [],
       excerpt,
       content,
+      // Substack serves every post at /p/<slug>. Only worth a redirect for a publication
+      // that had its own domain — for the rest the row simply never fires. Medium gets
+      // nothing: its old URLs live on medium.com, which will never point here.
+      path: isPublished ? `/p/${publicSlug}` : undefined,
     })
   }
   return { posts, pages: [], skipped }

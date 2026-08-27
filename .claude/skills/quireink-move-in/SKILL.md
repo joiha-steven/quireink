@@ -1,6 +1,6 @@
 ---
 name: quireink-move-in
-description: Move an existing blog into Quire Ink from WordPress, Ghost, Substack or Medium — running the import, then the work the importer deliberately leaves for a human or an agent: rescuing images that still point at the old host, restoring the old URLs as redirects, and cleaning up what the converter could not know. Use when the user is migrating a blog, has an export file, or asks whether their old posts can come across.
+description: Move an existing blog into Quire Ink from WordPress, Ghost, Substack or Medium — running the import (which writes the old URLs' redirects and brings the images home by itself), checking its failure list, and cleaning up what the converter could not know. Use when the user is migrating a blog, has an export file, or asks whether their old posts can come across.
 ---
 
 # Moving a blog in
@@ -30,20 +30,24 @@ and not a crash. A wrong file is rejected with a specific reason
 Posts and pages both come across, with their dates and their slugs. The count of skipped
 items comes back with the result — read it out, do not swallow it.
 
-## Then: the four jobs the importer leaves you
+## Then: check what the software did, and do the two jobs it left you
 
-**1. The images still point at the old host.** Every importer keeps image URLs exactly as
-they were. The posts read perfectly while the old blog is up and go blank the day it is
-turned off, which is usually a month later when nobody connects the two events. Fix it
-before that: pull each image in with `add_media_from_url` and rewrite the post to the new
-`/uploads` path. Do it in batches, keep a list of what failed, and tell the owner **not to
-cancel the old hosting until this is done and checked**.
+**1. The images (check the failure list).** The admin import fetches every image that
+still points at another host into the media library and rewrites the posts, batch by
+batch, right after the upload — the button shows the pace. Over MCP the same work is the
+`import_images` tool: call it in a loop until `remaining` is 0, and stop early when a
+call reports `moved: 0`, because what is left only fails. **The failure list is the
+owner's checklist**: each failed URL stays pointing at the old host and keeps working
+only while the old hosting is up. Fetch the strays by hand with `add_media_from_url`,
+or tell the owner plainly which images will die with the old server. Do not let them
+cancel the old hosting before this list is empty or accepted.
 
-**2. The old URLs.** Readers, search engines and other people's links all point at the old
-shape (`/2019/07/some-post/` on WordPress, `/p/some-post` on Substack). Quire Ink keeps a
-redirect when a slug changes inside the blog, but it knows nothing about the URL shape of a
-site it never served. Map the old paths to the new ones in **Settings → SEO → Redirects**.
-Take the list from the export, not from memory.
+**2. The old URLs (mostly written for you).** A published WordPress item's path
+(`/2019/07/some-post/`) and a Substack post's `/p/some-post` become 301s at import time,
+in the same table as the owner's own redirects — the response says how many. What that
+cannot cover: Medium (its old URLs live on medium.com), a category/tag/feed URL shape,
+and anything unpublished. Check **Settings → SEO → Redirects** against the export and
+add what matters by hand.
 
 **3. What the converter could not know.** Shortcodes with no meaning outside their old
 plugin, embeds that were an iframe, footnotes that were a plugin's markup, galleries. The
@@ -61,10 +65,11 @@ own job, with the subscribers' consent intact.
 ## Order of operations for a real migration
 
 1. Install and claim the blog, but **do not point the domain at it yet**.
-2. Import the export. Read the skipped count.
-3. Rescue the images, then check a sample of posts with the old site's DNS unresolved
-   (or images blocked) so a still-live old host cannot fool you.
-4. Write the redirects.
+2. Import the export. Read the skipped count, the redirect count, and the image
+   failure list — the import writes the 301s and fetches the images itself.
+3. Fetch any failed images by hand, then check a sample of posts with the old site's
+   DNS unresolved (or images blocked) so a still-live old host cannot fool you.
+4. Fill in the redirects the import could not know (see job 2).
 5. Read ten posts properly. Fix what the converter mangled.
 6. Set `SITE_URL`, take a snapshot, move the domain.
 7. Only then let the old hosting lapse.

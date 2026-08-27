@@ -22,10 +22,12 @@ function item(fields: {
   date?: string
   content?: string
   terms?: string
+  link?: string
 }): string {
   const f = fields
   return `<item>
     <title><![CDATA[${f.title ?? 'A title'}]]></title>
+    ${f.link ? `<link>${f.link}</link>` : ''}
     <content:encoded><![CDATA[${f.content ?? '<p>Body</p>'}]]></content:encoded>
     <wp:post_name><![CDATA[${f.name ?? ''}]]></wp:post_name>
     <wp:post_type>${f.type ?? 'post'}</wp:post_type>
@@ -56,6 +58,19 @@ describe('parseWxr selection', () => {
     const out = parseWxr(xml, NOW)
     expect(out.posts.find((p) => p.slug === 'live')?.status).toBe('published')
     expect(out.posts.find((p) => p.slug === 'wip')?.status).toBe('draft')
+  })
+
+  it('keeps the path a published item lived at, and only that', () => {
+    const xml = wxr(
+      item({ name: 'dated', link: 'https://old.example/2020/05/dated/' }) +
+        // A draft's <link> is WordPress's ?p=123 guess — nothing ever linked to it.
+        item({ name: 'wip', status: 'draft', link: 'https://old.example/?p=123' }) +
+        item({ name: 'bare' }),
+    )
+    const out = parseWxr(xml, NOW)
+    expect(out.posts.find((p) => p.slug === 'dated')?.path).toBe('/2020/05/dated/')
+    expect(out.posts.find((p) => p.slug === 'wip')?.path).toBeUndefined()
+    expect(out.posts.find((p) => p.slug === 'bare')?.path).toBeUndefined()
   })
 })
 

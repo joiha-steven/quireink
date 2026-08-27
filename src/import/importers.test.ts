@@ -91,6 +91,9 @@ describe('Substack', () => {
     expect(first.status).toBe('published')
     expect(first.content).toContain('## Part one')
     expect(posts.find((p) => p.slug === 'rough-idea')!.status).toBe('draft')
+    // Substack served it at /p/<slug>; a draft never had a public address.
+    expect(first.path).toBe('/p/first-letter')
+    expect(posts.find((p) => p.slug === 'rough-idea')!.path).toBeUndefined()
   })
 })
 
