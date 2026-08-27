@@ -224,7 +224,7 @@ Open it and the rest is a browser: username, email, password, then the QR code f
 
 <div align="center">
 
-<img src="docs/demo-setup.jpg" alt="Three first-run screens side by side: Claim this blog, with username, email and password fields; Your site, with the name, language, a time zone already filled in as Asia/Saigon and a site address already filled in as https://example.com; and The front page, offering two small drawings to choose between, a list of posts or a composed newspaper front" width="960">
+<img src="docs/demo-setup.jpg" alt="Three first-run screens side by side: Claim this blog, with username, email and password fields; Your site, with the language first, then the name, a time zone already filled in as Asia/Saigon and a site address already filled in as https://example.com; and The front page, offering two small drawings to choose between, a list of posts or a composed newspaper front" width="960">
 
 <sub>The whole of setup after the log line. The time zone and the address arrive already filled in — the browser knows both, and both are wrong by default and silent about it. What is <b>not</b> asked is the design: palettes, fonts, book mode and the feature switches all stay on a dashboard card you can reopen, because nobody can judge them before the site has a single post on it.</sub>
 

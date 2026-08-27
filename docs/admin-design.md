@@ -232,7 +232,7 @@ them 40px against the strip above it at 44, with no `aria-pressed` and no hover.
 which lives in the URL and so cannot be a `<Tabs>` with an `onChange`). `sm` has one
 modifier, `dense` (2026-08-17): tighter padding for the write pane's row of five, whose
 labels are the pane's own deliberately short `scope*` strings so five words share one line
-in all six languages — the row may not wrap.
+in all eleven languages — the row may not wrap.
 
 **One stat tile, one empty state.** `StatTile` was a second copy of `StatCard` that had
 already drifted a shade on its sub-line. `EmptyState` existed and two files used it while
@@ -363,6 +363,6 @@ Analytics 418 → 83ms. Cold load of `/admin` 501 → 329ms.
   better.
 
 Two items left this list on 2026-08-18: the editor chrome labels have long lived in
-`locales` (all six languages), and the narrow content tables DID become stacked list
+`locales` (all eleven languages), and the narrow content tables DID become stacked list
 rows — the comments queue, the subscriber list, the trash and the activity log are the
 one-sheet pages' two-column ledgers now.

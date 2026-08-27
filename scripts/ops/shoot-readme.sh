@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Rebuild the five README plates, from a seeded fixture, in one command.
+# Rebuild the six README plates, from seeded fixtures, in one command.
 #
 # THE COMMAND IS THE POINT. `compose-demo.ts` was written so the images "regenerate from a
 # command rather than an image editor", and then the command itself lived only in whoever
@@ -126,7 +126,54 @@ bun run drive "$L/admin/settings" "$P/appearance.png" \
   "(function(){var b=[].slice.call(document.querySelectorAll('button')).find(function(x){return x.textContent.trim()==='Appearance'}); if(b) b.click()})()" \
   1440 1000 2200 > /dev/null
 
+echo "== setup panels =="
+# The sixth plate photographs the three first-run screens, and they need what no seeded
+# database can hold: a blog with NO owner (the claim screen refuses to exist otherwise)
+# and the one-time token, which lives only in the boot log. So: a third, empty database.
+# The two later screens are owner-gated, so after the claim panel the owner and a session
+# are minted straight into the throwaway database — same trick as the seeder, no bypass in
+# the server — and the server restarts to shoot them.
+#
+# `justify-content:flex-start` on every panel: the login layout centres vertically, and
+# three cards centred inside three different content heights sit at three different
+# heights on one plate. Top-aligned, they read as one row.
+PORT_SETUP=3412
+SETUP_DIR=$TMP/setup
+DATA_DIR=$SETUP_DIR STORAGE_LOCAL_DIR=$TMP/up-setup PORT=$PORT_SETUP bun src/index.ts > "$TMP/setup.log" 2>&1 &
+for _ in $(seq 1 40); do curl -sf -o /dev/null "http://127.0.0.1:$PORT_SETUP/api/health" && break; sleep 1; done
+S="http://127.0.0.1:$PORT_SETUP"
+TOKEN_PATH=$(grep -oE '/setup\?token=[A-Za-z0-9_-]+' "$TMP/setup.log" | head -1)
+test -n "$TOKEN_PATH" || { echo "FAIL: no setup token in the boot log"; exit 1; }
+TOP='var w=document.querySelector(".login-wrap"); if(w) w.style.justifyContent="flex-start"'
+QUIRE_SESSION= bun run drive "$S$TOKEN_PATH" "$P/claim.png" "$TOP" 660 1180 800 2 > /dev/null
+
+cat > "$TMP/mint-setup.ts" <<'TS'
+import { openDatabases } from '@/store/db'
+openDatabases(process.env.DATA_DIR ?? '')
+const { createUser } = await import('@/auth/users')
+const { createSession } = await import('@/auth/sessions')
+const u = await createUser({ username: 'owner', email: 'owner@example.com', password: 'plate-shoot-only-2026!x' })
+const { token } = createSession(u.id, { userAgent: 'plate' })
+console.log(`QUIRE_SESSION=${token}`)
+TS
+SETUP_SESSION=$(DATA_DIR=$SETUP_DIR STORAGE_LOCAL_DIR=$TMP/up-setup bun "$TMP/mint-setup.ts" \
+  | grep '^QUIRE_SESSION=' | cut -d= -f2-)
+test -n "$SETUP_SESSION" || { echo "FAIL: the setup mint made no session"; exit 1; }
+kill %3 2>/dev/null || true; sleep 1
+DATA_DIR=$SETUP_DIR STORAGE_LOCAL_DIR=$TMP/up-setup PORT=$PORT_SETUP bun src/index.ts > "$TMP/setup2.log" 2>&1 &
+for _ in $(seq 1 40); do curl -sf -o /dev/null "http://127.0.0.1:$PORT_SETUP/api/health" && break; sleep 1; done
+
+# The address panel: the field autofills from the address the browser is on, which in here
+# is a loopback port. The plate shows the value a real install shows, so the prep writes
+# example.com over it after the autofill has run.
+SITE_PREP="$TOP; setTimeout(function(){var i=document.getElementById(\"siteUrl\"); if(i) i.value=\"https://example.com\"},400)"
+QUIRE_SESSION="$SETUP_SESSION" bun run drive "$S/setup/site" "$P/setup-site.png" "$SITE_PREP" 660 1180 800 2 > /dev/null
+QUIRE_SESSION="$SETUP_SESSION" bun run drive "$S/setup/face" "$P/setup-face.png" "$TOP" 660 1180 800 2 > /dev/null
+
 echo "== compose =="
+# Empty labels on purpose: these screens name themselves, and compose-demo draws nothing
+# for an empty label.
+bun scripts/compose-demo.ts docs/demo-setup.jpg   "$P/claim.png::full" "$P/setup-site.png::full" "$P/setup-face.png::full"
 bun scripts/compose-demo.ts docs/demo.jpg         "$P/front.png:the front page"   "$P/post.png:a post"
 bun scripts/compose-demo.ts docs/demo-reading.jpg "$P/book.png:book mode:full"    "$P/dark.png:the dark theme"
 bun scripts/compose-demo.ts docs/demo-mobile.jpg  "$P/m-list.png:the post list:phone" \
@@ -135,5 +182,5 @@ bun scripts/compose-demo.ts docs/demo-code.jpg    "$P/maths.png:mathematics" "$P
 bun scripts/compose-demo.ts docs/demo-admin.jpg   "$P/editor.png:the editor"      "$P/appearance.png:appearance"
 
 echo
-echo "done. Five plates rebuilt in docs/ — LOOK at them before committing:"
-ls -la docs/demo.jpg docs/demo-reading.jpg docs/demo-mobile.jpg docs/demo-admin.jpg docs/demo-code.jpg | awk '{print "  " $5, $9}'
+echo "done. Six plates rebuilt in docs/ — LOOK at them before committing:"
+ls -la docs/demo.jpg docs/demo-reading.jpg docs/demo-mobile.jpg docs/demo-admin.jpg docs/demo-code.jpg docs/demo-setup.jpg | awk '{print "  " $5, $9}'

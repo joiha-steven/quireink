@@ -225,7 +225,7 @@ Mở nó ra là xong phần còn lại ngay trong trình duyệt: tên đăng nh
 
 <div align="center">
 
-<img src="docs/demo-setup.jpg" alt="Ba màn hình đầu tiên đặt cạnh nhau: Claim this blog với ô tên đăng nhập, email và mật khẩu; Your site với tên site, ngôn ngữ, múi giờ đã điền sẵn Asia/Saigon và địa chỉ site đã điền sẵn https://example.com; và The front page với hai hình vẽ nhỏ để chọn, danh sách bài hoặc trang nhất kiểu báo" width="960">
+<img src="docs/demo-setup.jpg" alt="Ba màn hình đầu tiên đặt cạnh nhau: Claim this blog với ô tên đăng nhập, email và mật khẩu; Your site với ngôn ngữ đứng đầu, rồi tên site, múi giờ đã điền sẵn Asia/Saigon và địa chỉ site đã điền sẵn https://example.com; và The front page với hai hình vẽ nhỏ để chọn, danh sách bài hoặc trang nhất kiểu báo" width="960">
 
 <sub>Toàn bộ phần cài đặt sau dòng log. Múi giờ và địa chỉ đến nơi đã điền sẵn — trình duyệt biết cả hai, mà cả hai đều sai mặc định và không nói gì khi sai. Thứ <b>không</b> được hỏi mới là thiết kế: bảng màu, phông chữ, chế độ sách và các công tắc tính năng đều ở lại một thẻ trên bảng điều khiển mở lại được, vì chưa có bài nào thì chưa ai đánh giá nổi.</sub>
 
