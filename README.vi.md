@@ -176,7 +176,14 @@ Nó giữ được như vậy nhờ vài quyết định khó đảo ngược.
 
 ## Cài đặt
 
-Bạn cần [Bun](https://bun.sh) 1.3 trở lên và một máy trỏ tên miền vào được. Hết danh sách.
+**Cài lên đâu được?** Chỗ nào dưới đây cũng được, và blog y hệt nhau ở mọi chỗ.
+
+- **Một VPS thuê ngoài** — gói rẻ nhất là đủ. Một lệnh bên dưới, hoặc Docker.
+- **Droplet DigitalOcean** — dán [một file](./deploy/digitalocean/user-data.sh) vào trang tạo droplet, ba phút sau khi máy nổ là blog đã chạy ([cách làm và lý do](./deploy/digitalocean/README.md)).
+- **NAS trong nhà** — Synology, QNAP, Unraid: image Docker, với `PUID`/`PGID` nên không bao giờ chạy bằng root ([ghi chú](./docs/self-host-docker.md); Unraid có sẵn [template](https://github.com/joiha-steven/unraid-templates)).
+- **Máy nào có Docker** — kéo `quireink/quireink` về, có đủ `amd64` và `arm64`.
+
+Đường thứ nhất cần [Bun](https://bun.sh) 1.3 trở lên và một máy trỏ tên miền vào được. Hết danh sách.
 
 **Một lệnh**, nó tự tải mã nguồn, cài, dựng và chạy blog lên:
 

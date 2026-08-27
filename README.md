@@ -177,7 +177,14 @@ It stays this way because of a few decisions that are hard to walk back.
 
 ## Install
 
-You need [Bun](https://bun.sh) 1.3 or newer and a machine you can point a domain at. That is the list.
+**Where can it live?** Any of these, and the blog is the same on all of them.
+
+- **A rented VPS** — the cheapest tier is enough. The one command below, or Docker.
+- **A DigitalOcean droplet** — paste [one file](./deploy/digitalocean/user-data.sh) into the droplet-create page and it is serving three minutes after boot ([how and why](./deploy/digitalocean/README.md)).
+- **A NAS in your house** — Synology, QNAP, Unraid: the Docker image, with `PUID`/`PGID` so it never runs as root ([notes](./docs/self-host-docker.md); Unraid also has [a template](https://github.com/joiha-steven/unraid-templates)).
+- **Any machine with Docker** — pull `quireink/quireink`, `amd64` and `arm64` both.
+
+For the first path you need [Bun](https://bun.sh) 1.3 or newer and a machine you can point a domain at. That is the list.
 
 **One command**, which clones, installs, builds and starts it:
 
