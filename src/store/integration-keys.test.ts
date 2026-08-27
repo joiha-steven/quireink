@@ -30,6 +30,18 @@ describe('the purge webhook (ADR 0033)', () => {
     expect(JSON.stringify(status)).not.toContain('abc123')
   })
 
+  it('holds the offsite sextet, and configured needs bucket + both keys', async () => {
+    const { getIntegrationStatus } = await import('@/store/integration-keys')
+    await saveIntegrationKeys({ s3Bucket: 'quire-backups', s3AccessKeyId: 'AKIA123' })
+    expect((await getIntegrationStatus()).offsiteConfigured).toBe(false) // no secret yet
+    await saveIntegrationKeys({ s3SecretAccessKey: 'shh', s3Endpoint: 'https://acc.r2.cloudflarestorage.com' })
+    const status = await getIntegrationStatus()
+    expect(status.offsiteConfigured).toBe(true)
+    expect(status.s3Bucket).toBe('quire-backups')
+    // The secret never travels in the status payload.
+    expect(JSON.stringify(status)).not.toContain('shh')
+  })
+
   it('survives a blank save, like every other write-to-set key', async () => {
     await saveIntegrationKeys({ purgeWebhookUrl: 'https://cdn.example.com/purge' })
     await saveIntegrationKeys({ cloudflareZoneId: 'zone' })
@@ -41,7 +53,8 @@ describe('getIntegrationKeys', () => {
   it('returns empty strings when nothing is stored and no env var is set', async () => {
     expect(await getIntegrationKeys()).toEqual({
       turnstileSiteKey: '', turnstileSecretKey: '', cloudflareApiToken: '', cloudflareZoneId: '',
-      purgeWebhookUrl: '', googleClientId: '', googleClientSecret: '',
+      purgeWebhookUrl: '', s3Endpoint: '', s3Region: '', s3Bucket: '', s3Prefix: '',
+      s3AccessKeyId: '', s3SecretAccessKey: '', googleClientId: '', googleClientSecret: '',
       aiProvider: '', aiApiKey: '', aiModel: '',
     })
   })
@@ -87,6 +100,7 @@ describe('getIntegrationStatus', () => {
       turnstileConfigured: true, turnstileSiteKey: 'site',
       cloudflareConfigured: true, cloudflareZoneId: 'zone',
       purgeWebhookConfigured: false,
+      offsiteConfigured: false, s3Bucket: '',
       googleConfigured: false,
       aiConfigured: false, aiProvider: '', aiModel: '',
     })

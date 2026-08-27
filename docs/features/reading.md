@@ -203,6 +203,28 @@
   quote is anchored on its two ends rather than carried whole, each end trimmed back to a
   whole word.
 
+## The way onward, and the way back — `src/web/article.ts` (`features.readNext`), `src/assets/js/resume.ts` (`features.resume`)
+
+Both owner-approved 2026-08-27, both default **on**, both toggled from the Reading card.
+
+- **Read next** ends every post with ONE pointer forward: the next part of its series when
+  there is one (labelled `readNextSeries`), else the ADJACENT post — the **older** neighbour
+  first, because the index is newest-first and a reader who just finished this post is walking
+  back through the archive; only the oldest post points toward newer. It sits after the
+  taxonomy rule and before Related: a whispered label (`.read-next-label`, small role) and the
+  title as the only thing at reading size (`--fs-h3`). Server markup — costs the bundle
+  nothing. Route tests in `src/web/read-next.test.ts`.
+- **Resume** keeps the reader's place in THEIR browser and nowhere else
+  (`localStorage`, `quire:resume:<pathname>`, 90 days): past 1.5 viewports a position is worth
+  keeping, past 92% the post counts as finished and is **forgotten** — "continue where you left
+  off" at the end of a text is not memory, it is nagging. Returning near the top raises one
+  pill, bottom centre, that scrolls back on click (instant under `prefers-reduced-motion`) and
+  withdraws once the reader scrolls >200px on their own: scrolling IS the answer. The localized
+  prompt rides `<body data-resume-prompt>` only when the feature is on — no words, no island.
+  It cannot collide with the to-top button: the pill requires `scrollY < innerHeight`, the
+  button the opposite. Cost ~1.1 KB in `post.js` (budget 15,800 → 17,000, reason recorded in
+  `scripts/build-assets.ts`).
+
 ## Book reading mode — `src/assets/js/book.ts`, `features.bookMode`
 
 - **What:** an opt-in "Chế độ đọc sách" link on the post meta line (after the reading time)
@@ -210,7 +232,7 @@
   soft fade between spreads. Gated by `features.bookMode` (default **on**; the "Reading
   features" card in Admin → Settings → **Reading**). **Posts only** (the toggle is emitted
   from the post branch of `src/web/article.ts`).
-- **The reader sets the type size.** A− / A+ in the overlay chrome move `--type-scale` between
+- **The reader sets the type size.** The a/A pair in the overlay chrome moves `--type-scale` between
   0.85 and 1.35 in 0.05 steps, persisted per browser under `quire-book-scale` and written as an
   INLINE override, so a reader who has never touched it follows whatever the sheet ships. The
   sheet's own default is **1.05** (it was 1.15 until 2026-08-21). Every change re-measures: a
@@ -268,10 +290,13 @@
   box and therefore takes part in no layout. Without the reservation the centred title ran under
   it and printed as `owning your ow1 / 5`. **The reservation is twice the box**, because the
   head is centred and half of whatever it is allowed grows rightwards: reserving the box once
-  let a long title land on A− again the day the pair was widened. 540px since 2026-08-27.
+  let a long title run under the size pair again the day it was widened. 540px since 2026-08-27.
 - **The chrome is three things, and is spaced to say so** (2026-08-27, owner's report: "thiếu
-  trực quan, xấu vô cùng"). A− and A+ are ONE control and are drawn as one — a single hairline
-  around the pair with a rule between them, tinted with the page's own `--c-rule`. The page
-  count sits 18px away, and the close button 26px further, as a round target that fills under
-  the pointer. Before this they were four items at one weight, one colour and equal gaps, which
-  reads as a string of characters rather than as controls.
+  trực quan, xấu vô cùng"). The size pair is a small `a` and a large `A`, **plain glyphs on the
+  paper, on one shared baseline** — the size difference is the whole label. The pill-and-rule
+  cut that preceded it read as buttons (the owner's second complaint), and wore a "black seam"
+  on first paint: `showModal()` focuses the first focusable element, and the pill's
+  `overflow:hidden` cropped that focus ring to a single dark line between the two halves.
+  Initial focus now lands on the stage via `autofocus` (tabindex −1, no outline), so keyboard
+  focus rings survive on every control without one being worn at open. The page count sits
+  18px away, and the close button 26px further, as a round target that fills under the pointer.

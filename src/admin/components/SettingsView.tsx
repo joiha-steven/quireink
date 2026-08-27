@@ -303,7 +303,7 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
       {/* SYSTEM — content in and out, and the state of the install. Its own file since
           2026-08-22, when this one reached its line ceiling. */}
       {tab === 'system' && (
-        <SettingsSystemTab s={s} update={update} updateStatus={updateStatus} grid={GRID} col={COL} />
+        <SettingsSystemTab s={s} update={update} updateStatus={updateStatus} offsiteConfigured={integrations.offsiteConfigured} s3Bucket={integrations.s3Bucket} grid={GRID} col={COL} />
       )}
 
       {/* One always-reachable save bar, offset past the sidebar via the --admin-nav-w the

@@ -71,3 +71,14 @@ alter table integration_keys add column ai_model text;
 -- to when it flushes, so an install behind Bunny, Fastly or a script in front of nginx has
 -- the same "an edit is live without a manual purge" that a Cloudflare install has had.
 alter table integration_keys add column purge_webhook_url text;
+
+-- migration: 006-offsite-s3
+-- A snapshot that lives beside the thing it copies does not survive the disk (ADR 0035).
+-- Any S3-compatible bucket — R2, S3, MinIO — receives each scheduled snapshot; restore
+-- stays a shell act on purpose.
+alter table integration_keys add column s3_endpoint text;
+alter table integration_keys add column s3_region text;
+alter table integration_keys add column s3_bucket text;
+alter table integration_keys add column s3_prefix text;
+alter table integration_keys add column s3_access_key_id text;
+alter table integration_keys add column s3_secret_access_key text;

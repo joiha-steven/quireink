@@ -15,14 +15,17 @@ import { useAdminT } from './I18nProvider'
 import { ImportFields } from './ImportFields'
 import { ExportFields } from './ExportFields'
 import { CacheFields } from './CacheFields'
+import { OffsiteFields } from './OffsiteFields'
 import { StorageFields } from './StorageFields'
 import { UpdateFields, type UpdateStatus } from './UpdateFields'
 
 export function SettingsSystemTab(
-  { s, update, updateStatus, grid, col }: {
+  { s, update, updateStatus, offsiteConfigured, s3Bucket, grid, col }: {
     s: SiteSettings
     update: (partial: Partial<SiteSettings>) => void
     updateStatus: UpdateStatus
+    offsiteConfigured: boolean
+    s3Bucket: string
     grid: string
     col: string
   },
@@ -50,6 +53,11 @@ export function SettingsSystemTab(
       <div className={col}>
         <Card panel title={t.backupTitle}>
           <ExportFields backups={s.backups} onChange={(backups) => update({ backups })} />
+        </Card>
+        {/* The snapshot that leaves the machine (ADR 0035): a copy beside the data does
+            not survive the disk. Sits under the backups it ships. */}
+        <Card panel title={t.offsiteTitle}>
+          <OffsiteFields configured={offsiteConfigured} bucket={s3Bucket} />
         </Card>
         <Card panel title={t.storageTitle}>
           <StorageFields

@@ -6,6 +6,7 @@
 //   POST /api/backup/run        take one now, keep it here
 //   GET  /api/backup/download   fetch one that is already here
 //   POST /api/backup/delete     remove one
+//   POST /api/backup/offsite-test  prove the bucket paste works, while the owner is still here
 //
 // All owner-gated by where they are mounted (Invariant 4). What a snapshot IS, and why it
 // is built the way it is, lives in `src/server/backup.ts`.
@@ -17,6 +18,7 @@ import {
   buildArchive, deleteSnapshot, isSnapshotName, lastRunAt, listSnapshots, runBackup,
   snapshotName, snapshotsDir,
 } from '@/server/backup'
+import { offsiteTest } from '@/server/backup-offsite'
 import { logActivity } from '@/server/activity'
 import { fail, json } from '@/web/api'
 import { ownerRouter } from '@/web/guard'
@@ -93,6 +95,17 @@ export function backupRoutes() {
     if (!name || !(await deleteSnapshot(name))) return fail(c, 'Unknown snapshot', 400)
     logActivity('backup.delete', name)
     return json({ deleted: name })
+  })
+
+  // One marker object written and deleted. The transport's own words come back on
+  // failure, because "test failed" teaches the owner nothing about a wrong endpoint.
+  router.post('/api/backup/offsite-test', async (c) => {
+    try {
+      await offsiteTest()
+      return json({ ok: true })
+    } catch (error) {
+      return fail(c, (error as Error).message, 400)
+    }
   })
 
   return router

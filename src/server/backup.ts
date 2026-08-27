@@ -6,11 +6,12 @@
 // until now drove nothing: 2.0 dropped Google Drive (parity exception 1) and the fields
 // stayed behind pointing at a destination that no longer existed.
 //
-// **This is not the off-box backup and does not replace it.** A copy that lives beside the
-// thing it is copying survives a bad delete, a bad restore and a bad migration, and does
-// not survive the disk. `docs/backups.md` covers the cron that ships copies to R2, which is
-// the one that answers "the machine is gone". This one answers "I broke something an hour
-// ago", which is the far more common question and the one that used to need shell access.
+// A copy that lives beside the thing it is copying survives a bad delete, a bad restore
+// and a bad migration, and does not survive the disk — so every archive written here is
+// also SHIPPED, when a bucket is configured: `backup-offsite.ts` (ADR 0035) PUTs it into
+// any S3-compatible store and prunes the remote copies to the same retention. The ops
+// script in `scripts/ops/quire-backup.sh` remains for fleets that would rather run their
+// own; `docs/backups.md` holds the map.
 //
 // The databases are copied through SQLite's own `VACUUM INTO` rather than read off disk: a
 // live database has a write-ahead log, and copying the file alone can capture a torn state
@@ -22,6 +23,7 @@ import { join, resolve } from 'node:path'
 import { existsSync } from 'node:fs'
 import { db, analyticsDb } from '@/store/db'
 import { getSettings } from '@/content/settings'
+import { replicateSnapshot } from '@/server/backup-offsite'
 
 export type Snapshot = {
   name: string
@@ -169,6 +171,12 @@ export async function runBackup(): Promise<Snapshot> {
   for (const old of (await listSnapshots()).slice(Math.max(1, keep))) {
     await rm(join(dir, old.name), { force: true })
   }
+
+  // And off the machine (ADR 0035): every snapshot the schedule or the button writes is
+  // also PUT into the configured bucket. Awaited, so the cron tick's report is truthful —
+  // but a bucket outage never fails the backup; the archive above is already on disk.
+  await replicateSnapshot(dest, name)
+
   return { name, size, createdAt: new Date().toISOString() }
 }
 

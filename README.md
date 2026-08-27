@@ -101,8 +101,8 @@ You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE),
 | 🔎&nbsp;**Search&nbsp;engines** | Sitemap, RSS, `robots.txt`, `llms.txt`, and an OG image drawn per post. Rename a slug and the old URL keeps working on its own |
 | 📬&nbsp;**Newsletter** | Sign-ups with a confirmation email, an issue sent when you publish, a note when a comment gets a reply. Your own SMTP, so nothing to sign up for |
 | 📚&nbsp;**Series** | Write in parts, number them, and every part shows the others |
-| 💾&nbsp;**Backups** | One button downloads the whole install, and a cron script ships it off the server. [Details](./docs/backups.md) |
-| 📥&nbsp;**Moving&nbsp;in** | Upload a WordPress XML, a Ghost JSON, or the ZIP Substack or Medium emailed you — the server works out whose it is. Everything becomes Markdown, dead shortcodes are swept on the way in |
+| 💾&nbsp;**Backups** | One button downloads the whole install, scheduled snapshots kept on the server, and every snapshot also shipped to your own R2/S3 bucket. [Details](./docs/backups.md) |
+| 📥&nbsp;**Moving&nbsp;in** | Upload a WordPress XML, a Ghost JSON, or the ZIP Substack or Medium emailed you — the server works out whose it is. Everything becomes Markdown, dead shortcodes are swept on the way in, the old URLs answer with redirects, and the images are fetched into your own library |
 | 🌍&nbsp;**Languages** | Six, in the admin and on the site. No CJK webfont ships — they are megabytes — but each of the three names its own face, so 直 is drawn the Japanese way on a Japanese site |
 | 🔐&nbsp;**Sign-in** | Your own username and password, hashed with argon2id. An authenticator code every time, and ten recovery codes for the day you lose the phone. No Google in the login path |
 | 📱&nbsp;**Phone** | Install it to the home screen and it opens like an app |
@@ -169,7 +169,7 @@ It stays this way because of a few decisions that are hard to walk back.
 
 **Instead of a static site generator.** You get a real admin. Write, upload a photo, schedule and publish from a laptop or a phone, with search, comments, a newsletter and stats already there. No rebuild, no deploy, no git push to fix a typo.
 
-**Instead of writing your own.** The boring half is done and tested: sign-in with TOTP, sessions, image resizing, feeds, OG images, redirects, an undo for deletes, revisions, backups, a WordPress importer, six languages.
+**Instead of writing your own.** The boring half is done and tested: sign-in with TOTP, sessions, image resizing, feeds, OG images, redirects, an undo for deletes, revisions, backups, importers for WordPress, Ghost, Substack and Medium, six languages.
 
 <div align="center">
 
@@ -307,7 +307,7 @@ Writing is half of it. The agent can also read your traffic and compare it to la
 
 The sensitive settings are off limits over MCP, and you stay in charge. Revoke the token in the admin and it stops working immediately.
 
-**And the repository teaches the agent.** Three skills ship in `.claude/skills/`, so an assistant that has just cloned this repo already knows how to install a blog, work one over MCP, and move an existing blog in from WordPress, Ghost, Substack or Medium — including the jobs the importer deliberately leaves to a human. Nothing to install: clone it and ask. [What they cover](./docs/agent-ready.md#skills-that-ship-in-the-repository).
+**And the repository teaches the agent.** Three skills ship in `.claude/skills/`, so an assistant that has just cloned this repo already knows how to install a blog, work one over MCP, and move an existing blog in from WordPress, Ghost, Substack or Medium — the import writes the old URLs' redirects and fetches the images itself; the skill walks what remains, starting with the list of images it could not fetch. Nothing to install: clone it and ask. [What they cover](./docs/agent-ready.md#skills-that-ship-in-the-repository).
 
 ---
 
@@ -326,6 +326,7 @@ These are the only things that live outside the admin.
 | `STORAGE_QUOTA_GB` | ◻️ | Largest the uploads folder may grow, counting the smaller copies made from each image. Defaults to `5`; an upload that would go past it is refused. `0` = no limit |
 | `CRON_SECRET` | ◻️ | Guards `/api/cron`, which publishes scheduled posts and tidies image variants |
 | `PURGE_WEBHOOK_URL` | ◻️ | A URL the blog POSTs to whenever it flushes its own cache, for a CDN that is not Cloudflare ([ADR 0033](./docs/decisions/0033-purging-an-edge-that-is-not-cloudflare.md)). Normally entered in Settings → Integrations instead |
+| `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` (+`S3_ENDPOINT`, `S3_REGION`, `S3_PREFIX`) | ◻️ | An S3-compatible bucket every snapshot is also shipped to ([ADR 0035](./docs/decisions/0035-the-snapshot-leaves-the-machine.md)). Normally entered in Settings → System instead |
 | `CRON_INTERNAL` | ◻️ | Set to `0` to stop the process running its own maintenance clock, when you would rather schedule `/api/cron` yourself. On by default since [ADR 0031](./docs/decisions/0031-the-blog-winds-its-own-clock.md), and never started under `bun test` or `bun --watch` |
 | `MCP_OAUTH_SECRET` | ◻️ | Signs MCP OAuth codes. Leave it out and the server makes its own, which is the recommended way |
 | `ANALYTICS_TZ` | ◻️ | The site's DEFAULT timezone, used until somebody picks one in **Settings → Site → Timezone**. That setting is the site's whole clock — the date under a post, the month markers, and the day an analytics chart starts on — and it exists because a public page is rendered once and cached, so without it the SERVER's timezone decided what date every reader saw. Defaults to UTC |

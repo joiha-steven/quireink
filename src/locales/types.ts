@@ -880,6 +880,16 @@ export type AdminStrings = {
   storageQuotaHint: string
   // backups (Google Drive)
   backupTitle: string
+  offsiteTitle: string
+  offsiteHelp: string
+  s3Endpoint: string
+  s3Region: string
+  s3Bucket: string
+  s3Prefix: string
+  s3KeyId: string
+  s3Secret: string
+  offsiteTest: string
+  offsiteTestOk: string
   exportHint: string
   exportNow: string
   exportBusy: string
