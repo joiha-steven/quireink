@@ -32,6 +32,19 @@ throttles putting real content back by a fixed 300ms.
 - **A navigation must show it is happening.** `ui/TopProgress.tsx` is the only signal a click
   did anything. It covers the router's `pending` and every in-flight `useView`, through the
   counter in `pending.ts`.
+- **One navigation, ONE sweep — and the cold load is the case that broke it.** The bar is a
+  CSS animation, and `[data-done] { animation: none }` means UN-marking a finished bar runs
+  the keyframes again from the left edge: the same element, drawn twice, which is why
+  counting elements found nothing while the owner kept seeing it. A cold load is two requests
+  that cannot overlap (the shell answers with the site's language, and only the commit after
+  that mounts a page which asks for its own data); measured at 6x CPU with 150ms latency, the
+  gap was 179–206ms on four screens, against a 120ms tolerance. An in-app navigation has no
+  such gap, because the transition holds `pending` true across it — hence "sometimes".
+  `BOOT_SEAM_MS` (400) is spent on the first run only, and `progress-seam.test.ts` pins the
+  floor against a future tidy-up back to one constant.
+- ⚠️ **`/admin/media` reports nothing to the counter** and shows its own "Loading…" line
+  inside the sheet instead: both libraries fetch their own rows and predate the bar. It is
+  the one screen where a click draws no bar at all.
 - **The bar never claims a percentage.** Nothing here knows how far along a fetch is. It
   eases toward an edge it never reaches, then snaps closed, and honours `data-motion`.
 - **The entry preloads the current route's chunk** before React runs (`main.tsx`).
