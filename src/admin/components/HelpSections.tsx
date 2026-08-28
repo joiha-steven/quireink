@@ -30,6 +30,7 @@ export function MediaSection() {
       <Card panel title="Media &amp; files">
         <ul className={UL}>
           <li>Drop an image into the editor or the Library. Responsive <b>AVIF and WebP</b> versions plus a thumbnail are generated for you; the original is always kept.</li>
+          <li>Any picture can wear a <b>frame</b> — a mat of paper or of ink, in three weights — picked on the picture itself in the editor. <In href="/admin/settings?tab=layout">Settings &rarr; Layout &rarr; Pictures</In> sets the one every picture wears when it has not chosen; a picture that did choose keeps its own, and <C>No frame</C> says so out loud on a framed site.</li>
           <li>The Library flags <b>unused</b> files (nothing links them) so a clear-out is safe. It only reports — it never deletes.</li>
           <li>Files live on your server&apos;s own disk, served from <C>/uploads</C>. No object-storage account.</li>
         </ul>

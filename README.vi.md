@@ -27,7 +27,7 @@ Một tiến trình. Hai tệp SQLite. Không tài khoản đám mây nào trong
 
 <br/>
 
-<img src="docs/demo.jpg" alt="Hai ảnh chụp cạnh nhau: trang chủ dạng báo với bài dẫn và các hàng chuyên mục, và trang bài viết của cùng site với cột mục lục bên trái, cột thông tin bên phải, một câu gạch dưới bút chì, một chữ khoanh bút bi đỏ, một câu tô xanh và bức thư tay Van Gogh làm hình đầu bài" width="960">
+<img src="docs/demo.jpg" alt="Hai ảnh chụp cạnh nhau: trang chủ dạng báo với bài dẫn và các hàng chuyên mục, và trang bài viết của cùng site với cột mục lục bên trái, cột thông tin bên phải, một câu gạch dưới bút chì, một chữ khoanh bút bi đỏ, một câu tô xanh và bức thư tay Van Gogh đóng khung làm hình đầu bài" width="960">
 
 <sub>**[demo.quireink.com](https://demo.quireink.com)** là bản thật, chạy được. Không đăng ký, không phải điền gì. Dùng thanh dưới đáy để nhảy qua lại giữa trang chủ dạng báo, danh sách bài, một bài viết, chế độ sách, sáng và tối, và trang quản trị. Thanh đó là thứ duy nhất được thêm vào, và nó nằm ngoài mã nguồn, nên trang demo luôn là bản mới nhất.</sub>
 
@@ -89,7 +89,7 @@ Bạn được đọc, sửa, chạy và fork theo [PolyForm Noncommercial](./LI
 
 | Phần | Làm được gì |
 |:---|:---|
-| 🖋️&nbsp;**Viết** | Trình soạn thật trên nền Markdown — bảng, video, chú thích chân trang, khung nhấn, **công thức toán**, Spotify. Thả ảnh vào là nó tự cắt cho mọi cỡ màn hình — và tự được mô tả, nếu bạn đưa Settings một API key (Anthropic, OpenAI hoặc Gemini; key của bạn, hoá đơn của bạn). Lưu trong lúc gõ, giữ ba bản, và giữ bài lại tới sáng thứ Ba |
+| 🖋️&nbsp;**Viết** | Trình soạn thật trên nền Markdown — bảng, video, chú thích chân trang, khung nhấn, **công thức toán**, Spotify. Thả ảnh vào là nó tự cắt cho mọi cỡ màn hình — và tự được mô tả, nếu bạn đưa Settings một API key (Anthropic, OpenAI hoặc Gemini; key của bạn, hoá đơn của bạn). Một tấm ảnh có thể chiếm trọn cột chữ, thu còn một phần ba để chữ chạy vòng quanh, ghép với ảnh bên cạnh thành một dải, hoặc đóng khung: lề giấy hoặc lề mực, ba độ dày, đặt cho từng ảnh hoặc đặt một lần cho cả site. Lưu trong lúc gõ, giữ ba bản, và giữ bài lại tới sáng thứ Ba |
 | 🏠&nbsp;**Trang&nbsp;chủ** | Danh sách bài, một trang bạn tự viết, hoặc trang dựng sẵn: bài dẫn, vài bài chọn, một hàng cho mỗi chuyên mục, bài đọc nhiều. Hợp cả site nhiều ảnh lẫn site chỉ có chữ. [Cách hoạt động](./docs/homepage.md) |
 | 🎨&nbsp;**Giao&nbsp;diện** | Sáu bảng màu, sáng và tối. Bốn font đọc, hoặc tải font của bạn lên. Mọi cỡ chữ đều sinh ra từ một vai trò, nên sửa một chỗ là cả trang đổi chứ không phải một tiêu đề |
 | 🖍️&nbsp;**Cây&nbsp;bút** | `==chữ==` tô năm màu mực, `++chữ++` gạch dưới bằng bút chì, `@@chữ@@` khoanh tròn bằng bút bi đỏ. Không phải ô màu — nét sinh từ một bàn tay có hạt giống, không hai vệt nào trên trang giống nhau và mỗi cụm chữ giữ nét riêng. Màu mực đo từ ảnh chụp một hộp bút thật |
@@ -111,7 +111,7 @@ Bạn được đọc, sửa, chạy và fork theo [PolyForm Noncommercial](./LI
 
 <div align="center">
 
-<img src="docs/demo-reading.jpg" alt="Chế độ sách: trình đọc hai cột toàn màn hình trên nền giấy, có chữ cái đầu lớn, bức thư có chú thích và số trang; bên cạnh là giao diện tối đang hiện gallery 2 nhân 2 tranh Van Gogh phía trên một bảng" width="960">
+<img src="docs/demo-reading.jpg" alt="Chế độ sách: trình đọc hai cột toàn màn hình trên nền giấy, có chữ cái đầu lớn, bức thư đóng khung có chú thích và số trang; bên cạnh là giao diện tối đang hiện gallery 2 nhân 2 tranh Van Gogh phía trên một bảng" width="960">
 
 <sub>Chế độ sách và giao diện tối. Không cái nào là một lớp lọc phủ lên trang. Cả hai đều là chính hệ typography của trang đọc. Font đi kèm có sẵn dấu tiếng Việt và dấu của các tiếng Trung Âu, nên khối mẫu chữ bên trái hiện đúng font chứ không rơi về font hệ thống.</sub>
 
@@ -168,7 +168,7 @@ Nó giữ được như vậy nhờ vài quyết định khó đảo ngược.
 
 <div align="center">
 
-<img src="docs/demo-admin.jpg" alt="Trang quản trị Quire Ink: trình soạn bài với nút gạch dưới và khoanh tròn trên thanh công cụ, câu gạch chì, chữ khoanh đỏ, câu tô sáng và bức thư tay trong bài; bên cạnh là trang cấu hình giao diện với sáu bảng màu và bốn font đọc" width="960">
+<img src="docs/demo-admin.jpg" alt="Trang quản trị Quire Ink: trình soạn bài với nút gạch dưới và khoanh tròn trên thanh công cụ, câu gạch chì, chữ khoanh đỏ, câu tô sáng và bức thư tay đóng khung trong bài; bên cạnh là trang cấu hình giao diện với sáu bảng màu và bốn font đọc" width="960">
 
 <sub>Trang quản trị xoay quanh việc viết: danh sách bài nằm cạnh trang giấy, mọi thứ còn lại mỗi việc một tấm. Bảng màu, font, cỡ chữ, bố cục, menu — tất cả đều là tuỳ chọn, không có cái nào là code.</sub>
 

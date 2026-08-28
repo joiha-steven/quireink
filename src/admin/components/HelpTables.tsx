@@ -16,6 +16,7 @@ const MARKDOWN: Row[] = [
   ['@@word@@', 'Ballpoint ring around a word. @@word@@#blue picks the ink; red without one.'],
   ['text[^1]', 'Footnote reference; define it as [^1]: the note anywhere in the body.'],
   ['![alt](url)', 'Image. Dropping a file into the editor writes this for you.'],
+  ['![alt](url#frame)', 'A mat around that picture. #frame-thin and #frame-thick change the weight, ink makes the mat dark, #noframe keeps one picture plain on a framed site.'],
   ['```lang', 'Fenced code, syntax-highlighted on the server (no client JS).'],
   ['---', 'The one divider style used site-wide.'],
   ['A YouTube / Vimeo URL on its own line', 'Becomes a responsive embedded player.'],
