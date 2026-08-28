@@ -7,7 +7,7 @@ import type { ActivityEntry } from '@/server/activity'
 import { formatDateTimeShort } from '@/utils'
 import { useToast } from '@/admin/ui/Toast'
 import { PageHeader } from './kit'
-import { SHEET, SHEET_TOOL, SheetTop } from './sheet'
+import { SHEET, SHEET_TOOL, SheetTop, SHEET_TOOL_DANGER } from './sheet'
 import { useAdminT } from './I18nProvider'
 
 export function ActivityLog({ entries, enabled }: { entries: ActivityEntry[]; enabled: boolean }) {
@@ -45,7 +45,7 @@ export function ActivityLog({ entries, enabled }: { entries: ActivityEntry[]; en
           <span className={SHEET_TOOL}>{entries.length.toLocaleString()} · {t.logTitle.toLowerCase()}</span>
           <span className="flex-1" />
           {entries.length > 0 && (
-            <button type="button" onClick={clear} disabled={busy} className={SHEET_TOOL}>
+            <button type="button" onClick={clear} disabled={busy} className={SHEET_TOOL_DANGER}>
               {t.logClear}
             </button>
           )}

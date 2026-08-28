@@ -12,7 +12,7 @@ import { ImageUploader } from './ImageUploader'
 import { MediaToolbar, type MediaSort } from './MediaToolbar'
 import {EmptyState } from './kit'
 import { useAdminT, useAdminLang } from './I18nProvider'
-import { SHEET_TOOL } from './sheet'
+import { SHEET_TOOL, SHEET_TOOL_DANGER } from './sheet'
 import { MediaCard } from './MediaCard'
 
 type Props = {
@@ -269,7 +269,7 @@ export function MediaLibrary({ mode = 'page', multi = false, onSelect, onSelectM
               <button
                 type="button"
                 onClick={deleteSelected}
-                className="text-xs font-medium text-neutral-700 transition hover:text-black dark:text-neutral-300 dark:hover:text-white"
+                className={SHEET_TOOL_DANGER}
               >
                 {t.deleteSelected} ({selected.size})
               </button>
@@ -288,7 +288,7 @@ export function MediaLibrary({ mode = 'page', multi = false, onSelect, onSelectM
                 type="button"
                 onClick={deleteAllUnused}
                 disabled={deletingAll}
-                className="text-xs font-medium text-neutral-700 transition hover:text-black disabled:opacity-50 dark:text-neutral-300 dark:hover:text-white"
+                className={SHEET_TOOL_DANGER}
               >
                 {t.deleteAllUnused} ({unused.size})
               </button>

@@ -38,11 +38,27 @@
   --c-rule: #e9e9e4;
   /* The product's highlighter — the admin's ONE accent, taken from the Writing Desk mock:
      a search hit wears it as a <mark>, and the small dots that mean "work in progress"
-     (a draft's row, the unsaved state) are its edge tone. Everything else stays
-     monochrome; a second use of colour spends the only signal that means "your words". */
+     (a draft's row, the unsaved state) are its edge tone.
+
+     THE SECOND INK, owner's call 2026-08-29: the red ballpoint. It arrives with an argument
+     the old rule did not have an answer to — the admin now has a wordmark in three colours
+     (ink, red, highlighter), so "monochrome plus one" had stopped describing the product
+     anyway. What matters is that the colours are NOT decoration: they are the five inks this
+     software is about, and each keeps on screen the meaning it has on paper. Highlighter is
+     what you mark as worth returning to. Red ballpoint is what you strike OUT — so it dresses
+     the actions that destroy something, and nothing else. Graphite is the pencil: a note
+     beside the words, which is what secondary text already is.
+
+     A colour that means one thing is still a signal. A palette is not. The test for a third
+     use is the same as it always was: what does this ink MEAN on a page? */
   --pen: #d5f856;
   --pen-edge: #c3e844;
   --on-pen: #2c3208;
+  /* PEN_AUX_LIGHT in `src/render/pen.ts` — the one source, measured off a photograph of a
+     real pen box. Not re-typed by eye: the values are the product's own. */
+  --pen-red: #c23b2b;
+  --pen-red-soft: #fbeceb;
+  --pen-graphite: #5b574f;
 }
 .dark {
   --c-meta: #85858c;
@@ -50,6 +66,11 @@
   --pen: #7e7028;
   --pen-edge: #93832f;
   --on-pen: #f6f2dd;
+  /* PEN_AUX_DARK: brighter than a naive darkening, because a LINE owes the page visibility
+     rather than a text-contrast ceiling — the same argument `pen.ts` makes for the underline. */
+  --pen-red: #a3524a;
+  --pen-red-soft: #2a1a18;
+  --pen-graphite: #8f8a80;
 }
 /* Two newspaper columns inside a sheet, with the rule a paper would draw between them.
    For lists of SHORT rows (comments, subscriber addresses): one column left half the

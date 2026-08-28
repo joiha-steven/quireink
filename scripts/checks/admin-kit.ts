@@ -154,6 +154,12 @@ for (const rule of RULES) {
  * the owner is scrolling past is genuinely one: the editor's action header earns it, a picker
  * sitting still in a form does not.
  */
+// STILL `sm|md`, and the card's new contact step does not need this widened — which is the
+// point worth writing down. Those two are the shadows of a card PRETENDING to float while
+// sitting in the flow, which is the costume this guards against. `lg` and above are what a
+// real overlay wears, and the admin has three: the slash menu, the bubble bar, the date
+// picker. The card's own step (2026-08-29) is an arbitrary 1px of contact at 4% — an edge,
+// not a lift — so it was never one of these and the guard did not have to move for it.
 const RAISED = /bg-white[^'"`\n]*\bshadow-(sm|md)\b/
 const PINNED = /\b(sticky|fixed)\b/
 for (const file of files) {

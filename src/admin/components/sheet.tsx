@@ -56,6 +56,25 @@ export const SHEET_TOOL =
  */
 export const SHEET_TOOL_ON_CANVAS = SHEET_TOOL.replace('text-neutral-500', 'text-neutral-600')
 
+/**
+ * The same tool, in red ballpoint, for one that DESTROYS something.
+ *
+ * "Restore" and "Delete permanently" sat side by side in the Trash wearing the identical
+ * class — the same size, the same weight, the same grey — with a native `confirm()` as the
+ * only thing between a mis-tap and a post that is gone. Nothing on the row said which of the
+ * two was the one you cannot undo.
+ *
+ * DERIVED, not re-typed, for the reason `SHEET_TOOL_ON_CANVAS` is: the two must differ by
+ * exactly one thing — the ink — and a hand-written copy drifts on the other five within a
+ * month. The ink is the product's own red ballpoint (`--pen-red`, PEN_AUX_LIGHT in
+ * `render/pen.ts`), which is what you strike a line through something with on paper.
+ */
+export const SHEET_TOOL_DANGER = SHEET_TOOL
+  .replace('text-neutral-500', 'text-[var(--pen-red)]')
+  .replace('hover:text-neutral-900', 'hover:text-[var(--pen-red)] hover:underline')
+  .replace('dark:text-neutral-400', 'dark:text-[var(--pen-red)]')
+  .replace('dark:hover:text-neutral-200', 'dark:hover:text-[var(--pen-red)]')
+
 /** The sheet's first row: the page's tools on one thin band over a hairline. */
 export function SheetTop({ children }: { children: ReactNode }) {
   return (

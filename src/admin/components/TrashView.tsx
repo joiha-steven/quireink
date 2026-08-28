@@ -10,7 +10,7 @@ import type { Post, Page, MediaItem, FileItem, AdminComment, ApiResponse } from 
 import { useToast } from '@/admin/ui/Toast'
 import { formatDateTimeShort } from '@/utils'
 import { EmptyState, NOTE_TEXT, PageHeader, Tabs } from './kit'
-import { SHEET, SHEET_FOOT, SHEET_TOOL, SheetTop } from './sheet'
+import { SHEET, SHEET_FOOT, SHEET_TOOL, SHEET_TOOL_DANGER, SheetTop } from './sheet'
 import { useAdminT } from './I18nProvider'
 
 type Kind = 'posts' | 'pages' | 'media' | 'files' | 'comments' | 'subscribers'
@@ -125,7 +125,7 @@ export function TrashView({
           <Tabs tabs={tabs} value={tab} onChange={setTab} size="sm" />
           <span className="flex-1" />
           {counts[tab] > 0 && (
-            <button type="button" onClick={() => onEmpty(tab)} disabled={pending} className={SHEET_TOOL}>
+            <button type="button" onClick={() => onEmpty(tab)} disabled={pending} className={SHEET_TOOL_DANGER}>
               {t.emptyTrash}
             </button>
           )}
@@ -160,7 +160,7 @@ export function TrashView({
             <button type="button" onClick={() => onRestore(kind, id)} disabled={pending} className={SHEET_TOOL}>
               {t.restore}
             </button>
-            <button type="button" onClick={() => onPurge(kind, id)} disabled={pending} className={SHEET_TOOL}>
+            <button type="button" onClick={() => onPurge(kind, id)} disabled={pending} className={SHEET_TOOL_DANGER}>
               {t.deletePermanently}
             </button>
           </span>
