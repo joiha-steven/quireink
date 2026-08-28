@@ -33,6 +33,19 @@ the title always paints instantly in a fallback and the web font swaps in. `<lin
 rel="preload">` exists ONLY to remove that one swap on the LCP title — so we preload exactly
 the file(s) that paint it, and nothing else.
 
+**The swap must move nothing, and that takes TWO fallback twins per family.** Every text
+family declares metric-matched twins (`FALLBACKS` in `src/render/font-faces.ts`) — a local
+face reshaped with `size-adjust` / `ascent-override` / `descent-override` to the shipped
+family's own measurements, so the line breaks during the swap window are the line breaks
+after it. The first twin is Georgia or Arial and covers macOS, Windows and iOS. **The second
+is Noto Serif or Roboto and covers Android, which has neither of the first two** — without
+it `local()` misses, the stack falls through to an unadjusted generic, and the swap reflows
+the page: measured 2026-08-28 on the demo at 390px, the document stood **6,390px against
+6,921px**, so everything below the first block sat half a screen too high and then dropped.
+The numbers come from `scripts/ops/font-fallback-metrics.py`, which measures both twins;
+each needs its OWN, because one `size-adjust` cannot describe two local faces of different
+width. Order in the stack is the platform test — first name the device HAS, wins.
+
 **The rule — one place, `fontPreloadHrefs(fontPreset, language, hasCustomFont, chromeFont)`
 in `src/content/fonts.ts`, called once in `src/web/layout.ts`:**
 
