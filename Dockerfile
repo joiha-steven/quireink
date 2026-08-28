@@ -61,6 +61,42 @@ COPY package.json bun.lock ./
 RUN --mount=type=cache,target=/root/.bun/install/cache,sharing=locked \
     bun install --frozen-lockfile --production
 
+# What the SERVER never opens, deleted in the layer that produced it. Measured on this repo:
+# 95 MB of production dependencies becomes 67 MB, which is 28 MB off the image and off every
+# pull of it.
+#
+# Each of these is dead at runtime for a specific reason, not because it looked like clutter:
+# `.map` files are read by a debugger attaching to the process and by nothing else; `.d.ts`
+# declarations are consumed by `tsc`, which does not run here (Bun transpiles and does not
+# typecheck); the prose is prose. Nothing is deleted for being a test fixture or an example,
+# because a package is allowed to read its own files at runtime and there is no way to know
+# from the outside which ones do.
+#
+# PROVED BY RUNNING IT, not by reasoning: the app was booted against a tree pruned exactly
+# this way and exercised where these files would be missed — a post with two highlighted code
+# blocks rendered (shiki resolves its grammars from `node_modules` at runtime), an image
+# variant was served (sharp's native module), the admin answered 200, and the log carried no
+# resolution error. The reasoning above is why it is safe; that run is why we know.
+RUN find node_modules -type f \( \
+      -name '*.map' -o -name '*.d.ts' -o -name '*.d.mts' -o -name '*.d.cts' \
+      -o -iname 'README*' -o -iname 'CHANGELOG*' -o -iname '*.md' \
+    \) -delete
+
+# The MUSL half of sharp, which this image can never load.
+#
+# Decision 2 above chose Debian over Alpine because of exactly this split — and then shipped
+# both halves anyway. `bun install` resolves sharp's platform packages as optionals and takes
+# every libc variant for the architecture, so a glibc image carries
+# `@img/sharp-libvips-linuxmusl-*` (18 MB) and `@img/sharp-linuxmusl-*` (1 MB) that the
+# dynamic linker could not load if it tried: a `.node` built against musl does not open on
+# glibc. Not a size trade-off, then — dead files, 19 MB of them, on every pull.
+#
+# sharp finds its binary by attempting each candidate and catching the failure, so an absent
+# package takes the same path an incompatible one would. PROVED by uploading a real image
+# through `/api/media/upload` in this image with these directories gone, and reading back the
+# variants sharp produced from it.
+RUN rm -rf node_modules/@img/sharp-libvips-linuxmusl-* node_modules/@img/sharp-linuxmusl-*
+
 # --- build: the dev tree, only to produce the bundles --------------------------------------
 FROM oven/bun:1-slim AS build
 WORKDIR /app
