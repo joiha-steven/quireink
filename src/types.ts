@@ -1,5 +1,5 @@
 import type {
-  AiSettings, McpSettings, HomeSettings, GallerySettings,
+  AiSettings, McpSettings, HomeSettings, GallerySettings, FigureSettings,
   CacheSettings, InkSettings, MotionSettings, BackupSettings,
 } from '@/types-settings'
 // Core domain types shared across the app.
@@ -224,6 +224,7 @@ export type SiteSettings = {
   typography: TypographySettings // type scale + reading rhythm → CSS vars (--fs-*, --lh-body, --ls-body)
   customFont: FontSettings // owner-uploaded typeface (files/); '' = bundled Inter
   home: HomeSettings // what `/` serves, and where the post list lives when it is not there
+  figure: FigureSettings // site-wide default frame for every picture
   gallery: GallerySettings // site-wide default shape + caption state for in-body galleries
   seo: SeoSettings // SEO / crawler feature toggles
   features: FeatureSettings // reader-facing feature toggles

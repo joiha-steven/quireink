@@ -20,6 +20,7 @@ import { MOBILE_CSS } from '@/web/mobile.css'
 import { PROSE_CSS } from '@/web/prose.css'
 import { FRONT_CSS } from '@/web/front.css'
 import { UTILITY_CSS } from '@/web/utility.css'
+import { FIGURE_CSS } from '@/web/figure.css'
 import { PRINT_CSS } from '@/web/print.css'
 
 const BASE_CSS = `
@@ -298,46 +299,6 @@ aside.series li[aria-current]{color:var(--c-heading);font-weight:600}
 p.tags{margin-top:1.5rem;font-size:var(--fs-small);line-height:var(--lh-small);
   letter-spacing:var(--ls-small);color:var(--c-meta)}
 
-figure{margin:calc(var(--sp) * 2) 0}
-figure img{display:block;margin:0 auto;border-radius:.5rem}
-figcaption{color:var(--c-meta);font-size:var(--fs-caption);line-height:var(--lh-caption);
-  letter-spacing:var(--ls-caption);text-align:center;margin-top:calc(var(--sp) * .5)}
-.img-left img{margin-left:0}
-.img-right img{margin-right:0}
-.img-wide{margin-left:calc(-1 * clamp(0px,4vw,4rem));margin-right:calc(-1 * clamp(0px,4vw,4rem))}
-/* A 30% figure (#third). Alone it is a small centred plate; with an align it floats and the
-   words run around it, magazine-fashion — the one fragment that changes how TEXT lays out.
-   The img fills its figure, so the figure's width is the whole geometry. Floats exist
-   nowhere else in the prose, so headings and the footnote rule clear them: a section
-   boundary should never wrap around a picture from the section before. */
-.img-third{width:30%}
-.img-third img{width:100%}
-.img-center.img-third{margin-left:auto;margin-right:auto}
-.img-left.img-third{float:left;margin:calc(var(--sp) * .35) var(--sp) calc(var(--sp) * .5) 0}
-.img-right.img-third{float:right;margin:calc(var(--sp) * .35) 0 calc(var(--sp) * .5) var(--sp)}
-.img-left.img-third figcaption,.img-right.img-third figcaption{text-align:left}
-.prose h2,.prose h3,.prose .fn-rule{clear:both}
-.prose::after{content:"";display:table;clear:both}
-.gallery{display:grid;gap:calc(var(--sp) * .5);margin:calc(var(--sp) * 2) 0}
-.gallery figure{margin:0}
-.gallery-cols-2{grid-template-columns:repeat(2,1fr)}
-.gallery-cols-3{grid-template-columns:repeat(3,1fr)}
-.gallery-cols-4{grid-template-columns:repeat(4,1fr)}
-/* Gallery shape and captions, as VARIABLES, so two places can set them without either
-   knowing about the other: the site default on :root (pageStyles, from settings) and a
-   per-gallery override on the tile, which wins on specificity. The var() fallbacks are what
-   a gallery did before any of this existed, so an untouched site is unchanged.
-   picture is inline, and an inline box is a poor containing block for a percentage width. */
-.gallery picture{display:block}
-.gallery figure img{aspect-ratio:var(--gallery-ratio,auto);width:var(--gallery-w,auto);object-fit:cover}
-.gallery figcaption{display:var(--gallery-cap,block)}
-/* Width rides with the ratio: a cropped tile fills its cell, an uncropped one must not. */
-.gallery .g-asis{--gallery-ratio:auto;--gallery-w:auto}
-.gallery .g-1x1{--gallery-ratio:1/1;--gallery-w:100%}
-.gallery .g-3x2{--gallery-ratio:3/2;--gallery-w:100%}
-.gallery .g-4x3{--gallery-ratio:4/3;--gallery-w:100%}
-.gallery .g-cap{--gallery-cap:block}
-.gallery .g-nocap{--gallery-cap:none}
 
 .video-embed,.video-file{margin:calc(var(--sp) * 2) 0}
 .video-embed{position:relative;padding-top:56.25%}
@@ -385,6 +346,8 @@ footer.site a:hover{color:var(--c-text)}
  * to win against everything above, on paper, and it can only affect paper.
  */
 export const PUBLIC_CSS = `${BASE_CSS}
+
+${FIGURE_CSS}
 
 ${RAIL_CSS}
 ${ISLANDS_CSS}

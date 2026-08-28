@@ -37,7 +37,21 @@ const RATIO_LABEL: Record<string, string> = { '1x1': '1:1', '3x2': '3:2', '4x3':
 // figure cannot be 30% of the column and wider than it at once.
 type Size = '' | 'third' | 'wide'
 
-type Frag = { clean: string; align: Align; size: Size; grid: boolean } & GridOpts
+// The frame is a mat of paper (or of ink) around the picture. Weight is one four-valued
+// choice rather than a boolean plus a size, because "framed" and "how thick" are the same
+// decision — you cannot be framed at no thickness. '' is unframed, which is the default and
+// writes no token at all.
+// '' is SILENCE — follow whatever the site setting says — and 'none' is this picture saying
+// plain out loud. Both are needed the moment a site default exists to disagree with, which
+// is the same shape the gallery ratio and caption switches already have.
+type FrameWeight = '' | 'none' | 'thin' | 'frame' | 'thick'
+const FRAME_WEIGHTS: FrameWeight[] = ['', 'none', 'thin', 'frame', 'thick']
+// Paper or ink is three-valued for the same reason: '' follows the site.
+type FrameInk = '' | 'paper' | 'ink'
+const FRAME_INKS: FrameInk[] = ['', 'paper', 'ink']
+type Frame = { weight: FrameWeight; ink: FrameInk }
+
+type Frag = { clean: string; align: Align; size: Size; grid: boolean } & GridOpts & Frame
 
 function parseFrag(src: string): Frag {
   const [clean, frag = ''] = src.split('#')
@@ -53,14 +67,29 @@ function parseFrag(src: string): Frag {
     grid: tokens.includes('grid'),
     ratio: RATIOS.find((r) => r !== '' && tokens.includes(r)) ?? '',
     caption: CAPTIONS.find((c) => c !== '' && tokens.includes(c)) ?? '',
+    // `thin` and `thick` mean nothing without `frame` beside them, exactly as the renderer
+    // reads them: a stray `#thick` on some imported URL must not frame anything.
+    weight: tokens.includes('noframe')
+      ? 'none'
+      : tokens.includes('frame')
+        ? (tokens.includes('thin') ? 'thin' : tokens.includes('thick') ? 'thick' : 'frame')
+        : '',
+    ink: !tokens.includes('frame') ? '' : tokens.includes('ink') ? 'ink' : tokens.includes('paper') ? 'paper' : '',
   }
 }
 
 // `grid` is exclusive — a gallery item ignores align/size (the grid lays it out).
 function buildSrc(clean: string, f: Omit<Frag, 'clean'>): string {
+  // The frame rides along with EITHER shape. A gallery of framed tiles is a real thing to
+  // want, and the grid still owns the layout; the frame is only the picture's own edge.
+  const frame = f.weight === ''
+    ? []
+    : f.weight === 'none'
+      ? ['noframe']
+      : [f.weight === 'frame' ? 'frame' : `frame-${f.weight}`, f.ink]
   const marker = f.grid
-    ? ['grid', f.ratio, f.caption].filter(Boolean).join('-')
-    : [f.align !== 'center' ? f.align : '', f.size].filter(Boolean).join('-')
+    ? ['grid', f.ratio, f.caption, ...frame].filter(Boolean).join('-')
+    : [f.align !== 'center' ? f.align : '', f.size, ...frame].filter(Boolean).join('-')
   return marker ? `${clean}#${marker}` : clean
 }
 
@@ -106,14 +135,21 @@ function CaptionedImageView({ node, updateAttributes, selected, editor, getPos }
   const t = useAdminT()
   const src = (node.attrs.src as string) || ''
   const caption = (node.attrs.alt as string) || ''
-  const { clean, align, size, grid, ratio, caption: cap } = parseFrag(src)
+  const { clean, align, size, grid, ratio, caption: cap, weight, ink } = parseFrag(src)
 
   // Setting align/size implies leaving grid mode; setGrid toggles membership. All three
   // stay per-image: pulling one photo out of a gallery is about that photo.
-  const rest = { align, size, grid, ratio, caption: cap }
+  const rest = { align, size, grid, ratio, caption: cap, weight, ink }
   const setAlign = (a: Align) => updateAttributes({ src: buildSrc(clean, { ...rest, align: a, grid: false }) })
   const setSize = (s: Size) => updateAttributes({ src: buildSrc(clean, { ...rest, size: s, grid: false }) })
   const setGrid = (g: boolean) => updateAttributes({ src: buildSrc(clean, { ...rest, grid: g }) })
+  // Turning the frame off turns the ink off with it: an unframed picture has no mat to be
+  // made of ink, and leaving `ink` set would surprise whoever framed it again later.
+  // Leaving the frame behind takes the mat's colour with it: there is no mat left for it to
+  // describe, and a stale `ink` would surprise whoever framed the picture again later.
+  const framed = (w: FrameWeight) => w !== '' && w !== 'none'
+  const setWeight = (v: FrameWeight) => updateAttributes({ src: buildSrc(clean, { ...rest, weight: v, ink: framed(v) ? ink : '' }) })
+  const setInk = (v: FrameInk) => updateAttributes({ src: buildSrc(clean, { ...rest, weight: framed(weight) ? weight : 'frame', ink: v }) })
 
   const setGalleryOpts = (opts: Partial<GridOpts>) => {
     const pos = getPos()
@@ -165,6 +201,34 @@ function CaptionedImageView({ node, updateAttributes, selected, editor, getPos }
                   {t.imgGrid}
                 </button>
               </div>
+              {/* The frame, and it is deliberately the LAST group in both shapes: it is the
+                  only choice here that does not move the picture, so it reads as trim rather
+                  than as layout. Ink is a separate toggle rather than a fifth weight, because
+                  the mat's colour and its thickness are two questions. */}
+              <div className={group}>
+                {FRAME_WEIGHTS.map((v) => (
+                  <button
+                    key={v || 'site'}
+                    type="button"
+                    onClick={() => setWeight(v)}
+                    className={btn(weight === v)}
+                  >
+                    {v === '' ? t.imgDefault
+                      : v === 'none' ? t.imgFrameNone
+                        : v === 'thin' ? t.imgFrameThin
+                          : v === 'frame' ? t.imgFrameMedium : t.imgFrameThick}
+                  </button>
+                ))}
+              </div>
+              {framed(weight) && (
+                <div className={group}>
+                  {FRAME_INKS.map((v) => (
+                    <button key={v || 'site'} type="button" onClick={() => setInk(v)} className={btn(ink === v)}>
+                      {v === '' ? t.imgDefault : v === 'paper' ? t.imgFramePaper : t.imgFrameInk}
+                    </button>
+                  ))}
+                </div>
+              )}
             </>
           ) : (
             <>
@@ -197,6 +261,34 @@ function CaptionedImageView({ node, updateAttributes, selected, editor, getPos }
                   {t.imgGrid}
                 </button>
               </div>
+              {/* The frame, and it is deliberately the LAST group in both shapes: it is the
+                  only choice here that does not move the picture, so it reads as trim rather
+                  than as layout. Ink is a separate toggle rather than a fifth weight, because
+                  the mat's colour and its thickness are two questions. */}
+              <div className={group}>
+                {FRAME_WEIGHTS.map((v) => (
+                  <button
+                    key={v || 'site'}
+                    type="button"
+                    onClick={() => setWeight(v)}
+                    className={btn(weight === v)}
+                  >
+                    {v === '' ? t.imgDefault
+                      : v === 'none' ? t.imgFrameNone
+                        : v === 'thin' ? t.imgFrameThin
+                          : v === 'frame' ? t.imgFrameMedium : t.imgFrameThick}
+                  </button>
+                ))}
+              </div>
+              {framed(weight) && (
+                <div className={group}>
+                  {FRAME_INKS.map((v) => (
+                    <button key={v || 'site'} type="button" onClick={() => setInk(v)} className={btn(ink === v)}>
+                      {v === '' ? t.imgDefault : v === 'paper' ? t.imgFramePaper : t.imgFrameInk}
+                    </button>
+                  ))}
+                </div>
+              )}
             </>
           )}
         </div>
@@ -211,7 +303,18 @@ function CaptionedImageView({ node, updateAttributes, selected, editor, getPos }
             ? { aspectRatio: ratio.replace('x', ' / '), objectFit: 'cover' }
             : undefined
         }
-        className={`w-full rounded-lg ${selected ? 'ring-2 ring-neutral-900 dark:ring-white' : ''}`}
+        // The frame is DRAWN HERE, not just recorded: the same padding-on-the-img trick the
+        // public sheet uses, so choosing a weight is a decision you can see. The colours are
+        // the admin's own — this is a preview of the shape, and the mat takes the reader's
+        // paper colour on the site, which the admin has no token for.
+        className={[
+          'w-full rounded-lg',
+          weight === 'thin' ? 'p-2' : weight === 'frame' ? 'p-4' : weight === 'thick' ? 'p-7' : '',
+          !framed(weight) ? '' : ink === 'ink'
+            ? 'border border-neutral-900 bg-neutral-900 dark:border-neutral-100 dark:bg-neutral-100'
+            : 'border border-neutral-300 bg-white dark:border-neutral-600 dark:bg-neutral-900',
+          selected ? 'ring-2 ring-neutral-900 dark:ring-white' : '',
+        ].filter(Boolean).join(' ')}
       />
       <input
         value={caption}

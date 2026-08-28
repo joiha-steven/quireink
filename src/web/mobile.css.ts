@@ -65,6 +65,13 @@ footer.site a{display:inline-block;padding-block:.35rem}
    a full-width plate, which is the part of its meaning a phone can keep.
    Doubled class selectors, not a bare .img-third: the float rules are two-class strong and
    source order alone would lose to them. */
+/* A frame costs the picture twice its width on every side, and the column is 350px here.
+   28px of mat each way leaves a 294px photograph, which is a picture of a frame. Every
+   weight drops on a phone, and redefining the STEPS rather than the classes is what also
+   moves the site-wide default: that default is inlined after this sheet and points at these
+   same names, so it lands here too instead of outranking the media query. */
+:root{--fig-step-thin:calc(var(--sp) * .375);--fig-step-med:calc(var(--sp) * .625);
+  --fig-step-thick:var(--sp)}
 .img-third,.img-left.img-third,.img-right.img-third{float:none;width:60%;
   margin:calc(var(--sp) * 2) auto}
 }

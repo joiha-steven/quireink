@@ -86,6 +86,29 @@ export type FrontStrip = {
  * overrides these. One that says nothing follows them, which is what makes a whole
  * imported site fixable from one screen.
  */
+/**
+ * The frame every picture wears unless it says otherwise, site-wide.
+ *
+ * Same contract as GallerySettings below and for the same reason: applied as CSS variables,
+ * never baked into the markup, because a rendered body is cached under a hash of its INPUT —
+ * a default that rewrote HTML would leave every already-rendered post showing the old frame
+ * until something unrelated evicted it. Here it also means the setting is instant: change it
+ * and every picture on the site is reframed on the next paint, with nothing re-rendered.
+ *
+ * A picture that names its own frame in the fragment (`#frame-thick`, `#noframe`) overrides
+ * this. One that says nothing follows it — which is the point, and the same reason the
+ * gallery defaults exist: an imported archive is fixed from one screen rather than one
+ * picture at a time.
+ *
+ * `none` at install, deliberately. A frame is a decision about a site's voice, and arriving
+ * with one already made is the kind of default nobody asked for.
+ */
+export type FigureSettings = {
+  frame: 'none' | 'thin' | 'medium' | 'thick'
+  /** The mat is ink instead of paper. It inverts by itself in dark mode. */
+  ink: boolean
+}
+
 export type GallerySettings = {
   /** '' = the photos keep their own proportions, so rows are as tall as their tallest tile. */
   ratio: '' | '1x1' | '3x2' | '4x3'

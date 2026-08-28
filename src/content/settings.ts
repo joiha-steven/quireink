@@ -10,7 +10,7 @@ import { one, run } from '@/store/query'
 import { isSiteLang } from '@/locales/langs'
 import { DEFAULT_PRESET_ID, isPresetId, isFontPresetId, defaultThemes, ALL_PALETTE_IDS, DEFAULT_FONT, DEFAULT_FONT_PRESET, isChromeFontId, DEFAULT_CHROME_FONT, isScheme, getFontPreset } from '@/content/themes'
 import {
-  DEFAULT_HOME, DEFAULT_GALLERY, sanitizeMenu, migrateThemes, sanitizeThemes, sanitizeEnabledPalettes, sanitizeSeo, sanitizeFeatures, sanitizeHome, sanitizeGallery, sanitizeMcp, sanitizeMotion, sanitizeCache,
+  DEFAULT_HOME, DEFAULT_GALLERY, DEFAULT_FIGURE, sanitizeMenu, migrateThemes, sanitizeThemes, sanitizeEnabledPalettes, sanitizeSeo, sanitizeFeatures, sanitizeHome, sanitizeGallery, sanitizeFigure, sanitizeMcp, sanitizeMotion, sanitizeCache,
   sanitizeBackups, sanitizeComments, sanitizeCss, sanitizeUrl, clampNumber, sanitizeFeatured,
   sanitizeTimezone, sanitizeAi, sanitizeInks,
 } from '@/content/settings-sanitize'
@@ -130,6 +130,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   typography: INSTALL_TYPOGRAPHY,
   customFont: DEFAULT_FONT,
   home: DEFAULT_HOME,
+  figure: DEFAULT_FIGURE,
   gallery: DEFAULT_GALLERY,
   seo: DEFAULT_SEO,
   features: DEFAULT_FEATURES,
@@ -206,6 +207,7 @@ export async function getSettings(): Promise<SiteSettings> {
       seo: { ...seo, ogFallbackImage: expandBlob(seo.ogFallbackImage) },
       features: sanitizeFeatures(stored.features, DEFAULT_FEATURES),
       home: sanitizeHome(stored.home, DEFAULT_SETTINGS.home),
+      figure: sanitizeFigure(stored.figure, DEFAULT_FIGURE),
       gallery: sanitizeGallery(stored.gallery, DEFAULT_GALLERY),
       comments: sanitizeComments(stored.comments, DEFAULT_COMMENTS),
       mcp: sanitizeMcp(stored.mcp, DEFAULT_SETTINGS.mcp),
@@ -334,6 +336,7 @@ export async function saveSettings(input: Partial<SiteSettings>): Promise<SiteSe
     seo: sanitizeSeo(input.seo, current.seo),
     features: sanitizeFeatures(input.features, current.features),
     home: sanitizeHome(input.home, current.home),
+    figure: sanitizeFigure(input.figure, current.figure),
     gallery: sanitizeGallery(input.gallery, current.gallery),
     comments: sanitizeComments(input.comments, current.comments),
     mcp: sanitizeMcp(input.mcp, current.mcp),

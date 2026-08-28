@@ -2,7 +2,7 @@
 // back-compat shims). No DB, no Blob, no React. settings.ts depends on this ONE
 // WAY (settings -> settings-sanitize, never back) for its getSettings/saveSettings merge.
 
-import type { BackupSettings, CacheSettings, CommentSettings, FeatureSettings, GallerySettings, HomeSettings, McpSettings, MenuItem, MotionSettings, SeoSettings, ThemeColors, ThemeSettings, AiSettings, InkSettings, KeyFeedback } from '@/types'
+import type { BackupSettings, CacheSettings, CommentSettings, FeatureSettings, GallerySettings, FigureSettings, HomeSettings, McpSettings, MenuItem, MotionSettings, SeoSettings, ThemeColors, ThemeSettings, AiSettings, InkSettings, KeyFeedback } from '@/types'
 import { DEFAULT_PRESET_ID, isPresetId, defaultThemes, THEME_PRESETS } from '@/content/themes'
 
 // Keep only well-formed menu items (label + href both present).
@@ -224,6 +224,25 @@ export function sanitizeHome(input: unknown, fallback: HomeSettings): HomeSettin
     page: typeof o.page === 'string' ? o.page.trim().replace(/^\/+/, '').slice(0, 200) : fallback.page,
     listPath: sanitizeListPath(o.listPath, fallback.listPath),
     front: sanitizeFront(o.front, fallback.front),
+  }
+}
+
+/** The frame weights. Must match the tokens frameClasses() reads in render/post-content.ts. */
+const FIGURE_FRAMES = ['none', 'thin', 'medium', 'thick'] as const
+
+export const DEFAULT_FIGURE: FigureSettings = {
+  // What a picture did before this setting existed, so an upgrade changes nothing — and the
+  // right answer for a fresh install too: a frame is a decision about a site's voice.
+  frame: 'none',
+  ink: false,
+}
+
+export function sanitizeFigure(input: unknown, fallback: FigureSettings): FigureSettings {
+  const o = (input ?? {}) as Partial<FigureSettings>
+  const frame = FIGURE_FRAMES.find((f) => f === o.frame)
+  return {
+    frame: frame ?? fallback.frame,
+    ink: bool(o.ink, fallback.ink),
   }
 }
 

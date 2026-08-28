@@ -11,7 +11,7 @@
 //     (`scripts/build-assets.ts`), so a listing pays for the beacon and the header alone
 //     and an article adds one more file. Nothing is inlined, and there is no framework.
 
-import type { GallerySettings, SiteSettings, FeatureSettings, InkSettings } from '@/types'
+import type { GallerySettings, FigureSettings, SiteSettings, FeatureSettings, InkSettings } from '@/types'
 import { fontPreloadHrefs, fontPresetCss, chromeFontCss, themesToCss } from '@/content/themes'
 import { cjkLangCss } from '@/content/fonts'
 import { typographyToCss, fontToCss, resolveAppIcon } from '@/content/settings'
@@ -117,6 +117,22 @@ function penGesturesCss(f: FeatureSettings): string {
   return parts.join('')
 }
 
+/**
+ * The site-wide frame, as the four variables `figure img` reads when a picture names none.
+ *
+ * Points at `--fig-step-*` rather than at a length: this block is inlined AFTER the linked
+ * sheet, so a length here would outrank the phone's media query and a thick default would
+ * keep its desktop mat in a 350px column. See figure.css.ts.
+ */
+function figureCss(f: FigureSettings): string {
+  if (f.frame === 'none') return '' // the default default: nothing to say, so nothing is said
+  const pad = f.frame === 'thin' ? '--fig-step-thin' : f.frame === 'thick' ? '--fig-step-thick' : '--fig-step-med'
+  const mat = f.ink ? 'var(--c-heading)' : 'var(--c-bg)'
+  const line = f.ink ? 'var(--c-heading)' : 'color-mix(in srgb,var(--c-rule),var(--c-meta) 35%)'
+  return `:root{--fig-default-pad:var(${pad});--fig-default-mat:${mat};`
+    + `--fig-default-bw:1px;--fig-default-line:var(--c-rule);--fig-default-line:${line}}`
+}
+
 function galleryCss(g: GallerySettings): string {
   const parts = [
     g.ratio ? `--gallery-ratio:${g.ratio.replace('x', '/')};--gallery-w:100%` : '',
@@ -160,6 +176,7 @@ export function pageStyles(settings: SiteSettings, extra = ''): string {
     // The site default for galleries. In CSS on purpose: rendered Markdown is cached under
     // a hash of its input, so a default that changed the MARKUP would leave every body that
     // was already rendered serving the old shape until something unrelated evicted it.
+    figureCss(settings.figure),
     galleryCss(settings.gallery),
     // The pen toggles, on the same terms as the gallery above.
     penGesturesCss(settings.features),
