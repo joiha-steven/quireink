@@ -86,7 +86,7 @@ export function FileLibrary() {
           aria-label={f.filename}
         />
       )}
-      <span className="flex h-9 w-12 shrink-0 items-center justify-center rounded bg-neutral-100 text-xs font-bold text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400">
+      <span className="flex h-9 w-12 shrink-0 items-center justify-center rounded-md bg-neutral-100 text-xs font-bold text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400">
         {ext(f)}
       </span>
       <div className="min-w-0 flex-1">

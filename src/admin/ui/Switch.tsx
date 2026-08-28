@@ -86,6 +86,9 @@ export function CheckField({
         checked={checked}
         disabled={disabled}
         onChange={(e) => onChange(e.target.checked)}
+        // 4px, NOT the 6px control step, and this is the one place that exception is right:
+        // 6px on a 16px box is a 38% corner, which reads as a blob rather than as a checkbox.
+        // The hierarchy is about sheets, panels and controls the size of a button.
         className={`h-4 w-4 shrink-0 rounded border-neutral-300 dark:border-neutral-600 ${CHECK}`}
       />
       {label}

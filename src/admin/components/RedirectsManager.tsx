@@ -86,7 +86,7 @@ export function RedirectsManager() {
                 <span className="mx-1.5 text-neutral-500 dark:text-neutral-400">→</span>
                 <code className="text-neutral-600 dark:text-neutral-400">{r.destination}</code>
               </span>
-              <span className="shrink-0 rounded border border-neutral-200 px-1.5 py-0.5 text-xs text-neutral-500 dark:border-neutral-700 dark:text-neutral-400">
+              <span className="shrink-0 rounded-md border border-neutral-200 px-1.5 py-0.5 text-xs text-neutral-500 dark:border-neutral-700 dark:text-neutral-400">
                 {r.permanent ? '301' : '302'}
               </span>
               <button

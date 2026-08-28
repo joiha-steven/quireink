@@ -93,6 +93,17 @@ character and none of its typographic rules **except one**, below.
 - **Square corners are a PUBLIC rule.** Admin uses a 10 / 8 / 6px radius hierarchy — sheet,
   nested panel, control — never a global square reset, never arbitrary per-component rounding.
   It was 16 / 12 / 8; a 16px radius on a 1200px panel reads as a pill rather than as a page.
+  **Audited by measurement 2026-08-28**, because a rule nobody checks is a wish: every
+  computed radius across eighteen admin screens, counted. It found Tailwind's BARE `rounded`
+  (4px, not a step in this hierarchy) on 108 chips, badges and thumbnails, and three screens
+  that had hand-rolled a square chooser — `border px-3 py-2`, no radius at all — while the
+  Pictures and Galleries choosers directly below them on the same screen used the kit's
+  segmented track. Both are on the scale now; the choosers use the kit, which is also three
+  fewer copies of a control the kit already owns.
+  **Under 16px the hierarchy does not apply**, and that is a judgement rather than an
+  oversight: 6px on a 16px checkbox is a 38% corner, which reads as a blob. Checkboxes and
+  the small state dots keep 4px, and `ui/Switch.tsx` says so where somebody would otherwise
+  "fix" it.
 - **Admin is monochrome, plus exactly ONE accent: the product's highlighter** (the Writing
   Desk mock's `--pen`, 2026-08-17). It appears in two roles only — a search hit wears it as
   a `<mark>` in the write pane, and the small dots that mean "work in progress" (a draft's

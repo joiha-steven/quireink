@@ -132,7 +132,7 @@ export function CommentIntegrations(
               with an error page on Google's side that names no cause. */}
           <p className={NOTE_TEXT}>
             {t.commentsGoogleRedirect}
-            <code className="ml-2 select-all rounded bg-neutral-100 px-1.5 py-0.5 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-200">
+            <code className="ml-2 select-all rounded-md bg-neutral-100 px-1.5 py-0.5 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-200">
               {`${location.origin}/comment-auth/google/callback`}
             </code>
           </p>
