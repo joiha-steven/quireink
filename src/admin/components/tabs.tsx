@@ -37,12 +37,44 @@ export const SEGMENT_TRACK = 'flex w-fit max-w-full overflow-x-auto no-scrollbar
 // on the pane's own edge instead of stopping short of it ("hụt", the owner called the gap).
 const SEGMENT_TRACK_DENSE = 'flex w-full overflow-x-auto no-scrollbar rounded-md border border-neutral-200 dark:border-neutral-800'
 
-export const tabItemClass = (active: boolean, size: TabSize = 'lg', dense = false): string =>
+/**
+ * What an active item MEANS, which turns out to be two different things wearing one costume.
+ *
+ * A `place` is a tab you navigated to: Site, Layout, Reading. A `choice` is a value you set:
+ * English, 3:2, framed. They had the identical black pill, and on the Settings screen that
+ * put "Site" — the section you are IN — beside "English" — a field's current value — in the
+ * same ink, the same size, the same shape, eight lines apart. Nothing said which of the two
+ * was answering "where am I". That sameness is most of what reads as machine-made: a screen
+ * where everything is the same rectangle has told you nothing by the time you have looked
+ * at all of it.
+ *
+ * So the highlighter marks WHERE YOU ARE and nothing else. It is the meaning the ink already
+ * has on paper — the line you ran a marker over to come back to — and it is the reason this
+ * is not decoration: a second colour that means one thing is a signal, and a palette is not.
+ * A value you picked is not a place, so it keeps the ink pill.
+ *
+ * The seam is the `Tabs` component below, which is the only thing in the admin that renders
+ * navigation; the ten call sites that build a chooser out of `tabItemClass` directly are all
+ * choices, and get the default.
+ */
+export type TabRole = 'place' | 'choice'
+
+export const tabItemClass = (
+  active: boolean,
+  size: TabSize = 'lg',
+  dense = false,
+  role: TabRole = 'choice',
+): string =>
   size === 'lg'
     // `-mb-px` so the item's own 2px border sits ON the track's hairline rather than under it.
     ? `-mb-px border-b-2 pb-2.5 text-sm font-medium transition ${
         active
-          ? 'border-neutral-900 text-neutral-900 dark:border-white dark:text-white'
+          // A marker stroke under the label, not a wash behind it: an underlined strip is
+          // already a quiet control and a lime block in it would be the loudest thing on the
+          // page. The ink stays on the word so the label is still read as a word.
+          ? role === 'place'
+            ? 'border-[var(--pen-edge)] text-neutral-900 dark:text-white'
+            : 'border-neutral-900 text-neutral-900 dark:border-white dark:text-white'
           : 'border-transparent text-neutral-500 dark:text-neutral-400 hover:border-neutral-300 hover:text-neutral-900 dark:hover:border-neutral-600 dark:hover:text-neutral-200'
       }`
     // `shrink-0 whitespace-nowrap` on the segmented variant, now that the track scrolls
@@ -52,7 +84,11 @@ export const tabItemClass = (active: boolean, size: TabSize = 'lg', dense = fals
     // let the strip move — that is what scrolling is for.
     : `${dense ? 'grow px-2' : 'shrink-0 whitespace-nowrap px-3'} py-1.5 text-[0.8125rem] font-medium transition ${
         active
-          ? 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900'
+          // `--on-pen` rather than a neutral: the highlighter is a light ink and black on it
+          // is harsher than the olive the reading site already puts on its own marks.
+          ? role === 'place'
+            ? 'bg-[var(--pen)] text-[var(--on-pen)]'
+            : 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900'
           : 'text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-neutral-200'
       }`
 
@@ -84,7 +120,7 @@ export function Tabs<K extends string>({
           type="button"
           onClick={() => onChange(tb.key)}
           aria-pressed={value === tb.key}
-          className={tabItemClass(value === tb.key, size, dense)}
+          className={tabItemClass(value === tb.key, size, dense, 'place')}
         >
           {tb.label}
         </button>

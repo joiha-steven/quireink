@@ -24,7 +24,7 @@ import { usePathname } from '@/admin/router'
 import { useEffect, useState, type ReactNode } from 'react'
 import type { SiteLang } from '@/types'
 import { useAdminT } from './I18nProvider'
-import { SIDEBAR_NAV, SIDEBAR_NAV_ACTIVE, SIDEBAR_UTIL } from './headerActions'
+import { SIDEBAR_NAV, SIDEBAR_NAV_ACTIVE, SIDEBAR_NAV_QUIET, SIDEBAR_UTIL } from './headerActions'
 import { CacheButton } from './CacheButton'
 import { BrandMark, BrandWord } from './Wordmark'
 import { ThemeToggle } from '@/admin/ui/ThemeToggle'
@@ -157,7 +157,9 @@ export function AdminSidebar({
 
   // `c` = render collapsed (icon-only). Mobile drawer always passes false.
   const rowClass = (c: boolean, active = false): string =>
-    `${SIDEBAR_NAV} ${c ? 'justify-center' : 'gap-3'} ${active ? SIDEBAR_NAV_ACTIVE : ''}`
+    // The active row takes the QUIET base: a highlighted row has nothing to gain from a
+    // hover state — you are already there — and the grey one would paint over the mark.
+    `${active ? SIDEBAR_NAV_QUIET : SIDEBAR_NAV} ${c ? 'justify-center' : 'gap-3'} ${active ? SIDEBAR_NAV_ACTIVE : ''}`
 
   const navLink = (l: { href: string; label: string; icon: ReactNode }, c: boolean): ReactNode => (
     <Link
