@@ -17,11 +17,36 @@ export const ADMIN_NAV =
 // item (nav links AND the theme/palette/cache/sign-out controls) shares this ONE
 // string so the column reads as a single uniform set and can't drift — same rule as
 // ADMIN_NAV, just laid out as rows. Active links add `SIDEBAR_NAV_ACTIVE`.
-export const SIDEBAR_NAV =
-  'relative flex h-10 w-full items-center rounded-lg px-3 text-left text-sm text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 disabled:opacity-50 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white'
+// Split in two so the ACTIVE row can be built without the hover half, rather than by trying
+// to out-rank it. Both are `hover:bg-*`, and which one lands last in the built stylesheet is
+// decided by Tailwind's own ordering, not by the order the classes appear on the element:
+// measured, `hover:bg-neutral-100` was emitted 418 bytes AFTER the highlighter, so pointing
+// at the page you are already on repainted it grey. A rule you cannot see the order of is a
+// rule you should not be relying on.
+export const SIDEBAR_NAV_QUIET =
+  'relative flex h-10 w-full items-center rounded-lg px-3 text-left text-sm text-neutral-500 transition-colors disabled:opacity-50 dark:text-neutral-400'
 
+const SIDEBAR_NAV_HOVER =
+  'hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-white'
+
+export const SIDEBAR_NAV = `${SIDEBAR_NAV_QUIET} ${SIDEBAR_NAV_HOVER}`
+
+// The rail's answer to "which page am I on", in highlighter.
+//
+// It was `bg-neutral-100` — a grey one step off the canvas it sits on, which at a glance is
+// no answer at all. The rail is the one place that always shows where you are, and on a
+// screen already made of grey rectangles the current row was the least distinguishable
+// rectangle on it.
+//
+// Same ink and same meaning as an active TAB (`tabs.tsx`): the highlighter marks the place
+// you are in, never the value you chose. Together they read as a trail — the page in the
+// rail, the section in the strip — and there are never more than those two on screen.
+//
+// The inset ring goes with the grey. A hairline was there to give a nearly-invisible fill an
+// edge; a highlighter mark does not need one, and keeping it would put a dark line around a
+// light ink, which is not how a marker meets paper.
 export const SIDEBAR_NAV_ACTIVE =
-  'bg-neutral-100 font-medium text-neutral-950 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.03)] dark:bg-neutral-800 dark:text-white dark:shadow-none'
+  'bg-[var(--pen)] font-medium text-[var(--on-pen)]'
 
 // The rail's UTILITY register. The footer's rows (theme, cache, sign out) are CONTROLS,
 // and for a while they wore SIDEBAR_NAV — four more destinations, one apparently a page

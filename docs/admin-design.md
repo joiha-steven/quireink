@@ -123,10 +123,23 @@ character and none of its typographic rules **except one**, below.
   protects against is a card PRETENDING to float while sitting in the flow, which is what a
   named Tailwind shadow gives you. There is no second step; a surface that wants one wants to
   be an overlay.
+- **The highlighter marks WHERE YOU ARE** (2026-08-29, and it is the ink's third role rather
+  than a fourth colour). The rail's current row and the active tab wear `--pen` with
+  `--on-pen`; a SELECTED VALUE does not, and that distinction is the whole point. They had
+  the identical black pill, which put "Site" — the section you are in — eight lines above
+  "English" — a field's value — in the same ink, size and shape, with nothing answering
+  "where am I". A screen where everything is the same rectangle has told you nothing by the
+  time you have looked at all of it. The seam is the `Tabs` component, the admin's only
+  navigation strip; the ten call sites that build a chooser from `tabItemClass` directly get
+  the ink pill, and `components/where-you-are.test.ts` fails the day one of them reaches for
+  the marker. ⚠️ The active row is composed from `SIDEBAR_NAV_QUIET`, which has NO hover:
+  both hovers are rules on the same property and Tailwind decides which lands last, so
+  pointing at the page you were already on repainted it grey. Structure, not out-ranking.
 - **Admin is monochrome, plus exactly ONE accent: the product's highlighter** (the Writing
-  Desk mock's `--pen`, 2026-08-17). It appears in two roles only — a search hit wears it as
-  a `<mark>` in the write pane, and the small dots that mean "work in progress" (a draft's
-  row, the unsaved state, an unfinished chip on the home screen) are its edge tone. Feedback,
+  Desk mock's `--pen`, 2026-08-17). Its roles are named and closed — where you are (above), a
+  search hit as a `<mark>` in the write pane, and the small dots that mean "work in progress"
+  (a draft's row, the unsaved state, an unfinished chip on the home screen) in its edge tone.
+  Feedback,
   status, analytics trends, media selection, warnings, destructive actions and recovery
   banners stay on the neutral scale: a second use of colour spends the only signal that
   means "your words". The admin theme dropdown's colours are isolated from the site's

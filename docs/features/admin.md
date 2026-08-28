@@ -54,8 +54,12 @@
   (`TableFrame` / `THEAD` / `TROW`). The one-sheet page itself lives in
   `components/sheet.tsx` — `SHEET`, `SheetTop`, `NumBand`, `SHEET_FOOT`, `SHEET_TOOL` —
   with `.paper-cols` (two newspaper columns) in `admin.css`; see "One sheet per page" in
-  `docs/admin-design.md`. Admin is monochrome plus ONE accent (the pen: search hits and
-  work-in-progress dots) — the kit uses the neutral scale, not public theme tokens.
+  `docs/admin-design.md`. Admin is monochrome plus the product's own PEN BOX, and each ink
+  keeps the meaning it has on paper: highlighter marks where you are (the rail's current row,
+  the active tab) and search hits; red ballpoint dresses what destroys something and nothing
+  else. A selected VALUE is not a place, so it stays on the ink pill — `where-you-are.test.ts`
+  fails a chooser that reaches for the highlighter. The kit uses the neutral scale, not public
+  theme tokens.
 - **Admin canvas:** `<main>` in the admin layout carries `.admin-canvas` (`src/admin/admin.css`) — a flat,
   quiet neutral surface (one fill per light/dark mode); the sidebar + cards sit on solid surfaces
   above it. (The editorial redesign replaced the old dotted-grid canvas — see
