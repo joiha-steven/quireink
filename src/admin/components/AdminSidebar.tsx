@@ -12,6 +12,12 @@
 // the rail is 816, comfortably past what a folded-open phone gets, and below that the rail
 // is one tap away in the drawer, which is where a phone wants it anyway.
 //
+// AND FROM 1024 TO 1279 IT ARRIVES ALREADY SHUT (see NARROW below, added 2026-08-29 at the
+// owner's request). The `lg` decision above only ever asked WHETHER a rail belongs on screen;
+// it never asked how WIDE. In that band the answer is 72px and not 208: an iPad in landscape
+// and a foldable opened and turned both sit there, and the icon rail hands the form back
+// 136px without hiding the map behind a hamburger.
+//
 // Every nav item shares SIDEBAR_NAV so the rail reads as one uniform set. Monochrome by design (admin tooling stays on
 // the neutral scale — no hardcoded accent colors).
 //
@@ -34,6 +40,20 @@ import {
 } from './navIcons'
 
 const STORE_KEY = 'quireink-admin-nav-collapsed'
+/**
+ * The band where the rail costs more than it returns: wide enough that a rail belongs on
+ * screen at all (the `lg` decision at the top of this file), but not wide enough to spend
+ * 208px of it on words. An iPad in landscape and a foldable opened and turned both land here.
+ *
+ * Measured on the Settings screen: at 1024 the full rail leaves the form 816px and the icon
+ * rail leaves it 952. That 136px is the whole reason this exists.
+ *
+ * It forces the rail shut WITHOUT writing localStorage. The stored value is what the owner
+ * chose, and a window that happens to be 1100px wide is not them changing their mind; leaving
+ * the band puts their own choice back. Clicking the control inside the band still persists,
+ * because that IS them changing their mind.
+ */
+export const NARROW = '(min-width: 64rem) and (max-width: 79.9375rem)'
 /**
  * Whether the rail draws icons BESIDE ITS LABELS. OFF by default since 2026-08-15, at the
  * owner's request: *"không cần icon bên sidebar, nó làm cho không cần thiết"*. Eleven outline
@@ -84,14 +104,21 @@ export function AdminSidebar({
   // expanded so hydration matches, then we sync). Deferred a microtask so the
   // setState isn't in the effect body.
   useEffect(() => {
-    Promise.resolve().then(() => {
-      const showIcons = localStorage.getItem(ICONS_KEY) === '1'
-      const c = localStorage.getItem(STORE_KEY) === '1'
-      setIcons(showIcons)
+    const mq = matchMedia(NARROW)
+    // ONE place decides the rail's width, so the restore and the band cannot race: folding
+    // this into the same effect is why there is no second `setCollapsed` anywhere.
+    const apply = () => {
+      const c = mq.matches || localStorage.getItem(STORE_KEY) === '1'
       setCollapsed(c)
       applyWidthVar(c)
+    }
+    Promise.resolve().then(() => {
+      setIcons(localStorage.getItem(ICONS_KEY) === '1')
+      apply()
       if (localStorage.getItem(MORE_KEY) === '1') setMore(true)
     })
+    mq.addEventListener('change', apply)
+    return () => mq.removeEventListener('change', apply)
   }, [])
 
   function toggleIcons() {

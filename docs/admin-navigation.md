@@ -59,3 +59,29 @@ throttles putting real content back by a fixed 300ms.
 
 After: Content 355 → 49ms, Media 336 → 59ms, Comments 348 → 43ms, Settings 346 → 45ms,
 Analytics 418 → 83ms. Cold load of `/admin` 501 → 329ms.
+
+## How wide the rail is, and who decides
+
+Two questions, answered a day apart, and it helps to keep them apart.
+
+**Whether a rail is on screen at all** was settled on 2026-08-28 by measuring content width on
+the Settings screen. Below 1024px it is not: a 768px tablet was left 560px for the form, and a
+folded-open phone at 673px had more room than the tablet did. The admin is forms and tables,
+so content width is the product. Under `lg` the destinations live in a drawer behind the
+hamburger.
+
+**How wide it should be** was asked on 2026-08-29, and between 1024 and 1279 the answer
+differs from the answer above it. There the rail arrives already shut: 72px of icons instead
+of 208px of words hands the form back 136px, on exactly the screens that sit in that band, an
+iPad in landscape and a foldable opened and turned. From 1280 up, the owner's own choice
+applies again.
+
+⚠️ The band **forces** the rail shut and never **saves** that. A width is not a preference:
+the value in `localStorage` is the owner saying what they want, and a window that happens to
+be 1100px wide is not them saying anything. Leaving the band restores their choice untouched.
+Clicking the control inside the band does persist, because that is them changing their mind.
+
+The seam worth guarding is that both the restore and the band set the same piece of state. If
+they ever live in two effects, the deferred microtask in the restore path makes which one wins
+a coin flip. They are folded into one effect, and `narrow-rail.test.ts` counts the assignments
+so a split shows up as a failure rather than as an intermittent bug.
