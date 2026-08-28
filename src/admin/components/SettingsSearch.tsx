@@ -8,7 +8,7 @@
 // Why a search rather than a third rearrangement of the tabs: `settings-index.ts`.
 
 import { useState } from 'react'
-import { CLUSTER_GAP, CONTROL, PANEL_LIST } from './kit'
+import { CONTROL, PANEL_LIST } from './kit'
 import { useAdminT } from './I18nProvider'
 import { searchSettings, type SettingEntry, type SettingsTab } from './settings-index'
 
@@ -27,7 +27,13 @@ export function SettingsSearch({ tabLabel, onPick }: {
 
   return (
     <>
-      <div className={CLUSTER_GAP}>
+      {/* NO BOTTOM MARGIN. This sits in the sheet's header row beside the tabs, and that row
+          is `items-center` — which centres a flex item's MARGIN box, not its border box. A
+          `mb-4` here therefore pushed the field up by half of it: measured 2026-08-28, the
+          field's centre sat 8px above the tab strip's, which is exactly what the owner saw
+          as "lệch so với mấy cái tab". `CLUSTER_GAP` is a token for STACKING clusters
+          vertically; in a horizontal row it separates the field from nothing and moves it. */}
+      <div>
         <input
           type="search"
           value={query}
