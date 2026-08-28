@@ -176,6 +176,22 @@ const GRID_RATIOS = new Set(['asis', '1x1', '3x2', '4x3'])
 // #third (30% of the column; with an align it floats and the text runs around it,
 // magazine-fashion — the one fragment that changes how TEXT lays out, not just the figure).
 // Caption = alt.
+// The frame a picture wears, independent of where the picture sits: a mat of paper (or of
+// ink) with a line around it. `frame` alone is the middle weight; `thin` and `thick` mean
+// nothing on their own, which is why they are read only from beside it.
+//
+// THREE-VALUED, like the gallery options above it, and the third value is SILENCE: no token
+// means "whatever the site setting says". So `noframe` has to exist and has to be written
+// down — on a site whose default is a frame, "this one, plain" is a thing an author needs to
+// be able to say, and saying nothing already means something else.
+function frameClasses(tokens: string[]): string {
+  if (tokens.includes('noframe')) return 'img-noframe'
+  if (!tokens.includes('frame')) return ''
+  const weight = tokens.includes('thin') ? 'img-frame-thin' : tokens.includes('thick') ? 'img-frame-thick' : ''
+  const ink = tokens.includes('ink') ? 'img-frame-ink' : ''
+  return ['img-frame', weight, ink].filter(Boolean).join(' ')
+}
+
 function imgClasses(frag: string): string {
   // Exact hyphen tokens so `#bright` can't match `right`: left|right|wide|third|left-third|….
   const tokens = frag.split('-')
@@ -188,14 +204,18 @@ function imgClasses(frag: string): string {
   if (tokens.includes('grid')) {
     const ratio = tokens.find((t) => GRID_RATIOS.has(t))
     const cap = tokens.includes('nocap') ? 'g-nocap' : tokens.includes('cap') ? 'g-cap' : ''
-    const opts = [ratio ? `g-${ratio}` : '', cap].filter(Boolean)
+    const opts = [ratio ? `g-${ratio}` : '', cap, frameClasses(tokens)].filter(Boolean)
     return opts.length ? `img-grid ${opts.join(' ')}` : 'img-grid'
   }
   const align = tokens.includes('left') ? 'img-left' : tokens.includes('right') ? 'img-right' : 'img-center'
+  // The frame is ORTHOGONAL to all of this: it is drawn on the picture, while align and
+  // size decide where the picture goes. So it rides along with whichever answer wins below.
+  const frame = frameClasses(tokens)
+  const with_ = (base: string): string => (frame ? `${base} ${frame}` : base)
   // `wide` and `third` are both sizes, so they cannot compose; wide wins because a fragment
   // carrying both was almost certainly widened last.
-  if (tokens.includes('wide')) return `${align} img-wide`
-  return tokens.includes('third') ? `${align} img-third` : align
+  if (tokens.includes('wide')) return with_(`${align} img-wide`)
+  return with_(tokens.includes('third') ? `${align} img-third` : align)
 }
 
 // Column count for a gallery of N images — Jetpack-like: small sets get one row,

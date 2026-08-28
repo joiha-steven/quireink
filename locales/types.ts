@@ -294,6 +294,21 @@ export type AdminStrings = {
   imgCaptions: string
   imgNoCaptions: string
   imgDefault: string
+  // The frame a picture wears. Weight is four-valued because "framed" and "how thick"
+  // are one decision; paper/ink is the mat's colour and only applies once framed.
+  imgFrameNone: string
+  imgFrameThin: string
+  imgFrameMedium: string
+  imgFrameThick: string
+  imgFramePaper: string
+  imgFrameInk: string
+  // The SITE-WIDE default frame, in Settings. Applied as styling rather than markup, so a
+  // change reframes every picture at once without re-rendering a single post.
+  cardFigure: string
+  figureFrame: string
+  figureFrameHint: string
+  figureFrameColour: string
+  figureFrameColourHint: string
   // Settings -> Layout -> Galleries
   cardGallery: string
   galleryRatio: string

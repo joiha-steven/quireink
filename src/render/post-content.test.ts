@@ -136,6 +136,45 @@ describe('markdown render — structure', () => {
     expect(html).not.toContain('img-third')
   })
 
+  it('frames a picture without disturbing where the picture sits', async () => {
+    // The frame is orthogonal: it must survive beside an align AND beside a size, because
+    // those decide where the figure goes and the frame is only its own edge.
+    expect(await render('![a](media/a.jpg#frame)')).toContain('<figure class="img-center img-frame">')
+    expect(await render('![a](media/a.jpg#left-frame)')).toContain('<figure class="img-left img-frame">')
+    expect(await render('![a](media/a.jpg#right-third-frame)'))
+      .toContain('<figure class="img-right img-third img-frame">')
+    expect(await render('![a](media/a.jpg#wide-frame)')).toContain('<figure class="img-center img-wide img-frame">')
+  })
+
+  it('reads a frame weight only from beside the frame itself', async () => {
+    expect(await render('![a](media/a.jpg#frame-thin)')).toContain('img-frame img-frame-thin')
+    expect(await render('![a](media/a.jpg#frame-thick)')).toContain('img-frame img-frame-thick')
+    expect(await render('![a](media/a.jpg#frame-thick-ink)')).toContain('img-frame img-frame-thick img-frame-ink')
+    // A stray weight on an imported URL frames NOTHING. Without `frame` there is no mat for
+    // a thickness to describe, and the alternative is a picture that grows a border because
+    // somebody's old CMS wrote `#thick` into a filename.
+    const stray = await render('![a](media/a.jpg#thick-ink)')
+    expect(stray).toContain('<figure class="img-center">')
+    expect(stray).not.toContain('img-frame')
+  })
+
+  it('lets a picture say PLAIN out loud, which silence cannot once a site default exists', async () => {
+    // Silence means "whatever the site says", so on a site whose default is a frame there
+    // has to be a way to write "not this one". These are different answers, not the same one.
+    expect(await render('![a](media/a.jpg)')).toContain('<figure class="img-center">')
+    expect(await render('![a](media/a.jpg#noframe)')).toContain('<figure class="img-center img-noframe">')
+    // And it beats a frame token beside it: the plainer answer is the safer one to honour
+    // when a fragment somehow carries both.
+    expect(await render('![a](media/a.jpg#noframe-thick)')).toContain('img-noframe')
+    expect(await render('![a](media/a.jpg#noframe-thick)')).not.toContain('img-frame')
+  })
+
+  it('lets a gallery tile carry a frame, since the grid owns layout and not the edge', async () => {
+    const html = await render('![a](media/a.jpg#grid-3x2-frame)\n\n![b](media/b.jpg#grid-3x2-frame)')
+    expect(html).toContain('img-grid g-3x2 img-frame')
+    expect(html).toContain('class="gallery gallery-cols-2"')
+  })
+
   it('groups 2+ consecutive #grid images into one .gallery, cols by count', async () => {
     const html = await render('![a](media/a.jpg#grid)\n\n![b](media/b.jpg#grid)\n\n![c](media/c.jpg#grid)')
     // exactly one gallery wrapper, 3 images -> 3 columns, holding all three figures

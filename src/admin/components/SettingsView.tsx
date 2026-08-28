@@ -40,6 +40,7 @@ import { BrandFields } from './BrandFields'
 import { LayoutMenuFields } from './LayoutMenuFields'
 import { FrontFields } from './FrontFields'
 import { FooterField } from './FooterField'
+import { FigureFields } from './FigureFields'
 import { GalleryFields } from './GalleryFields'
 import { ActivityLogField, ListingFeatureFields, PostFeatureFields } from './FeatureFields'
 import { CommentFields } from './CommentFields'
@@ -207,6 +208,9 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
                 />
               </Card>
             )}
+            <Card panel title={t.cardFigure}>
+              <FigureFields figure={s.figure} onChange={(figure) => update({ figure })} />
+            </Card>
             <Card panel title={t.cardGallery}>
               <GalleryFields gallery={s.gallery} onChange={(gallery) => update({ gallery })} />
             </Card>

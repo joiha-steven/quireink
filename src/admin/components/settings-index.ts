@@ -74,6 +74,8 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { tab: 'layout', label: 'listPathLabel', note: 'listPathHint' },
   { tab: 'layout', label: 'mostViewedCount' },
   { tab: 'layout', label: 'galleryCaptions' },
+  { tab: 'layout', label: 'figureFrame', note: 'figureFrameHint' },
+  { tab: 'layout', label: 'figureFrameColour', note: 'figureFrameColourHint' },
   { tab: 'layout', label: 'frontCount' },
   { tab: 'layout', label: 'frontLead' },
   { tab: 'layout', label: 'frontSecondary' },
