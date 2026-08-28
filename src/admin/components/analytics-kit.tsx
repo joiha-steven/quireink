@@ -4,7 +4,8 @@
 // (neutral scale only), matching the rest of the kit.
 import Link from '@/admin/router'
 import type { ReactNode } from 'react'
-import { CARD, StatCard } from './kit'
+import { CARD } from './kit'
+import { StatCard } from './stat-band'
 import type { DailyPoint } from '@/analytics/types'
 
 // Period-over-period change vs the previous window. Null when there's no prior

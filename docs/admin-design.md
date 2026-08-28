@@ -104,6 +104,25 @@ character and none of its typographic rules **except one**, below.
   oversight: 6px on a 16px checkbox is a 38% corner, which reads as a blob. Checkboxes and
   the small state dots keep 4px, and `ui/Switch.tsx` says so where somebody would otherwise
   "fix" it.
+- **TWO INKS NOW, owner's call 2026-08-29** — and the rule below is kept because its argument
+  is still the test, not because the count is still one. The wordmark took three colours
+  (ink, red ballpoint, highlighter) when it shipped on 2026-08-27, so "monochrome plus one"
+  had stopped describing the product it belongs to. What did not change is WHY a colour is
+  allowed: it has to mean on screen what it means on paper. The highlighter is what you mark
+  as worth returning to. **The red ballpoint is what you strike OUT — so it dresses the
+  actions that destroy something, and nothing else.** `SHEET_TOOL_DANGER` and the `danger`
+  button variant are its only two homes; Restore, Cancel and Close stay grey beside them,
+  because a delete that looks like its neighbour is what put a native `confirm()` in the way
+  of a deleted post. Values from `PEN_AUX_LIGHT`/`PEN_AUX_DARK` in `render/pen.ts`, the one
+  source — measured off a photograph of a real pen box, never re-typed by eye.
+  A colour that means one thing is a signal; a palette is not. The test for a third ink is
+  the same as it always was: what does this pen MEAN on a page?
+- **The card carries ONE shadow step** (2026-08-29): 1px of contact at 4% black, an edge
+  rather than a lift, dark mode none. It is deliberately an arbitrary value and not
+  `shadow-sm`, so `check:admin-kit` did not have to move for it — the thing that guard
+  protects against is a card PRETENDING to float while sitting in the flow, which is what a
+  named Tailwind shadow gives you. There is no second step; a surface that wants one wants to
+  be an overlay.
 - **Admin is monochrome, plus exactly ONE accent: the product's highlighter** (the Writing
   Desk mock's `--pen`, 2026-08-17). It appears in two roles only — a search hit wears it as
   a `<mark>` in the write pane, and the small dots that mean "work in progress" (a draft's

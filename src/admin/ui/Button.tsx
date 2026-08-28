@@ -24,13 +24,17 @@ const STYLES: Record<Variant, string> = {
   secondary:
     'border border-neutral-300 bg-white text-neutral-800 hover:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:hover:bg-neutral-700',
   ghost: 'bg-transparent text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800',
-  // OUTLINED, where primary is solid. It was byte-identical to primary, which made "Delete
-  // forever" the loudest control on its screen and the only thing between it and a deleted
-  // post a native confirm(). Monochrome can still rank three weights: a solid fill for the
-  // action you came to do, a strong outline for one that destroys something, and secondary's
-  // faint border for everything else. It inverts on hover, so it does not read as disabled.
+  // THE RED BALLPOINT. It was byte-identical to primary once, which made "Delete forever" the
+  // loudest control on its screen with only a native confirm() between it and a deleted post;
+  // then it became an outline, which ranked it correctly and still asked the reader to notice
+  // a border weight. Since 2026-08-29 it is the pen you would actually reach for, and that is
+  // the whole argument for the colour: on paper, red ballpoint is what you strike OUT.
+  //
+  // OUTLINED, not filled. A solid red button is louder than the primary action beside it, and
+  // the loudest thing on a screen should be the thing you came to do — not the thing that
+  // destroys work. It fills on hover, when the pointer is already committed to it.
   danger:
-    'border border-neutral-900 bg-transparent text-neutral-900 hover:bg-neutral-900 hover:text-white dark:border-white dark:text-white dark:hover:bg-white dark:hover:text-neutral-900',
+    'border text-[var(--pen-red)] border-[var(--pen-red)] bg-transparent hover:bg-[var(--pen-red)] hover:text-white',
 }
 
 // `whitespace-nowrap` and `shrink-0` are load-bearing, not tidying. In a flex row beside
