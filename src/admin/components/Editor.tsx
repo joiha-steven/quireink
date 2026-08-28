@@ -123,6 +123,38 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
   // otherwise the dropped image only appeared when the stale closure happened to
   // hold a non-null editor ("lúc ăn lúc không").
   const editorRef = useRef<TiptapEditor | null>(null)
+
+  /** The image files out of a DataTransfer, from a drop or from the clipboard. */
+  const imageFiles = (list: FileList | null | undefined): File[] =>
+    Array.from(list ?? []).filter((f) => f.type.startsWith('image/'))
+
+  /**
+   * Upload and insert, in order, from wherever they came.
+   *
+   * Shared by the drop handler and the paste handler because they differ in exactly one
+   * thing — a drop knows the coordinates it landed on, a paste goes to the cursor — and
+   * everything after that has to be identical: the same upload route, the same alt from the
+   * file name, and the same walk forward so the second picture lands after the first rather
+   * than on top of it.
+   *
+   * Sequential on purpose. In parallel the uploads finish in whatever order the network
+   * decides, and a set of pictures a person chose in an order arrives in another.
+   */
+  const insertImageFiles = async (files: File[], at: number | undefined): Promise<void> => {
+    let pos = at
+    for (const file of files) {
+      const url = await onUploadFile(file)
+      const ed = editorRef.current
+      if (!url || !ed) continue
+      // A pasted screenshot's name is the browser's ("image.png"), which is no caption at
+      // all; a dropped file's usually is one. Either way it stays editable under the picture.
+      const alt = file.name.replace(/\.[a-z0-9]+$/i, '')
+      const chain = pos == null ? ed.chain().focus() : ed.chain().focus(pos)
+      chain.setImage({ src: url, alt }).run()
+      pos = ed.state.selection.to
+    }
+  }
+
   useEffect(() => { onChangeRef.current = onChange }, [onChange])
   useEffect(() => { onDirtyRef.current = onDirty }, [onDirty])
   useEffect(() => { rawRef.current = raw }, [raw])
@@ -190,30 +222,31 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
         },
       },
       handleDrop(view, event) {
-        const files = Array.from(event.dataTransfer?.files ?? []).filter((f) => f.type.startsWith('image/'))
+        const files = imageFiles(event.dataTransfer?.files)
         if (files.length === 0) return false
         event.preventDefault()
         // Capture WHERE the image was dropped now — uploads are async, so by the
         // time they resolve the text cursor has wandered (the image used to land
         // at the stale cursor, i.e. the end of the post). Insert at the drop point.
-        let pos = view.posAtCoords({ left: event.clientX, top: event.clientY })?.pos
-        // Upload sequentially so multiple dropped images insert in order.
-        ;(async () => {
-          for (const file of files) {
-            const url = await onUploadFile(file)
-            const ed = editorRef.current
-            if (!url || !ed) continue
-            const alt = file.name.replace(/\.[a-z0-9]+$/i, '')
-            const chain = pos == null ? ed.chain().focus() : ed.chain().focus(pos)
-            chain.setImage({ src: url, alt }).run()
-            // Advance past the just-inserted image so the next one lands after it.
-            pos = ed.state.selection.to
-          }
-        })()
+        void insertImageFiles(files, view.posAtCoords({ left: event.clientX, top: event.clientY })?.pos)
         return true
       },
-      // Paste a lone video URL (YouTube/Vimeo/TikTok) -> insert a video embed.
       handlePaste(_view, event) {
+        // AN IMAGE ON THE CLIPBOARD. Until 2026-08-28 this did nothing at all: the handler
+        // read `text/plain`, found no URL, and handed back to ProseMirror — which has no
+        // parse rule for a file, so a pasted screenshot vanished without a message. Taking
+        // a screenshot and pressing paste is how most people put a picture in a post, and
+        // the product answered it with silence. Same upload path as a drop, so alt text,
+        // ordering and the caption default are the ones the rest of the editor already uses.
+        const pasted = imageFiles(event.clipboardData?.files)
+        if (pasted.length > 0) {
+          event.preventDefault()
+          // No coordinates on a paste: it goes where the cursor is, which is where the
+          // person is looking. `undefined` means "wherever the selection is now".
+          void insertImageFiles(pasted, undefined)
+          return true
+        }
+        // Paste a lone video URL (YouTube/Vimeo/TikTok) -> insert a video embed.
         const text = event.clipboardData?.getData('text/plain')?.trim() ?? ''
         if (text && !/\s/.test(text) && isVideoUrl(text)) {
           editorRef.current?.chain().focus().setVideo(text).run()

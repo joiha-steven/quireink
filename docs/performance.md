@@ -33,6 +33,19 @@ the title always paints instantly in a fallback and the web font swaps in. `<lin
 rel="preload">` exists ONLY to remove that one swap on the LCP title — so we preload exactly
 the file(s) that paint it, and nothing else.
 
+**`sizes` states the shape's real width, and there are four shapes.** Every picture used to
+promise `100vw` on a phone and 768px above — true of one that HOLDS the reading column and
+false of the other three. Measured 2026-08-28: a gallery tile renders at 167px on a 390px
+phone and was fetching the 1024 file. `render/figures.ts` now answers per shape (column 672px ·
+`#third` 202px · `#wide` 800px · a tile from its column count, which only exists once
+`groupGalleries` has counted the run). **A third width, 512, joined 1024/1600** for the same
+reason: 1024 was already the smaller answer for a picture holding the column and far too big
+for anything else. Measured over the demo fixture's 18 pictures, 1,198 KB of 1024s against
+365 KB of 512s — **70% less** for what a phone actually draws, at about 8% more stored bytes.
+Which widths an original HAS is `media.variants`, a version rather than a flag, because a
+`<picture>` naming a file that is not there fails outright instead of falling back; the
+ordinary sweep upgrades old images, so nothing needs re-uploading.
+
 **The swap must move nothing, and that takes TWO fallback twins per family.** Every text
 family declares metric-matched twins (`FALLBACKS` in `src/render/font-faces.ts`) — a local
 face reshaped with `size-adjust` / `ascent-override` / `descent-override` to the shipped

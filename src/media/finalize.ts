@@ -3,7 +3,7 @@
 // only part with no request on the other end: it runs post-save and from cron.
 
 import { uploadFile, readBlob, collapseBlob } from '@/media/blob'
-import { makeThumb, makeDisplay } from '@/media/image'
+import { makeThumb, makeDisplay, VARIANT_VERSION } from '@/media/image'
 import { all, one, run } from '@/store/query'
 import { liveOnly } from '@/store/db'
 
@@ -22,7 +22,7 @@ import { liveOnly } from '@/store/db'
  */
 export const VARIANT_BUDGET_MS = 6_000
 
-// Generate deferred display variants for pending raster originals (variants = 0).
+// Generate deferred display variants for pending raster originals (variants < current).
 // Called after a save; cron sweeps anything left pending. Returns how many originals were
 // NEWLY finalized so callers can re-purge the pages that embed them (a page cached at save
 // time still shows the plain <img> until its <picture> exists).
@@ -43,7 +43,11 @@ export async function finalizeVariants(
     // is the same as not stopping.
     if (Date.now() >= deadline) break
     const row = one<{ variants: number }>(`select variants from media where path = ?`, path)
-    if (!row || row.variants) continue
+    // `< VARIANT_VERSION`, not truthiness. When 512 was added, every already-finalised
+    // image was version 1 and truthiness said "done" — which would have left them naming a
+    // file that does not exist, in a <picture> that has no fallback. This makes the sweep
+    // an upgrade path as well as a first pass, so a widened set needs no migration.
+    if (!row || row.variants >= VARIANT_VERSION) continue
     // Read the original from the store DIRECTLY. `fetch`ing the blob URL breaks on the local
     // driver: blobUrl/expandBlob is a store-relative `/uploads/...` path (no origin) and
     // server-side fetch throws "Failed to parse URL". null = not on the store; a sweep retries.
@@ -52,7 +56,7 @@ export async function finalizeVariants(
     const stem = path.replace(/\.[^.]+$/, '')
     const files = await makeDisplay(original)
     await Promise.all(files.map((f) => uploadFile(`${stem}${f.suffix}`, f.data, f.contentType)))
-    run(`update media set variants = 1 where path = ?`, path)
+    run(`update media set variants = ? where path = ?`, VARIANT_VERSION, path)
     finalized++
   }
   return finalized
@@ -96,7 +100,11 @@ export async function finalizePendingVariants(
   budgetMs: number = VARIANT_BUDGET_MS,
 ): Promise<number> {
   const paths = all<{ path: string }>(
-    `select path from media where ${liveOnly('media')} and variants = 0`,
+    // BOUND, not interpolated. It is a module constant and would be harmless inlined, but
+    // the rule in CLAUDE.md is that no VALUE is ever interpolated into SQL — only a fixed
+    // identifier is, and `liveOnly` is one. A rule with an exception is a rule nobody reads.
+    `select path from media where ${liveOnly('media')} and variants < ?`,
+    VARIANT_VERSION,
   )
     .map((r) => r.path)
     .filter((p) => /\.(jpe?g|png)$/i.test(p))

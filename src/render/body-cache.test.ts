@@ -43,7 +43,7 @@ describe('the body cache', () => {
     const md = '![A photo](/uploads/media/x.jpg)\n'
     const bare = await renderPostContent({ markdown: md })
     const withVariants = await renderPostContent({
-      markdown: md, readyOriginals: new Set([collapseBlob('/uploads/media/x.jpg')]),
+      markdown: md, readyOriginals: new Map([[collapseBlob('/uploads/media/x.jpg'), 2]]),
     })
     expect(rows()).toBe(2)
     expect(bare).not.toContain('<picture')

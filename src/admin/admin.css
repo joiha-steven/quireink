@@ -179,9 +179,51 @@ body {
    Scoped to .ProseMirror so the published page is unaffected. */
 .ProseMirror .react-renderer:has(> figure.img-grid) {
   display: inline-block;
+  /* Three across, always — while the published page uses two, three or four by count. So a
+     gallery of four read 3+1 while you wrote it and 2x2 once you published it, and nothing
+     said which was true. This is the fallback now: a tile that cannot find its own position
+     between transactions. The real widths are keyed on the count below. */
   width: 31.5%;
   margin: 0 1.5% 0.5rem 0;
   vertical-align: top;
+  /* The containing block for the escaping toolbar below. */
+  position: relative;
+}
+/* The published column count, as the editor's own row. The three numbers are
+   `editorTileWidth(2|3|4)` in `render/gallery-cols.ts` — that function is the source and
+   `figures.test.ts` holds this sheet to it, because CSS cannot import and a second copy of
+   a layout rule is how the two sides drifted apart in the first place. */
+.ProseMirror .react-renderer:has(> figure[data-cols="2"]) { width: 48.5%; }
+.ProseMirror .react-renderer:has(> figure[data-cols="3"]) { width: 31.8%; }
+.ProseMirror .react-renderer:has(> figure[data-cols="4"]) { width: 23.5%; }
+
+/* THE SELECTED TILE'S TOOLBAR, out of the cell it could never fit in.
+   A gallery cell is 202px on a desktop and 102px on a phone; the bar holds up to seventeen
+   buttons whose segmented groups clip rather than wrap (`overflow-hidden` on the track), so
+   the crop ratios and the frame weights were simply cut off and unclickable. Taken out of
+   flow it lays out against the writing column instead, and it sits ABOVE the tile so it
+   never covers the picture whose crop is being chosen. It reads as a popover because it now
+   floats over content: its own surface, a hairline, a shadow. */
+.ProseMirror .qi-tile-bar {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  z-index: 30;
+  width: max-content;
+  max-width: min(38rem, calc(100vw - 2rem));
+  padding: 0.375rem;
+  border-radius: 0.5rem;
+  /* --c-rule is the admin's own hairline token and it already flips with the theme, so the
+     border needs no dark twin. The surface does: this floats over the writing sheet, which
+     is white on paper and near-black at night, and a popover has to be opaque or the text
+     under it reads through the buttons. */
+  border: 1px solid var(--c-rule);
+  background: #fff;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.12);
+}
+.dark .ProseMirror .qi-tile-bar {
+  background: #171717;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.5);
 }
 .ProseMirror figure.img-grid {
   margin: 0;
