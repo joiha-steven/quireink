@@ -866,6 +866,8 @@ const de = {
   authSkipWhy: 'Nur solange dieses Blog keine öffentliche Adresse hat. Sobald eine gesetzt ist, fragt die nächste Anmeldung wieder nach einer Authenticator-App.',
   crashTitle: 'Diese Seite hat angehalten',
   crashText: 'Beim Aufbau dieser Seite ist etwas fehlgeschlagen, deshalb hält die Verwaltung hier an, statt weiß zu bleiben. Was Sie geschrieben haben, liegt weiterhin auf diesem Gerät und wird beim erneuten Öffnen zur Wiederherstellung angeboten. Der Rest der Verwaltung ist nicht betroffen: die Seitenleiste funktioniert weiter.',
+  crashMissingTitle: 'Diese Seite konnte nicht geladen werden',
+  crashMissingText: 'Die Verwaltung hat einen Teil von sich selbst angefordert, und die Datei kam nicht an. Meist war dieser Tab offen, während das Blog aktualisiert wurde, oder die Verbindung ist abgebrochen. Ein Neuladen holt die aktuelle Fassung. Alles, was Sie geschrieben hatten, liegt weiterhin auf diesem Gerät.',
   crashDetail: 'Was fehlschlug',
   crashReload: 'Diese Seite neu laden',
   crashHome: 'Zur Übersicht',

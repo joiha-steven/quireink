@@ -13,6 +13,7 @@ import { ToastProvider } from '@/admin/ui/Toast'
 import { ThemeProvider } from '@/admin/ui/ThemeProvider'
 import { TopProgress } from '@/admin/ui/TopProgress'
 import { ErrorBoundary } from '@/admin/ui/ErrorBoundary'
+import { throughDeploys } from '@/admin/ui/stale-build'
 import { AdminSidebar } from '@/admin/components/AdminSidebar'
 import type { SiteLang } from '@/types'
 
@@ -41,20 +42,25 @@ const load = {
   notFound: () => import('@/admin/pages/NotFound'),
 } satisfies Record<string, Loader>
 
-const Dashboard = lazy(load.dashboard)
-const Content = lazy(load.content)
-const PostEditor = lazy(load.postEditor)
-const PageEditor = lazy(load.pageEditor)
-const Media = lazy(load.media)
-const Comments = lazy(load.comments)
-const Newsletter = lazy(load.newsletter)
-const Analytics = lazy(load.analytics)
-const Log = lazy(load.log)
-const Trash = lazy(load.trash)
-const Settings = lazy(load.settings)
-const Help = lazy(load.help)
-const NotFound = lazy(load.notFound)
-const Assistant = lazy(load.assistant)
+// `throughDeploys` sits between the loader and React, and it is not error handling — it is
+// the one failure whose cure is known. A chunk filename carries a content hash, so a new
+// build on the server DELETES the file this tab is about to ask for; the fix is to fetch the
+// new bundle, which is a reload. `ui/stale-build.ts` carries the reasoning and the loop
+// guard. Everything else a page can throw still goes to the boundary, unchanged.
+const Dashboard = lazy(throughDeploys(load.dashboard))
+const Content = lazy(throughDeploys(load.content))
+const PostEditor = lazy(throughDeploys(load.postEditor))
+const PageEditor = lazy(throughDeploys(load.pageEditor))
+const Media = lazy(throughDeploys(load.media))
+const Comments = lazy(throughDeploys(load.comments))
+const Newsletter = lazy(throughDeploys(load.newsletter))
+const Analytics = lazy(throughDeploys(load.analytics))
+const Log = lazy(throughDeploys(load.log))
+const Trash = lazy(throughDeploys(load.trash))
+const Settings = lazy(throughDeploys(load.settings))
+const Help = lazy(throughDeploys(load.help))
+const NotFound = lazy(throughDeploys(load.notFound))
+const Assistant = lazy(throughDeploys(load.assistant))
 
 /** Which loader serves a path. The single place the route table's shape is decided. */
 function loaderFor(path: string): Loader {
@@ -87,6 +93,10 @@ function loaderFor(path: string): Loader {
 export function preloadRoute(path: string): void {
   void loaderFor(path)().catch(() => {
     /* the render will surface it; a warm-up must never be the thing that throws */
+    /* NOT wrapped in `throughDeploys`, deliberately: this fires on hover and on mount, and a
+       tab that reloaded itself because a pointer crossed a link would be worse than the bug
+       it is curing. The reload belongs to the navigation the owner actually made, which is
+       the `lazy()` above. */
   })
 }
 

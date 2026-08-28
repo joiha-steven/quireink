@@ -866,6 +866,8 @@ const vi = {
   authSkipWhy: 'Chỉ hiện khi blog chưa có địa chỉ công khai. Đặt địa chỉ xong thì lần đăng nhập sau sẽ hỏi lại mã xác thực.',
   crashTitle: 'Màn hình này đã dừng',
   crashText: 'Một thứ trong trang này hỏng lúc đang vẽ ra, nên trình quản trị dừng ở đây thay vì để trắng trang. Những gì bạn đã gõ vẫn được giữ trên máy này và sẽ được mời khôi phục khi mở lại trang. Phần còn lại của trình quản trị không sao: thanh bên vẫn dùng được.',
+  crashMissingTitle: 'Không tải được trang này',
+  crashMissingText: 'Bảng quản trị cần một phần của chính nó nhưng tệp không về. Thường là do thẻ này mở sẵn trong lúc blog được cập nhật, hoặc mạng bị rớt. Tải lại sẽ lấy đúng bản hiện tại. Những gì bạn đã gõ vẫn được giữ trên máy này.',
   crashDetail: 'Chỗ hỏng',
   crashReload: 'Tải lại trang này',
   crashHome: 'Về bảng điều khiển',

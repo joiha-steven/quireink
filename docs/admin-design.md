@@ -345,31 +345,8 @@ in this admin with rules nothing else shares — a second typeface, a caret draw
 sound — and it grew past the point where it could ride along in a document about cards and
 gaps. Everything in this file still applies to it; that one adds what is true only there.
 
-## Navigation and the progress bar
-
-Measured in headless Chromium against a throwaway instance seeded to the size of the real
-blog (70 posts, 40,000 analytics events).
-
-**The first click on any admin route cost 330-390ms; the same route clicked again cost
-23-35ms.** The difference was not data and not work: the CPU was idle for ~300ms of it and
-the page's own fetch had not started. Every page is a `lazy()` import, so a first visit
-suspends; outside a transition React answers a suspension with the Suspense fallback and then
-throttles putting real content back by a fixed 300ms.
-
-- **Route changes run inside `startTransition`** (`router.tsx`). The current page stays on
-  screen until the new one is ready, so no fallback is shown and there is no reveal to
-  throttle. The Suspense boundary in `App.tsx` is reached on the FIRST paint only.
-- **Scrolling to the top belongs after the commit.** During a transition the old page is
-  still the one being looked at.
-- **A navigation must show it is happening.** `ui/TopProgress.tsx` is the only signal a click
-  did anything. It covers the router's `pending` and every in-flight `useView`, through the
-  counter in `pending.ts`.
-- **The bar never claims a percentage.** Nothing here knows how far along a fetch is. It
-  eases toward an edge it never reaches, then snaps closed, and honours `data-motion`.
-- **The entry preloads the current route's chunk** before React runs (`main.tsx`).
-
-After: Content 355 → 49ms, Media 336 → 59ms, Comments 348 → 43ms, Settings 346 → 45ms,
-Analytics 418 → 83ms. Cold load of `/admin` 501 → 329ms.
+Route changes, the progress bar and recovery from a deploy have their own file:
+[`admin-navigation.md`](./admin-navigation.md).
 
 ## Icons and marks
 

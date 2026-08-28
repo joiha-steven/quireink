@@ -1082,6 +1082,8 @@ export type AdminStrings = {
   // that the work is not gone, then offer the two things that actually help.
   crashTitle: string
   crashText: string
+  crashMissingTitle: string
+  crashMissingText: string
   crashDetail: string
   crashReload: string
   crashHome: string

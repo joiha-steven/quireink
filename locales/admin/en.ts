@@ -866,6 +866,8 @@ const en = {
   authSkipWhy: 'Offered only while this blog has no public address. Set one and the next sign-in asks for an authenticator again.',
   crashTitle: 'This screen stopped',
   crashText: 'Something in this page failed while it was drawing, so the admin stopped here instead of going blank. Anything you had typed is still held on this device and will be offered back when the page reopens. The rest of the admin is unaffected: the sidebar still works.',
+  crashMissingTitle: 'This page could not be downloaded',
+  crashMissingText: 'The admin asked for a part of itself and the file did not arrive. Usually that means this tab was left open while the blog was updated, or the connection dropped. Reloading fetches the current version. Anything you had typed is still held on this device.',
   crashDetail: 'What broke',
   crashReload: 'Reload this page',
   crashHome: 'Go to the dashboard',
