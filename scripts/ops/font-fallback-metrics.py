@@ -44,6 +44,15 @@ fonts = {
   'Source Serif 4': [F+'sourceserif-vietnamese.woff2', F+'sourceserif-latin-ext.woff2', F+'sourceserif-latin.woff2'],
   'Georgia': ['/System/Library/Fonts/Supplemental/Georgia.ttf'],
   'Arial': ['/System/Library/Fonts/Supplemental/Arial.ttf'],
+  # Android ships NEITHER Georgia nor Arial, so the two rows above described a fallback
+  # that machine never reaches. Its `serif` is Noto Serif and its `sans-serif` is Roboto.
+  # Not on a Mac either, so fetch them (both open licence) before rerunning:
+  #   mkdir -p .tmp/fallback-fonts && cd .tmp/fallback-fonts
+  #   curl -sSLO https://raw.githubusercontent.com/google/fonts/main/ofl/notoserif/NotoSerif%5Bwdth,wght%5D.ttf
+  #   curl -sSLO https://raw.githubusercontent.com/google/fonts/main/ofl/roboto/Roboto%5Bwdth,wght%5D.ttf
+  # They are MEASURED, never shipped: `local()` reads the copy already on the device.
+  'Noto Serif': ['.tmp/fallback-fonts/NotoSerif[wdth,wght].ttf'],
+  'Roboto': ['.tmp/fallback-fonts/Roboto[wdth,wght].ttf'],
 }
 m = {k: load(v) for k, v in fonts.items()}
 for k, v in m.items():
@@ -57,7 +66,10 @@ def fallback(primary, local):
             round(abs(p['desc'])/scale*100,2), round(max(p['gap'],0)/scale*100,2))
 
 print()
-for primary, local in [('Inter','Arial'), ('Source Sans 3','Arial'),
-                       ('Literata','Georgia'), ('Source Serif 4','Georgia')]:
+# Desktop twin first, Android twin second — the same order the stacks list them in.
+for primary, local in [('Inter','Arial'), ('Inter','Roboto'),
+                       ('Source Sans 3','Arial'), ('Source Sans 3','Roboto'),
+                       ('Literata','Georgia'), ('Literata','Noto Serif'),
+                       ('Source Serif 4','Georgia'), ('Source Serif 4','Noto Serif')]:
     sa, a, d, g = fallback(primary, local)
     print(f"{primary:15s} ← {local:8s} size-adjust:{sa}%  ascent:{a}%  descent:{d}%  line-gap:{g}%")

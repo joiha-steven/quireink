@@ -89,9 +89,25 @@ const FACES: Record<string, Face[]> = {
 }
 
 /**
- * Metric-matched fallbacks: the local face each stack falls back to, RESHAPED to the
+ * Metric-matched fallbacks: the local faces each stack falls back to, RESHAPED to the
  * self-hosted family's own measurements, so the swap `font-display:swap` performs moves
  * nothing.
+ *
+ * TWO PER FAMILY, AND THE SECOND ONE IS NOT OPTIONAL. Georgia and Arial are the desktop
+ * answer — macOS, Windows and iOS all ship both — and for two months they were the ONLY
+ * answer, which meant this whole table did nothing on ANDROID, where neither font exists:
+ * `local()` failed, the adjusted twin never matched, and the stack fell through to a bare
+ * `serif` with no adjustment at all. Measured on the demo's front page at 390px on
+ * 2026-08-28: during the swap window the document stood 6,390px tall against 6,921px once
+ * Literata landed, so every block below the first sat 531px — half a screen — too high and
+ * then dropped. The owner reported it as "text first, then the layout arrives"; on a Mac it
+ * is pixel-identical, which is why it went unseen. Android's `serif` is Noto Serif and its
+ * `sans-serif` is Roboto, so those are the second entries, with their OWN numbers: one
+ * `size-adjust` cannot serve two local faces of different width.
+ *
+ * ORDER IS THE PLATFORM TEST. A device resolves the first name it has, so the desktop twin
+ * leads and the Android twin catches what it misses. Adding a third (Liberation/DejaVu, for
+ * Linux) needs nothing but a row here and a name in the stack.
  *
  * The four numbers are measured, not styled. `size-adjust` is the ratio of the two
  * families' average advance width over a mixed Vietnamese + English sample, read glyph by
@@ -102,30 +118,52 @@ const FACES: Record<string, Face[]> = {
  * `scripts/ops/font-fallback-metrics.py` recomputes all of it; rerun it when a font file
  * is re-dropped, and paste the numbers.
  *
- * One face per family, weight left at its default: within a family the nearest weight
- * always matches, so bold text during the swap window renders as synthesized-bold Georgia
- * or Arial at the right WIDTH — which is the property that keeps the line breaks, and the
- * line breaks are what keep the layout still. The mono families carry no fallback on
- * purpose: `unicode-range` means their files only download on pages with code, and a code
- * block's own box, not its glyphs, sets that layout.
+ * Weight is left at its default in every row: within a family the nearest weight always
+ * matches, so bold text during the swap window renders as synthesized-bold Georgia, Arial,
+ * Noto Serif or Roboto at the right WIDTH — which is the property that keeps the line
+ * breaks, and the line breaks are what keep the layout still. The mono families carry no
+ * fallback on purpose: `unicode-range` means their files only download on pages with code,
+ * and a code block's own box, not its glyphs, sets that layout.
  */
-const FALLBACKS: Record<string, { local: string, adjust: string, asc: string, desc: string }> = {
-  'Inter': { local: 'Arial', adjust: '104.38%', asc: '92.81%', desc: '23.11%' },
-  'Source Sans 3': { local: 'Arial', adjust: '93.17%', asc: '109.9%', desc: '42.93%' },
-  'Literata': { local: 'Georgia', adjust: '107.56%', asc: '109.43%', desc: '28.64%' },
-  'Source Serif 4': { local: 'Georgia', adjust: '103.01%', asc: '100.57%', desc: '32.52%' },
+type Fallback = { local: string, adjust: string, asc: string, desc: string }
+
+const FALLBACKS: Record<string, Fallback[]> = {
+  'Inter': [
+    { local: 'Arial', adjust: '104.38%', asc: '92.81%', desc: '23.11%' },
+    { local: 'Roboto', adjust: '105.4%', asc: '91.91%', desc: '22.88%' },
+  ],
+  'Source Sans 3': [
+    { local: 'Arial', adjust: '93.17%', asc: '109.9%', desc: '42.93%' },
+    { local: 'Roboto', adjust: '94.08%', asc: '108.84%', desc: '42.52%' },
+  ],
+  'Literata': [
+    { local: 'Georgia', adjust: '107.56%', asc: '109.43%', desc: '28.64%' },
+    { local: 'Noto Serif', adjust: '99.62%', asc: '118.15%', desc: '30.92%' },
+  ],
+  'Source Serif 4': [
+    { local: 'Georgia', adjust: '103.01%', asc: '100.57%', desc: '32.52%' },
+    { local: 'Noto Serif', adjust: '95.41%', asc: '108.59%', desc: '35.11%' },
+  ],
 }
+
+/**
+ * The family name a fallback rides under. The first keeps the original name so the stacks
+ * that already carry it do not churn; the rest are numbered from 2.
+ */
+export const fallbackName = (family: string, i: number): string =>
+  i === 0 ? `${family} Fallback` : `${family} Fallback ${i + 1}`
 
 const declare = (f: Face): string => {
   const faces = (Object.keys(f.ranges) as (keyof typeof TEXT)[]).map((subset) =>
     `@font-face{font-family:'${f.family}';font-style:normal;font-weight:${f.weight};`
     + `font-display:swap;src:url('/fonts/${f.slug}-${subset}.woff2') format('woff2');`
     + `unicode-range:${f.ranges[subset]}}`).join('')
-  const fb = FALLBACKS[f.family]
-  if (!fb) return faces
-  return faces + `@font-face{font-family:'${f.family} Fallback';src:local('${fb.local}');`
+  const fbs = FALLBACKS[f.family]
+  if (!fbs) return faces
+  return faces + fbs.map((fb, i) =>
+    `@font-face{font-family:'${fallbackName(f.family, i)}';src:local('${fb.local}');`
     + `size-adjust:${fb.adjust};ascent-override:${fb.asc};descent-override:${fb.desc};`
-    + `line-gap-override:0%}`
+    + `line-gap-override:0%}`).join('')
 }
 
 /**
