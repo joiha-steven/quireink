@@ -5,7 +5,7 @@
   <img src="docs/brand/wordmark-light.svg" alt="quireINK" width="360">
 </picture>
 
-`2.2.1`
+`2.2.2`
 
 **Một cái blog bạn tự host, và AI agent có thể vận hành thay bạn.**
 Không thuật toán, không quảng cáo, không nền tảng nào đứng giữa bạn và người đọc.
@@ -73,16 +73,17 @@ Có ba thứ định hình nó.
 
 Bạn được đọc, sửa, chạy và fork theo [PolyForm Noncommercial](./LICENSE), và được chạy bản phát hành để kinh doanh — kể cả bán hosting — theo [một cho phép bổ sung](./LICENSE-EXCEPTION.vi.md).
 
-> **2.2.1 ra ngày 27/08/2026**, đang chạy bản demo ở trên và blog riêng của tác giả tại
-> [manhhung.me](https://manhhung.me). **Giao diện giờ nói mười một thứ tiếng** — thêm năm
-> (Pháp, Tây Ban Nha, Bồ Đào Nha giọng Brazil, Ý, Nga), kho bản dịch dời ra
-> [`locales/`](./locales/) cho người đóng góp dễ tìm, và mọi bản dịch cũ được biên tập lại
-> một lượt. **Bản sao lưu rời khỏi máy**: mỗi bản chụp cũng được ghi lên bucket chuẩn S3 bất
-> kỳ — R2, S3, MinIO — có nút Test, không OAuth. **Cuộc nhập dọn nhà trọn gói**: URL cũ bên
-> WordPress/Substack thành redirect của bạn, ảnh còn nằm ở host cũ được kéo về thư viện của
-> chính bạn. **Không cần tài khoản Cloudflare** — blog tự lên dây đồng hồ, tự ký thử thách
-> chống spam bình luận, và purge được mọi CDN qua webhook. Cuối bài có **đọc tiếp**, chỗ đọc
-> dở được **mời quay lại**, và nút chỉnh cỡ chữ chế độ sách thành chữ trần.
+> **2.2.2 ra ngày 29/08/2026**, đang chạy bản demo ở trên và blog riêng của tác giả tại
+> [manhhung.me](https://manhhung.me). **Ảnh có thể đeo khung** — nền giấy hoặc nền mực, ba độ
+> dày, đặt riêng từng ảnh hoặc đặt một lần cho cả site. **Bộ ảnh biết co theo màn hình** thay
+> vì xếp mười ô rộng 80 pixel trên điện thoại, mỗi kiểu ảnh nay khai đúng bề ngang thật của
+> nó với trình duyệt, và bản cắt 512px về cùng 1024/1600: **giảm khoảng 70% dung lượng** cho
+> đúng thứ điện thoại vẽ ra. **Dán ảnh chụp màn hình vào bài đã ăn.** Phần quản trị được đo
+> lại ở bảy khổ màn hình, từ Galaxy Z Fold gập lại trở lên — tám màn tràn ngang và năm thẻ
+> Cài đặt không chạm tay tới được; nay không còn, và trong khoảng 1024–1279 thanh bên hiện ra
+> dưới dạng biểu tượng để chừa bề ngang cho biểu mẫu. **Chữ hết nhảy trên Android**, nơi cơ
+> chế giữ layout đứng yên đã âm thầm không chạy suốt hai tháng. Image **nhẹ đi 45 MB**, và
+> một lần dán là cài xong trên droplet DigitalOcean.
 > [Changelog](./CHANGELOG.md) có đủ những gì đã đổi.
 
 ## Bạn được gì
@@ -125,7 +126,7 @@ Bạn được đọc, sửa, chạy và fork theo [PolyForm Noncommercial](./LI
 
 Đây là số đo từ mạng, lần vào đầu tiên, chưa cache gì. Đúng bằng cái mà một người lạ cầm điện thoại phải chờ.
 
-Hai dòng CSS và JavaScript là sản phẩm của bản build — giống nhau ở mọi bản cài — lấy từ bản dựng 2.2.1. Các số tổng đo ngày 27/08/2026 trên chính site này: tiếng Việt, Literata để đọc và JetBrains Mono cho phần khung. Chúng không phải thuộc tính của phần mềm, vì font được cắt theo bảng chữ và trình duyệt chỉ tải đúng những dải mà trang bạn dùng tới. Hình nét của cây bút nằm trong hai tệp bất biến riêng (~20 KB cả cặp) chỉ lên xe ở trang thật sự có vệt tô hay gạch chân ([ADR 0027](docs/decisions/0027-the-pen-ships-only-where-it-wrote.md)) — trang không mực không phải trả đồng nào cho chúng.
+Hai dòng CSS và JavaScript là sản phẩm của bản build — giống nhau ở mọi bản cài — lấy từ bản dựng 2.2.2. Các số tổng đo ngày 27/08/2026 trên chính site này: tiếng Việt, Literata để đọc và JetBrains Mono cho phần khung. Chúng không phải thuộc tính của phần mềm, vì font được cắt theo bảng chữ và trình duyệt chỉ tải đúng những dải mà trang bạn dùng tới. Hình nét của cây bút nằm trong hai tệp bất biến riêng (~20 KB cả cặp) chỉ lên xe ở trang thật sự có vệt tô hay gạch chân ([ADR 0027](docs/decisions/0027-the-pen-ships-only-where-it-wrote.md)) — trang không mực không phải trả đồng nào cho chúng.
 
 | | Trang chủ | Một bài | |
 |:---|---:|---:|:---|

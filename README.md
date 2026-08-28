@@ -5,7 +5,7 @@
   <img src="docs/brand/wordmark-light.svg" alt="quireINK" width="360">
 </picture>
 
-`2.2.1`
+`2.2.2`
 
 **A blog you host yourself, and an AI agent can run it for you.**
 No algorithm, no ads, no platform standing between you and your readers.
@@ -73,17 +73,18 @@ Three things shaped it.
 
 You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE), and run the published version commercially — paid hosting included — under [one additional permission](./LICENSE-EXCEPTION.md).
 
-> **2.2.1 came out on 2026-08-27** and runs the demo above plus the author's own blog at
-> [manhhung.me](https://manhhung.me). **The interface now speaks eleven languages** — five new
-> (Français, Español, Português (Brasil), Italiano, Русский), the translations moved to
-> [`locales/`](./locales/) where a contributor can find them, and every old one got an
-> editor's pass. **Backups leave the machine**: every snapshot is also written to any
-> S3-compatible bucket — R2, S3, MinIO — with a Test button and no OAuth anywhere. **The
-> import finishes the move**: old WordPress and Substack URLs become your redirects, and
-> images still pointing at the old host are fetched into your own library. **Nothing needs a
-> Cloudflare account** — the blog winds its own clock, signs its own comment challenge, and
-> can purge any edge by webhook. Posts end with **read next**, offer your place back with
-> **resume**, and book mode's size control became plain type. The
+> **2.2.2 came out on 2026-08-29** and runs the demo above plus the author's own blog at
+> [manhhung.me](https://manhhung.me). **A picture can wear a frame** — a mat of paper or of
+> ink, in three weights, per picture or set once for the whole site. **Galleries reflow on a
+> phone** instead of drawing ten tiles 80 pixels wide, every picture shape now tells the
+> browser its real width, and a 512px cut joins 1024/1600: about 70% fewer bytes for what a
+> phone actually draws. **Pasting a screenshot into a post finally does something.** The
+> admin was audited at seven widths from a folded Galaxy Z Fold up — eight screens overflowed
+> and five Settings tabs could not be reached by a finger; none of that is true now, and
+> between 1024 and 1279 the rail arrives as icons so the form keeps its width. **The layout
+> stops jumping on Android**, where the metric-matched fallback had been silently doing
+> nothing for two months. The image is **45 MB smaller**, and one paste of cloud-init puts it
+> on a DigitalOcean droplet. The
 > [changelog](./CHANGELOG.md) has everything that changed.
 
 ## What you get
@@ -126,7 +127,7 @@ You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE),
 
 These are off the network, first visit, nothing cached. It is what a stranger on a phone actually waits for.
 
-The CSS and JavaScript rows are build artefacts — the same bytes on every install — read off the 2.2.1 build. The totals were measured on 2026-08-27 against this site: Vietnamese, Literata to read and JetBrains Mono for the furniture. They are not a property of the software, because the fonts are cut per script and a browser fetches only the ranges your pages actually use. The pen's stroke shapes ride in two further immutable sheets (~20 KB together) that only board a page carrying a mark or an underline ([ADR 0027](docs/decisions/0027-the-pen-ships-only-where-it-wrote.md)) — an inkless page never pays for them.
+The CSS and JavaScript rows are build artefacts — the same bytes on every install — read off the 2.2.2 build. The totals were measured on 2026-08-27 against this site: Vietnamese, Literata to read and JetBrains Mono for the furniture. They are not a property of the software, because the fonts are cut per script and a browser fetches only the ranges your pages actually use. The pen's stroke shapes ride in two further immutable sheets (~20 KB together) that only board a page carrying a mark or an underline ([ADR 0027](docs/decisions/0027-the-pen-ships-only-where-it-wrote.md)) — an inkless page never pays for them.
 
 | | Home | A post | |
 |:---|---:|---:|:---|

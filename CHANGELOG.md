@@ -1,5 +1,258 @@
 # CHANGELOG
 
+## 2026-08-29 — Quire Ink 2.2.2
+
+The number is the owner's again, and again it is a patch. Under plain semver the picture
+frames alone would be a minor, and the admin pass touched eighteen screens — but the shelf
+stays stocked, which is the rule at work rather than an exception to it. Two days of work,
+twenty-eight commits, and the shape of it is unusual: almost nothing here came from a test
+going red. The owner looked at his own screen and said the admin felt *máy móc* — mechanical
+— and most of this release is what that sentence turned out to mean once it was measured.
+
+### Pictures get a frame, and galleries get a phone
+
+**A picture can wear a mat.** Paper or ink, in three weights, set per picture with `#frame`
+in the URL or site-wide in Settings so three hundred pictures are one decision. The mat is
+drawn on the `<img>` itself rather than on a wrapper, so it costs no extra element, no markup
+change and no migration; a framed picture is exactly as wide as an unframed one, so nothing
+below it moves. The ink mat inverts itself — near-black on a light palette, near-white on a
+dark one, across every palette a reader can switch to, from one declaration. Because a
+default now exists, `#noframe` exists too: on a framed site, *this one, plain* is a thing an
+author has to be able to say.
+
+The default travels as CSS and never as markup. A rendered body is cached under a hash of its
+input, so a default that rewrote HTML would leave every already-rendered post wearing the old
+frame until something unrelated evicted it. Through variables the change lands on the next
+paint, everywhere, with nothing re-rendered — which is why the screen needs no *apply to
+existing posts* button.
+
+**A gallery finally reflows.** Not one media query in the product had ever touched
+`.gallery`: the column count came from how many pictures were in the run and never from how
+wide the screen was, so at 390px a run of ten drew tiles 80 pixels across. A photograph 80
+pixels wide is not a photograph, and the lightbox behind it does not save it — nobody taps
+what they cannot make out. Two columns below 639px now, about 167px each.
+
+**Every picture had been promising the browser the wrong width.** `sizes` claimed the full
+column for every shape, which is true of a picture that holds the column and false of a
+floated third, a wide plate and a gallery tile — so a 167px tile was fetching the file cut
+for a 672px slot. Each shape states its own now, and **512 joins 1024/1600**: measured over
+eighteen pictures, 1,198 KB against 365 KB, about **70% fewer bytes for what a phone actually
+draws**, at roughly 8% more stored.
+
+That last part could not ship as a flag. A `<picture>` has no fallback — a candidate that
+404s fails the image rather than dropping to the `<img>` — so on the day a third width
+shipped, every already-finalised image in every install would have named a file nobody had
+generated. `media.variants` is a version now (0 none, 1 the old pair, 2 with 512), the
+renderer offers only what an original actually has, and the ordinary hourly sweep upgrades old
+images with no re-upload and nothing for an owner to run.
+
+**Two editor faults went with it.** The editor drew a flat three-across gallery while the page
+drew two, three or four by count, so four pictures read 3+1 while you wrote and 2×2 once you
+published. And **pasting a picture did nothing at all** — the handler read `text/plain`, found
+no video URL, and handed a screenshot back to an editor that has no parse rule for a file, so
+it vanished without a message. It is the commonest way anybody puts a picture in a post; it
+uploads now, exactly as a drop does.
+
+### The admin, measured instead of admired
+
+The owner's word was *máy móc*. It turned out to be four measurable things.
+
+**Nothing on screen said where you were.** The section you were in and a field's current value
+wore the same black pill, the same size, the same weight, eight lines apart. The highlighter
+now does the job it does on paper: it marks the line you are on — the rail's current row and
+the active tab, and never a value you selected, because a choice is not a place.
+
+**Ninety-two kinds of control changed colour on hover with no transition at all**, snapping
+while their neighbours eased. One zero-specificity rule now gives every interactive element in
+the shell a 150ms colour transition — never `all`, because transitioning layout is how a list
+starts sliding about when a row is added. Afterwards: no control without one, and one duration
+across 679 of them instead of two.
+
+**Nineteen rows had controls four pixels or more apart in height**, ten of them the palette
+editor's hex field against the swatch beside it. The rule — *a field is as tall as the button
+beside it* — was already written down and had never been enforced. The settings search sat
+eight pixels above its own tab strip for the same kind of reason: a vertical-stacking token
+worn in a horizontal row, pushing the field up by half of itself.
+
+**Four radius values were in use where the rule names three.** Tailwind's bare `rounded` is
+4px and is not a step in this hierarchy; it was on 108 chips, badges, code spans and
+thumbnails. Three screens had hand-rolled their own chooser with no radius at all — three
+copies of the same fifteen lines — sitting directly above kit components doing the same job
+properly, which is why the eye caught them.
+
+**A second ink arrives, and it is the one you strike things out with.** The red ballpoint from
+the wordmark now dresses the actions that destroy something and nothing else. Trash had drawn
+*Restore* and *Delete permanently* side by side in identical grey, with nothing on the row
+saying which of the two cannot be undone. `danger` stays outlined rather than filled, and
+fills only on hover: the loudest thing on a screen should be the thing you came to do, not the
+thing that destroys work.
+
+### The admin on the screens people actually hold it on
+
+Audited at seven widths across twelve screens — 344 (a Galaxy Z Fold shut), 360, 390, 412 (a
+Z Flip open), 673 (a Z Fold open, upright), 768 and 841 (the same, turned) — for three faults:
+anything past the viewport, anything clipped by an ancestor that hides overflow, and any hit
+area under a fingertip. **Eight screens overflowed, twenty-four controls were clipped,
+twenty-six kinds of control were under 32px.** Now zero, two and twenty-three — and the two
+are a scroll container doing its job.
+
+**Five of the eight Settings tabs could not be reached by a finger.** The strip was
+`overflow-hidden`, and a hidden box is a scroll container that script and focus can move and a
+person cannot: at 390px, Appearance, Search & URLs, Connections, AI and System sat past the
+edge, reachable only by typing a `?tab=` URL.
+
+**The Settings columns would not shrink**, so the Layout tab pushed the page 160px sideways at
+344px and carried the fixed Save bar off the edge — the primary action of the screen, half off
+a phone.
+
+**Unfolding a phone made the admin worse.** The rail appeared at 768px and cost 208 of them: a
+Z Fold open and upright is 673px and gave the form all of it, while turned to landscape at
+841px the rail arrived and left the form 633. A 768px tablet fared worst at 560 — less room
+than the same device had while folded shut. The admin is forms and tables, so content width is
+the product: the rail waits for 1024 now, and **between 1024 and 1279 it arrives already shut**
+— 72px of icons rather than 208px of words, handing the form back 136px on exactly the screens
+that sit in that band. The band forces it and never saves that, because a window that happens
+to be 1100px wide is not the owner stating a preference; leaving the band restores their own
+choice untouched.
+
+### Six holes the tests could not see
+
+Every one of these passed 1,954 tests and sixty-one browser flows, because a test asks whether
+the code does what it says and none of them lies about itself.
+
+- **The print sheet had been written against an essay**, and an essay carries no listing cards.
+  A card fades in on a view() timeline whose progress on paper is whatever it was on screen —
+  zero, for everything below the fold. On the front page, five of ten cards printed at opacity
+  0 and two more part way, all still taking their space: two posts and a wall of white over
+  three sheets.
+- **Twenty-six switches had no name.** `role=switch` and `aria-checked` were both present; the
+  word for *what* was being switched was not, because the row's label is a sibling of the
+  button and a sibling names nothing. Every toggle in Settings announced itself as "switch,
+  on". The prop is required now, so the next one cannot be added without a name.
+- **The Publish button sat off the right-hand edge** of a 390px phone when editing an existing
+  post — 584px of row in a 390px window, reachable only by scrolling the admin sideways.
+- **Three outbound fetches had no clock**, and all three take a URL somebody else chose. There
+  is one 15-second ceiling covering a whole redirect chain now, and 10 seconds each on
+  Turnstile and the Google token exchange, where a reader is sitting on the request while it
+  runs.
+- **The logo render read whatever arrived**, uncapped, though every other byte path that starts
+  from a typed URL is capped while reading.
+- **A nine-pixel target removed a subscriber.**
+
+### The layout stops jumping on Android
+
+Every text family already declared a metric-matched twin, so the `font-display: swap` window
+changes glyphs without moving a line break. It worked — on a Mac. The twins were Georgia and
+Arial, and **Android has neither**, so `local()` missed, the adjustment never applied, and the
+mechanism that exists to hold the layout still did nothing at all. Measured on the demo's front
+page at 390px: during the swap the document stood 6,390px tall against 6,921px once the real
+face landed, so **every block below the first sat half a screen too high and then dropped**.
+The owner had reported it as "text first, then the layout arrives"; it is invisible on a Mac,
+which is how it survived two months and a table written specifically to prevent it.
+
+There is a second twin per family now, on Android's own faces — Noto Serif for the serif
+stacks, Roboto for the sans — each with its own measured numbers, because one `size-adjust`
+cannot describe two local faces of different width. Cost: 306 bytes of CSS per page, before
+compression.
+
+### An admin tab open during an update stops breaking
+
+Opening Trash on a tab that had been sitting there since before a deploy produced the crash
+sheet: every chunk filename carries a content hash, so the build that tab was holding named a
+file the new build had deleted. The screens already visited kept working; the next one touched
+could not load. This is not a demo problem — every self-hosted blog updates its own instance,
+and anyone with the admin open when it does is in exactly that state. The one error whose cure
+is known now reloads once, guarded by a mark in `sessionStorage` so a build genuinely missing a
+file cannot spin the tab forever.
+
+**And the loading bar stopped drawing itself twice.** The owner said it sometimes ran two or
+three times; counting insertions found nothing, because the bar was not being replaced. It
+marked itself finished inside every cold load and then un-marked itself, replaying the whole
+animation, at the seam where the shell answers and the page then asks for its own data. That
+seam is 400ms and is spent once, on the first run; charging every later click that wait would
+leave the bar on screen after the page was ready, which is the opposite complaint.
+
+### The admin's small print rejoins its own scale
+
+12px text in the admin sat at 2.58:1 against light and 3.78:1 against dark, either side of the
+4.5:1 a line that size has to clear — the context line under every comment, every timestamp,
+the table heads, and Light / Clear cache / Sign out at the foot of the sidebar. The public site
+passed in both themes and always had; this was only ever the owner's screen, which is to say
+the screen somebody sits in front of every day.
+
+It was never a new opinion about grey. The scale had held the right pair the whole time, and
+117 places had drifted off it three ways: 55 wore the pair backwards, 30 had a bare light value
+with no dark half, and 32 had a bare dark-side value with no light half — because a colour with
+no `dark:` variant does not stop existing when the theme flips. Placeholder text and disabled
+states were left alone: both *mean* lighter than what you type.
+
+### The pen's marks become the logo
+
+The old icon said Qi in a terminal's voice on a black square, and nothing about it wrote. The
+new one is the product performing on one glyph: a Literata Q with the highlighter swept behind
+it, the red ballpoint ring around it, the graphite underline beneath it, and a full stop in
+ink — every pigment the pen's own, taken from the code that draws it, in light and dark values
+both. The letterforms are outlines, so no file depends on a font being installed, and the 16px
+favicon cut is simplified because all four marks at that size read as a smudge. The admin and
+the sign-in door carry it now, and the collapsed rail wears Q with the red stop.
+
+### Where this thing can live
+
+The install section had been organised by method and never answered the reader's first
+question, which is *where*. A four-line map opens it now — a rented VPS, a DigitalOcean
+droplet, a NAS, any Docker host — and each has a page rather than a footnote:
+
+- **DigitalOcean**: one paste of cloud-init user data on the droplet-create page. Docker, the
+  published image on bind mounts, `SITE_URL` from the machine's own default route, and the
+  claim link fished out into a file so the first lesson is not `docker logs`. Deliberately a
+  droplet and not App Platform, whose ephemeral filesystem would erase the blog on every
+  redeploy.
+- **Unraid**: live in Community Applications, so the instruction is four words — search
+  QuireInk in Apps.
+- **Synology** DSM 7.2 and **QNAP** take the compose file directly in Container Manager and
+  Container Station, with no shell at any point.
+- **Runtipi** gets a straight answer instead of a search that will never find anything: the
+  official store is closed to new apps, so *Add custom app* and paste.
+
+**The blog claims its own name in the official MCP registry** — `com.quireink/blog`, the
+reverse-DNS namespace the project already owns rather than a personal handle, because the name
+outlives whoever holds the account.
+
+### The image gets smaller, and keeps what it must carry
+
+**308 MB to 263 MB on disk, 95 MB to about 81 MB to pull.** Two of three ideas paid: sharp's
+musl binaries, which a glibc image could not load if it tried (19 MB), and what the server
+never opens — source maps, `.d.ts` declarations and prose (26 MB). The third is recorded as
+dead because it will occur to somebody again: swapping the Bun base for a plain Debian plus a
+copied binary saves nothing, since 180 of those 184 MB are the two things we need.
+
+**And then the prune had to give something back.** `-iname '*.md'` cannot tell a README from a
+copyright notice, and eight packages in the production tree carry theirs only as `LICENSE.md`
+— jose, qs, ms, express-rate-limit, @img/colour, @shikijs/vscode-textmate, css-to-react-native
+and json-schema-typed. MIT, BSD-2 and BSD-3 all require that notice to travel with every copy,
+and an image on two public registries is a copy handed to strangers. All 42 licence files in
+the tree are kept now, for 172 KB against the 28 MB the prune still wins.
+
+### Documents that had stopped being true
+
+- **Both READMEs were carrying 2.0.x speed measurements.** They are re-measured, the feature
+  table finally seats Comments — a whole subsystem with its own spam gate the page had never
+  listed — and three Vietnamese env rows that had never been translated now are. The
+  Vietnamese `SITE_URL` row had been describing the exact behaviour the software deliberately
+  refuses.
+- **The font-preload table said NEVER where the code said always**, citing the table for a
+  measurement that had moved. Whichever a reader trusted, the other was wrong, and the bad
+  failure mode was the likely one: somebody tidying the code back into line with the doc would
+  have undone a measured change.
+- **The stylesheet header claimed to be inlined into every page.** It has not been since
+  2026-07-30. Re-measured rather than merely corrected, on a throttled phone: linked wins by
+  44ms, because the preload scanner starts the stylesheet while the HTML is still streaming
+  while the extra 45 KB in the document costs real time. Inlining is the intuitive optimisation
+  here and it is a regression.
+- **One account's design tooling and one live domain left the public repository.** Three
+  comments had cited a second live site by name while making a point that did not need it; the
+  measurements stay, only the domain goes.
+
 ## 2026-08-27 — Quire Ink 2.2.1
 
 The number is the owner's, per the rule in `releases.md`: under plain semver the languages
