@@ -30,7 +30,7 @@ export function BrandFields({ s, update }: Props) {
         <div className={SETTING_GAP}>
           <div className="space-y-3">
             {s.logoUrl ? (
-              <img src={s.logoUrl} alt="Logo" className="h-12 w-auto rounded bg-neutral-100 p-1" />
+              <img src={s.logoUrl} alt="Logo" className="h-12 w-auto rounded-md bg-neutral-100 p-1" />
             ) : (
               <p className={NOTE_TEXT}>{t.noLogo}</p>
             )}
@@ -49,7 +49,7 @@ export function BrandFields({ s, update }: Props) {
             <Setting label={t.chooseLogoDark} note={t.logoDarkHint}>
               <div className="space-y-3">
                 {s.logoDarkUrl ? (
-                  <img src={s.logoDarkUrl} alt="Logo (dark)" className="h-12 w-auto rounded bg-neutral-900 p-1" />
+                  <img src={s.logoDarkUrl} alt="Logo (dark)" className="h-12 w-auto rounded-md bg-neutral-900 p-1" />
                 ) : (
                   <p className={NOTE_TEXT}>{t.noLogoDark}</p>
                 )}

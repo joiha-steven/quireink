@@ -193,7 +193,7 @@ export function TrashView({
         {rows.map((m) => (
           <Row key={m.url} kind="media" id={m.url} deletedAt={m.deletedAt}>
             <div className="flex items-center gap-3">
-              <img src={m.thumb || m.url} alt="" width={40} height={40} className="h-10 w-10 shrink-0 rounded object-cover" />
+              <img src={m.thumb || m.url} alt="" width={40} height={40} className="h-10 w-10 shrink-0 rounded-md object-cover" />
               <span className="truncate text-sm font-medium text-neutral-800 dark:text-neutral-200">{m.filename}</span>
             </div>
           </Row>

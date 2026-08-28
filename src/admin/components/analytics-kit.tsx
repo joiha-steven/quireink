@@ -81,7 +81,7 @@ export function BarList({ title, rows, unit, empty, bare = false }: { title: Rea
             const body = (
               <>
                 <div
-                  className="absolute inset-y-0 left-0 rounded bg-neutral-100 dark:bg-neutral-800"
+                  className="absolute inset-y-0 left-0 rounded-md bg-neutral-100 dark:bg-neutral-800"
                   style={{ width: `${Math.max(2, (r.value / max) * 100)}%` }}
                 />
                 <div className="relative flex items-center justify-between gap-3 px-2.5 py-1.5 text-sm">

@@ -25,7 +25,7 @@ export const CARD =
 // they were named here. A settings page is a Card holding a PANEL_LIST of rows; a row that
 // needs its own boxed sub-area uses INSET.
 //
-// One radius step under the sheet's, so a box nested in a rounded box does not fight it. No
+// One radius step under the sheet's, so a box nested in a rounded-md box does not fight it. No
 // background and no shadow: the sheet underneath already provides both.
 export const PANEL = 'overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-800'
 export const PANEL_LIST = `divide-y divide-neutral-200 dark:divide-neutral-800 ${PANEL}`
@@ -77,7 +77,7 @@ export function Setting({
       {label && (
         <div className={`${SETTING_LABEL} flex items-center gap-2`}>
           {label}
-          {badge && <code className="rounded bg-neutral-100 px-1.5 py-0.5 text-xs font-normal text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400">{badge}</code>}
+          {badge && <code className="rounded-md bg-neutral-100 px-1.5 py-0.5 text-xs font-normal text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400">{badge}</code>}
         </div>
       )}
       {note && <p className={NOTE}>{note}</p>}
@@ -370,7 +370,7 @@ export function EmptyState({
 // Table chrome — shared so the 4 admin tables stop re-declaring wrapper + head classes.
 //
 // TWO nested boxes, and the inner one is not decoration. The frame needs `overflow-hidden` or
-// the table's corners square off the rounded sheet; but `overflow-hidden` on the ONLY box
+// the table's corners square off the rounded-md sheet; but `overflow-hidden` on the ONLY box
 // clips a table wider than the sheet with no way to reach the rest — measured at 390px, the
 // analytics table ran to 426px and its last column sat past the viewport edge, unreachable, on
 // every phone. The inner `overflow-x-auto` gives the overflow somewhere to go.

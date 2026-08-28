@@ -31,7 +31,7 @@ export function Links({ children }: { children: ReactNode }) {
 // Inline literal — syntax, a path, a setting name. One style, used everywhere here.
 export function C({ children }: { children: ReactNode }) {
   return (
-    <code className="rounded bg-neutral-100 px-1.5 py-0.5 text-[0.8125rem] text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200">
+    <code className="rounded-md bg-neutral-100 px-1.5 py-0.5 text-[0.8125rem] text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200">
       {children}
     </code>
   )
