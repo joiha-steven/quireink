@@ -31,6 +31,7 @@ import { Component, type ErrorInfo, type ReactNode } from 'react'
 import { Button } from '@/admin/ui/Button'
 import { CARD, NOTE_TEXT, TITLE } from '@/admin/components/kit'
 import { useAdminT } from '@/admin/components/I18nProvider'
+import { isStaleChunk } from '@/admin/ui/stale-build'
 
 /** What is worth showing about a thrown value. Anything can be thrown, so nothing is assumed. */
 function messageOf(error: unknown): string {
@@ -51,10 +52,21 @@ function messageOf(error: unknown): string {
  */
 function CrashSheet({ error }: { error: unknown }) {
   const t = useAdminT()
+  // TWO SHEETS, one layout. A render that threw and a file that never arrived look identical
+  // from here — both land as a caught value — but they are not the same event and the owner
+  // is owed the right sentence. `crashText` says the page "failed while it was drawing",
+  // which is a lie about a page that never drew, and it promises the sidebar still works,
+  // which is no comfort when the cause is that the whole build moved on underneath the tab.
+  //
+  // Reaching this sheet at all with a missing chunk means `throughDeploys` already reloaded
+  // once and it did not help, so the honest reading is no longer "your tab is old" but "the
+  // file is not there, or you are offline". The text says both, because from the browser the
+  // two are indistinguishable.
+  const missing = isStaleChunk(error)
   return (
     <div className={`${CARD} p-6 sm:p-8`}>
-      <h1 className={TITLE}>{t.crashTitle}</h1>
-      <p className={`${NOTE_TEXT} mt-3 max-w-prose`}>{t.crashText}</p>
+      <h1 className={TITLE}>{missing ? t.crashMissingTitle : t.crashTitle}</h1>
+      <p className={`${NOTE_TEXT} mt-3 max-w-prose`}>{missing ? t.crashMissingText : t.crashText}</p>
       <p className={`${NOTE_TEXT} mt-4`}>
         {t.crashDetail}
         {': '}

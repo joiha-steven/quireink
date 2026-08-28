@@ -867,6 +867,8 @@ const pt = {
   authSkipWhy: 'Oferecido só enquanto este blog não tem endereço público. Defina um e o próximo login volta a pedir um autenticador.',
   crashTitle: 'Esta tela parou',
   crashText: 'Algo nesta página falhou enquanto ela desenhava, então o admin parou aqui em vez de ficar em branco. O que você tinha digitado continua guardado neste aparelho e será oferecido quando a página reabrir. O resto do admin não foi afetado: a barra lateral continua funcionando.',
+  crashMissingTitle: 'Não foi possível baixar esta página',
+  crashMissingText: 'A administração pediu uma parte de si mesma e o arquivo não chegou. Normalmente significa que esta aba ficou aberta enquanto o blog era atualizado, ou que a conexão caiu. Recarregar busca a versão atual. O que você tinha digitado continua guardado neste dispositivo.',
   crashDetail: 'O que quebrou',
   crashReload: 'Recarregar esta página',
   crashHome: 'Ir ao painel',

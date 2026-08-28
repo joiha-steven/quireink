@@ -866,6 +866,8 @@ const it = {
   authSkipWhy: 'Offerto solo finché questo blog non ha un indirizzo pubblico. Assegnane uno e il prossimo accesso richiederà di nuovo un autenticatore.',
   crashTitle: 'Questa schermata si è fermata',
   crashText: 'Qualcosa in questa pagina è andato storto mentre si disegnava, così l’admin si è fermato qui invece di restare bianco. Quello che avevi scritto è ancora conservato su questo dispositivo e ti sarà riproposto alla riapertura della pagina. Il resto dell’admin non è toccato: la barra laterale funziona ancora.',
+  crashMissingTitle: 'Non è stato possibile scaricare questa pagina',
+  crashMissingText: 'L’amministrazione ha chiesto una parte di sé e il file non è arrivato. Di solito significa che questa scheda è rimasta aperta mentre il blog veniva aggiornato, oppure che la connessione è caduta. Ricaricando si ottiene la versione attuale. Quanto avevi scritto è ancora conservato su questo dispositivo.',
   crashDetail: 'Cosa si è rotto',
   crashReload: 'Ricarica questa pagina',
   crashHome: 'Vai al pannello',
