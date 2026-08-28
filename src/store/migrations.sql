@@ -82,3 +82,33 @@ alter table integration_keys add column s3_bucket text;
 alter table integration_keys add column s3_prefix text;
 alter table integration_keys add column s3_access_key_id text;
 alter table integration_keys add column s3_secret_access_key text;
+
+-- migration: 007-variant-set-version
+-- `media.variants` stopped being a yes/no. It says WHICH set of display widths is on disk,
+-- because a third (512) joined 1024/1600 and a `<picture>` naming a file that is not there
+-- fails outright rather than falling back — so the renderer has to know, per image, what it
+-- may offer. An install finalised before this keeps its two widths and is upgraded by the
+-- ordinary sweep; nothing has to be re-uploaded and nothing is re-encoded twice.
+--
+-- A REBUILD, because SQLite cannot alter a CHECK. The twelve-step dance in one transaction:
+-- new table, copy, drop, rename, indexes back. `media` is small, has no triggers, and
+-- nothing references it — which is what makes this the cheap option rather than adding a
+-- second column that would mean almost the same thing as the first.
+create table media_new (
+  path        text primary key,
+  filename    text not null,
+  size        integer not null default 0,
+  uploaded_at integer not null,
+  width       integer,
+  height      integer,
+  thumb       text,
+  variants    integer not null default 0 check (variants >= 0),
+  alt         text,
+  deleted_at  integer
+);
+insert into media_new (path, filename, size, uploaded_at, width, height, thumb, variants, alt, deleted_at)
+  select path, filename, size, uploaded_at, width, height, thumb, variants, alt, deleted_at from media;
+drop table media;
+alter table media_new rename to media;
+create index if not exists media_uploaded_at_idx on media (uploaded_at desc);
+create index if not exists media_deleted_at_idx  on media (deleted_at);

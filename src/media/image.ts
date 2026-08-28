@@ -23,7 +23,35 @@ async function sharp(): Promise<Sharp> {
 
 export const RASTER = /^image\/(jpeg|png)$/ // full responsive pipeline
 export const PASSTHROUGH = /^image\/(svg\+xml|gif|webp|avif)$/ // stored as-is, no variants (avif is already efficient)
-export const SIZES = [1024, 1600] as const // display widths (in-column / wider)
+/**
+ * Display widths. 512 joined them on 2026-08-28, and it is the one that pays.
+ *
+ * The set was written for a picture that holds the reading column, where 1024 is already
+ * the smaller answer. It is wrong for every picture that does NOT: a gallery tile renders
+ * at 167px on a 390px phone and at 80px before the phone rule capped galleries at two
+ * columns, and the smallest file it could be given was 1024. Measured on the Hokusai post:
+ * three pictures, 190.2 KB at 1024 against 66.7 KB at 512.
+ *
+ * It costs about 8% of an image's stored bytes (+72 KB on 901 KB, measured over the six
+ * files an original keeps), which is the trade this step is: storage is cheap on the box,
+ * the reader's connection is not.
+ */
+export const SIZES = [512, 1024, 1600] as const
+
+/**
+ * Which SET of widths an original has on disk, so the renderer never names a file that
+ * is not there.
+ *
+ * A `<picture>` has NO fallback: if the candidate the browser picks 404s, the image fails —
+ * it does not drop back to the `<img>`. So the day 512 was added, every already-finalised
+ * image in every install would have started serving a `srcset` naming a file nobody had
+ * generated. The old flag was a boolean and could not tell the difference.
+ *
+ * 0 = nothing yet · 1 = 1024/1600 (everything finalised before 2026-08-28) · 2 = with 512.
+ * A v1 image keeps working exactly as it did and is upgraded by the ordinary sweep, so the
+ * change needs no migration, no downtime, and no re-upload.
+ */
+export const VARIANT_VERSION = 2
 const THUMB_WIDTH = 400
 export const ORIGINAL_CAP = 2048 // hard ceiling for a stored original's width — no full-size bytes are ever kept/served
 const CAPPABLE = /^image\/(jpeg|png|webp|avif)$/ // formats we can safely downscale in place (svg/gif excluded)

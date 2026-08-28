@@ -15,7 +15,8 @@ import { issueStamp } from '@/comments/stamp'
 import { chromeLabels, siteFooter, siteHeader, subscribeCard } from '@/web/chrome'
 import { getSeriesForPost } from '@/content/series'
 import { collapseBlob } from '@/media/blob'
-import { renderPostContent, type ImageDims } from '@/render/post-content'
+import { renderPostContent } from '@/render/post-content'
+import type { ImageDims, ReadyOriginals } from '@/render/figures'
 import { extractHeadings } from '@/utils'
 import { TOC_ANCHORS } from '@/render/toc'
 import { termSlug } from '@/content/taxonomy'
@@ -47,12 +48,14 @@ const OG_DESC_MAX = 320
  * Media facts the renderer needs: which originals have responsive variants, and the
  * intrinsic size of each. Read once per render rather than per image.
  */
-async function mediaFacts(): Promise<{ ready: Set<string>; dims: ImageDims }> {
-  const ready = new Set<string>()
+async function mediaFacts(): Promise<{ ready: ReadyOriginals; dims: ImageDims }> {
+  const ready: ReadyOriginals = new Map()
   const dims: ImageDims = new Map()
   for (const r of await getMediaRefs()) {
     const key = collapseBlob(r.url)
-    if (r.variants) ready.add(key)
+    // The NUMBER, not a boolean: it says which widths exist on disk, and the renderer may
+    // only name those. See `ReadyOriginals` — a <picture> naming a missing file fails.
+    if (r.variants) ready.set(key, r.variants)
     if (r.width && r.height) dims.set(key, { width: r.width, height: r.height })
   }
   return { ready, dims }

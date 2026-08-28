@@ -13,6 +13,7 @@ import Image from '@tiptap/extension-image'
 import { ReactNodeViewRenderer, NodeViewWrapper, type NodeViewProps } from '@tiptap/react'
 import { useAdminT } from './I18nProvider'
 import { SEGMENT_TRACK, tabItemClass } from './kit'
+import { galleryCols } from '@/render/gallery-cols'
 
 type Align = 'left' | 'center' | 'right'
 /**
@@ -131,6 +132,31 @@ function applyToGallery(editor: NodeViewProps['editor'], pos: number, opts: Part
   editor.view.dispatch(tr)
 }
 
+/**
+ * How many tiles are in THIS tile's run — the number the published grid is built from.
+ *
+ * The editor used to lay every gallery out three across, whatever its size, while the page
+ * used `galleryCols`: two, three or four by count. So the commonest gallery of all — four
+ * pictures — was 3+1 while you wrote it and 2x2 once you published it, and nothing on the
+ * screen said which was true. Same walk as `applyToGallery`, which already had to find the
+ * run's edges for the ratio and caption switches.
+ */
+function runLength(editor: NodeViewProps['editor'], pos: number): number {
+  const tiles: { offset: number; grid: boolean }[] = []
+  editor.state.doc.forEach((child, offset) => {
+    const raw: unknown = child.attrs.src
+    const src = typeof raw === 'string' ? raw : ''
+    tiles.push({ offset, grid: child.type.name === 'image' && parseFrag(src).grid })
+  })
+  const here = tiles.findIndex((t) => t.offset === pos)
+  if (here < 0) return 0
+  let from = here
+  let to = here
+  while (from > 0 && tiles[from - 1]?.grid) from -= 1
+  while (to < tiles.length - 1 && tiles[to + 1]?.grid) to += 1
+  return to - from + 1
+}
+
 function CaptionedImageView({ node, updateAttributes, selected, editor, getPos }: NodeViewProps) {
   const t = useAdminT()
   const src = (node.attrs.src as string) || ''
@@ -160,11 +186,41 @@ function CaptionedImageView({ node, updateAttributes, selected, editor, getPos }
   const group = SEGMENT_TRACK
   const btn = (active: boolean) => tabItemClass(active, 'sm')
 
+  // The published column count, so the preview is the same grid the reader gets. A tile that
+  // cannot find its own position (getPos is undefined between transactions) falls back to
+  // the old fixed three rather than jumping about.
+  const pos = grid ? getPos() : undefined
+  const cols = pos === undefined ? 3 : galleryCols(runLength(editor, pos)) || 3
+
   return (
-    <NodeViewWrapper as="figure" className={`my-4 ${figCls}`} data-drag-handle>
+    <NodeViewWrapper
+      as="figure"
+      className={`my-4 ${figCls}`}
+      data-drag-handle
+      // The COUNT, as an attribute the parent can be selected on. A custom property was the
+      // first attempt and it cannot work: the width belongs to `.react-renderer`, which is
+      // this node's PARENT, and a variable set here does not travel upward. `admin.css`
+      // matches on the attribute instead, with `editorTileWidth` as the one source of the
+      // three numbers and a test holding the sheet to them.
+      {...(grid ? { 'data-cols': String(cols) } : {})}
+    >
       {selected && (
         <div
-          className="mb-2 flex flex-wrap gap-2"
+          // THE TOOLBAR MUST NOT BE AS NARROW AS THE TILE. In a gallery the node view IS a
+          // grid cell — 202px on a 1440px screen, 102px on a phone — and this bar carries up
+          // to seventeen buttons in five segmented groups. Each group is `w-fit max-w-full
+          // overflow-hidden`, so the overflow was not a squeeze but a CLIP: measured
+          // 2026-08-28, five of fourteen buttons on a desktop and ten of fourteen on a phone
+          // were cut off and unclickable, and the ones that went were the choices — the crop
+          // ratios and the frame weights. Editing a gallery on a phone was impossible.
+          //
+          // So a selected tile's bar leaves the cell: it is taken out of flow and given the
+          // writing column to lay itself out in. Only for a tile — a lone picture's node view
+          // is already the full column and the bar is happier in the flow above it, where it
+          // pushes nothing sideways.
+          className={grid
+            ? 'qi-tile-bar mb-2 flex flex-wrap gap-2'
+            : 'mb-2 flex flex-wrap gap-2'}
           contentEditable={false}
           onMouseDown={(e) => e.preventDefault()}
         >

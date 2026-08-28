@@ -148,7 +148,12 @@ create table if not exists media (
   width       integer,
   height      integer,
   thumb       text,
-  variants    integer not null default 0 check (variants in (0,1)),
+  -- WHICH SET of display widths exists on disk, not whether any does: 0 = none,
+  -- 1 = 1024/1600, 2 = with 512 (see VARIANT_VERSION in media/image.ts). It was
+  -- `check (variants in (0,1))` until 2026-08-28, and that closed set was the bug — the
+  -- day a third width was added, the sweep that generates it could not record having done
+  -- so. Open-ended now, because this number was always going to grow.
+  variants    integer not null default 0 check (variants >= 0),
   -- Written by the optional AI describer on upload (media/alt-text.ts), editable by the
   -- owner, used as the default alt when the editor inserts the image. NULL = never
   -- described; '' = the owner cleared it and the describer must not refill it.

@@ -5,9 +5,9 @@
 // is byte-for-byte the same; the ONLY change is the return value. It was a React server
 // component ending in `dangerouslySetInnerHTML`, and it is now a function that returns
 // the HTML string, because the M2 gate is that article bodies come out identical.
+import { buildFigures, groupGalleries, type ImageDims, type ReadyOriginals } from '@/render/figures'
 import { marked, type Tokens } from 'marked'
 import { videoEmbed, videoFileUrl } from '@/render/video'
-import { collapseBlob } from '@/media/blob'
 import { highlightCode } from '@/render/highlight'
 import { readRendered, renderKey, writeRendered } from '@/render/render-cache'
 import { prepareFootnotes, applyFootnotes } from '@/render/footnotes'
@@ -41,25 +41,6 @@ const safeHref = (href: string): string => {
   return /^(?:javascript|data|vbscript):/i.test(cleaned) ? '#' : cleaned
 }
 
-/**
- * The same guard for an image's `src`, minus the part that would break a real image.
- *
- * The LINK path has been scheme-checked since the port and the IMAGE path never was, so
- * `![x](javascript:alert(1))` came out as `<img src="javascript:alert(1)">`. No browser
- * executes that — a `javascript:` URL in `src` is dead — so this closes an inconsistency
- * rather than a hole, and it is worth closing precisely because the next person to move
- * this URL somewhere executable would inherit the gap rather than the guard.
- *
- * `data:` is deliberately NOT blocked here, unlike in `safeHref`: `data:image/png;base64,…`
- * is a legitimate inline image and blocking it would break real posts to prevent nothing.
- * Script inside an SVG does not run when the SVG is loaded as an `<img>`; the case where it
- * DOES run — the SVG opened as its own document — is handled where that is served
- * (`web/uploads.ts`).
- */
-const safeImageSrc = (src: string): string => {
-  const cleaned = src.trim().replace(/[\u0000-\u001F\u007F]/g, '')
-  return /^(?:javascript|vbscript):/i.test(cleaned) ? '' : cleaned
-}
 
 // Reverse of escapeHtml — Shiki needs the raw text back before re-highlighting.
 const unescapeHtml = (s: string) =>
@@ -104,7 +85,8 @@ marked.use({
       const level = Math.min(6, Math.max(2, token.depth === 1 ? 2 : token.depth))
       const slug = level === 2 || level === 3 ? slugify(token.text) : ''
       const id = slug ? ` id="${slug}"` : ''
-      return `<h${level}${id}>${inner}</h${level}>\n`
+      return `<h${level}${id}>${inner}</h${level}>
+`
     },
     // A column header that SAYS it is one. marked prints a bare `<th>`, which a screen
     // reader can still associate by position in a simple table — `scope="col"` is the thing
@@ -116,7 +98,8 @@ marked.use({
       const tag = token.header ? 'th' : 'td'
       const scope = token.header ? ' scope="col"' : ''
       const align = token.align ? ` align="${token.align}"` : ''
-      return `<${tag}${scope}${align}>${inner}</${tag}>\n`
+      return `<${tag}${scope}${align}>${inner}</${tag}>
+`
     },
     // Sanitize link hrefs (drop javascript:/data:/vbscript:); marked no longer does.
     link(token: Tokens.Link) {
@@ -158,125 +141,6 @@ function dedupeHeadingIds(html: string): string {
     counts.set(id, n + 1)
     return n === 0 ? whole : `${pre}${id}-${n + 1}${post}`
   })
-}
-
-// Intrinsic dims of uploaded originals, keyed by collapsed pathname. width/height
-// on the <img> reserves the box from the aspect ratio → no CLS.
-export type ImageDims = Map<string, { width: number; height: number }>
-
-// The shapes a gallery tile can be cropped to. Written `1x1` rather than `1:1` because
-// this travels in a URL fragment, where a colon is legal but reads as a scheme separator
-// to every human who looks at it. `asis` is not the absence of a ratio: it is "keep the
-// proportions", which a gallery has to be able to say out loud once a SITE default exists
-// to disagree with.
-const GRID_RATIOS = new Set(['asis', '1x1', '3x2', '4x3'])
-
-// Figure placement from the src fragment: #left|#right (align, default center),
-// #wide (noses right into the gutter on wide screens; every image is full-bleed on phones),
-// #third (30% of the column; with an align it floats and the text runs around it,
-// magazine-fashion — the one fragment that changes how TEXT lays out, not just the figure).
-// Caption = alt.
-// The frame a picture wears, independent of where the picture sits: a mat of paper (or of
-// ink) with a line around it. `frame` alone is the middle weight; `thin` and `thick` mean
-// nothing on their own, which is why they are read only from beside it.
-//
-// THREE-VALUED, like the gallery options above it, and the third value is SILENCE: no token
-// means "whatever the site setting says". So `noframe` has to exist and has to be written
-// down — on a site whose default is a frame, "this one, plain" is a thing an author needs to
-// be able to say, and saying nothing already means something else.
-function frameClasses(tokens: string[]): string {
-  if (tokens.includes('noframe')) return 'img-noframe'
-  if (!tokens.includes('frame')) return ''
-  const weight = tokens.includes('thin') ? 'img-frame-thin' : tokens.includes('thick') ? 'img-frame-thick' : ''
-  const ink = tokens.includes('ink') ? 'img-frame-ink' : ''
-  return ['img-frame', weight, ink].filter(Boolean).join(' ')
-}
-
-function imgClasses(frag: string): string {
-  // Exact hyphen tokens so `#bright` can't match `right`: left|right|wide|third|left-third|….
-  const tokens = frag.split('-')
-  // `#grid` marks a gallery item; groupGalleries() wraps consecutive ones. The
-  // grid owns layout, so align/wide are ignored for a grid item.
-  //
-  // A gallery may also name its own shape and caption state. Each is three-valued and the
-  // third value is SILENCE: no token means "whatever the site setting says", which is what
-  // lets one screen fix a whole imported archive. The classes only carry an override.
-  if (tokens.includes('grid')) {
-    const ratio = tokens.find((t) => GRID_RATIOS.has(t))
-    const cap = tokens.includes('nocap') ? 'g-nocap' : tokens.includes('cap') ? 'g-cap' : ''
-    const opts = [ratio ? `g-${ratio}` : '', cap, frameClasses(tokens)].filter(Boolean)
-    return opts.length ? `img-grid ${opts.join(' ')}` : 'img-grid'
-  }
-  const align = tokens.includes('left') ? 'img-left' : tokens.includes('right') ? 'img-right' : 'img-center'
-  // The frame is ORTHOGONAL to all of this: it is drawn on the picture, while align and
-  // size decide where the picture goes. So it rides along with whichever answer wins below.
-  const frame = frameClasses(tokens)
-  const with_ = (base: string): string => (frame ? `${base} ${frame}` : base)
-  // `wide` and `third` are both sizes, so they cannot compose; wide wins because a fragment
-  // carrying both was almost certainly widened last.
-  if (tokens.includes('wide')) return with_(`${align} img-wide`)
-  return with_(tokens.includes('third') ? `${align} img-third` : align)
-}
-
-// Column count for a gallery of N images — Jetpack-like: small sets get one row,
-// 4 squares to a 2×2, larger sets settle at 3 then 4 columns.
-function galleryCols(n: number): number {
-  if (n <= 3) return n // 2 -> 2, 3 -> 3
-  if (n === 4) return 2 // 2×2
-  if (n <= 9) return 3 // 5–9 -> 3 across
-  return 4 // 10+ -> 4 across
-}
-
-// Wrap a run of 2+ consecutive `#grid` figures (separated only by whitespace)
-// into one `.gallery` grid container, with a column count chosen from how many
-// images are in the run. A lone grid image stays a normal figure.
-// `img-grid[^"]*` rather than `img-grid"`, because a tile now carries its ratio and
-// caption classes alongside. Matching the exact old string silently stopped grouping the
-// moment an option was set, and a gallery that quietly falls apart into a column of
-// full-width photos is the kind of break nobody reports as a bug.
-function groupGalleries(html: string): string {
-  return html.replace(/(?:<figure class="img-grid[^"]*">[\s\S]*?<\/figure>\s*){2,}/g, (run) => {
-    const count = (run.match(/<figure class="img-grid[^"]*">/g) ?? []).length
-    return `<div class="gallery gallery-cols-${galleryCols(count)}">${run.trim()}</div>`
-  })
-}
-
-// <picture> (AVIF/WebP @1024/1600) ONLY for raster originals with confirmed
-// variants (`ready`). A <picture> has no fallback on a 404 source, so anything
-// unconfirmed renders as a plain <img> of the original (always loads).
-const SIZES_ATTR = '(max-width: 768px) 100vw, 768px'
-function responsiveSources(cleanSrc: string, ready: Set<string>): string | null {
-  const m = cleanSrc.match(/^(.*\/media\/.+)\.(?:jpe?g|png)$/i)
-  if (!m) return null
-  if (!ready.has(collapseBlob(cleanSrc))) return null // variants not generated -> plain <img>
-  const set = (fmt: string) => `${m[1]}-1024.${fmt} 1024w, ${m[1]}-1600.${fmt} 1600w`
-  return (
-    `<source type="image/avif" srcset="${set('avif')}" sizes="${SIZES_ATTR}">` +
-    `<source type="image/webp" srcset="${set('webp')}" sizes="${SIZES_ATTR}">`
-  )
-}
-function buildFigures(html: string, ready: Set<string>, dims: ImageDims): string {
-  let seen = 0 // index of the image within the body, in source order
-  return html
-    .replace(/<p>\s*(<img\b[^>]*>)\s*<\/p>/g, '$1')
-    .replace(/<img\b[^>]*>/g, (tag) => {
-      const src = tag.match(/\bsrc="([^"]*)"/)?.[1]
-      if (!src) return tag
-      const alt = tag.match(/\balt="([^"]*)"/)?.[1] ?? ''
-      const [rawSrc, frag = ''] = src.split('#')
-      const cleanSrc = safeImageSrc(rawSrc ?? '')
-      const caption = alt ? `<figcaption>${alt}</figcaption>` : ''
-      // Intrinsic size (when known) reserves the box -> no CLS as it loads.
-      const d = dims.get(collapseBlob(cleanSrc))
-      const sizeAttrs = d ? ` width="${d.width}" height="${d.height}"` : ''
-      // First image = likely LCP → eager + high priority; later images stay lazy.
-      const priority = seen === 0 ? ' fetchpriority="high"' : ' loading="lazy"'
-      seen++
-      const img = `<img src="${cleanSrc}" alt="${alt}"${sizeAttrs}${priority}>`
-      const sources = responsiveSources(cleanSrc, ready)
-      const media = sources ? `<picture>${sources}${img}</picture>` : img
-      return `<figure class="${imgClasses(frag)}">${media}${caption}</figure>`
-    })
 }
 
 // Turn a standalone video URL (bare or autolinked by marked) into a player: a
@@ -329,20 +193,24 @@ function buildVideos(html: string): string {
  * per post per deploy, which the cache warmer absorbs in the background. A hand-maintained
  * version constant would have been free and would eventually have been forgotten.
  */
-function bodyKey(markdown: string, ready: Set<string>, dims: ImageDims): string {
+function bodyKey(markdown: string, ready: ReadyOriginals, dims: ImageDims): string {
   const media = [...dims].map(([k, v]) => `${k}:${v.width}x${v.height}`).sort().join(',')
-  return renderKey('body', buildSha() ?? 'dev', [...ready].sort().join(','), media, markdown)
+  // The VERSION is part of the key, not just the membership: an image upgraded from two
+  // widths to three changes the srcset this body prints, and a cached body keyed only on
+  // "has variants" would go on serving the old one until something unrelated evicted it.
+  const variants = [...ready].map(([k, v]) => `${k}:${v}`).sort().join(',')
+  return renderKey('body', buildSha() ?? 'dev', variants, media, markdown)
 }
 
 export async function renderPostContent({
   markdown,
-  readyOriginals = new Set(),
+  readyOriginals = new Map(),
   imageDims = new Map(),
 }: {
   markdown: string
   // Collapsed pathnames (media/x.jpg) whose AVIF/WebP variants exist. Images not
   // in this set render as a plain <img> of the original (no broken <picture>).
-  readyOriginals?: Set<string>
+  readyOriginals?: ReadyOriginals
   // Intrinsic width/height per collapsed pathname (for CLS-free rendering).
   imageDims?: ImageDims
 }): Promise<string> {

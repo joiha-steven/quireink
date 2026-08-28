@@ -74,6 +74,15 @@ footer.site a{display:inline-block;padding-block:.35rem}
   --fig-step-thick:var(--sp)}
 .img-third,.img-left.img-third,.img-right.img-third{float:none;width:60%;
   margin:calc(var(--sp) * 2) auto}
+/* TWO COLUMNS, WHATEVER THE COUNT SAYS. The column rule picks 2, 3 or 4 from how many
+   pictures are in the run, which is the right question on a desktop and the wrong one on a
+   350px column: measured 2026-08-28 at 390px, a run of five drew 109x72px tiles and a run
+   of ten drew 80x53px. A photograph 80 pixels wide is not a photograph, and the lightbox
+   behind it does not help — nobody taps what they cannot make out. Two columns give about
+   165px, which is a picture you can recognise and decide to open.
+   The tiles state 47vw below this same width in their own sizes attribute, so what the
+   browser fetches matches what it draws. */
+.gallery-cols-3,.gallery-cols-4{grid-template-columns:repeat(2,1fr)}
 }
 
 /* Copy sat behind pre:hover, and a touch screen never hovers: the button existed on a phone

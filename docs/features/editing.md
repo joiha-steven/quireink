@@ -41,6 +41,13 @@
   `settings.motion.enabled` and `prefers-reduced-motion` still gate the visual half; `off`
   makes the editor standard and silent, and a volume of 0 keeps the caret without the sound.
   Nothing animates the text itself — see [admin-editor.md](../admin-editor.md).
+- **Getting a picture in:** the toolbar's **Image** (one) and **Gallery** (multi-select) buttons,
+  the same two rows in the `/` menu, dragging files onto the sheet — they upload in order and
+  land at the drop point, not at the stale cursor — and **pasting**. Paste was silence until
+  2026-08-28: `handlePaste` read `text/plain`, found no video URL and handed back to
+  ProseMirror, which has no parse rule for a file, so a pasted screenshot vanished with no
+  message. It now goes through `insertImageFiles`, the same path a drop uses, so alt text,
+  ordering and the caption default are identical whichever gesture you used.
 - **Images and galleries** (`CaptionedImage.tsx`): placement rides on the src fragment
   (a Markdown image whose src ends `#right-wide`) and the caption is the alt, so the node still serializes to plain
   Markdown. Size is a three-way choice: column width (unmarked), `#third` (30% of the
@@ -63,6 +70,17 @@
   flip-flopping. **GOTCHA:** `groupGalleries` matches `img-grid[^"]*`, not `img-grid` exactly. An
   option appends a class, and matching the old exact string made every gallery with an option
   silently stop grouping and fall into a full-width column.
+  **The editor draws the published grid, not a fixed one.** The node view asks `galleryCols`
+  (`render/gallery-cols.ts`, the one home for that rule) how many columns its own run gets and
+  writes the answer as `data-cols`, which `admin.css` selects on. It was a flat three across
+  until 2026-08-28, so the commonest gallery of all — four pictures — read 3+1 while you wrote
+  it and 2×2 once you published it, with nothing on screen saying which was true.
+  **A selected tile's toolbar leaves the cell** (`.qi-tile-bar`). A tile is a 202px grid cell
+  on a desktop and 102px on a phone; the bar carries up to seventeen buttons in segmented
+  tracks that CLIP rather than wrap, so five of fourteen buttons on a desktop and ten of
+  fourteen on a phone were cut off and unclickable — the crop ratios and the frame weights,
+  which is to say every actual choice. Taken out of flow it lays out against the writing
+  column and sits above the picture whose crop is being chosen.
 - **Gallery defaults, site-wide** (*Settings → Layout → Galleries*, `GalleryFields.tsx`): the shape
   and caption state every gallery follows when it has no opinion of its own. Each option is
   THREE-valued and the third value is silence: no token means "follow Settings", which is what lets

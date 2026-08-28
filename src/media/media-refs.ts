@@ -6,7 +6,10 @@ import { all } from '@/store/query'
 import { liveOnly } from '@/store/db'
 import { expandBlob } from '@/media/blob'
 
-export type MediaRef = { url: string; variants: boolean; width?: number; height?: number }
+// `variants` is the VERSION of the width set on disk (0 = none), not a yes/no. It was a
+// boolean until 2026-08-28, when a third width joined the set and "has variants" stopped
+// being enough to know which files exist — see `VARIANT_VERSION` in media/image.ts.
+export type MediaRef = { url: string; variants: number; width?: number; height?: number }
 type Row = { path: string; variants: number; width: number | null; height: number | null }
 
 export async function getMediaRefs(): Promise<MediaRef[]> {
@@ -15,7 +18,7 @@ export async function getMediaRefs(): Promise<MediaRef[]> {
       `select path, variants, width, height from media where ${liveOnly('media')}`,
     ).map((r) => ({
       url: expandBlob(r.path),
-      variants: !!r.variants,
+      variants: r.variants,
       width: r.width ?? undefined,
       height: r.height ?? undefined,
     }))
