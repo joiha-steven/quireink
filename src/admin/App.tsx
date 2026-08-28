@@ -148,7 +148,7 @@ function Shell() {
     <AdminI18nProvider lang={data.language}>
       {/* Toasts are ADMIN-only (save and upload feedback), so the provider lives here. */}
       <ToastProvider>
-        <div className="admin-shell min-h-screen bg-neutral-100 md:flex dark:bg-neutral-950">
+        <div className="admin-shell min-h-screen bg-neutral-100 lg:flex dark:bg-neutral-950">
           <AdminSidebar lang={data.language} signOut={signOut} />
           <Canvas>
             {/* One page may fail without taking the admin with it. INSIDE the canvas and

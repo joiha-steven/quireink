@@ -4,7 +4,7 @@ import { Input } from '@/admin/ui/Input'
 import { Button } from '@/admin/ui/Button'
 import { FeaturedField } from './FeaturedField'
 import { useAdminT } from './I18nProvider'
-import { NOTE_TEXT } from './kit'
+import { NOTE_TEXT, SEGMENT_TRACK, tabItemClass } from './kit'
 
 const MENU_FIELD =
   'w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-400'
@@ -25,7 +25,7 @@ export function LayoutMenuFields({ s, update, posts, pages }: Props) {
       {/* What `/` serves, and where the post list goes when it is no longer there. ADR 0014. */}
       <div className="space-y-2">
         <span className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">{t.homeModeLabel}</span>
-        <div className="grid grid-cols-3 gap-2">
+        <div className={SEGMENT_TRACK}>
           {(['list', 'page', 'front'] as const).map((v) => {
             const active = home.mode === v
             return (
@@ -34,11 +34,7 @@ export function LayoutMenuFields({ s, update, posts, pages }: Props) {
                 type="button"
                 onClick={() => update({ home: { ...home, mode: v } })}
                 aria-pressed={active}
-                className={`border px-3 py-2 text-sm transition-colors ${
-                  active
-                    ? 'border-neutral-900 bg-neutral-900 text-white dark:border-white dark:bg-white dark:text-neutral-900'
-                    : 'border-neutral-300 text-neutral-700 hover:border-neutral-500 dark:border-neutral-700 dark:text-neutral-300'
-                }`}
+                className={tabItemClass(active, 'sm')}
               >
                 {v === 'list' ? t.homeModeList : v === 'page' ? t.homeModePage : t.homeModeFront}
               </button>
@@ -122,7 +118,7 @@ export function LayoutMenuFields({ s, update, posts, pages }: Props) {
               type="button"
               onClick={() => update({ menu: s.menu.filter((_, idx) => idx !== i) })}
               aria-label={t.delete}
-              className="shrink-0 rounded-lg px-2 text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-lg text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800"
             >
               ×
             </button>
@@ -137,7 +133,7 @@ export function LayoutMenuFields({ s, update, posts, pages }: Props) {
       {/* Sidebar layout: one stacked rail (classic) vs two rails + a narrower column. */}
       <div className="space-y-2 border-t border-neutral-200 pt-5 dark:border-neutral-800">
         <span className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">{t.sidebarLayoutLabel}</span>
-        <div className="grid grid-cols-2 gap-2">
+        <div className={SEGMENT_TRACK}>
           {(['single', 'two'] as const).map((v) => {
             const active = s.sidebarLayout === v
             return (
@@ -146,11 +142,7 @@ export function LayoutMenuFields({ s, update, posts, pages }: Props) {
                 type="button"
                 onClick={() => update({ sidebarLayout: v })}
                 aria-pressed={active}
-                className={`border px-3 py-2 text-sm transition-colors ${
-                  active
-                    ? 'border-neutral-900 bg-neutral-900 text-white dark:border-white dark:bg-white dark:text-neutral-900'
-                    : 'border-neutral-300 text-neutral-700 hover:border-neutral-500 dark:border-neutral-700 dark:text-neutral-300'
-                }`}
+                className={tabItemClass(active, 'sm')}
               >
                 {v === 'single' ? t.sidebarLayoutSingle : t.sidebarLayoutTwo}
               </button>

@@ -502,3 +502,22 @@ input[type='color']::-moz-color-swatch {
 .scroll-fade {
   mask-image: linear-gradient(to bottom, #000 0, #000 calc(100% - 24px), transparent);
 }
+
+/* A strip that scrolls under a finger but shows no bar. Used by the segmented tracks, which
+   are 32px tall — a scrollbar inside one is most of the control. The strip is still
+   scrollable; what is hidden is only the furniture. */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* A table in the WRITING SHEET scrolls. The editor was the one surface where a wide table
+   simply stuck out: measured at 344px, a four-column table reached 410px and took the page
+   with it.
+   ON THE WRAPPER, not on .ProseMirror. The reader's rule scrolls the whole prose
+   (`.prose:has(table){overflow-x:auto}`) and that is right for a page you only read — but
+   panning the WRITING surface sideways moves every paragraph away from the caret that is
+   still in one of them. ProseMirror already wraps each table in `.tableWrapper`, so the
+   table can pan while the words stay where they were put. */
+.ProseMirror .tableWrapper { overflow-x: auto; }
