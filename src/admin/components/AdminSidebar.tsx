@@ -1,7 +1,18 @@
 // Admin navigation as a LEFT SIDEBAR that collapses between icon+label and
-// icon-only (desktop), persisted in localStorage. On mobile it's a slim top bar
-// with a hamburger drawer (always icon+label). Every nav item shares SIDEBAR_NAV so
-// the rail reads as one uniform set. Monochrome by design (admin tooling stays on
+// icon-only, persisted in localStorage. Below 1024px it's a slim top bar with a
+// hamburger drawer (always icon+label).
+//
+// THE RAIL WAITS FOR 1024 AND NOT 768, and that is a measurement rather than a taste. It
+// used to appear at `md` and cost 208px of it, which made unfolding a phone a step
+// BACKWARDS: on the Settings screen (measured 2026-08-28) a Galaxy Z Fold upright and open
+// is 673px and gave the form all 673; turned to landscape it is 841px, the rail arrives,
+// and the form is left 633. A 768px tablet fared worst of all at 560 — less room for the
+// thing you came to use than the same device had while it was folded shut. The admin is
+// forms and tables, so content width IS the product here. At `lg` the sums turn: 1024 less
+// the rail is 816, comfortably past what a folded-open phone gets, and below that the rail
+// is one tap away in the drawer, which is where a phone wants it anyway.
+//
+// Every nav item shares SIDEBAR_NAV so the rail reads as one uniform set. Monochrome by design (admin tooling stays on
 // the neutral scale — no hardcoded accent colors).
 //
 // LAYOUT INTENT: the collapse/expand control lives at the TOP next to the wordmark
@@ -276,8 +287,8 @@ export function AdminSidebar({
         // `z-30`, because `sticky` makes the rail its own stacking context: without a
         // z-index the CONTENT — a later sibling — painted over the theme menu that opens
         // from the rail's footer, and the menu read as cut off behind a media card.
-        className={`sticky top-0 z-30 h-screen shrink-0 flex-col border-r border-neutral-200/80 bg-white px-3 py-5 transition-[width] duration-200 dark:border-neutral-800 dark:bg-neutral-900 hidden md:flex ${
-          collapsed ? 'md:w-[4.5rem]' : 'md:w-52'
+        className={`sticky top-0 z-30 h-screen shrink-0 flex-col border-r border-neutral-200/80 bg-white px-3 py-5 transition-[width] duration-200 dark:border-neutral-800 dark:bg-neutral-900 hidden lg:flex ${
+          collapsed ? 'lg:w-[4.5rem]' : 'lg:w-52'
         }`}
       >
         {/* Top: wordmark + collapse control. Stacked when collapsed (no room for a row). */}
@@ -290,7 +301,7 @@ export function AdminSidebar({
       </aside>
 
       {/* Mobile: top bar + drawer (always icon+label) */}
-      <header className={`sticky top-0 z-20 items-center justify-between border-b border-neutral-200 bg-white/95 px-4 py-3 backdrop-blur dark:border-neutral-800 dark:bg-neutral-900/95 flex md:hidden`}>
+      <header className={`sticky top-0 z-20 items-center justify-between border-b border-neutral-200 bg-white/95 px-4 py-3 backdrop-blur dark:border-neutral-800 dark:bg-neutral-900/95 flex lg:hidden`}>
         {wordmark(false)}
         <button
           type="button"
@@ -306,8 +317,8 @@ export function AdminSidebar({
       </header>
       {open && (
         <>
-          <button type="button" aria-label={t.navHome} onClick={close} className="fixed inset-0 top-[65px] z-20 bg-black/20 md:hidden" />
-          <nav className="fixed inset-x-3 top-[72px] z-30 scroll-fade max-h-[calc(100dvh-84px)] overflow-y-auto rounded-2xl border border-neutral-200 bg-white p-3 shadow-xl md:hidden dark:border-neutral-800 dark:bg-neutral-900">
+          <button type="button" aria-label={t.navHome} onClick={close} className="fixed inset-0 top-[65px] z-20 bg-black/20 lg:hidden" />
+          <nav className="fixed inset-x-3 top-[72px] z-30 scroll-fade max-h-[calc(100dvh-84px)] overflow-y-auto rounded-2xl border border-neutral-200 bg-white p-3 shadow-xl lg:hidden dark:border-neutral-800 dark:bg-neutral-900">
             {navItems(false)}
             <span className="my-1 block h-px w-full bg-neutral-200 dark:bg-neutral-700" aria-hidden />
             {controls(false)}

@@ -327,7 +327,10 @@ const BARE_TILE = 'px-5 py-4'
  */
 export function StatBand({ children }: { children: ReactNode }) {
   return (
-    <div className={`${CARD} grid grid-cols-2 divide-neutral-200 sm:grid-cols-3 lg:grid-cols-5 dark:divide-neutral-800
+    // `overflow-hidden`: the band wears the 10px corner and its cells are deliberately bare,
+    // so without it a cell's hover background paints square straight through the rounded
+    // corner. The cells stay square — they are cells — and the band keeps its shape.
+    <div className={`${CARD} overflow-hidden grid grid-cols-2 divide-neutral-200 sm:grid-cols-3 lg:grid-cols-5 dark:divide-neutral-800
       [&>*]:border-l [&>*]:border-t [&>*]:border-neutral-200 dark:[&>*]:border-neutral-800
       [&>*:nth-child(-n+2)]:border-t-0 [&>*:nth-child(odd)]:border-l-0
       sm:[&>*:nth-child(-n+3)]:border-t-0 sm:[&>*:nth-child(odd)]:border-l sm:[&>*:nth-child(3n+1)]:border-l-0

@@ -179,6 +179,37 @@
   like every other admin action, deletes go to the Trash, and the system prompt tells the model
   to name a destructive or bulk action and ask once before doing it.
 
+## The admin on a phone, and on a phone that folds
+
+The owner's readers write from phones, so this is measured rather than assumed. Audited
+2026-08-28 at seven widths — 344 (Galaxy Z Fold, shut) · 360 · 390 · 412 (Z Flip, open) ·
+673 (Z Fold, open, upright) · 768 · 841 (Z Fold, open, turned) — across twelve admin screens,
+for three faults: anything past the viewport, anything clipped by an ancestor that hides its
+overflow, and any hit area under a fingertip. Before: 8 screens overflowed, 24 controls were
+clipped, 26 kinds of control were under 32px. After: **0 · 2 · 23**, and the two that remain
+are a scroll container behaving as one.
+
+- **A segmented track SCROLLS, it does not clip** (`SEGMENT_TRACK`). `overflow-hidden` makes a
+  box a scroll container that no finger can move — script and focus can, a user cannot. Five
+  of the eight Settings tabs sat past the edge at 390px, AI and System among them, reachable
+  only by typing a `?tab=` URL. Its items also carry `shrink-0 whitespace-nowrap`, or a
+  squeezed strip wraps its labels instead of scrolling — "Search & URLs" broke over three
+  lines and made a 32px control 130px tall.
+- **`min-w-0` on the Settings columns** (`COL`). A grid item defaults to `min-width: auto` and
+  refuses to shrink below its content's intrinsic minimum, so the Layout tab pushed the page
+  160px sideways at 344px and took the fixed Save bar off the edge with it. One declaration,
+  every tab at exactly 0.
+- **The rail waits for `lg` (1024), not `md` (768)** — see `AdminSidebar.tsx` for the numbers.
+  It cost 208px of a 768px screen, which made unfolding a phone a step backwards: a Z Fold
+  open and upright gave a form all 673px, and the same device turned to landscape gave it 633.
+- **A table in the writing sheet scrolls on its own wrapper**, not by panning the whole sheet:
+  the reader's rule moves the prose, which is right for a page you read and wrong for one you
+  are typing into.
+- **Controls are ROUNDED in the admin** — square corners are the public site's rule
+  ([admin-design.md](../admin-design.md)). Three screens had hand-rolled their own square
+  chooser (`border px-3 py-2`) instead of using the kit's segmented track; they now use it,
+  which is also three fewer copies of a control the kit already owns.
+
 ## Settings (Admin → settings) — `SettingsView.tsx`
 
 - **ONE form, ONE save button, EIGHT task-based tabs** (`site | layout | reading | appearance |

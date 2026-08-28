@@ -78,7 +78,12 @@ const TAB_IDS: Tab[] = [
  * its neighbour.
  */
 const GRID = 'grid items-start gap-5 xl:grid-cols-2'
-const COL = 'space-y-5'
+// `min-w-0`, and it is load-bearing. A grid item defaults to `min-width: auto`, which
+// refuses to shrink below its content's own intrinsic minimum — so on a narrow screen these
+// columns did not narrow, they pushed the page sideways: measured 2026-08-28, the Layout tab
+// overflowed by 160px at 344px and 114px at 390px, taking the fixed Save bar off the edge
+// with it. One declaration takes every tab to exactly 0.
+const COL = 'space-y-5 min-w-0'
 
 export function SettingsView({ settings, presets, commentEnv, integrations, posts, pages, categories, update: updateStatus }: {
   settings: SiteSettings

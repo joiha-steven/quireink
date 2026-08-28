@@ -25,10 +25,17 @@ export type TabSize = 'lg' | 'sm'
 // own copy of the markup, one padding step off and with a different hover, which is how one
 // control came to look like two. A link-driven strip wears these and gets the real thing.
 export const TAB_TRACK = 'flex w-full flex-wrap items-end gap-6 border-b border-neutral-200 dark:border-neutral-800'
-export const SEGMENT_TRACK = 'flex w-fit max-w-full overflow-hidden rounded-md border border-neutral-200 dark:border-neutral-800'
+// `overflow-x-auto`, not `overflow-hidden`, and the difference is the whole control on a
+// phone. A hidden box IS a scroll container — script and focus can move it — but the browser
+// gives the user no way to: a finger cannot pan it. So a segmented strip wider than its box
+// did not merely look cut off, its far end was UNREACHABLE by touch. Measured 2026-08-28 on
+// the Settings tabs: at 390px five of the eight tabs were past the edge, AI and System among
+// them, and the only way to reach them was a `?tab=` URL. `no-scrollbar` keeps the bar
+// itself out of a 32px-tall control; the strip still clips visually at its rounded edge.
+export const SEGMENT_TRACK = 'flex w-fit max-w-full overflow-x-auto no-scrollbar rounded-md border border-neutral-200 dark:border-neutral-800'
 // The dense variant is full-width with growing items: five segments whose right edge lands
 // on the pane's own edge instead of stopping short of it ("hụt", the owner called the gap).
-const SEGMENT_TRACK_DENSE = 'flex w-full overflow-hidden rounded-md border border-neutral-200 dark:border-neutral-800'
+const SEGMENT_TRACK_DENSE = 'flex w-full overflow-x-auto no-scrollbar rounded-md border border-neutral-200 dark:border-neutral-800'
 
 export const tabItemClass = (active: boolean, size: TabSize = 'lg', dense = false): string =>
   size === 'lg'
@@ -38,7 +45,12 @@ export const tabItemClass = (active: boolean, size: TabSize = 'lg', dense = fals
           ? 'border-neutral-900 text-neutral-900 dark:border-white dark:text-white'
           : 'border-transparent text-neutral-500 dark:text-neutral-400 hover:border-neutral-300 hover:text-neutral-900 dark:hover:border-neutral-600 dark:hover:text-neutral-200'
       }`
-    : `${dense ? 'grow px-2' : 'px-3'} py-1.5 text-[0.8125rem] font-medium transition ${
+    // `shrink-0 whitespace-nowrap` on the segmented variant, now that the track scrolls
+    // rather than clipping. Without them a strip too wide for its box squeezes its items and
+    // wraps their labels instead: measured at 390px, "Search & URLs" broke over three lines
+    // and made a 32px control 130px tall. A scrolling strip should keep its items whole and
+    // let the strip move — that is what scrolling is for.
+    : `${dense ? 'grow px-2' : 'shrink-0 whitespace-nowrap px-3'} py-1.5 text-[0.8125rem] font-medium transition ${
         active
           ? 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900'
           : 'text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-neutral-200'

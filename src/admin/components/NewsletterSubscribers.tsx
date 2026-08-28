@@ -109,7 +109,7 @@ export function NewsletterSubscribers() {
                 <button
                   type="button"
                   onClick={() => removeSub(s.id)}
-                  className="-my-1.5 -mr-1.5 ml-auto shrink-0 rounded px-2 py-1.5 text-neutral-500 dark:text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-white"
+                  className="-my-1.5 -mr-1.5 ml-auto grid h-9 w-9 shrink-0 place-items-center rounded text-neutral-500 dark:text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-white"
                   aria-label={t.nlDeleteSub}
                 >
                   ✕
