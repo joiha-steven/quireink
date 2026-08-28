@@ -77,10 +77,20 @@ RUN --mount=type=cache,target=/root/.bun/install/cache,sharing=locked \
 # blocks rendered (shiki resolves its grammars from `node_modules` at runtime), an image
 # variant was served (sharp's native module), the admin answered 200, and the log carried no
 # resolution error. The reasoning above is why it is safe; that run is why we know.
+#
+# THE LICENCES ARE NOT PROSE, and `-iname '*.md'` does not know the difference. Eight packages
+# in the production tree carry their copyright notice ONLY as `LICENSE.md` — jose, qs, ms,
+# express-rate-limit, @img/colour, @shikijs/vscode-textmate, css-to-react-native,
+# json-schema-typed — and MIT, BSD-2 and BSD-3 all require that notice to travel with every
+# copy. This image IS a copy, published to two public registries, so deleting them is not a
+# size decision anybody gets to make. Keeping every licence file in the tree costs 172 KB
+# against the 28 MB above; the eight that would otherwise vanish cost far less than that.
 RUN find node_modules -type f \( \
       -name '*.map' -o -name '*.d.ts' -o -name '*.d.mts' -o -name '*.d.cts' \
       -o -iname 'README*' -o -iname 'CHANGELOG*' -o -iname '*.md' \
-    \) -delete
+    \) \
+    ! -iname 'LICENSE*' ! -iname 'LICENCE*' ! -iname 'COPYING*' ! -iname 'NOTICE*' \
+    -delete
 
 # The MUSL half of sharp, which this image can never load.
 #
