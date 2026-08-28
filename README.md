@@ -27,7 +27,7 @@ One process. Two SQLite files. No cloud account anywhere in the path.
 
 <br/>
 
-<img src="docs/demo.jpg" alt="Two screenshots side by side: a composed front page with a lead story and section rows, and the same site's article page with a contents rail, a meta column, a pencil underline, a red ballpoint ring around one word, a blue highlight, and a scanned Van Gogh letter as its first figure" width="960">
+<img src="docs/demo.jpg" alt="Two screenshots side by side: a composed front page with a lead story and section rows, and the same site's article page with a contents rail, a meta column, a pencil underline, a red ballpoint ring around one word, a blue highlight, and a scanned Van Gogh letter, mounted on a mat, as its first figure" width="960">
 
 <sub>**[demo.quireink.com](https://demo.quireink.com)** is the real thing. No sign-up, nothing to fill in. Use the bar at the bottom to jump between the front page, the list, an article, book mode, light and dark, and the admin. That bar is the only thing added, and it lives outside the code, so the demo is always the latest build.</sub>
 
@@ -90,7 +90,7 @@ You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE),
 
 | The part | What it does |
 |:---|:---|
-| 🖋️&nbsp;**Writing** | A real editor over Markdown — tables, video, footnotes, callouts, **mathematics**, Spotify. Drop an image in and it is cut for every screen — and described for you, if you give Settings an AI key (Anthropic, OpenAI or Gemini; yours, so your bill). Saves as you type, keeps three versions, and can hold a post until Tuesday |
+| 🖋️&nbsp;**Writing** | A real editor over Markdown — tables, video, footnotes, callouts, **mathematics**, Spotify. Drop an image in and it is cut for every screen — and described for you, if you give Settings an AI key (Anthropic, OpenAI or Gemini; yours, so your bill). A picture can hold the column, float at a third of it with the words running past, join its neighbours as a gallery, or wear a frame: a mat of paper or of ink, in three weights, per picture or set once for the whole site. Saves as you type, keeps three versions, and can hold a post until Tuesday |
 | 🏠&nbsp;**Front&nbsp;page** | The post list, a page you wrote, or a composed front: lead story, picks, a row per category, most read. Works with photographs, and with only words. [How it works](./docs/homepage.md) |
 | 🎨&nbsp;**Looks** | Six palettes, light and dark. Four reading fonts, or upload your own. Every size comes from a role, so one change moves the page instead of one heading |
 | 🖍️&nbsp;**The&nbsp;pen** | `==text==` highlights in five inks, `++text++` underlines in pencil, `@@word@@` rings a word in red ballpoint. Not coloured boxes — strokes grown from a seeded hand, so no two on a page share a shape and every phrase keeps its own. Pigments measured off a photograph of a real pen box |
@@ -112,7 +112,7 @@ You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE),
 
 <div align="center">
 
-<img src="docs/demo-reading.jpg" alt="Book mode, a fullscreen two-column reader on paper with a drop cap, a captioned letter facsimile and a page count, beside the dark theme showing a two-by-two gallery of Van Gogh paintings above a table" width="960">
+<img src="docs/demo-reading.jpg" alt="Book mode, a fullscreen two-column reader on paper with a drop cap, a captioned letter facsimile on its mat and a page count, beside the dark theme showing a two-by-two gallery of Van Gogh paintings above a table" width="960">
 
 <sub>Book mode and the dark theme. Neither is a filter dropped over the page. Both are the reading typography itself. The fonts ship with Vietnamese and Central European accents included, so the specimen on the left is set properly instead of falling back to whatever the system has.</sub>
 
@@ -169,7 +169,7 @@ It stays this way because of a few decisions that are hard to walk back.
 
 <div align="center">
 
-<img src="docs/demo-admin.jpg" alt="The Quire Ink admin: the Write screen with the list of everything written beside the editor's paper — a toolbar with underline and ring buttons, a pencil underline, a ringed word and a highlighted sentence in the post — and the appearance settings as one sheet of panels with six colour palettes and four reading fonts" width="960">
+<img src="docs/demo-admin.jpg" alt="The Quire Ink admin: the Write screen with the list of everything written beside the editor's paper — a toolbar with underline and ring buttons, a pencil underline, a ringed word, a highlighted sentence and a matted letter scan in the post — and the appearance settings as one sheet of panels with six colour palettes and four reading fonts" width="960">
 
 <sub>The admin is built around writing: the list beside the paper, and everything else one sheet per page. Palettes, fonts, sizes, layout, menu — all of it is a setting, none of it is code.</sub>
 

@@ -201,7 +201,10 @@
   toolbar + live preview). `{year}`/`{title}` tokens expand at render. The public layout renders it
   in `<footer class="site-footer">`; default keeps the "© {year} {title} · powered by Quire Ink" line.
 - Controlled field groups (no own state/save), per tab: **Site** (identity only, nothing here moves
-  a pixel) `SiteFields` + `BrandFields`; **Layout** `LayoutMenuFields` + `FooterField`; **Reading**
+  a pixel) `SiteFields` + `BrandFields`; **Layout** `LayoutMenuFields` + `FooterField` +
+  `GalleryFields` + `FigureFields` (the shape galleries take and the mat pictures wear when
+  they say nothing themselves — both applied as CSS on `:root` rather than as markup, see
+  [editing.md](editing.md)); **Reading**
   `PostFeatureFields` + `ListingFeatureFields` + `CommentFields` + `ActivityLogField`;
   **Appearance** `ThemeFields` (the **Default appearance** selector — `settings.defaultScheme`,
   `system` | `light` | `dark`, what a first-time visitor opens in — then the palette grid) +

@@ -3,7 +3,9 @@
 // `ruling-a-page` sets its arithmetic as maths rather than describing it in prose.
 //
 // `the-reed-pen-in-van-goghs-letters` is the gallery post: four paintings in one `#grid`
-// run, a floated `#third` portrait, and the two letter scans at column width. The images are
+// run, a floated `#third` portrait, and the two letter scans at column width — the first
+// of them `#frame`d, because a mat is invisible in a feature list and obvious in a picture,
+// and the README plates are shot against this post. The images are
 // the committed public-domain scans in `scripts/art/` (see `seed-art.ts` for the copyright
 // argument), and they are on subject — a letter written with a reed pen is calligraphy by a
 // working hand, which is rarer and more instructive than calligraphy by a careful one.
@@ -21,7 +23,7 @@ export const HAND_POSTS: Seed[] = [
 
 That makes the letters something rare. Formal calligraphy shows you what a broad edge does when someone is being careful. ==The letters show what it does when someone is thinking about something else entirely==#blue — and the tool's behaviour survives the neglect, which is the whole argument for learning tools rather than styles.
 
-![The letter of April 1885, with the first sketch of The Potato Eaters worked into the page between paragraphs](/uploads/media/van-gogh-letter-to-theo.jpg)
+![The letter of April 1885, with the first sketch of The Potato Eaters worked into the page between paragraphs](/uploads/media/van-gogh-letter-to-theo.jpg#frame)
 
 ## A pen you make in a minute
 
@@ -35,7 +37,7 @@ The floated portrait beside this paragraph is the size feature doing its job, in
 
 ## The page is composed, even when the words are not
 
-Look at the 1885 letter above rather than reading it. The lines are dense and even, the left margin never wavers, and when a sketch arrives it is set into the measure like a figure in a book — The Potato Eaters, months before the painting, sitting between two paragraphs as if a compositor had placed it.
+Look at the 1885 letter above rather than reading it — it is sitting on a mat, the way a facsimile is shown, which is a per-picture choice and not something done to the scan. The lines are dense and even, the left margin never wavers, and when a sketch arrives it is set into the measure like a figure in a book — The Potato Eaters, months before the painting, sitting between two paragraphs as if a compositor had placed it.
 
 Nobody taught him that as a rule. It is what a person who looks at pages all day does by reflex, and it is the same reflex this software's figure placement is trying to give back to people who write on glass.
 

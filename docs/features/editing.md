@@ -74,6 +74,21 @@
   INPUT, so a default that changed the HTML would leave every already-rendered body serving the old
   shape until something unrelated evicted it. The per-gallery override wins on specificity (tile
   class beats `:root`), not on source order.
+- **Frame default, site-wide** (*Settings → Layout → Pictures*, `FigureFields.tsx`): the mat every
+  picture wears when it has no opinion of its own — `settings.figure` = a weight
+  (`none` | `thin` | `medium` | `thick`) and a mat colour (paper or ink). **`none` at install**, on
+  the owner's instruction: a frame is a decision about a site's voice, and arriving with one already
+  made is a default nobody asked for. Same three-valued shape and the same CSS-not-markup rule as
+  the gallery defaults above (`figureCss` in `web/layout.ts` emits `--fig-default-pad` /
+  `--fig-default-mat` / `--fig-default-line` on `:root`, and emits NOTHING while the answer is
+  `none`), and for the identical reason — a default that rewrote HTML would leave every
+  already-rendered post wearing the old frame until something unrelated evicted the cache entry.
+  **The default names a STEP, never a length** (`--fig-step-thin|med|thick`), and that indirection
+  is load-bearing: the settings block is inlined AFTER the linked sheet, so a length would outrank
+  `mobile.css.ts`'s media query and a thick default would keep its full 28px mat inside a 350px
+  column. `figure-default.test.ts` pins exactly that, because the obvious implementation is the
+  wrong one. Overridable in BOTH directions — a frame token on a picture overrides upward,
+  `#noframe` overrides downward, which is the half that only matters once a site default exists.
 - **BubbleBar:** a floating `BubbleMenu` (`@tiptap/react/menus`) over a text selection or with the
   cursor in a link — bold/italic/underline/strike/code + link edit/remove. `shouldShow` skips node
   selections (image/video) so it never covers their own controls.
