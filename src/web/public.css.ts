@@ -1,9 +1,19 @@
 // The public stylesheet, hand-written (ADR 0008: no Tailwind on the public site).
 //
-// It is a string rather than a `.css` file because it is INLINED into every page, which
-// removes a request from the critical path. That only stays a good idea while the sheet
-// is small, which is the point of writing it by hand: a utility framework's output cannot
-// be inlined without shipping the parts this site does not use.
+// It is a string rather than a `.css` file because it is ASSEMBLED — hand-written in pieces
+// that compose in a deliberate order (see the bottom of this file), minified once and served
+// from one hashed, immutable path by `assets.ts`. It was inlined into every page until
+// 2026-07-30, when measuring three articles showed 41 KB of gzipped CSS re-sent for one
+// page's worth of information; the static half moved to a cached file and only the
+// settings-derived half stays inline. Re-measured 2026-08-28 on a throttled phone, in case
+// the round trip had become the worse half again: it has not. Linked is 616 ms to first
+// paint and inlining the whole sheet back into the HTML is 660 ms, because the preload
+// scanner starts the sheet while the HTML is still streaming, so the request is free while
+// the extra 45 KB in the document is not.
+//
+// Writing it by hand is what keeps it small enough for either answer to be on the table: a
+// utility framework's output cannot be inlined without shipping the parts this site does
+// not use.
 //
 // Every colour comes from a theme token (`--c-*`, set by `themesToCss`) and every size
 // from a type role (`--fs-*`, set by `typographyToCss`). No hardcoded hex, no hardcoded
