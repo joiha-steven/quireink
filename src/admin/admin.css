@@ -521,3 +521,29 @@ input[type='color']::-moz-color-swatch {
    still in one of them. ProseMirror already wraps each table in `.tableWrapper`, so the
    table can pan while the words stay where they were put. */
 .ProseMirror .tableWrapper { overflow-x: auto; }
+
+/* EVERY CONTROL ANSWERS A FINGER AT THE SAME SPEED.
+   Measured 2026-08-28: 92 kinds of control across the admin changed colour on hover with no
+   transition at all, so they snapped while their neighbours eased — which is most of what
+   "máy móc" means when somebody says an interface feels mechanical. It was never a decision;
+   it was 92 places that each had to remember, and most did not.
+   `:where()` on purpose: it makes this selector specificity ZERO, so any utility a component
+   states for itself wins outright — the sidebar keeps its `transition-[width] duration-200`,
+   a button keeps whatever it declares. This is a floor, not a rule.
+   Only the properties a hover actually changes. Not `all`: transitioning layout is how a
+   list starts sliding about when a row is added, and this admin has lists that grow.
+   The owner's motion switch turns it off, the same way it turns off the search highlight —
+   `data-motion="off"` is a request, not a preference to be overridden. */
+.admin-shell :where(a, button, select, input, textarea, summary, label, [role='button'], [role='switch']) {
+  transition-property: color, background-color, border-color, text-decoration-color, outline-color, fill, stroke, opacity;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+[data-motion='off'] .admin-shell :where(a, button, select, input, textarea, summary, label, [role='button'], [role='switch']) {
+  transition-duration: 0s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .admin-shell :where(a, button, select, input, textarea, summary, label, [role='button'], [role='switch']) {
+    transition-duration: 0s;
+  }
+}

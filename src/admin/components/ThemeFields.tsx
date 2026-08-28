@@ -122,7 +122,9 @@ export function ColorRow({ label, value, onChange }: { label: string; value: str
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-24 rounded-lg border border-neutral-300 px-2 py-1 text-sm uppercase outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+          // `h-9`, matching the colour swatch it sits beside. It was `py-1`, which measured 30px
+          // against the swatch's 36 — six pixels out, on ten rows in one column.
+          className="h-9 w-24 rounded-lg border border-neutral-300 px-2 text-sm uppercase outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
         />
       </span>
     </label>

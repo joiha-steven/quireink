@@ -300,7 +300,7 @@ export function StatCard({
   // "this is clickable" without pretending to be a physical object on a tray.
   if (href) {
     return (
-      <Link href={href} className={`${bare ? BARE_TILE : `${CARD} p-5`} block transition duration-200 ${bare ? 'hover:bg-neutral-100/70 dark:hover:bg-neutral-800/40' : 'hover:border-neutral-400 dark:hover:border-neutral-600 dark:hover:bg-neutral-800/40'}`}>
+      <Link href={href} className={`${bare ? BARE_TILE : `${CARD} p-5`} block transition ${bare ? 'hover:bg-neutral-100/70 dark:hover:bg-neutral-800/40' : 'hover:border-neutral-400 dark:hover:border-neutral-600 dark:hover:bg-neutral-800/40'}`}>
         {inner}
       </Link>
     )

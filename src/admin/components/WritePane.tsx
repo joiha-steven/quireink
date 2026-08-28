@@ -67,7 +67,11 @@ function Rows({
             onChange={(e) => setQuery(e.target.value)}
             placeholder={t.filterPlaceholder}
             aria-label={t.filterPlaceholder}
-            className="h-9 w-full min-w-0 rounded-lg border border-neutral-200 bg-white px-3 text-sm placeholder:text-neutral-400 dark:border-neutral-700 dark:bg-neutral-900 dark:placeholder:text-neutral-500"
+            // `h-8`, matching the `size="sm"` button beside it. This pane is deliberately dense —
+            // its tabs are `sm dense` too — and the field was 36px against the button's 32, which
+            // is the one thing a two-item row cannot hide. The target stays easy: it is the full
+            // width of the pane.
+            className="h-8 w-full min-w-0 rounded-lg border border-neutral-200 bg-white px-3 text-sm placeholder:text-neutral-400 dark:border-neutral-700 dark:bg-neutral-900 dark:placeholder:text-neutral-500"
           />
           <Link href="/admin/editor" className="shrink-0">
             <Button size="sm">{t.newPost}</Button>
