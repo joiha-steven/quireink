@@ -48,8 +48,22 @@ links it to yesterday's. Counting by address would have been the easy way and it
 here: one machine can run a hundred blogs, and then a hundred blogs count as one.
 
 **Not sent, at all:** your address, your blog's name, your posts, your readers, your traffic
-figures, your email, your IP. The answer is a static file naming the newest release, and it
-is the same file for everybody.
+figures, your email. The answer is a static file naming the newest release, and it is the same
+file for everybody.
+
+**What the other end sees anyway, and what it does with it.** Every HTTP request carries a
+source address; there is no version of this that does not. Until 2026-08-29 the receiving log
+was written without one, and it now records a coarse **network** instead — `/24` for IPv4
+(up to 254 hosts, and far more behind carrier-grade NAT), `/32` for IPv6. Never an address,
+and never anything that names a machine.
+
+It exists to answer one question the daily token cannot: a fresh database mints a fresh
+token, so one person recreating a container four times is indistinguishable from four people.
+Networks tell those apart. The hourly roll-up turns them into a single integer — "eleven
+blogs, from nine networks" — and **the integer is kept while the network is not**: it reaches
+no stored file, and that log alone is rotated at two days rather than fourteen. The
+alternative on the table was collecting each blog's domain, which would have made the count
+identifiable rather than accurate; this was chosen instead.
 
 Turn it off with `UPDATE_CHECK=0` in the environment, or in Settings → System → Updates.
 Off means your blog makes no outbound request of any kind. Nothing updates itself either
