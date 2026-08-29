@@ -23,11 +23,17 @@ On any behavior change, update the matching doc in the SAME change (Working prin
   [`scripts/ops/quire-backup.sh`](../../scripts/ops/quire-backup.sh) does.
 - **Audits** are dated snapshots, so they are write-only and they live with the author's
   notes rather than here. Read the latest first so a pass starts from the last clean line.
-- **Versioning (owner's rule — do NOT auto-bump):** the version is **`2.2.2`**, released
+- **Versioning (owner's rule — do NOT auto-bump):** the version is **`2.2.3`**, released
+  2026-08-30 — the year archive and a feed per archive, offline reading behind a switch that
+  is off by default (ADR 0039), one set of table settings for the whole blog, a post's own
+  picture with an author and shape knobs, page weight and cache rate in Analytics, a licence
+  exception that finally covers the install its own guide teaches (ADR 0038), and a
+  repository that no longer quotes its owner; several of those are minors under the rule
+  below and the owner took the patch slot a third time. (`2.2.2`, released
   2026-08-29 — picture frames with a site-wide default, the gallery finally reflowing, an
   admin audited at seven widths and repaired at all of them, and the metric-matched fallback
   reaching Android after two months of doing nothing there; the frames alone would be a minor
-  under the rule below, and the owner took the patch slot again. (`2.2.1`, 2026-08-27 —
+  under the rule below, and the owner took the patch slot again.) (`2.2.1`, 2026-08-27 —
   eleven languages, offsite snapshots, the import finishing the move and the
   no-account trio, any one of which the rule below would have called a minor; the owner
   chose the patch slot to keep numbers in reserve, which is this bullet's own rule at work.)

@@ -1,5 +1,453 @@
 # CHANGELOG
 
+## 2026-08-30 — Quire Ink 2.2.3
+
+Twenty-six commits in a day, and the owner took the patch slot again — under plain semver
+the year archive, the per-archive feeds, offline reading, the table settings and the shape
+knobs would each have been a minor on their own. Two threads run through it. One is
+**giving the blog a way back into its own past**: until this release a five-year-old post
+was reachable only through a tag, through search, or by paging back through the listing.
+The other is **saying out loud what was only ever implied** — five buttons that announced
+the same word, a permission that did not cover the install its own guide teaches, a
+repository that quoted its owner in sixty places, and a licence condition with nothing in
+the software to bite on.
+
+One default changes what an existing blog looks like, and one adds a URL to it. Both are
+named where they land, below.
+
+### The blog gets a way back into its own past
+
+**`/archive` is every published post on one page**, newest year first, as rows of `MM-DD`
+and a title — no excerpt, no thumbnail, because two hundred of them have to stay scannable.
+Measured on a live blog: twelve years and seventy-five posts, one request. One page rather
+than `/archive/2024` per year, because a year route mints a URL with a dozen rows on it and
+splits the one view worth having; the years are anchors, so the jump row at the top costs
+nothing. The way in is the sidebar, a list of years with counts, above the tags because a
+tag cloud is the one rail block with no ceiling on its length.
+
+**On by default.** An upgrade therefore adds a URL and a sidebar block to a blog that did
+not ask for one. It is one switch in Settings → Reading, and the reasoning for the default
+is that a blog with no archive has no surface that shows it whole.
+
+**A page or post already published at `/archive` wins**, and the year index gives way
+silently. That is not politeness: this repository's own demo had exactly such a page, and
+every site imported from WordPress could. A release that takes over a live URL is the
+failure an upgrade is least forgiven for. The sitemap then names the URL once, as the
+document it really is.
+
+The year is read off the ISO string rather than from `new Date(...).getFullYear()`. The
+stored value is UTC, and a post published on 1 January at 02:00 UTC files itself under the
+previous year on any host west of Greenwich. The date column is numeric for a related
+reason: a month name needs each language's own day/month order — "19 tháng 6" against
+"June 19" — which is a twelfth locale string and a per-language branch for a column five
+characters wide. The full date is on the `<time>` element for anything reading the document
+rather than looking at it. Below 34rem the date moves above its title instead of holding a
+fifth of the line.
+
+**A feed per archive**: `/category/:slug/feed.xml`, `/tag/:slug/feed.xml` and
+`/series/:slug/feed.xml`. A reader who follows one subject had to take all fifty posts or
+nothing. Gated on the same `seo.rss` as the site feed and deliberately not a second switch —
+an owner who has turned the feed off has already answered the question about feeds. A term
+no public post carries answers 404 rather than serving an empty channel, because an empty
+feed reads as a broken site to an aggregator. Each archive page advertises its own with a
+second `rel="alternate"` beside the site's.
+
+The `self` link is the URL the document was fetched from, and that is the trap in this
+feature: point it at `/feed.xml` and an aggregator following it swaps the reader's chosen
+subject for the whole blog, with nothing on the page they clicked from to show it.
+
+### Reading with no signal
+
+A service worker, and the first thing to say about it is that it is **off by default**. One
+outlives the page that installed it, so putting one on every existing blog's readers because
+the software updated would be the owner's decision being assumed rather than respected.
+ADR 0039 records it, and it supersedes exactly one line — `seo-pwa.md` said offline was out
+of scope by design, which is why the manifest made the site installable and a tunnel made it
+blank. It does not reopen the rejection of a service worker as a *prefetch* mechanism in
+`performance.md`; nothing here speculates.
+
+**Nothing is fetched that the reader did not ask for.** A page is in the cache because it
+was read. HTML is network-first, so online the reader always gets what the server just
+rendered — that is the failure this feature could most easily cause, and it is designed out
+rather than mitigated. `/assets/<hash>.*` and `/fonts/*` are cache-first because those URLs
+are immutable by construction: a deploy changes the bytes, which changes the hash, which
+changes the URL. Forty pages, bounded by count rather than by bytes, because `Cache.put`
+reports no size without reading the body.
+
+`/admin`, `/api`, `/preview`, `/og`, `/setup`, `/login`, every non-GET and every other origin
+are untouched, so nothing the owner does passes through it and nothing private is left on a
+shared machine.
+
+**Turning it off uninstalls it.** `data-sw` is absent from `<body>` when the feature is off,
+and the island reads that absence as *unregister and drop every `quire-` cache*. It runs on
+every public page because the switch can only take effect on a page the reader happens to
+load, and most of those are listings. That half is two thirds of the 676 bytes (235 gzipped)
+the feature cost; registering alone would have been cheaper and would have made the switch a
+one-way door. The core budget moved 10,500 → 11,000 with the price written into the diff.
+
+Served at `/sw.js` rather than `/assets/sw.<hash>.js`: a worker's scope is the directory its
+script came from, and under `/assets/` it would install, activate and never see a page. The
+build rides in `?v=<hash>`, which is what makes a deploy an update and what stops a new
+worker reading the old one's caches. `no-cache`, never `immutable` — it is the one file
+whose staleness a reload cannot fix, because a browser keeps serving from the worker it
+already has.
+
+**Proved by killing the server.** With the worker installed and one article read, the process
+was stopped and the article re-opened: full text, correct typeface, 575 words. The eager
+prefetch was measured too, not assumed — this site prefetches every safe link, so if those
+requests reached the worker one listing would fill the cache with pages nobody opened. A
+top-level page with 133 links, worker in control: zero entries after six seconds.
+
+### Tables stop being four declarations
+
+A table was: collapse the borders, fill the column, box every cell in a hairline, pad it. A
+`<th>` had no ground, no weight beyond the browser's bold and no rule under it, so a header
+row was one more row.
+
+**One set for the whole blog**, which is the design and not a limitation. GFM has no syntax
+for a tint or a rule, so per-table control means an attribute inside the Markdown — and then
+a table you paste in is no longer a table you can paste out. Measured against a real article
+of six tables (one timeline of three short columns, five reference tables with cells past
+150 characters): they were all one kind.
+
+Seven knobs, each a different mechanism rather than a number — how the header is marked
+(plain / tint / rule / inverted), which lines are drawn (every cell / rows only / none), the
+line weight, banded rows, a first column carrying the header's weight, cell padding, and what
+happens when the column is narrower than the table wants.
+
+⚠️ **`head: 'tint'` is the one default in this product that does not reproduce the previous
+rendering.** Every other settings group has shipped defaults that moved nothing on upgrade.
+`plain` + *every cell* is the old rendering, one click away, named in `docs/appearance.md` and
+asserted by a test, because the doc now makes a promise.
+
+The tint was measured rather than picked. Mixing `--c-rule` into the page — the move
+`--c-code-panel` makes one file over — gives a contrast ratio of 1.053, a band you have to be
+told is there, because a rule colour is already almost the paper. Mixing the *ink* instead, 6%
+of `--c-text`, gives 1.121 in light and 1.109 in dark from one declaration, with the band
+lifting off a dark page instead of pressing into it.
+
+Two wrong answers came before that, and **both passed the string tests; only the rendered page
+caught them**. `--tbl-head-fg: var(--c-heading)` darkened the header ink of every table on
+every blog, from `#262626` to `#121212`, while `plain` claimed to change nothing. `inherit`
+then looked like the fix and is worse: a CSS-wide keyword in a custom property makes it
+inherit itself, which at `:root` is nothing, so it computes to guaranteed-invalid and every
+reader silently takes the `var()` fallback — which was `--c-heading`, the exact colour being
+avoided. A test now rejects the whole keyword class.
+
+The phone case is a knob, not a fix. `.prose` has carried `overflow-x:auto` since it was
+written and for a table of sentences it had never once engaged, because a table that can
+shrink never overflows. Measured at 375px: first column 105px, one row 551px tall, seven rows
+totalling 2,334px, no scrollbar. A minimum column of 11rem gives 176px, 312px and 1,528px —
+and sends a three-column timeline sideways to save one pixel of height. So it is offered,
+defaulted off, and both numbers are written down.
+
+The editor gets the block too: it is a `.prose` surface, and without it an owner who chose an
+inverted header would be writing against a tinted one.
+
+### A post can show its own picture, say who wrote it, and change shape
+
+`featuredImage` has been stored, resized and served since the port, and a reader could only
+ever meet it on a share card or a newspaper-mode front page. The article never showed it and
+the ordinary post list had no `<img>` in it at all, so a blog about objects could not put a
+picture on its own front door without changing its whole homepage layout.
+
+**The shapes are the design's, not a question.** A list row offers no picture, a small square
+beside the words, or a large 3:2 above the title; an article offers no cover or a 3:2 cover.
+A ratio picker shipped and came out again the same day: one blog's pictures should look like
+one blog's pictures. **Both positions arrive off** — an upgrade must not redesign somebody's
+archive. The cover sits **above** the headline, which is what a magazine does and the order a
+reader wants.
+
+There is no full-bleed hero, and that is a measurement rather than a taste. At a 672px column
+on a 1440 viewport the left rail measures 126–376 and a broken-out hero started at 264,
+printing over the table of contents. The band between the rails is eight pixels either side
+and does not grow with the viewport, because the rails are positioned against the column.
+
+**The page no longer jumps.** `postImage()` emitted an `<img>` with no width or height, so on
+a list of three thumbnails every box measured `height: 0` until its file landed. Thumbnails
+are pinned by CSS `aspect-ratio`, the hero carries its intrinsic size, and both list and
+article measure CLS 0 — structurally rather than luckily.
+
+**And the cards stopped asking for a 1024px file to fill a 96px box.** `front-card.ts` carried
+a second copy of the srcset builder and the copy had drifted, naming 1024 and 1600 only; the
+512 width exists precisely for pictures that do not hold the reading column. Measured on a
+nine-card list, the same nine pictures: **798 KB at 1024w, 242 KB at 512w**. One builder now,
+shared, and the copy is gone.
+
+**Who wrote it.** There was no owner-name setting at all, so every `BlogPosting` this software
+has ever emitted went out with no `author` — the field search engines lean on hardest when
+deciding whether a page was written by somebody. Name, bio, portrait and link; an empty name
+means silence, and an existing blog stays silent. The byline is emitted twice on purpose:
+`.post-meta` is hidden above the rail breakpoint because the same facts live in the right
+gutter there, so a byline that lived only in that line was invisible on every desktop. Found
+by opening the page, not by a test.
+
+**Shape**, which nothing could change before: density, corner radius and headline weight — the
+first knobs that move shape rather than colour. Three live blogs were measured running 84
+editable colour fields and 27 type numbers between them, and the entire visible difference was
+two colour values nobody can see. Every default reproduces today exactly.
+
+**SEO**, from the project's own *not carried over yet* list: the `/page/1` and `/sitemaps.xml`
+redirects, category and tag entries plus per-post `<image:image>` in the sitemap, and the
+three-group crawler policy restored verbatim from the frozen tree. Search and AI bots share one
+`Allow`, as they did in 1.x — whether to block an AI crawler is the owner's call and would need
+a switch, not a default.
+
+And **`docs/appearance.md`**, which did not exist: the owner's map of every knob, the CSS
+variables and class names custom CSS may target, and an honest list of what cannot be changed.
+`customCss` appeared in zero markdown files before this, and an escape hatch nobody was told
+about is not an escape hatch.
+
+### Analytics learns what a page costs, and what the cache is doing
+
+Two numbers under the chart, and most of the work was making sure neither claims to be
+something bigger.
+
+**Page weight** is the reader's own browser summing `transferSize` across Navigation and
+Resource Timing. It rides the *leave* beacon beside the dwell, and that was the one real design
+decision: the view row is written the moment a page activates, while its stylesheets, fonts and
+pictures are still arriving, so a count taken then is short by most of the page. The column
+therefore sits on `analytics_scroll`, and a test asserts it is **not** on the events table.
+
+It is *reader* bytes and the admin says so in eleven languages. A bot, a feed reader and anyone
+with JavaScript off all download bytes and report none, and a CDN answers most requests without
+the origin hearing about them. The denominator always travels with the total, because a total
+shown alone reads a partly-measured month as a cheap one. A zero is kept as a zero, since that
+is what a fully cached page really costs.
+
+**Page cache** is counted at the single line that decides hit from miss, after the 404 check so
+a crawler inventing URLs cannot drive the rate to nothing. The panel says which cache it is and
+that the edge's own rate is invisible from here, because a blog can read low and still be served
+almost entirely by a CDN. There is no CDN integration for it: that would be per-provider, and
+ADR 0033 keeps this product CDN-neutral on purpose.
+
+`analytics.db` had no migration ledger and needed one — `if not exists` cannot add a column to a
+table that already exists. It has the same one `quire.db` uses now, and step `a001-visit-bytes`
+is the first entry.
+
+**The chart also stopped opening on a sliver of a day.** A "30 days" chart drew thirty-one
+columns, and column 0 covered 0.10 of a day: it showed 1 view beside the next day's 29 and read
+as a collapse in traffic that never happened. Worse, the sliver's width was the time of day, so
+two screenshots taken hours apart disagreed about the same day. The window is aligned to the
+bucket in the site's own zone now. The previous-period comparison had to move with it, or every
+comparison would have opened showing a fall, on every blog, on the day this shipped.
+
+### Six locked doors
+
+One sweep closing a review's findings. Nothing here changes what a page looks like; all of it
+changes what can go wrong silently.
+
+- **`/api/cron` fails closed** without `CRON_SECRET`. *Unset means open* was an unauthenticated
+  lever on the most expensive work the process does.
+- **Stored files outside the renderable families download instead of rendering.** One MIME-map
+  entry used to stand between an attachment and same-origin HTML.
+- **Image uploads are byte-sniffed**: extension, declared type and content must agree before a
+  file enters the store.
+- **The comment stamp's answer comes from `randomInt`**, not `Math.random` — a predictable
+  answer skips the entire proof-of-work.
+- **Preview links expire after 30 days**, with the expiry inside the signature. The old tokens
+  never expired at all.
+- **Recovery codes are rate-limited per user as well as per IP**: the per-IP toll resets with
+  every fresh address while the argon2id bill lands on one machine.
+- **MCP OAuth loopback goes through the consent page.** GET auto-approve meant any web page
+  could walk a signed-in owner into handing a code to whatever listened on a local port.
+- **MCP tokens carry a scope** (ADR 0037). `read` registers only the tools marked read-only;
+  `full` stays the default so existing connectors keep working. An unmarked tool is a write
+  tool — the dangerous default is the one that fails safe.
+- **The bundled Caddyfile's CSP matches the nginx one** the docs and production already run.
+  It had `unsafe-inline`, which made it a CSP in name only.
+- **Snapshots are on by default** (4 days, keep 4). Off-by-default meant the install that never
+  opens Settings ran with no backup at all.
+- **`/api/track` verifies a path is real content** before it becomes a row. The beacon was an
+  open POST and any script could seed analytics with fabricated paths.
+
+Structurally: **Invariant 1 is enforced by the router**, like Invariant 4 always was — the owner
+gate flushes the cache after every successful write, and the MCP door wraps every write tool the
+same way, so ~45 hand-placed `clearCache()` calls stop being the only thing between a save and a
+stale page. **The admin view contract is typed**, and its first compile caught a real drift: the
+client's `Range` type omitted the 90-day window the server honours. **The tour runs in CI** — it
+was built to close exactly the blind spot `check:all` admits to, and then lived only as a command
+someone had to remember, which is how six bugs cleared 1,954 green tests. Sixteen mount tests
+render the heavy admin screens with a real React root.
+
+### The permission reaches the install people actually run
+
+Two gaps between the licence exception and the software it was written about. Neither touches the
+line the exception exists to draw: commercial use of a modified copy still needs a separate
+licence.
+
+**Section 2(a) required that what you run is a release published by the licensor**, and every
+from-source path puts you on the default branch instead — both guides say `git clone`, and
+`install.sh` does `git clone --depth 1` then `git pull --ff-only`. No tag is checked out anywhere.
+So somebody following the official guide and earning from their blog was, on the text, outside the
+permission. Docker was fine, because `:latest` is the newest release. Two documented install paths,
+two different licences, and nothing saying which was which. 2(a) turns on **unchanged** now rather
+than on **tagged**, which is the condition that carried the intent in the first place. Licence
+version 1.1, both language texts moved together.
+
+**And nothing in the software carried the name 2(c) asks be kept.** Measured on the live demo: no
+`<meta name="generator">`, and the only public mention of Quire Ink was the footer — which is a
+setting, and 2(a) says in as many words that a setting is not a change to the source. A licensee
+could delete every trace of the software's name from their pages without modifying a line of code
+and still be inside the permission. The page names itself now where no setting reaches, pinned by
+a test. It is not a lock and is not meant to be: anyone modifying the source can remove it, and
+removing it is then a source change, which is precisely the line being drawn.
+
+ADR 0038 records it and amends ADR 0023, whose grant is unchanged.
+
+### The daily check runs on a clock, and counts networks instead of guessing
+
+The number this project reads to decide what to build next could not tell a blog somebody runs
+from a container somebody made and deleted, and it was low by an amount nobody could measure.
+
+**It fires from the hourly tick as well as from a reader.** It had only ever been middleware on the
+public request path, so a blog that was running, updated and healthy but had no visitor that day
+never asked and was counted as not there. On a personal blog that is most days.
+
+**Four new fields, and every one is a step**: age since the blog was claimed, how much is published,
+`docker` or `source`, and the admin's language. Age is the one that matters — it separates a blog
+somebody still runs from one made and deleted, which no count of daily tokens can do. A field
+precise enough to be a fingerprint would undo the token, so the steps are wide and an unknown field
+is absent rather than empty. The sentence the owner reads before deciding moved with the protocol,
+in all eleven languages: it said *never your numbers*, and a coarse post count is a number of theirs.
+
+**The receiving end derives a coarse network** — /24 for IPv4, /32 for IPv6 — never an address and
+never anything naming a machine, then keeps one integer per day and no network at all. A fresh
+database mints a fresh token, so one person recreating a container four times and four people were
+the same picture; counting networks makes the number accurate rather than identifiable. ADR 0036
+records why the check is on by default, which three documents described and none explained.
+
+### The editor's selection bar says what it does
+
+Audited by measuring rather than looking: four widths, both themes, three modes, the toolbar's
+stickiness, the markdown mirror, and the accessible name of every control.
+
+**The five inks had one name.** Each swatch carried a `title` reading *Highlighter* and nothing
+else — no text, no `aria-label` — so five buttons announced the same word, told apart only by an
+inline background colour. Anything not reading colour was offered five controls it could not choose
+between. The names existed in all eleven languages already, because the settings screen has always
+labelled the same five pickers. **The rest of the bar announced single letters**: content beats
+`title` when a browser computes an accessible name, so the tooltip a mouse could see said the right
+thing while a screen reader read out `B`, `I`, `H`, `U`, `O`, `S`. Thirteen buttons, thirteen
+distinct names now, and a test pins the ink half across all eleven languages — including that no two
+inks share a word, since a translation that collapsed two would put the bug back silently.
+
+**And the bar offers the heading levels a body actually uses.** It was one button hard-wired to H2,
+justified by a note saying the deeper levels live behind `/` and the `#` shortcuts. Neither survives
+being tested: the slash menu opens only on an empty paragraph, and a selection has content by
+definition, so that door is shut in exactly the case the bubble bar exists for. `### ` does work on
+an existing line — but it is a markdown shortcut nobody discovers from a toolbar. H2, H3 and H4 now,
+each with its own name and pressed state. Not H1: the post title is the H1.
+
+Found while measuring for room, and worse than the thing reported: the bar was 411px of buttons with
+`nowrap` and no width bound, so on a 375px phone the Link button sat off the right edge with nothing
+to scroll. It wraps now, capped at `min(32rem, 100vw − 1.5rem)` — measured, after a first guess of
+30rem folded a desktop bar that had the room.
+
+What was checked and is fine, so nobody re-checks it: no horizontal overflow at 390, 768, 1024 or
+1440; the toolbar is sticky at 4,000px of scroll; the writing measure is 72 characters; dark mode
+reads 12.3:1 for prose and 13.4:1 for the toolbar; the markdown mirror and its textarea sit at a 0px
+offset in all three dimensions. Not fixed, because it is a trade rather than a defect: every control
+in the editor is 36×36, which clears WCAG 2.2 AA and misses the 44pt the admin's own note cites —
+making the forty of them 44 would take the phone toolbar from three rows to four.
+
+### The settings screen stops shouting its small print
+
+**The palettes had lost their colour, literally.** A palette unchecked from the visitor switcher
+carried `grayscale opacity-60` on its swatch, so hiding Sepia from readers turned Sepia grey *in the
+editor*, on a palette that is still fully editable. `admin-design.md` had already written the rule
+this shipped against. Hidden is a dashed edge now. The swatch also drew four of the seven colours,
+six of which are near-white or near-black in every built-in palette: measured on the Sepia card,
+28×4 pixels per mode was the only genuinely coloured element — 3.2% of the card — so Mono, Sepia and
+Forest read as three identical grey stripes. The accent gets area now.
+
+**A card's title was smaller than the labels inside it.** `Card panel` hard-typed a 13px heading
+above 14px labels above 13px notes, so the hierarchy ran backwards and the heading was exactly the
+size of the smallest print on the screen. 15 / 14 / 13 at 600 / 500 / 400 now.
+
+**One colour, both modes, on one line.** It was two stacked seven-row tables, 28 inputs, with the
+light and dark value of the same token some 500px apart and another table in between.
+
+**A short answer sits beside its question** — ten settings stop spending three stacked rows to say
+"10". The hints lean rather than dim, because dimmer is not available: `#737373` on a white card
+measures 4.74:1 against the 4.5:1 floor a 13px line has to clear, and the next step on the neutral
+scale is 2.58:1. Ten of them are also shorter, cut at sentence boundaries with every language's tail
+compared first — Japanese splits one differently and needed two sentences taken, not one. Seven were
+left alone because their last sentence is the trap the reader needs.
+
+**Columns were re-measured**, which `admin-design.md` asks for and nobody had done. The Site tab's
+right column stood empty for 1,110px; it is 391 now, Reading 459 → 232, Appearance 768 → 225,
+Connections 511 → 307.
+
+### Ten fields that were not the kit's field
+
+`kit.tsx` owns the admin's form control, and ten settings fields had each drawn their own: no
+min-height, so 38px beside a 40px button on three cards; `rounded-lg` against the kit's `rounded-md`;
+`px-3` against `px-3.5`; a focus border with no ring; and no placeholder shade, which mattered most
+on the three key forms whose label *is* the placeholder. The ten also disagreed among themselves four
+ways, one of them a whole type size. `check:admin-kit` missed all ten because it looked for the ring,
+and a rewrite is not a copy — it fails on the idea now, the third such rule, verified by
+reintroducing a violation and watching it fail.
+
+**Enrolment held a plaintext TOTP secret and a set of recovery codes for the life of the process.**
+Both maps were emptied only where enrolment *succeeds*, so anyone who opened the screen and walked
+away left theirs behind, outliving by an unbounded margin the ticket they could only ever be used
+with. Dropped on every write now.
+
+Four more shapes that existed twice went the same way, including the libraries' selection bar —
+neither copy of which had the tap-target rule, so the two controls that *delete* had a 16px hit box.
+
+### Documents that stopped being true, and a repository that stopped quoting its owner
+
+**Sixty transcribed sentences came out of the tree** — code comments, CSS, tests, five documentation
+files, six ADRs and this changelog. A quoted chat message reads differently once it is framed inside
+a technical document that strangers read, and it asks the wrong thing of the argument: a rule holds
+because of the evidence under it, not because of who said it. Every reason survives, restated as the
+fact or the measurement it was evidence for. `CLAUDE.md` carries the rule now.
+
+**Four docs still pointed at the retired Next.js tree**, which `CLAUDE.md`'s own danger note warns
+about — `docs/mcp.md` sent a reader to four modules that were deleted with that tree, and said the
+OAuth flow is gated by an auth library that no longer exists. Every backticked path in every doc was
+then checked: seven do not exist, six of those correctly, and the seventh was live and wrong.
+
+**An audit of `docs/decisions/` against the running code**: four ADRs stated something the code now
+contradicts, six index rows were less current than the files they point at, and two decisions had no
+ADR at all. No ADR body is edited — the directory is append-only and the index is the part its own
+rules say to keep current. ADR 0002 gets the longest note, because it is the one most likely to be
+cited wrongly: it reasons from *there are no third-party self-hosters* and *nobody depends on it*, and
+there are now releases, a Docker image, eleven translations and a counted install base.
+
+**Sixty long comment blocks say the same things in fewer lines**, from 57 down to 20, across scripts,
+the renderer, the admin and the reader's islands. The test was: keep the rule, the measurement that is
+the reason to believe it, and the warning about what breaks if somebody undoes it — drop the retelling.
+No code moved, and that is proven rather than asserted: every tracked `.ts`/`.tsx`/`.css` file was
+stripped of comments before and after and compared line for line, 0 of 590 differ. Three doc comments
+in `web/layout.ts` turned out to be stacked above the wrong functions, which git shows was not
+introduced by the pass.
+
+**The two READMEs read like somebody wrote them.** Measured before touching them: 386 lines, 5,300
+words, 60 em-dashes, 39 paragraphs opening on a bolded stub, and three sections spending 1,737 words
+answering one question between them. English openings 1,510 → 1,224 words and 22 em-dashes → none;
+the Vietnamese, which is the one its owner reads, 61 em-dashes → 25, written in Vietnamese rather than
+carried across sentence by sentence. The version blurb came out — thirteen lines of changelog copied
+into a README, stale the day it ships. `docs/features/*` and `docs/conventions/*` were deliberately
+left: they are parts catalogues, not prose, and turning them into flowing sentences would make them
+longer and easier to drop a fact from.
+
+### Smaller things
+
+- The tour needs a private Chrome profile before it will open its debugging port. Chrome 136+ silently
+  ignores the remote-debugging switches on the default profile, which is why the tour passed on every
+  dev machine and died on its first CI run.
+- Two tour flows picked "a post" by URL shape off the sitemap and picked `/archive` the day the sitemap
+  learned to list it. They read the feed now: an item is a post by definition.
+- The words run under a small thumbnail instead of leaving a hole beside it — it floats rather than
+  holding a grid column for the whole row.
+- A broken database at boot prints something a NAS owner can act on, then exits non-zero.
+- `scripts/ops/quire-uptime.sh`: the fleet's first uptime watch, same shape as the backup script.
+- `check:docs` pins the version everywhere it is written to `package.json`. The number has shipped
+  inconsistent three times.
+
 ## 2026-08-29 — Quire Ink 2.2.2
 
 The number is the owner's again, and again it is a patch. Under plain semver the picture
