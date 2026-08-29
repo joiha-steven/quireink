@@ -13,11 +13,11 @@
 // sits, not what colour it is — the same question `FigureFields` and `GalleryFields` answer
 // two cards away.
 //
-// A THUMBNAIL HAS NO SHAPE CONTROL, and that is deliberate: it is always cropped square
-// beside the words and 3:2 above the title. A gallery chooses because a gallery IS the
-// photographs; a list thumbnail is chrome, and three real files at ratios 0.70, 2.10 and
-// 0.72 made a column that read as a tall block, a thin strip and a tall block. The hero
-// gets the choice because an article has room for one picture to be itself.
+// NO SHAPE CONTROL ANYWHERE, and that is the whole design: a cover is 3:2, a thumbnail
+// beside the words is a square, a thumbnail above the title is 3:2. One blog's pictures
+// should look like one blog's pictures, and choosing that is the design's job rather than
+// a question put to the owner three times. A ratio picker existed for an hour on 2026-08-29
+// and was taken out again for that reason.
 
 import type { PostImageSettings } from '@/types'
 import { NOTE_TEXT, SETTING_GAP } from './kit'
@@ -49,24 +49,6 @@ export function PostImageFields({ postImage, onChange }: {
         ]}
         onChange={(hero) => onChange({ ...postImage, hero })}
       />
-
-      {/* Only worth asking once there IS a hero. A shape control above a picture nobody is
-          showing is a question about nothing. */}
-      {postImage.hero !== 'none' && (
-        <Choice
-          label={t.postImageRatio}
-          note={t.postImageRatioHint}
-          value={postImage.ratio}
-          options={[
-            { value: '', label: t.piRatioAsShot },
-            { value: '1x1', label: '1:1' },
-            { value: '3x2', label: '3:2' },
-            { value: '4x3', label: '4:3' },
-            { value: '16x9', label: '16:9' },
-          ]}
-          onChange={(ratio) => onChange({ ...postImage, ratio })}
-        />
-      )}
 
       <Choice
         label={t.postImageThumb}

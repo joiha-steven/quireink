@@ -11,10 +11,15 @@ import type { FrontSettings, Post, SiteSettings } from '@/types'
 import { formatDate, t } from '@/i18n/i18n'
 import { termSlug } from '@/content/taxonomy'
 import { escapeAttr, escapeHtml } from '@/utils'
-import { collapseBlob } from '@/media/blob'
+import { responsiveSources, type ReadyOriginals } from '@/render/figures'
 
 /** Which originals have responsive variants. Built once per render, never per image. */
-export type ReadyImages = Set<string>
+/**
+ * Originals that have variants, and WHICH set: the version decides whether 512 may be
+ * named. It was a bare `Set<string>` until 2026-08-29, which threw that number away and
+ * left every card asking for a 1024px file (`render/figures.ts` holds the one builder now).
+ */
+export type ReadyImages = ReadyOriginals
 
 /**
  * How much standfirst a shape gets, in characters.
@@ -135,13 +140,8 @@ export function postImage(
   // the attribute ratio, and the attributes still describe the file correctly.
   const size = dims ? ` width="${dims.width}" height="${dims.height}"` : ''
   const img = `<img src="${escapeAttr(src)}" alt="${alt}"${size}${loading} decoding="async">`
-  const m = src.match(/^(.*\/media\/.+)\.(?:jpe?g|png)$/i)
-  if (!m || !ready.has(collapseBlob(src))) return `<picture>${img}</picture>`
-  const set = (fmt: string) => `${m[1]}-1024.${fmt} 1024w, ${m[1]}-1600.${fmt} 1600w`
-  return '<picture>'
-    + `<source type="image/avif" srcset="${set('avif')}" sizes="${sizes}">`
-    + `<source type="image/webp" srcset="${set('webp')}" sizes="${sizes}">`
-    + `${img}</picture>`
+  const sources = responsiveSources(src, ready, sizes)
+  return sources ? `<picture>${sources}${img}</picture>` : `<picture>${img}</picture>`
 }
 
 /** Date, reading time, or neither. Both are settings because a front page is not a feed. */

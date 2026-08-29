@@ -269,10 +269,12 @@ async function buildBody(settings: SiteSettings, ready: ReadyImages): Promise<st
  */
 export async function renderFront(): Promise<string | null> {
   const settings = await getSettings()
-  const ready: ReadyImages = new Set()
+  const ready: ReadyImages = new Map()
   // Only needed for the kind that draws pictures, and it is a full table read.
   if (settings.home.front.kind === 'image') {
-    for (const r of await getMediaRefs()) if (r.variants) ready.add(collapseBlob(r.url))
+    // The VERSION, not a boolean: it decides whether the 512 width may be named
+    // (`render/figures.ts`). A Set threw it away and every card asked for 1024.
+    for (const r of await getMediaRefs()) if (r.variants) ready.set(collapseBlob(r.url), r.variants)
   }
   const body = await buildBody(settings, ready)
   return listingPage({

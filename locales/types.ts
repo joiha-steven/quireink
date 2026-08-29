@@ -332,9 +332,6 @@ export type AdminStrings = {
   piHeroInline: string
   piThumbSide: string
   piThumbTop: string
-  postImageRatio: string
-  postImageRatioHint: string
-  piRatioAsShot: string
   // Settings -> Appearance -> Shape. The three knobs that change shape rather than colour.
   // Every default reproduces today exactly, which is what `shapeHint` promises.
   cardShape: string

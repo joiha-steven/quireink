@@ -117,8 +117,10 @@ ${siteFooter(settings, { mailConfigured })}
  * one. Called only when thumbnails are switched on.
  */
 async function readyThumbs(): Promise<ReadyImages> {
-  const ready: ReadyImages = new Set()
-  for (const r of await getMediaRefs()) if (r.variants) ready.add(collapseBlob(r.url))
+  const ready: ReadyImages = new Map()
+  // The version number, not a boolean — it is what lets a 96px thumbnail be offered the
+  // 512px file instead of the 1024px one.
+  for (const r of await getMediaRefs()) if (r.variants) ready.set(collapseBlob(r.url), r.variants)
   return ready
 }
 

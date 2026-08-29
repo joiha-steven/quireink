@@ -84,10 +84,6 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { tab: 'layout', label: 'figureFrameColour', note: 'figureFrameColourHint' },
   { tab: 'layout', label: 'postImageHero', note: 'postImageHeroHint' },
   { tab: 'layout', label: 'postImageThumb', note: 'postImageThumbHint' },
-  // Only rendered once a hero is on, but always findable: somebody searching "ratio" is
-  // looking for where the setting LIVES, and telling them it is not there because a
-  // different switch is off is how a settings search loses trust.
-  { tab: 'layout', label: 'postImageRatio', note: 'postImageRatioHint' },
   { tab: 'layout', label: 'frontCount' },
   { tab: 'layout', label: 'frontLead' },
   { tab: 'layout', label: 'frontSecondary' },

@@ -18,24 +18,19 @@ export const POST_IMAGE_CSS = `
    travel with it, so anything wider prints the picture over the table of contents.
    render/rail-css.ts reached the same answer for in-body pictures before this.
 
-   THE 70vh CAP IS NOT OPTIONAL and applies at every ratio, including 'as shot'. A
-   977x1400 portrait — an ordinary scan, and the first one this was tested with —
-   is 963px tall inside a 672px column: a whole screen of picture standing between
-   the headline and the first sentence. object-fit crops the overflow rather than
-   squashing the photograph. */
+   3:2, ALWAYS, and it is not a question the owner is asked. One blog's covers should
+   look like one blog's covers, and the shape doing that job belongs to the design.
+   Fixing it also removes the case that made a chooser look necessary: an ordinary
+   977x1400 portrait scan is 963px tall inside a 672px column, a whole screen of
+   picture standing between the headline and the first sentence.
+
+   The ratio pins the box, so the space is reserved before the file arrives, and
+   object-fit crops the overflow rather than squashing the photograph. The 70vh cap
+   stays underneath as a floor for a very wide reading column, where even 3:2 is tall. */
 /* Above the headline, so the gap that matters is the one UNDER it. */
 .post-hero{margin:0 0 calc(var(--sp) * 1.5)}
-.post-hero img{display:block;width:100%;height:auto;max-height:70vh;object-fit:cover;
-  border-radius:var(--radius,.5rem)}
-
-/* A chosen ratio pins the box, so the space is reserved before the file arrives and
-   every post with a hero opens the same shape. 'As shot' (no attribute) keeps the
-   photograph's proportions and relies on the width/height the markup now carries. */
-.post-hero[data-ratio] img{height:auto}
-.post-hero[data-ratio="1x1"] img{aspect-ratio:1/1}
-.post-hero[data-ratio="3x2"] img{aspect-ratio:3/2}
-.post-hero[data-ratio="4x3"] img{aspect-ratio:4/3}
-.post-hero[data-ratio="16x9"] img{aspect-ratio:16/9}
+.post-hero img{display:block;width:100%;height:auto;aspect-ratio:3/2;max-height:70vh;
+  object-fit:cover;border-radius:var(--radius,.5rem)}
 
 /* --- the thumbnail, on a list row ----------------------------------------------
    'side' turns the card into a two-column grid; the words keep their order in the
@@ -54,14 +49,23 @@ export const POST_IMAGE_CSS = `
 .post-list article[data-thumb=top] .card-thumb img{aspect-ratio:3/2}
 .post-list article[data-thumb=top] .card-thumb{margin:0 0 calc(var(--sp) * .75)}
 
-@media (min-width:560px){
-  .post-list article[data-thumb=side]{display:grid;grid-template-columns:96px 1fr;
-    column-gap:calc(var(--sp) * 1.25);align-items:start}
-  .post-list article[data-thumb=side] .card-thumb{grid-row:1 / span 4;width:96px}
-  .post-list article[data-thumb=side] .tl-mark{grid-column:1 / -1}
-}
+/* FLOATED, not a grid column. A two-column grid pins the words beside the picture for the
+   whole card, so a 96px square against four lines of standfirst leaves a hole under the
+   picture and the row reads as a table with an empty cell. Floating lets the text run past
+   the picture and close up underneath it, which is what the space is for.
+
+   'flow-root' contains the float: without it a card shorter than its own picture would let
+   the picture hang into the card below. It does not clip, so the timeline marker — absolutely
+   positioned out in the gutter by rail-css.ts — is untouched. */
+.post-list article[data-thumb=side]{display:flow-root}
+.post-list article[data-thumb=side] .card-thumb{float:left;width:96px;
+  margin:.2rem calc(var(--sp) * 1.1) calc(var(--sp) * .45) 0}
+
+/* A phone has ~230px left beside a 96px picture, which is not a column for a headline.
+   Smaller picture, tighter gutter: the words still wrap under it, just sooner. */
 @media (max-width:559px){
-  .post-list article[data-thumb=side] .card-thumb{max-width:96px;margin:0 0 calc(var(--sp) * .5)}
+  .post-list article[data-thumb=side] .card-thumb{width:72px;
+    margin:.2rem calc(var(--sp) * .8) calc(var(--sp) * .4) 0}
 }
 
 /* --- the author box ------------------------------------------------------------

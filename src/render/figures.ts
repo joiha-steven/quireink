@@ -167,7 +167,15 @@ function sizesFor(cls: string): string {
   return SIZES_COLUMN
 }
 
-function responsiveSources(cleanSrc: string, ready: ReadyOriginals, sizes: string): string | null {
+/**
+ * Exported since 2026-08-29 because `web/front-card.ts` had grown a SECOND copy of this,
+ * and the copy had already drifted: it named 1024 and 1600 only, so every card thumbnail
+ * and every front-page picture asked for a 1024px file — including a 96px square. The 512
+ * width exists precisely for the pictures that do not hold the reading column
+ * (`media/image.ts` measured it: 190.2 KB against 66.7 KB on one post), and the copy could
+ * not offer it because it had been handed a Set instead of the version map.
+ */
+export function responsiveSources(cleanSrc: string, ready: ReadyOriginals, sizes: string): string | null {
   const m = cleanSrc.match(/^(.*\/media\/.+)\.(?:jpe?g|png)$/i)
   if (!m) return null
   const version = ready.get(collapseBlob(cleanSrc))
