@@ -67,7 +67,7 @@ short columns sideways when it fits a phone comfortably today.
 
 **Every ground is mixed from your palette, never named.** The header wash is 6% of your text
 colour stirred into your page colour, so it darkens the paper in a light theme and lightens
-it in a dark one, in all eleven palettes, from one declaration. Measured on the default
+it in a dark one, in all six palettes, from one declaration. Measured on the default
 palette: page and header are 13 steps of grey apart in light mode and 12 in dark, which is a
 band you can see without being told it is there.
 

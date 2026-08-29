@@ -35,56 +35,45 @@ Một tiến trình. Hai tệp SQLite. Không tài khoản đám mây nào trong
 
 ## Nó là gì
 
-Bạn viết, nó đăng, và mọi thứ nằm trên máy chủ của bạn.
+Một cái blog bạn viết và đăng, nằm trên máy chủ bạn thuê.
 
-Mục này viết cho người không rành kỹ thuật. Phần còn lại của trang là cho người sẽ đi dựng nó.
+Mục này viết cho người không rành kỹ thuật. Phần còn lại là cho người sẽ đi dựng nó.
 
-**Nó là một cái blog, đúng nghĩa đen.** Có trang chủ, bài viết, chuyên mục, ô tìm kiếm, phần bình luận, và bản tin tự gửi email cho người theo dõi mỗi khi bạn đăng bài. Cái nó không có: thuật toán quyết định ai được đọc bài bạn, quảng cáo chen ngang, và một công ty có thể đổi luật chơi hoặc đóng cửa vào một ngày nào đó.
+Nó có đủ đồ đạc của một cái blog: trang chủ, bài viết, chuyên mục, ô tìm kiếm, phần bình luận, và bản tin tự gửi email cho người theo dõi mỗi khi bạn đăng bài. Cái nó không có là thuật toán quyết định ai được đọc bài bạn, quảng cáo chen ngang, và một công ty có thể đổi luật chơi vào năm sau.
 
-**Bạn chỉnh nó bằng cách bấm, không phải bằng cách viết code.** Màu, font, cỡ chữ, bố cục trang chủ, menu — tất cả nằm trong trang quản trị, đăng nhập bằng tài khoản riêng của bạn, và dùng được cả trên điện thoại.
+Màu, font, cỡ chữ, bố cục trang chủ, menu: tất cả đều là một tuỳ chỉnh trong trang quản trị, sau lần đăng nhập của riêng bạn, và tất cả đều dùng được trên điện thoại.
 
-**Trang đọc nhẹ khác thường.** Mở một bài viết tốn khoảng 100 KB — một tấm ảnh chụp bằng điện thoại còn nặng gấp vài chục lần. Người đọc ở chỗ sóng yếu, cầm máy đời cũ, vẫn thấy chữ hiện ra gần như tức thì. Đây là số đo thật chứ không phải lời quảng cáo: [xem bảng](#tốc-độ).
+Mở một bài viết tốn khoảng 100 KB. Một tấm ảnh chụp bằng điện thoại nặng gấp vài chục lần, nên người lạ ở chỗ sóng yếu cầm máy đời cũ vẫn thấy chữ hiện ra gần như tức thì. Đó là số đo, và [bảng bên dưới](#tốc-độ) nói rõ đo bằng cách nào.
 
-**Đọc cho dễ chịu là chủ đích của cả dự án.** Sáu bảng màu sáng và tối, bốn font đọc, chế độ sách dàn hai cột như trang giấy, và bút dạ quang năm màu mực để tô những câu tâm đắc.
+Đọc cho dễ chịu là chủ đích của cả dự án. Sáu bảng màu sáng và tối, bốn font đọc, chế độ sách dàn hai cột như trang giấy, và bút dạ quang năm màu mực để tô những câu tâm đắc.
 
-**AI có thể viết và đăng thay bạn.** Nối Claude (hoặc một trợ lý AI khác) vào blog rồi bảo: *"viết một bài 600 chữ về chuyến đi hôm nay, gắn thẻ du lịch, đăng lên"*. Nó soạn và đăng qua đúng những luật mà bạn đang dùng, và bạn thu hồi quyền của nó lúc nào cũng được.
+Một trợ lý AI có thể viết thay bạn. Nối Claude hoặc một MCP client khác vào rồi bảo *"viết một bài 600 chữ về chuyến đi hôm nay, gắn thẻ du lịch, đăng lên"*, nó sẽ soạn và đăng qua đúng những luật bạn đang dùng. Quyền của nó là một token, bạn thu hồi bằng một cú bấm.
 
-**Cần gì để bắt đầu.** Một tên miền, và một máy chủ thuê ngoài — loại rẻ nhất là đủ. Lần dựng đầu tiên là việc kỹ thuật: nhờ một người biết về máy chủ, hoặc giao hẳn cho một AI agent làm hộ ([mục Cài đặt](#cài-đặt)). Sau đó thì việc hằng ngày — viết, đăng, đổi giao diện, xem thống kê — đều nằm trong trang quản trị; chỉ khi nâng cấp lên bản mới mới cần chạm lại vào dòng lệnh.
+Để bắt đầu, bạn cần một tên miền và một máy chủ thuê; loại rẻ nhất là đủ. Lần dựng đầu tiên là việc kỹ thuật, nên hãy nhờ người biết về máy chủ hoặc giao hẳn cho một agent ([mục Cài đặt](#cài-đặt)). Sau đó thì viết, đăng, đổi giao diện và xem thống kê đều nằm trong trang quản trị; chỉ khi nâng cấp mới phải quay lại dòng lệnh.
 
-**Đổi lại, bạn tự giữ nhà mình.** Không ai sao lưu hộ bạn — có sẵn một nút tải nguyên cả blog về máy, nhưng bấm nó là việc của bạn — và blog sống theo cái máy chủ bạn thuê.
+Đổi lại, bạn tự giữ nhà mình. Không ai sao lưu hộ bạn. Có sẵn một nút tải nguyên cả blog về máy, nhưng bấm nó là việc của bạn, và blog sống theo cái máy chủ bạn thuê.
 
-**Miễn phí, và bạn được thu tiền.** Blog cá nhân thì không tốn gì. Dùng trong doanh nghiệp, hay bán dịch vụ host cho mỗi khách một cái blog, cũng được — miễn là bản bạn chạy đúng là bản phát hành ở đây. Chỉ bản *đã sửa code* đem đi kinh doanh mới phải hỏi trước: [xem mục Giấy phép](#giấy-phép).
+Blog cá nhân thì không tốn gì, và bạn được thu tiền: dùng trong doanh nghiệp, hoặc bán dịch vụ host cho mỗi khách một cái blog. Chỉ bản *đã sửa code* đem đi kinh doanh mới phải hỏi trước ([mục Giấy phép](#giấy-phép)).
 
 ## Bên dưới nắp máy
 
-Không có CSDL nào phải cài, cũng không có gì phải deploy. Trỏ tên miền vào một câu lệnh là bạn có một cái blog:
+Không có gì phải deploy, cũng không có CSDL nào phải cài. Trỏ tên miền vào một câu lệnh là bạn có một cái blog:
 
 ```bash
 bun src/index.ts
 ```
 
-Có ba thứ định hình nó.
+Ba quyết định định hình mọi thứ còn lại.
 
-**Trang đọc mới là sản phẩm.** Font, màu, cỡ chữ, khoảng cách, bố cục: tất cả đều là tuỳ chọn bạn chỉnh trong trang quản trị. Không một cỡ chữ hay màu nào viết cứng trong stylesheet của trang đọc, và build sẽ báo đỏ nếu ai đó nhét vào.
+Trang đọc mới là sản phẩm, nên font, màu, cỡ chữ, giãn cách và bố cục đều là tuỳ chỉnh bạn đổi trong trang quản trị. Không một cỡ chữ hay màu nào được viết cứng vào stylesheet của người đọc, và bản dựng sẽ hỏng nếu ai đó nhét một cái vào.
 
-**Người đọc tải về 3,9–10,4 KB JavaScript, và không tải gì từ bên thứ ba.** Trang tới nơi đã là HTML hoàn chỉnh. Vài đoạn script nhỏ lo tìm kiếm, đổi giao diện và chế độ sách. React nằm yên trong trang quản trị, không bao giờ chạm tới người đọc.
+Người đọc tải về từ 3,9 KB đến 10,4 KB JavaScript, và không tải gì từ bất kỳ ai khác. Trang tới nơi dưới dạng HTML đã hoàn chỉnh. Vài đoạn script nhỏ lo phần tìm kiếm, nút đổi nền và chế độ sách; React ở lại trong trang quản trị và không bao giờ chạm tới người đọc.
 
-**Agent viết được thay bạn — và trông nom được cho bạn.** Nối Claude hay bất kỳ client MCP nào vào, nó soạn, gắn thẻ, hẹn giờ, đăng — và đọc được lượng truy cập, dọn bình luận rác, rà cả kho bài — theo đúng những luật mà trang quản trị đang theo.
+Một agent có thể trông coi chứ không chỉ viết. Bất kỳ MCP client nào cũng soạn được bài, gắn thẻ, hẹn giờ và đăng, đọc lưu lượng, quét bình luận và rà lại kho bài, qua đúng những luật mà trang quản trị tuân theo.
 
-Bạn được đọc, sửa, chạy và fork theo [PolyForm Noncommercial](./LICENSE), và được chạy bản phát hành để kinh doanh — kể cả bán hosting — theo [một cho phép bổ sung](./LICENSE-EXCEPTION.vi.md).
+Bạn được đọc, sửa, chạy và fork nó theo [PolyForm Noncommercial](./LICENSE), và được chạy bản đã phát hành để kinh doanh, kể cả bán dịch vụ host, theo [một quyền bổ sung](./LICENSE-EXCEPTION.md).
 
-> **2.2.2 ra ngày 29/08/2026**, đang chạy bản demo ở trên và blog riêng của tác giả tại
-> [manhhung.me](https://manhhung.me). **Ảnh có thể đeo khung** — nền giấy hoặc nền mực, ba độ
-> dày, đặt riêng từng ảnh hoặc đặt một lần cho cả site. **Bộ ảnh biết co theo màn hình** thay
-> vì xếp mười ô rộng 80 pixel trên điện thoại, mỗi kiểu ảnh nay khai đúng bề ngang thật của
-> nó với trình duyệt, và bản cắt 512px về cùng 1024/1600: **giảm khoảng 70% dung lượng** cho
-> đúng thứ điện thoại vẽ ra. **Dán ảnh chụp màn hình vào bài đã ăn.** Phần quản trị được đo
-> lại ở bảy khổ màn hình, từ Galaxy Z Fold gập lại trở lên — tám màn tràn ngang và năm thẻ
-> Cài đặt không chạm tay tới được; nay không còn, và trong khoảng 1024–1279 thanh bên hiện ra
-> dưới dạng biểu tượng để chừa bề ngang cho biểu mẫu. **Chữ hết nhảy trên Android**, nơi cơ
-> chế giữ layout đứng yên đã âm thầm không chạy suốt hai tháng. Image **nhẹ đi 45 MB**, và
-> một lần dán là cài xong trên droplet DigitalOcean.
-> [Changelog](./CHANGELOG.md) có đủ những gì đã đổi.
+**2.2.2** là bản hiện hành. Nó đang chạy bản demo ở trên và blog riêng của tác giả tại [manhhung.me](https://manhhung.me); [nhật ký thay đổi](./CHANGELOG.md) ghi đủ những gì đã đổi.
 
 ## Bạn được gì
 

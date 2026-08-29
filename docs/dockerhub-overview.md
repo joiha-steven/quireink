@@ -5,7 +5,7 @@ no cloud account anywhere in the path. No algorithm deciding who sees your writi
 across it, and no company that can change the rules.
 
 * 📖 **[Source and full documentation](https://github.com/joiha-steven/quireink)**
-* 🌐 **[Try the live demo](https://demo.quireink.com)** — no sign-up, nothing to fill in
+* 🌐 **[Try the live demo](https://demo.quireink.com)**, with no sign-up and nothing to fill in
 * 🏠 **[quireink.com](https://quireink.com)**
 
 ---
@@ -37,12 +37,12 @@ docker logs quire
 ```
 
 Open it and the rest is a browser: username, email, password, then two-factor. **No `docker
-exec`, no interactive terminal** — a NAS log panel is enough. The token lives in memory, so a
-restart mints a new one, and `/setup` answers 404 the moment an account exists. Anyone who
-would rather use the shell still can:
+exec` and no interactive terminal**, because a NAS log panel is enough on its own. The token
+lives in memory, so a restart mints a new one, and `/setup` answers 404 the moment an account
+exists. Anyone who would rather use the shell still can:
 `docker exec quire bun run user create --username you --email you@example.com`.
 
-Put a reverse proxy in front of it for TLS — the port is bound to `127.0.0.1` on purpose, and
+Put a reverse proxy in front of it for TLS. The port is bound to `127.0.0.1` on purpose, and
 [the setup guide](https://github.com/joiha-steven/quireink/blob/main/docs/self-host.md) has an
 nginx block you can copy.
 
@@ -50,7 +50,7 @@ nginx block you can copy.
 
 Their container UIs mount real folders rather than named volumes, because that is what their
 own backup jobs can see. Point both mounts at a folder you created and set `PUID` / `PGID` to
-whoever owns it — the container adopts the folders on first boot and never runs the app as
+whoever owns it. The container adopts the folders on first boot and never runs the app as
 root:
 
 ```yaml
@@ -100,8 +100,8 @@ has the rest.
 
 ## What is in it
 
-A real editor over Markdown — tables, footnotes, callouts, mathematics, video — that saves as
-you type and can hold a post until Tuesday. Six palettes in light and dark, four reading
+A real editor over Markdown, with tables, footnotes, callouts, mathematics and video, that
+saves as you type and can hold a post until Tuesday. Six palettes in light and dark, four reading
 fonts, a book mode set in two columns like paper, and a five-ink highlighter whose strokes are
 grown rather than drawn, so no two on a page share a shape. Search that answers as you type,
 comments, a newsletter, and analytics without cookies. An article page costs about 114 KB.
@@ -111,12 +111,12 @@ follows, and you can take its access away at any moment.
 
 ## Backups
 
-There is a button in the admin that hands you the whole blog — both databases and every
-upload — as one archive. Nobody backs it up for you; pressing it is your job.
+There is a button in the admin that hands you the whole blog as one archive: both databases
+and every upload. Nobody backs it up for you, so pressing it is your job.
 
 ## Licence
 
 [PolyForm Noncommercial](https://github.com/joiha-steven/quireink/blob/main/LICENSE), plus
 [one additional permission](https://github.com/joiha-steven/quireink/blob/main/LICENSE-EXCEPTION.md)
-that lets you run **this published image** commercially — paid hosting included. Only a
+that lets you run **this published image** commercially, paid hosting included. Only a
 *modified* version used commercially needs to ask first.

@@ -62,7 +62,7 @@ export function sanitizeTable(input: unknown, fallback: TableSettings): TableSet
  * Every ground here is MIXED from the palette, never named — and it is the INK that gets
  * mixed into the paper, not the rule.
  *
- * Mixing at all is what survives a theme: eleven palettes and a dark mode, so a grey named
+ * Mixing at all is what survives a theme: six palettes and a dark mode, so a grey named
  * here would be a grey that is wrong in ten of them. `--c-code-panel` one file over mixes
  * `--c-rule` into `--c-bg` and that was the first thing tried here — but a rule colour is
  * already almost the paper, so the mix is capped by it. Measured on the default palette:
@@ -99,7 +99,7 @@ const HEAD_LOOK: Record<TableSettings['head'], { bg: string; fg: string; rule: s
   rule: { bg: 'transparent', fg: 'var(--c-heading)', rule: '2' },
   // Inverted. `--c-heading` rather than `--c-text` because a solid band wants the darkest
   // ink the palette has, and `--c-bg` on top of it is the only pairing guaranteed to be
-  // legible in all eleven palettes: it is the article's own contrast pair, reversed.
+  // legible in all six palettes: it is the article's own contrast pair, reversed.
   ink: { bg: 'var(--c-heading)', fg: 'var(--c-bg)', rule: '1' },
 }
 

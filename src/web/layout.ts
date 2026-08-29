@@ -215,7 +215,7 @@ export function pageStyles(settings: SiteSettings, extra = ''): string {
     // the shape knobs are one line in one place.
     shapeToCss(settings.shape),
     // Anywhere after the palette: every ground it emits is MIXED from `--c-rule` and
-    // `--c-bg`, so the table follows whichever of the eleven palettes is on without a second
+    // `--c-bg`, so the table follows whichever of the six palettes is on without a second
     // declaration and without naming a colour (`prose.css.ts` holds the selectors).
     tableToCss(settings.table),
     typographyToCss(settings.typography),
