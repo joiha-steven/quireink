@@ -21,6 +21,7 @@
 //
 // Env: CHROME (binary), QUIRE_SESSION (owner cookie value), ONLY=<substring> to run a subset.
 
+import { rmSync } from 'node:fs'
 import { chromePath } from './chrome-path'
 import { registerFlows } from './tour-flows'
 
@@ -33,14 +34,24 @@ const ONLY = process.env.ONLY ?? ''
 // The browser, over the DevTools protocol. Same approach as `drive.ts`, kept open.
 
 const PORT = 9333
+// `--user-data-dir` is LOAD-BEARING for full Chrome, not tidiness: since Chrome 136 the
+// remote-debugging switches are silently IGNORED on the default profile (a data-theft
+// mitigation), so without a private dir the port never opens and the error below reads
+// like a startup hang. chrome-headless-shell does not care — which is exactly why this
+// passed on every dev machine and died on the first CI runner, where the fallback binary
+// is full google-chrome. Found on the tour job's first run, 2026-08-29.
+const PROFILE = `.tmp/tour-chrome-profile-${process.pid}`
 const chrome = Bun.spawn([
   CHROME, '--headless', '--disable-gpu', '--no-sandbox', '--hide-scrollbars',
   '--force-color-profile=srgb', '--font-render-hinting=none',
+  `--user-data-dir=${PROFILE}`,
   `--remote-debugging-port=${PORT}`, '--window-size=1440,900', 'about:blank',
 ], { stdout: 'ignore', stderr: 'ignore' })
 
 async function endpoint(): Promise<string> {
-  for (let i = 0; i < 100; i++) {
+  // 30s, not 10: full Chrome's first start on a cold CI runner unpacks crashpad and
+  // friends, and a timeout that only ever fires there is a flake, not a signal.
+  for (let i = 0; i < 300; i++) {
     try {
       const tabs = await (await fetch(`http://127.0.0.1:${PORT}/json/list`)).json() as
         { type: string; webSocketDebuggerUrl: string }[]
@@ -166,6 +177,7 @@ for (const f of flows) {
 
 socket.close()
 chrome.kill()
+try { rmSync(PROFILE, { recursive: true, force: true }) } catch { /* scratch under .tmp */ }
 
 const skipped = results.filter((r) => r.verdict.startsWith('skip:'))
 const failed = results.filter((r) => r.verdict !== 'ok' && !r.verdict.startsWith('ok ') && !r.verdict.startsWith('skip:'))

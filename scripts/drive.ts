@@ -28,6 +28,10 @@ const proc = Bun.spawn([
   // stem weight depending on the machine, which makes a composite plate look assembled
   // from two sources.
   '--force-color-profile=srgb', '--font-render-hinting=none',
+  // A private profile dir: Chrome 136+ silently IGNORES the remote-debugging switches on
+  // the default profile, so full Chrome never opens the port without this. tour.ts tells
+  // the whole story.
+  `--user-data-dir=.tmp/drive-chrome-profile-${process.pid}`,
   `--remote-debugging-port=${PORT}`, `--window-size=${width},${height}`, 'about:blank',
 ], { stdout: 'ignore', stderr: 'ignore' })
 
