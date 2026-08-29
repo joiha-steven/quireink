@@ -61,6 +61,12 @@ const zh = {
   seriesPartPrefix: '第',
   seriesTitle: '系列',
   emptySeries: '该系列还没有文章。',
+  // /archive: the year index, its jump row and its empty state. `archiveTitle` is also
+  // the sidebar block's heading, so the page and the way in carry one name.
+  archiveTitle: '归档',
+  archiveMeta: '{site} 的全部文章，按年份排列。',
+  archiveYears: '年份',
+  archiveEmpty: '归档中还没有内容。',
   previewNotice: '预览：此页面未公开，也不会被索引。',
   nlInvalid: '这似乎不是一个邮箱地址。',
   nlNoMail: '已订阅。邮件服务未配置，因此没有发送确认信。',

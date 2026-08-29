@@ -61,6 +61,12 @@ const vi = {
   seriesPartPrefix: 'Phần',
   seriesTitle: 'Loạt bài',
   emptySeries: 'Chưa có bài nào trong loạt này.',
+  // /archive: the year index, its jump row and its empty state. `archiveTitle` is also
+  // the sidebar block's heading, so the page and the way in carry one name.
+  archiveTitle: 'Lưu trữ',
+  archiveMeta: 'Toàn bộ bài trên {site}, xếp theo năm.',
+  archiveYears: 'Các năm',
+  archiveEmpty: 'Chưa có bài nào trong kho lưu trữ.',
   previewNotice: 'Bản xem trước: trang này không công khai và không được lập chỉ mục.',
   nlInvalid: 'Địa chỉ email không hợp lệ.',
   nlNoMail: 'Đã đăng ký. Email chưa được cấu hình nên chưa gửi thư xác nhận.',

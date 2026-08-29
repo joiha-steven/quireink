@@ -559,6 +559,14 @@ const ru = {
   featInfiniteScrollDesc: 'Подгружает записи по мере прокрутки вместо страниц, и показывает ленту дат на правом поле (только компьютер).',
   featGridView: 'Вид сеткой',
   featGridViewDesc: 'Позволяет читателям переключить список записей в сетку карточек (кнопка сетка/список в шапке). Выключено — остаётся список, и лента дат показывается всегда.',
+  // Settings -> Features -> Listing: the /archive page and the sidebar year list.
+  featArchive: 'Страница архива',
+  featArchiveDesc: 'Страница /archive со всеми записями по годам и список лет в боковой колонке.',
+  // Settings -> Reading: the service worker (ADR 0039). The description carries the two
+  // things a reader would want to know and an owner would not think to ask: nothing is
+  // fetched ahead of time, and turning it off UNINSTALLS it rather than merely stopping.
+  featOffline: 'Чтение без сети',
+  featOfflineDesc: 'Запись, которую читатель уже открывал, откроется и без сети. Ничего не загружается заранее, админка никогда не кэшируется. Выключение убирает его и у тех, кто уже получил.',
   featLeadPost: 'Главная запись',
   featLeadPostDesc: 'Самая свежая запись первой страницы набирается кеглем H1.',
   featCategoryLabel: 'Имя рубрики',

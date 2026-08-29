@@ -16,8 +16,21 @@ const escapeXml = (s: string) =>
 const rfc822 = (iso: string) => new Date(iso).toUTCString()
 const isoDay = (iso: string) => new Date(iso).toISOString().slice(0, 10)
 
+/**
+ * One feed's own identity: the whole site, or a single archive within it.
+ *
+ * `path` is both the document's URL and its `atom:link rel="self"`, and getting those two
+ * out of step is the classic RSS fault — an aggregator that follows `self` to subscribe
+ * would land back on the site feed and quietly replace the term the reader chose.
+ */
+export type FeedChannel = { title: string; description: string; path: string }
+
 /** RSS 2.0. Bodies are deliberately NOT included: a description is the excerpt. */
-export function renderFeed(posts: Post[], settings: SiteSettings, site: string): string {
+export function renderFeed(
+  posts: Post[], settings: SiteSettings, site: string, channel?: FeedChannel,
+): string {
+  const { title, description, path } = channel
+    ?? { title: settings.title, description: settings.description, path: '/feed.xml' }
   const items = posts.slice(0, 50).map((p) => `    <item>
       <title>${escapeXml(p.title)}</title>
       <link>${escapeXml(`${site}/${p.slug}`)}</link>
@@ -28,11 +41,11 @@ export function renderFeed(posts: Post[], settings: SiteSettings, site: string):
   return `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>${escapeXml(settings.title)}</title>
+    <title>${escapeXml(title)}</title>
     <link>${escapeXml(site)}</link>
-    <description>${escapeXml(settings.description)}</description>
+    <description>${escapeXml(description)}</description>
     <language>${escapeXml(settings.language)}</language>
-    <atom:link href="${escapeXml(`${site}/feed.xml`)}" rel="self" type="application/rss+xml"/>
+    <atom:link href="${escapeXml(`${site}${path}`)}" rel="self" type="application/rss+xml"/>
 ${items}
   </channel>
 </rss>
@@ -60,7 +73,9 @@ function postImages(p: Post, site: string): string[] {
   return [...new Set(refs)].map((u) => (u.startsWith('/') ? `${site}${u}` : u))
 }
 
-export function renderSitemap(posts: Post[], pages: Page[], site: string, home: HomeSettings): string {
+export function renderSitemap(
+  posts: Post[], pages: Page[], site: string, home: HomeSettings, archive = false,
+): string {
   const url = (loc: string, lastmod?: string, images: string[] = []) =>
     `  <url><loc>${escapeXml(loc)}</loc>${lastmod ? `<lastmod>${isoDay(lastmod)}</lastmod>` : ''}${
       images.map((i) => `<image:image><image:loc>${escapeXml(i)}</image:loc></image:image>`).join('')
@@ -70,6 +85,7 @@ export function renderSitemap(posts: Post[], pages: Page[], site: string, home: 
   // the root stays. The post list, meanwhile, has moved somewhere that is not in either
   // table and would otherwise appear nowhere.
   const homeSlug = home.mode === 'page' ? home.page : ''
+  const ownsArchiveSlug = [...posts, ...pages].some((d) => d.slug === 'archive')
 
   /**
    * Every archive page a reader can reach, with the date of the newest post on it.
@@ -103,6 +119,14 @@ export function renderSitemap(posts: Post[], pages: Page[], site: string, home: 
   const entries = [
     url(site),
     ...(home.mode === 'list' ? [] : [url(`${site}${home.listPath}`)]),
+    // The archive carries no `lastmod`: it lists every post, so it changed when the newest
+    // of them did — which is the date already on the first entry below, and repeating it
+    // here would be a second thing to keep in step for no gain.
+    //
+    // Skipped when a page or post already owns the slug, because then the route serves THAT
+    // and the URL is about to be listed below as the document it really is. Naming it twice
+    // is a duplicate `<loc>`, which is a sitemap error and not a cosmetic one.
+    ...(archive && !ownsArchiveSlug ? [url(`${site}/archive`)] : []),
     ...posts.filter((p) => p.slug !== homeSlug)
       .map((p) => url(`${site}/${p.slug}`, p.updatedAt ?? p.date, postImages(p, site))),
     ...pages.filter((p) => p.slug !== homeSlug).map((p) => url(`${site}/${p.slug}`)),

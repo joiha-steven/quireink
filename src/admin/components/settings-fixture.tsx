@@ -96,6 +96,7 @@ export function settingsFixture(): SiteSettings {
       activityLog: true, transferStats: true, sidebar: true, sidebarSeries: true, leadPost: true,
       categoryLabel: true, deck: true, penUnderline: true, penRing: true, bookText: false,
       bookMode: true, readNext: true, resume: true, infiniteScroll: false, gridView: true,
+      archive: true, offline: false,
     },
     comments: { enabled: false, turnstile: false, googleAuth: false },
     mcp: { enabled: false },

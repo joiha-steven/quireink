@@ -43,7 +43,8 @@ export function registerFeedRoutes(app: Hono): void {
   feedRoute('/feed.xml', (s) => s.seo.rss, 'application/rss+xml; charset=utf-8',
     ({ posts, settings, site }) => renderFeed(posts, settings, site))
   feedRoute('/sitemap.xml', (s) => s.seo.sitemap, 'application/xml; charset=utf-8',
-    ({ posts, pages, settings, site }) => renderSitemap(posts, pages, site, settings.home))
+    ({ posts, pages, settings, site }) =>
+      renderSitemap(posts, pages, site, settings.home, settings.features.archive))
   feedRoute('/robots.txt', (s) => s.seo.robots, 'text/plain; charset=utf-8',
     ({ settings, site }) => renderRobots(settings, site))
   feedRoute('/llms.txt', (s) => s.seo.llms, 'text/plain; charset=utf-8',

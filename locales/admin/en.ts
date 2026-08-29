@@ -559,6 +559,14 @@ const en = {
   featInfiniteScrollDesc: 'Load posts as the reader scrolls instead of pagination, and show a date timeline in the right gutter (desktop only).',
   featGridView: 'Grid view',
   featGridViewDesc: 'Let readers switch the post list to a card grid (the grid/list button in the header). Off keeps it a list — the timeline then always shows.',
+  // Settings -> Features -> Listing: the /archive page and the sidebar year list.
+  featArchive: 'Archive page',
+  featArchiveDesc: 'One /archive page listing every post by year, and the year list in the sidebar.',
+  // Settings -> Reading: the service worker (ADR 0039). The description carries the two
+  // things a reader would want to know and an owner would not think to ask: nothing is
+  // fetched ahead of time, and turning it off UNINSTALLS it rather than merely stopping.
+  featOffline: 'Read without a signal',
+  featOfflineDesc: 'A post the reader has already opened still opens with no network. Nothing is downloaded ahead of time, and the admin is never cached. Off also removes it from readers who already have it.',
   featLeadPost: 'Lead post',
   featLeadPostDesc: 'The newest post on page 1 is set at the H1 size.',
   featCategoryLabel: 'Category label',

@@ -6,7 +6,7 @@
 
 import type { SiteSettings } from '@/types'
 import { t } from '@/i18n/i18n'
-import { escapeHtml } from '@/utils'
+import { escapeAttr, escapeHtml } from '@/utils'
 import { getSettings, resolveSiteUrl } from '@/content/settings'
 import { paginate } from '@/content/paginate'
 import { pageCache, countCacheHit, countCacheMiss } from '@/server/cache'
@@ -47,6 +47,15 @@ export type ListingPage = {
   /** Extra geometry this page needs: the gutter timeline. */
   css?: string
   /**
+   * This archive's OWN feed, advertised beside the site's in the head.
+   *
+   * Two `rel="alternate"` links on a term page is the correct shape, not a duplicate: an
+   * aggregator lists both and lets the reader take the whole blog or just this subject.
+   * Suppressed with the same setting the routes are, so a site with RSS off never points at
+   * a document that answers 404.
+   */
+  feed?: { path: string; title: string }
+  /**
    * Drop the discovery rail and run the body full width.
    *
    * The front page composes its own rows (ADR 0014), so the rail's blocks would appear
@@ -59,10 +68,14 @@ export type ListingPage = {
 /** Wrap listing markup in the site shell. Shared by home, taxonomy, series and search. */
 export async function listingPage(
   { title, body, description, noindex = false, jsonLd, canonicalPath, cardTitle, activeHref,
-    css = '', noRail = false }: ListingPage,
+    css = '', noRail = false, feed }: ListingPage,
 ): Promise<string> {
   const settings = await getSettings()
   const site = resolveSiteUrl(settings)
+  const feedLink = feed && settings.seo.rss
+    ? `<link rel="alternate" type="application/rss+xml"`
+      + ` title="${escapeAttr(feed.title)}" href="${escapeAttr(feed.path)}">`
+    : ''
   const [{ configured: mailConfigured }, rail] = await Promise.all([
     getMailStatus(), renderSidebar(settings, activeHref),
   ])
@@ -83,6 +96,7 @@ export async function listingPage(
         ? { title: siteDomain(site), site: settings.description }
         : { title: cardTitle, site: siteDomain(site) }),
       stylesheet: PUBLIC_SHEET,
+      extra: feedLink,
     },
     pageStyles(settings, [css, sidebar.css].filter(Boolean).join('\n')),
     // The rail is rendered LAST inside `main`: it is absolutely placed, so DOM order is
@@ -97,6 +111,17 @@ ${siteFooter(settings, { mailConfigured })}
     // page and every listing, which between them are most of a blog's traffic.
     { bodyData: chromeLabels(settings), scripts: scriptTag('core') },
   )
+}
+
+/**
+ * A page number from a URL segment. Anything that is not a positive integer is a 404, not a 1.
+ *
+ * Here rather than in either router, because both `/page/:n` and `/{term}/:slug/page/:n` read
+ * one and they now live in different files. Two copies of four lines is where a rule drifts.
+ */
+export function pageNumber(raw: string): number | null {
+  const n = Number(raw)
+  return Number.isInteger(n) && n >= 1 ? n : null
 }
 
 /**

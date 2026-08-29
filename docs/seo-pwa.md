@@ -22,6 +22,16 @@
   own writing. Turning it into a block needs a `seo` setting and a switch in the admin
   beside the others — not a default. Only the tier that crawls heavily, sends no readers and
   resells the blog's links is turned away.
+- **A feed per archive** — `/category/:slug/feed.xml`, `/tag/:slug/feed.xml` and
+  `/series/:slug/feed.xml`, in `src/web/term-routes.ts` rather than beside the four above,
+  because a term feed cannot be built until the term is resolved and that is what that file
+  does. Same body (`renderFeed` takes a `FeedChannel` override), same cache window, gated on
+  the same `seo.rss` — deliberately not a second switch, since an owner who turned the feed
+  off has already answered the question about feeds. A term that no public post carries
+  **404s**, and each archive page advertises its own feed with a second `rel="alternate"`
+  beside the site's. **The `self` link is the URL the document was fetched from**: point it
+  at `/feed.xml` and an aggregator following it swaps the reader's chosen subject for the
+  whole blog, with nothing on the page they clicked from to show it.
 - `renderSitemap` — home + posts + pages, **plus one entry per category and per tag**, and
   `<image:image>` on a post that has one. Terms are read off the PUBLIC post list, never
   `getCategories`/`getTags`: those include drafts, and `/category/x` 404s for a term no
@@ -97,8 +107,31 @@ document this as present): the `Content-Signal` line in `robots.txt`. It is the 
 
 ## PWA
 
-- Installs to the home screen, launches standalone. **No service worker (offline is out of
-  scope by design)** → nothing to register; admin/API are never cached.
+- Installs to the home screen, launches standalone.
+- **A service worker, off by default** — [ADR 0039](decisions/0039-the-blog-reads-without-the-network.md),
+  `features.offline`, `src/assets/js/sw.ts` + `src/assets/js/offline.ts`. It supersedes the
+  "offline is out of scope by design" line that stood here until 2026-08-30, and **only** that
+  line: the rejection of a service worker as a *prefetch* mechanism in
+  [performance.md](performance.md) still holds, and nothing here prefetches.
+  - **Served at `/sw.js`, not `/assets/sw.<hash>.js`.** A worker's scope is the directory its
+    script came from; under `/assets/` it would install, activate and never see a page. The
+    build rides in `?v=<hash>` instead — that is what makes a deploy an update, and the worker
+    reads it back to name its caches so a new build cannot read the old one's entries.
+    `no-cache`, never `immutable`: it is the one file whose staleness a reload cannot fix.
+  - **HTML network-first, hashed assets and `/fonts/*` cache-first.** Online, the reader
+    always gets what the server just rendered. Neither may be swapped for the other without
+    a new ADR: cache-first HTML is the stale-post bug, and network-first on immutable URLs
+    would simply waste the request.
+  - **`/admin`, `/api`, `/preview`, `/og`, `/setup`, `/login`, every non-GET, and every other
+    origin are untouched** — nothing the owner does passes through it, and nothing private is
+    left on a shared device. Pages with a query string are skipped too: one URL per search.
+  - **Off UNINSTALLS it.** The island runs on every public page and reads `data-sw` off
+    `<body>`; the attribute is ABSENT when the feature is off, and absence is the instruction
+    to unregister and drop every `quire-*` cache. A worker outlives the page that installed
+    it, so a switch that only stopped registering new ones would be a one-way door.
+  - **Forty pages, by count.** `Cache.put` gives no size back without reading the body, so a
+    worker enforcing a megabyte figure would spend more than the figure saves.
+  - The recommended CSP in [self-host.md](self-host.md) already carries `worker-src 'self' blob:`.
 - `src/web/manifest.ts` serves `/manifest.webmanifest` from settings: name/short_name = the
   site title, `background_color`/`theme_color` = the default palette's light background,
   `display: standalone`, icons via `resolveAppIcon` at 192/512 `any` plus a 512 `maskable`

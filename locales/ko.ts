@@ -61,6 +61,12 @@ const ko = {
   seriesPartPrefix: '파트',
   seriesTitle: '시리즈',
   emptySeries: '이 시리즈에는 아직 글이 없습니다.',
+  // /archive: the year index, its jump row and its empty state. `archiveTitle` is also
+  // the sidebar block's heading, so the page and the way in carry one name.
+  archiveTitle: '아카이브',
+  archiveMeta: '{site}의 모든 글을 연도별로.',
+  archiveYears: '연도',
+  archiveEmpty: '아카이브에 아직 아무것도 없습니다.',
   previewNotice: '미리보기: 이 페이지는 공개되지 않으며 색인되지 않습니다.',
   nlInvalid: '이메일 주소 형식이 아닙니다.',
   nlNoMail: '등록되었습니다. 이메일이 설정되지 않아 확인 메일을 보내지 못했습니다.',

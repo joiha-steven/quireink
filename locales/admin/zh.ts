@@ -559,6 +559,14 @@ const zh = {
   featInfiniteScrollDesc: '滚动时加载文章而非分页，并在右侧栏显示日期时间线（仅桌面端）。',
   featGridView: '网格视图',
   featGridViewDesc: '允许读者将文章列表切换为卡片网格（页眉的网格/列表按钮）。关闭则始终为列表——此时时间线始终显示。',
+  // Settings -> Features -> Listing: the /archive page and the sidebar year list.
+  featArchive: '归档页',
+  featArchiveDesc: '一个 /archive 页面按年份列出全部文章，并在侧栏显示年份列表。',
+  // Settings -> Reading: the service worker (ADR 0039). The description carries the two
+  // things a reader would want to know and an owner would not think to ask: nothing is
+  // fetched ahead of time, and turning it off UNINSTALLS it rather than merely stopping.
+  featOffline: '断网也能读',
+  featOfflineDesc: '读者打开过的文章，没有网络时仍能打开。不会预先下载任何内容，后台永远不缓存。关闭时也会从已安装的读者那里移除。',
   featLeadPost: '头条文章',
   featLeadPostDesc: '第 1 页最新的文章使用 H1 字号。',
   featCategoryLabel: '分类标签',

@@ -22,6 +22,10 @@ const result = await Bun.build({
     `${ROOT}src/assets/js/core.ts`,
     `${ROOT}src/assets/js/post.ts`,
     `${ROOT}src/assets/js/login.ts`,
+    // The service worker (ADR 0039). Built here like the islands, but it is NOT a page
+    // bundle: it is served from the root as `/sw.js`, because a worker's scope is the
+    // directory its script came from and `/assets/` would leave it unable to see a page.
+    `${ROOT}src/assets/js/sw.ts`,
   ],
   outdir: OUT,
   target: 'browser',
@@ -73,7 +77,15 @@ const BUDGET: Record<string, number> = {
   // that is already fetched, against a post that measures about 100 KB. The measurement
   // could not be taken on the server -- a CDN answers most readers and the origin never
   // sees them -- so the browser is the only place it exists.
-  'core.js': 10_500,
+  //
+  // 11,000 since 2026-08-30, and what it bought is the offline switch (ADR 0039), measured
+  // at 676 bytes raw and 235 gzipped against a build with the island removed. Two thirds of
+  // that is the half nobody sees: a worker outlives the page that installed it, so the
+  // island also has to UNREGISTER one and drop its caches when the owner turns the feature
+  // off. Registering alone would have been cheaper and would have made the switch a one-way
+  // door. It runs on every public page for the same reason — the switch can only take
+  // effect on a page the reader happens to load, and most of those are listings.
+  'core.js': 11_000,
   // /{slug}: back to top, code copy, lightbox, subscribe, comments, the ToC highlight and
   // book mode. Same rule as above — each raise is named and priced.
   //
@@ -91,6 +103,10 @@ const BUDGET: Record<string, number> = {
   // search overlay and no listing controls, so it pays for the reveal toggle, the caps-lock
   // warning and the one-time-code paste, and nothing else.
   'login.js': 1_500,
+  // Fetched ONCE per reader per deploy, and never on the page's critical path — so its
+  // budget is about keeping it a small, readable thing rather than about page weight. Two
+  // strategies, a count-bounded trim, and the list of paths it refuses to touch.
+  'sw.js': 2_000,
 }
 
 let over = false

@@ -67,6 +67,9 @@ export function PostFeatureFields({ features, onChange, relatedCount, onRelatedC
     { key: 'readingTime', label: t.featReadingTime, desc: t.featReadingTimeDesc },
     { key: 'progressBar', label: t.featProgress, desc: t.featProgressDesc },
     { key: 'resume', label: t.featResume, desc: t.featResumeDesc },
+    // Beside "remember where they left off" because it answers the same reader: the one
+    // reading a long piece over several sittings, on a phone, on the way somewhere.
+    { key: 'offline', label: t.featOffline, desc: t.featOfflineDesc },
   ]
   return (
     <div className={SETTING_GAP}>
@@ -108,6 +111,7 @@ export function ListingFeatureFields({ features, onChange }: Omit<Props, 'relate
     { key: 'sidebarSeries', label: t.featSidebarSeries, desc: t.featSidebarSeriesDesc },
     { key: 'infiniteScroll', label: t.featInfiniteScroll, desc: t.featInfiniteScrollDesc },
     { key: 'gridView', label: t.featGridView, desc: t.featGridViewDesc },
+    { key: 'archive', label: t.featArchive, desc: t.featArchiveDesc },
     { key: 'leadPost', label: t.featLeadPost, desc: t.featLeadPostDesc },
   ]
   return <List items={items} features={features} onChange={onChange} />

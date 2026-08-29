@@ -3,8 +3,9 @@
 ## Reading & discovery
 
 - Features `{ search, toc, related, readingTime, progressBar, activityLog, sidebar, leadPost,
-  categoryLabel, deck, bookText, infiniteScroll, gridView }` (all default on EXCEPT `bookText` and
-  `infiniteScroll`, which are off; Admin → Settings → Tính năng); gated in header / `/search` / post page.
+  categoryLabel, deck, bookText, infiniteScroll, gridView, archive, offline }` (all default on
+  EXCEPT `bookText`, `infiniteScroll` and `offline`, which are off; Admin → Settings → Tính năng);
+  gated in header / `/search` / post page.
   `bookText` = book-page typesetting on the post body (first-line indent + justify ≥600px). `gridView` =
   the reader's grid/list header toggle (`GridToggle`); off hides the button AND the no-FOUC script ignores a
   stored `list=grid`, so every listing stays a list (and the infinite-scroll timeline, hidden in grid, always shows).
@@ -163,6 +164,30 @@
   `resolveSeries` (like categories/tags). Held in the page cache like every other public page, so
   an admin save empties it along with everything else (Invariant 1).
 
+## The year archive — `src/content/archive.ts`, `src/web/archive-page.ts`, `features.archive`
+
+- **`/archive` is every published post on one page**, newest year first, as rows of `MM-DD` +
+  title — no excerpt, no thumbnail. It answers "what has this person written", which nothing
+  else did: an old post was reachable only through a tag, through search, or by paging back
+  through the listing (on a 100-post blog, page eleven).
+- **One page, not `/archive/2024`.** Years are anchors (`#y2024`), so the jump row at the top
+  costs no request; the row is dropped below two years. Cached like every listing.
+- **`byYear` reads the year off the ISO string**, not `new Date(...).getFullYear()`: the stored
+  value is UTC, and a post published 1 January at 02:00 UTC files itself under the previous
+  year on any host west of Greenwich. It lives in `content/` because the sidebar reads it too,
+  and importing it the other way would close a cycle through `web/listing-page.ts`.
+- **The date column is numeric on purpose.** A month name needs each language's own day/month
+  order ("19 tháng 6" vs "June 19") — a twelfth locale string and a per-language branch for a
+  column `5ch` wide. The full date is on the `<time datetime>` for anything reading rather
+  than looking. Below 34rem the date moves above its title instead of holding a fifth of the line.
+- **A page or post the owner already publishes at `/archive` wins**, and the year index gives
+  way silently (`renderArticle('archive') ?? renderArchive()`). This repository's own demo had
+  such a page, and every imported WordPress site could; a release that takes over a live URL is
+  the failure an upgrade is least forgiven for. The sitemap then names the URL once, as the
+  document it really is.
+- **The way in is the rail**: a `termCloud` of years with counts, above the tags because a tag
+  cloud is the one rail block with no ceiling on its length. Off with the same switch.
+
 ## The printed page — `src/web/print.css.ts` (inlined into `public.css.ts`)
 
 - **What:** a post printed, or saved as PDF, gets the essay and nothing else. There was no
@@ -224,6 +249,29 @@ Both owner-approved 2026-08-27, both default **on**, both toggled from the Readi
   It cannot collide with the to-top button: the pill requires `scrollY < innerHeight`, the
   button the opposite. Cost ~1.1 KB in `post.js` (budget 15,800 → 17,000, reason recorded in
   `scripts/build-assets.ts`).
+
+## Reading with no signal — `src/assets/js/sw.ts`, `src/assets/js/offline.ts`, `features.offline`
+
+- **What:** a post the reader already opened still opens with no network. **Off by default**
+  ([ADR 0039](../decisions/0039-the-blog-reads-without-the-network.md)) — a service worker
+  outlives the page that installed it, and putting one on every existing blog's readers
+  because the software updated is the owner's decision being assumed rather than respected.
+- **Nothing is prefetched.** A page is in the cache because it was READ. This does not reopen
+  the prefetch judgement in [performance.md](../performance.md); nothing here speculates.
+- **HTML network-first, `/assets/<hash>.*` and `/fonts/*` cache-first.** Online the reader
+  always gets what the server just rendered; the immutable URLs cannot serve a stale answer
+  because a deploy changes them. Forty pages, kept by COUNT — `Cache.put` reports no size
+  without reading the body.
+- **The uninstall is the load-bearing half.** `data-sw` is absent from `<body>` when the
+  feature is off, and `offline.ts` reads that absence as "unregister and drop every `quire-*`
+  cache". It runs from `core.js`, on every public page, because the switch can only take
+  effect on a page the reader happens to load and most of those are listings. Cost 676 bytes
+  raw / 235 gzipped (budget 10,500 → 11,000, priced in `scripts/build-assets.ts`).
+- **Where it is proved:** `src/web/offline.test.ts` holds the server's half (the root path,
+  the `no-cache` header, `data-sw` only when on, an `install` handler that does nothing but
+  take over). The rest is only true in a browser and is a tour flow — a page read and found
+  in the cache, `/admin` read and found NOT in it, then the whole thing taken back off.
+- The recommended CSP in [self-host.md](../self-host.md) already allows `worker-src 'self'`.
 
 ## Book reading mode — `src/assets/js/book.ts`, `features.bookMode`
 

@@ -10,18 +10,13 @@
 
 import { Hono } from 'hono'
 import type { Context } from 'hono'
-import { getPublicPosts } from '@/content/posts'
 import { getSettings } from '@/content/settings'
-import { resolveSeries } from '@/content/series'
-import { resolveTerm, tagText } from '@/content/taxonomy'
-import { t } from '@/i18n/i18n'
-import { escapeHtml } from '@/utils'
-import { renderListing } from '@/web/listing'
-import { cached, listingPage, notFoundPage, renderFeedBody } from '@/web/listing-page'
+import { cached, notFoundPage, pageNumber } from '@/web/listing-page'
 import { renderHome, renderPostList, slugRole } from '@/web/home-mode'
 import { registerFeedRoutes } from '@/web/feed-routes'
+import { registerTermRoutes } from '@/web/term-routes'
 import { renderArticle } from '@/web/article'
-import { assetBody } from '@/web/assets'
+import { assetBody, SW_BODY } from '@/web/assets'
 import { handleOg } from '@/web/og'
 import { handleTrack } from '@/web/track'
 import { handleUpload } from '@/web/uploads'
@@ -78,12 +73,6 @@ async function adminPage(c: Context): Promise<Response> {
   return c.html(adminShell(await getSettings()), 200, { 'x-robots-tag': 'noindex, nofollow' })
 }
 
-/** A page number from the URL. Anything that is not a positive integer is a 404, not a 1. */
-function pageNumber(raw: string): number | null {
-  const n = Number(raw)
-  return Number.isInteger(n) && n >= 1 ? n : null
-}
-
 export function createApp(): Hono {
   const app = new Hono()
 
@@ -135,84 +124,12 @@ export function createApp(): Hono {
     return cached(`/page/${page}`, () => renderPostList(page))()
   })
 
-  // ----- taxonomy -------------------------------------------------------------
+  // ----- the archives ---------------------------------------------------------
+  // Category, tag, series and the year index, each with its own feed. In their own file
+  // since 2026-08-30: they are the routes that resolve a NAME to a set of posts, and this
+  // one had nine lines left. See `web/term-routes.ts`.
 
-  // The route segment is singular ('category'), the data field is plural ('categories'):
-  // the URL shape is the frozen tree's and so is the field name, so the map lives here.
-  const TAXONOMIES = [
-    { segment: 'category', field: 'categories' },
-    { segment: 'tag', field: 'tags' },
-  ] as const
-  for (const { segment: kind, field } of TAXONOMIES) {
-    const term = async (slug: string, page: number) => {
-      const settings = await getSettings()
-      const { name, posts } = resolveTerm(await getPublicPosts(), field, slug)
-      if (!name) return null
-      // "Danh muc: Kinh te" / "The: #edc" — the label, then the term, exactly as the
-      // frozen tree reads. A tag lowercases its own name and wears a hash.
-      const label = kind === 'category' ? t(settings.language).categoryLabel : t(settings.language).tagLabel
-      // A tag's spaces become hyphens here too, so the archive's own heading matches the
-      // token the reader clicked in the cloud. The stored name and the slug are untouched.
-      const term = kind === 'category'
-        ? escapeHtml(name)
-        : `<span class="lower">#${escapeHtml(tagText(name))}</span>`
-      const built = await renderFeedBody(posts, page, {
-        headingHtml: `${escapeHtml(label)}: ${term}`,
-        basePath: `/${kind}/${slug}`,
-        empty: kind === 'category' ? t(settings.language).emptyCategory : t(settings.language).emptyTag,
-      })
-      if (!built) return null
-      return listingPage({
-        title: `${name} · ${settings.title}`,
-        // Its own sentence. Every term page used to inherit the site description, so a
-        // hundred tag pages shipped one identical snippet and Google had nothing to tell
-        // them apart with.
-        description: t(settings.language).metaTerm
-          .replace('{site}', settings.title).replace('{name}', name),
-        body: built.body,
-        css: built.css,
-        canonicalPath: `/${kind}/${slug}`,
-        cardTitle: name,
-        // The archive's own URL is the row to mark in the rail.
-        activeHref: `/${kind}/${slug}`,
-      })
-    }
-
-    app.get(`/${kind}/:slug`, async (c) =>
-      cached(`/${kind}/${c.req.param('slug')}`, () => term(c.req.param('slug'), 1))())
-
-    app.get(`/${kind}/:slug/page/:n`, async (c) => {
-      const page = pageNumber(c.req.param('n'))
-      if (page === null) return notFoundPage()
-      const slug = c.req.param('slug')
-      return cached(`/${kind}/${slug}/page/${page}`, () => term(slug, page))()
-    })
-  }
-
-  // ----- series ---------------------------------------------------------------
-
-  app.get('/series/:slug', async (c) => {
-    const slug = c.req.param('slug')
-    return cached(`/series/${slug}`, async () => {
-      const settings = await getSettings()
-      const { name, posts } = await resolveSeries(slug)
-      if (!name) return null
-      // A series is read in order, front to back: it is not paginated, and it is never a
-      // timeline — its order is the owner's, not the calendar's.
-      return listingPage({
-        title: `${name} · ${settings.title}`,
-        description: t(settings.language).metaSeries
-          .replace('{site}', settings.title).replace('{name}', name),
-        body: renderListing({
-          headingHtml: `${escapeHtml(t(settings.language).seriesLabel)}: ${escapeHtml(name)}`,
-          paged: { items: posts, page: 1, totalPages: 1 },
-          basePath: `/series/${slug}`, empty: t(settings.language).emptySeries,
-        }, settings),
-        canonicalPath: `/series/${slug}`,
-        cardTitle: name,
-      })
-    })()
-  })
+  registerTermRoutes(app)
 
   // ----- search ---------------------------------------------------------------
 
@@ -349,6 +266,23 @@ export function createApp(): Hono {
   // The URL carries a content hash, so the answer is cacheable forever and a deploy that
   // changes the code changes the URL. A miss is a 404, never a stale body: an unknown
   // hash means the reader is asking for a version this server does not have.
+
+  // The service worker, at the root because that is the only scope from which it can see a
+  // page (ADR 0039). `no-cache` and not `immutable`: the build lives in the query string,
+  // but a worker script is the one file whose staleness cannot be fixed by a reload — a
+  // browser holding an old one keeps serving from it — so it revalidates every time.
+  //
+  // Registered unconditionally. The route existing costs nothing; what decides whether any
+  // reader installs it is `features.offline`, which is read where the page is built.
+  app.get('/sw.js', () => new Response(SW_BODY, {
+    headers: {
+      'content-type': 'text/javascript; charset=utf-8',
+      'cache-control': 'no-cache',
+      // Without this a worker served from `/sw.js` still only claims `/`, which is what is
+      // wanted — the header is here so a future move of the file cannot silently narrow it.
+      'service-worker-allowed': '/',
+    },
+  }))
 
   app.get('/assets/:file', (c) => {
     const file = c.req.param('file')

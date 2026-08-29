@@ -559,6 +559,14 @@ const it = {
   featInfiniteScrollDesc: 'Carica gli articoli man mano che il lettore scorre, invece della paginazione, e mostra una linea del tempo delle date nel margine destro (solo desktop).',
   featGridView: 'Vista a griglia',
   featGridViewDesc: 'Lascia che i lettori passino la lista degli articoli a una griglia di card (il pulsante griglia/elenco nell’intestazione). Spento resta un elenco — e la linea del tempo compare sempre.',
+  // Settings -> Features -> Listing: the /archive page and the sidebar year list.
+  featArchive: 'Pagina archivio',
+  featArchiveDesc: 'Una pagina /archive con tutti gli articoli per anno, e l’elenco degli anni nella barra laterale.',
+  // Settings -> Reading: the service worker (ADR 0039). The description carries the two
+  // things a reader would want to know and an owner would not think to ask: nothing is
+  // fetched ahead of time, and turning it off UNINSTALLS it rather than merely stopping.
+  featOffline: 'Leggere senza rete',
+  featOfflineDesc: 'Un articolo già aperto si apre anche senza rete. Nulla viene scaricato in anticipo e l’amministrazione non finisce mai in cache. Spegnerlo lo rimuove anche dai lettori che ce l’hanno già.',
   featLeadPost: 'Articolo di apertura',
   featLeadPostDesc: 'L’articolo più recente della pagina 1 è composto alla misura H1.',
   featCategoryLabel: 'Nome della categoria',
