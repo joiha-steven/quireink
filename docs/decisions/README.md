@@ -44,7 +44,7 @@ abandoned on 2026-07-26, and the only trace was a private memory file.
 | [0020](0020-mathematics-as-mathml.md) | Mathematics: LaTeX in the source, MathML on the page, and the dollar sign stays money | 2026-08-06 | ✅ |
 | [0021](0021-hosted-quire-ink-one-process-per-blog.md) | A hosted Quire Ink, as one process per blog. `tenant_id` stays rejected | 2026-08-11 | ⚠️ the architecture holds; **its headline cost number is wrong.** *"~140 MB per blog"* came from RSS on 2026-08-11 and was replaced on 2026-08-23 by a Pss measurement: **125 MB for a small blog and 226 MB for a large one**, the spread being an unbounded warm `pageCache` rather than the process. The "hundred blogs is ~15 GB" line is built on the retired figure. Re-measure before quoting either |
 | [0022](0022-ship-from-source-not-a-compiled-binary.md) | Quire Ink ships as source run by Bun. There is no compiled binary | 2026-08-11 | ✅ |
-| [0023](0023-commercial-use-of-unmodified-releases.md) | Commercial use of an unmodified release is allowed. A modified copy sold is not | 2026-08-16 | ✅ |
+| [0023](0023-commercial-use-of-unmodified-releases.md) | Commercial use of an unmodified release is allowed. A modified copy sold is not | 2026-08-16 | ⚠️ the grant holds; amended by [0038](0038-the-permission-reaches-the-install-people-actually-run.md) — the exception is v1.1, and §2(a) now turns on the source being unchanged rather than on running a tagged release |
 | [0024](0024-the-admin-is-rebuilt-around-writing.md) | The admin is rebuilt around writing; everything else moves out of the way | 2026-08-16 | ✅ |
 | [0025](0025-the-pen-varies-itself.md) | The pen varies itself: grown dies, a per-highlight deal, and the stroke setting retires | 2026-08-20 | ✅ |
 | [0026](0026-the-pen-learns-to-underline-and-ring.md) | The pen learns two more gestures: `++underline++` and `@@ring@@` | 2026-08-20 | ✅ |
@@ -59,6 +59,7 @@ abandoned on 2026-07-26, and the only trace was a private memory file.
 | [0035](0035-the-snapshot-leaves-the-machine.md) | Snapshots also ship to any S3-compatible bucket; restore stays a shell act | 2026-08-27 | ✅ |
 | [0036](0036-the-blog-asks-for-updates-and-is-counted-by-asking.md) | One daily request tells the blog a release exists and counts it, on by default | 2026-08-21 | ✅ recorded 2026-08-29 |
 | [0037](0037-an-mcp-token-carries-a-scope.md) | An MCP token is `full` or `read`; the read door registers only `readOnly` tools | 2026-08-29 | ✅ |
+| [0038](0038-the-permission-reaches-the-install-people-actually-run.md) | The commercial permission turns on UNCHANGED, not on tagged; the software names itself in a `generator` meta | 2026-08-29 | ✅ amends [0023](0023-commercial-use-of-unmodified-releases.md) |
 
 ## Written after the fact, and why that is allowed
 

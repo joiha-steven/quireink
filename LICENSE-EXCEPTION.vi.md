@@ -2,7 +2,7 @@ Required Notice: Copyright 2026 Quire Ink contributors (https://github.com/joiha
 
 # Cho phép bổ sung — dùng bản Quire Ink chưa sửa đổi cho mục đích thương mại
 
-Phiên bản 1.0, ngày 16/08/2026. [English](./LICENSE-EXCEPTION.md) · **Tiếng Việt**
+Phiên bản 1.1, ngày 29/08/2026. [English](./LICENSE-EXCEPTION.md) · **Tiếng Việt**
 
 > Bản tiếng Anh là bản có hiệu lực. Bản tiếng Việt này dịch sát nghĩa để đọc cho dễ; nếu hai
 > bản hiểu khác nhau ở chỗ nào thì theo bản tiếng Anh.
@@ -26,8 +26,11 @@ việc có trả phí; và bán hosting, mỗi khách hàng có một blog Quire
 
 ## 2. Điều kiện
 
-**(a) Bạn chạy đúng bản đã phát hành.** Thứ bạn chạy là một bản phát hành do bên cấp phép công
-bố, với mã nguồn nguyên vẹn. Những thứ sau **không** tính là sửa mã nguồn: cấu hình, biến môi
+**(a) Bạn chạy đúng bản đã công bố.** Thứ bạn chạy là mã nguồn do bên cấp phép công bố — một
+bản phát hành, hoặc nhánh mặc định của kho mã này — với mã nguồn nguyên vẹn. (Cách cài từ mã
+nguồn mà dự án này hướng dẫn là `git clone`, nên phần lớn bản triển khai không nằm trên một
+thẻ phiên bản; điều kiện ở đây nói về việc mã nguồn KHÔNG BỊ SỬA, chứ không phải việc nó có
+mang số hiệu phiên bản hay không.) Những thứ sau **không** tính là sửa mã nguồn: cấu hình, biến môi
 trường, mọi thứ chỉnh trong trang quản trị (bảng màu, font, cỡ chữ, bố cục, menu, trang, nội
 dung), font tự tải lên, và bài viết cùng hình ảnh của bạn. Phần mềm này được dựng sao cho diện
 mạo của một site là một tuỳ chọn chứ không phải một lần sửa code, nên một dịch vụ vẫn mang được
@@ -44,7 +47,8 @@ tệp giấy phép đều giữ nguyên vẹn, và ở chỗ nào phần mềm t
 chỗ đó vẫn hiện.
 
 **(d) Ghi công, và không nhận vơ.** Ở nơi dịch vụ của bạn được giới thiệu công khai, phải nói
-rõ nó chạy trên Quire Ink và dẫn link tới <https://github.com/joiha-steven/quireink>. Dịch vụ
+rõ nó chạy trên Quire Ink và dẫn link tới <https://quireink.com> hoặc
+<https://github.com/joiha-steven/quireink>. Dịch vụ
 của bạn được mang thương hiệu và tên riêng của bạn. Bạn không được trình bày phần mềm này như
 sản phẩm do mình làm ra, và không được đổi tên nó theo cách khiến người khác hiểu là bạn viết
 ra nó.

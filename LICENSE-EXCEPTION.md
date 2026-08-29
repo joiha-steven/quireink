@@ -2,7 +2,7 @@ Required Notice: Copyright 2026 Quire Ink contributors (https://github.com/joiha
 
 # Additional Permission — commercial use of unmodified Quire Ink
 
-Version 1.0, 2026-08-16. **English** · [Tiếng Việt](./LICENSE-EXCEPTION.vi.md)
+Version 1.1, 2026-08-29. **English** · [Tiếng Việt](./LICENSE-EXCEPTION.vi.md)
 
 > English is the authoritative text. The Vietnamese translation is there to be read, and
 > where the two are read differently, this one governs.
@@ -25,8 +25,11 @@ as part of paid work; and selling hosting, where each customer gets their own Qu
 
 ## 2. Conditions
 
-**(a) You run it as published.** What you run is a release published by the licensor, with
-its source unchanged. These are **not** changes to the source: configuration, environment
+**(a) You run it as published.** What you run is code published by the licensor — a release,
+or this repository's default branch — with its source unchanged. (The from-source install
+this project documents is a `git clone`, so a release tag is not what most deployments are
+on; what this condition is about is that the code is UNCHANGED, not that it carries a
+version number.) These are **not** changes to the source: configuration, environment
 variables, anything set through the admin (palette, fonts, type sizes, layout, menu, pages,
 content), uploaded fonts, and your own posts and images. The software is built so that the
 look of a site is a setting rather than a code change, so a service can carry its own visual
@@ -42,9 +45,10 @@ files stay intact, and wherever the software displays its own name and version, 
 visible.
 
 **(d) Credit, and no passing off.** Where your service is described publicly, it says that it
-runs Quire Ink and links to <https://github.com/joiha-steven/quireink>. Your service may carry
-your own brand and your own name. You may not present the software as your own work, and you
-may not rename it in a way that implies you wrote it.
+runs Quire Ink and links to either <https://quireink.com> or
+<https://github.com/joiha-steven/quireink>. Your service may carry your own brand and your own
+name. You may not present the software as your own work, and you may not rename it in a way
+that implies you wrote it.
 
 **(e) You sell the service, not the software.** You may charge for hosting, operation, support
 and your own work around it. You may not sell, sublicense, relicense or distribute the

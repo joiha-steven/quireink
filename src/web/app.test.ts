@@ -65,6 +65,16 @@ describe('article page', () => {
     expect(html).toContain('My Blog')
   })
 
+  // The licence's only enforcement surface, pinned rather than trusted: §2(c) asks that the
+  // software's own name stay visible, and the footer cannot carry that — it is a SETTING, and
+  // §2(a) says a setting is not a source change. See ADR 0038.
+  it('names itself and its version in a place no setting can edit', async () => {
+    await savePost({ title: 'Attributed', content: 'body', status: 'published', date: PAST })
+    const html = await get('/attributed').then((r) => r.text())
+    const pkg = await Bun.file('package.json').json() as { version: string }
+    expect(html).toContain(`<meta name="generator" content="Quire Ink ${pkg.version}">`)
+  })
+
   it('ships TWO deferred scripts and no inline JavaScript at all', async () => {
     await savePost({ title: 'Quiet', content: 'body', status: 'published', date: PAST })
     const html = await get('/quiet').then((r) => r.text())

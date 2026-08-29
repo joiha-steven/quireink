@@ -18,6 +18,24 @@ import { typographyToCss, fontToCss, shapeToCss, resolveAppIcon } from '@/conten
 import { singleRailCss } from '@/render/rail-css'
 import { fontFaceCss, MONO_TRACKING } from '@/render/font-faces'
 import { penSheetsFor } from '@/web/assets'
+/**
+ * THE ONE PLACE THE SOFTWARE NAMES ITSELF THAT AN OWNER CANNOT EDIT AWAY.
+ *
+ * `LICENSE-EXCEPTION.md` §2(c) requires that "wherever the software displays its own name and
+ * version, that stays visible", and until 2026-08-29 there was nowhere it did. The only
+ * public mention was the FOOTER, which is a setting — and §2(a) says in as many words that
+ * anything set through the admin is not a change to the source. So a commercial licensee
+ * could delete every trace of Quire Ink from their pages without touching a line of code and
+ * still be inside the permission, which is the exact thing the permission exists to prevent.
+ *
+ * A `generator` meta is the standard answer (WordPress, Ghost and Hugo all emit one), costs
+ * a reader nothing, shows nothing on the page, and makes the condition CHECKABLE from
+ * outside instead of only stated. It is not a lock — anyone modifying the source can remove
+ * it, and doing so is then a source change, which is precisely the line the licence draws.
+ */
+import pkg from '../../package.json' with { type: 'json' }
+
+const VERSION = (pkg as { version: string }).version
 
 export type Head = {
   title: string
@@ -306,6 +324,7 @@ export function renderDocument(
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="Quire Ink ${escapeAttr(VERSION)}">
 <title>${escapeHtml(head.title)}</title>
 ${description}${canonical}${robots}${icon}${manifest}${feed}${og}${sheet}${preloads}${jsonLd}
 <style>${styles}</style>

@@ -13,8 +13,7 @@ Status: accepted
 
 ## Context
 
-The owner asked on 2026-08-21: *"có cách nào thống kê số người thực sự đang xài Quire Ink
-không?"* — is there any way to count how many people actually use Quire Ink?
+The question, on 2026-08-21: is there any way to know how many people actually use Quire Ink?
 
 The honest answer was no, and the reason is worth keeping: **you cannot count people, only
 machines, and only machines that agree to say something.** The proxies available all lie in
