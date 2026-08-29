@@ -81,7 +81,10 @@ const RULES: Rule[] = [
     // size and the leading, which is still the difference between a readable hint and the
     // smallest text on the screen.
     what: 'the hint text style',
-    signature: 'text-[0.8125rem] leading-[1.55] text-neutral-500',
+    // `italic` since 2026-08-29, and the signature moved with it — a hint is set apart from
+    // its label by SLANT because it cannot be set apart by shade: measured at 4.74:1 on a
+    // white card against the 4.5:1 floor, with `neutral-400` two steps down at 2.58:1.
+    signature: 'text-[0.8125rem] italic leading-[1.55] text-neutral-500',
     home: 'src/admin/components/scale.ts',
     instead: 'import NOTE_TEXT from components/kit — or pass `note` to Setting / ui/Input',
   },

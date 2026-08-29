@@ -56,9 +56,11 @@ export function SiteFields({ s, update }: Props) {
         </div>
       </Setting>
 
-      <Setting label={t.siteTimezone} note={t.siteTimezoneHint}>
+      {/* Beside its label, and no longer the width of the card: a zone is a short answer, so
+          it takes a short field and the row it was spending on its own. */}
+      <Setting inline label={t.siteTimezone} note={t.siteTimezoneHint}>
         <Select
-          className={FIELD_W.full}
+          className={FIELD_W.medium}
           wrapClassName="flex"
           value={s.timezone}
           onChange={(e) => update({ timezone: e.target.value })}

@@ -1,4 +1,4 @@
-// The way past the seven tabs.
+// The way past the tabs.
 //
 // Split out of `SettingsView` when that file passed the 400-line ceiling — the same seam the
 // tour was split on: this file knows about matching and results and nothing about which tab

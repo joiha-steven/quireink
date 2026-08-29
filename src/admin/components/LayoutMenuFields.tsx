@@ -63,40 +63,38 @@ export function LayoutMenuFields({ s, update, posts, pages }: Props) {
               <p className={NOTE_TEXT}>{t.homePageHint}</p>
             </div>
           )}
-          <div className="space-y-1.5">
-            <Input
-              label={t.listPathLabel}
-              value={home.listPath}
-              onChange={(e) => update({ home: { ...home, listPath: e.target.value } })}
-            />
-            <p className={NOTE_TEXT}>{t.listPathHint}</p>
-          </div>
+          <Input
+            label={t.listPathLabel}
+            note={t.listPathHint}
+            value={home.listPath}
+            onChange={(e) => update({ home: { ...home, listPath: e.target.value } })}
+          />
         </div>
       )}
 
-      <div className="space-y-1.5">
-        <Input
-          label={t.siteWidth}
-          type="number"
-          min={360}
-          max={1600}
-          value={s.contentWidth}
-          onChange={(e) => update({ contentWidth: Number(e.target.value) })}
-        />
-        <p className={NOTE_TEXT}>{t.siteWidthHint}</p>
-      </div>
+      {/* `note=`, not a `<p>` after the field. Both of these hand-placed their hint BELOW the
+          control, which is the drift `ui/Input` grew a `note` slot to stop — the order is
+          label, note, control — and it also left the sentence outside the inline row, so it
+          ran the full width of the card under a 112px number box. */}
+      <Input
+        label={t.siteWidth}
+        note={t.siteWidthHint}
+        type="number"
+        min={360}
+        max={1600}
+        value={s.contentWidth}
+        onChange={(e) => update({ contentWidth: Number(e.target.value) })}
+      />
 
-      <div className="space-y-1.5">
-        <Input
-          label={t.postsPerPage}
-          type="number"
-          min={1}
-          max={100}
-          value={s.postsPerPage}
-          onChange={(e) => update({ postsPerPage: Number(e.target.value) })}
-        />
-        <p className={NOTE_TEXT}>{t.postsPerPageHint}</p>
-      </div>
+      <Input
+        label={t.postsPerPage}
+        note={t.postsPerPageHint}
+        type="number"
+        min={1}
+        max={100}
+        value={s.postsPerPage}
+        onChange={(e) => update({ postsPerPage: Number(e.target.value) })}
+      />
 
       <div className="space-y-3">
         <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{t.menuTitle}</span>
@@ -161,13 +159,13 @@ export function LayoutMenuFields({ s, update, posts, pages }: Props) {
       <div className="space-y-1.5">
         <Input
           label={t.mostViewedCount}
+          note={t.mostViewedCountHint}
           type="number"
           min={0}
           max={10}
           value={s.mostViewedCount}
           onChange={(e) => update({ mostViewedCount: Number(e.target.value) })}
         />
-        <p className={NOTE_TEXT}>{t.mostViewedCountHint}</p>
       </div>
     </div>
   )

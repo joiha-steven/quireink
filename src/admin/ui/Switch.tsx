@@ -1,5 +1,6 @@
 // Shared on/off switch primitives for the settings forms.
 
+import type { ReactNode } from 'react'
 import { CHECK, Setting } from '@/admin/components/kit'
 
 type SwitchProps = { checked: boolean; onChange: (v: boolean) => void }
@@ -49,7 +50,10 @@ export function ToggleRow({
   checked,
   onChange,
   disabled = false,
-}: SwitchProps & { label: string; desc?: string; badge?: string; disabled?: boolean }) {
+  // `ReactNode`, because one row's note is a disclosure rather than a sentence: the update
+  // check's is a 700-character promise about what leaves the machine, folded into a
+  // `<details>` so it stays verbatim without printing eleven lines under a switch.
+}: SwitchProps & { label: string; desc?: ReactNode; badge?: string; disabled?: boolean }) {
   return (
     <Setting label={label} note={desc} badge={badge} inline className={`p-4 ${disabled ? 'opacity-50' : ''}`}>
       <Switch checked={checked} onChange={onChange} label={label} disabled={disabled} />

@@ -217,6 +217,23 @@ function fieldByLabel(container: HTMLElement, label: string): HTMLElement {
   return field as HTMLElement
 }
 
+/**
+ * A button by its CARD and its label, for a label the tab prints more than once.
+ *
+ * `m.button` takes the first match in the DOM, which makes any assertion about a repeated
+ * label secretly an assertion about card ORDER — and card order is a layout decision that
+ * gets re-measured (see `admin-design.md`, "their heights get re-measured").
+ */
+function buttonInCard(container: HTMLElement, cardTitle: string, label: string): HTMLButtonElement {
+  const card = [...container.querySelectorAll('section')].find(
+    (s) => s.querySelector('h2')?.textContent?.trim() === cardTitle,
+  )
+  if (!card) throw new Error(`no card titled "${cardTitle}"`)
+  const hit = [...card.querySelectorAll('button')].find((b) => b.textContent?.trim() === label)
+  if (!hit) throw new Error(`no <button> "${label}" inside "${cardTitle}"`)
+  return hit
+}
+
 /** Mount, open a tab, and hand back the harness plus the dictionary. */
 async function onTab(tab: 'tabSite' | 'tabLayout' | 'tabAppearance') {
   const { mountAdmin, installFetchMock } = await import('@/admin/test-mount')
@@ -344,8 +361,13 @@ describe('author (Site)', () => {
 
   it('the portrait opens the media library, the same picker the logo uses', async () => {
     const { m, t } = await onTab('tabSite')
-    // Two `Choose image` buttons would mean a second picker was hand-rolled here.
-    await m.click(m.button(t.chooseImage))
+    // Scoped to the Author CARD, not `m.button`, which returns the first match in the DOM.
+    // The Site tab prints THREE `Choose image` buttons — favicon, app icon, portrait — and
+    // this asserted the portrait's only for as long as Author happened to be rendered before
+    // Branding. Moving Author into the other column on 2026-08-29 made it click the favicon,
+    // which opens a file input rather than the library, and the test failed for a reason that
+    // had nothing to do with what it is about.
+    await m.click(buttonInCard(m.container, t.cardAuthor, t.chooseImage))
     expect(m.text()).toContain(t.mediaTitle)
     await m.unmount()
   })
