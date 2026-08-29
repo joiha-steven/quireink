@@ -9,6 +9,7 @@ import { formatDate } from '@/i18n/i18n'
 import { isVideoAttachment } from '@/render/video'
 import { FileUploader } from './FileUploader'
 import { useAdminT, useAdminLang } from './I18nProvider'
+import { SelectionBar } from './SelectionBar'
 import { CHECK, NOTE_TEXT, TAP } from './kit'
 
 // Short uppercase tag from the filename extension (or the MIME subtype).
@@ -120,16 +121,11 @@ export function FileLibrary() {
     <div className="space-y-5">
       <FileUploader onUploaded={(uploaded) => setItems((prev) => [...uploaded, ...prev])} />
 
-      {selected.size > 0 && (
-        <div className="flex items-center justify-end gap-4">
-          <button type="button" onClick={() => setSelected(new Set())} className="text-sm text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white">
-            {t.clearSelection}
-          </button>
-          <button type="button" onClick={deleteSelected} className="text-sm font-medium text-neutral-800 hover:text-black dark:text-neutral-200 dark:hover:text-white">
-            {t.deleteSelected} ({selected.size})
-          </button>
-        </div>
-      )}
+      <SelectionBar
+        count={selected.size}
+        onClear={() => setSelected(new Set())}
+        onDelete={deleteSelected}
+      />
 
       {loading ? (
         <p className="py-10 text-center text-neutral-500 dark:text-neutral-400">{t.loading}</p>

@@ -4,16 +4,14 @@
 // form; write-to-set, a blank field leaves the stored value alone. The Test button PUTs
 // and deletes one marker object, so a wrong paste is found while the owner is still here
 // rather than on the day the machine is gone.
-import { useState } from 'react'
 import { useRouter } from '@/admin/router'
 import type { ApiResponse } from '@/types'
 import { Button } from '@/admin/ui/Button'
-import { useToast } from '@/admin/ui/Toast'
 import { useAdminT } from './I18nProvider'
-import { NOTE_TEXT } from './kit'
+import { CONTROL, NOTE_TEXT } from './kit'
+import { useSecretKeys } from './useSecretKeys'
 
-const INPUT =
-  'w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100'
+const INPUT = `${CONTROL} w-full`
 
 type Keys = {
   s3Endpoint: string; s3Region: string; s3Bucket: string
@@ -24,47 +22,21 @@ const EMPTY: Keys = { s3Endpoint: '', s3Region: '', s3Bucket: '', s3Prefix: '', 
 export function OffsiteFields({ configured, bucket }: { configured: boolean; bucket: string }) {
   const t = useAdminT()
   const router = useRouter()
-  const { notify } = useToast()
-  const [keys, setKeys] = useState<Keys>(EMPTY)
-  const [busy, setBusy] = useState(false)
-  const set = (k: keyof Keys, v: string) => setKeys((p) => ({ ...p, [k]: v }))
-  const ph = (has: boolean, label: string) => (has ? `${label} · ${t.commentsKeySet}` : label)
+  const { keys, busy, set, ph, save, withBusy, notify } = useSecretKeys(
+    '/api/integrations/s3', EMPTY, () => router.refresh(),
+  )
 
-  async function save() {
-    setBusy(true)
-    const body: Partial<Keys> = {}
-    for (const k of Object.keys(keys) as (keyof Keys)[]) if (keys[k].trim()) body[k] = keys[k].trim()
-    try {
-      const res = await fetch('/api/integrations/s3', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(body),
-      })
-      const json = (await res.json()) as ApiResponse
-      if (!json.success) throw new Error(json.error)
-      setKeys(EMPTY)
-      notify(t.commentsKeySaved)
-      router.refresh()
-    } catch {
-      notify(t.deleteFailed, 'error')
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  async function test() {
-    setBusy(true)
-    try {
-      const res = await fetch('/api/backup/offsite-test', { method: 'POST' })
-      const json = (await res.json()) as ApiResponse
-      // The transport's own words on failure: a wrong endpoint deserves a name, not "failed".
-      notify(json.success ? t.offsiteTestOk : json.error || t.deleteFailed, json.success ? undefined : 'error')
-    } catch {
-      notify(t.deleteFailed, 'error')
-    } finally {
-      setBusy(false)
-    }
-  }
+  const test = () =>
+    withBusy(async () => {
+      try {
+        const res = await fetch('/api/backup/offsite-test', { method: 'POST' })
+        const json = (await res.json()) as ApiResponse
+        // The transport's own words on failure: a wrong endpoint deserves a name, not "failed".
+        notify(json.success ? t.offsiteTestOk : json.error || t.deleteFailed, json.success ? undefined : 'error')
+      } catch {
+        notify(t.deleteFailed, 'error')
+      }
+    })
 
   return (
     <div className="space-y-3">

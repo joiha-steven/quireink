@@ -57,9 +57,9 @@ import {
   handleConfirm, handleOpenPixel, handleSubscribe, handleUnsubscribeGet, handleUnsubscribePost,
 } from '@/web/newsletter'
 import {
-  handleEnrol, handleEnrolDone, handleEnrolSkip, handleLogin, handleLoginPage, handleLogout,
-  handleTwoFactor, handleTwoFactorPage,
+  handleLogin, handleLoginPage, handleLogout, handleTwoFactor, handleTwoFactorPage,
 } from '@/web/auth-routes'
+import { handleEnrol, handleEnrolDone, handleEnrolSkip } from '@/web/enrol-routes'
 import { handleSetupClaim, handleSetupPage, setupWizardRoutes } from '@/web/setup-routes'
 
 /**

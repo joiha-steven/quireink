@@ -7,7 +7,7 @@
 import type { SiteSettings } from '@/types'
 import type { ThemePreset } from '@/content/themes'
 import type { RefObject } from 'react'
-import { Card, NOTE_TEXT, ResetButton } from './kit'
+import { Card, CONTROL_CHROME, NOTE_TEXT, ResetButton } from './kit'
 import { useAdminT } from './I18nProvider'
 import { ThemeFields } from './ThemeFields'
 import { ShapeFields } from './ShapeFields'
@@ -81,7 +81,7 @@ export function SettingsAppearanceTab(
               rows={8}
               spellCheck={false}
               placeholder={'.prose h2 { letter-spacing: -0.01em }'}
-              className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-xs outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+              className={`${CONTROL_CHROME} w-full resize-y px-3.5 py-2 text-xs`}
             />
             <p className={NOTE_TEXT}>{t.customCssHint}</p>
           </div>

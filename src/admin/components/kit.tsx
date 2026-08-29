@@ -123,17 +123,32 @@ export function Setting({
   )
 }
 
-// Canonical form-control chrome — shared by admin <input> and <select> so height,
-// padding, radius and focus never drift (they were hand-rolled + cramped before).
-// `ui/Input.tsx` now IMPORTS this rather than declaring a matching copy, so there is nothing
-// left to keep in step by hand. Callers add width (see FIELD_W).
+/**
+ * Everything about a form control EXCEPT its size: border, ground, radius, focus and the
+ * placeholder shade.
+ *
+ * Split out from `CONTROL` because ten fields had been drawn by hand, and two of them
+ * (the palette's hex box at `h-9` beside a 36px swatch, the type scale's 64px number) had a
+ * MEASURED reason to be a size `CONTROL` does not offer. Those two keep their size and take
+ * the chrome from here; the other eight take `CONTROL` whole.
+ *
+ * The chrome is the half that had drifted. All ten wrote `outline-none focus:border-neutral-900`
+ * — no ring at all — against this focus treatment, so the admin had two answers to what a
+ * focused field looks like. `check:admin-kit` now fails on that class.
+ */
+export const CONTROL_CHROME =
+  'rounded-md border border-neutral-300 bg-white text-neutral-900 outline-none transition focus:border-neutral-500 focus:ring-2 focus:ring-neutral-200 placeholder:text-neutral-400 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500 dark:focus:ring-neutral-800 dark:placeholder:text-neutral-500'
+
+// The canonical control — chrome plus the one size nearly every field wants. `ui/Input.tsx`
+// IMPORTS this rather than declaring a matching copy, so there is nothing left to keep in
+// step by hand. Callers add width (see FIELD_W).
 //
 // `min-h-10` and `py-2`, which is `ui/Button`'s height and not a rounder-looking `py-2.5`:
 // the padding version measured 42px against the button's 40, so every field standing beside
 // a button — Copy next to a token, Choose image next to a filename — sat two pixels proud of
-// it. A form control and the button that acts on it are one row or they are nothing.
-export const CONTROL =
-  'min-h-10 rounded-md border border-neutral-300 bg-white px-3.5 py-2 text-sm text-neutral-900 outline-none transition focus:border-neutral-500 focus:ring-2 focus:ring-neutral-200 placeholder:text-neutral-400 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500 dark:focus:ring-neutral-800 dark:placeholder:text-neutral-500'
+// it. A form control and the button that acts on it are one row or they are nothing. The
+// hand-drawn eight had no minimum height at all, so they measured 38 against that same 40.
+export const CONTROL = `${CONTROL_CHROME} min-h-10 px-3.5 py-2 text-sm`
 
 /** The tick. No `accent-color` does not mean unstyled, it means the OS accent, which is BLUE, in
  *  an admin of black, white and neutrals. Five shipped so and the two that remembered disagreed
@@ -341,3 +356,4 @@ export function TableFrame({ children, className = '' }: { children: ReactNode; 
     </div>
   )
 }
+
