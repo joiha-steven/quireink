@@ -112,3 +112,11 @@ drop table media;
 alter table media_new rename to media;
 create index if not exists media_uploaded_at_idx on media (uploaded_at desc);
 create index if not exists media_deleted_at_idx  on media (deleted_at);
+
+-- migration: 008-mcp-token-scope
+-- A leaked token used to be the whole blog: one scope, 'full', for every connector — the
+-- reader that only summarises posts held the same key as the writer that publishes them.
+-- 'read' tokens now exist; the default stays 'full' so every token already in someone's
+-- connector keeps doing exactly what it did. SQLite CAN add a column with a CHECK, so no
+-- rebuild this time.
+alter table mcp_tokens add column scope text not null default 'full' check (scope in ('full', 'read'));

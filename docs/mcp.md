@@ -15,7 +15,10 @@
   (`notifications/initialized`). Symptom when this was wrong: the handshake succeeded, that POST
   never returned, and the client showed a spinner and then "server is currently unavailable".
 - **Auth = admin-managed tokens + thin OAuth.** Manual tokens are created in the admin (up to 5,
-  named, shown ONCE on creation — only the SHA-256 hash is kept in the `mcp_tokens` table; see
+  named, shown ONCE on creation, each with a **scope** — `full` (the default) or `read`, chosen at mint
+  time; a `read` token's door registers only the tools marked `readOnly` (`src/mcp/registry.ts`,
+  pinned by `src/mcp/scope.test.ts`), so write tools are absent from its `tools/list`, not merely
+  refused — only the SHA-256 hash is kept in the `mcp_tokens` table; see
   `lib/mcp/tokens.ts`). Every token **expires 180 days after creation** (`expires_at`, set on insert,
   default in `schema.sql`); `verifyMcpToken` hashes the bearer, looks it up, **rejects it once past
   `expires_at`**, else stamps `last_used_at` (while the toggle is on). There is **no `MCP_TOKEN` env
@@ -34,7 +37,10 @@
   Approve, which POSTs back to `/authorize`. The Approve POST re-checks owner auth + the allowlist and requires a
   **CSRF token bound to the owner's SESSION** (HMAC over `getToken({raw:true})`'s session JWT + the oauth params),
   so a forged cross-site auto-submit that rides the owner's cookies still can't mint a code. **Loopback redirects
-  keep GET auto-approve** (they target the user's own machine). **Codes are single-use:**
+  go through the same consent page since 2026-08-29** — GET auto-approve meant any web page could make the
+  signed-in owner's browser fetch `/authorize`, and a code landed on whatever listened on that local port;
+  loopback stays a valid redirect *target* without pre-registration, it just costs the same one Approve
+  click as every other client. **Codes are single-use:**
   each carries a random `jti` that `/token` records in `mcp_used_codes` on first exchange (`lib/mcp/used-codes.ts`);
   a replay of the same code is rejected `invalid_grant`. **OAuth tokens are exempt from the manual 5-cap and are NEVER auto-deleted** (an expired
   row lingers as dead until the owner deletes it; a connector silently re-authorizes to mint a fresh one).

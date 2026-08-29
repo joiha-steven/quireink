@@ -32,7 +32,14 @@ export const DEFAULT_SEO: SeoSettings = {
 }
 
 export const DEFAULT_BACKUPS: BackupSettings = {
-  enabled: false,
+  // ON since 2026-08-29. It shipped off, which meant the product's least-technical
+  // audience — the person who installs from a NAS container store and never opens
+  // Settings → System — ran without a single snapshot until the day they needed one.
+  // `keep` bounds the disk (4 snapshots, pruned), so the cost of on-by-default is a few
+  // hundred MB ceiling; the cost of off-by-default is somebody's writing. An owner who
+  // SAVED settings before this ships keeps their stored `false` — the default only
+  // reaches installs that never chose.
+  enabled: true,
   intervalDays: 4,
   keep: 4,
 }

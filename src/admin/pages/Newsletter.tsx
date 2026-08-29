@@ -4,11 +4,8 @@
 import { useView } from '@/admin/useView'
 import { View } from '@/admin/pages/state'
 import { NewsletterView } from '@/admin/components/NewsletterView'
-import type { ComponentProps } from 'react'
-
-type Props = ComponentProps<typeof NewsletterView>
 
 export default function Newsletter() {
-  const state = useView<Props>('newsletter')
+  const state = useView('newsletter')
   return <View state={state}>{(data) => <NewsletterView {...data} />}</View>
 }

@@ -13,6 +13,11 @@ how an install ends up with two copies of the same protection and none of anothe
 All three take the same `VACUUM INTO` snapshot of both databases plus the uploads tree. They
 differ only in where the file ends up and who decides when.
 
+A sibling under the same env-var convention, [`scripts/ops/quire-uptime.sh`](../scripts/ops/quire-uptime.sh),
+watches a list of URLs from cron and announces DOWN/UP through the same webhook file the
+backup script uses. It is not a backup, but it answers the question every backup story
+skips: who notices, and when. Run it from a machine that is not the one being watched.
+
 The frozen tree backed up to the owner's Google Drive from inside the application, with an
 OAuth flow, a `backup_state` table and a destructive in-app restore. 2.0 dropped all of it
 (parity exception 1, [`spec/00-rationale.md`](spec/00-rationale.md)): backup is an operational
@@ -31,6 +36,11 @@ of the retention window.
 every `intervalDays`, keeping the newest `keep`. Those two fields have been in Settings
 since the port and drove nothing until 2026-07-29; they pointed at the Google Drive
 destination that had already been removed.
+
+**On by default since 2026-08-29** (every 4 days, keep 4). It shipped off, which meant the
+install that never opens Settings — precisely the one this product is for — ran with no
+snapshot at all. An owner who saved settings while it was off keeps their stored `false`;
+the default reaches only installs that never chose.
 
 - **Due-ness is measured from the newest file on disk**, not from a recorded run time. There
   is no state table, so nothing can go stale, deleting every snapshot asks for a fresh one,

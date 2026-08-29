@@ -24,11 +24,15 @@ const expiryMs = (): number => nowMs() + TOKEN_TTL_DAYS * 86_400_000
 // connection's lifecycle); deleting from Claude alone just lets it re-authorize.
 export const OAUTH_TOKEN_NAME = 'OAuth connector'
 
+/** What a token may do. 'read' registers only the read-only tools on its door. */
+export type McpScope = 'full' | 'read'
+
 // What the admin UI sees — never the secret itself.
 export type McpTokenInfo = {
   id: number
   name: string
   prefix: string // short non-secret display hint, e.g. "vbmcp_AbCd"
+  scope: McpScope
   createdAt: string
   expiresAt: string // created_at + 180d; rejected once past
   expired: boolean // computed server-side (past expiresAt) for display
@@ -37,11 +41,11 @@ export type McpTokenInfo = {
 }
 
 type TokenRow = {
-  id: number; name: string; prefix: string
+  id: number; name: string; prefix: string; scope: McpScope
   created_at: number; expires_at: number; last_used_at: number | null
 }
 
-const INFO_COLS = 'id, name, prefix, created_at, expires_at, last_used_at'
+const INFO_COLS = 'id, name, prefix, scope, created_at, expires_at, last_used_at'
 
 const sha256 = (s: string): string => createHash('sha256').update(s).digest('hex')
 
@@ -49,6 +53,7 @@ const toInfo = (r: TokenRow): McpTokenInfo => ({
   id: r.id,
   name: r.name,
   prefix: r.prefix,
+  scope: r.scope,
   createdAt: toIso(r.created_at),
   expiresAt: toIso(r.expires_at),
   expired: r.expires_at <= nowMs(),
@@ -80,13 +85,13 @@ const newSecret = (): { token: string; prefix: string } => {
   return { token, prefix: token.slice(0, 12) }
 }
 
-function insertToken(name: string): { token: string; info: McpTokenInfo } {
+function insertToken(name: string, scope: McpScope): { token: string; info: McpTokenInfo } {
   const { token, prefix } = newSecret()
   const row = one<TokenRow>(
-    `insert into mcp_tokens (name, token_hash, prefix, created_at, expires_at)
-     values ($name, $hash, $prefix, $now, $expires)
+    `insert into mcp_tokens (name, token_hash, prefix, scope, created_at, expires_at)
+     values ($name, $hash, $prefix, $scope, $now, $expires)
      returning ${INFO_COLS}`,
-    { name, hash: sha256(token), prefix, now: nowMs(), expires: expiryMs() },
+    { name, hash: sha256(token), prefix, scope, now: nowMs(), expires: expiryMs() },
   )
   if (!row) throw new Error('insertToken: no row')
   return { token, info: toInfo(row) }
@@ -94,9 +99,9 @@ function insertToken(name: string): { token: string; info: McpTokenInfo } {
 
 // Mint a named MANUAL token. Returns the PLAINTEXT once (never stored again).
 // Throws 'token_limit' when MAX_TOKENS manual tokens already exist.
-export async function createToken(name: string): Promise<{ token: string; info: McpTokenInfo }> {
+export async function createToken(name: string, scope: McpScope = 'full'): Promise<{ token: string; info: McpTokenInfo }> {
   if (countManualTokens() >= MAX_TOKENS) throw new Error('token_limit')
-  return insertToken(name.trim().slice(0, 80) || 'Token')
+  return insertToken(name.trim().slice(0, 80) || 'Token', scope)
 }
 
 // Mint the OAuth-connector token (called by the token endpoint). NEVER deletes any token
@@ -104,8 +109,9 @@ export async function createToken(name: string): Promise<{ token: string; info: 
 // connections in the admin). Exempt from the manual cap → authorizing never fails with
 // "limit reached". Expires 180 days after creation like every token; a connector silently
 // re-authorizes across that boundary to mint a fresh one, so it stays connected.
+// An OAuth connector negotiates no scope UI, so it gets what it always got: full.
 export async function mintOAuthToken(): Promise<{ token: string; info: McpTokenInfo }> {
-  return insertToken(OAUTH_TOKEN_NAME)
+  return insertToken(OAUTH_TOKEN_NAME, 'full')
 }
 
 export async function deleteToken(id: number): Promise<void> {
@@ -114,12 +120,12 @@ export async function deleteToken(id: number): Promise<void> {
 
 // Verify a presented bearer: hash + lookup. Rejects an expired token (past expires_at).
 // On a live match, stamps last_used_at and returns the token's id/name; otherwise null.
-export async function verifyTokenHash(bearer: string): Promise<{ id: number; name: string } | null> {
-  const r = one<{ id: number; name: string; expires_at: number }>(
-    `select id, name, expires_at from mcp_tokens where token_hash = ?`, sha256(bearer),
+export async function verifyTokenHash(bearer: string): Promise<{ id: number; name: string; scope: McpScope } | null> {
+  const r = one<{ id: number; name: string; scope: McpScope; expires_at: number }>(
+    `select id, name, scope, expires_at from mcp_tokens where token_hash = ?`, sha256(bearer),
   )
   if (!r) return null
   if (r.expires_at <= nowMs()) return null // expired → treat as invalid
   run(`update mcp_tokens set last_used_at = ? where id = ?`, nowMs(), r.id)
-  return { id: r.id, name: r.name }
+  return { id: r.id, name: r.name, scope: r.scope }
 }

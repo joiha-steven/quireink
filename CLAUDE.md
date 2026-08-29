@@ -14,8 +14,8 @@ gitignored `.env`.
 bun run check:all
 ```
 
-Typecheck, the seven static guards (`filesize` · `css` · `nul` · `routes` · `type` ·
-`admin-kit` · `docs`) and `bun test`. About 2 minutes. A change under `src/render` or
+Typecheck, the eight static guards (`filesize` · `css` · `nul` · `routes` · `type` ·
+`admin-kit` · `bundle` · `docs`) and `bun test`. About 2 minutes. A change under `src/render` or
 `src/web` also runs the golden compare.
 
 `check:all` proves the code compiles and the seams hold. It cannot tell you a column

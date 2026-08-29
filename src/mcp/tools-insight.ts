@@ -29,6 +29,7 @@ export function registerInsightTools(server: ToolHost): void {
   server.registerTool(
     'get_traffic',
     {
+      readOnly: true,
       description:
         'Traffic summary for the last N days, with the window before it for comparison: '
         + 'views, visitors, read depth, dwell time, top pages, referrers, countries, '
@@ -43,6 +44,7 @@ export function registerInsightTools(server: ToolHost): void {
   server.registerTool(
     'get_audience',
     {
+      readOnly: true,
       description:
         'Subscriber counts (confirmed, pending, unsubscribed) and how many live comments '
         + 'the blog holds. Counts only — the addresses themselves are not available over MCP.',
@@ -57,6 +59,7 @@ export function registerInsightTools(server: ToolHost): void {
   server.registerTool(
     'list_comments',
     {
+      readOnly: true,
       description: 'Live comments, newest first, 50 per page. Includes each comment\'s id for delete_comment.',
       inputSchema: { page: z.number().int().min(1).optional().describe('Defaults to 1') },
     },
@@ -96,6 +99,7 @@ export function registerInsightTools(server: ToolHost): void {
   server.registerTool(
     'search_posts',
     {
+      readOnly: true,
       description:
         'Full-text search across every post and page, drafts included — the owner\'s own '
         + 'search box. Each hit carries the passage the words were found in.',
@@ -113,6 +117,7 @@ export function registerInsightTools(server: ToolHost): void {
   server.registerTool(
     'get_update_status',
     {
+      readOnly: true,
       description:
         'The version this blog runs, whether a newer release exists (the dot beside the '
         + 'version in the admin), and whether the daily check is blocked by the environment.',

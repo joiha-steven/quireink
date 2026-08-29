@@ -53,7 +53,7 @@ export function registerTools(server: ToolHost): void {
 function registerPostTools(server: ToolHost): void {
   server.registerTool(
     'list_posts',
-    { description: 'List all posts (drafts included) with metadata, newest first.', inputSchema: { status: z.enum(['draft', 'published']).optional() } },
+    { readOnly: true, description: 'List all posts (drafts included) with metadata, newest first.', inputSchema: { status: z.enum(['draft', 'published']).optional() } },
     async ({ status }) => {
       const posts = await getIndex()
       const filtered = status ? posts.filter((p) => p.status === status) : posts
@@ -63,7 +63,7 @@ function registerPostTools(server: ToolHost): void {
 
   server.registerTool(
     'get_post',
-    { description: 'Get one post by slug, including its Markdown body.', inputSchema: { slug: z.string() } },
+    { readOnly: true, description: 'Get one post by slug, including its Markdown body.', inputSchema: { slug: z.string() } },
     async ({ slug }) => {
       const post = await getPost(slug)
       return post ? asJson(post) : asError(`Post not found: ${slug}`)
@@ -149,7 +149,7 @@ function registerPostTools(server: ToolHost): void {
 
   server.registerTool(
     'list_trashed_posts',
-    { description: 'List posts currently in the Trash.', inputSchema: {} },
+    { readOnly: true, description: 'List posts currently in the Trash.', inputSchema: {} },
     async () => asJson((await getTrashedPosts()).map((p) => ({ slug: p.slug, title: p.title, deletedAt: p.deletedAt }))),
   )
 }
@@ -157,13 +157,13 @@ function registerPostTools(server: ToolHost): void {
 function registerPageTools(server: ToolHost): void {
   server.registerTool(
     'list_pages',
-    { description: 'List all static pages (drafts included).', inputSchema: {} },
+    { readOnly: true, description: 'List all static pages (drafts included).', inputSchema: {} },
     async () => asJson((await getPageIndex()).map((p) => ({ slug: p.slug, title: p.title, status: p.status }))),
   )
 
   server.registerTool(
     'get_page',
-    { description: 'Get one page by slug, including its Markdown body.', inputSchema: { slug: z.string() } },
+    { readOnly: true, description: 'Get one page by slug, including its Markdown body.', inputSchema: { slug: z.string() } },
     async ({ slug }) => {
       const page = await getPage(slug)
       return page ? asJson(page) : asError(`Page not found: ${slug}`)
@@ -227,7 +227,7 @@ function registerPageTools(server: ToolHost): void {
 
   server.registerTool(
     'list_trashed_pages',
-    { description: 'List pages currently in the Trash.', inputSchema: {} },
+    { readOnly: true, description: 'List pages currently in the Trash.', inputSchema: {} },
     async () => asJson((await getTrashedPages()).map((p) => ({ slug: p.slug, title: p.title, deletedAt: p.deletedAt }))),
   )
 }
@@ -235,12 +235,12 @@ function registerPageTools(server: ToolHost): void {
 function registerTaxonomyTools(server: ToolHost): void {
   server.registerTool(
     'list_categories',
-    { description: 'List all distinct post categories.', inputSchema: {} },
+    { readOnly: true, description: 'List all distinct post categories.', inputSchema: {} },
     async () => asJson(await getCategories()),
   )
   server.registerTool(
     'list_tags',
-    { description: 'List all distinct post tags.', inputSchema: {} },
+    { readOnly: true, description: 'List all distinct post tags.', inputSchema: {} },
     async () => asJson(await getTags()),
   )
 }

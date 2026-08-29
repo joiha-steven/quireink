@@ -7,16 +7,11 @@ import { View } from '@/admin/pages/state'
 import { PageForm } from '@/admin/components/PageForm'
 import { WritePane } from '@/admin/components/WritePane'
 import { useFocusMode } from '@/admin/components/useFocusMode'
-import type { PageWithContent } from '@/types'
-import type { KeySound } from '@/admin/components/key-sound'
-
-type Props = { page: PageWithContent | null; contentWidth: number; keySound: KeySound; autosaveSeconds: number }
-
 export default function PageEditor() {
   const [focus] = useFocusMode()
   const path = usePathname()
   const slug = decodeURIComponent(path.replace(/^\/admin\/page-editor\/?/, ''))
-  const state = useView<Props>('page-editor', slug ? `?slug=${encodeURIComponent(slug)}` : '')
+  const state = useView('page-editor', slug ? `?slug=${encodeURIComponent(slug)}` : '')
   return (
     <View state={state}>
       {(d) => (

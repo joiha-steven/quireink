@@ -4,11 +4,8 @@
 import { useView } from '@/admin/useView'
 import { View } from '@/admin/pages/state'
 import { TrashView } from '@/admin/components/TrashView'
-import type { ComponentProps } from 'react'
-
-type Props = ComponentProps<typeof TrashView>
 
 export default function Trash() {
-  const state = useView<Props>('trash')
+  const state = useView('trash')
   return <View state={state}>{(data) => <TrashView {...data} />}</View>
 }

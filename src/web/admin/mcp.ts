@@ -12,7 +12,7 @@
 
 import { Hono } from 'hono'
 import type { Context } from 'hono'
-import { isLoopbackRedirect, isRedirectAllowed, registerClient } from '@/mcp/clients'
+import { isRedirectAllowed, registerClient } from '@/mcp/clients'
 import { createToken, deleteToken, listTokens, mintOAuthToken } from '@/mcp/tokens'
 import { issueCode, mcpEnabled, verifyCode } from '@/mcp/auth'
 import { consentPage, csrfToken, verifyCsrf, type OAuthParams } from '@/mcp/consent'
@@ -90,11 +90,14 @@ export function mcpAdminRoutes() {
   router.get('/api/mcp/tokens', async () => json(await listTokens()))
 
   router.post('/api/mcp/tokens', async (c) => {
-    const input = (await c.req.json().catch(() => ({}))) as { name?: unknown }
+    const input = (await c.req.json().catch(() => ({}))) as { name?: unknown; scope?: unknown }
     const name = typeof input.name === 'string' ? input.name.trim() : ''
     if (!name) return fail(c, 'Name is required', 400)
+    // Anything that is not exactly 'read' mints a full token — the value every token was
+    // before scopes existed, and the one an unaware client still expects.
+    const scope = input.scope === 'read' ? 'read' as const : 'full' as const
     try {
-      const { token, info } = await createToken(name)
+      const { token, info } = await createToken(name, scope)
       void logActivity('mcp.token.create', info.name)
       // The plaintext is returned ONCE and never again; only its hash is stored.
       return json({ token, info }, 201)
@@ -134,10 +137,13 @@ export function mcpOAuthRoutes(): Hono {
       return c.redirect(`/login?next=${next}`, 302)
     }
 
-    // A loopback redirect is the owner's own machine and carries little risk, so it
-    // auto-approves as before. Anything else gets the consent page, which issues NO code.
-    if (isLoopbackRedirect(params.redirectUri)) return issueAndRedirect(params)
-
+    // Loopback used to auto-approve here, on the reasoning that 127.0.0.1 is the owner's
+    // own machine. But this is a GET, and a GET any web page can cause: an <img> tag on a
+    // hostile page walked the signed-in owner through this route and the server handed an
+    // authorization code to whatever was listening on that port — no click, no CSRF,
+    // nothing. Removed 2026-08-29. A desktop client still may not pre-register (loopback
+    // stays a valid redirect target in `isRedirectAllowed`); it now costs the owner the
+    // same one Approve click every other client costs.
     const csrf = csrfToken(c, params)
     if (csrf === null) return new Response('not_authorized', { status: 401 })
     return new Response(consentPage(params, csrf, url.origin), {

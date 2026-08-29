@@ -7,6 +7,14 @@
 // that somewhere. Deliberately NOT a generic query API: the shape each page needs is
 // already known, and a generic one would turn one round trip into five.
 //
+// Each payload is built by a NAMED function with an INFERRED return type, and the
+// `ViewPayloads` map at the bottom is the typed contract the admin SPA compiles against
+// (`useView` takes a view NAME, not a caller-supplied generic). Until 2026-08-29 these
+// were thirteen inline object literals and the client asserted whatever shape it liked —
+// rename one field here and `tsc` stayed green while the screen went blank. Now the
+// compiler reads the same shape both sides do. Keep the returns inferred: an annotation
+// like `Record<string, unknown>` reopens the hole this closed.
+//
 // Everything is gated by the router group (Invariant 4) and nothing is cached: the admin
 // must never show a stale snapshot of the reader's own edits.
 
@@ -37,13 +45,196 @@ import { dashboardView } from '@/web/admin/views-home'
 /** Printed by the Help page and the dashboard, so the two can never disagree. */
 const VERSION = (pkg as { version: string }).version
 
-/** A window of days, from the `range` query. The frozen tree offered these four. */
-function rangeOf(raw: string | undefined): { days: number; bucket: 'day' | 'hour' } {
-  const days = Number(raw)
-  if (days === 1) return { days: 1, bucket: 'hour' }
-  if (days === 7 || days === 30 || days === 90 || days === 365) return { days, bucket: 'day' }
+/**
+ * A window of days, from the `range` query. The frozen tree offered these four (plus the
+ * hourly day view). Returned as the LITERAL union, not `number`: the typed view contract
+ * carries it to the client, and typing it loosely here is how the client came to believe
+ * 90 was impossible — its `Range` type listed four values while this accepted five.
+ */
+function rangeOf(raw: string | undefined): { days: 1 | 7 | 30 | 90 | 365; bucket: 'day' | 'hour' } {
+  const n = Number(raw)
+  if (n === 1) return { days: 1, bucket: 'hour' }
+  if (n === 7 || n === 30 || n === 90 || n === 365) return { days: n, bucket: 'day' }
   return { days: 30, bucket: 'day' }
 }
+
+// ----- the payload builders ---------------------------------------------------
+
+/** Posts and pages, with the view totals and comment counts each table shows. */
+async function contentView() {
+  const settings = await getSettings()
+  const commentsEnabled = settings.comments.enabled
+  const [posts, pages, views, commentCounts] = await Promise.all([
+    getIndex(), getPageIndex(), getViewTotals(),
+    commentsEnabled ? countsByPosts() : Promise.resolve({} as Record<string, number>),
+  ])
+  return { posts, pages, views, commentCounts, commentsEnabled }
+}
+
+/**
+ * The editor. `slug` empty means a new post: the taxonomy and series lists are still
+ * needed, so the same builder serves both and the caller does not branch. Null means the
+ * slug named a post that does not exist — the route turns that into a 404.
+ */
+async function editorView(slug: string) {
+  const [post, allCategories, allTags, allSeries, settings] = await Promise.all([
+    slug ? getPost(slug) : Promise.resolve(null),
+    getCategories(), getTags(), getAllSeriesNames(), getSettings(),
+  ])
+  if (slug && !post) return null
+  return {
+    post, allCategories, allTags, allSeries,
+    contentWidth: settings.contentWidth,
+    keySound: { mode: settings.motion.keys, volume: settings.motion.keyVolume },
+    autosaveSeconds: settings.autosaveSeconds,
+  }
+}
+
+async function pageEditorView(slug: string) {
+  const [page, settings] = await Promise.all([
+    slug ? getPage(slug) : Promise.resolve(null), getSettings(),
+  ])
+  if (slug && !page) return null
+  return {
+    page,
+    contentWidth: settings.contentWidth,
+    keySound: { mode: settings.motion.keys, volume: settings.motion.keyVolume },
+    autosaveSeconds: settings.autosaveSeconds,
+  }
+}
+
+/** Titles by public path, so a chart row can say what it is rather than "/slug". */
+async function analyticsTitles() {
+  const [posts, pages] = await Promise.all([getIndex(), getPageIndex()])
+  const titles: Record<string, string> = {}
+  for (const p of [...posts, ...pages]) titles[`/${p.slug}`] = p.title
+  return titles
+}
+
+/** One page's detail, when the analytics screen is drilled into a path. */
+async function analyticsDetailView(path: string, days: 1 | 7 | 30 | 90 | 365, bucket: 'day' | 'hour') {
+  const titles = await analyticsTitles()
+  return {
+    detail: await getPageAnalytics(path, days, bucket),
+    title: titles[path] ?? path,
+    range: days,
+  }
+}
+
+/** The analytics summary — the screen's default face. */
+async function analyticsSummaryView(days: 1 | 7 | 30 | 90 | 365, bucket: 'day' | 'hour') {
+  return {
+    summary: await getAnalytics(days, bucket),
+    rightNow: await getRightNow(),
+    titles: await analyticsTitles(),
+    range: days,
+  }
+}
+
+async function commentsView() {
+  const { rows } = await getAdminComments(1, 200)
+  return { rows }
+}
+
+async function settingsView() {
+  const [settings, commentEnv, integrations, posts, pages, categories] = await Promise.all([
+    getSettings(), getCommentEnv(), getIntegrationStatus(), getPublicPosts(), getPublicPages(),
+    getCategories(),
+  ])
+  return {
+    settings,
+    presets: THEME_PRESETS,
+    commentEnv,
+    integrations,
+    // Published posts only: the Featured picker cannot offer a draft.
+    posts: posts.map((p) => ({ slug: p.slug, title: p.title })),
+    // ...and published pages, for the homepage picker (ADR 0014). Same rule: a draft
+    // cannot be the front door, and offering one would only produce the fallback.
+    pages: pages.filter((p) => p.status === 'published').map((p) => ({ slug: p.slug, title: p.title })),
+    // Category NAMES, for the front page's strip picker (ADR 0014).
+    categories,
+    // Whether this deployment permits the daily update check, and the newest release it
+    // has been told about. Read here rather than from a route of its own: it is one
+    // small fact belonging to one card, and the settings screen already round-trips.
+    update: updateCheckStatus(),
+  }
+}
+
+async function newsletterView() {
+  const [posts, stats, mail] = await Promise.all([
+    getPublicPosts(), statsByPost(), getMailStatus(),
+  ])
+  return {
+    posts: posts.map((p) => ({
+      slug: p.slug, title: p.title, date: p.date, stats: stats.get(p.slug) ?? null,
+    })),
+    mailConfigured: mail.configured,
+  }
+}
+
+async function logView() {
+  const [entries, settings] = await Promise.all([getActivity(), getSettings()])
+  return { entries, enabled: settings.features.activityLog }
+}
+
+async function trashView() {
+  const [posts, pages, media, files, comments, subscribers] = await Promise.all([
+    getTrashedPosts(), getTrashedPages(), getTrashedMedia(),
+    getTrashedFiles(), getTrashedComments(), getTrashedSubscribers(),
+  ])
+  return { posts, pages, media, files, comments, subscribers }
+}
+
+/**
+ * The assistant page. The conversation is client state, so this is everything the page
+ * wants from the server — and it does want it: "no model connected" has to be visible
+ * BEFORE a question is typed, not delivered as an error five seconds after sending one.
+ */
+async function assistantView() {
+  const ai = await getIntegrationStatus()
+  return { configured: ai.aiConfigured, model: ai.aiModel }
+}
+
+/** The shell itself: the admin's language, and the version Help and the dashboard print. */
+async function shellView() {
+  const settings = await getSettings()
+  return { language: settings.language, version: VERSION }
+}
+
+/** Storage totals for the media page's header, without listing every blob twice. */
+async function mediaView() {
+  const blobs = await listBlobs()
+  return { count: blobs.length, totalBytes: blobs.reduce((sum, b) => sum + b.size, 0) }
+}
+
+/**
+ * THE CONTRACT. `src/admin/useView.ts` resolves a view name to its payload type through
+ * this map, so a renamed or retyped field on either side is a compile error on the other.
+ * The admin imports it with `import type` only — guard #8 (`check:bundle`) reads the
+ * built output to prove no value import ever follows.
+ */
+export type ViewPayloads = {
+  dashboard: Awaited<ReturnType<typeof dashboardView>>
+  content: Awaited<ReturnType<typeof contentView>>
+  editor: NonNullable<Awaited<ReturnType<typeof editorView>>>
+  'page-editor': NonNullable<Awaited<ReturnType<typeof pageEditorView>>>
+  // One endpoint, two faces: the summary, or one page's detail when `path` is given. The
+  // client narrows on the `detail` key, which only one face has.
+  analytics:
+    | Awaited<ReturnType<typeof analyticsSummaryView>>
+    | Awaited<ReturnType<typeof analyticsDetailView>>
+  'analytics-now': Awaited<ReturnType<typeof getRightNow>>
+  comments: Awaited<ReturnType<typeof commentsView>>
+  settings: Awaited<ReturnType<typeof settingsView>>
+  newsletter: Awaited<ReturnType<typeof newsletterView>>
+  log: Awaited<ReturnType<typeof logView>>
+  trash: Awaited<ReturnType<typeof trashView>>
+  assistant: Awaited<ReturnType<typeof assistantView>>
+  shell: Awaited<ReturnType<typeof shellView>>
+  media: Awaited<ReturnType<typeof mediaView>>
+}
+
+// ----- the routes -------------------------------------------------------------
 
 export function viewRoutes(): OwnerRouter {
   const routes = new OwnerRouter()
@@ -51,16 +242,7 @@ export function viewRoutes(): OwnerRouter {
   // The dashboard is the heaviest of these, so it lives in its own module.
   routes.get('/api/admin/view/dashboard', async (c) => c.json({ data: await dashboardView() }))
 
-  // Posts and pages, with the view totals and comment counts each table shows.
-  routes.get('/api/admin/view/content', async (c) => {
-    const settings = await getSettings()
-    const commentsEnabled = settings.comments.enabled
-    const [posts, pages, views, commentCounts] = await Promise.all([
-      getIndex(), getPageIndex(), getViewTotals(),
-      commentsEnabled ? countsByPosts() : Promise.resolve({} as Record<string, number>),
-    ])
-    return c.json({ data: { posts, pages, views, commentCounts, commentsEnabled } })
-  })
+  routes.get('/api/admin/view/content', async (c) => c.json({ data: await contentView() }))
 
   // The owner's search, over title AND body, drafts included (ADR 0024). Separate from the
   // content view rather than a parameter on it: that view returns every post so the tables
@@ -70,150 +252,46 @@ export function viewRoutes(): OwnerRouter {
     return c.json({ data: { hits: await searchEverything(q) } })
   })
 
-  // The editor. `slug` empty means a new post: the taxonomy and series lists are still
-  // needed, so the same endpoint serves both and the caller does not branch.
   routes.get('/api/admin/view/editor', async (c) => {
-    const slug = c.req.query('slug') ?? ''
-    const [post, allCategories, allTags, allSeries, settings] = await Promise.all([
-      slug ? getPost(slug) : Promise.resolve(null),
-      getCategories(), getTags(), getAllSeriesNames(), getSettings(),
-    ])
-    if (slug && !post) return c.json({ error: 'Not found' }, 404)
-    return c.json({
-      data: {
-        post, allCategories, allTags, allSeries,
-        contentWidth: settings.contentWidth,
-        keySound: { mode: settings.motion.keys, volume: settings.motion.keyVolume },
-        autosaveSeconds: settings.autosaveSeconds,
-      },
-    })
+    const data = await editorView(c.req.query('slug') ?? '')
+    if (data === null) return c.json({ error: 'Not found' }, 404)
+    return c.json({ data })
   })
 
   routes.get('/api/admin/view/page-editor', async (c) => {
-    const slug = c.req.query('slug') ?? ''
-    const [page, settings] = await Promise.all([
-      slug ? getPage(slug) : Promise.resolve(null), getSettings(),
-    ])
-    if (slug && !page) return c.json({ error: 'Not found' }, 404)
-    return c.json({
-      data: {
-        page,
-        contentWidth: settings.contentWidth,
-        keySound: { mode: settings.motion.keys, volume: settings.motion.keyVolume },
-        autosaveSeconds: settings.autosaveSeconds,
-      },
-    })
+    const data = await pageEditorView(c.req.query('slug') ?? '')
+    if (data === null) return c.json({ error: 'Not found' }, 404)
+    return c.json({ data })
   })
 
   // Analytics: the summary, or one page's detail when `path` is given.
   routes.get('/api/admin/view/analytics', async (c) => {
     const { days, bucket } = rangeOf(c.req.query('range'))
     const path = c.req.query('path') ?? ''
-    const [posts, pages] = await Promise.all([getIndex(), getPageIndex()])
-    // Titles by public path, so a chart row can say what it is rather than "/slug".
-    const titles: Record<string, string> = {}
-    for (const p of [...posts, ...pages]) titles[`/${p.slug}`] = p.title
-    if (path) {
-      return c.json({
-        data: {
-          detail: await getPageAnalytics(path, days, bucket),
-          title: titles[path] ?? path,
-          range: days,
-        },
-      })
-    }
-    return c.json({
-      data: { summary: await getAnalytics(days, bucket), rightNow: await getRightNow(), titles, range: days },
-    })
+    if (path) return c.json({ data: await analyticsDetailView(path, days, bucket) })
+    return c.json({ data: await analyticsSummaryView(days, bucket) })
   })
 
   // The live strip's poll: five minutes of rows, nothing else. Separate from the view
   // above because the poll must not re-run a dashboard's worth of aggregates every few
   // seconds to refresh one number.
-  routes.get('/api/admin/view/analytics-now', async (c) => {
-    return c.json({ data: await getRightNow() })
-  })
+  routes.get('/api/admin/view/analytics-now', async (c) => c.json({ data: await getRightNow() }))
 
-  routes.get('/api/admin/view/comments', async (c) => {
-    const { rows } = await getAdminComments(1, 200)
-    return c.json({ data: { rows } })
-  })
+  routes.get('/api/admin/view/comments', async (c) => c.json({ data: await commentsView() }))
 
-  routes.get('/api/admin/view/settings', async (c) => {
-    const [settings, commentEnv, integrations, posts, pages, categories] = await Promise.all([
-      getSettings(), getCommentEnv(), getIntegrationStatus(), getPublicPosts(), getPublicPages(),
-      getCategories(),
-    ])
-    return c.json({
-      data: {
-        settings,
-        presets: THEME_PRESETS,
-        commentEnv,
-        integrations,
-        // Published posts only: the Featured picker cannot offer a draft.
-        posts: posts.map((p) => ({ slug: p.slug, title: p.title })),
-        // ...and published pages, for the homepage picker (ADR 0014). Same rule: a draft
-        // cannot be the front door, and offering one would only produce the fallback.
-        pages: pages.filter((p) => p.status === 'published').map((p) => ({ slug: p.slug, title: p.title })),
-        // Category NAMES, for the front page's strip picker (ADR 0014).
-        categories,
-        // Whether this deployment permits the daily update check, and the newest release it
-        // has been told about. Read here rather than from a route of its own: it is one
-        // small fact belonging to one card, and the settings screen already round-trips.
-        update: updateCheckStatus(),
-      },
-    })
-  })
+  routes.get('/api/admin/view/settings', async (c) => c.json({ data: await settingsView() }))
 
-  routes.get('/api/admin/view/newsletter', async (c) => {
-    const [posts, stats, mail] = await Promise.all([
-      getPublicPosts(), statsByPost(), getMailStatus(),
-    ])
-    return c.json({
-      data: {
-        posts: posts.map((p) => ({
-          slug: p.slug, title: p.title, date: p.date, stats: stats.get(p.slug) ?? null,
-        })),
-        mailConfigured: mail.configured,
-      },
-    })
-  })
+  routes.get('/api/admin/view/newsletter', async (c) => c.json({ data: await newsletterView() }))
 
-  routes.get('/api/admin/view/log', async (c) => {
-    const [entries, settings] = await Promise.all([getActivity(), getSettings()])
-    return c.json({ data: { entries, enabled: settings.features.activityLog } })
-  })
+  routes.get('/api/admin/view/log', async (c) => c.json({ data: await logView() }))
 
-  routes.get('/api/admin/view/trash', async (c) => {
-    const [posts, pages, media, files, comments, subscribers] = await Promise.all([
-      getTrashedPosts(), getTrashedPages(), getTrashedMedia(),
-      getTrashedFiles(), getTrashedComments(), getTrashedSubscribers(),
-    ])
-    return c.json({ data: { posts, pages, media, files, comments, subscribers } })
-  })
+  routes.get('/api/admin/view/trash', async (c) => c.json({ data: await trashView() }))
 
-  // The assistant page. The conversation is client state, so this is everything the page
-  // wants from the server — and it does want it: "no model connected" has to be visible
-  // BEFORE a question is typed, not delivered as an error five seconds after sending one.
-  routes.get('/api/admin/view/assistant', async (c) => {
-    const ai = await getIntegrationStatus()
-    return c.json({ data: { configured: ai.aiConfigured, model: ai.aiModel } })
-  })
+  routes.get('/api/admin/view/assistant', async (c) => c.json({ data: await assistantView() }))
 
-  // The shell itself: the language the whole admin is drawn in, and the version the Help
-  // page and the dashboard both print. Fetched once, before anything else renders.
-  routes.get('/api/admin/view/shell', async (c) => {
-    const settings = await getSettings()
-    return c.json({ data: { language: settings.language, version: VERSION } })
-  })
+  routes.get('/api/admin/view/shell', async (c) => c.json({ data: await shellView() }))
 
-  // Storage totals for the media page's header, without listing every blob twice.
-  routes.get('/api/admin/view/media', async (c) => {
-    const blobs = await listBlobs()
-    return c.json({
-      data: { count: blobs.length, totalBytes: blobs.reduce((sum, b) => sum + b.size, 0) },
-    })
-  })
+  routes.get('/api/admin/view/media', async (c) => c.json({ data: await mediaView() }))
 
   return routes
 }

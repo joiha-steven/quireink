@@ -175,13 +175,18 @@ export function AiFields({ configured, provider, model, ai, onChangeAi }: {
         <Setting label={t.aiTasksLabel} note={configured ? undefined : t.aiTasksNeedModel}>
           <div className={PANEL_LIST}>
             {([
-              ['altText', t.aiTaskAltText],
-              ['excerpt', t.aiTaskExcerpt],
-              ['commentGuard', t.aiTaskComments],
-            ] as const).map(([job, label]) => (
+              ['altText', t.aiTaskAltText, undefined],
+              ['excerpt', t.aiTaskExcerpt, undefined],
+              // The guard sends a READER'S words to a third party, which the other two
+              // jobs never do (they read only the owner's own content). That difference
+              // is a privacy fact the owner must know before flipping the switch, so it
+              // is written on the switch and not only in a doc.
+              ['commentGuard', t.aiTaskComments, t.aiTaskCommentsDesc],
+            ] as const).map(([job, label, desc]) => (
               <ToggleRow
                 key={job}
                 label={label}
+                desc={desc}
                 checked={configured ? ai[job] : false}
                 disabled={!configured}
                 onChange={(v) => onChangeAi({ ...ai, [job]: v })}

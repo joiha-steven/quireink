@@ -4,11 +4,8 @@
 import { useView } from '@/admin/useView'
 import { View } from '@/admin/pages/state'
 import { CommentsTable } from '@/admin/components/CommentsTable'
-import type { ComponentProps } from 'react'
-
-type Rows = { rows: ComponentProps<typeof CommentsTable>['initial'] }
 
 export default function Comments() {
-  const state = useView<Rows>('comments')
+  const state = useView('comments')
   return <View state={state}>{(data) => <CommentsTable initial={data.rows} />}</View>
 }

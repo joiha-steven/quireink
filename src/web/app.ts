@@ -157,7 +157,7 @@ export function createApp(): Hono {
         ? escapeHtml(name)
         : `<span class="lower">#${escapeHtml(tagText(name))}</span>`
       const built = await renderFeedBody(posts, page, {
-        heading: `${escapeHtml(label)}: ${term}`,
+        headingHtml: `${escapeHtml(label)}: ${term}`,
         basePath: `/${kind}/${slug}`,
         empty: kind === 'category' ? t(settings.language).emptyCategory : t(settings.language).emptyTag,
       })
@@ -204,7 +204,7 @@ export function createApp(): Hono {
         description: t(settings.language).metaSeries
           .replace('{site}', settings.title).replace('{name}', name),
         body: renderListing({
-          heading: `${escapeHtml(t(settings.language).seriesLabel)}: ${escapeHtml(name)}`,
+          headingHtml: `${escapeHtml(t(settings.language).seriesLabel)}: ${escapeHtml(name)}`,
           paged: { items: posts, page: 1, totalPages: 1 },
           basePath: `/series/${slug}`, empty: t(settings.language).emptySeries,
         }, settings),

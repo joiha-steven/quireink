@@ -10,7 +10,6 @@ import { useState } from 'react'
 import Link from '@/admin/router'
 import { useView } from '@/admin/useView'
 import { View } from '@/admin/pages/state'
-import type { Post, Page } from '@/types'
 import { Button } from '@/admin/ui/Button'
 import { WritePane } from '@/admin/components/WritePane'
 import { TaxonomyManager } from '@/admin/components/TaxonomyManager'
@@ -19,11 +18,6 @@ import { SlideOver } from '@/admin/components/SlideOver'
 import { CARD } from '@/admin/components/kit'
 import { useAdminT } from '@/admin/components/I18nProvider'
 import { SHEET_TOOL } from '@/admin/components/sheet'
-
-type Props = {
-  posts: Post[]
-  pages: Page[]
-}
 
 type Drawer = 'none' | 'taxonomy' | 'series'
 
@@ -34,7 +28,7 @@ const TOOL = SHEET_TOOL
 
 export default function Content() {
   const t = useAdminT()
-  const state = useView<Props>('content')
+  const state = useView('content')
   const [drawer, setDrawer] = useState<Drawer>('none')
   const close = () => setDrawer('none')
   return (

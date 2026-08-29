@@ -17,6 +17,13 @@ import type { z } from 'zod'
 export type ToolMeta = {
   description: string
   inputSchema?: Record<string, z.ZodType>
+  /**
+   * Declares a tool safe for a 'read'-scope token. UNMARKED MEANS WRITE: a new tool
+   * someone forgets to classify is withheld from read tokens, which is an inconvenience
+   * — the failure mode of marking-the-writes would be a breach. The full read list is
+   * pinned by `scope.test.ts`, so widening it is a visible, reviewed act.
+   */
+  readOnly?: true
 }
 
 // Generic exactly the way the SDK's own registerTool is, so a handler keeps its typed,
@@ -24,7 +31,7 @@ export type ToolMeta = {
 export type ToolHost = {
   registerTool<S extends Record<string, z.ZodType>>(
     name: string,
-    meta: { description: string; inputSchema?: S },
+    meta: { description: string; inputSchema?: S; readOnly?: true },
     handler: (args: { [K in keyof S]: z.infer<S[K]> }) => Promise<CallToolResult> | CallToolResult,
   ): void
 }

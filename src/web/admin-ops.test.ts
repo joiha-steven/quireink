@@ -79,26 +79,37 @@ describe('the gate', () => {
   })
 
   // ...and does NOT gate the two an external caller reaches. A probe that had to hold a
-  // session would be a worse probe, and a scheduler cannot sign in at all.
-  it('leaves cron and health reachable', async () => {
+  // session would be a worse probe, and a scheduler cannot sign in at all — the scheduler
+  // authenticates with its bearer token instead.
+  it('leaves cron and health reachable without a session', async () => {
     expect((await app.request('/api/health')).status).toBe(200)
-    expect((await app.request('/api/cron')).status).toBe(200)
+    process.env.CRON_SECRET = 'a-long-shared-secret'
+    const res = await app.request('/api/cron', { headers: { authorization: 'Bearer a-long-shared-secret' } })
+    expect(res.status).toBe(200)
   })
 })
 
 describe('the cron tick', () => {
-  it('is open when no secret is set, so a fresh install still ticks', async () => {
+  // Every tick in this block authenticates. The route fails CLOSED without a secret, so
+  // the helper is the only way to reach the tick at all.
+  const SECRET = 'a-long-shared-secret'
+  const tick = (path: string) => {
+    process.env.CRON_SECRET = SECRET
+    return app.request(path, { headers: { authorization: `Bearer ${SECRET}` } })
+  }
+
+  it('is CLOSED when no secret is set — the internal clock covers a fresh install', async () => {
     const res = await app.request('/api/cron')
-    expect(res.status).toBe(200)
-    expect((await payload<{ alive: boolean }>(res)).alive).toBe(true)
+    expect(res.status).toBe(401)
   })
 
   it('demands the bearer token once a secret is set', async () => {
-    process.env.CRON_SECRET = 'a-long-shared-secret'
+    process.env.CRON_SECRET = SECRET
     expect((await app.request('/api/cron')).status).toBe(401)
     expect((await app.request('/api/cron', { headers: { authorization: 'Bearer wrong' } })).status).toBe(401)
-    const ok = await app.request('/api/cron', { headers: { authorization: 'Bearer a-long-shared-secret' } })
+    const ok = await tick('/api/cron')
     expect(ok.status).toBe(200)
+    expect((await payload<{ alive: boolean }>(ok)).alive).toBe(true)
   })
 
   // `timingSafeEqual` throws on a length mismatch, so a wrong-length header must be
@@ -122,7 +133,7 @@ describe('the cron tick', () => {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ title: 'Timed', status: 'published', date: oneMinuteAgo, content: 'x' }),
     })
-    const res = await app.request('/api/cron?publish=1')
+    const res = await tick('/api/cron?publish=1')
     expect((await payload<{ published: number }>(res)).published).toBe(1)
     // Invariant 1: on the home page without a cold hit.
     expect(await (await app.request('/')).text()).toContain('Timed')
@@ -135,12 +146,12 @@ describe('the cron tick', () => {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ title: 'Old news', status: 'published', date: lastWeek, content: 'x' }),
     })
-    const res = await app.request('/api/cron?publish=1')
+    const res = await tick('/api/cron?publish=1')
     expect((await payload<{ published: number }>(res)).published).toBe(0)
   })
 
   it('reports the session purge it now also does', async () => {
-    const res = await app.request('/api/cron')
+    const res = await tick('/api/cron')
     const body = await payload<{ sessions: number; finalized: number }>(res)
     expect(typeof body.sessions).toBe('number')
     expect(typeof body.finalized).toBe('number')
@@ -181,6 +192,21 @@ describe('the preview link', () => {
 
   it('requires a slug', async () => {
     expect((await asOwner('/api/preview-link')).status).toBe(400)
+  })
+
+  it('expires, and the expiry in the token cannot be edited forward', async () => {
+    const res = await asOwner('/api/preview-link?slug=a-draft')
+    const { token } = await payload<{ token: string }>(res)
+    const [sig, exp] = token.split('.')
+    // The date rides in the URL, so the obvious attack is changing it. The signature
+    // covers slug AND expiry, which is what this pins.
+    const later = (parseInt(exp!, 36) + 86_400_000).toString(36)
+    expect(verifyPreview('a-draft', `${sig}.${later}`)).toBe(false)
+    // An already-past expiry is refused even with a fresh signature shape.
+    expect(verifyPreview('a-draft', `${sig}.${(Date.now() - 1000).toString(36)}`)).toBe(false)
+    // And the pre-2026-08-29 format — a bare 24-char HMAC with no expiry — is dead: those
+    // tokens never expired, so they all expire at once.
+    expect(verifyPreview('a-draft', sig)).toBe(false)
   })
 })
 

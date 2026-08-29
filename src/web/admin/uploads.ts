@@ -24,6 +24,7 @@ import { describeUpload } from '@/media/alt-text'
 import { getIntegrationKeys } from '@/store/integration-keys'
 import { all } from '@/store/query'
 import { checkUpload } from '@/media/limits'
+import { sniffImage } from '@/media/sniff'
 import { finalizeVariants } from '@/media/finalize'
 import { clearCache } from '@/server/cache'
 import { logActivity } from '@/server/activity'
@@ -100,7 +101,14 @@ export function uploadRoutes() {
       // The WHOLE batch is refused on one bad type, matching the frozen tree. A partial
       // upload would leave the owner reconciling which of twenty images landed.
       if (!IMAGE_TYPES.includes(contentType)) return fail(c, 'unsupported_type', 415)
-      inputs.push({ filename: file.name, body: await file.arrayBuffer(), contentType })
+      const body = await file.arrayBuffer()
+      // Extension, declared type and BYTES must agree (`media/sniff.ts` says why the
+      // browser's word alone was never enough). The serving route derives its
+      // content-type from the stored extension, so the extension is part of the contract.
+      if (sniffImage(body) !== contentType || mimeOf(file.name) !== contentType) {
+        return fail(c, 'unsupported_type', 415)
+      }
+      inputs.push({ filename: file.name, body, contentType })
     }
 
     const uploaded = await addMediaBatch(inputs)

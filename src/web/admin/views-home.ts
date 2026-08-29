@@ -14,7 +14,7 @@ import { getIndex } from '@/content/posts'
 import { getPageIndex } from '@/content/pages'
 import { getSettings } from '@/content/settings'
 import { storageStats } from '@/media/storage-stats'
-import { db } from '@/store/db'
+import { one } from '@/store/query'
 import pkg from '../../../package.json' with { type: 'json' }
 
 /**
@@ -25,10 +25,12 @@ import pkg from '../../../package.json' with { type: 'json' }
  * program: the database is SQLite rather than PostgreSQL over PostgREST, the runtime is
  * Bun rather than Node, and there is no framework line to print at all.
  */
-async function systemInfo(): Promise<Record<string, unknown>> {
+async function systemInfo() {
   let dbReachable = true
   try {
-    db().query('select id from settings limit 1').get()
+    // Through `store/query` like every other read — until 2026-08-29 this was the one
+    // call in the routes that reached `db()` directly, a second door into the store.
+    one('select id from settings limit 1')
   } catch {
     dbReachable = false
   }
@@ -57,7 +59,11 @@ async function systemInfo(): Promise<Record<string, unknown>> {
   }
 }
 
-export async function dashboardView(): Promise<Record<string, unknown>> {
+// Return type INFERRED on purpose: this shape is one half of the typed contract with the
+// admin SPA (`ViewPayloads` in `views.ts`), and an annotation of `Record<string, unknown>`
+// here was the reason the contract could not be typed at all — the compiler knew less
+// about the payload than the code did.
+export async function dashboardView() {
   const settings = await getSettings()
   const commentsOn = settings.comments.enabled
   const activityOn = settings.features.activityLog

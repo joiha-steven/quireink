@@ -7,7 +7,7 @@ import { useAdminT } from '@/admin/components/I18nProvider'
 
 export default function Assistant() {
   const t = useAdminT()
-  const state = useView<{ configured: boolean; model: string }>('assistant')
+  const state = useView('assistant')
   return (
     <View state={state}>
       {(data) => <AssistantView title={t.navAssistant} configured={data.configured} model={data.model} />}

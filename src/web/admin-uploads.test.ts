@@ -108,6 +108,23 @@ describe('media upload', () => {
     expect(await res.json()).toEqual({ success: false, error: 'unsupported_type' })
   })
 
+  // `File.type` is the browser's word, and the browser takes the uploader's. The bytes,
+  // the declared type and the extension must all agree (`media/sniff.ts`), so a document
+  // wearing an image's name never enters the store.
+  it('refuses a file whose bytes are not what its type claims', async () => {
+    const svgBytes = '<svg xmlns="http://www.w3.org/2000/svg"><script>1</script></svg>'
+    // SVG bytes declared as PNG…
+    const form = new FormData()
+    form.append('file', new File([svgBytes], 'fake.png', { type: 'image/png' }), 'fake.png')
+    const res = await asOwner('/api/media/upload', { method: 'POST', body: form })
+    expect(res.status).toBe(415)
+    // …and honest SVG bytes hiding behind a PNG extension: the serving route types by
+    // extension, so the extension is part of what has to agree.
+    const form2 = new FormData()
+    form2.append('file', new File([svgBytes], 'fake2.png', { type: 'image/svg+xml' }), 'fake2.png')
+    expect((await asOwner('/api/media/upload', { method: 'POST', body: form2 })).status).toBe(415)
+  })
+
   /**
    * The whole batch is refused when one file is wrong, matching the frozen tree. A partial
    * upload leaves the owner working out which of twenty images actually landed.

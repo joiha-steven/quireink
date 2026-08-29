@@ -11,26 +11,13 @@ import { View } from '@/admin/pages/state'
 import { PostForm } from '@/admin/components/PostForm'
 import { WritePane } from '@/admin/components/WritePane'
 import { useFocusMode } from '@/admin/components/useFocusMode'
-import type { PostWithContent } from '@/types'
-import type { KeySound } from '@/admin/components/key-sound'
-
-type Props = {
-  post: PostWithContent | null
-  allCategories: string[]
-  allTags: string[]
-  allSeries: string[]
-  contentWidth: number
-  keySound: KeySound
-  autosaveSeconds: number
-}
-
 export default function PostEditor() {
   const path = usePathname()
   // Read here rather than inside the form: the pane is drawn by the PAGE, and the switch
   // that hides it lives three components down (`useFocusMode.ts` explains the event).
   const [focus] = useFocusMode()
   const slug = decodeURIComponent(path.replace(/^\/admin\/editor\/?/, ''))
-  const state = useView<Props>('editor', slug ? `?slug=${encodeURIComponent(slug)}` : '')
+  const state = useView('editor', slug ? `?slug=${encodeURIComponent(slug)}` : '')
   return (
     <View state={state}>
       {(d) => (

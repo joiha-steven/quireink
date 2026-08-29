@@ -46,12 +46,13 @@ function safeEq(a: string, b: string): boolean {
 /** What a verified bearer resolves to. Was the SDK's `AuthInfo`; the shape is the same. */
 export type McpAuth = { token: string; clientId: string; scopes: string[] }
 
-/** Accept any live managed token while MCP is enabled. */
+/** Accept any live managed token while MCP is enabled. The token's stored scope rides
+ *  along, and the transport decides which tools that scope may even see. */
 export async function verifyMcpToken(bearer?: string): Promise<McpAuth | undefined> {
   if (!bearer || !(await mcpEnabled())) return undefined
   const hit = await verifyTokenHash(bearer)
   if (!hit) return undefined
-  return { token: bearer, clientId: `token:${hit.id}`, scopes: ['full'] }
+  return { token: bearer, clientId: `token:${hit.id}`, scopes: [hit.scope] }
 }
 
 // ----- HMAC-signed authorization codes -----------------------------------------

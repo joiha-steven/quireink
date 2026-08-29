@@ -184,6 +184,27 @@ describe('submitSecondFactor', () => {
     expect(remainingCodes(userId)).toBe(CODE_COUNT - 1)
   })
 
+  // The per-USER cap is the one that survives an attacker with many IPs: every wrong
+  // recovery guess costs the process up to ten argon2id verifies, and the per-IP limit
+  // resets with each fresh address. Ten failures against one account, from ten different
+  // IPs, and the account is closed to recovery codes for the hour.
+  it('rate-limits recovery attempts per user, not only per IP', async () => {
+    // No codes are generated on purpose: a guess then fails without an argon2id verify,
+    // which keeps ten failures affordable inside the test timeout. The limiter charges on
+    // failure either way. Each ticket dies on its fifth wrong code, so a fresh one every
+    // four attempts — and a fresh IP every attempt, so only the user key can be what trips.
+    let spent = 0
+    while (spent < 10) {
+      const ticket = await startSignIn()
+      for (let i = 0; i < 4 && spent < 10; i++, spent++) {
+        const r = await submitSecondFactor({ ticket, code: 'wrong-code-aaaa', ip: freshIp() })
+        expect(r.status).toBe('rejected')
+      }
+    }
+    const blocked = await submitSecondFactor({ ticket: await startSignIn(), code: 'wrong-code-aaaa', ip: freshIp() })
+    expect(blocked.status).toBe('rate-limited')
+  })
+
   it('logs a recovery sign-in distinctly from a TOTP one', async () => {
     const codes = await regenerateCodes(userId)
     await submitSecondFactor({ ticket: await startSignIn(), code: codes[0], ip: freshIp() })

@@ -281,7 +281,7 @@ That line is how you know the clock is running rather than merely un-disabled. I
 once per boot; the sweeps after it are silent.
 
 **Prefer your own scheduler?** Set `CRON_INTERNAL=0` and the process starts no timers, then
-call the same two ticks yourself. `/api/cron` is unchanged and always available:
+call the same two ticks yourself. `/api/cron` answers only a caller holding `CRON_SECRET`:
 
 ```cron
 */5 * * * *  curl -fsS -H "Authorization: Bearer $CRON_SECRET" 'http://127.0.0.1:3000/api/cron?publish=1' >/dev/null
@@ -289,8 +289,9 @@ call the same two ticks yourself. `/api/cron` is unchanged and always available:
 ```
 
 The five-minute tick only flips due posts live; the hourly one does everything else. Set
-`CRON_SECRET` in the environment — the route is **open when it is unset**, and it is the most
-expensive lever in the process. It is rate-limited to 12 calls a minute regardless.
+`CRON_SECRET` in the environment — the route is **closed when it is unset** (it answers 401),
+because it is the most expensive lever in the process and the internal clock already covers
+an installation that configured nothing. It is rate-limited to 12 calls a minute regardless.
 
 Running both is harmless (every sweep is idempotent) but pointless: pick one, and if you
 keep the crontab, set `CRON_INTERNAL=0` so the numbers in your logs mean what you think.

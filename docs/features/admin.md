@@ -234,7 +234,9 @@ are a scroll container behaving as one.
 - **AI tab** — the provider (Anthropic / OpenAI / Gemini), the key, the model, and which jobs
   the model does on its own: `ai.altText` (describe an uploaded image), `ai.excerpt` (write the
   excerpt when a post publishes with the field blank), `ai.commentGuard` (hold spam in the
-  Trash). **The key is the master switch**: with none stored, every job is off whatever its own
+  Trash — NOTE: this one sends a READER'S comment text to the configured provider, which the
+  other two jobs never do; the toggle says so in the UI, and an owner who enables it should
+  say so in their privacy policy). **The key is the master switch**: with none stored, every job is off whatever its own
   toggle says. Like the other credentials it is written and never read back. The model list is
   the provider's own, with a measured default per provider (`DEFAULT_MODELS` in
   `src/server/ai-provider.ts`).

@@ -87,6 +87,14 @@ test('an OLD database gets the columns it was created without', () => {
              width integer, height integer, thumb text,
              variants integer not null default 0, deleted_at integer)`)
   old.run(`insert into media (path, filename, size, uploaded_at) values ('media/old.webp', 'old.webp', 5, 1)`)
+  // mcp_tokens as it stood before scopes: every token implicitly full.
+  old.run(`create table mcp_tokens (
+             id integer primary key autoincrement,
+             name text not null default '', token_hash text not null unique,
+             prefix text not null default '',
+             created_at integer not null, expires_at integer not null, last_used_at integer)`)
+  old.run(`insert into mcp_tokens (name, token_hash, prefix, created_at, expires_at)
+           values ('Old connector', 'hash-1', 'vbmcp_abc', 1, 9999999999999)`)
   old.close()
 
   const { db } = openDatabases(dir)
@@ -97,6 +105,7 @@ test('an OLD database gets the columns it was created without', () => {
   expect(columns(db, 'subscribers')).toContain('confirm_sent_at')
   expect(columns(db, 'media')).toContain('alt')
   expect(columns(db, 'integration_keys')).toContain('ai_api_key')
+  expect(columns(db, 'mcp_tokens')).toContain('scope')
   // The existing rows survive, which is the entire difference between a migration and a
   // reinstall.
   expect(db.query<{ turnstile_site_key: string }, []>(
@@ -105,6 +114,10 @@ test('an OLD database gets the columns it was created without', () => {
   expect(db.query<{ email: string; deleted_at: number | null }, []>(
     `select email, deleted_at from subscribers`,
   ).get()).toEqual({ email: 'keep@example.com', deleted_at: null })
+  // A token minted before scopes existed is a FULL token, not a broken one.
+  expect(db.query<{ scope: string }, []>(
+    `select scope from mcp_tokens where name = 'Old connector'`,
+  ).get()!.scope).toBe('full')
 
   // Booting the same database again must not try to add the columns a second time.
   expect(() => openDatabases(dir)).not.toThrow()

@@ -171,16 +171,18 @@ describe('authorize', () => {
     expect(res.headers.get('location')).toContain('/login?next=')
   })
 
-  // Loopback is the owner's own machine and carries little risk, so it keeps the
-  // auto-approve the frozen tree had.
-  it('auto-approves a loopback redirect', async () => {
+  // Loopback used to auto-approve ("the owner's own machine, little risk") — but the
+  // authorize route is a GET, and any web page can make the signed-in owner's browser
+  // issue a GET. With auto-approve, that GET handed a code to whatever listened on the
+  // port, with no click and no CSRF anywhere in the path. Since 2026-08-29 loopback walks
+  // through the same consent page as everyone else.
+  it('shows consent for a loopback redirect too — a bare GET issues NO code', async () => {
     const { challenge } = pkce()
     const id = await register(['http://127.0.0.1:8123/cb'])
     const res = await asOwner(authorizeUrl(id, 'http://127.0.0.1:8123/cb', challenge))
-    expect(res.status).toBe(302)
-    const dest = new URL(res.headers.get('location')!)
-    expect(dest.searchParams.get('code')).toBeTruthy()
-    expect(dest.searchParams.get('state')).toBe('xyz')
+    expect(res.status).toBe(200)
+    expect(res.headers.get('location')).toBeNull()
+    expect(await res.text()).toContain('127.0.0.1')
   })
 
   /**
@@ -251,16 +253,23 @@ describe('authorize', () => {
 })
 
 describe('the token exchange', () => {
-  /** Run the flow to a code, the loopback way, so no consent click is needed. */
+  /** Run the flow to a code the way every client now runs it: consent page, then Approve. */
   async function getCode(): Promise<{ code: string; verifier: string; redirectUri: string }> {
     const { verifier, challenge } = pkce()
     const redirectUri = 'http://127.0.0.1:8123/cb'
     const id = await register([redirectUri])
-    const res = await asOwner(
+    const page = await (await asOwner(
       `/api/mcp/authorize?response_type=code&client_id=${id}`
       + `&redirect_uri=${encodeURIComponent(redirectUri)}`
       + `&code_challenge=${challenge}&code_challenge_method=S256`,
-    )
+    )).text()
+    const csrf = page.match(/name="csrf" value="([^"]*)"/)![1]!
+    const res = await asOwner('/api/mcp/authorize', {
+      method: 'POST',
+      body: new URLSearchParams({
+        client_id: id, redirect_uri: redirectUri, code_challenge: challenge, state: '', csrf,
+      }),
+    })
     return {
       code: new URL(res.headers.get('location')!).searchParams.get('code')!,
       verifier,

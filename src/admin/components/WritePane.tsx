@@ -157,7 +157,7 @@ function Rows({
  * own scroll so a long list never scrolls the sheet, and the fade says where it clips.
  */
 export function WritePane({ activeSlug, always = false, tools }: { activeSlug?: string; always?: boolean; tools?: React.ReactNode }) {
-  const { data } = useView<ContentView>('content')
+  const { data } = useView('content')
   return (
     <aside
       className={`${

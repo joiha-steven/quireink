@@ -127,8 +127,14 @@ export async function submitSecondFactor(input: {
 
   const looksLikeTotp = /^\s*\d{6}\s*$/.test(input.code)
 
+  // Limited by IP AND by user, same shape as the password step: a recovery attempt costs
+  // up to ten argon2id verifies (~1s of the only thread), and an attacker with many IPs
+  // pays the per-IP toll once each while the CPU bill lands on one machine. The per-user
+  // key is the cap that survives distribution. Slightly looser than the IP one, so a real
+  // owner fumbling codes from one laptop always hits the gentler limit first.
   const recoveryKey = `recovery:ip:${input.ip}`
-  if (!looksLikeTotp && overLimit(recoveryKey, 5, HOUR)) {
+  const recoveryUserKey = `recovery:user:${ticket.userId}`
+  if (!looksLikeTotp && (overLimit(recoveryKey, 5, HOUR) || overLimit(recoveryUserKey, 10, HOUR))) {
     return { status: 'rate-limited', retryAfter: Math.ceil(HOUR / 1000) }
   }
 
@@ -151,6 +157,7 @@ export async function submitSecondFactor(input: {
     usedRecovery = matched
     if (!matched) {
       recordHit(recoveryKey, HOUR)
+      recordHit(recoveryUserKey, HOUR)
       logAuthEvent('auth.totp.failed', 'recovery code rejected')
     }
   }

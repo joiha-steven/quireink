@@ -23,6 +23,8 @@ import { createHash } from 'node:crypto'
 import { parseUa } from '@/analytics/ua'
 import { bufferEvent, bufferScroll } from '@/analytics/buffer'
 import { nowMs } from '@/store/db'
+import { one } from '@/store/query'
+import { getSettings } from '@/content/settings'
 import { serverSecret } from '@/auth/secret'
 
 // Common crawlers / preview bots — don't count them as readers.
@@ -56,6 +58,29 @@ export function normalizePath(raw: string): string | null {
   return p.slice(0, 512) || '/'
 }
 
+/**
+ * Is this a path the site can actually serve? The beacon is an open POST — the shape cap
+ * in `normalizePath` bounded each row at 512 bytes but not the SET of rows, so any script
+ * could seed `analytics_events` with fabricated paths: junk in the top-pages table,
+ * unbounded distinct-path growth, all rate-limited per IP and therefore not bounded at
+ * all. The route list here mirrors `web/app.ts`; a single-segment path must be a real
+ * post, page, or the list's own address. One indexed point-lookup per view, on the
+ * buffered (never request-blocking) side — see Invariant 7.
+ */
+export async function pathIsServable(p: string): Promise<boolean> {
+  if (p === '/' || p === '/search') return true
+  if (/^\/page\/\d+$/.test(p)) return true
+  // Term and series archives keep a shape check only: validating term existence would
+  // couple analytics to the taxonomy tables for rows that are clearly labelled already.
+  if (/^\/(category|tag|series)\/[^/]+(\/page\/\d+)?$/.test(p)) return true
+  const slug = p.slice(1)
+  if (slug === '' || slug.includes('/')) return false
+  const { home } = await getSettings()
+  if (home.mode !== 'list' && home.listPath === p) return true
+  return !!one<{ slug: string }>(`select slug from posts where slug = ? and deleted_at is null`, slug)
+    || !!one<{ slug: string }>(`select slug from pages where slug = ? and deleted_at is null`, slug)
+}
+
 // Record one page view. Never throws (analytics must not break a page load).
 // referrerHost = external referrer host only (no path/query; '' = direct/internal);
 // country = ISO-3166 alpha-2 from the edge. Both are privacy-light and best-effort.
@@ -69,7 +94,7 @@ export async function recordView(
   try {
     if (isBot(ua)) return
     const path = normalizePath(rawPath)
-    if (!path) return
+    if (!path || !(await pathIsServable(path))) return
     const { device, browser, os } = parseUa(ua)
     bufferEvent({
       path,
@@ -98,7 +123,7 @@ export async function recordScroll(
   try {
     if (isBot(ua)) return
     const path = normalizePath(rawPath)
-    if (!path) return
+    if (!path || !(await pathIsServable(path))) return
     bufferScroll({
       path,
       depth: Math.max(0, Math.min(100, Math.round(depth))),

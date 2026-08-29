@@ -8,6 +8,6 @@ import { HelpGuide } from '@/admin/components/HelpGuide'
 
 export default function Help() {
   const t = useAdminT()
-  const state = useView<{ version: string }>('shell')
+  const state = useView('shell')
   return <View state={state}>{(data) => <HelpGuide title={t.navHelp} version={data.version} firstRunTitle={t.firstRunTitle} />}</View>
 }

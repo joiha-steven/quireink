@@ -21,6 +21,7 @@ import type { Context } from 'hono'
 import { registerTools } from '@/mcp/tools'
 import { verifyMcpToken } from '@/mcp/auth'
 import { getSettings, resolveSiteUrl } from '@/content/settings'
+import { clearCache } from '@/server/cache'
 
 /**
  * A transport that carries exactly one exchange.
@@ -87,7 +88,9 @@ export async function handleMcp(c: Context): Promise<Response> {
 
   const auth = c.req.header('authorization') ?? ''
   const token = auth.toLowerCase().startsWith('bearer ') ? auth.slice(7).trim() : ''
-  if (!token || !(await verifyMcpToken(token))) return unauthorized()
+  const verified = token ? await verifyMcpToken(token) : undefined
+  if (!verified) return unauthorized()
+  const readOnlyDoor = !verified.scopes.includes('full')
 
   // DELETE ends a session, and there are no sessions to end. GET would open the SSE
   // stream this deliberately does not implement. Both are answered, not ignored.
@@ -107,7 +110,25 @@ export async function handleMcp(c: Context): Promise<Response> {
   // tool files use (the SDK's config is a superset, and a callback that ignores the SDK's
   // second `extra` argument is an ordinary JS callback). TS refuses to prove generic
   // method assignability here; the wire test proves the part that matters.
-  registerTools(server as unknown as import('@/mcp/registry').ToolHost)
+  const host = server as unknown as import('@/mcp/registry').ToolHost
+  // A 'read' token's door registers only the tools marked readOnly, so a write tool is
+  // not refused to it — it does not EXIST for it, in the tool list or anywhere else.
+  // Withholding at registration rather than checking inside handlers is the same shape as
+  // Invariant 4: a rule about where something is mounted cannot be forgotten per call.
+  //
+  // And the write tools that DO register get Invariant 1 the same structural way the
+  // owner router now applies it: whatever a mutating tool did, the cache is flushed after
+  // it ran. The flushes inside tool bodies remain where they are sharper; this wrapper is
+  // the one a new tool cannot forget.
+  registerTools({
+    registerTool: (name, meta, handler) => {
+      if (readOnlyDoor && !meta.readOnly) return
+      if (meta.readOnly) { host.registerTool(name, meta, handler); return }
+      host.registerTool(name, meta, async (args) => {
+        try { return await handler(args) } finally { clearCache() }
+      })
+    },
+  })
   const transport = new SingleExchange()
   await server.connect(transport)
 
