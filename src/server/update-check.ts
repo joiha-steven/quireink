@@ -72,35 +72,29 @@ let decidedEpochDay = -1
 /**
  * Why this deployment is not reporting, or null when it is.
  *
- * **INVERTED on 2026-08-22, owner's call, and the reason is worth keeping.** The rule was
- * "report only when `NODE_ENV=production`". The Docker image sets that; the systemd unit in
- * `docs/self-host.md` never did — so every from-source install would have been silent
- * FOREVER while looking perfectly healthy, and the number would have counted Docker and
- * nothing else without anything on any screen saying so.
+ * ⚠️ INVERTED on 2026-08-22, owner's call. The rule was "report only when
+ * `NODE_ENV=production`". The Docker image sets that; the systemd unit in `docs/self-host.md`
+ * never did — so every from-source install would have been silent FOREVER while looking
+ * healthy, and the number would have counted Docker and nothing else, silently.
  *
- * So the question is now the honest one: is this clearly NOT a real install? Each answer
- * below was measured on Bun 1.3.14 rather than assumed, because the whole trap was an
- * assumption about what sets `NODE_ENV`:
+ * So the question is now the honest one: is this clearly NOT a real install? Each answer was
+ * measured on Bun 1.3.14, because the whole trap was an assumption about what sets `NODE_ENV`:
  *
  *   bun src/index.ts           NODE_ENV unset       execArgv []           <- systemd: REPORTS
  *   bun --watch src/index.ts   NODE_ENV unset       execArgv ['--watch']  <- `bun run dev`: silent
  *   bun test                   NODE_ENV 'test'      execArgv []           <- silent
  *   the Docker image           NODE_ENV 'production'                      <- REPORTS
  *
- * `--watch` is what separates the two cases that share an empty `NODE_ENV`, and it is the
- * flag `bun run dev` is defined with in `package.json`.
- *
- * **There is a second net under this one, and it is why loosening the first is safe.** A
- * developer's machine has no public `SITE_URL`, so anything that slips through arrives as
- * `d=0` and lands on the TRIAL line, which is kept out of "blogs alive" on the receiving
- * end precisely because a trial is deleted and recreated all week.
+ * `--watch` separates the two cases that share an empty `NODE_ENV`, and it is the flag
+ * `bun run dev` is defined with. A second net makes loosening the first safe: a developer's
+ * machine has no public `SITE_URL`, so anything slipping through arrives as `d=0` and lands on
+ * the TRIAL line, kept out of "blogs alive" because a trial is deleted and recreated all week.
  *
  * Memoised: none of these can change under a running process.
  *
  * TWO KINDS of answer, named separately, because a screen that gives the wrong one is worse
- * than a screen that gives none. The admin printed `UPDATE_CHECK=0` for every case until a
- * screenshot on 2026-08-22 showed it saying so on an instance that had never set the
- * variable — the real cause was a missing `NODE_ENV`, which is a different fix entirely.
+ * than one that gives none — the admin printed `UPDATE_CHECK=0` on an instance that had never
+ * set the variable, when the real cause was a missing `NODE_ENV`.
  */
 let blocked: string | null | undefined
 

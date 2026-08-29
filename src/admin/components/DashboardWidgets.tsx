@@ -234,46 +234,27 @@ function SourcesCard({ sources }: { sources: DashboardData['sources'] }) {
 }
 
 /**
- * Two column stacks, not four cards dropped into a grid.
+ * ONE 2x2 grid, rows stretching — and the count is what makes that right.
  *
- * The grid version is the failure `docs/admin-design.md` already describes for the Settings
- * tabs, reappearing here: a grid lays its children out in ROWS, so "Needs attention" beside a
- * taller Traffic card was stretched to Traffic's height around two lines of text, and the
- * next card could not start until BOTH had finished — which is how "Most viewed" ended up a
- * full-width slab holding one sentence.
+ * ⚠️ Which side a card goes on is a decision that must be RE-MEASURED, not asserted. This
+ * comment once read "traffic is the tall one on its own" and was simply false by the time the
+ * band was called uneven: 225px against 413px, a 188px hole under Traffic, the widest thing
+ * on the page empty.
  *
- * ⚠️ **Which side a card goes on is a decision, and it has to be RE-MEASURED, not asserted.**
- * This comment used to end "traffic carries a sparkline and is the tall one on its own", and
- * by the time the owner said the page looked uneven that sentence was simply false: measured
- * at 1440px, the left column was 225px against the right's 413px — a 188px hole under Traffic
- * before the next full-width band, and the widest thing on the page was empty. So the left
- * column gets a second card and the numbers are recorded here to be checked against next
- * time: Traffic 225 + Sources ~200 against Needs ~190 + Most viewed 269.
+ * Two independent COLUMN STACKS were tried next and were worse in a subtler way: both totalled
+ * 484px, so the outer edges were level, while each stack packed on its own and put the seam
+ * between card one and card two 37px apart across the middle. Two long rules that nearly line
+ * up read worse than two that plainly do not.
  *
- * ── 2026-08-15: the stacks pack, and the SEAM between the two cards does not line up ────────
- *
- * Both columns measured 484px, so the band's outer edges were level, and the owner still
- * circled it as crooked. He was right and the totals were the wrong number to look at: each
- * stack packs INDEPENDENTLY, so Traffic 275 + Sources 209 against Needs 235 + Most viewed 249
- * put the horizontal join between card one and card two 37px apart across the middle of the
- * page. Two long rules that nearly line up read as worse than two that plainly do not.
- *
- * So the four cards are ONE 2×2 grid again, with rows stretching — which is the layout the
- * warning above is about, and the warning does not apply at an EVEN count. Stretching hurt
- * when there were three cards: the odd one out was stranded full-width around a sentence.
- * With four, a stretched row is exactly what is wanted, because the pair in it is the thing
- * being compared. `items-stretch` (the default) is therefore load-bearing here — do not add
+ * ⚠️ So `items-stretch` (the default) is load-bearing HERE and nowhere else. Stretching is the
+ * failure `admin-design.md` describes for the Settings tabs — at an ODD count the leftover
+ * card is stranded full-width around a sentence. At an even count a stretched row is exactly
+ * what is wanted, because the pair in it is the thing being compared. Do not put
  * `items-start` back without also giving the band an odd number of cards again.
  *
- * ── 2026-08-17, ADR 0024 step 6: RE-MEASURED, because the band changed under it ──────────────
- *
- * Traffic gained two figures and "Needs attention" lost its drafts row, so every number above
- * is now history. At 1440px: Traffic and Needs attention both 222 tall, with 25px and 89px of
- * air under their last line; Sources and Most viewed both 266, with 71 and 25. The emptiest
- * card carries 64px of hole — a quarter of its own height, against the 188px that made the
- * owner call this band uneven on 2026-08-14, and it is the half-width card rather than the
- * widest thing on the page. At 375px the four stack: 290 · 150 · 358 · 258, `scrollWidth` 375
- * against a 375 viewport, no sideways drag.
+ * Measured 2026-08-17 at 1440px: Traffic and Needs attention both 222, Sources and Most
+ * viewed both 266; the emptiest card carries 64px of hole, a quarter of its height. At 375px
+ * the four stack, `scrollWidth` 375 against a 375 viewport, no sideways drag.
  */
 export function DashboardWidgets({ data }: { data: DashboardData }) {
   return (

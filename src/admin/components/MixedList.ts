@@ -1,46 +1,26 @@
 // A list that is part bullets and part checkboxes, on its way INTO the editor.
 //
-// In Markdown this is one list:
+// In Markdown `- một / - hai / - [x] ba` is ONE list. GFM gives item three a checkbox, and
+// `markdown-it-task-lists` tags the surrounding `<ul>` with `contains-task-list`;
+// `tiptap-markdown` reads that list-level class and sets `data-type="taskList"` on ALL THREE
+// items. This schema has two different nodes and a `taskList` may only hold `taskItem`s.
 //
-//     - một
-//     - hai
-//     - [x] ba
-//
-// GFM says item three carries a checkbox, and `markdown-it-task-lists` agrees: it tags THAT
-// `<li>` with `task-list-item` and the surrounding `<ul>` with `contains-task-list`.
-// `tiptap-markdown` then reads the list-level class and sets `data-type="taskList"` on the
-// whole thing — all three items — which is where the document starts coming apart, because
-// this schema has two different nodes and a `taskList` may only hold `taskItem`s.
-//
-// ProseMirror repairs the mismatch the only way it can. The two plain items do not match
-// `taskItem`, so they are lifted out into a list of their own; the `taskList` is then empty and
-// its content rule demands at least one item, so an EMPTY one is inserted. The post gains a
-// blank checkbox it never had:
-//
-//     - [ ]                         <- was not written by anybody
-//
-//     - một
-//     - hai
-//
-//     - [x] ba
-//
-// and it does not stop there. That stray line parses on the NEXT open as a task item with no
-// text, which serializes to `- \[ \]`, which parses as an escaped bracket, which... Each save
-// leaves more behind than the last, which is the definition of the failure this repo's
-// round-trip suites exist to catch — and the one shape none of them held, because nobody
+// ProseMirror repairs the mismatch the only way it can: the two plain items are lifted into
+// a list of their own, the `taskList` is then empty, its content rule demands an item, and an
+// EMPTY one is inserted — the post gains a blank checkbox nobody wrote. It does not stop
+// there: that stray line parses on the NEXT open as a task item with no text, serializes to
+// `- \[ \]`, parses as an escaped bracket, and each save leaves more behind than the last.
+// The round-trip suites exist to catch exactly this and none held this shape, because nobody
 // writes a fixture that mixes two kinds of list.
 //
-// THE FIX IS A SPLIT, done before ProseMirror ever sees the HTML: a run of checkbox items
-// becomes a `taskList`, a run of plain items becomes a plain list, in the order they were
-// written. Nothing is invented and nothing is dropped. The Markdown that comes back out is the
-// Markdown that went in, and it is a fixed point: `- một\n- hai\n\n- [x] ba` parses to the same
-// two lists again, and splits to the same two nodes again.
+// THE FIX IS A SPLIT, before ProseMirror sees the HTML: a run of checkbox items becomes a
+// `taskList`, a run of plain items a plain list, in the order written. It is a fixed point —
+// the Markdown that comes out is the Markdown that went in.
 //
-// WHY AN EXTENSION OF ITS OWN, rather than an override on `TaskList`: the markdown spec of a
-// node is looked up BY NODE NAME and merged whole, so supplying `parse` on `taskList` would
-// also replace the `setup` that installs `markdown-it-task-lists` and take checkboxes away
-// entirely. The parser calls `parse.updateDOM` for EVERY extension that has one, so a nameless
-// helper can add a step without taking one over.
+// ⚠️ AN EXTENSION OF ITS OWN, not an override on `TaskList`: a node's markdown spec is looked
+// up by node NAME and merged whole, so supplying `parse` on `taskList` would also replace the
+// `setup` that installs `markdown-it-task-lists` and take checkboxes away entirely. A nameless
+// helper can add an `updateDOM` step without taking one over.
 import { Extension } from '@tiptap/core'
 
 /** A `<li>` that markdown-it-task-lists marked as carrying a checkbox. */

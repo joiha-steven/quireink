@@ -1,33 +1,21 @@
-// The CJK posts: Chinese, Japanese and Korean, and the reversal of a rule that stood until
-// 2026-08-15.
+// The CJK posts, and the reversal of a rule that stood until 2026-08-15.
 //
-// WHAT THE RULE WAS. `seed-content.ts` and `-intl.ts` both said CJK stays out, in the same
-// words: no bundled subset carries a Han, kana or hangul glyph, so a Japanese title would
-// "fall back to a system font and demonstrate the opposite of the point". That was a correct
-// reading of a real constraint. A CJK webfont is megabytes; this project budgets a reader's
-// download in single kilobytes (`docs/performance.md`), and no amount of wanting changes it.
+// The old rule said CJK stays out: no bundled subset carries a Han, kana or hangul glyph, so a
+// Japanese title would fall back to a system font and demonstrate the opposite of the point.
+// The constraint behind it is real and has not moved — a CJK webfont is megabytes and this
+// project budgets a reader's download in single kilobytes.
 //
-// WHY IT NO LONGER HOLDS. The rule confused two different things — what we SHIP and what the
-// page RENDERS IN. Nothing here ships a CJK face and nothing ever will. What changed is that
-// the reading stacks now END somewhere on purpose: `CJK_SERIF` and `CJK_SANS` in
-// `content/fonts.ts` name PingFang, Hiragino, Yu Mincho, Malgun Gothic and the Noto families
-// after the bundled face, so a Han character lands in a face that was chosen rather than in
-// whatever the browser reaches for last. That was the actual defect behind the old rule: not
-// that CJK looked bad, but that it looked like nobody had decided. Zero bytes are downloaded
-// for any of it.
+// It confused two things: what we SHIP and what the page RENDERS IN. Nothing here ships a CJK
+// face and nothing will. What changed is that the stacks now END somewhere on purpose —
+// `CJK_SERIF` and `CJK_SANS` in `content/fonts.ts` name PingFang, Hiragino, Yu Mincho, Malgun
+// Gothic and the Notos after the bundled face, so a Han character lands in a face that was
+// chosen rather than whatever the browser reaches for last. That was the actual defect: not
+// that CJK looked bad, but that it looked like nobody had decided. Zero bytes downloaded.
 //
-// SO WHAT THESE POSTS PROVE is the opposite of what the old note feared: that a page set in
-// Literata can carry a paragraph of 漢字 without either half looking borrowed, and that the
-// mixed-script problems below are real problems this software has an answer for.
-//
-// ONE THING THEY CANNOT PROVE, and it is written down in `content/fonts.ts` too: a Han
-// character is drawn differently in Chinese, Japanese and Korean typography, and a
-// font-family list picks the first INSTALLED family without ever consulting the language of
-// the text. All three posts below therefore render in the same Han face. Fixing it needs a
-// per-post language, which no post has — `<html lang>` is one site-wide setting.
-//
-// ONE LINE PER PARAGRAPH, as everywhere else in the fixture: the renderer turns a single
-// newline into a `<br>`.
+// ⚠️ ONE THING THESE CANNOT PROVE: a Han character is drawn differently in Chinese, Japanese
+// and Korean typography, and a font-family list picks the first INSTALLED family without
+// consulting the language of the text. All three posts render in the same Han face. Fixing it
+// needs a per-post language, which no post has — `<html lang>` is one site-wide setting.
 import type { Seed } from './seed-content'
 
 export const CJK_POSTS: Seed[] = [

@@ -1,45 +1,29 @@
 // The table, on its way back OUT of the editor.
 //
-// `tiptap-markdown` ships a table serializer and this file replaces it, because two things it
-// does are data loss rather than formatting differences. Both were found the day the editor
-// corpus suite was written, by running the repo's own fixtures through the parser that had
-// never seen them (`editor-corpus.test.ts`), and both destroy a table by SAVING it:
+// `tiptap-markdown` ships a table serializer and this file replaces it: three of the things
+// it does are data loss rather than formatting. All three were found by running the repo's
+// own fixtures through the parser that had never seen them (`editor-corpus.test.ts`), and
+// each destroys a table by SAVING it.
 //
-//   1. A CELL WITH NO TEXT IS SKIPPED. The library asks `cellContent.textContent.trim()`
-//      before rendering a cell, and an atom keeps its payload in an attribute rather than in
-//      text — so a formula and an image both measure as empty:
+//   1. A CELL WITH NO TEXT IS SKIPPED. The library asks `textContent.trim()`, and an atom
+//      keeps its payload in an attribute — so `| $x^2$ |` and `| ![ảnh](/x.jpg) |` both
+//      measure as empty and vanish on the first save. This asks whether the cell holds any
+//      CONTENT, which is the question that was meant.
 //
-//          | $x^2$ | hai |                ->   |  | hai |
-//          | ![ảnh](/x.jpg) | hai |       ->   |  | hai |
+//   2. A PIPE IS NOT ESCAPED. `esc()` in prosemirror-markdown does not escape `|`, because
+//      outside a table it is not special; inside one it is the column separator. Written
+//      bare it RE-CUTS the row on the next open — two saves take a column and add two stray
+//      backslashes. `golden/corpus/gfm-table-pipes.md` covered this and passed for a year,
+//      because it was only ever handed to the READER'S parser.
 //
-//      Gone, on the first save, with nothing said. What is asked here instead is whether the
-//      cell holds any CONTENT, which is the question that was meant.
-//
-//   2. A PIPE IS NOT ESCAPED. `esc()` in prosemirror-markdown escapes backticks, asterisks,
-//      brackets and underscores; `|` is not on the list, because outside a table it is not
-//      special. Inside one it is the column separator, and GFM's answer is `\|`. Writing it
-//      bare does not merely look wrong, it re-cuts the row on the next open:
-//
-//          | `a \| b` | c \| d |   ->  | `a | b` | c | d |   ->  | \`a | b\` |
-//
-//      Two saves and the row has lost a column and gained two stray backslashes. The repo had
-//      a fixture for exactly this (`golden/corpus/gfm-table-pipes.md`) and it passed for a
-//      year, because it was only ever handed to the READER'S parser.
-//
-//   3. A TABLE GFM CANNOT EXPRESS IS THROWN AWAY WHOLE. With `html: false` the library's
-//      fallback for a merged cell, a cell holding two blocks, or a table whose first row is
-//      not headers, is to write the literal text `[table]` — the entire table, every row of
-//      it, replaced by seven characters. All three are two clicks away: paste a table from a
-//      web page and it arrives with `colspan`; press Enter inside a cell; delete the header
-//      row with the button that offers to.
-//
-//      GFM has no merged cells and no multi-line cell, so something must be lost. What is
-//      chosen here is to lose the SHAPE and keep the WORDS: a spanned cell writes its content
-//      once and pads the row with empty cells so the columns still line up, a cell of several
-//      blocks joins them with a space, and a table without a header row promotes its first
-//      row — which is what the reader's parser would do with it anyway, since GFM has no
-//      headerless table either. Every one of those is a downgrade; none of them is a deletion,
-//      and `[table]` was a deletion.
+//   3. A TABLE GFM CANNOT EXPRESS IS THROWN AWAY WHOLE. With `html: false` the fallback for
+//      a merged cell, a multi-block cell, or a table whose first row is not headers is the
+//      literal text `[table]` — every row replaced by seven characters. All three are two
+//      clicks away: paste a table from the web, press Enter in a cell, delete the header row.
+//      GFM has none of those, so something must be lost; what is chosen is to lose the SHAPE
+//      and keep the WORDS — a spanned cell writes its content once and pads the row, a
+//      multi-block cell joins with a space, a headerless table promotes its first row. Each
+//      is a downgrade; `[table]` was a deletion.
 import { Table } from '@tiptap/extension-table'
 import type { Node as PMNode } from '@tiptap/pm/model'
 

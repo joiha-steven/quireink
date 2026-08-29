@@ -1,28 +1,22 @@
 // The highlighter, in the editor.
 //
-// A stroke you cannot see while you are writing is a stroke you cannot place, so the pen has
-// to be a real mark in the writing surface and not just literal `==` characters. The mark
-// renders as `<mark data-ink="…">`, which is the SAME element the published page uses, so the
-// ink CSS in `web/ink.css.ts` styles both from one place (it is carried into the admin sheet
-// through `PROSE_CSS`).
+// A stroke you cannot see while writing is a stroke you cannot place, so the pen is a real
+// mark in the writing surface rather than literal `==`. It renders as `<mark data-ink="…">`,
+// the SAME element the published page uses, so `web/ink.css.ts` styles both from one place.
 //
-// THE GRAMMAR IS NOT RESTATED HERE. `render/ink.ts` owns it and this file imports it. Three
-// separate readers of `==text==` now exist — marked on the server, markdown-it in the editor,
-// and `toPlainText` for excerpts — and the only way three parsers stay in step is for all
-// three to be built from one regex. They already drifted once, when `toPlainText` did not
-// know the syntax and put the word "green" into every excerpt.
+// THE GRAMMAR IS NOT RESTATED HERE; `render/ink.ts` owns it and this imports it. Three readers
+// of `==text==` exist — marked on the server, markdown-it here, `toPlainText` for excerpts —
+// and the only way three parsers stay in step is one regex. They drifted once already, when
+// `toPlainText` did not know the syntax and put the word "green" into every excerpt.
 //
-// ONE THING THE EDITOR CANNOT HOLD, deliberately: a stroke that runs across an inline CODE
-// span. StarterKit's `code` mark is declared `excludes: '_'`, refusing to share a character
-// with any other mark, and that cannot be overridden from outside it — `extendMarkSchema`
-// merges UNDER the mark's own fields, so it silently does nothing here (that was tried).
-// The server renders ``==a `b` c==`` as one stroke; opening it in the editor and saving ends
-// the stroke before the code and starts nothing after it. Accepted rather than fixed, because
-// the fix is a direct dependency on `@tiptap/extension-code` plus a forked `code` mark, and
-// because the ink is not VISIBLE under a code span anyway: the chip paints its own opaque
-// `--c-rule` background over the stroke (measured `#e8e8e8` on the rendered page, which is
-// the chip, not the pen). The degraded form is stable — serialising it twice is a fixed
-// point — and it is valid Markdown, so nothing is corrupted. Pinned by a test.
+// ⚠️ ONE THING THE EDITOR CANNOT HOLD, deliberately: a stroke running across an inline CODE
+// span. StarterKit's `code` mark is `excludes: '_'` and that cannot be overridden from outside
+// — `extendMarkSchema` merges UNDER the mark's own fields, so it silently does nothing (tried).
+// The server renders ``==a `b` c==`` as one stroke; opening and saving ends the stroke before
+// the code. Accepted rather than fixed: the fix is a direct dependency on
+// `@tiptap/extension-code` plus a forked mark, and the ink is not VISIBLE under a code span
+// anyway — the chip paints its own opaque `--c-rule` over it. The degraded form is a fixed
+// point and valid Markdown, so nothing is corrupted. Pinned by a test.
 import { getMarkRange, InputRule, Mark, markInputRule, markPasteRule, mergeAttributes } from '@tiptap/core'
 import type MarkdownIt from 'markdown-it'
 // The `.mjs` specifier the runtime uses has no declaration; `@types/markdown-it` ships this

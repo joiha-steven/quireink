@@ -75,32 +75,22 @@ export type FrontStrip = {
 }
 
 /**
- * How a gallery looks, site-wide.
- *
- * These are DEFAULTS, and they are applied as CSS variables rather than baked into the
- * rendered HTML. That is not a style choice: rendered Markdown is cached under a hash of
- * its input, so a default that changed the markup would leave every already-rendered body
+ * How a gallery looks, site-wide. These are DEFAULTS applied as CSS VARIABLES rather than
+ * baked into the rendered HTML — not a style choice: rendered Markdown is cached under a hash
+ * of its input, so a default that changed the markup would leave every already-rendered body
  * serving the old shape until something unrelated evicted it.
  *
- * A gallery that names its own shape in the image fragment (`#grid-1x1`, `#grid-nocap`)
- * overrides these. One that says nothing follows them, which is what makes a whole
- * imported site fixable from one screen.
+ * A gallery naming its own shape in the fragment (`#grid-1x1`) overrides these; one that says
+ * nothing follows them, which is what makes a whole imported site fixable from one screen.
  */
 /**
  * The frame every picture wears unless it says otherwise, site-wide.
  *
- * Same contract as GallerySettings below and for the same reason: applied as CSS variables,
- * never baked into the markup, because a rendered body is cached under a hash of its INPUT —
- * a default that rewrote HTML would leave every already-rendered post showing the old frame
- * until something unrelated evicted it. Here it also means the setting is instant: change it
- * and every picture on the site is reframed on the next paint, with nothing re-rendered.
+ * Same contract as GallerySettings and for the same cache reason. Here it also means the
+ * setting is instant: change it and every picture is reframed on the next paint, with nothing
+ * re-rendered. A picture naming its own frame (`#frame-thick`, `#noframe`) overrides it.
  *
- * A picture that names its own frame in the fragment (`#frame-thick`, `#noframe`) overrides
- * this. One that says nothing follows it — which is the point, and the same reason the
- * gallery defaults exist: an imported archive is fixed from one screen rather than one
- * picture at a time.
- *
- * `none` at install, deliberately. A frame is a decision about a site's voice, and arriving
+ * `none` at install, deliberately: a frame is a decision about a site's voice, and arriving
  * with one already made is the kind of default nobody asked for.
  */
 export type FigureSettings = {

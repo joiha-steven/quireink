@@ -1,32 +1,26 @@
 // The net under the admin.
 //
-// It is here because of what happened without it. A post containing `**đậm** và ==mực==`
-// made markdown-it throw while the editor was parsing it; the throw came up through
-// `setContent` into a React render, React found no boundary above it, and did the only thing
-// it can do in that case — unmounted the whole tree. The owner opened a draft and got a white
-// page: no message, no sidebar, no way back except typing a different URL. The bug was one
-// line of parser plumbing (`components/markdown-nested.ts`), but the BLANK SCREEN was this
-// file being absent, and the next parser bug would have produced exactly the same nothing.
+// It is here because of what happened without it. A post containing `**đậm** và ==mực==` made
+// markdown-it throw while the editor parsed it; the throw came up through `setContent` into a
+// React render, React found no boundary above it, and unmounted the whole tree. Opening a
+// draft gave a white page — no message, no sidebar, no way back but typing a URL. The bug was
+// one line of parser plumbing; the BLANK SCREEN was this file being absent.
 //
-// So: one page may fail, and the failure has to be a sentence the owner can read and act on.
+// WHERE IT SITS is the whole design: inside the canvas, around the routed page, OUTSIDE the
+// sidebar — so a screen that dies is a screen you can navigate away from. `App.tsx` keys it by
+// pathname, so leaving resets it without a reload; a boundary that stays tripped after you
+// have gone elsewhere is a second way to be stuck.
 //
-// WHERE IT SITS is the whole design. Inside the canvas, around the routed page, and OUTSIDE
-// the sidebar — the rail keeps working, so a screen that dies is a screen you can navigate
-// away from. `App.tsx` keys it by pathname, which makes leaving the broken page reset it
-// without a reload: a boundary that stays tripped after you have gone somewhere else is a
-// second way to be stuck.
+// It does NOT retry in place: React does not re-run the failed render, so "try again" is a
+// button that does nothing twice. The two honest offers are reload, or go elsewhere.
 //
-// WHAT IT DOES NOT DO: retry in place. React does not re-run the failed render on its own,
-// and a "try again" that re-renders the same broken state is a button that does nothing
-// twice. The two honest offers are reload this page, or go somewhere else — and both are here.
-// NOT COVERED BY A RENDERING TEST, and the reason is worth writing down rather than
-// rediscovering: `src/admin` is excluded from the ROOT tsconfig, whose `jsxImportSource` is
-// hono/jsx for server-rendered markup, and `bun test` transpiles by that root config. Any
-// admin component RENDERED under the test runner therefore builds hono elements and React
-// rejects them ("Invalid JSX tag name"). Every admin component shares that latent split and
-// gets away with it by only ever running in the browser bundle. So this one is proved the way
-// the repo proves rendered things: `error-boundary.test.ts` holds the wiring and the state
-// transition, and the sheet itself was tripped on purpose in a real browser and looked at.
+// ⚠️ NOT COVERED BY A RENDERING TEST, and the reason is structural: `src/admin` is excluded
+// from the ROOT tsconfig, whose `jsxImportSource` is hono/jsx, and `bun test` transpiles by
+// that root config — so any admin component rendered under the test runner builds hono
+// elements and React rejects them. Every admin component shares that latent split and gets
+// away with it by only running in the browser bundle. So this one is proved the way the repo
+// proves rendered things: `error-boundary.test.ts` holds the wiring and the state transition,
+// and the sheet itself was tripped on purpose in a real browser and looked at.
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 import { Button } from '@/admin/ui/Button'
 import { CARD, NOTE_TEXT, TITLE } from '@/admin/components/kit'
