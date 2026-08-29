@@ -1,29 +1,22 @@
-// EVERY non-English post, in the languages the bundled subsets actually cover. The three
-// sibling files split by category; this one splits by language and takes precedence, so a
-// German post about typography is here rather than in `seed-content-type.ts`.
+// EVERY non-English post, in the languages the bundled subsets actually cover. The sibling
+// files split by category; this one splits by LANGUAGE and takes precedence, so a German post
+// about typography is here rather than in `seed-content-type.ts`.
 //
-// That rule arrived late and by force. The split started as category-only, and Typography —
-// which is where a demo about letterforms puts most of its posts — came out at 429 lines
-// against a 400-line cap. Pulling the four non-English typography posts across fixed the
-// overflow, and left the two rules each meaning one thing instead of the file boundary
-// meaning "category, except when it does not".
+// That rule arrived by force: the split started as category-only and Typography came out at
+// 429 lines against a 400-line cap. Pulling the non-English posts across fixed the overflow and
+// left each rule meaning one thing.
 //
-// `seed-content.ts` has always CLAIMED the harder scripts: its header names "Polish ogoneks,
-// Czech hačeks, Turkish dotless i and Icelandic eth", and a specimen block inside one post
-// quotes a line of each. What it did not have was a post in any of them, so the front page —
-// the thing anyone actually looks at — carried titles in English, Vietnamese, German and
+// `seed-content.ts` always CLAIMED the harder scripts — its header names ogoneks, hačeks,
+// dotless i and eth, and a specimen block quotes a line of each. What it did not have was a
+// POST in any of them, so the front page carried titles in English, Vietnamese, German and
 // French and nothing else. The claim was true of one blockquote and false of the demo.
 //
-// So these exist to be SEEN AS TITLES, at the size a headline is set, where a stacked
-// diacritic either has room above it or visibly does not. That is the whole argument for
-// subsetting by `unicode-range` (`src/render/font-faces.ts`), and it cannot be made by a
-// quotation buried three screens down.
+// So these exist to be SEEN AS TITLES, at the size a headline is set, where a stacked diacritic
+// either has room above it or visibly does not. That is the whole argument for subsetting by
+// `unicode-range`, and it cannot be made by a quotation three screens down.
 //
-// EVERY LANGUAGE HERE IS LATIN OR LATIN-EXT (U+0100-02FF), which the real face covers —
-// ogonek, háček, dotless i, eth and thorn included. That is the line this file draws, and it
-// is now the only thing it means: CJK moved OUT of "deliberately absent" and into
-// `seed-content-cjk.ts` on 2026-08-15, once the reading stacks named a CJK face to fall to
-// instead of leaving the choice to the browser. Splitting the two keeps one claim per file —
+// EVERY LANGUAGE HERE IS LATIN OR LATIN-EXT (U+0100-02FF), which the real face covers. That is
+// the line this file draws: CJK lives in `seed-content-cjk.ts`, so each file makes one claim —
 // here, a glyph the bundled subset really carries; there, a glyph it never will.
 import type { Seed } from './seed-content'
 

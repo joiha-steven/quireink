@@ -19,30 +19,24 @@ import { parseRange } from '@/media/http-range'
 const CACHE = 'public, max-age=31536000, immutable'
 
 /**
- * An SVG is a DOCUMENT, and it is the one type in the store that can carry script.
+ * An SVG is a DOCUMENT, and the one type in the store that can carry script.
  *
- * `nosniff` does not help here and it is worth being precise about why: nosniff stops a
+ * `nosniff` does not help, and the reason is worth being precise about: nosniff stops a
  * browser DECIDING a file is HTML, and this file genuinely is `image/svg+xml`. Navigated to
  * directly — a tab opened from the media library, a link somebody was sent — the browser
- * renders it as a document and runs any `<script>` inside it, on THIS SITE'S ORIGIN. From
- * there a same-origin `fetch` carries the session cookie and satisfies the CSRF check in
- * `auth/csrf.ts`, because `Sec-Fetch-Site` really does say `same-origin`.
+ * renders it as a document and runs any `<script>` inside it ON THIS SITE'S ORIGIN. From there
+ * a same-origin `fetch` carries the session cookie and satisfies the CSRF check, because
+ * `Sec-Fetch-Site` really does say `same-origin`. Only the owner can upload, so this is not a
+ * stranger's attack — it is the booby-trapped icon set the owner used as a logo.
  *
- * Only the owner can upload, so this is not a stranger's attack — it is the booby-trapped
- * icon set the owner downloaded and used as a logo.
+ * `sandbox` with no `allow-` token puts the response in a unique opaque origin: no script, no
+ * forms, nothing that can reach back. The shapes still draw, which is the file's entire job.
  *
- * `sandbox` with no `allow-` token puts the response in a unique opaque origin: no script,
- * no forms, nothing that can reach back. The shapes still draw, which is the entire job of
- * the file. `style-src 'unsafe-inline'` keeps an SVG's own `<style>` block working.
- *
- * A RESPONSE CSP is ignored for a subresource, so `<img src="logo.svg">` on a page is
- * untouched — the logo, the favicon and every SVG in a post render exactly as before. This
- * only binds the case where the SVG is the document.
- *
- * Not a global CSP, and `web/security-headers.ts` says why that stays a deployment
- * decision: a browser enforces the INTERSECTION of every policy it receives, so a second
- * one from the app would silently narrow a proxy's tuned policy. This is one route that can
- * never legitimately execute anything, which makes it the exception rather than the wedge.
+ * ⚠️ A RESPONSE CSP is ignored for a subresource, so `<img src="logo.svg">` is untouched — the
+ * logo, the favicon and every SVG in a post render exactly as before. This binds only the case
+ * where the SVG is the document, which is why it is one route rather than a global CSP: a
+ * browser enforces the INTERSECTION of every policy it receives, so a second one from the app
+ * would silently narrow a proxy's tuned policy.
  */
 const SANDBOXED = new Set(['image/svg+xml'])
 const SANDBOX_CSP = "default-src 'none'; style-src 'unsafe-inline'; sandbox"

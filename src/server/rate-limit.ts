@@ -135,26 +135,22 @@ const trustProxyAlways = (): boolean => (process.env.TRUST_PROXY ?? '').trim() =
 /**
  * The address to key a limit or an analytics hash by.
  *
- * The SOCKET PEER is the ground truth: `Bun.serve` reports who actually connected, and a
- * client cannot forge it. Proxy headers are believed only when that peer is a trusted hop —
- * loopback or a private address, i.e. the nginx sitting in front on the same box — or when
- * `TRUST_PROXY=1` says the proxy is somewhere else.
+ * The SOCKET PEER is the ground truth: `Bun.serve` reports who actually connected and a client
+ * cannot forge it. Proxy headers are believed only when that peer is a trusted hop — loopback
+ * or a private address — or when `TRUST_PROXY=1` says the proxy is somewhere else.
  *
- * BOTH HALVES OF THIS WERE BROKEN, and each in a way that measured:
+ * BOTH HALVES WERE BROKEN, each in a way that measured:
  *
  * - `cf-connecting-ip` was read unconditionally, so a request straight to the origin could
- *   carry a made-up one. Measured on a local instance: 70 requests against a 60/minute cap,
- *   a different forged value on each, and not one of them was refused. Cloudflare overwrites
- *   the header, so the four live instances were covered by their deployment and the software
- *   itself was not — the same gap `web/security-headers.ts` exists to close.
- *
- * - With NO proxy in front (the self-hoster running the binary behind a tunnel, or nothing)
- *   neither header is present and every visitor shared one bucket called 'unknown'. One
- *   person searching then rate-limited the whole site. Measured the same way: request 16 of
- *   70 came back 429 from a second client.
+ *   carry a made-up one. Measured: 70 requests against a 60/minute cap, a different forged
+ *   value each, not one refused. Cloudflare overwrites the header, so the live instances were
+ *   covered by their deployment and the software itself was not.
+ * - With NO proxy in front, neither header is present and every visitor shared one bucket
+ *   called 'unknown' — one person searching rate-limited the whole site. Measured the same
+ *   way: request 16 of 70 came back 429 from a second client.
  *
  * `unknown` remains as the last resort — a unit test builds a bare `Request` with no server
- * behind it — and it is now genuinely unreachable in a running process.
+ * behind it — and is now genuinely unreachable in a running process.
  */
 export function clientIp(c: Context): string {
   const peer = peerAddress(c)

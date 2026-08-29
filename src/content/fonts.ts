@@ -126,27 +126,21 @@ function tuned(over: Partial<Record<TypeRole, Partial<TypeStyle>>>): TypographyS
 /**
  * THE CJK TAIL, and why a stack that ends at `serif` is not already enough.
  *
- * None of the four bundled faces carries a Han, kana or hangul glyph, and no subset in
- * `src/render/fonts` does either — a CJK webfont is megabytes, which is why the fixture's
- * note said CJK was "deliberately absent". That note was about what we SHIP, and that part
- * has not moved. It was never an argument for letting the stack end at the generic keyword.
+ * None of the bundled faces carries a Han, kana or hangul glyph and none ever will — a CJK
+ * webfont is megabytes. That is about what we SHIP, and was never an argument for letting the
+ * stack end at the generic keyword: a missing glyph does not fail, the browser reaches past
+ * the whole list to its own last-resort face, and that choice is nobody's. The page renders
+ * differently on every machine, at an optical size nothing here picked. Naming the faces costs
+ * zero bytes — they are already installed — and takes the choice back.
  *
- * A missing glyph does not fail: the browser reaches past the whole list to its own
- * last-resort face, and that choice is nobody's. The page renders — differently on every
- * machine, at an optical size nothing here picked, with no setting anywhere that explains
- * it. Naming the faces costs zero bytes (they are already installed) and takes the choice
- * back.
+ * ⚠️ ONE STACK CANNOT SERVE ALL THREE LANGUAGES. 直, 直 and 直 are one Unicode character drawn
+ * three ways, and a font-family list resolves to the first INSTALLED family without consulting
+ * the language of the text. A single tail headed by `PingFang SC` sets Japanese prose in
+ * Chinese letterforms on every Mac — not a fallback, the primary rendering. The first cut did
+ * exactly that, and put Yu Mincho ahead of SimSun for Windows readers too.
  *
- * ONE STACK CANNOT SERVE ALL THREE LANGUAGES, and this is the part worth reading twice.
- * 直, 直 and 直 are one Unicode character drawn three ways, and a font-family list resolves
- * to the first INSTALLED family without ever consulting the language of the text. So a
- * single tail with `PingFang SC` at its head sets Japanese prose in Chinese letterforms on
- * every Mac — not a fallback, the primary rendering. The first cut of this file did exactly
- * that, and put `Yu Mincho` (Japanese) ahead of `SimSun` (Chinese) for Windows readers too.
- *
- * Hence one tail PER LANGUAGE below, and `cjkLangCss` to switch between them on `:lang()`.
- * A Japanese site gets Japanese shapes because `<html lang="ja">` selects them, and the day
- * a post carries its own language the same rules start working per post with no change here.
+ * Hence one tail PER LANGUAGE, and `cjkLangCss` to switch on `:lang()`. The day a post carries
+ * its own language the same rules start working per post with no change here.
  */
 type CjkTail = { serif: string; sans: string }
 
@@ -226,9 +220,8 @@ export const FONT_PRESETS: FontPreset[] = [
     typography: tuned({}),
   },
   {
-    // Source Sans 3 — Adobe's humanist sans, and the one preset whose numbers were guessed
-    // rather than measured. Measured 2026-07-29 against the other three, at the default
-    // 672px column:
+    // Source Sans 3 — the one preset whose numbers were guessed rather than measured.
+    // Measured 2026-07-29 against the other three at the default 672px column:
     //
     //   preset          body px   x-height   chars/line   leading ÷ x-height
     //   Inter            18.08      10.0        70            3.07
@@ -236,23 +229,20 @@ export const FONT_PRESETS: FontPreset[] = [
     //   Source Serif 4   18.40       9.0        72            3.31
     //   Source Sans 3    18.40       9.0      * 79 *        * 3.52 *
     //
-    // Two things at once, and they compound. The face is NARROW — 7.70px per character
-    // against Inter's 8.69 — so the same column takes nine more characters per line, past
-    // the 45-75 band this site's defaults are built on. And the old note here reasoned from
-    // the short x-height to "loosen the line a hair", which is backwards: a small x-height
-    // under a long measure is exactly when the eye loses the return sweep, and 1.72 made it
-    // the loosest of the four.
+    // Two faults that compound. The face is NARROW — 7.70px per character against Inter's
+    // 8.69 — so the same column takes nine more characters, past the 45-75 band the defaults
+    // are built on. And the old note reasoned from the short x-height to "loosen the line",
+    // which is backwards: a small x-height under a long measure is exactly when the eye loses
+    // the return sweep.
     //
-    // The LEADING is fixed here: 1.62 puts it at 3.31 x the x-height, exactly where both
-    // serifs sit. The MEASURE is not, and cannot be from this file. Sizing up until 79
-    // characters comes back into band needs body ~1.26rem, and two pinned rules in
-    // `web/typography.test.ts` refuse it — `small` must stay above 0.8 of body, and the
-    // serifs' secondary text must stay larger than the sans's. Both are right: `small` also
-    // sets the CHROME, which renders in the chrome font and has no reason to grow with the
-    // reading face. Under them the ceiling is ~1.17rem, which moves the measure by one
-    // character. So the body goes up only as far as the rules allow, and the real lever is
-    // recorded rather than forced: **the measure belongs to `contentWidth`, which a preset
-    // does not own.** A reader on this preset wants roughly a 620px column, not 672.
+    // The LEADING is fixed here at 1.62, which puts it at 3.31x the x-height, where both
+    // serifs sit. The MEASURE cannot be fixed from this file: sizing up until 79 characters
+    // comes back into band needs body ~1.26rem, and two pinned rules in
+    // `web/typography.test.ts` refuse it (`small` must stay above 0.8 of body, and it also
+    // sets the CHROME, which has no reason to grow with the reading face). So the body goes up
+    // only as far as the rules allow, and the real lever is recorded rather than forced: **the
+    // measure belongs to `contentWidth`, which a preset does not own.** This preset wants
+    // roughly a 620px column, not 672.
     id: 'source-sans',
     slug: 'sourcesans',
     name: 'Source Sans 3',

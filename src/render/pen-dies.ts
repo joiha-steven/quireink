@@ -1,32 +1,26 @@
 // The hand behind the pen: every stroke shape, grown from one seed.
 //
-// The first pen had ONE die, and every highlight on a page was that die stretched — the
-// same edge wobble, the same chisel at both ends — and once a reader saw it twice the pen
-// stopped being a pen. Three hand-drawn dies were tried next and were better, but still
-// countable: a page with a dozen highlights dealt each die four times. Compared against
-// photographs of real highlighting (a notebook, two textbooks), what a machine stroke lacks
-// is not roughness but VARIETY — real strokes differ in tilt, in weight, in how the pen
-// lands and lifts, in how much ink the felt had left — and variety is a quantity problem,
-// which hand-drawing cannot solve under a byte budget somebody has to keep re-earning.
+// The first pen had ONE die stretched across every highlight — same edge wobble, same chisel
+// at both ends — and once a reader saw it twice the pen stopped being a pen. Three hand-drawn
+// dies were better and still countable: a dozen highlights dealt each die four times. Against
+// photographs of real highlighting, what a machine stroke lacks is not roughness but VARIETY
+// — tilt, weight, how the pen lands and lifts, how much ink the felt had left — and variety is
+// a quantity problem, which hand-drawing cannot solve under a byte budget.
 //
-// So the dies are GROWN, not drawn: a seeded generator varies, per die —
-//   · tilt (a hand is never level), and where the stroke sits against the words
-//   · weight: how tall the sweep is, and how much ink it lays (a light pass vs a pressed one)
-//   · the wobble of both edges, in count and in amplitude
-//   · the second pass: full, or broken in two where the felt ran dry
-//   · the ends: chisel slant, and an occasional taper where the pen was already lifting
-//   · pooled ink: a sliver along the top edge, and a darker spot where the pen was set down
+// So the dies are GROWN, not drawn. A seeded generator varies, per die: tilt and where the
+// stroke sits against the words; how tall the sweep is and how much ink it lays; the wobble of
+// both edges; whether the second pass is full or broken where the felt ran dry; the chisel
+// slant and the occasional taper; and pooled ink along the top edge and where the pen was set
+// down.
 //
-// DETERMINISTIC ON PURPOSE, twice over. The PRNG is seeded with a constant, so every build
-// emits byte-identical CSS and the public sheet's content hash holds still. And which die a
-// given highlight wears is decided by a hash of its own text (`render/ink.ts`), so a phrase
-// keeps its stroke across reloads and re-renders — a page that reshuffled its ink on every
-// visit would feel haunted, not hand-made.
+// ⚠️ DETERMINISTIC ON PURPOSE, twice over. The PRNG is seeded with a constant, so every build
+// emits byte-identical CSS and the public sheet's hash holds still. And which die a highlight
+// wears is a hash of its own text (`render/ink.ts`), so a phrase keeps its stroke across
+// reloads — a page that reshuffled its ink every visit would feel haunted, not hand-made.
 //
-// The ceiling every die respects is the dark-mode contrast audit in `render/pen.ts`
-// (PEN_DARK): composite alpha nowhere exceeds the ~.91 the 45% mix was measured at. The
-// sweep and the band compound to at most .905, and every pool or blob is placed clear of
-// the band, so it compounds with the sweep alone and tops out under .87.
+// The ceiling every die respects is the dark-mode contrast audit in `render/pen.ts`: composite
+// alpha nowhere exceeds ~.91. Sweep and band compound to at most .905, and every pool is
+// placed clear of the band so it compounds with the sweep alone and tops out under .87.
 
 /** One printable die: SVG path data plus the opacity it is inked at. */
 export type DiePath = readonly [d: string, opacity: string]

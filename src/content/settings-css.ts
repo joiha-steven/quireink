@@ -12,34 +12,30 @@ import type { FontSettings, TypographySettings } from '@/types'
 import { TYPE_ROLES } from '@/content/themes'
 import { fontFormat } from '@/content/settings-type'
 
-// Per-role type CSS vars on :root (+ optional font-smoothing). Injected after
-// globals.css (same defaults), so a saved scale wins and a fresh install still works.
+// Per-role type CSS vars on :root (+ optional font-smoothing). Injected after globals.css
+// (same defaults), so a saved scale wins and a fresh install still works.
 //
-// BOOK MODE IS ONE NUMBER, AND IT IS EMITTED TWICE. Do not "simplify" this to one block.
+// ⚠️ BOOK MODE IS ONE NUMBER, AND IT IS EMITTED TWICE. Do not "simplify" this to one block.
 //
-// The rule the owner asked for: in book mode the reading text runs 15% larger than the
-// article, and every gap around it moves by the same 15%. Type and the space between it are
-// one system; enlarging the words alone gives you crowded reading, not bigger reading. So
-// `--sp`, the article's spacing unit, carries the scale exactly as `--fs-<role>` does, and
-// every gap inside the article is a multiple of it.
+// The rule: in book mode the reading text runs larger than the article, and every gap around
+// it moves by the same factor. Type and the space between it are one system — enlarging the
+// words alone gives crowded reading, not bigger reading. So `--sp` carries the scale exactly
+// as `--fs-<role>` does.
 //
-// Emitting the block a SECOND time on `.book-overlay` is the whole mechanism, and it is
-// there because the obvious version does not work. A `var()` inside a custom property is
-// substituted where that property is DECLARED, not where it is used — so `--fs-body`
-// declared on `:root` resolves `var(--type-scale, 1)` against `:root`, where the scale is
-// undefined, and the resolved `calc(1.13rem * 1)` is what inherits. Overriding
-// `--type-scale` on a descendant then changes nothing at all. This file used to claim the
-// opposite in a comment, and book mode had been rendering at EXACTLY the article's size
-// since the port. Measured 2026-07-29, every ratio 1.000: body, leading, headings, and
-// every gap.
+// Emitting the block a SECOND time on `.book-overlay` is the whole mechanism, because the
+// obvious version does not work: a `var()` inside a custom property is substituted where that
+// property is DECLARED, not where it is used. `--fs-body` declared on `:root` resolves
+// `var(--type-scale, 1)` against `:root`, where the scale is undefined, and the resolved
+// `calc(1.13rem * 1)` is what inherits — so overriding `--type-scale` on a descendant changes
+// nothing. This file used to claim the opposite, and book mode rendered at EXACTLY the
+// article's size since the port. Measured 2026-07-29, every ratio 1.000.
 //
 //   #a { --scale:1; --unit:calc(10px * var(--scale,1)) }  ->  calc(10px * 1)
 //   #b { --scale:2 }                        (inherits #a's) ->  calc(10px * 1)   <- the trap
 //   #c { --scale:2; --unit:calc(10px * var(--scale,1)) }  ->  calc(10px * 2)   <- the fix
 //
-// Re-declaring the identical text on `.book-overlay` re-substitutes it THERE, where the
-// scale is 1.05. The numbers still live in one place: this function. Pinned by
-// `web/typography.test.ts`, and the reasoning is in docs/conventions/type.md.
+// Re-declaring the identical text on `.book-overlay` re-substitutes it THERE. The numbers
+// still live in one place: this function. Pinned by `web/typography.test.ts`.
 function scaledVars(t: TypographySettings): string {
   const roles = TYPE_ROLES.map((r) => {
     const s = t.roles[r]

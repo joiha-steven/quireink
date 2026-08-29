@@ -38,24 +38,22 @@ const dim = (s: string | undefined): string => (s ? `<i>${s}</i>` : '')
  * The INLINE markers, in one pass.
  *
  * One combined expression rather than a chain of `.replace()` calls, because a chain runs the
- * second pattern over HTML the first one produced — and `<i>` contains no marker characters
- * only by luck. `String.replace` scans the ORIGINAL string, so a single alternation cannot
- * re-enter its own output. It also settles precedence for free: a code span is listed first,
- * so the asterisks inside `` `a * b` `` are never reached by the emphasis rule.
- *
- * Applied to text that is ALREADY escaped, which is safe because every character these rules
- * match is ASCII punctuation that escaping does not touch.
+ * second pattern over HTML the first produced — and `<i>` contains no marker characters only by
+ * luck. `String.replace` scans the ORIGINAL string, so a single alternation cannot re-enter its
+ * own output. It also settles precedence for free: a code span is listed first, so the asterisks
+ * inside `` `a * b` `` are never reached by the emphasis rule. Applied to already-escaped text,
+ * which is safe because every character these rules match is ASCII punctuation.
  *
  * ⚠️ NO BACKREFERENCES, and the first draft is why. Written as `(\*\*|__)(...)\1`, the `\1`
- * looks local and is not: inside a combined alternation the number is ABSOLUTE, so it pointed
- * at the code span's backticks eleven groups earlier. In this branch that group never
- * participates, an unmatched backreference matches the empty string, and the pattern quietly
- * became "`**`, then the shortest run ending in a non-space" — which is why `**Spacing**` came
- * out as `**S**pacing**` on screen. The maths and strikethrough rules had the same bug.
+ * looks local and is not: inside a combined alternation the number is ABSOLUTE, so it pointed at
+ * the code span's backticks eleven groups earlier. In this branch that group never participates,
+ * an unmatched backreference matches the empty string, and the pattern quietly became "`**`,
+ * then the shortest run ending in a non-space" — which is why `**Spacing**` came out as
+ * `**S**pacing**`. Maths and strikethrough had the same bug.
  *
- * So each rule closes itself, and the rules OWN their group offsets: `RULES` below is walked
- * to build both the expression and the index of where each one's groups start, so inserting a
- * rule in the middle cannot silently renumber the ones after it.
+ * So each rule closes itself, and the rules OWN their group offsets: `RULES` is walked to build
+ * both the expression and the index of where each one's groups start, so inserting a rule in
+ * the middle cannot silently renumber the ones after it.
  */
 type Rule = {
   /** Source, with every group capturing — the count has to match `render`. */

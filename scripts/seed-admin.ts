@@ -1,20 +1,19 @@
 // Everything in the fixture that exists for the ADMIN rather than for the reader.
 //
-// The demo injects a session, so a visitor can open every owner-facing screen — and until
-// this file existed most of them were empty states. Trash: nothing in it. Media: a drop zone.
-// Subscribers: "No subscribers yet". Redirects: an empty table. Revisions: the panel does not
-// render at all without a second save. Scheduled publishing, which is a headline feature,
-// had no post waiting anywhere.
+// The demo injects a session so a visitor can open every owner-facing screen — and until this
+// file existed most were empty states: nothing in Trash, a drop zone for Media, "No subscribers
+// yet", an empty redirects table, no revisions panel at all, and no post waiting for the
+// scheduled-publishing headline feature.
 //
-// An empty screen is not a screenshot of a feature, it is a screenshot of its absence, and
-// the demo is the only place most people will ever see these. So each block below fills one
-// screen through the SAME function the admin calls, never by writing a row: a fixture built
-// on hand-made rows stops matching the product the first time a write path changes shape.
+// An empty screen is not a screenshot of a feature, it is a screenshot of its absence. So each
+// block fills one screen through the SAME function the admin calls, never by writing a row: a
+// fixture built on hand-made rows stops matching the product the first time a write path
+// changes shape.
 //
-// The two exceptions are timestamps. `created_at` on a subscriber and `sent_at` on a
-// newsletter row are stamped from the clock by design, and a mailing list where all forty
-// addresses arrived in the same second is the detail that gives a fixture away. Those are
-// written afterwards, and only those.
+// The two exceptions are timestamps — `created_at` on a subscriber and `sent_at` on a newsletter
+// row are stamped from the clock by design, and a mailing list where forty addresses arrived in
+// one second is the detail that gives a fixture away. Those are written afterwards, and only
+// those.
 //
 // The Log screen is the one owner-facing surface NOT filled from here: it is a hand-written
 // timeline rather than a by-product of writing rows, so it lives in `seed-activity.ts`.

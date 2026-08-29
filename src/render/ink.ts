@@ -34,29 +34,24 @@ export const isInk = (v: unknown): v is Ink => INKS.includes(v as Ink)
 /**
  * `==` … `==`, with an optional `#colour` immediately after the closing pair.
  *
- * The two guards are what keep it from eating ordinary prose:
+ * Two guards keep it from eating ordinary prose:
  *
- *  - The opening `==` must be followed by a character that is neither whitespace nor `=`,
- *    and the content must END on one too. Without that, `a == b and c == d` highlights
- *    " b and c " — arithmetic and shell snippets in running text are common enough that
- *    this is the difference between a feature and a trap. It is the same rule GFM uses for
- *    `~~strikethrough~~`.
+ *  - The opening `==` must be followed by a character that is neither whitespace nor `=`, and
+ *    the content must END on one. Without that, `a == b and c == d` highlights " b and c " —
+ *    arithmetic and shell snippets in running text are common enough that this is the
+ *    difference between a feature and a trap. Same rule GFM uses for `~~strikethrough~~`.
  *  - `(?!=)` on the close, so a run of three or more `=` is not a highlight.
  *
- * Between the pair, `[\s\S]` deliberately includes a newline: a writer who wraps a long
- * highlighted sentence across two source lines means one stroke, not a broken one. It
- * cannot cross a BLANK line, because a blank line ends the paragraph and this tokenizer
- * only ever sees one block's inline content.
+ * `[\s\S]` deliberately includes a newline: a highlighted sentence wrapped across two source
+ * lines is one stroke. It cannot cross a BLANK line, because that ends the paragraph and this
+ * tokenizer only sees one block's inline content. A run of `=` on its own line — a setext H1
+ * underline — never reaches here; the block tokenizer has already claimed it.
  *
- * A run of `=` on its own line — a setext H1 underline — never reaches here at all: the
- * block tokenizer has already claimed it. `^==` followed by `=` fails the first guard
- * anyway, which is what makes the golden fixture `setext-vs-atx` come out unchanged.
- *
- * It is exported AS SOURCE because four readers of it now exist: marked here, markdown-it in
- * the editor, the editor's typing rule, and `toPlainText` for excerpts. All four are built
- * from this one string, and that is not tidiness — the two that were once written out
- * separately drifted within the hour, and `toPlainText` put the word "green" into every
- * excerpt of a post that used a colour suffix. Group 1 is the words, group 2 is the colour.
+ * ⚠️ Exported AS SOURCE because four readers exist: marked here, markdown-it in the editor,
+ * the editor's typing rule, and `toPlainText` for excerpts. Not tidiness — the two that were
+ * once written out separately drifted within the hour, and `toPlainText` put the word "green"
+ * into every excerpt of a post that used a colour suffix. Group 1 is the words, group 2 the
+ * colour.
  */
 const STROKE = `==(?=[^\\s=])([\\s\\S]*?[^\\s=])==(?!=)`
 

@@ -1,23 +1,22 @@
 // Mathematics, in the editor.
 //
-// THIS FILE IS NOT A NICETY, and that is worth saying plainly because it looks like one: the
-// server half in `render/math.ts` renders formulas perfectly well without it. What it does
-// not do is survive the editor. Measured on the real extension set before a line of this was
-// written, opening a post and saving it again did the following:
+// THIS FILE IS NOT A NICETY, which is worth saying because it looks like one: the server half in
+// `render/math.ts` renders formulas perfectly well without it. What it does not do is survive
+// the editor. Measured on the real extension set before a line of this was written, opening a
+// post and saving it again did:
 //
 //     $$M \times V = P \times Q$$   ->   $$M \\times V = P \\times Q$$
 //     \(a_1 + b_2\)                 ->   (a_1 + b_2)
 //
-// The first doubles every backslash, so `\times` becomes a literal `\\times` and the formula
-// stops parsing. The second is worse: markdown-it's `escape` rule reads `\(` as an escaped
-// parenthesis and eats the delimiters outright, so the formula is not damaged but GONE, with
-// no way to tell from the saved file that it was ever maths. Neither throws. Both corrupt the
-// author's source on a save they did not know was a rewrite.
+// The first doubles every backslash, so the formula stops parsing. The second is worse:
+// markdown-it's `escape` rule reads `\(` as an escaped parenthesis and eats the delimiters, so
+// the formula is not damaged but GONE, with no way to tell from the saved file that it was ever
+// maths. Neither throws. Both corrupt the author's source on a save they did not know was a
+// rewrite.
 //
-// So the editor has to know the grammar. It does not restate it: `render/math.ts` owns it and
-// this file calls `matchMathAt` / `matchDisplayBlockAt`, which is the same discipline
-// `InkMark.ts` follows and for the same reason — the ink syntax drifted between two readers
-// within an hour of being written down twice.
+// So the editor has to know the grammar — but it does not restate it: `render/math.ts` owns it
+// and this calls `matchMathAt` / `matchDisplayBlockAt`, the same discipline `InkMark.ts`
+// follows, and for the same reason.
 import { useEffect, useRef, useState } from 'react'
 import { Node, InputRule } from '@tiptap/core'
 import { ReactNodeViewRenderer, NodeViewWrapper, type NodeViewProps } from '@tiptap/react'

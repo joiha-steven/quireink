@@ -1,23 +1,20 @@
-// The chat: the owner's side of the second door. Everything it can do is a registry
-// tool executed server-side (`server/assistant.ts`); everything it DID is shown as a
-// small chip under the reply, because a steward that hides its hands is a liability.
+// The chat: the owner's side of the second door. Everything it can do is a registry tool
+// executed server-side (`server/assistant.ts`); everything it DID is shown as a chip under the
+// reply, because a steward that hides its hands is a liability.
 //
-// The conversation lives in this component and nowhere else. Closing the tab is the
-// archive policy, and that is a feature: the blog's DATABASE holds posts, not chats.
+// The conversation lives in this component and nowhere else. Closing the tab is the archive
+// policy, and that is a feature: the blog's DATABASE holds posts, not chats.
 //
 // ⚠️ The first cut was a bubble chat on a sheet with a 60vh floor, and photographing it on
-// 2026-08-24 is the whole argument for what is here now. The composer sat two thirds of the
-// way down a full-height page with 380px of empty paper under it; the intro was a paragraph
-// of prose hanging in the top-left corner of an otherwise blank screen; nothing said which
-// model would answer, or that none was connected, until a question had been typed and sent;
-// and a long transcript would have pushed the composer off the bottom of the page for good.
-// So: a sheet the size of the window, a transcript that scrolls INSIDE it, the composer
-// fixed to its bottom edge, and the model named on the sheet's own first row.
+// 2026-08-24 is the argument for what is here now: the composer sat two thirds down a
+// full-height page with 380px of empty paper under it, nothing said which model would answer
+// until a question had been sent, and a long transcript would have pushed the composer off the
+// bottom for good. So: a sheet the size of the window, a transcript that scrolls INSIDE it, the
+// composer fixed to its bottom edge, the model named on the first row.
 //
-// It is not a bubble chat any more either. Rounded fills on alternating sides is the costume
-// `docs/admin-design.md` rejects on sight; this admin is paper, hairlines and space, so an
-// exchange is a block on the page — the question in the owner's own weight, the answer in
-// prose under it, a rule between one exchange and the next.
+// Not a bubble chat either — rounded fills on alternating sides is the costume
+// `docs/admin-design.md` rejects on sight. This admin is paper, hairlines and space, so an
+// exchange is a block on the page with a rule between one and the next.
 import { useRef, useState } from 'react'
 import Link from '@/admin/router'
 import type { ApiResponse } from '@/types'

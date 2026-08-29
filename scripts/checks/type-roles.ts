@@ -1,27 +1,21 @@
-// Every size on the reader's page comes from a type ROLE, so the owner's typography
-// settings actually control the page.
+// Every size on the reader's page comes from a type ROLE, so the owner's typography settings
+// actually control the page.
 //
-// The rule was written at the top of `public.css.ts` from the beginning — "every size from
-// a type role, no hardcoded px sizes" — and by the time anyone measured, the islands sheet
-// carried nine literals, a related-post title had no size rule at all and fell back to the
-// body size, and the comment thread was a role the settings could not reach. A rule that
+// The rule was written at the top of `public.css.ts` from the beginning, and by the time
+// anyone measured, the islands sheet carried nine literals, a related-post title had no size
+// rule at all, and the comment thread was a role the settings could not reach. A rule that
 // only exists in a comment is a rule that has already been broken.
 //
-// What counts as compliant:
-//   * `var(--fs-<role>)`             the owner's setting for that role
-//   * `inherit`                      deliberately taking the surrounding size
-//   * a value in `em`                an ornament measured against its OWN context (a drop
-//                                    cap, a dinkus), which stays right at every role size
-//   * a listed exception             below, with a reason
+// Compliant: `var(--fs-<role>)`; `inherit`; a value in `em` (an ornament measured against its
+// OWN context — a drop cap, a dinkus — which stays right at every role size); or a listed
+// exception below, with a reason.
 //
-// The sheets are DISCOVERED, not listed, for the same reason `check:css-literal`'s are: a
-// hand-kept list of files goes stale in the commit that adds a file, and a guard reading six
-// of eight sheets still prints a tick. `mobile.css.ts` was never in the list here and nobody
-// noticed, because it happens to carry exactly one size and that one is legitimate.
+// ⚠️ The sheets are DISCOVERED, not listed, for the same reason `check:css-literal`'s are: a
+// hand-kept list goes stale in the commit that adds a file, and a guard reading six of eight
+// sheets still prints a tick. `mobile.css.ts` was never in the list and nobody noticed.
 //
-// `login.css.ts` is the one real exclusion. The sign-in page renders with an empty base
-// sheet, so no `--fs-*` variable is defined on it and a role reference there would resolve
-// to nothing.
+// `login.css.ts` is the one real exclusion: the sign-in page renders with an empty base sheet,
+// so no `--fs-*` is defined and a role reference would resolve to nothing.
 
 import { readdirSync, readFileSync } from 'node:fs'
 
