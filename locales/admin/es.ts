@@ -17,7 +17,7 @@ const es = {
   clearCacheFailed: 'No se pudo vaciar la caché',
   updateTitle: 'Actualizaciones',
   updateCheckLabel: 'Buscar versiones nuevas',
-  updateCheckDesc: 'Una vez al día, con la primera visita que recibe tu blog, le pregunta a quireink.com cuál es la versión más reciente — y al preguntar, cuenta como un blog en uso. Lo que sale: la versión que usas, un código que se regenera cada medianoche y no puede rastrearse hasta el de ayer, y si tu sitio ya tiene dirección pública. Nunca tu dirección, tus textos, tus lectores ni tus números. Apagado, tu blog no llama a nadie jamás.',
+  updateCheckDesc: 'Una vez al día — en la primera visita que reciba tu blog, o por su propio reloj cada hora si no entra nadie — pregunta a quireink.com cuál es la versión más reciente, y al preguntar ya cuenta como un blog en uso. Lo que sale: la versión que ejecutas, un código que se regenera cada medianoche y no puede enlazarse con el de ayer, si tu sitio ya tiene una dirección pública, aproximadamente qué antigüedad tiene el blog y aproximadamente cuánto hay dentro (tramos amplios, nunca una cifra), en qué idioma está esta pantalla, y si funciona desde Docker o desde el código fuente. Nunca tu dirección, tus textos, tus lectores ni ninguna cifra exacta. Apagado significa que tu blog no llama fuera ni una sola vez.',
   updateAvailable: 'Salió Quire Ink {v}',
   updateAvailableNote: 'Estás en una versión anterior. Nada se actualiza solo: tú decides cuándo.',
   updateAvailableLink: 'Leer qué cambió',

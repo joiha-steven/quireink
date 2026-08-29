@@ -17,7 +17,7 @@ const de = {
   clearCacheFailed: 'Cache konnte nicht geleert werden',
   updateTitle: 'Aktualisierungen',
   updateCheckLabel: 'Nach neuen Versionen fragen',
-  updateCheckDesc: 'Einmal täglich, beim ersten Besuch Ihres Blogs, fragt es quireink.com nach der neuesten Version — und wird durch das Fragen als genutztes Blog gezählt. Übertragen werden: Ihre laufende Version, ein Code, der jede Mitternacht neu erzeugt wird und sich nicht mit gestern verknüpfen lässt, und ob Ihre Seite bereits eine öffentliche Adresse hat. Niemals Ihre Adresse, Ihre Texte, Ihre Leser oder Ihre Zahlen. Aus heißt: Ihr Blog ruft überhaupt nie nach außen.',
+  updateCheckDesc: 'Einmal am Tag — beim ersten Besuch Ihres Blogs, oder über die eigene stündliche Uhr, wenn niemand vorbeikommt — fragt er quireink.com nach der neuesten Version, und allein durch das Fragen zählt er als Blog, das benutzt wird. Was hinausgeht: die Version, die Sie betreiben, ein Code, der jede Mitternacht neu erzeugt wird und sich nicht mit gestern verknüpfen lässt, ob Ihre Seite schon eine öffentliche Adresse hat, ungefähr wie alt der Blog ist und ungefähr wie viel darin steht (grobe Stufen, nie eine Zahl), in welcher Sprache dieser Bildschirm läuft, und ob er aus Docker oder aus dem Quelltext läuft. Niemals Ihre Adresse, Ihre Texte, Ihre Leser oder eine genaue Zahl. Aus heißt: Ihr Blog ruft überhaupt nie hinaus.',
   updateAvailable: 'Quire Ink {v} ist da',
   updateAvailableNote: 'Sie nutzen eine ältere Version. Nichts aktualisiert sich von selbst — Sie entscheiden wann.',
   updateAvailableLink: 'Nachlesen, was sich geändert hat',

@@ -120,7 +120,7 @@ directly: it makes the header believable again, and the header is one line of a 
 
 **`UPDATE_CHECK=0` turns off the one request this software makes on its own** — the daily
 question of what the newest release is, which is also how a blog is counted as being used
-(section 10 says exactly what it carries). It is on without this line, and this line beats
+([`update-check.md`](update-check.md) says exactly what it carries). It is on without this line, and this line beats
 the owner's own switch: it is here for an operator running blogs for other people.
 
 Everything else — SMTP, Turnstile, Cloudflare, the site's own name and language — is
@@ -153,7 +153,7 @@ to the checkout, so the unit must start inside it. Use the absolute path to `bun
 systemd has no login shell and will not find it on `PATH`.
 
 `NODE_ENV=production` is conventional rather than load-bearing: an install without it
-behaves identically, including the update check in section 10, which asks whether this looks
+behaves identically, including the update check ([`update-check.md`](update-check.md)), which asks whether this looks
 like somebody EDITING the software (`bun --watch`, `bun test`) rather than whether a variable
 was set. That rule was inverted on 2026-08-22 for exactly this unit — requiring the variable
 would have made every from-source install silent forever while looking perfectly healthy.
@@ -319,54 +319,9 @@ NAS boxes. nginx, your account, the CDN note and **the cron ticks** still come f
 
 ## 10. What this blog tells us, and how to stop it
 
-Once a day, on the first visit your blog gets, it asks `check.quireink.com` what the newest
-release is. That one request does two jobs: you find out an update exists, and by asking,
-your blog is counted as one that is being used. There is no second call and no background
-process — a blog nobody reads never asks, and is never counted, which is the point.
-
-This is the whole request:
-
-```
-GET https://check.quireink.com/releases.json?v=2.2.0&t=8f2c91a04b7e&d=1&new=1
-```
-
-| | |
-|---|---|
-| `v` | the version you are running |
-| `t` | `sha256(a secret only your blog has + today's date)`, first 12 characters |
-| `d` | `1` if your site has a public address, `0` if it is still on a laptop |
-| `new` | sent once ever, on the first check a new database makes |
-
-**`t` is rebuilt from a new date every midnight**, so today's count is exact and nothing
-links it to yesterday's. Counting by address would have been the easy way and it is wrong
-here: one machine can run a hundred blogs, and then a hundred blogs count as one.
-
-**Not sent, at all:** your address, your blog's name, your posts, your readers, your traffic
-figures, your email, your IP. The answer is a static file naming the newest release, and it
-is the same file for everybody.
-
-Turn it off with `UPDATE_CHECK=0` in the environment, or in Settings → System → Updates.
-Off means your blog makes no outbound request of any kind. Nothing updates itself either
-way: knowing a release exists and installing it are separate acts, and the second one is
-yours ([section 9](#9-upgrading)).
-
-**It also stays quiet on its own while somebody is working on the software** — under
-`bun --watch` (which is what `bun run dev` is) and under `bun test`. An afternoon of
-development is not an install, and the software works that out rather than asking you to
-declare it. The dashboard shows a dot beside the version once it knows: amber when a newer
-release is out, green when you are on it, and nothing at all when it has not been told
-recently, because "up to date" is a claim and a stale answer cannot make it.
-
-The code is [`src/server/update-check.ts`](../src/server/update-check.ts), which is short
-and says the same thing this section does.
-
-**One more outbound exists, and only if you build it yourself by pasting a key.** Give
-Settings → Connections an AI key (Anthropic, OpenAI or Gemini) and each image you upload
-is sent to that provider once, to have its alt text written. Your key, your provider,
-your bill; the site's language is the answer's language; and removing the key removes the
-behaviour entirely. Without a key this path does not run — not quietly disabled, but
-never entered ([`src/media/alt-text.ts`](../src/media/alt-text.ts) declines before any
-network is touched).
+One request a day, and it is the only one this software makes on its own behalf. What it
+carries, why each field is a step rather than a number, and the one setting that turns it off
+for good: [`update-check.md`](update-check.md).
 
 ## Coming from Quire 1.x
 

@@ -119,7 +119,7 @@ describe('the pure parts', () => {
 })
 
 describe('the call', () => {
-  it('sends the agreed four fields, and new=1 only the first time', async () => {
+  it('sends the agreed fields, and new=1 only the first time', async () => {
     const { calls } = stubFetch(ok())
     await runUpdateCheck(SECRET, NOON)
     expect(calls).toHaveLength(1)
@@ -130,8 +130,16 @@ describe('the call', () => {
     // No site address is set in this database, so this instance is a trial.
     expect(url.searchParams.get('d')).toBe('0')
     expect(url.searchParams.get('new')).toBe('1')
-    // ...and nothing else. A field added here is a field the receiving end never agreed to.
-    expect([...url.searchParams.keys()].sort()).toEqual(['d', 'new', 't', 'v'])
+    // The buckets. Nobody has claimed this database, so it states no age at all rather than
+    // claiming to have been made today — an absent field means unknown, and that is the
+    // difference between "we do not know" and a wrong answer.
+    expect(url.searchParams.get('a')).toBeNull()
+    expect(url.searchParams.get('p')).toBe('0')      // no posts
+    expect(url.searchParams.get('i')).toBe('source') // no /.dockerenv under the test runner
+    expect(url.searchParams.get('l')).toBe('en')
+    // ...and nothing else. A field added here is a field the receiving end never agreed to,
+    // and — since 2026-08-29 — a field the Settings screen has not told the owner about.
+    expect([...url.searchParams.keys()].sort()).toEqual(['d', 'i', 'l', 'new', 'p', 't', 'v'])
 
     await runUpdateCheck(SECRET, NOON + 86_400_000)
     expect(new URL(calls[1]!).searchParams.get('new')).toBeNull()
