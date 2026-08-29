@@ -4,7 +4,7 @@
 // what "unique visitors" or "average dwell" mean. The frozen tree had the definitions
 // written out twice inside one SQL file, which is exactly how they drift.
 
-import { bucketRanges, type Bucket } from '@/analytics/buckets'
+import { bucketRanges, windowStart, type Bucket } from '@/analytics/buckets'
 import {
   dailySeries, depthBuckets, engagement, topCountries, topReferrers, windowCounts,
 } from '@/analytics/aggregate'
@@ -17,8 +17,10 @@ const PAGE_TOP_N = 10
 export async function getPageAnalytics(path: string, days: number, bucket: Bucket = 'day'): Promise<PageSummary> {
   try {
     const now = Date.now()
-    const since = now - days * 86_400_000
-    const prevSince = since - days * 86_400_000
+    // Same alignment and the same equal-elapsed previous window as `getAnalytics`; a page's
+    // chart and the site's chart must not disagree about where a day begins.
+    const since = windowStart(now, days, bucket, reportTz())
+    const prevSince = since - (now - since)
 
     const current = windowCounts(since, null, path)
     const previous = windowCounts(prevSince, since, path)

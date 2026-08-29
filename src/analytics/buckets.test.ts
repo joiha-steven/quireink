@@ -2,7 +2,7 @@
 // on, and the failure mode is silent: a chart that looks plausible and is an hour out for
 // half the year. So the DST cases are the point of this file, not decoration.
 import { describe, it, expect } from 'bun:test'
-import { bucketRanges, safeTimeZone } from '@/analytics/buckets'
+import { bucketRanges, safeTimeZone, windowStart } from '@/analytics/buckets'
 
 const iso = (ms: number) => new Date(ms).toISOString()
 const at = (s: string) => Date.parse(s)
@@ -119,5 +119,48 @@ describe('edges', () => {
     expect(safeTimeZone('Not/AZone')).toBe('UTC')
     expect(bucketRanges(at('2026-07-27T10:00:00Z'), at('2026-07-27T11:00:00Z'), 'day', 'Not/AZone')[0]!.label)
       .toBe('2026-07-27')
+  })
+})
+
+// The bug this file could not have caught before: `bucketRanges` was right and its CALLER
+// handed it a `since` in the middle of a day, so the chart grew a partial first column that
+// only a rendered chart or a width measurement would reveal. These pin the caller's half.
+describe('windowStart gives the chart a whole first column', () => {
+  const tz = 'Asia/Ho_Chi_Minh'
+  const noon = at('2026-08-29T05:00:00Z') // 12:00 in Hanoi, mid-day on purpose
+
+  it('a 30-day window is thirty whole days, not thirty-one with a sliver', () => {
+    const since = windowStart(noon, 30, 'day', tz)
+    const r = bucketRanges(since, noon, 'day', tz)
+    expect(r).toHaveLength(30)
+    expect(r[0]!.label).toBe('2026-07-31')
+    // Whole: the clamp inside bucketRanges has nothing left to clamp.
+    expect(r[0]!.hi - r[0]!.lo).toBe(86_400_000)
+    // And it really is local midnight, not UTC midnight.
+    expect(iso(since)).toBe('2026-07-30T17:00:00.000Z')
+  })
+
+  it('the LAST column stays partial, because today is not over', () => {
+    const since = windowStart(noon, 7, 'day', tz)
+    const r = bucketRanges(since, noon, 'day', tz)
+    expect(r).toHaveLength(7)
+    expect(r[r.length - 1]!.label).toBe('2026-08-29')
+    expect(noon - r[r.length - 1]!.lo).toBeLessThan(86_400_000)
+  })
+
+  it('one day of hours is twenty-four whole hours', () => {
+    const since = windowStart(noon, 1, 'hour', tz)
+    const r = bucketRanges(since, noon, 'hour', tz)
+    expect(r).toHaveLength(24)
+    expect(r[0]!.hi - r[0]!.lo).toBe(3_600_000)
+  })
+
+  it('the same instant in two zones starts on two different days', () => {
+    expect(iso(windowStart(noon, 30, 'day', 'UTC'))).toBe('2026-07-31T00:00:00.000Z')
+    expect(iso(windowStart(noon, 30, 'day', tz))).toBe('2026-07-30T17:00:00.000Z')
+  })
+
+  it('an unknown zone falls back to UTC rather than throwing', () => {
+    expect(iso(windowStart(noon, 7, 'day', 'Not/AZone'))).toBe('2026-08-23T00:00:00.000Z')
   })
 })
