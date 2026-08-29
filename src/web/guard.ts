@@ -12,6 +12,7 @@ import { getCookie } from 'hono/cookie'
 import { COOKIE_NAME, resolveSession, type SessionRow } from '@/auth/sessions'
 import { checkOrigin, isStateChanging } from '@/auth/csrf'
 import { getUser, type PublicUser } from '@/auth/users'
+import { clearCache } from '@/server/cache'
 
 /** What the gate puts on the context for handlers behind it. */
 export type Owner = { user: PublicUser; session: SessionRow }
@@ -65,6 +66,17 @@ export function requireOwner(): MiddlewareHandler<OwnerEnv> {
 
     c.set('owner', owner)
     await next()
+
+    // Invariant 1, made structural the way Invariant 4 already is. Until 2026-08-29 it
+    // was the only invariant enforced by DISCIPLINE: ~45 hand-placed `clearCache()` calls
+    // across four layers, with an inconsistent convention about whether the data layer or
+    // the route flushes — which is precisely the failure ("saved the post, the page never
+    // changed") the frozen tree kept shipping. Now every successful state-changing request
+    // through this gate flushes on the way out. The hand-placed calls remain where they
+    // say something sharper (flush only if something actually published); this line is
+    // the one that cannot be forgotten. A flush is one Map.clear() — cheap by design,
+    // which is what makes the blunt form affordable (docs/invariants.md, "Why 1 is blunt").
+    if (isStateChanging(c.req.method) && c.res.status < 400) clearCache()
   }
 }
 

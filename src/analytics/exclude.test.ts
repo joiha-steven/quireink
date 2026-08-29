@@ -24,7 +24,7 @@ const track = (ip: string, extra: Record<string, string> = {}) =>
   app.request('/api/track', {
     method: 'POST',
     headers: { 'content-type': 'application/json', 'user-agent': READER_UA, 'x-forwarded-for': ip, ...extra },
-    body: JSON.stringify({ path: '/a-post' }),
+    body: JSON.stringify({ path: '/' }),
   })
 
 const viewCount = (): number =>
@@ -40,8 +40,9 @@ beforeEach(async () => {
   owner = await createUser({ username: 'owner', email: 'owner@example.com', password: 'kx7Qm-vault-heron-92' })
   const { token } = createSession(owner.id, { ip: OWNER_IP, userAgent: READER_UA })
   ownerCookie = `__Host-quire_session=${token}`
-  // No post is created on purpose: the beacon records whatever path it is given, and a
-  // fixture that has to exist would only be another thing to keep in step.
+  // The beacon aims at '/' — always servable — because since 2026-08-29 `pathIsServable`
+  // drops a single-segment path that is not real content, and these tests are about WHO
+  // counts, not WHAT paths count (analytics.test.ts covers that).
 })
 
 describe('who counts as a reader', () => {

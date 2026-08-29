@@ -41,6 +41,34 @@ jobs:
       # [ADR 0022](../../docs/decisions/0022-ship-from-source-not-a-compiled-binary.md).
       - run: bun run build
 
+  # THE TOUR — a real browser through sixty-one real flows, plus the restore check.
+  #
+  # This job is the answer to CLAUDE.md's own admission: `check:all` proves the code
+  # compiles and the seams hold, and cannot tell you a page went blank. The tour was built
+  # to close exactly that blind spot — and then lived only as a command someone had to
+  # remember to run, which is how six bugs cleared 1,954 green tests on 2026-08-27. A
+  # verification tool that depends on memory is the failure mode every static guard in
+  # `scripts/checks/` was written to kill; this job applies the same cure to the tour.
+  #
+  # Chrome is preinstalled on ubuntu-latest at /usr/bin/google-chrome, which
+  # `scripts/chrome-path.ts` finds on its own. The tour seeds its own instance on port
+  # 3399 and deletes it after; nothing here needs secrets or network beyond the runner
+  # (UPDATE_CHECK=0 inside tour.sh keeps it off check.quireink.com).
+  #
+  # SEPARATE JOB, not a step in `check`, for the same reason `audit` is: a red tour on a
+  # green check is a real state — the code is consistent AND a page is broken — and the
+  # log should be able to show it.
+  tour:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+      - run: bun install --frozen-lockfile
+      # tour.sh builds the assets and the admin itself, seeds, serves, drives, restores.
+      - run: bun run tour
+
   # THE IMAGE, built and actually started. Nothing else in this repository looks at the
   # Docker path: measured 2026-08-21, `Dockerfile` appeared in no test, no tour flow and no
   # workflow, so it could have stopped building weeks earlier and every check here would

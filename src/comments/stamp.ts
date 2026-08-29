@@ -12,7 +12,7 @@
 //
 // [ADR 0032]: ../../docs/decisions/0032-the-comment-gate-needs-no-account.md
 
-import { createHmac, randomBytes, timingSafeEqual, createHash } from 'node:crypto'
+import { createHmac, randomBytes, randomInt, timingSafeEqual, createHash } from 'node:crypto'
 import { serverSecret } from '@/auth/secret'
 
 /**
@@ -58,7 +58,10 @@ const hash = (salt: string, answer: number): string =>
 /** Mint a challenge. Cheap enough to do on every render of a page that has a comment form. */
 export function issueStamp(): Stamp {
   const salt = randomBytes(12).toString('hex')
-  const answer = Math.floor(Math.random() * STAMP_RANGE)
+  // `randomInt`, not `Math.random`: the answer IS the work. V8's PRNG state can be
+  // recovered from a handful of outputs, and a bot that predicts the answer skips the
+  // entire proof-of-work while looking exactly like a solver.
+  const answer = randomInt(STAMP_RANGE)
   const target = hash(salt, answer)
   const issued = Date.now()
   return { salt, target, issued, range: STAMP_RANGE, signature: sign(salt, target, issued, STAMP_RANGE) }

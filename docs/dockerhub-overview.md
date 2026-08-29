@@ -92,7 +92,7 @@ and the analytics settings are all entered in the admin and stored in the databa
 | `PORT` | `3000` | Inside the container. |
 | `DATA_DIR` | `/var/lib/quire/data` | Both SQLite files. Mount it or lose your blog. |
 | `STORAGE_LOCAL_DIR` | `/var/lib/quire/uploads` | Images and files. Mount it too. |
-| `CRON_SECRET` | — | Protects `/api/cron`, the scheduled-publishing sweep. |
+| `CRON_SECRET` | — | Unlocks `/api/cron` for an external scheduler; the route is closed without it. The built-in clock needs neither. |
 | `ANALYTICS_TZ` | `UTC` | The site's default timezone, until one is picked in Settings → Site. |
 
 The [environment table](https://github.com/joiha-steven/quireink/blob/main/docs/self-host.md)

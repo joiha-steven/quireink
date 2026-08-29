@@ -15,7 +15,6 @@ import { TopProgress } from '@/admin/ui/TopProgress'
 import { ErrorBoundary } from '@/admin/ui/ErrorBoundary'
 import { throughDeploys } from '@/admin/ui/stale-build'
 import { AdminSidebar } from '@/admin/components/AdminSidebar'
-import type { SiteLang } from '@/types'
 
 // The editor pulls in Tiptap and its extensions, which is most of the bundle. Splitting it
 // out means the dashboard, the settings and every table load without paying for an editor
@@ -149,7 +148,7 @@ function Shell() {
   // One round trip before anything renders, for the two facts the whole shell needs. The
   // frozen tree read them in the layout's server component; there is nowhere else to put
   // them now, and a language flash is worse than a blank frame.
-  const { data } = useView<{ language: SiteLang; version: string }>('shell')
+  const { data } = useView('shell')
   // Read here rather than inside the boundary: it is the boundary's KEY, so it has to change
   // in the tree that renders it.
   const path = usePathname()

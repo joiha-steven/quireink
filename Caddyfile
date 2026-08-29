@@ -1,13 +1,17 @@
 # The reverse proxy for docker-compose.caddy.yml. Caddy gets and renews the certificate
 # itself; there is nothing to schedule and nothing to remember.
 #
-# The security headers are the same set docs/self-host.md documents for nginx, and the CSP
-# is the one the app is tested against: it allows the site's own scripts and styles and
-# nothing from anybody else, which is what a Quire Ink page needs and all it needs.
+# The security headers are the same set docs/self-host.md documents for nginx — the SAME
+# policy, character for character where the directives overlap, because until 2026-08-29
+# the two files disagreed: this one said `script-src 'self' 'unsafe-inline'`, which is a
+# CSP that stops almost nothing, while the nginx line (and every production instance) runs
+# `script-src 'self'`. The app ships no executable inline script — its one inline <script>
+# is a JSON-LD data block, which CSP does not govern — so the strict form is the tested
+# one, proven by the instances that serve it.
 #
 # Turnstile is the single exception, and it is opt-in: an owner who enters Cloudflare keys
-# has to widen script-src and frame-src to challenges.cloudflare.com, which is what the
-# commented block below does. Every other install is stricter without it.
+# has to widen script-src, connect-src and frame-src to challenges.cloudflare.com, which is
+# what the commented block below does. Every other install is stricter without it.
 
 {$CADDY_DOMAIN} {
 	encode zstd gzip
@@ -16,13 +20,13 @@
 		Strict-Transport-Security "max-age=31536000; includeSubDomains"
 		X-Content-Type-Options "nosniff"
 		Referrer-Policy "strict-origin-when-cross-origin"
-		X-Frame-Options "SAMEORIGIN"
-		Content-Security-Policy "default-src 'self'; img-src 'self' data: blob:; media-src 'self' data: blob:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self'; frame-src 'self' https://open.spotify.com https://www.youtube-nocookie.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
+		X-Frame-Options "DENY"
+		Content-Security-Policy "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data: blob: https:; font-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; media-src 'self' blob: https:; worker-src 'self' blob:; manifest-src 'self'; frame-src 'self' https://open.spotify.com https://www.youtube-nocookie.com; upgrade-insecure-requests"
 		-Server
 	}
 
 	# With Turnstile keys in Settings, replace the line above with this one:
-	# Content-Security-Policy "default-src 'self'; img-src 'self' data: blob:; media-src 'self' data: blob:; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self'; frame-src 'self' https://challenges.cloudflare.com https://open.spotify.com https://www.youtube-nocookie.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
+	# Content-Security-Policy "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data: blob: https:; font-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' https://challenges.cloudflare.com; connect-src 'self' https://challenges.cloudflare.com; media-src 'self' blob: https:; worker-src 'self' blob:; manifest-src 'self'; frame-src 'self' https://challenges.cloudflare.com https://open.spotify.com https://www.youtube-nocookie.com; upgrade-insecure-requests"
 
 	# Match the app's own upload ceiling (MAX_UPLOAD_MB, 64 by default) so the two refuse
 	# the same file rather than one of them being the only thing that does.

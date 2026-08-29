@@ -163,6 +163,26 @@ for (const file of files) {
   }
 }
 
+// 7. The version, everywhere it is written down, is the version in package.json.
+//
+// The release checklist's step one is bumping FOUR tracked places, and
+// `docs/conventions/releases.md` records the number going out inconsistent THREE times.
+// A checklist that has failed three times is not a checklist problem, it is a missing
+// guard — the same lesson as every other file in this directory. The chip is the line
+// that is exactly `` `x.y.z` `` near the top of each README; releases.md states it in
+// prose. Rule 6 skips records; this rule must NOT skip releases.md, which is why it names
+// its files directly.
+const pkgVersion = (JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8')) as { version: string }).version
+for (const [file, pattern, what] of [
+  ['README.md', `\n\`${pkgVersion}\`\n`, 'the version chip'],
+  ['README.vi.md', `\n\`${pkgVersion}\`\n`, 'the version chip'],
+  ['docs/conventions/releases.md', `the version is **\`${pkgVersion}\`**`, 'the versioning rule'],
+] as const) {
+  if (!readFileSync(join(ROOT, file), 'utf8').includes(pattern)) {
+    violations.push(`${file}: ${what} does not say ${pkgVersion} (package.json does)`)
+  }
+}
+
 console.log(`  scanned ${files.length} markdown file(s)`)
 for (const a of approaching) console.log(`  · approaching the cap: ${a}`)
 if (violations.length === 0) {

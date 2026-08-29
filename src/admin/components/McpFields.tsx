@@ -29,6 +29,9 @@ export function McpFields(
   const [tokens, setTokens] = useState<McpTokenInfo[]>([])
   const [created, setCreated] = useState<string | null>(null) // plaintext shown once
   const [pending, setPending] = useState(false)
+  // Scope for the NEXT token. Unchecked mints 'full' — what every token was before scopes
+  // existed, and what a connector that publishes needs.
+  const [readScope, setReadScope] = useState(false)
 
   // Refresh used by the create/delete handlers (event handlers — setState is fine).
   const refresh = useCallback(async () => {
@@ -72,7 +75,7 @@ export function McpFields(
       const res = await fetch('/api/mcp/tokens', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name }),
+        body: JSON.stringify({ name, scope: readScope ? 'read' : 'full' }),
       })
       const json = (await res.json()) as ApiResponse<{ token: string; info: McpTokenInfo }>
       if (!json.success || !json.data) {
@@ -152,6 +155,15 @@ export function McpFields(
               {t.mcpGenerate}
             </Button>
             <Button type="button" variant="ghost" onClick={() => refresh()}>{t.mcpRefresh}</Button>
+            <label className="flex cursor-pointer items-center gap-2 text-sm text-neutral-600 dark:text-neutral-300" title={t.mcpReadOnlyHint}>
+              <input
+                type="checkbox"
+                checked={readScope}
+                onChange={(e) => setReadScope(e.target.checked)}
+                className="size-4 rounded border-neutral-300 dark:border-neutral-700"
+              />
+              {t.mcpReadOnly}
+            </label>
           </div>
         </Setting>
 
@@ -190,6 +202,11 @@ export function McpFields(
                     <td className="px-3 py-2">
                       <span className="font-medium">{tok.name}</span>
                       <code className="ml-2 text-xs text-neutral-500 dark:text-neutral-400">{tok.prefix}…</code>
+                      {tok.scope === 'read' && (
+                        <span className="ml-2 rounded border border-neutral-300 px-1.5 py-0.5 text-xs text-neutral-500 dark:border-neutral-700 dark:text-neutral-400">
+                          {t.mcpReadOnly}
+                        </span>
+                      )}
                     </td>
                     <td className="hidden whitespace-nowrap px-3 py-2 text-neutral-500 sm:table-cell dark:text-neutral-400">
                       {formatDateTimeShort(tok.createdAt)}

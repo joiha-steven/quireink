@@ -6,7 +6,7 @@
 
 import { afterAll, beforeEach, describe, expect, it } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { analyticsDb } from '@/store/db'
+import { analyticsDb, db } from '@/store/db'
 import { flushAnalytics, pendingAnalytics, resetAnalyticsBuffer } from '@/analytics/buffer'
 import { createApp } from '@/web/app'
 
@@ -33,6 +33,10 @@ beforeEach(() => {
   resetAnalyticsBuffer()
   analyticsDb().run(`delete from analytics_events`)
   analyticsDb().run(`delete from analytics_scroll`)
+  // The beacon's target must be REAL content since 2026-08-29 (`pathIsServable`).
+  db().run(`delete from posts`)
+  db().run(`insert into posts (slug, title, date, status, created_at, updated_at)
+            values ('hello', 'Hello', 1, 'published', 1, 1)`)
 })
 
 describe('POST /api/track', () => {
@@ -95,7 +99,9 @@ describe('POST /api/track', () => {
   })
 
   it('caps one IP so a script cannot flood the table', async () => {
-    for (let i = 0; i < 260; i++) await beacon({ path: `/p${i}` }, '203.0.113.9')
+    // Servable-by-shape paths, so the CAP is what stops row 241 — a junk path is
+    // dropped earlier by `pathIsServable` and would prove nothing about the limiter.
+    for (let i = 0; i < 260; i++) await beacon({ path: `/page/${i + 1}` }, '203.0.113.9')
     // Counted in the TABLE, not in the buffer: the buffer flushes itself at MAX_ROWS, so
     // by this point most of these are already on disk. 240 a minute, and every call over
     // it is a silent 204 — telling a flooder they have been limited tells them what to

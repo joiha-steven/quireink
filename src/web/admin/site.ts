@@ -11,7 +11,7 @@ import type { SiteSettings } from '@/types'
 import { reorderSeries, updateSeries } from '@/content/series'
 import { saveSettings } from '@/content/settings'
 import { sanitizeListPath } from '@/content/settings-sanitize'
-import { one } from '@/store/query'
+import { slugTaken } from '@/content/slugs'
 import {
   restorePost, purgePost, emptyPostsTrash, updateTerm, type TermKind,
 } from '@/content/posts'
@@ -148,10 +148,7 @@ export function siteRoutes() {
     const listPath = sanitizeListPath(input?.home?.listPath, '')
     if (input?.home?.mode && input.home.mode !== 'list' && listPath) {
       const slug = listPath.slice(1)
-      if (one<{ slug: string }>(`select slug from posts where slug = ?`, slug)
-        || one<{ slug: string }>(`select slug from pages where slug = ?`, slug)) {
-        return fail(c, `list_path_taken: ${slug}`, 409)
-      }
+      if (slugTaken(slug)) return fail(c, `list_path_taken: ${slug}`, 409)
     }
     const next = await saveSettings(input)
     // The frozen tree purged everything and then re-warmed several pages, because a cold

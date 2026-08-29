@@ -758,6 +758,7 @@ export type AdminStrings = {
   analyticsRange24h: string
   analyticsRange7: string
   analyticsRange30: string
+  analyticsRange90: string
   analyticsRange365: string
   analyticsNoData: string
   analyticsPrivacyNote: string
@@ -824,6 +825,7 @@ export type AdminStrings = {
   aiModelsFailed: string
   aiTaskExcerpt: string
   aiTaskComments: string
+  aiTaskCommentsDesc: string
   aiDescribeAll: string
   aiDescribeAllStarted: string
   aiNotConfigured: string
@@ -887,6 +889,8 @@ export type AdminStrings = {
   mcpTokenDeleted: string
   mcpLimitReached: string
   mcpCreateFailed: string
+  mcpReadOnly: string
+  mcpReadOnlyHint: string
   // storage limits (Settings → System)
   storageTitle: string
   maxUploadLabel: string

@@ -214,11 +214,16 @@ create table if not exists settings (
 -- ----- MCP -------------------------------------------------------------------
 -- Only the SHA-256 hash is stored; the plaintext is shown once. The hash format must be
 -- preserved across cutover or AI publishing stops silently (docs/spec/00-rationale.md, parity exception #4).
+-- `scope` is 'full' or 'read'. 'full' is the default because every token minted before the
+-- column existed WAS full, and a connector that has been publishing for months must not
+-- start failing writes on an upgrade. New tokens choose at mint time; a read token's door
+-- simply does not register the write tools (web/admin/mcp-transport.ts).
 create table if not exists mcp_tokens (
   id           integer primary key autoincrement,
   name         text not null default '',
   token_hash   text not null unique,
   prefix       text not null default '',
+  scope        text not null default 'full' check (scope in ('full', 'read')),
   created_at   integer not null,
   expires_at   integer not null,
   last_used_at integer

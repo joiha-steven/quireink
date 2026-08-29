@@ -14,7 +14,12 @@ import { NumBand, SHEET, SHEET_TOOL_ON_CANVAS, SheetTop } from './sheet'
 import { useAdminT } from './I18nProvider'
 
 const RANGES = [1, 7, 30, 365] as const
-export type Range = (typeof RANGES)[number]
+// What the server can SEND, not what the tabs OFFER: `rangeOf` in `web/admin/views.ts`
+// also honours 90 (the frozen tree's window), reachable by URL. Deriving this from RANGES
+// hid that — the typed view contract caught the mismatch on its first compile. A 90-day
+// URL renders correctly with no tab highlighted, which is the honest presentation of a
+// window the tabs do not offer.
+export type Range = 1 | 7 | 30 | 90 | 365
 
 function toCsv(data: AnalyticsSummary): string {
   return ['date,views,visitors', ...data.daily.map((d) => `${d.day},${d.views},${d.visitors}`)].join('\n')
@@ -85,7 +90,7 @@ export function AnalyticsView({ data, range, titles, rightNow }: {
   rightNow?: RightNow
 }) {
   const t = useAdminT()
-  const rangeLabel: Record<Range, string> = { 1: t.analyticsRange24h, 7: t.analyticsRange7, 30: t.analyticsRange30, 365: t.analyticsRange365 }
+  const rangeLabel: Record<Range, string> = { 1: t.analyticsRange24h, 7: t.analyticsRange7, 30: t.analyticsRange30, 90: t.analyticsRange90, 365: t.analyticsRange365 }
   const hasData = data.totalViews > 0
 
   const exportCsv = () => {

@@ -4,11 +4,10 @@
 import { useView } from '@/admin/useView'
 import { View } from '@/admin/pages/state'
 import { Overview } from '@/admin/components/Overview'
-import type { ComponentProps } from 'react'
-
-type Props = ComponentProps<typeof Overview>
 
 export default function Dashboard() {
-  const state = useView<Props>('dashboard')
+  // Typed by NAME through ViewPayloads; the {...data} spread is where the compiler
+  // checks the server's payload against Overview's props.
+  const state = useView('dashboard')
   return <View state={state}>{(data) => <Overview {...data} />}</View>
 }

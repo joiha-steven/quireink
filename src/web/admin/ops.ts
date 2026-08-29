@@ -221,10 +221,16 @@ export function publicOpsRoutes(): Hono {
     if (rateLimited(`cron:${clientIp(c)}`, CRON_PER_MINUTE)) {
       return fail(c, 'Too many requests', 429)
     }
-    // When CRON_SECRET is set, the scheduler sends it as a Bearer token. Unset means open,
-    // so the keep-alive still works on a fresh install before anything is configured.
+    // No secret, no tick. This was "unset means open" until 2026-08-29, on the argument
+    // that a fresh install's keep-alive should work before anything is configured — but
+    // since ADR 0031 the process winds its own clock and a fresh install needs no external
+    // caller at all. What "open" actually meant was that anyone could pull the most
+    // expensive lever the process has, and the per-IP cap above dissolves against more
+    // than one IP. The only caller with a legitimate need for this route is a scheduler
+    // someone configured on purpose, and that someone can set a secret in the same breath.
     const secret = process.env.CRON_SECRET
-    if (secret && !bearerOk(c.req.header('authorization') ?? null, secret)) {
+    if (!secret) return fail(c, 'CRON_SECRET is not set; the internal clock covers this (self-host.md §8)', 401)
+    if (!bearerOk(c.req.header('authorization') ?? null, secret)) {
       return fail(c, 'Unauthorized', 401)
     }
 

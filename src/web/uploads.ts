@@ -47,10 +47,32 @@ const CACHE = 'public, max-age=31536000, immutable'
 const SANDBOXED = new Set(['image/svg+xml'])
 const SANDBOX_CSP = "default-src 'none'; style-src 'unsafe-inline'; sandbox"
 
+/**
+ * Only these FAMILIES may render when navigated to directly; everything else downloads.
+ *
+ * The attachment route accepts any content-type on purpose (`media/files.ts` says why), and
+ * today the unknown ones are safe by an accident of geography: `.html` is not in
+ * `media/mime.ts`, so it falls to octet-stream and `nosniff` stops the browser guessing.
+ * That is one map entry away from being false — someone adds `html: 'text/html'` to MIME
+ * for a legitimate reason and every stored attachment page becomes same-origin HTML with
+ * the session cookie in scope. The rule must live HERE, where the response is built, not in
+ * a table in another file that does not know it is load-bearing.
+ *
+ * Families rather than a list of today's types, so a new image or audio extension keeps
+ * working — and a new DOCUMENT type (html, xml, anything) fails safe as a download until
+ * someone adds its family deliberately.
+ */
+const INLINE = (type: string): boolean =>
+  type.startsWith('image/') || type.startsWith('font/') || type.startsWith('video/') ||
+  type.startsWith('audio/') || type === 'application/pdf'
+
 /** Response headers for a stored file, plus the sandbox when the type can execute. */
 function headersFor(type: string, extra: Record<string, string>): Record<string, string> {
   const out: Record<string, string> = { 'Content-Type': type, 'Cache-Control': CACHE, ...extra }
   if (SANDBOXED.has(type)) out['Content-Security-Policy'] = SANDBOX_CSP
+  // `Content-Disposition` binds only navigation — an <img>, <video> or CSS font fetch
+  // ignores it — so forcing the download costs embedded uses nothing.
+  if (!INLINE(type)) out['Content-Disposition'] = 'attachment'
   return out
 }
 

@@ -126,12 +126,15 @@ function timeline(posts: Post[], settings: SiteSettings, lead: boolean): string 
 
 export type ListingView = {
   /**
-   * The h1 above the list, as already-escaped markup. Absent on the home page, where the
-   * site header says it. A taxonomy page reads "Danh muc: Kinh te" — the label, then the
-   * term — so the caller builds it rather than this taking two fields and a flag.
+   * The h1 above the list, as already-escaped MARKUP — the name says so because the field
+   * beneath it takes plain text, and an asymmetric pair called `heading`/`subheading` is
+   * exactly the two-functions-one-weaker shape that shipped a reflected search query once
+   * (`render/post-content.ts` tells that story). Absent on the home page, where the site
+   * header says it. A taxonomy page reads "Danh muc: Kinh te" — the label, then the term —
+   * and a tag wraps itself in a span, which is why this cannot escape its input itself.
    */
-  heading?: string
-  /** A line under the heading: the term description, the series blurb, the result count. */
+  headingHtml?: string
+  /** A line under the heading: the term description, the series blurb, the result count. Plain text — renderListing escapes it. */
   subheading?: string
   paged: Paged<Post>
   /** Base for pagination links: '' for home, '/category/x' for a term. */
@@ -146,8 +149,8 @@ export type ListingView = {
 }
 
 export function renderListing(view: ListingView, settings: SiteSettings): string {
-  const head = view.heading
-    ? `<header class="listing-head"><h1>${view.heading}</h1>${
+  const head = view.headingHtml
+    ? `<header class="listing-head"><h1>${view.headingHtml}</h1>${
         view.subheading ? `<p class="meta">${escapeHtml(view.subheading)}</p>` : ''
       }</header>`
     : ''

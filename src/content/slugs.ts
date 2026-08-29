@@ -37,3 +37,18 @@ export async function ensureSlugFree(
   const pageHit = !!page && !(selfKind === 'page' && page.slug === selfSlug)
   if (postHit || pageHit) throw new SlugConflictError(slug)
 }
+
+/**
+ * The mirror question: does any post or page already hold `slug`? Asked when the LIST is
+ * being pointed at a path (Settings → home.listPath) — the other half of the guard above,
+ * which cannot run there because there is no row being saved.
+ *
+ * Lives HERE and not in the route, because docs/invariants.md names this file as the ONE
+ * place Invariant 2 is enforced — and until 2026-08-29 the settings route carried its own
+ * two raw queries, a second answer to a question that must have one. Same deliberate
+ * ignore of `deleted_at` as `ensureSlugFree`: a trashed row keeps its slug reserved.
+ */
+export function slugTaken(slug: string): boolean {
+  return !!one<{ slug: string }>(`select slug from posts where slug = ?`, slug)
+    || !!one<{ slug: string }>(`select slug from pages where slug = ?`, slug)
+}

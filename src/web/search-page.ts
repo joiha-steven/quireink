@@ -39,7 +39,7 @@ export async function handleSearchPage(c: Context): Promise<Response> {
   // "12 results for" under a heading that said "Tìm kiếm". Same class of bug as the
   // hardcoded " min" reading-time suffix, and the same fix.
   const body = renderListing({
-    heading: escapeHtml(tx.search),
+    headingHtml: escapeHtml(tx.search),
     subheading: q ? tx.searchResults.replace('{n}', String(results.length)).replace('{q}', q) : undefined,
     paged: { items: results, page: 1, totalPages: 1 },
     basePath: '/search',

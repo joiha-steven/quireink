@@ -139,6 +139,7 @@ export function registerStewardTools(server: ToolHost): void {
   server.registerTool(
     'get_post_traffic',
     {
+      readOnly: true,
       description: 'Traffic for ONE post or page over the last N days: views, visitors, read depth, dwell, referrers — the per-page view of the dashboard.',
       inputSchema: {
         slug: z.string().min(1),

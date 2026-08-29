@@ -3,3 +3,7 @@
 # left in a scratch directory, from joining the run by accident.
 [test]
 root = "src"
+# `bun test` transpiles every file with the ROOT tsconfig (hono/jsx), while the admin's
+# .tsx is React — the preload re-transpiles src/admin/*.tsx with the React runtime so the
+# mount tests render real React elements. The plugin's header carries the measurements.
+preload = ["./scripts/test-react-jsx.ts"]

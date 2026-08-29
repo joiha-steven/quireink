@@ -4,11 +4,8 @@
 import { useView } from '@/admin/useView'
 import { View } from '@/admin/pages/state'
 import { ActivityLog } from '@/admin/components/ActivityLog'
-import type { ComponentProps } from 'react'
-
-type Props = ComponentProps<typeof ActivityLog>
 
 export default function Log() {
-  const state = useView<Props>('log')
+  const state = useView('log')
   return <View state={state}>{(data) => <ActivityLog {...data} />}</View>
 }

@@ -137,6 +137,44 @@ describe('the MCP endpoint', () => {
     expect(body.result?.content?.[0]?.text).toContain('Through MCP')
   })
 
+  // The read-only door. A 'read' token does not get write tools REFUSED — they are not
+  // registered on its server at all, so they are absent from tools/list and unknown to
+  // tools/call. Same shape as Invariant 4: the rule lives where things are mounted.
+  it('withholds every write tool from a read-scope token', async () => {
+    const res = await asOwner('/api/mcp/tokens', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ name: 'reader', scope: 'read' }),
+    })
+    const { token, info } = await payload<{ token: string; info: { scope: string } }>(res)
+    expect(info.scope).toBe('read')
+
+    const list = await rpc(token, { jsonrpc: '2.0', id: 7, method: 'tools/list' })
+    const body = await list.json() as { result?: { tools?: { name: string }[] } }
+    const names = (body.result?.tools ?? []).map((t) => t.name)
+    expect(names).toContain('list_posts')
+    expect(names).toContain('get_settings')
+    expect(names).not.toContain('create_post')
+    expect(names).not.toContain('update_settings')
+    expect(names).not.toContain('delete_media')
+
+    // And calling one anyway is an error, not an execution.
+    const call = await rpc(token, {
+      jsonrpc: '2.0', id: 8, method: 'tools/call',
+      params: { name: 'create_post', arguments: { title: 'should not exist' } },
+    })
+    const outcome = await call.json() as { error?: unknown; result?: { isError?: boolean } }
+    expect(outcome.error !== undefined || outcome.result?.isError === true).toBe(true)
+    expect(db().query<{ n: number }, []>(`select count(*) as n from posts`).get()!.n).toBe(0)
+  })
+
+  it('mints a full token by default, so existing clients keep their writes', async () => {
+    const token = await mintToken()
+    const res = await rpc(token, { jsonrpc: '2.0', id: 9, method: 'tools/list' })
+    const body = await res.json() as { result?: { tools?: { name: string }[] } }
+    expect((body.result?.tools ?? []).map((t) => t.name)).toContain('create_post')
+  })
+
   it('is not there at all when the owner turns MCP off', async () => {
     const token = await mintToken()
     const { mcp } = await getSettings()

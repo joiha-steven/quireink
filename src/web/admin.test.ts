@@ -215,6 +215,35 @@ describe('Invariant 1: a write clears the whole page cache', () => {
     await asOwner(`/api/posts/${slug}`, { method: 'DELETE' })
     expect(await (await app.request('/')).text()).not.toContain('Briefly here')
   })
+
+  // The invariant is STRUCTURAL since 2026-08-29: the owner gate flushes after every
+  // successful state-changing request, so a write route whose handler forgets
+  // `clearCache()` cannot exist — same shape as Invariant 4. This pins the gate itself,
+  // with a handler that deliberately "forgets".
+  it('flushes even when the handler itself never calls clearCache', async () => {
+    const { OwnerRouter } = await import('@/web/guard')
+    const { pageCache } = await import('@/server/cache')
+    const { Hono } = await import('hono')
+    const forgetful = new OwnerRouter()
+    forgetful.post('/api/forgetful-write', async (c) => c.json({ ok: true }))
+    const bare = new Hono()
+    bare.route('/', forgetful.routes)
+
+    pageCache.set('/stale', '<html>old</html>')
+    const res = await bare.request('/api/forgetful-write', {
+      method: 'POST', headers: { cookie, 'sec-fetch-site': 'same-origin' },
+    })
+    expect(res.status).toBe(200)
+    expect(pageCache.size).toBe(0)
+
+    // ...and a REFUSED write flushes nothing: a 4xx changed no state, and flushing on it
+    // would let an unauthenticated POST empty the cache at will.
+    pageCache.set('/stale', '<html>old</html>')
+    const denied = await bare.request('/api/forgetful-write', { method: 'POST', headers: { 'sec-fetch-site': 'same-origin' } })
+    expect(denied.status).toBe(401)
+    expect(pageCache.size).toBe(1)
+    pageCache.clear()
+  })
 })
 
 // The error handler moved to `errors.test.ts`. It was asserting JSON for a NON-api path,

@@ -4,11 +4,8 @@
 import { useView } from '@/admin/useView'
 import { View } from '@/admin/pages/state'
 import { SettingsView } from '@/admin/components/SettingsView'
-import type { ComponentProps } from 'react'
-
-type Props = ComponentProps<typeof SettingsView>
 
 export default function Settings() {
-  const state = useView<Props>('settings')
+  const state = useView('settings')
   return <View state={state}>{(data) => <SettingsView {...data} />}</View>
 }

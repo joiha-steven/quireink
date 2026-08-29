@@ -30,7 +30,7 @@ export function registerLibraryTools(server: ToolHost): void {
 function registerMediaTools(server: ToolHost): void {
   server.registerTool(
     'list_media',
-    { description: 'List the live media library (images), newest first.', inputSchema: {} },
+    { readOnly: true, description: 'List the live media library (images), newest first.', inputSchema: {} },
     async () => asJson((await getMedia()).map((m) => ({ url: m.url, filename: m.filename, width: m.width, height: m.height, size: m.size }))),
   )
 
@@ -108,7 +108,7 @@ function registerMediaTools(server: ToolHost): void {
 
   server.registerTool(
     'list_trashed_media',
-    { description: 'List media items currently in the Trash.', inputSchema: {} },
+    { readOnly: true, description: 'List media items currently in the Trash.', inputSchema: {} },
     async () => asJson((await getTrashedMedia()).map((m) => ({ url: m.url, filename: m.filename, deletedAt: m.deletedAt }))),
   )
 }
@@ -116,7 +116,7 @@ function registerMediaTools(server: ToolHost): void {
 function registerFileTools(server: ToolHost): void {
   server.registerTool(
     'list_files',
-    { description: 'List the live file attachment library (non-image files), newest first.', inputSchema: {} },
+    { readOnly: true, description: 'List the live file attachment library (non-image files), newest first.', inputSchema: {} },
     async () => asJson((await getFiles()).map((f) => ({ url: f.url, filename: f.filename, contentType: f.contentType, size: f.size }))),
   )
 
@@ -142,7 +142,7 @@ function registerFileTools(server: ToolHost): void {
 
   server.registerTool(
     'list_trashed_files',
-    { description: 'List file attachments currently in the Trash.', inputSchema: {} },
+    { readOnly: true, description: 'List file attachments currently in the Trash.', inputSchema: {} },
     async () => asJson((await getTrashedFiles()).map((f) => ({ url: f.url, filename: f.filename, deletedAt: f.deletedAt }))),
   )
 }
@@ -150,7 +150,7 @@ function registerFileTools(server: ToolHost): void {
 function registerSettingsTools(server: ToolHost): void {
   server.registerTool(
     'get_settings',
-    { description: 'Read the full site settings (read-only).', inputSchema: {} },
+    { readOnly: true, description: 'Read the full site settings (read-only).', inputSchema: {} },
     async () => asJson(await getSettings()),
   )
 

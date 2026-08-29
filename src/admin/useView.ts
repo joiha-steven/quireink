@@ -9,9 +9,15 @@
 // `router.refresh()` calls after a save keep working unchanged.
 
 import { useCallback, useEffect, useState } from 'react'
+// TYPE-ONLY, and load-bearing: `views.ts` is server code, and the word `type` on this line
+// is what keeps `bun:sqlite` out of the browser bundle. `check:bundle` reads the built
+// output to prove it held.
+import type { ViewPayloads } from '@/web/admin/views'
 import { view } from '@/admin/api'
 import { beginRequest, endRequest } from '@/admin/pending'
 import { useRefreshEpoch } from '@/admin/router'
+
+export type ViewName = keyof ViewPayloads
 
 export type ViewState<T> = {
   data: T | null
@@ -21,7 +27,15 @@ export type ViewState<T> = {
   reload: () => void
 }
 
-export function useView<T>(name: string, query = ''): ViewState<T> {
+/**
+ * Typed by view NAME, through the `ViewPayloads` contract the server exports. Callers
+ * used to supply their own generic (`useView<Props>('dashboard')`), which meant thirteen
+ * screens each asserting what the server "probably" returns — rename one field in
+ * `views.ts` and every assertion stayed green while the screen rendered blank. Now the
+ * name resolves the type, and drift on either side is a compile error.
+ */
+export function useView<N extends ViewName>(name: N, query = ''): ViewState<ViewPayloads[N]> {
+  type T = ViewPayloads[N]
   const epoch = useRefreshEpoch()
   const [data, setData] = useState<T | null>(null)
   const [error, setError] = useState<string | null>(null)

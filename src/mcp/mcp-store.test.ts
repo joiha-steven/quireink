@@ -58,7 +58,7 @@ describe('tokens', () => {
   it('verifies a live bearer and stamps last_used_at', async () => {
     const { token, info } = await createToken('Laptop')
     expect((await listTokens())[0]!.lastUsedAt).toBeNull()
-    expect(await verifyTokenHash(token)).toEqual({ id: info.id, name: 'Laptop' })
+    expect(await verifyTokenHash(token)).toEqual({ id: info.id, name: 'Laptop', scope: 'full' })
     expect((await listTokens())[0]!.lastUsedAt).not.toBeNull()
   })
 

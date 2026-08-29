@@ -17,7 +17,18 @@ import { enableBackgroundCache } from '@/server/warm'
 import { startClock, clockBlockedBy } from '@/server/tick'
 
 const env = readEnv()
-openDatabases(env.dataDir)
+try {
+  openDatabases(env.dataDir)
+} catch (error) {
+  // The audience for this line is the person the product is for: someone who installed a
+  // container and cannot read a stack trace. Say what is wrong and what to check, then
+  // exit non-zero so the supervisor's restart/backoff machinery sees a failed boot.
+  console.error(`[FATAL] Cannot open the database in ${env.dataDir}: ${(error as Error).message}`)
+  console.error('        Check that the data directory exists, is writable by this process,')
+  console.error('        and that the disk is not full. If the .db files are corrupt, restore')
+  console.error('        a snapshot (docs/backups.md).')
+  process.exit(1)
+}
 // Same reason `openDatabases` creates its directory: a fresh install should come up
 // healthy, not report degraded storage until somebody uploads a file.
 ensureBlobStore()
@@ -63,17 +74,17 @@ console.log(`quire ${(pkg as { version: string }).version} listening on http://$
 // mints a new one and the old line in the log stops being a secret. Printed before the
 // site-address warning below because on a fresh install this is the only thing the operator
 // can act on — the address is set from inside, and there is no inside yet.
+const bootSettings = await getSettings()
 if (noUsersYet()) {
   // The bound socket, not `resolveSiteUrl`: on a fresh install there IS no site address yet,
   // and its fallback is a hardcoded `localhost:3000` that ignores the port in front of it.
-  const settings = await getSettings()
-  const reachable = siteUrlIsUnset(settings)
+  const reachable = siteUrlIsUnset(bootSettings)
     ? `http://${server.hostname}:${server.port}`
-    : resolveSiteUrl(settings)
+    : resolveSiteUrl(bootSettings)
   console.log(setupBanner(reachable))
 }
 
-if (siteUrlIsUnset(await getSettings())) {
+if (siteUrlIsUnset(bootSettings)) {
   console.warn(
     '[WARN] No site address is set. Feeds, the sitemap, OG images and newsletter links will'
     + ' all say http://localhost:3000. Set SITE_URL, or Settings → Search & URLs → Site address.',

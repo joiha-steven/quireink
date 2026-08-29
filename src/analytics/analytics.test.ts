@@ -4,7 +4,7 @@
 // person once however many hosts they arrived from.
 import { describe, it, expect, beforeEach, afterAll } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
-import { analyticsDb } from '@/store/db'
+import { analyticsDb, db } from '@/store/db'
 import { getAnalytics, getRightNow, getViewTotals } from '@/analytics/summary'
 import { getPageAnalytics } from '@/analytics/page'
 import { isBot, normalizePath, recordView, recordScroll } from '@/analytics/record'
@@ -22,6 +22,15 @@ beforeEach(() => {
   resetAnalyticsBuffer()
   analyticsDb().run(`delete from analytics_events`)
   analyticsDb().run(`delete from analytics_scroll`)
+  // `recordView` verifies a single-segment path is REAL content before buffering
+  // (`pathIsServable`), so the slugs these tests beacon at must exist as rows.
+  db().run(`delete from posts`)
+  for (const slug of ['a', 'b', 'c', 'hello']) {
+    db().run(
+      `insert into posts (slug, title, date, status, created_at, updated_at)
+       values (?, ?, 1, 'published', 1, 1)`, [slug, slug],
+    )
+  }
 })
 
 type View = { path?: string; visitor?: string; host?: string | null; country?: string | null; device?: string | null; at?: number }
@@ -48,6 +57,19 @@ describe('recording', () => {
     await recordView('/api/health', '1.1.1.1', 'Mozilla/5.0')
     await recordView('not-a-path', '1.1.1.1', 'Mozilla/5.0')
     expect(pendingAnalytics()).toBe(0)
+  })
+
+  // The beacon is an open POST, and until 2026-08-29 any fabricated path it named became
+  // a permanent row — junk in the top-pages table, distinct-path growth no per-IP cap
+  // bounds. A single-segment path must be REAL content now (`pathIsServable`).
+  it('drops a path the site cannot serve, and keeps the ones it can', async () => {
+    await recordView('/khong-ton-tai-dau', '1.1.1.1', 'Mozilla/5.0')
+    await recordView('/uploads/media/x.png', '1.1.1.1', 'Mozilla/5.0')
+    expect(pendingAnalytics()).toBe(0)
+    await recordView('/hello', '1.1.1.1', 'Mozilla/5.0') // a real post, seeded above
+    await recordView('/', '1.1.1.1', 'Mozilla/5.0')
+    await recordView('/category/anything', '1.1.1.1', 'Mozilla/5.0') // archives: shape only
+    expect(pendingAnalytics()).toBe(3)
   })
 
   it('buffers a view and writes it only on flush (Invariant 7)', async () => {
@@ -88,7 +110,8 @@ describe('recording', () => {
   })
 
   it('flushes automatically once the buffer is full', async () => {
-    for (let i = 0; i < 200; i++) await recordView(`/p${i}`, `${i}.1.1.1`, 'Mozilla/5.0')
+    // `/page/N` paths: servable by shape (no per-slug fixture needed), distinct per i.
+    for (let i = 0; i < 200; i++) await recordView(`/page/${i + 1}`, `${i}.1.1.1`, 'Mozilla/5.0')
     expect(pendingAnalytics()).toBe(0)
     expect(Object.keys(await getViewTotals())).toHaveLength(200)
   })
