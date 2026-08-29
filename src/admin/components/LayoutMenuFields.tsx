@@ -4,10 +4,9 @@ import { Input } from '@/admin/ui/Input'
 import { Button } from '@/admin/ui/Button'
 import { FeaturedField } from './FeaturedField'
 import { useAdminT } from './I18nProvider'
-import { NOTE_TEXT, SEGMENT_TRACK, tabItemClass } from './kit'
+import { CONTROL, NOTE_TEXT, SEGMENT_TRACK, tabItemClass } from './kit'
 
-const MENU_FIELD =
-  'w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-400'
+const MENU_FIELD = `${CONTROL} w-full`
 
 type Props = {
   s: SiteSettings

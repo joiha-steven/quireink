@@ -196,5 +196,34 @@ for (const file of files) {
   failed = true
 }
 
+/**
+ * A HAND-DRAWN FIELD, by its FOCUS — the third thing the exact strings could not catch.
+ *
+ * `signature` matching assumes a copy is a copy, and `RAISED` catches a shape. This catches a
+ * REWRITE: ten fields across the settings screens had each drawn their own text input rather
+ * than importing `CONTROL`, and every one of them landed on `outline-none` with a darkened
+ * border and NO RING — so the check sailed past all ten while looking for the ring.
+ *
+ * What that cost, measured against `CONTROL`: no minimum height, so 38px beside a 40px button
+ * on three cards that put one there; an 8px radius against the kit's 6; 12px of side padding
+ * against 14; and no `placeholder:` shade — which mattered most on the three key forms whose
+ * LABEL is the placeholder, so the naming of every field was left to the browser. The ten also
+ * disagreed among themselves four ways, one of them a whole type size.
+ *
+ * `kit.tsx` is exempt because it is the home: the paragraph above has to be able to name the
+ * class it bans, the same reason `FAMILY` insists on a colon.
+ */
+const HAND_DRAWN = 'focus:border-neutral-900'
+for (const file of files) {
+  const path = file.replaceAll('\\', '/')
+  if (path === 'src/admin/components/kit.tsx') continue
+  if (!readFileSync(file, 'utf8').includes(HAND_DRAWN)) continue
+  console.error(`✗ check:admin-kit: ${path} draws its own focus state`)
+  console.error(`  Found ${JSON.stringify(HAND_DRAWN)}. The focused field is CONTROL's to define.`)
+  console.error('  Use <Input>/<Textarea>, or CONTROL. A field with a measured size of its own')
+  console.error('  takes CONTROL_CHROME and states only that size.')
+  failed = true
+}
+
 if (failed) process.exit(1)
 console.log(`✓ check:admin-kit: ok (${RULES.length} primitive(s), ${files.length} file(s))`)

@@ -4,16 +4,13 @@
 // the stored value untouched. Once set, the app purges the whole zone on every content
 // change + "Clear all cache" (see lib/cdn.ts + lib/revalidate.ts), so an edit is live
 // with no manual purge.
-import { useState } from 'react'
 import { useRouter } from '@/admin/router'
-import type { ApiResponse } from '@/types'
 import { Button } from '@/admin/ui/Button'
-import { useToast } from '@/admin/ui/Toast'
 import { useAdminT } from './I18nProvider'
-import { NOTE_TEXT } from './kit'
+import { CONTROL, NOTE_TEXT } from './kit'
+import { useSecretKeys } from './useSecretKeys'
 
-const INPUT =
-  'w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100'
+const INPUT = `${CONTROL} w-full`
 const LINK = 'https://dash.cloudflare.com/profile/api-tokens'
 
 type Keys = { cloudflareZoneId: string; cloudflareApiToken: string; purgeWebhookUrl: string }
@@ -25,36 +22,10 @@ export function CloudflareFields(
 ) {
   const t = useAdminT()
   const router = useRouter()
-  const { notify } = useToast()
-  const [keys, setKeys] = useState<Keys>(EMPTY)
-  const [busy, setBusy] = useState(false)
-  const set = (k: keyof Keys, v: string) => setKeys((p) => ({ ...p, [k]: v }))
-  // A placeholder hinting the field is already configured (so blank = keep).
-  const ph = (has: boolean, label: string) => (has ? `${label} · ${t.commentsKeySet}` : label)
-
-  async function save() {
-    setBusy(true)
-    // Send only non-empty fields, so a blank input never clears a stored value.
-    const body: Partial<Keys> = {}
-    for (const k of Object.keys(keys) as (keyof Keys)[]) if (keys[k].trim()) body[k] = keys[k].trim()
-    try {
-      const res = await fetch('/api/integrations/cloudflare', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(body),
-      })
-      const json = (await res.json()) as ApiResponse
-      if (!json.success) throw new Error(json.error)
-      setKeys(EMPTY)
-      notify(t.commentsKeySaved)
-      router.refresh() // re-render so the "· saved" hint reflects the new state at once
-
-    } catch {
-      notify(t.deleteFailed, 'error')
-    } finally {
-      setBusy(false)
-    }
-  }
+  // `router.refresh()` so the "· saved" hint reflects the new state at once.
+  const { keys, busy, set, ph, save } = useSecretKeys(
+    '/api/integrations/cloudflare', EMPTY, () => router.refresh(),
+  )
 
   return (
     <div className="space-y-3">

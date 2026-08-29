@@ -73,7 +73,7 @@ history is never needed to fix or understand code.
 | Markdown → HTML, highlighting, footnotes | `src/render/` |
 | Island JS: search, theme, comments, subscribe, book mode | `src/assets/js/` |
 | Admin SPA, editor | `src/admin/`, `src/web/admin/` |
-| Sign-in, TOTP, sessions, recovery codes | `src/auth/`, `src/web/auth-routes.ts` |
+| Sign-in, TOTP, sessions, recovery codes | `src/auth/`, `src/web/auth-routes.ts`, `src/web/enrol-routes.ts` (first run) |
 | Posts, pages, slugs, series, revisions, settings | `src/content/` |
 | Uploads, image variants, ranges | `src/media/` |
 | Newsletter, broadcast, SMTP | `src/news/` |

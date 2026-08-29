@@ -4,7 +4,7 @@
 import { useRef } from 'react'
 import { renderInlineMarkdown } from '@/render/inline-md'
 import { useAdminT } from './I18nProvider'
-import { NOTE_TEXT } from './kit'
+import { CONTROL, NOTE_TEXT } from './kit'
 
 const TB_BTN =
   'flex h-8 min-w-8 items-center justify-center rounded-lg border border-neutral-300 px-2 text-sm text-neutral-700 hover:bg-neutral-100 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800'
@@ -45,7 +45,7 @@ export function FooterField({ value, onChange }: { value: string; onChange: (v: 
         onChange={(e) => onChange(e.target.value)}
         rows={3}
         spellCheck={false}
-        className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-400"
+        className={`${CONTROL} w-full resize-y`}
       />
       <p className={NOTE_TEXT}>{t.footerHint}</p>
       <div className="rounded-lg border border-dashed border-neutral-300 px-3 py-2 dark:border-neutral-700">

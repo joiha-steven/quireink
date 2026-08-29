@@ -6,6 +6,7 @@ import { Button } from '@/admin/ui/Button'
 import { isScheduled } from '@/utils'
 import { MultiSelect } from './MultiSelect'
 import { Combobox } from './Combobox'
+import { FeaturedImageField } from './FeaturedImageField'
 import { useAdminT } from './I18nProvider'
 import { CHECK, NOTE_TEXT } from './kit'
 
@@ -112,27 +113,11 @@ export function PostSettings({ draft, update, allCategories, allTags, allSeries,
         )}
       </div>
 
-      <div className="space-y-1.5">
-        <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{t.featuredImage}</span>
-        <p className={NOTE_TEXT}>{t.featuredImageHint}</p>
-        {draft.featuredImage ? (
-          <img src={draft.featuredImage} alt="" className="aspect-video w-full rounded-lg object-cover" />
-        ) : (
-          <div className="flex aspect-video w-full items-center justify-center rounded-lg bg-neutral-100 text-xs text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400 dark:text-neutral-400">
-            {t.noImageSelected}
-          </div>
-        )}
-        <div className="flex gap-2">
-          <Button variant="secondary" onClick={onPickFeatured} type="button">
-            {t.chooseImage}
-          </Button>
-          {draft.featuredImage && (
-            <Button variant="ghost" onClick={() => update({ featuredImage: '' })} type="button">
-              {t.removeSelection}
-            </Button>
-          )}
-        </div>
-      </div>
+      <FeaturedImageField
+        value={draft.featuredImage}
+        onPick={onPickFeatured}
+        onClear={() => update({ featuredImage: '' })}
+      />
 
       <Textarea
         label={t.excerpt}

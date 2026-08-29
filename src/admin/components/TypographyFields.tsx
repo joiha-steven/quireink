@@ -6,7 +6,7 @@ import type { TypographySettings, TypeRole, TypeStyle } from '@/types'
 import { getFontPreset, TYPE_ROLES } from '@/content/themes'
 import { useAdminT } from './I18nProvider'
 import type { AdminStrings } from '@/i18n/admin-i18n'
-import { INSET, NOTE, READING } from './kit'
+import { CONTROL_CHROME, INSET, NOTE, READING } from './kit'
 
 const ROLE_LABEL: Record<TypeRole, keyof AdminStrings> = {
   h1: 'typoH1',
@@ -42,7 +42,7 @@ function Cell({
       step={step}
       value={value}
       onChange={(e) => onChange(Number(e.target.value))}
-      className="w-16 rounded-lg border border-neutral-300 px-1.5 py-1 text-right text-xs outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+      className={`${CONTROL_CHROME} w-16 px-1.5 py-1 text-right text-xs`}
     />
   )
 }

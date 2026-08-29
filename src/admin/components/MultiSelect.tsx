@@ -1,6 +1,7 @@
 // Multi-select with inline create. Used for categories and tags.
 import { useState } from 'react'
 import { useAdminT } from './I18nProvider'
+import { CONTROL } from './kit'
 
 type Props = {
   label: string
@@ -49,7 +50,7 @@ export function MultiSelect({ label, value, options, placeholder, onChange, lowe
           }
         }}
         placeholder={placeholder ?? t.multiPlaceholder}
-        className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:focus:border-neutral-400"
+        className={`${CONTROL} w-full`}
       />
       {suggestions.length > 0 && (
         <div className="scroll-fade flex max-h-40 flex-wrap gap-1.5 overflow-y-auto pb-4">

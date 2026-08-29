@@ -259,7 +259,8 @@ four screens. A component that wants a third number wants one of these two.
 the padded version measured 42px against `ui/Button`'s 40, so every Copy-next-to-a-token and
 Choose-image-next-to-a-filename row sat two pixels out. `ui/Input.tsx` IMPORTS `CONTROL`
 rather than declaring a matching copy, which is what its comment used to promise and nothing
-enforced.
+enforced — as do the ten settings fields that had each drawn their own at 38px, an 8px radius,
+no focus ring and no placeholder shade. One with a measured size of its own takes `CONTROL_CHROME`.
 
 **A field is as wide as its answer.** A two-digit excerpt length in 580px, beside a site
 title in 580px and a description in 580px, draws three different questions as one. `Input`
@@ -299,7 +300,8 @@ its status tabs back together: they narrow the same list.
 `check:admin-kit` holds all of this. Each primitive has a class signature that belongs to
 exactly one file; the check fails if a screen re-types it, and also if a primitive is
 reworded so its own rule stops matching — which is how `check:css-literal` came to report a
-tick against two sheets it had never read.
+tick against two sheets it had never read. A signature only catches a COPY, so three rules
+match an idea: a raised white surface, a named typeface, a field drawing its own focus.
 
 ## One setting
 

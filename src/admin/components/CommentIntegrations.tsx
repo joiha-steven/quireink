@@ -7,17 +7,15 @@
 // The keys are SECRETS, so they have their own API (`/api/comments/keys` → the server-only
 // `integration_keys` table), NOT the settings form. Inputs are write-to-set: a blank field
 // leaves the stored key untouched, because only non-empty fields are sent.
-import { useState } from 'react'
-import type { CommentSettings, ApiResponse } from '@/types'
+import type { CommentSettings } from '@/types'
 import type { CommentEnv } from '@/comments/comment-env'
 import { Button } from '@/admin/ui/Button'
 import { ToggleRow } from '@/admin/ui/Switch'
-import { useToast } from '@/admin/ui/Toast'
 import { useAdminT } from './I18nProvider'
-import { INSET, NOTE, NOTE_TEXT, PANEL_LIST } from './kit'
+import { CONTROL, INSET, NOTE, NOTE_TEXT, PANEL_LIST } from './kit'
+import { useSecretKeys } from './useSecretKeys'
 
-const INPUT =
-  'w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100'
+const INPUT = `${CONTROL} w-full`
 
 // External setup links (where the owner gets each integration's keys / settings).
 const LINKS = {
@@ -55,41 +53,13 @@ export function CommentIntegrations(
   { comments: CommentSettings; env: CommentEnv; onChange: (c: CommentSettings) => void },
 ) {
   const t = useAdminT()
-  const { notify } = useToast()
-  const [keys, setKeys] = useState<Keys>(EMPTY)
-  const [busy, setBusy] = useState(false)
+  const { keys, busy, set, ph, save } = useSecretKeys('/api/comments/keys', EMPTY)
   // Shown whatever the master switch says. This tab is where the site's credentials live,
   // and hiding them behind a toggle two tabs away is how they get lost.
   const showTurnstile = comments.turnstile
   const showGoogle = comments.googleAuth
   // A toggle that is on with no key behind it does nothing, and says so here.
   const needsKey = (on: boolean, configured: boolean) => (on && !configured ? t.commentsNeedsKey : undefined)
-
-  const set = (k: keyof Keys, v: string) => setKeys((p) => ({ ...p, [k]: v }))
-  // A placeholder hinting the field is already configured (so blank = keep).
-  const ph = (configured: boolean, label: string) => (configured ? `${label} · ${t.commentsKeySet}` : label)
-
-  async function save() {
-    setBusy(true)
-    // Send only non-empty fields, so a blank input never clears a stored key.
-    const body: Partial<Keys> = {}
-    for (const k of Object.keys(keys) as (keyof Keys)[]) if (keys[k].trim()) body[k] = keys[k].trim()
-    try {
-      const res = await fetch('/api/comments/keys', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(body),
-      })
-      const json = (await res.json()) as ApiResponse
-      if (!json.success) throw new Error(json.error)
-      setKeys(EMPTY)
-      notify(t.commentsKeySaved)
-    } catch {
-      notify(t.deleteFailed, 'error')
-    } finally {
-      setBusy(false)
-    }
-  }
 
   return (
     <div className="space-y-4">

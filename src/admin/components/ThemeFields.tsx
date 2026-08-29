@@ -9,7 +9,7 @@ import type { SchemeDefault, ThemePreset } from '@/content/themes'
 import { getPreset, SCHEMES } from '@/content/themes'
 import { useAdminT } from './I18nProvider'
 import type { AdminStrings } from '@/i18n/admin-i18n'
-import { CHECK, INSET, META, ResetButton, Select, Setting, SETTING_GAP } from './kit'
+import { CHECK, CONTROL_CHROME, INSET, META, ResetButton, Select, Setting, SETTING_GAP } from './kit'
 
 type ColorKey = keyof ThemeColors
 
@@ -168,7 +168,7 @@ function ColorField({ label, value, onChange }: { label: string; value: string; 
         aria-label={label}
         // `h-9`, matching the colour swatch it sits beside. It was `py-1`, which measured 30px
         // against the swatch's 36 — six pixels out, on ten rows in one column.
-        className="h-9 min-w-0 flex-1 rounded-lg border border-neutral-300 px-2 text-sm uppercase outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+        className={`${CONTROL_CHROME} h-9 min-w-0 flex-1 px-2 text-sm uppercase`}
       />
     </span>
   )
