@@ -5,7 +5,7 @@
   <img src="docs/brand/wordmark-light.svg" alt="quireINK" width="360">
 </picture>
 
-`2.2.2`
+`2.2.3`
 
 **Một cái blog bạn tự host, và AI agent có thể vận hành thay bạn.**
 Không thuật toán, không quảng cáo, không nền tảng nào đứng giữa bạn và người đọc.
@@ -115,13 +115,13 @@ Bạn được đọc, sửa, chạy và fork nó theo [PolyForm Noncommercial](
 
 Đây là số đo từ mạng, lần vào đầu tiên, chưa cache gì. Đúng bằng cái mà một người lạ cầm điện thoại phải chờ.
 
-Hai dòng CSS và JavaScript là sản phẩm của bản build, giống nhau ở mọi bản cài, lấy từ bản dựng 2.2.2. Các số tổng đo trên một site đang chạy thật: tiếng Việt, Literata để đọc và JetBrains Mono cho phần khung. Chúng không phải thuộc tính của phần mềm, vì font được cắt theo bảng chữ và trình duyệt chỉ tải đúng những dải mà trang bạn dùng tới. Hình nét của cây bút nằm trong hai tệp bất biến riêng (~20 KB cả cặp) chỉ lên xe ở trang thật sự có vệt tô hay gạch chân ([ADR 0027](docs/decisions/0027-the-pen-ships-only-where-it-wrote.md)). Trang không mực không phải trả đồng nào cho chúng.
+Hai dòng CSS và JavaScript là sản phẩm của bản build, giống nhau ở mọi bản cài, lấy từ bản dựng 2.2.3. Các số tổng đo trên một site đang chạy thật: tiếng Việt, Literata để đọc và JetBrains Mono cho phần khung. Chúng không phải thuộc tính của phần mềm, vì font được cắt theo bảng chữ và trình duyệt chỉ tải đúng những dải mà trang bạn dùng tới. Hình nét của cây bút nằm trong hai tệp bất biến riêng (~20 KB cả cặp) chỉ lên xe ở trang thật sự có vệt tô hay gạch chân ([ADR 0027](docs/decisions/0027-the-pen-ships-only-where-it-wrote.md)). Trang không mực không phải trả đồng nào cho chúng. Bật đọc offline thì thêm một service worker 0,7 KB, tải một lần và chỉ ở blog đã bật.
 
 | | Trang chủ | Một bài | |
 |:---|---:|---:|:---|
 | **Số&nbsp;request** | 8 | 9 | |
 | **Tổng&nbsp;tải&nbsp;về** | **102&nbsp;KB** | **100&nbsp;KB** | 68&nbsp;KB trong đó là font |
-| **JavaScript** | **3,9&nbsp;KB** | **10,4&nbsp;KB** | viết tay, không framework |
+| **JavaScript** | **4,0&nbsp;KB** | **10,3&nbsp;KB** | viết tay, không framework |
 | **CSS** | 9,6&nbsp;KB | 9,6&nbsp;KB | +20&nbsp;KB chỉ ở trang có vệt bút |
 | **Request&nbsp;bên&nbsp;thứ&nbsp;ba** | **0** | **0** | không CDN, không font host, không tracker |
 | **Lần&nbsp;vào&nbsp;sau** | ~20&nbsp;KB | ~11&nbsp;KB | chỉ tải lại HTML; bài dài thì nặng hơn |
