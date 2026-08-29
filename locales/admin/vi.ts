@@ -559,6 +559,14 @@ const vi = {
   featInfiniteScrollDesc: 'Tải bài khi cuộn thay cho phân trang, và hiện dòng thời gian theo ngày ở cột phải (chỉ desktop).',
   featGridView: 'Chế độ lưới',
   featGridViewDesc: 'Cho người đọc chuyển danh sách bài sang dạng lưới thẻ (nút lưới/danh sách ở header). Tắt thì luôn là danh sách - khi đó timeline luôn hiện.',
+  // Settings -> Features -> Listing: the /archive page and the sidebar year list.
+  featArchive: 'Trang lưu trữ',
+  featArchiveDesc: 'Một trang /archive liệt kê mọi bài theo năm, kèm danh sách năm ở cột bên.',
+  // Settings -> Reading: the service worker (ADR 0039). The description carries the two
+  // things a reader would want to know and an owner would not think to ask: nothing is
+  // fetched ahead of time, and turning it off UNINSTALLS it rather than merely stopping.
+  featOffline: 'Đọc khi mất mạng',
+  featOfflineDesc: 'Bài người đọc đã mở vẫn mở được khi không có mạng. Không tải trước thứ gì, và không bao giờ lưu phần quản trị. Tắt cũng gỡ nó khỏi những người đọc đã có sẵn.',
   featLeadPost: 'Bài mở đầu',
   featLeadPostDesc: 'Bài mới nhất ở trang 1 dùng cỡ chữ H1.',
   featCategoryLabel: 'Nhãn danh mục',

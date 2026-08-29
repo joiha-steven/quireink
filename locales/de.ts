@@ -61,6 +61,12 @@ const de = {
   seriesPartPrefix: 'Teil',
   seriesTitle: 'Serien',
   emptySeries: 'Noch keine Beiträge in dieser Serie.',
+  // /archive: the year index, its jump row and its empty state. `archiveTitle` is also
+  // the sidebar block's heading, so the page and the way in carry one name.
+  archiveTitle: 'Archiv',
+  archiveMeta: 'Alle Beiträge auf {site}, nach Jahren.',
+  archiveYears: 'Jahre',
+  archiveEmpty: 'Noch nichts im Archiv.',
   previewNotice: 'Vorschau: Diese Seite ist nicht öffentlich und wird nicht indexiert.',
   nlInvalid: 'Das sieht nicht nach einer E-Mail-Adresse aus.',
   nlNoMail: 'Angemeldet. E-Mail ist nicht konfiguriert, daher wurde keine Bestätigung gesendet.',

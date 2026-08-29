@@ -9,6 +9,7 @@
 // JavaScript a reader of a listing pays for, and its size is the budget.
 
 import { listing } from './listing'
+import { offline } from './offline'
 import { search } from './search'
 import { subscribe } from './subscribe'
 import { palette, rail, theme } from './theme'
@@ -21,3 +22,7 @@ rail()
 search()
 subscribe()
 listing()
+// Here rather than in `post.js` because it has to run on EVERY public page: the switch that
+// turns the worker off can only take effect on a page the reader happens to load, and most
+// of those are listings. See `offline.ts`.
+offline()

@@ -58,6 +58,8 @@ export const DEFAULT_FEATURES: FeatureSettings = {
   resume: true,
   infiniteScroll: false,
   gridView: true,
+  archive: true,
+  offline: false,
 }
 
 export const DEFAULT_COMMENTS: CommentSettings = {

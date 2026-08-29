@@ -14,6 +14,7 @@ import { getPublicPosts, getPublicTaxonomy } from '@/content/posts'
 import { getViewTotals } from '@/analytics/summary'
 import { getSeriesList } from '@/content/series'
 import { tagText, termSlug } from '@/content/taxonomy'
+import { byYear, yearAnchor } from '@/content/archive'
 import { listingRailCss } from '@/render/rail-css'
 import { t } from '@/i18n/i18n'
 import { escapeAttr, escapeHtml } from '@/utils'
@@ -150,8 +151,19 @@ export async function renderSidebar(
     .slice(0, FEATURED_MAX)
     .map((slug) => ({ href: `/${slug}`, label: titleBySlug.get(slug) ?? '' }))
 
+  // The years, which are the only axis in the rail that is not a subject. Every row points
+  // at an anchor inside `/archive` rather than at a page of its own: one document holds all
+  // of them, so a year is a jump, not a fetch. Read off the SAME public post list the rest
+  // of this file uses, so a year that exists only on a draft never appears.
+  const years = settings.features.archive
+    ? byYear(posts).map(({ year, posts: inYear }) => ({
+      href: `/archive#${yearAnchor(year)}`, label: String(year), count: inYear.length,
+    }))
+    : []
+
   if (settings.menu.length === 0 && categories.length === 0 && allSeries.length === 0
-    && mostViewed.length === 0 && featured.length === 0 && tags.length === 0) return none
+    && mostViewed.length === 0 && featured.length === 0 && tags.length === 0
+    && years.length === 0) return none
 
   const discovery = indexBlock(labels.mostViewedTitle, mostViewed, activeHref)
     + indexBlock(labels.featuredTitle, featured, activeHref)
@@ -164,6 +176,10 @@ export async function renderSidebar(
     + termCloud(labels.seriesTitle,
       allSeries.map((x) => ({ href: `/series/${x.slug}`, label: x.name, count: x.count })),
       {}, activeHref)
+    // Above the tags, not below them: it is a short, bounded, counted list like the two
+    // above it, and a tag cloud is the one block on this rail with no ceiling on its length.
+    // Under it, the years would sit below a hundred words on a real blog.
+    + termCloud(labels.archiveTitle, years, {}, activeHref)
     + termCloud(labels.tagsTitle,
       tags.map((tag) => ({ href: `/tag/${termSlug(tag.name)}`, label: tag.name })),
       { lower: true }, activeHref)

@@ -559,6 +559,14 @@ const ko = {
   featInfiniteScrollDesc: '페이지 나누기 대신 스크롤에 따라 글을 불러오고, 오른쪽에 날짜 타임라인을 표시합니다(데스크톱 전용).',
   featGridView: '그리드 보기',
   featGridViewDesc: '독자가 글 목록을 카드 그리드로 전환할 수 있게 합니다(헤더의 그리드/목록 버튼). 끄면 항상 목록이며 타임라인이 항상 표시됩니다.',
+  // Settings -> Features -> Listing: the /archive page and the sidebar year list.
+  featArchive: '아카이브 페이지',
+  featArchiveDesc: '모든 글을 연도별로 모은 /archive 페이지와 사이드바의 연도 목록.',
+  // Settings -> Reading: the service worker (ADR 0039). The description carries the two
+  // things a reader would want to know and an owner would not think to ask: nothing is
+  // fetched ahead of time, and turning it off UNINSTALLS it rather than merely stopping.
+  featOffline: '네트워크 없이 읽기',
+  featOfflineDesc: '독자가 한 번 연 글은 네트워크가 없어도 다시 열립니다. 미리 받아두는 것은 없고 관리 화면은 캐시하지 않습니다. 끄면 이미 설치된 독자에게서도 제거됩니다.',
   featLeadPost: '대표 글',
   featLeadPostDesc: '1페이지의 최신 글을 H1 크기로 표시합니다.',
   featCategoryLabel: '카테고리 표시',

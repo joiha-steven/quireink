@@ -8,6 +8,7 @@
 import coreJs from '@/assets/dist/core.js' with { type: 'text' }
 import postJs from '@/assets/dist/post.js' with { type: 'text' }
 import loginJs from '@/assets/dist/login.js' with { type: 'text' }
+import swJs from '@/assets/dist/sw.js' with { type: 'text' }
 import { PUBLIC_CSS } from '@/web/public.css'
 import { INK_HIGHLIGHT_CSS, INK_LINES_CSS, inkHighlightCss, inkLinesCss } from '@/web/ink.css'
 import { inkSignature, resolveInks } from '@/render/ink-palette'
@@ -145,6 +146,19 @@ export function penSheets(inks: InkSettings): { marks: string; lines: string } {
   }
   return made
 }
+
+/**
+ * The service worker: one fixed path, and the build in a query string.
+ *
+ * The PATH cannot carry the hash the way every other bundle's does. A worker controls the
+ * directory its script was served from, so `/assets/sw.<hash>.js` would control `/assets/`
+ * and see no page at all; it has to be `/sw.js` at the root. The query string is what makes
+ * a deploy an UPDATE: the browser compares script URLs byte for byte, re-fetches when this
+ * one changes, and the worker reads `?v=` back out to name its caches, so the new build
+ * cannot read the old build's entries. ADR 0039.
+ */
+export const SW_BODY = swJs
+export const SW_PATH = `/sw.js?v=${hashOf(swJs)}`
 
 /** The hashed URL for a bundle. Callers use this rather than writing paths by hand. */
 export function assetPath(name: keyof typeof BUNDLES & string): string {

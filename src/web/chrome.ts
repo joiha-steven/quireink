@@ -14,6 +14,7 @@ import { t } from '@/i18n/i18n'
 import { renderInlineMarkdown, expandFooterTokens } from '@/render/inline-md'
 
 import { escapeAttr, escapeHtml } from '@/utils'
+import { SW_PATH } from '@/web/assets'
 
 /**
  * Inline SVG rather than an icon font: no extra request, and it inherits `currentColor`.
@@ -274,6 +275,10 @@ export function chromeLabels(settings: SiteSettings): Record<string, string> {
     // (`data-palettes`), because which palettes exist is the owner's choice and not a fixed
     // list the way the four theme modes are.
     palette: s.palette,
+    // Also not a label: where the service worker is, when the owner has switched it on.
+    // ABSENT rather than empty when it is off, because absence is what tells the island to
+    // unregister a worker an earlier visit installed — see `assets/js/offline.ts`.
+    ...(settings.features.offline ? { sw: SW_PATH } : {}),
     nlSuccess: s.nlSuccess,
     nlNoMail: s.nlNoMail,
     nlInvalid: s.nlInvalid,

@@ -559,6 +559,14 @@ const fr = {
   featInfiniteScrollDesc: 'Charge les articles au fil du défilement au lieu de paginer, et affiche une frise des dates dans la marge droite (ordinateur uniquement).',
   featGridView: 'Vue en grille',
   featGridViewDesc: 'Laisse les lecteurs passer la liste des articles en grille de cartes (le bouton grille/liste de l’en-tête). Désactivé, la liste reste une liste — la frise s’affiche alors toujours.',
+  // Settings -> Features -> Listing: the /archive page and the sidebar year list.
+  featArchive: 'Page d’archives',
+  featArchiveDesc: 'Une page /archive qui liste tous les articles par année, avec la liste des années dans la colonne latérale.',
+  // Settings -> Reading: the service worker (ADR 0039). The description carries the two
+  // things a reader would want to know and an owner would not think to ask: nothing is
+  // fetched ahead of time, and turning it off UNINSTALLS it rather than merely stopping.
+  featOffline: 'Lire sans réseau',
+  featOfflineDesc: 'Un article déjà ouvert s’ouvre encore sans réseau. Rien n’est téléchargé à l’avance, et l’administration n’est jamais mise en cache. Désactiver le retire aussi des lecteurs qui l’ont déjà.',
   featLeadPost: 'Article de tête',
   featLeadPostDesc: 'Le plus récent article de la page 1 est composé à la taille H1.',
   featCategoryLabel: 'Nom de catégorie',

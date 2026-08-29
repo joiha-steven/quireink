@@ -560,6 +560,14 @@ const pt = {
   featInfiniteScrollDesc: 'Carrega posts conforme o leitor rola, em vez de paginar, e mostra uma linha do tempo de datas na margem direita (só desktop).',
   featGridView: 'Visão em grade',
   featGridViewDesc: 'Deixa os leitores passarem a lista de posts para uma grade de cartões (o botão grade/lista do cabeçalho). Desligado mantém a lista — e a linha do tempo aparece sempre.',
+  // Settings -> Features -> Listing: the /archive page and the sidebar year list.
+  featArchive: 'Página de arquivo',
+  featArchiveDesc: 'Uma página /archive com todos os posts por ano, e a lista de anos na barra lateral.',
+  // Settings -> Reading: the service worker (ADR 0039). The description carries the two
+  // things a reader would want to know and an owner would not think to ask: nothing is
+  // fetched ahead of time, and turning it off UNINSTALLS it rather than merely stopping.
+  featOffline: 'Ler sem rede',
+  featOfflineDesc: 'Um post que o leitor já abriu continua a abrir sem rede. Nada é descarregado antecipadamente e a administração nunca fica em cache. Desligar também o remove dos leitores que já o têm.',
   featLeadPost: 'Post principal',
   featLeadPostDesc: 'O post mais novo da página 1 é composto no tamanho H1.',
   featCategoryLabel: 'Nome da categoria',

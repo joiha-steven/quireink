@@ -27,6 +27,8 @@ not cover.
 | Figure frame | Appearance → Images | The frame every in-body picture wears unless it says otherwise |
 | Content width | Appearance → Layout | How wide the reading column runs |
 | Sidebar | Appearance → Layout | One rail or two, and which blocks are in it |
+| **Read without a signal** | Appearance → Reading | A post your reader has already opened still opens with no network. **Off by default.** Nothing is downloaded ahead of time and your admin is never stored. Turning it off again removes it from readers who already have it |
+| **Archive** | Appearance → Reading | `/archive`: every post you have published, grouped by year, and the list of years in the rail. **On by default.** If you already publish a page or a post at `/archive`, yours keeps the URL and this stays off until you move it |
 | **Author** | Settings → Site | Name, bio, portrait and a link. Empty by default; filling in a name adds a byline and puts you in the structured data search engines read |
 | IDE chrome | Appearance → Shape | Dresses the furniture around your words as source code. Off by default; it is a strong taste and it is one click either way |
 | Footer | Appearance → Brand | Your own line, with `{year}` and `{title}` tokens |
@@ -168,6 +170,7 @@ Structure that is part of the contract, in the order a page uses it:
 | `.deck` | The standfirst under a post title |
 | `.author-box` | The author box under an article |
 | `.related` / `.read-next-title` | The blocks at the end of an article |
+| `.arc-jump` / `.arc-yr` | The archive's row of years, and one year's block of rows |
 | `.subscribe-card` | The newsletter sign-up |
 | `#comments` | The comment tree |
 

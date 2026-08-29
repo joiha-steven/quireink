@@ -559,6 +559,14 @@ const de = {
   featInfiniteScrollDesc: 'Beiträge beim Scrollen laden statt Seitennummerierung und einen Datums-Zeitstrahl in der rechten Spalte zeigen (nur Desktop).',
   featGridView: 'Rasteransicht',
   featGridViewDesc: 'Lesern erlauben, die Beitragsliste als Kartenraster anzuzeigen (Raster/Listen-Schalter im Header). Aus bleibt es eine Liste - dann wird der Zeitstrahl immer gezeigt.',
+  // Settings -> Features -> Listing: the /archive page and the sidebar year list.
+  featArchive: 'Archivseite',
+  featArchiveDesc: 'Eine Seite /archive mit allen Beiträgen nach Jahren, dazu die Jahresliste in der Seitenleiste.',
+  // Settings -> Reading: the service worker (ADR 0039). The description carries the two
+  // things a reader would want to know and an owner would not think to ask: nothing is
+  // fetched ahead of time, and turning it off UNINSTALLS it rather than merely stopping.
+  featOffline: 'Ohne Netz lesen',
+  featOfflineDesc: 'Ein bereits geöffneter Beitrag lässt sich auch ohne Netz öffnen. Nichts wird im Voraus geladen, und die Verwaltung wird nie zwischengespeichert. Aus entfernt es auch bei Lesern, die es schon haben.',
   featLeadPost: 'Aufmacher',
   featLeadPostDesc: 'Der neueste Beitrag auf Seite 1 erscheint in H1-Größe.',
   featCategoryLabel: 'Kategorie-Label',

@@ -67,6 +67,12 @@ export type Dict = {
   seriesPartPrefix: string
   seriesTitle: string
   emptySeries: string
+  // /archive: the year index, its jump row and its empty state. `archiveTitle` is also
+  // the sidebar block's heading, so the page and the way in carry one name.
+  archiveTitle: string
+  archiveMeta: string
+  archiveYears: string
+  archiveEmpty: string
   previewNotice: string
   nlInvalid: string
   nlNoMail: string
@@ -767,6 +773,14 @@ export type AdminStrings = {
   featInfiniteScrollDesc: string
   featGridView: string
   featGridViewDesc: string
+  // Settings -> Features -> Listing: the /archive page and the sidebar year list.
+  featArchive: string
+  featArchiveDesc: string
+  // Settings -> Reading: the service worker (ADR 0039). The description carries the two
+  // things a reader would want to know and an owner would not think to ask: nothing is
+  // fetched ahead of time, and turning it off UNINSTALLS it rather than merely stopping.
+  featOffline: string
+  featOfflineDesc: string
   featLeadPost: string
   featLeadPostDesc: string
   featCategoryLabel: string

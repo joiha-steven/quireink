@@ -52,6 +52,15 @@ Nothing about Invariant 1 changes: when the cache is on, a write still empties a
 The switch decides whether there is a cache at all, not how it is invalidated. Pinned by
 `src/web/app.test.ts` ("switched off in Settings").
 
+### `/sw.js` and the edge
+
+The service worker ([ADR 0039](decisions/0039-the-blog-reads-without-the-network.md)) is the
+one script whose staleness a reader cannot fix by reloading — a browser keeps serving from
+the worker it already has. It leaves the origin `no-cache`, and the build rides in
+`?v=<hash>`, which is what protects it at the edge: Cloudflare's standard cache level keys on
+the query string, so a deploy asks for a URL nothing has ever cached. **If a `sw.js` is ever
+seen surviving a deploy, look at the cache key before looking at the worker.**
+
 ### The warm, and the CDN purge
 
 `clearCache()` carries a hook list, and `src/index.ts` registers a debounced

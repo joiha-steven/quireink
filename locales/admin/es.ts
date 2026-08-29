@@ -559,6 +559,14 @@ const es = {
   featInfiniteScrollDesc: 'Carga entradas mientras el lector hace scroll en lugar de paginar, y muestra una línea de fechas en el margen derecho (solo escritorio).',
   featGridView: 'Vista de cuadrícula',
   featGridViewDesc: 'Deja que los lectores pasen la lista de entradas a una cuadrícula de tarjetas (el botón cuadrícula/lista de la cabecera). Apagado la deja como lista — y la línea de fechas se muestra siempre.',
+  // Settings -> Features -> Listing: the /archive page and the sidebar year list.
+  featArchive: 'Página de archivo',
+  featArchiveDesc: 'Una página /archive con todas las entradas por año, y la lista de años en la barra lateral.',
+  // Settings -> Reading: the service worker (ADR 0039). The description carries the two
+  // things a reader would want to know and an owner would not think to ask: nothing is
+  // fetched ahead of time, and turning it off UNINSTALLS it rather than merely stopping.
+  featOffline: 'Leer sin señal',
+  featOfflineDesc: 'Una entrada que el lector ya abrió sigue abriéndose sin red. No se descarga nada por adelantado y la administración nunca se guarda en caché. Apagarlo también lo retira de los lectores que ya lo tienen.',
   featLeadPost: 'Entrada principal',
   featLeadPostDesc: 'La entrada más reciente de la página 1 se compone al tamaño H1.',
   featCategoryLabel: 'Nombre de categoría',

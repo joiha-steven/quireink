@@ -61,6 +61,12 @@ const ru = {
   seriesPartPrefix: 'Часть',
   seriesTitle: 'Циклы',
   emptySeries: 'В этом цикле пока нет записей.',
+  // /archive: the year index, its jump row and its empty state. `archiveTitle` is also
+  // the sidebar block's heading, so the page and the way in carry one name.
+  archiveTitle: 'Архив',
+  archiveMeta: 'Все записи на {site}, по годам.',
+  archiveYears: 'Годы',
+  archiveEmpty: 'В архиве пока ничего нет.',
   previewNotice: 'Предпросмотр: эта страница не публична и не индексируется.',
   nlInvalid: 'Это не похоже на адрес почты.',
   nlNoMail: 'Подписка записана. Почта не настроена, поэтому письмо с подтверждением не отправлено.',

@@ -61,6 +61,12 @@ const ja = {
   seriesPartPrefix: 'パート',
   seriesTitle: 'シリーズ',
   emptySeries: 'このシリーズにはまだ記事がありません。',
+  // /archive: the year index, its jump row and its empty state. `archiveTitle` is also
+  // the sidebar block's heading, so the page and the way in carry one name.
+  archiveTitle: 'アーカイブ',
+  archiveMeta: '{site} のすべての記事を、年ごとに。',
+  archiveYears: '年',
+  archiveEmpty: 'アーカイブにはまだ何もありません。',
   previewNotice: 'プレビュー: このページは公開されておらず、インデックスもされません。',
   nlInvalid: 'メールアドレスの形式が正しくありません。',
   nlNoMail: '登録しました。メールが未設定のため確認メールは送信されていません。',

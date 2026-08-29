@@ -559,6 +559,14 @@ const ja = {
   featInfiniteScrollDesc: 'ページ送りの代わりにスクロールで記事を読み込み、右側に日付タイムラインを表示します（デスクトップのみ）。',
   featGridView: 'グリッド表示',
   featGridViewDesc: '記事一覧をカードのグリッドに切り替えられるようにします（ヘッダーのグリッド/リスト切替）。オフでは常にリストになり、タイムラインが常に表示されます。',
+  // Settings -> Features -> Listing: the /archive page and the sidebar year list.
+  featArchive: 'アーカイブページ',
+  featArchiveDesc: 'すべての記事を年ごとに並べた /archive ページと、サイドバーの年一覧。',
+  // Settings -> Reading: the service worker (ADR 0039). The description carries the two
+  // things a reader would want to know and an owner would not think to ask: nothing is
+  // fetched ahead of time, and turning it off UNINSTALLS it rather than merely stopping.
+  featOffline: '圏外でも読める',
+  featOfflineDesc: '読者が一度開いた記事は、通信がなくても開けます。先読みは一切せず、管理画面はキャッシュしません。オフにすると、すでに入っている読者からも取り除かれます。',
   featLeadPost: 'リード記事',
   featLeadPostDesc: '1ページ目の最新記事を H1 のサイズで表示します。',
   featCategoryLabel: 'カテゴリー表示',

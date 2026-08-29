@@ -250,7 +250,10 @@ The reading page is the product here, so every size, colour and space on it is a
   })
 
   await savePage({
-    title: 'Archive', slug: 'archive', status: 'published',
+    // Named for what it is. `/archive` belongs to the product now — the year index — and
+    // this page was always the other thing: a hand-written guide to the SUBJECTS. Keeping
+    // the old slug would have proved the collision rule works and hidden the feature.
+    title: 'Subjects', slug: 'subjects', status: 'published',
     content: `Everything published here, by subject.
 
 ## Typography
