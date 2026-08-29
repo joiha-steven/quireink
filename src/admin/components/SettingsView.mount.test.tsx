@@ -10,6 +10,11 @@
 //
 // What is asserted: all eight tabs exist by their printed names, switching tabs swaps the
 // cards, and editing the title then pressing Save PUTs the edited value to /api/settings.
+//
+// Then the three groups added on 2026-08-29 — post pictures, shape, author — each on the tab
+// it was filed under, each changing the value the form will SEND rather than only the pixel
+// it draws. The hero chooser is asserted to offer exactly two options, because the third one
+// (`wide`) was built and measured out again, and a picker is where it would come back.
 
 import { describe, expect, it, beforeAll, afterAll, afterEach } from 'bun:test'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
@@ -20,6 +25,7 @@ import {
   THEME_PRESETS, defaultThemes, getFontPreset,
 } from '@/content/themes'
 import { DEFAULT_FIGURE, DEFAULT_GALLERY, DEFAULT_HOME } from '@/content/settings-sanitize'
+import { DEFAULT_POST_IMAGE, DEFAULT_SHAPE, DEFAULT_AUTHOR } from '@/content/settings-shape'
 import { DEFAULT_INKS } from '@/render/ink-palette'
 
 beforeAll(() => GlobalRegistrator.register())
@@ -69,6 +75,12 @@ function settingsFixture(): SiteSettings {
     home: DEFAULT_HOME,
     figure: DEFAULT_FIGURE,
     gallery: DEFAULT_GALLERY,
+    // `settings-shape.ts` is store-free (pure data + two validators), so the real defaults
+    // can be imported here rather than transcribed — which is what keeps this fixture from
+    // drifting away from the thing it stands in for.
+    postImage: DEFAULT_POST_IMAGE,
+    shape: DEFAULT_SHAPE,
+    author: DEFAULT_AUTHOR,
     seo: { autoSchema: true, sitemap: true, llms: true, robots: true, rss: true, ogImage: true, ogFallbackImage: '' },
     features: {
       search: true, toc: true, related: true, readingTime: true, progressBar: true,
@@ -185,6 +197,156 @@ describe('SettingsView, mounted', () => {
     await m.flush()
     expect(m.text()).toContain(t.saveFailed)
     expect((title as HTMLInputElement).value).toBe('Unsaved edit')
+    await m.unmount()
+  })
+})
+
+/**
+ * The field `ui/Input` / `Textarea` renders under a given label.
+ *
+ * By LABEL rather than by placeholder or by index: three of the four author fields have no
+ * placeholder, and an index into the card's inputs would pass while pointing at the wrong
+ * one the day a field is inserted above it.
+ */
+function fieldByLabel(container: HTMLElement, label: string): HTMLElement {
+  const hit = [...container.querySelectorAll('label')].find(
+    (l) => l.querySelector('span')?.textContent?.trim() === label,
+  )
+  const field = hit?.querySelector('input, textarea')
+  if (!field) throw new Error(`no field labelled "${label}"`)
+  return field as HTMLElement
+}
+
+/** Mount, open a tab, and hand back the harness plus the dictionary. */
+async function onTab(tab: 'tabSite' | 'tabLayout' | 'tabAppearance') {
+  const { mountAdmin, installFetchMock } = await import('@/admin/test-mount')
+  const { SettingsView } = await import('@/admin/components/SettingsView')
+  const { adminT } = await import('@/i18n/admin-i18n')
+  const t = adminT('en')
+  // The media library asks for a LIST when the portrait picker opens; answering every URL
+  // with the settings object would hand it an object where it iterates.
+  const fetchMock = installFetchMock((url) =>
+    url.startsWith('/api/media')
+      ? { success: true, data: [] }
+      : { success: true, data: settingsFixture() })
+  restores.push(fetchMock.restore)
+  const m = await mountAdmin(<SettingsView {...payload()} />)
+  await m.click(m.button(t[tab]))
+  return { m, t, fetchMock }
+}
+
+/** The settings object the form sent, after a Save. */
+async function saved(
+  m: Awaited<ReturnType<typeof onTab>>['m'],
+  t: Awaited<ReturnType<typeof onTab>>['t'],
+  fetchMock: Awaited<ReturnType<typeof onTab>>['fetchMock'],
+): Promise<SiteSettings> {
+  await m.click(m.button(t.saveSettings))
+  await m.flush()
+  // The LAST one: a test that saves twice would otherwise keep reading the first body and
+  // pass no matter what the second edit did.
+  const put = fetchMock.calls.filter((c) => c.method === 'PUT' && c.url === '/api/settings').at(-1)
+  expect(put).toBeDefined()
+  return put?.body as SiteSettings
+}
+
+describe('post pictures (Layout)', () => {
+  it('arrives with both choosers off, which is what an upgrade must look like', async () => {
+    const { m, t } = await onTab('tabLayout')
+    expect(m.text()).toContain(t.cardPostImage)
+    // `aria-pressed` is the picker's own record of the selection, so this reads the control
+    // rather than the state behind it: two `Not shown` buttons, both pressed.
+    const off = [...m.container.querySelectorAll('button')]
+      .filter((b) => b.textContent?.trim() === t.piOff)
+    expect(off.length).toBe(2)
+    expect(off.every((b) => b.getAttribute('aria-pressed') === 'true')).toBe(true)
+    await m.unmount()
+  })
+
+  it('offers the hero TWO widths and no third — `wide` printed over the contents list', async () => {
+    const { m, t } = await onTab('tabLayout')
+    expect(m.button(t.piHeroInline)).toBeTruthy()
+    // The row is the hero's chooser: its options are the two, and nothing else.
+    const track = m.button(t.piHeroInline).parentElement
+    expect([...(track?.children ?? [])].map((c) => c.textContent?.trim()))
+      .toEqual([t.piOff, t.piHeroInline])
+    await m.unmount()
+  })
+
+  it('turning the hero on sends hero: inline', async () => {
+    const { m, t, fetchMock } = await onTab('tabLayout')
+    await m.click(m.button(t.piHeroInline))
+    const body = await saved(m, t, fetchMock)
+    expect(body.postImage.hero).toBe('inline')
+    expect(body.postImage.thumb).toBe('none') // the other half is untouched
+    await m.unmount()
+  })
+
+  it('a thumbnail can sit beside the text or above the title', async () => {
+    const { m, t, fetchMock } = await onTab('tabLayout')
+    await m.click(m.button(t.piThumbTop))
+    expect(await saved(m, t, fetchMock)).toHaveProperty('postImage.thumb', 'top')
+    await m.click(m.button(t.piThumbSide))
+    const body = await saved(m, t, fetchMock)
+    expect(body.postImage.thumb).toBe('side')
+    await m.unmount()
+  })
+})
+
+describe('shape (Appearance)', () => {
+  it('opens on the defaults that reproduce today exactly', async () => {
+    const { m, t } = await onTab('tabAppearance')
+    expect(m.text()).toContain(t.cardShape)
+    for (const label of [t.shapeNormal, t.shapeSoft, t.shapeRegular]) {
+      expect(m.button(label).getAttribute('aria-pressed')).toBe('true')
+    }
+    await m.unmount()
+  })
+
+  it('sends the three values it was left on, and only those', async () => {
+    const { m, t, fetchMock } = await onTab('tabAppearance')
+    await m.click(m.button(t.shapeRelaxed))
+    await m.click(m.button(t.shapeRound))
+    await m.click(m.button(t.shapeBold))
+    const body = await saved(m, t, fetchMock)
+    expect(body.shape).toEqual({ density: 'relaxed', radius: 'round', headingWeight: 'bold' })
+    await m.unmount()
+  })
+})
+
+describe('author (Site)', () => {
+  it('starts empty — an existing blog has no byline and gains none', async () => {
+    const { m, t } = await onTab('tabSite')
+    expect(m.text()).toContain(t.cardAuthor)
+    expect((fieldByLabel(m.container, t.authorName) as HTMLInputElement).value).toBe('')
+    // No portrait, so the note stands in for the preview and no Remove is offered.
+    expect(m.text()).toContain(t.authorNoAvatar)
+    expect(() => m.button(t.removeSelection)).toThrow()
+    await m.unmount()
+  })
+
+  it('sends the name, the bio and the link', async () => {
+    const { m, t, fetchMock } = await onTab('tabSite')
+    await m.type(fieldByLabel(m.container, t.authorName), 'Trần Mạnh Hùng')
+    await m.type(fieldByLabel(m.container, t.authorBio), 'Writes about keyboards.')
+    await m.type(fieldByLabel(m.container, t.authorLink), 'https://example.com/about')
+    const body = await saved(m, t, fetchMock)
+    expect(body.author).toEqual({
+      name: 'Trần Mạnh Hùng',
+      bio: 'Writes about keyboards.',
+      // The PATH is kept: `sanitizeAuthor` deliberately does not use `sanitizeUrl`, which
+      // would trim this back to the bare origin.
+      url: 'https://example.com/about',
+      avatarUrl: '',
+    })
+    await m.unmount()
+  })
+
+  it('the portrait opens the media library, the same picker the logo uses', async () => {
+    const { m, t } = await onTab('tabSite')
+    // Two `Choose image` buttons would mean a second picker was hand-rolled here.
+    await m.click(m.button(t.chooseImage))
+    expect(m.text()).toContain(t.mediaTitle)
     await m.unmount()
   })
 })

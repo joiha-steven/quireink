@@ -31,6 +31,8 @@ const vi = {
   themeTime: 'Theo giờ',
   readingSuffix: 'phút đọc',
   wordsSuffix: 'chữ',
+  bylinePrefix: 'của',
+  authorAbout: 'Về tác giả',
   bookMode: 'Chế độ đọc sách',
   bookModeClose: 'Đóng',
   bookModePrev: 'Trang trước',

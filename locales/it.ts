@@ -31,6 +31,8 @@ const it = {
   themeTime: 'In base all’ora',
   readingSuffix: 'min di lettura',
   wordsSuffix: 'parole',
+  bylinePrefix: 'di',
+  authorAbout: 'Sull’autore',
   bookMode: 'Modalità libro',
   bookModeClose: 'Chiudi',
   bookModePrev: 'Pagina precedente',

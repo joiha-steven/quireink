@@ -13,11 +13,41 @@
   bodies are built by `src/web/feeds.ts`. All four send
   `public, s-maxage=300, stale-while-revalidate=600` — a write purges the zone anyway, so a
   subscriber never waits on the window.
-- `renderRobots` — always `Disallow: /admin` and `Disallow: /api`, `Allow: /` for everything
-  else, plus the `Sitemap:` line when the sitemap is on.
-- `renderSitemap` — home + posts + pages. `renderLlms` — a markdown index of posts and pages,
-  newest first, titles and one-line summaries only: a model that wants the body follows the
-  link.
+- `renderRobots` — **three groups**, restored from 1.x on 2026-08-29. Search engines and AI
+  crawlers share one ALLOW group (named agents, `Allow: /`, the two `Disallow:` lines);
+  the SEO/backlink miners get `Disallow: /`; `*` gets the allow group's directives, so an
+  unknown good crawler is welcome. The `Sitemap:` line follows when the sitemap is on.
+  **Nothing in it blocks an AI crawler, deliberately**: this software ships `/llms.txt` for
+  those readers, and whether a blog joins a training set is the OWNER's decision about their
+  own writing. Turning it into a block needs a `seo` setting and a switch in the admin
+  beside the others — not a default. Only the tier that crawls heavily, sends no readers and
+  resells the blog's links is turned away.
+- `renderSitemap` — home + posts + pages, **plus one entry per category and per tag**, and
+  `<image:image>` on a post that has one. Terms are read off the PUBLIC post list, never
+  `getCategories`/`getTags`: those include drafts, and `/category/x` 404s for a term no
+  public post carries. They are keyed by slug (two names can slugify to one URL) and their
+  `lastmod` is the freshest post in the term, because a term page IS its posts. The images
+  are the post's two image FIELDS only — `coverImage` and `featuredImage`, made absolute —
+  and nothing scraped from the body: 1.x read every post's markdown here and could afford to
+  because Next cached the document for an hour, while this route builds on request.
+  `xmlns:image` is declared only when an entry actually uses it.
+- `/sitemaps.xml` **301s to `/sitemap.xml`** (`src/web/feed-routes.ts`). The plural is the
+  common misspelling and the shape of some old Search Console submissions. An alias, not a
+  second document: unconditional, reading no settings, so when the sitemap is switched off
+  the 404 comes from the one route that owns that answer.
+- `renderLlms` — a markdown index of posts and pages, newest first, titles and one-line
+  summaries only: a model that wants the body follows the link.
+- **Page 1 of a listing IS the listing.** `/category/x/page/1` → `/category/x`, the same for
+  a tag, and `/page/1` → wherever the post list lives: a 301 from `canonicalPath()`
+  (`src/web/canonical-path.ts`), beside the trailing-slash rule because it is the same rule —
+  one address per page, every other spelling a permanent move. The home destination is
+  `listRoot` (`/` in list mode, `settings.home.listPath` once a page or the front owns `/`,
+  ADR 0014), which is what `renderPostList` already put in the canonical tag; sending it to
+  `/` unconditionally would hand the reader a different document. Settings are read only on a
+  path that matched, so the hot path still costs one regex. It runs ahead of the routes, so
+  `/page/:n` only ever sees a real page number. The paginator has always linked page 1 at the
+  bare path; what this catches is the URL a person typed, a crawler guessed from `/page/2`,
+  or an old inbound link still carries.
 - `/og` (`src/web/og.ts`) — the dynamic 1200×630 card, rendered by `satori` + `sharp` in
   `src/render/og-card.ts`. It reads NO settings and touches no database; the caller
   (`src/render/og.ts`) has already decided what the card says. `ogImageUrl` builds a post's
@@ -60,10 +90,10 @@
   the same shape on ninety pages is the problem this fixed, not the cure.
 
 **Not carried over yet** (tracked in [`spec/07-parity-public.md`](spec/07-parity-public.md), do not
-document these as present): the `/page/1` → `/` redirect, the `sitemaps.xml` → `/sitemap.xml`
-redirect, category and tag entries and per-post `<image:image>` entries in the sitemap, and
-the three-group crawler policy (search / AI / scraper bot lists) the frozen tree's `robots.ts`
-carried.
+document this as present): the `Content-Signal` line in `robots.txt`. It is the one part of
+1.x's robots policy left out on purpose — it declares how the content may be USED
+(`ai-train=yes`), which is the owner's stance and not a constant this file gets to pick. See
+[`agent-ready.md`](agent-ready.md), "Content-usage policy".
 
 ## PWA
 

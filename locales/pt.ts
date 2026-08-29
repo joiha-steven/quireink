@@ -32,6 +32,8 @@ const pt = {
   themeTime: 'Pela hora',
   readingSuffix: 'min de leitura',
   wordsSuffix: 'palavras',
+  bylinePrefix: 'por',
+  authorAbout: 'Sobre o autor',
   bookMode: 'Modo livro',
   bookModeClose: 'Fechar',
   bookModePrev: 'Página anterior',

@@ -29,7 +29,7 @@ export const UTILITY_CSS = `
 .meta-part{white-space:nowrap}
 .text-text{color:var(--c-text)}
 .reading-font{font-family:var(--font-reading)}
-.font-semibold{font-weight:600}
+.font-semibold{font-weight:var(--fw-heading,600)}
 .mt-2{margin-top:.5rem}
 .mt-3{margin-top:.75rem}
 /* ONE hover signature for every link outside the body copy: an accent underline. */

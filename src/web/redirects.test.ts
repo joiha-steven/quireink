@@ -85,6 +85,50 @@ describe('redirects are served', () => {
   })
 })
 
+describe('the URLs that are a second spelling of another URL', () => {
+  const PAST = '2020-01-01T00:00:00.000Z'
+
+  it('sends /page/1 to the home listing, which is the same page', async () => {
+    await savePost({ title: 'Anything', content: 'body text here', status: 'published', date: PAST })
+    const res = await get('/page/1')
+    expect(res.status).toBe(301)
+    expect(res.headers.get('location')).toBe('/')
+    // ...and page 2 is a page of its own, so it still renders.
+    expect((await get('/page/2')).status).not.toBe(301)
+  })
+
+  it('sends a term archive\'s page 1 to the archive', async () => {
+    await savePost({
+      title: 'Tagged', content: 'body text here', status: 'published', date: PAST,
+      categories: ['Ghi chép'], tags: ['bun'],
+    })
+    for (const [from, to] of [['/category/ghi-chep/page/1', '/category/ghi-chep'], ['/tag/bun/page/1', '/tag/bun']]) {
+      const res = await get(from!)
+      expect(`${from}: ${res.status}`).toBe(`${from}: 301`)
+      expect(res.headers.get('location')).toBe(to!)
+    }
+  })
+
+  it('keeps the query string, and takes a trailing slash in two permanent hops', async () => {
+    expect((await get('/page/1?x=1')).headers.get('location')).toBe('/?x=1')
+    const first = await get('/page/1/')
+    expect(first.headers.get('location')).toBe('/page/1')
+    expect((await get('/page/1')).status).toBe(301)
+  })
+
+  it('leaves a path that only looks like page one alone', async () => {
+    // The rule is anchored: `/series/x/page/1` is not a route, and `/page/10` is a page.
+    expect((await get('/page/10')).status).not.toBe(301)
+    expect((await get('/series/notes/page/1')).status).not.toBe(301)
+  })
+
+  it('sends the plural /sitemaps.xml to the one sitemap', async () => {
+    const res = await get('/sitemaps.xml')
+    expect(res.status).toBe(301)
+    expect(res.headers.get('location')).toBe('/sitemap.xml')
+  })
+})
+
 describe('what redirects do NOT touch', () => {
   it('leaves the admin and the API alone', async () => {
     await saveRedirect({ source: '/admin/old', destination: '/new' })

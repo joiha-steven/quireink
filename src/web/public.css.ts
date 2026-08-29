@@ -31,6 +31,7 @@ import { PROSE_CSS } from '@/web/prose.css'
 import { FRONT_CSS } from '@/web/front.css'
 import { UTILITY_CSS } from '@/web/utility.css'
 import { FIGURE_CSS } from '@/web/figure.css'
+import { POST_IMAGE_CSS } from '@/web/postimage.css'
 import { PRINT_CSS } from '@/web/print.css'
 
 const BASE_CSS = `
@@ -145,7 +146,7 @@ main{flex:1;padding:3rem 0 1rem}
    never be. */
 .skip-link{position:absolute;left:-9999px;top:0;z-index:60}
 .skip-link:focus{left:.5rem;top:.5rem;padding:.5rem .75rem;background:var(--c-bg);
-  border:1px solid var(--c-rule);border-radius:.5rem;color:var(--c-heading);
+  border:1px solid var(--c-rule);border-radius:var(--radius,.5rem);color:var(--c-heading);
   text-decoration:none}
 
 header.site{padding:1.75rem 0}
@@ -222,7 +223,7 @@ article > header .t-small{margin:0}
 .read-next-label{font-size:var(--fs-small);line-height:var(--lh-small);
   letter-spacing:var(--ls-small);font-weight:600;color:var(--c-meta);margin:0 0 .5rem}
 .read-next-title{margin:0;font-size:var(--fs-h3);line-height:var(--lh-h3);letter-spacing:var(--ls-h3)}
-.read-next-title a{font-weight:600;color:var(--c-heading)}
+.read-next-title a{font-weight:var(--fw-heading,600);color:var(--c-heading)}
 .related{font-size:var(--fs-small);line-height:var(--lh-small);
   letter-spacing:var(--ls-small)}
 /* The size is stated even though the block already sets it: an h2 carries a UA default of
@@ -231,7 +232,7 @@ article > header .t-small{margin:0}
   letter-spacing:var(--ls-small);font-weight:600;color:var(--c-meta);margin:0 0 1.25rem}
 .related ul{list-style:none;padding:0;margin:0}
 .related li + li{margin-top:1rem}
-.related a{font-weight:600;color:var(--c-heading)}
+.related a{font-weight:var(--fw-heading,600);color:var(--c-heading)}
 .related p{margin:.125rem 0 0}
 article + .subscribe-card,article + #comments{margin-top:2.5rem}
 
@@ -241,7 +242,7 @@ ${PROSE_CSS}
    BOLD, where a post title is 600. Both come from the frozen tree's own markup. */
 .listing-head{margin:0 0 2rem}
 .listing-head h1{font-size:var(--fs-h1);line-height:var(--lh-h1);
-  letter-spacing:var(--ls-h1);color:var(--c-heading);margin:0;font-weight:700}
+  letter-spacing:var(--ls-h1);color:var(--c-heading);margin:0;font-weight:var(--fw-title,700)}
 .lower{text-transform:lowercase}
 ${UTILITY_CSS}
 
@@ -285,17 +286,17 @@ form.search{display:flex;gap:.5rem;margin:0 0 2rem}
    border sat off-screen: the page scrolled sideways. form.subscribe already carried this
    rule; the search form was written from the same shape and lost it. */
 form.search input{min-width:0;flex:1;padding:.5rem .75rem;border:1px solid var(--c-rule);
-  border-radius:.5rem;background:var(--c-bg);color:var(--c-text);font:inherit}
+  border-radius:var(--radius,.5rem);background:var(--c-bg);color:var(--c-text);font:inherit}
 /* nowrap because the label is what pushed the row wide: "Tìm kiếm" broke over two lines and
    took the whole control to 78px tall to make room for itself. */
-form.search button{padding:.5rem 1rem;border:1px solid var(--c-rule);border-radius:.5rem;
+form.search button{padding:.5rem 1rem;border:1px solid var(--c-rule);border-radius:var(--radius,.5rem);
   background:var(--c-bg);color:var(--c-heading);font:inherit;cursor:pointer;white-space:nowrap}
 /* Stacked on a phone, exactly as the sign-up form stacks and at the same width. */
 @media (max-width:639px){form.search{flex-direction:column}}
 /* The series box: a bordered card at the TOP of the post, as the frozen tree had it. The
    port turned it into a plain rule at the foot of the article, which is the wrong end — the
    point of it is knowing you are in part 3 of 6 BEFORE reading, not after. */
-aside.series{border:1px solid var(--c-rule);border-radius:.5rem;padding:1.25rem 1.5rem;
+aside.series{border:1px solid var(--c-rule);border-radius:var(--radius,.5rem);padding:1.25rem 1.5rem;
   margin:2rem 0 0;font-size:var(--fs-small);line-height:var(--lh-small);
   letter-spacing:var(--ls-small)}
 aside.series .series-head{margin:0;color:var(--c-meta)}
@@ -364,6 +365,7 @@ ${ISLANDS_CSS}
 ${BOOK_CSS}
 ${SUBSCRIBE_CSS}
 ${FRONT_CSS}
+${POST_IMAGE_CSS}
 ${IDE_CSS}
 ${MOBILE_CSS}
 ${PRINT_CSS}`

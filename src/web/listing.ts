@@ -13,11 +13,18 @@ import type { Dict } from '@/locales/types'
 import { termSlug } from '@/content/taxonomy'
 import type { Paged } from '@/content/paginate'
 import { escapeAttr, escapeHtml } from '@/utils'
+import { postImage, type ReadyImages } from '@/web/front-card'
 
 const yearOf = (iso: string) => iso.slice(0, 4)
 const monthOf = (iso: string) => iso.slice(0, 7)
 
 type CardOptions = {
+  /**
+   * Originals with responsive variants, for the thumbnail. Absent means no thumbnails:
+   * `renderListing` only reads the media table when `postImage.thumb` asks for pictures, so
+   * a text list costs exactly what it cost before (`listing-page.ts`).
+   */
+  ready?: ReadyImages
   /** The newest post on page 1 takes the h1 role, so a list has one clear entry point. */
   lead?: boolean
   /** First card of a month: its marker goes out in the gutter, level with the card. */
@@ -61,7 +68,20 @@ function card(post: Post, settings: SiteSettings, opts: CardOptions = {}): strin
   // is off or unsupported (pure CSS, `animation-timeline: view()`).
   // `data-more` marks a card past the first page. The island hides those and reveals them
   // a chunk at a time; with no JavaScript nothing hides them and the whole archive renders.
-  return `<article class="reveal"${opts.lead ? ' data-lead' : ''}${opts.more ? ' data-more' : ''}>${mark}
+  // The post's own picture, when the owner asked for thumbnails and this post has one.
+  //
+  // `sizes` is the measured box, not the column: `side` draws a 96px square (192 at 2x) and
+  // `top` fills the card. Declaring the column width here would download an image four
+  // times the size of the hole it goes in, which is the whole reason the shapes differ.
+  const thumbKind = settings.postImage.thumb
+  const thumb = thumbKind !== 'none' && opts.ready
+    ? postImage(post, opts.ready, thumbKind === 'side'
+      ? '96px'
+      : `(max-width: 700px) 100vw, ${settings.contentWidth}px`) ?? ''
+    : ''
+  const thumbBlock = thumb ? `<div class="card-thumb">${thumb}</div>` : ''
+  const shape = thumb ? ` data-thumb="${thumbKind}"` : ''
+  return `<article class="reveal"${shape}${opts.lead ? ' data-lead' : ''}${opts.more ? ' data-more' : ''}>${mark}${thumbBlock}
 <p class="t-small text-meta">${categoryLink}<time class="meta-part" datetime="${escapeAttr(post.date)}">${escapeHtml(formatDate(post.date, settings.language, settings.timezone))}</time>${minutes}</p>
 <${Title} class="reading-font mt-2 ${size} font-semibold"><a class="link-accent" href="/${escapeAttr(post.slug)}">${escapeHtml(post.title)}</a></${Title}>
 ${post.excerpt ? `<p class="reading-font mt-3 t-body text-text">${escapeHtml(post.excerpt)}</p>` : ''}
@@ -93,7 +113,7 @@ function pager(paged: Paged<Post>, basePath: string, tx: Dict): string {
  * ordinary children in the flow, positioned out into the gutter by `timelineCss` — so the
  * years stay level with their posts with no JavaScript and no measurement.
  */
-function timeline(posts: Post[], settings: SiteSettings, lead: boolean): string {
+function timeline(posts: Post[], settings: SiteSettings, lead: boolean, ready?: ReadyImages): string {
   // Everything past the first page is a chunk the island reveals on scroll. The frozen tree
   // held the tail in React state and revealed `postsPerPage` at a time; this renders it and
   // hides it instead, which reaches the same feed without giving up the no-script archive.
@@ -117,6 +137,7 @@ function timeline(posts: Post[], settings: SiteSettings, lead: boolean): string 
         lead: lead && i === 0,
         month: firstOfMonth && !firstOfYear ? formatMonth(post.date, settings.language, settings.timezone) : undefined,
         more: i >= chunk,
+        ready,
       })
     }).join('\n')
     return `<div class="tl-yr"><div class="tl-year" aria-hidden="true">`
@@ -136,6 +157,8 @@ export type ListingView = {
   headingHtml?: string
   /** A line under the heading: the term description, the series blurb, the result count. Plain text — renderListing escapes it. */
   subheading?: string
+  /** Originals with variants, for card thumbnails. Absent = a text-only list. */
+  ready?: ReadyImages
   paged: Paged<Post>
   /** Base for pagination links: '' for home, '/category/x' for a term. */
   basePath: string
@@ -166,10 +189,10 @@ export function renderListing(view: ListingView, settings: SiteSettings): string
     // content is only ever safe when the thing that undoes it is guaranteed to exist.
     const guard = '<noscript><style>html[data-chunked] .post-list article[data-more]'
       + '{display:block}</style></noscript>'
-    return `${head}<div class="post-list tl-feed">${timeline(view.paged.items, settings, lead)}</div>${guard}`
+    return `${head}<div class="post-list tl-feed">${timeline(view.paged.items, settings, lead, view.ready)}</div>${guard}`
   }
   const body = view.paged.items
-    .map((p, i) => card(p, settings, { lead: lead && i === 0 }))
+    .map((p, i) => card(p, settings, { lead: lead && i === 0, ready: view.ready }))
     .join('\n')
   return `${head}<div class="post-list">${body}</div>${pager(view.paged, view.basePath, t(settings.language))}`
 }

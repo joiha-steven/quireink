@@ -31,6 +31,8 @@ export type Dict = {
   themeTime: string
   readingSuffix: string
   wordsSuffix: string
+  bylinePrefix: string
+  authorAbout: string
   bookMode: string
   bookModeClose: string
   bookModePrev: string
@@ -315,6 +317,56 @@ export type AdminStrings = {
   galleryRatioHint: string
   galleryCaptions: string
   galleryCaptionsHint: string
+  // Settings -> Layout -> Post pictures. A post's cover is already stored, resized and
+  // served; these two decide whether a reader ever sees it. BOTH DEFAULT TO OFF, and
+  // `postImageHint` is the sentence that says so above the controls.
+  cardPostImage: string
+  postImageHint: string
+  postImageHero: string
+  postImageHeroHint: string
+  postImageThumb: string
+  postImageThumbHint: string
+  /** Shared by both choosers: "no picture here". */
+  piOff: string
+  /** The hero's only "on" value: there is no wider one (see `PostImageSettings.hero`). */
+  piHeroInline: string
+  piThumbSide: string
+  piThumbTop: string
+  // Settings -> Appearance -> Shape. The three knobs that change shape rather than colour.
+  // Every default reproduces today exactly, which is what `shapeHint` promises.
+  cardShape: string
+  shapeHint: string
+  shapeDensity: string
+  shapeDensityHint: string
+  shapeRadius: string
+  shapeRadiusHint: string
+  shapeHeading: string
+  shapeHeadingHint: string
+  shapeCompact: string
+  shapeNormal: string
+  shapeRelaxed: string
+  shapeSquare: string
+  shapeSoft: string
+  shapeRound: string
+  shapeLight: string
+  /** The middle weight. A separate key from `shapeNormal`: several languages use a
+   *  different word for "normal spacing" and "regular weight". */
+  shapeRegular: string
+  shapeBold: string
+  // Settings -> Site -> Author. One blog, one owner (ADR 0002). An EMPTY NAME is the
+  // default and means silence — no byline, no author box, no `author` in the structured
+  // data — so `authorHint` has to say that before the first field.
+  cardAuthor: string
+  authorHint: string
+  authorName: string
+  authorNameHint: string
+  authorBio: string
+  authorBioHint: string
+  authorAvatar: string
+  authorAvatarHint: string
+  authorNoAvatar: string
+  authorLink: string
+  authorLinkHint: string
   // Settings -> Layout -> Highlighter
   captionPlaceholder: string
   // post settings panel

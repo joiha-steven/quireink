@@ -49,7 +49,14 @@ function scaledVars(t: TypographySettings): string {
   // The article's spacing unit. Scale-dependent, so it belongs in this block and nowhere
   // else: a second definition on :root elsewhere would win or lose by source order and the
   // book overlay would go back to unscaled gaps.
-  return `${roles};--sp:calc(1rem * var(--type-scale, 1))`
+  //
+  // `--density` (settings/shape, 2026-08-29) multiplies in HERE for exactly the reason the
+  // block above is emitted twice: a var() inside a custom property resolves where the
+  // property is DECLARED. Reading the density anywhere else would bake in whatever value
+  // :root happened to hold and the knob would silently do nothing — the same trap that had
+  // book mode rendering at the article's size for a release. The fallback keeps a stylesheet
+  // rendered before the setting existed identical to one rendered after it.
+  return `${roles};--sp:calc(1rem * var(--type-scale, 1) * var(--density, 1))`
 }
 
 export function typographyToCss(t: TypographySettings): string {

@@ -1,6 +1,7 @@
 import type {
   AiSettings, McpSettings, HomeSettings, GallerySettings, FigureSettings,
   CacheSettings, InkSettings, MotionSettings, BackupSettings,
+  PostImageSettings, ShapeSettings, AuthorSettings,
 } from '@/types-settings'
 // Core domain types shared across the app.
 
@@ -226,6 +227,9 @@ export type SiteSettings = {
   home: HomeSettings // what `/` serves, and where the post list lives when it is not there
   figure: FigureSettings // site-wide default frame for every picture
   gallery: GallerySettings // site-wide default shape + caption state for in-body galleries
+  postImage: PostImageSettings // where a post's own picture may appear: article hero, list thumbnail. Both 'none' at install
+  shape: ShapeSettings // density, corner radius and headline weight — the knobs that change shape rather than colour. Defaults reproduce today exactly
+  author: AuthorSettings // the one person who writes here: byline, author box, and the `author` field in every BlogPosting. name:'' = silent
   seo: SeoSettings // SEO / crawler feature toggles
   features: FeatureSettings // reader-facing feature toggles
   comments: CommentSettings // reader comment system (off by default)

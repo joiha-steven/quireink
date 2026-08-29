@@ -46,6 +46,15 @@ export function postInfoPanel(post: PostWithContent, settings: SiteSettings, s: 
     `<p><time datetime="${escapeAttr(post.date)}">${
       escapeHtml(formatDate(post.date, settings.language, settings.timezone))}</time></p>`,
   ]
+  // Who wrote it, directly under the date — the same place the meta line puts it, and this
+  // panel IS the meta line above the rail breakpoint (`article.ts` hides `.post-meta`
+  // there, so a byline that lived only in that line was invisible on every desktop).
+  if (settings.author.name) {
+    const who = settings.author.url
+      ? `<a class="link-accent" href="${escapeAttr(settings.author.url)}" rel="author">${escapeHtml(settings.author.name)}</a>`
+      : escapeHtml(settings.author.name)
+    rows.push(`<p class="byline">${escapeHtml(s.bylinePrefix)} ${who}</p>`)
+  }
   if (features.readingTime) {
     // The figures are wrapped and the units are not, the same way the meta line does it, so
     // the IDE chrome can set a literal apart from the words beside it.

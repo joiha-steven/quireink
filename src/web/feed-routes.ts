@@ -48,4 +48,16 @@ export function registerFeedRoutes(app: Hono): void {
     ({ settings, site }) => renderRobots(settings, site))
   feedRoute('/llms.txt', (s) => s.seo.llms, 'text/plain; charset=utf-8',
     ({ posts, pages, settings, site }) => renderLlms(posts, pages, settings, site))
+
+  // The plural is the common misspelling, and it is the URL some old Search Console
+  // submissions still carry — 1.x answered it and 2.0 did not, so a site moved here answers
+  // 404 to whatever was already pointing at it. An alias rather than a second document:
+  // two sitemaps are two things to keep in sync, and this way there is one.
+  //
+  // Registered unconditionally, and NOT wrapped in `feedRoute`: it reads no settings and
+  // builds no body. When the owner has the sitemap switched off, the destination is the
+  // route that 404s, which is where that answer belongs. 301 rather than 1.x's 308 because
+  // the method is GET either way, and 301 is what every other permanent move in this app
+  // sends (`canonicalPath`, `userRedirects`, the home-slug alias).
+  app.get('/sitemaps.xml', (c) => c.redirect('/sitemap.xml', 301))
 }

@@ -12,6 +12,9 @@ import { paginate } from '@/content/paginate'
 import { pageCache } from '@/server/cache'
 import { renderDocument, pageStyles } from '@/web/layout'
 import { renderListing, type ListingView } from '@/web/listing'
+import type { ReadyImages } from '@/web/front-card'
+import { getMediaRefs } from '@/media/media-refs'
+import { collapseBlob } from '@/media/blob'
 import { renderSidebar } from '@/web/sidebar'
 import { timelineCss } from '@/render/rail-css'
 import { ogCardUrl, siteDomain } from '@/render/og'
@@ -106,6 +109,19 @@ ${siteFooter(settings, { mailConfigured })}
  *
  * Returns null when the page number does not exist, which the router turns into a 404.
  */
+/**
+ * Which originals have responsive variants, for card thumbnails.
+ *
+ * Same shape and the same one-table-read as `renderFront`'s: a `<picture>` has no fallback
+ * when a source 404s, so a variant may only be offered for an original confirmed to have
+ * one. Called only when thumbnails are switched on.
+ */
+async function readyThumbs(): Promise<ReadyImages> {
+  const ready: ReadyImages = new Set()
+  for (const r of await getMediaRefs()) if (r.variants) ready.add(collapseBlob(r.url))
+  return ready
+}
+
 export async function renderFeedBody(
   posts: Posts, page: number, view: Omit<ListingView, 'paged' | 'timeline'>,
 ): Promise<{ body: string; css: string } | null> {
@@ -119,8 +135,12 @@ export async function renderFeedBody(
   // would silently serve the last page under a ninth URL, which is duplicate content at
   // every number a crawler tries. Compare against the real total instead.
   if (page > paged.totalPages) return null
+  // The media table is read ONLY when the owner asked for thumbnails — the same
+  // conditional `renderFront` uses for its picture kind, and for the same reason: it is a
+  // full table read, and a text list must not start paying for a feature it does not use.
+  const ready = settings.postImage.thumb === 'none' ? undefined : await readyThumbs()
   return {
-    body: renderListing({ ...view, paged, timeline }, settings),
+    body: renderListing({ ...view, paged, timeline, ready }, settings),
     // The timeline appears at a MUCH lower width than the sidebar: a date label needs far
     // less gutter than a 250px rail, so it shows on an ordinary laptop.
     css: timeline ? timelineCss(settings.contentWidth) : '',

@@ -31,6 +31,8 @@ const ko = {
   themeTime: '시간대별',
   readingSuffix: '분 읽기',
   wordsSuffix: '단어',
+  bylinePrefix: '글',
+  authorAbout: '글쓴이 소개',
   bookMode: '책 모드',
   bookModeClose: '닫기',
   bookModePrev: '이전 페이지',
