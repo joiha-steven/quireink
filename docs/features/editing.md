@@ -184,9 +184,9 @@
   both forms.
 - **Serving (`app/uploads/[...path]`): STREAMS from disk and honours byte ranges.**
   Video seeking — and iOS Safari playback at all — needs 206 responses; the route
-  parses `Range` via `lib/http-range.ts` (pinned by `http-range.test.ts`) and pipes
+  parses `Range` via `src/media/http-range.ts` (pinned by `http-range.test.ts`) and pipes
   `createReadStream` into the Response, so a large video never sits in server memory
-  (this also de-buffered image serving). `lib/mime.ts` maps video/audio extensions —
+  (this also de-buffered image serving). `src/media/mime.ts` maps video/audio extensions —
   without them the fallback octet-stream makes browsers download instead of play.
 - **The app's own limits (`src/media/limits.ts`): `MAX_UPLOAD_MB` (64) and
   `STORAGE_QUOTA_GB` (5).** Added 2026-08-11, when the only byte limit in the tree turned

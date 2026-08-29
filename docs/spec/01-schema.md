@@ -153,7 +153,7 @@ Consequences:
 - `updateTerm` (rename across every post, merging on collision; remove across every
   post) becomes one `UPDATE` or one `DELETE` instead of a read-modify-write over the
   whole post index. This is a meaningful simplification of the hardest taxonomy code
-  in `lib/posts.ts`.
+  in `src/content/posts.ts`.
 - Saving a post costs two extra statements (`DELETE` then batch `INSERT`) inside the
   existing transaction.
 

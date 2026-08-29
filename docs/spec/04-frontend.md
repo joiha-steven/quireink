@@ -103,7 +103,10 @@ optical range. Pinning it at 18 gives:
 Also 180 KB off the font directory overall, since Source Serif 4 gets the same treatment.
 
 Reasoning, the rejected alternatives, and why 18 was chosen over 14/16/24 live in
-`docs/performance.md` and `scripts/subset-font-axes.py`.
+`docs/performance.md` and `scripts/ops/subset-fonts.py`. This line named
+`scripts/subset-font-axes.py` until 2026-08-29, a file that has never been in this tree;
+`docs/performance.md` had already recorded that the name was wrong and this copy of it
+went on pointing at nothing.
 
 **Standing rules**, unchanged and already honoured:
 

@@ -1,6 +1,6 @@
 # Newsletter
 
-## Newsletter — `lib/subscribers.ts`, `lib/mail.ts`, `lib/newsletter-log.ts`, `api/subscribe`, `api/newsletter/*`, `api/broadcast`, Admin → Newsletter
+## Newsletter — `src/news/{subscribers,mail,newsletter-log}.ts`, `/api/newsletter/*`, `api/newsletter/*`, `api/broadcast`, Admin → Newsletter
 
 - **Double opt-in.** `subscribers` (email unique · status pending/confirmed/unsubscribed · a
   per-subscriber `token` used for BOTH confirm + unsubscribe links). `POST /api/subscribe`
@@ -24,7 +24,7 @@
   Trash only — is the hard delete, and the moment `deleteSendsFor` clears the address from
   the send log. A trashed address neither receives broadcasts nor answers its own links;
   re-subscribing it starts over as a fresh pending row with a fresh token.
-- **SMTP (`lib/mail.ts`, Nodemailer).** Config lives on `integration_keys` (server-only secrets,
+- **SMTP (`src/news/mail.ts`, Nodemailer).** Config lives on `integration_keys` (server-only secrets,
   env fallback) — set in Admin → Settings → Connections (`NewsletterFields`, via `api/mail`).
   `sendMail` never throws: `{ sent:false, error:'smtp_not_configured' }` when unset, so subscribe
   still records the pending row. `isMailConfigured` = host + From present.
@@ -50,7 +50,7 @@
   SAME builder the live path uses, so a green test means the real send works. Recipient defaults
   to the signed-in owner's address; confirm/unsubscribe links carry a placeholder token, so they
   deliberately land on the "invalid link" page. Uses the SAVED config, not the unsaved form.
-- **Send log** (`newsletter_sends`, `lib/newsletter-log.ts`). `sendMail` writes ONE row per
+- **Send log** (`newsletter_sends`, `src/news/newsletter-log.ts`). `sendMail` writes ONE row per
   outgoing email — success or failure, all four kinds (`confirm`/`broadcast`/`reply`/`test`) — so
   no path can email an address without it showing up. Keyed by ADDRESS, not a subscriber FK:
   reply notifications go to commenters who never subscribed. Deleting a subscriber clears their
@@ -62,7 +62,7 @@
   refetching can't inflate the count; no IP, UA or referrer is recorded. The preview and the test
   send pass no token, so reviewing an email never counts as an open. Links are NOT wrapped, so
   there is no click tracking and every URL in the mail is the real one.
-- **Manual broadcast** (`lib/broadcast.ts` `broadcastPost`, `POST /api/broadcast`). There is NO
+- **Manual broadcast** (`src/news/broadcast.ts` `broadcastPost`, `POST /api/broadcast`). There is NO
   automatic send: the cron publishes a scheduled post on time but never emails anyone (owner's
   call — every send is previewed and pressed by hand). `broadcastPost` mails one publicly-visible
   post to every confirmed subscriber, one email each with its own open token, and stamps
@@ -71,15 +71,15 @@
   wrongly report them as sent. `force: true` (the admin's resend checkbox) overrides it. The route
   lives at `/api/broadcast`, NOT under `/api/newsletter/*` — that prefix is the public
   confirm/unsubscribe/pixel family and a send endpoint must stay owner-gated.
-- **Comment-reply notifications** (`lib/comment-notify.ts` `notifyReply`, fired via `after()`
+- **Comment-reply notifications** (`src/comments/comment-notify.ts` `notifyReply`, fired via `after()`
   from the comment POST route on a reply). Emails the parent commenter (their `author_email`) a
   link to the thread. Best-effort + transactional: skips a self-reply (same email), a deleted
   parent, and no-ops without SMTP. Never throws.
-- **Email design** — `lib/newsletter-email.ts` builds every message (`confirmEmail`,
+- **Email design** — `src/news/newsletter-email.ts` builds every message (`confirmEmail`,
   `broadcastEmail`, `replyEmail`) through ONE `shell()`, reused by the subscribe route, the manual
   broadcast, the comment route, the admin preview and the test send. It is meant to read like the
   blog, so:
-  - Identity comes from `lib/email-brand.ts` (`emailBrand(settings)`) — ONE resolver, so all four
+  - Identity comes from `src/news/email-brand.ts` (`emailBrand(settings)`) — ONE resolver, so all four
     senders share a letterhead. It carries the owner's OWN palette
     (`getDefaultTheme(...).light`) plus the masthead logo, bundled as `EmailBrand` rather than
     four more positional arguments.
