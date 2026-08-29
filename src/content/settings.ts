@@ -2,7 +2,7 @@
 // defaults on any failure so the header/<title> never crash. Image refs stored
 // store-relative, binaries on Blob. Validation/migration lives in settings-sanitize.ts.
 
-import type { BackupSettings, CommentSettings, FeatureSettings, SeoSettings, SiteSettings } from '@/types'
+import type { SiteSettings } from '@/types'
 import { DEFAULT_INKS } from '@/render/ink-palette'
 import { collapseBlob, expandBlob, deleteByPathname } from '@/media/blob'
 import { renderLogo } from '@/media/files'
@@ -19,63 +19,20 @@ import {
   DEFAULT_POST_IMAGE, DEFAULT_SHAPE, DEFAULT_AUTHOR,
   sanitizePostImage, sanitizeShape, sanitizeAuthor,
 } from '@/content/settings-shape'
+import { DEFAULT_TABLE, sanitizeTable } from '@/content/settings-table'
+import {
+  DEFAULT_SEO, DEFAULT_BACKUPS, DEFAULT_FEATURES, DEFAULT_COMMENTS,
+} from '@/content/settings-defaults'
 
 // Re-export so existing importers keep working.
 export { DEFAULT_THEME, themesToCss, getDefaultTheme, DEFAULT_TYPOGRAPHY, DEFAULT_FONT } from '@/content/themes'
 export { resolveSiteUrl, siteUrlIsUnset, resolveAppIcon } from '@/content/settings-resolve'
 export { typographyToCss, fontToCss } from '@/content/settings-css'
 export { shapeToCss } from '@/content/settings-shape'
-
-export const DEFAULT_SEO: SeoSettings = {
-  autoSchema: true,
-  sitemap: true,
-  llms: true,
-  robots: true,
-  rss: true,
-  ogImage: true,
-  ogFallbackImage: '',
-}
-
-export const DEFAULT_BACKUPS: BackupSettings = {
-  // ON since 2026-08-29. It shipped off, which meant the product's least-technical
-  // audience — the person who installs from a NAS container store and never opens
-  // Settings → System — ran without a single snapshot until the day they needed one.
-  // `keep` bounds the disk (4 snapshots, pruned), so the cost of on-by-default is a few
-  // hundred MB ceiling; the cost of off-by-default is somebody's writing. An owner who
-  // SAVED settings before this ships keeps their stored `false` — the default only
-  // reaches installs that never chose.
-  enabled: true,
-  intervalDays: 4,
-  keep: 4,
-}
-
-export const DEFAULT_FEATURES: FeatureSettings = {
-  search: true,
-  toc: true,
-  related: true,
-  readingTime: true,
-  progressBar: true,
-  activityLog: true,
-  sidebar: true,
-  sidebarSeries: true,
-  leadPost: true,
-  categoryLabel: true,
-  deck: true,
-  penUnderline: true,
-  penRing: true,
-  bookText: false,
-  bookMode: true,
-  readNext: true,
-  resume: true,
-  infiniteScroll: false,
-  gridView: true,
-}
-
-export const DEFAULT_COMMENTS: CommentSettings = {
-  enabled: false,
-  turnstile: false,
-  googleAuth: false,
-}
+export { tableToCss } from '@/content/settings-table'
+export {
+  DEFAULT_SEO, DEFAULT_BACKUPS, DEFAULT_FEATURES, DEFAULT_COMMENTS,
+} from '@/content/settings-defaults'
 
 /**
  * The type numbers a fresh install starts with: the DEFAULT FACE's own, never the neutral
@@ -149,6 +106,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   gallery: DEFAULT_GALLERY,
   postImage: DEFAULT_POST_IMAGE,
   shape: DEFAULT_SHAPE,
+  table: DEFAULT_TABLE,
   author: DEFAULT_AUTHOR,
   seo: DEFAULT_SEO,
   features: DEFAULT_FEATURES,
@@ -229,6 +187,7 @@ export async function getSettings(): Promise<SiteSettings> {
       gallery: sanitizeGallery(stored.gallery, DEFAULT_GALLERY),
       postImage: sanitizePostImage(stored.postImage, DEFAULT_POST_IMAGE),
       shape: sanitizeShape(stored.shape, DEFAULT_SHAPE),
+      table: sanitizeTable(stored.table, DEFAULT_TABLE),
       author: (() => {
         const a = sanitizeAuthor(stored.author, DEFAULT_AUTHOR)
         // The portrait is an image ref like the logo: stored store-relative, expanded on
@@ -366,6 +325,7 @@ export async function saveSettings(input: Partial<SiteSettings>): Promise<SiteSe
     gallery: sanitizeGallery(input.gallery, current.gallery),
     postImage: sanitizePostImage(input.postImage, current.postImage),
     shape: sanitizeShape(input.shape, current.shape),
+    table: sanitizeTable(input.table, current.table),
     author: sanitizeAuthor(input.author, current.author),
     comments: sanitizeComments(input.comments, current.comments),
     mcp: sanitizeMcp(input.mcp, current.mcp),

@@ -140,9 +140,36 @@ ${LINK_INK_CSS}
    a phone bug. :has() keeps the scroll container off the articles that have no table, and a
    browser without :has() is left exactly where it is today. */
 .prose:has(table){overflow-x:auto}
+/* EVERY NUMBER BELOW COMES FROM A VARIABLE, and the fallback in each var() is this file's
+   own default — the same arrangement settings-css.ts uses, so the sheet renders correctly
+   before any settings CSS is injected and a saved choice still wins when it is. The selectors
+   stay here: a stylesheet whose values are variables ships once and caches; one assembled per
+   site cannot. content/settings-table.ts decides what the values are.
+
+   --tbl-min-col is the phone fix, and it is off by default because it is a CHOICE. .prose
+   has carried overflow-x:auto for wide tables since it was written, and for a table of
+   sentences it had never once engaged: a table that can shrink never overflows, so instead of
+   scrolling it compressed. Measured at 375px on a two-column reference table -- first column
+   105px, one row 551px tall, seven rows totalling 2,334px, no scrollbar. A floor on the cell
+   is what lets the scroll container finally do its job; a floor on a timeline of three short
+   columns, which fits a phone comfortably today, would send it sideways for nothing. */
 .prose table{border-collapse:collapse;width:100%}
-.prose th,.prose td{border:1px solid var(--c-rule);
-  padding:calc(var(--sp) * .4) calc(var(--sp) * .6);text-align:left}
+.prose th,.prose td{
+  border-width:var(--tbl-rule-y, 1px) var(--tbl-rule-x, 1px);
+  border-style:solid;border-color:var(--c-rule);
+  padding:calc(var(--sp) * .4 * var(--tbl-pad, 1)) calc(var(--sp) * .6 * var(--tbl-pad, 1));
+  min-width:var(--tbl-min-col, 0);text-align:left}
+/* The header's own separation, drawn whatever the grid says: it marks the head off from the
+   data and is not one of the table's lines. */
+.prose th{background:var(--tbl-head-bg, color-mix(in srgb, var(--c-text) 6%, var(--c-bg)));
+  color:var(--tbl-head-fg, var(--c-heading));
+  border-bottom-width:var(--tbl-head-rule, 1px)}
+/* Banding under the text, never beside it: transparent when the setting is off, so this
+   rule costs a blog that never turns it on exactly nothing. */
+.prose tbody tr:nth-child(even){background:var(--tbl-stripe, transparent)}
+/* The left column as the heading for its row -- true of five of the six tables this was
+   measured against, where the first column names the row and the rest answers it. */
+.prose tbody td:first-child{font-weight:var(--tbl-col1-weight, inherit)}
 
 /* BOOK TYPOGRAPHY (features.bookText). A printed book leads a paragraph with nothing but
    an indent; on screen that reads as a wall, so a small lead stays. A paragraph that OPENS

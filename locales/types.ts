@@ -354,6 +354,37 @@ export type AdminStrings = {
    *  different word for "normal spacing" and "regular weight". */
   shapeRegular: string
   shapeBold: string
+  // Settings -> Appearance -> Tables. One set for the whole blog; GFM cannot express any
+  // of it, so the Markdown stays portable.
+  cardTable: string
+  tableHint: string
+  tableHead: string
+  tableHeadHint: string
+  tableHeadPlain: string
+  tableHeadTint: string
+  tableHeadRule: string
+  tableHeadInk: string
+  tableGrid: string
+  tableGridHint: string
+  tableGridAll: string
+  tableGridRows: string
+  tableGridNone: string
+  tableRuleWeight: string
+  tableRuleWeightHint: string
+  tableHairline: string
+  tableThick: string
+  tableFirstCol: string
+  tableFirstColHint: string
+  tableColNormal: string
+  tableColStrong: string
+  tablePadding: string
+  tablePaddingHint: string
+  tableNarrow: string
+  tableNarrowHint: string
+  tableNarrowFit: string
+  tableNarrowScroll: string
+  tableStripe: string
+  tableStripeHint: string
   // Settings -> Site -> Author. One blog, one owner (ADR 0002). An EMPTY NAME is the
   // default and means silence — no byline, no author box, no `author` in the structured
   // data — so `authorHint` has to say that before the first field.

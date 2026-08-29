@@ -11,6 +11,7 @@ import { Card, CONTROL_CHROME, NOTE_TEXT, ResetButton } from './kit'
 import { useAdminT } from './I18nProvider'
 import { ThemeFields } from './ThemeFields'
 import { ShapeFields } from './ShapeFields'
+import { TableFields } from './TableFields'
 import { InkFields } from './InkFields'
 import { FontFields } from './FontFields'
 import { FontUpload } from './FontUpload'
@@ -41,6 +42,11 @@ export function SettingsAppearanceTab(
             the right column as exactly one subject: type. Re-measure before moving it again. */}
         <Card panel title={t.cardShape}>
           <ShapeFields shape={s.shape} onChange={(shape) => update({ shape })} />
+        </Card>
+        {/* Under Shape, because it is the same question — what the site LOOKS like rather
+            than what colour it is — asked about the one block that had never been asked. */}
+        <Card panel title={t.cardTable}>
+          <TableFields table={s.table} onChange={(table) => update({ table })} />
         </Card>
         <Card panel title={t.navAppearance}>
           <p className={`${NOTE_TEXT} mb-4 rounded-lg bg-neutral-50 px-3 py-2 dark:bg-neutral-800/60`}>

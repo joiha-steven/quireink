@@ -186,6 +186,73 @@ export type ShapeSettings = {
 }
 
 /**
+ * How every table in an article is drawn.
+ *
+ * ONE SET FOR THE WHOLE BLOG, and that is the design rather than a limitation. GFM has no
+ * syntax for a tinted header or a row rule, so the alternative is an attribute carried in the
+ * markdown — which would make a table stop being a table anybody can paste somewhere else.
+ * These tables are written by pasting Markdown in and are expected to paste back out.
+ *
+ * Measured on a real article of six tables (2026-08-29): one timeline of three short columns
+ * and five reference tables of two columns whose cells run past 150 characters. They are all
+ * ONE KIND. Nobody needed this table to differ from that one; what they needed was for the
+ * default to be worth looking at.
+ *
+ * ⚠️ `head: 'tint'` is the one default in this file that does NOT reproduce today. Every other
+ * settings group added to this product shipped defaults that moved nothing on upgrade, and
+ * this one deliberately breaks that: a `<th>` had no ground at all, so a header row was bold
+ * text in the same white as the data and read as one more row. Owner's call, 2026-08-29.
+ * The old rendering is still one click away — it is `head: 'plain'` with `grid: 'all'`.
+ */
+export type TableSettings = {
+  /**
+   * How the header row is marked off from the data.
+   *
+   * `plain` is what every table looked like before this setting: nothing but the browser's
+   * bold. `tint` grounds it in the faintest wash the palette has. `rule` leaves it on the
+   * page and draws a heavier line beneath. `ink` inverts it.
+   */
+  head: 'plain' | 'tint' | 'rule' | 'ink'
+  /**
+   * Which rules get drawn. Not a weight — a different set of lines.
+   *
+   * `all` boxes every cell, which is what a table of NUMBERS wants and what a table of
+   * sentences drowns in. `rows` keeps the horizontal rules and drops the vertical ones.
+   * `none` leaves the banding and the air to do the separating.
+   */
+  grid: 'all' | 'rows' | 'none'
+  /** How heavy those rules are. A hairline, or something that reads as a drawn line. */
+  ruleWeight: 'hairline' | 'bold'
+  /** Alternate row tint. Earns its keep on a long table of long cells, not on four rows. */
+  stripe: boolean
+  /**
+   * The left column as a heading for its row.
+   *
+   * True of five of the six tables measured — `Chủ đề | Nguồn`, `Giờ | Sự việc` — where the
+   * first column names the row and the rest answers it. `strong` gives it the header's
+   * weight; the rest of the row stays as it was.
+   */
+  firstColumn: 'normal' | 'strong'
+  /** Air inside a cell. Multiplies the padding, which is already a multiple of `--sp`. */
+  padding: 'tight' | 'normal' | 'roomy'
+  /**
+   * What a table does when the reading column is narrower than the table wants to be.
+   *
+   * `fit` is today: `width:100%` with no minimum, so the browser compresses columns as far
+   * as the text will break. Measured at 375px on the reference table above — first column
+   * 105px, one row 551px tall, seven rows totalling 2,334px — and the `overflow-x:auto` that
+   * `.prose` has carried for wide tables never engaged once, because a table that can shrink
+   * never overflows.
+   *
+   * `scroll` gives every cell a floor of 11rem, so a column stops compressing at a measure
+   * somebody can read and the scroll container finally does its job. It is a choice and not
+   * a fix, because it is only right for a table of SENTENCES: the same floor on a timeline of
+   * short columns, which fits a phone comfortably today, would send it sideways for nothing.
+   */
+  narrow: 'fit' | 'scroll'
+}
+
+/**
  * Who wrote this. One blog, one owner (ADR 0002), so this is a single person and not a
  * table of them.
  *
