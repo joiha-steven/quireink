@@ -349,7 +349,11 @@ export function BubbleBar({ editor, avoidTop }: { editor: TiptapEditor; avoidTop
       shouldShow={shouldShow}
       // z-40, ABOVE the sticky toolbar's z-10: flipping keeps them apart in most cases, and
       // when a selection spans the seam anyway, the bar the writer is reaching for wins.
-      className="z-40 flex items-center gap-0.5 rounded-lg border border-neutral-200 bg-white p-1 shadow-lg dark:border-neutral-700 dark:bg-neutral-800"
+      // `flex-wrap` and a viewport-bounded width. The bar had neither: 411px of buttons on a
+      // 375px phone, `nowrap`, with the Link button off the right edge and unreachable —
+      // measured. 32rem because the row MEASURES 487px with the headings on it; 30rem was
+      // tried and folded a desktop that had the room. A phone takes the `100vw` half.
+      className="z-40 flex max-w-[min(32rem,calc(100vw-1.5rem))] flex-wrap items-center gap-0.5 rounded-lg border border-neutral-200 bg-white p-1 shadow-lg dark:border-neutral-700 dark:bg-neutral-800"
     >
       {/* Every button carries its name. The bar is five glyphs and the owner asked for a way
           to mark a selection as code, which was the fifth one all along: a bare backtick,
@@ -357,9 +361,26 @@ export function BubbleBar({ editor, avoidTop }: { editor: TiptapEditor; avoidTop
           title says it in words for the four that are only initials. */}
       <button type="button" title={t.tbBold} aria-label={t.tbBold} onMouseDown={hold} onClick={() => editor.chain().focus().toggleBold().run()} className={cls(editor.isActive('bold'))}><strong>B</strong></button>
       <button type="button" title={t.tbItalic} aria-label={t.tbItalic} onMouseDown={hold} onClick={() => editor.chain().focus().toggleItalic().run()} className={cls(editor.isActive('italic'))}><em>I</em></button>
-      {/* The mock's fourth glyph: turn the selected line into a section heading. H2 — the
-          post title is the H1 and the deeper levels live behind "/" and their `#` shortcuts. */}
-      <button type="button" title={t.tbHeading} aria-label={t.tbHeading} onMouseDown={hold} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className={cls(editor.isActive('heading', { level: 2 }))}><span className="font-semibold">H</span></button>
+      {/* THREE LEVELS, not one. A single `H` was hard-wired to H2 because the deeper levels
+          "live behind / and their `#` shortcuts" — and neither reaches the case this bar is
+          FOR: the slash menu opens only on an EMPTY paragraph (`handleTextInput` in
+          Editor.tsx), and a selection has content. `### ` does work at the start of an
+          existing line, measured, but nobody discovers it from a toolbar. H2/H3/H4 and not
+          H1, because the post title is the H1; H5 stays with the toolbar. */}
+      {([2, 3, 4] as const).map((level) => (
+        <button
+          key={level}
+          type="button"
+          title={`${t.tbHeading} ${level}`}
+          aria-label={`${t.tbHeading} ${level}`}
+          aria-pressed={editor.isActive('heading', { level })}
+          onMouseDown={hold}
+          onClick={() => editor.chain().focus().toggleHeading({ level }).run()}
+          className={cls(editor.isActive('heading', { level }))}
+        >
+          <span className="text-xs font-semibold">H{level}</span>
+        </button>
+      ))}
       <button type="button" title={t.tbUnderline} aria-label={t.tbUnderline} onMouseDown={hold} onClick={() => editor.chain().focus().toggleUnderline().run()} className={cls(editor.isActive('underline'))}><u>U</u></button>
       <button type="button" title={t.tbRing} aria-label={t.tbRing} onMouseDown={hold} onClick={() => editor.chain().focus().toggleRing().run()} className={cls(editor.isActive('ring'))}><span className="inline-block rounded-full border border-current px-1 leading-tight">O</span></button>
       <button type="button" title={t.tbStrike} aria-label={t.tbStrike} onMouseDown={hold} onClick={() => editor.chain().focus().toggleStrike().run()} className={cls(editor.isActive('strike'))}><s>S</s></button>
