@@ -157,6 +157,9 @@ const ja = {
   piHeroInline: '本文の幅',
   piThumbSide: '文章の横',
   piThumbTop: 'タイトルの上',
+  postImageRatio: 'カバー画像の比率',
+  postImageRatioHint: 'カバー画像の切り抜き方。「元のまま」は写真の比率を保ちます。どれを選んでも高さに上限があるので、縦長の写真が最初の画面を占領することはありません。',
+  piRatioAsShot: '元のまま',
   // Settings -> Appearance -> Shape. Every default reproduces today exactly.
   cardShape: 'かたち',
   shapeHint: '色ではなくサイトの「かたち」を変える三つの設定です。ここの既定値はどれも今の見た目そのままなので、あなたが動かすまで何も動きません。',

@@ -16,7 +16,12 @@ import { postImage, type ReadyImages } from '@/web/front-card'
 import { escapeAttr, escapeHtml } from '@/utils'
 
 /**
- * The picture at the top of an article, or ''.
+ * The picture at the top of an article, ABOVE the headline, or ''.
+ *
+ * Above and not below, which is the order every magazine and most blogs use: the picture
+ * is what makes somebody stop, and a cover printed underneath the standfirst is a cover
+ * that has already been scrolled past. It also puts the two halves in the right order for
+ * a reader — see it, then read what it is.
  *
  * `featuredImage` has been stored, resized and served since the port, and until this
  * function existed a reader could only ever see it on a share card or a newspaper-mode
@@ -33,15 +38,24 @@ import { escapeAttr, escapeHtml } from '@/utils'
  * measurement that says why: a hero that broke into the gutter covered the table of
  * contents, and the band between the two rails is eight pixels wide and does not grow.
  */
-export function heroImage(post: Post, settings: SiteSettings, ready: ReadyImages): string {
-  const { hero } = settings.postImage
+export function heroImage(
+  post: Post,
+  settings: SiteSettings,
+  ready: ReadyImages,
+  dims?: { width: number; height: number },
+): string {
+  const { hero, ratio } = settings.postImage
   if (hero === 'none') return ''
-  const picture = postImage(post, ready, `(max-width: 700px) 100vw, ${settings.contentWidth}px`, true)
+  // `dims` is what stops the page jumping when the file lands. The article render already
+  // reads every picture's intrinsic size for the body (`mediaFacts`), so this costs nothing
+  // beyond passing it along.
+  const picture = postImage(post, ready, `(max-width: 700px) 100vw, ${settings.contentWidth}px`, true, dims)
   if (!picture) return ''
-  // `data-hero` rather than two classes: the shape is a setting, and a CSS attribute
+  // `data-hero` and `data-ratio` rather than classes: both are settings, and an attribute
   // selector reads the setting directly instead of the markup encoding a decision that can
   // change while the page sits in the cache.
-  return `<figure class="post-hero" data-hero="${hero}">${picture}</figure>`
+  const shape = ratio ? ` data-ratio="${ratio}"` : ''
+  return `<figure class="post-hero" data-hero="${hero}"${shape}>${picture}</figure>`
 }
 
 /**

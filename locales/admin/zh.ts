@@ -157,6 +157,9 @@ const zh = {
   piHeroInline: '正文栏宽',
   piThumbSide: '在文字旁',
   piThumbTop: '在标题上方',
+  postImageRatio: '封面比例',
+  postImageRatioHint: '封面按什么比例裁剪。“保持原样”沿用照片自身的比例；无论选哪个，高度都有上限，竖幅照片不会占满第一屏。',
+  piRatioAsShot: '保持原样',
   // Settings -> Appearance -> Shape. Every default reproduces today exactly.
   cardShape: '形状',
   shapeHint: '三项改变站点形状而非颜色的设置。这里的默认值就是站点今天的样子，你不动它就不会有任何位移。',

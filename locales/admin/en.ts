@@ -157,6 +157,9 @@ const en = {
   piHeroInline: 'Column width',
   piThumbSide: 'Beside the text',
   piThumbTop: 'Above the title',
+  postImageRatio: 'Cover shape',
+  postImageRatioHint: "How the cover is cropped. As shot keeps the photograph's own proportions; any choice is capped so a tall picture cannot fill the first screen.",
+  piRatioAsShot: 'As shot',
   // Settings -> Appearance -> Shape. Every default reproduces today exactly.
   cardShape: 'Shape',
   shapeHint: 'Three settings that change the shape of the site rather than its colour. Every default here is what the site looks like today, so nothing moves until you move it.',

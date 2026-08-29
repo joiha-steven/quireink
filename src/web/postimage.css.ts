@@ -16,16 +16,42 @@ export const POST_IMAGE_CSS = `
    The reading column, and no wider. A breakout version existed for one afternoon
    and was measured out of existence: the rails sit eight pixels from the column and
    travel with it, so anything wider prints the picture over the table of contents.
-   render/rail-css.ts reached the same answer for in-body pictures before this. */
-.post-hero{margin:calc(var(--sp) * 1.5) 0 0}
-.post-hero img{display:block;width:100%;height:auto;border-radius:var(--radius,.5rem)}
+   render/rail-css.ts reached the same answer for in-body pictures before this.
+
+   THE 70vh CAP IS NOT OPTIONAL and applies at every ratio, including 'as shot'. A
+   977x1400 portrait — an ordinary scan, and the first one this was tested with —
+   is 963px tall inside a 672px column: a whole screen of picture standing between
+   the headline and the first sentence. object-fit crops the overflow rather than
+   squashing the photograph. */
+/* Above the headline, so the gap that matters is the one UNDER it. */
+.post-hero{margin:0 0 calc(var(--sp) * 1.5)}
+.post-hero img{display:block;width:100%;height:auto;max-height:70vh;object-fit:cover;
+  border-radius:var(--radius,.5rem)}
+
+/* A chosen ratio pins the box, so the space is reserved before the file arrives and
+   every post with a hero opens the same shape. 'As shot' (no attribute) keeps the
+   photograph's proportions and relies on the width/height the markup now carries. */
+.post-hero[data-ratio] img{height:auto}
+.post-hero[data-ratio="1x1"] img{aspect-ratio:1/1}
+.post-hero[data-ratio="3x2"] img{aspect-ratio:3/2}
+.post-hero[data-ratio="4x3"] img{aspect-ratio:4/3}
+.post-hero[data-ratio="16x9"] img{aspect-ratio:16/9}
 
 /* --- the thumbnail, on a list row ----------------------------------------------
    'side' turns the card into a two-column grid; the words keep their order in the
    markup and the picture is placed, so a screen reader and a no-CSS reader both get
    the headline first. A phone drops back to one column: 96px of picture beside a
    headline at 375px leaves the headline nowhere to go. */
-.card-thumb img{display:block;width:100%;height:auto;border-radius:var(--radius,.5rem)}
+/* CROPPED, ALWAYS, and the shape is not a setting.
+   A gallery gets to choose because a gallery IS the photographs; a list thumbnail is
+   chrome, and its job is recognition. Measured with three real files on 2026-08-29 —
+   ratios 0.70, 2.10 and 0.72 — an uncropped column read as a tall block, a thin strip
+   and a tall block, which is not a list. The aspect-ratio also reserves the box before
+   the file lands: every thumbnail measured height 0 until then. */
+.card-thumb img{display:block;width:100%;height:auto;object-fit:cover;
+  border-radius:var(--radius,.5rem)}
+.post-list article[data-thumb=side] .card-thumb img{aspect-ratio:1/1}
+.post-list article[data-thumb=top] .card-thumb img{aspect-ratio:3/2}
 .post-list article[data-thumb=top] .card-thumb{margin:0 0 calc(var(--sp) * .75)}
 
 @media (min-width:560px){

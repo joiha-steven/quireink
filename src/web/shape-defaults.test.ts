@@ -11,6 +11,7 @@
 import { describe, expect, it, afterAll } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
 import { pageStyles } from '@/web/layout'
+import { PUBLIC_CSS } from '@/web/public.css'
 import { DEFAULT_SETTINGS } from '@/content/settings'
 import {
   DEFAULT_POST_IMAGE, DEFAULT_SHAPE, DEFAULT_AUTHOR,
@@ -21,7 +22,7 @@ import { renderListing } from '@/web/listing'
 import { collapseBlob } from '@/media/blob'
 import { blogPostingSchema } from '@/render/schema'
 import type { Post, SiteSettings } from '@/types'
-import type { ShapeSettings, AuthorSettings } from '@/types-settings'
+import type { ShapeSettings, AuthorSettings, PostImageSettings } from '@/types-settings'
 
 const DIR = './.tmp/test-shape'
 freshDatabase(DIR)
@@ -38,7 +39,7 @@ const withAuthor = (author: Partial<AuthorSettings>): SiteSettings =>
 
 describe('the defaults are a promise that nothing changed', () => {
   it('ships every new knob at the value that reproduces today', () => {
-    expect(DEFAULT_POST_IMAGE).toEqual({ hero: 'none', thumb: 'none' })
+    expect(DEFAULT_POST_IMAGE).toEqual({ hero: 'none', thumb: 'none', ratio: '' })
     expect(DEFAULT_SHAPE).toEqual({ density: 'normal', radius: 'soft', headingWeight: 'normal' })
     expect(DEFAULT_AUTHOR).toEqual({ name: '', bio: '', avatarUrl: '', url: '' })
   })
@@ -101,7 +102,7 @@ describe('the shape knobs, once somebody turns them', () => {
   it('refuses a value it does not know, keeping the one already stored', () => {
     const stored: ShapeSettings = { density: 'compact', radius: 'round', headingWeight: 'bold' }
     expect(sanitizeShape({ density: 'enormous', radius: 7, headingWeight: null }, stored)).toEqual(stored)
-    expect(sanitizePostImage({ hero: 'banner', thumb: {} }, DEFAULT_POST_IMAGE)).toEqual(DEFAULT_POST_IMAGE)
+    expect(sanitizePostImage({ hero: 'banner', thumb: {}, ratio: '5x4' }, DEFAULT_POST_IMAGE)).toEqual(DEFAULT_POST_IMAGE)
   })
 })
 
@@ -160,8 +161,8 @@ describe('the author, once there is one', () => {
 
 describe("a post's own picture, once it is allowed out", () => {
   const withImage = post({ featuredImage: '/uploads/media/x.jpg' })
-  const on = (hero: 'inline'): SiteSettings =>
-    ({ ...DEFAULT_SETTINGS, postImage: { ...DEFAULT_POST_IMAGE, hero } })
+  const on = (hero: 'inline', ratio: PostImageSettings['ratio'] = ''): SiteSettings =>
+    ({ ...DEFAULT_SETTINGS, postImage: { ...DEFAULT_POST_IMAGE, hero, ratio } })
 
   it('draws the hero, and marks its shape as an attribute rather than a class', () => {
     const html = heroImage(withImage, on('inline'), new Set())
@@ -194,6 +195,21 @@ describe("a post's own picture, once it is allowed out", () => {
     expect(html).not.toContain('loading="lazy"')
   })
 
+  /**
+   * Without these the browser reserves nothing and the page jumps as each file lands —
+   * measured on a list of three thumbnails, every box `height: 0` until its image arrived.
+   */
+  it('carries the intrinsic size, so the space is reserved before the file lands', () => {
+    const html = heroImage(withImage, on('inline'), new Set(), { width: 977, height: 1400 })
+    expect(html).toContain('width="977"')
+    expect(html).toContain('height="1400"')
+  })
+
+  it('names a chosen ratio as an attribute, and says nothing when the shape is as-shot', () => {
+    expect(heroImage(withImage, on('inline', '16x9'), new Set())).toContain('data-ratio="16x9"')
+    expect(heroImage(withImage, on('inline'), new Set())).not.toContain('data-ratio')
+  })
+
   it('stays silent on a post with no picture, however the setting is set', () => {
     expect(heroImage(post(), on('inline'), new Set())).toBe('')
   })
@@ -213,7 +229,7 @@ describe('the list thumbnail', () => {
 
   it('appears once the owner asks, carrying the shape as an attribute', () => {
     const settings: SiteSettings = {
-      ...DEFAULT_SETTINGS, postImage: { hero: 'none', thumb: 'side' },
+      ...DEFAULT_SETTINGS, postImage: { hero: 'none', thumb: 'side', ratio: '' },
     }
     const html = list(settings, new Set())
     expect(html).toContain('card-thumb')
@@ -227,7 +243,7 @@ describe('the list thumbnail', () => {
    */
   it('promises the size of the hole the picture goes in', () => {
     const settings: SiteSettings = {
-      ...DEFAULT_SETTINGS, postImage: { hero: 'none', thumb: 'side' },
+      ...DEFAULT_SETTINGS, postImage: { hero: 'none', thumb: 'side', ratio: '' },
     }
     // The ready set is keyed store-relative (Invariant 3), and `sizes` is only emitted for
     // an original whose variants are CONFIRMED — a <picture> naming a file that 404s has no
@@ -243,8 +259,67 @@ describe('the list thumbnail', () => {
    */
   it('renders no picture when the caller passed no ready set', () => {
     const settings: SiteSettings = {
-      ...DEFAULT_SETTINGS, postImage: { hero: 'none', thumb: 'top' },
+      ...DEFAULT_SETTINGS, postImage: { hero: 'none', thumb: 'top', ratio: '' },
     }
     expect(list(settings, undefined)).not.toContain('card-thumb')
+  })
+})
+
+describe('the shapes a picture is allowed to take', () => {
+  /**
+   * The list's tidiness is not a setting, and the numbers are why: three real files at
+   * ratios 0.70, 2.10 and 0.72 rendered as a tall block, a thin strip and a tall block
+   * down one edge. A gallery chooses its own shape because a gallery IS the photographs;
+   * a list thumbnail is chrome.
+   */
+  it('crops every list thumbnail to a fixed shape, per position', () => {
+    expect(PUBLIC_CSS).toContain('.post-list article[data-thumb=side] .card-thumb img{aspect-ratio:1/1}')
+    expect(PUBLIC_CSS).toContain('.post-list article[data-thumb=top] .card-thumb img{aspect-ratio:3/2}')
+    expect(PUBLIC_CSS).toContain('.card-thumb img{display:block;width:100%;height:auto;object-fit:cover;')
+  })
+
+  /**
+   * The cap holds at EVERY ratio including as-shot, which is the case that needs it: a
+   * 977x1400 scan is 963px tall in a 672px column — a whole screen of picture before the
+   * first sentence.
+   */
+  it('caps a hero at 70vh whatever shape it is, and crops rather than squashes', () => {
+    const rule = PUBLIC_CSS.slice(PUBLIC_CSS.indexOf('.post-hero img{'))
+    expect(rule.slice(0, rule.indexOf('}'))).toContain('max-height:70vh')
+    expect(rule.slice(0, rule.indexOf('}'))).toContain('object-fit:cover')
+  })
+
+  it('offers the gallery vocabulary plus the banner shape a hero actually wants', () => {
+    for (const r of ['1x1', '3x2', '4x3', '16x9'] as const) {
+      expect(sanitizePostImage({ ratio: r }, DEFAULT_POST_IMAGE).ratio).toBe(r)
+      expect(PUBLIC_CSS).toContain(`.post-hero[data-ratio="${r}"] img{aspect-ratio:`)
+    }
+  })
+})
+
+/**
+ * The ORDER on the page, which is the half no unit test of `heroImage` can see.
+ *
+ * The cover goes ABOVE the headline. That is what a magazine does and what the owner
+ * asked for on 2026-08-29 after looking at the first version, which put it under the
+ * standfirst: a cover printed below the words is a cover that has already been scrolled
+ * past. Pinned here because it is one line in a template and nothing else would notice
+ * it moving.
+ */
+describe('where the cover sits on a real page', () => {
+  it('renders the picture before the headline, not after it', async () => {
+    const { savePost } = await import('@/content/posts')
+    const { renderArticle } = await import('@/web/article')
+    const { saveSettings } = await import('@/content/settings')
+    await saveSettings({ postImage: { hero: 'inline', thumb: 'none', ratio: '' } })
+    await savePost({
+      title: 'Covered', content: 'Body.', status: 'published',
+      date: new Date(Date.now() - 60_000).toISOString(),
+      featuredImage: '/uploads/media/x.jpg',
+    })
+    const html = await renderArticle('covered')
+    expect(html).not.toBeNull()
+    expect(html!.indexOf('post-hero')).toBeGreaterThan(-1)
+    expect(html!.indexOf('post-hero')).toBeLessThan(html!.indexOf('<h1'))
   })
 })

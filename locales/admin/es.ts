@@ -157,6 +157,9 @@ const es = {
   piHeroInline: 'Ancho de columna',
   piThumbSide: 'Junto al texto',
   piThumbTop: 'Sobre el título',
+  postImageRatio: 'Forma de la portada',
+  postImageRatioHint: 'Cómo se recorta la portada. «Tal cual» conserva las proporciones de la foto; en cualquier caso la altura se limita para que una imagen vertical no ocupe toda la primera pantalla.',
+  piRatioAsShot: 'Tal cual',
   // Settings -> Appearance -> Shape. Every default reproduces today exactly.
   cardShape: 'Forma',
   shapeHint: 'Tres ajustes que cambian la forma del sitio y no su color. Cada valor por defecto es exactamente el aspecto actual, así que nada se mueve hasta que usted lo mueva.',

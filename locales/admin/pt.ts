@@ -158,6 +158,9 @@ const pt = {
   piHeroInline: 'Largura da coluna',
   piThumbSide: 'Ao lado do texto',
   piThumbTop: 'Por cima do título',
+  postImageRatio: 'Formato da capa',
+  postImageRatioHint: 'Como a capa é recortada. “Como está” mantém as proporções da foto; em qualquer caso a altura é limitada para que uma imagem vertical não ocupe a primeira tela inteira.',
+  piRatioAsShot: 'Como está',
   // Settings -> Appearance -> Shape. Every default reproduces today exactly.
   cardShape: 'Forma',
   shapeHint: 'Três definições que mudam a forma do site e não a cor. Todos os valores por omissão aqui são exatamente o aspeto de hoje, por isso nada se mexe até que o mexa.',

@@ -157,6 +157,9 @@ const vi = {
   piHeroInline: 'Bằng bề rộng cột',
   piThumbSide: 'Bên cạnh chữ',
   piThumbTop: 'Trên tiêu đề',
+  postImageRatio: 'Khung ảnh bìa',
+  postImageRatioHint: 'Ảnh bìa được cắt theo khuôn nào. “Như ảnh gốc” giữ nguyên tỉ lệ của ảnh; dù chọn gì thì ảnh cũng bị chặn chiều cao để một tấm ảnh dọc không chiếm trọn màn hình đầu.',
+  piRatioAsShot: 'Như ảnh gốc',
   // Settings -> Appearance -> Shape. Every default reproduces today exactly.
   cardShape: 'Dáng',
   shapeHint: 'Ba mục đổi dáng của site chứ không đổi màu. Mọi mặc định ở đây đúng bằng dáng site đang có, nên không có gì xê dịch cho tới khi bạn tự đổi.',

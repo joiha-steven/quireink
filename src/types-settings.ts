@@ -153,8 +153,24 @@ export type PostImageSettings = {
    * The picture on a row of the post list.
    * `side` = a small square beside the words. `top` = above the title, card-like, which is
    * also the shape the grid view wants.
+   *
+   * A thumbnail's shape is NOT a setting and is always cropped — square beside the words,
+   * 3:2 above the title. A gallery gets a ratio choice because a gallery IS the
+   * photographs; a list thumbnail is chrome whose job is recognition, and a column of
+   * mixed heights is nobody's intention. Measured with three real images on 2026-08-29:
+   * ratios 0.70, 2.10 and 0.72 produced a tall block, a thin strip and a tall block down
+   * one edge of the list.
    */
   thumb: 'none' | 'side' | 'top'
+  /**
+   * The hero's shape. '' keeps the photograph's own proportions, which is the default
+   * because an article has room for one picture and cropping it is a decision.
+   *
+   * Whatever this says, a hero is capped at 70vh (`postimage.css.ts`): a portrait at the
+   * column's width is 960px tall on a 672px column, which is a whole screen of picture
+   * before the first sentence.
+   */
+  ratio: '' | '1x1' | '3x2' | '4x3' | '16x9'
 }
 
 /**
