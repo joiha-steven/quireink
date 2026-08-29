@@ -48,7 +48,7 @@ Three things keep it narrow:
 
 - The rule ADR 0007 states in one word now needs two sentences, which is a real cost: an
   exception that must be explained is an exception that can be misread. It is written into
-  `src/web/auth-routes.ts` next to `enrolmentSkippable`, and held by `src/web/setup.test.ts`
+  `src/web/enrol-routes.ts` next to `enrolmentSkippable`, and held by `src/web/setup.test.ts`
   — including the case that matters, which is the route refusing rather than the button
   being absent.
 - An owner who never sets an address can run indefinitely on a password alone. That is a
