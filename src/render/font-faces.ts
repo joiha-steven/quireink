@@ -90,40 +90,32 @@ const FACES: Record<string, Face[]> = {
 
 /**
  * Metric-matched fallbacks: the local faces each stack falls back to, RESHAPED to the
- * self-hosted family's own measurements, so the swap `font-display:swap` performs moves
- * nothing.
+ * self-hosted family's measurements, so the swap `font-display:swap` performs moves nothing.
  *
- * TWO PER FAMILY, AND THE SECOND ONE IS NOT OPTIONAL. Georgia and Arial are the desktop
- * answer — macOS, Windows and iOS all ship both — and for two months they were the ONLY
- * answer, which meant this whole table did nothing on ANDROID, where neither font exists:
- * `local()` failed, the adjusted twin never matched, and the stack fell through to a bare
- * `serif` with no adjustment at all. Measured on the demo's front page at 390px on
- * 2026-08-28: during the swap window the document stood 6,390px tall against 6,921px once
- * Literata landed, so every block below the first sat 531px — half a screen — too high and
- * then dropped. The owner reported it as "text first, then the layout arrives"; on a Mac it
- * is pixel-identical, which is why it went unseen. Android's `serif` is Noto Serif and its
- * `sans-serif` is Roboto, so those are the second entries, with their OWN numbers: one
- * `size-adjust` cannot serve two local faces of different width.
+ * TWO PER FAMILY, AND THE SECOND IS NOT OPTIONAL. Georgia and Arial are the desktop answer
+ * and for two months were the only one, so this table did nothing on ANDROID, where neither
+ * exists: `local()` failed and the stack fell through to a bare `serif` with no adjustment.
+ * Measured on the demo front page at 390px, 2026-08-28: during the swap window the document
+ * stood 6,390px against 6,921px once Literata landed, so every block below the first sat
+ * 531px too high and then dropped. Pixel-identical on a Mac, which is why it went unseen.
+ * Android's `serif` is Noto Serif and its `sans-serif` Roboto, each with its OWN numbers —
+ * one `size-adjust` cannot serve two local faces of different width.
  *
- * ORDER IS THE PLATFORM TEST. A device resolves the first name it has, so the desktop twin
- * leads and the Android twin catches what it misses. Adding a third (Liberation/DejaVu, for
- * Linux) needs nothing but a row here and a name in the stack.
+ * ORDER IS THE PLATFORM TEST: a device resolves the first name it has, so the desktop twin
+ * leads and the Android twin catches what it misses.
  *
- * The four numbers are measured, not styled. `size-adjust` is the ratio of the two
- * families' average advance width over a mixed Vietnamese + English sample, read glyph by
- * glyph from the shipped woff2 subsets (all three, merged the way `unicode-range` merges
- * them) against the local face's own tables — NOT from `OS/2.xAvgCharWidth`, which
- * averages bare a–z and misreads a language whose vowels carry diacritics. The three
- * overrides are the family's typo ascent/descent/line-gap divided by (upm × size-adjust).
- * `scripts/ops/font-fallback-metrics.py` recomputes all of it; rerun it when a font file
- * is re-dropped, and paste the numbers.
+ * The four numbers are measured, not styled. `size-adjust` is the ratio of the two families'
+ * average advance width over a mixed Vietnamese + English sample, read glyph by glyph from
+ * the shipped woff2 subsets — NOT from `OS/2.xAvgCharWidth`, which averages bare a–z and
+ * misreads a language whose vowels carry diacritics. The overrides are the family's typo
+ * ascent/descent/line-gap over (upm x size-adjust).
+ * `scripts/ops/font-fallback-metrics.py` recomputes all of it when a font file is re-dropped.
  *
- * Weight is left at its default in every row: within a family the nearest weight always
- * matches, so bold text during the swap window renders as synthesized-bold Georgia, Arial,
- * Noto Serif or Roboto at the right WIDTH — which is the property that keeps the line
- * breaks, and the line breaks are what keep the layout still. The mono families carry no
- * fallback on purpose: `unicode-range` means their files only download on pages with code,
- * and a code block's own box, not its glyphs, sets that layout.
+ * Weight stays default in every row: the nearest weight always matches within a family, so
+ * bold during the swap renders synthesized-bold at the right WIDTH — width is what keeps the
+ * line breaks, and the line breaks are what keep the layout still. The mono families carry no
+ * fallback on purpose: `unicode-range` downloads them only on pages with code, and a code
+ * block's box, not its glyphs, sets that layout.
  */
 type Fallback = { local: string, adjust: string, asc: string, desc: string }
 

@@ -1,27 +1,17 @@
 // The maths GRAMMAR, and nothing that can render it.
 //
-// THE GRAMMAR LIVES HERE AND NOWHERE ELSE. Four readers of it exist, the same four `ink.ts`
-// warns about: `marked` on the server (`render/math.ts`), markdown-it in the editor
-// (`admin/components/MathNode.tsx`), the editor's input rules, and `toPlainText` for
-// excerpts. The ink syntax drifted across those readers within an hour of being written in
-// two places, and put the word "green" into every excerpt on the site. So every reader
-// builds from the same exported strings.
+// THE GRAMMAR LIVES HERE AND NOWHERE ELSE. Four readers of it exist — `marked` on the server,
+// markdown-it in the editor, the editor's input rules, and `toPlainText` for excerpts. The ink
+// syntax drifted across those readers within an hour of being written in two places and put
+// the word "green" into every excerpt on the site. So every reader builds from these strings.
 //
-// WHY THIS IS A SEPARATE FILE FROM `math.ts`, which is the half that owns Temml.
-//
-// `@/utils` needs three things from here — `MATH_SYNTAX_GLOBAL`, `mathOf`, `isDisplayMatch`,
-// all so `toPlainText` can drop a formula out of an excerpt. It got them from `math.ts`, and
-// an ESM import is not a menu: taking three regex helpers took the whole module, and
-// `math.ts` imports Temml at its top. Fifteen admin files import `@/utils`, so the bundler
-// put Temml in the chunk they all share and EVERY admin screen downloaded a LaTeX engine —
-// 212 KB unpacked, 63 KB over the wire, measured on the Comments screen, which has neither
-// an editor nor a formula on it. Nothing was wrong with the code; the file simply held two
-// things and only one of them was wanted.
-//
-// So this file may never import a renderer, and that is the whole rule. It is import-free
-// for the same reason `render/ink.ts` is: anything it reaches for, every one of its readers
-// pays for. `math.ts` re-exports all of it, so the parsers that DO render can keep asking
-// one module for both halves.
+// ⚠️ THIS FILE MAY NEVER IMPORT A RENDERER, and that is the whole rule. `@/utils` needs three
+// things from here so `toPlainText` can drop a formula out of an excerpt; it used to take them
+// from `math.ts`, and an ESM import is not a menu — three regex helpers took the whole module,
+// and `math.ts` imports Temml at its top. Fifteen admin files import `@/utils`, so EVERY admin
+// screen downloaded a LaTeX engine: 212 KB unpacked, 63 KB over the wire, measured on the
+// Comments screen, which has neither an editor nor a formula on it. `math.ts` re-exports all
+// of this, so a parser that DOES render still asks one module for both halves.
 
 /**
  * `$…$` IS THE DANGEROUS ONE, and on this blog in particular.
