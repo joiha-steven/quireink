@@ -168,6 +168,7 @@ export type FeatureSettings = {
   readingTime: boolean // reading-time estimate in the post meta
   progressBar: boolean // reading-progress bar on posts
   activityLog: boolean // record admin mutations to the activity log (Admin -> Log)
+  transferStats: boolean // store, per visit, the bytes the reader's browser reported downloading (Analytics -> Delivery). ON by default, like the dwell time it sits beside and is no more identifying than. Off means the column stays NULL and the panel reads as unmeasured; nothing else changes, and the beacon is sent either way
   sidebar: boolean // categories + tags in the left gutter of the post list
   sidebarSeries: boolean // the series list in the sidebar, under the categories
   leadPost: boolean // first post of page 1 gets the h1 role instead of h2

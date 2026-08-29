@@ -24,6 +24,8 @@ export type ScrollRow = {
   path: string
   depth: number
   dwellMs: number | null
+  /** Bytes the reader's browser reported for this visit. NULL = not measured, never 0. */
+  bytes: number | null
   visitor: string
   createdAt: number
 }
@@ -84,9 +86,10 @@ export function flushAnalytics(): void {
       }
       for (const r of s) {
         analyticsQuery.run(
-          `insert into analytics_scroll (path, depth, dwell_ms, visitor, created_at)
-           values ($path, $depth, $dwellMs, $visitor, $createdAt)`,
-          { path: r.path, depth: r.depth, dwellMs: r.dwellMs, visitor: r.visitor, createdAt: r.createdAt },
+          `insert into analytics_scroll (path, depth, dwell_ms, bytes, visitor, created_at)
+           values ($path, $depth, $dwellMs, $bytes, $visitor, $createdAt)`,
+          { path: r.path, depth: r.depth, dwellMs: r.dwellMs, bytes: r.bytes,
+            visitor: r.visitor, createdAt: r.createdAt },
         )
       }
     })

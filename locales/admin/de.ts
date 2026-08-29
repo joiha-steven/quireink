@@ -636,6 +636,18 @@ const de = {
   analyticsColDepth: 'Tiefe',
   analyticsAvgTime: 'Ø Verweildauer',
   analyticsBounceRate: 'Absprungrate',
+  // Analytics -> Delivery. Reader-reported bytes and the in-process cache. Both labels
+  // have to keep saying what they are NOT: bytes are what browsers reported, never
+  // server egress, and the cache is this process's, never the CDN's.
+  analyticsDelivery: 'Auslieferung',
+  analyticsBytesTotal: 'Leser luden',
+  analyticsBytesAvg: 'Pro Besuch',
+  analyticsBytesMeasured: 'gemessen bei',
+  analyticsBytesNote: 'Besuchen',
+  analyticsCache: 'Seiten-Cache',
+  analyticsCacheHits: 'aus dem Cache',
+  analyticsCacheSince: 'seit',
+  analyticsCacheNote: 'Der Cache dieses Servers, und nur für Anfragen, die ihn erreicht haben. Ein vorgelagertes CDN beantwortet die meisten Leser selbst, und der Ursprung erfährt davon nichts.',
   analyticsNowReading: '{n} lesen gerade',
   analyticsNowQuiet: 'Gerade liest niemand',
   analyticsColTime: 'Zeit',
@@ -662,6 +674,8 @@ const de = {
   navHelp: 'Hilfe',
   featActivityLog: 'Aktivitätsprotokoll',
   featActivityLogDesc: 'Admin-Aktionen (Speichern, Uploads, Löschen) auf der Protokollseite aufzeichnen.',
+  featTransferStats: 'Seitengewicht',
+  featTransferStatsDesc: 'Speichert, wie viele Bytes jeder Besuch geladen hat, damit die Statistik zeigt, was Ihre Seiten einen Leser kosten. Aus heißt: die Zahl kommt nicht in die Datenbank, sonst ändert sich nichts.',
   logTitle: 'Aktivitätsprotokoll',
   logEmpty: 'Noch keine Aktivität aufgezeichnet.',
   logDisabled: 'Protokollierung ist aus. Aktiviere „Aktivitätsprotokoll“ in Einstellungen → Funktionen.',

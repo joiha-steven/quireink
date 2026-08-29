@@ -636,6 +636,18 @@ const en = {
   analyticsColDepth: 'Depth',
   analyticsAvgTime: 'Avg. time on page',
   analyticsBounceRate: 'Bounce rate',
+  // Analytics -> Delivery. Reader-reported bytes and the in-process cache. Both labels
+  // have to keep saying what they are NOT: bytes are what browsers reported, never
+  // server egress, and the cache is this process's, never the CDN's.
+  analyticsDelivery: 'Delivery',
+  analyticsBytesTotal: 'Readers downloaded',
+  analyticsBytesAvg: 'Per visit',
+  analyticsBytesMeasured: 'measured on',
+  analyticsBytesNote: 'visits',
+  analyticsCache: 'Page cache',
+  analyticsCacheHits: 'served from cache',
+  analyticsCacheSince: 'since',
+  analyticsCacheNote: 'Your own cache, and only for requests that reached this server. A CDN in front answers most readers on its own, and the origin never hears about those.',
   analyticsNowReading: '{n} reading now',
   analyticsNowQuiet: 'No one is reading right now',
   analyticsColTime: 'Time',
@@ -662,6 +674,8 @@ const en = {
   navHelp: 'Help',
   featActivityLog: 'Activity log',
   featActivityLogDesc: 'Record admin actions (saves, uploads, deletes) to the Log page.',
+  featTransferStats: 'Page weight',
+  featTransferStatsDesc: 'Store how many bytes each visit downloaded, so Analytics can show what your pages cost a reader. Off keeps the number out of the database; nothing else changes.',
   logTitle: 'Activity log',
   logEmpty: 'No activity recorded yet.',
   logDisabled: 'Logging is off. Turn on “Activity log” in Settings → Features to record actions.',

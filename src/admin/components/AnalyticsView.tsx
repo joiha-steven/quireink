@@ -11,6 +11,7 @@ import type { AnalyticsSummary, NameStat, RightNow } from '@/analytics/types'
 import { EmptyState, PageHeader, SEGMENT_TRACK, tabItemClass, TABLE_SCROLL, THEAD, TROW } from './kit'
 import { BarList, Trend, TrendChart, flag, formatDuration, type BarRow } from './analytics-kit'
 import { NumBand, SHEET, SHEET_TOOL_ON_CANVAS, SheetTop } from './sheet'
+import { DeliveryPanel } from './DeliveryPanel'
 import { useAdminT } from './I18nProvider'
 
 const RANGES = [1, 7, 30, 365] as const
@@ -179,6 +180,11 @@ export function AnalyticsView({ data, range, titles, rightNow }: {
           <div className="border-b border-neutral-100 px-4 pb-2 pt-4 dark:border-neutral-800">
             <TrendChart points={data.daily} peakLabel={t.analyticsPeak} viewsLabel={t.analyticsViews} visitorsLabel={t.analyticsVisitors} />
           </div>
+
+          {/* Under the chart rather than in the headline band above it: these two answer
+              "what does my blog cost to serve", which is a different question from the five
+              reader metrics, and one of them is not even windowed by the range tabs. */}
+          <DeliveryPanel transfer={data.transfer} cache={data.cache} />
 
           {/* Top pages — by title where known, the bare path otherwise. Each row
               links to that page's drill-down. In the sheet, the table needs no frame

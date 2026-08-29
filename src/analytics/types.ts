@@ -31,6 +31,17 @@ export type AnalyticsSummary = {
   browsers?: NameStat[]
   systems?: NameStat[]
   depthBuckets?: DepthBucket[]
+  /**
+   * What readers downloaded, and over how many measured visits.
+   *
+   * `measured` travels with the total on purpose: `bytes` is NULL on every sample older
+   * than the column, on browsers with no Navigation Timing, and on visits whose leave
+   * beacon never landed. A total shown without its denominator reads a partly-measured
+   * month as a cheap one.
+   */
+  transfer?: { totalBytes: number; avgBytes: number; measured: number }
+  /** In-process page cache since boot. Not the CDN's, which the origin cannot see. */
+  cache?: { hits: number; misses: number; since: number }
 }
 
 // One page's drill-down. Empty on failure.

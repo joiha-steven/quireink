@@ -27,6 +27,37 @@ export function onFlush(hook: FlushHook): void {
   hooks.push(hook)
 }
 
+/**
+ * Hit and miss, since this process started.
+ *
+ * In memory and not in a table, deliberately. Persisting them would mean a WRITE on the
+ * read path, on the one path this whole file exists to keep cheap, for a number nobody
+ * reads more than once a week. They reset on restart and the admin says since when, which
+ * is the honest shape for a counter that costs nothing.
+ *
+ * ⚠️ What this measures is the IN-PROCESS cache, and only for requests that reached this
+ * process at all. With a CDN in front, most readers are answered at the edge and never
+ * appear here: a blog can show a low hit rate and still be serving almost everything from
+ * cache. The edge's own rate is not visible from inside the origin, and the admin label
+ * has to keep saying so.
+ */
+export const cacheStats = { hits: 0, misses: 0, since: Date.now() }
+
+export function countCacheHit(): void {
+  cacheStats.hits += 1
+}
+
+export function countCacheMiss(): void {
+  cacheStats.misses += 1
+}
+
+/** Test seam: the counters are process-global, like the Map above. */
+export function resetCacheStats(): void {
+  cacheStats.hits = 0
+  cacheStats.misses = 0
+  cacheStats.since = Date.now()
+}
+
 /** Called after EVERY write, unconditionally. No arguments, so it cannot be narrowed. */
 export function clearCache(): void {
   pageCache.clear()

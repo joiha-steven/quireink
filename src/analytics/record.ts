@@ -119,16 +119,27 @@ export async function recordScroll(
   ip: string,
   ua: string,
   dwellMs?: number,
+  bytes?: number,
 ): Promise<void> {
   try {
     if (isBot(ua)) return
     const path = normalizePath(rawPath)
     if (!path || !(await pathIsServable(path))) return
+    const keep = (await getSettings()).features.transferStats
     bufferScroll({
       path,
       depth: Math.max(0, Math.min(100, Math.round(depth))),
       dwellMs: typeof dwellMs === 'number' && isFinite(dwellMs)
         ? Math.max(0, Math.min(86_400_000, Math.round(dwellMs)))
+        : null,
+      // Gated HERE rather than in the route, so every caller of `recordScroll` is covered
+      // by the switch and not just the one that happens to read the beacon today.
+      //
+      // Capped at 64 MB, which no reading page reaches and a forged beacon should not be
+      // able to use to swamp a monthly total. Zero is kept as zero: it is what a browser
+      // reports when every byte came out of its own cache, and that is a real answer.
+      bytes: keep && typeof bytes === 'number' && isFinite(bytes) && bytes >= 0
+        ? Math.min(67_108_864, Math.round(bytes))
         : null,
       visitor: visitorHash(ip, ua),
       createdAt: nowMs(),

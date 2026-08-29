@@ -9,7 +9,7 @@ import { t } from '@/i18n/i18n'
 import { escapeHtml } from '@/utils'
 import { getSettings, resolveSiteUrl } from '@/content/settings'
 import { paginate } from '@/content/paginate'
-import { pageCache } from '@/server/cache'
+import { pageCache, countCacheHit, countCacheMiss } from '@/server/cache'
 import { renderDocument, pageStyles } from '@/web/layout'
 import { renderListing, type ListingView } from '@/web/listing'
 import type { ReadyImages } from '@/web/front-card'
@@ -232,10 +232,16 @@ export function cached(key: string, render: () => Promise<string | null>) {
     const on = (await getSettings()).cache.enabled
     const hit = on ? pageCache.get(key) : undefined
     if (hit !== undefined) {
+      countCacheHit()
       return new Response(hit, { headers: { 'content-type': 'text/html; charset=utf-8' } })
     }
     const html = await render()
     if (html === null) return notFoundPage()
+    // Counted AFTER the 404 check: a path nobody can serve is not a cache miss, and
+    // counting it there would let a crawler inventing URLs drive the rate to nothing.
+    // Counted whether or not the cache is switched on, so a blog with it off reads 0%
+    // rather than reading nothing at all.
+    countCacheMiss()
     if (on) pageCache.set(key, html)
     return new Response(html, { headers: { 'content-type': 'text/html; charset=utf-8' } })
   }

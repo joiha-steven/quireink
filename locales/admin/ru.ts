@@ -636,6 +636,18 @@ const ru = {
   analyticsColDepth: 'Глубина',
   analyticsAvgTime: 'Среднее время на странице',
   analyticsBounceRate: 'Показатель отказов',
+  // Analytics -> Delivery. Reader-reported bytes and the in-process cache. Both labels
+  // have to keep saying what they are NOT: bytes are what browsers reported, never
+  // server egress, and the cache is this process's, never the CDN's.
+  analyticsDelivery: 'Доставка',
+  analyticsBytesTotal: 'Читатели загрузили',
+  analyticsBytesAvg: 'За визит',
+  analyticsBytesMeasured: 'измерено по',
+  analyticsBytesNote: 'визитам',
+  analyticsCache: 'Кэш страниц',
+  analyticsCacheHits: 'отдано из кэша',
+  analyticsCacheSince: 'с',
+  analyticsCacheNote: 'Кэш самого этого сервера, и только для запросов, которые до него дошли. Стоящий впереди CDN отвечает большинству читателей сам, и источник об этом не узнаёт.',
   analyticsNowReading: 'Сейчас читают: {n}',
   analyticsNowQuiet: 'Прямо сейчас никто не читает',
   analyticsColTime: 'Время',
@@ -662,6 +674,8 @@ const ru = {
   navHelp: 'Справка',
   featActivityLog: 'Журнал действий',
   featActivityLogDesc: 'Записывает действия в админке (сохранения, загрузки, удаления) на страницу «Журнал».',
+  featTransferStats: 'Вес страницы',
+  featTransferStatsDesc: 'Сохраняет, сколько байт загрузил каждый визит, чтобы аналитика показывала, во что ваши страницы обходятся читателю. Выключено — число не попадает в базу; больше ничего не меняется.',
   logTitle: 'Журнал действий',
   logEmpty: 'Записей в журнале пока нет.',
   logDisabled: 'Журнал выключен. Включите «Журнал действий» в Настройки → Возможности, чтобы записывать действия.',

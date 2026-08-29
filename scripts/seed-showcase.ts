@@ -204,6 +204,10 @@ for (const [rank, p] of POSTS.entries()) {
         path: `/${p.slug}`,
         depth: [28, 55, 74, 96][i % 4] ?? 50,
         dwellMs: 40_000 + (i % 9) * 25_000,
+        // A spread, not one frozen number: this site measures a post at about 100 KB, and
+        // a page carrying pen marks or a picture costs more. A flat line would teach the
+        // owner nothing about which of their pages are the expensive ones.
+        bytes: 96_000 + ((rank * 9_973 + i * 1_361) % 62_000),
         visitor: `v${(rank * 7 + i) % 90}`,
         createdAt: START - day * DAY,
       })

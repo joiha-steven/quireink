@@ -165,10 +165,28 @@
     aggregates clamp every stored sample at 30 minutes (`DWELL_CAP_MS`) so the wall-clock samples
     recorded before the meter existed cannot drag the average — one forgotten 24-hour tab was worth
     ~3 minutes of "average time on page" on a real instance.
-  - There is no migration gate on any of this in 2.0: `src/store/schema-analytics.sql` states the
-    final shape and is applied at boot, so every section is present on a fresh install. The
-    engagement / channel / audience / drill-down queries live in `src/analytics/`
-    (`summary.ts`, `aggregate.ts`, `channel.ts`, `page.ts`).
+  - **Delivery** (2026-08-29) answers what a blog costs to serve, and both halves are labelled
+    for what they are NOT. **Page weight** is `analytics_scroll.bytes`: the reader's own browser
+    sums `transferSize` across Navigation and Resource Timing and sends it on the LEAVE beacon,
+    beside the dwell, because a view row is written while the page's fonts and pictures are still
+    arriving. It is READER bytes and never server egress — a bot, a feed reader and anyone with
+    JavaScript off download bytes and report none, and a CDN answers most requests without the
+    origin hearing about them. NULL means not measured and is reported as such: the panel always
+    shows the denominator, because `bytes` is null on every sample older than the column, on
+    browsers with no Navigation Timing, and whenever `features.transferStats` is off. Clamped to
+    64 MB in `recordScroll`, since the route is an open POST. **Page cache** is `cacheStats` in
+    `src/server/cache.ts`, counted at the one line in `web/listing-page.ts` that decides hit from
+    miss, in memory and since boot: persisting it would mean a write on the read path, on the one
+    path that file exists to keep cheap. It measures the IN-PROCESS cache and only for requests
+    that got past the CDN, so a blog can read low here and still be served almost entirely from
+    the edge; the edge's own rate is not visible from inside the origin at all.
+  - `analytics.db` gained a migration ledger on the same day, and it needed one:
+    `create table if not exists` cannot add a column to a table that already exists. Steps live in
+    `src/store/migrations-analytics.sql` and run through the same `applyMigrations` the content
+    database uses. `src/store/schema-analytics.sql` still states the final shape, so a fresh
+    install has every section without running a step. The engagement / channel / audience /
+    drill-down queries live in `src/analytics/` (`summary.ts`, `aggregate.ts`, `channel.ts`,
+    `page.ts`).
 
 ## The assistant (Admin → Assistant) — `src/server/assistant.ts`, `src/web/admin/assistant.ts`
 

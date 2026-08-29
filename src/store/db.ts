@@ -17,6 +17,7 @@ import { join } from 'node:path'
 import contentSchema from './schema.sql' with { type: 'text' }
 import analyticsSchema from './schema-analytics.sql' with { type: 'text' }
 import contentMigrations from './migrations.sql' with { type: 'text' }
+import analyticsMigrations from './migrations-analytics.sql' with { type: 'text' }
 
 export type Db = Database
 
@@ -115,7 +116,12 @@ export function openDatabases(dir: string): { db: Database; analyticsDb: Databas
   const opened = open(join(dir, 'quire.db'), contentSchema, 'FULL')
   content = opened.db
   applyMigrations(content, contentMigrations, opened.fresh)
-  analytics = open(join(dir, 'analytics.db'), analyticsSchema, 'NORMAL').db
+  const openedAnalytics = open(join(dir, 'analytics.db'), analyticsSchema, 'NORMAL')
+  analytics = openedAnalytics.db
+  // Analytics has its own ledger and its own steps. It went without one until 2026-08-29,
+  // which was fine while the table never changed shape and stopped being fine the moment
+  // it did: `if not exists` cannot add a column to a table that already exists.
+  applyMigrations(analytics, analyticsMigrations, openedAnalytics.fresh)
   // Only `analytics_totals` (the Views column on the admin content tables) needs to join
   // across the two files. ATTACH once here rather than per query.
   content.run(`attach database ? as analytics;`, [join(dir, 'analytics.db')])

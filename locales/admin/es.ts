@@ -636,6 +636,18 @@ const es = {
   analyticsColDepth: 'Profundidad',
   analyticsAvgTime: 'Tiempo medio en página',
   analyticsBounceRate: 'Tasa de rebote',
+  // Analytics -> Delivery. Reader-reported bytes and the in-process cache. Both labels
+  // have to keep saying what they are NOT: bytes are what browsers reported, never
+  // server egress, and the cache is this process's, never the CDN's.
+  analyticsDelivery: 'Entrega',
+  analyticsBytesTotal: 'Descargado por lectores',
+  analyticsBytesAvg: 'Por visita',
+  analyticsBytesMeasured: 'medido en',
+  analyticsBytesNote: 'visitas',
+  analyticsCache: 'Caché de páginas',
+  analyticsCacheHits: 'servido desde caché',
+  analyticsCacheSince: 'desde',
+  analyticsCacheNote: 'La caché de este servidor, y solo para las peticiones que llegaron hasta él. Un CDN por delante responde a la mayoría de los lectores por su cuenta, y el origen nunca se entera.',
   analyticsNowReading: '{n} leyendo ahora',
   analyticsNowQuiet: 'Nadie está leyendo en este momento',
   analyticsColTime: 'Tiempo',
@@ -662,6 +674,8 @@ const es = {
   navHelp: 'Ayuda',
   featActivityLog: 'Registro de actividad',
   featActivityLogDesc: 'Anota las acciones de administración (guardados, subidas, borrados) en la página Registro.',
+  featTransferStats: 'Peso de la página',
+  featTransferStatsDesc: 'Guarda cuántos bytes descargó cada visita, para que la analítica muestre lo que tus páginas le cuestan a un lector. Desactivado, el número no entra en la base de datos; nada más cambia.',
   logTitle: 'Registro de actividad',
   logEmpty: 'Todavía no hay actividad anotada.',
   logDisabled: 'El registro está apagado. Activa «Registro de actividad» en Ajustes → Opciones para anotar las acciones.',

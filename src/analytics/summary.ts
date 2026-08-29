@@ -9,10 +9,11 @@
 
 import { analyticsQuery } from '@/store/query'
 import { nowMs } from '@/store/db'
+import { cacheStats } from '@/server/cache'
 import { bucketRanges, windowStart, type Bucket } from '@/analytics/buckets'
 import {
   DWELL_CAP_MS, channels, dailySeries, depthBuckets, engagement, facet, topCountries,
-  topReferrers, windowCounts,
+  topReferrers, windowCounts, transferred,
 } from '@/analytics/aggregate'
 import {
   EMPTY_RIGHT_NOW, EMPTY_SUMMARY, reportTz,
@@ -115,6 +116,10 @@ export async function getAnalytics(days: number, bucket: Bucket = 'day', topN = 
       browsers: facet(since, 'browser', topN),
       systems: facet(since, 'os', topN),
       depthBuckets: depthBuckets(since, null),
+      transfer: transferred(since, null),
+      // Not windowed like everything above it: the counters live in this process and start
+      // at boot, so they answer "is the cache working" and not "how did last month go".
+      cache: { ...cacheStats },
     }
   } catch (error) {
     console.error(`[ERROR] analytics.getAnalytics: ${(error as Error).message}`)
