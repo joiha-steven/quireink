@@ -162,6 +162,7 @@ export type AdminStrings = {
   // Settings -> System -> Updates. `updateAvailable` carries {v}, the newer version.
   updateTitle: string
   updateCheckLabel: string
+  updateCheckWhat: string
   updateCheckDesc: string
   updateAvailable: string
   updateAvailableNote: string
@@ -624,6 +625,7 @@ export type AdminStrings = {
   cardLayout: string
   cardFeatures: string
   cardBranding: string
+  cardOnPage: string
   cardListing: string
   cardActivity: string
   // comments

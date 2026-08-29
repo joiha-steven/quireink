@@ -22,7 +22,8 @@
 //
 //   30px  FIGURE   a number that IS the content — a stat tile, and nothing else
 //   22px  TITLE    the page's own name, once per screen
-//   14px  SECTION  a card's title, and the label on a setting
+//   15px  SECTION  a card's title
+//   14px  SETTING_LABEL  the label on one setting
 //   13px  NOTE     the sentence explaining a setting
 //   12px  META     the machine's smallest print: table heads, counts, timestamps
 //
@@ -60,10 +61,23 @@ export const READING = 'reading-font'
  */
 export const TITLE = 'text-[1.375rem] font-medium leading-tight tracking-[-0.014em] text-neutral-900 dark:text-neutral-50'
 
-/** A card's title, and any heading inside a page. One step above the body it introduces. */
-export const SECTION = 'text-sm font-semibold tracking-[-0.006em] text-neutral-900 dark:text-neutral-100'
+/**
+ * A card's title, and any heading inside a page. One step above the body it introduces.
+ *
+ * ⚠️ 15px, and the step is the point — it was 14, and the PANEL card (which is every card on
+ * every settings tab) did not even use this: it hard-typed `text-[13px]`. Measured on the
+ * Site tab, that made the hierarchy run BACKWARDS. The card's title "General" came out at
+ * 13px/600, the labels inside it at 14px/500, and the explanatory small print under those
+ * labels at 13px/400 — so a card's heading was smaller than its own contents and exactly the
+ * size of the smallest print on the screen. The owner's words were *"mấy cái đầu mục như
+ * Appearance nhỏ quá, hoặc ko đủ nổi bật"*.
+ *
+ * 15 / 14 / 13 at 600 / 500 / 400 now: heading, label, note, each a step down in both size
+ * and weight. The page title stays 22 and is still the largest thing on the screen.
+ */
+export const SECTION = 'text-[0.9375rem] font-semibold tracking-[-0.008em] text-neutral-900 dark:text-neutral-100'
 
-/** The label on one setting. Same size as SECTION, one weight down — a peer, not a heading. */
+/** The label on one setting. One step under SECTION — a peer of the other labels, not a heading. */
 export const SETTING_LABEL = 'block text-sm font-medium text-neutral-800 dark:text-neutral-200'
 
 /**
@@ -81,7 +95,20 @@ export const SETTING_LABEL = 'block text-sm font-medium text-neutral-800 dark:te
  * TWENTY-FIVE carried `text-neutral-500 dark:text-neutral-400` — lighter than this in light
  * mode and darker in dark mode, so they were the hardest hints to read in both.
  */
-export const NOTE_TEXT = 'text-[0.8125rem] leading-[1.55] text-neutral-500 dark:text-neutral-400'
+/**
+ * ITALIC, and it is the ONLY axis left for "quieter".
+ *
+ * Asked for on 2026-08-29 as *"mờ hơn xíu hoặc in nghiêng hay sao đó"* — and dimmer is not
+ * available. Measured on a card: this is `#737373` on `#ffffff`, **4.74:1**, against the
+ * 4.5:1 that 13px text has to clear. There is 0.24 of headroom, and the next step on the
+ * neutral scale (`neutral-400`) lands at **2.58:1** — a hint nobody can read is not a quiet
+ * hint. Size cannot give way either: these sentences were the smallest text on every screen
+ * once and that was the wrong way round (below).
+ *
+ * So the note leans instead. It separates the sentence from the label above it on an axis
+ * that costs no contrast, and it says "aside" — which is what a hint is.
+ */
+export const NOTE_TEXT = 'text-[0.8125rem] italic leading-[1.55] text-neutral-500 dark:text-neutral-400'
 
 /** A hint directly under the label it explains. `Setting` and `ui/Input` place this one. */
 export const NOTE = `${NOTE_TEXT} mt-1.5`

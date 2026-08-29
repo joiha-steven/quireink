@@ -43,7 +43,20 @@ function List({ items, features, onChange }: {
   )
 }
 
-/** What a reader gets on a POST. */
+/**
+ * THE AIDS AROUND AN ARTICLE: how a reader finds it, moves through it, and comes back to it.
+ *
+ * Seven, not thirteen. One undifferentiated list of thirteen switches was the single hardest
+ * thing to use on this screen — finding "Table of contents" meant reading thirteen two-line
+ * descriptions in a 1,360px column, because nothing on it said which switches were about the
+ * same subject. These seven are the reader's apparatus (search it, jump within it, track how
+ * far in they are, return where they left); the six in `PageFeatureFields` are what the page
+ * itself puts in front of them. Splitting on that line is what lets someone scan for the one
+ * they came to change.
+ *
+ * The keys are untouched in `FeatureSettings` — only which card renders them moved, so the
+ * stored shape is exactly what it was.
+ */
 export function PostFeatureFields({ features, onChange, relatedCount, onRelatedCount }: Props) {
   const t = useAdminT()
   const items: Item[] = [
@@ -54,12 +67,6 @@ export function PostFeatureFields({ features, onChange, relatedCount, onRelatedC
     { key: 'readingTime', label: t.featReadingTime, desc: t.featReadingTimeDesc },
     { key: 'progressBar', label: t.featProgress, desc: t.featProgressDesc },
     { key: 'resume', label: t.featResume, desc: t.featResumeDesc },
-    { key: 'deck', label: t.featDeck, desc: t.featDeckDesc },
-    { key: 'categoryLabel', label: t.featCategoryLabel, desc: t.featCategoryLabelDesc },
-    { key: 'penUnderline', label: t.featPenUnderline, desc: t.featPenUnderlineDesc },
-    { key: 'penRing', label: t.featPenRing, desc: t.featPenRingDesc },
-    { key: 'bookText', label: t.featBookText, desc: t.featBookTextDesc },
-    { key: 'bookMode', label: t.featBookMode, desc: t.featBookModeDesc },
   ]
   return (
     <div className={SETTING_GAP}>
@@ -77,6 +84,20 @@ export function PostFeatureFields({ features, onChange, relatedCount, onRelatedC
       )}
     </div>
   )
+}
+
+/** What the PAGE itself shows: its own furniture, the pen's marks, and the book. */
+export function PageFeatureFields({ features, onChange }: Omit<Props, 'relatedCount' | 'onRelatedCount'>) {
+  const t = useAdminT()
+  const items: Item[] = [
+    { key: 'deck', label: t.featDeck, desc: t.featDeckDesc },
+    { key: 'categoryLabel', label: t.featCategoryLabel, desc: t.featCategoryLabelDesc },
+    { key: 'penUnderline', label: t.featPenUnderline, desc: t.featPenUnderlineDesc },
+    { key: 'penRing', label: t.featPenRing, desc: t.featPenRingDesc },
+    { key: 'bookText', label: t.featBookText, desc: t.featBookTextDesc },
+    { key: 'bookMode', label: t.featBookMode, desc: t.featBookModeDesc },
+  ]
+  return <List items={items} features={features} onChange={onChange} />
 }
 
 /** What a reader gets on the LISTING they arrive from. */

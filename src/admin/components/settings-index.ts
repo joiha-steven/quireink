@@ -1,7 +1,7 @@
-// Which tab a setting is behind — the one thing the seven tabs never told you.
+// Which tab a setting is behind — the one thing the tabs never told you.
 //
 // [ADR 0011](../../../docs/decisions/0011-settings-regrouped-into-seven.md) split five
-// tangled tabs into seven defined ones, each printing the question it answers, because the
+// tangled tabs into seven defined ones (eight since `ai`), each printing the question it answers, because the
 // owner said the old arrangement was tangled. It is a better arrangement and it did not
 // solve the problem: two weeks later the same owner said *"các tab cài đặt thực ra khá rối,
 // không biết chỉnh cái gì ở đâu cả"*.
@@ -22,7 +22,7 @@
 
 import type { AdminStrings } from '@/locales/types'
 
-/** The seven tabs, as `SettingsView` keys them. */
+/** The EIGHT tabs, as `SettingsView` keys them — ADR 0011 named seven, `ai` joined 2026-08-23. */
 export type SettingsTab =
   'site' | 'layout' | 'reading' | 'appearance' | 'seo' | 'connections' | 'ai' | 'system'
 
@@ -117,7 +117,6 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { tab: 'reading', label: 'commentsEnable' },
   // Not a reader feature at all — the admin's own record of what changed. It sits on this
   // tab because that is where the toggle is, and the search's job is where things ARE.
-  { tab: 'reading', label: 'featActivityLog', note: 'featActivityLogDesc' },
 
   // Appearance — how it looks
   { tab: 'appearance', label: 'themePreset' },
@@ -171,6 +170,9 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   // System — moving content in and out
   { tab: 'system', label: 'cacheEnable' },
   { tab: 'system', label: 'updateCheckLabel', note: 'updateCheckDesc' },
+  // Moved off Reading, where an audit of the OWNER's actions had been filed as a reader
+  // feature. The tour reads the labels each tab renders, so this row and the card move together.
+  { tab: 'system', label: 'featActivityLog', note: 'featActivityLogDesc' },
   { tab: 'system', label: 'clearCache' },
   { tab: 'system', label: 'backupAuto' },
   { tab: 'system', label: 'offsiteTitle', note: 'offsiteHelp' },

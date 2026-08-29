@@ -7,7 +7,7 @@ import { Button } from '@/admin/ui/Button'
 import { ToggleRow } from '@/admin/ui/Switch'
 import { MediaLibrary } from './MediaLibrary'
 import { useAdminT } from './I18nProvider'
-import { NOTE_TEXT, PANEL_LIST } from './kit'
+import { PANEL_LIST } from './kit'
 
 type Feature = { key: keyof SeoSettings; label: string; desc: string; path: string }
 
@@ -30,15 +30,14 @@ export function SeoFields({ s, update }: Props) {
 
   return (
     <div className="space-y-5">
-      <div className="space-y-1.5">
-        <Input
-          label={t.seoCanonical}
-          value={s.siteUrl}
-          onChange={(e) => update({ siteUrl: e.target.value })}
-          placeholder="https://example.com"
-        />
-        <p className={NOTE_TEXT}>{t.seoCanonicalHint}</p>
-      </div>
+      {/* `note=`: the hint belongs between the label and the field, not under it. */}
+      <Input
+        label={t.seoCanonical}
+        note={t.seoCanonicalHint}
+        value={s.siteUrl}
+        onChange={(e) => update({ siteUrl: e.target.value })}
+        placeholder="https://example.com"
+      />
 
       <div className={PANEL_LIST}>
         {FEATURES.map((f) => (

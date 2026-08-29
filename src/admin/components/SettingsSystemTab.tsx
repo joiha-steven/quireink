@@ -18,6 +18,7 @@ import { CacheFields } from './CacheFields'
 import { OffsiteFields } from './OffsiteFields'
 import { StorageFields } from './StorageFields'
 import { UpdateFields, type UpdateStatus } from './UpdateFields'
+import { ActivityLogField } from './FeatureFields'
 
 export function SettingsSystemTab(
   { s, update, updateStatus, offsiteConfigured, s3Bucket, grid, col }: {
@@ -48,6 +49,17 @@ export function SettingsSystemTab(
             status={updateStatus}
             onChange={(updateCheck) => update({ updateCheck })}
           />
+        </Card>
+        {/* THE ADMIN'S OWN RECORD, and it was filed under Reading.
+            It records what the OWNER did — saves, uploads, deletes — to the Log page, which
+            is neither a reader feature nor anything a reader can see. The tab it sat on
+            prints "What a reader gets on a post: the extras, and whether they can reply", so
+            the tab's own printed promise was the argument against keeping it there; its
+            component comment already said "Not a reader feature at all". This tab answers
+            about the INSTALL, which is what an audit log is. `settings-index.ts` moved with
+            it, or search would still send people to Reading. */}
+        <Card panel title={t.cardActivity}>
+          <ActivityLogField features={s.features} onChange={(features) => update({ features })} />
         </Card>
       </div>
       <div className={col}>

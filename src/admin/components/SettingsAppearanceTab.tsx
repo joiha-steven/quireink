@@ -32,6 +32,16 @@ export function SettingsAppearanceTab(
   return (
     <div className={grid}>
       <div className={col}>
+        {/* SHAPE, first — the coarsest control on the tab: what shape everything is, before
+            what colour and what face it is set in.
+            ⚠️ It was first in the RIGHT column, on the measured grounds that the left stack
+            was the taller of the two. Pairing the light and dark colour tables took 363px out
+            of the left stack and that stopped being true — measured at 1440px, left 2,224
+            against right 2,992. Moving it back across puts them at 2,752 and 2,464 and leaves
+            the right column as exactly one subject: type. Re-measure before moving it again. */}
+        <Card panel title={t.cardShape}>
+          <ShapeFields shape={s.shape} onChange={(shape) => update({ shape })} />
+        </Card>
         <Card panel title={t.navAppearance}>
           <p className={`${NOTE_TEXT} mb-4 rounded-lg bg-neutral-50 px-3 py-2 dark:bg-neutral-800/60`}>
             {t.themeAdminNote}
@@ -78,14 +88,7 @@ export function SettingsAppearanceTab(
         </Card>
       </div>
       <div className={col}>
-        {/* SHAPE, first on this side. Density and corners are not type and not palette, so
-            neither column owns them outright — this one, because the left stack (the palette
-            grid, the pen, the CSS box) is the taller of the two and this card is the shortest
-            on the tab. It reads first in its column because it is the coarsest control here:
-            what shape everything is, before what face it is set in. */}
-        <Card panel title={t.cardShape}>
-          <ShapeFields shape={s.shape} onChange={(shape) => update({ shape })} />
-        </Card>
+        {/* TYPE, and only type: the face, the sizes it is set at, and how it is drawn. */}
         <Card panel title={t.cardFont}>
           <FontFields
             value={s.fontPreset}

@@ -25,7 +25,29 @@ export function UpdateFields(
       <div className={PANEL}>
         <ToggleRow
           label={t.updateCheckLabel}
-          desc={t.updateCheckDesc}
+          /**
+           * FOLDED, NOT SHORTENED — and the distinction is the whole point.
+           *
+           * This is a 700-character privacy disclosure and it was printed in full under the
+           * switch: eleven lines, the longest note in the admin by a wide margin, and the
+           * clearest case of what the owner meant by *"giải thích thì dài dòng quá"*. It is
+           * also the one note here that must not lose a word — it is the promise about what
+           * leaves the machine, and a summary of it would be a weaker promise.
+           *
+           * So the text is untouched and the wall is gone: a `<summary>` that says what the
+           * paragraph is about, which is an invitation to open it rather than a replacement
+           * for it. `open` is one click, nothing is behind a preference, and
+           * `server/update-check.ts` and `docs/self-host.md` still say the same thing twice
+           * more.
+           */
+          desc={(
+            <details className="group">
+              <summary className="cursor-pointer list-none underline decoration-dotted underline-offset-2 marker:content-none hover:text-neutral-900 dark:hover:text-white">
+                {t.updateCheckWhat}
+              </summary>
+              <p className="mt-1.5">{t.updateCheckDesc}</p>
+            </details>
+          )}
           // The badge, not a disabled switch, and it prints the VARIABLE that is in the way
           // rather than a sentence about it. Two things override this setting — an operator's
           // `UPDATE_CHECK=0`, and a build started without `NODE_ENV=production` — and a switch

@@ -97,9 +97,20 @@ export function Setting({
     </div>
   )
   if (inline) {
+    /**
+     * `flex-wrap` + `basis-48`, so the control drops to its own line rather than crushing the
+     * sentence beside it — and WITHOUT a breakpoint, because the thing that decides is the
+     * width of the control, not the width of the window.
+     *
+     * A 24px switch beside a label is comfortable at 390px and always stays put. A 230px
+     * select is not: measured at 390 on the Appearance tab, "Default appearance" left its
+     * note 215px to run in and seven lines to do it, with the space beside the select empty
+     * underneath — the same hole the inline layout exists to close. The head refuses to go
+     * under 12rem, so anything that cannot leave it that much wraps instead.
+     */
     return (
-      <div className={`flex items-start justify-between gap-4 ${className}`}>
-        {head}
+      <div className={`flex flex-wrap items-start justify-between gap-x-4 gap-y-2 ${className}`}>
+        <div className="min-w-0 flex-1 basis-48">{head}</div>
         <div className="shrink-0 pt-0.5">{children}</div>
       </div>
     )
@@ -226,7 +237,9 @@ export function Card({
       <section className={`rounded-lg border border-neutral-100 dark:border-neutral-800 ${className}`}>
         {(title || actions) && (
           <div className="flex items-center justify-between gap-3 border-b border-neutral-100 px-4 py-2.5 dark:border-neutral-800">
-            {title && <h2 className="text-[13px] font-semibold">{title}</h2>}
+            {/* SECTION, not a hand-typed size. This read `text-[13px]`, which put every
+              settings card's title below the labels inside it — see the note on SECTION. */}
+          {title && <h2 className={SECTION}>{title}</h2>}
             {actions}
           </div>
         )}

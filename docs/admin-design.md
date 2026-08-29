@@ -227,6 +227,12 @@ The recurring failure is not a wrong design. It is SEVERAL of the same design: t
 a thing once, a screen says it again slightly differently, and the difference is what the
 owner sees. Every rule here was found by photographing and measuring the running admin.
 
+**A CARD'S TITLE OUTRANKS WHAT IS INSIDE IT.** 15 / 14 / 13 at 600 / 500 / 400 — heading,
+label, note. It ran BACKWARDS until 2026-08-29: `Card panel` (every settings card) hard-typed
+`text-[13px]` rather than importing `SECTION`, so a heading was smaller than its own labels
+and the size of the smallest print on screen (*"mấy cái đầu mục nhỏ quá"*). A hand-typed size
+is how a scale stops being one.
+
 **A two-column band is two STACKS, and their heights get re-measured.** Cards go into explicit
 column stacks, never straight into the grid — a grid lays its children out in rows, so a short
 card beside a tall one is stretched and the next card cannot start until both have finished.
@@ -312,9 +318,12 @@ failed:
   text field from them, so a field and a picker cannot drift apart.
 - **`Input`/`Textarea` take a `note`.** They took a label and nothing else, which is why
   every hint was hand-placed and no two callers agreed.
-- **`inline` is the one variation**, and only for a boolean: a 24px switch beside its label
-  keeps fifteen feature toggles scannable. The ORDER is unchanged. `ToggleRow` is `Setting` +
-  `Switch`.
+- **`inline` is the one variation, and it is for a SHORT ANSWER** — a boolean, a two-digit
+  number, a short list; the ORDER is unchanged. It was booleans only, and ten settings paid
+  for it: a number under a label and a sentence is three stacked rows to say "10" (*"nhiều
+  tuỳ chỉnh ngắn ngưng xuống hàng, khoảng trống nhiều, tối mắt"*, 2026-08-29). **`ui/Input`
+  decides it for `type="number"`**, from the same test that gave a number `FIELD_W.short`: a
+  field as wide as its answer needs no row of its own. `inline={false}` opts out.
 - **`SETTING_GAP`** is the space between two settings in a card. One number.
 - **One control style per kind.** `CheckField` replaced the two raw `<input type="checkbox">`
   that looked like a different application from the switches above them.
@@ -373,6 +382,12 @@ Route changes, the progress bar and recovery from a deploy have their own file:
   Keep it narrow; the earlier 24 × 76px footprint needs a mobile review before returning.
 - Palette cards stay readable in every state. Use neutral border/surface hierarchy for
   selected, available and hidden; never lower opacity on a whole card or its labels.
+  ⚠️ **Shipped broken; found by the owner, not by a check.** An unchecked palette carried
+  `grayscale opacity-60`, so hiding Sepia from readers turned Sepia grey *in the editor*
+  (*"mấy bộ màu bị mất màu rồi kìa"*, 2026-08-29). Hidden is a **dashed border** now. The
+  swatch also draws all SEVEN colours: six are near-white or near-black in every palette, so
+  with the accent as a 4px bar only 3.2% of the card was coloured and Mono, Sepia and Forest
+  were three identical grey stripes.
 - Backup scheduling and import controls use the shared rounded inputs and buttons, with
   native file-input chrome hidden behind an accessible labelled trigger.
 
@@ -382,7 +397,3 @@ Route changes, the progress bar and recovery from a deploy have their own file:
 - The editor's link prompt is still `window.prompt`; a small accessible popover would be
   better.
 
-Two items left this list on 2026-08-18: the editor chrome labels have long lived in
-`locales` (all eleven languages), and the narrow content tables DID become stacked list
-rows — the comments queue, the subscriber list, the trash and the activity log are the
-one-sheet pages' two-column ledgers now.

@@ -44,7 +44,7 @@ import { FigureFields } from './FigureFields'
 import { GalleryFields } from './GalleryFields'
 import { PostImageFields } from './PostImageFields'
 import { AuthorFields } from './AuthorFields'
-import { ActivityLogField, ListingFeatureFields, PostFeatureFields } from './FeatureFields'
+import { ListingFeatureFields, PageFeatureFields, PostFeatureFields } from './FeatureFields'
 import { CommentFields } from './CommentFields'
 import { CommentIntegrations } from './CommentIntegrations'
 import { CloudflareFields } from './CloudflareFields'
@@ -184,15 +184,20 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
             <Card panel title={t.cardGeneral}>
               <SiteFields s={s} update={update} />
             </Card>
-            {/* Whose blog this is. Identity, like the title and the marks beside it — and it
-                goes in the LEFT stack because Branding on the right is the taller card. */}
-            <Card panel title={t.cardAuthor}>
-              <AuthorFields author={s.author} onChange={(author) => update({ author })} />
-            </Card>
           </div>
           <div className={COL}>
             <Card panel title={t.cardBranding}>
               <BrandFields s={s} update={update} />
+            </Card>
+            {/* Whose blog this is — filed with the marks, because both answer "who is this",
+                and the words above answer "what is this".
+                ⚠️ It was in the LEFT stack, on the stated grounds that Branding was the taller
+                card. It is not, and had not been for some time: measured at 1440px, Branding
+                351 against Author 710, which left the two stacks at 1,461 and 351 — the right
+                column of this tab was empty for 1,110px, the worst hole in the eight. Now 731
+                against 1,085. Re-measure before moving it back. */}
+            <Card panel title={t.cardAuthor}>
+              <AuthorFields author={s.author} onChange={(author) => update({ author })} />
             </Card>
           </div>
         </div>
@@ -244,6 +249,10 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
       {/* READING — what a reader gets on a post, and whether they can reply. */}
       {tab === 'reading' && (
         <div className={GRID}>
+          {/* WHAT A READER CAN DO, then WHAT THEY SEE — and the thirteen-switch card that
+              used to be the whole left column is the first half of it.
+              Measured at 1440px: one card of 1,360 against a stack of 901. Now 1,168 against
+              1,176. Re-measure before moving a card across. */}
           <div className={COL}>
             <Card panel title={t.cardFeatures}>
               <PostFeatureFields
@@ -253,18 +262,16 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
                 onRelatedCount={(relatedCount) => update({ relatedCount })}
               />
             </Card>
-          </div>
-          <div className={COL}>
-            <Card panel title={t.cardListing}>
-              <ListingFeatureFields features={s.features} onChange={(features) => update({ features })} />
-            </Card>
             <Card panel title={t.cardComments}>
               <CommentFields comments={s.comments} onChange={(comments) => update({ comments })} />
             </Card>
-            {/* Not a reader feature at all: it records what the OWNER changed. It sat in the
-                middle of the reading switches because there was one list to put it in. */}
-            <Card panel title={t.cardActivity}>
-              <ActivityLogField features={s.features} onChange={(features) => update({ features })} />
+          </div>
+          <div className={COL}>
+            <Card panel title={t.cardOnPage}>
+              <PageFeatureFields features={s.features} onChange={(features) => update({ features })} />
+            </Card>
+            <Card panel title={t.cardListing}>
+              <ListingFeatureFields features={s.features} onChange={(features) => update({ features })} />
             </Card>
           </div>
         </div>
@@ -303,11 +310,15 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
             <Card panel title={t.cardNewsletter}>
               <NewsletterFields />
             </Card>
+          </div>
+          <div className={COL}>
+            {/* The two services that sit in FRONT of the site — the CDN that caches it and
+                the checks a commenter passes — against the one that sends from it.
+                Measured at 1440px: this was Newsletter + Cloudflare against comments alone,
+                868 to 357. Now 459 to 770. */}
             <Card panel title={t.cardCloudflare}>
               <CloudflareFields configured={integrations.cloudflareConfigured} zoneId={integrations.cloudflareZoneId} webhookConfigured={integrations.purgeWebhookConfigured} />
             </Card>
-          </div>
-          <div className={COL}>
             <Card panel title={t.cardCommentIntegrations}>
               <CommentIntegrations
                 comments={s.comments}
