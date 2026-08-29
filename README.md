@@ -27,7 +27,7 @@ One process. Two SQLite files. No cloud account anywhere in the path.
 
 <br/>
 
-<img src="docs/demo.jpg" alt="Two screenshots side by side: a composed front page with a lead story and section rows, and the same site's article page with a contents rail, a meta column, a pencil underline, a red ballpoint ring around one word, a blue highlight, and a scanned Van Gogh letter, mounted on a mat, as its first figure" width="960">
+<img src="docs/demo.jpg" alt="A composed front page with a lead story and section rows, beside the same site's article page with a contents rail, pen marks and a mounted letter facsimile" width="960">
 
 <sub>**[demo.quireink.com](https://demo.quireink.com)** is the real thing. No sign-up, nothing to fill in. Use the bar at the bottom to jump between the front page, the list, an article, book mode, light and dark, and the admin. That bar is the only thing added, and it lives outside the code, so the demo is always the latest build.</sub>
 
@@ -35,77 +35,65 @@ One process. Two SQLite files. No cloud account anywhere in the path.
 
 ## What it is
 
-You write, it publishes, and all of it sits on a server you control.
+A blog you write in and publish from, on a server you rent.
 
-This section is for a reader who is not technical. The rest of the page is for whoever sets it up.
+This first part is for a reader who is not technical. Everything after it is for whoever sets it up.
 
-**It is a blog, in the plain sense of the word.** A front page, posts, categories, a search box, comments, and a newsletter that emails your subscribers whenever you publish. What it does not have: an algorithm deciding who gets to see your writing, ads cutting across it, and a company that can change the rules or close down one day.
+It has the usual furniture: a front page, posts, categories, a search box, comments, and a newsletter that goes out when you publish. What it has none of is an algorithm deciding who sees your writing, ads across the middle of it, or a company that can change the rules next year.
 
-**You change it by clicking, not by writing code.** Colour, type, size, the shape of the front page, the menu — all of it lives in the admin, behind your own sign-in, and works from a phone.
+Colour, type, size, the shape of the front page, the menu: all of it is a setting in the admin, behind your own sign-in, and all of it works from a phone.
 
-**The reading page is unusually light.** Opening a post costs about 100 KB — a photo from your phone is a few dozen times heavier. Someone on a weak signal with an old handset still sees the words almost at once. These are measurements, not claims: [the table](#speed).
+Opening a post costs about 100 KB. A photo from your phone is a few dozen times heavier, so a stranger on a weak signal with an old handset still gets the words almost at once. Those are measurements, and [the table](#speed) says how they were taken.
 
-**Reading comfort is the point of the whole project.** Six palettes in light and dark, four reading fonts, a book mode set in two columns like paper, and a five-ink highlighter for the lines worth keeping.
+Reading comfort is the point of the project. Six palettes in light and dark, four reading fonts, a book mode set in two columns like paper, and a five-ink highlighter for the lines worth keeping.
 
-**An AI can write and publish for you.** Connect Claude (or another assistant) and say: *"write a 600-word post about today's trip, tag it travel, publish it"*. It drafts and publishes through exactly the rules you use, and you can take its access away at any moment.
+An assistant can do the writing. Connect Claude or another MCP client, say *"write a 600-word post about today's trip, tag it travel, publish it"*, and it drafts and publishes through the same rules you use. Its access is a token you can revoke in one click.
 
-**What you need to start.** A domain, and a rented server — the cheapest tier is enough. The first setup is a technical job: ask someone who knows servers, or hand the whole thing to an AI agent ([Install](#install)). After that the daily work — writing, publishing, changing the look, reading the stats — is all in the admin; only upgrading to a new version needs the command line again.
+To start you need a domain and a rented server; the cheapest tier is enough. That first setup is a technical job, so ask someone who knows servers or hand it to an agent ([Install](#install)). After that the writing, the publishing, the look and the stats all live in the admin, and only an upgrade sends you back to a terminal.
 
-**In return, you keep your own house.** Nobody backs it up for you — there is a button that downloads the entire blog, but pressing it is your job — and the blog lives as long as the server you rent.
+The trade is that you keep your own house. Nobody backs it up for you. There is a button that downloads the entire blog, but pressing it is your job, and the blog lives as long as the server you rent.
 
-**Free, and you may charge for it.** A personal blog costs nothing. Running it inside a business, or selling hosting where every customer gets their own blog, is allowed too — as long as what you run is the version published here. Only a *modified* version used commercially needs to ask first: [License](#license).
+A personal blog costs nothing, and you may charge for it: run it inside a business, or sell hosting where every customer gets one. Only a *modified* version used commercially has to ask first ([License](#license)).
 
 ## Under the hood
 
-There is no database to install and nothing to deploy. Point a domain at one command and you have a blog:
+Nothing to deploy and no database to install. Point a domain at one command and you have a blog:
 
 ```bash
 bun src/index.ts
 ```
 
-Three things shaped it.
+Three decisions shaped everything else.
 
-**The reading page is the product.** Type, colour, size, spacing, layout: all of it is a setting you change in the admin. Not one size or colour is written into the reader's stylesheet, and the build fails if someone puts one there.
+The reading page is the product, so type, colour, size, spacing and layout are all settings you change in the admin. Not one size or colour is written into the reader's stylesheet, and the build fails if somebody puts one there.
 
-**Readers download between 3.9 KB and 10.4 KB of JavaScript, and nothing from anyone else.** Pages arrive as finished HTML. A few small scripts handle search, the theme switch and book mode. React stays in the admin and never reaches a reader.
+Readers download between 3.9 KB and 10.4 KB of JavaScript, and nothing at all from anyone else. Pages arrive as finished HTML. A few small scripts handle search, the theme switch and book mode; React stays in the admin and never reaches a reader.
 
-**An agent can do the writing — and the stewarding.** Connect Claude or any MCP client and it can draft, tag, schedule and publish for you, read your traffic, moderate comments and audit the archive, through exactly the rules the admin follows.
+An agent can steward as well as write. Any MCP client can draft, tag, schedule and publish, read your traffic, sweep comments and audit the archive, through the rules the admin itself follows.
 
-You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE), and run the published version commercially — paid hosting included — under [one additional permission](./LICENSE-EXCEPTION.md).
+You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE), and run the published version commercially, paid hosting included, under [one additional permission](./LICENSE-EXCEPTION.md).
 
-> **2.2.2 came out on 2026-08-29** and runs the demo above plus the author's own blog at
-> [manhhung.me](https://manhhung.me). **A picture can wear a frame** — a mat of paper or of
-> ink, in three weights, per picture or set once for the whole site. **Galleries reflow on a
-> phone** instead of drawing ten tiles 80 pixels wide, every picture shape now tells the
-> browser its real width, and a 512px cut joins 1024/1600: about 70% fewer bytes for what a
-> phone actually draws. **Pasting a screenshot into a post finally does something.** The
-> admin was audited at seven widths from a folded Galaxy Z Fold up — eight screens overflowed
-> and five Settings tabs could not be reached by a finger; none of that is true now, and
-> between 1024 and 1279 the rail arrives as icons so the form keeps its width. **The layout
-> stops jumping on Android**, where the metric-matched fallback had been silently doing
-> nothing for two months. The image is **45 MB smaller**, and one paste of cloud-init puts it
-> on a DigitalOcean droplet. The
-> [changelog](./CHANGELOG.md) has everything that changed.
+**2.2.2** is the current release. It runs the demo above and the author's own blog at [manhhung.me](https://manhhung.me); the [changelog](./CHANGELOG.md) has everything that changed.
 
 ## What you get
 
 | The part | What it does |
 |:---|:---|
-| 🖋️&nbsp;**Writing** | A real editor over Markdown — tables, video, footnotes, callouts, **mathematics**, Spotify. Drop an image in and it is cut for every screen — and described for you, if you give Settings an AI key (Anthropic, OpenAI or Gemini; yours, so your bill). A picture can hold the column, float at a third of it with the words running past, join its neighbours as a gallery, or wear a frame: a mat of paper or of ink, in three weights, per picture or set once for the whole site. Saves as you type, keeps three versions, and can hold a post until Tuesday |
-| 🏠&nbsp;**Front&nbsp;page** | The post list, a page you wrote, or a composed front: lead story, picks, a row per category, most read. Works with photographs, and with only words. [How it works](./docs/homepage.md) |
-| 🎨&nbsp;**Looks** | Six palettes, light and dark. Four reading fonts, or upload your own. Every size comes from a role, so one change moves the page instead of one heading |
-| 🖍️&nbsp;**The&nbsp;pen** | `==text==` highlights in five inks, `++text++` underlines in pencil, `@@word@@` rings a word in red ballpoint. Not coloured boxes — strokes grown from a seeded hand, so no two on a page share a shape and every phrase keeps its own. Pigments measured off a photograph of a real pen box |
-| 💻&nbsp;**Code** | Highlighted on the server, so the reader downloads no highlighter. Twenty-one languages, and the names people type (`typescript`, `sh`) reach them. A fence naming nothing is guessed at — timidly, so program output stays plain |
-| 🔍&nbsp;**Reading** | Search that answers as you type. A side rail with your categories and tags, or the contents of the post. Related posts, reading time, a progress bar. And **book mode**: two columns on paper, with a drop cap. A post ends with read next, and your place is kept for when you come back |
-| 📈&nbsp;**Numbers** | Analytics without cookies. Who read what, how far down they got, where they came from. Plus an activity log, a trash you can undo, and a help page |
-| 💬&nbsp;**Comments** | Readers comment without an account. The page signs its own spam challenge — no third party, and Turnstile takes over only if you add its keys. Sweeping is a trip to the trash, not a deletion |
-| 🔎&nbsp;**Search&nbsp;engines** | Sitemap, RSS, `robots.txt`, `llms.txt`, and an OG image drawn per post. Rename a slug and the old URL keeps working on its own |
-| 📬&nbsp;**Newsletter** | Sign-ups with a confirmation email, an issue sent when you publish, a note when a comment gets a reply. Your own SMTP, so nothing to sign up for |
+| 🖋️&nbsp;**Writing** | A real editor over Markdown: tables, video, footnotes, callouts, mathematics, Spotify. Drop in an image and it is cut for every screen, and described for you if you give Settings an AI key. A picture can hold the column, float at a third of it, join its neighbours as a gallery, or wear a paper or ink mat. Saves as you type, keeps three versions, holds a post until Tuesday |
+| 🏠&nbsp;**Front&nbsp;page** | The post list, a page you wrote, or a composed front: lead story, picks, a row per category, most read. Works with photographs and with only words. [How it works](./docs/homepage.md) |
+| 🎨&nbsp;**Looks** | Six palettes, light and dark. Four reading fonts, or upload your own. Every size comes from a role, so one change moves the whole page instead of one heading |
+| 🖍️&nbsp;**The&nbsp;pen** | `==text==` highlights in five inks, `++text++` underlines in pencil, `@@word@@` rings a word in red ballpoint. Strokes grown from a seeded hand, so no two on a page share a shape. Pigments measured off a photograph of a real pen box |
+| 💻&nbsp;**Code** | Highlighted on the server, so the reader downloads no highlighter. Twenty-one languages, and the names people actually type. A fence naming nothing is guessed at timidly, so program output stays plain |
+| 🔍&nbsp;**Reading** | Search that answers as you type. A rail with your categories and tags, or the contents of the post. Related posts, reading time, a progress bar. Book mode sets a post in two columns with a drop cap, and your place is kept for when you come back |
+| 📈&nbsp;**Numbers** | Analytics without cookies: who read what, how far they got, where they came from. Plus an activity log, a trash you can undo, and a help page |
+| 💬&nbsp;**Comments** | Readers comment without an account. The page signs its own spam challenge, so no third party sees them; Turnstile takes over only if you add its keys. Sweeping sends comments to the trash, not into nothing |
+| 🔎&nbsp;**Search&nbsp;engines** | Sitemap, RSS, `robots.txt`, `llms.txt`, and an OG image drawn per post. Rename a slug and the old URL keeps working |
+| 📬&nbsp;**Newsletter** | Sign-ups with a confirmation email, an issue sent when you publish, a note when a comment gets a reply. Your own SMTP, so there is nothing to sign up for |
 | 📚&nbsp;**Series** | Write in parts, number them, and every part shows the others |
-| 💾&nbsp;**Backups** | One button downloads the whole install, scheduled snapshots kept on the server, and every snapshot also shipped to your own R2/S3 bucket. [Details](./docs/backups.md) |
-| 📥&nbsp;**Moving&nbsp;in** | Upload a WordPress XML, a Ghost JSON, or the ZIP Substack or Medium emailed you — the server works out whose it is. Everything becomes Markdown, dead shortcodes are swept on the way in, the old URLs answer with redirects, and the images are fetched into your own library |
-| 🌍&nbsp;**Languages** | Eleven, in the admin and on the site — and the community can add more, one file per language. No CJK webfont ships — they are megabytes — but each of the three names its own face, so 直 is drawn the Japanese way on a Japanese site |
-| 🔐&nbsp;**Sign-in** | Your own username and password, hashed with argon2id. An authenticator code every time, and ten recovery codes for the day you lose the phone. No Google in the login path |
+| 💾&nbsp;**Backups** | One button downloads the whole install. Scheduled snapshots stay on the server, and each one is also shipped to your own R2 or S3 bucket. [Details](./docs/backups.md) |
+| 📥&nbsp;**Moving&nbsp;in** | Upload a WordPress XML, a Ghost JSON, or the ZIP Substack or Medium emailed you; the server works out whose it is. Everything becomes Markdown, dead shortcodes are swept out, old URLs answer with redirects, and the images land in your own library |
+| 🌍&nbsp;**Languages** | Eleven, in the admin and on the site, and anyone can add one more in a single file. No CJK webfont ships, because they run to megabytes, but each of the three names its own face so 直 is drawn the Japanese way on a Japanese site |
+| 🔐&nbsp;**Sign-in** | Your own username and password, hashed with argon2id. An authenticator code every time, and ten recovery codes for the day the phone goes missing. No Google anywhere in the login path |
 | 📱&nbsp;**Phone** | Install it to the home screen and it opens like an app |
 
 **Made for** one person, one server, one blog they mean to keep.
@@ -113,13 +101,13 @@ You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE),
 
 <div align="center">
 
-<img src="docs/demo-reading.jpg" alt="Book mode, a fullscreen two-column reader on paper with a drop cap, a captioned letter facsimile on its mat and a page count, beside the dark theme showing a two-by-two gallery of Van Gogh paintings above a table" width="960">
+<img src="docs/demo-reading.jpg" alt="Book mode, a two-column reader on paper with a drop cap, beside the dark theme showing a gallery of paintings above a table" width="960">
 
 <sub>Book mode and the dark theme. Neither is a filter dropped over the page. Both are the reading typography itself. The fonts ship with Vietnamese and Central European accents included, so the specimen on the left is set properly instead of falling back to whatever the system has.</sub>
 
-<img src="docs/demo-code.jpg" alt="Three screenshots: a formula bounding the drift of a rounded type scale, rendered as MathML in the reading face; the same site's code, one block highlighted from its language tag and one below it with no language where only the quoted text and a dollar-name are marked; and three highlighter strokes in yellow, green and pink" width="960">
+<img src="docs/demo-code.jpg" alt="A MathML formula in the reading face, a highlighted code block beside an unlabelled one, and three highlighter strokes" width="960">
 
-<sub>Mathematics is MathML, drawn by the browser's own layout engine — no script, no stylesheet, no font file, so a post with a formula costs a reader nothing over one without. Code is highlighted on the server for the same reason; the lower block named no language, so nothing invented colours for it and only what is true of any notation is marked. The pen is an SVG stroke that breaks per line, in five inks.</sub>
+<sub>Mathematics is MathML, laid out by the browser itself. No script, no stylesheet, no font file, so a post with a formula costs a reader nothing over one without. Code is highlighted on the server for the same reason. The lower block named no language, so nothing invented colours for it and only what holds for any notation is marked. The pen is an SVG stroke that breaks per line, in five inks.</sub>
 
 </div>
 
@@ -127,7 +115,7 @@ You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE),
 
 These are off the network, first visit, nothing cached. It is what a stranger on a phone actually waits for.
 
-The CSS and JavaScript rows are build artefacts — the same bytes on every install — read off the 2.2.2 build. The totals were measured on 2026-08-27 against this site: Vietnamese, Literata to read and JetBrains Mono for the furniture. They are not a property of the software, because the fonts are cut per script and a browser fetches only the ranges your pages actually use. The pen's stroke shapes ride in two further immutable sheets (~20 KB together) that only board a page carrying a mark or an underline ([ADR 0027](docs/decisions/0027-the-pen-ships-only-where-it-wrote.md)) — an inkless page never pays for them.
+The CSS and JavaScript rows are build artefacts, the same bytes on every install, read off the 2.2.2 build. The totals were measured against a live site running Vietnamese, Literata to read and JetBrains Mono for the furniture. They are not a property of the software: the fonts are cut per script, so a browser fetches only the ranges your pages actually use. The pen's stroke shapes ride in two further immutable sheets, about 20 KB together, and they board only a page that carries a mark or an underline ([ADR 0027](docs/decisions/0027-the-pen-ships-only-where-it-wrote.md)). An inkless page never pays for them.
 
 | | Home | A post | |
 |:---|---:|---:|:---|
@@ -138,21 +126,21 @@ The CSS and JavaScript rows are build artefacts — the same bytes on every inst
 | **Third&#8209;party&nbsp;requests** | **0** | **0** | no CDN, no font host, no tracker |
 | **Coming&nbsp;back** | ~20&nbsp;KB | ~11&nbsp;KB | only the HTML is fetched again; a long post carries more |
 
-It stays this way because of a few decisions that are hard to walk back.
+It stays this way because of five decisions that are hard to walk back.
 
-**Every bundle has a size limit the build enforces.** Go over it and the build fails. A feature cannot quietly start costing every reader a little more forever.
+Every bundle has a size limit the build enforces, so going over it fails the build. A feature cannot quietly start costing every reader a little more forever.
 
-**The page cache is one `Map`, and any write empties all of it.** That is the entire rule, so there is nothing to get subtly wrong. A miss costs a SQLite read and a render, well under a millisecond.
+The page cache is one `Map`, and any write empties all of it. That is the whole rule, which leaves nothing to get subtly wrong. A miss costs a SQLite read and a render, well under a millisecond.
 
-**Rendered Markdown is stored under a hash of its input.** Nothing ever needs invalidating. A long post went from 383 ms to 1 ms.
+Rendered Markdown is stored under a hash of its input, so nothing ever needs invalidating. A long post went from 383 ms to 1 ms.
 
-**Fonts are yours, cut down per language, and only the ones this page needs are preloaded.** Pinning one variable-font axis took that set from 97.6 KB to 46.2 KB.
+The fonts are yours, cut down per language, and only the ones a page needs get preloaded. Pinning one variable-font axis took that set from 97.6 KB to 46.2 KB.
 
-**The fade-in and the progress bar are pure CSS.** No script, off the main thread, and if the browser is old it just shows the text.
+The fade-in and the progress bar are pure CSS: no script, off the main thread, and an old browser simply shows the text.
 
 <div align="center">
 
-<img src="docs/demo-mobile.jpg" alt="Three phone screens: the post list, an article showing its series contents, and the instant search overlay with a query part-typed and the archive already filtered to the titles that match" width="960">
+<img src="docs/demo-mobile.jpg" alt="Three phone screens: the post list, an article with its series contents, and the search overlay filtering as it is typed" width="960">
 
 <sub>None of this is for a benchmark. It is for someone on a four-year-old phone who wanted to read four hundred words.</sub>
 
@@ -170,9 +158,9 @@ It stays this way because of a few decisions that are hard to walk back.
 
 <div align="center">
 
-<img src="docs/demo-admin.jpg" alt="The Quire Ink admin: the Write screen with the list of everything written beside the editor's paper — a toolbar with underline and ring buttons, a pencil underline, a ringed word, a highlighted sentence and a matted letter scan in the post — and the appearance settings as one sheet of panels with six colour palettes and four reading fonts" width="960">
+<img src="docs/demo-admin.jpg" alt="The Quire Ink admin: the Write screen with the archive list beside the editor, and the appearance settings as one sheet of panels" width="960">
 
-<sub>The admin is built around writing: the list beside the paper, and everything else one sheet per page. Palettes, fonts, sizes, layout, menu — all of it is a setting, none of it is code.</sub>
+<sub>The admin is built around writing: the list beside the paper, everything else one sheet per page. Palettes, fonts, sizes, layout and the menu are all settings. None of it is code.</sub>
 
 </div>
 
@@ -193,7 +181,7 @@ For the first path you need [Bun](https://bun.sh) 1.3 or newer and a machine you
 curl -fsSL https://raw.githubusercontent.com/joiha-steven/quireink/main/install.sh | bash
 ```
 
-It never uses `sudo`, never installs Bun behind your back and never touches systemd; it refuses to run as root, and running it again on the same directory updates and rebuilds instead of failing. Settings go in front of `bash` — the far side of the pipe, since anything in front of `curl` belongs to the download:
+It never uses `sudo`, never installs Bun behind your back and never touches systemd; it refuses to run as root, and running it again on the same directory updates and rebuilds instead of failing. Settings go in front of `bash`, on the far side of the pipe: anything in front of `curl` belongs to the download instead.
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/joiha-steven/quireink/main/install.sh \
@@ -211,7 +199,7 @@ bun run build:assets && bun run build:admin     # the islands, then the admin
 DATA_DIR=./data SITE_URL=https://example.com bun src/index.ts
 ```
 
-Put a reverse proxy with TLS in front of the port, `3000` by default. Then **read the log** — a blog nobody owns yet prints the link that claims it, every time it starts:
+Put a reverse proxy with TLS in front of the port, `3000` by default. Then read the log. A blog nobody owns yet prints the link that claims it, every time it starts:
 
 ```
   ┌─────────────────────────────────────────────────────────────────────────┐
@@ -226,16 +214,16 @@ Open it and the rest is a browser: username, email, password, then the QR code f
 
 <div align="center">
 
-<img src="docs/demo-setup.jpg" alt="Three first-run screens side by side: Claim this blog, with username, email and password fields; Your site, with the language first, then the name, a time zone already filled in as Asia/Saigon and a site address already filled in as https://example.com; and The front page, offering two small drawings to choose between, a list of posts or a composed newspaper front" width="960">
+<img src="docs/demo-setup.jpg" alt="Three first-run screens: claiming the blog, naming the site, and choosing between a list front page and a composed one" width="960">
 
-<sub>The whole of setup after the log line. The time zone and the address arrive already filled in — the browser knows both, and both are wrong by default and silent about it. What is <b>not</b> asked is the design: palettes, fonts, book mode and the feature switches all stay on a dashboard card you can reopen, because nobody can judge them before the site has a single post on it.</sub>
+<sub>The whole of setup after the log line. The time zone and the address arrive already filled in, because the browser knows both and both are wrong by default without saying so. What setup does <b>not</b> ask about is the design: palettes, fonts, book mode and the feature switches stay on a dashboard card you can reopen, since nobody can judge them before the site has a single post on it.</sub>
 
 </div>
 
 That is it. The database sets itself up on first boot, so there is no migration step to remember. If you want the full version with systemd, nginx, cache headers, backups and upgrades, it is in **[`docs/self-host.md`](./docs/self-host.md)**.
 
 > [!NOTE]
-> **Run from source — that is the whole deployment**, and it is what the live site does. There is
+> **Run from source. That is the whole deployment**, and it is what the live site does. There is
 > no compiled binary: `bun build --compile` leaves out `sharp`'s native module, and a binary that
 > cannot resize an image is not a shipping artefact
 > ([ADR 0022](./docs/decisions/0022-ship-from-source-not-a-compiled-binary.md)).
@@ -258,13 +246,13 @@ docker logs quire            # prints the link that claims the blog — open it 
 `:latest` on purpose: it is the newest release, and the newest release is the one with the
 fixes in it. The version tags below exist for anyone who wants to move by hand instead.
 
-Also on GHCR as `ghcr.io/joiha-steven/quireink` — the same image, pushed by the same run and
+Also on GHCR as `ghcr.io/joiha-steven/quireink`: the same image, pushed by the same run and
 carrying the same digest, so the two can never drift.
 
 **On a fresh DigitalOcean droplet** (or any Ubuntu VM with cloud-init): paste
 [`deploy/digitalocean/user-data.sh`](./deploy/digitalocean/user-data.sh) into the
 droplet-create page's initialization-script box and the blog is serving three minutes
-after boot, claim link included — [how and why](./deploy/digitalocean/README.md).
+after boot, claim link included ([how and why](./deploy/digitalocean/README.md)).
 
 **Or build it from this repository**, which is what `docker-compose.yml` does:
 
@@ -274,7 +262,7 @@ docker compose up -d --build
 docker compose logs quire            # the claim link, same as above
 ```
 
-**No `docker exec` and no interactive terminal anywhere in that** — which is the point, because a NAS container UI has a log panel and no TTY. One service, two volumes, no sidecar. The port only listens on `127.0.0.1`, so a reverse proxy still does TLS.
+**No `docker exec` and no interactive terminal anywhere in that**, which is the point: a NAS container UI gives you a log panel and no TTY. One service, two volumes, no sidecar. The port listens on `127.0.0.1` only, so a reverse proxy still does TLS.
 
 **On a NAS** (Synology, QNAP, Unraid), mount real folders and set `PUID`/`PGID` to whoever owns them — the container adopts them on first boot and never runs as root. Notes on volumes, ownership and upgrades are in [`docs/self-host-docker.md`](./docs/self-host-docker.md).
 
@@ -308,11 +296,11 @@ Using the Quire Ink MCP server, write a 600-word post titled
 "ai" and "writing", set a friendly excerpt, and publish it.
 ```
 
-Writing is half of it. The agent can also read your traffic and compare it to last week, count your subscribers (never see their addresses), sweep comments for spam (into the trash, not gone), search your whole archive and tell you whether a newer release is out. And it can steward: recompose the front page around what people actually read, restyle the site from the curated palettes and fonts (never free-form colour — an agent has no eyes), reply to a comment under your name, send the next newsletter issue as a test to you alone, and take a backup snapshot before anything big. The [agent cookbook](./docs/agent-cookbook.md) is a page of prompts that do real jobs — a Monday report, a newsletter draft, an archive audit.
+Writing is half of it. The agent can also read your traffic and compare it to last week, count your subscribers without ever seeing their addresses, sweep comments for spam into the trash rather than out of existence, search the whole archive, and tell you whether a newer release is out. It can steward, too: recompose the front page around what people actually read, restyle the site from the curated palettes and fonts, reply to a comment under your name, send the next newsletter issue as a test to you alone, and take a backup snapshot before anything big. Free-form colour is the one thing it cannot touch, because an agent has no eyes. The [agent cookbook](./docs/agent-cookbook.md) collects prompts that do real jobs: a Monday report, a newsletter draft, an archive audit.
 
 The sensitive settings are off limits over MCP, and you stay in charge. Revoke the token in the admin and it stops working immediately.
 
-**And the repository teaches the agent.** Three skills ship in `.claude/skills/`, so an assistant that has just cloned this repo already knows how to install a blog, work one over MCP, and move an existing blog in from WordPress, Ghost, Substack or Medium — the import writes the old URLs' redirects and fetches the images itself; the skill walks what remains, starting with the list of images it could not fetch. Nothing to install: clone it and ask. [What they cover](./docs/agent-ready.md#skills-that-ship-in-the-repository).
+The repository also teaches the agent. Three skills ship in `.claude/skills/`, so an assistant that has just cloned this repo already knows how to install a blog, run one over MCP, and move an existing blog in from WordPress, Ghost, Substack or Medium. The import writes the old URLs' redirects and fetches the images itself; the skill then walks whatever is left, starting with the images it could not fetch. Nothing to install: clone it and ask. [What they cover](./docs/agent-ready.md#skills-that-ship-in-the-repository).
 
 ## Environment variables
 
@@ -340,7 +328,7 @@ SMTP, Turnstile and CDN credentials go in **Settings → Connections** and stay 
 
 ## Translations
 
-The interface speaks **eleven languages** — English, Tiếng Việt, Deutsch, 日本語, 简体中文, 한국어, Français, Español, Português (Brasil), Italiano, Русский — on the reader's side and in the admin, and the first question of setup is which one this blog speaks.
+The interface speaks **eleven languages** on the reader's side and in the admin: English, Tiếng Việt, Deutsch, 日本語, 简体中文, 한국어, Français, Español, Português (Brasil), Italiano and Русский. The first question setup asks is which one this blog speaks.
 
 **Help translate.** Every language is one folder at the repository root: [`locales/`](./locales). To improve a translation, edit `locales/<code>.ts` (what readers see) and `locales/admin/<code>.ts` (what the owner sees) — plain files of quoted strings. To add a language, copy the two `en` files, translate, and register the code in `locales/langs.ts` + `src/types.ts`; the compiler refuses to build until every key exists, so a half-done translation cannot ship silently. Pull requests welcome — a native speaker's ear beats ours.
 
@@ -375,9 +363,9 @@ Two different things, and they are not covered by the same terms.
 
 **Noncommercial: everything.** Your own blog, a hobby project, study, research, and also charities, schools, public research bodies and government. Read it, change it, host it, fork it, pass it on. Keep the licence text and the `Required Notice:` line with any copy you give someone.
 
-**Commercial: yes, unmodified.** Run it for a business, run it for a client, sell hosting where each customer gets their own Quire Ink blog. What that asks of you: run a published release with its source unchanged — settings, palettes, fonts and content are not source, and the look of a site is a setting here rather than a fork — keep the notices, say your service runs Quire Ink and link back, and sell the service rather than the software. It is all in [`LICENSE-EXCEPTION.md`](./LICENSE-EXCEPTION.md), which is short.
+**Commercial: yes, unmodified.** Run it for a business, run it for a client, sell hosting where each customer gets their own Quire Ink blog. Four things are asked in return: run a published release with its source unchanged, keep the notices, say your service runs Quire Ink and link back, and sell the service rather than the software. Settings, palettes, fonts and content are not source, so the look of a site is a setting here rather than a fork. It is all in [`LICENSE-EXCEPTION.md`](./LICENSE-EXCEPTION.md), which is short.
 
-**A modified version, used commercially, needs a separate licence.** That is the one line the project holds: changing the code and then selling it, or running a changed copy as a service, is the thing to ask about first. Fixing a bug or a security hole in your own deployment is carved out — patch it, and tell the owner within 30 days. Ask by opening an issue or through [the owner's GitHub profile](https://github.com/joiha-steven).
+**A modified version, used commercially, needs a separate licence.** That is the one line the project holds: change the code and then sell it, or run a changed copy as a service, and you have to ask first. Fixing a bug or a security hole in your own deployment is carved out. Patch it, and tell the owner within 30 days. Ask by opening an issue or through [the owner's GitHub profile](https://github.com/joiha-steven).
 
 **What you write stays yours.** Your posts and images are not covered by the code licence and are not in this repository.
 
