@@ -127,7 +127,7 @@ export function AdvancedFields({
           WRAPPED IN THE ROW'S OWN PADDING, and that is the fix rather than decoration. Every
           other child of PANEL_LIST is a ToggleRow, which carries `p-4` inside its Setting;
           a bare Input has none, so this row alone sat flush against the divider and the
-          panel edge while the four above it were inset — reported as "chỗ này bị bể". The
+          panel edge while the four above it were inset, so the row read as broken. The
           divider draws between children, so the padding has to be on the child. */}
       <div className="p-4">
       <Input

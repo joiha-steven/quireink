@@ -58,8 +58,8 @@ type Props = {
  * short SHA answers it. Absent when the deploy left no `build-sha` behind, which is a dev
  * machine or somebody else's install.
  *
- * ⚠️ The link goes to the PROJECT, not to the commit — the owner's instruction on 2026-08-15:
- * *"mã commit (link tới dự án, ko phải link tới commit)"*. The SHA is here to be READ (does
+ * ⚠️ The link goes to the PROJECT, not to the commit — the owner's instruction on
+ * 2026-08-15. The SHA is here to be READ (does
  * this match what I just shipped), and the link is a different job: getting to the repository.
  * A per-commit URL served neither well — it is a page nobody wants from a dashboard, and it
  * 404s the moment a SHA is stale or the deploy shipped from a branch that was later rebased.
@@ -70,7 +70,7 @@ type Props = {
  *
  * ⚠️ **This is the first colour in the admin outside the highlighter**, and
  * `docs/admin-design.md` says status stays on the neutral scale. Owner's call on
- * 2026-08-22, asked for in those words ("chấm cam" / "chấm xanh"), and the exception is
+ * 2026-08-22, an amber dot and a green one asked for by name, and the exception is
  * written into that document rather than left as a surprise for whoever reads the rule next.
  *
  * The three states are the point, and the third is not decoration. "Up to date" is a CLAIM,
@@ -183,8 +183,8 @@ export function Overview(props: Props) {
           // longest action, `auth.recovery.regenerated`, measures 172), the timestamp 85, and
           // the detail column got the remaining 805px to hold strings like
           // `registration-target.png` at ~150. Six rows each carrying ~300px of content across
-          // a 1400px band is a card that is three-quarters air, which is what the owner meant
-          // by "trống trải quá mức" on 2026-08-15. Halving the width halves the hole, and it
+          // a 1400px band is a card that is three-quarters air, which is what was reported
+          // as far too empty on 2026-08-15. Halving the width halves the hole, and it
           // fills a band that was the last thing on the page.
           <ul className="grid divide-y divide-neutral-100 xl:grid-cols-2 xl:gap-x-10 dark:divide-neutral-800 [&>li]:border-neutral-100 dark:[&>li]:border-neutral-800 xl:divide-y-0 xl:[&>li]:border-b xl:[&>li:nth-last-child(-n+2)]:border-b-0">
             {recent.slice(0, 6).map((entry) => (

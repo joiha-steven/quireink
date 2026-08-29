@@ -2,8 +2,8 @@
 //
 // ⚠️ WHY THIS FILE EXISTS AT ALL. Until 2026-08-25 the three "instruments" were ONE
 // generator — a burst of white noise through one bandpass — with three centre frequencies.
-// That is not three keyboards, it is one sound with three EQ settings, and the owner heard
-// it immediately: *"3 loại tiếng ko khác gì nhau"*. A tactile switch and a typewriter do not
+// That is not three keyboards, it is one sound with three EQ settings, and it was heard
+// immediately as three sounds that did not differ. A tactile switch and a typewriter do not
 // differ by a filter frequency. They differ by what physically happens, how many times, and
 // how far apart, so that is what is written down here.
 //
@@ -51,7 +51,7 @@ export const VOICES: Record<Instrument, Record<Strike, Voice>> = {
    * Pressing a letter runs a lever, throws a typebar at the platen through an inked ribbon,
    * and lets the carriage step one space. That is THREE events across about 60ms, and the
    * middle one is a piece of metal hitting a rubber roller inside a wooden box — a low
-   * thump with a metal ring on top. "Mộc hơn, cơ khí hơn", which is what it is.
+   * thump with a metal ring on top: woodier and more mechanical, which is what it is.
    *
    * The two ring frequencies are 1 : 1.64, deliberately not a small whole-number ratio: a
    * struck bar has inharmonic modes, and partials in tune with each other read as a musical
@@ -126,7 +126,7 @@ export const VOICES: Record<Instrument, Record<Strike, Voice>> = {
   },
 
   /**
-   * A tactile mechanical switch — "đanh".
+   * A tactile mechanical switch — crisp and sharp.
    *
    * Crispness is not loudness and it is not a high filter frequency. It is a FAST ONSET, a
    * lot of energy above 2 kHz, and a very short life: the whole thing is over in 40ms. Two

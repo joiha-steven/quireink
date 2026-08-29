@@ -34,7 +34,7 @@ export const TAB_TRACK = 'flex w-full flex-wrap items-end gap-6 border-b border-
 // itself out of a 32px-tall control; the strip still clips visually at its rounded edge.
 export const SEGMENT_TRACK = 'flex w-fit max-w-full overflow-x-auto no-scrollbar rounded-md border border-neutral-200 dark:border-neutral-800'
 // The dense variant is full-width with growing items: five segments whose right edge lands
-// on the pane's own edge instead of stopping short of it ("hụt", the owner called the gap).
+// on the pane's own edge instead of stopping short of it, which read as a gap left over.
 const SEGMENT_TRACK_DENSE = 'flex w-full overflow-x-auto no-scrollbar rounded-md border border-neutral-200 dark:border-neutral-800'
 
 /**

@@ -268,8 +268,8 @@ describe('the admin shell carries the owner settings', () => {
   // in Inter and said so. Following it was the wrong reading of that report: a mono chrome
   // font is a branding choice about what a READER sees, and applying it to the tool put a
   // code face on every label, tab, button and table cell — which, next to the reading face,
-  // the same owner called "rối" (cluttered) and "không hợp để dùng trong admin". He was shown
-  // three photographed versions of one Settings screen and chose this one.
+  // was rejected as cluttered and wrong for an admin. Three photographed versions of one
+  // Settings screen were reviewed and this one was chosen.
   //
   // What the admin still honours is everything about his WORDS — palette, type scale, reading
   // preset, uploaded face — because the editor is WYSIWYG.

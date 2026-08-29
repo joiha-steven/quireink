@@ -1,9 +1,9 @@
 // The admin is set in ONE face, and the one place that is not is the editor.
 //
 // This file was `two-faces.test.ts` and it guarded the opposite rule. Both rules came from the
-// owner eight days apart — two faces on 2026-08-14, one face on 2026-08-15 (*"admin chỉ xài 1
-// font thôi, inter"*, then *"trừ phần editor, khung soạn thảo và tiêu đề soạn thảo vẫn dùng
-// font mà frontend xài"*) — and the file is rewritten rather than deleted because the FAILURE
+// owner eight days apart — two faces on 2026-08-14, one face on 2026-08-15, with the editor
+// keeping the face the frontend publishes in — and the file is rewritten rather than deleted
+// because the FAILURE
 // MODES it was built around are unchanged. Whichever rule is in force, the way it breaks is
 // that a primitive and a screen disagree about which face a thing wears, and nothing goes red.
 //
@@ -123,8 +123,8 @@ describe('the admin wears one face', () => {
 
 describe('the admin does not wear the site\'s chrome font either', () => {
   // A mono chrome font is a branding choice about what a READER sees. Spending it on the tool
-  // put a monospace on every label, tab, button and table cell; the owner's verdict on
-  // 2026-08-14 was *"nhìn rối thiệt"*. That decision survives the one-face change — the face
+  // put a monospace on every label, tab, button and table cell, and that was rejected on
+  // 2026-08-14 as visually cluttered. That decision survives the one-face change — the face
   // the admin settled on is Inter, not the site's chrome font.
   it('emits neither the chrome font nor its tracking correction', () => {
     const spa = readFileSync('src/web/admin/spa.ts', 'utf8')

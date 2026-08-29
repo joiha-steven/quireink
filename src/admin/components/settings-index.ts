@@ -3,8 +3,8 @@
 // [ADR 0011](../../../docs/decisions/0011-settings-regrouped-into-seven.md) split five
 // tangled tabs into seven defined ones (eight since `ai`), each printing the question it answers, because the
 // owner said the old arrangement was tangled. It is a better arrangement and it did not
-// solve the problem: two weeks later the same owner said *"các tab cài đặt thực ra khá rối,
-// không biết chỉnh cái gì ở đâu cả"*.
+// solve the problem: two weeks later the tabs were still reported as confusing, with no way
+// to tell which one held a given setting.
 //
 // So the answer this time is NOT a third arrangement. There are around fifty settings and no
 // grouping makes a person remember which of seven boxes holds one of them; what makes the

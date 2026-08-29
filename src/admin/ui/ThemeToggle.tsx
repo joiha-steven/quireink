@@ -114,7 +114,7 @@ export function ThemeToggle({
                 }}
                 // `text-sm` for the admin, `t-small` for the public header: the type roles
                 // live in the PUBLIC sheet, so on the admin `t-small` resolved to nothing
-                // and the menu spoke at 16px inside a 14px rail ("chữ tự nhiên to đùng").
+                // and the menu spoke at 16px inside a 14px rail — suddenly oversized.
                 className={`flex w-full items-center justify-between px-3 py-2 text-left ${variant === 'text' ? 'text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800' : 't-small hover:bg-rule'} ${
                   mode === it.key
                     ? variant === 'text' ? 'font-semibold text-neutral-900 dark:text-white' : 'font-semibold text-heading'

@@ -124,9 +124,8 @@ const PRELOADS = bootChunks()
  * mono chrome font is a BRANDING choice about what a reader sees; the admin is the tool the
  * owner works in, and letting the branding pick the tool's typeface put a code face on every
  * label, tab, button and table cell. Set beside the reading face it reads as two loud,
- * unrelated voices — measured on the owner's own instance, 2026-08-14: *"nhìn rối thiệt, 2
- * font này có vẻ không hợp để dùng trong admin"*. Three versions of one Settings screen were
- * photographed and he chose this one.
+ * unrelated voices, and on 2026-08-14 that was rejected as cluttered and wrong for an admin.
+ * Three versions of one Settings screen were photographed and this one was chosen.
  *
  * So the admin has its OWN chrome face, Inter, and the settings it still honours are the ones
  * about the owner's WORDS: the palette, the type scale, the reading preset and any uploaded

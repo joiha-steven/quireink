@@ -86,17 +86,19 @@ history is never needed to fix or understand code.
 
 ## Hard rules — each one is a bug that already shipped
 
+- **NEVER quote the owner** — not in code, comments, docs, ADRs, tests or commit messages.
+  State the fact or the measurement. Vietnamese in the tree is only ever a UI string, a test
+  fixture or seed content.
 - **No `any`** — use `unknown` and narrow. Acceptable only at a JSON boundary that
   immediately validates into a typed shape.
-- **No VALUE is ever interpolated into SQL.** Values are bound, always. What may be
-  interpolated is a fixed IDENTIFIER from a module constant or a closed set: a column list
-  (`META_COLS`), the `liveOnly()` predicate, a table name, the analytics facet
-  ([`docs/spec/01-schema.md`](./docs/spec/01-schema.md) §3). Sixteen such sites exist and
-  none reads a request.
+- **No VALUE is ever interpolated into SQL.** Values are bound, always. Only a fixed
+  IDENTIFIER from a module constant or a closed set may be — a column list (`META_COLS`), the
+  `liveOnly()` predicate, a table name, the analytics facet
+  ([`docs/spec/01-schema.md`](./docs/spec/01-schema.md) §3). Sixteen such sites, none reads a
+  request.
 - **Every write route is mounted on the owner-gated router group**, not checked inside the
   handler ([invariant 4](./docs/invariants.md)).
-- **Every handler** times and logs its request, catches and logs errors, and returns a typed
-  error response.
+- **Every handler** times and logs its request, catches errors, and returns a typed error.
 - **Secrets never reach a client-bound payload**: `users.password_hash`, `users.totp_secret`,
   `recovery_codes`, `integration_keys`, `mcp_tokens`.
 - **Public UI colours come ONLY from theme tokens.** Never a hardcoded `neutral-*`, `white`,
@@ -105,16 +107,14 @@ history is never needed to fix or understand code.
 
 ## Danger zones
 
-- **`golden/v1/corpus/` is not leftover from the retired 1.x tree.** It is captured reference
-  HTML and it is the golden compare's contract; `src/render/golden.test.ts` reads it on every
-  run. **Never regenerate it.** Those files are what 1.x actually printed, captured by running
-  a renderer that no longer exists — overwriting them does not update the reference, it
+- **`golden/v1/corpus/` is the golden compare's contract**, read by `src/render/golden.test.ts`
+  on every run. **Never regenerate it:** those files are what 1.x actually printed, from a
+  renderer that no longer exists, so overwriting them does not update the reference — it
   destroys it, and the gate then reports parity against our own output. When output changes on
   purpose, name the fixture in `DIVERGED` in that test and capture the new answer under
-  `golden/v2/corpus/`; both stay on disk and the other 42 keep the original contract.
+  `golden/v2/corpus/`; the other 42 keep the original contract.
 - **The retired Next.js implementation is gone from the tree** ([ADR 0019](./docs/decisions/0019-remove-the-frozen-tree-from-the-working-copy.md)),
   preserved at tag `v1-final`. Do not reintroduce it, and do not "fix" a doc by pointing at
   a `v1/` path.
 - **Production is not a test environment.** A newsletter cannot be unsent.
-- **All scratch goes under `.tmp/`.** One gitignored root, deletable at any moment. Never a
-  new scratch directory at the repository root.
+- **All scratch goes under `.tmp/`** — one gitignored root, never a new one at the root.

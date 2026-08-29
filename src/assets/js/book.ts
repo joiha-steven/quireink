@@ -19,7 +19,7 @@ import { el, label, onScrollFrame } from './dom'
 
 const OUTER_MARGIN = 48 // px, the minimum gap from the spread to the viewport edge
 // A phone cannot afford the desktop's margins: 48px a side took 96 of a 375px screen —
-// a quarter of the glass — and set the page at 279px ("chừa 2 bên nhiều quá"). 20px keeps
+// a quarter of the glass — and set the page at 279px, far too much margin. 20px keeps
 // the page off the bezel and gives the words 335px. Under 640, matching mobile.css.ts.
 const PHONE_MARGIN = 20
 const MAX_WIDTH = 1400 // px, so the spread does not sprawl on an ultrawide monitor
@@ -236,7 +236,7 @@ export function book(): void {
         el('span', { class: 'book-topright' },
           // The two size buttons are ONE control and now look like it. Four evenly spaced
           // glyphs in a row (A− A+ 1/3 ✕) read as a string of characters rather than as
-          // three separate things, which is what the owner saw: "thiếu trực quan".
+          // three separate things, which is what made the control hard to read.
           el('span', { class: 'book-sizes' }, smaller, larger),
           page,
           close)),

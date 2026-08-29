@@ -14,7 +14,7 @@ two cues and both were beneath seeing:
 - **A hairline** in `--c-rule`, which measures **1.16–1.33:1 against the paper** across all
   twelve palette-and-mode pairs. A 1px line at that contrast is not a line.
 
-The owner reported it as "link chèn vào không có nhiều khác biệt so với chữ thường".
+It was reported as an inserted link looking barely different from ordinary text.
 
 Two answers were tried and rejected before this one.
 

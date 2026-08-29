@@ -174,7 +174,7 @@ describe('book mode is one number, and the reader may move it', () => {
   const css = typographyToCss(DEFAULT_TYPOGRAPHY)
 
   // THE FORMULA, fixed by the owner on 2026-07-29 at x1.15 and revised by the owner on
-  // 2026-08-21 ("mặc định chữ hơi to") to x1.05 — with the A-/A+ control in book.ts an
+  // 2026-08-21, as slightly too large by default, to x1.05 — with the A-/A+ control an
   // untouched default is all the number decides now:
   //   book mode reading text = article reading text x the scale
   //   every gap inside the article = the same x the scale

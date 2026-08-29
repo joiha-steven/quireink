@@ -266,9 +266,9 @@ export type InkSettings = {
  *
  * ⚠️ THE NAMES ARE NOT THE NAMES OF REAL MACHINES, and that is deliberate as of 2026-08-25.
  * They were: `typewriter`, `tactile`, `linear`. The synthesis is genuinely modelled on those
- * three mechanisms and says so at length in `key-voices.ts` — but the owner listened and
- * said the honest thing: *"nghe chưa giống đồ thiệt cho lắm... đừng nên gọi tên thiệt, vì ko
- * làm giống được"*. A name that promises a Underwood and delivers a good synthesised knock
+ * three mechanisms and says so at length in `key-voices.ts` — but they do not sound close
+ * enough to the real machines to be allowed to borrow their names, which was the verdict
+ * after listening. A name that promises an Underwood and delivers a good synthesised knock
  * is a name that makes the sound worse by comparison. So they are named for what they ARE:
  *
  *  - `woody` — the deep, wooden one. A lever, something striking a hard surface, and a small
@@ -288,7 +288,7 @@ export type MotionSettings = {
    * How loud that keystroke is, 0-100, as a plain fraction of full volume.
    *
    * A setting rather than a constant since 2026-08-25: it shipped at a fixed level and the
-   * owner's verdict was "tiếng có vẻ nhỏ". Loudness is not a thing that has a right answer
+   * fixed level was reported as too quiet. Loudness is not a thing that has a right answer
    * — it is a room, a pair of speakers and a person, and the person is the only one of the
    * three this program can ask. 0 leaves the caret and takes the sound away, which is a
    * different thing from `keys: 'off'` and worth having: some people want the caret.

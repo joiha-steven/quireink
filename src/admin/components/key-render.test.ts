@@ -1,7 +1,7 @@
 // The three instruments, held apart by measurement.
 //
-// This suite exists because of one sentence from the owner on 2026-08-25: *"3 loại tiếng ko
-// khác gì nhau"*. He was right, and nothing in 1849 tests had any opinion about it — the
+// This suite exists because of a verdict on 2026-08-25: the three sounds were not different
+// from one another. That was right, and nothing in 1849 tests had any opinion about it — the
 // three "instruments" were one noise generator with three centre frequencies, 1840 / 1144 /
 // 972 Hz apart, which is not three keyboards. A sound is not a matter of taste that code
 // cannot check: where its energy sits, how long it lives and how many times something
@@ -104,8 +104,8 @@ describe('the three instruments are three instruments', () => {
   })
 
   it('gives one a crack, one a ring and one none at all', () => {
-    // Brightness — the share of energy above 2 kHz — is what "đanh" actually means, and it
-    // is the number the version the owner rejected had no spread in at all.
+    // Brightness — the share of energy above 2 kHz — is what crispness actually is, and it
+    // is the number the rejected version had no spread in at all.
     // Measured: 0.308 / 0.083 / 0.000.
     expect(brightness(tap.crisp)).toBeGreaterThan(0.2)
     expect(brightness(tap.woody)).toBeGreaterThan(0.03)

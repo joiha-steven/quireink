@@ -33,8 +33,8 @@ export function ActivityLog({ entries, enabled }: { entries: ActivityEntry[]; en
     }
   }
 
-  // ONE SHEET, two newspaper columns (the owner's follow-up on the mock build: "nhật
-  // ký, hướng dẫn nên chia đôi giống mấy cái kia"): each entry is a one-line ledger —
+  // ONE SHEET, two newspaper columns — the log and the guide split in two like the pages
+  // that already had: each entry is a one-line ledger —
   // time, the action as a quiet chip, the detail — and the clear control is the
   // sheet-top's one tool.
   return (

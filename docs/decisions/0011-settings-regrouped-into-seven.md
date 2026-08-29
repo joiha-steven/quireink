@@ -6,10 +6,8 @@ Status: accepted
 ## Context
 
 The frozen tree's settings screen had five tabs: Site, Content, Appearance, SEO,
-Integrations. The owner's words, on being asked what to change while the admin was being
-ported: *"sẵn xem lại sự sắp xếp của mấy thứ trong cài đặt, phân nhóm, định nghĩa cho tốt,
-cái cũ đang rối"* — review the arrangement, the grouping and the definitions; the old one
-is tangled.
+Integrations. Asked what to change while the admin was being ported, the owner called for a
+review of the arrangement, the grouping and the definitions: the old one was tangled.
 
 It was. Three of the five tabs were named after nothing in particular:
 

@@ -45,9 +45,9 @@ function ToolButton({ label, active = false, onClick, children }: { label: strin
  *
  * Its history is a round trip worth recording. Step 4 collapsed these buttons into two
  * menus; the Writing Desk mock then removed the bar entirely, and the first mock-faithful
- * cut shipped that. The owner, after writing in both (2026-08-17): *"ở chế độ markdown thì
- * / ok, nhưng ở chế độ bình thường nên có thanh công cụ chứ"* — and he circled THIS bar,
- * the original row of plain buttons, as the shape he wants — then asked for it at the TOP
+ * cut shipped that. After writing in both (2026-08-17) the verdict was that "/" alone is
+ * fine in the Markdown view but the normal view wants a toolbar — and THIS bar, the
+ * original row of plain buttons, is the shape asked for — then asked for it at the TOP
  * of the sheet, full-width, wrapping instead of scrolling. The Markdown view stays bare. "/" and the selection
  * bubble remain: the bar is a second door to the same rooms, not the only one.
  */
@@ -69,7 +69,7 @@ export function Toolbar({
   // MD switch sits in the action line, and the Markdown view shows no bar at all) — and
   // drawn in the SAME language as that action line: the same ground, the same hairline,
   // edges flush with the card. The first cut floated it as an inset rounded chip, and the
-  // owner's word for two chrome pieces in two styles a hand apart was "ẩu".
+  // two chrome pieces in two styles a hand apart read as careless.
   return (
     <div className="sticky z-10 border-b border-neutral-200/70 bg-neutral-50/80 backdrop-blur-xl dark:border-neutral-800 dark:bg-neutral-950/60" style={{ top: stickyTop }}>
       <div className="flex flex-wrap items-center justify-center gap-0.5 px-2.5 py-1.5">

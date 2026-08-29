@@ -294,7 +294,7 @@ export function DashboardWidgets({ data }: { data: DashboardData }) {
           stretches by default and the `Card` inside it does not, so after the 2×2 change the
           two cards in a row started together and still ended apart — measured at 1440px:
           Traffic 285 against Needs attention 245, Sources 288 against Most viewed 338. The
-          owner's word for that was *"nó cứ lệch lệch rất khó chịu"*, and he is describing the
+          persistent slight misalignment was reported as grating, and that names the
           right thing: a pair that is almost level reads as a mistake, where a pair that is
           plainly level reads as a decision. The cost is air inside the shorter card, and that
           is the correct trade at an EVEN count — it is only wrong when an odd card is left

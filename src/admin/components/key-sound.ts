@@ -28,7 +28,7 @@ export type KeySound = { mode: KeyFeedback; volume: number }
 /**
  * What the top of the slider means: the gain applied to an instrument at `LEVEL` 1.
  *
- * Raised from an effective 0.11 to 0.23 on 2026-08-25 — *"âm lượng lớn hơn đi"*. Measured
+ * Raised from an effective 0.11 to 0.23 on 2026-08-25, asked to be louder. Measured
  * A-weighted against the generator it replaces, a letter at the top of the slider is about
  * SEVEN TIMES the amplitude of the old one at ITS top, and the old default was half of that
  * again. A ceiling only twice as loud as a level somebody calls too quiet is the wrong

@@ -52,15 +52,14 @@ body:has(.book-overlay[open]){overflow:hidden}
      it inherits the mono-chrome correction from body and sets a book serif at -0.05em.
      Measured 2026-07-29: the running head was running -0.7px per character. */
   font-family:var(--font-reading);letter-spacing:var(--ls-body);
-  /* The stock was recut 2026-08-21, on the owner's verdict "cổ điển nhưng không cũ kỹ" —
-     classic, not aged. What read as AGE was two things: a paper pulled hard toward yellow
+  /* The stock was recut 2026-08-21, to read as classic rather than aged. What read as AGE was two things: a paper pulled hard toward yellow
      (#f9f4ec) and a grain printed at 0.62 opacity, together doing an impression of foxed
      stock. The paper is now a quiet warm ivory and the grain drops to a texture you feel
      more than see; the drop cap, the asterism and the spine — the CLASSIC half — stay. */
   --book-paper:#faf8f3;--c-bg:var(--book-paper);
   /* Reading text runs 5% larger in here — it MULTIPLIES the owner's --fs-* roles, so it
      tracks the site's own type setting rather than replacing it. Was 1.15 from 2026-07-29
-     until the owner revised the verdict on 2026-08-21: "mặc định chữ hơi to". 1.05 keeps
+     until it was revised on 2026-08-21 as slightly too large by default. 1.05 keeps
      the reader a touch more generous than the article without the large-print feel, and
      the A−/A+ control in the chrome (book.ts) now lets each reader move it themselves —
      that override rides as an inline style, so this remains only the default. */
@@ -117,8 +116,8 @@ body:has(.book-overlay[open]){overflow:hidden}
    The pill-with-a-rule cut before this one drew a segmented control, and the owner read
    it as exactly that — buttons, with a dark seam between them on first paint. The size
    difference IS the label, so nothing else is drawn.
-   The two font sizes would misalign under flex centering (an earlier cut shipped that,
-   "không thẳng hàng") — so both glyphs sit on the SAME baseline instead: line-height 1,
+   The two font sizes would misalign under flex centering, and an earlier cut shipped that
+   — so both glyphs sit on the SAME baseline instead: line-height 1,
    both buttons bottom-aligned with one shared padding, and neither glyph has a descender,
    which makes the bottoms the baseline. */
 .book-sizes{display:flex;align-items:flex-end}

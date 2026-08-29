@@ -34,9 +34,8 @@ const widthFor = (type: string | undefined, className: string): string =>
  * A two-digit number on its own line under a label and a sentence is three stacked rows to
  * say "10", and a settings tab is full of them: posts per page, site width, excerpt length,
  * most-viewed count, related count, upload limit, storage limit, backup interval and
- * retention, autosave seconds. The owner's words were *"nhiều tuỳ chỉnh ngắn ngưng xuống
- * hàng, khoảng trống nhiều, tối mắt"* — many short settings breaking onto a new line, a lot
- * of empty space, hard on the eyes.
+ * retention, autosave seconds. Reported as many short settings breaking onto a new line,
+ * a lot of empty space, and hard on the eyes.
  *
  * This file already made exactly this judgement about WIDTH: `widthFor` gives a number field
  * `FIELD_W.short` because a field should be as wide as its answer. A field should also not
