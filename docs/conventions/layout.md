@@ -121,8 +121,7 @@ unbroken token and the run needs no separator, chip or box.
 
 Display only. The stored term, `termSlug()` and every link keep the real name, so nothing a
 URL, a bookmark or a lookup depends on changes. **Categories are proper names and are never
-hyphenated.** The Vietnamese label is "Tag", not "Thẻ" — the owner reads the translation as
-ambiguous.
+hyphenated.** The Vietnamese label is "Tag", not "Thẻ", which the owner reads as ambiguous.
 
 ## Paper is a surface (`print.css.ts`)
 

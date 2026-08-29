@@ -291,8 +291,8 @@ Both owner-approved 2026-08-27, both default **on**, both toggled from the Readi
   it and printed as `owning your ow1 / 5`. **The reservation is twice the box**, because the
   head is centred and half of whatever it is allowed grows rightwards: reserving the box once
   let a long title run under the size pair again the day it was widened. 540px since 2026-08-27.
-- **The chrome is three things, and is spaced to say so** (2026-08-27, owner's report: "thiếu
-  trực quan, xấu vô cùng"). The size pair is a small `a` and a large `A`, **plain glyphs on the
+- **The chrome is three things, and is spaced to say so** (2026-08-27, reported as hard to
+  read and ugly). The size pair is a small `a` and a large `A`, **plain glyphs on the
   paper, on one shared baseline** — the size difference is the whole label. The pill-and-rule
   cut that preceded it read as buttons (the owner's second complaint), and wore a "black seam"
   on first paint: `showModal()` focuses the first focusable element, and the pill's

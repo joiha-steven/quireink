@@ -16,7 +16,7 @@
 // figure at 1.65rem/600 — five sizes with no ratio between any two of them, and the page title
 // the SAME SIZE as the number in a stat tile. A screen therefore had no largest thing and no
 // smallest thing; it had five middling ones. That is what reads as unconsidered, and it is
-// what the owner meant by "typography quá tệ" on 2026-08-15.
+// what the typography was called out for on 2026-08-15.
 //
 // So: a ratio of about 1.25, four steps, and each step used for exactly one kind of thing.
 //
@@ -34,8 +34,8 @@
 //
 // ── One face ─────────────────────────────────────────────────────────────────────────────
 //
-// The admin is set in Inter and nothing else, at the owner's instruction on 2026-08-15:
-// *"admin chỉ xài 1 font thôi, inter"*. The reading face is now confined to the EDITOR, which
+// The admin is set in Inter and nothing else, at the owner's instruction on 2026-08-15.
+// The reading face is now confined to the EDITOR, which
 // is WYSIWYG and must write in the face it publishes in — the writing surface and the title
 // field, and the font picker's own preview tiles. `admin.css` carries the reasoning.
 //
@@ -69,8 +69,7 @@ export const TITLE = 'text-[1.375rem] font-medium leading-tight tracking-[-0.014
  * Site tab, that made the hierarchy run BACKWARDS. The card's title "General" came out at
  * 13px/600, the labels inside it at 14px/500, and the explanatory small print under those
  * labels at 13px/400 — so a card's heading was smaller than its own contents and exactly the
- * size of the smallest print on the screen. The owner's words were *"mấy cái đầu mục như
- * Appearance nhỏ quá, hoặc ko đủ nổi bật"*.
+ * size of the smallest print on the screen — reported as headings too small to stand out.
  *
  * 15 / 14 / 13 at 600 / 500 / 400 now: heading, label, note, each a step down in both size
  * and weight. The page title stays 22 and is still the largest thing on the screen.
@@ -98,8 +97,7 @@ export const SETTING_LABEL = 'block text-sm font-medium text-neutral-800 dark:te
 /**
  * ITALIC, and it is the ONLY axis left for "quieter".
  *
- * Asked for on 2026-08-29 as *"mờ hơn xíu hoặc in nghiêng hay sao đó"* — and dimmer is not
- * available. Measured on a card: this is `#737373` on `#ffffff`, **4.74:1**, against the
+ * Asked for on 2026-08-29 as either dimmer or italic — and dimmer is not available. Measured on a card: this is `#737373` on `#ffffff`, **4.74:1**, against the
  * 4.5:1 that 13px text has to clear. There is 0.24 of headroom, and the next step on the
  * neutral scale (`neutral-400`) lands at **2.58:1** — a hint nobody can read is not a quiet
  * hint. Size cannot give way either: these sentences were the smallest text on every screen

@@ -1,11 +1,11 @@
-// "Mỗi trang một tờ" — the one-sheet page, from the admin-pages mock the owner approved
-// on 2026-08-17 ("ok, làm lần lượt đi"). Four laws, and these primitives are where they
+// One sheet per page — from the admin-pages mock approved on 2026-08-17, to be worked
+// through one page at a time. Four laws, and these primitives are where they
 // live so no screen re-types them:
 //
 //   1. Every page is ONE full-width sheet at ONE width, at least the window tall —
 //      the editor's paper, given to every screen. Long prose gets a reading column
-//      INSIDE the sheet; the page never changes size ("ko muốn chiều ngang trang có
-//      cái bự, có cái nhỏ").
+//      INSIDE the sheet; the page never changes size, and no two pages come out at
+//      different widths.
 //   2. A page's tools live on the sheet's own FIRST ROW (`SheetTop`), like the editor's
 //      action line — never scattered over the paper around it.
 //   3. Writing first; the numbers are one line of small print after it. Where a page IS

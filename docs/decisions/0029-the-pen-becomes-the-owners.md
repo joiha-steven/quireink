@@ -13,9 +13,9 @@ ADR 0018 decided the five pigments were not a setting, and gave a good reason:
 > A highlight that restyled itself per palette would read as a coloured box, which is the
 > exact thing this feature exists not to be.
 
-The owner asked for the opposite on 2026-08-24: *"mấy cái màu sắc này, kể cả màu đánh dấu
-highlight hay khoanh tròn, nên cho người dùng customize, những gì đang có sẽ là màu mặc
-định, có thể reset về mặc định hết."*
+The owner asked for the opposite on 2026-08-24: every one of these colours — the highlighter
+and the ring included — becomes the owner's to set, with today's values as the defaults and a
+reset back to all of them.
 
 Read carefully, the two do not collide. 0018 argues against the pen following the PALETTE —
 a mark that turns amber on the amber theme and teal on the ocean one, so that it stops being

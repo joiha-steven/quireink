@@ -18,10 +18,9 @@ character and none of its typographic rules **except one**, below.
 - **The public reading interface is out of scope.** Its typography, fonts and type settings
   are deliberate; admin polish never changes them.
 - **ONE FACE. The admin is Inter, everywhere, with one carve-out for the editor.**
-  Set on 2026-08-15 at the owner's request — *"admin chỉ xài 1 font thôi, inter"*, then
-  *"trừ phần editor, khung soạn thảo và tiêu đề soạn thảo vẫn dùng font mà frontend xài"*.
-  It replaces the TWO FACES rule adopted eight days earlier (2026-08-14, *"nên sử dụng 2 font
-  chữ, nguyên tắc như frontend"*), and both are his to set — what is worth writing down is why
+  Set on 2026-08-15, with the editor keeping the face the frontend publishes in.
+  It replaces the TWO FACES rule adopted eight days earlier (2026-08-14), and both are the
+  owner's to set — what is worth writing down is why
   the division works on the reading site and not here. There, it runs between a post title and
   its date: two genuinely different kinds of thing, read by someone with time to feel it. In
   the admin it landed between a setting's LABEL and the sentence under it — two halves of one
@@ -35,8 +34,8 @@ character and none of its typographic rules **except one**, below.
   `fontPresetCss` therefore stay; deleting either makes the owner write in Inter and publish
   in something else.
 - **The admin's chrome face is ITS OWN, and it is Inter.** It is not `chromeFont`. It followed
-  that setting for a day and the owner's verdict was *"nhìn rối thiệt, 2 font này có vẻ không
-  hợp để dùng trong admin"*. A chrome font is a branding choice about what a READER sees;
+  that setting for a day and was rejected as cluttered and wrong for an admin. A chrome font
+  is a branding choice about what a READER sees;
   spending it on the tool put a monospace code face on every label, tab, button and table
   cell, and beside a book serif that is two loud unrelated voices rather than one division.
   Three versions of one Settings screen were photographed — two faces on the mono chrome, one
@@ -76,8 +75,8 @@ character and none of its typographic rules **except one**, below.
   felt it twice before either mechanism was questioned.**
 - **The canvas is PAPER** (`#f7f6f4`), and a card is a SHEET on it: a hairline edge, a 10px
   radius, and no shadow at all. It was a flat neutral gray (`#f5f5f5`) under `rounded-2xl`
-  white cards carrying a 1px drop shadow, and on 2026-08-15 the owner's verdict on that was
-  *"giao diện vẫn rẻ tiền, chưa xứng tầm"*. The diagnosis was not workmanship: gray canvas +
+  white cards carrying a 1px drop shadow, and on 2026-08-15 that was rejected as looking
+  cheap and beneath the product. The diagnosis was not workmanship: gray canvas +
   rounded white card + soft shadow + tinted pill tabs is the costume every generated dashboard
   wears, and **nothing in it came from this product**. The reading site next door is one sheet
   of paper with hairlines ruled across it and nothing floating anywhere, so the tool is now
@@ -152,12 +151,12 @@ character and none of its typographic rules **except one**, below.
   of build metadata. A third state exists and draws NO dot: not knowing is not the same as
   being current. Adding a second such exception is how the rule stops meaning anything, so
   the next one is a decision rather than a precedent.
-- **The rail is words, not pictures.** Sidebar icons are OFF by default (2026-08-15, *"không
-  cần icon bên sidebar, nó làm cho không cần thiết"*); the switch lives at the BOTTOM of
+- **The rail is words, not pictures.** Sidebar icons are OFF by default (2026-08-15 — the
+  rail does not need them); the switch lives at the BOTTOM of
   "Everything else" (2026-08-17 — a set-once device preference does not need a permanent
   footer row), and it means the WHOLE rail: nav glyphs and the footer controls' glyphs alike
-  (*"ẩn icon mà mấy icon light, xoá cache, log out ko ẩn kìa"* — the always-glyph carve-out
-  tried that day lasted one evening). A COLLAPSED rail has no labels, so it stays icon-only
+  (the always-glyph carve-out tried that day — hiding the nav icons while Light, Clear cache
+  and Sign out kept theirs — lasted one evening). A COLLAPSED rail has no labels, so it stays icon-only
   and the collapse control is always available. Reading the setting as "no icons anywhere"
   is what hid the collapse control in the first cut, and the owner could not find it.
   The "Everything else" group itself remembers an EXPLICIT open/close across sessions
@@ -196,11 +195,11 @@ character and none of its typographic rules **except one**, below.
   drafts is not the same fact as the drafts; the band names them and opens the editor on one.
   Administration counts (posts, pages, comments, images, storage) sit BELOW the widgets.
 
-## One sheet per page ("Mỗi trang một tờ")
+## One sheet per page
 
-Adopted 2026-08-18 from the admin-pages mock, after the owner stopped a page-by-page fix
-session with *"đừng cố fix trong một phiên… vẽ mock từng trang… rồi từ từ làm tiếp"* and
-*"tôi cũng ko muốn chiều ngang trang có cái bự, có cái nhỏ"*. Four laws, held by the
+Adopted 2026-08-18 from the admin-pages mock, which replaced a page-by-page fix session:
+mock every page first, then work through them, and stop the pages coming out at different
+widths. Four laws, held by the
 primitives in `components/sheet.tsx` (`SHEET`, `SheetTop`, `NumBand`, `SHEET_FOOT`,
 `SHEET_TOOL`) and `.paper-cols` in `admin.css`:
 
@@ -230,8 +229,8 @@ owner sees. Every rule here was found by photographing and measuring the running
 **A CARD'S TITLE OUTRANKS WHAT IS INSIDE IT.** 15 / 14 / 13 at 600 / 500 / 400 — heading,
 label, note. It ran BACKWARDS until 2026-08-29: `Card panel` (every settings card) hard-typed
 `text-[13px]` rather than importing `SECTION`, so a heading was smaller than its own labels
-and the size of the smallest print on screen (*"mấy cái đầu mục nhỏ quá"*). A hand-typed size
-is how a scale stops being one.
+and the size of the smallest print on screen. A hand-typed size is how a scale stops being
+one.
 
 **A two-column band is two STACKS, and their heights get re-measured.** Cards go into explicit
 column stacks, never straight into the grid — a grid lays its children out in rows, so a short
@@ -320,8 +319,8 @@ failed:
   every hint was hand-placed and no two callers agreed.
 - **`inline` is the one variation, and it is for a SHORT ANSWER** — a boolean, a two-digit
   number, a short list; the ORDER is unchanged. It was booleans only, and ten settings paid
-  for it: a number under a label and a sentence is three stacked rows to say "10" (*"nhiều
-  tuỳ chỉnh ngắn ngưng xuống hàng, khoảng trống nhiều, tối mắt"*, 2026-08-29). **`ui/Input`
+  for it: a number under a label and a sentence is three stacked rows to say "10", reported
+  2026-08-29 as wasted space and hard on the eyes. **`ui/Input`
   decides it for `type="number"`**, from the same test that gave a number `FIELD_W.short`: a
   field as wide as its answer needs no row of its own. `inline={false}` opts out.
 - **`SETTING_GAP`** is the space between two settings in a card. One number.
@@ -334,7 +333,7 @@ failed:
 ROWS, and a row is as tall as its tallest cell, so two cards of different heights leave a void
 under the shorter one and the next card starts below BOTH. The System tab showed it plainly:
 Import, then Backups at twice its height, then Cache stranded with a hole above it. The
-owner's words were "is splitting into two columns so hard". A tab is `GRID` holding two `COL`
+fix asked for was simply two columns that pack. A tab is `GRID` holding two `COL`
 stacks, with cards assigned to a side by hand so the two come out close in height.
 
 **EVERY settings tab is two columns.** There is no one-column tab, and there was: Site held a
@@ -348,8 +347,8 @@ scrolls inside its card. Equally: a card holding a five-column table is not a ha
 **The workspace** is a 1480px maximum with responsive 16/28/40/48px gutters. The desktop
 sidebar is 208px, 72px collapsed; the mobile menu is a floating rounded drawer that overlays
 rather than pushing content down. **The rail holds two registers and they must not dress
-alike** (2026-08-17, *"cái sidebar… bất hợp lý kiểu nào đó"* — and the something was four
-CONTROLS wearing the nav's row, one of them reading as a page named "Light"): destinations
+alike** (2026-08-17 — the rail read as subtly wrong, and the something was four CONTROLS
+wearing the nav's row, one of them reading as a page named "Light"): destinations
 wear `SIDEBAR_NAV`; the footer's controls (theme, Clear cache, Sign out) wear the smaller,
 quieter `SIDEBAR_UTIL`, and their glyphs are ALWAYS drawn — the "Show icons" switch governs
 decoration beside nav labels, and a control's glyph is not decoration, it is the part that
@@ -384,7 +383,7 @@ Route changes, the progress bar and recovery from a deploy have their own file:
   selected, available and hidden; never lower opacity on a whole card or its labels.
   ⚠️ **Shipped broken; found by the owner, not by a check.** An unchecked palette carried
   `grayscale opacity-60`, so hiding Sepia from readers turned Sepia grey *in the editor*
-  (*"mấy bộ màu bị mất màu rồi kìa"*, 2026-08-29). Hidden is a **dashed border** now. The
+  (reported 2026-08-29). Hidden is a **dashed border** now. The
   swatch also draws all SEVEN colours: six are near-white or near-black in every palette, so
   with the accent as a 4px bar only 3.2% of the card was coloured and Mono, Sepia and Forest
   were three identical grey stripes.

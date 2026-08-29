@@ -5,8 +5,8 @@
 // at what I just shipped", it could not answer.
 //
 // ⚠️ This note used to continue "clicking it went to the repository's front page, which answers
-// it even less", and on 2026-08-15 the owner sent it back there on purpose: *"mã commit (link
-// tới dự án, ko phải link tới commit)"*. Both readings were right about different things. The
+// it even less", and on 2026-08-15 the owner sent it back there on purpose: the SHA is a
+// commit, the link is to the project. Both readings were right about different things. The
 // SHA answers the question by being READ, not by being clicked — a per-commit URL is a page
 // nobody opens from a dashboard, and it 404s as soon as the branch it came from is rebased.
 // The link is doing the other job, which is simply getting to the project.

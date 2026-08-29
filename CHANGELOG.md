@@ -55,7 +55,7 @@ uploads now, exactly as a drop does.
 
 ### The admin, measured instead of admired
 
-The owner's word was *máy móc*. It turned out to be four measurable things.
+The admin was reported as reading mechanical. It turned out to be four measurable things.
 
 **Nothing on screen said where you were.** The section you were in and a field's current value
 wore the same black pill, the same size, the same weight, eight lines apart. The highlighter
@@ -1241,7 +1241,7 @@ menu at the caret — image, gallery, table, code, the two formulas, divider, an
 types with their Markdown shortcuts printed beside them, so the menu teaches the gesture
 that makes itself unnecessary. Then the owner wrote in that editor for an afternoon and
 ruled three times, and each ruling was applied as said: the **formatted view gets the full
-button row back** ("ở chế độ bình thường nên có thanh công cụ chứ"), at the top of the
+button row back** — "/" is enough in Markdown, the normal view wants a toolbar — at the top of the
 sheet, full width, wrapping on a narrow window instead of hiding half its controls behind a
 horizontal drag, with the buttons grouped in the middle. The Markdown view stays bare —
 raw text formats itself, so a strip of formatting buttons over it is furniture. The switch
@@ -1311,7 +1311,7 @@ now, at rail size. And the "Show icons" switch moved into Everything else — a 
 device preference does not need a permanent footer row — and it governs the whole rail,
 footer glyphs included, by the owner's ruling.
 
-### Mỗi trang một tờ — every page is one sheet
+### Every page is one sheet
 
 The mock's second idea, applied to the seven remaining pages plus the activity log, each as
 its own commit. Four laws, held by shared primitives rather than by discipline: the page is
@@ -1319,7 +1319,7 @@ its own commit. Four laws, held by shared primitives rather than by discipline: 
 search, counts, the quiet dangerous verb; headline numbers **stand directly on the paper**
 in a band, not in little boxes; and lists of short rows fill **two newspaper columns** with
 a hairline rule between them, one column on a phone. Every page is the same width on
-purpose — "tôi cũng không muốn chiều ngang trang có cái bự, có cái nhỏ".
+purpose: no two pages come out at different widths.
 
 - **Library** went first and carried the primitives in: kind tabs on the sheet's first
   row, the tab's own toolbar (count · search · sort) bleeding to the sheet's edges as a
@@ -1618,7 +1618,7 @@ rather than the queue entry.
 
 ### The admin was wearing the framework's clothes, not the product's
 
-The owner's word for it was *rẻ tiền* — cheap. That is a fair reading of what was there, and
+It was rejected as looking cheap. That is a fair reading of what was there, and
 the fault was not workmanship: a grey canvas, rounded white cards, drop shadows and pill tabs
 is the stock look every dashboard framework hands out, and none of it came from this product,
 whose public side is paper and hairline rules. Twelve screens dressed as somebody else's
@@ -1705,7 +1705,7 @@ names the install command when it finds none.
 ### Renaming a draft and publishing it said "Not found"
 
 The post saved, the address bar updated, and the shell then threw the editor away for a red
-banner. Reported as *"mỗi lần sửa link bài nháp rồi đăng bài là bị Not found"*, and the post
+banner. Reported as editing a draft's link and then publishing landing on "Not found", and the post
 was on disk the whole time.
 
 A `router.refresh()` left over from the Next.js port, sitting after a raw `history.replaceState`.
@@ -2057,7 +2057,7 @@ the one mark on a page that is a **reader's** rather than a typesetter's. `==tex
 `==text==#green` picks one of five inks. [ADR 0018](docs/decisions/0018-highlighter-pen.md).
 
 The stroke is an SVG image, not a gradient and **not a mask**: masking clips the text along with
-the ink, and the first pass rendered "mang dấu vết" as "mang uau vet". Two paths per stroke,
+the ink, and the first pass sheared the tops off a line of accented text. Two paths per stroke,
 chisel ends, and `box-decoration-break: clone` so a highlight running past the end of a line
 breaks into one stroke per line instead of a box wrapped around both.
 
@@ -3918,7 +3918,7 @@ Consolidates the whole 1.2.0–1.2.6 line into one entry.
 
 ## 2026-06-23 (v1.0.17 — admin live reads were silently served from the 1h Data Cache)
 - **fix(admin): the MCP token list (and every admin live read) could show STALE data —
-  most visibly "list token không hiện" after connecting a connector from Claude.** Root cause:
+  most visibly an empty token list after connecting a connector from Claude.** Root cause:
   `dynamic = 'force-dynamic'` does NOT de-cache our `db()` GET reads, because they opt into the
   Data Cache with an explicit `next: { revalidate, tags:['db'] }` — Next only auto-de-caches
   force-dynamic fetches that set NO revalidate (`noFetchConfigAndForceDynamic` in `patch-fetch`).
@@ -4653,7 +4653,7 @@ delete is recoverable via a Trash.
   antialiased` (body + the `<html>` `antialiased` class) which thinned glyphs and made
   reading look lighter than the old blog; dropped the negative body `letter-spacing`
   (-0.011em) that cramped accented Vietnamese. Font stays Inter; heading tracking kept
-- fix(media): uploads were intermittently failing ("lúc ăn lúc không"). Root causes
+- fix(media): uploads were intermittently failing. Root causes
   fixed: (1) the whole multi-file upload now does ONE read-modify-write of the manifest
   (`addMediaBatch`) instead of one per file, removing the lost-update race that dropped
   entries; (2) collision naming (`logo` → `logo-2`) now checks the ACTUAL store

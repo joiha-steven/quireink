@@ -4,8 +4,8 @@
 //
 // The taxonomy and series managers open as right-hand sheets from the pane's own tool
 // line. They lived UNDER the panes first, and once the panes grew to window height that
-// put them below the fold on every screen — "chỗ dưới đó xấu và ko ai thấy để xài" was
-// the owner's verdict, and he was right: a door nobody can see is not a door.
+// put them below the fold on every screen, where they looked bad and nobody would find
+// them: a door nobody can see is not a door.
 import { useState } from 'react'
 import Link from '@/admin/router'
 import { useView } from '@/admin/useView'

@@ -126,7 +126,7 @@ export function PageForm({ initial, contentWidth, keySound, autosaveSeconds }: P
         // call bought nothing, and it cost this: `refresh()` bumps the epoch, `useView` re-runs
         // with the router's path, and the router's path is the OLD slug. The server answers
         // 404, the shell swaps the editor for a red "Not found", and the post is on disk the
-        // whole time. Reported 2026-08-15 as "sửa link bài nháp rồi đăng là bị Not found" —
+        // whole time: editing a draft's link and then publishing landed on "Not found".
         // twice, because `PageForm` had the identical two lines.
         window.history.replaceState(null, '', `/admin/page-editor/${json.data.slug}`)
         return true

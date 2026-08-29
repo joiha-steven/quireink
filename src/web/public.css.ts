@@ -168,7 +168,7 @@ header.site .logo-dark{display:none}
 html.dark header.site .title:has(.logo-dark) .logo:not(.logo-dark){display:none}
 html.dark header.site .logo-dark{display:block}
 /* Tight to the wordmark: the two are one lockup, and at .75rem the tagline floated far
-   enough to read as a separate element ("slogan với logo xa quá"). */
+   enough from the logo to read as a separate element. */
 header.site .tagline{color:var(--c-meta);font-size:var(--fs-small);
   line-height:var(--lh-small);letter-spacing:var(--ls-small);margin:.35rem 0 0}
 

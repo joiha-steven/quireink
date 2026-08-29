@@ -1,8 +1,8 @@
 // The pen's colours (Admin → Settings → Appearance).
 //
-// Owner's call, 2026-08-24: *"mấy cái màu sắc này, kể cả màu đánh dấu highlight hay khoanh
-// tròn, nên cho người dùng customize, những gì đang có sẽ là màu mặc định, có thể reset về
-// mặc định hết"*. It amends ADR 0018's "the colours are NOT a setting" — that decision's
+// Owner's call, 2026-08-24: every one of these colours — the highlighter and the ring
+// included — becomes the owner's to set, with today's values as the defaults and a reset
+// back to all of them. It amends ADR 0018's "the colours are NOT a setting" — that decision's
 // argument is that a highlighter must not restyle itself per PALETTE, and it still holds:
 // one pen for the whole site, whatever the reader picks. WHICH pen is now his.
 //

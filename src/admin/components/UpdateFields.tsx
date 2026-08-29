@@ -30,7 +30,7 @@ export function UpdateFields(
            *
            * This is a 700-character privacy disclosure and it was printed in full under the
            * switch: eleven lines, the longest note in the admin by a wide margin, and the
-           * clearest case of what the owner meant by *"giải thích thì dài dòng quá"*. It is
+           * clearest case of the long-windedness reported across this screen. It is
            * also the one note here that must not lose a word — it is the promise about what
            * leaves the machine, and a summary of it would be a weaker promise.
            *

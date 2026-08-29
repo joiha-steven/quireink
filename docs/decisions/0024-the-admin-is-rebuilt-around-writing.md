@@ -7,10 +7,10 @@ Extends [0011](0011-settings-regrouped-into-seven.md) and the visual contract in
 
 ## Context
 
-The owner's verdict, on seeing the content screens beside a note app: *"việc list các bài
-đăng, bản nháp, trang, phân loại, loạt bài … rất khó theo dõi, quản lý, nó đang trông như
-WordPress"*, and then the sentence that settles the priority — *"mấy cái tính năng còn lại
-ngoài soạn thảo nội dung … chỉ là phụ."*
+The verdict, on seeing the content screens beside a note app: listing posts, drafts, pages,
+taxonomy and series was hard to follow and to manage, and the whole thing looked like
+WordPress. And then the judgement that settles the priority — everything other than writing
+is secondary.
 
 Four measurements, not impressions, taken off the running demo:
 

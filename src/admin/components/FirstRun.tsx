@@ -1,8 +1,7 @@
 // The first five minutes: shown once, then reachable forever from a link.
 //
-// The owner's shape, in his words: *"onboarding hiện lần đầu, rồi nó nằm ở dạng link ở đâu
-// đó, mốt cần coi lại được"* — appears the first time, then lives as a link so it can be
-// looked at again later. That second half is the part most onboarding gets wrong: a tour you
+// The shape asked for: it appears the first time, then lives as a link so it can be looked
+// at again later. That second half is the part most onboarding gets wrong: a tour you
 // can never re-open is a tour you have to remember, and the whole reason it exists is that
 // nobody remembers.
 //

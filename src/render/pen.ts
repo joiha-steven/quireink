@@ -98,7 +98,7 @@ export {
  * IT CANNOT BE A MASK, and the obvious build is the one that fails. Solid ink plus an SVG
  * mask with a hand-drawn edge clips the TEXT as well: `mask` applies to the whole element, so
  * the tops of the letters and every Vietnamese diacritic get cut off along with the ink. That
- * is measured, not predicted — the first pass rendered "mang dấu vết" as "mang uau vet". So
+ * is measured, not predicted — the first pass sheared the tops off a line of accented text. So
  * the shape carries its own colour and rides in as an image, one per pigment per die.
  *
  * `preserveAspectRatio=none` stretches the die to the length of the phrase, so on top of the

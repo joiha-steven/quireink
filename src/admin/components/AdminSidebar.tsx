@@ -56,7 +56,7 @@ const STORE_KEY = 'quireink-admin-nav-collapsed'
 export const NARROW = '(min-width: 64rem) and (max-width: 79.9375rem)'
 /**
  * Whether the rail draws icons BESIDE ITS LABELS. OFF by default since 2026-08-15, at the
- * owner's request: *"không cần icon bên sidebar, nó làm cho không cần thiết"*. Eleven outline
+ * owner's instruction: the rail does not need them. Eleven outline
  * glyphs down the left edge are eleven things to look at before reading the word that was
  * always going to be the thing you read; the labels alone are shorter to scan and quieter.
  *
@@ -72,9 +72,8 @@ export const NARROW = '(min-width: 64rem) and (max-width: 79.9375rem)'
  */
 const ICONS_KEY = 'quireink-admin-nav-icons'
 /**
- * Whether "Everything else" stands open. The owner's rule, verbatim: "tôi đóng là mốt mở
- * lại trang vẫn đóng, tôi mở thì từ đây về sau nó vẫn mở" — an EXPLICIT toggle persists
- * across sessions. Arriving on a page inside the group still opens it for the visit (a
+ * Whether "Everything else" stands open. The rule: an EXPLICIT toggle persists across
+ * sessions in both directions — closed stays closed on the next visit, open stays open. Arriving on a page inside the group still opens it for the visit (a
  * rail that hides where you are is worse than a long one), but that visit-driven opening
  * is never WRITTEN: only the owner's own click on the row records a preference.
  */
@@ -154,7 +153,7 @@ export function AdminSidebar({
     { href: '/admin/newsletter', label: t.navNewsletter, icon: <IconNewsletter /> },
   ]
 
-  // "mấy cái tính năng còn lại ngoài soạn thảo nội dung … chỉ là phụ." Not removed — moved.
+  // Everything that is not writing is secondary. Not removed — moved.
   //
   // The assistant is FIRST here and not in the four above, which is where it was put on
   // 2026-08-23 and where the tour caught it on 2026-08-24: `the rail is four` failed with
@@ -263,10 +262,10 @@ export function AdminSidebar({
   // divider so it reads as the "account" cluster (never confused with collapse).
   //
   // These wear SIDEBAR_UTIL, not SIDEBAR_NAV — they are controls, not destinations, and
-  // dressed as nav rows they read as four more pages, one of them named "Light" ("cái
-  // sidebar… bất hợp lý kiểu nào đó", 2026-08-17). Their glyphs FOLLOW the "Show icons"
-  // switch, by the owner's correction the same night ("ẩn icon mà mấy icon light, xoá
-  // cache, log out ko ẩn kìa") — one switch means one answer for the whole rail. The
+  // dressed as nav rows they read as four more pages, one of them named "Light", which is
+  // what made the rail read as subtly wrong on 2026-08-17. Their glyphs FOLLOW the "Show
+  // icons" switch, corrected the same night when hiding the nav icons left Light, Clear
+  // cache and Sign out still carrying theirs — one switch, one answer for the rail. The
   // collapsed rail still draws them: with no labels, glyphs are all a rail can be.
   const utilClass = (c: boolean): string => `${SIDEBAR_UTIL} ${c ? 'justify-center' : 'gap-2.5'}`
   const controls = (c: boolean): ReactNode => (

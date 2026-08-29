@@ -5,7 +5,7 @@
 // field's current value — in the same ink, size and shape, with nothing saying which of the
 // two was answering "where am I". A screen where everything is the same rectangle has told
 // you nothing by the time you have looked at all of it, and that sameness is most of what
-// the owner meant by *"giao diện admin cứng quá, máy móc nữa"*.
+// made the admin read as stiff and mechanical.
 //
 // So the ink carries a meaning and the meaning is the thing worth defending: a second colour
 // that means ONE thing is a signal, and a palette is not. The day someone highlights a

@@ -121,7 +121,7 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
   // when `editor` is still null). Reading the live instance through a ref instead
   // of the captured `editor` const is what makes drag-drop insert reliably —
   // otherwise the dropped image only appeared when the stale closure happened to
-  // hold a non-null editor ("lúc ăn lúc không").
+  // hold a non-null editor, so the drop worked only sometimes.
   const editorRef = useRef<TiptapEditor | null>(null)
 
   /** The image files out of a DataTransfer, from a drop or from the clipboard. */

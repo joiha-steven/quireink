@@ -36,8 +36,8 @@ export function HelpGuide({ title, version, firstRunTitle }: {
   title: string; version: string; firstRunTitle: string
 }) {
   return (
-    // ONE SHEET, sections packed TWO columns wide ("nhật ký, hướng dẫn nên chia đôi
-    // giống mấy cái kia" — the owner's verdict on the first centred-column cut). Each
+    // ONE SHEET, sections packed TWO columns wide — the log and the guide split in two
+    // like the pages that already had, replacing a first centred-column cut. Each
     // section is a hairline PANEL inside the sheet, and CSS columns pack them: the
     // panels are wildly different heights, and a grid would leave a dead gap under
     // every short one.

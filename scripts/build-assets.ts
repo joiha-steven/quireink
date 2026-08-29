@@ -112,8 +112,8 @@ const BUDGET: Record<string, number> = {
   // stacked with dead space between them. 200 bytes for the section reading as part of the
   // site rather than as something pasted into it.
   // Raised to 12_100 for book mode's A−/A+: the reader's own hand on the type size,
-  // persisted per browser, asked for by the owner on 2026-08-21 ("không chỉnh được kích
-  // thước chữ"). 817 bytes raw, ~250 gzipped, and the alternative was a reader stuck at
+  // persisted per browser, asked for on 2026-08-21 because the type size could not be
+  // changed. 817 bytes raw, ~250 gzipped, and the alternative was a reader stuck at
   // whatever default the sheet ships.
   // Raised to 12_650 the same day for the phone's doorway into the reader: both
   // server-rendered entries hide under 768px, so phones had a working one-page book mode

@@ -64,8 +64,8 @@ const BARE_TILE = 'px-5 py-4'
  *
  * Measured on the Overview at 1440px: each tile was 98px tall around ~50px of content, so 49%
  * of every box was empty, and the row of five sat between a 40px gap above and a 40px gap
- * below. The owner circled exactly that region on 2026-08-15 — *"trên dưới cách nhau cả
- * khúc"*. Five separate sheets is also the reading the kit's own contract rejects: a card is
+ * below. That region was circled on 2026-08-15 as far too spread out top to bottom. Five
+ * separate sheets is also the reading the kit's own contract rejects: a card is
  * for "genuinely independent data", and Posts / Pages / Comments / Images / Storage are five
  * readings of ONE thing, which is how much blog there is.
  *

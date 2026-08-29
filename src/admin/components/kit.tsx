@@ -9,7 +9,7 @@ import type { ReactNode, SelectHTMLAttributes } from 'react'
 //
 // A card is a SHEET on paper: a hairline edge, a small radius, NO SHADOW. It was `rounded-2xl`
 // + a 1px drop shadow on a #f5f5f5 canvas, which is the costume every generated dashboard
-// wears and what the owner read as "rẻ tiền" on 2026-08-15. Each part does its share: 16px on
+// wears and what was rejected as looking cheap on 2026-08-15. Each part does its share: 16px on
 // a 1200px panel is a pill, a shadow says the panel FLOATS, and gray under white makes the
 // page a tray of boxes rather than a document. The reading site next door is the argument —
 // one sheet of paper, hairlines ruled across it, nothing floating — so the canvas is that same
@@ -24,8 +24,8 @@ import type { ReactNode, SelectHTMLAttributes } from 'react'
  * shadow is the costume every generated dashboard wears, and `check:admin-kit` failed a raised
  * white surface that was not `sticky` or `fixed`. That argument was about the COSTUME — a card
  * lifted high enough to float, over a tinted tray, with pill tabs. It is not an argument
- * against a card having any edge at all, and the admin had drifted into reading flat and, in
- * the owner's word, máy móc.
+ * against a card having any edge at all, and the admin had drifted into reading flat and
+ * mechanical.
  *
  * So: one step, and small enough to be an edge rather than a lift — 1px of contact and a 2px
  * spread at 4% black. It says "this is a surface above the page" and stops. There is no second

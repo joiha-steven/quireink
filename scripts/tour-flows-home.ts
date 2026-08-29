@@ -13,7 +13,7 @@ export function registerHomeFlows({ flow, expect }: Tour): void {
 
   // Both halves matter. Counting only what is visible at rest would pass just as well on a
   // rail that had DELETED the other seven, which is the one outcome the ADR rules out:
-  // "mấy cái tính năng còn lại … chỉ là phụ" is about rank, not about removal.
+  // everything that is not writing being secondary is about RANK, not about removal.
   flow('admin: the rail is four, and everything else is one click', () => expect('/admin', `
     (async () => {
       const rail = document.querySelector('aside nav')

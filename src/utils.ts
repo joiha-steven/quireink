@@ -94,7 +94,7 @@ export function formatTime(iso: string): string {
  * `deck()` for 260 characters for its lead standfirst (`DECK_CHARS` in `web/front-card.ts`)
  * and could never be given more than 200: the biggest slot on the most-looked-at page was
  * starved by a cap set for a `<meta>` tag it has nothing to do with. Visible on the demo as
- * a two-line deck under a three-line headline, which is what "mô tả ngắn quá" reported.
+ * a two-line deck under a three-line headline, reported as a description cut too short.
  *
  * The pattern for fixing it was already in the file that broke it: `web/article.ts` had hit
  * the same wall for the share card and answered it with its own `OG_DESC_MAX`, not by

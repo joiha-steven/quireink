@@ -104,8 +104,8 @@ font, only the site language's subset(s), never the chrome font or an uploaded c
   2026-08-14 not the FACE either. It uses Tailwind's standard scale and its own Inter; only
   the admin editor `.prose` mirrors the reader. Don't wire admin chrome to `--fs-*`, and don't
   wire it back to `chromeFont`: the admin followed that setting for a while, and putting a
-  mono code face on every label, tab, button and table cell is what the owner then called
-  "rối" — cluttered — and "không hợp để dùng trong admin". A chrome font is a branding choice
+  mono code face on every label, tab, button and table cell was then rejected as cluttered
+  and wrong for an admin. A chrome font is a branding choice
   about what a READER sees; the tool is not where it is spent. What the admin still follows is
   everything about the owner's own WORDS — palette, type scale, reading preset, uploaded face
   — because the editor is WYSIWYG. See `web/admin/spa.ts` `adminStyles` and
@@ -121,7 +121,7 @@ font, only the site language's subset(s), never the chrome font or an uploaded c
     every gap inside the article  = the same x the scale
 
 The RELATION is the hard rule, not the number. The scale was fixed at 1.15 on 2026-07-29 and
-revised by the owner to **1.05** on 2026-08-21 ("mặc định chữ hơi to"), and it is now only a
+revised to **1.05** on 2026-08-21 as slightly too large by default, and it is now only a
 DEFAULT: the a/A pair in the overlay chrome moves it 0.85–1.35 per reader, persisted under
 `quire-book-scale` and applied as an inline override, so an untouched reader still gets what
 the sheet ships (`src/assets/js/book.ts`). What must not change is the relation below.

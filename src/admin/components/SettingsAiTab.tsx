@@ -1,6 +1,6 @@
 // Settings → AI: the model and its automatic jobs, and the MCP door an agent connects
-// through. One tab because the owner ruled it one subject ("AI với MCP là một phần",
-// 2026-08-23): everything a model does to this site starts here.
+// through. One tab because the owner ruled AI and MCP one subject on 2026-08-23:
+// everything a model does to this site starts here.
 //
 // Split from `SettingsView.tsx` the day it was born — adding the tab put that file one
 // line over its 400-line ceiling, and the rule is split, not squeeze. Same seam as

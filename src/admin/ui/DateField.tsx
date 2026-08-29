@@ -2,7 +2,7 @@
 //
 // It replaces `<input type="datetime-local">`, whose popup calendar is the browser's — a
 // blue Chrome control that no stylesheet can reach, sitting in a monochrome admin. The
-// owner's verdict on it: "lịch đang rất xấu, không hợp design tổng thể." The input half of
+// calendar was rejected as ugly and out of keeping with the design. The input half of
 // the native control was fine; the calendar half is what this file redraws.
 //
 // The VALUE stays the `datetime-local` string ("YYYY-MM-DDTHH:mm"), so every caller and

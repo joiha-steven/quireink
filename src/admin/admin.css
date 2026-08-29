@@ -74,7 +74,7 @@
 }
 /* Two newspaper columns inside a sheet, with the rule a paper would draw between them.
    For lists of SHORT rows (comments, subscriber addresses): one column left half the
-   sheet blank, which the owner read as a hole ("nguyên khúc giữa bị trắng"). Collapses
+   sheet blank, which reads as a hole down the middle of the page. Collapses
    to one column below lg, where there is no blank half to fill. */
 .paper-cols { column-count: 2; column-gap: 0; column-rule: 1px solid #f0f0ef; }
 .dark .paper-cols { column-rule-color: #262626; }
@@ -130,9 +130,8 @@ body {
 /* ONE FACE. The admin is set in Inter and nothing else.
 
    It was two — `--font-reading` for what a PERSON wrote, `--font-sans` for what the MACHINE
-   says — adopted 2026-08-14 at the owner's request and RETIRED 2026-08-15 at the owner's
-   request: *"admin chỉ xài 1 font thôi, inter"*. Both instructions are his to give; what is
-   worth keeping is why the second one is right and the first sounded right.
+   says — adopted 2026-08-14 and RETIRED 2026-08-15, both at the owner's instruction. What
+   is worth keeping is why the second one is right and the first sounded right.
 
    The division is real on the reading site, where a post title and its date are genuinely
    different kinds of thing and a reader has time to feel it. A tool is not read, it is
@@ -284,7 +283,7 @@ body {
 
    This was #f5f5f5 — a true neutral gray — with white cards on it. That pairing is the shape
    every generated admin has: the canvas recedes, the cards float, and the page reads as a tray
-   of boxes. The owner's word for it on 2026-08-15 was "rẻ tiền", and the diagnosis is that
+   of boxes. It was rejected on 2026-08-15 as looking cheap, and the diagnosis is that
    nothing in the admin came from this product. The reading site is one sheet of #fcfcfc with
    hairlines ruled across it and no box floating anywhere.
 
@@ -314,7 +313,7 @@ body {
    existed. The textarea carries Tailwind's `outline-none`, which loses to the rule
    above on specificity — a utility is one class, `.admin-shell :focus-visible` is two
    — so clicking into the markdown source drew a 2px rectangle around a column 60vh
-   tall. Reported 2026-08-15 as "bấm vào để soạn thảo có cái viền đen xấu". Written
+   tall — an ugly black frame around the writing area. Reported 2026-08-15. Written
    here rather than as `!important` in the component, because the exception belongs
    beside the rule it is an exception to. */
 /* All THREE writing surfaces, and the third was found by photographing the second. The
@@ -345,7 +344,7 @@ body {
    is one rule with two selectors rather than two rules that look the same today.
 
    0.9375rem, up from 0.875: at 14px the source read as fine print beside a rich editor set
-   at reading size, which is what "chữ nên lớn hơn một chút" reported. */
+   at reading size, and was reported as wanting to be a little larger. */
 .md-box {
   font-family: var(--admin-mono);
   font-size: 0.9375rem;
