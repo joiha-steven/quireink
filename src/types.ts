@@ -1,7 +1,7 @@
 import type {
   AiSettings, McpSettings, HomeSettings, GallerySettings, FigureSettings,
   CacheSettings, InkSettings, MotionSettings, BackupSettings,
-  PostImageSettings, ShapeSettings, AuthorSettings,
+  PostImageSettings, ShapeSettings, TableSettings, AuthorSettings,
 } from '@/types-settings'
 // Core domain types shared across the app.
 
@@ -229,6 +229,7 @@ export type SiteSettings = {
   gallery: GallerySettings // site-wide default shape + caption state for in-body galleries
   postImage: PostImageSettings // where a post's own picture may appear: article hero, list thumbnail. Both 'none' at install
   shape: ShapeSettings // density, corner radius and headline weight — the knobs that change shape rather than colour. Defaults reproduce today exactly
+  table: TableSettings // how every table in an article is drawn: header, rules, banding, first column, air. One set for the whole blog, because GFM has no syntax for any of it and the markdown has to stay portable
   author: AuthorSettings // the one person who writes here: byline, author box, and the `author` field in every BlogPosting. name:'' = silent
   seo: SeoSettings // SEO / crawler feature toggles
   features: FeatureSettings // reader-facing feature toggles

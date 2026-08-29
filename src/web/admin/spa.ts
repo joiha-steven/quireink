@@ -16,7 +16,7 @@ import type { Context } from 'hono'
 import type { SiteSettings } from '@/types'
 import { allFontFaceCss } from '@/render/font-faces'
 import { fontPresetCss, themesToCss } from '@/content/themes'
-import { typographyToCss, fontToCss } from '@/content/settings'
+import { typographyToCss, fontToCss, tableToCss } from '@/content/settings'
 
 const DIR = join(import.meta.dir, '../../admin/dist')
 
@@ -144,6 +144,11 @@ function adminStyles(settings: SiteSettings): string {
     // they have turned off, which is exactly when they are looking at it.
     themesToCss(settings.themes, settings.themePreset),
     typographyToCss(settings.typography),
+    // The editor is a `.prose` surface, so a table drawn there has to be the table that will
+    // be published. Without this block it falls back to `prose.css.ts`'s own defaults and an
+    // owner who chose an inverted header would write against a tinted one — the same
+    // WYSIWYG mismatch `admin-design.md` records for the reading face.
+    tableToCss(settings.table),
     fontPresetCss(settings.fontPreset),
     fontToCss(settings.customFont),
   ].filter(Boolean).join('\n')

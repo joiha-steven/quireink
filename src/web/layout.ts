@@ -14,7 +14,7 @@
 import type { GallerySettings, FigureSettings, SiteSettings, FeatureSettings, InkSettings } from '@/types'
 import { fontPreloadHrefs, fontPresetCss, chromeFontCss, themesToCss } from '@/content/themes'
 import { cjkLangCss } from '@/content/fonts'
-import { typographyToCss, fontToCss, shapeToCss, resolveAppIcon } from '@/content/settings'
+import { typographyToCss, fontToCss, shapeToCss, tableToCss, resolveAppIcon } from '@/content/settings'
 import { singleRailCss } from '@/render/rail-css'
 import { fontFaceCss, MONO_TRACKING } from '@/render/font-faces'
 import { penSheetsFor } from '@/web/assets'
@@ -214,6 +214,10 @@ export function pageStyles(settings: SiteSettings, extra = ''): string {
     // two heading weights are ordinary variables and could sit anywhere; they ride along so
     // the shape knobs are one line in one place.
     shapeToCss(settings.shape),
+    // Anywhere after the palette: every ground it emits is MIXED from `--c-rule` and
+    // `--c-bg`, so the table follows whichever of the eleven palettes is on without a second
+    // declaration and without naming a colour (`prose.css.ts` holds the selectors).
+    tableToCss(settings.table),
     typographyToCss(settings.typography),
     fontToCss(settings.customFont),
     // Keyed on `data-chrome-font`, which `renderDocument` puts on <html>. It has to come

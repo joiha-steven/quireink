@@ -22,6 +22,7 @@ not cover.
 | **Density** | Appearance → Shape | How much air between everything. `normal` is the design as drawn |
 | **Corner radius** | Appearance → Shape | Square, soft, or round. Avatars and pills keep their own shape |
 | **Headline weight** | Appearance → Shape | Light, normal or bold. Moves the post title and the card title together |
+| **Tables** | Appearance → Tables | Seven knobs for how a table is drawn: header row, which lines, line weight, banded rows, first column, cell padding, and what happens on a phone. **The header row is tinted by default** — see below |
 | **Post images** | Layout → Post pictures | Whether a post's own picture appears above the headline, and whether it appears on list rows (small square, or large 3:2). **Both off by default** — see below |
 | Figure frame | Appearance → Images | The frame every in-body picture wears unless it says otherwise |
 | Content width | Appearance → Layout | How wide the reading column runs |
@@ -30,6 +31,45 @@ not cover.
 | IDE chrome | Appearance → Shape | Dresses the furniture around your words as source code. Off by default; it is a strong taste and it is one click either way |
 | Footer | Appearance → Brand | Your own line, with `{year}` and `{title}` tokens |
 | Feature switches | Appearance → Reading | Table of contents, progress bar, book mode, related posts, reading time, and a dozen more |
+
+### About the table settings
+
+⚠️ **This is the one settings group whose default does not reproduce what your blog looked
+like before it existed.** Every other group in this product shipped defaults that moved
+nothing on upgrade. A `<th>` had no ground of its own — a header row was bold text in the
+same paper as the data, and read as one more row — so a default that preserved it would have
+preserved the complaint. **To get exactly the old rendering back: Header row → Plain, and
+Lines → Around every cell.** Nothing else in the group changes anything by default.
+
+One set for the whole blog, and that is deliberate rather than a limitation. Markdown has no
+syntax for a tinted header, a row rule or a bold first column, so the only way to make a
+table differ from the table below it would be an attribute carried inside the source — and
+then a table you paste in is no longer a table you can paste out. These tables are written by
+pasting Markdown in, so they stay plain GFM.
+
+| Knob | Choices |
+|---|---|
+| **Header row** | **Tinted** (default) · Plain · Ruled — no ground, a heavier line beneath · Inverted — the ink and the paper swapped |
+| **Lines** | **Around every cell** (default) · Between rows only · None. A table of numbers reads well boxed; a table of sentences drowns in it |
+| **Line weight** | **Hairline** (default) · Thick |
+| **Banded rows** | **Off** (default) · On — a faint tint on every other row. It earns its place on a long table, not on four |
+| **First column** | **Same as the rest** (default) · Emphasised — for a table whose left column names the row and the rest answers it |
+| **Cell padding** | Compact · **Normal** (default) · Relaxed |
+| **On a narrow screen** | **Squeeze to fit** (default) · Scroll sideways |
+
+**What "Scroll sideways" is for.** A table of sentences keeps compressing its columns until
+they are a word wide, and the sideways scroll the reading column has always had for wide
+tables never engages, because a table that can shrink never overflows. Measured on a phone at
+375px: a two-column reference table put its first column at 105px, made one row 551px tall,
+and ran to 2,334px with no scrollbar anywhere. Giving each cell a floor makes it scroll
+instead. It is a choice and not a fix, because the same floor would send a timeline of three
+short columns sideways when it fits a phone comfortably today.
+
+**Every ground is mixed from your palette, never named.** The header wash is 6% of your text
+colour stirred into your page colour, so it darkens the paper in a light theme and lightens
+it in a dark one, in all eleven palettes, from one declaration. Measured on the default
+palette: page and header are 13 steps of grey apart in light mode and 12 in dark, which is a
+band you can see without being told it is there.
 
 ### About the picture settings
 

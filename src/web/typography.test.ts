@@ -217,7 +217,11 @@ describe('book mode is one number, and the reader may move it', () => {
       '.prose li{margin:calc(var(--sp) * .25) 0}',
       'padding-left:var(--sp);color:var(--c-meta)}',
       '.prose pre{padding:var(--sp)',
-      'padding:calc(var(--sp) * .4) calc(var(--sp) * .6)',
+      // The table cell, and the claim is unchanged: its padding is still spent in --sp, so it
+      // still scales with the reader's type and with book mode. `--tbl-pad` multiplies in on
+      // top (settings/table, 2026-08-29) and defaults to 1, so a blog that never opens that
+      // card gets the identical number this line has always asserted.
+      'padding:calc(var(--sp) * .4 * var(--tbl-pad, 1)) calc(var(--sp) * .6 * var(--tbl-pad, 1))',
       'figure{margin:calc(var(--sp) * 2) 0}',
     ]) {
       expect(PUBLIC_CSS).toContain(frozen)
