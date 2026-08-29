@@ -37,8 +37,8 @@ cd /home/quire/app && bun install && bun run build:assets && bun run build:admin
 Those three lines are also one line, and it is the same three:
 [`install.sh`](../install.sh) clones, installs, builds, and starts the blog so the log prints
 the claim link. It refuses to run as root, never uses `sudo` and touches nothing outside the
-directory you give it, which is why the rest of this guide — the user, the service, the proxy
-— is still yours to do.
+directory you give it, which is why the rest of this guide is still yours to do: the user,
+the service, the proxy.
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/joiha-steven/quireink/main/install.sh \
@@ -55,8 +55,8 @@ read from disk at runtime, so they have to exist before the service starts.
 > **`bun run build` builds those two artefacts and nothing else. There is no compiled binary**
 > ([ADR 0022](decisions/0022-ship-from-source-not-a-compiled-binary.md), 2026-08-11). It used to
 > emit `dist/quireink`, under a note saying not to deploy it "yet"; measured, the binary does not
-> come up at all — `sharp` is reached on the boot path, so the process dies before it listens —
-> and copying `@img/*` next to it does not help, because `sharp` resolves from the bundle's own
+> come up at all, because `sharp` is reached on the boot path and the process dies before it
+> listens. Copying `@img/*` next to it does not help, because `sharp` resolves from the bundle's own
 > `/$bunfs/root/…` path, which has no sibling directory. Running the source IS the shipping
 > story, and always was: every live instance does it.
 
@@ -85,8 +85,8 @@ raise them, so on a server you run for somebody else these two lines are the cei
 
 **`HOST` defaults to `127.0.0.1`, and the layout below is why.** nginx proxies to
 `http://127.0.0.1:<port>`, so the app never needs to be reachable from anywhere else. It used
-to listen on every interface — `Bun.serve` does that when nobody says otherwise — while the
-startup line printed `127.0.0.1`, so the only thing an operator would check said the opposite
+to listen on every interface, which is what `Bun.serve` does when nobody says otherwise, while
+the startup line printed `127.0.0.1`, so the only thing an operator would check said the opposite
 of what was true, and the port was closed by a firewall rule rather than by not being open.
 Set `HOST=0.0.0.0` when the proxy is on a different machine, and note that the Docker image
 sets it already: inside a container, loopback is the container's own.
@@ -108,7 +108,7 @@ than an omission: the page cache is keyed by path alone, so one request carrying
 the app does instead is complain — a `[WARN]` line at boot, and the hint under
 Settings → Search & URLs → Site address.
 
-**`TRUST_PROXY=1` — only if your proxy is not on this machine or this private network.**
+**`TRUST_PROXY=1`, and only if your proxy is not on this machine or this private network.**
 Rate limits and the analytics visitor hash are keyed by the reader's address, and the app
 takes it from the socket, which a client cannot forge. `CF-Connecting-IP` and
 `X-Forwarded-For` are believed only when the connection came from a loopback or private
@@ -123,8 +123,8 @@ question of what the newest release is, which is also how a blog is counted as b
 ([`update-check.md`](update-check.md) says exactly what it carries). It is on without this line, and this line beats
 the owner's own switch: it is here for an operator running blogs for other people.
 
-Everything else — SMTP, Turnstile, Cloudflare, the site's own name and language — is
-entered in the admin and stored in the database.
+Everything else is entered in the admin and stored in the database: SMTP, Turnstile,
+Cloudflare, the site's own name and language.
 
 ## 4. systemd
 
@@ -155,8 +155,9 @@ systemd has no login shell and will not find it on `PATH`.
 `NODE_ENV=production` is conventional rather than load-bearing: an install without it
 behaves identically, including the update check ([`update-check.md`](update-check.md)), which asks whether this looks
 like somebody EDITING the software (`bun --watch`, `bun test`) rather than whether a variable
-was set. That rule was inverted on 2026-08-22 for exactly this unit — requiring the variable
-would have made every from-source install silent forever while looking perfectly healthy.
+was set. That rule was inverted on 2026-08-22 for exactly this unit, because requiring the
+variable would have made every from-source install silent forever while looking perfectly
+healthy.
 
 ```bash
 systemctl daemon-reload && systemctl enable --now quire
@@ -238,8 +239,8 @@ It asks for a password and prints nothing else — two-factor enrolment happens 
 at first sign-in either way, and the admin is unreachable until it is done.
 
 **Trying it on your own machine?** While no site address is set, the enrolment screen offers
-*"Set this up later"*. Before anyone has enrolled, two-factor protects nothing — whoever
-reaches that screen with the password enrols their own authenticator — so skipping on a
+*"Set this up later"*. Before anyone has enrolled, two-factor protects nothing: whoever
+reaches that screen with the password enrols their own authenticator, so skipping on a
 laptop widens nothing. Set an address and the way out disappears at the next sign-in, which
 asks for enrolment again.
 
@@ -251,8 +252,7 @@ a *different, empty* database, and it will cheerfully tell you there are no acco
 The app sends `cache-control` for every response: 60 seconds plus
 `stale-while-revalidate` for public HTML, `private, no-store` for the admin, sign-in and
 API. **Let the CDN honour those headers.** A cache rule that forces a long TTL on HTML
-turns a publish into something nobody can see, and — worse when you are debugging — hands
-you a page from two deploys ago while you read source trying to work out why your fix did
+turns a publish into something nobody can see, and hands you a page from two deploys ago while you read source trying to work out why your fix did
 nothing.
 
 When verifying anything, request the origin directly (`curl localhost:3000/...` on the
@@ -289,7 +289,7 @@ call the same two ticks yourself. `/api/cron` answers only a caller holding `CRO
 ```
 
 The five-minute tick only flips due posts live; the hourly one does everything else. Set
-`CRON_SECRET` in the environment — the route is **closed when it is unset** (it answers 401),
+`CRON_SECRET` in the environment. The route is **closed when it is unset** (it answers 401),
 because it is the most expensive lever in the process and the internal clock already covers
 an installation that configured nothing. It is rate-limited to 12 calls a minute regardless.
 

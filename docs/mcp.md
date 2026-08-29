@@ -19,21 +19,22 @@
   time; a `read` token's door registers only the tools marked `readOnly` (`src/mcp/registry.ts`,
   pinned by `src/mcp/scope.test.ts`), so write tools are absent from its `tools/list`, not merely
   refused — only the SHA-256 hash is kept in the `mcp_tokens` table; see
-  `lib/mcp/tokens.ts`). Every token **expires 180 days after creation** (`expires_at`, set on insert,
+  `src/mcp/tokens.ts`). Every token **expires 180 days after creation** (`expires_at`, set on insert,
   default in `schema.sql`); `verifyMcpToken` hashes the bearer, looks it up, **rejects it once past
   `expires_at`**, else stamps `last_used_at` (while the toggle is on). There is **no `MCP_TOKEN` env
   var.** Connectors that require OAuth run a minimal OAuth 2.1 authorization-code + PKCE flow gated by
-  the owner's NextAuth login (`src/app/api/mcp/{authorize,token,register}` + `src/app/.well-known/oauth-*`);
+  the owner's own sign-in (`/api/mcp/{authorize,token,register}` and the two `/.well-known/oauth-*`
+  documents, all served from `src/web/admin/mcp.ts`);
   the `/token` exchange **mints a 180-day token via `mintOAuthToken`** (named "OAuth connector") and
   returns it. **`/register` PERSISTS the client** — it mints a unique `client_id` and stores the client's
-  `redirect_uris` (`mcp_clients` table, `lib/mcp/clients.ts`); `/authorize` then accepts a `redirect_uri`
+  `redirect_uris` (`mcp_clients` table, `src/mcp/clients.ts`); `/authorize` then accepts a `redirect_uri`
   ONLY if it **exactly matches one registered for that `client_id`** OR is a **loopback** address
   (`http://127.0.0.1:PORT`, `http://localhost:PORT`, IPv6 `[::1]` — the RFC 8252 native-app exception, since
   desktop clients use ephemeral ports). A non-matching `redirect_uri` is rejected **inline (400)** — the error
   is NEVER redirected to the unvalidated uri (open-redirect → owner-takeover fix). **Consent gate:** because
   `/register` is PUBLIC, the allowlist alone is insufficient (an attacker registers their own client+redirect,
   then phishes the logged-in owner). So a **non-loopback** `/authorize` does NOT auto-issue a code — it renders
-  a minimal consent page (`lib/mcp/consent.ts`) showing the exact `client_id` + `redirect_uri`; the owner clicks
+  a minimal consent page (`src/mcp/consent.ts`) showing the exact `client_id` + `redirect_uri`; the owner clicks
   Approve, which POSTs back to `/authorize`. The Approve POST re-checks owner auth + the allowlist and requires a
   **CSRF token bound to the owner's SESSION** (HMAC over `getToken({raw:true})`'s session JWT + the oauth params),
   so a forged cross-site auto-submit that rides the owner's cookies still can't mint a code. **Loopback redirects
@@ -41,7 +42,7 @@
   signed-in owner's browser fetch `/authorize`, and a code landed on whatever listened on that local port;
   loopback stays a valid redirect *target* without pre-registration, it just costs the same one Approve
   click as every other client. **Codes are single-use:**
-  each carries a random `jti` that `/token` records in `mcp_used_codes` on first exchange (`lib/mcp/used-codes.ts`);
+  each carries a random `jti` that `/token` records in `mcp_used_codes` on first exchange (`src/mcp/used-codes.ts`);
   a replay of the same code is rejected `invalid_grant`. **OAuth tokens are exempt from the manual 5-cap and are NEVER auto-deleted** (an expired
   row lingers as dead until the owner deletes it; a connector silently re-authorizes to mint a fresh one).
   **Lifecycle rule: the admin is the SOLE authority over a connection** — beyond the 180-day expiry a
