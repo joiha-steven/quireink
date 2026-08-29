@@ -11,6 +11,7 @@ import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import { type Editor as TiptapEditor } from '@tiptap/react'
 import { BubbleMenu } from '@tiptap/react/menus'
 import { NodeSelection, type EditorState } from '@tiptap/pm/state'
+import type { AdminStrings } from '@/i18n/admin-i18n'
 import { useAdminT } from './I18nProvider'
 import { INKS } from '@/render/ink'
 import { PEN_LIGHT } from '@/render/pen'
@@ -258,6 +259,11 @@ const PEN: Record<string, string> = Object.fromEntries(
   Object.entries(PEN_LIGHT).map(([ink, hex]) => [ink, `#${hex}`]),
 )
 
+/** `yellow` -> the owner's word for yellow. Same lookup `InkFields` uses on the settings screen. */
+function inkName(t: AdminStrings, ink: string): string {
+  return t[`ink${ink[0]!.toUpperCase()}${ink.slice(1)}` as 'inkYellow']
+}
+
 function InkButtons({ editor, hold }: { editor: TiptapEditor; hold: (e: React.MouseEvent) => void }) {
   const t = useAdminT()
   const current = editor.isActive('ink') ? (editor.getAttributes('ink').ink as string) : ''
@@ -267,7 +273,14 @@ function InkButtons({ editor, hold }: { editor: TiptapEditor; hold: (e: React.Mo
         <button
           key={ink}
           type="button"
-          title={t.tbHighlight}
+          // NAMED, and each one differently. All five carried `t.tbHighlight` and nothing
+          // else: no text, no `aria-label`, five buttons with one identical name, told apart
+          // only by an inline background on the span inside. Anything not looking at colour
+          // -- a screen reader, and anyone who cannot separate those five -- got five
+          // controls it could not choose between. The names already existed in all eleven
+          // languages for the settings screen, which looks them up exactly this way.
+          title={`${t.tbHighlight}: ${inkName(t, ink)}`}
+          aria-label={`${t.tbHighlight}: ${inkName(t, ink)}`}
           aria-pressed={current === ink}
           onMouseDown={hold}
           onClick={() => editor.chain().focus().toggleInk(ink).run()}
@@ -282,6 +295,11 @@ function InkButtons({ editor, hold }: { editor: TiptapEditor; hold: (e: React.Mo
   )
 }
 
+// Every button here names itself with `aria-label` as well as `title`, and the two must stay
+// together. The glyph inside is the accessible name otherwise -- content beats `title` when a
+// browser computes one -- so this bar announced "B", "I", "O" instead of Bold, Italic and Ring
+// a word, while the tooltip a mouse could see said the right thing all along.
+//
 // Floating menu over a text selection (or with the cursor in a link). An
 // elevated chip that follows light/dark like the toolbar (a fixed dark chip was
 // too harsh on light, and vanished into the dark editor background).
@@ -337,15 +355,15 @@ export function BubbleBar({ editor, avoidTop }: { editor: TiptapEditor; avoidTop
           to mark a selection as code, which was the fifth one all along: a bare backtick,
           the width of a comma, next to letters. `</>` says code the way B says bold, and a
           title says it in words for the four that are only initials. */}
-      <button type="button" title={t.tbBold} onMouseDown={hold} onClick={() => editor.chain().focus().toggleBold().run()} className={cls(editor.isActive('bold'))}><strong>B</strong></button>
-      <button type="button" title={t.tbItalic} onMouseDown={hold} onClick={() => editor.chain().focus().toggleItalic().run()} className={cls(editor.isActive('italic'))}><em>I</em></button>
+      <button type="button" title={t.tbBold} aria-label={t.tbBold} onMouseDown={hold} onClick={() => editor.chain().focus().toggleBold().run()} className={cls(editor.isActive('bold'))}><strong>B</strong></button>
+      <button type="button" title={t.tbItalic} aria-label={t.tbItalic} onMouseDown={hold} onClick={() => editor.chain().focus().toggleItalic().run()} className={cls(editor.isActive('italic'))}><em>I</em></button>
       {/* The mock's fourth glyph: turn the selected line into a section heading. H2 — the
           post title is the H1 and the deeper levels live behind "/" and their `#` shortcuts. */}
-      <button type="button" title={t.tbHeading} onMouseDown={hold} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className={cls(editor.isActive('heading', { level: 2 }))}><span className="font-semibold">H</span></button>
-      <button type="button" title={t.tbUnderline} onMouseDown={hold} onClick={() => editor.chain().focus().toggleUnderline().run()} className={cls(editor.isActive('underline'))}><u>U</u></button>
-      <button type="button" title={t.tbRing} onMouseDown={hold} onClick={() => editor.chain().focus().toggleRing().run()} className={cls(editor.isActive('ring'))}><span className="inline-block rounded-full border border-current px-1 leading-tight">O</span></button>
-      <button type="button" title={t.tbStrike} onMouseDown={hold} onClick={() => editor.chain().focus().toggleStrike().run()} className={cls(editor.isActive('strike'))}><s>S</s></button>
-      <button type="button" title={t.tbCodeInline} onMouseDown={hold} onClick={() => editor.chain().focus().toggleCode().run()} className={`${cls(editor.isActive('code'))} font-mono`}>{'</>'}</button>
+      <button type="button" title={t.tbHeading} aria-label={t.tbHeading} onMouseDown={hold} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className={cls(editor.isActive('heading', { level: 2 }))}><span className="font-semibold">H</span></button>
+      <button type="button" title={t.tbUnderline} aria-label={t.tbUnderline} onMouseDown={hold} onClick={() => editor.chain().focus().toggleUnderline().run()} className={cls(editor.isActive('underline'))}><u>U</u></button>
+      <button type="button" title={t.tbRing} aria-label={t.tbRing} onMouseDown={hold} onClick={() => editor.chain().focus().toggleRing().run()} className={cls(editor.isActive('ring'))}><span className="inline-block rounded-full border border-current px-1 leading-tight">O</span></button>
+      <button type="button" title={t.tbStrike} aria-label={t.tbStrike} onMouseDown={hold} onClick={() => editor.chain().focus().toggleStrike().run()} className={cls(editor.isActive('strike'))}><s>S</s></button>
+      <button type="button" title={t.tbCodeInline} aria-label={t.tbCodeInline} onMouseDown={hold} onClick={() => editor.chain().focus().toggleCode().run()} className={`${cls(editor.isActive('code'))} font-mono`}>{'</>'}</button>
       <span className="mx-0.5 h-5 w-px bg-neutral-200 dark:bg-neutral-700" />
       <InkButtons editor={editor} hold={hold} />
       <span className="mx-0.5 h-5 w-px bg-neutral-200 dark:bg-neutral-700" />
