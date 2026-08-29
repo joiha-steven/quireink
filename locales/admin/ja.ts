@@ -636,6 +636,18 @@ const ja = {
   analyticsColDepth: '深度',
   analyticsAvgTime: '平均滞在時間',
   analyticsBounceRate: '直帰率',
+  // Analytics -> Delivery. Reader-reported bytes and the in-process cache. Both labels
+  // have to keep saying what they are NOT: bytes are what browsers reported, never
+  // server egress, and the cache is this process's, never the CDN's.
+  analyticsDelivery: '配信',
+  analyticsBytesTotal: '読者がダウンロードした量',
+  analyticsBytesAvg: '1 訪問あたり',
+  analyticsBytesMeasured: '計測できた訪問',
+  analyticsBytesNote: '件',
+  analyticsCache: 'ページキャッシュ',
+  analyticsCacheHits: 'キャッシュから配信',
+  analyticsCacheSince: '起点',
+  analyticsCacheNote: 'このサーバー自身のキャッシュで、しかもここまで届いたリクエストだけです。前段の CDN が読者の大半を自分で返すため、オリジンはそれを知りません。',
   analyticsNowReading: '現在{n}人が閲覧中',
   analyticsNowQuiet: '現在閲覧中の読者はいません',
   analyticsColTime: '時間',
@@ -662,6 +674,8 @@ const ja = {
   navHelp: 'ヘルプ',
   featActivityLog: 'アクティビティログ',
   featActivityLogDesc: '管理操作（保存・アップロード・削除）をログページに記録します。',
+  featTransferStats: 'ページの重さ',
+  featTransferStatsDesc: '各訪問がダウンロードしたバイト数を保存し、解析でページが読者にいくら掛かるかを示します。オフにすると数値はデータベースに入りません。ほかは変わりません。',
   logTitle: 'アクティビティログ',
   logEmpty: 'まだ記録がありません。',
   logDisabled: 'ログは無効です。設定 → 機能で「アクティビティログ」をオンにすると記録されます。',

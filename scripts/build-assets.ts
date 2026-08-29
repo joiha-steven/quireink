@@ -65,7 +65,15 @@ const BUDGET: Record<string, number> = {
   // engaged-time meter (~240 — wall-clock dwell measured furniture, one tab left open for a
   // day moved the whole site's average by minutes), and the owner's default light/dark (48,
   // read off <body> or the island overrules the paint the stylesheet just made).
-  'core.js': 10_000,
+  //
+  // 10,500 since 2026-08-29, and the 212 bytes it bought are page weight: the leave beacon
+  // now sums `transferSize` across Navigation and Resource Timing and sends it, so the
+  // owner can see what a page costs a reader from the admin instead of from a network
+  // panel. Priced honestly: 212 bytes on every public page, once, gzipped into a bundle
+  // that is already fetched, against a post that measures about 100 KB. The measurement
+  // could not be taken on the server -- a CDN answers most readers and the origin never
+  // sees them -- so the browser is the only place it exists.
+  'core.js': 10_500,
   // /{slug}: back to top, code copy, lightbox, subscribe, comments, the ToC highlight and
   // book mode. Same rule as above — each raise is named and priced.
   //

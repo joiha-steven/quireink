@@ -34,6 +34,38 @@ function externalReferrer(): string {
   }
 }
 
+/**
+ * Bytes this visit actually pulled over the network, or undefined when the browser cannot
+ * say.
+ *
+ * `transferSize` is what came down the wire: compressed, headers included, and 0 for
+ * anything the browser served out of its own cache. That zero is the honest answer for a
+ * returning reader, so it is kept rather than treated as missing.
+ *
+ * Read on LEAVE, never at activation. The view beacon fires the moment the page is
+ * activated, while its stylesheets, fonts and pictures are still arriving, and a count
+ * taken then is short by most of the page.
+ *
+ * Cross-origin resources report 0 unless they send `Timing-Allow-Origin`. This site serves
+ * every byte from its own origin, so that limit costs nothing here and quietly undercounts
+ * on an install that has added a third party -- which is the direction an undercount should
+ * fall in a number the owner reads as a cost.
+ */
+function bytes(): number | undefined {
+  try {
+    const all = [
+      ...performance.getEntriesByType('navigation'),
+      ...performance.getEntriesByType('resource'),
+    ] as PerformanceResourceTiming[]
+    if (!all.length) return undefined
+    let total = 0
+    for (const r of all) total += r.transferSize || 0
+    return total
+  } catch {
+    return undefined // Navigation Timing Level 2 missing, or blocked
+  }
+}
+
 /** How far down the page the reader has got, as a percentage. */
 function depth(): number {
   const doc = document.documentElement
@@ -93,7 +125,7 @@ export function track(): void {
       sent = true
       meter(true) // close the open slice, so a quick bounce still measures
       clearInterval(interval)
-      beacon({ path, depth: max, dwell: Math.round(engaged) })
+      beacon({ path, depth: max, dwell: Math.round(engaged), bytes: bytes() })
     }
 
     addEventListener('scroll', () => { max = Math.max(max, depth()); active() }, { passive: true })

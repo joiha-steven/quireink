@@ -155,6 +155,43 @@ export function engagement(since: number, path: string | null): { avgReadDepth: 
   }
 }
 
+/**
+ * What readers downloaded over a window: the total, the average per measured visit, and how
+ * many visits were measured at all.
+ *
+ * `measured` is not decoration. `bytes` is NULL on every sample taken before this column
+ * existed, on every browser without Navigation Timing, and on every visit whose leave
+ * beacon never arrived -- so a total with no denominator beside it reads a partly-measured
+ * month as a cheap one. The admin shows both or neither.
+ *
+ * This is READER bytes, not server egress. A bot, a feed reader and anyone with JavaScript
+ * off all download bytes and report none of them, and a CDN answers most requests without
+ * the origin ever hearing about them. The label in the admin says so; so does this comment,
+ * because the query is where somebody will come looking for a number to rename.
+ */
+export function transferred(
+  since: number,
+  path: string | null,
+): { totalBytes: number; avgBytes: number; measured: number } {
+  const row = path === null
+    ? one<{ total: number | null; avg: number | null; n: number }>(
+        `select sum(bytes) as total, avg(bytes) as avg, count(bytes) as n from analytics_scroll
+          where created_at >= $since`,
+        { since },
+      )
+    : one<{ total: number | null; avg: number | null; n: number }>(
+        `select sum(bytes) as total, avg(bytes) as avg, count(bytes) as n from analytics_scroll
+          where created_at >= $since and path = $path`,
+        { since, path },
+      )
+  return {
+    totalBytes: Math.round(row?.total ?? 0),
+    avgBytes: Math.round(row?.avg ?? 0),
+    // count(bytes) skips NULLs, which is exactly the denominator wanted here.
+    measured: row?.n ?? 0,
+  }
+}
+
 /** Views + unique visitors over a window, optionally for one page. */
 export function windowCounts(from: number, to: number | null, path: string | null): { views: number; visitors: number } {
   const upper = to ?? Number.MAX_SAFE_INTEGER

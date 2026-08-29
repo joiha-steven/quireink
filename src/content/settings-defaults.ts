@@ -41,6 +41,10 @@ export const DEFAULT_FEATURES: FeatureSettings = {
   readingTime: true,
   progressBar: true,
   activityLog: true,
+  // ON, matching the dwell time it is stored beside: both are per-visit measurements of
+  // the visit itself rather than of the person, and a switch that ships off is a feature
+  // nobody finds. An owner who wants less kept turns it off and the column stays NULL.
+  transferStats: true,
   sidebar: true,
   sidebarSeries: true,
   leadPost: true,

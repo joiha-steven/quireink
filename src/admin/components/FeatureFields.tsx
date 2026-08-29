@@ -124,6 +124,12 @@ export function ActivityLogField({ features, onChange }: Omit<Props, 'relatedCou
         checked={features.activityLog}
         onChange={(v) => onChange({ ...features, activityLog: v })}
       />
+      <ToggleRow
+        label={t.featTransferStats}
+        desc={t.featTransferStatsDesc}
+        checked={features.transferStats}
+        onChange={(v) => onChange({ ...features, transferStats: v })}
+      />
     </div>
   )
 }

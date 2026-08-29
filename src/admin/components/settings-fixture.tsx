@@ -93,7 +93,7 @@ export function settingsFixture(): SiteSettings {
     seo: { autoSchema: true, sitemap: true, llms: true, robots: true, rss: true, ogImage: true, ogFallbackImage: '' },
     features: {
       search: true, toc: true, related: true, readingTime: true, progressBar: true,
-      activityLog: true, sidebar: true, sidebarSeries: true, leadPost: true,
+      activityLog: true, transferStats: true, sidebar: true, sidebarSeries: true, leadPost: true,
       categoryLabel: true, deck: true, penUnderline: true, penRing: true, bookText: false,
       bookMode: true, readNext: true, resume: true, infiniteScroll: false, gridView: true,
     },

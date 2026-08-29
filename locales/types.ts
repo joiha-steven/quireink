@@ -825,6 +825,18 @@ export type AdminStrings = {
   analyticsColDepth: string
   analyticsAvgTime: string
   analyticsBounceRate: string
+  // Analytics -> Delivery. Reader-reported bytes and the in-process cache. Both labels
+  // have to keep saying what they are NOT: bytes are what browsers reported, never
+  // server egress, and the cache is this process's, never the CDN's.
+  analyticsDelivery: string
+  analyticsBytesTotal: string
+  analyticsBytesAvg: string
+  analyticsBytesMeasured: string
+  analyticsBytesNote: string
+  analyticsCache: string
+  analyticsCacheHits: string
+  analyticsCacheSince: string
+  analyticsCacheNote: string
   analyticsNowReading: string
   analyticsNowQuiet: string
   analyticsColTime: string
@@ -852,6 +864,8 @@ export type AdminStrings = {
   navHelp: string
   featActivityLog: string
   featActivityLogDesc: string
+  featTransferStats: string
+  featTransferStatsDesc: string
   logTitle: string
   logEmpty: string
   logDisabled: string

@@ -636,6 +636,18 @@ const vi = {
   analyticsColDepth: 'Độ sâu',
   analyticsAvgTime: 'Thời gian TB trên trang',
   analyticsBounceRate: 'Tỷ lệ thoát',
+  // Analytics -> Delivery. Reader-reported bytes and the in-process cache. Both labels
+  // have to keep saying what they are NOT: bytes are what browsers reported, never
+  // server egress, and the cache is this process's, never the CDN's.
+  analyticsDelivery: 'Phân phối',
+  analyticsBytesTotal: 'Người đọc đã tải',
+  analyticsBytesAvg: 'Mỗi lượt',
+  analyticsBytesMeasured: 'đo được trên',
+  analyticsBytesNote: 'lượt',
+  analyticsCache: 'Cache của trang',
+  analyticsCacheHits: 'lấy từ cache',
+  analyticsCacheSince: 'tính từ',
+  analyticsCacheNote: 'Cache của chính máy chủ này, và chỉ với những yêu cầu đi tới được nó. CDN đứng trước trả lời phần lớn người đọc, và máy chủ không hề hay biết.',
   analyticsNowReading: '{n} người đang đọc',
   analyticsNowQuiet: 'Chưa có ai đang đọc lúc này',
   analyticsColTime: 'Thời gian',
@@ -662,6 +674,8 @@ const vi = {
   navHelp: 'Hướng dẫn',
   featActivityLog: 'Nhật ký hoạt động',
   featActivityLogDesc: 'Ghi lại thao tác admin (lưu, tải lên, xóa) vào trang Nhật ký.',
+  featTransferStats: 'Cân nặng trang',
+  featTransferStatsDesc: 'Lưu số byte mỗi lượt truy cập đã tải, để mục Phân tích cho biết trang của bạn tốn bao nhiêu của người đọc. Tắt thì con số không vào cơ sở dữ liệu; ngoài ra không đổi gì.',
   logTitle: 'Nhật ký hoạt động',
   logEmpty: 'Chưa có hoạt động nào.',
   logDisabled: 'Nhật ký đang tắt. Bật “Nhật ký hoạt động” trong Cài đặt → Tính năng để ghi lại.',

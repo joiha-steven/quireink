@@ -636,6 +636,18 @@ const fr = {
   analyticsColDepth: 'Profondeur',
   analyticsAvgTime: 'Temps moyen par page',
   analyticsBounceRate: 'Taux de rebond',
+  // Analytics -> Delivery. Reader-reported bytes and the in-process cache. Both labels
+  // have to keep saying what they are NOT: bytes are what browsers reported, never
+  // server egress, and the cache is this process's, never the CDN's.
+  analyticsDelivery: 'Distribution',
+  analyticsBytesTotal: 'Téléchargé par les lecteurs',
+  analyticsBytesAvg: 'Par visite',
+  analyticsBytesMeasured: 'mesuré sur',
+  analyticsBytesNote: 'visites',
+  analyticsCache: 'Cache de pages',
+  analyticsCacheHits: 'servi depuis le cache',
+  analyticsCacheSince: 'depuis',
+  analyticsCacheNote: 'Le cache de ce serveur, et seulement pour les requêtes qui lui sont parvenues. Un CDN placé devant répond lui-même à la plupart des lecteurs, et l’origine n’en sait rien.',
   analyticsNowReading: '{n} en train de lire',
   analyticsNowQuiet: 'Personne ne lit en ce moment',
   analyticsColTime: 'Temps',
@@ -662,6 +674,8 @@ const fr = {
   navHelp: 'Aide',
   featActivityLog: 'Journal d’activité',
   featActivityLogDesc: 'Consigne les actions d’administration (enregistrements, envois, suppressions) sur la page Journal.',
+  featTransferStats: 'Poids des pages',
+  featTransferStatsDesc: 'Enregistre le nombre d’octets téléchargés par visite, pour que les statistiques montrent ce que vos pages coûtent à un lecteur. Désactivé, le nombre n’entre pas dans la base ; rien d’autre ne change.',
   logTitle: 'Journal d’activité',
   logEmpty: 'Aucune activité consignée pour le moment.',
   logDisabled: 'La journalisation est coupée. Activez « Journal d’activité » dans Réglages → Options pour consigner les actions.',

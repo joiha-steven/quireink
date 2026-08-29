@@ -107,6 +107,7 @@ export function sanitizeFeatures(input: unknown, fallback: FeatureSettings): Fea
     readingTime: bool(o.readingTime, fallback.readingTime),
     progressBar: bool(o.progressBar, fallback.progressBar),
     activityLog: bool(o.activityLog, fallback.activityLog),
+    transferStats: bool(o.transferStats, fallback.transferStats),
     sidebar: bool(o.sidebar, fallback.sidebar),
     sidebarSeries: bool(o.sidebarSeries, fallback.sidebarSeries),
     leadPost: bool(o.leadPost, fallback.leadPost),

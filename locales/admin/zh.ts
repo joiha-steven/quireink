@@ -636,6 +636,18 @@ const zh = {
   analyticsColDepth: '深度',
   analyticsAvgTime: '平均停留时间',
   analyticsBounceRate: '跳出率',
+  // Analytics -> Delivery. Reader-reported bytes and the in-process cache. Both labels
+  // have to keep saying what they are NOT: bytes are what browsers reported, never
+  // server egress, and the cache is this process's, never the CDN's.
+  analyticsDelivery: '分发',
+  analyticsBytesTotal: '读者下载量',
+  analyticsBytesAvg: '每次访问',
+  analyticsBytesMeasured: '已计量',
+  analyticsBytesNote: '次访问',
+  analyticsCache: '页面缓存',
+  analyticsCacheHits: '由缓存提供',
+  analyticsCacheSince: '起算于',
+  analyticsCacheNote: '这是本服务器自己的缓存，且只统计到达了它的请求。前面的 CDN 会自行应答大多数读者，源站对此一无所知。',
   analyticsNowReading: '当前 {n} 人在读',
   analyticsNowQuiet: '当前没有人在读',
   analyticsColTime: '时间',
@@ -662,6 +674,8 @@ const zh = {
   navHelp: '帮助',
   featActivityLog: '活动日志',
   featActivityLogDesc: '将管理操作（保存、上传、删除）记录到日志页面。',
+  featTransferStats: '页面重量',
+  featTransferStatsDesc: '记录每次访问下载了多少字节，让统计页面显示你的页面让读者付出多少。关闭后该数字不会写入数据库，其余不变。',
   logTitle: '活动日志',
   logEmpty: '暂无活动记录。',
   logDisabled: '日志已关闭。在 设置 → 功能 中开启“活动日志”即可记录。',

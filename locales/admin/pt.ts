@@ -637,6 +637,18 @@ const pt = {
   analyticsColDepth: 'Profundidade',
   analyticsAvgTime: 'Tempo médio na página',
   analyticsBounceRate: 'Taxa de rejeição',
+  // Analytics -> Delivery. Reader-reported bytes and the in-process cache. Both labels
+  // have to keep saying what they are NOT: bytes are what browsers reported, never
+  // server egress, and the cache is this process's, never the CDN's.
+  analyticsDelivery: 'Entrega',
+  analyticsBytesTotal: 'Descarregado pelos leitores',
+  analyticsBytesAvg: 'Por visita',
+  analyticsBytesMeasured: 'medido em',
+  analyticsBytesNote: 'visitas',
+  analyticsCache: 'Cache de páginas',
+  analyticsCacheHits: 'servido da cache',
+  analyticsCacheSince: 'desde',
+  analyticsCacheNote: 'A cache deste servidor, e só para os pedidos que chegaram até ele. Uma CDN à frente responde à maioria dos leitores sozinha, e a origem nunca fica a saber.',
   analyticsNowReading: '{n} lendo agora',
   analyticsNowQuiet: 'Ninguém está lendo neste momento',
   analyticsColTime: 'Tempo',
@@ -663,6 +675,8 @@ const pt = {
   navHelp: 'Ajuda',
   featActivityLog: 'Diário de atividade',
   featActivityLogDesc: 'Anota as ações do admin (salvamentos, envios, exclusões) na página Diário.',
+  featTransferStats: 'Peso da página',
+  featTransferStatsDesc: 'Guarda quantos bytes cada visita descarregou, para a análise mostrar o que as suas páginas custam a um leitor. Desligado, o número não entra na base de dados; o resto não muda.',
   logTitle: 'Diário de atividade',
   logEmpty: 'Nenhuma atividade anotada ainda.',
   logDisabled: 'O diário está desligado. Ligue «Diário de atividade» em Configurações → Recursos para anotar as ações.',

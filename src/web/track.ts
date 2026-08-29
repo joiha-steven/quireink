@@ -23,7 +23,9 @@ import { clientIp, rateLimited } from '@/server/rate-limit'
  */
 const PER_MINUTE = 240
 
-type Payload = { path?: unknown; depth?: unknown; referrer?: unknown; dwell?: unknown }
+type Payload = {
+  path?: unknown; depth?: unknown; referrer?: unknown; dwell?: unknown; bytes?: unknown
+}
 
 export async function handleTrack(c: Context): Promise<Response> {
   try {
@@ -42,7 +44,11 @@ export async function handleTrack(c: Context): Promise<Response> {
     // request path and there is nothing to defer past the response.
     if (typeof body.depth === 'number') {
       const dwell = typeof body.dwell === 'number' ? body.dwell : undefined
-      await recordScroll(path, body.depth, ip, ua, dwell)
+      // What the reader's own browser says it downloaded. Clamped and sanity-checked in
+      // `recordScroll`, because this route is an open POST and the number ends up in a
+      // total the owner reads.
+      const bytes = typeof body.bytes === 'number' ? body.bytes : undefined
+      await recordScroll(path, body.depth, ip, ua, dwell, bytes)
     } else {
       // Source attribution: the referrer HOST only, sent by the beacon on session entry
       // and only when it is external, plus the country the CDN saw. Both privacy-light.

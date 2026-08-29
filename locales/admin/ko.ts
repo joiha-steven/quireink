@@ -636,6 +636,18 @@ const ko = {
   analyticsColDepth: '깊이',
   analyticsAvgTime: '평균 체류 시간',
   analyticsBounceRate: '이탈률',
+  // Analytics -> Delivery. Reader-reported bytes and the in-process cache. Both labels
+  // have to keep saying what they are NOT: bytes are what browsers reported, never
+  // server egress, and the cache is this process's, never the CDN's.
+  analyticsDelivery: '전송',
+  analyticsBytesTotal: '독자가 내려받은 양',
+  analyticsBytesAvg: '방문당',
+  analyticsBytesMeasured: '측정된 방문',
+  analyticsBytesNote: '건',
+  analyticsCache: '페이지 캐시',
+  analyticsCacheHits: '캐시에서 제공',
+  analyticsCacheSince: '기준 시각',
+  analyticsCacheNote: '이 서버 자신의 캐시이며, 여기까지 도달한 요청만 해당합니다. 앞단의 CDN이 대부분의 독자에게 직접 응답하므로 오리진은 그것을 알지 못합니다.',
   analyticsNowReading: '지금 {n}명이 읽는 중',
   analyticsNowQuiet: '지금 읽는 사람이 없습니다',
   analyticsColTime: '시간',
@@ -662,6 +674,8 @@ const ko = {
   navHelp: '도움말',
   featActivityLog: '활동 로그',
   featActivityLogDesc: '관리 작업(저장, 업로드, 삭제)을 로그 페이지에 기록합니다.',
+  featTransferStats: '페이지 무게',
+  featTransferStatsDesc: '각 방문이 내려받은 바이트 수를 저장해, 분석에서 페이지가 독자에게 얼마나 드는지 보여줍니다. 끄면 숫자가 데이터베이스에 들어가지 않으며, 그 밖에는 달라지지 않습니다.',
   logTitle: '활동 로그',
   logEmpty: '아직 기록된 활동이 없습니다.',
   logDisabled: '로그가 꺼져 있습니다. 설정 → 기능에서 “활동 로그”를 켜면 기록됩니다.',
