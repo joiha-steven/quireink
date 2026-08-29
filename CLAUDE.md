@@ -4,9 +4,11 @@ Public, source-available blog platform (PolyForm Noncommercial, [ADR 0015](./doc
 unmodified releases may be run commercially, [ADR 0023](./docs/decisions/0023-commercial-use-of-unmodified-releases.md)).
 One **Bun + Hono + SQLite** process; `src/` at the repository root serves the live site.
 
-**Zero personal data in this repo.** No IP, user, port or host, ever: they live in the
-private sibling with the worklog, the tasks and the audits. Credentials live only in the
-gitignored `.env`.
+**Zero personal data in this repo.** No IP, user, port or host, ever: they live in the private
+sibling with the worklog, the tasks and the audits; credentials only in the gitignored `.env`.
+But before proposing `docs/`, `scripts/` or `golden/` for that sibling, the second test:
+**if it vanished, could a stranger still install this and verify what they installed?** If no
+it is the PRODUCT and stays — `deploy.sh` ships `scripts/` and the tests read `golden/`.
 
 ## Verify
 
