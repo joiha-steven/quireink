@@ -9,7 +9,7 @@
 
 import { analyticsQuery } from '@/store/query'
 import { nowMs } from '@/store/db'
-import { bucketRanges, type Bucket } from '@/analytics/buckets'
+import { bucketRanges, windowStart, type Bucket } from '@/analytics/buckets'
 import {
   DWELL_CAP_MS, channels, dailySeries, depthBuckets, engagement, facet, topCountries,
   topReferrers, windowCounts,
@@ -85,8 +85,13 @@ function topPages(since: number, limit: number): TopPage[] {
 export async function getAnalytics(days: number, bucket: Bucket = 'day', topN = 10): Promise<AnalyticsSummary> {
   try {
     const now = Date.now()
-    const since = now - days * 86_400_000
-    const prevSince = since - days * 86_400_000 // the window just before `since`
+    // Aligned to the bucket, so the chart's first column is a whole day rather than the
+    // sliver of one `now - days * 86_400_000` used to leave there (see `windowStart`).
+    const since = windowStart(now, days, bucket, reportTz())
+    // The window just before `since`, of the SAME ELAPSED length. Not `days` again: the
+    // current window ends now, part-way through today, so a full previous day-count would
+    // be the longer of the two and every comparison would open showing a fall.
+    const prevSince = since - (now - since)
 
     const current = windowCounts(since, null, null)
     const previous = windowCounts(prevSince, since, null)
@@ -141,7 +146,7 @@ export async function getDashboardTraffic(days: number, topN = 10): Promise<{
 }> {
   try {
     const now = Date.now()
-    const since = now - days * 86_400_000
+    const since = windowStart(now, days, 'day', reportTz())
     const current = windowCounts(since, null, null)
     const { avgReadDepth, avgDwellMs } = engagement(since, null)
     return {

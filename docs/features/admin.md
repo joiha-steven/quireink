@@ -144,6 +144,14 @@
     every post, which until then was read off the SERVER's timezone and therefore changed
     if the site moved machine. The daily
     series emits **every bucket, zeros included** — a quiet day is a point on the chart, not a gap.
+  - **The window is whole days, aligned to that zone** (`windowStart`), so a 30-day range is
+    thirty full columns and not thirty-one with a sliver at the left. It used to start at
+    `now - 30 days`, an instant in the middle of a day: the leftmost column then covered only
+    the hours after it while carrying a whole day's label, so it read as a collapse in traffic
+    that had not happened — and it shrank all day and reset at midnight, because its width was
+    the time of day. The LAST column is still partial, and that one is honest: today is not
+    over. The **previous-period** comparison uses the same elapsed length rather than a full
+    extra day-count, so a part-finished today is not measured against a whole yesterday.
   - **Referrer hosts are folded for display** (`canonicalHost`): plumbing labels (`www.`, `m.`,
     `l.`, `lm.`, `out.`, `away.`, …) peel off, so `l.facebook.com` and `m.facebook.com` count as one
     `facebook.com` row — folded on the (host, visitor) pairs, so one person through two doors is
