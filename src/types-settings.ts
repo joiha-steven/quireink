@@ -134,7 +134,9 @@ export type GallerySettings = {
  */
 export type PostImageSettings = {
   /**
-   * The picture at the top of an article: the width of the reading column, or nothing.
+   * The picture at the top of an article: a 3:2 cover at the width of the reading column,
+   * or nothing. Two answers, because the shape is the design's and not a question for the
+   * owner — one blog's covers should look like one blog's covers.
    *
    * THERE IS NO WIDER OPTION, and that is a measurement rather than a preference. A `wide`
    * hero was built and removed the same afternoon: at contentWidth 672 on a 1440 viewport
@@ -162,15 +164,6 @@ export type PostImageSettings = {
    * one edge of the list.
    */
   thumb: 'none' | 'side' | 'top'
-  /**
-   * The hero's shape. '' keeps the photograph's own proportions, which is the default
-   * because an article has room for one picture and cropping it is a decision.
-   *
-   * Whatever this says, a hero is capped at 70vh (`postimage.css.ts`): a portrait at the
-   * column's width is 960px tall on a 672px column, which is a whole screen of picture
-   * before the first sentence.
-   */
-  ratio: '' | '1x1' | '3x2' | '4x3' | '16x9'
 }
 
 /**

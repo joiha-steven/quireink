@@ -192,12 +192,11 @@ export async function renderArticle(slug: string): Promise<string | null> {
       : ''
     // The right gutter, above the rail breakpoint only. It carries the same facts as the
     // meta line and the taxonomy, so both of those are hidden at that width.
-    // `ready` is a Map of original -> how many widths exist; `postImage` asks the simpler
-    // question ("does this one have variants at all"), so it takes the key set. Same table
-    // read either way — `mediaFacts` has already done it.
+    // `ready` goes through WHOLE: it maps an original to its variant-set version, and the
+    // version is what decides whether the 512 width may be named.
     // `dims` keyed store-relative, same as `ready` (Invariant 3). Both come from the one
     // table read `mediaFacts` already did.
-    hero = heroImage(post, settings, new Set(ready.keys()),
+    hero = heroImage(post, settings, ready,
       dims.get(collapseBlob(post.featuredImage || post.coverImage || '')))
     lead = postInfoPanel(post, settings, s) + seriesBox
     // Tags first (they belong to the post), then the person, then the ways onward. '' unless

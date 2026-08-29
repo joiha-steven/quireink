@@ -23,8 +23,6 @@ import type { PostImageSettings, ShapeSettings, AuthorSettings } from '@/types-s
 
 const HERO_KINDS = ['none', 'inline'] as const
 const THUMB_KINDS = ['none', 'side', 'top'] as const
-/** The gallery's vocabulary plus 16x9, which a banner wants and a gallery tile does not. */
-const HERO_RATIOS = ['', '1x1', '3x2', '4x3', '16x9'] as const
 
 export const DEFAULT_POST_IMAGE: PostImageSettings = {
   // What an article and a list row did before this setting existed. A hero that arrived
@@ -32,9 +30,6 @@ export const DEFAULT_POST_IMAGE: PostImageSettings = {
   // which is the one thing an upgrade may never do.
   hero: 'none',
   thumb: 'none',
-  // As shot. A hero is one picture with room to be itself; the 70vh cap in the sheet is
-  // what stops a portrait from becoming the whole first screen.
-  ratio: '',
 }
 
 export function sanitizePostImage(input: unknown, fallback: PostImageSettings): PostImageSettings {
@@ -42,7 +37,6 @@ export function sanitizePostImage(input: unknown, fallback: PostImageSettings): 
   return {
     hero: HERO_KINDS.find((k) => k === o.hero) ?? fallback.hero,
     thumb: THUMB_KINDS.find((k) => k === o.thumb) ?? fallback.thumb,
-    ratio: HERO_RATIOS.find((r) => r === o.ratio) ?? fallback.ratio,
   }
 }
 

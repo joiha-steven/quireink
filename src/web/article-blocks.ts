@@ -44,18 +44,17 @@ export function heroImage(
   ready: ReadyImages,
   dims?: { width: number; height: number },
 ): string {
-  const { hero, ratio } = settings.postImage
+  const { hero } = settings.postImage
   if (hero === 'none') return ''
   // `dims` is what stops the page jumping when the file lands. The article render already
   // reads every picture's intrinsic size for the body (`mediaFacts`), so this costs nothing
   // beyond passing it along.
   const picture = postImage(post, ready, `(max-width: 700px) 100vw, ${settings.contentWidth}px`, true, dims)
   if (!picture) return ''
-  // `data-hero` and `data-ratio` rather than classes: both are settings, and an attribute
-  // selector reads the setting directly instead of the markup encoding a decision that can
-  // change while the page sits in the cache.
-  const shape = ratio ? ` data-ratio="${ratio}"` : ''
-  return `<figure class="post-hero" data-hero="${hero}"${shape}>${picture}</figure>`
+  // `data-hero` rather than a class: it is a setting, and an attribute selector reads the
+  // setting directly instead of the markup encoding a decision that can change while the
+  // page sits in the cache.
+  return `<figure class="post-hero" data-hero="${hero}">${picture}</figure>`
 }
 
 /**

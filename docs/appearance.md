@@ -22,7 +22,7 @@ not cover.
 | **Density** | Appearance → Shape | How much air between everything. `normal` is the design as drawn |
 | **Corner radius** | Appearance → Shape | Square, soft, or round. Avatars and pills keep their own shape |
 | **Headline weight** | Appearance → Shape | Light, normal or bold. Moves the post title and the card title together |
-| **Post images** | Layout → Post pictures | Whether a post's own picture appears above the headline, whether it appears on list rows, and what shape the cover is cropped to. **Both positions off by default** — see below |
+| **Post images** | Layout → Post pictures | Whether a post's own picture appears above the headline, and whether it appears on list rows (small square, or large 3:2). **Both off by default** — see below |
 | Figure frame | Appearance → Images | The frame every in-body picture wears unless it says otherwise |
 | Content width | Appearance → Layout | How wide the reading column runs |
 | Sidebar | Appearance → Layout | One rail or two, and which blocks are in it |
@@ -34,20 +34,21 @@ not cover.
 ### About the picture settings
 
 They arrived switched **off**, on purpose. A blog that upgraded into the version that added
-them kept the exact pages it had; nothing grew a picture without being asked. Turn `hero` on and every post that has a featured image gets it **above the headline**, at
-the width of the reading column. There is no full-bleed option: the table of contents and
-the info panel sit eight pixels from that column, so a wider picture prints over them.
+them kept the exact pages it had; nothing grew a picture without being asked. The list offers **three** answers and the article **two**, and neither asks about shape:
 
-**Cover shape** appears once a hero is on: as shot (the photograph's own proportions), or
-cropped to 1:1, 3:2, 4:3 or 16:9. Whatever you choose, a hero is capped at 70% of the
-screen height — an ordinary portrait scan is 963px tall inside a 672px column, which is a
-whole screen of picture before the first sentence.
+| Where | Choices |
+|---|---|
+| **Cover on the post** | Not shown · **Show it** — a 3:2 cover above the headline, the width of the reading column |
+| **Thumbnail in lists** | Not shown · **Small square** beside the words, with the text wrapping under it · **Large 3:2** above the title |
 
-Turn `thumb` on and the same picture appears on list rows, beside the words or above the
-title. **A thumbnail's shape is not a setting**: it is always cropped, square beside the
-words and 3:2 above the title. A gallery gets to choose because a gallery *is* the
-photographs; a list thumbnail is there to be recognised, and a column of mixed heights
-reads as three different mistakes rather than one list.
+The shapes are fixed on purpose. One blog's pictures should look like one blog's pictures,
+and picking that is the design's job rather than a question put to you three times. It also
+removes the case that makes covers look accidental: an ordinary portrait scan is 963px tall
+inside a 672px column, a whole screen of picture between the headline and the first
+sentence.
+
+There is no full-bleed cover either — the table of contents and the info panel sit eight
+pixels from the reading column, so a wider picture prints over them.
 
 Posts without a picture are unaffected either way — there is no placeholder, and there
 will not be one.
