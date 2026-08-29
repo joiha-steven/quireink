@@ -38,26 +38,22 @@ const SAFE_LINKS = {
 /**
  * Two rules, because prefetch and prerender do not cost the same thing.
  *
- * `moderate` alone was not enough, and the reason is arithmetic rather than taste. It starts
- * a prerender only after the pointer has RESTED on a link for about 200ms, and on a normal
- * hover-and-click that leaves no time at all: measured from a Vietnamese home connection on
- * 2026-07-31, TTFB through the CDN is ~145ms on an edge HIT and ~185ms on a miss, so the
- * speculation is still in flight when the click lands and the reader waits out the whole
- * round trip. It also does nothing whatsoever on a touch screen, where there is no hover.
+ * `moderate` alone was not enough, and the reason is arithmetic. It starts a prerender only
+ * after the pointer has RESTED on a link ~200ms, which a normal hover-and-click never gives:
+ * measured from a Vietnamese home connection 2026-07-31, TTFB through the CDN is ~145ms on an
+ * edge hit and ~185ms on a miss, so the speculation is still in flight when the click lands.
+ * It also does nothing on a touch screen, where there is no hover.
  *
- * So the HTML is fetched ahead of the click, for every link on the page. `prefetch` is bytes
- * only — no render, no JavaScript, no `whenActivated` concerns — and a page is about 20 KB
- * gzipped that the origin already holds warm in `pageCache`. The reader pays that round trip
- * before deciding, which is the whole point: a click then has nothing left to fetch.
+ * So the HTML is fetched ahead of the click for every link. `prefetch` is bytes only — no
+ * render, no JavaScript — and a page is ~20 KB gzipped the origin already holds warm. The
+ * reader pays that round trip before deciding, which is the point.
  *
- * `prerender` stays on `moderate` for exactly the reason it always was. A prerender is a
- * full document plus its JavaScript, and at `eager` a reader who scrolls past ten cards has
- * paid for ten of them. Hover is a real signal of intent and it earns that cost; being in
- * the viewport is not.
+ * `prerender` stays on `moderate`: it is a full document plus its JavaScript, and at `eager` a
+ * reader who scrolls past ten cards has paid for ten. Hover is a real signal of intent and
+ * earns that cost; being in the viewport is not.
  *
- * The cost of `eager` prefetch is honest and worth stating: a listing with twenty links pulls
- * roughly 400 KB it may never use. On the desktop connections this site is read on that is
- * invisible, and Chrome caps prefetch at fifty documents and drops them under Save-Data.
+ * The cost of `eager` prefetch, stated honestly: a listing with twenty links pulls roughly
+ * 400 KB it may never use. Chrome caps prefetch at fifty documents and drops it under Save-Data.
  */
 const RULES = {
   prefetch: [{ where: SAFE_LINKS, eagerness: 'eager' }],

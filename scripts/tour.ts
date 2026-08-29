@@ -1,25 +1,22 @@
-// The tour: thirty-odd flows driven end to end in a real browser, with a verdict each.
+// The tour: sixty-odd flows driven end to end in a real browser, with a verdict each.
 //
 // WHY IT EXISTS. `check:all` proves the code compiles and the seams hold; it cannot tell you a
 // column collapsed to `reader@e…` or that a control the owner turned on has nothing behind it.
 // Both shipped. The M3 gate asked for this and it was never written, so "every admin page has
-// been opened in a real browser" has meant one person clicking once, and nothing re-checks it.
+// been opened in a real browser" meant one person clicking once, with nothing re-checking it.
 //
-// HOW IT DIFFERS FROM `drive.ts`. That is a screenshot tool: one navigate, one expression, one
+// HOW IT DIFFERS FROM `drive.ts`: that is a screenshot tool — one navigate, one expression, one
 // PNG, then it kills Chrome. This keeps ONE browser for the whole run and asks each flow a
 // question the page has to answer, so a broken flow is a line in a report rather than an image
 // somebody has to interpret.
 //
-// EVERY ASSERTION RUNS IN THE PAGE and returns a string: `ok`, or why not. That keeps this file
-// a runner rather than a second copy of the app's expectations, and it means a flow reads as the
-// sentence it is checking.
-//
-// Usage — the whole thing, from nothing:
+// EVERY ASSERTION RUNS IN THE PAGE and returns a string: `ok`, or why not. That keeps this a
+// runner rather than a second copy of the app's expectations.
 //
 //   scripts/ops/tour.sh                 # seeds, serves, tours, tears down
 //   bun scripts/tour.ts <base-url>      # against something already running
 //
-// Env: CHROME (binary), QUIRE_SESSION (owner cookie value), ONLY=<substring> to run a subset.
+// Env: CHROME (binary), QUIRE_SESSION (owner cookie value), ONLY=<substring> for a subset.
 
 import { rmSync } from 'node:fs'
 import { chromePath } from './chrome-path'

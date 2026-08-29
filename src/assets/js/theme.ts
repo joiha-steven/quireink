@@ -81,27 +81,22 @@ function drawIcon(button: HTMLElement, dark: boolean): void {
 /**
  * A header button that opens a menu of choices, one of which is current.
  *
- * Shared by the theme control and the palette control, which are the same widget twice: a
- * button, a list of rows, a tick on the current one, and one attribute on `<html>`. Written
- * once because the reader's bundle is budgeted in bytes and a second copy of the open/close/
- * mark/dismiss logic costs about as much as the palette feature itself.
+ * Shared by the theme and palette controls, which are the same widget twice: a button, a list
+ * of rows, a tick on the current one, one attribute on `<html>`. Written once because the
+ * reader's bundle is budgeted in bytes and a second copy of the open/close/mark/dismiss logic
+ * costs about as much as the palette feature itself. Returns `mark`, so a caller whose current
+ * value can change from outside the menu — `system` follows the OS — can re-tick the rows.
  *
- * Returns `mark`, so a caller whose current value can change from outside the menu — the
- * theme's `system` mode follows the OS — can re-tick the rows.
- *
- * A GROUP OF BUTTONS, not `role="menu"`. Which row is current was marked by a class and the
- * tick is drawn in CSS, so a reader using a screen reader heard identical buttons with no way
- * to tell which one they were on. `aria-pressed` is the honest fix: these are toggle buttons
- * and they behave like toggle buttons. `role="menu"` would promise arrow-key navigation this
- * widget does not implement, which is worse than plain buttons rather than better.
+ * ⚠️ A GROUP OF BUTTONS, not `role="menu"`. Current was marked by a class and the tick drawn in
+ * CSS, so a screen-reader user heard identical buttons with no way to tell which. `aria-pressed`
+ * is the honest fix: these are toggle buttons and behave like them. `role="menu"` would promise
+ * arrow-key navigation this widget does not implement, which is worse than plain buttons.
  */
 /**
- * Every dropdown's `close`, so opening one shuts the others.
- *
- * Found by clicking the header, not by a test: both controls sit at the same corner of the
- * same row and each stopped its click from reaching the document handler that closes menus, so
- * the theme menu and the palette menu could be open at once, overlapping. Neither one was
- * wrong on its own — the bug only exists once there are two.
+ * Every dropdown's `close`, so opening one shuts the others. Found by clicking the header, not
+ * by a test: both controls sit at the same corner of the same row and each stopped its click
+ * from reaching the document handler, so both menus could be open at once, overlapping.
+ * Neither was wrong on its own — the bug only exists once there are two.
  */
 const closers: (() => void)[] = []
 

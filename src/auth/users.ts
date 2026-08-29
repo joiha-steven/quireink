@@ -98,26 +98,23 @@ export function totpStateFor(id: number): { secret: string | null; lastStep: num
 /**
  * Create an account. Refuses a SECOND one unless the caller says so in as many words.
  *
- * ADR 0002 says one owner, permanently — "not a gap waiting to be filled" — and until
- * 2026-08-11 nothing enforced it. `web/guard.ts` treats ANY row in `users` holding a session
- * as the owner: no `id = 1`, no role column, none in the schema. What kept there being one
- * account was that only this function creates them and only the CLI calls it; the CLI itself
- * refused a duplicate USERNAME and was perfectly happy to make a second owner.
+ * ADR 0002 says one owner, permanently, and until 2026-08-11 nothing enforced it.
+ * `web/guard.ts` treats ANY row in `users` holding a session as the owner: no `id = 1`, no
+ * role column, none in the schema. What kept there being one account was that only this
+ * function creates them and only the CLI calls it — and the CLI refused a duplicate USERNAME
+ * while being perfectly happy to make a second owner. An invariant held by nobody, at the
+ * exact moment the hosted tier was being designed, which is when somebody adds a signup route.
  *
- * That is an invariant held by nobody, at the exact moment the hosted tier is being designed
- * — which is when somebody adds a signup route. So the design is now a line of code.
+ * ⚠️ `additional` only works under the test runner. Two tests legitimately need a second
+ * account — one proves a session cannot be revoked from another, the other that a CSRF token
+ * does not travel between them. Everywhere else the flag is ignored rather than honoured, so
+ * no running instance can pass anything to get a second owner. A signup route could not be
+ * written against this even deliberately: it would pass its own tests and refuse in
+ * production, which is the failure direction to want.
  *
- * **`additional` only works under the test runner, and that is the owner's own wording of the
- * rule: one owner, and never two accounts in one blog.** Two tests legitimately need a second
- * account — one proves a session cannot be revoked from another account, the other that a CSRF
- * token does not travel between them — and those are worth keeping. Everywhere else the flag is
- * ignored rather than honoured, so there is no argument any running instance can pass to get a
- * second owner. A signup route could not be written against this even deliberately; it would
- * pass its own tests and refuse in production, which is the failure direction to want.
- *
- * It is deliberately NOT a check on `id`, and not a `role` column. Both would introduce the
- * concept ADR 0002 spent its length rejecting — that there is more than one kind of account —
- * to solve a problem that is really about who may CREATE one.
+ * Deliberately NOT a check on `id` and not a `role` column. Both introduce the concept ADR
+ * 0002 spent its length rejecting — that there is more than one kind of account — to solve a
+ * problem that is really about who may CREATE one.
  */
 export async function createUser(input: {
   username: string

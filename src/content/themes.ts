@@ -87,64 +87,34 @@ function vars(c: ThemeColors): string {
 }
 
 // CSS for every ENABLED palette, so the switcher swaps instantly via `<html data-palette>`
-// with nothing to fetch. It emitted all six until 2026-08-11, including on blogs that had
-// turned five off — see `themesToCss`.
-// Default also lands on :root/.dark (no-JS baseline); mode-qualified
-// `[data-palette].dark` has higher specificity so dark resolves correctly.
+// with nothing to fetch. The default also lands on :root/.dark as the no-JS baseline;
+// mode-qualified `[data-palette].dark` has higher specificity so dark resolves correctly.
 //
-// DARK BEFORE THE ISLAND SPEAKS. `.dark` is applied by `assets/js/theme.ts`, which is a
-// deferred module — so a reader whose system is dark, on the default `system` mode, was
-// shown a white page for the length of one paint on every single navigation. There was no
-// `prefers-color-scheme` rule anywhere in the public sheet: measured at 0 of 429 rules.
+// DARK BEFORE THE ISLAND SPEAKS. `.dark` is applied by `assets/js/theme.ts`, a deferred
+// module, so a reader whose system is dark on the default `system` mode was shown a white
+// page for one paint on every navigation — measured: 0 `prefers-color-scheme` rules in 429.
 //
-// `data-scheme`, NOT `data-theme`: `<body data-theme="…">` already exists and holds the
-// translated word "Theme" for the island's button label (`assets/js/dom.ts` reads every UI
-// string off `body.dataset`). Two attributes of the same name on parent and child, one a
-// sentence and one a mode, is a mix-up waiting to be made.
+// ⚠️ `data-scheme`, NOT `data-theme`: `<body data-theme>` already exists and holds the
+// translated word "Theme" for the island's button label. Two same-named attributes on parent
+// and child, one a sentence and one a mode, is a mix-up waiting to happen.
 //
-// The handoff is `data-scheme` on `<html>`. Nothing server-rendered sets it (the page cache is
-// keyed by URL alone, Invariant 1, so a server-rendered mode would be the first visitor's
-// mode for everyone), the island sets it to the RESOLVED light/dark the moment it runs, and
-// this block applies only while it is absent. So: no script, correct first paint for the
-// system-dark reader, and the island still owns every explicit choice.
+// The handoff is `data-scheme` on `<html>`. Nothing server-rendered sets it — the page cache
+// is keyed by URL alone (Invariant 1), so a server-rendered mode would be the first visitor's
+// mode for everyone — the island sets it to the RESOLVED light/dark the moment it runs, and
+// this block applies only while it is absent.
 //
-// The honest cost, because there is one: a reader who explicitly chose LIGHT on a dark system
-// now gets the inverse flash, for exactly as long as the dark reader used to get theirs.
-// `system` is the default and by far the common case, so this moves the flash off the many
-// and onto the few. Removing it entirely needs an inline script, which this project does not
-// have anywhere and asserts it does not.
+// The honest cost: a reader who explicitly chose LIGHT on a dark system now gets the inverse
+// flash, for as long as the dark reader used to get theirs. `system` is the default and by far
+// the common case, so this moves the flash off the many onto the few. Removing it entirely
+// needs an inline script, which this project asserts it does not have.
 //
-// `color-scheme` rides along: it is what makes the scrollbar, the form controls and the
-// canvas the browser draws follow the page instead of staying light under a dark one.
+// `color-scheme` rides along: it is what makes the scrollbar, the form controls and the canvas
+// follow the page instead of staying light under a dark one.
 //
-// NOT mirrored per palette, and with the switcher now ported (2026-08-11) that is settled
-// rather than deferred. It cannot help. Before the island runs there is no `data-palette` at
-// all — the reader's choice is in their own localStorage and the page cache is keyed by URL, so
-// the server cannot know it — which means the only palette this block could possibly be about
-// is the owner's default, and that is exactly the one `base` already carries.
-//
-// After the island runs, `data-scheme` exists, this whole block drops out of the cascade, and
-// `[data-palette="…"].dark` answers instead. So the cost of mirroring is real and the benefit is
-// zero. What remains is one frame of the DEFAULT palette for a reader who chose another and is
-// on a dark machine — the same accepted flash the theme control has, for the same reason: no
-// inline script.
-/**
- * `enabled` is `settings.enabledPalettes`: the palettes a reader may switch between, which is
- * the only set worth emitting rules for.
- *
- * It used to emit all six unconditionally — twelve rule sets, ~2 KB on every page — because
- * `settings.themes` always holds all six so that each is customisable in the admin. Whether a
- * palette is CUSTOMISABLE and whether a reader can REACH it are different questions, and this
- * answered the wrong one. A blog with one palette enabled paid for five it had turned off.
- *
- * Fewer than two enabled means no switcher (the control hides itself), so `:root` already IS
- * the palette and no `[data-palette]` block can ever match: emit none. Two or more emits one
- * per enabled palette, INCLUDING the default — a reader who switches away and back sets
- * `data-palette` to the default's own id, so it needs a rule of its own to return to.
- *
- * Omitting `enabled` keeps every palette, which is what the admin shell wants: its preview
- * renders whatever the owner is editing, enabled or not.
- */
+// NOT mirrored per palette, and that is settled rather than deferred: before the island runs
+// there is no `data-palette` at all, so the only palette this block could be about is the
+// owner's default — which `base` already carries. After it runs, this whole block drops out of
+// the cascade. Real cost, zero benefit.
 export function themesToCss(
   themes: Record<string, ThemeSettings>,
   defaultId: string,

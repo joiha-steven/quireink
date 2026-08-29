@@ -1,31 +1,26 @@
 // How large one upload may be, and how large the whole store may grow.
 //
-// WHY THIS FILE EXISTS: neither number existed anywhere in the software. The only byte limit
-// in the tree was `MAX_IMPORT_BYTES` on the WordPress import, and what actually refused an
+// WHY THIS EXISTS: neither number existed anywhere in the software. What actually refused an
 // oversized image was `client_max_body_size` in nginx — 64M in the recommended vhost, 1m on
-// the demo, and whatever a self-hoster's proxy happens to be. That is the same shape of bug
-// `web/security-headers.ts` was written to fix, and its own words fit unedited: it made the
-// limit "a property of ONE deployment's proxy rather than of the software", so anyone running
-// the binary behind a tunnel, a PaaS or nothing at all had no limit and nothing said so.
-// Audit 2026-08-11 §2.
+// the demo, whatever a self-hoster's proxy happens to be. That made the limit a property of
+// ONE deployment's proxy rather than of the software, so anyone running behind a tunnel, a
+// PaaS or nothing at all had no limit and nothing said so.
 //
 // TWO LAYERS, and the split is deliberate:
 //
 //   1. `blob-local.put()` refuses anything over the ENVIRONMENT's ceiling. It is the single
-//      point every stored byte passes through — media, attachments, icons, fonts, the
-//      derived variants, and the MCP tool that rehosts an image from a URL — so a route that
-//      forgets to ask still cannot write past it. It reads no settings and therefore cannot
-//      cycle back through `content/settings.ts`, which imports the storage facade itself.
-//   2. The routes ask THIS module, which is the environment's ceiling narrowed by the
-//      owner's setting, and answer 413. That is what makes the refusal a sentence the admin
-//      can show instead of a 500, and — because `File.size` is known before the body is
-//      read — it is also what keeps a 900 MB upload from becoming 900 MB of resident memory
-//      on the way to being rejected.
+//      point every stored byte passes through — media, attachments, icons, fonts, the derived
+//      variants, the MCP tool that rehosts from a URL — so a route that forgets to ask still
+//      cannot write past it. It reads no settings, so it cannot cycle back through
+//      `content/settings.ts`, which imports the storage facade itself.
+//   2. The routes ask THIS module — the environment's ceiling narrowed by the owner's setting
+//      — and answer 413. That makes the refusal a sentence the admin can show instead of a
+//      500, and because `File.size` is known before the body is read, it also keeps a 900 MB
+//      upload from becoming 900 MB of resident memory on the way to being rejected.
 //
-// THE CEILING ONLY EVER NARROWS. `MAX_UPLOAD_MB` and `STORAGE_QUOTA_GB` are the operator's;
-// the admin fields can lower them and can never raise them. An operator hosting a blog for
-// somebody else needs a number the blog cannot argue with, and an operator hosting their own
-// sets it once and never thinks about it again.
+// ⚠️ THE CEILING ONLY EVER NARROWS. `MAX_UPLOAD_MB` and `STORAGE_QUOTA_GB` are the operator's;
+// the admin fields can lower them and never raise them. An operator hosting for somebody else
+// needs a number the blog cannot argue with.
 
 import { readEnv } from '@/env'
 import { getSettings } from '@/content/settings'

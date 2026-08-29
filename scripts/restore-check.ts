@@ -1,27 +1,26 @@
 // A backup nobody has restored is not a backup.
 //
-// `bun run tour` already proves the archive BUILDS — it reads the first two bytes and
-// confirms a gzip member. That is the cheap half. It cannot tell you the databases inside
-// open, that they hold the owner's rows, or that the uploads tree came along, and every one
-// of those has failed somewhere in this project's history: a snapshot taken as a file copy
-// captures a torn write-ahead log that only reveals itself on restore
-// ([`docs/backups.md`](../docs/backups.md)), and the uploads directory has been read from
-// one path and written to another for months without a single test going red.
+// `bun run tour` proves the archive BUILDS — it reads two bytes and confirms a gzip member.
+// That is the cheap half. It cannot tell you the databases inside open, that they hold the
+// owner's rows, or that the uploads tree came along, and every one of those has failed
+// somewhere in this project's history: a snapshot taken as a file copy captures a torn
+// write-ahead log that only reveals itself on restore, and the uploads directory has been read
+// from one path and written to another for months with no test going red.
 //
 // So this opens the archive and checks what a restore would actually get:
 //
-//   1. the three members are there                      — an archive missing uploads/ looks fine
-//   2. `pragma integrity_check` on both databases       — a torn snapshot fails here and nowhere else
-//   3. every row count matches the live instance        — a VACUUM INTO that raced a write does not
-//   4. every upload is byte-identical                   — the failure mode that has actually bitten
+//   1. the three members are there                — an archive missing uploads/ looks fine
+//   2. `pragma integrity_check` on both databases — a torn snapshot fails here and nowhere else
+//   3. every row count matches the live instance  — a VACUUM INTO that raced a write does not
+//   4. every upload is byte-identical             — the failure mode that has actually bitten
 //
-// Run against a THROWAWAY instance, which is what `scripts/ops/tour.sh` hands it. It only
-// reads: the live databases are opened read-only and the extraction goes under `.tmp/`.
+// Run against a THROWAWAY instance, which `scripts/ops/tour.sh` hands it. It only reads: live
+// databases are opened read-only and the extraction goes under `.tmp/`.
 //
 //   bun scripts/restore-check.ts http://127.0.0.1:3399
 //
-// Env: QUIRE_SESSION (owner cookie value), DATA_DIR and STORAGE_LOCAL_DIR — the same values
-// the instance under test was started with, because the comparison is against ITS files.
+// Env: QUIRE_SESSION, DATA_DIR and STORAGE_LOCAL_DIR — the same values the instance under test
+// was started with, because the comparison is against ITS files.
 
 import { Database } from 'bun:sqlite'
 import { existsSync, readdirSync, rmSync, statSync } from 'node:fs'

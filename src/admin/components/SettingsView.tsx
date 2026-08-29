@@ -1,25 +1,18 @@
-// Settings: ONE form, ONE save button, in SEVEN groups.
+// Settings: ONE form, ONE save button, in eight groups (ADR 0011 named seven; `ai` joined
+// 2026-08-23).
 //
-// The frozen tree had five, and the owner's complaint was that they were tangled — which
-// they were, because three of them were named after nothing in particular. "Site" held both
-// the site's identity AND the page layout; "Content" held reader features, comments and a
-// one-time WordPress importer; "Integrations" held a backup destination, an AI protocol
-// server, a CDN and an SMTP host. Nothing told you which tab a given setting was behind,
-// so finding one meant opening all five.
+// The frozen tree had five and they were tangled, because three were named after nothing in
+// particular: "Site" held the site's identity AND the page layout; "Content" held reader
+// features, comments and a one-time WordPress importer; "Integrations" held a backup
+// destination, an AI protocol server, a CDN and an SMTP host. Nothing told you which tab a
+// setting was behind, so finding one meant opening all five.
 //
-// Each group here answers ONE question, and that question is printed under the tab rather
-// than left implicit. Two extra tabs is a cheap price for never having to guess:
+// Each group answers ONE question, and that question is printed under the tab rather than left
+// implicit — what the site IS, where things SIT, what a reader GETS, how it LOOKS, how machines
+// SEE it, what it TALKS TO, what the AI door does, and the state of the INSTALL.
 //
-//   Site         what is this site
-//   Layout       where does everything sit
-//   Reading      what does a reader get on a post
-//   Appearance   how does it look
-//   Search       how do machines see it, and where do old addresses lead
-//   Connections  what else does it talk to
-//   System       moving content in and out, and the state of the install
-//
-// All settings still live in one state object and save together via PUT /api/settings,
-// which merges — regrouping the UI changed no stored shape.
+// All settings still live in one state object and save together via PUT /api/settings, which
+// merges — regrouping the UI changed no stored shape.
 
 import { useRef, useState, type ReactNode } from 'react'
 import { useRouter, useSearchParams } from '@/admin/router'

@@ -208,29 +208,25 @@ export function rememberEnrolmentSecret(ticket: string, secret: string): void {
 }
 
 /**
- * Whether the "set this up later" way out is offered — the middle path on 2FA, and the
- * reasoning is the whole of it.
+ * Whether the "set this up later" way out is offered — the middle path on 2FA (ADR 0030).
  *
- * [ADR 0007](../../docs/decisions/0007-self-hosted-password-totp-auth.md) made TOTP
- * mandatory and that stands for any blog with readers. But **before anyone has enrolled,
- * two-factor protects nothing**: whoever reaches the enrolment screen first with the
- * password enrols their own authenticator, so refusing to let the owner in without it
- * closes no door that was open. What it does do is make `docker run` on a laptop, to look
- * at the thing for ten minutes, require a phone.
+ * ADR 0007 made TOTP mandatory and that stands for any blog with readers. But **before anyone
+ * has enrolled, two-factor protects nothing**: whoever reaches the enrolment screen first with
+ * the password enrols their own authenticator, so refusing to let the owner in without it
+ * closes no door that was open. What it does do is make `docker run` on a laptop, to look at
+ * the thing for ten minutes, require a phone.
  *
- * So the gate is the SITE ADDRESS, not the account: no public address means nobody is
- * reading this blog yet. Set one — which is a step of setup itself — and the button is gone
- * at the very next sign-in, which still asks for enrolment because `totp_secret` is null.
- * No new column, no new state, nothing to migrate: the prompt simply comes back.
+ * So the gate is the SITE ADDRESS, not the account: no public address means nobody is reading
+ * this blog yet. Set one — itself a step of setup — and the button is gone at the very next
+ * sign-in, which still asks for enrolment because `totp_secret` is null. No new column, no new
+ * state, nothing to migrate: the prompt simply comes back.
  */
 /**
  * Where a session that has just come through enrolment lands.
  *
- * `/setup/site` only while the site address is unset, which is the same signal the boot
- * warning uses and the one thing that step exists to fix. An established owner who enrolled
- * again — after a TOTP reset, say — has an address by then and goes straight to the admin,
- * so re-enrolling never drags anybody back through setup. An explicit `next` always wins:
- * somebody who followed a link to a particular page asked for that page.
+ * `/setup/site` only while the site address is unset, which is the same signal the boot warning
+ * uses and the one thing that step exists to fix. An owner who enrolled again after a TOTP
+ * reset has an address by then and goes straight to the admin. An explicit `next` always wins.
  */
 function firstRunNext(settings: SiteSettings, next: string): string {
   if (next !== '') return safeNext(next)

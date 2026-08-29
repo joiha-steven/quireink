@@ -1,25 +1,21 @@
 // Who is not a reader.
 //
-// The owner asked for it in as many words: the numbers should not count the person who
-// runs the site, or the machine it runs on. Until now they counted both. Every visit the
-// owner made while checking a change, every drive of the site from a script on the box, and
-// every "does this look right" reload landed in `analytics_events` beside real readers, and
-// on a personal blog that is a large fraction of the traffic.
+// The numbers should not count the person who runs the site, or the machine it runs on. Until
+// this they counted both: every visit the owner made while checking a change, every drive from
+// a script on the box, every "does this look right" reload landed in `analytics_events` beside
+// real readers — and on a personal blog that is a large fraction of the traffic.
 //
 // Three exclusions, narrowest first:
 //
-//   1. A request carrying a LIVE owner session. The frozen tree opened its track route with
-//      `requireOwner()`; 2.0 had no session to ask until M3 and the gap has been open since
-//      (docs/spec/07-parity-public.md §8). This closes it.
-//   2. A request from an IP that a live session was created from — the owner in a second
-//      browser, in a private window, or on the phone beside the desk, where there is no
-//      cookie to find. This is the "by IP" half.
-//   3. A request from a loopback or private address. Nothing on the public internet reaches
-//      the site that way, so it is the box talking to itself: a warm-up, a probe, a health
-//      check, a headless browser driving a local instance.
+//   1. A request carrying a LIVE owner session. The frozen tree gated its track route with
+//      `requireOwner()`; 2.0 had no session to ask until M3 and the gap stayed open.
+//   2. A request from an IP a live session was created from — the owner in a second browser, a
+//      private window, or the phone beside the desk, where there is no cookie to find.
+//   3. A request from a loopback or private address: nothing on the public internet reaches the
+//      site that way, so it is the box talking to itself — a warm-up, a probe, a health check.
 //
 // Nothing new is stored to do any of it. (2) re-uses the salted `ip_hash` the sessions table
-// already keeps, so no IP is written anywhere and no list has to be maintained by hand.
+// already keeps, so no IP is written anywhere and no list is maintained by hand.
 
 import type { Context } from 'hono'
 import { getCookie } from 'hono/cookie'

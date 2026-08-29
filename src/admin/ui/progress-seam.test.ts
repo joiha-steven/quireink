@@ -1,26 +1,25 @@
 // One navigation, one sweep — and the number that makes it true.
 //
-// The bar is a CSS animation that restarts whenever `data-done` is removed from it, because
-// `[data-done] { animation: none }` and taking that away runs the keyframes again from the
-// left edge. So marking the bar finished and then un-marking it does not "carry on", as the
-// code once said it did: it draws the whole bar a second time, in the same element, which is
-// why counting elements found nothing and the owner still saw it happen.
+// The bar is a CSS animation that restarts whenever `data-done` is removed, because
+// `[data-done] { animation: none }` and taking that away runs the keyframes again from the left
+// edge. So marking the bar finished and then un-marking it does not "carry on" as the code once
+// claimed: it draws the whole bar a second time in the same element, which is why counting
+// elements found nothing while the sweep was visibly happening twice.
 //
-// Measured in a real browser at 6x CPU throttle with 150ms of added latency, recording every
+// Measured in a real browser at 6x CPU throttle with 150ms added latency, recording every
 // insertion and every `data-done` change:
 //
 //   COLD /admin/content   add@232 DONE@519 undone@699 DONE@1461 gone@1783
 //   COLD /admin/settings  add@191 DONE@482 undone@688 DONE@1045 gone@1366
 //
-// The gap between the shell's answer and the page's first request — the `DONE`→`undone`
-// distance — was 179 / 180 / 180 / 206ms across four screens. Every one of them was longer
-// than the 120ms the bar was willing to wait, so every cold load drew twice. In-app
-// navigation showed no `undone` at all, because the router's transition holds `pending` true
-// across its own seam; that is why it read as happening only "sometimes".
+// The `DONE`→`undone` gap was 179 / 180 / 180 / 206ms across four screens — every one longer
+// than the 120ms the bar was willing to wait, so every cold load drew twice. In-app navigation
+// showed no `undone` at all, because the router holds `pending` true across its own seam; that
+// is why it read as happening only "sometimes".
 //
-// What is pinned here is the FLOOR, not the exact value. The realistic regression is somebody
-// tidying 400 back down to match the other constant, which would look like a simplification
-// and would put the second sweep straight back on every page open.
+// ⚠️ What is pinned is the FLOOR, not the exact value. The realistic regression is somebody
+// tidying 400 back down to match the other constant, which would look like a simplification and
+// put the second sweep straight back on every page open.
 
 import { describe, expect, it } from 'bun:test'
 import { readFileSync } from 'node:fs'

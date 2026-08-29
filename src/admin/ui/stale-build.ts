@@ -1,27 +1,23 @@
 // What to do when a page is not merely broken but ABSENT.
 //
-// The admin is one bundle plus a lazy chunk per screen, and the chunk filenames carry a hash
-// of their contents. That is what makes them cacheable forever, and it is also what makes
-// them disappear: a new build writes `Trash-8qe19gzs.js` and deletes `Trash-qxdzszpf.js`. An
-// admin tab that was already open still holds the OLD bundle, which knows only the old name.
-// Nothing is wrong with that tab until the owner opens a screen they had not opened yet —
-// and then the browser asks for a file that was deleted while they were reading, and the
-// import rejects.
+// The admin is one bundle plus a lazy chunk per screen, and the chunk filenames carry a content
+// hash. That is what makes them cacheable forever, and also what makes them disappear: a new
+// build writes `Trash-8qe19gzs.js` and deletes `Trash-qxdzszpf.js`. An admin tab already open
+// still holds the OLD bundle, which knows only the old name. Nothing is wrong with that tab
+// until the owner opens a screen they had not opened yet — and then the browser asks for a file
+// deleted while they were reading, and the import rejects.
 //
-// This happened on the demo, to the owner, and it is not a demo problem: every self-hosted
-// blog updates its own instance, and anyone with the admin open in another tab when it does
-// is in exactly this state. The screens they have already visited keep working. The next one
-// they touch does not.
+// Not a demo problem: every self-hosted blog updates its own instance, and anyone with the
+// admin open in another tab when it does is in exactly this state.
 //
-// THE CURE IS A RELOAD, and that is the whole reason this file exists rather than a nicer
-// error message. The old bundle cannot be repaired in place; the new one is sitting on the
-// server, one round trip away. `ui/ErrorBoundary.tsx` deliberately refuses to offer "try
-// again", because for a render that threw, retrying re-runs the same broken state. This is
-// the other failure, the one where trying again is not a bluff: nothing rendered at all, and
-// the second attempt fetches a file that really is there.
+// THE CURE IS A RELOAD, which is why this exists rather than a nicer error message. The old
+// bundle cannot be repaired in place; the new one is one round trip away. `ui/ErrorBoundary`
+// deliberately refuses to offer "try again", because for a render that threw, retrying re-runs
+// the same broken state. This is the other failure, where trying again is not a bluff: nothing
+// rendered at all, and the second attempt fetches a file that really is there.
 //
-// So the boundary still exists and still catches everything else. This runs FIRST, and only
-// for the one error whose cure is known.
+// So the boundary still catches everything else. This runs FIRST, and only for the one error
+// whose cure is known.
 
 /** Where the fact "we already tried this" is kept. Per tab, which is the right scope: another tab's reload is not evidence about this one. */
 const MARK = 'qi:stale-build-reload'

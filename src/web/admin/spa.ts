@@ -114,26 +114,20 @@ const PRELOADS = bootChunks()
 /**
  * The owner's live type and colour settings, for the admin document.
  *
- * The frozen tree got these for free: the admin sat inside the root layout, so it inherited
- * `globals.css` (the @font-face declarations and `body{font-family:var(--font-sans)}`) plus
- * the runtime style block the layout injected from settings. There is no root layout here.
+ * The frozen tree got these for free: the admin sat inside the root layout and inherited
+ * `globals.css` plus the runtime style block. There is no root layout here.
  *
- * ⚠️ **`chromeFont` is deliberately NOT applied here, and that reverses an earlier fix.**
- * The admin used to follow it, because an owner on a JetBrains Mono site opened an admin in
- * Inter and reported it. Following it turned out to be the wrong reading of that report. A
- * mono chrome font is a BRANDING choice about what a reader sees; the admin is the tool the
- * owner works in, and letting the branding pick the tool's typeface put a code face on every
- * label, tab, button and table cell. Set beside the reading face it reads as two loud,
- * unrelated voices, and on 2026-08-14 that was rejected as cluttered and wrong for an admin.
- * Three versions of one Settings screen were photographed and this one was chosen.
+ * ⚠️ `chromeFont` is deliberately NOT applied, and that reverses an earlier fix. The admin used
+ * to follow it, because an owner on a JetBrains Mono site opened an admin in Inter and reported
+ * it — which turned out to be the wrong reading. A mono chrome font is a BRANDING choice about
+ * what a reader sees; the admin is the tool the owner works in, and letting the branding pick
+ * the tool's typeface put a code face on every label, tab, button and table cell. Beside the
+ * reading face that reads as two loud unrelated voices, and on 2026-08-14 it was rejected.
  *
- * So the admin has its OWN chrome face, Inter, and the settings it still honours are the ones
- * about the owner's WORDS: the palette, the type scale, the reading preset and any uploaded
- * face — because the editor is WYSIWYG and a post has to be written in the face it publishes
- * in. `MONO_TRACKING` goes with the chrome font: it corrects a wide monospace, and there is
- * no longer one here.
- *
- * The owner's custom CSS is absent, as it was in the frozen tree: it is written against the
+ * So the admin has its OWN chrome face, Inter, and honours only the settings about the owner's
+ * WORDS: palette, type scale, reading preset, uploaded face — because the editor is WYSIWYG.
+ * `MONO_TRACKING` goes with the chrome font: it corrects a wide monospace, and there is none
+ * here. The owner's custom CSS is absent, as in the frozen tree: it is written against the
  * public page and has no business restyling the tool.
  */
 function adminStyles(settings: SiteSettings): string {

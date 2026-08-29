@@ -1,27 +1,23 @@
 // The quireINK logo, as outlines. GENERATED, not hand-written: see the note at the bottom.
 //
 // Two faces, and that pairing IS the brand — the same two the product pairs on every page:
-// Literata, the reading face, for `quire`; JetBrains Mono, the machine's face, for `INK`.
-// (Until 2026-08-27 the word was set in Inter, the interface face. The owner redrew the
-// identity around the pen's own marks — see `docs/brand/` — and the wordmark moved to the
-// reading face with it: this logo belongs to the writing, not to the chrome around it.)
-//
-// The full mark on quireink.com carries the pen's gestures too — highlighter, ring,
-// underline. At rail and masthead sizes those read as smudge, so THIS art is the
-// size-appropriate cut: the letterforms and the full stop in ink. One colour inherited
-// from `currentColor`, plus the one brand constant below.
+// Literata, the reading face, for `quire`; JetBrains Mono, the machine's face, for `INK`. (Until
+// 2026-08-27 the word was set in Inter, the interface face; the identity was redrawn around the
+// pen's own marks and the wordmark moved with it — this logo belongs to the writing, not to the
+// chrome around it.) The full mark on quireink.com carries the pen's gestures too, which read as
+// smudge at rail and masthead sizes; this is the size-appropriate cut.
 //
 // Outlines rather than live text, for three reasons and only the first is aesthetic:
 //   1. /login is the one page where "did this load?" is a security question, so a mark that
 //      arrives on its own request can arrive late or swap face mid-paint.
-//   2. The admin renders in whatever chrome font the owner picked. As text the logo would
-//      have been a different logo per install.
-//   3. `pageStyles` declares only the owner's own faces plus Inter and JetBrains Mono, so a
-//      logo may not assume any other family is even declared.
+//   2. The admin renders in whatever chrome font the owner picked — as text the logo would be a
+//      different logo per install.
+//   3. `pageStyles` declares only the owner's own faces plus Inter and JetBrains Mono, so a logo
+//      may not assume any other family is even declared.
 //
-// Shared by the server-rendered sign-in page and the React admin, which is why it sits at
-// the root rather than under `web/`: `src/admin` has its own tsconfig and resolves `@/*` to
-// the same `src/`, so one file feeds both and the two can never drift.
+// Shared by the server-rendered sign-in page and the React admin, which is why it sits at the
+// root rather than under `web/`: `src/admin` has its own tsconfig and resolves `@/*` to the same
+// `src/`, so one file feeds both and the two can never drift.
 
 /**
  * The full stop, in ink. The red ballpoint the product's ring gesture defaults to

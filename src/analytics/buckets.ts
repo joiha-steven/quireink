@@ -135,22 +135,19 @@ export function safeTimeZone(tz: string): string {
 /**
  * Where a `days`-long window STARTS, so its first bucket is a whole one.
  *
- * `now - days * 86_400_000` is the obvious answer and it is the wrong one for anything
- * drawn as a chart. That instant lands in the middle of a local day, `bucketRanges` labels
- * the bucket it falls in by its true start, and the clamp then counts only the tail of it —
- * so a "30 days" chart drew THIRTY-ONE columns whose leftmost was a sliver. Measured on a
- * live blog on 2026-08-29: column 0 covered 0.10 of a day, showed 1 view beside the next
- * day's 29, and read as a collapse in traffic that never happened. Worse, the sliver is a
- * function of the time of day, so the left edge of the chart shrank all day and reset at
- * midnight.
+ * `now - days * 86_400_000` is the obvious answer and the wrong one for anything drawn as a
+ * chart: that instant lands mid-day, `bucketRanges` labels the bucket it falls in by its true
+ * start, and the clamp counts only the tail — so a "30 days" chart drew THIRTY-ONE columns
+ * whose leftmost was a sliver. Measured on a live blog 2026-08-29: column 0 covered 0.10 of a
+ * day, showed 1 view beside the next day's 29, and read as a collapse in traffic that never
+ * happened. Worse, the sliver is a function of the time of day, so the left edge shrank all day
+ * and reset at midnight.
  *
- * Aligning to the bucket makes the window `days` whole days ending with today, which is
- * what the label says and what every reader already assumes it says. The LAST bucket is
- * still partial, and that one is honest: today is not over.
+ * Aligning to the bucket makes the window `days` whole days ending with today, which is what
+ * the label says. The LAST bucket is still partial, and that one is honest: today is not over.
  *
- * `week` and `month` are not reachable from the admin (`rangeOf` offers hour and day only)
- * but are part of the type, so they truncate to their own bucket rather than pretending:
- * a whole first bucket that reaches slightly further back beats a partial one.
+ * `week` and `month` are not reachable from the admin but are part of the type, so they
+ * truncate to their own bucket rather than pretending.
  */
 export function windowStart(now: number, days: number, bucket: Bucket, tzRaw: string): number {
   const tz = safeTimeZone(tzRaw)

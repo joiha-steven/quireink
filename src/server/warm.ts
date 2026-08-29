@@ -92,28 +92,26 @@ export async function warmCache(): Promise<{ warmed: number; ms: number }> {
 /**
  * Drop the reader's copy NOW, without waiting for the warm.
  *
- * THE BUG THIS EXISTS FOR, measured on the live site 2026-08-21 from the owner's own publish:
+ * THE BUG THIS EXISTS FOR, measured on the live site 2026-08-21 from a real publish:
  *
  *     14:44:00  PUT /api/posts/…              the post is published
  *     14:44:03  (debounce elapses)            the warm starts
  *     14:44:09  cache: warmed 79 pages        6.5 seconds of rendering
  *     14:44:09  edge-cache: purged            <- only now do readers stop seeing the old page
  *
- * Nine seconds, and the number grows with the archive: the purge was queued behind a warm of
- * every public page. The owner refreshed the home page inside that window, did not see his
- * post, and pressed "Clear cache" — which purges in 183ms, because that route calls
- * `purgeEdge()` directly. The manual button was fast and the automatic path was not, which is
- * exactly what "the cache is broken" feels like from the outside.
+ * Nine seconds, growing with the archive: the purge was queued behind a warm of every public
+ * page. Refreshing inside that window did not show the post, and "Clear cache" — which purges
+ * in 183ms because it calls `purgeEdge()` directly — fixed it. The manual button was fast and
+ * the automatic path was not, which is exactly what "the cache is broken" feels like.
  *
- * The two jobs were never the same job. The warm is for ORIGIN LATENCY: it stops the next
- * reader paying for a re-render, and it can take as long as it likes. The purge is for
- * CORRECTNESS: until it runs, every reader behind the CDN is served a page that is wrong.
- * Making the second wait for the first traded the thing that matters for the thing that does
- * not.
+ * The two jobs were never the same job. The warm is for ORIGIN LATENCY and can take as long as
+ * it likes; the purge is for CORRECTNESS, and until it runs every reader behind the CDN is
+ * served a page that is wrong. Making the second wait for the first traded the thing that
+ * matters for the thing that does not.
  *
- * So the purge now fires on the LEADING edge of a burst, ~50ms after the write, and the
- * trailing one after the warm stays exactly as it was. A publish reaches readers immediately;
- * an import still purges at most twice.
+ * So the purge fires on the LEADING edge of a burst, ~50ms after the write, and the trailing
+ * one after the warm stays as it was. A publish reaches readers immediately; an import still
+ * purges at most twice.
  */
 /**
  * @param now Injected so the gap can be tested without a three-second sleep, and without a

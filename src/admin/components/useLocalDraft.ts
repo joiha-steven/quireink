@@ -95,26 +95,24 @@ export function useLocalDraft<T>(key: string) {
 /**
  * Keep the local snapshot current while the author works, and flush it on the way out.
  *
- * The interval alone was losing work, and the case was specific: on a phone, an over-scroll
- * at the top of the editor triggers the browser's pull-to-refresh and the page RELOADS, taking
- * everything typed since the last tick. `beforeunload` does not reliably fire there, so the
- * events that matter are `pagehide` and a `visibilitychange` to hidden. The unmount flush
- * covers leaving the editor by a route the admin's own router controls.
+ * The interval alone was losing work, in a specific case: on a phone an over-scroll at the top
+ * of the editor triggers pull-to-refresh and the page RELOADS, taking everything typed since
+ * the last tick. `beforeunload` does not reliably fire there, so the events that matter are
+ * `pagehide` and `visibilitychange` to hidden. The unmount flush covers leaving by a route the
+ * admin's own router controls.
  *
  * `isDirty` and `snapshot` are read through refs so a caller can pass plain arrows without
  * re-arming the interval on every keystroke.
  *
- * **`intervalMs` is a setting now (`autosaveSeconds`, default 120), and the three flushes above
- * are why that is safe.** It was a hardcoded 8,000, and the owner asked for two minutes on
- * 2026-07-30. Widening the tick does not widen the window of lost work, because leaving,
- * hiding or unmounting the editor all flush regardless — which is also why NONE of them may be
- * removed to "simplify" this: at 8 seconds the interval was the safety net, at two minutes the
- * events are, and the settings sanitiser floors the value at 15 seconds so it can never be
- * tightened into being the only one again.
+ * ⚠️ `intervalMs` is a setting (`autosaveSeconds`, default 120) and the three flushes are why
+ * that is safe. Widening the tick does not widen the window of lost work — which is also why
+ * NONE of them may be removed to "simplify" this: at 8 seconds the interval was the safety net,
+ * at two minutes the events are, and the sanitiser floors the value at 15 seconds so it can
+ * never be tightened into being the only one again.
  *
- * Returns when it last wrote, so the editor can SAY so. That was the other half of the
- * complaint: the feature existed and looked absent, because the status bar only ever spoke
- * about the server.
+ * Returns when it last wrote, so the editor can SAY so — the other half of the complaint was
+ * that the feature existed and looked absent, because the status bar only spoke about the
+ * server.
  */
 export function useLocalAutosave<T>(
   isDirty: () => boolean,

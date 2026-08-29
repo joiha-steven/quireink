@@ -1,26 +1,21 @@
 // A believable blog in a throwaway database: the fixture every screenshot is taken against,
 // and everything demo.quireink.com serves.
 //
-// Replaces three narrower seeds that each built half a site. The README shots, the front
-// page and the comment thread now come from ONE state, so a screenshot can be reproduced
-// rather than recreated from memory by whoever took it last.
-//
-// The fonts are the ones the project is designed around — Literata for the reader's words,
-// JetBrains Mono for everything that is the machine talking — with the IDE chrome on, which
-// is what ties the two together. English content on purpose: these end up in a README.
+// Replaces three narrower seeds that each built half a site. The README shots, the front page
+// and the comment thread now come from ONE state, so a screenshot can be reproduced rather than
+// recreated from memory by whoever took it last. English content on purpose: these end up in a
+// README.
 //
 //   bun scripts/seed-showcase.ts [dir] [text|image] [list|front]
 //   SEED_NOW=2026-07-30T09:00:00Z bun scripts/seed-showcase.ts ...   # pinned, for a plate
 //
 // THIS FILE IS THE MACHINERY. The words are in `seed-content*.ts`, the threads in
-// `seed-comments.ts`, the owner-facing half in `seed-admin.ts`, the owner's own history in
-// `seed-activity.ts`, and the library plates in `seed-media.ts`. It got split when filling
-// the admin's empty screens took it past the 400-line cap, and the split is by AUDIENCE
-// rather than by size: what a reader sees, what the owner sees, and the code that assembles
-// both.
+// `seed-comments.ts`, the owner-facing half in `seed-admin.ts`, the history in
+// `seed-activity.ts`, the library plates in `seed-media.ts`. The split is by AUDIENCE rather
+// than by size: what a reader sees, what the owner sees, and the code that assembles both.
 //
-// `seed-demo.ts` stays: it exists to exercise every island on one post, which is a different
-// job from looking like a blog.
+// `seed-demo.ts` stays: it exercises every island on one post, which is a different job from
+// looking like a blog.
 
 import { rmSync } from 'node:fs'
 import { openDatabases } from '@/store/db'
