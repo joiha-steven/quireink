@@ -56,100 +56,28 @@ if (!result.success) {
  */
 const BUDGET: Record<string, number> = {
   // Every public page: the beacon, the header's overlays and controls, the grid toggle.
-  // Raised from 6,500 when the theme control and the sidebar drawer were ported — two
-  // header buttons that had no JavaScript behind them at all, so the site could neither
-  // switch to dark nor open its own sidebar on a phone. Paid for in part by deleting the
-  // fetch-based infinite scroll, which a timeline feed has no next page for.
-  // Raised again to 8,000 for the newsletter overlay. The header's mail button pointed at
-  // an anchor that only exists at the foot of an ARTICLE, so on every listing it scrolled
-  // nowhere; the frozen tree opens a modal with its own copy of the form, and now so does
-  // this. The same change fixed the in-page card, which was never enhanced at all because
-  // the handler looked for the status line inside the form instead of beside it.
-  // Raised to 8,800 for the chunked feed and the scroll-reveal fallback. The feed rendered
-  // all 68 posts at once with no easing at all: the .reveal class had been in the markup
-  // since M2 and no rule ever matched it, and there was nothing to hand the archive back a
-  // page at a time. Both are what the frozen tree does.
   //
-  // RAISED TO 9,600 on 2026-08-11 for the reader's palette switcher, and this is the
-  // deliberate decision `state/TASKS.md` asked for rather than a number nudged mid-fix. The
-  // owner's call: six palettes had shipped on every page since M2 with nothing able to select
-  // them, and the choice was to make them work rather than to stop shipping them.
-  //
-  // The feature cost 564 bytes, which is what it costs AFTER the theme menu and the palette
-  // menu were made one `dropdown()` instead of two copies of open/close/mark/dismiss — the
-  // duplicate would have cost about as much again. The headroom is 234 bytes rather than the
-  // twenty this budget used to leave, because twenty bytes is not a budget, it is a tripwire:
-  // an accessibility pass went 59 over in one commit and was paid for by moving two static
-  // ARIA attributes into the markup, which is a trick that works once.
-  //
-  // RAISED TO 9,900 on 2026-08-20 for the engaged-time meter in the beacon. Dwell used to be
-  // wall-clock from load to leave, and on a real instance the wall clock measured furniture:
-  // one tab left open for 24 hours moved the whole site's "average time on page" by minutes.
-  // The meter runs the clock only while the page is visible and the reader has done something
-  // in the last three minutes. It cost ~240 bytes after the activity listeners were folded
-  // into one loop; the alternative — keeping the lie small by clamping server-side only —
-  // would have left every new sample as wrong as the old ones, just less so.
-  // Raised to 10_000 for the owner's default light/dark: a blog can now BE dark or light
-  // rather than mirroring each visitor's laptop, and the island has to read that default
-  // off <body> or it overrules the paint the stylesheet just made. 48 bytes.
+  // Every raise is a DECISION with its cost written down, not a number nudged mid-fix. The
+  // headroom is deliberately a few hundred bytes rather than twenty: twenty is not a budget,
+  // it is a tripwire, and one accessibility pass went 59 over in a single commit.
+  // What the current ceiling bought, most recently: the reader's palette switcher (564 bytes,
+  // after the theme and palette menus became one `dropdown()` instead of two), the beacon's
+  // engaged-time meter (~240 — wall-clock dwell measured furniture, one tab left open for a
+  // day moved the whole site's average by minutes), and the owner's default light/dark (48,
+  // read off <body> or the island overrules the paint the stylesheet just made).
   'core.js': 10_000,
   // /{slug}: back to top, code copy, lightbox, subscribe, comments, the ToC highlight and
-  // book mode. Raised from 8,000 when book mode grew its real chrome — a title bar, a page
-  // count and side arrows over a clipped viewport, and a spread measured to exactly two
-  // facing pages — which is the reader the frozen tree shipped rather than the four
-  // edge-to-edge columns that stood in for it. Raised again for the Turnstile widget: the
-  // server has refused unverified comments since M3, and without the widget the reader had
-  // no way to produce a token, so on a site with Turnstile on the form simply did not work.
-  // Raised to 10,000 for the book-mode fix: a spread INDEX and a measured step, in place
-  // of a relative scrollBy that drifted a column gap per page turn, plus the crossfade the
-  // frozen tree had between spreads. Raised to 11,000 for comment sign-in: an identity
-  // strip, the second fetch that fills it, and a sign-out. That cost is paid by every
-  // reader of every post, including the ones who will never sign in, which is why it is
-  // written down here rather than absorbed. Raised to 11,200 for the comment form's layout:
-  // a visible label on the textarea (the one control with nothing above it), a wrapper so
-  // the three short detail fields can share a grid instead of each spanning the reading
-  // width, and an actions row so the Turnstile widget and the submit stop being two objects
-  // stacked with dead space between them. 200 bytes for the section reading as part of the
-  // site rather than as something pasted into it.
-  // Raised to 12_100 for book mode's A−/A+: the reader's own hand on the type size,
-  // persisted per browser, asked for on 2026-08-21 because the type size could not be
-  // changed. 817 bytes raw, ~250 gzipped, and the alternative was a reader stuck at
-  // whatever default the sheet ships.
-  // Raised to 12_650 the same day for the phone's doorway into the reader: both
-  // server-rendered entries hide under 768px, so phones had a working one-page book mode
-  // and no way to open it. A to-top-twin floating button, 482 bytes with its inline icon.
-  // And to 12_800 for the Chrome 148 paging fix underneath it all: the turn is a transform
-  // and the flow is sized to hold its columns, because the engine stopped scrolling to —
-  // and then stopped painting — a multicol's overflow columns (book.ts has the numbers).
-  // And to 13_250 for the phone's page-turn gestures: swipe and outer-third taps, because
-  // the arrows retire under 640px where they overlaid the margin the phone got back.
+  // book mode. Same rule as above — each raise is named and priced.
   //
-  // RAISED TO 14_800 on 2026-08-24 for the quote gesture, and this is the owner's call
-  // rather than a number nudged mid-fix: he named the reading experience as one of the two
-  // things this product IS, and selecting a sentence here did nothing at all while it is the
-  // one interaction the platforms he measures this against are known for.
-  // 1,302 bytes raw, roughly 600 gzipped, after the first cut was made 356 bytes smaller by
-  // collapsing three listeners (selectionchange + mouseup + keyup) into one debounced
-  // selectionchange and dropping a resize handler that scroll already covered. What it buys
-  // is a link, not a share button: the sentence plus a `#:~:text=` fragment that opens the
-  // post AT that sentence, which needs no account, no third party and — because the
-  // fragment is a browser feature rather than markup — not one byte of change in the
-  // renderer whose output `golden/` pins.
-  //
-  // RAISED TO 15_800 on 2026-08-27 for the comment stamp (ADR 0032), which cost 761 bytes:
-  // the loop that answers the server's signed puzzle, and the one retry when a long-cached
-  // page hands back a stale one. It is the best-value 761 bytes in this file. Before it, a
-  // blog that wanted its comments protected had to put Cloudflare Turnstile in front of
-  // them, which is an account, two keys, and ~60 KB fetched from challenges.cloudflare.com
-  // on every page carrying a form — on a site whose whole claim is zero third-party
-  // requests. Turnstile still wins when its keys are set; every other install now has a
-  // gate that costs a reader under a kilobyte and costs a bot real arithmetic.
-  //
-  // RAISED TO 17_000 on 2026-08-27 for the reading position (assets/js/resume.ts), which
-  // cost ~1.1 KB: a forty-minute read is never one sitting, and the way back — stored in
-  // the reader's own browser, offered once, withdrawn on the first scroll — is the second
-  // of the two reader features the owner approved that day (the other, "read next", is
-  // server markup and costs this bundle nothing).
+  // The four worth knowing, because each buys something a reader can feel:
+  //   book mode's A-/A+ and phone gestures — the type size could not be changed at all, and
+  //     both server-rendered doorways hide under 768px, so phones had a book they could not open
+  //   the quote gesture (1,302 raw, ~600 gzipped) — a sentence plus a `#:~:text=` fragment,
+  //     which needs no account, no third party, and no change in the renderer `golden/` pins
+  //   the comment stamp, ADR 0032 (761 bytes) — the best value in this file: the alternative
+  //     was Turnstile, an account and ~60 KB from challenges.cloudflare.com on every page with
+  //     a form, on a site whose whole claim is zero third-party requests
+  //   the reading position (~1.1 KB) — a forty-minute read is never one sitting
   'post.js': 17_000,
   // /login only, and NOT loaded with core.js: the sign-in page carries no beacon, no
   // search overlay and no listing controls, so it pays for the reveal toggle, the caps-lock

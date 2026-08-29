@@ -1,30 +1,21 @@
 // Compose screenshots into the README's demo images.
 //
-// The images this replaces were a 2015 SaaS mockup: fake browser chrome with traffic
-// lights, drop shadows and a beige gradient, with the windows overlapping so the one behind
-// had its text covered. Nothing in it came from the project's own design.
+// This replaces a 2015 SaaS mockup — fake browser chrome, drop shadows, a beige gradient,
+// windows overlapping so the one behind had its text covered. The first fix went too far the
+// other way: panels laid straight onto the site's own #fcfcfc paper, unframed. A screenshot of
+// a white page, on white, with no edge does not read as a screenshot — three in a row read as
+// one wide page that had been cut up.
 //
-// The first attempt at fixing that went too far the other way — panels laid straight onto
-// the site's own #fcfcfc paper, unframed. A screenshot of a white page, on white, with no
-// edge, does not read as a screenshot: three of them in a row read as one wide page that
-// had been cut up, which is exactly the "I cannot tell where one ends" the owner reported.
+// So a panel is a SHEET: the plate a shade darker than the page, a hairline border on every
+// panel, and a gap wide enough to be a gap rather than a seam. That is the whole device, all
+// of it the project's own vocabulary. No shadow, no gradient, no perspective, no overlap.
 //
-// So a panel is a SHEET: the plate is a shade darker than the page, every panel carries a
-// hairline border, and the gap between them is wide enough to be a gap rather than a seam.
-// That is the whole visual device, and all of it is the project's own vocabulary — one
-// neutral, one 1px rule, one monospace label with a comment marker. No shadow, no gradient,
-// no perspective, nothing overlapping.
+// The PHONE is the one exception and earns it: a 390px screenshot with no device around it
+// reads as a narrow website. Panels are shot at 2x (3x for phones) and the plate resized down,
+// because a 1x screenshot of 15px type is mush once JPEG has had it.
 //
-// The PHONE is the one exception and it earns it: a 390px screenshot with no device around
-// it reads as a narrow website rather than as a phone, so it gets a thin outline frame.
-//
-// Panels are shot at 2x (3x for phones) and the plate is resized down, because a 1x
-// screenshot of 15px type is mush once JPEG has had it.
-//
-// A panel whose page CONTINUES below the fold fades out along its bottom edge and draws no
-// bottom border, because a hard crop through a half-line of type reads as a broken image
-// rather than as a page that goes on. `:full` opts out, for a surface that genuinely ends
-// where the screenshot does — the book reader, a phone screen.
+// A panel whose page CONTINUES below the fold fades along its bottom edge and draws no bottom
+// border — a hard crop through half a line of type reads as a broken image. `:full` opts out.
 //
 //   bun scripts/compose-demo.ts <out.jpg> <panel.png:label[:phone|:full]> [...]
 

@@ -85,31 +85,14 @@ export type Shell = {
 const dataAttr = (key: string) => `data-${key.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}`
 
 /**
- * The site-wide gallery default, as the two variables `public.css.ts` reads.
+ * What a text selection looks like, when the owner has said. Emits NOTHING by default; the
+ * sheet's own rule is the default and this only overrides it. Two fields rather than one
+ * because the modes are genuinely different decisions — the value that reads as a marker on
+ * paper is a flashbulb on a dark page.
  *
- * Emitted only when it differs from the built-in behaviour, so a site that has never opened
- * the setting adds no bytes and the `var()` fallbacks stay in charge. `--gallery-w` travels
- * with the ratio because a cropped tile has to fill its cell and an uncropped one must not
- * be stretched into it.
- */
-/**
- * The pen's line gestures, when an owner turns them OFF. On is the built-in behaviour and
- * emits nothing — the same no-bytes bargain as the gallery below. The selector lists name
- * the [data-pen] forms too: the per-variant grip rules in the hashed sheet outrank a bare
- * `.prose u`, and this inline block only wins the tie because it comes later.
- */
-/**
- * What a text selection looks like, when the owner has said.
- *
- * Emits NOTHING by default, which is the same no-bytes bargain as the gallery and the pen
- * gestures: the sheet's own rule (black on paper, the palette's mid grey on a dark page)
- * is the default, and this only overrides it. Two fields rather than one because the two
- * modes are genuinely different decisions — the value that reads as a marker on paper is a
- * flashbulb on a dark page.
- *
- * `html.dark` for the explicit case and the media query for the reader whose SYSTEM is dark
- * before the island has run, mirroring `content/themes.ts` exactly. Without the second one
- * a customised light selection paints over a dark page for one paint.
+ * `html.dark` for the explicit case AND the media query for the reader whose SYSTEM is dark
+ * before the island has run. Without the second, a customised light selection paints over a
+ * dark page for one paint.
  */
 function selectionCss(inks: InkSettings): string {
   const parts: string[] = []
@@ -122,6 +105,12 @@ function selectionCss(inks: InkSettings): string {
   return parts.join('')
 }
 
+/**
+ * The pen's line gestures, when an owner turns them OFF. On is the built-in behaviour and emits
+ * nothing — the same no-bytes bargain. The selector lists name the `[data-pen]` forms too: the
+ * per-variant grip rules in the hashed sheet outrank a bare `.prose u`, and this inline block
+ * only wins the tie because it comes later.
+ */
 function penGesturesCss(f: FeatureSettings): string {
   const parts = []
   if (!f.penUnderline) {
@@ -151,6 +140,12 @@ function figureCss(f: FigureSettings): string {
     + `--fig-default-bw:1px;--fig-default-line:var(--c-rule);--fig-default-line:${line}}`
 }
 
+/**
+ * The site-wide gallery default, as the two variables `public.css.ts` reads. Emitted only when
+ * it differs from the built-in behaviour, so a site that never opened the setting adds no bytes
+ * and the `var()` fallbacks stay in charge. `--gallery-w` travels with the ratio because a
+ * cropped tile has to fill its cell and an uncropped one must not be stretched into it.
+ */
 function galleryCss(g: GallerySettings): string {
   const parts = [
     g.ratio ? `--gallery-ratio:${g.ratio.replace('x', '/')};--gallery-w:100%` : '',

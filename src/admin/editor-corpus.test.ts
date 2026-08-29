@@ -1,30 +1,27 @@
 // THE EDITOR MEETS THE CORPUS, and the cross product it never had.
 //
-// Two blank-page bugs shipped on the same day, both in the editor's markdown-it rules, and
-// neither was exotic:
+// Two blank-page bugs shipped on the same day, both in the editor's markdown-it rules:
 //
 //   **đậm** và ==mực==                      the nested parse shared the outer token array
 //   [**@@Quire Ink@@**](https://…)          a silent claim that did not move the cursor
 //
-// Both were found by an owner opening his own draft. Neither could have been found by the
-// suites that existed, and the reason is structural rather than anybody's oversight:
+// Neither could have been found by the suites that existed, for structural reasons:
 //
-//   1. `golden/corpus/` holds 45 markdown fixtures, and only ONE of this repo's two parsers
-//      was ever run against them. `marked` renders the reader's page and is gated by the
-//      golden compare; markdown-it parses the WRITER'S page and saw none of it.
-//   2. Every fixture written for the pen tested one gesture in one sentence. The bugs live in
-//      COMBINATIONS — a gesture after emphasis, a gesture inside a link label — and a suite of
-//      single-gesture fixtures cannot reach a combination however many fixtures it has.
+//   1. `golden/corpus/` holds 45 fixtures and only ONE of this repo's two parsers was ever run
+//      against them. `marked` renders the reader's page and is gated by the golden compare;
+//      markdown-it parses the WRITER'S page and saw none of it.
+//   2. Every pen fixture tested one gesture in one sentence. The bugs live in COMBINATIONS —
+//      a gesture after emphasis, a gesture inside a link label — which a suite of
+//      single-gesture fixtures cannot reach however many it has.
 //
-// So this file closes both. It runs the corpus through the editor, and it generates the cross
-// product of every gesture against every container the pen can find itself inside.
+// So this runs the corpus through the EDITOR, and generates the cross product of every gesture
+// against every container the pen can find itself inside.
 //
-// THE LAW BEING TESTED IS A FIXED POINT, not an exact string. Opening a post and saving it
-// again may legitimately normalise (a stray `[` comes back escaped, a task item gains a
-// space), and pinning exact output would make this file a transcript that has to be rewritten
-// every time anything improves. What may never happen is a document that keeps changing every
-// time it is opened — that is silent corruption on a timer — or a parse that throws, which is
-// a white screen. Both are caught by: serialize twice, compare.
+// THE LAW IS A FIXED POINT, not an exact string. Opening and saving may legitimately normalise,
+// and pinning exact output makes this a transcript to rewrite whenever anything improves. What
+// may never happen is a document that keeps changing every time it is opened — silent
+// corruption on a timer — or a parse that throws, which is a white screen. Both are caught by:
+// serialize twice, compare.
 //
 // happy-dom is registered for THIS FILE ONLY, the rule every editor suite here follows.
 

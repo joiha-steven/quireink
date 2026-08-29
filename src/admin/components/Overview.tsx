@@ -51,33 +51,27 @@ type Props = {
 }
 
 /**
- * The build, and a way to check it.
+ * The build, and a way to check it. `2.0.0-dev` has named every deploy since the cutover, so
+ * the version alone cannot answer the only question this line exists for: is the running code
+ * what was just shipped. The short SHA answers it, and is absent when the deploy left no
+ * `build-sha` — a dev machine, or somebody else's install.
  *
- * `2.0.0-dev` has named every deploy since the cutover, so the version alone cannot answer
- * the only question this line is here for: is the running code what was just shipped. The
- * short SHA answers it. Absent when the deploy left no `build-sha` behind, which is a dev
- * machine or somebody else's install.
- *
- * ⚠️ The link goes to the PROJECT, not to the commit — the owner's instruction on
- * 2026-08-15. The SHA is here to be READ (does
- * this match what I just shipped), and the link is a different job: getting to the repository.
- * A per-commit URL served neither well — it is a page nobody wants from a dashboard, and it
- * 404s the moment a SHA is stale or the deploy shipped from a branch that was later rebased.
+ * ⚠️ The link goes to the PROJECT, not the commit (owner's instruction, 2026-08-15). The SHA
+ * is here to be READ; the link is a different job. A per-commit URL served neither, and 404s
+ * the moment a SHA is stale or the deploy shipped from a branch later rebased.
  */
 /**
- * The version's own traffic light: amber when a newer release exists, green when this
- * install is on the newest one, and NOTHING when the answer is not known.
+ * The version's own traffic light: amber when a newer release exists, green when this install
+ * is on the newest, and NOTHING when the answer is not known.
  *
- * ⚠️ **This is the first colour in the admin outside the highlighter**, and
- * `docs/admin-design.md` says status stays on the neutral scale. Owner's call on
- * 2026-08-22, an amber dot and a green one asked for by name, and the exception is
- * written into that document rather than left as a surprise for whoever reads the rule next.
+ * ⚠️ The first colour in the admin outside the highlighter, against `admin-design.md`'s rule
+ * that status stays neutral. Owner's call 2026-08-22, and the exception is written into that
+ * document rather than left as a surprise.
  *
- * The three states are the point, and the third is not decoration. "Up to date" is a CLAIM,
- * and it can only be made from an answer this instance received recently — a blog whose
- * check is off, or that has never reached the internet, or that has had no readers for a
- * fortnight, knows nothing. Green on that is the worst of the three, because it is the one
- * state a person acts on by doing nothing. So it draws no dot at all.
+ * The third state is the point, not decoration. "Up to date" is a CLAIM, makeable only from an
+ * answer received recently — a blog whose check is off, or that has never reached the internet,
+ * knows nothing. Green on that is the worst of the three, because it is the one state a person
+ * acts on by doing nothing. So it draws no dot.
  */
 function VersionDot({ update }: { update: UpdateState }) {
   const t = useAdminT()

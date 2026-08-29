@@ -1,39 +1,25 @@
-// The posts the showcase fixture is built from: the shape of a seeded post, and the order
-// they arrive in. The words themselves are in the six siblings.
+// The posts the showcase fixture is built from: the shape of a seeded post and the order they
+// arrive in. The words are in the six siblings.
 //
-// ONE SUBJECT: letterforms and the making of pages. Calligraphy, type, layout, printing, and
-// nothing else. A demo whose posts wander across five topics reads as filler; a demo that
-// stays on one reads as a real publication, and this one can talk about the thing the reader
-// is looking at while they look at it.
+// ONE SUBJECT: letterforms and the making of pages. A demo that wanders across five topics
+// reads as filler; one that stays on a subject reads as a real publication, and this one can
+// talk about the thing the reader is looking at while they look at it.
 //
-// SEVERAL LANGUAGES, on purpose. The bundled subsets cover latin, latin-ext and vietnamese
-// (`src/render/font-faces.ts`), so Vietnamese tone marks, German umlauts, Polish ogoneks,
-// Czech hačeks, Turkish dotless i and Icelandic eth all render in the real face.
+// SEVERAL LANGUAGES, on purpose. The bundled subsets cover latin, latin-ext and vietnamese, so
+// tone marks, umlauts, ogoneks, hačeks, dotless i and eth all render in the real face. CJK
+// joined them on 2026-08-15 — nothing CJK is SHIPPED, which was the real constraint and has
+// not moved; the stacks now name PingFang, Hiragino, Yu Mincho and the Notos before the
+// generic, so CJK lands in a decided face at zero download (`seed-content-cjk.ts`).
 //
-// CJK JOINED THEM on 2026-08-15, reversing a rule this header carried from the start. It
-// said CJK "would fall back to a system font and demonstrate the opposite of the point",
-// which was true of a stack that ended at the generic `serif` keyword — the browser reached
-// past the list to a last-resort face nobody had chosen, and it differed per machine. The
-// stacks now name PingFang, Hiragino, Yu Mincho, Malgun Gothic and the Noto families before
-// the generic (`content/fonts.ts`), so CJK lands in a decided face at zero download. Still
-// nothing CJK is SHIPPED, which was the real constraint and has not moved. The three posts
-// and the full argument are in `seed-content-cjk.ts`.
+// ONE LINE PER PARAGRAPH: the renderer turns a single newline into a `<br>`.
 //
-// ONE LINE PER PARAGRAPH. The renderer turns a single newline into a `<br>`, so prose typed
-// at 90 columns comes out ragged.
+// EVERY POST EARNS ITS PLACE BY SHOWING SOMETHING. This fixture is the only thing a visitor to
+// demo.quireink.com sees, so a renderer feature absent from it is one the demo claims and
+// never proves. It went up with no code fence and no table anywhere, which is how a site that
+// renders maths, code and tables came to look like a site that renders paragraphs.
 //
-// EVERY POST EARNS ITS PLACE BY SHOWING SOMETHING. The fixture is the only thing a visitor
-// to demo.quireink.com ever sees, so a renderer feature absent from it is a feature the demo
-// claims and never proves. It went up with four highlights, three footnotes, one callout and
-// one equation across eighteen posts — no code fence and no table anywhere — which is how a
-// site that renders maths, code, tables and five callout types came to look like a site that
-// renders paragraphs. The posts added since are each written around a gap in that list.
-//
-// THE SPLIT IS BY CATEGORY, with two exceptions: `-intl` is by LANGUAGE, because its posts
-// exist to prove the latin-ext subsets and their categories are incidental (`-cjk` likewise),
-// and `-page` is by SERIES, because the reading-page series outgrew the typography file as a
-// unit. Everything splits at the 400-line cap `check:filesize` enforces, which one file of
-// thirty posts cannot stay under.
+// THE SPLIT IS BY CATEGORY, except `-intl` and `-cjk` (by LANGUAGE, since those posts exist to
+// prove the subsets) and `-page` (by SERIES). Everything splits at the 400-line cap.
 
 export type Seed = {
   title: string

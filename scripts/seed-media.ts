@@ -1,32 +1,27 @@
 // Six plates for the media library, drawn rather than downloaded.
 //
-// The library was empty. Media is the one admin screen that cannot be filled with prose, so
-// it stayed a drop zone and an empty-state message through every screenshot the project has
-// taken — while the responsive pipeline behind it (cap the original, make a thumb, defer the
-// display variants) was the part nobody could see working.
+// Media is the one admin screen that cannot be filled with prose, so it stayed a drop zone and
+// an empty-state message through every screenshot the project has taken — while the responsive
+// pipeline behind it was the part nobody could see working.
 //
-// GEOMETRY ONLY, NO TEXT. sharp renders `<text>` through the host's font stack, and this
-// seeder runs ON THE DEMO SERVER during `refresh.sh` — a 1 GB box with no reason to have a
-// serif installed. A plate with text in it would look right on the machine it was written on
-// and come out blank on the machine anyone actually looks at. Every mark below is a rect, a
-// circle or a path, which resolve identically everywhere.
+// GEOMETRY ONLY, NO TEXT. sharp renders `<text>` through the HOST's font stack, and this seeder
+// runs on the demo server during `refresh.sh` — a 1 GB box with no reason to have a serif
+// installed. A plate with text would look right where it was written and come out blank where
+// anyone looks at it. Every mark here is a rect, a circle or a path.
 //
-// DETERMINISTIC NAMES, AND DELETED FIRST. `writeUniqueOriginal` claims names with an
-// exclusive write and falls through to `-2`, `-3` on collision. The database is wiped on
-// every reseed but the blob store is not, and the demo reseeds monthly — so without the
-// delete below the library fills up with `nib-angles-7.png` and the same picture eight times.
+// ⚠️ DETERMINISTIC NAMES, AND DELETED FIRST. `writeUniqueOriginal` claims names with an
+// exclusive write and falls through to `-2`, `-3` on collision. The database is wiped on every
+// reseed but the blob store is not, so without the delete the library fills with the same
+// picture eight times.
 //
-// THE DETERMINISM IS ALSO WHAT MAKES THE DEMO'S TWO INSTANCES SAFE, and that is worth saying
-// because nothing at the call site hints at it. `refresh.sh` seeds two databases — `data` and
-// `data-front` — and neither `quireink-demo` nor `quireink-front` sets `STORAGE_LOCAL_DIR`,
-// so both default to `./uploads` under the shared `WorkingDirectory` of `/home/quireink/app`.
-// One blob store, two seeds, run back to back. It works only because the second seed deletes
-// and rewrites the SAME paths the first one wrote, leaving the first database's rows still
-// resolving. Give these files a random suffix or a timestamp and the newspaper instance's
-// library silently 404s every thumbnail, with nothing red anywhere.
-//
-// (The window where the path is deleted and not yet rewritten is real and unreachable:
-// `refresh.sh` stops both units before seeding and starts them after.)
+// ⚠️ That determinism is also what makes the demo's TWO instances safe, and nothing at the call
+// site hints at it: `refresh.sh` seeds two databases, and neither unit sets
+// `STORAGE_LOCAL_DIR`, so both default to `./uploads` under one shared working directory. One
+// blob store, two seeds, back to back. It works only because the second seed deletes and
+// rewrites the SAME paths the first wrote, leaving the first database's rows resolving. Give
+// these files a random suffix and the newspaper instance 404s every thumbnail, silently.
+// (The window where a path is deleted and not yet rewritten is unreachable: `refresh.sh` stops
+// both units before seeding.)
 
 import { addMediaBatch, deleteMedia } from '@/media/media'
 import { deleteByPathname } from '@/media/blob'

@@ -1,29 +1,24 @@
 // Pasting a Markdown article into the writing surface.
 //
 // The bug this guards shipped and was found by the owner, not by a test: paste a post's
-// Markdown into the editor and every line landed as literal text — `# Heading` stayed two
-// characters and a word, the table stayed a wall of pipes, the fence stayed three backticks.
-// It did not stop there. The serializer escapes what it is handed, so SAVING that draft wrote
+// Markdown and every line landed as literal text — `# Heading` stayed two characters and a
+// word, the table a wall of pipes. It did not stop there. The serializer escapes what it is
+// handed, so SAVING that draft wrote `\# Dùng Synology…` and ```` \`\`\`bash ```` into the
+// database, and the post published as its own source. The editor looked broken; what was
+// broken was the document.
 //
-//     \# Dùng Synology để host một cái blog
-//     \`\`\`bash
-//     &gt; Lưu ý
-//
-// into the database, and the post published as its own source code. The editor looked broken;
-// what was actually broken was the document.
-//
-// The seam is `clipboardTextParser`, which is where prosemirror-view asks whether anyone can
-// turn the clipboard's PLAIN TEXT into a slice. `tiptap-markdown` answers only when
+// The seam is `clipboardTextParser`, where prosemirror-view asks whether anyone can turn the
+// clipboard's PLAIN TEXT into a slice. `tiptap-markdown` answers only when
 // `transformPastedText` is on, and its default is off — one option, and the whole difference
 // between pasting an article and pasting a screenshot of one.
 //
-// WHY NOT `view.pasteText()`, which would be one line: it passes `preferPlain: true`, the
-// flag that means "the writer held Shift". The parser is contractually required to decline
-// that, so the convenient helper tests the one path where the fix must NOT apply and reports
-// green with the option switched back off. This file goes through the prop itself.
+// ⚠️ NOT `view.pasteText()`, which would be one line: it passes `preferPlain: true`, the flag
+// meaning "the writer held Shift". The parser is contractually required to decline that, so
+// the convenient helper tests the one path where the fix must NOT apply and reports green with
+// the option switched back off. This goes through the prop itself.
 //
-// happy-dom is registered for THIS FILE ONLY, the rule every editor suite here follows:
-// registering globally hands the rest of the run happy-dom's `fetch`.
+// happy-dom is registered for THIS FILE ONLY: registering globally hands the rest of the run
+// happy-dom's `fetch`.
 
 import { describe, expect, it, beforeAll, afterAll } from 'bun:test'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'

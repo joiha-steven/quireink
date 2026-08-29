@@ -1,30 +1,21 @@
-// Admin navigation as a LEFT SIDEBAR that collapses between icon+label and
-// icon-only, persisted in localStorage. Below 1024px it's a slim top bar with a
-// hamburger drawer (always icon+label).
+// Admin navigation as a LEFT SIDEBAR that collapses between icon+label and icon-only,
+// persisted in localStorage. Below 1024px it is a slim top bar with a hamburger drawer.
 //
-// THE RAIL WAITS FOR 1024 AND NOT 768, and that is a measurement rather than a taste. It
-// used to appear at `md` and cost 208px of it, which made unfolding a phone a step
-// BACKWARDS: on the Settings screen (measured 2026-08-28) a Galaxy Z Fold upright and open
-// is 673px and gave the form all 673; turned to landscape it is 841px, the rail arrives,
-// and the form is left 633. A 768px tablet fared worst of all at 560 — less room for the
-// thing you came to use than the same device had while it was folded shut. The admin is
-// forms and tables, so content width IS the product here. At `lg` the sums turn: 1024 less
-// the rail is 816, comfortably past what a folded-open phone gets, and below that the rail
-// is one tap away in the drawer, which is where a phone wants it anyway.
+// THE RAIL WAITS FOR 1024, NOT 768, and that is a measurement. At `md` it cost 208px, which
+// made unfolding a phone a step BACKWARDS — measured 2026-08-28 on Settings: a Galaxy Z Fold
+// upright and open is 673px and gave the form all of it; turned landscape it is 841px, the
+// rail arrives, and the form is left 633. A 768px tablet fared worst at 560. The admin is
+// forms and tables, so content width IS the product. At `lg` the sums turn: 1024 less the rail
+// is 816, and below that the rail is one tap away in the drawer.
 //
-// AND FROM 1024 TO 1279 IT ARRIVES ALREADY SHUT (see NARROW below, added 2026-08-29 at the
-// owner's request). The `lg` decision above only ever asked WHETHER a rail belongs on screen;
-// it never asked how WIDE. In that band the answer is 72px and not 208: an iPad in landscape
-// and a foldable opened and turned both sit there, and the icon rail hands the form back
-// 136px without hiding the map behind a hamburger.
+// FROM 1024 TO 1279 IT ARRIVES ALREADY SHUT (see NARROW below). The `lg` decision only asked
+// WHETHER a rail belongs on screen, never how WIDE. In that band the answer is 72px, not 208:
+// an iPad landscape and a foldable opened both sit there, and the icon rail hands back 136px
+// without hiding the map behind a hamburger.
 //
-// Every nav item shares SIDEBAR_NAV so the rail reads as one uniform set. Monochrome by design (admin tooling stays on
-// the neutral scale — no hardcoded accent colors).
-//
-// LAYOUT INTENT: the collapse/expand control lives at the TOP next to the wordmark
-// (a compact chrome button, NOT a nav row) so it can't be mistaken for Sign out;
-// Sign out sits alone in the footer under its own divider (the "account" cluster).
-// Palette selection is FRONTEND-ONLY now — the admin chrome only toggles light/dark.
+// Every nav item shares SIDEBAR_NAV so the rail reads as one set; monochrome by design. The
+// collapse control sits at the TOP beside the wordmark as a chrome button, not a nav row, so
+// it cannot be mistaken for Sign out — which sits alone in the footer under its own divider.
 import Link from '@/admin/router'
 import { usePathname } from '@/admin/router'
 import { useEffect, useState, type ReactNode } from 'react'

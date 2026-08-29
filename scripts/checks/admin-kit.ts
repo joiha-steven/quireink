@@ -136,33 +136,25 @@ for (const rule of RULES) {
 }
 
 /**
- * A RAISED WHITE PILL, by shape rather than by exact string — and this is the rule the exact
- * strings above could not have caught.
+ * A RAISED WHITE PILL, by shape rather than by exact string — the rule the exact strings above
+ * could not have caught.
  *
  * `signature` matching assumes a copy is a COPY. Six segmented controls proved otherwise: the
- * site-language picker, the analytics range strip, and four pickers inside the editor (video
- * size, highlight stroke, image alignment, gallery ratio) all drew the tab strip's pill, and
- * every one of them had chosen `bg-neutral-100` where the primitive said `bg-neutral-200/70`.
- * One shade apart, so the check passed for months while the admin carried seven of one
- * control. They were found by photographing the running admin on 2026-08-15, which is exactly
- * the thing the check exists so nobody has to do.
+ * language picker, the analytics range strip and four editor pickers all drew the tab strip's
+ * pill, and every one had chosen `bg-neutral-100` where the primitive said `bg-neutral-200/70`.
+ * One shade apart, so the check passed for months while the admin carried seven of one control.
+ * They were found by photographing the running admin — exactly the thing this check exists so
+ * nobody has to do.
  *
- * So this matches the IDEA: a white fill lifted on a shadow, which after the 2026-08-15 rework
- * is not a thing the admin draws anywhere. A raised white chip on a tinted tray is the stock
- * dashboard's segmented control, and the admin's is `tabItemClass(active, 'sm')`.
- *
- * A surface that is `sticky` or `fixed` is exempt, and the exemption is read off the SAME LINE
- * rather than kept as a list of filenames — a list goes stale silently and says nothing about
- * why. `docs/admin-design.md` reserves the shadow for overlays, and a bar pinned over content
- * the owner is scrolling past is genuinely one: the editor's action header earns it, a picker
- * sitting still in a form does not.
+ * So this matches the IDEA: a white fill lifted on a shadow, which the admin does not draw
+ * anywhere. `sticky` or `fixed` is exempt, read off the SAME LINE rather than kept as a list of
+ * filenames — a list goes stale silently and says nothing about why. `admin-design.md` reserves
+ * the shadow for overlays, and a bar pinned over content being scrolled past is genuinely one.
  */
-// STILL `sm|md`, and the card's new contact step does not need this widened — which is the
-// point worth writing down. Those two are the shadows of a card PRETENDING to float while
-// sitting in the flow, which is the costume this guards against. `lg` and above are what a
-// real overlay wears, and the admin has three: the slash menu, the bubble bar, the date
-// picker. The card's own step (2026-08-29) is an arbitrary 1px of contact at 4% — an edge,
-// not a lift — so it was never one of these and the guard did not have to move for it.
+// STILL `sm|md`, and the card's contact step did not need this widened. Those two are the
+// shadows of a card PRETENDING to float while sitting in the flow, which is the costume this
+// guards against; `lg` and above is what a real overlay wears, and the admin has three. The
+// card's own step (2026-08-29) is an arbitrary 1px at 4% — an edge, not a lift.
 const RAISED = /bg-white[^'"`\n]*\bshadow-(sm|md)\b/
 const PINNED = /\b(sticky|fixed)\b/
 for (const file of files) {
