@@ -9,6 +9,7 @@
 
 import { one } from '@/store/query'
 import { finalizePendingThumbs, finalizePendingVariants } from '@/media/finalize'
+import { maybeRunUpdateCheck } from '@/server/update-check'
 import { purgeExpiredSessions } from '@/auth/sessions'
 import { sweepPendingSubscribers } from '@/news/subscribers'
 import { pruneRendered } from '@/render/render-cache'
@@ -59,6 +60,20 @@ export async function fullTick(opts: { purge?: boolean } = {}): Promise<FullTick
     clearCache()
     await purgeEdge().catch(() => { /* the edge is best-effort */ })
   }
+
+  // The daily version check, from the CLOCK as well as from a reader.
+  //
+  // It has only ever fired from `updatePing()`, middleware on the public request path — so a
+  // blog that is running, updated and healthy but had no visitor that day never asked, and
+  // was counted as not there. On a personal blog that is most days, and it is the largest
+  // source of undercounting in the figure the project reads to decide what to build next.
+  //
+  // Nothing here needs a guard of its own: `maybeRunUpdateCheck` is memoised per epoch day,
+  // holds the same conditional day-claim in `update_check` that the reader path takes, and
+  // still waits out `spreadMinutes` so a thousand blogs on an hourly tick do not arrive at
+  // the endpoint in the same second. Whichever of the two paths gets there first takes the
+  // day and the other returns without a request.
+  maybeRunUpdateCheck()
 
   let finalized = 0
   let thumbs = 0

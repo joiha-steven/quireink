@@ -2,16 +2,29 @@
 //
 // A blog asks what the newest release is, and by asking it is counted. One call doing two
 // jobs, so there is no telemetry service to keep alive and nothing running when nobody is
-// reading. What leaves the process is four fields wide:
+// reading. What leaves the process:
 //
-//     GET https://check.quireink.com/releases.json?v=2.2.0&t=8f2c91a04b7e&d=1&new=1
+//     GET https://check.quireink.com/releases.json?v=2.2.2&t=8f2c91a04b7e&d=1&new=1&a=3&p=2&i=docker&l=vi
 //
 //   v    the version this instance runs
 //   t    sha256(this instance's own secret + today's UTC date), first 12 hex characters
 //   d    1 when the site has a real public address, 0 when it is still on a laptop
 //   new  present only on the first check a fresh database ever makes
+//   a    how old the blog is, in five steps (absent while nobody has claimed it)
+//   p    how much is published, in four steps
+//   i    `docker`, `source`, or what an install template declared for itself
+//   l    the language this owner's admin is in
 //
-// No address, no hostname, no title, no content, no counts, and no identifier that
+// THE LAST FOUR ARE STEPS, NOT VALUES, and that is the whole of why they are allowed to
+// exist. `t` guarantees today cannot be tied to yesterday; a field precise enough to be a
+// fingerprint would hand that back, because with a dozen blogs checking in on a day an
+// exact post count beside a country names one install as surely as its domain would. They
+// were added on 2026-08-29 because the count alone could not tell a blog somebody still
+// runs from a container somebody made and deleted — which is the only question worth
+// asking of it — and because eleven translations were being maintained with no way to know
+// whether any of them had a user.
+//
+// No address, no hostname, no title, no content, no exact count, and no identifier that
 // survives the day. `t` is recomputed from a new date every midnight, so today's number is
 // exact and yesterday's cannot be linked to it. Counting by IP was the alternative and it
 // breaks on the shape this product is licensed for: one process per blog (ADR 0021) means
@@ -22,11 +35,13 @@
 // a switch in Settings, and an operator running this for other people has `UPDATE_CHECK=0`,
 // which turns it off for every instance they start.
 //
-// `docs/self-host.md` says all of this again in the words of somebody who is deciding
-// whether to allow it.
+// `docs/update-check.md` says all of this again in the words of somebody who is deciding
+// whether to allow it, and the Settings screen says it in eleven languages to the owner who
+// actually holds the switch. Three copies, and they move together or not at all.
 
 import { createHash } from 'node:crypto'
 import { serverSecret } from '@/auth/secret'
+import { ageBucket, installKind, sizeBucket } from '@/server/update-facts'
 import { getSettings, resolveSiteUrl } from '@/content/settings'
 import { isBlockedAddress } from '@/server/safe-fetch'
 import { one, run, tx } from '@/store/query'
@@ -281,6 +296,14 @@ export async function runUpdateCheck(secret: string, now: number): Promise<void>
     url.searchParams.set('t', dailyToken(secret, day))
     url.searchParams.set('d', isPublicAddress(resolveSiteUrl(settings)) ? '1' : '0')
     if ((readRow()?.first_done ?? 0) === 0) url.searchParams.set('new', '1')
+    // The buckets. Each is skipped when it has nothing true to say rather than sent empty,
+    // so an unclaimed blog is silent about its age instead of claiming to be new today.
+    const age = ageBucket(now)
+    if (age) url.searchParams.set('a', age)
+    url.searchParams.set('p', sizeBucket())
+    url.searchParams.set('i', installKind())
+    const lang = (settings.language ?? '').trim().toLowerCase()
+    if (/^[a-z]{2}$/.test(lang)) url.searchParams.set('l', lang)
 
     let res: Response
     try {

@@ -17,7 +17,7 @@ const en = {
   clearCacheFailed: 'Failed to clear cache',
   updateTitle: 'Updates',
   updateCheckLabel: 'Check for new releases',
-  updateCheckDesc: 'Once a day, on the first visit your blog gets, it asks quireink.com what the newest version is — and by asking, it is counted as a blog that is being used. What goes out: the version you run, a code that is regenerated every midnight and cannot be traced to yesterday, and whether your site has a public address yet. Never your address, your writing, your readers or your numbers. Off means your blog never calls out at all.',
+  updateCheckDesc: 'Once a day — on the first visit your blog gets, or on its own hourly clock if nobody visits — it asks quireink.com what the newest version is, and by asking it is counted as a blog in use. What goes out: the version you run, a code regenerated every midnight that cannot be traced to yesterday, whether your site has a public address yet, roughly how old the blog is and roughly how much is in it (wide steps, never a number), which language this screen is in, and whether it runs from Docker or from source. Never your address, your writing, your readers, or any exact count. Off means your blog never calls out at all.',
   updateAvailable: 'Quire Ink {v} is out',
   updateAvailableNote: 'You are running an older version. Nothing updates itself — you decide when.',
   updateAvailableLink: 'Read what changed',

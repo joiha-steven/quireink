@@ -17,7 +17,7 @@ const vi = {
   clearCacheFailed: 'Xóa cache thất bại',
   updateTitle: 'Bản mới',
   updateCheckLabel: 'Hỏi xem đã có bản mới chưa',
-  updateCheckDesc: 'Mỗi ngày một lần, vào lượt khách đầu tiên, blog hỏi quireink.com bản mới nhất là bản nào — và chính lúc hỏi thì được đếm là một blog đang được dùng. Thứ gửi đi: phiên bản đang chạy, một mã được sinh lại mỗi nửa đêm nên không nối được với hôm qua, và blog đã có tên miền thật hay chưa. Không có địa chỉ, không có bài viết, không có người đọc, không có số liệu của bạn. Tắt là blog không gọi ra ngoài lần nào cả.',
+  updateCheckDesc: 'Mỗi ngày một lần — vào lượt khách đầu tiên, hoặc theo nhịp đồng hồ hằng giờ của chính blog nếu hôm đó không ai ghé — blog hỏi quireink.com bản mới nhất là bản nào, và chính lúc hỏi thì được đếm là một blog đang được dùng. Thứ gửi đi: phiên bản đang chạy, một mã được sinh lại mỗi nửa đêm nên không nối được với hôm qua, blog đã có tên miền thật hay chưa, blog dựng được bao lâu rồi và trong đó nhiều hay ít bài (theo nấc thô, không bao giờ là con số), màn hình này đang dùng tiếng gì, và blog chạy bằng Docker hay từ mã nguồn. Không có địa chỉ, không có bài viết, không có người đọc, không có con số chính xác nào của bạn. Tắt là blog không gọi ra ngoài lần nào cả.',
   updateAvailable: 'Đã có Quire Ink {v}',
   updateAvailableNote: 'Bạn đang chạy bản cũ hơn. Không có gì tự cập nhật — nâng cấp lúc nào là bạn quyết.',
   updateAvailableLink: 'Xem bản mới đổi gì',

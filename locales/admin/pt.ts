@@ -18,7 +18,7 @@ const pt = {
   clearCacheFailed: 'Não foi possível limpar o cache',
   updateTitle: 'Atualizações',
   updateCheckLabel: 'Verificar novas versões',
-  updateCheckDesc: 'Uma vez por dia, na primeira visita que o blog recebe, ele pergunta ao quireink.com qual é a versão mais recente — e, ao perguntar, é contado como um blog em uso. O que sai: a versão que você roda, um código regenerado toda meia-noite que não dá para ligar ao de ontem, e se o seu site já tem endereço público. Nunca o seu endereço, seus textos, seus leitores ou seus números. Desligado, o blog nunca liga para ninguém.',
+  updateCheckDesc: 'Uma vez por dia — na primeira visita que o seu blog receber, ou pelo relógio interno de hora em hora se ninguém aparecer — ele pergunta ao quireink.com qual é a versão mais recente, e só de perguntar já conta como um blog em uso. O que sai: a versão que você executa, um código regerado toda meia-noite que não pode ser ligado ao de ontem, se o seu site já tem endereço público, aproximadamente que idade o blog tem e aproximadamente quanto há nele (em faixas largas, nunca um número), em que idioma está esta tela, e se roda a partir do Docker ou do código-fonte. Nunca o seu endereço, os seus textos, os seus leitores nem qualquer contagem exata. Desligado significa que o seu blog nunca chama para fora.',
   updateAvailable: 'Saiu o Quire Ink {v}',
   updateAvailableNote: 'Você está numa versão mais antiga. Nada se atualiza sozinho — quem decide quando é você.',
   updateAvailableLink: 'Ler o que mudou',
