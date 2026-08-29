@@ -34,7 +34,6 @@ const pt = {
   newPage: 'Nova página',
   noPosts: 'Ainda não há posts.',
   noPages: 'Ainda não há páginas.',
-  confirmDeletePage: 'Excluir esta página? Esta ação não pode ser desfeita.',
   colTitle: 'Título',
   colStatus: 'Status',
   colDate: 'Data',
@@ -57,7 +56,16 @@ const pt = {
   filterEmpty: 'Nenhum post bate com o seu filtro.',
   edit: 'Editar',
   delete: 'Excluir',
-  confirmDeletePost: 'Excluir este post? Esta ação não pode ser desfeita.',
+  // The editor's Attributes panel. The confirmation says the piece can be brought back,
+  // because `DELETE /api/posts/:slug` is a SOFT delete — the row keeps its body, its
+  // revisions and its slug. The strings this replaces said the action could not be
+  // undone, which was never true of that endpoint.
+  moveToTrash: 'Mover para o lixo',
+  confirmTrashPost: 'Mover este post para o lixo? Poderá restaurá-lo a partir de lá.',
+  confirmTrashPage: 'Mover esta página para o lixo? Poderá restaurá-la a partir de lá.',
+  // The line above the red button at the foot of the Attributes panel. It has to say BOTH
+  // halves: the piece goes now, and it is recoverable.
+  trashNote: 'Sai do site de imediato e fica à espera no lixo, onde pode restaurá-lo ou apagá-lo de vez.',
   deleted: 'Excluído',
   deleteFailed: 'A exclusão falhou',
   titlePlaceholder: 'Título do post',

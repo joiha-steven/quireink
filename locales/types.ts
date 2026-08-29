@@ -188,7 +188,6 @@ export type AdminStrings = {
   newPage: string
   noPosts: string
   noPages: string
-  confirmDeletePage: string
   colTitle: string
   colStatus: string
   colDate: string
@@ -216,7 +215,16 @@ export type AdminStrings = {
   commentsFootHint: string
   edit: string
   delete: string
-  confirmDeletePost: string
+  // The editor's Attributes panel. The confirmation says the piece can be brought back,
+  // because `DELETE /api/posts/:slug` is a SOFT delete — the row keeps its body, its
+  // revisions and its slug. The strings this replaces said the action could not be
+  // undone, which was never true of that endpoint.
+  moveToTrash: string
+  confirmTrashPost: string
+  confirmTrashPage: string
+  // The line above the red button at the foot of the Attributes panel. It has to say BOTH
+  // halves: the piece goes now, and it is recoverable.
+  trashNote: string
   deleted: string
   deleteFailed: string
   // editor

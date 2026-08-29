@@ -33,7 +33,6 @@ const zh = {
   newPage: '新页面',
   noPosts: '还没有文章。',
   noPages: '还没有页面。',
-  confirmDeletePage: '删除此页面？此操作无法撤销。',
   colTitle: '标题',
   colStatus: '状态',
   colDate: '日期',
@@ -56,7 +55,16 @@ const zh = {
   filterEmpty: '没有符合筛选条件的文章。',
   edit: '编辑',
   delete: '删除',
-  confirmDeletePost: '删除此文章？此操作无法撤销。',
+  // The editor's Attributes panel. The confirmation says the piece can be brought back,
+  // because `DELETE /api/posts/:slug` is a SOFT delete — the row keeps its body, its
+  // revisions and its slug. The strings this replaces said the action could not be
+  // undone, which was never true of that endpoint.
+  moveToTrash: '移到回收站',
+  confirmTrashPost: '将这篇文章移到回收站？之后可以从回收站还原。',
+  confirmTrashPage: '将这个页面移到回收站？之后可以从回收站还原。',
+  // The line above the red button at the foot of the Attributes panel. It has to say BOTH
+  // halves: the piece goes now, and it is recoverable.
+  trashNote: '它会立刻从站点消失，留在回收站里，你可以在那里还原或彻底删除。',
   deleted: '已删除',
   deleteFailed: '删除失败',
   titlePlaceholder: '文章标题',

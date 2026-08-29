@@ -33,7 +33,6 @@ const fr = {
   newPage: 'Nouvelle page',
   noPosts: 'Aucun article pour le moment.',
   noPages: 'Aucune page pour le moment.',
-  confirmDeletePage: 'Supprimer cette page ? Cette action est irréversible.',
   colTitle: 'Titre',
   colStatus: 'Statut',
   colDate: 'Date',
@@ -56,7 +55,16 @@ const fr = {
   filterEmpty: 'Aucun article ne correspond à votre filtre.',
   edit: 'Modifier',
   delete: 'Supprimer',
-  confirmDeletePost: 'Supprimer cet article ? Cette action est irréversible.',
+  // The editor's Attributes panel. The confirmation says the piece can be brought back,
+  // because `DELETE /api/posts/:slug` is a SOFT delete — the row keeps its body, its
+  // revisions and its slug. The strings this replaces said the action could not be
+  // undone, which was never true of that endpoint.
+  moveToTrash: 'Mettre à la corbeille',
+  confirmTrashPost: 'Mettre cet article à la corbeille ? Vous pourrez le restaurer depuis la corbeille.',
+  confirmTrashPage: 'Mettre cette page à la corbeille ? Vous pourrez la restaurer depuis la corbeille.',
+  // The line above the red button at the foot of the Attributes panel. It has to say BOTH
+  // halves: the piece goes now, and it is recoverable.
+  trashNote: 'Il quitte le site immédiatement et attend dans la corbeille, où vous pouvez le restaurer ou le supprimer définitivement.',
   deleted: 'Supprimé',
   deleteFailed: 'La suppression a échoué',
   titlePlaceholder: 'Titre de l’article',

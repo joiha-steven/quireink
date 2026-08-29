@@ -29,6 +29,7 @@ export function PublishPanel({
   onPublish,
   onClose,
   links,
+  bottom,
 }: {
   draft: Draft
   update: (patch: Partial<Draft>) => void
@@ -44,6 +45,8 @@ export function PublishPanel({
   onClose: () => void
   /** History / view-post, which belong to the post rather than to its attributes. */
   links: ReactNode
+  /** Rendered at the FOOT of the panel body, under its own rule. */
+  bottom?: ReactNode
 }) {
   const t = useAdminT()
   return (
@@ -76,6 +79,7 @@ export function PublishPanel({
         onPickFeatured={onPickFeatured}
         onPickCover={onPickCover}
       />
+      {bottom}
     </SlideOver>
   )
 }

@@ -33,7 +33,6 @@ const es = {
   newPage: 'Nueva página',
   noPosts: 'Todavía no hay entradas.',
   noPages: 'Todavía no hay páginas.',
-  confirmDeletePage: '¿Eliminar esta página? Esta acción no se puede deshacer.',
   colTitle: 'Título',
   colStatus: 'Estado',
   colDate: 'Fecha',
@@ -56,7 +55,16 @@ const es = {
   filterEmpty: 'Ninguna entrada coincide con tu filtro.',
   edit: 'Editar',
   delete: 'Eliminar',
-  confirmDeletePost: '¿Eliminar esta entrada? Esta acción no se puede deshacer.',
+  // The editor's Attributes panel. The confirmation says the piece can be brought back,
+  // because `DELETE /api/posts/:slug` is a SOFT delete — the row keeps its body, its
+  // revisions and its slug. The strings this replaces said the action could not be
+  // undone, which was never true of that endpoint.
+  moveToTrash: 'Mover a la papelera',
+  confirmTrashPost: '¿Mover esta entrada a la papelera? Podrás restaurarla desde allí.',
+  confirmTrashPage: '¿Mover esta página a la papelera? Podrás restaurarla desde allí.',
+  // The line above the red button at the foot of the Attributes panel. It has to say BOTH
+  // halves: the piece goes now, and it is recoverable.
+  trashNote: 'Sale del sitio de inmediato y espera en la papelera, donde puedes restaurarlo o borrarlo del todo.',
   deleted: 'Eliminada',
   deleteFailed: 'No se pudo eliminar',
   titlePlaceholder: 'Título de la entrada',
