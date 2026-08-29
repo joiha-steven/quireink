@@ -177,6 +177,11 @@ for (const [file, pattern, what] of [
   ['README.md', `\n\`${pkgVersion}\`\n`, 'the version chip'],
   ['README.vi.md', `\n\`${pkgVersion}\`\n`, 'the version chip'],
   ['docs/conventions/releases.md', `the version is **\`${pkgVersion}\`**`, 'the versioning rule'],
+  // NOT markdown, and that is why it drifted: `server.json` is the manifest the MCP
+  // registry publishes from, it carries its own `version`, and nothing on the release
+  // checklist named it. Found at 2.2.1 while the product was on 2.2.3 — two releases
+  // behind, in the one file an outside directory reads to say what version this is.
+  ['server.json', `"version": "${pkgVersion}"`, 'the MCP manifest version'],
 ] as const) {
   if (!readFileSync(join(ROOT, file), 'utf8').includes(pattern)) {
     violations.push(`${file}: ${what} does not say ${pkgVersion} (package.json does)`)

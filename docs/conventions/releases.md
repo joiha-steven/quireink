@@ -56,9 +56,11 @@ On any behavior change, update the matching doc in the SAME change (Working prin
 - **Cutting a release** (only when asked): `bun run check:all` and `bun run build` both exit 0
   (there is no binary — [ADR 0022](../decisions/0022-ship-from-source-not-a-compiled-binary.md)); the CHANGELOG entry is written and dated; push `main`; then
   `gh release create v<version> --title "v<version> — <tagline>" --notes-file <file>`.
-  The version lives in exactly **four** tracked places — `package.json`, the version chip
+  The version lives in exactly **five** tracked places — `package.json`, the version chip
   right under the wordmark at the top of **both** READMEs (a line that is just `` `<version>` ``
-  — the text title left when the wordmark image arrived, 2026-08-27), and this line — plus
+  — the text title left when the wordmark image arrived, 2026-08-27), this line, and
+  `server.json`, the manifest the MCP registry publishes from (added 2026-08-30, found two
+  releases behind at `2.2.1` because nothing had ever named it) — plus
   the CHANGELOG entry heading and each README's release-note paragraph, which is rewritten
   per release anyway.
   It said three and named `# **quire**blog`, from before the rename and before

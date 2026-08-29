@@ -2,6 +2,13 @@
 
 ## 2026-08-30 — Quire Ink 2.2.3
 
+**Cut twice.** The first v2.2.3 went out at 20:19 UTC and was withdrawn thirty-one minutes
+later: a reader running it on Unraid reported that the admin offers no way to move a post to
+the Trash, and it turned out to be a thirteen-day regression rather than a design choice. The
+tag and the release were deleted and remade with the fix in them. **Anyone who pulled `2.2.3`
+or `latest` inside that half hour has the build without it and should pull again** — the
+number cannot tell them apart, which is the cost of reusing it.
+
 Twenty-six commits in a day, and the owner took the patch slot again — under plain semver
 the year archive, the per-archive feeds, offline reading, the table settings and the shape
 knobs would each have been a minor on their own. Two threads run through it. One is
@@ -14,6 +21,44 @@ the software to bite on.
 
 One default changes what an existing blog looks like, and one adds a URL to it. Both are
 named where they land, below.
+
+### The admin gets back the button that puts a post in the Trash
+
+**Nothing in the admin could trash anything.** `/admin/trash` has been there since the port,
+`DELETE /api/posts/:slug` has always answered, and the browser tour has proved that endpoint on
+every run — by calling it. The SPA never did, on any screen. The control went with the old
+content table on 2026-08-17, when the Write screen became two panes: `RowActions` carried the
+trash icon and the fetch behind it, and neither was rebuilt into `WritePane`. It was missing
+from v2.1.0 through the first v2.2.3, and it was reported from outside — an Unraid install,
+issue #60 — rather than found here.
+
+**Nothing caught it because every test that touches the trash reaches for the API.** A test
+that calls the endpoint cannot see a missing button. There is a flow now that clicks the
+control: it opens a post from the Write pane, opens Attributes, presses Move to Trash, waits
+for the public URL to answer 404, checks the piece is listed in Trash and puts it back. The
+first version of that flow used an iframe and the tour refused it, because
+`x-frame-options: DENY` is on every response and should be; it drives the SPA in the same
+document instead.
+
+**Move to Trash sits at the foot of the Attributes panel**, under its own rule, as the outlined
+red button `ui/Button` already calls the red ballpoint. It went first into the panel's header
+line beside History and View post, and opening that screen is what moved it: three items in one
+row, one grey, one weight, and the third of them deletes the post — a destructive action
+dressed as a third navigation link. It is not in the editor's button row either; that row is
+measured, and at 390px a fourth button pushes Publish off the edge. Reaching it means scrolling
+past the slug, the date, the terms, both pictures and the SEO fields, which is the right amount
+of deliberation for the one control that takes a piece off the site.
+
+The confirmation says the piece can be restored, because this delete is soft — the row keeps
+its body, its revisions and its slug. The strings it replaces said the action could not be
+undone, which was never true of this endpoint; they had sat unused in eleven languages since
+the control disappeared, and that dangling pair was the one mechanical trace of the loss.
+Nothing was watching for it.
+
+Also here: **`server.json` was two releases behind**, at `2.2.1`. It is the manifest the MCP
+registry publishes from — the one file an outside directory reads to say what version this is —
+and the release checklist named four places to change while this was a fifth. `check:docs` pins
+it to `package.json` now, and the checklist says five.
 
 ### The blog gets a way back into its own past
 

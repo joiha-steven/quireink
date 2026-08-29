@@ -33,7 +33,6 @@ const ja = {
   newPage: '新規ページ',
   noPosts: 'まだ投稿がありません。',
   noPages: 'まだページがありません。',
-  confirmDeletePage: 'このページを削除しますか？この操作は取り消せません。',
   colTitle: 'タイトル',
   colStatus: 'ステータス',
   colDate: '日付',
@@ -56,7 +55,16 @@ const ja = {
   filterEmpty: 'フィルターに一致する記事がありません。',
   edit: '編集',
   delete: '削除',
-  confirmDeletePost: 'この投稿を削除しますか？この操作は取り消せません。',
+  // The editor's Attributes panel. The confirmation says the piece can be brought back,
+  // because `DELETE /api/posts/:slug` is a SOFT delete — the row keeps its body, its
+  // revisions and its slug. The strings this replaces said the action could not be
+  // undone, which was never true of that endpoint.
+  moveToTrash: 'ごみ箱に移動',
+  confirmTrashPost: 'この記事をごみ箱に移動しますか？ごみ箱から元に戻せます。',
+  confirmTrashPage: 'このページをごみ箱に移動しますか？ごみ箱から元に戻せます。',
+  // The line above the red button at the foot of the Attributes panel. It has to say BOTH
+  // halves: the piece goes now, and it is recoverable.
+  trashNote: 'サイトからはすぐに消え、ごみ箱で待ちます。そこから元に戻すことも、完全に削除することもできます。',
   deleted: '削除しました',
   deleteFailed: '削除に失敗しました',
   titlePlaceholder: '投稿タイトル',

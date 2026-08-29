@@ -33,7 +33,6 @@ const de = {
   newPage: 'Neue Seite',
   noPosts: 'Noch keine Beiträge.',
   noPages: 'Noch keine Seiten.',
-  confirmDeletePage: 'Diese Seite löschen? Diese Aktion kann nicht rückgängig gemacht werden.',
   colTitle: 'Titel',
   colStatus: 'Status',
   colDate: 'Datum',
@@ -56,7 +55,16 @@ const de = {
   filterEmpty: 'Keine Beiträge entsprechen dem Filter.',
   edit: 'Bearbeiten',
   delete: 'Löschen',
-  confirmDeletePost: 'Diesen Beitrag löschen? Diese Aktion kann nicht rückgängig gemacht werden.',
+  // The editor's Attributes panel. The confirmation says the piece can be brought back,
+  // because `DELETE /api/posts/:slug` is a SOFT delete — the row keeps its body, its
+  // revisions and its slug. The strings this replaces said the action could not be
+  // undone, which was never true of that endpoint.
+  moveToTrash: 'In den Papierkorb',
+  confirmTrashPost: 'Diesen Beitrag in den Papierkorb verschieben? Sie können ihn dort wiederherstellen.',
+  confirmTrashPage: 'Diese Seite in den Papierkorb verschieben? Sie können sie dort wiederherstellen.',
+  // The line above the red button at the foot of the Attributes panel. It has to say BOTH
+  // halves: the piece goes now, and it is recoverable.
+  trashNote: 'Es verschwindet sofort von der Website und wartet im Papierkorb, wo Sie es wiederherstellen oder endgültig löschen können.',
   deleted: 'Gelöscht',
   deleteFailed: 'Löschen fehlgeschlagen',
   titlePlaceholder: 'Beitragstitel',

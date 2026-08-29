@@ -11,6 +11,7 @@ import { uploadImages } from '@/admin/upload-client'
 import { Editor, type EditorApi } from './Editor'
 import { EditorActions } from './EditorActions'
 import { PageSettings, type PageDraft } from './PageSettings'
+import { TrashLink } from './TrashLink'
 import { MediaLibrary } from './MediaLibrary'
 import { SlideOver } from './SlideOver'
 import { SheetTitle } from './SheetTitle'
@@ -286,6 +287,8 @@ export function PageForm({ initial, contentWidth, keySound, autosaveSeconds }: P
           }
         >
           <PageSettings draft={draft} update={update} onPickFeatured={() => setPicker('featured')} />
+          {/* Saved only: an unsaved page has no slug the server has ever seen. */}
+          {savedSlug && <TrashLink kind="page" slug={savedSlug} />}
         </SlideOver>
       )}
 

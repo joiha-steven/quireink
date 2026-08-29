@@ -33,7 +33,6 @@ const ru = {
   newPage: 'Новая страница',
   noPosts: 'Записей пока нет.',
   noPages: 'Страниц пока нет.',
-  confirmDeletePage: 'Удалить эту страницу? Действие нельзя отменить.',
   colTitle: 'Заголовок',
   colStatus: 'Статус',
   colDate: 'Дата',
@@ -56,7 +55,16 @@ const ru = {
   filterEmpty: 'Под ваш фильтр не подходит ни одна запись.',
   edit: 'Редактировать',
   delete: 'Удалить',
-  confirmDeletePost: 'Удалить эту запись? Действие нельзя отменить.',
+  // The editor's Attributes panel. The confirmation says the piece can be brought back,
+  // because `DELETE /api/posts/:slug` is a SOFT delete — the row keeps its body, its
+  // revisions and its slug. The strings this replaces said the action could not be
+  // undone, which was never true of that endpoint.
+  moveToTrash: 'В корзину',
+  confirmTrashPost: 'Переместить эту запись в корзину? Её можно восстановить оттуда.',
+  confirmTrashPage: 'Переместить эту страницу в корзину? Её можно восстановить оттуда.',
+  // The line above the red button at the foot of the Attributes panel. It has to say BOTH
+  // halves: the piece goes now, and it is recoverable.
+  trashNote: 'Запись сразу исчезает с сайта и ждёт в корзине, откуда её можно восстановить или удалить насовсем.',
   deleted: 'Удалено',
   deleteFailed: 'Не удалось удалить',
   titlePlaceholder: 'Заголовок записи',

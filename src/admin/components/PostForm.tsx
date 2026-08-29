@@ -13,6 +13,7 @@ import { PublishPanel } from './PublishPanel'
 import { EditorActions } from './EditorActions'
 import { MediaLibrary } from './MediaLibrary'
 import { TimeMachine } from './TimeMachine'
+import { TrashLink } from './TrashLink'
 import { SheetTitle } from './SheetTitle'
 import { saveStatusLine, useLocalAutosave, useLocalDraft, useStickyOffset, useUnsavedGuard } from './useLocalDraft'
 import { useAdminT } from './I18nProvider'
@@ -377,6 +378,7 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
               {draft.status === 'published' && savedSlug && !scheduled && <a href={`/${savedSlug}`} target="_blank" rel="noopener" className="text-neutral-500 dark:text-neutral-400 hover:text-neutral-900">{t.viewPost}</a>}
             </>
           }
+          bottom={savedSlug ? <TrashLink kind="post" slug={savedSlug} /> : undefined}
         />
       )}
 

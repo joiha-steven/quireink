@@ -33,7 +33,6 @@ const vi = {
   newPage: 'Tạo trang mới',
   noPosts: 'Chưa có bài viết nào.',
   noPages: 'Chưa có trang nào.',
-  confirmDeletePage: 'Xóa trang này? Hành động không thể hoàn tác.',
   colTitle: 'Tiêu đề',
   colStatus: 'Trạng thái',
   colDate: 'Ngày',
@@ -56,7 +55,16 @@ const vi = {
   filterEmpty: 'Không có bài viết khớp bộ lọc.',
   edit: 'Chỉnh sửa',
   delete: 'Xóa',
-  confirmDeletePost: 'Xóa bài viết này? Hành động không thể hoàn tác.',
+  // The editor's Attributes panel. The confirmation says the piece can be brought back,
+  // because `DELETE /api/posts/:slug` is a SOFT delete — the row keeps its body, its
+  // revisions and its slug. The strings this replaces said the action could not be
+  // undone, which was never true of that endpoint.
+  moveToTrash: 'Chuyển vào Thùng rác',
+  confirmTrashPost: 'Chuyển bài này vào Thùng rác? Bạn có thể khôi phục lại từ Thùng rác.',
+  confirmTrashPage: 'Chuyển trang này vào Thùng rác? Bạn có thể khôi phục lại từ Thùng rác.',
+  // The line above the red button at the foot of the Attributes panel. It has to say BOTH
+  // halves: the piece goes now, and it is recoverable.
+  trashNote: 'Bài rời khỏi site ngay và nằm chờ trong Thùng rác, ở đó bạn khôi phục lại hoặc xoá hẳn.',
   deleted: 'Đã xóa',
   deleteFailed: 'Xóa thất bại',
   titlePlaceholder: 'Tiêu đề bài viết',

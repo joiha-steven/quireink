@@ -33,7 +33,6 @@ const en = {
   newPage: 'New page',
   noPosts: 'No posts yet.',
   noPages: 'No pages yet.',
-  confirmDeletePage: 'Delete this page? This action cannot be undone.',
   colTitle: 'Title',
   colStatus: 'Status',
   colDate: 'Date',
@@ -56,7 +55,16 @@ const en = {
   filterEmpty: 'No posts match your filter.',
   edit: 'Edit',
   delete: 'Delete',
-  confirmDeletePost: 'Delete this post? This action cannot be undone.',
+  // The editor's Attributes panel. The confirmation says the piece can be brought back,
+  // because `DELETE /api/posts/:slug` is a SOFT delete — the row keeps its body, its
+  // revisions and its slug. The strings this replaces said the action could not be
+  // undone, which was never true of that endpoint.
+  moveToTrash: 'Move to Trash',
+  confirmTrashPost: 'Move this post to the Trash? You can restore it from Trash.',
+  confirmTrashPage: 'Move this page to the Trash? You can restore it from Trash.',
+  // The line above the red button at the foot of the Attributes panel. It has to say BOTH
+  // halves: the piece goes now, and it is recoverable.
+  trashNote: 'It leaves the site at once and waits in Trash, where you can restore it or remove it for good.',
   deleted: 'Deleted',
   deleteFailed: 'Delete failed',
   titlePlaceholder: 'Post title',

@@ -7,6 +7,17 @@
   hard-deleted on a normal delete. EVERY live read filters `.is('deleted_at', null)`
   (index/search/getPost, page index/getPage, media/file lists, the finalize sweeps) so trashed
   items leave the site, lists, search, sitemap/feed/llms and the libraries at once.
+- **The way IN is the editor's Attributes panel** (`components/TrashLink.tsx`), beside History
+  and View post, and only for a piece that has been saved. It went missing between 2026-08-17
+  and 2026-08-30: the old content table's `RowActions` carried the trash icon and the
+  `DELETE /api/{posts,pages}/:slug` behind it, and neither was rebuilt when the Write screen
+  became two panes (`b4459b4`). For thirteen days and four releases the admin could reach
+  `/admin/trash` and had no way to put anything in it — reported from outside as issue #60.
+  **Every tour flow that touched the trash called the endpoint directly**, which is why 2,100
+  green tests and a 61-flow browser tour all missed it; there is now one that clicks the
+  control. The confirmation says the piece can be brought back, because this delete is soft —
+  the strings it replaced (`confirmDeletePost`/`confirmDeletePage`) said it could not be
+  undone, which was never true of this endpoint.
 - **Media/file soft delete KEEPS the blob** — a published post linking a trashed image keeps
   rendering; the blob is removed only on purge. So `/api/media/delete` no longer purges the page
   cache (it used to). A trashed row **keeps its slug** (still reserved via `ensureSlugFree`) so

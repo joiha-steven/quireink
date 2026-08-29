@@ -33,7 +33,6 @@ const ko = {
   newPage: '새 페이지',
   noPosts: '아직 게시물이 없습니다.',
   noPages: '아직 페이지가 없습니다.',
-  confirmDeletePage: '이 페이지를 삭제할까요? 이 작업은 되돌릴 수 없습니다.',
   colTitle: '제목',
   colStatus: '상태',
   colDate: '날짜',
@@ -56,7 +55,16 @@ const ko = {
   filterEmpty: '필터와 일치하는 글이 없습니다.',
   edit: '편집',
   delete: '삭제',
-  confirmDeletePost: '이 게시물을 삭제할까요? 이 작업은 되돌릴 수 없습니다.',
+  // The editor's Attributes panel. The confirmation says the piece can be brought back,
+  // because `DELETE /api/posts/:slug` is a SOFT delete — the row keeps its body, its
+  // revisions and its slug. The strings this replaces said the action could not be
+  // undone, which was never true of that endpoint.
+  moveToTrash: '휴지통으로 이동',
+  confirmTrashPost: '이 글을 휴지통으로 옮길까요? 휴지통에서 되돌릴 수 있습니다.',
+  confirmTrashPage: '이 페이지를 휴지통으로 옮길까요? 휴지통에서 되돌릴 수 있습니다.',
+  // The line above the red button at the foot of the Attributes panel. It has to say BOTH
+  // halves: the piece goes now, and it is recoverable.
+  trashNote: '사이트에서는 곧바로 사라지고 휴지통에서 기다립니다. 거기서 되돌리거나 완전히 지울 수 있습니다.',
   deleted: '삭제됨',
   deleteFailed: '삭제 실패',
   titlePlaceholder: '게시물 제목',

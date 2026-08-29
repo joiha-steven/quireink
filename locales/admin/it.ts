@@ -33,7 +33,6 @@ const it = {
   newPage: 'Nuova pagina',
   noPosts: 'Ancora nessun articolo.',
   noPages: 'Ancora nessuna pagina.',
-  confirmDeletePage: 'Eliminare questa pagina? L’azione non si può annullare.',
   colTitle: 'Titolo',
   colStatus: 'Stato',
   colDate: 'Data',
@@ -56,7 +55,16 @@ const it = {
   filterEmpty: 'Nessun articolo corrisponde al filtro.',
   edit: 'Modifica',
   delete: 'Elimina',
-  confirmDeletePost: 'Eliminare questo articolo? L’azione non si può annullare.',
+  // The editor's Attributes panel. The confirmation says the piece can be brought back,
+  // because `DELETE /api/posts/:slug` is a SOFT delete — the row keeps its body, its
+  // revisions and its slug. The strings this replaces said the action could not be
+  // undone, which was never true of that endpoint.
+  moveToTrash: 'Sposta nel cestino',
+  confirmTrashPost: 'Spostare questo articolo nel cestino? Potrai ripristinarlo da lì.',
+  confirmTrashPage: 'Spostare questa pagina nel cestino? Potrai ripristinarla da lì.',
+  // The line above the red button at the foot of the Attributes panel. It has to say BOTH
+  // halves: the piece goes now, and it is recoverable.
+  trashNote: 'Esce subito dal sito e resta nel cestino, dove puoi ripristinarlo o eliminarlo del tutto.',
   deleted: 'Eliminato',
   deleteFailed: 'Eliminazione non riuscita',
   titlePlaceholder: 'Titolo dell’articolo',
