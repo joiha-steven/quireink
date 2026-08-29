@@ -107,7 +107,7 @@ Bạn được đọc, sửa, chạy và fork nó theo [PolyForm Noncommercial](
 
 <img src="docs/demo-code.jpg" alt="Ba ảnh chụp: một công thức chặn trên độ trôi của thang chữ sau khi làm tròn, dựng bằng MathML trong font đọc; phần code của cùng site, một khối được tô màu nhờ tên ngôn ngữ và một khối bên dưới không ghi ngôn ngữ, chỉ đánh dấu phần trong ngoặc kép và tên biến có dấu đô la; và ba vệt bút dạ vàng, xanh, hồng" width="960">
 
-<sub>Công thức toán là MathML, do chính trình duyệt dựng — không script, không stylesheet, không file font, nên một bài có công thức không tốn thêm gì so với bài không có. Code cũng tô màu ở máy chủ, cùng một lý do; khối phía dưới không ghi ngôn ngữ nên không ai bịa màu cho nó, chỉ đánh dấu những gì đúng trong mọi ký pháp. Bút dạ là nét SVG ngắt theo từng dòng, có năm màu mực.</sub>
+<sub>Công thức toán là MathML, do chính trình duyệt dựng: không script, không stylesheet, không file font, nên một bài có công thức không tốn thêm gì so với bài không có. Code cũng tô màu ở máy chủ, cùng một lý do; khối phía dưới không ghi ngôn ngữ nên không ai bịa màu cho nó, chỉ đánh dấu những gì đúng trong mọi ký pháp. Bút dạ là nét SVG ngắt theo từng dòng, có năm màu mực.</sub>
 
 </div>
 
@@ -115,7 +115,7 @@ Bạn được đọc, sửa, chạy và fork nó theo [PolyForm Noncommercial](
 
 Đây là số đo từ mạng, lần vào đầu tiên, chưa cache gì. Đúng bằng cái mà một người lạ cầm điện thoại phải chờ.
 
-Hai dòng CSS và JavaScript là sản phẩm của bản build — giống nhau ở mọi bản cài — lấy từ bản dựng 2.2.2. Các số tổng đo ngày 27/08/2026 trên chính site này: tiếng Việt, Literata để đọc và JetBrains Mono cho phần khung. Chúng không phải thuộc tính của phần mềm, vì font được cắt theo bảng chữ và trình duyệt chỉ tải đúng những dải mà trang bạn dùng tới. Hình nét của cây bút nằm trong hai tệp bất biến riêng (~20 KB cả cặp) chỉ lên xe ở trang thật sự có vệt tô hay gạch chân ([ADR 0027](docs/decisions/0027-the-pen-ships-only-where-it-wrote.md)) — trang không mực không phải trả đồng nào cho chúng.
+Hai dòng CSS và JavaScript là sản phẩm của bản build, giống nhau ở mọi bản cài, lấy từ bản dựng 2.2.2. Các số tổng đo trên một site đang chạy thật: tiếng Việt, Literata để đọc và JetBrains Mono cho phần khung. Chúng không phải thuộc tính của phần mềm, vì font được cắt theo bảng chữ và trình duyệt chỉ tải đúng những dải mà trang bạn dùng tới. Hình nét của cây bút nằm trong hai tệp bất biến riêng (~20 KB cả cặp) chỉ lên xe ở trang thật sự có vệt tô hay gạch chân ([ADR 0027](docs/decisions/0027-the-pen-ships-only-where-it-wrote.md)). Trang không mực không phải trả đồng nào cho chúng.
 
 | | Trang chủ | Một bài | |
 |:---|---:|---:|:---|
@@ -126,17 +126,17 @@ Hai dòng CSS và JavaScript là sản phẩm của bản build — giống nhau
 | **Request&nbsp;bên&nbsp;thứ&nbsp;ba** | **0** | **0** | không CDN, không font host, không tracker |
 | **Lần&nbsp;vào&nbsp;sau** | ~20&nbsp;KB | ~11&nbsp;KB | chỉ tải lại HTML; bài dài thì nặng hơn |
 
-Nó giữ được như vậy nhờ vài quyết định khó đảo ngược.
+Nó giữ được như vậy nhờ năm quyết định khó đảo ngược.
 
-**Mỗi gói JS có một hạn mức dung lượng do build canh.** Vượt là build đỏ. Một tính năng không thể lặng lẽ bắt mọi người đọc trả thêm một chút, mãi mãi.
+Mỗi gói JS có một hạn mức dung lượng do build canh, vượt là build đỏ. Một tính năng không thể lặng lẽ bắt mọi người đọc trả thêm một chút, mãi mãi.
 
-**Cache trang là một `Map` duy nhất, và bất kỳ lần ghi nào cũng xoá sạch nó.** Cả luật chỉ có vậy, nên không có chỗ nào để sai một cách tinh vi. Trượt cache thì tốn một lần đọc SQLite cộng một lần render, dưới một phần nghìn giây.
+Cache trang là một `Map` duy nhất, và bất kỳ lần ghi nào cũng xoá sạch nó. Cả luật chỉ có vậy, nên không còn chỗ nào để sai một cách tinh vi. Trượt cache thì tốn một lần đọc SQLite cộng một lần render, dưới một phần nghìn giây.
 
-**Markdown đã render được lưu theo hash của đầu vào.** Không bao giờ phải invalidate cái gì. Một bài dài từ 383 ms xuống 1 ms.
+Markdown đã render được lưu theo hash của đầu vào, nên không bao giờ phải invalidate cái gì. Một bài dài từ 383 ms xuống 1 ms.
 
-**Font là của bạn, cắt gọn theo từng ngôn ngữ, và chỉ preload đúng bộ mà trang này cần.** Ghim một trục của variable font đưa bộ preload từ 97.6 KB xuống 46.2 KB.
+Font là của bạn, cắt gọn theo từng ngôn ngữ, và chỉ preload đúng bộ mà trang cần. Ghim một trục của variable font đưa bộ preload từ 97,6 KB xuống 46,2 KB.
 
-**Hiệu ứng hiện dần và thanh tiến độ là CSS thuần.** Không script, không chạy trên main thread, và trình duyệt cũ thì đơn giản là hiện chữ ra luôn.
+Hiệu ứng hiện dần và thanh tiến độ là CSS thuần: không script, không chạy trên main thread, và trình duyệt cũ thì đơn giản là hiện chữ ra luôn.
 
 <div align="center">
 
@@ -160,7 +160,7 @@ Nó giữ được như vậy nhờ vài quyết định khó đảo ngược.
 
 <img src="docs/demo-admin.jpg" alt="Trang quản trị Quire Ink: trình soạn bài với nút gạch dưới và khoanh tròn trên thanh công cụ, câu gạch chì, chữ khoanh đỏ, câu tô sáng và bức thư tay đóng khung trong bài; bên cạnh là trang cấu hình giao diện với sáu bảng màu và bốn font đọc" width="960">
 
-<sub>Trang quản trị xoay quanh việc viết: danh sách bài nằm cạnh trang giấy, mọi thứ còn lại mỗi việc một tấm. Bảng màu, font, cỡ chữ, bố cục, menu — tất cả đều là tuỳ chọn, không có cái nào là code.</sub>
+<sub>Trang quản trị xoay quanh việc viết: danh sách bài nằm cạnh trang giấy, mọi thứ còn lại mỗi việc một tấm. Bảng màu, font, cỡ chữ, bố cục và menu đều là tuỳ chọn. Không có cái nào là code.</sub>
 
 </div>
 
@@ -181,7 +181,7 @@ Nó giữ được như vậy nhờ vài quyết định khó đảo ngược.
 curl -fsSL https://raw.githubusercontent.com/joiha-steven/quireink/main/install.sh | bash
 ```
 
-Nó không dùng `sudo`, không tự cài Bun sau lưng bạn, không đụng tới systemd; nó từ chối chạy dưới quyền root, và chạy lại lần nữa trên cùng thư mục thì nó cập nhật rồi dựng lại chứ không báo lỗi. Tuỳ chọn đặt trước `bash`, tức là ở đầu bên kia của ống — đặt trước `curl` thì biến thuộc về lệnh tải chứ không tới được script:
+Nó không dùng `sudo`, không tự cài Bun sau lưng bạn, không đụng tới systemd; nó từ chối chạy dưới quyền root, và chạy lại lần nữa trên cùng thư mục thì nó cập nhật rồi dựng lại chứ không báo lỗi. Tuỳ chọn đặt trước `bash`, tức là ở đầu bên kia của ống. Đặt trước `curl` thì biến thuộc về lệnh tải chứ không tới được script:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/joiha-steven/quireink/main/install.sh \
@@ -199,7 +199,7 @@ bun run build:assets && bun run build:admin     # island, rồi tới trang qu�
 DATA_DIR=./data SITE_URL=https://example.com bun src/index.ts
 ```
 
-Đặt một reverse proxy có TLS trước cổng, mặc định là `3000`. Rồi **đọc log** — blog chưa có chủ sẽ in ra đường dẫn để nhận blog, mỗi lần khởi động:
+Đặt một reverse proxy có TLS trước cổng, mặc định là `3000`. Rồi đọc log. Blog chưa có chủ sẽ in ra đường dẫn để nhận blog, mỗi lần khởi động:
 
 ```
   ┌─────────────────────────────────────────────────────────────────────────┐
@@ -223,7 +223,7 @@ Mở nó ra là xong phần còn lại ngay trong trình duyệt: tên đăng nh
 Xong. CSDL tự dựng ở lần khởi động đầu, nên không có bước migration nào phải nhớ. Muốn bản đầy đủ với systemd, nginx, cache header, sao lưu và nâng cấp thì xem **[`docs/self-host.md`](./docs/self-host.md)**.
 
 > [!NOTE]
-> **Chạy trực tiếp từ mã nguồn — đó là toàn bộ việc triển khai**, và site thật cũng chạy như vậy.
+> **Chạy trực tiếp từ mã nguồn. Đó là toàn bộ việc triển khai**, và site thật cũng chạy như vậy.
 > Không có tệp nhị phân đóng gói sẵn: `bun build --compile`
 > bỏ sót native module của `sharp`, và một tệp nhị phân không resize được ảnh thì không phải
 > thứ để đem đi triển khai
@@ -234,7 +234,7 @@ Xong. CSDL tự dựng ở lần khởi động đầu, nên không có bước 
 
 <br/>
 
-**Kéo về dùng luôn.** Không cần clone, không cần Bun, không phải dựng gì — có sẵn cho `linux/amd64` và `linux/arm64`:
+**Kéo về dùng luôn.** Không cần clone, không cần Bun, không phải dựng gì, và có sẵn cho `linux/amd64` lẫn `linux/arm64`:
 
 ```bash
 docker run -d --name quire -p 127.0.0.1:3000:3000 \
@@ -247,7 +247,7 @@ docker logs quire            # in ra đường dẫn nhận blog — mở nó tr
 Cố ý dùng `:latest`: đó là bản mới nhất, và bản mới nhất là bản đã có các lỗi được sửa.
 Các thẻ theo số phiên bản ở dưới dành cho ai muốn tự tay quyết định lúc nào thì đổi.
 
-Cũng có trên GHCR là `ghcr.io/joiha-steven/quireink` — cùng một image, do cùng một lần chạy
+Cũng có trên GHCR là `ghcr.io/joiha-steven/quireink`: cùng một image, do cùng một lần chạy
 đẩy lên và mang cùng digest, nên hai nơi không thể lệch nhau.
 
 **Trên droplet DigitalOcean mới tinh** (hay VM Ubuntu nào có cloud-init): dán
@@ -263,7 +263,7 @@ docker compose up -d --build
 docker compose logs quire            # đường dẫn nhận blog, y như trên
 ```
 
-**Không có `docker exec`, không cần terminal tương tác ở đâu cả** — và đó chính là chủ ý, vì giao diện container của NAS có bảng xem log chứ không có TTY. Một service, hai volume, không sidecar. Cổng chỉ mở trên `127.0.0.1`, nên reverse proxy vẫn là chỗ xử lý TLS.
+**Không có `docker exec`, không cần terminal tương tác ở đâu cả**, và đó chính là chủ ý: giao diện container của NAS có bảng xem log chứ không có TTY. Một service, hai volume, không sidecar. Cổng chỉ mở trên `127.0.0.1`, nên reverse proxy vẫn là chỗ xử lý TLS.
 
 **Trên NAS** (Synology, QNAP, Unraid), hãy gắn thư mục thật và đặt `PUID`/`PGID` theo người sở hữu thư mục đó — container tự nhận quyền ở lần khởi động đầu và không bao giờ chạy bằng root. Ghi chú về volume, quyền sở hữu và nâng cấp nằm ở [`docs/self-host-docker.md`](./docs/self-host-docker.md).
 
@@ -297,11 +297,11 @@ Dùng máy chủ MCP của Quire Ink, viết một bài 600 chữ tựa đề
 "ai" và "writing", đặt một đoạn tóm tắt dễ chịu, rồi đăng.
 ```
 
-Viết mới là một nửa. Agent còn đọc được lượng truy cập và so với tuần trước, đếm người đăng ký (không bao giờ thấy địa chỉ email của họ), quét bình luận rác (vào thùng rác, không mất hẳn), tìm khắp kho bài, và cho bạn biết có bản mới chưa. Và nó trông nom được: sắp lại trang nhất theo bài người ta thật sự đọc, đổi diện mạo trong bộ màu và font đã tuyển sẵn (không bao giờ nhận màu tự do — agent không có mắt), trả lời bình luận nhân danh bạn, gửi bản tin thử về đúng hộp thư của bạn, và sao lưu trước khi làm gì lớn. [Sổ tay agent](./docs/agent-cookbook.md) là một trang các câu lệnh làm việc thật — báo cáo sáng thứ Hai, nháp bản tin, rà kho bài.
+Viết mới là một nửa. Agent còn đọc được lượng truy cập và so với tuần trước, đếm người đăng ký (không bao giờ thấy địa chỉ email của họ), quét bình luận rác (vào thùng rác, không mất hẳn), tìm khắp kho bài, và cho bạn biết có bản mới chưa. Nó cũng trông nom được: sắp lại trang nhất theo bài người ta thật sự đọc, đổi diện mạo trong bộ màu và font đã tuyển sẵn, trả lời bình luận nhân danh bạn, gửi bản tin thử về đúng hộp thư của bạn, và sao lưu trước khi làm gì lớn. Màu tự do là thứ duy nhất nó không được đụng, vì agent không có mắt. [Sổ tay agent](./docs/agent-cookbook.md) gom sẵn những câu lệnh làm việc thật: báo cáo sáng thứ Hai, nháp bản tin, rà kho bài.
 
 Các cấu hình nhạy cảm bị chặn qua MCP, và quyền vẫn nằm ở bạn. Thu hồi token trong trang quản trị là nó chết ngay.
 
-**Và kho mã này dạy luôn cho agent.** Ba bộ kỹ năng nằm sẵn trong `.claude/skills/`, nên một trợ lý vừa clone kho về là đã biết cách dựng một blog, vận hành nó qua MCP, và dọn nhà từ WordPress, Ghost, Substack hay Medium sang — bộ nhập tự viết chuyển hướng cho URL cũ và tự tải ảnh về; kỹ năng này lo phần còn lại, bắt đầu từ danh sách ảnh không tải được. Không phải cài gì thêm: clone về rồi hỏi. [Chúng gồm những gì](./docs/agent-ready.md#skills-that-ship-in-the-repository).
+Kho mã này còn dạy luôn cho agent. Ba bộ kỹ năng nằm sẵn trong `.claude/skills/`, nên một trợ lý vừa clone kho về là đã biết cách dựng một blog, vận hành nó qua MCP, và dọn nhà từ WordPress, Ghost, Substack hay Medium sang. Bộ nhập tự viết chuyển hướng cho URL cũ và tự tải ảnh về; kỹ năng này lo phần còn lại, bắt đầu từ danh sách ảnh không tải được. Không phải cài gì thêm: clone về rồi hỏi. [Chúng gồm những gì](./docs/agent-ready.md#skills-that-ship-in-the-repository).
 
 ## Biến môi trường
 
@@ -329,9 +329,9 @@ SMTP, Turnstile và thông tin CDN nhập ở **Cấu hình → Kết nối** v�
 
 ## Bản dịch
 
-Giao diện nói **mười một thứ tiếng** — English, Tiếng Việt, Deutsch, 日本語, 简体中文, 한국어, Français, Español, Português (Brasil), Italiano, Русский — cả phía người đọc lẫn trang quản trị, và câu hỏi đầu tiên khi cài đặt là blog này nói tiếng gì.
+Giao diện nói **mười một thứ tiếng**, cả phía người đọc lẫn trang quản trị: English, Tiếng Việt, Deutsch, 日本語, 简体中文, 한국어, Français, Español, Português (Brasil), Italiano và Русский. Câu hỏi đầu tiên khi cài đặt là blog này nói tiếng gì.
 
-**Mời bạn góp bản dịch.** Mỗi ngôn ngữ là một thư mục ngay gốc repo: [`locales/`](./locales). Muốn sửa một bản dịch, mở `locales/<mã>.ts` (chữ người đọc thấy) và `locales/admin/<mã>.ts` (chữ chủ blog thấy) — file chữ thuần, không cần biết lập trình. Muốn thêm ngôn ngữ mới: chép đôi file `en`, dịch, rồi đăng ký mã trong `locales/langs.ts` + `src/types.ts`; trình biên dịch từ chối build khi còn thiếu một chuỗi, nên bản dịch dở dang không thể lọt ra ngoài. Rất hoan nghênh pull request — tai người bản xứ hơn tai chúng tôi.
+**Mời bạn góp bản dịch.** Mỗi ngôn ngữ là một thư mục ngay gốc repo: [`locales/`](./locales). Muốn sửa một bản dịch, mở `locales/<mã>.ts` (chữ người đọc thấy) và `locales/admin/<mã>.ts` (chữ chủ blog thấy). Đều là file chữ thuần, không cần biết lập trình. Muốn thêm ngôn ngữ mới: chép đôi file `en`, dịch, rồi đăng ký mã trong `locales/langs.ts` + `src/types.ts`; trình biên dịch từ chối build khi còn thiếu một chuỗi, nên bản dịch dở dang không thể lọt ra ngoài. Rất hoan nghênh pull request: tai người bản xứ vẫn hơn tai chúng tôi.
 
 ## Chạy để phát triển
 
@@ -364,9 +364,9 @@ Hai thứ khác nhau, và chúng không chung điều khoản.
 
 **Phi thương mại: được tất.** Blog của bạn, một dự án chơi cho vui, học tập, nghiên cứu, và cả tổ chức từ thiện, trường học, viện nghiên cứu công và cơ quan nhà nước. Cứ đọc, sửa, tự host, fork, chuyển cho người khác. Chỉ cần giữ nguyên văn bản giấy phép và dòng `Required Notice:` kèm theo mỗi bản bạn đưa đi.
 
-**Thương mại: được, nếu không sửa code.** Chạy cho doanh nghiệp, chạy cho khách hàng, bán hosting mà mỗi khách có một cái blog Quire Ink riêng. Đổi lại bốn điều: chạy đúng một bản phát hành với mã nguồn nguyên vẹn — cấu hình, bảng màu, font và nội dung không tính là mã nguồn, vì ở đây giao diện là tuỳ chọn chứ không phải chỗ phải fork — giữ nguyên các dòng ghi chú bản quyền, nói rõ dịch vụ của bạn chạy trên Quire Ink kèm link về đây, và bán dịch vụ chứ không bán phần mềm. Đủ chi tiết nằm trong [`LICENSE-EXCEPTION.vi.md`](./LICENSE-EXCEPTION.vi.md), ngắn thôi.
+**Thương mại: được, nếu không sửa code.** Chạy cho doanh nghiệp, chạy cho khách hàng, bán hosting mà mỗi khách có một cái blog Quire Ink riêng. Đổi lại bốn điều: chạy đúng một bản phát hành với mã nguồn nguyên vẹn, giữ nguyên các dòng ghi chú bản quyền, nói rõ dịch vụ của bạn chạy trên Quire Ink kèm link về đây, và bán dịch vụ chứ không bán phần mềm. Cấu hình, bảng màu, font và nội dung không tính là mã nguồn, vì ở đây giao diện là tuỳ chọn chứ không phải chỗ phải fork. Đủ chi tiết nằm trong [`LICENSE-EXCEPTION.vi.md`](./LICENSE-EXCEPTION.vi.md), ngắn thôi.
 
-**Bản đã sửa code đem đi kinh doanh thì cần giấy phép riêng.** Đây là ranh giới duy nhất dự án giữ lại: sửa code rồi đem bán, hoặc chạy một bản đã sửa thành dịch vụ, thì phải hỏi trước. Vá lỗi hay bịt lỗ hổng bảo mật trên bản cài của chính bạn thì được miễn — cứ vá, và báo cho chủ sở hữu trong vòng 30 ngày. Hỏi bằng cách mở một issue, hoặc qua [trang GitHub của chủ sở hữu](https://github.com/joiha-steven).
+**Bản đã sửa code đem đi kinh doanh thì cần giấy phép riêng.** Đây là ranh giới duy nhất dự án giữ lại: sửa code rồi đem bán, hoặc chạy một bản đã sửa thành dịch vụ, thì phải hỏi trước. Vá lỗi hay bịt lỗ hổng bảo mật trên bản cài của chính bạn thì được miễn. Cứ vá, và báo cho chủ sở hữu trong vòng 30 ngày. Hỏi bằng cách mở một issue, hoặc qua [trang GitHub của chủ sở hữu](https://github.com/joiha-steven).
 
 **Những gì bạn viết vẫn là của bạn.** Bài và ảnh của bạn không thuộc giấy phép mã nguồn và không nằm trong repo này.
 
