@@ -157,6 +157,9 @@ const it = {
   piHeroInline: 'Larghezza colonna',
   piThumbSide: 'Accanto al testo',
   piThumbTop: 'Sopra il titolo',
+  postImageRatio: 'Formato della copertina',
+  postImageRatioHint: 'Come viene ritagliata la copertina. «Come scattata» mantiene le proporzioni della foto; in ogni caso l’altezza è limitata perché un’immagine verticale non riempia la prima schermata.',
+  piRatioAsShot: 'Come scattata',
   // Settings -> Appearance -> Shape. Every default reproduces today exactly.
   cardShape: 'Forma',
   shapeHint: "Tre impostazioni che cambiano la forma del sito invece del colore. Ogni valore predefinito è esattamente l'aspetto di oggi: nulla si sposta finché non lo sposti tu.",

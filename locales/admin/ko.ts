@@ -157,6 +157,9 @@ const ko = {
   piHeroInline: '본문 너비',
   piThumbSide: '글 옆에',
   piThumbTop: '제목 위에',
+  postImageRatio: '커버 이미지 비율',
+  postImageRatioHint: '커버를 어떤 비율로 자를지. ‘원본 그대로’는 사진의 비율을 유지합니다. 무엇을 고르든 높이에 상한이 있어 세로로 긴 사진이 첫 화면을 가득 채우지 않습니다.',
+  piRatioAsShot: '원본 그대로',
   // Settings -> Appearance -> Shape. Every default reproduces today exactly.
   cardShape: '모양',
   shapeHint: '색이 아니라 사이트의 모양을 바꾸는 세 가지입니다. 여기 기본값은 모두 지금 모습 그대로라, 직접 바꾸기 전에는 아무것도 움직이지 않습니다.',

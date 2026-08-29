@@ -195,7 +195,10 @@ export async function renderArticle(slug: string): Promise<string | null> {
     // `ready` is a Map of original -> how many widths exist; `postImage` asks the simpler
     // question ("does this one have variants at all"), so it takes the key set. Same table
     // read either way — `mediaFacts` has already done it.
-    hero = heroImage(post, settings, new Set(ready.keys()))
+    // `dims` keyed store-relative, same as `ready` (Invariant 3). Both come from the one
+    // table read `mediaFacts` already did.
+    hero = heroImage(post, settings, new Set(ready.keys()),
+      dims.get(collapseBlob(post.featuredImage || post.coverImage || '')))
     lead = postInfoPanel(post, settings, s) + seriesBox
     // Tags first (they belong to the post), then the person, then the ways onward. '' unless
     // the owner has filled in both a name and a bio.
@@ -370,8 +373,8 @@ export async function renderArticle(slug: string): Promise<string | null> {
 ${siteHeader(settings, { mailConfigured })}
 <div class="with-rail"><main id="content">
 <article>
-${header}
 ${hero}
+${header}
 ${lead}
 ${toc}
 <div id="post-body" class="prose">${body}</div>

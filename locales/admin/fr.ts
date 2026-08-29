@@ -157,6 +157,9 @@ const fr = {
   piHeroInline: 'Largeur de colonne',
   piThumbSide: 'À côté du texte',
   piThumbTop: 'Au-dessus du titre',
+  postImageRatio: 'Format de l’image de couverture',
+  postImageRatioHint: 'Comment l’image est recadrée. « Telle quelle » conserve les proportions de la photo ; dans tous les cas la hauteur est limitée pour qu’une image verticale ne remplisse pas le premier écran.',
+  piRatioAsShot: 'Telle quelle',
   // Settings -> Appearance -> Shape. Every default reproduces today exactly.
   cardShape: 'Forme',
   shapeHint: "Trois réglages qui changent la forme du site plutôt que sa couleur. Chaque valeur par défaut est exactement l'aspect actuel : rien ne bouge tant que vous ne bougez rien.",

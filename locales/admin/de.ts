@@ -157,6 +157,9 @@ const de = {
   piHeroInline: 'Spaltenbreite',
   piThumbSide: 'Neben dem Text',
   piThumbTop: 'Über dem Titel',
+  postImageRatio: 'Format des Titelbilds',
+  postImageRatioHint: 'Wie das Titelbild beschnitten wird. „Wie aufgenommen“ behält die Proportionen des Fotos; in jedem Fall wird die Höhe begrenzt, damit ein hochformatiges Bild nicht den ersten Bildschirm füllt.',
+  piRatioAsShot: 'Wie aufgenommen',
   // Settings -> Appearance -> Shape. Every default reproduces today exactly.
   cardShape: 'Form',
   shapeHint: 'Drei Einstellungen, die die Form der Website ändern statt ihrer Farbe. Jeder Standard hier ist genau das heutige Aussehen — es verrückt sich nichts, bis Sie etwas verrücken.',

@@ -120,12 +120,21 @@ export function postImage(
   ready: ReadyImages,
   sizes: string,
   priority = false,
+  dims?: { width: number; height: number },
 ): string | null {
   const src = post.featuredImage || post.coverImage
   if (!src) return null
   const alt = escapeAttr(post.title)
   const loading = priority ? ' fetchpriority="high"' : ' loading="lazy"'
-  const img = `<img src="${escapeAttr(src)}" alt="${alt}"${loading} decoding="async">`
+  // The intrinsic size, when the caller knows it. Without it the browser reserves NOTHING
+  // and the page jumps as each picture arrives — measured 2026-08-29 on a list of three
+  // thumbnails, every box `height: 0` until its file landed. `post-content.ts` has always
+  // passed these for in-body pictures; this door was the one that did not.
+  //
+  // Harmless where CSS pins the box anyway (a cropped thumbnail): an aspect-ratio wins over
+  // the attribute ratio, and the attributes still describe the file correctly.
+  const size = dims ? ` width="${dims.width}" height="${dims.height}"` : ''
+  const img = `<img src="${escapeAttr(src)}" alt="${alt}"${size}${loading} decoding="async">`
   const m = src.match(/^(.*\/media\/.+)\.(?:jpe?g|png)$/i)
   if (!m || !ready.has(collapseBlob(src))) return `<picture>${img}</picture>`
   const set = (fmt: string) => `${m[1]}-1024.${fmt} 1024w, ${m[1]}-1600.${fmt} 1600w`
