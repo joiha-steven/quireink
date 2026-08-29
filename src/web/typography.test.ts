@@ -74,7 +74,10 @@ describe('the public sheet', () => {
     expect(PUBLIC_CSS).toContain('.related h2{font-size:var(--fs-small)')
     const block = PUBLIC_CSS.slice(PUBLIC_CSS.indexOf('.related a{'))
     const rule = block.slice(0, block.indexOf('}'))
-    expect(rule).toContain('font-weight:600')
+    // The weight became a variable on 2026-08-29 (Appearance -> Shape -> headline weight).
+    // Asserting the whole declaration keeps BOTH halves of the claim: this block is told
+    // apart by weight, and the default weight is still the 600 it always was.
+    expect(rule).toContain('font-weight:var(--fw-heading,600)')
     expect(rule).not.toContain('font-size')
   })
 
@@ -198,7 +201,11 @@ describe('book mode is one number, and the reader may move it', () => {
     // --sp is why the 15% reaches the gaps. It must live in this one block: a second
     // definition on :root anywhere else would win or lose by source order, and the overlay
     // would silently go back to unscaled spacing.
-    expect(css).toContain('--sp:calc(1rem * var(--type-scale, 1))')
+    // `--density` joined the same declaration on 2026-08-29, and it had to join THIS one:
+    // a var() inside a custom property resolves where the property is declared, so a
+    // density read anywhere else would bake in :root's value and the knob would do nothing.
+    // The claim under test is unchanged — one definition, emitted in exactly two places.
+    expect(css).toContain('--sp:calc(1rem * var(--type-scale, 1) * var(--density, 1))')
     expect((css.match(/--sp:calc/g) ?? []).length).toBe(2)
   })
 

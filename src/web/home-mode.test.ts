@@ -69,9 +69,20 @@ describe('a page as the homepage', () => {
     expect(res.headers.get('location')).toBe('/')
   })
 
-  it('leaves /page/2 where it is, which is deliberate', async () => {
+  it('leaves deeper pages at /page/n, which is deliberate', async () => {
     // Not moved to /post/page/2. The pairing is untidy and it breaks no existing link.
-    expect((await app.request('/page/1')).status).toBe(200)
+    expect((await app.request('/post/page/2')).status).toBe(404)
+  })
+
+  it('sends /page/1 to the list wherever the list now is, not to /', async () => {
+    // Page 1 of the list is a second URL for the list, so it 301s — but `/` is the chosen
+    // PAGE here, so redirecting there would hand the reader a different document. The
+    // destination is the same `listRoot` `renderPostList` has always put in the canonical
+    // tag; this makes it an answer instead of a hint. Until 2026-08-29 `/page/1` simply
+    // rendered the list a second time.
+    const res = await app.request('/page/1')
+    expect(res.status).toBe(301)
+    expect(res.headers.get('location')).toBe('/post')
   })
 
   // Four ways a slug stops being public, none of which revisit this setting.

@@ -67,6 +67,12 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { tab: 'site', label: 'logoWidth' },
   { tab: 'site', label: 'favicon' },
   { tab: 'site', label: 'appIcon' },
+  // Who wrote it. The NAME is the switch for the whole group, so its note is the one that
+  // has to be findable — somebody looking for "byline" is looking for that sentence.
+  { tab: 'site', label: 'authorName', note: 'authorNameHint' },
+  { tab: 'site', label: 'authorBio', note: 'authorBioHint' },
+  { tab: 'site', label: 'authorAvatar', note: 'authorAvatarHint' },
+  { tab: 'site', label: 'authorLink', note: 'authorLinkHint' },
 
   // Layout — where things sit
   { tab: 'layout', label: 'siteWidth', note: 'siteWidthHint' },
@@ -76,6 +82,8 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { tab: 'layout', label: 'galleryCaptions' },
   { tab: 'layout', label: 'figureFrame', note: 'figureFrameHint' },
   { tab: 'layout', label: 'figureFrameColour', note: 'figureFrameColourHint' },
+  { tab: 'layout', label: 'postImageHero', note: 'postImageHeroHint' },
+  { tab: 'layout', label: 'postImageThumb', note: 'postImageThumbHint' },
   { tab: 'layout', label: 'frontCount' },
   { tab: 'layout', label: 'frontLead' },
   { tab: 'layout', label: 'frontSecondary' },
@@ -113,6 +121,9 @@ export const SETTINGS_INDEX: SettingEntry[] = [
 
   // Appearance — how it looks
   { tab: 'appearance', label: 'themePreset' },
+  { tab: 'appearance', label: 'shapeDensity', note: 'shapeDensityHint' },
+  { tab: 'appearance', label: 'shapeRadius', note: 'shapeRadiusHint' },
+  { tab: 'appearance', label: 'shapeHeading', note: 'shapeHeadingHint' },
   // The reading-font picker carries no label of its own — the card title IS its name
   // (`FontFields`). Indexed under that, because "font" is the word somebody types and a
   // picker nobody can find is a picker nobody uses.

@@ -31,6 +31,8 @@ const en = {
   themeTime: 'By time',
   readingSuffix: 'min read',
   wordsSuffix: 'words',
+  bylinePrefix: 'by',
+  authorAbout: 'About the author',
   bookMode: 'Book mode',
   bookModeClose: 'Close',
   bookModePrev: 'Previous page',

@@ -30,6 +30,7 @@ copies of a rule means one is wrong within a month
 | [admin-design.md](admin-design.md) | The admin visual contract |
 | [admin-navigation.md](admin-navigation.md) | How the admin moves between screens, and how it recovers from an update underneath an open tab |
 | [admin-editor.md](admin-editor.md) | The editor's own contract: the writing surface, the caret, the key feedback |
+| [appearance.md](appearance.md) | For the OWNER: every knob that changes how the site looks, the CSS variables and class names custom CSS may target, and what cannot be changed |
 | [homepage.md](homepage.md) | What `/` serves: the post list, a page, or a composed front page |
 | [seo-pwa.md](seo-pwa.md) | Sitemap, feeds, OG, region, PWA |
 | [agent-ready.md](agent-ready.md) | Markdown negotiation, `.well-known` discovery, the three shipped skills, Content-Signal |

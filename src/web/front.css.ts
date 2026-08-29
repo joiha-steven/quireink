@@ -42,7 +42,7 @@ export const FRONT_CSS = `
    the eye had no order to follow. Dropping it a step puts the headlines back on top, which
    is what the rest of this page already does with the label on the related-posts block. */
 .front-label{font-size:var(--fs-small);line-height:var(--lh-small);letter-spacing:var(--ls-small);
-  font-weight:600;color:var(--c-heading);margin:0}
+  font-weight:var(--fw-heading,600);color:var(--c-heading);margin:0}
 .front-label a{color:inherit;text-decoration:none}
 /* The topic links, one step quieter again so the label reads first. Wrapped, never scrolled:
    a row that scrolls sideways on a phone hides half of itself and nothing says so. */
@@ -59,7 +59,7 @@ export const FRONT_CSS = `
 /* ----- one item ---------------------------------------------------------- */
 .fc{margin:0;min-width:0}
 .fc-cat{margin:0 0 var(--fc-cat-gap);color:var(--c-meta)}
-.fc-title{margin:0;font-weight:600;color:var(--c-heading);
+.fc-title{margin:0;font-weight:var(--fw-heading,600);color:var(--c-heading);
   font-size:var(--fs-h3);line-height:var(--lh-h3);letter-spacing:var(--ls-h3)}
 .fc-title a{color:inherit;text-decoration:none}
 .fc-title a:hover{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:2px}

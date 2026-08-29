@@ -50,6 +50,7 @@ For one page, looked at rather than asserted: [`scripts/drive.ts`](./scripts/dri
 | Understanding how a part fits | [`docs/README.md`](./docs/README.md) — the index of everything below |
 | Touching fonts, CSS, images or island JS | [`docs/performance.md`](./docs/performance.md) — the resource-loading law |
 | Touching the cache, the CDN purge or compression | [`docs/delivery.md`](./docs/delivery.md) |
+| Adding or changing an appearance setting | [`docs/appearance.md`](./docs/appearance.md) — the OWNER's map of every knob, the CSS variables custom CSS may target, and the list of what cannot be changed. It is a promise to users: update it in the same commit |
 | Touching a public view | [`docs/conventions/`](./docs/conventions/README.md) — type · layout · colour · motion · admin: [`docs/admin-design.md`](./docs/admin-design.md), the editor: [`docs/admin-editor.md`](./docs/admin-editor.md), and moving between screens: [`docs/admin-navigation.md`](./docs/admin-navigation.md) |
 | Touching the schema | [`docs/spec/01-schema.md`](./docs/spec/01-schema.md) · [`src/store/schema.sql`](./src/store/schema.sql) |
 | Wondering whether 1.x did it differently | [`docs/spec/07-parity-public.md`](./docs/spec/07-parity-public.md) · [owner-facing half](./docs/spec/07-parity-admin.md) |

@@ -42,6 +42,8 @@ import { FrontFields } from './FrontFields'
 import { FooterField } from './FooterField'
 import { FigureFields } from './FigureFields'
 import { GalleryFields } from './GalleryFields'
+import { PostImageFields } from './PostImageFields'
+import { AuthorFields } from './AuthorFields'
 import { ActivityLogField, ListingFeatureFields, PostFeatureFields } from './FeatureFields'
 import { CommentFields } from './CommentFields'
 import { CommentIntegrations } from './CommentIntegrations'
@@ -182,6 +184,11 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
             <Card panel title={t.cardGeneral}>
               <SiteFields s={s} update={update} />
             </Card>
+            {/* Whose blog this is. Identity, like the title and the marks beside it — and it
+                goes in the LEFT stack because Branding on the right is the taller card. */}
+            <Card panel title={t.cardAuthor}>
+              <AuthorFields author={s.author} onChange={(author) => update({ author })} />
+            </Card>
           </div>
           <div className={COL}>
             <Card panel title={t.cardBranding}>
@@ -213,6 +220,14 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
                 />
               </Card>
             )}
+            {/* Directly above the frame card, because both answer a question about pictures
+                and somebody hunting for "how do I show my cover" scans the picture cards.
+                It started in the left stack on the grounds that the right one was longer;
+                looking at the rendered tab said otherwise — in list mode (the default) the
+                right column ended halfway up the page while the left ran on. */}
+            <Card panel title={t.cardPostImage}>
+              <PostImageFields postImage={s.postImage} onChange={(postImage) => update({ postImage })} />
+            </Card>
             <Card panel title={t.cardFigure}>
               <FigureFields figure={s.figure} onChange={(figure) => update({ figure })} />
             </Card>

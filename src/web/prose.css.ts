@@ -100,7 +100,7 @@ ${LINK_INK_CSS}
    The important flag is not decoration: an inline style beats any selector without it. Only
    the block needs one -- measured across the fixture, Shiki emits no span backgrounds here,
    so a second rule to flatten them would guard nothing. */
-.prose pre{padding:var(--sp);border-radius:.5rem;overflow-x:auto;font-size:var(--fs-code);
+.prose pre{padding:var(--sp);border-radius:var(--radius,.5rem);overflow-x:auto;font-size:var(--fs-code);
   line-height:var(--lh-code);letter-spacing:var(--ls-code);
   background:var(--c-code-panel);border:1px solid var(--c-rule)}
 .prose pre.shiki{background:var(--c-code-panel)!important}

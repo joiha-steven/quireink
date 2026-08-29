@@ -1,9 +1,11 @@
-// The pages that are not one article: listings, search, the feeds, the shared chrome and
-// the table of contents.
+// The pages that are not one article: listings, search, the shared chrome and the table of
+// contents.
 //
-// Split from `app.test.ts` to stay under the 400-line rule. Same harness, its OWN database
-// directory: `openDatabases` holds one connection pair per process, so two test files
-// sharing a directory would close each other's.
+// Split from `app.test.ts` to stay under the 400-line rule, and split again on 2026-08-29
+// when the four machine-readable documents grew past what it could hold — they are in
+// `src/web/feeds.test.ts` now, the same seam their source took. Same harness, its OWN
+// database directory: `openDatabases` holds one connection pair per process, so two test
+// files sharing a directory would close each other's.
 import { describe, expect, it, beforeEach, afterAll } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
 import { db } from '@/store/db'
@@ -23,7 +25,6 @@ const app = createApp()
 const get = async (path: string): Promise<Response> => app.request(path)
 
 const PAST = '2020-01-01T00:00:00.000Z'
-const FUTURE = '2099-01-01T00:00:00.000Z'
 
 beforeEach(() => {
   clearCache()
@@ -100,56 +101,6 @@ describe('search', () => {
   it('shows a prompt with no query and stays out of the page cache', async () => {
     expect((await get('/search')).status).toBe(200)
     expect(pageCache.has('/search')).toBe(false)
-  })
-})
-
-describe('machine-readable surfaces', () => {
-  it('serves RSS, sitemap, robots and llms.txt', async () => {
-    await saveSettings({ title: 'My Blog', siteUrl: 'https://example.com' })
-    await savePost({ title: 'Hello', content: 'body', status: 'published', date: PAST, excerpt: 'A summary' })
-    await savePage({ title: 'About', content: 'body', status: 'published' })
-
-    const feed = await get('/feed.xml')
-    expect(feed.headers.get('content-type')).toContain('application/rss+xml')
-    const xml = await feed.text()
-    expect(xml).toContain('<link>https://example.com/hello</link>')
-    expect(xml).toContain('A summary')
-
-    const sitemap = await get('/sitemap.xml').then((r) => r.text())
-    expect(sitemap).toContain('http://www.sitemaps.org/schemas/sitemap/0.9')
-    expect(sitemap).toContain('<loc>https://example.com/about</loc>')
-
-    const robots = await get('/robots.txt').then((r) => r.text())
-    expect(robots).toContain('Disallow: /admin')
-    expect(robots).toContain('Sitemap: https://example.com/sitemap.xml')
-
-    expect(await get('/llms.txt').then((r) => r.text())).toContain('(https://example.com/hello)')
-  })
-
-  it('excludes drafts and future posts from every feed', async () => {
-    await saveSettings({ siteUrl: 'https://example.com' })
-    await savePost({ title: 'Draft', content: 'body', status: 'draft', date: PAST })
-    await savePost({ title: 'Later', content: 'body', status: 'published', date: FUTURE })
-    for (const path of ['/feed.xml', '/sitemap.xml', '/llms.txt']) {
-      const body = await get(path).then((r) => r.text())
-      expect(body).not.toContain('/draft')
-      expect(body).not.toContain('/later')
-    }
-  })
-
-  it('404s a feed the owner turned off, rather than serving an empty one', async () => {
-    await saveSettings({ seo: { autoSchema: true, sitemap: false, llms: true, robots: true, rss: false, ogImage: true, ogFallbackImage: '' } })
-    expect((await get('/feed.xml')).status).toBe(404)
-    expect((await get('/sitemap.xml')).status).toBe(404)
-    expect((await get('/llms.txt')).status).toBe(200)
-  })
-
-  it('escapes XML rather than letting a title break the document', async () => {
-    await saveSettings({ siteUrl: 'https://example.com' })
-    await savePost({ title: 'Tom & Jerry <fight>', content: 'body', status: 'published', date: PAST })
-    const xml = await get('/feed.xml').then((r) => r.text())
-    expect(xml).toContain('Tom &amp; Jerry &lt;fight&gt;')
-    expect(xml).not.toContain('<fight>')
   })
 })
 

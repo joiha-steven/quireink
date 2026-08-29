@@ -13,6 +13,7 @@ import { getMailStatus } from '@/news/mail'
 import { getCommentEnv } from '@/comments/comment-env'
 import { issueStamp } from '@/comments/stamp'
 import { chromeLabels, siteFooter, siteHeader, subscribeCard } from '@/web/chrome'
+import { heroImage, byline, authorBox } from '@/web/article-blocks'
 import { getSeriesForPost } from '@/content/series'
 import { collapseBlob } from '@/media/blob'
 import { renderPostContent } from '@/render/post-content'
@@ -81,6 +82,9 @@ export async function renderArticle(slug: string): Promise<string | null> {
   })
 
   let header = `<header><h1 class="reading-font fs-h1 font-semibold">${escapeHtml(item.title)}</h1></header>`
+  // The post's own picture, above the body. '' unless the owner turned a hero on AND this
+  // post has an image — a page never has one, which is why it is set inside the post branch.
+  let hero = ''
   let footer = ''
   /** The series card, which sits ABOVE the body rather than in the footer with the rest. */
   let lead = ''
@@ -111,7 +115,9 @@ export async function renderArticle(slug: string): Promise<string | null> {
 <p class="t-small text-meta post-meta">${category
       ? `<a class="link-accent" href="/category/${escapeAttr(termSlug(category))}">${escapeHtml(category)}</a> · `
       : ''}<time datetime="${escapeAttr(post.date)}">${
-      escapeHtml(formatDate(post.date, settings.language, settings.timezone))}</time>${length}${book}</p>
+      escapeHtml(formatDate(post.date, settings.language, settings.timezone))}</time>${length}${
+      // Who wrote it, when the owner has said. '' on every blog that has not.
+      byline(settings, s.bylinePrefix)}${book}</p>
 <h1 class="reading-font mt-2 fs-h1 font-semibold">${escapeHtml(item.title)}</h1>${
       // Standfirst: the excerpt, so a long read opens on a sentence rather than a wall.
       features.deck && post.excerpt ? `
@@ -186,8 +192,14 @@ export async function renderArticle(slug: string): Promise<string | null> {
       : ''
     // The right gutter, above the rail breakpoint only. It carries the same facts as the
     // meta line and the taxonomy, so both of those are hidden at that width.
+    // `ready` is a Map of original -> how many widths exist; `postImage` asks the simpler
+    // question ("does this one have variants at all"), so it takes the key set. Same table
+    // read either way — `mediaFacts` has already done it.
+    hero = heroImage(post, settings, new Set(ready.keys()))
     lead = postInfoPanel(post, settings, s) + seriesBox
-    footer = taxoBlock + readNextBlock + relatedBlock
+    // Tags first (they belong to the post), then the person, then the ways onward. '' unless
+    // the owner has filled in both a name and a bio.
+    footer = taxoBlock + authorBox(settings) + readNextBlock + relatedBlock
   }
 
   // The table of contents is server-rendered markup, so a reader without JavaScript still
@@ -359,6 +371,7 @@ ${siteHeader(settings, { mailConfigured })}
 <div class="with-rail"><main id="content">
 <article>
 ${header}
+${hero}
 ${lead}
 ${toc}
 <div id="post-body" class="prose">${body}</div>

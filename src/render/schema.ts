@@ -66,10 +66,16 @@ export function websiteSchema(settings: SiteSettings, site: string): string | nu
  * refuses to print "Updated" for a save within 24 hours of publishing for the same reason —
  * this is that judgement in a second place, and both read the same column.
  *
- * NO `author`. There is no owner-name setting in this software (single owner, ADR 0002, and
- * the only name on record is `users.username`, which is half a credential and never leaves
- * the server). `publisher` carries the site instead, which is true. When a display name
- * exists, an author belongs here as a `Person` and this comment is the note that says so.
+ * `author` IS emitted now, and only when there is a real name to emit.
+ *
+ * There was no owner-name setting until 2026-08-29 — single owner (ADR 0002), and the only
+ * name on record was `users.username`, which is half a credential and never leaves the
+ * server — so every BlogPosting this software had ever produced went out authorless, on
+ * every blog. This comment used to say "when a display name exists, an author belongs here
+ * as a Person"; `settings.author.name` is that display name, and this is that Person.
+ *
+ * Absent when the name is '' rather than emitted empty: a blank `author` is a worse claim
+ * than no claim. `publisher` carries the site either way, which is true regardless.
  */
 export function blogPostingSchema(
   post: Post,
@@ -88,6 +94,13 @@ export function blogPostingSchema(
     datePublished: post.date,
     inLanguage: settings.language,
     publisher: { '@type': 'Organization', name: settings.title },
+  }
+  if (settings.author.name) {
+    // `url` only when the owner gave one — `sameAs` would be the field for a profile
+    // elsewhere, and guessing which of the two a link is would be guessing.
+    obj.author = settings.author.url
+      ? { '@type': 'Person', name: settings.author.name, url: settings.author.url }
+      : { '@type': 'Person', name: settings.author.name }
   }
   if (post.updatedAt && post.updatedAt !== post.date) obj.dateModified = post.updatedAt
   if (opts.description) obj.description = opts.description

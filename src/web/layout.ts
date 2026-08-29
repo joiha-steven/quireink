@@ -14,7 +14,7 @@
 import type { GallerySettings, FigureSettings, SiteSettings, FeatureSettings, InkSettings } from '@/types'
 import { fontPreloadHrefs, fontPresetCss, chromeFontCss, themesToCss } from '@/content/themes'
 import { cjkLangCss } from '@/content/fonts'
-import { typographyToCss, fontToCss, resolveAppIcon } from '@/content/settings'
+import { typographyToCss, fontToCss, shapeToCss, resolveAppIcon } from '@/content/settings'
 import { singleRailCss } from '@/render/rail-css'
 import { fontFaceCss, MONO_TRACKING } from '@/render/font-faces'
 import { penSheetsFor } from '@/web/assets'
@@ -196,6 +196,11 @@ export function pageStyles(settings: SiteSettings, extra = ''): string {
     // blog with one palette ships one rather than all six (`content/themes.ts`).
     themesToCss(settings.themes, settings.themePreset, settings.enabledPalettes,
       settings.defaultScheme),
+    // BEFORE typography, because `--density` is read inside the block typography emits
+    // (`settings-css.ts` says why it has to be read there and nowhere else). Radius and the
+    // two heading weights are ordinary variables and could sit anywhere; they ride along so
+    // the shape knobs are one line in one place.
+    shapeToCss(settings.shape),
     typographyToCss(settings.typography),
     fontToCss(settings.customFont),
     // Keyed on `data-chrome-font`, which `renderDocument` puts on <html>. It has to come

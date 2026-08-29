@@ -228,7 +228,7 @@ body:has(.book-overlay[open]){overflow:hidden}
   .site-menu a{color:var(--c-meta);text-decoration:none;white-space:nowrap}.site-menu a:hover{color:var(--c-heading)}
 }
 .icon-btn{display:flex;align-items:center;justify-content:center;width:2.5rem;height:2.5rem;
-  border:0;border-radius:.5rem;background:none;color:var(--c-meta);cursor:pointer;text-decoration:none}
+  border:0;border-radius:var(--radius,.5rem);background:none;color:var(--c-meta);cursor:pointer;text-decoration:none}
 .icon-btn:hover{color:var(--c-heading);background:var(--c-rule)}
 /* The short token beside each icon. Absent unless the IDE chrome is on: with the switch
    off this header is exactly the header it has always been. */
@@ -237,12 +237,12 @@ body:has(.book-overlay[open]){overflow:hidden}
 
 /* The overlays. Both are dialogs, so Escape and the inert background are the browser's. */
 .overlay[open]{display:flex}
-.overlay{flex-direction:column;border:1px solid var(--c-rule);border-radius:.5rem;padding:1.25rem;
+.overlay{flex-direction:column;border:1px solid var(--c-rule);border-radius:var(--radius,.5rem);padding:1.25rem;
   width:min(36rem,92vw);max-height:70vh;background:var(--c-bg);color:var(--c-text);margin-top:8vh}
 .overlay::backdrop{background:rgba(0,0,0,.4)}
 .search-close{position:absolute;top:.5rem;right:.5rem;border:0;background:none;color:var(--c-meta);
   font-size:1.25rem;line-height:1;cursor:pointer}
-.search-input{padding:.6rem .75rem;border:1px solid var(--c-rule);border-radius:.5rem;
+.search-input{padding:.6rem .75rem;border:1px solid var(--c-rule);border-radius:var(--radius,.5rem);
   background:var(--c-bg);color:var(--c-text);font:inherit;margin-right:2rem}
 .search-results{list-style:none;padding:0;margin:1rem 0 0;overflow-y:auto}
 .search-results li{margin:0 0 .6rem}
@@ -295,7 +295,7 @@ body:has(.book-overlay[open]){overflow:hidden}
    on the page with no boundary at all — a Google button, three fields, a textarea, a
    Turnstile widget and a submit, each floating separately on the page background. That is
    what made the section read as belonging to some other site. */
-.comment-form{margin-top:2rem;border:1px solid var(--c-rule);border-radius:.5rem;padding:1.25rem}
+.comment-form{margin-top:2rem;border:1px solid var(--c-rule);border-radius:var(--radius,.5rem);padding:1.25rem}
 /* A reply form opens INSIDE the thread, where a second bordered card boxes a box. */
 .comment .comment-form{margin-top:.75rem;padding:0;border:0}
 /* Name and email are short. Full width each, they turned a three-field form into a column
@@ -307,7 +307,7 @@ body:has(.book-overlay[open]){overflow:hidden}
 .comment-field label{display:block;color:var(--c-meta);margin-bottom:.375rem}
 .comment-body-field{margin-top:1rem}
 .comment-form input,.comment-form textarea{width:100%;padding:.5rem .75rem;border:1px solid var(--c-rule);
-  border-radius:.5rem;background:var(--c-bg);color:var(--c-text);font:inherit}
+  border-radius:var(--radius,.5rem);background:var(--c-bg);color:var(--c-text);font:inherit}
 /* The focus treatment the newsletter field already had, applied to the same-looking field. */
 .comment-form input:focus,.comment-form textarea:focus{border-color:var(--c-heading)}
 .comment-form textarea{display:block;resize:vertical}
@@ -316,7 +316,7 @@ body:has(.book-overlay[open]){overflow:hidden}
 .comment-actions{display:flex;flex-wrap:wrap;align-items:center;gap:.75rem;margin-top:1rem}
 .comment-form .comment-actions button{margin:0 0 0 auto}
 @media (max-width:639px){.comment-form .comment-actions button{margin-left:0}}
-.comment-form button{padding:.5rem 1rem;border:1px solid var(--c-rule);border-radius:.5rem;
+.comment-form button{padding:.5rem 1rem;border:1px solid var(--c-rule);border-radius:var(--radius,.5rem);
   background:var(--c-bg);color:var(--c-heading);font:inherit;font-weight:500;cursor:pointer}
 .comment-form button:hover{background:var(--c-rule)}
 .comment-status:empty{display:none}
@@ -329,7 +329,7 @@ body:has(.book-overlay[open]){overflow:hidden}
   color:var(--c-meta)}
 .comment-identity strong{color:var(--c-heading);font-weight:600}
 .comment-google{display:inline-block;padding:.5rem 1rem;border:1px solid var(--c-rule);
-  border-radius:.5rem;color:var(--c-heading);font:inherit;text-decoration:none}
+  border-radius:var(--radius,.5rem);color:var(--c-heading);font:inherit;text-decoration:none}
 .comment-google:hover{border-color:var(--c-heading)}
 /* Two classes deep on purpose: the comment-form button rule above is more specific than a
    lone class, so a one-class rule here loses and sign-out renders as a second Post button. */

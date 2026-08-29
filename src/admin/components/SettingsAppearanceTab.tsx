@@ -10,6 +10,7 @@ import type { RefObject } from 'react'
 import { Card, NOTE_TEXT, ResetButton } from './kit'
 import { useAdminT } from './I18nProvider'
 import { ThemeFields } from './ThemeFields'
+import { ShapeFields } from './ShapeFields'
 import { InkFields } from './InkFields'
 import { FontFields } from './FontFields'
 import { FontUpload } from './FontUpload'
@@ -77,6 +78,14 @@ export function SettingsAppearanceTab(
         </Card>
       </div>
       <div className={col}>
+        {/* SHAPE, first on this side. Density and corners are not type and not palette, so
+            neither column owns them outright — this one, because the left stack (the palette
+            grid, the pen, the CSS box) is the taller of the two and this card is the shortest
+            on the tab. It reads first in its column because it is the coarsest control here:
+            what shape everything is, before what face it is set in. */}
+        <Card panel title={t.cardShape}>
+          <ShapeFields shape={s.shape} onChange={(shape) => update({ shape })} />
+        </Card>
         <Card panel title={t.cardFont}>
           <FontFields
             value={s.fontPreset}

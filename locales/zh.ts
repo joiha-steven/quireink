@@ -31,6 +31,8 @@ const zh = {
   themeTime: '按时间',
   readingSuffix: '分钟阅读',
   wordsSuffix: '词',
+  bylinePrefix: '文',
+  authorAbout: '关于作者',
   bookMode: '书籍模式',
   bookModeClose: '关闭',
   bookModePrev: '上一页',

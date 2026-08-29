@@ -31,6 +31,8 @@ const ja = {
   themeTime: '時間帯で切替',
   readingSuffix: '分で読めます',
   wordsSuffix: '語',
+  bylinePrefix: '文',
+  authorAbout: '著者について',
   bookMode: 'ブックモード',
   bookModeClose: '閉じる',
   bookModePrev: '前のページ',

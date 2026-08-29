@@ -116,6 +116,101 @@ export type GallerySettings = {
   captions: boolean
 }
 
+/**
+ * Where a post's own picture is allowed to appear.
+ *
+ * `featuredImage` has been stored since the port and, until 2026-08-29, appeared in exactly
+ * two places a reader could see: the share card, and a front-page card in newspaper mode.
+ * The article itself never showed it, and the ordinary post list had no `<img>` in it at
+ * all — so a blog about objects (a flashlight review, a recipe, a trip) could not put a
+ * picture on its own front door without switching its whole homepage to the newspaper
+ * layout. The pictures were already stored, already resized, already served; only the
+ * showing was missing.
+ *
+ * BOTH DEFAULT TO `none`, and that is the load-bearing part. Turning a picture on is a
+ * decision about a site's voice — the same argument `FigureSettings.frame` makes for
+ * arriving frameless — and a default that grew a hero on every existing article would be a
+ * redesign nobody asked for, delivered by an upgrade.
+ */
+export type PostImageSettings = {
+  /**
+   * The picture at the top of an article: the width of the reading column, or nothing.
+   *
+   * THERE IS NO WIDER OPTION, and that is a measurement rather than a preference. A `wide`
+   * hero was built and removed the same afternoon: at contentWidth 672 on a 1440 viewport
+   * the left rail measured 126-376 while a broken-out hero started at 264, so it printed
+   * over the table of contents. The band between the two rails is EIGHT pixels either side
+   * of the column, and it does not grow with the viewport — the rails are positioned
+   * against the column and travel with it.
+   *
+   * `render/rail-css.ts` had already litigated the same collision for in-body pictures:
+   * `.img-wide` noses into the right gutter only, and stops doing even that in the first
+   * two blocks, "because a photograph with Tags printed across it is the worse of the two
+   * failures". A hero is permanently in those first two blocks.
+   */
+  hero: 'none' | 'inline'
+  /**
+   * The picture on a row of the post list.
+   * `side` = a small square beside the words. `top` = above the title, card-like, which is
+   * also the shape the grid view wants.
+   */
+  thumb: 'none' | 'side' | 'top'
+}
+
+/**
+ * The three knobs that change SHAPE rather than colour.
+ *
+ * The gap they close was measured on 2026-08-29 across three real sites: with 84 colour
+ * fields and 27 type numbers available, the whole visible difference between them was two
+ * colour values nobody can see. Every existing knob adjusts colour, size, or whether a
+ * block is present; none of them changes the shape of the thing, and shape is what an eye
+ * uses to tell two blogs apart.
+ *
+ * Each `normal`/today value below reproduces the current site EXACTLY, so this type can be
+ * added to an existing blog without moving a pixel until somebody chooses to move it.
+ */
+export type ShapeSettings = {
+  /**
+   * How much air. Multiplies `--sp`, the article's spacing unit, which every gap around
+   * the reading column is already a multiple of (`content/settings-css.ts`). It rides the
+   * same variable book mode scales, so the two compose instead of fighting.
+   */
+  density: 'compact' | 'normal' | 'relaxed'
+  /** Corner radius for the site's boxes. Pills and avatars keep their own shape. */
+  radius: 'square' | 'soft' | 'round'
+  /**
+   * How heavy headlines sit. `normal` is today's pair exactly — 700 for a post title, 600
+   * for a card title — because those two were never the same number and collapsing them
+   * into one knob would itself be a redesign.
+   */
+  headingWeight: 'light' | 'normal' | 'bold'
+}
+
+/**
+ * Who wrote this. One blog, one owner (ADR 0002), so this is a single person and not a
+ * table of them.
+ *
+ * It did not exist until 2026-08-29, and its absence was louder than it looks: every
+ * `BlogPosting` this software has ever emitted went out with no `author` at all, on every
+ * blog, which is the one structured-data field search engines lean on hardest when they
+ * are deciding whether a page was written by somebody. `render/schema.ts` said so in a
+ * comment — "No `author`, because this software has no owner-name setting" — and that was
+ * the whole reason.
+ *
+ * `name: ''` is the default and means silence: no byline, no author box, no `author` in
+ * the JSON-LD. An existing blog upgrades into exactly what it had.
+ */
+export type AuthorSettings = {
+  /** '' = no byline anywhere, and no `author` in the structured data. */
+  name: string
+  /** A sentence or two under an article. '' = no author box, even when a name is set. */
+  bio: string
+  /** Square portrait for the author box. '' = the box renders without one. */
+  avatarUrl: string
+  /** Where the name links to (a homepage, a profile). '' = the name is plain text. */
+  url: string
+}
+
 // Motion engine: ONE site-wide switch for all UI animation (public + admin). When
 // off (or under prefers-reduced-motion) every motion duration collapses to 0s.
 export type CacheSettings = {

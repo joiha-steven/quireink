@@ -31,6 +31,8 @@ const ru = {
   themeTime: 'По времени суток',
   readingSuffix: 'мин чтения',
   wordsSuffix: 'слов',
+  bylinePrefix: 'автор',
+  authorAbout: 'Об авторе',
   bookMode: 'Режим книги',
   bookModeClose: 'Закрыть',
   bookModePrev: 'Предыдущая страница',

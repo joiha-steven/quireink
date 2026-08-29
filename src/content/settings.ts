@@ -15,11 +15,16 @@ import {
   sanitizeTimezone, sanitizeAi, sanitizeInks,
 } from '@/content/settings-sanitize'
 import { sanitizeTypography, sanitizeFont } from '@/content/settings-type'
+import {
+  DEFAULT_POST_IMAGE, DEFAULT_SHAPE, DEFAULT_AUTHOR,
+  sanitizePostImage, sanitizeShape, sanitizeAuthor,
+} from '@/content/settings-shape'
 
 // Re-export so existing importers keep working.
 export { DEFAULT_THEME, themesToCss, getDefaultTheme, DEFAULT_TYPOGRAPHY, DEFAULT_FONT } from '@/content/themes'
 export { resolveSiteUrl, siteUrlIsUnset, resolveAppIcon } from '@/content/settings-resolve'
 export { typographyToCss, fontToCss } from '@/content/settings-css'
+export { shapeToCss } from '@/content/settings-shape'
 
 export const DEFAULT_SEO: SeoSettings = {
   autoSchema: true,
@@ -139,6 +144,9 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   home: DEFAULT_HOME,
   figure: DEFAULT_FIGURE,
   gallery: DEFAULT_GALLERY,
+  postImage: DEFAULT_POST_IMAGE,
+  shape: DEFAULT_SHAPE,
+  author: DEFAULT_AUTHOR,
   seo: DEFAULT_SEO,
   features: DEFAULT_FEATURES,
   comments: DEFAULT_COMMENTS,
@@ -216,6 +224,14 @@ export async function getSettings(): Promise<SiteSettings> {
       home: sanitizeHome(stored.home, DEFAULT_SETTINGS.home),
       figure: sanitizeFigure(stored.figure, DEFAULT_FIGURE),
       gallery: sanitizeGallery(stored.gallery, DEFAULT_GALLERY),
+      postImage: sanitizePostImage(stored.postImage, DEFAULT_POST_IMAGE),
+      shape: sanitizeShape(stored.shape, DEFAULT_SHAPE),
+      author: (() => {
+        const a = sanitizeAuthor(stored.author, DEFAULT_AUTHOR)
+        // The portrait is an image ref like the logo: stored store-relative, expanded on
+        // the way out (Invariant 3).
+        return { ...a, avatarUrl: expandBlob(a.avatarUrl) }
+      })(),
       comments: sanitizeComments(stored.comments, DEFAULT_COMMENTS),
       mcp: sanitizeMcp(stored.mcp, DEFAULT_SETTINGS.mcp),
       ai: sanitizeAi(stored.ai, DEFAULT_SETTINGS.ai),
@@ -345,6 +361,9 @@ export async function saveSettings(input: Partial<SiteSettings>): Promise<SiteSe
     home: sanitizeHome(input.home, current.home),
     figure: sanitizeFigure(input.figure, current.figure),
     gallery: sanitizeGallery(input.gallery, current.gallery),
+    postImage: sanitizePostImage(input.postImage, current.postImage),
+    shape: sanitizeShape(input.shape, current.shape),
+    author: sanitizeAuthor(input.author, current.author),
     comments: sanitizeComments(input.comments, current.comments),
     mcp: sanitizeMcp(input.mcp, current.mcp),
     ai: sanitizeAi(input.ai, current.ai),
