@@ -449,6 +449,18 @@ const vi = {
   autosaveLabel: 'Giữ bản nháp trên máy mỗi',
   autosaveHint: 'Số giây giữa hai lần lưu tạm khi bạn đang gõ, từ 15 đến 600. Không có gì được gửi lên máy chủ cho tới khi bạn bấm Lưu — đây là bản sống sót khi tab sập hoặc điện thoại tự tải lại.',
   overviewTitle: 'Tổng quan',
+  // The home screen greeting (`Greeting.tsx`). Four parts of the day, and a PATTERN that
+  // joins one to the name — so a language that puts no comma between them does not get one,
+  // and eleven dictionaries hold five rows instead of eight.
+  greetMorning: 'Chào buổi sáng',
+  greetAfternoon: 'Chào buổi chiều',
+  greetEvening: 'Chào buổi tối',
+  greetNight: 'Khuya rồi',
+  greetWithName: '{greeting}, {name}',
+  greetLastPublished: 'Đăng gần nhất',
+  greetNothingYet: 'Chưa đăng bài nào',
+  greetSetName: 'Đặt tên và ảnh của bạn',
+  greetToday: 'hôm nay',
   statPosts: 'Bài viết',
   statPages: 'Trang',
   statComments: 'Bình luận',

@@ -655,6 +655,18 @@ export type AdminStrings = {
   autosaveHint: string
   // overview
   overviewTitle: string
+  // The home screen greeting (`Greeting.tsx`). Four parts of the day, and a PATTERN that
+  // joins one to the name — so a language that puts no comma between them does not get one,
+  // and eleven dictionaries hold five rows instead of eight.
+  greetMorning: string
+  greetAfternoon: string
+  greetEvening: string
+  greetNight: string
+  greetWithName: string
+  greetLastPublished: string
+  greetNothingYet: string
+  greetSetName: string
+  greetToday: string
   statPosts: string
   statPages: string
   statComments: string

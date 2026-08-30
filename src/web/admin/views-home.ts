@@ -119,6 +119,22 @@ export async function dashboardView() {
   const published = posts.filter((p) => p.status === 'published')
 
   return {
+    // WHOSE desk this is. The name and the portrait are the ones already on Settings → Site
+    // (`author`), not a second pair: a blog has one owner (ADR 0002), and a second name to
+    // keep in step with the first is the kind of setting that is wrong within a month.
+    // Empty is a real answer — the greeting then invites the name instead of inventing one.
+    author: { name: settings.author.name, avatarUrl: settings.author.avatarUrl },
+    // The one fact about the OWNER'S OWN WRITING that belongs beside a greeting. Everything
+    // else on this screen is about the audience.
+    //
+    // ⚠️ Only what is ALREADY OUT. `status: 'published'` with a future date is a SCHEDULED
+    // post, and taking the plain maximum made the greeting read "last published in 10 days",
+    // which is not a sentence — seen on the demo, whose newest piece is queued for next week.
+    lastPublishedAt: published
+      .map((p) => p.date)
+      .filter((iso) => Date.parse(iso) <= Date.now())
+      .sort()
+      .at(-1) ?? null,
     posts: posts.length,
     pages: pages.length,
     comments: Object.values(commentCounts).reduce((sum, n) => sum + n, 0),

@@ -449,6 +449,18 @@ const en = {
   autosaveLabel: 'Keep a local copy every',
   autosaveHint: 'Seconds between local snapshots while you type, from 15 to 600. Nothing is sent to the server until you press Save — this is the copy that survives a crashed tab or a phone that reloaded under your thumb.',
   overviewTitle: 'Overview',
+  // The home screen greeting (`Greeting.tsx`). Four parts of the day, and a PATTERN that
+  // joins one to the name — so a language that puts no comma between them does not get one,
+  // and eleven dictionaries hold five rows instead of eight.
+  greetMorning: 'Good morning',
+  greetAfternoon: 'Good afternoon',
+  greetEvening: 'Good evening',
+  greetNight: 'Good evening',
+  greetWithName: '{greeting}, {name}',
+  greetLastPublished: 'Last published',
+  greetNothingYet: 'Nothing published yet',
+  greetSetName: 'Add your name and portrait',
+  greetToday: 'today',
   statPosts: 'Posts',
   statPages: 'Pages',
   statComments: 'Comments',

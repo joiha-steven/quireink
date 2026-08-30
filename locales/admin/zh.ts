@@ -449,6 +449,18 @@ const zh = {
   autosaveLabel: '本机保存间隔',
   autosaveHint: '输入时保存到本机的间隔秒数，15 到 600。在你按下保存之前不会向服务器发送任何内容——标签页崩溃或手机自动重载后，留下来的就是这份副本。',
   overviewTitle: '概览',
+  // The home screen greeting (`Greeting.tsx`). Four parts of the day, and a PATTERN that
+  // joins one to the name — so a language that puts no comma between them does not get one,
+  // and eleven dictionaries hold five rows instead of eight.
+  greetMorning: '早上好',
+  greetAfternoon: '下午好',
+  greetEvening: '晚上好',
+  greetNight: '夜深了',
+  greetWithName: '{greeting}，{name}',
+  greetLastPublished: '最近发布',
+  greetNothingYet: '还没有发布过文章',
+  greetSetName: '设置你的名字和头像',
+  greetToday: '今天',
   statPosts: '文章',
   statPages: '页面',
   statComments: '评论',

@@ -449,6 +449,18 @@ const ja = {
   autosaveLabel: 'この端末に保存する間隔',
   autosaveHint: '入力中にローカルへ保存する間隔（秒）。15〜600。保存を押すまでサーバーには何も送りません — タブが落ちたり、スマートフォンが再読み込みされても残るのはこの控えです。',
   overviewTitle: '概要',
+  // The home screen greeting (`Greeting.tsx`). Four parts of the day, and a PATTERN that
+  // joins one to the name — so a language that puts no comma between them does not get one,
+  // and eleven dictionaries hold five rows instead of eight.
+  greetMorning: 'おはようございます',
+  greetAfternoon: 'こんにちは',
+  greetEvening: 'こんばんは',
+  greetNight: 'おそくまでおつかれさまです',
+  greetWithName: '{name}さん、{greeting}',
+  greetLastPublished: '最終公開',
+  greetNothingYet: 'まだ公開した記事はありません',
+  greetSetName: '名前と顔写真を設定',
+  greetToday: '今日',
   statPosts: '投稿',
   statPages: 'ページ',
   statComments: 'コメント',
