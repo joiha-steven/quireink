@@ -207,10 +207,15 @@
       leave now records depth 0, so zero is a real reading and cannot also mean "no reading".
     - Ordering gained a name tiebreak everywhere (`order by … desc, path|country|name`), so rows
       on equal counts stop reshuffling between loads.
-  - ⚠️ **Tablets are undercounted and the UA cannot fix it.** iPadOS 13+ identifies as Macintosh
-    Safari, so an iPad lands in desktop/macOS. The only discriminator is `maxTouchPoints`, which
-    is client-side and not in the string. Measured over 30 days on a live blog: 117 desktop, 80
-    mobile, **0 tablet**.
+  - **Tablets, which the user agent cannot describe.** iPadOS 13+ identifies as Macintosh Safari
+    on purpose, so until 2026-08-30 every iPad counted as a desktop Mac — measured over 30 days
+    on a live blog: 117 desktop, 80 mobile, **0 tablet**. Multi-touch is the whole of the
+    difference and it exists only in the browser, so the view beacon sends `touch` and `parseUa`
+    reads a touching **macOS** agent as `tablet` / **iPadOS**. Gated on macOS deliberately: a
+    Windows touchscreen laptop is a desktop and its string says so. Nothing new is stored — the
+    same two coarse columns, with the right values — and a reader on cached JS or with scripting
+    off is bucketed exactly as before. Expect tablets to appear gradually as the old bundle
+    falls out of browser caches.
   - **Referrer hosts are folded for display** (`canonicalHost`): plumbing labels (`www.`, `m.`,
     `l.`, `lm.`, `out.`, `away.`, …) peel off, so `l.facebook.com` and `m.facebook.com` count as one
     `facebook.com` row — folded on the (host, visitor) pairs, so one person through two doors is

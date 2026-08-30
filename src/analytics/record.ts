@@ -90,12 +90,14 @@ export async function recordView(
   ua: string,
   referrerHost = '',
   country = '',
+  /** Multi-touch, reported by the browser. The only way to see an iPad; see `parseUa`. */
+  touch = false,
 ): Promise<void> {
   try {
     if (isBot(ua)) return
     const path = normalizePath(rawPath)
     if (!path || !(await pathIsServable(path))) return
-    const { device, browser, os } = parseUa(ua)
+    const { device, browser, os } = parseUa(ua, touch)
     bufferEvent({
       path,
       visitor: visitorHash(ip, ua),

@@ -25,6 +25,7 @@ const PER_MINUTE = 240
 
 type Payload = {
   path?: unknown; depth?: unknown; referrer?: unknown; dwell?: unknown; bytes?: unknown
+  touch?: unknown
 }
 
 export async function handleTrack(c: Context): Promise<Response> {
@@ -54,7 +55,9 @@ export async function handleTrack(c: Context): Promise<Response> {
       // and only when it is external, plus the country the CDN saw. Both privacy-light.
       const referrer = typeof body.referrer === 'string' ? body.referrer.slice(0, 255) : ''
       const country = (c.req.header('cf-ipcountry') ?? '').trim()
-      await recordView(path, ip, ua, referrer, country)
+      // Multi-touch, which the user agent cannot say and an iPad needs (`analytics/ua.ts`).
+      // Read as a strict boolean: this is an open POST, and the flag decides a bucket.
+      await recordView(path, ip, ua, referrer, country, body.touch === true)
     }
   } catch (error) {
     console.error(`[ERROR] track: ${(error as Error).message}`)
