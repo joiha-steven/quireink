@@ -563,6 +563,14 @@ export type AdminStrings = {
   relatedCountHint: string
   customCss: string
   customCssHint: string
+  cssLines: string
+  cssBytes: string
+  cssUnclosed: string
+  cssStrayBrace: string
+  cssShowNames: string
+  cssHideNames: string
+  cssNamesNote: string
+  cssStructure: string
   saveSettings: string
   savedSettings: string
   menuTitle: string
