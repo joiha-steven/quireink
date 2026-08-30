@@ -8,7 +8,7 @@
 import type { Tour } from './tour'
 import { registerEditorFlows } from './tour-flows-editor'
 import { registerHomeFlows } from './tour-flows-home'
-import { registerAutosaveFlows, registerKeyFlows, registerPaletteFlows, registerPaneFlows } from './tour-flows-pane'
+import { registerAutosaveFlows, registerKeyFlows, registerPaletteFlows, registerPaneFlows, registerWriteLayoutFlows } from './tour-flows-pane'
 
 export function registerAdminFlows({ flow, expect, atWidth }: Tour): void {
 
@@ -139,13 +139,13 @@ export function registerAdminFlows({ flow, expect, atWidth }: Tour): void {
   // The home screen and the rail (ADR 0024 step 6), likewise.
   registerHomeFlows({ flow, expect, atWidth })
 
-  // The Write pane, which is a screen at every width and a column beside every editor.
-  registerPaneFlows({ flow, expect, atWidth })
-
-  // The keyboard pressed rather than listed, and the autosave that reaches the server.
-  registerKeyFlows({ flow, expect, atWidth })
-  registerAutosaveFlows({ flow, expect, atWidth })
-  registerPaletteFlows({ flow, expect, atWidth })
+  // The writing surfaces, all in `tour-flows-pane.ts`: the pane and its selection, the
+  // keyboard pressed rather than listed, the autosave that reaches the server, ⌘K, and the
+  // pane surviving a click inside itself.
+  for (const register of [registerPaneFlows, registerKeyFlows, registerAutosaveFlows,
+                          registerPaletteFlows, registerWriteLayoutFlows]) {
+    register({ flow, expect, atWidth })
+  }
 
   flow('admin: the trash takes a post and gives it back', () => expect('/admin/trash', `
     (async () => {

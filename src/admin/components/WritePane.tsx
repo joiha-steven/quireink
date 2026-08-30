@@ -24,6 +24,9 @@ import { useToast } from '@/admin/ui/Toast'
 import { formatDateTimeShort } from '@/utils'
 import { Button } from '@/admin/ui/Button'
 import { Tabs } from './kit'
+import { SlideOver } from './SlideOver'
+import { TaxonomyManager } from './TaxonomyManager'
+import { SeriesManager } from './SeriesManager'
 import { Tick } from '@/admin/ui/Tick'
 import { useAdminT } from './I18nProvider'
 import { useWritingItems, type WriteScope, type WriteSort } from './useWritingItems'
@@ -194,9 +197,27 @@ function Rows({
             // The date beside "Published" is the PUBLICATION date — showing the last save
             // there read as a wrong publish time. A draft's only honest date is its save.
             const when = !drafty && it.kind === 'post' ? it.created : it.touched
-            const rowClass = `block border-b border-neutral-100 px-4 py-3 dark:border-neutral-800 ${
-              active || ticked ? 'bg-white dark:bg-neutral-900' : 'hover:bg-white/60 dark:hover:bg-neutral-900/60'
+            // THE OPEN ROW HAS TO BE FINDABLE AT A GLANCE. It was white on the pane's
+            // neutral-50 — a difference you can measure and cannot see, on the one row the
+            // column exists to point at. Three signals now, because one of them is always the
+            // wrong one for somebody: the lifted ground, the title in full weight (already
+            // there), and a bar down the left edge in the pen's own accent — the only colour
+            // this admin spends, and the reason it is spent here is that this is the only
+            // "you are here" the write screen has.
+            //
+            // The bar is `absolute` inside a `relative` row rather than a left border: a
+            // border would move every title 2px right on selection, so the list would twitch
+            // as you walked it.
+            const rowClass = `relative block border-b border-neutral-100 px-4 py-3 dark:border-neutral-800 ${
+              active
+                ? 'bg-white dark:bg-neutral-900'
+                : ticked
+                  ? 'bg-white dark:bg-neutral-900'
+                  : 'hover:bg-white/60 dark:hover:bg-neutral-900/60'
             }`
+            const marker = active ? (
+              <span aria-hidden className="absolute inset-y-0 left-0 w-[3px] bg-[var(--pen-edge)]" />
+            ) : null
             const body = (
               <span className="flex items-baseline gap-2">
                   {/* The box takes the DOT'S place rather than standing beside it. Adding a
@@ -252,6 +273,7 @@ function Rows({
                 aria-current={active ? 'page' : undefined}
                 className={rowClass}
               >
+                {marker}
                 {body}
               </Link>
             )
@@ -266,8 +288,15 @@ function Rows({
  * The pane, self-fetching. `activeSlug` marks the open piece's row. The column keeps its
  * own scroll so a long list never scrolls the sheet, and the fade says where it clips.
  */
-export function WritePane({ activeSlug, always = false, tools }: { activeSlug?: string; always?: boolean; tools?: React.ReactNode }) {
+export function WritePane({ activeSlug, always = false }: { activeSlug?: string; always?: boolean }) {
+  const t = useAdminT()
   const { data } = useView('content')
+  // THE DRAWERS ARE THE PANE'S OWN. They hung off the Write SCREEN, handed down as a `tools`
+  // prop — which was fine while only that screen drew the pane, and became the one thing
+  // stopping the pane from being hoisted out of the routed tree. They manage the categories
+  // and the series of the list standing right there; this is where they belong.
+  const [drawer, setDrawer] = useState<'none' | 'taxonomy' | 'series'>('none')
+  const close = () => setDrawer('none')
   return (
     <aside
       className={`${
@@ -275,11 +304,29 @@ export function WritePane({ activeSlug, always = false, tools }: { activeSlug?: 
       } shrink-0 flex-col self-start overflow-hidden rounded-[10px] border border-neutral-200/80 bg-neutral-50 xl:sticky xl:top-0 xl:max-h-[calc(100vh-1.5rem)] dark:border-neutral-800 dark:bg-neutral-950`}
     >
       {data ? (
-        <Rows {...data} activeSlug={activeSlug} tools={tools} />
+        <Rows
+          {...data}
+          activeSlug={activeSlug}
+          tools={
+            <>
+              <button type="button" className={SHEET_TOOL} onClick={() => setDrawer('taxonomy')}>{t.tabTaxonomy}</button>
+              <button type="button" className={SHEET_TOOL} onClick={() => setDrawer('series')}>{t.tabSeries}</button>
+            </>
+          }
+        />
       ) : (
         <div className="p-4">
           <div className="h-9 animate-pulse rounded-lg bg-neutral-200/60 dark:bg-neutral-800" />
         </div>
+      )}
+      {drawer !== 'none' && data && (
+        <SlideOver
+          label={drawer === 'taxonomy' ? t.tabTaxonomy : t.tabSeries}
+          onClose={close}
+          footer={<Button variant="secondary" onClick={close}>{t.close}</Button>}
+        >
+          {drawer === 'taxonomy' ? <TaxonomyManager posts={data.posts} /> : <SeriesManager posts={data.posts} />}
+        </SlideOver>
       )}
     </aside>
   )
