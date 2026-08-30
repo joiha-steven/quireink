@@ -109,4 +109,48 @@ describe('clientIp', () => {
   it('falls back to unknown only when there is no server and no header', () => {
     expect(clientIp(ctx({}, null))).toBe('unknown')
   })
+
+  /**
+   * EVERY range the local-hop test claims, one row each.
+   *
+   * It was pinned by two addresses — `::ffff:127.0.0.1` and `10.0.0.3` — and the other five
+   * branches were reachable by nothing. Measured on 2026-08-30: making the unique-local test
+   * (`fc00::/7`) answer the opposite left all 2377 tests green, and the symptom would have
+   * been the regression this file already records, on the container networks where it is the
+   * normal setup — a proxy on `fd00::` stops being believed, every visitor collapses into the
+   * proxy's own bucket, and one person searching rate-limits the site.
+   */
+  const LOCAL = [
+    ['IPv6 loopback', '::1'],
+    ['IPv4 loopback, as Bun maps it', '::ffff:127.0.0.1'],
+    ['IPv4 loopback', '127.0.0.53'],
+    ['unique-local fc00::/7, the container-network default', 'fd00::1'],
+    ['the other half of fc00::/7', 'fc00::1'],
+    ['IPv6 link-local', 'fe80::1'],
+    ['private 10/8', '10.0.0.3'],
+    ['private 172.16/12, at the bottom', '172.16.0.1'],
+    ['private 172.16/12, at the top', '172.31.255.254'],
+    ['private 192.168/16', '192.168.1.1'],
+    ['IPv4 link-local', '169.254.0.1'],
+  ] as const
+
+  for (const [what, peer] of LOCAL) {
+    it(`believes a proxy header from ${what}`, () => {
+      expect(clientIp(ctx({ 'cf-connecting-ip': '9.9.9.9' }, peer))).toBe('9.9.9.9')
+    })
+  }
+
+  // The near misses, so the ranges above are ranges and not "anything starting with 17".
+  const PUBLIC = [
+    ['just below 172.16/12', '172.15.0.1'],
+    ['just above 172.16/12', '172.32.0.1'],
+    ['a public address that starts like a private one', '192.169.1.1'],
+    ['global unicast IPv6', '2001:db8::1'],
+  ] as const
+
+  for (const [what, peer] of PUBLIC) {
+    it(`ignores a forged header from ${what}`, () => {
+      expect(clientIp(ctx({ 'cf-connecting-ip': '9.9.9.9' }, peer))).toBe(peer)
+    })
+  }
 })

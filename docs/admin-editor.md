@@ -43,6 +43,13 @@ that file first; this one only adds what is true here.
   ⚠️ **A fixed point is not the contract.** That file's original law — serialize twice, compare
   — passed on all four of those, because a document that is destroyed once and then holds still
   IS a fixed point. Anything that asks "does it settle?" is blind to "did it lose something?".
+  ⚠️ **Nor is "it still renders".** Eight fixtures are allowed to move, because Markdown itself
+  permits the normalisation — entities decode, a lazy line folds, a reference link is written
+  back inline. Excusing them by asserting only that the output is non-empty made the hatch
+  wider than the law: any of the eight could have collapsed to one character and the check
+  would have said ok. Each now carries a BEHAVIOUR it belongs to, both counts are bounded, and
+  what it publishes after a save is pinned in `golden/editor/` and compared byte for byte —
+  the same shape `src/render/golden.test.ts` uses for its divergences from 1.x.
 - **Keyboard: one table, in `editorKeys.ts`**, read by the handlers AND by the Help screen, so a
   chord cannot move without the printed sheet following it. Tiptap's own bindings are left as
   they come; what this product adds is `Mod-s` (save), `Mod-k` (link), `Mod-Shift-h`

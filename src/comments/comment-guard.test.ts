@@ -50,6 +50,31 @@ describe('guardComment', () => {
     expect((await getCommentTree('open-thread')).some((n) => n.id === c.id)).toBe(true)
   })
 
+  /**
+   * HALF-CONFIGURED IS OFF, and both halves count.
+   *
+   * The two-sided check had no test: loosening it on 2026-08-30 left all 2377 green. A
+   * provider chosen but no key pasted is what the Integrations screen looks like partway
+   * through being filled in, and reaching `ask()` from there sends a real reader's comment
+   * to a vendor with no credential — a request that cannot succeed and should never have
+   * left the machine.
+   */
+  for (const [what, keys] of [
+    ['a provider chosen but no key', { aiProvider: 'anthropic', aiApiKey: '' }],
+    ['a key pasted but no provider', { aiProvider: '', aiApiKey: 'sk-test' }],
+    ['neither', { aiProvider: '', aiApiKey: '' }],
+  ] as const) {
+    it(`asks nothing when the integration has ${what}`, async () => {
+      await saveIntegrationKeys(keys)
+      let called = 0
+      globalThis.fetch = (async () => { called++; return new Response('{}') }) as unknown as typeof fetch
+      const c = await plant('A perfectly ordinary comment.')
+      await guardComment(c.id, 'Visitor', 'A perfectly ordinary comment.')
+      expect(called).toBe(0)
+      expect((await getCommentTree('open-thread')).some((n) => n.id === c.id)).toBe(true)
+    })
+  }
+
   it('the owner can switch the gate off and nothing is even asked', async () => {
     const { saveSettings } = await import('@/content/settings')
     await saveSettings({ ai: { altText: true, excerpt: true, commentGuard: false } })

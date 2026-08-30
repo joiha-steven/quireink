@@ -1,7 +1,7 @@
 import { describe, it, expect } from '@/test/vitest'
-import { sanitizeEnabledPalettes, sanitizeComments, sanitizeThemes, sanitizeFront, sanitizeHome, sanitizeListPath, sanitizeMotion } from '@/content/settings-sanitize'
+import { sanitizeEnabledPalettes, sanitizeComments, sanitizeThemes, sanitizeFront, sanitizeHome, sanitizeListPath, sanitizeMenu, sanitizeMotion, migrateThemes } from '@/content/settings-sanitize'
 import { sanitizeFontUrl } from '@/content/settings-type'
-import { ALL_PALETTE_IDS, defaultThemes } from '@/content/themes'
+import { ALL_PALETTE_IDS, DEFAULT_PRESET_ID, defaultThemes } from '@/content/themes'
 import { DEFAULT_SETTINGS } from '@/content/settings'
 
 const COMMENTS_OFF = { enabled: false, turnstile: false, googleAuth: false }
@@ -214,5 +214,78 @@ describe('sanitizeMotion, upgrading from the old boolean', () => {
     expect(sanitizeMotion({ keyVolume: 62.4 }, M).keyVolume).toBe(62)
     expect(sanitizeMotion({ keyVolume: 'loud' }, M).keyVolume).toBe(60)
     expect(sanitizeMotion({ keyVolume: Number.NaN }, M).keyVolume).toBe(60)
+  })
+})
+
+/**
+ * The navigation, which is the one sanitiser whose output is a LINK a reader clicks.
+ *
+ * It had no test at all. Measured on 2026-08-30 by loosening each of its two filters in turn:
+ * both left all 2377 tests green, and both are reachable from an import or an MCP write
+ * rather than from the form — the form cannot produce a menu item with a numeric label, and
+ * `saveSettings` takes whatever shape it is handed.
+ */
+describe('sanitizeMenu', () => {
+  const KEEP = [{ label: 'Archive', href: '/archive' }]
+
+  it('keeps a well-formed item and trims both halves', () => {
+    expect(sanitizeMenu([{ label: '  Archive  ', href: ' /archive ' }], []))
+      .toEqual([{ label: 'Archive', href: '/archive' }])
+  })
+
+  it('falls back when the input is not an array at all', () => {
+    for (const junk of [undefined, null, 'Archive', 42, { label: 'Archive' }]) {
+      expect(sanitizeMenu(junk, KEEP)).toEqual(KEEP)
+    }
+  })
+
+  // Each of these used to reach `.trim()` on something that has no `trim`, which is a 500 on
+  // every page of the site rather than a missing menu entry.
+  it('drops an entry that is not an object with two strings', () => {
+    expect(sanitizeMenu([null, undefined, 'Archive', 7, [], { label: 7, href: '/a' },
+      { label: 'A', href: 7 }, { label: 'A' }, { href: '/a' }], [])).toEqual([])
+  })
+
+  it('drops an entry whose halves are present but empty once trimmed', () => {
+    expect(sanitizeMenu([{ label: '   ', href: '/a' }], [])).toEqual([])
+    expect(sanitizeMenu([{ label: 'A', href: '   ' }], [])).toEqual([])
+    expect(sanitizeMenu([{ label: '', href: '' }], [])).toEqual([])
+  })
+
+  it('drops the bad ones and keeps the good ones, in order', () => {
+    expect(sanitizeMenu([{ label: 'A', href: '/a' }, null, { label: 'B', href: '' },
+      { label: 'C', href: '/c' }], [])).toEqual([{ label: 'A', href: '/a' }, { label: 'C', href: '/c' }])
+  })
+})
+
+/**
+ * The one-palette-to-many migration, which runs on EVERY read of a settings row written
+ * before palettes existed. Loosening its condition also left the suite green.
+ */
+describe('migrateThemes', () => {
+  const LEGACY = { light: { bg: '#123456' }, dark: { bg: '#654321' } }
+
+  const OTHER = ALL_PALETTE_IDS.find((id) => id !== DEFAULT_PRESET_ID)!
+
+  it('seeds the default palette from an old single-theme row', () => {
+    expect(migrateThemes({ theme: LEGACY })[DEFAULT_PRESET_ID]!.light.bg).toBe('#123456')
+  })
+
+  it('seeds the palette the row had CHOSEN, not always the built-in default', () => {
+    const out = migrateThemes({ theme: LEGACY, themePreset: OTHER })
+    expect(out[OTHER]!.light.bg).toBe('#123456')
+    expect(out[DEFAULT_PRESET_ID]!.light.bg).not.toBe('#123456')
+  })
+
+  // The row this guards: a blog migrated once already has `themes`, and may still carry the
+  // dead `theme` key. Re-applying it would repaint a palette the owner has since edited.
+  it('leaves a row that has ALREADY migrated alone, dead key and all', () => {
+    const out = migrateThemes({ themes: defaultThemes(), theme: LEGACY })
+    expect(out[DEFAULT_PRESET_ID]!.light.bg).not.toBe('#123456')
+    expect(out).toEqual(defaultThemes())
+  })
+
+  it('returns the built-in palettes untouched when there is nothing to migrate', () => {
+    expect(migrateThemes({})).toEqual(defaultThemes())
   })
 })
