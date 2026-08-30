@@ -9,7 +9,7 @@ import { Button } from '@/admin/ui/Button'
 import { useToast } from '@/admin/ui/Toast'
 import { useAdminT } from './I18nProvider'
 import type { AdminStrings } from '@/i18n/admin-i18n'
-import { PANEL_LIST } from './kit'
+import { PANEL } from './kit'
 
 type Props = {
   value: FontSettings
@@ -77,7 +77,11 @@ export function FontUpload({ value, onChange }: Props) {
         }}
       />
 
-      <div className={PANEL_LIST}>
+      {/* Two to a line. Four weights, one per full-width row, put a two-word label at one end
+          and its Upload button at the other with ~400px of nothing between them — measured
+          2026-08-31, the same hole the pen card had. A weight and its button are a pair; the
+          grid keeps them a pair, and the four rows become two. */}
+      <div className={`${PANEL} sm:grid sm:grid-cols-2`}>
         {FONT_WEIGHTS.map((w) => {
           const has = value.faces.some((f) => f.weight === w)
           return (

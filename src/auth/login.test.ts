@@ -6,7 +6,7 @@
 import { describe, it, expect, beforeEach, afterAll } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
 import { db } from '@/store/db'
-import { one } from '@/store/query'
+import { one, run } from '@/store/query'
 import { createUser, setTotpSecret, totpStateFor } from './users'
 import { codeForStep, generateSecret, stepAt } from './totp'
 import { normalizeCode, redeemCode, regenerateCodes, remainingCodes, CODE_COUNT } from './recovery'
@@ -282,5 +282,32 @@ describe('enrolment hand-off', () => {
     expect(session).not.toBeNull()
     expect(resolveSession(session!.token)?.userId).toBe(userId)
     expect(completeEnrolment(result.ticket, { ip: freshIp() })).toBeNull()
+  })
+})
+
+/**
+ * THE LAST WAY BACK IN, which `bun run user reset-2fa` depends on.
+ *
+ * The one case that actually strands an owner is the phone gone AND the recovery codes gone:
+ * the web screen can re-enrol and mint codes, but both ask for the authenticator, so neither
+ * helps. The console command clears the secret and the codes, and everything after that
+ * hangs on this: with no secret, a correct password must land on ENROLMENT rather than on a
+ * code prompt nobody can answer.
+ */
+describe('the console rescue', () => {
+  it('sends a password-holder with no second factor to enrolment, not to a code prompt', async () => {
+    // The owner is created enrolled by `beforeEach`, which is the state this rescues from.
+    await regenerateCodes(userId)
+    expect((await submitPassword({ username: 'owner', password: PASSWORD, ip: freshIp() })).status)
+      .toBe('need-2fa')
+
+    // What `bun run user reset-2fa` does, and nothing else.
+    setTotpSecret(userId, null)
+    run(`delete from recovery_codes where user_id = ?`, userId)
+
+    expect(remainingCodes(userId)).toBe(0)
+    expect(totpStateFor(userId)?.secret ?? null).toBeNull()
+    expect((await submitPassword({ username: 'owner', password: PASSWORD, ip: freshIp() })).status)
+      .toBe('need-enrolment')
   })
 })
