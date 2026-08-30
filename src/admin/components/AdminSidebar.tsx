@@ -233,17 +233,6 @@ export function AdminSidebar({
             {(c || icons) && <IconExternal />}
             {!c && <span className="truncate">{t.navViewBlog}</span>}
           </a>
-          {/* The icon switch, last in the drawer of secondary things: a set-once preference
-              about this rail on this machine, which spent a while as a PERMANENT footer row —
-              one more page-looking line for something nobody touches twice a month. Not in
-              Settings (nothing about the blog changes), and never collapsed, where it would
-              be an unlabelled glyph offering to remove the glyphs. */}
-          {!c && (
-            <button type="button" onClick={toggleIcons} className={rowClass(false)}>
-              {icons && <IconGlyphs />}
-              <span className="truncate">{icons ? t.navIconsHide : t.navIconsShow}</span>
-            </button>
-          )}
         </div>
       )}
     </>
@@ -265,6 +254,20 @@ export function AdminSidebar({
           one row object, and `variant='icon'` is the public header's — it ignores the row class
           and drew this line 4px left of the two under it. */}
       <ThemeToggle lang={lang} variant="text" showIcon={c || icons} showLabel={!c} triggerClassName={utilClass(c)} />
+      {/* The icon switch, between the two other preferences about this machine. It was a
+          footer row once, dressed in `SIDEBAR_NAV` — which is what made it read as a fifth
+          page rather than as a control, and what sent it into the secondary drawer. Here it
+          wears `SIDEBAR_UTIL` like the light switch above it, so the three things that change
+          how the rail LOOKS on this machine sit together and none of them looks like a
+          destination. Not in Settings (nothing about the blog changes), and never on the
+          collapsed rail, where it would be an unlabelled glyph offering to remove the
+          glyphs. */}
+      {!c && (
+        <button type="button" onClick={toggleIcons} className={utilClass(false)}>
+          {icons && <IconGlyphs />}
+          <span className="truncate">{icons ? t.navIconsHide : t.navIconsShow}</span>
+        </button>
+      )}
       <CacheButton className={utilClass(c)} icon={c || icons ? <IconCache /> : null} collapsed={c} />
       <div className="mt-1 border-t border-neutral-200 pt-1 dark:border-neutral-800">
         <form action={signOut} className="contents">
