@@ -24,10 +24,13 @@ import { useAdminT } from './I18nProvider'
 import { SIDEBAR_NAV, SIDEBAR_NAV_ACTIVE, SIDEBAR_NAV_QUIET, SIDEBAR_UTIL } from './headerActions'
 import { CacheButton } from './CacheButton'
 import { BrandMark, BrandWord } from './Wordmark'
+import { openPalette } from './CommandPalette'
+import { chordFor, printChord, tip } from './editorKeys'
 import { ThemeToggle } from '@/admin/ui/ThemeToggle'
 import {
   IconHome, IconAnalytics, IconContent, IconComment, IconMedia, IconNewsletter, IconTrash, IconSettings,
   IconLog, IconExternal, IconCache, IconSignOut, IconChevronLeft, IconHelp, IconGlyphs, IconMore, IconAssistant,
+  IconSearch,
 } from './navIcons'
 
 const STORE_KEY = 'quireink-admin-nav-collapsed'
@@ -194,6 +197,30 @@ export function AdminSidebar({
 
   const navItems = (c: boolean): ReactNode => (
     <>
+      {/* SEARCH IS NOT A DESTINATION, so it is not a nav row: it wears the control class the
+          footer's switches wear, sits above the rail rather than in it, and is separated by a
+          rule. The same distinction that moved "Show icons" out of the drawer.
+          It exists because ⌘K cannot be discovered. Printing the chord ON the control is how
+          a mouse teaches a keyboard: click it once, read what it says, and the second time
+          your hands do it without the mouse. Collapsed, the glyph is all there is room for and
+          the chord lives in the tooltip. */}
+      <button
+        type="button"
+        onClick={() => { close(); openPalette() }}
+        title={c ? tip(t.paletteTitle, 'palette') : undefined}
+        className={`${SIDEBAR_UTIL} mb-1 border-b border-neutral-200 pb-2 dark:border-neutral-800 ${c ? 'justify-center' : 'justify-between gap-2.5'}`}
+      >
+        <span className={`flex items-center ${c ? '' : 'gap-2.5'}`}>
+          <IconSearch />
+          {!c && <span className="truncate">{t.paletteTitle}</span>}
+        </span>
+        {!c && (
+          <span className="shrink-0 rounded border border-neutral-200 px-1.5 py-0.5 text-[11px] tabular-nums text-neutral-500 dark:border-neutral-700 dark:text-neutral-400">
+            {printChord(chordFor('palette'))}
+          </span>
+        )}
+      </button>
+
       {primary.map((l) => navLink(l, c))}
 
       {/* The one row in this column that names no destination, so it is a button rather than

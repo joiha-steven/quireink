@@ -251,6 +251,31 @@ export function registerAutosaveFlows({ flow, expect }: Tour): void {
  * true is that choosing a row puts you on the tab with that setting on it.
  */
 export function registerPaletteFlows({ flow, expect }: Tour): void {
+  // The chord cannot be discovered, so the rail carries a control that opens the same thing
+  // and PRINTS the chord beside itself. A button that does not open it teaches a shortcut that
+  // does not exist, which is worse than teaching nothing.
+  flow('admin: the rail teaches ⌘K by offering it', () => expect('/admin', `
+    (async () => {
+      const wait = async (fn, tries = 60, gap = 100) => {
+        for (let i = 0; i < tries; i++) {
+          const hit = fn()
+          if (hit) return hit
+          await new Promise((r) => setTimeout(r, gap))
+        }
+        return null
+      }
+      const button = await wait(() => [...document.querySelectorAll('button')]
+        .find((b) => /⌘K|Ctrl\\+K/.test(b.textContent || '') || /⌘K|Ctrl\\+K/.test(b.getAttribute('title') || '')))
+      if (!button) return 'the rail prints the chord nowhere — nobody will find it'
+      if (document.querySelector('[role=dialog] input')) return 'something was already open'
+      button.click()
+      const box = await wait(() => document.querySelector('[role=dialog] input'))
+      if (!box) return 'the control prints the chord and does not open the thing'
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+      box.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+      return 'ok (' + (button.textContent || button.getAttribute('title')).trim() + ')'
+    })()`, 1200))
+
   flow('admin: ⌘K finds a setting and lands on its tab', () => expect('/admin', `
     (async () => {
       const wait = async (fn, tries = 60, gap = 100) => {

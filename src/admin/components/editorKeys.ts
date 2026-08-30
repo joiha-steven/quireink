@@ -33,6 +33,9 @@ export const SHORTCUTS: Shortcut[] = [
   { id: 'attributes', chord: 'Mod-Shift-a', does: 'The Attributes panel: slug, date, terms, both pictures, the SEO fields and the Trash.' },
   { id: 'markdown', chord: 'Mod-Shift-m', does: 'Switch between the writing surface and the Markdown source.' },
   { id: 'focus', chord: 'Mod-\\', does: 'Focus mode: everything but the paper goes away.' },
+  // Not the editor's, but it is printed by the same two things — the Help sheet and a
+  // tooltip — and a second table would be a second place for a chord to drift.
+  { id: 'palette', chord: 'Mod-k', does: 'Search everything: the screens, the settings and your writing. Also the button at the top of the rail.' },
 ]
 
 /**

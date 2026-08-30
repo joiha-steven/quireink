@@ -27,6 +27,18 @@ import { SETTINGS_INDEX } from './settings-index'
 import { useAdminT } from './I18nProvider'
 import type { AdminStrings } from '@/locales/types'
 
+/**
+ * Asked for by name, so nothing has to hold a setter.
+ *
+ * ⌘K IS NOT DISCOVERABLE AND WAS NEVER GOING TO BE. This file's own header says a palette you
+ * must find before the admin is usable is a lock rather than a door, and it was written for
+ * "hands that already know it is there" — which is every hand except a new one. The rail now
+ * carries a search control that opens this and PRINTS THE CHORD beside itself, so the way to
+ * learn the shortcut is to use the mouse once.
+ */
+export const PALETTE_EVENT = 'quireink:palette'
+export const openPalette = (): void => { window.dispatchEvent(new Event(PALETTE_EVENT)) }
+
 type Row = {
   id: string
   label: string
@@ -114,8 +126,17 @@ export function CommandPalette() {
         setOpen((was) => !was)
       }
     }
+    // A WINDOW EVENT is the second door, and it is why the rail can offer this without
+    // importing it: the rail is drawn once at the top of the shell and the palette once at
+    // the bottom, and neither is the other's parent. `useFocusMode.ts` keeps three components
+    // in step the same way and for the same reason.
+    const onAsk = () => setOpen(true)
     window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    window.addEventListener(PALETTE_EVENT, onAsk)
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      window.removeEventListener(PALETTE_EVENT, onAsk)
+    }
   }, [])
 
   // The writing, from the admin's own search — the one that reaches into the body. Debounced
