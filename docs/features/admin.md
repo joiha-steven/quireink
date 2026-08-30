@@ -143,6 +143,29 @@
   **distinct visitors** (one person = 1, not page views). **Per-page drill-down** (`?path=`,
   `AnalyticsPageDetail`) repeats the trend + sources + depth for a single URL. Plus a **CSV export**
   of the daily series.
+  - **Every piece, not the busiest ten** (`PieceIndex`, 2026-08-30). The top-pages table stays the
+    screen's default face — it answers "what is doing well" — and underneath it sits the complete
+    index: one row per post and page, filterable, each linking to that piece's drill-down. Until it
+    existed the ONLY door into a piece's own figures was a row in the top ten, so the fortieth piece
+    could not be looked at even though its screen and its numbers were already built. Deliberately
+    unranked and **uncapped** (a "top 50" would put the same wall one row lower); capped in HEIGHT
+    only. Pieces with no views in the window are listed at zero — read by nobody is an answer — which
+    is why `pieces` is joined to `titles` on the client rather than on the server. There is a second
+    door in the editor itself (`EditorLinks`), on the same condition as View post.
+  - **Left quickly** — on the drill-down, the share of measured leaves that were a glance: under ten
+    seconds, **or** under a quarter read (`QUICK_MS` / `QUICK_DEPTH`, the latter deliberately the
+    same boundary as the first bar of the read-depth split, so two numbers on one screen cannot
+    disagree). It never shows without the sample count beside it, exactly as Delivery's bytes do:
+    a leave sample exists only when the browser delivered the beacon, so the denominator is not the
+    view count.
+    ⚠️ **The beacon used to drop the entire bounce cohort.** `depth()` is 0 on a long article nobody
+    scrolled, and the leave beacon refused to send at depth 0 — so a reader who arrived, looked and
+    left in four seconds sent no sample, while everyone who stayed long enough to scroll sent one.
+    Every figure drawn from `analytics_scroll` was therefore an average over the people who did NOT
+    bounce: **average time on page and average read depth both read high, by construction.** Fixed
+    2026-08-30 (`src/assets/js/track.ts`). Both averages fall on any install after the fix, and the
+    lower numbers are the true ones; rows recorded before it are still missing that cohort, which is
+    what the sample count beside the share is there to expose.
   - **Right now:** a live strip under the range tabs — distinct visitors over the trailing five
     minutes and the pages they are on (`getRightNow`, polled every 10 s via
     `/api/admin/view/analytics-now`; the poll pauses while the tab is hidden). No socket: the flush

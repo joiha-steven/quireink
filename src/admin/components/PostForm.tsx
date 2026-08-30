@@ -14,6 +14,7 @@ import { EditorActions } from './EditorActions'
 import { MediaLibrary } from './MediaLibrary'
 import { TimeMachine } from './TimeMachine'
 import { TrashLink } from './TrashLink'
+import { EditorLinks } from './EditorLinks'
 import { SheetTitle } from './SheetTitle'
 import { saveStatusLine, useStickyOffset, useUnsavedGuard } from './useLocalDraft'
 import { useDraftSafety } from './serverDraft'
@@ -371,12 +372,8 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
           scheduled={scheduled}
           onPublish={() => void handleSave('published', scheduled ? t.scheduled : t.published)}
           onClose={() => { setSettingsOpen(false); setAsking(false) }}
-          links={
-            <>
-              {savedSlug && <button type="button" onClick={() => setTimeMachine(true)} className="text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white">{t.history}</button>}
-              {draft.status === 'published' && savedSlug && !scheduled && <a href={`/${savedSlug}`} target="_blank" rel="noopener" className="text-neutral-500 dark:text-neutral-400 hover:text-neutral-900">{t.viewPost}</a>}
-            </>
-          }
+          links={<EditorLinks slug={savedSlug} published={draft.status === 'published'}
+            scheduled={scheduled} onHistory={() => setTimeMachine(true)} />}
           bottom={savedSlug ? <TrashLink kind="post" slug={savedSlug} /> : undefined}
         />
       )}

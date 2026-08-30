@@ -20,7 +20,7 @@
 
 import { getActivity } from '@/server/activity'
 import { getAutosave } from '@/content/autosave'
-import { getAnalytics, getRightNow, getViewTotals } from '@/analytics/summary'
+import { getAnalytics, getPieces, getRightNow, getViewTotals } from '@/analytics/summary'
 import { getTrashedSubscribers } from '@/news/subscribers'
 import { getPageAnalytics } from '@/analytics/page'
 import { getAdminComments, countsByPosts, getTrashedComments } from '@/comments/comments'
@@ -127,12 +127,19 @@ async function analyticsDetailView(path: string, days: 1 | 7 | 30 | 90 | 365, bu
   }
 }
 
-/** The analytics summary — the screen's default face. */
+/**
+ * The analytics summary — the screen's default face.
+ *
+ * `pieces` is what makes a piece OUTSIDE the top table reachable. The table stays the
+ * default face; this is the index behind it, and it is joined to `titles` on the client
+ * rather than here so that a piece with no views at all still has a row to click.
+ */
 async function analyticsSummaryView(days: 1 | 7 | 30 | 90 | 365, bucket: 'day' | 'hour') {
   return {
     summary: await getAnalytics(days, bucket),
     rightNow: await getRightNow(),
     titles: await analyticsTitles(),
+    pieces: await getPieces(days, bucket),
     range: days,
   }
 }
