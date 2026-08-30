@@ -13,7 +13,7 @@ import type { InkSettings } from '@/types'
 import { PEN_AUX_LIGHT, PEN_LIGHT } from '@/render/pen'
 import { contrastRatio } from '@/render/pen-derive'
 import { NOTE_TEXT, SETTING_GAP, Setting } from './kit'
-import { ColorRow } from './ThemeFields'
+import { ColorGrid, ColorRow } from './ColorControls'
 import { useAdminT } from './I18nProvider'
 
 /** The five, in the order the toolbar offers them. */
@@ -43,7 +43,7 @@ export function InkFields({ inks, bodyText, selectionDefaults, onChange }: {
       <p className={NOTE_TEXT}>{t.inkHelp}</p>
 
       <Setting label={t.inkHighlighter}>
-        <div className="space-y-2.5">
+        <ColorGrid>
           {PIGMENTS.map((ink) => (
             <ColorRow
               key={ink}
@@ -52,7 +52,7 @@ export function InkFields({ inks, bodyText, selectionDefaults, onChange }: {
               onChange={(v) => set(ink, v)}
             />
           ))}
-        </div>
+        </ColorGrid>
       </Setting>
 
       {tooDark.length > 0 && (
@@ -65,17 +65,17 @@ export function InkFields({ inks, bodyText, selectionDefaults, onChange }: {
       )}
 
       <Setting label={t.inkLines} note={t.inkLinesHint}>
-        <div className="space-y-2.5">
+        <ColorGrid>
           <ColorRow label={t.inkRing} value={shown('ring', PEN_AUX_LIGHT.red)} onChange={(v) => set('ring', v)} />
           <ColorRow label={t.inkUnderline} value={shown('underline', PEN_AUX_LIGHT.graphite)} onChange={(v) => set('underline', v)} />
-        </div>
+        </ColorGrid>
       </Setting>
 
       <Setting label={t.inkSelection} note={t.inkSelectionHint}>
-        <div className="space-y-2.5">
+        <ColorGrid>
           <ColorRow label={t.inkSelectionLight} value={shown('selection', selectionDefaults.light)} onChange={(v) => set('selection', v)} />
           <ColorRow label={t.inkSelectionDark} value={shown('selectionDark', selectionDefaults.dark)} onChange={(v) => set('selectionDark', v)} />
-        </div>
+        </ColorGrid>
       </Setting>
     </div>
   )

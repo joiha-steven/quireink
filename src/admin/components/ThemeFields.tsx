@@ -9,7 +9,8 @@ import type { SchemeDefault, ThemePreset } from '@/content/themes'
 import { getPreset, SCHEMES } from '@/content/themes'
 import { useAdminT } from './I18nProvider'
 import type { AdminStrings } from '@/i18n/admin-i18n'
-import { CHECK, CONTROL_CHROME, INSET, META, ResetButton, Select, Setting, SETTING_GAP } from './kit'
+import { CHECK, INSET, META, ResetButton, Select, Setting, SETTING_GAP } from './kit'
+import { CELL, ColorField } from './ColorControls'
 
 type ColorKey = keyof ThemeColors
 
@@ -142,53 +143,6 @@ function PresetCard({
  * moving to the kit: the kit is the chrome every screen shares, and this is a control two
  * colour editors share.
  */
-/**
- * ONE width for a colour cell, so the two column heads sit exactly over the two columns.
- *
- * 148px = a 44px swatch, an 8px gap, and 96px of field. The field was 76px for one build and
- * `#FCFCFC` came out as `#FCFCF(` — seven characters and a hash is the WIDEST thing this
- * control ever holds, so it is what the width is cut for.
- */
-const CELL = 'w-[9.25rem]'
-
-function ColorField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
-  return (
-    <span className={`flex shrink-0 items-center gap-2 ${CELL}`}>
-      <input
-        type="color"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        aria-label={label}
-        className="h-9 w-11 shrink-0 rounded-lg border border-neutral-300 ring-1 ring-inset ring-black/5 dark:border-neutral-700"
-      />
-      <input
-        type="text"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        aria-label={label}
-        // `h-9`, matching the colour swatch it sits beside. It was `py-1`, which measured 30px
-        // against the swatch's 36 — six pixels out, on ten rows in one column.
-        className={`${CONTROL_CHROME} h-9 min-w-0 flex-1 px-2 text-sm uppercase`}
-      />
-    </span>
-  )
-}
-
-/**
- * One colour on its own: the label, then the control. The ink card's shape.
- *
- * Exported since 2026-08-24 because the ink card wants the same row, and a second copy of
- * these classes is exactly the drift `check:admin-kit` exists to catch.
- */
-export function ColorRow({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
-  return (
-    <label className="flex items-center justify-between gap-3">
-      <span className="text-sm text-neutral-700 dark:text-neutral-300">{label}</span>
-      <ColorField label={label} value={value} onChange={onChange} />
-    </label>
-  )
-}
-
 /**
  * ONE COLOUR, BOTH MODES, ON ONE LINE.
  *

@@ -150,6 +150,35 @@ export const CONTROL_CHROME =
 // hand-drawn eight had no minimum height at all, so they measured 38 against that same 40.
 export const CONTROL = `${CONTROL_CHROME} min-h-10 px-3.5 py-2 text-sm`
 
+/**
+ * The same chrome worn by a box that CONTAINS controls instead of being one.
+ *
+ * For a field made of more than one element — a colour swatch welded to its hex, a unit
+ * glued to a number — where the border has to belong to the PAIR or they read as two
+ * unrelated controls sitting near each other. That is what the palette editor looked like:
+ * an OS-drawn swatch and a rounded pill with an 8px gap between them, twenty-eight times.
+ *
+ * DERIVED, not re-typed, for the reason `SHEET_TOOL_ON_CANVAS` in `sheet.tsx` is: a
+ * hand-copy of `CONTROL_CHROME` is exactly the drift `check:admin-kit` exists to catch, and
+ * the only difference that belongs between them is which element the focus ring answers to.
+ */
+export const CONTROL_GROUP = CONTROL_CHROME.replaceAll('focus:', 'focus-within:')
+
+/**
+ * A number field with the browser's stepper taken off.
+ *
+ * `<input type="number">` ships a pair of OS-drawn arrows inside the box. On a lone field —
+ * posts per page, a retention count — they are harmless and occasionally useful, so those
+ * keep them. In the type scale they are not: twenty-seven fields 64px wide, each holding
+ * `1.13` AND a stepper, in a nine-by-three grid. The arrows are then most of what the eye
+ * sees and none of what it is looking for, and the number they crowd is the point of the
+ * screen. Arrow keys still step the value; nothing is lost but the drawing.
+ *
+ * `tabular-nums` for the same reason the hex fields have it: a column of numbers that
+ * changes width per digit reads as wobbling.
+ */
+export const CONTROL_NUM = `${CONTROL_CHROME} tabular-nums [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`
+
 /** The tick. No `accent-color` does not mean unstyled, it means the OS accent, which is BLUE, in
  *  an admin of black, white and neutrals. Five shipped so and the two that remembered disagreed
  *  — three ticks. This is the primary button's fill: a tick is ink, and there is one ink. */
