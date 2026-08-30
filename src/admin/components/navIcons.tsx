@@ -161,3 +161,14 @@ export function IconAssistant() {
     </svg>
   )
 }
+
+// The rail's search control (⌘K). A magnifier drawn with the set's own stroke, and the handle
+// left a hair short of the ring so it reads as a lens on a page rather than a stamped symbol.
+export function IconSearch() {
+  return (
+    <svg viewBox="0 0 24 24" className={C} {...S} aria-hidden>
+      <circle cx="11" cy="11" r="6" />
+      <path d="m15.6 15.6 3.9 3.9" />
+    </svg>
+  )
+}

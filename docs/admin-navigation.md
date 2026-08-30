@@ -111,6 +111,16 @@ it — so "make the text bigger", "go to the trash" and "write something" are on
   name it — it is just not printed.
 - It lives outside the canvas and outside the error boundary, because it is how you leave a
   screen that has gone wrong.
+- **The rail carries a search control, and printing the chord on it is the point.** ⌘K cannot be
+  discovered; a palette you must already know about is a lock rather than a door. The control
+  is not a nav row — search is not a destination — so it wears `SIDEBAR_UTIL` above the rule,
+  the same distinction that moved Show icons to the footer. Clicking it opens the palette and
+  shows `⌘K` beside itself, which is how a mouse teaches a keyboard: use it once, read what it
+  says, and the second time your hands do it without the mouse. Collapsed, the glyph is all
+  there is room for and the chord moves into the tooltip.
+  The chord is one row in `editorKeys.ts` like the rest, so the button, the Help sheet and the
+  handler cannot drift apart. `tour-flows-pane.ts` presses the BUTTON and checks the palette
+  opens: a control that prints a shortcut it does not perform teaches something false.
 
 ## The write pane belongs to the SHELL, not to the pages
 
