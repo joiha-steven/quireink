@@ -27,7 +27,15 @@ export async function writeExcerpt(slug: string, mechanical: string, content: st
     if (!ai.excerpt) return
 
     const answer = await ask([{
-      text: `Write the excerpt for this blog post in ${languageName(language)}: one or two plain sentences, at most ${Math.max(30, excerptLength)} words, in the author's tone, no quotation marks, no "this post". Answer with the excerpt only.\n\n---\n\n${content.slice(0, BODY_CAP)}`,
+      // THE VOICE IS THE POINT. This text goes out under the owner's name, on their blog
+      // and in their feed, so the one thing it must not sound like is a machine describing
+      // an article. The em dash is named because it is the tell: models reach for it two or
+      // three times a paragraph, and readers have learned to read it as "written by AI".
+      text: `Write the excerpt for this blog post in ${languageName(language)}: one or two plain sentences, at most ${Math.max(30, excerptLength)} words.\n`
+        + `Write as the author would, in the voice of the post itself. Plain words, ordinary punctuation.\n`
+        + `Do NOT use em dashes or en dashes; use a comma, a full stop or a colon instead.\n`
+        + `No quotation marks, no "this post", no "in this article", no summarising phrases at all.\n`
+        + `Answer with the excerpt only.\n\n***\n\n${content.slice(0, BODY_CAP)}`,
     }], 500)
     if (!answer) return
 

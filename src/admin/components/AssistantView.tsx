@@ -22,20 +22,50 @@ import { CONTROL, EmptyState, META, PageHeader } from './kit'
 import { SHEET_FIXED, SHEET_TOOL, SheetTop } from './sheet'
 import { Button } from '@/admin/ui/Button'
 import { useAdminT } from './I18nProvider'
+import { RichText } from './rich-text'
 
 type Turn =
   | { kind: 'user'; text: string }
   | { kind: 'assistant'; text: string }
-  | { kind: 'tool_use'; id: string; name: string; args: Record<string, unknown> }
+  | { kind: 'tool_use'; id: string; name: string; args: Record<string, unknown>; reasoning?: string }
   | { kind: 'tool_result'; id: string; name: string; text: string }
 
 /** One question and everything that came back for it. */
 type Block = { question: string; parts: Turn[] }
 
+const ANSWER =
+  'mt-2 border-l-2 border-neutral-200 pl-3 text-sm leading-relaxed whitespace-pre-wrap text-neutral-700 dark:border-neutral-700 dark:text-neutral-300'
+
 const CHIP =
   'inline-flex items-center rounded-full border border-neutral-200 px-2.5 py-0.5 text-[11px] text-neutral-500 dark:border-neutral-700 dark:text-neutral-400'
 
 const AI_SETTINGS = '/admin/settings?tab=ai'
+
+/**
+ * The server's events, one object at a time.
+ *
+ * A chunk boundary lands wherever the network puts it, so an event routinely arrives in
+ * two reads — the buffer is the whole point, and the same reason `assistant-stream.ts`
+ * carries one on the other side.
+ */
+async function* sseEvents(body: ReadableStream<Uint8Array>): AsyncGenerator<Record<string, unknown>> {
+  const reader = body.getReader()
+  const decoder = new TextDecoder()
+  let buffer = ''
+  for (;;) {
+    const { done, value } = await reader.read()
+    if (done) return
+    buffer += decoder.decode(value, { stream: true })
+    let cut = buffer.indexOf('\n\n')
+    while (cut !== -1) {
+      const frame = buffer.slice(0, cut).trim()
+      buffer = buffer.slice(cut + 2)
+      cut = buffer.indexOf('\n\n')
+      if (!frame.startsWith('data:')) continue
+      try { yield JSON.parse(frame.slice(5).trim()) as Record<string, unknown> } catch { /* partial */ }
+    }
+  }
+}
 
 export function AssistantView({ title, configured, model }: {
   title: string; configured: boolean; model: string
@@ -45,6 +75,9 @@ export function AssistantView({ title, configured, model }: {
   const [draft, setDraft] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  // What has arrived so far for the question in flight. Cleared the moment the server's
+  // own turns land, so the finished answer is never drawn twice.
+  const [live, setLive] = useState('')
   const endRef = useRef<HTMLDivElement>(null)
   const boxRef = useRef<HTMLTextAreaElement>(null)
 
@@ -67,19 +100,40 @@ export function AssistantView({ title, configured, model }: {
     // an old tool result adds cost without adding memory worth paying for.
     const next: Turn[] = [...turns, { kind: 'user', text: asked }]
     setTurns(next)
+    setLive('')
     try {
       const res = await fetch('/api/assistant', {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
+        headers: { 'content-type': 'application/json', accept: 'text/event-stream' },
         body: JSON.stringify({ turns: next.slice(-30) }),
       })
-      const json = (await res.json()) as ApiResponse<{ turns: Turn[] }>
-      if (!json.success || !json.data) throw new Error(json.error || 'failed')
-      setTurns([...next, ...json.data.turns])
+      // A stream answers 200 before anything can go wrong, so a refusal arrives as an
+      // event. A server that did not stream at all (an old build behind a proxy that
+      // strips the header) still answers JSON, and that path is still read.
+      if (!res.body || !res.headers.get('content-type')?.includes('text/event-stream')) {
+        const json = (await res.json()) as ApiResponse<{ turns: Turn[] }>
+        if (!json.success || !json.data) throw new Error(json.error || 'failed')
+        setTurns([...next, ...json.data.turns])
+        return
+      }
+      let shown = ''
+      for await (const event of sseEvents(res.body)) {
+        if (typeof event.delta === 'string') {
+          shown += event.delta
+          setLive(shown)
+        } else if (event.error) {
+          throw new Error(String(event.error))
+        } else if (event.done) {
+          // The SERVER'S turns, not the text assembled here: the deltas are for the eye,
+          // and a dropped one must not become the transcript the next question is built on.
+          setTurns([...next, ...((event.turns ?? []) as Turn[])])
+        }
+      }
     } catch (e) {
       const msg = (e as Error).message
       setError(msg === 'ai_not_configured' ? t.aiNotConfigured : t.assistantFailed)
     } finally {
+      setLive('')
       setBusy(false)
       setTimeout(() => endRef.current?.scrollIntoView({ block: 'end', behavior: 'smooth' }), 30)
     }
@@ -164,13 +218,18 @@ export function AssistantView({ title, configured, model }: {
                     </p>
                     {said.length > 0 && <p className={`${META} mt-5 mb-1`}>{model || t.assistantModelOn}</p>}
                     {said.map((p, j) => (
-                      <p
-                        key={j}
-                        className="mt-2 border-l-2 border-neutral-200 pl-3 text-sm leading-relaxed whitespace-pre-wrap text-neutral-700 dark:border-neutral-700 dark:text-neutral-300"
-                      >
-                        {p.kind === 'assistant' ? p.text : ''}
-                      </p>
+                      <div key={j} className={ANSWER}>
+                        <RichText text={p.kind === 'assistant' ? p.text : ''} />
+                      </div>
                     ))}
+                    {/* The answer still arriving, drawn by the same renderer: a mark that
+                        has not closed yet stays literal, so nothing flickers as it lands. */}
+                    {i === blocks.length - 1 && live !== '' && (
+                      <div className={ANSWER}>
+                        <RichText text={live} />
+                        <span className="ml-0.5 inline-block h-4 w-1.5 animate-pulse bg-neutral-400 align-text-bottom dark:bg-neutral-500" />
+                      </div>
+                    )}
                     {/* What it touched, in one quiet row under the answer — tool RESULTS ride
                         in the transcript and stay off the screen. */}
                     {used.length > 0 && (

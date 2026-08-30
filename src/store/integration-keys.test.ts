@@ -8,6 +8,10 @@ import {
   getIntegrationKeys, getIntegrationStatus, saveIntegrationKeys,
 } from '@/store/integration-keys'
 import { AI_PROVIDERS, seesImages } from '@/server/ai-capabilities'
+import { withoutProviderEnv } from '@/test/env'
+
+// This file asserts what happens with NO provider configured; the machine may disagree.
+withoutProviderEnv()
 
 const DIR = './.tmp/test-integration-keys'
 freshDatabase(DIR)

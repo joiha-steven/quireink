@@ -19,6 +19,7 @@ import { getSettings } from '@/content/settings'
 import { DEFAULT_MODELS } from '@/server/ai-provider'
 import { languageName } from '@/media/alt-text'
 import { buildChat, parseChat, type ToolSpec, type Turn } from '@/server/assistant-dialects'
+import { readChatStream, streams } from '@/server/assistant-stream'
 
 export type { Turn }
 
@@ -40,6 +41,10 @@ function systemPrompt(language: string, title: string): string {
     `You are the built-in assistant of "${title}", a Quire Ink blog, talking to its OWNER inside the admin.`,
     'You act through the provided tools — the same surface an MCP agent gets, with the same limits: deletes go to the Trash, the real newsletter broadcast does not exist here, subscriber addresses are not available.',
     `Answer in ${languageName(language)} unless the owner writes in another language. Be brief and concrete; report what you actually did.`,
+    // Anything this writes can end up on the blog, so it writes like the person whose blog
+    // it is. The dash is named for the same reason it is named in the excerpt prompt: it is
+    // the single punctuation mark that makes a paragraph read as machine-written.
+    'When you write anything for publication (a post, an excerpt, a page), write it as a person would, in the blog\'s own voice. Never use em dashes or en dashes; a comma, a full stop or a colon does the same work without sounding machine-written.',
     'For clearly destructive or bulk actions, state what you are about to do and ask once before doing it.',
   ].join('\n')
 }
@@ -68,7 +73,7 @@ export type AssistantReply =
  * executed and appended, ending in its text answer. The caller stores nothing — the
  * conversation lives in the owner's open tab, which is exactly as long as it should.
  */
-export async function runAssistant(turns: Turn[]): Promise<AssistantReply> {
+export async function runAssistant(turns: Turn[], onText?: (delta: string) => void): Promise<AssistantReply> {
   const keys = await getIntegrationKeys()
   if (!keys.aiProvider || !keys.aiApiKey) return { ok: false, error: 'ai_not_configured' }
   const model = keys.aiModel || DEFAULT_MODELS[keys.aiProvider]
@@ -85,7 +90,11 @@ export async function runAssistant(turns: Turn[]): Promise<AssistantReply> {
   const all = () => [...turns, ...added]
 
   for (let round = 0; round <= MAX_ROUNDS; round++) {
-    const req = buildChat(keys.aiProvider, model, keys.aiApiKey, system, all(), specs)
+    // Stream only when somebody is watching AND the provider's stream is one we have
+    // actually verified. A caller with no `onText` (a test, a future job) takes the plain
+    // path, which is unchanged.
+    const streaming = onText !== undefined && streams(keys.aiProvider)
+    const req = buildChat(keys.aiProvider, model, keys.aiApiKey, system, all(), specs, { stream: streaming })
     if (!req) return { ok: false, error: 'ai_not_configured' }
     let answer
     try {
@@ -102,13 +111,23 @@ export async function runAssistant(turns: Turn[]): Promise<AssistantReply> {
         console.error(`[ERROR] assistant: ${keys.aiProvider} answered ${res.status} ${why}`)
         return { ok: false, error: 'provider_error' }
       }
-      answer = parseChat(keys.aiProvider, await res.json())
+      answer = streaming
+        ? await readChatStream(keys.aiProvider, res, onText)
+        : parseChat(keys.aiProvider, await res.json())
     } catch (error) {
       console.error(`[ERROR] assistant: ${(error as Error).message}`)
       return { ok: false, error: 'provider_error' }
     }
 
     if (answer.calls.length === 0 || round === MAX_ROUNDS) {
+      // NOTHING AT ALL is a failure, not an answer. A model that spends its whole output
+      // ceiling thinking returns `finish_reason: length` with empty content, and reporting
+      // that as a successful reply paints a blank panel after ten seconds and logs nothing.
+      // Only on the first round: later rounds have tool results worth keeping.
+      if (!answer.text && added.length === 0) {
+        console.error(`[ERROR] assistant: ${keys.aiProvider} answered with no text and no tool call`)
+        return { ok: false, error: 'provider_error' }
+      }
       // The cap answers with whatever text there is rather than a dead end — the owner
       // sees how far it got, and every executed tool is already in the log.
       if (answer.text) added.push({ kind: 'assistant', text: answer.text })
