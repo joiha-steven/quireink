@@ -17,6 +17,7 @@ import { Button } from '@/admin/ui/Button'
 import { formatTime } from '@/utils'
 import { useAdminT } from './I18nProvider'
 import { useFocusMode } from './useFocusMode'
+import { SHORTCUTS, matchesChord, tip } from './editorKeys'
 
 /** Quiet text control, shared by everything on the bar that is not Preview/Publish. */
 const QUIET =
@@ -48,16 +49,6 @@ function countWords(markdown: string): number {
     .replace(/[#>*_`~[\]()!-]/g, ' ')
   const matched = text.match(/\S+/g)
   return matched ? matched.length : 0
-}
-
-/**
- * What to call the modifier in a tooltip. Read off the platform because the whole point of
- * printing it is that the reader can press it: "Ctrl" on a Mac keyboard is a different key.
- * `navigator.platform` is deprecated and still the only thing every browser answers.
- */
-function modKey(): string {
-  const p = typeof navigator === 'undefined' ? '' : navigator.platform || navigator.userAgent
-  return /Mac|iPhone|iPad/.test(p) ? '\u2318' : 'Ctrl'
 }
 
 export function EditorActions({
@@ -106,16 +97,32 @@ export function EditorActions({
   const focusRef = useRef(focus)
   useEffect(() => { focusRef.current = focus }, [focus])
 
-  // The shortcut, registered once per editor. Ctrl/Cmd + backslash because it is what a
-  // writer's hands know from every other tool that hides a sidebar, and because nothing in
-  // TipTap or the browser claims it. Ignored while a modifier combination is being used
-  // for anything else — `metaKey || ctrlKey` alone is the whole test.
+  // The three chords that belong to the SHEET rather than to the selection, on the window
+  // rather than on the editor: `Mod-s` has to work with the cursor in the title field too,
+  // and `Mod-Shift-m` leaves the writing surface, which cannot be the thing listening.
+  // The marks' own chords live in their extensions; the whole table is in `editorKeys.ts`.
+  //
+  // ⚠️ `Mod-s` IS THE ONE THAT MATTERED. The editor's autosave writes to localStorage and
+  // NEVER to the server — deliberately, so editing a published post cannot push half a
+  // sentence live. So a writer whose hands press Cmd+S got the browser's "Save page as…"
+  // dialog and a reasonable belief that the work was saved. `preventDefault` takes the key
+  // back from the browser; saving a draft is what it should always have done.
+  const saveRef = useRef(onSaveDraft)
+  const mdRef = useRef(onToggleMd)
+  const attrRef = useRef(onToggleSettings)
+  useEffect(() => {
+    saveRef.current = onSaveDraft
+    mdRef.current = onToggleMd
+    attrRef.current = onToggleSettings
+  })
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === '\\' && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault()
-        setFocus(!focusRef.current)
-      }
+      const hit = SHORTCUTS.find((s) => matchesChord(e, s.chord))
+      if (!hit) return
+      if (hit.id === 'focus') { e.preventDefault(); setFocus(!focusRef.current) }
+      else if (hit.id === 'save') { e.preventDefault(); saveRef.current() }
+      else if (hit.id === 'markdown') { e.preventDefault(); mdRef.current() }
+      else if (hit.id === 'attributes') { e.preventDefault(); attrRef.current() }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
@@ -174,10 +181,10 @@ export function EditorActions({
             SPELLED OUT in the same voice — a bold mono "MD" next to a plain-text word read
             as a different control ("việc gì làm lệch tone như vậy"). While it is on, the
             editor shows no toolbar. */}
-        <button type="button" onClick={onToggleMd} aria-pressed={mdView} className={`${QUIET} ${mdView ? 'font-medium text-neutral-900 dark:text-white' : ''}`}>
+        <button type="button" title={tip(t.tbMarkdown, 'markdown')} onClick={onToggleMd} aria-pressed={mdView} className={`${QUIET} ${mdView ? 'font-medium text-neutral-900 dark:text-white' : ''}`}>
           {t.tbMarkdown}
         </button>
-        <button type="button" onClick={onToggleSettings} className={QUIET}>
+        <button type="button" title={tip(t.attributes, 'attributes')} onClick={onToggleSettings} className={QUIET}>
           {settingsOpen ? t.hideAttributes : t.attributes}
         </button>
         {/* The third of the look-at-it group. It takes the button row and the write pane
@@ -188,17 +195,17 @@ export function EditorActions({
           type="button"
           onClick={() => setFocus(!focus)}
           aria-pressed={focus}
-          title={`${t.edFocus} (${modKey()} \\)`}
+          title={tip(t.edFocus, 'focus')}
           className={`${QUIET} ${focus ? 'font-medium text-neutral-900 dark:text-white' : ''}`}
         >
           {t.edFocus}
         </button>
         {savedSlug && (
-          <Button variant="secondary" type="button" onClick={onPreview}>
+          <Button variant="secondary" type="button" title={t.previewDraft} onClick={onPreview}>
             {t.previewDraft}
           </Button>
         )}
-        <Button variant="secondary" onClick={onSaveDraft} disabled={saving || !dirty}>
+        <Button variant="secondary" title={tip(t.saveDraft, 'save')} onClick={onSaveDraft} disabled={saving || !dirty}>
           {t.saveDraft}
         </Button>
         <Button onClick={onPublish} disabled={saving || (!dirty && published)}>

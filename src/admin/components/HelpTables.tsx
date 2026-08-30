@@ -3,6 +3,7 @@
 // glance, not a paragraph to read.
 import { TableFrame, THEAD, TROW } from './kit'
 import { C, P } from './help-kit'
+import { BUILTIN, SHORTCUTS, printChord } from './editorKeys'
 
 type Row = [syntax: string, does: string]
 
@@ -64,6 +65,22 @@ function Lookup({ rows, head }: { rows: Row[]; head: [string, string] }) {
       </tbody>
     </TableFrame>
   )
+}
+
+/**
+ * The editor's keyboard, printed from the same list the handlers read (`editorKeys.ts`).
+ *
+ * Generated rather than typed out, because a shortcut sheet that has drifted from the
+ * shortcuts is worse than no sheet: the reader presses the key, nothing happens, and stops
+ * trusting the page.
+ *
+ * This product's own chords first, then the ones Tiptap brings. The order is the useful one:
+ * somebody arriving here already knows Ctrl+B, and what they came to find out is that the
+ * highlighter has a key at all.
+ */
+export function ShortcutsTable() {
+  const rows: Row[] = [...SHORTCUTS, ...BUILTIN].map((s) => [printChord(s.chord), s.does])
+  return <Lookup rows={rows} head={['Press', 'And it does']} />
 }
 
 export function MarkdownTable() {

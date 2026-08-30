@@ -171,7 +171,7 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
     // states stay live — TipTap 3 disables this by default, which left the
     // active highlights stale and the contextual table-tools row never showing.
     shouldRerenderOnTransaction: true,
-    extensions: editorExtensions(t.editorPlaceholder),
+    extensions: editorExtensions(t.editorPlaceholder, t.promptLink),
     content: initialContent,
     editorProps: {
       attributes: { class: 'prose max-w-none min-h-[420px] px-4 py-4' },

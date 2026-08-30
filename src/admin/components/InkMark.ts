@@ -123,6 +123,14 @@ export const Ink = Mark.create({
     }
   },
 
+  // The pen the product is named for had no chord at all. `Mod-Shift-h` for highlight, and it
+  // reaches for the DEFAULT ink — a chord is the fast gesture, and choosing a colour is what
+  // the toolbar's swatches are for. The chord table and the collisions it was checked against
+  // are in `editorKeys.ts`.
+  addKeyboardShortcuts() {
+    return { 'Mod-Shift-h': () => this.editor.commands.toggleInk(DEFAULT_INK) }
+  },
+
   /**
    * Typing the syntax inks it on the spot, in TWO rules, because a suffix cannot be waited for.
    *

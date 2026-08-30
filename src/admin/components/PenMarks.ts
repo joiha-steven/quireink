@@ -180,6 +180,12 @@ export const PenRing = Mark.create({
     }
   },
 
+  // `Mod-Shift-o`, o for the shape it draws. Red without an ink named, which is what the
+  // command already defaults to — see `editorKeys.ts` for the whole chord table.
+  addKeyboardShortcuts() {
+    return { 'Mod-Shift-o': () => this.editor.commands.toggleRing() }
+  },
+
   addInputRules() {
     return [
       markInputRule({
