@@ -140,6 +140,25 @@ describe('book mode', () => {
     expect(viewport.dataset.pages).toBe('2')
   })
 
+  // An unfolded foldable is 673px and shaped like a book, and the desktop margins were what
+  // kept it from getting one: 48px a side left 577px, 39px short of a spread, so the reader
+  // got a single ~80-character column with the fold's crease through every line. The margins
+  // yield before the second page does.
+  it('gives an unfolded foldable two pages by yielding the margins', () => {
+    page(article, LABELS)
+    const overlay = open()
+    const viewport = overlay.querySelector<HTMLElement>('.book-viewport')!
+    geometry(overlay.querySelector<HTMLElement>('.book-flow')!, 673, 1200)
+
+    window.innerWidth = 673
+    dispatchEvent(new Event('resize'))
+    expect(viewport.dataset.pages).toBe('2')
+    // (673 - 20*2 - 56) / 2, floored: two paperback pages with the crease in the gutter.
+    expect(overlay.querySelector<HTMLElement>('.book-flow')!.style
+      .getPropertyValue('--book-col-w')).toBe('288px')
+  })
+
+
   it('does nothing when the owner has book mode off, so there is no toggle', () => {
     page('<div class="prose"><p>Body</p></div>', LABELS)
     expect(() => book()).not.toThrow()
