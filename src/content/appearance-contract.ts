@@ -45,8 +45,8 @@ export const PROMISED_VARS: { group: string; vars: Promised[] }[] = [
     group: 'shape',
     vars: [
       { name: '--radius', note: 'corner radius' },
-      { name: '--fw-title', note: "the post title's weight" },
-      { name: '--fw-heading', note: 'card titles, related, read-next' },
+      { name: '--fw-title', note: "the archive heading's weight" },
+      { name: '--fw-heading', note: 'the post title, card titles and every bold label' },
       { name: '--density', note: 'multiplies every gap' },
     ],
   },

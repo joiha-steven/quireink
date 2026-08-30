@@ -150,7 +150,7 @@ main{flex:1;padding:3rem 0 1rem}
   text-decoration:none}
 
 header.site{padding:1.75rem 0}
-header.site .title{font-family:var(--font-sans);font-weight:600;color:var(--c-heading);
+header.site .title{font-family:var(--font-sans);font-weight:var(--fw-heading,600);color:var(--c-heading);
   text-decoration:none;font-size:var(--fs-h4);line-height:var(--lh-h4);
   letter-spacing:var(--ls-h4)}
 /* width+height on the tag reserve the space, so the header does not jump when the logo
@@ -221,7 +221,7 @@ article > header .t-small{margin:0}
 /* One pointer forward at the article's end. The label whispers like .related's heading;
    the title is the only thing at reading size, because the title is the offer. */
 .read-next-label{font-size:var(--fs-small);line-height:var(--lh-small);
-  letter-spacing:var(--ls-small);font-weight:600;color:var(--c-meta);margin:0 0 .5rem}
+  letter-spacing:var(--ls-small);font-weight:var(--fw-heading,600);color:var(--c-meta);margin:0 0 .5rem}
 .read-next-title{margin:0;font-size:var(--fs-h3);line-height:var(--lh-h3);letter-spacing:var(--ls-h3)}
 .read-next-title a{font-weight:var(--fw-heading,600);color:var(--c-heading)}
 .related{font-size:var(--fs-small);line-height:var(--lh-small);
@@ -229,7 +229,7 @@ article > header .t-small{margin:0}
 /* The size is stated even though the block already sets it: an h2 carries a UA default of
    1.5em, so leaving it to inherit made the quiet label the largest thing in the block. */
 .related h2{font-size:var(--fs-small);line-height:var(--lh-small);
-  letter-spacing:var(--ls-small);font-weight:600;color:var(--c-meta);margin:0 0 1.25rem}
+  letter-spacing:var(--ls-small);font-weight:var(--fw-heading,600);color:var(--c-meta);margin:0 0 1.25rem}
 .related ul{list-style:none;padding:0;margin:0}
 .related li + li{margin-top:1rem}
 .related a{font-weight:var(--fw-heading,600);color:var(--c-heading)}
@@ -269,7 +269,7 @@ ${UTILITY_CSS}
    disappear instead of overlapping; the right padding widens the mask to cover the
    longest month label. */
 .tl-year-tag{align-items:center;gap:.5rem;white-space:nowrap;color:var(--c-heading);
-  font-weight:600;background:var(--c-bg);padding:.1rem 3rem .1rem 0;
+  font-weight:var(--fw-heading,600);background:var(--c-bg);padding:.1rem 3rem .1rem 0;
   font-size:var(--fs-h3);line-height:var(--lh-h3);
   letter-spacing:var(--ls-h3)}
 .tl-year-tag .tl-dot{background:var(--c-accent)}
@@ -327,12 +327,12 @@ form.search button{padding:.5rem 1rem;border:1px solid var(--c-rule);border-radi
 aside.series{border:1px solid var(--c-rule);border-radius:var(--radius,.5rem);padding:1.25rem 1.5rem;
   margin:2rem 0 0;font-size:var(--fs-small);line-height:var(--lh-small);letter-spacing:var(--ls-small)}
 aside.series .series-head{margin:0 0 .875rem;color:var(--c-meta)}
-aside.series .series-head a{font-weight:600}
+aside.series .series-head a{font-weight:var(--fw-heading,600)}
 aside.series ol{margin:0;border-top:1px solid var(--c-rule);padding:1rem 0 0 1.25rem}
 aside.series li + li{margin-top:.65rem}
 aside.series li a{color:var(--c-meta);text-decoration:none}
 aside.series li a:hover{color:var(--c-heading)}
-aside.series li[aria-current]{position:relative;color:var(--c-heading);font-weight:600}
+aside.series li[aria-current]{position:relative;color:var(--c-heading);font-weight:var(--fw-heading,600)}
 aside.series li[aria-current]::after{content:"";position:absolute;left:-2.75rem;top:3px;bottom:3px;
   width:2px;background:var(--c-accent)}
 p.tags{margin-top:1.5rem;font-size:var(--fs-small);line-height:var(--lh-small);
@@ -348,7 +348,7 @@ p.tags{margin-top:1.5rem;font-size:var(--fs-small);line-height:var(--lh-small);
 .callout{border-left:2px solid var(--c-accent);
   padding:calc(var(--sp) * .75) 0 calc(var(--sp) * .75) var(--sp);
   margin:calc(var(--sp) * 1.75) 0}
-.callout-label{font-weight:600;color:var(--c-heading);margin:0 0 calc(var(--sp) * .35)}
+.callout-label{font-weight:var(--fw-heading,600);color:var(--c-heading);margin:0 0 calc(var(--sp) * .35)}
 .callout p:last-child{margin-bottom:0}
 
 /* applyFootnotes already emits an <hr class="fn-rule">; a border-top here as well

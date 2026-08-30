@@ -141,8 +141,8 @@ one line of explanation each; clicking one writes it where your cursor is.
 
   /* Shape */
   --radius:      .5rem;  /* corner radius (Shape sets this; override for a value between) */
-  --fw-title:    700;    /* the post title's weight */
-  --fw-heading:  600;    /* card titles, related, read-next */
+  --fw-title:    700;    /* the archive heading's weight */
+  --fw-heading:  600;    /* the post title, card titles and every bold label */
   --density:     1;      /* multiplies every gap; Shape sets .82 / 1 / 1.22 */
 
   /* Measure */
