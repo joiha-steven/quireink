@@ -13,8 +13,9 @@ import { BubbleMenu } from '@tiptap/react/menus'
 import { NodeSelection, type EditorState } from '@tiptap/pm/state'
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import { useAdminT } from './I18nProvider'
-import { INKS } from '@/render/ink'
+import { DEFAULT_INK, INKS } from '@/render/ink'
 import { PEN_LIGHT } from '@/render/pen'
+import { tip } from './editorKeys'
 
 const BTN = 'grid h-9 min-w-9 shrink-0 place-items-center rounded-md px-1 text-[15px] hover:bg-white dark:hover:bg-neutral-700'
 
@@ -74,12 +75,12 @@ export function Toolbar({
   return (
     <div className="sticky z-10 border-b border-neutral-200/70 bg-neutral-50/80 backdrop-blur-xl dark:border-neutral-800 dark:bg-neutral-950/60" style={{ top: stickyTop }}>
       <div className="flex flex-wrap items-center justify-center gap-0.5 px-2.5 py-1.5">
-      <ToolButton label={t.tbBold} active={editor.isActive('bold')} onClick={() => editor.chain().focus().toggleBold().run()}><strong>B</strong></ToolButton>
-      <ToolButton label={t.tbItalic} active={editor.isActive('italic')} onClick={() => editor.chain().focus().toggleItalic().run()}><em>I</em></ToolButton>
-      <ToolButton label={t.tbUnderline} active={editor.isActive('underline')} onClick={() => editor.chain().focus().toggleUnderline().run()}><u>U</u></ToolButton>
-      <ToolButton label={t.tbRing} active={editor.isActive('ring')} onClick={() => editor.chain().focus().toggleRing().run()}><span className="inline-block rounded-full border border-current px-1 leading-tight">O</span></ToolButton>
-      <ToolButton label="S" active={editor.isActive('strike')} onClick={() => editor.chain().focus().toggleStrike().run()}><s>S</s></ToolButton>
-      <ToolButton label="`" active={editor.isActive('code')} onClick={() => editor.chain().focus().toggleCode().run()}><code>{'`'}</code></ToolButton>
+      <ToolButton label={tip(t.tbBold, 'bold')} active={editor.isActive('bold')} onClick={() => editor.chain().focus().toggleBold().run()}><strong>B</strong></ToolButton>
+      <ToolButton label={tip(t.tbItalic, 'italic')} active={editor.isActive('italic')} onClick={() => editor.chain().focus().toggleItalic().run()}><em>I</em></ToolButton>
+      <ToolButton label={tip(t.tbUnderline, 'underline')} active={editor.isActive('underline')} onClick={() => editor.chain().focus().toggleUnderline().run()}><u>U</u></ToolButton>
+      <ToolButton label={tip(t.tbRing, 'ring')} active={editor.isActive('ring')} onClick={() => editor.chain().focus().toggleRing().run()}><span className="inline-block rounded-full border border-current px-1 leading-tight">O</span></ToolButton>
+      <ToolButton label={tip('S', 'strike')} active={editor.isActive('strike')} onClick={() => editor.chain().focus().toggleStrike().run()}><s>S</s></ToolButton>
+      <ToolButton label={tip('`', 'code')} active={editor.isActive('code')} onClick={() => editor.chain().focus().toggleCode().run()}><code>{'`'}</code></ToolButton>
       {sep}
       <ToolButton label="P" active={editor.isActive('paragraph')} onClick={() => editor.chain().focus().setParagraph().run()}>P</ToolButton>
       {([1, 2, 3, 4, 5] as const).map((level) => (
@@ -88,19 +89,19 @@ export function Toolbar({
         </ToolButton>
       ))}
       {sep}
-      <ToolButton label={t.tbList} active={editor.isActive('bulletList')} onClick={() => editor.chain().focus().toggleBulletList().run()}>
+      <ToolButton label={tip(t.tbList, 'bulletList')} active={editor.isActive('bulletList')} onClick={() => editor.chain().focus().toggleBulletList().run()}>
         <Glyph><circle cx="5" cy="7" r="1" fill="currentColor" stroke="none" /><circle cx="5" cy="12" r="1" fill="currentColor" stroke="none" /><circle cx="5" cy="17" r="1" fill="currentColor" stroke="none" /><path d="M9 7h10M9 12h10M9 17h10" /></Glyph>
       </ToolButton>
-      <ToolButton label={t.tbListNumbered} active={editor.isActive('orderedList')} onClick={() => editor.chain().focus().toggleOrderedList().run()}>
+      <ToolButton label={tip(t.tbListNumbered, 'orderedList')} active={editor.isActive('orderedList')} onClick={() => editor.chain().focus().toggleOrderedList().run()}>
         <Glyph><path d="M4 6h2v4M4 14h2l-2 4h2M10 7h10M10 12h10M10 17h10" /></Glyph>
       </ToolButton>
-      <ToolButton label={t.tbTask} active={editor.isActive('taskList')} onClick={() => editor.chain().focus().toggleTaskList().run()}>
+      <ToolButton label={tip(t.tbTask, 'taskList')} active={editor.isActive('taskList')} onClick={() => editor.chain().focus().toggleTaskList().run()}>
         <Glyph><rect x="3.5" y="4.5" width="6" height="6" rx="1" /><path d="m5 7 1.5 1.5L9 5.5M13 7h7M4 16h5M13 16h7" /></Glyph>
       </ToolButton>
-      <ToolButton label={t.tbQuote} active={editor.isActive('blockquote')} onClick={() => editor.chain().focus().toggleBlockquote().run()}>
+      <ToolButton label={tip(t.tbQuote, 'blockquote')} active={editor.isActive('blockquote')} onClick={() => editor.chain().focus().toggleBlockquote().run()}>
         <Glyph><path d="M7 8H4v4h4v4H4M17 8h-3v4h4v4h-4" /></Glyph>
       </ToolButton>
-      <ToolButton label={t.tbCodeBlock} active={editor.isActive('codeBlock')} onClick={() => editor.chain().focus().toggleCodeBlock().run()}>
+      <ToolButton label={tip(t.tbCodeBlock, 'codeBlock')} active={editor.isActive('codeBlock')} onClick={() => editor.chain().focus().toggleCodeBlock().run()}>
         <Glyph><path d="m8 8-4 4 4 4M16 8l4 4-4 4M14 5l-4 14" /></Glyph>
       </ToolButton>
       <ToolButton label={t.tbDivider} onClick={() => editor.chain().focus().setHorizontalRule().run()}>
@@ -108,7 +109,7 @@ export function Toolbar({
       </ToolButton>
       {sep}
       <ToolButton
-        label={t.tbLink}
+        label={tip(t.tbLink, 'link')}
         active={editor.isActive('link')}
         onClick={() => {
           // Prefill the existing href so an old link can be edited (not just
@@ -226,15 +227,15 @@ export function SlashMenu({
       <Row label={t.tbImage} onClick={() => run(onPickImage)} />
       <Row label={t.tbGallery} onClick={() => run(onPickGallery)} />
       <Row label={t.tbTable} onClick={() => run(() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run())} />
-      <Row label={t.tbCodeBlock} hint="```" onClick={() => run(() => editor.chain().focus().toggleCodeBlock().run())} />
+      <Row label={tip(t.tbCodeBlock, 'codeBlock')} hint="```" onClick={() => run(() => editor.chain().focus().toggleCodeBlock().run())} />
       <Row label={t.tbMath} onClick={() => run(() => editor.chain().focus().setMath(true).run())} />
       <Row label={t.tbMathInline} onClick={() => run(() => editor.chain().focus().setMath(false).run())} />
       <Row label={t.tbDivider} hint="---" onClick={() => run(() => editor.chain().focus().setHorizontalRule().run())} />
       <span className="my-1 block h-px w-full bg-neutral-100 dark:bg-neutral-700" aria-hidden />
-      <Row label={t.tbQuote} hint=">" onClick={() => run(() => editor.chain().focus().toggleBlockquote().run())} />
-      <Row label={t.tbList} hint="-" onClick={() => run(() => editor.chain().focus().toggleBulletList().run())} />
-      <Row label={t.tbListNumbered} hint="1." onClick={() => run(() => editor.chain().focus().toggleOrderedList().run())} />
-      <Row label={t.tbTask} hint="[ ]" onClick={() => run(() => editor.chain().focus().toggleTaskList().run())} />
+      <Row label={tip(t.tbQuote, 'blockquote')} hint=">" onClick={() => run(() => editor.chain().focus().toggleBlockquote().run())} />
+      <Row label={tip(t.tbList, 'bulletList')} hint="-" onClick={() => run(() => editor.chain().focus().toggleBulletList().run())} />
+      <Row label={tip(t.tbListNumbered, 'orderedList')} hint="1." onClick={() => run(() => editor.chain().focus().toggleOrderedList().run())} />
+      <Row label={tip(t.tbTask, 'taskList')} hint="[ ]" onClick={() => run(() => editor.chain().focus().toggleTaskList().run())} />
       {([2, 3] as const).map((level) => (
         <Row key={level} label={`${t.tbHeading} ${level}`} hint={'#'.repeat(level)} onClick={() => run(() => editor.chain().focus().toggleHeading({ level }).run())} />
       ))}
@@ -279,7 +280,8 @@ function InkButtons({ editor, hold }: { editor: TiptapEditor; hold: (e: React.Mo
           // -- a screen reader, and anyone who cannot separate those five -- got five
           // controls it could not choose between. The names already existed in all eleven
           // languages for the settings screen, which looks them up exactly this way.
-          title={`${t.tbHighlight}: ${inkName(t, ink)}`}
+          // The chord on the DEFAULT ink only; on all five it would promise four lies.
+          title={ink === DEFAULT_INK ? tip(`${t.tbHighlight}: ${inkName(t, ink)}`, 'ink') : `${t.tbHighlight}: ${inkName(t, ink)}`}
           aria-label={`${t.tbHighlight}: ${inkName(t, ink)}`}
           aria-pressed={current === ink}
           onMouseDown={hold}
@@ -359,8 +361,8 @@ export function BubbleBar({ editor, avoidTop }: { editor: TiptapEditor; avoidTop
           to mark a selection as code, which was the fifth one all along: a bare backtick,
           the width of a comma, next to letters. `</>` says code the way B says bold, and a
           title says it in words for the four that are only initials. */}
-      <button type="button" title={t.tbBold} aria-label={t.tbBold} onMouseDown={hold} onClick={() => editor.chain().focus().toggleBold().run()} className={cls(editor.isActive('bold'))}><strong>B</strong></button>
-      <button type="button" title={t.tbItalic} aria-label={t.tbItalic} onMouseDown={hold} onClick={() => editor.chain().focus().toggleItalic().run()} className={cls(editor.isActive('italic'))}><em>I</em></button>
+      <button type="button" title={t.tbBold} aria-label={tip(t.tbBold, 'bold')} onMouseDown={hold} onClick={() => editor.chain().focus().toggleBold().run()} className={cls(editor.isActive('bold'))}><strong>B</strong></button>
+      <button type="button" title={t.tbItalic} aria-label={tip(t.tbItalic, 'italic')} onMouseDown={hold} onClick={() => editor.chain().focus().toggleItalic().run()} className={cls(editor.isActive('italic'))}><em>I</em></button>
       {/* THREE LEVELS, not one. A single `H` was hard-wired to H2 because the deeper levels
           "live behind / and their `#` shortcuts" — and neither reaches the case this bar is
           FOR: the slash menu opens only on an EMPTY paragraph (`handleTextInput` in
@@ -381,8 +383,8 @@ export function BubbleBar({ editor, avoidTop }: { editor: TiptapEditor; avoidTop
           <span className="text-xs font-semibold">H{level}</span>
         </button>
       ))}
-      <button type="button" title={t.tbUnderline} aria-label={t.tbUnderline} onMouseDown={hold} onClick={() => editor.chain().focus().toggleUnderline().run()} className={cls(editor.isActive('underline'))}><u>U</u></button>
-      <button type="button" title={t.tbRing} aria-label={t.tbRing} onMouseDown={hold} onClick={() => editor.chain().focus().toggleRing().run()} className={cls(editor.isActive('ring'))}><span className="inline-block rounded-full border border-current px-1 leading-tight">O</span></button>
+      <button type="button" title={t.tbUnderline} aria-label={tip(t.tbUnderline, 'underline')} onMouseDown={hold} onClick={() => editor.chain().focus().toggleUnderline().run()} className={cls(editor.isActive('underline'))}><u>U</u></button>
+      <button type="button" title={t.tbRing} aria-label={tip(t.tbRing, 'ring')} onMouseDown={hold} onClick={() => editor.chain().focus().toggleRing().run()} className={cls(editor.isActive('ring'))}><span className="inline-block rounded-full border border-current px-1 leading-tight">O</span></button>
       <button type="button" title={t.tbStrike} aria-label={t.tbStrike} onMouseDown={hold} onClick={() => editor.chain().focus().toggleStrike().run()} className={cls(editor.isActive('strike'))}><s>S</s></button>
       <button type="button" title={t.tbCodeInline} aria-label={t.tbCodeInline} onMouseDown={hold} onClick={() => editor.chain().focus().toggleCode().run()} className={`${cls(editor.isActive('code'))} font-mono`}>{'</>'}</button>
       <span className="mx-0.5 h-5 w-px bg-neutral-200 dark:bg-neutral-700" />

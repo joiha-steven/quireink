@@ -12,7 +12,7 @@ import { PageHeader, Card } from './kit'
 import { SHEET } from './sheet'
 import { FirstRunSteps } from './FirstRun'
 import { Anchor, A, P, Ext, REPO } from './help-kit'
-import { MarkdownTable, TroubleTable } from './HelpTables'
+import { MarkdownTable, ShortcutsTable, TroubleTable } from './HelpTables'
 import {
   WritingSection, MediaSection, ReadersSection, AnalyticsSection,
   SettingsSection, ServerSection, CacheSection, McpSection,
@@ -29,6 +29,7 @@ const INDEX: [string, string][] = [
   ['cache', 'Cache'],
   ['mcp', 'MCP'],
   ['markdown', 'Markdown'],
+  ['keys', 'Keyboard'],
   ['trouble', 'Troubleshooting'],
 ]
 
@@ -84,6 +85,13 @@ export function HelpGuide({ title, version, firstRunTitle }: {
         <Card panel title="Markdown the editor understands">
           <p className={`${P} mb-3`}>Standard Markdown, plus these. The toolbar inserts most of them for you.</p>
           <MarkdownTable />
+        </Card>
+      </Anchor>
+
+      <Anchor id="keys">
+        <Card panel title="Keys the editor answers to">
+          <p className={`${P} mb-3`}>On top of the usual bold, italic, headings and undo.</p>
+          <ShortcutsTable />
         </Card>
       </Anchor>
 
