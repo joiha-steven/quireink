@@ -31,6 +31,28 @@ that file first; this one only adds what is true here.
   empty line raises the insert menu (which prints each block's Markdown shortcut beside
   its row), and the table tools exist only while the cursor is in a table. The closing
   line under the writing says the two gestures once.
+- **A SAVE MAY NOT CHANGE THE READER'S PAGE.** This is the editor's one hard contract and it
+  was unwritten until 2026-08-30, when it turned out to be broken: 19 of the 45 fixtures in
+  `golden/corpus` published differently after one pass through the writing surface. Footnote
+  references and callout tags were escaped into `\[^1\]` and `\[!NOTE\]` — which the maths
+  extension then claimed, so the reader got an empty formula mid-sentence rather than even the
+  literal text. Table column alignment was dropped. Consecutive pictures lost the blank line
+  between them and landed inside one `<p>`. `ReaderSyntax.ts` and `TableMarkdown.ts` hold the
+  repairs; `editor-corpus.test.ts` holds the contract, by rendering every fixture before and
+  after and comparing the HTML.
+  ⚠️ **A fixed point is not the contract.** That file's original law — serialize twice, compare
+  — passed on all four of those, because a document that is destroyed once and then holds still
+  IS a fixed point. Anything that asks "does it settle?" is blind to "did it lose something?".
+- **Keyboard: one table, in `editorKeys.ts`**, read by the handlers AND by the Help screen, so a
+  chord cannot move without the printed sheet following it. Tiptap's own bindings are left as
+  they come; what this product adds is `Mod-s` (save), `Mod-k` (link), `Mod-Shift-h`
+  (highlighter), `Mod-Shift-o` (ring), `Mod-Shift-m` (Markdown source) and `Mod-\` (focus).
+  ⚠️ **`Mod-s` is not a convenience.** Autosave here writes to localStorage and NEVER to the
+  server — deliberately, so editing a published post cannot push half a sentence live. Before
+  this chord existed, a writer pressing Cmd+S got the browser's own "Save page as…" dialog and
+  a reasonable belief that the work was safe. Collisions were checked against the live keymap
+  and against the browsers; `Mod-Shift-i` and `Mod-Shift-p` were dropped for belonging to
+  DevTools and to a Firefox private window.
 - The attributes are a right-hand slide-over (`SlideOver`) over a scrim, never a docked
   column — a column squeezed the writing to make room for the questions. The first Publish
   on an unpublished piece opens it as the publish sheet, footered "Later / Publish".
