@@ -89,7 +89,10 @@ export function track(): void {
   if (path.startsWith('/admin') || path.startsWith('/api')) return
 
   whenActivated(() => {
-    beacon({ path, referrer: externalReferrer() })
+    // `maxTouchPoints` rides with the view because the SERVER cannot tell an iPad from a
+    // Mac: iPadOS sends a Macintosh user agent on purpose. Apple ships no touchscreen Mac,
+    // so this is the whole of the difference. Nothing else reads it.
+    beacon({ path, referrer: externalReferrer(), touch: navigator.maxTouchPoints > 1 })
 
     const now = () => performance.now()
     let max = depth()

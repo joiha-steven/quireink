@@ -55,6 +55,36 @@ describe('POST /api/track', () => {
     expect(row?.device).toBe('desktop')
   })
 
+  /**
+   * The touch hint, end to end. The parse is pinned in `analytics/ua.test.ts`; what this
+   * asserts is the SEAM — that a flag set in the browser survives the JSON body, the route
+   * and the buffer, and lands in the column. iPadOS sends a Macintosh user agent on purpose,
+   * so `BROWSER` above is already the string an iPad would send.
+   */
+  it('reads a touching Macintosh as a tablet, all the way to the row', async () => {
+    const IPAD = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15'
+      + ' (KHTML, like Gecko) Version/17.5 Safari/605.1.15'
+    await beacon({ path: '/hello', touch: true }, '203.0.113.44', IPAD)
+    flushAnalytics()
+    const row = analyticsDb().query<{ device: string; os: string }, []>(
+      `select device, os from analytics_events`,
+    ).get()
+    expect(row).toEqual({ device: 'tablet', os: 'iPadOS' })
+  })
+
+  // An open POST decides a bucket with this, so only a real `true` counts. A string, a 1 or
+  // a missing key all mean the same thing: the browser did not say.
+  it('takes only a real boolean, and defaults to what the string said', async () => {
+    for (const [i, touch] of [undefined, 'true', 1, null].entries()) {
+      analyticsDb().run(`delete from analytics_events`)
+      resetAnalyticsBuffer()
+      await beacon({ path: '/hello', touch }, `203.0.113.${50 + i}`)
+      flushAnalytics()
+      const row = analyticsDb().query<{ device: string }, []>(`select device from analytics_events`).get()
+      expect(`${JSON.stringify(touch)} -> ${row?.device}`).toBe(`${JSON.stringify(touch)} -> desktop`)
+    }
+  })
+
   it('records a depth sample as a scroll, not as a second view', async () => {
     await beacon({ path: '/hello', depth: 72, dwell: 41_000 })
     flushAnalytics()

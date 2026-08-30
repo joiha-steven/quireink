@@ -7,9 +7,30 @@
 
 export type UaInfo = { device: string; browser: string; os: string }
 
-export function parseUa(ua: string): UaInfo {
+/**
+ * `touch` is the one thing the string cannot say, and it is here for one device.
+ *
+ * iPadOS 13 and later identify as Macintosh Safari — same UA a desktop Mac sends, on
+ * purpose, so that sites stop serving them a phone layout. There is no token to test: every
+ * iPad in the world therefore landed in `desktop` / `macOS`. Measured on a live blog over 30
+ * days on 2026-08-30: 117 desktop, 80 mobile, ZERO tablet, on a site whose readers are
+ * plainly not all at a desk.
+ *
+ * The only discriminator is multi-touch, which lives in the browser and not in the header,
+ * so the beacon sends it. Apple ships no Mac with a touchscreen, so a Macintosh-claiming
+ * browser reporting more than one touch point is an iPad — and the check is gated on macOS
+ * precisely so that a Windows touchscreen laptop, which is a desktop and says so, is not
+ * caught by it.
+ *
+ * Nothing new is stored: the same two coarse columns, with the right values in them. When
+ * `touch` is absent — an older cached beacon, a reader with JavaScript off — the answer is
+ * exactly what it was before.
+ */
+export function parseUa(ua: string, touch = false): UaInfo {
   const s = (ua || '').toLowerCase()
-  return { device: device(s), browser: browser(s), os: os(s) }
+  const seen = { device: device(s), browser: browser(s), os: os(s) }
+  if (touch && seen.os === 'macOS') return { ...seen, device: 'tablet', os: 'iPadOS' }
+  return seen
 }
 
 function device(s: string): string {
