@@ -41,7 +41,7 @@ function form(initial: PostWithContent) {
       allSeries={[]}
       contentWidth={672}
       keySound={{ mode: 'off', volume: 0 }}
-      autosaveSeconds={120}
+      autosaveSeconds={120} autosaveAt={null}
     />
   ))
 }
@@ -81,7 +81,7 @@ describe('PostForm, mounted', () => {
     const m = await mountAdmin(
       <PostForm
         allCategories={[]} allTags={[]} allSeries={[]}
-        contentWidth={672} keySound={{ mode: 'off', volume: 0 }} autosaveSeconds={120}
+        contentWidth={672} keySound={{ mode: 'off', volume: 0 }} autosaveSeconds={120} autosaveAt={null}
       />,
     )
     await m.flush()

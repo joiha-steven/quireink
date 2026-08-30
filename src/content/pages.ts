@@ -3,6 +3,7 @@
 
 import type { Page, PageWithContent } from '@/types'
 import { collapseBlob, expandBlob } from '@/media/blob'
+import { clearAutosave } from '@/content/autosave'
 import { slugify } from '@/utils'
 import { ensureSlugFree } from '@/content/slugs'
 import { saveRedirect, clearRedirectForPath } from '@/server/redirects'
@@ -127,6 +128,10 @@ export async function savePage(
     run(`delete from pages where slug = ?`, previousSlug)
     await saveRedirect({ source: `/${previousSlug}`, destination: `/${page.slug}`, permanent: true })
   }
+  // The autosave is now the older text — see `savePost` for why this is here and not in
+  // the route.
+  clearAutosave('page', page.slug)
+
   // The live slug wins over any redirect that used it as a source (and no self-loop).
   await clearRedirectForPath(`/${page.slug}`)
 

@@ -84,6 +84,12 @@ const ja = {
   saving: '保存中...',
   savedAtPrefix: '保存日時',
   keptLocallyPrefix: 'この端末に保存 ',
+  // The autosave line, and the two prefixes are the whole point of having two: one copy is
+  // on this machine and one is not, and which of those is true decides whether a dead laptop
+  // costs you the morning. `serverDraftFound` is the recovery line's wording when the snapshot
+  // being offered came from the server — usually because it was typed on another machine.
+  keptOnServerPrefix: 'サーバーに保持',
+  serverDraftFound: 'サーバーから未保存の変更を復元しました',
   saveFailed: '保存に失敗しました',
   slugTaken: 'このスラッグは既に使用されています。別のものを選んでください',
   needTitle: '公開するにはタイトルが必要です',

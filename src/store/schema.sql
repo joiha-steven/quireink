@@ -46,7 +46,13 @@ create table if not exists posts (
   created_at       integer not null,
   updated_at       integer not null,
   -- Soft delete (Invariant 6): NULL = live, a timestamp = in Trash.
-  deleted_at       integer
+  deleted_at       integer,
+  -- The editor's server-side autosave: the whole in-progress draft as JSON, and when it was
+  -- written. NEVER read by anything that renders a page. `content` above is what the reader
+  -- sees and only an explicit Save moves it; this column is the copy that survives a dead
+  -- laptop, and it is cleared the moment a real save lands.
+  autosave_json    text,
+  autosave_at      integer
 );
 create index if not exists posts_status_date_idx on posts (status, date desc);
 create index if not exists posts_deleted_at_idx  on posts (deleted_at);
@@ -101,7 +107,10 @@ create table if not exists pages (
   content        text not null default '',
   created_at     integer not null,
   updated_at     integer not null,
-  deleted_at     integer
+  deleted_at     integer,
+  -- Same pair as `posts`, same rule: never rendered, cleared by a real save.
+  autosave_json  text,
+  autosave_at    integer
 );
 create index if not exists pages_deleted_at_idx on pages (deleted_at);
 

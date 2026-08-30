@@ -15,7 +15,8 @@ import { MediaLibrary } from './MediaLibrary'
 import { TimeMachine } from './TimeMachine'
 import { TrashLink } from './TrashLink'
 import { SheetTitle } from './SheetTitle'
-import { saveStatusLine, useLocalAutosave, useLocalDraft, useStickyOffset, useUnsavedGuard } from './useLocalDraft'
+import { saveStatusLine, useStickyOffset, useUnsavedGuard } from './useLocalDraft'
+import { useDraftSafety } from './serverDraft'
 import { useAdminT } from './I18nProvider'
 
 type Props = {
@@ -26,6 +27,8 @@ type Props = {
   contentWidth: number
   keySound: KeySound
   autosaveSeconds: number
+  /** `autosave_at` on the row, in ms: a snapshot waiting from another session or machine. */
+  autosaveAt: number | null
 }
 
 type PickTarget = 'editor' | 'gallery' | 'featured' | 'cover'
@@ -57,7 +60,7 @@ function toDraft(initial?: PostWithContent): Draft {
   }
 }
 
-export function PostForm({ initial, allCategories, allTags, allSeries, contentWidth, keySound, autosaveSeconds }: Props) {
+export function PostForm({ initial, allCategories, allTags, allSeries, contentWidth, keySound, autosaveSeconds, autosaveAt }: Props) {
   const t = useAdminT()
   const { notify } = useToast()
   const [draft, setDraft] = useState<Draft>(() => toDraft(initial))
@@ -78,13 +81,6 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
   // Unsaved-changes flag: drives button states, autosave and the exit warning.
   const [dirty, setDirty] = useState(false)
   const [savedSlug, setSavedSlug] = useState<string | null>(initial?.slug ?? null)
-  // Local (offline) autosave — keyed per post so drafts don't clobber each other.
-  const {
-    recovered: localRecovered,
-    save: saveLocal,
-    clear: clearLocal,
-    dismiss: dismissLocal,
-  } = useLocalDraft<Draft>(`quire:draft:post:${initial?.slug ?? 'new'}`)
 
   const slugTouched = useRef(Boolean(initial?.slug))
   const currentSlug = useRef<string | null>(initial?.slug ?? null)
@@ -100,6 +96,21 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
   useEffect(() => {
     dirtyRef.current = dirty
   }, [dirty])
+
+  // Both autosaves on one timer: localStorage here, `autosave_json` on the server. Neither
+  // touches the published body, so editing a live post cannot push half a sentence to a
+  // reader — only Save/Publish moves it. Reasoning in `serverDraft.ts`.
+  const safety = useDraftSafety<Draft>({
+    kind: 'post',
+    slug: savedSlug,
+    storageKey: `quire:draft:post:${initial?.slug ?? 'new'}`,
+    serverAt: autosaveAt,
+    rowSavedAt: initial?.updatedAt ? Date.parse(initial.updatedAt) : null,
+    isDirty: () => dirtyRef.current,
+    snapshot: () => ({ ...draftRef.current, content: editorApi.current?.getMarkdown() ?? contentRef.current }),
+    intervalMs: autosaveSeconds * 1000,
+  })
+  useUnsavedGuard(() => dirtyRef.current)
 
   const update = useCallback((partial: Partial<Draft>) => {
     setDirty(true)
@@ -157,7 +168,7 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
         setSavedSlug(json.data.slug)
         setSavedAt(new Date().toISOString())
         setDirty(false)
-        clearLocal() // the server now has it — drop the local recovery copy
+        safety.clear() // the server now has it — drop both recovery copies
         // THE ADDRESS BAR IS SYNCED HERE, AND THE ROUTER IS DELIBERATELY NOT.
         //
         // `router.replace()` would put the new slug in the router's state, which is what
@@ -181,7 +192,7 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
         setSaving(false)
       }
     },
-    [notify, t, clearLocal],
+    [notify, t, safety],
   )
 
   // Queue a save behind any in-flight save and return its result.
@@ -194,17 +205,6 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
     },
     [doPersist],
   )
-
-  // Local (offline) autosave: stash unsaved edits in localStorage on a timer AND whenever the
-  // page is hidden or left. It NEVER writes to the server, so editing a published post cannot
-  // push half-finished text live; only Save/Publish does that. The hook carries the reasoning.
-  const keptAt = useLocalAutosave(
-    () => dirtyRef.current,
-    () => ({ ...draftRef.current, content: editorApi.current?.getMarkdown() ?? contentRef.current }),
-    saveLocal,
-    autosaveSeconds * 1000,
-  )
-  useUnsavedGuard(() => dirtyRef.current)
 
   async function handleSave(status: Draft['status'], successMsg: string) {
     if (status === 'published' && !draftRef.current.title.trim()) {
@@ -230,16 +230,15 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
     setPicker(null)
   }
 
-  // Pull a recovered local snapshot back into the form (slug/date stay current).
-  function restoreLocal() {
-    if (!localRecovered) return
-    const d = localRecovered.data
+  // Pull the recovered snapshot back — device or server, whichever was newer (slug/date stay).
+  async function restoreDraft() {
+    const d = await safety.restore()
+    if (!d) return
     setDraft(d)
     draftRef.current = d
     editorApi.current?.setMarkdown(d.content)
     contentRef.current = d.content
     setDirty(true)
-    clearLocal()
     notify(t.revisionLoaded)
   }
 
@@ -319,7 +318,7 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
         actions={
           <EditorActions
             barRef={actionHeaderRef}
-            status={saveStatusLine(t, saving, savedAt, dirty, keptAt, formatTime)}
+            status={saveStatusLine(t, saving, savedAt, dirty, safety.keptAt, formatTime, safety.sentAt)}
             saving={saving}
             dirty={dirty}
             settingsOpen={settingsOpen}
@@ -327,7 +326,7 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
             savedSlug={savedSlug}
             mdView={mdView}
             onToggleMd={() => editorApi.current?.toggleRaw()}
-            recovered={localRecovered ? { at: localRecovered.at, onRestore: restoreLocal, onDiscard: dismissLocal } : null}
+            recovered={safety.recovered ? { ...safety.recovered, onRestore: () => void restoreDraft(), onDiscard: safety.dismiss } : null}
             getText={() => `${draftRef.current.title} ${editorApi.current?.getMarkdown() ?? contentRef.current}`}
             onPreview={openPreview}
             onSaveDraft={() => void handleSave('draft', t.savedDraft)}

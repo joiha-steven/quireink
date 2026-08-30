@@ -14,6 +14,7 @@ import { writeExcerpt } from '@/content/ai-excerpt'
 import { TERM_SELECT, parseTerms, writeTerms, updateTermRows, type TermKind } from '@/content/post-terms'
 import { all, one, run, tx } from '@/store/query'
 import { liveOnly, nowMs, toIso, fromIso } from '@/store/db'
+import { clearAutosave } from '@/content/autosave'
 
 export type { TermKind }
 
@@ -263,6 +264,11 @@ export async function savePost(
     await renameComments(previousSlug, post.slug)
     await saveRedirect({ source: `/${previousSlug}`, destination: `/${post.slug}`, permanent: true })
   }
+  // The autosave is now the OLDER text, so it stops being offered. Here rather than in the
+  // route, because the MCP server and the importer save through this same function and a
+  // snapshot surviving one of those would offer to restore what the author just replaced.
+  clearAutosave('post', post.slug)
+
   // This slug is now live content, so any redirect that used it as a SOURCE is stale
   // (live content must win over a redirect; also breaks a rename-back self-loop).
   await clearRedirectForPath(`/${post.slug}`)

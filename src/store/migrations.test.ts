@@ -95,6 +95,25 @@ test('an OLD database gets the columns it was created without', () => {
              created_at integer not null, expires_at integer not null, last_used_at integer)`)
   old.run(`insert into mcp_tokens (name, token_hash, prefix, created_at, expires_at)
            values ('Old connector', 'hash-1', 'vbmcp_abc', 1, 9999999999999)`)
+  // posts and pages as they stood before the editor's server autosave: no side column for
+  // the in-progress draft, so the work only ever existed in one browser's localStorage.
+  old.run(`create table posts (
+             slug text primary key, title text not null default '',
+             date integer not null, status text not null default 'draft',
+             featured_image text, excerpt text, reading_minutes integer,
+             content text not null default '', series text,
+             series_order integer not null default 0,
+             meta_title text, meta_description text, cover_image text, broadcast_at integer,
+             created_at integer not null, updated_at integer not null, deleted_at integer)`)
+  old.run(`insert into posts (slug, title, date, content, created_at, updated_at)
+           values ('kept-post', 'Kept', 1, 'body', 1, 1)`)
+  old.run(`create table pages (
+             slug text primary key, title text not null default '',
+             status text not null default 'draft', featured_image text,
+             content text not null default '',
+             created_at integer not null, updated_at integer not null, deleted_at integer)`)
+  old.run(`insert into pages (slug, title, content, created_at, updated_at)
+           values ('kept-page', 'Kept', 'body', 1, 1)`)
   old.close()
 
   const { db } = openDatabases(dir)
@@ -106,6 +125,10 @@ test('an OLD database gets the columns it was created without', () => {
   expect(columns(db, 'media')).toContain('alt')
   expect(columns(db, 'integration_keys')).toContain('ai_api_key')
   expect(columns(db, 'mcp_tokens')).toContain('scope')
+  for (const table of ['posts', 'pages']) {
+    expect(columns(db, table)).toContain('autosave_json')
+    expect(columns(db, table)).toContain('autosave_at')
+  }
   // The existing rows survive, which is the entire difference between a migration and a
   // reinstall.
   expect(db.query<{ turnstile_site_key: string }, []>(

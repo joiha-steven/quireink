@@ -120,3 +120,19 @@ create index if not exists media_deleted_at_idx  on media (deleted_at);
 -- connector keeps doing exactly what it did. SQLite CAN add a column with a CHECK, so no
 -- rebuild this time.
 alter table mcp_tokens add column scope text not null default 'full' check (scope in ('full', 'read'));
+
+-- migration: 009-editor-autosave
+-- The editor's autosave reached localStorage and nothing else, deliberately: a server
+-- autosave on a PUBLISHED post would push half a sentence to the readers. That left one
+-- real gap — the work only ever existed on that one browser, so a dead laptop, a cleared
+-- profile or simply moving to another machine lost everything typed since the last Save.
+--
+-- These two columns close it without reopening the risk. The autosave lands HERE, never in
+-- `content`, so the live page is still exactly what was last published; the editor offers
+-- the snapshot back when it is newer than the row. Uniform for drafts and published posts
+-- alike, because a draft can become published a second later and a status check at write
+-- time is a race.
+alter table posts add column autosave_json text;
+alter table posts add column autosave_at integer;
+alter table pages add column autosave_json text;
+alter table pages add column autosave_at integer;

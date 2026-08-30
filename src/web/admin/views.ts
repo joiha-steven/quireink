@@ -19,6 +19,7 @@
 // must never show a stale snapshot of the reader's own edits.
 
 import { getActivity } from '@/server/activity'
+import { getAutosave } from '@/content/autosave'
 import { getAnalytics, getRightNow, getViewTotals } from '@/analytics/summary'
 import { getTrashedSubscribers } from '@/news/subscribers'
 import { getPageAnalytics } from '@/analytics/page'
@@ -84,6 +85,10 @@ async function editorView(slug: string) {
   if (slug && !post) return null
   return {
     post, allCategories, allTags, allSeries,
+    // WHEN, not WHAT. The snapshot is the whole body a second time, and the editor opens on
+    // every post whether or not one is waiting; the timestamp is all the recovery bar needs to
+    // decide whether to offer it, and the body is fetched only if somebody says yes.
+    autosaveAt: slug ? (getAutosave('post', slug)?.at ?? null) : null,
     contentWidth: settings.contentWidth,
     keySound: { mode: settings.motion.keys, volume: settings.motion.keyVolume },
     autosaveSeconds: settings.autosaveSeconds,
@@ -97,6 +102,7 @@ async function pageEditorView(slug: string) {
   if (slug && !page) return null
   return {
     page,
+    autosaveAt: slug ? (getAutosave('page', slug)?.at ?? null) : null,
     contentWidth: settings.contentWidth,
     keySound: { mode: settings.motion.keys, volume: settings.motion.keyVolume },
     autosaveSeconds: settings.autosaveSeconds,

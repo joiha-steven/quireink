@@ -84,6 +84,12 @@ const en = {
   saving: 'Saving...',
   savedAtPrefix: 'Saved at',
   keptLocallyPrefix: 'kept on this device at',
+  // The autosave line, and the two prefixes are the whole point of having two: one copy is
+  // on this machine and one is not, and which of those is true decides whether a dead laptop
+  // costs you the morning. `serverDraftFound` is the recovery line's wording when the snapshot
+  // being offered came from the server — usually because it was typed on another machine.
+  keptOnServerPrefix: 'kept on the server at',
+  serverDraftFound: 'Unsaved changes recovered from the server',
   saveFailed: 'Save failed',
   slugTaken: 'That slug is already taken, choose another',
   needTitle: 'A title is required to publish',

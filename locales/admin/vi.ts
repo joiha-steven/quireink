@@ -84,6 +84,12 @@ const vi = {
   saving: 'Đang lưu...',
   savedAtPrefix: 'Đã lưu lúc',
   keptLocallyPrefix: 'đã giữ trên máy này lúc',
+  // The autosave line, and the two prefixes are the whole point of having two: one copy is
+  // on this machine and one is not, and which of those is true decides whether a dead laptop
+  // costs you the morning. `serverDraftFound` is the recovery line's wording when the snapshot
+  // being offered came from the server — usually because it was typed on another machine.
+  keptOnServerPrefix: 'đã giữ trên máy chủ lúc',
+  serverDraftFound: 'Đã khôi phục nội dung chưa lưu từ máy chủ',
   saveFailed: 'Lưu thất bại',
   slugTaken: 'Đường dẫn (slug) đã tồn tại, chọn đường dẫn khác',
   needTitle: 'Cần tiêu đề để đăng bài',

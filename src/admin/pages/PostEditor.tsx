@@ -38,6 +38,7 @@ export default function PostEditor() {
           contentWidth={d.contentWidth}
           keySound={d.keySound}
           autosaveSeconds={d.autosaveSeconds}
+          autosaveAt={d.autosaveAt}
         />
           </div>
         </div>

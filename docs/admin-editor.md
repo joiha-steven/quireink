@@ -53,6 +53,18 @@ that file first; this one only adds what is true here.
   a reasonable belief that the work was safe. Collisions were checked against the live keymap
   and against the browsers; `Mod-Shift-i` and `Mod-Shift-p` were dropped for belonging to
   DevTools and to a Firefox private window.
+- **The autosave is TWO copies and neither of them is the published body.** localStorage on
+  this device (since M2) and `posts.autosave_json` on the server (2026-08-30), written on the
+  same timer and on the same three flushes — interval, `pagehide`, `visibilitychange` to
+  hidden — with the last two going by `sendBeacon`, because a `fetch` started as the tab goes
+  away is routinely killed mid-flight. Only Save/Publish moves `content`, so editing a live
+  post still cannot push half a sentence to a reader.
+  ⚠️ **Uniform for drafts and published posts**, and that is the decision rather than the
+  shortcut. "A draft is not live, so autosave straight into its row" is a RACE: it can be
+  published a second later and the status the write read is already stale.
+  The editor offers back whichever copy is newer, and says which — the device's almost always,
+  the server's in the one case the device cannot help with. A piece that has never been saved
+  has no row to hang a snapshot on, so localStorage stays its only copy until the first save.
 - The attributes are a right-hand slide-over (`SlideOver`) over a scrim, never a docked
   column — a column squeezed the writing to make room for the questions. The first Publish
   on an unpublished piece opens it as the publish sheet, footered "Later / Publish".

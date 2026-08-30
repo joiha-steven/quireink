@@ -26,15 +26,22 @@ export type LocalSnapshot<T> = { data: T; at: string }
  * they had already drifted: the page editor's had no `unsaved` branch at all.
  */
 export function saveStatusLine(
-  t: { saving: string; savedAtPrefix: string; keptLocallyPrefix: string; unsaved: string },
+  t: { saving: string; savedAtPrefix: string; keptLocallyPrefix: string; keptOnServerPrefix: string; unsaved: string },
   saving: boolean,
   savedAt: string | null,
   dirty: boolean,
   keptAt: number | null,
   formatTime: (iso: string) => string,
+  /** When the SERVER last accepted a snapshot, if it has. */
+  sentAt: number | null = null,
 ): string {
   if (saving) return t.saving
   if (savedAt && !dirty) return `${t.savedAtPrefix} ${formatTime(savedAt)}`
+  // The server outranks the device when it has something to say, and the wording is the
+  // difference the writer cares about: one copy is on this machine, the other is not.
+  if (dirty && sentAt !== null && (keptAt === null || sentAt >= keptAt)) {
+    return `${t.keptOnServerPrefix} ${formatTime(new Date(sentAt).toISOString())}`
+  }
   if (dirty && keptAt !== null) {
     return `${t.keptLocallyPrefix} ${formatTime(new Date(keptAt).toISOString())}`
   }

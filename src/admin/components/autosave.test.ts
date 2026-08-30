@@ -11,6 +11,7 @@ const T = {
   saving: 'Saving…',
   savedAtPrefix: 'saved at',
   keptLocallyPrefix: 'kept on this device at',
+  keptOnServerPrefix: 'kept on the server at',
   unsaved: 'unsaved',
 }
 
@@ -58,5 +59,32 @@ describe('saveStatusLine', () => {
     const kept = new Date('2026-08-11T09:09:00Z').getTime()
     expect(saveStatusLine(T, false, '2026-08-11T09:05:00Z', true, kept, at))
       .toBe(`kept on this device at ${at(new Date(kept).toISOString())}`)
+  })
+})
+
+// The server half, added 2026-08-30 with `serverDraft.ts`. The line has to be able to say
+// which machine the work is on, because that is the difference between a dead laptop costing
+// nothing and costing the morning.
+describe('saveStatusLine, once the server holds a snapshot too', () => {
+  const t0 = Date.parse('2026-08-30T09:15:00Z')
+
+  it('names the SERVER when it holds the newer of the two', () => {
+    expect(saveStatusLine(T, false, null, true, t0 - 60_000, at, t0)).toBe(`kept on the server at ${at(new Date(t0).toISOString())}`)
+  })
+
+  it('names the DEVICE when the local snapshot is the newer one', () => {
+    expect(saveStatusLine(T, false, null, true, t0, at, t0 - 60_000)).toBe(`kept on this device at ${at(new Date(t0).toISOString())}`)
+  })
+
+  it('names the server on a tie — the same keystrokes, and the stronger claim', () => {
+    expect(saveStatusLine(T, false, null, true, t0, at, t0)).toBe(`kept on the server at ${at(new Date(t0).toISOString())}`)
+  })
+
+  it('still says unsaved when neither copy has been written yet', () => {
+    expect(saveStatusLine(T, false, null, true, null, at, null)).toBe('unsaved')
+  })
+
+  it('lets a real save outrank both', () => {
+    expect(saveStatusLine(T, false, '2026-08-30T09:20:00Z', false, t0, at, t0)).toBe(`saved at ${at('2026-08-30T09:20:00Z')}`)
   })
 })
