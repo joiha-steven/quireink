@@ -1,4 +1,4 @@
-// Analytics overview: range tabs + CSV export, headline metrics (views, visitors,
+// Analytics overview: range tabs, headline metrics (views, visitors,
 // avg time, avg read depth, bounce rate), a dual-series time chart, top pages
 // (each links to its drill-down), traffic sources (channels + referrers), and the
 // audience breakdown (countries, devices, browsers, systems) + read-depth split.
@@ -10,7 +10,7 @@ import { view } from '@/admin/api'
 import type { AnalyticsSummary, NameStat, PieceStat, RightNow } from '@/analytics/types'
 import { EmptyState, PageHeader, SEGMENT_TRACK, tabItemClass, TABLE_SCROLL, THEAD, TROW } from './kit'
 import { BarList, Trend, TrendChart, flag, formatDuration, type BarRow } from './analytics-kit'
-import { NumBand, SHEET, SHEET_TOOL_ON_CANVAS, SheetTop } from './sheet'
+import { NumBand, SHEET, SheetTop } from './sheet'
 import { DeliveryPanel } from './DeliveryPanel'
 import { PieceIndex } from './PieceIndex'
 import { useAdminT } from './I18nProvider'
@@ -22,10 +22,6 @@ const RANGES = [1, 7, 30, 365] as const
 // URL renders correctly with no tab highlighted, which is the honest presentation of a
 // window the tabs do not offer.
 export type Range = 1 | 7 | 30 | 90 | 365
-
-function toCsv(data: AnalyticsSummary): string {
-  return ['date,views,visitors', ...data.daily.map((d) => `${d.day},${d.views},${d.visitors}`)].join('\n')
-}
 
 const DEPTH_LABELS = ['0–25%', '26–50%', '51–75%', '76–100%']
 
@@ -97,16 +93,6 @@ export function AnalyticsView({ data, range, titles, pieces, rightNow }: {
   const rangeLabel: Record<Range, string> = { 1: t.analyticsRange24h, 7: t.analyticsRange7, 30: t.analyticsRange30, 90: t.analyticsRange90, 365: t.analyticsRange365 }
   const hasData = data.totalViews > 0
 
-  const exportCsv = () => {
-    const blob = new Blob([toCsv(data)], { type: 'text/csv;charset=utf-8' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `analytics-${range}d.csv`
-    a.click()
-    URL.revokeObjectURL(url)
-  }
-
   const channelLabel: Record<string, string> = {
     direct: t.analyticsChannelDirect,
     search: t.analyticsChannelSearch,
@@ -119,15 +105,7 @@ export function AnalyticsView({ data, range, titles, pieces, rightNow }: {
 
   return (
     <div>
-      {/* Export in the page head, quiet — the sheet's first row belongs to the range. */}
-      <PageHeader
-        title={t.analyticsTitle}
-        actions={
-          <button type="button" onClick={exportCsv} disabled={!hasData} className={SHEET_TOOL_ON_CANVAS}>
-            {t.analyticsExportCsv}
-          </button>
-        }
-      />
+      <PageHeader title={t.analyticsTitle} />
 
       {/* ONE SHEET (the admin-pages mock): range on the sheet's first row, the numbers
           standing directly on the paper, then the chart, the pages, the sources — all
@@ -228,8 +206,11 @@ export function AnalyticsView({ data, range, titles, pieces, rightNow }: {
                   </td>
                   <td className="w-px px-4 py-2.5 text-right tabular-nums whitespace-nowrap text-neutral-600 dark:text-neutral-300">{p.views.toLocaleString()}</td>
                   <td className="w-px px-4 py-2.5 text-right tabular-nums whitespace-nowrap text-neutral-600 dark:text-neutral-300">{p.visitors.toLocaleString()}</td>
-                  <td className="w-px px-4 py-2.5 text-right tabular-nums whitespace-nowrap text-neutral-500 dark:text-neutral-400">{formatDuration(p.avgDwellMs)}</td>
-                  <td className="w-px px-4 py-2.5 text-right tabular-nums whitespace-nowrap text-neutral-500 dark:text-neutral-400">{p.avgDepth}%</td>
+                  {/* An em-dash, never a zero. Nothing measured is a different fact from
+                      "they left immediately", and after the beacon fix a depth of 0 is a
+                      real reading that this column has to be able to print. */}
+                  <td className="w-px px-4 py-2.5 text-right tabular-nums whitespace-nowrap text-neutral-500 dark:text-neutral-400">{p.avgDwellMs == null ? '—' : formatDuration(p.avgDwellMs)}</td>
+                  <td className="w-px px-4 py-2.5 text-right tabular-nums whitespace-nowrap text-neutral-500 dark:text-neutral-400">{p.avgDepth == null ? '—' : `${p.avgDepth}%`}</td>
                 </tr>
               ))}
             </tbody>

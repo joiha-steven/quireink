@@ -678,7 +678,6 @@ const ru = {
   analyticsViews: 'Просмотры',
   analyticsVisitors: 'Посетители',
   analyticsAvgDepth: 'Средняя глубина чтения',
-  analyticsExportCsv: 'Выгрузить CSV',
   analyticsPeak: 'Пик',
   analyticsNew: 'Новые',
   analyticsReturning: 'Вернувшиеся',

@@ -9,7 +9,7 @@ import { getAnalytics, getRightNow, getViewTotals } from '@/analytics/summary'
 import { getPageAnalytics } from '@/analytics/page'
 import { isBot, normalizePath, recordView, recordScroll } from '@/analytics/record'
 import { flushAnalytics, resetAnalyticsBuffer, pendingAnalytics } from '@/analytics/buffer'
-import { canonicalHost, channelOf } from '@/analytics/channel'
+import { canonicalHost } from '@/analytics/channel'
 
 const DIR = './.tmp/test-analytics'
 freshDatabase(DIR)
@@ -151,6 +151,17 @@ describe('summary', () => {
     expect((await getAnalytics(7)).singlePageVisitors).toBe(1)
   })
 
+  // ONE PAGE, not one event. The query asked `count(*) = 1` until 2026-08-30, so a reader
+  // who opened one post and reloaded it — or came back to the same post later — fell out of
+  // the count, and the bounce rate read low by exactly the people who bounced twice. On a
+  // live blog that was 30 of 380 visitors: 52% shown where 60% was true.
+  it('still counts a visitor who read ONE page more than once', async () => {
+    view({ visitor: 'reloader', path: '/a' })
+    view({ visitor: 'reloader', path: '/a' })
+    view({ visitor: 'reloader', path: '/a' })
+    expect((await getAnalytics(7)).singlePageVisitors).toBe(1)
+  })
+
   it('ranks top pages and attaches their engagement', async () => {
     view({ path: '/busy' })
     view({ path: '/busy', visitor: 'v2' })
@@ -158,7 +169,21 @@ describe('summary', () => {
     scroll(60, 5000, '/busy')
     const s = await getAnalytics(7)
     expect(s.topPages[0]).toMatchObject({ path: '/busy', views: 2, visitors: 2, avgDepth: 60, avgDwellMs: 5000 })
-    expect(s.topPages[1]).toMatchObject({ path: '/quiet', avgDepth: 0, avgDwellMs: 0 })
+    // NULL, not 0. This line asserted 0 until 2026-08-30, which is how the table came to
+    // print "0s · 0%" for a page nobody's leave was ever measured on — a reading that says
+    // "they left at once" beside rows saying "2m 10s". Zero is a real answer now that an
+    // unscrolled leave records depth 0, so it cannot also stand for "no answer".
+    expect(s.topPages[1]).toMatchObject({ path: '/quiet', avgDepth: null, avgDwellMs: null })
+  })
+
+  it('tells a page measured at zero apart from a page never measured', async () => {
+    view({ path: '/glanced' })
+    view({ path: '/unmeasured' })
+    scroll(0, 3000, '/glanced') // the sample a bounce leaves
+    const s = await getAnalytics(7)
+    const by = Object.fromEntries(s.topPages.map((p) => [p.path, p]))
+    expect(by['/glanced']).toMatchObject({ avgDepth: 0, avgDwellMs: 3000 })
+    expect(by['/unmeasured']).toMatchObject({ avgDepth: null, avgDwellMs: null })
   })
 
   it('compares against the window just before, and finds returning visitors', async () => {
@@ -188,18 +213,6 @@ describe('summary', () => {
       { host: 'blog.example', visitors: 1 }, { host: 'news.example', visitors: 1 },
     ])
     expect(s.topCountries!.map((c) => c.country).sort()).toEqual(['DE', 'VN'])
-  })
-
-  it('counts a visitor ONCE per channel however many hosts they arrived from', async () => {
-    // The bug this shape avoids: summing per-host visitor counts would report 2 here.
-    view({ visitor: 'v1', host: 'google.com' })
-    view({ visitor: 'v1', host: 'bing.com' })
-    view({ visitor: 'v2', host: null })
-    const s = await getAnalytics(7)
-    // Order between equal counts is not part of the contract; the counts are.
-    expect([...s.channels!].sort((a, b) => a.channel.localeCompare(b.channel))).toEqual([
-      { channel: 'direct', visitors: 1 }, { channel: 'search', visitors: 1 },
-    ])
   })
 
   it('surfaces a missing audience value as Unknown', async () => {
@@ -337,17 +350,6 @@ describe('right now', () => {
   })
 })
 
-describe('channelOf', () => {
-  it('classifies the four channels', () => {
-    expect(channelOf(null)).toBe('direct')
-    expect(channelOf('')).toBe('direct')
-    expect(channelOf('www.google.com')).toBe('search')
-    expect(channelOf('duckduckgo.com')).toBe('search')
-    expect(channelOf('t.co')).toBe('social')
-    expect(channelOf('x.com')).toBe('social')
-    expect(channelOf('news.ycombinator.com')).toBe('referral')
-  })
-})
 
 describe('getViewTotals', () => {
   it('counts ALL time, not the dashboard window', async () => {

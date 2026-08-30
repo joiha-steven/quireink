@@ -873,7 +873,6 @@ export type AdminStrings = {
   analyticsViews: string
   analyticsVisitors: string
   analyticsAvgDepth: string
-  analyticsExportCsv: string
   analyticsPeak: string
   analyticsNew: string
   analyticsReturning: string

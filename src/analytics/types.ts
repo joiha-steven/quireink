@@ -5,7 +5,23 @@ import { one } from '@/store/query'
 // is now always present, but the types stay as they were rather than forcing an edit
 // across the components that consume them.
 
-export type TopPage = { path: string; views: number; visitors: number; avgDepth: number; avgDwellMs?: number }
+/**
+ * A row of the busiest-pages table.
+ *
+ * `avgDepth` and `avgDwellMs` are NULL when nothing was measured, and that is not the same
+ * as zero. A leave sample only exists when the browser delivered the beacon, so a page can
+ * be read plenty and measured never — and it used to print `0s` and `0%` in the table beside
+ * pages printing `2m 10s`, which reads as "nobody stayed" rather than "nobody was measured".
+ * Zero is now a real answer on its own: after the 2026-08-30 beacon fix, a reader who leaves
+ * an unscrolled page records depth 0. The two cases have to be told apart.
+ */
+export type TopPage = {
+  path: string
+  views: number
+  visitors: number
+  avgDepth: number | null
+  avgDwellMs?: number | null
+}
 export type DailyPoint = { day: string; views: number; visitors: number }
 export type TopReferrer = { host: string; visitors: number }
 export type TopCountry = { country: string; visitors: number }

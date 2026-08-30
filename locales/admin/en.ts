@@ -678,7 +678,6 @@ const en = {
   analyticsViews: 'Views',
   analyticsVisitors: 'Visitors',
   analyticsAvgDepth: 'Avg. read depth',
-  analyticsExportCsv: 'Export CSV',
   analyticsPeak: 'Peak',
   analyticsNew: 'New',
   analyticsReturning: 'Returning',

@@ -678,7 +678,6 @@ const vi = {
   analyticsViews: 'Lượt xem',
   analyticsVisitors: 'Người xem',
   analyticsAvgDepth: 'Độ đọc trung bình',
-  analyticsExportCsv: 'Xuất CSV',
   analyticsPeak: 'Cao nhất',
   analyticsNew: 'Mới',
   analyticsReturning: 'Quay lại',

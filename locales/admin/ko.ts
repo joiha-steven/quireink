@@ -678,7 +678,6 @@ const ko = {
   analyticsViews: '조회수',
   analyticsVisitors: '방문자',
   analyticsAvgDepth: '평균 읽은 비율',
-  analyticsExportCsv: 'CSV 내보내기',
   analyticsPeak: '최고',
   analyticsNew: '신규',
   analyticsReturning: '재방문',
