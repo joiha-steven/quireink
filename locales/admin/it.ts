@@ -62,6 +62,15 @@ const it = {
   moveToTrash: 'Sposta nel cestino',
   confirmTrashPost: 'Spostare questo articolo nel cestino? Potrai ripristinarlo da lì.',
   confirmTrashPage: 'Spostare questa pagina nel cestino? Potrai ripristinarla da lì.',
+  // The write pane's selection mode. `selectPieces` is a VERB and it shares one 320px line
+  // with Taxonomy, Series and the sort cycle, so each language picks its shortest true word —
+  // the same rule the scope tabs above are held to. The confirmation carries no number: a
+  // count inside a sentence needs a plural form in half these languages, and the button
+  // beside it already prints `(N)`.
+  selectPieces: 'Scegli',
+  selectDone: 'Fatto',
+  confirmTrashMany: 'Spostare gli elementi selezionati nel cestino? Potrai ripristinarli da lì.',
+  trashPartial: 'Alcuni elementi non sono stati spostati',
   // The line above the red button at the foot of the Attributes panel. It has to say BOTH
   // halves: the piece goes now, and it is recoverable.
   trashNote: 'Esce subito dal sito e resta nel cestino, dove puoi ripristinarlo o eliminarlo del tutto.',

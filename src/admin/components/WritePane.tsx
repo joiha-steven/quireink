@@ -17,16 +17,18 @@
 // between the two the writing wins — which is what `docs/admin-design.md` says out loud.
 // Focus mode (`useFocusMode.ts`) puts the pane away at ANY width, on purpose.
 import { useState } from 'react'
-import Link from '@/admin/router'
+import Link, { useRouter } from '@/admin/router'
 import { useView } from '@/admin/useView'
 import type { Post, Page } from '@/types'
+import { useToast } from '@/admin/ui/Toast'
 import { formatDateTimeShort } from '@/utils'
 import { Button } from '@/admin/ui/Button'
 import { Tabs } from './kit'
+import { Tick } from '@/admin/ui/Tick'
 import { useAdminT } from './I18nProvider'
 import { useWritingItems, type WriteScope, type WriteSort } from './useWritingItems'
 import { Marked } from './Marked'
-import { SHEET_TOOL } from './sheet'
+import { SHEET_TOOL, SHEET_TOOL_DANGER } from './sheet'
 
 type ContentView = {
   posts: Post[]
@@ -42,10 +44,62 @@ function Rows({
   tools,
 }: ContentView & { activeSlug?: string; tools?: React.ReactNode }) {
   const t = useAdminT()
+  const router = useRouter()
+  const { notify } = useToast()
   const [query, setQuery] = useState('')
   const [scope, setScope] = useState<WriteScope>('all')
   const [sort, setSort] = useState<WriteSort>('updated')
   const { shown, bodyHits } = useWritingItems(posts, pages, query, scope, sort)
+  // Selection is a MODE, not a permanent control on every row. A trash icon that lives on
+  // the row sits a few pixels from the title you click dozens of times a day, and it has to
+  // appear on hover to stay out of the way — which on a touch screen means it never appears
+  // at all. Behind a mode the row stays a plain link until you ask for something else.
+  const [picking, setPicking] = useState(false)
+  const [chosen, setChosen] = useState<Set<string>>(new Set())
+  const [busy, setBusy] = useState(false)
+
+  const leave = () => { setPicking(false); setChosen(new Set()) }
+  const toggle = (key: string) =>
+    setChosen((prev) => {
+      const next = new Set(prev)
+      if (!next.delete(key)) next.add(key)
+      return next
+    })
+
+  // There is no bulk endpoint: `POST /api/trash` only restores, purges and empties things
+  // ALREADY trashed, and moving a live piece is `DELETE /api/{posts,pages}/:slug`, one call
+  // each. So a batch can half-succeed, and it reports what landed rather than failing whole —
+  // refusing the batch would mean re-doing the part that already worked.
+  async function trashChosen() {
+    if (chosen.size === 0 || !confirm(t.confirmTrashMany)) return
+    setBusy(true)
+    const keys = [...chosen]
+    const done = await Promise.all(
+      keys.map(async (key) => {
+        const kind = key.slice(0, key.indexOf(':'))
+        const slug = key.slice(key.indexOf(':') + 1)
+        try {
+          const res = await fetch(`/api/${kind === 'post' ? 'posts' : 'pages'}/${encodeURIComponent(slug)}`, {
+            method: 'DELETE',
+          })
+          return res.ok ? slug : null
+        } catch {
+          return null
+        }
+      }),
+    )
+    const gone = done.filter((s): s is string => s !== null)
+    setBusy(false)
+    leave()
+    notify(
+      gone.length === keys.length ? t.movedToTrash : `${t.trashPartial} (${gone.length}/${keys.length})`,
+      gone.length === keys.length ? undefined : 'error',
+    )
+    // Refreshing beside the editor of a piece that was just trashed refetches a slug the
+    // server no longer serves and swaps the sheet for a red "Not found". Leave instead.
+    if (activeSlug && gone.includes(activeSlug)) router.push('/admin/content')
+    else router.refresh()
+  }
 
   // The scope* keys, not tabPages/statusPublished: five words must share ONE line in a
   // 320px column in every language, so this row carries its own deliberately short set.
@@ -79,17 +133,45 @@ function Rows({
         </div>
         <Tabs tabs={scopeTabs} value={scope} onChange={setScope} size="sm" dense />
         {/* One thin line of small print: the pane's tools on the left (the Write screen
-            hangs Taxonomy and Series here — they lived below the fold, where the owner
-            said nobody would ever find them), the sort cycle on the right. */}
+            hangs Taxonomy and Series here — they lived below the fold, where nobody would
+            find them), the sort cycle on the right.
+            Selecting SWAPS this line rather than adding one. The pane already stacks four
+            bands above the list in a 320px column, and a fifth would push the first row of
+            writing further down on every screen for the sake of a mode that is off almost
+            always. The line it swaps to carries the same two ends: what leaves the mode on
+            the left, what the mode is FOR on the right. */}
         <div className="flex items-center justify-between gap-3">
-          <span className="flex gap-3">{tools}</span>
-          <button
-            type="button"
-            onClick={() => setSort(sort === 'updated' ? 'created' : 'updated')}
-            className={SHEET_TOOL}
-          >
-            ↓ {sort === 'updated' ? t.sortUpdated : t.sortCreated}
-          </button>
+          {picking ? (
+            <>
+              <button type="button" onClick={leave} disabled={busy} className={SHEET_TOOL}>
+                {t.selectDone}
+              </button>
+              <button
+                type="button"
+                onClick={() => void trashChosen()}
+                disabled={busy || chosen.size === 0}
+                className={SHEET_TOOL_DANGER}
+              >
+                {t.moveToTrash} ({chosen.size})
+              </button>
+            </>
+          ) : (
+            <>
+              <span className="flex gap-3">
+                <button type="button" onClick={() => setPicking(true)} className={SHEET_TOOL}>
+                  {t.selectPieces}
+                </button>
+                {tools}
+              </span>
+              <button
+                type="button"
+                onClick={() => setSort(sort === 'updated' ? 'created' : 'updated')}
+                className={SHEET_TOOL}
+              >
+                ↓ {sort === 'updated' ? t.sortUpdated : t.sortCreated}
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -100,32 +182,44 @@ function Rows({
       ) : (
         <div className="scroll-fade min-h-0 flex-1 overflow-y-auto pb-6">
           {shown.map((it) => {
-            const found = bodyHits?.get(`${it.kind}:${it.slug}`)
+            const key = `${it.kind}:${it.slug}`
+            const found = bodyHits?.get(key)
             const under = found ?? it.standing
-            const active = it.slug === activeSlug
+            // The open piece is NOT marked while selecting. The lifted background means "this
+            // one", and in this mode "this one" is what the checkbox says; two meanings for one
+            // background is how a row nobody ticked comes to read as ticked.
+            const active = !picking && it.slug === activeSlug
+            const ticked = chosen.has(key)
             const drafty = it.status !== 'published'
             // The date beside "Published" is the PUBLICATION date — showing the last save
             // there read as a wrong publish time. A draft's only honest date is its save.
             const when = !drafty && it.kind === 'post' ? it.created : it.touched
-            return (
-              <Link
-                key={`${it.kind}:${it.slug}`}
-                href={it.editHref}
-                data-write-row
-                aria-current={active ? 'page' : undefined}
-                className={`block border-b border-neutral-100 px-4 py-3 dark:border-neutral-800 ${
-                  active ? 'bg-white dark:bg-neutral-900' : 'hover:bg-white/60 dark:hover:bg-neutral-900/60'
-                }`}
-              >
-                <span className="flex items-baseline gap-2">
-                  {/* The mock's dot: work still on the desk wears the pen's edge — the one
-                      accent the admin has — and published is the quiet neutral. */}
-                  <span
-                    aria-hidden
-                    className={`mt-1.5 h-1.5 w-1.5 shrink-0 self-start rounded-full ${
-                      drafty ? 'bg-[var(--pen-edge)]' : 'bg-neutral-300 dark:bg-neutral-600'
-                    }`}
-                  />
+            const rowClass = `block border-b border-neutral-100 px-4 py-3 dark:border-neutral-800 ${
+              active || ticked ? 'bg-white dark:bg-neutral-900' : 'hover:bg-white/60 dark:hover:bg-neutral-900/60'
+            }`
+            const body = (
+              <span className="flex items-baseline gap-2">
+                  {/* The box takes the DOT'S place rather than standing beside it. Adding a
+                      column moved every title 24px right and re-wrapped half the list on the
+                      way into the mode, so the rows you were looking at rearranged themselves
+                      at the moment you went to pick from them; swapping costs 8px and nothing
+                      re-wraps. The dot's reading is still on the row's own third line, and the
+                      scope tabs above are the honest way to select by status.
+                      The whole row is the target, not the 14px box: the label wraps it, so a
+                      tap anywhere ticks. That is also why the row stops being a link here — a
+                      row that both navigates and ticks loses the selection to a mis-tap. */}
+                  {picking ? (
+                    <Tick checked={ticked} onChange={() => toggle(key)} disabled={busy} className="mt-0.5 self-start" />
+                  ) : (
+                    /* The mock's dot: work still on the desk wears the pen's edge — the one
+                       accent the admin has — and published is the quiet neutral. */
+                    <span
+                      aria-hidden
+                      className={`mt-1.5 h-1.5 w-1.5 shrink-0 self-start rounded-full ${
+                        drafty ? 'bg-[var(--pen-edge)]' : 'bg-neutral-300 dark:bg-neutral-600'
+                      }`}
+                    />
+                  )}
                   <span className="min-w-0">
                     <span className={`block text-sm ${active ? 'font-semibold' : 'font-medium'} text-neutral-900 dark:text-white ${!it.title ? 'italic text-neutral-500 dark:text-neutral-400' : ''}`}>
                       {it.title ? <Marked text={it.title} needle={query} /> : t.untitled}
@@ -142,7 +236,23 @@ function Rows({
                       {!drafty && views[`/${it.slug}`] ? ` · ${views[`/${it.slug}`].toLocaleString()}` : ''}
                     </span>
                   </span>
-                </span>
+              </span>
+            )
+            // `data-write-row` stays on the LINK only: the tour reads `href` off it, and a
+            // label wearing the same mark would answer that query with nothing.
+            return picking ? (
+              <label key={key} data-write-pick={key} className={`${rowClass} cursor-pointer`}>
+                {body}
+              </label>
+            ) : (
+              <Link
+                key={key}
+                href={it.editHref}
+                data-write-row
+                aria-current={active ? 'page' : undefined}
+                className={rowClass}
+              >
+                {body}
               </Link>
             )
           })}
