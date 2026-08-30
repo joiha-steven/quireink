@@ -31,7 +31,7 @@ export function CacheFields(
           onChange={(enabled) => onChange({ ...cache, enabled })}
         />
       </div>
-      <Setting label={t.clearCache} note={t.cacheClearDesc}>
+      <Setting label={t.clearCache} note={t.cacheClearDesc} inline>
         <CacheButton className={CLEAR_BUTTON} />
       </Setting>
     </div>
