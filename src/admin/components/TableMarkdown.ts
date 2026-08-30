@@ -58,6 +58,33 @@ const widthOf = (row: PMNode): number =>
   children(row).reduce((n, cell) => n + Math.max(1, Number(cell.attrs.colspan ?? 1)), 0)
 
 /**
+ * The delimiter row, which is where GFM keeps COLUMN ALIGNMENT.
+ *
+ * markdown-it reads `|:--|:-:|--:|` into an `align` attribute on every cell, and the editor
+ * has always shown it — the centred column is centred on screen. It was written back out as
+ * a flat `| --- | --- |`, so every centred and right-aligned column in every table quietly
+ * went left on the first save, and stayed there. Numbers in a right-aligned column are the
+ * usual casualty and the one nobody re-checks.
+ *
+ * The FIRST row decides, because that is the only row GFM lets say anything: a table whose
+ * body cells disagree with their header cannot be written down, and the header is what
+ * markdown-it put the parsed alignment on.
+ */
+const RULE: Record<string, string> = { left: ':---', center: ':---:', right: '---:' }
+
+function delimiterRow(firstRow: PMNode | undefined, width: number): string {
+  const cells = firstRow ? children(firstRow) : []
+  const marks: string[] = []
+  for (const cell of cells) {
+    const rule = RULE[String(cell.attrs.align ?? '')] ?? '---'
+    // A spanned header covers columns that carry its alignment and nothing else.
+    for (let extra = Math.max(1, Number(cell.attrs.colspan ?? 1)); extra > 0; extra--) marks.push(rule)
+  }
+  while (marks.length < width) marks.push('---')
+  return `| ${marks.slice(0, width).join(' | ')} |`
+}
+
+/**
  * Render one BLOCK of a cell, whatever kind it is, onto one line.
  *
  * Three doors, because a cell can hold three shapes. A paragraph is inline content and goes
@@ -135,7 +162,7 @@ function serializeTable(state: SerializerState, node: PMNode): void {
       // Written whether or not the first row is made of header cells: GFM has no table
       // without a header, so a headerless one is read as having this row for a header by every
       // parser that will ever see it, including this repo's own.
-      state.write(`| ${Array.from({ length: width }, () => '---').join(' | ')} |`)
+      state.write(delimiterRow(rows[0], width))
       state.ensureNewLine()
     }
   })
