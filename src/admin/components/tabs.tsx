@@ -4,7 +4,7 @@
 // everything here answers "how does a set of mutually exclusive choices look", and nothing
 // else in the kit asks that.
 
-import type { ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode, type RefObject } from 'react'
 
 // Tabs — and the two sizes are now two DIFFERENT objects, because they always were.
 //
@@ -92,6 +92,54 @@ export const tabItemClass = (
           : 'text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-neutral-200'
       }`
 
+// A scrolling strip that says so. 2026-08-28 made the far tabs REACHABLE; this makes them
+// visible. At 360px the Settings strip holds four of its eight tabs (607px of strip in a
+// 292px box), and `w-fit max-w-full` plus the rounded border meant the fourth tab closed
+// the frame flush at the edge — a strip that had lost half its tabs looked finished.
+// Nothing said Connections, AI or System existed, on the one device where a settings
+// screen is most often somebody's only way in.
+//
+// The cue is a mask on the strip's own pixels, not an overlaid gradient: the strip sits on
+// white cards and on the bare canvas, in two themes, and a painted fade would have to know
+// what is behind it. Fading the strip's edge — labels, border and all — assumes no colour
+// and reads the same everywhere: an edge that dissolves is an edge that continues. Scroll
+// position drives which end dissolves, so the fade retires at the end of travel instead of
+// dimming a last tab that is fully there.
+const EDGE_MASK: Record<'left' | 'right' | 'both', string> = {
+  right: '[mask-image:linear-gradient(to_right,#000_calc(100%-2rem),transparent)]',
+  left: '[mask-image:linear-gradient(to_right,transparent,#000_2rem)]',
+  both: '[mask-image:linear-gradient(to_right,transparent,#000_2rem,#000_calc(100%-2rem),transparent)]',
+}
+
+function useScrollEdges(ref: RefObject<HTMLDivElement | null>, watch: boolean): '' | 'left' | 'right' | 'both' {
+  const [edges, setEdges] = useState<'' | 'left' | 'right' | 'both'>('')
+  useEffect(() => {
+    const el = ref.current
+    if (!watch || !el) return
+    const read = () => {
+      const spare = el.scrollWidth - el.clientWidth
+      // Sub-pixel layout makes scrollWidth and clientWidth disagree by fractions on a strip
+      // that does not scroll at all, so anything within a pixel of flush counts as flush.
+      if (spare <= 1) return setEdges('')
+      const left = el.scrollLeft > 1
+      const right = el.scrollLeft < spare - 1
+      setEdges(left && right ? 'both' : left ? 'left' : 'right')
+    }
+    read()
+    el.addEventListener('scroll', read, { passive: true })
+    // Re-read on resize rather than on renders: the strip overflows or stops overflowing
+    // when the pane changes width, not when React does. Guarded because the test DOM has
+    // no ResizeObserver and the initial read alone is correct for a box that never moves.
+    const ro = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(read)
+    ro?.observe(el)
+    return () => {
+      el.removeEventListener('scroll', read)
+      ro?.disconnect()
+    }
+  }, [ref, watch])
+  return edges
+}
+
 export function Tabs<K extends string>({
   tabs,
   value,
@@ -112,8 +160,14 @@ export function Tabs<K extends string>({
   dense?: boolean
   className?: string
 }) {
+  const track = useRef<HTMLDivElement>(null)
+  // Only the segmented strip scrolls; the lg strip wraps and cannot clip.
+  const edges = useScrollEdges(track, size === 'sm')
   return (
-    <div className={`${size === 'lg' ? TAB_TRACK : dense ? SEGMENT_TRACK_DENSE : SEGMENT_TRACK} ${className}`}>
+    <div
+      ref={track}
+      className={`${size === 'lg' ? TAB_TRACK : dense ? SEGMENT_TRACK_DENSE : SEGMENT_TRACK} ${edges ? EDGE_MASK[edges] : ''} ${className}`}
+    >
       {tabs.map((tb) => (
         <button
           key={tb.key}
