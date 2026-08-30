@@ -17,9 +17,10 @@ import { TaskList } from '@tiptap/extension-task-list'
 import { TaskItem } from '@tiptap/extension-task-item'
 import { Placeholder } from '@tiptap/extension-placeholder'
 import { Markdown } from 'tiptap-markdown'
-import { CaptionedImage } from './CaptionedImage'
 import { Video } from './VideoNode'
 import { Ink } from './InkMark'
+import { BlockImage, ReaderSyntax } from './ReaderSyntax'
+import { LinkKey } from './editorKeys'
 import { PenRing, PenUnderline } from './PenMarks'
 import { MathInline, MathBlock } from './MathNode'
 import { MixedList } from './MixedList'
@@ -27,8 +28,10 @@ import { MixedList } from './MixedList'
 /**
  * @param placeholder The per-block placeholder text, which is the one thing here that has to
  * come from the caller: it is a translated UI string and this module holds no i18n.
+ * @param promptLink The label on the link box `Mod-k` opens — a translated string for the same
+ * reason, and defaulted so the seven round-trip suites can keep calling this with one argument.
  */
-export function editorExtensions(placeholder: string): Extensions {
+export function editorExtensions(placeholder: string, promptLink = ''): Extensions {
   return [
     // StarterKit already ships `link` and `underline` in Tiptap 3. Registering them again
     // beside it made Tiptap log "Duplicate extension names found: ['link','underline']"
@@ -37,8 +40,13 @@ export function editorExtensions(placeholder: string): Extensions {
     // and `underline` is now switched OFF, because StarterKit's underline cannot reach
     // Markdown: pressing U applied a mark the serializer then dropped on save, silently.
     // `PenMarks.ts` supplies the replacement under the same name and command.
-    StarterKit.configure({ link: { openOnClick: false }, underline: false }),
-    CaptionedImage,
+    // `text: false` for the same reason as `underline` above, and with the same replacement
+    // beside it: `ReaderSyntax.ts` is the text node, and it exists because the library's
+    // escaping destroyed every footnote reference and every callout tag on save.
+    StarterKit.configure({ link: { openOnClick: false }, underline: false, text: false }),
+    ReaderSyntax,
+    // `CaptionedImage` with a serializer that closes its block — see `ReaderSyntax.ts`.
+    BlockImage,
     Video,
     Ink, // the pen: `==text==` inks as you type, and saves back as `==text==` (InkMark.ts)
     PenUnderline, // `++text++`, and the U button that used to lose its work (PenMarks.ts)
@@ -61,6 +69,9 @@ export function editorExtensions(placeholder: string): Extensions {
     // the repair ProseMirror makes for that adds an empty `- [ ]` to the post on every save
     // (MixedList.ts). It splits the runs before the schema sees them.
     MixedList,
+    // Mod-k. The rest of this product's keyboard is in `editorKeys.ts`; only the link needs
+    // to run inside the editor, holding the selection it is about to mark.
+    LinkKey.configure({ promptLabel: promptLink }),
     // Per-block placeholder (adds the is-editor-empty class + data-placeholder
     // the CSS reads). The old root data-placeholder attribute rendered nothing.
     Placeholder.configure({ placeholder }),

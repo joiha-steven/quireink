@@ -23,6 +23,20 @@
 // corruption on a timer — or a parse that throws, which is a white screen. Both are caught by:
 // serialize twice, compare.
 //
+// ⚠️ AND A FIXED POINT IS NOT ENOUGH, which is the correction of 2026-08-30. That law sees a
+// document that keeps CHANGING. It is blind to one that changes ONCE and then holds — which is
+// what a serializer that deletes something actually does. Every footnote reference in this
+// corpus was being rewritten `[^1]` → `\[^1\]` on the first save, and `\[^1\]` is a perfectly
+// stable fixed point, so all six footnote fixtures passed this file while the feature was gone
+// from the published page. Callouts, table column alignment and the blank line after a picture
+// went the same way: 19 of these 45 fixtures published differently after ONE pass through the
+// editor, and nothing here could say so.
+//
+// So there is a second law, and it is the one that matches the promise: RENDER BOTH AND
+// COMPARE. What a save may not do is change the reader's page. That is a stricter test than
+// comparing Markdown — a setext heading rewritten as `#` is the same page and passes — and it
+// is the only one that could have caught any of the four.
+//
 // happy-dom is registered for THIS FILE ONLY, the rule every editor suite here follows.
 
 import { describe, expect, it, beforeAll, afterAll } from 'bun:test'
@@ -59,6 +73,44 @@ describe('the corpus, opened in the editor', () => {
       const once = await roundTrip(source)
       const twice = await roundTrip(once)
       expect(twice).toBe(once)
+    })
+  }
+})
+
+/**
+ * The fixtures whose PAGE is allowed to move, and what moves in each.
+ *
+ * Every one of these is a normalisation Markdown itself permits, checked by hand on
+ * 2026-08-30 — none of them loses a feature, a word or a link. The list is short on purpose:
+ * an entry here is a promise that somebody looked, so adding one is a decision, and adding one
+ * to make a red check go away is the failure this file exists to prevent.
+ */
+const MAY_DIFFER: Record<string, string> = {
+  'callout-unknown.md': '[!MYSTERY] is not one of the five, so it is a blockquote either way; the two lines join and the <br> goes',
+  'dangerous-hrefs.md': 'javascript:/data:/vbscript: never became links; they are inert text before and after, escaped differently',
+  'dangerous-href-obfuscated.md': 'same — the tab inside the scheme becomes a space in inert text',
+  'entities.md': 'markdown-it decodes &copy; and friends on the way in; the characters they name are what comes back',
+  'lazy-continuation.md': 'a lazy second line is folded onto the first, which is what it already meant',
+  'raw-html-block.md': 'html:false — raw HTML is text here, and text is written back as entities. The promise, working',
+  'reference-links.md': '[a][ref] is written back inline as [a](url); the link and its label survive, the definition list goes',
+  'task-lists.md': 'items gain the blank line between them that makes a list loose, so each gets a <p>',
+}
+
+describe('the corpus, saved once, still publishes the same page', () => {
+  for (const file of FIXTURES) {
+    const why = MAY_DIFFER[file]
+    it(`${file}${why ? ' — normalises' : ''}`, async () => {
+      const { renderPostContent } = await import('@/render/post-content')
+      const source = readFileSync(join(CORPUS, file), 'utf8')
+      const before = await renderPostContent({ markdown: source })
+      const after = await renderPostContent({ markdown: await roundTrip(source) })
+      if (why) {
+        // Named as normalising, so it must still RENDER — an entry here excuses a difference,
+        // never a blank page.
+        expect(after.length).toBeGreaterThan(0)
+        return
+      }
+      expect(after).toBe(before)
     })
   }
 })
