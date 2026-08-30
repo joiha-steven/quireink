@@ -6,6 +6,7 @@
 //
 //   bun run user create --username hung --email hung@example.com
 //   bun run user set-password --username hung
+//   bun run user reset-2fa --username hung
 //   bun run user list
 //
 // The password is read from STDIN, never from an argument: an argument lands in shell
@@ -14,8 +15,8 @@
 import { openDatabases, closeDatabases } from '@/store/db'
 import { readEnv } from '@/env'
 import { checkPassword, MIN_LENGTH } from '@/auth/password'
-import { createUser, getUserByUsername, noUsersYet, setPassword } from '@/auth/users'
-import { all } from '@/store/query'
+import { createUser, getUserByUsername, noUsersYet, setPassword, setTotpSecret } from '@/auth/users'
+import { all, run } from '@/store/query'
 
 const args = process.argv.slice(2)
 const command = args[0] ?? ''
@@ -143,6 +144,48 @@ try {
       break
     }
 
+    /**
+     * BREAK GLASS: the second factor, cleared from the machine itself.
+     *
+     * The web screen can re-enrol 2FA and mint new recovery codes, but both ask for the
+     * current password and the authenticator — which is no help at all in the one case that
+     * actually strands somebody: the phone is gone AND the recovery codes are gone. Without
+     * this, that account is finished, on a product whose whole premise is that the owner runs
+     * the machine.
+     *
+     * Clearing the secret makes the next sign-in land on ENROLMENT (`login.ts` answers
+     * `need-enrolment` when there is no secret), which issues a fresh authenticator and a
+     * fresh set of codes. The old codes go with it: they were issued against an enrolment
+     * that no longer exists, and leaving them live would be a second key to a lock that has
+     * just been changed.
+     *
+     * ⚠️ It does NOT ask for the password, because the person running it is standing at the
+     * server with a shell. That is the authorisation, and it is a stronger one than any
+     * password — which is also why the console says out loud that the password is now the
+     * only thing left guarding the account.
+     *
+     * Sessions are left alone, for the same reason `set-password` leaves them: a lost phone
+     * is not a compromise, and signing the owner out of a browser that still works would be
+     * unhelpful. If the password may also be known, change it — the console says so.
+     */
+    case 'reset-2fa': {
+      const username = flag('username') ?? die('reset-2fa: --username is required')
+      const user = getUserByUsername(username) ?? die(`reset-2fa: no such user "${username}"`)
+      const enrolled = all<{ n: number }>(
+        `select count(*) as n from users where id = ? and totp_secret is not null`, user.id,
+      )[0]?.n ?? 0
+      if (enrolled === 0) die(`reset-2fa: ${user.username} has no second factor to clear`)
+
+      setTotpSecret(user.id, null)
+      const dropped = run(`delete from recovery_codes where user_id = ?`, user.id).changes
+      console.log(`✓ second factor cleared for ${user.username}`)
+      console.log(`  ${dropped} recovery code(s) destroyed with it — they belonged to that enrolment.`)
+      console.log('  The next sign-in will enrol a new authenticator and print new codes.')
+      console.log('  Until it does, the PASSWORD is the only thing guarding this account:')
+      console.log(`  if it may be known to anyone else, run  bun run user set-password --username ${user.username}`)
+      break
+    }
+
     case 'list': {
       if (noUsersYet()) {
         console.log('No accounts yet. Run: bun run user create --username <name> --email <address>')
@@ -158,7 +201,7 @@ try {
     }
 
     default:
-      console.log('usage: bun run user <create|set-password|list> [--username <name>] [--email <address>]')
+      console.log('usage: bun run user <create|set-password|reset-2fa|list> [--username <name>] [--email <address>]')
       process.exit(command === '' ? 0 : 1)
   }
 } finally {
