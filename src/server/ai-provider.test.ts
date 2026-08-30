@@ -8,7 +8,7 @@
 
 import { describe, it, expect } from 'bun:test'
 import { AI_PROVIDERS, DEFAULT_MODELS, buildParts, parseText, seesImages } from './ai-provider'
-import { buildChat, parseChat } from './assistant-dialects'
+import { buildChat, parseChat, type Turn } from './assistant-dialects'
 
 const TEXT = [{ text: 'describe this' }]
 const IMAGE = [{ text: 'describe this' }, { imageMime: 'image/png', imageB64: 'AAA' }]
@@ -51,8 +51,79 @@ describe('DeepSeek rides in OpenAI\'s dialect', () => {
 
   it('is read back by the same parser', () => {
     const answer = { choices: [{ message: { content: 'ok', tool_calls: [{ id: 'c1', function: { name: 'n', arguments: '{}' } }] } }] }
-    expect(parseChat('deepseek', answer)).toEqual({ text: 'ok', calls: [{ id: 'c1', name: 'n', args: {} }] })
+    expect(parseChat('deepseek', answer)).toEqual({ text: 'ok', reasoning: '', calls: [{ id: 'c1', name: 'n', args: {} }] })
     expect(parseText('deepseek', { choices: [{ message: { content: ' hi ' } }] })).toBe('hi')
+  })
+})
+
+describe('a thinking model gets its own thoughts back', () => {
+  // Not a nicety: DeepSeek answers 400 on the round AFTER a tool call unless the assistant
+  // message carrying that call also carries `reasoning_content`. Measured three times each
+  // way — absent is 400 every time, present (even as '') is 200 every time. It cost a
+  // working feature that had already passed 2488 tests, because nothing in a unit test can
+  // see the second round of a conversation with a real provider.
+  const CALLED: Turn[] = [
+    { kind: 'user', text: 'hi' },
+    { kind: 'tool_use', id: 'a1', name: 'list_posts', args: {}, reasoning: 'The owner asked.' },
+    { kind: 'tool_result', id: 'a1', name: 'list_posts', text: '[]' },
+  ]
+  const assistantMessage = (provider: string) =>
+    JSON.parse(buildChat(provider, 'm', 'k', 's', CALLED, [])!.body)
+      .messages.find((m: { tool_calls?: unknown }) => m.tool_calls)
+
+  it('echoes it to the provider that demands it', () => {
+    expect(assistantMessage('deepseek').reasoning_content).toBe('The owner asked.')
+  })
+
+  it('sends the field even when the model returned no reasoning, because absent is the 400', () => {
+    const noReasoning: Turn[] = [CALLED[0]!, { kind: 'tool_use', id: 'a1', name: 'list_posts', args: {} }, CALLED[2]!]
+    const message = JSON.parse(buildChat('deepseek', 'm', 'k', 's', noReasoning, [])!.body)
+      .messages.find((m: { tool_calls?: unknown }) => m.tool_calls)
+    expect(message.reasoning_content).toBe('')
+  })
+
+  // It is not part of OpenAI's schema, and this file's whole job is that a quirk of one
+  // provider does not leak into the request built for another.
+  it('never sends it to OpenAI', () => {
+    expect('reasoning_content' in assistantMessage('openai')).toBe(false)
+  })
+
+  // The bug this pins looked like flakiness for an hour: 502, 200, 502 on the same prompt.
+  // The model only sometimes narrates before calling a tool, and when it did, the neutral
+  // shape's two turns became two assistant messages — the second carrying the calls, the
+  // first carrying nothing DeepSeek would accept. One reply from the model is one message.
+  it('folds narration and the calls it came with into ONE message', () => {
+    const narrated: Turn[] = [
+      { kind: 'user', text: 'hi' },
+      { kind: 'assistant', text: 'Let me look.' },
+      { kind: 'tool_use', id: 'a1', name: 'list_posts', args: {}, reasoning: 'thinking' },
+      { kind: 'tool_result', id: 'a1', name: 'list_posts', text: '[]' },
+    ]
+    const messages = JSON.parse(buildChat('deepseek', 'm', 'k', 's', narrated, [])!.body).messages
+    const assistants = messages.filter((m: { role: string }) => m.role === 'assistant')
+    expect(assistants).toHaveLength(1)
+    expect(assistants[0].content).toBe('Let me look.')
+    expect(assistants[0].tool_calls).toHaveLength(1)
+    expect(assistants[0].reasoning_content).toBe('thinking')
+  })
+
+  // A finished answer is not narration: the next question's calls belong to a new reply.
+  it('does not let a closed answer absorb the next round\'s calls', () => {
+    const twoExchanges: Turn[] = [
+      { kind: 'user', text: 'hi' },
+      { kind: 'assistant', text: 'There is one draft.' },
+      { kind: 'user', text: 'and now?' },
+      { kind: 'tool_use', id: 'b1', name: 'list_posts', args: {} },
+    ]
+    const messages = JSON.parse(buildChat('deepseek', 'm', 'k', 's', twoExchanges, [])!.body).messages
+    expect(messages.filter((m: { role: string }) => m.role === 'assistant')).toHaveLength(2)
+    expect(messages.find((m: { content: string }) => m.content === 'There is one draft.').tool_calls).toBeUndefined()
+  })
+
+  it('reads it back off the wire', () => {
+    const answered = { choices: [{ message: { content: '', reasoning_content: 'thinking…', tool_calls: [] } }] }
+    expect(parseChat('deepseek', answered).reasoning).toBe('thinking…')
+    expect(parseChat('openai', answered).reasoning).toBe('thinking…')
   })
 })
 

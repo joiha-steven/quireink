@@ -14,7 +14,13 @@ const body = async <T>(c: Context): Promise<Partial<T>> =>
 const turn = z.union([
   z.object({ kind: z.literal('user'), text: z.string().max(20_000) }),
   z.object({ kind: z.literal('assistant'), text: z.string().max(50_000) }),
-  z.object({ kind: z.literal('tool_use'), id: z.string().max(200), name: z.string().max(100), args: z.record(z.string(), z.unknown()) }),
+  // `reasoning` must be declared, not merely tolerated: zod STRIPS unknown keys rather
+  // than refusing them, so leaving it out would drop the field silently on the way back
+  // in — and the next round would be the 400 this whole field exists to prevent.
+  z.object({
+    kind: z.literal('tool_use'), id: z.string().max(200), name: z.string().max(100),
+    args: z.record(z.string(), z.unknown()), reasoning: z.string().max(50_000).optional(),
+  }),
   z.object({ kind: z.literal('tool_result'), id: z.string().max(200), name: z.string().max(100), text: z.string().max(50_000) }),
 ])
 

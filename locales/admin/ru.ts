@@ -846,6 +846,7 @@ const ru = {
   assistantEmpty: 'Спросите что-нибудь у блога',
   assistantNeedsModel: 'Вставьте ключ API в Настройки → ИИ — и помощник сможет читать этот блог и ухаживать за ним вместо вас.',
   assistantModelOn: 'Отвечает через',
+  assistantYou: 'Вы',
   assistantNew: 'Новый разговор',
   assistantEg1: 'Как дела у блога на этой неделе?',
   assistantEg2: 'Пройдись по комментариям в поисках спама',

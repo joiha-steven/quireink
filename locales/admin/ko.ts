@@ -846,6 +846,7 @@ const ko = {
   assistantEmpty: '블로그에 물어보세요',
   assistantNeedsModel: '설정 → AI에 API 키를 넣으면 어시스턴트가 이 블로그를 읽고 돌봅니다.',
   assistantModelOn: '응답 모델',
+  assistantYou: '나',
   assistantNew: '새 대화',
   assistantEg1: '이번 주 블로그는 어땠나요?',
   assistantEg2: '댓글에서 스팸을 걸러 주세요',

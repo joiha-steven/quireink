@@ -846,6 +846,7 @@ const zh = {
   assistantEmpty: '问问你的博客',
   assistantNeedsModel: '在设置 → AI 里填入 API 密钥，助手就能替你读取和打理这个博客。',
   assistantModelOn: '正在使用',
+  assistantYou: '你',
   assistantNew: '新对话',
   assistantEg1: '这周博客表现如何？',
   assistantEg2: '清查评论里的垃圾内容',

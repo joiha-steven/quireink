@@ -17,6 +17,22 @@ export const OPENAI_COMPATIBLE: Record<string, string> = {
   deepseek: 'https://api.deepseek.com/v1',
 }
 
+/**
+ * Providers whose thinking models demand their own reasoning back.
+ *
+ * DeepSeek returns `reasoning_content` beside the tool calls, and REFUSES the next round
+ * unless that field is present on the assistant message carrying them — 400, every time,
+ * with `content: null` and the tool calls otherwise byte-identical. An empty string
+ * satisfies it, so this is a protocol requirement rather than a quality one; the real text
+ * is echoed anyway, because throwing away what the model was told to hand back is how a
+ * second round starts arguing with itself.
+ *
+ * Narrow on purpose. The field is not part of OpenAI's own schema and is not sent there.
+ */
+const ECHOES_REASONING = new Set(['deepseek'])
+
+export const echoesReasoning = (provider: string): boolean => ECHOES_REASONING.has(provider)
+
 export const DEFAULT_MODELS: Record<string, string> = {
   anthropic: 'claude-haiku-4-5',
   openai: 'gpt-4o-mini',
