@@ -846,6 +846,7 @@ const ja = {
   assistantEmpty: 'ブログに聞いてみる',
   assistantNeedsModel: '設定 → AI に API キーを入れると、アシスタントがこのブログを読んで世話をします。',
   assistantModelOn: '回答するモデル',
+  assistantYou: 'あなた',
   assistantNew: '新しい会話',
   assistantEg1: '今週のブログの調子は？',
   assistantEg2: 'コメントの迷惑投稿を確認して',

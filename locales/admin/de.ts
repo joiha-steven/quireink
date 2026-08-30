@@ -846,6 +846,7 @@ const de = {
   assistantEmpty: 'Fragen Sie Ihren Blog etwas',
   assistantNeedsModel: 'Einen API-Schlüssel in Einstellungen → KI eintragen, dann liest und pflegt der Assistent diesen Blog für Sie.',
   assistantModelOn: 'Antwortet mit',
+  assistantYou: 'Du',
   assistantNew: 'Neues Gespräch',
   assistantEg1: 'Wie lief der Blog diese Woche?',
   assistantEg2: 'Kommentare nach Spam durchsehen',

@@ -94,7 +94,12 @@ export async function runAssistant(turns: Turn[]): Promise<AssistantReply> {
         signal: AbortSignal.timeout(60_000),
       })
       if (!res.ok) {
-        console.error(`[ERROR] assistant: ${keys.aiProvider} answered ${res.status}`)
+        // The REASON, not just the number. A provider's 400 says which message it objected
+        // to and why; without it the admin shows "check your key" for a refusal that has
+        // nothing to do with the key, and the only way to find out is to rebuild the
+        // request by hand outside the server. That cost an afternoon once already.
+        const why = (await res.text().catch(() => '')).replace(/\s+/g, ' ').slice(0, 300)
+        console.error(`[ERROR] assistant: ${keys.aiProvider} answered ${res.status} ${why}`)
         return { ok: false, error: 'provider_error' }
       }
       answer = parseChat(keys.aiProvider, await res.json())
@@ -111,7 +116,10 @@ export async function runAssistant(turns: Turn[]): Promise<AssistantReply> {
     }
 
     for (const call of answer.calls) {
-      added.push({ kind: 'tool_use', id: call.id, name: call.name, args: call.args })
+      // The reasoning rides with the calls because that is where the provider wants it
+      // back: DeepSeek refuses the round after this one if the assistant message carrying
+      // these calls arrives without it. Empty for every provider that does not send any.
+      added.push({ kind: 'tool_use', id: call.id, name: call.name, args: call.args, reasoning: answer.reasoning })
     }
     for (const call of answer.calls) {
       const text = await runTool(byName.get(call.name), call.args)

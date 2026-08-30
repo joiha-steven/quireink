@@ -846,6 +846,7 @@ const en = {
   assistantEmpty: 'Ask the blog something',
   assistantNeedsModel: 'Plug an API key into Settings → AI and the assistant can read and tend this blog for you.',
   assistantModelOn: 'Answering with',
+  assistantYou: 'You',
   assistantNew: 'New conversation',
   assistantEg1: 'How did the blog do this week?',
   assistantEg2: 'Sweep the comments for spam',

@@ -10,17 +10,24 @@
 // `ai-provider.ts` reads the same table for alt text, excerpts and the comment guard.
 // That is the point: one list, or a provider that works in the chat box and silently
 // does nothing everywhere else.
-import { OPENAI_COMPATIBLE } from '@/server/ai-capabilities'
+import { OPENAI_COMPATIBLE, echoesReasoning } from '@/server/ai-capabilities'
 
 export type Turn =
   | { kind: 'user'; text: string }
   | { kind: 'assistant'; text: string }
-  | { kind: 'tool_use'; id: string; name: string; args: Record<string, unknown> }
+  // `reasoning` is what the model thought on its way to these calls. Only some providers
+  // hand it out, and DeepSeek REFUSES the next round without it back (`echoesReasoning`),
+  // so it rides on the turn rather than being dropped at the door.
+  | { kind: 'tool_use'; id: string; name: string; args: Record<string, unknown>; reasoning?: string }
   | { kind: 'tool_result'; id: string; name: string; text: string }
 
 export type ToolSpec = { name: string; description: string; parameters: Record<string, unknown> }
 export type ChatRequest = { url: string; headers: Record<string, string>; body: string }
-export type ChatAnswer = { text: string; calls: { id: string; name: string; args: Record<string, unknown> }[] }
+export type ChatAnswer = {
+  text: string
+  reasoning: string
+  calls: { id: string; name: string; args: Record<string, unknown> }[]
+}
 
 const cap = (s: string, n = 20_000): string => (s.length > n ? s.slice(0, n) + '\n…[truncated]' : s)
 
@@ -49,7 +56,7 @@ function anthropicMessages(turns: Turn[]): unknown[] {
 
 // ---- OpenAI ------------------------------------------------------------------------------
 
-function openaiMessages(system: string, turns: Turn[]): unknown[] {
+function openaiMessages(system: string, turns: Turn[], echo: boolean): unknown[] {
   const out: Record<string, unknown>[] = [{ role: 'system', content: system }]
   for (const t of turns) {
     if (t.kind === 'user') out.push({ role: 'user', content: t.text })
@@ -57,8 +64,21 @@ function openaiMessages(system: string, turns: Turn[]): unknown[] {
     else if (t.kind === 'tool_use') {
       const call = { id: t.id, type: 'function', function: { name: t.name, arguments: JSON.stringify(t.args) } }
       const last = out[out.length - 1]
-      if (last?.role === 'assistant' && Array.isArray(last.tool_calls)) (last.tool_calls as unknown[]).push(call)
-      else out.push({ role: 'assistant', content: null, tool_calls: [call] })
+      const reasoning = echo ? { reasoning_content: t.reasoning ?? '' } : {}
+      if (last?.role === 'assistant' && Array.isArray(last.tool_calls)) {
+        (last.tool_calls as unknown[]).push(call) // parallel calls share one message
+      } else if (last?.role === 'assistant') {
+        // NARRATION AND CALLS ARE ONE MESSAGE. A model that says "let me look" and calls a
+        // tool said both in a single reply; the neutral shape splits that into two turns,
+        // and emitting two assistant messages is a re-narration the provider never sent.
+        // OpenAI tolerates it. DeepSeek refuses the round — intermittently, because only
+        // some replies carry narration at all, which is what made it look like flakiness.
+        Object.assign(last, { tool_calls: [call], ...reasoning })
+      } else {
+        // The empty string is not a placeholder: absent is a 400 and '' is a 200, so a
+        // round whose reasoning was never returned still has to say so out loud.
+        out.push({ role: 'assistant', content: null, tool_calls: [call], ...reasoning })
+      }
     } else out.push({ role: 'tool', tool_call_id: t.id, content: cap(t.text) })
   }
   return out
@@ -112,7 +132,7 @@ export function buildChat(
       headers: { 'content-type': 'application/json', authorization: `Bearer ${key}` },
       body: JSON.stringify({
         model, max_tokens: 1500,
-        messages: openaiMessages(system, turns),
+        messages: openaiMessages(system, turns, echoesReasoning(provider)),
         tools: tools.map((t) => ({ type: 'function', function: { name: t.name, description: t.description, parameters: t.parameters } })),
       }),
     }
@@ -133,7 +153,7 @@ export function buildChat(
 
 export function parseChat(provider: string, json: unknown): ChatAnswer {
   const j = json as Record<string, any>
-  const out: ChatAnswer = { text: '', calls: [] }
+  const out: ChatAnswer = { text: '', reasoning: '', calls: [] }
   if (provider === 'anthropic') {
     for (const b of j?.content ?? []) {
       if (b.type === 'text') out.text += b.text
@@ -142,6 +162,7 @@ export function parseChat(provider: string, json: unknown): ChatAnswer {
   } else if (OPENAI_COMPATIBLE[provider]) {
     const m = j?.choices?.[0]?.message
     out.text = typeof m?.content === 'string' ? m.content : ''
+    if (typeof m?.reasoning_content === 'string') out.reasoning = m.reasoning_content
     for (const c of m?.tool_calls ?? []) {
       let args: Record<string, unknown> = {}
       try { args = JSON.parse(c?.function?.arguments ?? '{}') } catch { /* refused below by zod */ }

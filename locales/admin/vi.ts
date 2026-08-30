@@ -846,6 +846,7 @@ const vi = {
   assistantEmpty: 'Hỏi blog một câu',
   assistantNeedsModel: 'Dán API key vào Cài đặt → AI là trợ lý đọc và chăm blog giúp bạn.',
   assistantModelOn: 'Đang trả lời bằng',
+  assistantYou: 'Bạn',
   assistantNew: 'Cuộc mới',
   assistantEg1: 'Tuần này blog thế nào?',
   assistantEg2: 'Quét bình luận rác',

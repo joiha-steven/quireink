@@ -153,11 +153,21 @@ export function AssistantView({ title, configured, model }: {
                 const used = b.parts.filter((p) => p.kind === 'tool_use')
                 return (
                   <li key={i} className="border-t border-neutral-100 pt-7 first:border-0 first:pt-0 dark:border-neutral-800">
+                    {/* WHO SAID IT, said plainly. Weight and ink alone separated these two
+                        and it was not enough to read: a long question and a short answer
+                        looked like one paragraph in two shades. The answer also carries a
+                        rule down its left, so the eye finds where the reply starts without
+                        reading a word. */}
+                    <p className={`${META} mb-1`}>{t.assistantYou}</p>
                     <p className="text-sm leading-relaxed font-medium whitespace-pre-wrap text-neutral-900 dark:text-neutral-100">
                       {b.question}
                     </p>
+                    {said.length > 0 && <p className={`${META} mt-5 mb-1`}>{model || t.assistantModelOn}</p>}
                     {said.map((p, j) => (
-                      <p key={j} className="mt-3 text-sm leading-relaxed whitespace-pre-wrap text-neutral-700 dark:text-neutral-300">
+                      <p
+                        key={j}
+                        className="mt-2 border-l-2 border-neutral-200 pl-3 text-sm leading-relaxed whitespace-pre-wrap text-neutral-700 dark:border-neutral-700 dark:text-neutral-300"
+                      >
                         {p.kind === 'assistant' ? p.text : ''}
                       </p>
                     ))}

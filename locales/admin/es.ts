@@ -846,6 +846,7 @@ const es = {
   assistantEmpty: 'Pregúntale algo al blog',
   assistantNeedsModel: 'Pega una clave API en Ajustes → IA y el asistente podrá leer y cuidar este blog por ti.',
   assistantModelOn: 'Respondiendo con',
+  assistantYou: 'Tú',
   assistantNew: 'Nueva conversación',
   assistantEg1: '¿Cómo le fue al blog esta semana?',
   assistantEg2: 'Revisa los comentarios en busca de spam',

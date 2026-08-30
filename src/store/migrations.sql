@@ -136,3 +136,47 @@ alter table posts add column autosave_json text;
 alter table posts add column autosave_at integer;
 alter table pages add column autosave_json text;
 alter table pages add column autosave_at integer;
+
+-- migration: 010-ai-provider-deepseek
+-- The provider list existed in four places and only three of them were widened. DeepSeek
+-- passed typecheck, nine static guards and 2485 tests, and was refused HERE — by a CHECK
+-- written when there were three names — at the moment a key was actually saved. Every
+-- layer above was already correct; this one sentence of SQL was the whole feature.
+--
+-- SQLite cannot alter a CHECK, so the table is rebuilt. Same shape, one more name, and the
+-- row (there is only ever one, id = 1) carried across whole — it holds every credential
+-- the blog has, so losing it would mean re-pasting SMTP, S3, Turnstile and Google as well.
+create table integration_keys_new (
+  id                   integer primary key check (id = 1),
+  turnstile_site_key   text,
+  turnstile_secret_key text,
+  cloudflare_api_token text,
+  cloudflare_zone_id   text,
+  purge_webhook_url    text,
+  s3_endpoint          text,
+  s3_region            text,
+  s3_bucket            text,
+  s3_prefix            text,
+  s3_access_key_id     text,
+  s3_secret_access_key text,
+  google_client_id     text,
+  google_client_secret text,
+  smtp_host            text,
+  smtp_port            integer,
+  smtp_user            text,
+  smtp_pass            text,
+  smtp_from            text,
+  smtp_secure          integer check (smtp_secure in (0,1)),
+  ai_provider          text check (ai_provider in ('anthropic','openai','gemini','deepseek')),
+  ai_api_key           text,
+  ai_model             text
+);
+insert into integration_keys_new
+  select id, turnstile_site_key, turnstile_secret_key, cloudflare_api_token, cloudflare_zone_id,
+         purge_webhook_url, s3_endpoint, s3_region, s3_bucket, s3_prefix,
+         s3_access_key_id, s3_secret_access_key, google_client_id, google_client_secret,
+         smtp_host, smtp_port, smtp_user, smtp_pass, smtp_from, smtp_secure,
+         ai_provider, ai_api_key, ai_model
+    from integration_keys;
+drop table integration_keys;
+alter table integration_keys_new rename to integration_keys;

@@ -7,6 +7,7 @@ import { db } from '@/store/db'
 import {
   getIntegrationKeys, getIntegrationStatus, saveIntegrationKeys,
 } from '@/store/integration-keys'
+import { AI_PROVIDERS, seesImages } from '@/server/ai-capabilities'
 
 const DIR = './.tmp/test-integration-keys'
 freshDatabase(DIR)
@@ -124,5 +125,40 @@ describe('getIntegrationStatus', () => {
     const status = await getIntegrationStatus()
     expect(status.googleConfigured).toBe(true)
     expect(JSON.stringify(status)).not.toContain('GOCSPX')
+  })
+})
+
+describe('the provider list, all the way down', () => {
+  // THE TEST THAT WAS MISSING. The list of AI providers lived in four places — the model
+  // table, the admin menu, the two key routes, and a CHECK constraint in schema.sql — and
+  // only the first three were widened for a fourth. Typecheck passed, nine static guards
+  // passed, 2485 tests passed, and the feature was refused by SQLite at the one moment a
+  // key was actually saved. Nothing static can see a CHECK; only a real write can.
+  //
+  // So this walks the whole set rather than naming anyone: a fifth provider is covered the
+  // day it is added, and a schema nobody widened fails here instead of in someone's admin.
+  it('saves and reads back every provider this build offers', async () => {
+    for (const provider of AI_PROVIDERS) {
+      await saveIntegrationKeys({ aiProvider: provider, aiApiKey: 'k', aiModel: '' })
+      expect(`${provider} stored`).toBe(`${(await getIntegrationKeys()).aiProvider} stored`)
+    }
+  })
+
+  it('still refuses a name that is not on the list', async () => {
+    // The constraint is not decoration: a typo in AI_PROVIDER would otherwise sit in the
+    // row and turn every AI job into a silent no-op.
+    await saveIntegrationKeys({ aiProvider: 'anthropic', aiApiKey: 'k' })
+    expect(saveIntegrationKeys({ aiProvider: 'not-a-provider' })).rejects.toThrow()
+    expect((await getIntegrationKeys()).aiProvider).toBe('anthropic')
+  })
+
+  it('reports whether the stored model can be shown a picture', async () => {
+    await saveIntegrationKeys({ aiProvider: 'deepseek', aiApiKey: 'k', aiModel: 'deepseek-v4-flash' })
+    expect((await getIntegrationStatus()).aiSeesImages).toBe(false)
+    await saveIntegrationKeys({ aiModel: 'deepseek-v4-flash-vision-exp' })
+    expect((await getIntegrationStatus()).aiSeesImages).toBe(true)
+    // Same provider, same key, opposite answer — which is the whole point of asking the
+    // model rather than the provider.
+    expect(seesImages('deepseek', 'deepseek-v4-flash')).toBe(false)
   })
 })

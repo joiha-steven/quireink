@@ -302,7 +302,11 @@ create table if not exists integration_keys (
   -- The optional AI describer (media/alt-text.ts). Pasting a key here IS the opt-in:
   -- no key, no request, ever. The key is a secret; provider and model are not, and the
   -- admin status endpoint may show those two.
-  ai_provider          text check (ai_provider in ('anthropic','openai','gemini')),
+  -- Kept in step with AI_PROVIDERS (`src/server/ai-capabilities.ts`) by the round trip in
+  -- integration-keys.test.ts, which saves every name this build offers. That test exists
+  -- because this list silently did not: a fourth provider passed typecheck, nine guards
+  -- and 2485 tests, and was refused here at the last possible moment.
+  ai_provider          text check (ai_provider in ('anthropic','openai','gemini','deepseek')),
   ai_api_key           text,
   ai_model             text
 );

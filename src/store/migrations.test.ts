@@ -67,11 +67,18 @@ test('an OLD database gets the columns it was created without', () => {
   // omits is created by schema.sql at the FINAL shape, and the alter then fails on a
   // duplicate column — which is a fact about this fixture, not about any real database:
   // a real pre-migration instance has the real pre-migration table.
+  //
+  // The smtp columns are here because they have been in `schema.sql` since its first
+  // commit, so every real database of this era HAS them. They were left out while no
+  // migration named a column — and the first one that did (010, which rebuilds this table
+  // rather than adding to it) failed on a shape no instance has ever had.
   const old = new Database(join(dir, 'quire.db'), { create: true })
   old.run(`create table integration_keys (
              id integer primary key check (id = 1),
              turnstile_site_key text, turnstile_secret_key text,
-             cloudflare_api_token text, cloudflare_zone_id text)`)
+             cloudflare_api_token text, cloudflare_zone_id text,
+             smtp_host text, smtp_port integer, smtp_user text, smtp_pass text,
+             smtp_from text, smtp_secure integer check (smtp_secure in (0,1)))`)
   old.run(`insert into integration_keys (id, turnstile_site_key) values (1, 'keep-me')`)
   old.run(`create table subscribers (
              id integer primary key autoincrement,

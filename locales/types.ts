@@ -1044,6 +1044,7 @@ export type AdminStrings = {
   assistantEmpty: string
   assistantNeedsModel: string
   assistantModelOn: string
+  assistantYou: string
   assistantNew: string
   assistantEg1: string
   assistantEg2: string
