@@ -192,7 +192,7 @@ function Shell() {
       {/* Toasts are ADMIN-only (save and upload feedback), so the provider lives here. */}
       <ToastProvider>
         <div className="admin-shell min-h-screen bg-neutral-100 lg:flex dark:bg-neutral-950">
-          <AdminSidebar lang={data.language} signOut={signOut} />
+          <AdminSidebar lang={data.language} signOut={signOut} aiConfigured={data.aiConfigured} />
           {/* Outside the canvas and outside the error boundary: it is how you LEAVE a screen
               that has gone wrong, so it must not be inside the thing that went wrong. */}
           <CommandPalette />

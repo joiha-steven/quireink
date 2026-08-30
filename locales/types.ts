@@ -1020,6 +1020,7 @@ export type AdminStrings = {
   tabAi: string
   tabAiHint: string
   aiTasksLabel: string
+  aiAutoJobs: string
   aiTaskAltText: string
   aiModelsLoading: string
   aiModelsFailed: string
@@ -1044,7 +1045,20 @@ export type AdminStrings = {
   assistantEmpty: string
   assistantNeedsModel: string
   assistantModelOn: string
-  assistantYou: string
+  assistantChats: string
+  assistantWants: string
+  assistantAllow: string
+  assistantDeny: string
+  assistantDidThis: string
+  assistantDidNothing: string
+  assistantShowAll: string
+  assistantTokens: string
+  assistantNoChats: string
+  assistantUntitled: string
+  assistantDelete: string
+  assistantDeleteYes: string
+  assistantContext: string
+  assistantSpent: string
   assistantNew: string
   assistantEg1: string
   assistantEg2: string

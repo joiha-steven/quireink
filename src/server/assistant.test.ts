@@ -62,11 +62,11 @@ describe('buildChat folds the neutral turns into each dialect', () => {
 describe('parseChat reads each dialect back into the one shape', () => {
   it('anthropic, openai, gemini', () => {
     expect(parseChat('anthropic', { content: [{ type: 'text', text: 'hi ' }, { type: 'tool_use', id: 'a', name: 'n', input: { x: 1 } }] }))
-      .toEqual({ text: 'hi', reasoning: '', calls: [{ id: 'a', name: 'n', args: { x: 1 } }] })
+      .toEqual({ text: 'hi', reasoning: '', usage: { input: 0, output: 0 }, calls: [{ id: 'a', name: 'n', args: { x: 1 } }] })
     expect(parseChat('openai', { choices: [{ message: { content: null, tool_calls: [{ id: 'b', function: { name: 'n', arguments: '{"y":2}' } }] } }] }))
-      .toEqual({ text: '', reasoning: '', calls: [{ id: 'b', name: 'n', args: { y: 2 } }] })
+      .toEqual({ text: '', reasoning: '', usage: { input: 0, output: 0 }, calls: [{ id: 'b', name: 'n', args: { y: 2 } }] })
     expect(parseChat('gemini', { candidates: [{ content: { parts: [{ functionCall: { name: 'n', args: {} } }] } }] }))
-      .toEqual({ text: '', reasoning: '', calls: [{ id: 'g0', name: 'n', args: {} }] })
+      .toEqual({ text: '', reasoning: '', usage: { input: 0, output: 0 }, calls: [{ id: 'g0', name: 'n', args: {} }] })
   })
 })
 

@@ -451,3 +451,23 @@ create table if not exists recovery_codes (
   used_at   integer,                          -- NULL until spent; single use
   primary key (user_id, code_hash)
 ) without rowid;
+
+-- The assistant's conversations (ADR 0040). Stored here rather than in a browser tab so the
+-- owner can come back to one, and so it travels in the backup with everything else of theirs.
+--
+-- `turns` is the whole exchange as one JSON document, not a row per turn: it is written and
+-- read whole every time, never queried into, and a tool result is a blob of text that no
+-- column would make more searchable. `input_tokens` / `output_tokens` are what the whole
+-- conversation has cost so far; `context_tokens` is the last round's input, which is what
+-- the NEXT question will be charged for again and the number the screen shows.
+create table if not exists assistant_chats (
+  id             integer primary key autoincrement,
+  title          text not null default '',
+  turns          text not null default '[]',
+  input_tokens   integer not null default 0,
+  output_tokens  integer not null default 0,
+  context_tokens integer not null default 0,
+  created_at     integer not null,
+  updated_at     integer not null
+);
+create index if not exists assistant_chats_updated_idx on assistant_chats (updated_at desc);

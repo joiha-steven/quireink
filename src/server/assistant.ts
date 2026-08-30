@@ -18,8 +18,9 @@ import { getIntegrationKeys } from '@/store/integration-keys'
 import { getSettings } from '@/content/settings'
 import { DEFAULT_MODELS } from '@/server/ai-provider'
 import { languageName } from '@/media/alt-text'
-import { buildChat, parseChat, type ToolSpec, type Turn } from '@/server/assistant-dialects'
+import { buildChat, noUsage, parseChat, type ToolSpec, type Turn, type Usage } from '@/server/assistant-dialects'
 import { readChatStream, streams } from '@/server/assistant-stream'
+import { DECLINED, needsConsent } from '@/server/assistant-consent'
 
 export type { Turn }
 
@@ -64,8 +65,17 @@ async function runTool(def: ToolDef | undefined, args: Record<string, unknown>):
   }
 }
 
+/** A call the loop stopped in front of, waiting for the owner. */
+export type Pending = { id: string; name: string; args: Record<string, unknown> }
+
 export type AssistantReply =
-  | { ok: true; turns: Turn[]; text: string }
+  /**
+   * `usage` is the whole exchange, which is more than one round: a question that took four
+   * tool calls paid for five requests, and a per-round figure would tell the owner a
+   * quarter of the truth. `context` is the LAST round's input, because that is what the
+   * next question will be charged for again.
+   */
+  | { ok: true; turns: Turn[]; text: string; usage: Usage; context: number; awaiting?: Pending[] }
   | { ok: false; error: 'ai_not_configured' | 'bad_conversation' | 'provider_error' }
 
 /**
@@ -73,7 +83,12 @@ export type AssistantReply =
  * executed and appended, ending in its text answer. The caller stores nothing — the
  * conversation lives in the owner's open tab, which is exactly as long as it should.
  */
-export async function runAssistant(turns: Turn[], onText?: (delta: string) => void): Promise<AssistantReply> {
+export async function runAssistant(
+  turns: Turn[],
+  onText?: (delta: string) => void,
+  /** Calls the owner has just answered: approved run, declined get a refusal as their result. */
+  verdict: { approve?: string[]; decline?: string[] } = {},
+): Promise<AssistantReply> {
   const keys = await getIntegrationKeys()
   if (!keys.aiProvider || !keys.aiApiKey) return { ok: false, error: 'ai_not_configured' }
   const model = keys.aiModel || DEFAULT_MODELS[keys.aiProvider]
@@ -88,6 +103,29 @@ export async function runAssistant(turns: Turn[], onText?: (delta: string) => vo
 
   const added: Turn[] = []
   const all = () => [...turns, ...added]
+
+  /**
+   * Answer the calls the last round stopped in front of, before asking the model anything.
+   *
+   * A conversation arriving with unanswered `tool_use` turns is one that was paused for
+   * consent. Approved ones run now; declined ones get a refusal written as their result so
+   * the model learns what happened instead of asking again in the next breath.
+   */
+  const answered = new Set(turns.filter((t) => t.kind === 'tool_result').map((t) => t.id))
+  for (const t of turns) {
+    if (t.kind !== 'tool_use' || answered.has(t.id)) continue
+    if (verdict.approve?.includes(t.id)) {
+      added.push({ kind: 'tool_result', id: t.id, name: t.name, text: await runTool(byName.get(t.name), t.args) })
+    } else if (verdict.decline?.includes(t.id)) {
+      added.push({ kind: 'tool_result', id: t.id, name: t.name, text: DECLINED })
+    } else {
+      // Neither answer given: the pause still stands, and re-asking the model with an
+      // unanswered call is a request every provider refuses.
+      return { ok: true, turns: [], text: '', usage: noUsage(), context: 0, awaiting: [{ id: t.id, name: t.name, args: t.args }] }
+    }
+  }
+  const spent: Usage = noUsage()
+  let context = 0
 
   for (let round = 0; round <= MAX_ROUNDS; round++) {
     // Stream only when somebody is watching AND the provider's stream is one we have
@@ -114,6 +152,11 @@ export async function runAssistant(turns: Turn[], onText?: (delta: string) => vo
       answer = streaming
         ? await readChatStream(keys.aiProvider, res, onText)
         : parseChat(keys.aiProvider, await res.json())
+      spent.input += answer.usage.input
+      spent.output += answer.usage.output
+      // Not summed: every round re-sends the whole conversation, so the last one IS the
+      // size of the context. Adding them would report a number four times too large.
+      if (answer.usage.input > 0) context = answer.usage.input
     } catch (error) {
       console.error(`[ERROR] assistant: ${(error as Error).message}`)
       return { ok: false, error: 'provider_error' }
@@ -131,15 +174,30 @@ export async function runAssistant(turns: Turn[], onText?: (delta: string) => vo
       // The cap answers with whatever text there is rather than a dead end — the owner
       // sees how far it got, and every executed tool is already in the log.
       if (answer.text) added.push({ kind: 'assistant', text: answer.text })
-      return { ok: true, turns: added, text: answer.text }
+      return { ok: true, turns: added, text: answer.text, usage: spent, context }
     }
 
     for (const call of answer.calls) {
       // The reasoning rides with the calls because that is where the provider wants it
       // back: DeepSeek refuses the round after this one if the assistant message carrying
       // these calls arrives without it. Empty for every provider that does not send any.
-      added.push({ kind: 'tool_use', id: call.id, name: call.name, args: call.args, reasoning: answer.reasoning })
+      added.push({
+        kind: 'tool_use', id: call.id, name: call.name, args: call.args,
+        reasoning: answer.reasoning, at: Date.now(),
+      })
     }
+    // STOP HERE if any of them needs the owner. Not one by one: the model asked for these
+    // together, and running the harmless half while the screen asks about the other half
+    // would leave a conversation whose order nobody can reconstruct.
+    const ask = answer.calls.filter((c) => needsConsent(c.name))
+    if (ask.length > 0) {
+      if (answer.text) added.splice(added.length - answer.calls.length, 0, { kind: 'assistant', text: answer.text })
+      return {
+        ok: true, turns: added, text: answer.text, usage: spent, context,
+        awaiting: ask.map((c) => ({ id: c.id, name: c.name, args: c.args })),
+      }
+    }
+
     for (const call of answer.calls) {
       const text = await runTool(byName.get(call.name), call.args)
       added.push({ kind: 'tool_result', id: call.id, name: call.name, text })

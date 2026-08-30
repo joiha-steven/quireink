@@ -208,10 +208,18 @@ async function assistantView() {
   return { configured: ai.aiConfigured, model: ai.aiModel }
 }
 
-/** The shell itself: the admin's language, and the version Help and the dashboard print. */
+/**
+ * The shell itself: the admin's language, the version Help and the dashboard print, and
+ * whether a model is plugged in.
+ *
+ * `aiConfigured` is here rather than fetched by the rail because the rail is drawn before
+ * anything else and a destination that appears a beat later is worse than one that never
+ * appears. It is a boolean about a secret, never the secret.
+ */
 async function shellView() {
   const settings = await getSettings()
-  return { language: settings.language, version: VERSION }
+  const { aiConfigured } = await getIntegrationStatus()
+  return { language: settings.language, version: VERSION, aiConfigured }
 }
 
 /** Storage totals for the media page's header, without listing every blob twice. */

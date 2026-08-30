@@ -40,20 +40,50 @@ const NUMBER = /^\s*(\d+)[.)]\s+(.*)$/
 /** `---` between paragraphs, which models use to fence an answer they were asked for. */
 const RULE = /^\s*([-*_])\1{2,}\s*$/
 
+/** `| a | b |`, and the `|---|---|` that turns the line above it into a header. */
+const CELLS = /^\s*\|(.+)\|\s*$/
+const DIVIDER = /^\s*\|[\s:|-]+\|\s*$/
+
+const cells = (line: string): string[] =>
+  (CELLS.exec(line)?.[1] ?? '').split('|').map((c) => c.trim())
+
 type Row =
   | { kind: 'text'; text: string }
   | { kind: 'item'; marker: string; text: string }
   | { kind: 'rule' }
+  | { kind: 'table'; head: string[]; body: string[][] }
 
+/**
+ * Lines into blocks.
+ *
+ * A table is the one thing here that spans lines, and it obeys the same rule as an
+ * emphasis mark: it is not a table until the divider row has arrived. Until then the
+ * pipes stay pipes, so a table being streamed does not flicker into existence one row at
+ * a time and then re-lay itself out when the widths change.
+ */
 function rows(source: string): Row[] {
-  return source.split('\n').map((line) => {
-    if (RULE.test(line)) return { kind: 'rule' }
+  const lines = source.split('\n')
+  const out: Row[] = []
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]!
+    if (CELLS.test(line) && i + 1 < lines.length && DIVIDER.test(lines[i + 1]!)) {
+      const head = cells(line)
+      const body: string[][] = []
+      let j = i + 2
+      while (j < lines.length && CELLS.test(lines[j]!)) { body.push(cells(lines[j]!)); j++ }
+      out.push({ kind: 'table', head, body })
+      i = j - 1
+      continue
+    }
+    if (RULE.test(line)) { out.push({ kind: 'rule' }); continue }
     const numbered = NUMBER.exec(line)
-    if (numbered) return { kind: 'item', marker: `${numbered[1]}.`, text: numbered[2] ?? '' }
+    if (numbered) { out.push({ kind: 'item', marker: `${numbered[1]}.`, text: numbered[2] ?? '' }); continue }
     const bullet = BULLET.exec(line)
-    if (bullet) return { kind: 'item', marker: '·', text: bullet[1] ?? '' }
-    return { kind: 'text', text: line }
-  })
+    if (bullet) { out.push({ kind: 'item', marker: '·', text: bullet[1] ?? '' }); continue }
+    out.push({ kind: 'text', text: line })
+  }
+  return out
 }
 
 /**
@@ -66,6 +96,36 @@ export function RichText({ text }: { text: string }): JSX.Element {
   return (
     <>
       {rows(text).map((row, i) => {
+        if (row.kind === 'table') {
+          return (
+            // Scrolls INSIDE its own box: a four-column answer must not widen the sheet
+            // and give the whole transcript a horizontal scrollbar.
+            <span key={i} className="my-3 block overflow-x-auto">
+              <table className="w-full border-collapse text-left">
+                <thead>
+                  <tr>
+                    {row.head.map((h, j) => (
+                      <th key={j} className="border-b border-neutral-200 pb-1.5 pr-4 font-medium text-neutral-900 dark:border-neutral-700 dark:text-neutral-100">
+                        {inline(h, `h${i}-${j}`)}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {row.body.map((cellsIn, r) => (
+                    <tr key={r}>
+                      {cellsIn.map((c, j) => (
+                        <td key={j} className="border-b border-neutral-100 py-1.5 pr-4 align-top dark:border-neutral-800">
+                          {inline(c, `c${i}-${r}-${j}`)}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </span>
+          )
+        }
         if (row.kind === 'rule') {
           return <span key={i} className="my-3 block border-t border-neutral-200 dark:border-neutral-700" />
         }

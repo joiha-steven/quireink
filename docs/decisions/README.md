@@ -61,6 +61,7 @@ abandoned on 2026-07-26, and the only trace was a private memory file.
 | [0037](0037-an-mcp-token-carries-a-scope.md) | An MCP token is `full` or `read`; the read door registers only `readOnly` tools | 2026-08-29 | ✅ |
 | [0038](0038-the-permission-reaches-the-install-people-actually-run.md) | The commercial permission turns on UNCHANGED, not on tagged; the software names itself in a `generator` meta | 2026-08-29 | ✅ amends [0023](0023-commercial-use-of-unmodified-releases.md) |
 | [0039](0039-the-blog-reads-without-the-network.md) | A service worker, off by default, that keeps what the reader already read — never a prefetch | 2026-08-30 | ✅ supersedes only the "offline is out of scope" line in `docs/seo-pwa.md`; the prefetch judgement in `docs/performance.md` is untouched |
+| [0040](0040-the-assistant-keeps-its-conversations.md) | The assistant's conversations are stored and listed, instead of living in one browser tab | 2026-08-31 | ✅ reverses the "no server-side conversation" behaviour stated in `docs/features/admin.md`; no prior ADR governed it |
 
 ## Written after the fact, and why that is allowed
 

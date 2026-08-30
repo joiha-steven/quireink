@@ -51,7 +51,7 @@ describe('DeepSeek rides in OpenAI\'s dialect', () => {
 
   it('is read back by the same parser', () => {
     const answer = { choices: [{ message: { content: 'ok', tool_calls: [{ id: 'c1', function: { name: 'n', arguments: '{}' } }] } }] }
-    expect(parseChat('deepseek', answer)).toEqual({ text: 'ok', reasoning: '', calls: [{ id: 'c1', name: 'n', args: {} }] })
+    expect(parseChat('deepseek', answer)).toEqual({ text: 'ok', reasoning: '', usage: { input: 0, output: 0 }, calls: [{ id: 'c1', name: 'n', args: {} }] })
     expect(parseText('deepseek', { choices: [{ message: { content: ' hi ' } }] })).toBe('hi')
   })
 })
