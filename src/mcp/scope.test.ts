@@ -12,7 +12,7 @@ const READ_ONLY = [
   'list_pages', 'get_page', 'list_trashed_pages',
   'list_categories', 'list_tags',
   'list_media', 'list_trashed_media', 'list_files', 'list_trashed_files',
-  'get_settings',
+  'get_settings', 'list_settings',
   'get_traffic', 'get_post_traffic', 'get_audience', 'get_update_status', 'list_comments',
 ].sort()
 
