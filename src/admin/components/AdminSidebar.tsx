@@ -197,30 +197,6 @@ export function AdminSidebar({
 
   const navItems = (c: boolean): ReactNode => (
     <>
-      {/* SEARCH IS NOT A DESTINATION, so it is not a nav row: it wears the control class the
-          footer's switches wear, sits above the rail rather than in it, and is separated by a
-          rule. The same distinction that moved "Show icons" out of the drawer.
-          It exists because ⌘K cannot be discovered. Printing the chord ON the control is how
-          a mouse teaches a keyboard: click it once, read what it says, and the second time
-          your hands do it without the mouse. Collapsed, the glyph is all there is room for and
-          the chord lives in the tooltip. */}
-      <button
-        type="button"
-        onClick={() => { close(); openPalette() }}
-        title={c ? tip(t.paletteTitle, 'palette') : undefined}
-        className={`${SIDEBAR_UTIL} mb-1 border-b border-neutral-200 pb-2 dark:border-neutral-800 ${c ? 'justify-center' : 'justify-between gap-2.5'}`}
-      >
-        <span className={`flex items-center ${c ? '' : 'gap-2.5'}`}>
-          <IconSearch />
-          {!c && <span className="truncate">{t.paletteTitle}</span>}
-        </span>
-        {!c && (
-          <span className="shrink-0 rounded border border-neutral-200 px-1.5 py-0.5 text-[11px] tabular-nums text-neutral-500 dark:border-neutral-700 dark:text-neutral-400">
-            {printChord(chordFor('palette'))}
-          </span>
-        )}
-      </button>
-
       {primary.map((l) => navLink(l, c))}
 
       {/* The one row in this column that names no destination, so it is a button rather than
@@ -315,6 +291,35 @@ export function AdminSidebar({
     </Link>
   )
 
+  /**
+   * Search, up on the wordmark row rather than as a row of its own.
+   *
+   * It WAS a row: a full-width control reading "Search  ⌘K" above the rule. It worked and it
+   * cost a line of the rail to a thing that is not a destination, next to nine that are. Up
+   * here it is chrome beside chrome — the same standing as the collapse control — and the rail
+   * goes back to being a list of places.
+   *
+   * ⌘K STILL HAS TO BE PRINTED, which is the whole reason this control exists: the chord
+   * cannot be discovered, and a mouse teaches a keyboard by showing the chord on the thing the
+   * mouse clicks. Collapsed there is no room for the badge and it moves into the tooltip.
+   */
+  const searchBtn = (c: boolean): ReactNode => (
+    <button
+      type="button"
+      onClick={() => { close(); openPalette() }}
+      title={tip(t.paletteTitle, 'palette')}
+      aria-label={t.paletteTitle}
+      className="flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-transparent px-2 text-neutral-500 transition-colors hover:border-neutral-200 hover:bg-neutral-50 hover:text-neutral-700 dark:text-neutral-400 dark:hover:border-neutral-700 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
+    >
+      <IconSearch />
+      {!c && (
+        <span className="rounded border border-neutral-200 px-1 py-px text-[11px] tabular-nums leading-none dark:border-neutral-700">
+          {printChord(chordFor('palette'))}
+        </span>
+      )}
+    </button>
+  )
+
   const collapseBtn = (
     <button
       type="button"
@@ -341,9 +346,11 @@ export function AdminSidebar({
         }`}
       >
         {/* Top: wordmark + collapse control. Stacked when collapsed (no room for a row). */}
-        <div className={collapsed ? 'flex flex-col items-center gap-2' : 'flex items-center justify-between'}>
+        <div className={collapsed ? 'flex flex-col items-center gap-2' : 'flex items-center justify-between gap-1'}>
           {wordmark(collapsed)}
-          {collapseBtn}
+          {/* Collapsed the row is a column, and three stacked glyphs is a tower — the search
+              goes to the bottom of it so the chevron stays where the hand expects it. */}
+          {collapsed ? <>{collapseBtn}{searchBtn(true)}</> : <div className="flex items-center gap-1">{searchBtn(false)}{collapseBtn}</div>}
         </div>
         <nav className="mt-6 flex flex-col gap-1">{navItems(collapsed)}</nav>
         <div className="mt-auto flex flex-col gap-1 border-t border-neutral-200 pt-4 dark:border-neutral-800">{controls(collapsed)}</div>
@@ -352,6 +359,9 @@ export function AdminSidebar({
       {/* Mobile: top bar + drawer (always icon+label) */}
       <header className={`sticky top-0 z-20 items-center justify-between border-b border-neutral-200 bg-white/95 px-4 py-3 backdrop-blur dark:border-neutral-800 dark:bg-neutral-900/95 flex lg:hidden`}>
         {wordmark(false)}
+        <div className="flex items-center gap-1">
+        {/* No badge on a phone: there is no ⌘ to print, and the glyph is the whole control. */}
+        {searchBtn(true)}
         <button
           type="button"
           className="flex h-10 w-10 items-center justify-center rounded-md border border-neutral-200 text-neutral-600 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
@@ -363,6 +373,7 @@ export function AdminSidebar({
             {open ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
           </svg>
         </button>
+        </div>
       </header>
       {open && (
         <>
