@@ -53,6 +53,11 @@ const ru = {
   commentsSearch: 'Искать в комментариях…',
   commentsFootHint: 'Нажмите на комментарий, чтобы прочитать целиком. Удаление мягкое — комментарий уходит в корзину.',
   filterEmpty: 'Под ваш фильтр не подходит ни одна запись.',
+  // The command palette (⌘K). Its placeholder is the whole instruction: one box, and it
+  // reaches the screens, the settings and the writing. ADR 0011 is why it exists — no
+  // arrangement makes a person remember which of eight tabs holds a setting.
+  paletteTitle: 'Поиск',
+  palettePlaceholder: 'Куда угодно, изменить что угодно…',
   edit: 'Редактировать',
   delete: 'Удалить',
   // The editor's Attributes panel. The confirmation says the piece can be brought back,

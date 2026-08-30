@@ -85,3 +85,29 @@ The seam worth guarding is that both the restore and the band set the same piece
 they ever live in two effects, the deferred microtask in the restore path makes which one wins
 a coin flip. They are folded into one effect, and `narrow-rail.test.ts` counts the assignments
 so a split shows up as a failure rather than as an intermittent bug.
+
+## ⌘K — the answer to "which tab is it on"
+
+[ADR 0011](./decisions/0011-settings-regrouped-into-seven.md) split five tangled settings tabs
+into seven defined ones. Two weeks later the tabs were still reported as confusing, with no way
+to tell which one held a given setting, and `settings-index.ts` was written that day with the
+conclusion in its header: **no grouping makes a person remember which of eight boxes holds one
+of a hundred things, and what makes the grouping stop mattering is being able to type a word.**
+
+That index drove exactly one search box on one screen for two weeks. `CommandPalette.tsx` is
+the same index reached from anywhere, with the screens, the two actions and the writing beside
+it — so "make the text bigger", "go to the trash" and "write something" are one gesture.
+
+- **It REPLACES nothing.** The rail, the eight tabs and the settings search all stay. A palette
+  that removes the menus it shortcuts has to be discovered before the admin can be used at all,
+  which makes it a lock rather than a door. This one is for hands that already know it is there.
+- **It navigates; it does not set.** Landing on the tab is honest about what the index knows —
+  a label, and where it lives. Changing a value BY NAME is
+  [`content/settings-path.ts`](../src/content/settings-path.ts), whose doors are MCP and the
+  assistant, where the value can be read back afterwards and reported.
+- **The hint on the right is the TAB and only the tab.** A note is a whole sentence, and putting
+  one in a `shrink-0` right-hand column took the entire row and squeezed the label it was
+  explaining down to nothing. The note is still SEARCHED — people describe a setting rather than
+  name it — it is just not printed.
+- It lives outside the canvas and outside the error boundary, because it is how you leave a
+  screen that has gone wrong.

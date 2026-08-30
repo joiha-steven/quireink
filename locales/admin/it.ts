@@ -53,6 +53,11 @@ const it = {
   commentsSearch: 'Cerca nei commenti…',
   commentsFootHint: 'Clicca un commento per leggerlo per intero. Elimina è un’eliminazione morbida: finisce nel cestino.',
   filterEmpty: 'Nessun articolo corrisponde al filtro.',
+  // The command palette (⌘K). Its placeholder is the whole instruction: one box, and it
+  // reaches the screens, the settings and the writing. ADR 0011 is why it exists — no
+  // arrangement makes a person remember which of eight tabs holds a setting.
+  paletteTitle: 'Cerca',
+  palettePlaceholder: 'Vai ovunque, cambia qualsiasi cosa…',
   edit: 'Modifica',
   delete: 'Elimina',
   // The editor's Attributes panel. The confirmation says the piece can be brought back,

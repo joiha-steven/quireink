@@ -8,7 +8,7 @@
 import type { Tour } from './tour'
 import { registerEditorFlows } from './tour-flows-editor'
 import { registerHomeFlows } from './tour-flows-home'
-import { registerAutosaveFlows, registerKeyFlows, registerPaneFlows } from './tour-flows-pane'
+import { registerAutosaveFlows, registerKeyFlows, registerPaletteFlows, registerPaneFlows } from './tour-flows-pane'
 
 export function registerAdminFlows({ flow, expect, atWidth }: Tour): void {
 
@@ -145,6 +145,7 @@ export function registerAdminFlows({ flow, expect, atWidth }: Tour): void {
   // The keyboard pressed rather than listed, and the autosave that reaches the server.
   registerKeyFlows({ flow, expect, atWidth })
   registerAutosaveFlows({ flow, expect, atWidth })
+  registerPaletteFlows({ flow, expect, atWidth })
 
   flow('admin: the trash takes a post and gives it back', () => expect('/admin/trash', `
     (async () => {

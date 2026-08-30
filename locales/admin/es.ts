@@ -53,6 +53,11 @@ const es = {
   commentsSearch: 'Buscar comentarios…',
   commentsFootHint: 'Haz clic en un comentario para leerlo entero. Eliminar es un borrado suave: va a la papelera.',
   filterEmpty: 'Ninguna entrada coincide con tu filtro.',
+  // The command palette (⌘K). Its placeholder is the whole instruction: one box, and it
+  // reaches the screens, the settings and the writing. ADR 0011 is why it exists — no
+  // arrangement makes a person remember which of eight tabs holds a setting.
+  paletteTitle: 'Buscar',
+  palettePlaceholder: 'Ir a cualquier parte, cambiar cualquier cosa…',
   edit: 'Editar',
   delete: 'Eliminar',
   // The editor's Attributes panel. The confirmation says the piece can be brought back,
