@@ -488,6 +488,10 @@ const ru = {
   dashSources: 'Откуда приходят читатели',
   dashSourcesEmpty: 'За последние 30 дней визитов не было.',
   viewSite: 'Открыть сайт',
+  // The home screen’s closing line of system facts. It read "SQLite · online · Local
+  // filesystem" — three things that are true of EVERY install of this program and therefore
+  // say nothing about this one. A version answers the question the line raises.
+  sysStartedPrefix: 'Запущен',
   recentActivity: 'Недавние действия',
   recentViewAll: 'Смотреть все',
   cardGeneral: 'Общее',

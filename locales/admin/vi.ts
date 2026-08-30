@@ -488,6 +488,10 @@ const vi = {
   dashSources: 'Người đọc đến từ đâu',
   dashSourcesEmpty: 'Chưa có lượt truy cập nào trong 30 ngày qua.',
   viewSite: 'Xem site',
+  // The home screen’s closing line of system facts. It read "SQLite · online · Local
+  // filesystem" — three things that are true of EVERY install of this program and therefore
+  // say nothing about this one. A version answers the question the line raises.
+  sysStartedPrefix: 'Chạy từ',
   recentActivity: 'Hoạt động gần đây',
   recentViewAll: 'Xem tất cả',
   cardGeneral: 'Thông tin chung',

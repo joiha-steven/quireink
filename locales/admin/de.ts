@@ -488,6 +488,10 @@ const de = {
   dashSources: 'Woher die Leser kommen',
   dashSourcesEmpty: 'Keine Besuche in den letzten 30 Tagen.',
   viewSite: 'Website ansehen',
+  // The home screen’s closing line of system facts. It read "SQLite · online · Local
+  // filesystem" — three things that are true of EVERY install of this program and therefore
+  // say nothing about this one. A version answers the question the line raises.
+  sysStartedPrefix: 'Gestartet',
   recentActivity: 'Letzte Aktivität',
   recentViewAll: 'Alle ansehen',
   cardGeneral: 'Allgemein',
