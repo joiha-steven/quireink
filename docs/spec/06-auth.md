@@ -227,9 +227,18 @@ The base32 secret is shown as text beside it, grouped in fours. That is not a fa
 is what makes the screen complete without the QR, since every authenticator accepts a typed
 key.
 
-**Settings → Security:** change password, re-enrol 2FA, regenerate recovery codes, active
-session list with revoke, and the recent entries from `activity_log` filtered to auth
-events.
+**Settings → System → Security** (`SecurityFields.tsx`, routes in `web/admin/security.ts`,
+shipped 2026-08-31): change password, re-enrol 2FA, regenerate recovery codes, and the list
+of signed-in devices with revoke. Every action that CHANGES something asks for the current
+password and is rate limited per IP — a stolen session is the threat these controls answer,
+so the session alone must not be enough to rotate the 2FA secret. Revoking a session asks for
+nothing, because it only removes access. Changing the password signs out every OTHER device
+and keeps the current one. All four log to `activity_log`.
+
+This page described that screen for a long time before it existed: no route answered any of
+it, while `listSessions`, `revokeAllSessions` and `remainingCodes` sat in `src/auth/` written
+and tested and called by nobody. An owner whose laptop was stolen had no way to end its
+session; an owner down to their last recovery code had no way to make more.
 
 House style applies throughout, per the `frontend-house-style` guidance: theme tokens
 only, one typeface, no all-caps, one divider style.

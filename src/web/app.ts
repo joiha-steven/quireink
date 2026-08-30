@@ -33,6 +33,7 @@ import { updatePing } from '@/web/update-ping'
 import { compression } from '@/web/compress'
 import { errorHandler, notFoundHandler, requestLogger } from '@/web/api'
 import { contentRoutes } from '@/web/admin/content'
+import { securityRoutes } from '@/web/admin/security'
 import { siteRoutes } from '@/web/admin/site'
 import { uploadRoutes } from '@/web/admin/uploads'
 import { newsRoutes } from '@/web/admin/news'
@@ -192,6 +193,7 @@ export function createApp(): Hono {
   // it (Invariant 4), and `check:routes` fails the build if one escapes.
 
   app.route('/', contentRoutes().routes)
+  app.route('/', securityRoutes().routes)
   app.route('/', siteRoutes().routes)
   app.route('/', uploadRoutes().routes)
   app.route('/', newsRoutes().routes)

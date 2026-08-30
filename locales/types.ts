@@ -561,6 +561,39 @@ export type AdminStrings = {
   excerptLengthHint: string
   relatedCount: string
   relatedCountHint: string
+  securityTitle: string
+  securityConfirm: string
+  securityConfirmHint: string
+  securityNewPassword: string
+  securityChangePassword: string
+  securityPasswordSignsOut: string
+  securityPasswordChanged: string
+  securityRecovery: string
+  securityRecoveryHint: string
+  securityNewCodes: string
+  securityCodesOnce: string
+  securityTotp: string
+  securityTotpOn: string
+  securityTotpOff: string
+  securityReenrol: string
+  securityScanHint: string
+  securityConfirmCode: string
+  securityTotpDone: string
+  securitySessions: string
+  securitySessionsHint: string
+  securityThisDevice: string
+  securityLastSeen: string
+  securitySignOut: string
+  securitySignOutThis: string
+  securitySignOutOthers: string
+  securitySignedOut: string
+  securityUnknownDevice: string
+  securityWrongPassword: string
+  securityTooMany: string
+  securityBadCode: string
+  pwTooShort: string
+  pwTooCommon: string
+  pwContainsName: string
   customCss: string
   customCssHint: string
   cssLines: string

@@ -15,6 +15,7 @@ import { useAdminT } from './I18nProvider'
 import { ImportFields } from './ImportFields'
 import { ExportFields } from './ExportFields'
 import { CacheFields } from './CacheFields'
+import { SecurityFields } from './SecurityFields'
 import { OffsiteFields } from './OffsiteFields'
 import { StorageFields } from './StorageFields'
 import { UpdateFields, type UpdateStatus } from './UpdateFields'
@@ -39,6 +40,11 @@ export function SettingsSystemTab(
             only card here somebody uses on their first day. */}
         <Card panel title={t.cardImport}>
           <ImportFields />
+        </Card>
+        {/* First on the tab, because it is the one card here somebody opens in a hurry —
+            a laptop is gone and they want the session ended now. */}
+        <Card panel title={t.securityTitle}>
+          <SecurityFields />
         </Card>
         <Card panel title={t.cacheTitle}>
           <CacheFields cache={s.cache} onChange={(cache) => update({ cache })} />
