@@ -258,7 +258,7 @@ body:has(.book-overlay[open]){overflow:hidden}
 #comments{border-top:1px solid var(--c-rule);margin-top:3rem;padding-top:1.5rem;
   font-size:var(--fs-small);line-height:var(--lh-small);letter-spacing:var(--ls-small)}
 #comments h2{font-size:var(--fs-h3);line-height:var(--lh-h3);letter-spacing:var(--ls-h3);
-  color:var(--c-heading);font-weight:600;margin:0 0 1.5rem}
+  color:var(--c-heading);font-weight:var(--fw-heading,600);margin:0 0 1.5rem}
 .comment-list,.comment-replies{list-style:none;padding:0;margin:0}
 /* Structure from a rule between top-level comments, not from margins alone. A thread with
    only whitespace between entries reads as one long block, and the reply indent was too
@@ -268,7 +268,7 @@ body:has(.book-overlay[open]){overflow:hidden}
 .comment-replies{margin:1.25rem 0 0;padding-left:1.25rem;border-left:1px solid var(--c-rule)}
 .comment-replies .comment+.comment{margin-top:1.25rem}
 .comment-meta{color:var(--c-meta);margin:0 0 .5rem}
-.comment-name{color:var(--c-heading);font-weight:600}
+.comment-name{color:var(--c-heading);font-weight:var(--fw-heading,600)}
 /* A comment is somebody's WORDS, so it is set in the reading face like the article is —
    the frozen tree did this and the port dropped it, which left every comment in the chrome
    font. On this site that is JetBrains Mono, so the thread was rendering as monospace.
@@ -326,7 +326,7 @@ body:has(.book-overlay[open]){overflow:hidden}
    button that happens to sit above a form. */
 .comment-identity{margin:0 0 1rem;padding-bottom:1rem;border-bottom:1px solid var(--c-rule);
   color:var(--c-meta)}
-.comment-identity strong{color:var(--c-heading);font-weight:600}
+.comment-identity strong{color:var(--c-heading);font-weight:var(--fw-heading,600)}
 .comment-google{display:inline-block;padding:.5rem 1rem;border:1px solid var(--c-rule);
   border-radius:var(--radius,.5rem);color:var(--c-heading);font:inherit;text-decoration:none}
 .comment-google:hover{border-color:var(--c-heading)}

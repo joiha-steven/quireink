@@ -28,14 +28,14 @@ export const SUBSCRIBE_CSS = `
   font-size:var(--fs-small);line-height:var(--lh-small);letter-spacing:var(--ls-small);
   color:var(--c-meta)}
 .theme-menu button:hover{background:var(--c-rule)}
-.theme-menu button.is-current{font-weight:600;color:var(--c-heading)}
+.theme-menu button.is-current{font-weight:var(--fw-heading,600);color:var(--c-heading)}
 /* The tick marks the active mode, as in the frozen tree. It is decoration on a row whose
    state is already carried by the class, so it belongs in CSS, not in the bundle. */
 .theme-menu button.is-current::after{content:"✓"}
 
 .subscribe-card{border:1px solid var(--c-rule);border-radius:var(--radius,.5rem);padding:1.25rem;
   font-size:var(--fs-small);line-height:var(--lh-small);letter-spacing:var(--ls-small)}
-.subscribe-card h2{font-size:inherit;font-weight:600;color:var(--c-heading);margin:0 0 .75rem}
+.subscribe-card h2{font-size:inherit;font-weight:var(--fw-heading,600);color:var(--c-heading);margin:0 0 .75rem}
 form.subscribe{display:flex;gap:.5rem;margin:0}
 /* The honeypot: parked, not display:none — some form fillers skip boxless fields. */
 form.subscribe .hp{position:absolute;left:-9999px;width:1px;height:1px;flex:none;border:0;padding:0;opacity:0;pointer-events:none}

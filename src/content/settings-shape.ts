@@ -76,9 +76,12 @@ const RADIUS_SIZE: Record<ShapeSettings['radius'], string> = {
 }
 
 /**
- * Two weights, not one, and they were never the same number: a post title is 700 and a card
- * title is 600. Collapsing them into a single knob would itself be a redesign, so each step
- * moves the PAIR and `normal` is today's pair exactly.
+ * Two weights, not one, and they were never the same number: the standalone archive heading
+ * is 700, and the post title, the card titles and every bold label in the chrome are 600.
+ * (An earlier version of this comment called 700 "a post title", which is what the doc then
+ * promised — measured 2026-08-31, the post title has always worn `--fw-heading` through
+ * `.font-semibold`.) Collapsing them into a single knob would itself be a redesign, so each
+ * step moves the PAIR and `normal` is today's pair exactly.
  */
 const HEADING_WEIGHT: Record<ShapeSettings['headingWeight'], { title: string; heading: string }> = {
   light: { title: '400', heading: '400' },

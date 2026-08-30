@@ -31,7 +31,7 @@ export const PROSE_CSS = `
    be wrong — a line starting with a quoted string would slip its indent — so pre opts out. */
 .prose pre{hanging-punctuation:none}
 .prose > * + *{margin-top:1.4em}
-.prose h1,.prose h2,.prose h3,.prose h4,.prose h5{color:var(--c-heading);font-weight:600;
+.prose h1,.prose h2,.prose h3,.prose h4,.prose h5{color:var(--c-heading);font-weight:var(--fw-heading,600);
   scroll-margin-top:2rem}
 .prose h1{font-size:var(--fs-h1);line-height:var(--lh-h1);
   letter-spacing:var(--ls-h1);margin-top:1.9em}

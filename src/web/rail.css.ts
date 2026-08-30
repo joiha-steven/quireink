@@ -50,7 +50,7 @@ html[data-rail=open] .rail{transform:none}
 .rail-scrim{position:fixed;inset:0;z-index:39}
 .rail-inner{position:sticky;top:2.5rem}
 .rail-inner > * + *,.drawer-only > * + *{margin-top:1.75rem}
-.rail h2{margin:0 0 .75rem;padding-left:var(--rail-pad);font-weight:600;color:var(--c-heading);
+.rail h2{margin:0 0 .75rem;padding-left:var(--rail-pad);font-weight:var(--fw-heading,600);color:var(--c-heading);
   font-size:var(--fs-small);line-height:var(--lh-small);
   letter-spacing:var(--ls-small)}
 .rail ul{list-style:none;margin:0;padding:0}
