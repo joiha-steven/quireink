@@ -84,6 +84,12 @@ const ko = {
   saving: '저장 중...',
   savedAtPrefix: '저장 시각',
   keptLocallyPrefix: '이 기기에 보관됨 ',
+  // The autosave line, and the two prefixes are the whole point of having two: one copy is
+  // on this machine and one is not, and which of those is true decides whether a dead laptop
+  // costs you the morning. `serverDraftFound` is the recovery line's wording when the snapshot
+  // being offered came from the server — usually because it was typed on another machine.
+  keptOnServerPrefix: '서버에 보관됨',
+  serverDraftFound: '서버에서 저장되지 않은 변경을 되살렸습니다',
   saveFailed: '저장 실패',
   slugTaken: '이미 사용 중인 슬러그입니다. 다른 슬러그를 선택하세요',
   needTitle: '게시하려면 제목이 필요합니다',

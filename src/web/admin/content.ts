@@ -21,12 +21,24 @@ import type { PageWithContent, PostWithContent } from '@/types'
 import { getIndex, getPost, savePost, deletePost } from '@/content/posts'
 import { getPageIndex, getPage, savePage, deletePage } from '@/content/pages'
 import { getRevisions } from '@/content/revisions'
+import { getAutosave, putAutosave } from '@/content/autosave'
 import { SlugConflictError } from '@/content/slugs'
 import { finalizeContentMedia } from '@/media/finalize'
 import { clearCache } from '@/server/cache'
 import { logActivity } from '@/server/activity'
 import { fail, json } from '@/web/api'
 import { ownerRouter, param } from '@/web/guard'
+
+/**
+ * The ceiling on one autosave snapshot, in characters of JSON.
+ *
+ * Not a guess at how much anybody writes — it is the limit on what one editor tab can push
+ * into a column on a timer. The longest fixture in `golden/corpus` is under 2 KB and the
+ * longest real post on the demo is 12 KB; a megabyte is fifty of those and still nothing next
+ * to an upload. Past it the request is refused and localStorage keeps its copy, which is the
+ * behaviour a piece that has never been saved already has.
+ */
+const AUTOSAVE_MAX = 1_000_000
 
 /**
  * Generate display variants after the response has been sent.
@@ -106,6 +118,40 @@ export function contentRoutes() {
     return json({ slug })
   })
 
+  /**
+   * The editor's autosave. NOT a save.
+   *
+   * It writes `autosave_json` and nothing else — the live body, the terms, `updated_at` and
+   * the revision list are all untouched, so a reader's page cannot move because somebody is
+   * typing. `content.ts`'s other write routes each clear the render cache and push a revision;
+   * this one must do NEITHER, and the reason is arithmetic: at sixty words a minute a save per
+   * keystroke is five cache flushes and five revisions a second.
+   *
+   * POST rather than PUT so `navigator.sendBeacon` can reach it. The flush that matters most is
+   * the one as the tab goes away, and a `fetch` started there is routinely killed mid-flight;
+   * a beacon is the browser's own answer to that and it only speaks POST.
+   *
+   * A body is accepted as an opaque string: the client stores the same snapshot shape it keeps
+   * in localStorage, and giving this route an opinion about that shape would mean two places to
+   * change whenever the editor gains a field.
+   */
+  router.post('/api/posts/:slug/autosave', async (c) => {
+    const slug = param(c, 'slug')
+    const input = await body<{ snapshot?: unknown }>(c)
+    if (typeof input.snapshot !== 'string') return fail(c, 'snapshot must be a string', 400)
+    if (input.snapshot.length > AUTOSAVE_MAX) return fail(c, 'snapshot too large', 413)
+    // No row means a piece that has never been saved; localStorage is still its only copy and
+    // the editor is TOLD so rather than shown a false "kept on the server".
+    return putAutosave('post', slug, input.snapshot)
+      ? json({ slug, at: Date.now() })
+      : fail(c, 'Post not found', 404)
+  })
+
+  router.get('/api/posts/:slug/autosave', async (c) => {
+    const found = getAutosave('post', param(c, 'slug'))
+    return found === null ? fail(c, 'No autosave', 404) : json(found)
+  })
+
   router.get('/api/posts/:slug/revisions', async (c) => json(await getRevisions(param(c, 'slug'))))
 
   // ----- pages ----------------------------------------------------------------
@@ -149,6 +195,21 @@ export function contentRoutes() {
       if (error instanceof SlugConflictError) return fail(c, 'slug_taken', 409)
       throw error
     }
+  })
+
+  router.post('/api/pages/:slug/autosave', async (c) => {
+    const slug = param(c, 'slug')
+    const input = await body<{ snapshot?: unknown }>(c)
+    if (typeof input.snapshot !== 'string') return fail(c, 'snapshot must be a string', 400)
+    if (input.snapshot.length > AUTOSAVE_MAX) return fail(c, 'snapshot too large', 413)
+    return putAutosave('page', slug, input.snapshot)
+      ? json({ slug, at: Date.now() })
+      : fail(c, 'Page not found', 404)
+  })
+
+  router.get('/api/pages/:slug/autosave', async (c) => {
+    const found = getAutosave('page', param(c, 'slug'))
+    return found === null ? fail(c, 'No autosave', 404) : json(found)
   })
 
   router.delete('/api/pages/:slug', async (c) => {

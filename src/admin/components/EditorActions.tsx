@@ -80,7 +80,7 @@ export function EditorActions({
   /** Live markdown, read from the form's ref — see useWordStats for why it is polled. */
   getText: () => string
   /** A newer local snapshot than the server's copy — shown as the bar's second line. */
-  recovered?: { at: string; onRestore: () => void; onDiscard: () => void } | null
+  recovered?: { at: string; from: 'device' | 'server'; onRestore: () => void; onDiscard: () => void } | null
   mdView: boolean
   onToggleMd: () => void
   onPreview: () => void
@@ -157,7 +157,7 @@ export function EditorActions({
             the darker of the pair because it is the one that rescues somebody's words. */}
         {recovered && (
           <span className="basis-full text-xs text-neutral-500 dark:text-neutral-400">
-            {t.localDraftFound} · {formatTime(recovered.at)}
+            {recovered.from === 'server' ? t.serverDraftFound : t.localDraftFound} · {formatTime(recovered.at)}
             {' · '}
             <button type="button" onClick={recovered.onRestore} className="font-medium text-neutral-900 underline underline-offset-2 hover:no-underline dark:text-white">
               {t.localDraftRestore}

@@ -246,6 +246,12 @@ export type AdminStrings = {
   saving: string
   savedAtPrefix: string
   keptLocallyPrefix: string
+  // The autosave line, and the two prefixes are the whole point of having two: one copy is
+  // on this machine and one is not, and which of those is true decides whether a dead laptop
+  // costs you the morning. `serverDraftFound` is the recovery line's wording when the snapshot
+  // being offered came from the server — usually because it was typed on another machine.
+  keptOnServerPrefix: string
+  serverDraftFound: string
   saveFailed: string
   slugTaken: string
   needTitle: string

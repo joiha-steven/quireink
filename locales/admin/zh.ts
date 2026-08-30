@@ -84,6 +84,12 @@ const zh = {
   saving: '保存中...',
   savedAtPrefix: '保存于',
   keptLocallyPrefix: '已存在本机 ',
+  // The autosave line, and the two prefixes are the whole point of having two: one copy is
+  // on this machine and one is not, and which of those is true decides whether a dead laptop
+  // costs you the morning. `serverDraftFound` is the recovery line's wording when the snapshot
+  // being offered came from the server — usually because it was typed on another machine.
+  keptOnServerPrefix: '已在服务器保留于',
+  serverDraftFound: '已从服务器恢复未保存的修改',
   saveFailed: '保存失败',
   slugTaken: '该别名已被占用，请选择其他别名',
   needTitle: '发布前需要填写标题',

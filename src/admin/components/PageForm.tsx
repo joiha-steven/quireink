@@ -15,10 +15,18 @@ import { TrashLink } from './TrashLink'
 import { MediaLibrary } from './MediaLibrary'
 import { SlideOver } from './SlideOver'
 import { SheetTitle } from './SheetTitle'
-import { saveStatusLine, useLocalAutosave, useLocalDraft, useStickyOffset, useUnsavedGuard } from './useLocalDraft'
+import { saveStatusLine, useStickyOffset, useUnsavedGuard } from './useLocalDraft'
+import { useDraftSafety } from './serverDraft'
 import { useAdminT } from './I18nProvider'
 
-type Props = { initial?: PageWithContent; contentWidth: number; keySound: KeySound; autosaveSeconds: number }
+type Props = {
+  initial?: PageWithContent
+  contentWidth: number
+  keySound: KeySound
+  autosaveSeconds: number
+  /** `autosave_at` on the row, in ms — a snapshot waiting from another session or machine. */
+  autosaveAt: number | null
+}
 type PickTarget = 'editor' | 'gallery' | 'featured'
 
 function toDraft(initial?: PageWithContent): PageDraft {
@@ -31,7 +39,7 @@ function toDraft(initial?: PageWithContent): PageDraft {
   }
 }
 
-export function PageForm({ initial, contentWidth, keySound, autosaveSeconds }: Props) {
+export function PageForm({ initial, contentWidth, keySound, autosaveSeconds, autosaveAt }: Props) {
   const t = useAdminT()
   const { notify } = useToast()
   const [draft, setDraft] = useState<PageDraft>(() => toDraft(initial))
@@ -46,13 +54,18 @@ export function PageForm({ initial, contentWidth, keySound, autosaveSeconds }: P
   const [mdView, setMdView] = useState(false)
   const actionHeaderRef = useRef<HTMLDivElement>(null)
   const toolbarTop = useStickyOffset(actionHeaderRef)
-  // Local (offline) autosave — keyed per page so drafts don't clobber each other.
-  const {
-    recovered: localRecovered,
-    save: saveLocal,
-    clear: clearLocal,
-    dismiss: dismissLocal,
-  } = useLocalDraft<PageDraft>(`quire:draft:page:${initial?.slug ?? 'new'}`)
+  // Both autosaves on one timer — this device and the server — with the same contract as the
+  // post editor: neither ever touches the published body. See `serverDraft.ts`.
+  const safety = useDraftSafety<PageDraft>({
+    kind: 'page',
+    slug: savedSlug,
+    storageKey: `quire:draft:page:${initial?.slug ?? 'new'}`,
+    serverAt: autosaveAt,
+    rowSavedAt: initial?.updatedAt ? Date.parse(initial.updatedAt) : null,
+    isDirty: () => dirtyRef.current,
+    snapshot: () => ({ ...draftRef.current, content: editorApi.current?.getMarkdown() ?? contentRef.current }),
+    intervalMs: autosaveSeconds * 1000,
+  })
 
   const slugTouched = useRef(Boolean(initial?.slug))
   const currentSlug = useRef<string | null>(initial?.slug ?? null)
@@ -111,7 +124,7 @@ export function PageForm({ initial, contentWidth, keySound, autosaveSeconds }: P
         setSavedSlug(json.data.slug)
         setSavedAt(new Date().toISOString())
         setDirty(false)
-        clearLocal() // the server now has it — drop the local recovery copy
+        safety.clear() // the server now has it — drop both recovery copies
         // THE ADDRESS BAR IS SYNCED HERE, AND THE ROUTER IS DELIBERATELY NOT.
         //
         // `router.replace()` would put the new slug into the router's own state, which is
@@ -138,7 +151,7 @@ export function PageForm({ initial, contentWidth, keySound, autosaveSeconds }: P
         setSaving(false)
       }
     },
-    [notify, t, clearLocal],
+    [notify, t, safety],
   )
 
   const enqueueSave = useCallback(
@@ -151,14 +164,6 @@ export function PageForm({ initial, contentWidth, keySound, autosaveSeconds }: P
     [doPersist],
   )
 
-  // Local (offline) autosave, same contract as the post editor: localStorage only, never the
-  // server, so editing a published page cannot push half-finished text live.
-  const keptAt = useLocalAutosave(
-    () => dirtyRef.current,
-    () => ({ ...draftRef.current, content: editorApi.current?.getMarkdown() ?? contentRef.current }),
-    saveLocal,
-    autosaveSeconds * 1000,
-  )
   useUnsavedGuard(() => dirtyRef.current)
 
   async function handleSave(status: PageDraft['status'], successMsg: string) {
@@ -184,16 +189,15 @@ export function PageForm({ initial, contentWidth, keySound, autosaveSeconds }: P
     setPicker(null)
   }
 
-  // Pull a recovered local snapshot back into the form (slug stays current).
-  function restoreLocal() {
-    if (!localRecovered) return
-    const d = localRecovered.data
+  // Pull the recovered snapshot back — device or server, whichever was newer (slug stays).
+  async function restoreDraft() {
+    const d = await safety.restore()
+    if (!d) return
     setDraft(d)
     draftRef.current = d
     editorApi.current?.setMarkdown(d.content)
     contentRef.current = d.content
     setDirty(true)
-    clearLocal()
     notify(t.revisionLoaded)
   }
 
@@ -223,7 +227,7 @@ export function PageForm({ initial, contentWidth, keySound, autosaveSeconds }: P
         actions={
           <EditorActions
             barRef={actionHeaderRef}
-            status={saveStatusLine(t, saving, savedAt, dirty, keptAt, formatTime)}
+            status={saveStatusLine(t, saving, savedAt, dirty, safety.keptAt, formatTime, safety.sentAt)}
             saving={saving}
             dirty={dirty}
             settingsOpen={settingsOpen}
@@ -231,7 +235,7 @@ export function PageForm({ initial, contentWidth, keySound, autosaveSeconds }: P
             savedSlug={null}
             mdView={mdView}
             onToggleMd={() => editorApi.current?.toggleRaw()}
-            recovered={localRecovered ? { at: localRecovered.at, onRestore: restoreLocal, onDiscard: dismissLocal } : null}
+            recovered={safety.recovered ? { ...safety.recovered, onRestore: () => void restoreDraft(), onDiscard: safety.dismiss } : null}
             getText={() => `${draftRef.current.title} ${editorApi.current?.getMarkdown() ?? contentRef.current}`}
             onPreview={() => undefined}
             onSaveDraft={() => void handleSave('draft', t.savedDraft)}

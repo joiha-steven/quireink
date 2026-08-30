@@ -171,3 +171,74 @@ export function registerKeyFlows({ flow, expect }: Tour): void {
       return 'ok (' + slug + ')'
     })()`, 1500))
 }
+
+/**
+ * The editor's server autosave, driven the way a person triggers it.
+ *
+ * The interval is a SETTING (`autosaveSeconds`, floored at 15) and a tour that sat waiting for
+ * it would be the slowest flow here by an order of magnitude. It does not need to: the hook
+ * flushes on `visibilitychange` to hidden as well, which is the flush that matters most —
+ * switching tabs or closing the laptop — and is the one a browser can be asked for directly.
+ *
+ * What it proves is the pair of claims that make this feature worth having AND safe to have:
+ * the words reached the server without anybody pressing Save, and the page a reader gets did
+ * not move while they did.
+ */
+export function registerAutosaveFlows({ flow, expect }: Tour): void {
+  flow('admin: leaving the tab puts unsaved words on the server, not on the page', () => expect('/admin/content', `
+    (async () => {
+      const wait = async (fn, tries = 60, gap = 100) => {
+        for (let i = 0; i < tries; i++) {
+          const hit = await fn()
+          if (hit) return hit
+          await new Promise((r) => setTimeout(r, gap))
+        }
+        return null
+      }
+
+      // A PUBLISHED post, because that is the dangerous case: its body is the live page.
+      const feed = await (await fetch('/feed.xml')).text()
+      const link = [...feed.matchAll(/<link>([^<]+)<\\/link>/g)].map((m) => m[1])
+        .map((u) => new URL(u).pathname).find((p) => p !== '/')
+      if (!link) return 'the feed named no published post'
+      const slug = link.replace(/^\\//, '')
+
+      const row = await wait(() => [...document.querySelectorAll('[data-write-row]')]
+        .find((a) => new URL(a.href).pathname === '/admin/editor/' + slug))
+      if (!row) return 'the write pane did not list ' + slug
+      row.click()
+
+      const surface = await wait(() => document.querySelector('.ProseMirror'))
+      if (!surface) return 'the editor never showed its writing surface'
+      const marker = 'tour-autosave-' + Date.now()
+      surface.focus()
+      document.execCommand('insertText', false, marker)
+      await new Promise((r) => setTimeout(r, 400))
+
+      // The flush a browser performs when the tab goes away. sendBeacon is fire-and-forget,
+      // so what follows waits for the SERVER to show the snapshot rather than for a promise.
+      Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true })
+      document.dispatchEvent(new Event('visibilitychange'))
+      Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true })
+
+      const stored = await wait(async () => {
+        const res = await fetch('/api/posts/' + slug + '/autosave')
+        if (!res.ok) return null
+        const j = await res.json()
+        return (j?.data?.json || '').includes(marker) ? j.data : null
+      }, 50, 200)
+      if (!stored) return 'the words never reached the server'
+
+      // And the promise: the reader's page is untouched by any of it.
+      const publicPage = await (await fetch('/' + slug)).text()
+      if (publicPage.includes(marker)) return 'THE UNSAVED TEXT IS ON THE PUBLIC PAGE'
+
+      // Leave the post as it was found. A real save is what clears the snapshot, and this
+      // flow never made one, so the column is cleared directly.
+      await fetch('/api/posts/' + slug + '/autosave', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ snapshot: '' }),
+      })
+      return 'ok (' + slug + ')'
+    })()`, 2000))
+}

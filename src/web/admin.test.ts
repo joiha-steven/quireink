@@ -56,6 +56,10 @@ describe('the gate', () => {
       ['PUT', '/api/posts/anything'],
       ['DELETE', '/api/posts/anything'],
       ['GET', '/api/posts/anything/revisions'],
+      ['POST', '/api/posts/anything/autosave'],
+      ['GET', '/api/posts/anything/autosave'],
+      ['POST', '/api/pages/anything/autosave'],
+      ['GET', '/api/pages/anything/autosave'],
       ['GET', '/api/pages'],
       ['POST', '/api/pages'],
       ['GET', '/api/pages/anything'],
@@ -352,5 +356,44 @@ describe('the admin bundle is cacheable and does not arrive one wave at a time',
     }
     // The lazy routes are named after their component, and none of them may be preloaded.
     expect(hrefs.some((h) => /\/(Dashboard|Content|PostEditor|Settings|Media)-/.test(h))).toBe(false)
+  })
+})
+
+// The editor's server autosave. Its store-level promise — that the snapshot never lands in
+// the body a reader is served — lives in `content/autosave.test.ts`; what belongs here is the
+// route's own manners, because this is the one write endpoint the editor calls on a TIMER and
+// a badly behaved one would be called on that timer forever.
+describe('the autosave route', () => {
+  it('404s for a piece that has no row, so the editor is not told a lie', async () => {
+    const res = await post('/api/posts/never-saved/autosave', { snapshot: '{}' })
+    expect(res.status).toBe(404)
+  })
+
+  it('refuses a snapshot that is not a string', async () => {
+    const created = await post('/api/posts', { title: 'Kept', slug: 'kept', content: 'one' })
+    expect(created.status).toBe(201)
+    expect((await post('/api/posts/kept/autosave', { snapshot: { content: 'two' } })).status).toBe(400)
+  })
+
+  it('refuses one past the ceiling rather than letting a tab fill a column', async () => {
+    await post('/api/posts', { title: 'Big', slug: 'big', content: 'one' })
+    const res = await post('/api/posts/big/autosave', { snapshot: 'x'.repeat(1_000_001) })
+    expect(res.status).toBe(413)
+  })
+
+  it('stores one and hands it back', async () => {
+    await post('/api/posts', { title: 'Round trip', slug: 'round-trip', content: 'one' })
+    expect((await post('/api/posts/round-trip/autosave', { snapshot: '{"content":"two"}' })).status).toBe(200)
+    const read = await asOwner('/api/posts/round-trip/autosave')
+    expect(read.status).toBe(200)
+    expect(((await read.json()) as { data: { json: string } }).data.json).toBe('{"content":"two"}')
+  })
+
+  it('leaves the piece the reader gets exactly as it was', async () => {
+    await post('/api/posts', { title: 'Live', slug: 'live', status: 'published', content: 'Published words.' })
+    await post('/api/posts/live/autosave', { snapshot: '{"content":"half a sen"}' })
+    const body = await (await app.request('/live')).text()
+    expect(body).toContain('Published words.')
+    expect(body).not.toContain('half a sen')
   })
 })

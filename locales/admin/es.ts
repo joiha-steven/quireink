@@ -84,6 +84,12 @@ const es = {
   saving: 'Guardando…',
   savedAtPrefix: 'Guardado a las',
   keptLocallyPrefix: 'guardado en este dispositivo a las',
+  // The autosave line, and the two prefixes are the whole point of having two: one copy is
+  // on this machine and one is not, and which of those is true decides whether a dead laptop
+  // costs you the morning. `serverDraftFound` is the recovery line's wording when the snapshot
+  // being offered came from the server — usually because it was typed on another machine.
+  keptOnServerPrefix: 'guardado en el servidor a las',
+  serverDraftFound: 'Cambios sin guardar recuperados del servidor',
   saveFailed: 'No se pudo guardar',
   slugTaken: 'Ese slug ya está ocupado, elige otro',
   needTitle: 'Hace falta un título para publicar',

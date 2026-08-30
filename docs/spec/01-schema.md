@@ -119,6 +119,13 @@ Unchanged tables (straight translation, only the type mapping above applies):
 `comments` is unchanged apart from `AUTOINCREMENT` (above) and `smallint` becoming
 `INTEGER`.
 
+`posts.autosave_json` / `posts.autosave_at` (and the same pair on `pages`) are the editor's
+server-side autosave, added 2026-08-30. They map straight across — `TEXT` and `BIGINT` — and
+the only thing worth carrying into any port is the RULE: **nothing that renders a page may
+read them.** `content` is what the reader is served and only an explicit Save moves it; these
+two hold the in-progress draft so a dead laptop does not cost the morning, and a real save
+clears them. `src/content/autosave.test.ts` asserts both halves.
+
 Three areas need real design work.
 
 ---
