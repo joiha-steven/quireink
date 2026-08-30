@@ -8,6 +8,10 @@ import { one } from '@/store/query'
 import { saveIntegrationKeys } from '@/store/integration-keys'
 import { savePost, getPost } from '@/content/posts'
 import { writeExcerpt } from './ai-excerpt'
+import { withoutProviderEnv } from '@/test/env'
+
+// This file asserts what happens with NO provider configured; the machine may disagree.
+withoutProviderEnv()
 
 const DIR = './.tmp/test-ai-excerpt'
 freshDatabase(DIR)

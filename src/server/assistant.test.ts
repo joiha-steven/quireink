@@ -9,6 +9,10 @@ import { saveIntegrationKeys } from '@/store/integration-keys'
 import { savePost } from '@/content/posts'
 import { buildChat, parseChat, type Turn } from './assistant-dialects'
 import { runAssistant } from './assistant'
+import { withoutProviderEnv } from '@/test/env'
+
+// This file asserts what happens with NO provider configured; the machine may disagree.
+withoutProviderEnv()
 
 const DIR = './.tmp/test-assistant'
 freshDatabase(DIR)

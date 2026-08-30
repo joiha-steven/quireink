@@ -42,7 +42,11 @@ const LANGUAGE_NAMES: Record<string, string> = {
 export const languageName = (code: string): string => LANGUAGE_NAMES[code] ?? 'English'
 
 const prompt = (language: string): string =>
-  `Write alt text for this image in ${languageName(language)}: one factual sentence describing what is visible. No "image of", no quotation marks, no trailing period commentary. Answer with the alt text only.`
+  `Write alt text for this image in ${languageName(language)}: one factual sentence describing what is visible. `
+  + `No "image of", no quotation marks, no trailing period commentary. `
+  // Same reason as the excerpt: a screen reader speaks this aloud, and a dash it has to
+  // announce is worse than the comma that would have done the job.
+  + `Do not use em dashes or en dashes. Answer with the alt text only.`
 
 const DESCRIBABLE = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
 const MAX_BYTES = 8 * 1024 * 1024 // providers cap around here, and a poster is smaller anyway

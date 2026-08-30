@@ -8,6 +8,10 @@ import { saveIntegrationKeys } from '@/store/integration-keys'
 import { savePost } from '@/content/posts'
 import { addComment, getCommentTree, getTrashedComments } from '@/comments/comments'
 import { guardComment } from './comment-guard'
+import { withoutProviderEnv } from '@/test/env'
+
+// This file asserts what happens with NO provider configured; the machine may disagree.
+withoutProviderEnv()
 
 const DIR = './.tmp/test-comment-guard'
 freshDatabase(DIR)

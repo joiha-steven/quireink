@@ -138,6 +138,16 @@ describe('the output ceiling', () => {
       expect(`${p}: ${body.max_tokens >= 1000 ? 'roomy' : `only ${body.max_tokens}`}`).toBe(`${p}: roomy`)
     }
   })
+
+  // The CHAT ceiling, which was 1500 and hit by the same cause a few hours later: asked
+  // for a 120-word paragraph, the model spent 3348 characters thinking, ran out, and
+  // returned finish_reason:length with nothing in it. Ten seconds, then a blank panel.
+  it('leaves the conversation more room than one answer needs', () => {
+    for (const p of ['anthropic', 'openai', 'deepseek']) {
+      const body = JSON.parse(buildChat(p, 'm', 'k', 's', [{ kind: 'user', text: 'x' }], [])!.body)
+      expect(`${p}: ${body.max_tokens >= 4000 ? 'roomy' : `only ${body.max_tokens}`}`).toBe(`${p}: roomy`)
+    }
+  })
 })
 
 describe('seeing is a property of the MODEL', () => {

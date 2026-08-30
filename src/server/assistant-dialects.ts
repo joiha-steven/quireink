@@ -31,6 +31,20 @@ export type ChatAnswer = {
 
 const cap = (s: string, n = 20_000): string => (s.length > n ? s.slice(0, n) + '\n…[truncated]' : s)
 
+/**
+ * The output ceiling for one turn of the conversation.
+ *
+ * It was 1500, which is generous for an answer and not generous at all for a model that
+ * thinks first: measured against `deepseek-v4-flash`, a request for a 120-word paragraph
+ * spent 3348 characters on `reasoning_content`, hit the ceiling, and returned
+ * `finish_reason: length` with an EMPTY answer — a blank reply after ten seconds, with
+ * every part of the request correct. The same ceiling emptied the alt-text job a few hours
+ * earlier, from the same cause, which is what makes it worth a named constant here.
+ *
+ * Costs nothing on a model that does not reason: it still stops when it has answered.
+ */
+const ANSWER_TOKENS = 4000
+
 // ---- Anthropic ---------------------------------------------------------------------------
 
 function anthropicMessages(turns: Turn[]): unknown[] {
@@ -102,10 +116,66 @@ function geminiContents(turns: Turn[]): unknown[] {
   return out
 }
 
-// Gemini's schema reader is the fussiest of the three: no $schema, no additionalProperties.
-function geminiParams(p: Record<string, unknown>): Record<string, unknown> {
-  const { $schema: _s, additionalProperties: _a, ...rest } = p
-  return rest
+/**
+ * Gemini's schema reader is the fussiest of the four, and this used to be a one-line strip.
+ *
+ * IT NEVER WORKED. Every call was refused — `Unknown name "const"` — so the whole provider
+ * was dead in the chat box, before streaming and regardless of it. Nothing caught it
+ * because a schema is only judged by the provider, and there was no Gemini key here until
+ * today. zod writes a literal as `{const: x}` and a union of literals as an `anyOf` of
+ * them; Gemini knows `enum` and not `const`, and rejects the request rather than ignoring
+ * a word it does not recognise.
+ *
+ * So: recursive, and every rewrite below is a shape zod actually emits for these 42 tools.
+ */
+/**
+ * A fixed set of allowed values, in the only form Gemini takes.
+ *
+ * `enum` is STRINGS ONLY there — a numeric union (`7 | 30 | 90`, the analytics windows)
+ * is refused with "Invalid value … (TYPE_STRING), 7". So numbers keep their type and the
+ * choice moves into the description, which the model reads anyway; making them strings
+ * instead would have the model send "7" to a tool whose zod schema wants 7.
+ */
+function allowed(values: unknown[]): Record<string, unknown> {
+  const first = values[0]
+  if (typeof first === 'string') return { type: 'string', enum: values }
+  return {
+    type: typeof first === 'number' ? 'number' : typeof first === 'boolean' ? 'boolean' : 'string',
+    description: `One of: ${values.join(', ')}`,
+  }
+}
+
+function geminiParams(schema: Record<string, unknown>): Record<string, unknown> {
+  const { $schema: _s, additionalProperties: _a, ...rest } = schema
+  const out: Record<string, unknown> = {}
+
+  for (const [key, value] of Object.entries(rest)) {
+    if (key === 'const') {
+      Object.assign(out, allowed([value]))
+    } else if (key === 'anyOf' && Array.isArray(value)) {
+      const members = value as Record<string, unknown>[]
+      // `'draft' | 'published'` reaches here as two consts. Collapsed, it is the enum
+      // Gemini was going to be given anyway — kept as anyOf it is two words it refuses.
+      if (members.length > 0 && members.every((m) => 'const' in m)) {
+        Object.assign(out, allowed(members.map((m) => m.const)))
+      } else {
+        out.anyOf = members.map(geminiParams)
+      }
+    } else if (key === 'properties' && value && typeof value === 'object') {
+      out.properties = Object.fromEntries(
+        Object.entries(value as Record<string, Record<string, unknown>>)
+          .map(([name, sub]) => [name, geminiParams(sub)]),
+      )
+    } else if (key === 'items' && value && typeof value === 'object') {
+      out.items = geminiParams(value as Record<string, unknown>)
+    } else if (key === 'description' && typeof out.description === 'string') {
+      // `allowed()` may already have written one; the tool's own words come first.
+      out.description = `${String(value)} ${out.description}`
+    } else {
+      out[key] = value
+    }
+  }
+  return out
 }
 
 // ---- one front door ------------------------------------------------------------------------
@@ -113,13 +183,17 @@ function geminiParams(p: Record<string, unknown>): Record<string, unknown> {
 export function buildChat(
   provider: string, model: string, key: string,
   system: string, turns: Turn[], tools: ToolSpec[],
+  // Streaming is the same request with one flag. Only the OpenAI-compatible branch reads
+  // it: `assistant-stream.ts` says why the other two are not offered it.
+  opts: { stream?: boolean } = {},
 ): ChatRequest | null {
   if (provider === 'anthropic') {
     return {
       url: 'https://api.anthropic.com/v1/messages',
       headers: { 'content-type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01' },
       body: JSON.stringify({
-        model, max_tokens: 1500, system,
+        model, max_tokens: ANSWER_TOKENS, system,
+        ...(opts.stream ? { stream: true } : {}),
         messages: anthropicMessages(turns),
         tools: tools.map((t) => ({ name: t.name, description: t.description, input_schema: t.parameters })),
       }),
@@ -131,7 +205,8 @@ export function buildChat(
       url: `${base}/chat/completions`,
       headers: { 'content-type': 'application/json', authorization: `Bearer ${key}` },
       body: JSON.stringify({
-        model, max_tokens: 1500,
+        model, max_tokens: ANSWER_TOKENS,
+        ...(opts.stream ? { stream: true } : {}),
         messages: openaiMessages(system, turns, echoesReasoning(provider)),
         tools: tools.map((t) => ({ type: 'function', function: { name: t.name, description: t.description, parameters: t.parameters } })),
       }),
@@ -139,7 +214,11 @@ export function buildChat(
   }
   if (provider === 'gemini') {
     return {
-      url: `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
+      // `?alt=sse` is not optional for the streaming call: without it Gemini answers a
+      // JSON ARRAY that arrives in chunks, which looks like a stream and parses like
+      // nothing.
+      url: `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:${
+        opts.stream ? 'streamGenerateContent?alt=sse' : 'generateContent'}`,
       headers: { 'content-type': 'application/json', 'x-goog-api-key': key },
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: system }] },

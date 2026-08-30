@@ -31,13 +31,52 @@ export function assistantRoutes() {
     const input = await body<{ turns: unknown }>(c)
     const parsed = z.array(turn).min(1).max(60).safeParse(input.turns)
     if (!parsed.success) return fail(c, 'bad_conversation', 400)
-    const reply = await runAssistant(parsed.data as Turn[])
-    if (!reply.ok) {
-      // 400 when the owner has not plugged a model in; 502 when their provider failed —
-      // the same split the SMTP test makes, and for the same reason.
-      return fail(c, reply.error, reply.error === 'provider_error' ? 502 : 400)
+    const asked = parsed.data as Turn[]
+
+    // The client asks for a stream by Accept, so the plain JSON answer stays exactly as it
+    // was for anything that does not (a script, curl, the tests). One handler, because two
+    // would be two chances for the gated path and the ungated one to drift apart.
+    if (!c.req.header('accept')?.includes('text/event-stream')) {
+      const reply = await runAssistant(asked)
+      if (!reply.ok) {
+        // 400 when the owner has not plugged a model in; 502 when their provider failed —
+        // the same split the SMTP test makes, and for the same reason.
+        return fail(c, reply.error, reply.error === 'provider_error' ? 502 : 400)
+      }
+      return json({ turns: reply.turns, text: reply.text })
     }
-    return json({ turns: reply.turns, text: reply.text })
+
+    // SSE. THE STATUS IS ALREADY 200 by the time anything can fail, which is the price of
+    // streaming: a refusal has to travel as an event in the body, and the client reads it
+    // from there. Everything the non-streaming answer carries still arrives — the finished
+    // `turns` land in the last event, so the transcript the browser stores is the server's,
+    // not something reassembled from deltas that may have been dropped.
+    const encoder = new TextEncoder()
+    const stream = new ReadableStream({
+      async start(controller) {
+        const send = (event: unknown) => {
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`))
+        }
+        try {
+          const reply = await runAssistant(asked, (delta) => send({ delta }))
+          send(reply.ok ? { done: true, turns: reply.turns, text: reply.text } : { error: reply.error })
+        } catch (error) {
+          console.error(`[ERROR] assistant stream: ${(error as Error).message}`)
+          send({ error: 'provider_error' })
+        } finally {
+          controller.close()
+        }
+      },
+    })
+    return new Response(stream, {
+      headers: {
+        'content-type': 'text/event-stream; charset=utf-8',
+        'cache-control': 'no-store',
+        // Nginx buffers a proxied response by default, which would hold every delta until
+        // the answer was finished — streaming that arrives all at once is not streaming.
+        'x-accel-buffering': 'no',
+      },
+    })
   })
 
   return router
