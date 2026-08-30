@@ -15,6 +15,7 @@ import { getMedia, addMedia, deleteMedia, restoreMediaBatch, getTrashedMedia } f
 import { getFiles, deleteFile, restoreFilesBatch, getTrashedFiles } from '@/media/files'
 import { checkUpload, readCapped, uploadLimits } from '@/media/limits'
 import { getSettings, saveSettings } from '@/content/settings'
+import { SETTING_PATHS, getAt, isSettingPath, patchAt, typeOfPath } from '@/content/settings-path'
 import { clearCache } from '@/server/cache'
 import { logActivity } from '@/server/activity'
 import { safeFetch, BlockedUrlError } from '@/server/safe-fetch'
@@ -155,10 +156,51 @@ function registerSettingsTools(server: ToolHost): void {
   )
 
   server.registerTool(
+    'list_settings',
+    {
+      readOnly: true,
+      description:
+        'Every setting that can be changed by name: its path, what kind of answer it takes, '
+        + 'and what it is set to now. Use this to find the path for update_settings rather '
+        + 'than guessing one. Optional `contains` narrows the list to paths matching a word.',
+      inputSchema: { contains: z.string().optional().describe('e.g. "font", "comment", "backup"') },
+    },
+    async ({ contains }) => {
+      const current = await getSettings()
+      const needle = (contains ?? '').toLowerCase()
+      const rows = SETTING_PATHS
+        .filter((path) => !needle || path.toLowerCase().includes(needle))
+        .map((path) => ({ path, type: typeOfPath(path), value: getAt(current, path) }))
+      return asJson({ count: rows.length, settings: rows })
+    },
+  )
+
+  server.registerTool(
     'update_settings',
     {
-      description: 'Update SAFE site settings only: title, description, showDescription. Sensitive settings (theme, fonts, typography, menu, domain, SEO, language, logos) cannot be changed over MCP.',
+      // WHAT CHANGED, AND WHY IT IS SAFE NOW. This tool wrote three fields — title,
+      // description, showDescription — and its own description said the rest "cannot be
+      // changed over MCP". That restriction was written when every token was all-powerful and
+      // when nothing had proved that a partial save leaves the rest of the tree alone.
+      //
+      // Both have moved. Tokens carry a scope since 2026-08-2x, and a `read` token's door
+      // never registers a write tool at all (`mcp-transport.ts`). And the deep merge is now
+      // asserted for EVERY path, one at a time, with the other 154 watched
+      // (`content/settings-path.test.ts`) — so a patch built from one path can no more damage
+      // a neighbour than the admin's own Save button can.
+      //
+      // The route to disk is unchanged and deliberately so: `saveSettings`, which sanitises,
+      // clamps and refuses exactly as it does for the form. NOTHING reachable here is
+      // anything the owner's own screens could not already do.
+      description:
+        'Change any site setting by path — call list_settings first to find the path. The value '
+        + 'is sanitised exactly as the admin\'s own Save does, and everything not named is left '
+        + 'alone. Two are worth naming before you change them because they affect every page a '
+        + 'reader loads: `customCss` and `siteUrl`. The three named arguments are the older '
+        + 'shorthand and still work.',
       inputSchema: {
+        path: z.string().optional().describe('Dotted path, e.g. features.search or typography.roles.body.size'),
+        value: z.union([z.string(), z.number(), z.boolean()]).optional(),
         title: z.string().optional(),
         description: z.string().optional(),
         showDescription: z.boolean().optional(),
@@ -174,15 +216,38 @@ function registerSettingsTools(server: ToolHost): void {
       // in `settings-sanitize.ts` and pinned by "a partial save leaves everything it did not
       // mention alone" in `content/settings.test.ts`, because this comment is a promise
       // about a function in another file.
-      const patch: Partial<SiteSettings> = {}
+      const patch: Record<string, unknown> = {}
       if (args.title !== undefined) patch.title = args.title
       if (args.description !== undefined) patch.description = args.description
       if (args.showDescription !== undefined) patch.showDescription = args.showDescription
+
+      if (args.path !== undefined) {
+        // A path that is not one is a MISTAKE, not a no-op: silently ignoring it would report
+        // success for a setting that never moved, which is the worst answer available.
+        if (!isSettingPath(args.path)) {
+          return asError(`No setting at "${args.path}". Call list_settings to see the paths.`)
+        }
+        if (args.value === undefined) return asError('A path needs a value')
+        const wanted = typeOfPath(args.path)
+        if (wanted !== 'unknown' && typeof args.value !== wanted) {
+          return asError(`${args.path} takes a ${wanted}, not a ${typeof args.value}`)
+        }
+        Object.assign(patch, patchAt(args.path, args.value))
+      }
       if (Object.keys(patch).length === 0) return asError('Nothing to update')
-      const next = await saveSettings(patch)
+
+      const before = await getSettings()
+      const next = await saveSettings(patch as Partial<SiteSettings>)
       clearCache()
-      await logActivity('settings.save')
-      return asJson({ title: next.title, description: next.description, showDescription: next.showDescription })
+      await logActivity('settings.save', args.path ?? undefined)
+      // Report the BEFORE as well: the sanitiser clamps, so what was asked for and what
+      // landed are not always the same number, and a tool that only echoes the request hides
+      // exactly that.
+      return asJson(
+        args.path
+          ? { path: args.path, was: getAt(before, args.path), now: getAt(next, args.path) }
+          : { title: next.title, description: next.description, showDescription: next.showDescription },
+      )
     },
   )
 }
