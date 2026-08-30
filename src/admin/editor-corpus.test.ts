@@ -80,39 +80,92 @@ describe('the corpus, opened in the editor', () => {
 /**
  * The fixtures whose PAGE is allowed to move, and what moves in each.
  *
- * Every one of these is a normalisation Markdown itself permits, checked by hand on
- * 2026-08-30 — none of them loses a feature, a word or a link. The list is short on purpose:
- * an entry here is a promise that somebody looked, so adding one is a decision, and adding one
- * to make a red check go away is the failure this file exists to prevent.
+ * Every one is a normalisation Markdown itself permits, checked by hand on 2026-08-30 — none
+ * loses a feature, a word or a link. The list is short on purpose: an entry here is a promise
+ * that somebody looked, so adding one is a decision, and adding one to make a red check go
+ * away is the failure this file exists to prevent.
+ *
+ * ⚠️ THE SHAPE CHANGED ON 2026-08-30, and the reason is that the first cut of this hatch was
+ * far weaker than the one it was modelled on. An excused fixture was asserted only to render
+ * SOMETHING (`after.length > 0`), so any of these eight could have collapsed to a single
+ * character and this file would still have said ok — in the exact place where four data-loss
+ * bugs had just been found. `render/golden.test.ts` had solved the same problem years of
+ * fixtures earlier and its answer is copied here wholesale: group by BEHAVIOUR, bound both
+ * counts, and pin the new answer on disk so an excused fixture is still compared byte for
+ * byte — against what it renders after a save rather than against what it rendered before.
  */
-const MAY_DIFFER: Record<string, string> = {
-  'callout-unknown.md': '[!MYSTERY] is not one of the five, so it is a blockquote either way; the two lines join and the <br> goes',
-  'dangerous-hrefs.md': 'javascript:/data:/vbscript: never became links; they are inert text before and after, escaped differently',
-  'dangerous-href-obfuscated.md': 'same — the tab inside the scheme becomes a space in inert text',
-  'entities.md': 'markdown-it decodes &copy; and friends on the way in; the characters they name are what comes back',
-  'lazy-continuation.md': 'a lazy second line is folded onto the first, which is what it already meant',
-  'raw-html-block.md': 'html:false — raw HTML is text here, and text is written back as entities. The promise, working',
-  'reference-links.md': '[a][ref] is written back inline as [a](url); the link and its label survive, the definition list goes',
-  'task-lists.md': 'items gain the blank line between them that makes a list loose, so each gets a <p>',
+const MAY_DIFFER: Record<string, { behaviour: string; why: string }> = {
+  // ── Two lines becoming one. Both are places where Markdown's own line rules already said
+  //    the second line belongs to the first; what goes is the <br> between them.
+  'callout-unknown.md': { behaviour: 'line joining', why: '[!MYSTERY] is not one of the five, so it is a blockquote either way, and its two lines join' },
+  'lazy-continuation.md': { behaviour: 'line joining', why: 'a lazy second line is folded onto the first, which is what it already meant' },
+
+  // ── Text that is not markup, spelled differently. In every one of these the CHARACTERS a
+  //    reader sees are identical; only the entity spelling behind them moves. Two of the four
+  //    are the escaping promise doing its job, and the pinned files prove it still is.
+  'dangerous-hrefs.md': { behaviour: 'text that is not markup', why: 'javascript:/data:/vbscript: never became links; inert text before and after, escaped differently' },
+  'dangerous-href-obfuscated.md': { behaviour: 'text that is not markup', why: 'the tab inside the scheme becomes a space in inert text' },
+  'entities.md': { behaviour: 'text that is not markup', why: 'markdown-it decodes &copy; and friends on the way in; the characters they name are what comes back' },
+  'raw-html-block.md': { behaviour: 'text that is not markup', why: 'html:false — raw HTML is text here, and text is written back as entities. The promise, working' },
+
+  // ── One link notation for another, and one list becoming loose.
+  'reference-links.md': { behaviour: 'link form', why: '[a][ref] is written back inline as [a](url); the link and its label survive, the definition list goes' },
+  'task-lists.md': { behaviour: 'list looseness', why: 'items gain the blank line between them that makes a list loose, so each gets a <p>' },
 }
+
+/**
+ * What each excused fixture publishes AFTER one save, captured rather than described.
+ *
+ * ⚠️ These are a CONTRACT, in the same sense `golden/v1/corpus/` is one, and with one weakness
+ * that directory does not have: 1.x's renderer is gone, so its files cannot be regenerated,
+ * while these can — by running the very code they are meant to check. Re-capturing one to make
+ * a red check green turns this gate into a mirror. When one of these legitimately moves, look
+ * at the diff and say in `MAY_DIFFER` what moved and why; the whole value of the list is that
+ * every entry is a promise somebody looked.
+ */
+const AFTER = join('golden', 'editor')
 
 describe('the corpus, saved once, still publishes the same page', () => {
   for (const file of FIXTURES) {
-    const why = MAY_DIFFER[file]
-    it(`${file}${why ? ' — normalises' : ''}`, async () => {
+    const excused = MAY_DIFFER[file]
+    it(`${file}${excused ? ` — ${excused.behaviour}` : ''}`, async () => {
       const { renderPostContent } = await import('@/render/post-content')
       const source = readFileSync(join(CORPUS, file), 'utf8')
       const before = await renderPostContent({ markdown: source })
       const after = await renderPostContent({ markdown: await roundTrip(source) })
-      if (why) {
-        // Named as normalising, so it must still RENDER — an entry here excuses a difference,
-        // never a blank page.
-        expect(after.length).toBeGreaterThan(0)
-        return
-      }
-      expect(after).toBe(before)
+      // An excused fixture is compared just as strictly; only the answer it is compared
+      // against is different. "It still renders" is not a contract.
+      expect(after).toBe(excused
+        ? readFileSync(join(AFTER, file.replace(/\.md$/, '.html')), 'utf8')
+        : before)
     })
   }
+})
+
+describe('the excuses stay few, and stay excuses', () => {
+  it('counts behaviours rather than names, and keeps a bound on both', () => {
+    // Counting NAMES alone makes one legitimate change look like drift — a single behaviour
+    // moves several fixtures at once. Counting behaviours alone lets one behaviour eat the
+    // corpus. Both, or neither means anything.
+    const behaviours = new Set(Object.values(MAY_DIFFER).map((d) => d.behaviour))
+    expect(behaviours.size).toBeLessThan(6)
+    expect(Object.keys(MAY_DIFFER).length).toBeLessThan(FIXTURES.length / 4)
+  })
+
+  it('names only fixtures that exist, so no rule here is guarding nothing', () => {
+    for (const file of Object.keys(MAY_DIFFER)) expect(FIXTURES).toContain(file)
+  })
+
+  it('excuses only fixtures that really do move, so the list cannot grow by habit', async () => {
+    const { renderPostContent } = await import('@/render/post-content')
+    for (const file of Object.keys(MAY_DIFFER)) {
+      const source = readFileSync(join(CORPUS, file), 'utf8')
+      const before = await renderPostContent({ markdown: source })
+      const after = readFileSync(join(AFTER, file.replace(/\.md$/, '.html')), 'utf8')
+      expect(`${file}: ${after === before ? 'does not move, and does not belong here' : 'moves'}`)
+        .toBe(`${file}: moves`)
+    }
+  })
 })
 
 // The gestures this editor adds to Markdown, each in the form a writer types.
