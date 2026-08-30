@@ -140,8 +140,13 @@ export function MediaLibrary({ mode = 'page', multi = false, onSelect, onSelectM
       const json = (await res.json()) as ApiResponse<{ queued: number }>
       if (!json.success || !json.data) throw new Error(json.error)
       notify(`${t.aiDescribeAllStarted}: ${json.data.queued}`)
-    } catch {
-      notify(t.aiNotConfigured, 'error')
+    } catch (error) {
+      // "No model yet" and "this model has no eyes" are different problems with different
+      // fixes, and the second one is reached with everything apparently configured.
+      const why = error instanceof Error && error.message === 'ai_cannot_see_images'
+        ? t.aiCannotSeeImages
+        : t.aiNotConfigured
+      notify(why, 'error')
     } finally {
       setDescribing(false)
     }

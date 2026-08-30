@@ -831,6 +831,7 @@ const fr = {
   aiDescribeAll: 'Décrire les images sans texte alternatif',
   aiDescribeAllStarted: 'Description en arrière-plan — images en file',
   aiNotConfigured: 'Pas encore de modèle d’IA — Réglages → IA',
+  aiCannotSeeImages: 'Ce modèle ne voit pas les images — choisissez-en un qui le peut, ou laissez le texte alternatif désactivé.',
   navAssistant: 'Assistant',
   assistantIntro: 'Il tourne sur le modèle de Réglages → IA et passe par les mêmes outils qu’un client MCP : les mêmes limites, et chaque action consignée au journal d’activité.',
   assistantPlaceholder: 'Demandez, ou demandez quelque chose…',

@@ -831,6 +831,7 @@ const vi = {
   aiDescribeAll: "Mô tả ảnh thiếu alt text",
   aiDescribeAllStarted: "Đang mô tả nền — số ảnh xếp hàng",
   aiNotConfigured: "Chưa cắm model AI — Cài đặt → AI",
+  aiCannotSeeImages: 'Model này không nhìn được ảnh — chọn model nhìn được, hoặc tắt viết alt.',
   navAssistant: "Trợ lý",
   assistantIntro: 'Trợ lý chạy bằng model ở Cài đặt → AI và dùng đúng bộ công cụ mà một client MCP được dùng: cùng giới hạn, và mọi việc nó làm đều ghi vào nhật ký.',
   assistantPlaceholder: "Hỏi, hoặc nhờ một việc…",

@@ -831,6 +831,7 @@ const zh = {
   aiDescribeAll: "为缺少替代文字的图片撰写描述",
   aiDescribeAllStarted: "正在后台描述 — 已排队的图片",
   aiNotConfigured: "尚未接入 AI 模型 — 设置 → AI",
+  aiCannotSeeImages: '该模型无法查看图片 — 请选择能看图的模型，或让替代文本保持关闭。',
   navAssistant: "助手",
   assistantIntro: '助手运行在设置 → AI 里的模型上，使用与 MCP 客户端相同的工具：同样的权限边界，每一步操作都会写进活动日志。',
   assistantPlaceholder: "提问，或者交代一件事…",

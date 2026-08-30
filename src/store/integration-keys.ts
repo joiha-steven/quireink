@@ -6,6 +6,7 @@
 
 import { clearCache } from '@/server/cache'
 import { one, run } from '@/store/query'
+import { seesImages } from '@/server/ai-capabilities'
 
 export type IntegrationKeys = {
   turnstileSiteKey: string // PUBLIC (rendered in the widget)
@@ -21,7 +22,7 @@ export type IntegrationKeys = {
   s3SecretAccessKey: string // secret
   googleClientId: string // PUBLIC (it travels in the authorize URL the reader follows)
   googleClientSecret: string // secret
-  aiProvider: string // 'anthropic' | 'openai' | 'gemini' | '' — not secret
+  aiProvider: string // one of AI_PROVIDERS, or '' for off — not secret
   aiApiKey: string // secret
   aiModel: string // '' = the provider's default in media/alt-text.ts — not secret
 }
@@ -40,6 +41,8 @@ export type IntegrationStatus = {
   aiConfigured: boolean
   aiProvider: string
   aiModel: string
+  /** False for a text-only MODEL: the alt-text job is the one thing it cannot do. */
+  aiSeesImages: boolean
 }
 
 type Row = {
@@ -124,6 +127,9 @@ export async function getIntegrationStatus(): Promise<IntegrationStatus> {
     aiConfigured: !!(k.aiProvider && k.aiApiKey),
     aiProvider: k.aiProvider,
     aiModel: k.aiModel,
+    // The stored model, or the one the job would fall back to — the same resolution `ask()`
+    // does, so the switch the owner sees matches the request that would actually be built.
+    aiSeesImages: seesImages(k.aiProvider, k.aiModel),
   }
 }
 

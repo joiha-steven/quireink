@@ -831,6 +831,7 @@ const ko = {
   aiDescribeAll: "대체 텍스트 없는 이미지 설명하기",
   aiDescribeAllStarted: "백그라운드에서 설명 중 — 대기 중인 이미지",
   aiNotConfigured: "아직 AI 모델 없음 — 설정 → AI",
+  aiCannotSeeImages: '이 모델은 이미지를 볼 수 없습니다 — 이미지를 다루는 모델을 고르거나 대체 텍스트를 꺼 두세요.',
   navAssistant: "어시스턴트",
   assistantIntro: '설정 → AI에 연결한 모델로 동작하며 MCP 클라이언트와 같은 도구를 씁니다. 한계도 같고, 한 일은 모두 활동 기록에 남습니다.',
   assistantPlaceholder: "질문하거나, 일을 맡기세요…",

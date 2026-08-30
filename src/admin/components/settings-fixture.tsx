@@ -119,7 +119,7 @@ export function payload(): ViewPayloads['settings'] {
       cloudflareConfigured: false, cloudflareZoneId: '', purgeWebhookConfigured: false,
       offsiteConfigured: false, s3Bucket: '',
       googleConfigured: false,
-      aiConfigured: false, aiProvider: '', aiModel: '',
+      aiConfigured: false, aiProvider: '', aiModel: '', aiSeesImages: false,
     },
     posts: [{ slug: 'hello-world', title: 'Hello world' }],
     pages: [{ slug: 'about', title: 'About' }],

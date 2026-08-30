@@ -81,8 +81,9 @@ The code is [`src/server/update-check.ts`](../src/server/update-check.ts), which
 and says the same thing this section does.
 
 **One more outbound exists, and only if you build it yourself by pasting a key.** Give
-Settings → Connections an AI key (Anthropic, OpenAI or Gemini) and each image you upload
-is sent to that provider once, to have its alt text written. Your key, your provider,
+Settings → Connections an AI key (Anthropic, OpenAI, Gemini or DeepSeek) and pick a model
+that can see images, and each image you upload is sent to that provider once, to have its
+alt text written. A text-only model leaves this job switched off and says so. Your key, your provider,
 your bill; the site's language is the answer's language; and removing the key removes the
 behaviour entirely. Without a key this path does not run — not quietly disabled, but
 never entered ([`src/media/alt-text.ts`](../src/media/alt-text.ts) declines before any

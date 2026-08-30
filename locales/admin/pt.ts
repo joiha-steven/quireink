@@ -832,6 +832,7 @@ const pt = {
   aiDescribeAll: 'Descrever imagens sem texto alternativo',
   aiDescribeAllStarted: 'Descrevendo em segundo plano — imagens na fila',
   aiNotConfigured: 'Ainda sem modelo de IA — Configurações → IA',
+  aiCannotSeeImages: 'Este modelo não vê imagens — escolha um que veja, ou deixe o texto alternativo desligado.',
   navAssistant: 'Assistente',
   assistantIntro: 'Ele roda no modelo de Configurações → IA e trabalha com as mesmas ferramentas que um cliente MCP recebe: os mesmos limites, e cada ação anotada no diário de atividade.',
   assistantPlaceholder: 'Pergunte, ou peça alguma coisa…',

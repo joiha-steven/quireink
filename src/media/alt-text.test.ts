@@ -7,6 +7,7 @@ import { db } from '@/store/db'
 import { one } from '@/store/query'
 import { saveIntegrationKeys } from '@/store/integration-keys'
 import { buildRequest, parseAlt, parseModels, describeUpload, DEFAULT_MODELS } from './alt-text'
+import { seesImages } from '@/server/ai-provider'
 import { saveSettings } from '@/content/settings'
 
 const DIR = './.tmp/test-alt-text'
@@ -119,9 +120,15 @@ describe('describeUpload', () => {
     expect(altOf('media/denied.webp')).toBeNull()
   })
 
-  it('every provider named in DEFAULT_MODELS builds a request', () => {
+  // Was "every provider builds a request", true while all three could see. It is a MODEL
+  // question now, and the point of the check is unchanged: no default in the menu may be
+  // one this job silently ignores. So it asserts BOTH halves — the seeing ones build, the
+  // text-only ones refuse before the network — which is a stronger pin than the original.
+  it('every default model builds a request, or is one that cannot see', () => {
     for (const [provider, model] of Object.entries(DEFAULT_MODELS)) {
-      expect(buildRequest(provider, model, 'k', 'image/png', B64, 'en')).not.toBeNull()
+      const req = buildRequest(provider, model, 'k', 'image/png', B64, 'en')
+      expect(`${provider}/${model}: ${req ? 'builds' : 'refuses'}`)
+        .toBe(`${provider}/${model}: ${seesImages(provider, model) ? 'builds' : 'refuses'}`)
     }
   })
 })

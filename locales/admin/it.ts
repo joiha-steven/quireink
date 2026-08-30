@@ -831,6 +831,7 @@ const it = {
   aiDescribeAll: 'Descrivi le immagini senza testo alternativo',
   aiDescribeAllStarted: 'Descrizione in sottofondo — immagini in coda',
   aiNotConfigured: 'Ancora nessun modello di IA — Impostazioni → IA',
+  aiCannotSeeImages: 'Questo modello non vede le immagini — scegline uno che possa, o lascia disattivato il testo alternativo.',
   navAssistant: 'Assistente',
   assistantIntro: 'Gira sul modello di Impostazioni → IA e lavora con gli stessi strumenti che riceve un client MCP: gli stessi limiti, e ogni azione annotata nel registro attività.',
   assistantPlaceholder: 'Chiedi, o chiedi qualcosa…',

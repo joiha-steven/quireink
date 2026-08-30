@@ -831,6 +831,7 @@ const es = {
   aiDescribeAll: 'Describir las imágenes sin texto alternativo',
   aiDescribeAllStarted: 'Describiendo en segundo plano — imágenes en cola',
   aiNotConfigured: 'Todavía no hay modelo de IA — Ajustes → IA',
+  aiCannotSeeImages: 'Este modelo no puede ver imágenes — elige uno que sí pueda, o deja el texto alternativo desactivado.',
   navAssistant: 'Asistente',
   assistantIntro: 'Corre sobre el modelo de Ajustes → IA y trabaja con las mismas herramientas que recibe un cliente MCP: los mismos límites, y cada acción anotada en el registro de actividad.',
   assistantPlaceholder: 'Pregunta, o pide algo…',
