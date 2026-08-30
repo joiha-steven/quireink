@@ -63,6 +63,15 @@ const pt = {
   moveToTrash: 'Mover para o lixo',
   confirmTrashPost: 'Mover este post para o lixo? Poderá restaurá-lo a partir de lá.',
   confirmTrashPage: 'Mover esta página para o lixo? Poderá restaurá-la a partir de lá.',
+  // The write pane's selection mode. `selectPieces` is a VERB and it shares one 320px line
+  // with Taxonomy, Series and the sort cycle, so each language picks its shortest true word —
+  // the same rule the scope tabs above are held to. The confirmation carries no number: a
+  // count inside a sentence needs a plural form in half these languages, and the button
+  // beside it already prints `(N)`.
+  selectPieces: 'Escolher',
+  selectDone: 'Pronto',
+  confirmTrashMany: 'Mover os itens selecionados para o lixo? Poderá restaurá-los a partir de lá.',
+  trashPartial: 'Alguns itens não puderam ser movidos',
   // The line above the red button at the foot of the Attributes panel. It has to say BOTH
   // halves: the piece goes now, and it is recoverable.
   trashNote: 'Sai do site de imediato e fica à espera no lixo, onde pode restaurá-lo ou apagá-lo de vez.',

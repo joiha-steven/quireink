@@ -62,6 +62,15 @@ const zh = {
   moveToTrash: '移到回收站',
   confirmTrashPost: '将这篇文章移到回收站？之后可以从回收站还原。',
   confirmTrashPage: '将这个页面移到回收站？之后可以从回收站还原。',
+  // The write pane's selection mode. `selectPieces` is a VERB and it shares one 320px line
+  // with Taxonomy, Series and the sort cycle, so each language picks its shortest true word —
+  // the same rule the scope tabs above are held to. The confirmation carries no number: a
+  // count inside a sentence needs a plural form in half these languages, and the button
+  // beside it already prints `(N)`.
+  selectPieces: '选择',
+  selectDone: '完成',
+  confirmTrashMany: '将选中的条目移到回收站？之后可以从回收站还原。',
+  trashPartial: '部分条目没能移动',
   // The line above the red button at the foot of the Attributes panel. It has to say BOTH
   // halves: the piece goes now, and it is recoverable.
   trashNote: '它会立刻从站点消失，留在回收站里，你可以在那里还原或彻底删除。',

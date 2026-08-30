@@ -222,6 +222,15 @@ export type AdminStrings = {
   moveToTrash: string
   confirmTrashPost: string
   confirmTrashPage: string
+  // The write pane's selection mode. `selectPieces` is a VERB and it shares one 320px line
+  // with Taxonomy, Series and the sort cycle, so each language picks its shortest true word —
+  // the same rule the scope tabs above are held to. The confirmation carries no number: a
+  // count inside a sentence needs a plural form in half these languages, and the button
+  // beside it already prints `(N)`.
+  selectPieces: string
+  selectDone: string
+  confirmTrashMany: string
+  trashPartial: string
   // The line above the red button at the foot of the Attributes panel. It has to say BOTH
   // halves: the piece goes now, and it is recoverable.
   trashNote: string

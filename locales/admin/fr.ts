@@ -62,6 +62,15 @@ const fr = {
   moveToTrash: 'Mettre à la corbeille',
   confirmTrashPost: 'Mettre cet article à la corbeille ? Vous pourrez le restaurer depuis la corbeille.',
   confirmTrashPage: 'Mettre cette page à la corbeille ? Vous pourrez la restaurer depuis la corbeille.',
+  // The write pane's selection mode. `selectPieces` is a VERB and it shares one 320px line
+  // with Taxonomy, Series and the sort cycle, so each language picks its shortest true word —
+  // the same rule the scope tabs above are held to. The confirmation carries no number: a
+  // count inside a sentence needs a plural form in half these languages, and the button
+  // beside it already prints `(N)`.
+  selectPieces: 'Choisir',
+  selectDone: 'Terminé',
+  confirmTrashMany: 'Mettre les éléments sélectionnés à la corbeille ? Vous pourrez les restaurer depuis la corbeille.',
+  trashPartial: 'Certains éléments n’ont pas pu être déplacés',
   // The line above the red button at the foot of the Attributes panel. It has to say BOTH
   // halves: the piece goes now, and it is recoverable.
   trashNote: 'Il quitte le site immédiatement et attend dans la corbeille, où vous pouvez le restaurer ou le supprimer définitivement.',

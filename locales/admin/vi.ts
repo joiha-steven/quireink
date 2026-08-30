@@ -62,6 +62,15 @@ const vi = {
   moveToTrash: 'Chuyển vào Thùng rác',
   confirmTrashPost: 'Chuyển bài này vào Thùng rác? Bạn có thể khôi phục lại từ Thùng rác.',
   confirmTrashPage: 'Chuyển trang này vào Thùng rác? Bạn có thể khôi phục lại từ Thùng rác.',
+  // The write pane's selection mode. `selectPieces` is a VERB and it shares one 320px line
+  // with Taxonomy, Series and the sort cycle, so each language picks its shortest true word —
+  // the same rule the scope tabs above are held to. The confirmation carries no number: a
+  // count inside a sentence needs a plural form in half these languages, and the button
+  // beside it already prints `(N)`.
+  selectPieces: 'Chọn',
+  selectDone: 'Xong',
+  confirmTrashMany: 'Chuyển những mục đã chọn vào Thùng rác? Bạn có thể khôi phục lại từ Thùng rác.',
+  trashPartial: 'Một số mục không chuyển được',
   // The line above the red button at the foot of the Attributes panel. It has to say BOTH
   // halves: the piece goes now, and it is recoverable.
   trashNote: 'Bài rời khỏi site ngay và nằm chờ trong Thùng rác, ở đó bạn khôi phục lại hoặc xoá hẳn.',

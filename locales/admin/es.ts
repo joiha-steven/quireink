@@ -62,6 +62,15 @@ const es = {
   moveToTrash: 'Mover a la papelera',
   confirmTrashPost: '¿Mover esta entrada a la papelera? Podrás restaurarla desde allí.',
   confirmTrashPage: '¿Mover esta página a la papelera? Podrás restaurarla desde allí.',
+  // The write pane's selection mode. `selectPieces` is a VERB and it shares one 320px line
+  // with Taxonomy, Series and the sort cycle, so each language picks its shortest true word —
+  // the same rule the scope tabs above are held to. The confirmation carries no number: a
+  // count inside a sentence needs a plural form in half these languages, and the button
+  // beside it already prints `(N)`.
+  selectPieces: 'Elegir',
+  selectDone: 'Listo',
+  confirmTrashMany: '¿Mover los elementos seleccionados a la papelera? Podrás restaurarlos desde allí.',
+  trashPartial: 'Algunos elementos no se pudieron mover',
   // The line above the red button at the foot of the Attributes panel. It has to say BOTH
   // halves: the piece goes now, and it is recoverable.
   trashNote: 'Sale del sitio de inmediato y espera en la papelera, donde puedes restaurarlo o borrarlo del todo.',

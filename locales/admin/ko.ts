@@ -62,6 +62,15 @@ const ko = {
   moveToTrash: '휴지통으로 이동',
   confirmTrashPost: '이 글을 휴지통으로 옮길까요? 휴지통에서 되돌릴 수 있습니다.',
   confirmTrashPage: '이 페이지를 휴지통으로 옮길까요? 휴지통에서 되돌릴 수 있습니다.',
+  // The write pane's selection mode. `selectPieces` is a VERB and it shares one 320px line
+  // with Taxonomy, Series and the sort cycle, so each language picks its shortest true word —
+  // the same rule the scope tabs above are held to. The confirmation carries no number: a
+  // count inside a sentence needs a plural form in half these languages, and the button
+  // beside it already prints `(N)`.
+  selectPieces: '선택',
+  selectDone: '완료',
+  confirmTrashMany: '선택한 항목을 휴지통으로 옮길까요? 휴지통에서 되돌릴 수 있습니다.',
+  trashPartial: '일부 항목을 옮기지 못했습니다',
   // The line above the red button at the foot of the Attributes panel. It has to say BOTH
   // halves: the piece goes now, and it is recoverable.
   trashNote: '사이트에서는 곧바로 사라지고 휴지통에서 기다립니다. 거기서 되돌리거나 완전히 지울 수 있습니다.',

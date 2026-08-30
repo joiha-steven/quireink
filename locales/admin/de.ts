@@ -62,6 +62,15 @@ const de = {
   moveToTrash: 'In den Papierkorb',
   confirmTrashPost: 'Diesen Beitrag in den Papierkorb verschieben? Sie können ihn dort wiederherstellen.',
   confirmTrashPage: 'Diese Seite in den Papierkorb verschieben? Sie können sie dort wiederherstellen.',
+  // The write pane's selection mode. `selectPieces` is a VERB and it shares one 320px line
+  // with Taxonomy, Series and the sort cycle, so each language picks its shortest true word —
+  // the same rule the scope tabs above are held to. The confirmation carries no number: a
+  // count inside a sentence needs a plural form in half these languages, and the button
+  // beside it already prints `(N)`.
+  selectPieces: 'Wählen',
+  selectDone: 'Fertig',
+  confirmTrashMany: 'Die ausgewählten Beiträge in den Papierkorb verschieben? Sie können sie dort wiederherstellen.',
+  trashPartial: 'Einige Beiträge konnten nicht verschoben werden',
   // The line above the red button at the foot of the Attributes panel. It has to say BOTH
   // halves: the piece goes now, and it is recoverable.
   trashNote: 'Es verschwindet sofort von der Website und wartet im Papierkorb, wo Sie es wiederherstellen oder endgültig löschen können.',
