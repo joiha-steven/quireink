@@ -53,6 +53,11 @@ const ja = {
   commentsSearch: 'コメントを検索...',
   commentsFootHint: 'コメントをクリックすると全文を表示。削除はソフト削除で、ごみ箱に移動します。',
   filterEmpty: 'フィルターに一致する記事がありません。',
+  // The command palette (⌘K). Its placeholder is the whole instruction: one box, and it
+  // reaches the screens, the settings and the writing. ADR 0011 is why it exists — no
+  // arrangement makes a person remember which of eight tabs holds a setting.
+  paletteTitle: '検索',
+  palettePlaceholder: 'どこへでも、なんでも変更…',
   edit: '編集',
   delete: '削除',
   // The editor's Attributes panel. The confirmation says the piece can be brought back,

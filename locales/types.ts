@@ -201,6 +201,11 @@ export type AdminStrings = {
   filterPlaceholder: string
   filterAll: string
   filterEmpty: string
+  // The command palette (⌘K). Its placeholder is the whole instruction: one box, and it
+  // reaches the screens, the settings and the writing. ADR 0011 is why it exists — no
+  // arrangement makes a person remember which of eight tabs holds a setting.
+  paletteTitle: string
+  palettePlaceholder: string
   // The write pane's scope row: five words that must share ONE line in a 320px column,
   // so each language gets its own deliberately short set instead of reusing the longer
   // status/kind labels. Measured, not assumed — the row may not wrap.

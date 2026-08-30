@@ -242,3 +242,45 @@ export function registerAutosaveFlows({ flow, expect }: Tour): void {
       return 'ok (' + slug + ')'
     })()`, 2000))
 }
+
+/**
+ * ⌘K, pressed — and it has to LAND somewhere, not merely open.
+ *
+ * The palette's whole claim is that you no longer need to know which of eight tabs holds a
+ * setting. A flow that opened it and counted rows would prove the list exists; what has to be
+ * true is that choosing a row puts you on the tab with that setting on it.
+ */
+export function registerPaletteFlows({ flow, expect }: Tour): void {
+  flow('admin: ⌘K finds a setting and lands on its tab', () => expect('/admin', `
+    (async () => {
+      const wait = async (fn, tries = 60, gap = 100) => {
+        for (let i = 0; i < tries; i++) {
+          const hit = await fn()
+          if (hit) return hit
+          await new Promise((r) => setTimeout(r, gap))
+        }
+        return null
+      }
+
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true, cancelable: true }))
+      const box = await wait(() => document.querySelector('[role=dialog] input'))
+      if (!box) return 'the palette did not open'
+
+      // React owns the value, so the native setter is how a real keystroke is simulated.
+      const setValue = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set
+      setValue.call(box, 'font')
+      box.dispatchEvent(new Event('input', { bubbles: true }))
+
+      const row = await wait(() => [...document.querySelectorAll('[role=dialog] li button')]
+        .find((b) => /\\/admin\\/settings\\?tab=/.test(b.getAttribute('data-href') || '') || /appearance|erscheinung|apparence|apariencia|aspetto|外観|外观|디자인|Оформление|Aparência|Giao diện/i.test(b.textContent || '')))
+      if (!row) return 'typing a word found no setting'
+      row.click()
+
+      const landed = await wait(() => location.pathname === '/admin/settings' ? location.search : null)
+      if (!landed) return 'choosing a setting did not go to Settings'
+      if (!/tab=/.test(landed)) return 'it reached Settings but named no tab: ' + landed
+      // The palette must also be gone: a dialog that survives the navigation traps the page.
+      if (document.querySelector('[role=dialog] input')) return 'the palette stayed open after choosing'
+      return 'ok (' + landed + ')'
+    })()`, 1500))
+}

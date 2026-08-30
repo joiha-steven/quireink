@@ -53,6 +53,11 @@ const zh = {
   commentsSearch: '搜索评论...',
   commentsFootHint: '点击评论可展开全文。删除为软删除——移入回收站。',
   filterEmpty: '没有符合筛选条件的文章。',
+  // The command palette (⌘K). Its placeholder is the whole instruction: one box, and it
+  // reaches the screens, the settings and the writing. ADR 0011 is why it exists — no
+  // arrangement makes a person remember which of eight tabs holds a setting.
+  paletteTitle: '搜索',
+  palettePlaceholder: '去任何地方，改任何设置…',
   edit: '编辑',
   delete: '删除',
   // The editor's Attributes panel. The confirmation says the piece can be brought back,

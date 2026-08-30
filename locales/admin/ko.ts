@@ -53,6 +53,11 @@ const ko = {
   commentsSearch: '댓글 검색...',
   commentsFootHint: '댓글을 클릭하면 전문이 열립니다. 삭제는 휴지통으로 이동하는 소프트 삭제입니다.',
   filterEmpty: '필터와 일치하는 글이 없습니다.',
+  // The command palette (⌘K). Its placeholder is the whole instruction: one box, and it
+  // reaches the screens, the settings and the writing. ADR 0011 is why it exists — no
+  // arrangement makes a person remember which of eight tabs holds a setting.
+  paletteTitle: '검색',
+  palettePlaceholder: '어디로든, 무엇이든 바꾸기…',
   edit: '편집',
   delete: '삭제',
   // The editor's Attributes panel. The confirmation says the piece can be brought back,

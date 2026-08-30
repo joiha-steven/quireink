@@ -15,6 +15,7 @@ import { TopProgress } from '@/admin/ui/TopProgress'
 import { ErrorBoundary } from '@/admin/ui/ErrorBoundary'
 import { throughDeploys } from '@/admin/ui/stale-build'
 import { AdminSidebar } from '@/admin/components/AdminSidebar'
+import { CommandPalette } from '@/admin/components/CommandPalette'
 
 // The editor pulls in Tiptap and its extensions, which is most of the bundle. Splitting it
 // out means the dashboard, the settings and every table load without paying for an editor
@@ -159,6 +160,9 @@ function Shell() {
       <ToastProvider>
         <div className="admin-shell min-h-screen bg-neutral-100 lg:flex dark:bg-neutral-950">
           <AdminSidebar lang={data.language} signOut={signOut} />
+          {/* Outside the canvas and outside the error boundary: it is how you LEAVE a screen
+              that has gone wrong, so it must not be inside the thing that went wrong. */}
+          <CommandPalette />
           <Canvas>
             {/* One page may fail without taking the admin with it. INSIDE the canvas and
                 outside the sidebar, so the rail still works and the owner can leave; keyed by
