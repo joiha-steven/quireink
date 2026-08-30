@@ -10,7 +10,7 @@
   the reader's grid/list header toggle (`GridToggle`); off hides the button AND the no-FOUC script ignores a
   stored `list=grid`, so every listing stays a list (and the infinite-scroll timeline, hidden in grid, always shows).
 - **Sidebar** (`sidebar`): the MAIN (listing) sidebar has two layouts, chosen by `settings.sidebarLayout`
-  (**Settings → Site → Layout & menu**): `single` (default) = one left rail with every block stacked
+  (**Settings → Layout → Layout & menu**): `single` (default) = one left rail with every block stacked
   (full-width column); `two` = **TWO gutter rails on desktop** flanking a narrower reading column
   (listing column = 80% of the post width, via `--shell-w`; the extra compactness pulls both rails in) —
   the two-rail geometry/CSS is emitted ONLY in this mode. **Left rail** = discovery: **most viewed** (auto: top
@@ -33,7 +33,7 @@
   `ChromeOptions.menuInHeader`, `.site-menu` from 60rem up). It briefly rendered on every page, which
   doubled the links on every listing; reverted 2026-08-03. Trade: a desktop ARTICLE has no menu, its
   rail being the ToC. Below 60rem only the drawer has it. Menu + most-viewed count + featured are edited in
-  **Admin → Settings → Site → Layout & menu**; `getViewTotals` (`src/analytics/summary.ts`) reads
+  **Admin → Settings → Layout → Layout & menu**; `getViewTotals` (`src/analytics/summary.ts`) reads
   `analytics.db` directly and returns `{}` on any error, so a broken analytics database costs the
   block, not the page.
 - **Infinite scroll** (`infiniteScroll`, off by default): on every listing (home / category / tag) the

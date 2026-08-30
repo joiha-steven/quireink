@@ -13,26 +13,26 @@ not cover.
 
 | Setting | Where | What moves |
 |---|---|---|
-| Homepage mode | Appearance → Homepage | A list of posts, a single page you wrote, or a composed front page. This is the single largest visual difference between two Quire Ink blogs ([homepage.md](homepage.md)) |
-| Logo | Appearance → Brand | An image mark instead of the site name. In practice this is the first thing a reader tells two blogs apart by; it is resized for you and never served at its original weight |
-| Palette | Appearance → Colour | Six built-in palettes, and every one of the seven colours in each is editable in both light and dark |
-| Reading font | Appearance → Type | Four built-in faces, or upload your own (`.woff2`, up to four weights). Fonts are served from your own server — nothing is fetched from Google |
-| Chrome font | Appearance → Type | The face used by the header, the rail and the small print, separately from the one your words are set in |
-| Type scale | Appearance → Type | Nine roles, each with size, line height and letter spacing |
+| Homepage mode | Layout → Front page | A list of posts, a single page you wrote, or a composed front page. This is the single largest visual difference between two Quire Ink blogs ([homepage.md](homepage.md)) |
+| Logo | Site → Logo and icons | An image mark instead of the site name. In practice this is the first thing a reader tells two blogs apart by; it is resized for you and never served at its original weight |
+| Palette | Appearance → Appearance | Six built-in palettes, and every one of the seven colours in each is editable in both light and dark |
+| Reading font | Appearance → Font | Four built-in faces, or upload your own (`.woff2`, up to four weights). Fonts are served from your own server — nothing is fetched from Google |
+| Chrome font | Appearance → Font | The face used by the header, the rail and the small print, separately from the one your words are set in |
+| Type scale | Appearance → Text sizes | Nine roles, each with size, line height and letter spacing |
 | **Density** | Appearance → Shape | How much air between everything. `normal` is the design as drawn |
 | **Corner radius** | Appearance → Shape | Square, soft, or round. Avatars and pills keep their own shape |
 | **Headline weight** | Appearance → Shape | Light, normal or bold. Moves the post title and the card title together |
 | **Tables** | Appearance → Tables | Seven knobs for how a table is drawn: header row, which lines, line weight, banded rows, first column, cell padding, and what happens on a phone. **The header row is tinted by default** — see below |
 | **Post images** | Layout → Post pictures | Whether a post's own picture appears above the headline, and whether it appears on list rows (small square, or large 3:2). **Both off by default** — see below |
-| Figure frame | Appearance → Images | The frame every in-body picture wears unless it says otherwise |
-| Content width | Appearance → Layout | How wide the reading column runs |
-| Sidebar | Appearance → Layout | One rail or two, and which blocks are in it |
-| **Read without a signal** | Appearance → Reading | A post your reader has already opened still opens with no network. **Off by default.** Nothing is downloaded ahead of time and your admin is never stored. Turning it off again removes it from readers who already have it |
-| **Archive** | Appearance → Reading | `/archive`: every post you have published, grouped by year, and the list of years in the rail. **On by default.** If you already publish a page or a post at `/archive`, yours keeps the URL and this stays off until you move it |
-| **Author** | Settings → Site | Name, bio, portrait and a link. Empty by default; filling in a name adds a byline and puts you in the structured data search engines read |
-| IDE chrome | Appearance → Shape | Dresses the furniture around your words as source code. Off by default; it is a strong taste and it is one click either way |
-| Footer | Appearance → Brand | Your own line, with `{year}` and `{title}` tokens |
-| Feature switches | Appearance → Reading | Table of contents, progress bar, book mode, related posts, reading time, and a dozen more |
+| Figure frame | Layout → Pictures | The frame every in-body picture wears unless it says otherwise |
+| Content width | Layout → Layout & menu | How wide the reading column runs |
+| Sidebar | Layout → Layout & menu | One rail or two, and which blocks are in it |
+| **Read without a signal** | Reading → Reading features | A post your reader has already opened still opens with no network. **Off by default.** Nothing is downloaded ahead of time and your admin is never stored. Turning it off again removes it from readers who already have it |
+| **Archive** | Reading → Reading features | `/archive`: every post you have published, grouped by year, and the list of years in the rail. **On by default.** If you already publish a page or a post at `/archive`, yours keeps the URL and this stays off until you move it |
+| **Author** | Site → Author | Name, bio, portrait and a link. Empty by default; filling in a name adds a byline and puts you in the structured data search engines read |
+| IDE chrome | Appearance → Text rendering | Dresses the furniture around your words as source code. Off by default; it is a strong taste and it is one click either way |
+| Footer | Layout → Footer | Your own line, with `{year}` and `{title}` tokens |
+| Feature switches | Reading → Reading features | Table of contents, progress bar, book mode, related posts, reading time, and a dozen more |
 
 ### About the table settings
 
@@ -101,7 +101,7 @@ a different shape.
 
 ## When the knobs are not enough: your own CSS
 
-**Appearance → Advanced → Custom CSS** is injected into every public page, last, after
+**Appearance → Custom CSS** is injected into every public page, last, after
 everything else — so it wins. It is not filtered: any rule you can write in a stylesheet
 works here. It never touches the admin, so you cannot lock yourself out with it.
 
