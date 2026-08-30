@@ -83,6 +83,19 @@ footer.site a{display:inline-block;padding-block:.35rem}
    The tiles state 47vw below this same width in their own sizes attribute, so what the
    browser fetches matches what it draws. */
 .gallery-cols-3,.gallery-cols-4{grid-template-columns:repeat(2,1fr)}
+
+/* SIX CONTROLS DO NOT FIT A FOLDED PHONE. A folding phone's cover screen is 280px wide,
+   and the bar's arithmetic stops working there: five 2.5rem controls and their gaps are
+   202px, the title's shortest word is 75px, and the 232px between the gutters cannot hold
+   both. Measured 2026-08-31 on the home page: the row ran 18px past the edge, and the
+   clipped control was the menu button. Wrap costs nothing above that width -- a flex row
+   only folds when the arithmetic fails -- so every phone that fits keeps the one-line bar
+   it was measured into. margin-left:auto keeps the folded row against the right edge,
+   where the controls already live; it stays inside this media block because above 60rem
+   the slack already belongs to .site-menu's own auto margin, and a second one would split
+   it. */
+.site-bar{flex-wrap:wrap;row-gap:.25rem}
+.site-actions{margin-left:auto}
 }
 
 /* Copy sat behind pre:hover, and a touch screen never hovers: the button existed on a phone
