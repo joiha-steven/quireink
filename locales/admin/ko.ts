@@ -449,6 +449,18 @@ const ko = {
   autosaveLabel: '이 기기에 저장하는 간격',
   autosaveHint: '입력 중 로컬에 저장하는 간격(초), 15에서 600까지. 저장을 누르기 전에는 서버로 아무것도 보내지 않습니다 — 탭이 죽거나 휴대폰이 새로 고쳐졌을 때 남는 것이 이 사본입니다.',
   overviewTitle: '개요',
+  // The home screen greeting (`Greeting.tsx`). Four parts of the day, and a PATTERN that
+  // joins one to the name — so a language that puts no comma between them does not get one,
+  // and eleven dictionaries hold five rows instead of eight.
+  greetMorning: '좋은 아침입니다',
+  greetAfternoon: '안녕하세요',
+  greetEvening: '좋은 저녁입니다',
+  greetNight: '늦은 시간이네요',
+  greetWithName: '{name}님, {greeting}',
+  greetLastPublished: '마지막 발행',
+  greetNothingYet: '아직 발행한 글이 없습니다',
+  greetSetName: '이름과 사진 설정하기',
+  greetToday: '오늘',
   statPosts: '게시물',
   statPages: '페이지',
   statComments: '댓글',

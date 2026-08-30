@@ -449,6 +449,18 @@ const ru = {
   autosaveLabel: 'Держать локальную копию каждые',
   autosaveHint: 'Секунды между локальными снимками, пока вы печатаете, от 15 до 600. На сервер ничего не уходит, пока вы не нажмёте «Сохранить» — это та копия, что переживает упавшую вкладку и телефон, перезагрузившийся под пальцем.',
   overviewTitle: 'Обзор',
+  // The home screen greeting (`Greeting.tsx`). Four parts of the day, and a PATTERN that
+  // joins one to the name — so a language that puts no comma between them does not get one,
+  // and eleven dictionaries hold five rows instead of eight.
+  greetMorning: 'Доброе утро',
+  greetAfternoon: 'Добрый день',
+  greetEvening: 'Добрый вечер',
+  greetNight: 'Доброй ночи',
+  greetWithName: '{greeting}, {name}',
+  greetLastPublished: 'Последняя публикация',
+  greetNothingYet: 'Пока ничего не опубликовано',
+  greetSetName: 'Добавьте имя и портрет',
+  greetToday: 'сегодня',
   statPosts: 'Записи',
   statPages: 'Страницы',
   statComments: 'Комментарии',

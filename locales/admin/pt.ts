@@ -450,6 +450,18 @@ const pt = {
   autosaveLabel: 'Guardar uma cópia local a cada',
   autosaveHint: 'Segundos entre cópias locais enquanto você digita, de 15 a 600. Nada vai ao servidor até você apertar Salvar — esta é a cópia que sobrevive a uma aba travada ou a um celular que recarregou embaixo do seu polegar.',
   overviewTitle: 'Visão geral',
+  // The home screen greeting (`Greeting.tsx`). Four parts of the day, and a PATTERN that
+  // joins one to the name — so a language that puts no comma between them does not get one,
+  // and eleven dictionaries hold five rows instead of eight.
+  greetMorning: 'Bom dia',
+  greetAfternoon: 'Boa tarde',
+  greetEvening: 'Boa noite',
+  greetNight: 'Boa noite',
+  greetWithName: '{greeting}, {name}',
+  greetLastPublished: 'Última publicação',
+  greetNothingYet: 'Ainda não publicaste nada',
+  greetSetName: 'Adiciona o teu nome e retrato',
+  greetToday: 'hoje',
   statPosts: 'Posts',
   statPages: 'Páginas',
   statComments: 'Comentários',

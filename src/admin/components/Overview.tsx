@@ -6,10 +6,11 @@ import type { UpdateState } from '@/server/update-check'
 import type { ActivityEntry } from '@/server/activity'
 import { formatBytes, formatDateTimeShort } from '@/utils'
 import { buttonClass } from '@/admin/ui/Button'
-import { Card, PageHeader, SECTION_GAP } from './kit'
+import { Card, SECTION_GAP } from './kit'
 import { StatBand, StatCard } from './stat-band'
 import { DashboardWidgets, type DashboardData } from './DashboardWidgets'
 import { FirstRun } from './FirstRun'
+import { Greeting, type GreetingAuthor } from './Greeting'
 import { PickUpBand } from './PickUpBand'
 import { useAdminT } from './I18nProvider'
 import { REPO } from './help-kit'
@@ -43,6 +44,8 @@ type Props = {
   recent: ActivityEntry[]
   activityEnabled: boolean
   firstRunDone: boolean
+  author: GreetingAuthor
+  lastPublishedAt: string | null
   version: string
   commit: string | null
   update: UpdateState
@@ -126,16 +129,20 @@ export function Overview(props: Props) {
       body: JSON.stringify({ firstRunDone: true }),
     }).catch(() => undefined)
   }
-  const { posts, pages, comments, originals, totalBytes, recent, activityEnabled, version, commit, update, system, dashboard, firstRunDone } = props
+  const { posts, pages, comments, originals, totalBytes, recent, activityEnabled, version, commit, update, system, dashboard, firstRunDone, author, lastPublishedAt } = props
   return (
     <div className={SECTION_GAP}>
-      <PageHeader
-        title={t.overviewTitle}
+      {/* The greeting REPLACES the page title, it does not sit above one. "Overview" was a
+          category name over six blocks of numbers about strangers; the row that says whose
+          desk this is has to be the first row, or it is decoration on someone else's page. */}
+      <Greeting
+        author={author}
+        lastPublishedAt={lastPublishedAt}
         actions={
-          <div className="flex items-center gap-3">
+          <>
             <BuildLabel version={version} commit={commit} update={update} />
             <Link href="/admin/editor" className={buttonClass()}>{t.newPost}</Link>
-          </div>
+          </>
         }
       />
 
