@@ -1,7 +1,8 @@
 // Shared on/off switch primitives for the settings forms.
 
 import type { ReactNode } from 'react'
-import { CHECK, Setting } from '@/admin/components/kit'
+import { Setting } from '@/admin/components/kit'
+import { Tick } from './Tick'
 
 type SwitchProps = { checked: boolean; onChange: (v: boolean) => void }
 
@@ -76,6 +77,10 @@ export function ToggleField({ label, checked, onChange }: SwitchProps & { label:
  * would not fit: the palette cards' "show to readers", and the SMTP TLS row. Those were
  * raw `<input type="checkbox">` with browser-default chrome, which is why they looked like
  * a different application from the switches above them.
+ *
+ * The box is `ui/Tick` and no longer a styled native widget: `accent-` colours a fill and
+ * nothing else, so these two kept the platform's own border and shape while the switch above
+ * them was drawn. One drawn box, one look, and the label handling stays here.
  */
 export function CheckField({
   label,
@@ -85,16 +90,7 @@ export function CheckField({
 }: SwitchProps & { label: string; disabled?: boolean }) {
   return (
     <label className={`flex items-center gap-2 text-xs ${disabled ? 'cursor-default text-neutral-400 dark:text-neutral-600' : 'cursor-pointer text-neutral-600 dark:text-neutral-300'}`}>
-      <input
-        type="checkbox"
-        checked={checked}
-        disabled={disabled}
-        onChange={(e) => onChange(e.target.checked)}
-        // 4px, NOT the 6px control step, and this is the one place that exception is right:
-        // 6px on a 16px box is a 38% corner, which reads as a blob rather than as a checkbox.
-        // The hierarchy is about sheets, panels and controls the size of a button.
-        className={`h-4 w-4 shrink-0 rounded border-neutral-300 dark:border-neutral-600 ${CHECK}`}
-      />
+      <Tick checked={checked} disabled={disabled} onChange={(e) => onChange(e.target.checked)} />
       {label}
     </label>
   )

@@ -73,6 +73,17 @@ const RULES: Rule[] = [
     instead: 'import CHECK from components/kit, or use ui/Switch’s CheckField',
   },
   {
+    // `CHECK` above is what a NATIVE box is painted with; this is the drawn one that replaced
+    // it where a native box reads as a form pasted into a page of writing. `appearance-none`
+    // on a checkbox is the whole trick, and it is the fragment a screen would copy: the
+    // border, the fill, the focus ring and the overlaid stroke all have to arrive with it or
+    // the box comes out invisible.
+    what: 'the drawn checkbox',
+    signature: 'cursor-pointer appearance-none rounded border border-neutral-300',
+    home: 'src/admin/ui/Tick.tsx',
+    instead: 'use <Tick> from ui/Tick',
+  },
+  {
     // Thirty-eight screens hand-typed this rather than import it, plus three that went as far
     // as declaring `const HINT` with the same string — and twenty-five of the copies carried
     // `text-neutral-400 dark:text-neutral-500`, lighter than the primitive in light mode and
