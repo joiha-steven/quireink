@@ -28,7 +28,10 @@ const COL_GAP = 56 // px between the two facing pages
 // 390px phone, halving the footprint and taking the gutter out of the middle left two
 // columns of 119px, which is about ten characters — photographed with one word per line
 // and a heading broken across three. A phone gets one page and the same sideways turn.
-const MIN_COLUMN = 300
+// 280 rather than 300 since 2026-08-31, for the unfolded foldable: its two pages come out
+// at 288px — about 33 characters at the book's type size, a paperback page, and well clear
+// of the 119px failure this floor exists to stop.
+const MIN_COLUMN = 280
 const FADE_MS = 130 // the spread-to-spread crossfade; 200 (the frozen tree's) read as sluggish
 
 // The reader's type size, as a multiplier over the owner's roles. The DEFAULT lives in the
@@ -109,12 +112,31 @@ export function book(): void {
       // Falling back to near-full width when no rail is on screen.
       const margin = innerWidth < 640 ? PHONE_MARGIN : OUTER_MARGIN
       const rail = document.querySelector('.rail')?.getBoundingClientRect()
-      const footprint = rail && rail.width > 0 && rail.left >= margin
+      let footprint = rail && rail.width > 0 && rail.left >= margin
         ? innerWidth - Math.round(rail.left) * 2
         : innerWidth - margin * 2
+      // AN UNFOLDED FOLDABLE IS 673px AND SHAPED LIKE A BOOK, and the desktop margins were
+      // what kept it from getting one: 48px a side left 577px, 39px short of two pages, so
+      // it fell back to a single 577px column — an ~80-character measure with the fold's
+      // crease running through every line of it. When the glass holds two pages inside the
+      // phone margins, the margins yield rather than the second page: 673 now gives two
+      // 288px pages with the crease inside the gutter. Above 752px the full margins fit
+      // beside a spread anyway, so nothing wider moves.
+      const spreadMin = MIN_COLUMN * 2 + COL_GAP
+      if (footprint < spreadMin && innerWidth - PHONE_MARGIN * 2 >= spreadMin) {
+        footprint = innerWidth - PHONE_MARGIN * 2
+      }
       const width = Math.min(MAX_WIDTH, footprint)
-      const pages = width >= MIN_COLUMN * 2 + COL_GAP ? 2 : 1
+      const pages = width >= spreadMin ? 2 : 1
       const column = pages === 2 ? Math.floor((width - COL_GAP) / 2) : width
+      // NO Viewport Segments branch, and that is a measurement, not an oversight: on
+      // continuous-glass folds the API reports the panes meeting at 0px, so a per-pane
+      // page (pane − 20 margin − 28 half-gutter) and the yielded-margin page above
+      // ((width − 40 − 56) / 2) are the SAME arithmetic — vw/2 − 48 — pixel for pixel.
+      // The branch only ever differs on a dual-screen device with a physical seam, and it
+      // cost 378 bytes of a post.js budget with 123 to spare. If hinged hardware returns,
+      // the gutter needs to become a CSS variable sized to at least the hinge; until then
+      // the spread is centred and the fold falls in the gutter by symmetry.
       flow.style.setProperty('--book-col-w', `${column}px`)
       viewport.style.width = `${column * pages + COL_GAP * (pages - 1)}px`
       // Read by the stylesheet, which draws the spine down the CENTRE of the viewport: with

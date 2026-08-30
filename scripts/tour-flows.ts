@@ -367,6 +367,27 @@ export function registerFlows({ flow, expect, atWidth }: Tour): void {
       return 'ok (' + n + ' pages)'
     })()`, 400))
 
+  // An unfolded foldable: 673px of glass with the fold's crease down the exact middle. One
+  // page here is a 577px column with the crease through every line; two 288px pages put the
+  // crease inside the gutter, which is the whole reason a book mode belongs on this device.
+  flow('an unfolded foldable gets two pages with the crease in the gutter', () => atWidth(673,
+    '/the-reed-pen-in-van-goghs-letters', `
+    (async () => {
+      document.querySelector('[data-book-open]').click()
+      await new Promise((r) => setTimeout(r, 400))
+      const d = document.querySelector('.book-overlay[open]')
+      if (!d) return 'the overlay did not open'
+      if (d.querySelector('.book-viewport').dataset.pages !== '2')
+        return 'an unfolded foldable got ' + d.querySelector('.book-viewport').dataset.pages + ' page(s)'
+      const vp = d.querySelector('.book-viewport').getBoundingClientRect()
+      // The spine must straddle the fold: the spread's centre within a gutter's half-width
+      // of the glass's centre, or the crease is running through one of the pages.
+      if (Math.abs((vp.left + vp.right) / 2 - innerWidth / 2) > 28)
+        return 'the spine sits ' + Math.round((vp.left + vp.right) / 2 - innerWidth / 2) + 'px off the fold'
+      d.querySelector('.book-x').click()
+      return 'ok'
+    })()`, 400))
+
   registerAdminFlows({ flow, expect, atWidth })
   registerStatsFlows({ flow, expect, atWidth })
 }
