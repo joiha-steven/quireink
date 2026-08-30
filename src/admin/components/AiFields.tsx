@@ -122,7 +122,7 @@ export function AiFields({ configured, provider, model, ai, onChangeAi }: {
     <div className={SETTING_GAP}>
       <p className={NOTE_TEXT}>{t.aiHelp}</p>
 
-      <Setting label={t.aiProviderLabel}>
+      <Setting label={t.aiProviderLabel} inline>
         <Select
           className={FIELD_W.medium}
           value={pick}
@@ -155,8 +155,7 @@ export function AiFields({ configured, provider, model, ai, onChangeAi }: {
 
           <Setting
             label={t.aiModelLabel}
-            note={listing === 'loading' ? t.aiModelsLoading : listing === 'failed' ? t.aiModelsFailed : undefined}
-          >
+            note={listing === 'loading' ? t.aiModelsLoading : listing === 'failed' ? t.aiModelsFailed : undefined} inline>
             {modelControl}
           </Setting>
         </>

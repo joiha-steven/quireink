@@ -65,7 +65,7 @@ export function AdvancedFields({
           the row's own padding for the same reason the autosave field below does — every
           other child of this list is a ToggleRow, which carries `p-4` inside its Setting. */}
       <div className="p-4">
-        <Setting label={t.keyFeedbackLabel} note={t.keyFeedbackDesc}>
+        <Setting label={t.keyFeedbackLabel} note={t.keyFeedbackDesc} inline>
           <Select
             className={FIELD_W.medium}
             value={motion.keys}
@@ -89,7 +89,7 @@ export function AdvancedFields({
           last month has no way left to learn there was ever a volume. Disabled says the
           same thing and leaves the door marked. */}
       <div className="p-4">
-        <Setting label={t.keyVolumeLabel} note={t.keyVolumeDesc}>
+        <Setting label={t.keyVolumeLabel} note={t.keyVolumeDesc} inline>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
             <Range
               min={0}

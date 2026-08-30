@@ -149,7 +149,7 @@ export function McpFields(
         {/* Label, note, then the controls under them — the same order as every other
             setting. Side by side these two buttons had nowhere to go but into their own
             labels: the note beside them is three lines of prose on a narrow card. */}
-        <Setting label={t.mcpTokensTitle} note={t.mcpTokensHint}>
+        <Setting label={t.mcpTokensTitle} note={t.mcpTokensHint} inline>
           <div className="flex flex-wrap items-center gap-2">
             <Button type="button" onClick={generate} disabled={pending || tokens.filter((tk) => !tk.oauth).length >= MAX}>
               {t.mcpGenerate}
