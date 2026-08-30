@@ -326,8 +326,8 @@ failed:
   decides it for `type="number"`**, from the same test that gave a number `FIELD_W.short`: a
   field as wide as its answer needs no row of its own. `inline={false}` opts out.
 - **`SETTING_GAP`** is the space between two settings in a card. One number.
-- **One control style per kind.** `CheckField` replaced the two raw `<input type="checkbox">`
-  that looked like a different application from the switches above them.
+- **One control style per kind.** `ui/Tick` is the box — a real `input[type=checkbox]` under
+  `appearance-none`, drawn, since `accent-` colours a fill and leaves the platform's border.
 
 ## Layout
 
