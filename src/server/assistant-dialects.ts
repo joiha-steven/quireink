@@ -18,15 +18,32 @@ export type Turn =
   // `reasoning` is what the model thought on its way to these calls. Only some providers
   // hand it out, and DeepSeek REFUSES the next round without it back (`echoesReasoning`),
   // so it rides on the turn rather than being dropped at the door.
-  | { kind: 'tool_use'; id: string; name: string; args: Record<string, unknown>; reasoning?: string }
+  // `at` is when the call was DISPATCHED, stamped by the server so a conversation reopened
+  // from the database still knows when its work happened. `reasoning` is what the model
+  // thought on the way there: some providers hand it out and DeepSeek refuses the next
+  // round without it back (`echoesReasoning`), so it rides on the turn rather than being
+  // dropped at the door.
+  | { kind: 'tool_use'; id: string; name: string; args: Record<string, unknown>; reasoning?: string; at?: number }
   | { kind: 'tool_result'; id: string; name: string; text: string }
 
 export type ToolSpec = { name: string; description: string; parameters: Record<string, unknown> }
 export type ChatRequest = { url: string; headers: Record<string, string>; body: string }
+/**
+ * What one round cost, in the provider's own count.
+ *
+ * `input` is the WHOLE conversation as the provider saw it, not just the new question, so
+ * the last round's input is the context length: the number that grows every turn and the
+ * one the owner needs to see before deciding to start again.
+ */
+export type Usage = { input: number; output: number }
+
+export const noUsage = (): Usage => ({ input: 0, output: 0 })
+
 export type ChatAnswer = {
   text: string
   reasoning: string
   calls: { id: string; name: string; args: Record<string, unknown> }[]
+  usage: Usage
 }
 
 const cap = (s: string, n = 20_000): string => (s.length > n ? s.slice(0, n) + '\n…[truncated]' : s)
@@ -206,7 +223,9 @@ export function buildChat(
       headers: { 'content-type': 'application/json', authorization: `Bearer ${key}` },
       body: JSON.stringify({
         model, max_tokens: ANSWER_TOKENS,
-        ...(opts.stream ? { stream: true } : {}),
+        // `include_usage` is opt-in and silently absent without it, so a streamed answer
+        // would report a cost of zero while a whole-answer one reported the truth.
+        ...(opts.stream ? { stream: true, stream_options: { include_usage: true } } : {}),
         messages: openaiMessages(system, turns, echoesReasoning(provider)),
         tools: tools.map((t) => ({ type: 'function', function: { name: t.name, description: t.description, parameters: t.parameters } })),
       }),
@@ -230,15 +249,20 @@ export function buildChat(
   return null
 }
 
+/** A count, or zero. Providers omit the field on some answers rather than sending 0. */
+export const num = (v: unknown): number => (typeof v === 'number' && Number.isFinite(v) ? v : 0)
+
 export function parseChat(provider: string, json: unknown): ChatAnswer {
   const j = json as Record<string, any>
-  const out: ChatAnswer = { text: '', reasoning: '', calls: [] }
+  const out: ChatAnswer = { text: '', reasoning: '', calls: [], usage: noUsage() }
   if (provider === 'anthropic') {
+    out.usage = { input: num(j?.usage?.input_tokens), output: num(j?.usage?.output_tokens) }
     for (const b of j?.content ?? []) {
       if (b.type === 'text') out.text += b.text
       else if (b.type === 'tool_use') out.calls.push({ id: String(b.id), name: String(b.name), args: b.input ?? {} })
     }
   } else if (OPENAI_COMPATIBLE[provider]) {
+    out.usage = { input: num(j?.usage?.prompt_tokens), output: num(j?.usage?.completion_tokens) }
     const m = j?.choices?.[0]?.message
     out.text = typeof m?.content === 'string' ? m.content : ''
     if (typeof m?.reasoning_content === 'string') out.reasoning = m.reasoning_content
@@ -248,6 +272,7 @@ export function parseChat(provider: string, json: unknown): ChatAnswer {
       out.calls.push({ id: String(c.id), name: String(c?.function?.name ?? ''), args })
     }
   } else if (provider === 'gemini') {
+    out.usage = { input: num(j?.usageMetadata?.promptTokenCount), output: num(j?.usageMetadata?.candidatesTokenCount) }
     let n = 0
     for (const p of j?.candidates?.[0]?.content?.parts ?? []) {
       if (typeof p?.text === 'string') out.text += p.text

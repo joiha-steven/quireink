@@ -180,3 +180,18 @@ insert into integration_keys_new
     from integration_keys;
 drop table integration_keys;
 alter table integration_keys_new rename to integration_keys;
+
+-- migration: 011-assistant-chats
+-- ADR 0040: the assistant's conversations stop living in a browser tab. Same shape as the
+-- table `schema.sql` now creates for a fresh database; an existing one gets it here.
+create table if not exists assistant_chats (
+  id             integer primary key autoincrement,
+  title          text not null default '',
+  turns          text not null default '[]',
+  input_tokens   integer not null default 0,
+  output_tokens  integer not null default 0,
+  context_tokens integer not null default 0,
+  created_at     integer not null,
+  updated_at     integer not null
+);
+create index if not exists assistant_chats_updated_idx on assistant_chats (updated_at desc);

@@ -28,10 +28,9 @@ import { openPalette } from './CommandPalette'
 import { chordFor, printChord, tip } from './editorKeys'
 import { ThemeToggle } from '@/admin/ui/ThemeToggle'
 import {
-  IconHome, IconAnalytics, IconContent, IconComment, IconMedia, IconNewsletter, IconTrash, IconSettings,
-  IconLog, IconExternal, IconCache, IconSignOut, IconChevronLeft, IconHelp, IconGlyphs, IconMore, IconAssistant,
-  IconSearch,
+  IconExternal, IconCache, IconSignOut, IconChevronLeft, IconGlyphs, IconMore, IconSearch,
 } from './navIcons'
+import { primaryNav, secondaryNav } from './navDestinations'
 
 const STORE_KEY = 'quireink-admin-nav-collapsed'
 /**
@@ -76,9 +75,12 @@ const MORE_KEY = 'quireink-admin-nav-more'
 export function AdminSidebar({
   lang,
   signOut,
+  aiConfigured = false,
 }: {
   lang: SiteLang
   signOut: () => Promise<void>
+  /** A model is plugged in, so the assistant is somewhere the owner goes. */
+  aiConfigured?: boolean
 }) {
   const t = useAdminT()
   const pathname = usePathname()
@@ -131,38 +133,8 @@ export function AdminSidebar({
     })
   }
 
-  /**
-   * Four destinations, and everything else one click further (ADR 0024 step 6).
-   *
-   * The rail held eleven rows, which is eleven decisions before the one that matters. These
-   * four are what the owner is here to do: see how it went, write, put a picture in, send it
-   * out. **Analytics is not among them and that is the point** — the numbers moved onto the
-   * home screen, so the rail no longer offers a second door to them; the full screen is still
-   * one click from the cards that show them.
-   */
-  const primary = [
-    { href: '/admin', label: t.navHome, icon: <IconHome /> },
-    { href: '/admin/content', label: t.navWrite, icon: <IconContent /> },
-    { href: '/admin/media', label: t.navMedia, icon: <IconMedia /> },
-    { href: '/admin/newsletter', label: t.navNewsletter, icon: <IconNewsletter /> },
-  ]
-
-  // Everything that is not writing is secondary. Not removed — moved.
-  //
-  // The assistant is FIRST here and not in the four above, which is where it was put on
-  // 2026-08-23 and where the tour caught it on 2026-08-24: `the rail is four` failed with
-  // "the rail offers 5 destinations at rest". The rule is not a formality — the rail held
-  // eleven rows once, and every addition since has had an argument as good as this one.
-  // Promoting it is the owner's call to make, not a side effect of building it.
-  const secondary = [
-    { href: '/admin/assistant', label: t.navAssistant, icon: <IconAssistant /> },
-    { href: '/admin/analytics', label: t.navAnalytics, icon: <IconAnalytics /> },
-    { href: '/admin/comments', label: t.commentsNavTitle, icon: <IconComment /> },
-    { href: '/admin/trash', label: t.navTrash, icon: <IconTrash /> },
-    { href: '/admin/settings', label: t.navSettings, icon: <IconSettings /> },
-    { href: '/admin/log', label: t.navLog, icon: <IconLog /> },
-    { href: '/admin/help', label: t.navHelp, icon: <IconHelp /> },
-  ]
+  const primary = primaryNav(t, aiConfigured)
+  const secondary = secondaryNav(t, aiConfigured)
 
   const isActive = (href: string): boolean =>
     href === '/admin' ? pathname === '/admin' : pathname === href || pathname.startsWith(`${href}/`)

@@ -15,26 +15,16 @@
 // Not a bubble chat either — rounded fills on alternating sides is the costume
 // `docs/admin-design.md` rejects on sight. This admin is paper, hairlines and space, so an
 // exchange is a block on the page with a rule between one and the next.
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from '@/admin/router'
 import type { ApiResponse } from '@/types'
 import { CONTROL, EmptyState, META, PageHeader } from './kit'
 import { SHEET_FIXED, SHEET_TOOL, SheetTop } from './sheet'
 import { Button } from '@/admin/ui/Button'
 import { useAdminT } from './I18nProvider'
-import { RichText } from './rich-text'
-
-type Turn =
-  | { kind: 'user'; text: string }
-  | { kind: 'assistant'; text: string }
-  | { kind: 'tool_use'; id: string; name: string; args: Record<string, unknown>; reasoning?: string }
-  | { kind: 'tool_result'; id: string; name: string; text: string }
-
-/** One question and everything that came back for it. */
-type Block = { question: string; parts: Turn[] }
-
-const ANSWER =
-  'mt-2 border-l-2 border-neutral-200 pl-3 text-sm leading-relaxed whitespace-pre-wrap text-neutral-700 dark:border-neutral-700 dark:text-neutral-300'
+import { ChatPane, tokens, type ChatSummary } from './ChatPane'
+import { Exchange, type Block, type Pending, type Turn } from './Exchange'
+import { ToolLog, useToolLog } from './ToolLog'
 
 const CHIP =
   'inline-flex items-center rounded-full border border-neutral-200 px-2.5 py-0.5 text-[11px] text-neutral-500 dark:border-neutral-700 dark:text-neutral-400'
@@ -78,6 +68,56 @@ export function AssistantView({ title, configured, model }: {
   // What has arrived so far for the question in flight. Cleared the moment the server's
   // own turns land, so the finished answer is never drawn twice.
   const [live, setLive] = useState('')
+  // The conversations (ADR 0040). A chat is opened by id rather than routed to: a route
+  // change would swap the page component and take the column with it, which is the mistake
+  // `WritePane` was hoisted out of the routed tree to fix.
+  const [chats, setChats] = useState<ChatSummary[]>([])
+  const [chatId, setChatId] = useState<number | null>(null)
+  // What THIS exchange cost, keyed by the block it belongs to. A transcript reopened from
+  // the database shows no number rather than one invented for it.
+  const [cost, setCost] = useState<Record<number, { input: number; output: number }>>({})
+  const [context, setContext] = useState(0)
+  // A call the server stopped in front of. It is shown where the answer would be, and
+  // nothing moves until the owner says which way.
+  const [awaiting, setAwaiting] = useState<Pending[]>([])
+  const log = useToolLog()
+
+  const refreshChats = () =>
+    void fetch('/api/assistant/chats')
+      .then((r) => r.json())
+      .then((j: ApiResponse<ChatSummary[]>) => { if (j.success && j.data) setChats(j.data) })
+      .catch(() => { /* the column simply stays as it was */ })
+
+  useEffect(refreshChats, [])
+
+  async function openChat(id: number) {
+    const res = await fetch(`/api/assistant/chats/${id}`)
+    const json = (await res.json()) as ApiResponse<{ turns: Turn[]; context: number }>
+    if (!json.success || !json.data) return
+    setChatId(id); setTurns(json.data.turns); setContext(json.data.context); setCost({}); setError('')
+  }
+
+  /** A row to write into, returned rather than only set: the first question needs the id
+   *  in the same tick and state does not arrive that fast. */
+  async function startChat(): Promise<number | null> {
+    const res = await fetch('/api/assistant/chats', { method: 'POST' })
+    const json = (await res.json()) as ApiResponse<{ id: number }>
+    const id = json.success && json.data ? json.data.id : null
+    setChatId(id)
+    return id
+  }
+
+  async function newChat() {
+    setTurns([]); setCost({}); setContext(0); setError(''); setDraft('')
+    await startChat()
+    refreshChats()
+  }
+
+  async function removeChat(id: number) {
+    await fetch(`/api/assistant/chats/${id}`, { method: 'DELETE' })
+    if (id === chatId) { setChatId(null); setTurns([]); setCost({}); setContext(0) }
+    refreshChats()
+  }
   const endRef = useRef<HTMLDivElement>(null)
   const boxRef = useRef<HTMLTextAreaElement>(null)
 
@@ -89,6 +129,17 @@ export function AssistantView({ title, configured, model }: {
 
   // Takes the text rather than reading `draft`, so an example chip can send without
   // waiting a render for the state it just set.
+  /**
+   * Continue a paused conversation.
+   *
+   * The turns are already what they were: the answer is two lists of ids, so nothing the
+   * screen sends can name an action the model did not ask for.
+   */
+  async function answer(verdict: { approve?: string[]; decline?: string[] }) {
+    setAwaiting([])
+    await exchange(turns, verdict)
+  }
+
   async function send(text: string) {
     const asked = text.trim()
     if (!asked || busy || !configured) return
@@ -99,13 +150,36 @@ export function AssistantView({ title, configured, model }: {
     // Send a WINDOW, keep the whole transcript: the server caps what it will read, and
     // an old tool result adds cost without adding memory worth paying for.
     const next: Turn[] = [...turns, { kind: 'user', text: asked }]
+    // Which exchange this answer belongs to, counted before the request so the cost lands
+    // on the right block when two questions are asked in quick succession.
+    const blockIndex = next.filter((x) => x.kind === 'user').length - 1
     setTurns(next)
+    // A question asked on an empty screen opens a conversation for itself. Without this the
+    // first exchange of every session was answered, paid for, and stored nowhere.
+    const target = chatId ?? await startChat()
+    await exchange(next, {}, blockIndex, target)
+  }
+
+  /**
+   * One request to the model, streamed.
+   *
+   * Shared by a new question and by the answer to a pause, because both are the same
+   * thing on the wire: a conversation, plus at most two lists of ids saying what the
+   * owner decided about the calls it stopped in front of.
+   */
+  async function exchange(
+    next: Turn[],
+    verdict: { approve?: string[]; decline?: string[] },
+    blockIndex = Math.max(0, next.filter((x) => x.kind === 'user').length - 1),
+    target = chatId,
+  ) {
+    setBusy(true)
     setLive('')
     try {
       const res = await fetch('/api/assistant', {
         method: 'POST',
         headers: { 'content-type': 'application/json', accept: 'text/event-stream' },
-        body: JSON.stringify({ turns: next.slice(-30) }),
+        body: JSON.stringify({ turns: next.slice(-30), chatId: target, ...verdict }),
       })
       // A stream answers 200 before anything can go wrong, so a refusal arrives as an
       // event. A server that did not stream at all (an old build behind a proxy that
@@ -127,6 +201,11 @@ export function AssistantView({ title, configured, model }: {
           // The SERVER'S turns, not the text assembled here: the deltas are for the eye,
           // and a dropped one must not become the transcript the next question is built on.
           setTurns([...next, ...((event.turns ?? []) as Turn[])])
+          setAwaiting((event.awaiting ?? []) as Pending[])
+          const spent = event.usage as { input: number; output: number } | undefined
+          if (spent) setCost((c) => ({ ...c, [blockIndex]: spent }))
+          if (typeof event.context === 'number') setContext(event.context)
+          refreshChats()
         }
       }
     } catch (e) {
@@ -152,24 +231,62 @@ export function AssistantView({ title, configured, model }: {
   return (
     <div>
       <PageHeader title={title} />
-      <div className={SHEET_FIXED}>
+      {/* The two columns the writing screen established. The pane is drawn by this
+          component rather than the shell because opening a chat changes STATE and not the
+          route, so nothing here is ever unmounted underneath it. */}
+      <div className="flex items-start gap-6">
+        <ChatPane
+          chats={chats}
+          activeId={chatId}
+          onOpen={(id) => void openChat(id)}
+          onNew={() => void newChat()}
+          onDelete={(id) => void removeChat(id)}
+          busy={busy}
+        />
+      <div className={`${SHEET_FIXED} min-w-0 flex-1`}>
         <SheetTop>
           {/* WHICH model — the one fact the page cannot be honest without. Not connected is
               not a silent state: it is a link to the screen that fixes it. */}
           {configured
             ? <span className={META}>{t.assistantModelOn} <span className="text-neutral-700 dark:text-neutral-300">{model || t.aiProviderOff}</span></span>
             : <Link href={AI_SETTINGS} className={SHEET_TOOL}>{t.aiNotConfigured}</Link>}
+          {/* HOW BIG THIS CONVERSATION HAS BECOME, which is the number that decides when
+              to start another one. Not a total of what was spent: every question re-sends
+              the whole conversation, so THIS is what the next one pays again. Amber past
+              60k, where one more question stops being loose change. */}
+          {context > 0 && (
+            <span className={`${META} tabular-nums ${context > 60_000 ? 'text-amber-700 dark:text-amber-500' : ''}`}>
+              {t.assistantContext} {tokens(context)}
+            </span>
+          )}
+          {/* Only where the column can appear: a control that toggles something invisible
+              at this width is a control that does nothing. */}
           <button
             type="button"
-            className={`${SHEET_TOOL} ml-auto`}
-            onClick={() => { setTurns([]); setError(''); setDraft('') }}
+            className={`${SHEET_TOOL} ml-auto hidden min-[1600px]:inline-flex`}
+            onClick={log.toggle}
+            aria-pressed={log.open}
+          >
+            {t.assistantDidThis}
+          </button>
+          <button
+            type="button"
+            className={`${SHEET_TOOL} ml-auto min-[1600px]:ml-0`}
+            onClick={() => void newChat()}
             disabled={busy || turns.length === 0}
           >
             {t.assistantNew}
           </button>
         </SheetTop>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-6">
+        {/* The sheet splits below its top row: the chat keeps the width it had, and the
+            raw record of what was done stands beside it. */}
+        <div className="flex min-h-0 flex-1">
+        {/* A wider gutter than the sheet's usual 20px. The transcript is capped at
+            `max-w-3xl` and centres itself when there is room, but the three-column layout
+            often leaves less than that, and then the cap does nothing and the padding is
+            the only thing between a paragraph and the edge of the paper. */}
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-6 sm:px-10">
           {blocks.length === 0 ? (
             // Centred in the sheet rather than pinned to its top corner: with the composer
             // fixed to the bottom edge, an empty state at the top leaves the screen looking
@@ -202,49 +319,26 @@ export function AssistantView({ title, configured, model }: {
             </div>
           ) : (
             <ol className="mx-auto max-w-3xl space-y-7">
-              {blocks.map((b, i) => {
-                const said = b.parts.filter((p) => p.kind === 'assistant')
-                const used = b.parts.filter((p) => p.kind === 'tool_use')
-                return (
-                  <li key={i} className="border-t border-neutral-100 pt-7 first:border-0 first:pt-0 dark:border-neutral-800">
-                    {/* WHO SAID IT, said plainly. Weight and ink alone separated these two
-                        and it was not enough to read: a long question and a short answer
-                        looked like one paragraph in two shades. The answer also carries a
-                        rule down its left, so the eye finds where the reply starts without
-                        reading a word. */}
-                    <p className={`${META} mb-1`}>{t.assistantYou}</p>
-                    <p className="text-sm leading-relaxed font-medium whitespace-pre-wrap text-neutral-900 dark:text-neutral-100">
-                      {b.question}
-                    </p>
-                    {said.length > 0 && <p className={`${META} mt-5 mb-1`}>{model || t.assistantModelOn}</p>}
-                    {said.map((p, j) => (
-                      <div key={j} className={ANSWER}>
-                        <RichText text={p.kind === 'assistant' ? p.text : ''} />
-                      </div>
-                    ))}
-                    {/* The answer still arriving, drawn by the same renderer: a mark that
-                        has not closed yet stays literal, so nothing flickers as it lands. */}
-                    {i === blocks.length - 1 && live !== '' && (
-                      <div className={ANSWER}>
-                        <RichText text={live} />
-                        <span className="ml-0.5 inline-block h-4 w-1.5 animate-pulse bg-neutral-400 align-text-bottom dark:bg-neutral-500" />
-                      </div>
-                    )}
-                    {/* What it touched, in one quiet row under the answer — tool RESULTS ride
-                        in the transcript and stay off the screen. */}
-                    {used.length > 0 && (
-                      <div className="mt-3 flex flex-wrap gap-1.5">
-                        {used.map((p, j) => <span key={j} className={CHIP}>{p.kind === 'tool_use' ? p.name : ''}</span>)}
-                      </div>
-                    )}
-                  </li>
-                )
-              })}
+              {blocks.map((b, i) => (
+                <Exchange
+                  key={i}
+                  block={b}
+                  last={i === blocks.length - 1}
+                  live={live}
+                  busy={busy}
+                  cost={cost[i]}
+                  awaiting={awaiting}
+                  onAnswer={(v) => void answer(v)}
+                />
+              ))}
             </ol>
           )}
-          {busy && <p className={`mx-auto mt-6 max-w-3xl animate-pulse ${META}`}>{t.assistantBusy}</p>}
+          {/* The waiting line lives inside the exchange it belongs to, where the eye
+              already is. One here said the same thing a second time, three inches down. */}
           {error && <p className="mx-auto mt-6 max-w-3xl text-sm text-neutral-900 dark:text-neutral-100">{error}</p>}
           <div ref={endRef} />
+        </div>
+        <ToolLog turns={turns} open={log.open} />
         </div>
 
         <div className="border-t border-neutral-100 p-4 dark:border-neutral-800">
@@ -266,6 +360,7 @@ export function AssistantView({ title, configured, model }: {
             </Button>
           </div>
         </div>
+      </div>
       </div>
     </div>
   )

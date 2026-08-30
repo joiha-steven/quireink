@@ -166,36 +166,32 @@ export function AiFields({ configured, provider, model, seesImages, ai, onChange
         {t.commentsKeySave}
       </Button>
 
-      {/* The jobs. Saved with the page's Save button, and drawn as switches because the
-          card beside this one draws its booleans as switches — two idioms for one kind of
-          thing inside a single tab is the drift `docs/admin-design.md` calls "one of each".
-          Disabled while no model is configured: the note says why, so a dead row is not a
-          puzzle. */}
+      {/* THE KEY IS THE SWITCH, for everything the model does with the owner's OWN
+          material. Alt text and excerpts used to be two more decisions on this card, and
+          they were decisions about nothing: an owner who has just pasted a key and paid
+          for a model wants it describing their pictures and drafting their excerpts.
+          Both now follow the key, and alt text additionally follows the model — a
+          text-only one cannot do it, and the line below says so instead of offering a
+          switch that would never fire.
+
+          THE COMMENT GUARD KEEPS ITS SWITCH, and it is the one difference that matters.
+          The other two jobs read only what the owner wrote. This one sends a READER'S
+          words to a third party, which is a decision about somebody else's data, and the
+          person who has to declare it in a privacy policy is the person who should be
+          asked. Defaulting it on would start that traffic with nobody agreeing to it. */}
       <div className="border-t border-neutral-100 pt-5 dark:border-neutral-800">
         <Setting label={t.aiTasksLabel} note={configured ? undefined : t.aiTasksNeedModel}>
-          <div className={PANEL_LIST}>
-            {([
-              // Alt text is the only job that shows the model a picture, so it is the only
-              // one a text-only MODEL cannot do — and the same provider may sell both kinds.
-              // Greyed with the reason on the row: leaving it switchable would let the owner
-              // turn on a job that never runs.
-              ['altText', t.aiTaskAltText, seesImages ? undefined : t.aiCannotSeeImages],
-              ['excerpt', t.aiTaskExcerpt, undefined],
-              // The guard sends a READER'S words to a third party, which the other two
-              // jobs never do (they read only the owner's own content). That difference
-              // is a privacy fact the owner must know before flipping the switch, so it
-              // is written on the switch and not only in a doc.
-              ['commentGuard', t.aiTaskComments, t.aiTaskCommentsDesc],
-            ] as const).map(([job, label, desc]) => (
-              <ToggleRow
-                key={job}
-                label={label}
-                desc={desc}
-                checked={configured && (job !== 'altText' || seesImages) ? ai[job] : false}
-                disabled={!configured || (job === 'altText' && !seesImages)}
-                onChange={(v) => onChangeAi({ ...ai, [job]: v })}
-              />
-            ))}
+          <p className={NOTE_TEXT}>
+            {seesImages ? t.aiAutoJobs : `${t.aiAutoJobs} ${t.aiCannotSeeImages}`}
+          </p>
+          <div className={`${PANEL_LIST} mt-3`}>
+            <ToggleRow
+              label={t.aiTaskComments}
+              desc={t.aiTaskCommentsDesc}
+              checked={configured ? ai.commentGuard : false}
+              disabled={!configured}
+              onChange={(v) => onChangeAi({ ...ai, commentGuard: v })}
+            />
           </div>
         </Setting>
       </div>

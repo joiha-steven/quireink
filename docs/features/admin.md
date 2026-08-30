@@ -275,13 +275,34 @@
 - **The loop is small on purpose:** at most 8 tool rounds per message, and **every argument is
   validated against the tool's own zod schema before the handler runs** — a model's JSON is a
   guess, not a contract. Results are truncated before they ride back.
-- **No server-side conversation.** The history lives in the open admin tab and is posted back
-  each turn (`POST /api/assistant`, owner-gated, capped at 60 turns). Close the tab and it is
-  gone. Short memory, no web access, and as clever as the model the owner chose — the in-product
-  help says exactly that rather than implying an agent.
+- **Conversations are kept** ([ADR 0040](../decisions/0040-the-assistant-keeps-its-conversations.md)):
+  `assistant_chats`, listed beside the chat the way the writing screen lists pieces, and carried
+  in the backup. Deleting one is a delete, not a trip to the Trash.
+- **Storage is not memory.** The model still gets a WINDOW of the conversation, capped where it
+  was (`POST /api/assistant`, owner-gated, at most 60 turns). Short memory, no web access, and
+  as clever as the model the owner chose.
+- **The screen says what it costs.** Each answer carries what the exchange spent, and the top
+  row carries the CONTEXT: how big the conversation has become, which is what the next question
+  will be charged for again rather than a running total. Past 60k it turns amber, because that
+  is the point at which starting a fresh conversation is the cheaper answer.
+- **The rail follows the key.** With a model configured the assistant moves out of "Everything
+  else" and sits under Home; with none it stays behind the fold, because a door onto a refusal
+  has no business taking a quarter of the rail.
 - **It is the owner acting.** Tools run on the server under the owner's session and are logged
-  like every other admin action, deletes go to the Trash, and the system prompt tells the model
-  to name a destructive or bulk action and ask once before doing it.
+  like every other admin action, and deletes go to the Trash.
+- **Eleven actions STOP and wait for a click** (`server/assistant-consent.ts`): the five deletes,
+  `compose_homepage`, `update_settings`, `update_appearance`, `send_test_newsletter`,
+  `import_images`, `add_media_from_url`. The loop halts before running any of them and hands the
+  call and its arguments back; the screen shows both and nothing happens until Allow or Don't is
+  pressed. A refusal is written into the conversation as that call's result, so the model learns
+  it and moves on instead of asking again. The line is not "writes" — creating a post is a write
+  and nobody wants to approve one; it is what an owner would want to have seen coming. A gate
+  that asks too often teaches people to press Allow without reading.
+- **The AI card asks about ONE job, not three.** Alt text and excerpts follow the key and were
+  decisions about nothing; both settings still exist by name (`ai.altText`, `ai.excerpt`) for
+  anyone who wants them off. **The comment guard keeps its switch**: it is the one job that sends
+  a READER'S words to a third party, which is somebody else's data and not a thing to start by
+  default.
 
 ## The admin on a phone, and on a phone that folds
 

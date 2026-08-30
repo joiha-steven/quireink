@@ -15,7 +15,7 @@
 // PURE except for the reader at the bottom: the folding is a function of (state, chunk),
 // so every shape below is tested against recorded payloads rather than a live provider.
 
-import type { ChatAnswer } from '@/server/assistant-dialects'
+import { noUsage, num, type ChatAnswer, type Usage } from '@/server/assistant-dialects'
 import { OPENAI_COMPATIBLE } from '@/server/ai-capabilities'
 
 /** Whether this provider's answers can be read as they arrive. */
@@ -25,9 +25,21 @@ export const streams = (provider: string): boolean =>
 /** A tool call arrives in fragments: the name in one chunk, its arguments over several. */
 type Building = { id: string; name: string; args: string }
 
-export type StreamFold = { text: string; reasoning: string; building: Map<number, Building> }
+export type StreamFold = {
+  text: string
+  reasoning: string
+  building: Map<number, Building>
+  /**
+   * The count arrives ONCE, in its own chunk, at a different moment for each provider:
+   * OpenAI puts it in a final chunk with no choices, Anthropic splits it over the first
+   * and last events, Gemini repeats a running total on every chunk. So it is assigned
+   * rather than accumulated, and a later number replaces an earlier one.
+   */
+  usage: Usage
+}
 
-export const emptyFold = (): StreamFold => ({ text: '', reasoning: '', building: new Map() })
+export const emptyFold = (): StreamFold =>
+  ({ text: '', reasoning: '', building: new Map(), usage: noUsage() })
 
 /**
  * One SSE payload folded in. Returns the text that just landed, for the screen.
@@ -37,7 +49,15 @@ export const emptyFold = (): StreamFold => ({ text: '', reasoning: '', building:
  * spend the whole call throwing.
  */
 export function foldChunk(fold: StreamFold, payload: unknown): string {
-  const delta = (payload as { choices?: { delta?: Record<string, unknown> }[] })?.choices?.[0]?.delta
+  const chunk = payload as {
+    choices?: { delta?: Record<string, unknown> }[]
+    usage?: { prompt_tokens?: unknown; completion_tokens?: unknown }
+  }
+  // The usage chunk carries no choices at all, so this has to be read before the guard.
+  if (chunk?.usage) {
+    fold.usage = { input: num(chunk.usage.prompt_tokens), output: num(chunk.usage.completion_tokens) }
+  }
+  const delta = chunk?.choices?.[0]?.delta
   if (!delta) return ''
 
   let arrived = ''
@@ -68,6 +88,7 @@ export function foldToAnswer(fold: StreamFold): ChatAnswer {
   return {
     text: fold.text.trim(),
     reasoning: fold.reasoning,
+    usage: fold.usage,
     calls: [...fold.building.entries()]
       .sort((a, b) => a[0] - b[0])
       .map(([, b]) => {
@@ -97,6 +118,16 @@ export function foldAnthropicChunk(fold: StreamFold, payload: unknown): string {
   }
   const at = typeof p.index === 'number' ? p.index : 0
 
+  // Split across the first and last events: the prompt is counted before a word is
+  // written, the output only once it has stopped.
+  if (p.type === 'message_start') {
+    fold.usage.input = num((p as { message?: { usage?: { input_tokens?: unknown } } }).message?.usage?.input_tokens)
+  }
+  if (p.type === 'message_delta') {
+    const out = (p as { usage?: { output_tokens?: unknown } }).usage?.output_tokens
+    if (out !== undefined) fold.usage.output = num(out)
+  }
+
   if (p.type === 'content_block_start' && p.content_block?.type === 'tool_use') {
     fold.building.set(at, { id: p.content_block.id ?? '', name: p.content_block.name ?? '', args: '' })
     return ''
@@ -125,6 +156,10 @@ export function foldAnthropicChunk(fold: StreamFold, payload: unknown): string {
  * `parseChat` covers for the non-streaming path).
  */
 export function foldGeminiChunk(fold: StreamFold, payload: unknown): string {
+  const meta = (payload as { usageMetadata?: { promptTokenCount?: unknown; candidatesTokenCount?: unknown } })?.usageMetadata
+  // A running total on every chunk, so the last one wins rather than being added.
+  if (meta) fold.usage = { input: num(meta.promptTokenCount), output: num(meta.candidatesTokenCount) }
+
   const parts = (payload as { candidates?: { content?: { parts?: unknown[] } }[] })
     ?.candidates?.[0]?.content?.parts
   if (!Array.isArray(parts)) return ''

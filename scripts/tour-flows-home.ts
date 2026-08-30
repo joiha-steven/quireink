@@ -29,7 +29,10 @@ export function registerHomeFlows({ flow, expect }: Tour): void {
       control.click()
       await new Promise((r) => setTimeout(r, 250))
       const opened = hrefs()
-      const behind = ['/admin/analytics', '/admin/comments', '/admin/trash', '/admin/settings', '/admin/log', '/admin/help']
+      // The assistant is in this list because no key is configured in the tour's instance.
+      // Paste one and it moves UP, which the flow below proves; with none, a door onto a
+      // refusal has no business taking a quarter of the rail.
+      const behind = ['/admin/assistant', '/admin/analytics', '/admin/comments', '/admin/trash', '/admin/settings', '/admin/log', '/admin/help']
         .filter((h) => !opened.includes(h))
       if (behind.length) return 'still unreachable after one click: ' + behind.join(' ')
       return 'ok 4 at rest, ' + opened.length + ' after one click'
@@ -74,7 +77,6 @@ export function registerHomeFlows({ flow, expect }: Tour): void {
       const href = chips[0].getAttribute('href') || ''
       if (!href.startsWith('/admin/editor/') && !href.startsWith('/admin/page-editor/')) {
         return 'a chip points at ' + href + ' rather than at an editor'
-      }
       const named = chips[0].textContent.trim()
       chips[0].click()
       await new Promise((r) => setTimeout(r, 900))
@@ -85,4 +87,41 @@ export function registerHomeFlows({ flow, expect }: Tour): void {
       if (!title) return 'landed on ' + href + ' with no editor on it'
       return 'ok ' + chips.length + ' chip(s), first one opened ' + named.slice(0, 40)
     })()`, 1000))
+
+  // THE RAIL FOLLOWS THE KEY. Promoting the assistant was the owner's call, made on
+  // 2026-08-31, and the condition is the thing worth pinning: nobody pastes an API key for
+  // a screen they meant to visit twice a month, so the key IS the argument for the fifth
+  // row. A rail that shows it either always or never has lost the argument.
+  //
+  // Writes, and cleans up after itself: the tour's own rule, and a stored key would change
+  // what every flow after this one is looking at.
+  flow('admin: a stored key moves the assistant onto the rail, under Home', () =>
+    expect('/admin', `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      const rail = () => [...document.querySelectorAll('aside nav a')].map((a) => a.getAttribute('href'))
+      const save = (body) => fetch('/api/integrations/ai', {
+        method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body),
+      })
+
+      if (rail().includes('/admin/assistant')) return 'the assistant is on the rail before any key exists'
+
+      // Never used to call anything: the assistant only reaches a provider when asked a
+      // question, and this flow never asks one.
+      const saved = await save({ aiProvider: 'openai', aiApiKey: 'tour-not-a-real-key', aiModel: '' })
+      if (!saved.ok) return 'could not store a key: ' + saved.status
+      try {
+        location.reload()
+        await sleep(1200)
+        const after = rail()
+        if (after[1] !== '/admin/assistant') {
+          return 'with a key stored the rail reads ' + after.join(' ')
+        }
+        if (after.length !== 5) return 'the rail offers ' + after.length + ' destinations with a key'
+        return 'ok ' + after.join(' ')
+      } finally {
+        // '' clears it, which is what makes this a clear and not a set.
+        await save({ aiProvider: '', aiApiKey: '', aiModel: '' })
+      }
+    })()`, 2500))
 }
