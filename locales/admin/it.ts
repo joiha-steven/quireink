@@ -686,7 +686,7 @@ const it = {
   analyticsColPage: 'Pagina',
   analyticsColDepth: 'Profondità',
   analyticsAvgTime: 'Tempo medio sulla pagina',
-  analyticsBounceRate: 'Frequenza di rimbalzo',
+  analyticsOnePageOnly: 'Una sola pagina',
   analyticsLeftQuickly: 'Andati subito',
   analyticsPieces: 'Ogni contenuto',
   analyticsFindPiece: 'Cerca un contenuto…',

@@ -686,7 +686,7 @@ const ru = {
   analyticsColPage: 'Страница',
   analyticsColDepth: 'Глубина',
   analyticsAvgTime: 'Среднее время на странице',
-  analyticsBounceRate: 'Показатель отказов',
+  analyticsOnePageOnly: 'Только одна страница',
   analyticsLeftQuickly: 'Быстро ушли',
   analyticsPieces: 'Все материалы',
   analyticsFindPiece: 'Найти материал…',

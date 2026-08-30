@@ -686,7 +686,7 @@ const zh = {
   analyticsColPage: '页面',
   analyticsColDepth: '深度',
   analyticsAvgTime: '平均停留时间',
-  analyticsBounceRate: '跳出率',
+  analyticsOnePageOnly: '只看了一页',
   analyticsLeftQuickly: '立即离开',
   analyticsPieces: '每篇内容',
   analyticsFindPiece: '查找内容…',

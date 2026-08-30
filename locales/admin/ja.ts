@@ -686,7 +686,7 @@ const ja = {
   analyticsColPage: 'ページ',
   analyticsColDepth: '深度',
   analyticsAvgTime: '平均滞在時間',
-  analyticsBounceRate: '直帰率',
+  analyticsOnePageOnly: '1ページのみ',
   analyticsLeftQuickly: 'すぐ離脱',
   analyticsPieces: 'すべての記事',
   analyticsFindPiece: '記事を探す…',

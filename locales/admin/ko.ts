@@ -686,7 +686,7 @@ const ko = {
   analyticsColPage: '페이지',
   analyticsColDepth: '깊이',
   analyticsAvgTime: '평균 체류 시간',
-  analyticsBounceRate: '이탈률',
+  analyticsOnePageOnly: '한 페이지만',
   analyticsLeftQuickly: '바로 이탈',
   analyticsPieces: '모든 글',
   analyticsFindPiece: '글 찾기…',

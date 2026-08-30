@@ -687,7 +687,7 @@ const pt = {
   analyticsColPage: 'Página',
   analyticsColDepth: 'Profundidade',
   analyticsAvgTime: 'Tempo médio na página',
-  analyticsBounceRate: 'Taxa de rejeição',
+  analyticsOnePageOnly: 'Só uma página',
   analyticsLeftQuickly: 'Saíram logo',
   analyticsPieces: 'Cada peça',
   analyticsFindPiece: 'Procurar uma peça…',

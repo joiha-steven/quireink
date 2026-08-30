@@ -686,7 +686,7 @@ const de = {
   analyticsColPage: 'Seite',
   analyticsColDepth: 'Tiefe',
   analyticsAvgTime: 'Ø Verweildauer',
-  analyticsBounceRate: 'Absprungrate',
+  analyticsOnePageOnly: 'Nur eine Seite',
   analyticsLeftQuickly: 'Schnell weg',
   analyticsPieces: 'Jeder Beitrag',
   analyticsFindPiece: 'Beitrag suchen…',

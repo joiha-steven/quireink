@@ -881,7 +881,7 @@ export type AdminStrings = {
   analyticsColPage: string
   analyticsColDepth: string
   analyticsAvgTime: string
-  analyticsBounceRate: string
+  analyticsOnePageOnly: string
   analyticsLeftQuickly: string
   analyticsPieces: string
   analyticsFindPiece: string
