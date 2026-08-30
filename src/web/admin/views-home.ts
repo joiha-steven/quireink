@@ -5,7 +5,8 @@
 // and because that file is at the 400-line limit without it.
 
 import { getActivity } from '@/server/activity'
-import { release } from 'node:os'
+import { release, type } from 'node:os'
+import { readFileSync } from 'node:fs'
 import { lastRunAt } from '@/server/backup'
 import { buildSha } from '@/server/build-info'
 import { updateState } from '@/server/update-check'
@@ -36,16 +37,42 @@ function sqliteVersion(): string {
 }
 
 /**
- * `Linux 6.8 · x64`. The kernel's full release string is `6.8.0-31-generic`, which is four
- * facts where one was wanted; the first two numbers are what anybody reads.
+ * `Ubuntu 26.04 LTS (x64)` — what a person calls the machine, not what the kernel calls itself.
+ *
+ * The first cut printed the KERNEL: `os.release()` with the platform's name in front of it,
+ * which on the servers this runs on came out as "Linux 7.0". That is accurate — Ubuntu 26.04
+ * LTS ships a 7.0 kernel — and it answers the wrong question. Nobody asked what release the
+ * kernel is; they asked what the machine is, and the answer to that is on the box in
+ * `/etc/os-release`, which is a file read and not a subprocess.
+ *
+ * The kernel stays as the FALLBACK, for a container or a BSD with no `os-release` to read. It
+ * is labelled `os.type()` there — `Linux`, `Darwin` — so the number always belongs to the name
+ * printed beside it, which is the failure the first cut had on a Mac: `os.release()` is Darwin's
+ * version, and calling it "macOS" was only right by the coincidence that Apple aligned the two.
+ *
+ * Read once. It cannot change while the process is up, and this runs on every dashboard load.
  */
+let osCache: string | null = null
 function osLine(): string {
-  const names: Record<string, string> = { linux: 'Linux', darwin: 'macOS', win32: 'Windows' }
-  const name = names[process.platform] ?? process.platform
-  const version = (release().match(/^\d+\.\d+/) ?? [''])[0]
+  if (osCache === null) {
+    let name = ''
+    try {
+      // PRETTY_NAME="Ubuntu 26.04 LTS" — quoted by the spec, and some distributions leave the
+      // quotes off, so both shapes are accepted.
+      const found = /^PRETTY_NAME="?([^"\n]+)"?/m.exec(readFileSync('/etc/os-release', 'utf8'))
+      name = found?.[1]?.trim() ?? ''
+    } catch {
+      /* not a Linux with an os-release, or it is unreadable — the kernel answers instead */
+    }
+    if (!name) {
+      const version = (release().match(/^\d+\.\d+/) ?? [''])[0]
+      name = `${type()}${version ? ` ${version}` : ''}`
+    }
+    osCache = name
+  }
   // The arch in parentheses, not behind a third `·`: the footer joins ITS facts with the
   // same separator, and two weights of the same mark turn one fact into two.
-  return `${name}${version ? ` ${version}` : ''} (${process.arch})`
+  return `${osCache} (${process.arch})`
 }
 
 async function systemInfo() {
