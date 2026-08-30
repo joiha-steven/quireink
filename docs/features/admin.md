@@ -135,7 +135,7 @@
 - **Analytics:** Admin → Analytics (24h/7d/30d/1y); a View column on the content tables
   (`getViewTotals`). The **overview** shows five headline metrics — views, visitors (with
   **period-over-period trend** + a **new-vs-returning** split), **avg time on page** (dwell), avg
-  read depth, and a **bounce rate** (single-page-visit share) — a **dual-series time chart** (views
+  read depth, and **one page only** (the share of readers who never opened a second page) — a **dual-series time chart** (views
   + visitors, an SVG in `analytics-kit.tsx`; the year range buckets by month, 24h by hour), a **top
   pages** table (each row links to its drill-down), **sources** (traffic **channels**
   Direct/Search/Social/Referral + top external referrers), **audience** (countries + **device /
@@ -189,7 +189,7 @@
     extra day-count, so a part-finished today is not measured against a whole yesterday.
   - **Three numbers were wrong until 2026-08-30**, all found by reading the queries against
     what the labels claim and all measured on a live blog before and after:
-    - **Bounce rate** asked `count(*) = 1` — one EVENT, not one page. A reader who opened one
+    - **One page only** asked `count(*) = 1` — one EVENT, not one page. A reader who opened one
       post and reloaded it, or came back to the same post later, was dropped from the count, so
       the rate read low by exactly the people who bounced twice. Now `count(distinct path) = 1`.
       Measured over 30 days: **41% shown, 48% true.** (It remains a share of VISITORS over the
@@ -216,6 +216,16 @@
     same two coarse columns, with the right values — and a reader on cached JS or with scripting
     off is bucketed exactly as before. Expect tablets to appear gradually as the old bundle
     falls out of browser caches.
+  - **Why the two screens do not show the same fifth number** (decided 2026-08-31). The overview
+    ends its headline band with **One page only**; the per-page drill-down ends its with **Left
+    quickly**. They answer different questions and belong where they are: a site asks whether
+    readers go on to something else, a post asks whether they stayed on the thing in front of
+    them. The overview's number was called "Bounce rate" until that date, which was a term
+    borrowed from a metric this schema cannot compute — bounce rate elsewhere means a
+    single-page SESSION, and there are no sessions here — and its resemblance to "Left quickly"
+    two clicks away was the whole of the confusion. `leftQuickly` takes `path | null` and would
+    work site-wide unchanged; it is deliberately not shown there, because a sixth headline
+    number costs more than it explains.
   - **Referrer hosts are folded for display** (`canonicalHost`): plumbing labels (`www.`, `m.`,
     `l.`, `lm.`, `out.`, `away.`, …) peel off, so `l.facebook.com` and `m.facebook.com` count as one
     `facebook.com` row — folded on the (host, visitor) pairs, so one person through two doors is

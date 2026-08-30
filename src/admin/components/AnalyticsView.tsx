@@ -1,5 +1,5 @@
 // Analytics overview: range tabs, headline metrics (views, visitors,
-// avg time, avg read depth, bounce rate), a dual-series time chart, top pages
+// avg time, avg read depth, one-page-only share), a dual-series time chart, top pages
 // (each links to its drill-down), traffic sources (channels + referrers), and the
 // audience breakdown (countries, devices, browsers, systems) + read-depth split.
 // Presentational — the server page fetches the data and passes it in; range tabs
@@ -99,7 +99,21 @@ export function AnalyticsView({ data, range, titles, pieces, rightNow }: {
     social: t.analyticsChannelSocial,
     referral: t.analyticsChannelReferral,
   }
-  const bounce = data.uniqueVisitors > 0 && data.singlePageVisitors != null
+  /**
+   * The share of readers who never opened a second page.
+   *
+   * It was labelled "Bounce rate" until 2026-08-31, and that name was borrowed from a
+   * metric this schema cannot compute. Bounce rate elsewhere means a single-page SESSION;
+   * there are no sessions here, so what this actually counts is visitors who saw exactly one
+   * page in the whole window — a person who came back four times and read the same post
+   * every time is one of them. Under the old name that number invited comparison with a
+   * Google Analytics figure measuring something else.
+   *
+   * It is also a different question from the per-page screen's "Left quickly", which is why
+   * the two now have names that cannot be confused: this asks whether readers go on to
+   * something else, that one asks whether they stayed on the piece in front of them.
+   */
+  const onePageOnly = data.uniqueVisitors > 0 && data.singlePageVisitors != null
     ? Math.round((data.singlePageVisitors / data.uniqueVisitors) * 100)
     : null
 
@@ -150,7 +164,7 @@ export function AnalyticsView({ data, range, titles, pieces, rightNow }: {
             },
             { n: formatDuration(data.avgDwellMs), label: t.analyticsAvgTime },
             { n: `${data.avgReadDepth}%`, label: t.analyticsAvgDepth },
-            { n: bounce == null ? '—' : `${bounce}%`, label: t.analyticsBounceRate },
+            { n: onePageOnly == null ? '—' : `${onePageOnly}%`, label: t.analyticsOnePageOnly },
           ]}
         />
 

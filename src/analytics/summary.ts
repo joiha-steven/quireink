@@ -25,7 +25,7 @@ export type { Bucket }
 const { all } = analyticsQuery
 
 /**
- * Visitors who saw exactly ONE PAGE in the window — the bounce-ish signal.
+ * Visitors who saw exactly ONE PAGE in the window. Shown as "One page only".
  *
  * ⚠️ It counted `count(*) = 1`, which is one EVENT, not one page. A reader who opened a
  * single post and reloaded it, or came back to the same post a week later, has two events on

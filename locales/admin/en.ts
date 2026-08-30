@@ -686,7 +686,7 @@ const en = {
   analyticsColPage: 'Page',
   analyticsColDepth: 'Depth',
   analyticsAvgTime: 'Avg. time on page',
-  analyticsBounceRate: 'Bounce rate',
+  analyticsOnePageOnly: 'One page only',
   analyticsLeftQuickly: 'Left quickly',
   analyticsPieces: 'Every piece',
   analyticsFindPiece: 'Find a piece…',

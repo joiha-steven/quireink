@@ -686,7 +686,7 @@ const vi = {
   analyticsColPage: 'Trang',
   analyticsColDepth: 'Độ sâu',
   analyticsAvgTime: 'Thời gian TB trên trang',
-  analyticsBounceRate: 'Tỷ lệ thoát',
+  analyticsOnePageOnly: 'Chỉ xem một trang',
   analyticsLeftQuickly: 'Rời ngay',
   analyticsPieces: 'Từng bài',
   analyticsFindPiece: 'Tìm một bài…',
