@@ -47,8 +47,8 @@ export const SHEET_TOOL =
  *
  * Everything else that wears `SHEET_TOOL` sits on a white card and measures 4.61:1. A page
  * header sits on the canvas, which is tinted, and the same ink there measures 4.39:1 — under
- * the 4.5:1 a 12px line has to clear. Two call sites are affected and both are page headers:
- * Export CSV and the SMTP link.
+ * the 4.5:1 a 12px line has to clear. The call site that needs it is the newsletter's SMTP
+ * link; Analytics used to be the other, and its CSV export was removed on 2026-08-30.
  *
  * DERIVED from `SHEET_TOOL` rather than typed out, because a hand-copy of this constant is a
  * thing that has already happened here more than once — and because the ONLY difference that

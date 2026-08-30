@@ -678,7 +678,6 @@ const es = {
   analyticsViews: 'Vistas',
   analyticsVisitors: 'Visitantes',
   analyticsAvgDepth: 'Profundidad de lectura media',
-  analyticsExportCsv: 'Exportar CSV',
   analyticsPeak: 'Pico',
   analyticsNew: 'Nuevos',
   analyticsReturning: 'Recurrentes',

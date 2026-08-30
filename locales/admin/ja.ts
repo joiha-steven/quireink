@@ -678,7 +678,6 @@ const ja = {
   analyticsViews: '表示',
   analyticsVisitors: '訪問者',
   analyticsAvgDepth: '平均読了率',
-  analyticsExportCsv: 'CSVエクスポート',
   analyticsPeak: 'ピーク',
   analyticsNew: '新規',
   analyticsReturning: 'リピーター',

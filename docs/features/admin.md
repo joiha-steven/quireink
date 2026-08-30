@@ -141,8 +141,9 @@
   Direct/Search/Social/Referral + top external referrers), **audience** (countries + **device /
   browser / OS**), and the **read-depth distribution**. Referrers/countries/channels/facets count
   **distinct visitors** (one person = 1, not page views). **Per-page drill-down** (`?path=`,
-  `AnalyticsPageDetail`) repeats the trend + sources + depth for a single URL. Plus a **CSV export**
-  of the daily series.
+  `AnalyticsPageDetail`) repeats the trend + sources + depth for a single URL. (A **CSV export** of
+  the daily series sat in the page header until 2026-08-30. It went because nobody wanted the file:
+  a chart is the artefact here, and a two-column dump of it is not.)
   - **Every piece, not the busiest ten** (`PieceIndex`, 2026-08-30). The top-pages table stays the
     screen's default face — it answers "what is doing well" — and underneath it sits the complete
     index: one row per post and page, filterable, each linking to that piece's drill-down. Until it
@@ -186,6 +187,30 @@
     the time of day. The LAST column is still partial, and that one is honest: today is not
     over. The **previous-period** comparison uses the same elapsed length rather than a full
     extra day-count, so a part-finished today is not measured against a whole yesterday.
+  - **Three numbers were wrong until 2026-08-30**, all found by reading the queries against
+    what the labels claim and all measured on a live blog before and after:
+    - **Bounce rate** asked `count(*) = 1` — one EVENT, not one page. A reader who opened one
+      post and reloaded it, or came back to the same post later, was dropped from the count, so
+      the rate read low by exactly the people who bounced twice. Now `count(distinct path) = 1`.
+      Measured over 30 days: **41% shown, 48% true.** (It remains a share of VISITORS over the
+      window, not of sessions — there are no sessions in this schema — so someone who bounced in
+      March and again in April is one bouncer, not two.)
+    - **Channels double-counted.** The beacon sends a referrer only when it is EXTERNAL, so every
+      page after the first writes `referrer_host = NULL`, and `channelOf(null)` is `direct`.
+      Anyone who arrived from somewhere and read one more post was in that channel AND in Direct.
+      A bare row now speaks only for a visitor with no external referrer anywhere in the window.
+      Measured over 30 days: the bars summed to **229 for 197 visitors**, Direct carrying all 32
+      of the excess; they now sum to 197 exactly and Direct falls 164 → 132.
+    - **`0s` and `0%` for a page never measured**, printed in the top-pages table beside pages
+      printing `2m 10s`. `TopPage.avgDepth` / `avgDwellMs` are `null` when there is no sample and
+      the table prints an em-dash. This became load-bearing with the beacon fix: an unscrolled
+      leave now records depth 0, so zero is a real reading and cannot also mean "no reading".
+    - Ordering gained a name tiebreak everywhere (`order by … desc, path|country|name`), so rows
+      on equal counts stop reshuffling between loads.
+  - ⚠️ **Tablets are undercounted and the UA cannot fix it.** iPadOS 13+ identifies as Macintosh
+    Safari, so an iPad lands in desktop/macOS. The only discriminator is `maxTouchPoints`, which
+    is client-side and not in the string. Measured over 30 days on a live blog: 117 desktop, 80
+    mobile, **0 tablet**.
   - **Referrer hosts are folded for display** (`canonicalHost`): plumbing labels (`www.`, `m.`,
     `l.`, `lm.`, `out.`, `away.`, …) peel off, so `l.facebook.com` and `m.facebook.com` count as one
     `facebook.com` row — folded on the (host, visitor) pairs, so one person through two doors is

@@ -108,13 +108,13 @@ export function topCountries(since: number, limit: number, path: string | null):
     ? all<TopCountry>(
         `select country, count(distinct visitor) as visitors from analytics_events
           where created_at >= $since and country is not null and country != ''
-          group by country order by visitors desc limit $limit`,
+          group by country order by visitors desc, country limit $limit`,
         { since, limit },
       )
     : all<TopCountry>(
         `select country, count(distinct visitor) as visitors from analytics_events
           where created_at >= $since and path = $path and country is not null and country != ''
-          group by country order by visitors desc limit $limit`,
+          group by country order by visitors desc, country limit $limit`,
         { since, limit, path },
       )
 }
@@ -274,11 +274,11 @@ export function windowCounts(from: number, to: number | null, path: string | nul
 // reserved for this turned out not to be needed.
 const FACET_SQL = {
   device: `select coalesce(nullif(device, ''), 'Unknown') as name, count(distinct visitor) as visitors
-             from analytics_events where created_at >= $since group by name order by visitors desc limit $limit`,
+             from analytics_events where created_at >= $since group by name order by visitors desc, name limit $limit`,
   browser: `select coalesce(nullif(browser, ''), 'Unknown') as name, count(distinct visitor) as visitors
-              from analytics_events where created_at >= $since group by name order by visitors desc limit $limit`,
+              from analytics_events where created_at >= $since group by name order by visitors desc, name limit $limit`,
   os: `select coalesce(nullif(os, ''), 'Unknown') as name, count(distinct visitor) as visitors
-         from analytics_events where created_at >= $since group by name order by visitors desc limit $limit`,
+         from analytics_events where created_at >= $since group by name order by visitors desc, name limit $limit`,
 } as const
 
 export function facet(since: number, column: keyof typeof FACET_SQL, limit: number): NameStat[] {
@@ -297,12 +297,26 @@ export function facet(since: number, column: keyof typeof FACET_SQL, limit: numb
  * answer is a channel column written at insert, not a cleverer query.
  */
 export function channels(since: number): ChannelStat[] {
-  const byChannel = new Map<string, Set<string>>()
-  for (const r of all<{ referrer_host: string | null; visitor: string }>(
+  const rows = all<{ referrer_host: string | null; visitor: string }>(
     `select referrer_host, visitor from analytics_events
       where created_at >= $since group by referrer_host, visitor`,
     { since },
-  )) {
+  )
+  // ⚠️ A BARE ROW IS USUALLY NOT A DIRECT VISIT. The beacon sends a referrer only when it is
+  // EXTERNAL (`externalReferrer` in assets/js/track.ts), so every second and third page a
+  // reader opens writes `referrer_host = NULL` — and `channelOf(null)` is 'direct'. Anyone
+  // who arrived from Google and then clicked one more post therefore appeared in Search AND
+  // in Direct, and the bars summed to more than the site had visitors. Measured on a live
+  // blog 2026-08-30: 36 of 380 visitors counted twice, 11% of a Direct bar of 316.
+  //
+  // So a bare row only speaks for a visitor who has no external referrer anywhere in the
+  // window. Someone who genuinely arrived from two different places is still in two
+  // channels — that is the same rule `topReferrers` follows, and it is a fact about them
+  // rather than an artefact of how many pages they read.
+  const arrived = new Set(rows.filter((r) => r.referrer_host).map((r) => r.visitor))
+  const byChannel = new Map<string, Set<string>>()
+  for (const r of rows) {
+    if (!r.referrer_host && arrived.has(r.visitor)) continue
     const key = channelOf(r.referrer_host)
     const set = byChannel.get(key) ?? new Set<string>()
     set.add(r.visitor)
@@ -310,5 +324,6 @@ export function channels(since: number): ChannelStat[] {
   }
   return [...byChannel]
     .map(([channel, visitors]) => ({ channel, visitors: visitors.size }))
-    .sort((a, b) => b.visitors - a.visitors)
+    // Named tiebreak, so two channels on the same count keep their order between loads.
+    .sort((a, b) => b.visitors - a.visitors || a.channel.localeCompare(b.channel))
 }

@@ -24,12 +24,26 @@ export type { Bucket }
 
 const { all } = analyticsQuery
 
-/** Visitors who viewed exactly one page in the window (a bounce-ish signal). */
+/**
+ * Visitors who saw exactly ONE PAGE in the window — the bounce-ish signal.
+ *
+ * ⚠️ It counted `count(*) = 1`, which is one EVENT, not one page. A reader who opened a
+ * single post and reloaded it, or came back to the same post a week later, has two events on
+ * one page and was dropped from the count — so the rate came out low by exactly the readers
+ * who bounced twice. Measured on a live blog 2026-08-30: 198 of 380 visitors by the old
+ * count, 228 by this one, a bounce rate reading 52% where the honest figure is 60%. The
+ * doc comment above the query had said "one page" since the port; only the SQL disagreed.
+ *
+ * The window, not a session, is still the unit: there are no sessions in this schema, so a
+ * visitor who bounced in March and bounced again in April is one bouncer here, not two.
+ * That is a real limit of the number and the reason it is a share of visitors rather than
+ * of visits.
+ */
 function singlePageVisitors(since: number): number {
   return all<{ n: number }>(
     `select count(*) as n from (
        select visitor from analytics_events where created_at >= $since
-        group by visitor having count(*) = 1)`,
+        group by visitor having count(distinct path) = 1)`,
     { since },
   )[0]?.n ?? 0
 }
@@ -55,7 +69,7 @@ function returningVisitors(since: number): number {
 function topPages(since: number, limit: number): TopPage[] {
   const pages = all<{ path: string; views: number; visitors: number }>(
     `select path, count(*) as views, count(distinct visitor) as visitors from analytics_events
-      where created_at >= $since group by path order by views desc limit $limit`,
+      where created_at >= $since group by path order by views desc, path limit $limit`,
     { since, limit },
   )
   if (pages.length === 0) return []
@@ -63,18 +77,23 @@ function topPages(since: number, limit: number): TopPage[] {
     all<{ path: string; depth: number | null; dwell: number | null }>(
       // The same 30-minute dwell ceiling `engagement()` applies, so a page's row in this
       // table can never disagree with the drill-down it links to.
+      //
+      // Both averages come back NULL for a page with no samples, and `avg(dwell_ms)` comes
+      // back NULL on its own for a page whose samples all predate the dwell meter. Those
+      // NULLs are carried through rather than floored to 0: see `TopPage`.
       `select path, avg(depth) as depth, avg(min(dwell_ms, $cap)) as dwell from analytics_scroll
         where created_at >= $since and path in (select value from json_each($paths))
         group by path`,
       { since, cap: DWELL_CAP_MS, paths: JSON.stringify(pages.map((p) => p.path)) },
     ).map((r) => [r.path, r]),
   )
+  const round = (v: number | null | undefined) => (v == null ? null : Math.round(v))
   return pages.map((p) => ({
     path: p.path,
     views: p.views,
     visitors: p.visitors,
-    avgDepth: Math.round(depth.get(p.path)?.depth ?? 0),
-    avgDwellMs: Math.round(depth.get(p.path)?.dwell ?? 0),
+    avgDepth: round(depth.get(p.path)?.depth),
+    avgDwellMs: round(depth.get(p.path)?.dwell),
   }))
 }
 

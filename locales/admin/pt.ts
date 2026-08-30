@@ -679,7 +679,6 @@ const pt = {
   analyticsViews: 'Visualizações',
   analyticsVisitors: 'Visitantes',
   analyticsAvgDepth: 'Profundidade média de leitura',
-  analyticsExportCsv: 'Exportar CSV',
   analyticsPeak: 'Pico',
   analyticsNew: 'Novos',
   analyticsReturning: 'Recorrentes',

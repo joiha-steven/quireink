@@ -678,7 +678,6 @@ const zh = {
   analyticsViews: '浏览量',
   analyticsVisitors: '访客',
   analyticsAvgDepth: '平均阅读深度',
-  analyticsExportCsv: '导出 CSV',
   analyticsPeak: '峰值',
   analyticsNew: '新访客',
   analyticsReturning: '回访',
