@@ -25,6 +25,10 @@ export type ActivityAction =
   | 'import.wordpress' | 'import.images'
   // URL redirects (Admin → Settings → SEO).
   | 'redirect.save' | 'redirect.delete'
+  // The account itself (Admin → Settings → System → Security). Logged because these are the
+  // four events an owner most needs to see AFTER the fact: if one appears and they did not
+  // do it, the session that did it is the one to end.
+  | 'security.password' | 'security.recovery' | 'security.totp' | 'security.session'
   // Newsletter (Admin → Settings → Integrations). Delete is soft; restore/purge are the
   // Trash's, like every other kind.
   | 'subscriber.delete' | 'subscriber.restore' | 'subscriber.purge'
