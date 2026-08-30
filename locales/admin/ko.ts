@@ -488,6 +488,10 @@ const ko = {
   dashSources: '독자가 오는 경로',
   dashSourcesEmpty: '지난 30일 동안 방문이 없습니다.',
   viewSite: '사이트 보기',
+  // The home screen’s closing line of system facts. It read "SQLite · online · Local
+  // filesystem" — three things that are true of EVERY install of this program and therefore
+  // say nothing about this one. A version answers the question the line raises.
+  sysStartedPrefix: '시작',
   recentActivity: '최근 활동',
   recentViewAll: '전체 보기',
   cardGeneral: '기본 정보',

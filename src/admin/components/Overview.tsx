@@ -33,6 +33,13 @@ export type SystemInfo = {
   mcpEnabled: boolean
   backupOn: boolean
   backupLastRun?: string | null
+  /** The engine's own version, empty if it could not be asked. */
+  databaseVersion: string
+  /** `Linux 6.8 · x64`. */
+  os: string
+  /** When this PROCESS started, ISO — a duration frozen at render time is wrong by however
+      long the tab has been open, and this screen is one people leave open. */
+  startedAt: string
 }
 
 type Props = {
@@ -90,10 +97,46 @@ function VersionDot({ update }: { update: UpdateState }) {
   )
 }
 
+/**
+ * How long this process has been up, in the largest unit that still says something.
+ *
+ * NOT the greeting's `relative()`, which collapses anything from today down to "today" — right
+ * for a publication date and useless for a restart, where four minutes and nineteen hours are
+ * the difference between "it just came back" and "it has been fine all day". `Intl` supplies
+ * the words, so eleven languages get their own plural rules without a table here.
+ */
+function sinceStart(startedAt: string, now: Date): string {
+  const started = Date.parse(startedAt)
+  if (Number.isNaN(started)) return ''
+  const minutes = Math.round((started - now.getTime()) / 60_000)
+  const lang = typeof document !== 'undefined' ? document.documentElement.lang || 'en' : 'en'
+  try {
+    const fmt = new Intl.RelativeTimeFormat(lang, { numeric: 'auto' })
+    if (Math.abs(minutes) < 60) return fmt.format(Math.min(minutes, -1), 'minute')
+    if (Math.abs(minutes) < 60 * 48) return fmt.format(Math.round(minutes / 60), 'hour')
+    return fmt.format(Math.round(minutes / 1440), 'day')
+  } catch {
+    return ''
+  }
+}
+
 function BuildLabel({ version, commit, update }: {
   version: string; commit: string | null; update: UpdateState
 }) {
   const behind = update.state === 'behind'
+  const t = useAdminT()
+  // WHERE IT POINTS is the difference between a version number and something to act on.
+  // Behind: the release that is out. Current: the notes for the version actually running —
+  // "what am I running" is the question the number raises and the tag page is its answer.
+  // Unknown: the release list, because claiming either state would be a guess.
+  const href =
+    update.state === 'behind' ? update.release.url
+    : update.state === 'current' ? `${REPO}/releases/tag/v${version}`
+    : `${REPO}/releases`
+  const said =
+    update.state === 'behind' ? t.updateAvailable.replace('{v}', update.release.latest)
+    : update.state === 'current' ? t.updateCurrent
+    : null
   return (
     // `hidden sm:inline`, because on a phone this line is not small print, it is a THIRD
     // thing in the title row: measured at 390px it sat between "Overview" and New post and
@@ -102,7 +145,7 @@ function BuildLabel({ version, commit, update }: {
     // `docs/admin-design.md` says system information does not compete on the home page — but
     // its real home is Settings → System, and moving it there is plumbing, not a class.
     <a
-      href={REPO}
+      href={href}
       target="_blank"
       rel="noopener noreferrer"
       // Desktop-only at rest, for the reason above — but an update is not small print, so
@@ -114,6 +157,11 @@ function BuildLabel({ version, commit, update }: {
       <VersionDot update={update} />
       quire<span className="font-bold">INK</span> v{version}
       {commit && <span className="tabular-nums"> ({commit.slice(0, 7)})</span>}
+      {/* The DOT alone said this, and only to somebody who knew that amber meant behind and
+          green meant current — a colour is a reminder, not a sentence. The words are the
+          ones the Updates card already uses in all eleven languages, so the two screens
+          cannot come to disagree about what the same state is called. */}
+      {said && <span className="ml-1.5">· {said}</span>}
     </a>
   )
 }
@@ -207,10 +255,21 @@ export function Overview(props: Props) {
       </Card>
 
       <div className={`flex flex-wrap items-center justify-between gap-3 px-1 ${META_ON_CANVAS}`}>
-        {/* The engine NAME comes from the server. It was the literal string 'PostgreSQL'
-            here, left behind by the port, so the dashboard of a SQLite install reported a
-            database it does not have. */}
-        <span>{system.database} · {system.dbReachable ? 'online' : 'offline'} · {system.storage}</span>
+        {/* WHAT IS ACTUALLY RUNNING. This line read "SQLite · online · Local filesystem":
+            three facts that are identical on every install of this program, so it answered a
+            question nobody asks and not the one they do — what am I running, and is it what I
+            think it is. Versions and the machine, plus how long this process has been up.
+            `dbReachable` survives as the one that can be FALSE, and it is only printed then:
+            "online" beside a working database is noise, "offline" beside a broken one is the
+            most important word on the screen. */}
+        <span>
+          {[system.runtime,
+            system.databaseVersion ? `SQLite ${system.databaseVersion}` : system.database,
+            system.os,
+            `${t.sysStartedPrefix} ${sinceStart(system.startedAt, new Date())}`,
+          ].filter(Boolean).join(' · ')}
+          {!system.dbReachable && <span className="ml-1.5 font-medium text-[var(--pen-red)]">· offline</span>}
+        </span>
         {system.siteHref && <a href={system.siteHref} target="_blank" rel="noopener noreferrer" className="hover:text-neutral-900 dark:hover:text-white">{t.viewSite} ↗</a>}
       </div>
     </div>

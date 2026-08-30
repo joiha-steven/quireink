@@ -5,6 +5,7 @@
 // and because that file is at the 400-line limit without it.
 
 import { getActivity } from '@/server/activity'
+import { release } from 'node:os'
 import { lastRunAt } from '@/server/backup'
 import { buildSha } from '@/server/build-info'
 import { updateState } from '@/server/update-check'
@@ -25,6 +26,28 @@ import pkg from '../../../package.json' with { type: 'json' }
  * program: the database is SQLite rather than PostgreSQL over PostgREST, the runtime is
  * Bun rather than Node, and there is no framework line to print at all.
  */
+/** `3.50.4`, read from the engine rather than from a package version that may not match. */
+function sqliteVersion(): string {
+  try {
+    return one<{ v: string }>('select sqlite_version() as v')?.v ?? ''
+  } catch {
+    return ''
+  }
+}
+
+/**
+ * `Linux 6.8 · x64`. The kernel's full release string is `6.8.0-31-generic`, which is four
+ * facts where one was wanted; the first two numbers are what anybody reads.
+ */
+function osLine(): string {
+  const names: Record<string, string> = { linux: 'Linux', darwin: 'macOS', win32: 'Windows' }
+  const name = names[process.platform] ?? process.platform
+  const version = (release().match(/^\d+\.\d+/) ?? [''])[0]
+  // The arch in parentheses, not behind a third `·`: the footer joins ITS facts with the
+  // same separator, and two weights of the same mark turn one fact into two.
+  return `${name}${version ? ` ${version}` : ''} (${process.arch})`
+}
+
 async function systemInfo() {
   let dbReachable = true
   try {
@@ -56,6 +79,17 @@ async function systemInfo() {
     storage: 'Local filesystem',
     runtime: `Bun ${Bun.version}`,
     framework: 'Hono',
+    // The three VERSIONS the footer prints, and the one number that says how long this
+    // process has been up. The line used to read "SQLite · online · Local filesystem" — three
+    // facts that are the same on every install of this program and therefore say nothing
+    // about THIS one. A version answers the question somebody actually arrives with: what am
+    // I running, and is it what I think it is.
+    databaseVersion: sqliteVersion(),
+    os: osLine(),
+    // The START, not a duration: a payload is rendered once and then sits in a tab, and a
+    // duration frozen at render time is wrong by however long the tab has been open. From a
+    // timestamp the screen can always work out the truth.
+    startedAt: new Date(Date.now() - process.uptime() * 1000).toISOString(),
   }
 }
 

@@ -488,6 +488,10 @@ const zh = {
   dashSources: '读者从哪里来',
   dashSourcesEmpty: '最近 30 天没有访问。',
   viewSite: '查看网站',
+  // The home screen’s closing line of system facts. It read "SQLite · online · Local
+  // filesystem" — three things that are true of EVERY install of this program and therefore
+  // say nothing about this one. A version answers the question the line raises.
+  sysStartedPrefix: '启动于',
   recentActivity: '最近活动',
   recentViewAll: '查看全部',
   cardGeneral: '基本信息',

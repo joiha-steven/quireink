@@ -488,6 +488,10 @@ const ja = {
   dashSources: '読者の流入元',
   dashSourcesEmpty: '過去30日間のアクセスはありません。',
   viewSite: 'サイトを表示',
+  // The home screen’s closing line of system facts. It read "SQLite · online · Local
+  // filesystem" — three things that are true of EVERY install of this program and therefore
+  // say nothing about this one. A version answers the question the line raises.
+  sysStartedPrefix: '起動',
   recentActivity: '最近のアクティビティ',
   recentViewAll: 'すべて表示',
   cardGeneral: '基本情報',
