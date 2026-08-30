@@ -12,12 +12,12 @@ import { nowMs } from '@/store/db'
 import { cacheStats } from '@/server/cache'
 import { bucketRanges, windowStart, type Bucket } from '@/analytics/buckets'
 import {
-  DWELL_CAP_MS, channels, dailySeries, depthBuckets, engagement, facet, topCountries,
-  topReferrers, windowCounts, transferred,
+  DWELL_CAP_MS, allPieces, channels, dailySeries, depthBuckets, engagement, facet,
+  topCountries, topReferrers, windowCounts, transferred,
 } from '@/analytics/aggregate'
 import {
   EMPTY_RIGHT_NOW, EMPTY_SUMMARY, reportTz,
-  type AnalyticsSummary, type RightNow, type TopPage,
+  type AnalyticsSummary, type PieceStat, type RightNow, type TopPage,
 } from '@/analytics/types'
 
 export type { Bucket }
@@ -124,6 +124,28 @@ export async function getAnalytics(days: number, bucket: Bucket = 'day', topN = 
   } catch (error) {
     console.error(`[ERROR] analytics.getAnalytics: ${(error as Error).message}`)
     return EMPTY_SUMMARY
+  }
+}
+
+/**
+ * Every path read in the window, on the SAME window boundary the rest of the screen uses.
+ *
+ * A separate call rather than a field on `AnalyticsSummary`: the dashboard and the front
+ * page both read that shape and neither wants a row per path. It is one grouped scan of the
+ * index the summary already walks.
+ *
+ * The alignment is the whole reason this lives here instead of in the view. `windowStart`
+ * is what makes a chart column a whole day; a list built from `now - days * 86_400_000`
+ * would silently disagree with the table above it about which day the window opens on, and
+ * two tables on one screen giving different numbers for the same piece is worse than not
+ * having the second one.
+ */
+export async function getPieces(days: number, bucket: Bucket = 'day'): Promise<PieceStat[]> {
+  try {
+    return allPieces(windowStart(Date.now(), days, bucket, reportTz()))
+  } catch (error) {
+    console.error(`[ERROR] analytics.getPieces: ${(error as Error).message}`)
+    return []
   }
 }
 

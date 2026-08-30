@@ -17,7 +17,7 @@ export default function Analytics() {
     <View state={state}>
       {(d) => ('detail' in d
         ? <AnalyticsPageDetail data={d.detail} title={d.title} range={d.range} />
-        : <AnalyticsView data={d.summary} range={d.range} titles={d.titles} rightNow={d.rightNow} />)}
+        : <AnalyticsView data={d.summary} range={d.range} titles={d.titles} pieces={d.pieces} rightNow={d.rightNow} />)}
     </View>
   )
 }

@@ -6,7 +6,7 @@
 
 import { bucketRanges, windowStart, type Bucket } from '@/analytics/buckets'
 import {
-  dailySeries, depthBuckets, engagement, topCountries, topReferrers, windowCounts,
+  dailySeries, depthBuckets, engagement, leftQuickly, topCountries, topReferrers, windowCounts,
 } from '@/analytics/aggregate'
 import { EMPTY_PAGE, reportTz, type PageSummary } from '@/analytics/types'
 
@@ -38,6 +38,7 @@ export async function getPageAnalytics(path: string, days: number, bucket: Bucke
       topReferrers: topReferrers(since, PAGE_TOP_N, path),
       topCountries: topCountries(since, PAGE_TOP_N, path),
       depthBuckets: depthBuckets(since, path),
+      leftQuickly: leftQuickly(since, path),
     }
   } catch (error) {
     console.error(`[ERROR] analytics.getPageAnalytics: ${(error as Error).message}`)

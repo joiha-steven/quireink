@@ -688,6 +688,9 @@ const vi = {
   analyticsColDepth: 'Độ sâu',
   analyticsAvgTime: 'Thời gian TB trên trang',
   analyticsBounceRate: 'Tỷ lệ thoát',
+  analyticsLeftQuickly: 'Rời ngay',
+  analyticsPieces: 'Từng bài',
+  analyticsFindPiece: 'Tìm một bài…',
   // Analytics -> Delivery. Reader-reported bytes and the in-process cache. Both labels
   // have to keep saying what they are NOT: bytes are what browsers reported, never
   // server egress, and the cache is this process's, never the CDN's.

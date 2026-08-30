@@ -12,6 +12,15 @@ export type TopCountry = { country: string; visitors: number }
 export type ChannelStat = { channel: string; visitors: number }
 export type NameStat = { name: string; visitors: number } // device / browser / os facet
 export type DepthBucket = { bucket: number; samples: number } // 0 = 0-25% … 3 = 76-100%
+/** One path's numbers in the window, for the complete list rather than the top N. */
+export type PieceStat = { path: string; views: number; visitors: number }
+/**
+ * The glance share, and how many leaves were measured to get it.
+ *
+ * Never shown without `measured`: see `leftQuickly` in `aggregate.ts` for why a bare
+ * percentage here would flatter every install with history.
+ */
+export type QuickExit = { share: number; measured: number }
 
 export type AnalyticsSummary = {
   totalViews: number
@@ -57,6 +66,7 @@ export type PageSummary = {
   topReferrers: TopReferrer[]
   topCountries: TopCountry[]
   depthBuckets: DepthBucket[]
+  leftQuickly?: QuickExit
 }
 
 // The last five minutes, for the live strip on the Analytics page. `pages` is by distinct
@@ -73,7 +83,7 @@ export const EMPTY_SUMMARY: AnalyticsSummary = {
 }
 
 export const EMPTY_PAGE = (path: string): PageSummary => ({
-  path, totalViews: 0, uniqueVisitors: 0, avgReadDepth: 0, avgDwellMs: 0,
+  path, totalViews: 0, uniqueVisitors: 0, avgReadDepth: 0, avgDwellMs: 0, leftQuickly: { share: 0, measured: 0 },
   daily: [], topReferrers: [], topCountries: [], depthBuckets: [],
 })
 

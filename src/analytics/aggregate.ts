@@ -9,7 +9,7 @@ import { analyticsQuery } from '@/store/query'
 import { canonicalHost, channelOf } from '@/analytics/channel'
 import type { BucketRange } from '@/analytics/buckets'
 import type {
-  ChannelStat, DailyPoint, DepthBucket, NameStat, TopCountry, TopReferrer,
+  ChannelStat, DailyPoint, DepthBucket, NameStat, PieceStat, TopCountry, TopReferrer,
 } from '@/analytics/types'
 
 const { all, one } = analyticsQuery
@@ -153,6 +153,66 @@ export function engagement(since: number, path: string | null): { avgReadDepth: 
     avgReadDepth: Math.round(row?.depth ?? 0),
     avgDwellMs: Math.round(row?.dwell ?? 0),
   }
+}
+
+/**
+ * Where "a glance" stops and "a read" starts.
+ *
+ * Ten seconds is the usual line and it is not arbitrary: it is about how long it takes to
+ * realise a page is not the one you wanted. A quarter of the page is deliberately the SAME
+ * boundary as the first bar of the read-depth split the admin already draws, so the two
+ * never contradict each other on the same screen.
+ */
+export const QUICK_MS = 10_000
+export const QUICK_DEPTH = 25
+
+/**
+ * The share of measured leaves that were a glance, and how many leaves were measured.
+ *
+ * ⚠️ `measured` travels with the share, for the reason `transferred()` gives below and one
+ * more of its own. A leave sample exists only when the browser delivered the beacon — and
+ * until 2026-08-30 only when the reader had scrolled at all, which meant the visits this
+ * measures were the exact ones missing from the table (see `assets/js/track.ts`). A share
+ * shown without its denominator would read a long history as a site nobody bounces off.
+ */
+export function leftQuickly(since: number, path: string | null): { share: number; measured: number } {
+  const row = path === null
+    ? one<{ measured: number; quick: number | null }>(
+        `select count(*) as measured,
+                sum(case when depth < $depth or (dwell_ms is not null and dwell_ms < $quick)
+                         then 1 else 0 end) as quick
+           from analytics_scroll where created_at >= $since`,
+        { since, depth: QUICK_DEPTH, quick: QUICK_MS },
+      )
+    : one<{ measured: number; quick: number | null }>(
+        `select count(*) as measured,
+                sum(case when depth < $depth or (dwell_ms is not null and dwell_ms < $quick)
+                         then 1 else 0 end) as quick
+           from analytics_scroll where created_at >= $since and path = $path`,
+        { since, path, depth: QUICK_DEPTH, quick: QUICK_MS },
+      )
+  const measured = row?.measured ?? 0
+  return {
+    measured,
+    share: measured === 0 ? 0 : Math.round(((row?.quick ?? 0) / measured) * 100),
+  }
+}
+
+/**
+ * EVERY path with a view in the window, not the busiest N.
+ *
+ * The screen's default face stays the top table; this is what makes a piece that is not in
+ * it reachable at all. Deliberately unranked and deliberately uncapped: a limit here would
+ * reintroduce the exact problem — the 40th piece having no route to its own numbers — one
+ * row further down. The payload is one row per path that was read, which is smaller than
+ * the title map the same view already sends.
+ */
+export function allPieces(since: number): PieceStat[] {
+  return all<PieceStat>(
+    `select path, count(*) as views, count(distinct visitor) as visitors from analytics_events
+      where created_at >= $since group by path`,
+    { since },
+  )
 }
 
 /**

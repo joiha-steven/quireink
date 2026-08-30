@@ -688,6 +688,9 @@ const ja = {
   analyticsColDepth: '深度',
   analyticsAvgTime: '平均滞在時間',
   analyticsBounceRate: '直帰率',
+  analyticsLeftQuickly: 'すぐ離脱',
+  analyticsPieces: 'すべての記事',
+  analyticsFindPiece: '記事を探す…',
   // Analytics -> Delivery. Reader-reported bytes and the in-process cache. Both labels
   // have to keep saying what they are NOT: bytes are what browsers reported, never
   // server egress, and the cache is this process's, never the CDN's.

@@ -688,6 +688,9 @@ const zh = {
   analyticsColDepth: '深度',
   analyticsAvgTime: '平均停留时间',
   analyticsBounceRate: '跳出率',
+  analyticsLeftQuickly: '立即离开',
+  analyticsPieces: '每篇内容',
+  analyticsFindPiece: '查找内容…',
   // Analytics -> Delivery. Reader-reported bytes and the in-process cache. Both labels
   // have to keep saying what they are NOT: bytes are what browsers reported, never
   // server egress, and the cache is this process's, never the CDN's.

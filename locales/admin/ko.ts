@@ -688,6 +688,9 @@ const ko = {
   analyticsColDepth: '깊이',
   analyticsAvgTime: '평균 체류 시간',
   analyticsBounceRate: '이탈률',
+  analyticsLeftQuickly: '바로 이탈',
+  analyticsPieces: '모든 글',
+  analyticsFindPiece: '글 찾기…',
   // Analytics -> Delivery. Reader-reported bytes and the in-process cache. Both labels
   // have to keep saying what they are NOT: bytes are what browsers reported, never
   // server egress, and the cache is this process's, never the CDN's.

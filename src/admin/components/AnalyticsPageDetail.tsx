@@ -47,11 +47,20 @@ export function AnalyticsPageDetail({ data, title, range }: { data: PageSummary;
         }
       />
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
         <StatTile label={t.analyticsViews} value={data.totalViews} prev={data.prevViews} />
         <StatTile label={t.analyticsVisitors} value={data.uniqueVisitors} prev={data.prevVisitors} />
         <StatTile label={t.analyticsAvgTime} value={formatDuration(data.avgDwellMs)} />
         <StatTile label={t.analyticsAvgDepth} value={`${data.avgReadDepth}%`} />
+        {/* The glance share NEVER travels without the count it was taken over. A leave
+            sample exists only when the browser delivered the beacon, so the denominator is
+            not the view count and pretending otherwise would read a partly-measured week as
+            a week nobody bounced off. Same rule the Delivery panel follows for bytes. */}
+        <StatTile
+          label={t.analyticsLeftQuickly}
+          value={`${data.leftQuickly?.share ?? 0}%`}
+          sub={`${t.analyticsBytesMeasured} ${(data.leftQuickly?.measured ?? 0).toLocaleString()} ${t.analyticsBytesNote}`}
+        />
       </div>
 
       {!hasData ? (

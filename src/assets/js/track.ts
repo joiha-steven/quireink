@@ -120,8 +120,18 @@ export function track(): void {
     // The depth sample is sent ONCE, when the reader leaves. `pagehide` and a hidden tab
     // both count as leaving, and either can be the last event a browser delivers, so both
     // are wired and `sent` makes the second one a no-op.
+    // ⚠️ `max > 0` was a condition here until 2026-08-30, and it was silently deleting the
+    // one cohort worth measuring. `depth()` returns 0 for a long article nobody scrolled, so
+    // a reader who arrived, looked, and left in four seconds sent NO sample at all — while
+    // everyone who stayed long enough to scroll sent one. Every number drawn from
+    // `analytics_scroll` was therefore an average over the people who did NOT bounce:
+    // average time on page and average read depth both read high, by construction, and no
+    // amount of arithmetic downstream could have found it.
+    //
+    // The cost of sending it is one beacon per view instead of one per scrolled view. The
+    // gain is that "did they leave straight away" becomes a question the data can answer.
     const send = () => {
-      if (sent || max <= 0) return
+      if (sent) return
       sent = true
       meter(true) // close the open slice, so a quick bounce still measures
       clearInterval(interval)

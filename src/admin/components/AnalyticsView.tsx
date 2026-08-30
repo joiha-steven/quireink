@@ -7,11 +7,12 @@
 import { useEffect, useState } from 'react'
 import Link from '@/admin/router'
 import { view } from '@/admin/api'
-import type { AnalyticsSummary, NameStat, RightNow } from '@/analytics/types'
+import type { AnalyticsSummary, NameStat, PieceStat, RightNow } from '@/analytics/types'
 import { EmptyState, PageHeader, SEGMENT_TRACK, tabItemClass, TABLE_SCROLL, THEAD, TROW } from './kit'
 import { BarList, Trend, TrendChart, flag, formatDuration, type BarRow } from './analytics-kit'
 import { NumBand, SHEET, SHEET_TOOL_ON_CANVAS, SheetTop } from './sheet'
 import { DeliveryPanel } from './DeliveryPanel'
+import { PieceIndex } from './PieceIndex'
 import { useAdminT } from './I18nProvider'
 
 const RANGES = [1, 7, 30, 365] as const
@@ -84,10 +85,12 @@ function LiveNow({ initial, titles }: { initial: RightNow; titles: Record<string
   )
 }
 
-export function AnalyticsView({ data, range, titles, rightNow }: {
+export function AnalyticsView({ data, range, titles, pieces, rightNow }: {
   data: AnalyticsSummary
   range: Range
   titles: Record<string, string>
+  /** Every path read in the window. Joined to `titles` by `PieceIndex`, not here. */
+  pieces: PieceStat[]
   rightNow?: RightNow
 }) {
   const t = useAdminT()
@@ -232,6 +235,11 @@ export function AnalyticsView({ data, range, titles, rightNow }: {
             </tbody>
             </table>
           </div>
+
+          {/* The complete index, under the top table rather than instead of it: the table
+              answers "what is doing well", this answers "how is THIS piece doing" for a
+              piece the table will never show. */}
+          <PieceIndex pieces={pieces} titles={titles} range={range} />
 
           {/* Sources + engagement: traffic channels + top external referrers + read-depth
               split — three columns divided by vertical hairlines, on the sheet itself. */}

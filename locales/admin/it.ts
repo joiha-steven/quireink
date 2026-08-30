@@ -688,6 +688,9 @@ const it = {
   analyticsColDepth: 'Profondità',
   analyticsAvgTime: 'Tempo medio sulla pagina',
   analyticsBounceRate: 'Frequenza di rimbalzo',
+  analyticsLeftQuickly: 'Andati subito',
+  analyticsPieces: 'Ogni contenuto',
+  analyticsFindPiece: 'Cerca un contenuto…',
   // Analytics -> Delivery. Reader-reported bytes and the in-process cache. Both labels
   // have to keep saying what they are NOT: bytes are what browsers reported, never
   // server egress, and the cache is this process's, never the CDN's.
