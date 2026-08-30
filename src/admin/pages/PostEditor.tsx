@@ -9,23 +9,16 @@ import { usePathname } from '@/admin/router'
 import { useView } from '@/admin/useView'
 import { View } from '@/admin/pages/state'
 import { PostForm } from '@/admin/components/PostForm'
-import { WritePane } from '@/admin/components/WritePane'
-import { useFocusMode } from '@/admin/components/useFocusMode'
 export default function PostEditor() {
   const path = usePathname()
-  // Read here rather than inside the form: the pane is drawn by the PAGE, and the switch
-  // that hides it lives three components down (`useFocusMode.ts` explains the event).
-  const [focus] = useFocusMode()
   const slug = decodeURIComponent(path.replace(/^\/admin\/editor\/?/, ''))
   const state = useView('editor', slug ? `?slug=${encodeURIComponent(slug)}` : '')
   return (
-    <View state={state}>
-      {(d) => (
-        <div className="flex items-start gap-6">
-          {/* The mock's write screen: the list beside the paper. `key`ed remount of the form
-              on navigation keeps the pane mounted — clicking a row swaps only the sheet. */}
-          {!focus && <WritePane activeSlug={d.post?.slug} />}
-          <div className="min-w-0 flex-1">
+    // The list is drawn by the shell and outlives this page — see `App.tsx`. Only the sheet
+    // waits for the payload, which is what makes clicking a row swap one thing and not two.
+    <div className="min-w-0 flex-1">
+        <View state={state}>
+          {(d) => (
         <PostForm
           // `key` matters: navigating from one post to another must REMOUNT the editor.
           // Without it Tiptap keeps the previous document and the form silently edits the
@@ -40,9 +33,8 @@ export default function PostEditor() {
           autosaveSeconds={d.autosaveSeconds}
           autosaveAt={d.autosaveAt}
         />
-          </div>
-        </div>
-      )}
-    </View>
+          )}
+      </View>
+    </div>
   )
 }

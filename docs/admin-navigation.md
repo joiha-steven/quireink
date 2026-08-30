@@ -111,3 +111,29 @@ it — so "make the text bigger", "go to the trash" and "write something" are on
   name it — it is just not printed.
 - It lives outside the canvas and outside the error boundary, because it is how you leave a
   screen that has gone wrong.
+
+## The write pane belongs to the SHELL, not to the pages
+
+The list beside the paper appears on three routes — `/admin/content` and the two editors — and
+was rendered by each of them. That made a click inside it destroy it: the route changes, the
+page component is swapped, `ErrorBoundary` is keyed by path, and the whole subtree goes with
+it. The list came back looking identical and scrolled back to the top, on the one screen whose
+entire job is picking something out of a list. It read as a page reload.
+
+`WriteLayout` in `App.tsx` draws it once for the whole writing session, outside the route and
+outside the error boundary — outside the boundary because the pane is how you LEAVE a page
+that has thrown.
+
+- **`activeSlug` comes from the PATH**, not from a payload, so the open row moves the instant
+  the click lands rather than after a round trip.
+- **The taxonomy and series drawers moved into `WritePane`.** They hung off the Write screen and
+  were handed down as a `tools` prop, which was the last thing tying the pane to a page. They
+  manage the categories and series of the list standing right there.
+- **`useView` seeds from the last answer it got**, keyed by the refresh epoch so
+  `router.refresh()` still costs a real fetch. Without it every remount started at `null` and
+  every page shell rendered a centred ellipsis first.
+- **A changed view key drops the old data** in the same render. `data` used to survive a query
+  change, so clicking post B rendered post A's editor until the fetch landed — and anything
+  typed in that window went into A's document and was discarded on the remount.
+- `tour-flows-pane.ts` asserts the pane's IDENTITY across the click, not its presence: a
+  replacement that looks the same is exactly the bug.

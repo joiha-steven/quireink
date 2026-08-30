@@ -16,6 +16,8 @@ import { ErrorBoundary } from '@/admin/ui/ErrorBoundary'
 import { throughDeploys } from '@/admin/ui/stale-build'
 import { AdminSidebar } from '@/admin/components/AdminSidebar'
 import { CommandPalette } from '@/admin/components/CommandPalette'
+import { WritePane } from '@/admin/components/WritePane'
+import { useFocusMode } from '@/admin/components/useFocusMode'
 
 // The editor pulls in Tiptap and its extensions, which is most of the bundle. Splitting it
 // out means the dashboard, the settings and every table load without paying for an editor
@@ -140,6 +142,37 @@ function Canvas({ children }: { children: ReactNode }) {
   )
 }
 
+/** The three routes that are the writing screen: the list, and the two editors. */
+const WRITING = /^\/admin\/(content|editor|page-editor)(\/|$)/
+
+/**
+ * The write pane, drawn HERE and not by the pages it appears on.
+ *
+ * It was rendered by each of the three pages, which meant it was destroyed and rebuilt on
+ * every click inside itself: a route change swaps the page component, and `ErrorBoundary` is
+ * keyed by path, so the whole subtree goes. The list came back looking the same and scrolled
+ * back to the top — on the one screen whose entire job is picking something out of a list.
+ *
+ * Out here it is mounted once for the whole writing session. Clicking a row changes the sheet
+ * beside it and nothing else: the scroll stays, the search box keeps what was typed, and the
+ * selected row moves the moment the click lands rather than after a round trip, because
+ * `activeSlug` is read from the PATH and not from a payload.
+ *
+ * The pane fetches its own list, so this knows nothing about content — only which routes have
+ * one, and that focus mode puts it away.
+ */
+function WriteLayout({ path, children }: { path: string; children: ReactNode }) {
+  const [focus] = useFocusMode()
+  if (!WRITING.test(path)) return <>{children}</>
+  const slug = decodeURIComponent(path.replace(/^\/admin\/(editor|page-editor)\/?/, ''))
+  return (
+    <div className="flex items-start gap-6">
+      {!focus && <WritePane activeSlug={path === '/admin/content' ? undefined : slug || undefined} always={path === '/admin/content'} />}
+      {children}
+    </div>
+  )
+}
+
 async function signOut(): Promise<void> {
   await fetch('/api/auth/logout', { method: 'POST' })
   location.href = '/'
@@ -169,14 +202,18 @@ function Shell() {
                 path, so leaving is also what resets it. Before this existed, a parser that
                 threw while opening a post unmounted everything and left a white page
                 (`ui/ErrorBoundary.tsx`). */}
-            <ErrorBoundary key={path}>
+            {/* The pane is OUTSIDE the boundary and outside the route: it must survive both
+                a navigation and a page that threw, because it is how you get to another one. */}
+            <WriteLayout path={path}>
+              <ErrorBoundary key={path}>
               {/* Reached on the FIRST paint only. Every later route change runs inside a
                   transition, which keeps the current page on screen instead of falling back
                   here — see the note in `router.tsx`. */}
               <Suspense fallback={<div className="py-16 text-center text-sm text-neutral-500 dark:text-neutral-400">…</div>}>
                 <Route />
               </Suspense>
-            </ErrorBoundary>
+              </ErrorBoundary>
+            </WriteLayout>
           </Canvas>
         </div>
       </ToastProvider>
