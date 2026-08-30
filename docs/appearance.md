@@ -105,6 +105,11 @@ a different shape.
 everything else — so it wins. It is not filtered: any rule you can write in a stylesheet
 works here. It never touches the admin, so you cannot lock yourself out with it.
 
+The box counts its lines, indents on Tab, and shows the byte count — this text travels inside
+every public page on every request, so it is worth seeing. It also tells you when a brace is
+unclosed, which is the usual reason a stylesheet does nothing at all: braces inside comments
+and strings are not counted, so it does not cry wolf.
+
 The design is built on CSS variables, and overriding a variable is almost always better
 than overriding a rule: a variable is a value the whole design already reads, so changing
 one stays consistent, while a rule you copy out of the stylesheet is a copy that stops
@@ -113,7 +118,14 @@ matching when the original changes.
 ### The variables that are safe to set
 
 These names are part of what the software promises you. They will not be renamed without a
-note in the changelog.
+note in the changelog — and since 2026-08-31 that is a promise the build keeps rather than a
+sentence in a document: the list lives in `src/content/appearance-contract.ts`, and
+`check:contract` fails the build if a name here stops existing in the code, or if this page
+and that list stop agreeing in either direction. Before then nothing read it, which meant
+renaming one would have broken stylesheets on blogs nobody involved would ever see.
+
+**You do not have to come here for them.** The Custom CSS box lists every name below, with
+one line of explanation each; clicking one writes it where your cursor is.
 
 ```css
 :root {

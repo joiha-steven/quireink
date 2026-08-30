@@ -7,7 +7,8 @@
 import type { SiteSettings } from '@/types'
 import type { ThemePreset } from '@/content/themes'
 import type { RefObject } from 'react'
-import { Card, CONTROL_CHROME, NOTE_TEXT, ResetButton } from './kit'
+import { Card, NOTE_TEXT, ResetButton } from './kit'
+import { CssEditor } from './CssEditor'
 import { useAdminT } from './I18nProvider'
 import { ThemeFields } from './ThemeFields'
 import { ShapeFields } from './ShapeFields'
@@ -81,14 +82,7 @@ export function SettingsAppearanceTab(
         </Card>
         <Card panel title={t.customCss}>
           <div className="space-y-1.5">
-            <textarea
-              value={s.customCss}
-              onChange={(e) => update({ customCss: e.target.value })}
-              rows={8}
-              spellCheck={false}
-              placeholder={'.prose h2 { letter-spacing: -0.01em }'}
-              className={`${CONTROL_CHROME} w-full resize-y px-3.5 py-2 text-xs`}
-            />
+            <CssEditor value={s.customCss} onChange={(customCss) => update({ customCss })} />
             <p className={NOTE_TEXT}>{t.customCssHint}</p>
           </div>
         </Card>

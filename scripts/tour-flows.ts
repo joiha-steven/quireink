@@ -14,6 +14,7 @@
 import type { Tour } from './tour'
 import { registerAdminFlows } from './tour-flows-admin'
 import { registerStatsFlows } from './tour-flows-stats'
+import { registerCssFlows } from './tour-flows-css'
 
 export function registerFlows({ flow, expect, atWidth }: Tour): void {
   // ---------------------------------------------------------------------------------------------
@@ -390,4 +391,5 @@ export function registerFlows({ flow, expect, atWidth }: Tour): void {
 
   registerAdminFlows({ flow, expect, atWidth })
   registerStatsFlows({ flow, expect, atWidth })
+  registerCssFlows({ flow, expect, atWidth })
 }

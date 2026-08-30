@@ -16,8 +16,8 @@ it is the PRODUCT and stays — `deploy.sh` ships `scripts/` and the tests read 
 bun run check:all
 ```
 
-Typecheck, the eight static guards (`filesize` · `css` · `nul` · `routes` · `type` ·
-`admin-kit` · `bundle` · `docs`) and `bun test`. About 2 minutes. A change under `src/render` or
+Typecheck, the nine static guards (`filesize` · `css` · `nul` · `routes` · `type` ·
+`admin-kit` · `bundle` · `contract` · `docs`) and `bun test`. About 2 minutes. A change under `src/render` or
 `src/web` also runs the golden compare.
 
 `check:all` proves the code compiles and the seams hold. It cannot tell you a column
@@ -28,7 +28,7 @@ because nobody opened the page.
 bun run tour
 ```
 
-Seventy-four flows in a real browser, each with a verdict: the reader's controls, every admin
+Seventy-six flows in a real browser, each with a verdict: the reader's controls, every admin
 page, a draft saved and published and trashed and restored, an upload refused for being too
 large, the archive built. It seeds its own instance on **port 3399** and deletes it after, so it
 never touches a real one — and it refuses to start if something already holds that port, because
