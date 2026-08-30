@@ -339,8 +339,9 @@ describe('the series card', () => {
     // the feature read as missing.
     expect(html).toContain('href="/series/ten-years"')
     expect(html).toContain('2/3')
-    // The part you are reading is not a link to itself.
-    expect(html).toMatch(/<li aria-current="true">Part Two<\/li>/)
+    // The part you are reading is not a link to itself. "page" rather than "true": the
+    // token that tells assistive tech WHAT kind of current this is — the page you are on.
+    expect(html).toMatch(/<li aria-current="page">Part Two<\/li>/)
     expect(html).toContain('href="/one"')
   })
 

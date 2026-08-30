@@ -321,20 +321,20 @@ form.search button{padding:.5rem 1rem;border:1px solid var(--c-rule);border-radi
   background:var(--c-bg);color:var(--c-heading);font:inherit;cursor:pointer;white-space:nowrap}
 /* Stacked on a phone, exactly as the sign-up form stacks and at the same width. */
 @media (max-width:639px){form.search{flex-direction:column}}
-/* The series box: a bordered card at the TOP of the post, as the frozen tree had it. The
-   port turned it into a plain rule at the foot of the article, which is the wrong end — the
-   point of it is knowing you are in part 3 of 6 BEFORE reading, not after. */
+/* The series box, a bordered card at the TOP of the post: part 3 of 6 comes BEFORE reading.
+   Refined 2026-08-31 — the name is the card's title in heading ink, a hairline parts head
+   from list, and the current part wears the rail's own 2px accent "you are here" bar. */
 aside.series{border:1px solid var(--c-rule);border-radius:var(--radius,.5rem);padding:1.25rem 1.5rem;
-  margin:2rem 0 0;font-size:var(--fs-small);line-height:var(--lh-small);
-  letter-spacing:var(--ls-small)}
-aside.series .series-head{margin:0;color:var(--c-meta)}
-aside.series ol{margin:1rem 0 0;padding-left:1.25rem}
-aside.series li{margin-top:.5rem}
+  margin:2rem 0 0;font-size:var(--fs-small);line-height:var(--lh-small);letter-spacing:var(--ls-small)}
+aside.series .series-head{margin:0 0 .875rem;color:var(--c-meta)}
+aside.series .series-head a{font-weight:600}
+aside.series ol{margin:0;border-top:1px solid var(--c-rule);padding:1rem 0 0 1.25rem}
+aside.series li + li{margin-top:.65rem}
 aside.series li a{color:var(--c-meta);text-decoration:none}
 aside.series li a:hover{color:var(--c-heading)}
-/* The part you are reading is not a link, and it is the one thing in the card set in the
-   heading colour: the card answers "where am I" before it answers "what else is there". */
-aside.series li[aria-current]{color:var(--c-heading);font-weight:600}
+aside.series li[aria-current]{position:relative;color:var(--c-heading);font-weight:600}
+aside.series li[aria-current]::after{content:"";position:absolute;left:-2.75rem;top:3px;bottom:3px;
+  width:2px;background:var(--c-accent)}
 p.tags{margin-top:1.5rem;font-size:var(--fs-small);line-height:var(--lh-small);
   letter-spacing:var(--ls-small);color:var(--c-meta)}
 
