@@ -1,10 +1,16 @@
-// Three providers, one conversation shape. PURE — build the request, read the answer;
+// Three dialects, one conversation shape. PURE — build the request, read the answer;
 // the loop in `assistant.ts` owns everything stateful.
 //
 // The neutral shape is four kinds of turn. Each dialect folds them differently —
 // Anthropic wants tool results inside a user message, OpenAI wants them as their own
 // `tool` role, Gemini wants a `functionResponse` part and has no call ids at all — and
 // the whole point of this file is that nothing outside it ever learns those facts.
+
+// A name added to OPENAI_COMPATIBLE is added to every AI job at once, because
+// `ai-provider.ts` reads the same table for alt text, excerpts and the comment guard.
+// That is the point: one list, or a provider that works in the chat box and silently
+// does nothing everywhere else.
+import { OPENAI_COMPATIBLE } from '@/server/ai-capabilities'
 
 export type Turn =
   | { kind: 'user'; text: string }
@@ -99,9 +105,10 @@ export function buildChat(
       }),
     }
   }
-  if (provider === 'openai') {
+  const base = OPENAI_COMPATIBLE[provider]
+  if (base) {
     return {
-      url: 'https://api.openai.com/v1/chat/completions',
+      url: `${base}/chat/completions`,
       headers: { 'content-type': 'application/json', authorization: `Bearer ${key}` },
       body: JSON.stringify({
         model, max_tokens: 1500,
@@ -132,7 +139,7 @@ export function parseChat(provider: string, json: unknown): ChatAnswer {
       if (b.type === 'text') out.text += b.text
       else if (b.type === 'tool_use') out.calls.push({ id: String(b.id), name: String(b.name), args: b.input ?? {} })
     }
-  } else if (provider === 'openai') {
+  } else if (OPENAI_COMPATIBLE[provider]) {
     const m = j?.choices?.[0]?.message
     out.text = typeof m?.content === 'string' ? m.content : ''
     for (const c of m?.tool_calls ?? []) {

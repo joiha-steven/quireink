@@ -1029,6 +1029,7 @@ export type AdminStrings = {
   aiDescribeAll: string
   aiDescribeAllStarted: string
   aiNotConfigured: string
+  aiCannotSeeImages: string
   navAssistant: string
   assistantIntro: string
   assistantPlaceholder: string

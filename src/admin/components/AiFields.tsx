@@ -28,8 +28,8 @@ import { FIELD_W, NOTE_TEXT, PANEL_LIST, Select, Setting, SETTING_GAP } from './
 
 type Choice = { id: string; label: string }
 
-export function AiFields({ configured, provider, model, ai, onChangeAi }: {
-  configured: boolean; provider: string; model: string
+export function AiFields({ configured, provider, model, seesImages, ai, onChangeAi }: {
+  configured: boolean; provider: string; model: string; seesImages: boolean
   ai: AiSettings; onChangeAi: (ai: AiSettings) => void
 }) {
   const t = useAdminT()
@@ -137,6 +137,7 @@ export function AiFields({ configured, provider, model, ai, onChangeAi }: {
           <option value="anthropic">Anthropic (Claude)</option>
           <option value="openai">OpenAI (GPT)</option>
           <option value="gemini">Google (Gemini)</option>
+          <option value="deepseek">DeepSeek</option>
         </Select>
       </Setting>
 
@@ -174,7 +175,11 @@ export function AiFields({ configured, provider, model, ai, onChangeAi }: {
         <Setting label={t.aiTasksLabel} note={configured ? undefined : t.aiTasksNeedModel}>
           <div className={PANEL_LIST}>
             {([
-              ['altText', t.aiTaskAltText, undefined],
+              // Alt text is the only job that shows the model a picture, so it is the only
+              // one a text-only MODEL cannot do — and the same provider may sell both kinds.
+              // Greyed with the reason on the row: leaving it switchable would let the owner
+              // turn on a job that never runs.
+              ['altText', t.aiTaskAltText, seesImages ? undefined : t.aiCannotSeeImages],
               ['excerpt', t.aiTaskExcerpt, undefined],
               // The guard sends a READER'S words to a third party, which the other two
               // jobs never do (they read only the owner's own content). That difference
@@ -186,8 +191,8 @@ export function AiFields({ configured, provider, model, ai, onChangeAi }: {
                 key={job}
                 label={label}
                 desc={desc}
-                checked={configured ? ai[job] : false}
-                disabled={!configured}
+                checked={configured && (job !== 'altText' || seesImages) ? ai[job] : false}
+                disabled={!configured || (job === 'altText' && !seesImages)}
                 onChange={(v) => onChangeAi({ ...ai, [job]: v })}
               />
             ))}

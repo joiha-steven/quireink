@@ -831,6 +831,7 @@ const de = {
   aiDescribeAll: "Bilder ohne Alt-Text beschreiben",
   aiDescribeAllStarted: "Beschreibung läuft im Hintergrund — Bilder eingereiht",
   aiNotConfigured: "Noch kein KI-Modell — Einstellungen → KI",
+  aiCannotSeeImages: 'Dieses Modell kann keine Bilder sehen — wähle eines, das das kann, oder lass Alt-Text aus.',
   navAssistant: "Assistent",
   assistantIntro: 'Er läuft mit dem Modell aus Einstellungen → KI und nutzt dieselben Werkzeuge wie ein MCP-Client: dieselben Grenzen, und jede Aktion steht im Protokoll.',
   assistantPlaceholder: "Fragen oder erledigen lassen…",

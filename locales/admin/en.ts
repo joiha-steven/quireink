@@ -831,6 +831,7 @@ const en = {
   aiDescribeAll: "Describe images missing alt text",
   aiDescribeAllStarted: "Describing in the background — images queued",
   aiNotConfigured: "No AI model yet — Settings → AI",
+  aiCannotSeeImages: 'This model cannot see images — pick one that can, or leave alt text off.',
   navAssistant: "Assistant",
   assistantIntro: 'It runs on the model from Settings → AI and works through the same tools an MCP client gets: the same limits, and every action written to the activity log.',
   assistantPlaceholder: "Ask, or ask for something…",

@@ -31,6 +31,7 @@ export function SettingsAiTab(
             configured={integrations.aiConfigured}
             provider={integrations.aiProvider}
             model={integrations.aiModel}
+            seesImages={integrations.aiSeesImages}
             ai={s.ai}
             onChangeAi={(ai) => update({ ai })}
           />

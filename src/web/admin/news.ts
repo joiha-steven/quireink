@@ -21,6 +21,7 @@ import { getIntegrationKeys, saveIntegrationKeys } from '@/store/integration-key
 import { getPublicPosts } from '@/content/posts'
 import { getSettings, resolveSiteUrl } from '@/content/settings'
 import { t } from '@/i18n/i18n'
+import { AI_PROVIDERS } from '@/server/ai-provider'
 import { clearCache } from '@/server/cache'
 import { logActivity } from '@/server/activity'
 import { fail, json } from '@/web/api'
@@ -245,7 +246,7 @@ export function newsRoutes() {
     const provider = str(input.aiProvider) ?? ''
     // The one enum the schema also checks; anything else becomes "off" rather than a 500.
     await saveIntegrationKeys({
-      aiProvider: ['anthropic', 'openai', 'gemini'].includes(provider) ? provider : '',
+      aiProvider: AI_PROVIDERS.includes(provider) ? provider : '',
       aiApiKey: str(input.aiApiKey),
       aiModel: str(input.aiModel),
     })
@@ -256,7 +257,7 @@ export function newsRoutes() {
   router.post('/api/integrations/ai/models', async (c) => {
     const input = await body<{ provider: unknown; apiKey: unknown }>(c)
     const provider = str(input.provider) ?? ''
-    if (!['anthropic', 'openai', 'gemini'].includes(provider)) return fail(c, 'unknown_provider', 400)
+    if (!AI_PROVIDERS.includes(provider)) return fail(c, 'unknown_provider', 400)
     // A freshly pasted key is tried BEFORE it is saved — that is the whole point: the
     // owner sees the menu appear and knows the key works before committing it.
     const typed = str(input.apiKey)

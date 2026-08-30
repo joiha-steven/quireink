@@ -323,13 +323,15 @@ are a scroll container behaving as one.
   seven when that decision was written; `ai` joined them on 2026-08-23 when the key stopped
   being a single field and became a provider, a model and three jobs. One
   `useState<SiteSettings>` → one PUT `/api/settings`.
-- **AI tab** — the provider (Anthropic / OpenAI / Gemini), the key, the model, and which jobs
+- **AI tab** — the provider (Anthropic / OpenAI / Gemini / DeepSeek), the key, the model, and which jobs
   the model does on its own: `ai.altText` (describe an uploaded image), `ai.excerpt` (write the
   excerpt when a post publishes with the field blank), `ai.commentGuard` (hold spam in the
   Trash — NOTE: this one sends a READER'S comment text to the configured provider, which the
   other two jobs never do; the toggle says so in the UI, and an owner who enables it should
   say so in their privacy policy). **The key is the master switch**: with none stored, every job is off whatever its own
-  toggle says. Like the other credentials it is written and never read back. The model list is
+  toggle says. A text-only MODEL greys `ai.altText` and says why, because that job is the only
+  one that shows the model a picture — and seeing is a property of the model, not the
+  provider: DeepSeek sells both kinds under one key. Like the other credentials it is written and never read back. The model list is
   the provider's own, with a measured default per provider (`DEFAULT_MODELS` in
   `src/server/ai-provider.ts`).
 - **Footer is owner-editable** (Layout tab): `settings.footer` is limited inline markdown

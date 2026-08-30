@@ -22,6 +22,7 @@ import { collapseBlob, readBlob } from '@/media/blob'
 import { mimeOf } from '@/media/mime'
 import { describeUpload } from '@/media/alt-text'
 import { getIntegrationKeys } from '@/store/integration-keys'
+import { seesImages } from '@/server/ai-provider'
 import { all } from '@/store/query'
 import { checkUpload } from '@/media/limits'
 import { sniffImage } from '@/media/sniff'
@@ -165,6 +166,9 @@ export function uploadRoutes() {
   router.post('/api/media/describe-missing', async (c) => {
     const keys = await getIntegrationKeys()
     if (!keys.aiProvider || !keys.aiApiKey) return fail(c, 'ai_not_configured', 400)
+    // A text-only model would queue five hundred images and describe none of them, and the
+    // owner would watch a progress line that never moves. Say no here instead.
+    if (!seesImages(keys.aiProvider, keys.aiModel)) return fail(c, 'ai_cannot_see_images', 400)
     const rows = all<{ path: string }>(
       `select path from media where alt is null and deleted_at is null order by uploaded_at desc`,
     )

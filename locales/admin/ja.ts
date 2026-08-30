@@ -831,6 +831,7 @@ const ja = {
   aiDescribeAll: "代替テキストのない画像を説明する",
   aiDescribeAllStarted: "バックグラウンドで説明中 — キュー内の画像",
   aiNotConfigured: "AI モデル未設定 — 設定 → AI",
+  aiCannotSeeImages: 'このモデルは画像を見られません — 画像を扱えるモデルを選ぶか、代替テキストをオフのままにしてください。',
   navAssistant: "アシスタント",
   assistantIntro: '設定 → AI のモデルで動き、MCP クライアントと同じ道具を使います。制限も同じで、行った操作はすべて履歴に残ります。',
   assistantPlaceholder: "質問するか、仕事を頼んでください…",

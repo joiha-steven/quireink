@@ -102,7 +102,7 @@ describe('getIntegrationStatus', () => {
       purgeWebhookConfigured: false,
       offsiteConfigured: false, s3Bucket: '',
       googleConfigured: false,
-      aiConfigured: false, aiProvider: '', aiModel: '',
+      aiConfigured: false, aiProvider: '', aiModel: '', aiSeesImages: false,
     })
     expect(JSON.stringify(status)).not.toContain('secret')
     expect(JSON.stringify(status)).not.toContain('token')

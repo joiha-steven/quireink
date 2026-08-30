@@ -1,4 +1,5 @@
 // One plug, three sockets: the provider-facing half of every AI job the blog runs.
+// Four names fit the three sockets — DeepSeek shares OpenAI's, see `OPENAI_COMPATIBLE`.
 //
 // Split out of `media/alt-text.ts` on 2026-08-23, the day the SECOND job arrived
 // (excerpts) — the request shapes and answer shapes are provider facts, not image facts,
@@ -11,37 +12,57 @@
 // job's own toggle in Settings → AI.
 
 import { getIntegrationKeys } from '@/store/integration-keys'
+import { AI_PROVIDERS, DEFAULT_MODELS, OPENAI_COMPATIBLE, seesImages } from '@/server/ai-capabilities'
 
-export const DEFAULT_MODELS: Record<string, string> = {
-  anthropic: 'claude-haiku-4-5',
-  openai: 'gpt-4o-mini',
-  gemini: 'gemini-2.0-flash',
-}
+// The tables live in a file that imports nothing (`ai-capabilities.ts`) so the key store
+// can read them without closing a cycle; they are re-exported here because this is where
+// every caller already looks for them.
+export { AI_PROVIDERS, DEFAULT_MODELS, seesImages }
+
+/**
+ * The output ceiling for a one-sentence job, which is not one sentence' worth.
+ *
+ * It was 300, sized for a model that answers and stops. A REASONING model spends the
+ * budget thinking first — measured against `deepseek-v4-flash-vision-exp`, 300 came back
+ * `finish_reason: length` with `content: ""` every time, so alt text silently produced
+ * nothing while the request, the key and the model were all correct. Raising the ceiling
+ * costs nothing on a model that does not reason (it still stops after its sentence); the
+ * answer is trimmed to `cap` characters afterwards either way.
+ */
+const ANSWER_TOKENS = 1500
 
 export type AiRequest = { url: string; headers: Record<string, string>; body: string }
 
 type Part = { text?: string; imageMime?: string; imageB64?: string }
 
-/** Pure: the exact HTTP request each provider wants, for text and image parts alike. */
+/**
+ * Pure: the exact HTTP request each provider wants, for text and image parts alike.
+ *
+ * A picture put in front of a text-only model is refused HERE rather than sent to be
+ * rejected: every AI job already treats null as "quietly do nothing", so the blog behaves
+ * exactly as it does with no key — the upload keeps its empty alt and nothing is invented.
+ */
 export function buildParts(provider: string, model: string, key: string, parts: Part[]): AiRequest | null {
+  if (!seesImages(provider, model) && parts.some((p) => p.text === undefined)) return null
   if (provider === 'anthropic') {
     return {
       url: 'https://api.anthropic.com/v1/messages',
       headers: { 'content-type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01' },
       body: JSON.stringify({
-        model, max_tokens: 300,
+        model, max_tokens: ANSWER_TOKENS,
         messages: [{ role: 'user', content: parts.map((p) => p.text !== undefined
           ? { type: 'text', text: p.text }
           : { type: 'image', source: { type: 'base64', media_type: p.imageMime, data: p.imageB64 } }) }],
       }),
     }
   }
-  if (provider === 'openai') {
+  const base = OPENAI_COMPATIBLE[provider]
+  if (base) {
     return {
-      url: 'https://api.openai.com/v1/chat/completions',
+      url: `${base}/chat/completions`,
       headers: { 'content-type': 'application/json', authorization: `Bearer ${key}` },
       body: JSON.stringify({
-        model, max_tokens: 300,
+        model, max_tokens: ANSWER_TOKENS,
         messages: [{ role: 'user', content: parts.map((p) => p.text !== undefined
           ? { type: 'text', text: p.text }
           : { type: 'image_url', image_url: { url: `data:${p.imageMime};base64,${p.imageB64}` } }) }],
@@ -67,7 +88,7 @@ export function parseText(provider: string, json: unknown, cap = 300): string | 
   const j = json as Record<string, any>
   let text: unknown
   if (provider === 'anthropic') text = j?.content?.[0]?.text
-  else if (provider === 'openai') text = j?.choices?.[0]?.message?.content
+  else if (OPENAI_COMPATIBLE[provider]) text = j?.choices?.[0]?.message?.content
   else if (provider === 'gemini') text = j?.candidates?.[0]?.content?.parts?.[0]?.text
   if (typeof text !== 'string') return null
   const clean = text.trim().replace(/^["'“‘]+|["'’”]+$/g, '').replace(/\s+/g, ' ').slice(0, cap).trim()
@@ -95,7 +116,12 @@ export async function ask(parts: Part[], cap = 300): Promise<string | null> {
       console.error(`[ERROR] ai: ${keys.aiProvider} answered ${res.status}`)
       return null
     }
-    return parseText(keys.aiProvider, await res.json(), cap)
+    const answer = parseText(keys.aiProvider, await res.json(), cap)
+    // A 200 that carries no text is the quietest failure this file has: everything is
+    // configured, nothing is logged by the branch above, and the job just does not happen.
+    // It is how the reasoning-model token ceiling hid for a whole afternoon.
+    if (answer === null) console.error(`[ERROR] ai: ${keys.aiProvider} answered 200 with no text`)
+    return answer
   } catch (error) {
     console.error(`[ERROR] ai: ${(error as Error).message}`)
     return null
@@ -119,8 +145,8 @@ export async function listModels(provider: string, key: string): Promise<ModelCh
   if (provider === 'anthropic') {
     url = 'https://api.anthropic.com/v1/models?limit=100'
     headers = { 'x-api-key': key, 'anthropic-version': '2023-06-01' }
-  } else if (provider === 'openai') {
-    url = 'https://api.openai.com/v1/models'
+  } else if (OPENAI_COMPATIBLE[provider]) {
+    url = `${OPENAI_COMPATIBLE[provider]}/models`
     headers = { authorization: `Bearer ${key}` }
   } else if (provider === 'gemini') {
     url = 'https://generativelanguage.googleapis.com/v1beta/models?pageSize=200'
@@ -140,7 +166,7 @@ export function parseModels(provider: string, json: unknown): ModelChoice[] {
       .map((m) => ({ id: String(m.id ?? ''), label: String(m.display_name || m.id || '') }))
       .filter((m) => m.id)
   }
-  if (provider === 'openai') {
+  if (OPENAI_COMPATIBLE[provider]) {
     return ((j?.data ?? []) as Record<string, any>[])
       .map((m) => String(m.id ?? ''))
       .filter((id) => id && !OPENAI_SKIP.test(id))
