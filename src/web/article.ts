@@ -134,7 +134,7 @@ export async function renderArticle(slug: string): Promise<string | null> {
           escapeAttr(series.slug)}">${escapeHtml(series.name)}</a> · ${escapeHtml(s.seriesPartPrefix)} ${
           series.currentIndex + 1}/${series.posts.length}</p><ol>${
           series.posts.map((p) => (p.slug === post.slug
-            ? `<li aria-current="true">${escapeHtml(p.title)}</li>`
+            ? `<li aria-current="page">${escapeHtml(p.title)}</li>`
             : `<li><a href="/${escapeAttr(p.slug)}">${escapeHtml(p.title)}</a></li>`)).join('')
         }</ol></aside>`
       : ''

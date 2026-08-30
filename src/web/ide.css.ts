@@ -124,6 +124,9 @@ html[data-ide-chrome=on] aside.series ol{list-style:none;padding-left:0;counter-
 html[data-ide-chrome=on] aside.series li{counter-increment:part;position:relative;padding-left:4ch}
 html[data-ide-chrome=on] aside.series li::before{content:"[" counter(part) "]";position:absolute;
   left:0;top:0;color:var(--c-meta);font-variant-numeric:tabular-nums}
+/* The accent bar hugs the card's inner edge in both modes; this list has no ol padding, so
+   the offset that reaches that edge is the card's own 1.5rem, not the base list's 2.75. */
+html[data-ide-chrome=on] aside.series li[aria-current]::after{left:-1.5rem}
 
 /* The feed's right gutter is a year over its months, which is a PATH and not a count — so
    it takes a separator rather than brackets. The year is sticky, so exactly one is ever on
