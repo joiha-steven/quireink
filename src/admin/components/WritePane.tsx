@@ -197,27 +197,18 @@ function Rows({
             // The date beside "Published" is the PUBLICATION date — showing the last save
             // there read as a wrong publish time. A draft's only honest date is its save.
             const when = !drafty && it.kind === 'post' ? it.created : it.touched
-            // THE OPEN ROW HAS TO BE FINDABLE AT A GLANCE. It was white on the pane's
-            // neutral-50 — a difference you can measure and cannot see, on the one row the
-            // column exists to point at. Three signals now, because one of them is always the
-            // wrong one for somebody: the lifted ground, the title in full weight (already
-            // there), and a bar down the left edge in the pen's own accent — the only colour
-            // this admin spends, and the reason it is spent here is that this is the only
-            // "you are here" the write screen has.
-            //
-            // The bar is `absolute` inside a `relative` row rather than a left border: a
-            // border would move every title 2px right on selection, so the list would twitch
-            // as you walked it.
+            // THE OPEN ROW IS A KEY HELD DOWN, in the pen — the same mark, at the same
+            // strength, as the rail's current page and the active tab. It went white-on-
+            // neutral-50 (invisible), then bar-plus-lifted-ground, and each was its own
+            // dialect; the admin now says "you are here" exactly one way: full pen, carved
+            // in. An inset moves no text, so the list still does not twitch as you walk it.
             const rowClass = `relative block border-b border-neutral-100 px-4 py-3 dark:border-neutral-800 ${
               active
-                ? 'bg-white dark:bg-neutral-900'
+                ? 'bg-[var(--pen)] shadow-[inset_0_2px_3px_rgba(0,0,0,.3),inset_0_-1px_0_rgba(255,255,255,.35)]'
                 : ticked
                   ? 'bg-white dark:bg-neutral-900'
                   : 'hover:bg-white/60 dark:hover:bg-neutral-900/60'
             }`
-            const marker = active ? (
-              <span aria-hidden className="absolute inset-y-0 left-0 w-[3px] bg-[var(--pen-edge)]" />
-            ) : null
             const body = (
               <span className="flex items-baseline gap-2">
                   {/* The box takes the DOT'S place rather than standing beside it. Adding a
@@ -237,21 +228,22 @@ function Rows({
                     <span
                       aria-hidden
                       className={`mt-1.5 h-1.5 w-1.5 shrink-0 self-start rounded-full ${
-                        drafty ? 'bg-[var(--pen-edge)]' : 'bg-neutral-300 dark:bg-neutral-600'
+                        active ? (drafty ? 'bg-neutral-900' : 'bg-neutral-600')
+                        : drafty ? 'bg-[var(--pen-edge)]' : 'bg-neutral-300 dark:bg-neutral-600'
                       }`}
                     />
                   )}
                   <span className="min-w-0">
-                    <span className={`block text-sm ${active ? 'font-semibold' : 'font-medium'} text-neutral-900 dark:text-white ${!it.title ? 'italic text-neutral-500 dark:text-neutral-400' : ''}`}>
+                    <span className={`block text-sm ${active ? 'font-semibold text-neutral-950' : 'font-medium text-neutral-900 dark:text-white'} ${!it.title ? 'italic text-neutral-500 dark:text-neutral-400' : ''}`}>
                       {it.title ? <Marked text={it.title} needle={query} /> : t.untitled}
                     </span>
                     {under && (
-                      <span className="mt-0.5 line-clamp-2 block text-xs text-neutral-500 dark:text-neutral-400">
+                      <span className={`mt-0.5 line-clamp-2 block text-xs ${active ? 'text-neutral-700' : 'text-neutral-500 dark:text-neutral-400'}`}>
                         {it.kind === 'page' && <span className="mr-1 text-neutral-500 dark:text-neutral-400">{t.kindPage}</span>}
                         <Marked text={under} needle={query} />
                       </span>
                     )}
-                    <span className="mt-1 block text-xs text-neutral-500 dark:text-neutral-400">
+                    <span className={`mt-1 block text-xs ${active ? 'text-neutral-700' : 'text-neutral-500 dark:text-neutral-400'}`}>
                       {(drafty ? t.statusDraft : t.statusPublished)}
                       {when ? ` · ${formatDateTimeShort(new Date(when).toISOString())}` : ''}
                       {!drafty && views[`/${it.slug}`] ? ` · ${views[`/${it.slug}`].toLocaleString()}` : ''}
@@ -273,7 +265,6 @@ function Rows({
                 aria-current={active ? 'page' : undefined}
                 className={rowClass}
               >
-                {marker}
                 {body}
               </Link>
             )
