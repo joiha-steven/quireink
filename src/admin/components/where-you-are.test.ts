@@ -34,11 +34,11 @@ describe('the highlighter marks a place', () => {
   })
 
   it('marks the page you are on in the rail', () => {
-    // A KEY HELD DOWN in the pen's wash: what this pins is the INK and the STATE — the mark
-    // is drawn from --pen, and it is carved in (an inset), not a solid slab of the marker.
-    expect(SIDEBAR_NAV_ACTIVE).toContain('var(--pen)')
+    // A KEY HELD DOWN in the pen — the SAME full ink the active tab wears, carved in. What
+    // this pins is the INK and the STATE: drawn from --pen, at full strength, with an inset.
+    expect(SIDEBAR_NAV_ACTIVE).toContain('bg-[var(--pen)]')
+    expect(SIDEBAR_NAV_ACTIVE).toContain('text-[var(--on-pen)]')
     expect(SIDEBAR_NAV_ACTIVE).toContain('shadow-[inset')
-    expect(SIDEBAR_NAV_ACTIVE).not.toContain('bg-[var(--pen)]')
   })
 })
 
@@ -76,7 +76,9 @@ describe('the mark cannot be painted over', () => {
     expect(SIDEBAR_NAV_QUIET).not.toContain('hover:')
     expect(SIDEBAR_NAV_ACTIVE).not.toContain('hover:')
     // The inactive row still has one — it is the only feedback that a row is a link.
-    expect(SIDEBAR_NAV).toContain('hover:bg-neutral-100')
+    // `neutral-200/70`, because the rail sits on the paper canvas and neutral-100 was
+    // invisible against it.
+    expect(SIDEBAR_NAV).toContain('hover:bg-neutral-200/70')
   })
 
   it('composes the active row from the quiet base', () => {

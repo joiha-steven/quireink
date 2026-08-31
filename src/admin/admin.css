@@ -580,7 +580,7 @@ input[type='color']::-moz-color-swatch {
 }
 .fader::-webkit-slider-thumb {
   -webkit-appearance: none; width: .8rem; height: 1.4rem; border-radius: .25rem;
-  background: #171717; margin-top: -.42rem;
+  background: #171717; margin-top: -.36rem;
   box-shadow: 0 1px 2px rgb(0 0 0 / .35), inset 0 1px 1px rgb(255 255 255 / .4), inset 0 -1.5px 2px rgb(0 0 0 / .35);
 }
 .fader::-moz-range-track {

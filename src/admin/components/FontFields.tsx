@@ -47,7 +47,7 @@ export function FontFields({
                   // Sunken, not inverted: a solid ink tile can show neither relief nor — worse,
                     // on a FONT picker — the face it is selling. The chosen tile is a key
                     // pressed into the card, wearing its own specimen in its own ink.
-                    ? 'border-neutral-400 bg-neutral-100 font-semibold text-neutral-950 shadow-[inset_0_2px_3px_rgba(0,0,0,.16)] dark:border-neutral-500 dark:bg-neutral-800 dark:text-white dark:shadow-[inset_0_2px_3px_rgba(0,0,0,.5)]'
+                    ? 'border-neutral-400 bg-neutral-200 font-semibold text-neutral-950 shadow-[inset_0_2px_3px_rgba(0,0,0,.18)] dark:border-neutral-500 dark:bg-neutral-950 dark:text-white dark:shadow-[inset_0_2px_3px_rgba(0,0,0,.6)]'
                   : 'border-neutral-300 text-neutral-700 hover:border-neutral-500 dark:border-neutral-700 dark:text-neutral-300'
               }`}
               style={{ fontFamily: f.stack }}
@@ -81,7 +81,7 @@ export function FontFields({
                     // Sunken, not inverted: a solid ink tile can show neither relief nor — worse,
                     // on a FONT picker — the face it is selling. The chosen tile is a key
                     // pressed into the card, wearing its own specimen in its own ink.
-                    ? 'border-neutral-400 bg-neutral-100 font-semibold text-neutral-950 shadow-[inset_0_2px_3px_rgba(0,0,0,.16)] dark:border-neutral-500 dark:bg-neutral-800 dark:text-white dark:shadow-[inset_0_2px_3px_rgba(0,0,0,.5)]'
+                    ? 'border-neutral-400 bg-neutral-200 font-semibold text-neutral-950 shadow-[inset_0_2px_3px_rgba(0,0,0,.18)] dark:border-neutral-500 dark:bg-neutral-950 dark:text-white dark:shadow-[inset_0_2px_3px_rgba(0,0,0,.6)]'
                     : 'border-neutral-300 text-neutral-700 hover:border-neutral-500 dark:border-neutral-700 dark:text-neutral-300'
                 }`}
                 style={{ fontFamily: f.sans ?? `'Inter'` }}
