@@ -47,7 +47,7 @@ Mở một bài viết tốn khoảng 100 KB. Một tấm ảnh chụp bằng đ
 
 Đọc cho dễ chịu là chủ đích của cả dự án. Sáu bảng màu sáng và tối, bốn font đọc, chế độ sách dàn hai cột như trang giấy, và bút dạ quang năm màu mực để tô những câu tâm đắc.
 
-Một trợ lý AI có thể viết thay bạn. Nối Claude hoặc một MCP client khác vào rồi bảo *"viết một bài 600 chữ về chuyến đi hôm nay, gắn thẻ du lịch, đăng lên"*, nó sẽ soạn và đăng qua đúng những luật bạn đang dùng. Quyền của nó là một token, bạn thu hồi bằng một cú bấm.
+Một trợ lý AI có thể viết thay bạn, từ hai đầu. Nối Claude hoặc một MCP client khác vào rồi bảo *"viết một bài 600 chữ về chuyến đi hôm nay, gắn thẻ du lịch, đăng lên"*, nó sẽ soạn và đăng qua đúng những luật bạn đang dùng; quyền của nó là một token, bạn thu hồi bằng một cú bấm. Hoặc bỏ khoá của chính bạn vào phần Cài đặt, thế là trợ lý ngồi ngay trong trang quản trị — bốn nhà cung cấp để chọn, câu trả lời hiện ra theo lúc nó viết, mọi cuộc trò chuyện đều được giữ lại, và mỗi cuộc có một hoá đơn ghi nó tốn bao nhiêu.
 
 Để bắt đầu, bạn cần một tên miền và một máy chủ thuê; loại rẻ nhất là đủ. Lần dựng đầu tiên là việc kỹ thuật, nên hãy nhờ người biết về máy chủ hoặc giao hẳn cho một agent ([mục Cài đặt](#cài-đặt)). Sau đó thì viết, đăng, đổi giao diện và xem thống kê đều nằm trong trang quản trị; chỉ khi nâng cấp mới phải quay lại dòng lệnh.
 
@@ -85,7 +85,7 @@ Bạn được đọc, sửa, chạy và fork nó theo [PolyForm Noncommercial](
 | 🖍️&nbsp;**Cây&nbsp;bút** | `==chữ==` tô năm màu mực, `++chữ++` gạch dưới bằng bút chì, `@@chữ@@` khoanh tròn bằng bút bi đỏ. Không phải ô màu — nét sinh từ một bàn tay có hạt giống, không hai vệt nào trên trang giống nhau và mỗi cụm chữ giữ nét riêng. Màu mực đo từ ảnh chụp một hộp bút thật |
 | 💻&nbsp;**Code** | Tô màu ở máy chủ, người đọc không tải bộ tô màu nào. Hai mươi mốt ngôn ngữ, và những tên hay gõ (`typescript`, `sh`) đều nhận ra. Hàng rào không ghi ngôn ngữ thì được đoán — đoán dè dặt, để output của chương trình vẫn để trơn |
 | 🔍&nbsp;**Đọc** | Tìm kiếm trả lời ngay trong lúc gõ. Cột bên có chuyên mục và thẻ, hoặc mục lục của bài đang đọc. Bài liên quan, thời gian đọc, thanh tiến độ. Và **chế độ sách**: hai cột trên nền giấy, có chữ cái đầu lớn. Cuối bài có đọc tiếp, và chỗ đọc dở được giữ cho lần quay lại |
-| 📈&nbsp;**Số&nbsp;liệu** | Thống kê không dùng cookie. Ai đọc bài nào, đọc tới đâu, đến từ đâu. Kèm nhật ký hoạt động, thùng rác hoàn tác được, và một trang trợ giúp |
+| 📈&nbsp;**Số&nbsp;liệu** | Thống kê không dùng cookie. Ai đọc bài nào, đọc tới đâu, đến từ đâu — và đúng trang đó cho riêng từng bài. Kèm nhật ký hoạt động, thùng rác hoàn tác được, và một trang trợ giúp |
 | 💬&nbsp;**Bình&nbsp;luận** | Người đọc bình luận không cần tài khoản. Trang tự ký thử thách chống spam — không bên thứ ba nào; có khoá Turnstile thì Turnstile tiếp quản. Dọn rác là đưa vào thùng, không phải xoá hẳn |
 | 🔎&nbsp;**Máy&nbsp;tìm&nbsp;kiếm** | Sitemap, RSS, `robots.txt`, `llms.txt`, và ảnh chia sẻ vẽ riêng cho từng bài. Đổi đường dẫn thì link cũ vẫn tự chạy |
 | 📬&nbsp;**Bản&nbsp;tin** | Đăng ký có email xác nhận, một số gửi đi khi bạn đăng bài, và một lời nhắn khi bình luận được trả lời. SMTP của riêng bạn |
@@ -93,7 +93,9 @@ Bạn được đọc, sửa, chạy và fork nó theo [PolyForm Noncommercial](
 | 💾&nbsp;**Sao&nbsp;lưu** | Một nút tải cả blog về máy bạn, snapshot theo lịch giữ trên máy chủ, và mỗi snapshot cũng được gửi lên bucket R2/S3 của chính bạn. [Chi tiết](./docs/backups.md) |
 | 📥&nbsp;**Dọn&nbsp;nhà&nbsp;sang** | Tải lên XML của WordPress, JSON của Ghost, hay tệp ZIP mà Substack/Medium gửi qua email — máy chủ tự nhận ra của ai. Tất cả thành Markdown, shortcode chết được quét sạch trên đường vào, URL cũ được chuyển hướng sẵn, và ảnh được tải về thư viện của bạn |
 | 🌍&nbsp;**Ngôn&nbsp;ngữ** | Mười một thứ tiếng, cả trong quản trị lẫn ngoài site — và cộng đồng có thể thêm nữa, mỗi ngôn ngữ một file. Không kèm webfont CJK nào — chúng nặng hàng megabyte — nhưng mỗi thứ tiếng gọi tên mặt chữ riêng, nên 直 được vẽ theo lối Nhật trên site tiếng Nhật |
-| 🔐&nbsp;**Đăng&nbsp;nhập** | Tên và mật khẩu của riêng bạn, băm bằng argon2id. Mã xác thực mỗi lần vào, và mười mã khôi phục cho ngày mất điện thoại. Không có Google trong đường đăng nhập |
+| 🔐&nbsp;**Đăng&nbsp;nhập** | Tên và mật khẩu của riêng bạn, băm bằng argon2id. Mã xác thực mỗi lần vào, và mười mã khôi phục cho ngày mất điện thoại. Đổi mật khẩu, ghi danh lại ứng dụng xác thực, và xem mọi thiết bị đang đăng nhập kèm nút cắt — từng cái một hoặc tất cả. Có cả đường quay lại cho ngày mất CẢ mật khẩu lẫn điện thoại. Không có Google trong đường đăng nhập |
+| 🤖&nbsp;**Trợ&nbsp;lý** | Khoá model của chính bạn, ngay trong trang quản trị: Claude, GPT, Gemini hay DeepSeek. Câu trả lời hiện ra theo lúc nó viết, các cuộc trò chuyện được giữ và liệt kê, mỗi cuộc kèm hoá đơn. Nó cũng viết chú thích cho ảnh bạn vừa tải lên và gạt spam vào thùng rác |
+| ⌨️&nbsp;**Trang&nbsp;quản&nbsp;trị** | ⌘K nhảy thẳng tới bất kỳ cái nào trong 245 thiết lập bằng tên, nên không còn phải nhớ nó nằm ở tab nào trong tám tab. Mọi nút đều có độ nổi: nhô lên là bấm được, lõm xuống là đang giữ. Sáu tổ hợp phím trong trình soạn |
 | 📱&nbsp;**Điện&nbsp;thoại** | Cài ra màn hình chính là nó mở như một ứng dụng |
 
 **Làm cho** một người, một máy chủ, một cái blog định giữ lâu dài.
@@ -120,9 +122,9 @@ Hai dòng CSS và JavaScript là sản phẩm của bản build, giống nhau �
 | | Trang chủ | Một bài | |
 |:---|---:|---:|:---|
 | **Số&nbsp;request** | 8 | 9 | |
-| **Tổng&nbsp;tải&nbsp;về** | **102&nbsp;KB** | **100&nbsp;KB** | 68&nbsp;KB trong đó là font |
-| **JavaScript** | **4,0&nbsp;KB** | **10,3&nbsp;KB** | viết tay, không framework |
-| **CSS** | 9,6&nbsp;KB | 9,6&nbsp;KB | +20&nbsp;KB chỉ ở trang có vệt bút |
+| **Tổng&nbsp;tải&nbsp;về** | **103&nbsp;KB** | **101&nbsp;KB** | 68&nbsp;KB trong đó là font |
+| **JavaScript** | **4,1&nbsp;KB** | **10,4&nbsp;KB** | viết tay, không framework |
+| **CSS** | 10,6&nbsp;KB | 10,6&nbsp;KB | +20&nbsp;KB chỉ ở trang có vệt bút |
 | **Request&nbsp;bên&nbsp;thứ&nbsp;ba** | **0** | **0** | không CDN, không font host, không tracker |
 | **Lần&nbsp;vào&nbsp;sau** | ~20&nbsp;KB | ~11&nbsp;KB | chỉ tải lại HTML; bài dài thì nặng hơn |
 

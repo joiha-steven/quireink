@@ -156,6 +156,22 @@ character and none of its typographic rules **except one**, below.
   them reaches for the marker. ⚠️ The active row is composed from `SIDEBAR_NAV_QUIET`, which has NO hover:
   both hovers are rules on the same property and Tailwind decides which lands last, so
   pointing at the page you were already on repainted it grey. Structure, not out-ranking.
+- **TWO control heights, and only two (2026-09-01).** `CONTROL`/`Button` `md` are **36px**
+  and move together — a field two pixels proud of the button that acts on it is one row
+  broken. `CONTROL_SM`/`Button` `sm`/the segmented strip are **32px**, which is what a
+  SHEET'S TOOLS ROW wears throughout: the strip sets that row's height, being the widest
+  object on it and the first one read, and the key and the field beside it answer to it. The
+  ordinary control was 40 until this release — a number the admin arrived with rather than
+  one anyone measured. ⚠️ A caller cannot shrink a control by passing `h-8`: it loses to
+  `min-h-9`, which is a different property. `Select` swaps its BASE (`small`) instead.
+- **Enclosure weakens inward.** The sheet's edge, then the card's, then whatever is in the
+  card — each line lighter than the one around it. It ran backwards until 2026-09-01: the
+  sheet `neutral-200/80`, the card `neutral-100`, and a box inside the card `neutral-200` at
+  the card's own 8px radius, so the innermost frame shouted loudest and drew a corner inside
+  an identical corner. A LIST inside a card is therefore not a box at all — `PANEL_LIST` is
+  ruled top and bottom at the card's full width (`-mx-4` against the body's `p-4`), the shape
+  the card's own title row already has, and the rows keep their padding so their labels land
+  on the left edge every other label in the card uses.
 - **Admin is monochrome, plus exactly ONE accent: the product's highlighter** (the Writing
   Desk mock's `--pen`, 2026-08-17). Its roles are named and closed — where you are (above), a
   search hit as a `<mark>` in the write pane, and the small dots that mean "work in progress"
