@@ -2,11 +2,9 @@
 //  - Toolbar: the full button row under the title (formatted view only) — the owner's
 //    explicit pick, see its header for the round trip it survived.
 //  - SlashMenu: the same inserts, opened at the caret by typing "/" on an empty line.
-//  - BubbleBar: a floating menu that pops up on a text selection or with the
-//    cursor inside a link — formatting + quick link edit/remove.
+//  - BubbleBar: a floating menu on a text selection or with the cursor inside a link.
 // All need the editor to re-render on selection change; Editor.tsx enables
-// `shouldRerenderOnTransaction` so isActive() stays live (off by default in
-// TipTap 3, which is why the table row / active highlights weren't updating).
+// `shouldRerenderOnTransaction` so isActive() stays live (off by default in TipTap 3).
 import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import { type Editor as TiptapEditor } from '@tiptap/react'
 import { BubbleMenu } from '@tiptap/react/menus'
@@ -16,12 +14,14 @@ import { useAdminT } from './I18nProvider'
 import { DEFAULT_INK, INKS } from '@/render/ink'
 import { PEN_LIGHT } from '@/render/pen'
 import { tip } from './editorKeys'
+// Link, picture and bin come from the shared set; the rest is editing notation, drawn here.
+import { SharedGlyph as Shared } from './navIcons'
 
 const BTN = 'grid h-9 min-w-9 shrink-0 place-items-center rounded-md px-1 text-[15px] hover:bg-white dark:hover:bg-neutral-700'
 
 function Glyph({ children }: { children: React.ReactNode }) {
   return (
-    <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
       {children}
     </svg>
   )
@@ -123,7 +123,7 @@ export function Toolbar({
           else range.setLink({ href: url }).run()
         }}
       >
-        <Glyph><path d="M10 13a4.5 4.5 0 0 0 6.4.1l2-2a4.5 4.5 0 0 0-6.4-6.4l-1.1 1.1M14 11a4.5 4.5 0 0 0-6.4-.1l-2 2a4.5 4.5 0 0 0 6.4 6.4l1.1-1.1" /></Glyph>
+        <Glyph><Shared name="link" /></Glyph>
       </ToolButton>
       <ToolButton label={t.tbImage} onClick={onPickImage}><Glyph><rect x="3.5" y="4.5" width="17" height="15" rx="1.5" /><circle cx="8" cy="9" r="1.5" /><path d="m4 17 5-5 4 4 3-3 4 4" /></Glyph></ToolButton>
       <ToolButton label={t.tbGallery} onClick={onPickGallery}><Glyph><rect x="5" y="5" width="14" height="14" rx="1.5" /><path d="M8 5V3h13v13h-2M6 16l4-4 3 3 2-2 4 4" /></Glyph></ToolButton>
@@ -150,7 +150,7 @@ export function Toolbar({
           <ToolButton label={t.tbColDel} onClick={() => editor.chain().focus().deleteColumn().run()}><span className="text-[10px] font-bold">C−</span></ToolButton>
           <ToolButton label={t.tbRowAdd} onClick={() => editor.chain().focus().addRowAfter().run()}><span className="text-[10px] font-bold">R+</span></ToolButton>
           <ToolButton label={t.tbRowDel} onClick={() => editor.chain().focus().deleteRow().run()}><span className="text-[10px] font-bold">R−</span></ToolButton>
-          <ToolButton label={t.tbTableDelete} onClick={() => editor.chain().focus().deleteTable().run()}><Glyph><path d="M5 7h14M9 7V5h6v2M7 7l1 12h8l1-12" /></Glyph></ToolButton>
+          <ToolButton label={t.tbTableDelete} onClick={() => editor.chain().focus().deleteTable().run()}><Glyph><Shared name="trash" /></Glyph></ToolButton>
         </>
       )}
       </div>
