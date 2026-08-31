@@ -192,16 +192,33 @@ export function useUnsavedGuard(isDirty: () => boolean): void {
 export function useStickyOffset(ref: { current: HTMLElement | null }): number {
   const [top, setTop] = useState(0)
   useEffect(() => {
-    const bar = ref.current
-    if (!bar) return
+    // The bar this measures is rendered INSIDE the editor, and the editor mounts async —
+    // on this effect's first run `ref.current` is still null. The old early-return made
+    // that permanent: the effect never re-ran (its dep is the stable ref object), the
+    // offset stayed 0, and the toolbar spent its sticky life underneath the action bar,
+    // which read as the toolbar disappearing on scroll. So wait for the mount instead.
+    let observer: ResizeObserver | null = null
+    let raf = 0
     const desktop = window.matchMedia('(min-width: 1024px)')
-    const sync = () => setTop(desktop.matches ? Math.ceil(bar.getBoundingClientRect().height + 16) : 0)
-    const observer = new ResizeObserver(sync)
-    observer.observe(bar)
-    desktop.addEventListener('change', sync)
-    sync()
+    let sync = () => {}
+    const attach = () => {
+      const bar = ref.current
+      if (!bar) {
+        raf = requestAnimationFrame(attach)
+        return
+      }
+      // FLUSH under the bar — the toolbar's own border draws the seam. The old +16 dated
+      // from the window-scroll era and left a crack of page between the two stuck rows.
+      sync = () => setTop(desktop.matches ? Math.ceil(bar.getBoundingClientRect().height) : 0)
+      observer = new ResizeObserver(() => sync())
+      observer.observe(bar)
+      desktop.addEventListener('change', sync)
+      sync()
+    }
+    attach()
     return () => {
-      observer.disconnect()
+      cancelAnimationFrame(raf)
+      observer?.disconnect()
       desktop.removeEventListener('change', sync)
     }
   }, [ref])

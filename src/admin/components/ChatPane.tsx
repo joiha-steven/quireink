@@ -55,17 +55,17 @@ export function ChatPane({ chats, activeId, onOpen, onNew, onDelete, busy }: {
               const active = c.id === activeId
               return (
                 <li key={c.id} className="relative border-b border-neutral-100 dark:border-neutral-800">
-                  {/* The open chat is a key held down in the pen — the same one mark the
-                      write pane, the rail and the tabs make. An inset shifts no text. */}
+                  {/* The open chat is a key held down — carved on the paper ground, same
+                      as the write pane's open piece. An inset shifts no text. */}
                   <button
                     type="button"
                     onClick={() => onOpen(c.id)}
-                    className={`block w-full px-4 py-3 text-left ${active ? 'bg-[var(--pen)] shadow-[inset_0_2px_3px_rgba(0,0,0,.3),inset_0_-1px_0_rgba(255,255,255,.35)]' : ''}`}
+                    className={`block w-full px-4 py-3 text-left ${active ? 'bg-white shadow-[inset_0_2px_3px_rgba(0,0,0,.14)] dark:bg-neutral-900 dark:shadow-[inset_0_2px_3px_rgba(0,0,0,.5)]' : ''}`}
                   >
-                    <span className={`block truncate text-sm ${active ? 'font-semibold text-neutral-950' : 'text-neutral-700 dark:text-neutral-300'}`}>
+                    <span className={`block truncate text-sm ${active ? 'font-semibold text-neutral-900 dark:text-neutral-100' : 'text-neutral-700 dark:text-neutral-300'}`}>
                       {c.title || t.assistantUntitled}
                     </span>
-                    <span className={`mt-0.5 flex items-center gap-2 ${active ? 'text-xs text-neutral-700' : META}`}>
+                    <span className={`mt-0.5 flex items-center gap-2 ${META}`}>
                       <span>{formatDateTimeShort(c.updatedAt)}</span>
                       {c.context > 0 && <span className="tabular-nums">{tokens(c.context)}</span>}
                     </span>
