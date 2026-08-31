@@ -35,7 +35,7 @@ function ToolButton({ label, active = false, onClick, children }: { label: strin
       aria-label={label}
       aria-pressed={active || undefined}
       onClick={onClick}
-      className={`${BTN} ${active ? 'bg-white text-neutral-950 ring-1 ring-neutral-200 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600' : 'text-neutral-600 dark:text-neutral-300'}`}
+      className={`${BTN} ${active ? 'bg-white text-neutral-950 shadow-[inset_0_1.5px_2px_rgba(0,0,0,.14)] ring-1 ring-neutral-200 dark:bg-neutral-700 dark:text-white dark:shadow-[inset_0_1.5px_2px_rgba(0,0,0,.5)] dark:ring-neutral-600' : 'text-neutral-600 dark:text-neutral-300'}`}
     >
       {children}
     </button>
@@ -308,7 +308,7 @@ function InkButtons({ editor, hold }: { editor: TiptapEditor; hold: (e: React.Mo
 export function BubbleBar({ editor, avoidTop }: { editor: TiptapEditor; avoidTop: number }) {
   const t = useAdminT()
   const cls = (active: boolean) =>
-    `rounded-md px-2 py-1 text-sm ${active ? 'bg-neutral-200 text-neutral-900 dark:bg-neutral-700 dark:text-white' : 'text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-700'}`
+    `rounded-md px-2 py-1 text-sm ${active ? 'bg-neutral-200 text-neutral-900 shadow-[inset_0_1.5px_2px_rgba(0,0,0,.16)] dark:bg-neutral-700 dark:text-white dark:shadow-[inset_0_1.5px_2px_rgba(0,0,0,.5)]' : 'text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-700'}`
   // Keep the selection while clicking (mousedown would otherwise blur the editor
   // and collapse it before the command runs).
   const hold = (e: React.MouseEvent) => e.preventDefault()

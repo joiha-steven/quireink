@@ -77,8 +77,11 @@ function PresetCard({
   onPick: () => void
   onToggleShown: () => void
 }) {
+  // The card is a KEY, so being edited is being HELD DOWN: the carved inset from the relief
+  // grammar, on top of the darker edge it already wore. Hidden stays a dashed edge and
+  // NOTHING else — the colours are what the card exists to show (see the warning below).
   const state = editing
-    ? 'border-neutral-900 bg-neutral-50 dark:border-white dark:bg-neutral-800'
+    ? 'border-neutral-900 bg-neutral-50 shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.12)] dark:border-white dark:bg-neutral-800 dark:shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.45)]'
     : 'border-neutral-200 bg-white hover:border-neutral-400 hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-600 dark:hover:bg-neutral-800'
   return (
     <div className="group">
@@ -102,7 +105,7 @@ function PresetCard({
          * A dashed edge says "not in the switcher" in the neutral scale, which is where a
          * state belongs; the checkbox under the card says it in words either way.
          */
-        className={`block w-full rounded-lg border p-2 text-left transition ${shown ? '' : 'border-dashed'} ${state}`}
+        className={`block w-full rounded-lg border p-2 text-left transition active:translate-y-px active:duration-0 motion-reduce:active:translate-y-0 ${shown ? '' : 'border-dashed'} ${state}`}
       >
         <div className="flex h-14 overflow-hidden rounded-lg">
           <MiniMode c={theme.light} />
@@ -113,7 +116,9 @@ function PresetCard({
             {name}
           </span>
           {isDefault && (
-            <span className="rounded-md bg-neutral-900 px-1.5 py-0.5 text-xs font-medium text-white dark:bg-white dark:text-neutral-900">
+            // A quiet outline, not a solid ink block: on a card whose whole job is to show
+            // seven colours, a filled black pill was the loudest thing in the frame.
+            <span className="whitespace-nowrap rounded-full border border-neutral-300 px-1.5 py-0.5 text-[11px] text-neutral-500 dark:border-neutral-600 dark:text-neutral-400">
               {defaultLabel}
             </span>
           )}
