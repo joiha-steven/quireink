@@ -9,33 +9,39 @@ import { CONTROL_GROUP } from './kit'
 /**
  * ONE width for a colour cell, so the two column heads sit exactly over the two columns.
  *
- * 132px holds a 28px swatch and `#FCFCFC` — seven characters and a hash is the WIDEST thing
- * this control ever carries, and it is what the width is cut for. It was 148px when the
- * swatch and the field were two separate boxes with a gap; welding them gave 16px back on
- * every one of twenty-eight cells.
+ * 132px holds the well, the fixed hash and six hex characters with air — `FCFCFC` is the
+ * WIDEST value the field carries now that the hash is chrome rather than content. It was
+ * 148px when the swatch and the field were two separate boxes with a gap.
  */
 export const CELL = 'w-[8.25rem]'
 
 /**
- * A colour, as ONE control: the swatch is the field's leading edge, not a neighbour.
+ * A colour, as ONE control: an INK WELL carved into the field, then the hex.
+ *
+ * The well is round on purpose. Two rectangles welded at a seam read as two controls from
+ * two machines; a round well of ink sits in the same family as the wordmark's filled stop
+ * and the small state dots, and its carved lip (dark above, light below — held INK, in the
+ * relief grammar) keeps even `#FCFCFC` visible as a well rather than a hole in the card.
  *
  * ⚠️ `<input type="color">` IS PAINTED BY THE OPERATING SYSTEM. Border, radius and ring set
  * on it are advice the browser is free to ignore, and macOS does — it draws its own corner
  * and its own inner shadow, so the palette editor showed twenty-eight chunky shadowed
  * squares whose rounding did not match anything else on the screen and could not be made to.
- *
  * So the native input is still the control — it opens the OS picker, it is what a screen
- * reader and a keyboard find — but it paints NOTHING: it is transparent and stretched over a
- * span we draw ourselves. The swatch you see is that span's background.
+ * reader and a keyboard find — but it paints NOTHING: it is transparent and stretched over
+ * the well, whose background is the value.
  *
- * `ring-inset ring-black/10` is not decoration either: the lightest palette value is
- * `#FCFCFC` on a white card, and without an inner edge that swatch is an invisible hole.
+ * The hash is CHROME, not content: it sits fixed in the meta shade so a column of hexes
+ * lines up on its digits, and the field stores it back for any bare hex typed in. A value
+ * that is not a bare hex (an rgba() someone pasted) passes through untouched.
  */
 export function ColorField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  const bare = value.startsWith('#') ? value.slice(1) : value
+  const put = (v: string) => onChange(/^[0-9a-fA-F]{3,8}$/.test(v.trim()) ? `#${v.trim()}` : v)
   return (
-    <span className={`flex h-8 shrink-0 items-center overflow-hidden ${CONTROL_GROUP} ${CELL}`}>
+    <span className={`flex h-8 shrink-0 items-center gap-1.5 px-2 ${CONTROL_GROUP} ${CELL}`}>
       <span
-        className="relative h-full w-7 shrink-0 border-r border-neutral-300 ring-1 ring-inset ring-black/10 dark:border-neutral-700 dark:ring-white/10"
+        className="relative h-[1.05rem] w-[1.05rem] shrink-0 rounded-full ring-1 ring-black/15 shadow-[inset_0_1.5px_2px_rgba(0,0,0,.35),inset_0_-1px_1px_rgba(255,255,255,.28)] dark:ring-white/20"
         style={{ background: value }}
       >
         <input
@@ -43,18 +49,17 @@ export function ColorField({ label, value, onChange }: { label: string; value: s
           value={value}
           onChange={(e) => onChange(e.target.value)}
           aria-label={label}
-          className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+          className="absolute inset-0 h-full w-full cursor-pointer rounded-full opacity-0"
         />
       </span>
+      <span aria-hidden="true" className="font-mono text-xs text-neutral-400 dark:text-neutral-500">#</span>
       <input
         type="text"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
+        value={bare}
+        onChange={(e) => put(e.target.value)}
         aria-label={label}
         spellCheck={false}
-        // No chrome of its own: the box around the pair carries it. Mono and tabular so a
-        // column of hexes lines up on the hash rather than wobbling per glyph.
-        className="h-full min-w-0 flex-1 border-0 bg-transparent px-2 font-mono text-xs uppercase tabular-nums text-neutral-900 outline-none dark:text-neutral-100"
+        className="h-full min-w-0 flex-1 border-0 bg-transparent font-mono text-xs uppercase tabular-nums text-neutral-900 outline-none dark:text-neutral-100"
       />
     </span>
   )
