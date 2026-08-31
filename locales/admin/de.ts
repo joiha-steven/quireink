@@ -84,6 +84,12 @@ const de = {
   sortUpdated: 'Zuletzt geändert',
   sortCreated: 'Erstellt',
   commentsSearch: 'Kommentare durchsuchen...',
+  commentsSortRecent: 'Neueste',
+  commentsSortBusiest: 'Aktivste',
+  commentsInPosts: '{n} Kommentare zu {p} Beiträgen',
+  commentsStatPosts: 'Beiträge',
+  commentsStatWeek: 'in 7 Tagen',
+  commentsStatPeople: 'Personen',
   commentsFootHint: 'Kommentar anklicken, um ihn ganz zu lesen. Löschen ist ein weiches Löschen — er wandert in den Papierkorb.',
   filterEmpty: 'Keine Beiträge entsprechen dem Filter.',
   // The command palette (⌘K). Its placeholder is the whole instruction: one box, and it

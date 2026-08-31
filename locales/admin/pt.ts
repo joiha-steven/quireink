@@ -85,6 +85,12 @@ const pt = {
   sortUpdated: 'Última atualização',
   sortCreated: 'Data de criação',
   commentsSearch: 'Buscar comentários…',
+  commentsSortRecent: 'Recentes',
+  commentsSortBusiest: 'Mais ativos',
+  commentsInPosts: '{n} comentários em {p} posts',
+  commentsStatPosts: 'posts',
+  commentsStatWeek: 'em 7 dias',
+  commentsStatPeople: 'pessoas',
   commentsFootHint: 'Clique em um comentário para ler inteiro. Excluir é exclusão suave — vai para a lixeira.',
   filterEmpty: 'Nenhum post bate com o seu filtro.',
   // The command palette (⌘K). Its placeholder is the whole instruction: one box, and it

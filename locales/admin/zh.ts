@@ -84,6 +84,12 @@ const zh = {
   sortUpdated: '按更新',
   sortCreated: '按创建',
   commentsSearch: '搜索评论...',
+  commentsSortRecent: '最新',
+  commentsSortBusiest: '最多',
+  commentsInPosts: '{p} 篇文章共 {n} 条评论',
+  commentsStatPosts: '文章',
+  commentsStatWeek: '7 天内',
+  commentsStatPeople: '人',
   commentsFootHint: '点击评论可展开全文。删除为软删除——移入回收站。',
   filterEmpty: '没有符合筛选条件的文章。',
   // The command palette (⌘K). Its placeholder is the whole instruction: one box, and it

@@ -80,11 +80,16 @@ describe('CommentsTable, mounted', () => {
     window.confirm = () => true
 
     const m = await mountAdmin(<CommentsTable initial={rows()} />)
-    // Two rows, two delete buttons: click the FIRST (id 1).
+    // Two comments, two delete buttons — and the one wanted is found by its COMMENT, not by
+    // position. The screen groups by post and orders the groups by recency, so "the first
+    // button" is whichever post was commented on last: a test that clicks del[0] passes or
+    // fails on the fixture's dates, which is not what it is asking about.
     const del = [...m.container.querySelectorAll('button')]
       .filter((b) => b.textContent?.trim() === t.commentsColDelete)
     expect(del.length).toBe(2)
-    await m.click(del[0])
+    const target = del.find((b) => b.closest('li')?.textContent?.includes('Nguyễn Thị Ngọc Ánh'))
+    expect(target).toBeTruthy()
+    await m.click(target!)
     await m.flush()
 
     expect(fetchMock.calls).toEqual([

@@ -84,6 +84,12 @@ const fr = {
   sortUpdated: 'Dernière modification',
   sortCreated: 'Date de création',
   commentsSearch: 'Chercher dans les commentaires…',
+  commentsSortRecent: 'Récents',
+  commentsSortBusiest: 'Les plus actifs',
+  commentsInPosts: '{n} commentaires sur {p} articles',
+  commentsStatPosts: 'articles',
+  commentsStatWeek: 'en 7 jours',
+  commentsStatPeople: 'personnes',
   commentsFootHint: 'Cliquez sur un commentaire pour le lire en entier. Supprimer le déplace vers la corbeille.',
   filterEmpty: 'Aucun article ne correspond à votre filtre.',
   // The command palette (⌘K). Its placeholder is the whole instruction: one box, and it

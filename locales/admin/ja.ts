@@ -84,6 +84,12 @@ const ja = {
   sortUpdated: '更新順',
   sortCreated: '作成順',
   commentsSearch: 'コメントを検索...',
+  commentsSortRecent: '新しい順',
+  commentsSortBusiest: '多い順',
+  commentsInPosts: '{p}件の記事に{n}件のコメント',
+  commentsStatPosts: '記事',
+  commentsStatWeek: '7日間',
+  commentsStatPeople: '人',
   commentsFootHint: 'コメントをクリックすると全文を表示。削除はソフト削除で、ごみ箱に移動します。',
   filterEmpty: 'フィルターに一致する記事がありません。',
   // The command palette (⌘K). Its placeholder is the whole instruction: one box, and it

@@ -84,6 +84,12 @@ const ko = {
   sortUpdated: '수정순',
   sortCreated: '작성순',
   commentsSearch: '댓글 검색...',
+  commentsSortRecent: '최신순',
+  commentsSortBusiest: '많은순',
+  commentsInPosts: '글 {p}개에 댓글 {n}개',
+  commentsStatPosts: '글',
+  commentsStatWeek: '7일간',
+  commentsStatPeople: '명',
   commentsFootHint: '댓글을 클릭하면 전문이 열립니다. 삭제는 휴지통으로 이동하는 소프트 삭제입니다.',
   filterEmpty: '필터와 일치하는 글이 없습니다.',
   // The command palette (⌘K). Its placeholder is the whole instruction: one box, and it

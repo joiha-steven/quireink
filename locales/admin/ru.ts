@@ -84,6 +84,12 @@ const ru = {
   sortUpdated: 'По последнему изменению',
   sortCreated: 'По дате создания',
   commentsSearch: 'Искать в комментариях…',
+  commentsSortRecent: 'Новые',
+  commentsSortBusiest: 'Самые активные',
+  commentsInPosts: '{n} комментариев к {p} записям',
+  commentsStatPosts: 'записи',
+  commentsStatWeek: 'за 7 дней',
+  commentsStatPeople: 'человек',
   commentsFootHint: 'Нажмите на комментарий, чтобы прочитать целиком. Удаление мягкое — комментарий уходит в корзину.',
   filterEmpty: 'Под ваш фильтр не подходит ни одна запись.',
   // The command palette (⌘K). Its placeholder is the whole instruction: one box, and it
