@@ -26,8 +26,11 @@ debugging: ask the owner to check the toggle and the token's age.
 `list_categories` `list_tags`
 
 **The site itself.** `compose_homepage` (the composed front: lead, picks, category rows,
-most-read) · `update_appearance` (palette, fonts, sizes) · `get_settings`
-`update_settings` (a safe slice only)
+most-read) · `update_appearance` (palette, fonts, sizes) · `get_settings` ·
+`list_settings` (every setting that can be changed: path, type, value now — call it to FIND
+a path rather than guessing one) · `update_settings` (any of those paths; it wrote three
+fields before 2.2.4). Two are worth naming before you change them, because they affect every
+page a reader loads: `customCss` and `siteUrl`.
 
 **Media and files.** `add_media_from_url` `list_media` `delete_media` · `import_images`
 (one batch per call: fetch images still loading from other hosts into the library and
