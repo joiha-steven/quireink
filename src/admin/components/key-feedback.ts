@@ -82,10 +82,22 @@ export function pulseInput(
 ): void {
   if (sound.mode === 'off') return
   const inputType = event.inputType
+  // An IME redrawing its buffer: many engines clear and re-insert the composition on
+  // EVERY keystroke, so this event is bookkeeping, not a key — reacting to it doubled
+  // the click. The keystroke's own sound comes from the insert half below.
+  if (inputType === 'deleteCompositionText') return
   const deleting = inputType.startsWith('delete')
   if (!deleting && !inputType.startsWith('insert')) return
 
-  if (!event.isComposing) playKey(sound, strikeOf(inputType, event.data, deleting))
+  // A composing keystroke still IS a keystroke. The old guard silenced the whole
+  // composition, so anyone on an IME — Vietnamese Telex, Japanese, Chinese — heard one
+  // click per finished WORD while their fingers made ten: a typewriter that skips keys.
+  // `insertCompositionText` fires once per key inside the composition; everything else
+  // that is composing (the commit's own echo) stays silent so a word does not end on a
+  // double strike.
+  if (!event.isComposing || inputType === 'insertCompositionText') {
+    playKey(sound, strikeOf(inputType, event.data, deleting))
+  }
   placeCaret(view, caret)
   holdBlink(caret)
 
