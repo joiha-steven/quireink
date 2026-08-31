@@ -54,8 +54,8 @@ export const ISLANDS_CSS = `
 
 /* The quote control, raised on a selection (assets/js/quote.ts).
    SOLID INK, and the first cut was not: it borrowed the to-top button's hairline-on-paper
-   and came out a pale grey pill sitting on top of grey text, which the owner's word for was
-   "khó nhìn". The to-top button can be quiet because it waits in an empty corner; this one
+   and came out a pale grey pill sitting on top of grey text — the owner reported it as
+   hard to see, and it was. The to-top button can be quiet because it waits in an empty corner; this one
    appears IN the text, over the words, for two seconds. A control that interrupts reading
    has to look deliberate or it reads as a rendering fault. Ink and paper, inverted, is the
    loudest thing this palette can say without introducing a colour.
