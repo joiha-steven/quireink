@@ -53,18 +53,23 @@ export async function renderArchive(): Promise<string | null> {
 
   // The jump row is a nav, not a list of chips: it is the page's own table of contents, and
   // on a blog with one year it is a single link, which is why it is dropped below two.
+  //
+  // It rides the HEADING's line rather than sitting on its own between the title and the
+  // first year. On its own it had no rule, no label and nothing to belong to — two bare
+  // numbers floating in a gap, which is what it was reported as. A page's contents belong
+  // beside the page's name.
   const jump = years.length < 2 ? '' : `<nav class="arc-jump" aria-label="${escapeAttr(s.archiveYears)}">`
     + years.map(({ year }) => `<a class="link-accent" href="#${escapeAttr(yearAnchor(year))}">${year}</a>`).join('')
     + '</nav>'
 
   const body = years.length === 0
     ? `<p class="empty">${escapeHtml(s.archiveEmpty)}</p>`
-    : jump + years.map((y) => yearBlock(y, settings.language)).join('')
+    : years.map((y) => yearBlock(y, settings.language)).join('')
 
   return listingPage({
     title: `${s.archiveTitle} · ${settings.title}`,
     description: s.archiveMeta.replace('{site}', settings.title),
-    body: `<div class="listing-head"><h1>${escapeHtml(s.archiveTitle)}</h1></div>${body}`,
+    body: `<div class="listing-head arc-head"><h1>${escapeHtml(s.archiveTitle)}</h1>${jump}</div>${body}`,
     canonicalPath: '/archive',
     cardTitle: s.archiveTitle,
     // No `activeHref`: the rail's year rows point at anchors WITHIN this page, so there is
