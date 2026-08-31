@@ -46,3 +46,14 @@ export function IconMore() { return <I name="more" /> }
 export function IconAssistant() { return <I name="penMark" /> }
 export function IconSearch() { return <I name="search" /> }
 export function IconClose() { return <I name="close" /> }
+
+/**
+ * A set body as bare SVG children, for a file that draws its own <svg> wrapper.
+ *
+ * The editor's toolbar is the one such file: it sizes and strokes its glyphs itself (18px,
+ * inside a dense row), and three of them — link, picture, bin — are shapes the set already
+ * owns. This lets it borrow the shape without borrowing the wrapper.
+ */
+export const SharedGlyph = ({ name }: { name: IconName }) => (
+  <g dangerouslySetInnerHTML={{ __html: ICONS[name] }} />
+)
