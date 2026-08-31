@@ -257,6 +257,19 @@ export async function getTrashedComments(): Promise<AdminComment[]> {
 
 // ---- mutations ---------------------------------------------------------------
 
+/**
+ * Who wrote it and where, for the activity log.
+ *
+ * The log recorded a comment deletion as the row's ID and nothing else, which tells whoever
+ * reads it back that a number is gone. A name and a post is the line somebody can act on.
+ */
+export async function describeComment(id: number): Promise<string> {
+  const row = one<{ author_name: string; post_slug: string }>(
+    `select author_name, post_slug from comments where id = ?`, id,
+  )
+  return row ? `${row.author_name} on ${row.post_slug}` : `#${id}`
+}
+
 // Soft-delete (Trash): live replies survive and the node renders as a tombstone.
 export async function softDeleteComment(id: number): Promise<void> {
   run(`update comments set deleted_at = ? where id = ?`, nowMs(), id)
