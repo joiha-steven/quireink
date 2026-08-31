@@ -26,7 +26,11 @@ not cover.
 | **Post images** | Layout → Post pictures | Whether a post's own picture appears above the headline, and whether it appears on list rows (small square, or large 3:2). **Both off by default** — see below |
 | Figure frame | Layout → Pictures | The frame every in-body picture wears unless it says otherwise |
 | Content width | Layout → Layout & menu | How wide the reading column runs |
-| Sidebar | Layout → Layout & menu | One rail or two, and which blocks are in it |
+| Sidebar | Layout → Layout & menu | One rail or two, and whether there is a rail at all. Switching it off leaves the rail carrying the owner's MENU alone: that switch owns the discovery blocks, never the site's navigation |
+| Archive in the sidebar | Reading → Post list | The years, as a block in the rail. Separate from the `/archive` PAGE switch — the block can leave while the page stays reachable |
+| Series in the sidebar | Reading → Post list | The series list, each linking to its own page |
+| Tags in the sidebar | Reading → Post list | The tag cloud. The one block in the rail with no ceiling on its length, which is why it sits last |
+| Categories in the sidebar | Reading → Post list | The categories, each with how many posts it holds |
 | **Read without a signal** | Reading → Reading features | A post your reader has already opened still opens with no network. **Off by default.** Nothing is downloaded ahead of time and your admin is never stored. Turning it off again removes it from readers who already have it |
 | **Archive** | Reading → Reading features | `/archive`: every post you have published, grouped by year, and the list of years in the rail. **On by default.** If you already publish a page or a post at `/archive`, yours keeps the URL and this stays off until you move it |
 | **Author** | Site → Author | Name, bio, portrait and a link. Empty by default; filling in a name adds a byline and puts you in the structured data search engines read |

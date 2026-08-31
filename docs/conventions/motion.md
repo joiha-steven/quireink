@@ -20,6 +20,14 @@
   and held-key repeats. ⚠️ Sound is NOT gated by the motion engine or by reduced-motion: a person
   who asked for less movement did not ask for silence, and the two settings are not the same
   request. Nothing in that path may animate the text.
+- **THE CLICK is the one motion that is deliberately NOT symmetric.** A pressable control
+  travels 1px and takes its carved shadow **instantly** — `active:translate-y-px
+  active:duration-0` — and only the RELEASE is sprung, on the inherited transition. A control
+  that eases both ways feels like a screen; a key that drops now and springs back is what a
+  hand expects of a pressed thing. It is on `ui/Button`'s `SHAPE` and on the reading site's
+  own controls, in whichever ink the palette holds. Reduced motion keeps the surface change
+  and drops the travel (`motion-reduce:active:translate-y-0`) — the state must still be
+  legible without the movement, so relief is never the only cue.
 - **Cheap properties only** (`opacity`/`transform`/colour) so motion never causes CLS or jank; entrance
   effects must default to fully-visible (e.g. `.reveal` is gated behind `@supports (animation-timeline)`
   + `data-motion='on'`) so unsupported browsers / motion-off never hide content. There is no page-nav

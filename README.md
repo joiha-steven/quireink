@@ -47,7 +47,7 @@ Opening a post costs about 100 KB. A photo from your phone is a few dozen times 
 
 Reading comfort is the point of the project. Six palettes in light and dark, four reading fonts, a book mode set in two columns like paper, and a five-ink highlighter for the lines worth keeping.
 
-An assistant can do the writing. Connect Claude or another MCP client, say *"write a 600-word post about today's trip, tag it travel, publish it"*, and it drafts and publishes through the same rules you use. Its access is a token you can revoke in one click.
+An assistant can do the writing, from either end. Connect Claude or another MCP client, say *"write a 600-word post about today's trip, tag it travel, publish it"*, and it drafts and publishes through the same rules you use; its access is a token you can revoke in one click. Or put your own key into Settings and the assistant lives in the admin itself — four providers to choose from, answers arriving as they are written, every conversation kept, and a receipt for what each one cost.
 
 To start you need a domain and a rented server; the cheapest tier is enough. That first setup is a technical job, so ask someone who knows servers or hand it to an agent ([Install](#install)). After that the writing, the publishing, the look and the stats all live in the admin, and only an upgrade sends you back to a terminal.
 
@@ -85,7 +85,7 @@ You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE),
 | 🖍️&nbsp;**The&nbsp;pen** | `==text==` highlights in five inks, `++text++` underlines in pencil, `@@word@@` rings a word in red ballpoint. Strokes grown from a seeded hand, so no two on a page share a shape. Pigments measured off a photograph of a real pen box |
 | 💻&nbsp;**Code** | Highlighted on the server, so the reader downloads no highlighter. Twenty-one languages, and the names people actually type. A fence naming nothing is guessed at timidly, so program output stays plain |
 | 🔍&nbsp;**Reading** | Search that answers as you type. A rail with your categories and tags, or the contents of the post. Related posts, reading time, a progress bar. Book mode sets a post in two columns with a drop cap, and your place is kept for when you come back |
-| 📈&nbsp;**Numbers** | Analytics without cookies: who read what, how far they got, where they came from. Plus an activity log, a trash you can undo, and a help page |
+| 📈&nbsp;**Numbers** | Analytics without cookies: who read what, how far they got, where they came from — and the same page for any single post. Plus an activity log, a trash you can undo, and a help page |
 | 💬&nbsp;**Comments** | Readers comment without an account. The page signs its own spam challenge, so no third party sees them; Turnstile takes over only if you add its keys. Sweeping sends comments to the trash, not into nothing |
 | 🔎&nbsp;**Search&nbsp;engines** | Sitemap, RSS, `robots.txt`, `llms.txt`, and an OG image drawn per post. Rename a slug and the old URL keeps working |
 | 📬&nbsp;**Newsletter** | Sign-ups with a confirmation email, an issue sent when you publish, a note when a comment gets a reply. Your own SMTP, so there is nothing to sign up for |
@@ -93,7 +93,9 @@ You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE),
 | 💾&nbsp;**Backups** | One button downloads the whole install. Scheduled snapshots stay on the server, and each one is also shipped to your own R2 or S3 bucket. [Details](./docs/backups.md) |
 | 📥&nbsp;**Moving&nbsp;in** | Upload a WordPress XML, a Ghost JSON, or the ZIP Substack or Medium emailed you; the server works out whose it is. Everything becomes Markdown, dead shortcodes are swept out, old URLs answer with redirects, and the images land in your own library |
 | 🌍&nbsp;**Languages** | Eleven, in the admin and on the site, and anyone can add one more in a single file. No CJK webfont ships, because they run to megabytes, but each of the three names its own face so 直 is drawn the Japanese way on a Japanese site |
-| 🔐&nbsp;**Sign-in** | Your own username and password, hashed with argon2id. An authenticator code every time, and ten recovery codes for the day the phone goes missing. No Google anywhere in the login path |
+| 🔐&nbsp;**Sign-in** | Your own username and password, hashed with argon2id. An authenticator code every time, and ten recovery codes for the day the phone goes missing. Change the password, re-enrol the authenticator, and see every signed-in device with a button to end it — one at a time or all at once. There is a way back in when the password AND the phone are both gone. No Google anywhere in the login path |
+| 🤖&nbsp;**Assistant** | Your own model key, in the admin: Claude, GPT, Gemini or DeepSeek. Answers arrive as they are written, conversations are kept and listed, and each one carries a receipt of what it cost. It also writes the alt text for a picture you upload and sorts spam into the trash |
+| ⌨️&nbsp;**The&nbsp;admin** | ⌘K jumps to any of 245 settings by name, so it stops mattering which of the eight tabs holds it. Every control is a key with relief: raised means you can press it, carved means it is held down. Six chords in the editor |
 | 📱&nbsp;**Phone** | Install it to the home screen and it opens like an app |
 
 **Made for** one person, one server, one blog they mean to keep.
@@ -120,9 +122,9 @@ The CSS and JavaScript rows are build artefacts, the same bytes on every install
 | | Home | A post | |
 |:---|---:|---:|:---|
 | **Requests** | 8 | 9 | |
-| **Total&nbsp;transferred** | **102&nbsp;KB** | **100&nbsp;KB** | 68&nbsp;KB of that is the fonts |
-| **JavaScript** | **4.0&nbsp;KB** | **10.3&nbsp;KB** | written by hand, no framework |
-| **CSS** | 9.6&nbsp;KB | 9.6&nbsp;KB | +20&nbsp;KB only on a page carrying the pen |
+| **Total&nbsp;transferred** | **103&nbsp;KB** | **101&nbsp;KB** | 68&nbsp;KB of that is the fonts |
+| **JavaScript** | **4.1&nbsp;KB** | **10.4&nbsp;KB** | written by hand, no framework |
+| **CSS** | 10.6&nbsp;KB | 10.6&nbsp;KB | +20&nbsp;KB only on a page carrying the pen |
 | **Third&#8209;party&nbsp;requests** | **0** | **0** | no CDN, no font host, no tracker |
 | **Coming&nbsp;back** | ~20&nbsp;KB | ~11&nbsp;KB | only the HTML is fetched again; a long post carries more |
 
