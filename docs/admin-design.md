@@ -140,17 +140,19 @@ character and none of its typographic rules **except one**, below.
   be an overlay.
 - **The highlighter marks WHERE YOU ARE** (2026-08-29, and it is the ink's third role rather
   than a fourth colour). The active tab wears `--pen` with `--on-pen`; the rail's current row
-  is a KEY HELD DOWN in the pen: a 30% wash carved in on an inset (2026-08-31 — the solid
-  pen pill answered too loudly, and a bar-plus-wash read as a label, not a control). A
-  SELECTED VALUE gets neither, and that distinction is the whole point. They had
+  is a KEY HELD DOWN in the pen — the same full ink as the tab, with the same carved inset
+  (2026-08-31: a bar-plus-wash read as a label, and a diluted wash beside the full tab pill
+  read as a second ink; one ink, one strength, held down). A SELECTED VALUE gets neither,
+  and that distinction is the whole point. They had
   the identical black pill, which put "Site" — the section you are in — eight lines above
   "English" — a field's value — in the same ink, size and shape, with nothing answering
   "where am I". A screen where everything is the same rectangle has told you nothing by the
   time you have looked at all of it. The seam is the `Tabs` component, the admin's only
   navigation strip; the ten call sites that build a chooser from `tabItemClass` directly get
-  the SUNKEN PAPER KEY — solid ink shows no relief, so a chosen value is pressed into the
-  groove instead of painted black (2026-08-31, the font tiles and the palette card's editing
-  state carved the same way) — and `components/where-you-are.test.ts` fails the day one of
+  the SUNKEN KEY, one grey step DOWN from its ground — solid ink shows no relief, and a
+  white key vanishes against the white card, so a chosen value is a darker key pressed into
+  the groove (2026-08-31, the font tiles and the palette card's editing state carved the
+  same way) — and `components/where-you-are.test.ts` fails the day one of
   them reaches for the marker. ⚠️ The active row is composed from `SIDEBAR_NAV_QUIET`, which has NO hover:
   both hovers are rules on the same property and Tailwind decides which lands last, so
   pointing at the page you were already on repainted it grey. Structure, not out-ranking.

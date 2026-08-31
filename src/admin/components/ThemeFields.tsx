@@ -82,7 +82,7 @@ function PresetCard({
   // as chosen at a glance. Hidden stays a dashed edge and NOTHING else — the colours are
   // what the card exists to show (see the warning below).
   const state = editing
-    ? 'border-neutral-400 bg-neutral-100 shadow-[inset_0_2px_4px_rgba(0,0,0,.18)] dark:border-neutral-500 dark:bg-neutral-800 dark:shadow-[inset_0_2px_4px_rgba(0,0,0,.55)]'
+    ? 'border-neutral-400 bg-neutral-200 shadow-[inset_0_2px_4px_rgba(0,0,0,.2)] dark:border-neutral-500 dark:bg-neutral-950 dark:shadow-[inset_0_2px_4px_rgba(0,0,0,.6)]'
     : 'border-neutral-200 bg-white hover:border-neutral-400 hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-600 dark:hover:bg-neutral-800'
   return (
     <div className="group">
