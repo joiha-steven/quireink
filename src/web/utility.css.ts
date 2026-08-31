@@ -36,4 +36,30 @@ export const UTILITY_CSS = `
 .link-accent{color:var(--c-heading);text-decoration:none}
 .link-accent:hover{text-decoration:underline;text-decoration-color:var(--c-accent);
   text-decoration-thickness:1px;text-underline-offset:4px}
+
+/* THE CLICK, for everything on the reading site a finger can press. Pressing lands at
+   once - the 1px of travel and the carved-in shadow arrive with transition-duration:0 -
+   and only the release is sprung, on whatever transition the control already carries.
+   The shadow is the palette's own heading ink diluted (an engine without color-mix just
+   loses the shading, never the button), so every palette carves with its own ink. The
+   book arrows keep their translateY centring (colour only, no travel) and the resume
+   pill composes its centring with the dip. data-motion=off and reduced-motion keep the
+   shadow and drop the travel, like every press in this product. */
+.icon-btn:active,.code-copy:active,form.subscribe button:active,.theme-menu button:active,
+.lightbox button:active,.to-top:active,.book-x:active,.comment-form button:active{
+  transform:translateY(1px);transition-duration:0s;
+  box-shadow:inset 0 1.5px 2.5px color-mix(in srgb,var(--c-heading) 22%,transparent)}
+.resume-pill:active{transform:translateX(-50%) translateY(1px);transition-duration:0s;
+  box-shadow:inset 0 1.5px 2.5px color-mix(in srgb,var(--c-heading) 22%,transparent)}
+.book-arrow:active{color:var(--c-heading)}
+html[data-motion=off] .icon-btn:active,html[data-motion=off] .code-copy:active,
+html[data-motion=off] form.subscribe button:active,html[data-motion=off] .theme-menu button:active,
+html[data-motion=off] .lightbox button:active,html[data-motion=off] .to-top:active,
+html[data-motion=off] .book-x:active,html[data-motion=off] .comment-form button:active{transform:none}
+html[data-motion=off] .resume-pill:active{transform:translateX(-50%)}
+@media (prefers-reduced-motion:reduce){
+  .icon-btn:active,.code-copy:active,form.subscribe button:active,.theme-menu button:active,
+  .lightbox button:active,.to-top:active,.book-x:active,.comment-form button:active{transform:none}
+  .resume-pill:active{transform:translateX(-50%)}
+}
 `.trim()
