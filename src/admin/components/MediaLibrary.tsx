@@ -3,7 +3,7 @@
 // - 'picker' : modal for choosing an image (calls onSelect with the URL). With
 //   `multi`, tiles toggle a selection (checkbox + ring) and an "Add (N)" button
 //   returns them all via onSelectMany — used to build a gallery in one go.
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import type { MediaItem, ApiResponse } from '@/types'
 import { Button } from '@/admin/ui/Button'
@@ -15,6 +15,7 @@ import {EmptyState } from './kit'
 import { useAdminT, useAdminLang } from './I18nProvider'
 import { OVERLAY, SHEET_TOOL, SHEET_TOOL_DANGER } from './sheet'
 import { MediaCard } from './MediaCard'
+import { useMediaSweeps } from './useMediaSweeps'
 
 type Props = {
   mode?: 'page' | 'picker'
@@ -50,6 +51,33 @@ export function MediaLibrary({ mode = 'page', multi = false, onSelect, onSelectM
   const [query, setQuery] = useState('')
   const [sort, setSort] = useState<MediaSort>('new')
   const sentinel = useRef<HTMLDivElement>(null)
+  /** The anchor a shift-click measures its run from: the last box ticked on its own. */
+  const anchor = useRef<number | null>(null)
+  const {
+    checking, unused, onlyUnused, setOnlyUnused, describing, deletingAll,
+    checkUnused, deleteAllUnused, describeMissing, dropFromUnused,
+  } = useMediaSweeps(setItems)
+
+  // Compose the visible list: unused filter → name search → sort. Total count + size are
+  // over the whole library, not the filtered view.
+  //
+  // MEMOISED and lifted above the handlers, both for the same reason: `toggleSelect` reads
+  // this list to work out what a shift-click's run covers, so it has to exist before that
+  // callback is declared — and a fresh array on every render would make that callback fresh
+  // too, which is exactly what the memo on the card is there to avoid.
+  const view = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    return [...(onlyUnused && unused ? items.filter((m) => unused.has(m.url)) : items)]
+      .filter((m) => !q || m.filename.toLowerCase().includes(q))
+      .sort((a, b) =>
+        sort === 'name'
+          ? a.filename.localeCompare(b.filename)
+          : sort === 'size'
+            ? b.size - a.size
+            : +new Date(b.uploadedAt) - +new Date(a.uploadedAt),
+      )
+  }, [items, query, sort, onlyUnused, unused])
+  const totalSize = useMemo(() => items.reduce((n, m) => n + (m.size || 0), 0), [items])
 
   useEffect(() => {
     fetch('/api/media')
@@ -70,7 +98,7 @@ export function MediaLibrary({ mode = 'page', multi = false, onSelect, onSelectM
     return () => io.disconnect()
   }, [visible, items.length])
 
-  async function handleDelete(url: string) {
+  const handleDelete = useCallback(async (url: string) => {
     if (!confirm(t.confirmDeleteMedia)) return
     try {
       const res = await fetch(`/api/media/by?url=${encodeURIComponent(url)}`, { method: 'DELETE' })
@@ -87,33 +115,58 @@ export function MediaLibrary({ mode = 'page', multi = false, onSelect, onSelectM
           return
         }
       }
-      setUnused((prev) => {
-        if (!prev?.has(url)) return prev
-        const next = new Set(prev)
-        next.delete(url)
-        return next
-      })
+      dropFromUnused(url)
       notify(t.movedToTrash)
     } catch {
       notify(t.deleteFailed, 'error')
     }
-  }
+  }, [dropFromUnused, notify, t])
 
-  async function copyUrl(url: string) {
+  // `useCallback` on the four handlers a card is given, because `MediaCard` is memoised and
+  // a new function every render would defeat it: the whole grid re-rendered on every tick.
+  const copyUrl = useCallback(async (url: string) => {
     await navigator.clipboard.writeText(url)
     notify(t.copiedUrl)
-  }
+  }, [notify, t])
 
   // Multi-select delete (page mode). Reuses the atomic batch endpoint so several
   // images go in one manifest write (no per-image race).
-  function toggleSelect(url: string) {
+  /**
+   * Tick one box, or — with shift — the whole run between the last one and this one.
+   *
+   * A run always turns ON rather than mirroring the clicked box: shift-click is reached for
+   * to take a batch, and a modifier that sometimes clears is a modifier nobody trusts. To
+   * drop something from a run, click its own box.
+   */
+  const toggleSelect = useCallback((url: string, shift = false) => {
+    const i = view.findIndex((m) => m.url === url)
+    const from = anchor.current
     setSelected((prev) => {
       const next = new Set(prev)
+      if (shift && from !== null && i >= 0) {
+        const [a, b] = from < i ? [from, i] : [i, from]
+        for (let k = a; k <= b; k++) {
+          const it = view[k]
+          if (it) next.add(it.url)
+        }
+        return next
+      }
       if (next.has(url)) next.delete(url)
       else next.add(url)
       return next
     })
-  }
+    // A shift-click does not move the anchor, so a run can be re-measured wider or narrower
+    // from the same starting box without going back to tick it again.
+    if (!shift && i >= 0) anchor.current = i
+  }, [view])
+
+  /** One handler for every tile, so the memo on the card holds: clicking a picture zooms it
+      on the Library page and chooses it in the picker. */
+  const openItem = useCallback((m: MediaItem) => {
+    if (mode !== 'picker') return setZoom(m)
+    if (multi) return toggleSelect(m.url, false)
+    onSelect?.(m.url, m.alt)
+  }, [mode, multi, onSelect, toggleSelect])
   async function deleteSelected() {
     if (selected.size === 0) return
     if (!confirm(t.confirmDeleteSelected)) return
@@ -136,90 +189,6 @@ export function MediaLibrary({ mode = 'page', multi = false, onSelect, onSelectM
   // Backfill alt text for every never-described image (Settings → AI must hold a key).
   // The server answers with the queue size and works on; results land in the rows as
   // they arrive, so a reload shows progress and the activity log shows the total.
-  const [describing, setDescribing] = useState(false)
-  async function describeMissing() {
-    setDescribing(true)
-    try {
-      const res = await fetch('/api/media/describe-missing', { method: 'POST' })
-      const json = (await res.json()) as ApiResponse<{ queued: number }>
-      if (!json.success || !json.data) throw new Error(json.error)
-      notify(`${t.aiDescribeAllStarted}: ${json.data.queued}`)
-    } catch (error) {
-      // "No model yet" and "this model has no eyes" are different problems with different
-      // fixes, and the second one is reached with everything apparently configured.
-      const why = error instanceof Error && error.message === 'ai_cannot_see_images'
-        ? t.aiCannotSeeImages
-        : t.aiNotConfigured
-      notify(why, 'error')
-    } finally {
-      setDescribing(false)
-    }
-  }
-
-  // Delete EVERY currently-flagged unused image in one atomic request (one
-  // manifest write) — no per-image race, and far faster than clicking each.
-  const [deletingAll, setDeletingAll] = useState(false)
-  async function deleteAllUnused() {
-    if (!unused || unused.size === 0) return
-    if (!confirm(t.confirmDeleteUnused)) return
-    setDeletingAll(true)
-    try {
-      const res = await fetch('/api/media/delete', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ urls: [...unused] }),
-      })
-      const json = (await res.json()) as ApiResponse<MediaItem[]>
-      if (!json.success || !json.data) throw new Error(json.error)
-      setItems(json.data)
-      // Keep only the urls that genuinely survived (defensive — normally none).
-      const surviving = new Set(json.data.map((m) => m.url))
-      const left = [...unused].filter((u) => surviving.has(u))
-      setUnused(left.length ? new Set(left) : null)
-      if (left.length === 0) setOnlyUnused(false)
-      notify(t.movedToTrash)
-    } catch {
-      notify(t.deleteFailed, 'error')
-    } finally {
-      setDeletingAll(false)
-    }
-  }
-
-  // Non-destructive audit: flag media referenced by no post/page/setting/revision.
-  // `unused` is null until a check runs, then a Set of unused URLs to badge/filter.
-  const [checking, setChecking] = useState(false)
-  const [unused, setUnused] = useState<Set<string> | null>(null)
-  const [onlyUnused, setOnlyUnused] = useState(false)
-  async function checkUnused() {
-    setChecking(true)
-    try {
-      const res = await fetch('/api/media/unused')
-      const json = (await res.json()) as ApiResponse<string[]>
-      if (!json.success || !json.data) throw new Error(json.error)
-      const set = new Set(json.data)
-      setUnused(set)
-      setOnlyUnused(set.size > 0)
-      notify(set.size > 0 ? `${t.unusedFound}: ${set.size}` : t.unusedNone)
-    } catch {
-      notify(t.checkUnusedFailed, 'error')
-    } finally {
-      setChecking(false)
-    }
-  }
-
-  // Compose the visible list: unused filter → name search → sort. Total count +
-  // size (below) are over the whole library, not the filtered view.
-  const q = query.trim().toLowerCase()
-  const view = [...(onlyUnused && unused ? items.filter((m) => unused.has(m.url)) : items)]
-    .filter((m) => !q || m.filename.toLowerCase().includes(q))
-    .sort((a, b) =>
-      sort === 'name'
-        ? a.filename.localeCompare(b.filename)
-        : sort === 'size'
-          ? b.size - a.size
-          : +new Date(b.uploadedAt) - +new Date(a.uploadedAt),
-    )
-  const totalSize = items.reduce((n, m) => n + (m.size || 0), 0)
   const grid = (
     <>
       {/* Five at desktop, six on a wide screen. The old limit was the caption: three facts
@@ -237,10 +206,10 @@ export function MediaLibrary({ mode = 'page', multi = false, onSelect, onSelectM
             selected={selected.has(m.url)}
             lang={lang}
             unused={unused?.has(m.url) ?? false}
-            onOpen={() => (mode === 'picker' ? (multi ? toggleSelect(m.url) : onSelect?.(m.url, m.alt)) : setZoom(m))}
-            onToggle={() => toggleSelect(m.url)}
-            onCopy={() => copyUrl(m.url)}
-            onDelete={() => handleDelete(m.url)}
+            onOpen={openItem}
+            onToggle={toggleSelect}
+            onCopy={copyUrl}
+            onDelete={handleDelete}
           />
         ))}
       </div>
