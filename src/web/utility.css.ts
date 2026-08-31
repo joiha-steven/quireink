@@ -46,7 +46,8 @@ export const UTILITY_CSS = `
    pill composes its centring with the dip. data-motion=off and reduced-motion keep the
    shadow and drop the travel, like every press in this product. */
 .icon-btn:active,.code-copy:active,form.subscribe button:active,.theme-menu button:active,
-.lightbox button:active,.to-top:active,.book-x:active,.comment-form button:active{
+.lightbox button:active,.to-top:active,.book-x:active,.comment-form button:active,
+.book-mode-toggle:active{
   transform:translateY(1px);transition-duration:0s;
   box-shadow:inset 0 1.5px 2.5px color-mix(in srgb,var(--c-heading) 22%,transparent)}
 .resume-pill:active{transform:translateX(-50%) translateY(1px);transition-duration:0s;
@@ -55,11 +56,13 @@ export const UTILITY_CSS = `
 html[data-motion=off] .icon-btn:active,html[data-motion=off] .code-copy:active,
 html[data-motion=off] form.subscribe button:active,html[data-motion=off] .theme-menu button:active,
 html[data-motion=off] .lightbox button:active,html[data-motion=off] .to-top:active,
-html[data-motion=off] .book-x:active,html[data-motion=off] .comment-form button:active{transform:none}
+html[data-motion=off] .book-x:active,html[data-motion=off] .comment-form button:active,
+html[data-motion=off] .book-mode-toggle:active{transform:none}
 html[data-motion=off] .resume-pill:active{transform:translateX(-50%)}
 @media (prefers-reduced-motion:reduce){
   .icon-btn:active,.code-copy:active,form.subscribe button:active,.theme-menu button:active,
-  .lightbox button:active,.to-top:active,.book-x:active,.comment-form button:active{transform:none}
+  .lightbox button:active,.to-top:active,.book-x:active,.comment-form button:active,
+  .book-mode-toggle:active{transform:none}
   .resume-pill:active{transform:translateX(-50%)}
 }
 `.trim()

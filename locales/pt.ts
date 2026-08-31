@@ -33,6 +33,7 @@ const pt = {
   readingSuffix: 'min de leitura',
   wordsSuffix: 'palavras',
   bylinePrefix: 'por',
+  updatedPrefix: 'Atualizado',
   authorAbout: 'Sobre o autor',
   bookMode: 'Modo livro',
   bookModeClose: 'Fechar',

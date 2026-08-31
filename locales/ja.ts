@@ -32,6 +32,7 @@ const ja = {
   readingSuffix: '分で読めます',
   wordsSuffix: '語',
   bylinePrefix: '文',
+  updatedPrefix: '更新',
   authorAbout: '著者について',
   bookMode: 'ブックモード',
   bookModeClose: '閉じる',

@@ -32,6 +32,7 @@ export type Dict = {
   readingSuffix: string
   wordsSuffix: string
   bylinePrefix: string
+  updatedPrefix: string
   authorAbout: string
   bookMode: string
   bookModeClose: string

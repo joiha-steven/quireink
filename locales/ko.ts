@@ -32,6 +32,7 @@ const ko = {
   readingSuffix: '분 읽기',
   wordsSuffix: '단어',
   bylinePrefix: '글',
+  updatedPrefix: '수정',
   authorAbout: '글쓴이 소개',
   bookMode: '책 모드',
   bookModeClose: '닫기',
