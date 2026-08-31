@@ -48,8 +48,14 @@ export const SIDEBAR_NAV = `${SIDEBAR_NAV_QUIET} ${SIDEBAR_NAV_HOVER}`
 // active tab wears, carved with the SAME inset. It was a 30% wash for one evening, and the
 // owner read the two marks side by side as two different inks; where-you-are is one ink at
 // one strength wherever it appears, held down.
+//
+// The INK on it flips with the theme, and only the ink. In light the pen is #d5f856 and the
+// mark is written in near-black, as a highlighter over a page is. In dark the pen is #7e7028
+// — a highlighter seen under low light, not a lime slab — and near-black on it measured
+// 3.8:1, under the 4.5 a label has to clear, which is why it read as grey smeared on
+// mustard. White on that same olive measures 5.0:1.
 export const SIDEBAR_NAV_ACTIVE =
-  'bg-[var(--pen)] font-medium text-neutral-950 shadow-[inset_0_2px_3px_rgba(0,0,0,.3),inset_0_-1px_0_rgba(255,255,255,.35)]' 
+  'bg-[var(--pen)] font-medium text-neutral-950 dark:text-white shadow-[inset_0_2px_3px_rgba(0,0,0,.3),inset_0_-1px_0_rgba(255,255,255,.35)]' 
 
 // The rail's UTILITY register. The footer's rows (theme, cache, sign out) are CONTROLS,
 // and for a while they wore SIDEBAR_NAV — four more destinations, one apparently a page

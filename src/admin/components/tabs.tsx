@@ -107,7 +107,9 @@ export const tabItemClass = (
           // ground, carved: darker because a pressed key sits in its own shade. The pen
           // keeps marking a place; a chosen value is the sunken key.
           ? role === 'place'
-            ? 'bg-[var(--pen)] text-neutral-950 shadow-[inset_0_2px_3px_rgba(0,0,0,.3),inset_0_-1px_0_rgba(255,255,255,.35)]'
+            // `dark:text-white` for the reason set out on SIDEBAR_NAV_ACTIVE: the dark pen is
+            // an olive, and near-black on it measures 3.8:1 against the 5.0 white gets.
+            ? 'bg-[var(--pen)] text-neutral-950 dark:text-white shadow-[inset_0_2px_3px_rgba(0,0,0,.3),inset_0_-1px_0_rgba(255,255,255,.35)]'
             : 'bg-neutral-200 font-semibold text-neutral-950 shadow-[inset_0_2px_3px_rgba(0,0,0,.22)] dark:bg-neutral-950 dark:text-white dark:shadow-[inset_0_2px_3px_rgba(0,0,0,.6)]'
           : 'text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-neutral-200'
       }`
