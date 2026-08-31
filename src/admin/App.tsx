@@ -136,7 +136,7 @@ function Route(): ReactNode {
  */
 function Canvas({ children }: { children: ReactNode }) {
   return (
-    <main className="admin-canvas min-w-0 flex-1">
+    <main className="admin-canvas min-w-0 flex-1 lg:h-screen lg:overflow-y-auto lg:overscroll-y-contain">
       <div className="mx-auto w-full max-w-[1480px] px-4 py-6 sm:px-7 lg:px-10 lg:py-9 xl:px-12">{children}</div>
     </main>
   )
@@ -191,7 +191,12 @@ function Shell() {
     <AdminI18nProvider lang={data.language}>
       {/* Toasts are ADMIN-only (save and upload feedback), so the provider lives here. */}
       <ToastProvider>
-        <div className="admin-shell min-h-screen bg-neutral-100 lg:flex dark:bg-neutral-950">
+        {/* From lg up the shell is the INSTRUMENT PANEL: locked to the viewport, nothing on it
+            moves. Only the canvas scrolls — so the rail, the write pane and the editor's
+            sticky rows hold still while the paper passes, and a rubber-band at the top of a
+            page bounces the paper, never the frame. Below lg the page scrolls as pages do:
+            a phone drawer inside a height-locked shell is a trap. */}
+        <div className="admin-shell min-h-screen bg-neutral-100 lg:flex lg:h-screen lg:overflow-hidden dark:bg-neutral-950">
           <AdminSidebar lang={data.language} signOut={signOut} aiConfigured={data.aiConfigured} />
           {/* Outside the canvas and outside the error boundary: it is how you LEAVE a screen
               that has gone wrong, so it must not be inside the thing that went wrong. */}

@@ -77,6 +77,9 @@ export function RouterProvider({ children }: { children: ReactNode }) {
   // looking at it is the jolt this whole change exists to remove.
   useEffect(() => {
     scrollTo(0, 0)
+    // From lg up the canvas is the scroller, not the window (App.tsx) — reset it too, or
+    // every navigation lands mid-page wherever the last one left off.
+    document.querySelector('main.admin-canvas')?.scrollTo(0, 0)
   }, [state.path])
 
   const api = useMemo<RouterApi>(() => ({

@@ -130,8 +130,9 @@ export function EditorActions({
   return (
     <div
       ref={barRef}
-      className="z-20 flex flex-wrap items-center justify-between gap-3 rounded-t-[10px] border-b border-neutral-200/70 bg-white/95 px-4 py-2.5 backdrop-blur-xl lg:sticky lg:top-0 dark:border-neutral-800 dark:bg-neutral-900/95"
+      className="z-20 rounded-t-[10px] border-b border-neutral-200/70 bg-white/95 backdrop-blur-xl lg:sticky lg:top-0 dark:border-neutral-800 dark:bg-neutral-900/95"
     >
+      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5">
       <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
         <Link href="/admin/content" className={QUIET}>← {t.navWrite}</Link>
         <span className="hidden h-4 w-px bg-neutral-200 sm:block dark:bg-neutral-800" />
@@ -151,23 +152,6 @@ export function EditorActions({
             </span>
           )}
         </span>
-        {/* The recovered-work line, folded into the bar at the owner's instruction — it was
-            a full banner ABOVE the sheet, a third piece of chrome for one sentence. It wraps
-            to its own line under the status; the two verbs are text links, and Restore is
-            the darker of the pair because it is the one that rescues somebody's words. */}
-        {recovered && (
-          <span className="basis-full text-xs text-neutral-500 dark:text-neutral-400">
-            {recovered.from === 'server' ? t.serverDraftFound : t.localDraftFound} · {formatTime(recovered.at)}
-            {' · '}
-            <button type="button" onClick={recovered.onRestore} className="font-medium text-neutral-900 underline underline-offset-2 hover:no-underline dark:text-white">
-              {t.localDraftRestore}
-            </button>
-            {' · '}
-            <button type="button" onClick={recovered.onDiscard} className="underline underline-offset-2 hover:text-neutral-900 hover:no-underline dark:hover:text-white">
-              {t.localDraftDiscard}
-            </button>
-          </span>
-        )}
       </div>
       {/* flex-wrap, and it is load-bearing rather than tidy. The BAR wraps, so this group
           drops onto a line of its own on a narrow screen — and then sits there as one
@@ -179,8 +163,8 @@ export function EditorActions({
         {/* Quiet, and BEFORE the session-ending pair: these two change what you look AT,
             not what happens to the piece. Beside Attributes at the owner's instruction, and
             SPELLED OUT in the same voice — a bold mono "MD" next to a plain-text word read
-            as a different control ("việc gì làm lệch tone như vậy"). While it is on, the
-            editor shows no toolbar. */}
+            as a control from a different product, and the owner flagged the tonal drift.
+            While it is on, the editor shows no toolbar. */}
         <button type="button" title={tip(t.tbMarkdown, 'markdown')} onClick={onToggleMd} aria-pressed={mdView} className={`${QUIET} ${mdView ? 'font-medium text-neutral-900 dark:text-white' : ''}`}>
           {t.tbMarkdown}
         </button>
@@ -212,6 +196,30 @@ export function EditorActions({
           {publishLabel}
         </Button>
       </div>
+      </div>
+      {/* The recovered-work line, on a STRIP of its own under the controls. Folded into the
+          control row it was a `basis-full` child of the left group, so the moment it
+          appeared the one-row bar broke into three — the owner watched his buttons drop a
+          line because a notice arrived. It stays inside this one sticky band (a banner above
+          the sheet was already tried and rejected as a third piece of chrome), wears the
+          amber that means "needs you" with the lamp dot beside it, and the two verbs stay
+          text links — Restore darker, because it is the one that rescues somebody's words. */}
+      {recovered && (
+        <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 border-t border-amber-200/70 bg-amber-50/60 px-4 py-1.5 text-xs text-neutral-700 dark:border-amber-900/40 dark:bg-amber-950/20 dark:text-neutral-300">
+          <span aria-hidden className="h-2 w-2 shrink-0 rounded-full bg-amber-500" />
+          <span>
+            {recovered.from === 'server' ? t.serverDraftFound : t.localDraftFound} · {formatTime(recovered.at)}
+            {' · '}
+            <button type="button" onClick={recovered.onRestore} className="font-medium text-neutral-900 underline underline-offset-2 hover:no-underline dark:text-white">
+              {t.localDraftRestore}
+            </button>
+            {' · '}
+            <button type="button" onClick={recovered.onDiscard} className="underline underline-offset-2 hover:text-neutral-900 hover:no-underline dark:hover:text-white">
+              {t.localDraftDiscard}
+            </button>
+          </span>
+        </div>
+      )}
     </div>
   )
 }
