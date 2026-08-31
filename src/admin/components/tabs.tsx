@@ -157,11 +157,16 @@ export function Tabs<K extends string>({
   size = 'lg',
   dense = false,
   className = '',
+  role = 'place',
 }: {
   tabs: TabItem<K>[]
   value: K
   onChange: (key: K) => void
   size?: TabSize
+  /** 'place' is the default — a Tabs strip is navigation. The write pane's scope strip
+      opts down to 'choice': the pen beside the writing pulled the eye on every keystroke,
+      and a filter is closer to a value than a destination anyway. */
+  role?: TabRole
   /**
    * A tighter `sm`, for a row of five in a 320px pane. The row does NOT wrap — the owner
    * called the folded second line crooked — so every caller owes labels short enough to
@@ -184,7 +189,7 @@ export function Tabs<K extends string>({
           type="button"
           onClick={() => onChange(tb.key)}
           aria-pressed={value === tb.key}
-          className={tabItemClass(value === tb.key, size, dense, 'place')}
+          className={tabItemClass(value === tb.key, size, dense, role)}
         >
           {tb.label}
         </button>

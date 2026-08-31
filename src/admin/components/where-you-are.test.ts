@@ -54,12 +54,17 @@ describe('the highlighter does NOT mark a choice', () => {
   })
 
   it('is asked for only by the one component that renders navigation', () => {
-    // The seam. `Tabs` is the admin's only navigation strip; a chooser that starts passing
-    // 'place' is the drift this whole file exists to catch.
+    // The seam. `Tabs` is the admin's only navigation strip; 'place' reaches tabItemClass
+    // solely through Tabs' own DEFAULT (a caller may opt DOWN to 'choice' — the write
+    // pane's scope strip does, to keep the pen away from the writing — but never up).
+    // A chooser that starts passing 'place' is the drift this whole file exists to catch.
     const tabs = readFileSync('src/admin/components/tabs.tsx', 'utf8')
-    expect(tabs).toContain("tabItemClass(value === tb.key, size, dense, 'place')")
-    const callers = readFileSync('src/admin/components/SiteFields.tsx', 'utf8')
-    expect(callers).not.toContain("'place'")
+    expect(tabs).toContain("role = 'place'")
+    expect(tabs).toContain('tabItemClass(value === tb.key, size, dense, role)')
+    for (const f of ['SiteFields.tsx', 'WritePane.tsx']) {
+      const caller = readFileSync('src/admin/components/' + f, 'utf8')
+      expect(caller).not.toContain("'place'")
+    }
   })
 })
 
