@@ -1,7 +1,7 @@
 // Reusable button with a few visual variants.
 import type { ButtonHTMLAttributes } from 'react'
 
-type Variant = 'primary' | 'secondary' | 'ghost' | 'danger'
+type Variant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'armed'
 
 /**
  * Two sizes, and only two.
@@ -38,6 +38,12 @@ const STYLES: Record<Variant, string> = {
   // destroys work. It fills on hover, when the pointer is already committed to it.
   danger:
     'border text-[var(--pen-red)] border-[var(--pen-red)] bg-transparent hover:bg-[var(--pen-red)] hover:text-white active:shadow-[inset_0_2px_3px_rgba(0,0,0,.3)]',
+  // THE ARMED FACE of a two-stage latch: the first press turns the button this colour, the
+  // second press fires. Amber is the admin's needs-you hue (the version dot, NOTE_ALERT) —
+  // a control wearing it is half-way through something that cannot be undone, which is why
+  // this is a variant and not a hover. `tabular-nums`, because the label counts down.
+  armed:
+    'border border-amber-500 bg-amber-50 text-neutral-900 tabular-nums hover:bg-amber-100 dark:border-amber-600 dark:bg-amber-950/40 dark:text-neutral-100 dark:hover:bg-amber-950/60 shadow-[inset_0_1px_0_rgba(255,255,255,.5),0_1px_1.5px_rgba(0,0,0,.12)] active:shadow-[inset_0_2px_3px_rgba(0,0,0,.25)]',
 }
 
 // `whitespace-nowrap` and `shrink-0` are load-bearing, not tidying. In a flex row beside

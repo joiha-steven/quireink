@@ -62,11 +62,14 @@ async function readSendablePosts(slugs: string[], lang: SiteLang, tz: string): P
 }
 
 // Subject + HTML exactly as a subscriber would receive it, minus the tracking pixel and
-// with a placeholder unsubscribe token — for the admin preview pane.
-export async function previewBroadcast(slugs: string[]): Promise<{ subject: string; html: string }> {
+// with a placeholder unsubscribe token — for the admin preview pane. `recipients` is read
+// off the SAME list the send will use, because the armed send button prints it: a count
+// from anywhere else could disagree with what the second press actually does.
+export async function previewBroadcast(slugs: string[]): Promise<{ subject: string; html: string; recipients: number }> {
   const settings = await getSettings()
   const posts = await readSendablePosts(slugs, settings.language, settings.timezone)
-  return broadcastEmail(t(settings.language), emailBrand(settings), posts, 'preview-token')
+  const email = broadcastEmail(t(settings.language), emailBrand(settings), posts, 'preview-token')
+  return { ...email, recipients: (await getConfirmedSubscribers()).length }
 }
 
 // Send the chosen posts as one email to every confirmed subscriber. Each send is logged

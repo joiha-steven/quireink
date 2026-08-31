@@ -6,7 +6,7 @@
 // Several posts = ONE digest email, so ticking three does not put three messages in a
 // subscriber's inbox. Nothing sends automatically: the cron only publishes. A post that
 // already has successful sends needs the resend checkbox before the button unlocks.
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { ApiResponse } from '@/types'
 import { Card, CHECK, NOTE_TEXT } from './kit'
 import { Button } from '@/admin/ui/Button'
@@ -16,7 +16,7 @@ import { useAdminT } from './I18nProvider'
 type Stats = { sent: number; failed: number; opened: number; broadcasts: number; lastAt?: string }
 export type SendablePost = { slug: string; title: string; date: string; stats: Stats | null }
 
-type Preview = { subject: string; html: string }
+type Preview = { subject: string; html: string; recipients: number }
 type SendResult = { sent: number; failed: number; recipients: number }
 
 export function NewsletterSend({ posts }: { posts: SendablePost[] }) {
@@ -27,9 +27,36 @@ export function NewsletterSend({ posts }: { posts: SendablePost[] }) {
   const [loading, setLoading] = useState(true)
   const [resend, setResend] = useState(false)
   const [sending, setSending] = useState(false)
+  // THE LATCH. A newsletter cannot be unsent, so the button fires in two stages: the first
+  // press ARMS it — it turns amber and prints the recipient count the send will use — and
+  // only a second press inside five seconds sends. Esc, a click anywhere else, touching the
+  // selection or running out of seconds stands it down. This replaced a native confirm(),
+  // which asked its question in the browser's voice with none of the numbers.
+  const [armed, setArmed] = useState(0) // seconds of arming left; 0 = at rest
+  const latch = useRef<HTMLSpanElement>(null)
   // Sent counts come from the server on load; a send in this session is remembered here
   // so the button locks again without a page reload.
   const [sentNow, setSentNow] = useState<string[]>([])
+
+  const isArmed = armed > 0
+  useEffect(() => {
+    if (!isArmed) return
+    const id = setTimeout(() => setArmed((sLeft) => sLeft - 1), 1000)
+    return () => clearTimeout(id)
+  }, [armed])
+  useEffect(() => {
+    if (!isArmed) return
+    const key = (e: KeyboardEvent) => { if (e.key === 'Escape') setArmed(0) }
+    const away = (e: MouseEvent) => {
+      if (!latch.current?.contains(e.target as Node)) setArmed(0)
+    }
+    document.addEventListener('keydown', key)
+    document.addEventListener('click', away)
+    return () => {
+      document.removeEventListener('keydown', key)
+      document.removeEventListener('click', away)
+    }
+  }, [isArmed])
 
   // Keep the picked list in the page's own order, so the digest's lead post is the
   // newest one ticked rather than whichever checkbox was clicked first.
@@ -45,6 +72,9 @@ export function NewsletterSend({ posts }: { posts: SendablePost[] }) {
   const alreadySent = priorSent.length > 0
   const key = picked.join(',')
 
+  // An armed latch is armed for ONE exact selection; changing anything stands it down.
+  useEffect(() => setArmed(0), [key, resend])
+
   useEffect(() => {
     if (!key) return // nothing ticked — the pane renders its own hint, no state to clear
     const ctrl = new AbortController()
@@ -59,10 +89,13 @@ export function NewsletterSend({ posts }: { posts: SendablePost[] }) {
     return () => ctrl.abort()
   }, [key])
 
-  async function send() {
+  async function press() {
     if (picked.length === 0 || sending) return
-    const what = picked.length === 1 ? (posts.find((p) => p.slug === picked[0])?.title ?? picked[0]) : t.nlNPosts.replace('{n}', String(picked.length))
-    if (!confirm(t.nlSendConfirm.replace('{title}', what))) return
+    if (!isArmed) {
+      setArmed(5)
+      return
+    }
+    setArmed(0)
     setSending(true)
     try {
       const res = await fetch('/api/broadcast', {
@@ -125,9 +158,15 @@ export function NewsletterSend({ posts }: { posts: SendablePost[] }) {
             </div>
           )}
 
-          <Button onClick={send} disabled={sending || picked.length === 0 || (alreadySent && !resend)}>
-            {t.nlSendButton}
-          </Button>
+          {/* The span, not the Button, carries the ref: ui/Button does not forward one,
+              and the outside-click test only needs to know the latch's own footprint. */}
+          <span ref={latch} className="inline-flex">
+            <Button variant={isArmed ? 'armed' : 'primary'} onClick={press} disabled={sending || picked.length === 0 || (alreadySent && !resend)}>
+              {isArmed
+                ? t.nlArmed.replace('{n}', preview ? String(preview.recipients) : '…').replace('{s}', String(armed))
+                : t.nlSendButton}
+            </Button>
+          </span>
         </div>
       </Card>
 
