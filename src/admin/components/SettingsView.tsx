@@ -168,10 +168,22 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
         <div className="sticky top-0 z-20 rounded-t-[10px] bg-white/95 backdrop-blur-xl dark:bg-neutral-900/95">
         <SheetTop>
           <Tabs tabs={TABS} value={tab} onChange={setTab} size="sm" />
-          <span className="flex-1" />
-          <span className="text-xs text-neutral-500 dark:text-neutral-400">
+          {/* The save, its receipt and the way past the tabs travel as ONE group, and the
+              group is what takes the free space rather than a spacer between the parts.
+              With a `flex-1` spacer they were three loose items on a wrapping row, and at
+              375px the row broke into three lines with the save key alone at the right edge
+              and the field alone at the left of the next one. As a group they wrap together
+              and stay a group: at 375 the field gives up its width (`flex-1`, the same
+              answer the library's tool band takes) so the two share one line. */}
+          <div className="flex min-w-0 flex-1 items-center justify-end gap-3">
+          <span className="shrink-0 text-xs text-neutral-500 dark:text-neutral-400">
             {saving ? t.saving : savedAt ? `${t.savedAtPrefix} ${formatTime(savedAt)}` : ''}
           </span>
+          {/* `sm`, and the field beside it is sized to match, because on THIS row the height
+              is set by the tab strip: it is the widest object on the band and the first one
+              read, so it is the thing the other two answer to. The three measured 33.5, 32
+              and 40 — a strip, a key and a field, no two alike — and the pair at the right
+              end took the blame because they touch. All three are 32 now. */}
           <Button size="sm" onClick={save} disabled={saving}>
             {saving ? t.saving : t.saveSettings}
           </Button>
@@ -179,6 +191,7 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
             tabLabel={(k) => String(TAB_LABEL(k))}
             onPick={(entry) => { setTab(entry.tab); jumpToSetting(String(t[entry.label])) }}
           />
+          </div>
         </SheetTop>
         </div>
         <div className="p-5">

@@ -153,12 +153,12 @@ export const CONTROL_CHROME =
 // IMPORTS this rather than declaring a matching copy, so there is nothing left to keep in
 // step by hand. Callers add width (see FIELD_W).
 //
-// `min-h-10` and `py-2`, which is `ui/Button`'s height and not a rounder-looking `py-2.5`:
-// the padding version measured 42px against the button's 40, so every field standing beside
-// a button — Copy next to a token, Choose image next to a filename — sat two pixels proud of
-// it. A form control and the button that acts on it are one row or they are nothing. The
-// hand-drawn eight had no minimum height at all, so they measured 38 against that same 40.
-export const CONTROL = `${CONTROL_CHROME} min-h-10 px-3.5 py-2 text-sm`
+// `min-h-9`, which is `ui/Button`'s height and not a rounder-looking padding: an earlier
+// version measured 42px against the button's 40, so every field standing beside a button —
+// Copy next to a token, Choose image next to a filename — sat two pixels proud of it. A form
+// control and the button that acts on it are one row or they are nothing. Both came down a
+// step on 2026-09-01, together, for the reason recorded in `ui/Button`.
+export const CONTROL = `${CONTROL_CHROME} min-h-9 px-3 py-1.5 text-sm`
 
 /**
  * The same chrome worn by a box that CONTAINS controls instead of being one.

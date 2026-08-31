@@ -8,7 +8,8 @@
 // Why a search rather than a third rearrangement of the tabs: `settings-index.ts`.
 
 import { useState } from 'react'
-import { CONTROL, PANEL_LIST } from './kit'
+import { CONTROL_CHROME } from './kit'
+import { OVERLAY } from './sheet'
 import { useAdminT } from './I18nProvider'
 import { searchSettings, type SettingEntry, type SettingsTab } from './settings-index'
 
@@ -26,30 +27,44 @@ export function SettingsSearch({ tabLabel, onPick }: {
   const showing = query.trim().length >= 2
 
   return (
-    <>
-      {/* NO BOTTOM MARGIN. This sits in the sheet's header row beside the tabs, and that row
-          is `items-center` — which centres a flex item's MARGIN box, not its border box. A
-          `mb-4` here therefore pushed the field up by half of it: measured 2026-08-28, the
-          field's centre sat 8px above the tab strip's, which is exactly the misalignment
-          against the tabs that was reported. `CLUSTER_GAP` is a token for STACKING clusters
-          vertically; in a horizontal row it separates the field from nothing and moves it. */}
-      <div>
-        <input
-          type="search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder={t.settingsSearch}
-          aria-label={t.settingsSearch}
-          className={`${CONTROL} w-full max-w-80`}
-        />
-      </div>
+    // NO BOTTOM MARGIN. This sits in the sheet's header row beside the tabs, and that row
+    // is `items-center` — which centres a flex item's MARGIN box, not its border box. A
+    // `mb-4` here therefore pushed the field up by half of it: measured 2026-08-28, the
+    // field's centre sat 8px above the tab strip's, which is exactly the misalignment
+    // against the tabs that was reported. `CLUSTER_GAP` is a token for STACKING clusters
+    // vertically; in a horizontal row it separates the field from nothing and moves it.
+    //
+    // `relative`, because the results hang off this box. They used to be the NEXT FLEX ITEM
+    // in the sheet's tools row, which is a thing a row of tools cannot survive: measured at
+    // 1648px with three hits showing, the row went from 61px to 169 and the list — 311px of
+    // it — took a place on the row and pushed the tabs, the save key and the field around it.
+    // A list of results is not a tool. It is an overlay over the page, and the admin has one:
+    // `OVERLAY`, the same paper the command palette and the media picker are drawn on.
+    <div className="relative min-w-0 flex-1 sm:w-80 sm:flex-none">
+      <input
+        type="search"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder={t.settingsSearch}
+        aria-label={t.settingsSearch}
+        // `h-8` and the chrome from the kit, not `CONTROL`: the size is the one thing a field
+        // is allowed to decide for itself, and this one stands on a tools row whose height
+        // the tab strip sets. `CONTROL` is 36 and would be the tallest thing on the band.
+        className={`${CONTROL_CHROME} h-8 w-full px-3 text-sm`}
+      />
 
       {showing && (
-        <div className="mb-6">
+        // Hung from the field's RIGHT edge, which is the sheet's right edge: anchored left it
+        // would run off the paper on the narrow screens where the field itself is full width.
+        // Its own width rather than the field's: on a phone the field gives up its width to
+        // the save key beside it and measures 165px, and a 165px list broke "Font smoothing
+        // (anti-aliasing)" over three lines. The viewport cap is what keeps 320px of panel
+        // from hanging off the left edge of a 375px screen.
+        <div className={`absolute right-0 top-full z-30 mt-2 w-80 max-w-[calc(100vw-2rem)] overflow-hidden ${OVERLAY}`}>
           {results.length === 0
-            ? <p className="text-sm text-neutral-500 dark:text-neutral-400">{t.settingsSearchEmpty}</p>
+            ? <p className="px-4 py-3 text-sm text-neutral-500 dark:text-neutral-400">{t.settingsSearchEmpty}</p>
             : (
-              <ul className={PANEL_LIST}>
+              <ul className="max-h-80 divide-y divide-neutral-200 overflow-y-auto dark:divide-neutral-800">
                 {results.map((r) => (
                   <li key={`${r.tab}:${String(r.label)}`}>
                     {/* One row is one jump: it names the setting AND the tab, and clicking it
@@ -69,6 +84,6 @@ export function SettingsSearch({ tabLabel, onPick }: {
             )}
         </div>
       )}
-    </>
+    </div>
   )
 }
