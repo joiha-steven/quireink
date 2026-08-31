@@ -60,7 +60,20 @@ export const SETTING_LABEL = 'block text-sm font-medium text-neutral-800 dark:te
  * is **2.58:1**. Size cannot give way either — these were once the smallest text on screen,
  * which was the wrong way round. Slant costs no contrast and reads as an aside.
  */
-export const NOTE_TEXT = 'text-[0.8125rem] italic leading-[1.55] text-neutral-500 dark:text-neutral-400'
+const NOTE_SHAPE = 'text-[0.8125rem] italic leading-[1.55]'
+export const NOTE_TEXT = `${NOTE_SHAPE} text-neutral-500 dark:text-neutral-400`
+
+/**
+ * The same note, in the admin's one "look at this" ink: a hint the owner has to act on
+ * before the thing it describes will work — a key the provider refused, a connection that
+ * did not answer. NOT for a destroyed thing, which is red's job and red's alone.
+ *
+ * It exists because the colour has to be swapped rather than added. A caller writing
+ * `${NOTE_TEXT} text-amber-700` ships two colour classes in one list, and which one wins is
+ * decided by the order they happen to sit in the stylesheet — so the shape is shared above
+ * and each ink states its own.
+ */
+export const NOTE_ALERT = `${NOTE_SHAPE} text-amber-700 dark:text-amber-500`
 
 /** A hint directly under the label it explains. `Setting` and `ui/Input` place this one. */
 export const NOTE = `${NOTE_TEXT} mt-1.5`

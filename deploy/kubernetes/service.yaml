@@ -1,0 +1,18 @@
+# The address the Ingress (or a port-forward) talks to.
+#
+# ClusterIP, not LoadBalancer: one blog does not need a public IP of its own, and a
+# LoadBalancer here is a second bill and a second TLS story. The Ingress next door is the
+# front door.
+apiVersion: v1
+kind: Service
+metadata:
+  name: quire
+  labels:
+    app.kubernetes.io/name: quire
+spec:
+  selector:
+    app.kubernetes.io/name: quire
+  ports:
+    - name: http
+      port: 80
+      targetPort: http

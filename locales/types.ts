@@ -1024,6 +1024,14 @@ export type AdminStrings = {
   aiTaskAltText: string
   aiModelsLoading: string
   aiModelsFailed: string
+  /** The model list is also the only free test of a key, so its outcome is spoken in
+   *  the three failures an owner can act on: wrong key, throttled, unreachable. */
+  aiModelsLoad: string
+  aiModelsOk: string
+  aiKeyRejected: string
+  aiKeyLimited: string
+  aiProviderRefused: string
+  aiNoReach: string
   aiTaskExcerpt: string
   aiTaskComments: string
   aiTaskCommentsDesc: string

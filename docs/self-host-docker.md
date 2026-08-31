@@ -155,3 +155,16 @@ Runtipi's official app store [stopped accepting new
 applications](https://github.com/runtipi/runtipi/issues/2317), so there is no Quire Ink
 entry to search for and there is not going to be one. Use **Add custom app** and give it the
 compose above — the result is the same container, managed by Runtipi like any other app.
+
+## Kubernetes
+
+Same image, four manifests, `kubectl apply -k deploy/kubernetes`:
+[`deploy/kubernetes/README.md`](../deploy/kubernetes/README.md).
+
+Read the first section of that page before you scale anything. The workload is a
+**StatefulSet with one replica** and that is a correctness requirement rather than a starting
+point: the blog is one Bun process over two SQLite files, and a second pod on the same volume
+is a corrupted blog that nothing warns you about. What the manifests carry beyond the compose
+file is a probe, a security context that passes the `restricted` Pod Security Standard, and
+the one ingress annotation without which every upload over 1 MB is rejected before it reaches
+the app.

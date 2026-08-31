@@ -231,3 +231,52 @@ describe('the public search index', () => {
     expect((await app.request('/api/search/index')).status).toBe(404)
   })
 })
+
+// LISTING THE MODELS IS THE KEY TEST, and the shape of its answer is the contract the AI
+// card is written against. It returns 200 for a REFUSED key on purpose: the request was
+// well formed and the question was "does this key work", so "no, and here is what the
+// provider said" is the answer to it rather than a failure to answer. Sent back as a 502 —
+// which it was until 2026-08-31 — the envelope has one `error` string and nowhere to put
+// the provider's own sentence, so the card fell back to "could not read the model list"
+// whether the key was wrong, the account was out of credit, or the box had no route out.
+describe('the model list', () => {
+  const realFetch = globalThis.fetch
+  afterAll(() => { globalThis.fetch = realFetch })
+
+  const answering = (status: number, body: unknown) => {
+    globalThis.fetch = (async () => new Response(JSON.stringify(body), { status })) as unknown as typeof fetch
+  }
+
+  it('hands back what the account can see', async () => {
+    answering(200, { data: [{ id: 'deepseek-v4-flash' }, { id: 'text-embedding-3-small' }] })
+    const res = await post('/api/integrations/ai/models', { provider: 'deepseek', apiKey: 'sk-typed-not-yet-saved' })
+    expect(res.status).toBe(200)
+    const listing = await payload<{ ok: boolean; models: { id: string }[] }>(res)
+    expect(listing.ok).toBe(true)
+    // The embedding model is filtered out: it is on the account and cannot hold a conversation.
+    expect(listing.models.map((m) => m.id)).toEqual(['deepseek-v4-flash'])
+  })
+
+  it('answers a refused key with the reason and the provider’s own words', async () => {
+    answering(401, { error: { message: 'Authentication Fails, Your api key is invalid' } })
+    const res = await post('/api/integrations/ai/models', { provider: 'deepseek', apiKey: 'sk-wrong' })
+    expect(res.status).toBe(200)
+    const listing = await payload<{ ok: boolean; code: string; status: number; detail: string }>(res)
+    expect(listing.ok).toBe(false)
+    expect(listing.code).toBe('bad_key')
+    expect(listing.status).toBe(401)
+    expect(listing.detail).toBe('Authentication Fails, Your api key is invalid')
+  })
+
+  it('tries a typed key BEFORE it is saved, and stores nothing while doing it', async () => {
+    answering(200, { data: [{ id: 'deepseek-v4-flash' }] })
+    await post('/api/integrations/ai/models', { provider: 'deepseek', apiKey: 'sk-only-being-tried' })
+    expect(one<{ n: number }>('select count(*) as n from integration_keys')!.n).toBe(0)
+  })
+
+  // Both are the caller's mistake rather than the provider's, so both stay 400s.
+  it('refuses a provider it cannot serve, and a request with no key anywhere', async () => {
+    expect((await post('/api/integrations/ai/models', { provider: 'mistral', apiKey: 'k' })).status).toBe(400)
+    expect((await post('/api/integrations/ai/models', { provider: 'openai' })).status).toBe(400)
+  })
+})

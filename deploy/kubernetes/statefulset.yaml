@@ -1,0 +1,120 @@
+# The blog itself: one pod, one disk, and a strong statement that there is only ever one.
+#
+# A STATEFULSET RATHER THAN A DEPLOYMENT, and it is not a style choice. `bun:sqlite` is a
+# single writer by construction (the image's own Dockerfile says so beside its CMD), so two
+# pods with the same database is not "scaled", it is corrupted. A Deployment's rolling update
+# starts the new pod BEFORE it stops the old one — against a ReadWriteOnce volume that hangs
+# on `Multi-Attach error` until the timeout, and against a ReadWriteMany one it succeeds,
+# which is worse. A StatefulSet stops the old pod first and waits. That ordering is the whole
+# reason this file has this kind at the top.
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: quire
+  labels:
+    app.kubernetes.io/name: quire
+spec:
+  # ⚠️ ONE. Not a starting point, not a default to tune: `kubectl scale --replicas=2` here
+  # gives two processes writing one SQLite file. Nothing in Kubernetes will stop you and
+  # nothing will tell you. Grow the node, never the replica count.
+  replicas: 1
+  serviceName: quire
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: quire
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: quire
+    spec:
+      # The image starts as root and drops to PUID/PGID in its entrypoint, which is there for
+      # NAS bind mounts. Kubernetes has a better answer for the same problem, so this takes
+      # it: `runAsUser` means the entrypoint sees a non-root UID and execs the app straight
+      # away, and `fsGroup` makes the freshly provisioned volume group-writable by it. That
+      # is also what a cluster running the `restricted` Pod Security Standard demands.
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: quire
+          # Pinned. `latest` on a StatefulSet is a pod that changes underneath you at the
+          # next unrelated eviction, on a blog whose database is upgraded at boot.
+          image: quireink/quireink:2.2.3
+          ports:
+            - name: http
+              containerPort: 3000
+          # SITE_URL and anything else the operator sets. The Secret is optional so a blog
+          # with no secrets at all — which is the normal case, the app generates its own
+          # signing keys into the database — needs no Secret object to exist.
+          envFrom:
+            - configMapRef:
+                name: quire-config
+            - secretRef:
+                name: quire-secrets
+                optional: true
+          # The container's own layout, listed after envFrom so a stray value in the
+          # ConfigMap cannot point the app at a path nothing is mounted on.
+          env:
+            - name: DATA_DIR
+              value: /var/lib/quire/data
+            - name: STORAGE_LOCAL_DIR
+              value: /var/lib/quire/uploads
+            - name: PORT
+              value: "3000"
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/quire
+          # `/api/health` answers 503 when the database will not answer or the upload store
+          # will not take a byte, which is exactly what should hold traffic back.
+          startupProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            periodSeconds: 3
+            failureThreshold: 40
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            periodSeconds: 10
+          # NO LIVENESS PROBE, deliberately. The two things `/api/health` reports are a
+          # database that will not open and a disk that will not take a write, and a restart
+          # fixes neither — it converts a blog that is merely down into a CrashLoopBackOff
+          # that also loses its cache every 30 seconds. Readiness already takes a sick pod
+          # out of the Service. Add one if you have seen this process hang; it has not.
+          resources:
+            requests:
+              cpu: 50m
+              memory: 192Mi
+            limits:
+              # No CPU limit: throttling a single-process app mid-render buys nothing on a
+              # box it already shares politely. Memory IS capped, because a runaway there
+              # takes the node's other pods with it.
+              memory: 768Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+            # NOT read-only, and the reason is the backup button: `src/server/backup.ts`
+            # stages the archive in the system temp directory. A read-only root would need a
+            # tmpfs there, and a tmpfs is RAM, which turns backing up a few hundred MB of
+            # uploads into an OOM kill on exactly the small node this is written for.
+            readOnlyRootFilesystem: false
+  # ONE claim for both the databases and the uploads. They are backed up together and
+  # restored together, so splitting them into two volumes would mean two snapshots that can
+  # disagree about which uploads a post refers to.
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources:
+          requests:
+            storage: 10Gi
+        # storageClassName is left out on purpose: unset means the cluster's default, which
+        # is `do-block-storage` on DigitalOcean, `gp3`/`gp2` on EKS and `standard` on kind.
+        # Name one here only to pick a class that is not the default.

@@ -165,8 +165,10 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { tab: 'ai', label: 'aiProviderLabel' },
   { tab: 'ai', label: 'aiKeyLabel' },
   { tab: 'ai', label: 'aiModelLabel' },
-  { tab: 'ai', label: 'aiTaskAltText' },
-  { tab: 'ai', label: 'aiTaskExcerpt' },
+  // Alt text and excerpts stopped being switches on 2026-08-29 — they follow the key now —
+  // and their rows came out of the index with them. An entry for a setting that is no longer
+  // drawn is worse than a missing one: the search answers, opens the AI tab, and highlights
+  // nothing, which reads as the tab having lost the setting rather than the index being old.
   { tab: 'ai', label: 'aiTaskComments' },
 
   // System — moving content in and out

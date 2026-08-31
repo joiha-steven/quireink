@@ -95,7 +95,11 @@ const RULES: Rule[] = [
     // `italic` since 2026-08-29, and the signature moved with it — a hint is set apart from
     // its label by SLANT because it cannot be set apart by shade: measured at 4.74:1 on a
     // white card against the 4.5:1 floor, with `neutral-400` two steps down at 2.58:1.
-    signature: 'text-[0.8125rem] italic leading-[1.55] text-neutral-500',
+    //
+    // The SHAPE without the colour, since 2026-08-31: a note that has to be noticed keeps the
+    // size, the slant and the leading and swaps the ink (`NOTE_ALERT`), and a signature that
+    // still named the grey would have been a rule this kit could no longer satisfy.
+    signature: 'text-[0.8125rem] italic leading-[1.55]',
     home: 'src/admin/components/scale.ts',
     instead: 'import NOTE_TEXT from components/kit — or pass `note` to Setting / ui/Input',
   },

@@ -7,7 +7,7 @@
 // naming a provider, and a fifth one inherits them for free.
 
 import { describe, it, expect } from 'bun:test'
-import { AI_PROVIDERS, DEFAULT_MODELS, buildParts, parseText, seesImages } from './ai-provider'
+import { AI_PROVIDERS, DEFAULT_MODELS, buildParts, parseText, readListFailure, seesImages } from './ai-provider'
 import { buildChat, parseChat, type Turn } from './assistant-dialects'
 
 const TEXT = [{ text: 'describe this' }]
@@ -174,5 +174,63 @@ describe('seeing is a property of the MODEL', () => {
       expect(`${p}: sees`).toBe(`${p}: ${seesImages(p, 'anything-at-all') ? 'sees' : 'BLIND'}`)
       expect(`${p}: sends`).toBe(`${p}: ${buildParts(p, 'm', 'k', IMAGE) ? 'sends' : 'REFUSED'}`)
     }
+  })
+})
+
+// LISTING THE MODELS IS ALSO THE KEY TEST, so what comes back when it fails is the only
+// thing on that card telling the owner what to do next. It used to be one `null` for every
+// no, which read as "check the key" whether the key was wrong, the account was out of
+// credit, or the machine had no route out.
+describe('a refused model list', () => {
+  it('sorts the three failures the owner can act on', () => {
+    expect(readListFailure(401, '').code).toBe('bad_key')
+    expect(readListFailure(403, '').code).toBe('bad_key')
+    expect(readListFailure(429, '').code).toBe('rate_limited')
+    expect(readListFailure(500, '').code).toBe('refused')
+    expect(readListFailure(404, '').code).toBe('refused')
+  })
+
+  it('quotes the provider, in each provider’s own error shape', () => {
+    expect(readListFailure(401, JSON.stringify({
+      error: { message: 'Incorrect API key provided: sk-a***z.', type: 'invalid_request_error' },
+    })).detail).toBe('Incorrect API key provided: sk-a***z.')
+    expect(readListFailure(401, JSON.stringify({
+      type: 'error', error: { type: 'authentication_error', message: 'invalid x-api-key' },
+    })).detail).toBe('invalid x-api-key')
+    expect(readListFailure(429, JSON.stringify({
+      error: { message: 'Rate limit reached for gpt-4o-mini in organization org-x.' },
+    })).detail).toBe('Rate limit reached for gpt-4o-mini in organization org-x.')
+  })
+
+  // Gemini answers a bad key with 400, not 401 — so the sentence above it says "answered
+  // 400" rather than "rejected this key", and the provider's own line is what tells the
+  // owner which it was. Pinned because it is the one provider where the status alone lies.
+  it('leans on the provider’s words where the status does not say', () => {
+    const f = readListFailure(400, JSON.stringify({
+      error: { code: 400, message: 'API key not valid. Please pass a valid API key.', status: 'INVALID_ARGUMENT' },
+    }))
+    expect(f.code).toBe('refused')
+    expect(f.detail).toBe('API key not valid. Please pass a valid API key.')
+  })
+
+  // Providers quote back what they were sent, and this message goes on to a screen, a
+  // screenshot and a bug report.
+  it('takes the key back out of a message that echoed it', () => {
+    const key = 'sk-1234567890abcdef'
+    const said = readListFailure(401, JSON.stringify({
+      error: { message: `Authentication Fails, Your api key: ${key} is invalid` },
+    }), key)
+    expect(said.detail).not.toContain(key)
+    expect(said.detail).toBe('Authentication Fails, Your api key: … is invalid')
+  })
+
+  it('says nothing rather than paste a gateway’s HTML into the card', () => {
+    expect(readListFailure(502, '<html><head><title>502 Bad Gateway</title></head></html>').detail).toBe('')
+    expect(readListFailure(502, '').detail).toBe('')
+  })
+
+  it('caps a message long enough to fill the page', () => {
+    const long = readListFailure(500, JSON.stringify({ error: { message: 'x'.repeat(5000) } }))
+    expect(long.detail.length).toBe(200)
   })
 })

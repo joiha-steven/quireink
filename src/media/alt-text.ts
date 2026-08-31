@@ -16,8 +16,8 @@ import { ask, buildParts, parseText } from '@/server/ai-provider'
 
 // Compatibility exports: the provider plumbing moved to `server/ai-provider.ts` on
 // 2026-08-23; these keep every existing caller and test honest about where it lives.
-export { listModels, parseModels, DEFAULT_MODELS } from '@/server/ai-provider'
-export type { ModelChoice } from '@/server/ai-provider'
+export { listModels, parseModels, readListFailure, DEFAULT_MODELS } from '@/server/ai-provider'
+export type { ModelChoice, AiListing, ListFailure } from '@/server/ai-provider'
 
 export type AltRequest = { url: string; headers: Record<string, string>; body: string }
 

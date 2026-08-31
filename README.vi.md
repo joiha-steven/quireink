@@ -172,6 +172,7 @@ Hiệu ứng hiện dần và thanh tiến độ là CSS thuần: không script,
 - **Droplet DigitalOcean** — dán [một file](./deploy/digitalocean/user-data.sh) vào trang tạo droplet, ba phút sau khi máy nổ là blog đã chạy ([cách làm và lý do](./deploy/digitalocean/README.md)).
 - **NAS trong nhà** — trên **Unraid** tìm `QuireInk` trong Community Applications; trên **Synology** (DSM 7.2 trở lên) dán file compose vào Container Manager, Container Station của QNAP cũng nhận đúng file đó. Không cần dòng lệnh ở máy nào: blog in đường dẫn nhận quyền ra log của container. [Từng bước, theo từng loại máy](./docs/self-host-docker.md#on-a-nas-or-a-home-server).
 - **Máy nào có Docker** — kéo `quireink/quireink` về, có đủ `amd64` và `arm64`.
+- **Cụm Kubernetes** — `kubectl apply -k deploy/kubernetes`, chạy được trên DOKS, EKS, GKE hay cụm tự dựng. Một pod, một ổ đĩa, vì một blog là một tiến trình ghi SQLite ([bộ manifest, và lý do nó là StatefulSet](./deploy/kubernetes/README.md)).
 
 Đường thứ nhất cần [Bun](https://bun.sh) 1.3 trở lên và một máy trỏ tên miền vào được. Hết danh sách.
 

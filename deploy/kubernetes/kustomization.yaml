@@ -1,0 +1,39 @@
+# `kubectl apply -k deploy/kubernetes` — kustomize is built into kubectl, so this adds no
+# tool to install and no chart to template.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - statefulset.yaml
+  - service.yaml
+  # Drop this line if something else already terminates TLS for you.
+  - ingress.yaml
+
+# No `commonLabels` here, though it is the usual line: every object above already carries
+# `app.kubernetes.io/name: quire` where a selector needs it, and the field is deprecated in
+# newer kustomize while its replacement is not understood by older kubectl. A label this
+# file does not need is not worth a version floor on the tool.
+
+# THE ONE VALUE TO EDIT. Everything else the blog needs — its name, its language, SMTP,
+# Turnstile, the CDN — is entered in the admin and stored in the database, so there is no
+# config file to keep in sync with a running site.
+#
+# The address matters because it is not discoverable from inside a cluster: feeds, sitemaps,
+# OG images and the links in a newsletter are all built from it, and without it they are
+# built from whatever hostname the ingress passed through, which is an internal one.
+configMapGenerator:
+  - name: quire-config
+    literals:
+      - SITE_URL=https://blog.example.com
+      # Uncomment on a cluster whose ingress controller is NOT on a private address —
+      # a tunnel, or a load balancer that talks to the pod from a public one. Left alone,
+      # a proxy on 10.x is already trusted for `X-Forwarded-For` and this is not needed.
+      # - TRUST_PROXY=1
+      # The day boundary the analytics use. UTC unless this says otherwise.
+      # - ANALYTICS_TZ=Asia/Ho_Chi_Minh
+
+# A rolled ConfigMap name would restart the pod on every unrelated `apply`; the blog reads
+# these at boot and a restart is a short outage, so the name stays put and a change to the
+# address is followed by an explicit `kubectl rollout restart statefulset/quire`.
+generatorOptions:
+  disableNameSuffixHash: true
