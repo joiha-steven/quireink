@@ -134,7 +134,7 @@ function Rows({
             <Button size="sm">{t.newPost}</Button>
           </Link>
         </div>
-        <Tabs tabs={scopeTabs} value={scope} onChange={setScope} size="sm" dense />
+        <Tabs tabs={scopeTabs} value={scope} onChange={setScope} size="sm" dense role="choice" />
         {/* One thin line of small print: the pane's tools on the left (the Write screen
             hangs Taxonomy and Series here — they lived below the fold, where nobody would
             find them), the sort cycle on the right.
