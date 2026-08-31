@@ -7,6 +7,7 @@ import { Button } from '@/admin/ui/Button'
 import { formatDateTimeShort } from '@/utils'
 import { useAdminT } from './I18nProvider'
 import { INSET } from './kit'
+import { OVERLAY } from './sheet'
 
 type Props = {
   slug: string
@@ -40,7 +41,7 @@ export function TimeMachine({ slug, onRestore, onClose }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
       <div
-        className="flex max-h-[85vh] w-full max-w-2xl flex-col rounded-2xl bg-white p-5 dark:bg-neutral-900"
+        className={`flex max-h-[85vh] w-full max-w-2xl flex-col p-5 ${OVERLAY}`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-1 flex items-center justify-between">

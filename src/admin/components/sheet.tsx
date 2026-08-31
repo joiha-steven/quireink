@@ -104,3 +104,24 @@ export function NumBand({ items }: { items: { n: ReactNode; label: ReactNode; af
     </div>
   )
 }
+
+/**
+ * The lift, and the ONE thing in this admin allowed to have it.
+ *
+ * `docs/admin-design.md` reserves the drop shadow for what genuinely floats, and the five
+ * things that do had drifted into five opinions: the palette rounded 12 on `shadow-xl`, the
+ * mobile nav and the two modals rounded 16 — one radius step past the top of the scale — and
+ * of those two modals NEITHER carried a shadow at all, so the one signal reserved for them
+ * was the one they were missing. `shadow-xl` was also the only stock Tailwind shadow left in
+ * a file tree where every other shadow is written out.
+ *
+ * Two steps, because a real one has two: the contact under the near edge, and the spread the
+ * sheet casts across the paper. NO inset lip — in this grammar a light lip means PRESSABLE,
+ * and an overlay is not a key. It floats; it does not depress.
+ */
+export const OVERLAY_LIFT =
+  'shadow-[0_16px_32px_-12px_rgba(0,0,0,.22),0_3px_8px_-4px_rgba(0,0,0,.12)] dark:shadow-[0_16px_32px_-12px_rgba(0,0,0,.7),0_3px_8px_-4px_rgba(0,0,0,.5)]'
+
+/** A sheet laid ON TOP of the page: the paper's own radius, its own edge, and the lift. */
+export const OVERLAY =
+  `rounded-[10px] border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900 ${OVERLAY_LIFT}`

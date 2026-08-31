@@ -314,7 +314,7 @@ form.search{display:flex;gap:.5rem;margin:0 0 2rem}
    border sat off-screen: the page scrolled sideways. form.subscribe already carried this
    rule; the search form was written from the same shape and lost it. */
 form.search input{min-width:0;flex:1;padding:.5rem .75rem;border:1px solid var(--c-rule);
-  border-radius:var(--radius,.5rem);background:var(--c-bg);color:var(--c-text);font:inherit}
+  border-radius:var(--radius,.5rem);background:var(--c-bg);color:var(--c-text);font:inherit;box-shadow:var(--well)}
 /* nowrap because the label is what pushed the row wide: "Tìm kiếm" broke over two lines and
    took the whole control to 78px tall to make room for itself. */
 form.search button{padding:.5rem 1rem;border:1px solid var(--c-rule);border-radius:var(--radius,.5rem);

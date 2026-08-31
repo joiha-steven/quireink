@@ -31,6 +31,7 @@ import {
   IconExternal, IconCache, IconSignOut, IconChevronLeft, IconGlyphs, IconMore, IconSearch,
 } from './navIcons'
 import { primaryNav, secondaryNav } from './navDestinations'
+import { OVERLAY } from './sheet'
 
 const STORE_KEY = 'quireink-admin-nav-collapsed'
 /**
@@ -367,7 +368,7 @@ export function AdminSidebar({
       {open && (
         <>
           <button type="button" aria-label={t.navHome} onClick={close} className="fixed inset-0 top-[65px] z-20 bg-black/20 lg:hidden" />
-          <nav className="fixed inset-x-3 top-[72px] z-30 scroll-fade max-h-[calc(100dvh-84px)] overflow-y-auto rounded-2xl border border-neutral-200 bg-white p-3 shadow-xl lg:hidden dark:border-neutral-800 dark:bg-neutral-900">
+          <nav className={`fixed inset-x-3 top-[72px] z-30 scroll-fade max-h-[calc(100dvh-84px)] overflow-y-auto p-3 lg:hidden ${OVERLAY}`}>
             {navItems(false)}
             <span className="my-1 block h-px w-full bg-neutral-200 dark:bg-neutral-700" aria-hidden />
             {controls(false)}

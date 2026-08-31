@@ -37,6 +37,17 @@ export const UTILITY_CSS = `
 .link-accent:hover{text-decoration:underline;text-decoration-color:var(--c-accent);
   text-decoration-thickness:1px;text-underline-offset:4px}
 
+/* The two shapes a surface is made of, beside the third one below. --lift is what FLOATS:
+   two steps, the contact under the near edge and the spread the sheet casts on the paper.
+   Three things floated on this site and each had its own opinion — the sign-up modal on a
+   25/50 drop, the theme menu on a 10/15 (and no radius at all), the search and book dialogs
+   on nothing. --well is what HOLDS: the inset a field wears so the box is findable before it
+   is typed in; four fields here were flat outlines while their own buttons carved on press.
+   Black rather than a palette token, and deliberately unlike the press below: a shadow is
+   dark in EVERY palette, so a token would LIGHT the inside of a field on the dark ones. */
+:root{--lift:0 16px 32px -12px rgba(0,0,0,.22),0 3px 8px -4px rgba(0,0,0,.12);
+  --well:inset 0 1px 1.5px rgba(0,0,0,.07)}
+
 /* THE CLICK, for everything on the reading site a finger can press. Pressing lands at
    once - the 1px of travel and the carved-in shadow arrive with transition-duration:0 -
    and only the release is sprung, on whatever transition the control already carries.
