@@ -139,7 +139,7 @@ character and none of its typographic rules **except one**, below.
   named Tailwind shadow gives you. There is no second step; a surface that wants one wants to
   be an overlay.
 - **The highlighter marks WHERE YOU ARE** (2026-08-29, and it is the ink's third role rather
-  than a fourth colour). The active tab wears `--pen` with `--on-pen`; the rail's current row
+  than a fourth colour). The active tab wears `--pen` with ink text (the reading site's olive `--on-pen` stays on marks in running text — on a control it read as grey, owner's call 2026-08-31); the rail's current row
   is a KEY HELD DOWN in the pen — the same full ink as the tab, with the same carved inset
   (2026-08-31: a bar-plus-wash read as a label, and a diluted wash beside the full tab pill
   read as a second ink; one ink, one strength, held down). A SELECTED VALUE gets neither,

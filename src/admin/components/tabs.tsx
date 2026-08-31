@@ -87,8 +87,9 @@ export const tabItemClass = (
     // let the strip move — that is what scrolling is for.
     : `${dense ? 'grow px-2' : 'shrink-0 whitespace-nowrap px-3'} py-1.5 text-[0.8125rem] font-medium transition ${
         active
-          // `--on-pen` rather than a neutral: the highlighter is a light ink and black on it
-          // is harsher than the olive the reading site already puts on its own marks.
+          // INK on the highlighter, not the reading site's olive `--on-pen`: on a control
+          // the olive read as grey and dull, and the owner called it. A mark in running
+          // text keeps the olive; a pressed key wants the full contrast.
           // A latched key: the active segment is held DOWN, so it carries the same
           // carved-in shadow every pressed control wears.
           // Solid ink cannot show relief — shading dies inside black — and a WHITE key
@@ -96,7 +97,7 @@ export const tabItemClass = (
           // ground, carved: darker because a pressed key sits in its own shade. The pen
           // keeps marking a place; a chosen value is the sunken key.
           ? role === 'place'
-            ? 'bg-[var(--pen)] text-[var(--on-pen)] shadow-[inset_0_2px_3px_rgba(0,0,0,.3),inset_0_-1px_0_rgba(255,255,255,.35)]'
+            ? 'bg-[var(--pen)] text-neutral-950 shadow-[inset_0_2px_3px_rgba(0,0,0,.3),inset_0_-1px_0_rgba(255,255,255,.35)]'
             : 'bg-neutral-200 font-semibold text-neutral-950 shadow-[inset_0_2px_3px_rgba(0,0,0,.22)] dark:bg-neutral-950 dark:text-white dark:shadow-[inset_0_2px_3px_rgba(0,0,0,.6)]'
           : 'text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-neutral-200'
       }`
