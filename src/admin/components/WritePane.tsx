@@ -291,7 +291,7 @@ export function WritePane({ activeSlug, always = false }: { activeSlug?: string;
     <aside
       className={`${
         always ? 'flex w-full xl:w-80' : 'hidden w-80 min-[1640px]:flex'
-      } shrink-0 flex-col self-start overflow-hidden rounded-[10px] border border-neutral-200/80 bg-neutral-50 xl:sticky xl:top-0 xl:max-h-[calc(100vh-1.5rem)] dark:border-neutral-800 dark:bg-neutral-950`}
+      } shrink-0 flex-col self-start overflow-hidden rounded-[10px] border border-neutral-200/80 bg-neutral-50 xl:sticky xl:top-0 xl:max-h-[calc(100dvh-1.5rem)] dark:border-neutral-800 dark:bg-neutral-950`}
     >
       {data ? (
         <Rows

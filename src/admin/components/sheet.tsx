@@ -16,7 +16,7 @@ import type { ReactNode } from 'react'
 import { CARD, TAP } from './kit'
 
 /** The sheet itself. Height matches the editor's paper so every page stands as tall. */
-export const SHEET = `${CARD} flex flex-col lg:min-h-[calc(100vh-1.5rem)]`
+export const SHEET = `${CARD} flex flex-col lg:min-h-[calc(100dvh-1.5rem)]`
 
 /**
  * The sheet for a page that must fit the WINDOW instead of growing past it.
@@ -32,7 +32,7 @@ export const SHEET = `${CARD} flex flex-col lg:min-h-[calc(100vh-1.5rem)]`
  * covers it with a few pixels to spare, and being a few pixels out costs a few pixels of
  * scroll rather than a broken layout. Below `lg` the page scrolls as pages do.
  */
-export const SHEET_FIXED = `${CARD} flex flex-col min-h-[70vh] lg:h-[calc(100vh-9rem)]`
+export const SHEET_FIXED = `${CARD} flex flex-col min-h-[70dvh] lg:h-[calc(100dvh-9rem)]`
 
 /** The sheet's closing line of small print: counts, hints, what a click does. */
 export const SHEET_FOOT =

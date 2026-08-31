@@ -38,7 +38,7 @@ export function ChatPane({ chats, activeId, onOpen, onNew, onDelete, busy }: {
   const [confirming, setConfirming] = useState<number | null>(null)
 
   return (
-    <aside className="hidden w-72 shrink-0 flex-col self-start overflow-hidden rounded-[10px] border border-neutral-200/80 bg-neutral-50 xl:sticky xl:top-0 xl:flex xl:max-h-[calc(100vh-1.5rem)] dark:border-neutral-800 dark:bg-neutral-950">
+    <aside className="hidden w-72 shrink-0 flex-col self-start overflow-hidden rounded-[10px] border border-neutral-200/80 bg-neutral-50 xl:sticky xl:top-0 xl:flex xl:max-h-[calc(100dvh-1.5rem)] dark:border-neutral-800 dark:bg-neutral-950">
       <div className="flex items-center justify-between gap-2 px-4 pb-2 pt-4">
         <span className={META}>{t.assistantChats}</span>
         <button type="button" className={SHEET_TOOL} onClick={onNew} disabled={busy}>
