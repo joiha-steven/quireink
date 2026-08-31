@@ -149,16 +149,15 @@ export const CONTROL_CHROME =
   // holds something — and a field holds the value. 1px of shading, not a style.
   'rounded-md border border-neutral-300 bg-white text-neutral-900 outline-none transition focus:border-neutral-500 focus:ring-2 focus:ring-neutral-200 placeholder:text-neutral-400 shadow-[inset_0_1px_1.5px_rgba(0,0,0,.06)] dark:shadow-[inset_0_1px_1.5px_rgba(0,0,0,.35)] dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500 dark:focus:ring-neutral-800 dark:placeholder:text-neutral-500'
 
-// The canonical control — chrome plus the one size nearly every field wants. `ui/Input.tsx`
-// IMPORTS this rather than declaring a matching copy, so there is nothing left to keep in
-// step by hand. Callers add width (see FIELD_W).
-//
-// `min-h-9`, which is `ui/Button`'s height and not a rounder-looking padding: an earlier
-// version measured 42px against the button's 40, so every field standing beside a button —
-// Copy next to a token, Choose image next to a filename — sat two pixels proud of it. A form
-// control and the button that acts on it are one row or they are nothing. Both came down a
-// step on 2026-09-01, together, for the reason recorded in `ui/Button`.
+// The canonical control — chrome plus the size nearly every field wants. `ui/Input.tsx`
+// IMPORTS this rather than keeping a matching copy. Callers add width (see FIELD_W).
+// `min-h-9` is `ui/Button`'s height: an earlier padding measured 42 against the button's 40,
+// and a field two pixels proud of the button that acts on it is one row broken.
 export const CONTROL = `${CONTROL_CHROME} min-h-9 px-3 py-1.5 text-sm`
+// The SECOND size, and there are only two. A sheet's tools row takes its height from the
+// segmented strip that starts it — 32 — so a field standing on one is 32, not the 36 a field
+// inside a form wears. `h-8` and not a minimum: a tools row does not grow.
+export const CONTROL_SM = `${CONTROL_CHROME} h-8 px-3 text-sm`
 
 /**
  * The same chrome worn by a box that CONTAINS controls instead of being one.
@@ -224,12 +223,14 @@ export const FIELD_W = { short: 'w-28', medium: 'w-64', full: 'w-full' } as cons
 export function Select({
   className = '',
   wrapClassName = 'inline-flex',
+  small = false,
   children,
   ...props
-}: SelectHTMLAttributes<HTMLSelectElement> & { wrapClassName?: string }) {
+}: SelectHTMLAttributes<HTMLSelectElement> & { wrapClassName?: string; small?: boolean }) {
   return (
     <span className={`relative ${wrapClassName}`}>
-      <select {...props} className={`${CONTROL} cursor-pointer appearance-none pr-9 ${className}`}>
+      {/* SWAPPED, not overridden: `h-8` from a caller loses to `min-h-9` every time. */}
+      <select {...props} className={`${small ? CONTROL_SM : CONTROL} cursor-pointer appearance-none pr-9 ${className}`}>
         {children}
       </select>
       <svg

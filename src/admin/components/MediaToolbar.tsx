@@ -2,7 +2,7 @@
 // right. Split out of MediaLibrary to keep that file thin; presentational, all
 // state lives in the parent.
 import { formatBytes } from '@/utils'
-import { CONTROL, Select } from './kit'
+import { CONTROL_SM, Select } from './kit'
 import { useAdminT } from './I18nProvider'
 
 export type MediaSort = 'new' | 'name' | 'size'
@@ -42,10 +42,11 @@ export function MediaToolbar({
           value={query}
           onChange={(e) => onQuery(e.target.value)}
           placeholder={t.mediaSearch}
-          className={`${CONTROL} min-w-0 flex-1 sm:w-52 sm:flex-none`}
+          className={`${CONTROL_SM} min-w-0 flex-1 sm:w-52 sm:flex-none`}
         />
         <label className="sr-only" htmlFor="media-sort">{t.sortLabel}</label>
         <Select
+          small
           id="media-sort"
           value={sort}
           onChange={(e) => onSort(e.target.value as MediaSort)}

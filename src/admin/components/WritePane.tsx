@@ -23,7 +23,7 @@ import type { Post, Page } from '@/types'
 import { useToast } from '@/admin/ui/Toast'
 import { formatDateTimeShort } from '@/utils'
 import { Button } from '@/admin/ui/Button'
-import { CONTROL_CHROME, Tabs } from './kit'
+import { CONTROL_SM, Tabs } from './kit'
 import { SlideOver } from './SlideOver'
 import { TaxonomyManager } from './TaxonomyManager'
 import { SeriesManager } from './SeriesManager'
@@ -129,13 +129,11 @@ function Rows({
             // is the one thing a two-item row cannot hide. The target stays easy: it is the full
             // width of the pane.
             //
-            // The SIZE is the only thing this field gets to decide for itself, which is what
-            // `CONTROL_CHROME` was split out to allow. Drawn by hand it had drifted on four
-            // other things and one of them was not cosmetic: 8px of radius against the
-            // admin's 6, a neutral-200 border against the control shade of neutral-300, no
-            // inset carve on a box that holds a value — and NO FOCUS STATE AT ALL. A field
-            // reached by keyboard gave back nothing to say it had been reached.
-            className={`${CONTROL_CHROME} h-8 w-full min-w-0 px-3 text-sm`}
+            // Drawn by hand it had drifted on four things and one of them was not cosmetic:
+            // 8px of radius against the admin's 6, a neutral-200 border against the control
+            // shade of neutral-300, no inset carve on a box that holds a value — and NO
+            // FOCUS STATE AT ALL. A field reached by keyboard gave back nothing to say so.
+            className={`${CONTROL_SM} w-full min-w-0`}
           />
           <Link href="/admin/editor" className="shrink-0">
             <Button size="sm">{t.newPost}</Button>
