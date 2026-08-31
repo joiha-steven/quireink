@@ -246,7 +246,19 @@ body:has(.book-overlay[open]){overflow:hidden}
 }
 @keyframes card-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 
-.site-bar{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+/* WRAPS, at every width and not only on a phone. The bar lives inside the reading column,
+   which is 672px by default — a title, an owner's menu of any length and up to five controls
+   do not fit in it. Measured on an article at 1648px with a four-item menu: the menu wanted
+   403px and had 321, and the last link was drawn straight through the search control. A
+   menu is the owner's words and there is no correct number of them, so the row gives way
+   rather than the content. */
+.site-bar{display:flex;flex-wrap:wrap;row-gap:.25rem;align-items:center;justify-content:flex-end;gap:1rem}
+/* The auto margin is on the TITLE, and that is what makes the wrap land right. With
+   space-between the controls, once pushed onto a second line, were the only item on it and
+   space-between put them at the LEFT — under the wordmark, at the opposite edge from where
+   they sit when the row fits. End-justified plus one auto margin gives the same answer on
+   both: name at the left edge, everything else against the right, on however many lines. */
+.site-bar > .title{margin-right:auto}
 /* -0.625rem optically aligns the LAST icon's glyph with the column's right margin: the
    40px button centres a 20px glyph, so the glyph sits 10px inside the button edge. Pulling
    the row right by that 10px lands it flush, matching the logo's flush-left edge. */
@@ -256,7 +268,7 @@ body:has(.book-overlay[open]){overflow:hidden}
    the first control further off than the next link, so it is not read as one of them. */
 .site-menu{display:none}
 @media (min-width:60rem){
-  .site-menu{display:flex;align-items:center;gap:1.25rem;margin-left:auto;min-width:0;padding-right:.5rem}
+  .site-menu{display:flex;flex-wrap:wrap;row-gap:.35rem;align-items:center;gap:1.25rem;margin-left:auto;min-width:0;padding-right:.5rem}
   .site-menu a{color:var(--c-meta);text-decoration:none;white-space:nowrap}.site-menu a:hover{color:var(--c-heading)}
 }
 .icon-btn{display:flex;align-items:center;justify-content:center;width:2.5rem;height:2.5rem;

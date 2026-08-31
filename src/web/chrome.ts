@@ -104,19 +104,24 @@ const token = (text: string): string => `<span class="btn-token">${escapeHtml(te
 /**
  * The owner's menu, as words in the header's right-hand cluster, ahead of the controls.
  *
- * ONE MENU, ONE PLACE, and that place is the rail. This renders only when the page has no
- * rail to put it in, which today means the composed front page and nothing else — see
- * `ChromeOptions.menuInHeader`.
+ * ONE MENU, ONE PLACE, and that place is the rail WHEN THERE IS ONE. This renders wherever
+ * there is not: the composed front page, an article (whose rail is a table of contents), and
+ * a post list whose owner has switched the sidebar off — see `ChromeOptions.menuInHeader`.
  *
- * It briefly rendered on EVERY page, on the argument that an article's rail carries its
- * table of contents so the menu had nowhere to go there. The argument was true and the
- * conclusion was wrong: it put the same links in two places on every listing page, and a
- * reader meets the menu twice on the one layout that already had it. The owner called it,
- * and the trade is deliberate — a desktop reader on an ARTICLE now has no menu until they
- * scroll back to a listing or drop below the drawer breakpoint.
+ * It briefly rendered on EVERY page, which put the same links in two places on every
+ * listing page — a reader met the menu twice on the one layout that already had it. The
+ * answer then was to render it on the front page only, and that answer was aimed at the
+ * wrong thing: the fault was the DUPLICATION, not the header. Paying for it with "an
+ * article has no menu" also bought "a blog whose homepage is a page has no menu on its
+ * homepage", which is issue #61. The condition is now the honest one — does anything else
+ * on this page already carry the menu — so nothing is ever shown twice and nothing is
+ * dropped.
  *
- * Desktop only either way. Below the breakpoint the header row is the title and up to five
- * controls already, and words do not fit beside them; the drawer keeps serving that width.
+ * Desktop only either way (`.site-menu` is `display:none` under 60rem): below that the
+ * header row is the title and up to five controls already, and words do not fit beside
+ * them. The drawer serves that width — but ONLY on a listing that has a rail to hang it
+ * from, so under 60rem an article and a sidebar-less list still have no menu. That gap is
+ * a drawer's worth of work and is not this change.
  */
 function siteMenu(settings: SiteSettings, label: string): string {
   if (settings.menu.length === 0) return ''

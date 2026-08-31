@@ -156,10 +156,12 @@ describe('the reader\'s own text, put back into the page', () => {
 })
 
 describe('the owner menu on the header row', () => {
-  // The menu lives at the top of the listing rail and that is the ONLY place it renders —
-  // except on a page that has no rail to hold it, which today is the composed front page
-  // alone (ADR 0014). It briefly rendered on every page, which put the same links twice on
-  // every listing; the owner called that wrong on 2026-08-03.
+  // ONE MENU, ONE PLACE, and the place is the listing rail WHENEVER THERE IS ONE. The header
+  // takes it on every page where nothing else does: the composed front page (ADR 0014), an
+  // article (whose rail is a table of contents), and a post list whose owner has switched the
+  // sidebar off. It briefly rendered on every page, which put the same links twice on every
+  // listing; the answer then was "front page only", and that answer also deleted the menu
+  // from a blog whose homepage is a page — issue #61.
   const menu = [{ label: 'Essays', href: '/category/essays' }, { label: 'About', href: '/about' }]
 
   /** Put the site into newspaper mode and fetch `/`, which is the one rail-less layout. */
@@ -180,12 +182,29 @@ describe('the owner menu on the header row', () => {
     expect(nav).toContain('href="/about"')
   })
 
-  it('keeps the header clear on an article, where the menu is not the header\'s job', async () => {
-    // The regression this guards: the menu on every page. An article has a rail (its table
-    // of contents) and a drawer below the breakpoint, and neither is the header.
+  it('puts the menu in the header of an article, whose rail is a table of contents', async () => {
+    // Issue #61. The article rail holds headings, never the menu, so with the header ruled
+    // out as well the links were in the served HTML zero times, at every width.
     await saveSettings({ menu })
     clearCache()
-    expect(await (await get('/published')).text()).not.toContain('site-menu')
+    const nav = navOf(await (await get('/published')).text())
+    expect(nav).toContain('href="/category/essays"')
+    expect(nav).toContain('href="/about"')
+  })
+
+  it('puts the menu in the header of a post list whose sidebar is switched off', async () => {
+    // The other half of #61, and the reason the test is "did anything else carry it" rather
+    // than "what kind of page is this": with `features.sidebar` off there is no rail on a
+    // listing either, and the menu had nowhere left to go.
+    const s = await getSettings()
+    await saveSettings({
+      menu, home: { ...s.home, mode: 'list' }, features: { ...s.features, sidebar: false },
+    })
+    clearCache()
+    const html = await (await get('/')).text()
+    expect(navOf(html)).toContain('href="/about"')
+    await saveSettings({ features: { ...s.features, sidebar: true } })
+    clearCache()
   })
 
   it('keeps the header clear on a listing, where the rail already carries it', async () => {
