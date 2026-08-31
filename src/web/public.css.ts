@@ -30,6 +30,7 @@ import { MOBILE_CSS } from '@/web/mobile.css'
 import { PROSE_CSS } from '@/web/prose.css'
 import { FRONT_CSS } from '@/web/front.css'
 import { UTILITY_CSS } from '@/web/utility.css'
+import { ARCHIVE_CSS } from '@/web/archive.css'
 import { FIGURE_CSS } from '@/web/figure.css'
 import { POST_IMAGE_CSS } from '@/web/postimage.css'
 import { PRINT_CSS } from '@/web/print.css'
@@ -276,33 +277,7 @@ ${UTILITY_CSS}
 .tl-dot{flex:0 0 auto;width:8px;height:8px;border-radius:50%;background:var(--c-meta)}
 .empty{color:var(--c-meta)}
 
-/* The year archive. Rows, not cards: this page exists to be scanned, and 200 excerpts is
-   the listing page the reader came here to skip. Sizes are roles, so it follows the owner's
-   typography like everything else. */
-.arc-jump{display:flex;flex-wrap:wrap;gap:.75rem 1.25rem;margin:0 0 2.5rem;
-  font-size:var(--fs-small);line-height:var(--lh-small);letter-spacing:var(--ls-small);
-  font-variant-numeric:tabular-nums}
-.arc-yr + .arc-yr{margin-top:3rem}
-/* Sticky, so the year stays named through a long one; the --c-bg band is what stops rows
-   sliding out from under it, the same trick the timeline's year tag uses. */
-.arc-yr h2{position:sticky;top:0;z-index:1;background:var(--c-bg);
-  margin:0 0 1.25rem;padding:.25rem 0;display:flex;align-items:baseline;gap:.5rem;
-  color:var(--c-heading);font-weight:var(--fw-heading,600);
-  font-size:var(--fs-h3);line-height:var(--lh-h3);letter-spacing:var(--ls-h3)}
-.arc-count{color:var(--c-meta);font-weight:400;
-  font-size:var(--fs-small);line-height:var(--lh-small);letter-spacing:var(--ls-small)}
-.arc-yr ul{list-style:none;padding:0;margin:0}
-.arc-yr li{display:flex;gap:1rem;align-items:baseline;padding:.35rem 0}
-/* 5ch is exactly "MM-DD" in tabular figures, so every title starts on the same column
-   without a table and without a fixed px width that a larger type setting would break. */
-.arc-yr time{flex:0 0 5ch;color:var(--c-meta);font-variant-numeric:tabular-nums;
-  font-size:var(--fs-small);line-height:var(--lh-small);letter-spacing:var(--ls-small)}
-/* On a phone the fixed date column costs a fifth of the line and a wrapped title ranges
-   under it, so the date goes above its title instead. */
-@media (max-width:34rem){
-  .arc-yr li{display:block;padding:.5rem 0}
-  .arc-yr time{display:block}
-}
+${ARCHIVE_CSS}
 .pager{display:flex;justify-content:space-between;align-items:center;gap:1rem;
   border-top:1px solid var(--c-rule);padding-top:1rem;margin-top:1rem;
   font-size:var(--fs-small);line-height:var(--lh-small);letter-spacing:var(--ls-small)}
