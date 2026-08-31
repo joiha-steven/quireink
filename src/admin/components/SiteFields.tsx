@@ -11,7 +11,7 @@ import { Input, Textarea } from '@/admin/ui/Input'
 import { ToggleField } from '@/admin/ui/Switch'
 import { SITE_LANGS } from '@/locales/langs'
 import { useAdminT, useSetAdminLang } from './I18nProvider'
-import { FIELD_W, SEGMENT_TRACK, Select, Setting, SETTING_GAP, tabItemClass } from './kit'
+import { FIELD_W, Select, Setting, SETTING_GAP } from './kit'
 
 /**
  * Every zone the RUNTIME knows, asked for rather than listed.
@@ -38,22 +38,26 @@ export function SiteFields({ s, update }: Props) {
 
   return (
     <div className={SETTING_GAP}>
-      <Setting label={t.siteLanguage} note={t.siteLanguageHint}>
-        <div className={`${SEGMENT_TRACK} flex-wrap`}>
+      {/* A SELECT, not a segmented strip. Ten languages in a wrapping track was a grey slab
+          two rows tall holding one sunken key — a segmented control is for THREE or four
+          answers read at a glance, and past that it is the worst of both worlds: the bulk of
+          radio buttons with none of their scannability. One value from a long closed list is
+          what a dropdown is FOR, and the timezone right under this one already shows the
+          shape. `inline`, same as the timezone: a short answer takes a short field. */}
+      <Setting inline label={t.siteLanguage} note={t.siteLanguageHint}>
+        <Select
+          value={s.language}
+          onChange={(e) => {
+            const v = e.target.value as SiteSettings['language']
+            update({ language: v })
+            setLang(v) // switch the admin UI instantly
+          }}
+          aria-label={t.siteLanguage}
+        >
           {SITE_LANGS.map((l) => (
-            <button
-              key={l.value}
-              type="button"
-              onClick={() => {
-                update({ language: l.value })
-                setLang(l.value) // switch the admin UI instantly
-              }}
-              className={tabItemClass(s.language === l.value, 'sm')}
-            >
-              {l.label}
-            </button>
+            <option key={l.value} value={l.value}>{l.label}</option>
           ))}
-        </div>
+        </Select>
       </Setting>
 
       {/* Beside its label, and no longer the width of the card: a zone is a short answer, so
