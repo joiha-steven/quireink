@@ -1,0 +1,40 @@
+# The front door. EDIT THE HOST, twice, then apply.
+#
+# Written for ingress-nginx because it is what DOKS, GKE and a bare kubeadm cluster most
+# often have; Traefik and the others take the same three fields under different annotation
+# names. Delete this file entirely if you terminate TLS somewhere else — a tunnel, a
+# Cloudflare origin, an existing proxy — and reach the Service directly.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: quire
+  labels:
+    app.kubernetes.io/name: quire
+  annotations:
+    # ⚠️ THE ONE THAT BITES. ingress-nginx refuses a request body over 1 MB by default, and
+    # Quire Ink accepts uploads up to 64 MB (`MAX_UPLOAD_MB`). Without this line every photo
+    # worth uploading fails with a 413 that never reaches the app, so the admin reports
+    # nothing wrong and the upload just stops. Keep the two numbers equal.
+    nginx.ingress.kubernetes.io/proxy-body-size: "64m"
+    # An import or a backup download is a long single request. The default 60s cuts both.
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    # Uncomment with cert-manager installed, and the certificate issues itself.
+    # cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - blog.example.com
+      secretName: quire-tls
+  rules:
+    - host: blog.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: quire
+                port:
+                  name: http

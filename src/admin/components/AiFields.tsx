@@ -3,7 +3,9 @@
 //  - The MODEL half (provider, key, model) is a SECRET, so it has its own API
 //    (/api/integrations/ai → the server-only `integration_keys` table) and its own Save.
 //    Paste a key and the models list themselves (/api/integrations/ai/models) — the
-//    owner picks from what their account can actually see, not from memory.
+//    owner picks from what their account can actually see, not from memory. That call is
+//    also the only test of the key, so the button beside the menu doubles as one and
+//    reports what the provider said when it says no.
 //  - The JOBS half is plain settings (`settings.ai`), saved by the page's own Save
 //    button like every other switch. Every job defaults ON; the master switch is the
 //    key itself, so with no model configured the switches show off and stay disabled.
@@ -18,15 +20,43 @@
 // card on Connections are what it is meant to match.
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from '@/admin/router'
+import type { AiListing, ListFailure } from '@/server/ai-provider'
 import type { ApiResponse, AiSettings } from '@/types'
+import type { AdminStrings } from '@/i18n/admin-i18n'
 import { Button } from '@/admin/ui/Button'
 import { Input } from '@/admin/ui/Input'
 import { ToggleRow } from '@/admin/ui/Switch'
 import { useToast } from '@/admin/ui/Toast'
 import { useAdminT } from './I18nProvider'
-import { FIELD_W, NOTE_TEXT, PANEL_LIST, Select, Setting, SETTING_GAP } from './kit'
+import { FIELD_W, NOTE_ALERT, NOTE_TEXT, PANEL_LIST, Select, Setting, SETTING_GAP } from './kit'
 
 type Choice = { id: string; label: string }
+
+/** What the last check said, in the four states the card can be caught in. */
+type Checked =
+  | { state: 'idle' }
+  | { state: 'loading' }
+  | { state: 'ok'; found: number }
+  | { state: 'failed'; said: string }
+
+/**
+ * The provider's refusal in the owner's language, with the provider's own sentence after it.
+ *
+ * Only the first half can be translated: the second is whatever the provider wrote, and
+ * dropping it would throw away the only line that ever explains WHICH of the several things
+ * that return 401 has happened — a revoked key, a key from the wrong account, a project with
+ * no billing on it.
+ */
+function saidNo(t: AdminStrings, f: ListFailure): string {
+  const head = f.code === 'bad_key'
+    ? t.aiKeyRejected
+    : f.code === 'rate_limited'
+      ? t.aiKeyLimited
+      : f.code === 'unreachable'
+        ? t.aiNoReach
+        : t.aiProviderRefused.replace('{status}', String(f.status))
+  return f.detail ? `${head} ${f.detail}` : head
+}
 
 export function AiFields({ configured, provider, model, seesImages, ai, onChangeAi }: {
   configured: boolean; provider: string; model: string; seesImages: boolean
@@ -39,33 +69,43 @@ export function AiFields({ configured, provider, model, seesImages, ai, onChange
   const [key, setKey] = useState('')
   const [models, setModels] = useState<Choice[]>([])
   const [chosen, setChosen] = useState(model)
-  const [listing, setListing] = useState<'idle' | 'loading' | 'failed'>('idle')
+  const [checked, setChecked] = useState<Checked>({ state: 'idle' })
   const [busy, setBusy] = useState(false)
   const fetchSeq = useRef(0)
 
   // The menu loads the moment it CAN: a stored key on mount, a pasted key on blur, a
-  // provider change while either exists. A stale response must not overwrite a newer
-  // one, hence the sequence number.
+  // provider change while either exists, and whenever the owner presses the button. A stale
+  // response must not overwrite a newer one, hence the sequence number.
+  //
+  // THE CALL IS ALSO THE KEY TEST. Listing models is the cheapest request that still has to
+  // authenticate, so whatever comes back is the answer to "is this key any good" — which is
+  // why a refusal is reported in full here rather than swallowed into an empty menu.
   async function loadModels(p: string, typedKey: string) {
     if (!p || (!typedKey && !configured)) return
     const seq = ++fetchSeq.current
-    setListing('loading')
+    setChecked({ state: 'loading' })
     try {
       const res = await fetch('/api/integrations/ai/models', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify(typedKey ? { provider: p, apiKey: typedKey } : { provider: p }),
       })
-      const json = (await res.json()) as ApiResponse<{ models: Choice[] }>
+      const json = (await res.json()) as ApiResponse<AiListing>
       if (seq !== fetchSeq.current) return
       if (!json.success || !json.data) throw new Error(json.error)
-      setModels(json.data.models)
-      setListing('idle')
-      if (json.data.models.length > 0 && !json.data.models.some((m) => m.id === chosen)) {
-        setChosen(json.data.models[0]!.id)
+      const listing = json.data
+      if (!listing.ok) {
+        setChecked({ state: 'failed', said: saidNo(t, listing) })
+        return
+      }
+      setModels(listing.models)
+      setChecked({ state: 'ok', found: listing.models.length })
+      if (listing.models.length > 0 && !listing.models.some((m) => m.id === chosen)) {
+        setChosen(listing.models[0]!.id)
       }
     } catch {
-      if (seq === fetchSeq.current) setListing('failed')
+      // The browser never reached this blog — our own server, not the provider's.
+      if (seq === fetchSeq.current) setChecked({ state: 'failed', said: t.aiModelsFailed })
     }
   }
 
@@ -130,6 +170,7 @@ export function AiFields({ configured, provider, model, seesImages, ai, onChange
             const p = e.target.value
             setPick(p)
             setModels([])
+            setChecked({ state: 'idle' })
             if (p) void loadModels(p, key.trim())
           }}
         >
@@ -154,11 +195,30 @@ export function AiFields({ configured, provider, model, seesImages, ai, onChange
             autoComplete="off"
           />
 
-          <Setting
-            label={t.aiModelLabel}
-            note={listing === 'loading' ? t.aiModelsLoading : listing === 'failed' ? t.aiModelsFailed : undefined} inline>
-            {modelControl}
-          </Setting>
+          <Setting label={t.aiModelLabel} inline>{modelControl}</Setting>
+
+          {/* THE BUTTON, and why a card that already loads the list by itself needs one.
+              The automatic load fires on mount and on blur, which are moments the owner is
+              not watching — so a key that stopped working (revoked, out of credit, moved to
+              another project) showed up as a menu that simply did not change. There was no
+              way to ASK, and therefore no way to tell a working key from a stale answer.
+              Pressing this is the only thing on the page that says, right now, whether the
+              provider will take the key and what it will let this blog see. */}
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={checked.state === 'loading' || (!key.trim() && !configured)}
+              onClick={() => void loadModels(pick, key.trim())}
+            >
+              {t.aiModelsLoad}
+            </Button>
+            {checked.state === 'loading' && <span className={NOTE_TEXT}>{t.aiModelsLoading}</span>}
+            {checked.state === 'ok' && (
+              <span className={NOTE_TEXT}>{t.aiModelsOk.replace('{n}', String(checked.found))}</span>
+            )}
+            {checked.state === 'failed' && <span className={NOTE_ALERT}>{checked.said}</span>}
+          </div>
         </>
       )}
 

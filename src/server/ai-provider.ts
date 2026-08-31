@@ -135,11 +135,35 @@ export async function ask(parts: Part[], cap = 300): Promise<string | null> {
 
 export type ModelChoice = { id: string; label: string }
 
+/**
+ * WHY IT DID NOT WORK, which used to be `null`.
+ *
+ * Listing the models is also the only honest test of a key — it is the one call that costs
+ * nothing and still has to authenticate. So when it fails, the owner is owed the difference
+ * between the three failures they can actually act on: the key is wrong (fix the key), the
+ * provider is throttling (wait), the provider is unreachable (check the network). One `null`
+ * for all of them produced a card that said "check the key" while the real answer was an
+ * office firewall, and a card that said "check the key" while the key was in fact correct
+ * and the account merely out of credit.
+ *
+ * TWO HALVES, because only one of them can be translated. `code` is ours and the admin has a
+ * sentence for it in every language; `detail` is the provider's own message, in whatever
+ * language and wording they chose, shown underneath in a quieter voice. `status` is there so
+ * a bug report can name the number.
+ */
+export type ListFailure = {
+  code: 'bad_key' | 'rate_limited' | 'refused' | 'unreachable'
+  status: number
+  detail: string
+}
+
+export type AiListing = { ok: true; models: ModelChoice[] } | ({ ok: false } & ListFailure)
+
 // OpenAI's /v1/models returns every family they have ever shipped; most cannot look at
 // an image or are not chat models at all. Names, because capability is not in the API.
 const OPENAI_SKIP = /embed|whisper|tts|audio|dall-e|davinci|babbage|moderation|realtime|transcribe|image/
 
-export async function listModels(provider: string, key: string): Promise<ModelChoice[] | null> {
+export async function listModels(provider: string, key: string): Promise<AiListing> {
   let url = ''
   let headers: Record<string, string> = {}
   if (provider === 'anthropic') {
@@ -151,11 +175,53 @@ export async function listModels(provider: string, key: string): Promise<ModelCh
   } else if (provider === 'gemini') {
     url = 'https://generativelanguage.googleapis.com/v1beta/models?pageSize=200'
     headers = { 'x-goog-api-key': key }
-  } else return null
+  } else {
+    // Unreachable through the admin: the route rejects a provider that is not in
+    // `AI_PROVIDERS` before it gets here. Answered rather than thrown so a future caller
+    // gets a verdict instead of a stack trace.
+    return { ok: false, code: 'refused', status: 0, detail: '' }
+  }
 
-  const res = await fetch(url, { headers, signal: AbortSignal.timeout(15_000) })
-  if (!res.ok) return null
-  return parseModels(provider, await res.json())
+  let res: Response
+  try {
+    res = await fetch(url, { headers, signal: AbortSignal.timeout(15_000) })
+  } catch (error) {
+    // DNS, TLS, a proxy, or the 15s timeout. The message is ours, not a provider's, and it
+    // is the one case where the owner should look at the network rather than the key.
+    return { ok: false, code: 'unreachable', status: 0, detail: (error as Error).message.slice(0, DETAIL_CAP) }
+  }
+  if (!res.ok) return { ok: false, ...readListFailure(res.status, await res.text().catch(() => ''), key) }
+  return { ok: true, models: parseModels(provider, await res.json()) }
+}
+
+/** Long enough for a provider's sentence, short enough that an HTML page cannot fill the card. */
+const DETAIL_CAP = 200
+
+/**
+ * Pure: a refusal into the code the admin translates plus the provider's own words.
+ *
+ * The KEY IS SCRUBBED out of the message. Providers quote back what they were sent —
+ * OpenAI's 401 names the key it rejected — and that message travels into a browser, a
+ * screenshot and a bug report. It is the owner's own key on the owner's own screen, so this
+ * is care rather than a breach, but a secret that need not be on screen should not be.
+ */
+export function readListFailure(status: number, body: string, key = ''): ListFailure {
+  let detail = ''
+  try {
+    const j = JSON.parse(body) as Record<string, any>
+    const said = j?.error?.message ?? j?.error?.type ?? j?.message ?? j?.detail
+    if (typeof said === 'string') detail = said
+  } catch {
+    // Not JSON: a gateway's HTML, a proxy's plain text. Nothing in it is worth quoting, and
+    // the status number below says everything that page would have.
+  }
+  // Guarded on length so a one-character key cannot blank out the sentence describing it.
+  if (key.length >= 8) detail = detail.split(key).join('…')
+  return {
+    code: status === 401 || status === 403 ? 'bad_key' : status === 429 ? 'rate_limited' : 'refused',
+    status,
+    detail: detail.replace(/\s+/g, ' ').trim().slice(0, DETAIL_CAP),
+  }
 }
 
 /** Pure: each provider's listing shape into one menu, newest first where the API says. */

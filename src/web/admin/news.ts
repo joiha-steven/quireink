@@ -265,10 +265,12 @@ export function newsRoutes() {
     const key = typed || stored
     if (!key) return fail(c, 'no_key', 400)
     const { listModels } = await import('@/media/alt-text')
-    const models = await listModels(provider, key).catch(() => null)
-    // 502, like the SMTP test: the failure is the provider's (or the key's), not a bug.
-    if (models === null) return fail(c, 'model_list_failed', 502)
-    return json({ models })
+    // A REFUSED KEY IS AN ANSWER, not a failed request — which is why this is a 200
+    // carrying a verdict rather than the 502 it used to be. The button that calls this
+    // asks "does this key work, and what can it see"; "the provider rejected it" answers
+    // that question, and the envelope's single `error` string had nowhere to put the
+    // provider's own sentence.
+    return json(await listModels(provider, key))
   })
 
   return router

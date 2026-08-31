@@ -77,6 +77,7 @@ export function registerHomeFlows({ flow, expect }: Tour): void {
       const href = chips[0].getAttribute('href') || ''
       if (!href.startsWith('/admin/editor/') && !href.startsWith('/admin/page-editor/')) {
         return 'a chip points at ' + href + ' rather than at an editor'
+      }
       const named = chips[0].textContent.trim()
       chips[0].click()
       await new Promise((r) => setTimeout(r, 900))
@@ -95,33 +96,57 @@ export function registerHomeFlows({ flow, expect }: Tour): void {
   //
   // Writes, and cleans up after itself: the tour's own rule, and a stored key would change
   // what every flow after this one is looking at.
-  flow('admin: a stored key moves the assistant onto the rail, under Home', () =>
-    expect('/admin', `
-    (async () => {
+  //
+  // THREE VISITS, not one expression, and that is the fix for how this flow first shipped.
+  // The rail is drawn from a view fetched once when the admin boots, so seeing it change
+  // takes a fresh document — and `location.reload()` from inside the expression destroys the
+  // context that expression is running in, so everything after it is never reached and the
+  // flow reports `(no value)` whatever the product does. `expect` navigates for us.
+  flow('admin: a stored key moves the assistant onto the rail, under Home', async () => {
+    // DIRECT children of the nav, which is the whole distinction this flow is about. The
+    // secondary group ("Everything else") lives in a div inside the same nav, so
+    // `aside nav a` collects BOTH lists and calls the assistant promoted while it is sitting
+    // in the drawer where it belongs — which is what the first version of this did.
+    const READ = `
       const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
-      const rail = () => [...document.querySelectorAll('aside nav a')].map((a) => a.getAttribute('href'))
+      const rail = () => [...document.querySelectorAll('aside nav > a')].map((a) => a.getAttribute('href'))
+      const drawer = () => [...document.querySelectorAll('aside nav div a')].map((a) => a.getAttribute('href'))
+      // The group is closed on a primary page, so it has to be opened before it can be read.
+      const openDrawer = async () => {
+        const toggle = document.querySelector('aside nav button[aria-expanded]')
+        if (toggle && toggle.getAttribute('aria-expanded') === 'false') { toggle.click(); await sleep(250) }
+      }
       const save = (body) => fetch('/api/integrations/ai', {
         method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body),
-      })
+      })`
 
+    const before = await expect('/admin', `(async () => {${READ}
       if (rail().includes('/admin/assistant')) return 'the assistant is on the rail before any key exists'
-
+      // Never in both lists, and never in neither: with no key it is one row down the drawer.
+      await openDrawer()
+      if (!drawer().includes('/admin/assistant')) return 'with no key the assistant is nowhere: ' + drawer().join(' ')
       // Never used to call anything: the assistant only reaches a provider when asked a
       // question, and this flow never asks one.
       const saved = await save({ aiProvider: 'openai', aiApiKey: 'tour-not-a-real-key', aiModel: '' })
-      if (!saved.ok) return 'could not store a key: ' + saved.status
-      try {
-        location.reload()
-        await sleep(1200)
+      return saved.ok ? 'ok' : 'could not store a key: ' + saved.status
+    })()`, 1200)
+    if (before !== 'ok') return before
+
+    try {
+      return await expect('/admin', `(async () => {${READ}
         const after = rail()
-        if (after[1] !== '/admin/assistant') {
-          return 'with a key stored the rail reads ' + after.join(' ')
-        }
+        if (after[1] !== '/admin/assistant') return 'with a key stored the rail reads ' + after.join(' ')
         if (after.length !== 5) return 'the rail offers ' + after.length + ' destinations with a key'
+        await openDrawer()
+        if (drawer().includes('/admin/assistant')) return 'the assistant is on the rail AND in the drawer'
         return 'ok ' + after.join(' ')
-      } finally {
-        // '' clears it, which is what makes this a clear and not a set.
-        await save({ aiProvider: '', aiApiKey: '', aiModel: '' })
-      }
-    })()`, 2500))
+      })()`, 1200)
+    } finally {
+      // '' clears it, which is what makes this a clear and not a set.
+      await expect('/admin', `fetch('/api/integrations/ai', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ aiProvider: '', aiApiKey: '', aiModel: '' }),
+      }).then((r) => r.ok ? 'ok' : 'clear failed: ' + r.status)`, 600)
+    }
+  })
 }

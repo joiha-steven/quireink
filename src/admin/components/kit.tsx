@@ -48,7 +48,7 @@ export const INSET = 'rounded-lg border border-neutral-200 p-4 dark:border-neutr
 // already import them from the kit and the split is a fact about this file's length.
 export { TAB_TRACK, SEGMENT_TRACK, tabItemClass, Tabs, type TabItem, type TabSize } from './tabs'
 export {
-  READING, TITLE, SECTION, SETTING_LABEL, NOTE_TEXT, NOTE, META, FIGURE,
+  READING, TITLE, SECTION, SETTING_LABEL, NOTE_TEXT, NOTE_ALERT, NOTE, META, FIGURE,
   SECTION_GAP, CARD_GAP, CARD_STACK, HEADER_GAP, GROUP_GAP, CLUSTER_GAP, SETTING_GAP,
 } from './scale'
 import { HEADER_GAP, NOTE, NOTE_TEXT, SECTION, SETTING_LABEL, TITLE } from './scale'
