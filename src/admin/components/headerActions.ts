@@ -33,20 +33,19 @@ export const SIDEBAR_NAV = `${SIDEBAR_NAV_QUIET} ${SIDEBAR_NAV_HOVER}`
 
 // The rail's answer to "which page am I on", in highlighter.
 //
-// It was `bg-neutral-100` — a grey one step off the canvas it sits on, which at a glance is
-// no answer at all. The rail is the one place that always shows where you are, and on a
-// screen already made of grey rectangles the current row was the least distinguishable
-// rectangle on it.
+// It was `bg-neutral-100` — a grey one step off the canvas, no answer at all — and then a
+// SOLID pen pill, which answered too loudly: a filled block of the brightest ink on the
+// screen, sitting in the rail on every single page. Now it is the mark the rest of the
+// product already makes: a short bar in the pen's edge tone at the row's leading edge, over
+// a wash of the pen diluted into the paper. Same ink, same meaning as an active TAB
+// (`tabs.tsx`) — the highlighter marks the place you are in, never the value you chose —
+// but a run of a marker, not a slab of it.
 //
-// Same ink and same meaning as an active TAB (`tabs.tsx`): the highlighter marks the place
-// you are in, never the value you chose. Together they read as a trail — the page in the
-// rail, the section in the strip — and there are never more than those two on screen.
-//
-// The inset ring goes with the grey. A hairline was there to give a nearly-invisible fill an
-// edge; a highlighter mark does not need one, and keeping it would put a dark line around a
-// light ink, which is not how a marker meets paper.
+// The bar is drawn with `before:` because the row string is one class list on a link, and
+// `SIDEBAR_NAV_QUIET` already carries the `relative` it needs. It stays visible on the
+// collapsed icon rail, where the wash alone would be a faint square.
 export const SIDEBAR_NAV_ACTIVE =
-  'bg-[var(--pen)] font-medium text-[var(--on-pen)]'
+  "bg-[color-mix(in_srgb,var(--pen)_26%,transparent)] font-medium text-neutral-900 dark:text-white before:absolute before:bottom-1.5 before:left-0 before:top-1.5 before:w-[3px] before:rounded-full before:bg-[var(--pen-edge)] before:content-['']"
 
 // The rail's UTILITY register. The footer's rows (theme, cache, sign out) are CONTROLS,
 // and for a while they wore SIDEBAR_NAV — four more destinations, one apparently a page

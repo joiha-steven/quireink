@@ -34,7 +34,12 @@ describe('the highlighter marks a place', () => {
   })
 
   it('marks the page you are on in the rail', () => {
-    expect(SIDEBAR_NAV_ACTIVE).toContain('bg-[var(--pen)]')
+    // A RUN of the marker, not a slab: the wash is the pen diluted into the paper, and the
+    // bar at the leading edge is the pen's own edge tone. What this pins is the INK — the
+    // day the rail's mark stops being drawn from --pen, this fails.
+    expect(SIDEBAR_NAV_ACTIVE).toContain('var(--pen)')
+    expect(SIDEBAR_NAV_ACTIVE).toContain('before:bg-[var(--pen-edge)]')
+    expect(SIDEBAR_NAV_ACTIVE).not.toContain('bg-[var(--pen)]')
   })
 })
 
