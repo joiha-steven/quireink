@@ -94,6 +94,7 @@ export function settingsFixture(): SiteSettings {
     features: {
       search: true, toc: true, related: true, readingTime: true, progressBar: true,
       activityLog: true, transferStats: true, sidebar: true, sidebarSeries: true, leadPost: true,
+      sidebarCategories: true, sidebarTags: true, sidebarArchive: true,
       categoryLabel: true, deck: true, penUnderline: true, penRing: true, bookText: false,
       bookMode: true, readNext: true, resume: true, infiniteScroll: false, gridView: true,
       archive: true, offline: false,

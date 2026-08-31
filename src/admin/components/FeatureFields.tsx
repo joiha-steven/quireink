@@ -108,7 +108,14 @@ export function ListingFeatureFields({ features, onChange }: Omit<Props, 'relate
   const t = useAdminT()
   const items: Item[] = [
     { key: 'sidebar', label: t.featSidebar, desc: t.featSidebarDesc },
+    // One switch per BLOCK on the rail, together and in the order they render. The rail had
+    // seven blocks and four ways to influence it, scattered: the whole rail, the series, the
+    // archive route, and a count that hid Most viewed at 0 — so categories and tags could
+    // not be turned off at all, and the years only by taking /archive down with them.
+    { key: 'sidebarCategories', label: t.featSidebarCategories, desc: t.featSidebarCategoriesDesc },
     { key: 'sidebarSeries', label: t.featSidebarSeries, desc: t.featSidebarSeriesDesc },
+    { key: 'sidebarArchive', label: t.featSidebarArchive, desc: t.featSidebarArchiveDesc },
+    { key: 'sidebarTags', label: t.featSidebarTags, desc: t.featSidebarTagsDesc },
     { key: 'infiniteScroll', label: t.featInfiniteScroll, desc: t.featInfiniteScrollDesc },
     { key: 'gridView', label: t.featGridView, desc: t.featGridViewDesc },
     { key: 'archive', label: t.featArchive, desc: t.featArchiveDesc },

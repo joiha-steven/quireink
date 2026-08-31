@@ -171,6 +171,9 @@ export type FeatureSettings = {
   transferStats: boolean // store, per visit, the bytes the reader's browser reported downloading (Analytics -> Delivery). ON by default, like the dwell time it sits beside and is no more identifying than. Off means the column stays NULL and the panel reads as unmeasured; nothing else changes, and the beacon is sent either way
   sidebar: boolean // categories + tags in the left gutter of the post list
   sidebarSeries: boolean // the series list in the sidebar, under the categories
+  sidebarCategories: boolean // the category list in the sidebar
+  sidebarTags: boolean // the tag cloud in the sidebar — the one rail block with no ceiling on its length
+  sidebarArchive: boolean // the year list in the sidebar. SEPARATE from `archive`, which owns the /archive ROUTE: the years can leave the rail while the page they point at stays
   leadPost: boolean // first post of page 1 gets the h1 role instead of h2
   categoryLabel: boolean // category name in the meta line of cards and post headers
   deck: boolean // the excerpt shown as a standfirst under a post title

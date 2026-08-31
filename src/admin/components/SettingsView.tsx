@@ -155,17 +155,32 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
   return (
     // ONE SHEET (mock page 7): tabs + the search (the way PAST them, ADR 0011) on the
     // sheet's first row; every card a hairline PANEL inside.
-    <div className="pb-24">
+    <div>
       <PageHeader title={t.settingsTitle} />
       <div className={SHEET}>
+        {/* Save sits on the sheet's own first row, LEFT of the search — the sheet-top is
+            where a page's tools live, and this row is sticky, so the button is on screen
+            wherever the reader is in a long tab. It replaces a bar fixed to the bottom of
+            the window: that bar was reported as missing entirely, and it is the kind of
+            chrome that goes missing — it lived outside the sheet, it was the one control
+            not on the tools row, and anything that eats the bottom of the viewport (a
+            phone toolbar, an iPad's) takes it with no trace. */}
+        <div className="sticky top-0 z-20 rounded-t-[10px] bg-white/95 backdrop-blur-xl dark:bg-neutral-900/95">
         <SheetTop>
           <Tabs tabs={TABS} value={tab} onChange={setTab} size="sm" />
           <span className="flex-1" />
+          <span className="text-xs text-neutral-500 dark:text-neutral-400">
+            {saving ? t.saving : savedAt ? `${t.savedAtPrefix} ${formatTime(savedAt)}` : ''}
+          </span>
+          <Button size="sm" onClick={save} disabled={saving}>
+            {saving ? t.saving : t.saveSettings}
+          </Button>
           <SettingsSearch
             tabLabel={(k) => String(TAB_LABEL(k))}
             onPick={(entry) => { setTab(entry.tab); jumpToSetting(String(t[entry.label])) }}
           />
         </SheetTop>
+        </div>
         <div className="p-5">
       {/* The definition, in the open — a guessed-at tab is a tab you open five of. */}
       <p className={`${NOTE_TEXT} mb-5 max-w-2xl`}>{HINTS[tab]}</p>
@@ -334,18 +349,6 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
         <SettingsSystemTab s={s} update={update} updateStatus={updateStatus} offsiteConfigured={integrations.offsiteConfigured} s3Bucket={integrations.s3Bucket} grid={GRID} col={COL} />
       )}
 
-      {/* One always-reachable save bar, offset past the sidebar via the --admin-nav-w the
-          sidebar publishes, so it follows the rail's collapse state. */}
-        </div>
-      </div>
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-neutral-200/80 bg-white/90 shadow-[0_-8px_24px_rgba(0,0,0,0.04)] backdrop-blur-xl md:left-[var(--admin-nav-w,13rem)] dark:border-neutral-800 dark:bg-neutral-900/90">
-        <div className="mx-auto flex w-full max-w-[1480px] items-center justify-between px-4 py-3 sm:px-7 lg:px-10 xl:px-12">
-          <span className="text-sm text-neutral-500 dark:text-neutral-400">
-            {saving ? t.saving : savedAt ? `${t.savedAtPrefix} ${formatTime(savedAt)}` : ''}
-          </span>
-          <Button onClick={save} disabled={saving}>
-            {saving ? t.saving : t.saveSettings}
-          </Button>
         </div>
       </div>
     </div>
