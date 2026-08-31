@@ -1,109 +1,173 @@
 # CHANGELOG
 
-## 2026-09-01 — Quire Ink 2.3.4
+## 2026-09-01 — Quire Ink 2.2.4
 
-Seventy-five commits over two days, and the first MINOR since 2.2.0. The owner took a patch
-digit inside it rather than `2.3.0`, which is the same reserve the last four releases kept.
+Seventy-five commits over two days. Under plain semver the assistant's streaming, ⌘K, the
+security screen and the per-block rail switches would each have been a minor on their own;
+the owner took the patch slot again, which is the fifth release running.
 
-Two threads run through it, and they meet. One is **the software learning what it is made
-of**: every pressable thing in the admin now stands proud of the sheet and presses in, every
-box that holds a value is carved, and the reading site got the same click. The other is
-**things that were only ever nearly true** — a menu that vanished on three of five layouts,
-three analytics numbers that were wrong, an account with no way back when both keys are
-gone, and a screen that had been photographed at one width and shipped at five.
+### The assistant
 
-### The owner's menu stopped disappearing (#61)
+- **A fourth provider: DeepSeek.** It speaks OpenAI's protocol verbatim, so it is a base URL
+  in one table rather than a fourth dialect — and that table is read by the chat loop and by
+  every other AI job, so a provider that works in the chat box works everywhere.
+- **Answers stream as they are written**, on all four providers, each verified against a live
+  key: OpenAI sends delta fragments, Anthropic names its events and builds blocks by index,
+  Gemini and DeepSeek differ again.
+- **Conversations are kept and listed** beside the chat, the way the writing screen lists
+  pieces (ADR 0040). They used to live in one browser tab.
+- **A receipt**: what the assistant did, and what it cost.
+- **A stop button** — a hand on the brake mid-answer.
+- **A "test this key" button on the AI card**, which is the one question that card could not
+  answer before.
+- Five separate faults that only a real provider could report, all on a path that was green
+  at 2488 tests, and a token ceiling that had been hiding behind them.
 
-Reported from an Unraid install: header menu links show only when the homepage is set to
-**A front page**. Reproduced by counting each configured link in the served HTML, and the
-fault was wider than reported — with the homepage set to **Post list** and the sidebar
-switched off, or set to **A page**, or on any post at all, the links were in the page **zero
-times, at every width**.
+### Finding things
 
-Whether the menu appeared was decided by a flag about what KIND of page was being drawn, and
-only the front page ever set it. The menu's home is the rail, so the pages that had no menu
-turn out to be the pages with no rail, and those pages have one now: an article's rail leads
-with the menu and the contents follow, and a listing whose sidebar is off keeps a rail
-carrying the menu alone — that switch owns the discovery blocks, never the site's
-navigation. The front page keeps its header menu, being the one layout with no rail by
-design.
+- **⌘K opens a command palette** that jumps straight to any setting, so it stops mattering
+  which of the eight tabs holds it.
+- **All 245 leaf settings are indexed by name** — and the MCP tools read the same index, so
+  an agent can now write any of them. It could write three.
+- The rail prints the shortcut, because a shortcut cannot be found by looking for it.
+- Search moved up to the wordmark row.
 
-The header row also wraps now, at every width. It lives inside the reading column — 672px by
-default — and a title, a menu of any length and up to five controls do not fit in it: with
-four links the menu wanted 403px, had 321, and drew its last link straight through the
-search control.
+### The owner can defend their own account
 
-### Relief: raised means pressable, carved means held
+Settings → Security has been described in the spec since it was written and existed nowhere:
 
-The admin was flat, and flat is the look every generated dashboard has. Now a button stands
-1–2px proud of the sheet with a light lip along its top edge, and pressing it moves the light
-to the bottom inside edge and drops the outside shadow to nothing. **The press lands at
-once** and only the release is sprung: a control that eases both ways feels like a screen,
-and a key that drops NOW is what a hand expects. Reduced motion keeps the surface change and
-drops the travel.
+- change the password, re-enrol 2FA, regenerate the recovery codes;
+- every signed-in device listed, revoked one at a time or all at once;
+- **a way back in when both the password and the second factor are gone.** Resetting the
+  password alone never rescued anybody — the next sign-in still stopped at a code prompt.
 
-The other half is the same rule inverted. A field holds a value, so it is carved: one pixel
-of inner shading, not a style. A chosen tab, an active toolbar button, the current page in
-the sidebar — all of them are keys HELD DOWN, wearing the same inset. Solid ink shows no
-relief, so the black key is shaded by light instead of shadow.
+### Writing
 
-**The reading site got the click too**, in whichever ink the reader's palette holds, and a
-Vietnamese IME composing a keystroke now gets its click back — a composing keystroke is still
-a keystroke.
+- **Four faults that changed the published page on save.** Nineteen of the 45 golden
+  fixtures came out differently after one pass through the editor and nothing could say so:
+  - footnotes and callouts were escaped on every save, so `[^1]` became `\[^1\]` — which
+    this renderer reads as display maths. The reader got an empty formula mid-sentence, and
+    `[!NOTE]` came out as MathML spelling N-O-T-E;
+  - table alignment was written back flat, so every centred and right-aligned column went
+    left on the first save and stayed there;
+  - three pictures came back on one line and the page put three `<figure>` elements inside a
+    `<p>`, which the browser closes early — every rule written for `article > figure`
+    stopped matching.
+  - 26 of 45 fixtures published identically before; 37 now, and the eight remaining
+    differences are Markdown's own normalisations, each named with the reason.
+- **Six keyboard chords**, from one table the Help screen prints from: save the draft, add or
+  edit a link, highlighter, ring, strip every mark, the Attributes panel, the Markdown
+  source. `Mod-S` is not a convenience — autosave writes to localStorage and never to the
+  server, so a writer pressing it used to get the browser's "Save page as…" dialog.
+- **The write pane can bin several pieces at once**, as a mode rather than a trash icon
+  living a few pixels from the title.
+- The scope strip beside the paper stops wearing the pen.
+- Clicking a row in the write pane swaps the sheet and nothing else.
+- **A Vietnamese IME gets its keystroke sounds back** — a composing keystroke is still a
+  keystroke.
 
-### The assistant gets a desk
+### Analytics
 
-A fourth model provider, answers that arrive as they are written rather than in one lump,
-and a hand on the brake. Five separate ways a provider that passed every test still did not
-work in the field are fixed, along with a token ceiling that was hiding behind them. The
-assistant's chat is a desk with a receipt: what it did, and what it cost.
+- **Three numbers were wrong.** "Bounce rate" means a single-page session everywhere it is
+  used and there are no sessions in this schema, so the overview now says what it actually
+  counts.
+- **The beacon was deleting the bounce cohort** before anything could count it.
+- **A way into any single piece's numbers.**
+- CSV export is gone, with its locale key in eleven languages.
 
-### ⌘K, and every setting has a name
+### The reading site
 
-There are eight tabs of settings, and knowing which one holds a thing was a memory test.
-Every setting is now indexed by name, so the command palette can jump straight to it — and
-**the MCP tools read the same index**, so an agent asking for "the excerpt length" reaches
-the same place a person does. The rail teaches the shortcut, because a shortcut cannot be
-found by looking.
+- **The menu stopped disappearing (#61)**, reported from an Unraid install. With the homepage
+  set to *A page*, or to *Post list* with the sidebar off, or on any post at all, the
+  configured links were in the served HTML zero times at every width. The rail is the menu's
+  home, so an article's rail now leads with the menu above its contents, and a listing whose
+  sidebar is off keeps a rail carrying the menu alone. The front page keeps its header menu.
+- **The header row wraps** at every width: a title, a menu of any length and up to five
+  controls do not fit in a 672px reading column.
+- **The click, in whichever ink the reader's palette holds.**
+- **Book mode is circled in the pen** on hover, not boxed in grey, and its target is a
+  target.
+- **The archive is set as an index**: one type size per row instead of two, and the year
+  jumps moved onto the title's own line instead of floating in the gap.
+- **Sixteen bold words the heading-weight setting could not reach** — five sheets wrote 600
+  where the token belonged.
+- The series card is drawn in the site's own marks.
+- The footer names the machine, not the kernel. It printed `Linux 7.0`.
 
-### An owner can defend their own account
+### The admin, in relief
 
-A way back in when both the password and the second factor are gone. Sessions are listed per
-device and can be ended one at a time or all at once. The escape hatch got a guard and a
-front door.
+The whole surface learned what it is made of, and the grammar is two words: **raised means
+pressable, carved means held.**
 
-### Analytics that were quietly wrong
-
-Three numbers on the dashboard were wrong, and the bounce cohort was being deleted by the
-beacon before anything could count it. There is a way into any single piece's numbers now.
-The CSV export nobody used is gone.
+- A button stands 1–2px proud of the sheet with a light lip along its top edge; pressing
+  moves the light to the bottom inside edge and drops the outside shadow to nothing. **The
+  press lands at once** and only the release is sprung. Reduced motion keeps the surface
+  change and drops the travel.
+- A field holds a value, so it is carved. So is a chosen tab, an active toolbar button, and
+  the current page in the rail — all of them keys held down.
+- Solid ink shows no relief, so the black key is shaded by light instead of shadow.
+- **One pen at one strength** wherever "where you are" is marked, and white ink on it in dark
+  mode: near-black on the dark olive measured 3.8:1 against the 4.5 a label must clear.
+- **One hand draws every icon** — one shared set for both faces.
+- The colour picker stops being drawn by the operating system; the palette card is a held
+  key and the swatch an ink well.
+- The newsletter's send button is a latch: arm it, read the count, press again.
+- Ten languages take a dropdown instead of a strip.
+- **Controls came down a step**, 40px to 36, button and field together; a sheet's tools row
+  is 32 throughout — the tab strip, the key and the field on one height.
+- **Enclosure weakens inward.** A box inside a card was drawn heavier than the card; a list
+  is ruled top and bottom now instead of boxed, at the card's full width.
+- **One shape for an empty image slot.** There were five, no two alike, and three of them
+  changed the row's height the moment a picture went in.
+- The rail's seam is a recess rather than a drawn line, so structure reads as depth and a
+  sheet's edge as a hairline.
+- The dropzone is a well; the last two typed crosses became drawn ones; the terminal chrome
+  trades pictures for words.
 
 ### Screens that had only been looked at once
 
-A folded phone whose crease ran through every line. An iPad that the user agent refuses to
-describe. A tab strip that lost half its tabs and looked finished — the far ones were
-unreachable by touch, not merely clipped. A menu button cut in half. The shell measures in
-`dvh`, because the iPad's toolbar is not part of the viewport.
+- **A folded phone at 280px**: the bar ran 18px past the edge and the clipped control was
+  the menu button.
+- **An unfolded foldable at 673px**: book mode handed it one 577px column, 39px short of a
+  spread, with the crease down the middle of every line.
+- **An iPad, which the user agent refuses to describe** — iPadOS sends a Macintosh string on
+  purpose.
+- **A tab strip that lost half its tabs and looked finished.** At 360px four of the eight
+  settings tabs were past the edge and unreachable by touch, not merely clipped.
+- The shell measures in `dvh`, because the iPad's toolbar is not part of the viewport.
 
-### The Library, looked at
+### The Library
 
-Selecting images was slow, hover and selection did not press in, and there was no
-shift-click. All three are fixed, the two chrome rows are one, and an image variant born
-mid-export is no longer counted as a lost upload.
+Reported from a library of 78 pictures:
 
-### Also
+- selecting an image was slow — measured 1.60ms per click, now 0.70ms;
+- hover and selection did not press in;
+- **shift-click selects a run.**
+- The two chrome rows are one.
+- An image variant born mid-export is no longer counted as a lost upload.
 
-- The archive page is set as an INDEX rather than a listing: one type size per row, and the
-  year jumps moved onto the title's own line.
-- Every rail block — archive, series, tags, categories — has its own switch.
-- Book mode is circled in the pen rather than boxed in grey.
-- The activity card on the home screen is a feed, and a settings save records what it
-  actually changed instead of going in blank.
-- Ten languages take a dropdown instead of a strip.
-- The newsletter's send button is a latch: arm it, read the count, press again.
-- The admin's controls came down a step, 40px to 36, and a sheet's tools row is 32
-  throughout — the strip, the key and the field on one height.
-- One icon set for both faces; the source-code chrome trades pictures for words.
+### Settings and the home screen
+
+- **Every rail block has its own switch** — archive, series, tags, categories.
+- Save moved onto the sheet's tools row, from a bar fixed to the bottom of the window that
+  had been reported as missing entirely.
+- Six settings that were taking two lines to ask one question now take one.
+- Custom CSS gets a guard and a front door.
+- **The recent-activity card became a feed**, and a settings save records which paths it
+  changed instead of going in blank.
+- The home screen opens with the owner's name and says what version is running and whether
+  it is current.
+
+### Under it
+
+- **Eleven lines nothing was watching.** Found by breaking one line at a time in the thirteen
+  most load-bearing files and asking which test goes red.
+- The editor's corpus suite gained a second law: render both sides and compare the HTML. The
+  old law — serialize twice, compare — passes a document that is stably wrong, which is why
+  all six footnote fixtures were green while the feature was gone.
+- The tour stops clicking by paint.
+- `docs/appearance.md` had been sending readers to an Appearance → Advanced tab that does not
+  exist.
 
 ## 2026-08-30 — Quire Ink 2.2.3
 
