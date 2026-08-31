@@ -79,7 +79,7 @@ export function RedirectsManager() {
       {rows.length === 0 ? (
         <p className="text-sm text-neutral-500 dark:text-neutral-400">{t.redirectEmpty}</p>
       ) : (
-        <ul className="divide-y divide-neutral-200 dark:divide-neutral-800">
+        <ul className="divide-y divide-neutral-100 dark:divide-neutral-800">
           {rows.map((r) => (
             <li key={r.id} className="flex items-center gap-3 py-2 text-sm">
               <span className="min-w-0 flex-1 truncate">
@@ -105,7 +105,7 @@ export function RedirectsManager() {
         </ul>
       )}
 
-      <div className="grid gap-3 border-t border-neutral-200 pt-4 sm:grid-cols-2 dark:border-neutral-800">
+      <div className="grid gap-3 border-t border-neutral-100 pt-4 sm:grid-cols-2 dark:border-neutral-800">
         <Input
           label={t.redirectSource}
           value={source}

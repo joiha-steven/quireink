@@ -11,7 +11,7 @@ import { ToggleRow } from '@/admin/ui/Switch'
 import { useAdminT } from './I18nProvider'
 import { buttonClass } from '@/admin/ui/Button'
 import { CacheButton } from './CacheButton'
-import { PANEL, Setting, SETTING_GAP } from './kit'
+import { PANEL_LIST, Setting, SETTING_GAP } from './kit'
 
 /** `CacheButton` takes a class rather than a variant, so it asks Button for one. It used to
     carry a transcription of the secondary variant instead, under a comment saying so. */
@@ -23,7 +23,7 @@ export function CacheFields(
   const t = useAdminT()
   return (
     <div className={SETTING_GAP}>
-      <div className={PANEL}>
+      <div className={PANEL_LIST}>
         <ToggleRow
           label={t.cacheEnable}
           desc={t.cacheEnableDesc}

@@ -34,15 +34,15 @@ import type { ReactNode, SelectHTMLAttributes } from 'react'
 export const CARD =
   'rounded-[10px] border border-neutral-200/80 bg-white shadow-[0_1px_2px_rgba(0,0,0,.05)] dark:border-neutral-800 dark:bg-neutral-900 dark:shadow-none'
 
-// The two surfaces that sit INSIDE a card, both hand-written in several places before
-// they were named here. A settings page is a Card holding a PANEL_LIST of rows; a row that
-// needs its own boxed sub-area uses INSET.
-//
-// One radius step under the sheet's, so a box nested in a rounded-md box does not fight it. No
-// background and no shadow: the sheet underneath already provides both.
-export const PANEL = 'overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-800'
-export const PANEL_LIST = `divide-y divide-neutral-200 dark:divide-neutral-800 ${PANEL}`
-export const INSET = 'rounded-lg border border-neutral-200 p-4 dark:border-neutral-800'
+// The surfaces INSIDE a card. ENCLOSURE WEAKENS INWARD — each line lighter than the one around
+// it — and on Search & URLs it ran backwards: sheet neutral-200/80, card neutral-100, box in
+// the card neutral-200 at the card's own 8px radius. The innermost frame shouted loudest.
+// A LIST is not a box at all now: ruled top and bottom, full card width (`-mx-4` against the
+// body's `p-4`) — the card's title row already has that shape — and the rows keep their
+// padding, so their text lands on the left edge every other label in the card uses.
+export const PANEL = 'overflow-hidden rounded-lg border border-neutral-100 dark:border-neutral-800'
+export const PANEL_LIST = '-mx-4 divide-y divide-neutral-100 border-y border-neutral-100 dark:divide-neutral-800 dark:border-neutral-800'
+export const INSET = 'rounded-lg border border-neutral-100 p-4 dark:border-neutral-800'
 
 // The place you DROP something into: CARVED, because a well holds things (the inset a text
 // field wears, for the reason it wears it), and dashed, because it is waiting to be filled.

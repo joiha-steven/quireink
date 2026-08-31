@@ -6,6 +6,7 @@ import type { ApiResponse } from '@/types'
 import { Button } from '@/admin/ui/Button'
 import { useToast } from '@/admin/ui/Toast'
 import { useAdminT } from './I18nProvider'
+import { EMPTY_SLOT } from './slot'
 
 type Props = {
   kind: 'favicon' | 'app-icon'
@@ -45,7 +46,13 @@ export function IconUpload({ kind, value, onChange, previewClassName }: Props) {
       {value ? (
         <img src={value} alt="" className={`bg-neutral-100 object-contain p-1 ${previewClassName}`} />
       ) : (
-        <span className="text-xs text-neutral-500 dark:text-neutral-400">{t.noImageSelected}</span>
+        <>
+          {/* The slot, at the size the picture will be, so the row does not change height
+              the moment one goes in. The words stay beside it: a 32px square has no room
+              for them, and "no image" is worth saying rather than implying. */}
+          <span aria-hidden className={`${EMPTY_SLOT} shrink-0 ${previewClassName}`} />
+          <span className="text-xs text-neutral-500 dark:text-neutral-400">{t.noImageSelected}</span>
+        </>
       )}
       <input
         ref={inputRef}

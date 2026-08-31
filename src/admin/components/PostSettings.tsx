@@ -9,6 +9,7 @@ import { Combobox } from './Combobox'
 import { FeaturedImageField } from './FeaturedImageField'
 import { useAdminT } from './I18nProvider'
 import { CHECK, NOTE_TEXT } from './kit'
+import { EMPTY_SLOT } from './slot'
 
 export type Draft = {
   title: string
@@ -134,7 +135,7 @@ export function PostSettings({ draft, update, allCategories, allTags, allSeries,
         {draft.coverImage ? (
           <img src={draft.coverImage} alt="" className="aspect-video w-full rounded-lg object-cover" />
         ) : (
-          <div className="flex aspect-video w-full items-center justify-center rounded-lg bg-neutral-100 text-xs text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400">
+          <div className={`${EMPTY_SLOT} aspect-video w-full rounded-lg`}>
             {t.noImageSelected}
           </div>
         )}
