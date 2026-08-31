@@ -11,7 +11,7 @@
 import type { UpdateState } from '@/server/update-check'
 import { ToggleRow } from '@/admin/ui/Switch'
 import { useAdminT } from './I18nProvider'
-import { NOTE_TEXT, PANEL, Setting, SETTING_GAP } from './kit'
+import { NOTE_TEXT, PANEL_LIST, Setting, SETTING_GAP } from './kit'
 
 export type UpdateStatus = { blockedBy: string | null; update: UpdateState }
 
@@ -22,7 +22,7 @@ export function UpdateFields(
   const t = useAdminT()
   return (
     <div className={SETTING_GAP}>
-      <div className={PANEL}>
+      <div className={PANEL_LIST}>
         <ToggleRow
           label={t.updateCheckLabel}
           /**

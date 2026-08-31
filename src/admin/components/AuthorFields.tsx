@@ -21,6 +21,7 @@ import { Button } from '@/admin/ui/Button'
 import { MediaLibrary } from './MediaLibrary'
 import { NOTE_TEXT, Setting, SETTING_GAP } from './kit'
 import { useAdminT } from './I18nProvider'
+import { EMPTY_SLOT } from './slot'
 
 export function AuthorFields({ author, onChange }: {
   author: AuthorSettings
@@ -54,7 +55,14 @@ export function AuthorFields({ author, onChange }: {
         <div className="space-y-3">
           {author.avatarUrl
             ? <img src={author.avatarUrl} alt="" className="h-16 w-16 rounded-lg object-cover" />
-            : <p className={NOTE_TEXT}>{t.authorNoAvatar}</p>}
+            : (
+              // The slot at the portrait's own size, so choosing one does not move the
+              // buttons under it, with the sentence beside it: 64px has no room for words.
+              <div className="flex items-center gap-3">
+                <span aria-hidden className={`${EMPTY_SLOT} h-16 w-16 shrink-0 rounded-lg`} />
+                <p className={NOTE_TEXT}>{t.authorNoAvatar}</p>
+              </div>
+            )}
           <div className="flex flex-wrap gap-2">
             <Button variant="secondary" type="button" onClick={() => setPicking(true)}>{t.chooseImage}</Button>
             {author.avatarUrl && (

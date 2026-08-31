@@ -11,7 +11,7 @@ import { ToggleRow } from '@/admin/ui/Switch'
 import { useToast } from '@/admin/ui/Toast'
 import { formatDateTimeShort } from '@/utils'
 import { useAdminT } from './I18nProvider'
-import { PANEL, Setting, TABLE_SCROLL } from './kit'
+import { PANEL, PANEL_LIST, Setting, TABLE_SCROLL } from './kit'
 
 const MAX = 5 // manual tokens only; OAuth-connector tokens are exempt
 
@@ -118,7 +118,7 @@ export function McpFields(
 
   return (
     <div className="space-y-5">
-      <div className={PANEL}>
+      <div className={PANEL_LIST}>
         <ToggleRow
           label={t.mcpEnable}
           desc={t.mcpEnableDesc}

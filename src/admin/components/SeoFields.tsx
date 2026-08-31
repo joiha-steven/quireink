@@ -8,6 +8,7 @@ import { ToggleRow } from '@/admin/ui/Switch'
 import { MediaLibrary } from './MediaLibrary'
 import { useAdminT } from './I18nProvider'
 import { PANEL_LIST } from './kit'
+import { EMPTY_SLOT } from './slot'
 
 type Feature = { key: keyof SeoSettings; label: string; desc: string; path: string }
 
@@ -58,7 +59,7 @@ export function SeoFields({ s, update }: Props) {
           {s.seo.ogFallbackImage ? (
             <img src={s.seo.ogFallbackImage} alt="OG" className="h-20 w-36 rounded-lg border border-neutral-200 object-cover dark:border-neutral-800" />
           ) : (
-            <div className="flex h-20 w-36 items-center justify-center rounded-lg border border-dashed border-neutral-300 text-xs text-neutral-500 dark:text-neutral-400 dark:border-neutral-700">
+            <div className={`${EMPTY_SLOT} h-20 w-36 rounded-lg`}>
               {t.noImageSelected}
             </div>
           )}
