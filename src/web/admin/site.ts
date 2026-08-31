@@ -9,7 +9,8 @@
 import type { Context } from 'hono'
 import type { SiteSettings } from '@/types'
 import { reorderSeries, updateSeries } from '@/content/series'
-import { saveSettings } from '@/content/settings'
+import { getSettings, saveSettings } from '@/content/settings'
+import { describeSettingsSave } from '@/content/settings-diff'
 import { sanitizeListPath } from '@/content/settings-sanitize'
 import { slugTaken } from '@/content/slugs'
 import {
@@ -130,9 +131,10 @@ export function siteRoutes() {
   router.delete('/api/redirects/:id', async (c) => {
     const id = Number(param(c, 'id'))
     if (!Number.isInteger(id)) return fail(c, 'Invalid id', 400)
+    const gone = (await getRedirects()).find((r) => r.id === id)
     await deleteRedirect(id)
     clearCache()
-    void logActivity('redirect.delete', String(id))
+    void logActivity('redirect.delete', gone ? `${gone.source} → ${gone.destination}` : `#${id}`)
     return json({ id })
   })
 
@@ -150,12 +152,15 @@ export function siteRoutes() {
       const slug = listPath.slice(1)
       if (slugTaken(slug)) return fail(c, `list_path_taken: ${slug}`, 409)
     }
+    // Read BEFORE the write, so the log can say what moved. One extra read on a route
+    // that is pressed by hand a few times an hour.
+    const before = await getSettings()
     const next = await saveSettings(input)
     // The frozen tree purged everything and then re-warmed several pages, because a cold
     // ISR miss was expensive. Here a page re-renders from SQLite in well under a
     // millisecond, so warming would be work done to avoid work that is already free.
     clearCache()
-    void logActivity('settings.save')
+    void logActivity('settings.save', describeSettingsSave(before, next))
     return json(next)
   })
 

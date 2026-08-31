@@ -110,8 +110,9 @@ export function mcpAdminRoutes() {
   router.delete('/api/mcp/tokens/:id', async (c) => {
     const id = Number(param(c, 'id'))
     if (!Number.isInteger(id)) return fail(c, 'Invalid id', 400)
+    const gone = (await listTokens()).find((tok) => tok.id === id)
     await deleteToken(id)
-    void logActivity('mcp.token.delete', String(id))
+    void logActivity('mcp.token.delete', gone?.name ?? `#${id}`)
     return json({ id })
   })
 

@@ -16,7 +16,7 @@ import { emailBrand } from '@/news/email-brand'
 import { BroadcastError, broadcastPosts, previewBroadcast } from '@/news/broadcast'
 import { listSubscribers, subscriberCounts, deleteSubscriber } from '@/news/subscribers'
 import { statsByEmail } from '@/news/newsletter-log'
-import { softDeleteComment } from '@/comments/comments'
+import { describeComment, softDeleteComment } from '@/comments/comments'
 import { getIntegrationKeys, saveIntegrationKeys } from '@/store/integration-keys'
 import { getPublicPosts } from '@/content/posts'
 import { getSettings, resolveSiteUrl } from '@/content/settings'
@@ -182,8 +182,10 @@ export function newsRoutes() {
   router.delete('/api/subscribers/:id', async (c) => {
     const id = intParam(c, 'id')
     if (id === null) return fail(c, 'Invalid id', 400)
+    // Read the address BEFORE the row goes: "a number was removed" is not a ledger line.
+    const gone = (await listSubscribers()).find((s) => s.id === id)
     await deleteSubscriber(id)
-    void logActivity('subscriber.delete', String(id))
+    void logActivity('subscriber.delete', gone?.email ?? `#${id}`)
     return json({ ok: true })
   })
 
@@ -193,8 +195,9 @@ export function newsRoutes() {
     const id = intParam(c, 'id')
     if (id === null) return fail(c, 'Invalid comment id', 400)
     // Soft delete (Invariant 6). It lands in the trash and can be restored.
+    const who = await describeComment(id)
     await softDeleteComment(id)
-    void logActivity('comment.delete', String(id))
+    void logActivity('comment.delete', who)
     return json({ id })
   })
 

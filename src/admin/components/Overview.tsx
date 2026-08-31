@@ -4,7 +4,7 @@
 import Link from '@/admin/router'
 import type { UpdateState } from '@/server/update-check'
 import type { ActivityEntry } from '@/server/activity'
-import { formatBytes, formatDateTimeShort } from '@/utils'
+import { formatBytes } from '@/utils'
 import { buttonClass } from '@/admin/ui/Button'
 import { Card, SECTION_GAP } from './kit'
 import { StatBand, StatCard } from './stat-band'
@@ -12,6 +12,7 @@ import { DashboardWidgets, type DashboardData } from './DashboardWidgets'
 import { FirstRun } from './FirstRun'
 import { Greeting, type GreetingAuthor } from './Greeting'
 import { PickUpBand } from './PickUpBand'
+import { ActivityFeed } from './ActivityFeed'
 import { useAdminT } from './I18nProvider'
 import { REPO } from './help-kit'
 import { META_ON_CANVAS } from './scale'
@@ -227,30 +228,7 @@ export function Overview(props: Props) {
         {!activityEnabled || recent.length === 0 ? (
           <p className="text-sm text-neutral-500 dark:text-neutral-400">{t.logEmpty}</p>
         ) : (
-          // TWO COLUMNS on a wide screen, and it is the emptiness that forces it rather than a
-          // wish for density. Measured at 1440px: the action track is 180px (honest — the
-          // longest action, `auth.recovery.regenerated`, measures 172), the timestamp 85, and
-          // the detail column got the remaining 805px to hold strings like
-          // `registration-target.png` at ~150. Six rows each carrying ~300px of content across
-          // a 1400px band is a card that is three-quarters air, which is what was reported
-          // as far too empty on 2026-08-15. Halving the width halves the hole, and it
-          // fills a band that was the last thing on the page.
-          <ul className="grid divide-y divide-neutral-100 xl:grid-cols-2 xl:gap-x-10 dark:divide-neutral-800 [&>li]:border-neutral-100 dark:[&>li]:border-neutral-800 xl:divide-y-0 xl:[&>li]:border-b xl:[&>li:nth-last-child(-n+2)]:border-b-0">
-            {recent.slice(0, 6).map((entry) => (
-              // 180px, not 120px, and the action truncates. An action is a dotted identifier
-              // with nothing to wrap on, and the long ones overran the old track and painted
-              // on top of the detail beside them — `auth.recovery.regenerated` measured 176px
-              // against 120px of column. The grid is on the ROW, so each row sizes its own
-              // tracks: a content-sized column would fix the overlap and then stagger the
-              // detail edge from row to row. A fixed track keeps the list aligned, and the
-              // truncate is the backstop for whatever action name gets added next.
-              <li key={entry.id} className="grid gap-x-4 gap-y-1 py-2.5 text-sm sm:grid-cols-[minmax(0,180px)_minmax(0,1fr)_auto]">
-                <span className={`truncate ${entry.action === 'error' ? 'font-medium text-neutral-900 dark:text-white' : 'text-neutral-500 dark:text-neutral-400'}`}>{entry.action}</span>
-                <span className="truncate text-neutral-700 dark:text-neutral-300">{entry.detail}</span>
-                <time className="text-xs text-neutral-500 dark:text-neutral-400">{formatDateTimeShort(entry.at)}</time>
-              </li>
-            ))}
-          </ul>
+          <ActivityFeed entries={recent} />
         )}
       </Card>
 
