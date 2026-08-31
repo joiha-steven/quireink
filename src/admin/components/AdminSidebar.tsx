@@ -257,8 +257,11 @@ export function AdminSidebar({
 
   // Wordmark, plus the compact collapse/expand button (desktop top row only). The
   // chevron points the direction it will move the rail; rotates when collapsed.
+  // No padding of its own: the rail already pads (`px-3`), and this one paid for it twice —
+  // 24px the top row did not have to spare, which is what pushed the collapse control out of
+  // the rail entirely. The mobile header pads its own row, so nothing there loses air.
   const wordmark = (c: boolean): ReactNode => (
-    <Link href="/admin" onClick={close} className="flex h-10 items-center px-3 leading-none">
+    <Link href="/admin" onClick={close} className="flex h-10 items-center leading-none">
       {c ? <BrandMark /> : <BrandWord />}
     </Link>
   )
@@ -298,12 +301,13 @@ export function AdminSidebar({
       onClick={toggleCollapsed}
       title={collapsed ? t.navExpand : t.navCollapse}
       aria-label={collapsed ? t.navExpand : t.navCollapse}
-      className={utilClass(collapsed)}
+      // Back at the top beside the search, at the owner's word: down in the footer it sat
+      // one row from Sign out, and a mis-tap there costs a session rather than a rail.
+      className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-transparent text-neutral-500 transition-colors hover:border-neutral-200 hover:bg-neutral-50 hover:text-neutral-700 dark:text-neutral-400 dark:hover:border-neutral-700 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
     >
-      <span className={`grid shrink-0 place-items-center transition-transform ${collapsed ? 'rotate-180' : ''}`}>
+      <span className={`grid place-items-center transition-transform ${collapsed ? 'rotate-180' : ''}`}>
         <IconChevronLeft />
       </span>
-      {!collapsed && <span className="truncate">{t.navCollapse}</span>}
     </button>
   )
 
@@ -327,17 +331,18 @@ export function AdminSidebar({
             `min-w-0` on the wordmark so this row can never do that again. */}
         <div className={collapsed ? 'flex flex-col items-center gap-2' : 'flex min-w-0 items-center justify-between gap-1'}>
           <span className="min-w-0 truncate">{wordmark(collapsed)}</span>
-          {searchBtn(collapsed)}
+          {/* Collapsed the row is a column, and the chevron goes UNDER the search so it stays
+              at the same height as the expanded rail's — the hand does not have to look. */}
+          {collapsed
+            ? <>{searchBtn(true)}{collapseBtn}</>
+            : <span className="flex shrink-0 items-center gap-0.5">{searchBtn(false)}{collapseBtn}</span>}
         </div>
         <nav className="mt-6 flex flex-col gap-1">{navItems(collapsed)}</nav>
         {/* Collapse lives with the rail's other CONTROLS, at the foot: it is a preference
             about this rail on this device, the same kind of thing as "Show icons" sitting
             beside it — not a destination, and not chrome competing with the wordmark. It is
             also where the hand already goes to change how the rail looks. */}
-        <div className="mt-auto flex flex-col gap-1 border-t border-neutral-200 pt-4 dark:border-neutral-800">
-          {controls(collapsed)}
-          {collapseBtn}
-        </div>
+        <div className="mt-auto flex flex-col gap-1 border-t border-neutral-200 pt-4 dark:border-neutral-800">{controls(collapsed)}</div>
       </aside>
 
       {/* Mobile: top bar + drawer (always icon+label) */}
