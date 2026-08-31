@@ -8,7 +8,7 @@
 // Why a search rather than a third rearrangement of the tabs: `settings-index.ts`.
 
 import { useState } from 'react'
-import { CONTROL_CHROME } from './kit'
+import { CONTROL_SM } from './kit'
 import { OVERLAY } from './sheet'
 import { useAdminT } from './I18nProvider'
 import { searchSettings, type SettingEntry, type SettingsTab } from './settings-index'
@@ -40,17 +40,17 @@ export function SettingsSearch({ tabLabel, onPick }: {
     // it — took a place on the row and pushed the tabs, the save key and the field around it.
     // A list of results is not a tool. It is an overlay over the page, and the admin has one:
     // `OVERLAY`, the same paper the command palette and the media picker are drawn on.
-    <div className="relative min-w-0 flex-1 sm:w-80 sm:flex-none">
+    // 208px on a wide screen and not 320: the field was as wide as the eight tabs at the
+    // other end of the band and looked like the point of the row rather than the way past
+    // it. It is the width the library's tools row already gives the same control.
+    <div className="relative min-w-0 flex-1 sm:w-52 sm:flex-none">
       <input
         type="search"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder={t.settingsSearch}
         aria-label={t.settingsSearch}
-        // `h-8` and the chrome from the kit, not `CONTROL`: the size is the one thing a field
-        // is allowed to decide for itself, and this one stands on a tools row whose height
-        // the tab strip sets. `CONTROL` is 36 and would be the tallest thing on the band.
-        className={`${CONTROL_CHROME} h-8 w-full px-3 text-sm`}
+        className={`${CONTROL_SM} w-full`}
       />
 
       {showing && (
