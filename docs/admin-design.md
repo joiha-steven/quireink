@@ -140,16 +140,18 @@ character and none of its typographic rules **except one**, below.
   be an overlay.
 - **The highlighter marks WHERE YOU ARE** (2026-08-29, and it is the ink's third role rather
   than a fourth colour). The active tab wears `--pen` with `--on-pen`; the rail's current row
-  wears the same ink as a RUN of it, not a slab — a 3px bar in the pen's edge tone over a
-  26% wash (2026-08-31, from the same pass as the relief grammar). A SELECTED VALUE gets
-  neither, and that distinction is the whole point. They had
+  is a KEY HELD DOWN in the pen: a 30% wash carved in on an inset (2026-08-31 — the solid
+  pen pill answered too loudly, and a bar-plus-wash read as a label, not a control). A
+  SELECTED VALUE gets neither, and that distinction is the whole point. They had
   the identical black pill, which put "Site" — the section you are in — eight lines above
   "English" — a field's value — in the same ink, size and shape, with nothing answering
   "where am I". A screen where everything is the same rectangle has told you nothing by the
   time you have looked at all of it. The seam is the `Tabs` component, the admin's only
   navigation strip; the ten call sites that build a chooser from `tabItemClass` directly get
-  the ink pill, and `components/where-you-are.test.ts` fails the day one of them reaches for
-  the marker. ⚠️ The active row is composed from `SIDEBAR_NAV_QUIET`, which has NO hover:
+  the SUNKEN PAPER KEY — solid ink shows no relief, so a chosen value is pressed into the
+  groove instead of painted black (2026-08-31, the font tiles and the palette card's editing
+  state carved the same way) — and `components/where-you-are.test.ts` fails the day one of
+  them reaches for the marker. ⚠️ The active row is composed from `SIDEBAR_NAV_QUIET`, which has NO hover:
   both hovers are rules on the same property and Tailwind decides which lands last, so
   pointing at the page you were already on repainted it grey. Structure, not out-ranking.
 - **Admin is monochrome, plus exactly ONE accent: the product's highlighter** (the Writing

@@ -2,12 +2,11 @@
 // for the reason every other file in this directory is one — a second caller would otherwise
 // re-type the accent and the two would disagree about which black the thumb is.
 //
-// The accent is `CHECK`, the same ink as a tick, and that is not a shortcut: a range with no
-// `accent-color` is not unstyled, it is painted in the OS accent, which is blue, in an admin
-// of black, white and neutrals. The checkbox rule in `scripts/checks/admin-kit.ts` was
-// written after five controls shipped that way.
+// It is drawn (`.fader` in admin.css), not tinted: a bare range is painted in the OS
+// accent, which is blue, in an admin of black, white and neutrals — and `accent-color`,
+// the tinting fix that shipped first, cannot give the knob a face or the track a groove.
 import type { InputHTMLAttributes, ReactNode } from 'react'
-import { CHECK, NOTE, SETTING_LABEL } from '@/admin/components/kit'
+import { NOTE, SETTING_LABEL } from '@/admin/components/kit'
 
 type Props = Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> & {
   label?: string
@@ -16,14 +15,14 @@ type Props = Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> & {
   readout?: ReactNode
 }
 
-// NOT `appearance-none`. Stripping the appearance off a range removes the TRACK and leaves
-// the thumb alone in mid-air — photographed on 2026-08-25, a black dot floating in the card
-// with no rail under it — and re-drawing a track means `::-webkit-slider-runnable-track` and
-// `::-moz-range-track` and a thumb for each, four vendor pseudo-elements to hand-build
-// something the browser already draws correctly. `accent-color` is the supported way to tint
-// a native range, and it tints the filled half and the thumb together.
+// `.fader` in admin.css draws the whole control: a carved groove and a rectangular knob
+// standing proud of it — the hi-fi slide. That DOES mean `appearance-none` plus the four
+// vendor pseudo-elements this file once refused (2026-08-25 it left a thumb floating in
+// mid-air with no rail); the difference now is that the track is drawn on purpose, in the
+// same stylesheet, with the same groove the segmented strip wears — not stripped and
+// forgotten. `accent-color` cannot shade a knob, and the knob is the point.
 const TRACK =
-  `${CHECK} h-6 w-48 cursor-pointer ` +
+  'fader h-6 w-48 cursor-pointer ' +
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-300 dark:focus-visible:ring-neutral-700 ' +
   'disabled:cursor-not-allowed disabled:opacity-40'
 

@@ -54,7 +54,7 @@ const SEGMENT_TRACK_DENSE = 'flex w-full overflow-x-auto no-scrollbar rounded-md
  * So the highlighter marks WHERE YOU ARE and nothing else. It is the meaning the ink already
  * has on paper — the line you ran a marker over to come back to — and it is the reason this
  * is not decoration: a second colour that means one thing is a signal, and a palette is not.
- * A value you picked is not a place, so it keeps the ink pill.
+ * A value you picked is not a place, so it takes the sunken paper key.
  *
  * The seam is the `Tabs` component below, which is the only thing in the admin that renders
  * navigation; the ten call sites that build a chooser out of `tabItemClass` directly are all
@@ -91,9 +91,12 @@ export const tabItemClass = (
           // is harsher than the olive the reading site already puts on its own marks.
           // A latched key: the active segment is held DOWN, so it carries the same
           // carved-in shadow every pressed control wears.
+          // Solid ink cannot show relief — shading dies inside black — so the chosen key is
+          // a PAPER key pressed into the groove: card-white, carved, ink text. The pen keeps
+          // marking a place; a chosen value is the sunken key.
           ? role === 'place'
             ? 'bg-[var(--pen)] text-[var(--on-pen)] shadow-[inset_0_2px_3px_rgba(0,0,0,.3),inset_0_-1px_0_rgba(255,255,255,.35)]'
-            : 'bg-neutral-900 text-white shadow-[inset_0_2px_3px_rgba(0,0,0,.6),inset_0_-1px_0_rgba(255,255,255,.22)] dark:bg-neutral-100 dark:text-neutral-900 dark:shadow-[inset_0_2px_3px_rgba(0,0,0,.35),inset_0_-1px_0_rgba(255,255,255,.6)]'
+            : 'bg-white font-semibold text-neutral-950 shadow-[inset_0_2px_3px_rgba(0,0,0,.2)] dark:bg-neutral-800 dark:text-white dark:shadow-[inset_0_2px_3px_rgba(0,0,0,.55)]'
           : 'text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-neutral-200'
       }`
 

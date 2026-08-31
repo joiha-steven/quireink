@@ -44,13 +44,16 @@ export function FontFields({
               aria-pressed={active}
               className={`rounded-lg border px-3 py-2 text-left transition-colors ${
                 active
-                  ? 'border-neutral-900 bg-neutral-900 text-white dark:border-white dark:bg-white dark:text-neutral-900'
+                  // Sunken, not inverted: a solid ink tile can show neither relief nor — worse,
+                    // on a FONT picker — the face it is selling. The chosen tile is a key
+                    // pressed into the card, wearing its own specimen in its own ink.
+                    ? 'border-neutral-400 bg-neutral-100 font-semibold text-neutral-950 shadow-[inset_0_2px_3px_rgba(0,0,0,.16)] dark:border-neutral-500 dark:bg-neutral-800 dark:text-white dark:shadow-[inset_0_2px_3px_rgba(0,0,0,.5)]'
                   : 'border-neutral-300 text-neutral-700 hover:border-neutral-500 dark:border-neutral-700 dark:text-neutral-300'
               }`}
               style={{ fontFamily: f.stack }}
             >
               <span className="block text-base leading-tight">{f.name}</span>
-              <span className={`block text-xs ${active ? 'opacity-70' : 'text-neutral-500 dark:text-neutral-400'}`}>
+              <span className={`block text-xs ${active ? 'text-neutral-600 dark:text-neutral-300' : 'text-neutral-500 dark:text-neutral-400'}`}>
                 Aa · 1793
               </span>
             </button>
@@ -75,7 +78,10 @@ export function FontFields({
                 aria-pressed={active}
                 className={`rounded-lg border px-2 py-2 text-center text-sm transition-colors ${
                   active
-                    ? 'border-neutral-900 bg-neutral-900 text-white dark:border-white dark:bg-white dark:text-neutral-900'
+                    // Sunken, not inverted: a solid ink tile can show neither relief nor — worse,
+                    // on a FONT picker — the face it is selling. The chosen tile is a key
+                    // pressed into the card, wearing its own specimen in its own ink.
+                    ? 'border-neutral-400 bg-neutral-100 font-semibold text-neutral-950 shadow-[inset_0_2px_3px_rgba(0,0,0,.16)] dark:border-neutral-500 dark:bg-neutral-800 dark:text-white dark:shadow-[inset_0_2px_3px_rgba(0,0,0,.5)]'
                     : 'border-neutral-300 text-neutral-700 hover:border-neutral-500 dark:border-neutral-700 dark:text-neutral-300'
                 }`}
                 style={{ fontFamily: f.sans ?? `'Inter'` }}

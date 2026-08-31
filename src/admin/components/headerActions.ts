@@ -24,7 +24,7 @@ export const ADMIN_NAV =
 // at the page you are already on repainted it grey. A rule you cannot see the order of is a
 // rule you should not be relying on.
 export const SIDEBAR_NAV_QUIET =
-  'relative flex h-10 w-full items-center rounded-lg px-3 text-left text-sm text-neutral-500 transition-colors disabled:opacity-50 dark:text-neutral-400'
+  'relative flex h-10 w-full items-center rounded-lg px-3 text-left text-sm text-neutral-500 transition-colors disabled:opacity-50 dark:text-neutral-400 active:translate-y-px active:duration-0 motion-reduce:active:translate-y-0 active:shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.15)] dark:active:shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.5)]'
 
 const SIDEBAR_NAV_HOVER =
   'hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-white'
@@ -41,15 +41,15 @@ export const SIDEBAR_NAV = `${SIDEBAR_NAV_QUIET} ${SIDEBAR_NAV_HOVER}`
 // (`tabs.tsx`) — the highlighter marks the place you are in, never the value you chose —
 // but a run of a marker, not a slab of it.
 //
-// The bar is drawn with `before:` because the row string is one class list on a link, and
-// `SIDEBAR_NAV_QUIET` already carries the `relative` it needs. It stays visible on the
-// collapsed icon rail, where the wash alone would be a faint square.
+// The row is a KEY, so the current page is a key HELD DOWN: the pen wash is the ink, the
+// carved inset is the state. No bar, no slab — the same held-down face as every other
+// latched control in this admin, dressed in the one ink that means "you are here".
 export const SIDEBAR_NAV_ACTIVE =
-  "bg-[color-mix(in_srgb,var(--pen)_26%,transparent)] font-medium text-neutral-900 dark:text-white before:absolute before:bottom-1.5 before:left-0 before:top-1.5 before:w-[3px] before:rounded-full before:bg-[var(--pen-edge)] before:content-['']"
+  'bg-[color-mix(in_srgb,var(--pen)_30%,transparent)] font-medium text-neutral-900 shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.16)] dark:text-white dark:shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.45)]' 
 
 // The rail's UTILITY register. The footer's rows (theme, cache, sign out) are CONTROLS,
 // and for a while they wore SIDEBAR_NAV — four more destinations, one apparently a page
 // named "Light". A control is smaller and quieter than a place, and it always draws its
 // glyph: the glyph is what says "this does something" when the word alone reads as a name.
 export const SIDEBAR_UTIL =
-  'relative flex h-8 w-full items-center rounded-md px-3 text-left text-xs text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-700 disabled:opacity-50 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-300'
+  'relative flex h-8 w-full items-center rounded-md px-3 text-left text-xs text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-700 disabled:opacity-50 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-300 active:translate-y-px active:duration-0 motion-reduce:active:translate-y-0 active:shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.15)] dark:active:shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.5)]'

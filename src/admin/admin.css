@@ -567,3 +567,31 @@ input[type='color']::-moz-color-swatch {
     transition-duration: 0s;
   }
 }
+
+/* The fader. A native range wears the OS accent and a pill thumb; this one is the hi-fi
+   slide from the control grammar: a carved groove, and a rectangular ink knob standing
+   proud of it. Drawing that means all four vendor pseudo-elements — the price of relief on
+   the one control the browser will not shade. Keep track and thumb metrics in step across
+   the webkit/moz pairs; they cannot share a rule. */
+.fader { -webkit-appearance: none; appearance: none; height: 1.5rem; background: none; }
+.fader::-webkit-slider-runnable-track {
+  height: .55rem; border-radius: 999px; border: 1px solid #d4d4d4; background: #f5f5f5;
+  box-shadow: inset 0 1.5px 2.5px rgb(0 0 0 / .12);
+}
+.fader::-webkit-slider-thumb {
+  -webkit-appearance: none; width: .8rem; height: 1.4rem; border-radius: .25rem;
+  background: #171717; margin-top: -.42rem;
+  box-shadow: 0 1px 2px rgb(0 0 0 / .35), inset 0 1px 1px rgb(255 255 255 / .4), inset 0 -1.5px 2px rgb(0 0 0 / .35);
+}
+.fader::-moz-range-track {
+  height: .55rem; border-radius: 999px; border: 1px solid #d4d4d4; background: #f5f5f5;
+  box-shadow: inset 0 1.5px 2.5px rgb(0 0 0 / .12);
+}
+.fader::-moz-range-thumb {
+  width: .8rem; height: 1.4rem; border: 0; border-radius: .25rem; background: #171717;
+  box-shadow: 0 1px 2px rgb(0 0 0 / .35), inset 0 1px 1px rgb(255 255 255 / .4), inset 0 -1.5px 2px rgb(0 0 0 / .35);
+}
+.dark .fader::-webkit-slider-runnable-track { border-color: #404040; background: #1c1c1c; box-shadow: inset 0 1.5px 2.5px rgb(0 0 0 / .55); }
+.dark .fader::-webkit-slider-thumb { background: #f5f5f5; box-shadow: 0 1px 2px rgb(0 0 0 / .6), inset 0 1px 1px rgb(255 255 255 / .55), inset 0 -1.5px 2px rgb(0 0 0 / .25); }
+.dark .fader::-moz-range-track { border-color: #404040; background: #1c1c1c; box-shadow: inset 0 1.5px 2.5px rgb(0 0 0 / .55); }
+.dark .fader::-moz-range-thumb { background: #f5f5f5; box-shadow: 0 1px 2px rgb(0 0 0 / .6), inset 0 1px 1px rgb(255 255 255 / .55), inset 0 -1.5px 2px rgb(0 0 0 / .25); }

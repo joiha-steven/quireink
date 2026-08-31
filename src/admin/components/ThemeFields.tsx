@@ -77,11 +77,12 @@ function PresetCard({
   onPick: () => void
   onToggleShown: () => void
 }) {
-  // The card is a KEY, so being edited is being HELD DOWN: the carved inset from the relief
-  // grammar, on top of the darker edge it already wore. Hidden stays a dashed edge and
-  // NOTHING else — the colours are what the card exists to show (see the warning below).
+  // The card is a KEY, so being edited is being HELD DOWN — sunk into the card on a real
+  // inset, with the ground one step darker, because a thin dark border alone did not read
+  // as chosen at a glance. Hidden stays a dashed edge and NOTHING else — the colours are
+  // what the card exists to show (see the warning below).
   const state = editing
-    ? 'border-neutral-900 bg-neutral-50 shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.12)] dark:border-white dark:bg-neutral-800 dark:shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.45)]'
+    ? 'border-neutral-400 bg-neutral-100 shadow-[inset_0_2px_4px_rgba(0,0,0,.18)] dark:border-neutral-500 dark:bg-neutral-800 dark:shadow-[inset_0_2px_4px_rgba(0,0,0,.55)]'
     : 'border-neutral-200 bg-white hover:border-neutral-400 hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-600 dark:hover:bg-neutral-800'
   return (
     <div className="group">
