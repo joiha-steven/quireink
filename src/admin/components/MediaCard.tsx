@@ -26,6 +26,7 @@
 // What replaces the band is the grammar the rest of the admin already uses: the picture sits
 // in a TRAY that is carved (a hairline pressed in, because a tray holds), and the actions are
 // small RAISED keys (because a key is pressed). No black anywhere.
+import { memo } from 'react'
 import type { MediaItem, SiteLang } from '@/types'
 import type { IconName } from '@/icons'
 import { formatBytes } from '@/utils'
@@ -49,6 +50,26 @@ const KEY =
   + 'motion-reduce:active:translate-y-0 '
   + 'dark:bg-neutral-900/95 dark:text-neutral-300 dark:hover:text-white'
 
+/**
+ * The tray, in its three states.
+ *
+ * It was one flat state: a hairline, and a RING when chosen. A ring is drawn around a thing;
+ * this admin's grammar says a chosen thing is pressed INTO the page, and a picture in a tray
+ * is the most literal case of it there is. So hovering deepens the tray a little and choosing
+ * deepens it properly, with the ink edge kept because eighteen pale trays need one that is
+ * unmistakable at a glance. Pressing lands at once, as every press in this product does.
+ */
+const TRAY = 'relative aspect-square select-none overflow-hidden rounded-lg transition group-active:duration-0'
+const TRAY_IDLE =
+  'bg-neutral-100/70 ring-1 ring-inset ring-black/[.07] '
+  + 'group-hover:bg-neutral-200/70 group-hover:shadow-[inset_0_1.5px_3px_rgba(0,0,0,.10)] '
+  + 'group-active:shadow-[inset_0_2px_5px_rgba(0,0,0,.16)] '
+  + 'dark:bg-neutral-800/50 dark:ring-white/10 dark:group-hover:bg-neutral-800 '
+  + 'dark:group-hover:shadow-[inset_0_1.5px_3px_rgba(0,0,0,.45)]'
+const TRAY_ON =
+  'bg-neutral-200 ring-2 ring-inset ring-neutral-900 shadow-[inset_0_2px_6px_rgba(0,0,0,.22)] '
+  + 'dark:bg-neutral-700 dark:ring-white dark:shadow-[inset_0_2px_6px_rgba(0,0,0,.5)]'
+
 /** Shown on touch, waited for on a pointer: a library is scrolled far more than it is acted on. */
 const ON_HOVER = 'opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100'
 
@@ -61,7 +82,16 @@ const Glyph = ({ name }: { name: IconName }) => (
   </svg>
 )
 
-export function MediaCard({
+/**
+ * MEMOISED, and the callbacks below take the item rather than arriving bound to it.
+ *
+ * Bound callbacks were the original design and the reason was sound: a handler that cannot
+ * see a url cannot be wired to the wrong row. The cost only showed up with a real library —
+ * a new closure per card per render means every card is a new element, so ticking ONE box in
+ * a grid of seventy-eight re-rendered all seventy-eight, and the tick lagged behind the
+ * finger. The safety is kept a different way: a card only ever passes its OWN `m`.
+ */
+export const MediaCard = memo(function MediaCard({
   m, mode, multi, selected, lang, unused, onOpen, onToggle, onCopy, onDelete,
 }: {
   m: MediaItem
@@ -71,10 +101,11 @@ export function MediaCard({
   lang: SiteLang
   /** Marked by the "check unused" sweep; the chip is the only thing that reads it. */
   unused: boolean
-  onOpen: () => void
-  onToggle: () => void
-  onCopy: () => void
-  onDelete: () => void
+  onOpen: (m: MediaItem) => void
+  /** `shift` asks for the run from the last box ticked to this one. */
+  onToggle: (url: string, shift: boolean) => void
+  onCopy: (url: string) => void
+  onDelete: (url: string) => void
 }) {
   const t = useAdminT()
   const dims = m.width && m.height ? `${m.width}×${m.height} · ` : ''
@@ -88,16 +119,12 @@ export function MediaCard({
           reason. Chosen goes one step down and takes an ink edge, like every other
           chosen thing in this admin. */}
       <div
-        className={`relative aspect-square overflow-hidden rounded-lg transition ${
-          selected
-            ? 'bg-neutral-200 ring-2 ring-inset ring-neutral-900 dark:bg-neutral-700 dark:ring-white'
-            : 'bg-neutral-100/70 ring-1 ring-inset ring-black/[.07] dark:bg-neutral-800/50 dark:ring-white/10'
-        }`}
+        className={`${TRAY} ${selected ? TRAY_ON : TRAY_IDLE}`}
       >
         <button
           type="button"
           // Page mode: click to zoom. Picker: click to select (toggle in multi).
-          onClick={onOpen}
+          onClick={() => onOpen(m)}
           aria-label={m.filename}
           className="absolute inset-0 block"
         >
@@ -119,7 +146,16 @@ export function MediaCard({
               selected ? 'opacity-100' : ON_HOVER
             }`}
           >
-            <Tick checked={selected} onChange={onToggle} aria-label={m.filename} />
+            <Tick
+              checked={selected}
+              // The native event is the MouseEvent behind the change, which is where the
+              // modifier lives; a keyboard space reports false, which is right.
+              onChange={(e) => onToggle(m.url, (e.nativeEvent as MouseEvent).shiftKey)}
+              // Without this, shift-clicking a box also drags a text selection across the
+              // grid, so a range-select leaves the page highlighted blue.
+              onMouseDown={(e) => { if (e.shiftKey) e.preventDefault() }}
+              aria-label={m.filename}
+            />
           </label>
         )}
         {unused && (
@@ -143,14 +179,14 @@ export function MediaCard({
              did not fit on one line, so the row wrapped and the band grew a second storey.
              A 28px key is the same target at every width and carries no line to break. */
           <div className={`absolute right-1.5 top-1.5 z-10 flex gap-1 transition-opacity duration-150 ${ON_HOVER}`}>
-            <button type="button" onClick={onCopy} title={t.copyUrl} aria-label={t.copyUrl} className={KEY}>
+            <button type="button" onClick={() => onCopy(m.url)} title={t.copyUrl} aria-label={t.copyUrl} className={KEY}>
               <Glyph name="copy" />
             </button>
             <a href={m.url} download={m.filename} title={t.download} aria-label={t.download} className={KEY}>
               <Glyph name="download" />
             </a>
             <button
-              type="button" onClick={onDelete} title={t.delete} aria-label={t.delete}
+              type="button" onClick={() => onDelete(m.url)} title={t.delete} aria-label={t.delete}
               className={`${KEY} hover:text-[var(--pen-red)] dark:hover:text-[var(--pen-red)]`}
             >
               <Glyph name="trash" />
@@ -168,4 +204,4 @@ export function MediaCard({
       </figcaption>
     </figure>
   )
-}
+})
