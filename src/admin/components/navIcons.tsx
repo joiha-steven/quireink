@@ -1,174 +1,47 @@
-// Line icons for the admin sidebar — one uniform style (viewBox 24, stroke 1.8,
-// round caps, currentColor) so the rail reads as a single set. Sized by the caller.
+// The admin's icons, worn from the ONE shared set in `src/icons.ts` — the same bodies the
+// reading site's chrome wraps in server HTML. This file used to DRAW eighteen icons of its
+// own at stroke 1.55 while the public header drew six more at 1.6 and 1.7; now a shape is
+// drawn once and both faces inherit it, echo strokes, filled dots and all.
+//
+// The named exports stay, because eighteen call sites naming their icon is worth more than
+// one generic `<Icon name>` prop at each of them — the seam to the shared set lives here.
+import { ICONS, type IconName } from '@/icons'
 
-// Quire Ink line set: quiet 20px drawings with a lighter 1.55 stroke. Shapes favour
-// open contours and asymmetric details so the set feels editorial, not like a
-// generic dashboard icon pack.
-const S = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.55, strokeLinecap: 'round', strokeLinejoin: 'round' } as const
 const C = 'h-5 w-5 shrink-0'
 
-export function IconHome() {
+// The bodies are module CONSTANTS from our own file — no request data ever passes through
+// this, which is what makes `dangerouslySetInnerHTML` ordinary here rather than a hole.
+function I({ name }: { name: IconName }) {
   return (
-    <svg viewBox="0 0 24 24" className={C} {...S} aria-hidden>
-      <path d="M4 10.5 12 4l8 6.5" />
-      <path d="M6.5 9.5V20h11V9.5M10 20v-6h4v6" />
-    </svg>
-  )
-}
-export function IconAnalytics() {
-  return (
-    <svg viewBox="0 0 24 24" className={C} {...S} aria-hidden>
-      <path d="M3 19h18" />
-      <path d="m5 15 4-5 4 2 6-7" />
-      <circle cx="5" cy="15" r="1" fill="currentColor" stroke="none" />
-      <circle cx="19" cy="5" r="1" fill="currentColor" stroke="none" />
-    </svg>
-  )
-}
-export function IconContent() {
-  return (
-    <svg viewBox="0 0 24 24" className={C} {...S} aria-hidden>
-      <path d="M5 4.5h10.5L19 8v12H5z" />
-      <path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5" />
-    </svg>
-  )
-}
-export function IconMedia() {
-  return (
-    <svg viewBox="0 0 24 24" className={C} {...S} aria-hidden>
-      <rect x="3.5" y="4.5" width="17" height="15" rx="1" />
-      <circle cx="8.5" cy="9.5" r="1.5" />
-      <path d="m4 17 5-5 4 4 3-3 4 4" />
-    </svg>
-  )
-}
-export function IconNewsletter() {
-  return (
-    <svg viewBox="0 0 24 24" className={C} {...S} aria-hidden>
-      <rect x="3" y="5.5" width="18" height="13" rx="2" />
-      <path d="m3.5 7 8.5 6 8.5-6" />
-    </svg>
-  )
-}
-export function IconTrash() {
-  return (
-    <svg viewBox="0 0 24 24" className={C} {...S} aria-hidden>
-      <path d="M5 7h14M9 7V5h6v2M7 7l1 12h8l1-12" />
-    </svg>
-  )
-}
-export function IconSettings() {
-  return (
-    <svg viewBox="0 0 24 24" className={C} {...S} aria-hidden>
-      <path d="M4 7h10M18 7h2M4 17h2M10 17h10M8 4v6M16 14v6" />
-      <circle cx="8" cy="7" r="2" />
-      <circle cx="16" cy="17" r="2" />
-    </svg>
-  )
-}
-export function IconLog() {
-  return (
-    <svg viewBox="0 0 24 24" className={C} {...S} aria-hidden>
-      <path d="M4 5v14h16" />
-      <path d="M7 15h3v-4h3V8h3V5h3" />
-    </svg>
-  )
-}
-export function IconComment() {
-  return (
-    <svg viewBox="0 0 24 24" className={C} {...S} aria-hidden>
-      <path d="M4 5h16v11H9l-5 4z" />
-      <path d="M8 9h8M8 12.5h5" />
-    </svg>
-  )
-}
-export function IconExternal() {
-  return (
-    <svg viewBox="0 0 24 24" className={C} {...S} aria-hidden>
-      <path d="M14 4h6v6M20 4l-8 8" />
-      <path d="M18 13v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h5" />
-    </svg>
-  )
-}
-export function IconCache() {
-  return (
-    <svg viewBox="0 0 24 24" className={C} {...S} aria-hidden>
-      <path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5" />
-      <path d="M21 12a9 9 0 0 1-15 6.7L3 16M3 21v-5h5" />
-    </svg>
+    <svg
+      viewBox="0 0 24 24"
+      className={C}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+      dangerouslySetInnerHTML={{ __html: ICONS[name] }}
+    />
   )
 }
 
-export function IconHelp() {
-  return (
-    <svg viewBox="0 0 24 24" className={C} {...S} aria-hidden>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M9.6 9.2a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1.1 .9-1.1 1.8" />
-      <path d="M12 16.5h.01" />
-    </svg>
-  )
-}
-export function IconSignOut() {
-  return (
-    <svg viewBox="0 0 24 24" className={C} {...S} aria-hidden>
-      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-      <path d="M16 17l5-5-5-5M21 12H9" />
-    </svg>
-  )
-}
-// Collapse/expand chevrons (caller rotates by state if desired).
-// The icon switch's own mark: four squares, i.e. "the glyphs". Drawn rather than borrowed
-// because every other glyph here already names a destination, and reusing one would make the
-// footer row read as a link to that screen.
-export function IconGlyphs() {
-  return (
-    <svg viewBox="0 0 24 24" className={C} {...S} aria-hidden>
-      <rect x="4" y="4" width="6.5" height="6.5" rx="1.5" />
-      <rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5" />
-      <rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5" />
-      <rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5" />
-    </svg>
-  )
-}
-
-export function IconChevronLeft() {
-  return (
-    <svg viewBox="0 0 24 24" className={C} {...S} aria-hidden>
-      <path d="m15 6-6 6 6 6" />
-    </svg>
-  )
-}
-
-// "Everything else" (ADR 0024 step 6). Three dots, which is the mock's own mark for the row
-// that holds comments, trash, log, settings and help — and the one glyph in this set that
-// names no destination, because that row does not have one.
-export function IconMore() {
-  return (
-    <svg viewBox="0 0 24 24" className={C} {...S} aria-hidden>
-      <circle cx="5.5" cy="12" r="1.1" fill="currentColor" stroke="none" />
-      <circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none" />
-      <circle cx="18.5" cy="12" r="1.1" fill="currentColor" stroke="none" />
-    </svg>
-  )
-}
-export function IconAssistant() {
-  // A quill nib over a spark: the steward writes, and something electric helps.
-  return (
-    <svg viewBox="0 0 24 24" className={C} {...S} aria-hidden>
-      <path d="M12 4.5c.9 2.6 2 3.7 4.5 4.5-2.5.8-3.6 1.9-4.5 4.5-.9-2.6-2-3.7-4.5-4.5 2.5-.8 3.6-1.9 4.5-4.5Z" />
-      <path d="M5.5 14.5c.5 1.4 1.1 2 2.5 2.5-1.4.5-2 1.1-2.5 2.5-.5-1.4-1.1-2-2.5-2.5 1.4-.5 2-1.1 2.5-2.5Z" />
-      <path d="M14 17.5h7M14 20.5h5" />
-    </svg>
-  )
-}
-
-// The rail's search control (⌘K). A magnifier drawn with the set's own stroke, and the handle
-// left a hair short of the ring so it reads as a lens on a page rather than a stamped symbol.
-export function IconSearch() {
-  return (
-    <svg viewBox="0 0 24 24" className={C} {...S} aria-hidden>
-      <circle cx="11" cy="11" r="6" />
-      <path d="m15.6 15.6 3.9 3.9" />
-    </svg>
-  )
-}
+export function IconHome() { return <I name="home" /> }
+export function IconAnalytics() { return <I name="chart" /> }
+export function IconContent() { return <I name="page" /> }
+export function IconMedia() { return <I name="image" /> }
+export function IconNewsletter() { return <I name="mail" /> }
+export function IconTrash() { return <I name="trash" /> }
+export function IconSettings() { return <I name="settings" /> }
+export function IconLog() { return <I name="log" /> }
+export function IconComment() { return <I name="comment" /> }
+export function IconExternal() { return <I name="external" /> }
+export function IconCache() { return <I name="cache" /> }
+export function IconHelp() { return <I name="help" /> }
+export function IconSignOut() { return <I name="signOut" /> }
+export function IconGlyphs() { return <I name="glyphs" /> }
+export function IconChevronLeft() { return <I name="prev" /> }
+export function IconMore() { return <I name="more" /> }
+export function IconAssistant() { return <I name="penMark" /> }
+export function IconSearch() { return <I name="search" /> }
