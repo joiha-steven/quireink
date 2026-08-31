@@ -853,6 +853,12 @@ export type AdminStrings = {
   featSidebar: string
   featSidebarDesc: string
   featSidebarSeries: string
+  featSidebarCategories: string
+  featSidebarCategoriesDesc: string
+  featSidebarTags: string
+  featSidebarTagsDesc: string
+  featSidebarArchive: string
+  featSidebarArchiveDesc: string
   featSidebarSeriesDesc: string
   featInfiniteScroll: string
   featInfiniteScrollDesc: string

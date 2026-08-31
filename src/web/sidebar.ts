@@ -155,14 +155,21 @@ export async function renderSidebar(
   // at an anchor inside `/archive` rather than at a page of its own: one document holds all
   // of them, so a year is a jump, not a fetch. Read off the SAME public post list the rest
   // of this file uses, so a year that exists only on a draft never appears.
-  const years = settings.features.archive
+  // Two switches, and they are not the same question. `archive` owns the /archive ROUTE —
+  // off means the page 404s, so the years would point at nothing. `sidebarArchive` owns the
+  // BLOCK: the years leave the rail while the page they link to stays reachable.
+  const years = settings.features.archive && settings.features.sidebarArchive
     ? byYear(posts).map(({ year, posts: inYear }) => ({
       href: `/archive#${yearAnchor(year)}`, label: String(year), count: inYear.length,
     }))
     : []
+  const shownCategories = settings.features.sidebarCategories ? categories : []
+  const shownTags = settings.features.sidebarTags ? tags : []
 
-  if (settings.menu.length === 0 && categories.length === 0 && allSeries.length === 0
-    && mostViewed.length === 0 && featured.length === 0 && tags.length === 0
+  // Counted on what will actually RENDER, not on what exists: with every block switched
+  // off the rail is an empty box with a divider beside it, which reads as a fault.
+  if (settings.menu.length === 0 && shownCategories.length === 0 && allSeries.length === 0
+    && mostViewed.length === 0 && featured.length === 0 && shownTags.length === 0
     && years.length === 0) return none
 
   const discovery = indexBlock(labels.mostViewedTitle, mostViewed, activeHref)
@@ -171,7 +178,7 @@ export async function renderSidebar(
   // so it sits below the subjects and above the tags, which are the loosest of the three.
   // It carries a count for the same reason a category does: how long is this.
   const nav = termCloud(labels.categoriesTitle,
-    categories.map((c) => ({ href: `/category/${termSlug(c.name)}`, label: c.name, count: c.count })),
+    shownCategories.map((c) => ({ href: `/category/${termSlug(c.name)}`, label: c.name, count: c.count })),
     {}, activeHref)
     + termCloud(labels.seriesTitle,
       allSeries.map((x) => ({ href: `/series/${x.slug}`, label: x.name, count: x.count })),
@@ -181,7 +188,7 @@ export async function renderSidebar(
     // Under it, the years would sit below a hundred words on a real blog.
     + termCloud(labels.archiveTitle, years, {}, activeHref)
     + termCloud(labels.tagsTitle,
-      tags.map((tag) => ({ href: `/tag/${termSlug(tag.name)}`, label: tag.name })),
+      shownTags.map((tag) => ({ href: `/tag/${termSlug(tag.name)}`, label: tag.name })),
       { lower: true }, activeHref)
 
   // Infinite scroll forces the single left rail: the right gutter is taken by the
