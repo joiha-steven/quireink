@@ -5,7 +5,7 @@
   <img src="docs/brand/wordmark-light.svg" alt="quireINK" width="360">
 </picture>
 
-`2.2.3`
+`2.3.4`
 
 **Một cái blog bạn tự host, và AI agent có thể vận hành thay bạn.**
 Không thuật toán, không quảng cáo, không nền tảng nào đứng giữa bạn và người đọc.
@@ -73,7 +73,7 @@ Một agent có thể trông coi chứ không chỉ viết. Bất kỳ MCP clien
 
 Bạn được đọc, sửa, chạy và fork nó theo [PolyForm Noncommercial](./LICENSE), và được chạy bản đã phát hành để kinh doanh, kể cả bán dịch vụ host, theo [một quyền bổ sung](./LICENSE-EXCEPTION.md).
 
-**2.2.2** là bản hiện hành. Nó đang chạy bản demo ở trên và blog riêng của tác giả tại [manhhung.me](https://manhhung.me); [nhật ký thay đổi](./CHANGELOG.md) ghi đủ những gì đã đổi.
+**2.3.4** là bản hiện hành. Nó đang chạy bản demo ở trên và blog riêng của tác giả tại [manhhung.me](https://manhhung.me); [nhật ký thay đổi](./CHANGELOG.md) ghi đủ những gì đã đổi.
 
 ## Bạn được gì
 
@@ -115,7 +115,7 @@ Bạn được đọc, sửa, chạy và fork nó theo [PolyForm Noncommercial](
 
 Đây là số đo từ mạng, lần vào đầu tiên, chưa cache gì. Đúng bằng cái mà một người lạ cầm điện thoại phải chờ.
 
-Hai dòng CSS và JavaScript là sản phẩm của bản build, giống nhau ở mọi bản cài, lấy từ bản dựng 2.2.3. Các số tổng đo trên một site đang chạy thật: tiếng Việt, Literata để đọc và JetBrains Mono cho phần khung. Chúng không phải thuộc tính của phần mềm, vì font được cắt theo bảng chữ và trình duyệt chỉ tải đúng những dải mà trang bạn dùng tới. Hình nét của cây bút nằm trong hai tệp bất biến riêng (~20 KB cả cặp) chỉ lên xe ở trang thật sự có vệt tô hay gạch chân ([ADR 0027](docs/decisions/0027-the-pen-ships-only-where-it-wrote.md)). Trang không mực không phải trả đồng nào cho chúng. Bật đọc offline thì thêm một service worker 0,7 KB, tải một lần và chỉ ở blog đã bật.
+Hai dòng CSS và JavaScript là sản phẩm của bản build, giống nhau ở mọi bản cài, lấy từ bản dựng 2.3.4. Các số tổng đo trên một site đang chạy thật: tiếng Việt, Literata để đọc và JetBrains Mono cho phần khung. Chúng không phải thuộc tính của phần mềm, vì font được cắt theo bảng chữ và trình duyệt chỉ tải đúng những dải mà trang bạn dùng tới. Hình nét của cây bút nằm trong hai tệp bất biến riêng (~20 KB cả cặp) chỉ lên xe ở trang thật sự có vệt tô hay gạch chân ([ADR 0027](docs/decisions/0027-the-pen-ships-only-where-it-wrote.md)). Trang không mực không phải trả đồng nào cho chúng. Bật đọc offline thì thêm một service worker 0,7 KB, tải một lần và chỉ ở blog đã bật.
 
 | | Trang chủ | Một bài | |
 |:---|---:|---:|:---|

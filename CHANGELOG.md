@@ -1,5 +1,110 @@
 # CHANGELOG
 
+## 2026-09-01 — Quire Ink 2.3.4
+
+Seventy-five commits over two days, and the first MINOR since 2.2.0. The owner took a patch
+digit inside it rather than `2.3.0`, which is the same reserve the last four releases kept.
+
+Two threads run through it, and they meet. One is **the software learning what it is made
+of**: every pressable thing in the admin now stands proud of the sheet and presses in, every
+box that holds a value is carved, and the reading site got the same click. The other is
+**things that were only ever nearly true** — a menu that vanished on three of five layouts,
+three analytics numbers that were wrong, an account with no way back when both keys are
+gone, and a screen that had been photographed at one width and shipped at five.
+
+### The owner's menu stopped disappearing (#61)
+
+Reported from an Unraid install: header menu links show only when the homepage is set to
+**A front page**. Reproduced by counting each configured link in the served HTML, and the
+fault was wider than reported — with the homepage set to **Post list** and the sidebar
+switched off, or set to **A page**, or on any post at all, the links were in the page **zero
+times, at every width**.
+
+Whether the menu appeared was decided by a flag about what KIND of page was being drawn, and
+only the front page ever set it. The menu's home is the rail, so the pages that had no menu
+turn out to be the pages with no rail, and those pages have one now: an article's rail leads
+with the menu and the contents follow, and a listing whose sidebar is off keeps a rail
+carrying the menu alone — that switch owns the discovery blocks, never the site's
+navigation. The front page keeps its header menu, being the one layout with no rail by
+design.
+
+The header row also wraps now, at every width. It lives inside the reading column — 672px by
+default — and a title, a menu of any length and up to five controls do not fit in it: with
+four links the menu wanted 403px, had 321, and drew its last link straight through the
+search control.
+
+### Relief: raised means pressable, carved means held
+
+The admin was flat, and flat is the look every generated dashboard has. Now a button stands
+1–2px proud of the sheet with a light lip along its top edge, and pressing it moves the light
+to the bottom inside edge and drops the outside shadow to nothing. **The press lands at
+once** and only the release is sprung: a control that eases both ways feels like a screen,
+and a key that drops NOW is what a hand expects. Reduced motion keeps the surface change and
+drops the travel.
+
+The other half is the same rule inverted. A field holds a value, so it is carved: one pixel
+of inner shading, not a style. A chosen tab, an active toolbar button, the current page in
+the sidebar — all of them are keys HELD DOWN, wearing the same inset. Solid ink shows no
+relief, so the black key is shaded by light instead of shadow.
+
+**The reading site got the click too**, in whichever ink the reader's palette holds, and a
+Vietnamese IME composing a keystroke now gets its click back — a composing keystroke is still
+a keystroke.
+
+### The assistant gets a desk
+
+A fourth model provider, answers that arrive as they are written rather than in one lump,
+and a hand on the brake. Five separate ways a provider that passed every test still did not
+work in the field are fixed, along with a token ceiling that was hiding behind them. The
+assistant's chat is a desk with a receipt: what it did, and what it cost.
+
+### ⌘K, and every setting has a name
+
+There are eight tabs of settings, and knowing which one holds a thing was a memory test.
+Every setting is now indexed by name, so the command palette can jump straight to it — and
+**the MCP tools read the same index**, so an agent asking for "the excerpt length" reaches
+the same place a person does. The rail teaches the shortcut, because a shortcut cannot be
+found by looking.
+
+### An owner can defend their own account
+
+A way back in when both the password and the second factor are gone. Sessions are listed per
+device and can be ended one at a time or all at once. The escape hatch got a guard and a
+front door.
+
+### Analytics that were quietly wrong
+
+Three numbers on the dashboard were wrong, and the bounce cohort was being deleted by the
+beacon before anything could count it. There is a way into any single piece's numbers now.
+The CSV export nobody used is gone.
+
+### Screens that had only been looked at once
+
+A folded phone whose crease ran through every line. An iPad that the user agent refuses to
+describe. A tab strip that lost half its tabs and looked finished — the far ones were
+unreachable by touch, not merely clipped. A menu button cut in half. The shell measures in
+`dvh`, because the iPad's toolbar is not part of the viewport.
+
+### The Library, looked at
+
+Selecting images was slow, hover and selection did not press in, and there was no
+shift-click. All three are fixed, the two chrome rows are one, and an image variant born
+mid-export is no longer counted as a lost upload.
+
+### Also
+
+- The archive page is set as an INDEX rather than a listing: one type size per row, and the
+  year jumps moved onto the title's own line.
+- Every rail block — archive, series, tags, categories — has its own switch.
+- Book mode is circled in the pen rather than boxed in grey.
+- The activity card on the home screen is a feed, and a settings save records what it
+  actually changed instead of going in blank.
+- Ten languages take a dropdown instead of a strip.
+- The newsletter's send button is a latch: arm it, read the count, press again.
+- The admin's controls came down a step, 40px to 36, and a sheet's tools row is 32
+  throughout — the strip, the key and the field on one height.
+- One icon set for both faces; the source-code chrome trades pictures for words.
+
 ## 2026-08-30 — Quire Ink 2.2.3
 
 **Cut twice.** The first v2.2.3 went out at 20:19 UTC and was withdrawn thirty-one minutes
