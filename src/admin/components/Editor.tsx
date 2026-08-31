@@ -335,7 +335,7 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
     // The sheet runs at least the height of the window beside the write pane: a short
     // draft used to end the paper mid-screen while the list column kept going, which
     // the owner called ugly. The paper continues; the writing just hasn't reached it.
-    <div className={`${CARD} lg:min-h-[calc(100vh-1.5rem)]`}>
+    <div className={`${CARD} lg:min-h-[calc(100dvh-1.5rem)]`}>
       {actions}
       {/* Floating menu on a text selection / link — not in raw source mode. */}
       {!raw && <BubbleBar editor={editor} avoidTop={toolbarTop + ACTIONBAR_HEIGHT} />}
