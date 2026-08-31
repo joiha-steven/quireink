@@ -3,7 +3,7 @@
 //
 // One component, because the post editor and the page editor both hang their attributes on
 // it and the sheet chrome is exactly the kind of thing that drifts when each screen carries
-// its own copy — see "One of each" in docs/admin-design.md.
+// its own copy — see "One of each" in docs/admin-kit.md.
 import type { ReactNode } from 'react'
 
 export function SlideOver({

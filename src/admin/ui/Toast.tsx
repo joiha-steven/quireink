@@ -31,15 +31,17 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           <div
             key={t.id}
             role={t.kind === 'error' ? 'alert' : 'status'}
-            className={`flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium shadow-lg ${
-              t.kind === 'success'
-                ? 'border-neutral-900 bg-neutral-900 text-white dark:border-white dark:bg-white dark:text-neutral-900'
-                : 'border-neutral-900 bg-white text-neutral-900 dark:border-white dark:bg-neutral-900 dark:text-white'
-            }`}
+            className="flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-4 py-2.5 text-sm font-medium text-neutral-900 shadow-lg dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
           >
-            {/* Success and failure were inverted black and white and NOTHING else, so the
-                difference vanished for anyone who did not already know which way round it
-                was. A glyph carries the same distinction without a second colour. */}
+            {/* ONE neutral sheet, told apart by a pilot lamp AND a glyph. The two kinds were
+                inverted black and white — a difference that vanished for anyone who did not
+                already know which way round it was. The lamp wears the hues the version dot
+                established: green is good and done, amber is something that needs you. The
+                glyph stays because a dot alone asks colour to carry the whole message. */}
+            <span
+              aria-hidden="true"
+              className={`h-2 w-2 shrink-0 rounded-full ${t.kind === 'error' ? 'bg-amber-500' : 'bg-emerald-600 dark:bg-emerald-500'}`}
+            />
             <span aria-hidden="true">{t.kind === 'error' ? '!' : '✓'}</span>
             {t.message}
           </div>

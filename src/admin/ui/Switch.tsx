@@ -27,9 +27,11 @@ export function Switch({ checked, onChange, label, disabled = false }: SwitchPro
       aria-label={label}
       disabled={disabled}
       onClick={() => onChange(!checked)}
-      className={`relative h-6 w-11 shrink-0 rounded-full transition-colors disabled:cursor-not-allowed ${checked ? 'bg-neutral-900 dark:bg-white' : 'bg-neutral-300 dark:bg-neutral-700'}`}
+      className={`relative h-6 w-11 shrink-0 rounded-full transition-colors disabled:cursor-not-allowed shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.3)] ${checked ? 'bg-neutral-900 dark:bg-white' : 'bg-neutral-300 dark:bg-neutral-700'}`}
     >
-      <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-all dark:bg-neutral-900 ${checked ? 'left-[22px]' : 'left-0.5'}`} />
+      {/* The groove is carved (the inset above); the knob stands proud of it — lit on top,
+          shaded underneath — so the control reads as a physical slide in both themes. */}
+      <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-all dark:bg-neutral-900 shadow-[0_1px_2px_rgba(0,0,0,.35),inset_0_1px_1px_rgba(255,255,255,.45),inset_0_-1.5px_2px_rgba(0,0,0,.2)] ${checked ? 'left-[22px]' : 'left-0.5'}`} />
     </button>
   )
 }

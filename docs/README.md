@@ -28,6 +28,7 @@ copies of a rule means one is wrong within a month
 | [performance.md](performance.md) | The resource-loading law: images, fonts, CSS split, island JS |
 | [delivery.md](delivery.md) | What the server does before it answers: the render cache, the switch, the CDN purge, compression |
 | [admin-design.md](admin-design.md) | The admin visual contract |
+| [admin-kit.md](admin-kit.md) | The kit's one-of-each rules, enforced by `check:admin-kit` |
 | [admin-navigation.md](admin-navigation.md) | How the admin moves between screens, and how it recovers from an update underneath an open tab |
 | [admin-editor.md](admin-editor.md) | The editor's own contract: the writing surface, the caret, the key feedback |
 | [appearance.md](appearance.md) | For the OWNER: every knob that changes how the site looks, the CSS variables and class names custom CSS may target, and what cannot be changed |

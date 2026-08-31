@@ -20,7 +20,7 @@ import type { InputHTMLAttributes } from 'react'
 type Props = Omit<InputHTMLAttributes<HTMLInputElement>, 'type' | 'size'>
 
 const BOX =
-  'peer h-4 w-4 shrink-0 cursor-pointer appearance-none rounded border border-neutral-300 bg-white transition-colors ' +
+  'peer h-4 w-4 shrink-0 cursor-pointer appearance-none rounded border border-neutral-300 bg-white transition-colors shadow-[inset_0_1px_1.5px_rgba(0,0,0,.07)] checked:shadow-[inset_0_1.5px_2px_rgba(0,0,0,.4)] ' +
   'checked:border-neutral-900 checked:bg-neutral-900 ' +
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-300 ' +
   'disabled:cursor-not-allowed disabled:opacity-50 ' +
