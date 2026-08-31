@@ -182,27 +182,32 @@ describe('the owner menu on the header row', () => {
     expect(nav).toContain('href="/about"')
   })
 
-  it('puts the menu in the header of an article, whose rail is a table of contents', async () => {
-    // Issue #61. The article rail holds headings, never the menu, so with the header ruled
-    // out as well the links were in the served HTML zero times, at every width.
+  it('leads an article rail with the menu, above its table of contents', async () => {
+    // Issue #61. The article rail held headings and nothing else, and the header was ruled
+    // out, so the links were in the served HTML zero times at every width. A PAGE has no
+    // headings to build a rail from at all, which is why a blog whose homepage is a page
+    // had no navigation on its own front door.
     await saveSettings({ menu })
     clearCache()
-    const nav = navOf(await (await get('/published')).text())
-    expect(nav).toContain('href="/category/essays"')
-    expect(nav).toContain('href="/about"')
+    const html = await (await get('/published')).text()
+    expect(html).not.toContain('class="site-menu')
+    const rail = /<aside class="rail">.*?<\/aside>/s.exec(html)?.[0] ?? ''
+    expect(rail).toContain('href="/about"')
+    // Above the contents, in the position the listing rail already gives it.
+    expect(rail.indexOf('href="/about"')).toBeLessThan(rail.indexOf('class="toc"'))
   })
 
-  it('puts the menu in the header of a post list whose sidebar is switched off', async () => {
-    // The other half of #61, and the reason the test is "did anything else carry it" rather
-    // than "what kind of page is this": with `features.sidebar` off there is no rail on a
-    // listing either, and the menu had nowhere left to go.
+  it('keeps a rail for the menu alone when the sidebar is switched off', async () => {
+    // The sidebar switch owns the discovery blocks, not the site's navigation. Turning it
+    // off used to take the menu with it and put it nowhere else.
     const s = await getSettings()
     await saveSettings({
       menu, home: { ...s.home, mode: 'list' }, features: { ...s.features, sidebar: false },
     })
     clearCache()
     const html = await (await get('/')).text()
-    expect(navOf(html)).toContain('href="/about"')
+    expect(html).not.toContain('class="site-menu')
+    expect(html).toContain('href="/about"')
     await saveSettings({ features: { ...s.features, sidebar: true } })
     clearCache()
   })

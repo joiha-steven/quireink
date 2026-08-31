@@ -104,24 +104,22 @@ const token = (text: string): string => `<span class="btn-token">${escapeHtml(te
 /**
  * The owner's menu, as words in the header's right-hand cluster, ahead of the controls.
  *
- * ONE MENU, ONE PLACE, and that place is the rail WHEN THERE IS ONE. This renders wherever
- * there is not: the composed front page, an article (whose rail is a table of contents), and
- * a post list whose owner has switched the sidebar off — see `ChromeOptions.menuInHeader`.
+ * ONE MENU, ONE PLACE, and that place is the rail. This renders only where there is no rail
+ * at all, which is the composed front page — see `ChromeOptions.menuInHeader`. Every other
+ * layout grew one: an article's rail leads with the menu above its contents, and a listing
+ * whose sidebar is switched off keeps a rail carrying the menu alone.
  *
  * It briefly rendered on EVERY page, which put the same links in two places on every
- * listing page — a reader met the menu twice on the one layout that already had it. The
- * answer then was to render it on the front page only, and that answer was aimed at the
- * wrong thing: the fault was the DUPLICATION, not the header. Paying for it with "an
- * article has no menu" also bought "a blog whose homepage is a page has no menu on its
- * homepage", which is issue #61. The condition is now the honest one — does anything else
- * on this page already carry the menu — so nothing is ever shown twice and nothing is
- * dropped.
+ * listing — a reader met the menu twice on the one layout that already had it. The answer
+ * then was "the front page only", and that traded one fault for another: an article had no
+ * menu, and a blog whose homepage is a page therefore had none on its front door (#61).
+ * Neither answer was about the right thing. The rail is the menu's home; the pages that had
+ * no menu were the pages with no rail, so those pages got a rail.
  *
- * Desktop only either way (`.site-menu` is `display:none` under 60rem): below that the
- * header row is the title and up to five controls already, and words do not fit beside
- * them. The drawer serves that width — but ONLY on a listing that has a rail to hang it
- * from, so under 60rem an article and a sidebar-less list still have no menu. That gap is
- * a drawer's worth of work and is not this change.
+ * Desktop only (`.site-menu` is `display:none` under 60rem): below that the header row is
+ * the title and up to five controls already, and words do not fit beside them. Every other
+ * layout hands the narrow width to the rail's drawer, which is the button next to the
+ * palette — one control for one menu, at both widths.
  */
 function siteMenu(settings: SiteSettings, label: string): string {
   if (settings.menu.length === 0) return ''
@@ -215,6 +213,12 @@ export function siteFooter(settings: SiteSettings, opts: ChromeOptions): string 
   // Owner text, centred, and nothing else. The sign-up form used to live here so the
   // header's mail link always had an anchor to land on; the frozen tree puts that form at
   // the end of an ARTICLE, and a form in the footer of every listing is a different site.
+  //
+  // The menu is NOT here. It was for one evening: with the menu in an article's header the
+  // words could not also be shown under 60rem — 254px of header on a 375px screen before
+  // the title — so the footer held the narrow-screen copy. Two menus on one page is what
+  // that costs, and the rail already had a drawer for exactly this width. The rail carries
+  // the menu now, at every width, and the footer is owner text again.
   void opts
   // Limited inline markdown with {year} and {title} tokens, exactly as the frozen tree
   // rendered it. `renderInlineMarkdown` is the sanitiser, so this is not raw owner HTML.

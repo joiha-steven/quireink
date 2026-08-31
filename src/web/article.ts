@@ -20,6 +20,7 @@ import { renderPostContent } from '@/render/post-content'
 import type { ImageDims, ReadyOriginals } from '@/render/figures'
 import { extractHeadings } from '@/utils'
 import { TOC_ANCHORS } from '@/render/toc'
+import { menuBlock } from '@/web/sidebar'
 import { termSlug } from '@/content/taxonomy'
 import { formatCount, formatDate, t } from '@/i18n/i18n'
 import { PUBLIC_SHEET, scriptTag } from '@/web/assets'
@@ -225,16 +226,23 @@ export async function renderArticle(slug: string): Promise<string | null> {
   const mixed = headings.some((h) => h.level === 2) && headings.some((h) => h.level === 3)
   const row = (href: string, text: string, extra = '') =>
     `<li><a class="rail-row link-accent t-small${extra}" href="${escapeAttr(href)}">${escapeHtml(text)}</a></li>`
-  const toc = post && settings.features.toc && (headings.length > 0 || endLabel)
-    ? `<nav class="toc rail" aria-label="${escapeAttr(s.tocIndex)}">
-<div class="rail-inner">
+  const contents = post && settings.features.toc && (headings.length > 0 || endLabel)
+    ? `<nav class="toc" aria-label="${escapeAttr(s.tocIndex)}">
 <h2>${escapeHtml(s.tocIndex)}</h2>
 <ul>${row('#top', post.title, ' is-active')}${
       headings.map((h) => row(`#${h.id}`, h.text,
         mixed ? (h.level === 3 ? ' rail-sub' : ' rail-lead') : '')).join('')
     }${endLabel ? row(`#${endAnchor}`, endLabel, ' toc-end') : ''}</ul>
-</div>
 </nav>`
+    : ''
+  // ONE MENU, ONE PLACE: the rail, in the position the listing rail already leads with. An
+  // article's rail was the contents and nothing else, so the menu was not on the page at
+  // all — and a PAGE has no headings to build one from, which is why a blog whose homepage
+  // is a page had no navigation on its front door (issue #61). The nav is a SIBLING of
+  // `.toc`, not a child: `.toc li` is what the terminal chrome numbers.
+  const menu = menuBlock(settings.menu, s.menu)
+  const toc = contents || menu
+    ? `<aside class="rail"><div class="rail-inner">${menu}${contents}</div></aside>`
     : ''
 
   // The comment thread is a MOUNT POINT, not markup: the island fetches it. The article
@@ -369,12 +377,7 @@ export async function renderArticle(slug: string): Promise<string | null> {
     // lead between them, justified with hyphens once the column is wide enough. It sits on
     // the shell rather than on .prose so the editor and the reading view can share it.
     `${progress}<div class="wrap${settings.features.bookText ? ' book-text' : ''}">
-${/* An article's rail is its table of contents and never carries the menu, so the header
-     takes it — the same rule the listing applies, which is "whoever else did not". Without
-     it a post had no site menu anywhere in its HTML at any width, and a blog whose homepage
-     is A PAGE had none on its own front door: measured, zero occurrences of every
-     configured link. */
-  siteHeader(settings, { mailConfigured, menuInHeader: true })}
+${siteHeader(settings, { mailConfigured })}
 <div class="with-rail"><main id="content">
 <article>
 ${hero}
