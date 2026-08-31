@@ -47,6 +47,13 @@ export const UTILITY_CSS = `
    dark in EVERY palette, so a token would LIGHT the inside of a field on the dark ones. */
 :root{--lift:0 16px 32px -12px rgba(0,0,0,.22),0 3px 8px -4px rgba(0,0,0,.12);
   --well:inset 0 1px 1.5px rgba(0,0,0,.07)}
+/* The pen's own mark: a loop round a word, overshooting its start the way a real one
+   does. It is a MASK, so whatever wears it fills the cut-out with its own ink and no
+   palette is named here. preserveAspectRatio='none' lets it take the shape of what it
+   is circling; the slight thinning that gives the horizontal runs is the point rather
+   than a flaw, since a nib does the same. */
+:root{--ink-loop:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 60' preserveAspectRatio='none'%3E%3Cpath d='M170 13C130 4 60 4 24 16C4 23 6 40 44 48C84 56 150 54 180 42C198 35 196 20 168 12C160 10 150 9 140 9' fill='none' stroke='%23000' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
+
 
 /* THE CLICK, for everything on the reading site a finger can press. Pressing lands at
    once - the 1px of travel and the carved-in shadow arrive with transition-duration:0 -

@@ -22,13 +22,37 @@ export const BOOK_CSS = `
    the row is padded to a hand's height and pulled back out with a negative margin, so the
    hit area is 36px tall while the layout is exactly where it was. The icon says it does
    something; the ink says it is not another fact; the press comes from the shared click. */
-.book-mode-toggle{display:inline-flex;align-items:center;gap:.4rem;font:inherit;font-weight:500;
-  color:var(--c-heading);background:none;border:0;cursor:pointer;
-  padding:.5rem .5rem;margin:-.5rem -.5rem;border-radius:var(--radius,.5rem);
-  text-underline-offset:3px;transition:background-color var(--dur-fast),color var(--dur-fast)}
+.book-mode-toggle{position:relative;display:inline-flex;align-items:center;gap:.4rem;font:inherit;
+  font-weight:500;color:var(--c-heading);background:none;border:0;cursor:pointer;
+  /* Vertical padding ONLY. It used to pad and negative-margin on all four sides, which put
+     the hover box 8px to the LEFT of where the words start: under the IDE chrome, where the
+     row opens with a // marker, the box ran straight into it with no air between the two.
+     Height is what a thumb needs; the width is the words, and they were already wide enough. */
+  padding:.5rem 0;margin:-.5rem 0}
 .book-mode-toggle svg{flex-shrink:0;opacity:.75}
-.book-mode-toggle:hover{background:color-mix(in srgb,var(--c-rule) 45%,transparent);text-decoration:underline}
 .book-mode-toggle:hover svg{opacity:1}
+/* CIRCLED, not boxed. A grey rounded rectangle behind a line of type is interface furniture,
+   and this panel is the quietest thing on the page — it was also the only rectangle in a
+   column of writing. A pen goes round a word instead, so the mark is the one this whole
+   product is named after.
+   It is drawn as a MASK rather than as a background image, because a data URI cannot say
+   currentColor: the loop is cut out of a fill that already is the palette's heading ink, so
+   every palette circles in its own colour and nothing here names one. The path overshoots
+   its own start, the way a real one does. */
+/* GUARDED. Without a mask the cut-out never happens and the pseudo-element is a solid
+   block of heading ink laid over the words — the failure is not "no circle", it is the
+   label blacked out. An engine that cannot mask simply gets no mark. */
+@supports ((-webkit-mask-image:url("#m")) or (mask-image:url("#m"))){
+  .book-mode-toggle::after{content:"";position:absolute;pointer-events:none;
+    /* Asymmetric: the loop closes with a tail on the RIGHT, so that side needs the room,
+       and the left has a // marker sitting beside it under the IDE chrome. */
+    inset:.26rem -.52rem .26rem -.36rem;opacity:0;background-color:currentColor;
+    -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
+    -webkit-mask-size:100% 100%;mask-size:100% 100%;
+    -webkit-mask-image:var(--ink-loop);mask-image:var(--ink-loop);
+    transition:opacity var(--dur-fast)}
+  .book-mode-toggle:hover::after,.book-mode-toggle:focus-visible::after{opacity:.85}
+}
 @media (max-width:767px){.meta-book,.book-mode-toggle{display:none}}
 
 /* The phone's doorway into the reader. The desktop entries (the meta line, the info
