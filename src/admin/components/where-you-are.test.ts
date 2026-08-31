@@ -20,9 +20,9 @@ import { SIDEBAR_NAV, SIDEBAR_NAV_ACTIVE, SIDEBAR_NAV_QUIET } from '@/admin/comp
 describe('the highlighter marks a place', () => {
   it('paints an active tab you navigated to', () => {
     expect(tabItemClass(true, 'sm', false, 'place')).toContain('bg-[var(--pen)]')
-    // `--on-pen`, not a neutral: the highlighter is a light ink, and the reading site already
-    // decided what colour goes on top of it.
-    expect(tabItemClass(true, 'sm', false, 'place')).toContain('text-[var(--on-pen)]')
+    // Ink, not `--on-pen`: the olive belongs to marks in running text; on a pressed key it
+    // read as grey. Full contrast on the control.
+    expect(tabItemClass(true, 'sm', false, 'place')).toContain('text-neutral-950')
   })
 
   it('leaves an underlined strip as a marker STROKE, not a wash', () => {
@@ -37,7 +37,7 @@ describe('the highlighter marks a place', () => {
     // A KEY HELD DOWN in the pen — the SAME full ink the active tab wears, carved in. What
     // this pins is the INK and the STATE: drawn from --pen, at full strength, with an inset.
     expect(SIDEBAR_NAV_ACTIVE).toContain('bg-[var(--pen)]')
-    expect(SIDEBAR_NAV_ACTIVE).toContain('text-[var(--on-pen)]')
+    expect(SIDEBAR_NAV_ACTIVE).toContain('text-neutral-950')
     expect(SIDEBAR_NAV_ACTIVE).toContain('shadow-[inset')
   })
 })
