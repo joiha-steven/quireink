@@ -32,10 +32,13 @@ export const TAB_TRACK = 'flex w-full flex-wrap items-end gap-6 border-b border-
 // the Settings tabs: at 390px five of the eight tabs were past the edge, AI and System among
 // them, and the only way to reach them was a `?tab=` URL. `no-scrollbar` keeps the bar
 // itself out of a 32px-tall control; the strip still clips visually at its rounded edge.
-export const SEGMENT_TRACK = 'flex w-fit max-w-full overflow-x-auto no-scrollbar rounded-md border border-neutral-200 dark:border-neutral-800'
+// The track is carved — it CONTAINS the keys, so it wears the groove (`bg` one step off the
+// card plus a 1px inner shadow); the active key is HELD DOWN in it. Ink-on-ink shading is
+// invisible, so the pressed key also catches light on its lower inside edge.
+export const SEGMENT_TRACK = 'flex w-fit max-w-full overflow-x-auto no-scrollbar rounded-md border border-neutral-200 bg-neutral-50 shadow-[inset_0_1px_2px_rgba(0,0,0,.07)] dark:border-neutral-800 dark:bg-neutral-950/40 dark:shadow-[inset_0_1px_2px_rgba(0,0,0,.4)]'
 // The dense variant is full-width with growing items: five segments whose right edge lands
 // on the pane's own edge instead of stopping short of it, which read as a gap left over.
-const SEGMENT_TRACK_DENSE = 'flex w-full overflow-x-auto no-scrollbar rounded-md border border-neutral-200 dark:border-neutral-800'
+const SEGMENT_TRACK_DENSE = 'flex w-full overflow-x-auto no-scrollbar rounded-md border border-neutral-200 bg-neutral-50 shadow-[inset_0_1px_2px_rgba(0,0,0,.07)] dark:border-neutral-800 dark:bg-neutral-950/40 dark:shadow-[inset_0_1px_2px_rgba(0,0,0,.4)]'
 
 /**
  * What an active item MEANS, which turns out to be two different things wearing one costume.
@@ -89,8 +92,8 @@ export const tabItemClass = (
           // A latched key: the active segment is held DOWN, so it carries the same
           // carved-in shadow every pressed control wears.
           ? role === 'place'
-            ? 'bg-[var(--pen)] text-[var(--on-pen)] shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.25)]'
-            : 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900 shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.35)]'
+            ? 'bg-[var(--pen)] text-[var(--on-pen)] shadow-[inset_0_2px_3px_rgba(0,0,0,.3),inset_0_-1px_0_rgba(255,255,255,.35)]'
+            : 'bg-neutral-900 text-white shadow-[inset_0_2px_3px_rgba(0,0,0,.6),inset_0_-1px_0_rgba(255,255,255,.22)] dark:bg-neutral-100 dark:text-neutral-900 dark:shadow-[inset_0_2px_3px_rgba(0,0,0,.35),inset_0_-1px_0_rgba(255,255,255,.6)]'
           : 'text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-neutral-200'
       }`
 

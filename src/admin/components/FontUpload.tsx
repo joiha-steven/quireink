@@ -95,6 +95,7 @@ export function FontUpload({ value, onChange }: Props) {
                 </span>
                 <Button
                   variant="secondary"
+                  size="sm"
                   type="button"
                   disabled={busy !== null}
                   onClick={() => {
@@ -105,7 +106,7 @@ export function FontUpload({ value, onChange }: Props) {
                   {busy === w ? t.loading : has ? t.fontReplace : t.fontChoose}
                 </Button>
                 {has && busy === null && (
-                  <Button variant="ghost" type="button" onClick={() => removeWeight(w)}>
+                  <Button variant="ghost" size="sm" type="button" onClick={() => removeWeight(w)}>
                     {t.removeSelection}
                   </Button>
                 )}

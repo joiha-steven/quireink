@@ -112,6 +112,7 @@ export function AdvancedFields({
                 the only way to hear what actually separates these three. */}
             <Button
               variant="secondary"
+              size="sm"
               disabled={motion.keys === 'off'}
               onClick={() => playPhrase({ mode: motion.keys, volume: motion.keyVolume })}
             >

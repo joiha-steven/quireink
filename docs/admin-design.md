@@ -139,8 +139,10 @@ character and none of its typographic rules **except one**, below.
   named Tailwind shadow gives you. There is no second step; a surface that wants one wants to
   be an overlay.
 - **The highlighter marks WHERE YOU ARE** (2026-08-29, and it is the ink's third role rather
-  than a fourth colour). The rail's current row and the active tab wear `--pen` with
-  `--on-pen`; a SELECTED VALUE does not, and that distinction is the whole point. They had
+  than a fourth colour). The active tab wears `--pen` with `--on-pen`; the rail's current row
+  wears the same ink as a RUN of it, not a slab — a 3px bar in the pen's edge tone over a
+  26% wash (2026-08-31, from the same pass as the relief grammar). A SELECTED VALUE gets
+  neither, and that distinction is the whole point. They had
   the identical black pill, which put "Site" — the section you are in — eight lines above
   "English" — a field's value — in the same ink, size and shape, with nothing answering
   "where am I". A screen where everything is the same rectangle has told you nothing by the
