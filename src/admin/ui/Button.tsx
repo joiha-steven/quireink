@@ -19,11 +19,14 @@ type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
 }
 
 const STYLES: Record<Variant, string> = {
+  // Relief in 1–2px: a pressable thing stands PROUD of the sheet (a light lip above, 1px of
+  // contact below) and pressing carves it in. Grey values, not a colour — this is shading.
   primary:
-    'bg-neutral-900 text-white hover:bg-neutral-700 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-200',
+    'bg-neutral-900 text-white hover:bg-neutral-700 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-200 shadow-[0_1px_1.5px_rgba(0,0,0,.25)] active:shadow-[inset_0_2px_3px_rgba(0,0,0,.45)]',
   secondary:
-    'border border-neutral-300 bg-white text-neutral-800 hover:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:hover:bg-neutral-700',
-  ghost: 'bg-transparent text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800',
+    'border border-neutral-300 bg-white text-neutral-800 hover:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:hover:bg-neutral-700 shadow-[inset_0_1px_0_rgba(255,255,255,.75),0_1px_1.5px_rgba(0,0,0,.12)] active:shadow-[inset_0_2px_3px_rgba(0,0,0,.22)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,.06),0_1px_1.5px_rgba(0,0,0,.5)] dark:active:shadow-[inset_0_2px_3px_rgba(0,0,0,.6)]',
+  // Flat at rest — a ghost earns its relief only under the finger.
+  ghost: 'bg-transparent text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800 active:shadow-[inset_0_2px_3px_rgba(0,0,0,.15)] dark:active:shadow-[inset_0_2px_3px_rgba(0,0,0,.5)]',
   // THE RED BALLPOINT. It was byte-identical to primary once, which made "Delete forever" the
   // loudest control on its screen with only a native confirm() between it and a deleted post;
   // then it became an outline, which ranked it correctly and still asked the reader to notice
@@ -34,15 +37,19 @@ const STYLES: Record<Variant, string> = {
   // the loudest thing on a screen should be the thing you came to do — not the thing that
   // destroys work. It fills on hover, when the pointer is already committed to it.
   danger:
-    'border text-[var(--pen-red)] border-[var(--pen-red)] bg-transparent hover:bg-[var(--pen-red)] hover:text-white',
+    'border text-[var(--pen-red)] border-[var(--pen-red)] bg-transparent hover:bg-[var(--pen-red)] hover:text-white active:shadow-[inset_0_2px_3px_rgba(0,0,0,.3)]',
 }
 
 // `whitespace-nowrap` and `shrink-0` are load-bearing, not tidying. In a flex row beside
 // anything long, a button with neither gets squeezed until its own LABEL wraps: the MCP card
 // shipped "Tạo token" broken across two lines and twice as tall as the row it sat in. A
 // button is a fixed object; it is the text beside it that gives way.
+// THE CLICK. Pressing is instant — the 1px of travel and the carved-in shadow land with
+// `duration-0` — and only the release is sprung, on the inherited transition. A control that
+// eases both ways feels like a screen; a key that drops NOW and springs back is what a hand
+// expects from a pressed thing. Reduced motion keeps the surface change and drops the travel.
 const SHAPE =
-  'inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-md font-medium transition disabled:cursor-not-allowed disabled:opacity-50'
+  'inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-md font-medium transition disabled:cursor-not-allowed disabled:opacity-50 active:translate-y-px active:duration-0 motion-reduce:active:translate-y-0'
 
 const SIZES: Record<Size, string> = {
   md: 'min-h-10 px-4 py-2 text-sm',

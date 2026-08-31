@@ -137,7 +137,9 @@ export function Setting({
  * focused field looks like. `check:admin-kit` now fails on that class.
  */
 export const CONTROL_CHROME =
-  'rounded-md border border-neutral-300 bg-white text-neutral-900 outline-none transition focus:border-neutral-500 focus:ring-2 focus:ring-neutral-200 placeholder:text-neutral-400 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500 dark:focus:ring-neutral-800 dark:placeholder:text-neutral-500'
+  // The inset is the relief grammar's other half: raised means pressable, CARVED means it
+  // holds something — and a field holds the value. 1px of shading, not a style.
+  'rounded-md border border-neutral-300 bg-white text-neutral-900 outline-none transition focus:border-neutral-500 focus:ring-2 focus:ring-neutral-200 placeholder:text-neutral-400 shadow-[inset_0_1px_1.5px_rgba(0,0,0,.06)] dark:shadow-[inset_0_1px_1.5px_rgba(0,0,0,.35)] dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500 dark:focus:ring-neutral-800 dark:placeholder:text-neutral-500'
 
 // The canonical control — chrome plus the one size nearly every field wants. `ui/Input.tsx`
 // IMPORTS this rather than declaring a matching copy, so there is nothing left to keep in

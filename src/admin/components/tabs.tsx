@@ -86,9 +86,11 @@ export const tabItemClass = (
         active
           // `--on-pen` rather than a neutral: the highlighter is a light ink and black on it
           // is harsher than the olive the reading site already puts on its own marks.
+          // A latched key: the active segment is held DOWN, so it carries the same
+          // carved-in shadow every pressed control wears.
           ? role === 'place'
-            ? 'bg-[var(--pen)] text-[var(--on-pen)]'
-            : 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900'
+            ? 'bg-[var(--pen)] text-[var(--on-pen)] shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.25)]'
+            : 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900 shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.35)]'
           : 'text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-neutral-200'
       }`
 
