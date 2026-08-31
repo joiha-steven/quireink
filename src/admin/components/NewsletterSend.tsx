@@ -161,10 +161,18 @@ export function NewsletterSend({ posts }: { posts: SendablePost[] }) {
           {/* The span, not the Button, carries the ref: ui/Button does not forward one,
               and the outside-click test only needs to know the latch's own footprint. */}
           <span ref={latch} className="inline-flex">
-            <Button variant={isArmed ? 'armed' : 'primary'} onClick={press} disabled={sending || picked.length === 0 || (alreadySent && !resend)}>
-              {isArmed
-                ? t.nlArmed.replace('{n}', preview ? String(preview.recipients) : '…').replace('{s}', String(armed))
-                : t.nlSendButton}
+            <Button variant={isArmed || sending ? 'armed' : 'primary'} onClick={press} disabled={sending || picked.length === 0 || (alreadySent && !resend)}>
+              {/* While the send is in flight the button wears the amber face and a
+                  BREATHING lamp — running work, in the running-work colour. Reduced
+                  motion keeps the lamp lit and drops the breath. */}
+              {sending && (
+                <span aria-hidden className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-amber-500 motion-reduce:animate-none" />
+              )}
+              {sending
+                ? t.loading
+                : isArmed
+                  ? t.nlArmed.replace('{n}', preview ? String(preview.recipients) : '…').replace('{s}', String(armed))
+                  : t.nlSendButton}
             </Button>
           </span>
         </div>
