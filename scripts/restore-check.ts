@@ -158,6 +158,15 @@ const before = existsSync(liveContent) ? counts(liveContent, TABLES) : null
 const beforeAnalytics = existsSync(liveAnalytics)
   ? counts(liveAnalytics, ANALYTICS_TABLES)
   : null
+// The uploads are listed here for the SAME reason, and step 4 used to read them afterwards.
+// Image variants are built on demand, so anything that renders a page mid-export writes new
+// files into this directory — a `-1024.avif` that did not exist when the snapshot was taken
+// is not a lost upload, and calling it one made this check go red on an archive that was
+// perfect. Seen 2026-08-31: one run reported 1 missing, the next 6, all of them size
+// variants, growing with whatever had been browsed. The assertion is the one-directional
+// one again: every file that existed BEFORE the export must be in the archive, byte for
+// byte; the archive may also hold files that appeared later.
+const liveFilesBefore = filesUnder(UPLOADS)
 
 const res = await fetch(`${BASE}/api/backup/export`, { headers: { cookie: COOKIE } })
 if (!res.ok) {
@@ -218,7 +227,7 @@ if (beforeAnalytics && existsSync(join(WORK, 'analytics.db'))) {
 
 // ----- 4. the uploads, byte for byte ------------------------------------------------------
 
-const liveFiles = filesUnder(UPLOADS)
+const liveFiles = liveFilesBefore
 const keptFiles = filesUnder(join(WORK, 'uploads'))
 const missing = liveFiles.filter((f) => !keptFiles.includes(f))
 say(missing.length === 0, missing.length === 0
