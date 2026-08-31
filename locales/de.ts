@@ -32,6 +32,7 @@ const de = {
   readingSuffix: 'Min. Lesezeit',
   wordsSuffix: 'Wörter',
   bylinePrefix: 'von',
+  updatedPrefix: 'Aktualisiert',
   authorAbout: 'Über den Autor',
   bookMode: 'Buchmodus',
   bookModeClose: 'Schließen',

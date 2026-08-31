@@ -32,6 +32,7 @@ const vi = {
   readingSuffix: 'phút đọc',
   wordsSuffix: 'chữ',
   bylinePrefix: 'của',
+  updatedPrefix: 'Sửa',
   authorAbout: 'Về tác giả',
   bookMode: 'Chế độ đọc sách',
   bookModeClose: 'Đóng',

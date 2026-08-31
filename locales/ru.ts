@@ -32,6 +32,7 @@ const ru = {
   readingSuffix: 'мин чтения',
   wordsSuffix: 'слов',
   bylinePrefix: 'автор',
+  updatedPrefix: 'Обновлено',
   authorAbout: 'Об авторе',
   bookMode: 'Режим книги',
   bookModeClose: 'Закрыть',

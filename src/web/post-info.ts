@@ -21,6 +21,7 @@ import type { Dict } from '@/locales/types'
 import { formatCount, formatDate } from '@/i18n/i18n'
 import { tagText, termSlug } from '@/content/taxonomy'
 import { escapeAttr, escapeHtml, readingMinutes, wordCount } from '@/utils'
+import { ICONS } from '@/icons'
 
 /**
  * Comma-separated term links, as the frozen tree rendered them. Tags read lowercase.
@@ -55,13 +56,24 @@ export function postInfoPanel(post: PostWithContent, settings: SiteSettings, s: 
       : escapeHtml(settings.author.name)
     rows.push(`<p class="byline">${escapeHtml(s.bylinePrefix)} ${who}</p>`)
   }
+  // Edited AFTER publishing, and only then. On a technical blog a post gets corrected, and a
+  // reader deciding whether to trust what they are reading wants to know they are on the
+  // current version. Same DAY as the date above counts as unedited: a line saying a post was
+  // updated the day it went out is a line that says nothing, printed forever.
+  if (post.updatedAt && post.updatedAt.slice(0, 10) > post.date.slice(0, 10)) {
+    rows.push(`<p class="info-updated">${escapeHtml(s.updatedPrefix)} <time datetime="${
+      escapeAttr(post.updatedAt)}">${
+      escapeHtml(formatDate(post.updatedAt, settings.language, settings.timezone))}</time></p>`)
+  }
   if (features.readingTime) {
+    // ONE line for the two, because they answer one question — how long is this. They were
+    // two of a seven-line column, and the wrap this file's header warns about is about the
+    // DATE line, not these: "2.799 chữ · 14 phút đọc" is short enough to hold at 250px.
     // The figures are wrapped and the units are not, the same way the meta line does it, so
     // the IDE chrome can set a literal apart from the words beside it.
     rows.push(`<p><span class="num">${
-      formatCount(wordCount(post.content), settings.language)}</span> ${escapeHtml(s.wordsSuffix)}</p>`)
-    rows.push(`<p><span class="num">${readingMinutes(post.content)}</span> ${
-      escapeHtml(s.readingSuffix)}</p>`)
+      formatCount(wordCount(post.content), settings.language)}</span> ${escapeHtml(s.wordsSuffix)}`
+      + ` · <span class="num">${readingMinutes(post.content)}</span> ${escapeHtml(s.readingSuffix)}</p>`)
   }
   // No category link among the rows even though the meta line carries one: the full list of
   // categories is two lines further down, and naming the first of them twice in a 250px
@@ -73,9 +85,16 @@ export function postInfoPanel(post: PostWithContent, settings: SiteSettings, s: 
   // LAST, and set apart. Everything above it is a fact about the post; this is the one thing
   // in the panel the reader can DO, so it goes at the foot with air around it rather than
   // buried between the reading time and the tags. The IDE chrome marks it like a label.
+  // A BUTTON that looks like one. It was a text link in a column of grey text: the only
+  // thing in the panel a reader can press, dressed exactly like the six facts above it, and
+  // reachable only by hitting the words themselves. Now it carries an edge, a hand-sized
+  // target and the book from the shared icon set — and the press has the product's own
+  // click, from `utility.css.ts`.
   if (features.bookMode) {
-    rows.push(`<p class="info-action"><button type="button" class="book-mode-toggle" data-book-open>${
-      escapeHtml(s.bookMode)}</button></p>`)
+    rows.push(`<p class="info-action"><button type="button" class="book-mode-toggle" data-book-open>`
+      + `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"`
+      + ` stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS.book}</svg>`
+      + `<span>${escapeHtml(s.bookMode)}</span></button></p>`)
   }
 
   return `<aside class="post-info t-small text-meta">${rows.join('')}</aside>`

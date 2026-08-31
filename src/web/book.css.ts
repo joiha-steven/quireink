@@ -17,9 +17,18 @@ export const BOOK_CSS = `
    palette, and the same on a dark site as a light one. Carried over from the frozen tree.
    The columns come from column-width, so the BROWSER paginates and turning a page is one
    transform on the flow rather than a measurement loop fighting the layout engine. */
-.book-mode-toggle{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;
-  text-underline-offset:3px}
-.book-mode-toggle:hover{color:var(--c-heading);text-decoration:underline}
+/* Still WORDS, on a page made of words — a bordered box in the gutter of an article is
+   furniture, and this panel is the quietest thing on the page. What it gains is a TARGET:
+   the row is padded to a hand's height and pulled back out with a negative margin, so the
+   hit area is 36px tall while the layout is exactly where it was. The icon says it does
+   something; the ink says it is not another fact; the press comes from the shared click. */
+.book-mode-toggle{display:inline-flex;align-items:center;gap:.4rem;font:inherit;font-weight:500;
+  color:var(--c-heading);background:none;border:0;cursor:pointer;
+  padding:.5rem .5rem;margin:-.5rem -.5rem;border-radius:var(--radius,.5rem);
+  text-underline-offset:3px;transition:background-color var(--dur-fast),color var(--dur-fast)}
+.book-mode-toggle svg{flex-shrink:0;opacity:.75}
+.book-mode-toggle:hover{background:color-mix(in srgb,var(--c-rule) 45%,transparent);text-decoration:underline}
+.book-mode-toggle:hover svg{opacity:1}
 @media (max-width:767px){.meta-book,.book-mode-toggle{display:none}}
 
 /* The phone's doorway into the reader. The desktop entries (the meta line, the info

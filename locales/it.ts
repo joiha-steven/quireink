@@ -32,6 +32,7 @@ const it = {
   readingSuffix: 'min di lettura',
   wordsSuffix: 'parole',
   bylinePrefix: 'di',
+  updatedPrefix: 'Aggiornato',
   authorAbout: 'Sull’autore',
   bookMode: 'Modalità libro',
   bookModeClose: 'Chiudi',
