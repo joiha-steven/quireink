@@ -3,6 +3,7 @@ import { useRef, useState } from 'react'
 import type { MediaItem } from '@/types'
 import { useToast } from '@/admin/ui/Toast'
 import { uploadImages } from '@/admin/upload-client'
+import { DROPZONE, DROPZONE_IDLE, DROPZONE_OVER } from './kit'
 import { useAdminT } from './I18nProvider'
 
 export function ImageUploader({ onUploaded }: { onUploaded: (items: MediaItem[]) => void }) {
@@ -42,9 +43,7 @@ export function ImageUploader({ onUploaded }: { onUploaded: (items: MediaItem[])
           setDragging(false)
           handle(Array.from(e.dataTransfer.files))
         }}
-        className={`cursor-pointer rounded-[10px] border border-dashed bg-white p-8 text-center text-sm transition-colors dark:bg-neutral-900 ${
-          dragging ? 'border-neutral-900 bg-neutral-50 dark:border-white dark:bg-neutral-800' : 'border-neutral-300 text-neutral-500 dark:text-neutral-400 dark:border-neutral-700'
-        }`}
+        className={`${DROPZONE} ${dragging ? DROPZONE_OVER : DROPZONE_IDLE}`}
       >
         {t.dropzone}
         <input

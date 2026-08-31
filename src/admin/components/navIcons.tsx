@@ -45,3 +45,4 @@ export function IconChevronLeft() { return <I name="prev" /> }
 export function IconMore() { return <I name="more" /> }
 export function IconAssistant() { return <I name="penMark" /> }
 export function IconSearch() { return <I name="search" /> }
+export function IconClose() { return <I name="close" /> }

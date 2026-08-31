@@ -5,6 +5,7 @@ import { useRef, useState } from 'react'
 import type { FileItem } from '@/types'
 import { useToast } from '@/admin/ui/Toast'
 import { uploadAttachments } from '@/admin/upload-client'
+import { DROPZONE, DROPZONE_IDLE, DROPZONE_OVER } from './kit'
 import { useAdminT } from './I18nProvider'
 
 export function FileUploader({
@@ -50,9 +51,7 @@ export function FileUploader({
           setDragging(false)
           handle(Array.from(e.dataTransfer.files))
         }}
-        className={`cursor-pointer rounded-lg border-2 border-dashed p-8 text-center text-sm transition-colors ${
-          dragging ? 'border-neutral-900 bg-neutral-50' : 'border-neutral-300 text-neutral-500 dark:text-neutral-400'
-        }`}
+        className={`${DROPZONE} ${dragging ? DROPZONE_OVER : DROPZONE_IDLE}`}
       >
         {label ?? t.filesDropzone}
         <input

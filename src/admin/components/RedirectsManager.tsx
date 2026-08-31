@@ -6,6 +6,7 @@ import type { ApiResponse } from '@/types'
 import { Input } from '@/admin/ui/Input'
 import { Button } from '@/admin/ui/Button'
 import { useToast } from '@/admin/ui/Toast'
+import { IconClose } from './navIcons'
 import { useAdminT } from './I18nProvider'
 import { CHECK, NOTE_TEXT } from './kit'
 
@@ -97,7 +98,7 @@ export function RedirectsManager() {
                 aria-label={t.redirectDelete}
                 title={t.redirectDelete}
               >
-                ✕
+                <IconClose />
               </button>
             </li>
           ))}
