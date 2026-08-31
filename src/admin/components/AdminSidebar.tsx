@@ -226,6 +226,27 @@ export function AdminSidebar({
   const utilClass = (c: boolean): string => `${SIDEBAR_UTIL} ${c ? 'justify-center' : 'gap-2.5'}`
   const controls = (c: boolean): ReactNode => (
     <>
+      {/* Collapse, as a WORD and above the light switch.
+          It has been in three places. In the footer beside Sign out it was a mis-tap that
+          costs a session; up on the wordmark row it was chrome competing with the mark, and
+          the mark had to shrink to make room for it. Here it is neither: it is a preference
+          about this rail on this machine, which is exactly what the three rows under it are,
+          and it sits at the top of that group rather than at the bottom next to the one
+          destructive control in the rail. */}
+      <button
+        type="button"
+        onClick={toggleCollapsed}
+        title={c ? t.navExpand : t.navCollapse}
+        aria-label={c ? t.navExpand : t.navCollapse}
+        className={utilClass(c)}
+      >
+        {(c || icons) && (
+          <span className={`grid place-items-center transition-transform ${c ? 'rotate-180' : ''}`}>
+            <IconChevronLeft />
+          </span>
+        )}
+        {!c && <span className="truncate">{t.navCollapse}</span>}
+      </button>
       {/* `variant='text'` in BOTH states, with the word dropped when collapsed. The rail needs
           one row object, and `variant='icon'` is the public header's — it ignores the row class
           and drew this line 4px left of the two under it. */}
@@ -262,7 +283,13 @@ export function AdminSidebar({
   // 24px the top row did not have to spare, which is what pushed the collapse control out of
   // the rail entirely. The mobile header pads its own row, so nothing there loses air.
   const wordmark = (c: boolean): ReactNode => (
-    <Link href="/admin" onClick={close} className="flex h-10 items-center leading-none">
+    // LEFT padding only, and only when the rail is open: every label in this rail starts
+    // 24px from its edge — the nav rows and the footer controls both — while the mark sat at
+    // 12px, so it alone hung off the left. It had `px-3` once and that overflowed the row,
+    // but the row then also carried a 36px chevron; with that gone, the 12px the alignment
+    // needs fits, and only the side that needs it is spent. Collapsed the mark is centred in
+    // a 72px rail, where a one-sided pad would push it off centre.
+    <Link href="/admin" onClick={close} className={`flex h-10 items-center leading-none ${c ? '' : 'pl-3'}`}>
       {c ? <BrandMark /> : <BrandWord />}
     </Link>
   )
@@ -296,22 +323,6 @@ export function AdminSidebar({
     </button>
   )
 
-  const collapseBtn = (
-    <button
-      type="button"
-      onClick={toggleCollapsed}
-      title={collapsed ? t.navExpand : t.navCollapse}
-      aria-label={collapsed ? t.navExpand : t.navCollapse}
-      // Back at the top beside the search, at the owner's word: down in the footer it sat
-      // one row from Sign out, and a mis-tap there costs a session rather than a rail.
-      className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-transparent text-neutral-500 transition-colors hover:border-neutral-200 hover:bg-neutral-50 hover:text-neutral-700 dark:text-neutral-400 dark:hover:border-neutral-700 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
-    >
-      <span className={`grid place-items-center transition-transform ${collapsed ? 'rotate-180' : ''}`}>
-        <IconChevronLeft />
-      </span>
-    </button>
-  )
-
   return (
     <>
       {/* Desktop: sticky full-height left column; width animates on collapse */}
@@ -323,20 +334,16 @@ export function AdminSidebar({
           collapsed ? 'lg:w-[4.5rem]' : 'lg:w-52'
         }`}
       >
-        {/* Top: the wordmark and the search, and NOTHING else.
-            The collapse control used to be here too, and the row could not hold it: the
-            wordmark, a 40px search button, its ⌘K badge and a 36px chevron need more than
-            the 184px inside a 208px rail, and a flex row whose items cannot shrink does not
-            wrap — it OVERFLOWS. The chevron ended up floating in the canvas beside the page
-            title, outside the rail it belongs to, which is exactly how it looked.
+        {/* Top: the wordmark and the search, and NOTHING else — measured, not preferred.
+            The collapse control was here too for a while and the row could not hold it: the
+            wordmark, a 40px search button, its ⌘K badge and a 36px chevron need more than the
+            184px inside a 208px rail, and a flex row whose items cannot shrink does not wrap,
+            it OVERFLOWS. What gave way was the MARK, which is the one thing on this row that
+            is not chrome. Collapse now lives with the rail's other preferences, at the foot.
             `min-w-0` on the wordmark so this row can never do that again. */}
         <div className={collapsed ? 'flex flex-col items-center gap-2' : 'flex min-w-0 items-center justify-between gap-1'}>
           <span className="min-w-0 truncate">{wordmark(collapsed)}</span>
-          {/* Collapsed the row is a column, and the chevron goes UNDER the search so it stays
-              at the same height as the expanded rail's — the hand does not have to look. */}
-          {collapsed
-            ? <>{searchBtn(true)}{collapseBtn}</>
-            : <span className="flex shrink-0 items-center gap-0.5">{searchBtn(false)}{collapseBtn}</span>}
+          {searchBtn(collapsed)}
         </div>
         <nav className="mt-6 flex flex-col gap-1">{navItems(collapsed)}</nav>
         {/* Collapse lives with the rail's other CONTROLS, at the foot: it is a preference
