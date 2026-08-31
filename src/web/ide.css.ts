@@ -49,6 +49,12 @@ html[data-ide-chrome=on] .empty::before,
    already marked and read as the one unmarked thing in the row without it. */
 html[data-ide-chrome=on] .front-more::before,
 html[data-ide-chrome=on] .info-action::before{content:"// ";color:var(--c-meta)}
+/* AND NO GLYPH BESIDE IT. This chrome trades pictures for words everywhere else — the
+   header's four icons become [/tìm] [tối] tokens two rules below — so a book drawn next to
+   a line that already says "Book mode", inside a panel written as source, is the one place
+   the mode contradicts itself. The words are the icon here. The target the icon was added
+   for is the padding, not the drawing, so nothing gets harder to press. */
+html[data-ide-chrome=on] .book-mode-toggle svg{display:none}
 /* ...except in the comment thread. "Be the first to comment" is an invitation to the
    reader, not a label on a section, and the owner asked for the marker off it. */
 html[data-ide-chrome=on] #comments .empty::before{content:none}
