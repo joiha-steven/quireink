@@ -15,28 +15,28 @@ import { renderInlineMarkdown, expandFooterTokens } from '@/render/inline-md'
 
 import { escapeAttr, escapeHtml } from '@/utils'
 import { SW_PATH } from '@/web/assets'
+import { ICONS } from '@/icons'
 
 /**
  * Inline SVG rather than an icon font: no extra request, and it inherits `currentColor`.
  * All 20px, because they are sibling controls on one row and a mixed set reads as a
  * mistake — the frozen tree kept them in step with a shared class string.
  */
-const svg = (body: string, width = '1.6') =>
+// Bodies come from `src/icons.ts` — the one set both faces of the product draw from —
+// wrapped here for server HTML. 1.8 is the set's stroke; an echo stroke inside a body
+// carries its own 1.4.
+const svg = (body: string) =>
   `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"`
-  + ` stroke-width="${width}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">`
+  + ` stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">`
   + `${body}</svg>`
 
 const ICON = {
-  search: svg('<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>', '1.7'),
-  grid: svg('<rect x="4" y="4" width="7" height="7"/><rect x="13" y="4" width="7" height="7"/>'
-    + '<rect x="4" y="13" width="7" height="7"/><rect x="13" y="13" width="7" height="7"/>'),
-  mail: svg('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>', '1.7'),
-  sun: svg('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4'
-    + 'M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>'),
-  menu: svg('<path d="M5 8h14M8 16h11"/>'),
-  // A painter's palette: the thumb hole is what makes it read as one at 20px.
-  palette: svg('<circle cx="12" cy="12" r="9"/><circle cx="12" cy="17" r="1.6"/>'
-    + '<circle cx="8" cy="10" r="1.2"/><circle cx="16" cy="10" r="1.2"/>'),
+  search: svg(ICONS.search),
+  grid: svg(ICONS.grid),
+  mail: svg(ICONS.mail),
+  sun: svg(ICONS.theme),
+  menu: svg(ICONS.menu),
+  palette: svg(ICONS.palette),
 }
 
 export type ChromeOptions = {
