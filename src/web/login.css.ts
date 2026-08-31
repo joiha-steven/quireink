@@ -43,7 +43,7 @@ body{margin:0;background:var(--c-bg);color:var(--c-text);font-family:var(--font-
 /* flex:0 0 auto is not decoration. The card is a main element, and one line of custom CSS
    naming main would otherwise stretch it again, which is the bug this rewrite fixed. */
 .login-card{flex:0 0 auto;width:100%;max-width:24rem;padding:1.75rem;
-  border:1px solid var(--c-rule);border-radius:12px;background:var(--c-bg)}
+  border:1px solid var(--c-rule);border-radius:10px;background:var(--c-bg)}
 .login-card h1{margin:0;font-size:1.375rem;line-height:1.25;font-weight:600;
   letter-spacing:-.015em;color:var(--c-heading)}
 .login-card h2{margin:1.5rem 0 0;font-size:.9375rem;font-weight:600;color:var(--c-heading)}
@@ -65,6 +65,9 @@ body{margin:0;background:var(--c-bg);color:var(--c-text);font-family:var(--font-
 .login-form input:not([type=checkbox]){
   width:100%;padding:.625rem .75rem;font:inherit;font-size:.9375rem;line-height:1.5;color:var(--c-text);
   background:var(--field);border:1px solid var(--c-rule);border-radius:8px;
+  /* The well. Black rather than a palette token on purpose: a shadow is dark in every
+     palette, and a token here would light the inside of the field on a dark one. */
+  box-shadow:inset 0 1px 1.5px rgba(0,0,0,.07);
   /* Literal, not var(--dur-fast), and checked rather than assumed: the sign-in page is served
      pageStyles(settings) + LOGIN_CSS and NOT the public sheet, so BASE_CSS's :root{--dur-*} is
      not on this document. A token here would resolve to nothing and the transition would
@@ -78,7 +81,7 @@ body{margin:0;background:var(--c-bg);color:var(--c-text);font-family:var(--font-
 /* A ring, not a 2px outline box. autofocus fires on load, so whatever this draws is the
    first thing anyone sees, and the old one drew a solid red rectangle. */
 .login-form input:focus{outline:none;border-color:var(--c-accent);
-  box-shadow:0 0 0 3px color-mix(in srgb, var(--c-accent) 16%, transparent)}
+  box-shadow:inset 0 1px 1.5px rgba(0,0,0,.07), 0 0 0 3px color-mix(in srgb, var(--c-accent) 16%, transparent)}
 /* A code is read off a phone one character at a time, so it is set like one: centred,
    monospaced, spaced out. text-indent cancels the trailing letter-space, which otherwise
    pushes the digits half a character left of centre. */
@@ -91,6 +94,7 @@ body{margin:0;background:var(--c-bg);color:var(--c-text);font-family:var(--font-
 .login-reveal button{position:absolute;right:.375rem;top:50%;transform:translateY(-50%);
   display:flex;align-items:center;justify-content:center;width:2rem;height:2rem;padding:0;
   border:0;border-radius:6px;background:none;color:var(--c-meta);cursor:pointer}
+.login-reveal button{transition:color .12s, background-color .12s, box-shadow .12s, transform .12s}
 .login-reveal button:hover{color:var(--c-text);
   background:color-mix(in srgb, var(--c-text) 7%, transparent)}
 .login-reveal svg{width:18px;height:18px}
@@ -103,9 +107,22 @@ body{margin:0;background:var(--c-bg);color:var(--c-text);font-family:var(--font-
 
 .login-submit{margin-top:1.5rem;padding:.7rem 1rem;font:inherit;font-size:.9375rem;
   font-weight:600;color:var(--c-bg);background:var(--c-heading);border:0;border-radius:8px;
-  cursor:pointer;transition:opacity .12s}
-.login-submit:hover{opacity:.85}
-.login-submit:active{opacity:.95}
+  cursor:pointer;transition:box-shadow .12s, transform .12s;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.18),inset 0 -1px 0 rgba(0,0,0,.2),
+    0 1px 2px rgba(0,0,0,.28)}
+.login-submit:hover{box-shadow:inset 0 1px 0 rgba(255,255,255,.24),inset 0 -1px 0 rgba(0,0,0,.22),
+    0 2px 4px rgba(0,0,0,.3)}
+/* Landing is instant and only the release is sprung, like every press in this product. */
+.login-submit:active{transform:translateY(1px);transition-duration:0s;
+  box-shadow:inset 0 2px 4px rgba(0,0,0,.5),inset 0 -1px 0 rgba(255,255,255,.22)}
+.login-reveal button:active{transform:translateY(-50%) translateY(1px);transition-duration:0s;
+  box-shadow:inset 0 1.5px 2.5px color-mix(in srgb, var(--c-text) 20%, transparent)}
+html[data-motion=off] .login-submit:active{transform:none}
+html[data-motion=off] .login-reveal button:active{transform:translateY(-50%)}
+@media (prefers-reduced-motion:reduce){
+  .login-submit:active{transform:none}
+  .login-reveal button:active{transform:translateY(-50%)}
+}
 :where(.login-submit,.login-reveal button):focus-visible{outline:2px solid var(--c-accent);
   outline-offset:2px}
 
@@ -137,7 +154,7 @@ body{margin:0;background:var(--c-bg);color:var(--c-text);font-family:var(--font-
    accessibility tree with it. */
 .face-choice input{position:absolute;opacity:0;pointer-events:none}
 .face-choice:has(input:checked){border-color:var(--c-accent);
-  box-shadow:0 0 0 1px var(--c-accent)}
+  box-shadow:0 0 0 1px var(--c-accent), inset 0 2px 4px rgba(0,0,0,.10)}
 .face-choice:has(input:focus-visible){outline:2px solid var(--c-accent);outline-offset:2px}
 .face-art{display:flex;flex-direction:column;gap:.28rem;height:4.6rem;padding:.45rem;
   border-radius:.3rem;background:color-mix(in srgb, var(--c-text) 4%, transparent)}
@@ -177,10 +194,11 @@ body{margin:0;background:var(--c-bg);color:var(--c-text);font-family:var(--font-
 .login-form select{width:100%;padding:.625rem .75rem;font:inherit;font-size:.9375rem;
   min-height:calc(1.5 * .9375rem + 2 * .625rem + 2px);
   color:var(--c-text);background:var(--field);border:1px solid var(--c-rule);
-  border-radius:8px;transition:border-color .12s, box-shadow .12s}
+  border-radius:8px;box-shadow:inset 0 1px 1.5px rgba(0,0,0,.07);
+  transition:border-color .12s, box-shadow .12s}
 .login-form select:hover{border-color:color-mix(in srgb, var(--c-text) 22%, var(--c-rule))}
 .login-form select:focus{outline:none;border-color:var(--c-accent);
-  box-shadow:0 0 0 3px color-mix(in srgb, var(--c-accent) 16%, transparent)}
+  box-shadow:inset 0 1px 1.5px rgba(0,0,0,.07), 0 0 0 3px color-mix(in srgb, var(--c-accent) 16%, transparent)}
 .login-back{font-size:.8125rem;color:var(--c-meta);text-decoration:none}
 .login-back:hover{color:var(--c-text)}
 

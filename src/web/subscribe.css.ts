@@ -13,15 +13,15 @@ export const SUBSCRIBE_CSS = `
 /* The sign-up card IS the modal panel: it is already a bordered card on theme tokens, so
    the overlay strips its own frame rather than drawing a second one around it. */
 .subscribe-overlay{border:0;padding:0;background:none;width:min(28rem,92vw);margin-top:12vh}
-.subscribe-overlay .subscribe-card{background:var(--c-bg);
-  box-shadow:0 25px 50px -12px rgba(0,0,0,.25)}
+.subscribe-overlay .subscribe-card{background:var(--c-bg);box-shadow:var(--lift)}
 
 /* The theme menu. The island builds these two elements and nothing styled them, so the
    rows rendered as unstyled blocks that pushed the header apart instead of a dropdown. */
 .theme-wrap{position:relative;display:inline-flex}
 .theme-menu{position:absolute;right:0;top:100%;margin-top:.5rem;z-index:50;width:11rem;
   overflow:hidden;border:1px solid var(--c-rule);background:var(--c-bg);padding:.25rem 0;
-  box-shadow:0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -4px rgba(0,0,0,.1)}
+  /* It had none, so the site's one square corner was the menu that opens off the header. */
+  border-radius:var(--radius,.5rem);box-shadow:var(--lift)}
 .theme-menu[hidden]{display:none}
 .theme-menu button{display:flex;width:100%;align-items:center;justify-content:space-between;
   padding:.5rem .75rem;border:0;background:none;cursor:pointer;text-align:left;font:inherit;
@@ -40,7 +40,8 @@ form.subscribe{display:flex;gap:.5rem;margin:0}
 /* The honeypot: parked, not display:none — some form fillers skip boxless fields. */
 form.subscribe .hp{position:absolute;left:-9999px;width:1px;height:1px;flex:none;border:0;padding:0;opacity:0;pointer-events:none}
 form.subscribe input{min-width:0;flex:1;padding:.5rem .75rem;border:1px solid var(--c-rule);
-  border-radius:var(--radius,.5rem);background:var(--c-bg);color:var(--c-text);font:inherit}
+  border-radius:var(--radius,.5rem);background:var(--c-bg);color:var(--c-text);font:inherit;
+  box-shadow:var(--well)}
 /* The border darkening stays, the outline:none does not: it was cancelling the site's one
    focus ring on the only field in the header, so keyboard focus vanished here alone. */
 form.subscribe input:focus{border-color:var(--c-heading)}

@@ -5,6 +5,7 @@
 // it and the sheet chrome is exactly the kind of thing that drifts when each screen carries
 // its own copy — see "One of each" in docs/admin-kit.md.
 import type { ReactNode } from 'react'
+import { OVERLAY_LIFT } from './sheet'
 
 export function SlideOver({
   label,
@@ -28,7 +29,7 @@ export function SlideOver({
       <aside
         role="dialog"
         aria-label={label}
-        className="fixed inset-y-0 right-0 z-50 flex w-full max-w-sm flex-col border-l border-neutral-200 bg-white shadow-xl dark:border-neutral-800 dark:bg-neutral-900"
+        className={`fixed inset-y-0 right-0 z-50 flex w-full max-w-sm flex-col border-l border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900 ${OVERLAY_LIFT}`}
       >
         <div className="border-b border-neutral-100 px-6 py-5 dark:border-neutral-800">
           <div className="flex items-center justify-between">

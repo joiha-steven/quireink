@@ -12,7 +12,7 @@ import { ImageUploader } from './ImageUploader'
 import { MediaToolbar, type MediaSort } from './MediaToolbar'
 import {EmptyState } from './kit'
 import { useAdminT, useAdminLang } from './I18nProvider'
-import { SHEET_TOOL, SHEET_TOOL_DANGER } from './sheet'
+import { OVERLAY, SHEET_TOOL, SHEET_TOOL_DANGER } from './sheet'
 import { MediaCard } from './MediaCard'
 
 type Props = {
@@ -360,7 +360,7 @@ export function MediaLibrary({ mode = 'page', multi = false, onSelect, onSelectM
   // Picker modal.
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="flex max-h-[85vh] w-full max-w-3xl flex-col rounded-2xl bg-white p-5 dark:bg-neutral-900">
+      <div className={`flex max-h-[85vh] w-full max-w-3xl flex-col p-5 ${OVERLAY}`}>
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-bold">{multi ? t.galleryPickTitle : t.mediaTitle}</h2>
           <div className="flex items-center gap-2">

@@ -246,12 +246,13 @@ body:has(.book-overlay[open]){overflow:hidden}
 /* The overlays. Both are dialogs, so Escape and the inert background are the browser's. */
 .overlay[open]{display:flex}
 .overlay{flex-direction:column;border:1px solid var(--c-rule);border-radius:var(--radius,.5rem);padding:1.25rem;
-  width:min(36rem,92vw);max-height:70vh;background:var(--c-bg);color:var(--c-text);margin-top:8vh}
+  width:min(36rem,92vw);max-height:70vh;background:var(--c-bg);color:var(--c-text);margin-top:8vh;
+  box-shadow:var(--lift)}
 .overlay::backdrop{background:rgba(0,0,0,.4)}
 .search-close{position:absolute;top:.5rem;right:.5rem;border:0;background:none;color:var(--c-meta);
   font-size:1.25rem;line-height:1;cursor:pointer}
 .search-input{padding:.6rem .75rem;border:1px solid var(--c-rule);border-radius:var(--radius,.5rem);
-  background:var(--c-bg);color:var(--c-text);font:inherit;margin-right:2rem}
+  background:var(--c-bg);color:var(--c-text);font:inherit;margin-right:2rem;box-shadow:var(--well)}
 .search-results{list-style:none;padding:0;margin:1rem 0 0;overflow-y:auto}
 .search-results li{margin:0 0 .6rem}
 .search-results a{color:var(--c-heading);text-decoration:none}
@@ -315,7 +316,8 @@ body:has(.book-overlay[open]){overflow:hidden}
 .comment-field label{display:block;color:var(--c-meta);margin-bottom:.375rem}
 .comment-body-field{margin-top:1rem}
 .comment-form input,.comment-form textarea{width:100%;padding:.5rem .75rem;border:1px solid var(--c-rule);
-  border-radius:var(--radius,.5rem);background:var(--c-bg);color:var(--c-text);font:inherit}
+  border-radius:var(--radius,.5rem);background:var(--c-bg);color:var(--c-text);font:inherit;
+  box-shadow:var(--well)}
 /* The focus treatment the newsletter field already had, applied to the same-looking field. */
 .comment-form input:focus,.comment-form textarea:focus{border-color:var(--c-heading)}
 .comment-form textarea{display:block;resize:vertical}

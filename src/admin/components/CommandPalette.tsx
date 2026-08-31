@@ -25,6 +25,7 @@ import { useRouter } from '@/admin/router'
 import { foldAccents } from '@/utils'
 import { SETTINGS_INDEX } from './settings-index'
 import { useAdminT } from './I18nProvider'
+import { OVERLAY } from './sheet'
 import type { AdminStrings } from '@/locales/types'
 
 /**
@@ -208,7 +209,7 @@ export function CommandPalette() {
         aria-modal="true"
         aria-label={t.paletteTitle}
         onMouseDown={(e) => e.stopPropagation()}
-        className="w-full max-w-xl overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-xl dark:border-neutral-700 dark:bg-neutral-900"
+        className={`w-full max-w-xl overflow-hidden ${OVERLAY}`}
       >
         <input
           ref={inputRef}

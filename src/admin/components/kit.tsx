@@ -7,7 +7,7 @@ import type { ReactNode, SelectHTMLAttributes } from 'react'
 
 // --- The sheet -----------------------------------------------------------------------------
 //
-// A card is a SHEET on paper: a hairline edge, a small radius, NO SHADOW. It was `rounded-2xl`
+// A card is a SHEET on paper: a hairline edge, a small radius, no FLOAT. It was `rounded-2xl`
 // + a 1px drop shadow on a #f5f5f5 canvas, which is the costume every generated dashboard
 // wears and what was rejected as looking cheap on 2026-08-15. Each part does its share: 16px on
 // a 1200px panel is a pill, a shadow says the panel FLOATS, and gray under white makes the
@@ -15,8 +15,8 @@ import type { ReactNode, SelectHTMLAttributes } from 'react'
 // one sheet of paper, hairlines ruled across it, nothing floating — so the canvas is that same
 // paper now (`admin.css`) and the RULE does the dividing, which is what this file's own
 // contract already claimed ("hierarchy comes from spacing and rules, not decoration").
-// ⚠️ Not to be re-added: `docs/admin-design.md` reserves shadows for OVERLAYS, so one on a
-// card spends the only signal that means "this floats above what you were reading".
+// ⚠️ Still true of the float: `docs/admin-design.md` reserves the DROP shadow for overlays
+// (`OVERLAY_LIFT`), so a card that lifts spends the signal that means "this is above you".
 /**
  * ONE SHADOW STEP, owner's call 2026-08-29 — and the rule it replaces is worth reading first.
  *
@@ -32,7 +32,7 @@ import type { ReactNode, SelectHTMLAttributes } from 'react'
  * step, and a card that wants one wants to be an overlay instead.
  */
 export const CARD =
-  'rounded-[10px] border border-neutral-200/80 bg-white shadow-[0_1px_2px_rgb(16_24_40/0.04)] dark:border-neutral-800 dark:bg-neutral-900 dark:shadow-none'
+  'rounded-[10px] border border-neutral-200/80 bg-white shadow-[0_1px_2px_rgba(0,0,0,.05)] dark:border-neutral-800 dark:bg-neutral-900 dark:shadow-none'
 
 // The two surfaces that sit INSIDE a card, both hand-written in several places before
 // they were named here. A settings page is a Card holding a PANEL_LIST of rows; a row that
