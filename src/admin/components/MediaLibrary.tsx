@@ -4,6 +4,7 @@
 //   `multi`, tiles toggle a selection (checkbox + ring) and an "Add (N)" button
 //   returns them all via onSelectMany — used to build a gallery in one go.
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import type { MediaItem, ApiResponse } from '@/types'
 import { Button } from '@/admin/ui/Button'
 import { useToast } from '@/admin/ui/Toast'
@@ -17,6 +18,18 @@ import { MediaCard } from './MediaCard'
 
 type Props = {
   mode?: 'page' | 'picker'
+  /**
+   * Where the tool band goes, when the page wants it on the SHEET'S OWN FIRST ROW beside
+   * the kind tabs instead of on a second row under them.
+   *
+   * The Library was two chrome rows deep before anything of its own appeared: tabs, then a
+   * band holding a count, a search and a sort — and the tab row was otherwise empty, so the
+   * second row existed only because the count lives in THIS component's state and the tabs
+   * live in its parent's. A portal is the honest fix: the band stays owned by the state it
+   * reads, and lands where it belongs on the page. React context follows the React tree, not
+   * the DOM, so translations and toasts still reach it.
+   */
+  toolsSlot?: HTMLElement | null
   multi?: boolean
   onSelect?: (url: string, alt?: string) => void
   onSelectMany?: (urls: string[]) => void
@@ -25,16 +38,7 @@ type Props = {
 
 const PAGE = 50 // render this many, then load more on scroll (keeps it light)
 
-// Compact numeric date (e.g. 22/07/26) — keeps the metadata line to one tidy row.
-function compactDate(iso: string, lang: string): string {
-  try {
-    return new Date(iso).toLocaleDateString(lang, { day: '2-digit', month: '2-digit', year: '2-digit' })
-  } catch {
-    return ''
-  }
-}
-
-export function MediaLibrary({ mode = 'page', multi = false, onSelect, onSelectMany, onClose }: Props) {
+export function MediaLibrary({ mode = 'page', multi = false, onSelect, onSelectMany, onClose, toolsSlot }: Props) {
   const t = useAdminT()
   const lang = useAdminLang()
   const { notify } = useToast()
@@ -218,9 +222,12 @@ export function MediaLibrary({ mode = 'page', multi = false, onSelect, onSelectM
   const totalSize = items.reduce((n, m) => n + (m.size || 0), 0)
   const grid = (
     <>
-      {/* Roomier than a 6-col wall so the dims · size · date caption fits without
-          truncating (5 cols at desktop). */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+      {/* Five at desktop, six on a wide screen. The old limit was the caption: three facts
+          on one line needed a wide tile or they truncated. The caption is the NAME now, so
+          the column count answers to the pictures instead. The gaps are uneven on purpose —
+          the caption sits under its own tile, so the vertical gap has a line of type in it
+          that the horizontal one does not. */}
+      <div className="grid grid-cols-2 gap-x-3 gap-y-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
         {view.slice(0, visible).map((m) => (
           <MediaCard
             key={m.url}
@@ -229,7 +236,6 @@ export function MediaLibrary({ mode = 'page', multi = false, onSelect, onSelectM
             multi={multi}
             selected={selected.has(m.url)}
             lang={lang}
-            compactDate={compactDate}
             unused={unused?.has(m.url) ?? false}
             onOpen={() => (mode === 'picker' ? (multi ? toggleSelect(m.url) : onSelect?.(m.url, m.alt)) : setZoom(m))}
             onToggle={() => toggleSelect(m.url)}
@@ -242,23 +248,30 @@ export function MediaLibrary({ mode = 'page', multi = false, onSelect, onSelectM
     </>
   )
 
+  const toolBand = mode === 'page' && items.length > 0 && (
+    <MediaToolbar
+      count={items.length}
+      totalSize={totalSize}
+      query={query}
+      onQuery={(v) => {
+        setQuery(v)
+        setVisible(PAGE)
+      }}
+      sort={sort}
+      onSort={setSort}
+      // In the sheet's first row it is already inside SheetTop's rule and padding, so it
+      // brings neither. Standing alone it draws its own closing rule, as it always did.
+      // `contents` in the slot: the count and the search/sort group become direct children
+      // of the sheet's first row, so the row lays them out and `ml-auto` still holds the
+      // right edge. A wrapper of its own would have been a flex box inside a flex box, each
+      // with its own idea of what wraps first.
+      className={toolsSlot ? 'contents' : undefined}
+    />
+  )
+
   const body = (
     <div className="space-y-5">
-      {/* The tool band FIRST, bled to the sheet's edges — the mock's second chrome row. */}
-      {mode === 'page' && items.length > 0 && (
-        <MediaToolbar
-          count={items.length}
-          totalSize={totalSize}
-          query={query}
-          onQuery={(v) => {
-            setQuery(v)
-            setVisible(PAGE)
-          }}
-          sort={sort}
-          onSort={setSort}
-          className="-mx-4 -mt-4 border-b border-neutral-100 px-5 py-2.5 dark:border-neutral-800"
-        />
-      )}
+      {toolsSlot ? createPortal(toolBand, toolsSlot) : toolBand}
       <ImageUploader onUploaded={(uploaded) => setItems((prev) => [...uploaded, ...prev])} />
       {mode === 'page' && items.length > 0 && (
         <div className="flex flex-wrap justify-end gap-4">

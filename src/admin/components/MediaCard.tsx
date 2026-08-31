@@ -1,5 +1,4 @@
-// One tile in the media grid: the thumbnail, the selection tick, the hover actions, and the
-// caption under it.
+// One tile in the media grid: the picture, the selection tick, the hover actions, the caption.
 //
 // Split out of `MediaLibrary.tsx` on 2026-08-22, when that file crossed its 400-line ceiling.
 // The seam is the obvious one: everything here is about ONE item, and nothing here knows
@@ -7,23 +6,70 @@
 //
 // The four callbacks are already bound to this item by the caller, so nothing in here has to
 // know its own url — which is also what stops a handler being wired to the wrong row.
-
+//
+// REDRAWN 2026-08-31, because the grid was the one screen in the admin nobody had looked at:
+//
+//   · Every picture was cropped to 3:2 with `object-cover`. A manuscript page and a wide
+//     landscape are not the same shape, and forcing both through one letterbox threw away
+//     the half of a tall image that tells you WHICH image it is. A library you cannot
+//     recognise a picture in is not a library. Now the tile is square, the picture is
+//     `object-contain`, and nothing is cut.
+//   · The actions sat on a black gradient washed across the bottom of the picture, with
+//     three white words on it that wrapped to two lines on a narrow tile. That band is the
+//     stock photo-app costume, it is the darkest thing in an admin built from paper and
+//     hairlines, and it painted over the one thing the screen exists to show.
+//   · Every tile was a bordered box holding a picture plus TWO lines of small grey type —
+//     eighteen boxes to a screen, and the second line truncated mid-date (`08/…`) so the
+//     noise was not even legible. One line now, and the size kept because it is one of the
+//     three sorts.
+//
+// What replaces the band is the grammar the rest of the admin already uses: the picture sits
+// in a TRAY that is carved (a hairline pressed in, because a tray holds), and the actions are
+// small RAISED keys (because a key is pressed). No black anywhere.
 import type { MediaItem, SiteLang } from '@/types'
+import type { IconName } from '@/icons'
 import { formatBytes } from '@/utils'
 import { formatDate } from '@/i18n/i18n'
 import { useAdminT } from './I18nProvider'
-import { CHECK, TAP } from './kit'
+import { SharedGlyph } from './navIcons'
+import { Tick } from '@/admin/ui/Tick'
+
+/**
+ * A key laid ON a picture: white, raised, and pressed the way every other key in this admin
+ * is pressed. It is defined here rather than in the kit because it is the only place in the
+ * admin where a control has to stand on an image it does not own — it cannot take the paper
+ * behind it for granted, which is why it carries its own ground and a top lip bright enough
+ * to read over a photograph.
+ */
+const KEY =
+  'grid h-7 w-7 place-items-center rounded-md bg-white/95 text-neutral-600 backdrop-blur-[2px] transition '
+  + 'shadow-[inset_0_1px_0_rgba(255,255,255,.9),0_1px_2px_rgba(0,0,0,.3)] '
+  + 'hover:text-neutral-900 hover:shadow-[inset_0_1px_0_rgba(255,255,255,.9),0_2px_4px_rgba(0,0,0,.32)] '
+  + 'active:translate-y-px active:duration-0 active:shadow-[inset_0_2px_3px_rgba(0,0,0,.25)] '
+  + 'motion-reduce:active:translate-y-0 '
+  + 'dark:bg-neutral-900/95 dark:text-neutral-300 dark:hover:text-white'
+
+/** Shown on touch, waited for on a pointer: a library is scrolled far more than it is acted on. */
+const ON_HOVER = 'opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100'
+
+const Glyph = ({ name }: { name: IconName }) => (
+  <svg
+    viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor"
+    strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden
+  >
+    <SharedGlyph name={name} />
+  </svg>
+)
 
 export function MediaCard({
-  m, mode, multi, selected, lang, compactDate, unused, onOpen, onToggle, onCopy, onDelete,
+  m, mode, multi, selected, lang, unused, onOpen, onToggle, onCopy, onDelete,
 }: {
   m: MediaItem
   mode: 'page' | 'picker'
   multi: boolean
   selected: boolean
   lang: SiteLang
-  compactDate: (iso: string, lang: string) => string
-  /** Marked by the "check unused" sweep; the badge is the only thing that reads it. */
+  /** Marked by the "check unused" sweep; the chip is the only thing that reads it. */
   unused: boolean
   onOpen: () => void
   onToggle: () => void
@@ -31,84 +77,95 @@ export function MediaCard({
   onDelete: () => void
 }) {
   const t = useAdminT()
+  const dims = m.width && m.height ? `${m.width}×${m.height} · ` : ''
+  const full = `${dims}${formatBytes(m.size)} · ${formatDate(m.uploadedAt, lang)}`
+  const showTick = mode === 'page' || multi
   return (
-        <figure
-                className={`group relative overflow-hidden rounded-lg border bg-white dark:bg-neutral-900 ${
-            (mode === 'page' || multi) && selected
-              ? 'border-neutral-900 ring-2 ring-neutral-900 dark:border-white dark:ring-white'
-              : 'border-neutral-200 dark:border-neutral-800'
-          }`}
+    <figure className="group relative">
+      {/* The tray. Carved rather than boxed: a hairline pressed into the paper says the
+          picture is HELD here, where a border drawn around picture AND caption made the
+          grid a tray of boxes — the costume `kit.tsx` argues against for exactly this
+          reason. Chosen goes one step down and takes an ink edge, like every other
+          chosen thing in this admin. */}
+      <div
+        className={`relative aspect-square overflow-hidden rounded-lg transition ${
+          selected
+            ? 'bg-neutral-200 ring-2 ring-inset ring-neutral-900 dark:bg-neutral-700 dark:ring-white'
+            : 'bg-neutral-100/70 ring-1 ring-inset ring-black/[.07] dark:bg-neutral-800/50 dark:ring-white/10'
+        }`}
+      >
+        <button
+          type="button"
+          // Page mode: click to zoom. Picker: click to select (toggle in multi).
+          onClick={onOpen}
+          aria-label={m.filename}
+          className="absolute inset-0 block"
         >
-          {/* Image region. The click target fills it; the checkbox + action bar
-              sit ON the image (absolute) so they cost zero layout height. */}
-          <div className="relative aspect-[3/2] w-full bg-neutral-100 dark:bg-neutral-800">
-            <button
-              type="button"
-              // Page mode: click to zoom. Picker: click to select (toggle in multi).
-              onClick={onOpen}
-              aria-label={m.filename}
-              className="absolute inset-0 block"
-            >
-              <img src={m.thumb ?? m.url} alt={m.filename} className="h-full w-full object-cover" />
+          {/* The padding is the mount a print gets, and it is what keeps a white-edged
+              scan from bleeding into the tray it sits in. */}
+          <img src={m.thumb ?? m.url} alt={m.filename} className="h-full w-full object-contain p-1.5" />
+        </button>
+        {showTick && (
+          /* The LABEL carries the hit area, not the tick. Padding on an `input[type=checkbox]`
+             is ignored by the browser — the native widget draws at its border box and a `p-2`
+             on it computes to 0, measured 2026-08-22 — so the 16px tick stayed a 16px target
+             on a phone and on an iPad. A label is the standard answer and it is also the
+             accessible one: the whole 32px square is the control.
+             It is `<Tick>` and not the native box because this one stands on a PICTURE: the
+             drawn box brings its own white ground and hairline, so it is findable over a
+             pale scan, where `accent-` on the platform widget was not. */
+          <label
+            className={`absolute left-1.5 top-1.5 z-20 flex h-8 w-8 -translate-x-1 -translate-y-1 cursor-pointer items-center justify-center ${
+              selected ? 'opacity-100' : ON_HOVER
+            }`}
+          >
+            <Tick checked={selected} onChange={onToggle} aria-label={m.filename} />
+          </label>
+        )}
+        {unused && (
+          /* A finding, not an alarm: it reads as a note laid on the corner of the print.
+             It was a solid black rectangle with square corners, which in an admin whose
+             only black is its ink read louder than anything it could be telling you. */
+          <span className="absolute bottom-1.5 left-1.5 z-10 rounded-md bg-white/95 px-1.5 py-0.5 text-[11px] font-medium text-neutral-600 shadow-[0_1px_2px_rgba(0,0,0,.22)] backdrop-blur-[2px] dark:bg-neutral-900/95 dark:text-neutral-300">
+            {t.unusedBadge}
+          </span>
+        )}
+        {/* The size, where it costs the NAME nothing. Set beside the name it took a third
+            of a 190px caption and cut "gutenberg-bible-epistle.jpg" to "gutenberg-bible-ep…",
+            which is the half of the line that is actually looked for. It waits for the
+            pointer with the keys, so the resting grid is pictures and names and nothing else. */}
+        <span className={`absolute bottom-1.5 right-1.5 z-10 rounded-md bg-white/95 px-1.5 py-0.5 text-[11px] tabular-nums text-neutral-600 shadow-[0_1px_2px_rgba(0,0,0,.22)] backdrop-blur-[2px] transition-opacity dark:bg-neutral-900/95 dark:text-neutral-300 ${ON_HOVER}`}>
+          {formatBytes(m.size)}
+        </span>
+        {mode === 'page' && (
+          /* Three keys, not three words. The labels were "Copy URL", "Download" and
+             "Delete" laid across the picture; at 155px — a tile on a 390px phone — they
+             did not fit on one line, so the row wrapped and the band grew a second storey.
+             A 28px key is the same target at every width and carries no line to break. */
+          <div className={`absolute right-1.5 top-1.5 z-10 flex gap-1 transition-opacity duration-150 ${ON_HOVER}`}>
+            <button type="button" onClick={onCopy} title={t.copyUrl} aria-label={t.copyUrl} className={KEY}>
+              <Glyph name="copy" />
             </button>
-            {(mode === 'page' || multi) && (
-              /* The LABEL carries the hit area, not the tick. Padding on an
-                 `input[type=checkbox]` is ignored by the browser — the native widget draws
-                 at its border box and a `p-2` on it computes to 0, measured 2026-08-22 —
-                 so the 16px tick stayed a 16px target on a phone and on an iPad. A label
-                 is the standard answer and it is also the accessible one: the whole 32px
-                 square is the control. `-m-2` puts the tick back where it was, so nothing
-                 on the card moves. */
-              <label
-                className={`absolute left-1.5 top-1.5 z-20 -m-2 flex h-8 w-8 cursor-pointer items-center justify-center transition-opacity ${
-                  selected ? 'opacity-100' : 'opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100'
-                }`}
-              >
-                <input
-                  type="checkbox"
-                  checked={selected}
-                  onChange={onToggle}
-                  aria-label={m.filename}
-                  className={`h-4 w-4 ${CHECK}`}
-                />
-              </label>
-            )}
-            {unused && (
-              <span className="absolute right-1.5 top-1.5 z-10 bg-neutral-900 px-1.5 py-0.5 text-xs font-medium text-white dark:bg-white dark:text-neutral-900">
-                {t.unusedBadge}
-              </span>
-            )}
-            {/* Actions overlay the image bottom (always on touch, hover on desktop).
-
-                `flex-wrap` + `whitespace-nowrap`, and both halves are needed: a tile is ~155px
-                wide at 390px and the three labels do not fit on one line there, so the row was
-                breaking "Copy URL" through its own middle — the same failure `ui/Button` has a
-                comment about, on buttons that never went through it. Wrapping the ROW puts
-                "Delete" on a second line instead, which is a layout; breaking a label is not.
-                Photographed at 390px on 2026-08-22. */}
-            {mode === 'page' && (
-              <div className="absolute inset-x-0 bottom-0 z-10 flex flex-wrap items-center justify-end gap-x-2.5 gap-y-1 bg-gradient-to-t from-black/70 via-black/35 to-transparent px-2 py-1.5 text-xs opacity-100 transition-opacity duration-150 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
-                <button type="button" onClick={onCopy} className={`${TAP} whitespace-nowrap text-white/90 hover:text-white`}>
-                  {t.copyUrl}
-                </button>
-                <a href={m.url} download={m.filename} className={`${TAP} whitespace-nowrap text-white/90 hover:text-white`}>
-                  {t.download}
-                </a>
-                <button type="button" onClick={onDelete} className={`${TAP} whitespace-nowrap font-medium text-white`}>
-                  {t.delete}
-                </button>
-              </div>
-            )}
+            <a href={m.url} download={m.filename} title={t.download} aria-label={t.download} className={KEY}>
+              <Glyph name="download" />
+            </a>
+            <button
+              type="button" onClick={onDelete} title={t.delete} aria-label={t.delete}
+              className={`${KEY} hover:text-[var(--pen-red)] dark:hover:text-[var(--pen-red)]`}
+            >
+              <Glyph name="trash" />
+            </button>
           </div>
-          <figcaption className="space-y-0.5 p-2 text-xs">
-            <p className="truncate font-medium text-neutral-700 dark:text-neutral-300" title={m.filename}>
-              {m.filename}
-            </p>
-            <p className="truncate text-neutral-500 dark:text-neutral-400" title={`${m.width && m.height ? `${m.width}×${m.height} · ` : ''}${formatBytes(m.size)} · ${formatDate(m.uploadedAt, lang)}`}>
-              {m.width && m.height ? `${m.width}×${m.height} · ` : ''}
-              {formatBytes(m.size)} · {compactDate(m.uploadedAt, lang)}
-            </p>
-          </figcaption>
-        </figure>
+        )}
+      </div>
+      {/* One line, and the whole width of the tile for the one thing you are looking for.
+          Dimensions, size and date are all a hover or a title away. */}
+      <figcaption
+        className="mt-1.5 truncate text-xs text-neutral-700 dark:text-neutral-300"
+        title={`${m.filename}\n${full}`}
+      >
+        {m.filename}
+      </figcaption>
+    </figure>
   )
 }
