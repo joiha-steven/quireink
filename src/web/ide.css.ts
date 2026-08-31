@@ -48,7 +48,11 @@ html[data-ide-chrome=on] .empty::before,
    page's way on to the whole archive, which sits on a heading row beside a label that is
    already marked and read as the one unmarked thing in the row without it. */
 html[data-ide-chrome=on] .front-more::before,
-html[data-ide-chrome=on] .info-action::before{content:"// ";color:var(--c-meta)}
+html[data-ide-chrome=on] .info-action::before{content:"// ";color:var(--c-meta);
+  /* The trailing space in the content string is one monospace character and the label
+     beside it is a control that draws a mark round itself on hover. Four pixels is not
+     a gap between a comment marker and a circled word, it is a collision. */
+  margin-right:.45rem}
 /* AND NO GLYPH BESIDE IT. This chrome trades pictures for words everywhere else — the
    header's four icons become [/tìm] [tối] tokens two rules below — so a book drawn next to
    a line that already says "Book mode", inside a panel written as source, is the one place
