@@ -185,7 +185,7 @@ function registerSettingsTools(server: ToolHost): void {
       //
       // Both have moved. Tokens carry a scope since 2026-08-2x, and a `read` token's door
       // never registers a write tool at all (`mcp-transport.ts`). And the deep merge is now
-      // asserted for EVERY path, one at a time, with the other 154 watched
+      // asserted for EVERY path, one at a time, with the other 157 watched
       // (`content/settings-path.test.ts`) — so a patch built from one path can no more damage
       // a neighbour than the admin's own Save button can.
       //

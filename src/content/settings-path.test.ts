@@ -1,4 +1,4 @@
-// Every setting, set one at a time, with the other 154 watched.
+// Every setting, set one at a time, with the other 157 watched.
 //
 // This is the test that makes it safe for anything other than a form to write a setting. The
 // promise `settings-path.ts` relies on is that `saveSettings` DEEP-merges — that a partial

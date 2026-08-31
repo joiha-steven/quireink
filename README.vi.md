@@ -95,7 +95,7 @@ Bạn được đọc, sửa, chạy và fork nó theo [PolyForm Noncommercial](
 | 🌍&nbsp;**Ngôn&nbsp;ngữ** | Mười một thứ tiếng, cả trong quản trị lẫn ngoài site — và cộng đồng có thể thêm nữa, mỗi ngôn ngữ một file. Không kèm webfont CJK nào — chúng nặng hàng megabyte — nhưng mỗi thứ tiếng gọi tên mặt chữ riêng, nên 直 được vẽ theo lối Nhật trên site tiếng Nhật |
 | 🔐&nbsp;**Đăng&nbsp;nhập** | Tên và mật khẩu của riêng bạn, băm bằng argon2id. Mã xác thực mỗi lần vào, và mười mã khôi phục cho ngày mất điện thoại. Đổi mật khẩu, ghi danh lại ứng dụng xác thực, và xem mọi thiết bị đang đăng nhập kèm nút cắt — từng cái một hoặc tất cả. Có cả đường quay lại cho ngày mất CẢ mật khẩu lẫn điện thoại. Không có Google trong đường đăng nhập |
 | 🤖&nbsp;**Trợ&nbsp;lý** | Khoá model của chính bạn, ngay trong trang quản trị: Claude, GPT, Gemini hay DeepSeek. Câu trả lời hiện ra theo lúc nó viết, các cuộc trò chuyện được giữ và liệt kê, mỗi cuộc kèm hoá đơn. Nó cũng viết chú thích cho ảnh bạn vừa tải lên và gạt spam vào thùng rác |
-| ⌨️&nbsp;**Trang&nbsp;quản&nbsp;trị** | ⌘K nhảy thẳng tới bất kỳ cái nào trong 245 thiết lập bằng tên, nên không còn phải nhớ nó nằm ở tab nào trong tám tab. Mọi nút đều có độ nổi: nhô lên là bấm được, lõm xuống là đang giữ. Sáu tổ hợp phím trong trình soạn |
+| ⌨️&nbsp;**Trang&nbsp;quản&nbsp;trị** | ⌘K tìm bất kỳ cái nào trong 108 thiết lập có tên rồi nhảy thẳng tới, nên không còn phải nhớ nó nằm ở tab nào trong tám tab. Mọi nút đều có độ nổi: nhô lên là bấm được, lõm xuống là đang giữ. Sáu tổ hợp phím trong trình soạn |
 | 📱&nbsp;**Điện&nbsp;thoại** | Cài ra màn hình chính là nó mở như một ứng dụng |
 
 **Làm cho** một người, một máy chủ, một cái blog định giữ lâu dài.

@@ -95,7 +95,7 @@ You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE),
 | 🌍&nbsp;**Languages** | Eleven, in the admin and on the site, and anyone can add one more in a single file. No CJK webfont ships, because they run to megabytes, but each of the three names its own face so 直 is drawn the Japanese way on a Japanese site |
 | 🔐&nbsp;**Sign-in** | Your own username and password, hashed with argon2id. An authenticator code every time, and ten recovery codes for the day the phone goes missing. Change the password, re-enrol the authenticator, and see every signed-in device with a button to end it — one at a time or all at once. There is a way back in when the password AND the phone are both gone. No Google anywhere in the login path |
 | 🤖&nbsp;**Assistant** | Your own model key, in the admin: Claude, GPT, Gemini or DeepSeek. Answers arrive as they are written, conversations are kept and listed, and each one carries a receipt of what it cost. It also writes the alt text for a picture you upload and sorts spam into the trash |
-| ⌨️&nbsp;**The&nbsp;admin** | ⌘K jumps to any of 245 settings by name, so it stops mattering which of the eight tabs holds it. Every control is a key with relief: raised means you can press it, carved means it is held down. Six chords in the editor |
+| ⌨️&nbsp;**The&nbsp;admin** | ⌘K finds any of 108 named settings and jumps to it, so it stops mattering which of the eight tabs holds it. Every control is a key with relief: raised means you can press it, carved means it is held down. Six chords in the editor |
 | 📱&nbsp;**Phone** | Install it to the home screen and it opens like an app |
 
 **Made for** one person, one server, one blog they mean to keep.

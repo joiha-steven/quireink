@@ -92,7 +92,7 @@
   (2.2.4; it wrote three fields before, and said the rest could not be changed over MCP).
   Two things had to move first: a token now carries a SCOPE, and a `read` token's door never
   registers a write tool at all (`mcp-transport.ts`); and the deep merge is asserted for every
-  path one at a time with the other 154 watched (`content/settings-path.test.ts`), so a patch
+  path one at a time with the other 157 watched (`content/settings-path.test.ts`), so a patch
   built from one path cannot damage a neighbour. The route to disk is unchanged —
   `saveSettings`, which sanitises, clamps and refuses exactly as it does for the form — so
   nothing reachable here is anything the owner's own screens could not already do.
