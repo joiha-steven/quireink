@@ -84,6 +84,12 @@ const it = {
   sortUpdated: 'Ultima modifica',
   sortCreated: 'Data di creazione',
   commentsSearch: 'Cerca nei commenti…',
+  commentsSortRecent: 'Recenti',
+  commentsSortBusiest: 'Più attivi',
+  commentsInPosts: '{n} commenti su {p} articoli',
+  commentsStatPosts: 'articoli',
+  commentsStatWeek: 'in 7 giorni',
+  commentsStatPeople: 'persone',
   commentsFootHint: 'Clicca un commento per leggerlo per intero. Elimina è un’eliminazione morbida: finisce nel cestino.',
   filterEmpty: 'Nessun articolo corrisponde al filtro.',
   // The command palette (⌘K). Its placeholder is the whole instruction: one box, and it

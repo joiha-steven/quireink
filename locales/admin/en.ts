@@ -84,6 +84,12 @@ const en = {
   sortUpdated: 'Last updated',
   sortCreated: 'Date created',
   commentsSearch: 'Search comments...',
+  commentsSortRecent: 'Newest',
+  commentsSortBusiest: 'Busiest',
+  commentsInPosts: '{n} comments on {p} posts',
+  commentsStatPosts: 'posts',
+  commentsStatWeek: 'in 7 days',
+  commentsStatPeople: 'people',
   commentsFootHint: 'Click a comment to read it in full. Delete is a soft delete — it moves to Trash.',
   filterEmpty: 'No posts match your filter.',
   // The command palette (⌘K). Its placeholder is the whole instruction: one box, and it

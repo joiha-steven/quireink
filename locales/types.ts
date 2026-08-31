@@ -217,6 +217,12 @@ export type AdminStrings = {
   sortUpdated: string
   sortCreated: string
   commentsSearch: string
+  commentsSortRecent: string
+  commentsSortBusiest: string
+  commentsInPosts: string
+  commentsStatPosts: string
+  commentsStatWeek: string
+  commentsStatPeople: string
   commentsFootHint: string
   edit: string
   delete: string

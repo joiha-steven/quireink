@@ -21,10 +21,31 @@ type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
 const STYLES: Record<Variant, string> = {
   // Relief in 1–2px: a pressable thing stands PROUD of the sheet (a light lip above, 1px of
   // contact below) and pressing carves it in. Grey values, not a colour — this is shading.
+  //
+  // ON THE BLACK BUTTON THE SHADING HAS TO COME FROM LIGHT, NOT SHADOW. A dark inset inside
+  // near-black is invisible — the same lesson the segmented strip learned — so this key is
+  // lit instead: a bright lip along its TOP edge at rest, which is what a raised face catches;
+  // hover lifts it (the lip brightens, the contact shadow deepens); the press moves the light
+  // to the BOTTOM inside edge, which is what a sunken face catches, and drops the outside
+  // shadow to nothing so the button sits flat on the sheet. Dark mode inverts the button, so
+  // there the lip is a dark one and the same three states read the same way.
   primary:
-    'bg-neutral-900 text-white hover:bg-neutral-700 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-200 shadow-[0_1px_1.5px_rgba(0,0,0,.25)] active:shadow-[inset_0_2px_3px_rgba(0,0,0,.45)]',
+    'bg-neutral-900 text-white hover:bg-neutral-700 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-200 '
+    + 'shadow-[inset_0_1px_0_rgba(255,255,255,.16),0_1px_2px_rgba(0,0,0,.3)] '
+    + 'hover:shadow-[inset_0_1px_0_rgba(255,255,255,.22),0_2px_4px_rgba(0,0,0,.32)] '
+    + 'active:shadow-[inset_0_2px_4px_rgba(0,0,0,.55),inset_0_-1px_0_rgba(255,255,255,.22)] '
+    + 'dark:shadow-[inset_0_1px_0_rgba(255,255,255,.9),0_1px_2px_rgba(0,0,0,.25)] '
+    + 'dark:hover:shadow-[inset_0_1px_0_rgba(255,255,255,.9),0_2px_4px_rgba(0,0,0,.3)] '
+    + 'dark:active:shadow-[inset_0_2px_4px_rgba(0,0,0,.3),inset_0_-1px_0_rgba(255,255,255,.7)]',
   secondary:
-    'border border-neutral-300 bg-white text-neutral-800 hover:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:hover:bg-neutral-700 shadow-[inset_0_1px_0_rgba(255,255,255,.75),0_1px_1.5px_rgba(0,0,0,.12)] active:shadow-[inset_0_2px_3px_rgba(0,0,0,.22)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,.06),0_1px_1.5px_rgba(0,0,0,.5)] dark:active:shadow-[inset_0_2px_3px_rgba(0,0,0,.6)]',
+    'border border-neutral-300 bg-white text-neutral-800 hover:border-neutral-400 hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:hover:bg-neutral-700 '
+    + 'shadow-[inset_0_1px_0_rgba(255,255,255,.75),0_1px_1.5px_rgba(0,0,0,.12)] '
+    // Hover LIFTS a raised key — 2px of contact instead of 1 — rather than only tinting it.
+    + 'hover:shadow-[inset_0_1px_0_rgba(255,255,255,.9),0_2px_4px_rgba(0,0,0,.14)] '
+    + 'active:shadow-[inset_0_2px_3px_rgba(0,0,0,.22)] '
+    + 'dark:shadow-[inset_0_1px_0_rgba(255,255,255,.06),0_1px_1.5px_rgba(0,0,0,.5)] '
+    + 'dark:hover:shadow-[inset_0_1px_0_rgba(255,255,255,.1),0_2px_4px_rgba(0,0,0,.55)] '
+    + 'dark:active:shadow-[inset_0_2px_3px_rgba(0,0,0,.6)]',
   // Flat at rest — a ghost earns its relief only under the finger.
   ghost: 'bg-transparent text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800 active:shadow-[inset_0_2px_3px_rgba(0,0,0,.15)] dark:active:shadow-[inset_0_2px_3px_rgba(0,0,0,.5)]',
   // THE RED BALLPOINT. It was byte-identical to primary once, which made "Delete forever" the

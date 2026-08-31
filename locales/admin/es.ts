@@ -84,6 +84,12 @@ const es = {
   sortUpdated: 'Última modificación',
   sortCreated: 'Fecha de creación',
   commentsSearch: 'Buscar comentarios…',
+  commentsSortRecent: 'Recientes',
+  commentsSortBusiest: 'Más activos',
+  commentsInPosts: '{n} comentarios en {p} entradas',
+  commentsStatPosts: 'entradas',
+  commentsStatWeek: 'en 7 días',
+  commentsStatPeople: 'personas',
   commentsFootHint: 'Haz clic en un comentario para leerlo entero. Eliminar es un borrado suave: va a la papelera.',
   filterEmpty: 'Ninguna entrada coincide con tu filtro.',
   // The command palette (⌘K). Its placeholder is the whole instruction: one box, and it

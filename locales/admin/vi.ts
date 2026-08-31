@@ -84,6 +84,12 @@ const vi = {
   sortUpdated: 'Mới cập nhật',
   sortCreated: 'Mới tạo',
   commentsSearch: 'Tìm trong bình luận...',
+  commentsSortRecent: 'Mới nhất',
+  commentsSortBusiest: 'Nhiều nhất',
+  commentsInPosts: '{n} bình luận trên {p} bài',
+  commentsStatPosts: 'bài',
+  commentsStatWeek: 'trong 7 ngày',
+  commentsStatPeople: 'người',
   commentsFootHint: 'Bấm vào lời bình để đọc toàn văn. Xoá là xoá mềm — chuyển vào Thùng rác.',
   filterEmpty: 'Không có bài viết khớp bộ lọc.',
   // The command palette (⌘K). Its placeholder is the whole instruction: one box, and it
