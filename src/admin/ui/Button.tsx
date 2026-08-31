@@ -78,8 +78,13 @@ const STYLES: Record<Variant, string> = {
 const SHAPE =
   'inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-md font-medium transition disabled:cursor-not-allowed disabled:opacity-50 active:translate-y-px active:duration-0 motion-reduce:active:translate-y-0'
 
+// 36 and 32, down from 40 and 32 on 2026-09-01. Forty was never measured against anything —
+// it is the default a dashboard arrives with — and next to this admin's type it read as
+// furniture: a `Save settings` key 40px tall over a 33.5px tab strip, `Choose image` twice the
+// height of the sentence explaining it. The small key keeps its 32 and is now one step below
+// the ordinary one rather than two, which is what a second size is for.
 const SIZES: Record<Size, string> = {
-  md: 'min-h-10 px-4 py-2 text-sm',
+  md: 'min-h-9 px-3.5 py-1.5 text-sm',
   sm: 'min-h-8 px-3 py-1.5 text-xs',
 }
 

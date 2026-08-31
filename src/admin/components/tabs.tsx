@@ -35,10 +35,16 @@ export const TAB_TRACK = 'flex w-full flex-wrap items-end gap-6 border-b border-
 // The track is carved — it CONTAINS the keys, so it wears the groove (`bg` one step off the
 // card plus a 1px inner shadow); the active key is HELD DOWN in it. Ink-on-ink shading is
 // invisible, so the pressed key also catches light on its lower inside edge.
-export const SEGMENT_TRACK = 'flex w-fit max-w-full overflow-x-auto no-scrollbar rounded-md border border-neutral-200 bg-neutral-50 shadow-[inset_0_1px_2px_rgba(0,0,0,.07)] dark:border-neutral-800 dark:bg-neutral-950/40 dark:shadow-[inset_0_1px_2px_rgba(0,0,0,.4)]'
+// `min-h-8` — 32px, the small control height, and the height of the whole segmented family.
+// The strip sets the height of the sheet's tools row: it is the widest thing on that row and
+// the first thing read on it, so the save key and the search field beside it are sized to IT
+// rather than the other way round. A MINIMUM rather than a fixed height, because three call
+// sites let the strip wrap and a fixed one would halve their rows; a single-line strip lands
+// on 32 exactly, its items stretching to 30 inside the 1px edge.
+export const SEGMENT_TRACK = 'flex min-h-8 w-fit max-w-full overflow-x-auto no-scrollbar rounded-md border border-neutral-200 bg-neutral-50 shadow-[inset_0_1px_2px_rgba(0,0,0,.07)] dark:border-neutral-800 dark:bg-neutral-950/40 dark:shadow-[inset_0_1px_2px_rgba(0,0,0,.4)]'
 // The dense variant is full-width with growing items: five segments whose right edge lands
 // on the pane's own edge instead of stopping short of it, which read as a gap left over.
-const SEGMENT_TRACK_DENSE = 'flex w-full overflow-x-auto no-scrollbar rounded-md border border-neutral-200 bg-neutral-50 shadow-[inset_0_1px_2px_rgba(0,0,0,.07)] dark:border-neutral-800 dark:bg-neutral-950/40 dark:shadow-[inset_0_1px_2px_rgba(0,0,0,.4)]'
+const SEGMENT_TRACK_DENSE = 'flex min-h-8 w-full overflow-x-auto no-scrollbar rounded-md border border-neutral-200 bg-neutral-50 shadow-[inset_0_1px_2px_rgba(0,0,0,.07)] dark:border-neutral-800 dark:bg-neutral-950/40 dark:shadow-[inset_0_1px_2px_rgba(0,0,0,.4)]'
 
 /**
  * What an active item MEANS, which turns out to be two different things wearing one costume.
@@ -85,7 +91,11 @@ export const tabItemClass = (
     // wraps their labels instead: measured at 390px, "Search & URLs" broke over three lines
     // and made a 32px control 130px tall. A scrolling strip should keep its items whole and
     // let the strip move — that is what scrolling is for.
-    : `${dense ? 'grow px-2' : 'shrink-0 whitespace-nowrap px-3'} py-1.5 text-[0.8125rem] font-medium transition ${
+    // `py-1` and not `py-1.5`: the track's own `min-h-8` is what sets the strip's height now,
+    // and the padding only has to be small enough to let it. At `py-1.5` the item measured
+    // 31.5 and pushed the track to 33.5 — a third height on a row that has a 32px key and a
+    // 32px field on it.
+    : `${dense ? 'grow px-2' : 'shrink-0 whitespace-nowrap px-3'} py-1 text-[0.8125rem] font-medium transition ${
         active
           // INK on the highlighter, not the reading site's olive `--on-pen`: on a control
           // the olive read as grey and dull, and the owner called it. A mark in running
