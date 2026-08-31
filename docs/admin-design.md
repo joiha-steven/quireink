@@ -100,7 +100,11 @@ character and none of its typographic rules **except one**, below.
   drops the travel. Homes: `ui/Button`, `ui/Switch`, `ui/Tick`, `CONTROL_CHROME`, the
   segmented item in `tabs.tsx`; screens inherit and add nothing. The toast is now ONE neutral
   sheet with a pilot lamp in the version dot's hues — green good, amber needs you — plus the
-  glyph, so colour never carries the message alone.
+  glyph, so colour never carries the message alone. The newsletter send button is a TWO-STAGE
+  LATCH in the same amber: the first press arms it and prints the recipient count the send
+  will use, only a second press within five seconds sends, and Esc, an outside click or the
+  countdown stands it down — it replaced a native `confirm()` that asked with none of the
+  numbers, for the one action this product cannot undo.
 - **Square corners are a PUBLIC rule.** Admin uses a 10 / 8 / 6px radius hierarchy — sheet,
   nested panel, control — never a global square reset, never arbitrary per-component rounding.
   It was 16 / 12 / 8; a 16px radius on a 1200px panel reads as a pill rather than as a page.

@@ -1211,11 +1211,10 @@ export type AdminStrings = {
   nlAlreadySentShort: string
   nlResendConfirm: string
   nlSendButton: string
-  nlSendConfirm: string
+  nlArmed: string
   nlSendDone: string
   nlSendFailed: string
   nlSendHint: string
-  nlNPosts: string
   nlDigestHint: string
   // sidebar collapse
   navCollapse: string
