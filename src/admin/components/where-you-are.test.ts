@@ -34,20 +34,21 @@ describe('the highlighter marks a place', () => {
   })
 
   it('marks the page you are on in the rail', () => {
-    // A RUN of the marker, not a slab: the wash is the pen diluted into the paper, and the
-    // bar at the leading edge is the pen's own edge tone. What this pins is the INK — the
-    // day the rail's mark stops being drawn from --pen, this fails.
+    // A KEY HELD DOWN in the pen's wash: what this pins is the INK and the STATE — the mark
+    // is drawn from --pen, and it is carved in (an inset), not a solid slab of the marker.
     expect(SIDEBAR_NAV_ACTIVE).toContain('var(--pen)')
-    expect(SIDEBAR_NAV_ACTIVE).toContain('before:bg-[var(--pen-edge)]')
+    expect(SIDEBAR_NAV_ACTIVE).toContain('shadow-[inset')
     expect(SIDEBAR_NAV_ACTIVE).not.toContain('bg-[var(--pen)]')
   })
 })
 
 describe('the highlighter does NOT mark a choice', () => {
-  it('leaves a selected value on the ink pill', () => {
+  it('leaves a selected value on the sunken paper key, never the pen', () => {
     // The default role. Ten call sites build a chooser out of this directly — the language
-    // picker, the home mode, the gallery ratio — and every one of them is a value, not a place.
-    expect(tabItemClass(true, 'sm')).toContain('bg-neutral-900')
+    // picker, the home mode, the gallery ratio — and every one of them is a value, not a
+    // place. It was the solid ink pill; ink can show no relief, so the chosen value is now
+    // the paper key pressed into the groove. What stays pinned: no --pen on a value.
+    expect(tabItemClass(true, 'sm')).toContain('shadow-[inset')
     expect(tabItemClass(true, 'sm')).not.toContain('--pen')
     expect(tabItemClass(true, 'lg')).not.toContain('--pen')
   })
