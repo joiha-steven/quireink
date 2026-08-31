@@ -297,6 +297,43 @@ body {
 .dark .admin-canvas {
   background: #0f0f0f;
 }
+/* MILLED OUT OF THE CASE, rather than butted against it behind a drawn line. The rail used
+   to end in a 1px border — the same hairline the sheet's own edge is drawn with, so the case
+   seam and the paper's edge were the same stroke and neither said which was structure. A
+   recess says it without a line: the working area sits a fraction below the plate around it,
+   which is where a recess is on anything you can pick up. Only from `lg`, because below it
+   there is no rail and the canvas has nothing to be recessed into. */
+@media (min-width: 64rem) {
+  .admin-canvas {
+    box-shadow: inset 1px 0 0 rgb(0 0 0 / 0.07), inset 7px 0 7px -7px rgb(0 0 0 / 0.09);
+  }
+  .dark .admin-canvas {
+    box-shadow: inset 1px 0 0 rgb(0 0 0 / 0.6), inset 7px 0 7px -7px rgb(0 0 0 / 0.7);
+  }
+}
+
+/* THE CASE: the rail, and the shell behind everything. White, the same white as the paper —
+   a white desk with white paper on it is not a thing that needs explaining, and the warm
+   canvas between them was already a step darker than both. What the seam needed was not a
+   different colour but a different KIND of edge, which is the recess above: structure is
+   shown by depth, a sheet's own edge by a hairline. Before, both were the identical 1px
+   line, so nothing said which of the two whites you could write on.
+
+   The cool `neutral-100` the shell used to carry is gone with it: on the one screen where
+   the shell shows through, a cool plate beside a warm canvas is a seam doing nothing. */
+.admin-case {
+  background: #ffffff;
+}
+.dark .admin-case {
+  background: #171717;
+}
+/* The phone's top bar is the same plate, translucent because the page scrolls under it. */
+.admin-bar {
+  background: rgb(255 255 255 / 0.95);
+}
+.dark .admin-bar {
+  background: rgb(23 23 23 / 0.95);
+}
 
 .admin-shell :focus-visible {
   outline: 2px solid #737373;
