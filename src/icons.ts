@@ -65,6 +65,15 @@ export const ICONS = {
     '<path d="M10 14 20 4M14.5 4H20v5.5"/>'
     + '<path d="M20 13.5V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h5.5"/>'
     + '<path d="m12.3 11.7 2.2-2.2" stroke-width="1.4"/>',
+  // Two sheets, the front one carrying the echo stroke every filled shape in this set has.
+  // `link` above is a way OUT to a page; this is the address taken away with you.
+  copy:
+    '<rect x="8.5" y="8.5" width="12" height="12" rx="1.5"/>'
+    + '<path d="M15.5 5.5V5A1.5 1.5 0 0 0 14 3.5H5A1.5 1.5 0 0 0 3.5 5v9A1.5 1.5 0 0 0 5 15.5h.5"/>'
+    + '<path d="M11.7 13.3h5.6" stroke-width="1.4"/>',
+  download:
+    '<path d="M12 3.5v11"/><path d="m7.5 10.2 4.5 4.5 4.5-4.5"/>'
+    + '<path d="M4 16.5v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>',
   calendar:
     '<rect x="4" y="6" width="16" height="14" rx="1.5"/><path d="M4 10.5h16M9 3.5V8M15 3.5V8"/>'
     + '<path d="M7.2 13.5h4.4" stroke-width="1.4"/>',
