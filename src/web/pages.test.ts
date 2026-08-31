@@ -151,7 +151,7 @@ describe('the table of contents', () => {
     const html = await get('/long').then((r) => r.text())
     // The list is real markup and its links are real anchors. The bundle only adds the
     // active-section highlight, which is the part that genuinely needs a script.
-    expect(html).toContain('<nav class="toc rail"')
+    expect(html).toContain('<nav class="toc"')
     expect(html).toContain('href="#first-section"')
     expect(html).toContain('href="#a-sub-heading"')
     // Nesting survives: a post that MIXES H2 and H3 marks the children as sub-rows.
@@ -168,7 +168,7 @@ describe('the table of contents', () => {
   it('still renders for a post with one heading, because the title and end rows earn it', async () => {
     await savePost({ title: 'Short', content: '## Only one\n\nText.', status: 'published', date: PAST })
     const html = await get('/short').then((r) => r.text())
-    expect(html).toContain('<nav class="toc rail"')
+    expect(html).toContain('<nav class="toc"')
     expect(html).toContain('href="#only-one"')
   })
 
@@ -176,7 +176,7 @@ describe('the table of contents', () => {
     const { features } = await getSettings()
     await saveSettings({ features: { ...features, toc: false } })
     await savePost({ title: 'Notoc', content: LONG, status: 'published', date: PAST })
-    expect(await get('/notoc').then((r) => r.text())).not.toContain('<nav class="toc rail"')
+    expect(await get('/notoc').then((r) => r.text())).not.toContain('<nav class="toc"')
   })
 
   it('is a rail, with the breakpoint computed from the reading column', async () => {
@@ -195,7 +195,7 @@ describe('the table of contents', () => {
 
   it('leaves it off a static page, which has no post structure', async () => {
     await savePage({ title: 'About', content: LONG, status: 'published' })
-    expect(await get('/about').then((r) => r.text())).not.toContain('<nav class="toc rail"')
+    expect(await get('/about').then((r) => r.text())).not.toContain('<nav class="toc"')
   })
 })
 

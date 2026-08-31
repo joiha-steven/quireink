@@ -86,7 +86,7 @@ function termCloud(
  * Headingless: the nav leads the rail. Rows reuse `rail-row`, so they range right in the
  * desktop gutter and left in the mobile drawer with no per-surface handling.
  */
-function menuBlock(items: MenuItem[], label: string): string {
+export function menuBlock(items: MenuItem[], label: string): string {
   if (items.length === 0) return ''
   const rows = items.map((item) => {
     // An external link opens in a new tab; an internal one does not. `noopener` because
@@ -123,7 +123,17 @@ export async function renderSidebar(
   settings: SiteSettings, activeHref?: string,
 ): Promise<Sidebar> {
   const none: Sidebar = { html: '', css: '' }
-  if (!settings.features.sidebar) return none
+  // The sidebar switch owns the DISCOVERY blocks — categories, tags, the years. It does not
+  // own the owner's menu, which is the site's navigation and has to be reachable from every
+  // page. Switching it off used to take the menu with it and put it nowhere else: measured
+  // on 2026-09-01, four configured links appearing zero times in the served HTML. What is
+  // left when it is off is a rail carrying the menu and nothing but.
+  if (!settings.features.sidebar) {
+    const labels = t(settings.language)
+    return settings.menu.length === 0
+      ? none
+      : { html: rail('', menuBlock(settings.menu, labels.menu)), css: '' }
+  }
 
   const [{ categories, tags }, posts, viewTotals, allSeries] = await Promise.all([
     getPublicTaxonomy(), getPublicPosts(), getViewTotals(),

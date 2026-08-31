@@ -246,12 +246,10 @@ body:has(.book-overlay[open]){overflow:hidden}
 }
 @keyframes card-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 
-/* WRAPS, at every width and not only on a phone. The bar lives inside the reading column,
-   which is 672px by default — a title, an owner's menu of any length and up to five controls
-   do not fit in it. Measured on an article at 1648px with a four-item menu: the menu wanted
-   403px and had 321, and the last link was drawn straight through the search control. A
-   menu is the owner's words and there is no correct number of them, so the row gives way
-   rather than the content. */
+/* WRAPS, at every width and not only on a phone: the bar lives inside the reading column,
+   672px by default, and a title plus a menu of any length plus five controls do not fit.
+   Measured on an article at 1648px with four links: the menu wanted 403px and had 321, and
+   the last link was drawn through the search control. The row gives way, not the words. */
 .site-bar{display:flex;flex-wrap:wrap;row-gap:.25rem;align-items:center;justify-content:flex-end;gap:1rem}
 /* The auto margin is on the TITLE, and that is what makes the wrap land right. With
    space-between the controls, once pushed onto a second line, were the only item on it and
@@ -263,9 +261,11 @@ body:has(.book-overlay[open]){overflow:hidden}
    40px button centres a 20px glyph, so the glyph sits 10px inside the button edge. Pulling
    the row right by that 10px lands it flush, matching the logo's flush-left edge. */
 .site-actions{display:flex;align-items:center;gap:.125rem;flex-shrink:0;margin-right:-.625rem}
-/* The owner's menu, in the same cluster as the controls, from 60rem up (narrower than that
-   the row is a title and five controls already). The .5rem past the bar's own 1rem gap holds
-   the first control further off than the next link, so it is not read as one of them. */
+/* The owner's menu, in the same cluster as the controls; the .5rem past the bar's own 1rem
+   gap holds the first control off further than the next link, so it is not read as one.
+   display:none under 60rem: the bar wraps now, so the words WOULD fit on a line of their
+   own, and letting them measured 254px of header on a 375px screen before the article
+   title. Every layout but this one hands that width to the rail's drawer instead. */
 .site-menu{display:none}
 @media (min-width:60rem){
   .site-menu{display:flex;flex-wrap:wrap;row-gap:.35rem;align-items:center;gap:1.25rem;margin-left:auto;min-width:0;padding-right:.5rem}
