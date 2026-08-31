@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import type { ApiResponse } from '@/types'
 import { EmptyState } from './kit'
 import { NumBand } from './sheet'
+import { IconClose } from './navIcons'
 import { useAdminT } from './I18nProvider'
 
 type Stats = { sent: number; failed: number; opened: number; broadcasts: number; lastAt?: string; lastError?: string }
@@ -112,7 +113,7 @@ export function NewsletterSubscribers() {
                   className="-my-1.5 -mr-1.5 ml-auto grid h-9 w-9 shrink-0 place-items-center rounded-md text-neutral-500 dark:text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-white"
                   aria-label={t.nlDeleteSub}
                 >
-                  ✕
+                  <IconClose />
                 </button>
               </div>
             </li>
