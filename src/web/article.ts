@@ -369,7 +369,12 @@ export async function renderArticle(slug: string): Promise<string | null> {
     // lead between them, justified with hyphens once the column is wide enough. It sits on
     // the shell rather than on .prose so the editor and the reading view can share it.
     `${progress}<div class="wrap${settings.features.bookText ? ' book-text' : ''}">
-${siteHeader(settings, { mailConfigured })}
+${/* An article's rail is its table of contents and never carries the menu, so the header
+     takes it — the same rule the listing applies, which is "whoever else did not". Without
+     it a post had no site menu anywhere in its HTML at any width, and a blog whose homepage
+     is A PAGE had none on its own front door: measured, zero occurrences of every
+     configured link. */
+  siteHeader(settings, { mailConfigured, menuInHeader: true })}
 <div class="with-rail"><main id="content">
 <article>
 ${hero}

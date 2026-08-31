@@ -102,7 +102,12 @@ export async function listingPage(
     // The rail is rendered LAST inside `main`: it is absolutely placed, so DOM order is
     // free, and this way the page heading still leads the document outline.
     `<div class="wrap">
-${siteHeader(settings, { mailConfigured, menuInHeader: noRail })}
+${/* The header takes the menu when the RAIL DID NOT — read off the rail that was actually
+     built, not off a flag about what kind of page this is. `noRail` alone was the test, and
+     only the front page sets it, so on a post list with the sidebar switched off the menu
+     rendered nowhere at all: measured on 2026-09-01, four configured links appearing zero
+     times in the served HTML. */
+  siteHeader(settings, { mailConfigured, menuInHeader: noRail || sidebar.html === '' })}
 <div class="with-rail"><main id="content">${body}${sidebar.html}</main></div>
 ${siteFooter(settings, { mailConfigured })}
 </div>`,
