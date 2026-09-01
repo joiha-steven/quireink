@@ -1,5 +1,95 @@
 # CHANGELOG
 
+## 2026-09-01 — Quire Ink 2.2.5
+
+Ten commits in one day, and the day was one long consequence: four names left the CDN that had
+been in front of them, and everything that had quietly been relying on it came up for air. Two
+of the things that came up were security defects. The rest is what an origin has to do for
+itself once nothing is standing in front of it.
+
+### The origin now does its own compression
+
+- **Brotli, not only gzip.** A cold visit to a post falls from 49,960 bytes to 36,717 — 22% on
+  the wire, measured through a real proxy. The pen's sheets are where it stops being a rounding
+  error: `pen-marks.css` goes 11,838 → 5,928.
+- The file said "not Brotli" and gave two reasons. Both were re-measured and neither held. The
+  first was 2.9%, which is true at quality **4** — the worst rung on the ladder; q5 saves 7.7%
+  and is faster, q11 saves 17.6%. The second was that the CDN re-compresses anyway: it does for
+  HTML, and it does **not** for the hashed immutable assets, which came back from a live edge
+  carrying the origin's own gzip byte for byte. Those are what every first-time reader
+  downloads.
+- **The expensive quality only where the answer is kept forever**, and only up to 192 KB. The
+  ceiling was found by the browser tour, not by reasoning: the admin's chunks are hashed and
+  immutable too and twenty times the size, so without it a 644 KB bundle went through 642 ms of
+  synchronous compression on the first admin load and stalled the whole process. `check:all`
+  was green through all of it.
+- **A returning reader downloads nothing.** Every 200 carries a strong `ETag` and answers
+  `If-None-Match` with a 304. A warm browser cache was re-fetching 8,179 bytes of HTML per
+  view with every other resource already at zero.
+
+### Two headers that anyone could send
+
+- **`CF-Connecting-IP` is believed only when a Cloudflare zone is configured** in Settings.
+  It was read from any local hop, and only Cloudflare overwrites it — so behind any other
+  proxy a caller could pick their own rate-limit bucket. Measured through a real Caddy: 45
+  requests against a 30-per-minute cap, a different made-up value on each, **zero refused**;
+  the same 45 without the header, 16 refused.
+- **`CF-IPCountry` gets the same gate.** `/api/track` is an open POST, so the owner's "where
+  they came from" panel could be filled with countries nobody visited from. Wrong data that
+  looks right is worse than the empty column it replaces.
+- Both were found by listing every request header the application reads and asking which of
+  them a client can choose. The same sweep cleared the rest: the CSRF check stands on
+  `Sec-Fetch-Site`, `x-forwarded-proto` is overwritten by both shipped proxies, and public
+  pages are byte-identical for a stranger and a signed-in owner, so the new ETag cannot serve
+  one reader's page to another.
+
+### A certificate, whichever way you came in
+
+- **Every install path that can have one now brings one.** Six were audited; two ended in
+  HTTPS. `deploy/caddy/setup.sh` is one command for the install that runs straight on the
+  machine, and the DigitalOcean file gains one editable line that brings the droplet up on
+  HTTPS with the certificate already issued.
+- **`docker-compose.image.yml`** gives the `docker pull` path what the checkout already had:
+  two files, no source, a certificate that renews itself.
+- **One `Caddyfile` for all three shapes**, so the content security policy the application is
+  tested against is the one that ends up in front of it. `CADDY_DOMAIN` is gone — Caddy takes
+  the certificate's name out of `SITE_URL`.
+- `http2 on;` in the nginx sample, which never asked for it and therefore never had it.
+
+### Reading
+
+- **A wide table scrolls its own box now, not the whole article.** The scroll sat on `.prose`,
+  and CSS gives no way to scroll one axis alone — so an article carrying a single table became
+  a scroll box as tall as the piece, and Safari drew a scrollbar down the side of the reading
+  column and took that width out of the text. Reported from a reading window.
+- **The book-mode control answers a click the way it answers a pointer.** Its hover draws a pen
+  loop and its press was taking a carved rectangle from the shared key vocabulary, so one
+  control replied to the mouse with a circle and to the click with a square.
+
+### Boot
+
+- **The stylesheet minifier gathers instead of appending.** It built its result one character
+  at a time over 417 KB, which is 417,000 rope allocations: physical footprint rose 109 MB
+  during those three calls. It is 2.2 MB now, and a warm instance's boot peak fell from 240 MB
+  to 157 MB — which is the number a container limit has to be set from.
+
+### What this version does NOT do
+
+- **A NAS and a Kubernetes cluster get no Caddy, on purpose.** A NAS already holds ports 80 and
+  443 with its own certificate UI, and a cluster terminates TLS at its ingress. Everywhere else
+  the certificate comes with the install.
+- **`docker compose up` does not fetch a newer image.** On a machine that had pulled once
+  before, `latest` started a blog two releases behind the tag it named, printed a claim link
+  and looked entirely correct. Upgrading is `pull` then `up -d`.
+- **An install that injects into its own HTML loses the origin's compression and its ETag.**
+  Anything using nginx `sub_filter` has to ask upstream for plain text, and nginx drops the
+  validator when it rewrites a body. The hashed assets can be excepted; the pages cannot.
+- **Nothing here buys back a round trip.** Compression and validators save bytes; on an origin
+  with no CDN in front, a distant reader still pays the handshake. Measured from Asia to a US
+  origin: a `304` carrying zero bytes still took 623 ms. The 22% is real and it is not a CDN.
+- **HTTP/3 only where the proxy has it.** Caddy advertises it; the nginx sample does not,
+  because that needs a QUIC-capable build.
+
 ## 2026-09-01 — Quire Ink 2.2.4
 
 Seventy-five commits over two days. Under plain semver the assistant's streaming, ⌘K, the

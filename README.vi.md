@@ -5,7 +5,7 @@
   <img src="docs/brand/wordmark-light.svg" alt="quireINK" width="360">
 </picture>
 
-`2.2.4`
+`2.2.5`
 
 **Một cái blog bạn tự host, và AI agent có thể vận hành thay bạn.**
 Không thuật toán, không quảng cáo, không nền tảng nào đứng giữa bạn và người đọc.
@@ -73,7 +73,11 @@ Một agent có thể trông coi chứ không chỉ viết. Bất kỳ MCP clien
 
 Bạn được đọc, sửa, chạy và fork nó theo [PolyForm Noncommercial](./LICENSE), và được chạy bản đã phát hành để kinh doanh, kể cả bán dịch vụ host, theo [một quyền bổ sung](./LICENSE-EXCEPTION.md).
 
-**2.2.4** là bản hiện hành. Nó đang chạy bản demo ở trên và blog riêng của tác giả tại [manhhung.me](https://manhhung.me); [nhật ký thay đổi](./CHANGELOG.md) ghi đủ những gì đã đổi.
+**2.2.5** là bản hiện hành. Nó đang chạy bản demo ở trên và blog riêng của tác giả tại [manhhung.me](https://manhhung.me); [nhật ký thay đổi](./CHANGELOG.md) ghi đủ những gì đã đổi.
+
+Đây là bản mà máy chủ thôi dựa vào CDN. Nó tự nén lấy — brotli, bớt 22% cho một lượt ghé nguội — và trả `304` không byte nào cho người quay lại đúng trang cũ. Hai header mà chỉ Cloudflare ghi đè trước đây được tin ở cả những bản cài không có Cloudflare, đủ để người gọi tự chọn xô giới hạn nhịp cho mình và bơm vào bảng lưu lượng những quốc gia không ai ghé; cả hai giờ chỉ được tin khi đã khai zone trong Cài đặt. Mọi đường cài có thể mang chứng chỉ thì nay đều mang, kể cả đường `docker pull`.
+
+**Và những gì bản này KHÔNG làm.** NAS và Kubernetes cố ý không có Caddy — NAS đã giữ cổng 80 với 443 kèm giao diện chứng chỉ riêng, còn cluster kết thúc TLS ở ingress. `docker compose up` không tự kéo image mới, nên nâng cấp là `pull` rồi `up -d`; máy nào từng kéo một lần rồi thì sẽ chạy một blog cũ hơn cái tag nó gọi, mà nhìn vẫn y như đúng. Bản cài nào chèn vào HTML của chính nó bằng `sub_filter` của nginx thì mất phần nén và mất cả thẻ kiểm ở các trang, vì không thứ nào sống sót qua một thân bị viết lại. Và không thứ nào ở đây mua lại được một vòng mạng: máy chủ không có CDN đứng trước thì người đọc ở nửa kia địa cầu vẫn trả tiền bắt tay — đo từ châu Á về một máy chủ Mỹ, một `304` không mang byte nào vẫn tốn 623ms. Con số 22% là thật, và nó không phải một CDN.
 
 ## Bạn được gì
 
@@ -117,16 +121,16 @@ Bạn được đọc, sửa, chạy và fork nó theo [PolyForm Noncommercial](
 
 Đây là số đo từ mạng, lần vào đầu tiên, chưa cache gì. Đúng bằng cái mà một người lạ cầm điện thoại phải chờ.
 
-Hai dòng CSS và JavaScript là sản phẩm của bản build, giống nhau ở mọi bản cài, lấy từ bản dựng 2.2.4. Các số tổng đo trên một site đang chạy thật: tiếng Việt, Literata để đọc và JetBrains Mono cho phần khung. Chúng không phải thuộc tính của phần mềm, vì font được cắt theo bảng chữ và trình duyệt chỉ tải đúng những dải mà trang bạn dùng tới. Hình nét của cây bút nằm trong hai tệp bất biến riêng (~20 KB cả cặp) chỉ lên xe ở trang thật sự có vệt tô hay gạch chân ([ADR 0027](docs/decisions/0027-the-pen-ships-only-where-it-wrote.md)). Trang không mực không phải trả đồng nào cho chúng. Bật đọc offline thì thêm một service worker 0,7 KB, tải một lần và chỉ ở blog đã bật.
+Hai dòng CSS và JavaScript là sản phẩm của bản build, giống nhau ở mọi bản cài, lấy từ bản dựng 2.2.5 — **từ 2.2.5 máy chủ tự nén brotli**, và đó là chỗ mỗi dòng bớt được khoảng một kilobyte. Các số tổng đo trên một site đang chạy thật: tiếng Việt, Literata để đọc và JetBrains Mono cho phần khung, và chúng nhích đúng bằng phần hai dòng kia tiết kiệm được. Chúng không phải thuộc tính của phần mềm, vì font được cắt theo bảng chữ và trình duyệt chỉ tải đúng những dải mà trang bạn dùng tới. Hình nét của cây bút nằm trong hai tệp bất biến riêng (**11 KB cả cặp, trước là 20**) chỉ lên xe ở trang thật sự có vệt tô hay gạch chân ([ADR 0027](docs/decisions/0027-the-pen-ships-only-where-it-wrote.md)). Trang không mực không phải trả đồng nào cho chúng. Bật đọc offline thì thêm một service worker 0,7 KB, tải một lần và chỉ ở blog đã bật.
 
 | | Trang chủ | Một bài | |
 |:---|---:|---:|:---|
 | **Số&nbsp;request** | 8 | 9 | |
-| **Tổng&nbsp;tải&nbsp;về** | **103&nbsp;KB** | **101&nbsp;KB** | 68&nbsp;KB trong đó là font |
-| **JavaScript** | **4,1&nbsp;KB** | **10,4&nbsp;KB** | viết tay, không framework |
-| **CSS** | 10,6&nbsp;KB | 10,6&nbsp;KB | +20&nbsp;KB chỉ ở trang có vệt bút |
+| **Tổng&nbsp;tải&nbsp;về** | **100&nbsp;KB** | **98&nbsp;KB** | 68&nbsp;KB trong đó là font |
+| **JavaScript** | **3,5&nbsp;KB** | **9,0&nbsp;KB** | viết tay, không framework |
+| **CSS** | 9,5&nbsp;KB | 9,5&nbsp;KB | +11&nbsp;KB chỉ ở trang có vệt bút |
 | **Request&nbsp;bên&nbsp;thứ&nbsp;ba** | **0** | **0** | không CDN, không font host, không tracker |
-| **Lần&nbsp;vào&nbsp;sau** | ~20&nbsp;KB | ~11&nbsp;KB | chỉ tải lại HTML; bài dài thì nặng hơn |
+| **Lần&nbsp;vào&nbsp;sau** | **0&nbsp;byte** | **0&nbsp;byte** | đúng trang đó trả `304`; trang chưa đọc thì vẫn tốn phần HTML của nó |
 
 Nó giữ được như vậy nhờ năm quyết định khó đảo ngược.
 

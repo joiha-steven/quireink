@@ -23,7 +23,15 @@ On any behavior change, update the matching doc in the SAME change (Working prin
   [`scripts/ops/quire-backup.sh`](../../scripts/ops/quire-backup.sh) does.
 - **Audits** are dated snapshots, so they are write-only and they live with the author's
   notes rather than here. Read the latest first so a pass starts from the last clean line.
-- **Versioning (owner's rule — do NOT auto-bump):** the version is **`2.2.4`**, released
+- **Versioning (owner's rule — do NOT auto-bump):** the version is **`2.2.5`**, released
+  2026-09-01 — the day four names left the CDN in front of them, and everything quietly
+  relying on it came up for air. Two of those were security defects, both the same shape: a
+  header only Cloudflare overwrites, believed on installs that have no Cloudflare. The origin
+  learned to compress for itself (brotli, 22% off a cold visit) and to answer a returning
+  reader with a 304; every install path that can carry a certificate now does; a wide table
+  stopped turning the whole article into a scroll box. The owner asked for `2.2.4.1` first and
+  took `2.2.5` when four segments turned out not to be semver — `bun install` swallows it, and
+  the MCP registry schema does not. The patch slot a sixth time. (`2.2.4`, released
   2026-09-01 — seventy-five commits in two days: the admin and the reading site both learned
   relief (raised means pressable, carved means held), the assistant got a fourth provider,
   streaming and a desk to work at, ⌘K arrived on the back of a settings index the MCP tools
@@ -34,7 +42,7 @@ On any behavior change, update the matching doc in the SAME change (Working prin
   minutes before the number was corrected: the tag and the GitHub release were deleted and
   the owner removed the `2.3.4` and `2.3` tags from Docker Hub by hand, since a tag pushed by
   `publish.yml` cannot be withdrawn by it. A wrong number is four public places, not one —
-  the tag, the release, two registries and any comment already written on an issue.
+  the tag, the release, two registries and any comment already written on an issue.)
   (`2.2.3`, released
   2026-08-30 — the year archive and a feed per archive, offline reading behind a switch that
   is off by default (ADR 0039), one set of table settings for the whole blog, a post's own
