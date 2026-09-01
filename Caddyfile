@@ -55,5 +55,15 @@
 		max_size 64MB
 	}
 
-	reverse_proxy quire:3000
+	# WHERE THE BLOG IS, named by the caller rather than written in, because this one file now
+	# serves two shapes of install. Under compose it is the service name on the private
+	# network (`quire:3000`); on a machine where the blog runs from `install.sh` it is
+	# `127.0.0.1:3000`. One file rather than two because the CSP above lives in it, and a
+	# second copy of a tested security header drifts with nothing going red.
+	#
+	# No default value: `{$VAR:quire:3000}` looks like it works and does not — the default is
+	# read up to the first colon, so the port becomes the default and the variable is ignored.
+	# Measured with `caddy adapt`, which resolved to `quire:3000` whether the variable was set
+	# or not. Both callers set it, and there is nothing sensible to fall back to anyway.
+	reverse_proxy {$QUIRE_UPSTREAM}
 }

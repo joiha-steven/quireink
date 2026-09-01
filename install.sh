@@ -103,7 +103,21 @@ step "Uploads     $DIR_ABS/uploads"
 step "Address     ${SITE_URL:-not set — feeds and emails will say http://localhost:$PORT}"
 step ""
 step "Upgrading later:  cd $DIR_ABS && git pull && bun install && bun run build:assets && bun run build:admin"
-step "Putting it on a real server, with TLS and a service:  docs/self-host.md"
+
+# HTTPS, named here rather than left to the reader to go looking for. This script stops at a
+# blog on loopback on purpose -- it uses no sudo and touches no service, because those are
+# decisions with consequences on somebody else's machine. But stopping there and saying
+# nothing left the one-command path as the only way in with no certificate at the end of it,
+# beside Docker paths that all have one. The next command is the same decisions made out loud.
+say "It has no certificate yet. One more command gives it one:"
+if [ -n "$SITE_URL" ]; then
+  step "sudo bash $DIR_ABS/deploy/caddy/setup.sh $SITE_URL"
+else
+  step "sudo bash $DIR_ABS/deploy/caddy/setup.sh https://your-domain"
+  step "(and set SITE_URL to the same address, or feeds and emails will say localhost)"
+fi
+step "Caddy gets it from Let's Encrypt and renews it itself. Nothing is scheduled."
+step "Something else already terminating TLS? Skip it: docs/self-host.md has nginx."
 
 if [ "${NO_RUN:-}" = "1" ]; then
   say "Not starting it (NO_RUN=1). To start:"
