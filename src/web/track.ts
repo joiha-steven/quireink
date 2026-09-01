@@ -13,7 +13,7 @@
 import type { Context } from 'hono'
 import { isCountableVisit } from '@/analytics/exclude'
 import { recordScroll, recordView } from '@/analytics/record'
-import { clientIp, rateLimited } from '@/server/rate-limit'
+import { clientCountry, clientIp, rateLimited } from '@/server/rate-limit'
 
 /**
  * Generous enough that a real reader never trips it (one view plus one depth sample per
@@ -54,7 +54,7 @@ export async function handleTrack(c: Context): Promise<Response> {
       // Source attribution: the referrer HOST only, sent by the beacon on session entry
       // and only when it is external, plus the country the CDN saw. Both privacy-light.
       const referrer = typeof body.referrer === 'string' ? body.referrer.slice(0, 255) : ''
-      const country = (c.req.header('cf-ipcountry') ?? '').trim()
+      const country = clientCountry(c)
       // Multi-touch, which the user agent cannot say and an iPad needs (`analytics/ua.ts`).
       // Read as a strict boolean: this is an open POST, and the flag decides a bucket.
       await recordView(path, ip, ua, referrer, country, body.touch === true)

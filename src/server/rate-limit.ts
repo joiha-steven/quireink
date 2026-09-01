@@ -190,6 +190,29 @@ const lastForwarded = (header: string | undefined): string => {
 }
 
 /**
+ * The country the CDN saw, or '' when nothing trustworthy said.
+ *
+ * Same header, same gate and same reason as `clientIp` above: `CF-Connecting-IP` was believed
+ * from any local hop and only Cloudflare overwrites it, and `CF-IPCountry` sits in exactly
+ * that position. It was read unconditionally in two places — the analytics beacon and the
+ * comment form — and `/api/track` is an open POST, so on any install not behind Cloudflare
+ * (which is the default, and four of the five names this project runs) anyone could fill the
+ * owner's "where they came from" panel with countries nobody visited from. Wrong data that
+ * looks right is worse than the empty column it replaced.
+ *
+ * Two letters or nothing. Cloudflare sends `XX` for unknown and `T1` for Tor, both of which
+ * pass and both of which are true answers; anything else was never a country code and has no
+ * business reaching a database column nothing else validates.
+ */
+export function clientCountry(c: Context): string {
+  if (!cloudflareInFront()) return ''
+  const peer = peerAddress(c)
+  if (peer && !isLocalHop(peer) && !trustProxyAlways()) return ''
+  const raw = (c.req.header('cf-ipcountry') ?? '').trim().toUpperCase()
+  return /^[A-Z0-9]{2}$/.test(raw) ? raw : ''
+}
+
+/**
  * The peer address, or '' when there is no server to ask.
  *
  * `Bun.serve` passes itself as the second argument to `fetch`, which is what Hono surfaces
