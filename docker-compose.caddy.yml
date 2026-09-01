@@ -1,8 +1,13 @@
 # Quire Ink with HTTPS, in one command.
 #
-#   cp .env.docker.example .env    # set SITE_URL and CADDY_DOMAIN in it
-#   docker compose -f docker-compose.caddy.yml up -d
-#   docker compose -f docker-compose.caddy.yml logs quire   # the link that claims the blog
+#   cp .env.docker.example .env    # set SITE_URL in it. That is the only required value.
+#   docker compose up -d
+#   docker compose logs quire      # the link that claims the blog
+#
+# No `-f` in those, because `.env.docker.example` ships `COMPOSE_FILE` pointing here. That is
+# not tidiness: the flag has to be repeated on every later command, and the one it gets
+# forgotten on is the upgrade months later, which quietly rebuilds the OTHER file — the blog
+# comes back on loopback with no certificate and nothing says why.
 #
 # The difference from `docker-compose.yml` is one service: Caddy in front, which gets a
 # certificate from Let's Encrypt on its own and renews it on its own, with nothing
@@ -49,9 +54,13 @@ services:
       - "443:443"
       - "443:443/udp"      # HTTP/3
     environment:
-      # The name the certificate is issued for. It must already point at this machine, or
-      # the certificate cannot be issued and Caddy will say so in its log.
-      CADDY_DOMAIN: ${CADDY_DOMAIN:?set CADDY_DOMAIN in .env, e.g. example.com}
+      # The Caddyfile uses this as its site address and takes the certificate's name out of
+      # it, so there is one name to write rather than two that can drift. The host must
+      # already point at this machine, or the certificate cannot be issued and Caddy will say
+      # so in its log. Refused here rather than passed empty: Caddy's message for an empty
+      # site address is `unrecognized global option: reverse_proxy`, which names neither the
+      # variable nor the problem.
+      SITE_URL: ${SITE_URL:?set SITE_URL in .env, e.g. https://example.com}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       # Named, and worth keeping: it holds the certificates and the account key. Losing it
