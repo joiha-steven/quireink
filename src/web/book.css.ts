@@ -52,7 +52,21 @@ export const BOOK_CSS = `
     -webkit-mask-image:var(--ink-loop);mask-image:var(--ink-loop);
     transition:opacity var(--dur-fast)}
   .book-mode-toggle:hover::after,.book-mode-toggle:focus-visible::after{opacity:.85}
+  /* AND THE PRESS IS THE SAME MARK, PRESSED HARDER. This control took the shared carved
+     shadow off the key vocabulary until 2026-09-01, and the two did not belong together: the
+     hover draws a round pen loop and the carve is a rectangle across the padded row, so one
+     control answered a pointer with a circle and a click with a square. The loop going to
+     full ink is the surface change the click convention asks for, in the vocabulary this
+     control already speaks. */
+  .book-mode-toggle:active::after{opacity:1;transition-duration:0s}
 }
+/* The travel stays, because it is the shared click and it has no shape of its own: 1px down,
+   instantly, sprung back on the release. Outside the @supports block on purpose — an engine
+   that cannot mask gets no loop, and taking its press away as well would leave the click
+   with nothing at all. */
+.book-mode-toggle:active{transform:translateY(1px);transition-duration:0s}
+html[data-motion=off] .book-mode-toggle:active{transform:none}
+@media (prefers-reduced-motion:reduce){.book-mode-toggle:active{transform:none}}
 @media (max-width:767px){.meta-book,.book-mode-toggle{display:none}}
 
 /* The phone's doorway into the reader. The desktop entries (the meta line, the info
