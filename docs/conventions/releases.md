@@ -80,6 +80,18 @@ On any behavior change, update the matching doc in the SAME change (Working prin
   copy — and this line itself sat at `2.1.0` while the product was on `2.1.2`, which is the
   same failure a third time. `grep -rn '<old>' package.json README.md README.vi.md docs/conventions/releases.md`
   before tagging; a number left behind in a README is the usual miss.
+  **The release-note paragraph says what the version CANNOT do, not only what it can.**
+  Owner's instruction, 2026-09-01: a reader deciding whether to install this needs the limits
+  stated where they will read them, per version, in the README rather than discovered on
+  their own server. The 2.2.x work threw up four of exactly that shape — a NAS and a
+  Kubernetes cluster get no Caddy and that is deliberate; a `docker compose up` on a machine
+  with an older cached image silently runs the older blog; an install that injects into its
+  own HTML with `sub_filter` loses the origin's brotli and its ETag; and an origin with no CDN
+  in front costs a reader on the far side of the world a round trip that no amount of saved
+  bytes buys back. None of those is a bug and every one of them surprises somebody. A
+  paragraph that lists only what was added is an advertisement; the limits are what make it a
+  release note.
+
   **Docker docs deliberately do NOT carry a version at all**: every `docker pull` and compose
   example names `:latest`, which the owner made the install tag on 2026-08-21 — the newest
   release is the one carrying the fixes, and 2.1.3 was the argument, since anyone who had
