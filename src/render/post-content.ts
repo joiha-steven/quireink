@@ -134,6 +134,31 @@ function buildCallouts(html: string): string {
 
 // 2nd occurrence of a slug → `slug-2`, etc. MUST match extractHeadings' counter
 // (both walk H2/H3 in document order) or the ToC anchors break.
+/**
+ * A wide table scrolls INSIDE ITS OWN BOX, and the article does not move.
+ *
+ * The scroll used to sit on `.prose` itself (`prose.css.ts`, `.prose:has(table){overflow-x:auto}`),
+ * which fixed the phone bug it was written for and created a worse one everywhere else. CSS
+ * gives no way to scroll one axis alone: an `overflow-x` that is not `visible` computes
+ * `overflow-y` to `auto` as well, so an article carrying a single table became a scroll box
+ * four thousand pixels tall. Measured on a live post: `clientHeight` 4119 against
+ * `scrollHeight` 4120 — one pixel of overflow, and enough for Safari to draw a scrollbar down
+ * the side of the reading column and take that width out of the text.
+ *
+ * The reason it was on `.prose` at all was that `overflow` is ignored on a `display:table`
+ * box, and making the table `display:block` shrink-to-fits it (measured 607px down to 345px).
+ * Both are true of the TABLE. Neither is true of a plain block wrapped around it, which is
+ * what this adds: the table keeps `display:table` and its full width, and the box that
+ * scrolls is one element rather than the whole piece.
+ *
+ * A string pass rather than a `renderer.table` override, so marked's own table HTML stays
+ * byte-for-byte what it was and the golden diff is exactly this wrapper. GFM cannot nest a
+ * table inside a table, so the non-greedy match cannot close on the wrong tag.
+ */
+function wrapTables(html: string): string {
+  return html.replace(/<table>[\s\S]*?<\/table>/g, (table) => `<div class="table-scroll">${table}</div>`)
+}
+
 function dedupeHeadingIds(html: string): string {
   const counts = new Map<string, number>()
   return html.replace(/(<h[23] id=")([^"]*)(")/g, (whole, pre, id, post) => {
@@ -220,7 +245,7 @@ export async function renderPostContent({
   // Pull footnote refs/defs out of the markdown FIRST (references become placeholders
   // that survive marked), then re-insert the <sup> links + list after rendering.
   const fn = prepareFootnotes(markdown)
-  const parsed = dedupeHeadingIds(buildVideos(groupGalleries(buildFigures(buildCallouts(await marked.parse(fn.markdown)), readyOriginals, imageDims))))
+  const parsed = dedupeHeadingIds(wrapTables(buildVideos(groupGalleries(buildFigures(buildCallouts(await marked.parse(fn.markdown)), readyOriginals, imageDims)))))
   const html = applyFootnotes(await highlightBlocks(parsed), fn.refs, fn.defs)
   writeRendered(key, html)
   return html

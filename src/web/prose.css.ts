@@ -127,19 +127,22 @@ ${LINK_INK_CSS}
    document; this is a pause inside it.
    Width in em, so it grows with the reader's type and with book mode's scale. */
 .prose hr:not(.fn-rule){width:6em;margin:2.6em auto;border-top:1px solid var(--c-rule)}
-/* A TABLE THAT WILL NOT FIT SCROLLS THE ARTICLE, NEVER THE PAGE.
+/* A TABLE THAT WILL NOT FIT SCROLLS ITS OWN BOX, NEVER THE ARTICLE AND NEVER THE PAGE.
    Measured at 390px: a five-column table is 484px at its narrowest, and a table cannot be
    squeezed below its own content -- so with visible overflow the DOCUMENT went to 516px and
-   every paragraph in the piece panned sideways with it. A pre has carried overflow-x since
-   it was written and .math-block was given it on purpose; this was the third case, and the
-   only one nothing said out loud.
-   The scroll sits on .prose rather than on the table, and that is forced rather than
-   preferred: overflow is ignored on a display:table box, and switching the table to
-   display:block makes the anonymous table inside it shrink-to-fit -- measured 607px down to
-   345px on a laptop, which would quietly restyle every table on every site in order to fix
-   a phone bug. :has() keeps the scroll container off the articles that have no table, and a
-   browser without :has() is left exactly where it is today. */
-.prose:has(table){overflow-x:auto}
+   every paragraph in the piece panned sideways with it.
+   This rule sat on .prose:has(table) until 2026-09-01, which fixed that and broke the
+   desktop: CSS has no way to scroll one axis alone, so an overflow-x that is not visible
+   computes overflow-y to auto as well, and an article carrying one table became a scroll box
+   as tall as the piece. Measured on a live post, clientHeight 4119 against scrollHeight 4120
+   -- one pixel, and enough for Safari to draw a scrollbar down the side of the reading column
+   and take that width out of the text.
+   It could not sit on the table because overflow is ignored on a display:table box, and
+   display:block shrink-to-fits it (607px down to 345px on a laptop). Both are true of the
+   table and neither is true of a plain block around it, so render/post-content.ts wraps each
+   table in one. The wrapper is the direct child of .prose, so it inherits the block rhythm
+   the table used to get. */
+.prose .table-scroll{overflow-x:auto}
 /* EVERY NUMBER BELOW COMES FROM A VARIABLE, and the fallback in each var() is this file's
    own default — the same arrangement settings-css.ts uses, so the sheet renders correctly
    before any settings CSS is injected and a saved choice still wins when it is. The selectors
@@ -177,7 +180,7 @@ ${LINK_INK_CSS}
    there is nothing to continue from. */
 .book-text .prose p{margin-top:.65em;text-indent:1.6em}
 .book-text .prose > p:first-child{text-indent:0}
-.book-text .prose :is(blockquote,figure,pre,ul,ol,hr,table,.gallery,.video-embed) + p{
+.book-text .prose :is(blockquote,figure,pre,ul,ol,hr,table,.table-scroll,.gallery,.video-embed) + p{
   text-indent:0;margin-top:1.4em}
 /* A heading keeps the tighter lead the rhythm rules give it: restating 1.4em here would
    undo, in book mode only, the one thing that binds a heading to its own section. */

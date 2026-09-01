@@ -82,11 +82,19 @@ const DIVERGED: Record<string, { behaviour: string; why: string }> = {
   //    `scope="col"` on every `<th>`, from the `tablecell` override in `post-content.ts`.
   //    ELEVEN lines across these five, and each one differs from 1.x by that attribute and
   //    nothing else — checked line by line at capture time, not eyeballed.
-  'footnote-in-table': { behaviour: 'table scope', why: 'th carries scope="col"' },
-  'gfm-table-align': { behaviour: 'table scope', why: 'th carries scope="col", before align' },
-  'gfm-table-pipes': { behaviour: 'table scope', why: 'th carries scope="col"' },
-  'list-with-table': { behaviour: 'table scope', why: 'th carries scope="col"' },
-  'mixed-everything': { behaviour: 'table scope', why: 'th carries scope="col"' },
+  //
+  //    The same five moved again on 2026-09-01, for the second reason in the `why` below: a
+  //    table is now wrapped in a scrolling block. The scroll had been on `.prose` itself,
+  //    which is the only element CSS would let it sit on and the wrong one — an `overflow-x`
+  //    that is not `visible` computes `overflow-y` to `auto` too, so an article carrying one
+  //    table became a scroll box as tall as the piece and Safari drew a scrollbar down the
+  //    reading column. Each v2 answer grew by exactly the 32 bytes of the wrapper and nothing
+  //    else, which was asserted at capture time rather than eyeballed.
+  'footnote-in-table': { behaviour: 'table scope', why: 'th carries scope="col"; the table is wrapped to scroll' },
+  'gfm-table-align': { behaviour: 'table scope', why: 'th carries scope="col" before align; wrapped to scroll' },
+  'gfm-table-pipes': { behaviour: 'table scope', why: 'th carries scope="col"; the table is wrapped to scroll' },
+  'list-with-table': { behaviour: 'table scope', why: 'th carries scope="col"; the table is wrapped to scroll' },
+  'mixed-everything': { behaviour: 'table scope', why: 'th carries scope="col"; the table is wrapped to scroll' },
 }
 
 describe('golden: the deliberate divergences from 1.x', () => {
