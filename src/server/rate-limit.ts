@@ -11,6 +11,7 @@
 // lockout down to sixty seconds. See `sweep`.
 
 import type { Context } from 'hono'
+import { cloudflareInFront } from '@/store/integration-keys'
 
 /** One key's hits, and the window they were charged under. */
 type Bucket = { windowMs: number; times: number[] }
@@ -156,14 +157,36 @@ export function clientIp(c: Context): string {
   const peer = peerAddress(c)
   if (peer && !isLocalHop(peer) && !trustProxyAlways()) return peer
 
-  // Prefer `CF-Connecting-IP` (set by Cloudflare, the documented front-end, and NOT
-  // forwardable by the client) over `X-Forwarded-For`, whose first hop is whatever the
-  // client sent when the proxy appends rather than overwrites.
-  const cf = c.req.header('cf-connecting-ip')?.trim()
-  if (cf) return cf
-  const forwarded = (c.req.header('x-forwarded-for') ?? '').split(',')[0]?.trim()
+  // `CF-Connecting-IP` ONLY when Cloudflare is the front, because only Cloudflare overwrites
+  // it. Every other proxy forwards it as the unknown header it is, so believing it
+  // unconditionally hands the client a free choice of bucket — see `cloudflareInFront`, which
+  // carries the measurement. The default install has no Cloudflare, so the default is no.
+  if (cloudflareInFront()) {
+    const cf = c.req.header('cf-connecting-ip')?.trim()
+    if (cf) return cf
+  }
+  const forwarded = lastForwarded(c.req.header('x-forwarded-for'))
   if (forwarded) return forwarded
   return peer || 'unknown'
+}
+
+/**
+ * The LAST hop in `X-Forwarded-For`, not the first.
+ *
+ * The first is whatever the client sent, on any proxy that appends rather than overwrites,
+ * and appending is what nginx's `$proxy_add_x_forwarded_for` does and what Cloudflare does.
+ * The last is always the view of the nearest trusted proxy, which is the one that just
+ * handed us the connection and the only hop in the list we have any reason to believe.
+ *
+ * Right on all three shipped layouts. Caddy REPLACES the header with the peer it saw, so the
+ * list is one entry and first and last agree (verified against Caddy 2: a request carrying
+ * `X-Forwarded-For: 198.51.100.7` arrived as `192.168.65.1`, the real peer). nginx appends
+ * `$remote_addr`, so the last entry is what nginx saw. Cloudflare appends the visitor, so the
+ * last entry is the visitor.
+ */
+const lastForwarded = (header: string | undefined): string => {
+  const hops = (header ?? '').split(',')
+  return hops[hops.length - 1]?.trim() ?? ''
 }
 
 /**

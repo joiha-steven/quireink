@@ -307,8 +307,12 @@ describe('the cap on card renders', () => {
   it('answers 429 with Retry-After once a caller is past its minute, and draws nothing', async () => {
     // Distinct titles on purpose: identical URLs are what a shared link looks like and are
     // answered by the edge in practice. The attack is a caller who never repeats a URL.
+    // `X-Forwarded-For`, which is what a proxy in front sets and what `clientIp` reads on a
+    // default install. `CF-Connecting-IP` is believed only once the zone is configured in the
+    // admin, so a test that used it would be testing the Cloudflare deployment and nothing
+    // else — and it would collapse both callers below into one 'unknown' bucket.
     const ask = (n: number) => app.request(`/og?title=card-${n}`, {
-      headers: { 'cf-connecting-ip': '203.0.113.7' },
+      headers: { 'x-forwarded-for': '203.0.113.7' },
     })
 
     for (let n = 0; n < 30; n++) expect((await ask(n)).status).toBe(200)
@@ -322,11 +326,11 @@ describe('the cap on card renders', () => {
 
   it('charges each caller its own allowance', async () => {
     const from = (ip: string) => app.request('/og?title=neighbours', {
-      headers: { 'cf-connecting-ip': ip },
+      headers: { 'x-forwarded-for': ip },
     })
     for (let n = 0; n < 31; n++) await from('203.0.113.8')
     expect((await from('203.0.113.8')).status).toBe(429)
-    // A busy neighbour behind the same CDN must not spend somebody else's cards.
+    // A busy neighbour behind the same proxy must not spend somebody else's cards.
     expect((await from('198.51.100.4')).status).toBe(200)
   })
 })

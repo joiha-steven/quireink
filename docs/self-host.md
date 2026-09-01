@@ -110,13 +110,27 @@ Settings → Search & URLs → Site address.
 
 **`TRUST_PROXY=1`, and only if your proxy is not on this machine or this private network.**
 Rate limits and the analytics visitor hash are keyed by the reader's address, and the app
-takes it from the socket, which a client cannot forge. `CF-Connecting-IP` and
-`X-Forwarded-For` are believed only when the connection came from a loopback or private
-address — which is the layout below, and every other layout where a proxy sits in front on
-the same box. Set `TRUST_PROXY=1` when the hop in front reaches you over a public address
-(a tunnel, a PaaS router, a load balancer elsewhere); without it, every reader behind it
-would be counted as that one hop. Do NOT set it on an origin the internet can reach
-directly: it makes the header believable again, and the header is one line of a request.
+takes it from the socket, which a client cannot forge. `X-Forwarded-For` is believed only
+when the connection came from a loopback or private address — which is the layout below, and
+every other layout where a proxy sits in front on the same box. Set `TRUST_PROXY=1` when the
+hop in front reaches you over a public address (a tunnel, a PaaS router, a load balancer
+elsewhere); without it, every reader behind it would be counted as that one hop. Do NOT set
+it on an origin the internet can reach directly: it makes the header believable again, and
+the header is one line of a request.
+
+**The LAST hop of `X-Forwarded-For` is the one that counts,** not the first. The first is
+whatever the client sent, on any proxy that appends rather than overwrites — which is what
+nginx's `$proxy_add_x_forwarded_for` does and what Cloudflare does. The last is the view of
+the proxy that just handed over the connection, and it is the only entry in the list there is
+any reason to believe. Caddy needs none of this: it replaces the header with the peer it saw.
+
+**`CF-Connecting-IP` is believed only once the Cloudflare zone is filled in** under
+Settings → Connections. That is not a preference, it is the difference between a header that
+means something and one that does not: Cloudflare overwrites it, and no other proxy touches
+it. Measured on 2026-09-01 through a real Caddy in front of the app — 45 requests against a
+30-per-minute cap, each carrying a different made-up `CF-Connecting-IP`, were refused **zero**
+times; the same 45 without the header were refused 16. A default install has no Cloudflare, so
+the default is to ignore it, and turning the integration on is what turns it back on.
 
 **`UPDATE_CHECK=0` turns off the one request this software makes on its own** — the daily
 question of what the newest release is, which is also how a blog is counted as being used

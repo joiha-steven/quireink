@@ -13,6 +13,7 @@ import { describe, expect, it, beforeEach, afterAll } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
 import { savePost } from '@/content/posts'
 import { resetLimits } from '@/server/rate-limit'
+import { forgetCloudflareInFront, saveIntegrationKeys } from '@/store/integration-keys'
 import { createApp } from '@/web/app'
 
 const DIR = './.tmp/test-client-ip'
@@ -66,6 +67,38 @@ describe('who a public rate limit counts', () => {
   })
 
   /**
+   * The same defect, one layer in, and the one a default install has: put ANY reverse proxy
+   * in front and the peer becomes a trusted local hop, so the forged header was believed
+   * again. Measured through a real Caddy 2 on 2026-09-01 — 45 requests against a 30-per-
+   * minute cap, a different made-up `CF-Connecting-IP` on each, ZERO refused, where the same
+   * 45 without the header were refused 16. Caddy replaces `X-Forwarded-For` with the peer it
+   * saw, so that one is not forgeable; `CF-Connecting-IP` is an unknown header to it and goes
+   * straight through. Cloudflare is the only front that overwrites it.
+   */
+  it('does not let a forged CF header past the cap when Cloudflare is not the front', async () => {
+    const at = await firstRefusal(OVER_THE_CAP, (i) =>
+      search('::ffff:127.0.0.1', { 'cf-connecting-ip': `10.0.0.${i % 256}` }))
+    expect(at).not.toBeNull()
+    expect(at).toBeLessThanOrEqual(62)
+  })
+
+  /** And once the owner turns the zone on in the admin, the header is the reader again. */
+  it('counts the CF header once the zone is configured', async () => {
+    await saveIntegrationKeys({ cloudflareApiToken: 'token', cloudflareZoneId: 'zone' })
+    forgetCloudflareInFront()
+    try {
+      const at = await firstRefusal(OVER_THE_CAP, () =>
+        search('::ffff:127.0.0.1', { 'cf-connecting-ip': '198.51.100.9' }))
+      expect(at).not.toBeNull()
+      // A different reader behind the same zone is unaffected by the one that was refused.
+      expect((await search('::ffff:127.0.0.1', { 'cf-connecting-ip': '198.51.100.10' })).status).toBe(200)
+    } finally {
+      await saveIntegrationKeys({ cloudflareApiToken: '', cloudflareZoneId: '' })
+      forgetCloudflareInFront()
+    }
+  })
+
+  /**
    * With no proxy in front, neither header is present and every visitor used to share one
    * bucket called 'unknown' — so one person searching rate-limited the whole site. The
    * second visitor here starts with a full allowance.
@@ -75,12 +108,24 @@ describe('who a public rate limit counts', () => {
     expect((await search('198.51.100.4')).status).toBe(200)
   })
 
-  /** The ordinary deployment: nginx on the same box, so the header IS the reader. */
+  /** The ordinary deployment: Caddy or nginx on the same box, so the header IS the reader. */
   it('still counts the forwarded reader when the peer is the local proxy', async () => {
     const at = await firstRefusal(OVER_THE_CAP, () =>
-      search('::ffff:127.0.0.1', { 'cf-connecting-ip': '198.51.100.9' }))
+      search('::ffff:127.0.0.1', { 'x-forwarded-for': '198.51.100.9' }))
     expect(at).not.toBeNull()
     // A different reader behind the same proxy is unaffected by the one that was refused.
-    expect((await search('::ffff:127.0.0.1', { 'cf-connecting-ip': '198.51.100.10' })).status).toBe(200)
+    expect((await search('::ffff:127.0.0.1', { 'x-forwarded-for': '198.51.100.10' })).status).toBe(200)
+  })
+
+  /**
+   * The first hop is whatever the client sent, on nginx (`$proxy_add_x_forwarded_for`) and on
+   * Cloudflare, both of which append. Reading it let a client pick its own bucket without
+   * needing to know the CF header existed.
+   */
+  it('does not let a forged first hop past the cap', async () => {
+    const at = await firstRefusal(OVER_THE_CAP, (i) =>
+      search('::ffff:127.0.0.1', { 'x-forwarded-for': `10.0.0.${i % 256}, 198.51.100.9` }))
+    expect(at).not.toBeNull()
+    expect(at).toBeLessThanOrEqual(62)
   })
 })
