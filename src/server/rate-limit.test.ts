@@ -1,6 +1,6 @@
 import type { Context } from 'hono'
 import { describe, it, expect, vi, beforeEach, afterEach } from '@/test/vitest'
-import { rateLimited, overLimit, recordHit, clientIp, resetLimits } from '@/server/rate-limit'
+import { rateLimited, overLimit, recordHit, clientIp, clientCountry, resetLimits } from '@/server/rate-limit'
 import { forgetCloudflareInFront } from '@/store/integration-keys'
 
 /**
@@ -160,6 +160,39 @@ describe('clientIp', () => {
 
   it('falls back to unknown only when there is no server and no header', () => {
     expect(clientIp(ctx({}, null))).toBe('unknown')
+  })
+
+  it('reads no country at all when Cloudflare is not the front', () => {
+    // `/api/track` is an open POST and this value goes straight into the owner's "where they
+    // came from" panel. Believed unconditionally, anyone could fill it with countries nobody
+    // visited from — wrong data that looks right, which is worse than the empty column.
+    withCloudflare(false, () => {
+      expect(clientCountry(ctx({ 'cf-ipcountry': 'JP' }, '10.0.0.3'))).toBe('')
+    })
+  })
+
+  it('reads it once the zone is configured', () => {
+    withCloudflare(true, () => {
+      expect(clientCountry(ctx({ 'cf-ipcountry': 'vn' }, '10.0.0.3'))).toBe('VN')
+      // XX is unknown and T1 is Tor. Both are answers Cloudflare really sends.
+      expect(clientCountry(ctx({ 'cf-ipcountry': 'XX' }, '10.0.0.3'))).toBe('XX')
+      expect(clientCountry(ctx({ 'cf-ipcountry': 'T1' }, '10.0.0.3'))).toBe('T1')
+    })
+  })
+
+  it('ignores it from a public peer even with the zone configured', () => {
+    // Straight to the origin, past the CDN: the header is the caller's own again.
+    withCloudflare(true, () => {
+      expect(clientCountry(ctx({ 'cf-ipcountry': 'JP' }, '203.0.113.7'))).toBe('')
+    })
+  })
+
+  it('refuses anything that was never a country code', () => {
+    withCloudflare(true, () => {
+      for (const junk of ['', 'V', 'VNM', 'V N', '<script>', 'vn;drop']) {
+        expect(clientCountry(ctx({ 'cf-ipcountry': junk }, '10.0.0.3'))).toBe('')
+      }
+    })
   })
 
   /**

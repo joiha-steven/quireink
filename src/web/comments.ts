@@ -25,7 +25,7 @@ import { getPost } from '@/content/posts'
 import { getSettings } from '@/content/settings'
 import { logActivity } from '@/server/activity'
 import { isPublicallyVisible } from '@/utils'
-import { clientIp, rateLimited } from '@/server/rate-limit'
+import { clientCountry, clientIp, rateLimited } from '@/server/rate-limit'
 import { fail, json } from '@/web/api'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -69,8 +69,9 @@ export async function handleCommentsPost(c: Context): Promise<Response> {
   if (!comments.enabled) return fail(c, 'Comments are disabled', 403)
 
   const ip = clientIp(c)
-  // Best-effort, from the CDN edge. Absent without one.
-  const country = (c.req.header('cf-ipcountry') ?? '').trim()
+  // Best-effort, and only when a CDN that overwrites the header is really in front: see
+  // `clientCountry`. Absent otherwise, which is every install with no zone configured.
+  const country = clientCountry(c)
   if (rateLimited(`comment:${ip}`, PER_MINUTE)) {
     return fail(c, 'Too many comments — slow down a moment', 429)
   }
