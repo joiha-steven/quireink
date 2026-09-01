@@ -107,6 +107,49 @@ export async function getIntegrationKeys(): Promise<IntegrationKeys> {
   }
 }
 
+/**
+ * Is Cloudflare actually in front of this install?
+ *
+ * The answer decides whether `CF-Connecting-IP` may be believed, so it is a security question
+ * rather than a convenience one. A default install has Caddy in front and no Cloudflare
+ * anywhere, and Caddy forwards an unknown header untouched: measured through a real Caddy 2,
+ * 45 requests against a 30-per-minute cap with a different made-up `CF-Connecting-IP` on each
+ * one were refused **zero** times, where the same 45 without the header were refused 16. Only
+ * Cloudflare overwrites that header, which is what makes it trustworthy behind Cloudflare and
+ * a free pass behind anything else.
+ *
+ * The same two keys as `cloudflareConfigured`, because they are what an owner fills in when
+ * they put the zone in front of the blog. Turning the integration on in the admin is what
+ * turns this on, which is the whole switch.
+ *
+ * CACHED, and that is the reason this is not just a call to `getIntegrationStatus`: it is
+ * asked on every rate-limited request and on every analytics write, and neither can afford a
+ * row read. `saveIntegrationKeys` forgets it, which is the only moment the answer can change.
+ */
+let inFront: boolean | null = null
+
+export function cloudflareInFront(): boolean {
+  if (inFront === null) {
+    // The row read is the fragile half and the env is the fallback, so the catch goes around
+    // the read alone — exactly as `getIntegrationKeys` does it. Wrapping both meant a missing
+    // table answered `false` for an install that had said so in its environment.
+    let row: Row | null = null
+    try {
+      row = readRow()
+    } catch (error) {
+      console.error(`[ERROR] integration-keys.cloudflareInFront: ${(error as Error).message}`)
+    }
+    inFront = !!((row?.cloudflare_api_token || env('CLOUDFLARE_API_TOKEN'))
+      && (row?.cloudflare_zone_id || env('CLOUDFLARE_ZONE_ID')))
+  }
+  return inFront
+}
+
+/** Invalidation, and the seam a test uses to change the answer between cases. */
+export function forgetCloudflareInFront(): void {
+  inFront = null
+}
+
 // Client-safe view: configured flags + the public values, never the secrets.
 export async function getIntegrationStatus(): Promise<IntegrationStatus> {
   const k = await getIntegrationKeys()
@@ -192,5 +235,8 @@ export async function saveIntegrationKeys(input: Partial<IntegrationKeys>): Prom
       aiModel: pick(input.aiModel, current?.ai_model),
     },
   )
+  // The zone keys may have just arrived or just gone, and `clientIp` reads the answer from a
+  // module variable rather than from this table.
+  forgetCloudflareInFront()
   clearCache()
 }

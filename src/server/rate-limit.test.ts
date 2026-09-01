@@ -1,6 +1,32 @@
 import type { Context } from 'hono'
 import { describe, it, expect, vi, beforeEach, afterEach } from '@/test/vitest'
 import { rateLimited, overLimit, recordHit, clientIp, resetLimits } from '@/server/rate-limit'
+import { forgetCloudflareInFront } from '@/store/integration-keys'
+
+/**
+ * Turn the Cloudflare integration on and off for one case.
+ *
+ * `cloudflareInFront` resolves the two zone keys from the row first and the env second, and
+ * this file has no database, so the env is the whole answer here. The cached flag has to be
+ * forgotten on both sides of the case or the previous one decides this one.
+ */
+function withCloudflare<T>(on: boolean, body: () => T): T {
+  const before = [process.env.CLOUDFLARE_API_TOKEN, process.env.CLOUDFLARE_ZONE_ID] as const
+  const set = (k: string, v: string | undefined): void => {
+    if (v === undefined) delete process.env[k]
+    else process.env[k] = v
+  }
+  set('CLOUDFLARE_API_TOKEN', on ? 'token' : undefined)
+  set('CLOUDFLARE_ZONE_ID', on ? 'zone' : undefined)
+  forgetCloudflareInFront()
+  try {
+    return body()
+  } finally {
+    set('CLOUDFLARE_API_TOKEN', before[0])
+    set('CLOUDFLARE_ZONE_ID', before[1])
+    forgetCloudflareInFront()
+  }
+}
 
 describe('rateLimited', () => {
   beforeEach(() => vi.useFakeTimers())
@@ -68,12 +94,38 @@ describe('clientIp', () => {
   }
 
   it('believes a proxy header when the peer is the local reverse proxy', () => {
-    const c = ctx({ 'cf-connecting-ip': '9.9.9.9', 'x-forwarded-for': '1.2.3.4, 5.6.7.8' }, '::ffff:127.0.0.1')
-    expect(clientIp(c)).toBe('9.9.9.9')
+    expect(clientIp(ctx({ 'x-forwarded-for': '5.6.7.8' }, '::ffff:127.0.0.1'))).toBe('5.6.7.8')
   })
 
-  it('prefers CF-Connecting-IP over X-Forwarded-For, whose first hop the client may have sent', () => {
-    expect(clientIp(ctx({ 'x-forwarded-for': '1.2.3.4, 5.6.7.8' }, '10.0.0.3'))).toBe('1.2.3.4')
+  /**
+   * The LAST hop, not the first. The first is whatever the client sent on any proxy that
+   * appends rather than overwrites, which is what nginx's `$proxy_add_x_forwarded_for` does
+   * and what Cloudflare does; the last is the nearest trusted proxy's own view.
+   */
+  it('takes the last hop of X-Forwarded-For, because the first is the client\u2019s', () => {
+    expect(clientIp(ctx({ 'x-forwarded-for': '1.2.3.4, 5.6.7.8' }, '10.0.0.3'))).toBe('5.6.7.8')
+  })
+
+  /**
+   * The measurement behind this pair, taken through a real Caddy 2 in front of the app: 45
+   * requests against a 30-per-minute cap, each carrying a different made-up
+   * `CF-Connecting-IP`, were refused ZERO times. The same 45 without it were refused 16.
+   * Caddy replaces `X-Forwarded-For` with the peer it saw, so that one cannot be forged, and
+   * forwards `CF-Connecting-IP` untouched because to Caddy it is just an unknown header.
+   * Only Cloudflare overwrites it, so only behind Cloudflare does it mean anything.
+   */
+  it('ignores CF-Connecting-IP when Cloudflare is not the front, which is the default', () => {
+    withCloudflare(false, () => {
+      const c = ctx({ 'cf-connecting-ip': '9.9.9.9', 'x-forwarded-for': '5.6.7.8' }, '10.0.0.3')
+      expect(clientIp(c)).toBe('5.6.7.8')
+    })
+  })
+
+  it('believes CF-Connecting-IP once the zone is configured in the admin', () => {
+    withCloudflare(true, () => {
+      const c = ctx({ 'cf-connecting-ip': '9.9.9.9', 'x-forwarded-for': '5.6.7.8' }, '10.0.0.3')
+      expect(clientIp(c)).toBe('9.9.9.9')
+    })
   })
 
   /**
@@ -90,7 +142,7 @@ describe('clientIp', () => {
     const before = process.env.TRUST_PROXY
     process.env.TRUST_PROXY = '1'
     try {
-      expect(clientIp(ctx({ 'cf-connecting-ip': '9.9.9.9' }, '203.0.113.7'))).toBe('9.9.9.9')
+      expect(clientIp(ctx({ 'x-forwarded-for': '9.9.9.9' }, '203.0.113.7'))).toBe('9.9.9.9')
     } finally {
       if (before === undefined) delete process.env.TRUST_PROXY
       else process.env.TRUST_PROXY = before
@@ -136,7 +188,7 @@ describe('clientIp', () => {
 
   for (const [what, peer] of LOCAL) {
     it(`believes a proxy header from ${what}`, () => {
-      expect(clientIp(ctx({ 'cf-connecting-ip': '9.9.9.9' }, peer))).toBe('9.9.9.9')
+      expect(clientIp(ctx({ 'x-forwarded-for': '9.9.9.9' }, peer))).toBe('9.9.9.9')
     })
   }
 
@@ -150,7 +202,7 @@ describe('clientIp', () => {
 
   for (const [what, peer] of PUBLIC) {
     it(`ignores a forged header from ${what}`, () => {
-      expect(clientIp(ctx({ 'cf-connecting-ip': '9.9.9.9' }, peer))).toBe(peer)
+      expect(clientIp(ctx({ 'x-forwarded-for': '9.9.9.9' }, peer))).toBe(peer)
     })
   }
 })
