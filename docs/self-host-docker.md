@@ -44,10 +44,18 @@ by itself: no certbot, nothing scheduled, and section 5's nginx block is not nee
 Point the domain at the machine first, then:
 
 ```bash
-cp .env.docker.example .env       # set SITE_URL and CADDY_DOMAIN
-docker compose -f docker-compose.caddy.yml up -d
-docker compose -f docker-compose.caddy.yml logs quire     # the link that claims the blog
+cp .env.docker.example .env       # set SITE_URL, uncomment COMPOSE_FILE
+docker compose up -d
+docker compose logs quire         # the link that claims the blog
 ```
+
+No `-f` in those: uncommenting `COMPOSE_FILE` in `.env` is what selects this file, and it
+keeps selecting it for every later command. The flag would have to be repeated on all of
+them, and the one it gets forgotten on is the upgrade months later — which rebuilds the
+plain file instead, brings the blog back on loopback with no certificate, and says nothing.
+
+There is no domain to write twice. Caddy takes the certificate's name straight out of
+`SITE_URL`.
 
 The [`Caddyfile`](../Caddyfile) beside it carries the same security headers the nginx block
 does, including the content security policy the app is tested against. Use the plain compose

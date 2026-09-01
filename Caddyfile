@@ -13,7 +13,28 @@
 # has to widen script-src, connect-src and frame-src to challenges.cloudflare.com, which is
 # what the commented block below does. Every other install is stricter without it.
 
-{$CADDY_DOMAIN} {
+# The site address IS `SITE_URL`, scheme and all, because Caddy accepts a URL here and reads
+# the host out of it — verified against Caddy 2 with `https://blog.example.com`, which logged
+# `enabling automatic TLS certificate management domains:["blog.example.com"]`. It used to be
+# a second variable, `CADDY_DOMAIN`, holding the same host without the scheme: two places to
+# write one name, and the failure when they drifted was a certificate for the wrong host with
+# nothing to say so. Compose refuses to start without `SITE_URL` rather than letting an empty
+# value through, because an empty one adapts to `unrecognized global option: reverse_proxy`,
+# which names neither the variable nor the problem.
+#
+# For expiry notices from the CA, uncomment the block below and put an address in it. It is
+# commented rather than wired to a variable on purpose: `email {$ACME_EMAIL}` with the
+# variable unset is a PARSE ERROR, not an empty setting, so the optional nicety would take the
+# whole site down on every install that skipped it.
+#
+#{
+#	email you@example.com
+#}
+
+{$SITE_URL} {
+	# Kept, and narrower than it looks now that the app compresses its own text responses
+	# (brotli, `src/web/compress.ts`): Caddy leaves an already-encoded body alone, so what
+	# this still covers is the bodies the app skips — anything under its 1 KB floor.
 	encode zstd gzip
 
 	header {

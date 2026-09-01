@@ -183,6 +183,17 @@ curl -s localhost:3000/api/health
 ```nginx
 server {
     listen 443 ssl;
+    # HTTP/2, which this block did not ask for until 2026-09-01 and therefore did not get.
+    # It matters more here than it looks: a reading page fetches the sheet, the pen's two
+    # sheets, two font subsets and two scripts, and under HTTP/1.1 nginx answers them down
+    # six connections with a queue behind each. On its own directive rather than as
+    # `listen ... http2`, which nginx deprecated in 1.25.1; on an older nginx write
+    # `listen 443 ssl http2;` instead and delete this line.
+    #
+    # HTTP/3 is not set up here because it needs a QUIC-capable build, a second `listen` on
+    # UDP and an `Alt-Svc` header to advertise itself. Caddy (§4) turns it on by itself, and
+    # that is the shorter road to it.
+    http2 on;
     server_name example.com;
     ssl_certificate     /etc/nginx/ssl/example.com.pem;
     ssl_certificate_key /etc/nginx/ssl/example.com.key;
