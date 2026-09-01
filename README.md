@@ -170,11 +170,13 @@ The fade-in and the progress bar are pure CSS: no script, off the main thread, a
 
 **Where can it live?** Any of these, and the blog is the same on all of them.
 
-- **A rented VPS** — the cheapest tier is enough. The one command below, or Docker.
-- **A DigitalOcean droplet** — paste [one file](./deploy/digitalocean/user-data.sh) into the droplet-create page and it is serving three minutes after boot ([how and why](./deploy/digitalocean/README.md)).
+- **A rented VPS** — the cheapest tier is enough. The one command below, then one more for the certificate ([`deploy/caddy/setup.sh`](./deploy/caddy/setup.sh)); or Docker, where the certificate comes with it.
+- **A DigitalOcean droplet** — paste [one file](./deploy/digitalocean/user-data.sh) into the droplet-create page and it is serving three minutes after boot. Put your domain in its first editable line and it comes up on HTTPS with the certificate already issued; leave it empty and it comes up on the droplet's address, with the one command that fixes that written to `/root/quire-https.txt` ([how and why](./deploy/digitalocean/README.md)).
 - **A NAS in your house** — on **Unraid** search `QuireInk` in Community Applications; on **Synology** (DSM 7.2+) paste the compose into Container Manager, and QNAP's Container Station takes the same. No shell on any of them: the blog prints its claim link to the container log. [Step by step, per box](./docs/self-host-docker.md#on-a-nas-or-a-home-server).
 - **Any machine with Docker** — pull `quireink/quireink`, `amd64` and `arm64` both. With HTTPS and nothing to schedule, that is [`docker-compose.image.yml`](./docker-compose.image.yml) plus the [`Caddyfile`](./Caddyfile): two files, no checkout.
 - **A Kubernetes cluster** — `kubectl apply -k deploy/kubernetes` on DOKS, EKS, GKE or your own. One pod and one volume, because one blog is one SQLite writer ([the manifests, and why they are a StatefulSet](./deploy/kubernetes/README.md)).
+
+**Two of those do not bring Caddy, and both on purpose.** A NAS already has a reverse proxy with its own certificate UI, and it is already holding ports 80 and 443 — a second one fights it rather than helping. A Kubernetes cluster terminates TLS at its ingress, which is the one thing in the cluster that knows about certificates. Everywhere else, the certificate comes with the install.
 
 For the first path you need [Bun](https://bun.sh) 1.3 or newer and a machine you can point a domain at. That is the list.
 

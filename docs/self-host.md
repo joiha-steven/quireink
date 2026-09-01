@@ -178,6 +178,29 @@ systemctl daemon-reload && systemctl enable --now quire
 curl -s localhost:3000/api/health
 ```
 
+## 4b. Caddy, in one command
+
+`install.sh` leaves the blog on `127.0.0.1:3000` and stops, because it uses no sudo and
+touches no service. This is the step it stops before, made out loud:
+
+```bash
+sudo bash deploy/caddy/setup.sh https://example.com
+```
+
+It installs Caddy from Caddy's own apt repository, copies the [`Caddyfile`](../Caddyfile) at
+the root of this repository to `/etc/caddy/` **byte-identical** — the same file the compose
+installs use, so the content security policy is the one the application is tested against —
+and writes a systemd drop-in carrying `SITE_URL` and `QUIRE_UPSTREAM`. It validates the
+configuration before starting anything. Caddy gets the certificate from Let's Encrypt and
+renews it itself; nothing is scheduled.
+
+It refuses rather than guesses: no address, an `http://` address, an address with no scheme,
+no root, no systemd, no apt — each stops with what to do instead. The domain has to already
+point at the machine before you run it, or no certificate can be issued.
+
+Use section 5 instead when something else already terminates TLS. Two things fighting over
+ports 80 and 443 is a worse problem than the one this solves.
+
 ## 5. nginx
 
 ```nginx

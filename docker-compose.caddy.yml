@@ -61,6 +61,9 @@ services:
       # site address is `unrecognized global option: reverse_proxy`, which names neither the
       # variable nor the problem.
       SITE_URL: ${SITE_URL:?set SITE_URL in .env, e.g. https://example.com}
+      # Where the blog is on the compose network. The Caddyfile is shared with the direct
+      # install, which points the same variable at 127.0.0.1:3000.
+      QUIRE_UPSTREAM: quire:3000
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       # Named, and worth keeping: it holds the certificates and the account key. Losing it
