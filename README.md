@@ -5,7 +5,7 @@
   <img src="docs/brand/wordmark-light.svg" alt="quireINK" width="360">
 </picture>
 
-`2.2.4`
+`2.2.5`
 
 **A blog you host yourself, and an AI agent can run it for you.**
 No algorithm, no ads, no platform standing between you and your readers.
@@ -73,7 +73,11 @@ An agent can steward as well as write. Any MCP client can draft, tag, schedule a
 
 You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE), and run the published version commercially, paid hosting included, under [one additional permission](./LICENSE-EXCEPTION.md).
 
-**2.2.4** is the current release. It runs the demo above and the author's own blog at [manhhung.me](https://manhhung.me); the [changelog](./CHANGELOG.md) has everything that changed.
+**2.2.5** is the current release. It runs the demo above and the author's own blog at [manhhung.me](https://manhhung.me); the [changelog](./CHANGELOG.md) has everything that changed.
+
+It is the release where the origin stopped leaning on a CDN. It compresses for itself now — brotli, 22% off a cold visit — and answers a reader who comes back to the same page with a `304` and no body. Two headers that only Cloudflare overwrites had been believed on installs that have no Cloudflare, which let a caller pick their own rate-limit bucket and fill the traffic panel with countries nobody visited from; both are gated on the zone being configured in Settings. Every install path that can carry a certificate now brings one, including `docker pull`.
+
+**And what it does not do.** A NAS and a Kubernetes cluster get no Caddy, on purpose — a NAS already holds ports 80 and 443 with its own certificate UI, and a cluster terminates TLS at its ingress. `docker compose up` does not fetch a newer image, so upgrading is `pull` then `up -d`; a machine that had pulled once before will otherwise start a blog older than the tag it named and look entirely correct doing it. An install that injects into its own HTML with nginx `sub_filter` gives up the origin's compression and its validator on pages, because neither survives a rewritten body. And none of this buys back a round trip: on an origin with no CDN in front, a reader on the far side of the world still pays the handshake — measured from Asia to a US origin, a `304` carrying zero bytes took 623 ms. The 22% is real, and it is not a CDN.
 
 ## What you get
 
@@ -117,16 +121,16 @@ You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE),
 
 These are off the network, first visit, nothing cached. It is what a stranger on a phone actually waits for.
 
-The CSS and JavaScript rows are build artefacts, the same bytes on every install, read off the 2.2.4 build. The totals were measured against a live site running Vietnamese, Literata to read and JetBrains Mono for the furniture. They are not a property of the software: the fonts are cut per script, so a browser fetches only the ranges your pages actually use. The pen's stroke shapes ride in two further immutable sheets, about 20 KB together, and they board only a page that carries a mark or an underline ([ADR 0027](docs/decisions/0027-the-pen-ships-only-where-it-wrote.md)). An inkless page never pays for them. Offline reading adds a service worker of 0.7 KB, fetched once and only on a blog that switched it on.
+The CSS and JavaScript rows are build artefacts, the same bytes on every install, read off the 2.2.5 build — **brotli from the origin since 2.2.5**, which is where they lost about a kilobyte each. The totals were measured against a live site running Vietnamese, Literata to read and JetBrains Mono for the furniture, and moved by exactly what those rows saved. They are not a property of the software: the fonts are cut per script, so a browser fetches only the ranges your pages actually use. The pen's stroke shapes ride in two further immutable sheets, **11 KB together now against 20 before**, and they board only a page that carries a mark or an underline ([ADR 0027](docs/decisions/0027-the-pen-ships-only-where-it-wrote.md)). An inkless page never pays for them. Offline reading adds a service worker of 0.7 KB, fetched once and only on a blog that switched it on.
 
 | | Home | A post | |
 |:---|---:|---:|:---|
 | **Requests** | 8 | 9 | |
-| **Total&nbsp;transferred** | **103&nbsp;KB** | **101&nbsp;KB** | 68&nbsp;KB of that is the fonts |
-| **JavaScript** | **4.1&nbsp;KB** | **10.4&nbsp;KB** | written by hand, no framework |
-| **CSS** | 10.6&nbsp;KB | 10.6&nbsp;KB | +20&nbsp;KB only on a page carrying the pen |
+| **Total&nbsp;transferred** | **100&nbsp;KB** | **98&nbsp;KB** | 68&nbsp;KB of that is the fonts |
+| **JavaScript** | **3.5&nbsp;KB** | **9.0&nbsp;KB** | written by hand, no framework |
+| **CSS** | 9.5&nbsp;KB | 9.5&nbsp;KB | +11&nbsp;KB only on a page carrying the pen |
 | **Third&#8209;party&nbsp;requests** | **0** | **0** | no CDN, no font host, no tracker |
-| **Coming&nbsp;back** | ~20&nbsp;KB | ~11&nbsp;KB | only the HTML is fetched again; a long post carries more |
+| **Coming&nbsp;back** | **0&nbsp;bytes** | **0&nbsp;bytes** | the same page answers `304`; a page you have not read yet still costs its HTML |
 
 It stays this way because of five decisions that are hard to walk back.
 
