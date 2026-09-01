@@ -173,7 +173,7 @@ The fade-in and the progress bar are pure CSS: no script, off the main thread, a
 - **A rented VPS** — the cheapest tier is enough. The one command below, or Docker.
 - **A DigitalOcean droplet** — paste [one file](./deploy/digitalocean/user-data.sh) into the droplet-create page and it is serving three minutes after boot ([how and why](./deploy/digitalocean/README.md)).
 - **A NAS in your house** — on **Unraid** search `QuireInk` in Community Applications; on **Synology** (DSM 7.2+) paste the compose into Container Manager, and QNAP's Container Station takes the same. No shell on any of them: the blog prints its claim link to the container log. [Step by step, per box](./docs/self-host-docker.md#on-a-nas-or-a-home-server).
-- **Any machine with Docker** — pull `quireink/quireink`, `amd64` and `arm64` both.
+- **Any machine with Docker** — pull `quireink/quireink`, `amd64` and `arm64` both. With HTTPS and nothing to schedule, that is [`docker-compose.image.yml`](./docker-compose.image.yml) plus the [`Caddyfile`](./Caddyfile): two files, no checkout.
 - **A Kubernetes cluster** — `kubectl apply -k deploy/kubernetes` on DOKS, EKS, GKE or your own. One pod and one volume, because one blog is one SQLite writer ([the manifests, and why they are a StatefulSet](./deploy/kubernetes/README.md)).
 
 For the first path you need [Bun](https://bun.sh) 1.3 or newer and a machine you can point a domain at. That is the list.

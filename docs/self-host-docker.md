@@ -63,6 +63,28 @@ file instead when something else already terminates TLS — an existing nginx, a
 load balancer — because two of them fighting over ports 80 and 443 is a worse problem than
 the one this solves.
 
+**Or take HTTPS WITHOUT a checkout.** The compose above and the Caddy one both say `build: .`,
+so both want the source. [`docker-compose.image.yml`](../docker-compose.image.yml) is the
+Caddy arrangement with the published image instead, which is the missing half of the line
+above: `pull quireink/quireink` used to be offered beside the Caddy file as an equal way in,
+and it was not one — the reader who came for the image had no way to get the certificate with
+it. Two files, because the `Caddyfile` is the same one the checkout uses and a second copy of
+a tested CSP would drift:
+
+```bash
+curl -O https://raw.githubusercontent.com/joiha-steven/quireink/main/docker-compose.image.yml
+curl -O https://raw.githubusercontent.com/joiha-steven/quireink/main/Caddyfile
+printf 'SITE_URL=https://example.com\n' > .env
+docker compose -f docker-compose.image.yml pull
+docker compose -f docker-compose.image.yml up -d
+docker compose -f docker-compose.image.yml logs quire
+```
+
+**That `pull` is not decoration.** `up` uses whatever image is already on the machine and says
+nothing about its age: on a box that had pulled once before, `latest` started a blog two
+releases behind the tag it named, printed a claim link, and looked entirely correct. It was
+found by reading the version in its own log. Upgrading is `pull` then `up -d`.
+
 **Or build it yourself** from this repository, which is what `docker-compose.yml` does and
 what you want if you have changed anything:
 
