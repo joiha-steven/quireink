@@ -37,12 +37,21 @@ export async function readFields(c: Context, names: string[]): Promise<{
  * the same trick against a check that only knows about slashes: browsers normalise the
  * backslash and leave the site just as readily. `safeReturnPath` in `web/comment-auth.ts`
  * guards the identical pair, for the identical reason.
+ *
+ * And no control characters or whitespace ANYWHERE in it. The URL parser strips ASCII tab
+ * and newline before it reads a URL, so `/<TAB>/evil.example` passes both checks above and
+ * still arrives in the browser as `//evil.example`. Reproduced 2026-09-02: the server sent
+ * `Location: /\t/example.com` for `?next=/%09/example.com`, and Chrome resolved it to
+ * `https://example.com/`. A backslash later in the path is refused for the same reason.
  */
 export function safeNext(raw: string | undefined): string {
   if (raw === undefined || raw === '') return '/admin'
-  if (!raw.startsWith('/') || raw.startsWith('//') || raw.startsWith('/\\')) return '/admin'
+  if (!raw.startsWith('/') || raw.startsWith('//') || UNSAFE_PATH_CHARS.test(raw)) return '/admin'
   return raw
 }
+
+/** ASCII controls, whitespace and backslashes: nothing a same-site path needs, and each one a way off it. */
+export const UNSAFE_PATH_CHARS = /[\x00-\x20\x7f\\]/
 
 /**
  * The answer to a request that has just produced a session.

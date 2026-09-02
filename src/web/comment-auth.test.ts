@@ -2,6 +2,7 @@
 // interesting behaviour is everything AROUND the exchange, and all of it is reachable
 // without a network.
 import { describe, expect, it, beforeEach, afterAll } from 'bun:test'
+import { resetLimits } from '@/server/rate-limit'
 import { freshDatabase, dropDatabase } from '@/test/db'
 import { db } from '@/store/db'
 import { savePost } from '@/content/posts'
@@ -28,6 +29,11 @@ async function configured(): Promise<void> {
 
 beforeEach(async () => {
   clearCache()
+  // The sign-in route is rate limited to 6/min per IP, and a single test now makes more
+  // calls than that from one address (the open-redirect case walks a list of bad paths).
+  // Without this, a later case is answered by the limiter, not the handler, and its cookie
+  // comes back empty for a reason that has nothing to do with what it is testing.
+  resetLimits()
   for (const t of ['posts', 'comments', 'settings', 'integration_keys']) db().run(`delete from ${t}`)
 })
 
@@ -74,7 +80,7 @@ describe('GET /comment-auth/google', () => {
   // way lets it through and the browser reads it as another origin.
   it('refuses to be steered off the site by the return path', async () => {
     await configured()
-    for (const bad of ['//evil.example', '/\\evil.example', 'https://evil.example']) {
+    for (const bad of ['//evil.example', '/\\evil.example', 'https://evil.example', '/\t/evil.example', '/\n/evil.example', '/a\\evil.example']) {
       const res = await get(`/comment-auth/google?return=${encodeURIComponent(bad)}`)
       const cookie = res.headers.get('set-cookie') ?? ''
       const encoded = cookie.split('.')[1]?.split(';')[0] ?? ''

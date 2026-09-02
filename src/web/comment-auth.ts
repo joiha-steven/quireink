@@ -11,6 +11,7 @@
 // fills in two form fields.
 
 import { Hono } from 'hono'
+import { UNSAFE_PATH_CHARS } from '@/web/auth-http'
 import { getCookie } from 'hono/cookie'
 import { getSettings, resolveSiteUrl } from '@/content/settings'
 import { getIntegrationKeys } from '@/store/integration-keys'
@@ -47,11 +48,13 @@ const PER_MINUTE = 6
  * `//evil.example` is the case worth naming: it starts with a slash, so a "must be
  * relative" check written the obvious way passes it, and the browser reads it as
  * protocol-relative and leaves the site. A backslash is the same trick for the engines
- * that normalise it to a slash.
+ * that normalise it to a slash, and a tab or newline is the same trick again: the parser
+ * strips them before it looks, so `/<TAB>/evil.example` reads as `//evil.example`.
+ * `UNSAFE_PATH_CHARS` in `web/auth-http.ts` tells the whole story.
  */
 function safeReturnPath(raw: string | undefined): string {
   if (!raw || !raw.startsWith('/')) return '/'
-  if (raw.startsWith('//') || raw.startsWith('/\\')) return '/'
+  if (raw.startsWith('//') || UNSAFE_PATH_CHARS.test(raw)) return '/'
   return raw
 }
 
