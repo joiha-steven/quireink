@@ -107,19 +107,18 @@ export function Setting({
   if (inline) {
     /**
      * `flex-wrap` + `basis-48`, so the control drops to its own line rather than crushing the
-     * sentence beside it — and WITHOUT a breakpoint, because the thing that decides is the
-     * width of the control, not the width of the window.
-     *
-     * A 24px switch beside a label is comfortable at 390px and always stays put. A 230px
-     * select is not: measured at 390 on the Appearance tab, "Default appearance" left its
-     * note 215px to run in and seven lines to do it, with the space beside the select empty
-     * underneath — the same hole the inline layout exists to close. The head refuses to go
-     * under 12rem, so anything that cannot leave it that much wraps instead.
+     * sentence beside it, WITHOUT a breakpoint: what decides is the width of the control, not
+     * the window. A 24px switch stays beside its label at 390px; a 230px select cannot, and
+     * measured on the Appearance tab it left its note seven lines in a 215px gap. The head
+     * refuses to go under 12rem, so anything that cannot leave it that much wraps.
+     * `max-w-full` on the control, not only `shrink-0`: a shrink-0 box never lets its own
+     * flex-wrap children wrap, so a WIDE group — the key-volume slider and its "hear it"
+     * button, 373px — ran 52px past a 375px screen. Capping it at the row makes it wrap.
      */
     return (
       <div className={`flex flex-wrap items-start justify-between gap-x-4 gap-y-2 ${className}`}>
         <div className="min-w-0 flex-1 basis-48">{head}</div>
-        <div className="shrink-0 pt-0.5">{children}</div>
+        <div className="max-w-full shrink-0 pt-0.5">{children}</div>
       </div>
     )
   }
