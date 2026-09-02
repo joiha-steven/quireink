@@ -276,11 +276,20 @@ export function rail(): void {
   }
 
   const html = document.documentElement
+  const rail = document.querySelector<HTMLElement>('.rail')
   const set = (open: boolean) => {
+    const was = html.dataset.rail === 'open'
     if (open) html.dataset.rail = 'open'
     else delete html.dataset.rail
     button.setAttribute('aria-expanded', String(open))
     scrim.hidden = !open
+    // Focus goes where the drawer goes. Opening it left focus on the menu button, so the
+    // next Tab landed on the palette control behind the drawer rather than on the first
+    // link inside it; closing it with Escape while a link was focused dropped focus on the
+    // body, because the closed drawer is visibility:hidden and a hidden element cannot keep
+    // it. The button is the place a keyboard user was before the drawer opened.
+    if (open) rail?.querySelector<HTMLElement>('a[href],button')?.focus()
+    else if (was && rail?.contains(document.activeElement)) button.focus()
   }
 
   const scrim = el('div', { class: 'rail-scrim', hidden: '', 'aria-hidden': 'true' })
@@ -288,6 +297,6 @@ export function rail(): void {
   scrim.addEventListener('click', () => set(false))
   button.addEventListener('click', () => set(html.dataset.rail !== 'open'))
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') set(false)
+    if (e.key === 'Escape' && html.dataset.rail === 'open') set(false)
   })
 }

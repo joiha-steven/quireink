@@ -15,13 +15,14 @@ import { t } from '@/i18n/i18n'
 import { clientIp, rateLimited } from '@/server/rate-limit'
 import { renderListing } from '@/web/listing'
 import { listingPage } from '@/web/listing-page'
+import { searchForm } from '@/web/chrome'
 
-// The canonical pair, NOT a private copy. The copy that used to live here escaped `& < >`
-// and nothing else, and line 45 interpolates the reader's own query into an attribute:
-// `/search?q=" onfocus=alert(1) autofocus x="` came back as
+// The canonical escaper, NOT a private copy. The copy that used to live here escaped `& < >`
+// and nothing else, and the form (now `searchForm` in chrome.ts) interpolates the reader's
+// own query into an attribute: `/search?q=" onfocus=alert(1) autofocus x="` came back as
 // `value="" onfocus=alert(1) autofocus x=""`, which is a live event handler on a public page.
 // Reproduced against a local instance before this line was written; there is a test for it.
-import { escapeAttr, escapeHtml } from '@/utils'
+import { escapeHtml } from '@/utils'
 
 /** Matches `/api/search`. One feature, one cap, whichever half of it a reader reaches. */
 const PER_MINUTE = 60
@@ -45,10 +46,7 @@ export async function handleSearchPage(c: Context): Promise<Response> {
     basePath: '/search',
     empty: q ? tx.searchEmpty : tx.searchHint,
   }, settings)
-  const form = `<form class="search" action="/search" method="get" role="search">
-<input type="search" name="q" value="${escapeAttr(q)}" aria-label="${escapeAttr(tx.search)}">
-<button type="submit">${escapeHtml(tx.search)}</button>
-</form>`
+  const form = searchForm(tx, q)
   return c.html(await listingPage({
     title: `${tx.search} · ${settings.title}`,
     // Out of the index, and this is the one page on the site that has to say so: `/search?q=`

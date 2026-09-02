@@ -208,6 +208,21 @@ export function siteHeader(settings: SiteSettings, opts: ChromeOptions): string 
   }</header>`
 }
 
+/**
+ * The search box as a plain form: `/search?q=` with no script at all.
+ *
+ * Shared by the search page and the 404, which is the other page whose reader arrived
+ * looking for something. The query goes back into the field through `escapeAttr` — the
+ * search page once had a private copy of the escaping that skipped quotes, and a query
+ * with `" onfocus=` in it came back as a live handler (`search-page.ts` keeps that story).
+ */
+export function searchForm(s: { search: string }, q = ''): string {
+  return `<form class="search" action="/search" method="get" role="search">
+<input type="search" name="q" value="${escapeAttr(q)}" aria-label="${escapeAttr(s.search)}">
+<button type="submit">${escapeHtml(s.search)}</button>
+</form>`
+}
+
 /** The footer: the owner's own line, centred, and nothing else. */
 export function siteFooter(settings: SiteSettings, opts: ChromeOptions): string {
   // Owner text, centred, and nothing else. The sign-up form used to live here so the

@@ -27,7 +27,9 @@ function breakpoint(colWidth: number): number {
 const DIVIDER = (RAIL_GAP - RAIL_PAD) / 2
 const GUTTER =
   'position:absolute;inset:auto auto auto auto;top:var(--rail-top);width:var(--rail-w);' +
-  'height:calc(100% - var(--rail-top));padding:0;background:none;border:0;overflow:visible;transform:none;display:block'
+  // visibility:visible undoes the closed-drawer rule in rail.css.ts: in the gutter the rail is
+  // always open, and without this the promoted rail would be invisible above the breakpoint.
+  'height:calc(100% - var(--rail-top));padding:0;background:none;border:0;overflow:visible;transform:none;display:block;visibility:visible'
 const INNER =
   '.rail-inner{max-height:calc(100dvh - 2.5rem - 1.5rem);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}'
 

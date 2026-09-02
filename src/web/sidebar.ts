@@ -102,6 +102,20 @@ export function menuBlock(items: MenuItem[], label: string): string {
 const rail = (variant: string, blocks: string) =>
   `<aside class="rail${variant}"><div class="rail-inner">${blocks}</div></aside>`
 
+/**
+ * A rail carrying the owner's menu and nothing else.
+ *
+ * Two layouts need it: a listing whose sidebar is switched off (below), and the composed
+ * front page, which drops the discovery rail on purpose (ADR 0014) and then had no menu at
+ * all under 60rem — the header words are desktop-only and the drawer button hides itself
+ * when there is no drawer. Measured 2026-09-02 at 375px and 768px: four configured links,
+ * zero reachable. Empty when there is no menu, for the reason `renderSidebar` gives.
+ */
+export function menuRail(settings: SiteSettings): Sidebar {
+  if (settings.menu.length === 0) return { html: '', css: '' }
+  return { html: rail('', menuBlock(settings.menu, t(settings.language).menu)), css: '' }
+}
+
 export type Sidebar = {
   /** The rail markup, or '' when there is nothing to show. */
   html: string
@@ -128,12 +142,7 @@ export async function renderSidebar(
   // page. Switching it off used to take the menu with it and put it nowhere else: measured
   // on 2026-09-01, four configured links appearing zero times in the served HTML. What is
   // left when it is off is a rail carrying the menu and nothing but.
-  if (!settings.features.sidebar) {
-    const labels = t(settings.language)
-    return settings.menu.length === 0
-      ? none
-      : { html: rail('', menuBlock(settings.menu, labels.menu)), css: '' }
-  }
+  if (!settings.features.sidebar) return menuRail(settings)
 
   const [{ categories, tags }, posts, viewTotals, allSeries] = await Promise.all([
     getPublicTaxonomy(), getPublicPosts(), getViewTotals(),

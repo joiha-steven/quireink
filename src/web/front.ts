@@ -286,7 +286,8 @@ export async function renderFront(): Promise<string | null> {
     css: frontCss(),
     canonicalPath: '/',
     // The rows below already ARE the discovery blocks. Keeping the rail would put
-    // most-viewed beside most-viewed on the same screen (ADR 0014).
+    // most-viewed beside most-viewed on the same screen (ADR 0014). The shell still
+    // renders the menu's drawer for narrow screens — see `listingPage`.
     noRail: true,
   })
 }
