@@ -29,6 +29,33 @@ export function registerShellFlows({ flow, expect, atWidth }: Tour): void {
       return 'ok ' + rail.querySelectorAll('a').length + ' link(s) behind one button'
     })()`, 600))
 
+  // The contents list's last row, at the width where it was wrong. Above the rail
+  // breakpoint the taxonomy under the article is hidden and the gutter panel holds those
+  // facts, so the row has to aim there instead; the server cannot know the width, so an
+  // island decides and this is the only thing that proves it decided. Watched red against
+  // the shipped build, where the row still pointed under the article and the jump landed
+  // on "Read next" with no tag on screen.
+  flow('shell: the contents list ends where the tags actually are',
+    // The same fixture post the gesture flows use, and at the tour's own 1440 — which is
+    // above the rail breakpoint, where the bug lived.
+    () => expect('/the-reed-pen-in-van-goghs-letters', `
+    (async () => {
+      const row = document.querySelector('.toc a.toc-end')
+      if (!row) return 'skip: this post has no contents list'
+      const panel = document.querySelector('.post-info')
+      if (!panel || getComputedStyle(panel).display === 'none') return 'skip: no gutter at this width'
+      const id = row.getAttribute('href').slice(1)
+      const target = document.getElementById(id)
+      if (!target) return 'the last row points at #' + id + ', which is not on the page'
+      // Honest only if the copy it lands on is the one being SHOWN.
+      if (!panel.contains(target)) return 'at gutter width the row still aims under the article'
+      row.click()
+      await new Promise((r) => setTimeout(r, 700))
+      const box = panel.getBoundingClientRect()
+      if (box.bottom < 0 || box.top > innerHeight) return 'it jumped somewhere the panel is not'
+      return 'ok #' + id + ', panel on screen'
+    })()`, 900))
+
   // A miss offered one link home and nothing else. It now carries the search box and the
   // three newest posts, and it has to still BE a 404 — the status is the first check,
   // because a page that helps but answers 200 would be indexed as content.

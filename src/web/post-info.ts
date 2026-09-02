@@ -22,6 +22,7 @@ import { formatCount, formatDate } from '@/i18n/i18n'
 import { tagText, termSlug } from '@/content/taxonomy'
 import { escapeAttr, escapeHtml, readingMinutes, wordCount } from '@/utils'
 import { ICONS } from '@/icons'
+import { TOC_ANCHORS } from '@/render/toc'
 
 /**
  * Comma-separated term links, as the frozen tree rendered them. Tags read lowercase.
@@ -78,9 +79,17 @@ export function postInfoPanel(post: PostWithContent, settings: SiteSettings, s: 
   // No category link among the rows even though the meta line carries one: the full list of
   // categories is two lines further down, and naming the first of them twice in a 250px
   // column reads as a rendering fault rather than as emphasis.
-  if (post.tags.length) rows.push(termRow(s.tagLabel, termLinks(post.tags, 'tag', true)))
+  // Each term row leads with its own anchor. Above the rail breakpoint this panel is the
+  // ONLY copy of these facts — the end-of-article block is hidden there — so the contents
+  // list's last row needs somewhere real to land at that width. `render/toc.ts` says why
+  // the names differ from the footer's, and `assets/js/toc.ts` picks between them.
+  const anchor = (id: string) => `<span class="anchor" id="${id}"></span>`
+  if (post.tags.length) {
+    rows.push(anchor(TOC_ANCHORS.infoTags) + termRow(s.tagLabel, termLinks(post.tags, 'tag', true)))
+  }
   if (post.categories.length) {
-    rows.push(termRow(s.categoryLabel, termLinks(post.categories, 'category')))
+    rows.push(anchor(TOC_ANCHORS.infoCategories)
+      + termRow(s.categoryLabel, termLinks(post.categories, 'category')))
   }
   // LAST, and set apart. Everything above it is a fact about the post; this is the one thing
   // in the panel the reader can DO, so it goes at the foot with air around it rather than
