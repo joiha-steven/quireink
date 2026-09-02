@@ -98,7 +98,17 @@ const BUDGET: Record<string, number> = {
   //     was Turnstile, an account and ~60 KB from challenges.cloudflare.com on every page with
   //     a form, on a site whose whole claim is zero third-party requests
   //   the reading position (~1.1 KB) — a forty-minute read is never one sitting
-  'post.js': 17_000,
+  //
+  // 17,400 since 2026-09-02, and the 227 bytes it bought are the last row of the contents
+  // list telling the truth on a desktop (issue #63). The tags and categories exist twice
+  // and only one copy is ever on screen: under the article on a phone, in the gutter panel
+  // above the rail breakpoint, where the under-article copy is `display:none`. The row is
+  // server-rendered pointing at the under-article copy, which is right at one width and
+  // sent a desktop reader 2,615px past the end of the prose to an invisible anchor at the
+  // other. The server cannot know a viewport width, so the choice has to be made here and
+  // re-made on resize. Priced against the alternative of rendering both copies visible,
+  // which costs nothing in JavaScript and undoes a deliberate layout.
+  'post.js': 17_400,
   // /login only, and NOT loaded with core.js: the sign-in page carries no beacon, no
   // search overlay and no listing controls, so it pays for the reveal toggle, the caps-lock
   // warning and the one-time-code paste, and nothing else.
