@@ -41,8 +41,17 @@ export const RAIL_CSS = `
 .rail{position:fixed;top:0;bottom:0;left:0;z-index:40;width:min(300px,84vw);
   overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;padding:4.5rem 1.25rem 2rem;
   background:var(--c-bg);border-right:1px solid var(--c-rule);
-  transform:translateX(-100%);transition:transform var(--dur-base) ease}
-html[data-rail=open] .rail{transform:none}
+  transform:translateX(-100%);visibility:hidden;
+  transition:transform var(--dur-base) ease,visibility 0s linear var(--dur-base)}
+/* visibility, and not only the transform. A drawer slid off-screen is still in the document:
+   every link in it stayed in the Tab order and in the screen reader's list, so a keyboard
+   reader on a phone tabbed through the whole sidebar (44 links on a listing page, measured
+   2026-08-29) before reaching the first post, with nothing on screen to show for it. Hidden
+   visibility takes the closed drawer out of both. The delay is what keeps the slide-out
+   animation: visibility flips only after the transform has finished; opening flips it at
+   once (the delay is reset below) so the links are focusable the moment the drawer moves.
+   The gutter geometry (render/rail-css.ts) sets it back to visible above the breakpoint. */
+html[data-rail=open] .rail{transform:none;visibility:visible;transition-delay:0s}
 /* Two-rail listings only: on mobile there is no gutter, so the LEFT rail is hidden and its
    blocks appear in the right rail's drawer through .drawer-only. */
 .rail-left{display:none}

@@ -104,11 +104,16 @@ export function ActivityFeed({ entries, limit = 10 }: { entries: ActivityEntry[]
     // column, which is how every ruled page in this product handles the same problem. The
     // grid fills row-major, so the odd children are the left column and their right edges
     // line up into one continuous line.
+    //
+    // min-w-0 on each ITEM, not only on the text column inside it. A grid item's minimum
+    // width is its content, so the truncate classes further down had nothing to truncate
+    // against: at 375px a row ran to 339px inside a 301px list and the whole admin
+    // scrolled sideways by one pixel.
     <ul className="grid xl:grid-cols-2">
       {entries.slice(0, limit).map((entry) => (
         <li
           key={entry.id}
-          className="flex items-start gap-3 border-b border-neutral-100 py-2.5 last:border-b-0 dark:border-neutral-800 xl:[&:nth-last-child(-n+2)]:border-b-0 xl:[&:nth-child(odd)]:border-r xl:[&:nth-child(odd)]:pr-8 xl:[&:nth-child(even)]:pl-8 xl:[&:nth-child(odd)]:border-r-neutral-100 dark:xl:[&:nth-child(odd)]:border-r-neutral-800"
+          className="flex min-w-0 items-start gap-3 border-b border-neutral-100 py-2.5 last:border-b-0 dark:border-neutral-800 xl:[&:nth-last-child(-n+2)]:border-b-0 xl:[&:nth-child(odd)]:border-r xl:[&:nth-child(odd)]:pr-8 xl:[&:nth-child(even)]:pl-8 xl:[&:nth-child(odd)]:border-r-neutral-100 dark:xl:[&:nth-child(odd)]:border-r-neutral-800"
           title={formatDateTimeShort(entry.at)}
         >
           <span className={`${MARK} ${inkFor(entry.action)}`}>

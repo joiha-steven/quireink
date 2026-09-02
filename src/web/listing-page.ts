@@ -5,7 +5,7 @@
 // router keeps the routing; this keeps what a listing page IS.
 
 import type { SiteSettings } from '@/types'
-import { t } from '@/i18n/i18n'
+import { formatDate, t } from '@/i18n/i18n'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { getSettings, resolveSiteUrl } from '@/content/settings'
 import { paginate } from '@/content/paginate'
@@ -15,10 +15,11 @@ import { renderListing, type ListingView } from '@/web/listing'
 import type { ReadyImages } from '@/web/front-card'
 import { getMediaRefs } from '@/media/media-refs'
 import { collapseBlob } from '@/media/blob'
-import { renderSidebar } from '@/web/sidebar'
+import { menuRail, renderSidebar } from '@/web/sidebar'
 import { timelineCss } from '@/render/rail-css'
 import { ogCardUrl, siteDomain } from '@/render/og'
-import { chromeLabels, siteFooter, siteHeader } from '@/web/chrome'
+import { chromeLabels, searchForm, siteFooter, siteHeader } from '@/web/chrome'
+import { getPublicPosts } from '@/content/posts'
 import { getMailStatus } from '@/news/mail'
 import { PUBLIC_SHEET, scriptTag } from '@/web/assets'
 
@@ -79,7 +80,14 @@ export async function listingPage(
   const [{ configured: mailConfigured }, rail] = await Promise.all([
     getMailStatus(), renderSidebar(settings, activeHref),
   ])
-  const sidebar = noRail ? { html: '', css: '' } : rail
+  // No discovery rail does not mean no rail: the menu still needs its drawer under 60rem,
+  // where the header's copy of it is display:none. Above that width the words are in the
+  // header, so the drawer AND its button go — the one control for one menu rule, kept.
+  // The rail itself has to go too, not only the button: the layout's single-rail geometry
+  // promotes any `.rail` into the left gutter above its own breakpoint, and the menu was
+  // then printed twice on the same screen (measured at 1440px, 2026-09-02).
+  const sidebar = noRail ? menuRail(settings) : rail
+  const noRailCss = noRail && sidebar.html ? '@media (min-width:60rem){.rail,.rail-toggle{display:none}}' : ''
   return renderDocument(
     settings,
     {
@@ -98,7 +106,7 @@ export async function listingPage(
       stylesheet: PUBLIC_SHEET,
       extra: feedLink,
     },
-    pageStyles(settings, [css, sidebar.css].filter(Boolean).join('\n')),
+    pageStyles(settings, [css, sidebar.css, noRailCss].filter(Boolean).join('\n')),
     // The rail is rendered LAST inside `main`: it is absolutely placed, so DOM order is
     // free, and this way the page heading still leads the document outline.
     `<div class="wrap">
@@ -192,6 +200,18 @@ export async function renderFeedBody(
 export async function notFoundPage(): Promise<Response> {
   const settings = await getSettings()
   const s = t(settings.language)
+  // A miss is where a reader is most likely to leave, and the old page offered one link
+  // back to the front door and nothing else. Two ways onward now, both already on the site:
+  // the search box (a mistyped or moved URL usually has its title in it), and the three
+  // newest posts, in the same quiet list the article end uses for its related posts. Three
+  // rather than a feed: the page has to stay a "not found" and not become a second home.
+  const latest = (await getPublicPosts()).slice(0, 3)
+  const latestBlock = latest.length
+    ? `<hr><section class="related"><h2>${escapeHtml(s.frontLatest)}</h2><ul>${
+        latest.map((p) => `<li><a class="link-accent" href="/${escapeAttr(p.slug)}">${escapeHtml(p.title)}</a>`
+          + `<p class="t-small text-meta">${escapeHtml(formatDate(p.date, settings.language, settings.timezone))}</p></li>`).join('')
+      }</ul></section>`
+    : ''
   const html = await listingPage({
     title: `${s.notFoundTitle} · ${settings.title}`,
     description: s.notFoundText,
@@ -199,7 +219,8 @@ export async function notFoundPage(): Promise<Response> {
     // is an empty listing, so it is dressed as one rather than as a new kind of page.
     body: `<div class="listing-head"><h1>${escapeHtml(s.notFoundTitle)}</h1></div>
 <p class="empty">${escapeHtml(s.notFoundText)}</p>
-<p class="mt-3"><a class="link-accent" href="/">${escapeHtml(s.backHome)}</a></p>`,
+${searchForm(s)}
+<p class="mt-3"><a class="link-accent" href="/">${escapeHtml(s.backHome)}</a></p>${latestBlock}`,
   })
   return new Response(html, {
     status: 404,
