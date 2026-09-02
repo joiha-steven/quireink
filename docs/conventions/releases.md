@@ -23,7 +23,15 @@ On any behavior change, update the matching doc in the SAME change (Working prin
   [`scripts/ops/quire-backup.sh`](../../scripts/ops/quire-backup.sh) does.
 - **Audits** are dated snapshots, so they are write-only and they live with the author's
   notes rather than here. Read the latest first so a pass starts from the last clean line.
-- **Versioning (owner's rule — do NOT auto-bump):** the version is **`2.2.6`**, released
+- **Versioning (owner's rule — do NOT auto-bump):** the version is **`2.2.7`**, released
+  2026-09-02 — two bug reports from one Unraid owner, answered, plus the box that lets an
+  owner add the third party this software refuses to add for them. The contents list's last
+  row was a dead anchor on a post with no tags and, on a desktop, a 2,615px jump to a copy
+  of the taxonomy that is hidden at that width (#63). Analytics gained All time and a By
+  year table: nothing here has ever deleted a row, so the history was always on disk and
+  what was missing was a window wider than 365 days to ask with (#64). And Connections →
+  Custom code takes your own HTML in the head and before the closing body tag, on public
+  pages only. The patch slot an eighth time. (`2.2.6`, released
   2026-09-02 — a fix release from a sweep of every page and admin screen at four widths in
   both colour schemes. The navigation drawer stopped keeping its links in the keyboard tab
   order once it slid shut, the composed front page kept its menu on a narrow screen, the

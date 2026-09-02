@@ -1,5 +1,64 @@
 # CHANGELOG
 
+## 2026-09-02 — Quire Ink 2.2.7
+
+Two reports from someone running the blog on Unraid, and the box this product needed in
+order to keep its own promise.
+
+### The contents list's last row goes somewhere (#63)
+
+- **A post with no tags and no categories had a dead link.** The row said "Comments" and
+  pointed at `post-comments`; the section carries `id="comments"` and always has. Measured:
+  the click moved the page zero pixels.
+- **On a desktop the taxonomy row aimed at a copy nobody can see.** Above the rail
+  breakpoint the block under the article is `display:none` — those facts live in the gutter
+  panel at the TOP of the article — so "Tag / Category" scrolled 2,615px past the end of the
+  prose to a zero-height anchor and landed on "Read next" with no tag on screen. The panel
+  has its own anchors now and the row follows whichever copy is rendered, re-deciding on
+  resize. With no JavaScript the row keeps the server's choice, which is right at the width
+  where there is no gutter.
+
+### The whole history was always there, and now it can be asked for (#64)
+
+- **Nothing has ever deleted an analytics row.** There is no retention setting and no
+  pruning job. What was missing was the question: every window was "the last N days" and the
+  widest offered was 365, so an install in its third year was holding two years it could not
+  look at.
+- **ALL TIME**, bucketed by month, so five years is sixty columns rather than eighteen
+  hundred.
+- **BY YEAR**, every calendar year on record, independent of the window above — "2024
+  against 2025" is not a question about the last thirty days. Grouped in the site's own
+  timezone: a UTC `strftime('%Y')` would file the first seven hours of every January on a
+  UTC+7 blog into the year before.
+- The trend arrow and the new/returning split are suppressed on all time, because both
+  compare against the window immediately before and before all time there is nothing.
+- The delivery row on that screen was also lopsided, and it is the reason the panel was
+  looked at: the figures sat 36px in while every other row on the sheet sits at 20px, and
+  each note was 4px out from the number it explains. Everything on that sheet is now on one
+  margin; the bytes figure gained the caveat that had only ever lived in a source comment.
+
+### A box for your own code
+
+- **Connections → Custom code**: your own HTML in the page `<head>` and before `</body>`.
+  Quire Ink still fetches nothing from anybody — a fresh install has both boxes empty — but
+  what you add is your site's business. Umami, Plausible, Cloudflare's beacon, a
+  verification tag.
+- Kept verbatim: a field whose purpose is to carry a script cannot strip script tags.
+- **Never on the admin, the sign-in page, or a draft preview.** A tracker on a preview
+  reports a reader who does not exist and spoils the numbers in Analytics; one on the
+  sign-in page watches a password being typed. The snippets are passed into the document
+  renderer by the two public shells rather than read inside it, so a page carries them only
+  by asking.
+- The editor is the CSS box's sibling: line gutter, Tab indents, byte count, and it names an
+  unclosed `<script>` or `<style>` — this field's unclosed brace, and worse, because the
+  browser swallows the rest of the page and the site goes blank with nothing saying why.
+
+### Under the hood
+
+- The browser tour installs the browser this project targets instead of using whatever the
+  CI runner shipped. A runner's `/usr/bin/chromium` had twice held the debugging port shut
+  for a full thirty seconds; the diagnostics added in 2.2.6 are what named it.
+
 ## 2026-09-02 — Quire Ink 2.2.6
 
 A sweep of every reader page and every admin screen at 375, 768, 1024 and 1440, in both colour
