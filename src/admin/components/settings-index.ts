@@ -157,6 +157,8 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { tab: 'connections', label: 'nlSmtpSecure' },
   { tab: 'connections', label: 'commentsTurnstile' },
   { tab: 'connections', label: 'commentsGoogleAuth' },
+  { tab: 'connections', label: 'customHeadLabel', note: 'customCodeNote' },
+  { tab: 'connections', label: 'customBodyEndLabel', note: 'customBodyEndHint' },
   { tab: 'appearance', label: 'cardInk', note: 'inkHelp' },
   { tab: 'appearance', label: 'inkHighlighter' },
   { tab: 'appearance', label: 'inkLines', note: 'inkLinesHint' },

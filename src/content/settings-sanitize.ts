@@ -335,6 +335,22 @@ export function sanitizeCss(value: unknown): string {
   return typeof value === 'string' ? value.replace(/<\/style/gi, '') : ''
 }
 
+/**
+ * The owner's own markup, kept as typed.
+ *
+ * Deliberately NOT the treatment `sanitizeCss` gives its input, and the difference is the
+ * whole point: that one strips `</style` so a stylesheet field can never become a script,
+ * because CSS is all it was ever for. These fields ARE for script — a tracking snippet is
+ * the thing they exist to hold — so stripping tags would leave a box that silently ruins
+ * every snippet pasted into it, which is worse than not having the box.
+ *
+ * What it does do is refuse anything that is not a string and trim the edges, so a field
+ * holding only whitespace reads as empty everywhere rather than as "set to a space".
+ */
+export function sanitizeSnippet(value: unknown): string {
+  return typeof value === 'string' ? value.trim() : ''
+}
+
 // Accept only a valid http(s) URL with no trailing slash; '' otherwise.
 export function sanitizeUrl(value: unknown): string {
   if (typeof value !== 'string' || !value.trim()) return ''

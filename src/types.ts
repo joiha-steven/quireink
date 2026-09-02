@@ -219,6 +219,25 @@ export type SiteSettings = {
   relatedCount: number // related posts shown at the end of an article (0 = none)
   excerptLength: number // words auto-used as a post excerpt when none is set
   customCss: string // owner CSS injected into PUBLIC pages only ('' = none)
+  /**
+   * The owner's own markup, verbatim, on PUBLIC pages only ('' = none).
+   *
+   * This product ships no third-party request of any kind, and that is a claim about what
+   * IT does, not a rule for the person whose site it is. An owner who wants Umami, Plausible,
+   * Cloudflare's beacon or a sign-in button has nowhere to put the snippet those services
+   * hand out, and `customCss` is CSS by construction — `sanitizeCss` strips `</style` exactly
+   * so it can never become script. These two fields are the door, and they are script BY
+   * DESIGN: whatever is in them runs on every public page, which makes them precisely as
+   * trusted as the owner session that can set them.
+   *
+   * Two, not one, because the snippets in the wild name both ends: most want `<head>`, and
+   * Cloudflare Web Analytics documents itself just before `</body>`.
+   *
+   * NOT on the sign-in page, NOT in the admin, and NOT on a draft preview — a tracker firing
+   * on the owner's own preview of an unpublished post reports a reader who does not exist.
+   */
+  customHead: string
+  customBodyEnd: string
   footer: string // footer content: limited inline markdown (bold/italic/underline/link) + {year}/{title} tokens
   menu: MenuItem[] // header navigation links
   featured: string[] // owner-curated post slugs shown in the sidebar "Featured" block, in this order (first 5 render); auto-drops any that stop being public

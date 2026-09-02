@@ -120,7 +120,13 @@ ${siteFooter(settings, { mailConfigured })}
     // `core` carries the analytics beacon AND the header's controls, all of which are on
     // every public page. A pageview that only fired on posts would undercount the home
     // page and every listing, which between them are most of a blog's traffic.
-    { bodyData: chromeLabels(settings), scripts: scriptTag('core') },
+    {
+      bodyData: chromeLabels(settings),
+      scripts: scriptTag('core'),
+      // Same as the article shell: the owner's snippets ride the public pages only.
+      customHead: settings.customHead,
+      customBodyEnd: settings.customBodyEnd,
+    },
   )
 }
 

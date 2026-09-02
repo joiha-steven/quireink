@@ -26,6 +26,7 @@ import { formatTime } from '@/utils'
 import { Card, NOTE_TEXT, PageHeader, Tabs, type TabItem } from './kit'
 import { SHEET, SheetTop } from './sheet'
 import { SettingsSearch } from './SettingsSearch'
+import { SnippetEditor } from './SnippetEditor'
 import { useSettingJump } from './useSettingJump'
 import { useAdminT } from './I18nProvider'
 import { SiteFields } from './SiteFields'
@@ -346,6 +347,32 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
                 env={commentEnv}
                 onChange={(comments) => update({ comments })}
               />
+            </Card>
+          </div>
+          {/* FULL WIDTH, under both columns. Two code fields do not belong in a 459px
+              column beside a form: a snippet is pasted, then read back to check it, and a
+              line that wraps three times is a line nobody can check. It is also the one
+              card here that is not a credential, so it reads as its own thing rather than
+              as a third service. */}
+          <div className="lg:col-span-2">
+            <Card panel title={t.cardCustomCode}>
+              <div className="space-y-4">
+                <p className={NOTE_TEXT}>{t.customCodeNote}</p>
+                <SnippetEditor
+                  value={s.customHead}
+                  onChange={(customHead) => update({ customHead })}
+                  label={t.customHeadLabel}
+                  note={t.customHeadHint}
+                  placeholder={'<script defer src="https://example.com/script.js"></script>'}
+                />
+                <SnippetEditor
+                  value={s.customBodyEnd}
+                  onChange={(customBodyEnd) => update({ customBodyEnd })}
+                  label={t.customBodyEndLabel}
+                  note={t.customBodyEndHint}
+                  placeholder={'<script defer src="https://example.com/beacon.js"></script>'}
+                />
+              </div>
             </Card>
           </div>
         </div>

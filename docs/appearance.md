@@ -203,6 +203,36 @@ because it usually means a knob is missing.
 - **`!important` is almost never needed.** Your CSS is already last. If a rule is not taking,
   the usual cause is specificity inside your own selector, not the design fighting you.
 
+## When it is not CSS you need: your own code
+
+**Connections → Custom code** holds your own HTML. One box goes in the page `<head>`, where
+most snippets ask to be; the other goes just before `</body>`, where Cloudflare's beacon and
+a few others ask to be. Both ship on every public page, in the order you typed them, and
+neither is checked or rewritten — a box whose purpose is to carry a script cannot strip
+script tags.
+
+This is the seam between two different promises. Quire Ink itself makes **no third-party
+request of any kind**, and that stays true: a fresh install has both boxes empty and fetches
+nothing from anybody. What you put in them is your site's business, not the software's —
+Umami, Plausible, a verification tag, a widget, a beacon.
+
+Three things worth knowing before you paste:
+
+- **It never reaches the admin, the sign-in page, or a draft preview.** A tracker on the
+  preview of an unpublished post reports a reader who does not exist, and quietly spoils the
+  numbers you read in Analytics.
+- **No content policy stands in its way.** This server deliberately sends no
+  `Content-Security-Policy` on reading pages, because a useful policy depends on what you
+  have chosen to load. Your snippet runs.
+- **The box shows the byte count**, for the same reason the CSS box does: that text travels
+  inside every public page on every request. It also says when a `<script>` or `<style>` is
+  never closed, which is this field's version of the unclosed brace — worse, because an
+  unclosed `<script>` swallows the rest of the page and the site goes blank with nothing
+  saying why.
+
+The built-in statistics are not replaced by any of this. They stay where they are, they keep
+their whole history, and they cost a reader nothing ([performance.md](performance.md)).
+
 ## What you cannot change from here
 
 Honest list, so you do not spend an evening trying:
