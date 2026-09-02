@@ -5,7 +5,7 @@
   <img src="docs/brand/wordmark-light.svg" alt="quireINK" width="360">
 </picture>
 
-`2.2.5`
+`2.2.6`
 
 **A blog you host yourself, and an AI agent can run it for you.**
 No algorithm, no ads, no platform standing between you and your readers.
@@ -73,11 +73,11 @@ An agent can steward as well as write. Any MCP client can draft, tag, schedule a
 
 You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE), and run the published version commercially, paid hosting included, under [one additional permission](./LICENSE-EXCEPTION.md).
 
-**2.2.5** is the current release. It runs the demo above and the author's own blog at [manhhung.me](https://manhhung.me); the [changelog](./CHANGELOG.md) has everything that changed.
+**2.2.6** is the current release. It runs the demo above and the author's own blog at [manhhung.me](https://manhhung.me); the [changelog](./CHANGELOG.md) has everything that changed.
 
-It is the release where the origin stopped leaning on a CDN. It compresses for itself now — brotli, 22% off a cold visit — and answers a reader who comes back to the same page with a `304` and no body. Two headers that only Cloudflare overwrites had been believed on installs that have no Cloudflare, which let a caller pick their own rate-limit bucket and fill the traffic panel with countries nobody visited from; both are gated on the zone being configured in Settings. Every install path that can carry a certificate now brings one, including `docker pull`.
+It is a fix release from a sweep of every page and every admin screen at four widths in both colour schemes. The navigation drawer, closed on a phone, no longer keeps its links in the keyboard tab order, so a reader on a phone stops tabbing through a hidden sidebar to reach the first post; the composed front page keeps its menu on a narrow screen; the "not found" page carries the search box and the three newest posts instead of a single link home; and two admin screens that overran a 375px viewport — one by a pixel, Appearance by 52 — now fit it. It also closes an open redirect: the page you land on after signing in refused `//evil.example` but not `/⇥/evil.example`, a tab the URL parser strips before it reads the address, and now refuses any control character, whitespace or backslash.
 
-**And what it does not do.** A NAS and a Kubernetes cluster get no Caddy, on purpose — a NAS already holds ports 80 and 443 with its own certificate UI, and a cluster terminates TLS at its ingress. `docker compose up` does not fetch a newer image, so upgrading is `pull` then `up -d`; a machine that had pulled once before will otherwise start a blog older than the tag it named and look entirely correct doing it. An install that injects into its own HTML with nginx `sub_filter` gives up the origin's compression and its validator on pages, because neither survives a rewritten body. And none of this buys back a round trip: on an origin with no CDN in front, a reader on the far side of the world still pays the handshake — measured from Asia to a US origin, a `304` carrying zero bytes took 623 ms. The 22% is real, and it is not a CDN.
+**And what it does not do.** It changes no data, no setting and no install step — it is layout, focus and one input check — so an install that no one reaches by keyboard or reads on a phone gains nothing from it but the redirect fix. Every limit the earlier notes state still stands and this release lifts none of them: a NAS and a Kubernetes cluster still get no Caddy, `docker compose up` still will not fetch a newer image on its own (upgrading is `pull` then `up -d`), an install that rewrites its own HTML with nginx `sub_filter` still loses the origin's compression and validator, and an origin with no CDN still owes a distant reader the round trip that no saved byte buys back.
 
 ## What you get
 

@@ -23,7 +23,16 @@ On any behavior change, update the matching doc in the SAME change (Working prin
   [`scripts/ops/quire-backup.sh`](../../scripts/ops/quire-backup.sh) does.
 - **Audits** are dated snapshots, so they are write-only and they live with the author's
   notes rather than here. Read the latest first so a pass starts from the last clean line.
-- **Versioning (owner's rule — do NOT auto-bump):** the version is **`2.2.5`**, released
+- **Versioning (owner's rule — do NOT auto-bump):** the version is **`2.2.6`**, released
+  2026-09-02 — a fix release from a sweep of every page and admin screen at four widths in
+  both colour schemes. The navigation drawer stopped keeping its links in the keyboard tab
+  order once it slid shut, the composed front page kept its menu on a narrow screen, the
+  "not found" page grew a search box and the newest posts, and two admin screens that
+  overran a phone — the dashboard feed by a pixel, Appearance by 52 — were made to fit. It
+  also closed an open redirect: the post-sign-in destination refused `//evil.example` but not
+  `/<TAB>/evil.example`, a tab the URL parser strips before it reads the address, and now
+  refuses any control character, whitespace or backslash. The patch slot a seventh time — the
+  a11y work is minors under the rule below, and the owner took the patch slot. (`2.2.5`, released
   2026-09-01 — the day four names left the CDN in front of them, and everything quietly
   relying on it came up for air. Two of those were security defects, both the same shape: a
   header only Cloudflare overwrites, believed on installs that have no Cloudflare. The origin

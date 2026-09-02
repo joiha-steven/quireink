@@ -3,7 +3,7 @@
   "name": "com.quireink/blog",
   "title": "Quire Ink",
   "description": "Write, publish and steward a self-hosted Quire Ink blog: posts, front page, traffic, comments.",
-  "version": "2.2.5",
+  "version": "2.2.6",
   "websiteUrl": "https://quireink.com",
   "repository": {
     "url": "https://github.com/joiha-steven/quireink",
