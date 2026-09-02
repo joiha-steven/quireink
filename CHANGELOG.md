@@ -1,5 +1,53 @@
 # CHANGELOG
 
+## 2026-09-02 — Quire Ink 2.2.6
+
+A sweep of every reader page and every admin screen at 375, 768, 1024 and 1440, in both colour
+schemes, and the six faults it turned up. Five are what a phone or a keyboard met; one is a way
+off the site.
+
+### Reachable on a phone and by keyboard
+
+- **The navigation drawer leaves the tab order when it closes.** Slid off-screen it was still in
+  the document — 44 focusable links on a listing, 66 on an article, none of them visible — so a
+  keyboard reader tabbed through the whole sidebar before reaching the first post. It is hidden
+  once the slide finishes now; opening it moves focus to its first link and Escape hands focus
+  back to the button.
+- **The composed front page keeps its menu under 60rem.** The header's copy of the menu is
+  desktop-only and the drawer button hides itself where there is no drawer, so on that one
+  layout four configured links had nowhere to appear on a phone: reachable at 1024 and up, gone
+  at 375 and 768. It now carries the same menu-only drawer a listing with its sidebar switched
+  off already has.
+- **The "not found" page offers a way on.** It had one link home; it now carries the search box
+  — a mistyped or moved URL usually has its title in it — and the three newest posts, and still
+  answers 404.
+
+### Two overflows on narrow admin screens
+
+- **The activity feed no longer scrolls the dashboard sideways by a pixel** — its rows are grid
+  items, whose minimum width is their content until told otherwise.
+- **Settings → Appearance fits a 375px screen.** The key-volume slider and its preview button,
+  373px together, were handed their full width by a shrink-0 box that never lets its own content
+  wrap; capped at the row, the pair drops to a second line where there is no room for one. It
+  ran 52px past the edge before.
+
+### A redirect a control character could steer
+
+- **The post-sign-in destination rejects any control character, whitespace or backslash.** It
+  already refused `//evil.example` and `/\evil.example`, but a tab after the leading slash —
+  `/<TAB>/evil.example` — passed both checks and arrived in the browser as `//evil.example`,
+  because the URL parser strips tab, newline and carriage return before it reads a URL.
+  Reproduced against a running server, then closed for the whole class on both redirect
+  sanitisers.
+
+### Under the hood
+
+- **A browser that will not start now says why.** When the tour's Chrome fails to open its
+  debugging port its stderr and exit code are reported instead of a bare timeout, and the three
+  shapes of that failure — the process died, the port never answered, the port answered with no
+  page — are told apart. A CI flake on the 2.2.5 release commit left nothing anybody could read;
+  this is that gap closed.
+
 ## 2026-09-01 — Quire Ink 2.2.5
 
 Ten commits in one day, and the day was one long consequence: four names left the CDN that had
