@@ -5,7 +5,7 @@
   <img src="docs/brand/wordmark-light.svg" alt="quireINK" width="360">
 </picture>
 
-`2.2.6`
+`2.2.7`
 
 **A blog you host yourself, and an AI agent can run it for you.**
 No algorithm, no ads, no platform standing between you and your readers.
@@ -73,11 +73,11 @@ An agent can steward as well as write. Any MCP client can draft, tag, schedule a
 
 You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE), and run the published version commercially, paid hosting included, under [one additional permission](./LICENSE-EXCEPTION.md).
 
-**2.2.6** is the current release. It runs the demo above and the author's own blog at [manhhung.me](https://manhhung.me); the [changelog](./CHANGELOG.md) has everything that changed.
+**2.2.7** is the current release. It runs the demo above and the author's own blog at [manhhung.me](https://manhhung.me); the [changelog](./CHANGELOG.md) has everything that changed.
 
-It is a fix release from a sweep of every page and every admin screen at four widths in both colour schemes. The navigation drawer, closed on a phone, no longer keeps its links in the keyboard tab order, so a reader on a phone stops tabbing through a hidden sidebar to reach the first post; the composed front page keeps its menu on a narrow screen; the "not found" page carries the search box and the three newest posts instead of a single link home; and two admin screens that overran a 375px viewport — one by a pixel, Appearance by 52 — now fit it. It also closes an open redirect: the page you land on after signing in refused `//evil.example` but not `/⇥/evil.example`, a tab the URL parser strips before it reads the address, and now refuses any control character, whitespace or backslash.
+Two of its three parts came from one person's bug reports. The contents list's last row now lands on something a reader can actually see: it was a dead anchor on a post with no tags, and on a desktop it threw the reader 2,615px past the end of the article to a copy of the taxonomy that is hidden at that width. Analytics gained **All time** and a **By year** table — nothing here has ever deleted a row, so the history was always on disk; what was missing was a window wider than 365 days to ask for it with. And there is now a box for **your own code**, in the page head and before the closing body tag, because "no third-party requests" is a promise about what this software does, not a rule for the person whose site it is.
 
-**And what it does not do.** It changes no data, no setting and no install step — it is layout, focus and one input check — so an install that no one reaches by keyboard or reads on a phone gains nothing from it but the redirect fix. Every limit the earlier notes state still stands and this release lifts none of them: a NAS and a Kubernetes cluster still get no Caddy, `docker compose up` still will not fetch a newer image on its own (upgrading is `pull` then `up -d`), an install that rewrites its own HTML with nginx `sub_filter` still loses the origin's compression and validator, and an origin with no CDN still owes a distant reader the round trip that no saved byte buys back.
+**And what it does not do.** The custom-code box is not checked, filtered or sandboxed — a field whose purpose is to carry a tracking snippet cannot strip script tags, so what you paste runs, and an unclosed `<script>` will blank your site (the box says so, and names the tag). It never reaches the admin, the sign-in page or a draft preview, which also means you cannot use it to change those. The year table is not a replacement for a real analytics product: there are still no sessions, no funnels and no arbitrary date range, only the five windows and the year list. And every standing limit holds — a NAS and a Kubernetes cluster get no Caddy, `docker compose up` will not fetch a newer image on its own (upgrading is `pull` then `up -d`), an install that rewrites its own HTML with nginx `sub_filter` loses the origin's compression and validator, and an origin with no CDN still owes a distant reader the round trip that no saved byte buys back.
 
 ## What you get
 
