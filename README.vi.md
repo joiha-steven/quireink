@@ -129,7 +129,7 @@ Muốn bản đầy đủ với systemd, nginx, cache header, sao lưu và nâng
 | 🖍️&nbsp;**Cây&nbsp;bút** | `==tô sáng==`, `++gạch chì++`, `@@khoanh bút đỏ@@`. Nét vẽ như tay người, không vệt nào trên trang giống vệt nào |
 | 💻&nbsp;**Code** | Tô màu sẵn ở máy chủ, hai mươi mốt ngôn ngữ. Người đọc không phải tải bộ tô màu nào |
 | 🔍&nbsp;**Đọc** | Tìm kiếm hiện kết quả ngay trong lúc gõ. Mục lục bài, bài liên quan, thời gian đọc. Và chế độ sách: hai cột trên nền giấy |
-| 📈&nbsp;**Số&nbsp;liệu** | Thống kê không dùng cookie: ai đọc bài nào, đọc tới đâu, đến từ đâu. Kèm nhật ký hoạt động và thùng rác hoàn tác được |
+| 📈&nbsp;**Số&nbsp;liệu** | Thống kê không dùng cookie: ai đọc bài nào, đọc tới đâu, đến từ đâu. Kèm nhật ký hoạt động và thùng rác hoàn tác được. Không có gì bị xoá, nên bảng theo năm lùi được tới người đọc đầu tiên |
 | 💬&nbsp;**Bình&nbsp;luận** | Người đọc bình luận không cần tài khoản. Chống spam bằng cách tự ký thử thách, không qua bên thứ ba nào |
 | 🔎&nbsp;**Máy&nbsp;tìm&nbsp;kiếm** | Sitemap, RSS, `robots.txt`, `llms.txt`, ảnh chia sẻ vẽ riêng cho từng bài. Đổi đường dẫn thì link cũ vẫn chạy |
 | 📬&nbsp;**Bản&nbsp;tin** | Đăng ký có email xác nhận, một số tự gửi khi bạn đăng bài. SMTP của riêng bạn |

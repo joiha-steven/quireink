@@ -33,24 +33,40 @@ export function DeliveryPanel({ transfer, cache }: {
   if (!transfer && !cache) return null
 
   return (
-    <div className="grid gap-6 border-b border-neutral-100 px-4 py-5 sm:grid-cols-2 dark:border-neutral-800">
-      {/* `StatCard bare`, not a hand-drawn tile: the number's size, weight, tracking and
+    // NO horizontal padding here, and that is the alignment fix rather than a tidy-up.
+    // `StatCard bare` already carries the band's own `px-5`, so a `px-4` on this grid put
+    // the two figures 36px in while every other row on the sheet — the range tabs, the
+    // headline band, "By year", the source columns — sits at 20px. The note beneath each
+    // figure got only the grid's 16px, so it did not even line up with the number it
+    // explains. Measured at 1440px on 2026-09-02: figures at 293, notes at 273, everything
+    // else at 277.
+    <div className="grid gap-6 border-b border-neutral-100 pb-4 sm:grid-cols-2 dark:border-neutral-800">
+      {/* TWO MATCHING CELLS: a figure, its sub-line, and a sentence saying what the figure
+          is not. It was a figure-and-sub on the left against a figure, a sub AND a
+          three-line note on the right, so the row hung several lines lower on one side than
+          the other and read as a rendering fault rather than as two columns.
+          The left column's caveat was the half that was missing, and it existed all along —
+          in this file's own header comment, where a reader of the screen cannot see it.
+          `StatCard bare`, not a hand-drawn tile: the number's size, weight, tracking and
           tabular figures belong to the kit, and `check:admin-kit` fails a screen that
           re-types them. This panel tried to and was caught. */}
       {transfer && (
-        <StatCard
-          bare
-          label={t.analyticsBytesTotal}
-          value={transfer.measured > 0 ? formatBytes(transfer.totalBytes) : '—'}
-          sub={
-            <>
-              {transfer.measured > 0 && (
-                <>{t.analyticsBytesAvg} {formatBytes(transfer.avgBytes)}{' · '}</>
-              )}
-              {t.analyticsBytesMeasured} {transfer.measured.toLocaleString()} {t.analyticsBytesNote}
-            </>
-          }
-        />
+        <div>
+          <StatCard
+            bare
+            label={t.analyticsBytesTotal}
+            value={transfer.measured > 0 ? formatBytes(transfer.totalBytes) : '—'}
+            sub={
+              <>
+                {transfer.measured > 0 && (
+                  <>{t.analyticsBytesAvg} {formatBytes(transfer.avgBytes)}{' · '}</>
+                )}
+                {t.analyticsBytesMeasured} {transfer.measured.toLocaleString()} {t.analyticsBytesNote}
+              </>
+            }
+          />
+          <p className={`${NOTE_TEXT} mt-2 px-5`}>{t.analyticsBytesCaveat}</p>
+        </div>
       )}
       {cache && (
         <div>
@@ -60,13 +76,20 @@ export function DeliveryPanel({ transfer, cache }: {
             value={rate === null ? '—' : `${rate}%`}
             sub={
               <>
-                {t.analyticsCacheHits}{' · '}{cache.hits.toLocaleString()}/{requests.toLocaleString()}
-                {' · '}
+                {/* The fraction only when there IS one. A process that has served nothing
+                    since boot printed "served from cache · 0/0", which reads as a broken
+                    counter rather than as an honest "nothing yet". */}
+                {rate !== null && (
+                  <>
+                    {t.analyticsCacheHits}{' · '}{cache.hits.toLocaleString()}/{requests.toLocaleString()}
+                    {' · '}
+                  </>
+                )}
                 {t.analyticsCacheSince} {formatDateTimeShort(new Date(cache.since).toISOString())}
               </>
             }
           />
-          <p className={`${NOTE_TEXT} mt-2`}>{t.analyticsCacheNote}</p>
+          <p className={`${NOTE_TEXT} mt-2 px-5`}>{t.analyticsCacheNote}</p>
         </div>
       )}
     </div>

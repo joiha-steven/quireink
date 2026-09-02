@@ -20,7 +20,9 @@
 
 import { getActivity } from '@/server/activity'
 import { getAutosave } from '@/content/autosave'
-import { getAnalytics, getPieces, getRightNow, getViewTotals } from '@/analytics/summary'
+import { firstEventAt, getAnalytics, getPieces, getRightNow, getViewTotals, yearTotals }
+  from '@/analytics/summary'
+import type { Bucket } from '@/analytics/buckets'
 import { getTrashedSubscribers } from '@/news/subscribers'
 import { getPageAnalytics } from '@/analytics/page'
 import { getAdminComments, countsByPosts, getTrashedComments } from '@/comments/comments'
@@ -52,11 +54,21 @@ const VERSION = (pkg as { version: string }).version
  * carries it to the client, and typing it loosely here is how the client came to believe
  * 90 was impossible — its `Range` type listed four values while this accepted five.
  */
-function rangeOf(raw: string | undefined): { days: 1 | 7 | 30 | 90 | 365; bucket: 'day' | 'hour' } {
+function rangeOf(raw: string | undefined): Window {
   const n = Number(raw)
-  if (n === 1) return { days: 1, bucket: 'hour' }
-  if (n === 7 || n === 30 || n === 90 || n === 365) return { days: n, bucket: 'day' }
-  return { days: 30, bucket: 'day' }
+  if (n === 1) return { days: 1, bucket: 'hour', range: 1 }
+  if (n === 7 || n === 30 || n === 90 || n === 365) return { days: n, bucket: 'day', range: n }
+  // ALL TIME. Nothing has ever deleted an analytics row, so an install that has been up for
+  // three years is holding three years — and until this existed the widest question the
+  // screen could ask was 365 days, which is why a reader of issue #64 reasonably concluded
+  // the older data was gone. `days` is measured back to the first event and the bucket is a
+  // MONTH, so five years of a busy blog is sixty columns rather than eighteen hundred.
+  if (raw === 'all') {
+    const first = firstEventAt()
+    const days = first === null ? 30 : Math.max(1, Math.ceil((Date.now() - first) / 86_400_000))
+    return { days, bucket: 'month', range: 'all' }
+  }
+  return { days: 30, bucket: 'day', range: 30 }
 }
 
 // ----- the payload builders ---------------------------------------------------
@@ -109,6 +121,13 @@ async function pageEditorView(slug: string) {
   }
 }
 
+/**
+ * A resolved window: what to measure, how to bucket it, and what to tell the client it
+ * asked for. `range` is what the tab strip highlights, and it is the ONLY field that
+ * carries 'all' — `days` is always a number, so every aggregate below stays untouched.
+ */
+type Window = { days: number; bucket: Bucket; range: 1 | 7 | 30 | 90 | 365 | 'all' }
+
 /** Titles by public path, so a chart row can say what it is rather than "/slug". */
 async function analyticsTitles() {
   const [posts, pages] = await Promise.all([getIndex(), getPageIndex()])
@@ -118,12 +137,12 @@ async function analyticsTitles() {
 }
 
 /** One page's detail, when the analytics screen is drilled into a path. */
-async function analyticsDetailView(path: string, days: 1 | 7 | 30 | 90 | 365, bucket: 'day' | 'hour') {
+async function analyticsDetailView(path: string, { days, bucket, range }: Window) {
   const titles = await analyticsTitles()
   return {
     detail: await getPageAnalytics(path, days, bucket),
     title: titles[path] ?? path,
-    range: days,
+    range,
   }
 }
 
@@ -134,13 +153,17 @@ async function analyticsDetailView(path: string, days: 1 | 7 | 30 | 90 | 365, bu
  * default face; this is the index behind it, and it is joined to `titles` on the client
  * rather than here so that a piece with no views at all still has a row to click.
  */
-async function analyticsSummaryView(days: 1 | 7 | 30 | 90 | 365, bucket: 'day' | 'hour') {
+async function analyticsSummaryView({ days, bucket, range }: Window) {
   return {
     summary: await getAnalytics(days, bucket),
     rightNow: await getRightNow(),
     titles: await analyticsTitles(),
     pieces: await getPieces(days, bucket),
-    range: days,
+    // Every year that has data, independent of the window above: the question "2024 against
+    // 2025" is not a window question, and answering it by making the owner set a window
+    // twice and hold both numbers in their head is not answering it.
+    years: yearTotals(),
+    range,
   }
 }
 
@@ -287,10 +310,10 @@ export function viewRoutes(): OwnerRouter {
 
   // Analytics: the summary, or one page's detail when `path` is given.
   routes.get('/api/admin/view/analytics', async (c) => {
-    const { days, bucket } = rangeOf(c.req.query('range'))
+    const window = rangeOf(c.req.query('range'))
     const path = c.req.query('path') ?? ''
-    if (path) return c.json({ data: await analyticsDetailView(path, days, bucket) })
-    return c.json({ data: await analyticsSummaryView(days, bucket) })
+    if (path) return c.json({ data: await analyticsDetailView(path, window) })
+    return c.json({ data: await analyticsSummaryView(window) })
   })
 
   // The live strip's poll: five minutes of rows, nothing else. Separate from the view

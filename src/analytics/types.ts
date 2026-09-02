@@ -31,6 +31,15 @@ export type DepthBucket = { bucket: number; samples: number } // 0 = 0-25% … 3
 /** One path's numbers in the window, for the complete list rather than the top N. */
 export type PieceStat = { path: string; views: number; visitors: number }
 /**
+ * One calendar year, in the site's own timezone.
+ *
+ * Nothing in this product has ever deleted an analytics row — there is no retention setting
+ * and no pruning job, so an install that has been up for three years is holding three years.
+ * What it did not have was a way to ASK: every window is "the last N days" and the widest N
+ * offered was 365, so the second year existed and could not be looked at (issue #64).
+ */
+export type YearStat = { year: string; views: number; visitors: number }
+/**
  * The glance share, and how many leaves were measured to get it.
  *
  * Never shown without `measured`: see `leftQuickly` in `aggregate.ts` for why a bare

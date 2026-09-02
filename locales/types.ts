@@ -957,6 +957,9 @@ export type AdminStrings = {
   analyticsBytesAvg: string
   analyticsBytesMeasured: string
   analyticsBytesNote: string
+  // What the byte figure is NOT. The cache column beside it has carried its caveat on
+  // screen since it was written; this one lived only in the source until 2026-09-02.
+  analyticsBytesCaveat: string
   analyticsCache: string
   analyticsCacheHits: string
   analyticsCacheSince: string
@@ -981,6 +984,11 @@ export type AdminStrings = {
   analyticsRange30: string
   analyticsRange90: string
   analyticsRange365: string
+  // All of it. Nothing has ever deleted an analytics row, so this is the window that
+  // finally lets an owner ask for what the database has been holding all along (#64).
+  analyticsRangeAll: string
+  // Calendar years, side by side, whatever window the tabs are showing.
+  analyticsByYear: string
   analyticsNoData: string
   analyticsPrivacyNote: string
   // activity log (Admin → Log) + feature toggle
