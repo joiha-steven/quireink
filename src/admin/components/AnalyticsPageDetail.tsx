@@ -13,7 +13,7 @@ const DEPTH_LABELS = ['0–25%', '26–50%', '51–75%', '76–100%']
 
 export function AnalyticsPageDetail({ data, title, range }: { data: PageSummary; title: string; range: Range }) {
   const t = useAdminT()
-  const rangeLabel: Record<Range, string> = { 1: t.analyticsRange24h, 7: t.analyticsRange7, 30: t.analyticsRange30, 90: t.analyticsRange90, 365: t.analyticsRange365 }
+  const rangeLabel: Record<Range, string> = { 1: t.analyticsRange24h, 7: t.analyticsRange7, 30: t.analyticsRange30, 90: t.analyticsRange90, 365: t.analyticsRange365, all: t.analyticsRangeAll }
   const hasData = data.totalViews > 0
 
   return (

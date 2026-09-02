@@ -17,7 +17,7 @@ import {
 } from '@/analytics/aggregate'
 import {
   EMPTY_RIGHT_NOW, EMPTY_SUMMARY, reportTz,
-  type AnalyticsSummary, type PieceStat, type RightNow, type TopPage,
+  type AnalyticsSummary, type PieceStat, type RightNow, type TopPage, type YearStat,
 } from '@/analytics/types'
 
 export type { Bucket }
@@ -246,6 +246,48 @@ export async function getRightNow(topN = 5): Promise<RightNow> {
 }
 
 /** All-time total views per path (`{ "/slug": 12, … }`) for the content tables. */
+/** When the first event was recorded, or null on an install that has never been visited. */
+export function firstEventAt(): number | null {
+  try {
+    return all<{ at: number | null }>(
+      'select min(created_at) as at from analytics_events',
+    )[0]?.at ?? null
+  } catch (error) {
+    console.error(`[ERROR] analytics.firstEventAt: ${(error as Error).message}`)
+    return null
+  }
+}
+
+/**
+ * Every calendar year that has data, oldest first, in the site's timezone.
+ *
+ * Built by FOLDING the month buckets rather than by a new `group by`, and that is the
+ * point: `bucketRanges` already knows how to turn an instant into a wall-clock month in an
+ * IANA zone, and `windowCounts` is the same counter the headline figures use. A hand-rolled
+ * `strftime('%Y', created_at)` would have been shorter and would have grouped in UTC, which
+ * on a UTC+7 blog files the first seven hours of every January into the year before.
+ *
+ * The first month range is clamped to the first event, so the earliest year counts from the
+ * day the blog started rather than from a January that has nothing in it.
+ */
+export function yearTotals(): YearStat[] {
+  try {
+    const first = firstEventAt()
+    if (first === null) return []
+    const spans = new Map<string, { lo: number; hi: number }>()
+    for (const m of bucketRanges(first, Date.now(), 'month', reportTz())) {
+      const year = m.label.slice(0, 4)
+      const seen = spans.get(year)
+      if (seen) seen.hi = m.hi
+      else spans.set(year, { lo: m.lo, hi: m.hi })
+    }
+    return [...spans].map(([year, span]) => ({ year, ...windowCounts(span.lo, span.hi, null) }))
+  } catch (error) {
+    console.error(`[ERROR] analytics.yearTotals: ${(error as Error).message}`)
+    return []
+  }
+}
+
 export async function getViewTotals(): Promise<Record<string, number>> {
   try {
     const out: Record<string, number> = {}
