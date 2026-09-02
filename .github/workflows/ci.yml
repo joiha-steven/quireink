@@ -66,6 +66,26 @@ jobs:
         with:
           bun-version: 1.3.14
       - run: bun install --frozen-lockfile
+      # THE BROWSER THE PROJECT ACTUALLY TARGETS, installed rather than inherited.
+      #
+      # `chrome-path.ts` prefers `chrome-headless-shell` under `$HOME/chrome` and falls back
+      # to whatever the machine happens to carry. On a runner that is `/usr/bin/chromium` —
+      # the entry the source itself calls a last resort — and it has now hung twice on a
+      # cold start, holding the debugging port shut for the full thirty seconds while
+      # complaining about a D-Bus it has no business needing (run 33618728673, and #597
+      # before it, which passed on a rerun of the same commit). Neither failure was about
+      # the code being toured.
+      #
+      # Pinning the browser is what makes the tour a test of this repository rather than of
+      # whatever Chromium the image shipped that week. Cached, so it costs one download per
+      # runner image rather than one per run.
+      - uses: actions/cache@v4
+        id: headless-shell
+        with:
+          path: ~/chrome
+          key: chrome-headless-shell-stable-${{ runner.os }}
+      - if: steps.headless-shell.outputs.cache-hit != 'true'
+        run: bunx @puppeteer/browsers install chrome-headless-shell@stable --path "$HOME/chrome"
       # tour.sh builds the assets and the admin itself, seeds, serves, drives, restores.
       - run: bun run tour
 
