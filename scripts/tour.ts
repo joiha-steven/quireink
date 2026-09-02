@@ -18,7 +18,7 @@
 //
 // Env: CHROME (binary), QUIRE_SESSION (owner cookie value), ONLY=<substring> for a subset.
 
-import { rmSync } from 'node:fs'
+import { mkdirSync, openSync, readFileSync, rmSync } from 'node:fs'
 import { chromePath } from './chrome-path'
 import { registerFlows } from './tour-flows'
 
@@ -38,26 +38,66 @@ const PORT = 9333
 // passed on every dev machine and died on the first CI runner, where the fallback binary
 // is full google-chrome. Found on the tour job's first run, 2026-08-29.
 const PROFILE = `.tmp/tour-chrome-profile-${process.pid}`
+// CHROME'S STDERR IS KEPT, not discarded. When the port does not open, the process is
+// usually still running and has already said why on stderr — a profile it could not lock, a
+// sandbox it could not build, a library it could not load. With the stream thrown away the
+// only evidence left is the timeout below, and that names no cause: the CI tour job died
+// here on 2026-09-01 (run 33522127129), passed on a rerun of the same commit, and left
+// nothing anybody could read to tell the two apart.
+const CHROME_LOG = `.tmp/tour-chrome-${process.pid}.log`
+mkdirSync('.tmp', { recursive: true })
+const chromeLog = openSync(CHROME_LOG, 'w')
 const chrome = Bun.spawn([
   CHROME, '--headless', '--disable-gpu', '--no-sandbox', '--hide-scrollbars',
   '--force-color-profile=srgb', '--font-render-hinting=none',
   `--user-data-dir=${PROFILE}`,
   `--remote-debugging-port=${PORT}`, '--window-size=1440,900', 'about:blank',
-], { stdout: 'ignore', stderr: 'ignore' })
+], { stdout: 'ignore', stderr: chromeLog })
 
 async function endpoint(): Promise<string> {
   // 30s, not 10: full Chrome's first start on a cold CI runner unpacks crashpad and
   // friends, and a timeout that only ever fires there is a flake, not a signal.
+  //
+  // THREE FAILURES WEAR THE SAME FACE and the old message covered all three with one
+  // sentence: the process died on startup, the port never answered, or the port answered
+  // with no page in it. They are fixed in different places, so the wait records which one
+  // it is on the way out.
+  let answered = false
+  let types = 'none'
   for (let i = 0; i < 300; i++) {
+    // A dead browser will not open a port. Polling one for the full thirty seconds turns a
+    // crash into a timeout and hides the exit code that says what happened.
+    if (chrome.exitCode !== null) break
     try {
       const tabs = await (await fetch(`http://127.0.0.1:${PORT}/json/list`)).json() as
         { type: string; webSocketDebuggerUrl: string }[]
+      answered = true
+      types = tabs.map((t) => t.type).join(', ') || 'none'
       const tab = tabs.find((t) => t.type === 'page')
       if (tab) return tab.webSocketDebuggerUrl
     } catch { /* not up yet */ }
     await Bun.sleep(100)
   }
-  throw new Error('chrome never opened its debugging port')
+
+  const why = chrome.exitCode !== null
+    ? `chrome exited with code ${chrome.exitCode}`
+    : answered
+      ? `the port answered but served no page tab (tabs: ${types})`
+      : 'the port never answered'
+  let said = ''
+  try {
+    said = readFileSync(CHROME_LOG, 'utf8').trimEnd().split('\n').slice(-8).join('\n')
+  } catch { /* nothing was written */ }
+  // Kill it here rather than leaving it to the runner: the failing run left three orphan
+  // chrome processes for the job cleanup to reap.
+  chrome.kill()
+  try { rmSync(PROFILE, { recursive: true, force: true }) } catch { /* scratch under .tmp */ }
+  throw new Error(
+    `chrome never opened its debugging port — ${why}\n`
+    + `  binary:  ${CHROME}\n`
+    + `  profile: ${PROFILE}\n`
+    + (said ? `  chrome said:\n${said.replace(/^/gm, '    ')}` : '  chrome said nothing on stderr'),
+  )
 }
 
 const socket = new WebSocket(await endpoint())
@@ -175,6 +215,7 @@ for (const f of flows) {
 socket.close()
 chrome.kill()
 try { rmSync(PROFILE, { recursive: true, force: true }) } catch { /* scratch under .tmp */ }
+try { rmSync(CHROME_LOG, { force: true }) } catch { /* scratch under .tmp */ }
 
 const skipped = results.filter((r) => r.verdict.startsWith('skip:'))
 const failed = results.filter((r) => r.verdict !== 'ok' && !r.verdict.startsWith('ok ') && !r.verdict.startsWith('skip:'))
