@@ -69,6 +69,8 @@ export function settingsFixture(): SiteSettings {
     excerptLength: 50,
     ideChrome: false,
     customCss: '',
+    customHead: '',
+    customBodyEnd: '',
     footer: '© {year} {title}',
     menu: [],
     featured: [],

@@ -11,7 +11,7 @@ import { isSiteLang } from '@/locales/langs'
 import { DEFAULT_PRESET_ID, isPresetId, isFontPresetId, defaultThemes, ALL_PALETTE_IDS, DEFAULT_FONT, DEFAULT_FONT_PRESET, isChromeFontId, DEFAULT_CHROME_FONT, isScheme, getFontPreset } from '@/content/themes'
 import {
   DEFAULT_HOME, DEFAULT_GALLERY, DEFAULT_FIGURE, sanitizeMenu, migrateThemes, sanitizeThemes, sanitizeEnabledPalettes, sanitizeSeo, sanitizeFeatures, sanitizeHome, sanitizeGallery, sanitizeFigure, sanitizeMcp, sanitizeMotion, sanitizeCache,
-  sanitizeBackups, sanitizeComments, sanitizeCss, sanitizeUrl, clampNumber, sanitizeFeatured,
+  sanitizeBackups, sanitizeComments, sanitizeCss, sanitizeSnippet, sanitizeUrl, clampNumber, sanitizeFeatured,
   sanitizeTimezone, sanitizeAi, sanitizeInks,
 } from '@/content/settings-sanitize'
 import { sanitizeTypography, sanitizeFont } from '@/content/settings-type'
@@ -87,6 +87,8 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   excerptLength: 50,
   ideChrome: false,
   customCss: '',
+  customHead: '',
+  customBodyEnd: '',
   // The credit points at the PRODUCT'S HOME, not the repository: a reader who follows it
   // wants to know what Quire Ink is, and the repository answers a different question for a
   // different visitor. The licence accepts either (LICENSE-EXCEPTION.md §2(d)).
@@ -165,6 +167,8 @@ export async function getSettings(): Promise<SiteSettings> {
       maxUploadMb: clampNumber(stored.maxUploadMb, 0, 4096, DEFAULT_SETTINGS.maxUploadMb),
       storageQuotaGb: clampNumber(stored.storageQuotaGb, 0, 4096, DEFAULT_SETTINGS.storageQuotaGb),
       customCss: sanitizeCss(stored.customCss),
+      customHead: sanitizeSnippet(stored.customHead),
+      customBodyEnd: sanitizeSnippet(stored.customBodyEnd),
       defaultScheme: isScheme(stored.defaultScheme) ? stored.defaultScheme : 'system',
       themePreset: isPresetId(stored.themePreset) ? stored.themePreset : DEFAULT_PRESET_ID,
       fontPreset: isFontPresetId(stored.fontPreset) ? stored.fontPreset : DEFAULT_FONT_PRESET,
@@ -302,6 +306,9 @@ export async function saveSettings(input: Partial<SiteSettings>): Promise<SiteSe
     maxUploadMb: clampNumber(input.maxUploadMb, 0, 4096, current.maxUploadMb),
     storageQuotaGb: clampNumber(input.storageQuotaGb, 0, 4096, current.storageQuotaGb),
     customCss: input.customCss !== undefined ? sanitizeCss(input.customCss) : current.customCss,
+    customHead: input.customHead !== undefined ? sanitizeSnippet(input.customHead) : current.customHead,
+    customBodyEnd: input.customBodyEnd !== undefined
+      ? sanitizeSnippet(input.customBodyEnd) : current.customBodyEnd,
     // Footer is rendered through renderInlineMarkdown (escape-first), so here we only
     // trim + cap length; markup safety is the renderer's job.
     footer: typeof input.footer === 'string' ? input.footer.slice(0, 600) : current.footer,

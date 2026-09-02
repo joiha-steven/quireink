@@ -607,6 +607,16 @@ export type AdminStrings = {
   cssBytes: string
   cssUnclosed: string
   cssStrayBrace: string
+  // The owner's own markup, on public pages only. `SnippetEditor` renders these; the
+  // pair of status strings are that box's answer to the CSS box's unclosed brace.
+  cardCustomCode: string
+  customCodeNote: string
+  customHeadLabel: string
+  customHeadHint: string
+  customBodyEndLabel: string
+  customBodyEndHint: string
+  snippetUnclosed: string
+  snippetStray: string
   cssShowNames: string
   cssHideNames: string
   cssNamesNote: string

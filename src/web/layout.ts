@@ -79,6 +79,16 @@ export type Shell = {
   bodyData?: Record<string, string>
   /** Script tags, rendered last so nothing blocks the parse. */
   scripts?: string
+  /**
+   * The owner's own markup, verbatim, at each end of the document.
+   *
+   * Passed IN rather than read from `settings` here, and that is the safety property: this
+   * function also renders the sign-in page and a draft preview, and neither should carry a
+   * tracker. Making it an argument means a page gets the owner's code only by asking for
+   * it, so the two public shells ask and the other two do not — see `types.ts`.
+   */
+  customHead?: string
+  customBodyEnd?: string
 }
 
 /** `backToTop` -> `data-back-to-top`. The inverse of the browser's `dataset` mapping. */
@@ -327,11 +337,11 @@ export function renderDocument(
 <title>${escapeHtml(head.title)}</title>
 ${description}${canonical}${robots}${icon}${manifest}${feed}${og}${sheet}${preloads}${jsonLd}
 <style>${styles}</style>
-${head.extra ?? ''}
+${head.extra ?? ''}${shell.customHead ?? ''}
 </head>
 <body${bodyAttrs}>
 ${body}
-${shell.scripts ?? ''}</body>
+${shell.scripts ?? ''}${shell.customBodyEnd ?? ''}</body>
 </html>
 `
 }

@@ -332,6 +332,8 @@ export async function renderArticle(slug: string): Promise<string | null> {
       ...(post && settings.features.resume ? { resumePrompt: s.resumePrompt } : {}),
     },
     scripts: scriptTag('core') + scriptTag('post'),
+    customHead: settings.customHead,
+    customBodyEnd: settings.customBodyEnd,
   }
 
   const site = resolveSiteUrl(settings)
