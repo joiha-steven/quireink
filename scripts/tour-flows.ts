@@ -22,7 +22,6 @@ export function registerFlows({ flow, expect, atWidth }: Tour): void {
   // ---------------------------------------------------------------------------------------------
   // PUBLIC — what a reader meets.
 
-
   flow('home lists posts', () => expect('/', `
     (() => {
       const n = document.querySelectorAll('article').length
