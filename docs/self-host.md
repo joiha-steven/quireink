@@ -157,11 +157,6 @@ EnvironmentFile=/home/quire/app/.env
 ExecStart=/home/quire/.bun/bin/bun src/index.ts
 Restart=always
 RestartSec=2
-
-# The sandbox. The process may write to its own data and upload directories and nowhere
-# else on the machine; it cannot gain privileges, cannot read other homes, and has a /tmp
-# of its own. /var/lib/quire holds the two directories `.env` names in DATA_DIR and
-# STORAGE_LOCAL_DIR; if yours live elsewhere, name those here, and create them first.
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
@@ -176,13 +171,8 @@ WantedBy=multi-user.target
 to the checkout, so the unit must start inside it. Use the absolute path to `bun` —
 systemd has no login shell and will not find it on `PATH`.
 
-The five sandbox lines cost nothing at runtime and are what keeps a fault in the blog from
-becoming a fault in the machine. Two things about them are easy to get wrong. A directory
-named in `ReadWritePaths` must EXIST when the unit starts, or systemd fails the unit before
-the app runs a line, so `mkdir -p` both before `systemctl start`. And the list must name
-every directory the app writes: a path left out does not fail now, it fails on the next
-restart, when the app finds its database read-only. `BACKUP_DIR`, if you set it outside
-`DATA_DIR`, belongs on the list too.
+The five sandbox lines keep a fault in the blog inside the blog. `ReadWritePaths` must name
+every directory the app writes, each existing before the first start; a missing one fails on the NEXT restart.
 
 `NODE_ENV=production` is conventional rather than load-bearing: an install without it
 behaves identically, including the update check ([`update-check.md`](update-check.md)), which asks whether this looks
