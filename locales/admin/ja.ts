@@ -1037,6 +1037,8 @@ const ja = {
   navExpand: 'サイドバーを展開',
   navIconsShow: 'アイコンを表示',
   navIconsHide: 'アイコンを非表示',
+  settingsNotesShow: '説明を表示',
+  settingsNotesHide: '説明を非表示',
   authSignIn: 'サインイン',
   authSignInLede: '{site} の管理画面です。',
   authBackTo: '{site} に戻る',

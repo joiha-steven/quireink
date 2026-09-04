@@ -6,7 +6,7 @@ import type { TypographySettings, TypeRole, TypeStyle } from '@/types'
 import { getFontPreset, TYPE_ROLES } from '@/content/themes'
 import { useAdminT } from './I18nProvider'
 import type { AdminStrings } from '@/i18n/admin-i18n'
-import { CONTROL_NUM, INSET, NOTE, READING } from './kit'
+import { CONTROL_NUM, INSET, NOTE, NOTE_TEXT, READING } from './kit'
 
 const ROLE_LABEL: Record<TypeRole, keyof AdminStrings> = {
   h1: 'typoH1',
@@ -84,7 +84,7 @@ export function TypographyFields({ typography, fontPreset, onChange, resetRef }:
           with nothing. The Light mode and Dark mode panels put Reset on the TITLE row; this
           card now does the same through `SettingsView`'s Card actions slot, so all three
           reset buttons on the tab sit on the same rail. */}
-      <p className={`${READING} text-sm leading-6 text-neutral-500 dark:text-neutral-400`}>{t.typographyHint}</p>
+      <p className={`${READING} ${NOTE_TEXT}`}>{t.typographyHint}</p>
 
       <div className="overflow-x-auto">
         <table className="w-full border-separate border-spacing-y-1 text-sm">

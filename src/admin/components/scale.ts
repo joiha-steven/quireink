@@ -47,6 +47,22 @@ export const TITLE = 'text-[1.375rem] font-medium leading-tight tracking-[-0.014
  */
 export const SECTION = 'text-[0.9375rem] font-semibold tracking-[-0.008em] text-neutral-900 dark:text-neutral-100'
 
+/**
+ * A settings GROUP's title — 17px, one step ABOVE `SECTION`, worn only by `SettingsCard`.
+ *
+ * The fix above got the ORDER right and left the DISTANCE too short. 15/600 over 14/500 is one
+ * point of size and one weight step, and the owner read the settings screen on 2026-09-04 and
+ * could not pick the group titles out of it: "Bố cục & menu" and the "Trang chủ" label under it
+ * were the same object to the eye. Nothing was broken — the hierarchy was simply too quiet to
+ * do its job on a screen that holds thirty-seven of these in two columns.
+ *
+ * NOT a change to `SECTION` itself, and that is deliberate: a settings group is a different
+ * thing from a dashboard tile or a Help card, which stand alone rather than being scanned down
+ * a column. Widening the step everywhere would have been a redesign of the admin, asked for by
+ * nobody.
+ */
+export const GROUP_TITLE = 'text-[1.0625rem] font-semibold tracking-[-0.008em] text-neutral-900 dark:text-neutral-100'
+
 /** The label on one setting. One step under SECTION — a peer of the other labels, not a heading. */
 export const SETTING_LABEL = 'block text-sm font-medium text-neutral-800 dark:text-neutral-200'
 
@@ -61,7 +77,22 @@ export const SETTING_LABEL = 'block text-sm font-medium text-neutral-800 dark:te
  * which was the wrong way round. Slant costs no contrast and reads as an aside.
  */
 const NOTE_SHAPE = 'text-[0.8125rem] italic leading-[1.55]'
-export const NOTE_TEXT = `${NOTE_SHAPE} text-neutral-500 dark:text-neutral-400`
+/**
+ * `admin-note` is a HANDLE, not a style — it declares nothing and exists so one CSS rule in
+ * `admin.css` can put every explanation on the settings screen out of sight at once.
+ *
+ * It rides on the token because the alternative was marking up the call sites: notes are
+ * printed both by `Setting`/`ui/Input` and, about twenty times, as a loose paragraph at the
+ * top of a card. Two dozen files would each have had to remember an attribute, and the one
+ * that forgot would have left a stray sentence hanging on an otherwise quiet screen with
+ * nothing to say why.
+ *
+ * ⚠️ On `NOTE_TEXT` and NOT on `NOTE_SHAPE`, so `NOTE_ALERT` does not inherit it. An alert is
+ * a hint the owner must ACT on before the thing it describes will work — a refused key, a
+ * connection that did not answer. Hiding one to tidy the screen would hide the reason
+ * something is broken.
+ */
+export const NOTE_TEXT = `${NOTE_SHAPE} admin-note text-neutral-500 dark:text-neutral-400`
 
 /**
  * The same note, in the admin's one "look at this" ink: a hint the owner has to act on

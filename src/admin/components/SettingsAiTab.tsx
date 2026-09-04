@@ -8,7 +8,7 @@
 // back changes, so there is still ONE form and ONE save button for the settings half.
 import type { SiteSettings } from '@/types'
 import type { IntegrationStatus } from '@/store/integration-keys'
-import { Card } from './kit'
+import { SettingsCard } from './SettingsCard'
 import { useAdminT } from './I18nProvider'
 import { AiFields } from './AiFields'
 import { McpFields } from './McpFields'
@@ -26,7 +26,7 @@ export function SettingsAiTab(
   return (
     <div className={grid}>
       <div className={col}>
-        <Card panel title={t.cardAi}>
+        <SettingsCard title={t.cardAi}>
           <AiFields
             configured={integrations.aiConfigured}
             provider={integrations.aiProvider}
@@ -35,12 +35,12 @@ export function SettingsAiTab(
             ai={s.ai}
             onChangeAi={(ai) => update({ ai })}
           />
-        </Card>
+        </SettingsCard>
       </div>
       <div className={col}>
-        <Card panel title={t.cardMcp}>
+        <SettingsCard title={t.cardMcp}>
           <McpFields mcp={s.mcp} siteUrl={s.siteUrl} onChange={(mcp) => update({ mcp })} />
-        </Card>
+        </SettingsCard>
       </div>
     </div>
   )

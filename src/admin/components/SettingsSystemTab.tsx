@@ -10,7 +10,7 @@
 // changes, so there is still ONE form and ONE save button.
 
 import type { SiteSettings } from '@/types'
-import { Card } from './kit'
+import { SettingsCard } from './SettingsCard'
 import { useAdminT } from './I18nProvider'
 import { ImportFields } from './ImportFields'
 import { ExportFields } from './ExportFields'
@@ -38,24 +38,24 @@ export function SettingsSystemTab(
       <div className={col}>
         {/* The WP importer is a one-time tool, not a setting, and it leads because it is the
             only card here somebody uses on their first day. */}
-        <Card panel title={t.cardImport}>
+        <SettingsCard title={t.cardImport}>
           <ImportFields />
-        </Card>
+        </SettingsCard>
         {/* First on the tab, because it is the one card here somebody opens in a hurry —
             a laptop is gone and they want the session ended now. */}
-        <Card panel title={t.securityTitle}>
+        <SettingsCard title={t.securityTitle}>
           <SecurityFields />
-        </Card>
-        <Card panel title={t.cacheTitle}>
+        </SettingsCard>
+        <SettingsCard title={t.cacheTitle}>
           <CacheFields cache={s.cache} onChange={(cache) => update({ cache })} />
-        </Card>
-        <Card panel title={t.updateTitle}>
+        </SettingsCard>
+        <SettingsCard title={t.updateTitle}>
           <UpdateFields
             updateCheck={s.updateCheck}
             status={updateStatus}
             onChange={(updateCheck) => update({ updateCheck })}
           />
-        </Card>
+        </SettingsCard>
         {/* THE ADMIN'S OWN RECORD, and it was filed under Reading.
             It records what the OWNER did — saves, uploads, deletes — to the Log page, which
             is neither a reader feature nor anything a reader can see. The tab it sat on
@@ -64,27 +64,27 @@ export function SettingsSystemTab(
             component comment already said "Not a reader feature at all". This tab answers
             about the INSTALL, which is what an audit log is. `settings-index.ts` moved with
             it, or search would still send people to Reading. */}
-        <Card panel title={t.cardActivity}>
+        <SettingsCard title={t.cardActivity}>
           <ActivityLogField features={s.features} onChange={(features) => update({ features })} />
-        </Card>
+        </SettingsCard>
       </div>
       <div className={col}>
-        <Card panel title={t.backupTitle}>
+        <SettingsCard title={t.backupTitle}>
           <ExportFields backups={s.backups} onChange={(backups) => update({ backups })} />
-        </Card>
+        </SettingsCard>
         {/* The snapshot that leaves the machine (ADR 0035): a copy beside the data does
             not survive the disk. Sits under the backups it ships. */}
-        <Card panel title={t.offsiteTitle}>
+        <SettingsCard title={t.offsiteTitle}>
           <OffsiteFields configured={offsiteConfigured} bucket={s3Bucket} />
-        </Card>
-        <Card panel title={t.storageTitle}>
+        </SettingsCard>
+        <SettingsCard title={t.storageTitle}>
           <StorageFields
             maxUploadMb={s.maxUploadMb}
             storageQuotaGb={s.storageQuotaGb}
             onMaxUploadMb={(maxUploadMb) => update({ maxUploadMb })}
             onStorageQuotaGb={(storageQuotaGb) => update({ storageQuotaGb })}
           />
-        </Card>
+        </SettingsCard>
       </div>
     </div>
   )

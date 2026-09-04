@@ -23,9 +23,11 @@ import type { IntegrationStatus } from '@/store/integration-keys'
 import { Button } from '@/admin/ui/Button'
 import { useToast } from '@/admin/ui/Toast'
 import { formatTime } from '@/utils'
-import { Card, NOTE_TEXT, PageHeader, Tabs, type TabItem } from './kit'
+import { NOTE_TEXT, PageHeader, Tabs, type TabItem } from './kit'
+import { SettingsCard } from './SettingsCard'
 import { SHEET, SheetTop } from './sheet'
 import { SettingsSearch } from './SettingsSearch'
+import { SettingsNotesRow, useSettingsNotes } from './SettingsNotes'
 import { SnippetEditor } from './SnippetEditor'
 import { useSettingJump } from './useSettingJump'
 import { useAdminT } from './I18nProvider'
@@ -106,6 +108,7 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
   const typographyReset = useRef<(() => void) | null>(null)
 
   const jumpToSetting = useSettingJump()
+  const [notes, toggleNotes] = useSettingsNotes()
 
   const update = (partial: Partial<SiteSettings>) => setS((prev) => ({ ...prev, ...partial }))
 
@@ -195,22 +198,22 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
           </div>
         </SheetTop>
         </div>
-        <div className="p-5">
-      {/* The definition, in the open — a guessed-at tab is a tab you open five of. */}
-      <p className={`${NOTE_TEXT} mb-5 max-w-2xl`}>{HINTS[tab]}</p>
+        <div className="p-5" data-explanations={notes ? 'on' : 'off'}>
+      {/* The definition, in the open — a guessed-at tab is a tab you open five of. It shares its line with the switch that quiets every OTHER explanation; this one stays. See `SettingsNotes`. */}
+      <SettingsNotesRow hint={HINTS[tab]} on={notes} onToggle={toggleNotes} />
 
       {/* SITE — what this site IS. Identity only: nothing here moves a pixel. */}
       {tab === 'site' && (
         <div className={GRID}>
           <div className={COL}>
-            <Card panel title={t.cardGeneral}>
+            <SettingsCard title={t.cardGeneral}>
               <SiteFields s={s} update={update} />
-            </Card>
+            </SettingsCard>
           </div>
           <div className={COL}>
-            <Card panel title={t.cardBranding}>
+            <SettingsCard title={t.cardBranding}>
               <BrandFields s={s} update={update} />
-            </Card>
+            </SettingsCard>
             {/* Whose blog this is — filed with the marks, because both answer "who is this",
                 and the words above answer "what is this".
                 ⚠️ It was in the LEFT stack, on the stated grounds that Branding was the taller
@@ -218,9 +221,9 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
                 351 against Author 710, which left the two stacks at 1,461 and 351 — the right
                 column of this tab was empty for 1,110px, the worst hole in the eight. Now 731
                 against 1,085. Re-measure before moving it back. */}
-            <Card panel title={t.cardAuthor}>
+            <SettingsCard title={t.cardAuthor}>
               <AuthorFields author={s.author} onChange={(author) => update({ author })} />
-            </Card>
+            </SettingsCard>
           </div>
         </div>
       )}
@@ -229,41 +232,41 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
       {tab === 'layout' && (
         <div className={GRID}>
           <div className={COL}>
-            <Card panel title={t.cardLayout}>
+            <SettingsCard title={t.cardLayout}>
               <LayoutMenuFields s={s} update={update} posts={posts} pages={pages} />
-            </Card>
+            </SettingsCard>
           </div>
           <div className={COL}>
             {/* Only when the site actually serves one. Twenty questions about a front page
                 nobody is showing is how a settings screen becomes something people scroll
                 past. */}
             {s.home.mode === 'front' && (
-              <Card panel title={t.cardFront}>
+              <SettingsCard title={t.cardFront}>
                 <FrontFields
                   front={s.home.front}
                   onChange={(front) => update({ home: { ...s.home, front } })}
                   posts={posts}
                   categories={categories}
                 />
-              </Card>
+              </SettingsCard>
             )}
             {/* Directly above the frame card, because both answer a question about pictures
                 and somebody hunting for "how do I show my cover" scans the picture cards.
                 It started in the left stack on the grounds that the right one was longer;
                 looking at the rendered tab said otherwise — in list mode (the default) the
                 right column ended halfway up the page while the left ran on. */}
-            <Card panel title={t.cardPostImage}>
+            <SettingsCard title={t.cardPostImage}>
               <PostImageFields postImage={s.postImage} onChange={(postImage) => update({ postImage })} />
-            </Card>
-            <Card panel title={t.cardFigure}>
+            </SettingsCard>
+            <SettingsCard title={t.cardFigure}>
               <FigureFields figure={s.figure} onChange={(figure) => update({ figure })} />
-            </Card>
-            <Card panel title={t.cardGallery}>
+            </SettingsCard>
+            <SettingsCard title={t.cardGallery}>
               <GalleryFields gallery={s.gallery} onChange={(gallery) => update({ gallery })} />
-            </Card>
-            <Card panel title={t.footerContent}>
+            </SettingsCard>
+            <SettingsCard title={t.footerContent}>
               <FooterField value={s.footer} onChange={(footer) => update({ footer })} />
-            </Card>
+            </SettingsCard>
           </div>
         </div>
       )}
@@ -276,25 +279,25 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
               Measured at 1440px: one card of 1,360 against a stack of 901. Now 1,168 against
               1,176. Re-measure before moving a card across. */}
           <div className={COL}>
-            <Card panel title={t.cardFeatures}>
+            <SettingsCard title={t.cardFeatures}>
               <PostFeatureFields
                 features={s.features}
                 onChange={(features) => update({ features })}
                 relatedCount={s.relatedCount}
                 onRelatedCount={(relatedCount) => update({ relatedCount })}
               />
-            </Card>
-            <Card panel title={t.cardComments}>
+            </SettingsCard>
+            <SettingsCard title={t.cardComments}>
               <CommentFields comments={s.comments} onChange={(comments) => update({ comments })} />
-            </Card>
+            </SettingsCard>
           </div>
           <div className={COL}>
-            <Card panel title={t.cardOnPage}>
+            <SettingsCard title={t.cardOnPage}>
               <PageFeatureFields features={s.features} onChange={(features) => update({ features })} />
-            </Card>
-            <Card panel title={t.cardListing}>
+            </SettingsCard>
+            <SettingsCard title={t.cardListing}>
               <ListingFeatureFields features={s.features} onChange={(features) => update({ features })} />
-            </Card>
+            </SettingsCard>
           </div>
         </div>
       )}
@@ -312,14 +315,14 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
       {tab === 'seo' && (
         <div className={GRID}>
           <div className={COL}>
-            <Card panel title={t.tabSeo}>
+            <SettingsCard title={t.tabSeo}>
               <SeoFields s={s} update={update} />
-            </Card>
+            </SettingsCard>
           </div>
           <div className={COL}>
-            <Card panel title={t.redirectsTitle}>
+            <SettingsCard title={t.redirectsTitle}>
               <RedirectsManager />
-            </Card>
+            </SettingsCard>
           </div>
         </div>
       )}
@@ -329,25 +332,25 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
       {tab === 'connections' && (
         <div className={GRID}>
           <div className={COL}>
-            <Card panel title={t.cardNewsletter}>
+            <SettingsCard title={t.cardNewsletter}>
               <NewsletterFields />
-            </Card>
+            </SettingsCard>
           </div>
           <div className={COL}>
             {/* The two services that sit in FRONT of the site — the CDN that caches it and
                 the checks a commenter passes — against the one that sends from it.
                 Measured at 1440px: this was Newsletter + Cloudflare against comments alone,
                 868 to 357. Now 459 to 770. */}
-            <Card panel title={t.cardCloudflare}>
+            <SettingsCard title={t.cardCloudflare}>
               <CloudflareFields configured={integrations.cloudflareConfigured} zoneId={integrations.cloudflareZoneId} webhookConfigured={integrations.purgeWebhookConfigured} />
-            </Card>
-            <Card panel title={t.cardCommentIntegrations}>
+            </SettingsCard>
+            <SettingsCard title={t.cardCommentIntegrations}>
               <CommentIntegrations
                 comments={s.comments}
                 env={commentEnv}
                 onChange={(comments) => update({ comments })}
               />
-            </Card>
+            </SettingsCard>
           </div>
           {/* FULL WIDTH, under both columns. Two code fields do not belong in a 459px
               column beside a form: a snippet is pasted, then read back to check it, and a
@@ -355,7 +358,7 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
               card here that is not a credential, so it reads as its own thing rather than
               as a third service. */}
           <div className="lg:col-span-2">
-            <Card panel title={t.cardCustomCode}>
+            <SettingsCard title={t.cardCustomCode}>
               <div className="space-y-4">
                 <p className={NOTE_TEXT}>{t.customCodeNote}</p>
                 <SnippetEditor
@@ -373,7 +376,7 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
                   placeholder={'<script defer src="https://example.com/beacon.js"></script>'}
                 />
               </div>
-            </Card>
+            </SettingsCard>
           </div>
         </div>
       )}

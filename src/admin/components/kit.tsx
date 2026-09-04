@@ -116,7 +116,7 @@ export function Setting({
      * button, 373px — ran 52px past a 375px screen. Capping it at the row makes it wrap.
      */
     return (
-      <div className={`flex flex-wrap items-start justify-between gap-x-4 gap-y-2 ${className}`}>
+      <div className={`setting-row flex flex-wrap items-start justify-between gap-x-4 gap-y-2 ${className}`}>
         <div className="min-w-0 flex-1 basis-48">{head}</div>
         <div className="max-w-full shrink-0 pt-0.5">{children}</div>
       </div>

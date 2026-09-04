@@ -11,6 +11,7 @@ import type { ApiResponse } from '@/types'
 import { useToast } from '@/admin/ui/Toast'
 import { Button } from '@/admin/ui/Button'
 import { useAdminT } from './I18nProvider'
+import { NOTE_TEXT } from './kit'
 
 type ImportResult = { posts: number; pages: number; skipped: number }
 type ImagesReport = { found: number; moved: number; remaining: number; failed: { url: string; reason: string }[] }
@@ -73,7 +74,7 @@ export function ImportFields() {
 
   return (
     <div className="space-y-4">
-      <p className="text-sm leading-relaxed text-neutral-500 dark:text-neutral-400">{t.importHelp}</p>
+      <p className={NOTE_TEXT}>{t.importHelp}</p>
       <input
         ref={inputRef}
         type="file"

@@ -123,7 +123,7 @@ export function ExportFields({
 
   return (
     <div className="space-y-5">
-      <p className="text-sm text-neutral-500 dark:text-neutral-400">{t.exportHint}</p>
+      <p className={NOTE_TEXT}>{t.exportHint}</p>
 
       <Button onClick={exportNow} disabled={busy !== null}>
         {busy === 'export' ? t.exportBusy : t.exportNow}

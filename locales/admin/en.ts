@@ -1037,6 +1037,8 @@ const en = {
   navExpand: 'Expand sidebar',
   navIconsShow: 'Show icons',
   navIconsHide: 'Hide icons',
+  settingsNotesShow: 'Show explanations',
+  settingsNotesHide: 'Hide explanations',
   authSignIn: 'Sign in',
   authSignInLede: 'The admin for {site}.',
   authBackTo: 'Back to {site}',

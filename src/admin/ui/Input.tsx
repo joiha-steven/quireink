@@ -60,7 +60,7 @@ export function Input({ label, note, className = '', inline, ...props }: InputPr
     return (
       // `flex-wrap` + `basis-48`, matching `Setting`'s inline row: a short field stays beside
       // its label, and one that would leave the sentence under 12rem wraps under it instead.
-      <label className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
+      <label className="setting-row flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
         <span className="min-w-0 flex-1 basis-48">
           {label && <span className={SETTING_LABEL}>{label}</span>}
           {note && <span className={`${NOTE} block`}>{note}</span>}

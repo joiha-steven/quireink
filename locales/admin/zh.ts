@@ -1037,6 +1037,8 @@ const zh = {
   navExpand: '展开侧边栏',
   navIconsShow: '显示图标',
   navIconsHide: '隐藏图标',
+  settingsNotesShow: '显示说明',
+  settingsNotesHide: '隐藏说明',
   authSignIn: '登录',
   authSignInLede: '{site} 的管理后台。',
   authBackTo: '返回 {site}',
