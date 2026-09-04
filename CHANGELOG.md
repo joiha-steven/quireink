@@ -1,5 +1,27 @@
 # CHANGELOG
 
+## Unreleased
+
+### Custom code, and the policy that decides whether it runs
+
+- **The Custom code guide said no content policy stood in the way. One usually does.** The
+  app sends no `Content-Security-Policy`; the recommended nginx vhost, the `Caddyfile` and
+  `deploy/caddy` all send `script-src 'self'`, and so does every install that followed them,
+  which blocks a pasted snippet with a note only in the browser console. The guide now says
+  which directives to widen, and `SECURITY.md` scopes its no-inline-script promise to the
+  HTML the software writes rather than to the box the owner fills.
+
+### Under the hood
+
+- **The dependency audit runs on a clock.** Seven advisories (four high) sat open on `main`
+  for two days after a green run, every one published after it. `bun audit` now also runs
+  every Monday, on its own, without the rest of CI. The three packages named (`qs`,
+  `fast-uri`, and `@tiptap/core` through five editor extensions) are bumped.
+- **A tag waits for CI before it publishes.** `publish.yml` fires on the tag and `ci.yml`
+  does not, so the two had never met: a release could reach both registries as `latest` on
+  a commit whose tour was red. The publish workflow now reads the check runs on the tagged
+  commit and refuses until all four are green, or fails naming the one that is not.
+
 ## 2026-09-02 — Quire Ink 2.2.7
 
 Two reports from someone running the blog on Unraid, and the box this product needed in

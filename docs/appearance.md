@@ -221,9 +221,16 @@ Three things worth knowing before you paste:
 - **It never reaches the admin, the sign-in page, or a draft preview.** A tracker on the
   preview of an unpublished post reports a reader who does not exist, and quietly spoils the
   numbers you read in Analytics.
-- **No content policy stands in its way.** This server deliberately sends no
-  `Content-Security-Policy` on reading pages, because a useful policy depends on what you
-  have chosen to load. Your snippet runs.
+- **Your content policy decides whether it runs.** The app itself sends no
+  `Content-Security-Policy`, because a useful policy depends on what you have chosen to
+  load. The proxy in front of it usually does: the nginx vhost in
+  [self-host.md](self-host.md), the `Caddyfile`, and `deploy/caddy` all send
+  `script-src 'self'`, which blocks both an inline `<script>` and a `<script src>` from
+  another host, and the browser says so only in its console. Before a snippet can run
+  under that policy, widen `script-src` (and `connect-src`, for a beacon that posts back)
+  to name the host it loads from, the way the Turnstile block in the `Caddyfile` does.
+  A `docker compose up` with no proxy of your own sends no policy at all, and the snippet
+  runs as pasted.
 - **The box shows the byte count**, for the same reason the CSS box does: that text travels
   inside every public page on every request. It also says when a `<script>` or `<style>` is
   never closed, which is this field's version of the unclosed brace — worse, because an

@@ -34,13 +34,13 @@
   "devDependencies": {
     "@happy-dom/global-registrator": "^20.11.1",
     "@tailwindcss/cli": "^4",
-    "@tiptap/extension-image": "^3.27.1",
-    "@tiptap/extension-placeholder": "^3.27.1",
-    "@tiptap/extension-table": "^3.27.1",
-    "@tiptap/extension-task-item": "^3.27.1",
-    "@tiptap/extension-task-list": "^3.27.1",
-    "@tiptap/react": "^3.27.1",
-    "@tiptap/starter-kit": "^3.27.1",
+    "@tiptap/extension-image": "^3.31.2",
+    "@tiptap/extension-placeholder": "^3.31.2",
+    "@tiptap/extension-table": "^3.31.2",
+    "@tiptap/extension-task-item": "^3.31.2",
+    "@tiptap/extension-task-list": "^3.31.2",
+    "@tiptap/react": "^3.31.2",
+    "@tiptap/starter-kit": "^3.31.2",
     "@types/bun": "latest",
     "@types/nodemailer": "^8.0.1",
     "@types/react": "^19",
@@ -52,16 +52,19 @@
     "typescript": "^5.9.0"
   },
   "overrides": {
-    "fast-uri": "^3.1.5"
+    "fast-uri": "^3.1.6"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.26.0",
+    "@tiptap/core": "^3.31.2",
+    "fast-uri": "^3.1.7",
     "fast-xml-parser": "^5.10.1",
     "fflate": "^0.8.3",
     "hono": "^4.13.1",
     "marked": "18.0.9",
     "nodemailer": "^9.0.5",
     "qrcode-generator": "^2.0.4",
+    "qs": "^6.16.0",
     "satori": "^0.29.0",
     "sharp": "^0.35.3",
     "shiki": "4.4.3",

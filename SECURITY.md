@@ -49,8 +49,12 @@ Stated so a report can say which of these is wrong, which is more useful than a 
   building anywhere in the request path.
 - Raw HTML in markdown and in comments is escaped, never executed, and `javascript:`,
   `data:` and `vbscript:` hrefs are dropped.
-- The public site ships **no inline script**, which is what lets the recommended CSP omit
-  `'unsafe-inline'` from `script-src`. A report that this is violated is a real finding.
+- The HTML the software itself writes ships **no inline script**, which is what lets the
+  recommended CSP omit `'unsafe-inline'` from `script-src`. A report that this is violated
+  is a real finding. The one exception is by design: **Connections → Custom code** inserts
+  whatever the owner pastes, verbatim, on public pages only (never the admin, the sign-in
+  page or a preview). That is the owner's script on the owner's site, and it runs only where
+  the owner's own policy allows it.
 - Uploads are served from a single directory by exact path lookup; `..` and encoded
   variants do not escape it.
 
