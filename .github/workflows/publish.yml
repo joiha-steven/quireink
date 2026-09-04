@@ -46,11 +46,56 @@ env:
   HUB_IMAGE: quireink/quireink
 
 jobs:
+  # THE GATE: nothing below runs until CI has said yes to the commit under the tag.
+  #
+  # A tag fires this workflow and `ci.yml` does not fire for a tag, so until 2026-09-04 the
+  # two never met: a tag on a commit whose tour was red, or pushed a minute before its CI
+  # finished, published `latest` to two registries with every job here green. `latest` is
+  # the install tag the docs recommend on purpose, which makes that the one image that must
+  # not be wrong. `main` carries no branch protection, deliberately, so the wait lives here
+  # on the publishing side rather than in a rule that fights the push-to-main workflow.
+  #
+  # It reads the CHECK RUNS on the tagged SHA and waits for the four `ci.yml` jobs to
+  # complete successfully, polling for up to twenty minutes (a full CI run is under three;
+  # the margin is for a queued runner). Any conclusion but `success` on any of the four
+  # fails this job, and with it the release, with the job named in the log. A commit CI
+  # never ran on at all (no check runs after twenty minutes) fails the same way: the
+  # absence of a verdict is not a verdict.
+  gate:
+    runs-on: ubuntu-latest
+    permissions:
+      checks: read
+      contents: read
+    steps:
+      - name: Wait for CI on ${{ github.sha }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 80); do
+            runs=$(gh api "repos/${REPO}/commits/${SHA}/check-runs?per_page=100" \
+              --jq '[.check_runs[] | select(.name == "check" or .name == "tour" or .name == "image" or .name == "audit")]')
+            done_ok=$(jq '[.[] | select(.status == "completed" and .conclusion == "success") | .name] | unique | length' <<< "$runs")
+            failed=$(jq -r '[.[] | select(.status == "completed" and .conclusion != "success" and .conclusion != "neutral" and .conclusion != "skipped") | "\(.name)=\(.conclusion)"] | join(" ")' <<< "$runs")
+            if [ -n "$failed" ]; then
+              echo "CI did not pass on ${SHA}: ${failed}"; exit 1
+            fi
+            if [ "$done_ok" -ge 4 ]; then
+              echo "CI passed on ${SHA}: check, tour, image, audit"; exit 0
+            fi
+            echo "waiting: ${done_ok}/4 CI jobs green on ${SHA} (attempt ${i}/80)"
+            sleep 15
+          done
+          echo "CI never finished on ${SHA} within twenty minutes; not publishing"; exit 1
+
   # One job per architecture, each pushing an untagged blob identified only by its digest.
   # Tags come later, once both exist: tagging here would mean the two architectures fight
   # over the same tag and the last one to finish wins, which is how a multi-arch image
   # quietly becomes single-arch.
   build:
+    needs: gate
     strategy:
       fail-fast: false
       matrix:

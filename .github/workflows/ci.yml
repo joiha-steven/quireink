@@ -5,12 +5,22 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  # ON A CLOCK AS WELL, for the `audit` job alone. Every other job here answers a question
+  # about a commit, and a commit that has not changed cannot change its answer; an advisory
+  # is published on somebody else's calendar. Measured 2026-09-04: the tree on `main` had
+  # seven open advisories (four high), every one published after the last green run two
+  # days earlier, and nothing in this repository would have said so until the next push.
+  # Dependabot cannot fill that gap because it does not read `bun.lock` (see `audit`).
+  # Monday 03:00 UTC, before the working week in every timezone this project deploys to.
+  schedule:
+    - cron: '0 3 * * 1'
 
 permissions:
   contents: read
 
 jobs:
   check:
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -59,6 +69,7 @@ jobs:
   # green check is a real state — the code is consistent AND a page is broken — and the
   # log should be able to show it.
   tour:
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -108,6 +119,7 @@ jobs:
   # behaves as if it belonged to the container user. Do not "simplify" this onto a developer
   # machine and believe the result.
   image:
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
