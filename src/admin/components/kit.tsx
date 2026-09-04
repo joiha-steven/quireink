@@ -41,7 +41,7 @@ export const CARD =
 // body's `p-4`) — the card's title row already has that shape — and the rows keep their
 // padding, so their text lands on the left edge every other label in the card uses.
 export const PANEL = 'overflow-hidden rounded-lg border border-neutral-100 dark:border-neutral-800'
-export const PANEL_LIST = '-mx-4 divide-y divide-neutral-100 border-y border-neutral-100 dark:divide-neutral-800 dark:border-neutral-800'
+export const PANEL_LIST = 'panel-list -mx-4 divide-y divide-neutral-100 border-y border-neutral-100 dark:divide-neutral-800 dark:border-neutral-800'
 export const INSET = 'rounded-lg border border-neutral-100 p-4 dark:border-neutral-800'
 
 // The place you DROP something into: CARVED, because a well holds things (the inset a text

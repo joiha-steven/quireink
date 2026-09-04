@@ -679,3 +679,26 @@ input[type='color']::-moz-color-swatch {
    pixel of the free space; 12rem would set it in a column three words wide. */
 [data-explanations='off'] .setting-row { justify-content: flex-start; }
 [data-explanations='off'] .setting-row > :first-child { flex: 0 1 auto; min-width: min(12rem, 100%); }
+/* And the HEIGHT of it, which is the half that was actually complained about.
+   A `ToggleRow` is a `Setting` wearing `p-4`: 16px of air above and below a 24px switch, so a
+   row that says "Table of contents · on" is 65px tall and a card of nine of them is 585px of
+   mostly nothing. That padding is not decoration when the explanation is there — it is what
+   keeps a two-line sentence off the rule above it. With the sentence gone it is padding around
+   padding, and the owner's word for the result was "bự": huge.
+   8px here plus the 8px of slack below takes a switch row from 65px to 42px — nine of them in
+   the Reading card, 585px down to 378. The switch itself is unchanged at 24px, which is what a
+   finger actually aims at; the row around it was never the tap target. Keyed on `p-4` so it
+   reaches the padded rows and leaves the bare ones (a plain `ui/Input` row has no padding of
+   its own) at the height they already had. */
+[data-explanations='off'] .setting-row.p-4 { padding-block: 0.5rem; }
+/* The other 8px, and it is invisible until you measure: the control's wrapper is a block, so
+   the 24px switch inside it sits in a 32px line box and the row pays for six pixels of
+   descender space that nothing is using. `flex` takes the line box out of it. */
+[data-explanations='off'] .setting-row > :last-child { display: flex; padding-top: 0; }
+/* And the strip at each end of a list card. `PANEL_LIST` runs full width (`-mx-4`) inside a
+   body that pads 16px all round, so above the first row and below the last there is a band of
+   nothing between the card's own rule and the list's — 32px a card, near 200px on a tab of
+   six. Pull the list over that padding and drop the border it would then double up on: the
+   header's rule and the card's edge already draw those two lines. */
+[data-explanations='off'] .panel-list:first-child { margin-top: -1rem; border-top: 0; }
+[data-explanations='off'] .panel-list:last-child { margin-bottom: -1rem; border-bottom: 0; }
