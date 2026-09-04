@@ -1253,6 +1253,9 @@ export type AdminStrings = {
   // sidebar icons, OFF by default since 2026-08-15
   navIconsShow: string
   navIconsHide: string
+  /** Settings only: the switch that draws or quiets every explanation on the screen. */
+  settingsNotesShow: string
+  settingsNotesHide: string
   // sign-in (new in 2.0; see v2/docs/06-auth.md)
   authSignIn: string
   // Both take {site}. The sign-in page wears the Quire Ink mark, so the blog it opens is named

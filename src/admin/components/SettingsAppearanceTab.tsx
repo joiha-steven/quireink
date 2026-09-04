@@ -7,7 +7,8 @@
 import type { SiteSettings } from '@/types'
 import type { ThemePreset } from '@/content/themes'
 import type { RefObject } from 'react'
-import { Card, NOTE_TEXT, ResetButton } from './kit'
+import { NOTE_TEXT, ResetButton } from './kit'
+import { SettingsCard } from './SettingsCard'
 import { CssEditor } from './CssEditor'
 import { useAdminT } from './I18nProvider'
 import { ThemeFields } from './ThemeFields'
@@ -41,15 +42,15 @@ export function SettingsAppearanceTab(
             of the left stack and that stopped being true — measured at 1440px, left 2,224
             against right 2,992. Moving it back across puts them at 2,752 and 2,464 and leaves
             the right column as exactly one subject: type. Re-measure before moving it again. */}
-        <Card panel title={t.cardShape}>
+        <SettingsCard title={t.cardShape}>
           <ShapeFields shape={s.shape} onChange={(shape) => update({ shape })} />
-        </Card>
+        </SettingsCard>
         {/* Under Shape, because it is the same question — what the site LOOKS like rather
             than what colour it is — asked about the one block that had never been asked. */}
-        <Card panel title={t.cardTable}>
+        <SettingsCard title={t.cardTable}>
           <TableFields table={s.table} onChange={(table) => update({ table })} />
-        </Card>
-        <Card panel title={t.navAppearance}>
+        </SettingsCard>
+        <SettingsCard title={t.navAppearance}>
           <p className={`${NOTE_TEXT} mb-4 rounded-lg bg-neutral-50 px-3 py-2 dark:bg-neutral-800/60`}>
             {t.themeAdminNote}
           </p>
@@ -64,8 +65,8 @@ export function SettingsAppearanceTab(
             onChangeEnabled={(enabledPalettes) => update({ enabledPalettes })}
             onChangeScheme={(defaultScheme) => update({ defaultScheme })}
           />
-        </Card>
-        <Card panel title={t.cardInk}
+        </SettingsCard>
+        <SettingsCard title={t.cardInk}
           actions={<ResetButton onClick={() => update({ inks: { ...DEFAULT_INKS } })} label={t.resetDefault} />}>
           <InkFields
             inks={s.inks}
@@ -79,17 +80,17 @@ export function SettingsAppearanceTab(
             }}
             onChange={(inks) => update({ inks })}
           />
-        </Card>
-        <Card panel title={t.customCss}>
+        </SettingsCard>
+        <SettingsCard title={t.customCss}>
           <div className="space-y-1.5">
             <CssEditor value={s.customCss} onChange={(customCss) => update({ customCss })} />
             <p className={NOTE_TEXT}>{t.customCssHint}</p>
           </div>
-        </Card>
+        </SettingsCard>
       </div>
       <div className={col}>
         {/* TYPE, and only type: the face, the sizes it is set at, and how it is drawn. */}
-        <Card panel title={t.cardFont}>
+        <SettingsCard title={t.cardFont}>
           <FontFields
             value={s.fontPreset}
             onChange={(fontPreset, typography) => update({ fontPreset, typography })}
@@ -99,15 +100,15 @@ export function SettingsAppearanceTab(
           <div className="mt-4 border-t border-neutral-200 pt-4 dark:border-neutral-800">
             <FontUpload value={s.customFont} onChange={(customFont) => update({ customFont })} />
           </div>
-        </Card>
-        <Card panel title={t.cardTypography}
+        </SettingsCard>
+        <SettingsCard title={t.cardTypography}
           actions={<ResetButton onClick={() => typographyReset.current?.()} label={t.resetDefault} />}>
           <TypographyFields
             typography={s.typography} fontPreset={s.fontPreset} resetRef={typographyReset}
             onChange={(typography) => update({ typography })}
           />
-        </Card>
-        <Card panel title={t.cardRendering}>
+        </SettingsCard>
+        <SettingsCard title={t.cardRendering}>
           <AdvancedFields
             typography={s.typography}
             onTypography={(typography) => update({ typography })}
@@ -118,7 +119,7 @@ export function SettingsAppearanceTab(
             autosaveSeconds={s.autosaveSeconds}
             onAutosaveSeconds={(autosaveSeconds) => update({ autosaveSeconds })}
           />
-        </Card>
+        </SettingsCard>
       </div>
     </div>
   )

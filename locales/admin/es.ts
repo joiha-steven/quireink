@@ -1037,6 +1037,8 @@ const es = {
   navExpand: 'Desplegar la barra lateral',
   navIconsShow: 'Mostrar iconos',
   navIconsHide: 'Ocultar iconos',
+  settingsNotesShow: 'Mostrar explicaciones',
+  settingsNotesHide: 'Ocultar explicaciones',
   authSignIn: 'Iniciar sesión',
   authSignInLede: 'La administración de {site}.',
   authBackTo: 'Volver a {site}',

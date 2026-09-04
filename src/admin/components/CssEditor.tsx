@@ -26,6 +26,7 @@
 import { useMemo, useRef, useState } from 'react'
 import { PROMISED_SELECTORS, PROMISED_VARS } from '@/content/appearance-contract'
 import { useAdminT } from './I18nProvider'
+import { NOTE_TEXT } from './kit'
 
 /** Unbalanced braces, ignoring anything inside a comment or a string. */
 export function braceBalance(css: string): number {
@@ -151,7 +152,7 @@ export function CssEditor({
         // `check:contract` proves still exists; nothing is offered that could quietly stop
         // being true.
         <div className="space-y-3 rounded-md border border-neutral-200 bg-neutral-50 p-3 dark:border-neutral-800 dark:bg-neutral-900">
-          <p className="text-xs text-neutral-500 dark:text-neutral-400">{t.cssNamesNote}</p>
+          <p className={NOTE_TEXT}>{t.cssNamesNote}</p>
           {PROMISED_VARS.map((group) => (
             <div key={group.group}>
               <h4 className="mb-1 text-[0.6875rem] font-medium uppercase tracking-wide text-neutral-400 dark:text-neutral-500">

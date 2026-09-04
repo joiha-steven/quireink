@@ -1038,6 +1038,8 @@ const pt = {
   navExpand: 'Expandir a barra lateral',
   navIconsShow: 'Mostrar ícones',
   navIconsHide: 'Esconder ícones',
+  settingsNotesShow: 'Mostrar explicações',
+  settingsNotesHide: 'Esconder explicações',
   authSignIn: 'Entrar',
   authSignInLede: 'A administração de {site}.',
   authBackTo: 'Voltar para {site}',

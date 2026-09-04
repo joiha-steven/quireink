@@ -1037,6 +1037,8 @@ const it = {
   navExpand: 'Apri la barra laterale',
   navIconsShow: 'Mostra le icone',
   navIconsHide: 'Nascondi le icone',
+  settingsNotesShow: 'Mostra le spiegazioni',
+  settingsNotesHide: 'Nascondi le spiegazioni',
   authSignIn: 'Accedi',
   authSignInLede: 'L’amministrazione di {site}.',
   authBackTo: 'Torna a {site}',

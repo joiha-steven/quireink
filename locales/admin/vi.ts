@@ -1037,6 +1037,8 @@ const vi = {
   navExpand: 'Mở rộng thanh bên',
   navIconsShow: 'Hiện biểu tượng',
   navIconsHide: 'Ẩn biểu tượng',
+  settingsNotesShow: 'Hiện giải thích',
+  settingsNotesHide: 'Ẩn giải thích',
   authSignIn: 'Đăng nhập',
   authSignInLede: 'Trang quản trị của {site}.',
   authBackTo: 'Về {site}',

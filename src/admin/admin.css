@@ -636,3 +636,46 @@ input[type='color']::-moz-color-swatch {
 .dark .fader::-webkit-slider-thumb { background: #f5f5f5; box-shadow: 0 1px 2px rgb(0 0 0 / .6), inset 0 1px 1px rgb(255 255 255 / .55), inset 0 -1.5px 2px rgb(0 0 0 / .25); }
 .dark .fader::-moz-range-track { border-color: #404040; background: #1c1c1c; box-shadow: inset 0 1.5px 2.5px rgb(0 0 0 / .55); }
 .dark .fader::-moz-range-thumb { background: #f5f5f5; box-shadow: 0 1px 2px rgb(0 0 0 / .6), inset 0 1px 1px rgb(255 255 255 / .55), inset 0 -1.5px 2px rgb(0 0 0 / .25); }
+
+/* --- Settings: explanations off ---------------------------------------------------------
+   Thirty-seven groups of controls, each setting carrying a sentence or three between its
+   label and its control — measured 2026-09-04 at 16-30% of the vertical space in the cards,
+   30% on Reading. The owner's words were that it made the screen hard to read, and the copy
+   itself is not the problem: it is right where you do not want it when you already know what
+   a switch does and just want to reach it.
+
+   So it hides, per DEVICE, the way the rail's icons and its collapsed state do. Nothing is
+   deleted and nothing is translated away — the sentences are still in the eleven
+   dictionaries, the settings search still MATCHES on them (a person who describes rather
+   than names still finds the row), and one click brings them all back.
+
+   `.admin-note` rides on `NOTE_TEXT` in `scale.ts` — see the note there for why it is on the
+   token rather than on two dozen call sites, and why `NOTE_ALERT` is deliberately left out
+   of it. `.tab-hint` is exempt because it is the one line that says what a TAB is for, which
+   is wayfinding rather than explanation: hiding it would leave eight unlabelled boxes. */
+[data-explanations='off'] .admin-note:not(.tab-hint) { display: none; }
+/* And the HOLE it leaves. Tailwind's `space-y-*` is `& > :not([hidden]) ~ :not([hidden])`,
+   and an element with `display: none` still matches `:not([hidden])` — so a card whose first
+   child is its opening sentence kept that sentence's share of the stack after the sentence
+   was gone, and every such card opened with a blank strip under its title. Only the first
+   child needs this: a note anywhere else is the LAST thing in its own little block. */
+[data-explanations='off'] .admin-note:not(.tab-hint):first-child + * { margin-top: 0; }
+
+/* And the ROW, once the sentence between the label and the control is gone.
+   `Setting` and `ui/Input` both lay a setting out as `justify-between`: the label takes the
+   free space, the control is pushed to the far end. That reads well with a note in the
+   middle and badly without one — the owner's screenshot of Storage was a label at the left
+   edge of a 560px card, a "0" box at the right edge, and nothing in between. His words were
+   "thu hẹp mỗi dòng lại": bring the row in.
+
+   So the head stops growing and the row packs from the left. `min-width` rather than a cap on
+   the row: a label shorter than 12rem still reserves 12rem, so every control in a card starts
+   at the SAME x and a column of switches stays a column — which is the thing the far-right
+   alignment was buying, kept at a tenth of the distance. A label longer than that pushes its
+   own control along and only that row goes ragged. `min()` so a container narrower than 12rem
+   (a phone, a split column) still gets a row that fits rather than one that overflows.
+
+   Only with explanations OFF. With them on the head is holding a paragraph and needs every
+   pixel of the free space; 12rem would set it in a column three words wide. */
+[data-explanations='off'] .setting-row { justify-content: flex-start; }
+[data-explanations='off'] .setting-row > :first-child { flex: 0 1 auto; min-width: min(12rem, 100%); }

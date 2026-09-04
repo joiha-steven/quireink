@@ -1037,6 +1037,8 @@ const de = {
   navExpand: 'Seitenleiste ausklappen',
   navIconsShow: 'Symbole anzeigen',
   navIconsHide: 'Symbole ausblenden',
+  settingsNotesShow: 'Erklärungen anzeigen',
+  settingsNotesHide: 'Erklärungen ausblenden',
   authSignIn: 'Anmelden',
   authSignInLede: 'Die Verwaltung für {site}.',
   authBackTo: 'Zurück zu {site}',

@@ -1037,6 +1037,8 @@ const ru = {
   navExpand: 'Развернуть боковую панель',
   navIconsShow: 'Показать иконки',
   navIconsHide: 'Скрыть иконки',
+  settingsNotesShow: 'Показать пояснения',
+  settingsNotesHide: 'Скрыть пояснения',
   authSignIn: 'Войти',
   authSignInLede: 'Админка {site}.',
   authBackTo: 'Назад на {site}',

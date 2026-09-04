@@ -1037,6 +1037,8 @@ const fr = {
   navExpand: 'Déplier la barre latérale',
   navIconsShow: 'Afficher les icônes',
   navIconsHide: 'Masquer les icônes',
+  settingsNotesShow: 'Afficher les explications',
+  settingsNotesHide: 'Masquer les explications',
   authSignIn: 'Se connecter',
   authSignInLede: 'L’administration de {site}.',
   authBackTo: 'Retour à {site}',
