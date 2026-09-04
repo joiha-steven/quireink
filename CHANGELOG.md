@@ -11,6 +11,15 @@
   which directives to widen, and `SECURITY.md` scopes its no-inline-script promise to the
   HTML the software writes rather than to the box the owner fills.
 
+### The systemd unit in the guide gets a sandbox
+
+- **The sample unit in `self-host.md` ran the blog with the run of the machine.** It now
+  carries `NoNewPrivileges`, `PrivateTmp`, `ProtectSystem=strict`, `ProtectHome=read-only`
+  and a `ReadWritePaths` naming the data and upload directories, which is what the author's
+  own installs have run with since August. A fault in the blog stays in the blog. The guide
+  says the two things that bite: the directories must exist before the first start, and a
+  directory left off the list fails on the next restart rather than this one.
+
 ### Under the hood
 
 - **The dependency audit runs on a clock.** Seven advisories (four high) sat open on `main`
