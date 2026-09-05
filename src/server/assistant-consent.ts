@@ -40,5 +40,26 @@ const NEEDS_CONSENT = new Set([
 
 export const needsConsent = (tool: string): boolean => NEEDS_CONSENT.has(tool)
 
+/**
+ * The SECOND reason to stop, and it is about where the words came from rather than what
+ * the tool does. A tool marked `untrusted` in its meta (`list_comments`) puts text written
+ * by readers into the model's context, and from that moment an instruction in the
+ * transcript may be a comment talking rather than the owner. So once such a result is in
+ * the conversation, every tool that is not `readOnly` asks, for the rest of that
+ * conversation. Reads stay free: a comment cannot do anything by being read twice. A tool
+ * that does not exist is left to the runner, which answers it with an error.
+ */
+export type AskReason = 'listed' | 'untrusted'
+
+export function askReason(
+  tool: string,
+  def: { meta: { readOnly?: true } } | undefined,
+  afterUntrusted: boolean,
+): AskReason | null {
+  if (NEEDS_CONSENT.has(tool)) return 'listed'
+  if (afterUntrusted && def && !def.meta.readOnly) return 'untrusted'
+  return null
+}
+
 /** What the owner refused, in the shape a tool result takes. The model reads this and moves on. */
 export const DECLINED = 'The owner declined this action. Do not try it again; ask what they would prefer.'

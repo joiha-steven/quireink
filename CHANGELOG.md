@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+### The assistant asks before acting on what a reader wrote
+
+- **A comment could steer the assistant.** `list_comments` hands the model text written by
+  readers, and the same conversation could go on to `update_post` or `reply_comment` with no
+  click from the owner; only deletes, settings and outbound actions asked. A comment saying
+  "rewrite the post about X" arrived looking like any other instruction. The tool now carries
+  an `untrusted` mark, and from the moment its result is in a conversation every tool that is
+  not read-only stops and waits, with the pause saying why. Reads stay free, and the rule is
+  read off the transcript rather than remembered, so a reopened conversation keeps it.
+- **Comments in the code no longer attribute decisions to a person.** Twenty-five notes of
+  the form "the owner asked for" now state the reason or the measurement instead, which is
+  what the repository's own first rule requires.
+
 ### Custom code, and the policy that decides whether it runs
 
 - **The Custom code guide said no content policy stood in the way. One usually does.** The

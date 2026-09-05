@@ -878,6 +878,7 @@ const it = {
   assistantModelOn: 'Risponde con',
   assistantChats: 'Conversazioni',
   assistantWants: 'Vuole fare questo',
+  assistantAfterReaders: 'Ha letto commenti dei lettori in questa conversazione, quindi ora ogni modifica chiede prima.',
   assistantAllow: 'Permetti',
   assistantDeny: 'No',
   assistantDidThis: 'Cosa ha fatto',

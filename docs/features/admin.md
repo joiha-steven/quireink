@@ -293,11 +293,13 @@
 - **Eleven actions STOP and wait for a click** (`server/assistant-consent.ts`): the five deletes,
   `compose_homepage`, `update_settings`, `update_appearance`, `send_test_newsletter`,
   `import_images`, `add_media_from_url`. The loop halts before running any of them and hands the
-  call and its arguments back; the screen shows both and nothing happens until Allow or Don't is
-  pressed. A refusal is written into the conversation as that call's result, so the model learns
-  it and moves on instead of asking again. The line is not "writes" — creating a post is a write
-  and nobody wants to approve one; it is what an owner would want to have seen coming. A gate
-  that asks too often teaches people to press Allow without reading.
+  call and its arguments back; nothing happens until Allow or Don't is pressed, and a refusal is
+  written in as that call's result so the model moves on instead of asking again. The line is not
+  "writes" — creating a post is a write and nobody wants to approve one; it is what an owner would
+  want to have seen coming. A gate that asks too often teaches people to press Allow unread.
+- **After it reads comments, every change asks.** `list_comments` is marked `untrusted`: its rows
+  are readers' words, and a "rewrite this post" among them is not the owner speaking. From then
+  on every tool that is not read-only stops for a click, the pause says why, and reads stay free.
 - **The AI card asks about ONE job, not three.** Alt text and excerpts follow the key and were
   decisions about nothing; both settings still exist by name (`ai.altText`, `ai.excerpt`) for
   anyone who wants them off. **The comment guard keeps its switch**: it is the one job that sends

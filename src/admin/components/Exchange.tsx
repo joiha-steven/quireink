@@ -22,7 +22,7 @@ export type Turn =
   | { kind: 'tool_use'; id: string; name: string; args: Record<string, unknown>; reasoning?: string; at?: number }
   | { kind: 'tool_result'; id: string; name: string; text: string }
 
-export type Pending = { id: string; name: string; args: Record<string, unknown> }
+export type Pending = { id: string; name: string; args: Record<string, unknown>; reason?: 'listed' | 'untrusted' }
 
 /** One question and everything that came back for it. */
 export type Block = { question: string; parts: Turn[] }
@@ -69,6 +69,10 @@ export function Exchange({ block, last, live, busy, cost, awaiting, onAnswer }: 
       {asking && (
         <div className="mt-4 rounded-lg border border-amber-300 bg-amber-50/60 p-3 dark:border-amber-800/60 dark:bg-amber-950/20">
           <p className={META}>{t.assistantWants}</p>
+          {/* Said only when the pause is the second kind: an ordinary edit stopped because
+              readers' words are in the conversation. The listed kind needs no explanation
+              beyond the call itself. */}
+          {awaiting.some((a) => a.reason === 'untrusted') && <p className={`${META} mt-1`}>{t.assistantAfterReaders}</p>}
           <ul className="mt-1.5 space-y-1">
             {awaiting.map((a) => (
               <li key={a.id} className="font-mono text-xs break-all text-neutral-800 dark:text-neutral-200">

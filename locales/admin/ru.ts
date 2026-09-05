@@ -878,6 +878,7 @@ const ru = {
   assistantModelOn: 'Отвечает через',
   assistantChats: 'Разговоры',
   assistantWants: 'Хочет сделать это',
+  assistantAfterReaders: 'В этом разговоре он прочитал комментарии читателей, поэтому теперь каждое изменение сначала спрашивает.',
   assistantAllow: 'Разрешить',
   assistantDeny: 'Нет',
   assistantDidThis: 'Что было сделано',

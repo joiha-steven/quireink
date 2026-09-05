@@ -20,7 +20,7 @@ import { DEFAULT_MODELS } from '@/server/ai-provider'
 import { languageName } from '@/media/alt-text'
 import { buildChat, noUsage, parseChat, type ToolSpec, type Turn, type Usage } from '@/server/assistant-dialects'
 import { readChatStream, streams } from '@/server/assistant-stream'
-import { DECLINED, needsConsent } from '@/server/assistant-consent'
+import { askReason, DECLINED, type AskReason } from '@/server/assistant-consent'
 
 export type { Turn }
 
@@ -65,8 +65,8 @@ async function runTool(def: ToolDef | undefined, args: Record<string, unknown>):
   }
 }
 
-/** A call the loop stopped in front of, waiting for the owner. */
-export type Pending = { id: string; name: string; args: Record<string, unknown> }
+/** A call the loop stopped in front of, waiting for the owner, and why it stopped. */
+export type Pending = { id: string; name: string; args: Record<string, unknown>; reason?: AskReason }
 
 export type AssistantReply =
   /**
@@ -103,6 +103,12 @@ export async function runAssistant(
 
   const added: Turn[] = []
   const all = () => [...turns, ...added]
+  // Whether readers' words are already in front of the model. Read off the transcript
+  // rather than remembered, so a conversation reopened from the database carries the
+  // same rule as the one that produced it, and one trimmed past that result loses it
+  // together with the words themselves.
+  const untrusted = new Set(defs.filter((d) => d.meta.untrusted).map((d) => d.name))
+  const afterUntrusted = () => all().some((t) => t.kind === 'tool_result' && untrusted.has(t.name))
 
   /**
    * Answer the calls the last round stopped in front of, before asking the model anything.
@@ -189,13 +195,17 @@ export async function runAssistant(
     // STOP HERE if any of them needs the owner. Not one by one: the model asked for these
     // together, and running the harmless half while the screen asks about the other half
     // would leave a conversation whose order nobody can reconstruct.
-    const ask = answer.calls.filter((c) => needsConsent(c.name))
+    // The taint is read once per round, BEFORE this round's results exist: calls the model
+    // issued in the same breath as `list_comments` were decided before it read a word.
+    const tainted = afterUntrusted()
+    const ask: Pending[] = []
+    for (const c of answer.calls) {
+      const reason = askReason(c.name, byName.get(c.name), tainted)
+      if (reason) ask.push({ id: c.id, name: c.name, args: c.args, reason })
+    }
     if (ask.length > 0) {
       if (answer.text) added.splice(added.length - answer.calls.length, 0, { kind: 'assistant', text: answer.text })
-      return {
-        ok: true, turns: added, text: answer.text, usage: spent, context,
-        awaiting: ask.map((c) => ({ id: c.id, name: c.name, args: c.args })),
-      }
+      return { ok: true, turns: added, text: answer.text, usage: spent, context, awaiting: ask }
     }
 
     for (const call of answer.calls) {

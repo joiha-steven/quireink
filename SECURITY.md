@@ -49,6 +49,8 @@ Stated so a report can say which of these is wrong, which is more useful than a 
   building anywhere in the request path.
 - Raw HTML in markdown and in comments is escaped, never executed, and `javascript:`,
   `data:` and `vbscript:` hrefs are dropped.
+- Readers' words never drive the assistant unattended: once a conversation has read comments,
+  every tool that writes waits for the owner's click (`docs/features/admin.md`, the assistant).
 - The HTML the software itself writes ships **no inline script**, which is what lets the
   recommended CSP omit `'unsafe-inline'` from `script-src`. A report that this is violated
   is a real finding. The one exception is by design: **Connections → Custom code** inserts

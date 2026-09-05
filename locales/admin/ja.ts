@@ -878,6 +878,7 @@ const ja = {
   assistantModelOn: '回答するモデル',
   assistantChats: '会話',
   assistantWants: 'これを実行しようとしています',
+  assistantAfterReaders: 'この会話で読者のコメントを読んだため、以後の変更はすべて先に確認します。',
   assistantAllow: '許可',
   assistantDeny: 'しない',
   assistantDidThis: '実行した操作',

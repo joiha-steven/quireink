@@ -878,6 +878,7 @@ const en = {
   assistantModelOn: 'Answering with',
   assistantChats: 'Conversations',
   assistantWants: 'It wants to do this',
+  assistantAfterReaders: 'It has read readers\' comments in this conversation, so every change now asks first.',
   assistantAllow: 'Allow',
   assistantDeny: 'Don\'t',
   assistantDidThis: 'What it did',
