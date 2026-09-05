@@ -201,20 +201,22 @@ export function EditorActions({
           control row it was a `basis-full` child of the left group, so the moment it
           appeared the one-row bar broke into three — the owner watched his buttons drop a
           line because a notice arrived. It stays inside this one sticky band (a banner above
-          the sheet was already tried and rejected as a third piece of chrome), wears the
-          amber that means "needs you" with the lamp dot beside it, and the two verbs stay
-          text links — Restore darker, because it is the one that rescues somebody's words. */}
+          the sheet was already tried and rejected as a third piece of chrome) and carries a
+          lamp dot beside it. GREY, not amber, and the verbs are not underlined: nothing here
+          has gone wrong — a draft was found and the owner may take it or leave it — and a
+          warning colour on that made the editor open looking like it had a problem. Restore
+          stays the darker of the two, because it is the one that rescues somebody's words. */}
       {recovered && (
-        <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 border-t border-amber-200/70 bg-amber-50/60 px-4 py-1.5 text-xs text-neutral-700 dark:border-amber-900/40 dark:bg-amber-950/20 dark:text-neutral-300">
-          <span aria-hidden className="h-2 w-2 shrink-0 rounded-full bg-amber-500" />
+        <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 border-t border-neutral-200 bg-neutral-50 px-4 py-1.5 text-xs text-neutral-700 dark:border-neutral-800 dark:bg-neutral-900/60 dark:text-neutral-300">
+          <span aria-hidden className="h-2 w-2 shrink-0 rounded-full bg-neutral-400 dark:bg-neutral-500" />
           <span>
             {recovered.from === 'server' ? t.serverDraftFound : t.localDraftFound} · {formatTime(recovered.at)}
             {' · '}
-            <button type="button" onClick={recovered.onRestore} className="font-medium text-neutral-900 underline underline-offset-2 hover:no-underline dark:text-white">
+            <button type="button" onClick={recovered.onRestore} className="font-medium text-neutral-900 hover:text-neutral-600 dark:text-white dark:hover:text-neutral-300">
               {t.localDraftRestore}
             </button>
             {' · '}
-            <button type="button" onClick={recovered.onDiscard} className="underline underline-offset-2 hover:text-neutral-900 hover:no-underline dark:hover:text-white">
+            <button type="button" onClick={recovered.onDiscard} className="hover:text-neutral-900 dark:hover:text-white">
               {t.localDraftDiscard}
             </button>
           </span>
