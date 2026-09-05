@@ -19,7 +19,7 @@
 // what a hand expects: the rows above and below PART where the row would land, the row is
 // already there while it is still being held, and letting go leaves it exactly there. So the
 // list reorders live under the pointer, and the pointer stream stays ours the whole way.
-import { useRef, type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { useAdminT } from './I18nProvider'
 import { IconGrip, IconChevronLeft } from './navIcons'
 import type { Zone } from './useNavArrange'
@@ -38,15 +38,12 @@ const STEP =
  * press anywhere along the row is a grab rather than a click on the link inside it.
  */
 export function Arrangeable({
-  id, held, onGrab, onProbe, onRelease, onNudge, first, last, children,
+  id, held, onGrab, onNudge, first, last, children,
 }: {
   id: string
   /** This row is the one in the hand. */
   held: boolean
   onGrab: (id: string) => void
-  /** Where the pointer is now; the column decides whether that moves the row. */
-  onProbe: (id: string, clientY: number) => boolean
-  onRelease: () => void
   onNudge: (id: string, dir: -1 | 1) => void
   /** Ends of the WHOLE column, not of this zone: the steppers cross zone boundaries. */
   first: boolean
@@ -54,8 +51,6 @@ export function Arrangeable({
   children: ReactNode
 }) {
   const t = useAdminT()
-  const box = useRef<HTMLDivElement>(null)
-  const held_ = useRef<boolean>(false)
 
   // NO TRANSFORM ON THE CARRIED ROW, and that was tried first. Following the pointer by a few
   // pixels between crossings looks right in isolation and is wrong here: the column scrolls
@@ -64,10 +59,16 @@ export function Arrangeable({
   // vanished, mid-drag, with the pointer still down. The row's own movement is the reorder:
   // it steps to each new place as the pointer crosses a neighbour, which is also the thing
   // the list has to show anyway.
+  //
+  // ⚠️ THE ROW LISTENS FOR NOTHING BUT THE FIRST PRESS. Everything after it is on the window
+  // (`NavColumn`), and that is the fix for a drag that moved one row and then died: reordering
+  // the list means React takes this node out of the DOM and puts it back somewhere else, and
+  // a node that leaves the document LOSES ITS POINTER CAPTURE. So the second `pointermove`
+  // never arrived, `pointerup` never arrived either, and the arrangement was never saved —
+  // which is exactly what "it feels stiff" was describing.
 
   return (
     <div
-      ref={box}
       data-nav-row={id}
       onPointerDown={(e) => {
         // Left button or a finger. A right-click on a row should still be a right-click, and
@@ -75,31 +76,7 @@ export function Arrangeable({
         if (e.button !== 0) return
         if ((e.target as HTMLElement).closest('[data-nav-step]')) return
         e.preventDefault()
-        // Capture keeps the stream coming when the pointer outruns the row — which it does on
-        // any quick drag, because the row only catches up on the next crossing. In a try: a
-        // synthetic pointer (a test, an assistive tool) has no capture to take, and the throw
-        // would leave the row grabbed and unmovable.
-        try { box.current?.setPointerCapture(e.pointerId) } catch { /* no live pointer */ }
-        held_.current = true
         onGrab(id)
-      }}
-      onPointerMove={(e) => {
-        if (!held_.current) return
-        onProbe(id, e.clientY)
-      }}
-      onPointerUp={(e) => {
-        if (!held_.current) return
-        try { box.current?.releasePointerCapture(e.pointerId) } catch { /* never captured */ }
-        held_.current = false
-        onRelease()
-      }}
-      onPointerCancel={() => {
-        // A cancelled pointer (the OS took the gesture, the tab lost focus) still has to put
-        // the row down: what is on screen is what gets stored, and a row left in the hand with
-        // no pointer would never be released.
-        if (!held_.current) return
-        held_.current = false
-        onRelease()
       }}
       className={`flex touch-none select-none items-center gap-0.5 rounded-lg ${
         held

@@ -118,6 +118,9 @@ export const ICONS = {
   // Two rails, the universal "pick this up" mark. Only ever shown while the sidebar is in
   // arrange mode, where it is the one thing on the row that is not the row.
   grip: '<path d="M5 9.5h14M5 14.5h14"/>',
+  // Rows, and one of them moving: the sidebar's arrange mode. Not a grip (that is the handle
+  // ON a row) and not a chevron (that is a direction) — this is the mode itself.
+  arrange: '<path d="M4 7h9M4 12h7M4 17h9"/><path d="M17.5 8v9M17.5 17.5 15 15M17.5 17.5 20 15"/>',
   glyphs:
     '<path d="m5 17 4-10 4 10M6.3 13.5h5.4"/><path d="M15.5 17V9.5"/>'
     + '<circle cx="17.5" cy="13.5" r="2.6"/><path d="M20.1 11v6"/>',

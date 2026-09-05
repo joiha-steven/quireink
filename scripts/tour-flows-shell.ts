@@ -117,9 +117,14 @@ export function registerShellFlows({ flow, expect, atWidth }: Tour): void {
       }
       const start = at(rows[0])
       const target = at(rows[3])
-      const send = (type, y) => rows[0].dispatchEvent(new PointerEvent(type, {
+      // THE PRESS GOES TO THE ROW, EVERYTHING AFTER IT TO THE WINDOW, which is what a
+      // browser does: once the list reorders, the pointer is over some other row entirely.
+      // Sending the whole gesture to the row it started on would pass against a build that
+      // only listens there — the build that shipped, where reordering pulled the node out of
+      // the document, took its pointer capture with it, and left the drag dead after one row.
+      const send = (type, y, target) => target.dispatchEvent(new PointerEvent(type, {
         bubbles: true, cancelable: true, pointerId: 1, isPrimary: true, pointerType: 'mouse',
-        button: type === 'pointerup' ? 0 : 0, buttons: type === 'pointerup' ? 0 : 1,
+        button: 0, buttons: type === 'pointerup' ? 0 : 1,
         clientX: start.x, clientY: y,
       }))
       const listed = () => [...document.querySelectorAll('aside [data-nav-row]')].map((r) => r.getAttribute('data-nav-row'))
@@ -128,17 +133,17 @@ export function registerShellFlows({ flow, expect, atWidth }: Tour): void {
       // reorder once per paint, because the next destination is read off the rectangles the
       // last paint left. Firing the whole gesture inside one tick asks it to move six rows
       // through one render and is a test of something no hand does.
-      send('pointerdown', start.y)
+      send('pointerdown', start.y, rows[0])
       for (let y = start.y; y <= target.y; y += 8) {
-        send('pointermove', y)
+        send('pointermove', y, window)
         await new Promise((r) => setTimeout(r, 24))
       }
       const held = listed()
       if (held.indexOf(carried) < 2) {
-        send('pointerup', target.y)
+        send('pointerup', target.y, window)
         return 'the list did not reorder under the pointer: ' + held.slice(0, 5).join(' ')
       }
-      send('pointerup', target.y)
+      send('pointerup', target.y, window)
       await new Promise((r) => setTimeout(r, 250))
       const landed = listed()
       if (landed.indexOf(carried) !== held.indexOf(carried)) {

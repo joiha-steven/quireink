@@ -22,13 +22,14 @@ import { SIDEBAR_NAV, SIDEBAR_NAV_ACTIVE, SIDEBAR_NAV_QUIET, SIDEBAR_UTIL } from
 import { CacheButton } from './CacheButton'
 import { ThemeToggle } from '@/admin/ui/ThemeToggle'
 import {
-  IconExternal, IconCache, IconSignOut, IconChevronLeft, IconGlyphs, IconMore, IconSearch,
+  IconExternal, IconCache, IconSignOut, IconChevronLeft, IconGlyphs, IconMore, IconSearch, IconArrange,
 } from './navIcons'
 import { BrandMark, BrandWord } from './Wordmark'
 import { openPalette } from './CommandPalette'
 import { chordFor, printChord, tip } from './editorKeys'
 import { primaryNav, secondaryNav, defaultNavOrder, type Destination } from './navDestinations'
-import { findSpot, useNavArrange, ZONES, type Zone } from './useNavArrange'
+import { useNavArrange, ZONES, type Zone } from './useNavArrange'
+import { useNavDrag } from './useNavDrag'
 import { Arrangeable, ZoneFloor, SwitchRow } from './NavArrange'
 import { useToast } from '@/admin/ui/Toast'
 
@@ -54,6 +55,10 @@ export function useNavColumn({
   const arrange = useNavArrange(navOrder, defaults, (why) => notify(`${t.navArrangeFailed} (${why})`, 'error'))
   const showLogo = !arrange.isHidden('logo')
   const showSearch = !arrange.isHidden('search')
+
+// Every part of the gesture — the slide, the probe and the window listeners — is in
+  // `useNavDrag`.
+  useNavDrag(arrange)
 
   const build = (c: boolean) => {
     // Arrange mode belongs to the OPEN rail: see the note at the top of `NavArrange.tsx`.
@@ -162,74 +167,52 @@ export function useNavColumn({
       }
     }
 
-    /**
-     * Where the pointer is, in rail terms — and the move it implies.
-     *
-     * Read off the LIVE DOM rather than from measurements taken when the drag began: the list
-     * reorders under the pointer, so every crossing changes where every other row is. Asking
-     * the document each time is a handful of `getBoundingClientRect` calls on at most twenty
-     * rows, which is nothing beside re-deriving the geometry ourselves and being wrong about
-     * it after the first swap.
-     *
-     * ⚠️ It reads `arrange.order`, the RENDERED order, and not the ref that leads it. The two
-     * halves of this decision have to come from the same instant: the rectangles are where the
-     * last paint put the rows, so pairing them with an order that has already moved on gives a
-     * destination the pointer is not actually over. One step per frame is the correct rate —
-     * that is how often the rectangles are true.
-     *
-     * Returns true when the order actually changed, which is what tells the row being carried
-     * to re-zero its offset.
-     */
-    const probe = (id: string, clientY: number): boolean => {
-      // THE WHOLE DOCUMENT, not the aside: the rail draws itself twice — the sticky column
-      // and the phone drawer — and only one of them is on screen. The hidden copy measures
-      // zero and can never contain a pointer, so asking for both is also asking for the
-      // right one.
-      const rows = [...document.querySelectorAll<HTMLElement>('[data-nav-row]')].filter((el) => el.dataset.navRow !== id)
-      for (const el of rows) {
-        const box = el.getBoundingClientRect()
-        if (clientY < box.top || clientY > box.bottom) continue
-        const other = el.dataset.navRow
-        if (!other) continue
-        const to = findSpot(arrange.order, other)
-        if (!to) return false
-        const before = clientY < box.top + box.height / 2
-        const at = { zone: to.zone, index: before ? to.index : to.index + 1 }
-        const now = findSpot(arrange.order, id)
-        // Already there: without this the same crossing fires on every pointermove and the
-        // row re-zeroes its offset forty times a second, which reads as a row that will not
-        // move at all.
-        if (now && now.zone === at.zone && (now.index === at.index || now.index === at.index - 1)) return false
-        arrange.preview(id, at)
-        return true
-      }
-      // An empty zone has no rows to aim at, only its floor.
-      for (const el of document.querySelectorAll<HTMLElement>('[data-nav-floor]')) {
-        const box = el.getBoundingClientRect()
-        if (clientY < box.top || clientY > box.bottom) continue
-        const zone = el.dataset.navFloor as Zone | undefined
-        if (!zone) continue
-        const now = findSpot(arrange.order, id)
-        if (now && now.zone === zone && now.index === arrange.order[zone].length - 1) return false
-        arrange.preview(id, { zone, index: arrange.order[zone].length })
-        return true
-      }
-      return false
-    }
-
     /** Every row in the column, top to bottom — what the steppers walk, and what an end means. */
     const walk = ZONES.flatMap((zone) => arrange.order[zone].map((id) => ({ id, zone })))
+
+    /**
+     * The switch into arrange mode — and, while it is on, the way back out and the way back
+     * to the shipped order.
+     *
+     * Reset gets its OWN class rather than `SIDEBAR_UTIL`, which is `w-full`: beside a
+     * flexed Done it kept asking for the whole width and its hover state hung over the edge
+     * of the rail.
+     */
+    const arrangeControl = c ? null : (
+      <div className="flex items-center gap-1">
+        <button type="button" data-nav-arrange={arranging ? 'on' : 'off'} onClick={arrange.toggleArranging} className={`${utilClass} min-w-0 flex-1`}>
+          {(c || icons || arranging) && <IconArrange />}
+          <span className="truncate">{arranging ? t.navArrangeDone : t.navArrange}</span>
+        </button>
+        {arranging && (
+          <button
+            type="button"
+            data-nav-reset
+            onClick={arrange.reset}
+            className="h-8 shrink-0 rounded-md px-2 text-xs text-neutral-500 transition-colors hover:bg-neutral-200/70 hover:text-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-300"
+          >
+            {t.navArrangeReset}
+          </button>
+        )}
+      </div>
+    )
 
     const list = (zone: Zone): ReactNode => (
       <>
         {arrange.order[zone].map((id) => {
           const drawn = row(id)
           if (!drawn) return null
+          // The mode switch rides UNDER THE COLLAPSE ROW, wherever the collapse row has been
+          // put: the two are siblings — both are about this rail rather than about the blog —
+          // and it is the row the hand already goes to when it wants the rail to look
+          // different. It is not itself arrangeable: a control that can be dragged out of
+          // reach while it is the thing doing the dragging is a door that closes behind you.
+          const after = id === 'collapse' ? arrangeControl : null
           // A FRAGMENT, not a wrapper. `display:contents` looks like no element at all and is
           // not: it is still a node, so `aside nav > a` — which is how the rail's own guards
           // tell a primary destination from one inside the group — stopped matching anything
           // the moment rows were wrapped. Outside arrange mode the DOM is exactly what it was.
-          if (!arranging) return <Fragment key={id}>{drawn}</Fragment>
+          if (!arranging) return <Fragment key={id}>{drawn}{after}</Fragment>
           const at = walk.findIndex((w) => w.id === id)
           return (
             <Arrangeable
@@ -237,8 +220,6 @@ export function useNavColumn({
               id={id}
               held={arrange.dragging === id}
               onGrab={arrange.setDragging}
-              onProbe={probe}
-              onRelease={() => { arrange.setDragging(null); arrange.commit() }}
               onNudge={arrange.nudge}
               first={at === 0}
               last={at === walk.length - 1}
@@ -246,7 +227,7 @@ export function useNavColumn({
               {drawn}
             </Arrangeable>
           )
-        })}
+        }).flatMap((el, i) => (arranging && arrange.order[zone][i] === 'collapse' ? [el, <Fragment key="arrange-control">{arrangeControl}</Fragment>] : [el]))}
         {arranging && <ZoneFloor zone={zone} empty={arrange.order[zone].length === 0} />}
       </>
     )
@@ -339,7 +320,7 @@ export function useNavColumn({
           )}
         </>
       ),
-      /** The controls at the foot, the two switches, and the row that turns arranging on. */
+      /** The controls at the foot, and the two switches that belong to arrange mode. */
       controls: (
         <>
           {list('footer')}
@@ -350,22 +331,6 @@ export function useNavColumn({
             <div className="mt-1 flex flex-col gap-1 border-t border-neutral-200 pt-1 dark:border-neutral-800">
               <SwitchRow id="logo" label={t.navShowLogo} on={showLogo} onToggle={() => arrange.toggleHidden('logo')} />
               <SwitchRow id="search" label={t.navShowSearch} on={showSearch} onToggle={() => arrange.toggleHidden('search')} />
-            </div>
-          )}
-          {/* Under the collapse row by default, because that is the row it is a sibling of:
-              both are about this rail rather than about the blog. It is not itself arrangeable
-              — a control that can be dragged out of reach while it is the thing doing the
-              dragging is a door that closes behind you. */}
-          {!c && (
-            <div className="flex items-center gap-2">
-              <button type="button" data-nav-arrange={arranging ? 'on' : 'off'} onClick={arrange.toggleArranging} className={`${utilClass} flex-1`}>
-                <span className="truncate">{arranging ? t.navArrangeDone : t.navArrange}</span>
-              </button>
-              {arranging && (
-                <button type="button" data-nav-reset onClick={arrange.reset} title={t.navArrangeReset} className={`${SIDEBAR_UTIL} shrink-0`}>
-                  <span className="truncate">{t.navArrangeReset}</span>
-                </button>
-              )}
             </div>
           )}
         </>
