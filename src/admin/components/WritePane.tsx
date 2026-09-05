@@ -239,7 +239,7 @@ function Rows({
                   )}
                   <span className="min-w-0">
                     <span className={`block text-sm ${active ? 'font-semibold' : 'font-medium'} text-neutral-900 dark:text-white ${!it.title ? 'italic text-neutral-500 dark:text-neutral-400' : ''}`}>
-                      {it.title ? <Marked text={it.title} needle={query} /> : t.untitled}
+                      {it.title ? <Marked text={it.title} needle={query} /> : `${t.untitled} #${it.untitledNo ?? 1}`}
                     </span>
                     {under && (
                       <span className="mt-0.5 line-clamp-2 block text-xs text-neutral-500 dark:text-neutral-400">
