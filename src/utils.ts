@@ -256,3 +256,19 @@ export function isScheduled(status: string, isoDate: string): boolean {
   if (Number.isNaN(d)) return false
   return d > Date.now()
 }
+
+/**
+ * Untitled drafts, numbered oldest-first, keyed `kind:slug`. The one home for this rule, so
+ * the writing sidebar and the dashboard's pick-up band hand the SAME draft the SAME number
+ * rather than two copies drifting apart. `created` is the post's own date and the page's
+ * `updatedAt`, the same keys both callers already sort by; ties break on slug so the answer
+ * is deterministic. Anything with a title is left out.
+ */
+export function untitledNumbers(
+  items: { kind: string; slug: string; title: string; created: number }[],
+): Map<string, number> {
+  const untitled = items
+    .filter((i) => !i.title.trim())
+    .sort((a, b) => a.created - b.created || a.slug.localeCompare(b.slug))
+  return new Map(untitled.map((i, idx) => [`${i.kind}:${i.slug}`, idx + 1]))
+}

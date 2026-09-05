@@ -8,7 +8,8 @@ import {
   isPublicallyVisible,
   isScheduled,
   extractImageUrls,
-} from '@/utils'
+  untitledNumbers,
+} from './utils'
 
 describe('slugify', () => {
   it('strips Vietnamese diacritics and maps đ -> d', () => {
@@ -136,5 +137,43 @@ describe('extractImageUrls', () => {
   it('also collects root-relative image URLs', () => {
     const content = '![a](/uploads/media/foo.png) and ![b](/uploads/media/bar.webp)'
     expect(extractImageUrls(content)).toEqual(['/uploads/media/foo.png', '/uploads/media/bar.webp'])
+  })
+})
+
+// The untitled draft numbering shared by the writing sidebar and the dashboard band.
+const uRow = (kind: 'post' | 'page', slug: string, title: string, created: number) => ({ kind, slug, title, created })
+
+describe('untitledNumbers', () => {
+  it('numbers only the untitled ones, oldest first, whitespace counting as untitled', () => {
+    const n = untitledNumbers([
+      uRow('post', 'has-title', 'A Real Title', 300),
+      uRow('post', 'post-3', '', 300),
+      uRow('post', 'post-1', '', 100),
+      uRow('post', 'post-2', '  ', 200),
+    ])
+    expect(n.get('post:post-1')).toBe(1)
+    expect(n.get('post:post-2')).toBe(2)
+    expect(n.get('post:post-3')).toBe(3)
+    expect(n.has('post:has-title')).toBe(false)
+  })
+
+  it('keeps a draft its number when a newer untitled draft appears above it', () => {
+    const after = untitledNumbers([uRow('post', 'a', '', 100), uRow('post', 'b', '', 200), uRow('post', 'c', '', 300)])
+    expect(after.get('post:a')).toBe(1)
+    expect(after.get('post:b')).toBe(2)
+    expect(after.get('post:c')).toBe(3)
+  })
+
+  it('is deterministic when two untitled drafts share a timestamp', () => {
+    const a = untitledNumbers([uRow('post', 'y', '', 100), uRow('post', 'x', '', 100)])
+    const b = untitledNumbers([uRow('post', 'x', '', 100), uRow('post', 'y', '', 100)])
+    expect(a.get('post:x')).toBe(b.get('post:x'))
+    expect(a.get('post:y')).toBe(b.get('post:y'))
+  })
+
+  it('numbers posts and pages in one sequence, so the two surfaces agree', () => {
+    const n = untitledNumbers([uRow('page', 'page-1', '', 150), uRow('post', 'post-1', '', 100)])
+    expect(n.get('post:post-1')).toBe(1)
+    expect(n.get('page:page-1')).toBe(2)
   })
 })

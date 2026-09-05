@@ -8,7 +8,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { Post, Page, ApiResponse } from '@/types'
 // Type-only, and it must stay that way: the module it comes from opens the database.
 import type { OwnerHit } from '@/content/search-owner'
-import { foldAccents } from '@/utils'
+import { foldAccents, untitledNumbers } from '@/utils'
 
 export type WriteScope = 'all' | 'page' | 'post' | 'published' | 'draft'
 export type WriteSort = 'updated' | 'created'
@@ -35,20 +35,6 @@ export type WriteItem = {
    * as the list re-sorts. `undefined` for anything with a title.
    */
   untitledNo?: number
-}
-
-/**
- * The untitled drafts, numbered oldest-first, keyed `kind:slug`. Pulled out of the hook so
- * it is testable without React: the number has to be stable, and stability is the thing a
- * test pins.
- */
-export function untitledNumbers(
-  items: { kind: string; slug: string; title: string; created: number }[],
-): Map<string, number> {
-  const untitled = items
-    .filter((i) => !i.title.trim())
-    .sort((a, b) => a.created - b.created || a.slug.localeCompare(b.slug))
-  return new Map(untitled.map((i, idx) => [`${i.kind}:${i.slug}`, idx + 1]))
 }
 
 const stamp = (iso?: string): number => (iso ? new Date(iso).getTime() : 0)

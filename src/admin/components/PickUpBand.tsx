@@ -30,7 +30,7 @@ import { useAdminT } from './I18nProvider'
  */
 const CHIP = buttonClass('secondary', 'md', 'max-w-full font-normal text-neutral-700 dark:text-neutral-200')
 
-export function PickUpBand({ items, total }: { items: { title: string; href: string; touched: string }[]; total: number }) {
+export function PickUpBand({ items, total }: { items: { title: string; href: string; touched: string; untitledNo?: number }[]; total: number }) {
   const t = useAdminT()
   // Nothing unfinished is a real state and a good one. The band is absent rather than empty:
   // a card saying "no drafts" is a row of furniture that reports the absence of work.
@@ -56,7 +56,7 @@ export function PickUpBand({ items, total }: { items: { title: string; href: str
             <span aria-hidden className="h-[5px] w-[5px] shrink-0 rounded-full bg-[var(--pen-edge)]" />
             {/* `truncate` on the TITLE only, so a long headline shortens and the timestamp
                 beside it never gets pushed out of the chip. */}
-            <span className="truncate">{it.title || t.untitled}</span>
+            <span className="truncate">{it.title || `${t.untitled} #${it.untitledNo ?? 1}`}</span>
             {it.touched && (
               <span className="shrink-0 text-xs text-neutral-500 dark:text-neutral-400">
                 {formatDateTimeShort(it.touched)}
