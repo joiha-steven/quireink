@@ -6,7 +6,7 @@
 // have not written, and a choice made blind is worse than a default: a default still reads
 // as "not decided yet", while something you clicked reads as decided. Those live on the
 // dashboard's "first five minutes" card, which is re-openable, which is the right shape for
-// them and the shape the owner asked for when he designed it.
+// them: a choice you can return to is a choice you can safely postpone.
 //
 // What is left qualifies on one of two grounds. The site address and the time zone are
 // WRONG BY DEFAULT AND SILENT ABOUT IT — one makes every feed, sitemap and share card say

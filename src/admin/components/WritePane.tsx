@@ -204,8 +204,8 @@ function Rows({
             const when = !drafty && it.kind === 'post' ? it.created : it.touched
             // THE OPEN ROW IS A KEY HELD DOWN — carved in, like every latched control —
             // but on PAPER, not on the pen: a full lime field the height of three lines of
-            // text sat beside the writing and pulled the eye on every keystroke, and the
-            // owner asked for the quiet ground back. The carve says "held down"; the pen
+            // text sat beside the writing and pulled the eye on every keystroke, so the
+            // ground went quiet again. The carve says "held down"; the pen
             // stays on the small marks (the draft dot, the rail, the tabs).
             const rowClass = `relative block border-b border-neutral-100 px-4 py-3 dark:border-neutral-800 ${
               active

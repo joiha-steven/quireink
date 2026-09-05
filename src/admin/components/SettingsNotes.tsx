@@ -18,7 +18,7 @@
 // machine, and putting it in site settings would sync one owner's reading habit to a
 // co-author's browser — and add a thirty-eighth thing to the screen it is trying to quiet.
 //
-// ⚠️ OFF by default, which is the owner's call (2026-09-04) and worth writing down because it
+// ⚠️ OFF by default since 2026-09-04, and worth writing down because it
 // costs something real: a person opening Settings for the first time meets bare controls with
 // no guidance, and the guidance is good. The default is the `=== '1'` below and nothing else.
 import { useEffect, useState, type ReactNode } from 'react'

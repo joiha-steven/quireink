@@ -183,8 +183,8 @@ export function book(): void {
       'aria-label': label('bookModeClose'), title: label('bookModeClose') }, '✕')
 
     // a / A — the size itself is the label, the way every e-reader draws it, and the pair
-    // is plain type rather than a control (the owner's call: the pill + divider "read as
-    // buttons", and a black seam showed between them on first paint). The current scale is
+    // is plain type rather than a control (the pill + divider read as buttons, and a black
+    // seam showed between them on first paint). The current scale is
     // read off the dialog's computed style, so the sheet's default needs no copy here; a
     // stored preference is applied as an inline override before first measure, and every
     // change re-measures — a bigger glyph is fewer lines per column, which is a different

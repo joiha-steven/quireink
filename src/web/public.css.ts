@@ -202,9 +202,9 @@ article > header .t-small{margin:0}
 .post-info{display:none}
 .post-info p{margin:0}
 .post-info p + p{margin-top:.35rem}
-/* One even rhythm through the facts — the tags and categories used to be set apart and the
-   owner asked for them level with the rest. The ACTION is the only thing set apart, because
-   it is the one row that is not a fact: it does something. */
+/* One even rhythm through the facts — the tags and categories used to be set apart, which
+   made two of five facts look like a second panel. The ACTION is the only thing set apart,
+   because it is the one row that is not a fact: it does something. */
 .post-info .info-action{margin-top:1.25rem}
 /* The VALUES are a step darker than the words around them, the same ink the contents list
    uses for the row you are on. The panel is the only place a desktop reader sees the date
@@ -215,7 +215,7 @@ article > header .t-small{margin:0}
    page (a list of "you might also read") was set as large as the writing, and in the chrome
    face, which on a monospace setting is visibly wider again. h5 is the title role that sits
    below body. The whole block is now ONE size: at h5 the titles still read as headings under
-   a chrome font that is monospace on this site, and the owner asked for them smaller again.
+   a chrome font that is monospace on this site, and still competed with the article's end.
    So the label, the titles and the dates are all --fs-small and nothing here competes with
    the article; weight and colour do the separating, which is how a book sets its back
    matter. */

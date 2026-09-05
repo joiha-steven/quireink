@@ -8,7 +8,7 @@
 //   · SIZE — `GROUP_TITLE`, 17px against the 14px labels below. This is the one that carries it;
 //     a marker alone left the title reading as one more label.
 //   · A DOT — a 7px round mark opening the row, so scanning DOWN a column has something to catch
-//     on rather than a wall of same-sized words. It is the thing the owner asked for by name.
+//     on rather than a wall of same-sized words. It is the one treatment that was missed by name.
 //   · A BAND — the header row on its own tint, which turns "a line of bolder text" into "the top
 //     of a box". It is what separates one group from the next when they stack.
 //

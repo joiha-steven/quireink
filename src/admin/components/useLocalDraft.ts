@@ -13,7 +13,7 @@ export type LocalSnapshot<T> = { data: T; at: string }
  *
  * It used to read `saving` → `saved at HH:MM` → `unsaved`, and **never mentioned that the work
  * was already held locally** — which is why a feature that had been running since M2 read as
- * absent, and why the owner asked for an autosave that already existed. `unsaved` was also
+ * absent, and why an autosave that already existed was requested as new. `unsaved` was also
  * simply untrue thirty seconds into typing: the snapshot was there, the sentence just did not
  * say so.
  *

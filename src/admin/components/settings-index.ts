@@ -1,8 +1,8 @@
 // Which tab a setting is behind — the one thing the tabs never told you.
 //
 // [ADR 0011](../../../docs/decisions/0011-settings-regrouped-into-seven.md) split five
-// tangled tabs into seven defined ones (eight since `ai`), each printing the question it answers, because the
-// owner said the old arrangement was tangled. It is a better arrangement and it did not
+// tangled tabs into seven defined ones (eight since `ai`), each printing the question it answers, because
+// settings kept being looked for on the wrong tab. It is a better arrangement and it did not
 // solve the problem: two weeks later the tabs were still reported as confusing, with no way
 // to tell which one held a given setting.
 //

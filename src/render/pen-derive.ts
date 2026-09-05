@@ -2,7 +2,7 @@
 //
 // The built-in inks are measured off a photograph and hand-tuned per colour (ADR 0018), and
 // they stay exactly as they are. This file is for the OTHER case, added 2026-08-24 when the
-// owner asked for the pen's colours to be his to choose: somebody picks one hex, and the
+// pen's colours became a setting: somebody picks one hex, and the
 // stroke still has to work on a dark page and still has to have a line version, because a
 // 2px underline drawn in a pale highlighter pigment is invisible.
 //

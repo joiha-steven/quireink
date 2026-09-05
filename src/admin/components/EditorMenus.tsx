@@ -357,8 +357,8 @@ export function BubbleBar({ editor, avoidTop }: { editor: TiptapEditor; avoidTop
       // tried and folded a desktop that had the room. A phone takes the `100vw` half.
       className="z-40 flex max-w-[min(32rem,calc(100vw-1.5rem))] flex-wrap items-center gap-0.5 rounded-lg border border-neutral-200 bg-white p-1 shadow-lg dark:border-neutral-700 dark:bg-neutral-800"
     >
-      {/* Every button carries its name. The bar is five glyphs and the owner asked for a way
-          to mark a selection as code, which was the fifth one all along: a bare backtick,
+      {/* Every button carries its name. The bar is five glyphs and "mark this as code" was
+          asked for as a missing feature, while it was the fifth one all along: a bare backtick,
           the width of a comma, next to letters. `</>` says code the way B says bold, and a
           title says it in words for the four that are only initials. */}
       <button type="button" title={t.tbBold} aria-label={tip(t.tbBold, 'bold')} onMouseDown={hold} onClick={() => editor.chain().focus().toggleBold().run()} className={cls(editor.isActive('bold'))}><strong>B</strong></button>
