@@ -50,8 +50,8 @@ function render(comment: Comment): HTMLElement {
   // ISO instant either way; this is only what the reader sees, in their own zone.
   //
   // Formatted in two halves and joined, NOT by one `toLocaleString`. Several locales put the
-  // clock first — Vietnamese renders "lúc 21:58 23 tháng 6, 2026" — and the owner asked for
-  // date then time, which is also the order that reads as a log line inside the brackets the
+  // clock first — Vietnamese renders "lúc 21:58 23 tháng 6, 2026" — and this thread wants
+  // date then time, which is the order that reads as a log line inside the brackets the
   // IDE chrome puts around it.
   const at = new Date(comment.createdAt)
   const lang = document.documentElement.lang || 'en'

@@ -319,7 +319,7 @@ export type InkSettings = {
 
 /**
  * What the editor does when a key lands, and it is a CHOICE OF INSTRUMENT rather than a
- * switch (owner's call, 2026-08-24).
+ * switch: three voices since 2026-08-24, because one on/off sound is one sound to tire of.
  *
  * ⚠️ THE NAMES ARE NOT THE NAMES OF REAL MACHINES, and that is deliberate as of 2026-08-25.
  * They were: `typewriter`, `tactile`, `linear`. The synthesis is genuinely modelled on those

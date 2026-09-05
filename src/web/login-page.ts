@@ -9,8 +9,8 @@
 // `autocomplete` attributes so a password manager fills it, and an error that never says
 // which half was wrong.
 //
-// The masthead is the QUIRE mark, not the blog's logo — the owner's call after seeing the
-// page, and the reasoning is in `web/brand.ts`. The site is still named, in the sentence
+// The masthead is the QUIRE mark, not the blog's logo — a blog's logo here read as a page
+// OF the blog, and the reasoning is in `web/brand.ts`. The site is still named, in the sentence
 // under the heading and in the way back at the bottom, which is where it belongs: this
 // page is the software, and the blog is what it lets you in to.
 //

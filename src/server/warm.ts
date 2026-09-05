@@ -7,7 +7,7 @@
 // fix and takes that to a lookup; this is what stops even the cheap re-render landing on a
 // reader rather than on an idle process.
 //
-// It is also what the owner asked for in as many words: edit or change a setting, and the
+// It is also the behaviour a save implies: edit or change a setting, and the
 // site should clear AND re-fill, not clear and wait to be asked.
 //
 // Deliberately NOT registered by default. `enableBackgroundCache()` is called once by the

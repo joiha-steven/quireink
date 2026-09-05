@@ -284,7 +284,7 @@ export const FONT_PRESETS: FontPreset[] = [
 ]
 
 /**
- * What a FRESH INSTALL reads in. The owner's call on 2026-08-21: Literata to read and
+ * What a FRESH INSTALL reads in. Since 2026-08-21: Literata to read and
  * JetBrains Mono for the furniture — the pairing this project's own instances converged on,
  * so a new blog now starts where they finished rather than at the neutral sans.
  *

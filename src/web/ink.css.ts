@@ -147,8 +147,8 @@ const ringGrips = () =>
 /**
  * The highlighter half, in whichever inks this site writes with.
  *
- * A FUNCTION since 2026-08-24, when the owner asked for the pen's colours to be his to
- * choose. It still defaults to the measured pigments, and an install that has changed
+ * A FUNCTION since 2026-08-24, when the pen's colours became a setting rather than a
+ * constant. It still defaults to the measured pigments, and an install that has changed
  * nothing gets a byte-identical sheet under the same hash — which is the property that
  * matters, because the sheet is served immutable under a hash of its own content.
  */

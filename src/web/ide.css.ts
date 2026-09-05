@@ -60,7 +60,7 @@ html[data-ide-chrome=on] .info-action::before{content:"// ";color:var(--c-meta);
    for is the padding, not the drawing, so nothing gets harder to press. */
 html[data-ide-chrome=on] .book-mode-toggle svg{display:none}
 /* ...except in the comment thread. "Be the first to comment" is an invitation to the
-   reader, not a label on a section, and the owner asked for the marker off it. */
+   reader, not a label on a section, so a marker there would file a sentence as a heading. */
 html[data-ide-chrome=on] #comments .empty::before{content:none}
 /* The commenter's name takes the marker too. Not because it is a label — it is a person —
    but because it opens an entry, the way every other marker on the page opens a block, and
@@ -188,8 +188,8 @@ html[data-ide-chrome=on] .tl-year-tag::after{content:"/";margin-left:-.5rem;colo
    stay aligned however long the list runs. Tabular figures are what stop the numbers
    shifting the labels as the count crosses 9. */
 /* The rail keeps the alignment it has with the switch off: ranged right, hugging the
-   article. An earlier pass ranged it LEFT to put the gutter where an editor puts it;
-   the owner asked for the opposite, so the GUTTER moves to the far right instead and
+   article. An earlier pass ranged it LEFT to put the gutter where an editor puts it, which
+   moved the whole rail on toggle; so the GUTTER moves to the far right instead and
    nothing else about the rail changes. The active marker stays where the gutter layout
    put it, at the row's right edge, which is now 3.5ch clear of the numbers. */
 /* EVERYTHING BELOW IS GUTTER-ONLY, and the gutter starts at 640px.

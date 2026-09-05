@@ -66,8 +66,8 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   chromeFont: DEFAULT_CHROME_FONT,
   faviconUrl: '',
   appIconUrl: '',
-  // Two minutes, which is what the owner asked for on 2026-07-30. It was 8 seconds and a
-  // constant; the interval is only half the safety net, the flush on hide is the other half.
+  // Two minutes since 2026-07-30. It was 8 seconds and a constant, which wrote a revision
+  // mid-word; the interval is only half the safety net, the flush on hide is the other half.
   autosaveSeconds: 120,
   // 0 = do not narrow the deployment's ceiling. NOT a copy of `MAX_UPLOAD_MB` /
   // `STORAGE_QUOTA_GB`: two places holding one limit is how they disagree (`media/limits.ts`).

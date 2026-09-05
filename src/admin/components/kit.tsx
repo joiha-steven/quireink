@@ -18,7 +18,7 @@ import type { ReactNode, SelectHTMLAttributes } from 'react'
 // ⚠️ Still true of the float: `docs/admin-design.md` reserves the DROP shadow for overlays
 // (`OVERLAY_LIFT`), so a card that lifts spends the signal that means "this is above you".
 /**
- * ONE SHADOW STEP, owner's call 2026-08-29 — and the rule it replaces is worth reading first.
+ * ONE SHADOW STEP since 2026-08-29 — and the rule it replaces is worth reading first.
  *
  * The admin was flat on purpose: `admin-design.md` argued that a rounded white card on a soft
  * shadow is the costume every generated dashboard wears, and `check:admin-kit` failed a raised

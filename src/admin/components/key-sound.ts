@@ -4,8 +4,8 @@
 // (`key-render.ts`). What is left here is the part that needs a browser — an AudioContext, a
 // buffer, and the one number the owner sets.
 //
-// Split three ways on 2026-08-25 for a reason that turned out to matter: the owner said the
-// three sounds were indistinguishable, and answering that meant MEASURING them rather than
+// Split three ways on 2026-08-25 for a reason that turned out to matter: the three sounds
+// were reported as indistinguishable, and answering that meant MEASURING them rather than
 // arguing about them. A generator tangled into an audio graph cannot be measured; a pure
 // function returning samples can, and `key-render.test.ts` now holds the three apart by
 // their spectra.

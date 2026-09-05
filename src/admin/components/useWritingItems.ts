@@ -92,8 +92,8 @@ export function useWritingItems(posts: Post[], pages: Page[], query: string, sco
   const needle = foldAccents(query.trim())
   const shown = useMemo(() => {
     return items.filter((it) => {
-      // Two scopes are a KIND and two are a STATUS; the owner asked for both families
-      // on one row of tabs, so the filter reads which family the word belongs to.
+      // Two scopes are a KIND and two are a STATUS; both families share one row of
+      // tabs, so the filter reads which family the word belongs to.
       if (scope === 'page' || scope === 'post') {
         if (it.kind !== scope) return false
       } else if (scope !== 'all' && it.status !== scope) return false

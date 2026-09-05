@@ -61,7 +61,7 @@ let decidedEpochDay = -1
 /**
  * Why this deployment is not reporting, or null when it is.
  *
- * ⚠️ INVERTED on 2026-08-22, owner's call. The rule was "report only when
+ * ⚠️ INVERTED on 2026-08-22. The rule was "report only when
  * `NODE_ENV=production`". The Docker image sets that; the systemd unit in `docs/self-host.md`
  * never did — so every from-source install would have been silent FOREVER while looking
  * healthy, and the number would have counted Docker and nothing else, silently.
