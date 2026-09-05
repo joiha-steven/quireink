@@ -9,7 +9,8 @@ import type { Tour } from './tour'
 import { registerEditorFlows } from './tour-flows-editor'
 import { registerSettingsFlows } from './tour-flows-settings'
 import { registerHomeFlows } from './tour-flows-home'
-import { registerAutosaveFlows, registerKeyFlows, registerPaletteFlows, registerPaneFlows, registerWriteLayoutFlows } from './tour-flows-pane'
+import { registerAutosaveFlows, registerKeyFlows, registerPaletteFlows, registerPaneFlows } from './tour-flows-pane'
+import { registerFocusFlows, registerWriteLayoutFlows } from './tour-flows-layout'
 
 export function registerAdminFlows({ flow, expect, atWidth }: Tour): void {
   registerSettingsFlows({ flow, expect, atWidth })
@@ -141,11 +142,12 @@ export function registerAdminFlows({ flow, expect, atWidth }: Tour): void {
   // The home screen and the rail (ADR 0024 step 6), likewise.
   registerHomeFlows({ flow, expect, atWidth })
 
-  // The writing surfaces, all in `tour-flows-pane.ts`: the pane and its selection, the
-  // keyboard pressed rather than listed, the autosave that reaches the server, ⌘K, and the
-  // pane surviving a click inside itself.
+  // The writing surfaces: the pane and its selection, the keyboard pressed rather than
+  // listed, the autosave that reaches the server and ⌘K (`tour-flows-pane.ts`), then what
+  // the shell draws around all of it — the pane surviving a click inside itself, and focus
+  // mode taking the chrome without taking the Write screen (`tour-flows-layout.ts`).
   for (const register of [registerPaneFlows, registerKeyFlows, registerAutosaveFlows,
-                          registerPaletteFlows, registerWriteLayoutFlows]) {
+                          registerPaletteFlows, registerWriteLayoutFlows, registerFocusFlows]) {
     register({ flow, expect, atWidth })
   }
 

@@ -15,7 +15,9 @@
 // the first word. The pane is 320px and the shell takes 330, so the sheet is the window less
 // 650; the row needs ~950 with air around it. Below 1640 there is not room for both, and
 // between the two the writing wins — which is what `docs/admin-design.md` says out loud.
-// Focus mode (`useFocusMode.ts`) puts the pane away at ANY width, on purpose.
+// Focus mode (`useFocusMode.ts`) puts the pane away at ANY width, on purpose — but only
+// BESIDE AN EDITOR. On the Write screen (`always`) the pane is the screen, so it stays;
+// see the note on `WriteLayout` in `App.tsx`.
 import { useState } from 'react'
 import Link, { useRouter } from '@/admin/router'
 import { useView } from '@/admin/useView'

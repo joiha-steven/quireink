@@ -159,15 +159,24 @@ const WRITING = /^\/admin\/(content|editor|page-editor)(\/|$)/
  * `activeSlug` is read from the PATH and not from a payload.
  *
  * The pane fetches its own list, so this knows nothing about content — only which routes have
- * one, and that focus mode puts it away.
+ * one, and that focus mode puts it away BESIDE A SHEET.
+ *
+ * ⚠️ On the Write screen itself the pane is not chrome beside the writing, it IS the screen:
+ * the sheet there holds one line and two buttons. Focus mode hid it on all three routes, so
+ * turning it on inside an editor emptied the Write screen for every later visit — the list
+ * gone, `Content.tsx`'s invitation still saying to pick something on the left, and below
+ * `xl` (where that invitation is hidden because the pane is normally the whole width) a
+ * blank page. It also took the way back out with it: `Mod-\` is registered by the editor's
+ * action line, so the screen that had lost its list had no switch on it either.
  */
 function WriteLayout({ path, children }: { path: string; children: ReactNode }) {
   const [focus] = useFocusMode()
   if (!WRITING.test(path)) return <>{children}</>
+  const list = path === '/admin/content'
   const slug = decodeURIComponent(path.replace(/^\/admin\/(editor|page-editor)\/?/, ''))
   return (
     <div className="flex items-start gap-6">
-      {!focus && <WritePane activeSlug={path === '/admin/content' ? undefined : slug || undefined} always={path === '/admin/content'} />}
+      {(list || !focus) && <WritePane activeSlug={list ? undefined : slug || undefined} always={list} />}
       {children}
     </div>
   )
