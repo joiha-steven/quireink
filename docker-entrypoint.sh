@@ -53,4 +53,8 @@ done
 # group. HOME follows the same logic: an arbitrary UID has no home in this image, and
 # leaving it pointed at root's would be the one writable-by-nobody path in the process.
 export HOME=/tmp
-exec setpriv --reuid "$PUID" --regid "$PGID" --clear-groups -- "$@"
+# --no-new-privs is set HERE rather than left to `--security-opt no-new-privileges` on the
+# run command, because only the compose files carry that flag: a plain `docker run`, the
+# droplet payload and a NAS container UI do not, and the process read NoNewPrivs 0 on every
+# one of them when measured. Setting it on the exec covers every door with one line.
+exec setpriv --reuid "$PUID" --regid "$PGID" --clear-groups --no-new-privs -- "$@"

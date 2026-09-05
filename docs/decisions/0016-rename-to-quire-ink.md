@@ -35,7 +35,7 @@ talks in. The same pairing already runs the whole product, so the logo is the ty
 stated in two words rather than a decoration applied on top of it.
 
 > Revised the same day. The first cut set `quire` in **Literata**, the reading face, and it
-> was replaced on the owner's call. Two reasons it is the better answer anyway: Literata is
+> was replaced. Two reasons it is the better answer anyway: Literata is
 > the *reader's* face and the logo never appears on a reading page, and Inter is the one
 > family `pageStyles` declares unconditionally, so the outlines and the surrounding UI now
 > agree instead of quietly disagreeing. The wordmark is also set tighter than the text

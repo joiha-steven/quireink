@@ -23,7 +23,7 @@ On any behavior change, update the matching doc in the SAME change (Working prin
   [`scripts/ops/quire-backup.sh`](../../scripts/ops/quire-backup.sh) does.
 - **Audits** are dated snapshots, so they are write-only and they live with the author's
   notes rather than here. Read the latest first so a pass starts from the last clean line.
-- **Versioning (owner's rule — do NOT auto-bump):** the version is **`2.2.7`**, released
+- **Versioning (do NOT auto-bump):** the version is **`2.2.7`**, released
   2026-09-02 — two bug reports from one Unraid owner, answered, plus the box that lets an
   owner add the third party this software refuses to add for them. The contents list's last
   row was a dead anchor on a post with no tags and, on a desktop, a 2,615px jump to a copy
@@ -74,8 +74,8 @@ On any behavior change, update the matching doc in the SAME change (Working prin
   eleven languages, offsite snapshots, the import finishing the move and the
   no-account trio, any one of which the rule below would have called a minor; the owner
   chose the patch slot to keep numbers in reserve, which is this bullet's own rule at work.)
-  (`2.2.0`, 2026-08-25, was the largest release since 2.0, and the owner asked for the
-  number and for the checking pass that went with it: setup in a browser, the agent's
+  (`2.2.0`, 2026-08-25, was the largest release since 2.0, and the size of it is why the
+  number came with a checking pass: setup in a browser, the agent's
   reading and stewarding halves, the in-admin assistant, the print sheet, the pen becoming
   the owner's, three keyboards with a volume, JSON-LD, and a documentation sweep that found
   the install guide still teaching a step the software had stopped taking. `2.1.4`,
@@ -118,14 +118,14 @@ On any behavior change, update the matching doc in the SAME change (Working prin
   release note.
 
   **Docker docs deliberately do NOT carry a version at all**: every `docker pull` and compose
-  example names `:latest`, which the owner made the install tag on 2026-08-21 — the newest
+  example names `:latest`, the install tag since 2026-08-21 — the newest
   release is the one carrying the fixes, and 2.1.3 was the argument, since anyone who had
   pinned `:2.1.2` that morning would still be running the white screen. So a release cannot
   leave a stale command behind in four files. The one place a number still appears is the tag
   table in [`docs/dockerhub-overview.md`](../dockerhub-overview.md), which exists to explain
   what an exact pin means, and it names the current release.
 
-- **A GitHub release IS a Docker release. There is no second decision** (owner's rule,
+- **A GitHub release IS a Docker release. There is no second decision** (since
   2026-08-21). Pushing a `v*` tag fires [`publish.yml`](../../.github/workflows/publish.yml),
   which builds `linux/amd64` and `linux/arm64` on native runners, stitches them into one
   manifest, tags it `<major>.<minor>.<patch>` / `<major>.<minor>` / `latest`, publishes to

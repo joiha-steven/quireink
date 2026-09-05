@@ -13,7 +13,24 @@
   read off the transcript rather than remembered, so a reopened conversation keeps it.
 - **Comments in the code no longer attribute decisions to a person.** Twenty-five notes of
   the form "the owner asked for" now state the reason or the measurement instead, which is
-  what the repository's own first rule requires.
+  what the repository's own first rule requires. Fourteen lines in `docs/` followed.
+
+### Every install path was run again, and three things were off
+
+- **The container sets `no_new_privs` on itself.** Only the compose files carried
+  `--security-opt no-new-privileges`; a plain `docker run`, the droplet payload and every
+  NAS container UI did not, and the process read `NoNewPrivs: 0` on each of them. The
+  entrypoint now passes `--no-new-privs` to `setpriv` when it drops to `PUID:PGID`, so every
+  door gets it. Measured on the rebuilt image: `Uid 1000`, `NoNewPrivs 1`, and a Synology-style
+  `PUID=1026 PGID=100` still adopts its folders and boots.
+- **The Kubernetes manifest pinned `2.2.3` through four releases.** It now names `2.2.7`, and
+  `check:docs` fails when the pin, the tag table in `dockerhub-overview.md` and the version
+  line in `releases.md` disagree with `package.json`, so the next release cannot leave one
+  behind.
+- **`ghcr.io` still carries the withdrawn `2.3` and `2.3.4` tags** from the mistaken release
+  of 2026-08-31; Docker Hub was cleaned by hand at the time and the second registry was not.
+  Deleting them needs the package owner's token, so this note is the fix until then: the
+  newest release is `latest`, and `2.3.x` is not a release.
 
 ### Custom code, and the policy that decides whether it runs
 

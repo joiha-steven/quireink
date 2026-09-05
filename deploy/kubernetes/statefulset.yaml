@@ -43,7 +43,7 @@ spec:
         - name: quire
           # Pinned. `latest` on a StatefulSet is a pod that changes underneath you at the
           # next unrelated eviction, on a blog whose database is upgraded at boot.
-          image: quireink/quireink:2.2.3
+          image: quireink/quireink:2.2.7
           ports:
             - name: http
               containerPort: 3000
