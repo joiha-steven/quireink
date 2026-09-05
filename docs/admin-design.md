@@ -219,7 +219,10 @@ character and none of its typographic rules **except one**, below.
   Do not put it back to `xl` without re-measuring the row.
 - **Focus mode is the other half of that** (`components/useFocusMode.ts`, 2026-08-24). One
   switch in the action line, `Ctrl/Cmd + \`, takes the pane AND the button row off the
-  screen at any width and leaves the paper. It is a device preference in localStorage, not a
+  screen at any width and leaves the paper. **It applies beside an EDITOR only.** On the
+  Write screen the pane is not chrome around the paper, it is the screen — hiding it there
+  left the list gone and, below `xl`, nothing at all, on every visit until the switch was
+  found again inside an editor (2026-09-06). It is a device preference in localStorage, not a
   setting: it is a fact about this person at this desk, like the rail's icon switch. The
   default does not change. Nothing is lost while it is on — the bubble bar on a selection and
   "/" at the caret carry every command the row holds, which is the arrangement Medium is
