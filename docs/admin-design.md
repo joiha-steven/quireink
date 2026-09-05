@@ -216,7 +216,9 @@ character and none of its typographic rules **except one**, below.
   their things go, and it has to be the same on the laptop and on the desktop. The drag is
   POINTER-BASED, not HTML5 drag-and-drop: the native API does not fire on a touch screen and can
   only drag a ghost, while what a hand expects is the list opening where the row will land — so
-  the rows reorder live under the pointer and letting go stores what is on screen. Three empty
+  the rows reorder live under the pointer and letting go stores what is on screen. The carried
+  row is not offset towards the pointer between crossings: the column scrolls, and a row pushed
+  past the edge of that box is clipped — carried towards the footer it vanished mid-drag. Three empty
   lists mean "whatever the code says", which is how a release that adds a screen needs no
   migration —
   `content/nav-order.ts` reconciles a stored order against the live rail on every mount. The

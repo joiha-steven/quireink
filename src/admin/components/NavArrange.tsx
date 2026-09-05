@@ -44,11 +44,7 @@ export function Arrangeable({
   /** This row is the one in the hand. */
   held: boolean
   onGrab: (id: string) => void
-  /**
-   * Where the pointer is now. Returns true when that CHANGED the order, which is the signal
-   * to re-zero this row's offset: it has just been moved to a new place in the list, so the
-   * distance it should carry is measured from here rather than from where the drag began.
-   */
+  /** Where the pointer is now; the column decides whether that moves the row. */
   onProbe: (id: string, clientY: number) => boolean
   onRelease: () => void
   onNudge: (id: string, dir: -1 | 1) => void
@@ -59,14 +55,15 @@ export function Arrangeable({
 }) {
   const t = useAdminT()
   const box = useRef<HTMLDivElement>(null)
-  const from = useRef<number | null>(null)
+  const held_ = useRef<boolean>(false)
 
-  // The row follows the pointer by a transform written STRAIGHT TO THE NODE rather than
-  // through state: this runs on every pointermove, and a render per move is both slower than
-  // the finger and a way to lose the pointer capture mid-drag.
-  const lift = (dy: number) => {
-    if (box.current) box.current.style.transform = dy ? `translateY(${dy}px)` : ''
-  }
+  // NO TRANSFORM ON THE CARRIED ROW, and that was tried first. Following the pointer by a few
+  // pixels between crossings looks right in isolation and is wrong here: the column scrolls
+  // (`overflow-y-auto`, because arrange mode makes the rail taller than the glass), so a row
+  // pushed past the edge of that box is CLIPPED — carried towards the footer it simply
+  // vanished, mid-drag, with the pointer still down. The row's own movement is the reorder:
+  // it steps to each new place as the pointer crosses a neighbour, which is also the thing
+  // the list has to show anyway.
 
   return (
     <div
@@ -78,39 +75,30 @@ export function Arrangeable({
         if (e.button !== 0) return
         if ((e.target as HTMLElement).closest('[data-nav-step]')) return
         e.preventDefault()
-        // Capture keeps the stream coming even when the pointer outruns the row — which it
-        // does on any quick drag, because the row only catches up on the next reorder. In a
-        // try: a synthetic pointer (a test, an assistive tool) has no capture to take, and
-        // the throw would leave the row grabbed and unmovable.
+        // Capture keeps the stream coming when the pointer outruns the row — which it does on
+        // any quick drag, because the row only catches up on the next crossing. In a try: a
+        // synthetic pointer (a test, an assistive tool) has no capture to take, and the throw
+        // would leave the row grabbed and unmovable.
         try { box.current?.setPointerCapture(e.pointerId) } catch { /* no live pointer */ }
-        from.current = e.clientY
+        held_.current = true
         onGrab(id)
       }}
       onPointerMove={(e) => {
-        if (from.current === null) return
-        // Probe FIRST: if this crossing reorders the list, the row is now somewhere else and
-        // its offset restarts from where the pointer is standing.
-        if (onProbe(id, e.clientY)) {
-          from.current = e.clientY
-          lift(0)
-          return
-        }
-        lift(e.clientY - from.current)
+        if (!held_.current) return
+        onProbe(id, e.clientY)
       }}
       onPointerUp={(e) => {
-        if (from.current === null) return
+        if (!held_.current) return
         try { box.current?.releasePointerCapture(e.pointerId) } catch { /* never captured */ }
-        from.current = null
-        lift(0)
+        held_.current = false
         onRelease()
       }}
       onPointerCancel={() => {
         // A cancelled pointer (the OS took the gesture, the tab lost focus) still has to put
-        // the row down: what is on screen is what gets stored, and a row left mid-lift with
+        // the row down: what is on screen is what gets stored, and a row left in the hand with
         // no pointer would never be released.
-        if (from.current === null) return
-        from.current = null
-        lift(0)
+        if (!held_.current) return
+        held_.current = false
         onRelease()
       }}
       className={`flex touch-none select-none items-center gap-0.5 rounded-lg ${
