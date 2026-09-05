@@ -201,4 +201,13 @@ jobs:
         with:
           bun-version: 1.3.14
       - run: bun install --frozen-lockfile
-      - run: bun audit
+      # Three tries, twenty seconds apart. The advisory database is a network call, and one
+      # run on 2026-09-04 went red with `ConnectionClosed: audit request failed` and not one
+      # advisory in it; on the Monday schedule that is a red mail about nothing. A real
+      # advisory fails all three tries the same way, so nothing real is retried away.
+      - run: |
+          for try in 1 2 3; do
+            bun audit && exit 0
+            [ "$try" -lt 3 ] && echo "audit did not complete (try $try), retrying in 20s" && sleep 20
+          done
+          exit 1
