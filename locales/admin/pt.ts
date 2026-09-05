@@ -879,6 +879,7 @@ const pt = {
   assistantModelOn: 'Respondendo com',
   assistantChats: 'Conversas',
   assistantWants: 'Quer fazer isto',
+  assistantAfterReaders: 'Leu comentários de leitores nesta conversa, por isso agora cada alteração pergunta primeiro.',
   assistantAllow: 'Permitir',
   assistantDeny: 'Não',
   assistantDidThis: 'O que fez',

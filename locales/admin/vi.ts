@@ -878,6 +878,7 @@ const vi = {
   assistantModelOn: 'Đang trả lời bằng',
   assistantChats: 'Hội thoại',
   assistantWants: 'Nó muốn làm việc này',
+  assistantAfterReaders: 'Nó đã đọc bình luận của độc giả trong cuộc trò chuyện này, nên mọi thay đổi giờ đều hỏi trước.',
   assistantAllow: 'Cho phép',
   assistantDeny: 'Không',
   assistantDidThis: 'Nó đã làm gì',

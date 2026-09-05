@@ -24,6 +24,14 @@ export type ToolMeta = {
    * pinned by `scope.test.ts`, so widening it is a visible, reviewed act.
    */
   readOnly?: true
+  /**
+   * Declares that the RESULT carries text written by somebody other than the owner —
+   * reader comments, today. The in-admin assistant reads this: once such a result is in a
+   * conversation, every tool that is not `readOnly` asks the owner first for the rest of
+   * it (`server/assistant-consent.ts`), because a "rewrite the post" in the transcript may
+   * be a comment talking. Unmarked means the owner's own data.
+   */
+  untrusted?: true
 }
 
 // Generic exactly the way the SDK's own registerTool is, so a handler keeps its typed,
@@ -31,7 +39,7 @@ export type ToolMeta = {
 export type ToolHost = {
   registerTool<S extends Record<string, z.ZodType>>(
     name: string,
-    meta: { description: string; inputSchema?: S; readOnly?: true },
+    meta: { description: string; inputSchema?: S; readOnly?: true; untrusted?: true },
     handler: (args: { [K in keyof S]: z.infer<S[K]> }) => Promise<CallToolResult> | CallToolResult,
   ): void
 }

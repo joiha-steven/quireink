@@ -1086,6 +1086,7 @@ export type AdminStrings = {
   assistantModelOn: string
   assistantChats: string
   assistantWants: string
+  assistantAfterReaders: string
   assistantAllow: string
   assistantDeny: string
   assistantDidThis: string

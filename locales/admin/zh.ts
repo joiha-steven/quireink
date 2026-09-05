@@ -878,6 +878,7 @@ const zh = {
   assistantModelOn: '正在使用',
   assistantChats: '对话',
   assistantWants: '它想执行这个操作',
+  assistantAfterReaders: '它在本次对话中读过读者评论，因此现在每次更改都会先询问。',
   assistantAllow: '允许',
   assistantDeny: '不要',
   assistantDidThis: '它做了什么',

@@ -878,6 +878,7 @@ const fr = {
   assistantModelOn: 'Répond avec',
   assistantChats: 'Conversations',
   assistantWants: 'Il veut faire ceci',
+  assistantAfterReaders: 'Il a lu des commentaires de lecteurs dans cette conversation, donc chaque modification demande d\'abord.',
   assistantAllow: 'Autoriser',
   assistantDeny: 'Non',
   assistantDidThis: 'Ce qu’il a fait',

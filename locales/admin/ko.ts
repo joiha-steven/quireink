@@ -878,6 +878,7 @@ const ko = {
   assistantModelOn: '응답 모델',
   assistantChats: '대화',
   assistantWants: '이 작업을 하려고 합니다',
+  assistantAfterReaders: '이 대화에서 독자 댓글을 읽었기 때문에 이제 모든 변경은 먼저 확인합니다.',
   assistantAllow: '허용',
   assistantDeny: '안 함',
   assistantDidThis: '수행한 작업',
