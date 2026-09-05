@@ -212,13 +212,30 @@ export function recoveryCodesScreen(
  * sign-in form to credentials that could not exist, which is indistinguishable from having
  * forgotten your own password on a blog you never made.
  */
-export function unclaimedScreen(settings: SiteSettings, opts: { error?: string } = {}): string {
+export function unclaimedScreen(
+  settings: SiteSettings,
+  opts: { error?: string; askCode?: boolean } = {},
+): string {
   const s = adminT(settings.language)
+  // Two installs, two screens. With `SETUP_CODE` set the person has the secret in a file
+  // they wrote, so the page asks for it; without it the secret is in a log, so the page
+  // says where the log is and shows no field — a field here would invite guessing at a
+  // 24-byte token, and the log line is the way in.
+  const body = opts.askCode
+    ? `<p class="login-lede">${escapeHtml(s.setupCodeLede)}</p>
+${errorBox(opts.error)}
+<form method="get" action="/setup" class="login-form">
+<label for="token">${escapeHtml(s.setupCodeLabel)}</label>
+<input id="token" name="token" type="text" required autofocus autocomplete="off"
+  autocapitalize="none" spellcheck="false" inputmode="text">
+<button type="submit">${escapeHtml(s.setupCodeGo)}</button>
+</form>`
+    : `<p class="login-lede">${escapeHtml(s.setupUnclaimedLede)}</p>
+${errorBox(opts.error)}
+<p class="login-hint">${escapeHtml(s.setupWhereToLook)}</p>`
   return loginShell(settings, s.setupUnclaimedTitle, `
 <h1>${escapeHtml(s.setupUnclaimedTitle)}</h1>
-<p class="login-lede">${escapeHtml(s.setupUnclaimedLede)}</p>
-${errorBox(opts.error)}
-<p class="login-hint">${escapeHtml(s.setupWhereToLook)}</p>`)
+${body}`)
 }
 
 /**

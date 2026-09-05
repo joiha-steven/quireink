@@ -15,6 +15,20 @@
   the form "the owner asked for" now state the reason or the measurement instead, which is
   what the repository's own first rule requires. Fourteen lines in `docs/` followed.
 
+### Claiming a blog without a terminal
+
+- **`SETUP_CODE`.** Every install so far ended at "read the log": the one-time link that
+  claims a blog nobody owns is printed at boot, and on a droplet, a hosting panel or a NAS
+  that is the tallest step of the whole install, arriving right after the one that felt like
+  the last. Set `SETUP_CODE` (twelve characters or more) in the environment and `/setup`
+  asks for it in a browser instead. The proof is unchanged, since whoever wrote the
+  environment owns the machine; only where the secret is read moves, from the log to the
+  file the person already has. The code is compared folded (case and dashes are for reading
+  it) in constant time, the claim routes now allow ten misses per address per quarter hour,
+  a code too short to be a secret is ignored for the random token with a line in the banner
+  saying so, and once the blog is claimed the process forgets the code and never reads it
+  again. The droplet payload carries the variable; the log link remains the default.
+
 ### Every install path was run again, and three things were off
 
 - **The container sets `no_new_privs` on itself.** Only the compose files carried
