@@ -138,12 +138,12 @@ function BuildLabel({ version, commit, update }: {
     : update.state === 'current' ? t.updateCurrent
     : null
   return (
-    // AT THE FOOT, on the end of the line that already says what is running. It stood beside
-    // the greeting for a while and never belonged there — `docs/admin-design.md` says system
+    // AT THE FOOT, and FIRST on the line that says what is running. It stood beside the
+    // greeting for a while and never belonged there — `docs/admin-design.md` says system
     // information does not compete on the home page, and at 390px it was a THIRD thing in the
-    // title row, taking width off both the greeting and New post. Down here it is the last
-    // clause of the sentence its neighbours are already saying: runtime, database, machine,
-    // uptime, and then which build all of that is.
+    // title row, taking width off both the greeting and New post. Down here it opens the
+    // sentence its neighbours finish: which build this is, then the runtime, the database,
+    // the machine and how long the process has been up.
     //
     // The dot and the separator are outside this component, so a phone can drop both at once.
     <a
@@ -233,19 +233,20 @@ export function Overview(props: Props) {
             "online" beside a working database is noise, "offline" beside a broken one is the
             most important word on the screen. */}
         <span>
+          {/* The build LEADS the line: what this is comes before what it is running on.
+              Desktop-only at rest — on a phone the four facts after it are the ones somebody
+              is standing there for — but an install that is BEHIND shows at every width,
+              because that one is not small print. */}
+          <span className={update.state === 'behind' ? 'inline' : 'hidden sm:inline'}>
+            <BuildLabel version={version} commit={commit} update={update} />
+            {' · '}
+          </span>
           {[system.runtime,
             system.databaseVersion ? `SQLite ${system.databaseVersion}` : system.database,
             system.os,
             `${t.sysStartedPrefix} ${sinceStart(system.startedAt, new Date())}`,
           ].filter(Boolean).join(' · ')}
           {!system.dbReachable && <span className="ml-1.5 font-medium text-[var(--pen-red)]">· offline</span>}
-          {/* Desktop-only at rest: on a phone this line is already four facts long and the
-              build is the one a reader is least likely to be standing there for. An install
-              that is BEHIND shows it at every width — that one is not small print. */}
-          <span className={update.state === 'behind' ? 'inline' : 'hidden sm:inline'}>
-            {' · '}
-            <BuildLabel version={version} commit={commit} update={update} />
-          </span>
         </span>
         {system.siteHref && <a href={system.siteHref} target="_blank" rel="noopener noreferrer" className="hover:text-neutral-900 dark:hover:text-white">{t.viewSite} ↗</a>}
       </div>
