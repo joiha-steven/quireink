@@ -649,6 +649,8 @@ const pt = {
   featInfiniteScrollDesc: 'Carrega posts conforme o leitor rola, em vez de paginar, e mostra uma linha do tempo de datas na margem direita (só desktop).',
   featGridView: 'Visão em grade',
   featGridViewDesc: 'Deixa os leitores passarem a lista de posts para uma grade de cartões (o botão grade/lista do cabeçalho). Desligado mantém a lista — e a linha do tempo aparece sempre.',
+  featScrollFade: 'Esmaecer ao rolar',
+  featScrollFadeDesc: 'Os cartões surgem gradualmente no fim da lista e o texto do artigo esmaece no topo e na base da janela. Um único interruptor para as duas telas.',
   // Settings -> Features -> Listing: the /archive page and the sidebar year list.
   featArchive: 'Página de arquivo',
   featArchiveDesc: 'Uma página /archive com todos os posts por ano, e a lista de anos na barra lateral.',

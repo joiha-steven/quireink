@@ -648,6 +648,8 @@ const vi = {
   featInfiniteScrollDesc: 'Tải bài khi cuộn thay cho phân trang, và hiện dòng thời gian theo ngày ở cột phải (chỉ desktop).',
   featGridView: 'Chế độ lưới',
   featGridViewDesc: 'Cho người đọc chuyển danh sách bài sang dạng lưới thẻ (nút lưới/danh sách ở header). Tắt thì luôn là danh sách - khi đó timeline luôn hiện.',
+  featScrollFade: 'Mờ khi cuộn',
+  featScrollFadeDesc: 'Bài ở cuối danh sách hiện dần lên, và chữ trong bài viết mờ đi ở mép trên và mép dưới màn hình khi cuộn qua. Một công tắc cho cả hai.',
   // Settings -> Features -> Listing: the /archive page and the sidebar year list.
   featArchive: 'Trang lưu trữ',
   featArchiveDesc: 'Một trang /archive liệt kê mọi bài theo năm, kèm danh sách năm ở cột bên.',

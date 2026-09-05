@@ -328,8 +328,13 @@ export function renderDocument(
   // the page to look like itself. Absent rather than "off" when the owner has it off, so
   // the whole IDE ruleset is one attribute selector that simply never matches.
   const ide = settings.ideChrome ? ' data-ide-chrome="on"' : ''
+  // And the fourth, for the scroll fade: the cards easing in at the foot of a listing and
+  // the text dimming at the edges of an article are one effect on two screens, so they are
+  // one attribute. Written only when it is ON, so the whole ruleset is a selector that
+  // simply never matches when it is off — nothing to override and nothing to un-hide.
+  const fade = settings.features.scrollFade ? ' data-scroll-fade="on"' : ''
   return `<!DOCTYPE html>
-<html lang="${escapeAttr(settings.language)}" data-motion="${motion}" data-chrome-font="${escapeAttr(settings.chromeFont)}"${ide}>
+<html lang="${escapeAttr(settings.language)}" data-motion="${motion}" data-chrome-font="${escapeAttr(settings.chromeFont)}"${ide}${fade}>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">

@@ -648,6 +648,8 @@ const es = {
   featInfiniteScrollDesc: 'Carga entradas mientras el lector hace scroll en lugar de paginar, y muestra una línea de fechas en el margen derecho (solo escritorio).',
   featGridView: 'Vista de cuadrícula',
   featGridViewDesc: 'Deja que los lectores pasen la lista de entradas a una cuadrícula de tarjetas (el botón cuadrícula/lista de la cabecera). Apagado la deja como lista — y la línea de fechas se muestra siempre.',
+  featScrollFade: 'Desvanecer al desplazar',
+  featScrollFadeDesc: 'Las tarjetas aparecen gradualmente al final de la lista y el texto del artículo se atenúa en los bordes superior e inferior. Un solo interruptor para ambas vistas.',
   // Settings -> Features -> Listing: the /archive page and the sidebar year list.
   featArchive: 'Página de archivo',
   featArchiveDesc: 'Una página /archive con todas las entradas por año, y la lista de años en la barra lateral.',

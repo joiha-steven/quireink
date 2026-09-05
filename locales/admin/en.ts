@@ -648,6 +648,8 @@ const en = {
   featInfiniteScrollDesc: 'Load posts as the reader scrolls instead of pagination, and show a date timeline in the right gutter (desktop only).',
   featGridView: 'Grid view',
   featGridViewDesc: 'Let readers switch the post list to a card grid (the grid/list button in the header). Off keeps it a list — the timeline then always shows.',
+  featScrollFade: 'Fade on scroll',
+  featScrollFadeDesc: 'Cards ease in at the foot of the list, and the text of an article dims at the top and bottom of the window as it passes. One switch for both screens.',
   // Settings -> Features -> Listing: the /archive page and the sidebar year list.
   featArchive: 'Archive page',
   featArchiveDesc: 'One /archive page listing every post by year, and the year list in the sidebar.',

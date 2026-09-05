@@ -648,6 +648,8 @@ const de = {
   featInfiniteScrollDesc: 'Beiträge beim Scrollen laden statt Seitennummerierung und einen Datums-Zeitstrahl in der rechten Spalte zeigen (nur Desktop).',
   featGridView: 'Rasteransicht',
   featGridViewDesc: 'Lesern erlauben, die Beitragsliste als Kartenraster anzuzeigen (Raster/Listen-Schalter im Header). Aus bleibt es eine Liste - dann wird der Zeitstrahl immer gezeigt.',
+  featScrollFade: 'Beim Scrollen einblenden',
+  featScrollFadeDesc: 'Karten am Ende der Liste blenden sich ein, und der Text eines Beitrags wird am oberen und unteren Rand blasser. Ein Schalter für beide Ansichten.',
   // Settings -> Features -> Listing: the /archive page and the sidebar year list.
   featArchive: 'Archivseite',
   featArchiveDesc: 'Eine Seite /archive mit allen Beiträgen nach Jahren, dazu die Jahresliste in der Seitenleiste.',

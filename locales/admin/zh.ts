@@ -648,6 +648,8 @@ const zh = {
   featInfiniteScrollDesc: '滚动时加载文章而非分页，并在右侧栏显示日期时间线（仅桌面端）。',
   featGridView: '网格视图',
   featGridViewDesc: '允许读者将文章列表切换为卡片网格（页眉的网格/列表按钮）。关闭则始终为列表——此时时间线始终显示。',
+  featScrollFade: '滚动淡入淡出',
+  featScrollFadeDesc: '列表末尾的卡片渐渐浮现，文章正文在窗口上下边缘变淡。一个开关同时控制两处。',
   // Settings -> Features -> Listing: the /archive page and the sidebar year list.
   featArchive: '归档页',
   featArchiveDesc: '一个 /archive 页面按年份列出全部文章，并在侧栏显示年份列表。',

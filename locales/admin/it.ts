@@ -648,6 +648,8 @@ const it = {
   featInfiniteScrollDesc: 'Carica gli articoli man mano che il lettore scorre, invece della paginazione, e mostra una linea del tempo delle date nel margine destro (solo desktop).',
   featGridView: 'Vista a griglia',
   featGridViewDesc: 'Lascia che i lettori passino la lista degli articoli a una griglia di card (il pulsante griglia/elenco nell’intestazione). Spento resta un elenco — e la linea del tempo compare sempre.',
+  featScrollFade: 'Dissolvenza allo scorrimento',
+  featScrollFadeDesc: 'Le schede compaiono in dissolvenza in fondo all\'elenco e il testo dell\'articolo sfuma in alto e in basso. Un solo interruttore per entrambe le viste.',
   // Settings -> Features -> Listing: the /archive page and the sidebar year list.
   featArchive: 'Pagina archivio',
   featArchiveDesc: 'Una pagina /archive con tutti gli articoli per anno, e l’elenco degli anni nella barra laterale.',

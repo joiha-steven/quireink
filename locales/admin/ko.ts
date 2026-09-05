@@ -648,6 +648,8 @@ const ko = {
   featInfiniteScrollDesc: '페이지 나누기 대신 스크롤에 따라 글을 불러오고, 오른쪽에 날짜 타임라인을 표시합니다(데스크톱 전용).',
   featGridView: '그리드 보기',
   featGridViewDesc: '독자가 글 목록을 카드 그리드로 전환할 수 있게 합니다(헤더의 그리드/목록 버튼). 끄면 항상 목록이며 타임라인이 항상 표시됩니다.',
+  featScrollFade: '스크롤 시 페이드',
+  featScrollFadeDesc: '목록 아래쪽에서 카드가 서서히 나타나고, 글 본문은 화면 위아래에서 흐려집니다. 두 화면을 한 스위치로 켜고 끕니다.',
   // Settings -> Features -> Listing: the /archive page and the sidebar year list.
   featArchive: '아카이브 페이지',
   featArchiveDesc: '모든 글을 연도별로 모은 /archive 페이지와 사이드바의 연도 목록.',

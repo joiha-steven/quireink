@@ -186,6 +186,7 @@ export type FeatureSettings = {
   infiniteScroll: boolean // reveal posts on scroll instead of pagination; adds a date timeline in the right gutter (desktop)
   gridView: boolean // reader can switch the listing to a card grid (header grid/list toggle); off = list only
   offline: boolean // register a service worker so a post the reader already opened still opens with no network (ADR 0039). OFF by default: a worker outlives the page that installed it, and installing one on every existing blog's readers because the software updated is not a decision to make for the owner. Off also UNINSTALLS it from anyone who has it
+  scrollFade: boolean // the SCROLL FADE, in both places it can appear: cards easing in at the foot of a listing, and the running text of an article dimming at the top and bottom edges as it passes. One switch for both, because they are one effect seen on two screens — a reader who does not want the page breathing does not want half of it breathing
   archive: boolean // /archive: every published post in one page, grouped by year, plus the year list in the sidebar. Off = the route 404s and the block is not rendered
 }
 

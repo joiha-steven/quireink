@@ -881,6 +881,8 @@ export type AdminStrings = {
   featInfiniteScrollDesc: string
   featGridView: string
   featGridViewDesc: string
+  featScrollFade: string
+  featScrollFadeDesc: string
   // Settings -> Features -> Listing: the /archive page and the sidebar year list.
   featArchive: string
   featArchiveDesc: string

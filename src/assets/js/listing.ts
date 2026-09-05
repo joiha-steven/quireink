@@ -81,7 +81,10 @@ function chunked(): void {
   // The reveal ANIMATION is CSS. This arms the fallback only where view() timelines do not
   // exist, and marks whatever is already on screen as arrived first: hiding something above
   // the fold in order to fade it in is a flash, not an effect.
-  if (CSS.supports?.('animation-timeline', 'view()') !== true && html.dataset.motion !== 'off') {
+  // The owner's switch first: with the fade off nothing is armed, so a Firefox reader sees
+  // the same solid list as everyone else rather than the fallback still hiding cards.
+  if (html.dataset.scrollFade === 'on'
+    && CSS.supports?.('animation-timeline', 'view()') !== true && html.dataset.motion !== 'off') {
     for (const c of feed.querySelectorAll<HTMLElement>('.reveal')) {
       if (c.getBoundingClientRect().top < innerHeight) c.classList.add('is-in')
     }

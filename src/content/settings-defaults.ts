@@ -61,6 +61,9 @@ export const DEFAULT_FEATURES: FeatureSettings = {
   resume: true,
   infiniteScroll: false,
   gridView: true,
+  // ON, because it is what every install has done since M2 and turning it off for existing
+  // blogs on an upgrade would be a redesign nobody asked for.
+  scrollFade: true,
   archive: true,
   offline: false,
 }

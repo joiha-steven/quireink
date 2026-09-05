@@ -118,6 +118,9 @@ export function ListingFeatureFields({ features, onChange }: Omit<Props, 'relate
     { key: 'sidebarTags', label: t.featSidebarTags, desc: t.featSidebarTagsDesc },
     { key: 'infiniteScroll', label: t.featInfiniteScroll, desc: t.featInfiniteScrollDesc },
     { key: 'gridView', label: t.featGridView, desc: t.featGridViewDesc },
+    // Listed here because the listing is where it is most visible, but it is ONE switch for
+    // both screens and its description says so.
+    { key: 'scrollFade', label: t.featScrollFade, desc: t.featScrollFadeDesc },
     { key: 'archive', label: t.featArchive, desc: t.featArchiveDesc },
     { key: 'leadPost', label: t.featLeadPost, desc: t.featLeadPostDesc },
   ]

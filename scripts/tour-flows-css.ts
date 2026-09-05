@@ -109,4 +109,106 @@ export function registerSecurityFlows({ flow, expect }: Tour): void {
       cur.dispatchEvent(new Event('input', { bubbles: true }))
       return 'ok (' + rows.length + ' device(s))'
     })()`, 1800))
+
+  // The scroll fade, both halves of it, through the owner's switch.
+  //
+  // THREE VISITS, not one expression, for the reason `tour-flows-home.ts` spells out: the
+  // attribute that drives the whole effect is stamped by the SERVER, so seeing it change
+  // takes a fresh document, and `expect` is what navigates. Every part of this is a computed
+  // opacity produced by a scroll-driven animation — nothing in the HTML says whether it is
+  // running, `check:all` cannot see it, and the fault that started it (posts still half
+  // faded in the MIDDLE of the window, because the range was measured against each card's
+  // own height) looked like a rendering glitch rather than like a rule.
+  flow('the scroll fade dims the edges of an article, and stops when it is switched off', async () => {
+    const MEASURE = `
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      const measure = async () => {
+        scrollTo(0, 1800)
+        await sleep(400)
+        return {
+          attr: document.documentElement.dataset.scrollFade ?? 'absent',
+          parts: [...document.querySelectorAll('.prose>p')].map((p) => +getComputedStyle(p).opacity),
+        }
+      }
+      const feature = async (on) => {
+        const now = (await (await fetch('/api/admin/view/settings')).json())?.data?.settings?.features
+        if (!now) return 'no settings (no owner session?)'
+        const r = await fetch('/api/settings', {
+          method: 'PUT', headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ features: { ...now, scrollFade: on } }),
+        })
+        return r.ok ? '' : 'PUT /api/settings -> ' + r.status
+      }`
+
+    // The post comes from the FEED, parsed in the page: an item in the feed is a post by
+    // definition, while a link in the markup can be a category (the mistake `tour-flows.ts`
+    // documents). Only the pathname crosses back, so nothing here has to parse XML twice.
+    const post = await expect('/', `
+      (async () => {
+        const xml = await (await fetch('/feed.xml')).text()
+        const links = [...new DOMParser().parseFromString(xml, 'application/xml').querySelectorAll('item > link')]
+        const path = links.map((l) => new URL(l.textContent).pathname).find((p) => p !== '/')
+        return path ?? ''
+      })()`, 600)
+    if (!post.startsWith('/')) return 'the feed listed no post'
+
+    try {
+      const armed = await expect('/', `(async () => {${MEASURE}
+        if (!CSS.supports('animation-timeline', 'view()')) return 'skip: no view() timelines'
+        return (await feature(true)) || 'ok'
+      })()`, 400)
+      if (armed !== 'ok') return armed
+
+      const on = await expect(post, `(async () => {${MEASURE}
+        const m = await measure()
+        if (m.attr !== 'on') return 'the switch is on and the page does not say so'
+        if (!m.parts.some((o) => o < 0.95)) return 'nothing dimmed at the edges of a scrolled article'
+        // The middle of the window must be SOLID — the reported fault, and the half that a
+        // "does anything fade?" assertion would have passed straight over.
+        if (!m.parts.some((o) => o > 0.99)) return 'every paragraph is dimmed, including the one being read'
+        return 'ok ' + m.parts.length
+      })()`, 900)
+      if (!on.startsWith('ok')) return on
+
+      // THE LISTING, which is where the reported fault actually lived: a card that is fully
+      // inside the window must be solid, whatever its height. Measured against the card's own
+      // height, a long post's card was still arriving in the middle of the screen.
+      const list = await expect('/', `(async () => {${MEASURE}
+        // Every card that is WHOLLY inside the window must be solid. The reported fault was
+        // cards still half faded in the middle of the screen, and the cause was a range
+        // measured against each card's own height; this is the assertion that a range cannot
+        // outlast the card's arrival, whatever the card is.
+        scrollTo(0, 1500)
+        await sleep(600)
+        const inside = [...document.querySelectorAll('.post-list .reveal')].filter((c) => {
+          const b = c.getBoundingClientRect()
+          return b.top > 8 && b.bottom < innerHeight - 8
+        })
+        if (!inside.length) return 'no card sits wholly inside the window to measure'
+        const dim = inside.filter((c) => +getComputedStyle(c).opacity < 0.99)
+        if (dim.length) return dim.length + ' of ' + inside.length + ' cards are still fading in mid-window'
+        return 'ok ' + inside.length
+      })()`, 900)
+      if (!list.startsWith('ok')) return list
+
+      const off = await expect('/', `(async () => {${MEASURE}
+        return (await feature(false)) || 'ok'
+      })()`, 400)
+      if (off !== 'ok') return off
+
+      const quiet = await expect(post, `(async () => {${MEASURE}
+        const m = await measure()
+        if (m.attr !== 'absent') return 'the switch is off and the page still carries the attribute'
+        if (m.parts.some((o) => o < 0.99)) return 'the fade is off and a paragraph is still dimmed'
+        return 'ok'
+      })()`, 900)
+      if (quiet !== 'ok') return quiet
+
+      return 'ok (' + on.slice(3) + ' paragraph(s) dim, ' + list.slice(3) + ' cards solid mid-window, none dim with it off)'
+    } finally {
+      await expect('/', `(async () => {${MEASURE}
+        return (await feature(true)) || 'ok'
+      })()`, 200)
+    }
+  })
 }

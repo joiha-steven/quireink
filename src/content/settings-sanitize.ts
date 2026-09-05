@@ -124,6 +124,7 @@ export function sanitizeFeatures(input: unknown, fallback: FeatureSettings): Fea
     resume: bool(o.resume, fallback.resume),
     infiniteScroll: bool(o.infiniteScroll, fallback.infiniteScroll),
     gridView: bool(o.gridView, fallback.gridView),
+    scrollFade: bool(o.scrollFade, fallback.scrollFade),
     archive: bool(o.archive, fallback.archive),
     offline: bool(o.offline, fallback.offline),
   }

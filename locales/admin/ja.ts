@@ -648,6 +648,8 @@ const ja = {
   featInfiniteScrollDesc: 'ページ送りの代わりにスクロールで記事を読み込み、右側に日付タイムラインを表示します（デスクトップのみ）。',
   featGridView: 'グリッド表示',
   featGridViewDesc: '記事一覧をカードのグリッドに切り替えられるようにします（ヘッダーのグリッド/リスト切替）。オフでは常にリストになり、タイムラインが常に表示されます。',
+  featScrollFade: 'スクロールでフェード',
+  featScrollFadeDesc: '一覧の下端でカードが浮かび上がり、記事の本文は画面の上下でうすくなります。両方をまとめて切り替えます。',
   // Settings -> Features -> Listing: the /archive page and the sidebar year list.
   featArchive: 'アーカイブページ',
   featArchiveDesc: 'すべての記事を年ごとに並べた /archive ページと、サイドバーの年一覧。',

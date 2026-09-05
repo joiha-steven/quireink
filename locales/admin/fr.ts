@@ -648,6 +648,8 @@ const fr = {
   featInfiniteScrollDesc: 'Charge les articles au fil du défilement au lieu de paginer, et affiche une frise des dates dans la marge droite (ordinateur uniquement).',
   featGridView: 'Vue en grille',
   featGridViewDesc: 'Laisse les lecteurs passer la liste des articles en grille de cartes (le bouton grille/liste de l’en-tête). Désactivé, la liste reste une liste — la frise s’affiche alors toujours.',
+  featScrollFade: 'Fondu au défilement',
+  featScrollFadeDesc: 'Les cartes apparaissent en fondu au bas de la liste et le texte de l\'article s\'estompe en haut et en bas de la fenêtre. Un seul réglage pour les deux.',
   // Settings -> Features -> Listing: the /archive page and the sidebar year list.
   featArchive: 'Page d’archives',
   featArchiveDesc: 'Une page /archive qui liste tous les articles par année, avec la liste des années dans la colonne latérale.',

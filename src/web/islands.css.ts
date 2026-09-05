@@ -96,15 +96,24 @@ export const ISLANDS_CSS = `
    by the fade at the foot of the feed going missing - the markup has carried a .reveal
    class since M2 and NO rule ever matched it, so the cards simply appeared.
 
-   GUARDED three ways, exactly as the frozen tree guards it: it may only ever HIDE content
-   where it can also reveal it. Needs view() timelines, motion on, and no reduced-motion
-   preference; anything else leaves .reveal a normal, fully visible element. There is no
-   blank-page failure mode. */
+   GUARDED FOUR ways, and it may only ever HIDE content where it can also reveal it: the
+   owner's switch (data-scroll-fade), view() timelines, motion on, and no reduced-motion
+   preference. Anything else leaves .reveal a normal, fully visible element, so there is no
+   blank-page failure mode.
+
+   ⚠️ entry 0% -> entry 100%, and the range is the whole fix. It was cover 20%, and cover is
+   measured against the card's OWN height plus the window: on a feed of long posts that is a
+   long way further up the page, so cards sat half faded in the MIDDLE of the window while
+   shorter cards beside them were solid. entry 100% is one instant with one meaning at any
+   height — the card is inside the window — so a card you can read is never still arriving.
+
+   A fixed distance (entry 320px) was tried and is worse: inside an entry range a length is measured
+   along a range that is only as long as the card, so on a short card the animation never
+   reaches its end at all and the card stays permanently dimmed. */
 @supports (animation-timeline:view()){
   @media (prefers-reduced-motion:no-preference){
-    html[data-motion=on] .reveal{animation:reveal-in linear both;animation-timeline:view();
-      /* Finishes in the lower third, where the eye is - not at the very bottom edge. */
-      animation-range:entry 0% cover 20%}
+    html[data-scroll-fade=on][data-motion=on] .reveal{animation:reveal-in linear both;animation-timeline:view();
+      animation-range:entry 0% entry 100%}
   }
 }
 @keyframes reveal-in{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
@@ -114,6 +123,37 @@ export const ISLANDS_CSS = `
 @media (prefers-reduced-motion:no-preference){
   html[data-reveal-js=on] .reveal:not(.is-in){opacity:0;transform:translateY(24px)}
   html[data-reveal-js=on] .reveal{transition:opacity var(--dur-slow) ease,transform var(--dur-slow) ease}
+}
+
+/* THE SAME EFFECT ON AN ARTICLE, which is the other half of the owner's one switch: the
+   running text dims as it reaches the top and the bottom of the window and is solid in
+   between, so the paragraph being read is the brightest thing on the screen.
+
+   Per BLOCK rather than as one gradient over the column: a fixed overlay would have to know
+   the column's width, its background and the theme, and would sit over the sidebar on the
+   way. A block that is taller than the window never dims — cover cannot reach its ends —
+   which is the correct behaviour: a long code listing is not "arriving" while you read it.
+
+   Only direct children of .prose, and never the figures: an image dimming at the edges
+   reads as a rendering fault rather than as an effect. */
+@supports (animation-timeline:view()){
+  @media (prefers-reduced-motion:no-preference){
+    html[data-scroll-fade=on][data-motion=on] .prose>p,
+    html[data-scroll-fade=on][data-motion=on] .prose>h2,
+    html[data-scroll-fade=on][data-motion=on] .prose>h3,
+    html[data-scroll-fade=on][data-motion=on] .prose>ul,
+    html[data-scroll-fade=on][data-motion=on] .prose>ol,
+    html[data-scroll-fade=on][data-motion=on] .prose>blockquote{
+      animation:edge-fade linear both;animation-timeline:view();animation-range:cover 0% cover 100%}
+  }
+}
+/* Never to nothing: 0.35 keeps the line legible for anyone who reads at the edge of the
+   window, and the point is where the eye rests, not a curtain. */
+@keyframes edge-fade{
+  0%{opacity:.35}
+  18%{opacity:1}
+  82%{opacity:1}
+  100%{opacity:.35}
 }
 
 /* Chunked feed. The server renders every card, so a reader with no JavaScript gets the
