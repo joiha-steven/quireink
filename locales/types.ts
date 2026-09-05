@@ -1254,6 +1254,15 @@ export type AdminStrings = {
   // sidebar icons, OFF by default since 2026-08-15
   navIconsShow: string
   navIconsHide: string
+  /** Arrange mode in the sidebar: the switch, the way out, and the way back to the shipped order. */
+  navArrange: string
+  navArrangeDone: string
+  navArrangeReset: string
+  navArrangeFailed: string
+  navMoveUp: string
+  navMoveDown: string
+  navShowLogo: string
+  navShowSearch: string
   /** Settings only: the switch that draws or quiets every explanation on the screen. */
   settingsNotesShow: string
   settingsNotesHide: string

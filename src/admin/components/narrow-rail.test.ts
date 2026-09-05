@@ -74,11 +74,13 @@ describe('the 136px that justifies all of this', () => {
     // 13rem = 208px open, 4.5rem = 72px shut. The difference is the entire argument; if
     // someone tunes either number the band may no longer be worth having, and this test is
     // where they find that out.
-    expect(source).toContain("applyWidthVar = (c: boolean) =>")
-    expect(source).toContain("c ? '4.5rem' : '13rem'")
+    expect(source).toContain("applyWidthVar = (c: boolean, arranging = false) =>")
+    expect(source).toContain("c ? '4.5rem' : arranging ? '16rem' : '13rem'")
     // The CSS var and the Tailwind class have to agree, or fixed chrome offsets past a rail
-    // that is not the width it thinks: w-52 IS 13rem.
-    expect(source).toContain("collapsed ? 'lg:w-[4.5rem]' : 'lg:w-52'")
+    // that is not the width it thinks: w-52 IS 13rem, and w-64 IS 16rem. Arrange mode added
+    // the third width on 2026-09-06 and the variable had to learn it in the same commit —
+    // the settings save bar is positioned off this number.
+    expect(source).toContain("collapsed ? 'lg:w-[4.5rem]' : column.arranging ? 'lg:w-64' : 'lg:w-52'")
     expect(13 * 16 - 4.5 * 16).toBe(136)
   })
 })

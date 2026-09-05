@@ -1,0 +1,341 @@
+// The rail's CONTENTS: every row it can draw, in whatever order the owner put them.
+//
+// Split from `AdminSidebar.tsx` when arrange mode arrived and that file passed its 400-line
+// ceiling. The seam is the one the rail already had in its comments: `AdminSidebar` is the
+// FRAME (the sticky column, the phone drawer, the collapse width, the media query), and this
+// is what stands inside it. Only this file changes when a row is added or moved.
+//
+// ONE ROW, ONE DEFINITION. Every row is built by `row(id)` and drawn from there on the wide
+// rail, on the collapsed rail, in the phone drawer, and — in arrange mode — inside the wrapper
+// that makes it draggable. The rail defined some of its rows twice before this, and the second
+// copy is how a control once ended up dressed as a destination.
+//
+// A HOOK, not a component, and it hands back RENDERERS rather than trees: the rail draws
+// itself twice on every page (the sticky column, and the drawer that is always expanded), and
+// both have to read one arrange state. As a component it would be two independent modes, and
+// a row dragged in the drawer would leave the desktop rail where it was.
+import Link from '@/admin/router'
+import { Fragment, useState, type ReactNode } from 'react'
+import type { SiteLang, NavOrder } from '@/types'
+import { useAdminT } from './I18nProvider'
+import { SIDEBAR_NAV, SIDEBAR_NAV_ACTIVE, SIDEBAR_NAV_QUIET, SIDEBAR_UTIL } from './headerActions'
+import { CacheButton } from './CacheButton'
+import { ThemeToggle } from '@/admin/ui/ThemeToggle'
+import {
+  IconExternal, IconCache, IconSignOut, IconChevronLeft, IconGlyphs, IconMore, IconSearch,
+} from './navIcons'
+import { BrandMark, BrandWord } from './Wordmark'
+import { openPalette } from './CommandPalette'
+import { chordFor, printChord, tip } from './editorKeys'
+import { primaryNav, secondaryNav, defaultNavOrder, type Destination } from './navDestinations'
+import { useNavArrange, ZONES, type Spot, type Zone } from './useNavArrange'
+import { Arrangeable, ZoneFloor, SwitchRow } from './NavArrange'
+import { useToast } from '@/admin/ui/Toast'
+
+export function useNavColumn({
+  lang, signOut, aiConfigured, navOrder, icons, more, onMore, onIcons, onCollapse, close, isActive,
+}: {
+  lang: SiteLang
+  signOut: () => Promise<void>
+  aiConfigured: boolean
+  /** What the server has stored; reconciled with the live rail inside `useNavArrange`. */
+  navOrder: NavOrder
+  icons: boolean
+  more: boolean
+  onMore: () => void
+  onIcons: () => void
+  onCollapse: () => void
+  close: () => void
+  isActive: (href: string) => boolean
+}) {
+  const t = useAdminT()
+  const { notify } = useToast()
+  const defaults = defaultNavOrder(aiConfigured)
+  const arrange = useNavArrange(navOrder, defaults, (why) => notify(`${t.navArrangeFailed} (${why})`, 'error'))
+  const [hovered, setHovered] = useState<string | null>(null)
+  const showLogo = !arrange.isHidden('logo')
+  const showSearch = !arrange.isHidden('search')
+
+  const build = (c: boolean) => {
+    // Arrange mode belongs to the OPEN rail: see the note at the top of `NavArrange.tsx`.
+    const arranging = arrange.arranging && !c
+    const rowClass = (active = false): string =>
+      // The active row takes the QUIET base: a highlighted row has nothing to gain from a
+      // hover state — you are already there — and the grey one would paint over the mark.
+      `${active ? SIDEBAR_NAV_QUIET : SIDEBAR_NAV} ${c ? 'justify-center' : 'gap-3'} ${active ? SIDEBAR_NAV_ACTIVE : ''}`
+    const utilClass = `${SIDEBAR_UTIL} ${c ? 'justify-center' : 'gap-2.5'}`
+
+    const navLink = (l: Destination): ReactNode => (
+      <Link
+        href={l.href}
+        onClick={close}
+        aria-current={isActive(l.href) ? 'page' : undefined}
+        title={c ? l.label : undefined}
+        className={rowClass(isActive(l.href))}
+      >
+        {(c || icons) && l.icon}
+        {!c && <span className="truncate">{l.label}</span>}
+      </Link>
+    )
+
+    const byId = new Map<string, Destination>()
+    for (const d of [...primaryNav(t, aiConfigured), ...secondaryNav(t, aiConfigured)]) byId.set(d.id, d)
+
+    /**
+     * One row, by id — the single definition every list draws from.
+     *
+     * Returns null for an id the rail no longer has. That cannot normally happen (the order is
+     * reconciled against the live rail before anything is drawn), but it is exactly what a
+     * hand-edited settings payload would carry, and a rail that throws is a rail nobody can
+     * sign out of.
+     */
+    const row = (id: string): ReactNode => {
+      const dest = byId.get(id)
+      if (dest) return navLink(dest)
+      switch (id) {
+        case 'more':
+          // The one row in this column that names no destination, so it is a button rather
+          // than a Link, and the chevron says which way it will move.
+          return (
+            <button
+              type="button"
+              onClick={onMore}
+              aria-expanded={more}
+              title={c ? t.navMore : undefined}
+              className={`${rowClass()} ${!c ? 'justify-between' : ''}`}
+            >
+              <span className={`flex min-w-0 items-center ${c ? '' : 'gap-3'}`}>
+                {(c || icons) && <IconMore />}
+                {!c && <span className="truncate">{t.navMore}</span>}
+              </span>
+              {!c && (
+                <span className={`grid place-items-center transition-transform ${more ? 'rotate-90' : '-rotate-90'}`}>
+                  <IconChevronLeft />
+                </span>
+              )}
+            </button>
+          )
+        case 'viewBlog':
+          return (
+            <a href="/" target="_blank" rel="noopener" onClick={close} title={c ? t.navViewBlog : undefined} className={rowClass()}>
+              {(c || icons) && <IconExternal />}
+              {!c && <span className="truncate">{t.navViewBlog}</span>}
+            </a>
+          )
+        case 'collapse':
+          return (
+            <button type="button" onClick={onCollapse} title={c ? t.navExpand : t.navCollapse} aria-label={c ? t.navExpand : t.navCollapse} className={utilClass}>
+              {(c || icons) && (
+                <span className={`grid place-items-center transition-transform ${c ? 'rotate-180' : ''}`}>
+                  <IconChevronLeft />
+                </span>
+              )}
+              {!c && <span className="truncate">{t.navCollapse}</span>}
+            </button>
+          )
+        case 'theme':
+          // `variant='text'` in BOTH states, with the word dropped when collapsed. The rail
+          // needs one row object, and `variant='icon'` is the public header's — it ignores the
+          // row class and drew this line 4px left of the two under it.
+          return <ThemeToggle lang={lang} variant="text" showIcon={c || icons} showLabel={!c} triggerClassName={utilClass} />
+        case 'icons':
+          // Never on the collapsed rail, where it would be an unlabelled glyph offering to
+          // remove the glyphs.
+          return c ? null : (
+            <button type="button" onClick={onIcons} className={utilClass}>
+              {icons && <IconGlyphs />}
+              <span className="truncate">{icons ? t.navIconsHide : t.navIconsShow}</span>
+            </button>
+          )
+        case 'cache':
+          return <CacheButton className={utilClass} icon={c || icons ? <IconCache /> : null} collapsed={c} />
+        case 'signout':
+          return (
+            <form action={signOut} className="contents">
+              <button className={utilClass} title={c ? t.signOut : undefined}>
+                {(c || icons) && <IconSignOut />}
+                {!c && <span className="truncate">{t.signOut}</span>}
+              </button>
+            </form>
+          )
+        default:
+          return null
+      }
+    }
+
+    /** Every row in the column, top to bottom — what the steppers walk, and what an end means. */
+    const walk = ZONES.flatMap((zone) => arrange.order[zone].map((id) => ({ id, zone })))
+
+    const list = (zone: Zone): ReactNode => (
+      <>
+        {arrange.order[zone].map((id, i) => {
+          const drawn = row(id)
+          if (!drawn) return null
+          // A FRAGMENT, not a wrapper. `display:contents` looks like no element at all and is
+          // not: it is still a node, so `aside nav > a` — which is how the rail's own guards
+          // tell a primary destination from one inside the group — stopped matching anything
+          // the moment rows were wrapped. Outside arrange mode the DOM is exactly what it was.
+          if (!arranging) return <Fragment key={id}>{drawn}</Fragment>
+          const at = walk.findIndex((w) => w.id === id)
+          return (
+            <Arrangeable
+              key={id}
+              id={id}
+              zone={zone}
+              index={i}
+              dragging={arrange.dragging}
+              hovered={hovered}
+              onDragStart={arrange.setDragging}
+              onDragEnd={() => arrange.setDragging(null)}
+              onHover={setHovered}
+              onDrop={(to: Spot) => arrange.drop(id, to)}
+              onNudge={arrange.nudge}
+              first={at === 0}
+              last={at === walk.length - 1}
+            >
+              {drawn}
+            </Arrangeable>
+          )
+        })}
+        {arranging && (
+          <ZoneFloor
+            zone={zone}
+            count={arrange.order[zone].length}
+            hovered={hovered}
+            onHover={setHovered}
+            onDrop={(to: Spot) => { if (arrange.dragging) arrange.drop(arrange.dragging, to) }}
+          />
+        )}
+      </>
+    )
+
+    /**
+     * Search as a ROW rather than as chrome beside the wordmark.
+     *
+     * Where it goes when the wordmark is switched off. Up on the top row it is chrome balanced
+     * against the mark; with the mark gone it would be one small glyph floating over a column
+     * of left-aligned labels, so it becomes what everything else at that edge is — a row, with
+     * its label and its chord, sitting directly above Home.
+     */
+    const searchRow: ReactNode = (
+      <button type="button" onClick={() => { close(); openPalette() }} title={c ? tip(t.paletteTitle, 'palette') : undefined} className={`${rowClass()} ${!c ? 'justify-between' : ''}`}>
+        <span className={`flex min-w-0 items-center ${c ? '' : 'gap-3'}`}>
+          <IconSearch />
+          {!c && <span className="truncate">{t.paletteTitle}</span>}
+        </span>
+        {!c && (
+          <span className="rounded border border-neutral-200 px-1 py-px text-[11px] tabular-nums leading-none text-neutral-500 dark:border-neutral-700 dark:text-neutral-400">
+            {printChord(chordFor('palette'))}
+          </span>
+        )}
+      </button>
+    )
+
+    /**
+     * Search as chrome, on the wordmark's row.
+     *
+     * ⌘K STILL HAS TO BE PRINTED, which is the whole reason this control exists: a chord cannot
+     * be discovered, and a mouse teaches a keyboard by showing the chord on the thing the mouse
+     * clicks. Collapsed there is no room for the badge and it moves into the tooltip.
+     */
+    const searchBtn: ReactNode = (
+      <button
+        type="button"
+        onClick={() => { close(); openPalette() }}
+        title={tip(t.paletteTitle, 'palette')}
+        aria-label={t.paletteTitle}
+        className="flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-transparent px-2 text-neutral-500 transition-colors hover:border-neutral-200 hover:bg-neutral-50 hover:text-neutral-700 dark:text-neutral-400 dark:hover:border-neutral-700 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
+      >
+        <IconSearch />
+        {!c && (
+          <span className="rounded border border-neutral-200 px-1 py-px text-[11px] tabular-nums leading-none dark:border-neutral-700">
+            {printChord(chordFor('palette'))}
+          </span>
+        )}
+      </button>
+    )
+
+    const wordmark: ReactNode = (
+      // LEFT padding only, and only when the rail is open: every label in this rail starts 24px
+      // from its edge, while the mark sat at 12px and alone hung off the left. Collapsed the
+      // mark is centred in a 72px rail, where a one-sided pad would push it off centre.
+      <Link href="/admin" onClick={close} className={`flex h-10 items-center leading-none ${c ? '' : 'pl-3'}`}>
+        {c ? <BrandMark /> : <BrandWord />}
+      </Link>
+    )
+
+    return {
+      /**
+       * The top row: the wordmark, and the search button beside it.
+       *
+       * Empty — and drawn by nobody — when the wordmark is off: search then rides in the
+       * column as a row, and a top row holding one small button over an empty half is worse
+       * than no top row at all.
+       */
+      top: !showLogo ? null : (
+        <div className={c ? 'flex flex-col items-center gap-2' : 'flex min-w-0 items-center justify-between gap-1'}>
+          <span className="min-w-0 truncate">{wordmark}</span>
+          {showSearch && searchBtn}
+        </div>
+      ),
+      /**
+       * The destinations. In arrange mode the "Everything else" group is FORCED OPEN: its rows
+       * are half of what is being arranged, and a folded group would hide them behind a toggle
+       * whose own row is being dragged at the time.
+       */
+      nav: (
+        <>
+          {!showLogo && showSearch && searchRow}
+          {list('primary')}
+          {(more || arranging) && (
+            // Indented by a rule rather than by padding: `SIDEBAR_NAV` is the one row string
+            // every item in this column shares (`headerActions.ts`), and a per-item `pl-6` here
+            // is how that rule stops being true. Collapsed, there is nothing to indent.
+            <div className={c ? 'contents' : 'ml-3 flex flex-col gap-1 border-l border-neutral-200 pl-1 dark:border-neutral-800'}>
+              {list('more')}
+            </div>
+          )}
+        </>
+      ),
+      /** The controls at the foot, the two switches, and the row that turns arranging on. */
+      controls: (
+        <>
+          {list('footer')}
+          {/* The two things on the top row cannot be dragged — a wordmark dropped into a
+              column of destinations becomes one — so they are switches, and they appear only
+              while arranging, next to everything else about how the rail is laid out. */}
+          {arranging && (
+            <div className="mt-1 flex flex-col gap-1 border-t border-neutral-200 pt-1 dark:border-neutral-800">
+              <SwitchRow id="logo" label={t.navShowLogo} on={showLogo} onToggle={() => arrange.toggleHidden('logo')} />
+              <SwitchRow id="search" label={t.navShowSearch} on={showSearch} onToggle={() => arrange.toggleHidden('search')} />
+            </div>
+          )}
+          {/* Under the collapse row by default, because that is the row it is a sibling of:
+              both are about this rail rather than about the blog. It is not itself arrangeable
+              — a control that can be dragged out of reach while it is the thing doing the
+              dragging is a door that closes behind you. */}
+          {!c && (
+            <div className="flex items-center gap-2">
+              <button type="button" data-nav-arrange={arranging ? 'on' : 'off'} onClick={arrange.toggleArranging} className={`${utilClass} flex-1`}>
+                <span className="truncate">{arranging ? t.navArrangeDone : t.navArrange}</span>
+              </button>
+              {arranging && (
+                <button type="button" data-nav-reset onClick={arrange.reset} title={t.navArrangeReset} className={`${SIDEBAR_UTIL} shrink-0`}>
+                  <span className="truncate">{t.navArrangeReset}</span>
+                </button>
+              )}
+            </div>
+          )}
+        </>
+      ),
+    }
+  }
+
+  return {
+    /** The frame needs this too: a rail being arranged is wider than one being read. */
+    arranging: arrange.arranging,
+    top: (c: boolean) => build(c).top,
+    nav: (c: boolean) => build(c).nav,
+    controls: (c: boolean) => build(c).controls,
+  }
+}

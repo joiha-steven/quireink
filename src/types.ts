@@ -189,6 +189,42 @@ export type FeatureSettings = {
   archive: boolean // /archive: every published post in one page, grouped by year, plus the year list in the sidebar. Off = the route 404s and the block is not rendered
 }
 
+/**
+ * The admin rail, in the order the owner dragged it into.
+ *
+ * Three lists because the rail has three PLACES, not because a row belongs to a kind: the
+ * column of destinations, the group that folds away inside it, and the controls at the foot.
+ * A row may be moved into any of them — including a destination into the footer or the theme
+ * switch up beside Write — so the id is what is stored and the row decides how it draws.
+ *
+ * Ids, never labels or paths: a label is translated and a path can move, and either would
+ * turn "the order I set" into "the order I set, until something was renamed".
+ *
+ * A SITE SETTING rather than a device preference, unlike the collapse and icon switches
+ * beside it in the rail. Those describe a rail on one machine; this is a person saying where
+ * their things go, and it has to be the same on the laptop and on the desktop.
+ *
+ * Anything stored that is no longer a row is dropped, and any row not stored is put back
+ * where the default has it — so an upgrade that adds a screen does not need a migration and
+ * cannot leave the rail missing a door. `sanitizeNavOrder` is that reconciliation.
+ */
+export type NavOrder = {
+  /** The main column, top to bottom. May contain `more`, which is where the group folds in. */
+  primary: string[]
+  /** Inside the "Everything else" group. */
+  more: string[]
+  /** The controls under the rule at the foot. */
+  footer: string[]
+  /**
+   * Rows switched OFF, by id. Currently the two on the top row — `logo` and `search` — which
+   * are the two things in the rail that are not rows and cannot be dragged anywhere.
+   *
+   * Hiding is separate from ordering on purpose: putting the rail back in its shipped order
+   * is not the same wish as wanting the wordmark back.
+   */
+  hidden: string[]
+}
+
 export type SiteSettings = {
   language: SiteLang // public site language: drives lang attr, font, labels, dates
   title: string
@@ -266,6 +302,7 @@ export type SiteSettings = {
   cache: CacheSettings // page cache + shared-cache headers for public HTML
   backups: BackupSettings // Google Drive backup config (secrets live in backup_state)
   timezone: string // IANA zone the WHOLE site reads its clock in: the date under a post, the month markers, and the day an analytics bucket starts on. Empty = the `ANALYTICS_TZ` variable, then UTC. It is a SETTING and not the machine's own zone on purpose — a page is rendered once and cached, so the server's timezone would otherwise decide what date every reader sees, and moving the box would silently move every date on the site
+  navOrder: NavOrder // the admin rail's own running order, set by dragging rows in the rail's arrange mode
   updateCheck: boolean // ask check.quireink.com once a day what the newest release is, and be counted by asking. ON by default: a number nobody opts into is a number that means nothing, and the owner knew that when they chose the default. Off = the blog never calls out at all. `server/update-check.ts` states exactly what the call carries; `UPDATE_CHECK=0` turns it off for every instance on a box, whatever this says
 }
 

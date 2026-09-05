@@ -238,11 +238,15 @@ async function assistantView() {
  * `aiConfigured` is here rather than fetched by the rail because the rail is drawn before
  * anything else and a destination that appears a beat later is worse than one that never
  * appears. It is a boolean about a secret, never the secret.
+ *
+ * `navOrder` rides along for the same reason and it is the stricter case: it decides where
+ * every row goes, so fetching it separately would draw the rail in one order and then
+ * rearrange it under the pointer.
  */
 async function shellView() {
   const settings = await getSettings()
   const { aiConfigured } = await getIntegrationStatus()
-  return { language: settings.language, version: VERSION, aiConfigured }
+  return { language: settings.language, version: VERSION, aiConfigured, navOrder: settings.navOrder }
 }
 
 /** Storage totals for the media page's header, without listing every blob twice. */

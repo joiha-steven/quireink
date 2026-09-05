@@ -1,6 +1,7 @@
-// The public shell on a phone, and the page a reader gets for a URL that is not here.
+// The public shell on a phone, the page a reader gets for a URL that is not here, and the
+// admin rail's own arrange mode.
 //
-// Both flows are here because neither fault they guard shows at the tour's own width. The
+// The first two are here because neither fault they guard shows at the tour's own width. The
 // drawer is a drawer only under the rail breakpoint, and a 404 looks like any other empty
 // listing at a glance — so both regressions were live for weeks with every other guard green.
 import type { Tour } from './tour'
@@ -71,4 +72,72 @@ export function registerShellFlows({ flow, expect, atWidth }: Tour): void {
       if (!document.querySelector('a[href="/"]')) return 'no way home'
       return 'ok search box, ' + latest + ' newest post(s), and a way home'
     })()`))
+
+  // Arrange mode, driven the way a hand drives it — and the assertion is on the SERVER's copy.
+  //
+  // The rail redrawing itself proves nothing here: the whole point of this feature is that the
+  // arrangement is a site setting, so it survives a reload on another machine. A flow that
+  // only read the DOM would pass against a build that never sent the PUT at all.
+  //
+  // The controls are found by `data-*`, never by their words: every label in this rail is
+  // translated eleven ways, and the seeded instance answers in whichever language its settings
+  // carry.
+  flow('admin: the sidebar can be rearranged, and the order reaches the server', () => expect('/admin', `
+    (async () => {
+      const wait = async (fn, tries = 60, gap = 100) => {
+        for (let i = 0; i < tries; i++) {
+          const hit = await fn()
+          if (hit) return hit
+          await new Promise((r) => setTimeout(r, gap))
+        }
+        return null
+      }
+      const stored = async () => (await (await fetch('/api/admin/view/shell')).json())?.data?.navOrder
+      const before = await stored()
+      if (!before) return 'the shell view carries no navOrder'
+
+      const enter = await wait(() => document.querySelector('aside [data-nav-arrange="off"]'))
+      if (!enter) return 'the rail offers no way into arrange mode'
+      enter.click()
+
+      // The FIRST row's step-down. Whatever is at the top of the rail, it should not be after.
+      const first = await wait(() => document.querySelector('aside [data-nav-row]'))
+      if (!first) return 'arrange mode drew no rows'
+      const moved = first.getAttribute('data-nav-row')
+      const down = first.querySelector('[data-nav-step="down"]')
+      if (!down) return 'a row in arrange mode has no way to walk down'
+      down.click()
+
+      // The stored order must NAME the row: an empty order also fails "is it still first",
+      // and reporting that as a move would hide a build that never saved anything.
+      const after = await wait(async () => {
+        const now = await stored()
+        return now && now.primary.includes(moved) && now.primary[0] !== moved ? now : null
+      }, 40, 150)
+      if (!after) return 'the server never recorded ' + moved + ' moving off the top'
+      if (after.primary.indexOf(moved) !== 1) return moved + ' landed at ' + after.primary.indexOf(moved) + ', not 1'
+
+      // Hiding the wordmark moves search into the column as a row — the one layout rule that
+      // depends on the switch rather than on the order.
+      const logo = await wait(() => document.querySelector('aside [data-nav-switch="logo"]'))
+      if (!logo) return 'arrange mode offers no switch for the wordmark'
+      logo.click()
+      const searchRow = await wait(() => document.querySelector('aside nav button svg') && !document.querySelector('aside a[href="/admin"] svg'))
+      if (!searchRow) return 'the wordmark went but the top row is still drawn'
+
+      // Put everything back: a tour that leaves the rail rearranged changes what the next run
+      // is looking at, and the reset control is itself worth pressing.
+      document.querySelector('aside [data-nav-switch="logo"]').click()
+      await new Promise((r) => setTimeout(r, 200))
+      const reset = document.querySelector('aside [data-nav-reset]')
+      if (!reset) return 'arrange mode offers no way back to the shipped order'
+      reset.click()
+      const back = await wait(async () => {
+        const now = await stored()
+        return now && now.primary.length === 0 && now.hidden.length === 0 ? now : null
+      }, 40, 150)
+      if (!back) return 'reset did not clear the stored order'
+      document.querySelector('aside [data-nav-arrange="on"]').click()
+      return 'ok (' + moved + ' moved, wordmark switched, order reset)'
+    })()`, 900))
 }

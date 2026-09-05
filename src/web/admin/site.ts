@@ -10,7 +10,7 @@ import type { Context } from 'hono'
 import type { SiteSettings } from '@/types'
 import { reorderSeries, updateSeries } from '@/content/series'
 import { getSettings, saveSettings } from '@/content/settings'
-import { describeSettingsSave } from '@/content/settings-diff'
+import { describeSettingsSave, isNavOrderOnly } from '@/content/settings-diff'
 import { sanitizeListPath } from '@/content/settings-sanitize'
 import { slugTaken } from '@/content/slugs'
 import {
@@ -160,7 +160,14 @@ export function siteRoutes() {
     // ISR miss was expensive. Here a page re-renders from SQLite in well under a
     // millisecond, so warming would be work done to avoid work that is already free.
     clearCache()
-    void logActivity('settings.save', describeSettingsSave(before, next))
+    // A save that ONLY moved the admin's own sidebar rows is not an event in the blog's
+    // ledger. Arrange mode writes on every drop and every nudge, so one minute of tidying
+    // filled the activity card with `navOrder.primary` and pushed the last real change off
+    // the home page. Nothing else about a settings save is filtered — this is the one field
+    // that describes the desk rather than the site.
+    // A save that changed nothing still goes in — see `settings-diff.ts` for why that is a
+    // fact worth reading.
+    if (!isNavOrderOnly(before, next)) void logActivity('settings.save', describeSettingsSave(before, next))
     return json(next)
   })
 

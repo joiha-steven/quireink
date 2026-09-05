@@ -212,7 +212,7 @@ function Shell() {
             the "locked" panel looked locked on every desktop it was tested on. `dvh` is the
             height that is actually visible right now. Reported from an iPad in Safari. */}
         <div className="admin-shell admin-case min-h-screen lg:flex lg:h-[100dvh] lg:overflow-hidden">
-          <AdminSidebar lang={data.language} signOut={signOut} aiConfigured={data.aiConfigured} />
+          <AdminSidebar lang={data.language} signOut={signOut} aiConfigured={data.aiConfigured} navOrder={data.navOrder} />
           {/* Outside the canvas and outside the error boundary: it is how you LEAVE a screen
               that has gone wrong, so it must not be inside the thing that went wrong. */}
           <CommandPalette />

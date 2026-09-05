@@ -69,6 +69,7 @@ export function settingsFixture(): SiteSettings {
     excerptLength: 50,
     ideChrome: false,
     customCss: '',
+    navOrder: { primary: [], more: [], footer: [], hidden: [] },
     customHead: '',
     customBodyEnd: '',
     footer: '© {year} {title}',

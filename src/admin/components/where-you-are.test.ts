@@ -87,7 +87,10 @@ describe('the mark cannot be painted over', () => {
   })
 
   it('composes the active row from the quiet base', () => {
-    const sidebar = readFileSync('src/admin/components/AdminSidebar.tsx', 'utf8')
-    expect(sidebar).toContain('active ? SIDEBAR_NAV_QUIET : SIDEBAR_NAV')
+    // In `NavColumn.tsx` since 2026-09-06: the rail's rows moved out of `AdminSidebar` when
+    // arrange mode arrived, and this guard has to follow the row definition rather than the
+    // file it used to live in.
+    const rows = readFileSync('src/admin/components/NavColumn.tsx', 'utf8')
+    expect(rows).toContain('active ? SIDEBAR_NAV_QUIET : SIDEBAR_NAV')
   })
 })

@@ -66,3 +66,15 @@ export function describeSettingsSave(before: SiteSettings, after: SiteSettings):
   const head = paths.slice(0, SHOWN).join(', ')
   return paths.length > SHOWN ? `${head} +${paths.length - SHOWN}` : head
 }
+
+/**
+ * Did this save touch nothing but the admin sidebar's running order?
+ *
+ * `navOrder` is the one setting that describes the DESK rather than the site, and arrange
+ * mode saves on every drop and every nudge — so a minute of tidying the rail would otherwise
+ * write a dozen rows into a ledger whose job is to say what happened to the blog.
+ */
+export function isNavOrderOnly(before: SiteSettings, after: SiteSettings): boolean {
+  const paths = changedSettingPaths(before, after)
+  return paths.length > 0 && paths.every((p) => p === 'navOrder' || p.startsWith('navOrder.'))
+}

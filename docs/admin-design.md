@@ -205,6 +205,19 @@ character and none of its typographic rules **except one**, below.
   under "Everything else". The group opens itself when the current page is inside it, because
   a rail that hides where you are is worse than a long one. Eleven rows was eleven decisions
   before the one that matters, and the four are what the owner came to do.
+- **The rail is the owner's to arrange** (2026-09-06). "Rearrange sidebar", under the collapse
+  row, turns every row into something that can be dragged — or walked with the up/down buttons,
+  which are the touch and keyboard route and reach across the three groups the same way a drag
+  does. The wordmark and the search button are the two things that cannot be dragged, because a
+  logo dropped into a column of destinations becomes a destination; they get switches instead,
+  and with the wordmark off, search becomes the first ROW of the column rather than a glyph
+  floating over it. The order is a SITE SETTING (`navOrder`), not a device preference like
+  collapse and Show icons: those describe a rail on one machine, this is a person saying where
+  their things go, and it has to be the same on the laptop and on the desktop. Three empty lists
+  mean "whatever the code says", which is how a release that adds a screen needs no migration —
+  `content/nav-order.ts` reconciles a stored order against the live rail on every mount. The
+  rail widens from 208 to 256px while arranging, measured: the grip and two steppers take 62px,
+  and at 208 "Everything else" read as "Ever…".
 - **Writing is the primary task.** Since the two-pane Write screen (2026-08-17) the editor
   no longer hides the rail: the mock draws it, and the owner circled the whole frame. The
   write pane — the list of everything written — rides beside the sheet on the Write screen

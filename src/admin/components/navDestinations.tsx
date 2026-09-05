@@ -6,15 +6,17 @@
 // another. Only the second changes when a screen is added.
 import type { ReactNode } from 'react'
 import type { AdminStrings } from '@/i18n/admin-i18n'
+import type { NavId } from '@/content/nav-order'
+import type { NavOrder } from '@/types'
 import {
   IconHome, IconAnalytics, IconContent, IconComment, IconMedia, IconNewsletter,
   IconTrash, IconSettings, IconLog, IconHelp, IconAssistant,
 } from './navIcons'
 
-export type Destination = { href: string; label: string; icon: ReactNode }
+export type Destination = { id: NavId; href: string; label: string; icon: ReactNode }
 
 const assistant = (t: AdminStrings): Destination =>
-  ({ href: '/admin/assistant', label: t.navAssistant, icon: <IconAssistant /> })
+  ({ id: 'assistant', href: '/admin/assistant', label: t.navAssistant, icon: <IconAssistant /> })
 
 /**
  * Four destinations, and everything else one click further (ADR 0024 step 6).
@@ -31,11 +33,11 @@ const assistant = (t: AdminStrings): Destination =>
  */
 export function primaryNav(t: AdminStrings, aiConfigured: boolean): Destination[] {
   return [
-    { href: '/admin', label: t.navHome, icon: <IconHome /> },
+    { id: 'home', href: '/admin', label: t.navHome, icon: <IconHome /> },
     ...(aiConfigured ? [assistant(t)] : []),
-    { href: '/admin/content', label: t.navWrite, icon: <IconContent /> },
-    { href: '/admin/media', label: t.navMedia, icon: <IconMedia /> },
-    { href: '/admin/newsletter', label: t.navNewsletter, icon: <IconNewsletter /> },
+    { id: 'write', href: '/admin/content', label: t.navWrite, icon: <IconContent /> },
+    { id: 'media', href: '/admin/media', label: t.navMedia, icon: <IconMedia /> },
+    { id: 'newsletter', href: '/admin/newsletter', label: t.navNewsletter, icon: <IconNewsletter /> },
   ]
 }
 
@@ -48,11 +50,33 @@ export function primaryNav(t: AdminStrings, aiConfigured: boolean): Destination[
 export function secondaryNav(t: AdminStrings, aiConfigured: boolean): Destination[] {
   return [
     ...(aiConfigured ? [] : [assistant(t)]),
-    { href: '/admin/analytics', label: t.navAnalytics, icon: <IconAnalytics /> },
-    { href: '/admin/comments', label: t.commentsNavTitle, icon: <IconComment /> },
-    { href: '/admin/trash', label: t.navTrash, icon: <IconTrash /> },
-    { href: '/admin/settings', label: t.navSettings, icon: <IconSettings /> },
-    { href: '/admin/log', label: t.navLog, icon: <IconLog /> },
-    { href: '/admin/help', label: t.navHelp, icon: <IconHelp /> },
+    { id: 'analytics', href: '/admin/analytics', label: t.navAnalytics, icon: <IconAnalytics /> },
+    { id: 'comments', href: '/admin/comments', label: t.commentsNavTitle, icon: <IconComment /> },
+    { id: 'trash', href: '/admin/trash', label: t.navTrash, icon: <IconTrash /> },
+    { id: 'settings', href: '/admin/settings', label: t.navSettings, icon: <IconSettings /> },
+    { id: 'log', href: '/admin/log', label: t.navLog, icon: <IconLog /> },
+    { id: 'help', href: '/admin/help', label: t.navHelp, icon: <IconHelp /> },
   ]
+}
+
+/**
+ * The rail as the PRODUCT has it, for a given install — the order every stored order is
+ * reconciled against (`content/nav-order.ts`).
+ *
+ * It is computed rather than a constant because one row moves on its own: the assistant
+ * rides at the top only once a model is configured, and sits in the group until then. A
+ * frozen default would have to pick one of those, and the rail would stop reacting to the
+ * key being pasted.
+ *
+ * `viewBlog` is a destination like any other here even though it leaves the admin, and the
+ * five controls are listed because the owner may drag them anywhere the rows go.
+ */
+export function defaultNavOrder(aiConfigured: boolean): NavOrder {
+  return {
+    primary: ['home', ...(aiConfigured ? ['assistant'] : []), 'write', 'media', 'newsletter', 'more'],
+    more: [...(aiConfigured ? [] : ['assistant']), 'analytics', 'comments', 'trash', 'settings', 'log', 'help', 'viewBlog'],
+    footer: ['collapse', 'theme', 'icons', 'cache', 'signout'],
+    // Nothing hidden: the wordmark and the search button are both on.
+    hidden: [],
+  }
 }

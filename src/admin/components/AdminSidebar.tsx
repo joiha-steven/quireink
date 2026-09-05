@@ -16,21 +16,12 @@
 // Every nav item shares SIDEBAR_NAV so the rail reads as one set; monochrome by design. The
 // collapse control sits at the TOP beside the wordmark as a chrome button, not a nav row, so
 // it cannot be mistaken for Sign out — which sits alone in the footer under its own divider.
-import Link from '@/admin/router'
 import { usePathname } from '@/admin/router'
-import { useEffect, useState, type ReactNode } from 'react'
-import type { SiteLang } from '@/types'
+import { useEffect, useState } from 'react'
+import type { SiteLang, NavOrder } from '@/types'
 import { useAdminT } from './I18nProvider'
-import { SIDEBAR_NAV, SIDEBAR_NAV_ACTIVE, SIDEBAR_NAV_QUIET, SIDEBAR_UTIL } from './headerActions'
-import { CacheButton } from './CacheButton'
-import { BrandMark, BrandWord } from './Wordmark'
-import { openPalette } from './CommandPalette'
-import { chordFor, printChord, tip } from './editorKeys'
-import { ThemeToggle } from '@/admin/ui/ThemeToggle'
-import {
-  IconExternal, IconCache, IconSignOut, IconChevronLeft, IconGlyphs, IconMore, IconSearch,
-} from './navIcons'
-import { primaryNav, secondaryNav } from './navDestinations'
+import { secondaryNav } from './navDestinations'
+import { useNavColumn } from './NavColumn'
 import { OVERLAY } from './sheet'
 
 const STORE_KEY = 'quireink-admin-nav-collapsed'
@@ -77,11 +68,14 @@ export function AdminSidebar({
   lang,
   signOut,
   aiConfigured = false,
+  navOrder,
 }: {
   lang: SiteLang
   signOut: () => Promise<void>
   /** A model is plugged in, so the assistant is somewhere the owner goes. */
   aiConfigured?: boolean
+  /** The owner's own running order for these rows (`content/nav-order.ts`). */
+  navOrder: NavOrder
 }) {
   const t = useAdminT()
   const pathname = usePathname()
@@ -93,8 +87,12 @@ export function AdminSidebar({
 
   // Publish the current desktop rail width as a CSS var so fixed-position chrome
   // (e.g. the settings save bar) can offset past the sidebar at any collapse state.
-  const applyWidthVar = (c: boolean) =>
-    document.documentElement.style.setProperty('--admin-nav-w', c ? '4.5rem' : '13rem')
+  // 4.5rem shut · 13rem open · 16rem while arranging — the three widths the aside's own class
+  // list carries, and they have to be the same three numbers. Fixed chrome (the settings save
+  // bar) offsets past the rail by this variable, so a rail that is 16rem wide while the
+  // variable still says 13 puts that bar 48px into the rail it is supposed to clear.
+  const applyWidthVar = (c: boolean, arranging = false) =>
+    document.documentElement.style.setProperty('--admin-nav-w', c ? '4.5rem' : arranging ? '16rem' : '13rem')
 
   // Restore the desktop collapsed state after mount (client-only; server renders
   // expanded so hydration matches, then we sync). Deferred a microtask so the
@@ -134,7 +132,6 @@ export function AdminSidebar({
     })
   }
 
-  const primary = primaryNav(t, aiConfigured)
   const secondary = secondaryNav(t, aiConfigured)
 
   const isActive = (href: string): boolean =>
@@ -148,180 +145,30 @@ export function AdminSidebar({
     if (inSecondary) setMore(true)
   }, [inSecondary])
 
-  // `c` = render collapsed (icon-only). Mobile drawer always passes false.
-  const rowClass = (c: boolean, active = false): string =>
-    // The active row takes the QUIET base: a highlighted row has nothing to gain from a
-    // hover state — you are already there — and the grey one would paint over the mark.
-    `${active ? SIDEBAR_NAV_QUIET : SIDEBAR_NAV} ${c ? 'justify-center' : 'gap-3'} ${active ? SIDEBAR_NAV_ACTIVE : ''}`
+  // Every row this rail can draw, in the owner's order — the top row, the destinations and the
+  // controls, each a renderer taking one argument: whether to draw collapsed.
+  const column = useNavColumn({
+    lang,
+    signOut,
+    aiConfigured,
+    navOrder,
+    icons,
+    more,
+    onMore: () => setMore((v) => {
+      const next = !v
+      localStorage.setItem(MORE_KEY, next ? '1' : '0')
+      return next
+    }),
+    onIcons: toggleIcons,
+    onCollapse: toggleCollapsed,
+    close,
+    isActive,
+  })
 
-  const navLink = (l: { href: string; label: string; icon: ReactNode }, c: boolean): ReactNode => (
-    <Link
-      key={l.href}
-      href={l.href}
-      onClick={close}
-      aria-current={isActive(l.href) ? 'page' : undefined}
-      title={c ? l.label : undefined}
-      className={rowClass(c, isActive(l.href))}
-    >
-      {(c || icons) && l.icon}
-      {!c && <span className="truncate">{l.label}</span>}
-    </Link>
-  )
-
-  const navItems = (c: boolean): ReactNode => (
-    <>
-      {primary.map((l) => navLink(l, c))}
-
-      {/* The one row in this column that names no destination, so it is a button rather than
-          a Link, and the chevron says which way it will move. */}
-      <button
-        type="button"
-        onClick={() =>
-          setMore((v) => {
-            const next = !v
-            localStorage.setItem(MORE_KEY, next ? '1' : '0')
-            return next
-          })
-        }
-        aria-expanded={more}
-        title={c ? t.navMore : undefined}
-        className={`${rowClass(c)} ${!c ? 'justify-between' : ''}`}
-      >
-        <span className={`flex min-w-0 items-center ${c ? '' : 'gap-3'}`}>
-          {(c || icons) && <IconMore />}
-          {!c && <span className="truncate">{t.navMore}</span>}
-        </span>
-        {!c && (
-          <span className={`grid place-items-center transition-transform ${more ? 'rotate-90' : '-rotate-90'}`}>
-            <IconChevronLeft />
-          </span>
-        )}
-      </button>
-
-      {more && (
-        // Indented by a rule rather than by padding: `SIDEBAR_NAV` is the one row string every
-        // item in this column shares (`headerActions.ts`), and a per-item `pl-6` here is how
-        // that rule stops being true. Collapsed, there is nothing to indent — the rail is
-        // 72px of centred glyphs — so the wrapper only draws on the wide rail.
-        <div className={c ? 'contents' : 'ml-3 flex flex-col gap-1 border-l border-neutral-200 pl-1 dark:border-neutral-800'}>
-          {secondary.map((l) => navLink(l, c))}
-          <a href="/" target="_blank" rel="noopener" onClick={close} title={c ? t.navViewBlog : undefined} className={rowClass(c)}>
-            {(c || icons) && <IconExternal />}
-            {!c && <span className="truncate">{t.navViewBlog}</span>}
-          </a>
-        </div>
-      )}
-    </>
-  )
-
-  // Footer controls: appearance (light/dark) + cache, then Sign out alone under a
-  // divider so it reads as the "account" cluster (never confused with collapse).
-  //
-  // These wear SIDEBAR_UTIL, not SIDEBAR_NAV — they are controls, not destinations, and
-  // dressed as nav rows they read as four more pages, one of them named "Light", which is
-  // what made the rail read as subtly wrong on 2026-08-17. Their glyphs FOLLOW the "Show
-  // icons" switch, corrected the same night when hiding the nav icons left Light, Clear
-  // cache and Sign out still carrying theirs — one switch, one answer for the rail. The
-  // collapsed rail still draws them: with no labels, glyphs are all a rail can be.
-  const utilClass = (c: boolean): string => `${SIDEBAR_UTIL} ${c ? 'justify-center' : 'gap-2.5'}`
-  const controls = (c: boolean): ReactNode => (
-    <>
-      {/* Collapse, as a WORD and above the light switch.
-          It has been in three places. In the footer beside Sign out it was a mis-tap that
-          costs a session; up on the wordmark row it was chrome competing with the mark, and
-          the mark had to shrink to make room for it. Here it is neither: it is a preference
-          about this rail on this machine, which is exactly what the three rows under it are,
-          and it sits at the top of that group rather than at the bottom next to the one
-          destructive control in the rail. */}
-      <button
-        type="button"
-        onClick={toggleCollapsed}
-        title={c ? t.navExpand : t.navCollapse}
-        aria-label={c ? t.navExpand : t.navCollapse}
-        className={utilClass(c)}
-      >
-        {(c || icons) && (
-          <span className={`grid place-items-center transition-transform ${c ? 'rotate-180' : ''}`}>
-            <IconChevronLeft />
-          </span>
-        )}
-        {!c && <span className="truncate">{t.navCollapse}</span>}
-      </button>
-      {/* `variant='text'` in BOTH states, with the word dropped when collapsed. The rail needs
-          one row object, and `variant='icon'` is the public header's — it ignores the row class
-          and drew this line 4px left of the two under it. */}
-      <ThemeToggle lang={lang} variant="text" showIcon={c || icons} showLabel={!c} triggerClassName={utilClass(c)} />
-      {/* The icon switch, between the two other preferences about this machine. It was a
-          footer row once, dressed in `SIDEBAR_NAV` — which is what made it read as a fifth
-          page rather than as a control, and what sent it into the secondary drawer. Here it
-          wears `SIDEBAR_UTIL` like the light switch above it, so the three things that change
-          how the rail LOOKS on this machine sit together and none of them looks like a
-          destination. Not in Settings (nothing about the blog changes), and never on the
-          collapsed rail, where it would be an unlabelled glyph offering to remove the
-          glyphs. */}
-      {!c && (
-        <button type="button" onClick={toggleIcons} className={utilClass(false)}>
-          {icons && <IconGlyphs />}
-          <span className="truncate">{icons ? t.navIconsHide : t.navIconsShow}</span>
-        </button>
-      )}
-      <CacheButton className={utilClass(c)} icon={c || icons ? <IconCache /> : null} collapsed={c} />
-      <div className="mt-1 border-t border-neutral-200 pt-1 dark:border-neutral-800">
-        <form action={signOut} className="contents">
-          <button className={utilClass(c)} title={c ? t.signOut : undefined}>
-            {(c || icons) && <IconSignOut />}
-            {!c && <span className="truncate">{t.signOut}</span>}
-          </button>
-        </form>
-      </div>
-    </>
-  )
-
-  // Wordmark, plus the compact collapse/expand button (desktop top row only). The
-  // chevron points the direction it will move the rail; rotates when collapsed.
-  // No padding of its own: the rail already pads (`px-3`), and this one paid for it twice —
-  // 24px the top row did not have to spare, which is what pushed the collapse control out of
-  // the rail entirely. The mobile header pads its own row, so nothing there loses air.
-  const wordmark = (c: boolean): ReactNode => (
-    // LEFT padding only, and only when the rail is open: every label in this rail starts
-    // 24px from its edge — the nav rows and the footer controls both — while the mark sat at
-    // 12px, so it alone hung off the left. It had `px-3` once and that overflowed the row,
-    // but the row then also carried a 36px chevron; with that gone, the 12px the alignment
-    // needs fits, and only the side that needs it is spent. Collapsed the mark is centred in
-    // a 72px rail, where a one-sided pad would push it off centre.
-    <Link href="/admin" onClick={close} className={`flex h-10 items-center leading-none ${c ? '' : 'pl-3'}`}>
-      {c ? <BrandMark /> : <BrandWord />}
-    </Link>
-  )
-
-  /**
-   * Search, up on the wordmark row rather than as a row of its own.
-   *
-   * It WAS a row: a full-width control reading "Search  ⌘K" above the rule. It worked and it
-   * cost a line of the rail to a thing that is not a destination, next to nine that are. Up
-   * here it is chrome beside chrome — the same standing as the collapse control — and the rail
-   * goes back to being a list of places.
-   *
-   * ⌘K STILL HAS TO BE PRINTED, which is the whole reason this control exists: the chord
-   * cannot be discovered, and a mouse teaches a keyboard by showing the chord on the thing the
-   * mouse clicks. Collapsed there is no room for the badge and it moves into the tooltip.
-   */
-  const searchBtn = (c: boolean): ReactNode => (
-    <button
-      type="button"
-      onClick={() => { close(); openPalette() }}
-      title={tip(t.paletteTitle, 'palette')}
-      aria-label={t.paletteTitle}
-      className="flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-transparent px-2 text-neutral-500 transition-colors hover:border-neutral-200 hover:bg-neutral-50 hover:text-neutral-700 dark:text-neutral-400 dark:hover:border-neutral-700 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
-    >
-      <IconSearch />
-      {!c && (
-        <span className="rounded border border-neutral-200 px-1 py-px text-[11px] tabular-nums leading-none dark:border-neutral-700">
-          {printChord(chordFor('palette'))}
-        </span>
-      )}
-    </button>
-  )
+  // Arrange mode changes the rail's WIDTH, so it has to change the variable too.
+  useEffect(() => {
+    applyWidthVar(collapsed, column.arranging)
+  }, [collapsed, column.arranging])
 
   return (
     <>
@@ -331,7 +178,11 @@ export function AdminSidebar({
         // z-index the CONTENT — a later sibling — painted over the theme menu that opens
         // from the rail's footer, and the menu read as cut off behind a media card.
         className={`admin-case sticky top-0 z-30 h-[100dvh] shrink-0 flex-col px-3 py-5 transition-[width] duration-200 hidden lg:flex ${
-          collapsed ? 'lg:w-[4.5rem]' : 'lg:w-52'
+          // WIDER WHILE ARRANGING, and it is a measurement rather than a preference: the grip
+          // and the two steppers take 62px off a 208px rail, which left "Everything else" as
+          // "Ever…" and "Collapse sidebar" as "Collapse sid…". A row you cannot read is a row
+          // you cannot place. 256px puts every label back and returns to 208 on the way out.
+          collapsed ? 'lg:w-[4.5rem]' : column.arranging ? 'lg:w-64' : 'lg:w-52'
         }`}
       >
         {/* Top: the wordmark and the search, and NOTHING else — measured, not preferred.
@@ -341,24 +192,25 @@ export function AdminSidebar({
             it OVERFLOWS. What gave way was the MARK, which is the one thing on this row that
             is not chrome. Collapse now lives with the rail's other preferences, at the foot.
             `min-w-0` on the wordmark so this row can never do that again. */}
-        <div className={collapsed ? 'flex flex-col items-center gap-2' : 'flex min-w-0 items-center justify-between gap-1'}>
-          <span className="min-w-0 truncate">{wordmark(collapsed)}</span>
-          {searchBtn(collapsed)}
-        </div>
-        <nav className="mt-6 flex flex-col gap-1">{navItems(collapsed)}</nav>
+        {column.top(collapsed)}
+        {/* `mt-6` only when there IS a top row: with the wordmark switched off the column
+            starts at the top of the rail, and the gap would be air over nothing. */}
+        {/* `min-h-0` + `overflow-y-auto`: the column is the only part of a height-locked rail
+            that can grow, and in arrange mode it grows by a floor per zone and a taller row
+            each. Without this the footer controls — including the way OUT of arrange mode —
+            are pushed past the bottom of the glass on a 900px screen. */}
+        <nav className={`flex min-h-0 flex-col gap-1 overflow-y-auto ${column.top(collapsed) ? 'mt-6' : ''}`}>{column.nav(collapsed)}</nav>
         {/* Collapse lives with the rail's other CONTROLS, at the foot: it is a preference
             about this rail on this device, the same kind of thing as "Show icons" sitting
             beside it — not a destination, and not chrome competing with the wordmark. It is
             also where the hand already goes to change how the rail looks. */}
-        <div className="mt-auto flex flex-col gap-1 border-t border-neutral-200 pt-4 dark:border-neutral-800">{controls(collapsed)}</div>
+        <div className="mt-auto flex flex-col gap-1 border-t border-neutral-200 pt-4 dark:border-neutral-800">{column.controls(collapsed)}</div>
       </aside>
 
       {/* Mobile: top bar + drawer (always icon+label) */}
       <header className={`admin-bar sticky top-0 z-20 items-center justify-between border-b border-neutral-200/80 px-4 py-3 backdrop-blur dark:border-neutral-800 flex lg:hidden`}>
-        {wordmark(false)}
+        {column.top(false)}
         <div className="flex items-center gap-1">
-        {/* No badge on a phone: there is no ⌘ to print, and the glyph is the whole control. */}
-        {searchBtn(true)}
         <button
           type="button"
           className="flex h-10 w-10 items-center justify-center rounded-md border border-neutral-200 text-neutral-600 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
@@ -376,9 +228,9 @@ export function AdminSidebar({
         <>
           <button type="button" aria-label={t.navHome} onClick={close} className="fixed inset-0 top-[65px] z-20 bg-black/20 lg:hidden" />
           <nav className={`fixed inset-x-3 top-[72px] z-30 scroll-fade max-h-[calc(100dvh-84px)] overflow-y-auto p-3 lg:hidden ${OVERLAY}`}>
-            {navItems(false)}
+            {column.nav(false)}
             <span className="my-1 block h-px w-full bg-neutral-200 dark:bg-neutral-700" aria-hidden />
-            {controls(false)}
+            {column.controls(false)}
           </nav>
         </>
       )}

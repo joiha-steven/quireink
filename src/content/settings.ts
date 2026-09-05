@@ -8,6 +8,7 @@ import { collapseBlob, expandBlob, deleteByPathname } from '@/media/blob'
 import { renderLogo } from '@/media/files'
 import { one, run } from '@/store/query'
 import { isSiteLang } from '@/locales/langs'
+import { EMPTY_NAV_ORDER, sanitizeNavOrder } from '@/content/nav-order'
 import { DEFAULT_PRESET_ID, isPresetId, isFontPresetId, defaultThemes, ALL_PALETTE_IDS, DEFAULT_FONT, DEFAULT_FONT_PRESET, isChromeFontId, DEFAULT_CHROME_FONT, isScheme, getFontPreset } from '@/content/themes'
 import {
   DEFAULT_HOME, DEFAULT_GALLERY, DEFAULT_FIGURE, sanitizeMenu, migrateThemes, sanitizeThemes, sanitizeEnabledPalettes, sanitizeSeo, sanitizeFeatures, sanitizeHome, sanitizeGallery, sanitizeFigure, sanitizeMcp, sanitizeMotion, sanitizeCache,
@@ -80,6 +81,9 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   // answer, and a blank field reads as "whatever this server was told" rather than as a
   // choice nobody made.
   timezone: '',
+  // Three empty lists: the rail has never been rearranged, so it draws itself the way the
+  // code has it (`content/nav-order.ts`).
+  navOrder: EMPTY_NAV_ORDER,
   updateCheck: true,
   contentWidth: 672,
   postsPerPage: 10,
@@ -167,6 +171,7 @@ export async function getSettings(): Promise<SiteSettings> {
       maxUploadMb: clampNumber(stored.maxUploadMb, 0, 4096, DEFAULT_SETTINGS.maxUploadMb),
       storageQuotaGb: clampNumber(stored.storageQuotaGb, 0, 4096, DEFAULT_SETTINGS.storageQuotaGb),
       customCss: sanitizeCss(stored.customCss),
+      navOrder: sanitizeNavOrder(stored.navOrder, EMPTY_NAV_ORDER),
       customHead: sanitizeSnippet(stored.customHead),
       customBodyEnd: sanitizeSnippet(stored.customBodyEnd),
       defaultScheme: isScheme(stored.defaultScheme) ? stored.defaultScheme : 'system',
@@ -306,6 +311,7 @@ export async function saveSettings(input: Partial<SiteSettings>): Promise<SiteSe
     maxUploadMb: clampNumber(input.maxUploadMb, 0, 4096, current.maxUploadMb),
     storageQuotaGb: clampNumber(input.storageQuotaGb, 0, 4096, current.storageQuotaGb),
     customCss: input.customCss !== undefined ? sanitizeCss(input.customCss) : current.customCss,
+    navOrder: input.navOrder !== undefined ? sanitizeNavOrder(input.navOrder, current.navOrder) : current.navOrder,
     customHead: input.customHead !== undefined ? sanitizeSnippet(input.customHead) : current.customHead,
     customBodyEnd: input.customBodyEnd !== undefined
       ? sanitizeSnippet(input.customBodyEnd) : current.customBodyEnd,

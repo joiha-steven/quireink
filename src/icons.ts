@@ -115,6 +115,9 @@ export const ICONS = {
   signOut:
     '<path d="M13.5 4.5H6a1.5 1.5 0 0 0-1.5 1.5v12A1.5 1.5 0 0 0 6 19.5h7.5"/>'
     + '<path d="M16 8.5 19.5 12 16 15.5M19.5 12H10"/>',
+  // Two rails, the universal "pick this up" mark. Only ever shown while the sidebar is in
+  // arrange mode, where it is the one thing on the row that is not the row.
+  grip: '<path d="M5 9.5h14M5 14.5h14"/>',
   glyphs:
     '<path d="m5 17 4-10 4 10M6.3 13.5h5.4"/><path d="M15.5 17V9.5"/>'
     + '<circle cx="17.5" cy="13.5" r="2.6"/><path d="M20.1 11v6"/>',
