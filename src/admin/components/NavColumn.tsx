@@ -15,7 +15,7 @@
 // both have to read one arrange state. As a component it would be two independent modes, and
 // a row dragged in the drawer would leave the desktop rail where it was.
 import Link from '@/admin/router'
-import { Fragment, useState, type ReactNode } from 'react'
+import { Fragment, type ReactNode } from 'react'
 import type { SiteLang, NavOrder } from '@/types'
 import { useAdminT } from './I18nProvider'
 import { SIDEBAR_NAV, SIDEBAR_NAV_ACTIVE, SIDEBAR_NAV_QUIET, SIDEBAR_UTIL } from './headerActions'
@@ -28,7 +28,7 @@ import { BrandMark, BrandWord } from './Wordmark'
 import { openPalette } from './CommandPalette'
 import { chordFor, printChord, tip } from './editorKeys'
 import { primaryNav, secondaryNav, defaultNavOrder, type Destination } from './navDestinations'
-import { useNavArrange, ZONES, type Spot, type Zone } from './useNavArrange'
+import { findSpot, useNavArrange, ZONES, type Zone } from './useNavArrange'
 import { Arrangeable, ZoneFloor, SwitchRow } from './NavArrange'
 import { useToast } from '@/admin/ui/Toast'
 
@@ -52,7 +52,6 @@ export function useNavColumn({
   const { notify } = useToast()
   const defaults = defaultNavOrder(aiConfigured)
   const arrange = useNavArrange(navOrder, defaults, (why) => notify(`${t.navArrangeFailed} (${why})`, 'error'))
-  const [hovered, setHovered] = useState<string | null>(null)
   const showLogo = !arrange.isHidden('logo')
   const showSearch = !arrange.isHidden('search')
 
@@ -163,12 +162,67 @@ export function useNavColumn({
       }
     }
 
+    /**
+     * Where the pointer is, in rail terms — and the move it implies.
+     *
+     * Read off the LIVE DOM rather than from measurements taken when the drag began: the list
+     * reorders under the pointer, so every crossing changes where every other row is. Asking
+     * the document each time is a handful of `getBoundingClientRect` calls on at most twenty
+     * rows, which is nothing beside re-deriving the geometry ourselves and being wrong about
+     * it after the first swap.
+     *
+     * ⚠️ It reads `arrange.order`, the RENDERED order, and not the ref that leads it. The two
+     * halves of this decision have to come from the same instant: the rectangles are where the
+     * last paint put the rows, so pairing them with an order that has already moved on gives a
+     * destination the pointer is not actually over. One step per frame is the correct rate —
+     * that is how often the rectangles are true.
+     *
+     * Returns true when the order actually changed, which is what tells the row being carried
+     * to re-zero its offset.
+     */
+    const probe = (id: string, clientY: number): boolean => {
+      // THE WHOLE DOCUMENT, not the aside: the rail draws itself twice — the sticky column
+      // and the phone drawer — and only one of them is on screen. The hidden copy measures
+      // zero and can never contain a pointer, so asking for both is also asking for the
+      // right one.
+      const rows = [...document.querySelectorAll<HTMLElement>('[data-nav-row]')].filter((el) => el.dataset.navRow !== id)
+      for (const el of rows) {
+        const box = el.getBoundingClientRect()
+        if (clientY < box.top || clientY > box.bottom) continue
+        const other = el.dataset.navRow
+        if (!other) continue
+        const to = findSpot(arrange.order, other)
+        if (!to) return false
+        const before = clientY < box.top + box.height / 2
+        const at = { zone: to.zone, index: before ? to.index : to.index + 1 }
+        const now = findSpot(arrange.order, id)
+        // Already there: without this the same crossing fires on every pointermove and the
+        // row re-zeroes its offset forty times a second, which reads as a row that will not
+        // move at all.
+        if (now && now.zone === at.zone && (now.index === at.index || now.index === at.index - 1)) return false
+        arrange.preview(id, at)
+        return true
+      }
+      // An empty zone has no rows to aim at, only its floor.
+      for (const el of document.querySelectorAll<HTMLElement>('[data-nav-floor]')) {
+        const box = el.getBoundingClientRect()
+        if (clientY < box.top || clientY > box.bottom) continue
+        const zone = el.dataset.navFloor as Zone | undefined
+        if (!zone) continue
+        const now = findSpot(arrange.order, id)
+        if (now && now.zone === zone && now.index === arrange.order[zone].length - 1) return false
+        arrange.preview(id, { zone, index: arrange.order[zone].length })
+        return true
+      }
+      return false
+    }
+
     /** Every row in the column, top to bottom — what the steppers walk, and what an end means. */
     const walk = ZONES.flatMap((zone) => arrange.order[zone].map((id) => ({ id, zone })))
 
     const list = (zone: Zone): ReactNode => (
       <>
-        {arrange.order[zone].map((id, i) => {
+        {arrange.order[zone].map((id) => {
           const drawn = row(id)
           if (!drawn) return null
           // A FRAGMENT, not a wrapper. `display:contents` looks like no element at all and is
@@ -181,14 +235,10 @@ export function useNavColumn({
             <Arrangeable
               key={id}
               id={id}
-              zone={zone}
-              index={i}
-              dragging={arrange.dragging}
-              hovered={hovered}
-              onDragStart={arrange.setDragging}
-              onDragEnd={() => arrange.setDragging(null)}
-              onHover={setHovered}
-              onDrop={(to: Spot) => arrange.drop(id, to)}
+              held={arrange.dragging === id}
+              onGrab={arrange.setDragging}
+              onProbe={probe}
+              onRelease={() => { arrange.setDragging(null); arrange.commit() }}
               onNudge={arrange.nudge}
               first={at === 0}
               last={at === walk.length - 1}
@@ -197,15 +247,7 @@ export function useNavColumn({
             </Arrangeable>
           )
         })}
-        {arranging && (
-          <ZoneFloor
-            zone={zone}
-            count={arrange.order[zone].length}
-            hovered={hovered}
-            onHover={setHovered}
-            onDrop={(to: Spot) => { if (arrange.dragging) arrange.drop(arrange.dragging, to) }}
-          />
-        )}
+        {arranging && <ZoneFloor zone={zone} empty={arrange.order[zone].length === 0} />}
       </>
     )
 

@@ -1,19 +1,28 @@
-// What a rail row LOOKS like while the rail is being rearranged, and the control that turns
-// that mode on.
+// What a rail row LOOKS like while the rail is being rearranged, and the pointer handling
+// that moves it.
 //
-// The row itself is not re-implemented here and that is the point: `AdminSidebar` hands its
-// own link, button or switch in as children, and this wraps it. A second set of rows drawn
-// for arrange mode would be a second place for a label, an icon or a hover state to drift,
-// and the owner would be arranging something that is not quite the rail.
+// The row itself is not re-implemented here and that is the point: `NavColumn` hands its own
+// link, button or switch in as children, and this wraps it. A second set of rows drawn for
+// arrange mode would be a second place for a label, an icon or a hover state to drift, and
+// the owner would be arranging something that is not quite the rail.
 //
 // ONLY ON THE OPEN RAIL. Collapsed, the rail is 72px of centred glyphs with no room for a
 // grip and two steppers beside a 20px icon, and a row with no label is a row nobody can
-// place. The control that enters the mode is hidden there for the same reason the icon
-// switch is (`AdminSidebar`), and leaving the mode on is harmless: nothing draws.
-import type { ReactNode } from 'react'
+// place. The control that enters the mode is hidden there for the same reason the icon switch
+// is (`NavColumn`), and leaving the mode on is harmless: nothing draws.
+//
+// POINTER EVENTS, NOT HTML5 DRAG-AND-DROP, since 2026-09-06. The first version used the
+// native API and the report was that a row could be grabbed and would not come: `dragstart`
+// on a container whose children are links is where that API is least reliable, it does not
+// fire at all on a touch screen, and — the part that decided it — a native drag can only show
+// a ghost of the row under the cursor. It cannot open the list. What it has to do instead is
+// what a hand expects: the rows above and below PART where the row would land, the row is
+// already there while it is still being held, and letting go leaves it exactly there. So the
+// list reorders live under the pointer, and the pointer stream stays ours the whole way.
+import { useRef, type ReactNode } from 'react'
 import { useAdminT } from './I18nProvider'
 import { IconGrip, IconChevronLeft } from './navIcons'
-import type { Spot, Zone } from './useNavArrange'
+import type { Zone } from './useNavArrange'
 
 const STEP =
   'grid h-6 w-4 shrink-0 place-items-center rounded text-neutral-400 transition-colors '
@@ -23,29 +32,25 @@ const STEP =
 /**
  * One row, wrapped so it can be picked up.
  *
- * The drop target is the ROW, not a gap between rows: a 4px seam is a target nobody hits, and
- * every list that has tried it ends up with rows that refuse to move. Dropping on the top
- * half of a row means "above it" and the bottom half means "below it", which is also what the
- * line drawn while hovering says.
- *
- * The wrapped row is inert while arranging — `pointer-events-none` on the child rather than a
- * `preventDefault` on the click, because a link that swallows its own click still shows a
- * pointer cursor and still answers a middle-click. Here the whole row is a handle.
+ * `touch-none` is load-bearing on a touch screen: without it the browser claims the gesture
+ * for scrolling the instant the finger moves vertically, which is every drag in a vertical
+ * list. The wrapped row is inert while arranging — `pointer-events-none` on the child — so a
+ * press anywhere along the row is a grab rather than a click on the link inside it.
  */
 export function Arrangeable({
-  id, zone, index, dragging, hovered, onDragStart, onDragEnd, onHover, onDrop, onNudge,
-  first, last, children,
+  id, held, onGrab, onProbe, onRelease, onNudge, first, last, children,
 }: {
   id: string
-  zone: Zone
-  index: number
-  dragging: string | null
-  /** `${zone}:${index}:${'before' | 'after'}` while a row is held over this one. */
-  hovered: string | null
-  onDragStart: (id: string) => void
-  onDragEnd: () => void
-  onHover: (key: string | null) => void
-  onDrop: (to: Spot) => void
+  /** This row is the one in the hand. */
+  held: boolean
+  onGrab: (id: string) => void
+  /**
+   * Where the pointer is now. Returns true when that CHANGED the order, which is the signal
+   * to re-zero this row's offset: it has just been moved to a new place in the list, so the
+   * distance it should carry is measured from here rather than from where the drag began.
+   */
+  onProbe: (id: string, clientY: number) => boolean
+  onRelease: () => void
   onNudge: (id: string, dir: -1 | 1) => void
   /** Ends of the WHOLE column, not of this zone: the steppers cross zone boundaries. */
   first: boolean
@@ -53,47 +58,75 @@ export function Arrangeable({
   children: ReactNode
 }) {
   const t = useAdminT()
-  const held = dragging === id
-  const edge = (e: { currentTarget: HTMLElement; clientY: number }): 'before' | 'after' => {
-    const box = e.currentTarget.getBoundingClientRect()
-    return e.clientY < box.top + box.height / 2 ? 'before' : 'after'
+  const box = useRef<HTMLDivElement>(null)
+  const from = useRef<number | null>(null)
+
+  // The row follows the pointer by a transform written STRAIGHT TO THE NODE rather than
+  // through state: this runs on every pointermove, and a render per move is both slower than
+  // the finger and a way to lose the pointer capture mid-drag.
+  const lift = (dy: number) => {
+    if (box.current) box.current.style.transform = dy ? `translateY(${dy}px)` : ''
   }
-  const line = (side: 'before' | 'after') => hovered === `${zone}:${index}:${side}`
 
   return (
     <div
-      draggable
-      onDragStart={(e) => { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', id); onDragStart(id) }}
-      onDragEnd={() => { onHover(null); onDragEnd() }}
-      onDragOver={(e) => {
-        // Without BOTH of these the browser refuses the drop and the row springs back, which
-        // reads as "this row cannot be moved" rather than as a missing event handler.
-        e.preventDefault()
-        e.dataTransfer.dropEffect = 'move'
-        onHover(`${zone}:${index}:${edge(e)}`)
-      }}
-      onDragLeave={() => onHover(null)}
-      onDrop={(e) => {
-        e.preventDefault()
-        const side = edge(e)
-        onHover(null)
-        onDrop({ zone, index: side === 'before' ? index : index + 1 })
-      }}
+      ref={box}
       data-nav-row={id}
-      className={`flex items-center gap-0.5 rounded-lg transition-opacity ${held ? 'opacity-40' : ''} ${
-        line('before') ? 'border-t-2 border-neutral-900 dark:border-white' : 'border-t-2 border-transparent'
-      } ${line('after') ? 'border-b-2 border-neutral-900 dark:border-white' : 'border-b-2 border-transparent'}`}
+      onPointerDown={(e) => {
+        // Left button or a finger. A right-click on a row should still be a right-click, and
+        // the steppers are buttons that have to keep their own clicks.
+        if (e.button !== 0) return
+        if ((e.target as HTMLElement).closest('[data-nav-step]')) return
+        e.preventDefault()
+        // Capture keeps the stream coming even when the pointer outruns the row — which it
+        // does on any quick drag, because the row only catches up on the next reorder. In a
+        // try: a synthetic pointer (a test, an assistive tool) has no capture to take, and
+        // the throw would leave the row grabbed and unmovable.
+        try { box.current?.setPointerCapture(e.pointerId) } catch { /* no live pointer */ }
+        from.current = e.clientY
+        onGrab(id)
+      }}
+      onPointerMove={(e) => {
+        if (from.current === null) return
+        // Probe FIRST: if this crossing reorders the list, the row is now somewhere else and
+        // its offset restarts from where the pointer is standing.
+        if (onProbe(id, e.clientY)) {
+          from.current = e.clientY
+          lift(0)
+          return
+        }
+        lift(e.clientY - from.current)
+      }}
+      onPointerUp={(e) => {
+        if (from.current === null) return
+        try { box.current?.releasePointerCapture(e.pointerId) } catch { /* never captured */ }
+        from.current = null
+        lift(0)
+        onRelease()
+      }}
+      onPointerCancel={() => {
+        // A cancelled pointer (the OS took the gesture, the tab lost focus) still has to put
+        // the row down: what is on screen is what gets stored, and a row left mid-lift with
+        // no pointer would never be released.
+        if (from.current === null) return
+        from.current = null
+        lift(0)
+        onRelease()
+      }}
+      className={`flex touch-none select-none items-center gap-0.5 rounded-lg ${
+        held
+          ? 'relative z-10 cursor-grabbing bg-white shadow-[0_2px_8px_rgba(0,0,0,.16)] dark:bg-neutral-800'
+          : 'cursor-grab'
+      }`}
     >
-      <span className="shrink-0 cursor-grab text-neutral-400 active:cursor-grabbing" aria-hidden><IconGrip /></span>
+      <span className="shrink-0 text-neutral-400" aria-hidden><IconGrip /></span>
       <div className="min-w-0 flex-1 pointer-events-none">{children}</div>
-      {/* The touch and keyboard route. A chevron turned a quarter, the same glyph the rail
-          already uses for a direction. */}
-      {/* `data-*` because the tour drives these for real, and every label here is translated
-          eleven ways — a flow matching on words is a flow that passes in one language. */}
-      <button type="button" data-nav-step="up" data-nav-row={id} disabled={first} onClick={() => onNudge(id, -1)} aria-label={t.navMoveUp} title={t.navMoveUp} className={STEP}>
+      {/* The keyboard's route, and the one a finger can take without dragging at all. A
+          chevron turned a quarter, the same glyph the rail already uses for a direction. */}
+      <button type="button" data-nav-step="up" disabled={first} onClick={() => onNudge(id, -1)} aria-label={t.navMoveUp} title={t.navMoveUp} className={STEP}>
         <span className="grid place-items-center rotate-90"><IconChevronLeft /></span>
       </button>
-      <button type="button" data-nav-step="down" data-nav-row={id} disabled={last} onClick={() => onNudge(id, 1)} aria-label={t.navMoveDown} title={t.navMoveDown} className={STEP}>
+      <button type="button" data-nav-step="down" disabled={last} onClick={() => onNudge(id, 1)} aria-label={t.navMoveDown} title={t.navMoveDown} className={STEP}>
         <span className="grid place-items-center -rotate-90"><IconChevronLeft /></span>
       </button>
     </div>
@@ -101,27 +134,18 @@ export function Arrangeable({
 }
 
 /**
- * An empty list still has to be a target.
+ * An empty list still has to be reachable.
  *
- * Drag every row out of "Everything else" and the group becomes a zero-height div, so there
- * is nowhere left to drop the row that would put one back — the list would be closed for
- * good. This is the floor of each zone: invisible until something is being dragged.
+ * Move every row out of "Everything else" and the group becomes a zero-height div with no
+ * rows to aim at, so the list would be closed for good. This is each zone's floor: a target
+ * with a height of its own, and it only takes up room while the zone is empty.
  */
-export function ZoneFloor({ zone, count, onDrop, onHover, hovered }: {
-  zone: Zone
-  count: number
-  onDrop: (to: Spot) => void
-  onHover: (key: string | null) => void
-  hovered: string | null
-}) {
-  const lit = hovered === `${zone}:floor`
+export function ZoneFloor({ zone, empty }: { zone: Zone; empty: boolean }) {
   return (
     <div
-      onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; onHover(`${zone}:floor`) }}
-      onDragLeave={() => onHover(null)}
-      onDrop={(e) => { e.preventDefault(); onHover(null); onDrop({ zone, index: count }) }}
+      data-nav-floor={zone}
       className={`rounded-lg border border-dashed transition-colors ${
-        lit ? 'h-8 border-neutral-400 bg-neutral-100 dark:border-neutral-500 dark:bg-neutral-800' : 'h-4 border-transparent'
+        empty ? 'h-9 border-neutral-300 dark:border-neutral-600' : 'h-3 border-transparent'
       }`}
     />
   )

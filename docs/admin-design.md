@@ -213,8 +213,12 @@ character and none of its typographic rules **except one**, below.
   and with the wordmark off, search becomes the first ROW of the column rather than a glyph
   floating over it. The order is a SITE SETTING (`navOrder`), not a device preference like
   collapse and Show icons: those describe a rail on one machine, this is a person saying where
-  their things go, and it has to be the same on the laptop and on the desktop. Three empty lists
-  mean "whatever the code says", which is how a release that adds a screen needs no migration —
+  their things go, and it has to be the same on the laptop and on the desktop. The drag is
+  POINTER-BASED, not HTML5 drag-and-drop: the native API does not fire on a touch screen and can
+  only drag a ghost, while what a hand expects is the list opening where the row will land — so
+  the rows reorder live under the pointer and letting go stores what is on screen. Three empty
+  lists mean "whatever the code says", which is how a release that adds a screen needs no
+  migration —
   `content/nav-order.ts` reconciles a stored order against the live rail on every mount. The
   rail widens from 208 to 256px while arranging, measured: the grip and two steppers take 62px,
   and at 208 "Everything else" read as "Ever…".

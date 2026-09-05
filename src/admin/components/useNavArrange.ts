@@ -15,7 +15,7 @@
 // EVERY MOVE IS SAVED, immediately. The alternative is a Save button on a rail, and a rail is
 // where you go to leave the screen — an arrangement that only survives if you remember to
 // press something is an arrangement that gets lost by the second click.
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { NavOrder } from '@/types'
 import { reconcileNavOrder } from '@/content/nav-order'
 
@@ -88,21 +88,38 @@ export function step(order: NavOrder, id: string, dir: -1 | 1): NavOrder {
  */
 export function useNavArrange(stored: NavOrder, defaults: NavOrder, onError: (message: string) => void) {
   const [order, setOrder] = useState<NavOrder>(() => reconcileNavOrder(stored, defaults))
+  // The order as of RIGHT NOW, not as of the last render.
+  //
+  // A drag asks "where is this row?" on every pointermove, and several moves can land inside
+  // one frame — a quick drag, or a test firing them in a loop. Read from `order` those all see
+  // the state the last render closed over, compute the same destination, and the row walks one
+  // step instead of six. The ref is written the moment anything moves.
+  const live = useRef(order)
+  const remember = (next: NavOrder): NavOrder => { live.current = next; return next }
   const [arranging, setArranging] = useState(false)
   const [dragging, setDragging] = useState<string | null>(null)
 
-  // The server's answer wins on arrival and on every later refetch — but only while nothing
-  // is being dragged, or a slow round trip would snatch the row out of the pointer's hand.
+  // The server's answer wins on arrival and whenever it CHANGES — and on nothing else.
+  //
+  // ⚠️ `dragging` was in this list, so letting go re-ran the effect against the `stored` prop
+  // the shell was still holding — the copy from before the PUT — and the row sprang back to
+  // where it came from a beat after it landed. The server had it right and the screen had it
+  // wrong, which is the worst way round: the arrangement was saved and looked lost.
+  //
+  // `stored` and `defaults` are fresh objects on every render of the shell, so the effect is
+  // keyed on their CONTENT. Keyed on the objects themselves it would run on every render and
+  // undo every move a beat after it was made.
   useEffect(() => {
-    if (dragging) return
-    setOrder(reconcileNavOrder(stored, defaults))
-    // `stored` and `defaults` are fresh objects on every render of the shell, so the effect
-    // is keyed on their CONTENT: keyed on the objects it would run on every render and undo
-    // a move a beat after it was made.
-  }, [JSON.stringify(stored), JSON.stringify(defaults), dragging])
+    setOrder(remember(reconcileNavOrder(stored, defaults)))
+  }, [JSON.stringify(stored), JSON.stringify(defaults)])
 
   const save = useCallback(async (next: NavOrder) => {
-    setOrder(next)
+    // WHAT IS STORED AND WHAT IS DRAWN ARE NOT THE SAME OBJECT, and Reset is why. It stores
+    // three empty lists, which mean "whatever the code says" — draw that literally and the
+    // rail goes blank the moment it is pressed, staying blank until the next page load put
+    // the reconciliation back. Everything shown goes through the same reconcile the server's
+    // copy does; for an ordinary move the two are identical anyway.
+    setOrder(remember(reconcileNavOrder(next, defaults)))
     try {
       const res = await fetch('/api/settings', {
         method: 'PUT',
@@ -115,7 +132,7 @@ export function useNavArrange(stored: NavOrder, defaults: NavOrder, onError: (me
       // the next load will show what the server actually has, which is the honest answer.
       onError('offline')
     }
-  }, [onError])
+  }, [onError, JSON.stringify(defaults)])
 
   return {
     order,
@@ -123,15 +140,28 @@ export function useNavArrange(stored: NavOrder, defaults: NavOrder, onError: (me
     dragging,
     setDragging,
     toggleArranging: () => setArranging((v) => !v),
+    /** Where a row is at this instant — the drag reads this, never the rendered `order`. */
+    latest: () => live.current,
     /** Drop `id` at `to`. */
-    drop: (id: string, to: Spot) => { void save(moveTo(order, id, to)) },
+    drop: (id: string, to: Spot) => { void save(moveTo(live.current, id, to)) },
+    /**
+     * Move a row WITHOUT saving — what a drag in progress does.
+     *
+     * The rail reorders under the finger on every crossing, so the row being dragged is
+     * always already in the place it would land and the two rows around it have already
+     * opened for it. Only letting go writes anything: a drag across six rows would otherwise
+     * be six PUTs, five of them describing an arrangement nobody asked for.
+     */
+    preview: (id: string, to: Spot) => { setOrder(remember(moveTo(live.current, id, to))) },
+    /** Let go: store whatever the drag left on screen. */
+    commit: () => { void save(live.current) },
     /** Walk `id` one row up or down, across zones when it reaches an end. */
-    nudge: (id: string, dir: -1 | 1) => { void save(step(order, id, dir)) },
+    nudge: (id: string, dir: -1 | 1) => { void save(step(live.current, id, dir)) },
     /** Whether a switchable row is off. Only `logo` and `search` are, today. */
     isHidden: (id: string) => order.hidden.includes(id),
     /** Turn the wordmark or the search button off, or back on. */
     toggleHidden: (id: string) => {
-      const next = clone(order)
+      const next = clone(live.current)
       next.hidden = next.hidden.includes(id) ? next.hidden.filter((h) => h !== id) : [...next.hidden, id]
       void save(next)
     },
@@ -142,6 +172,6 @@ export function useNavArrange(stored: NavOrder, defaults: NavOrder, onError: (me
      * asking for the wordmark back is another, and a reset that did both would take away the
      * only way to say the first without the second.
      */
-    reset: () => { void save({ primary: [], more: [], footer: [], hidden: order.hidden }) },
+    reset: () => { void save({ primary: [], more: [], footer: [], hidden: live.current.hidden }) },
   }
 }

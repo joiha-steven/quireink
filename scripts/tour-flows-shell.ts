@@ -100,22 +100,68 @@ export function registerShellFlows({ flow, expect, atWidth }: Tour): void {
       if (!enter) return 'the rail offers no way into arrange mode'
       enter.click()
 
-      // The FIRST row's step-down. Whatever is at the top of the rail, it should not be after.
-      const first = await wait(() => document.querySelector('aside [data-nav-row]'))
-      if (!first) return 'arrange mode drew no rows'
-      const moved = first.getAttribute('data-nav-row')
-      const down = first.querySelector('[data-nav-step="down"]')
-      if (!down) return 'a row in arrange mode has no way to walk down'
-      down.click()
+      // THE DRAG ITSELF, with pointer events, because that is the half that shipped broken:
+      // the first version used native drag-and-drop, a row could be grabbed and would not
+      // come, and the list never opened where it would land. Two claims are checked, and the
+      // second is the one that was wrong even after the row started moving — the list has to
+      // reorder WHILE THE POINTER IS DOWN, and the row has to still be there after it lifts.
+      const rows = await wait(() => {
+        const found = [...document.querySelectorAll('aside [data-nav-row]')]
+        return found.length > 3 ? found : null
+      })
+      if (!rows) return 'arrange mode drew no rows'
+      const carried = rows[0].getAttribute('data-nav-row')
+      const at = (el) => {
+        const box = el.getBoundingClientRect()
+        return { x: Math.round(box.left + 40), y: Math.round(box.top + box.height / 2) }
+      }
+      const start = at(rows[0])
+      const target = at(rows[3])
+      const send = (type, y) => rows[0].dispatchEvent(new PointerEvent(type, {
+        bubbles: true, cancelable: true, pointerId: 1, isPrimary: true, pointerType: 'mouse',
+        button: type === 'pointerup' ? 0 : 0, buttons: type === 'pointerup' ? 0 : 1,
+        clientX: start.x, clientY: y,
+      }))
+      const listed = () => [...document.querySelectorAll('aside [data-nav-row]')].map((r) => r.getAttribute('data-nav-row'))
+
+      // A FRAME BETWEEN MOVES, which is what a pointer actually delivers: the list can only
+      // reorder once per paint, because the next destination is read off the rectangles the
+      // last paint left. Firing the whole gesture inside one tick asks it to move six rows
+      // through one render and is a test of something no hand does.
+      send('pointerdown', start.y)
+      for (let y = start.y; y <= target.y; y += 8) {
+        send('pointermove', y)
+        await new Promise((r) => setTimeout(r, 24))
+      }
+      const held = listed()
+      if (held.indexOf(carried) < 2) {
+        send('pointerup', target.y)
+        return 'the list did not reorder under the pointer: ' + held.slice(0, 5).join(' ')
+      }
+      send('pointerup', target.y)
+      await new Promise((r) => setTimeout(r, 250))
+      const landed = listed()
+      if (landed.indexOf(carried) !== held.indexOf(carried)) {
+        return 'the row sprang back on release: held at ' + held.indexOf(carried) + ', landed at ' + landed.indexOf(carried)
+      }
 
       // The stored order must NAME the row: an empty order also fails "is it still first",
       // and reporting that as a move would hide a build that never saved anything.
       const after = await wait(async () => {
         const now = await stored()
-        return now && now.primary.includes(moved) && now.primary[0] !== moved ? now : null
+        return now && now.primary.includes(carried) && now.primary[0] !== carried ? now : null
       }, 40, 150)
-      if (!after) return 'the server never recorded ' + moved + ' moving off the top'
-      if (after.primary.indexOf(moved) !== 1) return moved + ' landed at ' + after.primary.indexOf(moved) + ', not 1'
+      if (!after) return 'the server never recorded ' + carried + ' moving off the top'
+
+      // And the steppers, which are the touch and keyboard route to the same thing.
+      const up = document.querySelector('aside [data-nav-row] [data-nav-step="down"]')
+      if (!up) return 'a row in arrange mode has no way to walk down'
+      up.click()
+      const walked = await wait(async () => {
+        const now = await stored()
+        return now && now.primary[0] !== after.primary[0] ? now : null
+      }, 40, 150)
+      if (!walked) return 'the step buttons moved nothing the server kept'
 
       // Hiding the wordmark moves search into the column as a row — the one layout rule that
       // depends on the switch rather than on the order.
@@ -138,6 +184,6 @@ export function registerShellFlows({ flow, expect, atWidth }: Tour): void {
       }, 40, 150)
       if (!back) return 'reset did not clear the stored order'
       document.querySelector('aside [data-nav-arrange="on"]').click()
-      return 'ok (' + moved + ' moved, wordmark switched, order reset)'
+      return 'ok (' + carried + ' dragged and kept, stepper moved, wordmark switched, order reset)'
     })()`, 900))
 }
