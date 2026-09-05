@@ -23,12 +23,11 @@ import type { IntegrationStatus } from '@/store/integration-keys'
 import { Button } from '@/admin/ui/Button'
 import { useToast } from '@/admin/ui/Toast'
 import { formatTime } from '@/utils'
-import { NOTE_TEXT, PageHeader, Tabs, type TabItem } from './kit'
+import { PageHeader, Tabs, type TabItem } from './kit'
 import { SettingsCard } from './SettingsCard'
 import { SHEET, SheetTop } from './sheet'
 import { SettingsSearch } from './SettingsSearch'
 import { SettingsNotesRow, useSettingsNotes } from './SettingsNotes'
-import { SnippetEditor } from './SnippetEditor'
 import { useSettingJump } from './useSettingJump'
 import { useAdminT } from './I18nProvider'
 import { SiteFields } from './SiteFields'
@@ -42,15 +41,13 @@ import { PostImageFields } from './PostImageFields'
 import { AuthorFields } from './AuthorFields'
 import { ListingFeatureFields, PageFeatureFields, PostFeatureFields } from './FeatureFields'
 import { CommentFields } from './CommentFields'
-import { CommentIntegrations } from './CommentIntegrations'
-import { CloudflareFields } from './CloudflareFields'
 import { SettingsAiTab } from './SettingsAiTab'
+import { SettingsConnectionsTab } from './SettingsConnectionsTab'
 import { SettingsSystemTab } from './SettingsSystemTab'
 import type { UpdateStatus } from './UpdateFields'
 import { SeoFields } from './SeoFields'
 import { SettingsAppearanceTab } from './SettingsAppearanceTab'
 import { RedirectsManager } from './RedirectsManager'
-import { NewsletterFields } from './NewsletterFields'
 
 type Tab = 'site' | 'layout' | 'reading' | 'appearance' | 'seo' | 'connections' | 'ai' | 'system'
 // Every member of `Tab`, and the list is what `?tab=` is validated against — so a tab
@@ -327,58 +324,12 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
         </div>
       )}
 
-      {/* CONNECTIONS — other services. Every credential here is written to the server and
-          never read back, which is why these cards show status rather than values. */}
+      {/* CONNECTIONS — its own file; see SettingsConnectionsTab. */}
       {tab === 'connections' && (
-        <div className={GRID}>
-          <div className={COL}>
-            <SettingsCard title={t.cardNewsletter}>
-              <NewsletterFields />
-            </SettingsCard>
-          </div>
-          <div className={COL}>
-            {/* The two services that sit in FRONT of the site — the CDN that caches it and
-                the checks a commenter passes — against the one that sends from it.
-                Measured at 1440px: this was Newsletter + Cloudflare against comments alone,
-                868 to 357. Now 459 to 770. */}
-            <SettingsCard title={t.cardCloudflare}>
-              <CloudflareFields configured={integrations.cloudflareConfigured} zoneId={integrations.cloudflareZoneId} webhookConfigured={integrations.purgeWebhookConfigured} />
-            </SettingsCard>
-            <SettingsCard title={t.cardCommentIntegrations}>
-              <CommentIntegrations
-                comments={s.comments}
-                env={commentEnv}
-                onChange={(comments) => update({ comments })}
-              />
-            </SettingsCard>
-          </div>
-          {/* FULL WIDTH, under both columns. Two code fields do not belong in a 459px
-              column beside a form: a snippet is pasted, then read back to check it, and a
-              line that wraps three times is a line nobody can check. It is also the one
-              card here that is not a credential, so it reads as its own thing rather than
-              as a third service. */}
-          <div className="lg:col-span-2">
-            <SettingsCard title={t.cardCustomCode}>
-              <div className="space-y-4">
-                <p className={NOTE_TEXT}>{t.customCodeNote}</p>
-                <SnippetEditor
-                  value={s.customHead}
-                  onChange={(customHead) => update({ customHead })}
-                  label={t.customHeadLabel}
-                  note={t.customHeadHint}
-                  placeholder={'<script defer src="https://example.com/script.js"></script>'}
-                />
-                <SnippetEditor
-                  value={s.customBodyEnd}
-                  onChange={(customBodyEnd) => update({ customBodyEnd })}
-                  label={t.customBodyEndLabel}
-                  note={t.customBodyEndHint}
-                  placeholder={'<script defer src="https://example.com/beacon.js"></script>'}
-                />
-              </div>
-            </SettingsCard>
-          </div>
-        </div>
+        <SettingsConnectionsTab
+          s={s} update={update} integrations={integrations} commentEnv={commentEnv}
+          grid={GRID} col={COL}
+        />
       )}
 
       {/* AI — its own file; see SettingsAiTab for why it is one subject. */}
