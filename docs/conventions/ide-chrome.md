@@ -26,7 +26,7 @@ and no island runs.
   round a run of terms. Tested both ends. (The rail's counts were a filled ring for one
   deploy, on the argument that a term cloud has no sequence to punctuate. Rejected.)
 - **The rail keeps the alignment it has with the switch off:** ranged right, hugging the
-  article, which is what the owner asked for. The line numbers are rings sitting ON the
+  article, so the toggle moves nothing but the gutter. The line numbers are rings sitting ON the
   rail's divider out past the text, so they cost the rail no width. An earlier pass ranged
   the rail left to put a gutter column where an editor puts it, and it was rejected.
 - **The gutter is legible** (`--c-meta`, 4.56:1), not a hairline. `--c-rule` measured

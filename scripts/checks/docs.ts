@@ -182,6 +182,12 @@ for (const [file, pattern, what] of [
   // checklist named it. Found at 2.2.1 while the product was on 2.2.3 — two releases
   // behind, in the one file an outside directory reads to say what version this is.
   ['server.json', `"version": "${pkgVersion}"`, 'the MCP manifest version'],
+  // The two Docker documents that DO name a version. The manifest pins on purpose (a
+  // cluster should not move on `:latest`), and the pin sat at 2.2.3 through four releases
+  // because no checklist line and no guard named it; the tag table exists to explain what an
+  // exact pin means and must show the current one to mean anything.
+  ['deploy/kubernetes/statefulset.yaml', `image: quireink/quireink:${pkgVersion}`, 'the image pin'],
+  ['docs/dockerhub-overview.md', `| \`${pkgVersion}\` |`, 'the tag table'],
 ] as const) {
   if (!readFileSync(join(ROOT, file), 'utf8').includes(pattern)) {
     violations.push(`${file}: ${what} does not say ${pkgVersion} (package.json does)`)

@@ -90,7 +90,7 @@ character and none of its typographic rules **except one**, below.
   independent data; shadows are for overlays, and `check:admin-kit` now fails a raised white
   surface that is not `sticky` or `fixed` — the control-scale relief below is 1–2px of edge,
   not a float, and does not move this rule.
-- **Relief says what a control IS (2026-08-31, owner's call; the board that set the direction
+- **Relief says what a control IS (since 2026-08-31; the board that set the direction
   is in the private repository under `brand/signal/`).** Raised means pressable — a light lip
   on top, 1px of contact below. Carved-in means ON or CONTAINING: a field holds its value
   (`CONTROL_CHROME`), and a checked `Tick`, a latched segment and the switch's groove are held
@@ -119,7 +119,7 @@ character and none of its typographic rules **except one**, below.
   oversight: 6px on a 16px checkbox is a 38% corner, which reads as a blob. Checkboxes and
   the small state dots keep 4px, and `ui/Switch.tsx` says so where somebody would otherwise
   "fix" it.
-- **TWO INKS NOW, owner's call 2026-08-29** — and the rule below is kept because its argument
+- **TWO INKS NOW, since 2026-08-29** — and the rule below is kept because its argument
   is still the test, not because the count is still one. The wordmark took three colours
   (ink, red ballpoint, highlighter) when it shipped on 2026-08-27, so "monochrome plus one"
   had stopped describing the product it belongs to. What did not change is WHY a colour is
@@ -139,7 +139,7 @@ character and none of its typographic rules **except one**, below.
   named Tailwind shadow gives you. There is no second step; a surface that wants one wants to
   be an overlay.
 - **The highlighter marks WHERE YOU ARE** (2026-08-29, and it is the ink's third role rather
-  than a fourth colour). The active tab wears `--pen` with ink text (the reading site's olive `--on-pen` stays on marks in running text — on a control it read as grey, owner's call 2026-08-31); the rail's current row
+  than a fourth colour). The active tab wears `--pen` with ink text (the reading site's olive `--on-pen` stays on marks in running text — on a control it read as grey, measured 2026-08-31); the rail's current row
   is a KEY HELD DOWN in the pen — the same full ink as the tab, with the same carved inset
   (2026-08-31: a bar-plus-wash read as a label, and a diluted wash beside the full tab pill
   read as a second ink; one ink, one strength, held down). A SELECTED VALUE gets neither,
@@ -181,7 +181,7 @@ character and none of its typographic rules **except one**, below.
   banners stay on the neutral scale: a second use of colour spends the only signal that
   means "your words". The admin theme dropdown's colours are isolated from the site's
   configurable palette.
-  **ONE exception, owner's call 2026-08-22: the dot beside the version on the dashboard** is
+  **ONE exception, since 2026-08-22: the dot beside the version on the dashboard** is
   amber when a newer release exists and green when this install is on the newest, asked for
   in those words. It is the only place in the admin where colour carries a status, and the
   argument for it is that this particular status is rare, actionable, and often a security

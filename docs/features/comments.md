@@ -66,7 +66,7 @@ Google account.
   salts is kept. Verdicts are separate on purpose: `expired` answers **409** so the island
   re-solves a fresh challenge and sends again (a page can sit in a cache longer than a stamp
   lives), everything else answers 400. The issue time doubles as a floor — under three seconds
-  was not typed. **Turnstile takes over whenever its keys are set** (owner's rule, 2026-08-27);
+  was not typed. **Turnstile takes over whenever its keys are set** (since 2026-08-27);
   Settings → Connections says which gate is standing. A signed-in Google reader skips both.
   Without a secure context there is no `crypto.subtle`, so only the age check stands: that
   install needs TLS.

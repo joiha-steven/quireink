@@ -21,7 +21,7 @@ column stacks, never straight into the grid — a grid lays its children out in 
 card beside a tall one is stretched and the next card cannot start until both have finished.
 That much was already fixed. What was not: which card goes on which side is a decision that
 goes stale. The Overview's comment said "traffic is the tall one on its own" and by the time
-the owner said the page looked uneven it was the SHORT one — measured at 1440px, 225px against
+the page was reported uneven it was the SHORT one — measured at 1440px, 225px against
 the other column's 413px, a 188px hole above the next full-width band, and the emptiest card on
 the page (5% of its box was text) sitting in the widest space. Two cards a side now: 467 against
 485, and both numbers are written where the next person will check them.
