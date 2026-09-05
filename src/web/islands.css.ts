@@ -135,15 +135,20 @@ export const ISLANDS_CSS = `
    which is the correct behaviour: a long code listing is not "arriving" while you read it.
 
    Only direct children of .prose, and never the figures: an image dimming at the edges
-   reads as a rendering fault rather than as an effect. */
+   reads as a rendering fault rather than as an effect.
+
+   ⚠️ NOT IN BOOK MODE. The book's own flow IS a .prose, and it is laid out in columns that
+   run sideways — so a view() timeline, which only knows the document's vertical scroll,
+   dimmed whichever paragraphs happened to sit outside the window in a direction the reader
+   is not scrolling. On a phone that put a wash of grey across the top of every page turned. */
 @supports (animation-timeline:view()){
   @media (prefers-reduced-motion:no-preference){
-    html[data-scroll-fade=on][data-motion=on] .prose>p,
-    html[data-scroll-fade=on][data-motion=on] .prose>h2,
-    html[data-scroll-fade=on][data-motion=on] .prose>h3,
-    html[data-scroll-fade=on][data-motion=on] .prose>ul,
-    html[data-scroll-fade=on][data-motion=on] .prose>ol,
-    html[data-scroll-fade=on][data-motion=on] .prose>blockquote{
+    html[data-scroll-fade=on][data-motion=on] .prose:not(.book-flow)>p,
+    html[data-scroll-fade=on][data-motion=on] .prose:not(.book-flow)>h2,
+    html[data-scroll-fade=on][data-motion=on] .prose:not(.book-flow)>h3,
+    html[data-scroll-fade=on][data-motion=on] .prose:not(.book-flow)>ul,
+    html[data-scroll-fade=on][data-motion=on] .prose:not(.book-flow)>ol,
+    html[data-scroll-fade=on][data-motion=on] .prose:not(.book-flow)>blockquote{
       animation:edge-fade linear both;animation-timeline:view();animation-range:cover 0% cover 100%}
   }
 }

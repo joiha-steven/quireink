@@ -96,6 +96,15 @@ footer.site a{display:inline-block;padding-block:.35rem}
    it. */
 .site-bar{flex-wrap:wrap;row-gap:.25rem}
 .site-actions{margin-left:auto}
+
+/* NO READING-PROGRESS BAR ON A PHONE. The scrollbar is already the answer to how far in you
+   are, and it is the answer the reader's own OS draws; a second one across the top of a
+   320px screen is a 2px line reporting a fact the device reports better. It also stuttered:
+   the bar is a scroll-driven animation, and on a phone it shares the compositor with the
+   address bar collapsing and the rubber-band at both ends, so it moved in steps while the
+   page moved smoothly. This is display, not opacity: the element leaves the page entirely
+   rather than sitting there invisible over the top edge. */
+.progress{display:none}
 }
 
 /* Copy sat behind pre:hover, and a touch screen never hovers: the button existed on a phone

@@ -173,8 +173,30 @@ export function registerSecurityFlows({ flow, expect }: Tour): void {
       // THE LISTING, which is where the reported fault actually lived: a card that is fully
       // inside the window must be solid, whatever its height. Measured against the card's own
       // height, a long post's card was still arriving in the middle of the screen.
+      // BOOK MODE MUST NOT FADE. Its flow is itself a .prose, laid out in columns that run
+      // sideways, so a view() timeline — which only knows the document's vertical scroll —
+      // dimmed whichever paragraphs happened to be outside the window in a direction nobody
+      // is scrolling. On a phone that was a wash of grey across the top of every page turned.
+      const book = await expect(post, `(async () => {${MEASURE}
+        const open = document.querySelector('.book-fab') || document.querySelector('[data-book-open]')
+        if (!open) return 'skip: book mode is off'
+        open.click()
+        await sleep(700)
+        const d = document.querySelector('.book-overlay[open]')
+        if (!d) return 'the book overlay did not open'
+        const next = d.querySelector('.book-next')
+        for (let i = 0; i < 3 && next; i++) { next.click(); await sleep(300) }
+        await sleep(400)
+        const ops = [...d.querySelectorAll('.book-flow p')].map((p) => +getComputedStyle(p).opacity)
+        d.querySelector('.book-x').click()
+        if (!ops.length) return 'the book flow has no paragraphs to measure'
+        const dim = ops.filter((o) => o < 0.99).length
+        return dim ? dim + ' of ' + ops.length + ' paragraphs are dimmed inside book mode' : 'ok ' + ops.length
+      })()`, 900)
+      if (!book.startsWith('ok') && !book.startsWith('skip')) return book
+
       const list = await expect('/', `(async () => {${MEASURE}
-        // Every card that is WHOLLY inside the window must be solid. The reported fault was
+      // Every card that is WHOLLY inside the window must be solid. The reported fault was
         // cards still half faded in the middle of the screen, and the cause was a range
         // measured against each card's own height; this is the assertion that a range cannot
         // outlast the card's arrival, whatever the card is.
