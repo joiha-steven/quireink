@@ -281,9 +281,9 @@ and the ten recovery codes, once. **Store the recovery codes somewhere that is n
 machine.**
 
 The token lives in memory, so a restart mints a new one and the old line stops being a
-secret. Reading it still proves you have the machine, which is the whole reason setup is not
-simply a page anyone could find: between first boot and the owner typing a password there
-would otherwise be a window, and whoever found the URL first would own the blog.
+secret. Reading it proves you have the machine, which is why setup is not simply a page
+anyone could find. **No log to read?** Set `SETUP_CODE` (twelve characters or more) in the
+environment and `/setup` asks for it instead; a cloud-init paste can carry it.
 
 Prefer the terminal, or automating it? The CLI still does the same job:
 

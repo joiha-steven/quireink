@@ -1308,6 +1308,11 @@ export type AdminStrings = {
   setupUnclaimedLede: string
   setupWhereToLook: string
   setupBadLink: string
+  setupCodeLede: string
+  setupCodeLabel: string
+  setupCodeGo: string
+  setupBadCode: string
+  setupTooMany: string
   // One message per rule the password check can fail, because "that password will not do"
   // without saying which rule leaves a person guessing. `{n}` is the minimum length.
   setupPwShort: string

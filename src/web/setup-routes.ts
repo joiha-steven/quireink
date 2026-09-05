@@ -16,9 +16,12 @@ import { noUsersYet, createUser } from '@/auth/users'
 import { checkPassword, MIN_LENGTH } from '@/auth/password'
 import { submitPassword } from '@/auth/login'
 import { generateSecret, otpauthUri } from '@/auth/totp'
-import { clientIp } from '@/server/rate-limit'
+import { clientIp, overLimit, recordHit } from '@/server/rate-limit'
 import { logAuthEvent } from '@/server/activity'
-import { setupToken, setupTokenMatches, forgetSetupToken } from '@/server/setup-token'
+import {
+  setupToken, setupTokenMatches, forgetSetupToken, setupCodeConfigured, setupCodeIgnored,
+  MIN_CODE_LENGTH,
+} from '@/server/setup-token'
 import { qrSvg } from '@/render/qr'
 import { claimScreen, enrolScreen, unclaimedScreen, fillTemplate } from '@/web/login-page'
 import { rememberEnrolmentSecret, enrolmentSkippable } from '@/web/enrol-routes'
@@ -30,6 +33,14 @@ import { siteStepScreen, faceStepScreen } from '@/web/setup-page'
 
 const html = (body: string, status = 200): Response =>
   new Response(body, { status, headers: { 'content-type': 'text/html; charset=utf-8' } })
+
+// Ten wrong secrets per address per quarter hour. Irrelevant against the 24-byte random
+// token, which no rate limit is needed for; there for `SETUP_CODE`, which a person chose
+// and a person could choose badly. Only misses are charged, so the one right answer and the
+// page loads before it cost nothing.
+const TRIES = 10
+const TRIES_WINDOW = 15 * 60_000
+const tries = (c: Context): string => `setup:${clientIp(c)}`
 
 /**
  * `GET /setup`.
@@ -45,10 +56,16 @@ export async function handleSetupPage(c: Context): Promise<Response> {
   if (!noUsersYet()) {
     return html(unclaimedScreen(settings, { error: adminT(settings.language).setupClaimed }), 404)
   }
+  const s = adminT(settings.language)
+  const askCode = setupCodeConfigured()
   const given = c.req.query('token') ?? ''
-  if (given === '') return html(unclaimedScreen(settings))
+  if (given === '') return html(unclaimedScreen(settings, { askCode }))
+  if (overLimit(tries(c), TRIES, TRIES_WINDOW)) {
+    return html(unclaimedScreen(settings, { error: s.setupTooMany, askCode }), 429)
+  }
   if (!setupTokenMatches(given)) {
-    return html(unclaimedScreen(settings, { error: adminT(settings.language).setupBadLink }), 403)
+    recordHit(tries(c), TRIES_WINDOW)
+    return html(unclaimedScreen(settings, { error: askCode ? s.setupBadCode : s.setupBadLink, askCode }), 403)
   }
   return html(claimScreen(settings, { token: given }))
 }
@@ -80,13 +97,18 @@ export async function handleSetupClaim(c: Context): Promise<Response> {
   // here means the same password fails at every later sign-in.
   const password = typeof source.password === 'string' ? source.password : ''
 
+  const askCode = setupCodeConfigured()
   const refuse = (message: string, status: number): Response => {
     if (!wantsHtml) return fail(c, message, status)
-    return html(unclaimedScreen(settings, { error: message }), status)
+    return html(unclaimedScreen(settings, { error: message, askCode }), status)
   }
 
   if (!noUsersYet()) return refuse(s.setupClaimed, 409)
-  if (!setupTokenMatches(token)) return refuse(s.setupBadLink, 403)
+  if (overLimit(tries(c), TRIES, TRIES_WINDOW)) return refuse(s.setupTooMany, 429)
+  if (!setupTokenMatches(token)) {
+    recordHit(tries(c), TRIES_WINDOW)
+    return refuse(askCode ? s.setupBadCode : s.setupBadLink, 403)
+  }
   if (username === '' || email === '') return refuse(s.setupBadLink, 400)
 
   // The same rules the CLI applies, so the two doors cannot disagree about what a password
@@ -136,6 +158,24 @@ export async function handleSetupClaim(c: Context): Promise<Response> {
  * ever asks anybody to do.
  */
 export function setupBanner(base: string): string {
+  // With `SETUP_CODE` honoured the secret is the operator's own and is NOT echoed here: the
+  // log is the one place it would gain a second reader. The page asks for it instead.
+  if (setupCodeConfigured()) {
+    return [
+      '',
+      '  ┌─────────────────────────────────────────────────────────────────────────┐',
+      '  │  This blog has no owner yet. Open the address below and type SETUP_CODE. │',
+      '  └─────────────────────────────────────────────────────────────────────────┘',
+      '',
+      `  ${base}/setup`,
+      '',
+      "  The code is the one in this service's environment. It stops working once the blog is claimed.",
+      '',
+    ].join('\n')
+  }
+  const ignored = setupCodeIgnored()
+    ? [`  [WARN] SETUP_CODE is shorter than ${MIN_CODE_LENGTH} characters and was ignored. The link above is the way in.`, '']
+    : []
   return [
     '',
     '  ┌─────────────────────────────────────────────────────────────────────────┐',
@@ -146,6 +186,7 @@ export function setupBanner(base: string): string {
     '',
     '  The link is good until this service restarts, and once only.',
     '',
+    ...ignored,
   ].join('\n')
 }
 

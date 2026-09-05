@@ -10,7 +10,11 @@ typed into a terminal:
    any provider whose Ubuntu images run cloud-init takes the same file.
 3. Create it. About three minutes after boot the blog answers on `http://<droplet-ip>`.
 4. The one-time link that claims it waits in `/root/quire-claim.txt` on the droplet, and in
-   `docker logs quire`, where every restart prints a fresh one.
+   `docker logs quire`, where every restart prints a fresh one. **Or skip the terminal
+   entirely:** put twelve characters or more in `SETUP_CODE` at the top of the file before
+   pasting, and claim the blog by opening `/setup` in a browser and typing them. The
+   generator at [quireink.com/start](https://quireink.com/start) writes the file with both
+   `DOMAIN` and `SETUP_CODE` filled in.
 
 It runs the published image against the droplet's bare IP over plain HTTP, which is the
 most a machine with no domain can honestly do. When you point a domain at the droplet, the

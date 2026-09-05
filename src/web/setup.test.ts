@@ -13,7 +13,9 @@ import { saveSettings } from '@/content/settings'
 import { resetPending } from '@/auth/login'
 import { resetEnrolment } from '@/web/enrol-routes'
 import { resetLimits } from '@/server/rate-limit'
-import { setupToken, forgetSetupToken } from '@/server/setup-token'
+import { setupToken, forgetSetupToken, resetSetupToken, setupCodeConfigured } from '@/server/setup-token'
+import { setupBanner } from '@/web/setup-routes'
+import { afterEach } from 'bun:test'
 import { getSettings } from '@/content/settings'
 
 const DIR = './.tmp/test-setup'
@@ -247,5 +249,83 @@ describe('the two questions after the account', () => {
     // document when it fails, which buries the reason it failed.
     const value = (await res.text()).match(/id="siteUrl"[^>]*value="([^"]*)"/s)?.[1]
     expect(value).toBe('https://blog.example')
+  })
+})
+
+// The second way in: a code the operator chose, for the installs where nobody reads a log.
+describe('a chosen setup code', () => {
+  const CODE = 'Paste-Once-4821'
+  beforeEach(() => {
+    process.env.SETUP_CODE = CODE
+    resetSetupToken()
+  })
+  afterEach(() => {
+    delete process.env.SETUP_CODE
+    resetSetupToken()
+  })
+
+  it('asks for the code on the page, and does not print it', async () => {
+    expect(setupCodeConfigured()).toBe(true)
+    const body = await (await app.request('/setup')).text()
+    expect(body).toContain('name="token"')
+    expect(body).not.toContain(CODE)
+    expect(body).not.toContain(CODE.toLowerCase().replace(/-/g, ''))
+    expect(body).not.toContain('/api/setup/claim')
+  })
+
+  it('takes the code as a person types it: any case, spaces or dashes', async () => {
+    for (const typed of [CODE, 'paste once 4821', 'PASTEONCE4821', ' paste-ONCE-4821 ']) {
+      const res = await app.request(`/setup?token=${encodeURIComponent(typed)}`)
+      expect(`${typed}: ${res.status}`).toBe(`${typed}: 200`)
+      expect(await res.text()).toContain('/api/setup/claim')
+    }
+  })
+
+  it('refuses a wrong code with the code message and keeps the field', async () => {
+    const res = await app.request('/setup?token=paste-twice-4821')
+    expect(res.status).toBe(403)
+    const body = await res.text()
+    expect(body).toContain('name="token"')
+    expect(body).toContain('setup code')
+  })
+
+  it('claims with the typed code, then forgets it for good', async () => {
+    const res = await claim({ token: 'paste once 4821' })
+    expect(res.status).toBe(200)
+    expect(noUsersYet()).toBe(false)
+    // The account exists, so the code is spent: a fresh ask mints a random token, not the
+    // operator's code, and the page stops asking for a code.
+    expect(setupToken()).not.toBe(CODE.toLowerCase().replace(/-/g, ''))
+    expect(setupCodeConfigured()).toBe(false)
+  })
+
+  it('locks the door after ten misses from one address, for the code only', async () => {
+    for (let i = 0; i < 10; i++) {
+      expect((await app.request(`/setup?token=wrong-${i}`)).status).toBe(403)
+    }
+    expect((await app.request('/setup?token=wrong-10')).status).toBe(429)
+    // The right code is refused too while the door is shut: a limiter that lets the right
+    // answer through is a limiter that confirms the right answer.
+    expect((await app.request(`/setup?token=${CODE}`)).status).toBe(429)
+    expect((await claim()).status).toBe(429)
+    expect(noUsersYet()).toBe(true)
+  })
+
+  it('keeps the code out of the boot banner, and points at /setup', () => {
+    const banner = setupBanner('https://example.com')
+    expect(banner).toContain('https://example.com/setup')
+    expect(banner).not.toContain('token=')
+    expect(banner).not.toContain('4821')
+    expect(banner).toContain('SETUP_CODE')
+  })
+
+  it('ignores a code too short to be a secret, and says so in the banner', async () => {
+    process.env.SETUP_CODE = 'short'
+    resetSetupToken()
+    expect(setupCodeConfigured()).toBe(false)
+    expect(setupToken().length).toBeGreaterThan(20)
+    const body = await (await app.request('/setup')).text()
+    expect(body).not.toContain('name="token"')
+    expect(setupBanner('https://example.com')).toContain('SETUP_CODE is shorter than 12')
   })
 })

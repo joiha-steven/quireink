@@ -23,7 +23,13 @@ set -euo pipefail
 # Leave it empty and you get what this file has always given: the blog on port
 # 80 at the droplet's own address, no certificate, and a note in
 # /root/quire-https.txt with the one command that fixes it once DNS is ready.
+#
+# SETUP_CODE is the second line worth filling: twelve characters or more, and
+# the blog is claimed by opening /setup in a browser and typing them, so the
+# terminal is never needed. Leave it empty and the one-time link in the log
+# is the way in, as before. https://quireink.com/start writes both lines.
 DOMAIN=""
+SETUP_CODE=""
 # ──────────────────────────────────────────────────────────────────────────────
 
 export DEBIAN_FRONTEND=noninteractive
@@ -48,13 +54,14 @@ if [ -n "$DOMAIN" ]; then
   RAW=https://raw.githubusercontent.com/joiha-steven/quireink/main
   curl -fsSL -o docker-compose.image.yml "$RAW/docker-compose.image.yml"
   curl -fsSL -o Caddyfile "$RAW/Caddyfile"
-  printf 'SITE_URL=https://%s\n' "$DOMAIN" > .env
+  printf 'SITE_URL=https://%s\nSETUP_CODE=%s\n' "$DOMAIN" "$SETUP_CODE" > .env
   docker compose -f docker-compose.image.yml pull -q
   docker compose -f docker-compose.image.yml up -d
 else
   docker run -d --name quire --restart unless-stopped \
     -p 80:3000 \
     -e SITE_URL="http://$IP" \
+    -e SETUP_CODE="$SETUP_CODE" \
     -v /var/lib/quire/data:/var/lib/quire/data \
     -v /var/lib/quire/uploads:/var/lib/quire/uploads \
     quireink/quireink:latest
