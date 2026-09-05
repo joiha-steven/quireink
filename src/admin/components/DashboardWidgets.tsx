@@ -16,7 +16,7 @@ export type DashboardData = {
   topPosts: { title: string; slug: string; views: number }[]
   // The unfinished pieces, newest first, at most four — and how many there are in all, so a
   // band showing four of eleven can say so instead of quietly capping.
-  pickUp: { items: { title: string; href: string; touched: string }[]; total: number }
+  pickUp: { items: { title: string; href: string; touched: string; untitledNo?: number }[]; total: number }
   // Counts the owner may want to act on. Comments have no moderation queue in
   // this app (publish-on-submit + soft-delete), so there is no "pending" here.
   // Unused-media is deliberately excluded — too heavy to compute on every load.

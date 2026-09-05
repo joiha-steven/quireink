@@ -14,6 +14,7 @@ import { getDashboardTraffic, getViewTotals } from '@/analytics/summary'
 import { countsByPosts } from '@/comments/comments'
 import { getIndex } from '@/content/posts'
 import { getPageIndex } from '@/content/pages'
+import { untitledNumbers } from '@/utils'
 import { getSettings } from '@/content/settings'
 import { storageStats } from '@/media/storage-stats'
 import { one } from '@/store/query'
@@ -168,9 +169,16 @@ export async function dashboardView() {
    * worth sorting by, and a draft created and never saved again still carries the moment it
    * was created here.
    */
+  // The SAME numbering the writing sidebar draws (`untitledNumbers`), over the SAME
+  // population and keys, so an untitled draft wears one number in both places rather than a
+  // dashboard '#2' beside a sidebar '#3'. Posts key on their date, pages on `updatedAt`.
+  const untitledNo = untitledNumbers([
+    ...posts.map((p) => ({ kind: 'post', slug: p.slug, title: p.title, created: Date.parse(p.date) || 0 })),
+    ...pages.map((p) => ({ kind: 'page', slug: p.slug, title: p.title, created: Date.parse(p.updatedAt ?? '') || 0 })),
+  ])
   const pickUpItems = [
-    ...unfinishedPosts.map((p) => ({ title: p.title, href: `/admin/editor/${p.slug}`, touched: p.updatedAt ?? '' })),
-    ...unfinishedPages.map((p) => ({ title: p.title, href: `/admin/page-editor/${p.slug}`, touched: p.updatedAt ?? '' })),
+    ...unfinishedPosts.map((p) => ({ title: p.title, href: `/admin/editor/${p.slug}`, touched: p.updatedAt ?? '', untitledNo: untitledNo.get(`post:${p.slug}`) })),
+    ...unfinishedPages.map((p) => ({ title: p.title, href: `/admin/page-editor/${p.slug}`, touched: p.updatedAt ?? '', untitledNo: untitledNo.get(`page:${p.slug}`) })),
   ]
     .sort((a, b) => new Date(b.touched).getTime() - new Date(a.touched).getTime())
     .slice(0, 4)
