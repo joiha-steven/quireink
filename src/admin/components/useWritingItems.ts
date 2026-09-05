@@ -28,6 +28,27 @@ export type WriteItem = {
   terms: string
   editHref: string
   viewHref?: string
+  /**
+   * 1, 2, 3… for a draft with no title, so the sidebar can tell several apart instead of
+   * showing one identical label for all of them. Numbered by creation order and NOT by
+   * position in the list, so a given draft keeps its number as new ones appear above it and
+   * as the list re-sorts. `undefined` for anything with a title.
+   */
+  untitledNo?: number
+}
+
+/**
+ * The untitled drafts, numbered oldest-first, keyed `kind:slug`. Pulled out of the hook so
+ * it is testable without React: the number has to be stable, and stability is the thing a
+ * test pins.
+ */
+export function untitledNumbers(
+  items: { kind: string; slug: string; title: string; created: number }[],
+): Map<string, number> {
+  const untitled = items
+    .filter((i) => !i.title.trim())
+    .sort((a, b) => a.created - b.created || a.slug.localeCompare(b.slug))
+  return new Map(untitled.map((i, idx) => [`${i.kind}:${i.slug}`, idx + 1]))
 }
 
 const stamp = (iso?: string): number => (iso ? new Date(iso).getTime() : 0)
@@ -62,8 +83,11 @@ export function useWritingItems(posts: Post[], pages: Page[], query: string, sco
       editHref: `/admin/page-editor/${p.slug}`,
       viewHref: p.status === 'published' ? `/${p.slug}` : undefined,
     }))
+    const all = [...fromPosts, ...fromPages]
+    const numbers = untitledNumbers(all)
+    for (const i of all) i.untitledNo = numbers.get(`${i.kind}:${i.slug}`)
     const key = sort === 'created' ? (i: WriteItem) => i.created : (i: WriteItem) => i.touched
-    return [...fromPosts, ...fromPages].sort((a, b) => key(b) - key(a))
+    return all.sort((a, b) => key(b) - key(a))
   }, [posts, pages, sort])
 
   // The body search is the SERVER's, because the body is not here: this hook is handed
