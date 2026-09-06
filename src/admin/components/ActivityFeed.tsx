@@ -26,6 +26,8 @@ import type { ActivityEntry } from '@/server/activity'
 import type { IconName } from '@/icons'
 import { formatDateTimeShort } from '@/utils'
 import { SharedGlyph } from './navIcons'
+import { useAdminT } from './I18nProvider'
+import { logSentence } from './logSentence'
 
 /**
  * The mark for an action.
@@ -91,6 +93,7 @@ const inkFor = (action: string): string =>
     : 'text-neutral-500 dark:text-neutral-400'
 
 export function ActivityFeed({ entries, limit = 10 }: { entries: ActivityEntry[]; limit?: number }) {
+  const t = useAdminT()
   // ONE clock for the whole list, read at render: eight rows each calling `Date.now()` can
   // straddle a minute boundary and print two different answers for the same instant.
   const now = Date.now()
@@ -114,7 +117,7 @@ export function ActivityFeed({ entries, limit = 10 }: { entries: ActivityEntry[]
         <li
           key={entry.id}
           className="flex min-w-0 items-start gap-3 border-b border-neutral-100 py-2.5 last:border-b-0 dark:border-neutral-800 xl:[&:nth-last-child(-n+2)]:border-b-0 xl:[&:nth-child(odd)]:border-r xl:[&:nth-child(odd)]:pr-8 xl:[&:nth-child(even)]:pl-8 xl:[&:nth-child(odd)]:border-r-neutral-100 dark:xl:[&:nth-child(odd)]:border-r-neutral-800"
-          title={formatDateTimeShort(entry.at)}
+          title={`${formatDateTimeShort(entry.at)} · ${entry.action}${entry.detail ? ` — ${entry.detail}` : ''}`}
         >
           <span className={`${MARK} ${inkFor(entry.action)}`}>
             <svg
@@ -125,10 +128,11 @@ export function ActivityFeed({ entries, limit = 10 }: { entries: ActivityEntry[]
             </svg>
           </span>
           <div className="min-w-0 flex-1">
-            {/* The detail is the sentence. An action with none — `cache.clear` says
-                everything in its own name, and so does every row written before the log
-                began recording one — takes the top line itself rather than leaving it
-                blank above its own filing. */}
+            {/* THE SENTENCE, from the same table the Log screen reads (`logSentence.ts`).
+                Both surfaces printed the machine's code — the top line was the raw detail
+                and the small print under it was `post.create` — so the home page's "Recent
+                activity" card said things like `mcp.token.delete` to somebody glancing at
+                their blog. The code stays in the row's `title` for anyone who needs it. */}
             <p
               className={`truncate text-sm ${
                 entry.action === 'error'
@@ -136,12 +140,9 @@ export function ActivityFeed({ entries, limit = 10 }: { entries: ActivityEntry[]
                   : 'text-neutral-800 dark:text-neutral-200'
               }`}
             >
-              {entry.detail || entry.action}
+              {logSentence(t, entry.action, entry.detail)}
             </p>
-            <p className="truncate text-xs text-neutral-500 dark:text-neutral-400">
-              {entry.detail && <>{entry.action} <span className="text-neutral-300 dark:text-neutral-600">·</span> </>}
-              {ago(entry.at, now)}
-            </p>
+            <p className="truncate text-xs text-neutral-500 dark:text-neutral-400">{ago(entry.at, now)}</p>
           </div>
         </li>
       ))}

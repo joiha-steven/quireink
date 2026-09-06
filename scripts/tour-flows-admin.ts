@@ -106,6 +106,42 @@ export function registerAdminFlows({ flow, expect, atWidth }: Tour): void {
       return empty.length ? empty.join(', ') : 'ok'
     })()`, 1000))
 
+  // The log is the one screen whose entire job is to be READ, and it printed the database's
+  // own vocabulary: forty machine codes in grey chips beside raw detail strings.
+  flow('admin: the log speaks, filters, and keeps the code in reach', () => expect('/admin/log', `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      const rows = () => [...document.querySelectorAll('main ul li')]
+      const first = rows()[0]
+      if (!first) return 'the log is empty; the fixture should have written to it'
+      // The row's own title holds the code; the face must not repeat it. Compared against
+      // THE ACTUAL CODE rather than against a pattern for one — "media.upload" and a filename
+      // like "nib-angles.png" look identical to a regex, and the first version of this flow
+      // failed on a perfectly good row because of that. No regex at all: this whole body is a
+      // template literal, and a backslash in it is one escape away from meaning something
+      // else by the time the browser sees it.
+      const title = first.getAttribute('title') || ''
+      const code = title.split(' — ')[0].trim()
+      if (!code.includes('.')) return 'the row dropped the machine code entirely: ' + title
+      const text = first.textContent || ''
+      if (text.includes(code)) return 'a row still prints its machine code: ' + text.slice(0, 60)
+      const before = rows().length
+      const kind = document.querySelector('main select')
+      if (!kind) return 'no kind filter on the log'
+      const opt = [...kind.options].find((o) => o.value === 'security')
+      if (!opt) return 'the kind filter offers no security option'
+      const setter = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value').set
+      setter.call(kind, 'security')
+      kind.dispatchEvent(new Event('change', { bubbles: true }))
+      await sleep(400)
+      const after = rows().length
+      if (after >= before) return 'filtering by kind narrowed nothing (' + before + ' -> ' + after + ')'
+      setter.call(kind, 'all')
+      kind.dispatchEvent(new Event('change', { bubbles: true }))
+      await sleep(300)
+      return 'ok (' + before + ' rows, ' + after + ' under one kind)'
+    })()`, 1200))
+
   flow('admin: the Storage card offers both limits', () => expect('/admin/settings', `
     (async () => {
       const b = [...document.querySelectorAll('button')].find((x) => x.textContent.trim() === 'Server & connections')

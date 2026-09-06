@@ -1077,6 +1077,30 @@ export type AdminStrings = {
   featTransferStatsDesc: string
   logTitle: string
   logEmpty: string
+  /** The log's own controls: which kinds, how far back, and what to look for. */
+  logKindAll: string
+  logKindWriting: string
+  logKindMedia: string
+  logKindPeople: string
+  logKindSettings: string
+  logKindSystem: string
+  logKindSecurity: string
+  logKindError: string
+  logWhenAll: string
+  logWhen7: string
+  logWhen30: string
+  logSearch: string
+  logShowMore: string
+  logNoMatch: string
+  /**
+   * ONE SENTENCE PER RECORDED ACTION, keyed by its machine code.
+   *
+   * A record rather than forty keys, for the reason `paletteNames` is one: these are a
+   * closed set that is read as a set, and forty siblings in a flat dictionary would sit
+   * between two unrelated strings and be translated one at a time out of context.
+   * `{t}` is the thing the action was about; an action with no object simply omits it.
+   */
+  logActions: Record<string, string>
   logDisabled: string
   logColTime: string
   logColAction: string
