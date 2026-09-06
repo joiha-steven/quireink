@@ -193,6 +193,42 @@ export function registerAdminFlows({ flow, expect, atWidth }: Tour): void {
       return rows() >= before ? 'ok (gone, then back)' : 'undo did not put the comment back'
     })()`, 1000))
 
+  flow('admin: a failed save leaves its toast up, and the close button removes it', () => expect('/admin/settings', `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      // A refusal the server really gives: the settings endpoint rejects a body that is not
+      // an object, so nothing has to be stubbed to produce a real failure toast.
+      await fetch('/api/settings', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: '"nope"' })
+      const box = document.querySelector('main input:not([type])')
+      const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set
+      setter.call(box, box.value + ' x')
+      box.dispatchEvent(new Event('input', { bubbles: true }))
+      await sleep(250)
+      // Break the endpoint from the page's side: a fetch that cannot parse its answer is the
+      // same failure path a dead server takes, and it needs no fixture.
+      const real = window.fetch
+      window.fetch = (u, i) => (String(u).includes('/api/settings') && i && i.method === 'PUT'
+        ? Promise.reject(new Error('offline'))
+        : real(u, i))
+      const save = [...document.querySelectorAll('main button')].find((b) => /[0-9]/.test(b.textContent) && !b.disabled)
+      if (!save) return 'the save key never counted the change'
+      save.click()
+      await sleep(600)
+      window.fetch = real
+      let toast = document.querySelector('.admin-toast')
+      if (!toast) return 'a failed save printed nothing'
+      // FOUR SECONDS LATER it is still there: a failure has no timer, because only the person
+      // reading it can decide it has been read.
+      await sleep(4200)
+      toast = document.querySelector('.admin-toast')
+      if (!toast) return 'the failure toast left on its own'
+      const close = [...toast.querySelectorAll('button')].pop()
+      if (!close) return 'the toast offered no way to close it'
+      close.click()
+      await sleep(500)
+      return document.querySelector('.admin-toast') ? 'the close button did not remove it' : 'ok (stayed 4s, closed on demand)'
+    })()`, 1200))
+
   flow('admin: emptying the trash asks first, and Esc backs out', () => expect('/admin/trash', `
     (async () => {
       const sleep = (ms) => new Promise((r) => setTimeout(r, ms))

@@ -755,6 +755,15 @@ html.admin [role='dialog'] {
   .admin-toast { opacity: 0; translate: 0 8px; }
   html.admin [role='dialog'] { opacity: 0; translate: 0 6px; }
 }
+/* AND THE WAY OUT. A toast that arrives on a curve and then disappears on a frame reads as a
+   glitch rather than as an exit: the eye tracks the entrance, so it is watching the thing at
+   the moment it vanishes. 150ms, which is what `ToastProvider` waits before unmounting —
+   the two numbers have to agree or the element is gone before the transition starts. */
+.admin-toast[data-leaving] {
+  opacity: 0;
+  translate: 0 8px;
+  transition-duration: .15s;
+}
 
 /* THE TWO GATES. The owner's one switch (server-rendered as data-motion on <html>) and the
    OS preference each set every animation and transition to none in one rule, exactly as
