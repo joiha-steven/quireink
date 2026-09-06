@@ -39,16 +39,12 @@ html.book-reading body>*:not(.book-reader){display:none}
   padding-top:env(safe-area-inset-top,0px);background:var(--book-paper);
   transition:transform var(--dur-fast) ease}
 .book-reader.chrome-away .book-chrome{transform:translateY(-100%)}
-/* THE STATUS BAR'S OWN STRIP, and it stays when the chrome leaves.
-   With the reader open the page asks for viewport-fit=cover (book-scroll.ts), because that
-   is what makes iOS report a real safe-area inset — and what lets the paper run to the very
-   top of the glass instead of stopping at a seam. The cost of covering is that the clock and
-   the battery are then drawn OVER the page, so a line of type scrolling past sits under them
-   and is unreadable for those pixels. This strip is the paper that catches it: the line goes
-   behind a band of the same stock rather than behind the status bar. Zero-height on any
-   device that has no inset, so nothing changes there. */
-.book-reader::before{content:'';position:fixed;inset-inline:0;top:0;z-index:3;
-  height:env(safe-area-inset-top,0px);background:var(--book-paper)}
+/* NO STRIP UNDER THE STATUS BAR when the chrome is away. There was one - a fixed band of
+   paper the height of the safe-area inset, kept after the bar left so a line scrolling past
+   the clock had paper behind it. The owner read it as a band that blocks the words: on an
+   ordinary page the text runs under the status bar while you read down, and the chrome only
+   comes back when you scroll up. So the reader does the same. The bar's own padding-top
+   (above) still covers the inset while the bar is showing. */
 /* The inset, the bar and its rule, so the first line clears all three when the bar shows. */
 .book-page{padding:calc(env(safe-area-inset-top,0px) + 56px + 1.5rem) 20px calc(3rem + env(safe-area-inset-bottom,0px))}
 .book-reader .book-flow{max-width:38rem;margin:0 auto;columns:auto;column-width:auto;width:auto}

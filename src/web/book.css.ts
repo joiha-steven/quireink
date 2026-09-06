@@ -39,27 +39,23 @@ export const BOOK_CSS = `
    currentColor: the loop is cut out of a fill that already is the palette's heading ink, so
    every palette circles in its own colour and nothing here names one. The path overshoots
    its own start, the way a real one does. */
-/* GUARDED. Without a mask the cut-out never happens and the pseudo-element is a solid
-   block of heading ink laid over the words — the failure is not "no circle", it is the
-   label blacked out. An engine that cannot mask simply gets no mark. */
-@supports ((-webkit-mask-image:url("#m")) or (mask-image:url("#m"))){
-  .book-mode-toggle::after{content:"";position:absolute;pointer-events:none;
-    /* Asymmetric: the loop closes with a tail on the RIGHT, so that side needs the room,
-       and the left has a // marker sitting beside it under the IDE chrome. */
-    inset:.26rem -.52rem .26rem -.36rem;opacity:0;background-color:currentColor;
-    -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
-    -webkit-mask-size:100% 100%;mask-size:100% 100%;
-    -webkit-mask-image:var(--ink-loop);mask-image:var(--ink-loop);
-    transition:opacity var(--dur-fast)}
-  .book-mode-toggle:hover::after,.book-mode-toggle:focus-visible::after{opacity:.85}
-  /* AND THE PRESS IS THE SAME MARK, PRESSED HARDER. This control took the shared carved
-     shadow off the key vocabulary until 2026-09-01, and the two did not belong together: the
-     hover draws a round pen loop and the carve is a rectangle across the padded row, so one
-     control answered a pointer with a circle and a click with a square. The loop going to
-     full ink is the surface change the click convention asks for, in the vocabulary this
-     control already speaks. */
-  .book-mode-toggle:active::after{opacity:1;transition-duration:0s}
-}
+/* A REAL SVG (INK_LOOP_SVG, icons.ts), placed over the words. It was a data-URI mask on a
+   pseudo-element until 2026-09-06, and Safari drew a faint dotted rectangle round the mask's
+   box on every hover - WebKit rasterises a scaled SVG mask and shows its edges; Chrome does
+   not, which is why it shipped. A path in the document has no edges to show. */
+.book-loop{position:absolute;pointer-events:none;
+  /* Asymmetric: the loop closes with a tail on the RIGHT, so that side needs the room,
+     and the left has a // marker sitting beside it under the IDE chrome. */
+  inset:.26rem -.52rem .26rem -.36rem;width:auto;height:auto;opacity:0;
+  transition:opacity var(--dur-fast)}
+.book-mode-toggle:hover .book-loop,.book-mode-toggle:focus-visible .book-loop{opacity:.85}
+/* AND THE PRESS IS THE SAME MARK, PRESSED HARDER. This control took the shared carved
+   shadow off the key vocabulary until 2026-09-01, and the two did not belong together: the
+   hover draws a round pen loop and the carve is a rectangle across the padded row, so one
+   control answered a pointer with a circle and a click with a square. The loop going to
+   full ink is the surface change the click convention asks for, in the vocabulary this
+   control already speaks. */
+.book-mode-toggle:active .book-loop{opacity:1;transition-duration:0s}
 /* The travel stays, because it is the shared click and it has no shape of its own: 1px down,
    instantly, sprung back on the release. Outside the @supports block on purpose — an engine
    that cannot mask gets no loop, and taking its press away as well would leave the click

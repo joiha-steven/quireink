@@ -127,3 +127,17 @@ export const ICONS = {
 } as const
 
 export type IconName = keyof typeof ICONS
+
+/**
+ * The pen's own mark: a loop round a word, overshooting its start the way a real one does.
+ * INLINE SVG, not a CSS mask, since 2026-09-06. It was a data-URI mask on a pseudo-element
+ * (`--ink-loop`), and WebKit rasterises a scaled SVG mask with a faint dotted rectangle round
+ * its box — Chrome does not, which is why it shipped. A real path in the document is drawn
+ * by the vector engine at any size, takes currentColor so every palette circles in its own
+ * ink, and needs no @supports guard. preserveAspectRatio none lets it take the shape of what
+ * it circles; the slight thinning of the horizontal runs is the point, since a nib does the
+ * same. `.book-loop` in book.css.ts places it and fades it in on hover.
+ */
+export const INK_LOOP_SVG = '<svg class="book-loop" viewBox="0 0 200 60" preserveAspectRatio="none" aria-hidden="true">'
+  + '<path d="M170 13C130 4 60 4 24 16C4 23 6 40 44 48C84 56 150 54 180 42C198 35 196 20 168 12C160 10 150 9 140 9"'
+  + ' fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg>'

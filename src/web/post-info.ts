@@ -21,7 +21,7 @@ import type { Dict } from '@/locales/types'
 import { formatCount, formatDate } from '@/i18n/i18n'
 import { tagText, termSlug } from '@/content/taxonomy'
 import { escapeAttr, escapeHtml, readingMinutes, wordCount } from '@/utils'
-import { ICONS } from '@/icons'
+import { ICONS, INK_LOOP_SVG } from '@/icons'
 import { TOC_ANCHORS } from '@/render/toc'
 
 /**
@@ -31,6 +31,10 @@ import { TOC_ANCHORS } from '@/render/toc'
  * information at two widths, and a divergence between them is a difference the reader would
  * see when they turned their phone sideways.
  */
+/** The one button that opens the book, with the pen loop it wears on hover, for both places it is drawn. */
+export const bookToggle = (inner: string): string =>
+  `<button type="button" class="book-mode-toggle" data-book-open>${inner}${INK_LOOP_SVG}</button>`
+
 export function termLinks(list: string[], kind: 'category' | 'tag', lower = false): string {
   return list
     .map((x) => `<a class="link-accent${lower ? ' lower' : ''}" href="/${kind}/${
@@ -100,10 +104,10 @@ export function postInfoPanel(post: PostWithContent, settings: SiteSettings, s: 
   // target and the book from the shared icon set — and the press has the product's own
   // click, from `utility.css.ts`.
   if (features.bookMode) {
-    rows.push(`<p class="info-action"><button type="button" class="book-mode-toggle" data-book-open>`
-      + `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"`
+    rows.push(`<p class="info-action">${bookToggle(
+      `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"`
       + ` stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS.book}</svg>`
-      + `<span>${escapeHtml(s.bookMode)}</span></button></p>`)
+      + `<span>${escapeHtml(s.bookMode)}</span>`)}</p>`)
   }
 
   return `<aside class="post-info t-small text-meta">${rows.join('')}</aside>`

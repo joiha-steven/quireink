@@ -58,7 +58,7 @@ html[data-ide-chrome=on] .info-action::before{content:"// ";color:var(--c-meta);
    a line that already says "Book mode", inside a panel written as source, is the one place
    the mode contradicts itself. The words are the icon here. The target the icon was added
    for is the padding, not the drawing, so nothing gets harder to press. */
-html[data-ide-chrome=on] .book-mode-toggle svg{display:none}
+html[data-ide-chrome=on] .book-mode-toggle svg:not(.book-loop){display:none}
 /* ...except in the comment thread. "Be the first to comment" is an invitation to the
    reader, not a label on a section, so a marker there would file a sentence as a heading. */
 html[data-ide-chrome=on] #comments .empty::before{content:none}
