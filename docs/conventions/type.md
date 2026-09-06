@@ -46,7 +46,7 @@
   measure at `contentWidth` 672 is 70 characters in Inter, 71 in Literata and 72 in Source
   Serif — near the 45-75 band's top, not the 66 the note claimed.
 - **THE MEASURE IS A FUNCTION OF THE LANGUAGE, not of `contentWidth` alone**, which is why
-  `siteWidthHint` names no character count in any of the six locales. Same setting, same
+  `siteWidthHint` names no character count in any of the eleven locales. Same setting, same
   face, same 18px: the line above measures 71 characters in Literata, and the same column
   running Vietnamese measures **67**. Vietnamese syllables are short, so a line carries ~16
   words and therefore ~15 of the narrow glyphs a space is — more characters fit in fewer

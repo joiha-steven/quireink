@@ -14,8 +14,8 @@ and to ship a fix or mitigation before any public disclosure.
 
 ## Scope
 
-Quire Ink is self-hosted, single-owner software. The trust model: the account created with
-`bun run user create` is the owner, and the owner is trusted. Owner-only actions
+Quire Ink is self-hosted, single-owner software. The trust model: the one account that claims the blog
+(`/setup`, or `bun run user create`) is the owner, and the owner is trusted. Owner-only actions
 (uploading media, editing content, custom CSS, uploading an SVG) are not vulnerabilities.
 
 Reports we care about:
@@ -64,11 +64,6 @@ Stated so a report can say which of these is wrong, which is more useful than a 
 
 Fixes land on `main`. Please test against the latest `main` before reporting.
 
-**Quire 1.5.0**, the Next.js + PostgreSQL implementation, was replaced by 2.0 on 2026-07-28
-and its last instance was shut down on 2026-07-31. It is **unsupported** and receives no
-fixes, security ones included. It is no longer part of the working tree; it is in git
-history at tag `v1-final`. Its trust model differed in one important way, so read it
-with that in mind: the owner signed in with Google and was identified by
-`AUTHORIZED_EMAIL`. A finding against 1.x is still worth sending if 2.0 inherited the same
-flaw, but say which tree you tested, because a 1.x-only issue will be documented rather
-than patched.
+**Quire 1.x** (tag `v1-final`: Next.js + PostgreSQL, Google sign-in via `AUTHORIZED_EMAIL`) is
+unsupported and receives no fixes, security ones included. Say which tree you tested: a
+1.x-only finding is documented, not patched.

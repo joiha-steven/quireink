@@ -24,9 +24,9 @@ The negotiation lives in the router rather than in a config file, which is the o
 it can be read next to the route it affects. Both `.well-known` documents answer `OPTIONS`
 and send permissive CORS, because a connector's browser half fetches them cross-origin.
 
-A new public read route is owner-gated by default; making it public means adding it to
-`PUBLIC_WRITES` in `scripts/checks/routes-guarded.ts` **with the reason**, or the build
-fails ([`spec/02-structure.md`](spec/02-structure.md)).
+A write route is gated by where it is mounted; a public write goes in `PUBLIC_WRITES` in
+`scripts/checks/routes-guarded.ts` **with the reason**, or the build fails
+([`spec/02-structure.md`](spec/02-structure.md)).
 
 ## Not carried into 2.0 yet
 
@@ -42,8 +42,7 @@ The OAuth/MCP discovery routes are served by the app, so a proxy in front MUST f
 `location ~ /.well-known { … }` block (for ACME) with **no `proxy_pass`** — it swallows
 ALL `/.well-known/*` and returns a disk 404, so discovery silently breaks. Narrow it to
 `location ^~ /.well-known/acme-challenge/` so everything else falls through to the
-proxy. (Also purge the CDN once — a cached 404 outlives the fix.) See the deploy notes
-in the ops repo / memory.
+proxy. (Also purge the CDN once — a cached 404 outlives the fix.)
 
 ## Skills that ship in the repository
 
@@ -68,9 +67,7 @@ Owners who drive the blog from somewhere else copy the operating one into their 
 cp -r .claude/skills/quireink-write ~/.claude/skills/
 ```
 
-This is a file in a repository, not a network surface. The **Agent Skills index** listed as
-deliberately absent below is a different thing: an HTTP endpoint advertising skills to
-strangers, which is still not what this blog needs.
+This is a file in a repository, not a network surface.
 
 ## Content-usage policy (Content-Signal)
 

@@ -51,6 +51,8 @@ type Props = {
   totalBytes: number
   recent: ActivityEntry[]
   activityEnabled: boolean
+  /** The owner's switch for the line at the foot (Settings → System → Dashboard). */
+  systemLine: boolean
   firstRunDone: boolean
   author: GreetingAuthor
   lastPublishedAt: string | null
@@ -175,7 +177,7 @@ export function Overview(props: Props) {
       body: JSON.stringify({ firstRunDone: true }),
     }).catch(() => undefined)
   }
-  const { posts, pages, comments, originals, totalBytes, recent, activityEnabled, version, commit, update, system, dashboard, firstRunDone, author, lastPublishedAt } = props
+  const { posts, pages, comments, originals, totalBytes, recent, activityEnabled, systemLine, version, commit, update, system, dashboard, firstRunDone, author, lastPublishedAt } = props
   return (
     <div className={SECTION_GAP}>
       {/* The greeting REPLACES the page title, it does not sit above one. "Overview" was a
@@ -224,7 +226,10 @@ export function Overview(props: Props) {
         )}
       </Card>
 
-      <div className={`flex flex-wrap items-center justify-between gap-3 px-1 ${META_ON_CANVAS}`}>
+      {/* The whole line has a switch (Settings → System → Dashboard): an owner who wants no
+          brand on the screen gets none. Settings → System still says when an update
+          exists, so hiding this line hides no warning. */}
+      {systemLine && <div className={`flex flex-wrap items-center justify-between gap-3 px-1 ${META_ON_CANVAS}`}>
         {/* WHAT IS ACTUALLY RUNNING. This line read "SQLite · online · Local filesystem":
             three facts that are identical on every install of this program, so it answered a
             question nobody asks and not the one they do — what am I running, and is it what I
@@ -249,7 +254,7 @@ export function Overview(props: Props) {
           {!system.dbReachable && <span className="ml-1.5 font-medium text-[var(--pen-red)]">· offline</span>}
         </span>
         {system.siteHref && <a href={system.siteHref} target="_blank" rel="noopener noreferrer" className="hover:text-neutral-900 dark:hover:text-white">{t.viewSite} ↗</a>}
-      </div>
+      </div>}
     </div>
   )
 }

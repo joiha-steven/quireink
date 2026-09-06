@@ -11,13 +11,15 @@ that is the name to use: `bun run build:assets`, `bun run check:all`, `bun run u
   build both artefacts, start the server — so a change to either means changing both. It
   never uses `sudo`, refuses to run as root, and is idempotent on the directory it is given.
 - **The schema is not a script.** `src/store/schema.sql` and `src/store/schema-analytics.sql`
-  are embedded and applied at boot; `src/store/migrations.sql` is one file, not a directory.
+  are embedded and applied at boot; the migrations are two files, one per database
+  (`src/store/migrations.sql`, `src/store/migrations-analytics.sql`), not a directory.
   Nothing has to be run by hand on a fresh install.
 - **WordPress import is an in-app feature** (Admin → Settings → System →
   `src/import/wordpress.ts`), NOT a script. `turndown`, `turndown-plugin-gfm` and
   `fast-xml-parser` are runtime **dependencies** because the importer uses them.
 - **`scripts/checks/`** holds the static guards `check:all` runs — `file-size`, `css-literal`,
-  `no-nul`, `routes-guarded`, `type-roles`, `admin-kit`, `docs`. A new load-bearing rule that a
+  `no-nul`, `routes-guarded`, `type-roles`, `admin-kit`, `admin-bundle`, `appearance-contract`,
+  `docs`. A new load-bearing rule that a
   test cannot hold belongs here, not in a comment.
 - **A check that needs a RUNNING instance does not go in `scripts/checks/`.** Those are static
   and `check:all` runs them with nothing serving. `restore-check.ts` needs an instance, a

@@ -75,10 +75,10 @@ the ConfigMap only if yours reaches the pod from a public address.
 ## Backups
 
 The volume is not a backup, and a volume snapshot of a live SQLite file is not one either.
-Use the blog's own archive (Settings → System, or `/api/backup`), which quiesces the
+Use the blog's own archive (Settings → System, or `/api/backup/export`), which quiesces the
 databases before it writes: [`docs/backups.md`](../../docs/backups.md). Restoring is
-[`scripts/restore-check.ts`](../../scripts/restore-check.ts)'s subject and works the same
-way in a pod as anywhere else.
+[`docs/backups.md#restoring`](../../docs/backups.md#restoring), and works the same way in a
+pod as anywhere else.
 
 `kubectl delete -k deploy/kubernetes` does **not** delete the volume — a StatefulSet's
 claims outlive it, which is the behaviour you want the day you delete the wrong thing.

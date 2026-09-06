@@ -126,41 +126,16 @@ porting bug in the surrounding pipeline, not a parser difference.
 
 - The theme and the Shiki version are unchanged, so highlighted markup is expected to be
   byte-identical to v1, not merely equivalent.
-- The **importer** warms that cache for the whole corpus (05-importer.md step 15) and the
+- The **importer** warms that cache for the whole corpus (the importer) and the
   golden comparison is what proves it did. The read path self-heals on a miss, so a
   failure here shows up as a slow first render rather than wrong output, which is exactly
   the kind of silent gap a byte comparison is good at catching.
 
-## `accepted.yaml`
+## The crawl tooling was not built
 
-Present, and expected to stay empty.
-
-Under the Go plan this file was where genuine parser disagreements were recorded. Here,
-any entry means either a porting mistake or an intentional design change that belongs in
-the parity-exceptions list in 00-rationale.md instead. Treat a non-empty file as a signal to
-stop and look, not as a normal working state.
-
-## Compare and report
-
-`compare.ts` boots Quire 2.0 against the imported SQLite database, requests the same URL
-set, applies the same normalisation, and diffs against `v1/`.
-
-Output is `report.html`: one page grouping differences by cause, side by side, sorted by
-number of affected URLs so systematic problems surface before one-offs.
-
-Exit code is non-zero on any difference. Runs in CI on every commit touching `src/render`
-or `src/web`.
-
-## Running order
-
-```
-1. capture   (once, against v1 + a production copy)     -> golden/v1/
-2. import    (bun run import-v1)                        -> quire.db
-3. compare   (repeatedly, during M2)                    -> report.html
-```
-
-Step 1 is re-run only when the production corpus changes materially, and that re-run is
-reviewed.
+`capture.ts`, `compare.ts`, `accepted.yaml` and `report.html` were planned and not built: the
+corpus gate above (`src/render/golden.test.ts` over `golden/v1/corpus/`, on every commit)
+replaced them.
 
 ## What this harness does not cover
 

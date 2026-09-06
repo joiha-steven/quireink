@@ -34,6 +34,7 @@ not cover.
 | **Read without a signal** | Reading → Reading features | A post your reader has already opened still opens with no network. **Off by default.** Nothing is downloaded ahead of time and your admin is never stored. Turning it off again removes it from readers who already have it |
 | **Archive** | Reading → Reading features | `/archive`: every post you have published, grouped by year, and the list of years in the rail. **On by default.** If you already publish a page or a post at `/archive`, yours keeps the URL and this stays off until you move it |
 | **Author** | Site → Author | Name, bio, portrait and a link. Empty by default; filling in a name adds a byline and puts you in the structured data search engines read |
+| Motion | Appearance → Text rendering | Every transition, entrance and smooth scroll, on the site, the sign-in page and the admin alike. A reader's own reduced-motion preference wins either way ([conventions/motion.md](conventions/motion.md)) |
 | IDE chrome | Appearance → Text rendering | Dresses the furniture around your words as source code. Off by default; it is a strong taste and it is one click either way |
 | Footer | Layout → Footer | Your own line, with `{year}` and `{title}` tokens |
 | Feature switches | Reading → Reading features | Table of contents, progress bar, book mode, related posts, reading time, the scroll fade, and a dozen more |
@@ -129,11 +130,8 @@ matching when the original changes.
 ### The variables that are safe to set
 
 These names are part of what the software promises you. They will not be renamed without a
-note in the changelog — and since 2026-08-31 that is a promise the build keeps rather than a
-sentence in a document: the list lives in `src/content/appearance-contract.ts`, and
-`check:contract` fails the build if a name here stops existing in the code, or if this page
-and that list stop agreeing in either direction. Before then nothing read it, which meant
-renaming one would have broken stylesheets on blogs nobody involved would ever see.
+note in the changelog. Since 2026-08-31 `check:contract` fails the build if this list and
+`src/content/appearance-contract.ts` disagree in either direction.
 
 **You do not have to come here for them.** The Custom CSS box lists every name below, with
 one line of explanation each; clicking one writes it where your cursor is.
@@ -231,8 +229,8 @@ Three things worth knowing before you paste:
 - **Your content policy decides whether it runs.** The app itself sends no
   `Content-Security-Policy`, because a useful policy depends on what you have chosen to
   load. The proxy in front of it usually does: the nginx vhost in
-  [self-host.md](self-host.md), the `Caddyfile`, and `deploy/caddy` all send
-  `script-src 'self'`, which blocks both an inline `<script>` and a `<script src>` from
+  [self-host.md](self-host.md) and the `Caddyfile` (which `deploy/caddy/setup.sh` installs)
+  both send `script-src 'self'`, which blocks both an inline `<script>` and a `<script src>` from
   another host, and the browser says so only in its console. Before a snippet can run
   under that policy, widen `script-src` (and `connect-src`, for a beacon that posts back)
   to name the host it loads from, the way the Turnstile block in the `Caddyfile` does.

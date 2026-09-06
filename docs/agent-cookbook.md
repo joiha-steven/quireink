@@ -110,8 +110,9 @@ calling the client) and the job repeats:
 
 ## Where the lines are
 
-- **Sensitive settings can't be written.** The settings tool exposes title and description;
-  fonts, domains, mail and auth are admin-only.
+- **Secrets are not settings.** `update_settings` takes any path `list_settings` names except
+  the palette definitions (`themes.*`); SMTP, keys and tokens are not settings at all and stay
+  in the admin.
 - **Deletes are soft.** Posts, pages, media, comments — everything goes to the Trash first.
 - **Every action is logged.** The activity log shows the agent's work the same way it shows
   yours, and revoking the token in the admin stops it mid-sentence.

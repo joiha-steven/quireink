@@ -71,7 +71,7 @@ which was never true. The boxes came off on 2026-08-03; **not one line of conten
   reads oldest first. Drafts and scheduled parts never appear
 - SeriesBox renders only when the series has more than one public part; current part
   highlighted and not linked
-- `/series/[slug]` listing preserves the given order and only paginates
+- `✂` `/series/[slug]` listing preserves the given order; 2.0 never paginates it ([reading.md](../features/reading.md))
 - Admin Series tab: rename across all posts (merging on collision), remove (clears the
   fields, posts untouched), reorder with arrows
 - Owner-managed 301/302 redirects, CRUD in Settings → SEO
@@ -163,9 +163,9 @@ which was never true. The boxes came off on 2026-08-03; **not one line of conten
   `animation-timeline` is missing)
 - Draft preview at `/preview/[slug]?key=<hmac>`, force-dynamic, noindex; the editor's
   "Preview draft" saves pending edits first
-- Themed skeleton while a blog route loads, gated on the motion engine
-- `⚠` Book mode: fullscreen two-column spread, paged with arrow keys, always sepia
-  regardless of theme, hidden below 767px, driven by the `#read` hash so Back closes it
+- `✂` Themed skeleton while a blog route loads: 2.0 has none, pages are server-rendered
+- `✂` Book mode: 2.0 is a `<dialog>` spread (arrow keys, paper), a floating button under 767px
+  and a scrolled reader under 640px; no `#read` hash ([reading.md](../features/reading.md))
 - Book mode clones the already-rendered body (Shiki, images, footnotes intact), forces
   cloned images eager, recomputes on resize and after `document.fonts.ready`
 - Book mode caps media to one page height so nothing overflows a spread; wide images
@@ -200,7 +200,7 @@ which was never true. The boxes came off on 2026-08-03; **not one line of conten
 
 ## 6. Comments
 
-- Off by default; enable in Settings → Content
+- Off by default; enable in Settings → Reading
 - Manual identity (name + email + optional website) or a signed-in account
 - `⚠` Limited markdown only: `**bold**` and `*italic*`, escape-first, hard cap 1000 chars
   on both server and client
@@ -209,11 +209,10 @@ which was never true. The boxes came off on 2026-08-03; **not one line of conten
   deleted-but-still-replied node as a blanked **tombstone**; a deleted leaf is pruned
 - `⚠` Email is stored but NEVER sent to the public client (separate public and admin column
   sets); website links get `rel="nofollow ugc noopener"`
-- Optimistic insert rendered with the SAME renderer the server uses, then replaced by an
-  authoritative refetch; a failed POST removes it and shows the error
+- `✂` Optimistic insert: 2.0 refetches after the POST ([comments.md](../features/comments.md))
 - `⚠` A comment never triggers `revalidatePath`. The block is a client island fetching
   `no-store`, so the post page stays static
-- Comment count comes from the same fetch plus the optimistic overlay
+- Comment count comes from the same fetch
 - Turnstile: enforced only when the toggle is on AND a secret exists, so toggling on without
   keys never locks out commenting. Tokens are single-use and the form re-arms
 - Per-IP rate limit (6/min); only a published, visible post accepts a comment
@@ -288,7 +287,7 @@ which was never true. The boxes came off on 2026-08-03; **not one line of conten
 - `⚠` Both beacons are deferred until the document is actually viewed (prerender guard,
   shipped in M0). Any new on-mount side effect needs the same treatment
 - Overview: views, visitors with period-over-period trend and a new-vs-returning split, avg
-  time on page, avg read depth, bounce rate
+  time on page, avg read depth, "One page only" (bounce rate, renamed 2026-08-31)
 - Dual-series time chart; year buckets by month, 24h by hour
 - Top pages table, each row linking to its drill-down
 - Sources: channels (Direct / Search / Social / Referral) + top external referrers
@@ -296,7 +295,7 @@ which was never true. The boxes came off on 2026-08-03; **not one line of conten
 - Read-depth distribution
 - `⚠` Referrers, countries, channels and facets count **distinct visitors**, not page views
 - Per-page drill-down repeats trend + sources + depth for one URL
-- CSV export of the daily series
+- `✂` CSV export of the daily series (removed 2026-08-30)
 - `⚠` Buckets truncated in `ANALYTICS_TZ` so days line up with local midnight. Port the
   existing timezone test cases FIRST
 - View totals column on the content tables
@@ -315,7 +314,6 @@ which was never true. The boxes came off on 2026-08-03; **not one line of conten
 - `/api/md/[slug]` markdown negotiation
 - `.well-known` discovery endpoints and the proxy rule
 - Content-Signal and Link headers
-- `auth.md`
 
 ## Known gaps in this list
 
@@ -326,4 +324,4 @@ Stated so nobody reads this inventory as proof of completeness:
 - Performance budgets live in [04-frontend.md](04-frontend.md), not here.
 - The 61 API routes are covered only through the behaviours they serve. A route with no
   user-visible behaviour (health, internal sweeps) may be missed.
-- i18n completeness is one line here and is really 4,983 lines across 6 files.
+- i18n completeness is one line here and is really 11 languages across 22 files under `locales/`.

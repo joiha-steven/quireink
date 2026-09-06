@@ -17,62 +17,33 @@ character and none of its typographic rules **except one**, below.
 
 - **The public reading interface is out of scope.** Its typography, fonts and type settings
   are deliberate; admin polish never changes them.
-- **ONE FACE. The admin is Inter, everywhere, with one carve-out for the editor.**
-  Set on 2026-08-15, with the editor keeping the face the frontend publishes in.
-  It replaces the TWO FACES rule adopted eight days earlier (2026-08-14), and both are the
-  owner's to set — what is worth writing down is why
-  the division works on the reading site and not here. There, it runs between a post title and
-  its date: two genuinely different kinds of thing, read by someone with time to feel it. In
-  the admin it landed between a setting's LABEL and the sentence under it — two halves of one
-  control, four lines apart, in two typefaces. A form is scanned, not read, and a reader
-  scanning does not experience that as meaning; they experience two voices. Rank by SIZE and
-  WEIGHT instead (`src/admin/components/scale.ts`).
-  **The carve-out is the editor, and it is not a preference:** the editor is WYSIWYG, so the
-  writing surface and the TITLE field must be set in the face the post will publish in. Those
-  two, plus the font picker's own specimen tiles, are the only holders of `.reading-font` —
-  `src/admin/components/one-face.test.ts` fails on a fourth. `--font-reading` and `spa.ts`'s
-  `fontPresetCss` therefore stay; deleting either makes the owner write in Inter and publish
-  in something else.
-- **The admin's chrome face is ITS OWN, and it is Inter.** It is not `chromeFont`. It followed
-  that setting for a day and was rejected as cluttered and wrong for an admin. A chrome font
-  is a branding choice about what a READER sees;
-  spending it on the tool put a monospace code face on every label, tab, button and table
-  cell, and beside a book serif that is two loud unrelated voices rather than one division.
-  Three versions of one Settings screen were photographed — two faces on the mono chrome, one
-  face throughout, and Inter + the reading face — and he chose the third. On 2026-08-15 he
-  chose the SECOND of those three instead (above), which is the same rejection of the mono
-  chrome arriving at a simpler answer.
-  ⚠️ Do not wire it back. Two things went with it and must stay gone: `MONO_TRACKING`, which
-  corrects a wide monospace and has nothing to correct here, and the `data-chrome-font`
-  attribute on the shell, whose only reader that rule was.
-  **What the admin still follows is everything about the owner's WORDS** — palette, type
-  scale, reading preset, uploaded face — because the editor is WYSIWYG and a post has to be
-  written in the face it publishes in.
+- **ONE FACE. The admin is Inter everywhere, with one carve-out for the editor** (since
+  2026-08-15). A form is scanned, not read: two faces between a setting's label and the
+  sentence under it read as two voices, not as meaning. Rank by SIZE and WEIGHT instead
+  (`src/admin/components/scale.ts`). The carve-out is not a preference: the editor is WYSIWYG,
+  so the writing surface, the title field and the font picker's specimen tiles are set in the
+  face the post publishes in — the only holders of `.reading-font`, pinned by
+  `src/admin/components/one-face.test.ts`. `--font-reading` and `spa.ts`'s `fontPresetCss`
+  therefore stay.
+- **The admin's chrome face is ITS OWN, and it is Inter.** It is never the site's `chromeFont`:
+  a chrome font is a branding choice about what a READER sees, and spent on the tool it put a
+  monospace on every label, tab and cell. ⚠️ Do not wire it back; `MONO_TRACKING` and the
+  `data-chrome-font` attribute on the shell went with it and must stay gone. What the admin
+  still follows is everything about the owner's WORDS — palette, type scale, reading preset,
+  uploaded face.
 - **BY ROLE, NEVER BY TAG** — kept, because it is what made the two-faces era survivable and
   it is what will catch the next attempt. The first version was a `.admin p` rule, and a tag is
   not a role: `Setting` renders its hint as a `<p>` and `ui/Input` renders the identical hint as
   a `<span>`, so the Site tab shipped *"Changes the interface language and date format."* in
   Literata four lines above *"Words auto-used as the excerpt…"* in JetBrains Mono — one card,
   one kind of thing, two faces, and neither call site was wrong. Every type decision travels on
-  a role from `components/type.ts`, never on an element; `check:admin-kit` fails a screen that
+  a role from `components/scale.ts`, never on an element; `check:admin-kit` fails a screen that
   hand-types a hint or names a typeface at all. `data-prose`, the page-level escape hatch, is
   GONE with the second face — there is nothing left for it to switch to. The one place a
   `fontFamily` may still appear is a `data-specimen` surface, which paints itself in the family
   it offers.
-- ⚠️ **Two mechanisms were tried against these symptoms and BOTH were wrong.** They are
-  recorded because each looked right and each was built on a misread.
-  `font-size-adjust: from-font` on `body`, to close the x-height gap — measured per 1em:
-  JetBrains Mono 0.550, Inter 0.539, IBM Plex Mono 0.516, Literata 0.508, Source Sans 3 0.486,
-  Source Serif 4 0.481, so a 12px serif hint really does render at 92% of the mono label
-  beside it. It cannot carry the leading with it and CSS gives no way to make it: `line-height`
-  resolves against the COMPUTED font-size, and `20px`, unitless `1.6` and `normal` all produce
-  an identical line box with the adjustment on and off while the glyphs inside grow. Tailwind's
-  line-heights are absolute, so it took every hint from 1.67 leading to 1.54.
-  Then `letter-spacing: normal` on every reading-face role, to undo the inherited mono
-  tracking. That one WORKED, and it was still a patch at each site for a problem whose source
-  was one line in `adminStyles`. Both are gone. **An x-height gap between two faces is ordinary
-  typography; text with less air than it was drawn for is what a reader feels, and the owner
-  felt it twice before either mechanism was questioned.**
+- `font-size-adjust: from-font` and a per-role `letter-spacing: normal` were both tried against
+  the mixed-face symptoms and both removed: the source was one line in `adminStyles`.
 - **The canvas is PAPER** (`#f7f6f4`), and a card is a SHEET on it: a hairline edge, a 10px
   radius, and no shadow at all. It was a flat neutral gray (`#f5f5f5`) under `rounded-2xl`
   white cards carrying a 1px drop shadow, and on 2026-08-15 that was rejected as looking
@@ -108,13 +79,9 @@ character and none of its typographic rules **except one**, below.
 - **Square corners are a PUBLIC rule.** Admin uses a 10 / 8 / 6px radius hierarchy — sheet,
   nested panel, control — never a global square reset, never arbitrary per-component rounding.
   It was 16 / 12 / 8; a 16px radius on a 1200px panel reads as a pill rather than as a page.
-  **Audited by measurement 2026-08-28**, because a rule nobody checks is a wish: every
-  computed radius across eighteen admin screens, counted. It found Tailwind's BARE `rounded`
-  (4px, not a step in this hierarchy) on 108 chips, badges and thumbnails, and three screens
-  that had hand-rolled a square chooser — `border px-3 py-2`, no radius at all — while the
-  Pictures and Galleries choosers directly below them on the same screen used the kit's
-  segmented track. Both are on the scale now; the choosers use the kit, which is also three
-  fewer copies of a control the kit already owns.
+  Audited by measurement on 2026-08-28: every computed radius across every admin screen is
+  on this scale, and the choosers use the kit's segmented track rather than a hand-rolled
+  square one.
   **Under 16px the hierarchy does not apply**, and that is a judgement rather than an
   oversight: 6px on a 16px checkbox is a 38% corner, which reads as a blob. Checkboxes and
   the small state dots keep 4px, and `ui/Switch.tsx` says so where somebody would otherwise
@@ -172,7 +139,7 @@ character and none of its typographic rules **except one**, below.
   ruled top and bottom at the card's full width (`-mx-4` against the body's `p-4`), the shape
   the card's own title row already has, and the rows keep their padding so their labels land
   on the left edge every other label in the card uses.
-- **Admin is monochrome, plus exactly ONE accent: the product's highlighter** (the Writing
+- **Admin is monochrome plus two inks and the version dot, each with a named role. The accent is the product's highlighter** (the Writing
   Desk mock's `--pen`, 2026-08-17). Its roles are named and closed — where you are (above), a
   search hit as a `<mark>` in the write pane, and the small dots that mean "work in progress"
   (a draft's row, the unsaved state, an unfinished chip on the home screen) in its edge tone.
@@ -193,8 +160,7 @@ character and none of its typographic rules **except one**, below.
   rail does not need them); the switch lives at the BOTTOM of
   "Everything else" (2026-08-17 — a set-once device preference does not need a permanent
   footer row), and it means the WHOLE rail: nav glyphs and the footer controls' glyphs alike
-  (the always-glyph carve-out tried that day — hiding the nav icons while Light, Clear cache
-  and Sign out kept theirs — lasted one evening). A COLLAPSED rail has no labels, so it stays icon-only
+  A COLLAPSED rail has no labels, so it stays icon-only
   and the collapse control is always available. Reading the setting as "no icons anywhere"
   is what hid the collapse control in the first cut, and the owner could not find it.
   The "Everything else" group itself remembers an EXPLICIT open/close across sessions
@@ -333,7 +299,7 @@ Route changes, the progress bar and recovery from a deploy have their own file:
 
 - Admin navigation uses the custom Quire Ink line-icon language.
 - **The four public-header glyphs are settled** — search circle, three-circle palette,
-  sun/moon, two-line menu. A July 12 replacement was reviewed and reverted. Shared button
+  sun/moon, two-line menu. Shared button
   sizing still comes from `ICON_BTN`; preserving glyphs does not permit per-button drift.
 - Tag labels render lowercase across the public rail, tag archives, post metadata, editor
   selections and taxonomy management, without mutating stored values.
@@ -349,10 +315,3 @@ Route changes, the progress bar and recovery from a deploy have their own file:
   were three identical grey stripes.
 - Backup scheduling and import controls use the shared rounded inputs and buttons, with
   native file-input chrome hidden behind an accessible labelled trigger.
-
-## Still open
-
-- Integrations may need its own secondary navigation if it keeps growing.
-- The editor's link prompt is still `window.prompt`; a small accessible popover would be
-  better.
-

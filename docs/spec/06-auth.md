@@ -75,7 +75,7 @@ SHA-1, 30-second step, 6 digits. About 80 lines using `crypto.createHmac`, no li
 - **Replay guard:** store the step number that was accepted in `totp_last_step` and
   reject any step less than or equal to it. Without this, a code shoulder-surfed inside
   its 90-second window is replayable.
-- Enrolment produces an `otpauth://totp/Quire:<username>?secret=...&issuer=Quire` URI,
+- Enrolment produces an `otpauth://totp/QuireInk:<username>?secret=...&issuer=QuireInk` URI,
   rendered as a QR code, with the base32 secret shown as text for manual entry.
 - 2FA is **required**, not optional. One user, no support desk, no reason for a weaker
   path to exist.
@@ -146,8 +146,8 @@ their own edits, which is a different want.
 There is no sign-up. The first owner is created by the CLI:
 
 ```
-quire user create --username hung --email hung@...
-quire user set-password --username hung
+quire user create --username <username> --email <email>
+quire user set-password --username <username>
 ```
 
 Implemented as `bun run user <create|set-password|list>` (`scripts/user.ts`).
@@ -240,7 +240,7 @@ it, while `listSessions`, `revokeAllSessions` and `remainingCodes` sat in `src/a
 and tested and called by nobody. An owner whose laptop was stolen had no way to end its
 session; an owner down to their last recovery code had no way to make more.
 
-House style applies throughout, per the `frontend-house-style` guidance: theme tokens
+House style applies throughout ([`docs/conventions/`](../conventions/README.md)): theme tokens
 only, one typeface, no all-caps, one divider style.
 
 ## What is removed

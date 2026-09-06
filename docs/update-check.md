@@ -1,23 +1,15 @@
 # What this blog tells us, and how to stop it
 
-Split out of [`self-host.md`](self-host.md) on 2026-08-29, when that page passed its 400-line
-cap: the guard says split rather than squeeze, and this was already a whole subject with its
-own audience — somebody deciding whether to allow a request at all reads differently from
-somebody following an install.
-
-The protocol is stated twice on purpose. The other copy is the comment at the top of
-[`src/server/update-check.ts`](../src/server/update-check.ts), for the reader who arrives at
-the code first; a change to one is a change to both, and to the eleven translations of the
-sentence the Settings screen shows the owner before they decide.
+The same protocol is in the header of
+[`src/server/update-check.ts`](../src/server/update-check.ts); a change to one is a change to
+both, and to the eleven translations of the sentence the Settings screen shows.
 
 Once a day, on the first visit your blog gets — or on its own hourly clock if nobody visits
 that day — it asks `check.quireink.com` what the newest release is. That one request does two
 jobs: you find out an update exists, and by asking, your blog is counted as one that is being
 used. There is no second call and no separate telemetry service.
 
-Until 2026-08-29 it asked only when a reader arrived, so a blog that was running perfectly and
-had a quiet day was counted as not there at all. On a personal blog that is most days, which
-made the figure read low by an amount nobody could measure.
+Since 2026-08-29 the hourly clock asks too, so a quiet day still counts.
 
 This is the whole request:
 
@@ -68,7 +60,7 @@ identifiable rather than accurate; this was chosen instead.
 Turn it off with `UPDATE_CHECK=0` in the environment, or in Settings → System → Updates.
 Off means your blog makes no outbound request of any kind. Nothing updates itself either
 way: knowing a release exists and installing it are separate acts, and the second one is
-yours ([section 9](#9-upgrading)).
+yours ([self-host.md, section 9](self-host.md#9-upgrading)).
 
 **It also stays quiet on its own while somebody is working on the software** — under
 `bun --watch` (which is what `bun run dev` is) and under `bun test`. An afternoon of

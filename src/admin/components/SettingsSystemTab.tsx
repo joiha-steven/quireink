@@ -20,6 +20,8 @@ import { OffsiteFields } from './OffsiteFields'
 import { StorageFields } from './StorageFields'
 import { UpdateFields, type UpdateStatus } from './UpdateFields'
 import { ActivityLogField } from './FeatureFields'
+import { ToggleRow } from '@/admin/ui/Switch'
+import { PANEL_LIST } from './kit'
 
 export function SettingsSystemTab(
   { s, update, updateStatus, offsiteConfigured, s3Bucket, grid, col }: {
@@ -48,6 +50,18 @@ export function SettingsSystemTab(
         </SettingsCard>
         <SettingsCard title={t.cacheTitle}>
           <CacheFields cache={s.cache} onChange={(cache) => update({ cache })} />
+        </SettingsCard>
+        {/* The dashboard's own furniture. One switch so far: the line at its foot, which is
+            the one place the admin says its own name and version on every visit. */}
+        <SettingsCard title={t.dashboardTitle}>
+          <div className={PANEL_LIST}>
+            <ToggleRow
+              label={t.dashboardSystemLine}
+              desc={t.dashboardSystemLineDesc}
+              checked={s.dashboard.systemLine}
+              onChange={(systemLine) => update({ dashboard: { ...s.dashboard, systemLine } })}
+            />
+          </div>
         </SettingsCard>
         <SettingsCard title={t.updateTitle}>
           <UpdateFields

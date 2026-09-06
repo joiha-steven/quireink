@@ -88,9 +88,6 @@ because both failures happened while it was being written: an explicit `--layout
 list drops `kern`/`mark`/`mkmk` and yields a font that measures 26% smaller and sets badly,
 and a Vietnamese subset with no combining marks silently loses mark attachment.
 
-For a long time this section named `scripts/subset-font-axes.py`, which has never been in
-this tree. The one operation the whole font budget rests on was the one nobody could run.
-
 The `opsz` axis doubled the two book serifs. Literata carries 42% fewer glyphs than Inter
 yet was 2.2× its size, entirely because `gvar` must store deltas for every glyph across
 the optical range:
@@ -125,22 +122,10 @@ Hard invariants (also in [`conventions/type.md`](./conventions/type.md)):
   `-latin` / `-latin-ext` / `-vietnamese`.
 - **Never preload `latin-ext` or a specific weight.** Built-in reading fonts are variable
   (one file per subset carries every weight); `latin-ext` glyphs are rare and load on demand.
-- **Never preload the chrome font**, in any config. (Regression to watch: a "no swap flash
-  on chrome" instinct will try to re-add it — don't; chrome is not LCP.)
-  **REVERSED 2026-07-29 for a self-hosted chrome family.** That rule was written when the
-  chrome font was Inter and the fallback a system sans, so the swap was barely visible. It
-  is a MONOSPACE on any site that picks one, and the header, the meta line and both rails
-  re-flow when it lands. Measured at the origin, cold, 4x CPU throttle, median of five:
-
-  | | LCP | CLS |
-  |---|---|---|
-  | no chrome preload | 472 ms | 0.0004 on four runs of five |
-  | chrome face preloaded | **472 ms** | **0 on all five** |
-  | Inter preloaded by mistake (44 KB unused) | 632 ms | 0.0004 |
-
-  Free in LCP, and it removes the shift. The third row is the trap: `getChromeFont` falls
-  back to Inter for an unknown id, which is right for the font STACK and costs 160 ms as a
-  preload. `chromeFont: 'reading'` preloads nothing extra — it is the reading face again.
+- **Preload the chrome font only when it is a self-hosted family of its own** (`isChromeFontId`
+  decides); `chromeFont: 'reading'` preloads nothing extra. The table above has the
+  measurement, and the trap: `getChromeFont` falls back to Inter for an unknown id, which is
+  right for the font stack and costs 160 ms as a preload.
 - Changing which subsets exist? Keep `fontPreloadHrefs`, the `@font-face` `unicode-range`
   blocks (`src/render/font-faces.ts`) and the served file list (`src/web/static.ts`) in sync.
 
@@ -205,14 +190,14 @@ one, and both break it silently:
 It found a bug on the way in: `ide.css.ts` carried a paragraph of prose with a closing `*/`
 and **no opener**, so a browser read the prose as a selector, failed, and discarded the rule
 that followed it — seven selectors meant to darken every count and date under the IDE chrome,
-which had therefore never applied. `check:css-literal` now counts `/*` against `*/` in every
+which had therefore never applied. `check:css` (`scripts/checks/css-literal.ts`) now counts `/*` against `*/` in every
 sheet, because nothing about that failure was visible: no error, no log, and the sheet reads
 correctly in the editor.
 
 **The check DISCOVERS the sheets; it does not keep a list of them.** It used to, and the
 list went stale three times — the third time it reported "ok (6 sheets)" while `front.css.ts`
 and `utility.css.ts` had never been read, and a backtick in one of them was caught by the
-type checker instead. `check:type-roles` had the same list and the same hole (`mobile.css.ts`
+type checker instead. `check:type` had the same list and the same hole (`mobile.css.ts`
 was never in it). Both now scan `src/web/*.css.ts`, so a new sheet is covered the moment the
 file exists, and the old rule "add a new sheet to the check in the same commit" is gone
 along with the way to forget it. `type-roles` keeps ONE exclusion, `login.css.ts`, because
@@ -220,8 +205,9 @@ the sign-in page renders with no base sheet and a role reference there resolves 
 
 ### A fourth sheet: the phone
 
-`web/mobile.css.ts` is appended LAST, after the islands and the IDE chrome, because several
-of its rules win on a specificity tie alone. The seam is a real one rather than a split at
+`web/mobile.css.ts` is appended after the islands, the IDE chrome and the motion engine, and
+before print, because several of its rules win on a specificity tie alone. `book-phone.css.ts`
+is the second phone sheet: the scrolled book reader that replaces the spread under 640px. The seam is a real one rather than a split at
 the line limit: a phone is not a narrow desktop. It carries the 16px floor on form controls
 (below that, iOS Safari zooms the page on focus and the site's small role is 14px),
 thumb-sized padding on the drawer rows and the tag cloud, `@media (hover:none)` for the
@@ -284,7 +270,7 @@ appended to the admin bundle by the build (Tailwind cannot import a TypeScript m
 Not budgeted (ADR 0006) — but "the owner pays it" is not the same as "the owner pays it
 again every time". Two things were wrong and both are cheap:
 
-- `main.js` (194 KB) and `admin.css` (68 KB) are the two files Bun does not hash, and they
+- `main.js` and `admin.css` are the two files Bun does not hash, and they
   went out `no-cache` with **no validator at all**, so 262 KB came down on every admin load
   while the twelve hashed chunks beside them were `immutable` and free. They are now served
   under a fingerprinted URL — `main.<hash>.js`, `admin.<hash>.css` — computed in
@@ -303,9 +289,10 @@ owner may never open, and preloading all fourteen would trade one problem for a 
 
 ## JS — ship only what's used, only when it's used
 
-1. **Four bundles, and a budget in a test.** `core.js` on every public page, `post.js` added
-   on an article, and **`book-mode.js` / `comment-thread.js` only on an article whose switch
-   is on** (`article.ts` emits the tag or does not); `scripts/build-assets.ts` builds them
+1. **Four bundles on public pages, plus `login.js` on the sign-in page, and a budget in a
+   test.** `core.js` on every public page, `post.js` added on an article, and
+   **`book-mode.js` / `comment-thread.js` only on an article whose switch is on**
+   (`articleScripts()` in `web/assets.ts` emits the tag or does not); `scripts/build-assets.ts` builds them
    from `src/assets/js/` and FAILS the build when any passes the byte budget written beside
    it. There is no framework baseline to hide inside, which is the point of the whole rewrite.
 2. **Every island gates itself on its own DOM hook** and returns immediately when it is
@@ -325,7 +312,9 @@ owner may never open, and preloading all fourteen would trade one problem for a 
    Detections — are a dashboard concern, not code, and are redundant here.)
 5. **Scroll-reveal is pure CSS first.** `.reveal` cards ease in via `animation-timeline:
    view()` — zero JS on Chromium. The fallback in `core.js` covers ONLY browsers without
-   scroll-timeline, and is gated on `motion.enabled`.
+   scroll-timeline, behind the owner's scroll-fade switch and the motion gate. How anything
+   moves, and the one switch that stops all of it, is the motion engine:
+   [`conventions/motion.md`](conventions/motion.md).
 
 ## Navigation: prefetch every link, prerender on hover, zero runtime JS
 
@@ -367,11 +356,7 @@ Excluded from BOTH rules: `/admin/*`, `/api/*`, `/uploads/*`, `/preview/*`, `/og
 prerender does. The header itself is only set on a public HTML 200, so the owner's surfaces
 never offer it at all.
 
-> This shipped on 2026-07-29 and was absent before then, while both this file and
-> `spec/04-frontend.md` described it as present. What the port DID carry over was
-> `whenActivated` — the guard that exists only because a prerendered page runs its JS at
-> speculation time. A guard with nothing to guard against is the quietest possible way for a
-> feature to be missing.
+> Shipped 2026-07-29; `whenActivated` predates it.
 
 > **RULE: a prerendered page runs its JavaScript at speculation time.** Any island that
 > writes, measures time, or beacons **on mount** must be wrapped in `whenActivated()`
@@ -389,8 +374,9 @@ never offer it at all.
   and exits non-zero when one is over. That is the check; there is nothing to diff by hand.
 - **What a reader loads:** `bun run start`, fetch a post, extract `<script src>` + `<link
   rel=stylesheet>`; confirm `site.css` — **plus `pen-marks` / `pen-lines` if and only if the
-  post carries a highlight or an underline** (ADR 0027) — `core.js` + `post.js` and nothing
-  else, and the correct font preloads for the site language.
+  post carries a highlight or an underline** (ADR 0027) — `core.js` + `post.js`, plus
+  `book-mode.js` / `comment-thread.js` if and only if that switch is on, and nothing else,
+  and the correct font preloads for the site language.
 - **Critical path / LCP:** Lighthouse "Network dependency tree" — the chain should be HTML →
   public CSS → (at most) the reading font's language subset(s). No chrome font, no unused
   subset, no admin CSS.

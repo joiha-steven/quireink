@@ -11,20 +11,14 @@ a thing once, a screen says it again slightly differently, and the difference is
 owner sees. Every rule here was found by photographing and measuring the running admin.
 
 **A CARD'S TITLE OUTRANKS WHAT IS INSIDE IT.** 15 / 14 / 13 at 600 / 500 / 400 — heading,
-label, note. It ran BACKWARDS until 2026-08-29: `Card panel` (every settings card) hard-typed
-`text-[13px]` rather than importing `SECTION`, so a heading was smaller than its own labels
-and the size of the smallest print on screen. A hand-typed size is how a scale stops being
-one.
+label, note. Since 2026-08-29 `Card panel` imports `SECTION` rather than typing a size; a
+hand-typed size is how a scale stops being one.
 
 **A two-column band is two STACKS, and their heights get re-measured.** Cards go into explicit
 column stacks, never straight into the grid — a grid lays its children out in rows, so a short
 card beside a tall one is stretched and the next card cannot start until both have finished.
-That much was already fixed. What was not: which card goes on which side is a decision that
-goes stale. The Overview's comment said "traffic is the tall one on its own" and by the time
-the page was reported uneven it was the SHORT one — measured at 1440px, 225px against
-the other column's 413px, a 188px hole above the next full-width band, and the emptiest card on
-the page (5% of its box was text) sitting in the widest space. Two cards a side now: 467 against
-485, and both numbers are written where the next person will check them.
+Which card goes on which side is re-measured when a page is reported uneven, and the
+heights are written beside the assignment where the next person will check them.
 
 ⚠️ **A grid item needs `min-w-0` or a `truncate` row will not let the column shrink.** A grid
 item's automatic minimum size is its content's min-content width, and `truncate` sets
@@ -39,9 +33,9 @@ table, one level up. `bun run tour` now checks the dashboard at 375px (`atWidth`
 column measured 12, 16, 20 and 28 in a single scroll, which reads as a page assembled from
 four screens. A component that wants a third number wants one of these two.
 
-**A field is as tall as the button beside it.** `CONTROL` is `min-h-10 py-2`, not `py-2.5`:
-the padded version measured 42px against `ui/Button`'s 40, so every Copy-next-to-a-token and
-Choose-image-next-to-a-filename row sat two pixels out. `ui/Input.tsx` IMPORTS `CONTROL`
+**A field is as tall as the button beside it.** `CONTROL` is `min-h-9 px-3 py-1.5`, the same
+36px as `ui/Button`'s `md`, so a Copy-next-to-a-token or Choose-image-next-to-a-filename row
+sits level. `ui/Input.tsx` IMPORTS `CONTROL`
 rather than declaring a matching copy, which is what its comment used to promise and nothing
 enforced — as do the ten settings fields that had each drawn their own at 38px, an 8px radius,
 no focus ring and no placeholder shade. One with a measured size of its own takes `CONTROL_CHROME`.
@@ -67,8 +61,8 @@ modifier, `dense` (2026-08-17): tighter padding for the write pane's row of five
 labels are the pane's own deliberately short `scope*` strings so five words share one line
 in all eleven languages — the row may not wrap.
 
-**One stat tile, one empty state.** `StatTile` was a second copy of `StatCard` that had
-already drifted a shade on its sub-line. `EmptyState` existed and two files used it while
+**Two stat shapes, one empty state.** `StatCard` (`analytics-kit.tsx`) and `StatTile`
+(`stat-band.tsx`) are the two, and a third is a copy. `EmptyState` existed and two files used it while
 five hand-rolled a message in three styles.
 
 **A button is a fixed object; the text beside it gives way.** `ui/Button` carries
@@ -83,7 +77,7 @@ its status tabs back together: they narrow the same list.
 
 `check:admin-kit` holds all of this. Each primitive has a class signature that belongs to
 exactly one file; the check fails if a screen re-types it, and also if a primitive is
-reworded so its own rule stops matching — which is how `check:css-literal` came to report a
+reworded so its own rule stops matching — which is how `check:css` came to report a
 tick against two sheets it had never read. A signature only catches a COPY, so three rules
 match an idea: a raised white surface, a named typeface, a field drawing its own focus.
 

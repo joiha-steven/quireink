@@ -1,6 +1,6 @@
 # Newsletter
 
-## Newsletter — `src/news/{subscribers,mail,newsletter-log}.ts`, `/api/newsletter/*`, `api/newsletter/*`, `api/broadcast`, Admin → Newsletter
+## Newsletter — `src/news/{subscribers,mail,newsletter-log}.ts`, `/api/newsletter/*`, `/api/broadcast`, Admin → Newsletter
 
 - **Double opt-in.** `subscribers` (email unique · status pending/confirmed/unsubscribed · a
   per-subscriber `token` used for BOTH confirm + unsubscribe links). `POST /api/subscribe`
@@ -31,7 +31,7 @@
 - **Sign-up form** (`SubscribeForm`) renders at the foot of a post ONLY when SMTP is configured
   (`getMailStatus().configured`). The same gate also puts an envelope button in the public header
   (`SubscribeTrigger`, last before the mobile drawer toggle) that opens the identical card as a
-  modal (`SubscribeOverlay`, lazy — Escape / backdrop closes), so a reader can subscribe from any
+  modal (built client-side by `subscribe.ts` in `core.js`, on the `.overlay` panel search shares; Escape / backdrop / ✕ closes), so a reader can subscribe from any
   page.
 - **Admin → Newsletter** (`/admin/newsletter`, `NewsletterView`) is where the list is worked;
   Settings → Connections keeps ONLY the SMTP credentials (`NewsletterFields`, which now derives
@@ -71,8 +71,8 @@
   wrongly report them as sent. `force: true` (the admin's resend checkbox) overrides it. The route
   lives at `/api/broadcast`, NOT under `/api/newsletter/*` — that prefix is the public
   confirm/unsubscribe/pixel family and a send endpoint must stay owner-gated.
-- **Comment-reply notifications** (`src/comments/comment-notify.ts` `notifyReply`, fired via `after()`
-  from the comment POST route on a reply). Emails the parent commenter (their `author_email`) a
+- **Comment-reply notifications** (`src/comments/comment-notify.ts` `notifyReply`, awaited from the
+  comment POST route on a reply; it never throws). Emails the parent commenter (their `author_email`) a
   link to the thread. Best-effort + transactional: skips a self-reply (same email), a deleted
   parent, and no-ops without SMTP. Never throws.
 - **Email design** — `src/news/newsletter-email.ts` builds every message (`confirmEmail`,

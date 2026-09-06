@@ -78,13 +78,10 @@
   `SearchAction` only when search is switched on, because describing an endpoint that answers
   404 is worse than describing none — and `BlogPosting` on each post, carrying the real
   `dateModified` and only when there IS one. A static page gets none: a `WebPage` object that
-  restates the title and the canonical adds no fact the tags beside it did not. No `author`,
-  because this software has no owner-name setting and the only name on record is
-  `users.username`, which is half a credential; `publisher` names the site instead. Absolute
+  restates the title and the canonical adds no fact the tags beside it did not. `author` when
+  `settings.author.name` is set, absent otherwise; `publisher` names the site. Absolute
   URLs or nothing, the same rule as the canonical.
-  **This is the setting that was in the shape, defaulted to `true`, described in the admin,
-  and read by nothing** until 2026-08-25 — an owner looking at the switch saw a feature that
-  was on. Wiring it was the fix; hiding it would also have been one.
+  The switch was read by nothing until 2026-08-25.
 - **A page that should not be indexed says so.** `Head.robots` prints
   `<meta name="robots">`, and two pages use it: sign-in, and `/search`. The results page mints
   a URL per query and had no canonical either, so a crawler following the form found an
@@ -109,9 +106,7 @@ document this as present): the `Content-Signal` line in `robots.txt`. It is the 
 
 - Installs to the home screen, launches standalone.
 - **A service worker, off by default** — [ADR 0039](decisions/0039-the-blog-reads-without-the-network.md),
-  `features.offline`, `src/assets/js/sw.ts` + `src/assets/js/offline.ts`. It supersedes the
-  "offline is out of scope by design" line that stood here until 2026-08-30, and **only** that
-  line: the rejection of a service worker as a *prefetch* mechanism in
+  `features.offline`, `src/assets/js/sw.ts` + `src/assets/js/offline.ts`. The rejection of a service worker as a *prefetch* mechanism in
   [performance.md](performance.md) still holds, and nothing here prefetches.
   - **Served at `/sw.js`, not `/assets/sw.<hash>.js`.** A worker's scope is the directory its
     script came from; under `/assets/` it would install, activate and never see a page. The

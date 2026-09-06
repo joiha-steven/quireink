@@ -290,6 +290,16 @@ export type CacheSettings = {
 }
 
 /**
+ * The dashboard's own furniture. `systemLine` is the line at its foot — the build, the
+ * runtime, the database, the machine, the uptime and the link out to the site. Off hides
+ * the whole line: an owner who wants no brand on their screen gets none, and Settings →
+ * System still says when an update exists.
+ */
+export type DashboardSettings = {
+  systemLine: boolean
+}
+
+/**
  * The pen's colours, and the selection highlight. EVERY FIELD IS AN OVERRIDE, and '' means
  * "the built-in", which is why the defaults are all empty strings.
  *

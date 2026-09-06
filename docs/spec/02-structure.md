@@ -34,13 +34,13 @@ src/
     db.ts               the two connections + PRAGMAs
     schema.sql          embedded, applied at boot
     schema-analytics.sql
-    migrations.sql      one FILE, not a directory
+    migrations.sql      one file per database (+ migrations-analytics.sql), not a directory
   import/               WordPress WXR parsing, for the admin's import page
   admin/                the React SPA, ported from the frozen src/components/admin
   assets/
-    js/                 core, post, listing + the lazy islands
+    js/                 core, post, login, book-mode, comment-thread, sw (scripts/build-assets.ts)
     static/             fonts and icons
-  i18n/ locales/        6 locales
+  i18n/                 dates and the locale table; the 11 languages live in locales/ at the root
 scripts/                build, checks/, ops/, user.ts, drive.ts, shot.ts
 golden/
 docs/
@@ -51,20 +51,8 @@ There is no `src/api/` and no `src/cli/`. Route handlers live beside the views i
 
 ## Mapping from `src/lib`
 
-The rule: **anything that does not touch `db()` moves verbatim.** That is 42 of 65
-files, about 6,500 lines. It keeps its tests.
-
-| Current | Destination | Change |
-|---|---|---|
-| `footnotes` `toc` `video` `inline-md` `series-order` `paginate` `taxonomy` `ua` `utils` `slugs` `image` `mime` `safe-fetch` `settings-sanitize` `redirect-path` `og` `preview` `wordpress-import` `themes` `email-brand` `newsletter-email` `comment-md` | same-named file under the matching folder | **none** |
-| `db.ts` | `store/db.ts` | rewritten: `@supabase/postgrest-js` to `bun:sqlite`. 132 call sites across 28 files follow |
-| `posts` `pages` `revisions` `media` `files` `settings` `comments` `subscribers` `newsletter-log` `analytics` `activity` `redirects` `series` `integration-keys` `backup-state` | matching folder | query bodies rewritten, signatures and semantics unchanged |
-| `revalidate.ts` | `server/cache.ts` | collapses to one function, see below |
-| `api.ts` | `web/api.ts` + `web/guard.ts` | `requireOwner()` becomes router-group membership |
-| `auth.ts` `auth-shared.ts` | `auth/` | rewritten, see 06-auth.md |
-| `gdrive.ts` `backup.ts` | deleted / reduced | the Drive path goes (parity exception #1); what replaced it is in [`../backups.md`](../backups.md) |
-| `highlight.ts` | `render/highlight.ts` | **runs at save time** into the content-addressed `render_cache` (01-schema.md §4); the read path looks up and self-heals on a miss |
-| `rate-limit.ts` | `server/rate-limit.ts` | unchanged, extended for login (06-auth.md) |
+Pure modules moved verbatim; every `db()` caller was rewritten. The table that listed all 65
+went with the frozen tree ([ADR 0019](../decisions/0019-remove-the-frozen-tree-from-the-working-copy.md)).
 
 ## Caching: the biggest simplification
 
@@ -112,7 +100,8 @@ needed:
 ## Route mapping
 
 **Public (`src/web`):** `/`, `/page/:n`, `/:slug`, `/category/:slug` (+`/page/:n`),
-`/tag/:slug` (+`/page/:n`), `/series/:slug`, `/search`, `/preview/:slug`, `/feed.xml`,
+`/tag/:slug` (+`/page/:n`), `/series/:slug`, `/archive`, `/search`, `/preview/:slug`, `/login`,
+`/setup`, `/sw.js`, `/assets/:file`, `/feed.xml` (and a feed per archive),
 `/sitemap.xml`, `/robots.txt`, `/llms.txt`, `/manifest.webmanifest`, `/og`, `/uploads/*`,
 `/.well-known/*`, `/api/md/:slug`. Server-rendered HTML built as strings, not JSX.
 
@@ -122,8 +111,7 @@ inside it stays client-side. 13 pages, unchanged.
 **API:** the existing routes, same paths, same shapes, registered in `src/web/` beside
 the views rather than in a directory of their own. Split into two router groups:
 
-- **public**: `track`, `search`, `subscribe`, `comments` (POST), `newsletter/open`,
-  `newsletter/unsubscribe`, `mcp/*`, `health`
+- **public**: the `PUBLIC_WRITES` list in `scripts/checks/routes-guarded.ts`, each with its reason
 - **owner-gated**: everything else, mounted under a group that runs the session check
   once (Invariant 4). A new route is owner-gated by default; making it public is an
   explicit act, which is the opposite of today's `isPublicApi()` allowlist and safer.

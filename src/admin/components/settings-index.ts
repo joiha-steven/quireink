@@ -178,6 +178,7 @@ export const SETTINGS_INDEX: SettingEntry[] = [
 
   // System — moving content in and out
   { tab: 'system', label: 'cacheEnable' },
+  { tab: 'system', label: 'dashboardSystemLine', note: 'dashboardSystemLineDesc' },
   { tab: 'system', label: 'updateCheckLabel', note: 'updateCheckDesc' },
   // Moved off Reading, where an audit of the OWNER's actions had been filed as a reader
   // feature. The tour reads the labels each tab renders, so this row and the card move together.

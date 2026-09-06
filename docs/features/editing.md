@@ -182,7 +182,7 @@
   native `<video>` (`.video-file`, column width, natural aspect). The scheme gate
   means `javascript:`/`data:` can never reach `src`. The editor's Video node previews
   both forms.
-- **Serving (`app/uploads/[...path]`): STREAMS from disk and honours byte ranges.**
+- **Serving (`handleUpload` in `src/web/uploads.ts`, on `/uploads/*`): STREAMS from disk and honours byte ranges.**
   Video seeking — and iOS Safari playback at all — needs 206 responses; the route
   parses `Range` via `src/media/http-range.ts` (pinned by `http-range.test.ts`) and pipes
   `createReadStream` into the Response, so a large video never sits in server memory

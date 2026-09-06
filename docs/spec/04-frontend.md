@@ -9,9 +9,10 @@ Replaces the Go plan's frontend spec. Two frontends with opposite budgets.
 
 ## Budgets
 
-**The gate is per BUNDLE, in raw bytes, in `scripts/build-assets.ts`** — `core.js` 10,000
-and `post.js` 13,250, each with the reason it last moved written beside it, and
-`bun run build:assets` fails the build when either is passed. That file is the authority;
+**The gate is per BUNDLE, in raw bytes, in `scripts/build-assets.ts`** — `core.js` 11,000,
+`post.js` 7,400, `book-mode.js` 7,600, `comment-thread.js` 6,700, `login.js` 1,500, each with
+the reason it last moved written beside it, and `bun run build:assets` fails the build when
+any is passed. That file is the authority;
 this section is the intent behind it.
 
 ⚠️ **A per-PAGE table stood here until 2026-08-18 claiming "target 0 KB, fail above 3 KB
@@ -22,7 +23,8 @@ it. Aspirations belong in prose; a number that says "enforced" has to name what 
 it.
 
 Measured 2026-08-18 on a served article page, at the origin, exactly as a browser fetches
-it — **two files and no third**, and no inline script anywhere on the site:
+it — **two files on an article with book mode and comments off, four with both on**, and no
+inline script anywhere on the site:
 
 | | raw | gzip (what is served) | brotli |
 |---|---|---|---|
@@ -31,14 +33,8 @@ it — **two files and no third**, and no inline script anywhere on the site:
 | **an article page, total JS** | 20,601 | **8,064** | 6,922 |
 
 The 1.x article page this replaced fetched **182 KB of JS (gzip) across 12 files**, of
-which 143 KB was Next and React — the measurement in
-[00-rationale.md](00-rationale.md) that ended Next.js, and past tense since the
-2026-07-28 cutover. **It cannot be re-measured**: the frozen tree was removed from the
-working copy ([ADR 0019](../decisions/0019-remove-the-frozen-tree-from-the-working-copy.md))
-and `old.manhhung.me` no longer answers — the name still resolves and Cloudflare still
-terminates TLS for it, but the edge returns **522, origin unreachable** (checked
-2026-08-18). The number stands as a dated capture of a site that is gone, which is the
-only thing it can now be.
+which 143 KB was Next and React — the measurement in [00-rationale.md](00-rationale.md)
+that ended Next.js. It cannot be re-measured: the 1.x site is gone ([ADR 0019](../decisions/0019-remove-the-frozen-tree-from-the-working-copy.md)).
 
 Zero on an article page remains the direction and is not where this landed: back to top,
 code copy, the lightbox, subscribe, comments, the contents highlight and book mode are all
@@ -132,6 +128,11 @@ client router. One rule, and it degrades to nothing where it is unsupported — 
 visible change to how the site moves, so it is the owner's call rather than an omission.
 
 ## The 23 islands
+
+> Where it landed differently (2026-09-06): `listing.js` never existed (folded into `core`);
+> `search.js` and `subscribe.js` are not lazy (both in `core`); `BookMode`/`BookReader` became
+> `book-mode.js` and the comment islands `comment-thread.js`, each emitted only when its switch
+> is on; `Toc` landed in `post.js`; `RevealFallback` is CSS behind `features.scrollFade`.
 
 Each current `'use client'` component in `src/components/blog/` and its replacement.
 Three eagerly loaded files, none of them bundled, each hand-written and self-contained.
@@ -232,7 +233,8 @@ because it is the highest-value cleanup left in the admin.
 
 ## Building
 
-- **Public JS: `bun run build:assets`.** Three entry points (`core`, `post`, `login`) built
+- **Public JS: `bun run build:assets`.** Six entry points (`core`, `post`, `login`, `book-mode`,
+  `comment-thread`, `sw`) built
   from `src/assets/js/` as minified **IIFE** bundles — not ESM: they are injected as classic
   `<script src defer>`, so three ESM bundles put every top-level declaration on the global
   scope and stamped on each other. Each bundle has a byte BUDGET the build fails on.

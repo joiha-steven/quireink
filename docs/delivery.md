@@ -73,11 +73,7 @@ suite flushes several hundred times and must get a plain `Map.clear()`; a CLI mu
 left holding a timer open.
 
 `purgeEdge()` (`server/edge-cache.ts`) uses `cloudflareApiToken` + `cloudflareZoneId` from
-`integration_keys`. Those keys have been in the schema and in the Admin UI since the import
-and **nothing in 2.0 ever read them** — the port dropped the call and kept the panel.
-Measured through the CDN before writing any code, because a gap has to be real first:
-`cf-cache-status: HIT`, `Age: 165` against `s-maxage=60, stale-while-revalidate=600`.
-Unconfigured is a no-op, which is the normal state of a self-hosted install.
+`integration_keys`; unconfigured is a no-op, which is the normal state of a self-hosted install.
 
 **And any other CDN** ([ADR 0033](decisions/0033-purging-an-edge-that-is-not-cloudflare.md)):
 `purgeWebhookUrl` is one URL the blog POSTs `{"purge":"everything","source":"quireink"}` to
@@ -88,10 +84,7 @@ answering a POST — and the URL is treated as a secret and never logged, becaus
 endpoint usually carries its own token.
 
 It is the **only** purge path: the scheduled sweep, `/api/cron?purge=1` and the admin cache
-button all call it. They used to call a second, ported implementation (`server/cdn.ts`)
-that purged the same zone with no request timeout and logged Cloudflare's response body on
-failure — a body that echoes what was sent. That file is deleted; two ways to do one thing
-means the weaker one keeps being reached for.
+button all call it.
 
 ## Compression
 
@@ -99,9 +92,8 @@ means the weaker one keeps being reached for.
 stylesheet, every page and every feed left the origin raw. `web/compress.ts` gzips text
 responses over 1 KB when the client asked, and sets `Vary: Accept-Encoding`.
 
-Measured at the origin when it shipped, on the un-minified sheet: **61,241 → 19,513 bytes**;
-the minifier above took it to **30,811 raw / 6,519 compressed** (2026-07-30), and ADR 0027 has since moved the pen's ink out of it again — `site.css` measured **7.6 KB gzipped** on 2026-08-21, but the ratio is
-the point. On the hashed immutable assets a reader sees this DIRECTLY, because a CDN passes
+Ratio, not size, is the point: **61 KB → 19.5 KB** when it shipped, and `site.css` is about
+**10 KB compressed** today, after the minifier and ADR 0027 took the pen's ink out of it. On the hashed immutable assets a reader sees this DIRECTLY, because a CDN passes
 the origin's encoding straight through on them (measured below); on HTML the CDN re-compresses,
 so what this buys there is the origin-to-edge fetch, on every cache miss and on every purge
 above. An install with no CDN in front of it sees all of it, everywhere. Binary bodies are left alone: an image
@@ -170,11 +162,9 @@ on every write, so it gets q5, which is the rung that pays for itself per distin
 **The second half is a 192 KB ceiling, and the tour is what found it.** `immutable` was the
 whole test to begin with, which was right about the public sheets and wrong about what else
 wears the label: the admin's own chunks are hashed and immutable too, and twenty times the
-size. `main-<hash>.js` is 644 KB and takes **642 ms** at q11 against 11 ms at q5; `admin.css`
-is 375 KB and takes 279 ms. Compression was synchronous then, so the first load of the admin
-stalled the entire process for over a second — `check:all` was green through all of it, and
-the tour's settings flow failed with *no search box*, which is what a stalled server looks
-like from a browser. A reader asking for a page in that window waited exactly as long.
+size. The admin's entry chunk takes **642 ms** at q11 against 11 ms at q5, and `admin.css`
+279 ms. Compression was synchronous then, so the first load of the admin stalled the entire
+process for over a second, and a reader asking for a page in that window waited exactly as long.
 
 Two things came out of that. **The expensive rung moved off the event loop:** measured with a
 10 ms interval running alongside, `brotliCompressSync` on that bundle let 1 tick through and

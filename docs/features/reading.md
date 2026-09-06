@@ -2,12 +2,10 @@
 
 ## Reading & discovery
 
-- Features `{ search, toc, related, readingTime, progressBar, activityLog, sidebar, leadPost,
-  categoryLabel, deck, bookText, infiniteScroll, gridView, archive, offline }` (all default on
-  EXCEPT `bookText`, `infiniteScroll` and `offline`, which are off; Admin → Settings → Tính năng);
+- The feature switches are `FeatureSettings` in `src/types.ts` (Admin → Settings → Reading),
   gated in header / `/search` / post page.
   `bookText` = book-page typesetting on the post body (first-line indent + justify ≥600px). `gridView` =
-  the reader's grid/list header toggle (`GridToggle`); off hides the button AND the no-FOUC script ignores a
+  the reader's grid/list header toggle (`GridToggle`); off hides the button AND `listing.ts` ignores a
   stored `list=grid`, so every listing stays a list (and the infinite-scroll timeline, hidden in grid, always shows).
 - **Sidebar** (`sidebar`): the MAIN (listing) sidebar has two layouts, chosen by `settings.sidebarLayout`
   (**Settings → Layout → Layout & menu**): `single` (default) = one left rail with every block stacked
@@ -50,8 +48,7 @@
   is pushed out when the next year's group arrives — the tag's background masks months sliding up under it.
   A year's own first month is skipped (the sticky year covers it). Dates line up with the posts on the left —
   **no JS, no measurement** (`PostCard`'s `month` prop + CSS `position:sticky`; geometry from `timelineCss`).
-  The spine is the same faint `--c-rule` hairline as the sidebar dividers; dots are round (an explicit
-  exception to the site-wide square-corners rule). No post counts, no click nav. Its breakpoint is much LOWER
+  The spine is the same faint `--c-rule` hairline as the sidebar dividers; dots are round. No post counts, no click nav. Its breakpoint is much LOWER
   than the sidebar's (a short date label needs only a thin gutter — `colWidth + 2*(gap+130)`), so it shows on
   normal laptops. **Desktop list view only**: below the breakpoint there is no gutter (markers + spine
   `display:none`), and the **grid view** hides them AND dissolves the year groups (`.tl-yr{display:contents}`)
@@ -63,7 +60,8 @@
   instant + accent-insensitive) merged with `GET /api/search?q=` (SQLite FTS5 over title + BODY via
   `searchPosts`, `posts_fts match ?` joined back to live published rows). **NOTE:** FTS5 is accent-
   *sensitive* — accent-insensitivity comes from the local layer only. The header search is a
-  `<dialog>` overlay opened by `src/assets/js/search.ts`; the `/search` route stays for deep links
+  `<dialog>` overlay opened by `src/assets/js/search.ts`, on the one `.overlay` panel the
+  sign-up overlay shares (`subscribe.css.ts`); the `/search` route stays for deep links
   and no-JS.
 - Post page: back-to-top, ToC and related posts (`getRelatedPosts`: shared tags ×2 + categories).
   The reading-progress bar is CSS (`animation-timeline: scroll()`), not an island. There is no
@@ -247,8 +245,7 @@ Both owner-approved 2026-08-27, both default **on**, both toggled from the Readi
   withdraws once the reader scrolls >200px on their own: scrolling IS the answer. The localized
   prompt rides `<body data-resume-prompt>` only when the feature is on — no words, no island.
   It cannot collide with the to-top button: the pill requires `scrollY < innerHeight`, the
-  button the opposite. Cost ~1.1 KB in `post.js` (budget 15,800 → 17,000, reason recorded in
-  `scripts/build-assets.ts`).
+  button the opposite. Cost ~1.1 KB in `post.js` (priced in `scripts/build-assets.ts`).
 
 ## Reading with no signal — `src/assets/js/sw.ts`, `src/assets/js/offline.ts`, `features.offline`
 
@@ -289,9 +286,13 @@ Both owner-approved 2026-08-27, both default **on**, both toggled from the Readi
   from the browser instead of from this file, so **desktop and iPad behave identically** and there
   are no Safari fullscreen quirks. Scroll is locked with `body:has(.book-overlay[open])`.
   **A phone gets in through a floating button**, not through the meta line: both server-rendered
-  entries hide under 767px (the meta line is cramped there), which left the one width whose
-  one-page mode works with no way to open it. `.book-fab` is a twin of the to-top circle one slot
-  up the same column, on the same scroll trigger, and the stylesheet keeps it off desktop.
+  entries hide under 767px. `.book-fab` is a twin of the to-top circle one slot up the same
+  column, on the same scroll trigger, and the stylesheet keeps it off desktop. **Under 640px it
+  opens the SCROLLED reader** (`book-scroll.ts`, `book-phone.css.ts`): the article laid out as
+  one column in the document, so iOS's own bars retract while the page moves; the chrome
+  follows the direction (away on the way down, back on the way up), the paper covers the
+  safe area, and the phone's back gesture leaves the reader rather than the article. Between
+  640 and 767px it opens the dialog in one-page mode.
   **Always paper**
   — the `::backdrop` and the overlay's own tokens are a warm-paper palette regardless of the site
   theme or dark mode; closing restores the page's own tokens.
@@ -305,7 +306,7 @@ Both owner-approved 2026-08-27, both default **on**, both toggled from the Readi
   reads `scrollWidth` to count columns → spreads = `ceil(cols / pages)`. The flow is itself `.prose`,
   so the reading view's indents and justification apply unchanged. **Wide images
   (`figure.img-wide`) render at column width here**, so a wide image never spills into the next
-  column. Advancing is one **transform on the flow** plus a 130 ms crossfade — the browser has
+  column. Advancing is one **transform on the flow** plus `fadeSwap()` at `--dur-fast`, instant behind the motion gate — the browser has
   already done the pagination, and re-implementing it is how this becomes a measurement loop that
   fights the layout engine. Recomputes on resize. The base page keeps normal scroll, so **SEO,
   a11y and find-in-page are untouched**.
@@ -320,7 +321,7 @@ Both owner-approved 2026-08-27, both default **on**, both toggled from the Readi
   flows pin it, desktop and 375px, because 57 green flows said nothing while this was broken.
 - **Media** stays column-width (no full-bleed) and is capped to one page height (`--book-page-h`)
   with `break-inside: avoid`, so images/code/tables never overflow a spread. `--font-reading`
-  drives the body; all colours are theme tokens. Respects `prefers-reduced-motion` (no fade).
+  drives the body; all colours are theme tokens. Motion asks `motionOn()`: the owner's switch AND the media query.
 - **A spread is TWO pages only while two pages can hold words.** Below `MIN_COLUMN * 2 + COL_GAP`
   the reader drops to **one** page, `viewport[data-pages="1"]` hides the centre spine, and the
   page count divides by one instead of two. The spread used to be an unconditional two, which at
@@ -328,12 +329,11 @@ Both owner-approved 2026-08-27, both default **on**, both toggled from the Readi
   purpose** now, and a narrow window that still shows the rail reaches it too: the rail is
   subtracted from the footprint, so the spread can be far narrower than the window.
   Pinned by `shell.test.ts`.
-- **A phone is not a narrow desktop, and the chrome says so.** Under 640px the page margin is
-  20px a side rather than the desktop's 48 (which took a quarter of a 375px screen), the
-  mouse-sized hover arrows retire, and the turn is a **swipe** (48px of travel, 1.5× more
-  sideways than down, so an ordinary reading scroll never turns a page) or a **tap in the outer
-  thirds** — links stay links, and the middle third is left for a thumb to rest on. Under 520px
-  the running head goes silent rather than stammering three letters into the size buttons.
+- **A phone is not a narrow desktop.** Under 640px the reader is the scrolled column above, with
+  a fixed chrome (the title, the a/A pair shared through `sizeControl`, close) and an edge swipe
+  back. Between 640 and 767px the one-page dialog keeps 20px margins, the hover arrows retire,
+  and the turn is a **swipe** (48px, 1.5× more sideways than down) or a **tap in the outer
+  thirds**; under 520px the running head goes silent rather than stammering into the size buttons.
 - **The running head reserves room for the page count**, which lives in an absolutely positioned
   box and therefore takes part in no layout. Without the reservation the centred title ran under
   it and printed as `owning your ow1 / 5`. **The reservation is twice the box**, because the

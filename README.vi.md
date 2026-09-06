@@ -5,7 +5,7 @@
   <img src="docs/brand/wordmark-light.svg" alt="quireINK" width="360">
 </picture>
 
-`2.2.7`
+`2.2.8`
 
 **Blog tự host cho một người viết. Nhờ được AI viết và trông coi hộ.**
 Không thuật toán, không quảng cáo, không nền tảng nào đứng giữa bạn và người đọc.
@@ -53,7 +53,7 @@ Cài lên đâu cũng được, và blog y hệt nhau ở mọi chỗ:
 
 - **VPS thuê ngoài**, gói rẻ nhất là đủ. Một lệnh bên dưới, hoặc Docker.
 - **Droplet DigitalOcean**: dán [một file](./deploy/digitalocean/user-data.sh) vào ô initialization script lúc tạo máy, ba phút sau là blog chạy ([cách làm](./deploy/digitalocean/README.md)).
-- **NAS trong nhà**: Unraid tìm `QuireInk` trong Community Applications; Synology và QNAP dán file compose vào Container Manager. Không cần dòng lệnh nào ([từng bước](./docs/self-host-docker.md#on-a-nas-or-a-home-server)).
+- **NAS trong nhà**: Unraid tìm `QuireInk` trong Community Applications; Synology dán file compose vào Container Manager, QNAP vào Container Station. Không cần dòng lệnh nào ([từng bước](./docs/self-host-docker.md#on-a-nas-or-a-home-server)).
 - **Máy nào có Docker**: kéo `quireink/quireink` về, có sẵn cho `amd64` và `arm64`.
 - **Cụm Kubernetes**: `kubectl apply -k deploy/kubernetes` ([bộ manifest](./deploy/kubernetes/README.md)).
 
@@ -65,7 +65,7 @@ Cách thứ nhất cần [Bun](https://bun.sh) 1.3 trở lên và một máy tr�
 curl -fsSL https://raw.githubusercontent.com/joiha-steven/quireink/main/install.sh | bash
 ```
 
-Lệnh này không dùng `sudo`, không tự cài Bun sau lưng bạn, không đụng tới systemd, và từ chối chạy dưới quyền root. Chạy lại lần nữa trên cùng thư mục thì nó cập nhật chứ không báo lỗi. [Bản thân cái script](./install.sh) dài 120 dòng, đọc trước được nếu bạn muốn xem nó làm gì.
+Lệnh này không dùng `sudo`, không tự cài Bun sau lưng bạn, không đụng tới systemd, và từ chối chạy dưới quyền root. Chạy lại lần nữa trên cùng thư mục thì nó cập nhật chứ không báo lỗi. [Bản thân cái script](./install.sh) dài 136 dòng, đọc trước được nếu bạn muốn xem nó làm gì.
 
 Xong, bạn đọc log. Blog chưa có chủ sẽ tự in ra đường dẫn để nhận:
 
@@ -128,7 +128,7 @@ Muốn bản đầy đủ với systemd, nginx, cache header, sao lưu và nâng
 | 🎨&nbsp;**Giao&nbsp;diện** | Sáu bảng màu sáng và tối, bốn font đọc, hoặc tải font của bạn lên. Sửa một chỗ là cả trang đổi theo |
 | 🖍️&nbsp;**Cây&nbsp;bút** | `==tô sáng==`, `++gạch chì++`, `@@khoanh bút đỏ@@`. Nét vẽ như tay người, không vệt nào trên trang giống vệt nào |
 | 💻&nbsp;**Code** | Tô màu sẵn ở máy chủ, hai mươi mốt ngôn ngữ. Người đọc không phải tải bộ tô màu nào |
-| 🔍&nbsp;**Đọc** | Tìm kiếm hiện kết quả ngay trong lúc gõ. Mục lục bài, bài liên quan, thời gian đọc. Và chế độ sách: hai cột trên nền giấy |
+| 🔍&nbsp;**Đọc** | Tìm kiếm hiện kết quả ngay trong lúc gõ. Mục lục bài, bài liên quan, thời gian đọc. Và chế độ sách: hai cột trên nền giấy ở máy bàn, một cột cuộn trên điện thoại, nhớ chỗ bạn đang đọc |
 | 📈&nbsp;**Số&nbsp;liệu** | Thống kê không dùng cookie: ai đọc bài nào, đọc tới đâu, đến từ đâu. Kèm nhật ký hoạt động và thùng rác hoàn tác được. Không có gì bị xoá, nên bảng theo năm lùi được tới người đọc đầu tiên |
 | 💬&nbsp;**Bình&nbsp;luận** | Người đọc bình luận không cần tài khoản. Chống spam bằng cách tự ký thử thách, không qua bên thứ ba nào |
 | 🔎&nbsp;**Máy&nbsp;tìm&nbsp;kiếm** | Sitemap, RSS, `robots.txt`, `llms.txt`, ảnh chia sẻ vẽ riêng cho từng bài. Đổi đường dẫn thì link cũ vẫn chạy |
@@ -179,7 +179,7 @@ Dùng máy chủ MCP của Quire Ink, viết một bài 600 chữ tựa đề
 
 Viết mới là một nửa. Agent còn đọc được lượng truy cập, đếm người đăng ký mà không bao giờ thấy email của họ, quét bình luận rác vào thùng rác, tìm khắp kho bài, sắp lại trang nhất theo bài người ta thật sự đọc, và sao lưu trước khi làm gì lớn. Thu hồi token trong trang quản trị là nó mất quyền ngay. [Sổ tay agent](./docs/agent-cookbook.md) gom sẵn những câu lệnh làm việc thật.
 
-Kho mã này còn dạy luôn cho agent: ba bộ kỹ năng nằm trong `.claude/skills/`, nên một trợ lý vừa tải kho về là đã biết cách dựng blog, vận hành nó qua MCP, và dọn nhà từ WordPress hay Ghost sang. [Chúng gồm những gì](./docs/agent-ready.md#skills-that-ship-in-the-repository).
+Kho mã này còn dạy luôn cho agent: ba bộ kỹ năng nằm trong `.claude/skills/`, nên một trợ lý vừa tải kho về là đã biết cách dựng blog, vận hành nó qua MCP, và dọn nhà từ WordPress, Ghost, Substack hay Medium sang. [Chúng gồm những gì](./docs/agent-ready.md#skills-that-ship-in-the-repository).
 
 ## Tốc độ
 
@@ -207,7 +207,7 @@ Gần như mọi thứ nằm trong trang quản trị. Chỉ vài biến môi tr
 | `PORT` | ◻️ | Mặc định `3000` |
 | `HOST` | ◻️ | Mặc định `127.0.0.1`, đúng khi reverse proxy đứng cùng máy |
 
-Danh sách đầy đủ, kèm giới hạn dung lượng tải lên, sao lưu lên S3 và các công tắc khác, nằm ở [`docs/self-host.md`](./docs/self-host.md).
+Danh sách đầy đủ nằm ở [bảng biến môi trường của README](./README.md#environment-variables); sao lưu lên S3 ở [`docs/backups.md`](./docs/backups.md). Không có thương hiệu nào bị ép lên bạn: footer là dòng chữ của bạn hoặc không có gì, logo trong admin có công tắc tắt, dòng phiên bản ở chân bảng điều khiển cũng vậy.
 
 Mỗi ngày một lần, blog hỏi máy chủ xem đã có bản mới chưa, và chính lúc hỏi thì được đếm là một blog đang được dùng. Nó gửi đi phiên bản đang chạy và bốn nấc thô về blog, không có địa chỉ, bài viết hay người đọc nào. Tắt bằng `UPDATE_CHECK=0` hoặc một công tắc trong Cài đặt. [Toàn bộ nội dung cú gọi](./docs/update-check.md).
 
@@ -215,7 +215,7 @@ Mỗi ngày một lần, blog hỏi máy chủ xem đã có bản mới chưa, v
 
 Giao diện nói mười một thứ tiếng: English, Tiếng Việt, Deutsch, 日本語, 简体中文, 한국어, Français, Español, Português (Brasil), Italiano và Русский.
 
-Mời bạn góp bản dịch. Mỗi ngôn ngữ là mấy file chữ thuần trong [`locales/`](./locales), sửa được mà không cần biết lập trình. Trình biên dịch từ chối build khi còn thiếu một chuỗi, nên bản dịch dở dang không lọt ra ngoài được. Tai người bản xứ vẫn hơn tai chúng tôi.
+Mời bạn góp bản dịch. Mỗi ngôn ngữ là hai file chữ thuần trong [`locales/`](./locales) (`locales/<mã>.ts` cho người đọc, `locales/admin/<mã>.ts` cho chủ blog), sửa được mà không cần biết lập trình. Trình biên dịch từ chối build khi còn thiếu một chuỗi, nên bản dịch dở dang không lọt ra ngoài được. Tai người bản xứ vẫn hơn tai chúng tôi.
 
 ## Góp code
 
@@ -236,6 +236,6 @@ Mã nguồn theo [PolyForm Noncommercial 1.0.0](./LICENSE) cộng [một cho ph�
 - **Sửa code rồi đem đi kinh doanh thì phải hỏi trước.** Đây là ranh giới duy nhất dự án giữ lại. Vá lỗi hay bịt lỗ hổng bảo mật trên bản cài của chính bạn thì được miễn, chỉ cần báo lại trong vòng 30 ngày.
 - **Những gì bạn viết vẫn là của bạn.** Bài và ảnh của bạn không thuộc giấy phép mã nguồn.
 
-Cấu hình, bảng màu, font và nội dung không tính là mã nguồn, vì ở đây giao diện là tuỳ chọn chứ không phải chỗ phải fork.
+Cấu hình, bảng màu, font và nội dung không tính là mã nguồn, vì giao diện là thứ chỉnh trong cài đặt, không cần fork.
 
 > **Mọi thứ tính tới hết v2.0.0 là MIT, và mãi mãi là MIT.** Đổi giấy phép không có hiệu lực lùi: bản nào lấy về trước lần đổi này thì giữ nguyên quyền đã được trao. Xem [ADR 0015](./docs/decisions/0015-relicense-polyform-noncommercial.md).

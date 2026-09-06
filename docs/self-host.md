@@ -6,7 +6,7 @@ third-party account anywhere in the path.
 
 Commands assume Ubuntu/Debian and `root` (or `sudo`). Adjust the paths. If you would rather
 not install Bun on the host, [Docker](#docker-instead-of-systemd) is the same install in
-two commands, and sections 5 and 7 still apply to it.
+two commands, and sections 5 to 8 still apply to it.
 
 ```
 Internet → CDN (optional) → nginx (TLS) → 127.0.0.1:3000  quire (systemd)
@@ -53,12 +53,7 @@ input. `build:assets` produces the island bundles and `build:admin` the admin SP
 read from disk at runtime, so they have to exist before the service starts.
 
 > **`bun run build` builds those two artefacts and nothing else. There is no compiled binary**
-> ([ADR 0022](decisions/0022-ship-from-source-not-a-compiled-binary.md), 2026-08-11). It used to
-> emit `dist/quireink`, under a note saying not to deploy it "yet"; measured, the binary does not
-> come up at all, because `sharp` is reached on the boot path and the process dies before it
-> listens. Copying `@img/*` next to it does not help, because `sharp` resolves from the bundle's own
-> `/$bunfs/root/…` path, which has no sibling directory. Running the source IS the shipping
-> story, and always was: every live instance does it.
+> ([ADR 0022](decisions/0022-ship-from-source-not-a-compiled-binary.md)): the checkout is the deployment.
 
 ## 3. Configure
 
@@ -74,33 +69,26 @@ STORAGE_QUOTA_GB=5
 HOST=127.0.0.1
 ```
 
-**`MAX_UPLOAD_MB` and `STORAGE_QUOTA_GB` are the app's own limits, and they default to 64 MB
-and 5 GB whether you set them or not.** Until 2026-08-11 there were none: what refused an
-oversized image was `client_max_body_size` below, so running the binary behind a tunnel, a
-PaaS or nothing at all meant no limit and nothing said so. Keep the proxy's number and this
-one in step — the proxy refuses first and more cheaply, this one refuses what never passes
-through a proxy at all, including an image the MCP tool fetches from a URL. `0` disables
-either. The admin (Settings → System → Storage) can lower them for this blog and can never
-raise them, so on a server you run for somebody else these two lines are the ceiling.
+**`MAX_UPLOAD_MB` and `STORAGE_QUOTA_GB` are the app's own limits, 64 MB and 5 GB by
+default.** Keep the proxy's number and this one in step: the proxy refuses first and more
+cheaply, this one refuses what never passes through a proxy at all, including an image the
+MCP tool fetches from a URL. `0` disables either. The admin (Settings → System → Storage) can
+lower them for this blog and never raise them, so on a server you run for somebody else these
+two lines are the ceiling.
 
-**`HOST` defaults to `127.0.0.1`, and the layout below is why.** nginx proxies to
-`http://127.0.0.1:<port>`, so the app never needs to be reachable from anywhere else. It used
-to listen on every interface, which is what `Bun.serve` does when nobody says otherwise, while
-the startup line printed `127.0.0.1`, so the only thing an operator would check said the opposite
-of what was true, and the port was closed by a firewall rule rather than by not being open.
-Set `HOST=0.0.0.0` when the proxy is on a different machine, and note that the Docker image
-sets it already: inside a container, loopback is the container's own.
+**`HOST` defaults to `127.0.0.1`, and the layout below is why:** nginx proxies to
+`http://127.0.0.1:<port>`, so the app never needs to be reachable from anywhere else. Set
+`HOST=0.0.0.0` when the proxy is on a different machine; the Docker image sets it already,
+since inside a container loopback is the container's own.
 
 There is no secret to generate. 1.x needed `AUTH_SECRET`; 2.0 creates its own signing
 secrets on first use and stores them in the database ([`src/auth/secret.ts`](../src/auth/secret.ts)),
 because an optional secret is one an install can be left running without.
 
-**`SITE_URL` is not optional in practice, and what happens without it is worse than this
-paragraph used to say.** It claimed the app derives the origin from each request. It does not:
-the admin field is asked next, and then the answer is the literal `http://localhost:3000`. So
-an install with neither set serves a sitemap, a feed, every OG tag and every newsletter link
-pointing at localhost — a site that is perfect for a reader and broken for every crawler and
-mail client, with nothing on any page to show it.
+**`SITE_URL` is not optional in practice.** Without it the admin field is asked next, and then
+the answer is the literal `http://localhost:3000`: an install with neither set serves a sitemap,
+a feed, every OG tag and every newsletter link pointing at localhost, perfect for a reader and
+broken for every crawler and mail client, with nothing on any page to show it.
 
 It is not derived from the request `Host` on purpose, and that is a security choice rather
 than an omission: the page cache is keyed by path alone, so one request carrying
@@ -174,12 +162,9 @@ systemd has no login shell and will not find it on `PATH`.
 The five sandbox lines keep a fault in the blog inside the blog. `ReadWritePaths` must name
 every directory the app writes, each existing before the first start; a missing one fails on the NEXT restart.
 
-`NODE_ENV=production` is conventional rather than load-bearing: an install without it
-behaves identically, including the update check ([`update-check.md`](update-check.md)), which asks whether this looks
-like somebody EDITING the software (`bun --watch`, `bun test`) rather than whether a variable
-was set. That rule was inverted on 2026-08-22 for exactly this unit, because requiring the
-variable would have made every from-source install silent forever while looking perfectly
-healthy.
+`NODE_ENV=production` is conventional rather than load-bearing: an install without it behaves
+identically, including the update check ([`update-check.md`](update-check.md)), which since
+2026-08-22 keys on `bun --watch` / `bun test` rather than on a variable.
 
 ```bash
 systemctl daemon-reload && systemctl enable --now quire
@@ -214,17 +199,7 @@ ports 80 and 443 is a worse problem than the one this solves.
 ```nginx
 server {
     listen 443 ssl;
-    # HTTP/2, which this block did not ask for until 2026-09-01 and therefore did not get.
-    # It matters more here than it looks: a reading page fetches the sheet, the pen's two
-    # sheets, two font subsets and two scripts, and under HTTP/1.1 nginx answers them down
-    # six connections with a queue behind each. On its own directive rather than as
-    # `listen ... http2`, which nginx deprecated in 1.25.1; on an older nginx write
-    # `listen 443 ssl http2;` instead and delete this line.
-    #
-    # HTTP/3 is not set up here because it needs a QUIC-capable build, a second `listen` on
-    # UDP and an `Alt-Svc` header to advertise itself. Caddy (§4) turns it on by itself, and
-    # that is the shorter road to it.
-    http2 on;
+    http2 on;  # nginx >= 1.25.1; older: `listen 443 ssl http2;` and delete this line. Caddy (§4) adds HTTP/3 by itself.
     server_name example.com;
     ssl_certificate     /etc/nginx/ssl/example.com.pem;
     ssl_certificate_key /etc/nginx/ssl/example.com.key;
@@ -382,17 +357,10 @@ for good: [`update-check.md`](update-check.md).
 
 ## Coming from Quire 1.x
 
-**The importer is gone, on purpose.** `scripts/import-v1.ts` read a running 1.x instance
-over PostgREST and wrote the whole thing into SQLite, and it was removed with the rest of
-the frozen tree ([ADR 0019](decisions/0019-remove-the-frozen-tree-from-the-working-copy.md))
-because it described a migration that had already happened and cannot happen again: it
-needed a live 1.x instance with PostgREST in front of it, and there is no longer one to
-point it at. The `bun run import-v1` script went with it.
-
-If you are still running a 1.x instance of your own, the code that moved it is preserved at
-tag `v1-final` — `git worktree add ../quire-v1 v1-final` gets you a tree you can run it
-from. Nothing in the current tree will do it for you, and this section would be lying if it
-implied otherwise.
+**The 1.x importer went with the frozen tree** ([ADR 0019](decisions/0019-remove-the-frozen-tree-from-the-working-copy.md)):
+it needed a live 1.x instance with PostgREST in front of it, and there is no longer one to point
+it at. If you still run one, `git worktree add ../quire-v1 v1-final` gives you the tree it lived
+in; nothing in the current tree will do it.
 
 Whichever route you take, one thing does not carry over: sessions. The cookie is `__Host-`
 prefixed and therefore scoped to a single hostname, so you will sign in again on the new

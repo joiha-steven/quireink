@@ -1,6 +1,6 @@
 import type {
   AiSettings, McpSettings, HomeSettings, GallerySettings, FigureSettings,
-  CacheSettings, InkSettings, MotionSettings, BackupSettings,
+  CacheSettings, DashboardSettings, InkSettings, MotionSettings, BackupSettings,
   PostImageSettings, ShapeSettings, TableSettings, AuthorSettings,
 } from '@/types-settings'
 // Core domain types shared across the app.
@@ -301,6 +301,7 @@ export type SiteSettings = {
   inks: InkSettings // the pen's own colours, and what a text selection looks like
   motion: MotionSettings // site-wide motion/animation engine toggle
   cache: CacheSettings // page cache + shared-cache headers for public HTML
+  dashboard: DashboardSettings // the dashboard's own furniture: the system line at its foot
   backups: BackupSettings // Google Drive backup config (secrets live in backup_state)
   timezone: string // IANA zone the WHOLE site reads its clock in: the date under a post, the month markers, and the day an analytics bucket starts on. Empty = the `ANALYTICS_TZ` variable, then UTC. It is a SETTING and not the machine's own zone on purpose — a page is rendered once and cached, so the server's timezone would otherwise decide what date every reader sees, and moving the box would silently move every date on the site
   navOrder: NavOrder // the admin rail's own running order, set by dragging rows in the rail's arrange mode

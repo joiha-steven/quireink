@@ -25,7 +25,8 @@ Google account.
   same day said nothing about their order without it.
 
 - **Instant, never cached — by design.** The page itself is cached; the comment block is an
-  island (`assets/js/comments.ts`) that fetches `/api/comments?post=<slug>`, and that route is
+  island (`assets/js/comments.ts`, shipped as its own bundle `comment-thread.js` and named on
+  a page only when the block is rendered) that fetches `/api/comments?post=<slug>`, and that route is
   refused a shared cache like everything under `/api`, so its read is always live. A new comment
   is POSTed and the thread is then RE-READ, which is what makes it appear. There is no optimistic
   overlay: 2.0 dropped the one the frozen tree had, along with `mergeOptimisticComments`, because

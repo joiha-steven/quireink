@@ -5,7 +5,7 @@
   <img src="docs/brand/wordmark-light.svg" alt="quireINK" width="360">
 </picture>
 
-`2.2.7`
+`2.2.8`
 
 **A blog you host yourself, and an AI agent can run it for you.**
 No algorithm, no ads, no platform standing between you and your readers.
@@ -67,17 +67,17 @@ Three decisions shaped everything else.
 
 The reading page is the product, so type, colour, size, spacing and layout are all settings you change in the admin. Not one size or colour is written into the reader's stylesheet, and the build fails if somebody puts one there.
 
-Readers download between 3.9 KB and 10.4 KB of JavaScript, and nothing at all from anyone else. Pages arrive as finished HTML. A few small scripts handle search, the theme switch and book mode; React stays in the admin and never reaches a reader.
+Readers download between 4 KB and 7 KB of JavaScript (13 KB on a post with book mode and comments switched on), and nothing at all from anyone else. Pages arrive as finished HTML. A few small scripts handle search, the theme switch and book mode; React stays in the admin and never reaches a reader.
 
 An agent can steward as well as write. Any MCP client can draft, tag, schedule and publish, read your traffic, sweep comments and audit the archive, through the rules the admin itself follows.
 
 You can read, change, run and fork it under [PolyForm Noncommercial](./LICENSE), and run the published version commercially, paid hosting included, under [one additional permission](./LICENSE-EXCEPTION.md).
 
-**2.2.7** is the current release. It runs the demo above and the author's own blog at [manhhung.me](https://manhhung.me); the [changelog](./CHANGELOG.md) has everything that changed.
+**2.2.8** is the current release. It runs the demo above and the author's own blog at [manhhung.me](https://manhhung.me); the [changelog](./CHANGELOG.md) has everything that changed.
 
-Two of its three parts came from one person's bug reports. The contents list's last row now lands on something a reader can actually see: it was a dead anchor on a post with no tags, and on a desktop it threw the reader 2,615px past the end of the article to a copy of the taxonomy that is hidden at that width. Analytics gained **All time** and a **By year** table — nothing here has ever deleted a row, so the history was always on disk; what was missing was a window wider than 365 days to ask for it with. And there is now a box for **your own code**, in the page head and before the closing body tag, because "no third-party requests" is a promise about what this software does, not a rule for the person whose site it is.
+Four days on how the thing moves. One **motion engine** now runs the reading site, the sign-in page and the admin, and the Motion switch in Settings finally stops all of it, which it had not: the admin gated four rules and left every other transition running, the sign-in page had no gate at all, and the book's page turn showed a blank spread for a tenth of a second with the switch off. Menus, panels and toasts arrive instead of appearing; every control eases at one speed; a post runs one scroll loop instead of four. On a phone, **book mode scrolls the page** instead of opening a dialog, so Safari's bars retract and the paper runs to the top of the glass; the reader's chrome leaves on the way down and returns on the way up. The admin **rail can be rearranged** by drag or by buttons, and the order follows you between machines. Settings groups have titles you can find and an explanations switch that shrinks every row; untitled drafts are numbered. Search and the newsletter sign-up share one panel. And the two heaviest pieces of JavaScript, book mode and the comment thread, are now **fetched only by a page whose switch is on**: three quarters of the article bundle, gone from every site that does not use them. Underneath, the assistant asks before acting on anything it read in a comment, `SETUP_CODE` claims a blog from a browser without reading the log, and every install path was run again.
 
-**And what it does not do.** The custom-code box is not checked, filtered or sandboxed — a field whose purpose is to carry a tracking snippet cannot strip script tags, so what you paste runs, and an unclosed `<script>` will blank your site (the box says so, and names the tag). It never reaches the admin, the sign-in page or a draft preview, which also means you cannot use it to change those. The year table is not a replacement for a real analytics product: there are still no sessions, no funnels and no arbitrary date range, only the five windows and the year list. And every standing limit holds — a NAS and a Kubernetes cluster get no Caddy, `docker compose up` will not fetch a newer image on its own (upgrading is `pull` then `up -d`), an install that rewrites its own HTML with nginx `sub_filter` loses the origin's compression and validator, and an origin with no CDN still owes a distant reader the round trip that no saved byte buys back.
+**And what it does not do.** The Motion switch is the owner's, site-wide; a reader's own "reduce motion" setting is honoured, but there is no per-reader toggle on the page. The phone reader is a phone reader: under 640px only, and it needs the page's own scroll, so an in-app browser that pins its bars gets the same bars it always had. The rail order is stored as ids, so a screen that does not exist yet cannot be placed until it does. `SETUP_CODE` is a claim code, not a password: it is forgotten the moment the blog has an owner, and a code shorter than twelve characters is ignored with a line in the log saying so. The split bundles mean a site turning book mode on pays one more request, deferred and cached for a year. A Cloudflare zone with "JavaScript Detections" on injects its own inline script and iframe into every page, which breaks the no-third-party promise and a strict `script-src 'self'`; that is a dashboard setting, not this software. And every standing limit holds — a NAS and a Kubernetes cluster get no Caddy, `docker compose up` will not fetch a newer image on its own (upgrading is `pull` then `up -d`), an install that rewrites its own HTML with nginx `sub_filter` loses the origin's compression and validator, and an origin with no CDN still owes a distant reader the round trip that no saved byte buys back.
 
 ## What you get
 
@@ -88,7 +88,7 @@ Two of its three parts came from one person's bug reports. The contents list's l
 | 🎨&nbsp;**Looks** | Six palettes, light and dark. Four reading fonts, or upload your own. Every size comes from a role, so one change moves the whole page instead of one heading |
 | 🖍️&nbsp;**The&nbsp;pen** | `==text==` highlights in five inks, `++text++` underlines in pencil, `@@word@@` rings a word in red ballpoint. Strokes grown from a seeded hand, so no two on a page share a shape. Pigments measured off a photograph of a real pen box |
 | 💻&nbsp;**Code** | Highlighted on the server, so the reader downloads no highlighter. Twenty-one languages, and the names people actually type. A fence naming nothing is guessed at timidly, so program output stays plain |
-| 🔍&nbsp;**Reading** | Search that answers as you type. A rail with your categories and tags, or the contents of the post. Related posts, reading time, a progress bar. Book mode sets a post in two columns with a drop cap, and your place is kept for when you come back |
+| 🔍&nbsp;**Reading** | Search that answers as you type. A rail with your categories and tags, or the contents of the post. Related posts, reading time, a progress bar. Book mode sets a post in two columns on paper on a desk and one scrolled column on a phone, and your place is kept for when you come back |
 | 📈&nbsp;**Numbers** | Analytics without cookies: who read what, how far they got, where they came from — and the same page for any single post. Nothing is ever deleted, so the year-by-year table goes back to your first reader. Plus an activity log, a trash you can undo, and a help page |
 | 💬&nbsp;**Comments** | Readers comment without an account. The page signs its own spam challenge, so no third party sees them; Turnstile takes over only if you add its keys. Sweeping sends comments to the trash, not into nothing |
 | 🔎&nbsp;**Search&nbsp;engines** | Sitemap, RSS, `robots.txt`, `llms.txt`, and an OG image drawn per post. Rename a slug and the old URL keeps working |
@@ -99,7 +99,7 @@ Two of its three parts came from one person's bug reports. The contents list's l
 | 🌍&nbsp;**Languages** | Eleven, in the admin and on the site, and anyone can add one more in a single file. No CJK webfont ships, because they run to megabytes, but each of the three names its own face so 直 is drawn the Japanese way on a Japanese site |
 | 🔐&nbsp;**Sign-in** | Your own username and password, hashed with argon2id. An authenticator code every time, and ten recovery codes for the day the phone goes missing. Change the password, re-enrol the authenticator, and see every signed-in device with a button to end it — one at a time or all at once. There is a way back in when the password AND the phone are both gone. No Google anywhere in the login path |
 | 🤖&nbsp;**Assistant** | Your own model key, in the admin: Claude, GPT, Gemini or DeepSeek. Answers arrive as they are written, conversations are kept and listed, and each one carries a receipt of what it cost. It also writes the alt text for a picture you upload and sorts spam into the trash |
-| ⌨️&nbsp;**The&nbsp;admin** | ⌘K finds any of 108 named settings and jumps to it, so it stops mattering which of the eight tabs holds it. Every control is a key with relief: raised means you can press it, carved means it is held down. Six chords in the editor |
+| ⌨️&nbsp;**The&nbsp;admin** | ⌘K finds any named setting and jumps to it, so it stops mattering which of the eight tabs holds it. The rail's order is yours to drag, and its wordmark can go. Every control is a key with relief: raised means you can press it, carved means it is held down. Six chords in the editor |
 | 📱&nbsp;**Phone** | Install it to the home screen and it opens like an app |
 
 **Made for** one person, one server, one blog they mean to keep.
@@ -121,13 +121,13 @@ Two of its three parts came from one person's bug reports. The contents list's l
 
 These are off the network, first visit, nothing cached. It is what a stranger on a phone actually waits for.
 
-The CSS and JavaScript rows are build artefacts, the same bytes on every install, read off the 2.2.5 build — **brotli from the origin since 2.2.5**, which is where they lost about a kilobyte each. The totals were measured against a live site running Vietnamese, Literata to read and JetBrains Mono for the furniture, and moved by exactly what those rows saved. They are not a property of the software: the fonts are cut per script, so a browser fetches only the ranges your pages actually use. The pen's stroke shapes ride in two further immutable sheets, **11 KB together now against 20 before**, and they board only a page that carries a mark or an underline ([ADR 0027](docs/decisions/0027-the-pen-ships-only-where-it-wrote.md)). An inkless page never pays for them. Offline reading adds a service worker of 0.7 KB, fetched once and only on a blog that switched it on.
+The CSS and JavaScript rows are build artefacts, the same bytes on every install, read off the 2.2.8 build — **brotli from the origin since 2.2.5**, which is where they lost about a kilobyte each. The totals were measured against a live site running Vietnamese, Literata to read and JetBrains Mono for the furniture, and moved by exactly what those rows saved. They are not a property of the software: the fonts are cut per script, so a browser fetches only the ranges your pages actually use. The pen's stroke shapes ride in two further immutable sheets, **11 KB together now against 20 before**, and they board only a page that carries a mark or an underline ([ADR 0027](docs/decisions/0027-the-pen-ships-only-where-it-wrote.md)). An inkless page never pays for them. Offline reading adds a service worker of 0.7 KB, fetched once and only on a blog that switched it on.
 
 | | Home | A post | |
 |:---|---:|---:|:---|
-| **Requests** | 8 | 9 | |
+| **Requests** | 8 | 9 | 11 on a post with book mode and comments switched on |
 | **Total&nbsp;transferred** | **100&nbsp;KB** | **98&nbsp;KB** | 68&nbsp;KB of that is the fonts |
-| **JavaScript** | **3.5&nbsp;KB** | **9.0&nbsp;KB** | written by hand, no framework |
+| **JavaScript** | **4.2&nbsp;KB** | **7.3&nbsp;KB** | written by hand, no framework; +5.7&nbsp;KB only when book mode and comments are on |
 | **CSS** | 9.5&nbsp;KB | 9.5&nbsp;KB | +11&nbsp;KB only on a page carrying the pen |
 | **Third&#8209;party&nbsp;requests** | **0** | **0** | no CDN, no font host, no tracker |
 | **Coming&nbsp;back** | **0&nbsp;bytes** | **0&nbsp;bytes** | the same page answers `304`; a page you have not read yet still costs its HTML |
@@ -146,7 +146,7 @@ The fade-in and the progress bar are pure CSS: no script, off the main thread, a
 
 <div align="center">
 
-<img src="docs/demo-mobile.jpg" alt="Three phone screens: the post list, an article with its series contents, and the search overlay filtering as it is typed" width="960">
+<img src="docs/demo-mobile.jpg" alt="Four phone screens: the post list, an article with its series contents, book mode set on paper and scrolled like a page, and the search panel filtering as it is typed" width="960">
 
 <sub>None of this is for a benchmark. It is for someone on a four-year-old phone who wanted to read four hundred words.</sub>
 
@@ -197,7 +197,7 @@ curl -fsSL https://raw.githubusercontent.com/joiha-steven/quireink/main/install.
   | SITE_URL=https://example.com QUIREINK_DIR=/srv/blog bash
 ```
 
-`NO_RUN=1` stops it short of starting the blog, and [the script itself](./install.sh) is 120 readable lines if you would rather look before you pipe.
+`NO_RUN=1` stops it short of starting the blog, and [the script itself](./install.sh) is 136 readable lines if you would rather look before you pipe.
 
 **Or the same thing by hand**, which is all it does:
 
@@ -258,11 +258,6 @@ fixes in it. The version tags below exist for anyone who wants to move by hand i
 Also on GHCR as `ghcr.io/joiha-steven/quireink`: the same image, pushed by the same run and
 carrying the same digest, so the two can never drift.
 
-**On a fresh DigitalOcean droplet** (or any Ubuntu VM with cloud-init): paste
-[`deploy/digitalocean/user-data.sh`](./deploy/digitalocean/user-data.sh) into the
-droplet-create page's initialization-script box and the blog is serving three minutes
-after boot, claim link included ([how and why](./deploy/digitalocean/README.md)).
-
 **Or build it from this repository**, which is what `docker-compose.yml` does:
 
 ```bash
@@ -313,7 +308,7 @@ The repository also teaches the agent. Three skills ship in `.claude/skills/`, s
 
 ## Environment variables
 
-These are the only things that live outside the admin.
+These are the only things that live outside the admin. No brand of ours is forced on you: the footer is your own line or nothing, the admin's wordmark has a switch, and so does the version line at the foot of the dashboard.
 
 | Variable | Needed | What it does |
 |---|:---:|---|
@@ -321,18 +316,19 @@ These are the only things that live outside the admin.
 | `SITE_URL` | ✅ | Your public address, used in feeds, OG images and email. Leave it empty and every one of them says `http://localhost:3000` — the site still reads fine, so the only things that notice are crawlers and mail clients. It is deliberately not guessed from the request |
 | `STORAGE_LOCAL_DIR` | ◻️ | Where uploads go, served at `/uploads`. Defaults to `./uploads` |
 | `PORT` | ◻️ | Defaults to `3000` |
-| `SETUP_CODE` | ◻️ | Twelve characters or more, and the blog is claimed by opening `/setup` and typing it, instead of by the one-time link in the log. For installs where nobody will read a log: a cloud-init paste, a hosting panel. Unset, the log link stands |
+| `SETUP_CODE` | ◻️ | Twelve characters or more; then `/setup` asks for it instead of the log link. For installs where nobody reads a log: cloud-init, a hosting panel |
 | `HOST` | ◻️ | Which interface to listen on. Defaults to `127.0.0.1`, which is right when a reverse proxy sits in front on the same machine. Set `0.0.0.0` when it does not — another machine, or a container that has to be reachable from outside |
 | `MAX_UPLOAD_MB` | ◻️ | Largest single upload the app will store. Defaults to `64`, matching the `client_max_body_size` in the recommended vhost so the two refuse the same file. `0` = no limit |
 | `STORAGE_QUOTA_GB` | ◻️ | Largest the uploads folder may grow, counting the smaller copies made from each image. Defaults to `5`; an upload that would go past it is refused. `0` = no limit |
 | `CRON_SECRET` | ◻️ | Guards `/api/cron`, which publishes scheduled posts and tidies image variants |
-| `PURGE_WEBHOOK_URL` | ◻️ | A URL the blog POSTs to whenever it flushes its own cache, for a CDN that is not Cloudflare ([ADR 0033](./docs/decisions/0033-purging-an-edge-that-is-not-cloudflare.md)). Normally entered in Settings → Integrations instead |
+| `PURGE_WEBHOOK_URL` | ◻️ | A URL the blog POSTs to whenever it flushes its own cache, for a CDN that is not Cloudflare ([ADR 0033](./docs/decisions/0033-purging-an-edge-that-is-not-cloudflare.md)). Normally entered in Settings → Connections instead |
 | `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` (+`S3_ENDPOINT`, `S3_REGION`, `S3_PREFIX`) | ◻️ | An S3-compatible bucket every snapshot is also shipped to ([ADR 0035](./docs/decisions/0035-the-snapshot-leaves-the-machine.md)). Normally entered in Settings → System instead |
 | `CRON_INTERNAL` | ◻️ | Set to `0` to stop the process running its own maintenance clock, when you would rather schedule `/api/cron` yourself. On by default since [ADR 0031](./docs/decisions/0031-the-blog-winds-its-own-clock.md), and never started under `bun test` or `bun --watch` |
 | `MCP_OAUTH_SECRET` | ◻️ | Signs MCP OAuth codes. Leave it out and the server makes its own, which is the recommended way |
-| `ANALYTICS_TZ` | ◻️ | The site's DEFAULT timezone, used until somebody picks one in **Settings → Site → Timezone**. That setting is the site's whole clock — the date under a post, the month markers, and the day an analytics chart starts on — and it exists because a public page is rendered once and cached, so without it the SERVER's timezone decided what date every reader saw. Defaults to UTC |
+| `ANALYTICS_TZ` | ◻️ | Default timezone until the owner picks one in **Settings → Site → Timezone**, which is the site's whole clock: post dates, month markers, the day a chart starts on. Defaults to UTC |
+| `BACKUP_DIR` | ◻️ | Where snapshots are written. Defaults to `<DATA_DIR>/backups` ([backups](./docs/backups.md)) |
 | `TRUST_PROXY` | ◻️ | Set to `1` only when the proxy in front reaches you over a PUBLIC address. Rate limits key on the socket address; `CF-Connecting-IP`/`X-Forwarded-For` are believed automatically when the connection came from loopback or a private network |
-| `UPDATE_CHECK` | ◻️ | Set to `0` to stop the one request this software makes on its own: once a day, on the first visit your blog gets — or on its own hourly clock if nobody visits — it asks what the newest release is, and by asking, it is counted as a blog being used. What goes out is the version you run, a code rebuilt from a new date every midnight, whether your site has a public address, and four coarse steps: roughly how old the blog is, roughly how much is published, `docker` or `source`, and the admin's language. Never your address, your posts, your readers, or any exact number. On by default, and quiet on its own under `bun --watch` and `bun test` — a development afternoon is not an install. [The whole request is written out here](./docs/update-check.md). The owner has the same switch in Settings → System |
+| `UPDATE_CHECK` | ◻️ | Set to `0` to stop the one request this software makes on its own: once a day it asks what the newest release is, and by asking is counted as a blog in use. It sends the version you run and four coarse facts about the blog, never your address, posts, readers or an exact number. Also a switch in Settings. [The whole call](./docs/update-check.md) |
 
 SMTP, Turnstile and CDN credentials go in **Settings → Connections** and stay on the server. Your posts live in `DATA_DIR` and your uploads folder, never in git.
 
@@ -340,7 +336,7 @@ SMTP, Turnstile and CDN credentials go in **Settings → Connections** and stay 
 
 The interface speaks **eleven languages** on the reader's side and in the admin: English, Tiếng Việt, Deutsch, 日本語, 简体中文, 한국어, Français, Español, Português (Brasil), Italiano and Русский. The first question setup asks is which one this blog speaks.
 
-**Help translate.** Every language is one folder at the repository root: [`locales/`](./locales). To improve a translation, edit `locales/<code>.ts` (what readers see) and `locales/admin/<code>.ts` (what the owner sees) — plain files of quoted strings. To add a language, copy the two `en` files, translate, and register the code in `locales/langs.ts` + `src/types.ts`; the compiler refuses to build until every key exists, so a half-done translation cannot ship silently. Pull requests welcome — a native speaker's ear beats ours.
+**Help translate.** Every language is one folder at the repository root: [`locales/`](./locales). To improve a translation, edit `locales/<code>.ts` (what readers see) and `locales/admin/<code>.ts` (what the owner sees) — plain files of quoted strings. To add a language, copy the two `en` files, translate, and register the code in three places, `locales/langs.ts`, `src/types.ts` and `DATE_LOCALE` in `src/i18n/i18n.ts`; the compiler refuses to build until every key exists, so a half-done translation cannot ship silently. Pull requests welcome — a native speaker's ear beats ours.
 
 ## Develop
 

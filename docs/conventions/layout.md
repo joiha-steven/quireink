@@ -39,16 +39,16 @@ inside it. In book mode the same break becomes the asterism.
   links add `SIDEBAR_NAV_ACTIVE`); the footer holds the **light/dark toggle + Clear cache + Sign out**
   (palette selection moved to the public site); on mobile
   it's a hamburger drawer (always icon+label). (`ADMIN_NAV` is the older horizontal variant.)
-  It lists **four destinations** and puts the rest behind one "Everything else" button
+  By default it lists **four destinations** and puts the rest behind one "Everything else" button
+  (the owner can reorder and hide rows: [admin-design.md](../admin-design.md))
   ([ADR 0024](../decisions/0024-the-admin-is-rebuilt-around-writing.md) step 6) — the group is
   indented by a RULE on its wrapper, never by padding on the rows, because those rows share the
   one class constant this bullet is about.
-  Public header's 40px icon buttons → `ICON_BTN` (`ui/iconButton.ts`). Adding an item = reuse the
-  constant, never copy a class list.
-- **Editor toolbar stays one row.** Text is reserved for B/I/U/S, P, H1–H5, and compact table
-  abbreviations; semantic actions use line icons with localized `title`/`aria-label`. The row is
-  `flex-nowrap` inside `overflow-x-auto` on desktop and mobile. Never put `overflow-hidden` on the
-  editor frame: it creates a scroll container and prevents the toolbar from sticking to the viewport.
+  The public header's icon buttons are `.icon-btn` (`src/web/chrome.ts`); the admin's are `ICON_BTN`
+  (`ui/iconButton.ts`). Adding an item = reuse the constant, never copy a class list.
+- **Never put `overflow-hidden` on the editor frame:** it creates a scroll container and
+  prevents the toolbar from sticking to the viewport. (The toolbar wraps by owner verdict,
+  2026-08-17: [features/editing.md](../features/editing.md).)
 - **Header/menu alignment must be pixel-exact — the owner is very sensitive and it has drifted
   repeatedly.** Every header-row item (incl. the bigger brand wordmark) is an
   `inline-flex h-9 items-center` box; the row is `items-center`. NEVER align a bigger wordmark
@@ -143,7 +143,7 @@ answer to:
    signature and a colour printer should give the reader the ones the writer drew.
    `!important` is used, and only here — the settings layer is inline and lands after this
    sheet, so `html.dark` would otherwise win and print a black page.
-3. **The owner's type prints.** `check:type-roles` refuses a size on the reader's page that
+3. **The owner's type prints.** `check:type` refuses a size on the reader's page that
    the owner cannot set, and it is right about paper too — a blog set large is usually set
    large on purpose. The print sheet sets the MEASURE (150mm, about 70 characters at the
    12pt a default 16px body prints as) and hyphenation, and leaves size and leading alone.

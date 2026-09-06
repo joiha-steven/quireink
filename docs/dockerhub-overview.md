@@ -75,7 +75,7 @@ services:
 |---|---|
 | `latest` | The newest release. **The one to install**, because the newest release is the one carrying the fixes. |
 | `2.2` | Fixes within the 2.2 line, no feature surprises. For anyone who would rather step up a major version by hand. |
-| `2.2.7` | One exact release. Nothing moves, ever. |
+| `2.2.8` | One exact release. Nothing moves, ever. |
 
 `linux/amd64` and `linux/arm64`, each built on its own native runner. The same image is on
 GHCR as `ghcr.io/joiha-steven/quireink`, pushed by the same run with the same digest.
@@ -95,7 +95,7 @@ and the analytics settings are all entered in the admin and stored in the databa
 | `CRON_SECRET` | — | Unlocks `/api/cron` for an external scheduler; the route is closed without it. The built-in clock needs neither. |
 | `ANALYTICS_TZ` | `UTC` | The site's default timezone, until one is picked in Settings → Site. |
 
-The [environment table](https://github.com/joiha-steven/quireink/blob/main/docs/self-host.md)
+The [environment table](https://github.com/joiha-steven/quireink/blob/main/README.md#environment-variables)
 has the rest.
 
 ## What is in it
@@ -104,7 +104,7 @@ A real editor over Markdown, with tables, footnotes, callouts, mathematics and v
 saves as you type and can hold a post until Tuesday. Six palettes in light and dark, four reading
 fonts, a book mode set in two columns like paper, and a five-ink highlighter whose strokes are
 grown rather than drawn, so no two on a page share a shape. Search that answers as you type,
-comments, a newsletter, and analytics without cookies. An article page costs about 114 KB.
+comments, a newsletter, and analytics without cookies. An article page costs about 100 KB.
 
 An AI agent can write and publish for you over MCP, through exactly the rules the admin
 follows, and you can take its access away at any moment.

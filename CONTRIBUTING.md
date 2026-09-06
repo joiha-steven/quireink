@@ -11,9 +11,7 @@ to relicense it, including under commercial terms. That second half is what keep
 commercial licence possible without having to track down every past contributor; it is
 stated here rather than enforced by a CLA bot.
 
-> **Quire 1.x takes nothing.** The Next.js + PostgreSQL implementation was shut down on
-> 2026-07-31 and removed from the working tree; it is in git history at tag `v1-final`. It
-> receives no changes at all, security fixes included.
+> **Quire 1.x takes nothing.** The Next.js + PostgreSQL tree is at tag `v1-final` and receives no changes, security fixes included.
 
 ## This file is an entry point, not the rulebook
 
@@ -32,13 +30,13 @@ month. So before writing code, read the file that owns what you are touching.
 ## Getting set up
 
 Bun 1.3 or newer, and nothing else: no database server, no container runtime, no
-third-party account, no credentials. The four commands are in
+third-party account, no credentials. The commands are in
 [README, develop](./README.md#develop).
 
 Two more are worth knowing, because the house rule is that you LOOK at what you changed
 instead of reasoning about rendered CSS from the source: `bun run shot` takes a screenshot
 and `bun run drive` drives headless Chromium through a flow. `bun run tour` uses the same
-browser for fifty-nine flows.
+browser for every flow in `scripts/tour-flows*.ts`, and prints its own count.
 
 All three need a headless browser, and they find one themselves — `scripts/chrome-path.ts`
 looks for a `@puppeteer/browsers` install, then the usual system paths, then full Chrome.
@@ -53,7 +51,7 @@ bunx @puppeteer/browsers install chrome-headless-shell@stable --path "$HOME/chro
 ## Definition of done
 
 **`bun run check:all` exits 0.** It builds the island bundles and the admin SPA, typechecks
-all three projects, runs the eight static guards in `scripts/checks/`, then the test suite. It
+all three projects, runs the nine static guards in `scripts/checks/`, then the test suite. It
 touches no network, needs no credentials and starts no services, so there is no excuse for
 opening a pull request without it.
 
@@ -63,7 +61,7 @@ happened here at least once.
 
 **A change under `src/render/` or `src/web/` also faces the golden gate.**
 [`src/render/golden.test.ts`](./src/render/golden.test.ts) renders every fixture in
-`golden/corpus/` and compares it byte for byte against captured 1.x output. One moved byte
+`golden/v1/corpus/` and compares it byte for byte against captured 1.x output. One moved byte
 usually means a template is wrong. Re-baselining is sometimes the correct answer, but it is
 a decision: say in the commit what moved and why it is allowed to.
 
@@ -75,7 +73,7 @@ a decision: say in the commit what moved and why it is allowed to.
 - **Simplicity first.** The minimum code that solves the problem. No speculative
   abstraction, no interface with one implementation, no handling for impossible states.
 - **English everywhere except the interface.** Code, comments, identifiers, filenames,
-  commit messages and docs are English. UI strings live in `src/i18n/` and move in all six
+  commit messages and docs are English. UI strings live in `locales/` and move in all eleven
   languages together.
 - **Run it and look at it.** `check:all` proves the code compiles and the seams hold. It
   cannot tell you that a column collapsed or that three headings sit 14px out of line.
@@ -96,5 +94,5 @@ The **code** in this repository is [PolyForm Noncommercial](./LICENSE): read it,
 self-host it, share it, for any noncommercial purpose. An
 [additional permission](./LICENSE-EXCEPTION.md) also allows commercial use — paid hosting
 included — of a published release run unmodified. Commercial use of a *modified* version
-needs a separate licence, which is usually cheap or free for the asking. The **writing** published with Quire Ink
+needs a separate licence. The **writing** published with Quire Ink
 belongs to its author, is not covered by the code licence, and is not in this repository.

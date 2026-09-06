@@ -23,73 +23,15 @@ On any behavior change, update the matching doc in the SAME change (Working prin
   [`scripts/ops/quire-backup.sh`](../../scripts/ops/quire-backup.sh) does.
 - **Audits** are dated snapshots, so they are write-only and they live with the author's
   notes rather than here. Read the latest first so a pass starts from the last clean line.
-- **Versioning (do NOT auto-bump):** the version is **`2.2.7`**, released
-  2026-09-02 — two bug reports from one Unraid owner, answered, plus the box that lets an
-  owner add the third party this software refuses to add for them. The contents list's last
-  row was a dead anchor on a post with no tags and, on a desktop, a 2,615px jump to a copy
-  of the taxonomy that is hidden at that width (#63). Analytics gained All time and a By
-  year table: nothing here has ever deleted a row, so the history was always on disk and
-  what was missing was a window wider than 365 days to ask with (#64). And Connections →
-  Custom code takes your own HTML in the head and before the closing body tag, on public
-  pages only. The patch slot an eighth time. (`2.2.6`, released
-  2026-09-02 — a fix release from a sweep of every page and admin screen at four widths in
-  both colour schemes. The navigation drawer stopped keeping its links in the keyboard tab
-  order once it slid shut, the composed front page kept its menu on a narrow screen, the
-  "not found" page grew a search box and the newest posts, and two admin screens that
-  overran a phone — the dashboard feed by a pixel, Appearance by 52 — were made to fit. It
-  also closed an open redirect: the post-sign-in destination refused `//evil.example` but not
-  `/<TAB>/evil.example`, a tab the URL parser strips before it reads the address, and now
-  refuses any control character, whitespace or backslash. The patch slot a seventh time — the
-  a11y work is minors under the rule below, and the owner took the patch slot. (`2.2.5`, released
-  2026-09-01 — the day four names left the CDN in front of them, and everything quietly
-  relying on it came up for air. Two of those were security defects, both the same shape: a
-  header only Cloudflare overwrites, believed on installs that have no Cloudflare. The origin
-  learned to compress for itself (brotli, 22% off a cold visit) and to answer a returning
-  reader with a 304; every install path that can carry a certificate now does; a wide table
-  stopped turning the whole article into a scroll box. The owner asked for `2.2.4.1` first and
-  took `2.2.5` when four segments turned out not to be semver — `bun install` swallows it, and
-  the MCP registry schema does not. The patch slot a sixth time. (`2.2.4`, released
-  2026-09-01 — seventy-five commits in two days: the admin and the reading site both learned
-  relief (raised means pressable, carved means held), the assistant got a fourth provider,
-  streaming and a desk to work at, ⌘K arrived on the back of a settings index the MCP tools
-  also read, the account can be recovered when both keys are gone, four faults that changed
-  the published page on save were fixed, and the owner's menu stopped disappearing on three
-  of five layouts (#61). The patch slot a fifth time, and by the widest margin yet — several
-  of those are minors under the rule below. **It went out once as `2.3.4` by mistake**, twenty
-  minutes before the number was corrected: the tag and the GitHub release were deleted and
-  the owner removed the `2.3.4` and `2.3` tags from Docker Hub by hand, since a tag pushed by
-  `publish.yml` cannot be withdrawn by it. A wrong number is four public places, not one —
-  the tag, the release, two registries and any comment already written on an issue.)
-  (`2.2.3`, released
-  2026-08-30 — the year archive and a feed per archive, offline reading behind a switch that
-  is off by default (ADR 0039), one set of table settings for the whole blog, a post's own
-  picture with an author and shape knobs, page weight and cache rate in Analytics, a licence
-  exception that finally covers the install its own guide teaches (ADR 0038), and a
-  repository that no longer quotes its owner; several of those are minors under the rule
-  below and the owner took the patch slot a third time. (`2.2.2`, released
-  2026-08-29 — picture frames with a site-wide default, the gallery finally reflowing, an
-  admin audited at seven widths and repaired at all of them, and the metric-matched fallback
-  reaching Android after two months of doing nothing there; the frames alone would be a minor
-  under the rule below, and the owner took the patch slot again.) (`2.2.1`, 2026-08-27 —
-  eleven languages, offsite snapshots, the import finishing the move and the
-  no-account trio, any one of which the rule below would have called a minor; the owner
-  chose the patch slot to keep numbers in reserve, which is this bullet's own rule at work.)
-  (`2.2.0`, 2026-08-25, was the largest release since 2.0, and the size of it is why the
-  number came with a checking pass: setup in a browser, the agent's
-  reading and stewarding halves, the in-admin assistant, the print sheet, the pen becoming
-  the owner's, three keyboards with a volume, JSON-LD, and a documentation sweep that found
-  the install guide still teaching a step the software had stopped taking. `2.1.4`,
-  2026-08-22, was the audit
-  day after the editor day: the update check with its version dot, the site-wide timezone
-  setting, the SVG sandbox and the thumb-size pass — features that under the semver rule
-  below would have made it `2.2.0`, and the owner called `2.1.4`, which is this bullet's own
-  rule at work. `2.1.3` was a day of editor fixes on `2.1.2`; `2.1.2` had withdrawn `2.1.1`,
-  whose tag and release were deleted a day after they went out, having shipped book mode
-  already broken on current Chrome.) From 2.0 onward the number is **semver and means something**, which is the change
-  from the 1.5.x era where `x` was a running counter: MAJOR for a break in how the thing is
-  installed or run, MINOR for a feature, PATCH for a fix. **Never bump any of the three on your
-  own** — a release is the owner's call, and so is the number. Ship the work, write the
-  CHANGELOG entry under an "Unreleased" heading, and ask.
+- **Versioning (do NOT auto-bump):** the version is **`2.2.8`**, released 2026-09-06. From 2.0
+  the number is semver and means something (the 1.5.x `x` was a running counter): MAJOR for a
+  break in how the thing is installed or run, MINOR for a feature, PATCH for a fix. The owner
+  picks the number, and has taken the patch slot for minor-sized work nine releases running;
+  that is the rule at work, not an exception to it. **Never bump any of the three on your own**
+  — ship the work, write the CHANGELOG entry under an "Unreleased" heading, and ask. History,
+  per release, is [CHANGELOG.md](../../CHANGELOG.md). The one lesson kept here: 2.2.4 went out
+  as `2.3.4` for twenty minutes, and a wrong number is four public places (the tag, the
+  release, two registries) plus every issue comment already written.
 - **Cutting a release** (only when asked): `bun run check:all` and `bun run build` both exit 0
   (there is no binary — [ADR 0022](../decisions/0022-ship-from-source-not-a-compiled-binary.md)); the CHANGELOG entry is written and dated; push `main`; then
   `gh release create v<version> --title "v<version> — <tagline>" --notes-file <file>`.
@@ -100,21 +42,13 @@ On any behavior change, update the matching doc in the SAME change (Working prin
   releases behind at `2.2.1` because nothing had ever named it) — plus
   the CHANGELOG entry heading and each README's release-note paragraph, which is rewritten
   per release anyway.
-  It said three and named `# **quire**blog`, from before the rename and before
-  `README.vi.md` existed, so the instruction for finding the stale copy was itself a stale
-  copy — and this line itself sat at `2.1.0` while the product was on `2.1.2`, which is the
-  same failure a third time. `grep -rn '<old>' package.json README.md README.vi.md docs/conventions/releases.md`
-  before tagging; a number left behind in a README is the usual miss.
+  This line has lagged the product three times; `grep -rn '<old>' package.json server.json README.md README.vi.md docs/conventions/releases.md`
+  before tagging, and `check:docs` now fails on a stale pin.
   **The release-note paragraph says what the version CANNOT do, not only what it can.**
   Owner's instruction, 2026-09-01: a reader deciding whether to install this needs the limits
   stated where they will read them, per version, in the README rather than discovered on
-  their own server. The 2.2.x work threw up four of exactly that shape — a NAS and a
-  Kubernetes cluster get no Caddy and that is deliberate; a `docker compose up` on a machine
-  with an older cached image silently runs the older blog; an install that injects into its
-  own HTML with `sub_filter` loses the origin's brotli and its ETag; and an origin with no CDN
-  in front costs a reader on the far side of the world a round trip that no amount of saved
-  bytes buys back. None of those is a bug and every one of them surprises somebody. A
-  paragraph that lists only what was added is an advertisement; the limits are what make it a
+  their own server. A NAS and a Kubernetes cluster get no Caddy, and that is deliberate: not a
+  bug, and it surprises somebody. A paragraph that lists only what was added is an advertisement; the limits are what make it a
   release note.
 
   **Docker docs deliberately do NOT carry a version at all**: every `docker pull` and compose

@@ -113,6 +113,11 @@ echo "== phone panels =="
 # driven — wrapped correctly. Two panels of a phone plate that were not phones.
 MOBILE=1 bun run drive "$L/"      "$P/m-list.png" "void 0" 390 844 600 > /dev/null
 MOBILE=1 bun run drive "$L/$MPOST" "$P/m-post.png" "void 0" 390 844 600 > /dev/null
+# Book mode on a phone scrolls the document (book-scroll.ts); the meta-line toggle is
+# display:none at this width, but clicking it from script still opens the reader.
+MOBILE=1 bun run drive "$L/$MPOST" "$P/m-book.png" \
+  "document.querySelector('[data-book-open]').click(); setTimeout(function(){scrollTo(0,460)},300); setTimeout(function(){scrollTo(0,420)},700)" \
+  390 844 1200 > /dev/null
 MOBILE=1 bun run drive "$L/$POST" "$P/m-search.png" \
   "document.querySelector('[data-search-open]').click(); setTimeout(function(){var i=document.querySelector('.search-panel input, input[type=search]'); if(i){i.value='page'; i.dispatchEvent(new Event('input',{bubbles:true}))}}, 200)" \
   390 844 1400 > /dev/null
@@ -177,7 +182,7 @@ bun scripts/compose-demo.ts docs/demo-setup.jpg   "$P/claim.png::full" "$P/setup
 bun scripts/compose-demo.ts docs/demo.jpg         "$P/front.png:the front page"   "$P/post.png:a post"
 bun scripts/compose-demo.ts docs/demo-reading.jpg "$P/book.png:book mode:full"    "$P/dark.png:the dark theme"
 bun scripts/compose-demo.ts docs/demo-mobile.jpg  "$P/m-list.png:the post list:phone" \
-  "$P/m-post.png:a post:phone" "$P/m-search.png:instant search:phone"
+  "$P/m-post.png:a post:phone" "$P/m-book.png:book mode:phone" "$P/m-search.png:instant search:phone"
 bun scripts/compose-demo.ts docs/demo-code.jpg    "$P/maths.png:mathematics" "$P/code.png:code" "$P/pen.png:the pen"
 bun scripts/compose-demo.ts docs/demo-admin.jpg   "$P/editor.png:the editor"      "$P/appearance.png:appearance"
 

@@ -71,12 +71,12 @@ between a line here and the running software is either a bug or an unrecorded `â
   `motion.keyVolume`. 1.x had no sound at all, so there is nothing to be at parity with
 - `âš ` **Vietnamese IME (Telex) must be tested explicitly.** Toolbar and autosave must not
   interfere mid-composition
-- Title grows instead of clipping; toolbar sticky, never wraps, scrolls horizontally on
-  narrow screens; focusing prose draws no black outline
+- Title grows instead of clipping; toolbar sticky (`âœ‚` it wraps in 2.0, by owner verdict,
+  [editing.md](../features/editing.md)); focusing prose draws no black outline
 
 ## 12. Settings
 
-- ONE form, ONE save, five tabs, `?tab=` deep links
+- ONE form, ONE save, five tabs (now eight: [admin.md](../features/admin.md)), `?tab=` deep links
 - Save calls a refresh so the admin shell and public header update immediately
 - Site: title, logo, header menu, language, content width, sidebar layout, most-viewed count,
   featured slugs
@@ -92,7 +92,7 @@ between a line here and the running software is either a bug or an unrecorded `â
 - Integrations: SMTP, MCP tokens, Cloudflare, backups, comment keys
 - `âš ` Secrets never enter the settings payload: Turnstile keys, SMTP credentials and the
   backup token live in server-only tables
-- 6 locales in sync (en default, then vi, de, ja, zh, ko)
+- 6 locales in sync (now 11: [i18n.md](../conventions/i18n.md))
 - 6 theme palettes, light and dark each, reader-switchable with no flash
 
 ## 13. MCP
@@ -138,7 +138,7 @@ between a line here and the running software is either a bug or an unrecorded `â
 - Rate limits and lockout on password, TOTP and recovery attempts, all written to the
   activity log
 - Bootstrap through the CLI; TOTP enrolment forced at first sign-in
-- Sign-in page carries the site masthead, correct autocomplete attributes, caps-lock warning,
+- Sign-in page carries the Quire mark rather than the site masthead (since 2026-07-28), correct autocomplete attributes, caps-lock warning,
   2FA on its own screen, errors that never reveal whether an account exists
 - `âœ‚` Sessions do not survive cutover; everyone signs in once (parity exception 4)
 - `âš ` MCP tokens DO survive cutover

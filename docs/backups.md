@@ -1,6 +1,6 @@
 # Backups
 
-There are **three**, and they answer different questions. Losing track of which is which is
+There are **four**, and they answer different questions. Losing track of which is which is
 how an install ends up with two copies of the same protection and none of another.
 
 | | Where | Answers | Source |
@@ -10,7 +10,7 @@ how an install ends up with two copies of the same protection and none of anothe
 | **Off-server, built in** | any S3-compatible bucket (R2, S3, MinIO) | "the machine is gone" | [`src/server/backup-offsite.ts`](../src/server/backup-offsite.ts) (ADR 0035) |
 | **Off-server, ops script** | R2, hourly + daily tiers | the same, for a fleet running its own shipping | [`scripts/ops/quire-backup.sh`](../scripts/ops/quire-backup.sh) |
 
-All three take the same `VACUUM INTO` snapshot of both databases plus the uploads tree. They
+All four take the same `VACUUM INTO` snapshot of both databases plus the uploads tree. They
 differ only in where the file ends up and who decides when.
 
 A sibling under the same env-var convention, [`scripts/ops/quire-uptime.sh`](../scripts/ops/quire-uptime.sh),
@@ -94,10 +94,8 @@ password lives in Settings, so both are inside the snapshot already. A restore t
 brings its own sessions and its own mail server back with it.
 
 > The names below match [`self-host.md`](./self-host.md): service `quire`, data
-> `/var/lib/quire`. They used to disagree — the script defaulted to `quire2`, one
-> installation's service name — and reading both and mixing them gave you a backup pointed at
-> a directory that does not exist. If you named your service something else, everything here
-> is an environment variable; see [Instance configuration](#instance-configuration).
+> `/var/lib/quire`. If you named your service something else, everything here is an
+> environment variable; see [Instance configuration](#instance-configuration).
 
 ## Schedule and retention
 
@@ -111,7 +109,7 @@ brings its own sessions and its own mail server back with it.
 
 ## Restoring
 
-The same procedure for all three, because all three produce the same archive. The service
+The same procedure for all four, because all four produce the same archive. The service
 has to stop: copying a database under a running process is the torn-state problem the
 backup itself avoids, in the other direction. That is also why there is no restore button.
 

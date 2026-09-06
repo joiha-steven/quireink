@@ -1,6 +1,136 @@
 # CHANGELOG
 
-## Unreleased
+## 2026-09-06 — Quire Ink 2.2.8
+
+Four days on how the thing moves and how it feels under a hand: one motion engine for the
+reading site, the sign-in page and the admin, with one switch that finally stops all of it;
+a book reader that a phone can actually read in; an admin rail you can rearrange; and the
+two heaviest islands leaving every page that has not switched them on. Underneath, the
+assistant stops taking orders from a comment, a blog can be claimed without reading a log,
+and every install path was run again.
+
+### One motion engine, one switch
+
+- **Four files ARE the engine now**, and nothing else says how the product moves:
+  `web/motion.css.ts` and `assets/js/motion.ts` for the reading site, the foot of
+  `admin.css` and `admin/motion.ts` for the admin ([`docs/conventions/motion.md`](./docs/conventions/motion.md)
+  is the contract). Three durations, and for the first time one curve, `--ease-out`, taken
+  from the rail's slide and shared by every entrance. Eleven duration literals across four
+  files at four values for three intents became the tokens; Tailwind's own `transition`
+  utilities read the same token.
+- **The Motion switch stops everything, on both sides of the door.** It did not: the admin
+  gated four rules one at a time while every Tailwind transition, six loading skeletons and
+  the sidebar's width kept moving; the sign-in page used tokens that resolved to nothing and
+  had no gate at all; two admin scrolls and the to-top button smooth-scrolled regardless;
+  and the book's page turn held a blank spread for 130ms with the switch off, because its
+  timer did not know the transition had gone. One rule per gate now, on every element and
+  pseudo-element, and script asks the gate rather than reading a token.
+- **One scroll loop.** Four islands on a post ran four `requestAnimationFrame` loops, and the
+  second one's layout reads landed after the first one's writes, a forced layout on every
+  frame. Every island now watches the scroll through one loop, reads before writes.
+- **Things arrive rather than appear.** The theme menu, the search and sign-up panels, the
+  admin's toasts, command palette and slide-overs start a shade transparent and a few
+  pixels short, in pure CSS (`@starting-style`), so the scripts are unchanged. Every control
+  eases its colour at one speed under a floor rule, so nothing snaps beside a neighbour that
+  eases. Three transitions on layout properties — the settings switch travelling on `left`,
+  two upload bars growing by `width` — became transforms.
+- **A card had two entrances.** `card-in` sat outside the scroll-fade switch and `reveal-in`
+  inside it, so a feed with the fade off still rose on the way in. One entrance, one switch.
+- **The admin's progress bar sweeps once per click.** Work arriving while the finished bar
+  was fading used to un-mark it, and un-marking replays the keyframes from the left: a save
+  followed by its refresh, or the write pane's list and then its post, drew one click twice.
+  The bar now holds full until that work ends, then fades once.
+
+### The scroll fade is one switch, and reaches the words
+
+- `features.scrollFade` governs both halves: the cards easing in at the foot of a listing,
+  and the new half, an article's running text dimming at the top and bottom of the window so
+  the paragraph being read is the brightest thing on screen. Off means nothing fades
+  anywhere, including the fallback armed for browsers without scroll timelines.
+- Cards used to sit half-faded in the middle of the window on a feed of long posts, because
+  the range was measured against each card's own height. The range is now "the card is
+  inside the window", one instant with one meaning at any height.
+- Not inside the paginated book, whose columns run sideways: a vertical timeline dimmed
+  whichever paragraphs sat outside the window in a direction nobody was scrolling.
+
+### A phone reads a book by scrolling
+
+- **Below 640px book mode is not a dialog.** A modal takes the scroll off the document, and
+  on iOS that means Safari keeps its address bar and toolbar for the whole read: measured at
+  844px, 190px of the screen were Safari's, 56 ours, and a nineteen-page article turned a
+  page every four sentences. The phone now lays the article out as one column in the
+  document and scrolls the page, which hands those bars back to the words. The chrome
+  follows the direction — away on the way down, back on the way up — and the phone's own
+  back gesture leaves the reader rather than the article.
+- **Paper to the top of the glass.** iOS tints its status bar with the document's background,
+  which was the site's white, so the reader wore a white band above its paper. The document
+  itself is paper while the reader is open, `theme-color` says so, and the words run under
+  the clock on the way down exactly as an ordinary page does; the bar's own padding covers
+  the inset while the bar shows. Seen on an iPhone 17 Pro simulator against the live site.
+- The scrolled reader fades at its edges like an article, since a scrolling window cuts a
+  line in half at its top edge; the paginated spread does not.
+- The reading-progress bar is gone on a phone: the scrollbar already says how far in you
+  are, and the bar stuttered against the address bar collapsing. Unchanged above 639px.
+
+### The admin rail is yours to arrange
+
+- **Every row can be moved** — the four destinations, the group they fold into, the controls
+  at the foot — by dragging with a pointer or a finger, or with up/down buttons for keyboard
+  and touch. Rearrange sits under Collapse. The wordmark and the search button get switches
+  instead of drags, because a logo dropped into a column of destinations becomes one; with
+  the wordmark off, search becomes the first row above Home.
+- **The order is a site setting**, stored as ids, so it is the same on the laptop and the
+  desktop and survives a label being translated eleven ways. Collapse and icons stay per
+  device.
+- Three faults in the first drag, fixed the same day: the row died after one move (a node
+  that leaves the document loses its pointer capture, so the gesture now lives on the
+  window), a moved row sprang back while the server kept the new order, and the list
+  teleported instead of sliding (rows now animate from where they were, skipped behind the
+  motion gate).
+
+### No brand, if you want none
+
+- **The dashboard's system line has a switch.** The line at its foot — `quireINK v2.2.8
+  (hash) · running the latest · Bun · SQLite · the machine · uptime · View site` — is the one
+  place the admin said its own name on every visit. Settings → System → Dashboard turns the
+  whole line off; Settings → System still says when an update exists.
+- With that, nothing of ours is forced onto your screens: the admin wordmark has a switch in
+  Rearrange sidebar, the public footer is your own line or nothing, and the only place the
+  software still names itself is the `generator` meta tag ([ADR 0038](./docs/decisions/0038-the-permission-reaches-the-install-people-actually-run.md)).
+
+### Settings you can read, drafts you can tell apart
+
+- **Group titles you can find.** Thirty-seven groups in two columns at 15px over labels at
+  14px read as one object; a group now opens at 17px on a tinted band with a graphite dot.
+- **Explanations have a switch.** Show explanations, at the top of Settings; off, every note
+  under a setting goes, and the rows shrink with them: a switch row 65px to 41px, from the
+  padding, six pixels of descender space under every switch, and the empty strip at each
+  end of a list card.
+- **Untitled drafts are numbered.** Several drafts saved without a title were a wall of the
+  same label; each now carries a stable number, oldest first, and the dashboard's pick-up
+  band uses the same numbering as the writing sidebar.
+- Focus mode hid the pane on the Write screen too, where the pane is not chrome around the
+  writing but the screen itself, and took the way out with it; it now hides the pane only
+  beside an editor. The recovered-work strip is grey rather than amber, since nothing has
+  gone wrong when it appears. Custom code moves into the Connections tab's left column,
+  beside SMTP, instead of a strip stranded under both. The build line ends the dashboard's
+  system line, where a phone hides it unless the install is behind.
+
+### The reading site
+
+- **Search and the newsletter sign-up share one panel.** They were two designs — a framed
+  32rem box 8vh down with a close glyph, and a frameless 28rem card 12vh down without one.
+  Same frame, width, top, heading and close now; the card inside the sign-up drops its own
+  border.
+- **The pen loop is a real path.** The loop drawn round "Book mode" on hover was an SVG mask,
+  and Safari draws a faint dotted rectangle round a scaled mask's box (Chrome does not,
+  which is why it shipped). It is an inline SVG in the button now, drawn by the vector engine
+  in whichever ink the palette holds.
+- **An island behind a switch is its own bundle.** Book mode was 7.8 KB and the comment
+  thread 7.0 KB of a 19.6 KB `post.js`, three quarters of the file sent to every reader of a
+  site with both switched off. Each is a bundle now, named on a page only when its switch is
+  on; `post.js` keeps the islands every article has, at 7.1 KB. A site with both on pays the
+  same bytes over two more deferred, immutable requests.
 
 ### The assistant asks before acting on what a reader wrote
 
@@ -37,10 +167,10 @@
   entrypoint now passes `--no-new-privs` to `setpriv` when it drops to `PUID:PGID`, so every
   door gets it. Measured on the rebuilt image: `Uid 1000`, `NoNewPrivs 1`, and a Synology-style
   `PUID=1026 PGID=100` still adopts its folders and boots.
-- **The Kubernetes manifest pinned `2.2.3` through four releases.** It now names `2.2.7`, and
-  `check:docs` fails when the pin, the tag table in `dockerhub-overview.md` and the version
-  line in `releases.md` disagree with `package.json`, so the next release cannot leave one
-  behind.
+- **The Kubernetes manifest pinned `2.2.3` through four releases.** It now names the current
+  release, and `check:docs` fails when the pin, the tag table in `dockerhub-overview.md` and
+  the version line in `releases.md` disagree with `package.json`, so the next release cannot
+  leave one behind.
 - **`ghcr.io` still carries the withdrawn `2.3` and `2.3.4` tags** from the mistaken release
   of 2026-08-31; Docker Hub was cleaned by hand at the time and the second registry was not.
   Deleting them needs the package owner's token, so this note is the fix until then: the
@@ -74,6 +204,9 @@
   does not, so the two had never met: a release could reach both registries as `latest` on
   a commit whose tour was red. The publish workflow now reads the check runs on the tagged
   commit and refuses until all four are green, or fails naming the one that is not.
+- The appearance contract's notes for the three duration tokens said 120/200/320ms for a
+  month while the sheet said .15/.2/.5s; they say what the sheet says, and `--ease-out`
+  joined the contract. `docs/performance.md` no longer claims there is nothing to split.
 
 ## 2026-09-02 — Quire Ink 2.2.7
 

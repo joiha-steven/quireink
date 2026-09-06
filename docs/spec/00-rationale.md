@@ -28,8 +28,8 @@ Measured on the live 1.x site, 2026-07-26. A post page fetched **182 KB of JavaS
 
 **79% of the payload was framework.** Deleting every island on the site would have saved
 39 KB and still left 143 KB. The cost was structural, not carelessness, and that is the
-whole argument for leaving. Target for 2.0: **0 KB on an article page**, under 3 KB
-site-wide ([04-frontend.md](04-frontend.md)).
+whole argument for leaving. The budgets are per bundle in
+`scripts/build-assets.ts` ([04-frontend.md](04-frontend.md)).
 
 A 13th chunk (110 KB raw, core-js polyfills) was emitted with `noModule`, so modern
 browsers never fetched it. It is excluded from every number above.

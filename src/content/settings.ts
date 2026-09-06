@@ -11,7 +11,7 @@ import { isSiteLang } from '@/locales/langs'
 import { EMPTY_NAV_ORDER, sanitizeNavOrder } from '@/content/nav-order'
 import { DEFAULT_PRESET_ID, isPresetId, isFontPresetId, defaultThemes, ALL_PALETTE_IDS, DEFAULT_FONT, DEFAULT_FONT_PRESET, isChromeFontId, DEFAULT_CHROME_FONT, isScheme, getFontPreset } from '@/content/themes'
 import {
-  DEFAULT_HOME, DEFAULT_GALLERY, DEFAULT_FIGURE, sanitizeMenu, migrateThemes, sanitizeThemes, sanitizeEnabledPalettes, sanitizeSeo, sanitizeFeatures, sanitizeHome, sanitizeGallery, sanitizeFigure, sanitizeMcp, sanitizeMotion, sanitizeCache,
+  DEFAULT_HOME, DEFAULT_GALLERY, DEFAULT_FIGURE, sanitizeMenu, migrateThemes, sanitizeThemes, sanitizeEnabledPalettes, sanitizeSeo, sanitizeFeatures, sanitizeHome, sanitizeGallery, sanitizeFigure, sanitizeMcp, sanitizeMotion, sanitizeCache, sanitizeDashboard,
   sanitizeBackups, sanitizeComments, sanitizeCss, sanitizeSnippet, sanitizeUrl, clampNumber, sanitizeFeatured,
   sanitizeTimezone, sanitizeAi, sanitizeInks,
 } from '@/content/settings-sanitize'
@@ -129,6 +129,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   // On, because a blog that is fast for readers is the default. The switch exists for the
   // hour you are changing the look and want to see it, not for permanent use.
   cache: { enabled: true },
+  dashboard: { systemLine: true },
   backups: DEFAULT_BACKUPS,
 }
 
@@ -209,6 +210,7 @@ export async function getSettings(): Promise<SiteSettings> {
       inks: sanitizeInks(stored.inks, DEFAULT_SETTINGS.inks),
       motion: sanitizeMotion(stored.motion, DEFAULT_SETTINGS.motion),
       cache: sanitizeCache(stored.cache, DEFAULT_SETTINGS.cache),
+      dashboard: sanitizeDashboard(stored.dashboard, DEFAULT_SETTINGS.dashboard),
       backups: sanitizeBackups(stored.backups, DEFAULT_BACKUPS),
       // Only an explicit `false` turns it off. A settings blob written before this
       // existed has no key at all, and `=== true` would read that silence as a refusal
@@ -346,6 +348,7 @@ export async function saveSettings(input: Partial<SiteSettings>): Promise<SiteSe
     inks: sanitizeInks(input.inks, current.inks),
     motion: sanitizeMotion(input.motion, current.motion),
     cache: sanitizeCache(input.cache, current.cache),
+    dashboard: sanitizeDashboard(input.dashboard, current.dashboard),
     backups: sanitizeBackups(input.backups, current.backups),
     timezone: input.timezone !== undefined ? sanitizeTimezone(input.timezone, current.timezone) : current.timezone,
     updateCheck: typeof input.updateCheck === 'boolean' ? input.updateCheck : current.updateCheck,

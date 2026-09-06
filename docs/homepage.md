@@ -3,12 +3,11 @@
 
 # Homepage mode
 
-## Homepage mode — `src/web/home-mode.ts`, Admin → Settings → Site → Layout & menu
+## Homepage mode — `src/web/home-mode.ts`, Admin → Settings → Layout → Front page
 
 What `/` serves. [ADR 0014](decisions/0014-homepage-modes.md). `home.mode` is **`list`
 (default: page 1 of the post list, byte for byte what this always did)** or **`page`
-(a published page renders at `/`)**. The composed front page is part 2 and is not in the
-union yet. Posts keep `/{slug}` in every mode.
+(a published page renders at `/`)** or **`front`** (the composed front page, below). Posts keep `/{slug}` in every mode.
 
 - **Both branches resolve per REQUEST, not when the routes are registered.** `createApp()`
   runs once at boot and the mode is a setting, so a route table built from settings would
@@ -28,7 +27,7 @@ union yet. Posts keep `/{slug}` in every mode.
   site's front door.
 - **The chosen page's own slug 301s to `/`**, and the sitemap names the root, not the slug;
   it also names `listPath`, which appears in no table and would otherwise be listed nowhere.
-- `warm.ts` now warms `/`. Its comment claimed that long before it was true.
+- `warm.ts` warms `/`.
 
 ### The composed front page (`home.mode = 'front'`) — `src/web/front.ts`, `front-card.ts`, `front.css.ts`
 

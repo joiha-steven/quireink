@@ -1,9 +1,7 @@
 # Docker, instead of systemd
 
-> Split out of [`self-host.md`](self-host.md) on 2026-08-25, when that file reached its
-> 400-line cap. `check:docs` says a file at the cap gets split rather than squeezed, and
-> this was the section that could leave: it is a complete alternative to the native install
-> rather than a step inside it.
+> Split out of [`self-host.md`](self-host.md) on 2026-08-25: a complete alternative to the
+> native install rather than a step inside it.
 
 The native guide's sections **1, 2, 4 and 9** are replaced by what follows. Still yours to
 do from [`self-host.md`](self-host.md): **nginx** (section 5), **your account** (section 6 —
@@ -67,11 +65,8 @@ the one this solves.
 
 **Or take HTTPS WITHOUT a checkout.** The compose above and the Caddy one both say `build: .`,
 so both want the source. [`docker-compose.image.yml`](../docker-compose.image.yml) is the
-Caddy arrangement with the published image instead, which is the missing half of the line
-above: `pull quireink/quireink` used to be offered beside the Caddy file as an equal way in,
-and it was not one — the reader who came for the image had no way to get the certificate with
-it. Two files, because the `Caddyfile` is the same one the checkout uses and a second copy of
-a tested CSP would drift:
+Caddy arrangement over the published image. Two files, because the `Caddyfile` is the same one
+the checkout uses and a second copy of a tested CSP would drift:
 
 ```bash
 curl -O https://raw.githubusercontent.com/joiha-steven/quireink/main/docker-compose.image.yml
@@ -111,15 +106,11 @@ Four things worth knowing before you change anything in `docker-compose.yml`:
   winning over it. They are where the volumes are mounted; a `.env` that redefines them
   points the app at an unmounted directory, where the database it writes disappears with the
   container.
-- **The volumes are named volumes by default, and bind mounts now work too.** A fresh named
-  volume inherits the image's ownership, which is what makes it writable with nothing else
-  running. A bind mount keeps the HOST's ownership instead, and that used to be fatal rather
-  than degraded: measured on 2026-08-21, a root-owned host directory killed the container on
-  boot with `SQLITE_CANTOPEN` and a `bun:sqlite` stack trace. The image now starts as root,
-  adopts `PUID`/`PGID` (1000:1000 by default), chowns the two directories **only when the
-  ownership is actually wrong**, and drops to that user before the app starts — so the app
-  itself never runs as root. `docker run --user 1000:1000` skips all of it and behaves as it
-  always did.
+- **The volumes are named volumes by default, and bind mounts work too.** A fresh named
+  volume inherits the image's ownership. A bind mount keeps the HOST's ownership, so since
+  2026-08-21 the image starts as root, adopts `PUID`/`PGID` (1000:1000 by default), chowns
+  the two directories only when the ownership is actually wrong, and drops to that user
+  before the app starts. `docker run --user 1000:1000` skips all of it.
 - **Upgrades are `git pull && docker compose up -d --build`.** The schema is applied at boot
   as usual. Your content is in the volumes and is not touched by a rebuild.
 
@@ -193,10 +184,7 @@ compose above — the result is the same container, managed by Runtipi like any 
 Same image, four manifests, `kubectl apply -k deploy/kubernetes`:
 [`deploy/kubernetes/README.md`](../deploy/kubernetes/README.md).
 
-Read the first section of that page before you scale anything. The workload is a
-**StatefulSet with one replica** and that is a correctness requirement rather than a starting
-point: the blog is one Bun process over two SQLite files, and a second pod on the same volume
-is a corrupted blog that nothing warns you about. What the manifests carry beyond the compose
-file is a probe, a security context that passes the `restricted` Pod Security Standard, and
-the one ingress annotation without which every upload over 1 MB is rejected before it reaches
-the app.
+Read the first section of that page before you scale anything: the workload is a
+**StatefulSet with one replica**, and that is a correctness requirement rather than a starting
+point, because a second pod on the same SQLite volume is a corrupted blog that nothing warns
+you about.

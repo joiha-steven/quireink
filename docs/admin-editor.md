@@ -18,7 +18,7 @@ that file first; this one only adds what is true here.
   the toolbar sticks directly under it. One piece: a floating band over a crack of page
   between it and the paper was rejected as looking off (2026-08-17). Never shadowed.
   The global sidebar shows again since the two-pane write screen; the write pane (the list
-  column) sits beside the sheet from `xl` up, pinned at the same top as the sheet's chrome.
+  column) sits beside the sheet from 1640px up, pinned at the same top as the sheet's chrome.
 - The title lives ON the sheet (`SheetTitle`), in the reading face, with the meta line
   (status · last touched) under it. It aligns with the public reading column, wraps
   naturally, and uses content-driven height so a long one is never clipped.
@@ -53,7 +53,8 @@ that file first; this one only adds what is true here.
 - **Keyboard: one table, in `editorKeys.ts`**, read by the handlers AND by the Help screen, so a
   chord cannot move without the printed sheet following it. Tiptap's own bindings are left as
   they come; what this product adds is `Mod-s` (save), `Mod-k` (link), `Mod-Shift-h`
-  (highlighter), `Mod-Shift-o` (ring), `Mod-Shift-m` (Markdown source) and `Mod-\` (focus).
+  (highlighter), `Mod-Shift-o` (ring), `Mod-Shift-x` (strip marks), `Mod-Shift-a` (Attributes),
+  `Mod-Shift-m` (Markdown source) and `Mod-\` (focus).
   ⚠️ **`Mod-s` is not a convenience.** Autosave here writes to localStorage and NEVER to the
   server — deliberately, so editing a published post cannot push half a sentence live. Before
   this chord existed, a writer pressing Cmd+S got the browser's own "Save page as…" dialog and
@@ -81,16 +82,13 @@ that file first; this one only adds what is true here.
 - The prose `contenteditable` must not inherit the global focus outline; the surrounding card
   is the boundary. Focus rings stay on discrete controls.
 - **Key feedback is a CHOICE OF INSTRUMENT, not a switch** (2026-08-24): `woody`, `crisp`,
-  `deep`, `off`. It defaults to `woody`, is stored as `motion.keys`, and migrates BOTH older
-  spellings — the pre-2026-08-24 `motion.typewriter` boolean, and the machine names
-  (`typewriter` / `tactile` / `linear`) it shipped under until 2026-08-25.
+  `deep`, `off`. It defaults to `woody`, is stored as `motion.keys`, and older spellings are
+  migrated on read.
   ⚠️ **The names are not the names of real machines, on purpose.** The synthesis is modelled
   on those three mechanisms and says so at length in `key-voices.ts`, but they do not sound
   close enough to the real machines to borrow their names. A label promising an Underwood and delivering a good synthesised
   knock makes the sound worse by comparison. They are named for what they are. The click is generated locally: no audio files anywhere, ever.
-  ⚠️ **The three are three MACHINES, not three filter settings**, and this is the correction
-  of 2026-08-25: the three did not sound different from one another, because they were one
-  noise burst through one bandpass at 1840 / 1144 / 972 Hz. A strike is now a SEQUENCE OF
+  ⚠️ **The three are three MACHINES, not three filter settings.** A strike is a SEQUENCE OF
   EVENTS, written as physics in `key-voices.ts`:
   **woody** runs a lever, throws a typebar at the platen through a ribbon, and lets
   the carriage step — three events over 60ms, a low wooden thump with an inharmonic metal

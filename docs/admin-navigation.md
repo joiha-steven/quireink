@@ -1,16 +1,9 @@
 # Getting from one screen to the next
 
 What the admin does BETWEEN screens: how a route change is committed, what says it is
-happening, and what happens when the file a screen needs is not there any more. Split out of
-[`admin-design.md`](./admin-design.md) on 2026-08-28, when the stale-build recovery put that
-file over its 400-line cap.
-
-The seam is the same one that produced [`admin-editor.md`](./admin-editor.md): the file next
-door is a VISUAL contract, and every rule here is about time rather than appearance. A
-transition, a 300ms throttle, a preload that starts before React runs, a tab that is older
-than the server it is talking to — none of those are decisions about how a screen looks, and
-reading them among the radius scale and the colour rule is what made both files harder to
-use. Read this one before touching `router.tsx`, `App.tsx`, `ui/TopProgress.tsx` or
+happening, and what happens when the file a screen needs is not there any more. Split from
+[`admin-design.md`](./admin-design.md) on 2026-08-28: everything here is about time, not
+appearance. Read this one before touching `router.tsx`, `App.tsx`, `ui/TopProgress.tsx` or
 `ui/stale-build.ts`.
 
 ## The cost of a first click
@@ -92,15 +85,11 @@ so a split shows up as a failure rather than as an intermittent bug.
 
 ## ⌘K — the answer to "which tab is it on"
 
-[ADR 0011](./decisions/0011-settings-regrouped-into-seven.md) split five tangled settings tabs
-into seven defined ones. Two weeks later the tabs were still reported as confusing, with no way
-to tell which one held a given setting, and `settings-index.ts` was written that day with the
-conclusion in its header: **no grouping makes a person remember which of eight boxes holds one
-of a hundred things, and what makes the grouping stop mattering is being able to type a word.**
-
-That index drove exactly one search box on one screen for two weeks. `CommandPalette.tsx` is
-the same index reached from anywhere, with the screens, the two actions and the writing beside
-it — so "make the text bigger", "go to the trash" and "write something" are one gesture.
+**No grouping makes a person remember which of eight boxes holds one of a hundred things;
+what makes the grouping stop mattering is being able to type a word.** `settings-index.ts` is
+that word for Settings, and `CommandPalette.tsx` is the same index reached from anywhere,
+with the screens, the two actions and the writing beside it — so "make the text bigger",
+"go to the trash" and "write something" are one gesture.
 
 - **It REPLACES nothing.** The rail, the eight tabs and the settings search all stay. A palette
   that removes the menus it shortcuts has to be discovered before the admin can be used at all,
@@ -121,7 +110,7 @@ it — so "make the text bigger", "go to the trash" and "write something" are on
   it once, read what it says, and the second time your hands do it without the mouse.
   It sits on the WORDMARK ROW, beside the collapse control — chrome next to chrome. It was a
   full-width row above the rule first, which worked and spent a line of the rail on a thing
-  that is not a destination, next to nine that are. Up there the rail is a list of places
+  that is not a destination, next to the rows that are. Up there the rail is a list of places
   again. Collapsed, and on a phone, the glyph is the whole control and the chord moves into the
   tooltip — there is no ⌘ to print on a phone.
   ⚠️ The rule and the spacing of a control belong to a WRAPPER. On the button itself, `pb-2`

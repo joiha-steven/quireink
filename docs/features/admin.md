@@ -76,7 +76,9 @@
   above it. (The editorial redesign replaced the old dotted-grid canvas — see
   `docs/admin-design.md`.)
 - **Sidebar (`AdminSidebar`):** four destinations + "Everything else" (which remembers an
-  explicit open/close across sessions). Two registers that must not dress alike: nav rows
+  explicit open/close across sessions) by default; the owner can drag any row between the
+  three zones, hide the wordmark and the search button, and the order follows them between
+  machines as a site setting (`src/content/nav-order.ts`, [admin-design.md](../admin-design.md)). Two registers that must not dress alike: nav rows
   wear `SIDEBAR_NAV`, the footer's CONTROLS (theme, Clear cache, Sign out) wear the
   smaller `SIDEBAR_UTIL`. The collapse/expand control sits at the TOP next to the
   wordmark (a compact chrome button, NOT a nav row) so it can't be mistaken for Sign out;
@@ -126,14 +128,8 @@
   a one-line **system footer** — DB reachability · storage · a **View site** link, from `getSystemInfo()`.
 - **The editorial redesign** removed the old home-page duplicate cards (SEO health, traffic sources,
   quick-actions row, taxonomy breakdown, and the rich system panel) — that data lives on its own pages
-  now; only the compact footer remains. See `docs/admin-design.md`. (`Overview` still declares the
-  `seo`/`sources` props, now unused.)
-- **Help / Guide:** Admin → Help (`/admin/help`, `HelpGuide.tsx`) — a concise, sectioned index (writing,
-  settings, self-host, Cloudflare, cache/ops, MCP) linking out to the repo docs. **Content is English by
-  design** (canonical, like the docs); only the nav label + title are localized (`navHelp`).
-  Add a section here (not a new i18n dump) when a subsystem needs owner guidance.
-- **Analytics:** Admin → Analytics (24h/7d/30d/1y); a View column on the content tables
-  (`getViewTotals`). The **overview** shows five headline metrics — views, visitors (with
+  now; only the compact footer remains. See `docs/admin-design.md`.
+- **Analytics:** Admin → Analytics (24h/7d/30d/1y). The **overview** shows five headline metrics — views, visitors (with
   **period-over-period trend** + a **new-vs-returning** split), **avg time on page** (dwell), avg
   read depth, and **one page only** (the share of readers who never opened a second page) — a **dual-series time chart** (views
   + visitors, an SVG in `analytics-kit.tsx`; the year range buckets by month, 24h by hour), a **top
@@ -332,7 +328,7 @@ are a scroll container behaving as one.
 - **A table in the writing sheet scrolls on its own wrapper**, not by panning the whole sheet:
   the reader's rule moves the prose, which is right for a page you read and wrong for one you
   are typing into.
-- **Controls are ROUNDED in the admin** — square corners are the public site's rule
+- **Controls are ROUNDED in the admin**, on the kit's radius scale
   ([admin-design.md](../admin-design.md)). Three screens had hand-rolled their own square
   chooser (`border px-3 py-2`) instead of using the kit's segmented track; they now use it,
   which is also three fewer copies of a control the kit already owns.
@@ -362,27 +358,23 @@ are a scroll container behaving as one.
   `comment-md`, link hrefs protocol-checked) authored via `FooterField` (textarea + B/I/U/Link
   toolbar + live preview). `{year}`/`{title}` tokens expand at render. The public layout renders it
   in `<footer class="site-footer">`; default keeps the "© {year} {title} · powered by Quire Ink" line.
-- Controlled field groups (no own state/save), per tab: **Site** (identity only, nothing here moves
-  a pixel) `SiteFields` + `BrandFields`; **Layout** `LayoutMenuFields` + `FooterField` +
-  `GalleryFields` + `FigureFields` (the shape galleries take and the mat pictures wear when
-  they say nothing themselves — both applied as CSS on `:root` rather than as markup, see
-  [editing.md](editing.md)); **Reading**
-  `PostFeatureFields` + `ListingFeatureFields` + `CommentFields` + `ActivityLogField`;
-  **Appearance** `ThemeFields` (the **Default appearance** selector — `settings.defaultScheme`,
-  `system` | `light` | `dark`, what a first-time visitor opens in — then the palette grid) +
-  custom CSS on the left, the type stack `FontFields` (built-in
-  `fontPreset` picker + `chromeFont` selector) / `FontUpload` / `TypographyFields` /
-  `AdvancedFields` (Rendering card: font smoothing, IDE chrome, the **Motion** engine toggle →
-  `settings.motion.enabled`, the editor **Key feedback** instrument → `settings.motion.keys`
-  and its **Key volume** slider → `settings.motion.keyVolume`, which plays a key as it moves)
-  on the right; **Search & URLs** `SeoFields` + `RedirectsManager`
-  (an old address is a search-engine concern before it is anything else); **Connections**
-  `NewsletterFields` + `CloudflareFields` + `CommentIntegrations` + `McpFields` — every credential
-  here is written to the server and never read back, which is why these cards show status rather
-  than values; **System** `ImportFields` (the one-time WordPress importer, a tool rather than a
-  setting) + `CacheFields` + `ExportFields`. `McpFields` is the EXCEPTION to "no own state/save":
-  the MCP enable toggle flows through the settings form, but its token manager has its own
-  `/api/mcp/tokens` API (plaintext shown once).
+- Controlled field groups (no own state/save), per tab, each composed by its own
+  `Settings<Tab>Tab.tsx` where the tab outgrew `SettingsView.tsx`: **Site** `SiteFields` +
+  `BrandFields` + `AuthorFields`; **Layout** `LayoutMenuFields` + `FrontFields` + `FooterField` +
+  `PostImageFields` + `GalleryFields` + `FigureFields`; **Reading** `FeatureFields` +
+  `CommentFields`; **Appearance** `ThemeFields` (the **Default appearance** selector, then the
+  palette grid) + custom CSS on the left, `FontFields` / `FontUpload` / `TypographyFields` /
+  `AdvancedFields` (Rendering: font smoothing, IDE chrome, the **Motion** switch →
+  `settings.motion.enabled`, the editor **Key feedback** instrument and its volume →
+  `settings.motion.keys` / `keyVolume`) on the right; **Search & URLs** `SeoFields` +
+  `RedirectsManager`; **Connections** `NewsletterFields` + `CloudflareFields` +
+  `CommentIntegrations` + `McpFields` + custom code (every credential here is written to the
+  server and never read back, which is why these cards show status rather than values);
+  **System** `ImportFields` + `SecurityFields` + `CacheFields` + the **Dashboard** switch
+  (`settings.dashboard.systemLine`) + `UpdateFields` + `ActivityLogField` + `ExportFields` +
+  `OffsiteFields` + `StorageFields`. `SettingsSearch` (⌘K's index) reaches every one of them.
+  `McpFields` is the EXCEPTION to "no own state/save": the MCP enable toggle flows through the
+  settings form, but its token manager has its own `/api/mcp/tokens` API (plaintext shown once).
 - **Palette is FRONTEND-ONLY now** — the admin chrome no longer carries a `PaletteToggle` (only the
   light/dark toggle). The Appearance tab still sets the site's **default palette** + which palettes
   readers may switch between (`settings.enabledPalettes`), with a note (`themeAdminNote`) explaining
@@ -395,6 +387,6 @@ are a scroll container behaving as one.
   longer emitted. Disabled palettes stay fully editable — visibility ≠ customization. Sanitizer
   (`sanitizeEnabledPalettes`): known ids only, preset order, default forced in; a missing field
   (legacy settings) = all on. Pinned by `settings-sanitize.test.ts`.
-- Tabs lay cards out `grid lg:grid-cols-2 items-start` (explicit columns, NOT CSS `columns`).
+- Tabs lay cards out on `GRID` in `SettingsView.tsx` (`grid items-start gap-5 xl:grid-cols-2`: explicit columns, NOT CSS `columns`).
 - **Save calls `router.refresh()`** so the admin shell + public header reflect the change
   immediately.

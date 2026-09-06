@@ -38,6 +38,7 @@ copies of a rule means one is wrong within a month
 | [mcp.md](mcp.md) | MCP server, tokens, OAuth |
 | [agent-cookbook.md](agent-cookbook.md) | Prompts that do real jobs with a connected agent, and where the lines are |
 | [backups.md](backups.md) | What is copied off the server, how often, and how to restore it |
+| [update-check.md](update-check.md) | What the daily update check sends, and how to turn it off |
 | [self-host.md](self-host.md) | Running it on your own server |
 | [self-host-docker.md](self-host-docker.md) | The same thing in a container, and on a NAS |
 

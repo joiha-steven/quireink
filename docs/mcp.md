@@ -2,7 +2,7 @@
 
 # MCP server — `/api/mcp` + `src/mcp/`
 
-- **What it is.** A remote MCP endpoint (Streamable HTTP, `mcp-handler` + `@modelcontextprotocol/sdk`)
+- **What it is.** A remote MCP endpoint (Streamable HTTP, `@modelcontextprotocol/sdk`)
   that lets an MCP client (Claude/ChatGPT) operate the blog. Tools are THIN wrappers over the same
   `lib/` functions the admin routes use — same slug rules, revisions, soft-delete, revalidation,
   activity log. **Off unless the owner enables it** (Admin → Settings → Connections toggle,
@@ -64,10 +64,10 @@
   callback, and a browser enforces `form-action` across a form submission's WHOLE redirect
   chain — so under `form-action 'self'` the Approve button did nothing, silently. Only that
   directive is relaxed, and only on that location. **An `add_header` inside a `location`
-  REPLACES the inherited ones**, so all five headers are repeated there.
+  REPLACES the inherited ones**, so the two nginx sets (HSTS and the CSP) are repeated there.
 - **The tool surface is a neutral registry** (`src/mcp/registry.ts`): every tool file
   registers against `ToolHost`, which `McpServer` satisfies, and `collectTools()` hands
-  the same list out as data for any OTHER door (the planned in-admin assistant). One
+  the same list out as data for any OTHER door (the in-admin assistant, ADR 0040). One
   list, many doors, one rulebook — a door must never grow a private tool, and
   `registry.test.ts` pins the forbidden names (broadcast, token minting) at the registry
   level so they are absent from every door at once.
@@ -96,5 +96,5 @@
   built from one path cannot damage a neighbour. The route to disk is unchanged —
   `saveSettings`, which sanitises, clamps and refuses exactly as it does for the form — so
   nothing reachable here is anything the owner's own screens could not already do.
-  `get_settings` reads all. **Adding a tool that mutates →
-  `clearCache()` + `logActivity` like the admin routes.**
+  `get_settings` reads all. **A tool that mutates still calls `logActivity`;
+  the door itself flushes the cache after every write tool (Invariant 1).**

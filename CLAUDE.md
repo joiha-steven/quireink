@@ -8,7 +8,7 @@ One **Bun + Hono + SQLite** process; `src/` at the repository root serves the li
 sibling with the worklog, the tasks and the audits; credentials only in the gitignored `.env`.
 But before proposing `docs/`, `scripts/` or `golden/` for that sibling, the second test:
 **if it vanished, could a stranger still install this and verify what they installed?** If no
-it is the PRODUCT and stays — `deploy.sh` ships `scripts/` and the tests read `golden/`.
+it is the PRODUCT and stays — the private deploy script ships `scripts/` and the tests read `golden/`.
 
 ## Verify
 
@@ -28,13 +28,12 @@ because nobody opened the page.
 bun run tour
 ```
 
-Seventy-seven flows in a real browser, each with a verdict: the reader's controls, every admin
-page, a draft saved and published and trashed and restored, an upload refused for being too
-large, the archive built. It seeds its own instance on **port 3399** and deletes it after, so it
-never touches a real one — and it refuses to start if something already holds that port, because
-a tour on a busy port silently tours the other instance and fails every admin flow on a session
-that database never issued. `PORT=` moves it. Flows live in [`scripts/tour-flows.ts`](./scripts/tour-flows.ts);
-the browser plumbing is [`scripts/tour.ts`](./scripts/tour.ts).
+Every flow in a real browser, each with a verdict: the reader's controls, every admin page, a
+draft saved and published and trashed and restored, an upload refused for being too large, the
+archive built. It seeds its own instance on **port 3399** and deletes it after, and refuses to
+start if the port is taken (a tour on a busy port tours the wrong instance and fails every admin
+flow). `PORT=` moves it. Flows live in [`scripts/tour-flows.ts`](./scripts/tour-flows.ts); the
+browser plumbing is [`scripts/tour.ts`](./scripts/tour.ts).
 
 It then runs [`scripts/restore-check.ts`](./scripts/restore-check.ts), because a browser
 cannot untar an archive or open a SQLite file. The tour proves the backup BUILDS; this opens
@@ -112,7 +111,7 @@ history is never needed to fix or understand code.
   renderer that no longer exists, so overwriting them does not update the reference — it
   destroys it, and the gate then reports parity against our own output. When output changes on
   purpose, name the fixture in `DIVERGED` in that test and capture the new answer under
-  `golden/v2/corpus/`; the other 42 keep the original contract.
+  `golden/v2/corpus/`; the rest keep the original contract.
 - **The retired Next.js implementation is gone from the tree** ([ADR 0019](./docs/decisions/0019-remove-the-frozen-tree-from-the-working-copy.md)),
   preserved at tag `v1-final`. Do not reintroduce it, and do not "fix" a doc by pointing at
   a `v1/` path.

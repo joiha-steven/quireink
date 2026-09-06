@@ -107,6 +107,7 @@ export function settingsFixture(): SiteSettings {
     ai: { altText: true, excerpt: true, commentGuard: true },
     inks: { ...DEFAULT_INKS },
     motion: { enabled: true, keys: 'woody', keyVolume: 60 },
+    dashboard: { systemLine: true },
     cache: { enabled: true },
     backups: { enabled: true, intervalDays: 4, keep: 4 },
   }

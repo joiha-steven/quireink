@@ -211,6 +211,7 @@ export async function dashboardView() {
     totalBytes: storage.totalBytes,
     recent,
     activityEnabled: activityOn,
+    systemLine: settings.dashboard.systemLine,
     firstRunDone: settings.firstRunDone,
     version: (pkg as { version: string }).version,
     // Null on a machine the deploy did not stamp. The admin then shows the version alone.

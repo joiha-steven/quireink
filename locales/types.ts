@@ -164,6 +164,9 @@ export type AdminStrings = {
   cacheTitle: string
   cacheEnable: string
   cacheEnableDesc: string
+  dashboardTitle: string
+  dashboardSystemLine: string
+  dashboardSystemLineDesc: string
   cacheClearDesc: string
   clearCacheFailed: string
   // Settings -> System -> Updates. `updateAvailable` carries {v}, the newer version.
