@@ -7,7 +7,7 @@ import type { ActivityEntry } from '@/server/activity'
 import { formatDateTimeShort } from '@/utils'
 import { useToast } from '@/admin/ui/Toast'
 import { useConfirm } from '@/admin/ui/ConfirmDialog'
-import { PageHeader } from './kit'
+import { EmptyState, PageHeader } from './kit'
 import { SHEET, SHEET_TOOL, SheetTop, SHEET_TOOL_DANGER } from './sheet'
 import { useAdminT } from './I18nProvider'
 
@@ -66,8 +66,11 @@ export function ActivityLog({ entries, enabled }: { entries: ActivityEntry[]; en
           </p>
         )}
 
+        {/* `EmptyState`, not a loose paragraph. Two shapes for "nothing here" were counted on
+            2026-09-07 and this was the other one — a sentence at the top left of an otherwise
+            blank sheet, where every other empty screen in the admin centres its. */}
         {entries.length === 0 ? (
-          <p className="px-5 py-8 text-sm text-neutral-500 dark:text-neutral-400">{t.logEmpty}</p>
+          <EmptyState title={t.logEmpty} />
         ) : (
           <ul className="paper-cols">
             {entries.map((e) => (

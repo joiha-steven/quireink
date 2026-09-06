@@ -14,7 +14,7 @@ export default function Analytics() {
   const query = `?${new URLSearchParams({ ...(range ? { range } : {}), ...(path ? { path } : {}) })}`
   const state = useView('analytics', query)
   return (
-    <View state={state}>
+    <View state={state} shape="stats">
       {(d) => ('detail' in d
         ? <AnalyticsPageDetail data={d.detail} title={d.title} range={d.range} />
         : <AnalyticsView data={d.summary} range={d.range} titles={d.titles} pieces={d.pieces} years={d.years} rightNow={d.rightNow} />)}

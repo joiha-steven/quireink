@@ -378,6 +378,8 @@ const fr = {
   confirmDeleteUnused: 'Supprimer TOUTES les images inutilisées ? C’est irréversible.',
   close: 'Fermer',
   loading: 'Chargement…',
+  retry: 'Réessayer',
+  loadFailed: 'Ceci ne s’est pas chargé.',
   noMedia: 'Aucune image pour le moment.',
   confirmDeleteMedia: 'Supprimer cette image ? Cette action est irréversible.',
   deleteNoMatch: 'Le serveur n’a trouvé aucun fichier à supprimer (l’URL ne correspondait pas).',

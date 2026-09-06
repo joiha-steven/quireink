@@ -8,7 +8,10 @@ import { Button } from '@/admin/ui/Button'
 import { useToast } from '@/admin/ui/Toast'
 import { IconClose } from './navIcons'
 import { useAdminT } from './I18nProvider'
-import { CHECK, NOTE_TEXT } from './kit'
+import { useFetched } from '@/admin/useFetched'
+import { Failed } from '@/admin/pages/state'
+import { Skeleton } from './Skeleton'
+import { CHECK, EmptyState, NOTE_TEXT } from './kit'
 
 type Redirect = { id: number; source: string; destination: string; permanent: boolean }
 
@@ -26,16 +29,13 @@ export function RedirectsManager() {
     const json = (await res.json()) as ApiResponse<Redirect[]>
     if (json.success && json.data) setRows(json.data)
   }
-  // Load once on mount (inline fetch — the setState lives in the promise callback, not
-  // the effect body, matching the other admin islands).
-  useEffect(() => {
-    fetch('/api/redirects')
-      .then((r) => r.json() as Promise<ApiResponse<Redirect[]>>)
-      .then((j) => {
-        if (j.success && j.data) setRows(j.data)
-      })
-      .catch(() => {})
-  }, [])
+  /**
+   * ⚠️ The catch here used to be `() => {}`, so a refused request left an empty table with
+   * nothing to say the question had failed — and an owner with fifty redirects saw the screen
+   * of an owner with none. `useFetched` keeps the three answers apart and carries a Try again.
+   */
+  const state = useFetched<Redirect[]>('/api/redirects', t.loadFailed)
+  useEffect(() => { if (state.data) setRows(state.data) }, [state.data])
 
   async function add() {
     if (!source.trim() || !destination.trim()) return
@@ -72,12 +72,15 @@ export function RedirectsManager() {
     }
   }
 
+  if (state.error) return <Failed error={state.error} onRetry={state.reload} />
+  if (!state.data) return <Skeleton shape="list" />
+
   return (
     <div className="space-y-4">
       <p className={NOTE_TEXT}>{t.redirectsHint}</p>
 
       {rows.length === 0 ? (
-        <p className="text-sm text-neutral-500 dark:text-neutral-400">{t.redirectEmpty}</p>
+        <EmptyState title={t.redirectEmpty} />
       ) : (
         <ul className="divide-y divide-neutral-100 dark:divide-neutral-800">
           {rows.map((r) => (

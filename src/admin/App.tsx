@@ -15,6 +15,7 @@ import { ThemeProvider } from '@/admin/ui/ThemeProvider'
 import { TopProgress } from '@/admin/ui/TopProgress'
 import { ErrorBoundary } from '@/admin/ui/ErrorBoundary'
 import { throughDeploys } from '@/admin/ui/stale-build'
+import { Loading } from '@/admin/pages/state'
 import { AdminSidebar } from '@/admin/components/AdminSidebar'
 import { CommandPalette } from '@/admin/components/CommandPalette'
 import { WritePane } from '@/admin/components/WritePane'
@@ -235,7 +236,11 @@ function Shell() {
               {/* Reached on the FIRST paint only. Every later route change runs inside a
                   transition, which keeps the current page on screen instead of falling back
                   here — see the note in `router.tsx`. */}
-              <Suspense fallback={<div className="py-16 text-center text-sm text-neutral-500 dark:text-neutral-400">…</div>}>
+              {/* `Loading` with no shape — the shared ellipsis, not a second hand-typed one.
+                  This fallback is reached on the FIRST paint only, before the route's chunk
+                  has arrived, so the shell does not yet know whether a list or a form is
+                  coming; the page's own `View` draws the right skeleton a moment later. */}
+              <Suspense fallback={<Loading />}>
                 <Route />
               </Suspense>
               </ErrorBoundary>

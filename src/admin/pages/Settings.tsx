@@ -7,5 +7,5 @@ import { SettingsView } from '@/admin/components/SettingsView'
 
 export default function Settings() {
   const state = useView('settings')
-  return <View state={state}>{(data) => <SettingsView {...data} />}</View>
+  return <View state={state} shape="form">{(data) => <SettingsView {...data} />}</View>
 }

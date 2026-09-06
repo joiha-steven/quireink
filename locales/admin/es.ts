@@ -378,6 +378,8 @@ const es = {
   confirmDeleteUnused: '¿Eliminar TODAS las imágenes sin usar? No se puede deshacer.',
   close: 'Cerrar',
   loading: 'Cargando…',
+  retry: 'Reintentar',
+  loadFailed: 'Esto no se ha cargado.',
   noMedia: 'Todavía no hay imágenes.',
   confirmDeleteMedia: '¿Eliminar esta imagen? Esta acción no se puede deshacer.',
   deleteNoMatch: 'El servidor no encontró ningún archivo que eliminar (la URL no coincidía).',

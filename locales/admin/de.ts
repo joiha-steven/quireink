@@ -378,6 +378,8 @@ const de = {
   confirmDeleteUnused: 'ALLE unbenutzten Bilder löschen? Dies kann nicht rückgängig gemacht werden.',
   close: 'Schließen',
   loading: 'Wird geladen...',
+  retry: 'Erneut versuchen',
+  loadFailed: 'Das konnte nicht geladen werden.',
   noMedia: 'Noch keine Medien.',
   confirmDeleteMedia: 'Dieses Bild löschen? Diese Aktion kann nicht rückgängig gemacht werden.',
   deleteNoMatch: 'Der Server hat keine Datei zum Löschen gefunden (URL passt nicht).',

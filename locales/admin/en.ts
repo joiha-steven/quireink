@@ -378,6 +378,8 @@ const en = {
   confirmDeleteUnused: 'Delete ALL unused images? This cannot be undone.',
   close: 'Close',
   loading: 'Loading...',
+  retry: 'Try again',
+  loadFailed: 'This did not load.',
   noMedia: 'No media yet.',
   confirmDeleteMedia: 'Delete this image? This action cannot be undone.',
   deleteNoMatch: 'Server matched no file to delete (the URL did not line up).',

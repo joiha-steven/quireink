@@ -539,6 +539,9 @@ export type AdminStrings = {
   confirmDeleteUnused: string
   close: string
   loading: string
+  /** The way out of a failed fetch: ask again, here, instead of reloading the whole admin. */
+  retry: string
+  loadFailed: string
   noMedia: string
   confirmDeleteMedia: string
   deleteNoMatch: string

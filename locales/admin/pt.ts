@@ -379,6 +379,8 @@ const pt = {
   confirmDeleteUnused: 'Excluir TODAS as imagens sem uso? Não dá para desfazer.',
   close: 'Fechar',
   loading: 'Carregando…',
+  retry: 'Tentar de novo',
+  loadFailed: 'Isto não carregou.',
   noMedia: 'Ainda não há imagens.',
   confirmDeleteMedia: 'Excluir esta imagem? Esta ação não pode ser desfeita.',
   deleteNoMatch: 'O servidor não achou nenhum arquivo para excluir (a URL não bateu).',

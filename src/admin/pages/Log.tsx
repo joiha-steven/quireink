@@ -7,5 +7,5 @@ import { ActivityLog } from '@/admin/components/ActivityLog'
 
 export default function Log() {
   const state = useView('log')
-  return <View state={state}>{(data) => <ActivityLog {...data} />}</View>
+  return <View state={state} shape="list">{(data) => <ActivityLog {...data} />}</View>
 }

@@ -9,5 +9,5 @@ export default function Dashboard() {
   // Typed by NAME through ViewPayloads; the {...data} spread is where the compiler
   // checks the server's payload against Overview's props.
   const state = useView('dashboard')
-  return <View state={state}>{(data) => <Overview {...data} />}</View>
+  return <View state={state} shape="stats">{(data) => <Overview {...data} />}</View>
 }

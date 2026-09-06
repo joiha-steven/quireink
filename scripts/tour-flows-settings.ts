@@ -143,6 +143,36 @@ export function registerSettingsFlows({ flow, expect }: Tour): void {
       return rows() >= before ? 'ok (gone, then back)' : 'undo did not put the comment back'
     })()`, 1000))
 
+  // ⚠️ AN EMPTY ANSWER AND A BROKEN QUESTION ARE NOT THE SAME FACT. Three components used to
+  // render them identically: a refused request printed "nothing here" to somebody whose rows
+  // were all still on the server.
+  flow('admin: a refused list says so, and offers to ask again', () => expect('/admin/settings?tab=server', `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      const real = window.fetch
+      let refuse = true
+      window.fetch = (u, i) => (refuse && String(u).includes('/api/redirects') && (!i || !i.method || i.method === 'GET')
+        ? Promise.reject(new Error('offline'))
+        : real(u, i))
+      // Re-enter the tab so the redirect table mounts behind the refusal.
+      const other = [...document.querySelectorAll('main .no-scrollbar button')][0]
+      const server = [...document.querySelectorAll('main .no-scrollbar button')].find((b) => /server|máy chủ/i.test(b.textContent))
+      other.click(); await sleep(400); server.click(); await sleep(900)
+      const boxes = [...document.querySelectorAll('main div')].filter((d) => /border-neutral-900|border-white/.test(d.className))
+      if (!boxes.length) { window.fetch = real; return 'a refused list drew no failure box' }
+      const retry = [...boxes[0].querySelectorAll('button')][0]
+      if (!retry) { window.fetch = real; return 'the failure box offered no way to ask again' }
+      // Let it through this time: the retry must refetch in place, not reload the admin.
+      refuse = false
+      const path = location.pathname
+      retry.click()
+      await sleep(900)
+      window.fetch = real
+      if (location.pathname !== path) return 'Try again left the page'
+      const stillBroken = [...document.querySelectorAll('main div')].some((d) => /border-neutral-900|border-white/.test(d.className))
+      return stillBroken ? 'Try again did not clear the failure' : 'ok (failed, asked again, recovered in place)'
+    })()`, 1400))
+
   flow('admin: a failed save leaves its toast up, and the close button removes it', () => expect('/admin/settings', `
     (async () => {
       const sleep = (ms) => new Promise((r) => setTimeout(r, ms))

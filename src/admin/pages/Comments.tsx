@@ -7,5 +7,5 @@ import { CommentsTable } from '@/admin/components/CommentsTable'
 
 export default function Comments() {
   const state = useView('comments')
-  return <View state={state}>{(data) => <CommentsTable initial={data.rows} />}</View>
+  return <View state={state} shape="list">{(data) => <CommentsTable initial={data.rows} />}</View>
 }

@@ -8,6 +8,8 @@ import { createPortal } from 'react-dom'
 import type { MediaItem, ApiResponse } from '@/types'
 import { Button } from '@/admin/ui/Button'
 import { useToast } from '@/admin/ui/Toast'
+import { Failed } from '@/admin/pages/state'
+import { Skeleton } from './Skeleton'
 import { useConfirm } from '@/admin/ui/ConfirmDialog'
 import { formatBytes } from '@/utils'
 import { ImageUploader } from './ImageUploader'
@@ -47,6 +49,8 @@ export function MediaLibrary({ mode = 'page', multi = false, onSelect, onSelectM
   const ask = useConfirm()
   const [items, setItems] = useState<MediaItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const [tick, setTick] = useState(0)
   const [zoom, setZoom] = useState<MediaItem | null>(null)
   const [visible, setVisible] = useState(PAGE)
   const [selected, setSelected] = useState<Set<string>>(new Set())
@@ -81,13 +85,19 @@ export function MediaLibrary({ mode = 'page', multi = false, onSelect, onSelectM
   }, [items, query, sort, onlyUnused, unused])
   const totalSize = useMemo(() => items.reduce((n, m) => n + (m.size || 0), 0), [items])
 
+  // ⚠️ A REFUSED REQUEST IS NOT AN EMPTY LIBRARY. This toasted and then drew the empty
+  // state, which says "no images yet" to somebody whose eighteen are all still on the server
+  // — and four seconds later the toast is gone and only the lie is left. The error is state
+  // now, and it carries a Try again that re-asks in place.
   useEffect(() => {
+    setLoading(true)
+    setLoadError(null)
     fetch('/api/media')
       .then((r) => r.json() as Promise<ApiResponse<MediaItem[]>>)
       .then((j) => setItems(j.data ?? []))
-      .catch(() => notify(t.loadMediaFailed, 'error'))
+      .catch(() => setLoadError(t.loadMediaFailed))
       .finally(() => setLoading(false))
-  }, [notify, t])
+  }, [t, tick])
 
   // Infinite scroll: reveal another page when the sentinel comes into view.
   useEffect(() => {
@@ -317,12 +327,14 @@ export function MediaLibrary({ mode = 'page', multi = false, onSelect, onSelectM
           </button>
         </div>
       )}
-      {loading ? (
-        <p className="py-10 text-center text-neutral-500 dark:text-neutral-400">{t.loading}</p>
+      {loadError ? (
+        <div className="p-5"><Failed error={loadError} onRetry={() => setTick((n) => n + 1)} /></div>
+      ) : loading ? (
+        <Skeleton shape="grid" />
       ) : items.length === 0 ? (
         <EmptyState title={t.noMedia} />
       ) : view.length === 0 ? (
-        <p className="py-10 text-center text-neutral-500 dark:text-neutral-400">{t.mediaNoMatch}</p>
+        <EmptyState title={t.mediaNoMatch} />
       ) : (
         grid
       )}

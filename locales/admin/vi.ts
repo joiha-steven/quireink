@@ -378,6 +378,8 @@ const vi = {
   confirmDeleteUnused: 'Xoá TẤT CẢ ảnh chưa dùng? Không thể hoàn tác.',
   close: 'Đóng',
   loading: 'Đang tải...',
+  retry: 'Thử lại',
+  loadFailed: 'Chỗ này không tải được.',
   noMedia: 'Chưa có ảnh nào.',
   confirmDeleteMedia: 'Xóa ảnh này? Hành động không thể hoàn tác.',
   deleteNoMatch: 'Máy chủ không tìm thấy file để xoá (URL không khớp).',

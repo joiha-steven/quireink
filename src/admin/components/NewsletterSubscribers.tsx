@@ -2,9 +2,12 @@
 // sent. Counts come from the `newsletter_sends` log, so "5 emails" means five emails
 // really left the server, not five attempts. Open rate covers broadcasts only (the
 // tracking pixel rides on those); a dash means nothing to measure yet.
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import type { ApiResponse } from '@/types'
+import { useFetched } from '@/admin/useFetched'
+import { Failed } from '@/admin/pages/state'
 import { EmptyState } from './kit'
+import { Skeleton } from './Skeleton'
 import { NumBand } from './sheet'
 import { IconClose } from './navIcons'
 import { useAdminT } from './I18nProvider'
@@ -23,28 +26,27 @@ const shortDate = (iso?: string) => (iso ? iso.slice(0, 10) : '—')
 
 export function NewsletterSubscribers() {
   const t = useAdminT()
-  const [subs, setSubs] = useState<Subscriber[] | null>(null)
-  const [counts, setCounts] = useState<Counts>({ confirmed: 0, pending: 0, unsubscribed: 0 })
-
-  useEffect(() => {
-    fetch('/api/subscribers')
-      .then((r) => r.json() as Promise<ApiResponse<{ subscribers: Subscriber[]; counts: Counts }>>)
-      .then((j) => {
-        if (j.success && j.data) {
-          setSubs(j.data.subscribers)
-          setCounts(j.data.counts)
-        } else setSubs([])
-      })
-      .catch(() => setSubs([]))
-  }, [])
+  /**
+   * ⚠️ A REFUSED REQUEST IS NOT AN EMPTY LIST, and this component used to say it was: the
+   * catch ran `setSubs([])`, so a server that was down printed "No subscribers yet" to
+   * somebody who has twenty-five. `useFetched` keeps the three answers apart and carries a
+   * Try again, so asking a second time does not mean reloading the whole admin.
+   */
+  const state = useFetched<{ subscribers: Subscriber[]; counts: Counts }>('/api/subscribers', t.loadFailed)
+  const [removed, setRemoved] = useState<Set<number>>(new Set())
+  const subs = state.data ? state.data.subscribers.filter((x) => !removed.has(x.id)) : null
+  const counts: Counts = state.data?.counts ?? { confirmed: 0, pending: 0, unsubscribed: 0 }
 
   async function removeSub(id: number) {
     const res = await fetch(`/api/subscribers/${id}`, { method: 'DELETE' })
     const j = (await res.json()) as ApiResponse<unknown>
-    if (j.success) setSubs((s) => (s ? s.filter((x) => x.id !== id) : s))
+    // Hidden locally rather than refetched: the row is gone from the server either way, and
+    // a refetch here would throw away the scroll position for one deleted line.
+    if (j.success) setRemoved((prev) => new Set(prev).add(id))
   }
 
-  if (!subs) return <p className="px-5 py-6 text-sm text-neutral-500 dark:text-neutral-400">{t.loading}</p>
+  if (state.error) return <div className="p-5"><Failed error={state.error} onRetry={state.reload} /></div>
+  if (!subs) return <Skeleton shape="list" />
 
   const openRate = (s: Stats | null) =>
     s && s.broadcasts > 0 ? `${Math.round((s.opened / s.broadcasts) * 100)}%` : null

@@ -378,6 +378,8 @@ const zh = {
   confirmDeleteUnused: '删除所有未使用的图片？此操作无法撤销。',
   close: '关闭',
   loading: '加载中...',
+  retry: '重试',
+  loadFailed: '这部分没有加载出来。',
   noMedia: '还没有媒体文件。',
   confirmDeleteMedia: '删除此图片？此操作无法撤销。',
   deleteNoMatch: '服务器未匹配到要删除的文件（URL 不一致）。',

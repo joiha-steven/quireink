@@ -7,5 +7,5 @@ import { NewsletterView } from '@/admin/components/NewsletterView'
 
 export default function Newsletter() {
   const state = useView('newsletter')
-  return <View state={state}>{(data) => <NewsletterView {...data} />}</View>
+  return <View state={state} shape="list">{(data) => <NewsletterView {...data} />}</View>
 }

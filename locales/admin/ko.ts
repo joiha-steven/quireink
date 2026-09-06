@@ -378,6 +378,8 @@ const ko = {
   confirmDeleteUnused: '미사용 이미지를 모두 삭제할까요? 이 작업은 되돌릴 수 없습니다.',
   close: '닫기',
   loading: '불러오는 중...',
+  retry: '다시 시도',
+  loadFailed: '이건 불러오지 못했습니다.',
   noMedia: '아직 미디어가 없습니다.',
   confirmDeleteMedia: '이 이미지를 삭제할까요? 이 작업은 되돌릴 수 없습니다.',
   deleteNoMatch: '삭제할 파일을 서버에서 찾지 못했습니다(URL 불일치).',

@@ -378,6 +378,8 @@ const it = {
   confirmDeleteUnused: 'Eliminare TUTTE le immagini inutilizzate? Non si può annullare.',
   close: 'Chiudi',
   loading: 'Caricamento…',
+  retry: 'Riprova',
+  loadFailed: 'Questo non si è caricato.',
   noMedia: 'Ancora nessuna immagine.',
   confirmDeleteMedia: 'Eliminare questa immagine? L’azione non si può annullare.',
   deleteNoMatch: 'Il server non ha trovato nessun file da eliminare (l’URL non corrispondeva).',

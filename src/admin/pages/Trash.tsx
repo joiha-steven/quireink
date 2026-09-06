@@ -7,5 +7,5 @@ import { TrashView } from '@/admin/components/TrashView'
 
 export default function Trash() {
   const state = useView('trash')
-  return <View state={state}>{(data) => <TrashView {...data} />}</View>
+  return <View state={state} shape="list">{(data) => <TrashView {...data} />}</View>
 }

@@ -4,6 +4,8 @@
 import { useEffect, useState } from 'react'
 import type { FileItem, ApiResponse } from '@/types'
 import { useToast } from '@/admin/ui/Toast'
+import { Failed } from '@/admin/pages/state'
+import { Skeleton } from './Skeleton'
 import { useConfirm } from '@/admin/ui/ConfirmDialog'
 import { formatBytes } from '@/utils'
 import { formatDate } from '@/i18n/i18n'
@@ -11,7 +13,7 @@ import { isVideoAttachment } from '@/render/video'
 import { FileUploader } from './FileUploader'
 import { useAdminT, useAdminLang } from './I18nProvider'
 import { SelectionBar } from './SelectionBar'
-import { CHECK, NOTE_TEXT } from './kit'
+import { CHECK, EmptyState, NOTE_TEXT } from './kit'
 
 const onlyVideos = (items: FileItem[]) => items.filter((f) => isVideoAttachment(f.filename, f.contentType))
 
@@ -22,15 +24,23 @@ export function VideoLibrary() {
   const ask = useConfirm()
   const [items, setItems] = useState<FileItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [tick, setTick] = useState(0)
   const [selected, setSelected] = useState<Set<string>>(new Set())
 
+  // ⚠️ A REFUSED REQUEST IS NOT AN EMPTY LIBRARY. This toasted and then drew the empty
+  // state, which says "nothing here" to somebody whose videos are all still on the server —
+  // and four seconds later the toast is gone and only the lie is left. The error is state
+  // now, and it carries a Try again that re-asks in place.
   useEffect(() => {
+    setLoading(true)
+    setError(null)
     fetch('/api/files')
       .then((r) => r.json() as Promise<ApiResponse<FileItem[]>>)
       .then((f) => setItems(onlyVideos(f.data ?? [])))
-      .catch(() => notify(t.loadFilesFailed, 'error'))
+      .catch(() => setError(t.loadFilesFailed))
       .finally(() => setLoading(false))
-  }, [notify, t])
+  }, [t, tick])
 
   function toggle(url: string) {
     setSelected((prev) => {
@@ -86,10 +96,12 @@ export function VideoLibrary() {
         onDelete={deleteSelected}
       />
 
-      {loading ? (
-        <p className="py-10 text-center text-neutral-500 dark:text-neutral-400">{t.loading}</p>
+      {error ? (
+        <div className="p-5"><Failed error={error} onRetry={() => setTick((n) => n + 1)} /></div>
+      ) : loading ? (
+        <Skeleton shape="grid" />
       ) : items.length === 0 ? (
-        <p className="py-10 text-center text-neutral-500 dark:text-neutral-400">{t.noVideos}</p>
+        <EmptyState title={t.noVideos} />
       ) : (
         <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((f) => (

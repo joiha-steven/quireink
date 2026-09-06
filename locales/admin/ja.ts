@@ -378,6 +378,8 @@ const ja = {
   confirmDeleteUnused: '未使用の画像をすべて削除しますか？この操作は取り消せません。',
   close: '閉じる',
   loading: '読み込み中...',
+  retry: 'もう一度',
+  loadFailed: 'これは読み込めませんでした。',
   noMedia: 'まだメディアがありません。',
   confirmDeleteMedia: 'この画像を削除しますか？この操作は取り消せません。',
   deleteNoMatch: '削除対象のファイルが見つかりませんでした（URLが一致しません）。',
