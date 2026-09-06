@@ -46,22 +46,16 @@ try {
 }
 
 /**
- * The two files the bundler does not hash, served under a name that carries one.
+ * The stylesheet, served under a name that carries a fingerprint.
  *
- * `main.js` and `admin.css` are 194 KB and 68 KB, and they were `cache-control: no-cache`
- * with no validator — so the owner re-downloaded 262 KB on every single admin load while
- * the chunks beside them, which DO carry a hash, were `immutable` and free. The public side
- * has always done this (`/assets/site.<hash>.css`); this is the same trick.
+ * `admin.css` is 68 KB and was `cache-control: no-cache` with no validator, so the owner
+ * re-downloaded it on every single admin load while the chunks beside it, which carry the
+ * bundler's hash, were `immutable` and free. The public side has always done this
+ * (`/assets/site.<hash>.css`); this is the same trick.
  *
- * The name is computed here rather than in the build because `[name]-[hash].js` is already
- * the CHUNK pattern and the chunks are also called `main-…`: hashing the entry there would
- * make the one file that must be found by name indistinguishable from the twelve that must
- * not. So the URL is virtual and `handleAdminAsset` maps it back. A `.` separator, not a
- * `-`, for the same reason.
- *
- * Relative imports still resolve: the browser resolves `./main-abc.js` against the entry's
- * URL, which is in the same directory whichever name it wears. `admin.css` references no
- * files at all — its ten `url()`s are data URIs.
+ * Tailwind writes this file, not Bun, so there is no bundler hash to use and the name is
+ * computed here. That is safe for a SHEET and was not safe for the entry: nothing imports a
+ * stylesheet by name, where a JavaScript module is identified BY ITS URL.
  */
 function fingerprint(name: string): string {
   const asset = ASSETS.get(name)
@@ -70,7 +64,27 @@ function fingerprint(name: string): string {
   return asset ? Bun.hash(asset.body as Uint8Array<ArrayBuffer>).toString(36) : 'dev'
 }
 
-const ENTRY_NAME = `main.${fingerprint('main.js')}.js`
+/**
+ * The entry, under the name the BUNDLER gave it — never a name computed here.
+ *
+ * ⚠️ This was `main.<hash>.js`, a virtual name mapped back to a `main.js` on disk, and it
+ * shipped a blank admin in 2.2.8. A lazy route chunk may import the entry back: Bun 1.4 emits
+ * `from"./main.js"` in every one of them where 1.3 emitted none. The browser then held the
+ * entry TWICE — once as the shell's `main.<hash>.js`, once as the chunk's `main.js` — and two
+ * module records mean two copies of React. The first lazy screen to call a hook got a
+ * dispatcher belonging to the other copy and threw React error #321; the admin rendered
+ * nothing at all.
+ *
+ * A module's identity is its URL. So the file's name on disk IS the name the shell links, and
+ * `build-admin.ts` puts the hash in it. `admin.` with a dot keeps it apart from the
+ * `main-<hash>.js` chunks, which must be found by their own names and not by this one.
+ */
+function entryName(): string {
+  for (const name of ASSETS.keys()) if (/^admin\.[a-z0-9]+\.js$/.test(name)) return name
+  return 'admin.dev.js'
+}
+
+const ENTRY_NAME = entryName()
 const STYLES_NAME = `admin.${fingerprint('admin.css')}.css`
 const ENTRY = `/admin/assets/${ENTRY_NAME}`
 const STYLES = `/admin/assets/${STYLES_NAME}`
@@ -88,8 +102,8 @@ const STYLES = `/admin/assets/${STYLES_NAME}`
  */
 function bootChunks(): string[] {
   const found: string[] = []
-  const seen = new Set<string>()
-  const queue = ['main.js']
+  const seen = new Set<string>([ENTRY_NAME])
+  const queue = [ENTRY_NAME]
   while (queue.length > 0) {
     const asset = ASSETS.get(queue.shift() ?? '')
     if (!asset) continue
@@ -230,15 +244,17 @@ export function adminAsset(name: string): Asset | null {
 
 export function handleAdminAsset(c: Context): Response {
   const name = c.req.path.replace('/admin/assets/', '')
-  // The two virtual names map back to the files they fingerprint. The BARE names still
-  // serve — a bookmark, or a shell an old tab is still holding — and still revalidate,
-  // because only the fingerprinted URL carries the promise that the bytes cannot change.
-  const stored = name === ENTRY_NAME ? 'main.js' : name === STYLES_NAME ? 'admin.css' : name
+  // ONE virtual name, the sheet's. The entry had one too and that was the bug: a module is
+  // identified by the URL it was fetched from, so an entry reachable under two names is two
+  // modules, and a chunk that imports the entry back gets a second copy of everything in it.
+  // The bare `admin.css` still serves — a bookmark, or a shell an old tab is still holding —
+  // and still revalidates, because only the fingerprinted URL promises the bytes cannot change.
+  const stored = name === STYLES_NAME ? 'admin.css' : name
   const asset = adminAsset(stored)
   if (!asset) return new Response('Not found', { status: 404 })
-  // Every name the shell emits now carries a hash: the bundler's on a chunk, ours on the
-  // entry and the sheet. Anything else is a bare name and must revalidate.
-  const immutable = stored !== name || /-[a-z0-9]{8,}\./.test(name)
+  // Every name the shell emits carries a hash: the bundler's on the entry and the chunks,
+  // ours on the sheet. Anything else is a bare name and must revalidate.
+  const immutable = stored !== name || /[-.][a-z0-9]{8,}\./.test(name)
   return new Response(asset.body, {
     headers: {
       'content-type': asset.type,

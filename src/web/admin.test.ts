@@ -294,7 +294,7 @@ describe('the admin bundle is cacheable and does not arrive one wave at a time',
     const html = await shell()
     const entry = /<script type="module" src="([^"]+)">/.exec(html)?.[1] ?? ''
     const sheet = /<link rel="stylesheet" href="(\/admin\/assets\/[^"]+)">/.exec(html)?.[1] ?? ''
-    expect(entry).toMatch(/^\/admin\/assets\/main\.[a-z0-9]+\.js$/)
+    expect(entry).toMatch(/^\/admin\/assets\/admin\.[a-z0-9]+\.js$/)
     expect(sheet).toMatch(/^\/admin\/assets\/admin\.[a-z0-9]+\.css$/)
 
     for (const href of [entry, sheet]) {
@@ -305,12 +305,39 @@ describe('the admin bundle is cacheable and does not arrive one wave at a time',
   })
 
   /** A bookmark, or a tab still holding an older shell. It serves, and it revalidates. */
-  it('still serves the bare names, and does not promise those are immutable', async () => {
-    for (const href of ['/admin/assets/main.js', '/admin/assets/admin.css']) {
-      const res = await app.request(href)
+  it('still serves the bare sheet name, and does not promise it is immutable', async () => {
+    const res = await app.request('/admin/assets/admin.css')
+    expect(res.status).toBe(200)
+    expect(res.headers.get('cache-control')).toBe('no-cache')
+  })
+
+  /**
+   * The blank admin of 2.2.8, as a test. The entry was served under a name computed here over
+   * a file the bundler called `main.js`, and Bun 1.4 began emitting `from"./main.js"` inside
+   * every lazy chunk: the browser fetched the entry under BOTH names, and a second module
+   * record is a second copy of React. Error #321, nothing rendered. So no two URLs under
+   * `/admin/assets/` may serve the same JavaScript — however the bundler splits it next.
+   */
+  it('serves each module under exactly one name, so React cannot be loaded twice', async () => {
+    const entry = (/<script type="module" src="([^"]+)">/.exec(await shell())?.[1] ?? '')
+      .replace('/admin/assets/', '')
+    const seen = new Set<string>()
+    const byBody = new Map<string, string>()
+    const queue = [entry]
+    while (queue.length > 0) {
+      const name = queue.shift() ?? ''
+      if (!name || seen.has(name)) continue
+      seen.add(name)
+      const res = await app.request(`/admin/assets/${name}`)
       expect(res.status).toBe(200)
-      expect(res.headers.get('cache-control')).toBe('no-cache')
+      const text = await res.text()
+      const digest = Bun.hash(text).toString(36)
+      const twin = byBody.get(digest)
+      if (twin) throw new Error(`${twin} and ${name} are the same module under two URLs`)
+      byBody.set(digest, name)
+      for (const m of text.matchAll(/(?:from|import)\s*\(?\s*"\.\/([^"]+\.js)"/g)) queue.push(m[1] ?? '')
     }
+    expect(seen.size).toBeGreaterThan(1)
   })
 
   /**

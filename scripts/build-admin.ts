@@ -25,7 +25,17 @@ const result = await Bun.build({
   format: 'esm',
   splitting: true, // the editor's Tiptap chunk loads only when an editor opens
   minify: true,
-  naming: { entry: '[name].js', chunk: '[name]-[hash].js' },
+  // The ENTRY carries the bundler's own hash, and that is a correctness rule before it is a
+  // caching one. A route chunk may import the entry back — Bun 1.4 emits `from"./main.js"` in
+  // every lazy chunk where 1.3 did not — so the name the shell loads and the name the chunks
+  // import have to be the SAME string. Fingerprinting the entry in the server (`main.<hash>.js`
+  // for a file on disk called `main.js`) made them two, the browser instantiated the module
+  // twice, and the second copy of React threw "invalid hook call" on the first lazy screen.
+  //
+  // `admin.` with a DOT, not `main-`, so the one file that must be found by name stays
+  // distinguishable from the twelve chunks that must not: those are `[name]-[hash].js` and
+  // `[name]` is `main` for all of them.
+  naming: { entry: 'admin.[hash].js', chunk: '[name]-[hash].js' },
   define: { 'process.env.NODE_ENV': '"production"' },
 })
 

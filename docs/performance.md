@@ -270,12 +270,23 @@ appended to the admin bundle by the build (Tailwind cannot import a TypeScript m
 Not budgeted (ADR 0006) — but "the owner pays it" is not the same as "the owner pays it
 again every time". Two things were wrong and both are cheap:
 
-- `main.js` and `admin.css` are the two files Bun does not hash, and they
-  went out `no-cache` with **no validator at all**, so 262 KB came down on every admin load
-  while the twelve hashed chunks beside them were `immutable` and free. They are now served
-  under a fingerprinted URL — `main.<hash>.js`, `admin.<hash>.css` — computed in
-  `web/admin/spa.ts` from the bytes, because `[name]-[hash].js` is already the CHUNK pattern
-  and the chunks are also called `main-…`. The bare names still serve, and still revalidate.
+- The entry and `admin.css` went out `no-cache` with **no validator at all**, so 262 KB came
+  down on every admin load while the twelve hashed chunks beside them were `immutable` and
+  free. Both now carry a hash, but from two different places, and the difference is a bug that
+  shipped. The SHEET's is computed from the bytes in `web/admin/spa.ts` (Tailwind writes that
+  file, not Bun, so there is no bundler hash to use) and the bare `admin.css` still serves and
+  still revalidates. The ENTRY's is the BUNDLER's: `build-admin.ts` names it
+  `admin.<hash>.js`, with a dot, so it stays distinguishable from the `main-<hash>.js` chunks.
+
+  ⚠️ The entry used to be fingerprinted the same way as the sheet — served as `main.<hash>.js`
+  over a file the bundler had called `main.js` — and 2.2.8 shipped a blank admin because of
+  it. **A JavaScript module is identified by the URL it was fetched from.** Bun 1.4 began
+  emitting `from"./main.js"` inside every lazy route chunk where 1.3 emitted none, so the
+  browser held the entry twice: once as the shell's `main.<hash>.js`, once as the chunk's
+  `main.js`. Two module records are two copies of React, and the first lazy screen to call a
+  hook threw React error #321 against a dispatcher belonging to the other copy. A name the
+  server invents is safe for a stylesheet and never safe for a module. `check:admin-bundle`
+  now reads the built directory for exactly one entry and no dangling import.
 - The shell linked the entry and nothing else, so the browser found the module graph one
   level at a time. Measured on the dashboard: **four waves, at 4 / 13 / 24 / 31 ms** — on
   localhost, where a hop costs a millisecond; on a real connection, four round trips of blank

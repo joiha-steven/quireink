@@ -47,5 +47,36 @@ for (const f of files) {
   }
 }
 
+// The second thing this guard reads the OUTPUT for: every module has exactly ONE name.
+//
+// The admin shipped blank in 2.2.8 because it had two. The entry was written to disk as
+// `main.js` and served under a fingerprint computed at runtime (`main.<hash>.js`), and Bun 1.4
+// began emitting `from"./main.js"` inside every lazy route chunk where 1.3 emitted none. The
+// browser fetched the entry under both names, a second module record gave a second copy of
+// React, and the first lazy screen to call a hook threw React error #321.
+//
+// A bundler is free to point a chunk at any other chunk. What must hold is that the name it
+// writes is a file that EXISTS — a dangling import is the same blank screen by a different
+// route — and that the entry is not reachable under a second name. Both are answered here,
+// from the artifact, because neither is visible in the source.
+const ENTRY = files.filter((f) => /^admin\.[a-z0-9]+\.js$/.test(f))
+if (ENTRY.length !== 1) {
+  console.error(`admin-bundle: expected exactly one entry (admin.<hash>.js), found ${ENTRY.length}`)
+  bad++
+}
+
+for (const f of files) {
+  const text = readFileSync(join(DIST, f), 'utf8')
+  // Static `from"./x.js"` / `import"./x.js"`, and the dynamic `import("./x.js")` a lazy
+  // route arrives by. All three are names the browser will actually request.
+  for (const match of text.matchAll(/(?:from|import)\s*\(?\s*"\.\/([^"]+\.js)"/g)) {
+    const dep = match[1] ?? ''
+    if (!files.includes(dep)) {
+      console.error(`admin-bundle: ${f} imports "./${dep}", which is not in the bundle`)
+      bad++
+    }
+  }
+}
+
 if (bad > 0) process.exit(1)
-console.log(`admin-bundle: ${files.length} files clean of ${CANARIES.length} canaries`)
+console.log(`admin-bundle: ${files.length} files clean of ${CANARIES.length} canaries, one entry, no dangling import`)
