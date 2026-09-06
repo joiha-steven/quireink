@@ -285,20 +285,7 @@ body:has(.book-overlay[open]){overflow:hidden}
 .btn-token{display:none;font-size:var(--fs-caption);line-height:var(--lh-caption);
   letter-spacing:var(--ls-caption)}
 
-/* The overlays. Both are dialogs, so Escape and the inert background are the browser's. */
-.overlay[open]{display:flex}
-.overlay{flex-direction:column;border:1px solid var(--c-rule);border-radius:var(--radius,.5rem);padding:1rem;
-  width:min(32rem,92vw);max-height:70vh;background:var(--c-bg);color:var(--c-text);margin-top:8vh;
-  /* Chrome size, not reading size: it inherited the body, so a long-form blog drew a search
-     box with 20px placeholder in an 80px field. */
-  box-shadow:var(--lift);font-size:var(--fs-small);line-height:var(--lh-small);letter-spacing:var(--ls-small)}
-.overlay::backdrop{background:rgba(0,0,0,.4)}
-.search-close{position:absolute;top:.5rem;right:.5rem;border:0;background:none;color:var(--c-meta);font-size:1.125rem;line-height:1;cursor:pointer}
-.search-input{padding:.5rem .7rem;border:1px solid var(--c-rule);border-radius:var(--radius,.5rem);background:var(--c-bg);color:var(--c-text);font:inherit;margin-right:1.75rem;box-shadow:var(--well)}
-.search-results{list-style:none;padding:0;margin:.85rem 0 0;overflow-y:auto}
-.search-results li{margin:0 0 .6rem}
-.search-results a{color:var(--c-heading);text-decoration:none}
-.search-results a:hover{text-decoration:underline}
+/* The header overlays (search, sign-up) and their one panel are in subscribe.css.ts. */
 
 
 /* The thread runs at --fs-small throughout, which is the frozen tree's setting and the

@@ -33,7 +33,7 @@ export const PRINT_CSS = `
    .site-actions div above, so it is already gone. The test that checks every selector here
    is a selector the site still uses is what said so. */
 .progress,.site-actions,.toc,.to-top,.book-fab,.meta-book,.skip-link,.quote-copy,
-.book-overlay,.lightbox,.subscribe-overlay,.subscribe-card,form.subscribe,
+.book-overlay,.lightbox,.overlay,.subscribe-card,form.subscribe,
 #comments,.related,.read-next,.resume-pill,footer.site{display:none!important}
 /* ...and the rule drawn ABOVE each of them, which would otherwise be left ruling off the
    end of the essay against nothing. The divider belongs to the block it introduces, and

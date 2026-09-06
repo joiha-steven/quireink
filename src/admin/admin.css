@@ -543,6 +543,13 @@ input[type='color']::-moz-color-swatch {
   opacity: 0;
   transition: transform var(--dur-fast) var(--ease-out), opacity var(--dur-base) var(--ease-out) var(--dur-fast);
 }
+/* HELD: more work arrived while the finished bar was fading. It stays full and fully
+   visible until that work ends, rather than being un-finished — which would replay the
+   keyframes from the left and draw the same click twice (TopProgress.tsx has the measure). */
+.quireink-progress-bar[data-done='true'][data-hold='true'] {
+  opacity: 1;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
 /* With motion off - the owner's switch OR the OS preference - the bar still SAYS something
    is happening, it just says it without moving: a static two-thirds. Both gates, because
    the foot of this file sets the animation to none for both, and a bar whose only transform

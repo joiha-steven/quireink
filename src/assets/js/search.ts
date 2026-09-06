@@ -73,7 +73,9 @@ export function search(): void {
     const list = el('ul', { class: 'search-results', 'aria-live': 'polite' })
     // `lightboxClose` rather than a new `close` key: it already says exactly this in six
     // languages, and a second key with the same meaning is how a locale table drifts.
-    const close = el('button', { type: 'button', class: 'search-close', 'aria-label': label('lightboxClose') }, '✕')
+    const close = el('button', { type: 'button', class: 'overlay-close', 'aria-label': label('lightboxClose') }, '✕')
+    // A heading, as the sign-up overlay has: the two header overlays are one panel design.
+    const heading = el('h2', {}, label('search'))
 
     const run = debounce(async (query: string) => {
       // Every request carries a sequence number and only the newest one is allowed to
@@ -98,7 +100,7 @@ export function search(): void {
 
     const next = document.createElement('dialog')
     next.className = 'overlay search-overlay'
-    next.append(close, input, list)
+    next.append(close, heading, input, list)
     close.addEventListener('click', () => next.close())
     next.addEventListener('click', (e) => { if (e.target === next) next.close() })
 

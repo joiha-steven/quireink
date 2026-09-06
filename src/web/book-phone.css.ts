@@ -14,6 +14,15 @@ export const BOOK_PHONE_CSS = `
    under 600 and a nineteen-page article turned a page every four sentences.
    The page's own content is hidden by one rule rather than by touching every element, so
    closing the reader restores the page with nothing to remember. */
+/* THE GROUND BEHIND SAFARI'S OWN BARS IS THE PAPER, and that is the whole of this rule.
+   iOS paints the status bar's strip, and the area its address bar retracts from, with the
+   document's background - the site's page colour, white on the default palette - not with
+   whatever element happens to be under it. So the reader had a white band above its paper
+   on an iPhone, exactly where an ordinary page shows none, because an ordinary page IS
+   white there. The reader is paper to the top of the glass only if the document is. The
+   island also sets theme-color to the same stock while the reader is open (book-scroll.ts),
+   which is what Safari reads first when it is present. */
+html.book-reading,html.book-reading body{background:#faf8f3}
 html.book-reading{overflow-x:hidden}
 html.book-reading body>*:not(.book-reader){display:none}
 .book-reader{min-height:100dvh;font-family:var(--font-reading);letter-spacing:var(--ls-body);

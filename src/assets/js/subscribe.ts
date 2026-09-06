@@ -91,7 +91,10 @@ function overlay(): void {
     // the same choice search and book mode make.
     const next = document.createElement('dialog')
     next.className = 'overlay subscribe-overlay'
-    next.append(card())
+    // The same close glyph the search panel carries; Escape and the scrim still work too.
+    const close = el('button', { type: 'button', class: 'overlay-close', 'aria-label': label('lightboxClose') }, '✕')
+    close.addEventListener('click', () => next.close())
+    next.append(close, card())
     next.addEventListener('click', (ev) => { if (ev.target === next) next.close() })
     document.body.appendChild(next)
     dialog = next

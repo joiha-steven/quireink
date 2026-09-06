@@ -57,6 +57,16 @@ export function TopProgress() {
 
   const [visible, setVisible] = useState(false)
   const [done, setDone] = useState(false)
+  /**
+   * Work that arrives while the finished bar is still fading out. The bar used to answer it
+   * by un-marking `done`, and `[data-done] { animation: none }` taken away replays the
+   * keyframes from the left edge — the same element, swept twice, for ONE click. It happens
+   * whenever a page's second request starts inside the 320ms exit: a save followed by the
+   * refresh it triggers, the write pane's list and then its post. Measured on the owner's
+   * own clicks, 2026-09-06. So the bar now HOLDS instead: full width, fully visible, until
+   * the new work ends, and only then fades. One click, one sweep, however many requests.
+   */
+  const [hold, setHold] = useState(false)
   // `run` keys the element, and keying it is what replays the animation. It may therefore
   // only change when the bar was NOT already on screen: while it is up, the two halves of a
   // navigation are one piece of work and get one sweep.
@@ -66,33 +76,54 @@ export function TopProgress() {
   const shown = useRef(false)
   // Whether a run has ever finished. Only the first one straddles the boot seam.
   const booted = useRef(false)
+  // Read at the END of an exit, to know whether the work that held it is still running.
+  const busyRef = useRef(busy)
+  busyRef.current = busy
 
   useEffect(() => {
     if (busy) {
+      // A finished bar is never un-finished: that replays the sweep. It holds.
+      if (done) {
+        setHold(true)
+        return undefined
+      }
       if (!shown.current) {
         shown.current = true
         setRun((n) => n + 1)
       }
-      // Clears a finish that the seam had already started, so the bar does not snap to full
-      // and then carry on.
-      setDone(false)
       setVisible(true)
       return undefined
     }
+    if (done) {
+      // The held work has ended; releasing the hold lets the exit below run.
+      setHold(false)
+      return undefined
+    }
+    // Nothing on screen and nothing in flight: nothing to settle. Without this the exit's
+    // own `setDone(false)` would schedule a settle that marks an invisible bar done again.
+    if (!shown.current) return undefined
     const settle = setTimeout(() => setDone(true), booted.current ? SEAM_MS : BOOT_SEAM_MS)
     return () => clearTimeout(settle)
-  }, [busy])
+  }, [busy, done])
 
   useEffect(() => {
     if (!done) return undefined
+    if (hold) return undefined
     const timer = setTimeout(() => {
       shown.current = false
       booted.current = true
       setVisible(false)
       setDone(false)
+      // Work that began in the last frames of the exit and is still running is NEW work,
+      // and gets a sweep of its own.
+      if (busyRef.current) {
+        shown.current = true
+        setRun((n) => n + 1)
+        setVisible(true)
+      }
     }, EXIT_MS)
     return () => clearTimeout(timer)
-  }, [done])
+  }, [done, hold])
 
   if (!visible) return null
   return (
@@ -100,6 +131,7 @@ export function TopProgress() {
       <div
         key={run}
         data-done={done ? 'true' : undefined}
+        data-hold={hold ? 'true' : undefined}
         className="quireink-progress-bar h-full w-full bg-neutral-900 dark:bg-neutral-100"
       />
     </div>

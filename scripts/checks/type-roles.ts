@@ -47,7 +47,7 @@ const ALLOWED = new Map<string, string>([
   ['.lightbox-prev,.lightbox-next', 'the ‹ › glyphs, sized with their 3rem hit targets'],
   ['.book-x', 'the × glyph that closes book mode, sized with its padding'],
   ['.book-arrow', 'the page-turn arrows in book mode, sized with their hit targets'],
-  ['.search-close', 'the × glyph that closes the search overlay'],
+  ['.overlay-close', 'the × glyph that closes a header overlay'],
   [
     'form.search input,form.subscribe input,.search-input,.comment-form input,.comment-form textarea',
     'not a size but a FLOOR: max(16px,1em). iOS Safari zooms the whole page when a focused '

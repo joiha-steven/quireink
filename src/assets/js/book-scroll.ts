@@ -103,6 +103,13 @@ export function openScrollReader(
   const meta = document.querySelector<HTMLMetaElement>('meta[name=viewport]')!
   const viewport = meta.content
   meta.content = viewport + ', viewport-fit=cover'
+  // THEME-COLOR, for the length of the read: Safari tints its status bar and the strip its
+  // address bar retracts from with this when it is present, and with the document's
+  // background when it is not. The sheet paints the document paper too (book-phone.css.ts);
+  // this is the same answer for the engine that asks the meta first. Removed on close, so
+  // the site is left exactly as it was found.
+  const tint = el('meta', { name: 'theme-color', content: '#faf8f3' })
+  document.head.appendChild(tint)
 
   html.classList.add('book-reading')
   document.body.appendChild(reader)
@@ -133,6 +140,7 @@ export function openScrollReader(
     // the browser's own restoration on a popstate, which lands after the first.
     requestAnimationFrame(() => requestAnimationFrame(() => scrollTo(0, wasAt)))
     meta.content = viewport
+    tint.remove()
     try { history.scrollRestoration = restoration } catch { /* see above */ }
     dispatchEvent(new Event('quire:book-closed'))
   }

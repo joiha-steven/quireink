@@ -41,7 +41,11 @@ throttles putting real content back by a fixed 300ms.
   gap was 179–206ms on four screens, against a 120ms tolerance. An in-app navigation has no
   such gap, because the transition holds `pending` true across it — hence "sometimes".
   `BOOT_SEAM_MS` (400) is spent on the first run only, and `progress-seam.test.ts` pins the
-  floor against a future tidy-up back to one constant.
+  floor against a future tidy-up back to one constant. **And a finished bar is never
+  un-finished** (2026-09-06): work that arrives during the 320ms exit — a save and the refresh
+  it triggers, the write pane's list and then its post — used to un-mark `done` and replay
+  the sweep; it now HOLDS the bar full and visible (`data-hold`) until that work ends, then
+  fades once. Work still running when an exit completes is new work and gets its own sweep.
 - ⚠️ **`/admin/media` reports nothing to the counter** and shows its own "Loading…" line
   inside the sheet instead: both libraries fetch their own rows and predate the bar. It is
   the one screen where a click draws no bar at all.
