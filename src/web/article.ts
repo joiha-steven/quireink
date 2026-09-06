@@ -23,7 +23,7 @@ import { TOC_ANCHORS } from '@/render/toc'
 import { menuBlock } from '@/web/sidebar'
 import { termSlug } from '@/content/taxonomy'
 import { formatCount, formatDate, t } from '@/i18n/i18n'
-import { PUBLIC_SHEET, scriptTag } from '@/web/assets'
+import { PUBLIC_SHEET, articleScripts } from '@/web/assets'
 import { ogImageUrl } from '@/render/og'
 import { isPublicallyVisible, clampExcerpt, readingMinutes, toPlainText, wordCount } from '@/utils'
 import { renderDocument, pageStyles } from '@/web/layout'
@@ -330,7 +330,7 @@ export async function renderArticle(slug: string): Promise<string | null> {
       bookModeLarger: s.bookModeLarger,
       ...(post && settings.features.resume ? { resumePrompt: s.resumePrompt } : {}),
     },
-    scripts: scriptTag('core') + scriptTag('post'),
+    scripts: articleScripts(!!post && settings.features.bookMode, commentsMount !== ''),
     customHead: settings.customHead,
     customBodyEnd: settings.customBodyEnd,
   }

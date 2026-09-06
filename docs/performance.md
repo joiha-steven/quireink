@@ -303,15 +303,20 @@ owner may never open, and preloading all fourteen would trade one problem for a 
 
 ## JS — ship only what's used, only when it's used
 
-1. **Two bundles, and a budget in a test.** `core.js` on every public page, `post.js` added
-   on an article; `scripts/build-assets.ts` builds both from `src/assets/js/` and FAILS the
-   build when either passes the byte budget written beside it. There is no framework
-   baseline to hide inside, which is the point of the whole rewrite.
+1. **Four bundles, and a budget in a test.** `core.js` on every public page, `post.js` added
+   on an article, and **`book-mode.js` / `comment-thread.js` only on an article whose switch
+   is on** (`article.ts` emits the tag or does not); `scripts/build-assets.ts` builds them
+   from `src/assets/js/` and FAILS the build when any passes the byte budget written beside
+   it. There is no framework baseline to hide inside, which is the point of the whole rewrite.
 2. **Every island gates itself on its own DOM hook** and returns immediately when it is
-   absent — `toc()` on `.toc`, `lightbox()` on the images, `comments()` on the block. A
-   feature the owner turned off renders no markup, so its island costs one failed
-   `querySelector`. Nothing is feature-gated at build time, because there is nothing to
-   split.
+   absent — `toc()` on `.toc`, `lightbox()` on the images. A feature the owner turned off
+   renders no markup, so its island costs one failed `querySelector`. That was the whole
+   argument for one bundle until 2026-09-06, when it was measured: book mode and the comment
+   thread were 7.8 KB and 7.0 KB of a 19.6 KB `post.js`, three quarters of the file on two
+   switches. **An island behind an owner's switch is its own bundle**, emitted only when the
+   switch is on; an island every article has stays in `post.js` (7.1 KB after the split).
+   Each gated bundle carries its own copy of `dom` and `motion` (~1.5 KB) because an IIFE
+   cannot share and a shared chunk would be a request every page pays.
 3. **Heavy libs stay off the reader.** `@tiptap`/ProseMirror, `shiki`, `turndown` and
    `marked` are admin-only or run server-side (Shiki highlights at save time into
    `render_cache` → zero client JS). Never import one from `src/assets/js/`.

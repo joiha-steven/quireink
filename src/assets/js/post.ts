@@ -9,11 +9,13 @@
 //
 // The reading-progress bar is NOT here. It is CSS (`animation-timeline: scroll()`), which
 // is why it also works with JavaScript switched off.
+//
+// Neither are book mode and the comment thread, since 2026-09-06: they are the two islands
+// behind an owner's switch, and together they were three quarters of this file. Each is its
+// own bundle (`book-mode.ts`, `comment-thread.ts`), emitted only when its switch is on.
 
 import { backToTop } from './back-to-top'
-import { book } from './book'
 import { codeCopy } from './code-copy'
-import { comments } from './comments'
 import { lightbox } from './lightbox'
 import { quote } from './quote'
 import { resume } from './resume'
@@ -25,5 +27,3 @@ lightbox()
 toc()
 quote()
 resume()
-comments()
-book()

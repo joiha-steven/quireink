@@ -7,6 +7,8 @@
 
 import coreJs from '@/assets/dist/core.js' with { type: 'text' }
 import postJs from '@/assets/dist/post.js' with { type: 'text' }
+import bookModeJs from '@/assets/dist/book-mode.js' with { type: 'text' }
+import commentThreadJs from '@/assets/dist/comment-thread.js' with { type: 'text' }
 import loginJs from '@/assets/dist/login.js' with { type: 'text' }
 import swJs from '@/assets/dist/sw.js' with { type: 'text' }
 import { PUBLIC_CSS } from '@/web/public.css'
@@ -16,7 +18,9 @@ import type { InkSettings } from '@/types'
 import { minifyCss } from '@/web/css-min'
 
 /** Bundles by logical name. Adding one is an import and a line. */
-const BUNDLES: Record<string, string> = { core: coreJs, post: postJs, login: loginJs }
+const BUNDLES: Record<string, string> = {
+  core: coreJs, post: postJs, login: loginJs, 'book-mode': bookModeJs, 'comment-thread': commentThreadJs,
+}
 
 /**
  * Short content hash. Not a security boundary, so speed matters more than collision
@@ -170,6 +174,17 @@ export function assetPath(name: keyof typeof BUNDLES & string): string {
 /** A `<script>` tag for a bundle. `defer` because no island needs to block parsing. */
 export function scriptTag(name: string): string {
   return `<script src="${assetPath(name)}" defer></script>`
+}
+
+/**
+ * The bundles an article names. `core` and `post` always; the two switch-gated islands
+ * ONLY when their switch is on, so a site with book mode off never fetches a byte of the
+ * book and a page with no comment block never fetches the thread. Measured 2026-09-06
+ * before the split: the two were three quarters of post.js, sent to every reader.
+ */
+export function articleScripts(bookMode: boolean, thread: boolean): string {
+  return scriptTag('core') + scriptTag('post')
+    + (bookMode ? scriptTag('book-mode') : '') + (thread ? scriptTag('comment-thread') : '')
 }
 
 /**

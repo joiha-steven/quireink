@@ -22,6 +22,10 @@ const result = await Bun.build({
     `${ROOT}src/assets/js/core.ts`,
     `${ROOT}src/assets/js/post.ts`,
     `${ROOT}src/assets/js/login.ts`,
+    // The two switch-gated islands, each its own bundle so a site with the switch off never
+    // fetches it (the measurement is in book-mode.ts).
+    `${ROOT}src/assets/js/book-mode.ts`,
+    `${ROOT}src/assets/js/comment-thread.ts`,
     // The service worker (ADR 0039). Built here like the islands, but it is NOT a page
     // bundle: it is served from the root as `/sw.js`, because a worker's scope is the
     // directory its script came from and `/assets/` would leave it unable to see a page.
@@ -125,7 +129,17 @@ const BUDGET: Record<string, number> = {
   // the owner's switch or the reader's OS says so; and `fadeSwap` on the book's page turn,
   // whose timer used to hold a blank spread for 130ms with the switch off because it did
   // not know the transition was gone.
-  'post.js': 19_600,
+  //
+  // 7,400 since 2026-09-06 (evening): book mode and the comment thread left for bundles of
+  // their own. They were 7.8 KB and 7.0 KB of the 19.6 KB - three quarters of the file spent
+  // on two owner's switches, sent to every reader of a site with both off. What is left is
+  // every article's islands: copy, lightbox, contents, quote, resume, to-top.
+  'post.js': 7_400,
+  // Only on a page whose switch is on (article.ts). Priced with their own copy of `dom` and
+  // `motion` (~1.5 KB each): an IIFE cannot share, and a shared chunk would be a request
+  // every page pays for two pages' benefit.
+  'book-mode.js': 7_600,
+  'comment-thread.js': 6_700,
   // /login only, and NOT loaded with core.js: the sign-in page carries no beacon, no
   // search overlay and no listing controls, so it pays for the reveal toggle, the caps-lock
   // warning and the one-time-code paste, and nothing else.

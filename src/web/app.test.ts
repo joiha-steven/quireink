@@ -75,28 +75,7 @@ describe('article page', () => {
     expect(html).toContain(`<meta name="generator" content="Quire Ink ${pkg.version}">`)
   })
 
-  it('ships TWO deferred scripts and no inline JavaScript at all', async () => {
-    await savePost({ title: 'Quiet', content: 'body', status: 'published', date: PAST })
-    const html = await get('/quiet').then((r) => r.text())
-    // The budget is a number, not a vibe: the moment a third bundle or an inline block
-    // appears on an article page, this fails. `core` is the analytics beacon, which every
-    // public page carries; `post` is the islands.
-    //
-    // EXECUTABLE scripts, which is the property the recommended CSP depends on. A
-    // `type="application/ld+json"` block is a DATA block: the browser never executes it and
-    // `script-src 'self'` does not touch it. Measured 2026-08-25 in a real browser against a
-    // page carrying `script-src 'self'` with no `'unsafe-inline'` — the block parsed and the
-    // console stayed empty. Counting every `<script` instead made this test fail the day
-    // structured data arrived, which is a test failing for being imprecise, not for a bug.
-    const executable = html.match(/<script(?![^>]*\btype="application\/ld\+json")/g) ?? []
-    expect(executable.length).toBe(2)
-    expect(html).toMatch(/<script src="\/assets\/core\.[a-z0-9]+\.js" defer><\/script>/)
-    expect(html).toMatch(/<script src="\/assets\/post\.[a-z0-9]+\.js" defer><\/script>/)
-    // No inline block that a browser would RUN.
-    expect(html).not.toMatch(/<script(?![^>]*\b(?:src=|type="application\/ld\+json"))/)
-    expect(html).not.toContain('onload=')
-    expect(html).not.toContain('onclick=')
-  })
+  // Which bundles a page names, and the switch behind two of them: bundles.test.ts.
 
   // The page cache is keyed by URL alone (Invariant 1), so the header cannot branch on the
   // reader's theme: whichever mode the first visitor had would be cached for everyone.
