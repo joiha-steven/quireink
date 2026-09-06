@@ -21,13 +21,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from '@/admin/router'
 import type { AiListing, ListFailure } from '@/server/ai-provider'
-import type { ApiResponse, AiSettings } from '@/types'
+import type { ApiResponse, AiSettings, SiteSettings } from '@/types'
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import { Button } from '@/admin/ui/Button'
 import { Input } from '@/admin/ui/Input'
 import { ToggleRow } from '@/admin/ui/Switch'
-import { useToast } from '@/admin/ui/Toast'
 import { useAdminT } from './I18nProvider'
+import { ConnectionCard, type SaveResult } from './ConnectionCard'
 import { FIELD_W, NOTE_ALERT, NOTE_TEXT, PANEL_LIST, Select, Setting, SETTING_GAP } from './kit'
 
 type Choice = { id: string; label: string }
@@ -58,19 +58,28 @@ function saidNo(t: AdminStrings, f: ListFailure): string {
   return f.detail ? `${head} ${f.detail}` : head
 }
 
-export function AiFields({ configured, provider, model, seesImages, ai, onChangeAi }: {
+/**
+ * ⚠️ ONE CARD, TWO STORES, ONE BUTTON since ADR 0041 (2026-09-07).
+ *
+ * The model half is a secret with its own endpoint; the jobs half is plain settings. They
+ * used to be saved by two different buttons — this card's own, and the page-level Save bar
+ * that no longer exists on this tab — with nothing on screen saying which switch belonged to
+ * which. The card's Save now writes both, in that order, and reports the first refusal.
+ */
+export function AiCard({ configured, provider, model, seesImages, ai, onChangeAi, savePartial, dirty }: {
   configured: boolean; provider: string; model: string; seesImages: boolean
   ai: AiSettings; onChangeAi: (ai: AiSettings) => void
+  savePartial: (p: Partial<SiteSettings>) => Promise<SaveResult>
+  /** True when the jobs half differs from what the server holds. */
+  dirty: boolean
 }) {
   const t = useAdminT()
   const router = useRouter()
-  const { notify } = useToast()
   const [pick, setPick] = useState(provider)
   const [key, setKey] = useState('')
   const [models, setModels] = useState<Choice[]>([])
   const [chosen, setChosen] = useState(model)
   const [checked, setChecked] = useState<Checked>({ state: 'idle' })
-  const [busy, setBusy] = useState(false)
   const fetchSeq = useRef(0)
 
   // The menu loads the moment it CAN: a stored key on mount, a pasted key on blur, a
@@ -114,8 +123,7 @@ export function AiFields({ configured, provider, model, seesImages, ai, onChange
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  async function save() {
-    setBusy(true)
+  async function save(): Promise<SaveResult> {
     // The provider is ALWAYS sent — '' is how "Off" clears it. Key and model only when
     // present, so a blank never wipes a stored value.
     const body: Record<string, string> = { aiProvider: pick }
@@ -128,14 +136,18 @@ export function AiFields({ configured, provider, model, seesImages, ai, onChange
         body: JSON.stringify(body),
       })
       const json = (await res.json()) as ApiResponse
-      if (!json.success) throw new Error(json.error)
+      if (!json.success) return { ok: false, error: json.error }
       setKey('')
-      notify(t.commentsKeySaved)
+      // The jobs half, through the settings record. After the credentials, because a job
+      // switched on against a key that did not store is a switch pointing at nothing.
+      const jobs = await savePartial({ ai })
+      if (!jobs.ok) return jobs
       router.refresh()
-    } catch {
-      notify(t.deleteFailed, 'error')
-    } finally {
-      setBusy(false)
+      // The listing IS the test — the cheapest request that still has to authenticate — so
+      // a save that could reach the provider says so, and one with no key to try does not.
+      return { ok: true, tested: checked.state === 'ok' }
+    } catch (e) {
+      return { ok: false, error: e instanceof Error ? e.message : undefined }
     }
   }
 
@@ -159,6 +171,14 @@ export function AiFields({ configured, provider, model, seesImages, ai, onChange
       : null
 
   return (
+    <ConnectionCard
+      title={t.cardAi}
+      enabled={!off}
+      connected={configured && checked.state !== 'failed'}
+      dirty={dirty || key.trim().length > 0 || pick !== provider || chosen !== model}
+      canTest={!off}
+      onSave={save}
+    >
     <div className={SETTING_GAP}>
       <p className={NOTE_TEXT}>{t.aiHelp}</p>
 
@@ -222,10 +242,6 @@ export function AiFields({ configured, provider, model, seesImages, ai, onChange
         </>
       )}
 
-      <Button type="button" onClick={() => void save()} disabled={busy}>
-        {t.commentsKeySave}
-      </Button>
-
       {/* THE KEY IS THE SWITCH, for everything the model does with the owner's OWN
           material. Alt text and excerpts used to be two more decisions on this card, and
           they were decisions about nothing: an owner who has just pasted a key and paid
@@ -256,5 +272,6 @@ export function AiFields({ configured, provider, model, seesImages, ai, onChange
         </Setting>
       </div>
     </div>
+    </ConnectionCard>
   )
 }

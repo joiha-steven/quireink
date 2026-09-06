@@ -33,7 +33,15 @@ export function SecurityFields() {
   const [otp, setOtp] = useState('')
   const [busy, setBusy] = useState(false)
 
-  const load = (): void => { void api.get<State>('/api/security').then(setState).catch(() => { /* the toast said it */ }) }
+  // NARROWED, not merely stored. Everything below reads `state.sessions` as an array and
+  // `state.recoveryLeft` as a number, so a payload that is not this shape has to leave the
+  // card in its loading state — the alternative is a throw from a render three components
+  // deep, whose stack names React and not the fetch that fed it.
+  const load = (): void => {
+    void api.get<State>('/api/security')
+      .then((d) => { if (Array.isArray(d?.sessions)) setState(d) })
+      .catch(() => { /* the toast said it */ })
+  }
   useEffect(load, [])
 
   /**

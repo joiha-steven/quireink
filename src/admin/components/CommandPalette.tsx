@@ -87,8 +87,8 @@ const ACTIONS: { label: StringKey; href: string }[] = [
  */
 function buildRows(t: AdminStrings): Row[] {
   const tabName: Record<string, string> = {
-    site: t.tabSite, layout: t.tabLayout, reading: t.tabReading, appearance: t.tabAppearance,
-    seo: t.tabSeo, connections: t.tabConnections, ai: t.tabAi, system: t.tabSystem,
+    blog: t.tabBlog, home: t.tabHome, post: t.tabPost, appearance: t.tabAppearance,
+    people: t.tabPeople, server: t.tabServer, account: t.tabAccount,
   }
   return [
     ...ACTIONS.map((a) => ({ id: `a:${a.href}`, label: t[a.label], hint: '', search: t[a.label], href: a.href, group: 'action' as const })),

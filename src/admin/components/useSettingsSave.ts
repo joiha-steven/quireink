@@ -8,6 +8,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigationGuard, useRouter } from '@/admin/router'
 import type { SiteSettings, ApiResponse } from '@/types'
+import type { SaveResult } from './ConnectionCard'
 import { useToast } from '@/admin/ui/Toast'
 import { useConfirm } from '@/admin/ui/ConfirmDialog'
 import { useAdminT } from './I18nProvider'
@@ -15,11 +16,27 @@ import { useAdminT } from './I18nProvider'
 export type SettingsSave = {
   /** How many top-level keys differ from what the server last handed us. */
   changed: number
+  /**
+   * WHICH keys differ. A card on a save-itself tab reads this to light its own lamp: the
+   * page-level count answers "is there work on this screen", and a card needs "is there work
+   * in MY box" — a different question the moment one screen holds seven boxes that save
+   * separately.
+   */
+  changedIn: (...keys: (keyof SiteSettings)[]) => boolean
   saving: boolean
   /** ISO time of the last successful save, or null. */
   savedAt: string | null
   /** Stores the form. Resolves to whether it worked. */
   save: () => Promise<boolean>
+  /**
+   * Stores ONLY the named keys, for a card on a tab that saves card by card.
+   *
+   * `PUT /api/settings` merges, so sending three keys leaves the rest of the record alone —
+   * which is what lets tab 6 hold four cards with their own endpoints beside one card of
+   * ordinary settings keys and still have exactly one way to save per card (ADR 0041).
+   * It does NOT clear the form's dirty count, because the rest of the form is still dirty.
+   */
+  savePartial: (partial: Partial<SiteSettings>) => Promise<SaveResult>
 }
 
 /**
@@ -46,12 +63,14 @@ export function useSettingsSave(settings: SiteSettings, s: SiteSettings): Settin
    * compare would only give a boolean. Key order cannot drift between the two sides because
    * the form starts as a copy of `settings` and is only ever spread over.
    */
-  const changed = useMemo(() => {
+  const changedKeys = useMemo(() => {
     const keys = new Set([...Object.keys(settings), ...Object.keys(s)]) as Set<keyof SiteSettings>
-    let n = 0
-    for (const k of keys) if (JSON.stringify(s[k]) !== JSON.stringify(settings[k])) n++
-    return n
+    const out = new Set<keyof SiteSettings>()
+    for (const k of keys) if (JSON.stringify(s[k]) !== JSON.stringify(settings[k])) out.add(k)
+    return out
   }, [s, settings])
+  const changed = changedKeys.size
+  const changedIn = (...keys: (keyof SiteSettings)[]) => keys.some((k) => changedKeys.has(k))
 
   async function save(): Promise<boolean> {
     setSaving(true)
@@ -78,6 +97,22 @@ export function useSettingsSave(settings: SiteSettings, s: SiteSettings): Settin
     }
   }
 
+  async function savePartial(partial: Partial<SiteSettings>): Promise<SaveResult> {
+    try {
+      const res = await fetch('/api/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(partial),
+      })
+      const json = (await res.json()) as ApiResponse<SiteSettings>
+      if (!json.success) return { ok: false, error: json.error }
+      router.refresh()
+      return { ok: true }
+    } catch (e) {
+      return { ok: false, error: e instanceof Error ? e.message : undefined }
+    }
+  }
+
   /**
    * Leaving with work on the screen asks a THREE-way question, because there are three
    * answers: keep it, throw it away, or go back to it. A yes/no dialog answers it by throwing
@@ -101,5 +136,5 @@ export function useSettingsSave(settings: SiteSettings, s: SiteSettings): Settin
     return answer === 'confirm'
   })
 
-  return { changed, saving, savedAt, save }
+  return { changed, changedIn, saving, savedAt, save, savePartial }
 }

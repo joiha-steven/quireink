@@ -71,11 +71,11 @@ export function registerCssFlows({ flow, expect }: Tour): void {
  */
 export function registerSecurityFlows({ flow, expect }: Tour): void {
   flow('admin: the account can be defended from the admin', () =>
-    expect('/admin/settings?tab=system', `
+    expect('/admin/settings?tab=account', `
     (async () => {
       const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
       const cur = document.querySelector('[data-security-current]')
-      if (!cur) return 'the System tab has no Security card'
+      if (!cur) return 'the Account tab has no Security card'
 
       const rows = [...document.querySelectorAll('[data-security-session]')]
       if (!rows.length) return 'no signed-in device is listed, not even this one'

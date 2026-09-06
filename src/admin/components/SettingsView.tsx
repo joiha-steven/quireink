@@ -1,18 +1,19 @@
-// Settings: ONE form, ONE save button, in eight groups (ADR 0011 named seven; `ai` joined
-// 2026-08-23).
+// Settings: SEVEN tabs, grouped by the question the owner is holding when they open this
+// screen, with that question printed under the tab (ADR 0041, which supersedes 0011's
+// grouping and keeps its one-question-per-tab rule).
 //
-// The frozen tree had five and they were tangled, because three were named after nothing in
-// particular: "Site" held the site's identity AND the page layout; "Content" held reader
-// features, comments and a one-time WordPress importer; "Integrations" held a backup
-// destination, an AI protocol server, a CDN and an SMTP host. Nothing told you which tab a
-// setting was behind, so finding one meant opening all five.
+// The eight tabs it replaces were grouped by which part of the CODE a key belonged to, and
+// the count measured on 2026-09-07 says what that cost: Appearance carried 137 controls over
+// 2,825px while five other tabs sat within 31px of 1,236, and the answer to "how do readers
+// sign in to comment" lived three tabs from "should there be comments".
 //
-// Each group answers ONE question, and that question is printed under the tab rather than left
-// implicit — what the site IS, where things SIT, what a reader GETS, how it LOOKS, how machines
-// SEE it, what it TALKS TO, what the AI door does, and the state of the INSTALL.
+// ⚠️ A TAB SAVES ONE WAY, and the sheet's Save key renders on the first four only. Tabs 5-7
+// are made of cards that each own their keys and each say whether the far end answered; a
+// page-level Save beside them would be a button that silently did nothing for most of the
+// screen, which is the arrangement being replaced.
 //
-// All settings still live in one state object and save together via PUT /api/settings, which
-// merges — regrouping the UI changed no stored shape.
+// The stored shape is untouched. `SiteSettings` keeps every key and every name; this file
+// decides which tab renders which key, and `?tab=` still answers to the eight old ids.
 
 import { useRef, useState, type ReactNode } from 'react'
 import { useSearchParams } from '@/admin/router'
@@ -23,41 +24,53 @@ import type { IntegrationStatus } from '@/store/integration-keys'
 import { Button } from '@/admin/ui/Button'
 import { formatTime } from '@/utils'
 import { PageHeader, Tabs, type TabItem } from './kit'
-import { SettingsCard } from './SettingsCard'
 import { SHEET, SheetTop } from './sheet'
 import { SettingsSearch } from './SettingsSearch'
 import { SettingsNotesRow, useSettingsNotes } from './SettingsNotes'
 import { useSettingJump } from './useSettingJump'
 import { useSettingsSave } from './useSettingsSave'
 import { useAdminT } from './I18nProvider'
-import { SiteFields } from './SiteFields'
-import { BrandFields } from './BrandFields'
-import { LayoutMenuFields } from './LayoutMenuFields'
-import { FrontFields } from './FrontFields'
-import { FooterField } from './FooterField'
-import { FigureFields } from './FigureFields'
-import { GalleryFields } from './GalleryFields'
-import { PostImageFields } from './PostImageFields'
-import { AuthorFields } from './AuthorFields'
-import { ListingFeatureFields, PageFeatureFields, PostFeatureFields } from './FeatureFields'
-import { CommentFields } from './CommentFields'
-import { SettingsAiTab } from './SettingsAiTab'
-import { SettingsConnectionsTab } from './SettingsConnectionsTab'
-import { SettingsSystemTab } from './SettingsSystemTab'
-import type { UpdateStatus } from './UpdateFields'
-import { SeoFields } from './SeoFields'
+import { SettingsBlogTab } from './SettingsBlogTab'
+import { SettingsHomeTab } from './SettingsHomeTab'
+import { SettingsPostTab } from './SettingsPostTab'
 import { SettingsAppearanceTab } from './SettingsAppearanceTab'
-import { RedirectsManager } from './RedirectsManager'
+import { SettingsPeopleTab } from './SettingsPeopleTab'
+import { SettingsServerTab } from './SettingsServerTab'
+import { SettingsAccountTab } from './SettingsAccountTab'
+import type { UpdateStatus } from './UpdateFields'
 
-type Tab = 'site' | 'layout' | 'reading' | 'appearance' | 'seo' | 'connections' | 'ai' | 'system'
-// Every member of `Tab`, and the list is what `?tab=` is validated against — so a tab
-// missing here is a tab no link can reach. 'ai' was left out when the tab was added on
-// 2026-08-23, which made `/admin/settings?tab=ai` land silently on Site: the address the
-// assistant's own error message hands the owner, and the one the guide on quireink.com
-// prints. Derived from the type so the next tab cannot repeat it.
-const TAB_IDS: Tab[] = [
-  'site', 'layout', 'reading', 'appearance', 'seo', 'connections', 'ai', 'system',
-]
+export type Tab = 'blog' | 'home' | 'post' | 'appearance' | 'people' | 'server' | 'account'
+
+/**
+ * Every member of `Tab`, and the list `?tab=` is validated against — so a tab missing here is
+ * a tab no link can reach. That happened once: `ai` was left out when its tab was added on
+ * 2026-08-23, which made the assistant's own settings link land silently on Site — the address
+ * its error message hands the owner, and the one the guide on quireink.com prints.
+ */
+const TAB_IDS: Tab[] = ['blog', 'home', 'post', 'appearance', 'people', 'server', 'account']
+
+/**
+ * The eight old ids, pointed at the tab that now holds their keys.
+ *
+ * Help, the home screen's setup band, the newsletter's SMTP link, the assistant's error
+ * message and the command palette all address settings by these URLs, and a decision about
+ * GROUPING is not a licence to break five screens that had no part in it. `?setting=` still
+ * works alongside, because it names a key rather than a tab.
+ *
+ * `connections` lands on Comments & mail rather than on Server, and that is a judgement about
+ * what people were looking for when they followed the link: SMTP is the reason that tab was
+ * opened. `seo`, `ai` and `system` all land on Server, which absorbed all three.
+ */
+const OLD_TABS: Record<string, Tab> = {
+  site: 'blog', layout: 'home', reading: 'post', appearance: 'appearance',
+  seo: 'server', connections: 'people', ai: 'server', system: 'server',
+}
+
+const resolveTab = (param: string | null): Tab =>
+  (TAB_IDS as string[]).includes(param ?? '') ? (param as Tab) : (OLD_TABS[param ?? ''] ?? 'blog')
+
+/** The four that save through the sheet's own key. The other three save card by card. */
+const SAVES_AS_ONE: Tab[] = ['blog', 'home', 'post', 'appearance']
 
 /**
  * Two columns on a wide screen, one on a narrow one.
@@ -95,8 +108,7 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
   const t = useAdminT()
   const [s, setS] = useState<SiteSettings>(settings)
   const tabParam = useSearchParams().get('tab')
-  const [tab, setTab] = useState<Tab>(
-    (TAB_IDS as string[]).includes(tabParam ?? '') ? (tabParam as Tab) : 'site')
+  const [tab, setTab] = useState<Tab>(() => resolveTab(tabParam))
   // Filled by TypographyFields; called by the Reset in that card's header row.
   const typographyReset = useRef<(() => void) | null>(null)
 
@@ -105,30 +117,31 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
 
   const update = (partial: Partial<SiteSettings>) => setS((prev) => ({ ...prev, ...partial }))
 
-  // The whole form's unsaved state, and the question it asks when somebody leaves.
-  const { changed, saving, savedAt, save } = useSettingsSave(settings, s)
+  // The whole form's unsaved state, the question it asks when somebody leaves, and the
+  // partial save the card-by-card tabs hand to each of their cards.
+  const form = useSettingsSave(settings, s)
+  const { changed, saving, savedAt, save } = form
+  const savesAsOne = SAVES_AS_ONE.includes(tab)
 
   const TABS: TabItem<Tab>[] = [
-    { key: 'site', label: t.tabSite },
-    { key: 'layout', label: t.tabLayout },
-    { key: 'reading', label: t.tabReading },
+    { key: 'blog', label: t.tabBlog },
+    { key: 'home', label: t.tabHome },
+    { key: 'post', label: t.tabPost },
     { key: 'appearance', label: t.tabAppearance },
-    { key: 'seo', label: t.tabSeo },
-    { key: 'connections', label: t.tabConnections },
-    { key: 'ai', label: t.tabAi },
-    { key: 'system', label: t.tabSystem },
+    { key: 'people', label: t.tabPeople },
+    { key: 'server', label: t.tabServer },
+    { key: 'account', label: t.tabAccount },
   ]
   /** A result says WHICH tab, or it has only told you the thing exists. */
   const TAB_LABEL = (k: Tab): ReactNode => TABS.find((x) => x.key === k)?.label ?? k
   const HINTS: Record<Tab, string> = {
-    site: t.tabSiteHint,
-    layout: t.tabLayoutHint,
-    reading: t.tabReadingHint,
+    blog: t.tabBlogHint,
+    home: t.tabHomeHint,
+    post: t.tabPostHint,
     appearance: t.tabAppearanceHint,
-    seo: t.tabSeoHint,
-    connections: t.tabConnectionsHint,
-    ai: t.tabAiHint,
-    system: t.tabSystemHint,
+    people: t.tabPeopleHint,
+    server: t.tabServerHint,
+    account: t.tabAccountHint,
   }
 
   return (
@@ -159,20 +172,27 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
               the time — a screen that has been open all afternoon and one saved thirty seconds
               ago read identically otherwise. It clears itself the moment the form is dirty
               again: a stale "Saved at 14:02" beside three unsaved changes is a lie. */}
+          {savesAsOne && (
           <span className="shrink-0 text-xs text-neutral-500 dark:text-neutral-400">
             {saving ? t.saving : savedAt && changed === 0 ? `${t.savedAtPrefix} ${formatTime(savedAt)}` : ''}
           </span>
+          )}
           {/* `sm`, and the field beside it is sized to match, because on THIS row the height
               is set by the tab strip: it is the widest object on the band and the first one
               read, so it is the thing the other two answer to. The three measured 33.5, 32
               and 40 — a strip, a key and a field, no two alike — and the pair at the right
               end took the blame because they touch. All three are 32 now. */}
-          {/* Disabled with nothing to save, and it is not tidiness: a Save key that is always
-              pressable answers "did I change anything?" with a shrug, and pressing it wrote
-              the same record back and printed a success toast for work nobody did. */}
+          {/* ⚠️ FOUR TABS ONLY (ADR 0041). On Comments & mail, Server and Account every card
+              owns its keys and carries its own key, so a page-level Save beside them would be
+              a button that silently did nothing for most of the screen.
+              Disabled with nothing to save, and that is not tidiness either: a Save key that
+              is always pressable answers "did I change anything?" with a shrug, and pressing
+              it wrote the same record back and printed a success toast for work nobody did. */}
+          {savesAsOne && (
           <Button size="sm" onClick={() => { void save() }} disabled={saving || changed === 0}>
             {saving ? t.saving : changed === 0 ? t.saveSettings : t.saveSettingsCount.replace('{n}', String(changed))}
           </Button>
+          )}
           <SettingsSearch
             tabLabel={(k) => String(TAB_LABEL(k))}
             onPick={(entry) => { setTab(entry.tab); jumpToSetting(String(t[entry.label])) }}
@@ -184,107 +204,21 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
       {/* The definition, in the open — a guessed-at tab is a tab you open five of. It shares its line with the switch that quiets every OTHER explanation; this one stays. See `SettingsNotes`. */}
       <SettingsNotesRow hint={HINTS[tab]} on={notes} onToggle={toggleNotes} />
 
-      {/* SITE — what this site IS. Identity only: nothing here moves a pixel. */}
-      {tab === 'site' && (
-        <div className={GRID}>
-          <div className={COL}>
-            <SettingsCard title={t.cardGeneral}>
-              <SiteFields s={s} update={update} />
-            </SettingsCard>
-          </div>
-          <div className={COL}>
-            <SettingsCard title={t.cardBranding}>
-              <BrandFields s={s} update={update} />
-            </SettingsCard>
-            {/* Whose blog this is — filed with the marks, because both answer "who is this",
-                and the words above answer "what is this".
-                ⚠️ It was in the LEFT stack, on the stated grounds that Branding was the taller
-                card. It is not, and had not been for some time: measured at 1440px, Branding
-                351 against Author 710, which left the two stacks at 1,461 and 351 — the right
-                column of this tab was empty for 1,110px, the worst hole in the eight. Now 731
-                against 1,085. Re-measure before moving it back. */}
-            <SettingsCard title={t.cardAuthor}>
-              <AuthorFields author={s.author} onChange={(author) => update({ author })} />
-            </SettingsCard>
-          </div>
-        </div>
+      {tab === 'blog' && <SettingsBlogTab s={s} update={update} grid={GRID} col={COL} />}
+
+      {tab === 'home' && (
+        <SettingsHomeTab
+          s={s} update={update} posts={posts} pages={pages} categories={categories}
+          grid={GRID} col={COL}
+        />
       )}
 
-      {/* LAYOUT — where things sit; split out of "Site", which had no reason to hold both. */}
-      {tab === 'layout' && (
-        <div className={GRID}>
-          <div className={COL}>
-            <SettingsCard title={t.cardLayout}>
-              <LayoutMenuFields s={s} update={update} posts={posts} pages={pages} />
-            </SettingsCard>
-          </div>
-          <div className={COL}>
-            {/* Only when the site actually serves one. Twenty questions about a front page
-                nobody is showing is how a settings screen becomes something people scroll
-                past. */}
-            {s.home.mode === 'front' && (
-              <SettingsCard title={t.cardFront}>
-                <FrontFields
-                  front={s.home.front}
-                  onChange={(front) => update({ home: { ...s.home, front } })}
-                  posts={posts}
-                  categories={categories}
-                />
-              </SettingsCard>
-            )}
-            {/* Directly above the frame card, because both answer a question about pictures
-                and somebody hunting for "how do I show my cover" scans the picture cards.
-                It started in the left stack on the grounds that the right one was longer;
-                looking at the rendered tab said otherwise — in list mode (the default) the
-                right column ended halfway up the page while the left ran on. */}
-            <SettingsCard title={t.cardPostImage}>
-              <PostImageFields postImage={s.postImage} onChange={(postImage) => update({ postImage })} />
-            </SettingsCard>
-            <SettingsCard title={t.cardFigure}>
-              <FigureFields figure={s.figure} onChange={(figure) => update({ figure })} />
-            </SettingsCard>
-            <SettingsCard title={t.cardGallery}>
-              <GalleryFields gallery={s.gallery} onChange={(gallery) => update({ gallery })} />
-            </SettingsCard>
-            <SettingsCard title={t.footerContent}>
-              <FooterField value={s.footer} onChange={(footer) => update({ footer })} />
-            </SettingsCard>
-          </div>
-        </div>
+      {tab === 'post' && (
+        <SettingsPostTab
+          s={s} update={update} onCommentSignIn={() => setTab('people')} grid={GRID} col={COL}
+        />
       )}
 
-      {/* READING — what a reader gets on a post, and whether they can reply. */}
-      {tab === 'reading' && (
-        <div className={GRID}>
-          {/* WHAT A READER CAN DO, then WHAT THEY SEE — and the thirteen-switch card that
-              used to be the whole left column is the first half of it.
-              Measured at 1440px: one card of 1,360 against a stack of 901. Now 1,168 against
-              1,176. Re-measure before moving a card across. */}
-          <div className={COL}>
-            <SettingsCard title={t.cardFeatures}>
-              <PostFeatureFields
-                features={s.features}
-                onChange={(features) => update({ features })}
-                relatedCount={s.relatedCount}
-                onRelatedCount={(relatedCount) => update({ relatedCount })}
-              />
-            </SettingsCard>
-            <SettingsCard title={t.cardComments}>
-              <CommentFields comments={s.comments} onChange={(comments) => update({ comments })} />
-            </SettingsCard>
-          </div>
-          <div className={COL}>
-            <SettingsCard title={t.cardOnPage}>
-              <PageFeatureFields features={s.features} onChange={(features) => update({ features })} />
-            </SettingsCard>
-            <SettingsCard title={t.cardListing}>
-              <ListingFeatureFields features={s.features} onChange={(features) => update({ features })} />
-            </SettingsCard>
-          </div>
-        </div>
-      )}
-
-      {/* APPEARANCE — palette + escape hatch left, the type stack right. */}
       {tab === 'appearance' && (
         <SettingsAppearanceTab
           s={s} update={update} presets={presets}
@@ -292,40 +226,21 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
         />
       )}
 
-      {/* SEARCH & URLS — the machine-facing surface. Redirects belong with it: an old
-          address is a search-engine concern before it is anything else. */}
-      {tab === 'seo' && (
-        <div className={GRID}>
-          <div className={COL}>
-            <SettingsCard title={t.tabSeo}>
-              <SeoFields s={s} update={update} />
-            </SettingsCard>
-          </div>
-          <div className={COL}>
-            <SettingsCard title={t.redirectsTitle}>
-              <RedirectsManager />
-            </SettingsCard>
-          </div>
-        </div>
-      )}
-
-      {/* CONNECTIONS — its own file; see SettingsConnectionsTab. */}
-      {tab === 'connections' && (
-        <SettingsConnectionsTab
-          s={s} update={update} integrations={integrations} commentEnv={commentEnv}
-          grid={GRID} col={COL}
+      {tab === 'people' && (
+        <SettingsPeopleTab
+          s={s} update={update} commentEnv={commentEnv} form={form} grid={GRID} col={COL}
         />
       )}
 
-      {/* AI — its own file; see SettingsAiTab for why it is one subject. */}
-      {tab === 'ai' && (
-        <SettingsAiTab s={s} update={update} integrations={integrations} grid={GRID} col={COL} />
+      {tab === 'server' && (
+        <SettingsServerTab
+          s={s} update={update} integrations={integrations} updateStatus={updateStatus}
+          updateStatusValue={s.updateCheck} form={form} grid={GRID} col={COL}
+        />
       )}
 
-      {/* SYSTEM — content in and out, and the state of the install. Its own file since
-          2026-08-22, when this one reached its line ceiling. */}
-      {tab === 'system' && (
-        <SettingsSystemTab s={s} update={update} updateStatus={updateStatus} offsiteConfigured={integrations.offsiteConfigured} s3Bucket={integrations.s3Bucket} grid={GRID} col={COL} />
+      {tab === 'account' && (
+        <SettingsAccountTab s={s} update={update} form={form} grid={GRID} col={COL} />
       )}
 
         </div>

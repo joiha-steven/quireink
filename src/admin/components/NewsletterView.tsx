@@ -29,7 +29,7 @@ export function NewsletterView({ posts, mailConfigured }: { posts: SendablePost[
       <PageHeader
         title={t.navNewsletter}
         actions={
-          <Link href="/admin/settings?tab=connections" className={SHEET_TOOL_ON_CANVAS}>
+          <Link href="/admin/settings?tab=people" className={SHEET_TOOL_ON_CANVAS}>
             {t.nlSmtpSettingsLink} →
           </Link>
         }

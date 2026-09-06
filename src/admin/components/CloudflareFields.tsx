@@ -5,8 +5,8 @@
 // change + "Clear all cache" (see lib/cdn.ts + lib/revalidate.ts), so an edit is live
 // with no manual purge.
 import { useRouter } from '@/admin/router'
-import { Button } from '@/admin/ui/Button'
 import { useAdminT } from './I18nProvider'
+import { ConnectionCard } from './ConnectionCard'
 import { CONTROL, NOTE_TEXT } from './kit'
 import { useSecretKeys } from './useSecretKeys'
 
@@ -16,18 +16,30 @@ const LINK = 'https://dash.cloudflare.com/profile/api-tokens'
 type Keys = { cloudflareZoneId: string; cloudflareApiToken: string; purgeWebhookUrl: string }
 const EMPTY: Keys = { cloudflareZoneId: '', cloudflareApiToken: '', purgeWebhookUrl: '' }
 
-export function CloudflareFields(
+/**
+ * The card, which since ADR 0041 is what owns the save.
+ *
+ * The button and the lamp moved out of the field list and into `ConnectionCard` — one shape
+ * for every card that stores its own keys, so a tab of six says "saved / changed / refused"
+ * the same way six times instead of six ways.
+ */
+export function CloudflareCard(
   { configured, zoneId, webhookConfigured }:
   { configured: boolean; zoneId: string; webhookConfigured: boolean },
 ) {
   const t = useAdminT()
   const router = useRouter()
   // `router.refresh()` so the "· saved" hint reflects the new state at once.
-  const { keys, busy, set, ph, save } = useSecretKeys(
-    '/api/integrations/cloudflare', EMPTY, () => router.refresh(),
-  )
+  const secrets = useSecretKeys('/api/integrations/cloudflare', EMPTY, () => router.refresh())
+  const { keys, touched, set, ph } = secrets
 
   return (
+    <ConnectionCard
+      title={t.cardCloudflare}
+      connected={configured}
+      dirty={touched}
+      onSave={secrets.saveResult}
+    >
     <div className="space-y-3">
       <p className={NOTE_TEXT}>
         {t.cfHelp}{' '}
@@ -59,9 +71,7 @@ export function CloudflareFields(
         value={keys.purgeWebhookUrl}
         onChange={(e) => set('purgeWebhookUrl', e.target.value)}
       />
-      <Button type="button" onClick={save} disabled={busy}>
-        {t.commentsKeySave}
-      </Button>
     </div>
+    </ConnectionCard>
   )
 }

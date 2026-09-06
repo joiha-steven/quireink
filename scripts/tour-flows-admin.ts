@@ -95,7 +95,7 @@ export function registerAdminFlows({ flow, expect, atWidth }: Tour): void {
   flow('admin: the settings tabs all have content', () => expect('/admin/settings', `
     (async () => {
       const empty = []
-      for (const label of ['Site','Layout','Reading','Appearance','Search & URLs','Connections','System']) {
+      for (const label of ['Blog','Home & menu','Posts','Appearance','Comments & mail','Server & connections','Account']) {
         const b = [...document.querySelectorAll('button')].find((x) => x.textContent.trim() === label)
         if (!b) { empty.push(label + ' (no tab)'); continue }
         b.click()
@@ -108,8 +108,8 @@ export function registerAdminFlows({ flow, expect, atWidth }: Tour): void {
 
   flow('admin: the Storage card offers both limits', () => expect('/admin/settings', `
     (async () => {
-      const b = [...document.querySelectorAll('button')].find((x) => x.textContent.trim() === 'System')
-      if (!b) return 'no System tab'
+      const b = [...document.querySelectorAll('button')].find((x) => x.textContent.trim() === 'Server & connections')
+      if (!b) return 'no Server & connections tab'
       b.click()
       await new Promise((r) => setTimeout(r, 300))
       const n = document.querySelectorAll('input[type=number][max="4096"]').length
@@ -313,7 +313,7 @@ export function registerAdminFlows({ flow, expect, atWidth }: Tour): void {
       // Compared against a list, NOT a regex: this whole flow is a template literal, so a
       // \\b in it is a backspace character long before it is a word boundary, and the first
       // version called two perfectly good links dead.
-      const TABS = ['site','layout','reading','appearance','seo','connections','system']
+      const TABS = ['blog','home','post','appearance','people','server','account']
       const bad = hrefs.filter((h) => h.includes('tab=') && !TABS.includes(h.split('tab=')[1]))
       if (bad.length) return 'step links at a tab that does not exist: ' + bad.join(', ')
 

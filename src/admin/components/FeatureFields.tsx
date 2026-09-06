@@ -44,32 +44,46 @@ function List({ items, features, onChange }: {
 }
 
 /**
- * THE AIDS AROUND AN ARTICLE: how a reader finds it, moves through it, and comes back to it.
+ * THE HEAD OF A POST: what stands above the first sentence.
  *
- * Seven, not thirteen. One undifferentiated list of thirteen switches was the single hardest
- * thing to use on this screen — finding "Table of contents" meant reading thirteen two-line
- * descriptions in a 1,360px column, because nothing on it said which switches were about the
- * same subject. These seven are the reader's apparatus (search it, jump within it, track how
- * far in they are, return where they left); the six in `PageFeatureFields` are what the page
- * itself puts in front of them. Splitting on that line is what lets someone scan for the one
- * they came to change.
- *
- * The keys are untouched in `FeatureSettings` — only which card renders them moved, so the
- * stored shape is exactly what it was.
+ * Regrouped by POSITION on 2026-09-07 (ADR 0041). It was two lists — "the reader's apparatus"
+ * and "what the page puts in front of them" — a distinction that reads well written down and
+ * answers no question anybody arrives with. What somebody actually holds is "the date is in
+ * the wrong place" or "I want the table of contents gone", and both of those are answered by
+ * knowing where on the page the thing appears. The keys are untouched in `FeatureSettings`;
+ * only which group renders them moved.
  */
-export function PostFeatureFields({ features, onChange, relatedCount, onRelatedCount }: Props) {
+export function PostHeadFields({ features, onChange }: Omit<Props, 'relatedCount' | 'onRelatedCount'>) {
   const t = useAdminT()
   const items: Item[] = [
-    { key: 'search', label: t.featSearch, desc: t.featSearchDesc },
-    { key: 'toc', label: t.featToc, desc: t.featTocDesc },
-    { key: 'related', label: t.featRelated, desc: t.featRelatedDesc },
-    { key: 'readNext', label: t.featReadNext, desc: t.featReadNextDesc },
+    { key: 'deck', label: t.featDeck, desc: t.featDeckDesc },
+    { key: 'categoryLabel', label: t.featCategoryLabel, desc: t.featCategoryLabelDesc },
     { key: 'readingTime', label: t.featReadingTime, desc: t.featReadingTimeDesc },
+  ]
+  return <List items={items} features={features} onChange={onChange} />
+}
+
+/** THE BODY: what happens between the first sentence and the last. */
+export function PostBodyFields({ features, onChange }: Omit<Props, 'relatedCount' | 'onRelatedCount'>) {
+  const t = useAdminT()
+  const items: Item[] = [
+    { key: 'toc', label: t.featToc, desc: t.featTocDesc },
     { key: 'progressBar', label: t.featProgress, desc: t.featProgressDesc },
     { key: 'resume', label: t.featResume, desc: t.featResumeDesc },
-    // Beside "remember where they left off" because it answers the same reader: the one
-    // reading a long piece over several sittings, on a phone, on the way somewhere.
-    { key: 'offline', label: t.featOffline, desc: t.featOfflineDesc },
+    { key: 'penUnderline', label: t.featPenUnderline, desc: t.featPenUnderlineDesc },
+    { key: 'penRing', label: t.featPenRing, desc: t.featPenRingDesc },
+    { key: 'bookText', label: t.featBookText, desc: t.featBookTextDesc },
+    { key: 'bookMode', label: t.featBookMode, desc: t.featBookModeDesc },
+  ]
+  return <List items={items} features={features} onChange={onChange} />
+}
+
+/** THE FOOT: what a reader is offered once the words have run out. */
+export function PostEndFields({ features, onChange, relatedCount, onRelatedCount }: Props) {
+  const t = useAdminT()
+  const items: Item[] = [
+    { key: 'related', label: t.featRelated, desc: t.featRelatedDesc },
+    { key: 'readNext', label: t.featReadNext, desc: t.featReadNextDesc },
   ]
   return (
     <div className={SETTING_GAP}>
@@ -89,16 +103,16 @@ export function PostFeatureFields({ features, onChange, relatedCount, onRelatedC
   )
 }
 
-/** What the PAGE itself shows: its own furniture, the pen's marks, and the book. */
-export function PageFeatureFields({ features, onChange }: Omit<Props, 'relatedCount' | 'onRelatedCount'>) {
+/**
+ * NEITHER HEAD NOR BODY NOR FOOT: how a post is FOUND, and whether it survives losing the
+ * network. Both are about a post and neither appears anywhere on one, which is why they are
+ * their own group rather than filed under a position they do not have.
+ */
+export function PostReachFields({ features, onChange }: Omit<Props, 'relatedCount' | 'onRelatedCount'>) {
   const t = useAdminT()
   const items: Item[] = [
-    { key: 'deck', label: t.featDeck, desc: t.featDeckDesc },
-    { key: 'categoryLabel', label: t.featCategoryLabel, desc: t.featCategoryLabelDesc },
-    { key: 'penUnderline', label: t.featPenUnderline, desc: t.featPenUnderlineDesc },
-    { key: 'penRing', label: t.featPenRing, desc: t.featPenRingDesc },
-    { key: 'bookText', label: t.featBookText, desc: t.featBookTextDesc },
-    { key: 'bookMode', label: t.featBookMode, desc: t.featBookModeDesc },
+    { key: 'search', label: t.featSearch, desc: t.featSearchDesc },
+    { key: 'offline', label: t.featOffline, desc: t.featOfflineDesc },
   ]
   return <List items={items} features={features} onChange={onChange} />
 }

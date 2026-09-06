@@ -42,7 +42,9 @@ describe('searchSettings', () => {
   })
 
   it('says which tab, which is the whole point', () => {
-    expect(searchSettings('smtp', en).every((h) => h.tab === 'connections')).toBe(true)
+    // SMTP followed the question rather than the code: ADR 0041 files "how does mail leave
+    // this machine" beside "how do readers answer back", not under a tab named Connections.
+    expect(searchSettings('smtp', en).every((h) => h.tab === 'people')).toBe(true)
   })
 
   it('ignores a query of one character, which would match half the index', () => {
@@ -65,7 +67,7 @@ describe('searchSettings', () => {
 
 describe('the index itself', () => {
   it('names a tab that exists for every entry', () => {
-    const tabs = new Set(['site', 'layout', 'reading', 'appearance', 'seo', 'connections', 'ai', 'system'])
+    const tabs = new Set(['blog', 'home', 'post', 'appearance', 'people', 'server', 'account'])
     expect(SETTINGS_INDEX.filter((e) => !tabs.has(e.tab))).toEqual([])
   })
 

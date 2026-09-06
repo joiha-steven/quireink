@@ -1,9 +1,14 @@
-// Settings → Appearance: the palette, the pen, the type and the writing surface.
+// Settings → Appearance: how the site LOOKS. The shape of things, the palette, the type.
 //
-// Split from `SettingsView.tsx` on 2026-08-24, when the pen's colour card put that file
-// eight lines over its 400-line ceiling — the same cut, for the same reason, as
-// `SettingsAiTab`. The state stays in `SettingsView`: this takes the fields it needs and
-// hands back changes, so there is still ONE form and ONE save button.
+// ⚠️ THREE CARDS LEFT ON 2026-09-07 (ADR 0041), and the measurement is why. This tab carried
+// 137 controls over 2,825px while five other tabs sat within 31px of 1,236 — 36% of every
+// control on the settings screen behind one word. Tables and the pen went to Posts, because
+// both draw INSIDE a post's body and neither is a palette decision; text rendering, motion,
+// the key sounds and the autosave interval went to Account, because they describe the TOOL
+// and this tab is about what a reader sees.
+//
+// The state stays in `SettingsView`: this takes the fields it needs and hands back changes.
+// This is one of the four tabs that still save through the sheet's one Save button.
 import type { SiteSettings } from '@/types'
 import type { ThemePreset } from '@/content/themes'
 import type { RefObject } from 'react'
@@ -13,13 +18,9 @@ import { CssEditor } from './CssEditor'
 import { useAdminT } from './I18nProvider'
 import { ThemeFields } from './ThemeFields'
 import { ShapeFields } from './ShapeFields'
-import { TableFields } from './TableFields'
-import { InkFields } from './InkFields'
 import { FontFields } from './FontFields'
 import { FontUpload } from './FontUpload'
 import { TypographyFields } from './TypographyFields'
-import { AdvancedFields } from './AdvancedFields'
-import { DEFAULT_INKS } from '@/render/ink-palette'
 
 export function SettingsAppearanceTab(
   { s, update, presets, typographyReset, grid, col }: {
@@ -45,11 +46,6 @@ export function SettingsAppearanceTab(
         <SettingsCard title={t.cardShape}>
           <ShapeFields shape={s.shape} onChange={(shape) => update({ shape })} />
         </SettingsCard>
-        {/* Under Shape, because it is the same question — what the site LOOKS like rather
-            than what colour it is — asked about the one block that had never been asked. */}
-        <SettingsCard title={t.cardTable}>
-          <TableFields table={s.table} onChange={(table) => update({ table })} />
-        </SettingsCard>
         <SettingsCard title={t.navAppearance}>
           <p className={`${NOTE_TEXT} mb-4 rounded-lg bg-neutral-50 px-3 py-2 dark:bg-neutral-800/60`}>
             {t.themeAdminNote}
@@ -64,21 +60,6 @@ export function SettingsAppearanceTab(
             onSetDefault={(themePreset) => update({ themePreset })}
             onChangeEnabled={(enabledPalettes) => update({ enabledPalettes })}
             onChangeScheme={(defaultScheme) => update({ defaultScheme })}
-          />
-        </SettingsCard>
-        <SettingsCard title={t.cardInk}
-          actions={<ResetButton onClick={() => update({ inks: { ...DEFAULT_INKS } })} label={t.resetDefault} />}>
-          <InkFields
-            inks={s.inks}
-            bodyText={s.themes[s.themePreset]?.light.text ?? '#262626'}
-            selectionDefaults={{
-              // What the sheet's own rule paints when neither field is set: the heading
-              // colour on paper, the mid grey on a dark page. Shown so the swatch tells
-              // the truth about what the reader currently sees.
-              light: s.themes[s.themePreset]?.light.heading ?? '#121212',
-              dark: s.themes[s.themePreset]?.dark.meta ?? '#888888',
-            }}
-            onChange={(inks) => update({ inks })}
           />
         </SettingsCard>
         <SettingsCard title={t.customCss}>
@@ -106,18 +87,6 @@ export function SettingsAppearanceTab(
           <TypographyFields
             typography={s.typography} fontPreset={s.fontPreset} resetRef={typographyReset}
             onChange={(typography) => update({ typography })}
-          />
-        </SettingsCard>
-        <SettingsCard title={t.cardRendering}>
-          <AdvancedFields
-            typography={s.typography}
-            onTypography={(typography) => update({ typography })}
-            ideChrome={s.ideChrome}
-            onIdeChrome={(ideChrome) => update({ ideChrome })}
-            motion={s.motion}
-            onMotion={(motion) => update({ motion })}
-            autosaveSeconds={s.autosaveSeconds}
-            onAutosaveSeconds={(autosaveSeconds) => update({ autosaveSeconds })}
           />
         </SettingsCard>
       </div>

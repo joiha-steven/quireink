@@ -625,6 +625,14 @@ export type AdminStrings = {
   cssNamesNote: string
   cssStructure: string
   saveSettings: string
+  /** A card that owns its own keys: its button, and the five things its lamp can mean. */
+  save: string
+  saveAndTest: string
+  connectionOk: string
+  connectionUntested: string
+  connectionUnsaved: string
+  connectionFailed: string
+  connectionOff: string
   savedSettings: string
   /** The Save key once the form has changes on it: the count is the reason to press it. */
   saveSettingsCount: string
@@ -659,20 +667,21 @@ export type AdminStrings = {
   colorRule: string
   resetDefault: string
   // settings tabs (task-based)
-  tabSite: string
-  tabSiteHint: string
-  tabLayout: string
-  tabLayoutHint: string
-  tabReading: string
-  tabReadingHint: string
+  /** The SEVEN settings tabs and the question each prints under itself (ADR 0041). */
+  tabBlog: string
+  tabBlogHint: string
+  tabHome: string
+  tabHomeHint: string
+  tabPost: string
+  tabPostHint: string
+  tabPeople: string
+  tabPeopleHint: string
+  tabServer: string
+  tabServerHint: string
+  tabAccount: string
+  tabAccountHint: string
   tabAppearance: string
   tabAppearanceHint: string
-  tabSeo: string
-  tabSeoHint: string
-  tabConnections: string
-  tabConnectionsHint: string
-  tabSystem: string
-  tabSystemHint: string
   themeAdminNote: string
   // typography (per-role type system)
   cardTypography: string
@@ -772,6 +781,19 @@ export type AdminStrings = {
   recentViewAll: string
   // overview: SEO health + traffic sources widgets
   cardGeneral: string
+  /** Card and group titles introduced by the ADR 0041 regrouping. */
+  cardAddress: string
+  cardPost: string
+  cardPictures: string
+  cardServerSettings: string
+  cardInstall: string
+  cardThisAdmin: string
+  groupPostHead: string
+  groupPostBody: string
+  groupPostEnd: string
+  groupPostReach: string
+  groupSidebar: string
+  linkCommentSignIn: string
   cardLayout: string
   cardFeatures: string
   cardBranding: string
@@ -1061,8 +1083,6 @@ export type AdminStrings = {
   aiHelp: string
   aiKeyPh: string
   aiProviderOff: string
-  tabAi: string
-  tabAiHint: string
   aiTasksLabel: string
   aiAutoJobs: string
   aiTaskAltText: string

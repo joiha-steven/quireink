@@ -13,8 +13,8 @@ not cover.
 
 | Setting | Where | What moves |
 |---|---|---|
-| Homepage mode | Layout → Front page | A list of posts, a single page you wrote, or a composed front page. This is the single largest visual difference between two Quire Ink blogs ([homepage.md](homepage.md)) |
-| Logo | Site → Logo and icons | An image mark instead of the site name. In practice this is the first thing a reader tells two blogs apart by; it is resized for you and never served at its original weight |
+| Homepage mode | Home & menu → Front page | A list of posts, a single page you wrote, or a composed front page. This is the single largest visual difference between two Quire Ink blogs ([homepage.md](homepage.md)) |
+| Logo | Blog → Logo and icons | An image mark instead of the site name. In practice this is the first thing a reader tells two blogs apart by; it is resized for you and never served at its original weight |
 | Palette | Appearance → Appearance | Six built-in palettes, and every one of the seven colours in each is editable in both light and dark |
 | Reading font | Appearance → Font | Four built-in faces, or upload your own (`.woff2`, up to four weights). Fonts are served from your own server — nothing is fetched from Google |
 | Chrome font | Appearance → Font | The face used by the header, the rail and the small print, separately from the one your words are set in |
@@ -22,22 +22,23 @@ not cover.
 | **Density** | Appearance → Shape | How much air between everything. `normal` is the design as drawn |
 | **Corner radius** | Appearance → Shape | Square, soft, or round. Avatars and pills keep their own shape |
 | **Headline weight** | Appearance → Shape | Light, normal or bold. Moves the post title and the card title together |
-| **Tables** | Appearance → Tables | Seven knobs for how a table is drawn: header row, which lines, line weight, banded rows, first column, cell padding, and what happens on a phone. **The header row is tinted by default** — see below |
-| **Post images** | Layout → Post pictures | Whether a post's own picture appears above the headline, and whether it appears on list rows (small square, or large 3:2). **Both off by default** — see below |
-| Figure frame | Layout → Pictures | The frame every in-body picture wears unless it says otherwise |
-| Content width | Layout → Layout & menu | How wide the reading column runs |
-| Sidebar | Layout → Layout & menu | One rail or two, and whether there is a rail at all. Switching it off leaves the rail carrying the owner's MENU alone: that switch owns the discovery blocks, never the site's navigation |
-| Archive in the sidebar | Reading → Post list | The years, as a block in the rail. Separate from the `/archive` PAGE switch — the block can leave while the page stays reachable |
-| Series in the sidebar | Reading → Post list | The series list, each linking to its own page |
-| Tags in the sidebar | Reading → Post list | The tag cloud. The one block in the rail with no ceiling on its length, which is why it sits last |
-| Categories in the sidebar | Reading → Post list | The categories, each with how many posts it holds |
-| **Read without a signal** | Reading → Reading features | A post your reader has already opened still opens with no network. **Off by default.** Nothing is downloaded ahead of time and your admin is never stored. Turning it off again removes it from readers who already have it |
-| **Archive** | Reading → Reading features | `/archive`: every post you have published, grouped by year, and the list of years in the rail. **On by default.** If you already publish a page or a post at `/archive`, yours keeps the URL and this stays off until you move it |
-| **Author** | Site → Author | Name, bio, portrait and a link. Empty by default; filling in a name adds a byline and puts you in the structured data search engines read |
-| Motion | Appearance → Text rendering | Every transition, entrance and smooth scroll, on the site, the sign-in page and the admin alike. A reader's own reduced-motion preference wins either way ([conventions/motion.md](conventions/motion.md)) |
-| IDE chrome | Appearance → Text rendering | Dresses the furniture around your words as source code. Off by default; it is a strong taste and it is one click either way |
-| Footer | Layout → Footer | Your own line, with `{year}` and `{title}` tokens |
-| Feature switches | Reading → Reading features | Table of contents, progress bar, book mode, related posts, reading time, the scroll fade, and a dozen more |
+| **Tables** | Posts → Tables | Seven knobs for how a table is drawn: header row, which lines, line weight, banded rows, first column, cell padding, and what happens on a phone. **The header row is tinted by default** — see below |
+| **Post hero** | Posts → Pictures | Whether a post's own picture appears above the headline. **Off by default** — see below |
+| **List thumbnail** | Home & menu → Post list | Whether that picture appears on list rows, as a small square or a large 3:2. **Off by default** — see below |
+| Figure frame | Posts → Pictures | The frame every in-body picture wears unless it says otherwise |
+| Content width | Home & menu → Layout & menu | How wide the reading column runs |
+| Sidebar | Home & menu → Layout & menu | One rail or two, and whether there is a rail at all. Switching it off leaves the rail carrying the owner's MENU alone: that switch owns the discovery blocks, never the site's navigation |
+| Archive in the sidebar | Home & menu → Post list | The years, as a block in the rail. Separate from the `/archive` PAGE switch — the block can leave while the page stays reachable |
+| Series in the sidebar | Home & menu → Post list | The series list, each linking to its own page |
+| Tags in the sidebar | Home & menu → Post list | The tag cloud. The one block in the rail with no ceiling on its length, which is why it sits last |
+| Categories in the sidebar | Home & menu → Post list | The categories, each with how many posts it holds |
+| **Read without a signal** | Posts → What is on a post | A post your reader has already opened still opens with no network. **Off by default.** Nothing is downloaded ahead of time and your admin is never stored. Turning it off again removes it from readers who already have it |
+| **Archive** | Home & menu → Post list | `/archive`: every post you have published, grouped by year, and the list of years in the rail. **On by default.** If you already publish a page or a post at `/archive`, yours keeps the URL and this stays off until you move it |
+| **Author** | Blog → Author | Name, bio, portrait and a link. Empty by default; filling in a name adds a byline and puts you in the structured data search engines read |
+| Motion | Account → This admin | Every transition, entrance and smooth scroll, on the site, the sign-in page and the admin alike. A reader's own reduced-motion preference wins either way ([conventions/motion.md](conventions/motion.md)) |
+| IDE chrome | Account → This admin | Dresses the furniture around your words as source code. Off by default; it is a strong taste and it is one click either way |
+| Footer | Home & menu → Footer | Your own line, with `{year}` and `{title}` tokens |
+| Feature switches | Posts → What is on a post | Table of contents, progress bar, book mode, related posts, reading time, the scroll fade, and a dozen more |
 
 **Two of those read differently on a phone, and neither is a setting.** The reading-progress
 bar is desktop-only: the scrollbar already answers how far in you are, and a scroll-driven
@@ -210,7 +211,7 @@ because it usually means a knob is missing.
 
 ## When it is not CSS you need: your own code
 
-**Connections → Custom code** holds your own HTML. One box goes in the page `<head>`, where
+**Server & connections → Site settings** holds your own HTML. One box goes in the page `<head>`, where
 most snippets ask to be; the other goes just before `</body>`, where Cloudflare's beacon and
 a few others ask to be. Both ship on every public page, in the order you typed them, and
 neither is checked or rewritten — a box whose purpose is to carry a script cannot strip

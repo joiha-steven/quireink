@@ -6,8 +6,8 @@
 // rather than on the day the machine is gone.
 import { useRouter } from '@/admin/router'
 import type { ApiResponse } from '@/types'
-import { Button } from '@/admin/ui/Button'
 import { useAdminT } from './I18nProvider'
+import { ConnectionCard, type SaveResult } from './ConnectionCard'
 import { CONTROL, NOTE_TEXT } from './kit'
 import { useSecretKeys } from './useSecretKeys'
 
@@ -19,26 +19,42 @@ type Keys = {
 }
 const EMPTY: Keys = { s3Endpoint: '', s3Region: '', s3Bucket: '', s3Prefix: '', s3AccessKeyId: '', s3SecretAccessKey: '' }
 
-export function OffsiteFields({ configured, bucket }: { configured: boolean; bucket: string }) {
+export function OffsiteCard({ configured, bucket }: { configured: boolean; bucket: string }) {
   const t = useAdminT()
   const router = useRouter()
-  const { keys, busy, set, ph, save, withBusy, notify } = useSecretKeys(
-    '/api/integrations/s3', EMPTY, () => router.refresh(),
-  )
+  const secrets = useSecretKeys('/api/integrations/s3', EMPTY, () => router.refresh())
+  const { keys, touched, set, ph } = secrets
 
-  const test = () =>
-    withBusy(async () => {
-      try {
-        const res = await fetch('/api/backup/offsite-test', { method: 'POST' })
-        const json = (await res.json()) as ApiResponse
-        // The transport's own words on failure: a wrong endpoint deserves a name, not "failed".
-        notify(json.success ? t.offsiteTestOk : json.error || t.deleteFailed, json.success ? undefined : 'error')
-      } catch {
-        notify(t.deleteFailed, 'error')
-      }
-    })
+  /**
+   * SAVE, THEN REACH THE BUCKET — one press, in that order.
+   *
+   * They were two buttons and the second was disabled until the first had run, which is an
+   * arrangement that teaches nothing: what an owner wants to know is whether the keys they
+   * just typed work, and that question needs both halves. The test PUTs and deletes one
+   * marker object, so a wrong paste is found while they are still here rather than on the
+   * day the machine is gone.
+   */
+  async function saveAndTest(): Promise<SaveResult> {
+    const stored = await secrets.saveResult()
+    if (!stored.ok) return stored
+    try {
+      const res = await fetch('/api/backup/offsite-test', { method: 'POST' })
+      const json = (await res.json()) as ApiResponse
+      // The transport's own words on failure: a wrong endpoint deserves a name, not "failed".
+      return json.success ? { ok: true, tested: true } : { ok: false, error: json.error }
+    } catch (e) {
+      return { ok: false, error: e instanceof Error ? e.message : undefined }
+    }
+  }
 
   return (
+    <ConnectionCard
+      title={t.offsiteTitle}
+      connected={configured}
+      dirty={touched}
+      canTest
+      onSave={saveAndTest}
+    >
     <div className="space-y-3">
       <p className={NOTE_TEXT}>{t.offsiteHelp}</p>
       <input className={INPUT} placeholder={t.s3Endpoint}
@@ -55,12 +71,7 @@ export function OffsiteFields({ configured, bucket }: { configured: boolean; buc
         value={keys.s3AccessKeyId} onChange={(e) => set('s3AccessKeyId', e.target.value)} />
       <input className={INPUT} type="password" placeholder={ph(configured, t.s3Secret)}
         value={keys.s3SecretAccessKey} onChange={(e) => set('s3SecretAccessKey', e.target.value)} />
-      <div className="flex items-center gap-3">
-        <Button type="button" onClick={save} disabled={busy}>{t.commentsKeySave}</Button>
-        <Button type="button" variant="secondary" onClick={test} disabled={busy || !configured}>
-          {t.offsiteTest}
-        </Button>
-      </div>
     </div>
+    </ConnectionCard>
   )
 }

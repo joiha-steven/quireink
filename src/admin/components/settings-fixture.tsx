@@ -167,7 +167,7 @@ export function buttonInCard(container: HTMLElement, cardTitle: string, label: s
 }
 
 /** Mount, open a tab, and hand back the harness plus the dictionary. */
-export async function onTab(tab: 'tabSite' | 'tabLayout' | 'tabAppearance') {
+export async function onTab(tab: 'tabBlog' | 'tabHome' | 'tabPost' | 'tabAppearance') {
   const { mountAdmin, installFetchMock } = await import('@/admin/test-mount')
   const { SettingsView } = await import('@/admin/components/SettingsView')
   const { adminT } = await import('@/i18n/admin-i18n')

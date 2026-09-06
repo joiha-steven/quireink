@@ -29,7 +29,7 @@ const HREFS = [
   '/admin/settings',
   '/admin/editor',
   '/admin/settings?tab=appearance',
-  '/admin/settings?tab=connections',
+  '/admin/settings?tab=people',
   '/admin/newsletter',
 ] as const
 

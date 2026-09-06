@@ -20,12 +20,21 @@ import { NOTE_TEXT, SETTING_GAP } from './kit'
 import { Choice } from './Choice'
 import { useAdminT } from './I18nProvider'
 
-export function PostImageFields({ postImage, onChange }: {
+type Props = {
   postImage: PostImageSettings
   onChange: (p: PostImageSettings) => void
-}) {
-  const t = useAdminT()
+}
 
+/**
+ * THE HERO — the picture at the top of the post itself.
+ *
+ * Split from the thumbnail on 2026-09-07 (ADR 0041). The two were one card because they are
+ * one stored shape, and that is a fact about storage rather than about the question being
+ * asked: the hero is part of what a POST looks like and the thumbnail is part of what a LIST
+ * looks like, so under a grouping by where-a-thing-sits they belong on different groups.
+ */
+export function PostHeroField({ postImage, onChange }: Props) {
+  const t = useAdminT()
   return (
     <div className={SETTING_GAP}>
       <p className={NOTE_TEXT}>{t.postImageHint}</p>
@@ -45,7 +54,15 @@ export function PostImageFields({ postImage, onChange }: {
         ]}
         onChange={(hero) => onChange({ ...postImage, hero })}
       />
+    </div>
+  )
+}
 
+/** THE THUMBNAIL — the picture beside a post's row in a list. */
+export function PostThumbField({ postImage, onChange }: Props) {
+  const t = useAdminT()
+  return (
+    <div className={SETTING_GAP}>
       <Choice
         label={t.postImageThumb}
         note={t.postImageThumbHint}

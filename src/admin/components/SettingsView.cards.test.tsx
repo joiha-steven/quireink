@@ -20,21 +20,34 @@ beforeAll(() => GlobalRegistrator.register())
 afterAll(() => GlobalRegistrator.unregister())
 afterEach(releaseMocks)
 
-describe('post pictures (Layout)', () => {
-  it('arrives with both choosers off, which is what an upgrade must look like', async () => {
-    const { m, t } = await onTab('tabLayout')
-    expect(m.text()).toContain(t.cardPostImage)
+// ⚠️ THE HERO AND THE THUMBNAIL ARE ON TWO TABS since ADR 0041, and the split is the point:
+// the hero is part of what a POST looks like and the thumbnail is part of what a LIST looks
+// like. They were one card because they share one stored shape, which is a fact about storage
+// rather than about the question being asked.
+describe('post pictures', () => {
+  it('the hero arrives off, which is what an upgrade must look like', async () => {
+    const { m, t } = await onTab('tabPost')
+    expect(m.text()).toContain(t.cardPictures)
     // `aria-pressed` is the picker's own record of the selection, so this reads the control
     // rather than the state behind it: two `Not shown` buttons, both pressed.
     const off = [...m.container.querySelectorAll('button')]
       .filter((b) => b.textContent?.trim() === t.piOff)
-    expect(off.length).toBe(2)
+    expect(off.length).toBe(1)
     expect(off.every((b) => b.getAttribute('aria-pressed') === 'true')).toBe(true)
     await m.unmount()
   })
 
+  it('the thumbnail arrives off too, on the tab that owns the list', async () => {
+    const { m, t } = await onTab('tabHome')
+    const off = [...m.container.querySelectorAll('button')]
+      .filter((b) => b.textContent?.trim() === t.piOff)
+    expect(off.length).toBe(1)
+    expect(off[0]?.getAttribute('aria-pressed')).toBe('true')
+    await m.unmount()
+  })
+
   it('offers the hero TWO widths and no third — `wide` printed over the contents list', async () => {
-    const { m, t } = await onTab('tabLayout')
+    const { m, t } = await onTab('tabPost')
     expect(m.button(t.piHeroInline)).toBeTruthy()
     // The row is the hero's chooser: its options are the two, and nothing else.
     const track = m.button(t.piHeroInline).parentElement
@@ -44,7 +57,7 @@ describe('post pictures (Layout)', () => {
   })
 
   it('turning the hero on sends hero: inline', async () => {
-    const { m, t, fetchMock } = await onTab('tabLayout')
+    const { m, t, fetchMock } = await onTab('tabPost')
     await m.click(m.button(t.piHeroInline))
     const body = await saved(m, t, fetchMock)
     expect(body.postImage.hero).toBe('inline')
@@ -53,7 +66,7 @@ describe('post pictures (Layout)', () => {
   })
 
   it('a thumbnail can sit beside the text or above the title', async () => {
-    const { m, t, fetchMock } = await onTab('tabLayout')
+    const { m, t, fetchMock } = await onTab('tabHome')
     await m.click(m.button(t.piThumbTop))
     expect(await saved(m, t, fetchMock)).toHaveProperty('postImage.thumb', 'top')
     await m.click(m.button(t.piThumbSide))
@@ -63,13 +76,15 @@ describe('post pictures (Layout)', () => {
   })
 })
 
-describe('tables (Appearance)', () => {
+// Tables moved to Posts with the pen on 2026-09-07 (ADR 0041): both draw INSIDE a post's
+// body, and neither is a palette decision.
+describe('tables (Posts)', () => {
   // The mirror image of the shape block below. `head: 'tint'` is the ONE default in this
   // product that deliberately does not reproduce what a blog looked like before the setting
   // existed, so the assertion is that the card opens ON the change rather than on the absence
   // of one — and that every other knob still opens on today.
   it('opens tinted, and on today for everything else', async () => {
-    const { m, t } = await onTab('tabAppearance')
+    const { m, t } = await onTab('tabPost')
     expect(m.text()).toContain(t.cardTable)
     for (const label of [
       t.tableHeadTint, t.tableGridAll, t.tableHairline, t.tableColNormal, t.tableNarrowFit,
@@ -80,7 +95,7 @@ describe('tables (Appearance)', () => {
   })
 
   it('sends the seven values it was left on', async () => {
-    const { m, t, fetchMock } = await onTab('tabAppearance')
+    const { m, t, fetchMock } = await onTab('tabPost')
     // `buttonInCard`, not `m.button`: the padding words are the SHAPE card's on purpose, so
     // a bare lookup would find that card's copy of them first and this test would pass while
     // clicking the wrong control.
@@ -118,9 +133,9 @@ describe('shape (Appearance)', () => {
   })
 })
 
-describe('author (Site)', () => {
+describe('author (Blog)', () => {
   it('starts empty — an existing blog has no byline and gains none', async () => {
-    const { m, t } = await onTab('tabSite')
+    const { m, t } = await onTab('tabBlog')
     expect(m.text()).toContain(t.cardAuthor)
     expect((fieldByLabel(m.container, t.authorName) as HTMLInputElement).value).toBe('')
     // No portrait, so the note stands in for the preview and no Remove is offered.
@@ -130,7 +145,7 @@ describe('author (Site)', () => {
   })
 
   it('sends the name, the bio and the link', async () => {
-    const { m, t, fetchMock } = await onTab('tabSite')
+    const { m, t, fetchMock } = await onTab('tabBlog')
     await m.type(fieldByLabel(m.container, t.authorName), 'Trần Mạnh Hùng')
     await m.type(fieldByLabel(m.container, t.authorBio), 'Writes about keyboards.')
     await m.type(fieldByLabel(m.container, t.authorLink), 'https://example.com/about')
@@ -147,7 +162,7 @@ describe('author (Site)', () => {
   })
 
   it('the portrait opens the media library, the same picker the logo uses', async () => {
-    const { m, t } = await onTab('tabSite')
+    const { m, t } = await onTab('tabBlog')
     // Scoped to the Author CARD, not `m.button`, which returns the first match in the DOM.
     // The Site tab prints THREE `Choose image` buttons — favicon, app icon, portrait — and
     // this asserted the portrait's only for as long as Author happened to be rendered before

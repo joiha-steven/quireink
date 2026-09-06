@@ -6,10 +6,9 @@ import { useEffect, useState } from 'react'
 import Link from '@/admin/router'
 import type { ApiResponse } from '@/types'
 import { Input } from '@/admin/ui/Input'
-import { Button } from '@/admin/ui/Button'
 import { CheckField } from '@/admin/ui/Switch'
-import { useToast } from '@/admin/ui/Toast'
 import { useAdminT } from './I18nProvider'
+import { ConnectionCard, type SaveResult } from './ConnectionCard'
 import { NOTE_TEXT } from './kit'
 
 type MailStatus = { host: string; port: number; user: string; from: string; secure: boolean; hasPass: boolean; configured: boolean }
@@ -19,40 +18,64 @@ type MailStatus = { host: string; port: number; user: string; from: string; secu
 // number", so the port drives the checkbox instead of leaving them to drift apart.
 const secureForPort = (port: number) => port === 465
 
-export function NewsletterFields() {
+/**
+ * SMTP, as a card that saves and then actually sends (ADR 0041).
+ *
+ * Storing a host proves nothing about whether mail leaves the machine, and "why did my
+ * newsletter not send" was the question this card could not answer: it had a Save button, a
+ * success toast, and no way to find out that port 587 was blocked or the password was stale.
+ * `POST /api/mail/test` sends one real message to the owner's own address, so the answer
+ * arrives in their inbox and the provider's refusal arrives under the card.
+ */
+export function NewsletterCard() {
   const t = useAdminT()
-  const { notify } = useToast()
   const [cfg, setCfg] = useState<MailStatus | null>(null)
   const [pass, setPass] = useState('')
-  const [busy, setBusy] = useState(false)
+  const [dirty, setDirty] = useState(false)
 
   useEffect(() => {
     fetch('/api/mail')
       .then((r) => r.json() as Promise<ApiResponse<MailStatus>>)
-      .then((j) => j.success && j.data && setCfg(j.data))
+      // NARROWED, not merely truthy. `j.data` is whatever came off the wire, and the card
+      // reads `cfg.host.trim()` in five places — so anything that is not the shape this card
+      // knows has to leave it in its loading state rather than throw the whole tab away
+      // three renders later, where the stack names React and not this line.
+      .then((j) => { if (j.success && typeof j.data?.host === 'string') setCfg(j.data) })
       .catch(() => {})
   }, [])
 
   function field<K extends keyof MailStatus>(k: K, v: MailStatus[K]) {
+    setDirty(true)
     setCfg((c) => (c ? { ...c, [k]: v } : c))
   }
 
   function setPort(port: number) {
+    setDirty(true)
     setCfg((c) => (c ? { ...c, port, secure: secureForPort(port) } : c))
   }
 
-  async function save() {
-    if (!cfg) return
-    setBusy(true)
+  async function saveAndTest(): Promise<SaveResult> {
+    if (!cfg) return { ok: false }
     try {
       const body: Record<string, unknown> = { host: cfg.host, port: cfg.port, user: cfg.user, from: cfg.from, secure: cfg.secure }
       if (pass) body.pass = pass
       const res = await fetch('/api/mail', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })
       const j = (await res.json()) as ApiResponse<unknown>
-      notify(j.success ? t.nlSmtpSaved : t.saveFailed, j.success ? 'success' : 'error')
-      if (j.success) setPass('')
-    } finally {
-      setBusy(false)
+      if (!j.success) return { ok: false, error: j.error }
+      setPass('')
+      setDirty(false)
+      // Nothing to try against an empty host — an install with no mail is not broken, it is
+      // a blog with no newsletter, and lighting the lamp red for it would be a lie.
+      if (!cfg.host.trim()) return { ok: true }
+      const sent = await fetch('/api/mail/test', {
+        method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ kind: 'smtp' }),
+      })
+      const st = (await sent.json()) as ApiResponse<unknown>
+      // The transport's own sentence: "535 authentication failed" is a password and
+      // "ENOTFOUND" is a hostname, and neither survives being renamed "Save failed".
+      return st.success ? { ok: true, tested: true } : { ok: false, error: st.success ? undefined : st.error }
+    } catch (e) {
+      return { ok: false, error: e instanceof Error ? e.message : undefined }
     }
   }
 
@@ -61,6 +84,14 @@ export function NewsletterFields() {
   const mismatch = cfg.secure !== secureForPort(cfg.port)
 
   return (
+    <ConnectionCard
+      title={t.cardNewsletter}
+      enabled={Boolean(cfg.host.trim())}
+      connected={cfg.configured}
+      dirty={dirty || pass.length > 0}
+      canTest={Boolean(cfg.host.trim())}
+      onSave={saveAndTest}
+    >
     <div className="space-y-5">
       <p className={NOTE_TEXT}>{t.nlSmtpHint}</p>
       <div className="grid gap-3 sm:grid-cols-2">
@@ -74,12 +105,10 @@ export function NewsletterFields() {
           switches on every other card. `CheckField` is the shared one. */}
       <CheckField label={t.nlSmtpSecure} checked={cfg.secure} onChange={(v) => field('secure', v)} />
       {mismatch && <p className={NOTE_TEXT}>{t.nlSmtpTlsMismatch}</p>}
-      <div className="flex flex-wrap items-center gap-3">
-        <Button onClick={save} disabled={busy}>{t.nlSaveSmtp}</Button>
-        <Link href="/admin/newsletter" className="text-sm font-medium text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white">
-          {t.nlManageLink} →
-        </Link>
-      </div>
+      <Link href="/admin/newsletter" className="text-sm font-medium text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white">
+        {t.nlManageLink} →
+      </Link>
     </div>
+    </ConnectionCard>
   )
 }

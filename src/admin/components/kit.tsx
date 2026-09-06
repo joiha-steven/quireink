@@ -297,7 +297,7 @@ export function Card({
             {actions}
           </div>
         )}
-        <div className={`p-4 ${bodyClassName}`}>{children}</div>
+        <div className={`card-body p-4 ${bodyClassName}`}>{children}</div>
       </section>
     )
   }

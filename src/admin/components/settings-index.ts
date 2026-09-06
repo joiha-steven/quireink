@@ -22,9 +22,16 @@
 
 import type { AdminStrings } from '@/locales/types'
 
-/** The EIGHT tabs, as `SettingsView` keys them — ADR 0011 named seven, `ai` joined 2026-08-23. */
+/**
+ * The SEVEN tabs, as `SettingsView` keys them (ADR 0041).
+ *
+ * ⚠️ Re-keyed wholesale on 2026-09-07 — every row's `tab` was reassigned. The index is what
+ * both the search and `?setting=` read, so a row with a stale tab is a search result that
+ * opens the wrong page: the index and the tab components have to move in one commit, and the
+ * tour flow that opens every tab and looks for every label is what proves they did.
+ */
 export type SettingsTab =
-  'site' | 'layout' | 'reading' | 'appearance' | 'seo' | 'connections' | 'ai' | 'system'
+  'blog' | 'home' | 'post' | 'appearance' | 'people' | 'server' | 'account'
 
 /**
  * Dictionary keys whose value is a STRING.
@@ -55,71 +62,71 @@ export type SettingEntry = {
  * the tour checks against.
  */
 export const SETTINGS_INDEX: SettingEntry[] = [
-  // Site — what this site is
-  { tab: 'site', label: 'siteTitle' },
-  { tab: 'site', label: 'siteDescription' },
-  { tab: 'site', label: 'siteLanguage' },
-  { tab: 'site', label: 'siteTimezone', note: 'siteTimezoneHint' },
-  { tab: 'site', label: 'showDescription' },
-  { tab: 'site', label: 'excerptLength' },
-  { tab: 'site', label: 'showLogo' },
-  { tab: 'site', label: 'chooseLogoDark' },
-  { tab: 'site', label: 'logoWidth' },
-  { tab: 'site', label: 'favicon' },
-  { tab: 'site', label: 'appIcon' },
+  // Blog — what this blog is
+  { tab: 'blog', label: 'siteTitle' },
+  { tab: 'blog', label: 'siteDescription' },
+  { tab: 'blog', label: 'siteLanguage' },
+  { tab: 'blog', label: 'siteTimezone', note: 'siteTimezoneHint' },
+  { tab: 'blog', label: 'showDescription' },
+  { tab: 'blog', label: 'excerptLength' },
+  { tab: 'blog', label: 'showLogo' },
+  { tab: 'blog', label: 'chooseLogoDark' },
+  { tab: 'blog', label: 'logoWidth' },
+  { tab: 'blog', label: 'favicon' },
+  { tab: 'blog', label: 'appIcon' },
   // Who wrote it. The NAME is the switch for the whole group, so its note is the one that
   // has to be findable — somebody looking for "byline" is looking for that sentence.
-  { tab: 'site', label: 'authorName', note: 'authorNameHint' },
-  { tab: 'site', label: 'authorBio', note: 'authorBioHint' },
-  { tab: 'site', label: 'authorAvatar', note: 'authorAvatarHint' },
-  { tab: 'site', label: 'authorLink', note: 'authorLinkHint' },
+  { tab: 'blog', label: 'authorName', note: 'authorNameHint' },
+  { tab: 'blog', label: 'authorBio', note: 'authorBioHint' },
+  { tab: 'blog', label: 'authorAvatar', note: 'authorAvatarHint' },
+  { tab: 'blog', label: 'authorLink', note: 'authorLinkHint' },
 
-  // Layout — where things sit
-  { tab: 'layout', label: 'siteWidth', note: 'siteWidthHint' },
-  { tab: 'layout', label: 'postsPerPage' },
-  { tab: 'layout', label: 'listPathLabel', note: 'listPathHint' },
-  { tab: 'layout', label: 'mostViewedCount' },
-  { tab: 'layout', label: 'galleryCaptions' },
-  { tab: 'layout', label: 'figureFrame', note: 'figureFrameHint' },
-  { tab: 'layout', label: 'figureFrameColour', note: 'figureFrameColourHint' },
-  { tab: 'layout', label: 'postImageHero', note: 'postImageHeroHint' },
-  { tab: 'layout', label: 'postImageThumb', note: 'postImageThumbHint' },
-  { tab: 'layout', label: 'frontCount' },
-  { tab: 'layout', label: 'frontLead' },
-  { tab: 'layout', label: 'frontSecondary' },
-  { tab: 'layout', label: 'frontFeaturedRow' },
-  { tab: 'layout', label: 'frontPopularRow' },
-  { tab: 'layout', label: 'frontLatestRow' },
-  { tab: 'layout', label: 'frontShowDate' },
-  { tab: 'layout', label: 'frontShowReading' },
-  { tab: 'layout', label: 'frontTagLinks' },
+  // Home & menu — what a reader sees when they open the front page
+  { tab: 'home', label: 'siteWidth', note: 'siteWidthHint' },
+  { tab: 'home', label: 'postsPerPage' },
+  { tab: 'home', label: 'listPathLabel', note: 'listPathHint' },
+  { tab: 'home', label: 'mostViewedCount' },
+  { tab: 'post', label: 'galleryCaptions' },
+  { tab: 'post', label: 'figureFrame', note: 'figureFrameHint' },
+  { tab: 'post', label: 'figureFrameColour', note: 'figureFrameColourHint' },
+  { tab: 'post', label: 'postImageHero', note: 'postImageHeroHint' },
+  { tab: 'home', label: 'postImageThumb', note: 'postImageThumbHint' },
+  { tab: 'home', label: 'frontCount' },
+  { tab: 'home', label: 'frontLead' },
+  { tab: 'home', label: 'frontSecondary' },
+  { tab: 'home', label: 'frontFeaturedRow' },
+  { tab: 'home', label: 'frontPopularRow' },
+  { tab: 'home', label: 'frontLatestRow' },
+  { tab: 'home', label: 'frontShowDate' },
+  { tab: 'home', label: 'frontShowReading' },
+  { tab: 'home', label: 'frontTagLinks' },
 
-  // Reading — what a reader gets on a post
-  { tab: 'reading', label: 'featSearch', note: 'featSearchDesc' },
-  { tab: 'reading', label: 'featToc', note: 'featTocDesc' },
-  { tab: 'reading', label: 'featRelated', note: 'featRelatedDesc' },
-  { tab: 'reading', label: 'featReadNext', note: 'featReadNextDesc' },
-  { tab: 'reading', label: 'featResume', note: 'featResumeDesc' },
-  { tab: 'reading', label: 'featOffline', note: 'featOfflineDesc' },
-  { tab: 'reading', label: 'featReadingTime', note: 'featReadingTimeDesc' },
-  { tab: 'reading', label: 'featProgress', note: 'featProgressDesc' },
-  { tab: 'reading', label: 'featDeck', note: 'featDeckDesc' },
-  { tab: 'reading', label: 'featCategoryLabel', note: 'featCategoryLabelDesc' },
-  { tab: 'reading', label: 'featBookText', note: 'featBookTextDesc' },
-  { tab: 'reading', label: 'featBookMode', note: 'featBookModeDesc' },
-  { tab: 'reading', label: 'featPenUnderline', note: 'featPenUnderlineDesc' },
-  { tab: 'reading', label: 'featPenRing', note: 'featPenRingDesc' },
-  { tab: 'reading', label: 'featSidebar', note: 'featSidebarDesc' },
-  { tab: 'reading', label: 'featSidebarCategories', note: 'featSidebarCategoriesDesc' },
-  { tab: 'reading', label: 'featSidebarSeries', note: 'featSidebarSeriesDesc' },
-  { tab: 'reading', label: 'featSidebarArchive', note: 'featSidebarArchiveDesc' },
-  { tab: 'reading', label: 'featSidebarTags', note: 'featSidebarTagsDesc' },
-  { tab: 'reading', label: 'featInfiniteScroll', note: 'featInfiniteScrollDesc' },
-  { tab: 'reading', label: 'featGridView', note: 'featGridViewDesc' },
-  { tab: 'reading', label: 'featArchive', note: 'featArchiveDesc' },
-  { tab: 'reading', label: 'featLeadPost', note: 'featLeadPostDesc' },
-  { tab: 'reading', label: 'relatedCount', note: 'relatedCountHint' },
-  { tab: 'reading', label: 'commentsEnable' },
+  // Posts — what surrounds the words on a post
+  { tab: 'post', label: 'featSearch', note: 'featSearchDesc' },
+  { tab: 'post', label: 'featToc', note: 'featTocDesc' },
+  { tab: 'post', label: 'featRelated', note: 'featRelatedDesc' },
+  { tab: 'post', label: 'featReadNext', note: 'featReadNextDesc' },
+  { tab: 'post', label: 'featResume', note: 'featResumeDesc' },
+  { tab: 'post', label: 'featOffline', note: 'featOfflineDesc' },
+  { tab: 'post', label: 'featReadingTime', note: 'featReadingTimeDesc' },
+  { tab: 'post', label: 'featProgress', note: 'featProgressDesc' },
+  { tab: 'post', label: 'featDeck', note: 'featDeckDesc' },
+  { tab: 'post', label: 'featCategoryLabel', note: 'featCategoryLabelDesc' },
+  { tab: 'post', label: 'featBookText', note: 'featBookTextDesc' },
+  { tab: 'post', label: 'featBookMode', note: 'featBookModeDesc' },
+  { tab: 'post', label: 'featPenUnderline', note: 'featPenUnderlineDesc' },
+  { tab: 'post', label: 'featPenRing', note: 'featPenRingDesc' },
+  { tab: 'home', label: 'featSidebar', note: 'featSidebarDesc' },
+  { tab: 'home', label: 'featSidebarCategories', note: 'featSidebarCategoriesDesc' },
+  { tab: 'home', label: 'featSidebarSeries', note: 'featSidebarSeriesDesc' },
+  { tab: 'home', label: 'featSidebarArchive', note: 'featSidebarArchiveDesc' },
+  { tab: 'home', label: 'featSidebarTags', note: 'featSidebarTagsDesc' },
+  { tab: 'home', label: 'featInfiniteScroll', note: 'featInfiniteScrollDesc' },
+  { tab: 'home', label: 'featGridView', note: 'featGridViewDesc' },
+  { tab: 'home', label: 'featArchive', note: 'featArchiveDesc' },
+  { tab: 'home', label: 'featLeadPost', note: 'featLeadPostDesc' },
+  { tab: 'post', label: 'relatedCount', note: 'relatedCountHint' },
+  { tab: 'people', label: 'commentsEnable' },
   // Not a reader feature at all — the admin's own record of what changed. It sits on this
   // tab because that is where the toggle is, and the search's job is where things ARE.
 
@@ -134,64 +141,64 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { tab: 'appearance', label: 'cardFont', note: 'fontPresetHint' },
   { tab: 'appearance', label: 'chromeFontLabel', note: 'chromeFontHint' },
   { tab: 'appearance', label: 'fontSmoothing' },
-  { tab: 'appearance', label: 'ideChromeLabel' },
-  { tab: 'appearance', label: 'motionLabel' },
-  { tab: 'appearance', label: 'keyFeedbackLabel', note: 'keyFeedbackDesc' },
-  { tab: 'appearance', label: 'keyVolumeLabel', note: 'keyVolumeDesc' },
-  { tab: 'appearance', label: 'keyHear' },
-  { tab: 'appearance', label: 'autosaveLabel', note: 'autosaveHint' },
+  { tab: 'account', label: 'ideChromeLabel' },
+  { tab: 'account', label: 'motionLabel' },
+  { tab: 'account', label: 'keyFeedbackLabel', note: 'keyFeedbackDesc' },
+  { tab: 'account', label: 'keyVolumeLabel', note: 'keyVolumeDesc' },
+  { tab: 'account', label: 'keyHear' },
+  { tab: 'account', label: 'autosaveLabel', note: 'autosaveHint' },
 
-  // Search & URLs — how machines see it
-  { tab: 'seo', label: 'seoCanonical' },
-  { tab: 'seo', label: 'seoAutoSchema' },
-  { tab: 'seo', label: 'seoOgImage' },
-  { tab: 'seo', label: 'redirectSource' },
-  { tab: 'seo', label: 'redirectDestination' },
+  // Server & connections — who this machine talks to
+  { tab: 'blog', label: 'seoCanonical' },
+  { tab: 'server', label: 'seoAutoSchema' },
+  { tab: 'server', label: 'seoOgImage' },
+  { tab: 'server', label: 'redirectSource' },
+  { tab: 'server', label: 'redirectDestination' },
 
-  // Connections — what else it talks to
-  { tab: 'connections', label: 'nlSmtpHost' },
-  { tab: 'connections', label: 'nlSmtpPort' },
-  { tab: 'connections', label: 'nlSmtpUser' },
-  { tab: 'connections', label: 'nlSmtpPass' },
-  { tab: 'connections', label: 'nlSmtpFrom' },
-  { tab: 'connections', label: 'nlSmtpSecure' },
-  { tab: 'connections', label: 'commentsTurnstile' },
-  { tab: 'connections', label: 'commentsGoogleAuth' },
-  { tab: 'connections', label: 'customHeadLabel', note: 'customCodeNote' },
-  { tab: 'connections', label: 'customBodyEndLabel', note: 'customBodyEndHint' },
-  { tab: 'appearance', label: 'cardInk', note: 'inkHelp' },
-  { tab: 'appearance', label: 'inkHighlighter' },
-  { tab: 'appearance', label: 'inkLines', note: 'inkLinesHint' },
-  { tab: 'appearance', label: 'inkSelection', note: 'inkSelectionHint' },
-  { tab: 'ai', label: 'mcpEnable' },
-  { tab: 'ai', label: 'mcpUrlLabel' },
-  { tab: 'ai', label: 'mcpTokensTitle' },
-  { tab: 'ai', label: 'cardAi' },
-  { tab: 'ai', label: 'aiProviderLabel' },
-  { tab: 'ai', label: 'aiKeyLabel' },
-  { tab: 'ai', label: 'aiModelLabel' },
+  // Comments & mail, and the rest of the server
+  { tab: 'people', label: 'nlSmtpHost' },
+  { tab: 'people', label: 'nlSmtpPort' },
+  { tab: 'people', label: 'nlSmtpUser' },
+  { tab: 'people', label: 'nlSmtpPass' },
+  { tab: 'people', label: 'nlSmtpFrom' },
+  { tab: 'people', label: 'nlSmtpSecure' },
+  { tab: 'people', label: 'commentsTurnstile' },
+  { tab: 'people', label: 'commentsGoogleAuth' },
+  { tab: 'server', label: 'customHeadLabel', note: 'customCodeNote' },
+  { tab: 'server', label: 'customBodyEndLabel', note: 'customBodyEndHint' },
+  { tab: 'post', label: 'cardInk', note: 'inkHelp' },
+  { tab: 'post', label: 'inkHighlighter' },
+  { tab: 'post', label: 'inkLines', note: 'inkLinesHint' },
+  { tab: 'post', label: 'inkSelection', note: 'inkSelectionHint' },
+  { tab: 'server', label: 'mcpEnable' },
+  { tab: 'server', label: 'mcpUrlLabel' },
+  { tab: 'server', label: 'mcpTokensTitle' },
+  { tab: 'server', label: 'cardAi' },
+  { tab: 'server', label: 'aiProviderLabel' },
+  { tab: 'server', label: 'aiKeyLabel' },
+  { tab: 'server', label: 'aiModelLabel' },
   // Alt text and excerpts stopped being switches on 2026-08-29 — they follow the key now —
   // and their rows came out of the index with them. An entry for a setting that is no longer
   // drawn is worse than a missing one: the search answers, opens the AI tab, and highlights
   // nothing, which reads as the tab having lost the setting rather than the index being old.
-  { tab: 'ai', label: 'aiTaskComments' },
+  { tab: 'server', label: 'aiTaskComments' },
 
-  // System — moving content in and out
-  { tab: 'system', label: 'cacheEnable' },
-  { tab: 'system', label: 'dashboardSystemLine', note: 'dashboardSystemLineDesc' },
-  { tab: 'system', label: 'updateCheckLabel', note: 'updateCheckDesc' },
+  // Server & connections — the state of the install
+  { tab: 'server', label: 'cacheEnable' },
+  { tab: 'account', label: 'dashboardSystemLine', note: 'dashboardSystemLineDesc' },
+  { tab: 'server', label: 'updateCheckLabel', note: 'updateCheckDesc' },
   // Moved off Reading, where an audit of the OWNER's actions had been filed as a reader
   // feature. The tour reads the labels each tab renders, so this row and the card move together.
-  { tab: 'system', label: 'featActivityLog', note: 'featActivityLogDesc' },
-  { tab: 'system', label: 'clearCache' },
-  { tab: 'system', label: 'backupAuto' },
-  { tab: 'system', label: 'offsiteTitle', note: 'offsiteHelp' },
-  { tab: 'system', label: 's3Bucket' },
-  { tab: 'system', label: 'offsiteTest' },
-  { tab: 'system', label: 'backupIntervalLabel' },
-  { tab: 'system', label: 'backupKeepLabel' },
-  { tab: 'system', label: 'maxUploadLabel', note: 'maxUploadHint' },
-  { tab: 'system', label: 'storageQuotaLabel', note: 'storageQuotaHint' },
+  { tab: 'account', label: 'featActivityLog', note: 'featActivityLogDesc' },
+  { tab: 'server', label: 'clearCache' },
+  { tab: 'server', label: 'backupAuto' },
+  { tab: 'server', label: 'offsiteTitle', note: 'offsiteHelp' },
+  { tab: 'server', label: 's3Bucket' },
+  { tab: 'server', label: 'offsiteTest' },
+  { tab: 'server', label: 'backupIntervalLabel' },
+  { tab: 'server', label: 'backupKeepLabel' },
+  { tab: 'server', label: 'maxUploadLabel', note: 'maxUploadHint' },
+  { tab: 'server', label: 'storageQuotaLabel', note: 'storageQuotaHint' },
 ]
 
 /**

@@ -94,7 +94,7 @@ export function Greeting({ author, lastPublishedAt, actions, now = new Date() }:
             {!named && (
               <>
                 {' · '}
-                <Link href="/admin/settings?tab=site" className="underline underline-offset-2 hover:text-neutral-900 dark:hover:text-white">
+                <Link href="/admin/settings?tab=blog" className="underline underline-offset-2 hover:text-neutral-900 dark:hover:text-white">
                   {t.greetSetName}
                 </Link>
               </>

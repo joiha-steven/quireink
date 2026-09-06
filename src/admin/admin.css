@@ -733,8 +733,14 @@ input[type='color']::-moz-color-swatch {
    nothing between the card's own rule and the list's — 32px a card, near 200px on a tab of
    six. Pull the list over that padding and drop the border it would then double up on: the
    header's rule and the card's edge already draw those two lines. */
-[data-explanations='off'] .panel-list:first-child { margin-top: -1rem; border-top: 0; }
-[data-explanations='off'] .panel-list:last-child { margin-bottom: -1rem; border-bottom: 0; }
+/* ⚠️ SCOPED TO THE CARD'S OWN BODY (`.card-body >`), not to any first child.
+   The pull exists to swallow the CARD's 16px of padding, and `:first-child` alone matched a
+   list that happened to open any wrapper — which after the settings regrouping (ADR 0041) put
+   a group heading and its first switch on the same line: `SettingsGroup` renders a title and
+   then a list, and the list is the first child of the div inside it, with no card padding
+   above it to swallow. Measured on the Posts tab, "After the last word". */
+[data-explanations='off'] .card-body > .panel-list:first-child { margin-top: -1rem; border-top: 0; }
+[data-explanations='off'] .card-body > .panel-list:last-child { margin-bottom: -1rem; border-bottom: 0; }
 
 /* THE ENTRANCES. A toast, the command palette and a slide-over ARRIVE rather than appear:
    a shade transparent and a few pixels short, settling on the one curve, from the

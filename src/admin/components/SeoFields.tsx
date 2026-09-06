@@ -14,6 +14,27 @@ type Feature = { key: keyof SeoSettings; label: string; desc: string; path: stri
 
 type Props = { s: SiteSettings; update: (p: Partial<SiteSettings>) => void }
 
+/**
+ * THE ADDRESS, split out on 2026-09-07 (ADR 0041).
+ *
+ * It moved to the Blog tab and the switches below it did not: a blog's own domain is part of
+ * what the blog IS, and filing it under "how machines see the site" put the answer to "what
+ * is my address" behind a tab named after search engines. One field, one export, no copy.
+ */
+export function CanonicalField({ s, update }: Props) {
+  const t = useAdminT()
+  return (
+    // `note=`: the hint belongs between the label and the field, not under it.
+    <Input
+      label={t.seoCanonical}
+      note={t.seoCanonicalHint}
+      value={s.siteUrl}
+      onChange={(e) => update({ siteUrl: e.target.value })}
+      placeholder="https://example.com"
+    />
+  )
+}
+
 export function SeoFields({ s, update }: Props) {
   const t = useAdminT()
   const [picking, setPicking] = useState(false)
@@ -31,15 +52,6 @@ export function SeoFields({ s, update }: Props) {
 
   return (
     <div className="space-y-5">
-      {/* `note=`: the hint belongs between the label and the field, not under it. */}
-      <Input
-        label={t.seoCanonical}
-        note={t.seoCanonicalHint}
-        value={s.siteUrl}
-        onChange={(e) => update({ siteUrl: e.target.value })}
-        placeholder="https://example.com"
-      />
-
       <div className={PANEL_LIST}>
         {FEATURES.map((f) => (
           <ToggleRow

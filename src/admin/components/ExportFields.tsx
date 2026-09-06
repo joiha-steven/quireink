@@ -53,7 +53,10 @@ export function ExportFields({
     try {
       const res = await fetch('/api/backup/list')
       const json = (await res.json()) as ApiResponse<ListPayload>
-      if (json.success && json.data) setSnapshots(json.data.snapshots)
+      // NARROWED, not merely truthy: the list is read as an array in three places, and a
+      // payload that is not the shape this panel knows must leave it empty rather than
+      // throw the tab away on `snapshots[0].createdAt` two renders later.
+      if (json.success && Array.isArray(json.data?.snapshots)) setSnapshots(json.data.snapshots)
     } catch {
       // The list is informational. A failure here should not colour the whole panel.
     }

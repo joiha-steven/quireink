@@ -16,7 +16,7 @@ afterAll(() => GlobalRegistrator.unregister())
 afterEach(releaseMocks)
 
 describe('SettingsView, mounted', () => {
-  it('shows all eight tabs and opens on Site', async () => {
+  it('shows all seven tabs and opens on Blog', async () => {
     const { mountAdmin, installFetchMock } = await import('@/admin/test-mount')
     const { SettingsView } = await import('@/admin/components/SettingsView')
     const { adminT } = await import('@/i18n/admin-i18n')
@@ -26,10 +26,10 @@ describe('SettingsView, mounted', () => {
 
     const m = await mountAdmin(<SettingsView {...payload()} />)
     for (const label of [
-      t.tabSite, t.tabLayout, t.tabReading, t.tabAppearance,
-      t.tabSeo, t.tabConnections, t.tabAi, t.tabSystem,
+      t.tabBlog, t.tabHome, t.tabPost, t.tabAppearance,
+      t.tabPeople, t.tabServer, t.tabAccount,
     ]) expect(m.button(label)).toBeTruthy()
-    // The Site tab's card is on screen; a card from another tab is not.
+    // The Blog tab's card is on screen; a card from another tab is not.
     expect(m.text()).toContain(t.cardGeneral)
     expect(m.text()).not.toContain(t.cardLayout)
     // Rendering asked the server for nothing: every prop arrived through the view payload.
@@ -37,7 +37,7 @@ describe('SettingsView, mounted', () => {
     await m.unmount()
   })
 
-  it('switching to Layout swaps the cards', async () => {
+  it('switching to Home & menu swaps the cards', async () => {
     const { mountAdmin, installFetchMock } = await import('@/admin/test-mount')
     const { SettingsView } = await import('@/admin/components/SettingsView')
     const { adminT } = await import('@/i18n/admin-i18n')
@@ -46,7 +46,7 @@ describe('SettingsView, mounted', () => {
     trackMock(fetchMock.restore)
 
     const m = await mountAdmin(<SettingsView {...payload()} />)
-    await m.click(m.button(t.tabLayout))
+    await m.click(m.button(t.tabHome))
     expect(m.text()).toContain(t.cardLayout)
     expect(m.text()).not.toContain(t.cardGeneral)
     await m.unmount()
@@ -104,6 +104,40 @@ describe('SettingsView, mounted', () => {
     const perPage = m.container.querySelector('input[type=number]')
     await m.type(perPage as Element, '25')
     expect(m.button(t.saveSettingsCount.replace('{n}', '2'))).toBeDefined()
+    await m.unmount()
+  })
+
+  it('renders the sheet\'s Save key on the four save-as-one tabs and on none of the others', async () => {
+    // ADR 0041's load-bearing consequence. A page-level Save beside cards that own their own
+    // keys is a button that silently does nothing for most of the screen, which is the
+    // arrangement this regrouping replaced.
+    const { mountAdmin, installFetchMock } = await import('@/admin/test-mount')
+    const { SettingsView } = await import('@/admin/components/SettingsView')
+    const { adminT } = await import('@/i18n/admin-i18n')
+    const t = adminT('en')
+    // The mail card asks for its own configuration; a list would leave it loading forever
+    // and prove nothing about the tab around it.
+    const fetchMock = installFetchMock((url) =>
+      url.startsWith('/api/mail')
+        ? { success: true, data: { host: '', port: 587, user: '', from: '', secure: false, hasPass: false, configured: false } }
+        : url.startsWith('/api/backup')
+          ? { success: true, data: { snapshots: [], lastRunAt: null } }
+          : { success: true, data: [] })
+    trackMock(fetchMock.restore)
+
+    const m = await mountAdmin(<SettingsView {...payload()} />)
+    const hasPageSave = () =>
+      [...m.container.querySelectorAll('button')].some((b) => b.textContent?.trim() === t.saveSettings)
+
+    for (const tab of [t.tabBlog, t.tabHome, t.tabPost, t.tabAppearance]) {
+      await m.click(m.button(tab))
+      expect(hasPageSave()).toBe(true)
+    }
+    for (const tab of [t.tabPeople, t.tabServer, t.tabAccount]) {
+      await m.click(m.button(tab))
+      await m.flush()
+      expect(hasPageSave()).toBe(false)
+    }
     await m.unmount()
   })
 

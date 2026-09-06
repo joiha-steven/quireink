@@ -9,6 +9,13 @@
 // A silent fallback plus a hand-typed key is a combination that cannot fail loudly at runtime,
 // so it has to fail here instead. Reads the source rather than the rendered page: a dead link
 // on a screen nobody opened in the tour is exactly the one that survives.
+//
+// ⚠️ THE OLD IDS DO NOT COUNT AS LIVE TABS. `SettingsView` maps the eight names of the
+// pre-0041 arrangement onto the seven that replaced them, so a bookmark, a printed guide or a
+// link in somebody's notes still lands correctly — but that map is for addresses arriving
+// from OUTSIDE. A link inside this bundle naming a tab that no longer exists is a link nobody
+// updated, and it goes stale in the direction that matters: the redirect is a promise about
+// old URLs, not a licence to keep writing them.
 
 import { describe, expect, it } from 'bun:test'
 import { readdirSync, readFileSync, statSync } from 'node:fs'
