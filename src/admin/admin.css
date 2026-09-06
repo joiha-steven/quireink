@@ -742,6 +742,28 @@ input[type='color']::-moz-color-swatch {
 [data-explanations='off'] .card-body > .panel-list:first-child { margin-top: -1rem; border-top: 0; }
 [data-explanations='off'] .card-body > .panel-list:last-child { margin-bottom: -1rem; border-bottom: 0; }
 
+/* A 44 × 44 HIT BOX FOR A FINGER, and nothing at all for a cursor.
+
+   `kit.tsx`'s `TAP_TOUCH` carries the reasoning. The short version: three 28px keys sit on a
+   media thumbnail, and neither growing them nor padding them is available — one covers the
+   picture, the other pushes them off the tile. A centred pseudo-element takes no space, moves
+   nothing, and is 44px wide to a finger.
+
+   `pointer: coarse` and not a width query: what decides is whether the thing pointing is a
+   fingertip, and an iPad in landscape is 1024px wide with no cursor at all. */
+@media (pointer: coarse) {
+  .tap-touch { position: relative; }
+  .tap-touch::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 44px;
+    height: 44px;
+    translate: -50% -50%;
+  }
+}
+
 /* THE ENTRANCES. A toast, the command palette and a slide-over ARRIVE rather than appear:
    a shade transparent and a few pixels short, settling on the one curve, from the
    @starting-style the browser applies on the frame React mounts them. Where the engine has

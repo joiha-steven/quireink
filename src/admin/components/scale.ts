@@ -162,3 +162,39 @@ export const CLUSTER_GAP = 'mb-4'
 
 /** The gap between two settings inside one card. One number, so no card invents its own. */
 export const SETTING_GAP = 'space-y-5'
+
+/**
+ * A tappable hit box around text that is only 16px tall.
+ *
+ * The quiet text buttons in this admin — Export CSV, Taxonomy, Check unused, Copy URL,
+ * Delete — are `text-xs` with no padding, so their hit box is exactly the line box: 16px.
+ * Measured on 2026-08-22 at 390, 768, 1024 and 1440: five screens, the same 16px, and iPad
+ * is a touch device at every one of those widths. Apple asks for 44pt and Google for 48dp;
+ * 16 is not a near miss.
+ *
+ * Padding PLUS the matching negative margin, so the box grows and the ink does not move: the
+ * element's margin box stays the height it was, the row it sits in keeps its height, and
+ * nothing on any of those screens shifts by a pixel. Making them visually bigger was the
+ * other option and it is the wrong one — `docs/admin-design.md` puts these deliberately in
+ * the quietest voice on the screen, and a hit box is not a voice.
+ */
+export const TAP = '-my-2 py-2'
+
+/**
+ * A 44 × 44 HIT BOX ON A TOUCH SCREEN, drawn by nothing and costing no layout.
+ *
+ * `TAP` above grows a text link's box with padding, which works because a link sits in a
+ * column with room around it. It is wrong for the three keys stacked on a media thumbnail:
+ * padding there would push them off the tile, and drawing them at 44px would cover the
+ * picture they are about. Measured on 2026-09-07 at 390px: 54 controls on the Library screen
+ * and 25 on Newsletter were under 44px in at least one axis.
+ *
+ * So the hit box is a pseudo-element centred on the control, under `pointer: coarse` only. It
+ * is `absolute`, so it takes no space and moves nothing; the control keeps the size it was
+ * drawn at, and a finger keeps the 44px every guideline asks for. A mouse gets neither, which
+ * is right — a cursor is a pixel and does not need the pad.
+ *
+ * ⚠️ The control must be its own positioning context. The class sets `relative`, so a caller
+ * that also positions it (an overlay key on a tile) states its own and wins by order.
+ */
+export const TAP_TOUCH = 'tap-touch'

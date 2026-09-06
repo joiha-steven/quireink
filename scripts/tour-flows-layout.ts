@@ -120,4 +120,28 @@ export function registerFocusFlows({ flow, atWidth }: Tour): void {
         window.dispatchEvent(new Event('quireink:focus'))
       }
     })()`, 1500))
+
+  // A phone's editor is mostly paper. Measured at 390 × 844 before this: the action bar
+  // wrapped to two lines of 139px, the toolbar strip took 125 more, and the post's title
+  // began 378px down — 45% of the screen was chrome before the first word.
+  flow('editor: a phone gets the paper, not the chrome', () => atWidth(390, '/admin/editor/ligatures-and-the-three-you-can-turn-off', `
+    (async () => {
+      await new Promise((r) => setTimeout(r, 900))
+      const title = document.querySelector('.reading-font')
+      if (!title) return 'no title field on the editor'
+      const top = Math.round(title.getBoundingClientRect().top)
+      if (top > 220) return 'the title starts ' + top + 'px down; the chrome is back'
+      // The action bar is at the BOTTOM, where the thumb is, and the paper has room under it.
+      // Found by its COMPUTED position rather than by a class name: what is being asserted is
+      // where the bar is, and a class list is a guess about that.
+      const bar = [...document.querySelectorAll('main div')]
+        .find((d) => getComputedStyle(d).position === 'fixed'
+          && Math.abs(d.getBoundingClientRect().bottom - innerHeight) < 3
+          && d.getBoundingClientRect().height > 20)
+      if (!bar) return 'no action bar fixed to the bottom edge'
+      // And nothing scrolls sideways, which is what a wrapped bar used to cause.
+      const d = document.documentElement
+      const spill = d.scrollWidth - d.clientWidth
+      return spill > 1 ? 'the page scrolls sideways by ' + spill + 'px' : 'ok (title at ' + top + 'px, bar on the bottom)'
+    })()`, 1400))
 }

@@ -43,7 +43,9 @@ import { Tick } from '@/admin/ui/Tick'
  * to read over a photograph.
  */
 const KEY =
-  'grid h-7 w-7 place-items-center rounded-md bg-white/95 text-neutral-600 backdrop-blur-[2px] transition '
+  // `TAP_TOUCH` gives a finger 44px without moving the key or covering the picture — see
+  // `kit.tsx`. Measured 2026-09-07: these three were 28 × 28 on a phone.
+  'tap-touch grid h-7 w-7 place-items-center rounded-md bg-white/95 text-neutral-600 backdrop-blur-[2px] transition '
   + 'shadow-[inset_0_1px_0_rgba(255,255,255,.9),0_1px_2px_rgba(0,0,0,.3)] '
   + 'hover:text-neutral-900 hover:shadow-[inset_0_1px_0_rgba(255,255,255,.9),0_2px_4px_rgba(0,0,0,.32)] '
   + 'active:translate-y-px active:duration-0 active:shadow-[inset_0_2px_3px_rgba(0,0,0,.25)] '

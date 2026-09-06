@@ -377,6 +377,7 @@ const vi = {
   deleteAllUnused: 'Xoá tất cả ảnh chưa dùng',
   confirmDeleteUnused: 'Xoá TẤT CẢ ảnh chưa dùng? Không thể hoàn tác.',
   close: 'Đóng',
+  moreActions: 'Thêm',
   skipToContent: 'Bỏ qua, vào thẳng trang',
   loading: 'Đang tải...',
   retry: 'Thử lại',

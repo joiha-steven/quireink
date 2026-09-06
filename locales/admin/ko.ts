@@ -377,6 +377,7 @@ const ko = {
   deleteAllUnused: '미사용 모두 삭제',
   confirmDeleteUnused: '미사용 이미지를 모두 삭제할까요? 이 작업은 되돌릴 수 없습니다.',
   close: '닫기',
+  moreActions: '더 보기',
   skipToContent: '본문으로 건너뛰기',
   loading: '불러오는 중...',
   retry: '다시 시도',

@@ -377,6 +377,7 @@ const ru = {
   deleteAllUnused: 'Удалить все неиспользуемые',
   confirmDeleteUnused: 'Удалить ВСЕ неиспользуемые изображения? Отменить нельзя.',
   close: 'Закрыть',
+  moreActions: 'Ещё',
   skipToContent: 'Перейти сразу к странице',
   loading: 'Загрузка…',
   retry: 'Попробовать снова',

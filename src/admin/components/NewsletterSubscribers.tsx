@@ -6,7 +6,7 @@ import { useState } from 'react'
 import type { ApiResponse } from '@/types'
 import { useFetched } from '@/admin/useFetched'
 import { Failed } from '@/admin/pages/state'
-import { EmptyState } from './kit'
+import { EmptyState, TAP_TOUCH } from './kit'
 import { Skeleton } from './Skeleton'
 import { NumBand } from './sheet'
 import { IconClose } from './navIcons'
@@ -112,7 +112,7 @@ export function NewsletterSubscribers() {
                 <button
                   type="button"
                   onClick={() => removeSub(s.id)}
-                  className="-my-1.5 -mr-1.5 ml-auto grid h-9 w-9 shrink-0 place-items-center rounded-md text-neutral-500 dark:text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-white"
+                  className={`${TAP_TOUCH} -my-1.5 -mr-1.5 ml-auto grid h-9 w-9 shrink-0 place-items-center rounded-md text-neutral-500 dark:text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-white`}
                   aria-label={t.nlDeleteSub}
                 >
                   <IconClose />

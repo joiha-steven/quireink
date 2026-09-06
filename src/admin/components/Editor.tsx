@@ -360,8 +360,12 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
           away costs nothing. */}
       {!raw && !focus && <Toolbar editor={editor} onPickImage={onPickImage} onPickGallery={onPickGallery} stickyTop={toolbarTop} />}
       {/* Center the writing column at the public single-post width so what you
-          type wraps exactly like the published article. */}
-      <div className="mx-auto w-full" style={{ maxWidth: contentWidth }}>
+          type wraps exactly like the published article.
+
+          `pb-20` below `lg`: the action bar is FIXED to the bottom edge on a phone
+          (2026-09-07, `EditorActions`), so without room under the paper the last line of a
+          post sits behind Publish and cannot be scrolled clear of it. */}
+      <div className="mx-auto w-full pb-20 lg:pb-0" style={{ maxWidth: contentWidth }}>
         {header}
         {raw ? (
           <MarkdownSource

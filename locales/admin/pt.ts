@@ -378,6 +378,7 @@ const pt = {
   deleteAllUnused: 'Excluir todas as sem uso',
   confirmDeleteUnused: 'Excluir TODAS as imagens sem uso? Não dá para desfazer.',
   close: 'Fechar',
+  moreActions: 'Mais',
   skipToContent: 'Ir directo para a página',
   loading: 'Carregando…',
   retry: 'Tentar de novo',

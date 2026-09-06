@@ -5,6 +5,7 @@
 // else in the kit asks that.
 
 import { useEffect, useRef, useState, type ReactNode, type RefObject } from 'react'
+import { scrollBehavior } from '@/admin/motion'
 
 // Tabs — and the two sizes are now two DIFFERENT objects, because they always were.
 //
@@ -202,6 +203,22 @@ export function Tabs<K extends string>({
   const edges = useScrollEdges(track, size === 'sm')
   const tablist = panelId !== undefined
   const index = tabs.findIndex((tb) => tb.key === value)
+
+  /**
+   * THE CHOSEN TAB COMES INTO VIEW, and on a phone that is the difference between a strip
+   * and a strip you can use. Seven settings tabs are 720px of labels in a 358px sheet, so
+   * four of them are off the right edge — and arriving on `?tab=account`, or arrowing to it,
+   * left the selection scrolled out of sight with the strip apparently showing "Blog".
+   *
+   * `inline: 'center'` rather than `'nearest'`: centring also reveals what is on either
+   * SIDE of the current tab, which is the whole reason the strip is a strip.
+   */
+  useEffect(() => {
+    const el = track.current?.querySelectorAll('button')[index]
+    if (!(el instanceof HTMLElement) || !track.current) return
+    if (track.current.scrollWidth <= track.current.clientWidth) return
+    el.scrollIntoView({ inline: 'center', block: 'nearest', behavior: scrollBehavior() })
+  }, [index])
 
   /**
    * ARROWS MOVE BETWEEN TABS, and Tab leaves the strip. That is the whole of the difference

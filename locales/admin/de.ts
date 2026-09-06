@@ -377,6 +377,7 @@ const de = {
   deleteAllUnused: 'Alle unbenutzten löschen',
   confirmDeleteUnused: 'ALLE unbenutzten Bilder löschen? Dies kann nicht rückgängig gemacht werden.',
   close: 'Schließen',
+  moreActions: 'Mehr',
   skipToContent: 'Direkt zur Seite',
   loading: 'Wird geladen...',
   retry: 'Erneut versuchen',

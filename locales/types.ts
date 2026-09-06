@@ -538,6 +538,7 @@ export type AdminStrings = {
   deleteAllUnused: string
   confirmDeleteUnused: string
   close: string
+  moreActions: string
   skipToContent: string
   loading: string
   /** The way out of a failed fetch: ask again, here, instead of reloading the whole admin. */

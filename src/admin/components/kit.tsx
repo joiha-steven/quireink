@@ -55,6 +55,7 @@ export const DROPZONE_OVER = 'border-neutral-500 bg-neutral-100 text-neutral-700
 // Both scales live in `scale.ts` and are re-exported here, because thirty-eight screens
 // already import them from the kit and the split is a fact about this file's length.
 export { TAB_TRACK, SEGMENT_TRACK, tabItemClass, Tabs, type TabItem, type TabSize } from './tabs'
+export { TAP, TAP_TOUCH } from './scale'
 export {
   READING, PAGE_TITLE_FACE, TITLE, SECTION, SETTING_LABEL, NOTE_TEXT, NOTE_ALERT, NOTE, META, FIGURE,
   SECTION_GAP, CARD_GAP, CARD_STACK, HEADER_GAP, GROUP_GAP, CLUSTER_GAP, SETTING_GAP,
@@ -190,23 +191,6 @@ export const CONTROL_NUM = `${CONTROL_CHROME} tabular-nums [appearance:textfield
 /** The tick. No `accent-color` does not mean unstyled, it means the OS accent, which is BLUE, in
  *  an admin of black, white and neutrals. Five shipped so and the two that remembered disagreed
  *  — three ticks. This is the primary button's fill: a tick is ink, and there is one ink. */
-/**
- * A tappable hit box around text that is only 16px tall.
- *
- * The quiet text buttons in this admin — Export CSV, Taxonomy, Check unused, Copy URL,
- * Delete — are `text-xs` with no padding, so their hit box is exactly the line box: 16px.
- * Measured on 2026-08-22 at 390, 768, 1024 and 1440: five screens, the same 16px, and iPad
- * is a touch device at every one of those widths. Apple asks for 44pt and Google for 48dp;
- * 16 is not a near miss.
- *
- * Padding PLUS the matching negative margin, so the box grows and the ink does not move: the
- * element's margin box stays the height it was, the row it sits in keeps its height, and
- * nothing on any of those screens shifts by a pixel. Making them visually bigger was the
- * other option and it is the wrong one — `docs/admin-design.md` puts these deliberately in
- * the quietest voice on the screen, and a hit box is not a voice.
- */
-export const TAP = '-my-2 py-2'
-
 export const CHECK = 'accent-neutral-900 dark:accent-white'
 
 // A field whose CONTENT has a known size does not run to the edge of its card. A three-digit

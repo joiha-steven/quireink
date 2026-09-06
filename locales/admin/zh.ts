@@ -377,6 +377,7 @@ const zh = {
   deleteAllUnused: '删除所有未使用',
   confirmDeleteUnused: '删除所有未使用的图片？此操作无法撤销。',
   close: '关闭',
+  moreActions: '更多',
   skipToContent: '跳到页面内容',
   loading: '加载中...',
   retry: '重试',

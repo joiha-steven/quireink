@@ -214,8 +214,16 @@ export function AnalyticsView({ data, range, titles, pieces, years, rightNow }: 
 
           {/* Top pages — by title where known, the bare path otherwise. Each row
               links to that page's drill-down. In the sheet, the table needs no frame
-              of its own: the hairline under it closes the section. */}
-          <div className={`${TABLE_SCROLL} border-b border-neutral-100 dark:border-neutral-800`}>
+              of its own: the hairline under it closes the section.
+
+              ⚠️ A TABLE BELOW 640px IS A LIST OF CARDS. Five columns in 358px gives each
+              number 41px to hold "1,522" and leaves the title 120px, so the useful half of
+              every row is truncated and the other half is unreadable — measured at 390 on
+              2026-09-07. Scrolling it sideways is the other answer and it is worse: the
+              titles scroll away from the numbers they name. Same rows, same order, same
+              link; one per card, with the four figures under the title where they fit. */}
+          <div className="hidden border-b border-neutral-100 sm:block dark:border-neutral-800">
+          <div className={TABLE_SCROLL}>
             <table className="w-full text-sm">
             {/* `w-full` on the title column and `w-px` on the four numbers, which is how an
                 auto-layout table is told where the slack goes. Without it the numbers took
@@ -261,6 +269,30 @@ export function AnalyticsView({ data, range, titles, pieces, years, rightNow }: 
             </tbody>
             </table>
           </div>
+          </div>
+
+          <ul className="border-b border-neutral-100 sm:hidden dark:border-neutral-800">
+            {data.topPages.map((p) => (
+              <li key={p.path} className="border-b border-neutral-100 px-4 py-3 last:border-b-0 dark:border-neutral-800">
+                <Link
+                  href={`/admin/analytics?path=${encodeURIComponent(p.path)}&range=${range}`}
+                  className="block truncate text-sm text-neutral-700 hover:underline dark:text-neutral-200"
+                  title={p.path}
+                >
+                  {titles[p.path] ?? p.path}
+                </Link>
+                {/* The four figures under the title, each keeping its name — a number with
+                    no column head over it is a number nobody can read. `tabular-nums` so
+                    the four line up down the list. */}
+                <dl className="mt-1.5 grid grid-cols-4 gap-2 text-xs tabular-nums text-neutral-500 dark:text-neutral-400">
+                  <div><dt>{t.analyticsViews}</dt><dd className="text-neutral-700 dark:text-neutral-300">{p.views.toLocaleString()}</dd></div>
+                  <div><dt>{t.analyticsVisitors}</dt><dd className="text-neutral-700 dark:text-neutral-300">{p.visitors.toLocaleString()}</dd></div>
+                  <div><dt>{t.analyticsColTime}</dt><dd className="text-neutral-700 dark:text-neutral-300">{p.avgDwellMs == null ? '—' : formatDuration(p.avgDwellMs)}</dd></div>
+                  <div><dt>{t.analyticsColDepth}</dt><dd className="text-neutral-700 dark:text-neutral-300">{p.avgDepth == null ? '—' : `${p.avgDepth}%`}</dd></div>
+                </dl>
+              </li>
+            ))}
+          </ul>
 
           {/* The complete index, under the top table rather than instead of it: the table
               answers "what is doing well", this answers "how is THIS piece doing" for a

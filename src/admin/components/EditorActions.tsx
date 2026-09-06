@@ -11,11 +11,19 @@
 // sheet, over a hairline, and the toolbar strip attaches directly under it. The floating
 // version put two light bands a crack apart and the owner's word for it was "kì kì".
 // Quiet text controls on the left with the status; the session-ending buttons right.
+//
+// ⚠️ ON A PHONE IT IS THE BOTTOM ROW (2026-09-07), and the measurement is why. At 390 × 844
+// the bar wrapped to two lines of 139px, the toolbar strip under it took 125 more, and the
+// post's title started 378px down — 45% of the screen was chrome before the first word. It
+// is fixed to the BOTTOM below `lg`: the thumb is there, the paper starts at the top where
+// it belongs, and the three look-at-it controls (Markdown, Attributes, Focus) fold into one
+// "⋯" so the row holds four objects rather than seven. Above `lg` nothing changes.
 import { useEffect, useRef, useState, type RefObject } from 'react'
 import Link from '@/admin/router'
 import { Button } from '@/admin/ui/Button'
 import { formatTime } from '@/utils'
 import { useAdminT } from './I18nProvider'
+import { OVERLAY } from './sheet'
 import { useFocusMode } from './useFocusMode'
 import { SHORTCUTS, matchesChord, tip } from './editorKeys'
 
@@ -130,11 +138,18 @@ export function EditorActions({
   return (
     <div
       ref={barRef}
-      className="z-20 rounded-t-[10px] border-b border-neutral-200/70 bg-white/95 backdrop-blur-xl lg:sticky lg:top-0 dark:border-neutral-800 dark:bg-neutral-900/95"
+      className={
+        // Below `lg`: fixed to the bottom edge, over the paper, with the safe area under it
+        // so an iPhone's home indicator does not sit on the Publish key. Above `lg`: the
+        // sheet's own first row, exactly as before.
+        'z-20 border-neutral-200/70 bg-white/95 backdrop-blur-xl dark:border-neutral-800 dark:bg-neutral-900/95 '
+        + 'fixed inset-x-0 bottom-0 border-t pb-[env(safe-area-inset-bottom)] '
+        + 'lg:static lg:rounded-t-[10px] lg:border-t-0 lg:border-b lg:pb-0 lg:sticky lg:top-0'
+      }
     >
-      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5">
-      <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-        <Link href="/admin/content" className={QUIET}>← {t.navWrite}</Link>
+      <div className="flex flex-nowrap items-center justify-between gap-3 px-4 py-2.5 lg:flex-wrap">
+      <div className="flex min-w-0 flex-nowrap items-center gap-x-2 gap-y-1 lg:flex-wrap">
+        <Link href="/admin/content" className={`${QUIET} shrink-0`}>← {t.navWrite}</Link>
         <span className="hidden h-4 w-px bg-neutral-200 sm:block dark:bg-neutral-800" />
         {/* The mock's saved line: state · size · time to read. One string of small print. */}
         <span className="text-xs text-neutral-500 dark:text-neutral-400">
@@ -159,16 +174,32 @@ export function EditorActions({
           edge and the whole admin scrolling sideways to reach them. Measured 2026-08-27:
           584px of scroll width on a 390px viewport, editing an existing post. justify-end
           keeps the pair that ENDS the session on the reading edge whether it wraps or not. */}
-      <div className="flex flex-wrap items-center justify-end gap-1.5">
+      <div className="flex shrink-0 flex-nowrap items-center justify-end gap-1.5 lg:flex-wrap">
+        {/* THE PHONE'S "⋯". Below `lg` the three controls that change what you LOOK AT are
+            behind it, so the bottom row carries four objects instead of seven; above `lg`
+            it is not drawn at all and they stand on the row as they always have. */}
+        <details className="relative lg:hidden">
+          <summary className={`${QUIET} list-none cursor-pointer select-none`} aria-label={t.moreActions}>⋯</summary>
+          <div className={`absolute bottom-full right-0 mb-2 flex w-44 flex-col p-1 ${OVERLAY}`}>
+            <button type="button" onClick={onToggleMd} aria-pressed={mdView} className={`${QUIET} text-left`}>{t.tbMarkdown}</button>
+            <button type="button" onClick={onToggleSettings} className={`${QUIET} text-left`}>
+              {settingsOpen ? t.hideAttributes : t.attributes}
+            </button>
+            <button type="button" onClick={() => setFocus(!focus)} aria-pressed={focus} className={`${QUIET} text-left`}>{t.edFocus}</button>
+            {savedSlug && (
+              <button type="button" onClick={onPreview} className={`${QUIET} text-left`}>{t.previewDraft}</button>
+            )}
+          </div>
+        </details>
         {/* Quiet, and BEFORE the session-ending pair: these two change what you look AT,
             not what happens to the piece. Beside Attributes at the owner's instruction, and
             SPELLED OUT in the same voice — a bold mono "MD" next to a plain-text word read
             as a control from a different product, and the owner flagged the tonal drift.
             While it is on, the editor shows no toolbar. */}
-        <button type="button" title={tip(t.tbMarkdown, 'markdown')} onClick={onToggleMd} aria-pressed={mdView} className={`${QUIET} ${mdView ? 'font-medium text-neutral-900 dark:text-white' : ''}`}>
+        <button type="button" title={tip(t.tbMarkdown, 'markdown')} onClick={onToggleMd} aria-pressed={mdView} className={`hidden lg:block ${QUIET} ${mdView ? 'font-medium text-neutral-900 dark:text-white' : ''}`}>
           {t.tbMarkdown}
         </button>
-        <button type="button" title={tip(t.attributes, 'attributes')} onClick={onToggleSettings} className={QUIET}>
+        <button type="button" title={tip(t.attributes, 'attributes')} onClick={onToggleSettings} className={`hidden lg:block ${QUIET}`}>
           {settingsOpen ? t.hideAttributes : t.attributes}
         </button>
         {/* The third of the look-at-it group. It takes the button row and the write pane
@@ -180,14 +211,21 @@ export function EditorActions({
           onClick={() => setFocus(!focus)}
           aria-pressed={focus}
           title={tip(t.edFocus, 'focus')}
-          className={`${QUIET} ${focus ? 'font-medium text-neutral-900 dark:text-white' : ''}`}
+          className={`hidden lg:block ${QUIET} ${focus ? 'font-medium text-neutral-900 dark:text-white' : ''}`}
         >
           {t.edFocus}
         </button>
+        {/* ⚠️ THE WRAPPER CARRIES `hidden`, not the button. `hidden` and `inline-flex` are
+            both display utilities, so which one wins is decided by their order in the
+            STYLESHEET and not by the order in the class attribute — putting `hidden` on a
+            `Button` (whose shape sets `inline-flex`) left it on screen at 390 and squeezed
+            "← Write" to "← Writ". On a phone Preview lives in the "⋯". */}
         {savedSlug && (
-          <Button variant="secondary" type="button" title={t.previewDraft} onClick={onPreview}>
-            {t.previewDraft}
-          </Button>
+          <span className="hidden lg:contents">
+            <Button variant="secondary" type="button" title={t.previewDraft} onClick={onPreview}>
+              {t.previewDraft}
+            </Button>
+          </span>
         )}
         <Button variant="secondary" title={tip(t.saveDraft, 'save')} onClick={onSaveDraft} disabled={saving || !dirty}>
           {t.saveDraft}

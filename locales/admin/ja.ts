@@ -377,6 +377,7 @@ const ja = {
   deleteAllUnused: '未使用をすべて削除',
   confirmDeleteUnused: '未使用の画像をすべて削除しますか？この操作は取り消せません。',
   close: '閉じる',
+  moreActions: 'その他',
   skipToContent: 'ページ本体へ移動',
   loading: '読み込み中...',
   retry: 'もう一度',

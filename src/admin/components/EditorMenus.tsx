@@ -76,7 +76,14 @@ export function Toolbar({
   // two chrome pieces in two styles a hand apart read as careless.
   return (
     <div className="sticky z-10 border-b border-neutral-200/70 bg-neutral-50/80 backdrop-blur-xl dark:border-neutral-800 dark:bg-neutral-950/60" style={{ top: stickyTop }}>
-      <div className="flex flex-wrap items-center justify-center gap-0.5 px-2.5 py-1.5">
+      {/* ⚠️ ONE ROW THAT SCROLLS ON A PHONE, three rows that wrap on a desktop.
+          Measured at 390 × 844 on 2026-09-07: this strip wrapped to 125px and the action bar
+          above it to 139, so a post's title began 378px down — 45% of the screen was chrome
+          before the first word. Wrapping is right where there is width for it and wrong here:
+          a writer scrolls a strip of tools sideways in every application they have ever used,
+          and they cannot scroll the paper back up past chrome that is stuck to it.
+          `no-scrollbar` because the bar itself would be a fourth line of furniture. */}
+      <div className="no-scrollbar flex flex-nowrap items-center gap-0.5 overflow-x-auto px-2.5 py-1.5 lg:flex-wrap lg:justify-center lg:overflow-x-visible">
       <ToolButton label={tip(t.tbBold, 'bold')} active={editor.isActive('bold')} onClick={() => editor.chain().focus().toggleBold().run()}><strong>B</strong></ToolButton>
       <ToolButton label={tip(t.tbItalic, 'italic')} active={editor.isActive('italic')} onClick={() => editor.chain().focus().toggleItalic().run()}><em>I</em></ToolButton>
       <ToolButton label={tip(t.tbUnderline, 'underline')} active={editor.isActive('underline')} onClick={() => editor.chain().focus().toggleUnderline().run()}><u>U</u></ToolButton>
