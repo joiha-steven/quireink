@@ -99,12 +99,10 @@ export function ConnectionCard({
 
   return (
     <SettingsCard
-      title={
-        <span className="flex items-center gap-2">
-          <Lamp state={state} title={lampTitle} />
-          {title}
-        </span>
-      }
+      title={title}
+      // In the DOT's place, never beside it: the mark that opens a card's title row is one
+      // mark. `SettingsCard` says what happened when this was two.
+      lamp={<Lamp state={state} title={lampTitle} />}
       actions={actions}
     >
       {children}

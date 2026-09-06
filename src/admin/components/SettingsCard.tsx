@@ -52,9 +52,19 @@ const BODY = 'rounded-b-[7px] bg-white dark:bg-neutral-900'
 /** The mark that opens the row. Graphite, not an ink: see `admin.css` on what a colour MEANS. */
 const DOT = 'mt-[7px] h-[7px] w-[7px] shrink-0 rounded-full bg-neutral-400 dark:bg-neutral-500'
 
-export function SettingsCard({ title, actions, children, className = '', bodyClassName = '' }: {
+export function SettingsCard({ title, actions, lamp, children, className = '', bodyClassName = '' }: {
   title: ReactNode
   actions?: ReactNode
+  /**
+   * A card that has a STATE puts its lamp where the dot goes, and draws no dot.
+   *
+   * ⚠️ IT REPLACES THE DOT, it does not join it. `ConnectionCard` first passed its lamp inside
+   * the `title` node, which left two marks side by side on every self-saving card — a grey one
+   * that means "this is a group" and a coloured one that means "this is working", reported on
+   * the Comments & mail tab the day it shipped. The dot's whole job is to give the eye
+   * something to catch scanning a column; a lamp does that job and says something as well.
+   */
+  lamp?: ReactNode
   children: ReactNode
   className?: string
   bodyClassName?: string
@@ -66,7 +76,15 @@ export function SettingsCard({ title, actions, children, className = '', bodyCla
       bodyClassName={`${BODY} ${bodyClassName}`}
       title={
         <span className={`flex items-start gap-2.5 ${GROUP_TITLE}`}>
-          <span className={DOT} aria-hidden />
+          {lamp
+            /* ⚠️ `flex`, and it is the whole fix. A lamp is an INLINE-BLOCK, so inside an
+               ordinary span it sits on the text baseline of a 17px line box — about 15px
+               below where an 8px mark belongs — and the title read visibly out of true.
+               A flex wrapper has no baseline to sit on, so the offset below is the only
+               thing positioning it. 8px centres 8px of lamp on a 17px/1.4 first line:
+               (23.8 − 8) ÷ 2 ≈ 8, the same arithmetic the 7px dot uses. */
+            ? <span className="mt-2 flex shrink-0">{lamp}</span>
+            : <span className={DOT} aria-hidden />}
           {title}
         </span>
       }

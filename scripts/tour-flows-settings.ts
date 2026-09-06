@@ -1,5 +1,8 @@
-// The Settings screen's own flows. Split from `tour-flows-admin.ts` at its 400-line cap —
-// the same seam as the editor, home, pane and newsletter flows beside it.
+// The Settings screen's own flows, plus the two rules about ASKING that this admin now holds
+// everywhere — a reversible act asks nothing and offers the way back, an irreversible one asks
+// in a dialog that names the thing. They live here rather than in `tour-flows-admin.ts`
+// because that file hit its 400-line cap twice while they were being written; the seam is the
+// same one the editor, home, pane and newsletter flows use.
 
 import type { Tour } from './tour'
 
@@ -118,4 +121,80 @@ export function registerSettingsFlows({ flow, expect }: Tour): void {
       if (location.pathname !== '/admin') return 'chose to discard and the page stayed put'
       return 'ok (landed on home)'
     })()`, 1200))
+
+  // The two halves of the 2026-09-07 rule about asking: a REVERSIBLE act asks nothing and
+  // offers the way back; an IRREVERSIBLE one asks, in a dialog that names the thing.
+  flow('admin: trashing a comment asks nothing and offers the way back', () => expect('/admin/comments', `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      const rows = () => document.querySelectorAll('main [data-comment-row], main li').length
+      const before = rows()
+      const del = [...document.querySelectorAll('main button')]
+        .find((b) => /delete|xoá|xóa/i.test(b.textContent.trim()))
+      if (!del) return 'no delete control on a comment'
+      del.click()
+      await sleep(600)
+      if (document.querySelector('[role=dialog]')) return 'trashing a comment put a dialog in the way'
+      const undo = [...document.querySelectorAll('.admin-toast button')]
+        .find((b) => b.textContent.trim().length > 0)
+      if (!undo) return 'the comment went with no way back offered'
+      undo.click()
+      await sleep(800)
+      return rows() >= before ? 'ok (gone, then back)' : 'undo did not put the comment back'
+    })()`, 1000))
+
+  flow('admin: a failed save leaves its toast up, and the close button removes it', () => expect('/admin/settings', `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      // A refusal the server really gives: the settings endpoint rejects a body that is not
+      // an object, so nothing has to be stubbed to produce a real failure toast.
+      await fetch('/api/settings', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: '"nope"' })
+      const box = document.querySelector('main input:not([type])')
+      const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set
+      setter.call(box, box.value + ' x')
+      box.dispatchEvent(new Event('input', { bubbles: true }))
+      await sleep(250)
+      // Break the endpoint from the page's side: a fetch that cannot parse its answer is the
+      // same failure path a dead server takes, and it needs no fixture.
+      const real = window.fetch
+      window.fetch = (u, i) => (String(u).includes('/api/settings') && i && i.method === 'PUT'
+        ? Promise.reject(new Error('offline'))
+        : real(u, i))
+      const save = [...document.querySelectorAll('main button')].find((b) => /[0-9]/.test(b.textContent) && !b.disabled)
+      if (!save) return 'the save key never counted the change'
+      save.click()
+      await sleep(600)
+      window.fetch = real
+      let toast = document.querySelector('.admin-toast')
+      if (!toast) return 'a failed save printed nothing'
+      // FOUR SECONDS LATER it is still there: a failure has no timer, because only the person
+      // reading it can decide it has been read.
+      await sleep(4200)
+      toast = document.querySelector('.admin-toast')
+      if (!toast) return 'the failure toast left on its own'
+      const close = [...toast.querySelectorAll('button')].pop()
+      if (!close) return 'the toast offered no way to close it'
+      close.click()
+      await sleep(500)
+      return document.querySelector('.admin-toast') ? 'the close button did not remove it' : 'ok (stayed 4s, closed on demand)'
+    })()`, 1200))
+
+  flow('admin: emptying the trash asks first, and Esc backs out', () => expect('/admin/trash', `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      const empty = [...document.querySelectorAll('main button')]
+        .find((b) => /empty|dọn|leeren|vider|vaciar|svuota|esvaziar|очист|空|비우/i.test(b.textContent.trim()))
+      if (!empty) return 'no Empty trash control'
+      empty.click()
+      await sleep(500)
+      const dialog = document.querySelector('[role=dialog]')
+      if (!dialog) return 'emptying the trash asked nothing'
+      if (!/[a-z]/i.test(dialog.textContent)) return 'the dialog carried no words'
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+      await sleep(400)
+      if (document.querySelector('[role=dialog]')) return 'Esc did not close the dialog'
+      const counts = await (await fetch('/api/admin/view/trash')).json()
+      const still = (counts?.data?.posts ?? []).length + (counts?.data?.media ?? []).length
+      return still > 0 ? 'ok (asked, backed out, trash intact)' : 'backing out emptied it anyway'
+    })()`, 1000))
 }
