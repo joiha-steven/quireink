@@ -156,9 +156,8 @@ body:has(.book-overlay[open]){overflow:hidden}
   background:none;border:0;cursor:pointer;color:var(--c-meta);font-size:1rem;
   line-height:1;width:34px;height:34px;padding:0;border-radius:999px;
   display:flex;align-items:center;justify-content:center;
-  transition:background-color .12s ease,color .12s ease}
+  transition:background-color var(--dur-fast),color var(--dur-fast)}
 .book-x:hover{color:var(--c-heading);background:color-mix(in srgb,var(--c-rule) 55%,transparent)}
-@media (prefers-reduced-motion:reduce){.book-x{transition:none}}
 /* The reader's own hand on the type: a small a and a large A, plain glyphs on the paper.
    The pill-with-a-rule cut before this one drew a segmented control, and the owner read
    it as exactly that — buttons, with a dark seam between them on first paint. The size
@@ -171,12 +170,11 @@ body:has(.book-overlay[open]){overflow:hidden}
 .book-size{background:none;border:0;cursor:pointer;color:var(--c-meta);line-height:1;
   font-family:var(--font-reading);min-width:32px;padding:6px 7px;
   display:flex;align-items:baseline;justify-content:center;
-  transition:color .12s ease}
+  transition:color var(--dur-fast)}
 .book-smaller{font-size:.8em}
 .book-larger{font-size:1.2em}
 .book-size:hover:not([disabled]){color:var(--c-heading)}
 .book-size[disabled]{opacity:.4;cursor:default}
-@media (prefers-reduced-motion:reduce){.book-size{transition:none}}
 .book-count{font-size:var(--fs-caption);line-height:var(--lh-caption);
   letter-spacing:var(--ls-caption);color:var(--c-meta);font-variant-numeric:tabular-nums}
 /* Holds the dialog's initial focus (see book.ts) — a reading surface, not a control,
@@ -188,11 +186,12 @@ body:has(.book-overlay[open]){overflow:hidden}
 /* A flex:1 here silently beat the measured width — a flex item with a basis of 0 and
    grow 1 fills the stage no matter what the inline style says, so the spread ran the
    full viewport and the two facing pages became four. */
-/* The crossfade between spreads: dim, jump, come back. Without it the turn is a hard cut,
-   which is what "not smooth any more" meant. 200ms, matching the frozen tree, and the
-   motion switch above zeroes it like everything else. */
+/* The crossfade between spreads - dim, jump, come back - is fadeSwap() in motion.ts, on
+   the Web Animations API, so it reads --dur-fast and asks the gate itself: a CSS transition
+   here plus a timer in script flashed a blank spread for the timer's length whenever the
+   switch was off, because the timer did not know. */
 .book-viewport{position:relative;height:100%;flex:0 0 auto;max-width:100%;overflow:hidden;
-  padding:clamp(4px,2vh,24px) 0;transition:opacity var(--dur-fast) ease}
+  padding:clamp(4px,2vh,24px) 0}
 .book-flow{height:100%;column-gap:56px;column-width:var(--book-col-w,340px);column-fill:auto;
   max-width:none;
   /* Oldstyle figures and discretionary ligatures. Both were missing from every subset
@@ -248,17 +247,10 @@ body:has(.book-overlay[open]){overflow:hidden}
 [data-list="grid"] .post-list .t-body{display:none}
 .listing-sentinel{height:1px}
 
-/* Cards ease in as they enter the viewport, in CSS. The frozen tree shipped an
-   IntersectionObserver fallback for engines without scroll-driven animations; 04-frontend.md
-   called for deleting it, and this is that deletion. An engine without support simply shows
-   the cards, which is the correct end state anyway. Motion is skipped entirely when the
-   reader has asked for less of it. */
-@supports (animation-timeline:view()){
-  @media (prefers-reduced-motion:no-preference){
-    .post-list > article{animation:card-in linear both;animation-timeline:view();animation-range:entry 0% entry 40%}
-  }
-}
-@keyframes card-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+/* A card's entrance is .reveal in islands.css.ts, and ONLY that. A second view() animation
+   on .post-list > article lived here until 2026-09-06, outside the owner's scroll-fade
+   switch, so a feed with the fade OFF still rose 10px on the way in - two entrances for
+   one card, in two files, and the switch was not one switch. */
 
 /* WRAPS, at every width and not only on a phone: the bar lives inside the reading column,
    672px by default, and a title plus a menu of any length plus five controls do not fit.

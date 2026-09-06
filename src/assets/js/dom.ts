@@ -42,7 +42,4 @@ export function el<K extends keyof HTMLElementTagNameMap>(
   return node
 }
 
-// The scroll watcher lives in motion.ts with the rest of the motion engine. Re-exported here
-// only so the book files, which the owner is rewriting, keep importing it from this module
-// until that work lands; new code imports it from './motion'.
-export { onScrollFrame } from './scroll'
+// The scroll watcher (`onScrollFrame`) is in motion.ts, with the rest of the motion engine.

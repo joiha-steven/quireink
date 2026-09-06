@@ -10,7 +10,7 @@ Four files ARE the engine, and nothing about how the product moves lives anywher
 A component's own sheet says WHAT moves (which property, which state); the engine says HOW
 (how long, on which curve, whether at all). A duration literal outside these files is drift,
 and the audit that built the engine (2026-09-06) found eleven of them across four files at
-four values for three intents; the three left in `book.css.ts` wait for the book rewrite.
+four values for three intents.
 
 - **Tokens: `--dur-fast` .15s · `--dur-base` .2s · `--dur-slow` .5s · `--ease-out`
   `cubic-bezier(.2,.7,.3,1)`.** Declared twice on purpose — the admin never receives the
@@ -35,11 +35,9 @@ four values for three intents; the three left in `book.css.ts` wait for the book
   `motionOn()` — the attribute and the media query — and `scrollBehavior()` for any
   programmatic scroll. Four admin call sites decided this for themselves before the engine
   (two read only the OS, two read nothing), so the switch stopped a hover and not a smooth
-  scroll. `fadeSwap()` is a Web Animations fade that reads `--dur-fast` off the document and
-  is instant behind the gate; it is what the book's page turn should use — that turn still
-  holds a BLANK spread for 130ms with the switch off, because its CSS transition is gone and
-  its timer does not know (`book.ts`, to be moved onto the engine once the owner's book
-  rewrite lands).
+  scroll; the book's page turn held a BLANK spread for 130ms with the switch off, because its
+  timer did not know the transition had gone. `fadeSwap()` is the replacement: a Web
+  Animations fade that reads `--dur-fast` off the document and is instant behind the gate.
 - **One scroll loop.** Anything that watches the scroll goes through `onScrollFrame(read,
   write)`: one `requestAnimationFrame` shared by every island, every island's READ (rects,
   `scrollY`) before any island's WRITE (a class), so a scroll frame forces layout once rather
@@ -69,9 +67,9 @@ four values for three intents; the three left in `book.css.ts` wait for the book
   causes layout or CLS. **Nothing may hide content it cannot reveal**: an entrance starts from
   the visible state where unsupported; `.reveal` is gated behind `@supports
   (animation-timeline)` + `data-motion=on` + the owner's scroll-fade switch, and it is the ONLY
-  entrance a card has — ⚠️ a second `view()` animation (`card-in`, on `.post-list > article`)
-  still sits in `book.css.ts` outside that switch, so a feed with the fade off still rises on
-  the way in; it goes with the book rewrite, along with that sheet's last `.12s` literals. There is no page-nav cross-fade in 2.0: cross-document View Transitions were
+  entrance a card has — a second `view()` animation on `.post-list > article` sat in
+  `book.css.ts` outside that switch until the engine, so a feed with the fade off still rose on
+  the way in. There is no page-nav cross-fade in 2.0: cross-document View Transitions were
   considered and not shipped ([`spec/04-frontend.md`](../spec/04-frontend.md)).
 - `settings.motion.keys` is a scoped editor preference, not another motion engine. It enables
   the custom caret response and the synthesized key sound; its visual part asks `motionOn()`.

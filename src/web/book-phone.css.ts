@@ -28,7 +28,7 @@ html.book-reading body>*:not(.book-reader){display:none}
    a header being dragged. */
 .book-reader .book-chrome{position:fixed;inset-inline:0;top:0;z-index:2;
   padding-top:env(safe-area-inset-top,0px);background:var(--book-paper);
-  transition:transform var(--dur-fast,.18s) ease}
+  transition:transform var(--dur-fast) ease}
 .book-reader.chrome-away .book-chrome{transform:translateY(-100%)}
 /* THE STATUS BAR'S OWN STRIP, and it stays when the chrome leaves.
    With the reader open the page asks for viewport-fit=cover (book-scroll.ts), because that
@@ -43,5 +43,5 @@ html.book-reading body>*:not(.book-reader){display:none}
 /* The inset, the bar and its rule, so the first line clears all three when the bar shows. */
 .book-page{padding:calc(env(safe-area-inset-top,0px) + 56px + 1.5rem) 20px calc(3rem + env(safe-area-inset-bottom,0px))}
 .book-reader .book-flow{max-width:38rem;margin:0 auto;columns:auto;column-width:auto;width:auto}
-html[data-motion=off] .book-reader .book-chrome{transition:none}
+/* Motion off is the engine gate in motion.css.ts, not a rule here. */
 `.trim()

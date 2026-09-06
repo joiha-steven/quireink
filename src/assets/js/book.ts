@@ -15,7 +15,8 @@
 // Book mode is its OWN standard rather than the site theme: paper and ink, not the reader's
 // palette. That is deliberate, and carried over from the frozen tree.
 
-import { el, label, onScrollFrame } from './dom'
+import { el, label } from './dom'
+import { fadeSwap, onScrollFrame } from './motion'
 import { openScrollReader, sizeControl } from './book-scroll'
 
 const OUTER_MARGIN = 48 // px, the minimum gap from the spread to the viewport edge
@@ -33,7 +34,6 @@ const COL_GAP = 56 // px between the two facing pages
 // at 288px — about 33 characters at the book's type size, a paperback page, and well clear
 // of the 119px failure this floor exists to stop.
 const MIN_COLUMN = 280
-const FADE_MS = 130 // the spread-to-spread crossfade; 200 (the frozen tree's) read as sluggish
 
 // The reader's type size, as a multiplier over the owner's roles. The DEFAULT lives in the
 // stylesheet (--type-scale on .book-overlay); this island only writes an INLINE override
@@ -113,11 +113,11 @@ export function book(): void {
       // error anywhere. The columns are still laid out; only the scroll machinery went
       // blind to them. Translating the flow under the clipping viewport asks nothing of
       // scroll semantics, so it cannot regress the same way.
-      viewport.style.opacity = '0'
-      setTimeout(() => {
+      // fadeSwap, not a CSS transition and a timer: the engine's fade reads --dur-fast and
+      // is instant with the switch off, where the timer used to hold a blank spread.
+      fadeSwap(viewport, () => {
         flow.style.transform = `translateX(${-spread * step}px)`
-        viewport.style.opacity = '1'
-      }, FADE_MS)
+      })
     }
     const turn = (delta: number) => goto(spread + delta)
     // The spread is exactly TWO columns, sized to the page's own footprint. Leaving the
@@ -297,7 +297,5 @@ export function book(): void {
     + '<path d="M12 6.5v13"/></svg>'
   fab.addEventListener('click', open)
   document.body.appendChild(fab)
-  onScrollFrame(() => {
-    fab.classList.toggle('shown', scrollY > innerHeight)
-  })
+  onScrollFrame(() => scrollY > innerHeight, (past) => fab.classList.toggle('shown', past))
 }

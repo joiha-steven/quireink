@@ -15,7 +15,8 @@
 // The chrome then behaves the way a reading app's does: gone on the way down, back on the
 // way up, always one short scroll away. It is fixed rather than sticky so that Safari
 // collapsing its own bars does not shove it around mid-gesture.
-import { el, label, onScrollFrame } from './dom'
+import { el, label } from './dom'
+import { onScrollFrame } from './motion'
 
 /** Where the article was before the reader opened it, so closing is exact rather than near. */
 type Session = { close: () => void }
@@ -112,8 +113,7 @@ export function openScrollReader(
   // from the rubber-band at both ends and from its own bars resizing the viewport, and
   // without it the bar flickered on and off while the thumb was doing nothing.
   let last = 0
-  const stop: () => void = onScrollFrame(() => {
-    const y = Math.max(0, scrollY)
+  const stop: () => void = onScrollFrame(() => Math.max(0, scrollY), (y) => {
     if (Math.abs(y - last) < 8) return
     // Always visible at the very top: that is where a reader looks for the way out.
     reader.classList.toggle('chrome-away', y > last && y > 64)

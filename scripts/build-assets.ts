@@ -118,14 +118,14 @@ const BUDGET: Record<string, number> = {
   // retract, and its chrome leaves on the way down and returns on the way up. Priced after
   // the a/A control was made one definition for both readers rather than two (−800 b); what
   // is left is the reader itself, the direction-following chrome, and the back gesture.
-  // 19,400 the same day, for the motion engine's script half (assets/js/motion.ts): ONE
+  // 19,600 the same day, for the motion engine's script half (assets/js/motion.ts): ONE
   // scroll loop where four islands ran four, with every island's layout reads before any
   // island's class writes, so a scroll frame forces layout once rather than once per
   // island; the gate asked in one place (`motionOn`) so the to-top scroll stops moving when
-  // the owner's switch or the reader's OS says so; and `fadeSwap`, which the book's page turn
-  // is to adopt once the book rewrite lands (its timer today holds a blank spread for 130ms
-  // with the switch off, because it does not know the transition is gone).
-  'post.js': 19_400,
+  // the owner's switch or the reader's OS says so; and `fadeSwap` on the book's page turn,
+  // whose timer used to hold a blank spread for 130ms with the switch off because it did
+  // not know the transition was gone.
+  'post.js': 19_600,
   // /login only, and NOT loaded with core.js: the sign-in page carries no beacon, no
   // search overlay and no listing controls, so it pays for the reveal toggle, the caps-lock
   // warning and the one-time-code paste, and nothing else.
