@@ -64,4 +64,58 @@ export function registerSettingsFlows({ flow, expect }: Tour): void {
         ? 'ok (' + labels.size + ' labels, all findable)'
         : missing.length + ' of ' + labels.size + ' not findable: ' + missing.slice(0, 6).join(' | ')
     })()`, 1200))
+
+  // Unsaved settings are not lost by a click on the rail. Two flows, because the interesting
+  // half is the SECOND answer: a dialog that offers "stay" and then leaves anyway is worse
+  // than no dialog, and one that offers "discard" and then keeps the edit is a lie about
+  // what the button did.
+  // The shared opening move of both flows below: put one change on the form, confirm the
+  // save key counted it, then try to walk out. Inlined as STATEMENTS into each flow's async
+  // body — so a failure returns the verdict string straight out of the flow — and it leaves
+  // `was` and `dialog` behind for the half that differs.
+  const editAndLeave = `
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      // \`:not([type])\` and not \`[type=text]\`: \`ui/Input\` leaves the attribute off unless a
+      // caller names one, so the site title — the first field on this sheet — matches neither
+      // \`input[type=text]\` nor anything else a habit would reach for.
+      const box = document.querySelector('main input:not([type])')
+      if (!box) return 'no text field on the settings sheet'
+      const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set
+      const was = box.value
+      setter.call(box, was + ' edited')
+      box.dispatchEvent(new Event('input', { bubbles: true }))
+      await sleep(250)
+      const save = [...document.querySelectorAll('main button')].find((b) => /[0-9]/.test(b.textContent) && !b.disabled)
+      if (!save) return 'the save key never counted the change'
+      const home = document.querySelector('aside nav a[href="/admin"]')
+      if (!home) return 'no way back to home in the rail'
+      home.click()
+      await sleep(500)
+      const dialog = document.querySelector('[role=dialog]')
+      if (!dialog) return 'left the page with an unsaved change and asked nothing'
+      if (location.pathname !== '/admin/settings') return 'the address moved before the question was answered'`
+
+  flow('admin: staying keeps an unsaved settings change, and the page', () => expect('/admin/settings', `
+    (async () => {
+      ${editAndLeave}
+      const stay = [...dialog.querySelectorAll('button')][0]
+      stay.click()
+      await new Promise((r) => setTimeout(r, 400))
+      if (location.pathname !== '/admin/settings') return 'chose to stay and the page left anyway'
+      const box2 = document.querySelector('main input:not([type])')
+      if (box2.value !== was + ' edited') return 'chose to stay and the edit was thrown away'
+      return 'ok (still on settings, edit intact)'
+    })()`, 1200))
+
+  flow('admin: discarding an unsaved settings change lets the page go', () => expect('/admin/settings', `
+    (async () => {
+      ${editAndLeave}
+      // The LAST button is the committing one, which is the order every footer in this admin
+      // uses: back out, then the alternative, then the answer that acts.
+      const buttons = [...dialog.querySelectorAll('button')]
+      buttons[buttons.length - 1].click()
+      await new Promise((r) => setTimeout(r, 600))
+      if (location.pathname !== '/admin') return 'chose to discard and the page stayed put'
+      return 'ok (landed on home)'
+    })()`, 1200))
 }

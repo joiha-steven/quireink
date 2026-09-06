@@ -65,7 +65,10 @@ describe('SettingsView, mounted', () => {
     const title = m.container.querySelector('input[placeholder="Quire Ink"]')
     expect(title).not.toBeNull()
     await m.type(title as Element, 'My Field Notes')
-    await m.click(m.button(t.saveSettings))
+    // The key NAMES the work waiting on it. Since 2026-09-07 it reads "Save · 1 change(s)"
+    // once the form is dirty and is disabled when it is not, so a test that clicks
+    // `t.saveSettings` is clicking a label that only exists on a clean form.
+    await m.click(m.button(t.saveSettingsCount.replace('{n}', '1')))
     await m.flush()
 
     const put = fetchMock.calls.find((c) => c.method === 'PUT' && c.url === '/api/settings')
@@ -76,6 +79,31 @@ describe('SettingsView, mounted', () => {
     expect(body.title).toBe('My Field Notes')
     expect(body.postsPerPage).toBe(10)
     expect(m.text()).toContain(t.savedSettings) // the toast — the save's only confirmation
+    await m.unmount()
+  })
+
+  it('counts the changes on the save key, and refuses to save none', async () => {
+    // A Save key that is always pressable answers "did I change anything?" with a shrug, and
+    // pressing it wrote the same record back and printed a success toast for work nobody did.
+    const { mountAdmin, installFetchMock } = await import('@/admin/test-mount')
+    const { SettingsView } = await import('@/admin/components/SettingsView')
+    const { adminT } = await import('@/i18n/admin-i18n')
+    const t = adminT('en')
+    const fetchMock = installFetchMock(() => ({ success: true, data: settingsFixture() }))
+    trackMock(fetchMock.restore)
+
+    const m = await mountAdmin(<SettingsView {...payload()} />)
+    expect(m.button(t.saveSettings).disabled).toBe(true)
+
+    const title = m.container.querySelector('input[placeholder="Quire Ink"]')
+    await m.type(title as Element, 'One edit')
+    const counted = m.button(t.saveSettingsCount.replace('{n}', '1'))
+    expect(counted.disabled).toBe(false)
+
+    // A SECOND field, so the count is proved to be a count and not a boolean wearing a 1.
+    const perPage = m.container.querySelector('input[type=number]')
+    await m.type(perPage as Element, '25')
+    expect(m.button(t.saveSettingsCount.replace('{n}', '2'))).toBeDefined()
     await m.unmount()
   })
 
@@ -90,7 +118,7 @@ describe('SettingsView, mounted', () => {
     const m = await mountAdmin(<SettingsView {...payload()} />)
     const title = m.container.querySelector('input[placeholder="Quire Ink"]')
     await m.type(title as Element, 'Unsaved edit')
-    await m.click(m.button(t.saveSettings))
+    await m.click(m.button(t.saveSettingsCount.replace('{n}', '1')))
     await m.flush()
     expect(m.text()).toContain(t.saveFailed)
     expect((title as HTMLInputElement).value).toBe('Unsaved edit')

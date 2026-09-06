@@ -10,7 +10,7 @@
 // page shells depend on, which re-runs their fetch. Same effect, one concept fewer.
 
 import {
-  createContext, startTransition, useCallback, useContext, useEffect, useMemo, useState,
+  createContext, startTransition, useCallback, useContext, useEffect, useMemo, useRef, useState,
   useTransition,
 } from 'react'
 import type { AnchorHTMLAttributes, ReactNode } from 'react'
@@ -33,6 +33,19 @@ type RouterApi = RouterState & {
 
 const RouterContext = createContext<RouterApi | null>(null)
 
+/**
+ * What a screen with unsaved work says when the reader tries to leave it.
+ *
+ * `blocked()` is asked on every push and replace; when it answers true the navigation is held
+ * and `ask()` decides. Resolving true lets it through, false leaves the reader where they are.
+ *
+ * ONE guard at a time, and that is a fact about the admin rather than a simplification: the
+ * only screens that can hold unsaved work are a settings form and an editor, and neither is
+ * ever mounted inside the other. A stack would be dead code with a second failure mode.
+ */
+type NavGuard = { blocked: () => boolean; ask: () => Promise<boolean> }
+const GuardContext = createContext<{ set: (g: NavGuard | null) => void } | null>(null)
+
 const readLocation = (): { path: string; search: string } => ({
   path: location.pathname,
   search: location.search,
@@ -41,6 +54,10 @@ const readLocation = (): { path: string; search: string } => ({
 export function RouterProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<RouterState>(() => ({ ...readLocation(), epoch: 0 }))
   const [pending, startNavigation] = useTransition()
+  // A REF, not state: registering a guard must not re-render the whole admin, and `go` needs
+  // the value at the moment of the click rather than the value the last render closed over.
+  const guard = useRef<NavGuard | null>(null)
+  const guardApi = useMemo(() => ({ set: (g: NavGuard | null) => { guard.current = g } }), [])
 
   useEffect(() => {
     const onPop = () => startTransition(() => setState((s) => ({ ...readLocation(), epoch: s.epoch })))
@@ -64,13 +81,30 @@ export function RouterProvider({ children }: { children: ReactNode }) {
    * the new one is ready. No fallback shown, no reveal to throttle. `pending` is what the
    * progress bar reads in the meantime.
    */
-  const go = useCallback((href: string, mode: 'push' | 'replace') => {
+  const commit = useCallback((href: string, mode: 'push' | 'replace') => {
     // The URL changes NOW, not when the transition commits. A pending navigation that has
     // not yet rendered still has to be the address the reader sees and can copy.
     if (mode === 'push') history.pushState(null, '', href)
     else history.replaceState(null, '', href)
     startNavigation(() => setState((s) => ({ ...readLocation(), epoch: s.epoch })))
   }, [])
+
+  /**
+   * ⚠️ The URL must NOT move before the question is answered.
+   *
+   * That is the whole reason the address change moved down into `commit`: the guard's dialog
+   * takes as long as a person takes, and pushing the new path first would put the address of a
+   * page the reader has not gone to in the bar behind the question — and leave it there if
+   * they chose to stay.
+   */
+  const go = useCallback((href: string, mode: 'push' | 'replace') => {
+    const g = guard.current
+    if (g && g.blocked()) {
+      void g.ask().then((leave) => { if (leave) commit(href, mode) })
+      return
+    }
+    commit(href, mode)
+  }, [commit])
 
   // Scrolling belongs AFTER the commit, not beside the click. During a transition the old
   // page is still the one on screen, and yanking it to the top while the reader is still
@@ -91,7 +125,39 @@ export function RouterProvider({ children }: { children: ReactNode }) {
     refresh: () => setState((s) => ({ ...s, epoch: s.epoch + 1 })),
   }), [state, go, pending])
 
-  return <RouterContext.Provider value={api}>{children}</RouterContext.Provider>
+  return (
+    <RouterContext.Provider value={api}>
+      <GuardContext.Provider value={guardApi}>{children}</GuardContext.Provider>
+    </RouterContext.Provider>
+  )
+}
+
+/**
+ * Hold a route change until the screen says it may happen, and warn the browser too.
+ *
+ * `beforeunload` covers what the router cannot see — a reload, a typed address, the tab being
+ * closed — and it can only ever raise the browser's own generic warning; the router half is
+ * what makes a click on the rail ask a question this product wrote. Both are needed, and a
+ * screen that registers only one of them loses work through the other.
+ */
+export function useNavigationGuard(blocked: boolean, ask: () => Promise<boolean>): void {
+  const ctx = useContext(GuardContext)
+  // The latest `ask` without re-registering on every render: the callback usually closes over
+  // form state, so it is a new function each keystroke, and re-registering per keystroke would
+  // make the guard's identity churn for no reason.
+  const askRef = useRef(ask)
+  askRef.current = ask
+  useEffect(() => {
+    if (!ctx) return
+    if (!blocked) { ctx.set(null); return }
+    ctx.set({ blocked: () => true, ask: () => askRef.current() })
+    const onUnload = (e: BeforeUnloadEvent) => { e.preventDefault(); e.returnValue = '' }
+    addEventListener('beforeunload', onUnload)
+    return () => {
+      ctx.set(null)
+      removeEventListener('beforeunload', onUnload)
+    }
+  }, [ctx, blocked])
 }
 
 function useRouterContext(): RouterApi {

@@ -17,6 +17,7 @@ import { act } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { AdminI18nProvider } from '@/admin/components/I18nProvider'
 import { ToastProvider } from '@/admin/ui/Toast'
+import { ConfirmProvider } from '@/admin/ui/ConfirmDialog'
 import { RouterProvider } from '@/admin/router'
 
 /**
@@ -118,8 +119,13 @@ function setNativeValue(el: Element, value: string): void {
 
 /**
  * Mount a node inside the providers the admin shell always supplies (App.tsx):
- * Router → I18n (en) → Toast. Theme and the progress bar are left out — nothing a
+ * Router → I18n (en) → Toast → Confirm. Theme and the progress bar are left out — nothing a
  * component asserts on reads them, and each drags in scheme-preference plumbing.
+ *
+ * ⚠️ This list is a CONTRACT with `App.tsx`, not a convenience. A provider the shell supplies
+ * and this harness does not turns "the screen mounts" into "the screen throws", and it throws
+ * for every test in the file at once — which is how one new context provider took fifteen
+ * settings assertions red with nothing wrong on the screen they were testing.
  */
 export async function mountAdmin(node: ReactElement): Promise<Mounted> {
   ensureBrowserShims()
@@ -131,7 +137,9 @@ export async function mountAdmin(node: ReactElement): Promise<Mounted> {
       root.render(
         <RouterProvider>
           <AdminI18nProvider lang="en">
-            <ToastProvider>{n}</ToastProvider>
+            <ToastProvider>
+              <ConfirmProvider>{n}</ConfirmProvider>
+            </ToastProvider>
           </AdminI18nProvider>
         </RouterProvider>,
       )

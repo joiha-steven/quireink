@@ -626,6 +626,14 @@ export type AdminStrings = {
   cssStructure: string
   saveSettings: string
   savedSettings: string
+  /** The Save key once the form has changes on it: the count is the reason to press it. */
+  saveSettingsCount: string
+  /** The three-way question asked when a settings form with changes is being left. */
+  leaveUnsavedTitle: string
+  leaveUnsavedBody: string
+  leaveUnsavedSave: string
+  leaveUnsavedDiscard: string
+  leaveUnsavedStay: string
   menuTitle: string
   menuLabelField: string
   menuHrefField: string

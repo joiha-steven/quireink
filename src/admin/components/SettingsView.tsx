@@ -15,13 +15,12 @@
 // merges — regrouping the UI changed no stored shape.
 
 import { useRef, useState, type ReactNode } from 'react'
-import { useRouter, useSearchParams } from '@/admin/router'
-import type { SiteSettings, ApiResponse } from '@/types'
+import { useSearchParams } from '@/admin/router'
+import type { SiteSettings } from '@/types'
 import type { ThemePreset } from '@/content/themes'
 import type { CommentEnv } from '@/comments/comment-env'
 import type { IntegrationStatus } from '@/store/integration-keys'
 import { Button } from '@/admin/ui/Button'
-import { useToast } from '@/admin/ui/Toast'
 import { formatTime } from '@/utils'
 import { PageHeader, Tabs, type TabItem } from './kit'
 import { SettingsCard } from './SettingsCard'
@@ -29,6 +28,7 @@ import { SHEET, SheetTop } from './sheet'
 import { SettingsSearch } from './SettingsSearch'
 import { SettingsNotesRow, useSettingsNotes } from './SettingsNotes'
 import { useSettingJump } from './useSettingJump'
+import { useSettingsSave } from './useSettingsSave'
 import { useAdminT } from './I18nProvider'
 import { SiteFields } from './SiteFields'
 import { BrandFields } from './BrandFields'
@@ -93,11 +93,7 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
   update: UpdateStatus
 }) {
   const t = useAdminT()
-  const router = useRouter()
-  const { notify } = useToast()
   const [s, setS] = useState<SiteSettings>(settings)
-  const [saving, setSaving] = useState(false)
-  const [savedAt, setSavedAt] = useState<string | null>(null)
   const tabParam = useSearchParams().get('tab')
   const [tab, setTab] = useState<Tab>(
     (TAB_IDS as string[]).includes(tabParam ?? '') ? (tabParam as Tab) : 'site')
@@ -109,26 +105,8 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
 
   const update = (partial: Partial<SiteSettings>) => setS((prev) => ({ ...prev, ...partial }))
 
-  async function save() {
-    setSaving(true)
-    try {
-      const res = await fetch('/api/settings', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(s),
-      })
-      const json = (await res.json()) as ApiResponse<SiteSettings>
-      if (!json.success) throw new Error(json.error)
-      setSavedAt(new Date().toISOString())
-      notify(t.savedSettings)
-      // Refetch the shell so a language change reaches the whole admin at once.
-      router.refresh()
-    } catch {
-      notify(t.saveFailed, 'error')
-    } finally {
-      setSaving(false)
-    }
-  }
+  // The whole form's unsaved state, and the question it asks when somebody leaves.
+  const { changed, saving, savedAt, save } = useSettingsSave(settings, s)
 
   const TABS: TabItem<Tab>[] = [
     { key: 'site', label: t.tabSite },
@@ -177,16 +155,23 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
               and stay a group: at 375 the field gives up its width (`flex-1`, the same
               answer the library's tool band takes) so the two share one line. */}
           <div className="flex min-w-0 flex-1 items-center justify-end gap-3">
+          {/* The receipt. It says WHEN, not "saved!", because the useful fact a minute later is
+              the time — a screen that has been open all afternoon and one saved thirty seconds
+              ago read identically otherwise. It clears itself the moment the form is dirty
+              again: a stale "Saved at 14:02" beside three unsaved changes is a lie. */}
           <span className="shrink-0 text-xs text-neutral-500 dark:text-neutral-400">
-            {saving ? t.saving : savedAt ? `${t.savedAtPrefix} ${formatTime(savedAt)}` : ''}
+            {saving ? t.saving : savedAt && changed === 0 ? `${t.savedAtPrefix} ${formatTime(savedAt)}` : ''}
           </span>
           {/* `sm`, and the field beside it is sized to match, because on THIS row the height
               is set by the tab strip: it is the widest object on the band and the first one
               read, so it is the thing the other two answer to. The three measured 33.5, 32
               and 40 — a strip, a key and a field, no two alike — and the pair at the right
               end took the blame because they touch. All three are 32 now. */}
-          <Button size="sm" onClick={save} disabled={saving}>
-            {saving ? t.saving : t.saveSettings}
+          {/* Disabled with nothing to save, and it is not tidiness: a Save key that is always
+              pressable answers "did I change anything?" with a shrug, and pressing it wrote
+              the same record back and printed a success toast for work nobody did. */}
+          <Button size="sm" onClick={() => { void save() }} disabled={saving || changed === 0}>
+            {saving ? t.saving : changed === 0 ? t.saveSettings : t.saveSettingsCount.replace('{n}', String(changed))}
           </Button>
           <SettingsSearch
             tabLabel={(k) => String(TAB_LABEL(k))}

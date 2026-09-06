@@ -190,7 +190,15 @@ export async function saved(
   t: Awaited<ReturnType<typeof onTab>>['t'],
   fetchMock: Awaited<ReturnType<typeof onTab>>['fetchMock'],
 ): Promise<SiteSettings> {
-  await m.click(m.button(t.saveSettings))
+  // The key's LABEL carries the change count since 2026-09-07 ("Save · 3 change(s)"), and it
+  // is disabled with nothing to save — so a helper naming `t.saveSettings` would only ever
+  // find the key it must not press. Found by its counted prefix instead, which is a fact
+  // about the button rather than about how many fields this particular test touched.
+  const prefix = t.saveSettingsCount.split('{n}')[0]
+  const key = [...m.container.querySelectorAll('button')]
+    .find((b) => b.textContent?.startsWith(prefix) && !(b as HTMLButtonElement).disabled)
+  if (!key) throw new Error('no enabled save key: the form recorded no change to send')
+  await m.click(key)
   await m.flush()
   // The LAST one: a test that saves twice would otherwise keep reading the first body and
   // pass no matter what the second edit did.
