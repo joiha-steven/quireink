@@ -39,8 +39,9 @@ export function FeaturedField({ posts, value, onChange }: Props) {
           <button type="button" onClick={() => onChange(chosen.filter((s) => s !== slug))} aria-label={t.delete} className={ICON}>×</button>
         </div>
       ))}
+      {/* Its only name was its first option, which is not on screen once a post is picked. */}
       {available.length > 0 && (
-        <Select value="" onChange={(e) => e.target.value && onChange([...chosen, e.target.value])} wrapClassName="flex w-full" className="w-full">
+        <Select aria-label={t.featuredAdd} value="" onChange={(e) => e.target.value && onChange([...chosen, e.target.value])} wrapClassName="flex w-full" className="w-full">
           <option value="">{t.featuredAdd}</option>
           {available.map((p) => (
             <option key={p.slug} value={p.slug}>{p.title || p.slug}</option>

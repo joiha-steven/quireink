@@ -35,7 +35,12 @@ export const SHORTCUTS: Shortcut[] = [
   { id: 'focus', chord: 'Mod-\\', does: 'Focus mode: everything but the paper goes away.' },
   // Not the editor's, but it is printed by the same two things — the Help sheet and a
   // tooltip — and a second table would be a second place for a chord to drift.
-  { id: 'palette', chord: 'Mod-k', does: 'Search everything: the screens, the settings and your writing. Also the button at the top of the rail.' },
+  // ⚠️ `Mod-Shift-k`, and it moved there on 2026-09-07. `Mod-k` was assigned TWICE — this
+  // palette on a window listener, and the editor's link box inside the editor — so pressing
+  // it while writing opened both: the link box took the selection and the palette opened over
+  // it. `Mod-k` is the link in every editor anybody has used, so the palette is the one that
+  // moves, and the rail's search button prints the new chord beside itself.
+  { id: 'palette', chord: 'Mod-Shift-k', does: 'Search everything: the screens, the settings and your writing. Also the button at the top of the rail.' },
 ]
 
 /**

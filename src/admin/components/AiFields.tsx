@@ -158,13 +158,13 @@ export function AiCard({ configured, provider, model, seesImages, ai, onChangeAi
   // anywhere. Same chrome, disabled: obviously not a menu, still an answer.
   const modelControl = models.length > 0
     ? (
-      <Select wrapClassName="flex w-full" className="w-full" value={chosen} onChange={(e) => setChosen(e.target.value)}>
+      <Select aria-label={t.aiModelLabel} wrapClassName="flex w-full" className="w-full" value={chosen} onChange={(e) => setChosen(e.target.value)}>
         {models.map((m) => <option key={m.id} value={m.id}>{m.label}</option>)}
       </Select>
     )
     : chosen
       ? (
-        <Select wrapClassName="flex w-full" className="w-full" value={chosen} disabled>
+        <Select aria-label={t.aiModelLabel} wrapClassName="flex w-full" className="w-full" value={chosen} disabled>
           <option value={chosen}>{chosen}</option>
         </Select>
       )
@@ -184,6 +184,10 @@ export function AiCard({ configured, provider, model, seesImages, ai, onChangeAi
 
       <Setting label={t.aiProviderLabel} inline>
         <Select
+          // `Setting` prints the label as a sibling, not as a wrapper, so a control inside it
+          // has no name of its own unless it says one. Measured on the Server tab: this and
+          // the model menu below were the last two unnamed controls in the settings screen.
+          aria-label={t.aiProviderLabel}
           className={FIELD_W.medium}
           value={pick}
           onChange={(e) => {

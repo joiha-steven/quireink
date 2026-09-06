@@ -23,12 +23,15 @@ export function registerSettingsFlows({ flow, expect }: Tour): void {
       // collected 110 strings and called 51 unfindable, and every one of those was a tab
       // name, a palette name or a language in a picker: things that are not settings and
       // have no business in the index. A guard that cries wolf gets switched off.
-      // ⚠️ Tabs are found by STRUCTURE (the sheet-top track, aria-pressed), never by a
+      // ⚠️ Tabs are found by STRUCTURE (the tablist and its tabs), never by a
       // paint shade: as [class*="bg-neutral-200"] a hover elsewhere matched the shade, the
       // sweep took in the sidebar, and this flow CLICKED SIGN OUT — everything after it
       // failed on a dead session and nothing pointed here. (Empty ⇒ the zero-label guard.)
       const labels = new Set()
-      const tabs = [...(document.querySelector('main .no-scrollbar')?.querySelectorAll('button[aria-pressed]') ?? [])]
+      // \`[role=tab]\`, not \`[aria-pressed]\`: the strip became a real tablist on 2026-09-07,
+      // and a selected tab says \`aria-selected\`. Finding zero tabs made this sweep collect
+      // zero labels, which its own zero-label guard then caught — as designed.
+      const tabs = [...(document.querySelector('main [role=tablist]')?.querySelectorAll('[role=tab]') ?? [])]
       for (const tab of tabs) {
         tab.click()
         await sleep(500)
@@ -142,6 +145,41 @@ export function registerSettingsFlows({ flow, expect }: Tour): void {
       await sleep(800)
       return rows() >= before ? 'ok (gone, then back)' : 'undo did not put the comment back'
     })()`, 1000))
+
+  // A tablist is not eleven buttons in a row. With buttons, reaching the last settings tab
+  // from the keyboard costs seven presses of Tab, and every one of them is also a press that
+  // has to NOT be Enter.
+  flow('admin: the settings tabs are one stop, and the arrows walk them', () => expect('/admin/settings', `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      const strip = document.querySelector('main [role=tablist]')
+      if (!strip) return 'the settings strip is not a tablist'
+      const tabs = [...strip.querySelectorAll('[role=tab]')]
+      if (tabs.length !== 7) return 'expected 7 tabs, found ' + tabs.length
+      // ROVING: exactly one of them is a tab stop, so Tab reaches the panel rather than
+      // walking the strip.
+      const stops = tabs.filter((b) => b.tabIndex === 0)
+      if (stops.length !== 1) return stops.length + ' tabs are keyboard stops; a tablist has one'
+      if (stops[0].getAttribute('aria-selected') !== 'true') return 'the stop is not the selected tab'
+      const panel = document.getElementById(tabs[0].getAttribute('aria-controls') || '')
+      if (!panel || panel.getAttribute('role') !== 'tabpanel') return 'the strip controls no panel'
+
+      const before = document.querySelector('[role=tab][aria-selected=true]').textContent
+      stops[0].focus()
+      strip.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }))
+      await sleep(400)
+      const after = document.querySelector('[role=tab][aria-selected=true]').textContent
+      if (after === before) return 'the right arrow moved nothing'
+      strip.dispatchEvent(new KeyboardEvent('keydown', { key: 'End', bubbles: true }))
+      await sleep(400)
+      const last = document.querySelector('[role=tab][aria-selected=true]').textContent
+      const names = [...document.querySelectorAll('[role=tab]')].map((b) => b.textContent)
+      if (last !== names[names.length - 1]) return 'End did not reach the last tab'
+      // Put it back, so the next flow starts where every other one expects to.
+      strip.dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', bubbles: true }))
+      await sleep(300)
+      return 'ok (one stop, arrows move, End reaches the last)'
+    })()`, 1200))
 
   // A refusal that belongs to one field goes TO that field, on the tab that holds it — not
   // into a corner toast on a screen of forty controls with nothing saying which one is wrong.

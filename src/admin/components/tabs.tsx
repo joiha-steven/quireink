@@ -170,6 +170,7 @@ export function Tabs<K extends string>({
   dense = false,
   className = '',
   role = 'place',
+  panelId,
 }: {
   tabs: TabItem<K>[]
   value: K
@@ -186,13 +187,55 @@ export function Tabs<K extends string>({
    */
   dense?: boolean
   className?: string
+  /**
+   * The id of the panel this strip switches, when there IS one.
+   *
+   * Only a strip that swaps a region of the page is a tablist; the write pane's scope filter
+   * swaps nothing, it narrows a list that is already there. Naming the panel is what makes
+   * the difference expressible, so this prop is also the switch: with it the strip is a
+   * tablist, without it the buttons stay pressed-state buttons, which is what a filter is.
+   */
+  panelId?: string
 }) {
   const track = useRef<HTMLDivElement>(null)
   // Only the segmented strip scrolls; the lg strip wraps and cannot clip.
   const edges = useScrollEdges(track, size === 'sm')
+  const tablist = panelId !== undefined
+  const index = tabs.findIndex((tb) => tb.key === value)
+
+  /**
+   * ARROWS MOVE BETWEEN TABS, and Tab leaves the strip. That is the whole of the difference
+   * between a tablist and eleven buttons: with buttons, reaching the eighth settings tab from
+   * the keyboard costs eight presses of Tab, and every one of them is also a press that has to
+   * NOT be Enter. In a tablist the strip is one stop and the arrows walk it.
+   *
+   * ⚠️ SELECTION FOLLOWS FOCUS, which is the pattern for tabs whose panels are already in
+   * memory — every panel here is a render away — and it is what makes the arrows feel like
+   * arrows rather than like a two-step. `Home`/`End` are the ends, as everywhere else.
+   */
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    if (!tablist) return
+    const to = e.key === 'ArrowRight' ? index + 1
+      : e.key === 'ArrowLeft' ? index - 1
+      : e.key === 'Home' ? 0
+      : e.key === 'End' ? tabs.length - 1
+      : null
+    if (to === null) return
+    e.preventDefault()
+    // Wraps, because a strip that stops at its ends makes the reader look at it to find out
+    // whether the key did anything.
+    const next = tabs[(to + tabs.length) % tabs.length]
+    if (!next) return
+    onChange(next.key)
+    const el = track.current?.querySelectorAll('button')[(to + tabs.length) % tabs.length]
+    if (el instanceof HTMLElement) el.focus()
+  }
+
   return (
     <div
       ref={track}
+      role={tablist ? 'tablist' : undefined}
+      onKeyDown={onKeyDown}
       className={`${size === 'lg' ? TAB_TRACK : dense ? SEGMENT_TRACK_DENSE : SEGMENT_TRACK} ${edges ? EDGE_MASK[edges] : ''} ${className}`}
     >
       {tabs.map((tb) => (
@@ -200,7 +243,13 @@ export function Tabs<K extends string>({
           key={tb.key}
           type="button"
           onClick={() => onChange(tb.key)}
-          aria-pressed={value === tb.key}
+          role={tablist ? 'tab' : undefined}
+          aria-selected={tablist ? value === tb.key : undefined}
+          aria-controls={tablist ? panelId : undefined}
+          // ROVING, and only in a tablist: exactly one stop for the whole strip, so Tab
+          // reaches the panel rather than walking seven buttons to get there.
+          tabIndex={tablist ? (value === tb.key ? 0 : -1) : undefined}
+          aria-pressed={tablist ? undefined : value === tb.key}
           className={tabItemClass(value === tb.key, size, dense, role)}
         >
           {tb.label}

@@ -76,6 +76,7 @@ export function SiteFields({ s, update, saved }: Props) {
           it takes a short field and the row it was spending on its own. */}
       <Setting inline label={t.siteTimezone} note={t.siteTimezoneHint}>
         <Select
+          aria-label={t.siteTimezone}
           className={FIELD_W.medium}
           wrapClassName="flex"
           value={s.timezone}

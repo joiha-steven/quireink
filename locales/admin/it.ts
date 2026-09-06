@@ -377,6 +377,7 @@ const it = {
   deleteAllUnused: 'Elimina tutte le inutilizzate',
   confirmDeleteUnused: 'Eliminare TUTTE le immagini inutilizzate? Non si può annullare.',
   close: 'Chiudi',
+  skipToContent: 'Vai direttamente alla pagina',
   loading: 'Caricamento…',
   retry: 'Riprova',
   loadFailed: 'Questo non si è caricato.',

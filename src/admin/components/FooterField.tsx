@@ -50,6 +50,7 @@ export function FooterField({ value, onChange }: { value: string; onChange: (v: 
         ref={ref}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        aria-label={t.footerContent}
         rows={3}
         spellCheck={false}
         className={`${CONTROL} w-full resize-y`}

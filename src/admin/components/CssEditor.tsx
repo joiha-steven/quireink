@@ -123,6 +123,7 @@ export function CssEditor({
           onScroll={(e) => { if (gutter.current) gutter.current.scrollTop = e.currentTarget.scrollTop }}
           rows={10}
           spellCheck={false}
+          aria-label={t.customCss}
           data-css-editor
           placeholder={':root { --c-accent: #b4472a }\n\n.prose h2 { letter-spacing: -0.01em }'}
           className="max-h-80 min-h-40 w-full resize-y bg-white px-3 py-2 font-mono text-xs leading-5 text-neutral-900 placeholder:text-neutral-400 focus:outline-none dark:bg-neutral-950 dark:text-neutral-100 dark:placeholder:text-neutral-600"

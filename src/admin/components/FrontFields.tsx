@@ -113,6 +113,9 @@ export function FrontFields({ front, onChange, posts, categories }: Props) {
               <select
                 value={front.lead.slug}
                 onChange={(e) => set({ lead: { ...front.lead, slug: e.target.value } })}
+                // Its only name was its first option, which stops being on screen the moment
+                // something is chosen and was never announced as a name at all.
+                aria-label={t.frontLeadPickPost}
                 className={FIELD}
               >
                 <option value="">{t.frontLeadPickPost}</option>
@@ -200,6 +203,7 @@ export function FrontFields({ front, onChange, posts, categories }: Props) {
             value=""
             onChange={(e) => e.target.value
               && set({ strips: [...front.strips, { category: e.target.value, count: 3, columns: 3 }] })}
+            aria-label={t.frontStripAdd}
             className={FIELD}
           >
             <option value="">{t.frontStripAdd}</option>

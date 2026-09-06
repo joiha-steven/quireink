@@ -377,6 +377,7 @@ const fr = {
   deleteAllUnused: 'Supprimer toutes les inutilisées',
   confirmDeleteUnused: 'Supprimer TOUTES les images inutilisées ? C’est irréversible.',
   close: 'Fermer',
+  skipToContent: 'Aller directement à la page',
   loading: 'Chargement…',
   retry: 'Réessayer',
   loadFailed: 'Ceci ne s’est pas chargé.',

@@ -26,12 +26,20 @@ function Cell({
   step,
   min,
   max,
+  label,
   onChange,
 }: {
   value: number
   step: number
   min: number
   max: number
+  /**
+   * "H1 (titles) — Size", and it is not decoration: this table is 27 identical number boxes
+   * in a nine-by-three grid, so a column head alone names none of them to anything that
+   * cannot see the grid. A visible label per cell would be 27 more words on the screen; the
+   * name only has to exist where the name is needed.
+   */
+  label: string
   onChange: (v: number) => void
 }) {
   return (
@@ -41,6 +49,7 @@ function Cell({
       max={max}
       step={step}
       value={value}
+      aria-label={label}
       onChange={(e) => onChange(Number(e.target.value))}
       className={`${CONTROL_NUM} h-8 w-[4.25rem] px-2 text-right text-xs`}
     />
@@ -99,17 +108,18 @@ export function TypographyFields({ typography, fontPreset, onChange, resetRef }:
           <tbody>
             {TYPE_ROLES.map((role) => {
               const s = typography.roles[role]
+              const name = t[ROLE_LABEL[role]] as string
               return (
                 <tr key={role}>
-                  <td className="pr-2 text-neutral-700 dark:text-neutral-300">{t[ROLE_LABEL[role]] as string}</td>
+                  <td className="pr-2 text-neutral-700 dark:text-neutral-300">{name}</td>
                   <td className="px-1 text-right">
-                    <Cell value={s.size} step={0.01} min={0.5} max={6} onChange={(v) => setStyle(role, { size: v })} />
+                    <Cell label={`${name} — ${t.colSize}`} value={s.size} step={0.01} min={0.5} max={6} onChange={(v) => setStyle(role, { size: v })} />
                   </td>
                   <td className="px-1 text-right">
-                    <Cell value={s.line} step={0.05} min={0.8} max={3} onChange={(v) => setStyle(role, { line: v })} />
+                    <Cell label={`${name} — ${t.colLine}`} value={s.line} step={0.05} min={0.8} max={3} onChange={(v) => setStyle(role, { line: v })} />
                   </td>
                   <td className="px-1 text-right">
-                    <Cell value={s.spacing} step={0.005} min={-0.2} max={0.5} onChange={(v) => setStyle(role, { spacing: v })} />
+                    <Cell label={`${name} — ${t.colSpacing}`} value={s.spacing} step={0.005} min={-0.2} max={0.5} onChange={(v) => setStyle(role, { spacing: v })} />
                   </td>
                 </tr>
               )

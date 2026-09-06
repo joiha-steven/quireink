@@ -67,6 +67,7 @@ export function AdvancedFields({
       <div className="p-4">
         <Setting label={t.keyFeedbackLabel} note={t.keyFeedbackDesc} inline>
           <Select
+            aria-label={t.keyFeedbackLabel}
             className={FIELD_W.medium}
             value={motion.keys}
             onChange={(e) => {

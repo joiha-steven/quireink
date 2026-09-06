@@ -7,10 +7,10 @@
 import { useRouter } from '@/admin/router'
 import { useAdminT } from './I18nProvider'
 import { ConnectionCard } from './ConnectionCard'
-import { CONTROL, NOTE_TEXT } from './kit'
+import { NOTE_TEXT } from './kit'
+import { Input } from '@/admin/ui/Input'
 import { useSecretKeys } from './useSecretKeys'
 
-const INPUT = `${CONTROL} w-full`
 const LINK = 'https://dash.cloudflare.com/profile/api-tokens'
 
 type Keys = { cloudflareZoneId: string; cloudflareApiToken: string; purgeWebhookUrl: string }
@@ -31,7 +31,7 @@ export function CloudflareCard(
   const router = useRouter()
   // `router.refresh()` so the "· saved" hint reflects the new state at once.
   const secrets = useSecretKeys('/api/integrations/cloudflare', EMPTY, () => router.refresh())
-  const { keys, touched, set, ph } = secrets
+  const { keys, touched, set, phSet } = secrets
 
   return (
     <ConnectionCard
@@ -47,16 +47,16 @@ export function CloudflareCard(
           {t.commentsHelpOpen}
         </a>
       </p>
-      <input
-        className={INPUT}
-        placeholder={ph(!!zoneId, t.cfZoneId)}
+      <Input
+        label={t.cfZoneId}
+        placeholder={phSet(!!zoneId)}
         value={keys.cloudflareZoneId}
         onChange={(e) => set('cloudflareZoneId', e.target.value)}
       />
-      <input
-        className={INPUT}
+      <Input
+        label={t.cfToken}
         type="password"
-        placeholder={ph(configured, t.cfToken)}
+        placeholder={phSet(configured)}
         value={keys.cloudflareApiToken}
         onChange={(e) => set('cloudflareApiToken', e.target.value)}
       />
@@ -64,10 +64,10 @@ export function CloudflareCard(
           install behind Bunny, Fastly or a script in front of nginx gets what a Cloudflare
           install has had. Password-typed because a purge URL usually carries its own token. */}
       <p className={NOTE_TEXT}>{t.cfWebhookHelp}</p>
-      <input
-        className={INPUT}
+      <Input
+        label={t.cfWebhook}
         type="password"
-        placeholder={ph(webhookConfigured, t.cfWebhook)}
+        placeholder={phSet(webhookConfigured)}
         value={keys.purgeWebhookUrl}
         onChange={(e) => set('purgeWebhookUrl', e.target.value)}
       />

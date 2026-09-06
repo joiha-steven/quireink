@@ -51,7 +51,7 @@ export function LayoutMenuFields({ s, update, posts, pages, listPathError }: Pro
       {home.mode !== 'list' && (
         <div className="space-y-4 border-l-2 border-neutral-200 pl-4 dark:border-neutral-800">
           {home.mode === 'page' && (
-            <div className="space-y-1.5">
+            <label className="block space-y-1.5">
               <span className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">{t.homePageLabel}</span>
               <select
                 value={home.page}
@@ -62,7 +62,7 @@ export function LayoutMenuFields({ s, update, posts, pages, listPathError }: Pro
                 {pages.map((p) => <option key={p.slug} value={p.slug}>{p.title}</option>)}
               </select>
               <p className={NOTE_TEXT}>{t.homePageHint}</p>
-            </div>
+            </label>
           )}
           <Input
             label={t.listPathLabel}
@@ -102,16 +102,21 @@ export function LayoutMenuFields({ s, update, posts, pages, listPathError }: Pro
         <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{t.menuTitle}</span>
         {s.menu.map((item, i) => (
           <div key={i} className="flex gap-2">
+            {/* Named, not just prompted. A placeholder is the one thing that cannot be a
+                label: it disappears the moment the row has content, so a filled menu was a
+                column of unnamed boxes and a screen reader never had the names at all. */}
             <input
               value={item.label}
               onChange={(e) => update({ menu: s.menu.map((m, idx) => (idx === i ? { ...m, label: e.target.value } : m)) })}
               placeholder={t.menuLabelField}
+              aria-label={`${t.menuLabelField} ${i + 1}`}
               className={MENU_FIELD}
             />
             <input
               value={item.href}
               onChange={(e) => update({ menu: s.menu.map((m, idx) => (idx === i ? { ...m, href: e.target.value } : m)) })}
               placeholder={t.menuHrefField}
+              aria-label={`${t.menuHrefField} ${i + 1}`}
               className={MENU_FIELD}
             />
             <button

@@ -12,10 +12,9 @@ import type { CommentEnv } from '@/comments/comment-env'
 import { ToggleRow } from '@/admin/ui/Switch'
 import { useAdminT } from './I18nProvider'
 import { ConnectionCard, type SaveResult } from './ConnectionCard'
-import { CONTROL, INSET, NOTE, NOTE_TEXT, PANEL_LIST } from './kit'
+import { INSET, NOTE, NOTE_TEXT, PANEL_LIST } from './kit'
+import { Input } from '@/admin/ui/Input'
 import { useSecretKeys } from './useSecretKeys'
-
-const INPUT = `${CONTROL} w-full`
 
 // External setup links (where the owner gets each integration's keys / settings).
 const LINKS = {
@@ -73,7 +72,7 @@ export function CommentIntegrations(
 ) {
   const t = useAdminT()
   const secrets = useSecretKeys('/api/comments/keys', EMPTY)
-  const { keys, touched, set, ph } = secrets
+  const { keys, touched, set, phSet } = secrets
 
   async function saveBoth(): Promise<SaveResult> {
     // The FLAGS first. A key stored against a switch that did not save leaves the owner
@@ -125,8 +124,8 @@ export function CommentIntegrations(
       {showTurnstile && (
         <div className="space-y-2">
           <Help title={t.commentsTurnstile} text={t.commentsTurnstileHelp} href={LINKS.turnstile} open={t.commentsHelpOpen} />
-          <input className={INPUT} placeholder={ph(!!env.turnstileSiteKey, t.commentsKeySite)} value={keys.turnstileSiteKey} onChange={(e) => set('turnstileSiteKey', e.target.value)} />
-          <input className={INPUT} type="password" placeholder={ph(env.turnstileConfigured, t.commentsKeySecret)} value={keys.turnstileSecretKey} onChange={(e) => set('turnstileSecretKey', e.target.value)} />
+          <Input label={t.commentsKeySite} placeholder={phSet(!!env.turnstileSiteKey)} value={keys.turnstileSiteKey} onChange={(e) => set('turnstileSiteKey', e.target.value)} />
+          <Input label={t.commentsKeySecret} type="password" placeholder={phSet(env.turnstileConfigured)} value={keys.turnstileSecretKey} onChange={(e) => set('turnstileSecretKey', e.target.value)} />
         </div>
       )}
       {showGoogle && (
@@ -141,8 +140,8 @@ export function CommentIntegrations(
               {`${location.origin}/comment-auth/google/callback`}
             </code>
           </p>
-          <input className={INPUT} placeholder={ph(env.googleConfigured, t.commentsKeyGoogleId)} value={keys.googleClientId} onChange={(e) => set('googleClientId', e.target.value)} />
-          <input className={INPUT} type="password" placeholder={ph(env.googleConfigured, t.commentsKeyGoogleSecret)} value={keys.googleClientSecret} onChange={(e) => set('googleClientSecret', e.target.value)} />
+          <Input label={t.commentsKeyGoogleId} placeholder={phSet(env.googleConfigured)} value={keys.googleClientId} onChange={(e) => set('googleClientId', e.target.value)} />
+          <Input label={t.commentsKeyGoogleSecret} type="password" placeholder={phSet(env.googleConfigured)} value={keys.googleClientSecret} onChange={(e) => set('googleClientSecret', e.target.value)} />
         </div>
       )}
       </div>

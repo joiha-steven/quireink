@@ -122,6 +122,10 @@ export function SecurityFields() {
           value={current}
           autoComplete="current-password"
           onChange={(e) => setCurrent(e.target.value)}
+          // `Setting` prints its label as a sibling, not as a wrapper, so a control inside
+          // one has no name unless it states one. On a password box that matters more than
+          // most: nothing else on screen says which of the two it is.
+          aria-label={t.securityConfirm}
           data-security-current
           className={`${CONTROL} w-full max-w-sm`}
         />
@@ -134,6 +138,7 @@ export function SecurityFields() {
             value={next}
             autoComplete="new-password"
             onChange={(e) => setNext(e.target.value)}
+            aria-label={t.securityNewPassword}
             className={`${CONTROL} w-full max-w-sm`}
           />
           <Button variant="secondary" disabled={busy || !current || !next} onClick={() => void changePassword()}>

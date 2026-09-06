@@ -73,6 +73,15 @@ const resolveTab = (param: string | null): Tab =>
 const SAVES_AS_ONE: Tab[] = ['blog', 'home', 'post', 'appearance']
 
 /**
+ * The region the strip switches, named so the strip can point at it.
+ *
+ * A tablist that controls nothing is a row of buttons wearing tab clothes: naming the panel
+ * is what makes `role=tab` true rather than decorative, and it is what tells a screen reader
+ * that arrowing along the strip changed what is below it.
+ */
+const PANEL_ID = 'settings-panel'
+
+/**
  * Two columns on a wide screen, one on a narrow one.
  *
  * The cards go in EXPLICIT column stacks (`COL`), never straight into the grid. A grid lays
@@ -166,7 +175,7 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
             phone toolbar, an iPad's) takes it with no trace. */}
         <div className="sticky top-0 z-20 rounded-t-[10px] bg-white/95 backdrop-blur-xl dark:bg-neutral-900/95">
         <SheetTop>
-          <Tabs tabs={TABS} value={tab} onChange={setTab} size="sm" />
+          <Tabs tabs={TABS} value={tab} onChange={setTab} size="sm" panelId={PANEL_ID} />
           {/* The save, its receipt and the way past the tabs travel as ONE group, and the
               group is what takes the free space rather than a spacer between the parts.
               With a `flex-1` spacer they were three loose items on a wrapping row, and at
@@ -207,7 +216,16 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
           </div>
         </SheetTop>
         </div>
-        <div className="p-5" data-explanations={notes ? 'on' : 'off'}>
+        <div
+          id={PANEL_ID}
+          role="tabpanel"
+          aria-label={String(TAB_LABEL(tab))}
+          // `tabIndex={-1}` and not 0: the panel is reachable by script (the strip's arrows
+          // leave focus on the tab) without adding a stop that lands on a container.
+          tabIndex={-1}
+          className="p-5"
+          data-explanations={notes ? 'on' : 'off'}
+        >
       {/* The definition, in the open — a guessed-at tab is a tab you open five of. It shares its line with the switch that quiets every OTHER explanation; this one stays. See `SettingsNotes`. */}
       <SettingsNotesRow hint={HINTS[tab]} on={notes} onToggle={toggleNotes} />
 

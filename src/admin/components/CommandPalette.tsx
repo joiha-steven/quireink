@@ -1,4 +1,4 @@
-// ⌘K — the door that makes the arrangement stop mattering.
+// ⌘⇧K — the door that makes the arrangement stop mattering.
 //
 // The rail lists ten destinations, Settings holds 107 named controls behind eight tabs, and
 // [ADR 0011](../../../docs/decisions/0011-settings-regrouped-into-seven.md) already recorded
@@ -31,7 +31,7 @@ import type { AdminStrings } from '@/locales/types'
 /**
  * Asked for by name, so nothing has to hold a setter.
  *
- * ⌘K IS NOT DISCOVERABLE AND WAS NEVER GOING TO BE. This file's own header says a palette you
+ * THE CHORD IS NOT DISCOVERABLE AND WAS NEVER GOING TO BE. This file's own header says a palette you
  * must find before the admin is usable is a lock rather than a door, and it was written for
  * "hands that already know it is there" — which is every hand except a new one. The rail now
  * carries a search control that opens this and PRINTS THE CHORD beside itself, so the way to
@@ -122,10 +122,15 @@ export function CommandPalette() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key.toLowerCase() === 'k' && (e.metaKey || e.ctrlKey) && !e.altKey) {
-        e.preventDefault()
-        setOpen((was) => !was)
-      }
+      // ⚠️ SHIFT IS REQUIRED, since 2026-09-07. This listened for `Mod-k` unconditionally
+      // while the editor bound the same chord to its link box, so pressing it mid-sentence
+      // ran both: the link box took the selection and this opened on top of it. `Mod-k` is
+      // the link in every editor anybody has used, so the palette moved rather than the link.
+      if (e.key.toLowerCase() !== 'k' || !(e.metaKey || e.ctrlKey) || e.altKey || !e.shiftKey) return
+      // And even then, not over something that has already answered the key.
+      if (e.defaultPrevented) return
+      e.preventDefault()
+      setOpen((was) => !was)
     }
     // A WINDOW EVENT is the second door, and it is why the rail can offer this without
     // importing it: the rail is drawn once at the top of the shell and the palette once at

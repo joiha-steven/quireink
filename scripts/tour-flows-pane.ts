@@ -254,7 +254,7 @@ export function registerPaletteFlows({ flow, expect }: Tour): void {
   // The chord cannot be discovered, so the rail carries a control that opens the same thing
   // and PRINTS the chord beside itself. A button that does not open it teaches a shortcut that
   // does not exist, which is worse than teaching nothing.
-  flow('admin: the rail teaches ⌘K by offering it', () => expect('/admin', `
+  flow('admin: the rail teaches the palette chord by printing it', () => expect('/admin', `
     (async () => {
       const wait = async (fn, tries = 60, gap = 100) => {
         for (let i = 0; i < tries; i++) {
@@ -264,8 +264,11 @@ export function registerPaletteFlows({ flow, expect }: Tour): void {
         }
         return null
       }
+      // The chord moved to Mod-Shift-K on 2026-09-07: Mod-K was assigned twice, and the
+      // editor's link box is the one every editor anybody has used already binds it to.
+      const chord = /⌘⇧K|Ctrl\\+Shift\\+K/
       const button = await wait(() => [...document.querySelectorAll('button')]
-        .find((b) => /⌘K|Ctrl\\+K/.test(b.textContent || '') || /⌘K|Ctrl\\+K/.test(b.getAttribute('title') || '')))
+        .find((b) => chord.test(b.textContent || '') || chord.test(b.getAttribute('title') || '')))
       if (!button) return 'the rail prints the chord nowhere — nobody will find it'
       if (document.querySelector('[role=dialog] input')) return 'something was already open'
       button.click()
@@ -276,7 +279,7 @@ export function registerPaletteFlows({ flow, expect }: Tour): void {
       return 'ok (' + (button.textContent || button.getAttribute('title')).trim() + ')'
     })()`, 1200))
 
-  flow('admin: ⌘K finds a setting and lands on its tab', () => expect('/admin', `
+  flow('admin: the palette chord finds a setting and lands on its tab', () => expect('/admin', `
     (async () => {
       const wait = async (fn, tries = 60, gap = 100) => {
         for (let i = 0; i < tries; i++) {
@@ -287,7 +290,7 @@ export function registerPaletteFlows({ flow, expect }: Tour): void {
         return null
       }
 
-      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true, cancelable: true }))
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, shiftKey: true, bubbles: true, cancelable: true }))
       const box = await wait(() => document.querySelector('[role=dialog] input'))
       if (!box) return 'the palette did not open'
 

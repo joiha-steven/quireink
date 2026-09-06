@@ -8,7 +8,7 @@
 import { Suspense, lazy, type ComponentType, type ReactNode } from 'react'
 import { RouterProvider, usePathname } from '@/admin/router'
 import { useView } from '@/admin/useView'
-import { AdminI18nProvider } from '@/admin/components/I18nProvider'
+import { AdminI18nProvider, useAdminT } from '@/admin/components/I18nProvider'
 import { ToastProvider } from '@/admin/ui/Toast'
 import { ConfirmProvider } from '@/admin/ui/ConfirmDialog'
 import { ThemeProvider } from '@/admin/ui/ThemeProvider'
@@ -138,7 +138,7 @@ function Route(): ReactNode {
  */
 function Canvas({ children }: { children: ReactNode }) {
   return (
-    <main className="admin-canvas min-w-0 flex-1 lg:h-[100dvh] lg:overflow-y-auto lg:overscroll-y-contain">
+    <main id="admin-content" className="admin-canvas min-w-0 flex-1 lg:h-[100dvh] lg:overflow-y-auto lg:overscroll-y-contain">
       <div className="mx-auto w-full max-w-[1480px] px-4 py-6 sm:px-7 lg:px-10 lg:py-9 xl:px-12">{children}</div>
     </main>
   )
@@ -219,6 +219,17 @@ function Shell() {
             the "locked" panel looked locked on every desktop it was tested on. `dvh` is the
             height that is actually visible right now. Reported from an iPad in Safari. */}
         <div className="admin-shell admin-case min-h-screen lg:flex lg:h-[100dvh] lg:overflow-hidden">
+          {/* THE FIRST STOP, and it was missing. The rail holds four destinations, a group of
+              seven and six footer controls, so reaching the page itself from the keyboard cost
+              up to eighteen presses of Tab on every single visit. It is invisible until it has
+              focus, which is the whole convention: the people who need it find it with the
+              first key they press, and nobody else ever sees it. */}
+          <a
+            href="#admin-content"
+            className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-md focus:border focus:border-neutral-300 focus:bg-white focus:px-3 focus:py-2 focus:text-sm focus:font-medium focus:text-neutral-900 focus:shadow-lg dark:focus:border-neutral-700 dark:focus:bg-neutral-900 dark:focus:text-neutral-100"
+          >
+            <SkipLabel />
+          </a>
           <AdminSidebar lang={data.language} signOut={signOut} aiConfigured={data.aiConfigured} navOrder={data.navOrder} />
           {/* Outside the canvas and outside the error boundary: it is how you LEAVE a screen
               that has gone wrong, so it must not be inside the thing that went wrong. */}
@@ -251,6 +262,11 @@ function Shell() {
       </ToastProvider>
     </AdminI18nProvider>
   )
+}
+
+/** Its own component so the shell need not become a consumer of the dictionary. */
+function SkipLabel() {
+  return <>{useAdminT().skipToContent}</>
 }
 
 export function App() {

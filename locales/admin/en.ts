@@ -377,6 +377,7 @@ const en = {
   deleteAllUnused: 'Delete all unused',
   confirmDeleteUnused: 'Delete ALL unused images? This cannot be undone.',
   close: 'Close',
+  skipToContent: 'Skip to the page',
   loading: 'Loading...',
   retry: 'Try again',
   loadFailed: 'This did not load.',

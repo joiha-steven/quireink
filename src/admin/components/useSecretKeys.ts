@@ -30,6 +30,17 @@ export function useSecretKeys<K extends Record<string, string>>(
   const ph = (configured: boolean, label: string) =>
     configured ? `${label} · ${t.commentsKeySet}` : label
 
+  /**
+   * The same fact, for a field that has a REAL LABEL beside it.
+   *
+   * Nine credential fields used the placeholder AS the label until 2026-09-07, which is the
+   * one thing a placeholder cannot be: it disappears the moment somebody types, so the field
+   * they are typing into stops saying what it is, and a screen reader never had the name at
+   * all. With the name on a `<label>`, the placeholder is free to carry the only thing it was
+   * ever good for — whether something is already stored, and therefore that blank means keep.
+   */
+  const phSet = (configured: boolean) => (configured ? t.commentsKeySet : '')
+
   /** Run an action with the panel disabled while it is in flight. */
   async function withBusy(action: () => Promise<void>): Promise<void> {
     setBusy(true)
@@ -81,5 +92,5 @@ export function useSecretKeys<K extends Record<string, string>>(
   /** Whether any field has been typed into — what a card's lamp reads as "not stored yet". */
   const touched = Object.values(keys).some((v) => v.trim().length > 0)
 
-  return { keys, busy, touched, set, ph, save, saveResult, withBusy, notify }
+  return { keys, busy, touched, set, ph, phSet, save, saveResult, withBusy, notify }
 }

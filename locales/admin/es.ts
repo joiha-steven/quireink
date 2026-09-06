@@ -377,6 +377,7 @@ const es = {
   deleteAllUnused: 'Eliminar todas las sin usar',
   confirmDeleteUnused: '¿Eliminar TODAS las imágenes sin usar? No se puede deshacer.',
   close: 'Cerrar',
+  skipToContent: 'Ir directo a la página',
   loading: 'Cargando…',
   retry: 'Reintentar',
   loadFailed: 'Esto no se ha cargado.',

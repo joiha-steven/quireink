@@ -270,6 +270,7 @@ export function ThemeFields({ presets, themes, defaultId, enabled, scheme, onCha
           but a blog that IS dark or IS light can now say so. */}
       <Setting inline label={t.defaultScheme} note={t.defaultSchemeHint}>
         <Select
+          aria-label={t.defaultScheme}
           value={scheme}
           onChange={(e) => onChangeScheme(e.target.value as SchemeDefault)}
         >

@@ -195,7 +195,7 @@ export function AdminSidebar({
       >
         {/* Top: the wordmark and the search, and NOTHING else — measured, not preferred.
             The collapse control was here too for a while and the row could not hold it: the
-            wordmark, a 40px search button, its ⌘K badge and a 36px chevron need more than the
+            wordmark, a 40px search button, its chord badge and a 36px chevron need more than the
             184px inside a 208px rail, and a flex row whose items cannot shrink does not wrap,
             it OVERFLOWS. What gave way was the MARK, which is the one thing on this row that
             is not chrome. Collapse now lives with the rail's other preferences, at the foot.

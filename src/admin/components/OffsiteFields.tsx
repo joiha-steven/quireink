@@ -8,10 +8,9 @@ import { useRouter } from '@/admin/router'
 import type { ApiResponse } from '@/types'
 import { useAdminT } from './I18nProvider'
 import { ConnectionCard, type SaveResult } from './ConnectionCard'
-import { CONTROL, NOTE_TEXT } from './kit'
+import { NOTE_TEXT } from './kit'
+import { Input } from '@/admin/ui/Input'
 import { useSecretKeys } from './useSecretKeys'
-
-const INPUT = `${CONTROL} w-full`
 
 type Keys = {
   s3Endpoint: string; s3Region: string; s3Bucket: string
@@ -23,7 +22,7 @@ export function OffsiteCard({ configured, bucket }: { configured: boolean; bucke
   const t = useAdminT()
   const router = useRouter()
   const secrets = useSecretKeys('/api/integrations/s3', EMPTY, () => router.refresh())
-  const { keys, touched, set, ph } = secrets
+  const { keys, touched, set, phSet } = secrets
 
   /**
    * SAVE, THEN REACH THE BUCKET — one press, in that order.
@@ -57,19 +56,19 @@ export function OffsiteCard({ configured, bucket }: { configured: boolean; bucke
     >
     <div className="space-y-3">
       <p className={NOTE_TEXT}>{t.offsiteHelp}</p>
-      <input className={INPUT} placeholder={t.s3Endpoint}
+      <Input label={t.s3Endpoint}
         value={keys.s3Endpoint} onChange={(e) => set('s3Endpoint', e.target.value)} />
       <div className="grid grid-cols-2 gap-3">
-        <input className={INPUT} placeholder={ph(!!bucket, bucket || t.s3Bucket)}
+        <Input label={t.s3Bucket} placeholder={bucket || phSet(false)}
           value={keys.s3Bucket} onChange={(e) => set('s3Bucket', e.target.value)} />
-        <input className={INPUT} placeholder={t.s3Region}
+        <Input label={t.s3Region}
           value={keys.s3Region} onChange={(e) => set('s3Region', e.target.value)} />
       </div>
-      <input className={INPUT} placeholder={t.s3Prefix}
+      <Input label={t.s3Prefix}
         value={keys.s3Prefix} onChange={(e) => set('s3Prefix', e.target.value)} />
-      <input className={INPUT} placeholder={ph(configured, t.s3KeyId)}
+      <Input label={t.s3KeyId} placeholder={phSet(configured)}
         value={keys.s3AccessKeyId} onChange={(e) => set('s3AccessKeyId', e.target.value)} />
-      <input className={INPUT} type="password" placeholder={ph(configured, t.s3Secret)}
+      <Input label={t.s3Secret} type="password" placeholder={phSet(configured)}
         value={keys.s3SecretAccessKey} onChange={(e) => set('s3SecretAccessKey', e.target.value)} />
     </div>
     </ConnectionCard>

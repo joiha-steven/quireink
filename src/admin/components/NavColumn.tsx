@@ -268,7 +268,7 @@ export function useNavColumn({
     /**
      * Search as chrome, on the wordmark's row.
      *
-     * ⌘K STILL HAS TO BE PRINTED, which is the whole reason this control exists: a chord cannot
+     * THE CHORD STILL HAS TO BE PRINTED, which is the whole reason this control exists: a chord cannot
      * be discovered, and a mouse teaches a keyboard by showing the chord on the thing the mouse
      * clicks. Collapsed there is no room for the badge and it moves into the tooltip.
      */
