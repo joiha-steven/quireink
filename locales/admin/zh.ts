@@ -420,6 +420,7 @@ const zh = {
   firstRun5Body: '配置好 SMTP 后，站点上会出现订阅表单。何时发送始终由你决定。',
   siteLanguage: '站点语言',
   siteLanguageHint: '更改界面语言和日期格式。',
+  siteLanguageOnSave: '保存之后管理界面才会切换到这个语言。',
   siteTitle: '站点标题',
   siteDescription: '站点描述',
   siteDescriptionPlaceholder: '博客的简短标语',

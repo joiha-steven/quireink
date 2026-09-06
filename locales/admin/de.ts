@@ -420,6 +420,7 @@ const de = {
   firstRun5Body: 'Sobald SMTP steht, erscheint ein Anmeldeformular auf der Website. Gesendet wird nur auf Ihre Entscheidung.',
   siteLanguage: 'Website-Sprache',
   siteLanguageHint: 'Ändert die Sprache der Oberfläche und das Datumsformat.',
+  siteLanguageOnSave: 'Die Verwaltung wechselt dazu, sobald Sie speichern.',
   siteTitle: 'Website-Titel',
   siteDescription: 'Website-Beschreibung',
   siteDescriptionPlaceholder: 'Ein kurzer Slogan für den Blog',

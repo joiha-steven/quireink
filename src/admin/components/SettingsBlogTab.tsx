@@ -14,9 +14,11 @@ import { BrandFields } from './BrandFields'
 import { AuthorFields } from './AuthorFields'
 import { CanonicalField } from './SeoFields'
 
-export function SettingsBlogTab({ s, update, grid, col }: {
+export function SettingsBlogTab({ s, update, savedLanguage, grid, col }: {
   s: SiteSettings
   update: (partial: Partial<SiteSettings>) => void
+  /** What the server holds, so the language field can say when the form disagrees with it. */
+  savedLanguage: SiteSettings['language']
   grid: string
   col: string
 }) {
@@ -25,7 +27,7 @@ export function SettingsBlogTab({ s, update, grid, col }: {
     <div className={grid}>
       <div className={col}>
         <SettingsCard title={t.cardGeneral}>
-          <SiteFields s={s} update={update} />
+          <SiteFields s={s} update={update} saved={savedLanguage} />
         </SettingsCard>
         {/* The address the blog calls its own. One field, so it rides under the identity it
             belongs to rather than opening a card of its own. */}

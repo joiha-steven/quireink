@@ -420,6 +420,7 @@ const fr = {
   firstRun5Body: 'Une fois SMTP configuré, un formulaire d’abonnement apparaît sur le site. L’envoi reste toujours votre décision.',
   siteLanguage: 'Langue du site',
   siteLanguageHint: 'Change la langue de l’interface et le format des dates.',
+  siteLanguageOnSave: 'L’administration passera à cette langue une fois enregistré.',
   siteTitle: 'Titre du site',
   siteDescription: 'Description du site',
   siteDescriptionPlaceholder: 'Une courte devise pour le blog',

@@ -420,6 +420,7 @@ const en = {
   firstRun5Body: 'Once SMTP is set, a sign-up form appears on the site. Sending is always your call.',
   siteLanguage: 'Site language',
   siteLanguageHint: 'Changes the interface language and date format.',
+  siteLanguageOnSave: 'The admin switches to this once you save.',
   siteTitle: 'Site title',
   siteDescription: 'Site description',
   siteDescriptionPlaceholder: 'A short tagline for the blog',

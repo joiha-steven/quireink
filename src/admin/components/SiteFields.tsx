@@ -10,7 +10,7 @@ import type { SiteSettings } from '@/types'
 import { Input, Textarea } from '@/admin/ui/Input'
 import { ToggleField } from '@/admin/ui/Switch'
 import { SITE_LANGS } from '@/locales/langs'
-import { useAdminT, useSetAdminLang } from './I18nProvider'
+import { useAdminT } from './I18nProvider'
 import { FIELD_W, Select, Setting, SETTING_GAP } from './kit'
 
 /**
@@ -30,11 +30,15 @@ const ZONES: string[] = (() => {
   }
 })()
 
-type Props = { s: SiteSettings; update: (p: Partial<SiteSettings>) => void }
+type Props = {
+  s: SiteSettings
+  update: (p: Partial<SiteSettings>) => void
+  /** The language the SERVER holds, so the field can say when the two disagree. */
+  saved: SiteSettings['language']
+}
 
-export function SiteFields({ s, update }: Props) {
+export function SiteFields({ s, update, saved }: Props) {
   const t = useAdminT()
-  const setLang = useSetAdminLang()
 
   return (
     <div className={SETTING_GAP}>
@@ -44,14 +48,22 @@ export function SiteFields({ s, update }: Props) {
           radio buttons with none of their scannability. One value from a long closed list is
           what a dropdown is FOR, and the timezone right under this one already shows the
           shape. `inline`, same as the timezone: a short answer takes a short field. */}
-      <Setting inline label={t.siteLanguage} note={t.siteLanguageHint}>
+      {/* ⚠️ IT DOES NOT APPLY UNTIL IT IS SAVED (2026-09-07). Choosing a language used to
+          re-letter the whole admin on the `change` event, before anything was stored — so
+          somebody looking at what Vietnamese would be like got a Vietnamese admin, an
+          unsaved form, and a Save key they now had to find in a language they were only
+          trying on. Worse in the other direction: leaving the page put the interface back
+          without a word, which reads as the setting having failed. The note below says the
+          state out loud while the two disagree; `useSettingsSave` applies it after the
+          server has taken it. */}
+      <Setting
+        inline
+        label={t.siteLanguage}
+        note={s.language === saved ? t.siteLanguageHint : t.siteLanguageOnSave}
+      >
         <Select
           value={s.language}
-          onChange={(e) => {
-            const v = e.target.value as SiteSettings['language']
-            update({ language: v })
-            setLang(v) // switch the admin UI instantly
-          }}
+          onChange={(e) => update({ language: e.target.value as SiteSettings['language'] })}
           aria-label={t.siteLanguage}
         >
           {SITE_LANGS.map((l) => (

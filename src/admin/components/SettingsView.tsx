@@ -211,7 +211,7 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
       {/* The definition, in the open — a guessed-at tab is a tab you open five of. It shares its line with the switch that quiets every OTHER explanation; this one stays. See `SettingsNotes`. */}
       <SettingsNotesRow hint={HINTS[tab]} on={notes} onToggle={toggleNotes} />
 
-      {tab === 'blog' && <SettingsBlogTab s={s} update={update} grid={GRID} col={COL} />}
+      {tab === 'blog' && <SettingsBlogTab s={s} update={update} savedLanguage={settings.language} grid={GRID} col={COL} />}
 
       {tab === 'home' && (
         <SettingsHomeTab

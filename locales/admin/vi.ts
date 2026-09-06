@@ -420,6 +420,7 @@ const vi = {
   firstRun5Body: 'Cài SMTP xong, form đăng ký sẽ hiện trên site. Gửi lúc nào là quyền của bạn.',
   siteLanguage: 'Ngôn ngữ site',
   siteLanguageHint: 'Đổi ngôn ngữ giao diện và định dạng ngày tháng.',
+  siteLanguageOnSave: 'Lưu xong thì admin mới đổi sang thứ tiếng này.',
   siteTitle: 'Tiêu đề site',
   siteDescription: 'Mô tả site',
   siteDescriptionPlaceholder: 'Một dòng giới thiệu ngắn về blog',

@@ -420,6 +420,7 @@ const es = {
   firstRun5Body: 'Con el SMTP configurado, aparece un formulario de suscripción en el sitio. Enviar siempre es decisión tuya.',
   siteLanguage: 'Idioma del sitio',
   siteLanguageHint: 'Cambia el idioma de la interfaz y el formato de fechas.',
+  siteLanguageOnSave: 'La administración cambia a este idioma al guardar.',
   siteTitle: 'Título del sitio',
   siteDescription: 'Descripción del sitio',
   siteDescriptionPlaceholder: 'Un lema corto para el blog',

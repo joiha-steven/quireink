@@ -420,6 +420,7 @@ const ja = {
   firstRun5Body: 'SMTP を設定すると登録フォームがサイトに現れます。送信するかどうかは常にあなた次第です。',
   siteLanguage: 'サイトの言語',
   siteLanguageHint: 'インターフェースの言語と日付形式を変更します。',
+  siteLanguageOnSave: '保存すると管理画面がこの言語に切り替わります。',
   siteTitle: 'サイトタイトル',
   siteDescription: 'サイトの説明',
   siteDescriptionPlaceholder: 'ブログの短いキャッチフレーズ',

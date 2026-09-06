@@ -420,6 +420,7 @@ const it = {
   firstRun5Body: 'Con l’SMTP configurato, sul sito compare un modulo di iscrizione. L’invio resta sempre una tua decisione.',
   siteLanguage: 'Lingua del sito',
   siteLanguageHint: 'Cambia la lingua dell’interfaccia e il formato delle date.',
+  siteLanguageOnSave: 'L’amministrazione passa a questa lingua quando salvi.',
   siteTitle: 'Titolo del sito',
   siteDescription: 'Descrizione del sito',
   siteDescriptionPlaceholder: 'Un motto breve per il blog',

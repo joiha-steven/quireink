@@ -420,6 +420,7 @@ const ru = {
   firstRun5Body: 'Как только настроен SMTP, на сайте появляется форма подписки. Отправлять или нет — всегда решаете вы.',
   siteLanguage: 'Язык сайта',
   siteLanguageHint: 'Меняет язык интерфейса и формат дат.',
+  siteLanguageOnSave: 'Панель переключится на этот язык после сохранения.',
   siteTitle: 'Название сайта',
   siteDescription: 'Описание сайта',
   siteDescriptionPlaceholder: 'Короткий девиз блога',

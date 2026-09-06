@@ -585,6 +585,7 @@ export type AdminStrings = {
   firstRun5Body: string
   siteLanguage: string
   siteLanguageHint: string
+  siteLanguageOnSave: string
   siteTitle: string
   siteDescription: string
   siteDescriptionPlaceholder: string

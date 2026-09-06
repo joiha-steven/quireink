@@ -11,7 +11,7 @@ import type { SiteSettings, ApiResponse } from '@/types'
 import type { SaveResult } from './ConnectionCard'
 import { useToast } from '@/admin/ui/Toast'
 import { useConfirm } from '@/admin/ui/ConfirmDialog'
-import { useAdminT } from './I18nProvider'
+import { useAdminT, useSetAdminLang } from './I18nProvider'
 
 /**
  * A refusal that belongs to ONE field.
@@ -63,6 +63,7 @@ export function useSettingsSave(settings: SiteSettings, s: SiteSettings): Settin
   const [saving, setSaving] = useState(false)
   const [savedAt, setSavedAt] = useState<string | null>(null)
   const [fieldError, setFieldError] = useState<FieldError | null>(null)
+  const setLang = useSetAdminLang()
 
   /**
    * A COUNT rather than a boolean, because the count is what makes the Save key worth
@@ -106,6 +107,12 @@ export function useSettingsSave(settings: SiteSettings, s: SiteSettings): Settin
         throw new Error(json.error)
       }
       setSavedAt(new Date().toISOString())
+      // ⚠️ THE LANGUAGE APPLIES HERE AND NOWHERE ELSE (2026-09-07). The field used to
+      // re-letter the whole admin on `change`, before anything was stored — so trying a
+      // language out handed somebody an admin in it, an unsaved form, and a Save key to find
+      // in a language they had not chosen; and leaving the page put it back without a word,
+      // which reads as the setting having failed. It changes when the server has taken it.
+      if (s.language !== settings.language) setLang(s.language)
       notify(t.savedSettings)
       // Refetch the shell so a language change reaches the whole admin at once. It is also
       // what clears the count: the shell hands the view a new `settings` prop, and `changed`

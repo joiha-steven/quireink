@@ -420,6 +420,7 @@ const ko = {
   firstRun5Body: 'SMTP를 설정하면 사이트에 구독 양식이 나타납니다. 보낼지는 언제나 직접 결정합니다.',
   siteLanguage: '사이트 언어',
   siteLanguageHint: '인터페이스 언어와 날짜 형식을 변경합니다.',
+  siteLanguageOnSave: '저장하면 관리 화면이 이 언어로 바뀝니다.',
   siteTitle: '사이트 제목',
   siteDescription: '사이트 설명',
   siteDescriptionPlaceholder: '블로그의 짧은 소개 문구',

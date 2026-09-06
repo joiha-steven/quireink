@@ -141,6 +141,30 @@ describe('SettingsView, mounted', () => {
     await m.unmount()
   })
 
+  it('leaves the admin in its own language until the new one is stored', async () => {
+    // Choosing a language used to re-letter the whole admin on `change`, before anything was
+    // saved: trying Vietnamese out handed somebody a Vietnamese admin, an unsaved form and a
+    // Save key to find in a language they had not chosen. The note under the field says the
+    // two disagree; the interface itself waits for the server.
+    const { mountAdmin, installFetchMock } = await import('@/admin/test-mount')
+    const { SettingsView } = await import('@/admin/components/SettingsView')
+    const { adminT } = await import('@/i18n/admin-i18n')
+    const t = adminT('en')
+    const fetchMock = installFetchMock(() => ({ success: true, data: settingsFixture() }))
+    trackMock(fetchMock.restore)
+
+    const m = await mountAdmin(<SettingsView {...payload()} />)
+    const picker = m.container.querySelector('select[aria-label="' + t.siteLanguage + '"]')
+    expect(picker).not.toBeNull()
+    await m.type(picker as Element, 'vi')
+    await m.flush()
+
+    // Still English, and the field says why.
+    expect(m.text()).toContain(t.cardGeneral)
+    expect(m.text()).toContain(t.siteLanguageOnSave)
+    await m.unmount()
+  })
+
   it('a rejected save reports failure and keeps the edit on screen', async () => {
     const { mountAdmin, installFetchMock } = await import('@/admin/test-mount')
     const { SettingsView } = await import('@/admin/components/SettingsView')

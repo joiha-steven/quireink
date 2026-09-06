@@ -155,7 +155,11 @@ export async function mountAdmin(node: ReactElement): Promise<Mounted> {
     type: (el, value) =>
       act(async () => {
         setNativeValue(el, value)
-        el.dispatchEvent(new Event('input', { bubbles: true }))
+        // ⚠️ A `<select>` needs `change`, not `input`. React maps `onChange` to the browser's
+        // `input` event for text fields and to `change` for a select, so dispatching only
+        // `input` set the DOM value and ran no handler — the state behind the control never
+        // moved, and a test asserting on it read the value it had started with.
+        el.dispatchEvent(new Event(el.tagName === 'SELECT' ? 'change' : 'input', { bubbles: true }))
       }),
     // `focusout`, not `blur`: React 17+ listens for the bubbling event, and a `blur` event
     // dispatched at the element does not reach the root React attached its listener to.

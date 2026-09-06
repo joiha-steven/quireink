@@ -421,6 +421,7 @@ const pt = {
   firstRun5Body: 'Com o SMTP configurado, um formulário de inscrição aparece no site. Enviar é sempre decisão sua.',
   siteLanguage: 'Idioma do site',
   siteLanguageHint: 'Muda o idioma da interface e o formato das datas.',
+  siteLanguageOnSave: 'A administração muda para este idioma quando guardar.',
   siteTitle: 'Título do site',
   siteDescription: 'Descrição do site',
   siteDescriptionPlaceholder: 'Um lema curto para o blog',
