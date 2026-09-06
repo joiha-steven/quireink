@@ -137,10 +137,15 @@ export const ISLANDS_CSS = `
    Only direct children of .prose, and never the figures: an image dimming at the edges
    reads as a rendering fault rather than as an effect.
 
-   ⚠️ NOT IN BOOK MODE. The book's own flow IS a .prose, and it is laid out in columns that
-   run sideways — so a view() timeline, which only knows the document's vertical scroll,
+   ⚠️ NOT IN THE SPREAD. The desktop book's flow IS a .prose, and it is laid out in columns
+   that run sideways — so a view() timeline, which only knows the document's vertical scroll,
    dimmed whichever paragraphs happened to sit outside the window in a direction the reader
-   is not scrolling. On a phone that put a wash of grey across the top of every page turned. */
+   is not scrolling. On a phone that put a wash of grey across the top of every page turned.
+
+   The PHONE reader is the opposite case and gets the effect: it scrolls the document like
+   any other page, and the fade is what stops a line being sliced in half by the top of the
+   glass — which is what the edge of a scrolling window does to a line of type, and what a
+   paginated reader never has to answer for. */
 @supports (animation-timeline:view()){
   @media (prefers-reduced-motion:no-preference){
     html[data-scroll-fade=on][data-motion=on] .prose:not(.book-flow)>p,
@@ -148,7 +153,13 @@ export const ISLANDS_CSS = `
     html[data-scroll-fade=on][data-motion=on] .prose:not(.book-flow)>h3,
     html[data-scroll-fade=on][data-motion=on] .prose:not(.book-flow)>ul,
     html[data-scroll-fade=on][data-motion=on] .prose:not(.book-flow)>ol,
-    html[data-scroll-fade=on][data-motion=on] .prose:not(.book-flow)>blockquote{
+    html[data-scroll-fade=on][data-motion=on] .prose:not(.book-flow)>blockquote,
+    html[data-scroll-fade=on][data-motion=on] .book-reader .book-flow>p,
+    html[data-scroll-fade=on][data-motion=on] .book-reader .book-flow>h2,
+    html[data-scroll-fade=on][data-motion=on] .book-reader .book-flow>h3,
+    html[data-scroll-fade=on][data-motion=on] .book-reader .book-flow>ul,
+    html[data-scroll-fade=on][data-motion=on] .book-reader .book-flow>ol,
+    html[data-scroll-fade=on][data-motion=on] .book-reader .book-flow>blockquote{
       animation:edge-fade linear both;animation-timeline:view();animation-range:cover 0% cover 100%}
   }
 }
