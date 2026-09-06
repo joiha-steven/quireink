@@ -217,13 +217,17 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
         </SheetTop>
         </div>
         <div
+          // KEYED BY TAB, so switching one mounts a new panel and `@starting-style` catches
+          // it (`admin-enter` in admin.css). Before this the panel was replaced between two
+          // frames, which reports "the screen is different now" and not what changed.
+          key={tab}
           id={PANEL_ID}
           role="tabpanel"
           aria-label={String(TAB_LABEL(tab))}
           // `tabIndex={-1}` and not 0: the panel is reachable by script (the strip's arrows
           // leave focus on the tab) without adding a stop that lands on a container.
           tabIndex={-1}
-          className="p-5"
+          className="admin-enter p-5"
           data-explanations={notes ? 'on' : 'off'}
         >
       {/* The definition, in the open — a guessed-at tab is a tab you open five of. It shares its line with the switch that quiets every OTHER explanation; this one stays. See `SettingsNotes`. */}

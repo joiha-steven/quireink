@@ -163,11 +163,12 @@ export function ActivityLog({ entries, enabled }: { entries: ActivityEntry[]; en
           <EmptyState title={t.logNoMatch} />
         ) : (
           <>
-          <ul className="paper-cols">
-            {rows.slice(0, shown).map((e) => (
+          <ul className="admin-stagger paper-cols">
+            {rows.slice(0, shown).map((e, i) => (
               <li
                 key={e.id}
-                className="flex items-center gap-2.5 border-b border-neutral-100 px-5 py-2 text-xs dark:border-neutral-800"
+                style={{ ["--i" as string]: i }}
+                className="flex items-center gap-2.5 border-b border-neutral-100 px-5 py-2 text-xs transition-colors hover:bg-neutral-50/70 dark:border-neutral-800 dark:hover:bg-neutral-800/30"
                 // The machine's own words, kept where somebody debugging an install can
                 // reach them and nobody else has to read them.
                 title={`${e.action}${e.detail ? ` — ${e.detail}` : ''}`}

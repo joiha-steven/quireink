@@ -13,6 +13,7 @@ import { Input } from '@/admin/ui/Input'
 import { ToggleRow } from '@/admin/ui/Switch'
 import { useAdminT } from './I18nProvider'
 import { PANEL_LIST, SETTING_GAP } from './kit'
+import { Reveal } from './Reveal'
 
 type Item = { key: keyof FeatureSettings; label: string; desc: string }
 
@@ -88,7 +89,7 @@ export function PostEndFields({ features, onChange, relatedCount, onRelatedCount
   return (
     <div className={SETTING_GAP}>
       <List items={items} features={features} onChange={onChange} />
-      {features.related && (
+      <Reveal open={features.related}>
         <Input
           label={t.relatedCount}
           note={t.relatedCountHint}
@@ -98,7 +99,7 @@ export function PostEndFields({ features, onChange, relatedCount, onRelatedCount
           value={relatedCount}
           onChange={(e) => onRelatedCount(Number(e.target.value))}
         />
-      )}
+      </Reveal>
     </div>
   )
 }

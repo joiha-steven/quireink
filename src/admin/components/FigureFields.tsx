@@ -17,6 +17,7 @@
 import type { FigureSettings } from '@/types'
 import { useAdminT } from './I18nProvider'
 import { NOTE_TEXT, SEGMENT_TRACK, tabItemClass } from './kit'
+import { Reveal } from './Reveal'
 
 const LABEL = 'block text-sm font-medium text-neutral-700 dark:text-neutral-300'
 
@@ -50,8 +51,10 @@ export function FigureFields({ figure, onChange }: {
         <p className={NOTE_TEXT}>{t.figureFrameHint}</p>
       </div>
 
-      {/* The mat's colour is only a question once there is a mat, so it appears with one. */}
-      {framed && (
+      {/* The mat's colour is only a question once there is a mat, so it appears with one —
+          and since 2026-09-07 it GROWS out of the row rather than being inserted into it.
+          `Reveal` carries the mechanism and the reason. */}
+      <Reveal open={framed}>
         <div className="space-y-2">
           <span className={LABEL}>{t.figureFrameColour}</span>
           <div className={SEGMENT_TRACK}>
@@ -64,7 +67,7 @@ export function FigureFields({ figure, onChange }: {
           </div>
           <p className={NOTE_TEXT}>{t.figureFrameColourHint}</p>
         </div>
-      )}
+      </Reveal>
     </div>
   )
 }

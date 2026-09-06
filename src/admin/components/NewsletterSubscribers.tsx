@@ -80,9 +80,9 @@ export function NewsletterSubscribers() {
       {subs.length === 0 ? (
         <div className="p-8"><EmptyState title={t.nlNoSubs} description={t.nlNoSubsHint} /></div>
       ) : (
-        <ul className="paper-cols">
-          {subs.map((s) => (
-            <li key={s.id} className="border-b border-neutral-100 px-5 py-2.5 dark:border-neutral-800">
+        <ul className="admin-stagger paper-cols">
+          {subs.map((s, i) => (
+            <li key={s.id} style={{ ["--i" as string]: i }} className="border-b border-neutral-100 px-5 py-2.5 transition-colors hover:bg-neutral-50/70 dark:border-neutral-800 dark:hover:bg-neutral-800/30">
               <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-xs text-neutral-500 dark:text-neutral-400">
                 <span
                   aria-hidden

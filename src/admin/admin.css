@@ -764,6 +764,74 @@ input[type='color']::-moz-color-swatch {
   }
 }
 
+/* ═══ THE ADMIN MOVES, and until 2026-09-07 it did not. ═══
+
+   Measured on that date across every admin screen: 48 of 48 interactive elements had a
+   transition, all of them the same `--dur-fast` hover, and there were ZERO keyframes and no
+   entrance of any kind. Every change of state was an instant swap — a tab's panel replaced
+   between two frames, a page replaced by another page, a row appearing where nothing was —
+   and an instant swap is the one thing the eye cannot follow: it reports "the screen is
+   different now" without reporting what changed or where the old thing went.
+
+   Five entrances below, and one thing they all have in common: they are all ARRIVALS. Nothing
+   here moves while anybody is reading or typing, nothing loops, and nothing delays an action
+   — the click has already happened by the time the paint starts. `docs/conventions/motion.md`
+   is the contract; the gates at the foot of this file zero every one of them.
+
+   ⚠️ THE TOKENS DO NOT MOVE. The audit proposed renaming them and retiming two, and the
+   reason not to is that they are a promise shared with the reading site (`web/motion.css.ts`
+   declares the same three, and the doc says in as many words that the numbers must not drift).
+   What was missing here was motion, not different numbers. */
+
+/* (a) A PAGE ARRIVES. The canvas' content is keyed by path, so a route change mounts a new
+   subtree and `@starting-style` catches it. Six pixels, which is far enough to read as a
+   direction and near enough that nothing appears to travel. */
+.admin-enter {
+  transition: opacity var(--dur-base) var(--ease-out), translate var(--dur-base) var(--ease-out);
+}
+@starting-style {
+  .admin-enter { opacity: 0; translate: 0 6px; }
+}
+
+/* (c) A LIST ARRIVES IN ORDER, up to ten rows and then all at once — a stagger long enough
+   to be read as one sweep rather than as a queue. `--i` is set inline by the list; rows past
+   the tenth get no delay at all, because a fortieth row appearing 800ms late is a bug that
+   looks like a design.
+
+   An ANIMATION rather than a transition, because a row is created rather than changed: React
+   reuses DOM nodes, so this runs when a row first exists and never on a re-render. */
+@keyframes admin-row-in {
+  from { opacity: 0; translate: 0 4px; }
+  to { opacity: 1; translate: 0 0; }
+}
+.admin-stagger > * {
+  animation: admin-row-in var(--dur-base) var(--ease-out) both;
+  animation-delay: calc(min(var(--i, 0), 10) * 20ms);
+}
+
+/* (d) A FIELD THAT DEPENDS ON A SWITCH grows out of the row rather than appearing in it.
+   `grid-template-rows: 0fr → 1fr` is the only way to animate to a height nobody has measured;
+   the inner element owns the `overflow: hidden` that makes it a curtain rather than a clip. */
+.admin-reveal {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--dur-base) var(--ease-out);
+}
+.admin-reveal[data-open] { grid-template-rows: 1fr; }
+.admin-reveal > * { overflow: hidden; }
+
+/* (f) THE PHONE'S DRAWER SLIDES, and the scrim behind it fades. It appeared and disappeared
+   between frames, which on a panel that covers most of the screen reads as the page having
+   been replaced rather than as something having opened over it. */
+.admin-drawer {
+  transition: opacity var(--dur-base) var(--ease-out), translate var(--dur-base) var(--ease-out);
+}
+.admin-scrim { transition: opacity var(--dur-base) var(--ease-out); }
+@starting-style {
+  .admin-drawer { opacity: 0; translate: 0 -8px; }
+  .admin-scrim { opacity: 0; }
+}
+
 /* THE ENTRANCES. A toast, the command palette and a slide-over ARRIVE rather than appear:
    a shade transparent and a few pixels short, settling on the one curve, from the
    @starting-style the browser applies on the frame React mounts them. Where the engine has

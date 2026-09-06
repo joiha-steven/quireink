@@ -234,8 +234,8 @@ export function AdminSidebar({
       </header>
       {open && (
         <>
-          <button type="button" aria-label={t.navHome} onClick={close} className="fixed inset-0 top-[65px] z-20 bg-black/20 lg:hidden" />
-          <nav className={`fixed inset-x-3 top-[72px] z-30 scroll-fade max-h-[calc(100dvh-84px)] overflow-y-auto p-3 lg:hidden ${OVERLAY}`}>
+          <button type="button" aria-label={t.navHome} onClick={close} className="admin-scrim fixed inset-0 top-[65px] z-20 bg-black/20 lg:hidden" />
+          <nav className={`admin-drawer fixed inset-x-3 top-[72px] z-30 scroll-fade max-h-[calc(100dvh-84px)] overflow-y-auto p-3 lg:hidden ${OVERLAY}`}>
             {column.nav(false)}
             <span className="my-1 block h-px w-full bg-neutral-200 dark:bg-neutral-700" aria-hidden />
             {column.controls(false)}

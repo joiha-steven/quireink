@@ -146,6 +146,32 @@ export function registerSettingsFlows({ flow, expect }: Tour): void {
       return rows() >= before ? 'ok (gone, then back)' : 'undo did not put the comment back'
     })()`, 1000))
 
+  // Measured on 2026-09-07: 48 of 48 interactive elements had a transition, all of them the
+  // same hover, and there were ZERO keyframes and no entrance anywhere. A change of state was
+  // an instant swap, which reports "the screen is different now" and not what changed.
+  flow('admin: a panel arrives, a list arrives in order, and the switch stops both', () => expect('/admin/log', `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      const row = document.querySelector('.admin-stagger > *')
+      if (!row) return 'the log rows carry no stagger'
+      const rows = [...document.querySelectorAll('.admin-stagger > *')].slice(0, 4)
+      const delays = rows.map((r) => getComputedStyle(r).animationDelay)
+      if (getComputedStyle(row).animationName === 'none') return 'the rows have no entrance'
+      if (delays[1] === delays[2]) return 'the rows all arrive at once: ' + delays.join(' ')
+      // ⚠️ AND THE OWNER'S SWITCH STOPS IT. A motion pass the gate does not reach is the
+      // exact failure the admin stylesheet was rewritten for on 2026-09-06.
+      // NOTE: this body is a template literal. No backticks anywhere in it.
+      document.documentElement.dataset.motion = 'off'
+      await sleep(200)
+      const stopped = getComputedStyle(document.querySelector('.admin-stagger > *')).animationDuration
+      const enter = document.querySelector('.admin-enter')
+      const enterStopped = enter ? getComputedStyle(enter).transitionDuration : '0s'
+      document.documentElement.dataset.motion = ''
+      if (!/^0m?s/.test(stopped)) return 'the switch left the row entrance running: ' + stopped
+      if (!/^0m?s/.test(enterStopped)) return 'the switch left the page entrance running: ' + enterStopped
+      return 'ok (staggered ' + delays.join('/') + ', all zero with motion off)'
+    })()`, 1200))
+
   // A tablist is not eleven buttons in a row. With buttons, reaching the last settings tab
   // from the keyboard costs seven presses of Tab, and every one of them is also a press that
   // has to NOT be Enter.

@@ -243,7 +243,18 @@ function Shell() {
             {/* The pane is OUTSIDE the boundary and outside the route: it must survive both
                 a navigation and a page that threw, because it is how you get to another one. */}
             <WriteLayout path={path}>
+              {/* KEYED BY PATH, which is what makes the arrival possible: a new key mounts a
+                  new subtree, and `@starting-style` only fires on something that has just
+                  come into existence. The boundary was already keyed this way for its own
+                  reason — leaving a broken page is what resets it — so the class rides along
+                  rather than adding a wrapper. */}
               <ErrorBoundary key={path}>
+              {/* ⚠️ `min-w-0`, and it is load-bearing rather than tidy. A flex item defaults
+                  to `min-width: auto`, which refuses to shrink below its content's intrinsic
+                  minimum — so this wrapper, added only to carry the entrance, took the
+                  editor's own shrink chain out and the phone scrolled sideways by 591px.
+                  The same declaration is the fix in three other places in this admin. */}
+              <div className="admin-enter min-w-0">
               {/* Reached on the FIRST paint only. Every later route change runs inside a
                   transition, which keeps the current page on screen instead of falling back
                   here — see the note in `router.tsx`. */}
@@ -254,6 +265,7 @@ function Shell() {
               <Suspense fallback={<Loading />}>
                 <Route />
               </Suspense>
+              </div>
               </ErrorBoundary>
             </WriteLayout>
           </Canvas>
