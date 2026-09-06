@@ -117,7 +117,7 @@ function Result({ text }: { text: string }): JSX.Element {
   const long = text.length > FOLD
   return (
     <>
-      <pre className="mt-1 whitespace-pre-wrap break-all font-mono text-[11px] leading-relaxed">
+      <pre className="mt-1 whitespace-pre-wrap break-all font-mono text-xs leading-relaxed">
         <Json text={open || !long ? text : `${text.slice(0, FOLD)}…`} />
       </pre>
       {long && (
@@ -153,7 +153,7 @@ export function ToolLog({ turns, open }: { turns: Turn[]; open: boolean }): JSX.
                 {/* The arguments as sent. An empty object is shown rather than hidden: "it
                     called this with nothing" is a fact, and a missing line reads as a
                     missing record. */}
-                <pre className="mt-1 whitespace-pre-wrap break-all font-mono text-[11px] leading-relaxed">
+                <pre className="mt-1 whitespace-pre-wrap break-all font-mono text-xs leading-relaxed">
                   <Json text={JSON.stringify(e.args)} />
                 </pre>
                 {e.result !== undefined && <Result text={e.result} />}

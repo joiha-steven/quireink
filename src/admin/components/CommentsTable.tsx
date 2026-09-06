@@ -172,7 +172,7 @@ export function CommentsTable({ initial }: { initial: AdminComment[] }) {
                   >
                     <Marked text={g.title} needle={query} />
                   </a>
-                  <span className="shrink-0 rounded-full border border-neutral-200 px-1.5 text-[11px] tabular-nums text-neutral-500 dark:border-neutral-700 dark:text-neutral-400">
+                  <span className="shrink-0 rounded-full border border-neutral-200 px-1.5 text-xs tabular-nums text-neutral-500 dark:border-neutral-700 dark:text-neutral-400">
                     {g.items.length}
                   </span>
                 </div>
@@ -183,7 +183,7 @@ export function CommentsTable({ initial }: { initial: AdminComment[] }) {
                           same person twice in a card is then obvious at a glance. */}
                       <span
                         aria-hidden
-                        className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-md bg-neutral-100 text-[11px] font-semibold text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300"
+                        className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-md bg-neutral-100 text-xs font-semibold text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300"
                       >
                         {initialOf(c.name)}
                       </span>
@@ -217,7 +217,7 @@ export function CommentsTable({ initial }: { initial: AdminComment[] }) {
                         {/* The forensics, one line, and only where it exists. It is the third
                             question a moderator asks, so it is the third thing here. */}
                         {(c.email || c.ip) && (
-                          <div className="mt-1 flex flex-wrap items-baseline gap-x-2 text-[11px] text-neutral-400 dark:text-neutral-500">
+                          <div className="mt-1 flex flex-wrap items-baseline gap-x-2 text-xs text-neutral-400 dark:text-neutral-500">
                             {c.email && <span className="truncate">{c.email}</span>}
                             {c.ip && <span className="whitespace-nowrap">{c.ip}{c.country && ` (${c.country})`}</span>}
                           </div>

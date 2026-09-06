@@ -34,7 +34,7 @@ const ASKED =
 const ANSWER = 'mt-4 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300'
 
 const CHIP =
-  'inline-flex items-center rounded-full border border-neutral-200 px-2.5 py-0.5 text-[11px] text-neutral-500 dark:border-neutral-700 dark:text-neutral-400'
+  'inline-flex items-center rounded-full border border-neutral-200 px-2.5 py-0.5 text-xs text-neutral-500 dark:border-neutral-700 dark:text-neutral-400'
 
 export function Exchange({ block, last, live, busy, cost, awaiting, onAnswer }: {
   block: Block

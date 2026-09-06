@@ -164,7 +164,7 @@ export const MediaCard = memo(function MediaCard({
           /* A finding, not an alarm: it reads as a note laid on the corner of the print.
              It was a solid black rectangle with square corners, which in an admin whose
              only black is its ink read louder than anything it could be telling you. */
-          <span className="absolute bottom-1.5 left-1.5 z-10 rounded-md bg-white/95 px-1.5 py-0.5 text-[11px] font-medium text-neutral-600 shadow-[0_1px_2px_rgba(0,0,0,.22)] backdrop-blur-[2px] dark:bg-neutral-900/95 dark:text-neutral-300">
+          <span className="absolute bottom-1.5 left-1.5 z-10 rounded-md bg-white/95 px-1.5 py-0.5 text-xs font-medium text-neutral-600 shadow-[0_1px_2px_rgba(0,0,0,.22)] backdrop-blur-[2px] dark:bg-neutral-900/95 dark:text-neutral-300">
             {t.unusedBadge}
           </span>
         )}
@@ -172,7 +172,7 @@ export const MediaCard = memo(function MediaCard({
             of a 190px caption and cut "gutenberg-bible-epistle.jpg" to "gutenberg-bible-ep…",
             which is the half of the line that is actually looked for. It waits for the
             pointer with the keys, so the resting grid is pictures and names and nothing else. */}
-        <span className={`absolute bottom-1.5 right-1.5 z-10 rounded-md bg-white/95 px-1.5 py-0.5 text-[11px] tabular-nums text-neutral-600 shadow-[0_1px_2px_rgba(0,0,0,.22)] backdrop-blur-[2px] transition-opacity dark:bg-neutral-900/95 dark:text-neutral-300 ${ON_HOVER}`}>
+        <span className={`absolute bottom-1.5 right-1.5 z-10 rounded-md bg-white/95 px-1.5 py-0.5 text-xs tabular-nums text-neutral-600 shadow-[0_1px_2px_rgba(0,0,0,.22)] backdrop-blur-[2px] transition-opacity dark:bg-neutral-900/95 dark:text-neutral-300 ${ON_HOVER}`}>
           {formatBytes(m.size)}
         </span>
         {mode === 'page' && (

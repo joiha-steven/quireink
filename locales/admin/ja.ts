@@ -3,7 +3,7 @@ import type { AdminStrings } from '../types'
 const ja = {
   navHome: 'ホーム',
   navWrite: '執筆',
-  navMore: 'その他',
+  navMore: '管理',
   navMedia: 'ライブラリ',
   navSettings: '設定',
   navViewBlog: 'ブログを見る',

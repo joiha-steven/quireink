@@ -145,10 +145,10 @@ export function Toolbar({
       {editor.isActive('table') && (
         <>
           {sep}
-          <ToolButton label={t.tbColAdd} onClick={() => editor.chain().focus().addColumnAfter().run()}><span className="text-[10px] font-bold">C+</span></ToolButton>
-          <ToolButton label={t.tbColDel} onClick={() => editor.chain().focus().deleteColumn().run()}><span className="text-[10px] font-bold">C−</span></ToolButton>
-          <ToolButton label={t.tbRowAdd} onClick={() => editor.chain().focus().addRowAfter().run()}><span className="text-[10px] font-bold">R+</span></ToolButton>
-          <ToolButton label={t.tbRowDel} onClick={() => editor.chain().focus().deleteRow().run()}><span className="text-[10px] font-bold">R−</span></ToolButton>
+          <ToolButton label={t.tbColAdd} onClick={() => editor.chain().focus().addColumnAfter().run()}><span className="text-xs font-bold">C+</span></ToolButton>
+          <ToolButton label={t.tbColDel} onClick={() => editor.chain().focus().deleteColumn().run()}><span className="text-xs font-bold">C−</span></ToolButton>
+          <ToolButton label={t.tbRowAdd} onClick={() => editor.chain().focus().addRowAfter().run()}><span className="text-xs font-bold">R+</span></ToolButton>
+          <ToolButton label={t.tbRowDel} onClick={() => editor.chain().focus().deleteRow().run()}><span className="text-xs font-bold">R−</span></ToolButton>
           <ToolButton label={t.tbTableDelete} onClick={() => editor.chain().focus().deleteTable().run()}><Glyph><Shared name="trash" /></Glyph></ToolButton>
         </>
       )}
@@ -169,7 +169,7 @@ function Row({ label, hint, active = false, onClick }: { label: string; hint?: s
       }`}
     >
       <span>{label}</span>
-      {hint && <span className="shrink-0 font-mono text-[11px] text-neutral-500 dark:text-neutral-400">{hint}</span>}
+      {hint && <span className="shrink-0 font-mono text-xs text-neutral-500 dark:text-neutral-400">{hint}</span>}
     </button>
   )
 }

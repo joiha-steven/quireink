@@ -3,7 +3,7 @@ import type { AdminStrings } from '../types'
 const vi = {
   navHome: 'Trang chủ',
   navWrite: 'Viết',
-  navMore: 'Mọi thứ khác',
+  navMore: 'Quản lý',
   navMedia: 'Thư viện',
   navSettings: 'Cài đặt',
   navViewBlog: 'Xem blog',

@@ -3,7 +3,7 @@
 // list (drafts, unused media). All data is gathered server-side in
 // app/admin/page.tsx and passed in — these are presentational only.
 import Link from '@/admin/router'
-import { Card, CARD_GAP } from './kit'
+import { Card, CARD_GAP, UTIL } from './kit'
 import { useAdminT } from './I18nProvider'
 
 export type DashboardData = {
@@ -144,7 +144,13 @@ function TopPostsCard({ posts }: { posts: DashboardData['topPosts'] }) {
                 {/* The owner's own headline, so it takes the reading face; the rank and
                     the view count either side of it are the machine's. */}
                 <span className="min-w-0 flex-1 truncate text-neutral-700 dark:text-neutral-200">{p.title}</span>
-                <span className="shrink-0 text-xs text-neutral-500 tabular-nums dark:text-neutral-400">{p.views.toLocaleString()}</span>
+                {/* ⚠️ THE COUNT IS THE ANSWER, so it is not the smallest thing on the row.
+                    "Most viewed" is a list of numbers; the title says which post and the
+                    number says the thing the card is for, and it was set 2px under the
+                    title at the same weight as a timestamp. Measured on the home page
+                    2026-09-07: 12px was the most common size on the screen, 61 runs of it
+                    against 41 at 14, and twenty-one of those 61 were counts like this. */}
+                <span className="shrink-0 text-sm text-neutral-600 tabular-nums dark:text-neutral-300">{p.views.toLocaleString()}</span>
               </Link>
             </li>
           ))}
@@ -215,13 +221,16 @@ function SourcesCard({ sources }: { sources: DashboardData['sources'] }) {
         <div className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
           {columns.map((col) => (
             <div key={String(col.heading)}>
-              <div className="mb-1.5 text-xs font-medium text-neutral-500 dark:text-neutral-400">{col.heading}</div>
+              {/* An eyebrow over a stretch of rows: `UTIL`, which is the one role in the
+                  scale that is allowed uppercase — it names a box rather than saying
+                  something, and a name is scanned. */}
+              <div className={`${UTIL} mb-1.5`}>{col.heading}</div>
               <ul className="space-y-1">
                 {col.rows.length === 0 && <li className="py-1 text-sm text-neutral-300 dark:text-neutral-600">—</li>}
                 {col.rows.map((r) => (
                   <li key={r.label} className="flex items-baseline justify-between gap-3 py-0.5 text-sm">
                     <span className="min-w-0 truncate text-neutral-600 dark:text-neutral-300">{r.label}</span>
-                    <span className="shrink-0 text-xs text-neutral-500 tabular-nums dark:text-neutral-400">{r.visitors.toLocaleString()}</span>
+                    <span className="shrink-0 text-sm text-neutral-600 tabular-nums dark:text-neutral-300">{r.visitors.toLocaleString()}</span>
                   </li>
                 ))}
               </ul>

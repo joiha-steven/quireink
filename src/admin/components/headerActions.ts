@@ -23,8 +23,14 @@ export const ADMIN_NAV =
 // measured, `hover:bg-neutral-100` was emitted 418 bytes AFTER the highlighter, so pointing
 // at the page you are already on repainted it grey. A rule you cannot see the order of is a
 // rule you should not be relying on.
+/**
+ * ⚠️ 15px/500, up from 14px/400 on 2026-09-07, and the rail is the one place in this admin
+ * where a step up is worth its cost. It is the first thing read on every visit and it was
+ * set at the same size as a table cell and a hint — measured 2026-09-07: four destinations
+ * and a group, every row 40px of 14px grey, nothing on the column but text at one size.
+ */
 export const SIDEBAR_NAV_QUIET =
-  'relative flex h-10 w-full items-center rounded-lg px-3 text-left text-sm text-neutral-500 transition-colors disabled:opacity-50 dark:text-neutral-400 active:translate-y-px active:duration-0 motion-reduce:active:translate-y-0 active:shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.15)] dark:active:shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.5)]'
+  'relative flex h-10 w-full items-center rounded-lg px-3 text-left text-[0.9375rem] font-medium text-neutral-500 transition-colors disabled:opacity-50 dark:text-neutral-400 active:translate-y-px active:duration-0 motion-reduce:active:translate-y-0 active:shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.15)] dark:active:shadow-[inset_0_1.5px_2.5px_rgba(0,0,0,.5)]'
 
 // `neutral-200/70`, not `neutral-100`: the rail sits on the PAPER canvas (#f7f6f4), and
 // neutral-100 (#f5f5f5) is two points away from it — a hover nobody can see. Measured the

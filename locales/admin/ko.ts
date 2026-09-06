@@ -3,7 +3,7 @@ import type { AdminStrings } from '../types'
 const ko = {
   navHome: '홈',
   navWrite: '글쓰기',
-  navMore: '그 밖의 것',
+  navMore: '관리',
   navMedia: '라이브러리',
   navSettings: '설정',
   navViewBlog: '블로그 보기',

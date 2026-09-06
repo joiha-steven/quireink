@@ -117,6 +117,8 @@ export function useNavColumn({
                 // width: with the rail's icons on (2026-09-07) its 184px of content holds a
                 // 20px glyph, a 12px gap, the label, another 12px gap and a 20px chevron,
                 // which left the English "Everything else" 96px for the 100px it needs.
+                // The label is "Manage" now — three words was never a NAME, it was a
+                // description of what was left over, and at 15px it clipped again.
                 // The four pixels come back from the CHEVRON rather than from the label,
                 // and that is the right place for them: a destination's glyph says WHAT the
                 // row is and a state chevron says which way it will move, so they are not
@@ -258,7 +260,7 @@ export function useNavColumn({
           {!c && <span className="truncate">{t.paletteTitle}</span>}
         </span>
         {!c && (
-          <span className="rounded border border-neutral-200 px-1 py-px text-[11px] tabular-nums leading-none text-neutral-500 dark:border-neutral-700 dark:text-neutral-400">
+          <span className="rounded border border-neutral-200 px-1 py-px text-xs tabular-nums leading-none text-neutral-500 dark:border-neutral-700 dark:text-neutral-400">
             {printChord(chordFor('palette'))}
           </span>
         )}
@@ -283,7 +285,7 @@ export function useNavColumn({
       >
         <IconSearch />
         {!c && (
-          <span className="rounded border border-neutral-200 px-1 py-px text-[11px] tabular-nums leading-none dark:border-neutral-700">
+          <span className="rounded border border-neutral-200 px-1 py-px text-xs tabular-nums leading-none dark:border-neutral-700">
             {printChord(chordFor('palette'))}
           </span>
         )}

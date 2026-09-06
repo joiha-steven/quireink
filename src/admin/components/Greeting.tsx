@@ -17,6 +17,7 @@
 import Link from '@/admin/router'
 import { META_ON_CANVAS } from './scale'
 import { useAdminT } from './I18nProvider'
+import { TITLE } from './scale'
 
 export type GreetingAuthor = { name: string; avatarUrl: string }
 
@@ -83,7 +84,11 @@ export function Greeting({ author, lastPublishedAt, actions, now = new Date() }:
       <div className="flex min-w-0 items-center gap-3">
         <Portrait author={author} />
         <div className="min-w-0">
-          <h1 className="truncate text-[1.375rem] font-semibold tracking-[-0.01em] text-neutral-900 dark:text-white">
+          {/* `TITLE`, not a hand-typed copy of what it used to be. This is the home page's
+              page title — the one line per screen that ADR-era `PageHeader` sets everywhere
+              else — and it had the old 22px written out here, so the scale change on
+              2026-09-07 moved every other screen's title and left this one behind. */}
+          <h1 className={`truncate ${TITLE}`}>
             {line}
           </h1>
           <p className={`${META_ON_CANVAS} mt-0.5`}>

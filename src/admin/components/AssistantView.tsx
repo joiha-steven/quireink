@@ -28,7 +28,7 @@ import { Exchange, type Block, type Pending, type Turn } from './Exchange'
 import { ToolLog, useToolLog } from './ToolLog'
 
 const CHIP =
-  'inline-flex items-center rounded-full border border-neutral-200 px-2.5 py-0.5 text-[11px] text-neutral-500 dark:border-neutral-700 dark:text-neutral-400'
+  'inline-flex items-center rounded-full border border-neutral-200 px-2.5 py-0.5 text-xs text-neutral-500 dark:border-neutral-700 dark:text-neutral-400'
 
 const AI_SETTINGS = '/admin/settings?tab=server'
 

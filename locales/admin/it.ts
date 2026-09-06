@@ -3,7 +3,7 @@ import type { AdminStrings } from '../types'
 const it = {
   navHome: 'Inizio',
   navWrite: 'Scrivi',
-  navMore: 'Tutto il resto',
+  navMore: 'Gestisci',
   navMedia: 'Libreria',
   navSettings: 'Impostazioni',
   navViewBlog: 'Vedi il blog',

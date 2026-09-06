@@ -136,7 +136,7 @@ export function SwitchRow({ id, label, on, onToggle }: { id: string; label: stri
     >
       <span
         aria-hidden
-        className={`grid h-4 w-4 shrink-0 place-items-center rounded border text-[10px] leading-none ${
+        className={`grid h-4 w-4 shrink-0 place-items-center rounded border text-xs leading-none ${
           on
             ? 'border-neutral-900 bg-neutral-900 text-white dark:border-white dark:bg-white dark:text-neutral-900'
             : 'border-neutral-300 text-transparent dark:border-neutral-600'

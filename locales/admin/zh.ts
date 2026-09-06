@@ -3,7 +3,7 @@ import type { AdminStrings } from '../types'
 const zh = {
   navHome: '首页',
   navWrite: '写作',
-  navMore: '其他',
+  navMore: '管理',
   navMedia: '资源库',
   navSettings: '设置',
   navViewBlog: '查看博客',

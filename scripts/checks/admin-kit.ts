@@ -270,5 +270,30 @@ for (const file of files) {
   failed = true
 }
 
+/**
+ * TYPE SMALLER THAN THE SCALE'S FLOOR.
+ *
+ * The scale runs 30 · 28 · 17 · 16 · 14 · 13 · 12 (`components/scale.ts`), and 12 is the
+ * floor on purpose: measured `#737373` on white is 4.74:1 against the 4.5 a 13px line has to
+ * clear, and the next neutral step is 2.58 — there is no room under it. Thirteen runs of
+ * `text-[11px]` and two of `text-[10px]` were counted on 2026-09-07, every one of them on a
+ * chip, a badge or a chord — the things people read least carefully, set smaller than
+ * everything else on the screen.
+ *
+ * A hand-typed size is also a size that answers to nobody: it does not move when the scale
+ * moves, which is how the home page kept a 22px title through a change that took every other
+ * page's to 28.
+ */
+const TINY = /text-\[(?:9|10|11)px\]/
+for (const file of files) {
+  const path = file.replaceAll('\\', '/')
+  const hit = TINY.exec(readFileSync(file, 'utf8'))
+  if (!hit) continue
+  console.error(`✗ check:admin-kit: ${path} sets type below the scale's floor (${hit[0]})`)
+  console.error("  Twelve is the smallest this admin sets, and it is a contrast limit rather")
+  console.error('  than a taste: use META or UTIL from components/scale.ts.')
+  failed = true
+}
+
 if (failed) process.exit(1)
 console.log(`✓ check:admin-kit: ok (${RULES.length} primitive(s), ${files.length} file(s))`)

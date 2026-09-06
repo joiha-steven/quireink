@@ -119,7 +119,7 @@ function PresetCard({
           {isDefault && (
             // A quiet outline, not a solid ink block: on a card whose whole job is to show
             // seven colours, a filled black pill was the loudest thing in the frame.
-            <span className="whitespace-nowrap rounded-full border border-neutral-300 px-1.5 py-0.5 text-[11px] text-neutral-500 dark:border-neutral-600 dark:text-neutral-400">
+            <span className="whitespace-nowrap rounded-full border border-neutral-300 px-1.5 py-0.5 text-xs text-neutral-500 dark:border-neutral-600 dark:text-neutral-400">
               {defaultLabel}
             </span>
           )}

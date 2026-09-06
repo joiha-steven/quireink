@@ -4,7 +4,7 @@ import type { AdminStrings } from '../types'
 const pt = {
   navHome: 'Início',
   navWrite: 'Escrever',
-  navMore: 'Todo o resto',
+  navMore: 'Gerir',
   navMedia: 'Biblioteca',
   navSettings: 'Configurações',
   navViewBlog: 'Ver o blog',

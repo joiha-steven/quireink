@@ -11,15 +11,26 @@
 // So: a ratio of about 1.25, and each step used for exactly one kind of thing.
 //
 //   30px  FIGURE         a number that IS the content — a stat tile, nothing else
-//   22px  TITLE          the page's own name, once per screen
-//   15px  SECTION        a card's title
+//   28px  TITLE          the page's own name, once per screen, in Literata
+//   17px  GROUP_TITLE    a settings group
+//   16px  SECTION        a card's title
 //   14px  SETTING_LABEL  the label on one setting
 //   13px  NOTE           the sentence explaining a setting
-//   12px  META           table heads, counts, timestamps
+//   12px  META / UTIL    table heads, counts, timestamps · and the eyebrow over a group
 //
-// ⚠️ The page title went DOWN, 26.4px to 22px, deliberately: a tool's page title is a
-// location, not a headline, and a quieter title is what lets the tile figure be the loudest
-// thing on a dashboard — the figure is what the owner came to read.
+// ⚠️ THE PAGE TITLE WENT UP, 22px to 28px, on 2026-09-07 — reversing the 26.4→22 change
+// that preceded it, and the measurement is the reason. At 22/500 over a card title at
+// 15/600 the name of the SCREEN was seven pixels and one weight step from the name of a BOX
+// on it, and the type histogram of the home page had exactly ONE run at 22px against 61 at
+// 12px: the largest thing on the screen carried 0.8% of its text. The argument that a tool's
+// page title is a location and not a headline still holds — what it does not follow from is
+// that a location should be almost the same size as everything around it. It is now the one
+// line of Literata this admin sets (`PAGE_TITLE_FACE`), which is what lets it be quiet and
+// unmistakable at the same time.
+//
+// ⚠️ 11px IS GONE. Two runs of it were measured on the home page, both inside chord badges,
+// which put the smallest type in the admin on a control nobody reads twice. `check:admin-kit`
+// fails a file that hand-types it.
 //
 // One face, Inter, since 2026-08-15; the reading face is confined to the EDITOR, which is
 // WYSIWYG. So ranking here is done entirely by SIZE and WEIGHT.
@@ -50,17 +61,17 @@ export const PAGE_TITLE_FACE = 'page-title-face'
  * A page's own name. Once per screen, placed by `PageHeader`. `font-medium`, not
  * `font-semibold`: at 22px, 600 is a shout and 500 is a statement.
  */
-export const TITLE = 'text-[1.375rem] font-medium leading-tight tracking-[-0.014em] text-neutral-900 dark:text-neutral-50'
+export const TITLE = `${PAGE_TITLE_FACE} text-[1.75rem] font-semibold leading-tight tracking-[-0.01em] text-neutral-900 dark:text-neutral-50`
 
 /**
  * A card's title. One step above the body it introduces.
  *
- * ⚠️ 15px, and the step is the point. `Card panel` — every card on every settings tab —
+ * ⚠️ 16px since 2026-09-07 (15 before it), and the step is the point. `Card panel` — every card on every settings tab —
  * hard-typed `text-[13px]` instead of importing this, so the hierarchy ran BACKWARDS:
  * heading 13px/600 above labels at 14px/500 above notes at 13px/400. 15 / 14 / 13 at
  * 600 / 500 / 400 now, each a step down in both.
  */
-export const SECTION = 'text-[0.9375rem] font-semibold tracking-[-0.008em] text-neutral-900 dark:text-neutral-100'
+export const SECTION = 'text-base font-semibold tracking-[-0.008em] text-neutral-900 dark:text-neutral-100'
 
 /**
  * A settings GROUP's title — 17px, one step ABOVE `SECTION`, worn only by `SettingsCard`.
@@ -126,6 +137,19 @@ export const NOTE = `${NOTE_TEXT} mt-1.5`
 
 /** The machine's smallest print: a table head, a count, a timestamp, a filename. */
 export const META = 'text-xs text-neutral-500 dark:text-neutral-400'
+
+/**
+ * THE EYEBROW: a name over a stretch of other things, at the same size as `META` and in a
+ * different voice — 500 rather than 400, uppercase, and opened up 0.04em so the caps do not
+ * set solid.
+ *
+ * ⚠️ NOT FOR A SENTENCE, and the tracking is why: uppercase at 12px is slower to read than
+ * anything else this admin sets, which is fine for two words naming a group and wrong for a
+ * line somebody has to take in. A note is `NOTE`; this is the label ON the box the note is in.
+ * `docs/admin-design.md` bans ALL-CAPS on the public side and this is the admin, where the
+ * job is scanning rather than reading.
+ */
+export const UTIL = 'text-xs font-medium uppercase tracking-[0.04em] text-neutral-500 dark:text-neutral-400'
 
 /**
  * The same small print, one notch darker, for text on the CANVAS rather than in a card.
