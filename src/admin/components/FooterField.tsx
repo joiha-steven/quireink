@@ -4,6 +4,7 @@
 import { useRef } from 'react'
 import { renderInlineMarkdown } from '@/render/inline-md'
 import { useAdminT } from './I18nProvider'
+import { useConfirmFor } from '@/admin/ui/ConfirmDialog'
 import { CONTROL, NOTE_TEXT } from './kit'
 
 const TB_BTN =
@@ -11,6 +12,7 @@ const TB_BTN =
 
 export function FooterField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   const t = useAdminT()
+  const askFor = useConfirmFor()
   const ref = useRef<HTMLTextAreaElement>(null)
 
   // Wrap the current selection in `before`/`after`, keeping the inner text selected.
@@ -25,8 +27,13 @@ export function FooterField({ value, onChange }: { value: string; onChange: (v: 
     })
   }
 
-  function link() {
-    const url = window.prompt(t.promptLink)
+  async function link() {
+    const url = await askFor({
+      title: t.tbLink,
+      input: { label: t.promptLink, placeholder: 'https://' },
+      confirmLabel: t.save,
+      cancelLabel: t.askCancel,
+    })
     if (url === null) return
     wrap('[', `](${url || 'https://'})`)
   }
@@ -37,7 +44,7 @@ export function FooterField({ value, onChange }: { value: string; onChange: (v: 
         <button type="button" onClick={() => wrap('**', '**')} aria-label={t.tbBold} className={`${TB_BTN} font-bold`}>B</button>
         <button type="button" onClick={() => wrap('*', '*')} aria-label={t.tbItalic} className={`${TB_BTN} italic`}>I</button>
         <button type="button" onClick={() => wrap('++', '++')} aria-label={t.tbUnderline} className={`${TB_BTN} underline`}>U</button>
-        <button type="button" onClick={link} aria-label={t.tbLink} className={TB_BTN}>{t.tbLink}</button>
+        <button type="button" onClick={() => void link()} aria-label={t.tbLink} className={TB_BTN}>{t.tbLink}</button>
       </div>
       <textarea
         ref={ref}

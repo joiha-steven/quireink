@@ -111,16 +111,23 @@ export function matchesChord(e: KeyboardEvent, chord: string): boolean {
  *
  * An extension of its own rather than a line in `EditorActions`, because the link is a MARK on
  * the selection: the handler has to run while the editor still owns the focus and the range,
- * and a window listener that opens a `prompt()` has already lost both. It is the same three
+ * and a window listener that asked elsewhere has already lost both. It is the same three
  * lines the toolbar button runs, deliberately — one behaviour, two doors.
  *
- * The label is an option because this module holds no i18n, the same arrangement the
- * placeholder has in `editorExtensions.ts`.
+ * ⚠️ ASKING IS NOW ASYNCHRONOUS, and the shape follows from that. The native `prompt()` this
+ * replaced (2026-09-07) blocked the main thread, so the answer was a value on the next line;
+ * the product's own dialog resolves later, and a Tiptap shortcut must return its boolean NOW.
+ * So the key returns `true` at once — it HAS handled the chord — and applies the mark when the
+ * answer arrives. `chain().focus()` restores the selection ProseMirror kept while the dialog
+ * held the DOM focus, which is the same recovery the prompt needed and got by accident.
+ *
+ * The asker is an option because this module holds no i18n and no React, the same arrangement
+ * the placeholder has in `editorExtensions.ts`.
  */
-export const LinkKey = Extension.create<{ promptLabel: string }>({
+export const LinkKey = Extension.create<{ askLink: (previous: string) => Promise<string | null> }>({
   name: 'linkKey',
   addOptions() {
-    return { promptLabel: '' }
+    return { askLink: async () => null }
   },
   addKeyboardShortcuts() {
     return {
@@ -132,12 +139,13 @@ export const LinkKey = Extension.create<{ promptLabel: string }>({
       'Mod-Shift-x': () => this.editor.chain().focus().unsetAllMarks().run(),
       'Mod-k': () => {
         const previous = (this.editor.getAttributes('link').href as string | undefined) ?? ''
-        const url = window.prompt(this.options.promptLabel, previous)
-        if (url === null) return true // cancelled, and the key is still handled
-        const range = this.editor.chain().focus().extendMarkRange('link')
-        if (url === '') range.unsetLink().run()
-        else range.setLink({ href: url }).run()
-        return true
+        void this.options.askLink(previous).then((url) => {
+          if (url === null) return // backed out, and the link is untouched
+          const range = this.editor.chain().focus().extendMarkRange('link')
+          if (url === '') range.unsetLink().run() // cleared the URL -> remove the link
+          else range.setLink({ href: url }).run()
+        })
+        return true // the chord is handled either way, so nothing else claims it
       },
     }
   },

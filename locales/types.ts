@@ -230,6 +230,34 @@ export type AdminStrings = {
   commentsFootHint: string
   edit: string
   delete: string
+  /** The dialog that replaced the twenty native prompts (2026-09-07). Titles name the OBJECT. */
+  askCancel: string
+  askDeleteForever: string
+  askRemove: string
+  askClear: string
+  askNoUndo: string
+  askPurgeTitle: string
+  askPurgeManyTitle: string
+  askEmptyTrashTitle: string
+  askEmptyTrashBody: string
+  askPurgeInUseTitle: string
+  askPurgeInUseBody: string
+  askDeleteUnusedTitle: string
+  askDeleteUnusedBody: string
+  askRemoveSeriesTitle: string
+  askRemoveSeriesBody: string
+  askRemoveTermTitle: string
+  askRemoveTermBody: string
+  askClearLogTitle: string
+  askClearLogBody: string
+  askDeleteTokenTitle: string
+  askDeleteTokenBody: string
+  askDeleteBackupTitle: string
+  askDeleteBackupBody: string
+  /** Trashing asks nothing and offers the way back instead. */
+  trashedOne: string
+  trashedMany: string
+  undo: string
   // The editor's Attributes panel. The confirmation says the piece can be brought back,
   // because `DELETE /api/posts/:slug` is a SOFT delete — the row keeps its body, its
   // revisions and its slug. The strings this replaces said the action could not be

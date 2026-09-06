@@ -10,11 +10,13 @@
 import { useCallback, useState } from 'react'
 import type { MediaItem, ApiResponse } from '@/types'
 import { useToast } from '@/admin/ui/Toast'
+import { useConfirm } from '@/admin/ui/ConfirmDialog'
 import { useAdminT } from './I18nProvider'
 
 export function useMediaSweeps(setItems: (items: MediaItem[]) => void) {
   const t = useAdminT()
   const { notify } = useToast()
+  const ask = useConfirm()
   const [checking, setChecking] = useState(false)
   /** Null until a check has run; then the set of urls nothing references. */
   const [unused, setUnused] = useState<Set<string> | null>(null)
@@ -44,7 +46,14 @@ export function useMediaSweeps(setItems: (items: MediaItem[]) => void) {
   // — no per-image race, and far faster than clicking each.
   const deleteAllUnused = useCallback(async () => {
     if (!unused || unused.size === 0) return
-    if (!confirm(t.confirmDeleteUnused)) return
+    const said = await ask({
+      title: t.askDeleteUnusedTitle,
+      body: `${t.askDeleteUnusedBody} (${unused.size})`,
+      confirmLabel: t.askDeleteForever,
+      cancelLabel: t.askCancel,
+      danger: true,
+    })
+    if (said !== 'confirm') return
     setDeletingAll(true)
     try {
       const res = await fetch('/api/media/delete', {

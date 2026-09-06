@@ -1,5 +1,32 @@
 # CHANGELOG
 
+## 2026-09-07 — Quire Ink 2.2.9
+
+One fix. 2.2.8 signed in to a blank admin, and this is the release that takes it back.
+
+### The admin loaded React twice
+
+- **A blank screen after sign-in, with `Minified React error #321` in the console**
+  ([#65](https://github.com/joiha-steven/quireink/issues/65)). The entry script is written to
+  disk as `main.js` and was served under a name the server computed, `main.<hash>.js`, so the
+  owner would not re-download it on every load. That held only while no code-split chunk
+  imported the entry back. Bun 1.4 — the version the release image picked up — imports it back
+  from **every** lazy route chunk, where 1.3 imported it from none. A JavaScript module is
+  identified by the URL it was fetched from, so the browser held the entry twice: two module
+  records, two copies of React, and the first lazy screen to call a hook resolved a dispatcher
+  belonging to the other copy. The dashboard is that screen, which is why the admin was blank
+  from the moment it opened.
+- **The entry now carries the bundler's own hash and nothing renames it** —
+  `admin.<hash>.js`, a dot to keep it apart from the `main-<hash>.js` chunks. The name the
+  shell loads and the name a chunk imports are one string, so there is one module however the
+  bundler splits the graph next. The stylesheet keeps its computed fingerprint: Tailwind
+  writes that file, and nothing imports a stylesheet by name.
+- **Two guards for the property, not the symptom.** `check:admin-bundle` reads the built
+  directory for exactly one entry and no import naming a file that is not there, and a test
+  walks every URL the admin shell can reach and fails if two of them serve the same bytes.
+- **Nothing a reader sees was affected.** Public pages arrive as finished HTML and were never
+  blank; this was the admin's bundle alone.
+
 ## 2026-09-06 — Quire Ink 2.2.8
 
 Four days on how the thing moves and how it feels under a hand: one motion engine for the

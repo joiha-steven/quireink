@@ -8,6 +8,7 @@ import { useState } from 'react'
 import { useRouter } from '@/admin/router'
 import type { Post, Page, MediaItem, FileItem, AdminComment, ApiResponse } from '@/types'
 import { useToast } from '@/admin/ui/Toast'
+import { useConfirm } from '@/admin/ui/ConfirmDialog'
 import { formatDateTimeShort } from '@/utils'
 import { EmptyState, NOTE_TEXT, PageHeader, Tabs } from './kit'
 import { SHEET, SHEET_FOOT, SHEET_TOOL, SHEET_TOOL_DANGER, SheetTop } from './sheet'
@@ -38,6 +39,7 @@ export function TrashView({
   const t = useAdminT()
   const router = useRouter()
   const { notify } = useToast()
+  const ask = useConfirm()
   const [tab, setTab] = useState<Kind>('posts')
   const [pending, setPending] = useState(false)
 
@@ -84,31 +86,56 @@ export function TrashView({
   }
 
   // A media purge/empty may come back `in_use:<n>` (image still used by a live page).
-  // Returns whether the owner confirmed the second, stronger prompt (false = declined
+  // Resolves to whether the owner confirmed the second, stronger question (false = declined
   // or not an in-use error). Other kinds never hit this path.
-  function askInUse(error: string | undefined): boolean {
+  async function askInUse(error: string | undefined): Promise<boolean> {
     if (!error?.startsWith('in_use')) return false
-    return confirm(t.confirmPurgeInUse.replace('{n}', error.split(':')[1] ?? ''))
+    return (await ask({
+      title: t.askPurgeInUseTitle.replace('{n}', error.split(':')[1] ?? ''),
+      body: t.askPurgeInUseBody,
+      confirmLabel: t.askDeleteForever,
+      cancelLabel: t.askCancel,
+      danger: true,
+    })) === 'confirm'
   }
 
   async function onRestore(kind: Kind, id: string) {
     const { ok } = await act(kind, 'restore', [id])
     notify(ok ? t.restored : t.restoreFailed, ok ? undefined : 'error')
   }
-  async function onPurge(kind: Kind, id: string) {
-    if (!confirm(t.confirmPurge)) return
+  /** ⚠️ THIS ONE ASKS, and it is the reason the trash asks nothing on the way in: a soft
+   *  delete is a decision you can walk back, and this is the moment there is nothing left to
+   *  walk back to. The question NAMES the thing — a native `confirm()` took one string, so
+   *  "Permanently delete this item?" was the whole of it and which item was left to whichever
+   *  row the pointer happened to be over. */
+  async function onPurge(kind: Kind, id: string, name: string) {
+    const said = await ask({
+      title: t.askPurgeTitle.replace('{name}', name),
+      body: t.askNoUndo,
+      confirmLabel: t.askDeleteForever,
+      cancelLabel: t.askCancel,
+      danger: true,
+    })
+    if (said !== 'confirm') return
     let r = await act(kind, 'purge', [id])
     if (!r.ok && r.error?.startsWith('in_use')) {
-      if (!askInUse(r.error)) return // owner declined — leave it in Trash, no error toast
+      if (!(await askInUse(r.error))) return // owner declined — leave it in Trash, no error toast
       r = await act(kind, 'purge', [id], true)
     }
     notify(r.ok ? t.purged : t.purgeFailed, r.ok ? undefined : 'error')
   }
   async function onEmpty(kind: Kind) {
-    if (!confirm(t.confirmEmptyTrash)) return
+    const said = await ask({
+      title: t.askEmptyTrashTitle,
+      body: t.askEmptyTrashBody,
+      confirmLabel: t.askDeleteForever,
+      cancelLabel: t.askCancel,
+      danger: true,
+    })
+    if (said !== 'confirm') return
     let r = await act(kind, 'empty')
     if (!r.ok && r.error?.startsWith('in_use')) {
-      if (!askInUse(r.error)) return
+      if (!(await askInUse(r.error))) return
       r = await act(kind, 'empty', undefined, true)
     }
     notify(r.ok ? t.trashEmptied : t.purgeFailed, r.ok ? undefined : 'error')
@@ -150,7 +177,7 @@ export function TrashView({
 
   // A trashed item's row: the thing first, then one line of small print — when it was
   // deleted and the two verbs that decide its fate, both quiet words.
-  function Row({ kind, id, deletedAt, children }: { kind: Kind; id: string; deletedAt?: string | null; children: React.ReactNode }) {
+  function Row({ kind, id, name, deletedAt, children }: { kind: Kind; id: string; name: string; deletedAt?: string | null; children: React.ReactNode }) {
     return (
       <li className="border-b border-neutral-100 px-5 py-3 hover:bg-neutral-50/60 dark:border-neutral-800 dark:hover:bg-neutral-800/30">
         {children}
@@ -160,7 +187,7 @@ export function TrashView({
             <button type="button" onClick={() => onRestore(kind, id)} disabled={pending} className={SHEET_TOOL}>
               {t.restore}
             </button>
-            <button type="button" onClick={() => onPurge(kind, id)} disabled={pending} className={SHEET_TOOL_DANGER}>
+            <button type="button" onClick={() => onPurge(kind, id, name)} disabled={pending} className={SHEET_TOOL_DANGER}>
               {t.deletePermanently}
             </button>
           </span>
@@ -178,7 +205,7 @@ export function TrashView({
     return (
       <Rows>
         {rows.map((r) => (
-          <Row key={r.slug} kind={kind} id={r.slug} deletedAt={r.deletedAt}>
+          <Row key={r.slug} kind={kind} id={r.slug} name={r.title || t.untitled} deletedAt={r.deletedAt}>
             <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">{r.title || t.untitled}</p>
           </Row>
         ))}
@@ -191,7 +218,7 @@ export function TrashView({
     return (
       <Rows>
         {rows.map((m) => (
-          <Row key={m.url} kind="media" id={m.url} deletedAt={m.deletedAt}>
+          <Row key={m.url} kind="media" id={m.url} name={m.filename} deletedAt={m.deletedAt}>
             <div className="flex items-center gap-3">
               <img src={m.thumb || m.url} alt="" width={40} height={40} className="h-10 w-10 shrink-0 rounded-md object-cover" />
               <span className="truncate text-sm font-medium text-neutral-800 dark:text-neutral-200">{m.filename}</span>
@@ -207,7 +234,7 @@ export function TrashView({
     return (
       <Rows>
         {rows.map((f) => (
-          <Row key={f.url} kind="files" id={f.url} deletedAt={f.deletedAt}>
+          <Row key={f.url} kind="files" id={f.url} name={f.filename} deletedAt={f.deletedAt}>
             <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">{f.filename}</p>
           </Row>
         ))}
@@ -220,7 +247,7 @@ export function TrashView({
     return (
       <Rows>
         {rows.map((c) => (
-          <Row key={c.id} kind="comments" id={String(c.id)} deletedAt={c.deletedAt}>
+          <Row key={c.id} kind="comments" id={String(c.id)} name={c.name} deletedAt={c.deletedAt}>
             <p className="line-clamp-1 text-sm text-neutral-800 dark:text-neutral-200">{c.content}</p>
             <p className={NOTE_TEXT}>{c.name} · {c.postTitle}</p>
           </Row>
@@ -237,7 +264,7 @@ export function TrashView({
     return (
       <Rows>
         {rows.map((s) => (
-          <Row key={s.id} kind="subscribers" id={String(s.id)} deletedAt={s.deletedAt}>
+          <Row key={s.id} kind="subscribers" id={String(s.id)} name={s.email} deletedAt={s.deletedAt}>
             <p className="truncate text-sm font-medium text-neutral-800 dark:text-neutral-200" title={s.email}>{s.email}</p>
             <p className={NOTE_TEXT}>{statusLabel[s.status] ?? s.status}</p>
           </Row>

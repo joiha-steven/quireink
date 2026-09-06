@@ -8,6 +8,7 @@ import { createPortal } from 'react-dom'
 import type { MediaItem, ApiResponse } from '@/types'
 import { Button } from '@/admin/ui/Button'
 import { useToast } from '@/admin/ui/Toast'
+import { useConfirm } from '@/admin/ui/ConfirmDialog'
 import { formatBytes } from '@/utils'
 import { ImageUploader } from './ImageUploader'
 import { MediaToolbar, type MediaSort } from './MediaToolbar'
@@ -43,6 +44,7 @@ export function MediaLibrary({ mode = 'page', multi = false, onSelect, onSelectM
   const t = useAdminT()
   const lang = useAdminLang()
   const { notify } = useToast()
+  const ask = useConfirm()
   const [items, setItems] = useState<MediaItem[]>([])
   const [loading, setLoading] = useState(true)
   const [zoom, setZoom] = useState<MediaItem | null>(null)
@@ -99,7 +101,16 @@ export function MediaLibrary({ mode = 'page', multi = false, onSelect, onSelectM
   }, [visible, items.length])
 
   const handleDelete = useCallback(async (url: string) => {
-    if (!confirm(t.confirmDeleteMedia)) return
+    // NAMES THE FILE. `confirm()` took one string, so "Delete this image?" was the whole
+    // question and which image was left to whichever tile the pointer was over.
+    const said = await ask({
+      title: t.askPurgeTitle.replace('{name}', url.split('/').pop() ?? url),
+      body: t.askNoUndo,
+      confirmLabel: t.askDeleteForever,
+      cancelLabel: t.askCancel,
+      danger: true,
+    })
+    if (said !== 'confirm') return
     try {
       const res = await fetch(`/api/media/by?url=${encodeURIComponent(url)}`, { method: 'DELETE' })
       const json = (await res.json()) as ApiResponse<MediaItem[]>
@@ -169,7 +180,14 @@ export function MediaLibrary({ mode = 'page', multi = false, onSelect, onSelectM
   }, [mode, multi, onSelect, toggleSelect])
   async function deleteSelected() {
     if (selected.size === 0) return
-    if (!confirm(t.confirmDeleteSelected)) return
+    const said = await ask({
+      title: t.askPurgeManyTitle.replace('{n}', String(selected.size)),
+      body: t.askNoUndo,
+      confirmLabel: t.askDeleteForever,
+      cancelLabel: t.askCancel,
+      danger: true,
+    })
+    if (said !== 'confirm') return
     try {
       const res = await fetch('/api/media/delete', {
         method: 'POST',

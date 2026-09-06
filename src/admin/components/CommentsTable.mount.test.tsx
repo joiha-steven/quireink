@@ -75,9 +75,8 @@ describe('CommentsTable, mounted', () => {
     const t = adminT('en')
     const fetchMock = installFetchMock(() => ({ success: true }))
     restores.push(fetchMock.restore)
-    // The component guards deletion behind confirm(); the test is about the request and
-    // the row, not the dialog, so the dialog always says yes.
-    window.confirm = () => true
+    // Trashing a comment asks NOTHING since 2026-09-07 — it is a soft delete, and the way
+    // back rides in the toast. The stub that answered the native confirm() went with it.
 
     const m = await mountAdmin(<CommentsTable initial={rows()} />)
     // Two comments, two delete buttons — and the one wanted is found by its COMMENT, not by
@@ -108,7 +107,6 @@ describe('CommentsTable, mounted', () => {
     const t = adminT('en')
     const fetchMock = installFetchMock(() => ({ success: false, error: 'nope' }))
     restores.push(fetchMock.restore)
-    window.confirm = () => true
 
     const m = await mountAdmin(<CommentsTable initial={rows()} />)
     await m.click(m.button(t.commentsColDelete))

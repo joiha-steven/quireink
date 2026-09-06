@@ -28,10 +28,14 @@ import { MixedList } from './MixedList'
 /**
  * @param placeholder The per-block placeholder text, which is the one thing here that has to
  * come from the caller: it is a translated UI string and this module holds no i18n.
- * @param promptLink The label on the link box `Mod-k` opens — a translated string for the same
+ * @param askLink Opens the product's link box for `Mod-k` and resolves to the URL, '' to
+ *   unlink, or null if the reader backed out. A callback rather than a translated string
  * reason, and defaulted so the seven round-trip suites can keep calling this with one argument.
  */
-export function editorExtensions(placeholder: string, promptLink = ''): Extensions {
+export function editorExtensions(
+  placeholder: string,
+  askLink: (previous: string) => Promise<string | null> = async () => null,
+): Extensions {
   return [
     // StarterKit already ships `link` and `underline` in Tiptap 3. Registering them again
     // beside it made Tiptap log "Duplicate extension names found: ['link','underline']"
@@ -71,7 +75,7 @@ export function editorExtensions(placeholder: string, promptLink = ''): Extensio
     MixedList,
     // Mod-k. The rest of this product's keyboard is in `editorKeys.ts`; only the link needs
     // to run inside the editor, holding the selection it is about to mark.
-    LinkKey.configure({ promptLabel: promptLink }),
+    LinkKey.configure({ askLink }),
     // Per-block placeholder (adds the is-editor-empty class + data-placeholder
     // the CSS reads). The old root data-placeholder attribute rendered nothing.
     Placeholder.configure({ placeholder }),

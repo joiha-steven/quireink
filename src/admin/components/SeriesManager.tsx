@@ -7,6 +7,7 @@ import Link from '@/admin/router'
 import type { Post, ApiResponse } from '@/types'
 import { seriesEntries } from '@/content/series-order'
 import { useToast } from '@/admin/ui/Toast'
+import { useConfirm, useConfirmFor } from '@/admin/ui/ConfirmDialog'
 import { useAdminT } from './I18nProvider'
 import { ICON_BTN, PencilIcon, TrashIcon } from './RowActions'
 
@@ -29,6 +30,8 @@ export function SeriesManager({ posts }: { posts: Post[] }) {
   const t = useAdminT()
   const router = useRouter()
   const { notify } = useToast()
+  const ask = useConfirm()
+  const askFor = useConfirmFor()
 
   const entries = seriesEntries(posts)
 
@@ -48,16 +51,28 @@ export function SeriesManager({ posts }: { posts: Post[] }) {
     }
   }
 
-  function rename(name: string) {
-    const input = window.prompt(t.renamePrompt, name)
-    if (input === null) return
-    const newName = input.trim()
+  async function rename(name: string) {
+    // The title names the series. `window.prompt` took one label and no context, so the
+    // whole interface for renaming was the words "New name:" over an empty box.
+    const newName = await askFor({
+      title: t.askRemoveSeriesTitle.replace('{name}', name).replace('?', ''),
+      input: { label: t.renamePrompt, initial: name },
+      confirmLabel: t.save,
+      cancelLabel: t.askCancel,
+    })
     if (!newName || newName === name) return
     post({ action: 'rename', name, newName }, t.renamed)
   }
 
-  function remove(name: string) {
-    if (!confirm(t.confirmDeleteSeries)) return
+  async function remove(name: string) {
+    const said = await ask({
+      title: t.askRemoveSeriesTitle.replace('{name}', name),
+      body: t.askRemoveSeriesBody,
+      confirmLabel: t.askRemove,
+      cancelLabel: t.askCancel,
+      danger: true,
+    })
+    if (said !== 'confirm') return
     post({ action: 'delete', name }, t.deleted)
   }
 
@@ -85,10 +100,10 @@ export function SeriesManager({ posts }: { posts: Post[] }) {
                 {s.name}
               </Link>
               <span className="shrink-0 text-xs text-neutral-500 dark:text-neutral-400">{s.parts.length}</span>
-              <button type="button" onClick={() => rename(s.name)} aria-label={t.rename} title={t.rename} className={ICON_BTN}>
+              <button type="button" onClick={() => void rename(s.name)} aria-label={t.rename} title={t.rename} className={ICON_BTN}>
                 <PencilIcon />
               </button>
-              <button type="button" onClick={() => remove(s.name)} aria-label={t.delete} title={t.delete} className={ICON_BTN}>
+              <button type="button" onClick={() => void remove(s.name)} aria-label={t.delete} title={t.delete} className={ICON_BTN}>
                 <TrashIcon />
               </button>
             </div>

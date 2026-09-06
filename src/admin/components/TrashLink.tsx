@@ -22,12 +22,15 @@
 // work. Publish is the filled button; this one is quieter than it on purpose.
 //
 // It is a SOFT delete. The row keeps its body, its revisions and its slug, and Trash gives it
-// back. The confirmation says so — the string it inherited said the action could not be
-// undone, which was never true of this endpoint.
+// back — which is why, since 2026-09-07, it ASKS NOTHING. A question before a reversible act
+// is a toll on the ninety-nine times somebody meant it, paid to save the one time they did
+// not; and it does not save that one either, because a dialog answered by reflex is not read.
+// The piece moves at once and the way back sits in the toast, where the eye already is.
 
 import { useState } from 'react'
 import { useRouter } from '@/admin/router'
 import { Button } from '@/admin/ui/Button'
+import { useToast } from '@/admin/ui/Toast'
 import { NOTE_TEXT } from './kit'
 import { useAdminT } from './I18nProvider'
 
@@ -39,10 +42,19 @@ export function TrashLink({ kind, slug, onGone }: {
 }) {
   const t = useAdminT()
   const router = useRouter()
+  const { notify } = useToast()
   const [busy, setBusy] = useState(false)
 
+  /** Put it back where it was. The same endpoint the Trash screen's Restore uses. */
+  const restore = () => {
+    void fetch('/api/trash', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ kind: kind === 'post' ? 'posts' : 'pages', action: 'restore', ids: [slug] }),
+    }).then(() => router.refresh())
+  }
+
   const move = async () => {
-    if (!confirm(kind === 'post' ? t.confirmTrashPost : t.confirmTrashPage)) return
     setBusy(true)
     try {
       const res = await fetch(`/api/${kind === 'post' ? 'posts' : 'pages'}/${encodeURIComponent(slug)}`, {
@@ -50,6 +62,7 @@ export function TrashLink({ kind, slug, onGone }: {
       })
       // A failed delete must not navigate: leaving the editor would look like it worked.
       if (!res.ok) { setBusy(false); return }
+      notify(t.trashedOne, 'success', { label: t.undo, run: restore })
       if (onGone) onGone()
       else router.push('/admin/content')
     } catch {

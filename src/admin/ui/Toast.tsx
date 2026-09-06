@@ -2,10 +2,19 @@
 import { createContext, useCallback, useContext, useState, type ReactNode } from 'react'
 
 type ToastKind = 'success' | 'error'
-type ToastItem = { id: number; message: string; kind: ToastKind }
+/**
+ * A toast may carry ONE action, and it exists for exactly one thing: undo.
+ *
+ * Trashing a post no longer asks first (2026-09-07). A question before a REVERSIBLE act is
+ * a toll on the ninety-nine times somebody meant it, paid to save the one time they did not
+ * — and it does not even save that one, because a dialog answered by reflex is not read. The
+ * honest trade is to act at once and put the way back where the eye already is.
+ */
+type ToastAction = { label: string; run: () => void }
+type ToastItem = { id: number; message: string; kind: ToastKind; action?: ToastAction }
 
 type ToastContextValue = {
-  notify: (message: string, kind?: ToastKind) => void
+  notify: (message: string, kind?: ToastKind, action?: ToastAction) => void
 }
 
 const ToastContext = createContext<ToastContextValue | null>(null)
@@ -13,10 +22,12 @@ const ToastContext = createContext<ToastContextValue | null>(null)
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<ToastItem[]>([])
 
-  const notify = useCallback((message: string, kind: ToastKind = 'success') => {
+  const notify = useCallback((message: string, kind: ToastKind = 'success', action?: ToastAction) => {
     const id = Date.now() + Math.random()
-    setItems((prev) => [...prev, { id, message, kind }])
-    setTimeout(() => setItems((prev) => prev.filter((t) => t.id !== id)), 3000)
+    setItems((prev) => [...prev, { id, message, kind, action }])
+    // A toast with something to press waits LONGER, because three seconds is not enough time
+    // to notice a sentence, read it, decide it was a mistake and reach the word.
+    setTimeout(() => setItems((prev) => prev.filter((t) => t.id !== id)), action ? 6000 : 3000)
   }, [])
 
   return (
@@ -44,6 +55,15 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             />
             <span aria-hidden="true">{t.kind === 'error' ? '!' : '✓'}</span>
             {t.message}
+            {t.action && (
+              <button
+                type="button"
+                onClick={() => { t.action?.run(); setItems((prev) => prev.filter((x) => x.id !== t.id)) }}
+                className="ml-1 shrink-0 font-semibold underline underline-offset-2 hover:no-underline"
+              >
+                {t.action.label}
+              </button>
+            )}
           </div>
         ))}
       </div>

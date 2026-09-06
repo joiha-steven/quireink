@@ -6,6 +6,7 @@ import type { ApiResponse } from '@/types'
 import type { ActivityEntry } from '@/server/activity'
 import { formatDateTimeShort } from '@/utils'
 import { useToast } from '@/admin/ui/Toast'
+import { useConfirm } from '@/admin/ui/ConfirmDialog'
 import { PageHeader } from './kit'
 import { SHEET, SHEET_TOOL, SheetTop, SHEET_TOOL_DANGER } from './sheet'
 import { useAdminT } from './I18nProvider'
@@ -14,11 +15,19 @@ export function ActivityLog({ entries, enabled }: { entries: ActivityEntry[]; en
   const t = useAdminT()
   const router = useRouter()
   const { notify } = useToast()
+  const ask = useConfirm()
   const [busy, setBusy] = useState(false)
 
   async function clear() {
     if (busy || entries.length === 0) return
-    if (!window.confirm(t.logClearConfirm)) return
+    const said = await ask({
+      title: t.askClearLogTitle,
+      body: t.askClearLogBody,
+      confirmLabel: t.askClear,
+      cancelLabel: t.askCancel,
+      danger: true,
+    })
+    if (said !== 'confirm') return
     setBusy(true)
     try {
       const res = await fetch('/api/activity', { method: 'DELETE' })

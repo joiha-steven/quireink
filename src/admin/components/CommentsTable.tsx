@@ -48,14 +48,28 @@ export function CommentsTable({ initial }: { initial: AdminComment[] }) {
     })
   }
 
+  /**
+   * Trashing a comment ASKS NOTHING (2026-09-07) — it is a soft delete, and the way back is
+   * in the toast. The row is put back on screen by the undo as well as on the server, so the
+   * table does not have to be refetched to prove it worked.
+   */
   async function handleDelete(id: number) {
-    if (!confirm(t.commentsConfirmDelete)) return
+    const row = rows.find((c) => c.id === id)
     try {
       const res = await fetch(`/api/comments/${id}`, { method: 'DELETE' })
       const json = (await res.json()) as ApiResponse
       if (!json.success) throw new Error(json.error)
       setRows((prev) => prev.filter((c) => c.id !== id))
-      notify(t.movedToTrash)
+      notify(t.trashedOne, 'success', {
+        label: t.undo,
+        run: () => {
+          void fetch('/api/trash', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ kind: 'comments', action: 'restore', ids: [String(id)] }),
+          }).then((r) => { if (r.ok && row) setRows((prev) => [row, ...prev]) })
+        },
+      })
     } catch {
       notify(t.deleteFailed, 'error')
     }

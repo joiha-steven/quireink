@@ -9,6 +9,7 @@ import type { ApiResponse } from '@/types'
 import { Button } from '@/admin/ui/Button'
 import { ToggleRow } from '@/admin/ui/Switch'
 import { useToast } from '@/admin/ui/Toast'
+import { useConfirm, useConfirmFor } from '@/admin/ui/ConfirmDialog'
 import { formatDateTimeShort } from '@/utils'
 import { useAdminT } from './I18nProvider'
 import { PANEL, PANEL_LIST, Setting, TABLE_SCROLL } from './kit'
@@ -26,6 +27,8 @@ export function McpFields(
   // the more useful of the two when they do not: it is reachable by definition.
   const endpoint = `${(siteUrl || window.location.origin).replace(/\/+$/, '')}/api/mcp`
   const { notify } = useToast()
+  const ask = useConfirm()
+  const askFor = useConfirmFor()
   const [tokens, setTokens] = useState<McpTokenInfo[]>([])
   const [created, setCreated] = useState<string | null>(null) // plaintext shown once
   const [pending, setPending] = useState(false)
@@ -68,7 +71,12 @@ export function McpFields(
   }, [refresh])
 
   async function generate() {
-    const name = prompt(t.mcpNamePrompt)?.trim()
+    const name = await askFor({
+      title: t.mcpGenerate,
+      input: { label: t.mcpNamePrompt, placeholder: 'Claude desktop' },
+      confirmLabel: t.mcpGenerate,
+      cancelLabel: t.askCancel,
+    })
     if (!name) return
     setPending(true)
     try {
@@ -91,8 +99,15 @@ export function McpFields(
     }
   }
 
-  async function remove(id: number) {
-    if (!confirm(t.mcpConfirmDelete)) return
+  async function remove(id: number, name: string) {
+    const said = await ask({
+      title: t.askDeleteTokenTitle.replace('{name}', name),
+      body: t.askDeleteTokenBody,
+      confirmLabel: t.askDeleteForever,
+      cancelLabel: t.askCancel,
+      danger: true,
+    })
+    if (said !== 'confirm') return
     setPending(true)
     try {
       const res = await fetch(`/api/mcp/tokens/${id}`, { method: 'DELETE' })
@@ -151,7 +166,7 @@ export function McpFields(
             labels: the note beside them is three lines of prose on a narrow card. */}
         <Setting label={t.mcpTokensTitle} note={t.mcpTokensHint} inline>
           <div className="flex flex-wrap items-center gap-2">
-            <Button type="button" onClick={generate} disabled={pending || tokens.filter((tk) => !tk.oauth).length >= MAX}>
+            <Button type="button" onClick={() => void generate()} disabled={pending || tokens.filter((tk) => !tk.oauth).length >= MAX}>
               {t.mcpGenerate}
             </Button>
             <Button type="button" variant="ghost" onClick={() => refresh()}>{t.mcpRefresh}</Button>
@@ -224,7 +239,7 @@ export function McpFields(
                     <td className="px-3 py-2 text-right">
                       <button
                         type="button"
-                        onClick={() => remove(tok.id)}
+                        onClick={() => void remove(tok.id, tok.name)}
                         disabled={pending}
                         className="rounded-lg px-2.5 py-1 text-xs text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 disabled:opacity-50 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white"
                       >

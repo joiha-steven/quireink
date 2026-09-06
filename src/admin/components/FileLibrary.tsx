@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react'
 import type { FileItem, ApiResponse } from '@/types'
 import { useToast } from '@/admin/ui/Toast'
+import { useConfirm } from '@/admin/ui/ConfirmDialog'
 import { formatBytes } from '@/utils'
 import { formatDate } from '@/i18n/i18n'
 import { isVideoAttachment } from '@/render/video'
@@ -24,6 +25,7 @@ export function FileLibrary() {
   const t = useAdminT()
   const lang = useAdminLang()
   const { notify } = useToast()
+  const ask = useConfirm()
   const [items, setItems] = useState<FileItem[]>([])
   const [icons, setIcons] = useState<FileItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -54,7 +56,14 @@ export function FileLibrary() {
 
   async function deleteSelected() {
     if (selected.size === 0) return
-    if (!confirm(t.confirmDeleteSelected)) return
+    const said = await ask({
+      title: t.askPurgeManyTitle.replace('{n}', String(selected.size)),
+      body: t.askNoUndo,
+      confirmLabel: t.askDeleteForever,
+      cancelLabel: t.askCancel,
+      danger: true,
+    })
+    if (said !== 'confirm') return
     try {
       const res = await fetch('/api/files/delete', {
         method: 'POST',

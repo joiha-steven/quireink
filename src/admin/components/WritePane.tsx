@@ -75,8 +75,12 @@ function Rows({
   // ALREADY trashed, and moving a live piece is `DELETE /api/{posts,pages}/:slug`, one call
   // each. So a batch can half-succeed, and it reports what landed rather than failing whole —
   // refusing the batch would mean re-doing the part that already worked.
+  //
+  // IT ASKS NOTHING (2026-09-07). Trashing is reversible, so the honest trade is to act at
+  // once and put the way back in the toast rather than tax every intended use with a dialog
+  // that gets answered by reflex.
   async function trashChosen() {
-    if (chosen.size === 0 || !confirm(t.confirmTrashMany)) return
+    if (chosen.size === 0) return
     setBusy(true)
     const keys = [...chosen]
     const done = await Promise.all(
@@ -96,9 +100,24 @@ function Rows({
     const gone = done.filter((s): s is string => s !== null)
     setBusy(false)
     leave()
+    const restore = () => {
+      const byKind = (k: string) => keys
+        .filter((key) => key.startsWith(`${k === 'posts' ? 'post' : 'page'}:`))
+        .map((key) => key.slice(key.indexOf(':') + 1))
+        .filter((slug) => gone.includes(slug))
+      void Promise.all(['posts', 'pages'].filter((k) => byKind(k).length > 0).map((kind) =>
+        fetch('/api/trash', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ kind, action: 'restore', ids: byKind(kind) }),
+        }))).then(() => router.refresh())
+    }
     notify(
-      gone.length === keys.length ? t.movedToTrash : `${t.trashPartial} (${gone.length}/${keys.length})`,
+      gone.length === keys.length
+        ? t.trashedMany.replace('{n}', String(gone.length))
+        : `${t.trashPartial} (${gone.length}/${keys.length})`,
       gone.length === keys.length ? undefined : 'error',
+      gone.length > 0 ? { label: t.undo, run: restore } : undefined,
     )
     // Refreshing beside the editor of a piece that was just trashed refetches a slug the
     // server no longer serves and swaps the sheet for a red "Not found". Leave instead.

@@ -11,6 +11,7 @@ import { Button } from '@/admin/ui/Button'
 import { Input } from '@/admin/ui/Input'
 import { ToggleField } from '@/admin/ui/Switch'
 import { useToast } from '@/admin/ui/Toast'
+import { useConfirm } from '@/admin/ui/ConfirmDialog'
 import { useAdminT } from './I18nProvider'
 import { NOTE, NOTE_TEXT, PANEL_LIST } from './kit'
 import type { ApiResponse, BackupSettings } from '@/types'
@@ -46,6 +47,7 @@ export function ExportFields({
 }) {
   const t = useAdminT()
   const { notify } = useToast()
+  const ask = useConfirm()
   const [busy, setBusy] = useState<'export' | 'run' | null>(null)
   const [snapshots, setSnapshots] = useState<Snapshot[]>([])
 
@@ -107,7 +109,14 @@ export function ExportFields({
   }
 
   async function remove(name: string): Promise<void> {
-    if (!confirm(t.backupDeleteConfirm)) return
+    const said = await ask({
+      title: t.askDeleteBackupTitle,
+      body: `${name} — ${t.askDeleteBackupBody}`,
+      confirmLabel: t.askDeleteForever,
+      cancelLabel: t.askCancel,
+      danger: true,
+    })
+    if (said !== 'confirm') return
     try {
       const res = await fetch('/api/backup/delete', {
         method: 'POST',

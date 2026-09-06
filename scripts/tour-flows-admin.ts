@@ -172,6 +172,46 @@ export function registerAdminFlows({ flow, expect, atWidth }: Tour): void {
       return back.ok ? 'ok' : 'restore -> ' + back.status
     })()`, 900))
 
+  // The two halves of the 2026-09-07 rule about asking: a REVERSIBLE act asks nothing and
+  // offers the way back; an IRREVERSIBLE one asks, in a dialog that names the thing.
+  flow('admin: trashing a comment asks nothing and offers the way back', () => expect('/admin/comments', `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      const rows = () => document.querySelectorAll('main [data-comment-row], main li').length
+      const before = rows()
+      const del = [...document.querySelectorAll('main button')]
+        .find((b) => /delete|xoá|xóa/i.test(b.textContent.trim()))
+      if (!del) return 'no delete control on a comment'
+      del.click()
+      await sleep(600)
+      if (document.querySelector('[role=dialog]')) return 'trashing a comment put a dialog in the way'
+      const undo = [...document.querySelectorAll('.admin-toast button')]
+        .find((b) => b.textContent.trim().length > 0)
+      if (!undo) return 'the comment went with no way back offered'
+      undo.click()
+      await sleep(800)
+      return rows() >= before ? 'ok (gone, then back)' : 'undo did not put the comment back'
+    })()`, 1000))
+
+  flow('admin: emptying the trash asks first, and Esc backs out', () => expect('/admin/trash', `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      const empty = [...document.querySelectorAll('main button')]
+        .find((b) => /empty|dọn|leeren|vider|vaciar|svuota|esvaziar|очист|空|비우/i.test(b.textContent.trim()))
+      if (!empty) return 'no Empty trash control'
+      empty.click()
+      await sleep(500)
+      const dialog = document.querySelector('[role=dialog]')
+      if (!dialog) return 'emptying the trash asked nothing'
+      if (!/[a-z]/i.test(dialog.textContent)) return 'the dialog carried no words'
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+      await sleep(400)
+      if (document.querySelector('[role=dialog]')) return 'Esc did not close the dialog'
+      const counts = await (await fetch('/api/admin/view/trash')).json()
+      const still = (counts?.data?.posts ?? []).length + (counts?.data?.media ?? []).length
+      return still > 0 ? 'ok (asked, backed out, trash intact)' : 'backing out emptied it anyway'
+    })()`, 1000))
+
   flow('admin: an oversized upload is refused with a reason', () => expect('/admin/media', `
     (async () => {
       const before = await (await fetch('/api/settings')).json()

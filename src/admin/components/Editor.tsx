@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useEditor, EditorContent, type Editor as TiptapEditor } from '@tiptap/react'
 import { editorExtensions } from './editorExtensions'
 import { BubbleBar, SlashMenu, Toolbar } from './EditorMenus'
+import { useLinkAsker } from './editorLink'
 import { useFocusMode } from './useFocusMode'
 import { placeCaret, pulseInput } from './key-feedback'
 
@@ -99,6 +100,9 @@ type Props = {
 
 export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickGallery, onUploadFile, apiRef, contentWidth, toolbarTop = 0, keySound, actions, header, onRawChange }: Props) {
   const t = useAdminT()
+  // Mod-k opens the same box the toolbar and the bubble bar do; the extension takes it as
+  // an option because it holds no React (`editorKeys.ts`).
+  const askLink = useLinkAsker()
   // Markdown source view: edit the raw markdown directly (still saves live).
   const [raw, setRaw] = useState(false)
   // Read straight from the shared switch rather than as a prop: the two forms above this
@@ -171,7 +175,7 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
     // states stay live — TipTap 3 disables this by default, which left the
     // active highlights stale and the contextual table-tools row never showing.
     shouldRerenderOnTransaction: true,
-    extensions: editorExtensions(t.editorPlaceholder, t.promptLink),
+    extensions: editorExtensions(t.editorPlaceholder, askLink),
     content: initialContent,
     editorProps: {
       attributes: { class: 'prose max-w-none min-h-[420px] px-4 py-4' },

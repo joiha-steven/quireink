@@ -240,5 +240,35 @@ for (const file of files) {
   failed = true
 }
 
+/**
+ * THE BROWSER'S OWN DIALOGS, and they stay gone.
+ *
+ * Sixteen `confirm()` and four `prompt()` were counted in `src/admin` on 2026-09-07, and each
+ * cost the same three things: the browser draws them, so the box deciding whether a post is
+ * destroyed forever wears none of this product's grammar; they name nothing, because
+ * `confirm()` takes one string and "Delete this?" leaves WHICH to whatever row the pointer was
+ * over; and they block the main thread, freezing the page behind them mid-render for as long
+ * as somebody thinks about it. `ui/ConfirmDialog` replaced all twenty.
+ *
+ * ⚠️ MATCHED WITH A LEADING BOUNDARY, because `useConfirm(`, `askFor(` and the word inside a
+ * comment are not calls to the global. A guard that fires on prose about the thing rather than
+ * the thing is a guard somebody switches off — this file's own header, and `one-face.test.ts`,
+ * have each paid for that lesson once.
+ */
+const NATIVE = /(?<![.\w])(?:window\s*\.\s*)?(confirm|prompt)\s*\(/
+for (const file of files) {
+  const path = file.replaceAll('\\', '/')
+  if (path === 'src/admin/ui/ConfirmDialog.tsx') continue
+  const code = readFileSync(file, 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .split('\n').filter((l) => !l.trimStart().startsWith('//')).join('\n')
+  const hit = NATIVE.exec(code)
+  if (!hit) continue
+  console.error(`✗ check:admin-kit: ${path} calls the browser's ${hit[1]}()`)
+  console.error("  Use useConfirm() / useConfirmFor() from ui/ConfirmDialog: it names the object,")
+  console.error('  wears the product, closes on Esc, and does not freeze the page behind it.')
+  failed = true
+}
+
 if (failed) process.exit(1)
 console.log(`✓ check:admin-kit: ok (${RULES.length} primitive(s), ${files.length} file(s))`)

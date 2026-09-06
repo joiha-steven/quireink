@@ -6,6 +6,7 @@ import { useRouter } from '@/admin/router'
 import type { Post, ApiResponse } from '@/types'
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import { useToast } from '@/admin/ui/Toast'
+import { useConfirm, useConfirmFor } from '@/admin/ui/ConfirmDialog'
 import { useAdminT } from './I18nProvider'
 import { ICON_BTN, PencilIcon, TrashIcon } from './RowActions'
 
@@ -67,6 +68,8 @@ export function TaxonomyManager({ posts }: { posts: Post[] }) {
   const t = useAdminT()
   const router = useRouter()
   const { notify } = useToast()
+  const ask = useConfirm()
+  const askFor = useConfirmFor()
 
   const categories = tally(posts.map((p) => p.categories ?? []))
   const tags = tally(posts.map((p) => p.tags ?? []))
@@ -74,12 +77,23 @@ export function TaxonomyManager({ posts }: { posts: Post[] }) {
   async function act(kind: Kind, name: string, action: 'rename' | 'delete') {
     let newName: string | undefined
     if (action === 'rename') {
-      const input = window.prompt(t.renamePrompt, name)
-      if (input === null) return
-      newName = input.trim()
-      if (!newName || newName === name) return
-    } else if (!confirm(t.confirmDeleteTerm)) {
-      return
+      const typed = await askFor({
+        title: t.askRemoveTermTitle.replace('{name}', name).replace('?', ''),
+        input: { label: t.renamePrompt, initial: name },
+        confirmLabel: t.save,
+        cancelLabel: t.askCancel,
+      })
+      if (!typed || typed === name) return
+      newName = typed
+    } else {
+      const said = await ask({
+        title: t.askRemoveTermTitle.replace('{name}', name),
+        body: t.askRemoveTermBody,
+        confirmLabel: t.askRemove,
+        cancelLabel: t.askCancel,
+        danger: true,
+      })
+      if (said !== 'confirm') return
     }
     try {
       const res = await fetch('/api/taxonomy', {

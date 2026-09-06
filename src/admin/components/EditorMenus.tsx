@@ -11,6 +11,7 @@ import { BubbleMenu } from '@tiptap/react/menus'
 import { NodeSelection, type EditorState } from '@tiptap/pm/state'
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import { useAdminT } from './I18nProvider'
+import { editLink, useLinkAsker } from './editorLink'
 import { DEFAULT_INK, INKS } from '@/render/ink'
 import { PEN_LIGHT } from '@/render/pen'
 import { tip } from './editorKeys'
@@ -65,6 +66,7 @@ export function Toolbar({
   stickyTop: number
 }) {
   const t = useAdminT()
+  const askLink = useLinkAsker()
   const sep = <span className="mx-1 h-5 w-px shrink-0 bg-neutral-200 dark:bg-neutral-700" />
   // The sheet's own top strip, tuned by the owner's notes in order: on TOP, full-width,
   // wrapping instead of scrolling, buttons grouped in the middle, FORMATTED view only (the
@@ -111,17 +113,7 @@ export function Toolbar({
       <ToolButton
         label={tip(t.tbLink, 'link')}
         active={editor.isActive('link')}
-        onClick={() => {
-          // Prefill the existing href so an old link can be edited (not just
-          // created). extendMarkRange covers the whole link when the cursor is
-          // merely inside it — no need to first select the linked text.
-          const prev = (editor.getAttributes('link').href as string | undefined) ?? ''
-          const url = window.prompt(t.promptLink, prev)
-          if (url === null) return // cancelled — leave the link untouched
-          const range = editor.chain().focus().extendMarkRange('link')
-          if (url === '') range.unsetLink().run() // cleared the URL -> remove the link
-          else range.setLink({ href: url }).run()
-        }}
+        onClick={() => { void editLink(editor, askLink) }}
       >
         <Glyph><Shared name="link" /></Glyph>
       </ToolButton>
@@ -312,14 +304,8 @@ export function BubbleBar({ editor, avoidTop }: { editor: TiptapEditor; avoidTop
   // Keep the selection while clicking (mousedown would otherwise blur the editor
   // and collapse it before the command runs).
   const hold = (e: React.MouseEvent) => e.preventDefault()
-  const editLink = () => {
-    const prev = (editor.getAttributes('link').href as string | undefined) ?? ''
-    const url = window.prompt(t.promptLink, prev)
-    if (url === null) return
-    const range = editor.chain().focus().extendMarkRange('link')
-    if (url === '') range.unsetLink().run()
-    else range.setLink({ href: url }).run()
-  }
+  const askLink = useLinkAsker()
+  const editLinkHere = () => { void editLink(editor, askLink) }
   // These two MUST be referentially stable. BubbleMenu re-dispatches an
   // "updateOptions" transaction whenever `options`/`shouldShow` change identity;
   // with shouldRerenderOnTransaction on, a fresh inline object each render would
@@ -390,7 +376,7 @@ export function BubbleBar({ editor, avoidTop }: { editor: TiptapEditor; avoidTop
       <span className="mx-0.5 h-5 w-px bg-neutral-200 dark:bg-neutral-700" />
       <InkButtons editor={editor} hold={hold} />
       <span className="mx-0.5 h-5 w-px bg-neutral-200 dark:bg-neutral-700" />
-      <button type="button" title={t.tbLink} onMouseDown={hold} onClick={editLink} className={cls(editor.isActive('link'))}>{t.tbLink}</button>
+      <button type="button" title={t.tbLink} onMouseDown={hold} onClick={editLinkHere} className={cls(editor.isActive('link'))}>{t.tbLink}</button>
       {editor.isActive('link') && (
         <button type="button" onMouseDown={hold} onClick={() => editor.chain().focus().extendMarkRange('link').unsetLink().run()} className={cls(false)}>{t.tbLinkRemove}</button>
       )}

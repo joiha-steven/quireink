@@ -21,6 +21,7 @@
 // throwing one of the three away.
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
 import { Button } from './Button'
+import { Input } from './Input'
 import { OVERLAY } from '@/admin/components/sheet'
 import { SECTION } from '@/admin/components/scale'
 
@@ -40,37 +41,64 @@ export type ConfirmRequest = {
   altLabel?: string
   /** Whether the yes button is the red ballpoint. True whenever the answer destroys something. */
   danger?: boolean
+  /**
+   * Ask for a VALUE as well as an answer — the replacement for `window.prompt`.
+   *
+   * Four of those were counted on 2026-09-07, and they cost what the confirms did plus one
+   * thing more: a native prompt is a bare box with no label, so "New name:" was the entire
+   * interface for renaming a series and there was no way to say WHICH series was being
+   * renamed. Here the title names it and the field carries a real label.
+   */
+  input?: { label: string; initial?: string; placeholder?: string }
 }
 
-type Ask = (req: ConfirmRequest) => Promise<ConfirmAnswer>
+type Ask = (req: ConfirmRequest) => Promise<{ answer: ConfirmAnswer; value: string }>
 
-const ConfirmContext = createContext<Ask | null>(null)
+type ConfirmApi = {
+  /** Yes or no (or the third answer). Discards any typed value. */
+  ask: (req: ConfirmRequest) => Promise<ConfirmAnswer>
+  /** The typed value, or null if the reader backed out. Requires `input`. */
+  askFor: (req: ConfirmRequest & { input: NonNullable<ConfirmRequest['input']> }) => Promise<string | null>
+}
 
-type Pending = { req: ConfirmRequest; settle: (a: ConfirmAnswer) => void }
+const ConfirmContext = createContext<ConfirmApi | null>(null)
+
+type Settle = (r: { answer: ConfirmAnswer; value: string }) => void
+type Pending = { req: ConfirmRequest; settle: Settle }
 
 export function ConfirmProvider({ children }: { children: ReactNode }) {
   const [pending, setPending] = useState<Pending | null>(null)
+  const [value, setValue] = useState('')
 
-  const ask = useCallback<Ask>(
+  const raw = useCallback<Ask>(
     (req) =>
-      new Promise<ConfirmAnswer>((settle) => {
+      new Promise<{ answer: ConfirmAnswer; value: string }>((settle) => {
+        setValue(req.input?.initial ?? '')
         setPending((prev) => {
           // A second question while one is open answers the first with "no" rather than
           // dropping its promise on the floor. An abandoned promise never settles, and the
           // caller sitting on `await` never runs its `finally`.
-          if (prev) prev.settle('cancel')
+          if (prev) prev.settle({ answer: 'cancel', value: '' })
           return { req, settle }
         })
       }),
     [],
   )
 
+  const api = useCallback<() => ConfirmApi>(() => ({
+    ask: async (req) => (await raw(req)).answer,
+    askFor: async (req) => {
+      const out = await raw(req)
+      return out.answer === 'confirm' ? out.value.trim() : null
+    },
+  }), [raw])()
+
   const answer = useCallback((a: ConfirmAnswer) => {
     setPending((prev) => {
-      if (prev) prev.settle(a)
+      if (prev) prev.settle({ answer: a, value })
       return null
     })
-  }, [])
+  }, [value])
 
   useEffect(() => {
     if (!pending) return
@@ -82,7 +110,7 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
   }, [pending, answer])
 
   return (
-    <ConfirmContext.Provider value={ask}>
+    <ConfirmContext.Provider value={api}>
       {children}
       {pending && (
         <>
@@ -108,6 +136,23 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
                 {pending.req.body}
               </div>
             )}
+            {pending.req.input && (
+              <form
+                className="mt-4"
+                onSubmit={(e) => { e.preventDefault(); answer('confirm') }}
+              >
+                {/* Return submits, which is the one thing a native prompt did right and the
+                    thing a hand-rolled dialog forgets — the hands that used the prompt type
+                    a name and press Return without looking at the buttons. */}
+                <Input
+                  autoFocus
+                  label={pending.req.input.label}
+                  value={value}
+                  placeholder={pending.req.input.placeholder}
+                  onChange={(e) => setValue(e.target.value)}
+                />
+              </form>
+            )}
             {/* The safe answer is on the LEFT and the committing one on the right, which is the
                 order every other footer in this admin uses. `flex-wrap` so three buttons in a
                 long language stack rather than overflow the sheet. */}
@@ -115,7 +160,7 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
               {/* Focus opens on the SAFE answer, never on the destructive one: a dialog that
                   opens with Delete focused turns a stray Return — the key somebody was already
                   pressing to submit the form behind it — into a deletion. */}
-              <Button autoFocus variant="ghost" size="sm" onClick={() => answer('cancel')}>
+              <Button autoFocus={!pending.req.input} variant="ghost" size="sm" onClick={() => answer('cancel')}>
                 {pending.req.cancelLabel}
               </Button>
               {pending.req.altLabel && (
@@ -138,14 +183,23 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
   )
 }
 
+function useConfirmApi(): ConfirmApi {
+  const ctx = useContext(ConfirmContext)
+  if (!ctx) throw new Error('useConfirm must be used within ConfirmProvider')
+  return ctx
+}
+
 /**
  * Ask, and await the answer.
  *
  * Returns the three-way answer. Most callers want the yes/no reading and can compare against
  * `'confirm'`; the ones offering a third button switch on all three.
  */
-export function useConfirm(): Ask {
-  const ctx = useContext(ConfirmContext)
-  if (!ctx) throw new Error('useConfirm must be used within ConfirmProvider')
-  return ctx
+export function useConfirm(): ConfirmApi['ask'] {
+  return useConfirmApi().ask
+}
+
+/** Ask for a VALUE. Resolves to the trimmed text, or null if the reader backed out. */
+export function useConfirmFor(): ConfirmApi['askFor'] {
+  return useConfirmApi().askFor
 }
