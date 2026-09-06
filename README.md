@@ -9,7 +9,7 @@
 
 **A blog you host yourself, and an AI agent can run it for you.**
 No algorithm, no ads, no platform standing between you and your readers.
-One process. Two SQLite files. No cloud account anywhere in the path.
+One process. Two SQLite files. No cloud account anywhere in the path. Your name on it, not ours.
 
 <br/>
 
@@ -86,6 +86,7 @@ Four days on how the thing moves. One **motion engine** now runs the reading sit
 | 🖋️&nbsp;**Writing** | A real editor over Markdown: tables, video, footnotes, callouts, mathematics, Spotify. Drop in an image and it is cut for every screen, and described for you if you give Settings an AI key. A picture can hold the column, float at a third of it, join its neighbours as a gallery, or wear a paper or ink mat. Saves as you type, keeps three versions, holds a post until Tuesday |
 | 🏠&nbsp;**Front&nbsp;page** | The post list, a page you wrote, or a composed front: lead story, picks, a row per category, most read. Works with photographs and with only words. [How it works](./docs/homepage.md) |
 | 🎨&nbsp;**Looks** | Six palettes, light and dark. Four reading fonts, or upload your own. Every size comes from a role, so one change moves the whole page instead of one heading |
+| 🏷️&nbsp;**No&nbsp;brand** | Nothing of ours on your pages or your screens. No "powered by" line: the footer is your own line or nothing, and the admin's wordmark and its version line each have a switch. The one place the software still names itself is a meta tag a reader never sees |
 | 🖍️&nbsp;**The&nbsp;pen** | `==text==` highlights in five inks, `++text++` underlines in pencil, `@@word@@` rings a word in red ballpoint. Strokes grown from a seeded hand, so no two on a page share a shape. Pigments measured off a photograph of a real pen box |
 | 💻&nbsp;**Code** | Highlighted on the server, so the reader downloads no highlighter. Twenty-one languages, and the names people actually type. A fence naming nothing is guessed at timidly, so program output stays plain |
 | 🔍&nbsp;**Reading** | Search that answers as you type. A rail with your categories and tags, or the contents of the post. Related posts, reading time, a progress bar. Book mode sets a post in two columns on paper on a desk and one scrolled column on a phone, and your place is kept for when you come back |

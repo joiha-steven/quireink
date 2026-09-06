@@ -8,7 +8,7 @@
 `2.2.8`
 
 **Blog tự host cho một người viết. Nhờ được AI viết và trông coi hộ.**
-Không thuật toán, không quảng cáo, không nền tảng nào đứng giữa bạn và người đọc.
+Không thuật toán, không quảng cáo, không nền tảng nào đứng giữa bạn và người đọc. Tên bạn trên đó, không phải tên chúng tôi.
 
 <br/>
 
@@ -126,6 +126,7 @@ Muốn bản đầy đủ với systemd, nginx, cache header, sao lưu và nâng
 | 🖋️&nbsp;**Viết** | Trình soạn Markdown thật: bảng, video, chú thích chân trang, công thức toán, nhúng Spotify. Thả ảnh vào là tự cắt cho mọi cỡ màn hình. Lưu trong lúc gõ, giữ ba bản gần nhất |
 | 🏠&nbsp;**Trang&nbsp;chủ** | Danh sách bài, một trang bạn tự viết, hoặc trang nhất kiểu báo dựng sẵn. [Cách hoạt động](./docs/homepage.md) |
 | 🎨&nbsp;**Giao&nbsp;diện** | Sáu bảng màu sáng và tối, bốn font đọc, hoặc tải font của bạn lên. Sửa một chỗ là cả trang đổi theo |
+| 🏷️&nbsp;**Không&nbsp;thương&nbsp;hiệu** | Không có gì của chúng tôi trên trang hay màn hình của bạn. Không dòng "powered by": footer là dòng chữ của bạn hoặc không có gì, logo trong admin và dòng phiên bản ở bảng điều khiển đều có công tắc tắt. Chỗ duy nhất phần mềm còn ghi tên mình là một thẻ meta người đọc không thấy |
 | 🖍️&nbsp;**Cây&nbsp;bút** | `==tô sáng==`, `++gạch chì++`, `@@khoanh bút đỏ@@`. Nét vẽ như tay người, không vệt nào trên trang giống vệt nào |
 | 💻&nbsp;**Code** | Tô màu sẵn ở máy chủ, hai mươi mốt ngôn ngữ. Người đọc không phải tải bộ tô màu nào |
 | 🔍&nbsp;**Đọc** | Tìm kiếm hiện kết quả ngay trong lúc gõ. Mục lục bài, bài liên quan, thời gian đọc. Và chế độ sách: hai cột trên nền giấy ở máy bàn, một cột cuộn trên điện thoại, nhớ chỗ bạn đang đọc |
