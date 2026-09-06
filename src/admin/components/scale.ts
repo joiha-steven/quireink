@@ -32,6 +32,21 @@
 export const READING = 'reading-font'
 
 /**
+ * The page-title face — `PageHeader` ONLY, one line per screen (2026-09-07).
+ *
+ * The second carve-out from the one-face rule, and it is narrower than the first: the editor's
+ * carve-out covers a whole surface, this covers one `<h1>`. Measured on the home screen before
+ * it: 129 of 129 text runs were Inter, and the title stood 22px/600 over a card title at
+ * 15px/600 — one weight the same, seven pixels apart, so the name of the SCREEN and the name
+ * of a BOX on it were the same object to a glance.
+ *
+ * ⚠️ It resolves to Literata through `.page-title-face` in `admin.css`, NOT to
+ * `var(--font-reading)`. A site's reading face is the owner's choice for their readers, and
+ * letting it re-letter the admin's own titles would make the tool change shape with the blog.
+ */
+export const PAGE_TITLE_FACE = 'page-title-face'
+
+/**
  * A page's own name. Once per screen, placed by `PageHeader`. `font-medium`, not
  * `font-semibold`: at 22px, 600 is a shout and 500 is a statement.
  */

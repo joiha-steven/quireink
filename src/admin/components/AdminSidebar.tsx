@@ -40,10 +40,15 @@ const STORE_KEY = 'quireink-admin-nav-collapsed'
  */
 export const NARROW = '(min-width: 64rem) and (max-width: 79.9375rem)'
 /**
- * Whether the rail draws icons BESIDE ITS LABELS. OFF by default since 2026-08-15, at the
- * owner's instruction: the rail does not need them. Eleven outline
- * glyphs down the left edge are eleven things to look at before reading the word that was
- * always going to be the thing you read; the labels alone are shorter to scan and quieter.
+ * Whether the rail draws icons BESIDE ITS LABELS. **ON by default since 2026-09-07**; the
+ * switch stays, so a rail of pure words is one click away.
+ *
+ * It was OFF from 2026-08-15 on the argument that eleven outline glyphs are eleven things to
+ * look at before the word you were going to read anyway. What retired that argument is the
+ * rail it produced, measured 2026-09-07: after ADR 0024 the rail holds FOUR destinations and
+ * a group, not eleven, and every row is 40px of 14px grey `oklch(0.556)` — one size, one
+ * weight, one ink, nothing on the column but text. Four glyphs are not clutter; they are the
+ * only thing on that rail a person can recognise without reading it.
  *
  * ⚠️ Beside its LABELS, which is why the collapsed rail ignores it and always draws them. A
  * collapsed rail has no labels — icons are the only thing it can be. The first version of this
@@ -81,7 +86,7 @@ export function AdminSidebar({
   const pathname = usePathname()
   const [open, setOpen] = useState(false) // mobile drawer
   const [collapsed, setCollapsed] = useState(false) // desktop rail
-  const [icons, setIcons] = useState(false) // glyphs beside the labels
+  const [icons, setIcons] = useState(true) // glyphs beside the labels; see ICONS_KEY
   const [more, setMore] = useState(false) // "everything else" group
   const close = () => setOpen(false)
 
@@ -107,7 +112,10 @@ export function AdminSidebar({
       applyWidthVar(c)
     }
     Promise.resolve().then(() => {
-      setIcons(localStorage.getItem(ICONS_KEY) === '1')
+      // ABSENT means default, which is now ON — so the test is against '0', not for '1'.
+      // Reading `=== '1'` with the default flipped would have shown icons for one frame and
+      // then taken them away on every load by anyone who had never touched the switch.
+      setIcons(localStorage.getItem(ICONS_KEY) !== '0')
       apply()
       if (localStorage.getItem(MORE_KEY) === '1') setMore(true)
     })

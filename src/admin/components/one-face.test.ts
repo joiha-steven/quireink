@@ -17,7 +17,7 @@
 import { describe, expect, it } from 'bun:test'
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { CARD, CONTROL, NOTE, NOTE_TEXT, READING, SETTING_LABEL, THEAD, TROW } from './kit'
+import { CARD, CONTROL, NOTE, NOTE_TEXT, PAGE_TITLE_FACE, READING, SETTING_LABEL, THEAD, TROW } from './kit'
 
 const ADMIN_CSS = readFileSync('src/admin/admin.css', 'utf8')
 
@@ -73,6 +73,7 @@ describe('the admin wears one face', () => {
     // the most visible when the answer changed. Its distinction is now size and leading only.
     for (const role of [NOTE_TEXT, NOTE, SETTING_LABEL, CONTROL, THEAD, TROW, CARD]) {
       expect(role.split(' ')).not.toContain(READING)
+      expect(role.split(' ')).not.toContain(PAGE_TITLE_FACE)
     }
   })
 
@@ -102,6 +103,32 @@ describe('the admin wears one face', () => {
       'src/admin/components/kit.tsx', // re-export only
       'src/admin/components/scale.ts',
     ].sort())
+  })
+
+  it('gives the page-title face to PageHeader and nothing else', () => {
+    // THE SECOND CARVE-OUT, 2026-09-07 — and it is one LINE per screen, not one surface.
+    // `kit.tsx` holds `PageHeader` itself and re-exports the token; `scale.ts` declares it.
+    // A third file means some other heading has started wearing a serif, which is the exact
+    // drift the one-face rule exists to catch: two faces arrive one call site at a time.
+    const holders = sources('src/admin')
+      .filter((f) => /\bPAGE_TITLE_FACE\b/.test(code(f)))
+      .map((f) => f.replaceAll('\\', '/'))
+      .sort()
+    expect(holders).toEqual([
+      'src/admin/components/kit.tsx',
+      'src/admin/components/scale.ts',
+    ])
+  })
+
+  it('points the page-title class at a FIXED serif, never at the site\'s reading face', () => {
+    // If this resolved to `var(--font-reading)` the admin's own titles would change face with
+    // the blog's reading preset — the tool re-lettered by a decision about what READERS see.
+    expect(PAGE_TITLE_FACE).toBe('page-title-face')
+    expect(DECLARATIONS).toContain(`.admin .${PAGE_TITLE_FACE}`)
+    const rule = DECLARATIONS.slice(DECLARATIONS.indexOf(`.admin .${PAGE_TITLE_FACE}`))
+      .slice(0, DECLARATIONS.slice(DECLARATIONS.indexOf(`.admin .${PAGE_TITLE_FACE}`)).indexOf('}'))
+    expect(rule).toContain("'Literata'")
+    expect(rule).not.toContain('--font-reading')
   })
 
   it('still points that class at the reading font, or the editor writes in the wrong one', () => {

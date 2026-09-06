@@ -232,7 +232,14 @@ export function registerShellFlows({ flow, expect, atWidth }: Tour): void {
       const logo = await wait(() => document.querySelector('aside [data-nav-switch="logo"]'))
       if (!logo) return 'arrange mode offers no switch for the wordmark'
       logo.click()
-      const searchRow = await wait(() => document.querySelector('aside nav button svg') && !document.querySelector('aside a[href="/admin"] svg'))
+      // Named handles, not shapes. Reading the wordmark's absence off a link to /admin that
+      // holds an svg meant "the wordmark" only while the rail drew no glyphs; the Home
+      // destination points at the same href, so with icons on by default (2026-09-07) the
+      // absence test could never pass and the flow failed on a rail behaving correctly.
+      // NOTE: this whole body is a template literal evaluated in the page. No backticks.
+      const searchRow = await wait(() =>
+        !document.querySelector('aside [data-nav-top]')
+        && document.querySelector('aside nav [data-nav-search]'))
       if (!searchRow) return 'the wordmark went but the top row is still drawn'
 
       // Put everything back: a tour that leaves the rail rearranged changes what the next run

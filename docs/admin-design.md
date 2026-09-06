@@ -17,14 +17,23 @@ character and none of its typographic rules **except one**, below.
 
 - **The public reading interface is out of scope.** Its typography, fonts and type settings
   are deliberate; admin polish never changes them.
-- **ONE FACE. The admin is Inter everywhere, with one carve-out for the editor** (since
-  2026-08-15). A form is scanned, not read: two faces between a setting's label and the
-  sentence under it read as two voices, not as meaning. Rank by SIZE and WEIGHT instead
-  (`src/admin/components/scale.ts`). The carve-out is not a preference: the editor is WYSIWYG,
-  so the writing surface, the title field and the font picker's specimen tiles are set in the
-  face the post publishes in — the only holders of `.reading-font`, pinned by
-  `src/admin/components/one-face.test.ts`. `--font-reading` and `spa.ts`'s `fontPresetCss`
-  therefore stay.
+- **ONE FACE. The admin is Inter everywhere, with TWO carve-outs** (one face since
+  2026-08-15; the second carve-out 2026-09-07). A form is scanned, not read: two faces
+  between a setting's label and the sentence under it read as two voices, not as meaning.
+  Rank by SIZE and WEIGHT instead (`src/admin/components/scale.ts`).
+  - **The editor**, because it is WYSIWYG: the writing surface, the title field and the font
+    picker's specimen tiles are set in the face the post publishes in — the holders of
+    `.reading-font`. `--font-reading` and `spa.ts`'s `fontPresetCss` therefore stay.
+  - **The page title, and exactly that one line per screen** (`PageHeader`, `.page-title-face`).
+    Measured on the home screen 2026-09-07: 129 of 129 text runs were Inter and the title was
+    22px/600 against a card title at 15px/600 — seven pixels and no other difference between
+    the name of the screen and the name of a box on it, so every page opened with nothing that
+    read as its own first line. It is **Literata at a fixed weight, not `--font-reading`**: the
+    reading face is a site setting and a screen's own title is not the owner's to re-letter.
+    Literata is already loaded in the admin (`allFontFaceCss`), so this costs no new download.
+
+  Both are pinned by `src/admin/components/one-face.test.ts`, which counts the holders of each
+  class: a third file wearing either one re-opens a decision by accident.
 - **The admin's chrome face is ITS OWN, and it is Inter.** It is never the site's `chromeFont`:
   a chrome font is a branding choice about what a READER sees, and spent on the tool it put a
   monospace on every label, tab and cell. ⚠️ Do not wire it back; `MONO_TRACKING` and the
@@ -156,8 +165,12 @@ character and none of its typographic rules **except one**, below.
   of build metadata. A third state exists and draws NO dot: not knowing is not the same as
   being current. Adding a second such exception is how the rule stops meaning anything, so
   the next one is a decision rather than a precedent.
-- **The rail is words, not pictures.** Sidebar icons are OFF by default (2026-08-15 — the
-  rail does not need them); the switch lives at the BOTTOM of
+- **The rail carries its glyphs, and the words stay.** Sidebar icons are ON by default since
+  2026-09-07; the switch stays, so a rail of pure words is one click away. They were OFF from
+  2026-08-15 on the argument that the rail did not need them, and the rail measured on
+  2026-09-07 is what retired it: four destinations plus a group, every row 40px of 14px grey
+  `oklch(0.556)`, nothing on the column but text at one size — a list of words is scanned
+  letter by letter where a glyph is recognised. The switch lives at the BOTTOM of
   "Everything else" (2026-08-17 — a set-once device preference does not need a permanent
   footer row), and it means the WHOLE rail: nav glyphs and the footer controls' glyphs alike
   A COLLAPSED rail has no labels, so it stays icon-only
@@ -229,9 +242,14 @@ widths. Four laws, held by the
 primitives in `components/sheet.tsx` (`SHEET`, `SheetTop`, `NumBand`, `SHEET_FOOT`,
 `SHEET_TOOL`) and `.paper-cols` in `admin.css`:
 
-1. **Every page is ONE full-width sheet at ONE width**, at least the window tall — the
-   editor's paper, given to every screen. Long prose (Help) takes a reading column INSIDE
-   the sheet; the page never changes size. Never fix a sparse page by narrowing it.
+1. **Every page is ONE full-width sheet at ONE width, as long as what is on it** — the
+   editor's paper, given to every screen, with a **60vh floor** so a near-empty page still
+   reads as paper rather than as a strip. It was "at least the window tall" until 2026-09-07,
+   and what that shipped was measured: Trash, the assistant and an empty Write screen each
+   drew about 2,000px of white with one sentence at the top, which reads as a page that failed
+   to load rather than as a page with nothing in it. A floor answers the sparse page; a
+   window-height MINIMUM answers it by printing blank paper. Long prose (Help) takes a reading
+   column INSIDE the sheet; the page never changes size. Never fix a sparse page by narrowing it.
 2. **A page's tools live on the sheet's own first row** (`SheetTop`): scope tabs, search,
    sort, export, "empty this kind" — never scattered over the paper around the sheet. A
    second chrome row (the Library's count · search · sort band) is the editor's own
@@ -265,6 +283,16 @@ stacks, with cards assigned to a side by hand so the two come out close in heigh
 **EVERY settings tab is two columns.** There is no one-column tab, and there was: Site held a
 single card and Reading held fifteen toggles beside one switch. Two tabs of seven behaving
 differently reads as a mistake. Split the CONTENT, do not leave the layout ragged.
+
+**A settings tab is grouped by the QUESTION it answers, and it saves ONE way**
+([ADR 0041](./decisions/0041-settings-by-the-owners-question.md), 2026-09-07, superseding the
+grouping in [0011](./decisions/0011-settings-regrouped-into-seven.md)). The eight tabs were
+grouped by which part of the CODE a key belonged to, and the count measured on 2026-09-07 says
+what that cost: Appearance carried 137 controls over 2,825px while five other tabs sat at
+about 1,236px each, and the answer to "how do readers sign in to comment" lived three tabs
+away from "how does mail leave this machine". A tab either saves everything on it with one
+button (tabs 1–4) or saves card by card, each card testing what it just stored (tabs 5–7);
+the sheet's Save button renders only on the first kind, so no screen shows two ways to save.
 
 **Do not widen a card to fix its contents.** Making the MCP card span both columns gave its
 table room and turned it into a wide slab under a two-column tab. A table that does not fit

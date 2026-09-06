@@ -2,9 +2,9 @@
 // through one page at a time. Four laws, and these primitives are where they
 // live so no screen re-types them:
 //
-//   1. Every page is ONE full-width sheet at ONE width, at least the window tall —
-//      the editor's paper, given to every screen. Long prose gets a reading column
-//      INSIDE the sheet; the page never changes size, and no two pages come out at
+//   1. Every page is ONE full-width sheet at ONE width, as long as what is ON it, with a
+//      60vh floor — the editor's paper, given to every screen. Long prose gets a reading
+//      column INSIDE the sheet; the page never changes size, and no two pages come out at
 //      different widths.
 //   2. A page's tools live on the sheet's own FIRST ROW (`SheetTop`), like the editor's
 //      action line — never scattered over the paper around it.
@@ -15,8 +15,19 @@
 import type { ReactNode } from 'react'
 import { CARD, TAP } from './kit'
 
-/** The sheet itself. Height matches the editor's paper so every page stands as tall. */
-export const SHEET = `${CARD} flex flex-col lg:min-h-[calc(100dvh-1.5rem)]`
+/**
+ * The sheet itself: as long as its content, with a floor under it.
+ *
+ * ⚠️ **60vh, and it was `calc(100dvh-1.5rem)` until 2026-09-07.** A window-height minimum
+ * gives a sparse page a page-height slab of white: Trash, the assistant and an empty Write
+ * screen each drew about 2,000px of it under one sentence, which reads as a page that failed
+ * to load rather than as a page with nothing on it. A FLOOR is what the rule was reaching for
+ * — it keeps a short page reading as paper — and 60vh is high enough to do that without
+ * printing blank paper to reach the fold.
+ *
+ * `min-h`, still, and not a height: a page taller than the fold scrolls, as pages do.
+ */
+export const SHEET = `${CARD} flex flex-col min-h-[60vh]`
 
 /**
  * The sheet for a page that must fit the WINDOW instead of growing past it.

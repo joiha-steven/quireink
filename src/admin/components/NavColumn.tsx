@@ -106,14 +106,22 @@ export function useNavColumn({
               onClick={onMore}
               aria-expanded={more}
               title={c ? t.navMore : undefined}
-              className={`${rowClass()} ${!c ? 'justify-between' : ''}`}
+              className={`${rowClass()} ${!c ? 'justify-between gap-2' : ''}`}
             >
               <span className={`flex min-w-0 items-center ${c ? '' : 'gap-3'}`}>
                 {(c || icons) && <IconMore />}
                 {!c && <span className="truncate">{t.navMore}</span>}
               </span>
               {!c && (
-                <span className={`grid place-items-center transition-transform ${more ? 'rotate-90' : '-rotate-90'}`}>
+                // The one row carrying TWO glyphs, so it is the one row that runs out of
+                // width: with the rail's icons on (2026-09-07) its 184px of content holds a
+                // 20px glyph, a 12px gap, the label, another 12px gap and a 20px chevron,
+                // which left the English "Everything else" 96px for the 100px it needs.
+                // The four pixels come back from the CHEVRON rather than from the label,
+                // and that is the right place for them: a destination's glyph says WHAT the
+                // row is and a state chevron says which way it will move, so they are not
+                // peers and need not be drawn at one size. 16px in a 16px box, on an 8px gap.
+                <span className={`grid h-4 w-4 shrink-0 place-items-center [&>svg]:h-4 [&>svg]:w-4 transition-transform ${more ? 'rotate-90' : '-rotate-90'}`}>
                   <IconChevronLeft />
                 </span>
               )}
@@ -241,7 +249,10 @@ export function useNavColumn({
      * its label and its chord, sitting directly above Home.
      */
     const searchRow: ReactNode = (
-      <button type="button" onClick={() => { close(); openPalette() }} title={c ? tip(t.paletteTitle, 'palette') : undefined} className={`${rowClass()} ${!c ? 'justify-between' : ''}`}>
+      // Same handle as the chrome placement above: it is ONE control in two positions, and
+      // which one is on screen is exactly what a test wants to ask. The `nav` scope in a
+      // selector separates them — the row is in the column, the chrome is not.
+      <button type="button" data-nav-search onClick={() => { close(); openPalette() }} title={c ? tip(t.paletteTitle, 'palette') : undefined} className={`${rowClass()} ${!c ? 'justify-between' : ''}`}>
         <span className={`flex min-w-0 items-center ${c ? '' : 'gap-3'}`}>
           <IconSearch />
           {!c && <span className="truncate">{t.paletteTitle}</span>}
@@ -264,6 +275,7 @@ export function useNavColumn({
     const searchBtn: ReactNode = (
       <button
         type="button"
+        data-nav-search
         onClick={() => { close(); openPalette() }}
         title={tip(t.paletteTitle, 'palette')}
         aria-label={t.paletteTitle}
@@ -296,7 +308,13 @@ export function useNavColumn({
        * than no top row at all.
        */
       top: !showLogo ? null : (
-        <div className={c ? 'flex flex-col items-center gap-2' : 'flex min-w-0 items-center justify-between gap-1'}>
+        // `data-nav-top` is the row's NAME, and it is here so a test can ask whether the row
+        // exists rather than inferring it from what is inside it. The rearrange flow used to
+        // read the wordmark's absence off `aside a[href="/admin"] svg` having no matches —
+        // true only while the rail drew no icons, because the Home destination is a link to
+        // the same href, and it started matching the moment icons came on by default
+        // (2026-09-07). A structural fact deserves a structural handle.
+        <div data-nav-top className={c ? 'flex flex-col items-center gap-2' : 'flex min-w-0 items-center justify-between gap-1'}>
           <span className="min-w-0 truncate">{wordmark}</span>
           {showSearch && searchBtn}
         </div>
