@@ -42,26 +42,7 @@ export function el<K extends keyof HTMLElementTagNameMap>(
   return node
 }
 
-/**
- * A scroll handler that reads layout, coalesced to one call per frame. Reading rects on
- * every scroll event forces a synchronous layout each time; this reads at most once per
- * paint.
- */
-export function onScrollFrame(run: () => void): () => void {
-  let queued = 0
-  const handler = () => {
-    if (queued) return
-    queued = requestAnimationFrame(() => {
-      queued = 0
-      run()
-    })
-  }
-  run()
-  addEventListener('scroll', handler, { passive: true })
-  addEventListener('resize', handler)
-  return () => {
-    cancelAnimationFrame(queued)
-    removeEventListener('scroll', handler)
-    removeEventListener('resize', handler)
-  }
-}
+// The scroll watcher lives in motion.ts with the rest of the motion engine. Re-exported here
+// only so the book files, which the owner is rewriting, keep importing it from this module
+// until that work lands; new code imports it from './motion'.
+export { onScrollFrame } from './scroll'

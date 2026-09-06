@@ -25,6 +25,7 @@ import { RAIL_CSS } from '@/web/rail.css'
 import { ISLANDS_CSS } from '@/web/islands.css'
 import { BOOK_CSS } from '@/web/book.css'
 import { BOOK_PHONE_CSS } from '@/web/book-phone.css'
+import { MOTION_CSS } from '@/web/motion.css'
 import { SUBSCRIBE_CSS } from '@/web/subscribe.css'
 import { IDE_CSS } from '@/web/ide.css'
 import { MOBILE_CSS } from '@/web/mobile.css'
@@ -37,22 +38,10 @@ import { POST_IMAGE_CSS } from '@/web/postimage.css'
 import { PRINT_CSS } from '@/web/print.css'
 
 const BASE_CSS = `
-/* MOTION TOKENS. Three durations, and no easing token. docs/conventions/motion.md promised these
-   since the frozen tree and 2.0 had none, so every duration in islands.css.ts was a literal.
-   Counted before deciding: twelve motion declarations across three files, and FOUR values for
-   three intents — .13s and .15s are the same idea written twice, which is exactly the drift a
-   token set exists to stop. So the tiers are named and .13s becomes .15s.
-
-   --ease is DELIBERATELY not here. Its value would have been the keyword ease, which is
-   indirection with no payload; and the three scroll-driven animations must stay linear, since
-   easing a timeline a reader is scrubbing with their thumb is wrong rather than slower.
-   Introduce one when a real curve is chosen, not to complete a set.
-
-   Static, so they live in the immutable sheet rather than the per-page inline half: they are
-   not derived from any setting. data-motion=off and prefers-reduced-motion still switch all of
-   it off in one rule each, at the foot of islands.css.ts. NOTE the sign-in page does not get
-   this sheet — see the comment in login.css.ts. */
-:root{--dur-fast:.15s;--dur-base:.2s;--dur-slow:.5s}
+/* The motion tokens are in motion.css.ts, assembled below with the rest of the engine
+   (the floor, the click, the entrances and the two gates). Static, so they live in the
+   immutable sheet rather than the per-page inline half. The sign-in page takes the same
+   tokens through MOTION_TOKENS - see login.css.ts. */
 *,*::before,*::after{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 /* The hidden ATTRIBUTE means hidden, and it takes an !important to say so.
@@ -354,6 +343,10 @@ footer.site a:hover{color:var(--c-text)}
 /**
  * The document sheet, the island sheet, the IDE chrome and the phone rules, in that order.
  *
+ * The motion engine sits just before the phone sheet: its floor is specificity zero and its
+ * gates are !important, so the order only matters for the click, which has to follow the
+ * controls it presses.
+ *
  * The phone sheet is LAST because several of its rules win on a specificity tie alone: it
  * raises a floor on a control that already states its size, and undoes a hover-only opacity.
  *
@@ -372,5 +365,6 @@ ${SUBSCRIBE_CSS}
 ${FRONT_CSS}
 ${POST_IMAGE_CSS}
 ${IDE_CSS}
+${MOTION_CSS}
 ${MOBILE_CSS}
 ${PRINT_CSS}`

@@ -10,7 +10,8 @@
 // asked has to go quietly. Finishing a post (past 92%) forgets it — "continue where you
 // left off" at the end of a text is not memory, it is nagging.
 
-import { el, label, onScrollFrame } from './dom'
+import { el, label } from './dom'
+import { onScrollFrame, scrollBehavior } from './motion'
 
 const KEY = 'quire:resume:'
 const MIN_Y = 1.5 // viewports read before a position is worth keeping
@@ -45,8 +46,7 @@ export function resume(): void {
     const target = Math.min(mark.y, doc())
     const pill = el('button', { type: 'button', class: 'resume-pill' }, text)
     pill.addEventListener('click', () => {
-      const still = matchMedia('(prefers-reduced-motion:reduce)').matches
-      scrollTo({ top: target, behavior: still ? 'auto' : 'smooth' })
+      scrollTo({ top: target, behavior: scrollBehavior() })
       pill.remove()
     })
     document.body.appendChild(pill)

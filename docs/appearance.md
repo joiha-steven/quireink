@@ -166,7 +166,7 @@ one line of explanation each; clicking one writes it where your cursor is.
   /* ...and the same trio for h2, h3, h4, small, caption, code, ui */
 
   /* Motion */
-  --dur-fast: 120ms;  --dur-base: 200ms;  --dur-slow: 320ms;
+  --dur-fast: .15s;  --dur-base: .2s;  --dur-slow: .5s;  --ease-out: cubic-bezier(.2,.7,.3,1);
 }
 ```
 

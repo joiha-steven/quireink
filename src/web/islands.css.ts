@@ -182,8 +182,5 @@ html[data-chunked] .post-list article[data-more]{display:none}
   border-radius:.5rem;padding:.5rem 1rem;font-size:var(--fs-small);
   line-height:var(--lh-small);letter-spacing:var(--ls-small);margin:0 0 1.5rem}
 
-/* Two ways to the same place: the reader's system preference, and the owner's Motion
-   switch in Settings. The switch had no effect at all until this rule existed. */
-@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
-html[data-motion=off] *{animation:none!important;transition:none!important}
+/* The two motion gates (the owner's switch, the OS preference) are in motion.css.ts. */
 `.trim()

@@ -20,7 +20,10 @@
 // string. It has cost two failed boots in this repository already; check:css-literal guards
 // this file, public.css.ts and islands.css.ts.
 
+import { MOTION_GATES, MOTION_TOKENS } from '@/web/motion.css'
+
 export const LOGIN_CSS = `
+${MOTION_TOKENS}
 *,*::before,*::after{box-sizing:border-box}
 /* Inter, not the blog's chrome face. The sign-in page belongs to Quire Ink and looks the same
    on every install; the blog's own typeface starts at the door it opens. */
@@ -68,14 +71,11 @@ body{margin:0;background:var(--c-bg);color:var(--c-text);font-family:var(--font-
   /* The well. Black rather than a palette token on purpose: a shadow is dark in every
      palette, and a token here would light the inside of the field on a dark one. */
   box-shadow:inset 0 1px 1.5px rgba(0,0,0,.07);
-  /* Literal, not var(--dur-fast), and checked rather than assumed: the sign-in page is served
-     pageStyles(settings) + LOGIN_CSS and NOT the public sheet, so BASE_CSS's :root{--dur-*} is
-     not on this document. A token here would resolve to nothing and the transition would
-     silently not happen, which is a failure neither this file nor a test can see. Defining the
-     tokens a second time here is the other half of the same problem, and moving them into
-     pageStyles would put a static value in the per-page inline half. One screen, two
-     transitions, its own system on purpose. */
-  transition:border-color .12s, box-shadow .12s}
+  /* Tokens, since 2026-09-06: this sheet opens with MOTION_TOKENS from motion.css.ts, the
+     same line the public sheet carries, because the sign-in page is served
+     pageStyles(settings) + LOGIN_CSS and never sees BASE_CSS. Before that it kept literals
+     and its own copy of the press, and the gates never reached it at all. */
+  transition:border-color var(--dur-fast), box-shadow var(--dur-fast)}
 .login-form input::placeholder{color:var(--c-meta)}
 .login-form input:hover{border-color:color-mix(in srgb, var(--c-text) 22%, var(--c-rule))}
 /* A ring, not a 2px outline box. autofocus fires on load, so whatever this draws is the
@@ -94,7 +94,7 @@ body{margin:0;background:var(--c-bg);color:var(--c-text);font-family:var(--font-
 .login-reveal button{position:absolute;right:.375rem;top:50%;transform:translateY(-50%);
   display:flex;align-items:center;justify-content:center;width:2rem;height:2rem;padding:0;
   border:0;border-radius:6px;background:none;color:var(--c-meta);cursor:pointer}
-.login-reveal button{transition:color .12s, background-color .12s, box-shadow .12s, transform .12s}
+.login-reveal button{transition:color var(--dur-fast), background-color var(--dur-fast), box-shadow var(--dur-fast), transform var(--dur-fast)}
 .login-reveal button:hover{color:var(--c-text);
   background:color-mix(in srgb, var(--c-text) 7%, transparent)}
 .login-reveal svg{width:18px;height:18px}
@@ -107,7 +107,7 @@ body{margin:0;background:var(--c-bg);color:var(--c-text);font-family:var(--font-
 
 .login-submit{margin-top:1.5rem;padding:.7rem 1rem;font:inherit;font-size:.9375rem;
   font-weight:600;color:var(--c-bg);background:var(--c-heading);border:0;border-radius:8px;
-  cursor:pointer;transition:box-shadow .12s, transform .12s;
+  cursor:pointer;transition:box-shadow var(--dur-fast), transform var(--dur-fast);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.18),inset 0 -1px 0 rgba(0,0,0,.2),
     0 1px 2px rgba(0,0,0,.28)}
 .login-submit:hover{box-shadow:inset 0 1px 0 rgba(255,255,255,.24),inset 0 -1px 0 rgba(0,0,0,.22),
@@ -195,7 +195,7 @@ html[data-motion=off] .login-reveal button:active{transform:translateY(-50%)}
   min-height:calc(1.5 * .9375rem + 2 * .625rem + 2px);
   color:var(--c-text);background:var(--field);border:1px solid var(--c-rule);
   border-radius:8px;box-shadow:inset 0 1px 1.5px rgba(0,0,0,.07);
-  transition:border-color .12s, box-shadow .12s}
+  transition:border-color var(--dur-fast), box-shadow var(--dur-fast)}
 .login-form select:hover{border-color:color-mix(in srgb, var(--c-text) 22%, var(--c-rule))}
 .login-form select:focus{outline:none;border-color:var(--c-accent);
   box-shadow:inset 0 1px 1.5px rgba(0,0,0,.07), 0 0 0 3px color-mix(in srgb, var(--c-accent) 16%, transparent)}
@@ -225,4 +225,5 @@ html[data-motion=off] .login-reveal button:active{transform:translateY(-50%)}
   .login-wrap{gap:1.25rem;padding:1.5rem 1rem}
   .login-card{padding:1.375rem}
 }
+${MOTION_GATES}
 `

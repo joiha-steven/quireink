@@ -9,7 +9,7 @@
 // middle of a long section: the heading has already scrolled away, so nothing intersects
 // and no row is marked.
 
-import { onScrollFrame } from './dom'
+import { onScrollFrame } from './motion'
 
 const READING_LINE = 120 // px from the top of the viewport
 
@@ -63,6 +63,8 @@ export function toc(): void {
   aim()
   addEventListener('resize', aim, { passive: true })
 
+  // The READ half measures every heading; the WRITE half moves the class. Split so the
+  // engine can run every island's reads before any island's writes in the same frame.
   onScrollFrame(() => {
     let current: HTMLAnchorElement | null = null
     for (const link of links) {
@@ -76,7 +78,8 @@ export function toc(): void {
     // The title row is the one anchor with no element behind it (#top scrolls the
     // document). Falling back to `targets[0]` instead would light the first HEADING while
     // the reader is still above it, which is a different claim.
-    const lit = current ?? links.find((a) => idOf(a) === 'top') ?? null
+    return current ?? links.find((a) => idOf(a) === 'top') ?? null
+  }, (lit) => {
     for (const link of links) {
       const on = link === lit
       link.classList.toggle('is-active', on)

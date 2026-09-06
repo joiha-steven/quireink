@@ -480,7 +480,7 @@ const en = {
   ideChromeLabel: 'IDE chrome',
   ideChromeDesc: 'Dress the furniture around the article as source code: comment markers on the sidebar headings, bracketed counts, and a line-number gutter. The reading column is untouched.',
   motionLabel: 'Motion',
-  motionDesc: 'Subtle animations across the site + admin (page fades, hover/press, scroll reveal). Off = instant. Reduced-motion is always respected.',
+  motionDesc: 'One switch for every movement on the site, the sign-in page and this admin: hovers and presses, menus and dialogs arriving, the scroll reveal, smooth scrolling. Off = everything is instant. A reader whose device asks for reduced motion gets the same, whatever this says.',
   keyFeedbackLabel: 'Key feedback',
   keyFeedbackDesc: 'What the editor does when a key lands: a caret that holds still while you type, and a click made on the spot.',
   keyFeedbackOff: 'Off',

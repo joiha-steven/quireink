@@ -1,35 +1,82 @@
-# Motion — one engine, token-gated (HARD RULES)
+# Motion — one engine, one switch (HARD RULES)
 
-- **`--dur-fast` .15s · `--dur-base` .2s · `--dur-slow` .5s**, in `public.css.ts` `BASE_CSS`
-  (2026-08-11; promised here since the frozen tree, absent for all of 2.0). **No `--ease` token:
-  its value would be the keyword `ease`, and the scroll-driven animations must stay `linear`.**
-  The reasoning, and the count that settled it, is at the definition.
-- ⚠️ **The sign-in page has no `--dur-*`** — it is served `pageStyles + LOGIN_CSS`, not the public
-  sheet, so a `var()` there silently drops the transition. `login.css.ts` keeps literals, and says
-  so at the line.
-- **ONE switch gates ALL visual motion.** `<html data-motion>` is server-rendered from `settings.motion.enabled`
-  (no flash, no client JS); `html[data-motion='off']` AND `@media (prefers-reduced-motion: reduce)`
-  each set `animation:none!important;transition:none!important` on `*` — instant, no branching.
-  ⚠️ They do NOT zero `--dur-*` (measured: still `.2s` with the switch off), so never read a token
-  in script to decide whether to animate; read the media query and the attribute. Toggle in
-  Admin → Appearance → Rendering. Don't add a second motion gate.
-- `settings.motion.keys` is a scoped editor preference, not another global motion engine. It
-  enables the custom caret/line response and synthesized key sound; its visual parts must still obey
-  the master motion gate and reduced-motion preference. Audio is generated locally, at the level
-  `settings.motion.keyVolume` names, and must ignore IME composition, modifiers/navigation, paste
-  and held-key repeats. ⚠️ Sound is NOT gated by the motion engine or by reduced-motion: a person
-  who asked for less movement did not ask for silence, and the two settings are not the same
-  request. Nothing in that path may animate the text.
+Four files ARE the engine, and nothing about how the product moves lives anywhere else:
+
+| Half | Reading site | Admin |
+|---|---|---|
+| CSS — tokens, floor, click, entrances, gates | `src/web/motion.css.ts` (`MOTION_TOKENS` and `MOTION_GATES` also bracket the sign-in sheet) | the foot of `src/admin/admin.css` |
+| Script — the gate, the scroll loop, the cross-fade | `src/assets/js/motion.ts` | `src/admin/motion.ts` |
+
+A component's own sheet says WHAT moves (which property, which state); the engine says HOW
+(how long, on which curve, whether at all). A duration literal outside these files is drift,
+and the audit that built the engine (2026-09-06) found eleven of them across four files at
+four values for three intents; the three left in `book.css.ts` wait for the book rewrite.
+
+- **Tokens: `--dur-fast` .15s · `--dur-base` .2s · `--dur-slow` .5s · `--ease-out`
+  `cubic-bezier(.2,.7,.3,1)`.** Declared twice on purpose — the admin never receives the
+  public sheet — and the two declarations must stay equal; no guard can see a drift between
+  them, so a change to one is a change to both in the same commit. Tailwind's `transition*`
+  utilities read `--dur-fast` through `--default-transition-duration`, so a `transition` in a
+  className and one in the sheet run at one speed. `--ease-out` is the one curve, introduced
+  only once a real curve had been chosen (the rail's FLIP slide, then every entrance); the
+  scroll-driven animations do NOT use it and must stay `linear` — a timeline a reader scrubs
+  with a thumb is linear or it is wrong.
+- **ONE switch gates ALL motion, on both sides.** `<html data-motion>` is server-rendered from
+  `settings.motion.enabled` (no flash, no client JS) on the reading site, the sign-in page and
+  the admin. `html[data-motion=off]` AND `@media (prefers-reduced-motion: reduce)` each set
+  `animation:none!important;transition:none!important` on every element and pseudo-element
+  (`::backdrop` included) — instant, no branching. Don't add a second gate, and don't gate one
+  rule at a time: the admin did, and every Tailwind `transition`, six skeleton pulses and the
+  sidebar's width kept moving with the switch off. A STATE that must survive with motion off
+  (the progress bar's static two-thirds) is a rule of its own under both gates; a duration
+  never is. Toggle in Admin → Appearance → Rendering.
+- ⚠️ **The gates do NOT zero the tokens** (measured: `--dur-base` still reads .2s with the
+  switch off). Script therefore never reads a token to decide whether to move: it asks
+  `motionOn()` — the attribute and the media query — and `scrollBehavior()` for any
+  programmatic scroll. Four admin call sites decided this for themselves before the engine
+  (two read only the OS, two read nothing), so the switch stopped a hover and not a smooth
+  scroll. `fadeSwap()` is a Web Animations fade that reads `--dur-fast` off the document and
+  is instant behind the gate; it is what the book's page turn should use — that turn still
+  holds a BLANK spread for 130ms with the switch off, because its CSS transition is gone and
+  its timer does not know (`book.ts`, to be moved onto the engine once the owner's book
+  rewrite lands).
+- **One scroll loop.** Anything that watches the scroll goes through `onScrollFrame(read,
+  write)`: one `requestAnimationFrame` shared by every island, every island's READ (rects,
+  `scrollY`) before any island's WRITE (a class), so a scroll frame forces layout once rather
+  than once per island. Four islands ran four loops on a post before this, and the second
+  loop's reads landed after the first loop's writes on every frame.
+- **The floor.** Every pressable thing (`:where(a,button,summary,input,select,textarea,
+  [role=button])`) eases its colour, opacity and shadow at `--dur-fast`, at specificity zero, so
+  a component's own `transition` wins outright and nothing snaps beside a neighbour that eases.
+  Only the properties a hover changes, never `all`: a transition on a layout property re-lays
+  out on every frame, which is why the settings switch travels on a transform and the upload
+  bars scale rather than widen.
 - **THE CLICK is the one motion that is deliberately NOT symmetric.** A pressable control
   travels 1px and takes its carved shadow **instantly** — `active:translate-y-px
-  active:duration-0` — and only the RELEASE is sprung, on the inherited transition. A control
-  that eases both ways feels like a screen; a key that drops now and springs back is what a
-  hand expects of a pressed thing. It is on `ui/Button`'s `SHAPE` and on the reading site's
-  own controls, in whichever ink the palette holds. Reduced motion keeps the surface change
-  and drops the travel (`motion-reduce:active:translate-y-0`) — the state must still be
-  legible without the movement, so relief is never the only cue.
-- **Cheap properties only** (`opacity`/`transform`/colour) so motion never causes CLS or jank; entrance
-  effects must default to fully-visible (e.g. `.reveal` is gated behind `@supports (animation-timeline)`
-  + `data-motion='on'`) so unsupported browsers / motion-off never hide content. There is no page-nav
-  cross-fade in 2.0: cross-document View Transitions were considered and not shipped
-  ([`spec/04-frontend.md`](../spec/04-frontend.md)).
+  active:duration-0` on `ui/Button`'s `SHAPE`, `transition-duration:0s` on the engine's list of
+  the reading site's pressables — and only the RELEASE is sprung, on the inherited transition.
+  A control that eases both ways feels like a screen; a key that drops now and springs back is
+  what a hand expects of a pressed thing. Behind either gate the surface change stays and the
+  travel goes — the state must still be legible without the movement, so relief is never the
+  only cue.
+- **The entrances.** A menu, a dialog, a toast, a slide-over ARRIVES rather than appears:
+  `@starting-style` plus `transition-behavior: allow-discrete`, pure CSS, so `hidden = true`
+  and `showModal()` stay the whole of the script. A dialog moves in OPACITY ONLY — a transform
+  on it would make it the containing block for anything fixed inside it during the entrance,
+  and the child would jump when the transform came off. An engine without `@starting-style`
+  shows and hides instantly, which is the state every entrance rule starts from.
+- **Cheap properties only** (`opacity`/`transform`/`translate`/colour/shadow) so motion never
+  causes layout or CLS. **Nothing may hide content it cannot reveal**: an entrance starts from
+  the visible state where unsupported; `.reveal` is gated behind `@supports
+  (animation-timeline)` + `data-motion=on` + the owner's scroll-fade switch, and it is the ONLY
+  entrance a card has — ⚠️ a second `view()` animation (`card-in`, on `.post-list > article`)
+  still sits in `book.css.ts` outside that switch, so a feed with the fade off still rises on
+  the way in; it goes with the book rewrite, along with that sheet's last `.12s` literals. There is no page-nav cross-fade in 2.0: cross-document View Transitions were
+  considered and not shipped ([`spec/04-frontend.md`](../spec/04-frontend.md)).
+- `settings.motion.keys` is a scoped editor preference, not another motion engine. It enables
+  the custom caret response and the synthesized key sound; its visual part asks `motionOn()`.
+  Audio is generated locally, at the level `settings.motion.keyVolume` names, and must ignore
+  IME composition, modifiers/navigation, paste and held-key repeats. ⚠️ Sound is NOT gated by
+  the engine or by reduced motion: a person who asked for less movement did not ask for
+  silence, and the two settings are not the same request. Nothing in that path may animate
+  the text.

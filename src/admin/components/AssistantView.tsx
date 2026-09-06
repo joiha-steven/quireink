@@ -17,6 +17,7 @@
 // exchange is a block on the page with a rule between one and the next.
 import { useEffect, useRef, useState } from 'react'
 import Link from '@/admin/router'
+import { scrollBehavior } from '@/admin/motion'
 import type { ApiResponse } from '@/types'
 import { CONTROL, EmptyState, META, PageHeader } from './kit'
 import { SHEET_FIXED, SHEET_TOOL, SheetTop } from './sheet'
@@ -214,7 +215,7 @@ export function AssistantView({ title, configured, model }: {
     } finally {
       setLive('')
       setBusy(false)
-      setTimeout(() => endRef.current?.scrollIntoView({ block: 'end', behavior: 'smooth' }), 30)
+      setTimeout(() => endRef.current?.scrollIntoView({ block: 'end', behavior: scrollBehavior() }), 30)
     }
   }
 

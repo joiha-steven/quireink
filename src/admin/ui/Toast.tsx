@@ -31,7 +31,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           <div
             key={t.id}
             role={t.kind === 'error' ? 'alert' : 'status'}
-            className="flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-4 py-2.5 text-sm font-medium text-neutral-900 shadow-lg dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+            className="admin-toast flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-4 py-2.5 text-sm font-medium text-neutral-900 shadow-lg dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
           >
             {/* ONE neutral sheet, told apart by a pilot lamp AND a glyph. The two kinds were
                 inverted black and white — a difference that vanished for anyone who did not

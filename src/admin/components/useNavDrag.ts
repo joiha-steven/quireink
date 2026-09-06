@@ -10,6 +10,7 @@
 // fail to compile). Nothing under `src/content` may import it.
 import { useEffect, useLayoutEffect, useRef } from 'react'
 import { findSpot, type Spot, type Zone } from './useNavArrange'
+import { motionOn } from '@/admin/motion'
 import type { NavOrder } from '@/types'
 
 /**
@@ -41,14 +42,14 @@ export function useNavDrag(arrange: Draggable): void {
    * transition on `transform` would also animate nothing at every OTHER render, and would
    * fight the row's own hover and active states.
    *
-   * `prefers-reduced-motion` is honoured by skipping the animation entirely — the list still
-   * reorders, it just does not travel.
+   * The gate (`motionOn`: the owner's switch and `prefers-reduced-motion`) is honoured by
+   * skipping the animation entirely — the list still reorders, it just does not travel.
    */
   const seen = useRef(new Map<string, number>())
   useLayoutEffect(() => {
     const rows = [...document.querySelectorAll<HTMLElement>('[data-nav-row]')]
     const now = new Map<string, number>()
-    const quiet = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches
+    const quiet = !motionOn()
     for (const el of rows) {
       const id = el.dataset.navRow
       if (!id) continue

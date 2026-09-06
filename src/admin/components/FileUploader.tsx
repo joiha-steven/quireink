@@ -68,7 +68,9 @@ export function FileUploader({
       </div>
       {progress !== null && (
         <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-neutral-200">
-          <div className="h-full bg-neutral-900 transition-all" style={{ width: `${progress}%` }} />
+          {/* A transform, not a width: the fill scales on the compositor instead of re-laying out
+              the bar on every tick of the upload. */}
+          <div className="h-full w-full origin-left bg-neutral-900 transition-transform" style={{ transform: `scaleX(${progress / 100})` }} />
         </div>
       )}
     </div>

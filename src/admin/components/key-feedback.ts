@@ -15,6 +15,7 @@
 import { type Editor as TiptapEditor } from '@tiptap/react'
 import { playKey, type KeySound } from './key-sound'
 import type { Strike } from './key-voices'
+import { motionOn } from '@/admin/motion'
 
 /**
  * How long the caret holds still after the last keystroke before it starts blinking again.
@@ -101,12 +102,7 @@ export function pulseInput(
   placeCaret(view, caret)
   holdBlink(caret)
 
-  if (
-    sound.mode !== 'woody' ||
-    !caret ||
-    document.documentElement.dataset.motion === 'off' ||
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  ) return
+  if (sound.mode !== 'woody' || !caret || !motionOn()) return
 
   // Compositor-only, on the caret and nothing else. `transform` and `opacity` on one 2px
   // element cost a composite; the version this replaced repainted a whole paragraph.

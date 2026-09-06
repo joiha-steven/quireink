@@ -480,7 +480,7 @@ const vi = {
   ideChromeLabel: 'Giao diện kiểu IDE',
   ideChromeDesc: 'Cho phần khung quanh bài viết trông như mã nguồn: dấu chú thích ở tiêu đề cột bên, số đếm trong ngoặc vuông, và cột số dòng. Cột chữ đọc giữ nguyên.',
   motionLabel: 'Chuyển động',
-  motionDesc: 'Hiệu ứng tinh tế toàn site + admin (mờ dần khi chuyển trang, hover/bấm, hiện dần khi cuộn). Tắt = tức thì. Luôn tôn trọng prefers-reduced-motion.',
+  motionDesc: 'Một công tắc cho mọi chuyển động trên site, trang đăng nhập và admin này: hover và bấm, menu và hộp thoại hiện ra, hiện dần khi cuộn, cuộn mượt. Tắt = mọi thứ tức thì. Thiết bị của người đọc yêu cầu giảm chuyển động thì cũng được như vậy, bất kể công tắc này.',
   keyFeedbackLabel: 'Phản hồi khi gõ',
   keyFeedbackDesc: 'Trình soạn thảo làm gì mỗi khi một phím rơi xuống: con trỏ đứng yên trong lúc gõ, và một tiếng lách tạo tại chỗ.',
   keyFeedbackOff: 'Tắt',

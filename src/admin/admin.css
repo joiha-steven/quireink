@@ -17,10 +17,25 @@
    no matter which setting they picked. The class has to be the switch. */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* THE MOTION ENGINE, admin half. The same three durations and one curve the reading site
+   declares in web/motion.css.ts, declared again here because the admin never receives the
+   public sheet; the numbers must not drift between the two, and docs/conventions/motion.md
+   is where that is promised. Tailwind's own `transition` utilities are pointed at the fast
+   token, so a `transition` in a className and a `transition` written here run at one
+   speed - before this every utility ran Tailwind's 150ms literal beside the sheet's own
+   150ms literal, equal by luck. The gates are at the foot of this file. */
+@theme {
+  --default-transition-duration: var(--dur-fast);
+}
+
 /* The tokens the admin borrows from the public sheet. The editor renders `.prose`, so it
    needs the same reading face and the same meta colour the article page uses; everything
    else in the admin is on the neutral scale by design. */
 :root {
+  --dur-fast: .15s;
+  --dur-base: .2s;
+  --dur-slow: .5s;
+  --ease-out: cubic-bezier(.2, .7, .3, 1);
   --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-reading: var(--font-sans);
   /* `--admin-mono`, NOT `--font-mono`, and the distinct name is the whole point.
@@ -172,21 +187,21 @@ body {
    which is the same hunt the search exists to remove. Outline rather than background: a
    background repaints the card and reads as a state the setting is in, while an outline
    reads as a pointer and takes no colour from the neutral scale.
-   `--dur-slow` is not available here — the admin does not get the public sheet — so the
-   duration is a literal, as `login.css.ts` documents for the same reason. Honours the
-   owner's motion switch: `data-motion="off"` is a request, not a preference to override. */
+   The outline is DRAWN by the class and only taken away by the animation, so with motion
+   off (the owner's switch, or the OS) the mark still appears, holds for as long as
+   useSettingJump keeps the class on, and leaves; it used to be transparent at rest and
+   painted only by the keyframes, which made the marker vanish exactly where the reader
+   had asked for less motion rather than for less help. 1.6s is a hold, not a motion tier,
+   which is why it is not a `--dur-*` token. */
 @keyframes setting-found {
   from { outline-color: currentColor; }
   to { outline-color: transparent; }
 }
 .setting-found {
-  outline: 2px solid transparent;
+  outline: 2px solid currentColor;
   outline-offset: 6px;
   border-radius: 4px;
-  animation: setting-found 1.6s ease-out;
-}
-[data-motion="off"] .setting-found {
-  animation: none;
+  animation: setting-found 1.6s ease-out forwards;
 }
 
 /* Editor preview: the TipTap editor has no .gallery wrapper (grouping happens on
@@ -526,16 +541,21 @@ input[type='color']::-moz-color-swatch {
   animation: none;
   transform: translateX(0);
   opacity: 0;
-  transition: transform 140ms ease-out, opacity 180ms ease-out 140ms;
+  transition: transform var(--dur-fast) var(--ease-out), opacity var(--dur-base) var(--ease-out) var(--dur-fast);
 }
-/* The site's one motion switch also owns this. Off means the bar still SAYS something is
-   happening, it just says it without moving. */
+/* With motion off - the owner's switch OR the OS preference - the bar still SAYS something
+   is happening, it just says it without moving: a static two-thirds. Both gates, because
+   the foot of this file sets the animation to none for both, and a bar whose only transform
+   was in its keyframes sat at translateX(-100%), off screen, for anyone on reduced motion. */
 :root[data-motion='off'] .quireink-progress-bar {
   animation: none;
   transform: translateX(-35%);
 }
-:root[data-motion='off'] .quireink-progress-bar[data-done='true'] {
-  transition: opacity 120ms ease-out;
+@media (prefers-reduced-motion: reduce) {
+  .quireink-progress-bar {
+    animation: none;
+    transform: translateX(-35%);
+  }
 }
 
 /* iOS Safari zooms the whole page when a focused control is set below 16px, and every field
@@ -589,20 +609,11 @@ input[type='color']::-moz-color-swatch {
    a button keeps whatever it declares. This is a floor, not a rule.
    Only the properties a hover actually changes. Not `all`: transitioning layout is how a
    list starts sliding about when a row is added, and this admin has lists that grow.
-   The owner's motion switch turns it off, the same way it turns off the search highlight —
-   `data-motion="off"` is a request, not a preference to be overridden. */
+   The gates at the foot of this file switch it off with everything else. */
 .admin-shell :where(a, button, select, input, textarea, summary, label, [role='button'], [role='switch']) {
-  transition-property: color, background-color, border-color, text-decoration-color, outline-color, fill, stroke, opacity;
-  transition-duration: 150ms;
+  transition-property: color, background-color, border-color, text-decoration-color, outline-color, fill, stroke, opacity, box-shadow;
+  transition-duration: var(--dur-fast);
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-}
-[data-motion='off'] .admin-shell :where(a, button, select, input, textarea, summary, label, [role='button'], [role='switch']) {
-  transition-duration: 0s;
-}
-@media (prefers-reduced-motion: reduce) {
-  .admin-shell :where(a, button, select, input, textarea, summary, label, [role='button'], [role='switch']) {
-    transition-duration: 0s;
-  }
 }
 
 /* The fader. A native range wears the OS accent and a pill thumb; this one is the hi-fi
@@ -702,3 +713,34 @@ input[type='color']::-moz-color-swatch {
    header's rule and the card's edge already draw those two lines. */
 [data-explanations='off'] .panel-list:first-child { margin-top: -1rem; border-top: 0; }
 [data-explanations='off'] .panel-list:last-child { margin-bottom: -1rem; border-bottom: 0; }
+
+/* THE ENTRANCES. A toast, the command palette and a slide-over ARRIVE rather than appear:
+   a shade transparent and a few pixels short, settling on the one curve, from the
+   @starting-style the browser applies on the frame React mounts them. Where the engine has
+   no @starting-style they simply appear, which is the state every rule starts from. Only
+   opacity and translate, which cost a composite and never a layout. */
+.admin-toast,
+html.admin [role='dialog'] {
+  transition: opacity var(--dur-base) var(--ease-out), translate var(--dur-base) var(--ease-out);
+}
+@starting-style {
+  .admin-toast { opacity: 0; translate: 0 8px; }
+  html.admin [role='dialog'] { opacity: 0; translate: 0 6px; }
+}
+
+/* THE TWO GATES. The owner's one switch (server-rendered as data-motion on <html>) and the
+   OS preference each set every animation and transition to none in one rule, exactly as
+   the reading site does in web/motion.css.ts. Until 2026-09-06 the admin gated four rules
+   one at a time and the rest - every Tailwind `transition`, six `animate-pulse` skeletons,
+   the sidebar's width - kept moving with the switch off. A state that must survive with
+   motion off (the progress bar's static two-thirds, above) is a rule of its own; a duration
+   never is. */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after { animation: none !important; transition: none !important; }
+}
+:root[data-motion='off'] *,
+:root[data-motion='off'] ::before,
+:root[data-motion='off'] ::after {
+  animation: none !important;
+  transition: none !important;
+}

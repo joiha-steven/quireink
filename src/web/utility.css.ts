@@ -55,31 +55,5 @@ export const UTILITY_CSS = `
 :root{--ink-loop:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 60' preserveAspectRatio='none'%3E%3Cpath d='M170 13C130 4 60 4 24 16C4 23 6 40 44 48C84 56 150 54 180 42C198 35 196 20 168 12C160 10 150 9 140 9' fill='none' stroke='%23000' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
 
 
-/* THE CLICK, for everything on the reading site a finger can press. Pressing lands at
-   once - the 1px of travel and the carved-in shadow arrive with transition-duration:0 -
-   and only the release is sprung, on whatever transition the control already carries.
-   The shadow is the palette's own heading ink diluted (an engine without color-mix just
-   loses the shading, never the button), so every palette carves with its own ink. The
-   book arrows keep their translateY centring (colour only, no travel) and the resume
-   pill composes its centring with the dip. data-motion=off and reduced-motion keep the
-   shadow and drop the travel, like every press in this product. */
-.icon-btn:active,.code-copy:active,form.subscribe button:active,.theme-menu button:active,
-.lightbox button:active,.to-top:active,.book-x:active,.comment-form button:active{
-  transform:translateY(1px);transition-duration:0s;
-  box-shadow:inset 0 1.5px 2.5px color-mix(in srgb,var(--c-heading) 22%,transparent)}
-.resume-pill:active{transform:translateX(-50%) translateY(1px);transition-duration:0s;
-  box-shadow:inset 0 1.5px 2.5px color-mix(in srgb,var(--c-heading) 22%,transparent)}
-.book-arrow:active{color:var(--c-heading)}
-html[data-motion=off] .icon-btn:active,html[data-motion=off] .code-copy:active,
-html[data-motion=off] form.subscribe button:active,html[data-motion=off] .theme-menu button:active,
-html[data-motion=off] .lightbox button:active,html[data-motion=off] .to-top:active,
-html[data-motion=off] .book-x:active,
-html[data-motion=off] .comment-form button:active{transform:none}
-html[data-motion=off] .resume-pill:active{transform:translateX(-50%)}
-@media (prefers-reduced-motion:reduce){
-  .icon-btn:active,.code-copy:active,form.subscribe button:active,.theme-menu button:active,
-  .lightbox button:active,.to-top:active,.book-x:active,
-  .comment-form button:active{transform:none}
-  .resume-pill:active{transform:translateX(-50%)}
-}
+/* THE CLICK - the press every control shares - is in motion.css.ts with the rest of the engine. */
 `.trim()

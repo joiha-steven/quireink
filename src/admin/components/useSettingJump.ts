@@ -6,6 +6,7 @@
 // and nothing about settings.
 
 import { useEffect, useRef, useState } from 'react'
+import { scrollBehavior } from '@/admin/motion'
 
 /** How long the mark stays. Matches the `setting-found` animation in `admin.css`. */
 const MARK_MS = 1600
@@ -50,7 +51,7 @@ export function useSettingJump(): (label: string) => void {
         if (++tries < MAX_FRAMES) frame = requestAnimationFrame(look)
         return
       }
-      match.scrollIntoView({ block: 'center', behavior: 'smooth' })
+      match.scrollIntoView({ block: 'center', behavior: scrollBehavior() })
       // The label's own box, so the mark frames the setting rather than the word.
       const box = match.closest('label') ?? match
       box.classList.add('setting-found')

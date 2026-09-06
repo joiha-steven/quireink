@@ -74,9 +74,12 @@ export const PROMISED_VARS: { group: string; vars: Promised[] }[] = [
   {
     group: 'motion',
     vars: [
-      { name: '--dur-fast', note: '120ms' },
-      { name: '--dur-base', note: '200ms' },
-      { name: '--dur-slow', note: '320ms' },
+      // The values are the engine's (web/motion.css.ts); the notes here were 120/200/320 for
+      // a month while the sheet said .15s/.2s/.5s, and only the doc read them.
+      { name: '--dur-fast', note: '.15s' },
+      { name: '--dur-base', note: '.2s' },
+      { name: '--dur-slow', note: '.5s' },
+      { name: '--ease-out', note: 'the one curve every entrance settles on' },
     ],
   },
 ]
