@@ -542,6 +542,14 @@ export type AdminStrings = {
   /** The way out of a failed fetch: ask again, here, instead of reloading the whole admin. */
   retry: string
   loadFailed: string
+  /** What a field says about a value it cannot take. Found on blur, never mid-word. */
+  fieldMin: string
+  fieldMax: string
+  fieldEmail: string
+  fieldUrl: string
+  fieldRequired: string
+  fieldInvalid: string
+  listPathTaken: string
   noMedia: string
   confirmDeleteMedia: string
   deleteNoMatch: string

@@ -13,6 +13,16 @@ import { useToast } from '@/admin/ui/Toast'
 import { useConfirm } from '@/admin/ui/ConfirmDialog'
 import { useAdminT } from './I18nProvider'
 
+/**
+ * A refusal that belongs to ONE field.
+ *
+ * The settings endpoint sanitises almost everything, so there is exactly one of these today:
+ * a list path pointing at an address a post already holds. Before this it came back as
+ * `list_path_taken: <slug>` and was shown as "Save failed" in a corner toast — a screen of
+ * forty controls, one of them wrong, and nothing saying which.
+ */
+export type FieldError = { field: 'listPath'; message: string }
+
 export type SettingsSave = {
   /** How many top-level keys differ from what the server last handed us. */
   changed: number
@@ -26,6 +36,8 @@ export type SettingsSave = {
   saving: boolean
   /** ISO time of the last successful save, or null. */
   savedAt: string | null
+  /** The one field the server refused, until it is saved again. */
+  fieldError: FieldError | null
   /** Stores the form. Resolves to whether it worked. */
   save: () => Promise<boolean>
   /**
@@ -50,6 +62,7 @@ export function useSettingsSave(settings: SiteSettings, s: SiteSettings): Settin
   const ask = useConfirm()
   const [saving, setSaving] = useState(false)
   const [savedAt, setSavedAt] = useState<string | null>(null)
+  const [fieldError, setFieldError] = useState<FieldError | null>(null)
 
   /**
    * A COUNT rather than a boolean, because the count is what makes the Save key worth
@@ -74,6 +87,7 @@ export function useSettingsSave(settings: SiteSettings, s: SiteSettings): Settin
 
   async function save(): Promise<boolean> {
     setSaving(true)
+    setFieldError(null)
     try {
       const res = await fetch('/api/settings', {
         method: 'PUT',
@@ -81,7 +95,16 @@ export function useSettingsSave(settings: SiteSettings, s: SiteSettings): Settin
         body: JSON.stringify(s),
       })
       const json = (await res.json()) as ApiResponse<SiteSettings>
-      if (!json.success) throw new Error(json.error)
+      if (!json.success) {
+        // A refusal that names a field goes TO the field. `router.refresh()` is deliberately
+        // not called: the form still holds the value the owner has to fix.
+        if (json.error?.startsWith('list_path_taken')) {
+          setFieldError({ field: 'listPath', message: t.listPathTaken })
+          notify(t.listPathTaken, 'error')
+          return false
+        }
+        throw new Error(json.error)
+      }
       setSavedAt(new Date().toISOString())
       notify(t.savedSettings)
       // Refetch the shell so a language change reaches the whole admin at once. It is also
@@ -136,5 +159,5 @@ export function useSettingsSave(settings: SiteSettings, s: SiteSettings): Settin
     return answer === 'confirm'
   })
 
-  return { changed, changedIn, saving, savedAt, save, savePartial }
+  return { changed, changedIn, saving, savedAt, fieldError, save, savePartial }
 }

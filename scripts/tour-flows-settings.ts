@@ -143,6 +143,35 @@ export function registerSettingsFlows({ flow, expect }: Tour): void {
       return rows() >= before ? 'ok (gone, then back)' : 'undo did not put the comment back'
     })()`, 1000))
 
+  // A refusal that belongs to one field goes TO that field, on the tab that holds it — not
+  // into a corner toast on a screen of forty controls with nothing saying which one is wrong.
+  // Driven through the API rather than the mode chooser: what is being tested is where the
+  // refusal LANDS, and setting up the collision by clicking is a test of three other things.
+  flow('admin: the server refuses a list path a post holds, and names the field', () => expect('/admin/settings?tab=home', `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      const read = async () => (await (await fetch('/api/admin/view/settings')).json())?.data?.settings
+      const before = await read()
+      const taken = (await (await fetch('/api/admin/view/content')).json())?.data?.posts?.[0]?.slug
+      if (!taken) return 'the fixture has no post to collide with'
+      const put = (home) => fetch('/api/settings', {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ home }),
+      })
+      // Home on a PAGE, which is what makes the list path a live field at all.
+      const page = (await (await fetch('/api/admin/view/content')).json())?.data?.pages?.[0]?.slug
+      if (!page) return 'the fixture has no page to point the home at'
+      const setup = await put({ ...before.home, mode: 'page', page })
+      if (!setup.ok) return 'could not put the home on a page'
+      // And the collision the server refuses.
+      const refused = await put({ ...before.home, mode: 'page', page, listPath: '/' + taken })
+      const said = await refused.json()
+      await put(before.home)
+      if (refused.ok) return 'the server accepted a list path a post already holds'
+      return String(said.error || '').startsWith('list_path_taken')
+        ? 'ok (refused, and the refusal names the field)'
+        : 'the refusal did not name the field: ' + said.error
+    })()`, 1200))
+
   // ⚠️ AN EMPTY ANSWER AND A BROKEN QUESTION ARE NOT THE SAME FACT. Three components used to
   // render them identically: a refused request printed "nothing here" to somebody whose rows
   // were all still on the server.

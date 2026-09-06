@@ -15,12 +15,14 @@ import { FooterField } from './FooterField'
 import { ListingFeatureFields } from './FeatureFields'
 import { PostThumbField } from './PostImageFields'
 
-export function SettingsHomeTab({ s, update, posts, pages, categories, grid, col }: {
+export function SettingsHomeTab({ s, update, posts, pages, categories, listPathError, grid, col }: {
   s: SiteSettings
   update: (partial: Partial<SiteSettings>) => void
   posts: { slug: string; title: string }[]
   pages: { slug: string; title: string }[]
   categories: string[]
+  /** The server's refusal for the list path, when the last save had one. */
+  listPathError?: string
   grid: string
   col: string
 }) {
@@ -29,7 +31,7 @@ export function SettingsHomeTab({ s, update, posts, pages, categories, grid, col
     <div className={grid}>
       <div className={col}>
         <SettingsCard title={t.cardLayout}>
-          <LayoutMenuFields s={s} update={update} posts={posts} pages={pages} />
+          <LayoutMenuFields s={s} update={update} posts={posts} pages={pages} listPathError={listPathError} />
         </SettingsCard>
         <SettingsCard title={t.footerContent}>
           <FooterField value={s.footer} onChange={(footer) => update({ footer })} />

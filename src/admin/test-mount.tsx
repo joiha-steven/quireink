@@ -96,6 +96,8 @@ export type Mounted = {
   click: (el: Element) => Promise<void>
   /** Set a controlled input/textarea/select value the way a user's keystroke would. */
   type: (el: Element, value: string) => Promise<void>
+  /** Leave a field, which is when a field checks what it was given. */
+  blur: (el: Element) => Promise<void>
   /** The first <button> whose visible text is exactly `text`, or throw — a missing
    *  control should fail the test loudly, not as an undefined deref three lines later. */
   button: (text: string) => HTMLButtonElement
@@ -154,6 +156,12 @@ export async function mountAdmin(node: ReactElement): Promise<Mounted> {
       act(async () => {
         setNativeValue(el, value)
         el.dispatchEvent(new Event('input', { bubbles: true }))
+      }),
+    // `focusout`, not `blur`: React 17+ listens for the bubbling event, and a `blur` event
+    // dispatched at the element does not reach the root React attached its listener to.
+    blur: (el) =>
+      act(async () => {
+        el.dispatchEvent(new FocusEvent('focusout', { bubbles: true }))
       }),
     button: (text) => {
       const hit = [...container.querySelectorAll('button')].find(

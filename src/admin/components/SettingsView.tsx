@@ -15,7 +15,7 @@
 // The stored shape is untouched. `SiteSettings` keeps every key and every name; this file
 // decides which tab renders which key, and `?tab=` still answers to the eight old ids.
 
-import { useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useSearchParams } from '@/admin/router'
 import type { SiteSettings } from '@/types'
 import type { ThemePreset } from '@/content/themes'
@@ -123,6 +123,13 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
   const { changed, saving, savedAt, save } = form
   const savesAsOne = SAVES_AS_ONE.includes(tab)
 
+  // A refused field is on ONE tab, and it is not necessarily the tab being looked at: the
+  // save key stores the whole form. Opening that tab is the least the screen can do before
+  // pointing at the field.
+  useEffect(() => {
+    if (form.fieldError?.field === 'listPath') setTab('home')
+  }, [form.fieldError])
+
   const TABS: TabItem<Tab>[] = [
     { key: 'blog', label: t.tabBlog },
     { key: 'home', label: t.tabHome },
@@ -209,6 +216,7 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
       {tab === 'home' && (
         <SettingsHomeTab
           s={s} update={update} posts={posts} pages={pages} categories={categories}
+          listPathError={form.fieldError?.field === 'listPath' ? form.fieldError.message : undefined}
           grid={GRID} col={COL}
         />
       )}

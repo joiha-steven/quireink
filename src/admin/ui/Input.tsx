@@ -5,8 +5,10 @@
 // they disagreed — above the control here, below it there, styled three ways. With a slot
 // for it the order is decided ONCE, here, and no call site can hold a different opinion.
 // The order is the one rule: what it is, what to know about it, then the control.
-import type { InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from 'react'
+import { useState, type FocusEvent, type InputHTMLAttributes, type ReactNode, type TextareaHTMLAttributes } from 'react'
 import { CONTROL, FIELD_W, NOTE, SETTING_LABEL } from '@/admin/components/kit'
+import { NOTE_ALERT } from '@/admin/components/scale'
+import { useAdminT } from '@/admin/components/I18nProvider'
 
 // `CONTROL`, not a copy of it. This file used to declare its own `FIELD` with the same
 // twenty-odd classes, under a comment in `kit.tsx` promising the two matched — which is a
@@ -49,12 +51,55 @@ type InputProps = InputHTMLAttributes<HTMLInputElement> & {
   label?: string
   note?: ReactNode
   inline?: boolean
+  /**
+   * A refusal to print under the field, from OUTSIDE — usually the server's.
+   *
+   * Separate from the check the field runs on itself, and it outranks it: a value the
+   * browser is happy with can still be one this blog cannot take (a list path a post already
+   * holds), and that answer only exists after a round trip.
+   */
+  error?: string
 }
 
-export function Input({ label, note, className = '', inline, ...props }: InputProps) {
+/** The ballpoint on the edge of a field the reader has to come back to. */
+const INVALID = 'border-[var(--pen-red)] focus:border-[var(--pen-red)]'
+
+export function Input({ label, note, className = '', inline, error, onBlur, ...props }: InputProps) {
+  const t = useAdminT()
+  /**
+   * WHAT THE FIELD FINDS OUT ABOUT ITSELF, ON BLUR.
+   *
+   * Not while typing: "not a valid address" appearing on the second keystroke of an email is
+   * a screen arguing with somebody who is halfway through. Blur is the moment they have
+   * finished saying it. The browser already knows the answer — `min`, `max`, `type=email`
+   * and `type=url` are on the element — and `validity` reports it; what it does NOT have is
+   * a sentence in the owner's language, which is the whole of what is added here.
+   */
+  const [found, setFound] = useState<string | null>(null)
+  const check = (e: FocusEvent<HTMLInputElement>) => {
+    const el = e.currentTarget
+    const v = el.validity
+    setFound(
+      v.valid ? null
+      : v.rangeUnderflow ? t.fieldMin.replace('{n}', el.min)
+      : v.rangeOverflow ? t.fieldMax.replace('{n}', el.max)
+      : v.typeMismatch && el.type === 'email' ? t.fieldEmail
+      : v.typeMismatch && el.type === 'url' ? t.fieldUrl
+      : v.valueMissing ? t.fieldRequired
+      : t.fieldInvalid,
+    )
+    onBlur?.(e)
+  }
+  const shown = error ?? found
   const field = (
-    <input className={`${FIELD} ${widthFor(props.type, className)} ${className}`} {...props} />
+    <input
+      className={`${FIELD} ${widthFor(props.type, className)} ${shown ? INVALID : ''} ${className}`}
+      aria-invalid={shown ? true : undefined}
+      onBlur={check}
+      {...props}
+    />
   )
+  const message = shown ? <span className={`${NOTE_ALERT} mt-1 block`}>{shown}</span> : null
   const beside = inline ?? props.type === 'number'
   if (beside && (label || note)) {
     return (
@@ -64,6 +109,9 @@ export function Input({ label, note, className = '', inline, ...props }: InputPr
         <span className="min-w-0 flex-1 basis-48">
           {label && <span className={SETTING_LABEL}>{label}</span>}
           {note && <span className={`${NOTE} block`}>{note}</span>}
+          {/* The message goes with the LABEL on an inline row, not under the field: the field
+              is 5rem wide at the right-hand edge and a sentence there wraps to four lines. */}
+          {message}
         </span>
         <span className="shrink-0">{field}</span>
       </label>
@@ -73,7 +121,13 @@ export function Input({ label, note, className = '', inline, ...props }: InputPr
     <label className="block">
       {label && <span className={SETTING_LABEL}>{label}</span>}
       {note && <span className={`${NOTE} block`}>{note}</span>}
-      <input className={`${FIELD} ${widthFor(props.type, className)} ${label || note ? 'mt-2' : ''} ${className}`} {...props} />
+      <input
+        className={`${FIELD} ${widthFor(props.type, className)} ${label || note ? 'mt-2' : ''} ${shown ? INVALID : ''} ${className}`}
+        aria-invalid={shown ? true : undefined}
+        onBlur={check}
+        {...props}
+      />
+      {message}
     </label>
   )
 }

@@ -13,9 +13,11 @@ type Props = {
   update: (p: Partial<SiteSettings>) => void
   posts: { slug: string; title: string }[]
   pages: { slug: string; title: string }[]
+  /** The server's refusal for the list path — it can only be known after a round trip. */
+  listPathError?: string
 }
 
-export function LayoutMenuFields({ s, update, posts, pages }: Props) {
+export function LayoutMenuFields({ s, update, posts, pages, listPathError }: Props) {
   const t = useAdminT()
   const home = s.home
 
@@ -66,6 +68,7 @@ export function LayoutMenuFields({ s, update, posts, pages }: Props) {
             label={t.listPathLabel}
             note={t.listPathHint}
             value={home.listPath}
+            error={listPathError}
             onChange={(e) => update({ home: { ...home, listPath: e.target.value } })}
           />
         </div>
