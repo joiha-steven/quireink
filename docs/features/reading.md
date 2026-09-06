@@ -188,22 +188,12 @@
 
 ## The printed page — `src/web/print.css.ts` (inlined into `public.css.ts`)
 
-- **What:** a post printed, or saved as PDF, gets the essay and nothing else. There was no
-  `@media print` rule anywhere in the repository until 2026-08-24 — measured, zero across
-  twelve sheets — so paper got the screen: the reading-progress bar, the site bar's
-  [search] [dark] [palette] [menu] controls, a book-mode link that does nothing on paper,
-  then the related posts, the whole comment thread, the subscribe card and the footer. Ten
-  sheets for a four-page piece, with four dead buttons at the top.
 - **What survives:** the masthead as one line of provenance, the article, its footnotes, its
-  tags. Nothing else.
-- **The rules divide into three:** what a screen needs and paper does not (removed), the
-  palette a sheet of paper actually has (a dark-mode reader gets ink on paper rather than a
-  black page), and the breaks a page has to respect — no heading orphaned at the foot, no
-  table, figure or code block cut in half, code wrapped rather than losing its right-hand
-  end, and an off-site link printing its address so a paper copy is still a lead.
-- **The owner's type settings come with it**, at the size they chose: the measure is set for
-  paper rather than for a viewport. **The pen marks keep their colour** — they are the reason
-  a page off this site looks like this site.
+  tags. Nothing else — no controls, no related posts, no comment thread, no subscribe card.
+  The owner's type settings come with it at the size they chose, and the pen marks keep their
+  colour, because they are the reason a page off this site looks like this site.
+- **Why the sheet is shaped the way it is** — the three rules any change to it answers to —
+  is [conventions/layout.md](../conventions/layout.md#paper-is-a-surface-printcssts).
 - **No separate stylesheet and no `media="print"` link.** `PRINT_CSS` is appended inside
   `public.css.ts`, so it ships in the one sheet the page already downloads and costs a reader
   no extra request. Held by `src/web/print.test.ts`.

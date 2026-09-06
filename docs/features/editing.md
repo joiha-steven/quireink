@@ -60,27 +60,27 @@
   an imported URL that happens to end `#thick` frames nothing. The mat is padding on the
   `img` itself rather than a wrapper, which is why a framed picture is exactly as wide as an
   unframed one and the caption stays outside the mat; `--c-heading` makes the ink mat invert
-  by itself, dark on paper and light at night, with no second token and no media query. Two or more consecutive `#grid` images become one `.gallery`, column count by count
-  (`galleryCols`). A gallery has two options of its own, also on the fragment: a **ratio**
-  (`asis`, `1x1`, `3x2`, `4x3`) which crops every tile with `object-fit:cover` so rows line up, and
-  **captions** (`cap` / `nocap`), which show or hide them with CSS. The alt is
-  still emitted either way, so it keeps serving screen readers and search. Both options apply to the
-  WHOLE run in one transaction (`applyToGallery`) rather than to the selected image, and the new
-  value is decided once from the tile that was clicked so an inconsistent run heals instead of
-  flip-flopping. **GOTCHA:** `groupGalleries` matches `img-grid[^"]*`, not `img-grid` exactly. An
-  option appends a class, and matching the old exact string made every gallery with an option
-  silently stop grouping and fall into a full-width column.
+  by itself, dark on paper and light at night, with no second token and no media query. 
+
+  **A gallery is a run.** Two or more consecutive `#grid` images become one `.gallery`, column
+  count by count (`galleryCols`). It carries two options of its own on the fragment: a **ratio**
+  (`asis`, `1x1`, `3x2`, `4x3`), which crops every tile with `object-fit:cover` so rows line up,
+  and **captions** (`cap` / `nocap`), which show or hide them in CSS — the alt is emitted either
+  way, so it keeps serving screen readers and search. Both apply to the WHOLE run in one
+  transaction (`applyToGallery`), and the new value is decided once from the tile that was
+  clicked, so an inconsistent run heals instead of flip-flopping. **GOTCHA:** `groupGalleries`
+  matches `img-grid[^"]*`, not `img-grid` exactly — an option appends a class, and the exact
+  match made every gallery with an option silently stop grouping.
   **The editor draws the published grid, not a fixed one.** The node view asks `galleryCols`
   (`render/gallery-cols.ts`, the one home for that rule) how many columns its own run gets and
   writes the answer as `data-cols`, which `admin.css` selects on. It was a flat three across
   until 2026-08-28, so the commonest gallery of all — four pictures — read 3+1 while you wrote
   it and 2×2 once you published it, with nothing on screen saying which was true.
-  **A selected tile's toolbar leaves the cell** (`.qi-tile-bar`). A tile is a 202px grid cell
-  on a desktop and 102px on a phone; the bar carries up to seventeen buttons in segmented
-  tracks that CLIP rather than wrap, so five of fourteen buttons on a desktop and ten of
-  fourteen on a phone were cut off and unclickable — the crop ratios and the frame weights,
-  which is to say every actual choice. Taken out of flow it lays out against the writing
-  column and sits above the picture whose crop is being chosen.
+  **A selected tile's toolbar leaves the cell** (`.qi-tile-bar`). A tile is 202px on a desktop
+  and 102px on a phone, and the bar carries up to seventeen buttons in segmented tracks that CLIP
+  rather than wrap, so most of them — every crop ratio and frame weight, which is to say every
+  actual choice — were cut off and unclickable. Taken out of flow it lays out against the writing
+  column, above the picture whose crop is being chosen.
 - **Gallery defaults, site-wide** (*Settings → Layout → Galleries*, `GalleryFields.tsx`): the shape
   and caption state every gallery follows when it has no opinion of its own. Each option is
   THREE-valued and the third value is silence: no token means "follow Settings", which is what lets

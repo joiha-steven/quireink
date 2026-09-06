@@ -176,42 +176,31 @@
     if the site moved machine. The daily
     series emits **every bucket, zeros included** — a quiet day is a point on the chart, not a gap.
   - **The window is whole days, aligned to that zone** (`windowStart`), so a 30-day range is
-    thirty full columns and not thirty-one with a sliver at the left. It used to start at
-    `now - 30 days`, an instant in the middle of a day: the leftmost column then covered only
-    the hours after it while carrying a whole day's label, so it read as a collapse in traffic
-    that had not happened — and it shrank all day and reset at midnight, because its width was
-    the time of day. The LAST column is still partial, and that one is honest: today is not
-    over. The **previous-period** comparison uses the same elapsed length rather than a full
-    extra day-count, so a part-finished today is not measured against a whole yesterday.
+    thirty full columns rather than thirty-one with a sliver at the left. The LAST column is
+    still partial, and that one is honest: today is not over. The **previous-period** comparison
+    uses the same elapsed length, so a part-finished today is not measured against a whole
+    yesterday.
   - **Three numbers were wrong until 2026-08-30**, all found by reading the queries against
-    what the labels claim and all measured on a live blog before and after:
-    - **One page only** asked `count(*) = 1` — one EVENT, not one page. A reader who opened one
-      post and reloaded it, or came back to the same post later, was dropped from the count, so
-      the rate read low by exactly the people who bounced twice. Now `count(distinct path) = 1`.
-      Measured over 30 days: **41% shown, 48% true.** (It remains a share of VISITORS over the
-      window, not of sessions — there are no sessions in this schema — so someone who bounced in
-      March and again in April is one bouncer, not two.)
+    what their labels claim:
+    - **One page only** asked `count(*) = 1` — one EVENT, not one page — so a reader who
+      reloaded a post was dropped from the count. Now `count(distinct path) = 1`. It remains a
+      share of VISITORS over the window, not of sessions: there are none in this schema.
     - **Channels double-counted.** The beacon sends a referrer only when it is EXTERNAL, so every
-      page after the first writes `referrer_host = NULL`, and `channelOf(null)` is `direct`.
+      page after the first writes `referrer_host = NULL` and `channelOf(null)` is `direct`.
       Anyone who arrived from somewhere and read one more post was in that channel AND in Direct.
       A bare row now speaks only for a visitor with no external referrer anywhere in the window.
-      Measured over 30 days: the bars summed to **229 for 197 visitors**, Direct carrying all 32
-      of the excess; they now sum to 197 exactly and Direct falls 164 → 132.
-    - **`0s` and `0%` for a page never measured**, printed in the top-pages table beside pages
-      printing `2m 10s`. `TopPage.avgDepth` / `avgDwellMs` are `null` when there is no sample and
-      the table prints an em-dash. This became load-bearing with the beacon fix: an unscrolled
-      leave now records depth 0, so zero is a real reading and cannot also mean "no reading".
+    - **`0s` and `0%` for a page never measured.** `TopPage.avgDepth` / `avgDwellMs` are `null`
+      with no sample and the table prints an em-dash. This became load-bearing with the beacon
+      fix: an unscrolled leave now records depth 0, so zero is a real reading and cannot also
+      mean "no reading".
     - Ordering gained a name tiebreak everywhere (`order by … desc, path|country|name`), so rows
       on equal counts stop reshuffling between loads.
-  - **Tablets, which the user agent cannot describe.** iPadOS 13+ identifies as Macintosh Safari
-    on purpose, so until 2026-08-30 every iPad counted as a desktop Mac — measured over 30 days
-    on a live blog: 117 desktop, 80 mobile, **0 tablet**. Multi-touch is the whole of the
-    difference and it exists only in the browser, so the view beacon sends `touch` and `parseUa`
-    reads a touching **macOS** agent as `tablet` / **iPadOS**. Gated on macOS deliberately: a
-    Windows touchscreen laptop is a desktop and its string says so. Nothing new is stored — the
-    same two coarse columns, with the right values — and a reader on cached JS or with scripting
-    off is bucketed exactly as before. Expect tablets to appear gradually as the old bundle
-    falls out of browser caches.
+  - **Tablets, which the user agent cannot describe.** iPadOS 13+ identifies as Macintosh
+    Safari on purpose, so until 2026-08-30 every iPad counted as a desktop Mac. Multi-touch is
+    the whole of the difference and it exists only in the browser, so the view beacon sends
+    `touch` and `parseUa` reads a touching **macOS** agent as `tablet` / **iPadOS**. Gated on
+    macOS deliberately: a Windows touchscreen laptop is a desktop and its string says so.
+    Nothing new is stored, and tablets appear gradually as the old bundle falls out of caches.
   - **Why the two screens do not show the same fifth number** (decided 2026-08-31). The overview
     ends its headline band with **One page only**; the per-page drill-down ends its with **Left
     quickly**. They answer different questions and belong where they are: a site asks whether

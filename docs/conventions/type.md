@@ -1,19 +1,15 @@
 # Typography — one source of truth (HARD RULES)
 
-- **No hardcoded text sizes on the public site**, and since 2026-07-29 that is a check
-  rather than a sentence: `bun run check:type` ([`scripts/checks/type-roles.ts`](../../scripts/checks/type-roles.ts))
-  fails the build on any `font-size` in the reader's sheets that is not `var(--fs-<role>)`,
-  `inherit`, a value in `em` (an ornament measured against its own context), or a listed
-  exception with a reason. It was written because the rule had already been broken in nine
-  places, and because a related-post title had no size rule at all and silently fell back to
-  the body size.
-- **A role is THREE numbers, and a rule takes all three or none.** `check:type` fails a
-  rule that sets `font-size: var(--fs-X)` without `line-height: var(--lh-X)` and
-  `letter-spacing: var(--ls-X)`. It was added on 2026-07-29 after measuring the rendered
-  page: eight surfaces took the size alone — figcaption, the footnote block, both code
-  forms, the tagline, the footer, the pager and the ToC sub-rows — so the owner's leading
-  and tracking for those roles moved nothing at all. A rule that names a role variable
-  LOOKS wired, which is why review never caught it.
+- **No hardcoded text sizes on the public site.** `bun run check:type`
+  ([`scripts/checks/type-roles.ts`](../../scripts/checks/type-roles.ts)) fails the build on any
+  `font-size` in the reader's sheets that is not `var(--fs-<role>)`, `inherit`, a value in `em`
+  (an ornament measured against its own context), or a listed exception with a reason. It is a
+  check rather than a sentence because the rule had already been broken in nine places.
+- **A role is THREE numbers, and a rule takes all three or none.** `check:type` fails a rule
+  that sets `font-size: var(--fs-X)` without `line-height: var(--lh-X)` and
+  `letter-spacing: var(--ls-X)`. Measured on the rendered page 2026-07-29: eight surfaces took
+  the size alone, so the owner's leading and tracking moved nothing there. A rule that names a
+  role variable LOOKS wired, which is why review never caught it.
 - 9 roles (`TypeRole`: `h1–h5`, `body`, `small`, `caption`, `code`), each with
   size/line-height/letter-spacing → CSS vars `--fs/--lh/--ls-<role>`, from
   `DEFAULT_TYPOGRAPHY` in [`src/content/fonts.ts`](../../src/content/fonts.ts) — which is the
@@ -52,13 +48,11 @@
   words and therefore ~15 of the narrow glyphs a space is — more characters fit in fewer
   pixels. CJK is further away again, and a Latin band quoted at a Japanese or Chinese owner
   would be wrong by more than it is right.
-  Measured 2026-08-14 on a live Vietnamese article, by walking every rendered line box and
-  dropping each paragraph's last (partial) line — 417 to 473 full lines per width:
-  `contentWidth` 720 → 72 · 685 → 68 · **672 → 67** · 665 → 66 · 650 → 64.
-  ⚠️ Two cheaper methods were tried first and BOTH lied. Dividing a paragraph's character
-  count by its line count reads low, because every paragraph ends on a partial line. Laying
-  the text out in an off-screen probe read 80, because the line count was derived from the
-  block height and rounded. Only the per-line-box walk agrees with the 2026-07-29 figure.
+  Measured 2026-08-14 on a live Vietnamese article by walking every rendered line box and
+  dropping each paragraph's last, partial one: `contentWidth` 720 → 72 · 685 → 68 ·
+  **672 → 67** · 665 → 66 · 650 → 64. ⚠️ Two cheaper methods lie: dividing characters by line
+  count reads low (every paragraph ends part-way), and an off-screen probe read 80 because it
+  derived the line count from the block height.
 - **Reset restores the CHOSEN FONT's setup, not `DEFAULT_TYPOGRAPHY`.** Each preset carries
   typography tuned for its own face, so resetting to the Inter defaults while reading in
   Literata silently swapped the serif's numbers for a sans's. Text wraps normally (no `text-wrap: balance`/`pretty` — both re-broke lines
