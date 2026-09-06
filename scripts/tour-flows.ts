@@ -346,27 +346,18 @@ export function registerFlows({ flow, expect, atWidth }: Tour): void {
       if (!fab) return 'no floating book button'
       if (getComputedStyle(fab).display === 'none') return 'the button is display:none at 375px'
       fab.click()
-      await new Promise((r) => setTimeout(r, 400))
-      const d = document.querySelector('.book-overlay[open]')
-      if (!d) return 'the overlay did not open'
-      if (d.querySelector('.book-viewport').dataset.pages !== '1') return 'a 375px phone got a two-page spread'
-      const n = +(/\\/ (\\d+)$/.exec(d.querySelector('.book-count').textContent)?.[1] ?? 0)
-      if (n < 2) return 'one-page mode measured ' + n + ' spread(s) for a 700-word article'
-      if (getComputedStyle(d.querySelector('.book-title')).display !== 'none')
-        return 'the running head is on at 375px and collides with the size buttons'
-      if (getComputedStyle(d.querySelector('.book-next')).display !== 'none')
-        return 'the hover arrows are still on at 375px'
-      // The phone page is the glass minus 20px a side, not the desktop's 48.
-      const col = parseFloat(getComputedStyle(d.querySelector('.book-flow')).columnWidth)
-      if (col < innerWidth - 44) return 'the page is ' + col + 'px on a ' + innerWidth + 'px phone'
-      // A tap in the right third turns the page.
-      d.querySelector('.book-viewport').dispatchEvent(
-        new MouseEvent('click', { clientX: Math.round(innerWidth * 0.85), bubbles: true }))
-      await new Promise((r) => setTimeout(r, 350))
-      if (!d.querySelector('.book-count').textContent.startsWith('2 /'))
-        return 'a right-third tap did not turn the page'
-      d.querySelector('.book-x').click()
-      return 'ok (' + n + ' pages)'
+      await new Promise((r) => setTimeout(r, 500))
+      // A PHONE GETS THE SCROLLED READER, not the spread — since 2026-09-06, because a modal
+      // dialog takes the scroll off the document and iOS then keeps its own bars for the
+      // whole read. What that reader has to do is asserted in tour-flows-shell.ts; this
+      // flow owns the DOORWAY, so it only checks that the button opens the right thing.
+      const r = document.querySelector('.book-reader')
+      if (!r) return document.querySelector('.book-overlay[open]') ? 'the phone got the desktop spread' : 'nothing opened'
+      const flow = r.querySelector('.book-flow')
+      if (!flow || !flow.textContent.trim()) return 'the reader opened empty'
+      r.querySelector('.book-x').click()
+      await new Promise((r2) => setTimeout(r2, 400))
+      return document.querySelector('.book-reader') ? 'it would not close' : 'ok'
     })()`, 400))
 
   // An unfolded foldable: 673px of glass with the fold's crease down the exact middle. One

@@ -98,6 +98,7 @@ const BUDGET: Record<string, number> = {
   //     was Turnstile, an account and ~60 KB from challenges.cloudflare.com on every page with
   //     a form, on a site whose whole claim is zero third-party requests
   //   the reading position (~1.1 KB) — a forty-minute read is never one sitting
+  //   the phone's book reader (~1.5 KB) — see below
   //
   // 17,400 since 2026-09-02, and the 227 bytes it bought are the last row of the contents
   // list telling the truth on a desktop (issue #63). The tags and categories exist twice
@@ -108,7 +109,16 @@ const BUDGET: Record<string, number> = {
   // other. The server cannot know a viewport width, so the choice has to be made here and
   // re-made on resize. Priced against the alternative of rendering both copies visible,
   // which costs nothing in JavaScript and undoes a deliberate layout.
-  'post.js': 17_400,
+  //
+  // 19,000 since 2026-09-06, and what the 1,600 bought is the phone's own book reader
+  // (`book-scroll.ts`). The spread is a modal dialog, and a modal takes the scroll off the
+  // document — which on iOS means Safari keeps its address bar and its toolbar for the whole
+  // read: 190px of an 844px screen, plus 56 of ours, leaving under 600 for the words and a
+  // page turn every four sentences. The phone reader scrolls the DOCUMENT, so those bars
+  // retract, and its chrome leaves on the way down and returns on the way up. Priced after
+  // the a/A control was made one definition for both readers rather than two (−800 b); what
+  // is left is the reader itself, the direction-following chrome, and the back gesture.
+  'post.js': 19_000,
   // /login only, and NOT loaded with core.js: the sign-in page carries no beacon, no
   // search overlay and no listing controls, so it pays for the reveal toggle, the caps-lock
   // warning and the one-time-code paste, and nothing else.

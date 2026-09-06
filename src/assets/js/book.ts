@@ -16,6 +16,7 @@
 // palette. That is deliberate, and carried over from the frozen tree.
 
 import { el, label, onScrollFrame } from './dom'
+import { openScrollReader, sizeControl } from './book-scroll'
 
 const OUTER_MARGIN = 48 // px, the minimum gap from the spread to the viewport edge
 // A phone cannot afford the desktop's margins: 48px a side took 96 of a 375px screen —
@@ -53,8 +54,24 @@ export function book(): void {
   if (toggles.length === 0 || !source) return
 
   let dialog: HTMLDialogElement | null = null
+  let scrolling: { close: () => void } | null = null
+
+  // The phone reads by SCROLLING, not by turning: see the note at the top of
+  // `book-scroll.ts`. The width is the same 640 the rest of the phone rules use, and it is
+  // decided at OPEN time — a reader who rotates mid-article keeps the mode they opened in,
+  // because swapping the machinery under a moving thumb loses their place either way.
+  const phone = () => innerWidth < 640
 
   function open(): void {
+    if (phone()) {
+      if (scrolling) return
+      const heading = document.querySelector('article > header h1')?.textContent ?? ''
+      // Nothing to re-measure: one column, scrolled, so a bigger glyph is simply a longer
+      // page. `sizeControl` is the same pair the spread uses (`book-scroll.ts`).
+      const size = sizeControl({ min: SCALE_MIN, max: SCALE_MAX, step: SCALE_STEP, key: SCALE_KEY }, () => {})
+      scrolling = openScrollReader(source!, heading, { sizes: size.sizes, onScale: size.attach })
+      return
+    }
     if (dialog) {
       dialog.showModal()
       return
@@ -182,31 +199,12 @@ export function book(): void {
     const close = el('button', { type: 'button', class: 'book-x',
       'aria-label': label('bookModeClose'), title: label('bookModeClose') }, '✕')
 
-    // a / A — the size itself is the label, the way every e-reader draws it, and the pair
-    // is plain type rather than a control (the pill + divider read as buttons, and a black
-    // seam showed between them on first paint). The current scale is
-    // read off the dialog's computed style, so the sheet's default needs no copy here; a
-    // stored preference is applied as an inline override before first measure, and every
-    // change re-measures — a bigger glyph is fewer lines per column, which is a different
-    // page count.
-    const smaller = el('button', { type: 'button', class: 'book-size book-smaller',
-      'aria-label': label('bookModeSmaller'), title: label('bookModeSmaller') }, 'a')
-    const larger = el('button', { type: 'button', class: 'book-size book-larger',
-      'aria-label': label('bookModeLarger'), title: label('bookModeLarger') }, 'A')
-    const scaleOf = (): number => {
-      const v = parseFloat(getComputedStyle(next).getPropertyValue('--type-scale'))
-      return Number.isFinite(v) ? v : 1
-    }
-    const setScale = (v: number) => {
-      const clamped = Math.round(Math.min(SCALE_MAX, Math.max(SCALE_MIN, v)) * 100) / 100
-      next.style.setProperty('--type-scale', String(clamped))
-      try { localStorage.setItem(SCALE_KEY, String(clamped)) } catch { /* private mode */ }
-      smaller.disabled = clamped <= SCALE_MIN
-      larger.disabled = clamped >= SCALE_MAX
-      measure()
-    }
-    smaller.addEventListener('click', () => setScale(scaleOf() - SCALE_STEP))
-    larger.addEventListener('click', () => setScale(scaleOf() + SCALE_STEP))
+    // a / A — the size itself is the label, the way every e-reader draws it. One definition
+    // for both readers (`book-scroll.ts`), because the control, the clamps and the stored
+    // value are the same; only what follows a change differs. Here every change re-measures:
+    // a bigger glyph is fewer lines per column, which is a different page count.
+    const size = sizeControl({ min: SCALE_MIN, max: SCALE_MAX, step: SCALE_STEP, key: SCALE_KEY }, () => measure())
+
     // The title recedes: regular weight, faint, body size, so the article stays the focus.
     const heading = document.querySelector('article > header h1')?.textContent ?? ''
     // `autofocus` steers showModal(): without it the dialog focuses the FIRST focusable
@@ -246,12 +244,7 @@ export function book(): void {
     const next = document.createElement('dialog')
     next.className = 'book-overlay'
     // A reader who has set their size gets it back before anything is measured.
-    let stored = NaN
-    try { stored = parseFloat(localStorage.getItem(SCALE_KEY) ?? '') } catch { /* private mode */ }
-    if (Number.isFinite(stored)) {
-      next.style.setProperty('--type-scale',
-        String(Math.min(SCALE_MAX, Math.max(SCALE_MIN, stored))))
-    }
+    size.attach(next)
     next.append(
       el('div', { class: 'book-chrome book-top' },
         el('span', { class: 'book-title' }, heading),
@@ -259,7 +252,7 @@ export function book(): void {
           // The two size buttons are ONE control and now look like it. Four evenly spaced
           // glyphs in a row (A− A+ 1/3 ✕) read as a string of characters rather than as
           // three separate things, which is what made the control hard to read.
-          el('span', { class: 'book-sizes' }, smaller, larger),
+          size.sizes,
           page,
           close)),
       stage,
@@ -278,9 +271,6 @@ export function book(): void {
     dialog = next
     next.showModal()
     document.addEventListener('keydown', onKey)
-    // In the document now, so the computed scale is readable — pin the ends of the range.
-    smaller.disabled = scaleOf() <= SCALE_MIN
-    larger.disabled = scaleOf() >= SCALE_MAX
     measure()
     // Images sit off-screen in later columns, so lazy-loading would never fire for them and
     // the measurement would count a spread that later grows.
@@ -289,6 +279,9 @@ export function book(): void {
   }
 
   for (const toggle of toggles) toggle.addEventListener('click', open)
+  // The reader closes itself (its own ✕, Escape, the phone's back gesture), so the flag it
+  // is guarded by has to be cleared from out here rather than by whoever pressed what.
+  addEventListener('quire:book-closed', () => { scrolling = null })
 
   // The phone's doorway. Both server-rendered entries hide under 768px (the meta line is
   // cramped there), which left the reader no way in at all on the one class of device

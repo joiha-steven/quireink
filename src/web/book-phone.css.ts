@@ -1,0 +1,36 @@
+// The phone's book reader: the same paper as the desktop spread, scrolled instead of turned.
+//
+// Its own sheet because it is its own thing — the spread is a modal <dialog> that takes the
+// scroll off the document, and this deliberately does not, so that iOS keeps retracting its
+// own bars while the reader reads. `book.css.ts` was also at its 400-line ceiling.
+//
+// NO BACKTICKS anywhere below: check:css-literal enforces that, and one in a comment ends
+// the template literal this file is.
+export const BOOK_PHONE_CSS = `
+/* THE PHONE'S READER: the same paper, scrolled instead of turned (book-scroll.ts).
+   It is not a dialog, so the DOCUMENT scrolls — which is the whole point, because iOS only
+   retracts its address bar and toolbar while the page itself is moving. Measured on an
+   iPhone at 844px: Safari kept 190px and the reader's own bar another 56, so the words had
+   under 600 and a nineteen-page article turned a page every four sentences.
+   The page's own content is hidden by one rule rather than by touching every element, so
+   closing the reader restores the page with nothing to remember. */
+html.book-reading{overflow-x:hidden}
+html.book-reading body>*:not(.book-reader){display:none}
+.book-reader{min-height:100dvh;font-family:var(--font-reading);letter-spacing:var(--ls-body);
+  --book-paper:#faf8f3;--c-bg:var(--book-paper);--type-scale:1.05;
+  --c-text:#211f1a;--c-heading:#16130d;--c-meta:#6f6a5c;--c-link:#2f2c25;
+  --c-accent:#2f2c25;--c-rule:#e2ddd2;color:var(--c-text);
+  background-color:var(--book-paper);background-blend-mode:multiply;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.24'/%3E%3C/svg%3E")}
+/* FIXED, not sticky: Safari resizes the visual viewport as its own bars collapse, and a
+   sticky bar rides that resize in steps while the thumb is still moving. Fixed, plus the
+   direction rule in the island, is what makes it feel like a reading app rather than like
+   a header being dragged. */
+.book-reader .book-chrome{position:fixed;inset-inline:0;top:0;z-index:2;
+  background:var(--book-paper);transition:transform var(--dur-fast,.18s) ease}
+.book-reader.chrome-away .book-chrome{transform:translateY(-100%)}
+/* The bar's height plus its rule, so the first line clears it when the bar is showing. */
+.book-page{padding:calc(56px + 1.5rem) 20px calc(3rem + env(safe-area-inset-bottom,0px))}
+.book-reader .book-flow{max-width:38rem;margin:0 auto;columns:auto;column-width:auto;width:auto}
+html[data-motion=off] .book-reader .book-chrome{transition:none}
+`.trim()

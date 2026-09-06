@@ -163,14 +163,14 @@ body:has(.book-overlay[open]){overflow:hidden}
    The pill-with-a-rule cut before this one drew a segmented control, and the owner read
    it as exactly that — buttons, with a dark seam between them on first paint. The size
    difference IS the label, so nothing else is drawn.
-   The two font sizes would misalign under flex centering, and an earlier cut shipped that
-   — so both glyphs sit on the SAME baseline instead: line-height 1,
-   both buttons bottom-aligned with one shared padding, and neither glyph has a descender,
-   which makes the bottoms the baseline. */
-.book-sizes{display:flex;align-items:flex-end}
+
+   BOTH GLYPHS ON ONE BASELINE, and the row on one centre line. Bottom-aligning the buttons
+   put their shared baseline 9px below the middle of a 34px row, so the pair sat low against
+   the close button and the row read as tilted. */
+.book-sizes{display:flex;align-items:baseline;gap:2px}
 .book-size{background:none;border:0;cursor:pointer;color:var(--c-meta);line-height:1;
-  font-family:var(--font-reading);height:34px;min-width:32px;padding:0 7px 9px;
-  display:flex;align-items:flex-end;justify-content:center;
+  font-family:var(--font-reading);min-width:32px;padding:6px 7px;
+  display:flex;align-items:baseline;justify-content:center;
   transition:color .12s ease}
 .book-smaller{font-size:.8em}
 .book-larger{font-size:1.2em}

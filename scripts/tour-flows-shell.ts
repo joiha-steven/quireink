@@ -73,6 +73,57 @@ export function registerShellFlows({ flow, expect, atWidth }: Tour): void {
       return 'ok search box, ' + latest + ' newest post(s), and a way home'
     })()`))
 
+  // Book mode ON A PHONE is a different machine from the desktop spread, and the difference
+  // is the one thing a screenshot cannot show: the DOCUMENT scrolls. That is what lets iOS
+  // retract its own address bar and toolbar, which on an 844px phone is 190px of glass
+  // handed back to the words. A dialog cannot do it — a modal takes the scroll off the page.
+  //
+  // 375px, because the whole behaviour is behind the 640 breakpoint.
+  flow('a phone reads a book by scrolling, and the chrome gets out of the way', () => atWidth(375,
+    '/the-reed-pen-in-van-goghs-letters', `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      scrollTo(0, 700)
+      await sleep(200)
+      const wasAt = Math.round(scrollY)
+
+      const open = document.querySelector('.book-fab') || document.querySelector('[data-book-open]')
+      if (!open) return 'skip: book mode is off'
+      open.click()
+      await sleep(700)
+
+      const reader = document.querySelector('.book-reader')
+      if (!reader) return document.querySelector('.book-overlay') ? 'a phone got the desktop dialog' : 'nothing opened'
+      if (document.querySelector('.book-overlay')) return 'both readers opened at once'
+      // The claim: the page itself is what scrolls. A dialog would leave the document the
+      // height of the window and the toolbars where they are.
+      if (document.documentElement.scrollHeight <= innerHeight) return 'the document does not scroll, so the toolbars will stay'
+      const flow = reader.querySelector('.book-flow')
+      if (getComputedStyle(flow).columnCount !== 'auto') return 'the phone reader is still in columns'
+
+      const bar = reader.querySelector('.book-chrome')
+      if (!bar) return 'the reader has no chrome'
+      const bottom = () => Math.round(bar.getBoundingClientRect().bottom)
+      const shown = bottom()
+      if (shown <= 0) return 'the chrome is already off screen before anything scrolled'
+      scrollTo(0, 900)
+      await sleep(400)
+      if (bottom() > 0) return 'the chrome stayed put on the way down'
+      scrollTo(0, 500)
+      await sleep(400)
+      if (bottom() !== shown) return 'the chrome did not come back on the way up'
+
+      reader.querySelector('.book-x').click()
+      await sleep(700)
+      if (document.querySelector('.book-reader')) return 'the reader did not close'
+      if (document.documentElement.classList.contains('book-reading')) return 'the page is still hidden after closing'
+      if (!document.querySelector('article')) return 'the article did not come back'
+      // Where they were, not the top: the page is display:none while the reader is up, so a
+      // restore that does not wait for layout is clamped to 0.
+      if (Math.abs(scrollY - wasAt) > 8) return 'closed at ' + Math.round(scrollY) + ', opened from ' + wasAt
+      return 'ok (' + shown + 'px of chrome, document scrolls, back at ' + wasAt + ')'
+    })()`, 600))
+
   // Arrange mode, driven the way a hand drives it — and the assertion is on the SERVER's copy.
   //
   // The rail redrawing itself proves nothing here: the whole point of this feature is that the

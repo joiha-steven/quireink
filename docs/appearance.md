@@ -36,7 +36,14 @@ not cover.
 | **Author** | Site → Author | Name, bio, portrait and a link. Empty by default; filling in a name adds a byline and puts you in the structured data search engines read |
 | IDE chrome | Appearance → Text rendering | Dresses the furniture around your words as source code. Off by default; it is a strong taste and it is one click either way |
 | Footer | Layout → Footer | Your own line, with `{year}` and `{title}` tokens |
-| Feature switches | Reading → Reading features | Table of contents, progress bar, book mode, related posts, reading time, and a dozen more |
+| Feature switches | Reading → Reading features | Table of contents, progress bar, book mode, related posts, reading time, the scroll fade, and a dozen more |
+
+**Two of those read differently on a phone, and neither is a setting.** The reading-progress
+bar is desktop-only: the scrollbar already answers how far in you are, and a scroll-driven
+hairline stutters on a phone because it shares the compositor with the address bar
+collapsing. And book mode below 640px is one scrolled column rather than a turned spread —
+a modal dialog takes the scroll off the document, which is what keeps iOS from retracting
+its own bars, so the phone reader scrolls the page and its chrome hides on the way down.
 
 ### About the table settings
 
