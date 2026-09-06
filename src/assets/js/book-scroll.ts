@@ -89,6 +89,20 @@ export function openScrollReader(
   // Hidden by CSS (`html.book-reading body > :not(.book-reader)`) rather than by touching
   // every sibling: one rule reverses cleanly, and nothing in the page has to be remembered
   // and put back.
+  // VIEWPORT-FIT=COVER, for the length of the read only.
+  //
+  // Without it iOS keeps the page below the status bar and the paper stops at a seam a
+  // centimetre from the top of the glass — which is the whole difference the owner
+  // photographed between this reader and an ordinary page. With it the paper runs edge to
+  // edge, `env(safe-area-inset-top)` starts reporting a real number, and the stylesheet uses
+  // that for both the top padding and the strip that catches a line scrolling under the
+  // clock. Put back on close: it is the reader's frame, not the site's.
+  // The original is restored on close, so appending unconditionally cannot accumulate.
+  // Always present: `layout.ts` writes it into every page this island can run on.
+  const meta = document.querySelector<HTMLMetaElement>('meta[name=viewport]')!
+  const viewport = meta.content
+  meta.content = viewport + ', viewport-fit=cover'
+
   html.classList.add('book-reading')
   document.body.appendChild(reader)
   scrollTo(0, 0)
@@ -118,6 +132,7 @@ export function openScrollReader(
     // got 0, and a reader who was halfway down came back to the top. The second frame is for
     // the browser's own restoration on a popstate, which lands after the first.
     requestAnimationFrame(() => requestAnimationFrame(() => scrollTo(0, wasAt)))
+    meta.content = viewport
     try { history.scrollRestoration = restoration } catch { /* see above */ }
     dispatchEvent(new Event('quire:book-closed'))
   }

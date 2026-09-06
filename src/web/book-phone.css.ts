@@ -27,10 +27,21 @@ html.book-reading body>*:not(.book-reader){display:none}
    direction rule in the island, is what makes it feel like a reading app rather than like
    a header being dragged. */
 .book-reader .book-chrome{position:fixed;inset-inline:0;top:0;z-index:2;
-  background:var(--book-paper);transition:transform var(--dur-fast,.18s) ease}
+  padding-top:env(safe-area-inset-top,0px);background:var(--book-paper);
+  transition:transform var(--dur-fast,.18s) ease}
 .book-reader.chrome-away .book-chrome{transform:translateY(-100%)}
-/* The bar's height plus its rule, so the first line clears it when the bar is showing. */
-.book-page{padding:calc(56px + 1.5rem) 20px calc(3rem + env(safe-area-inset-bottom,0px))}
+/* THE STATUS BAR'S OWN STRIP, and it stays when the chrome leaves.
+   With the reader open the page asks for viewport-fit=cover (book-scroll.ts), because that
+   is what makes iOS report a real safe-area inset — and what lets the paper run to the very
+   top of the glass instead of stopping at a seam. The cost of covering is that the clock and
+   the battery are then drawn OVER the page, so a line of type scrolling past sits under them
+   and is unreadable for those pixels. This strip is the paper that catches it: the line goes
+   behind a band of the same stock rather than behind the status bar. Zero-height on any
+   device that has no inset, so nothing changes there. */
+.book-reader::before{content:'';position:fixed;inset-inline:0;top:0;z-index:3;
+  height:env(safe-area-inset-top,0px);background:var(--book-paper)}
+/* The inset, the bar and its rule, so the first line clears all three when the bar shows. */
+.book-page{padding:calc(env(safe-area-inset-top,0px) + 56px + 1.5rem) 20px calc(3rem + env(safe-area-inset-bottom,0px))}
 .book-reader .book-flow{max-width:38rem;margin:0 auto;columns:auto;column-width:auto;width:auto}
 html[data-motion=off] .book-reader .book-chrome{transition:none}
 `.trim()

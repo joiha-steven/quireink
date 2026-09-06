@@ -94,6 +94,11 @@ export function registerShellFlows({ flow, expect, atWidth }: Tour): void {
 
       const reader = document.querySelector('.book-reader')
       if (!reader) return document.querySelector('.book-overlay') ? 'a phone got the desktop dialog' : 'nothing opened'
+      // viewport-fit=cover for the length of the read, and only that: it is what makes iOS
+      // report a real safe-area inset and let the paper reach the top of the glass, and it
+      // belongs to the reader rather than to the site.
+      const meta = document.querySelector('meta[name=viewport]')
+      if (!/viewport-fit=cover/.test(meta.content)) return 'the reader did not ask for the full glass'
       if (document.querySelector('.book-overlay')) return 'both readers opened at once'
       // The claim: the page itself is what scrolls. A dialog would leave the document the
       // height of the window and the toolbars where they are.
@@ -118,6 +123,9 @@ export function registerShellFlows({ flow, expect, atWidth }: Tour): void {
       if (document.querySelector('.book-reader')) return 'the reader did not close'
       if (document.documentElement.classList.contains('book-reading')) return 'the page is still hidden after closing'
       if (!document.querySelector('article')) return 'the article did not come back'
+      if (/viewport-fit=cover/.test(document.querySelector('meta[name=viewport]').content)) {
+        return 'the reader kept the page covering the safe area after it closed'
+      }
       // Where they were, not the top: the page is display:none while the reader is up, so a
       // restore that does not wait for layout is clamped to 0.
       if (Math.abs(scrollY - wasAt) > 8) return 'closed at ' + Math.round(scrollY) + ', opened from ' + wasAt
