@@ -159,6 +159,21 @@ describe('savePost', () => {
   })
 })
 
+describe('search', () => {
+  // `ftsQuery` makes one AND-ed phrase per whitespace token, so the length of the string is
+  // the amount of work. The `/search` page capped its own input; the JSON API and the
+  // owner's search read the same field and did not.
+  it('takes a bounded amount of query, however much is sent', async () => {
+    await savePost({ title: 'Findable', content: 'a needle in it', status: 'published', date: PAST })
+    const long = `needle ${'word '.repeat(4000)}`
+    expect(long.length).toBeGreaterThan(20_000)
+    // Answers rather than hanging, and answers the same as the capped prefix would.
+    const hits = await searchPosts(long)
+    expect(Array.isArray(hits)).toBe(true)
+    expect(await searchPosts(long.slice(0, 200))).toEqual(hits)
+  })
+})
+
 describe('lists and visibility', () => {
   it('orders newest first, and the public list drops drafts and future dates', async () => {
     await savePost({ title: 'Older', status: 'published', date: '2020-01-01T00:00:00.000Z' })

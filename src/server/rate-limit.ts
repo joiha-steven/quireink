@@ -43,6 +43,9 @@ function sweep(now: number): void {
   }
 }
 
+/** As many failures as any lockout in this product counts, with room to spare. */
+const LOCKOUT_CAP = 64
+
 /** The hits still inside `windowMs`. Reads only — an absent key stays absent. */
 function recentHits(key: string, now: number, windowMs: number): number[] {
   const bucket = buckets.get(key)
@@ -50,10 +53,19 @@ function recentHits(key: string, now: number, windowMs: number): number[] {
   return bucket.times.filter((t) => now - t < windowMs)
 }
 
-/** Record one hit and store the window it was charged under. */
-function charge(key: string, now: number, windowMs: number): number[] {
+/**
+ * Record one hit and store the window it was charged under.
+ *
+ * CAPPED AT `max + 1`, and the cap is what makes a flood cheap to refuse. Every hit was
+ * pushed, over the limit or not, and every hit then filtered the whole array: a client at a
+ * thousand requests a second held sixty thousand timestamps and paid O(n) per request, so
+ * the busiest bucket was the most expensive thing on the machine. Past the limit the answer
+ * is already "no" and one more timestamp cannot change it, so the oldest is dropped.
+ */
+function charge(key: string, now: number, windowMs: number, max: number): number[] {
   const times = recentHits(key, now, windowMs)
   times.push(now)
+  if (times.length > max + 1) times.splice(0, times.length - (max + 1))
   buckets.set(key, { windowMs, times })
   return times
 }
@@ -62,7 +74,7 @@ function charge(key: string, now: number, windowMs: number): number[] {
 export function rateLimited(key: string, max: number, windowMs = 60_000): boolean {
   const now = Date.now()
   sweep(now)
-  return charge(key, now, windowMs).length > max
+  return charge(key, now, windowMs, max).length > max
 }
 
 // `rateLimited` above both records the hit and reports the verdict, which is right for a
@@ -78,11 +90,16 @@ export function overLimit(key: string, max: number, windowMs = 60_000): boolean 
   return recentHits(key, Date.now(), windowMs).length >= max
 }
 
-/** Charge one hit against a key. Called after an attempt is known to have failed. */
+/**
+ * Charge one hit against a key. Called after an attempt is known to have failed.
+ *
+ * The cap is generous here because `overLimit` reads the COUNT and the caller's `max` is not
+ * known at this point; a sign-in lockout is a handful of attempts, not a flood.
+ */
 export function recordHit(key: string, windowMs = 60_000): void {
   const now = Date.now()
   sweep(now)
-  charge(key, now, windowMs)
+  charge(key, now, windowMs, LOCKOUT_CAP)
 }
 
 /** Forget a key. A successful sign-in clears the failures that preceded it. */

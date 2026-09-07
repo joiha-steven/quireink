@@ -109,9 +109,14 @@ describe('recording', () => {
     expect(rows).toEqual([{ depth: 0, dwell_ms: null }, { depth: 100, dwell_ms: 86_400_000 }])
   })
 
-  it('flushes automatically once the buffer is full', async () => {
+  it('flushes automatically once the buffer is full, on the next turn rather than in-line', async () => {
     // `/page/N` paths: servable by shape (no per-slug fixture needed), distinct per i.
     for (let i = 0; i < 200; i++) await recordView(`/page/${i + 1}`, `${i}.1.1.1`, 'Mozilla/5.0')
+    // NOT SYNCHRONOUSLY. This runs inside `/api/track`, and flushing here put a 200-row
+    // transaction and its fsync in front of one reader's beacon in every two hundred, which
+    // is the thing the buffer exists to prevent (Invariant 7). The flush is the next
+    // macrotask, so one turn of the loop is what it takes to land.
+    await new Promise((r) => setTimeout(r, 0))
     expect(pendingAnalytics()).toBe(0)
     expect(Object.keys(await getViewTotals())).toHaveLength(200)
   })

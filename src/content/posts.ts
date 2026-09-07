@@ -129,7 +129,9 @@ function ftsQuery(input: string): string {
 // Ordering stays date-desc, as in the frozen tree; bm25 relevance ranking is an ALLOWED
 // parity exception that has deliberately not been taken during the port.
 export async function searchPosts(query: string): Promise<Post[]> {
-  const q = query.trim()
+  // 200 chars, because `ftsQuery` makes one AND-ed phrase per token: the length of the
+  // string is the work. The `/search` page capped its input and the JSON API did not.
+  const q = query.trim().slice(0, 200)
   if (!q) return []
   try {
     return all<PostRow>(
@@ -264,14 +266,12 @@ export async function savePost(
   // Slug changed → drop the old row, move everything keyed by the old slug, and leave a
   // 301 from the old path so existing links + search results keep working.
   //
-  // `existing` is the guard and not decoration: a PUT naming a slug that has no row is a
-  // CREATE, not a rename. Without the check it deleted nothing, then wrote a permanent
-  // redirect from a path that never held anything, so one mistyped slug in an MCP call
-  // left a second copy of the post and a 301 out of nowhere.
+  // `existing` is the guard: a PUT naming a slug that has no row is a CREATE, not a rename.
+  // Without it one mistyped slug in an MCP call left a second copy of the post and a
+  // permanent redirect out of a path that never held anything.
   //
-  // The send log moves too. It is keyed by slug and it is the only thing that tells the
-  // newsletter tab this post already went out; leaving it behind re-arms a button that
-  // mails every subscriber a second time, and a newsletter cannot be recalled.
+  // The send log moves too: it is keyed by slug and is the only thing telling the newsletter
+  // tab this post already went out. A newsletter cannot be recalled.
   if (previousSlug && previousSlug !== post.slug && existing) {
     run(`delete from posts where slug = ?`, previousSlug)
     await renameRevisions(previousSlug, post.slug)

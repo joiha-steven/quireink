@@ -48,8 +48,20 @@ function schedule(): void {
 }
 
 function enqueue(): void {
-  if (events.length + scrolls.length >= MAX_ROWS) flushAnalytics()
-  else schedule()
+  // A FULL BUFFER STILL DOES NOT FLUSH HERE. This runs inside `/api/track`, and calling
+  // `flushAnalytics` from it put a 200-row transaction and its fsync in front of one
+  // reader's beacon in every two hundred — which is precisely what Invariant 7 says the
+  // buffer exists to prevent. A zero-delay timer is the next macrotask instead: the same
+  // flush, off the request.
+  if (events.length + scrolls.length >= MAX_ROWS) {
+    // The waiting timer is the SLOW one this is overtaking, so it has to go: leaving it in
+    // place meant the full-buffer case simply waited out the ordinary delay.
+    if (timer) clearTimeout(timer)
+    timer = setTimeout(() => { timer = null; flushAnalytics() }, 0)
+    timer.unref?.()
+    return
+  }
+  schedule()
 }
 
 export function bufferEvent(row: EventRow): void {

@@ -63,7 +63,9 @@ function ftsQuery(input: string): string {
 const LIMIT = 60
 
 export async function searchEverything(query: string): Promise<OwnerHit[]> {
-  const q = query.trim()
+  // The same cap the reader's search has, and for the same reason: one AND-ed phrase per
+  // token means a long enough query is a lot of FTS5 work on a single thread.
+  const q = query.trim().slice(0, 200)
   if (!q) return []
   const match = ftsQuery(q)
 
