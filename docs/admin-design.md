@@ -140,14 +140,22 @@ character and none of its typographic rules **except one**, below.
   ordinary control was 40 until this release — a number the admin arrived with rather than
   one anyone measured. ⚠️ A caller cannot shrink a control by passing `h-8`: it loses to
   `min-h-9`, which is a different property. `Select` swaps its BASE (`small`) instead.
-- **Enclosure weakens inward.** The sheet's edge, then the card's, then whatever is in the
-  card — each line lighter than the one around it. It ran backwards until 2026-09-01: the
-  sheet `neutral-200/80`, the card `neutral-100`, and a box inside the card `neutral-200` at
-  the card's own 8px radius, so the innermost frame shouted loudest and drew a corner inside
-  an identical corner. A LIST inside a card is therefore not a box at all — `PANEL_LIST` is
-  ruled top and bottom at the card's full width (`-mx-4` against the body's `p-4`), the shape
-  the card's own title row already has, and the rows keep their padding so their labels land
-  on the left edge every other label in the card uses.
+- **Enclosure weakens inward, and settings is built from three ranks.** The sheet's edge, then
+  the card's, then whatever is in the card — each line lighter than the one around it. It ran
+  backwards until 2026-09-01: the sheet `neutral-200/80`, the card `neutral-100`, and a box
+  inside the card `neutral-200` at the card's own 8px radius, so the innermost frame shouted
+  loudest and drew a corner inside an identical corner. The three ranks are **card**
+  (`SettingsCard`: a hairline box, its name on a ruled header row at 16px/600), **group**
+  (`SettingsGroup`: one rule and a 12px `UTIL` eyebrow, no box — a box inside a card is the
+  arrangement above, one level further in) and **list** (`PANEL_LIST`: the card's full width,
+  `-mx-4` against the body's `p-4`, the rows keeping their padding so their labels land on the
+  card's own left edge, and a rule BETWEEN them and nowhere else).
+  **A rank is set by type, never by decoration.** Until 2026-09-07 a settings card wore a 17px
+  title, a tinted header band and a grey dot, all three bought to separate it from the groups
+  inside it — which were set at 16px/600, one point below. Dropping the group to an eyebrow
+  makes the distance four points and two weights, and all three marks came off with nothing
+  lost. The same reasoning took the list's own top and bottom rules away: a group's rule or the
+  card's header already sits above the first row and the card's edge below the last.
 - **Admin is monochrome plus two inks and the version dot, each with a named role. The accent is the product's highlighter** (the Writing
   Desk mock's `--pen`, 2026-08-17). Its roles are named and closed — where you are (above), a
   search hit as a `<mark>` in the write pane, and the small dots that mean "work in progress"

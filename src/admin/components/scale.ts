@@ -12,11 +12,18 @@
 //
 //   30px  FIGURE         a number that IS the content — a stat tile, nothing else
 //   28px  TITLE          the page's own name, once per screen, in Literata
-//   17px  GROUP_TITLE    a settings group
-//   16px  SECTION        a card's title
+//   16px  SECTION        a card's title, settings cards included
 //   14px  SETTING_LABEL  the label on one setting
 //   13px  NOTE           the sentence explaining a setting
 //   12px  META / UTIL    table heads, counts, timestamps · and the eyebrow over a group
+//
+// ⚠️ A SEVENTH STEP WAS REMOVED ON 2026-09-07. `GROUP_TITLE` set a settings card's title at
+// 17px, bought on 2026-09-04 because 15/600 over 14/500 left the owner unable to pick a group
+// title out of a column of thirty-seven. What that bought was one point of size for the outer
+// box while the stretches INSIDE it stayed at 16/600 — so the extra point was being spent on
+// the smaller of the two distances. The groups are now a 12px eyebrow (`UTIL`), which makes
+// the distance four points and two weights and leaves nothing for a step of its own to do. A
+// size worn by exactly one component is not a step in a scale; it is that component's opinion.
 //
 // ⚠️ THE PAGE TITLE WENT UP, 22px to 28px, on 2026-09-07 — reversing the 26.4→22 change
 // that preceded it, and the measurement is the reason. At 22/500 over a card title at
@@ -72,22 +79,6 @@ export const TITLE = `${PAGE_TITLE_FACE} text-[1.75rem] font-semibold leading-ti
  * 600 / 500 / 400 now, each a step down in both.
  */
 export const SECTION = 'text-base font-semibold tracking-[-0.008em] text-neutral-900 dark:text-neutral-100'
-
-/**
- * A settings GROUP's title — 17px, one step ABOVE `SECTION`, worn only by `SettingsCard`.
- *
- * The fix above got the ORDER right and left the DISTANCE too short. 15/600 over 14/500 is one
- * point of size and one weight step, and the owner read the settings screen on 2026-09-04 and
- * could not pick the group titles out of it: "Bố cục & menu" and the "Trang chủ" label under it
- * were the same object to the eye. Nothing was broken — the hierarchy was simply too quiet to
- * do its job on a screen that holds thirty-seven of these in two columns.
- *
- * NOT a change to `SECTION` itself, and that is deliberate: a settings group is a different
- * thing from a dashboard tile or a Help card, which stand alone rather than being scanned down
- * a column. Widening the step everywhere would have been a redesign of the admin, asked for by
- * nobody.
- */
-export const GROUP_TITLE = 'text-[1.0625rem] font-semibold tracking-[-0.008em] text-neutral-900 dark:text-neutral-100'
 
 /** The label on one setting. One step under SECTION — a peer of the other labels, not a heading. */
 export const SETTING_LABEL = 'block text-sm font-medium text-neutral-800 dark:text-neutral-200'

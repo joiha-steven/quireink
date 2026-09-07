@@ -39,11 +39,12 @@ export const CARD =
 // The surfaces INSIDE a card. ENCLOSURE WEAKENS INWARD — each line lighter than the one around
 // it — and on Search & URLs it ran backwards: sheet neutral-200/80, card neutral-100, box in
 // the card neutral-200 at the card's own 8px radius. The innermost frame shouted loudest.
-// A LIST is not a box at all now: ruled top and bottom, full card width (`-mx-4` against the
-// body's `p-4`) — the card's title row already has that shape — and the rows keep their
-// padding, so their text lands on the left edge every other label in the card uses.
+// A LIST is not a box at all: full card width (`-mx-4` against the body's `p-4`), rows keeping
+// their padding, and RULES BETWEEN THEM AND NOWHERE ELSE since 2026-09-07. Ruled top and
+// bottom as well, it doubled lines that were already drawn — a group's rule or the card's
+// header above the first row, the card's edge below the last.
 export const PANEL = 'overflow-hidden rounded-lg border border-neutral-100 dark:border-neutral-800'
-export const PANEL_LIST = 'panel-list -mx-4 divide-y divide-neutral-100 border-y border-neutral-100 dark:divide-neutral-800 dark:border-neutral-800'
+export const PANEL_LIST = 'panel-list -mx-4 divide-y divide-neutral-100 dark:divide-neutral-800'
 export const INSET = 'rounded-lg border border-neutral-100 p-4 dark:border-neutral-800'
 
 // The place you DROP something into: CARVED, because a well holds things (the inset a text
