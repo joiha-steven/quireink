@@ -84,7 +84,7 @@ export function registerStewardTools(server: ToolHost): void {
   const strip = z.object({
     category: z.string().describe('Category NAME as stored on posts'),
     count: z.number().int().min(1).max(12).optional(),
-    columns: z.number().int().min(1).max(4).optional(),
+    columns: z.number().int().min(1).max(3).optional(),
   })
 
   server.registerTool(
@@ -106,7 +106,7 @@ export function registerStewardTools(server: ToolHost): void {
         }).optional(),
         strips: z.array(strip).optional(),
         popular: z.object({ on: z.boolean().optional(), count: z.number().int().min(1).max(12).optional(), days: z.union([z.literal(7), z.literal(30), z.literal(0)]).optional() }).optional(),
-        latest: z.object({ on: z.boolean().optional(), count: z.number().int().min(1).max(12).optional(), columns: z.number().int().min(1).max(4).optional() }).optional(),
+        latest: z.object({ on: z.boolean().optional(), count: z.number().int().min(1).max(12).optional(), columns: z.number().int().min(1).max(3).optional() }).optional(),
       },
     },
     async ({ mode, kind, lead, strips, popular, latest }) => {
@@ -118,7 +118,7 @@ export function registerStewardTools(server: ToolHost): void {
         popular: { ...current.home.front.popular, ...(popular ?? {}) },
         latest: { ...current.home.front.latest, ...(latest ?? {}) },
         strips: strips !== undefined
-          ? strips.map((s) => ({ category: s.category, count: s.count ?? 4, columns: s.columns ?? 4 }))
+          ? strips.map((s) => ({ category: s.category, count: s.count ?? 4, columns: s.columns ?? 3 }))
           : current.home.front.strips,
       }
       const saved = await saveSettings({
