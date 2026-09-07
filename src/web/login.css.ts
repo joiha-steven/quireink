@@ -199,7 +199,9 @@ html[data-motion=off] .login-reveal button:active{transform:translateY(-50%)}
 .login-form select:hover{border-color:color-mix(in srgb, var(--c-text) 22%, var(--c-rule))}
 .login-form select:focus{outline:none;border-color:var(--c-accent);
   box-shadow:inset 0 1px 1.5px rgba(0,0,0,.07), 0 0 0 3px color-mix(in srgb, var(--c-accent) 16%, transparent)}
-.login-back{font-size:.8125rem;color:var(--c-meta);text-decoration:none}
+/* Padding rather than a taller line: on an inline box the extra area is touchable without
+   growing the line, and this link measured 65x20 with a Vietnamese site name. */
+.login-back{font-size:.8125rem;color:var(--c-meta);text-decoration:none;padding-block:.25rem}
 .login-back:hover{color:var(--c-text)}
 
 /* The QR carries its own white quiet zone (render/qr.ts), so it needs a frame, not a

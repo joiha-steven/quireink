@@ -237,7 +237,7 @@ export function siteHeader(settings: SiteSettings, opts: ChromeOptions): string 
  */
 export function searchForm(s: { search: string }, q = ''): string {
   return `<form class="search" action="/search" method="get" role="search">
-<input type="search" name="q" value="${escapeAttr(q)}" aria-label="${escapeAttr(s.search)}">
+<input type="search" name="q" value="${escapeAttr(q)}" placeholder="${escapeAttr(s.search)}" aria-label="${escapeAttr(s.search)}">
 <button type="submit">${escapeHtml(s.search)}</button>
 </form>`
 }

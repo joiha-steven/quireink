@@ -43,7 +43,12 @@ export const FRONT_CSS = `
    is what the rest of this page already does with the label on the related-posts block. */
 .front-label{font-size:var(--fs-small);line-height:var(--lh-small);letter-spacing:var(--ls-small);
   font-weight:var(--fw-heading,600);color:var(--c-heading);margin:0}
-.front-label a{color:inherit;text-decoration:none}
+.front-label a{color:inherit;text-decoration:none;
+  /* A BIGGER TARGET THAN IT LOOKS. The row heading is set at the small size, so its link
+     measured 84x21 and 92x21 on the front page, under the 24px a fingertip is judged by.
+     Vertical padding on an INLINE box does not grow the line, so this is four more pixels
+     of touchable area above and below the words and nothing at all moves. */
+  padding-block:.25rem}
 /* The topic links, one step quieter again so the label reads first. Wrapped, never scrolled:
    a row that scrolls sideways on a phone hides half of itself and nothing says so. */
 .front-topics{display:flex;flex-wrap:wrap;gap:.25rem .75rem;margin:0;color:var(--c-meta);

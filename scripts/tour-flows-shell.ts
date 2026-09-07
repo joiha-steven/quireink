@@ -30,6 +30,31 @@ export function registerShellFlows({ flow, expect, atWidth }: Tour): void {
       return 'ok ' + rail.querySelectorAll('a').length + ' link(s) behind one button'
     })()`, 600))
 
+  // HOW FAR A KEYBOARD IS FROM THE WORDS, and what the first key press does about it.
+  //
+  // Measured at 1440 on a post: TWENTY focusable stops stand between the top of the document
+  // and the first paragraph — the header's four controls, the article's own tags and
+  // category, the site menu, and one per heading in the contents list. That order is right
+  // (a contents list belongs before what it indexes, the way a book's does), so what has to
+  // hold is the way past it: the skip link is the FIRST stop on the page and it lands on the
+  // element that contains the body. Both halves have been silently broken before.
+  flow('shell: the first key press on an article gets past the furniture', () => atWidth(1440, '/the-reed-pen-in-van-goghs-letters', `
+    (async () => {
+      const body = document.querySelector('#post-body')
+      if (!body) return 'this page has no article body'
+      const focusable = [...document.querySelectorAll('a[href], button, input, select, textarea, [tabindex]')]
+        .filter((el) => el.tabIndex >= 0 && el.offsetParent !== null)
+      const first = focusable[0]
+      if (!first || !first.classList.contains('skip-link')) {
+        return 'the first tab stop is not the skip link: ' + (first ? first.textContent.trim() : 'nothing focusable')
+      }
+      const target = document.querySelector(first.getAttribute('href'))
+      if (!target) return 'the skip link points at nothing'
+      if (!target.contains(body)) return 'the skip link lands outside the article body'
+      const before = focusable.filter((el) => body.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_PRECEDING)
+      return 'ok skip link first, ' + before.length + ' stop(s) it steps over'
+    })()`, 600))
+
   // What the drawer SAYS it is, and what it does to the page behind it. Three of these were
   // missing: it was an <aside> a screen reader walked straight past into the article, and
   // the article kept scrolling under a finger that reached the end of the drawer's own

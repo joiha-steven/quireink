@@ -142,10 +142,10 @@ describe('the reader\'s own text, put back into the page', () => {
     // The whole payload is INSIDE the value, entities and all, so `onfocus=` is text the
     // reader typed rather than an attribute the browser will honour.
     expect(input).toContain('value="&quot; onfocus=alert(1) autofocus x=&quot;"')
-    // Four attributes (type, name, value, aria-label), so eight quote characters. Breaking out
-    // of the value adds more, which is the failure this asserts against without depending on
-    // what the payload happens to be.
-    expect((input.match(/"/g) ?? []).length).toBe(8)
+    // Five attributes (type, name, value, placeholder, aria-label), so ten quote characters.
+    // Breaking out of the value adds more, which is the failure this asserts against without
+    // depending on what the payload happens to be.
+    expect((input.match(/"/g) ?? []).length).toBe(10)
   })
 
   it('escapes a tag in the query rather than rendering it', async () => {
