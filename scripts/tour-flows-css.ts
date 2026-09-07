@@ -233,4 +233,50 @@ export function registerSecurityFlows({ flow, expect }: Tour): void {
       })()`, 200)
     }
   })
+
+  // ITEM 18. A segmented control has to answer "which one is chosen" before it is read, and
+  // the answer used to be a key DARKER than its own track — the wrong way round for a
+  // pressed key, forced by a track that was one point off the card behind it. The track is a
+  // groove now and the key is white and carved.
+  //
+  // What is measured is the CHOSEN LABEL AGAINST AN UNCHOSEN ONE, because that is the signal:
+  // the two grounds are 1.26:1 and never told anybody anything. Colours are read as PIXELS
+  // through a canvas — Tailwind 4 computes to `oklch()`, which no string parser here should
+  // be trying to understand.
+  //
+  // NOTE: this body is a template literal. No backticks, no backslashes.
+  flow('admin: a chosen segment is legibly chosen', () => expect('/admin/settings?tab=post', `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      // Settings is a lazy route: read once at 900ms and the panel is sometimes still the
+      // skeleton, which is how this flow first reported "no segmented track on the tab".
+      for (let i = 0; i < 40; i++) {
+        if (document.querySelectorAll('.no-scrollbar button').length > 1) break
+        await sleep(150)
+      }
+      const cv = document.createElement('canvas'); cv.width = 1; cv.height = 1
+      const cx = cv.getContext('2d', { willReadFrequently: true })
+      const rgb = (c) => { cx.clearRect(0,0,1,1); cx.fillStyle = c; cx.fillRect(0,0,1,1); const d = cx.getImageData(0,0,1,1).data; return [d[0],d[1],d[2]] }
+      const lum = (c) => { const p = rgb(c).map((v) => v/255).map((v) => v <= 0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055, 2.4)); return 0.2126*p[0] + 0.7152*p[1] + 0.0722*p[2] }
+      const ratio = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x,y) + 0.05) / (Math.min(x,y) + 0.05) }
+      const tracks = Array.from(document.querySelectorAll('.no-scrollbar')).filter((t) => t.querySelectorAll('button').length > 1)
+      if (tracks.length === 0) return 'no segmented track on the tab'
+      for (const track of tracks) {
+        const keys = Array.from(track.querySelectorAll('button'))
+        const on = keys.find((k) => getComputedStyle(k).backgroundColor !== 'rgba(0, 0, 0, 0)')
+        if (!on) continue
+        // The pen key is where-you-are, a different control with its own guard.
+        if (rgb(getComputedStyle(on).backgroundColor).join(',') === '213,248,86') continue
+        const off = keys.find((k) => k !== on)
+        const a = getComputedStyle(on), b = getComputedStyle(off)
+        if (Number(a.fontWeight) < 600) return 'the chosen key is weight ' + a.fontWeight
+        const labels = ratio(a.color, b.color)
+        if (labels < 3) return 'chosen and unchosen labels are ' + labels.toFixed(2) + ':1'
+        const onGround = ratio(a.color, a.backgroundColor)
+        if (onGround < 4.5) return 'the chosen label reads ' + onGround.toFixed(2) + ':1 on its key'
+        return 'ok labels ' + labels.toFixed(2) + ':1, chosen label on its key ' + onGround.toFixed(2) + ':1'
+      }
+      return 'every segment on the tab is a place, not a choice'
+    })()`, 900))
+
 }

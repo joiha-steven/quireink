@@ -42,10 +42,16 @@ export const TAB_TRACK = 'flex w-full flex-wrap items-end gap-6 border-b border-
 // rather than the other way round. A MINIMUM rather than a fixed height, because three call
 // sites let the strip wrap and a fixed one would halve their rows; a single-line strip lands
 // on 32 exactly, its items stretching to 30 inside the 1px edge.
-export const SEGMENT_TRACK = 'flex min-h-8 w-fit max-w-full overflow-x-auto no-scrollbar rounded-md border border-neutral-200 bg-neutral-50 shadow-[inset_0_1px_2px_rgba(0,0,0,.07)] dark:border-neutral-800 dark:bg-neutral-950/40 dark:shadow-[inset_0_1px_2px_rgba(0,0,0,.4)]'
+// ⚠️ THE TRACK IS THE GROOVE, `neutral-200`, since 2026-09-07 — it was `neutral-50`, one
+// point off the card it sits on, so the strip had no edges of its own and the chosen key had
+// to be drawn DARKER than its own track to be seen at all. That inverted the object: a
+// pressed key is not darker than the panel it is set into, it is the panel's own face pushed
+// down. With a real groove the key can be white and carved, which is what every physical
+// segmented control on a desk looks like.
+export const SEGMENT_TRACK = 'flex min-h-8 w-fit max-w-full overflow-x-auto no-scrollbar rounded-md border border-neutral-200 bg-neutral-200 p-0.5 shadow-[inset_0_1px_2px_rgba(0,0,0,.09)] dark:border-neutral-800 dark:bg-neutral-950/60 dark:shadow-[inset_0_1px_2px_rgba(0,0,0,.5)]'
 // The dense variant is full-width with growing items: five segments whose right edge lands
 // on the pane's own edge instead of stopping short of it, which read as a gap left over.
-const SEGMENT_TRACK_DENSE = 'flex min-h-8 w-full overflow-x-auto no-scrollbar rounded-md border border-neutral-200 bg-neutral-50 shadow-[inset_0_1px_2px_rgba(0,0,0,.07)] dark:border-neutral-800 dark:bg-neutral-950/40 dark:shadow-[inset_0_1px_2px_rgba(0,0,0,.4)]'
+const SEGMENT_TRACK_DENSE = 'flex min-h-8 w-full overflow-x-auto no-scrollbar rounded-md border border-neutral-200 bg-neutral-200 p-0.5 shadow-[inset_0_1px_2px_rgba(0,0,0,.09)] dark:border-neutral-800 dark:bg-neutral-950/60 dark:shadow-[inset_0_1px_2px_rgba(0,0,0,.5)]'
 
 /**
  * What an active item MEANS, which turns out to be two different things wearing one costume.
@@ -101,18 +107,20 @@ export const tabItemClass = (
           // INK on the highlighter, not the reading site's olive `--on-pen`: on a control
           // the olive read as grey and dull, and the owner called it. A mark in running
           // text keeps the olive; a pressed key wants the full contrast.
-          // A latched key: the active segment is held DOWN, so it carries the same
-          // carved-in shadow every pressed control wears.
-          // Solid ink cannot show relief — shading dies inside black — and a WHITE key
-          // vanishes against the white card. The chosen key is one grey step DOWN from its
-          // ground, carved: darker because a pressed key sits in its own shade. The pen
-          // keeps marking a place; a chosen value is the sunken key.
+          //
+          // A latched key: the active segment is held DOWN, so it carries the carved-in
+          // shadow every pressed control wears. It is WHITE and the track is the groove,
+          // reversed from what it was: the key used to be `neutral-200` — darker than its own
+          // `neutral-50` track — because a white key does vanish on a white card, and that
+          // argument stopped being true the day the track became a real groove. Measured on
+          // the rendered control: the chosen label reads 4.2:1 against an unchosen one, which
+          // is what tells them apart; the two GROUNDS are 1.3:1 and never were the signal.
           ? role === 'place'
             // `dark:text-white` for the reason set out on SIDEBAR_NAV_ACTIVE: the dark pen is
             // an olive, and near-black on it measures 3.8:1 against the 5.0 white gets.
             ? 'bg-[var(--pen)] text-neutral-950 dark:text-white shadow-[inset_0_2px_3px_rgba(0,0,0,.3),inset_0_-1px_0_rgba(255,255,255,.35)]'
-            : 'bg-neutral-200 font-semibold text-neutral-950 shadow-[inset_0_2px_3px_rgba(0,0,0,.22)] dark:bg-neutral-950 dark:text-white dark:shadow-[inset_0_2px_3px_rgba(0,0,0,.6)]'
-          : 'text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-neutral-200'
+            : 'bg-white font-semibold text-neutral-950 shadow-[inset_0_2px_3px_rgba(0,0,0,.16)] dark:bg-neutral-800 dark:text-white dark:shadow-[inset_0_2px_3px_rgba(0,0,0,.55)]'
+          : 'text-neutral-500 dark:text-neutral-400 hover:bg-neutral-300/60 hover:text-neutral-900 dark:hover:bg-neutral-800/60 dark:hover:text-neutral-200'
       }`
 
 // A scrolling strip that says so. 2026-08-28 made the far tabs REACHABLE; this makes them
