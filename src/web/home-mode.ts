@@ -67,7 +67,11 @@ export async function renderPostList(page: number): Promise<string | null> {
 export async function renderHome(): Promise<string | null> {
   const { home } = await getSettings()
   if (home.mode === 'page' && home.page) {
-    const page = await renderArticle(home.page)
+    // `/` is the address, and the chosen page's own slug 301s here. Rendering it without
+    // saying so left the front door printing a canonical and an og:url that pointed at a
+    // redirect, while the sitemap named `/`: two documents disagreeing about which of them
+    // is the page.
+    const page = await renderArticle(home.page, '/')
     if (page !== null) return page
   }
   if (home.mode === 'front') {

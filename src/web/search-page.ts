@@ -22,7 +22,7 @@ import { searchForm } from '@/web/chrome'
 // own query into an attribute: `/search?q=" onfocus=alert(1) autofocus x="` came back as
 // `value="" onfocus=alert(1) autofocus x=""`, which is a live event handler on a public page.
 // Reproduced against a local instance before this line was written; there is a test for it.
-import { escapeHtml } from '@/utils'
+import { escapeHtml, fill } from '@/utils'
 
 /** Matches `/api/search`. One feature, one cap, whichever half of it a reader reaches. */
 const PER_MINUTE = 60
@@ -41,7 +41,7 @@ export async function handleSearchPage(c: Context): Promise<Response> {
   // hardcoded " min" reading-time suffix, and the same fix.
   const body = renderListing({
     headingHtml: escapeHtml(tx.search),
-    subheading: q ? tx.searchResults.replace('{n}', String(results.length)).replace('{q}', q) : undefined,
+    subheading: q ? fill(tx.searchResults, { n: results.length, q }) : undefined,
     paged: { items: results, page: 1, totalPages: 1 },
     basePath: '/search',
     empty: q ? tx.searchEmpty : tx.searchHint,

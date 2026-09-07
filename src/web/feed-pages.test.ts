@@ -8,6 +8,7 @@ import { describe, expect, it, beforeEach, afterAll } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
 import { db } from '@/store/db'
 import { savePost } from '@/content/posts'
+import { savePage } from '@/content/pages'
 import { getSettings, saveSettings } from '@/content/settings'
 import { clearCache } from '@/server/cache'
 import { createApp } from '@/web/app'
@@ -128,5 +129,31 @@ describe('every page has exactly one h1', () => {
     const html = await (await get('/a-post')).text()
     expect(countH1(html)).toBe(1)
     expect(html).not.toContain('site-h1')
+  })
+})
+
+// One document, one address. Both of these used to answer 200 while naming a DIFFERENT URL
+// as their canonical, which is two pages disagreeing about which of them is the page.
+describe('a page and its address agree', () => {
+  it('sends an old term spelling to the slug, permanently', async () => {
+    await savePost({
+      title: 'Filed', content: 'x', status: 'published', date: PAST,
+      categories: ['Suy nghi'],
+    })
+    const alias = await get('/category/Suy%20nghi')
+    expect(alias.status).toBe(301)
+    expect(alias.headers.get('location')).toBe('/category/suy-nghi')
+    expect((await get('/category/suy-nghi')).status).toBe(200)
+  })
+
+  it('lets the homepage in page mode own the canonical, not the page it renders', async () => {
+    await savePage({ title: 'About', slug: 'about', content: 'Hello', status: 'published' })
+    await saveSettings({ siteUrl: 'https://example.com', home: { ...(await getSettings()).home, mode: 'page', page: 'about' } })
+    clearCache()
+    const html = await (await get('/')).text()
+    expect(html).toContain('<link rel="canonical" href="https://example.com/">')
+    expect(html).not.toContain('canonical" href="https://example.com/about"')
+    // ...and the slug still redirects here, which is what made the old canonical a lie.
+    expect((await get('/about')).status).toBe(301)
   })
 })

@@ -16,9 +16,9 @@ import type { Post, SiteSettings } from '@/types'
 import { getPublicPosts } from '@/content/posts'
 import { getSettings, resolveSiteUrl } from '@/content/settings'
 import { resolveSeries } from '@/content/series'
-import { resolveTerm, tagText } from '@/content/taxonomy'
+import { canonicalTermSlug, resolveTerm, tagText } from '@/content/taxonomy'
 import { t } from '@/i18n/i18n'
-import { escapeHtml } from '@/utils'
+import { escapeHtml, fill } from '@/utils'
 import { renderListing } from '@/web/listing'
 import { cached, listingPage, notFoundPage, renderFeedBody } from '@/web/listing-page'
 import { parsePathPage } from '@/content/paginate'
@@ -46,7 +46,7 @@ async function termFeed(
     // "Kinh tế · edcmeo" — the term leads, because this is what the subscriber picked and
     // what will show in the list of feeds they subscribe to.
     title: `${name} · ${settings.title}`,
-    description: s.metaTerm.replace('{site}', settings.title).replace('{name}', name),
+    description: fill(s.metaTerm, { site: settings.title, name }),
     path,
   })
   return new Response(body, {
@@ -92,7 +92,7 @@ export function registerTermRoutes(app: Hono): void {
         // Its own sentence. Every term page used to inherit the site description, so a
         // hundred tag pages shipped one identical snippet and Google had nothing to tell
         // them apart with.
-        description: s.metaTerm.replace('{site}', settings.title).replace('{name}', name),
+        description: fill(s.metaTerm, { site: settings.title, name }),
         body: built.body,
         css: built.css,
         noindex: built.noindex,
@@ -112,8 +112,19 @@ export function registerTermRoutes(app: Hono): void {
       return termFeed(settings, name, posts, `/${kind}/${c.req.param('slug')}/feed.xml`)
     })
 
-    app.get(`/${kind}/:slug`, async (c) =>
-      cached(`/${kind}/${c.req.param('slug')}`, () => term(c.req.param('slug'), 1))())
+    app.get(`/${kind}/:slug`, async (c) => {
+      // An old %-encoded URL still RESOLVES (`resolveTerm` matches the raw term as well as
+      // its slug), and until now it also rendered, at 200, printing a canonical, an og:url,
+      // a feed link and a pager that all carried the raw name with its spaces in. Two
+      // indexable addresses for one archive, each naming itself as the canonical. It is one
+      // document, so the alias answers the way every other alias here does: with a 301.
+      const asked = c.req.param('slug')
+      const canonical = canonicalTermSlug(await getPublicPosts(), field, asked)
+      if (canonical !== null && canonical !== asked) {
+        return c.redirect(`/${kind}/${encodeURIComponent(canonical)}`, 301)
+      }
+      return cached(`/${kind}/${asked}`, () => term(asked, 1))()
+    })
 
     app.get(`/${kind}/:slug/page/:n`, async (c) => {
       const page = parsePathPage(c.req.param('n'))
@@ -142,7 +153,7 @@ export function registerTermRoutes(app: Hono): void {
       // timeline — its order is the owner's, not the calendar's.
       return listingPage({
         title: `${name} · ${settings.title}`,
-        description: s.metaSeries.replace('{site}', settings.title).replace('{name}', name),
+        description: fill(s.metaSeries, { site: settings.title, name }),
         body: renderListing({
           headingHtml: `${escapeHtml(s.seriesLabel)}: ${escapeHtml(name)}`,
           paged: { items: posts, page: 1, totalPages: 1 },

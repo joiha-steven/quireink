@@ -6,6 +6,7 @@ import {
   readingMinutes,
   wordCount,
   isPublicallyVisible,
+  fill,
   isScheduled,
   extractImageUrls,
   untitledNumbers,
@@ -175,5 +176,20 @@ describe('untitledNumbers', () => {
     const n = untitledNumbers([uRow('page', 'page-1', '', 150), uRow('post', 'post-1', '', 100)])
     expect(n.get('post:post-1')).toBe(1)
     expect(n.get('page:page-1')).toBe(2)
+  })
+})
+
+// `String.replace(pattern, replacement)` reads `$&`, `$'` and `` $` `` in the REPLACEMENT as
+// instructions, and every locale substitution on this site puts text somebody typed there.
+describe('fill', () => {
+  it('treats a value as a value, whatever dollar signs are in it', () => {
+    expect(fill('{n} results for "{q}"', { n: 2, q: "$'" })).toBe('2 results for "$\'"')
+    expect(fill('{n} results for "{q}"', { n: 2, q: '$&' })).toBe('2 results for "$&"')
+    expect(fill('Every post on {site} filed under {name}.', { site: 'A$`B', name: '$1' }))
+      .toBe('Every post on A$`B filed under $1.')
+  })
+
+  it('leaves a placeholder it was given nothing for', () => {
+    expect(fill('{a} and {b}', { a: 'one' })).toBe('one and {b}')
   })
 })

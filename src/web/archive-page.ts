@@ -14,7 +14,7 @@
 
 import type { SiteSettings } from '@/types'
 import { formatCount, t, zonedDay } from '@/i18n/i18n'
-import { escapeAttr, escapeHtml } from '@/utils'
+import { escapeAttr, escapeHtml, fill } from '@/utils'
 import { getPublicPosts } from '@/content/posts'
 import { getSettings } from '@/content/settings'
 import { byYear, yearAnchor, type ArchiveYear } from '@/content/archive'
@@ -73,7 +73,7 @@ export async function renderArchive(): Promise<string | null> {
 
   return listingPage({
     title: `${s.archiveTitle} · ${settings.title}`,
-    description: s.archiveMeta.replace('{site}', settings.title),
+    description: fill(s.archiveMeta, { site: settings.title }),
     body: `<div class="listing-head arc-head"><h1>${escapeHtml(s.archiveTitle)}</h1>${jump}</div>${body}`,
     canonicalPath: '/archive',
     cardTitle: s.archiveTitle,

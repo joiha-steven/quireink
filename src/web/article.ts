@@ -63,7 +63,8 @@ async function mediaFacts(): Promise<{ ready: ReadyOriginals; dims: ImageDims }>
   return { ready, dims }
 }
 
-export async function renderArticle(slug: string): Promise<string | null> {
+// `canonicalPath`: the address this answers at when that is not its own slug (`home-mode.ts`).
+export async function renderArticle(slug: string, canonicalPath?: string): Promise<string | null> {
   const settings = await getSettings()
   const s = t(settings.language)
   const post = await getPost(slug)
@@ -341,7 +342,7 @@ export async function renderArticle(slug: string): Promise<string | null> {
     {
       title: `${post?.metaTitle || item.title} · ${settings.title}`,
       description,
-      canonical: site ? `${site}/${item.slug}` : undefined,
+      canonical: site ? `${site}${canonicalPath ?? `/${item.slug}`}` : undefined,
       // Absolute, always: `resolveSiteUrl` falls back to SITE_URL and then to localhost,
       // and a relative og:image is ignored by every scraper.
       image: ogImageUrl(settings, site, {

@@ -272,3 +272,17 @@ export function untitledNumbers(
     .sort((a, b) => a.created - b.created || a.slug.localeCompare(b.slug))
   return new Map(untitled.map((i, idx) => [`${i.kind}:${i.slug}`, idx + 1]))
 }
+
+/**
+ * Fill `{name}` placeholders in a locale string.
+ *
+ * A plain `String.replace(pattern, replacement)` reads `$&`, `$'`, `` $` `` and `$1` in the
+ * REPLACEMENT as instructions, and every one of these substitutions puts text somebody
+ * typed on that side: a search query, a term name, a token's label. Searching for `$'` on a
+ * site printed the tail of its own template back at the reader. A function replacer is the
+ * only form that treats the value as a value.
+ */
+export function fill(template: string, values: Record<string, string | number>): string {
+  return template.replace(/\{(\w+)\}/g, (whole, key: string) =>
+    key in values ? String(values[key]) : whole)
+}

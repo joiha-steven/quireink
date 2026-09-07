@@ -25,6 +25,20 @@ export const termSlug = (term: string): string => slugify(term)
  */
 export const tagText = (term: string): string => term.replace(/\s+/g, '-')
 
+/**
+ * The one address a term archive answers at, for a URL that may be an old spelling of it.
+ *
+ * `resolveTerm` deliberately matches the raw pre-slug term as well, so an inbound
+ * `/category/Suy%20ngh%C4%A9` still finds its posts. That is a redirect, not a second page:
+ * left as a 200 it printed a canonical, an og:url, a feed link and a pager all carrying the
+ * raw name, spaces and all, so one archive had two indexable addresses each claiming to be
+ * the canonical one. Null when nothing matches, so the caller can 404 as before.
+ */
+export function canonicalTermSlug<T extends HasTaxo>(posts: T[], kind: Taxo, slug: string): string | null {
+  const { name } = resolveTerm(posts, kind, slug)
+  return name === null ? null : termSlug(name)
+}
+
 // Resolve a taxonomy slug among posts: the matching posts + the term's display
 // name (first match, or null if no term matches). Back-compat: also matches a raw
 // pre-slug term, so old %-encoded URLs (/category/Suy%20ngh%C4%A9) still resolve.

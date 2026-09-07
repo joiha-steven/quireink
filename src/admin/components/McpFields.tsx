@@ -10,7 +10,7 @@ import { Button } from '@/admin/ui/Button'
 import { ToggleRow } from '@/admin/ui/Switch'
 import { useToast } from '@/admin/ui/Toast'
 import { useConfirm, useConfirmFor } from '@/admin/ui/ConfirmDialog'
-import { formatDateTimeShort } from '@/utils'
+import { formatDateTimeShort, fill } from '@/utils'
 import { useAdminT } from './I18nProvider'
 import { PANEL, PANEL_LIST, Setting, TABLE_SCROLL } from './kit'
 
@@ -101,7 +101,7 @@ export function McpFields(
 
   async function remove(id: number, name: string) {
     const said = await ask({
-      title: t.askDeleteTokenTitle.replace('{name}', name),
+      title: fill(t.askDeleteTokenTitle, { name }),
       body: t.askDeleteTokenBody,
       confirmLabel: t.askDeleteForever,
       cancelLabel: t.askCancel,
