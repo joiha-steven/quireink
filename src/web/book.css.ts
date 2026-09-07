@@ -29,8 +29,12 @@ export const BOOK_CSS = `
      row opens with a // marker, the box ran straight into it with no air between the two.
      Height is what a thumb needs; the width is the words, and they were already wide enough. */
   padding:.5rem 0;margin:-.5rem 0}
-.book-mode-toggle svg{flex-shrink:0;opacity:.75}
-.book-mode-toggle:hover svg{opacity:1}
+/* THE BOOK GLYPH, and not the pen loop beside it. The loop became a real <svg> in the
+   document on 2026-09-06 and walked straight into this descendant selector, which outranks
+   the loop's own opacity:0 by one element name. So the mark that is meant to arrive with the
+   pointer was inked at .75 on every article, on the meta line and in the panel alike. */
+.book-mode-toggle svg:not(.book-loop){flex-shrink:0;opacity:.75}
+.book-mode-toggle:hover svg:not(.book-loop){opacity:1}
 /* CIRCLED, not boxed. A grey rounded rectangle behind a line of type is interface furniture,
    and this panel is the quietest thing on the page — it was also the only rectangle in a
    column of writing. A pen goes round a word instead, so the mark is the one this whole

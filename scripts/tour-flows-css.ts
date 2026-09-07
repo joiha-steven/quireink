@@ -279,4 +279,35 @@ export function registerSecurityFlows({ flow, expect }: Tour): void {
       return 'every segment on the tab is a place, not a choice'
     })()`, 900))
 
+  // THE PEN'S LOOP ARRIVES WITH THE POINTER, and is not on the page before it.
+  //
+  // It is the product's own mark and the only decoration on a very quiet meta line, so drawn
+  // at rest it reads as a permanent oval around two words. The fault was pure cascade:
+  // `.book-mode-toggle svg` sets the BOOK GLYPH to .75 and outranks `.book-loop{opacity:0}`,
+  // which the loop walked into on the day it stopped being a pseudo-element and became a real
+  // svg in the document. Every rule was right and the page was still wrong, so the assertion
+  // is on the computed number at rest — and on the glyph still being dimmed, which is what
+  // the excluding selector could quietly take away.
+  //
+  // NOTE: this body is a template literal. No backticks, no backslashes.
+  flow('the pen loop round the book button waits for the pointer', () => expect('/the-reed-pen-in-van-goghs-letters', `
+    (async () => {
+      const buttons = Array.from(document.querySelectorAll('[data-book-open]'))
+      if (!buttons.length) return 'skip: book mode is off'
+      for (const btn of buttons) {
+        const loop = btn.querySelector('.book-loop')
+        if (!loop) return 'a book button carries no pen loop'
+        const rest = Number(getComputedStyle(loop).opacity)
+        if (rest > 0.01) return 'the loop is inked at ' + rest + ' with nothing pointing at it'
+        const glyph = btn.querySelector('svg:not(.book-loop)')
+        if (glyph && Number(getComputedStyle(glyph).opacity) > 0.9) return 'the book glyph lost its resting dim'
+      }
+      buttons[0].focus()
+      await new Promise((r) => setTimeout(r, 80))
+      if (!buttons[0].matches(':focus-visible')) return 'ok invisible at rest on ' + buttons.length + ' button(s)'
+      const lit = Number(getComputedStyle(buttons[0].querySelector('.book-loop')).opacity)
+      if (lit < 0.5) return 'the loop stays at ' + lit + ' when the button is asked for'
+      return 'ok invisible at rest, ' + lit + ' when it is asked for'
+    })()`, 600))
+
 }
