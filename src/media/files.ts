@@ -5,7 +5,7 @@
 
 import type { FileItem } from '@/types'
 import {
-  uploadFile, expandBlob, collapseBlob, deleteByPathname, listBlobs,
+  uploadFile, expandBlob, collapseBlob, deleteByPathname, listBlobs, readBlob,
 } from '@/media/blob'
 import { slugify } from '@/utils'
 import { safeFetch } from '@/server/safe-fetch'
@@ -58,25 +58,43 @@ export async function renderLogo(
   width: number,
 ): Promise<{ url: string; height: number; emailUrl: string } | null> {
   if (!sourceUrl) return null
-  let res: Response
-  try {
-    // SSRF guard: logoUrl is owner-supplied settings; block internal targets.
-    res = await safeFetch(sourceUrl)
-  } catch {
-    return null
-  }
-  if (!res.ok) return null
-  const contentType = res.headers.get('content-type') ?? ''
-  const isRaster = LOGO_RASTER.test(contentType) || (!contentType && LOGO_EXT_RASTER.test(sourceUrl))
-  if (!isRaster) return null // svg / gif / unknown: serve original untouched
-  // Capped WHILE reading, like every other byte path that starts with a URL somebody typed.
-  // This one was reading the whole response into memory first and asking nothing, so a
-  // logo address pointing at a large file was a way to make the process eat it — and the
-  // reverse proxy cannot see a fetch this server made. The same cap the upload form uses.
   const { maxFileBytes } = await uploadLimits()
-  const read = await readCapped(res, maxFileBytes)
-  if ('tooLarge' in read) return null // caller serves the original untouched
-  const src = Buffer.from(read.body)
+  // ⚠ THE LOGO IS ALMOST ALWAYS ON THE STORE, and the store is not a URL this process can
+  // fetch. `logoUrl` comes out of the media library as `/uploads/media/…`, which is
+  // origin-relative, and `new URL()` inside the SSRF guard throws on it: `safeFetch` raised,
+  // the catch returned null, and EVERY owner who picked a logo from their own library got
+  // `logoRenderUrl: ''` and `logoEmailUrl: ''`. The header then served the untouched
+  // original at whatever size it was uploaded, and the newsletter masthead fell back to
+  // text. Silently, on every install, since the field existed. `finalize.ts` had already
+  // met the same trap for image variants and reads the store directly; so does this.
+  const storePath = collapseBlob(sourceUrl)
+  const local = storePath !== sourceUrl || !/^https?:\/\//i.test(sourceUrl)
+  let src: Buffer
+  if (local) {
+    const bytes = await readBlob(storePath).catch(() => null)
+    if (!bytes || bytes.byteLength > maxFileBytes) return null
+    if (!LOGO_EXT_RASTER.test(storePath)) return null // svg / gif / unknown: serve as-is
+    src = bytes
+  } else {
+    let res: Response
+    try {
+      // SSRF guard: an absolute logoUrl is owner-supplied settings; block internal targets.
+      res = await safeFetch(sourceUrl)
+    } catch {
+      return null
+    }
+    if (!res.ok) return null
+    const contentType = res.headers.get('content-type') ?? ''
+    const isRaster = LOGO_RASTER.test(contentType) || (!contentType && LOGO_EXT_RASTER.test(sourceUrl))
+    if (!isRaster) return null // svg / gif / unknown: serve original untouched
+    // Capped WHILE reading, like every other byte path that starts with a URL somebody typed.
+    // This one was reading the whole response into memory first and asking nothing, so a
+    // logo address pointing at a large file was a way to make the process eat it — and the
+    // reverse proxy cannot see a fetch this server made. The same cap the upload form uses.
+    const read = await readCapped(res, maxFileBytes)
+    if ('tooLarge' in read) return null // caller serves the original untouched
+    src = Buffer.from(read.body)
+  }
   // PORT NOTE: sharp is imported here rather than at the top of the file. It is the only
   // sharp user reachable from `content/settings.ts`, which every request touches, so a
   // top-level import put it on the BOOT path — and `bun build --compile` bundles sharp's
