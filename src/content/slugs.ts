@@ -5,6 +5,26 @@
 import { one } from '@/store/query'
 import { getSettings } from '@/content/settings'
 
+/**
+ * Slugs the router answers before `/{slug}` ever runs, so a post or page saved at one of
+ * them is stored, listed, put in the sitemap, and unreachable forever with nothing saying
+ * why. "Search" and "Login" are ordinary page titles, and `slugify` turns both into exactly
+ * these strings.
+ *
+ * MEASURED, not guessed, and `slugs.test.ts` keeps it measured: a fixed route only shadows
+ * a slug when it is one bare segment (`/search`) or a segment with a wildcard under it
+ * (`/uploads/*`, which Hono matches with the wildcard empty). A parameter does not, so
+ * `/assets/:file` leaves `assets` free and `/api/track` leaves `api` free. That is why this
+ * list is six names and not the twenty a reading of `app.ts` would suggest.
+ *
+ * `archive` is deliberately NOT here. `/archive` asks for the owner's own document first
+ * and only draws the year index when there is none, which is the opposite trade and is set
+ * out where that route is registered.
+ */
+export const RESERVED_SLUGS: ReadonlySet<string> = new Set([
+  'admin', 'login', 'og', 'search', 'setup', 'uploads',
+])
+
 // Thrown by save* when a slug is already taken by a different post/page.
 // Route handlers map this to a 409 with the `slug_taken` error code.
 export class SlugConflictError extends Error {
@@ -29,6 +49,7 @@ export async function ensureSlugFree(
   // it has no row to be found by the two queries below. Without this, saving a post at the
   // list's path succeeds and one of the two silently stops being reachable — the router
   // answers the list first, so it is the post that vanishes, with no error anywhere.
+  if (RESERVED_SLUGS.has(slug)) throw new SlugConflictError(slug)
   const { home } = await getSettings()
   if (home.mode !== 'list' && slug === home.listPath.slice(1)) throw new SlugConflictError(slug)
   const post = one<{ slug: string }>(`select slug from posts where slug = ?`, slug)
