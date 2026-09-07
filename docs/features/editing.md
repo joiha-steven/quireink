@@ -140,13 +140,16 @@
   **Scheduled**, a "Scheduled for <local time>" note shows under the date field, and the live
   "View post" link is hidden (the URL 404s until it goes live). "Preview draft" still works.
 - **Going live on time:** `sweepScheduled` (called from `/api/cron`) is what makes it punctual —
-  it finds posts that crossed their time within a bounded lookback (`newlyLive`, a pure
-  `(since, now]` window) and, when any did, calls `clearCache()`, which warms the origin and
-  purges the edge behind it. The **5-min publish tick** (`/api/cron?publish=1`,
-  `PUBLISH_TICK_LOOKBACK_MS` = 6 min) does this and nothing else; the **hourly** tick sweeps
-  `HOURLY_LOOKBACK_MS` = 65 min as a backstop and also finalizes image variants, prunes
-  `render_cache` and expired sessions, and takes a snapshot when one is due. No watermark is
-  stored — an overlapping purge is an idempotent superset. Nothing inside the process calls
+  it finds posts that crossed their time in the window since the LAST sweep (`newlyLive`, a
+  pure `(since, now]` window) and, when any did, calls `clearCache()`, which warms the origin
+  and purges the edge behind it. The **one-minute publish tick** (`/api/cron?publish=1`) does
+  this and nothing else; the **hourly** tick sweeps as a backstop and also finalizes image
+  variants, prunes `render_cache` and expired sessions, and takes a snapshot when one is due.
+  `PUBLISH_TICK_LOOKBACK_MS` = 6 min and `HOURLY_LOOKBACK_MS` = 65 min are the FLOOR on that
+  window, used on the first sweep after a boot so a restart between two ticks cannot drop a
+  crossing. ⚠ A fixed window is what this replaced, and with a tick faster than the window a
+  post answered "newly live" on every tick it stayed inside: one publish cost six cache
+  flushes and six edge purges. Nothing inside the process calls
   `/api/cron`: an external scheduler has to, and setting one up is
   [`self-host.md`](../self-host.md) §8.
 

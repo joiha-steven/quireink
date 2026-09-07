@@ -13,6 +13,7 @@ import { createUser } from '@/auth/users'
 import { COOKIE_NAME, createSession } from '@/auth/sessions'
 import { resetSecretCache } from '@/auth/secret'
 import { resetLimits } from '@/server/rate-limit'
+import { resetSweepWindow } from '@/server/scheduled'
 import { verifyPreview } from '@/content/preview'
 import { payload } from '@/test/api'
 
@@ -56,6 +57,9 @@ beforeEach(async () => {
     db().run(`delete from ${t}`)
   }
   delete process.env.CRON_SECRET
+  // The sweep now remembers where it stopped, so one test's tick would otherwise close the
+  // window the next test's fixture is dated inside.
+  resetSweepWindow()
   rmSync(SNAPSHOTS, { recursive: true, force: true })
   resetSecretCache()
   resetLimits()
@@ -137,6 +141,23 @@ describe('the cron tick', () => {
     expect((await payload<{ published: number }>(res)).published).toBe(1)
     // Invariant 1: on the home page without a cold hit.
     expect(await (await app.request('/')).text()).toContain('Timed')
+  })
+
+  // The window starts where the last sweep ended. Before that a post stayed inside a fixed
+  // six-minute lookback for six consecutive minute ticks, and every one of them flushed the
+  // page cache and asked the CDN to purge.
+  it('reports one crossing once, however many times the tick runs', async () => {
+    const oneMinuteAgo = new Date(Date.now() - 60_000).toISOString()
+    await asOwner('/api/posts', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ title: 'Once', status: 'published', date: oneMinuteAgo, content: 'x' }),
+    })
+    const counts: number[] = []
+    for (let i = 0; i < 3; i++) {
+      counts.push((await payload<{ published: number }>(await tick('/api/cron?publish=1'))).published)
+    }
+    expect(counts).toEqual([1, 0, 0])
   })
 
   it('reports nothing when a post is dated outside the window', async () => {

@@ -20,8 +20,10 @@ import { purgeEdge } from '@/server/edge-cache'
 import { all } from '@/store/query'
 import { liveOnly } from '@/store/db'
 
-// Lookback windows, slightly wider than each cadence to absorb tick jitter.
-export const PUBLISH_TICK_LOOKBACK_MS = 6 * 60 * 1000 // 5-min tick + 1 min slack
+// The FLOOR on each window, not the window itself: `sweepScheduled` starts where the last
+// sweep ended and only falls back to these on the first run after a boot. Wider than each
+// cadence so a restart between two ticks cannot drop a crossing.
+export const PUBLISH_TICK_LOOKBACK_MS = 6 * 60 * 1000 // the minute tick, with room for a restart
 export const HOURLY_LOOKBACK_MS = 65 * 60 * 1000 // hourly backstop + 5 min slack
 
 type Crossable = { slug: string; date: string; status: string }
@@ -38,12 +40,34 @@ export function newlyLive(posts: Crossable[], since: number, now: number): strin
     .map((p) => p.slug)
 }
 
-// Find posts that just became live and, if any, flush the caches. Returns how many
-// crossed (0 = nothing to do, no flush). The caller (cron) isolates it so a sweep failure
-// can't skip other maintenance.
+/**
+ * Where the last sweep stopped looking. Module state, so it resets on a restart and the
+ * lookback below is what covers the gap.
+ */
+let lastSweepAt = 0
+
+/** Only for tests: forget where the last sweep stopped. */
+export function resetSweepWindow(): void {
+  lastSweepAt = 0
+}
+
+/**
+ * Find posts that just became live and, if any, flush the caches. Returns how many crossed
+ * (0 = nothing to do, no flush). The caller (cron) isolates it so a sweep failure can't
+ * skip other maintenance.
+ *
+ * THE WINDOW STARTS WHERE THE LAST ONE ENDED, and the fixed lookback is only the floor.
+ * A fixed window is wrong once the tick is faster than the window: the minute tick runs
+ * with a six-minute lookback, so an ordinary publish (whose date is now) sat inside it for
+ * six consecutive ticks and answered "newly live" every time. Each of those calls flushed
+ * the page cache and asked the CDN to purge, so one post cost six stop-the-world warms and
+ * a burst of purges the edge rate-limits. Crossing is a one-time event and now reports as
+ * one.
+ */
 export async function sweepScheduled(lookbackMs: number): Promise<number> {
   const now = Date.now()
-  const since = now - lookbackMs
+  const since = Math.max(now - lookbackMs, lastSweepAt)
+  lastSweepAt = now
   const rows = all<{ slug: string; date: number; status: string }>(
     `select slug, date, status from posts
       where ${liveOnly('posts')} and status = 'published' and date > ? and date <= ?`,

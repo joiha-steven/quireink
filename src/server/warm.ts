@@ -80,6 +80,15 @@ export async function warmCache(): Promise<{ warmed: number; ms: number }> {
   for (const { slug } of [...posts, ...pages]) {
     // One at a time, on purpose. The point is to use the idle time BETWEEN requests, and a
     // Promise.all over seventy 360ms renders would block the loop for the whole burst.
+    //
+    // ⚠ The yield is what makes that true, and without it the comment above was wishful.
+    // Nothing in the render chain does real I/O: bun:sqlite is synchronous, the markdown
+    // parse resolves on an already-settled promise and the highlighter is memoised, so
+    // every `await` here resolved as a microtask and the loop never handed the event loop
+    // back. Measured at 8.4 seconds for 77 posts, during which an arriving request waited
+    // for the whole warm. `setTimeout(0)` is a macrotask, so the queued requests run
+    // between posts.
+    await new Promise((resolve) => setTimeout(resolve, 0))
     const html = await renderArticle(slug)
     if (html !== null) {
       pageCache.set(`/${slug}`, html)
