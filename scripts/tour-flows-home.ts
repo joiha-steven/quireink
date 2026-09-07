@@ -149,4 +149,67 @@ export function registerHomeFlows({ flow, expect }: Tour): void {
       }).then((r) => r.ok ? 'ok' : 'clear failed: ' + r.status)`, 600)
     }
   })
+
+  // ITEM 17. A count that names a problem has to land on the pieces that have it. Both rows
+  // pointed at the unfiltered list until 2026-09-07 — "35 published, no share image" took
+  // you to all 41 — so what this proves is the whole round trip: the row's href carries the
+  // filter, the pane applies it, the list gets shorter, and the filter is VISIBLE with a way
+  // off it. A filtered list that looks unfiltered is the worse of the two failures.
+  //
+  // NOTE: this body is a template literal. No backticks, AND NO BACKSLASHES — `\d` inside one
+  // is not an escape JavaScript knows, so it collapses to a plain `d` and the regex silently
+  // matches the letter. Both of these flows failed that way once. Character classes only.
+  flow('admin: a needs-attention row lands on the pieces that need it', () => expect('/admin', `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      const row = document.querySelector('a[href*="needs=image"]')
+      if (!row) return 'the needs-attention card offers no filtered link'
+      // The badge is the row's last element, so the count is read as an ELEMENT rather than
+      // parsed out of a sentence that is translated eleven ways.
+      const badge = row.lastElementChild
+      const said = Number((badge && badge.textContent || '').trim())
+      if (!Number.isFinite(said)) return 'the row prints no count: ' + row.textContent.trim()
+      if (said === 0) return 'skip: nothing needs a share image on this seed'
+      row.click()
+      await sleep(900)
+      let chip = null
+      for (let i = 0; i < 40 && !chip; i++) {
+        chip = document.querySelector('[data-write-needs]')
+        if (!chip) await sleep(150)
+      }
+      if (!chip) return 'the list applied a filter and did not say so'
+      const rows = document.querySelectorAll('[data-write-row]').length
+      if (rows === 0) return 'the filtered list is empty, and the card said ' + said
+      if (rows > said) return 'the filter left ' + rows + ' rows for a count of ' + said
+      // And the way OFF it, which is the half that makes a filtered list honest.
+      const off = chip.querySelector('button')
+      if (!off) return 'the filter cannot be taken off'
+      off.click()
+      await sleep(400)
+      const all = document.querySelectorAll('[data-write-row]').length
+      if (all <= rows) return 'clearing the filter left ' + all + ' rows against ' + rows
+      return 'ok ' + said + ' counted, ' + rows + ' listed, ' + all + ' with the filter off'
+    })()`, 900))
+
+  // The five-step band reads the INSTALL now, not a dismissal. `data-first-run-progress` is
+  // the state as a fact: the count is printed in eleven languages and the ticks are styling,
+  // so a guard that parsed either would break on a translation.
+  //
+  // NOTE: this body is a template literal. No backticks, no backslashes.
+  flow('admin: the first-run band counts what is actually set up', () => expect('/admin', `
+    (() => {
+      const band = document.querySelector('[data-first-run-progress]')
+      if (!band) return 'skip: the band is finished or dismissed on this install'
+      const parts = band.getAttribute('data-first-run-progress').split('/')
+      const said = Number(parts[0])
+      const total = Number(parts[1])
+      if (total !== 5) return 'the band counts out of ' + total + ', not 5'
+      if (!(said >= 0 && said < 5)) return 'a band on screen says ' + said + ' of 5'
+      const steps = band.querySelectorAll('ol li').length
+      if (steps !== 5) return steps + ' steps drawn, not 5'
+      const ticks = band.querySelectorAll('[data-step-done]').length
+      if (ticks !== said) return 'it says ' + said + ' and ticks ' + ticks
+      return 'ok ' + said + ' of 5, ' + ticks + ' ticked'
+    })()`, 900))
+
 }

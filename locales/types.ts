@@ -579,6 +579,7 @@ export type AdminStrings = {
   firstRunIntro: string
   firstRunDismiss: string
   firstRunReopen: string
+  firstRunProgress: string
   firstRun1Label: string
   firstRun1Body: string
   firstRun2Label: string
@@ -795,6 +796,7 @@ export type AdminStrings = {
   greetLastPublished: string
   greetNothingYet: string
   greetSetName: string
+  greetAddPortrait: string
   greetToday: string
   statPosts: string
   statPages: string

@@ -19,7 +19,7 @@
 // BESIDE AN EDITOR. On the Write screen (`always`) the pane is the screen, so it stays;
 // see the note on `WriteLayout` in `App.tsx`.
 import { useState } from 'react'
-import Link, { useRouter } from '@/admin/router'
+import Link, { useRouter, useSearchParams } from '@/admin/router'
 import { useView } from '@/admin/useView'
 import type { Post, Page } from '@/types'
 import { useToast } from '@/admin/ui/Toast'
@@ -31,7 +31,7 @@ import { TaxonomyManager } from './TaxonomyManager'
 import { SeriesManager } from './SeriesManager'
 import { Tick } from '@/admin/ui/Tick'
 import { useAdminT } from './I18nProvider'
-import { useWritingItems, type WriteScope, type WriteSort } from './useWritingItems'
+import { useWritingItems, type WriteNeeds, type WriteScope, type WriteSort } from './useWritingItems'
 import { Marked } from './Marked'
 import { SHEET_TOOL, SHEET_TOOL_DANGER } from './sheet'
 
@@ -54,7 +54,13 @@ function Rows({
   const [query, setQuery] = useState('')
   const [scope, setScope] = useState<WriteScope>('all')
   const [sort, setSort] = useState<WriteSort>('updated')
-  const { shown, bodyHits } = useWritingItems(posts, pages, query, scope, sort)
+  // THE DASHBOARD'S FILTER, arriving in the URL. Read once into state rather than read live,
+  // because it has to be dismissable: a filter you cannot take off is a list that has
+  // silently stopped being the list of everything, which is the failure mode of every
+  // "35 posts need X" link that lands somewhere filtered without saying so.
+  const arrived = useSearchParams().get('needs')
+  const [needs, setNeeds] = useState<WriteNeeds>(arrived === 'excerpt' || arrived === 'image' ? arrived : null)
+  const { shown, bodyHits } = useWritingItems(posts, pages, query, scope, sort, needs)
   // Selection is a MODE, not a permanent control on every row. A trash icon that lives on
   // the row sits a few pixels from the title you click dozens of times a day, and it has to
   // appear on hover to stay out of the way — which on a touch screen means it never appears
@@ -161,6 +167,22 @@ function Rows({
           </Link>
         </div>
         <Tabs tabs={scopeTabs} value={scope} onChange={setScope} size="sm" dense role="choice" />
+        {/* THE FILTER SAYS SO, and carries its own way off. It is a whole band rather than a
+            word in the toolbar because it changes what the list IS, and the one thing worse
+            than an unfiltered list is a filtered one that looks unfiltered. */}
+        {needs && (
+          <div data-write-needs={needs} className="flex items-center justify-between gap-2 rounded-lg bg-neutral-100 px-2.5 py-1.5 text-xs text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300">
+            <span className="min-w-0 truncate">{needs === 'excerpt' ? t.dashNoExcerpt : t.dashNoImage}</span>
+            <button
+              type="button"
+              onClick={() => setNeeds(null)}
+              aria-label={t.close}
+              className="shrink-0 rounded px-1 text-neutral-400 transition hover:text-neutral-900 dark:hover:text-white"
+            >
+              ✕
+            </button>
+          </div>
+        )}
         {/* One thin line of small print: the pane's tools on the left (the Write screen
             hangs Taxonomy and Series here — they lived below the fold, where nobody would
             find them), the sort cycle on the right.

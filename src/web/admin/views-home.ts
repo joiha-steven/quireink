@@ -15,7 +15,9 @@ import { countsByPosts } from '@/comments/comments'
 import { getIndex } from '@/content/posts'
 import { getPageIndex } from '@/content/pages'
 import { untitledNumbers } from '@/utils'
-import { getSettings } from '@/content/settings'
+import { DEFAULT_SETTINGS, getSettings } from '@/content/settings'
+import { getMailStatus } from '@/news/mail'
+import { liveOnly } from '@/store/db'
 import { storageStats } from '@/media/storage-stats'
 import { one } from '@/store/query'
 import pkg from '../../../package.json' with { type: 'json' }
@@ -186,6 +188,11 @@ export async function dashboardView() {
   // SEO health: metadata-only signals over PUBLISHED posts. No body scan, so it stays
   // cheap enough to sit on the home page.
   const published = posts.filter((p) => p.status === 'published')
+  // One row, counted in SQL rather than by listing. `liveOnly` is the shared trashed-row
+  // predicate — a soft-deleted subscriber is not a reader you have gathered.
+  const subscribers = one<{ n: number }>(
+    `select count(*) as n from subscribers where status = 'confirmed' and ${liveOnly('subscribers')}`,
+  )?.n ?? 0
 
   return {
     // WHOSE desk this is. The name and the portrait are the ones already on Settings → Site
@@ -213,6 +220,25 @@ export async function dashboardView() {
     activityEnabled: activityOn,
     systemLine: settings.dashboard.systemLine,
     firstRunDone: settings.firstRunDone,
+    // WHAT IS ACTUALLY SET UP, read from the install rather than from a dismissal.
+    //
+    // The five steps were a card of links that looked identical on a blog set up an hour ago
+    // and one running for a year: the only state it held was whether somebody had pressed
+    // "Got it". Each flag below is the thing the step actually asks for, so the band can say
+    // 3 of 5 and cross off the three — and take itself off the screen at 5, which is a
+    // dismissal nobody has to remember to perform.
+    setup: {
+      named: settings.title.trim() !== DEFAULT_SETTINGS.title,
+      published: published.length > 0,
+      // Either half of "choose the look": a different preset, or the same preset with its
+      // inks edited. Somebody who tuned the palette by hand has chosen a look.
+      styled: settings.themePreset !== DEFAULT_SETTINGS.themePreset
+        || JSON.stringify(settings.themes) !== JSON.stringify(DEFAULT_SETTINGS.themes),
+      // The host and a From address — `isMailConfigured`'s own test, so this cannot come to
+      // disagree with whether mail will actually send.
+      mail: (await getMailStatus()).configured,
+      readers: subscribers > 0,
+    },
     version: (pkg as { version: string }).version,
     // Null on a machine the deploy did not stamp. The admin then shows the version alone.
     commit: buildSha(),

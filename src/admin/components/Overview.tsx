@@ -8,8 +8,8 @@ import { formatBytes } from '@/utils'
 import { buttonClass } from '@/admin/ui/Button'
 import { Card, SECTION_GAP } from './kit'
 import { StatBand, StatCard } from './stat-band'
-import { DashboardWidgets, type DashboardData } from './DashboardWidgets'
-import { FirstRun } from './FirstRun'
+import { DashboardWidgets, TrafficCard, type DashboardData } from './DashboardWidgets'
+import { FirstRun, type SetupState } from './FirstRun'
 import { Greeting, type GreetingAuthor } from './Greeting'
 import { PickUpBand } from './PickUpBand'
 import { ActivityFeed } from './ActivityFeed'
@@ -54,6 +54,8 @@ type Props = {
   /** The owner's switch for the line at the foot (Settings → System → Dashboard). */
   systemLine: boolean
   firstRunDone: boolean
+  /** What is actually set up, for the five-step band. */
+  setup: SetupState
   author: GreetingAuthor
   lastPublishedAt: string | null
   version: string
@@ -177,7 +179,7 @@ export function Overview(props: Props) {
       body: JSON.stringify({ firstRunDone: true }),
     }).catch(() => undefined)
   }
-  const { posts, pages, comments, originals, totalBytes, recent, activityEnabled, systemLine, version, commit, update, system, dashboard, firstRunDone, author, lastPublishedAt } = props
+  const { posts, pages, comments, originals, totalBytes, recent, activityEnabled, systemLine, version, commit, update, system, dashboard, firstRunDone, setup, author, lastPublishedAt } = props
   return (
     <div className={SECTION_GAP}>
       {/* The greeting REPLACES the page title, it does not sit above one. "Overview" was a
@@ -190,14 +192,37 @@ export function Overview(props: Props) {
       />
 
       {/* Above the numbers on purpose: on a fresh install every number is zero, and a screen
-          of zeroes is the least useful thing a new owner can be shown first. */}
-      <FirstRun done={firstRunDone} onDone={markFirstRunDone} />
+          of zeroes is the least useful thing a new owner can be shown first. It takes itself
+          off the screen once all five steps read as done. */}
+      <FirstRun done={firstRunDone} onDone={markFirstRunDone} setup={setup} />
 
-      {/* ADR 0024 step 6. The unfinished writing first, then how the finished writing did,
-          and the administration counts last — they used to lead the page. */}
+      {/* THE NUMBER STRIP LEADS, full width. It is the one card made of figures rather than
+          of a list, and a dashboard opens with the figures — the four that say how many came
+          and whether they read, over the shape of the thirty days behind them. */}
+      <TrafficCard traffic={dashboard.traffic} />
+
+      {/* ADR 0024 step 6. The unfinished writing next, then what needs attention, then how
+          the finished writing did, and the administration counts last — they used to lead. */}
       <PickUpBand items={dashboard.pickUp.items} total={dashboard.pickUp.total} />
 
-      <DashboardWidgets data={dashboard} />
+      <DashboardWidgets
+        data={dashboard}
+        activity={
+          /* `Card`, not a hand-rolled copy of it. This one was a `<section>` wearing CARD
+             with its own header at `mb-4` and 14px against the kit's `mb-5` and 15px, so the
+             panels above it and this one were two different components on one screen. */
+          <Card
+            title={t.recentActivity}
+            actions={<Link href="/admin/log" className="text-xs text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white">{t.recentViewAll}</Link>}
+          >
+            {!activityEnabled || recent.length === 0 ? (
+              <p className="text-sm text-neutral-500 dark:text-neutral-400">{t.logEmpty}</p>
+            ) : (
+              <ActivityFeed entries={recent} />
+            )}
+          </Card>
+        }
+      />
 
       {/* Below the widgets since 2026-08-17, and it is the ADR's ordering rather than a taste:
           posts · pages · comments · images · storage is inventory, and inventory is what the
@@ -211,20 +236,6 @@ export function Overview(props: Props) {
         <StatCard bare label={t.statMedia} value={originals} href="/admin/media" />
         <StatCard bare label={t.statStorage} value={formatBytes(totalBytes)} />
       </StatBand>
-
-      {/* `Card`, not a hand-rolled copy of it. This one was a `<section>` wearing CARD with
-          its own header at `mb-4` and 14px against the kit's `mb-5` and 15px, so the three
-          panels above it and this one were two different components on one screen. */}
-      <Card
-        title={t.recentActivity}
-        actions={<Link href="/admin/log" className="text-xs text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white">{t.recentViewAll}</Link>}
-      >
-        {!activityEnabled || recent.length === 0 ? (
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">{t.logEmpty}</p>
-        ) : (
-          <ActivityFeed entries={recent} />
-        )}
-      </Card>
 
       {/* The whole line has a switch (Settings → System → Dashboard): an owner who wants no
           brand on the screen gets none. Settings → System still says when an update

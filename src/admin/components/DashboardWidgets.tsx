@@ -2,6 +2,7 @@
 // visitors with a sparkline), the most-viewed posts, and a "needs attention"
 // list (drafts, unused media). All data is gathered server-side in
 // app/admin/page.tsx and passed in — these are presentational only.
+import type { ReactNode } from 'react'
 import Link from '@/admin/router'
 import { Card, CARD_GAP, UTIL } from './kit'
 import { useAdminT } from './I18nProvider'
@@ -35,27 +36,68 @@ export type DashboardData = {
   sources: { referrers: { label: string; visitors: number }[]; countries: { label: string; visitors: number }[] }
 }
 
-// Tiny inline sparkline — no chart lib. Scales to the busiest day; uses
-// currentColor so it follows the surrounding text colour in light/dark.
+// Tiny inline sparkline — no chart lib. Scales to the busiest day; uses currentColor so it
+// follows the surrounding text colour in light/dark.
+//
+// THREE THINGS WERE ADDED ON 2026-09-07, and each answers a question a bare line could not:
+//
+//   · A WASH UNDER THE LINE at 8%. A hairline alone reads as a border on a 28px strip; the
+//     fill is what makes it a quantity. 8% and not more, because the shape is the fact and a
+//     filled block would be a chart competing with four figures above it.
+//   · DOTS AT BOTH ENDS. A line that runs to the edge of its box has no visible beginning or
+//     end, so "thirty days ago" and "yesterday" — the two points anybody actually reads off
+//     it — were the two least legible places on the line.
+//   · THE PEAK, NAMED. The line's whole vertical scale is set by its busiest day and the
+//     number was nowhere on the card, so a shape that doubled meant nothing: 4 to 8 and 400
+//     to 800 drew the identical picture.
+//
+// ⚠️ THE MARKS ARE HTML OVER THE SVG, not shapes inside it, and the reason is
+// `preserveAspectRatio="none"`: the viewBox is 100×28 stretched to whatever the card is wide,
+// which is right for a path and turns a circle into a 6:1 ellipse and a label into smeared
+// type. Positioning in percent outside the stretched box is the only way both can be true.
 function Sparkline({ data }: { data: number[] }) {
   if (data.length < 2) return null
   const max = Math.max(...data, 1)
   const w = 100
   const h = 28
-  const step = w / (data.length - 1)
+  const last = data.length - 1
+  const step = w / last
   const pts = data.map((v, i) => `${(i * step).toFixed(1)},${(h - (v / max) * h).toFixed(1)}`).join(' ')
+  const peak = data.indexOf(max)
+  /** Where a day sits across the strip, and how high its value stands, both in per cent. */
+  const across = (i: number) => (i / last) * 100
+  const up = (v: number) => (v / max) * 100
+  const dot = 'absolute h-1.5 w-1.5 -translate-x-1/2 translate-y-1/2 rounded-full bg-current'
   return (
-    <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="h-7 w-full text-neutral-700 dark:text-neutral-300" aria-hidden="true">
-      <polyline
-        points={pts}
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        vectorEffect="non-scaling-stroke"
-        strokeLinejoin="round"
-        strokeLinecap="round"
-      />
-    </svg>
+    <div className="relative text-neutral-700 dark:text-neutral-300">
+      {/* h-12 and not h-7: the card became the page's full width on 2026-09-07, and 28px of
+            height across 1,100px is a 40:1 box in which a doubling of traffic is a 3px bump.
+            48px is the shortest strip in which the SHAPE of a month is legible at that width. */}
+        <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="block h-12 w-full" aria-hidden="true">
+        <polygon points={`0,${h} ${pts} ${w},${h}`} fill="currentColor" opacity="0.08" />
+        <polyline
+          points={pts}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          vectorEffect="non-scaling-stroke"
+          strokeLinejoin="round"
+          strokeLinecap="round"
+        />
+      </svg>
+      <span aria-hidden className={dot} style={{ left: 0, bottom: `${up(data[0] ?? 0)}%` }} />
+      <span aria-hidden className={dot} style={{ left: '100%', bottom: `${up(data[last] ?? 0)}%` }} />
+      {/* The label sits ABOVE the peak, and flips its anchor in the last fifth of the strip:
+          a peak on the final day would otherwise print its number off the card's edge. */}
+      <span
+        className={`absolute bottom-full mb-0.5 text-[0.6875rem] font-medium tabular-nums text-neutral-500 dark:text-neutral-400 ${
+          across(peak) > 80 ? '-translate-x-full' : across(peak) < 20 ? '' : '-translate-x-1/2'
+        }`}
+        style={{ left: `${across(peak)}%` }}
+      >
+        {max.toLocaleString()}
+      </span>
+    </div>
   )
 }
 
@@ -88,7 +130,7 @@ function minutesSeconds(ms: number): string {
   return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`
 }
 
-function TrafficCard({ traffic }: { traffic: DashboardData['traffic'] }) {
+export function TrafficCard({ traffic }: { traffic: DashboardData['traffic'] }) {
   const t = useAdminT()
   return (
     <Card
@@ -166,9 +208,13 @@ function NeedsAttentionCard({ needs }: { needs: DashboardData['needs'] }) {
   // which is the one kind of problem the owner cannot see by opening his own site. A row with
   // a zero still shows: the point of the card is the whole checklist, and a list that changes
   // length as counts hit zero makes the page jump and hides which checks are even being run.
+  // ⚠️ EACH ROW LANDS ON ITS OWN LIST. Both pointed at `/admin/content` unfiltered until
+  // 2026-09-07, so a row reading "35 published, no share image" took you to all 41 pieces
+  // with no way to see which 35 — a count that names a problem and then hands over a haystack.
+  // `?needs=` is read by the write pane, which prints the filter and offers the way off it.
   const items = [
-    { label: t.dashNoExcerpt, count: needs.noExcerpt, href: '/admin/content' },
-    { label: t.dashNoImage, count: needs.noImage, href: '/admin/content' },
+    { label: t.dashNoExcerpt, count: needs.noExcerpt, href: '/admin/content?needs=excerpt' },
+    { label: t.dashNoImage, count: needs.noImage, href: '/admin/content?needs=image' },
   ]
   const allClear = items.every((i) => i.count === 0)
   return (
@@ -265,7 +311,7 @@ function SourcesCard({ sources }: { sources: DashboardData['sources'] }) {
  * viewed both 266; the emptiest card carries 64px of hole, a quarter of its height. At 375px
  * the four stack, `scrollWidth` 375 against a 375 viewport, no sideways drag.
  */
-export function DashboardWidgets({ data }: { data: DashboardData }) {
+export function DashboardWidgets({ data, activity }: { data: DashboardData; activity: ReactNode }) {
   return (
     <div className={`grid ${CARD_GAP} lg:grid-cols-2`}>
       {/* `min-w-0` on the STACKS, and it is a bug fix rather than a precaution. A grid item's
@@ -289,10 +335,16 @@ export function DashboardWidgets({ data }: { data: DashboardData }) {
           plainly level reads as a decision. The cost is air inside the shorter card, and that
           is the correct trade at an EVEN count — it is only wrong when an odd card is left
           alone to be stretched into a slab, which is the case the note above is about. */}
-      <div className="min-w-0 [&>section]:h-full"><TrafficCard traffic={data.traffic} /></div>
+      {/* ⚠️ THE ORDER IS THE OWNER'S QUESTION ORDER, not the data's. Traffic left this grid
+          on 2026-09-07 and became the band above it — it is the one card that is a set of
+          NUMBERS rather than a list, and a number strip is what a dashboard opens with. What
+          is left reads: what needs me · what did well · where they came from · what happened.
+          Activity arrives as a slot rather than as a fifth card so the Overview keeps owning
+          the one card that depends on a setting being switched on. */}
       <div className="min-w-0 [&>section]:h-full"><NeedsAttentionCard needs={data.needs} /></div>
-      <div className="min-w-0 [&>section]:h-full"><SourcesCard sources={data.sources} /></div>
       <div className="min-w-0 [&>section]:h-full"><TopPostsCard posts={data.topPosts} /></div>
+      <div className="min-w-0 [&>section]:h-full"><SourcesCard sources={data.sources} /></div>
+      <div className="min-w-0 [&>section]:h-full">{activity}</div>
     </div>
   )
 }

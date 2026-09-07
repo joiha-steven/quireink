@@ -17,6 +17,7 @@
 import Link from '@/admin/router'
 import { META_ON_CANVAS } from './scale'
 import { useAdminT } from './I18nProvider'
+import { IconPerson } from './navIcons'
 import { TITLE } from './scale'
 
 export type GreetingAuthor = { name: string; avatarUrl: string }
@@ -31,13 +32,19 @@ export function partOfDay(hour: number): 'greetMorning' | 'greetAfternoon' | 'gr
 }
 
 /**
- * The portrait, or the initials standing in for one.
+ * The portrait, or an INVITATION to set one.
  *
- * `aria-hidden`, because the name is written beside it in text: a screen reader that reads a
- * portrait AND the name says the name twice. With no name at all there are no initials to
- * draw either, and the circle is a quiet placeholder rather than a letter chosen at random.
+ * The picture itself stays `aria-hidden`, because the name is written beside it in text: a
+ * screen reader that reads a portrait AND the name says the name twice.
+ *
+ * ⚠️ THE EMPTY CIRCLE IS NOT HIDDEN, and that is a deliberate reversal. It was a silent grey
+ * disc — initials if a name existed, nothing at all if not — which on a blog that HAS a name
+ * but no picture was the one state with no way out of it: the text link beside it only
+ * appears while the name is missing. An empty slot that can be filled should say so and be
+ * the way to fill it, so it takes the person glyph, a hover, and a label naming the job.
  */
 function Portrait({ author }: { author: GreetingAuthor }) {
+  const t = useAdminT()
   const initials = author.name
     .split(/\s+/)
     .filter(Boolean)
@@ -50,14 +57,21 @@ function Portrait({ author }: { author: GreetingAuthor }) {
     return <img src={author.avatarUrl} alt="" aria-hidden className={`${ring} object-cover`} />
   }
   return (
-    <span
-      aria-hidden
-      className={`${ring} grid place-items-center bg-neutral-100 text-sm font-medium text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400`}
+    <Link
+      href={PORTRAIT_HREF}
+      aria-label={t.greetAddPortrait}
+      title={t.greetAddPortrait}
+      className={`${ring} grid place-items-center bg-neutral-100 text-sm font-medium text-neutral-500 transition-colors hover:border-neutral-400 hover:text-neutral-900 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:border-neutral-500 dark:hover:text-white`}
     >
-      {initials}
-    </span>
+      {/* The initials when there are any — they are a better likeness than a generic
+          silhouette — and the glyph when the blog has no name either. */}
+      {initials || <IconPerson />}
+    </Link>
   )
 }
+
+/** Straight to the card that holds it, by the `?setting=` route ADR 0041 kept working. */
+const PORTRAIT_HREF = '/admin/settings?tab=blog&setting=authorAvatar'
 
 /**
  * @param lastPublishedAt ISO of the newest published piece, or null on a blog with none.

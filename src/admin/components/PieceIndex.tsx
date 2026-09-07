@@ -88,7 +88,13 @@ export function PieceIndex({
       ) : (
         // Capped in HEIGHT, never in row count: everything is present and reachable by
         // scrolling or by typing, which is the difference between a long list and a top N.
-        <div className={`${TABLE_SCROLL} max-h-96 overflow-y-auto`}>
+        //
+        // `scroll-fade` since 2026-09-07, and it is the difference between a clip that MEANS
+        // something and one that looks like a mistake: the box ends 384px down, wherever that
+        // falls, and it fell through the middle of a row's glyphs — a line of type sliced
+        // horizontally, with three cards starting immediately under it. The mask says "this
+        // continues" in the one place a reader is looking when they need to know it.
+        <div className={`${TABLE_SCROLL} scroll-fade max-h-96 overflow-y-auto`}>
           <table className="w-full text-sm">
             <thead className={THEAD}>
               <tr>

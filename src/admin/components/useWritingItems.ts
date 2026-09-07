@@ -12,6 +12,8 @@ import { foldAccents, untitledNumbers } from '@/utils'
 
 export type WriteScope = 'all' | 'page' | 'post' | 'published' | 'draft'
 export type WriteSort = 'updated' | 'created'
+/** The dashboard's two "needs attention" checks, as a filter this list can be asked for. */
+export type WriteNeeds = 'excerpt' | 'image' | null
 
 /** Posts and pages, flattened to the few things a row actually renders. */
 export type WriteItem = {
@@ -29,6 +31,14 @@ export type WriteItem = {
   editHref: string
   viewHref?: string
   /**
+   * Published and missing something a shared link will show. The dashboard's "needs
+   * attention" card counts exactly these two, and its rows link here — a count that names a
+   * problem and lands you on an unfiltered list has told you a number and nothing else.
+   * Always false for a page: neither concept exists on one.
+   */
+  noExcerpt: boolean
+  noImage: boolean
+  /**
    * 1, 2, 3… for a draft with no title, so the sidebar can tell several apart instead of
    * showing one identical label for all of them. Numbered by creation order and NOT by
    * position in the list, so a given draft keeps its number as new ones appear above it and
@@ -39,7 +49,7 @@ export type WriteItem = {
 
 const stamp = (iso?: string): number => (iso ? new Date(iso).getTime() : 0)
 
-export function useWritingItems(posts: Post[], pages: Page[], query: string, scope: WriteScope, sort: WriteSort = 'updated') {
+export function useWritingItems(posts: Post[], pages: Page[], query: string, scope: WriteScope, sort: WriteSort = 'updated', needs: WriteNeeds = null) {
   // Where the words were found, keyed by `kind:slug`. Null means the server has not answered
   // for this query yet, which is NOT the same as "nothing matched" — see the empty state.
   const [bodyHits, setBodyHits] = useState<Map<string, string> | null>(null)
@@ -56,6 +66,8 @@ export function useWritingItems(posts: Post[], pages: Page[], query: string, sco
       terms: [p.tags.join(' '), p.categories.join(' ')].join(' '),
       editHref: `/admin/editor/${p.slug}`,
       viewHref: p.status === 'published' ? `/${p.slug}` : undefined,
+      noExcerpt: p.status === 'published' && !p.excerpt?.trim(),
+      noImage: p.status === 'published' && !p.featuredImage,
     }))
     const fromPages = pages.map<WriteItem>((p) => ({
       kind: 'page',
@@ -68,6 +80,8 @@ export function useWritingItems(posts: Post[], pages: Page[], query: string, sco
       terms: '',
       editHref: `/admin/page-editor/${p.slug}`,
       viewHref: p.status === 'published' ? `/${p.slug}` : undefined,
+      noExcerpt: false,
+      noImage: false,
     }))
     const all = [...fromPosts, ...fromPages]
     const numbers = untitledNumbers(all)
@@ -107,11 +121,16 @@ export function useWritingItems(posts: Post[], pages: Page[], query: string, sco
       if (scope === 'page' || scope === 'post') {
         if (it.kind !== scope) return false
       } else if (scope !== 'all' && it.status !== scope) return false
+      // The dashboard's filter, and it stacks WITH the scope rather than replacing it: a
+      // person who arrives on "no share image" and then presses Drafts is asking a narrower
+      // question, not starting again.
+      if (needs === 'excerpt' && !it.noExcerpt) return false
+      if (needs === 'image' && !it.noImage) return false
       if (!needle) return true
       if (foldAccents(`${it.title} ${it.terms}`).includes(needle)) return true
       return bodyHits?.has(`${it.kind}:${it.slug}`) ?? false
     })
-  }, [items, scope, needle, bodyHits])
+  }, [items, scope, needle, bodyHits, needs])
 
   return { items, shown, bodyHits }
 }
