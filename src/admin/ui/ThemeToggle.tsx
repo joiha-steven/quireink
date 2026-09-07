@@ -1,7 +1,6 @@
 // Theme button + dropdown: Light / Dark / System / By time.
 import { useState, useSyncExternalStore } from 'react'
-import type { SiteLang } from '@/types'
-import { t } from '@/i18n/i18n'
+import { useAdminT } from '@/admin/components/I18nProvider'
 import { ICON_BTN } from '@/admin/ui/iconButton'
 import { useTheme, type ThemeMode } from '@/admin/ui/ThemeProvider'
 
@@ -57,13 +56,11 @@ function MoonIcon() {
 // `menuSide` stays tied to `variant`: an admin rail is against the left edge, so the menu opens
 // beside it, not under it.
 export function ThemeToggle({
-  lang,
   variant = 'icon',
   showIcon = true,
   showLabel = true,
   triggerClassName = '',
 }: {
-  lang: SiteLang
   variant?: 'icon' | 'text'
   showIcon?: boolean
   showLabel?: boolean
@@ -72,7 +69,10 @@ export function ThemeToggle({
   const { mode, setMode } = useTheme()
   const [open, setOpen] = useState(false)
   const isDark = useIsDark()
-  const s = t(lang)
+  // The admin's own dictionary. It used to read the READER's, which meant importing a module
+  // that holds all eleven public dictionaries in a lookup table nothing can tree-shake, for
+  // four words — in the chunk every admin screen waits for.
+  const s = useAdminT()
 
   const items: { key: ThemeMode; label: string }[] = [
     { key: 'light', label: s.themeLight },
@@ -86,7 +86,7 @@ export function ThemeToggle({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        aria-label={s.theme}
+        aria-label={s.themeLabel}
         className={triggerClassName || (variant === 'text' ? '' : ICON_BTN)}
       >
         {variant === 'text' ? (

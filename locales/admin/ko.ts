@@ -1,7 +1,12 @@
 import type { AdminStrings } from '../types'
 
 const ko = {
-  navHome: '홈',
+  navHome: '홈',  themeLabel: '테마',
+
+  themeLight: '라이트',
+  themeDark: '다크',
+  themeSystem: '시스템',
+  themeTime: '시간대별',
   navWrite: '글쓰기',
   navMore: '관리',
   navMedia: '라이브러리',

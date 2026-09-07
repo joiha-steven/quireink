@@ -16,7 +16,7 @@
 // a row dragged in the drawer would leave the desktop rail where it was.
 import Link from '@/admin/router'
 import { Fragment, type ReactNode } from 'react'
-import type { SiteLang, NavOrder } from '@/types'
+import type { NavOrder } from '@/types'
 import { useAdminT } from './I18nProvider'
 import { SIDEBAR_GROUP, SIDEBAR_ICON, SIDEBAR_NAV, SIDEBAR_NAV_ACTIVE, SIDEBAR_NAV_QUIET, SIDEBAR_UTIL } from './headerActions'
 import { CacheButton } from './CacheButton'
@@ -34,9 +34,8 @@ import { SearchKey, SearchRow } from './NavSearch'
 import { useToast } from '@/admin/ui/Toast'
 
 export function useNavColumn({
-  lang, signOut, aiConfigured, navOrder, avatar, icons, more, onMore, onIcons, onCollapse, close, isActive,
+  signOut, aiConfigured, navOrder, avatar, icons, more, onMore, onIcons, onCollapse, close, isActive,
 }: {
-  lang: SiteLang
   signOut: () => Promise<void>
   aiConfigured: boolean
   /** The owner's portrait for the foot of the rail, or '' — `NavFooter` draws the fallback. */
@@ -167,7 +166,7 @@ export function useNavColumn({
           // `variant='text'` in BOTH states, with the word dropped when collapsed. The rail
           // needs one row object, and `variant='icon'` is the public header's — it ignores the
           // row class and drew this line 4px left of the two under it.
-          return <ThemeToggle lang={lang} variant="text" showIcon={c || icons} showLabel={!c} triggerClassName={utilClass} />
+          return <ThemeToggle variant="text" showIcon={c || icons} showLabel={!c} triggerClassName={utilClass} />
         case 'icons':
           // Never on the collapsed rail, where it would be an unlabelled glyph offering to
           // remove the glyphs.
@@ -321,7 +320,6 @@ export function useNavColumn({
             <RailStrip
               ids={arrange.order.footer}
               collapsed={c}
-              lang={lang}
               iconsOn={icons}
               avatar={avatar}
               onCollapse={onCollapse}

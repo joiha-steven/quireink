@@ -17,7 +17,6 @@
 // Account and Sign out, which is where a tool's own settings are looked for.
 import { useEffect, useState, type ReactNode } from 'react'
 import Link from '@/admin/router'
-import type { SiteLang } from '@/types'
 import { ThemeToggle } from '@/admin/ui/ThemeToggle'
 import { CacheButton } from './CacheButton'
 import { IconCache, IconChevronLeft, IconPerson } from './navIcons'
@@ -28,12 +27,11 @@ import { useAdminT } from './I18nProvider'
 const ACCOUNT_HREF = '/admin/settings?tab=account'
 
 export function RailStrip({
-  ids, collapsed, lang, iconsOn, avatar, onCollapse, onIcons, onArrange, signOut, close, destination,
+  ids, collapsed, iconsOn, avatar, onCollapse, onIcons, onArrange, signOut, close, destination,
 }: {
   /** The footer zone's stored order. Ids it does not know are handed to `destination`. */
   ids: string[]
   collapsed: boolean
-  lang: SiteLang
   iconsOn: boolean
   /** The owner's portrait, or '' — the glyph stands in, and the ring is drawn either way. */
   avatar: string
@@ -66,7 +64,7 @@ export function RailStrip({
         // `variant='text'` with the word dropped: the text variant is the one whose menu opens
         // UPWARD and inside the rail. The icon variant's menu drops downward off a header,
         // which from the foot of a full-height column would open below the window.
-        return <ThemeToggle key={id} lang={lang} variant="text" showIcon showLabel={false} triggerClassName={SIDEBAR_ICON} />
+        return <ThemeToggle key={id} variant="text" showIcon showLabel={false} triggerClassName={SIDEBAR_ICON} />
       case 'cache':
         return <CacheButton key={id} className={SIDEBAR_ICON} icon={<IconCache />} collapsed />
       // Both moved into the menu below. A stored order that still lists them draws nothing

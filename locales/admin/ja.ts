@@ -1,7 +1,12 @@
 import type { AdminStrings } from '../types'
 
 const ja = {
-  navHome: 'ホーム',
+  navHome: 'ホーム',  themeLabel: 'テーマ',
+
+  themeLight: 'ライト',
+  themeDark: 'ダーク',
+  themeSystem: 'システム',
+  themeTime: '時間帯で切替',
   navWrite: '執筆',
   navMore: '管理',
   navMedia: 'ライブラリ',

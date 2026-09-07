@@ -21,6 +21,12 @@ const CANARIES = [
   'server_secrets', // the table every HMAC salt lives in
   'from mcp_tokens', // any token SQL
   'password_hash', // the users table's secret column, named in auth SQL
+  // ...and one that is not about secrecy but about WEIGHT. `@/i18n/i18n` holds all eleven
+  // READER dictionaries in a lookup table nothing can tree-shake, and four admin components
+  // used to import it for `formatDate` and four theme words: 52 KB of a language the admin
+  // never speaks, in the chunk every screen waits for. `@/i18n/format` is the half without
+  // them. This string is a reader's pager label and appears in no admin dictionary.
+  'pagerOlder',
 ]
 
 if (!existsSync(DIST)) {

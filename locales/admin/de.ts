@@ -1,7 +1,12 @@
 import type { AdminStrings } from '../types'
 
 const de = {
-  navHome: 'Startseite',
+  navHome: 'Startseite',  themeLabel: 'Design',
+
+  themeLight: 'Hell',
+  themeDark: 'Dunkel',
+  themeSystem: 'System',
+  themeTime: 'Nach Uhrzeit',
   navWrite: 'Schreiben',
   navMore: 'Verwalten',
   navMedia: 'Bibliothek',

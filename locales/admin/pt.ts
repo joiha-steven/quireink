@@ -2,7 +2,12 @@ import type { AdminStrings } from '../types'
 
 // Brazilian Portuguese on purpose — Brazil is where the writing community lives.
 const pt = {
-  navHome: 'Início',
+  navHome: 'Início',  themeLabel: 'Tema',
+
+  themeLight: 'Claro',
+  themeDark: 'Escuro',
+  themeSystem: 'Sistema',
+  themeTime: 'Pela hora',
   navWrite: 'Escrever',
   navMore: 'Gerir',
   navMedia: 'Biblioteca',

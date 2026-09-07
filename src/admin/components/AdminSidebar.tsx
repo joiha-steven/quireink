@@ -70,7 +70,6 @@ const ICONS_KEY = 'quireink-admin-nav-icons'
 const MORE_KEY = 'quireink-admin-nav-more'
 
 export function AdminSidebar({
-  lang,
   signOut,
   aiConfigured = false,
   navOrder,
@@ -159,7 +158,6 @@ export function AdminSidebar({
   // Every row this rail can draw, in the owner's order — the top row, the destinations and the
   // controls, each a renderer taking one argument: whether to draw collapsed.
   const column = useNavColumn({
-    lang,
     signOut,
     aiConfigured,
     navOrder,

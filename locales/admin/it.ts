@@ -1,7 +1,12 @@
 import type { AdminStrings } from '../types'
 
 const it = {
-  navHome: 'Inizio',
+  navHome: 'Inizio',  themeLabel: 'Tema',
+
+  themeLight: 'Chiaro',
+  themeDark: 'Scuro',
+  themeSystem: 'Sistema',
+  themeTime: 'In base all’ora',
   navWrite: 'Scrivi',
   navMore: 'Gestisci',
   navMedia: 'Libreria',

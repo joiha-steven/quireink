@@ -1,7 +1,12 @@
 import type { AdminStrings } from '../types'
 
 const vi = {
-  navHome: 'Trang chủ',
+  navHome: 'Trang chủ',  themeLabel: 'Giao diện',
+
+  themeLight: 'Sáng',
+  themeDark: 'Tối',
+  themeSystem: 'Theo hệ thống',
+  themeTime: 'Theo giờ',
   navWrite: 'Viết',
   navMore: 'Quản lý',
   navMedia: 'Thư viện',
