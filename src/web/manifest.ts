@@ -1,9 +1,10 @@
 // The PWA manifest, built from the owner's settings so an installed app carries the live
 // title, palette and uploaded icon.
 //
-// Installable and standalone only. There is no service worker: offline is deliberately out
-// of scope, so this stays a thin descriptor rather than the entry point to a cache the
-// owner cannot clear.
+// A thin descriptor, and only that. There IS a service worker now (ADR 0039), but it is off
+// by default and it keeps only what the reader already read — it never prefetches, and it is
+// registered from the page rather than announced here, so this file stays what it was: the
+// title, the palette and the icon an installed app wears.
 
 import type { Context } from 'hono'
 import { getSettings, resolveAppIcon, getDefaultTheme } from '@/content/settings'

@@ -7,7 +7,7 @@
 
 import type { HomeSettings, Page, Post, SiteSettings } from '@/types'
 import { termSlug } from '@/content/taxonomy'
-import { toPlainText, clampExcerpt } from '@/utils'
+import { clampExcerpt } from '@/utils'
 
 const escapeXml = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -206,8 +206,9 @@ export function renderRobots(settings: SiteSettings, site: string): string {
 export function renderLlms(posts: Post[], pages: Page[], settings: SiteSettings, site: string): string {
   const line = (title: string, slug: string, summary: string) =>
     `- [${title}](${site}/${slug})${summary ? `: ${summary}` : ''}`
-  const postLines = posts.map((p) =>
-    line(p.title, p.slug, clampExcerpt(p.excerpt ?? toPlainText(''))))
+  // No excerpt, no summary. It used to fall back to `toPlainText('')`, which is the empty
+  // string with two function calls in front of it.
+  const postLines = posts.map((p) => line(p.title, p.slug, p.excerpt ? clampExcerpt(p.excerpt) : ''))
   const pageLines = pages.map((p) => line(p.title, p.slug, ''))
   return `# ${settings.title}
 
