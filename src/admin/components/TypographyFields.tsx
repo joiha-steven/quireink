@@ -2,11 +2,20 @@
 // its own size (rem), line-height, and letter-spacing (em) — the full set of CSS
 // vars the site renders from. One reset restores all roles to the tuned defaults
 // FOR THE CHOSEN READING FONT. Parent owns state + save.
+//
+// ⚠️ EVERY ROW SHOWS ITSELF, since 2026-09-07. This was twenty-seven number boxes and one
+// specimen block underneath showing three of the nine roles — so seven of the nine sizes on
+// the screen could only be judged by reading a decimal, and `1.35` against `1.4` is not a
+// question anybody can answer from the number. The size now carries a SLIDER as well as its
+// figure, and the row's last cell is that role set at its own size, line and spacing, in the
+// reading face, changing as the slider moves. Nothing is saved until Save: this edits the
+// same draft state every other field on the tab does.
 import type { TypographySettings, TypeRole, TypeStyle } from '@/types'
 import { getFontPreset, TYPE_ROLES } from '@/content/themes'
 import { useAdminT } from './I18nProvider'
 import type { AdminStrings } from '@/i18n/admin-i18n'
-import { CONTROL_NUM, INSET, NOTE, NOTE_TEXT, READING } from './kit'
+import { CONTROL_NUM, NOTE, NOTE_TEXT, READING } from './kit'
+import { Range } from '@/admin/ui/Range'
 
 const ROLE_LABEL: Record<TypeRole, keyof AdminStrings> = {
   h1: 'typoH1',
@@ -100,9 +109,12 @@ export function TypographyFields({ typography, fontPreset, onChange, resetRef }:
           <thead>
             <tr className="text-xs text-neutral-500 dark:text-neutral-400">
               <th className="text-left font-medium" />
-              <th className="px-1 text-right font-medium">{t.colSize}</th>
+              <th className="px-1 text-left font-medium" colSpan={2}>{t.colSize}</th>
               <th className="px-1 text-right font-medium">{t.colLine}</th>
               <th className="px-1 text-right font-medium">{t.colSpacing}</th>
+              {/* The specimen column is deliberately unheaded: a column of examples labelled
+                  "Example" spends a word saying what the reader can already see. */}
+              <th className="w-1/3 font-medium" />
             </tr>
           </thead>
           <tbody>
@@ -111,15 +123,46 @@ export function TypographyFields({ typography, fontPreset, onChange, resetRef }:
               const name = t[ROLE_LABEL[role]] as string
               return (
                 <tr key={role}>
-                  <td className="pr-2 text-neutral-700 dark:text-neutral-300">{name}</td>
-                  <td className="px-1 text-right">
+                  <td className="whitespace-nowrap pr-2 align-middle text-neutral-700 dark:text-neutral-300">{name}</td>
+                  <td className="px-1 align-middle">
+                    {/* The slider is the CONTROL and the box is the readout you can also type
+                        into. Both write the same value; neither is the master. */}
+                    <Range
+                      aria-label={`${name} — ${t.colSize}`}
+                      min={0.5}
+                      max={6}
+                      step={0.01}
+                      value={s.size}
+                      onChange={(e) => setStyle(role, { size: Number(e.target.value) })}
+                      className="w-24"
+                    />
+                  </td>
+                  <td className="px-1 text-right align-middle">
                     <Cell label={`${name} — ${t.colSize}`} value={s.size} step={0.01} min={0.5} max={6} onChange={(v) => setStyle(role, { size: v })} />
                   </td>
-                  <td className="px-1 text-right">
+                  <td className="px-1 text-right align-middle">
                     <Cell label={`${name} — ${t.colLine}`} value={s.line} step={0.05} min={0.8} max={3} onChange={(v) => setStyle(role, { line: v })} />
                   </td>
-                  <td className="px-1 text-right">
+                  <td className="px-1 text-right align-middle">
                     <Cell label={`${name} — ${t.colSpacing}`} value={s.spacing} step={0.005} min={-0.2} max={0.5} onChange={(v) => setStyle(role, { spacing: v })} />
+                  </td>
+                  {/* THE SPECIMEN. `reading-font` + `data-specimen`: these samples ARE the
+                      reader's roles, so they show the reading face at the size the reader
+                      will get — not the admin's normalised one (`admin.css`, the note on
+                      `font-size-adjust`). A preview of a size control that quietly resizes is
+                      the one preview that must not. `truncate` keeps a 6rem heading inside
+                      its cell; the row's height follows the size, which is the honest answer
+                      to "how big is that". */}
+                  <td className={`w-1/3 pl-3 align-middle ${READING}`} data-specimen>
+                    <div
+                      className="truncate text-neutral-900 dark:text-neutral-100"
+                      style={{ fontSize: `${s.size}rem`, lineHeight: s.line, letterSpacing: `${s.spacing}em` }}
+                    >
+                      {/* A HEADING sample for the heading roles and a sentence for the rest:
+                          "Heading sample" set at the caption size is showing the right size
+                          and saying the wrong thing about what it is for. */}
+                      {role.startsWith('h') ? t.typographyPreview : t.typographyPreviewBody}
+                    </div>
                   </td>
                 </tr>
               )
@@ -129,28 +172,6 @@ export function TypographyFields({ typography, fontPreset, onChange, resetRef }:
       </div>
       <p className={NOTE}>{t.typographyUnits}</p>
 
-      {/* Live preview of the heading roles + body, each at its own style.
-          `reading-font` + `data-specimen`: these samples ARE the reader's roles, so they show
-          the reading face at the size the reader will get — not the admin's normalised one
-          (`admin.css`, "font-size-adjust"). A preview of a size control that quietly resizes
-          is the one preview that must not. */}
-      <div className={`space-y-1.5 ${READING} ${INSET}`} data-specimen>
-        {(['h1', 'h2', 'h3'] as const).map((k) => (
-          <p
-            key={k}
-            className="truncate font-semibold text-neutral-900 dark:text-white"
-            style={{ fontSize: `${typography.roles[k].size}rem`, lineHeight: typography.roles[k].line, letterSpacing: `${typography.roles[k].spacing}em` }}
-          >
-            {k.toUpperCase()} · {t.typographyPreview}
-          </p>
-        ))}
-        <p
-          className="text-neutral-500 dark:text-neutral-400"
-          style={{ fontSize: `${typography.roles.body.size}rem`, lineHeight: typography.roles.body.line }}
-        >
-          {t.typographyPreviewBody}
-        </p>
-      </div>
     </div>
   )
 }

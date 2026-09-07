@@ -34,6 +34,11 @@ export function SettingsAppearanceTab(
 ) {
   const t = useAdminT()
   return (
+    // TYPE SIZES STAND ALONE, full width, since 2026-09-07. The table is nine roles by four
+    // numbers plus a live specimen of each, and in a half-width column that is a five-column
+    // table in 600px — the specimen, which is the whole point of the card, had 150px to draw
+    // a 2.5rem heading in. Everything else on the tab still pairs.
+    <div className="space-y-5">
     <div className={grid}>
       <div className={col}>
         {/* SHAPE, first — the coarsest control on the tab: what shape everything is, before
@@ -82,14 +87,15 @@ export function SettingsAppearanceTab(
             <FontUpload value={s.customFont} onChange={(customFont) => update({ customFont })} />
           </div>
         </SettingsCard>
-        <SettingsCard title={t.cardTypography}
-          actions={<ResetButton onClick={() => typographyReset.current?.()} label={t.resetDefault} />}>
-          <TypographyFields
-            typography={s.typography} fontPreset={s.fontPreset} resetRef={typographyReset}
-            onChange={(typography) => update({ typography })}
-          />
-        </SettingsCard>
       </div>
+    </div>
+    <SettingsCard title={t.cardTypography}
+      actions={<ResetButton onClick={() => typographyReset.current?.()} label={t.resetDefault} />}>
+      <TypographyFields
+        typography={s.typography} fontPreset={s.fontPreset} resetRef={typographyReset}
+        onChange={(typography) => update({ typography })}
+      />
+    </SettingsCard>
     </div>
   )
 }
