@@ -143,18 +143,28 @@ export function siteRoutes() {
 
   router.put('/api/settings', async (c) => {
     const input = await body<SiteSettings>(c)
+    // Read BEFORE the write, so the log can say what moved, and so the guard below can ask
+    // what the settings will BE rather than what this payload happens to mention. One
+    // extra read on a route that is pressed by hand a few times an hour.
+    const before = await getSettings()
     // The other half of the slug guard in `content/slugs.ts`. That one stops a POST taking
     // the list's path; this stops the list being pointed at a path a post already holds,
     // which the sanitizer cannot see because it is pure and this needs the database.
-    // Refusing is the only honest answer: whichever of the two lost would simply disappear.
-    const listPath = sanitizeListPath(input?.home?.listPath, '')
-    if (input?.home?.mode && input.home.mode !== 'list' && listPath) {
-      const slug = listPath.slice(1)
+    // Refusing is the only honest answer: whichever of the two lost would simply disappear,
+    // and it is the post that goes, because `slugRole` answers 'list' before it looks for
+    // a row.
+    //
+    // MERGED, not read off the payload. Reading the payload let two shapes through, and
+    // both are ordinary: moving only the path while the mode is already `front`, and
+    // switching only the mode while the default `/post` is already somebody's post.
+    const nextMode = input?.home?.mode ?? before.home.mode
+    const nextListPath = input?.home?.listPath === undefined
+      ? before.home.listPath
+      : sanitizeListPath(input.home.listPath, before.home.listPath)
+    if (nextMode !== 'list' && nextListPath) {
+      const slug = nextListPath.slice(1)
       if (slugTaken(slug)) return fail(c, `list_path_taken: ${slug}`, 409)
     }
-    // Read BEFORE the write, so the log can say what moved. One extra read on a route
-    // that is pressed by hand a few times an hour.
-    const before = await getSettings()
     const next = await saveSettings(input)
     // The frozen tree purged everything and then re-warmed several pages, because a cold
     // ISR miss was expensive. Here a page re-renders from SQLite in well under a

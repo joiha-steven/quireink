@@ -45,6 +45,42 @@ const post = (path: string, data: unknown) =>
 
 const newPost = (data: unknown) => post('/api/posts', data)
 
+const put = (path: string, data: unknown) =>
+  asOwner(path, { method: 'PUT', body: JSON.stringify(data) })
+
+// The list's path is a THIRD occupant of the /{slug} namespace once the home page stops
+// being the list. The guard has to ask what the settings will BE, not what this particular
+// payload mentions, or the two commonest shapes walk straight past it.
+describe('the post list cannot be pointed at a slug something already holds', () => {
+  const PAST = '2020-01-01T00:00:00.000Z'
+
+  it('refuses a payload that names both the mode and the path', async () => {
+    await newPost({ title: 'Post', status: 'published', date: PAST })
+    const res = await put('/api/settings', { home: { mode: 'front', page: '', listPath: '/post', front: {} } })
+    expect(res.status).toBe(409)
+    expect((await payload<{ error: string }>(res)).error).toContain('list_path_taken')
+  })
+
+  it('refuses a payload that moves only the path, with the mode already set', async () => {
+    await put('/api/settings', { home: { mode: 'front', page: '', listPath: '/writing', front: {} } })
+    await newPost({ title: 'Journal', status: 'published', date: PAST })
+    const res = await put('/api/settings', { home: { listPath: '/journal' } })
+    expect(res.status).toBe(409)
+  })
+
+  it('refuses a payload that flips only the mode onto the default path', async () => {
+    await newPost({ title: 'Post', status: 'published', date: PAST })
+    const res = await put('/api/settings', { home: { mode: 'front' } })
+    expect(res.status).toBe(409)
+  })
+
+  it('still allows a free path', async () => {
+    await newPost({ title: 'Post', status: 'published', date: PAST })
+    const res = await put('/api/settings', { home: { mode: 'front', page: '', listPath: '/writing', front: {} } })
+    expect(res.status).toBe(200)
+  })
+})
+
 describe('the gate', () => {
   it('refuses every one of these without a session', async () => {
     const routes: Array<[string, string]> = [
