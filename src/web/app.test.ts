@@ -194,6 +194,16 @@ describe('article page', () => {
   })
 })
 
+// The phone paints its own chrome around the page, and a blog whose default is dark met the
+// reader with a white bar over a black page.
+describe('the colour the phone paints around the page', () => {
+  it('names one for each scheme, taken from the palette', async () => {
+    const html = await (await get('/')).text()
+    expect(html).toContain('<meta name="theme-color" media="(prefers-color-scheme: light)"')
+    expect(html).toContain('<meta name="theme-color" media="(prefers-color-scheme: dark)"')
+  })
+})
+
 describe('what must NOT be reachable', () => {
   it('404s a draft', async () => {
     await savePost({ title: 'Secret', content: 'unpublished', status: 'draft', date: PAST })

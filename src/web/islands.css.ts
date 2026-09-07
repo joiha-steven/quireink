@@ -171,6 +171,19 @@ export const ISLANDS_CSS = `
   82%{opacity:1}
   100%{opacity:.35}
 }
+/* SHALLOWER ON A PHONE, and it is arithmetic rather than taste. 18% of a 900px window is
+   one line at the top and one at the bottom; 18% of an 844px phone in portrait is three,
+   because the type is the same size and the window is the same height while the measure is
+   a third as wide. So the reader met the next three lines of what they were about to read
+   at well under half opacity. Owner's call, 2026-09-07: keep the effect, narrow the band. */
+@media (max-width:639px){
+  @keyframes edge-fade{
+    0%{opacity:.6}
+    8%{opacity:1}
+    92%{opacity:1}
+    100%{opacity:.6}
+  }
+}
 
 .preview-note{border:1px solid var(--c-rule);background:var(--c-rule);color:var(--c-meta);
   border-radius:.5rem;padding:.5rem 1rem;font-size:var(--fs-small);

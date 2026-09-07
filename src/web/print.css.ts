@@ -38,7 +38,7 @@ export const PRINT_CSS = `
 /* ...and the rule drawn ABOVE each of them, which would otherwise be left ruling off the
    end of the essay against nothing. The divider belongs to the block it introduces, and
    :has is how a stylesheet says that without the renderer having to know. */
-hr:has(+ .related),hr:has(+ #comments){display:none!important}
+hr:has(+ .related),hr:has(+ #comments),hr:has(+ .read-next){display:none!important}
 
 /* The scroll reveal, undone. A listing card eases in as it crosses the viewport, and the
    progress of a view() timeline on paper is whatever it was on screen - which for every card

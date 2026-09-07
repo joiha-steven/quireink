@@ -14,7 +14,7 @@
 import type { GallerySettings, FigureSettings, SiteSettings, FeatureSettings, InkSettings } from '@/types'
 import { fontPreloadHrefs, fontPresetCss, chromeFontCss, themesToCss } from '@/content/themes'
 import { cjkLangCss } from '@/content/fonts'
-import { typographyToCss, fontToCss, shapeToCss, tableToCss, resolveAppIcon } from '@/content/settings'
+import { typographyToCss, fontToCss, shapeToCss, tableToCss, resolveAppIcon, getDefaultTheme } from '@/content/settings'
 import { singleRailCss } from '@/render/rail-css'
 import { fontFaceCss, MONO_TRACKING } from '@/render/font-faces'
 import { penSheetsFor } from '@/web/assets'
@@ -333,12 +333,26 @@ export function renderDocument(
   // one attribute. Written only when it is ON, so the whole ruleset is a selector that
   // simply never matches when it is off — nothing to override and nothing to un-hide.
   const fade = settings.features.scrollFade ? ' data-scroll-fade="on"' : ''
+  /**
+   * What the phone paints around the page: Android Chrome's toolbar and the strip iOS
+   * Safari retracts its bars from.
+   *
+   * TWO of them, one per scheme, because the reader's choice lives in their own storage and
+   * the page cache is keyed by URL alone (Invariant 1) — a single tag would have to pick a
+   * side and would then be wrong for everyone on the other one. Without either, a blog whose
+   * default is dark met the reader with a white bar over a black page. The phone book reader
+   * already did this for the length of a read; this is the same answer for every other page.
+   */
+  const paper = getDefaultTheme(settings.themes, settings.themePreset)
+  const themeColor = `<meta name="theme-color" media="(prefers-color-scheme: light)" content="${
+    escapeAttr(paper.light.bg)}">\n<meta name="theme-color" media="(prefers-color-scheme: dark)" content="${
+    escapeAttr(paper.dark.bg)}">\n`
   return `<!DOCTYPE html>
 <html lang="${escapeAttr(settings.language)}" data-motion="${motion}" data-chrome-font="${escapeAttr(settings.chromeFont)}"${ide}${fade}>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="generator" content="Quire Ink ${escapeAttr(VERSION)}">
+${themeColor}<meta name="generator" content="Quire Ink ${escapeAttr(VERSION)}">
 <title>${escapeHtml(head.title)}</title>
 ${description}${canonical}${robots}${icon}${manifest}${feed}${og}${sheet}${preloads}${jsonLd}
 <style>${styles}</style>

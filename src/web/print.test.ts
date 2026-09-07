@@ -59,6 +59,14 @@ describe('the print sheet', () => {
     expect(unused).toEqual([])
   })
 
+  // Each of those blocks is introduced by a rule, and a rule with nothing under it prints
+  // as a line across the end of the essay. The divider belongs to the block it introduces.
+  it('hides the rule above every block it hides', () => {
+    for (const block of ['.related', '#comments', '.read-next']) {
+      expect(PUBLIC_CSS).toContain(`hr:has(+ ${block})`)
+    }
+  })
+
   it("prints on paper rather than in the reader's palette", () => {
     // The palette lands INLINE, after the linked sheet (`sheet.test.ts`), so `html.dark`
     // beats this on order and specificity alike. Without `!important` a reader printing at
