@@ -129,6 +129,8 @@ const es = {
   askRemoveSeriesTitle: '¿Quitar la serie «{name}»?',
   askRemoveSeriesBody: 'Sale de cada entrada que la lleva. Las entradas no se tocan.',
   askRemoveTermTitle: '¿Quitar «{name}»?',
+  renameTermTitle: 'Renombrar «{name}»',
+  renameSeriesTitle: 'Renombrar la serie «{name}»',
   askRemoveTermBody: 'Sale de cada entrada que lo lleva. Las entradas no se tocan.',
   askClearLogTitle: '¿Vaciar todo el registro de actividad?',
   askClearLogBody: 'Se va cada acción registrada. Nada más en el blog cambia.',

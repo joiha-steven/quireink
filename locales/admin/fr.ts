@@ -129,6 +129,8 @@ const fr = {
   askRemoveSeriesTitle: 'Retirer la série « {name} » ?',
   askRemoveSeriesBody: 'Elle quitte chaque article qui la porte. Les articles restent.',
   askRemoveTermTitle: 'Retirer « {name} » ?',
+  renameTermTitle: 'Renommer « {name} »',
+  renameSeriesTitle: 'Renommer la série « {name} »',
   askRemoveTermBody: 'Il quitte chaque article qui le porte. Les articles restent.',
   askClearLogTitle: 'Vider tout le journal d’activité ?',
   askClearLogBody: 'Chaque action consignée part. Rien d’autre ne change sur le blog.',

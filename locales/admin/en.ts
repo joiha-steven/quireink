@@ -129,6 +129,8 @@ const en = {
   askRemoveSeriesTitle: 'Remove the series “{name}”?',
   askRemoveSeriesBody: 'It comes off every post carrying it. The posts themselves are untouched.',
   askRemoveTermTitle: 'Remove “{name}”?',
+  renameTermTitle: 'Rename “{name}”',
+  renameSeriesTitle: 'Rename the series “{name}”',
   askRemoveTermBody: 'It comes off every post carrying it. The posts themselves are untouched.',
   askClearLogTitle: 'Clear the whole activity log?',
   askClearLogBody: 'Every recorded action goes. Nothing else on the blog changes.',

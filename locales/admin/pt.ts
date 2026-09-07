@@ -130,6 +130,8 @@ const pt = {
   askRemoveSeriesTitle: 'Retirar a série «{name}»?',
   askRemoveSeriesBody: 'Sai de cada publicação que a leva. As publicações ficam.',
   askRemoveTermTitle: 'Retirar «{name}»?',
+  renameTermTitle: 'Renomear “{name}”',
+  renameSeriesTitle: 'Renomear a série “{name}”',
   askRemoveTermBody: 'Sai de cada publicação que o leva. As publicações ficam.',
   askClearLogTitle: 'Esvaziar todo o registo de atividade?',
   askClearLogBody: 'Sai cada ação registada. Mais nada no blog muda.',

@@ -9,6 +9,7 @@ import { useToast } from '@/admin/ui/Toast'
 import { useConfirm, useConfirmFor } from '@/admin/ui/ConfirmDialog'
 import { useAdminT } from './I18nProvider'
 import { ICON_BTN, PencilIcon, TrashIcon } from './RowActions'
+import { fill } from '@/utils'
 
 type Term = { name: string; count: number }
 type Kind = 'category' | 'tag'
@@ -78,7 +79,7 @@ export function TaxonomyManager({ posts }: { posts: Post[] }) {
     let newName: string | undefined
     if (action === 'rename') {
       const typed = await askFor({
-        title: t.askRemoveTermTitle.replace('{name}', name).replace('?', ''),
+        title: fill(t.renameTermTitle, { name }),
         input: { label: t.renamePrompt, initial: name },
         confirmLabel: t.save,
         cancelLabel: t.askCancel,

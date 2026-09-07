@@ -10,6 +10,7 @@ import { useToast } from '@/admin/ui/Toast'
 import { useConfirm, useConfirmFor } from '@/admin/ui/ConfirmDialog'
 import { useAdminT } from './I18nProvider'
 import { ICON_BTN, PencilIcon, TrashIcon } from './RowActions'
+import { fill } from '@/utils'
 
 function ChevronUpIcon() {
   return (
@@ -55,7 +56,7 @@ export function SeriesManager({ posts }: { posts: Post[] }) {
     // The title names the series. `window.prompt` took one label and no context, so the
     // whole interface for renaming was the words "New name:" over an empty box.
     const newName = await askFor({
-      title: t.askRemoveSeriesTitle.replace('{name}', name).replace('?', ''),
+      title: fill(t.renameSeriesTitle, { name }),
       input: { label: t.renamePrompt, initial: name },
       confirmLabel: t.save,
       cancelLabel: t.askCancel,

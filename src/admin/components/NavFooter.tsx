@@ -132,7 +132,12 @@ function OwnerMenu({ avatar, iconsOn, collapsed, onIcons, onArrange, signOut, cl
       </button>
       {open && (
         <>
-          <button className="fixed inset-0 z-40 cursor-default" aria-hidden onClick={() => setOpen(false)} />
+          {/* A DIV, not a button. As a button it was focusable and `aria-hidden` at the
+              same time: Tab landed on an invisible, unnamed control while a screen reader
+              was told it did not exist, which is the shape axe calls `aria-hidden-focus`.
+              Escape and picking a row both close the menu, so the scrim is for the pointer
+              alone and has nothing to say to anyone else. */}
+          <div className="fixed inset-0 z-40 cursor-default" aria-hidden onClick={() => setOpen(false)} />
           {/* UPWARD, and OPENING RIGHT in both rail states.
               ⚠️ It was `right-0` on the open rail, which anchors a 208px menu to the right
               edge of a button that sits at the right edge of a 208px rail — so it ran from

@@ -129,6 +129,8 @@ const ru = {
   askRemoveSeriesTitle: 'Убрать серию «{name}»?',
   askRemoveSeriesBody: 'Она уйдёт из каждой записи, где стоит. Сами записи останутся.',
   askRemoveTermTitle: 'Убрать «{name}»?',
+  renameTermTitle: 'Переименовать «{name}»',
+  renameSeriesTitle: 'Переименовать серию «{name}»',
   askRemoveTermBody: 'Это уйдёт из каждой записи, где стоит. Сами записи останутся.',
   askClearLogTitle: 'Очистить весь журнал действий?',
   askClearLogBody: 'Пропадёт каждая записанная строка. Больше в блоге ничего не изменится.',

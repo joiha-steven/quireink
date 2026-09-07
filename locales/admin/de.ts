@@ -129,6 +129,8 @@ const de = {
   askRemoveSeriesTitle: 'Serie „{name}“ entfernen?',
   askRemoveSeriesBody: 'Sie verschwindet aus jedem Beitrag, der sie trägt. Die Beiträge bleiben.',
   askRemoveTermTitle: '„{name}“ entfernen?',
+  renameTermTitle: '„{name}“ umbenennen',
+  renameSeriesTitle: 'Die Reihe „{name}“ umbenennen',
   askRemoveTermBody: 'Es verschwindet aus jedem Beitrag, der es trägt. Die Beiträge bleiben.',
   askClearLogTitle: 'Das gesamte Aktivitätsprotokoll leeren?',
   askClearLogBody: 'Jeder festgehaltene Vorgang geht. Sonst ändert sich nichts.',

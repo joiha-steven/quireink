@@ -129,6 +129,8 @@ const it = {
   askRemoveSeriesTitle: 'Togliere la serie «{name}»?',
   askRemoveSeriesBody: 'Esce da ogni articolo che la porta. Gli articoli restano.',
   askRemoveTermTitle: 'Togliere «{name}»?',
+  renameTermTitle: 'Rinomina «{name}»',
+  renameSeriesTitle: 'Rinomina la serie «{name}»',
   askRemoveTermBody: 'Esce da ogni articolo che lo porta. Gli articoli restano.',
   askClearLogTitle: 'Svuotare tutto il registro attività?',
   askClearLogBody: 'Ogni azione registrata se ne va. Nient’altro del blog cambia.',

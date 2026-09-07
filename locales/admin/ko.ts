@@ -129,6 +129,8 @@ const ko = {
   askRemoveSeriesTitle: '연재 “{name}”을(를) 뺄까요?',
   askRemoveSeriesBody: '달려 있던 모든 글에서 빠집니다. 글 자체는 그대로입니다.',
   askRemoveTermTitle: '“{name}”을(를) 뺄까요?',
+  renameTermTitle: '“{name}” 이름 바꾸기',
+  renameSeriesTitle: '시리즈 “{name}” 이름 바꾸기',
   askRemoveTermBody: '달려 있던 모든 글에서 빠집니다. 글 자체는 그대로입니다.',
   askClearLogTitle: '활동 기록을 전부 지울까요?',
   askClearLogBody: '기록된 모든 동작이 사라집니다. 블로그의 나머지는 그대로입니다.',

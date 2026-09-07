@@ -260,6 +260,10 @@ export type AdminStrings = {
   askRemoveSeriesTitle: string
   askRemoveSeriesBody: string
   askRemoveTermTitle: string
+  /** The rename dialog's own title. It used to borrow the REMOVE one with its question
+   *  mark stripped, so a rename was headed "Remove ..." above a Save button. */
+  renameTermTitle: string
+  renameSeriesTitle: string
   askRemoveTermBody: string
   askClearLogTitle: string
   askClearLogBody: string

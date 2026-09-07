@@ -129,6 +129,8 @@ const vi = {
   askRemoveSeriesTitle: 'Gỡ loạt bài “{name}”?',
   askRemoveSeriesBody: 'Nó rời khỏi mọi bài đang mang. Bài viết thì không đụng tới.',
   askRemoveTermTitle: 'Gỡ “{name}”?',
+  renameTermTitle: 'Đổi tên “{name}”',
+  renameSeriesTitle: 'Đổi tên loạt bài “{name}”',
   askRemoveTermBody: 'Nó rời khỏi mọi bài đang mang. Bài viết thì không đụng tới.',
   askClearLogTitle: 'Xoá sạch nhật ký hoạt động?',
   askClearLogBody: 'Mọi dòng đã ghi sẽ mất. Phần còn lại của blog không đổi.',

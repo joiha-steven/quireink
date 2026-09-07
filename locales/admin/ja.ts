@@ -129,6 +129,8 @@ const ja = {
   askRemoveSeriesTitle: 'シリーズ「{name}」を外しますか？',
   askRemoveSeriesBody: '付いているすべての記事から外れます。記事そのものはそのままです。',
   askRemoveTermTitle: '「{name}」を外しますか？',
+  renameTermTitle: '「{name}」の名前を変更',
+  renameSeriesTitle: '連載「{name}」の名前を変更',
   askRemoveTermBody: '付いているすべての記事から外れます。記事そのものはそのままです。',
   askClearLogTitle: '操作履歴をすべて消しますか？',
   askClearLogBody: '記録された操作はすべて消えます。ブログの他の部分は変わりません。',

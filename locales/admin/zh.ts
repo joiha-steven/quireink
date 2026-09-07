@@ -129,6 +129,8 @@ const zh = {
   askRemoveSeriesTitle: '移除系列“{name}”？',
   askRemoveSeriesBody: '它会从每篇带着它的文章上移除。文章本身不动。',
   askRemoveTermTitle: '移除“{name}”？',
+  renameTermTitle: '重命名“{name}”',
+  renameSeriesTitle: '重命名系列“{name}”',
   askRemoveTermBody: '它会从每篇带着它的文章上移除。文章本身不动。',
   askClearLogTitle: '清空整份操作记录？',
   askClearLogBody: '所有记下的操作都会消失。博客其余部分不变。',

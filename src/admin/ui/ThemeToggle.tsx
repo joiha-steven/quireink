@@ -98,7 +98,12 @@ export function ThemeToggle({
       </button>
       {open && (
         <>
-          <button className="fixed inset-0 z-40 cursor-default" aria-hidden onClick={() => setOpen(false)} />
+          {/* A DIV, not a button. As a button it was focusable and `aria-hidden` at the
+              same time: Tab landed on an invisible, unnamed control while a screen reader
+              was told it did not exist, which is the shape axe calls `aria-hidden-focus`.
+              Escape and picking a row both close the menu, so the scrim is for the pointer
+              alone and has nothing to say to anyone else. */}
+          <div className="fixed inset-0 z-40 cursor-default" aria-hidden onClick={() => setOpen(false)} />
           {/* The admin variant wears the popover radius; the public one stays square —
               square corners are a PUBLIC rule and this component serves both sides.
               It opens UPWARD from the rail's footer, inside the rail, not floating off
