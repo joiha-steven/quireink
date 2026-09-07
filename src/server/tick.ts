@@ -11,6 +11,7 @@ import { one } from '@/store/query'
 import { finalizePendingThumbs, finalizePendingVariants } from '@/media/finalize'
 import { maybeRunUpdateCheck } from '@/server/update-check'
 import { purgeExpiredSessions } from '@/auth/sessions'
+import { sweepActivityLog } from '@/server/activity'
 import { sweepPendingSubscribers } from '@/news/subscribers'
 import { pruneRendered } from '@/render/render-cache'
 import { sweepScheduled, PUBLISH_TICK_LOOKBACK_MS, HOURLY_LOOKBACK_MS } from '@/server/scheduled'
@@ -25,6 +26,8 @@ export type FullTick = {
   published: number
   sessions: number
   staleSignups: number
+  /** Activity-log rows dropped by the retention sweep. */
+  activityRows: number
   renderRows: number
   backup: { ran: boolean; name?: string; error?: string }
 }
@@ -114,6 +117,11 @@ export async function fullTick(opts: { purge?: boolean } = {}): Promise<FullTick
     console.error(`[ERROR] tick subscriber sweep: ${(error as Error).message}`)
   }
 
+  // The activity log, which had no retention at all: it is copied whole into every backup,
+  // and one of the things it records is a refused sign-in, written whatever the owner's
+  // toggle says. Anybody could grow this blog's database one slow guess at a time.
+  const activityRows = sweepActivityLog()
+
   // The render cache is insert-only for the same reason it needs no invalidation, so this
   // is the only thing that ever removes a row from it. Bounded per tick, and it swallows
   // its own failures.
@@ -130,7 +138,7 @@ export async function fullTick(opts: { purge?: boolean } = {}): Promise<FullTick
     console.error(`[ERROR] tick backup: ${(error as Error).message}`)
   }
 
-  return { purged, finalized, thumbs, published, sessions, staleSignups, renderRows, backup }
+  return { purged, finalized, thumbs, published, sessions, staleSignups, activityRows, renderRows, backup }
 }
 
 // ----- the clock ------------------------------------------------------------------------
@@ -204,7 +212,7 @@ export function startClock(): () => void {
         announced = true
         console.log(
           `clock: first sweep done (published ${result.published}, variants ${result.finalized},`
-          + ` sessions ${result.sessions}, cached rows ${result.renderRows})`,
+          + ` sessions ${result.sessions}, log rows ${result.activityRows}, cached rows ${result.renderRows})`,
         )
       }).catch((error: unknown) => {
         console.error(`[ERROR] clock full: ${(error as Error).message}`)

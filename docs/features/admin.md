@@ -111,6 +111,12 @@
   **Adding a mutating route → log it too.** The frozen tree wrapped these in Next's `after()`;
   there is no equivalent here and none is needed — the promise is simply not awaited and the
   runtime keeps running.
+- **Retention (hourly tick):** `sweepActivityLog()` drops entries older than a year and, past
+  a ceiling of 20,000 rows, trims the REFUSED SIGN-INS first and only then anything else. The
+  order is the point: refused sign-ins are written whatever the toggle says (a trail a setting
+  can silence is one an attacker can silence), so a plain oldest-first trim would let anybody
+  push the owner's own history out of the log one slow guess at a time. The table also travels
+  whole inside every backup.
 - **Error log (same table):** `errorHandler()` in `src/web/api.ts` — the one handler every route
   falls through to — calls `logActivityError("METHOD /path", message)`, recording an
   `error`-action entry (gated by the same toggle). So unexpected server failures show up in the

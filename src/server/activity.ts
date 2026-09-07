@@ -6,7 +6,7 @@
 // Never throws: a logging failure must not break the action being logged.
 
 import { getSettings } from '@/content/settings'
-import { all, run } from '@/store/query'
+import { all, one, run } from '@/store/query'
 import { nowMs, toIso } from '@/store/db'
 
 export type ActivityAction =
@@ -130,3 +130,46 @@ export async function getActivity(limit = 200): Promise<ActivityEntry[]> {
 export async function clearActivity(): Promise<void> {
   run(`delete from activity_log`)
 }
+
+/**
+ * A YEAR, AND A CEILING, AND THE FLOOD GOES FIRST.
+ *
+ * The log had no retention at all. It lives in `quire.db`, which is opened `synchronous=FULL`
+ * and copied whole into the hourly backup, and one of the things it records is a refused
+ * sign-in — written whatever the owner's toggle says, on purpose, because a security trail a
+ * setting can silence is one an attacker can silence. Put together, anybody on the internet
+ * could grow this blog's database and every snapshot of it, one slow guess at a time.
+ *
+ * The age is what the log is FOR: what did I change, and when. A year answers that.
+ *
+ * The ceiling is the part that had to be thought about, because a plain oldest-first trim
+ * hands the flood the ability to push out the very entries an owner would go looking for. So
+ * the refused sign-ins are trimmed first and on their own: past a few thousand they say the
+ * same thing the first hundred did, while a save or a settings change never repeats.
+ */
+const ACTIVITY_MAX_AGE_MS = 365 * 24 * 60 * 60 * 1000
+const ACTIVITY_CEILING = 20_000
+
+export function sweepActivityLog(now = nowMs()): number {
+  try {
+    let gone = run(`delete from activity_log where at < ?`, now - ACTIVITY_MAX_AGE_MS).changes
+    for (const onlyRefusals of [true, false]) {
+      const over = (one<{ n: number }>(`select count(*) as n from activity_log`)?.n ?? 0) - ACTIVITY_CEILING
+      if (over <= 0) break
+      gone += run(
+        `delete from activity_log where id in (
+           select id from activity_log
+            where ($refusals = 0 or action in ('auth.login.failed', 'auth.totp.failed'))
+            order by at asc, id asc limit $over)`,
+        { refusals: onlyRefusals ? 1 : 0, over },
+      ).changes
+    }
+    return gone
+  } catch (error) {
+    console.error(`[ERROR] activity.sweepActivityLog: ${(error as Error).message}`)
+    return 0
+  }
+}
+
+/** For the test, and for anything that wants to explain the numbers. */
+export const ACTIVITY_RETENTION = { maxAgeMs: ACTIVITY_MAX_AGE_MS, ceiling: ACTIVITY_CEILING }

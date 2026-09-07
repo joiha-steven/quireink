@@ -5,7 +5,7 @@ import { describe, it, expect, beforeEach, afterAll } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
 import { db } from '@/store/db'
 import { one } from '@/store/query'
-import { logActivity, logActivityError, getActivity, clearActivity } from '@/server/activity'
+import { logActivity, logActivityError, getActivity, clearActivity, sweepActivityLog, ACTIVITY_RETENTION } from '@/server/activity'
 import { saveSettings, DEFAULT_SETTINGS } from '@/content/settings'
 
 const DIR = './.tmp/test-activity'
@@ -73,5 +73,38 @@ describe('reads', () => {
     await logActivity('post.create', 'x')
     await clearActivity()
     expect(one<{ n: number }>(`select count(*) n from activity_log`)!.n).toBe(0)
+  })
+})
+
+describe('sweepActivityLog', () => {
+  const put = (action: string, at: number) =>
+    db().run(`insert into activity_log (at, action, detail) values (?, ?, '')`, [at, action])
+
+  it('drops what is older than the window and keeps the rest', () => {
+    const now = Date.now()
+    put('post.update', now - ACTIVITY_RETENTION.maxAgeMs - 1000)
+    put('post.update', now - 1000)
+    expect(sweepActivityLog(now)).toBe(1)
+    expect(one<{ n: number }>(`select count(*) as n from activity_log`)?.n).toBe(1)
+  })
+
+  it('trims refused sign-ins before anything the owner did', () => {
+    // A plain oldest-first trim would hand anybody on the internet the ability to push the
+    // owner's own history out of their log, one slow guess at a time. The refusals are what
+    // grows without bound and what says the same thing after the first hundred.
+    const now = Date.now()
+    put('post.create', now - 9000) // the oldest row in the table, and the one to keep
+    for (let i = 0; i < ACTIVITY_RETENTION.ceiling + 50; i++) put('auth.login.failed', now - 8000 + i)
+
+    expect(sweepActivityLog(now)).toBe(51)
+    expect(one<{ n: number }>(`select count(*) as n from activity_log where action = 'post.create'`)?.n).toBe(1)
+    expect(one<{ n: number }>(`select count(*) as n from activity_log`)?.n).toBe(ACTIVITY_RETENTION.ceiling)
+  })
+
+  it('falls back to the oldest of anything once the refusals are gone', () => {
+    const now = Date.now()
+    for (let i = 0; i < ACTIVITY_RETENTION.ceiling + 5; i++) put('post.update', now - 8000 + i)
+    expect(sweepActivityLog(now)).toBe(5)
+    expect(one<{ n: number }>(`select count(*) as n from activity_log`)?.n).toBe(ACTIVITY_RETENTION.ceiling)
   })
 })
