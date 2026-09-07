@@ -6,8 +6,9 @@
 // — while every other key on the same screen waited for the sheet's one Save button. A tab
 // therefore showed two ways to save at once with nothing saying which button owned which box,
 // and a screen that answers "did that save?" with "it depends which box you were in" has to be
-// read rather than used. Tabs 5-7 are now made entirely of these; the sheet's Save renders on
-// tabs 1-4 only.
+// read rather than used. Tabs 5-7 are now made entirely of these, and each keeps its own key
+// for what the sheet's key cannot do — try the far end — while the sheet's key stores the
+// ordinary settings keys on every tab (ADR 0041, revised 2026-09-07).
 //
 // TWO THINGS BEYOND SAVING, and they are the reason this is a component rather than a
 // convention:

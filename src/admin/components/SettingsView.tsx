@@ -7,10 +7,18 @@
 // 2,825px while five other tabs sat within 31px of 1,236, and the answer to "how do readers
 // sign in to comment" lived three tabs from "should there be comments".
 //
-// ⚠️ A TAB SAVES ONE WAY, and the sheet's Save key renders on the first four only. Tabs 5-7
-// are made of cards that each own their keys and each say whether the far end answered; a
-// page-level Save beside them would be a button that silently did nothing for most of the
-// screen, which is the arrangement being replaced.
+// ⚠️ THE SHEET'S SAVE KEY RENDERS ON EVERY TAB (ADR 0041, revised 2026-09-07). Tabs 5-7 are
+// also made of cards that each own their keys and each say whether the far end answered, and
+// those cards keep their own key: a card that TESTS what it stores is doing something the
+// sheet's key cannot do. What the sheet's key does everywhere is store the ordinary settings
+// keys on the screen, and the count on it says how many are waiting.
+//
+// It rendered on the first four tabs only, on the argument that a page-level Save beside
+// self-saving cards would do nothing for most of the screen. Two things were wrong with that.
+// The backup card carried three ordinary settings keys and NO save of any kind, so the
+// schedule could be changed on tab 6 and stored nowhere. And a key that is in the place the
+// eye goes on four tabs and absent on three reads as a fault on the three, which is what a
+// missing control looks like whatever sentence stands in for it.
 //
 // The stored shape is untouched. `SiteSettings` keeps every key and every name; this file
 // decides which tab renders which key, and `?tab=` still answers to the eight old ids.
@@ -68,9 +76,6 @@ const OLD_TABS: Record<string, Tab> = {
 
 const resolveTab = (param: string | null): Tab =>
   (TAB_IDS as string[]).includes(param ?? '') ? (param as Tab) : (OLD_TABS[param ?? ''] ?? 'blog')
-
-/** The four that save through the sheet's own key. The other three save card by card. */
-const SAVES_AS_ONE: Tab[] = ['blog', 'home', 'post', 'appearance']
 
 /**
  * The region the strip switches, named so the strip can point at it.
@@ -156,7 +161,6 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
   // partial save the card-by-card tabs hand to each of their cards.
   const form = useSettingsSave(settings, s)
   const { changed, saving, savedAt, save } = form
-  const savesAsOne = SAVES_AS_ONE.includes(tab)
 
   // A refused field is on ONE tab, and it is not necessarily the tab being looked at: the
   // save key stores the whole form. Opening that tab is the least the screen can do before
@@ -214,36 +218,23 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
               the time — a screen that has been open all afternoon and one saved thirty seconds
               ago read identically otherwise. It clears itself the moment the form is dirty
               again: a stale "Saved at 14:02" beside three unsaved changes is a lie. */}
-          {savesAsOne && (
           <span className="shrink-0 text-xs text-neutral-500 dark:text-neutral-400">
             {saving ? t.saving : savedAt && changed === 0 ? `${t.savedAtPrefix} ${formatTime(savedAt)}` : ''}
           </span>
-          )}
           {/* `sm`, and the field beside it is sized to match, because on THIS row the height
               is set by the tab strip: it is the widest object on the band and the first one
               read, so it is the thing the other two answer to. The three measured 33.5, 32
               and 40 — a strip, a key and a field, no two alike — and the pair at the right
               end took the blame because they touch. All three are 32 now. */}
-          {/* ⚠️ FOUR TABS ONLY (ADR 0041). On Comments & mail, Server and Account every card
-              owns its keys and carries its own key, so a page-level Save beside them would be
-              a button that silently did nothing for most of the screen.
-              Disabled with nothing to save, and that is not tidiness either: a Save key that
-              is always pressable answers "did I change anything?" with a shrug, and pressing
-              it wrote the same record back and printed a success toast for work nobody did. */}
-          {savesAsOne && (
+          {/* EVERY TAB (ADR 0041, revised). It stores the ordinary settings keys wherever
+              they are rendered, and the cards that reach something keep their own key beside
+              it for the thing this one cannot do: try the far end.
+              Disabled with nothing to save, and that is not tidiness: a Save key that is
+              always pressable answers "did I change anything?" with a shrug, and pressing it
+              wrote the same record back and printed a success toast for work nobody did. */}
           <Button size="sm" onClick={() => { void save() }} disabled={saving || changed === 0}>
             {saving ? t.saving : changed === 0 ? t.saveSettings : t.saveSettingsCount.replace('{n}', String(changed))}
           </Button>
-          )}
-          {/* ⚠️ A MISSING BUTTON HAS TO SAY SO. On tabs 5-7 every card owns its keys and
-              saves them itself, which is ADR 0041's whole point — and the owner read the
-              empty slot as a fault the first time they met it, which it looks exactly like.
-              A sentence in the place the eye goes for Save costs one line and answers the
-              question; a Save button that silently did nothing for most of the screen is the
-              arrangement this replaced. */}
-          {!savesAsOne && (
-            <span className="shrink-0 text-xs text-neutral-500 dark:text-neutral-400">{t.settingsSavesPerCard}</span>
-          )}
           <SettingsSearch
             tabLabel={(k) => String(TAB_LABEL(k))}
             onPick={(entry) => { setTab(entry.tab); jumpToSetting(String(t[entry.label])) }}

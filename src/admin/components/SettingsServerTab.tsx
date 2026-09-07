@@ -4,19 +4,22 @@
 // argument that all four answered one question with four names on it — what this INSTALL
 // does, as opposed to what the blog is or what a post looks like.
 //
-// EVERY CARD SAVES ITSELF, and the sheet's Save button does not render here. That is the
-// tab's hardest requirement and the reason ADR 0041 collapses mixed keys into one CARD
-// rather than one tab: the SEO switches, the custom code, the cache, the update check and
-// the storage limits are ordinary settings keys, so they go into a single card at the top
-// with its own Save that PUTs only those keys. Everything else on the tab already owned an
-// endpoint before this ADR.
+// EVERY CARD THAT HOLDS SETTINGS KEYS SAVES ITSELF, and since 2026-09-07 the sheet's Save
+// renders here too (ADR 0041, revised). That is the reason the ADR collapses mixed keys into
+// one CARD rather than one tab: the SEO switches, the custom code, the cache, the update
+// check and the storage limits are ordinary settings keys, so they go into a single card at
+// the top with its own Save that PUTs only those keys. Everything else on the tab already
+// owned an endpoint before this ADR.
 //
-// ⚠️ FOUR CARDS KEEP THEIR OWN CONTROLS RATHER THAN A SAVE KEY, and that is not an exception
-// to the rule. Redirects, the backup schedule, the import and the security card are made of
-// ACTIONS — add a row, run a snapshot now, upload a file, sign a device out — each of which
-// commits by itself the moment it is pressed. A card whose every control has already
+// ⚠️ TWO CARDS KEEP THEIR OWN CONTROLS RATHER THAN A SAVE KEY, and that is not an exception
+// to the rule. Redirects and the import are made of ACTIONS — add a row, upload a file — each
+// of which commits by itself the moment it is pressed. A card whose every control has already
 // committed has nothing left for a Save key to do, and adding one would invent a state
 // ("pressed the button, did not save") that cannot exist.
+//
+// The backup card was counted among them and should not have been: running a snapshot is an
+// action, but the SCHEDULE beside it is three settings keys, and with no key on the card and
+// none on the tab there was nowhere to store them from.
 import type { SiteSettings } from '@/types'
 import type { IntegrationStatus } from '@/store/integration-keys'
 import { SettingsCard } from './SettingsCard'
@@ -164,9 +167,20 @@ export function SettingsServerTab({ s, update, integrations, updateStatus, updat
         >
           <McpFields mcp={s.mcp} siteUrl={s.siteUrl} onChange={(mcp) => update({ mcp })} />
         </ConnectionCard>
-        <SettingsCard title={t.backupTitle}>
+        {/* ⚠️ A CARD WITH KEYS NEEDS A KEY. The backup schedule — on/off, how often, how many
+            to keep — is three ordinary settings keys, and this card was a plain one: the
+            switch changed the form and nothing on the tab could store it, because the
+            sheet's Save did not render here. Running a snapshot and downloading one are the
+            card's actions and commit themselves; the schedule is a setting and needed this. */}
+        <ConnectionCard
+          title={t.backupTitle}
+          connected={s.backups.enabled}
+          enabled={s.backups.enabled}
+          dirty={form.changedIn('backups')}
+          onSave={() => form.savePartial({ backups: s.backups })}
+        >
           <ExportFields backups={s.backups} onChange={(backups) => update({ backups })} />
-        </SettingsCard>
+        </ConnectionCard>
         {/* The snapshot that leaves the machine (ADR 0035): a copy beside the data does not
             survive the disk. Sits under the backups it ships. */}
         <OffsiteCard configured={integrations.offsiteConfigured} bucket={integrations.s3Bucket} />

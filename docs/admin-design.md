@@ -298,9 +298,10 @@ grouping in [0011](./decisions/0011-settings-regrouped-into-seven.md)). The eigh
 grouped by which part of the CODE a key belonged to, and the count measured on 2026-09-07 says
 what that cost: Appearance carried 137 controls over 2,825px while five other tabs sat at
 about 1,236px each, and the answer to "how do readers sign in to comment" lived three tabs
-away from "how does mail leave this machine". A tab either saves everything on it with one
-button (tabs 1–4) or saves card by card, each card testing what it just stored (tabs 5–7);
-the sheet's Save button renders only on the first kind, so no screen shows two ways to save.
+away from "how does mail leave this machine". The sheet's Save button renders on every tab and
+stores every ordinary settings key waiting on the screen, counting them on its face; tabs 5–7
+are also made of cards that own their keys, and each of those keeps its own key for the part
+the sheet's cannot do — testing what it just stored.
 
 **Do not widen a card to fix its contents.** Making the MCP card span both columns gave its
 table room and turned it into a wide slab under a two-column tab. A table that does not fit

@@ -6,8 +6,9 @@
 // proves they are a person were on Connections. That is how `googleAuth` ran switched on for
 // weeks with no credentials behind it and nothing on either screen saying so.
 //
-// EVERY CARD SAVES ITSELF, and the sheet's Save button does not render on this tab. Both
-// cards reach something — a provider, a mail host — so both say "Save and test" and try it.
+// EVERY CARD SAVES ITSELF, and since 2026-09-07 the sheet's Save renders here too (ADR 0041,
+// revised). Both cards reach something — a provider, a mail host — so both say "Save and test"
+// and try it, which is the part no page-level key can do.
 import type { SiteSettings } from '@/types'
 import type { CommentEnv } from '@/comments/comment-env'
 import { useAdminT } from './I18nProvider'

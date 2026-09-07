@@ -61,14 +61,20 @@ tab saves exactly one way.**
 | 2 | Home & menu | What a reader sees when they open the front page | one Save |
 | 3 | Posts | What surrounds the words on a post | one Save |
 | 4 | Appearance | How it looks | one Save |
-| 5 | Comments & mail | How readers answer back, and how mail leaves | card by card |
-| 6 | Server & connections | Who this machine talks to | card by card |
-| 7 | Account | You, and this admin | card by card |
+| 5 | Comments & mail | How readers answer back, and how mail leaves | card by card, and the sheet's Save |
+| 6 | Server & connections | Who this machine talks to | card by card, and the sheet's Save |
+| 7 | Account | You, and this admin | card by card, and the sheet's Save |
 
 Three consequences follow, and they are the decision as much as the table is:
 
-1. **The sheet's Save button renders on tabs 1–4 only.** On 5–7 there is no page-level save to
-   confuse with a card's own, because every card on those tabs owns its keys.
+1. **The sheet's Save button renders on every tab** — revised the day this was accepted. It
+   rendered on 1–4 only, so that no page-level save could be confused with a card's own, and
+   two things were wrong with that. The backup card carried three ordinary settings keys (the
+   schedule switch, how often, how many to keep) and no Save of any kind, so on tab 6 they
+   could be changed and stored nowhere; that card now owns its keys like the rest. And a
+   control that stands in the place the eye goes on four tabs and is absent on three reads as
+   a fault on the three, whatever sentence is put in its place. The cards keep their own key,
+   because storing and TESTING are not one act and only a card can do the second.
 2. **A card that saves itself also TESTS itself.** `ConnectionCard` carries a lamp and one
    button: green means stored and the far end answered, amber means changed-and-not-yet-tried,
    red prints the remote error under the card rather than throwing it at a toast that is gone
@@ -97,10 +103,11 @@ screens that had no part in it.
 - **Muscle memory.** Anybody who knows where a setting lives today has to look again once.
   The settings search and `?setting=` jumping are what make that once rather than always, and
   both already exist.
-- **Two save models in one screen.** A person who learns Save on tab 1 meets per-card Save on
-  tab 5. That is a real cost and it is paid deliberately: the alternative is a page-level Save
-  that silently does nothing for nine of the cards under it, which is the arrangement being
-  replaced.
+- **Two ways to save on one tab.** On 5–7 a card's own key and the sheet's key are both on
+  screen, and they do different amounts: the card's stores that card and tries the far end,
+  the sheet's stores every ordinary settings key waiting on the screen and counts them on its
+  face. The cost is real and it is smaller than the one it replaces, which was a Save key that
+  existed on four tabs and vanished on three.
 - **`settings-index.ts` is re-keyed wholesale** — every entry's `tab` is reassigned, and the
   index is what both the search and `?setting=` read. A key with a stale tab is a search result
   that opens the wrong page, so the index and the tab components have to move in one commit.
@@ -115,3 +122,5 @@ screens that had no part in it.
 - **Make everything save through the page-level Save.** It reads well and cannot be built:
   testing an SMTP host, minting an MCP token and starting a backup are not writes to a settings
   record, and pretending they are is how a Save button comes to mean four different things.
+  The revision to consequence 1 does not adopt this: the sheet's key stores settings keys, and
+  every action still belongs to the card that performs it.

@@ -7,9 +7,10 @@
 // is a tab about what READERS see, so an owner turning off a sound they alone hear was
 // changing a setting filed under their site's looks.
 //
-// EVERY CARD SAVES ITSELF. The security card is made of ACTIONS that each commit when pressed
-// — a password change, a fresh set of recovery codes, a device signed out — so it has nothing
-// left for a Save key to do; the preferences card is ordinary settings keys and saves them.
+// EVERY CARD SAVES ITSELF, and since 2026-09-07 the sheet's Save renders here too (ADR 0041,
+// revised). The security card is made of ACTIONS that each commit when pressed — a password
+// change, a fresh set of recovery codes, a device signed out — so it has nothing left for a
+// Save key to do; the preferences card is ordinary settings keys and saves them.
 import type { SiteSettings } from '@/types'
 import { SettingsCard } from './SettingsCard'
 import { SettingsGroup } from './SettingsGroup'

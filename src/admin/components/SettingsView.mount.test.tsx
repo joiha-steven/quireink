@@ -107,10 +107,11 @@ describe('SettingsView, mounted', () => {
     await m.unmount()
   })
 
-  it('renders the sheet\'s Save key on the four save-as-one tabs and on none of the others', async () => {
-    // ADR 0041's load-bearing consequence. A page-level Save beside cards that own their own
-    // keys is a button that silently does nothing for most of the screen, which is the
-    // arrangement this regrouping replaced.
+  it('renders the sheet\'s Save key on every tab', async () => {
+    // It rendered on the first four only, and the card-by-card three were left with a
+    // sentence where the key goes (ADR 0041, revised). A control that is in the place the eye
+    // looks on four tabs and gone on three reads as a fault on the three — and one of those
+    // three held settings keys with no key of any kind behind them.
     const { mountAdmin, installFetchMock } = await import('@/admin/test-mount')
     const { SettingsView } = await import('@/admin/components/SettingsView')
     const { adminT } = await import('@/i18n/admin-i18n')
@@ -129,15 +130,49 @@ describe('SettingsView, mounted', () => {
     const hasPageSave = () =>
       [...m.container.querySelectorAll('button')].some((b) => b.textContent?.trim() === t.saveSettings)
 
-    for (const tab of [t.tabBlog, t.tabHome, t.tabPost, t.tabAppearance]) {
-      await m.click(m.button(tab))
-      expect(hasPageSave()).toBe(true)
-    }
-    for (const tab of [t.tabPeople, t.tabServer, t.tabAccount]) {
+    for (const tab of [t.tabBlog, t.tabHome, t.tabPost, t.tabAppearance, t.tabPeople, t.tabServer, t.tabAccount]) {
       await m.click(m.button(tab))
       await m.flush()
-      expect(hasPageSave()).toBe(false)
+      expect(hasPageSave()).toBe(true)
     }
+    await m.unmount()
+  })
+
+  /**
+   * A CARD THAT HOLDS SETTINGS KEYS HOLDS A KEY TO STORE THEM WITH.
+   *
+   * The backup card was filed with the cards made of actions — run a snapshot, download one —
+   * and it is not one: the schedule beside those buttons is three ordinary settings keys. With
+   * no key on the card and, at the time, none on the tab either, turning automatic backups off
+   * changed the form and stored nothing.
+   */
+  it('stores the backup schedule from the card that holds it', async () => {
+    const { mountAdmin, installFetchMock } = await import('@/admin/test-mount')
+    const { SettingsView } = await import('@/admin/components/SettingsView')
+    const { adminT } = await import('@/i18n/admin-i18n')
+    const { buttonInCard } = await import('./settings-fixture')
+    const t = adminT('en')
+    const fetchMock = installFetchMock((url) =>
+      url.startsWith('/api/mail')
+        ? { success: true, data: { host: '', port: 587, user: '', from: '', secure: false, hasPass: false, configured: false } }
+        : url.startsWith('/api/backup')
+          ? { success: true, data: { snapshots: [], lastRunAt: null } }
+          : { success: true, data: [] })
+    trackMock(fetchMock.restore)
+
+    const m = await mountAdmin(<SettingsView {...payload()} />)
+    await m.click(m.button(t.tabServer))
+    await m.flush()
+
+    // The card's own key, found by the card's title so this cannot pass on somebody else's.
+    await m.click(buttonInCard(m.container, t.backupTitle, t.save))
+    await m.flush()
+    const put = fetchMock.calls.find((c) => c.method === 'PUT' && c.url === '/api/settings')
+    expect(put).toBeDefined()
+    const body = put?.body as Record<string, unknown>
+    // ONLY this card's keys: `PUT /api/settings` merges, and a card that sends the whole form
+    // would store every other unsaved edit on the screen behind its own button.
+    expect(Object.keys(body)).toEqual(['backups'])
     await m.unmount()
   })
 
