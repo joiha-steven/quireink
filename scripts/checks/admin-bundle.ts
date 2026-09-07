@@ -10,7 +10,7 @@
 //
 // So this one reads the OUTPUT. Not the import graph — the artifact. A canary string in
 // `src/admin/dist/*.js` is proof the boundary broke no matter which import let it through.
-import { readdirSync, readFileSync, existsSync } from 'node:fs'
+import { readdirSync, readFileSync, existsSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 
 const DIST = new URL('../../src/admin/dist', import.meta.url).pathname
@@ -84,5 +84,34 @@ for (const f of files) {
   }
 }
 
+// The third thing, and it is about WEIGHT: what the browser must have before the first frame.
+//
+// `@/i18n/admin-i18n` imports all eleven admin dictionaries so the server can answer a login
+// page in any of them from one process. One value import of it from the SPA put all eleven in
+// the chunk the entry waits for: the eager payload measured 1063 KB, of which about 71 KB was
+// a language the owner reads. It is 374 KB with ten of them behind `import()`.
+//
+// Read from the artifact, and from the STATIC graph only: `import("./x.js")` is a later
+// request and belongs to whichever screen asks for it. A canary in a dictionary the admin is
+// not set to is proof the eleven came back, whatever import let them.
+const eager = new Set<string>()
+const walkStatic = (f: string): void => {
+  if (eager.has(f) || !files.includes(f)) return
+  eager.add(f)
+  const text = readFileSync(join(DIST, f), 'utf8')
+  for (const match of text.matchAll(/(?:from|import)\s*"\.\/([^"]+\.js)"/g)) walkStatic(match[1] ?? '')
+}
+if (ENTRY[0]) walkStatic(ENTRY[0])
+
+/** A word that is in the Russian dictionary and in no other file the admin builds. */
+const OTHER_TONGUE = 'Настройки'
+for (const f of eager) {
+  if (readFileSync(join(DIST, f), 'utf8').includes(OTHER_TONGUE)) {
+    console.error(`admin-bundle: ${f} is fetched before the first frame and contains "${OTHER_TONGUE}" — every dictionary is back in the eager graph`)
+    bad++
+  }
+}
+const eagerKb = Math.round([...eager].reduce((n, f) => n + statSync(join(DIST, f)).size, 0) / 1024)
+
 if (bad > 0) process.exit(1)
-console.log(`admin-bundle: ${files.length} files clean of ${CANARIES.length} canaries, one entry, no dangling import`)
+console.log(`admin-bundle: ${files.length} files clean of ${CANARIES.length} canaries, one entry, no dangling import, ${eagerKb} KB before the first frame`)

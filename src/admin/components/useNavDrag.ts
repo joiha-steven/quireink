@@ -47,6 +47,22 @@ export function useNavDrag(arrange: Draggable): void {
    */
   const seen = useRef(new Map<string, number>())
   useLayoutEffect(() => {
+    /**
+     * ONLY WHILE A ROW IS BEING CARRIED.
+     *
+     * `getBoundingClientRect` on the first row flushes pending layout, and this ran on every
+     * render of the rail — which is every route change, every collapse, every rename — to
+     * measure twenty rows that had not moved and animate none of them. Nothing outside a drag
+     * reorders this list, so nothing outside a drag has a First to remember.
+     *
+     * Clearing on the way out is the other half: a baseline kept between drags would be
+     * measured against a rail that has since collapsed, scrolled or grown a row, and the next
+     * drag would open by sliding every row in from wherever it used to be.
+     */
+    if (!arrange.dragging) {
+      seen.current.clear()
+      return
+    }
     const rows = [...document.querySelectorAll<HTMLElement>('[data-nav-row]')]
     const now = new Map<string, number>()
     const quiet = !motionOn()
