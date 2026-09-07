@@ -33,7 +33,7 @@ const HUES: Record<LampState, string> = {
   off: 'bg-neutral-300 dark:bg-neutral-600',
 }
 
-export function Lamp({ state, title }: { state: LampState; title?: string }) {
+export function Lamp({ state, title, pulse = false }: { state: LampState; title?: string; pulse?: boolean }) {
   return (
     <span
       // A role and a name, not `aria-hidden`: unlike the toast's dot, this lamp is sometimes
@@ -43,7 +43,11 @@ export function Lamp({ state, title }: { state: LampState; title?: string }) {
       aria-label={title}
       aria-hidden={title ? undefined : true}
       title={title}
-      className={`inline-block h-2 w-2 shrink-0 rounded-full ${HUES[state]}`}
+      // A SLOW BREATH, and only for one meaning: something that has not happened YET. A
+      // scheduled post is not waiting on the owner the way an unsaved card is, so it wears
+      // the amber without the alarm — 2s in and out is a lamp on standby, not a blink.
+      // `admin.css` gates the keyframe behind the motion switch like every other one.
+      className={`inline-block h-2 w-2 shrink-0 rounded-full ${HUES[state]} ${pulse ? 'lamp-pulse' : ''}`}
     />
   )
 }

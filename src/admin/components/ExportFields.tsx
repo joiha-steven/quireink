@@ -13,6 +13,7 @@ import { ToggleField } from '@/admin/ui/Switch'
 import { useToast } from '@/admin/ui/Toast'
 import { useConfirm } from '@/admin/ui/ConfirmDialog'
 import { useAdminT } from './I18nProvider'
+import { Lamp } from '@/admin/ui/Lamp'
 import { NOTE, NOTE_TEXT, PANEL_LIST } from './kit'
 import type { ApiResponse, BackupSettings } from '@/types'
 
@@ -174,7 +175,15 @@ export function ExportFields({
           <Button variant="secondary" onClick={runNow} disabled={busy !== null}>
             {busy === 'run' ? t.exportBusy : t.backupNow}
           </Button>
-          <span className="text-xs text-neutral-500 dark:text-neutral-400">
+          {/* THE LAMP SAYS WHETHER THERE IS ONE AT ALL, before the date is read. "Last
+              backup: never" and "Last backup: 3 days ago" are the same shape of sentence and
+              read the same at a glance, which is the wrong answer for the one line on this
+              screen that can mean there is no copy of the blog anywhere. */}
+          <span className="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400">
+            <Lamp
+              state={snapshots[0] ? 'good' : 'attention'}
+              title={snapshots[0] ? t.backupLastRun : t.backupNever}
+            />
             {`${t.backupLastRun}: ${snapshots[0] ? when(snapshots[0].createdAt) : t.backupNever}`}
           </span>
         </div>

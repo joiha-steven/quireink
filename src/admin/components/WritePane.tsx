@@ -30,6 +30,7 @@ import { SlideOver } from './SlideOver'
 import { TaxonomyManager } from './TaxonomyManager'
 import { SeriesManager } from './SeriesManager'
 import { Tick } from '@/admin/ui/Tick'
+import { Lamp } from '@/admin/ui/Lamp'
 import { useAdminT } from './I18nProvider'
 import { useWritingItems, type WriteNeeds, type WriteScope, type WriteSort } from './useWritingItems'
 import { Marked } from './Marked'
@@ -242,6 +243,8 @@ function Rows({
             const active = !picking && it.slug === activeSlug
             const ticked = chosen.has(key)
             const drafty = it.status !== 'published'
+            // Published with a date still ahead: out of your hands, not out of the door.
+            const queued = !drafty && it.created > Date.now()
             // The date beside "Published" is the PUBLICATION date — showing the last save
             // there read as a wrong publish time. A draft's only honest date is its save.
             const when = !drafty && it.kind === 'post' ? it.created : it.touched
@@ -271,14 +274,19 @@ function Rows({
                   {picking ? (
                     <Tick checked={ticked} onChange={() => toggle(key)} disabled={busy} className="mt-0.5 self-start" />
                   ) : (
-                    /* The mock's dot: work still on the desk wears the pen's edge — the one
-                       accent the admin has — and published is the quiet neutral. */
-                    <span
-                      aria-hidden
-                      className={`mt-1.5 h-1.5 w-1.5 shrink-0 self-start rounded-full ${
-                        drafty ? 'bg-[var(--pen-edge)]' : 'bg-neutral-300 dark:bg-neutral-600'
-                      }`}
-                    />
+                    /* THE ROW'S STATE, in the admin's one lamp rather than in a dot of its
+                       own. Three answers, not two: a draft is amber because it is waiting on
+                       YOU, a scheduled post is amber BREATHING because it is waiting on the
+                       clock, and a published one is green because it is done. The pen's edge
+                       said only "not published", which put a piece queued for Tuesday and a
+                       paragraph typed this morning under the same mark. */
+                    <span className="mt-1.5 flex shrink-0 self-start">
+                      <Lamp
+                        state={drafty ? 'attention' : queued ? 'attention' : 'good'}
+                        pulse={queued}
+                        title={drafty ? t.statusDraft : queued ? t.scheduled : t.statusPublished}
+                      />
+                    </span>
                   )}
                   <span className="min-w-0">
                     <span className={`block text-sm ${active ? 'font-semibold' : 'font-medium'} text-neutral-900 dark:text-white ${!it.title ? 'italic text-neutral-500 dark:text-neutral-400' : ''}`}>

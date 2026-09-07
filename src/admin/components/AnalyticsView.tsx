@@ -14,6 +14,7 @@ import { NumBand, SHEET, SheetTop } from './sheet'
 import { DeliveryPanel } from './DeliveryPanel'
 import { PieceIndex } from './PieceIndex'
 import { useAdminT } from './I18nProvider'
+import { Lamp } from '@/admin/ui/Lamp'
 
 const RANGES = [1, 7, 30, 365, 'all'] as const
 // What the server can SEND, not what the tabs OFFER: `rangeOf` in `web/admin/views.ts`
@@ -53,12 +54,14 @@ function LiveNow({ initial, titles }: { initial: RightNow; titles: Record<string
   const live = now.visitors > 0
   return (
     <div className="flex items-baseline gap-2 border-b border-neutral-100 px-4 py-2 text-xs dark:border-neutral-800">
-      <span
-        aria-hidden
-        className={`inline-block h-1.5 w-1.5 shrink-0 self-center rounded-full ${
-          live ? 'animate-pulse bg-[var(--pen-edge)]' : 'bg-neutral-300 dark:bg-neutral-600'
-        }`}
-      />
+      {/* The admin's one lamp, so "somebody is reading" wears the same mark as every other
+          live state on the screen. GREEN and breathing while there is somebody, `off` when
+          the site is quiet — quiet is not a fault, and amber here would say it was.
+          `animate-pulse` was a 1s Tailwind blink; the lamp's own breath is 2s and sits
+          behind the motion switch, which the blink did not. */}
+      <span className="flex shrink-0 self-center">
+        <Lamp state={live ? 'good' : 'off'} pulse={live} title={live ? t.analyticsNowReading.replace('{n}', String(now.visitors)) : t.analyticsNowQuiet} />
+      </span>
       {live ? (
         <>
           <span className="whitespace-nowrap text-neutral-700 dark:text-neutral-200">
