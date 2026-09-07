@@ -144,6 +144,19 @@ describe('a returning reader is answered with nothing', () => {
     expect((await second.arrayBuffer()).byteLength).toBe(0)
   })
 
+  // A browser merges a 304's headers into the entry it just revalidated. When the 304 said
+  // `no-store` the entry was dropped, so the very next visit was a full 200 and the
+  // validator paid off on alternate requests at best.
+  it('answers the 304 with the same caching instructions as the 200', async () => {
+    const first = await get('/long', MODERN)
+    const control = first.headers.get('cache-control')
+    expect(control).toContain('s-maxage')
+    const second = await get('/long', { ...MODERN, 'if-none-match': first.headers.get('etag')! })
+    expect(second.status).toBe(304)
+    expect(second.headers.get('cache-control')).toBe(control)
+    expect(second.headers.get('cache-control')).not.toContain('no-store')
+  })
+
   it('gives the two encodings of one page different tags', async () => {
     // A strong ETag names ONE representation. If the brotli and the gzip of a page shared a
     // tag, a client holding one could be told the other was unchanged, and would decode a

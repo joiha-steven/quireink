@@ -39,9 +39,18 @@ export function cacheHeaders(): MiddlewareHandler {
     // A handler that has already said what it wants is left alone: the asset routes are
     // immutable-for-a-year, and the machine surfaces set their own.
     if (c.res.headers.has('cache-control')) return
-    // Anything that is not a 200 is refused a shared cache whatever its type: a public miss
-    // is now a rendered page in the site shell, and a cached 404 outlives the reason for it.
-    if (c.res.status !== 200 || OWNER_PATH.test(c.req.path)) {
+    // Anything that is not a 200 or its 304 is refused a shared cache whatever its type: a
+    // public miss is now a rendered page in the site shell, and a cached 404 outlives the
+    // reason for it.
+    //
+    // ⚠ THE 304 IS THE SAME RESOURCE as the 200 it revalidates, and it has to carry the
+    // same instructions. This middleware is registered before `compression`, so its own
+    // code runs after that one has already turned a matching `If-None-Match` into a 304 —
+    // and the old status check then stamped `no-store` on it. A browser merging those
+    // headers into the entry it just revalidated dooms the entry, so the next visit was a
+    // full 200 again and the validator paid off every other request at best.
+    const revalidated = c.res.status === 304
+    if ((c.res.status !== 200 && !revalidated) || OWNER_PATH.test(c.req.path)) {
       c.res.headers.set('cache-control', PRIVATE)
       return
     }
