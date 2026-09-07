@@ -57,8 +57,17 @@ export function HelpGuide({ title, version, firstRunTitle }: {
         <FirstRunSteps />
       </Card>
 
-      {/* Jump index — the page is long by design; this keeps it a reference. */}
-      <nav className="flex flex-wrap gap-2">
+      {/* Jump index — the page is long by design; this keeps it a reference.
+          STICKY since 2026-09-07, and it is CSS rather than a widget: this page runs to
+          about six screens, and an index that scrolls away at screen one is an index you
+          can only use before you have read anything. `-mx-5 px-5` so the backdrop covers
+          the sheet's own padding instead of leaving 20px of text sliding past either end,
+          and `top-0` because the sheet is what scrolls, not a pane inside it.
+          ⚠️ NO SEARCH BOX HERE, and the reason is at the top of this file: the Help screen
+          is a pure server component and ships no client JS. A box that filters needs some,
+          and "make Help interactive" is a bigger decision than a help search — the settings
+          search and the command palette already reach every setting by name. */}
+      <nav className="sticky top-0 z-10 -mx-5 flex flex-wrap gap-2 border-b border-neutral-100 bg-white/95 px-5 py-3 backdrop-blur-xl dark:border-neutral-800 dark:bg-neutral-900/95">
         {INDEX.map(([id, label]) => (
           <a
             key={id}
