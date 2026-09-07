@@ -107,3 +107,42 @@ describe('the mark cannot be painted over', () => {
     expect(rows).toContain('active ? SIDEBAR_NAV_QUIET : SIDEBAR_NAV')
   })
 })
+
+describe('the dark highlighter is legible, and it is measured', () => {
+  /** WCAG relative luminance from a `#rrggbb` string. */
+  const lum = (hex: string): number => {
+    const p = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
+      .map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4))
+    return 0.2126 * (p[0] ?? 0) + 0.7152 * (p[1] ?? 0) + 0.0722 * (p[2] ?? 0)
+  }
+  const ratio = (a: string, b: string): number => {
+    const x = lum(a), y = lum(b)
+    return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05)
+  }
+  /** Every `--pen:` declaration in the admin sheet, in source order: light first, then dark. */
+  const pens = [...readFileSync('src/admin/admin.css', 'utf8').matchAll(/--pen:\s*(#[0-9a-f]{6})/gi)]
+    .map((m) => m[1] as string)
+
+  it('has a pen of its own in dark, not the light one dimmed', () => {
+    // ⚠️ TWO INKS, and the second is the reason this file has a section about dark at all.
+    // The light pen is #d5f856, a highlighter on white paper. Painted into a dark admin it
+    // is a slab of lime with no relation to anything around it, so dark gets an OLIVE — the
+    // same marker seen under low light.
+    expect(pens.length).toBeGreaterThanOrEqual(2)
+    expect(pens[0]).not.toBe(pens[1])
+  })
+
+  it('carries a label that clears 4.5:1 on each pen', () => {
+    // The ink FLIPS with the theme and only the ink: near-black on the light pen, white on
+    // the dark one. Measured rather than asserted, because the first dark cut kept the
+    // near-black and it came out at 3.8:1 — under the 4.5 a label has to clear, and it read
+    // as grey smeared on mustard.
+    const light = pens[0] as string
+    const dark = pens[1] as string
+    expect(ratio('#0a0a0a', light)).toBeGreaterThanOrEqual(4.5)
+    expect(ratio('#ffffff', dark)).toBeGreaterThanOrEqual(4.5)
+    // And the pairing the code does NOT use, so the number that drove the decision is on
+    // the record rather than in a comment somebody can edit without re-measuring.
+    expect(ratio('#0a0a0a', dark)).toBeLessThan(4.5)
+  })
+})
