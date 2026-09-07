@@ -86,3 +86,35 @@ describe('rename and delete', () => {
     expect(await getRevisions('a-post')).toHaveLength(0)
   })
 })
+
+// A revision carries the terms, the excerpt, the date and the status as well as the body,
+// and `restoreRevision` puts all of them back. Deduping on body and title alone meant that
+// once the newest revision shared a body with what was being saved, every later change to
+// one of the others was dropped and could not be restored.
+describe('what counts as the same version', () => {
+  it('snapshots a change that is not in the body or the title', async () => {
+    const base = {
+      slug: 'meta-only', title: 'Meta only', date: '2020-01-01T00:00:00.000Z',
+      status: 'draft' as const, categories: [] as string[], tags: [] as string[],
+      content: 'one paragraph, unchanged throughout',
+    }
+    await pushRevision(base)
+    await pushRevision({ ...base, tags: ['added'] })
+    await pushRevision({ ...base, tags: ['added'], excerpt: 'a standfirst' })
+
+    const kept = await getRevisions('meta-only')
+    expect(kept).toHaveLength(3)
+    expect(kept[0]?.excerpt).toBe('a standfirst')
+    expect(kept[1]?.tags).toEqual(['added'])
+  })
+
+  it('still refuses a snapshot identical in every field', async () => {
+    const base = {
+      slug: 'identical', title: 'Identical', date: '2020-01-01T00:00:00.000Z',
+      status: 'draft' as const, categories: ['x'], tags: ['y'], content: 'body',
+    }
+    await pushRevision(base)
+    await pushRevision({ ...base })
+    expect(await getRevisions('identical')).toHaveLength(1)
+  })
+})

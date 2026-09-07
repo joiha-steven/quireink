@@ -42,3 +42,19 @@ describe('isValidDestination', () => {
     expect(isValidDestination('')).toBe(false)
   })
 })
+
+// A WordPress export gives permalinks as `<link>` URLs, and `URL.pathname` is always
+// percent-encoded. The router hands over a decoded path, so a redirect stored encoded was
+// a row that could never match: every inbound link to a non-ASCII permalink answered 404
+// while the import report counted the redirect as saved.
+describe('one spelling of a path, encoded or not', () => {
+  it('stores and looks up the decoded form', () => {
+    expect(normalizePath('/2020/05/b%C3%A0i-vi%E1%BA%BFt')).toBe('/2020/05/bài-viết')
+    expect(normalizePath('/2020/05/bài-viết')).toBe('/2020/05/bài-viết')
+    expect(normalizePath('/caf%C3%A9/')).toBe('/café')
+  })
+
+  it('leaves a malformed escape exactly as it was written', () => {
+    expect(normalizePath('/100%-real')).toBe('/100%-real')
+  })
+})

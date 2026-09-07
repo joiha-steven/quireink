@@ -48,6 +48,16 @@ export async function getRevisions(slug: string): Promise<PostRevision[]> {
   }
 }
 
+/** Everything a revision carries, so "the same version" means the same in both directions. */
+function sameSnapshot(a: PostWithContent, b: PostWithContent): boolean {
+  const of = (p: PostWithContent) => JSON.stringify([
+    p.title, p.content, p.date, p.status, p.excerpt ?? '', p.featuredImage ?? '',
+    p.coverImage ?? '', p.series ?? '', p.seriesOrder ?? 0,
+    [...p.categories].sort(), [...p.tags].sort(),
+  ])
+  return of(a) === of(b)
+}
+
 // Snapshot a version that is about to be overwritten. Inserts it and trims to
 // MAX_REVISIONS. Skips a snapshot identical to the latest one so a no-op autosave
 // never evicts a genuinely older version.
@@ -58,7 +68,15 @@ export async function pushRevision(previous: PostWithContent): Promise<void> {
     previous.slug,
   )
   const top = latest ? (JSON.parse(latest.data) as PostWithContent) : undefined
-  if (top && top.content === snapshot.content && top.title === snapshot.title) return
+  // IDENTICAL MEANS THE WHOLE SNAPSHOT, not just its body and its title.
+  //
+  // A revision stores the excerpt, the terms, the status, the date and the featured image
+  // as well, and `restoreRevision` puts all of them back — so two snapshots that differ in
+  // any of those are two different versions. Comparing only content and title meant that
+  // once the newest revision shared a body with what was being saved, every later change to
+  // a date, a tag or an excerpt was dropped: the owner could not get the previous one back,
+  // and the time machine showed nothing new to explain why.
+  if (top && sameSnapshot(top, snapshot)) return
 
   run(
     `insert into post_revisions (slug, data, saved_at) values (?, ?, ?)`,

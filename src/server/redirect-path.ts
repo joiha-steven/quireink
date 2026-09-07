@@ -9,6 +9,19 @@ export function normalizePath(input: string): string {
   let p = (input ?? '').trim()
   if (!p) return ''
   p = p.split('#')[0].split('?')[0]
+  // DECODED, on both sides of the question.
+  //
+  // A WordPress export gives its permalinks as `<link>` URLs, and `URL.pathname` is always
+  // percent-encoded — so an import stored `/2020/05/b%C3%A0i-vi%E1%BA%BFt` while the router
+  // hands this function `/2020/05/bài-viết`, and the two never met. Every inbound link to a
+  // non-ASCII permalink answered 404, and the import report counted the redirect as saved.
+  // Storing the decoded form makes one spelling of a path, which is the same rule the rest
+  // of this file is about. A malformed escape is left as it was written.
+  try {
+    p = decodeURIComponent(p)
+  } catch {
+    /* not valid encoding: compare the literal */
+  }
   if (!p.startsWith('/')) p = `/${p}`
   p = p.replace(/\/+/g, '/') // collapse duplicate slashes
   if (p.length > 1) p = p.replace(/\/$/, '') // drop trailing slash (keep root '/')
