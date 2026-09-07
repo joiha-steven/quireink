@@ -29,6 +29,9 @@ describe('listing controls', () => {
     document.querySelector<HTMLButtonElement>('[data-grid-toggle]')!.click()
     expect(document.documentElement.dataset.list).toBe('grid')
     expect(document.querySelector('[data-grid-toggle]')!.getAttribute('aria-pressed')).toBe('true')
+    // A toggle has ONE name and two states. Swapping the name as well announced "List view,
+    // toggle button, pressed": the name said one thing and the state said the other.
+    expect(document.querySelector('[data-grid-toggle]')!.getAttribute('aria-label')).toBe('Grid view')
 
     // A second page load, same reader.
     page(`<button data-grid-toggle></button>${page1}`, LABELS)

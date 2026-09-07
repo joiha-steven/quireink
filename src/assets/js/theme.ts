@@ -133,9 +133,16 @@ function dropdown(
   button.replaceWith(wrap)
   wrap.append(button, menu)
 
+  // Closing puts focus back on the button that opened it, and only when it was inside the
+  // menu: picking a row or pressing Escape used to leave focus on an element about to become
+  // `hidden`, so it fell to `<body>` and the next Tab started again from the top of the page.
+  // The `contains` check is what keeps the document-level closers from stealing focus off
+  // whatever the reader is actually on.
   const close = () => {
+    const inside = menu.contains(document.activeElement)
     menu.hidden = true
     button.setAttribute('aria-expanded', 'false')
+    if (inside) button.focus()
   }
   closers.push(close)
   // `aria-haspopup="true"` and the initial `aria-expanded="false"` are in the markup

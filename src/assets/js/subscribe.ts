@@ -85,6 +85,9 @@ function overlay(): void {
     e.preventDefault() // the href stays a working fallback for a middle-click or no JS
     if (dialog) {
       dialog.showModal()
+      // The field, every time: `showModal` would otherwise hand the second opening to the
+      // close button, which is the first focusable child.
+      dialog.querySelector('input')?.focus()
       return
     }
     // A `<dialog>`, so Escape, the focus trap and the inert background are the browser's —

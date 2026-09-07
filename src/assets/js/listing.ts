@@ -36,10 +36,14 @@ function gridToggle(): void {
     return
   }
 
+  // ONE name, and `aria-pressed` carries the state. Swapping the label as well as the state
+  // meant a screen reader announced "List view, toggle button, pressed" in grid: the name
+  // said one thing and the state said the other, and a toggle is a control that has one name
+  // and two states.
+  button.setAttribute('aria-label', label('gridView'))
   const apply = (grid: boolean) => {
     document.documentElement.dataset.list = grid ? 'grid' : 'list'
     button.setAttribute('aria-pressed', String(grid))
-    button.setAttribute('aria-label', label(grid ? 'listView' : 'gridView'))
   }
 
   let grid = false

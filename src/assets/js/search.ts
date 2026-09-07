@@ -60,6 +60,10 @@ export function search(): void {
   function open(): void {
     if (dialog) {
       dialog.showModal()
+      // The FIELD, every time. `showModal` focuses the first focusable child by itself, and
+      // that is the close button, so the second press of `/` opened a search box the reader
+      // then had to Tab into.
+      dialog.querySelector('input')?.focus()
       return
     }
     const input = el('input', {
