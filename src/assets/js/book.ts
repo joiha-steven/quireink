@@ -17,7 +17,7 @@
 
 import { el, label } from './dom'
 import { fadeSwap, onScrollFrame } from './motion'
-import { openScrollReader, sizeControl } from './book-scroll'
+import { openScrollReader, sizeControl, renameAnchors } from './book-scroll'
 
 const OUTER_MARGIN = 48 // px, the minimum gap from the spread to the viewport edge
 // A phone cannot afford the desktop's margins: 48px a side took 96 of a 375px screen —
@@ -55,6 +55,12 @@ export function book(): void {
 
   let dialog: HTMLDialogElement | null = null
   let scrolling: { close: () => void } | null = null
+  // Where the phone reader sends focus on the way out. Everything outside the reader is
+  // display:none while it is open, so the button that opened it cannot hold focus; and the
+  // one that was clicked may be the copy that has no box at this width, so this asks which
+  // one is on screen at the moment it is needed rather than remembering which was pressed.
+  const opener = (): HTMLElement | undefined =>
+    [...toggles, fab].find((t) => t.getClientRects().length > 0)
 
   // The phone reads by SCROLLING, not by turning: see the note at the top of
   // `book-scroll.ts`. The width is the same 640 the rest of the phone rules use, and it is
@@ -69,7 +75,7 @@ export function book(): void {
       // Nothing to re-measure: one column, scrolled, so a bigger glyph is simply a longer
       // page. `sizeControl` is the same pair the spread uses (`book-scroll.ts`).
       const size = sizeControl({ min: SCALE_MIN, max: SCALE_MAX, step: SCALE_STEP, key: SCALE_KEY }, () => {})
-      scrolling = openScrollReader(source!, heading, { sizes: size.sizes, onScale: size.attach })
+      scrolling = openScrollReader(source!, heading, { sizes: size.sizes, onScale: size.attach }, opener)
       return
     }
     if (dialog) {
@@ -80,6 +86,7 @@ export function book(): void {
     // A CLONE. The original stays in the document, so the page a search engine and a screen
     // reader see is untouched by anything that happens in here.
     flow.innerHTML = source!.innerHTML
+    renameAnchors(flow)
 
     // The flow is also `.prose`, so the body keeps the article's own typography inside the
     // reader: the drop cap, the indents and the justification are the same rules.

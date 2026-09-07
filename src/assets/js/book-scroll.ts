@@ -65,10 +65,33 @@ export function sizeControl(limits: { min: number; max: number; step: number; ke
   }
 }
 
+/**
+ * Give a cloned article its own anchors.
+ *
+ * A copy of the body carries a copy of every heading id and every footnote marker, so while
+ * a reader is open the document holds two `#fn-1` and two of each heading. A footnote link
+ * then lands on whichever the browser picks first, which is as often as not the copy that is
+ * `display:none`. Prefixing both the ids and the same-document hrefs keeps the copy's links
+ * inside the copy and leaves the original's alone, with no listener to carry.
+ */
+export function renameAnchors(clone: HTMLElement): void {
+  for (const node of clone.querySelectorAll<HTMLElement>('[id]')) node.id = `bk-${node.id}`
+  for (const a of clone.querySelectorAll<HTMLAnchorElement>('a[href^="#"]')) {
+    a.setAttribute('href', `#bk-${a.getAttribute('href')!.slice(1)}`)
+  }
+}
+
 export function openScrollReader(
   source: HTMLElement,
   heading: string,
   chrome: { sizes: HTMLElement; onScale: (el: HTMLElement) => void },
+  /**
+   * Where focus goes on the way out, asked for at that moment rather than remembered.
+   * An article carries the control twice (the meta line and the gutter panel) and exactly
+   * one of them has a box at any width, so the one that was clicked is not necessarily the
+   * one a reader can be sent back to.
+   */
+  opener?: () => HTMLElement | null | undefined,
 ): Session {
   const html = document.documentElement
   const wasAt = scrollY
@@ -77,6 +100,7 @@ export function openScrollReader(
   // A CLONE, like the spread's: the document's own article is untouched, so a screen reader
   // and a crawler see exactly what they saw before.
   flow.innerHTML = source.innerHTML
+  renameAnchors(flow)
 
   const close = el('button', {
     type: 'button', class: 'book-x', 'aria-label': label('bookModeClose'), title: label('bookModeClose'),
@@ -114,6 +138,11 @@ export function openScrollReader(
   html.classList.add('book-reading')
   document.body.appendChild(reader)
   scrollTo(0, 0)
+  // Focus follows the reader in. Everything outside `.book-reader` is display:none while
+  // this is open, and the button that opened it is one of those things — so focus fell to
+  // `<body>` and a keyboard reader had to Tab from the top of a page they could not see.
+  reader.tabIndex = -1
+  reader.focus()
 
   // THE CHROME FOLLOWS THE DIRECTION, not the position: away on the way down, back on the
   // way up. The 8px threshold is what keeps it still — iOS reports a few pixels of scroll
@@ -129,6 +158,11 @@ export function openScrollReader(
 
   const teardown = () => {
     html.classList.remove('book-reading')
+    // Back to the control that opened it. AFTER a frame, and for the same reason the scroll
+    // restore below waits: the opener is `display:none` until the class above comes off and
+    // the style recalculates, and `focus()` on a hidden element does nothing at all.
+    const returning = reader.contains(document.activeElement)
+    if (returning) requestAnimationFrame(() => opener?.()?.focus())
     reader.remove()
     stop()
     removeEventListener('keydown', onKey)

@@ -153,7 +153,14 @@ const BUDGET: Record<string, number> = {
   // Only on a page whose switch is on (article.ts). Priced with their own copy of `dom` and
   // `motion` (~1.5 KB each): an IIFE cannot share, and a shared chunk would be a request
   // every page pays for two pages' benefit.
-  'book-mode.js': 7_600,
+  //
+  // 7,700 since 2026-09-07, for two things a reader can feel. The reader is a CLONE of the
+  // article, so while it was open the document held two of every heading id and every
+  // footnote marker: a footnote link landed on whichever copy the browser picked first,
+  // which is as often as not the one that is display:none. The clone's anchors are now its
+  // own. And the phone reader hides everything outside itself, including the button that
+  // opened it, so focus fell to the body: it now follows the reader in and back out.
+  'book-mode.js': 7_700,
   'comment-thread.js': 6_700,
   // /login only, and NOT loaded with core.js: the sign-in page carries no beacon, no
   // search overlay and no listing controls, so it pays for the reveal toggle, the caps-lock
