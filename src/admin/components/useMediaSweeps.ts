@@ -89,7 +89,7 @@ export function useMediaSweeps(setItems: (items: MediaItem[]) => void) {
       // fixes, and the second one is reached with everything apparently configured.
       const why = error instanceof Error && error.message === 'ai_cannot_see_images'
         ? t.aiCannotSeeImages
-        : t.aiNotConfigured
+        : t.aiNotConfigured.replace('{tab}', t.tabServer)
       notify(why, 'error')
     } finally {
       setDescribing(false)

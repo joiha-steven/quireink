@@ -46,3 +46,17 @@ export function useAdminLang(): SiteLang {
 export function useSetAdminLang(): (l: SiteLang) => void {
   return useCtx().setLang
 }
+
+/**
+ * A message that names a SETTINGS TAB, with the tab's own translated name filled in.
+ *
+ * ⚠️ THE STRINGS USED TO SPELL THE TAB OUT, and ADR 0041 renamed every tab underneath them.
+ * Six messages in eleven languages went on saying "Settings → AI", "Settings → Integrations"
+ * and "Settings → System" after those three tabs stopped existing — instructions that send an
+ * owner looking for a word that is not on the screen. The tab name is now a `{tab}` hole and
+ * this fills it from the same dictionary entry the tab strip reads, so the next rename moves
+ * the messages with it.
+ */
+export function useTabbed(): (message: string, tab: string) => string {
+  return (message, tab) => message.replace('{tab}', tab)
+}

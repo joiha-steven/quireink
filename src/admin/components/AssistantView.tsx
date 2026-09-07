@@ -22,7 +22,7 @@ import type { ApiResponse } from '@/types'
 import { CONTROL, EmptyState, META, PageHeader } from './kit'
 import { SHEET_FIXED, SHEET_TOOL, SheetTop } from './sheet'
 import { Button } from '@/admin/ui/Button'
-import { useAdminT } from './I18nProvider'
+import { useAdminT, useTabbed } from './I18nProvider'
 import { ChatPane, tokens, type ChatSummary } from './ChatPane'
 import { Exchange, type Block, type Pending, type Turn } from './Exchange'
 import { ToolLog, useToolLog } from './ToolLog'
@@ -62,6 +62,7 @@ export function AssistantView({ title, configured, model }: {
   title: string; configured: boolean; model: string
 }) {
   const t = useAdminT()
+  const tabbed = useTabbed()
   const [turns, setTurns] = useState<Turn[]>([])
   const [draft, setDraft] = useState('')
   const [busy, setBusy] = useState(false)
@@ -211,7 +212,7 @@ export function AssistantView({ title, configured, model }: {
       }
     } catch (e) {
       const msg = (e as Error).message
-      setError(msg === 'ai_not_configured' ? t.aiNotConfigured : t.assistantFailed)
+      setError(tabbed(msg === 'ai_not_configured' ? t.aiNotConfigured : t.assistantFailed, t.tabServer))
     } finally {
       setLive('')
       setBusy(false)
@@ -250,7 +251,7 @@ export function AssistantView({ title, configured, model }: {
               not a silent state: it is a link to the screen that fixes it. */}
           {configured
             ? <span className={META}>{t.assistantModelOn} <span className="text-neutral-700 dark:text-neutral-300">{model || t.aiProviderOff}</span></span>
-            : <Link href={AI_SETTINGS} className={SHEET_TOOL}>{t.aiNotConfigured}</Link>}
+            : <Link href={AI_SETTINGS} className={SHEET_TOOL}>{tabbed(t.aiNotConfigured, t.tabServer)}</Link>}
           {/* HOW BIG THIS CONVERSATION HAS BECOME, which is the number that decides when
               to start another one. Not a total of what was spent: every question re-sends
               the whole conversation, so THIS is what the next one pays again. Amber past
@@ -296,7 +297,7 @@ export function AssistantView({ title, configured, model }: {
             <EmptyState
               glyph="pen"
               title={configured ? t.assistantEmpty : t.assistantNoModel}
-              description={configured ? t.assistantIntro : t.assistantNeedsModel}
+              description={tabbed(configured ? t.assistantIntro : t.assistantNeedsModel, t.tabServer)}
               action={configured
                 ? (
                   <div className="flex flex-wrap justify-center gap-2">
@@ -314,7 +315,7 @@ export function AssistantView({ title, configured, model }: {
                 )
                 : (
                   <Link href={AI_SETTINGS} className={`${CHIP} transition hover:border-neutral-400 hover:text-neutral-900 dark:hover:border-neutral-500 dark:hover:text-neutral-100`}>
-                    {t.assistantOpenAi}
+                    {tabbed(t.assistantOpenAi, t.tabServer)}
                   </Link>
                 )}
             />

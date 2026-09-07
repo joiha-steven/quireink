@@ -5,7 +5,7 @@ import { useState } from 'react'
 import Link from '@/admin/router'
 import { PageHeader, type TabItem, Tabs } from './kit'
 import { SHEET, SHEET_FOOT, SheetTop, SHEET_TOOL_ON_CANVAS } from './sheet'
-import { useAdminT } from './I18nProvider'
+import { useAdminT, useTabbed } from './I18nProvider'
 import { NewsletterSubscribers } from './NewsletterSubscribers'
 import { NewsletterSend, type SendablePost } from './NewsletterSend'
 import { NewsletterTest } from './NewsletterTest'
@@ -14,6 +14,7 @@ type Tab = 'people' | 'send' | 'test'
 
 export function NewsletterView({ posts, mailConfigured }: { posts: SendablePost[]; mailConfigured: boolean }) {
   const t = useAdminT()
+  const tabbed = useTabbed()
   const [tab, setTab] = useState<Tab>('people')
 
   const TABS: TabItem<Tab>[] = [
@@ -41,7 +42,7 @@ export function NewsletterView({ posts, mailConfigured }: { posts: SendablePost[
         {/* One banner, not one per tab: nothing on this page can send without SMTP. */}
         {!mailConfigured && (
           <p className="border-b border-neutral-100 bg-neutral-50 px-5 py-2.5 text-sm text-neutral-600 dark:border-neutral-800 dark:bg-neutral-900/60 dark:text-neutral-400">
-            {t.nlNoSmtpWarning}
+            {tabbed(t.nlNoSmtpWarning, t.tabPeople)}
           </p>
         )}
         {tab === 'people' && <NewsletterSubscribers />}

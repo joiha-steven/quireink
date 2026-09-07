@@ -14,7 +14,7 @@ import type { SiteSettings } from '@/types'
 import { SettingsCard } from './SettingsCard'
 import { SettingsGroup } from './SettingsGroup'
 import { ConnectionCard } from './ConnectionCard'
-import { useAdminT } from './I18nProvider'
+import { useAdminT, useTabbed } from './I18nProvider'
 import { SecurityFields } from './SecurityFields'
 import { AdvancedFields } from './AdvancedFields'
 import { ActivityLogField } from './FeatureFields'
@@ -30,6 +30,7 @@ export function SettingsAccountTab({ s, update, form, grid, col }: {
   col: string
 }) {
   const t = useAdminT()
+  const tabbed = useTabbed()
   return (
     <div className={grid}>
       <div className={col}>
@@ -57,7 +58,7 @@ export function SettingsAccountTab({ s, update, form, grid, col }: {
             <div className={PANEL_LIST}>
               <ToggleRow
                 label={t.dashboardSystemLine}
-                desc={t.dashboardSystemLineDesc}
+                desc={tabbed(t.dashboardSystemLineDesc, t.tabServer)}
                 checked={s.dashboard.systemLine}
                 onChange={(systemLine) => update({ dashboard: { ...s.dashboard, systemLine } })}
               />
