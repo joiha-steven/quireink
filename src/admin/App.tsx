@@ -6,7 +6,7 @@
 // check in the client would be decoration.
 
 import { Suspense, lazy, type ComponentType, type ReactNode } from 'react'
-import { RouterProvider, usePathname } from '@/admin/router'
+import { RouterProvider, usePathname, useNavSeq } from '@/admin/router'
 import { useView } from '@/admin/useView'
 import { AdminI18nProvider, useAdminT } from '@/admin/components/I18nProvider'
 import { ToastProvider } from '@/admin/ui/Toast'
@@ -206,6 +206,11 @@ function Shell() {
   // Read here rather than inside the boundary: it is the boundary's KEY, so it has to change
   // in the tree that renders it.
   const path = usePathname()
+  // The other half of that key. The path alone cannot tell a second visit from the first, and
+  // one screen needs it to: the editor moves the address itself after a first save, so a click
+  // on New post afterwards is a push to the path this router still believes it is on. Keyed on
+  // the path alone, nothing remounted and the blank sheet came up holding the saved piece.
+  const nav = useNavSeq()
   // A shell that cannot load is not a slow shell. `error` and `reload` were both being
   // thrown away here, so a 500 from `/api/admin/view/shell` — a locked database, a settings
   // blob that will not parse — left the owner on an empty grey page with no message, no way
@@ -279,7 +284,7 @@ function Shell() {
                   come into existence. The boundary was already keyed this way for its own
                   reason — leaving a broken page is what resets it — so the class rides along
                   rather than adding a wrapper. */}
-              <ErrorBoundary key={path}>
+              <ErrorBoundary key={`${path}#${nav}`}>
               {/* ⚠️ `min-w-0`, and it is load-bearing rather than tidy. A flex item defaults
                   to `min-width: auto`, which refuses to shrink below its content's intrinsic
                   minimum — so this wrapper, added only to carry the entrance, took the

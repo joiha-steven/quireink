@@ -43,7 +43,12 @@ function toDraft(initial?: PageWithContent): PageDraft {
 export function PageForm({ initial, contentWidth, keySound, autosaveSeconds, autosaveAt }: Props) {
   const t = useAdminT()
   const { notify } = useToast()
-  const storageKey = `quire:draft:page:${initial?.slug ?? 'new'}`
+  // The slug the server holds, and the key the snapshot is filed under: both follow the
+  // piece rather than the screen. The key was fixed at mount, so everything typed AFTER a
+  // new page's first save went on being filed under `new` — where the editor that reopens
+  // that page never looks, and where the next blank sheet reopens it as a piece of its own.
+  const [savedSlug, setSavedSlug] = useState<string | null>(initial?.slug ?? null)
+  const storageKey = `quire:draft:page:${savedSlug ?? 'new'}`
   // A page that has never been saved is reopened rather than offered back. The reasoning,
   // and the measurement, are on `PostForm`.
   const reopened = useRef(initial ? null : readSnapshot<PageDraft>(storageKey)).current
@@ -52,7 +57,6 @@ export function PageForm({ initial, contentWidth, keySound, autosaveSeconds, aut
   const [savedAt, setSavedAt] = useState<string | null>(null)
   const [picker, setPicker] = useState<PickTarget | null>(null)
   const [dirty, setDirty] = useState(reopened !== null)
-  const [savedSlug, setSavedSlug] = useState<string | null>(initial?.slug ?? null)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [asking, setAsking] = useState(false)
   // Mirrors the editor raw/markdown view so the MD switch shows state.

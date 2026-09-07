@@ -49,6 +49,13 @@ function form(initial: PostWithContent) {
 
 const t = adminT('en')
 
+/** The editor with no piece behind it: `/admin/editor`, before anything has been saved. */
+const blank = {
+  allCategories: [], allTags: [], allSeries: [], contentWidth: 672,
+  keySound: { mode: 'off', volume: 0 } as const,
+  autosaveSeconds: 120, autosaveAt: null, timezone: 'Asia/Ho_Chi_Minh',
+}
+
 describe('PostForm, mounted', () => {
   it('shows the title in the sheet and the body inside a live ProseMirror', async () => {
     const { mountAdmin, installFetchMock } = await import('@/admin/test-mount')
@@ -205,5 +212,74 @@ describe('PostForm, mounted', () => {
     // Still dirty — the failed save must not clear the flag that lets the owner retry.
     expect(m.button(t.saveDraft).disabled).toBe(false)
     await m.unmount()
+  })
+
+  /**
+   * LEAVING THE SCREEN IS WHAT WRITES THE SNAPSHOT, on a piece that has never been saved.
+   *
+   * The interval is two minutes by default, so on anything shorter than that the flush on the
+   * way out is the whole of the safety net — and it is the path a writer actually takes: type
+   * a few lines, click something else in the admin, come back. Reported as work lost.
+   */
+  it('writes an unsaved new post to storage on the way out of the screen', async () => {
+    const { mountAdmin, installFetchMock } = await import('@/admin/test-mount')
+    const { PostForm } = await import('@/admin/components/PostForm')
+    const fetchMock = installFetchMock(() => ({ success: true }))
+    restores.push(fetchMock.restore)
+    localStorage.removeItem('quire:draft:post:new')
+    restores.push(() => localStorage.removeItem('quire:draft:post:new'))
+
+    const m = await mountAdmin(<PostForm {...blank} />)
+    await m.flush()
+    await m.type(m.container.querySelector('textarea') as Element, 'Half a thought')
+    await m.flush()
+    // Nothing yet: the first tick is two minutes away, and that is not the failure.
+    expect(localStorage.getItem('quire:draft:post:new')).toBeNull()
+
+    await m.unmount()
+    const kept = JSON.parse(localStorage.getItem('quire:draft:post:new') ?? 'null') as
+      { data: { title: string } } | null
+    expect(kept?.data.title).toBe('Half a thought')
+  })
+
+  /**
+   * THE SNAPSHOT FOLLOWS THE PIECE, not the screen it was opened on.
+   *
+   * The key was fixed at mount, so a new post kept writing to `…:new` after its first save.
+   * Two failures came out of that one key: the editor reopening that post looked under its own
+   * slug and found nothing, so the device copy was invisible; and the next blank sheet found
+   * the saved post's text under `new` and reopened it as a piece of its own, which is how one
+   * post becomes two.
+   */
+  it('files the snapshot under the post once the first save gives it a slug', async () => {
+    const { mountAdmin, installFetchMock } = await import('@/admin/test-mount')
+    const { PostForm } = await import('@/admin/components/PostForm')
+    const fetchMock = installFetchMock((url, init) =>
+      url === '/api/posts' && init?.method === 'POST'
+        ? { success: true, data: { slug: 'half-a-thought' } }
+        : { success: true })
+    restores.push(fetchMock.restore)
+    localStorage.removeItem('quire:draft:post:new')
+    restores.push(() => {
+      localStorage.removeItem('quire:draft:post:new')
+      localStorage.removeItem('quire:draft:post:half-a-thought')
+    })
+
+    const m = await mountAdmin(<PostForm {...blank} />)
+    await m.flush()
+    await m.type(m.container.querySelector('textarea') as Element, 'Half a thought')
+    await m.click(m.button(t.saveDraft))
+    await m.flush()
+    expect(fetchMock.calls[0]?.url).toBe('/api/posts')
+
+    // Typed after the save, and then the screen is left.
+    await m.type(m.container.querySelector('textarea') as Element, 'Half a thought, continued')
+    await m.flush()
+    await m.unmount()
+
+    expect(localStorage.getItem('quire:draft:post:new')).toBeNull()
+    const kept = JSON.parse(localStorage.getItem('quire:draft:post:half-a-thought') ?? 'null') as
+      { data: { title: string } } | null
+    expect(kept?.data.title).toBe('Half a thought, continued')
   })
 })

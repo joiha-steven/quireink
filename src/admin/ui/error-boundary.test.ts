@@ -32,10 +32,15 @@ describe('the admin error boundary', () => {
     expect(ErrorBoundary.getDerivedStateFromError('a string')).toEqual({ error: 'a string' })
   })
 
-  it('is mounted around the route and keyed by the path', async () => {
+  it('is mounted around the route and keyed by the visit, not only the path', async () => {
     // Keyed, so leaving the broken page resets it without a reload — a boundary that stays
     // tripped after you have navigated away is a second way to be stuck.
-    expect(APP).toContain('<ErrorBoundary key={path}>')
+    //
+    // The nav count is the other half, and it is load-bearing beyond the boundary: the editor
+    // moves the address itself after a first save, so a later click on New post pushes the
+    // path the router still believes it is on. On the path alone nothing remounted and the
+    // blank sheet came up holding the piece just saved.
+    expect(APP).toContain('<ErrorBoundary key={`${path}#${nav}`}>')
   })
 
   it('sits INSIDE the canvas, with the sidebar outside it', async () => {

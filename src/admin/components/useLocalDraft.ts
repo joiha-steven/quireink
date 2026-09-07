@@ -165,14 +165,22 @@ export function useLocalAutosave<T>(
 ): number | null {
   const isDirtyRef = useRef(isDirty)
   const snapshotRef = useRef(snapshot)
+  // ⚠️ `save` THROUGH A REF, like the other two, and it is not symmetry: it carries the
+  // STORAGE KEY, and the key changes under a piece that has just been saved for the first
+  // time (`quire:draft:post:new` becomes the post's own). As a dependency, that change tore
+  // the timer down and its cleanup flushed the work back into the key the save had just
+  // emptied — where the editor never looks again, and where the NEXT blank sheet reopens it
+  // as a piece of its own. Held in a ref, every flush writes wherever the work lives now.
+  const saveRef = useRef(save)
   isDirtyRef.current = isDirty
   snapshotRef.current = snapshot
+  saveRef.current = save
   const [keptAt, setKeptAt] = useState<number | null>(null)
 
   useEffect(() => {
     const flush = () => {
       if (!isDirtyRef.current()) return
-      save(snapshotRef.current())
+      saveRef.current(snapshotRef.current())
       setKeptAt(Date.now())
     }
     const onHidden = () => {
@@ -187,7 +195,7 @@ export function useLocalAutosave<T>(
       document.removeEventListener('visibilitychange', onHidden)
       flush()
     }
-  }, [save, intervalMs])
+  }, [intervalMs])
 
   return keptAt
 }

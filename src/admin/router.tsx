@@ -20,6 +20,21 @@ type RouterState = {
   search: string
   /** Bumped by `refresh()`. Page shells list it as a dependency of their data fetch. */
   epoch: number
+  /**
+   * How many times the address has actually MOVED. A screen's mount identity.
+   *
+   * The path alone was that identity, and it is not enough, because one screen moves the
+   * address behind this router's back: the editor replaces `/admin/editor` with the new
+   * post's own URL after a first save, deliberately and without a re-render (`PostForm`
+   * explains why). The router still held the old string, so the next click on "New post"
+   * pushed the address it thought it was already at, nothing about the key changed, and the
+   * editor kept the piece it had just saved under a URL that says new. Typing the next
+   * article into it and pressing Save overwrote the first one.
+   *
+   * Bumped only when the address before and after the commit differ, so a link to the page
+   * already open still costs nothing.
+   */
+  nav: number
 }
 
 type RouterApi = RouterState & {
@@ -52,7 +67,7 @@ const readLocation = (): { path: string; search: string } => ({
 })
 
 export function RouterProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<RouterState>(() => ({ ...readLocation(), epoch: 0 }))
+  const [state, setState] = useState<RouterState>(() => ({ ...readLocation(), epoch: 0, nav: 0 }))
   const [pending, startNavigation] = useTransition()
   // A REF, not state: registering a guard must not re-render the whole admin, and `go` needs
   // the value at the moment of the click rather than the value the last render closed over.
@@ -79,9 +94,14 @@ export function RouterProvider({ children }: { children: ReactNode }) {
   const commit = useCallback((href: string, mode: 'push' | 'replace') => {
     // The URL changes NOW, not when the transition commits. A pending navigation that has
     // not yet rendered still has to be the address the reader sees and can copy.
+    const was = location.pathname + location.search
     if (mode === 'push') history.pushState(null, '', href)
     else history.replaceState(null, '', href)
-    startNavigation(() => setState((s) => ({ ...readLocation(), epoch: s.epoch })))
+    const to = readLocation()
+    // Read from the ADDRESS BAR either side of the push, not from this router's own state:
+    // the state is what can be out of date, and the whole point of `nav` is to notice that.
+    const moved = to.path + to.search !== was
+    startNavigation(() => setState((s) => ({ ...to, epoch: s.epoch, nav: moved ? s.nav + 1 : s.nav })))
   }, [])
 
   // Where the reader is, for the one thing that needs it outside a render: putting the
@@ -107,7 +127,7 @@ export function RouterProvider({ children }: { children: ReactNode }) {
       const g = guard.current
       const to = readLocation()
       if (!g?.blocked()) {
-        startTransition(() => setState((s) => ({ ...to, epoch: s.epoch })))
+        startTransition(() => setState((s) => ({ ...to, epoch: s.epoch, nav: s.nav + 1 })))
         return
       }
       const from = here.current
@@ -213,6 +233,12 @@ export function useSearchParams(): URLSearchParams {
 
 /** The epoch a `refresh()` bumps. A page shell refetches when this changes. */
 export const useRefreshEpoch = (): number => useRouterContext().epoch
+
+/**
+ * The count of address moves, for whoever draws the screen: two visits to one address are
+ * two visits, and a screen keyed on this is mounted again for the second.
+ */
+export const useNavSeq = (): number => useRouterContext().nav
 
 type LinkProps = AnchorHTMLAttributes<HTMLAnchorElement> & {
   href: string

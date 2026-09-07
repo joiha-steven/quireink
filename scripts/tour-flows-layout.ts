@@ -14,7 +14,7 @@ import type { Tour } from './tour'
  * and scrolled to the top — the failure is invisible in a screenshot and obvious to anybody
  * using it. So the assertion is on IDENTITY: the same DOM element before and after.
  */
-export function registerWriteLayoutFlows({ flow, expect }: Tour): void {
+export function registerWriteLayoutFlows({ flow, expect, atWidth }: Tour): void {
   flow('admin: clicking a row swaps the sheet and leaves the list alone', () => expect('/admin/content', `
     (async () => {
       const wait = async (fn, tries = 60, gap = 100) => {
@@ -57,6 +57,61 @@ export function registerWriteLayoutFlows({ flow, expect }: Tour): void {
       const active = document.querySelector('[data-write-row][aria-current="page"]')
       if (!active) return 'no row is marked as the open one'
       return 'ok (' + rowsBefore + ' rows kept)'
+    })()`, 1500))
+
+  /**
+   * NEW POST MEANS A BLANK SHEET, even one click after a save.
+   *
+   * The editor moves the address itself when a new piece is saved for the first time: the URL
+   * becomes the post's own, by a raw history call, because routing there would refetch and
+   * remount the editor and take the caret and the undo stack with it. The router therefore
+   * still held `/admin/editor` — so the next click on New post pushed the address it believed
+   * it was already at, no key changed, nothing remounted, and the blank sheet came up holding
+   * the piece just saved. The next article typed into it and saved OVERWROTE the first.
+   *
+   * The pane's own New link, at 1700 where the pane stands beside the sheet, because that is
+   * the click a writer actually makes. It cleans up the post it creates.
+   */
+  flow('editor: New post after a save gives a blank sheet, not the piece just saved', () => atWidth(1700, '/admin/editor', `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      const wait = async (fn, tries = 60, gap = 100) => {
+        for (let i = 0; i < tries; i++) { const hit = fn(); if (hit) return hit; await sleep(gap) }
+        return null
+      }
+      // Through the prototype setter, or React's own value tracker swallows the event.
+      const setValue = (el, v) => {
+        const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set
+        setter.call(el, v)
+        el.dispatchEvent(new Event('input', { bubbles: true }))
+      }
+      const field = () => document.querySelector('textarea')
+      const ta = await wait(field)
+      if (!ta) return 'no title field on the editor'
+      const mark = 'Tour probe ' + Date.now()
+      setValue(ta, mark)
+      await sleep(300)
+      const save = [...document.querySelectorAll('button')].find((b) => /save draft/i.test(b.textContent || ''))
+      if (!save) return 'no Save draft key on the editor'
+      save.click()
+      const path = await wait(() => location.pathname !== '/admin/editor' ? location.pathname : null)
+      if (!path) return 'the save never moved the address onto the new post'
+      const slug = path.replace('/admin/editor/', '')
+
+      try {
+        const link = [...document.querySelectorAll('a')].find((a) => new URL(a.href).pathname === '/admin/editor')
+        if (!link) return 'no New post link beside the editor at this width'
+        link.click()
+        await sleep(1200)
+        const now = field()
+        if (!now) return 'the new sheet has no title field'
+        if (now.value === mark) return 'the blank sheet came up holding the post just saved'
+        if (now.value !== '') return 'the new sheet opened holding ' + JSON.stringify(now.value)
+        if (location.pathname !== '/admin/editor') return 'the address says ' + location.pathname
+        return 'ok (saved as ' + slug + ', then a blank sheet)'
+      } finally {
+        await fetch('/api/posts/' + slug, { method: 'DELETE' }).catch(() => {})
+      }
     })()`, 1500))
 }
 

@@ -41,7 +41,12 @@ type PickTarget = 'editor' | 'gallery' | 'featured' | 'cover'
 export function PostForm({ initial, allCategories, allTags, allSeries, contentWidth, keySound, autosaveSeconds, autosaveAt , timezone}: Props) {
   const t = useAdminT()
   const { notify } = useToast()
-  const storageKey = `quire:draft:post:${initial?.slug ?? 'new'}`
+  // The slug the server holds, and the key the snapshot is filed under: both follow the
+  // piece rather than the screen. The key was fixed at mount, so everything typed AFTER a
+  // new post's first save went on being filed under `new` — where the editor that reopens
+  // that post never looks, and where the next blank sheet reopens it as a piece of its own.
+  const [savedSlug, setSavedSlug] = useState<string | null>(initial?.slug ?? null)
+  const storageKey = `quire:draft:post:${savedSlug ?? 'new'}`
   // A piece with no row is REOPENED from its snapshot (see `readSnapshot`), read here so
   // the editor mounts with the work already in it.
   const reopened = useRef(initial ? null : readSnapshot<Draft>(storageKey)).current
@@ -63,7 +68,6 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
   // Unsaved-changes flag: drives button states, autosave and the exit warning. A reopened
   // draft starts dirty, because it is: nothing has ever been saved.
   const [dirty, setDirty] = useState(reopened !== null)
-  const [savedSlug, setSavedSlug] = useState<string | null>(initial?.slug ?? null)
 
   const slugTouched = useRef(Boolean(initial?.slug))
   const currentSlug = useRef<string | null>(initial?.slug ?? null)
