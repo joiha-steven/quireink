@@ -2,6 +2,7 @@ import type { AdminStrings } from '../types'
 
 const ja = {
   navHome: 'ホーム',  themeLabel: 'テーマ',
+  navMenu: 'メニュー',
 
   themeLight: 'ライト',
   themeDark: 'ダーク',
@@ -230,6 +231,9 @@ const ja = {
   notFoundBody: 'アドレスの打ち間違いか、指していたものの名前が変わったか、消えたのかもしれません。',
   dateNow: '今',
   dateTomorrow: '明日 9:00',
+  dateMonthPrev: '前の月',
+  dateMonthNext: '次の月',
+  dateTime: '時刻',
   tbHeading: '見出し',
   slashHint: '/ で画像・表・コード・数式を挿入 · テキストを選択すると書式バーが現れます',
   edWords: '{n} 語',

@@ -92,12 +92,12 @@ export function Toolbar({
       <ToolButton label={tip(t.tbItalic, 'italic')} active={editor.isActive('italic')} onClick={() => editor.chain().focus().toggleItalic().run()}><em>I</em></ToolButton>
       <ToolButton label={tip(t.tbUnderline, 'underline')} active={editor.isActive('underline')} onClick={() => editor.chain().focus().toggleUnderline().run()}><u>U</u></ToolButton>
       <ToolButton label={tip(t.tbRing, 'ring')} active={editor.isActive('ring')} onClick={() => editor.chain().focus().toggleRing().run()}><span className="inline-block rounded-full border border-current px-1 leading-tight">O</span></ToolButton>
-      <ToolButton label={tip('S', 'strike')} active={editor.isActive('strike')} onClick={() => editor.chain().focus().toggleStrike().run()}><s>S</s></ToolButton>
-      <ToolButton label={tip('`', 'code')} active={editor.isActive('code')} onClick={() => editor.chain().focus().toggleCode().run()}><code>{'`'}</code></ToolButton>
+      <ToolButton label={tip(t.tbStrike, 'strike')} active={editor.isActive('strike')} onClick={() => editor.chain().focus().toggleStrike().run()}><s>S</s></ToolButton>
+      <ToolButton label={tip(t.tbCodeInline, 'code')} active={editor.isActive('code')} onClick={() => editor.chain().focus().toggleCode().run()}><code>{'`'}</code></ToolButton>
       {sep}
-      <ToolButton label="P" active={editor.isActive('paragraph')} onClick={() => editor.chain().focus().setParagraph().run()}>P</ToolButton>
+      <ToolButton label={t.tbParagraph} active={editor.isActive('paragraph')} onClick={() => editor.chain().focus().setParagraph().run()}>P</ToolButton>
       {([1, 2, 3, 4, 5] as const).map((level) => (
-        <ToolButton key={level} label={`H${level}`} active={editor.isActive('heading', { level })} onClick={() => editor.chain().focus().toggleHeading({ level }).run()}>
+        <ToolButton key={level} label={`${t.tbHeading} ${level}`} active={editor.isActive('heading', { level })} onClick={() => editor.chain().focus().toggleHeading({ level }).run()}>
           <span className="text-xs font-medium">H{level}</span>
         </ToolButton>
       ))}

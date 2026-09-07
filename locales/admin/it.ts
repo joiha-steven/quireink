@@ -2,6 +2,7 @@ import type { AdminStrings } from '../types'
 
 const it = {
   navHome: 'Inizio',  themeLabel: 'Tema',
+  navMenu: 'Menu',
 
   themeLight: 'Chiaro',
   themeDark: 'Scuro',
@@ -230,6 +231,9 @@ const it = {
   notFoundBody: 'Forse l\'indirizzo ha un errore di battitura, o ciò a cui puntava è stato rinominato o eliminato.',
   dateNow: 'Adesso',
   dateTomorrow: 'Domani 9:00',
+  dateMonthPrev: 'Mese precedente',
+  dateMonthNext: 'Mese successivo',
+  dateTime: 'Ora',
   tbHeading: 'Titolo di sezione',
   slashHint: 'Digita / per inserire un’immagine, una tabella, codice o una formula · seleziona del testo per far comparire la barra di formattazione',
   edWords: '{n} parole',

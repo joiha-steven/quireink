@@ -3,6 +3,7 @@ import type { AdminStrings } from '../types'
 // Brazilian Portuguese on purpose — Brazil is where the writing community lives.
 const pt = {
   navHome: 'Início',  themeLabel: 'Tema',
+  navMenu: 'Menu',
 
   themeLight: 'Claro',
   themeDark: 'Escuro',
@@ -231,6 +232,9 @@ const pt = {
   notFoundBody: 'Talvez o endereço tenha um erro de digitação, ou o que ele apontava foi renomeado ou apagado.',
   dateNow: 'Agora',
   dateTomorrow: 'Amanhã 9:00',
+  dateMonthPrev: 'Mês anterior',
+  dateMonthNext: 'Próximo mês',
+  dateTime: 'Hora',
   tbHeading: 'Título de seção',
   slashHint: 'Digite / para inserir imagem, tabela, código ou fórmula · selecione um texto para abrir a barra de formatação',
   edWords: '{n} palavras',

@@ -8,7 +8,7 @@
 // The VALUE stays the `datetime-local` string ("YYYY-MM-DDTHH:mm"), so every caller and
 // every save path is untouched. Weekday and month names come from `Intl` in the browser's
 // locale — a device-level display choice, like the collapse state of the rail.
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { CONTROL, NOTE, SETTING_LABEL } from '@/admin/components/kit'
 import { useAdminT } from '@/admin/components/I18nProvider'
 
@@ -34,6 +34,10 @@ export function DateField({
 }) {
   const t = useAdminT()
   const [open, setOpen] = useState(false)
+  // The label is a caption over a button, not a `<label>` over an input: the control here is
+  // the button that opens the calendar. Naming it by both ids reads the caption and then the
+  // date it currently holds, which is what a `<label>` around a native field would have said.
+  const id = useId()
   const box = useRef<HTMLDivElement>(null)
   const picked = value ? new Date(value) : new Date()
   const valid = !Number.isNaN(picked.getTime())
@@ -79,9 +83,12 @@ export function DateField({
 
   return (
     <div className="relative" ref={box}>
-      <span className={SETTING_LABEL}>{label}</span>
+      <span id={`${id}-label`} className={SETTING_LABEL}>{label}</span>
       <button
         type="button"
+        id={`${id}-value`}
+        aria-labelledby={`${id}-label ${id}-value`}
+        aria-haspopup="dialog"
         aria-expanded={open}
         onClick={() => { setView(new Date(shown.getFullYear(), shown.getMonth(), 1)); setOpen((v) => !v) }}
         className={`${CONTROL} mt-2 flex w-full items-center justify-between text-left`}
@@ -97,10 +104,10 @@ export function DateField({
           <div className="mb-2 flex items-center justify-between">
             <span className="px-1 text-sm font-medium">{monthLabel}</span>
             <div className="flex">
-              <button type="button" aria-label="←" onClick={() => setView(new Date(view.getFullYear(), view.getMonth() - 1, 1))} className={NAV}>
+              <button type="button" aria-label={t.dateMonthPrev} onClick={() => setView(new Date(view.getFullYear(), view.getMonth() - 1, 1))} className={NAV}>
                 <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="m14 6-6 6 6 6" /></svg>
               </button>
-              <button type="button" aria-label="→" onClick={() => setView(new Date(view.getFullYear(), view.getMonth() + 1, 1))} className={NAV}>
+              <button type="button" aria-label={t.dateMonthNext} onClick={() => setView(new Date(view.getFullYear(), view.getMonth() + 1, 1))} className={NAV}>
                 <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="m10 6 6 6-6 6" /></svg>
               </button>
             </div>
@@ -135,6 +142,7 @@ export function DateField({
             {/* The native TIME input keeps its text half only — no popup, so nothing blue. */}
             <input
               type="time"
+              aria-label={t.dateTime}
               value={`${pad(shown.getHours())}:${pad(shown.getMinutes())}`}
               onChange={(e) => setTime(e.target.value)}
               className={`${CONTROL} w-28 tabular-nums`}

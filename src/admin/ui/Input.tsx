@@ -5,7 +5,7 @@
 // they disagreed — above the control here, below it there, styled three ways. With a slot
 // for it the order is decided ONCE, here, and no call site can hold a different opinion.
 // The order is the one rule: what it is, what to know about it, then the control.
-import { useState, type FocusEvent, type InputHTMLAttributes, type ReactNode, type TextareaHTMLAttributes } from 'react'
+import { useId, useState, type FocusEvent, type InputHTMLAttributes, type ReactNode, type TextareaHTMLAttributes } from 'react'
 import { CONTROL, FIELD_W, NOTE, SETTING_LABEL } from '@/admin/components/kit'
 import { NOTE_ALERT } from '@/admin/components/scale'
 import { useAdminT } from '@/admin/components/I18nProvider'
@@ -64,8 +64,27 @@ type InputProps = InputHTMLAttributes<HTMLInputElement> & {
 /** The ballpoint on the edge of a field the reader has to come back to. */
 const INVALID = 'border-[var(--pen-red)] focus:border-[var(--pen-red)]'
 
+/**
+ * WHY THE LABEL POINTS AT THE FIELD INSTEAD OF WRAPPING IT.
+ *
+ * A `<label>` around the control takes ALL of its text into the control's accessible name,
+ * so a field with a hint and a refusal announced itself as one run-on sentence: its label,
+ * then the explanation, then the refusal, with no way to tell which part was which and no
+ * way for the refusal to arrive on its own once it changed. Naming the control with `for`
+ * and describing it with `aria-describedby` gives the same three pieces the roles they had
+ * on screen all along: a name, a description, and a message that is read when it appears.
+ */
+function describedBy(...ids: unknown[]): string | undefined {
+  const on = ids.filter((id): id is string => typeof id === 'string' && id !== '')
+  return on.length ? on.join(' ') : undefined
+}
+
 export function Input({ label, note, className = '', inline, error, onBlur, ...props }: InputProps) {
   const t = useAdminT()
+  const auto = useId()
+  const id = props.id ?? auto
+  const noteId = `${auto}-note`
+  const msgId = `${auto}-msg`
   /**
    * WHAT THE FIELD FINDS OUT ABOUT ITSELF, ON BLUR.
    *
@@ -91,55 +110,72 @@ export function Input({ label, note, className = '', inline, error, onBlur, ...p
     onBlur?.(e)
   }
   const shown = error ?? found
+  const described = describedBy(note && noteId, shown && msgId, props['aria-describedby'])
   const field = (
     <input
       className={`${FIELD} ${widthFor(props.type, className)} ${shown ? INVALID : ''} ${className}`}
       aria-invalid={shown ? true : undefined}
       onBlur={check}
       {...props}
+      id={id}
+      aria-describedby={described}
     />
   )
-  const message = shown ? <span className={`${NOTE_ALERT} mt-1 block`}>{shown}</span> : null
+  // `role=alert`: a refusal that appears after the field has been left, or after a round
+  // trip, is new information arriving on a screen the reader may have moved on from.
+  const message = shown ? <span id={msgId} role="alert" className={`${NOTE_ALERT} mt-1 block`}>{shown}</span> : null
+  const title = label && <label htmlFor={id} className={SETTING_LABEL}>{label}</label>
+  const hint = note && <span id={noteId} className={`${NOTE} block`}>{note}</span>
   const beside = inline ?? props.type === 'number'
   if (beside && (label || note)) {
     return (
       // `flex-wrap` + `basis-48`, matching `Setting`'s inline row: a short field stays beside
       // its label, and one that would leave the sentence under 12rem wraps under it instead.
-      <label className="setting-row flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
+      <div className="setting-row flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
         <span className="min-w-0 flex-1 basis-48">
-          {label && <span className={SETTING_LABEL}>{label}</span>}
-          {note && <span className={`${NOTE} block`}>{note}</span>}
+          {title}
+          {hint}
           {/* The message goes with the LABEL on an inline row, not under the field: the field
               is 5rem wide at the right-hand edge and a sentence there wraps to four lines. */}
           {message}
         </span>
         <span className="shrink-0">{field}</span>
-      </label>
+      </div>
     )
   }
   return (
-    <label className="block">
-      {label && <span className={SETTING_LABEL}>{label}</span>}
-      {note && <span className={`${NOTE} block`}>{note}</span>}
+    <div className="block">
+      {title}
+      {hint}
       <input
         className={`${FIELD} ${widthFor(props.type, className)} ${label || note ? 'mt-2' : ''} ${shown ? INVALID : ''} ${className}`}
         aria-invalid={shown ? true : undefined}
         onBlur={check}
         {...props}
+        id={id}
+        aria-describedby={described}
       />
       {message}
-    </label>
+    </div>
   )
 }
 
 type TextareaProps = TextareaHTMLAttributes<HTMLTextAreaElement> & { label?: string; note?: ReactNode }
 
 export function Textarea({ label, note, className = '', ...props }: TextareaProps) {
+  const auto = useId()
+  const id = props.id ?? auto
+  const noteId = `${auto}-note`
   return (
-    <label className="block">
-      {label && <span className={SETTING_LABEL}>{label}</span>}
-      {note && <span className={`${NOTE} block`}>{note}</span>}
-      <textarea className={`${FIELD} ${FIELD_W.full} resize-y ${label || note ? 'mt-2' : ''} ${className}`} {...props} />
-    </label>
+    <div className="block">
+      {label && <label htmlFor={id} className={SETTING_LABEL}>{label}</label>}
+      {note && <span id={noteId} className={`${NOTE} block`}>{note}</span>}
+      <textarea
+        className={`${FIELD} ${FIELD_W.full} resize-y ${label || note ? 'mt-2' : ''} ${className}`}
+        {...props}
+        id={id}
+        aria-describedby={describedBy(note && noteId, props['aria-describedby'])}
+      />
+    </div>
   )
 }

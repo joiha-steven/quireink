@@ -54,6 +54,17 @@ const MAX = 3
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<ToastItem[]>([])
+  /**
+   * THE ANNOUNCEMENT IS NOT THE TOAST.
+   *
+   * A live region has to be in the document BEFORE the text lands in it: a screen reader
+   * watches regions it already knows about, and one that arrives carrying its message is a
+   * new element, not a change to an old one. Every toast was created with its own
+   * `role=status` and its own words at the same instant, so the save it confirmed was
+   * announced only by luck. These two regions are mounted for the life of the admin and
+   * empty until there is something to say; the visible toast is then only a picture of it.
+   */
+  const [said, setSaid] = useState<{ polite: string; urgent: string }>({ polite: '', urgent: '' })
   // The pending departures, so a hover can cancel one and a leave can restart it. Keyed by
   // id: a Map rather than a field on the item, because a timer is not state — re-rendering
   // because a countdown exists would re-run every effect in the tree three times a save.
@@ -84,6 +95,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       }
       return next.slice(-MAX)
     })
+    setSaid((was) => (kind === 'error' ? { ...was, urgent: message } : { ...was, polite: message }))
     // ⚠️ A FAILURE IS NEVER ARMED. It leaves when somebody closes it, and not before.
     if (kind !== 'error') arm(id, action ? LIFE.action : LIFE.plain)
   }, [arm])
@@ -96,6 +108,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={{ notify }}>
       {children}
+      <div role="status" aria-live="polite" className="sr-only">{said.polite}</div>
+      <div role="alert" aria-live="assertive" className="sr-only">{said.urgent}</div>
       <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
         {items.map((t) => (
           <Toast key={t.id} item={t} onClose={() => drop(t.id)} onHold={() => {
@@ -118,12 +132,9 @@ function Toast({ item, onClose, onHold, onRelease }: {
 }) {
   const t = useAdminT()
   return (
-    // An announced region, because a toast is the ONLY confirmation the admin gives that a
-    // save worked: without this every save and every upload was silent to a screen reader.
-    // `alert` for a failure, so it interrupts; `status` for a success, so it waits for a
-    // pause in whatever is being read.
+    // No role: the words were already read out of the standing live regions in the provider,
+    // and a second announcement from the picture of them would say everything twice.
     <div
-      role={item.kind === 'error' ? 'alert' : 'status'}
       // Pointing at a toast is what you do while reading it, or while reaching for the undo
       // inside it. Either way the clock has no business running.
       onPointerEnter={onHold}

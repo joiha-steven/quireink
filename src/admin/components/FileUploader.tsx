@@ -1,11 +1,11 @@
 // Drag-drop + click upload zone for the Files/Videos tabs. By default accepts ANY
 // file type (the catch-all attachment store); `accept`/`label` narrow it for the
 // Videos tab. Multi-file, with a progress bar.
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import type { FileItem } from '@/types'
 import { useToast } from '@/admin/ui/Toast'
 import { uploadAttachments } from '@/admin/upload-client'
-import { DROPZONE, DROPZONE_IDLE, DROPZONE_OVER } from './kit'
+import { Dropzone } from '@/admin/ui/Dropzone'
 import { useAdminT } from './I18nProvider'
 
 export function FileUploader({
@@ -19,9 +19,7 @@ export function FileUploader({
 }) {
   const t = useAdminT()
   const { notify } = useToast()
-  const inputRef = useRef<HTMLInputElement>(null)
   const [progress, setProgress] = useState<number | null>(null)
-  const [dragging, setDragging] = useState(false)
 
   async function handle(files: File[]) {
     if (files.length === 0) return
@@ -37,42 +35,5 @@ export function FileUploader({
     }
   }
 
-  return (
-    <div>
-      <div
-        onClick={() => inputRef.current?.click()}
-        onDragOver={(e) => {
-          e.preventDefault()
-          setDragging(true)
-        }}
-        onDragLeave={() => setDragging(false)}
-        onDrop={(e) => {
-          e.preventDefault()
-          setDragging(false)
-          handle(Array.from(e.dataTransfer.files))
-        }}
-        className={`${DROPZONE} ${dragging ? DROPZONE_OVER : DROPZONE_IDLE}`}
-      >
-        {label ?? t.filesDropzone}
-        <input
-          ref={inputRef}
-          type="file"
-          multiple
-          accept={accept}
-          className="hidden"
-          onChange={(e) => {
-            handle(Array.from(e.target.files ?? []))
-            e.target.value = ''
-          }}
-        />
-      </div>
-      {progress !== null && (
-        <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-neutral-200">
-          {/* A transform, not a width: the fill scales on the compositor instead of re-laying out
-              the bar on every tick of the upload. */}
-          <div className="h-full w-full origin-left bg-neutral-900 transition-transform" style={{ transform: `scaleX(${progress / 100})` }} />
-        </div>
-      )}
-    </div>
-  )
+  return <Dropzone label={label ?? t.filesDropzone} accept={accept} progress={progress} onFiles={handle} />
 }

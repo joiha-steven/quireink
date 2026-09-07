@@ -2,6 +2,7 @@ import type { AdminStrings } from '../types'
 
 const zh = {
   navHome: '首页',  themeLabel: '主题',
+  navMenu: '菜单',
 
   themeLight: '浅色',
   themeDark: '深色',
@@ -230,6 +231,9 @@ const zh = {
   notFoundBody: '可能是地址打错了，或者它指向的东西已改名或被删除。',
   dateNow: '现在',
   dateTomorrow: '明天 9:00',
+  dateMonthPrev: '上个月',
+  dateMonthNext: '下个月',
+  dateTime: '时间',
   tbHeading: '标题',
   slashHint: '输入 / 插入图片、表格、代码或公式 · 选中文字即显示格式栏',
   edWords: '{n} 字',

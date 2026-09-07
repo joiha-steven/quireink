@@ -229,7 +229,7 @@ export function AdminSidebar({
         <button
           type="button"
           className="flex h-10 w-10 items-center justify-center rounded-md border border-neutral-200 text-neutral-600 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
-          aria-label={t.navHome}
+          aria-label={t.navMenu}
           aria-expanded={open}
           onClick={() => setOpen((v) => !v)}
         >
@@ -241,7 +241,9 @@ export function AdminSidebar({
       </header>
       {open && (
         <>
-          <button type="button" aria-label={t.navHome} onClick={close} className="admin-scrim fixed inset-0 top-[65px] z-20 bg-black/20 lg:hidden" />
+          {/* A DIV. As a button it was a focusable control called Home that closed the menu: Tab
+              left the drawer, landed on nothing visible, and Enter looked like a mis-click. */}
+          <div aria-hidden onClick={close} className="admin-scrim fixed inset-0 top-[65px] z-20 bg-black/20 lg:hidden" />
           <nav className={`rail-glyphs admin-drawer fixed inset-x-3 top-[72px] z-30 scroll-fade max-h-[calc(100dvh-84px)] overflow-y-auto p-3 lg:hidden ${OVERLAY}`}>
             {column.nav(false)}
             <span className="my-1 block h-px w-full bg-neutral-200 dark:bg-neutral-700" aria-hidden />

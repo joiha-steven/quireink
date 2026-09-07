@@ -142,6 +142,7 @@ export type Dict = {
 export type AdminStrings = {
   // nav
   navHome: string
+  navMenu: string
   /** The theme picker's four modes. The words match the reader's side exactly; they are
    *  repeated here so the admin does not have to import the public dictionaries to say them. */
   themeLabel: string
@@ -373,6 +374,9 @@ export type AdminStrings = {
   notFoundBody: string
   dateNow: string
   dateTomorrow: string
+  dateMonthPrev: string
+  dateMonthNext: string
+  dateTime: string
   tbHeading: string
   slashHint: string
   edWords: string

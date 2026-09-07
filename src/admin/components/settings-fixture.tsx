@@ -141,10 +141,13 @@ export function payload(): ViewPayloads['settings'] {
  * one the day a field is inserted above it.
  */
 export function fieldByLabel(container: HTMLElement, label: string): HTMLElement {
+  // Through `for`, the way a browser and a screen reader resolve it. The label used to wrap
+  // the control, and this walked down into it; it names the control by id instead now, so
+  // that the hint and the refusal beside a field stop being read as part of its name.
   const hit = [...container.querySelectorAll('label')].find(
-    (l) => l.querySelector('span')?.textContent?.trim() === label,
+    (l) => l.textContent?.trim() === label,
   )
-  const field = hit?.querySelector('input, textarea')
+  const field = hit?.htmlFor ? container.querySelector(`#${CSS.escape(hit.htmlFor)}`) : null
   if (!field) throw new Error(`no field labelled "${label}"`)
   return field as HTMLElement
 }

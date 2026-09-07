@@ -2,6 +2,7 @@ import type { AdminStrings } from '../types'
 
 const ko = {
   navHome: '홈',  themeLabel: '테마',
+  navMenu: '메뉴',
 
   themeLight: '라이트',
   themeDark: '다크',
@@ -230,6 +231,9 @@ const ko = {
   notFoundBody: '주소를 잘못 입력했거나, 가리키던 것의 이름이 바뀌었거나 지워졌을 수 있습니다.',
   dateNow: '지금',
   dateTomorrow: '내일 9:00',
+  dateMonthPrev: '이전 달',
+  dateMonthNext: '다음 달',
+  dateTime: '시간',
   tbHeading: '제목',
   slashHint: '/ 를 입력해 이미지·표·코드·수식 삽입 · 텍스트를 선택하면 서식 막대가 나타납니다',
   edWords: '{n} 단어',

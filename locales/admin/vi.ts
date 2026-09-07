@@ -2,6 +2,7 @@ import type { AdminStrings } from '../types'
 
 const vi = {
   navHome: 'Trang chủ',  themeLabel: 'Giao diện',
+  navMenu: 'Menu',
 
   themeLight: 'Sáng',
   themeDark: 'Tối',
@@ -230,6 +231,9 @@ const vi = {
   notFoundBody: 'Có thể địa chỉ gõ sai, hoặc thứ nó trỏ tới đã đổi tên hay bị xoá.',
   dateNow: 'Bây giờ',
   dateTomorrow: 'Ngày mai 9:00',
+  dateMonthPrev: 'Tháng trước',
+  dateMonthNext: 'Tháng sau',
+  dateTime: 'Giờ',
   tbHeading: 'Tiêu đề mục',
   slashHint: 'Gõ / để chèn ảnh, bảng, mã, công thức · bôi đen chữ để hiện thanh công cụ',
   edWords: '{n} chữ',

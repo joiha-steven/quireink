@@ -46,6 +46,31 @@ describe('a field that cannot take its value', () => {
     await m.unmount()
   })
 
+  it('names the field with the label and describes it with the hint and the refusal', async () => {
+    // The three used to be ONE string. A `<label>` wrapped the control, so its name was the
+    // caption, the explanatory sentence and the refusal read end to end, with nothing to say
+    // which part was which and no way for the refusal to arrive on its own once it changed.
+    const { mountAdmin } = await import('@/admin/test-mount')
+    const { Input } = await import('@/admin/ui/Input')
+
+    const m = await mountAdmin(
+      <Input label="Address" note="Where the list of posts lives." defaultValue="/notes" error="A post already lives there." />,
+    )
+    const el = m.container.querySelector('input') as HTMLInputElement
+    const label = m.container.querySelector('label') as HTMLLabelElement
+    expect(label.textContent).toBe('Address')
+    expect(label.htmlFor).toBe(el.id)
+    expect(el.id).not.toBe('')
+
+    const ids = (el.getAttribute('aria-describedby') ?? '').split(' ').filter(Boolean)
+    expect(ids).toHaveLength(2)
+    const said = ids.map((id) => m.container.querySelector(`#${CSS.escape(id)}`)?.textContent)
+    expect(said).toEqual(['Where the list of posts lives.', 'A post already lives there.'])
+    // The refusal announces itself: it appears after the round trip that produced it.
+    expect(m.container.querySelector('[role=alert]')?.textContent).toBe('A post already lives there.')
+    await m.unmount()
+  })
+
   it('lets an outside refusal outrank a value the browser is happy with', async () => {
     // The list path is the case: `/notes` is a perfectly good string, and the server still
     // refuses it because a post already lives there. Only a round trip can know.

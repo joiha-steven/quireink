@@ -2,6 +2,7 @@ import type { AdminStrings } from '../types'
 
 const fr = {
   navHome: 'Accueil',  themeLabel: 'Thème',
+  navMenu: 'Menu',
 
   themeLight: 'Clair',
   themeDark: 'Sombre',
@@ -230,6 +231,9 @@ const fr = {
   notFoundBody: 'L\'adresse comporte peut-être une faute, ou ce qu\'elle désignait a été renommé ou supprimé.',
   dateNow: 'Maintenant',
   dateTomorrow: 'Demain 9h00',
+  dateMonthPrev: 'Mois précédent',
+  dateMonthNext: 'Mois suivant',
+  dateTime: 'Heure',
   tbHeading: 'Titre',
   slashHint: 'Tapez / pour insérer une image, un tableau, du code ou une formule · sélectionnez du texte pour faire apparaître la barre de mise en forme',
   edWords: '{n} mots',

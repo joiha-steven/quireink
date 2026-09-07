@@ -2,6 +2,7 @@ import type { AdminStrings } from '../types'
 
 const ru = {
   navHome: 'Главная',  themeLabel: 'Тема',
+  navMenu: 'Меню',
 
   themeLight: 'Светлая',
   themeDark: 'Тёмная',
@@ -230,6 +231,9 @@ const ru = {
   notFoundBody: 'Возможно, в адресе опечатка, или то, на что он указывал, переименовали или удалили.',
   dateNow: 'Сейчас',
   dateTomorrow: 'Завтра 9:00',
+  dateMonthPrev: 'Предыдущий месяц',
+  dateMonthNext: 'Следующий месяц',
+  dateTime: 'Время',
   tbHeading: 'Заголовок раздела',
   slashHint: 'Наберите /, чтобы вставить изображение, таблицу, код или формулу · выделите текст, чтобы поднять панель форматирования',
   edWords: '{n} слов',
