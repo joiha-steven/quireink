@@ -18,6 +18,7 @@ import { throughDeploys } from '@/admin/ui/stale-build'
 import { Loading } from '@/admin/pages/state'
 import { AdminSidebar } from '@/admin/components/AdminSidebar'
 import { CommandPalette } from '@/admin/components/CommandPalette'
+import { ShortcutSheet } from '@/admin/components/ShortcutSheet'
 import { WritePane } from '@/admin/components/WritePane'
 import { useFocusMode } from '@/admin/components/useFocusMode'
 
@@ -234,6 +235,11 @@ function Shell() {
           {/* Outside the canvas and outside the error boundary: it is how you LEAVE a screen
               that has gone wrong, so it must not be inside the thing that went wrong. */}
           <CommandPalette />
+          {/* `?` from anywhere. Its own component for the same reason the palette is one:
+              the rail is drawn at the top of the shell and this at the bottom, and a key
+              listener that has to live inside a screen is a key that stops working on the
+              screens that screen is not. */}
+          <ShortcutSheet />
           <Canvas>
             {/* One page may fail without taking the admin with it. INSIDE the canvas and
                 outside the sidebar, so the rail still works and the owner can leave; keyed by
