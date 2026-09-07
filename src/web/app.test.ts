@@ -271,6 +271,23 @@ describe('the feed hands itself back a chunk at a time', () => {
     expect(html).toContain('html[data-chunked] .post-list article[data-more]{display:block}')
   })
 
+  // The card and the marker above it have to name the same year. The marker sliced the
+  // stored UTC string while the card printed `settings.timezone`, so for the first hours of
+  // every January in Hanoi a post dated 1 January sat under a heading reading the year
+  // before.
+  it('puts a card under the year marker its own printed date names', async () => {
+    await saveSettings({
+      timezone: 'Asia/Ho_Chi_Minh',
+      features: { ...(await getSettings()).features, infiniteScroll: true },
+    })
+    // 02:00 on 1 January 2026 in Hanoi, which is still 2025 in UTC.
+    await savePost({ title: 'New Year', content: 'x', status: 'published', date: '2025-12-31T19:00:00.000Z' })
+    const html = await (await get('/')).text()
+    expect(html).toContain('>2026</span>')
+    expect(html).not.toContain('>2025</span>')
+    expect(html).toContain('January 1, 2026')
+  })
+
   it('eases each card in, which nothing in the sheet used to do', async () => {
     await savePost({ title: 'Solo', content: 'x', status: 'published', date: PAST })
     const html = await (await get('/')).text()

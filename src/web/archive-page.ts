@@ -13,7 +13,7 @@
 // the excerpt is what the listing page is for.
 
 import type { SiteSettings } from '@/types'
-import { formatCount, t } from '@/i18n/i18n'
+import { formatCount, t, zonedDay } from '@/i18n/i18n'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { getPublicPosts } from '@/content/posts'
 import { getSettings } from '@/content/settings'
@@ -28,12 +28,17 @@ import { listingPage } from '@/web/listing-page'
  * language branch for a column two characters wide. The full date is on the `<time>` element
  * for anything reading the document rather than looking at it.
  */
-const monthDay = (iso: string) => iso.slice(5, 10)
+const monthDay = (day: string) => day.slice(5, 10)
 
-function yearBlock({ year, posts }: ArchiveYear, lang: SiteSettings['language']): string {
-  const rows = posts.map((p) => `<li><time datetime="${escapeAttr(p.date.slice(0, 10))}">`
-    + `${escapeHtml(monthDay(p.date))}</time>`
-    + `<a class="link-accent" href="/${escapeAttr(p.slug)}">${escapeHtml(p.title)}</a></li>`).join('')
+function yearBlock({ year, posts }: ArchiveYear, lang: SiteSettings['language'], tz: string): string {
+  const rows = posts.map((p) => {
+    // The SITE's day, in the column and in the attribute alike. Slicing the stored UTC
+    // string printed 12-31 beside a post every other surface dates 1 January.
+    const day = zonedDay(p.date, tz)
+    return `<li><time datetime="${escapeAttr(day)}">`
+    + `${escapeHtml(monthDay(day))}</time>`
+    + `<a class="link-accent" href="/${escapeAttr(p.slug)}">${escapeHtml(p.title)}</a></li>`
+  }).join('')
   return `<section class="arc-yr"><h2 id="${escapeAttr(yearAnchor(year))}">${year}`
     + `<span class="arc-count">${escapeHtml(formatCount(posts.length, lang))}</span>`
     + `</h2><ul>${rows}</ul></section>`
@@ -49,7 +54,7 @@ export async function renderArchive(): Promise<string | null> {
   const settings = await getSettings()
   if (!settings.features.archive) return null
   const s = t(settings.language)
-  const years = byYear(await getPublicPosts())
+  const years = byYear(await getPublicPosts(), settings.timezone)
 
   // The jump row is a nav, not a list of chips: it is the page's own table of contents, and
   // on a blog with one year it is a single link, which is why it is dropped below two.
@@ -64,7 +69,7 @@ export async function renderArchive(): Promise<string | null> {
 
   const body = years.length === 0
     ? `<p class="empty">${escapeHtml(s.archiveEmpty)}</p>`
-    : years.map((y) => yearBlock(y, settings.language)).join('')
+    : years.map((y) => yearBlock(y, settings.language, settings.timezone)).join('')
 
   return listingPage({
     title: `${s.archiveTitle} · ${settings.title}`,

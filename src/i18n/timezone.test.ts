@@ -7,7 +7,7 @@
 // same zone now answers both.
 
 import { describe, it, expect } from 'bun:test'
-import { formatDate, formatMonth } from '@/i18n/i18n'
+import { formatDate, formatMonth, zonedDay } from '@/i18n/i18n'
 import { sanitizeTimezone } from '@/content/settings-sanitize'
 
 // 18:00 UTC — which is already tomorrow in Hanoi and still today in London and New York.
@@ -54,5 +54,31 @@ describe('sanitizeTimezone', () => {
     expect(sanitizeTimezone('Asia/Atlantis', 'Asia/Ho_Chi_Minh')).toBe('Asia/Ho_Chi_Minh')
     expect(sanitizeTimezone(42, 'UTC')).toBe('UTC')
     expect(sanitizeTimezone(null, 'UTC')).toBe('UTC')
+  })
+})
+
+// The grouping half of the same question. Everything that PRINTS a date passed the zone
+// through; everything that GROUPED one sliced the UTC string, so a card could print one
+// year under a marker reading another.
+describe('zonedDay', () => {
+  it('agrees with what formatDate prints, for the same instant and zone', () => {
+    expect(zonedDay(EVENING, 'Asia/Ho_Chi_Minh')).toBe('2026-08-23')
+    expect(zonedDay(EVENING, 'UTC')).toBe('2026-08-22')
+    expect(zonedDay(EVENING, 'America/New_York')).toBe('2026-08-22')
+  })
+
+  it('pads to a sortable width, so a slice is still a year and a month', () => {
+    expect(zonedDay('2026-01-02T12:00:00Z', 'UTC')).toBe('2026-01-02')
+    expect(zonedDay('2026-01-02T12:00:00Z', 'UTC').slice(0, 4)).toBe('2026')
+    expect(zonedDay('2026-01-02T12:00:00Z', 'UTC').slice(0, 7)).toBe('2026-01')
+  })
+
+  it('falls back rather than throwing on a zone or an instant it cannot read', () => {
+    expect(zonedDay(EVENING, 'Mars/Olympus_Mons')).toBe('2026-08-22')
+    expect(zonedDay('not a date', 'UTC')).toBe('not a date')
+  })
+
+  it('with no zone reads the machine, which is what an unset setting means', () => {
+    expect(zonedDay(EVENING)).toMatch(/^2026-08-2[23]$/)
   })
 })

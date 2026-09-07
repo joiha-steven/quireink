@@ -18,7 +18,7 @@
 
 import type { PostWithContent, SiteSettings } from '@/types'
 import type { Dict } from '@/locales/types'
-import { formatCount, formatDate } from '@/i18n/i18n'
+import { formatCount, formatDate, zonedDay } from '@/i18n/i18n'
 import { tagText, termSlug } from '@/content/taxonomy'
 import { escapeAttr, escapeHtml, readingMinutes, wordCount } from '@/utils'
 import { ICONS, INK_LOOP_SVG } from '@/icons'
@@ -65,7 +65,8 @@ export function postInfoPanel(post: PostWithContent, settings: SiteSettings, s: 
   // reader deciding whether to trust what they are reading wants to know they are on the
   // current version. Same DAY as the date above counts as unedited: a line saying a post was
   // updated the day it went out is a line that says nothing, printed forever.
-  if (post.updatedAt && post.updatedAt.slice(0, 10) > post.date.slice(0, 10)) {
+  if (post.updatedAt
+    && zonedDay(post.updatedAt, settings.timezone) > zonedDay(post.date, settings.timezone)) {
     rows.push(`<p class="info-updated">${escapeHtml(s.updatedPrefix)} <time datetime="${
       escapeAttr(post.updatedAt)}">${
       escapeHtml(formatDate(post.updatedAt, settings.language, settings.timezone))}</time></p>`)

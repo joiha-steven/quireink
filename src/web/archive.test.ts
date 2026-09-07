@@ -54,6 +54,29 @@ describe('grouping', () => {
     expect(posts[0]?.year).toBe(2026)
   })
 
+  // The year the SITE is in, which is neither UTC's nor the server's. The row beside the
+  // heading has always printed in `settings.timezone`, so the heading had to follow it or
+  // the two disagreed for the first hours of every January.
+  it('files a post under the year the site is in, not the year UTC is in', () => {
+    const post = {
+      title: 'a', slug: 'a', date: '2025-12-31T19:00:00.000Z',
+      status: 'published' as const, categories: [], tags: [],
+    }
+    expect(byYear([post])[0]?.year).toBe(2025)
+    // 02:00 on 1 January 2026 in Hanoi.
+    expect(byYear([post], 'Asia/Ho_Chi_Minh')[0]?.year).toBe(2026)
+    // And the mirror case west of Greenwich: 14:00 on 31 December in New York.
+    expect(byYear([{ ...post, date: '2026-01-01T03:00:00.000Z' }], 'America/New_York')[0]?.year).toBe(2025)
+  })
+
+  it('survives a timezone the machine has never heard of', () => {
+    const post = {
+      title: 'a', slug: 'a', date: '2026-03-04T05:00:00.000Z',
+      status: 'published' as const, categories: [], tags: [],
+    }
+    expect(byYear([post], 'Mars/Olympus_Mons')[0]?.year).toBe(2026)
+  })
+
   it('sorts years newest first and posts newest first inside a year', async () => {
     const p = (slug: string, date: string) =>
       ({ title: slug, slug, date, status: 'published' as const, categories: [], tags: [] })

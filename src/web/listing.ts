@@ -8,15 +8,18 @@
 
 import type { Post } from '@/types'
 import type { SiteSettings } from '@/types'
-import { formatDate, formatMonth, t } from '@/i18n/i18n'
+import { formatDate, formatMonth, t, zonedDay } from '@/i18n/i18n'
 import type { Dict } from '@/locales/types'
 import { termSlug } from '@/content/taxonomy'
 import type { Paged } from '@/content/paginate'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { postImage, type ReadyImages } from '@/web/front-card'
 
-const yearOf = (iso: string) => iso.slice(0, 4)
-const monthOf = (iso: string) => iso.slice(0, 7)
+// The site's calendar year and month, not the stored instant's. Slicing the UTC ISO put a
+// post published on 1 January at 02:00 in Hanoi under last year's marker while its own card
+// printed this year's date. `zonedDay` is the one place that knows the difference.
+const yearOf = (iso: string, tz: string) => zonedDay(iso, tz).slice(0, 4)
+const monthOf = (iso: string, tz: string) => zonedDay(iso, tz).slice(0, 7)
 
 type CardOptions = {
   /**
@@ -119,8 +122,9 @@ function timeline(posts: Post[], settings: SiteSettings, lead: boolean, ready?: 
   // hides it instead, which reaches the same feed without giving up the no-script archive.
   const chunk = Math.max(1, settings.postsPerPage)
   const groups: { year: string; items: { post: Post; i: number }[] }[] = []
+  const tz = settings.timezone
   posts.forEach((post, i) => {
-    const year = yearOf(post.date)
+    const year = yearOf(post.date, tz)
     const last = groups[groups.length - 1]
     if (last && last.year === year) last.items.push({ post, i })
     else groups.push({ year, items: [{ post, i }] })
@@ -131,8 +135,8 @@ function timeline(posts: Post[], settings: SiteSettings, lead: boolean, ready?: 
       // A month marker on the first card of each month, EXCEPT the year's own first
       // month, which the sticky year marker already covers.
       const prev = posts[i - 1]
-      const firstOfYear = !prev || yearOf(prev.date) !== g.year
-      const firstOfMonth = !prev || monthOf(prev.date) !== monthOf(post.date)
+      const firstOfYear = !prev || yearOf(prev.date, tz) !== g.year
+      const firstOfMonth = !prev || monthOf(prev.date, tz) !== monthOf(post.date, tz)
       return card(post, settings, {
         lead: lead && i === 0,
         month: firstOfMonth && !firstOfYear ? formatMonth(post.date, settings.language, settings.timezone) : undefined,

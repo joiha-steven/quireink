@@ -178,7 +178,7 @@ export async function renderSidebar(
   // off means the page 404s, so the years would point at nothing. `sidebarArchive` owns the
   // BLOCK: the years leave the rail while the page they link to stays reachable.
   const years = settings.features.archive && settings.features.sidebarArchive
-    ? byYear(posts).map(({ year, posts: inYear }) => ({
+    ? byYear(posts, settings.timezone).map(({ year, posts: inYear }) => ({
       href: `/archive#${yearAnchor(year)}`, label: String(year), count: inYear.length,
     }))
     : []
