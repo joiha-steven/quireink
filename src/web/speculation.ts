@@ -25,11 +25,18 @@ export const SPECULATION_HEADER = `"${SPECULATION_PATH}"`
  * The exclusions are the paths where a speculative GET is not free. `/admin` and `/api` do
  * work and can write; `/preview` burns a token; `/og` renders an image; `/uploads` is bytes
  * nobody asked for. `nofollow` and `download` are the author saying so in the markup.
+ *
+ * `/search` is the one that is not obvious, and it is the most expensive of them. The
+ * header's search control is an `<a href="/search">` so that it works without JavaScript,
+ * which put the one HTML route that is deliberately never cached, renders the sidebar and
+ * is rate limited at 60 requests a minute per address inside an EAGER prefetch on every
+ * public page. A reader paging quickly, or an office behind one address, spent that budget
+ * on pages nobody asked for and then met a 429 on the real thing.
  */
 const SAFE_LINKS = {
   and: [
     { href_matches: '/*' },
-    { not: { href_matches: ['/admin/*', '/api/*', '/uploads/*', '/preview/*', '/og*'] } },
+    { not: { href_matches: ['/admin/*', '/api/*', '/uploads/*', '/preview/*', '/og*', '/search*'] } },
     { not: { selector_matches: '[rel~=nofollow]' } },
     { not: { selector_matches: '[download]' } },
   ],

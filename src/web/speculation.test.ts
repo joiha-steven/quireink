@@ -36,7 +36,10 @@ describe('the rules document', () => {
     // does, and it is the cheap rule that now points at every link on the page.
     for (const rule of [...rules.prefetch, ...rules.prerender]) {
       const json = JSON.stringify(rule.where)
-      for (const excluded of ['/admin/*', '/api/*', '/uploads/*', '/preview/*', '/og*']) {
+      // `/search*` is the expensive one: the header's search control is a real link, so
+      // without this every public page eagerly prefetched the one route that is never
+      // cached and is rate limited per address.
+      for (const excluded of ['/admin/*', '/api/*', '/uploads/*', '/preview/*', '/og*', '/search*']) {
         expect(json).toContain(excluded)
       }
       // The author's own markup, honoured: a nofollow or a download link is not a page.
