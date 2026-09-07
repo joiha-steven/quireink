@@ -7,7 +7,7 @@
 import type { MediaItem } from '@/types'
 import { describeUpload } from '@/media/alt-text'
 import {
-  uploadFile, readBlob, deleteByPathname, collapseBlob, expandBlob, listBlobs,
+  uploadFile, readBlob, deleteByPathname, collapseBlob, expandBlob,
 } from '@/media/blob'
 import { mimeOf } from '@/media/mime'
 import { slugify } from '@/utils'
@@ -85,16 +85,41 @@ export async function getMedia(): Promise<MediaItem[]> {
   return listMedia()
 }
 
-// All taken media pathnames, for collision-free naming. Unions DB rows with
-// ACTUAL store contents (listBlobs) so derived thumb/variant names are covered too.
+/**
+ * The names an original implies: its thumbnail and every display width.
+ *
+ * These have no row of their own, which is why the taken set used to be filled by walking the
+ * whole blob store. It never needed to be: a derived name is a function of the original's, so
+ * the `media` rows already say all of them.
+ */
+function reserveDerived(path: string, taken: Set<string>): void {
+  if (!/\.(jpe?g|png)$/i.test(path)) return
+  const stem = path.replace(/\.[^.]+$/, '')
+  taken.add(`${stem}-thumb.webp`)
+  for (const w of SIZES) { taken.add(`${stem}-${w}.webp`); taken.add(`${stem}-${w}.avif`) }
+}
+
+/**
+ * Every media pathname this blog has claimed, for collision-free naming.
+ *
+ * Derived from the ROWS. It used to union them with a walk of the actual store, on every
+ * upload request, to catch the derived names above; that walk measured 734ms on a store of
+ * 5,120 files, and it ran alongside the quota check's walk of the same directory.
+ *
+ * What a walk covered and rows do not is a file in the store that no row mentions, and the
+ * original is not exposed by dropping it: the original is written with O_EXCL and retries the
+ * next name on EEXIST (`writeUniqueOriginal`), so the filesystem is the real guard and this
+ * set is what stops it having to guess fifty times. Trashed rows are included on purpose —
+ * their bytes are still on disk until the trash is emptied.
+ */
 async function takenPathnames(): Promise<Set<string>> {
   const set = new Set<string>()
   for (const r of all<{ path: string; thumb: string | null }>(`select path, thumb from media`)) {
-    if (/^media\//.test(r.path)) set.add(r.path)
+    if (/^media\//.test(r.path)) {
+      set.add(r.path)
+      reserveDerived(r.path, set)
+    }
     if (r.thumb && /^media\//.test(r.thumb)) set.add(r.thumb)
-  }
-  for (const b of await listBlobs()) {
-    if (b.pathname.startsWith('media/')) set.add(b.pathname)
   }
   return set
 }
@@ -107,11 +132,7 @@ function freePathname(base: string, ext: string, taken: Set<string>): string {
   while (taken.has(make(n))) n++
   const path = make(n)
   taken.add(path)
-  if (/\.(jpe?g|png)$/i.test(path)) {
-    const stem = path.replace(/\.[^.]+$/, '')
-    taken.add(`${stem}-thumb.webp`)
-    for (const w of SIZES) { taken.add(`${stem}-${w}.webp`); taken.add(`${stem}-${w}.avif`) }
-  }
+  reserveDerived(path, taken)
   return path
 }
 

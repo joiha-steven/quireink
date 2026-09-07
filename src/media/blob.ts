@@ -57,15 +57,22 @@ export function expandBlob(s: string): string {
 // Anything derived from the CONTENTS of the store has to know when the store changes, and
 // the two functions below are the only places it can. A listener list rather than a direct
 // call, because the deriving module imports this one and the reverse would be a cycle.
-const writeListeners = new Set<() => void>()
+//
+// The announcement names the file and its new size, rather than saying only that something
+// happened. A listener told nothing could only throw its answer away and walk the store
+// again, which on an upload of ten images is ten walks of a directory that grew by ten files.
+/** One file's new size, or null when it is gone. */
+export type BlobChange = { pathname: string; size: number | null }
+
+const writeListeners = new Set<(change: BlobChange) => void>()
 
 /** Subscribe to "the blob store changed". Currently `media/storage-stats.ts`. */
-export function onBlobWrite(listener: () => void): void {
+export function onBlobWrite(listener: (change: BlobChange) => void): void {
   writeListeners.add(listener)
 }
 
-function announceWrite(): void {
-  for (const listener of writeListeners) listener()
+function announceWrite(change: BlobChange): void {
+  for (const listener of writeListeners) listener(change)
 }
 
 // --- IO helpers (server-only; local driver lazy-loaded to keep node:fs off the client) ---
@@ -85,7 +92,7 @@ export async function uploadFile(
 ): Promise<string> {
   try {
     const url = await (await import('./blob-local')).put(pathname, body, opts)
-    announceWrite()
+    announceWrite({ pathname, size: body.byteLength })
     return url
   } catch (error) {
     // EEXIST from an exclusive write is an EXPECTED race signal (a concurrent upload
@@ -106,7 +113,7 @@ export async function readBlob(pathname: string): Promise<Buffer> {
 export async function deleteByPathname(pathname: string): Promise<void> {
   try {
     await (await import('./blob-local')).del(pathname)
-    announceWrite()
+    announceWrite({ pathname, size: null })
   } catch (error) {
     console.error(`[ERROR] blob.deleteByPathname(${pathname}): ${(error as Error).message}`)
     throw error

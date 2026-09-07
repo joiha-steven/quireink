@@ -1,12 +1,15 @@
-// The four storage figures the dashboard prints, computed once and kept until something is
-// written.
+// The four storage figures the dashboard prints, kept current instead of re-derived.
 //
-// They come from a walk of the whole blob store, and the dashboard asked for them on every
-// load: 5,120 files on the measuring machine, one `stat` each, 734ms of the dashboard's
-// response on a cold cache. Nothing about them changes until the STORE changes, which is a
-// narrower event than "something was written": saving a post cannot move these numbers, and
-// invalidating on every write would hand the next dashboard visit the whole walk again for
-// nothing.
+// They come from a walk of the whole blob store: 5,120 files on the measuring machine, one
+// `stat` each, 734ms. The dashboard asked for them on every load, so the walk was cached; but
+// every uploaded file dropped the cache, and the quota check on the NEXT upload is another
+// reader of these numbers, so an upload paid for a full walk of a directory it had just added
+// one file to.
+//
+// So the walk happens once per process and what it produced is kept: a size per file, updated
+// by the write announcements themselves. An upload of ten images now costs ten map writes
+// instead of ten directory walks, and the answer is exact rather than approximated — an
+// overwrite replaces a size it already knows rather than adding to a total it cannot correct.
 //
 // Deliberately NOT computed from the `media` and `files` tables, which would be one cheap
 // query: those rows carry the ORIGINAL's size and a has-variants flag, not a row per derived
@@ -29,28 +32,47 @@ export type StorageStats = {
 
 const isVariant = (p: string) => /-(?:thumb|\d+)\.(?:avif|webp)$/.test(p)
 
-let cached: StorageStats | null = null
+/** One size per stored file. Null until the one walk that fills it. */
+let sizes: Map<string, number> | null = null
+
+async function index(): Promise<Map<string, number>> {
+  if (sizes) return sizes
+  const built = new Map<string, number>()
+  for (const b of await listBlobs()) built.set(b.pathname, b.size)
+  sizes = built
+  return built
+}
 
 export async function storageStats(): Promise<StorageStats> {
-  if (cached) return cached
-  const blobs = await listBlobs()
-  const media = blobs.filter((b) => b.pathname.startsWith('media/') && !b.pathname.endsWith('_index.json'))
-  const variants = media.filter((b) => isVariant(b.pathname)).length
-  cached = {
-    originals: media.length - variants,
-    variants,
-    files: blobs.filter((b) => b.pathname.startsWith('files/')).length,
-    totalBytes: blobs.reduce((sum, b) => sum + b.size, 0),
+  const held = await index()
+  let originals = 0
+  let variants = 0
+  let files = 0
+  let totalBytes = 0
+  for (const [pathname, size] of held) {
+    totalBytes += size
+    if (pathname.startsWith('files/')) files++
+    else if (pathname.startsWith('media/') && !pathname.endsWith('_index.json')) {
+      if (isVariant(pathname)) variants++
+      else originals++
+    }
   }
-  return cached
+  return { originals, variants, files, totalBytes }
 }
 
-/** Exported for the test, which has to prove the walk happens again after an upload. */
+/** Throw the index away, so the next read walks the store again. */
 export function forgetStorageStats(): void {
-  cached = null
+  sizes = null
 }
 
-// Registered at import rather than from the server entry point, unlike the cache warmer:
-// this listener only nulls a variable, so nothing pays for it, and a script that forgot to
-// register it would print stale numbers.
-onBlobWrite(forgetStorageStats)
+// Registered at import rather than from the server entry point, unlike the cache warmer: a
+// script that forgot to register it would print stale numbers.
+//
+// Before the first walk there is nothing to keep current, and no reason to start: a process
+// that writes a file without anybody ever asking for these figures should not walk the store
+// to find out what it just did.
+onBlobWrite(({ pathname, size }) => {
+  if (!sizes) return
+  if (size === null) sizes.delete(pathname)
+  else sizes.set(pathname, size)
+})

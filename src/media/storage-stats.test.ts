@@ -1,7 +1,7 @@
-// The point of the cache is that the walk stops happening; the point of the test is that it
-// starts again when the store changes. Both halves fail silently in production: a walk that
-// never repeats prints numbers that are quietly wrong, and one that repeats on every read
-// puts the cost straight back.
+// The point of the index is that the walk stops happening; the point of the test is that the
+// numbers still move when the store does. Both halves fail silently in production: an index
+// that never notices a write prints numbers that are quietly wrong, and one that re-walks on
+// every read puts the cost straight back onto the dashboard and onto every upload.
 
 import { afterAll, beforeEach, describe, expect, test } from 'bun:test'
 import { mkdtempSync, rmSync } from 'node:fs'
@@ -51,6 +51,22 @@ describe('storageStats', () => {
     await deleteByPathname('media/second.webp')
     const after = await storageStats()
     expect(after.originals).toBe(before.originals - 1)
+  })
+
+  test('an upload does not send it back to the store to find out what it just wrote', async () => {
+    // The upload path reads these figures too — the quota check — so a write that threw the
+    // answer away made every upload pay for a walk of a directory it had added one file to.
+    // A file written behind the facade is invisible to the announcements, so it is what tells
+    // the two apart: if the numbers notice it, an upload walked the store.
+    await storageStats()
+    const { promises: fs } = await import('node:fs')
+    await fs.writeFile(join(DIR, 'media', 'behind-the-facade.webp'), png)
+
+    const before = await storageStats()
+    await uploadFile('media/third.webp', png, 'image/webp')
+    const after = await storageStats()
+    expect(after.originals).toBe(before.originals + 1)
+    expect(after.totalBytes).toBe(before.totalBytes + png.byteLength)
   })
 
   test('a repeat read does not walk the store again', async () => {
