@@ -209,7 +209,16 @@ export type AdminStrings = {
   // reaches the screens, the settings and the writing. ADR 0011 is why it exists — no
   // arrangement makes a person remember which of eight tabs holds a setting.
   paletteTitle: string
+  shortcutsTitle: string
+  shortcutsHint: string
   palettePlaceholder: string
+  paletteGroupRecent: string
+  paletteGroupAction: string
+  paletteGroupPost: string
+  paletteGroupScreen: string
+  paletteGroupSetting: string
+  paletteBackupNow: string
+  paletteBackupDone: string
   // The write pane's scope row: five words that must share ONE line in a 320px column,
   // so each language gets its own deliberately short set instead of reusing the longer
   // status/kind labels. Measured, not assumed — the row may not wrap.
@@ -223,6 +232,8 @@ export type AdminStrings = {
   commentsSearch: string
   commentsSortRecent: string
   commentsSortBusiest: string
+  commentsFilterWeek: string
+  commentsWalkHint: string
   commentsInPosts: string
   commentsStatPosts: string
   commentsStatWeek: string
@@ -347,6 +358,7 @@ export type AdminStrings = {
   notFoundTitle: string
   notFoundBody: string
   dateNow: string
+  dateTomorrow: string
   tbHeading: string
   slashHint: string
   edWords: string
@@ -1033,6 +1045,8 @@ export type AdminStrings = {
   analyticsLeftQuickly: string
   analyticsPieces: string
   analyticsFindPiece: string
+  analyticsShowAll: string
+  analyticsShowFewer: string
   // Analytics -> Delivery. Reader-reported bytes and the in-process cache. Both labels
   // have to keep saying what they are NOT: bytes are what browsers reported, never
   // server egress, and the cache is this process's, never the CDN's.
@@ -1122,6 +1136,7 @@ export type AdminStrings = {
   trashHint: string
   trashEmpty: string
   trashEmptyHint: string
+  trashSearch: string
   colDeletedAt: string
   restored: string
   restoreFailed: string
@@ -1338,6 +1353,12 @@ export type AdminStrings = {
   nlColJoined: string
   nlColSent: string
   nlColOpenRate: string
+  nlSearchPlaceholder: string
+  nlExportCsv: string
+  nlShowing: string
+  nlNoMatch: string
+  nlPagePrev: string
+  nlPageNext: string
   nlColLastSend: string
   nlFailedSuffix: string
   nlPickPost: string
