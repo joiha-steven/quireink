@@ -7,6 +7,7 @@ import { freshDatabase, dropDatabase } from '@/test/db'
 import { db } from '@/store/db'
 import { savePost, getPost } from '@/content/posts'
 import { savePage, getPage } from '@/content/pages'
+import { getRevisions } from '@/content/revisions'
 import { remoteImageUrls, rewriteUrl, bringImagesHome } from '@/import/images'
 
 const DIR = './.tmp/test-import-images'
@@ -110,6 +111,28 @@ describe('bringImagesHome', () => {
     // The next call picks up the queue where this one stopped.
     const second = await bringImagesHome(2, fetchGif)
     expect(second).toMatchObject({ found: 1, moved: 1, remaining: 0 })
+  })
+
+  it('leaves the written history alone: a rescue is not an edit', async () => {
+    // Three snapshots is the whole time machine, and the pictures of a photo essay do not
+    // fit in one pass. Snapshotting each pass pushed out everything its owner wrote and left
+    // three near-identical bodies still pointing at the host being rescued from.
+    const base = { title: 'Essay', slug: 'essay', status: 'published' as const, date: '2020-01-01T00:00:00.000Z' }
+    await savePost({ ...base, content: 'first draft' })
+    await savePost({ ...base, content: 'second draft' }, 'essay')
+    await savePost({
+      ...base,
+      content: 'the finished thing ![a](https://old.example/a.gif) ![b](https://old.example/b.gif)',
+    }, 'essay')
+    expect((await getRevisions('essay')).map((r) => r.content)).toEqual(['second draft', 'first draft'])
+
+    // One image per pass, so the rescue takes two passes over the same post.
+    expect(await bringImagesHome(1, fetchGif)).toMatchObject({ moved: 1, remaining: 1 })
+    expect(await bringImagesHome(1, fetchGif)).toMatchObject({ moved: 1, remaining: 0 })
+
+    expect((await getPost('essay'))?.content).not.toContain('old.example')
+    const kept = (await getRevisions('essay')).map((r) => r.content)
+    expect(kept).toEqual(['second draft', 'first draft'])
   })
 
   it('does not touch images already on the site\'s own host', async () => {

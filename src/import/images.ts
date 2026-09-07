@@ -19,8 +19,9 @@
 // failures and retrying them buys the same errors again.
 
 import { readEnv } from '@/env'
-import { getIndex, getPost, savePost } from '@/content/posts'
-import { getPageIndex, getPage, savePage } from '@/content/pages'
+import { getPost, savePost } from '@/content/posts'
+import { getPage, savePage } from '@/content/pages'
+import { all } from '@/store/query'
 import { addMedia } from '@/media/media'
 import { checkUpload, readCapped, uploadLimits } from '@/media/limits'
 import { finalizeContentMedia } from '@/media/finalize'
@@ -135,14 +136,40 @@ function docUrls(d: Doc, ownHost: string | null): string[] {
   return urls
 }
 
-async function liveDocs(): Promise<Doc[]> {
+type Skim = { slug: string; content: string | null; featured_image: string | null; cover_image: string | null }
+
+/** Whether any of a row's three image-bearing fields still points at another host. */
+function stillRemote(row: Skim, ownHost: string | null): boolean {
+  if (remoteImageUrls(row.content ?? '', ownHost).length > 0) return true
+  return [row.featured_image, row.cover_image].some(
+    (field) => !!field && /^https?:\/\//.test(field) && (ownHost === null || hostOf(field) !== ownHost),
+  )
+}
+
+/**
+ * The documents that still have an image somewhere else, loaded in full. Nothing else is.
+ *
+ * The callers run this in a loop of five images at a time, and it used to open EVERY post and
+ * EVERY page on every pass: a query for the index, then a query and a full assembly per slug,
+ * to discover on most of them that there was nothing to do. Two skims answer that question
+ * for the whole blog, and only a document with an answer of yes is opened.
+ */
+async function docsWithRemoteImages(ownHost: string | null): Promise<Doc[]> {
   const docs: Doc[] = []
-  for (const meta of await getIndex()) {
-    const doc = await getPost(meta.slug)
+  const posts = all<Skim>(
+    `select slug, content, featured_image, cover_image from posts where deleted_at is null order by date desc`,
+  )
+  for (const row of posts) {
+    if (!stillRemote(row, ownHost)) continue
+    const doc = await getPost(row.slug)
     if (doc) docs.push({ kind: 'post', doc })
   }
-  for (const meta of await getPageIndex()) {
-    const doc = await getPage(meta.slug)
+  const pages = all<Skim>(
+    `select slug, content, featured_image, null as cover_image from pages where deleted_at is null`,
+  )
+  for (const row of pages) {
+    if (!stillRemote(row, ownHost)) continue
+    const doc = await getPage(row.slug)
     if (doc) docs.push({ kind: 'page', doc })
   }
   return docs
@@ -151,14 +178,19 @@ async function liveDocs(): Promise<Doc[]> {
 type Fetcher = (url: string) => Promise<FetchedImage>
 
 /**
- * Move up to `limit` remote images into the media library and point their references at
- * the stored copies. Documents touched in this batch are saved ONCE each (through the
- * ordinary save path, so the previous version lands in the time machine), and the page
- * cache is emptied when anything changed — Invariant 1 knows no partial flush.
+ * Move up to `limit` remote images into the media library and point their references at the
+ * stored copies. Documents touched in this batch are saved ONCE each, and the page cache is
+ * emptied when anything changed — Invariant 1 knows no partial flush.
+ *
+ * The save carries no snapshot into the time machine. It goes through the ordinary save path
+ * for everything else it does, but a rescue is not an edit: the words are untouched, only the
+ * address of a picture moved, and there is room for three snapshots per post. A photo essay
+ * whose pictures took four passes had its whole written history pushed out by four
+ * near-identical bodies still pointing at the host it was being rescued from.
  */
 export async function bringImagesHome(limit = IMAGE_BATCH, fetcher: Fetcher = fetchImageCapped): Promise<HomeReport> {
   const ownHost = hostOf(readEnv().siteUrl)
-  const docs = await liveDocs()
+  const docs = await docsWithRemoteImages(ownHost)
 
   // Distinct URLs in first-seen order, so a caller's loop walks the same queue the
   // whole way through and every batch takes the head of what is left.
@@ -201,7 +233,9 @@ export async function bringImagesHome(limit = IMAGE_BATCH, fetcher: Fetcher = fe
       || (d.kind === 'post' && coverImage !== d.doc.coverImage)
     if (!changed) continue
     if (d.kind === 'post') {
-      await savePost({ ...d.doc, content, featuredImage, coverImage }, d.doc.slug)
+      // No snapshot: see savePost's `revision` option. What the owner wrote has not changed,
+      // and a snapshot of it would point at the very URLs this is rescuing them from.
+      await savePost({ ...d.doc, content, featuredImage, coverImage }, d.doc.slug, { revision: false })
     } else {
       await savePage({ ...d.doc, content, featuredImage }, d.doc.slug)
     }

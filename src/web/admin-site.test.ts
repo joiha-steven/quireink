@@ -267,6 +267,24 @@ describe('trash', () => {
     expect(forced.status).toBe(200)
   })
 
+  it('refuses to purge media a TRASHED post references, because a trashed post comes back', async () => {
+    // The audit read the live index, so trashing a post made its images look unused: they
+    // could be permanently deleted, and then the post came back out of the trash with a hole
+    // in it. Nothing else about the trash works that way.
+    const path = 'media/only-in-the-bin.jpg'
+    const url = blobUrl(path)
+    db().run(`insert into media (path, filename, uploaded_at) values (?, ?, ?)`,
+      [path, 'only-in-the-bin.jpg', Date.now()])
+    const created = await newPost({ title: 'Binned but not gone', content: `![alt](${url})`, status: 'published' })
+    const { slug } = await payload<{ slug: string }>(created)
+    await asOwner(`/api/posts/${slug}`, { method: 'DELETE' })
+    db().run(`update media set deleted_at = ? where path = ?`, [Date.now(), path])
+
+    const refused = await post('/api/trash', { kind: 'media', action: 'purge', ids: [url] })
+    expect(refused.status).toBe(409)
+    expect((await payload<{ error: string }>(refused)).error).toBe('in_use:1')
+  })
+
   it('lets an unreferenced image be purged without force', async () => {
     const url = blobUrl('media/orphan.jpg')
     db().run(`insert into media (path, filename, uploaded_at, deleted_at) values (?, ?, ?, ?)`,

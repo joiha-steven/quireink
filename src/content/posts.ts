@@ -199,10 +199,10 @@ function toMeta(post: PostWithContent): Post {
   return { ...meta, readingMinutes: readingMinutes(content) }
 }
 
-// Create or overwrite a post.
+// Create or overwrite a post. `revision: false` is a rewrite that is NOT an edit and takes no
+// snapshot: `import/images.ts` carries the case, and the cost of getting it wrong.
 export async function savePost(
-  input: Partial<PostWithContent>,
-  previousSlug?: string,
+  input: Partial<PostWithContent>, previousSlug?: string, opts: { revision?: boolean } = {},
 ): Promise<Post> {
   const { excerptLength } = await getSettings()
   const post = normalize(input, excerptLength)
@@ -214,7 +214,7 @@ export async function savePost(
   const existing = one<PostRow & { created_at: number }>(
     `select ${META_COLS}, p.content, p.created_at from posts p where p.slug = ?`, overwriting,
   )
-  if (existing) {
+  if (existing && opts.revision !== false) {
     const prev: PostWithContent = { ...rowToMeta(existing), content: expandBlob(existing.content ?? '') }
     if (projection(prev) !== projection({ ...post, slug: prev.slug })) {
       await pushRevision(prev)
