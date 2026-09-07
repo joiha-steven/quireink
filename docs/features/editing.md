@@ -116,10 +116,20 @@
   left-column shade is CSS-only (GFM has no header-column), so it never changes the saved Markdown.
   **GOTCHA:** list items wrap content in `<p>`; `.prose li > p{margin:0}` keeps them tight.
 - **Local (offline) autosave** (`useLocalDraft.ts`): unsaved edits are stashed in `localStorage`
-  every 8s while dirty — NEVER to the server, so editing a *published* post can't push
-  half-finished text live; only Save/Publish writes to the server. On return, a snapshot that
-  outlived its session (crash / closed tab / dropped connection clears nothing) surfaces a
-  "restore / discard" bar; a successful server save clears it. **The interval alone lost work**:
+  on the `autosaveSeconds` tick while dirty — NEVER to the server, so editing a *published* post
+  can't push half-finished text live; only Save/Publish writes to the server. What happens on
+  return depends on whether the piece has a row:
+  - **Never saved** (the `:new` key): the snapshot is the ONLY copy there is, so it is REOPENED
+    into the editor rather than offered, read synchronously so the editor mounts with it, and the
+    snapshot stays in storage until a real save clears it. Until 2026-09-07 it was offered
+    instead, which meant a writer who typed, left without pressing Save and came back met an
+    empty page with a one-line offer above it: the text was in storage the whole time and the
+    screen read as work lost.
+  - **Already saved**: a snapshot that outlived its session (crash / closed tab / dropped
+    connection clears nothing) surfaces a "restore / discard" bar, because here it competes with
+    a saved version and replacing that without asking is the failure the bar exists to prevent.
+    Restoring keeps the live slug and date; the snapshot's are not carried over.
+  A successful server save clears the snapshot. **The interval alone lost work**:
   an over-scroll at the top of the editor on a phone triggers pull-to-refresh and the page
   RELOADS, and `beforeunload` does not reliably fire there — so `useLocalAutosave` also flushes on
   `pagehide`, on a `visibilitychange` to hidden, and on unmount. `beforeunload` remains the

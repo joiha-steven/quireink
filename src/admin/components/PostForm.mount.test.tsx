@@ -72,6 +72,40 @@ describe('PostForm, mounted', () => {
     await m.unmount()
   })
 
+  // The bug this pins: the writer typed, left without pressing Save, came back, and met an
+  // empty page with a one-line offer above it. The text was in storage the whole time.
+  it('reopens an unsaved draft into the editor instead of offering it', async () => {
+    const { mountAdmin, installFetchMock } = await import('@/admin/test-mount')
+    const { PostForm } = await import('@/admin/components/PostForm')
+    const fetchMock = installFetchMock(() => ({ success: true }))
+    restores.push(fetchMock.restore)
+    localStorage.setItem('quire:draft:post:new', JSON.stringify({
+      at: new Date().toISOString(),
+      data: {
+        title: 'Half a thought', slug: '', date: '2026-09-07T10:00', status: 'draft',
+        categories: [], tags: [], series: '', seriesOrder: 0, featuredImage: '',
+        coverImage: '', metaTitle: '', metaDescription: '', excerpt: '',
+        content: 'The sentence that used to disappear.',
+      },
+    }))
+    restores.push(() => localStorage.removeItem('quire:draft:post:new'))
+
+    const m = await mountAdmin(
+      <PostForm
+        allCategories={[]} allTags={[]} allSeries={[]}
+        contentWidth={672} keySound={{ mode: 'off', volume: 0 }} autosaveSeconds={120} autosaveAt={null}
+      />,
+    )
+    await m.flush()
+
+    expect((m.container.querySelector('textarea') as HTMLTextAreaElement).value).toBe('Half a thought')
+    expect(m.container.querySelector('.ProseMirror')?.textContent)
+      .toContain('The sentence that used to disappear.')
+    // ...and the snapshot stays put, so a second trip through this screen finds it too.
+    expect(localStorage.getItem('quire:draft:post:new')).not.toBeNull()
+    await m.unmount()
+  })
+
   it('a new post (no initial) mounts empty without throwing', async () => {
     const { mountAdmin, installFetchMock } = await import('@/admin/test-mount')
     const { PostForm } = await import('@/admin/components/PostForm')

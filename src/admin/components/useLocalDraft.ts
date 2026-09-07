@@ -49,6 +49,51 @@ export function saveStatusLine(
   return savedAt ? `${t.savedAtPrefix} ${formatTime(savedAt)}` : ''
 }
 
+/**
+ * The stored snapshot, read straight out of storage.
+ *
+ * A plain function and not a hook, because of what the two editors do with it. A piece that
+ * has NEVER been saved has nothing on the server for a snapshot to be restored over: it is
+ * the only copy that exists, so the editor is seeded from it during its FIRST render and
+ * mounts with the work already in it. Applying it afterwards is not the same thing, because
+ * the editor takes its content once from `initialContent` and does not re-seed.
+ *
+ * Measured on 2026-09-07, and it is the failure this exists for: a writer typed, left the
+ * screen without pressing Save, came back, and met an empty page with a one-line offer above
+ * it. The text was in storage the whole time; the screen read as work lost.
+ *
+ * A piece that HAS a row keeps the offer instead. There the snapshot competes with a saved
+ * version, and replacing that without asking is the failure the offer exists to prevent.
+ */
+export function readSnapshot<T>(key: string): LocalSnapshot<T> | null {
+  try {
+    const raw = localStorage.getItem(key)
+    return raw ? (JSON.parse(raw) as LocalSnapshot<T>) : null
+  } catch {
+    // corrupt or blocked storage: local autosave is best-effort
+    return null
+  }
+}
+
+/**
+ * Take the offer down for a draft that has already been put back, and say so once.
+ *
+ * `dismiss` and not `clear`: the snapshot stays in storage until a real save, so a second
+ * trip through the screen finds it too. Shared because both editors need exactly this and a
+ * copy in each is where the two would drift.
+ */
+export function useReopenedNotice(
+  reopened: boolean, offered: boolean, dismiss: () => void, say: () => void,
+): void {
+  const done = useRef(false)
+  useEffect(() => {
+    if (!reopened || done.current || !offered) return
+    done.current = true
+    dismiss()
+    say()
+  }, [reopened, offered, dismiss, say])
+}
+
 export function useLocalDraft<T>(key: string) {
   const [recovered, setRecovered] = useState<LocalSnapshot<T> | null>(null)
 
@@ -57,19 +102,10 @@ export function useLocalDraft<T>(key: string) {
   // The setState is deferred to a frame so it lands after hydration (the bar is
   // never in the server HTML) and isn't a synchronous in-effect update.
   useEffect(() => {
-    let raf = 0
-    try {
-      const raw = localStorage.getItem(key)
-      if (raw) {
-        const snap = JSON.parse(raw) as LocalSnapshot<T>
-        raf = requestAnimationFrame(() => setRecovered(snap))
-      }
-    } catch {
-      // ignore corrupt/blocked storage — local autosave is best-effort
-    }
-    return () => {
-      if (raf) cancelAnimationFrame(raf)
-    }
+    const snap = readSnapshot<T>(key)
+    if (!snap) return
+    const raf = requestAnimationFrame(() => setRecovered(snap))
+    return () => cancelAnimationFrame(raf)
   }, [key])
 
   const save = useCallback(

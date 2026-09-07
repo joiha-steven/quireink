@@ -9,6 +9,7 @@ import { slugify, formatTime, formatDateTimeShort, isScheduled } from '@/utils'
 import { uploadImages } from '@/admin/upload-client'
 import { Editor, type EditorApi } from './Editor'
 import { type Draft } from './PostSettings'
+import { toDraft } from './post-draft'
 import { PublishPanel } from './PublishPanel'
 import { EditorActions } from './EditorActions'
 import { MediaLibrary } from './MediaLibrary'
@@ -16,7 +17,7 @@ import { TimeMachine } from './TimeMachine'
 import { TrashLink } from './TrashLink'
 import { EditorLinks } from './EditorLinks'
 import { SheetTitle } from './SheetTitle'
-import { saveStatusLine, useStickyOffset, useUnsavedGuard } from './useLocalDraft'
+import { readSnapshot, saveStatusLine, useReopenedNotice, useStickyOffset, useUnsavedGuard } from './useLocalDraft'
 import { useDraftSafety } from './serverDraft'
 import { useAdminT } from './I18nProvider'
 
@@ -34,37 +35,15 @@ type Props = {
 
 type PickTarget = 'editor' | 'gallery' | 'featured' | 'cover'
 
-// ISO -> value for <input type="datetime-local"> in local time.
-function isoToLocal(iso: string): string {
-  const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) return ''
-  const pad = (n: number) => String(n).padStart(2, '0')
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
-}
-
-function toDraft(initial?: PostWithContent): Draft {
-  return {
-    title: initial?.title ?? '',
-    slug: initial?.slug ?? '',
-    date: isoToLocal(initial?.date ?? new Date().toISOString()),
-    status: initial?.status ?? 'draft',
-    categories: initial?.categories ?? [],
-    tags: initial?.tags ?? [],
-    series: initial?.series ?? '',
-    seriesOrder: initial?.seriesOrder ?? 0,
-    featuredImage: initial?.featuredImage ?? '',
-    coverImage: initial?.coverImage ?? '',
-    metaTitle: initial?.metaTitle ?? '',
-    metaDescription: initial?.metaDescription ?? '',
-    excerpt: initial?.excerpt ?? '',
-    content: initial?.content ?? '',
-  }
-}
-
 export function PostForm({ initial, allCategories, allTags, allSeries, contentWidth, keySound, autosaveSeconds, autosaveAt }: Props) {
   const t = useAdminT()
   const { notify } = useToast()
-  const [draft, setDraft] = useState<Draft>(() => toDraft(initial))
+  const storageKey = `quire:draft:post:${initial?.slug ?? 'new'}`
+  // A piece with no row is REOPENED from its snapshot rather than offered it back, and the
+  // read is here rather than in an effect so the editor mounts with the work in it. Why,
+  // and what it cost, on `readSnapshot`.
+  const reopened = useRef(initial ? null : readSnapshot<Draft>(storageKey)).current
+  const [draft, setDraft] = useState<Draft>(() => reopened?.data ?? toDraft(initial))
   const [saving, setSaving] = useState(false)
   const [savedAt, setSavedAt] = useState<string | null>(null)
   const [picker, setPicker] = useState<PickTarget | null>(null)
@@ -79,8 +58,9 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
   const [mdView, setMdView] = useState(false)
   const actionHeaderRef = useRef<HTMLDivElement>(null)
   const toolbarTop = useStickyOffset(actionHeaderRef)
-  // Unsaved-changes flag: drives button states, autosave and the exit warning.
-  const [dirty, setDirty] = useState(false)
+  // Unsaved-changes flag: drives button states, autosave and the exit warning. A reopened
+  // draft starts dirty, because it is: nothing has ever been saved.
+  const [dirty, setDirty] = useState(reopened !== null)
   const [savedSlug, setSavedSlug] = useState<string | null>(initial?.slug ?? null)
 
   const slugTouched = useRef(Boolean(initial?.slug))
@@ -88,7 +68,7 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
   const editorApi = useRef<EditorApi | null>(null)
   // Live editor content lives here (not in React state) so typing never
   // re-renders the form. Saves read editorApi.getMarkdown() for the latest text.
-  const contentRef = useRef<string>(initial?.content ?? '')
+  const contentRef = useRef<string>(reopened?.data.content ?? initial?.content ?? '')
   const draftRef = useRef(draft)
   const dirtyRef = useRef(dirty)
   useEffect(() => {
@@ -104,7 +84,7 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
   const safety = useDraftSafety<Draft>({
     kind: 'post',
     slug: savedSlug,
-    storageKey: `quire:draft:post:${initial?.slug ?? 'new'}`,
+    storageKey,
     serverAt: autosaveAt,
     rowSavedAt: initial?.updatedAt ? Date.parse(initial.updatedAt) : null,
     isDirty: () => dirtyRef.current,
@@ -112,6 +92,8 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
     intervalMs: autosaveSeconds * 1000,
   })
   useUnsavedGuard(() => dirtyRef.current)
+
+  useReopenedNotice(reopened !== null, safety.recovered !== null, safety.dismiss, () => notify(t.localDraftFound))
 
   const update = useCallback((partial: Partial<Draft>) => {
     setDirty(true)
@@ -231,10 +213,17 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
     setPicker(null)
   }
 
-  // Pull the recovered snapshot back — device or server, whichever was newer (slug/date stay).
+  // Pull the recovered snapshot back — device or server, whichever was newer. The slug and
+  // the date STAY on a piece that has a row, which this comment claimed and the code did
+  // not do: a whole-object `setDraft` carried the snapshot's slug over the live one, so a
+  // restore renamed a published post's URL.
   async function restoreDraft() {
     const d = await safety.restore()
     if (!d) return
+    if (initial) {
+      d.slug = draftRef.current.slug
+      d.date = draftRef.current.date
+    }
     setDraft(d)
     draftRef.current = d
     editorApi.current?.setMarkdown(d.content)

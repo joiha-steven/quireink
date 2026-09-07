@@ -15,7 +15,7 @@ import { TrashLink } from './TrashLink'
 import { MediaLibrary } from './MediaLibrary'
 import { SlideOver } from './SlideOver'
 import { SheetTitle } from './SheetTitle'
-import { saveStatusLine, useStickyOffset, useUnsavedGuard } from './useLocalDraft'
+import { readSnapshot, saveStatusLine, useReopenedNotice, useStickyOffset, useUnsavedGuard } from './useLocalDraft'
 import { useDraftSafety } from './serverDraft'
 import { useAdminT } from './I18nProvider'
 
@@ -42,11 +42,15 @@ function toDraft(initial?: PageWithContent): PageDraft {
 export function PageForm({ initial, contentWidth, keySound, autosaveSeconds, autosaveAt }: Props) {
   const t = useAdminT()
   const { notify } = useToast()
-  const [draft, setDraft] = useState<PageDraft>(() => toDraft(initial))
+  const storageKey = `quire:draft:page:${initial?.slug ?? 'new'}`
+  // A page that has never been saved is reopened rather than offered back. The reasoning,
+  // and the measurement, are on `PostForm`.
+  const reopened = useRef(initial ? null : readSnapshot<PageDraft>(storageKey)).current
+  const [draft, setDraft] = useState<PageDraft>(() => reopened?.data ?? toDraft(initial))
   const [saving, setSaving] = useState(false)
   const [savedAt, setSavedAt] = useState<string | null>(null)
   const [picker, setPicker] = useState<PickTarget | null>(null)
-  const [dirty, setDirty] = useState(false)
+  const [dirty, setDirty] = useState(reopened !== null)
   const [savedSlug, setSavedSlug] = useState<string | null>(initial?.slug ?? null)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [asking, setAsking] = useState(false)
@@ -59,7 +63,7 @@ export function PageForm({ initial, contentWidth, keySound, autosaveSeconds, aut
   const safety = useDraftSafety<PageDraft>({
     kind: 'page',
     slug: savedSlug,
-    storageKey: `quire:draft:page:${initial?.slug ?? 'new'}`,
+    storageKey,
     serverAt: autosaveAt,
     rowSavedAt: initial?.updatedAt ? Date.parse(initial.updatedAt) : null,
     isDirty: () => dirtyRef.current,
@@ -72,7 +76,7 @@ export function PageForm({ initial, contentWidth, keySound, autosaveSeconds, aut
   const editorApi = useRef<EditorApi | null>(null)
   // Live editor content lives here (not in React state) so typing never
   // re-renders the form. Saves read editorApi.getMarkdown() for the latest text.
-  const contentRef = useRef<string>(initial?.content ?? '')
+  const contentRef = useRef<string>(reopened?.data.content ?? initial?.content ?? '')
   const draftRef = useRef(draft)
   const dirtyRef = useRef(dirty)
   useEffect(() => {
@@ -166,6 +170,8 @@ export function PageForm({ initial, contentWidth, keySound, autosaveSeconds, aut
 
   useUnsavedGuard(() => dirtyRef.current)
 
+  useReopenedNotice(reopened !== null, safety.recovered !== null, safety.dismiss, () => notify(t.localDraftFound))
+
   async function handleSave(status: PageDraft['status'], successMsg: string) {
     if (status === 'published' && !draftRef.current.title.trim()) {
       notify(t.needTitle, 'error')
@@ -189,10 +195,15 @@ export function PageForm({ initial, contentWidth, keySound, autosaveSeconds, aut
     setPicker(null)
   }
 
-  // Pull the recovered snapshot back — device or server, whichever was newer (slug stays).
+  // Pull the recovered snapshot back — device or server, whichever was newer.
+  //
+  // The slug STAYS, which the comment has claimed since this was written and the code did
+  // not do: a whole-object `setDraft` carried the snapshot's slug over the live one, so
+  // restoring into a saved page renamed its URL.
   async function restoreDraft() {
     const d = await safety.restore()
     if (!d) return
+    if (initial) d.slug = draftRef.current.slug
     setDraft(d)
     draftRef.current = d
     editorApi.current?.setMarkdown(d.content)
