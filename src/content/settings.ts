@@ -143,16 +143,41 @@ function resolveChromeFont(stored: Partial<SiteSettings> & { fontChromeInter?: u
 }
 
 // Settings merged over defaults; defaults on any error.
+/**
+ * The last answer, and the exact bytes it was built from.
+ *
+ * `getSettings` is the most-called function on the hot path: a page-cache HIT pays for it
+ * twice (`cached` and `cacheHeaders`), an article render five times or more, and every
+ * analytics beacon twice. Each call was a `JSON.parse` of a blob carrying six palettes and
+ * nine type roles, then thirty sanitizers, then a fresh `Intl.DateTimeFormat` for the
+ * timezone. That is the one piece of per-request work the page cache exists to remove.
+ *
+ * KEYED ON THE RAW STRING rather than invalidated by `saveSettings`, and that is the load
+ * bearing part: the memo is then a pure function of what is in the table, so it cannot go
+ * stale for a caller that wrote the row some other way. The read stays, because it is an
+ * indexed single-row lookup; what is skipped is everything after it.
+ */
+let cachedRaw: string | null = null
+let cachedSettings: SiteSettings | null = null
+
+/** Only for tests that swap the database file under a live process. */
+export function resetSettingsCache(): void {
+  cachedRaw = null
+  cachedSettings = null
+}
+
 export async function getSettings(): Promise<SiteSettings> {
   try {
     const row = one<{ data: string }>(`select data from settings where id = 1`)
+    const raw = row?.data ?? ''
+    if (cachedSettings !== null && cachedRaw === raw) return cachedSettings
     // `data` is verbatim JSON, never reshaped. A malformed blob throws here and the
     // catch below returns defaults, which is the same "never crash the header" contract
     // the frozen tree had against a failed query.
     const stored = (row ? JSON.parse(row.data) : {}) as Partial<SiteSettings>
     const seo = sanitizeSeo(stored.seo, DEFAULT_SEO)
     // Expand store-relative image refs to absolute Blob URLs.
-    return {
+    const built: SiteSettings = {
       ...DEFAULT_SETTINGS,
       ...stored,
       logoUrl: expandBlob(stored.logoUrl ?? DEFAULT_SETTINGS.logoUrl),
@@ -218,6 +243,9 @@ export async function getSettings(): Promise<SiteSettings> {
       timezone: sanitizeTimezone(stored.timezone, ''),
       updateCheck: stored.updateCheck !== false,
     }
+    cachedRaw = raw
+    cachedSettings = built
+    return built
   } catch (error) {
     console.error(`[ERROR] settings.getSettings: ${(error as Error).message}`)
     return DEFAULT_SETTINGS

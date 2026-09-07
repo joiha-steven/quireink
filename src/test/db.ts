@@ -12,6 +12,7 @@
 import { rmSync } from 'node:fs'
 import { openDatabases, closeDatabases } from '@/store/db'
 import { resetViewTotalsCache } from '@/analytics/summary'
+import { resetSettingsCache } from '@/content/settings'
 
 export function freshDatabase(dir: string): void {
   rmSync(dir, { recursive: true, force: true })
@@ -20,6 +21,7 @@ export function freshDatabase(dir: string): void {
   // them. A test that writes analytics rows straight into the table and then renders the
   // sidebar would otherwise read the previous file's totals.
   resetViewTotalsCache()
+  resetSettingsCache()
 }
 
 export function dropDatabase(dir: string): void {
