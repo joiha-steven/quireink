@@ -48,6 +48,7 @@ const pt = {
   pagerNewer: 'Mais novos',
   pagerOlder: 'Mais antigos',
   pagerLabel: 'Paginação',
+  pagerPage: 'Página {n}',
   metaTerm: 'Todos os posts de {site} arquivados em {name}.',
   metaSeries: '{name}: uma série em {site}, na ordem em que deve ser lida.',
   tocIndex: 'Sumário',

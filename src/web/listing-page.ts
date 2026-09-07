@@ -113,7 +113,16 @@ export async function listingPage(
 ${/* The header carries the menu only where there is no rail to hold it, which is the
      composed front page and nothing else. Every other layout now has a rail whenever the
      owner has a menu — see `renderSidebar` and the article's own rail. */
-  siteHeader(settings, { mailConfigured, menuInHeader: noRail })}
+  siteHeader(settings, {
+    mailConfigured,
+    menuInHeader: noRail,
+    // ONE h1 per page, and the body gets first refusal. A listing's own heading is either
+    // the term's name or its lead card, and the lead card is a switch: with it off the home
+    // page had no h1 at all, and neither does a deep page or an empty feed. Asked of the
+    // rendered body rather than of the settings, because four different callers build this
+    // body and only the string knows which of them ended up with a heading.
+    titleIsHeading: !/<h1[\s>]/.test(body),
+  })}
 <div class="with-rail"><main id="content">${body}${sidebar.html}</main></div>
 ${siteFooter(settings, { mailConfigured })}
 </div>`,

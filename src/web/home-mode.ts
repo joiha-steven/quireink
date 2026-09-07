@@ -35,7 +35,11 @@ export async function renderPostList(page: number): Promise<string | null> {
   // listing like any other and `renderFront` carries the object instead.
   const isHome = page === 1 && listRoot === '/'
   return listingPage({
-    title: page === 1 ? settings.title : `${settings.title} · page ${page}`,
+    // The word for "page" comes from the locale table like every other. It was English on
+    // a six-language product, in the one string a reader sees in their own browser tab.
+    title: page === 1
+      ? settings.title
+      : `${settings.title} · ${t(settings.language).pagerPage.replace('{n}', String(page))}`,
     jsonLd: isHome && settings.seo.autoSchema
       ? websiteSchema(settings, resolveSiteUrl(settings)) ?? undefined
       : undefined,

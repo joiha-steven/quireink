@@ -47,6 +47,7 @@ const ru = {
   pagerNewer: 'Новее',
   pagerOlder: 'Старее',
   pagerLabel: 'Страницы',
+  pagerPage: 'Страница {n}',
   metaTerm: 'Все записи {site} в разделе {name}.',
   metaSeries: '{name}: цикл записей на {site}, в том порядке, в котором его стоит читать.',
   tocIndex: 'Оглавление',

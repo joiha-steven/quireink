@@ -55,6 +55,14 @@ export type ChromeOptions = {
    * menu for the same reason, and nobody will have to remember to add it here.
    */
   menuInHeader?: boolean
+  /**
+   * Make the site's name the page's `<h1>`.
+   *
+   * Only for a listing whose body has none. A listing's own h1 is its lead card, which is a
+   * switch, so `leadPost` off left the home page starting at h2 with no entry point for
+   * heading navigation; a deep page and an empty feed never had one either.
+   */
+  titleIsHeading?: boolean
 }
 
 /**
@@ -65,7 +73,7 @@ export type ChromeOptions = {
  * admin builds on save — the original is only served when there is no render (a vector or
  * an animated logo).
  */
-function siteTitle(settings: SiteSettings): string {
+function siteTitle(settings: SiteSettings, asHeading = false): string {
   const src = settings.showLogo && settings.logoUrl
     ? (settings.logoRenderUrl || settings.logoUrl)
     : ''
@@ -85,7 +93,15 @@ function siteTitle(settings: SiteSettings): string {
     ? img(src, 'logo', settings.logoRenderHeight, true)
       + (darkSrc ? img(darkSrc, 'logo logo-dark', settings.logoDarkRenderHeight, false) : '')
     : escapeHtml(settings.title)
-  return `<a class="title" href="/">${inner}</a>`
+  const link = `<a class="title" href="/">${inner}</a>`
+  // The site's name becomes the page's HEADING when the page has none of its own.
+  //
+  // A listing's only h1 is its lead card, and the lead card is a switch the owner can turn
+  // off; a deep page never had one; an empty feed has nothing to promote. So the home page
+  // of a blog with `leadPost` off started at h2, and heading navigation had no entry point
+  // at all. The wrapper carries no styling of its own (`h1.site-h1` resets the three
+  // properties a heading brings), so nothing on screen moves either way.
+  return asHeading ? `<h1 class="site-h1">${link}</h1>` : link
 }
 
 /**
@@ -202,7 +218,7 @@ export function siteHeader(settings: SiteSettings, opts: ChromeOptions): string 
   // field and nothing to skip) does not call this function at all.
   return `<header class="site">
 <a class="skip-link" href="#content">${escapeHtml(s.skipToContent)}</a>
-<div class="site-bar">${siteTitle(settings)}${opts.menuInHeader ? siteMenu(settings, s.menu) : ''}<div class="site-actions">${actions.join('')}</div></div>${
+<div class="site-bar">${siteTitle(settings, opts.titleIsHeading === true)}${opts.menuInHeader ? siteMenu(settings, s.menu) : ''}<div class="site-actions">${actions.join('')}</div></div>${
     settings.showDescription && settings.description
       ? `<p class="tagline">${escapeHtml(settings.description)}</p>` : ''
   }</header>`

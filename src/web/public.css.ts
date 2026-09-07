@@ -141,6 +141,9 @@ main{flex:1;padding:3rem 0 1rem}
   text-decoration:none}
 
 header.site{padding:1.75rem 0}
+/* The site's name is sometimes the page's h1, decided in the listing shell. The wrapper
+   gives up the three things a heading brings, so the header looks the same either way. */
+.site-h1{margin:0;font-size:inherit;font-weight:inherit;line-height:inherit}
 header.site .title{font-family:var(--font-sans);font-weight:var(--fw-heading,600);color:var(--c-heading);
   text-decoration:none;font-size:var(--fs-h4);line-height:var(--lh-h4);
   letter-spacing:var(--ls-h4)}

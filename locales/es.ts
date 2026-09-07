@@ -47,6 +47,7 @@ const es = {
   pagerNewer: 'Más recientes',
   pagerOlder: 'Más antiguas',
   pagerLabel: 'Paginación',
+  pagerPage: 'Página {n}',
   metaTerm: 'Todas las entradas de {site} archivadas en {name}.',
   metaSeries: '{name}: una serie en {site}, en el orden en que se lee.',
   tocIndex: 'Contenido',

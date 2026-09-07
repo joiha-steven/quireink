@@ -47,6 +47,7 @@ const ja = {
   pagerNewer: '新しい記事',
   pagerOlder: '古い記事',
   pagerLabel: 'ページ送り',
+  pagerPage: '{n}ページ目',
   metaTerm: '{site} で {name} に分類された記事のすべて。',
   metaSeries: '{name}: {site} の連載。読まれるべき順に並んでいます。',
   tocIndex: '目次',

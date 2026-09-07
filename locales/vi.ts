@@ -47,6 +47,7 @@ const vi = {
   pagerNewer: 'Mới hơn',
   pagerOlder: 'Cũ hơn',
   pagerLabel: 'Phân trang',
+  pagerPage: 'Trang {n}',
   metaTerm: 'Mọi bài trên {site} được xếp vào {name}.',
   metaSeries: '{name}: một loạt bài trên {site}, theo đúng thứ tự nên đọc.',
   tocIndex: 'Mục lục',

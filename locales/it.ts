@@ -47,6 +47,7 @@ const it = {
   pagerNewer: 'Più recenti',
   pagerOlder: 'Più vecchi',
   pagerLabel: 'Paginazione',
+  pagerPage: 'Pagina {n}',
   metaTerm: 'Tutti gli articoli di {site} archiviati sotto {name}.',
   metaSeries: '{name}: una serie su {site}, nell’ordine in cui va letta.',
   tocIndex: 'Indice',

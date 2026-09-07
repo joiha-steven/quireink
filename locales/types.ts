@@ -49,6 +49,8 @@ export type Dict = {
   // The pager's own landmark name. A page can carry two or three <nav> regions and a
   // screen reader lists them by label alone; unlabelled they all read as "navigation".
   pagerLabel: string
+  /** The title of a deep page of a listing. `{n}` is the page number. */
+  pagerPage: string
   // Meta descriptions for the listing surfaces that have no words of their own. Without
   // them home, search, every tag, every category and every series shipped ONE shared
   // sentence — the site description — so four indexable page kinds carried an identical,

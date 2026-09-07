@@ -96,3 +96,37 @@ describe('a page of the feed', () => {
     expect(seen.size).toBe(20)
   })
 })
+
+// A page's entry point for heading navigation. A listing's own h1 is the lead card, which is
+// a switch, so with it off the home page started at h2 and had none at all.
+describe('every page has exactly one h1', () => {
+  const countH1 = (html: string) => html.match(/<h1[\s>]/g)?.length ?? 0
+
+  it('promotes the site name when the feed has no lead card', async () => {
+    const s = await getSettings()
+    await saveSettings({ features: { ...s.features, leadPost: false } })
+    await savePost({ title: 'Alone', content: 'x', status: 'published', date: PAST })
+    const html = await (await get('/')).text()
+    expect(countH1(html)).toBe(1)
+    expect(html).toContain('<h1 class="site-h1">')
+  })
+
+  it('leaves the lead card as the only h1 when there is one', async () => {
+    await savePost({ title: 'Lead', content: 'x', status: 'published', date: PAST })
+    const html = await (await get('/')).text()
+    expect(countH1(html)).toBe(1)
+    expect(html).not.toContain('site-h1')
+  })
+
+  it('gives an empty feed and a miss one each', async () => {
+    expect(countH1(await (await get('/')).text())).toBe(1)
+    expect(countH1(await (await get('/nothing-here')).text())).toBe(1)
+  })
+
+  it('leaves the article title as the article page heading', async () => {
+    await savePost({ title: 'A Post', slug: 'a-post', content: 'x', status: 'published', date: PAST })
+    const html = await (await get('/a-post')).text()
+    expect(countH1(html)).toBe(1)
+    expect(html).not.toContain('site-h1')
+  })
+})
