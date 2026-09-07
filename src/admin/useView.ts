@@ -52,6 +52,22 @@ export type ViewState<T> = {
  */
 const lastSeen = new Map<string, { epoch: number; data: unknown }>()
 
+/**
+ * Drop one entry, for a screen that has just made it untrue.
+ *
+ * ⚠️ THE EDITOR IS WHY. A save deliberately does not bump the epoch — that would remount the
+ * editor and take the cursor, the selection and the undo stack with it — so the entry for the
+ * post being edited went on holding the version from BEFORE the save. Reopening that post
+ * seeded the form from it, and because the editor takes its content once, the fresh payload
+ * arriving a round trip later was dropped: the writer met the text they had already replaced,
+ * typed the fix again, and the next save wrote the old version plus the fix over the new one.
+ *
+ * Forgetting the one entry costs that post a skeleton on the next open and nothing else.
+ */
+export function forgetView(name: ViewName, query = ''): void {
+  lastSeen.delete(`${name}${query}`)
+}
+
 export function useView<N extends ViewName>(name: N, query = ''): ViewState<ViewPayloads[N]> {
   type T = ViewPayloads[N]
   const epoch = useRefreshEpoch()

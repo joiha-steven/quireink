@@ -18,6 +18,7 @@ import { SheetTitle } from './SheetTitle'
 import { readSnapshot, saveStatusLine, useReopenedNotice, useStickyOffset, useUnsavedGuard } from './useLocalDraft'
 import { useDraftSafety } from './serverDraft'
 import { useAdminT } from './I18nProvider'
+import { forgetView } from '@/admin/useView'
 
 type Props = {
   initial?: PageWithContent
@@ -124,6 +125,10 @@ export function PageForm({ initial, contentWidth, keySound, autosaveSeconds, aut
           notify(json.error === 'slug_taken' ? t.slugTaken : t.saveFailed, 'error')
           return false
         }
+        // The cached copy of this piece is now the version before this save. Dropping it is
+        // what stops the next open seeding the editor from it (`forgetView`).
+        forgetView('page-editor', `?slug=${encodeURIComponent(json.data.slug)}`)
+        forgetView('page-editor', editing ? `?slug=${encodeURIComponent(editing)}` : '')
         currentSlug.current = json.data.slug
         setSavedSlug(json.data.slug)
         setSavedAt(new Date().toISOString())

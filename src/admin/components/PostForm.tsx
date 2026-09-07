@@ -5,11 +5,11 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { PostWithContent, PostRevision, ApiResponse } from '@/types'
 import type { KeySound } from './key-sound'
 import { useToast } from '@/admin/ui/Toast'
-import { slugify, formatTime, formatDateTimeShort, isScheduled , zonedInputToIso } from '@/utils'
+import { slugify, formatTime, formatDateTimeShort, isScheduled } from '@/utils'
 import { uploadImages } from '@/admin/upload-client'
 import { Editor, type EditorApi } from './Editor'
 import { type Draft } from './PostSettings'
-import { toDraft } from './post-draft'
+import { toDraft, toPayload } from './post-draft'
 import { PublishPanel } from './PublishPanel'
 import { EditorActions } from './EditorActions'
 import { MediaLibrary } from './MediaLibrary'
@@ -20,6 +20,7 @@ import { SheetTitle } from './SheetTitle'
 import { readSnapshot, saveStatusLine, useReopenedNotice, useStickyOffset, useUnsavedGuard } from './useLocalDraft'
 import { useDraftSafety } from './serverDraft'
 import { useAdminT } from './I18nProvider'
+import { forgetView } from '@/admin/useView'
 
 type Props = {
   initial?: PostWithContent
@@ -41,8 +42,8 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
   const t = useAdminT()
   const { notify } = useToast()
   const storageKey = `quire:draft:post:${initial?.slug ?? 'new'}`
-  // A piece with no row is REOPENED from its snapshot rather than offered it back; the read
-  // is here so the editor mounts with the work in it. Why, and what it cost, on `readSnapshot`.
+  // A piece with no row is REOPENED from its snapshot (see `readSnapshot`), read here so
+  // the editor mounts with the work already in it.
   const reopened = useRef(initial ? null : readSnapshot<Draft>(storageKey)).current
   const [draft, setDraft] = useState<Draft>(() => reopened?.data ?? toDraft(initial, timezone))
   const [saving, setSaving] = useState(false)
@@ -119,23 +120,7 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
       const content = editorApi.current?.getMarkdown() ?? contentRef.current
       if (!d.title.trim() && !content.trim()) return false
       setSaving(true)
-      const payload: Partial<PostWithContent> = {
-        title: d.title,
-        // Always have a slug so the API never rejects a content-only draft.
-        slug: d.slug || slugify(d.title) || `post-${Date.now()}`,
-        date: d.date ? zonedInputToIso(d.date, timezone) : new Date().toISOString(),
-        status: statusOverride ?? d.status,
-        categories: d.categories,
-        tags: d.tags,
-        series: d.series.trim() || undefined,
-        seriesOrder: d.series.trim() ? d.seriesOrder : undefined,
-        featuredImage: d.featuredImage || undefined,
-        coverImage: d.coverImage || undefined,
-        metaTitle: d.metaTitle.trim() || undefined,
-        metaDescription: d.metaDescription.trim() || undefined,
-        excerpt: d.excerpt,
-        content,
-      }
+      const payload = toPayload(d, content, timezone, statusOverride)
       try {
         const editing = currentSlug.current
         const res = await fetch(editing ? `/api/posts/${editing}` : '/api/posts', {
@@ -148,19 +133,20 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
           notify(json.error === 'slug_taken' ? t.slugTaken : t.saveFailed, 'error')
           return false
         }
+        // The cached view of this piece now predates this save (`forgetView`).
+        for (const was of [json.data.slug, editing]) forgetView('editor', was ? `?slug=${encodeURIComponent(was)}` : '')
         currentSlug.current = json.data.slug
         setSavedSlug(json.data.slug)
         setSavedAt(new Date().toISOString())
         // ONLY IF NOTHING MOVED WHILE THE REQUEST WAS IN THE AIR. `content` was read before
-        // the fetch, so a sentence typed during it is not in what the server holds, and
-        // marking the form clean over it turned off the exit warning, disabled Save, made
-        // both autosaves skip and dropped the recovery copies for exactly that sentence.
+        // the fetch, so marking the form clean over a sentence typed during it turned off
+        // the exit warning and dropped the recovery copies for exactly that sentence.
         if ((editorApi.current?.getMarkdown() ?? contentRef.current) === content) {
           setDirty(false)
           safety.clear() // the server now has it — drop both recovery copies
         }
-        // The slug is the reader's URL from here on: nothing set this after the first save,
-        // so every later title edit renamed a post that had already been shared.
+        // Nothing set this after the first save, so every later title edit renamed a post
+        // that had already been shared.
         slugTouched.current = true
         // THE ADDRESS BAR IS SYNCED HERE, AND THE ROUTER IS DELIBERATELY NOT.
         //
