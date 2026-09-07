@@ -9,8 +9,9 @@ import { useRouter } from '@/admin/router'
 import type { Post, Page, MediaItem, FileItem, AdminComment, ApiResponse } from '@/types'
 import { useToast } from '@/admin/ui/Toast'
 import { useConfirm } from '@/admin/ui/ConfirmDialog'
-import { formatDateTimeShort } from '@/utils'
-import { EmptyState, NOTE_TEXT, PageHeader, Tabs } from './kit'
+import { foldAccents, formatDateTimeShort } from '@/utils'
+import { CONTROL_SM, EmptyState, NOTE_TEXT, PageHeader, Tabs } from './kit'
+import { Tick } from '@/admin/ui/Tick'
 import { SHEET, SHEET_FOOT, SHEET_TOOL, SHEET_TOOL_DANGER, SheetTop } from './sheet'
 import { useAdminT } from './I18nProvider'
 
@@ -42,6 +43,26 @@ export function TrashView({
   const ask = useConfirm()
   const [tab, setTab] = useState<Kind>('posts')
   const [pending, setPending] = useState(false)
+  const [query, setQuery] = useState('')
+  /**
+   * WHAT IS TICKED, and it is cleared on every tab change.
+   *
+   * Ids are only unique WITHIN a kind — a post's slug and a file's URL are different
+   * namespaces — so a selection carried across tabs would restore something nobody pointed at.
+   */
+  const [chosen, setChosen] = useState<Set<string>>(new Set())
+  const swap = (k: Kind) => { setTab(k); setChosen(new Set()); setQuery('') }
+  const pick = (id: string) => setChosen((prev) => {
+    const next = new Set(prev)
+    if (next.has(id)) next.delete(id)
+    else next.add(id)
+    return next
+  })
+  /** Accent-folded, so "cafe" finds "café" — the same rule the write pane's search follows. */
+  const keep = (name: string) => {
+    const needle = foldAccents(query.trim().toLowerCase())
+    return !needle || foldAccents(name.toLowerCase()).includes(needle)
+  }
 
   const counts: Record<Kind, number> = {
     posts: posts.length,
@@ -149,8 +170,23 @@ export function TrashView({
       <PageHeader title={t.trashTitle} />
       <div className={SHEET}>
         <SheetTop>
-          <Tabs tabs={tabs} value={tab} onChange={setTab} size="sm" />
+          <Tabs tabs={tabs} value={tab} onChange={swap} size="sm" />
           <span className="flex-1" />
+          {counts[tab] > 0 && (
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={t.trashSearch}
+              aria-label={t.trashSearch}
+              className={`${CONTROL_SM} w-full min-w-0 sm:w-48`}
+            />
+          )}
+          {chosen.size > 0 && (
+            <button type="button" onClick={() => { void restoreChosen() }} disabled={pending} className={SHEET_TOOL}>
+              {t.restore} ({chosen.size})
+            </button>
+          )}
           {counts[tab] > 0 && (
             <button type="button" onClick={() => onEmpty(tab)} disabled={pending} className={SHEET_TOOL_DANGER}>
               {t.emptyTrash}
@@ -169,6 +205,20 @@ export function TrashView({
     </div>
   )
 
+  /**
+   * PUT BACK EVERYTHING TICKED, in one request.
+   *
+   * `/api/trash` already takes an array of ids — restoring one has always been the
+   * single-element case of this — so bulk restore is the endpoint's own shape rather than a
+   * loop of calls, and it either all lands or none of it does.
+   */
+  async function restoreChosen() {
+    const ids = [...chosen]
+    const r = await act(tab, 'restore', ids)
+    if (r.ok) setChosen(new Set())
+    notify(r.ok ? t.restored : (r.error ?? t.restoreFailed), r.ok ? undefined : 'error')
+  }
+
   // ----- per-kind tables (kept inline so they share act/onRestore/onPurge) -----
 
   function Empty() {
@@ -180,7 +230,10 @@ export function TrashView({
   function Row({ kind, id, name, deletedAt, children }: { kind: Kind; id: string; name: string; deletedAt?: string | null; children: React.ReactNode }) {
     return (
       <li className="border-b border-neutral-100 px-5 py-3 hover:bg-neutral-50/60 dark:border-neutral-800 dark:hover:bg-neutral-800/30">
-        {children}
+        <div className="flex items-start gap-3">
+          <Tick checked={chosen.has(id)} onChange={() => pick(id)} disabled={pending} className="mt-0.5" />
+          <div className="min-w-0 flex-1">{children}</div>
+        </div>
         <div className="mt-1 flex flex-wrap items-baseline gap-x-2 text-xs text-neutral-500 dark:text-neutral-400">
           {deletedAt && <span className="whitespace-nowrap">{t.colDeletedAt} {formatDateTimeShort(deletedAt)}</span>}
           <span className="ml-auto flex gap-3">
@@ -204,7 +257,7 @@ export function TrashView({
     if (rows.length === 0) return <Empty />
     return (
       <Rows>
-        {rows.map((r) => (
+        {rows.filter((r) => keep(r.title || t.untitled)).map((r) => (
           <Row key={r.slug} kind={kind} id={r.slug} name={r.title || t.untitled} deletedAt={r.deletedAt}>
             <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">{r.title || t.untitled}</p>
           </Row>
@@ -217,7 +270,7 @@ export function TrashView({
     if (rows.length === 0) return <Empty />
     return (
       <Rows>
-        {rows.map((m) => (
+        {rows.filter((m) => keep(m.filename)).map((m) => (
           <Row key={m.url} kind="media" id={m.url} name={m.filename} deletedAt={m.deletedAt}>
             <div className="flex items-center gap-3">
               <img src={m.thumb || m.url} alt="" width={40} height={40} className="h-10 w-10 shrink-0 rounded-md object-cover" />
@@ -233,7 +286,7 @@ export function TrashView({
     if (rows.length === 0) return <Empty />
     return (
       <Rows>
-        {rows.map((f) => (
+        {rows.filter((f) => keep(f.filename)).map((f) => (
           <Row key={f.url} kind="files" id={f.url} name={f.filename} deletedAt={f.deletedAt}>
             <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">{f.filename}</p>
           </Row>
