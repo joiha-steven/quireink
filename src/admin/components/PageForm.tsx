@@ -127,8 +127,13 @@ export function PageForm({ initial, contentWidth, keySound, autosaveSeconds, aut
         currentSlug.current = json.data.slug
         setSavedSlug(json.data.slug)
         setSavedAt(new Date().toISOString())
-        setDirty(false)
-        safety.clear() // the server now has it — drop both recovery copies
+        // Only if nothing moved while the request was in the air, and the slug stops being
+        // derived from the title once there is a row. Both reasons are on `PostForm`.
+        if ((editorApi.current?.getMarkdown() ?? contentRef.current) === content) {
+          setDirty(false)
+          safety.clear() // the server now has it — drop both recovery copies
+        }
+        slugTouched.current = true
         // THE ADDRESS BAR IS SYNCED HERE, AND THE ROUTER IS DELIBERATELY NOT.
         //
         // `router.replace()` would put the new slug into the router's own state, which is
@@ -177,9 +182,15 @@ export function PageForm({ initial, contentWidth, keySound, autosaveSeconds, aut
       notify(t.needTitle, 'error')
       return
     }
-    update({ status })
+    // The status follows the save, and is written straight into the draft. Setting it first
+    // left the sheet claiming Published for a page the server had refused; going through
+    // `update` would mark the form dirty over a status the server has just accepted. Same
+    // reasoning as `PostForm`.
     const okSaved = await enqueueSave(status)
-    if (okSaved) notify(successMsg)
+    if (!okSaved) return
+    setDraft((prev) => ({ ...prev, status }))
+    draftRef.current = { ...draftRef.current, status }
+    notify(successMsg)
   }
 
   // Single pick (image / featured). Gallery uses multi-select -> onPickedMany.

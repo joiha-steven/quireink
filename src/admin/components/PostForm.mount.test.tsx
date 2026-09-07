@@ -13,6 +13,7 @@
 import { describe, expect, it, beforeAll, afterAll, afterEach } from 'bun:test'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
 import type { PostWithContent } from '@/types'
+import { adminT } from '@/i18n/admin-i18n'
 
 beforeAll(() => GlobalRegistrator.register())
 afterAll(() => GlobalRegistrator.unregister())
@@ -45,6 +46,8 @@ function form(initial: PostWithContent) {
     />
   ))
 }
+
+const t = adminT('en')
 
 describe('PostForm, mounted', () => {
   it('shows the title in the sheet and the body inside a live ProseMirror', async () => {
@@ -103,6 +106,32 @@ describe('PostForm, mounted', () => {
       .toContain('The sentence that used to disappear.')
     // ...and the snapshot stays put, so a second trip through this screen finds it too.
     expect(localStorage.getItem('quire:draft:post:new')).not.toBeNull()
+    await m.unmount()
+  })
+
+  // The sheet must not claim a state the server refused. Setting the status before the save
+  // meant a `slug_taken` or a 500 left the meta line, the radios and the button all saying
+  // Published for a post the server still had as a draft.
+  it('does not say published when the server refused the save', async () => {
+    const { mountAdmin, installFetchMock } = await import('@/admin/test-mount')
+    const fetchMock = installFetchMock(() => ({ success: false, error: 'slug_taken' }))
+    restores.push(fetchMock.restore)
+
+    const m = await mountAdmin(await form(post()))
+    await m.flush()
+    // TWICE, through the harness's own click (which wraps `act`): the first press opens the
+    // attributes sheet and asks (ADR 0024), and only the second one saves.
+    await m.click(m.button(t.publish))
+    await m.click(m.button(t.publish))
+    await new Promise((r) => setTimeout(r, 40))
+    await m.flush()
+
+    // The attributes sheet opens on the first Publish press, so the state is on screen. The
+    // radios carry no `value`, so the checked one is read through its label.
+    const checked = [...m.container.querySelectorAll('label')]
+      .find((l) => (l.querySelector('input[type=radio]') as HTMLInputElement | null)?.checked)
+    expect(checked?.textContent).toContain('Draft')
+    expect(m.container.textContent ?? '').not.toContain('Saved at')
     await m.unmount()
   })
 

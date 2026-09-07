@@ -150,8 +150,17 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
         currentSlug.current = json.data.slug
         setSavedSlug(json.data.slug)
         setSavedAt(new Date().toISOString())
-        setDirty(false)
-        safety.clear() // the server now has it — drop both recovery copies
+        // ONLY IF NOTHING MOVED WHILE THE REQUEST WAS IN THE AIR. `content` was read before
+        // the fetch, so a sentence typed during it is not in what the server holds, and
+        // marking the form clean over it turned off the exit warning, disabled Save, made
+        // both autosaves skip and dropped the recovery copies for exactly that sentence.
+        if ((editorApi.current?.getMarkdown() ?? contentRef.current) === content) {
+          setDirty(false)
+          safety.clear() // the server now has it — drop both recovery copies
+        }
+        // The slug is the reader's URL from here on: nothing set this after the first save,
+        // so every later title edit renamed a post that had already been shared.
+        slugTouched.current = true
         // THE ADDRESS BAR IS SYNCED HERE, AND THE ROUTER IS DELIBERATELY NOT.
         //
         // `router.replace()` would put the new slug in the router's state, which is what
@@ -194,9 +203,14 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
       notify(t.needTitle, 'error')
       return
     }
-    update({ status })
+    // The STATUS follows the save. Set first, a refused save left the sheet saying Published
+    // for a post the server still had as a draft. Written straight into the draft rather
+    // than through `update`, which would mark the form dirty over a status just accepted.
     const okSaved = await enqueueSave(status)
-    if (okSaved) notify(successMsg)
+    if (!okSaved) return
+    setDraft((prev) => ({ ...prev, status }))
+    draftRef.current = { ...draftRef.current, status }
+    notify(successMsg)
   }
 
   // Single pick (image / featured). Gallery uses multi-select -> onPickedMany.
