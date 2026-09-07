@@ -41,6 +41,7 @@ export async function renderPostList(page: number): Promise<string | null> {
       : undefined,
     body: built.body,
     css: built.css,
+    noindex: built.noindex,
     canonicalPath: page === 1 ? listRoot : `/page/${page}`,
   })
 }

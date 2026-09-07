@@ -268,10 +268,14 @@ ${UTILITY_CSS}
 .empty{color:var(--c-meta)}
 
 ${ARCHIVE_CSS}
-.pager{display:flex;justify-content:space-between;align-items:center;gap:1rem;
+.pager,.feed-more{display:flex;justify-content:space-between;align-items:center;gap:1rem;
   border-top:1px solid var(--c-rule);padding-top:1rem;margin-top:1rem;
   font-size:var(--fs-small);line-height:var(--lh-small);letter-spacing:var(--ls-small)}
 .pager-count{color:var(--c-meta)}
+/* One link, so it hangs on the right where the pager's "older" already sits. Only a reader
+   with no JavaScript sees it: the island reads its address, hides it, and puts it back if
+   the fetch fails. */
+.feed-more{justify-content:flex-end}
 form.search{display:flex;gap:.5rem;margin:0 0 2rem}
 /* min-width:0 is what stops this row leaving the viewport. An <input> carries an intrinsic
    width from its size attribute, a flex item will not shrink below its own min-content by

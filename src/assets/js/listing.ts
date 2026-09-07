@@ -3,10 +3,11 @@
 // Opt-in per site (`features.gridView`) and self-guarding on markup, so on a site with it
 // switched off this file does one failed query and stops.
 //
-// Infinite scroll used to live here too, as a fetch of the next page's HTML. It does not
-// any more: a site with `features.infiniteScroll` on has no pagination at all — the feed is
-// one year-grouped timeline and `/page/2` is a 404, exactly as in the frozen tree — so
-// there was no next page left to fetch. Scroll reveal is now the CSS `reveal` animation.
+// Infinite scroll is here again, and it is a fetch of the next page's HTML. It was removed
+// when the server started rendering every card and hiding the tail; that is fine at thirty
+// posts and is 450 KB on a five-hundred-post blog, on every visit, held per URL in the page
+// cache. So the server now sends three chunks and a real link to the next page, and this
+// asks for the rest as the reader arrives. Scroll reveal stays the CSS `reveal` animation.
 
 import { label } from './dom'
 
@@ -61,19 +62,18 @@ function gridToggle(): void {
 }
 
 /**
- * Hand the feed back a chunk at a time, and ease each card in.
+ * Fetch the next page of the feed as the reader nears the end, and ease each card in.
  *
- * The frozen tree kept the tail of the archive in React state and revealed `postsPerPage`
- * at a time as a sentinel neared the viewport. The server here renders every card, so the
- * archive survives with no JavaScript and a crawler sees all of it — this hides what is
- * past the first page and gives it back on the same trigger. `rootMargin` is the frozen
- * tree's 600px, so the next chunk is already there when the reader arrives.
+ * The server sends three chunks and a link to the next page. Nothing on the page is hidden:
+ * the frozen tree kept the tail in React state, and 2.0 rendered every card and hid what was
+ * past the first page, which meant each reveal moved the footer under a reader who had
+ * already reached it. A capped page needs neither.
  *
  * The reveal ANIMATION is CSS (`animation-timeline: view()`). This only arms the fallback
  * for an engine that has no view() timelines, and only for cards that are not already on
  * screen — hiding something above the fold to fade it in is a flash, not an effect.
  */
-function chunked(): void {
+function moreOnScroll(): void {
   const feed = document.querySelector<HTMLElement>('.post-list')
   if (!feed) return
   const html = document.documentElement
@@ -95,29 +95,76 @@ function chunked(): void {
     for (const c of feed.querySelectorAll('.reveal:not(.is-in)')) seen.observe(c)
   }
 
-  // The tail of the archive, handed back a page at a time as the reader reaches it. The
-  // step is what the server withheld, read off the markup so there is one source for it.
-  const more = [...feed.querySelectorAll<HTMLElement>('article[data-more]')]
-  if (!more.length) return
-  html.dataset.chunked = 'on'
-  const step = Math.max(1, feed.querySelectorAll('article').length - more.length)
-
-  // 600px of rootMargin, as the frozen tree used: the next chunk is already in place by the
-  // time the reader gets there, so the feed never visibly stops.
+  // The tail of the archive, fetched a page at a time as the reader reaches it.
   //
-  // The sentinel is the LAST VISIBLE card, not the first hidden one. A hidden card is
-  // display:none, so it has no box, so it never intersects anything - observing it meant
-  // the feed stopped dead at twenty posts and no amount of scrolling moved it.
+  // The link is the address of the next page AND the fallback. Hidden while this runs;
+  // shown again the moment a fetch fails, so the worst case is a page with a link on it.
+  const nav = document.querySelector<HTMLElement>('[data-feed-more]')
+  const link = nav?.querySelector<HTMLAnchorElement>('a[rel=next]') ?? null
+  if (!link) return
+  nav!.hidden = true
+  let loading = false
+
+  /**
+   * Two feeds into one, without a year printed twice.
+   *
+   * Each `.tl-yr` carries its year marker as its first child, so appending page two whole
+   * prints the year again the moment a page boundary falls inside one. When the years match
+   * only the cards move across.
+   */
+  const merge = (incoming: Element): void => {
+    for (const group of incoming.querySelectorAll<HTMLElement>('.tl-yr')) {
+      const last = feed.querySelector<HTMLElement>('.tl-yr:last-of-type')
+      const sameYear = last?.querySelector('.tl-year-tag')?.textContent
+        === group.querySelector('.tl-year-tag')?.textContent
+      if (last && sameYear) last.append(...group.querySelectorAll('article'))
+      else feed.append(group)
+    }
+  }
+
+  const fetchNext = async (): Promise<void> => {
+    if (loading) return
+    loading = true
+    try {
+      // `throw res` rather than a new Error: the catch below ignores what it caught and
+      // only cares that something went wrong, so the message would be bytes on every page.
+      const res = await fetch(link.href)
+      if (!res.ok) throw res
+      // A template rather than `DOMParser`: its contents are inert, it is smaller, and
+      // only the body of the answer is wanted.
+      const doc = document.createElement('template')
+      doc.innerHTML = await res.text()
+      const incoming = doc.content.querySelector('.post-list')
+      if (!incoming) throw res
+      merge(incoming)
+      // The next address is taken as the RELATIVE href it was written as: a detached
+      // fragment has no base URL of its own to resolve one against.
+      const onward = doc.content.querySelector('[data-feed-more] a[rel=next]')?.getAttribute('href')
+      loading = false
+      if (!onward) { nav!.remove(); return }
+      link.setAttribute('href', onward)
+      arm()
+    } catch {
+      // Whatever went wrong, the reader keeps a way onward.
+      loading = false
+      nav!.hidden = false
+    }
+  }
+
+  // Two viewports of rootMargin rather than a fixed 600px: on a phone one flick travels
+  // further than 600px between frames, so the next page arrived after the footer had
+  // already moved up under the reader's eyes.
   const io = new IntersectionObserver((es) => {
     if (!es.some((e) => e.isIntersecting)) return
     io.disconnect()
-    for (const c of more.splice(0, step)) c.removeAttribute('data-more')
-    if (!more.length) delete html.dataset.chunked
-    else arm()
-  }, { rootMargin: '600px 0px' })
-  const arm = () => {
-    const shown = feed.querySelectorAll<HTMLElement>('article:not([data-more])')
-    const last = shown[shown.length - 1]
+    void fetchNext()
+  }, { rootMargin: `${innerHeight * 2}px 0px` })
+
+  // The sentinel is the LAST CARD: the link itself is hidden, and a hidden element has no
+  // box, so it never intersects anything.
+  const arm = (): void => {
+    const cards = feed.querySelectorAll<HTMLElement>('article')
+    const last = cards[cards.length - 1]
     if (last) io.observe(last)
   }
   arm()
@@ -125,5 +172,5 @@ function chunked(): void {
 
 export function listing(): void {
   gridToggle()
-  chunked()
+  moreOnScroll()
 }

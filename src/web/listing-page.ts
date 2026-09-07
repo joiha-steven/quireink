@@ -156,15 +156,26 @@ async function readyThumbs(): Promise<ReadyImages> {
   return ready
 }
 
+/**
+ * How many reveal chunks one timeline page carries.
+ *
+ * The whole archive used to be in the HTML, hidden past the first chunk. That is fine at
+ * thirty posts and is not what a blog becomes: measured on the demo's 33 posts the home page
+ * was 49,905 bytes before compression, so a five-hundred-post blog would have been around
+ * 450 KB, on every visit, and the page cache held that per URL. Three chunks is deep enough
+ * that a reader who scrolls a little never waits, and the rest arrives a page at a time.
+ */
+const TIMELINE_CHUNKS = 3
+
 export async function renderFeedBody(
   posts: Posts, page: number, view: Omit<ListingView, 'paged' | 'timeline'>,
-): Promise<{ body: string; css: string } | null> {
+): Promise<{ body: string; css: string; noindex: boolean } | null> {
   const settings: SiteSettings = await getSettings()
   const timeline = settings.features.infiniteScroll
-  if (timeline && page > 1) return null
-  const paged = timeline
-    ? { items: posts, page: 1, totalPages: 1 }
-    : paginate(posts, page, settings.postsPerPage)
+  const perPage = timeline
+    ? Math.max(1, settings.postsPerPage) * TIMELINE_CHUNKS
+    : settings.postsPerPage
+  const paged = paginate(posts, page, perPage)
   // `paginate` CLAMPS an out-of-range page, so an emptiness check never fires: /page/9
   // would silently serve the last page under a ninth URL, which is duplicate content at
   // every number a crawler tries. Compare against the real total instead.
@@ -175,6 +186,11 @@ export async function renderFeedBody(
   const ready = settings.postImage.thumb === 'none' ? undefined : await readyThumbs()
   return {
     body: renderListing({ ...view, paged, timeline, ready }, settings),
+    // A deep page of an infinite feed exists so the reader without JavaScript, and the
+    // island, can reach the older posts. It is not a page anybody should arrive at from a
+    // search result, and it holds no content of its own: `follow`, so the posts on it are
+    // still reached, `noindex` so the feed does not become one URL per thirty posts.
+    noindex: timeline && page > 1,
     // The timeline appears at a MUCH lower width than the sidebar: a date label needs far
     // less gutter than a 250px rail, so it shows on an ordinary laptop.
     css: timeline ? timelineCss(settings.contentWidth) : '',

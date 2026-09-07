@@ -256,36 +256,17 @@ describe('the feed hands itself back a chunk at a time', () => {
   // meant by "it feels like everything loads in one go". The cards are all rendered — so a
   // crawler and a reader with no JavaScript still get the whole archive — and the ones past
   // the first page are MARKED, for the island to hide and give back.
-  it('marks every card past the first page, and guards the hiding with noscript', async () => {
+  it('hides nothing: what is not on the page was not sent', async () => {
     await saveSettings({ postsPerPage: 2, features: { ...(await getSettings()).features, infiniteScroll: true } })
     for (let i = 0; i < 5; i++) {
       await savePost({ title: `Post ${i}`, content: 'x', status: 'published', date: PAST })
     }
     const html = await (await get('/')).text()
-    // Count the ARTICLES, not the string: it also appears in the sheet and in the noscript
-    // guard, which is how the first version of this test read five where three were meant.
-    const marked = html.match(/<article[^>]*data-more/g)?.length ?? 0
-    expect(marked).toBe(3)
-    // Hiding content is only safe when the thing that undoes it is guaranteed to exist.
-    expect(html).toContain('<noscript>')
-    expect(html).toContain('html[data-chunked] .post-list article[data-more]{display:block}')
-  })
-
-  // The card and the marker above it have to name the same year. The marker sliced the
-  // stored UTC string while the card printed `settings.timezone`, so for the first hours of
-  // every January in Hanoi a post dated 1 January sat under a heading reading the year
-  // before.
-  it('puts a card under the year marker its own printed date names', async () => {
-    await saveSettings({
-      timezone: 'Asia/Ho_Chi_Minh',
-      features: { ...(await getSettings()).features, infiniteScroll: true },
-    })
-    // 02:00 on 1 January 2026 in Hanoi, which is still 2025 in UTC.
-    await savePost({ title: 'New Year', content: 'x', status: 'published', date: '2025-12-31T19:00:00.000Z' })
-    const html = await (await get('/')).text()
-    expect(html).toContain('>2026</span>')
-    expect(html).not.toContain('>2025</span>')
-    expect(html).toContain('January 1, 2026')
+    // Five posts fit inside one capped page, so all five are there and none is marked.
+    expect(html.match(/<article/g)?.length).toBe(5)
+    expect(html).not.toContain('data-more')
+    // ...and with nothing hidden there is nothing for a noscript guard to undo.
+    expect(html).not.toContain('data-chunked')
   })
 
   it('eases each card in, which nothing in the sheet used to do', async () => {

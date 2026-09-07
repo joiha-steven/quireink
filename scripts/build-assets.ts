@@ -89,7 +89,17 @@ const BUDGET: Record<string, number> = {
   // off. Registering alone would have been cheaper and would have made the switch a one-way
   // door. It runs on every public page for the same reason — the switch can only take
   // effect on a page the reader happens to load, and most of those are listings.
-  'core.js': 11_000,
+  //
+  // 11,300 since 2026-09-07, and it bought back page weight many times over. The server used
+  // to render EVERY card of the feed and hide the tail, which is why this file had no fetch
+  // in it. Measured on the 33-post demo the home page was 49,905 bytes uncompressed, and it
+  // grows with the archive: a five-hundred-post blog would have shipped roughly 450 KB on
+  // every visit, with the page cache holding a copy per URL. The server now sends three
+  // chunks and a link, and this asks for the rest. The net is 491 bytes: the fetch and the
+  // year-merge cost more than that, and deleting the hide-and-reveal machinery gave some
+  // back. Against it: about 25 KB of HTML off every listing view on a blog of any age, and
+  // 0.136 CLS off the phone home page, because nothing on the page moves any more.
+  'core.js': 11_300,
   // /{slug}: back to top, code copy, lightbox, subscribe, comments, the ToC highlight and
   // book mode. Same rule as above — each raise is named and priced.
   //

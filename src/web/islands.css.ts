@@ -172,12 +172,6 @@ export const ISLANDS_CSS = `
   100%{opacity:.35}
 }
 
-/* Chunked feed. The server renders every card, so a reader with no JavaScript gets the
-   whole archive and a crawler sees all of it; the island hides what is past the first page
-   and hands it back a chunk at a time on scroll. The <noscript> counterpart is emitted with
-   the list, so the hiding only ever applies where something can undo it. */
-html[data-chunked] .post-list article[data-more]{display:none}
-
 .preview-note{border:1px solid var(--c-rule);background:var(--c-rule);color:var(--c-meta);
   border-radius:.5rem;padding:.5rem 1rem;font-size:var(--fs-small);
   line-height:var(--lh-small);letter-spacing:var(--ls-small);margin:0 0 1.5rem}

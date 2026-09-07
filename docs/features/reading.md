@@ -35,10 +35,17 @@
   `analytics.db` directly and returns `{}` on any error, so a broken analytics database costs the
   block, not the page.
 - **Infinite scroll** (`infiniteScroll`, off by default): on every listing (home / category / tag) the
-  feed reveals posts on scroll instead of paginating, and a **date timeline** fills the right gutter. The
-  whole published list is handed to the `InfiniteListing` client island as light metadata (no bodies), so
-  revealing more is pure client work — no network; the first `postsPerPage` chunk still server-renders for
-  SEO, and `/page/[n]` URLs 404 (would be duplicate content). The left rail is forced to its single-rail
+  feed grows as the reader scrolls instead of paginating, and a **date timeline** fills the right gutter.
+  A page carries **three chunks of `postsPerPage`** and then a real link to the next page; the island
+  reads that link's address, hides it, fetches the next page as the reader nears the end, and merges the
+  year groups so a year is never printed twice. Nothing on the page is hidden — what is not there was not
+  sent — so a reader with no JavaScript sees the link and walks the archive a page at a time, and a
+  failed fetch puts the link back. `/page/[n]` therefore EXISTS in this mode and carries
+  `noindex, follow`: it is the reader's and the island's way through, not a URL to index. ⚠ Until
+  2026-09-07 the server rendered every card and hid the tail, which was 49,905 bytes on a 33-post demo
+  and would have been about 450 KB on a five-hundred-post blog, per visit and per cache entry; the
+  reveals also moved the footer under a reader who had reached it (0.136 CLS at 390px, now 0). The left
+  rail is forced to its single-rail
   branch (all blocks stacked); the right gutter holds a **date timeline** — but NOT a boxed widget: a spine
   runs the full height of the feed (`.post-list::after`) and the FIRST card of each month/year carries a
   timeline. The feed is grouped by year (`.tl-yr`): each **month**'s first card carries a `.tl-mark` (round

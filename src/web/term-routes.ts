@@ -95,6 +95,7 @@ export function registerTermRoutes(app: Hono): void {
         description: s.metaTerm.replace('{site}', settings.title).replace('{name}', name),
         body: built.body,
         css: built.css,
+        noindex: built.noindex,
         canonicalPath: `/${kind}/${slug}`,
         cardTitle: name,
         // The archive's own URL is the row to mark in the rail.

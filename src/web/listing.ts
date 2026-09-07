@@ -32,8 +32,6 @@ type CardOptions = {
   lead?: boolean
   /** First card of a month: its marker goes out in the gutter, level with the card. */
   month?: string
-  /** Past the first page: hidden by the island until the reader scrolls that far. */
-  more?: boolean
 }
 
 /**
@@ -69,8 +67,6 @@ function card(post: Post, settings: SiteSettings, opts: CardOptions = {}): strin
 
   // `reveal` eases the card in as it scrolls into view, and is fully visible when motion
   // is off or unsupported (pure CSS, `animation-timeline: view()`).
-  // `data-more` marks a card past the first page. The island hides those and reveals them
-  // a chunk at a time; with no JavaScript nothing hides them and the whole archive renders.
   // The post's own picture, when the owner asked for thumbnails and this post has one.
   //
   // `sizes` is the measured box, not the column: `side` draws a 96px square (192 at 2x) and
@@ -84,7 +80,7 @@ function card(post: Post, settings: SiteSettings, opts: CardOptions = {}): strin
     : ''
   const thumbBlock = thumb ? `<div class="card-thumb">${thumb}</div>` : ''
   const shape = thumb ? ` data-thumb="${thumbKind}"` : ''
-  return `<article class="reveal"${shape}${opts.lead ? ' data-lead' : ''}${opts.more ? ' data-more' : ''}>${mark}${thumbBlock}
+  return `<article class="reveal"${shape}${opts.lead ? ' data-lead' : ''}>${mark}${thumbBlock}
 <p class="t-small text-meta">${categoryLink}<time class="meta-part" datetime="${escapeAttr(post.date)}">${escapeHtml(formatDate(post.date, settings.language, settings.timezone))}</time>${minutes}</p>
 <${Title} class="reading-font mt-2 ${size} font-semibold"><a class="link-accent" href="/${escapeAttr(post.slug)}">${escapeHtml(post.title)}</a></${Title}>
 ${post.excerpt ? `<p class="reading-font mt-3 t-body text-text">${escapeHtml(post.excerpt)}</p>` : ''}
@@ -109,6 +105,22 @@ function pager(paged: Paged<Post>, basePath: string, tx: Dict): string {
 }
 
 /**
+ * The way on to the next page of the feed, on a timeline that has one.
+ *
+ * A REAL LINK, and that is the whole design. The feed's tail is fetched by the island, but
+ * the island has to get its address from somewhere and the reader with no JavaScript has to
+ * get to the older posts somehow. One anchor answers both: the island reads its `href`,
+ * hides it, and puts it back if the fetch fails, so the worst case is a page with a link on
+ * it rather than an archive that stops at thirty posts.
+ */
+function feedMore(paged: Paged<Post>, basePath: string, tx: Dict): string {
+  if (paged.page >= paged.totalPages) return ''
+  const href = `${basePath}/page/${paged.page + 1}`
+  return `<nav class="feed-more" data-feed-more aria-label="${escapeAttr(tx.pagerLabel)}">`
+    + `<a rel="next" href="${escapeAttr(href)}">${escapeHtml(tx.pagerOlder)}</a></nav>`
+}
+
+/**
  * The feed, grouped by year, with a date timeline in the right gutter.
  *
  * Each year's group carries a STICKY marker that pins to the top of the gutter until the
@@ -117,10 +129,6 @@ function pager(paged: Paged<Post>, basePath: string, tx: Dict): string {
  * years stay level with their posts with no JavaScript and no measurement.
  */
 function timeline(posts: Post[], settings: SiteSettings, lead: boolean, ready?: ReadyImages): string {
-  // Everything past the first page is a chunk the island reveals on scroll. The frozen tree
-  // held the tail in React state and revealed `postsPerPage` at a time; this renders it and
-  // hides it instead, which reaches the same feed without giving up the no-script archive.
-  const chunk = Math.max(1, settings.postsPerPage)
   const groups: { year: string; items: { post: Post; i: number }[] }[] = []
   const tz = settings.timezone
   posts.forEach((post, i) => {
@@ -140,7 +148,6 @@ function timeline(posts: Post[], settings: SiteSettings, lead: boolean, ready?: 
       return card(post, settings, {
         lead: lead && i === 0,
         month: firstOfMonth && !firstOfYear ? formatMonth(post.date, settings.language, settings.timezone) : undefined,
-        more: i >= chunk,
         ready,
       })
     }).join('\n')
@@ -188,12 +195,15 @@ export function renderListing(view: ListingView, settings: SiteSettings): string
   // for it. A category archive has no lead post.
   const lead = settings.features.leadPost && view.basePath === '' && view.paged.page === 1
   if (view.timeline) {
-    // The <noscript> is the safety catch on the chunking: the island sets `data-chunked` on
-    // <html>, which hides the tail, and this undoes it where no island can ever run. Hiding
-    // content is only ever safe when the thing that undoes it is guaranteed to exist.
-    const guard = '<noscript><style>html[data-chunked] .post-list article[data-more]'
-      + '{display:block}</style></noscript>'
-    return `${head}<div class="post-list tl-feed">${timeline(view.paged.items, settings, lead, view.ready)}</div>${guard}`
+    // NOTHING IS HIDDEN HERE any more, and the deletion is the fix. The server used to
+    // render the whole archive and hide everything past the first page, which the island
+    // gave back a chunk at a time; that existed because the alternative was 68 cards at
+    // once. With the page capped at three chunks the alternative is thirty, so hiding is
+    // cost without a benefit: each reveal moved the footer under a reader who had already
+    // reached it. Measured at 390px on the demo, the home page went from 0.136 CLS to 0.
+    return `${head}<div class="post-list tl-feed">${
+      timeline(view.paged.items, settings, lead, view.ready)
+    }</div>${feedMore(view.paged, view.basePath, t(settings.language))}`
   }
   const body = view.paged.items
     .map((p, i) => card(p, settings, { lead: lead && i === 0, ready: view.ready }))
