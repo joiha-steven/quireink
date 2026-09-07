@@ -66,6 +66,13 @@ export function registerFlows({ flow, expect, atWidth }: Tour): void {
         if (hex === stamp.target.slice(0, 16)) { answer = n; break }
       }
       if (answer < 0) return 'the challenge had no answer inside its own range'
+      // The gate also has a FLOOR: a stamp younger than three seconds is refused, because
+      // nobody reads a post and types a comment in less. This code does, so it waits the
+      // floor out rather than pretending to be a person who types at machine speed. It used
+      // to pass by accident, on a page the warm had already rendered minutes earlier; the
+      // warm now yields between posts, so an early flow can be the first to render one.
+      const age = Date.now() - stamp.issued
+      if (age < 3200) await new Promise((r) => setTimeout(r, 3200 - age))
       const real = await fetch('/api/comments', {
         method: 'POST', headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
@@ -73,7 +80,7 @@ export function registerFlows({ flow, expect, atWidth }: Tour): void {
           content: 'Left by the tour, through the gate.', stamp: { ...stamp, answer },
         }),
       })
-      if (!real.ok) return 'a solved comment was refused: ' + real.status
+      if (!real.ok) return 'a solved comment was refused: ' + real.status + ' ' + (await real.text()).slice(0, 90)
       return 'ok (bot ' + bare.status + ', reader 200, answer ' + answer + ')'
     })()`, 4000))
 

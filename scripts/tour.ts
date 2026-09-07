@@ -18,7 +18,7 @@
 //
 // Env: CHROME (binary), QUIRE_SESSION (owner cookie value), ONLY=<substring> for a subset.
 
-import { mkdirSync, openSync, readFileSync, rmSync } from 'node:fs'
+import { mkdirSync, openSync, readFileSync, rmSync, mkdtempSync } from 'node:fs'
 import { chromePath } from './chrome-path'
 import { registerFlows } from './tour-flows'
 
@@ -37,7 +37,10 @@ const PORT = 9333
 // like a startup hang. chrome-headless-shell does not care — which is exactly why this
 // passed on every dev machine and died on the first CI runner, where the fallback binary
 // is full google-chrome. Found on the tour job's first run, 2026-08-29.
-const PROFILE = `.tmp/tour-chrome-profile-${process.pid}`
+//
+// Unique per run rather than named after the pid: a pid comes round again, and a run that
+// died before its cleanup leaves its directory behind for the next one to open.
+const PROFILE = mkdtempSync('.tmp/tour-chrome-profile-')
 // CHROME'S STDERR IS KEPT, not discarded. When the port does not open, the process is
 // usually still running and has already said why on stderr — a profile it could not lock, a
 // sandbox it could not build, a library it could not load. With the stream thrown away the
@@ -46,6 +49,37 @@ const PROFILE = `.tmp/tour-chrome-profile-${process.pid}`
 // nothing anybody could read to tell the two apart.
 const CHROME_LOG = `.tmp/tour-chrome-${process.pid}.log`
 mkdirSync('.tmp', { recursive: true })
+
+/**
+ * REFUSE TO RUN AGAINST SOMEBODY ELSE'S BROWSER.
+ *
+ * `endpoint()` below asks the debugging port for a tab, and a port answers whoever is on it.
+ * With another headless Chrome already there — one of this repository's own screenshot
+ * scripts, or a tour that died without taking its browser with it — the tour spawns a
+ * browser, ignores it, and drives the OLD one instead. That browser has a different profile
+ * and therefore a different HTTP cache.
+ *
+ * It cost an afternoon on 2026-09-07. A stale browser was serving a post page cached from a
+ * server that no longer existed, so the comment flow solved a proof-of-work challenge whose
+ * signature belonged to a dead instance's secret and read `a solved comment was refused:
+ * 400` against a build with nothing wrong with it. Every other flow passed, because nothing
+ * else in the tour cares which copy of a page it looks at.
+ *
+ * `tour.sh` has guarded the APP's port since the same class of confusion; this is the other
+ * port the tour depends on and it had no guard at all.
+ */
+async function refuseIfPortTaken(): Promise<void> {
+  const answered = await fetch(`http://127.0.0.1:${PORT}/json/version`, {
+    signal: AbortSignal.timeout(1500),
+  }).then((r) => r.ok).catch(() => false)
+  if (!answered) return
+  console.error(`✗ something is already listening on the debugging port ${PORT}.`)
+  console.error('  The tour would drive THAT browser, with its own profile and its own cache,')
+  console.error('  and report failures that belong to whatever it has held since.')
+  console.error(`  Close it first:  pkill -f 'remote-debugging-port=${PORT}'`)
+  process.exit(1)
+}
+await refuseIfPortTaken()
 const chromeLog = openSync(CHROME_LOG, 'w')
 const chrome = Bun.spawn([
   CHROME, '--headless', '--disable-gpu', '--no-sandbox', '--hide-scrollbars',

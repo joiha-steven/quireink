@@ -99,7 +99,12 @@ const BUDGET: Record<string, number> = {
   // year-merge cost more than that, and deleting the hide-and-reveal machinery gave some
   // back. Against it: about 25 KB of HTML off every listing view on a blog of any age, and
   // 0.136 CLS off the phone home page, because nothing on the page moves any more.
-  'core.js': 11_300,
+  //
+  // 11,500 the same day, for the mobile drawer: `role=dialog`, `aria-modal`, `aria-controls`
+  // and picking the LAST rail rather than the first. The last one is not decoration — on a
+  // two-rail listing the first `.rail` is `display:none` below the breakpoint, so the drawer
+  // opened and focus stayed behind it, and Escape restored nothing.
+  'core.js': 11_500,
   // /{slug}: back to top, code copy, lightbox, subscribe, comments, the ToC highlight and
   // book mode. Same rule as above — each raise is named and priced.
   //

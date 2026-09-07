@@ -52,6 +52,13 @@ export const RAIL_CSS = `
    once (the delay is reset below) so the links are focusable the moment the drawer moves.
    The gutter geometry (render/rail-css.ts) sets it back to visible above the breakpoint. */
 html[data-rail=open] .rail{transform:none;visibility:visible;transition-delay:0s}
+/* The page behind an open drawer does not scroll. Reaching the end of the drawer's own
+   scroll used to carry on scrolling the article under it, which on a phone reads as the
+   drawer sliding away from under the finger. Containing the overscroll alone does not do
+   it: the drawer is often shorter than the viewport and then has no scroll of its own to
+   contain. */
+html[data-rail=open],html[data-rail=open] body{overflow:hidden}
+.rail{overscroll-behavior:contain}
 /* Two-rail listings only: on mobile there is no gutter, so the LEFT rail is hidden and its
    blocks appear in the right rail's drawer through .drawer-only. */
 .rail-left{display:none}

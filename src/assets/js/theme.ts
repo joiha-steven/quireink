@@ -268,15 +268,28 @@ export function theme(): void {
 export function rail(): void {
   const button = document.querySelector<HTMLButtonElement>('[data-rail-toggle]')
   if (!button) return
-  // A page with no rail — an article with no table of contents, /search, a 404 — would
-  // open nothing, so the button removes itself rather than sitting there dead.
-  if (!document.querySelector('.rail')) {
+  // The drawer is the LAST rail, not the first. A two-rail listing renders `.rail-left`
+  // (the discovery blocks) before `.rail-right`, and below the breakpoint the left one is
+  // `display:none` while the right one is the drawer. Taking the first match sent focus
+  // into a hidden subtree, where `focus()` does nothing: on a two-rail site the drawer
+  // opened and the keyboard stayed behind it, and Escape restored nothing.
+  //
+  // A page with no rail — an article with no table of contents, /search, a 404 — would open
+  // nothing, so the button removes itself rather than sitting there dead.
+  const rails = document.querySelectorAll<HTMLElement>('.rail')
+  const rail = rails[rails.length - 1]
+  if (!rail) {
     button.hidden = true
     return
   }
 
   const html = document.documentElement
-  const rail = document.querySelector<HTMLElement>('.rail')
+  // A dialog, said out loud: without this the drawer was an `<aside>` that happened to be
+  // on top, and a screen reader walked straight past it into the page behind.
+  rail.setAttribute('role', 'dialog')
+  rail.setAttribute('aria-modal', 'true')
+  rail.id ||= 'site-rail'
+  button.setAttribute('aria-controls', rail.id)
   const set = (open: boolean) => {
     const was = html.dataset.rail === 'open'
     if (open) html.dataset.rail = 'open'
@@ -288,8 +301,8 @@ export function rail(): void {
     // link inside it; closing it with Escape while a link was focused dropped focus on the
     // body, because the closed drawer is visibility:hidden and a hidden element cannot keep
     // it. The button is the place a keyboard user was before the drawer opened.
-    if (open) rail?.querySelector<HTMLElement>('a[href],button')?.focus()
-    else if (was && rail?.contains(document.activeElement)) button.focus()
+    if (open) rail.querySelector<HTMLElement>('a[href],button')?.focus()
+    else if (was && rail.contains(document.activeElement)) button.focus()
   }
 
   const scrim = el('div', { class: 'rail-scrim', hidden: '', 'aria-hidden': 'true' })

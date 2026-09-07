@@ -30,6 +30,30 @@ export function registerShellFlows({ flow, expect, atWidth }: Tour): void {
       return 'ok ' + rail.querySelectorAll('a').length + ' link(s) behind one button'
     })()`, 600))
 
+  // What the drawer SAYS it is, and what it does to the page behind it. Three of these were
+  // missing: it was an <aside> a screen reader walked straight past into the article, and
+  // the article kept scrolling under a finger that reached the end of the drawer's own
+  // scroll. The rail it decorates is the LAST one, which is the two-rail case: there the
+  // first `.rail` is display:none below this width, so focus went into a hidden subtree.
+  flow('shell: the drawer is a dialog, and the page behind it holds still', () => atWidth(375, '/', `
+    (async () => {
+      const rails = document.querySelectorAll('.rail')
+      const rail = rails[rails.length - 1]
+      const button = document.querySelector('[data-rail-toggle]')
+      if (!rail || !button) return 'skip: this page has no drawer'
+      if (rail.getAttribute('role') !== 'dialog') return 'the drawer does not say it is a dialog'
+      if (rail.getAttribute('aria-modal') !== 'true') return 'the drawer is not modal'
+      if (button.getAttribute('aria-controls') !== rail.id) return 'the button names ' + button.getAttribute('aria-controls')
+      button.click()
+      await new Promise((r) => setTimeout(r, 350))
+      const locked = getComputedStyle(document.body).overflow
+      if (locked !== 'hidden') return 'open, and the page behind still scrolls (' + locked + ')'
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+      await new Promise((r) => setTimeout(r, 350))
+      if (getComputedStyle(document.body).overflow === 'hidden') return 'closed, and the page is still locked'
+      return 'ok dialog #' + rail.id + ', page locked while open'
+    })()`, 600))
+
   // The contents list's last row, at the width where it was wrong. Above the rail
   // breakpoint the taxonomy under the article is hidden and the gutter panel holds those
   // facts, so the row has to aim there instead; the server cannot know the width, so an
