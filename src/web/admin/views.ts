@@ -104,6 +104,11 @@ async function editorView(slug: string) {
     contentWidth: settings.contentWidth,
     keySound: { mode: settings.motion.keys, volume: settings.motion.keyVolume },
     autosaveSeconds: settings.autosaveSeconds,
+    // A schedule is a wall-clock time on the BLOG's clock, not on the clock of whichever
+    // machine happens to be typing it. Without this the editor read and wrote the browser's
+    // zone, so a post scheduled from a laptop on UTC went out seven hours late in Hanoi and
+    // the line under the field agreed with the laptop.
+    timezone: settings.timezone,
   }
 }
 

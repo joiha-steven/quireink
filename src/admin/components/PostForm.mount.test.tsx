@@ -42,7 +42,7 @@ function form(initial: PostWithContent) {
       allSeries={[]}
       contentWidth={672}
       keySound={{ mode: 'off', volume: 0 }}
-      autosaveSeconds={120} autosaveAt={null}
+      autosaveSeconds={120} autosaveAt={null} timezone="Asia/Ho_Chi_Minh"
     />
   ))
 }
@@ -96,7 +96,7 @@ describe('PostForm, mounted', () => {
     const m = await mountAdmin(
       <PostForm
         allCategories={[]} allTags={[]} allSeries={[]}
-        contentWidth={672} keySound={{ mode: 'off', volume: 0 }} autosaveSeconds={120} autosaveAt={null}
+        contentWidth={672} keySound={{ mode: 'off', volume: 0 }} autosaveSeconds={120} autosaveAt={null} timezone="Asia/Ho_Chi_Minh"
       />,
     )
     await m.flush()
@@ -144,7 +144,7 @@ describe('PostForm, mounted', () => {
     const m = await mountAdmin(
       <PostForm
         allCategories={[]} allTags={[]} allSeries={[]}
-        contentWidth={672} keySound={{ mode: 'off', volume: 0 }} autosaveSeconds={120} autosaveAt={null}
+        contentWidth={672} keySound={{ mode: 'off', volume: 0 }} autosaveSeconds={120} autosaveAt={null} timezone="Asia/Ho_Chi_Minh"
       />,
     )
     await m.flush()

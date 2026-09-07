@@ -7,6 +7,8 @@ import {
   wordCount,
   isPublicallyVisible,
   fill,
+  isoToZonedInput,
+  zonedInputToIso,
   isScheduled,
   extractImageUrls,
   untitledNumbers,
@@ -191,5 +193,34 @@ describe('fill', () => {
 
   it('leaves a placeholder it was given nothing for', () => {
     expect(fill('{a} and {b}', { a: 'one' })).toBe('one and {b}')
+  })
+})
+
+// A schedule is a wall-clock time in the SITE's zone. Read through the browser's zone it is
+// simply a different moment: "10 Sep 09:00" set from a laptop on UTC published at 16:00 in
+// Hanoi, and the line under the field agreed with the laptop, so nothing on screen said so.
+describe('the site clock', () => {
+  it('shows an instant as the site reads it, not as the machine does', () => {
+    expect(isoToZonedInput('2026-09-10T02:00:00.000Z', 'Asia/Ho_Chi_Minh')).toBe('2026-09-10T09:00')
+    expect(isoToZonedInput('2026-09-10T02:00:00.000Z', 'UTC')).toBe('2026-09-10T02:00')
+    expect(isoToZonedInput('2026-09-10T02:00:00.000Z', 'America/New_York')).toBe('2026-09-09T22:00')
+  })
+
+  it('reads a typed time back as the instant that wall clock names', () => {
+    expect(zonedInputToIso('2026-09-10T09:00', 'Asia/Ho_Chi_Minh')).toBe('2026-09-10T02:00:00.000Z')
+    expect(zonedInputToIso('2026-09-10T02:00', 'UTC')).toBe('2026-09-10T02:00:00.000Z')
+  })
+
+  it('round-trips across a daylight-saving boundary, which is what the second pass is for', () => {
+    // 02:30 on the night New York springs forward does not exist; the hour either side does.
+    for (const local of ['2026-03-08T01:30', '2026-03-08T03:30', '2026-11-01T00:30']) {
+      const iso = zonedInputToIso(local, 'America/New_York')
+      expect(isoToZonedInput(iso, 'America/New_York')).toBe(local)
+    }
+  })
+
+  it('falls back rather than throwing on a zone nobody has heard of', () => {
+    expect(isoToZonedInput('2026-09-10T02:00:00.000Z', 'Mars/Olympus_Mons')).toBe('2026-09-10T02:00')
+    expect(zonedInputToIso('2026-09-10T02:00', 'Mars/Olympus_Mons')).toBe('2026-09-10T02:00:00.000Z')
   })
 })

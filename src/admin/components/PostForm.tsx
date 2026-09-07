@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { PostWithContent, PostRevision, ApiResponse } from '@/types'
 import type { KeySound } from './key-sound'
 import { useToast } from '@/admin/ui/Toast'
-import { slugify, formatTime, formatDateTimeShort, isScheduled } from '@/utils'
+import { slugify, formatTime, formatDateTimeShort, isScheduled , zonedInputToIso } from '@/utils'
 import { uploadImages } from '@/admin/upload-client'
 import { Editor, type EditorApi } from './Editor'
 import { type Draft } from './PostSettings'
@@ -31,19 +31,20 @@ type Props = {
   autosaveSeconds: number
   /** `autosave_at` on the row, in ms: a snapshot waiting from another session or machine. */
   autosaveAt: number | null
+  /** The blog's own clock, for the schedule field. Empty means the machine's. */
+  timezone: string
 }
 
 type PickTarget = 'editor' | 'gallery' | 'featured' | 'cover'
 
-export function PostForm({ initial, allCategories, allTags, allSeries, contentWidth, keySound, autosaveSeconds, autosaveAt }: Props) {
+export function PostForm({ initial, allCategories, allTags, allSeries, contentWidth, keySound, autosaveSeconds, autosaveAt , timezone}: Props) {
   const t = useAdminT()
   const { notify } = useToast()
   const storageKey = `quire:draft:post:${initial?.slug ?? 'new'}`
-  // A piece with no row is REOPENED from its snapshot rather than offered it back, and the
-  // read is here rather than in an effect so the editor mounts with the work in it. Why,
-  // and what it cost, on `readSnapshot`.
+  // A piece with no row is REOPENED from its snapshot rather than offered it back; the read
+  // is here so the editor mounts with the work in it. Why, and what it cost, on `readSnapshot`.
   const reopened = useRef(initial ? null : readSnapshot<Draft>(storageKey)).current
-  const [draft, setDraft] = useState<Draft>(() => reopened?.data ?? toDraft(initial))
+  const [draft, setDraft] = useState<Draft>(() => reopened?.data ?? toDraft(initial, timezone))
   const [saving, setSaving] = useState(false)
   const [savedAt, setSavedAt] = useState<string | null>(null)
   const [picker, setPicker] = useState<PickTarget | null>(null)
@@ -122,7 +123,7 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
         title: d.title,
         // Always have a slug so the API never rejects a content-only draft.
         slug: d.slug || slugify(d.title) || `post-${Date.now()}`,
-        date: d.date ? new Date(d.date).toISOString() : new Date().toISOString(),
+        date: d.date ? zonedInputToIso(d.date, timezone) : new Date().toISOString(),
         status: statusOverride ?? d.status,
         categories: d.categories,
         tags: d.tags,

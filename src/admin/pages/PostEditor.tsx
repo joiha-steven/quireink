@@ -32,6 +32,7 @@ export default function PostEditor() {
           keySound={d.keySound}
           autosaveSeconds={d.autosaveSeconds}
           autosaveAt={d.autosaveAt}
+          timezone={d.timezone}
         />
           )}
       </View>
