@@ -28,7 +28,7 @@ import { Tick } from '@/admin/ui/Tick'
 import { Lamp, type LampState } from '@/admin/ui/Lamp'
 import { IconClose } from './navIcons'
 import { TAP } from './scale'
-import { useAdminT } from './I18nProvider'
+import { useAdminCount, useAdminT } from './I18nProvider'
 import { useToast } from '@/admin/ui/Toast'
 
 type Stats = { sent: number; failed: number; opened: number; broadcasts: number; lastAt?: string; lastError?: string }
@@ -49,6 +49,7 @@ const LAMP: Record<Status, LampState> = { confirmed: 'good', pending: 'attention
 
 export function NewsletterSubscribers() {
   const t = useAdminT()
+  const count = useAdminCount()
   const { notify } = useToast()
   /**
    * ⚠️ A REFUSED REQUEST IS NOT AN EMPTY LIST, and this component used to say it was: the
@@ -148,9 +149,9 @@ export function NewsletterSubscribers() {
     <>
       <NumBand
         items={[
-          { n: counts.confirmed.toLocaleString(), label: t.nlConfirmed },
+          { n: count(counts.confirmed), label: t.nlConfirmed },
           {
-            n: counts.pending.toLocaleString(),
+            n: count(counts.pending),
             label: (
               <>
                 <span aria-hidden className="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-[var(--pen-edge)] align-middle" />
@@ -158,7 +159,7 @@ export function NewsletterSubscribers() {
               </>
             ),
           },
-          { n: counts.unsubscribed.toLocaleString(), label: t.nlUnsub },
+          { n: count(counts.unsubscribed), label: t.nlUnsub },
         ]}
       />
       {live.length === 0 ? (

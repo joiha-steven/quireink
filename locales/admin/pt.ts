@@ -348,6 +348,8 @@ const pt = {
   authorLinkHint: 'Para onde aponta o nome: uma página pessoal, um perfil, qualquer sítio. Vazio deixa o nome como texto simples.',
   captionPlaceholder: 'Legenda da imagem',
   slug: 'Slug (URL)',
+  slugFromTitle: 'do-titulo',
+  slugExample: 'sobre',
   publishDate: 'Data de publicação',
   schedule: 'Agendar',
   scheduled: 'Agendado',

@@ -347,6 +347,8 @@ const it = {
   authorLinkHint: 'Dove porta il nome: una home page, un profilo, ovunque. Vuoto lascia il nome come testo semplice.',
   captionPlaceholder: 'Didascalia dell’immagine',
   slug: 'Slug (URL)',
+  slugFromTitle: 'dal-titolo',
+  slugExample: 'chi-siamo',
   publishDate: 'Data di pubblicazione',
   schedule: 'Programma',
   scheduled: 'Programmato',

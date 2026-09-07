@@ -13,7 +13,7 @@ import { BarList, Trend, TrendChart, flag, formatDuration, type BarRow } from '.
 import { NumBand, SHEET, SheetTop } from './sheet'
 import { DeliveryPanel } from './DeliveryPanel'
 import { PieceIndex } from './PieceIndex'
-import { useAdminT } from './I18nProvider'
+import { useAdminCount, useAdminT } from './I18nProvider'
 import { Lamp } from '@/admin/ui/Lamp'
 
 const RANGES = [1, 7, 30, 365, 'all'] as const
@@ -95,6 +95,7 @@ export function AnalyticsView({ data, range, titles, pieces, years, rightNow }: 
   rightNow?: RightNow
 }) {
   const t = useAdminT()
+  const count = useAdminCount()
   const rangeLabel: Record<Range, string> = { 1: t.analyticsRange24h, 7: t.analyticsRange7, 30: t.analyticsRange30, 90: t.analyticsRange90, 365: t.analyticsRange365, all: t.analyticsRangeAll }
   const hasData = data.totalViews > 0
   /**
@@ -171,9 +172,9 @@ export function AnalyticsView({ data, range, titles, pieces, years, rightNow }: 
 
         <NumBand
           items={[
-            { n: data.totalViews.toLocaleString(), label: t.analyticsViews, after: comparable && data.prevViews != null ? <Trend cur={data.totalViews} prev={data.prevViews} /> : undefined },
+            { n: count(data.totalViews), label: t.analyticsViews, after: comparable && data.prevViews != null ? <Trend cur={data.totalViews} prev={data.prevViews} /> : undefined },
             {
-              n: data.uniqueVisitors.toLocaleString(),
+              n: count(data.uniqueVisitors),
               label: t.analyticsVisitors,
               after: comparable && data.prevVisitors != null ? <Trend cur={data.uniqueVisitors} prev={data.prevVisitors} /> : undefined,
               // Suppressed on all time for the same reason as the arrow: "returning" means
@@ -182,9 +183,9 @@ export function AnalyticsView({ data, range, titles, pieces, years, rightNow }: 
               sub:
                 comparable && data.returningVisitors != null ? (
                   <>
-                    {t.analyticsNew} <span className="tabular-nums">{Math.max(0, data.uniqueVisitors - data.returningVisitors).toLocaleString()}</span>
+                    {t.analyticsNew} <span className="tabular-nums">{count(Math.max(0, data.uniqueVisitors - data.returningVisitors))}</span>
                     {' · '}
-                    {t.analyticsReturning} <span className="tabular-nums">{data.returningVisitors.toLocaleString()}</span>
+                    {t.analyticsReturning} <span className="tabular-nums">{count(data.returningVisitors)}</span>
                   </>
                 ) : undefined,
             },
@@ -260,8 +261,8 @@ export function AnalyticsView({ data, range, titles, pieces, years, rightNow }: 
                       {titles[p.path] ?? p.path}
                     </Link>
                   </td>
-                  <td className="w-px px-4 py-2.5 text-right tabular-nums whitespace-nowrap text-neutral-600 dark:text-neutral-300">{p.views.toLocaleString()}</td>
-                  <td className="w-px px-4 py-2.5 text-right tabular-nums whitespace-nowrap text-neutral-600 dark:text-neutral-300">{p.visitors.toLocaleString()}</td>
+                  <td className="w-px px-4 py-2.5 text-right tabular-nums whitespace-nowrap text-neutral-600 dark:text-neutral-300">{count(p.views)}</td>
+                  <td className="w-px px-4 py-2.5 text-right tabular-nums whitespace-nowrap text-neutral-600 dark:text-neutral-300">{count(p.visitors)}</td>
                   {/* An em-dash, never a zero. Nothing measured is a different fact from
                       "they left immediately", and after the beacon fix a depth of 0 is a
                       real reading that this column has to be able to print. */}
@@ -288,8 +289,8 @@ export function AnalyticsView({ data, range, titles, pieces, years, rightNow }: 
                     no column head over it is a number nobody can read. `tabular-nums` so
                     the four line up down the list. */}
                 <dl className="mt-1.5 grid grid-cols-4 gap-2 text-xs tabular-nums text-neutral-500 dark:text-neutral-400">
-                  <div><dt>{t.analyticsViews}</dt><dd className="text-neutral-700 dark:text-neutral-300">{p.views.toLocaleString()}</dd></div>
-                  <div><dt>{t.analyticsVisitors}</dt><dd className="text-neutral-700 dark:text-neutral-300">{p.visitors.toLocaleString()}</dd></div>
+                  <div><dt>{t.analyticsViews}</dt><dd className="text-neutral-700 dark:text-neutral-300">{count(p.views)}</dd></div>
+                  <div><dt>{t.analyticsVisitors}</dt><dd className="text-neutral-700 dark:text-neutral-300">{count(p.visitors)}</dd></div>
                   <div><dt>{t.analyticsColTime}</dt><dd className="text-neutral-700 dark:text-neutral-300">{p.avgDwellMs == null ? '—' : formatDuration(p.avgDwellMs)}</dd></div>
                   <div><dt>{t.analyticsColDepth}</dt><dd className="text-neutral-700 dark:text-neutral-300">{p.avgDepth == null ? '—' : `${p.avgDepth}%`}</dd></div>
                 </dl>

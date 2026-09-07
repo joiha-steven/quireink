@@ -4,6 +4,7 @@
 // When the server re-renders with a new prop (after save + refresh), we re-sync.
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import type { SiteLang } from '@/types'
+import { formatCount } from '@/i18n/format'
 import { adminStrings, adminStringsReady, loadAdminStrings, type AdminStrings } from '@/admin/admin-strings'
 
 type Ctx = { lang: SiteLang; t: AdminStrings; setLang: (l: SiteLang) => void }
@@ -57,6 +58,22 @@ export function useAdminT(): AdminStrings {
 // Current admin language (for date formatting etc.).
 export function useAdminLang(): SiteLang {
   return useCtx().lang
+}
+
+/**
+ * A NUMBER IN THE LANGUAGE THE ADMIN IS SET TO, not the one the browser happens to be in.
+ *
+ * Forty call sites wrote `n.toLocaleString()` with no argument, which asks the BROWSER for
+ * its grouping. An owner running the admin in Vietnamese on an English-locale machine read
+ * their view counts as 1,234 where the rest of the screen says 1.234, and every reader-facing
+ * page on the same blog already prints the second one.
+ *
+ * `formatCount` comes from `@/i18n/format`, which carries no dictionaries: importing it here
+ * must not pull the eleven reader locales back into the admin bundle.
+ */
+export function useAdminCount(): (n: number) => string {
+  const lang = useCtx().lang
+  return (n) => formatCount(n, lang)
 }
 
 // Switch the admin UI language instantly (optimistic; persisted on save).

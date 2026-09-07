@@ -125,3 +125,29 @@ export function formatMonth(iso: string, lang: SiteLang, tz = ''): string {
   if (lang === 'vi') return `Tháng ${parts(z.d, z.opts).month}`
   return z.d.toLocaleDateString(DATE_LOCALE[lang] ?? 'en-US', { ...z.opts, month: 'long' })
 }
+
+/**
+ * A `datetime-local` value ("YYYY-MM-DDTHH:mm") printed in the admin's language, with NO
+ * zone conversion at all.
+ *
+ * The editor's date field holds the blog's own wall clock (see `isoToZonedInput`), and the
+ * line under it used to print `new Date(value).toLocaleString()`. Two things were wrong with
+ * that, and only one of them is obvious.
+ *
+ * The obvious one is the language: no argument means the BROWSER's locale, so an admin set to
+ * Vietnamese printed one line of the screen in whatever the machine was configured for.
+ *
+ * The other is the hour. Reading a zoneless string builds a Date in the MACHINE's zone, and
+ * an hour that the machine's zone does not have is silently moved to one it does. On a
+ * browser in New York, a post scheduled for 02:30 on 2026-03-08 — inside that zone's own
+ * spring-forward gap, and a perfectly ordinary time for a blog set to anywhere else — was
+ * printed back as 03:30. Parsing as UTC and printing as UTC has no gaps and no zone: the
+ * digits that go in are the digits that come out, in the reader's own order and language.
+ */
+export function formatWallClock(value: string, lang: SiteLang): string {
+  const at = new Date(`${value}Z`)
+  if (Number.isNaN(at.getTime())) return value
+  return new Intl.DateTimeFormat(DATE_LOCALE[lang] ?? 'en-US', {
+    dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC',
+  }).format(at)
+}

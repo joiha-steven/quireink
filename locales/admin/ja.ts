@@ -347,6 +347,8 @@ const ja = {
   authorLinkHint: '名前のリンク先です。ホームページでも、プロフィールでも構いません。空なら名前はただの文字になります。',
   captionPlaceholder: '画像キャプション',
   slug: 'スラッグ (URL)',
+  slugFromTitle: 'タイトルから',
+  slugExample: 'about',
   publishDate: '公開日',
   schedule: '予約投稿',
   scheduled: '予約済み',

@@ -509,6 +509,8 @@ export type AdminStrings = {
   captionPlaceholder: string
   // post settings panel
   slug: string
+  slugFromTitle: string
+  slugExample: string
   publishDate: string
   schedule: string
   scheduled: string

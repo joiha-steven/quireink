@@ -22,7 +22,7 @@ import { formatDateTimeShort, foldAccents } from '@/utils'
 import { PageHeader, EmptyState, Tabs, type TabItem } from './kit'
 import { SHEET, SHEET_FOOT, SHEET_TOOL, SHEET_TOOL_DANGER, SheetTop, NumBand } from './sheet'
 import { Marked } from './Marked'
-import { useAdminT } from './I18nProvider'
+import { useAdminCount, useAdminT } from './I18nProvider'
 import { SelectionBar } from './SelectionBar'
 import { Tick } from '@/admin/ui/Tick'
 
@@ -37,6 +37,7 @@ const initialOf = (name: string): string => (name.trim()[0] ?? '?').toUpperCase(
 
 export function CommentsTable({ initial }: { initial: AdminComment[] }) {
   const t = useAdminT()
+  const count = useAdminCount()
   const { notify } = useToast()
   const [rows, setRows] = useState(initial)
   const [expanded, setExpanded] = useState<Set<number>>(new Set())
@@ -206,8 +207,8 @@ export function CommentsTable({ initial }: { initial: AdminComment[] }) {
           <SelectionBar count={chosen.size} onClear={() => setChosen(new Set())} onDelete={() => { void deleteChosen() }} />
           <span className={SHEET_TOOL}>
             {t.commentsInPosts
-              .replace('{n}', shown.length.toLocaleString())
-              .replace('{p}', groups.length.toLocaleString())}
+              .replace('{n}', count(shown.length))
+              .replace('{p}', count(groups.length))}
           </span>
           <input
             type="search"
@@ -220,10 +221,10 @@ export function CommentsTable({ initial }: { initial: AdminComment[] }) {
         </SheetTop>
         <NumBand
           items={[
-            { n: stats.total.toLocaleString(), label: t.commentsNavTitle },
-            { n: stats.posts.toLocaleString(), label: t.commentsStatPosts },
-            { n: stats.week.toLocaleString(), label: t.commentsStatWeek },
-            { n: stats.people.toLocaleString(), label: t.commentsStatPeople },
+            { n: count(stats.total), label: t.commentsNavTitle },
+            { n: count(stats.posts), label: t.commentsStatPosts },
+            { n: count(stats.week), label: t.commentsStatWeek },
+            { n: count(stats.people), label: t.commentsStatPeople },
           ]}
         />
         {groups.length === 0 ? (

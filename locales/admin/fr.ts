@@ -347,6 +347,8 @@ const fr = {
   authorLinkHint: "Où mène le nom : une page personnelle, un profil, n'importe où. Vide, le nom reste du texte simple.",
   captionPlaceholder: 'Légende de l’image',
   slug: 'Slug (URL)',
+  slugFromTitle: 'depuis-le-titre',
+  slugExample: 'a-propos',
   publishDate: 'Date de publication',
   schedule: 'Programmer',
   scheduled: 'Programmé',

@@ -5,7 +5,7 @@ import Link from '@/admin/router'
 import type { PageSummary } from '@/analytics/types'
 import { EmptyState, PageHeader, Card, SEGMENT_TRACK, tabItemClass } from './kit'
 import { BarList, StatTile, TrendChart, flag, formatDuration } from './analytics-kit'
-import { useAdminT } from './I18nProvider'
+import { useAdminCount, useAdminT } from './I18nProvider'
 import type { Range } from './AnalyticsView'
 
 const RANGES = [1, 7, 30, 365] as const
@@ -13,6 +13,7 @@ const DEPTH_LABELS = ['0–25%', '26–50%', '51–75%', '76–100%']
 
 export function AnalyticsPageDetail({ data, title, range }: { data: PageSummary; title: string; range: Range }) {
   const t = useAdminT()
+  const count = useAdminCount()
   const rangeLabel: Record<Range, string> = { 1: t.analyticsRange24h, 7: t.analyticsRange7, 30: t.analyticsRange30, 90: t.analyticsRange90, 365: t.analyticsRange365, all: t.analyticsRangeAll }
   const hasData = data.totalViews > 0
 
@@ -59,7 +60,7 @@ export function AnalyticsPageDetail({ data, title, range }: { data: PageSummary;
         <StatTile
           label={t.analyticsLeftQuickly}
           value={`${data.leftQuickly?.share ?? 0}%`}
-          sub={`${t.analyticsBytesMeasured} ${(data.leftQuickly?.measured ?? 0).toLocaleString()} ${t.analyticsBytesNote}`}
+          sub={`${t.analyticsBytesMeasured} ${count(data.leftQuickly?.measured ?? 0)} ${t.analyticsBytesNote}`}
         />
       </div>
 

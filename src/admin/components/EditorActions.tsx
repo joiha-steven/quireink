@@ -125,6 +125,10 @@ export function EditorActions({
   })
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      // A HELD KEY REPEATS. Every one of these chords is a command, not a character: holding
+      // the save chord for a second fired a save a frame, which is one PUT and one toast per
+      // repeat, and holding the focus chord flickered the chrome in and out.
+      if (e.repeat) return
       const hit = SHORTCUTS.find((s) => matchesChord(e, s.chord))
       if (!hit) return
       if (hit.id === 'focus') { e.preventDefault(); setFocus(!focusRef.current) }

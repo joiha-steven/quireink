@@ -1,8 +1,15 @@
-// Presentational building blocks shared by the analytics overview and the
-// per-page drill-down. No 'use client', no i18n hook — every label comes in as a
-// prop so these render in either tree and never drift. Admin is monochrome
-// (neutral scale only), matching the rest of the kit.
+// Presentational building blocks shared by the analytics overview and the per-page
+// drill-down. Every LABEL comes in as a prop, so the two screens cannot drift into two
+// vocabularies. Admin is monochrome (neutral scale only), matching the rest of the kit.
+//
+// The one thing read from context rather than passed is how to write a NUMBER. It is not a
+// label — there is nothing for a caller to decide — and the alternative was `toLocaleString()`
+// with no argument in three places, which asks the browser's locale rather than the one the
+// admin is set to. (The header used to forbid any hook here so these would render in the
+// frozen tree's server components as well. That tree is gone, ADR 0019, and this file has
+// imported the admin's own router since.)
 import Link from '@/admin/router'
+import { useAdminCount } from './I18nProvider'
 import type { ReactNode } from 'react'
 import { CARD } from './kit'
 import { StatCard } from './stat-band'
@@ -51,10 +58,11 @@ export function formatDuration(ms?: number): string {
  * for no reason anyone chose. The trend is the only real difference and it is now a prop.
  */
 export function StatTile({ label, value, prev, sub }: { label: ReactNode; value: number | string; prev?: number; sub?: ReactNode }) {
+  const count = useAdminCount()
   return (
     <StatCard
       label={label}
-      value={typeof value === 'number' ? value.toLocaleString() : value}
+      value={typeof value === 'number' ? count(value) : value}
       after={typeof value === 'number' && prev != null ? <Trend cur={value} prev={prev} /> : undefined}
       sub={sub}
     />
@@ -66,6 +74,7 @@ export type BarRow = { key: string; label: ReactNode; value: number; href?: stri
 // Horizontal bar list (Plausible-style): the proportional bar is the row's
 // background, label + count sit on top. Bars scale to the biggest value.
 export function BarList({ title, rows, unit, empty, bare = false }: { title: ReactNode; rows: BarRow[]; unit: ReactNode; empty: ReactNode; bare?: boolean }) {
+  const count = useAdminCount()
   const max = rows.reduce((m, r) => Math.max(m, r.value), 0) || 1
   return (
     // `bare` inside the one-sheet page: the sheet draws the edges, hairlines divide.
@@ -87,7 +96,7 @@ export function BarList({ title, rows, unit, empty, bare = false }: { title: Rea
                 />
                 <div className="relative flex items-center justify-between gap-3 px-2.5 py-1.5 text-sm">
                   <span className="min-w-0 truncate text-neutral-700 dark:text-neutral-200">{r.label}</span>
-                  <span className="shrink-0 tabular-nums text-neutral-500 dark:text-neutral-400">{r.value.toLocaleString()}</span>
+                  <span className="shrink-0 tabular-nums text-neutral-500 dark:text-neutral-400">{count(r.value)}</span>
                 </div>
               </>
             )
@@ -123,6 +132,7 @@ export function TrendChart({
   viewsLabel: string
   visitorsLabel: string
 }) {
+  const count = useAdminCount()
   const W = 720
   const H = 150
   const n = points.length
@@ -141,7 +151,7 @@ export function TrendChart({
           <span className="flex items-center gap-1.5"><i className="inline-block h-2 w-2 rounded-sm bg-neutral-400 dark:bg-neutral-500" />{viewsLabel}</span>
           <span className="flex items-center gap-1.5"><i className="inline-block h-2 w-2 rounded-sm bg-neutral-800 dark:bg-neutral-200" />{visitorsLabel}</span>
         </div>
-        <span>{peakLabel}: <span className="tabular-nums">{max.toLocaleString()}</span></span>
+        <span>{peakLabel}: <span className="tabular-nums">{count(max)}</span></span>
       </div>
       <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className="h-36 w-full" role="img">
         {area && <path d={area} className="fill-neutral-200/50 dark:fill-neutral-700/30" />}

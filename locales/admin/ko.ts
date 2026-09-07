@@ -347,6 +347,8 @@ const ko = {
   authorLinkHint: '이름이 가리킬 곳입니다. 홈페이지든 프로필이든 상관없습니다. 비워 두면 이름은 그냥 글자로 남습니다.',
   captionPlaceholder: '이미지 설명',
   slug: '슬러그 (URL)',
+  slugFromTitle: '제목에서',
+  slugExample: 'about',
   publishDate: '게시 날짜',
   schedule: '예약',
   scheduled: '예약됨',

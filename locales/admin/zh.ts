@@ -347,6 +347,8 @@ const zh = {
   authorLinkHint: '姓名指向哪里：主页、个人档案，随便哪里。留空则姓名只是普通文字。',
   captionPlaceholder: '图片说明',
   slug: '别名 (URL)',
+  slugFromTitle: '取自标题',
+  slugExample: 'about',
   publishDate: '发布日期',
   schedule: '定时发布',
   scheduled: '已定时',

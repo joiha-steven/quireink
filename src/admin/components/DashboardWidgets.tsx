@@ -5,7 +5,7 @@
 import type { ReactNode } from 'react'
 import Link from '@/admin/router'
 import { Card, CARD_GAP, UTIL } from './kit'
-import { useAdminT } from './I18nProvider'
+import { useAdminCount, useAdminT } from './I18nProvider'
 
 export type DashboardData = {
   // 30-day totals + the per-day view series for the sparkline; views7 is the last
@@ -56,6 +56,7 @@ export type DashboardData = {
 // which is right for a path and turns a circle into a 6:1 ellipse and a label into smeared
 // type. Positioning in percent outside the stretched box is the only way both can be true.
 function Sparkline({ data }: { data: number[] }) {
+  const count = useAdminCount()
   if (data.length < 2) return null
   const max = Math.max(...data, 1)
   const w = 100
@@ -95,7 +96,7 @@ function Sparkline({ data }: { data: number[] }) {
         }`}
         style={{ left: `${across(peak)}%` }}
       >
-        {max.toLocaleString()}
+        {count(max)}
       </span>
     </div>
   )
@@ -132,6 +133,7 @@ function minutesSeconds(ms: number): string {
 
 export function TrafficCard({ traffic }: { traffic: DashboardData['traffic'] }) {
   const t = useAdminT()
+  const count = useAdminCount()
   return (
     <Card
       title={t.dashTraffic}
@@ -151,8 +153,8 @@ export function TrafficCard({ traffic }: { traffic: DashboardData['traffic'] }) 
           two under 640px, four across above it, each track sized by the grid instead of by
           its own content. */}
       <div className="grid grid-cols-2 gap-x-8 gap-y-4 sm:grid-cols-4">
-        <Figure value={traffic.views30.toLocaleString()} label={t.dashViews} lead />
-        <Figure value={traffic.visitors30.toLocaleString()} label={t.dashVisitors} />
+        <Figure value={count(traffic.views30)} label={t.dashViews} lead />
+        <Figure value={count(traffic.visitors30)} label={t.dashVisitors} />
         {/* The two that say whether anybody READ it, as opposed to how many arrived. They are
             the reason this card can carry the word "Analytics" without one. */}
         <Figure value={minutesSeconds(traffic.avgDwellMs)} label={t.dashAvgTime} />
@@ -162,7 +164,7 @@ export function TrafficCard({ traffic }: { traffic: DashboardData['traffic'] }) 
         <Sparkline data={traffic.spark} />
       </div>
       <div className="mt-2 text-xs text-neutral-500 dark:text-neutral-400">
-        {t.dashViews7}: <span className="tabular-nums">{traffic.views7.toLocaleString()}</span>
+        {t.dashViews7}: <span className="tabular-nums">{count(traffic.views7)}</span>
       </div>
     </Card>
   )
@@ -170,6 +172,7 @@ export function TrafficCard({ traffic }: { traffic: DashboardData['traffic'] }) 
 
 function TopPostsCard({ posts }: { posts: DashboardData['topPosts'] }) {
   const t = useAdminT()
+  const count = useAdminCount()
   return (
     <Card title={t.dashTopPosts}>
       {posts.length === 0 ? (
@@ -192,7 +195,7 @@ function TopPostsCard({ posts }: { posts: DashboardData['topPosts'] }) {
                     title at the same weight as a timestamp. Measured on the home page
                     2026-09-07: 12px was the most common size on the screen, 61 runs of it
                     against 41 at 14, and twenty-one of those 61 were counts like this. */}
-                <span className="shrink-0 text-sm text-neutral-600 tabular-nums dark:text-neutral-300">{p.views.toLocaleString()}</span>
+                <span className="shrink-0 text-sm text-neutral-600 tabular-nums dark:text-neutral-300">{count(p.views)}</span>
               </Link>
             </li>
           ))}
@@ -251,6 +254,7 @@ function NeedsAttentionCard({ needs }: { needs: DashboardData['needs'] }) {
 /** Where the last 30 days of readers came from. Two short lists, side by side. */
 function SourcesCard({ sources }: { sources: DashboardData['sources'] }) {
   const t = useAdminT()
+  const count = useAdminCount()
   const columns = [
     { heading: t.analyticsTopReferrers, rows: sources.referrers.slice(0, 4) },
     { heading: t.analyticsTopCountries, rows: sources.countries.slice(0, 4) },
@@ -276,7 +280,7 @@ function SourcesCard({ sources }: { sources: DashboardData['sources'] }) {
                 {col.rows.map((r) => (
                   <li key={r.label} className="flex items-baseline justify-between gap-3 py-0.5 text-sm">
                     <span className="min-w-0 truncate text-neutral-600 dark:text-neutral-300">{r.label}</span>
-                    <span className="shrink-0 text-sm text-neutral-600 tabular-nums dark:text-neutral-300">{r.visitors.toLocaleString()}</span>
+                    <span className="shrink-0 text-sm text-neutral-600 tabular-nums dark:text-neutral-300">{count(r.visitors)}</span>
                   </li>
                 ))}
               </ul>

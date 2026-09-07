@@ -31,7 +31,7 @@ import { TaxonomyManager } from './TaxonomyManager'
 import { SeriesManager } from './SeriesManager'
 import { Tick } from '@/admin/ui/Tick'
 import { Lamp } from '@/admin/ui/Lamp'
-import { useAdminT } from './I18nProvider'
+import { useAdminCount, useAdminT } from './I18nProvider'
 import { useWritingItems, type WriteNeeds, type WriteScope, type WriteSort } from './useWritingItems'
 import { Marked } from './Marked'
 import { SHEET_TOOL, SHEET_TOOL_DANGER } from './sheet'
@@ -50,6 +50,7 @@ function Rows({
   tools,
 }: ContentView & { activeSlug?: string; tools?: React.ReactNode }) {
   const t = useAdminT()
+  const count = useAdminCount()
   const router = useRouter()
   const { notify } = useToast()
   const [query, setQuery] = useState('')
@@ -301,7 +302,7 @@ function Rows({
                     <span className="mt-1 block text-xs text-neutral-500 dark:text-neutral-400">
                       {(drafty ? t.statusDraft : t.statusPublished)}
                       {when ? ` · ${formatDateTimeShort(new Date(when).toISOString())}` : ''}
-                      {!drafty && views[`/${it.slug}`] ? ` · ${views[`/${it.slug}`].toLocaleString()}` : ''}
+                      {!drafty && views[`/${it.slug}`] ? ` · ${count(views[`/${it.slug}`] ?? 0)}` : ''}
                     </span>
                   </span>
               </span>

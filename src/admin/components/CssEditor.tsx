@@ -25,7 +25,7 @@
 // Line numbers, a working Tab, and honest feedback are worth more here than colour.
 import { useMemo, useRef, useState } from 'react'
 import { PROMISED_SELECTORS, PROMISED_VARS } from '@/content/appearance-contract'
-import { useAdminT } from './I18nProvider'
+import { useAdminCount, useAdminT } from './I18nProvider'
 import { NOTE_TEXT } from './kit'
 
 /** Unbalanced braces, ignoring anything inside a comment or a string. */
@@ -67,6 +67,7 @@ export function CssEditor({
   className?: string
 }) {
   const t = useAdminT()
+  const count = useAdminCount()
   const area = useRef<HTMLTextAreaElement>(null)
   const gutter = useRef<HTMLDivElement>(null)
   const [showRef, setShowRef] = useState(false)
@@ -100,7 +101,7 @@ export function CssEditor({
 
   const problem = depth !== 0
   const status = depth === 0
-    ? `${lines} ${t.cssLines} · ${size.toLocaleString()} ${t.cssBytes}`
+    ? `${lines} ${t.cssLines} · ${count(size)} ${t.cssBytes}`
     : depth < 0 ? t.cssStrayBrace : `${t.cssUnclosed} ${depth}`
 
   return (

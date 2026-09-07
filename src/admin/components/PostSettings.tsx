@@ -4,10 +4,11 @@ import { DateField } from '@/admin/ui/DateField'
 import { Input, Textarea } from '@/admin/ui/Input'
 import { Button } from '@/admin/ui/Button'
 import { isScheduled } from '@/utils'
+import { formatWallClock } from '@/i18n/format'
 import { MultiSelect } from './MultiSelect'
 import { Combobox } from './Combobox'
 import { FeaturedImageField } from './FeaturedImageField'
-import { useAdminT } from './I18nProvider'
+import { useAdminLang, useAdminT } from './I18nProvider'
 import { CHECK, NOTE_TEXT } from './kit'
 import { EMPTY_SLOT } from './slot'
 
@@ -40,13 +41,14 @@ type Props = {
 
 export function PostSettings({ draft, update, allCategories, allTags, allSeries, onPickFeatured, onPickCover }: Props) {
   const t = useAdminT()
+  const lang = useAdminLang()
   return (
     <div className="space-y-5">
       <Input
         label={t.slug}
         value={draft.slug}
         onChange={(e) => update({ slug: e.target.value })}
-        placeholder="tu-dong-tu-tieu-de"
+        placeholder={t.slugFromTitle}
       />
 
       <div className="space-y-1.5">
@@ -57,7 +59,7 @@ export function PostSettings({ draft, update, allCategories, allTags, allSeries,
         />
         {isScheduled(draft.status, draft.date) && (
           <p className={NOTE_TEXT}>
-            {t.scheduledForPrefix} {new Date(draft.date).toLocaleString()}
+            {t.scheduledForPrefix} {formatWallClock(draft.date, lang)}
           </p>
         )}
       </div>

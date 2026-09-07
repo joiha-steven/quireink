@@ -347,6 +347,8 @@ const es = {
   authorLinkHint: 'Adónde lleva el nombre: una página personal, un perfil, donde sea. Vacío deja el nombre como texto normal.',
   captionPlaceholder: 'Pie de la imagen',
   slug: 'Slug (URL)',
+  slugFromTitle: 'del-titulo',
+  slugExample: 'acerca-de',
   publishDate: 'Fecha de publicación',
   schedule: 'Programar',
   scheduled: 'Programada',

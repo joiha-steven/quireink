@@ -20,7 +20,7 @@ import { useToast } from '@/admin/ui/Toast'
 import { useConfirm } from '@/admin/ui/ConfirmDialog'
 import { EmptyState, PageHeader, Select } from './kit'
 import { SHEET, SHEET_TOOL, SheetTop, SHEET_TOOL_DANGER } from './sheet'
-import { useAdminT } from './I18nProvider'
+import { useAdminCount, useAdminT } from './I18nProvider'
 import { fold } from './settings-index'
 import { glyphOf, kindOf, logSentence, type LogKind } from './logSentence'
 import { ICONS } from '@/icons'
@@ -43,6 +43,7 @@ function Glyph({ action }: { action: string }) {
 
 export function ActivityLog({ entries, enabled }: { entries: ActivityEntry[]; enabled: boolean }) {
   const t = useAdminT()
+  const count = useAdminCount()
   const router = useRouter()
   const { notify } = useToast()
   const ask = useConfirm()
@@ -113,7 +114,7 @@ export function ActivityLog({ entries, enabled }: { entries: ActivityEntry[]; en
       <PageHeader title={t.logTitle} />
       <div className={SHEET}>
         <SheetTop>
-          <span className={SHEET_TOOL}>{rows.length.toLocaleString()} · {t.logTitle.toLowerCase()}</span>
+          <span className={SHEET_TOOL}>{count(rows.length)} · {t.logTitle.toLowerCase()}</span>
           <Select
             small
             aria-label={t.logKindAll}

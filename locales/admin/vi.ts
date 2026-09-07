@@ -347,6 +347,8 @@ const vi = {
   authorLinkHint: 'Tên trỏ về đâu: trang cá nhân, hồ sơ, chỗ nào cũng được. Để trống thì tên chỉ là chữ, bấm vào không đi đâu cả.',
   captionPlaceholder: 'Chú thích ảnh',
   slug: 'Đường dẫn (slug)',
+  slugFromTitle: 'tu-dong-tu-tieu-de',
+  slugExample: 'gioi-thieu',
   publishDate: 'Ngày đăng',
   schedule: 'Hẹn giờ',
   scheduled: 'Đã hẹn giờ',

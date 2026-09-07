@@ -20,13 +20,14 @@ import type { AnalyticsSummary } from '@/analytics/types'
 import { formatBytes, formatDateTimeShort } from '@/utils'
 import { NOTE_TEXT } from './kit'
 import { StatCard } from './stat-band'
-import { useAdminT } from './I18nProvider'
+import { useAdminCount, useAdminT } from './I18nProvider'
 
 export function DeliveryPanel({ transfer, cache }: {
   transfer: AnalyticsSummary['transfer']
   cache: AnalyticsSummary['cache']
 }) {
   const t = useAdminT()
+  const count = useAdminCount()
   const requests = (cache?.hits ?? 0) + (cache?.misses ?? 0)
   // No requests yet means no answer, not 0%. A freshly booted process has served nothing.
   const rate = requests > 0 ? Math.round(((cache?.hits ?? 0) / requests) * 100) : null
@@ -61,7 +62,7 @@ export function DeliveryPanel({ transfer, cache }: {
                 {transfer.measured > 0 && (
                   <>{t.analyticsBytesAvg} {formatBytes(transfer.avgBytes)}{' · '}</>
                 )}
-                {t.analyticsBytesMeasured} {transfer.measured.toLocaleString()} {t.analyticsBytesNote}
+                {t.analyticsBytesMeasured} {count(transfer.measured)} {t.analyticsBytesNote}
               </>
             }
           />
@@ -81,7 +82,7 @@ export function DeliveryPanel({ transfer, cache }: {
                     counter rather than as an honest "nothing yet". */}
                 {rate !== null && (
                   <>
-                    {t.analyticsCacheHits}{' · '}{cache.hits.toLocaleString()}/{requests.toLocaleString()}
+                    {t.analyticsCacheHits}{' · '}{count(cache.hits)}/{count(requests)}
                     {' · '}
                   </>
                 )}

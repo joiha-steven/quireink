@@ -347,6 +347,8 @@ const en = {
   authorLinkHint: 'Where the name points: a homepage, a profile, anywhere. Empty leaves the name as plain text.',
   captionPlaceholder: 'Image caption',
   slug: 'Slug (URL)',
+  slugFromTitle: 'from-the-title',
+  slugExample: 'about',
   publishDate: 'Publish date',
   schedule: 'Schedule',
   scheduled: 'Scheduled',

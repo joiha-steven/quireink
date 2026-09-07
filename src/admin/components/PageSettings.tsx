@@ -28,7 +28,7 @@ export function PageSettings({ draft, update, onPickFeatured }: Props) {
         label={t.slug}
         value={draft.slug}
         onChange={(e) => update({ slug: e.target.value })}
-        placeholder="gioi-thieu"
+        placeholder={t.slugExample}
       />
 
       <div className="space-y-1.5">

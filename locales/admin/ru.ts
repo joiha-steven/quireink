@@ -347,6 +347,8 @@ const ru = {
   authorLinkHint: 'Куда ведёт имя: домашняя страница, профиль, что угодно. Пусто — имя останется простым текстом.',
   captionPlaceholder: 'Подпись к изображению',
   slug: 'Слаг (URL)',
+  slugFromTitle: 'из-заголовка',
+  slugExample: 'o-nas',
   publishDate: 'Дата публикации',
   schedule: 'Запланировать',
   scheduled: 'Запланировано',

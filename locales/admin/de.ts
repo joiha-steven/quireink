@@ -347,6 +347,8 @@ const de = {
   authorLinkHint: 'Wohin der Name führt: eine Startseite, ein Profil, irgendwohin. Leer bleibt der Name einfacher Text.',
   captionPlaceholder: 'Bildunterschrift',
   slug: 'Slug (URL)',
+  slugFromTitle: 'aus-dem-titel',
+  slugExample: 'ueber-uns',
   publishDate: 'Veröffentlichungsdatum',
   schedule: 'Planen',
   scheduled: 'Geplant',

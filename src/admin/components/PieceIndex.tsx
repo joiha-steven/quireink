@@ -19,7 +19,7 @@ import { useMemo, useState } from 'react'
 import Link from '@/admin/router'
 import type { PieceStat } from '@/analytics/types'
 import { TABLE_SCROLL, TAP, THEAD, TROW } from './kit'
-import { useAdminT } from './I18nProvider'
+import { useAdminCount, useAdminT } from './I18nProvider'
 import type { Range } from './AnalyticsView'
 
 type Row = { path: string; title: string; views: number; visitors: number }
@@ -41,6 +41,7 @@ export function PieceIndex({
   range: Range
 }) {
   const t = useAdminT()
+  const count = useAdminCount()
   const [query, setQuery] = useState('')
 
   // The join happens here rather than on the server so a piece with no row in the window
@@ -79,7 +80,7 @@ export function PieceIndex({
       <div className="flex flex-wrap items-center gap-3 px-4 py-3">
         <h2 className="text-sm font-medium text-neutral-900 dark:text-white">{t.analyticsPieces}</h2>
         <span className="text-xs tabular-nums text-neutral-500 dark:text-neutral-400">
-          {shown.length.toLocaleString()}
+          {count(shown.length)}
         </span>
         <input
           type="search"
@@ -126,8 +127,8 @@ export function PieceIndex({
                       {r.title}
                     </Link>
                   </td>
-                  <td className="w-px px-4 py-2.5 text-right tabular-nums whitespace-nowrap text-neutral-600 dark:text-neutral-300">{r.views.toLocaleString()}</td>
-                  <td className="w-px px-4 py-2.5 text-right tabular-nums whitespace-nowrap text-neutral-500 dark:text-neutral-400">{r.visitors.toLocaleString()}</td>
+                  <td className="w-px px-4 py-2.5 text-right tabular-nums whitespace-nowrap text-neutral-600 dark:text-neutral-300">{count(r.views)}</td>
+                  <td className="w-px px-4 py-2.5 text-right tabular-nums whitespace-nowrap text-neutral-500 dark:text-neutral-400">{count(r.visitors)}</td>
                 </tr>
               ))}
             </tbody>
@@ -144,7 +145,7 @@ export function PieceIndex({
             data-piece-showall
             className={`${TAP} text-xs text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white`}
           >
-            {t.analyticsShowAll.replace('{n}', shown.length.toLocaleString())}
+            {t.analyticsShowAll.replace('{n}', count(shown.length))}
           </button>
         </div>
       )}

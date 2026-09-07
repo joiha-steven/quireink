@@ -20,7 +20,7 @@
 // Not sanitised, and the note in the box says so. A field whose whole purpose is to carry
 // a script cannot strip script tags; what it can do is be honest that it runs.
 import { useMemo, useRef } from 'react'
-import { useAdminT } from './I18nProvider'
+import { useAdminCount, useAdminT } from './I18nProvider'
 
 /**
  * Elements that swallow the document when left unclosed.
@@ -61,6 +61,7 @@ export function SnippetEditor({
   className?: string
 }) {
   const t = useAdminT()
+  const count = useAdminCount()
   const area = useRef<HTMLTextAreaElement>(null)
   const gutter = useRef<HTMLDivElement>(null)
 
@@ -96,7 +97,7 @@ export function SnippetEditor({
   const status = value === ''
     ? ''
     : problem === null
-      ? `${size.toLocaleString()} ${t.cssBytes}`
+      ? `${count(size)} ${t.cssBytes}`
       : problem.depth > 0
         ? `${t.snippetUnclosed} <${problem.tag}>`
         : `${t.snippetStray} </${problem.tag}>`
