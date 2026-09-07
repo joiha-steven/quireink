@@ -137,6 +137,7 @@ const ja = {
   askDeleteBackupTitle: 'このバックアップを削除しますか？',
   askDeleteBackupBody: 'アーカイブファイルをサーバーから削除します。ブログの中身は変わりません。',
   trashedOne: 'ごみ箱に移しました',
+  trashFailed: 'ゴミ箱に移動できませんでした',
   trashedMany: '{n} 件をごみ箱に移しました',
   undo: '元に戻す',
   // The editor's Attributes panel. The confirmation says the piece can be brought back,

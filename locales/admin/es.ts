@@ -137,6 +137,7 @@ const es = {
   askDeleteBackupTitle: '¿Borrar esta copia de seguridad?',
   askDeleteBackupBody: 'El archivo se elimina del servidor. Nada del blog cambia.',
   trashedOne: 'Movido a la papelera',
+  trashFailed: 'No se pudo mover a la papelera',
   trashedMany: '{n} movidos a la papelera',
   undo: 'Deshacer',
   // The editor's Attributes panel. The confirmation says the piece can be brought back,

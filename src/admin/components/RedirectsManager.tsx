@@ -66,7 +66,12 @@ export function RedirectsManager() {
     try {
       const res = await fetch(`/api/redirects/${id}`, { method: 'DELETE' })
       const json = (await res.json()) as ApiResponse<unknown>
+      // A refused delete has to say so. Without the else the row simply stayed, which reads
+      // as a click that never landed rather than as a server that said no.
       if (json.success) setRows((r) => r.filter((x) => x.id !== id))
+      else notify(json.error || t.redirectSaveFailed, 'error')
+    } catch {
+      notify(t.redirectSaveFailed, 'error')
     } finally {
       setBusy(false)
     }

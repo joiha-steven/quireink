@@ -113,24 +113,33 @@ export function useNavArrange(stored: NavOrder, defaults: NavOrder, onError: (me
     setOrder(remember(reconcileNavOrder(stored, defaults)))
   }, [JSON.stringify(stored), JSON.stringify(defaults)])
 
+
   const save = useCallback(async (next: NavOrder) => {
     // WHAT IS STORED AND WHAT IS DRAWN ARE NOT THE SAME OBJECT, and Reset is why. It stores
     // three empty lists, which mean "whatever the code says" — draw that literally and the
     // rail goes blank the moment it is pressed, staying blank until the next page load put
     // the reconciliation back. Everything shown goes through the same reconcile the server's
     // copy does; for an ordinary move the two are identical anyway.
+    // What was on screen before the move, so a refusal can put it back.
+    const before = live.current
     setOrder(remember(reconcileNavOrder(next, defaults)))
+    const undo = (why: string) => {
+      // PUT BACK, not left as it was. The rail used to keep an arrangement the server had
+      // refused, so the toast said it was not saved while the screen went on showing it,
+      // and the next drag was made on top of a state that does not exist anywhere.
+      setOrder(remember(reconcileNavOrder(before, defaults)))
+      onError(why)
+    }
     try {
       const res = await fetch('/api/settings', {
         method: 'PUT',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ navOrder: next }),
       })
-      if (!res.ok) onError(`PUT /api/settings -> ${res.status}`)
+      if (!res.ok) undo(`PUT /api/settings -> ${res.status}`)
     } catch {
-      // Offline, or the tab was closed mid-flight. The rail keeps the arrangement on screen;
-      // the next load will show what the server actually has, which is the honest answer.
-      onError('offline')
+      // Offline, or the tab was closed mid-flight.
+      undo('offline')
     }
   }, [onError, JSON.stringify(defaults)])
 

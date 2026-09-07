@@ -269,6 +269,7 @@ export type AdminStrings = {
   askDeleteBackupBody: string
   /** Trashing asks nothing and offers the way back instead. */
   trashedOne: string
+  trashFailed: string
   trashedMany: string
   undo: string
   // The editor's Attributes panel. The confirmation says the piece can be brought back,

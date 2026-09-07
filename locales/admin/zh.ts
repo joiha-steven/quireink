@@ -137,6 +137,7 @@ const zh = {
   askDeleteBackupTitle: '删除这个备份？',
   askDeleteBackupBody: '存档文件从服务器移除。博客内容不变。',
   trashedOne: '已移入回收站',
+  trashFailed: '无法移入回收站',
   trashedMany: '已把 {n} 项移入回收站',
   undo: '撤销',
   // The editor's Attributes panel. The confirmation says the piece can be brought back,

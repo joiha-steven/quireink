@@ -137,6 +137,7 @@ const en = {
   askDeleteBackupTitle: 'Delete this backup?',
   askDeleteBackupBody: 'The archive file is removed from the server. Nothing in the blog changes.',
   trashedOne: 'Moved to the Trash',
+  trashFailed: 'Could not move it to the Trash',
   trashedMany: '{n} moved to the Trash',
   undo: 'Undo',
   // The editor's Attributes panel. The confirmation says the piece can be brought back,

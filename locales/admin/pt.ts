@@ -138,6 +138,7 @@ const pt = {
   askDeleteBackupTitle: 'Apagar esta cópia de segurança?',
   askDeleteBackupBody: 'O ficheiro é removido do servidor. Nada no blog muda.',
   trashedOne: 'Movido para a reciclagem',
+  trashFailed: 'Não foi possível mover para o lixo',
   trashedMany: '{n} movidos para a reciclagem',
   undo: 'Anular',
   // The editor's Attributes panel. The confirmation says the piece can be brought back,

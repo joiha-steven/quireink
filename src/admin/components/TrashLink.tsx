@@ -61,12 +61,19 @@ export function TrashLink({ kind, slug, onGone }: {
         method: 'DELETE',
       })
       // A failed delete must not navigate: leaving the editor would look like it worked.
-      if (!res.ok) { setBusy(false); return }
+      // AND IT HAS TO SAY SO. Silently un-greying the button is indistinguishable from a
+      // click that did not register, so the owner presses it again, and again.
+      if (!res.ok) {
+        setBusy(false)
+        notify(t.trashFailed, 'error')
+        return
+      }
       notify(t.trashedOne, 'success', { label: t.undo, run: restore })
       if (onGone) onGone()
       else router.push('/admin/content')
     } catch {
       setBusy(false)
+      notify(t.trashFailed, 'error')
     }
   }
 

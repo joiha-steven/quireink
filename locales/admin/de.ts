@@ -137,6 +137,7 @@ const de = {
   askDeleteBackupTitle: 'Diese Sicherung löschen?',
   askDeleteBackupBody: 'Die Archivdatei wird vom Server entfernt. Am Blog ändert sich nichts.',
   trashedOne: 'In den Papierkorb verschoben',
+  trashFailed: 'Konnte nicht in den Papierkorb verschoben werden',
   trashedMany: '{n} in den Papierkorb verschoben',
   undo: 'Rückgängig',
   // The editor's Attributes panel. The confirmation says the piece can be brought back,
