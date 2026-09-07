@@ -15,7 +15,7 @@
 // The stored shape is untouched. `SiteSettings` keeps every key and every name; this file
 // decides which tab renders which key, and `?tab=` still answers to the eight old ids.
 
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { useSearchParams } from '@/admin/router'
 import type { SiteSettings } from '@/types'
 import type { ThemePreset } from '@/content/themes'
@@ -122,7 +122,33 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
   const typographyReset = useRef<(() => void) | null>(null)
 
   const jumpToSetting = useSettingJump()
-  const [notes, toggleNotes] = useSettingsNotes()
+  const [notes, toggleNotes, suggestNotes] = useSettingsNotes()
+  const panelRef = useRef<HTMLDivElement>(null)
+  /**
+   * Does this tab leave blank paper under it? Then the explanations cost nothing to show.
+   *
+   * ⚠️ MEASURED WITH THEM HIDDEN, always, and the flag is flipped on the live element to do
+   * it. Measuring the tab as drawn would be a loop: a short tab is given its explanations,
+   * grows past the floor, measures as long on the next pass, and has them taken away again.
+   * The attribute is set, the height read, and the attribute put back inside one layout
+   * effect, so nothing is ever painted in the measuring state.
+   *
+   * The PANEL is what is measured — the tab's own content, without the sticky strip above it
+   * — against the sheet's 60vh floor. Measured at 1440x900 on 2026-09-07, six of the seven
+   * tabs stand well past it (blog 907, account 884, home 1,339, post 1,508, appearance 1,602,
+   * server 2,271) and Comments & mail does not: 526 against a 540 floor. Its six explanations
+   * take it to 781, which is still the shortest tab of the seven — the growth lands on paper
+   * that was doing nothing, which is the whole test.
+   */
+  useLayoutEffect(() => {
+    const panel = panelRef.current
+    if (!panel) return
+    const was = panel.getAttribute('data-explanations')
+    panel.setAttribute('data-explanations', 'off')
+    const bare = panel.getBoundingClientRect().height
+    if (was !== null) panel.setAttribute('data-explanations', was)
+    suggestNotes(bare < window.innerHeight * 0.6)
+  }, [tab, suggestNotes])
 
   const update = (partial: Partial<SiteSettings>) => setS((prev) => ({ ...prev, ...partial }))
 
@@ -221,6 +247,7 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
           // it (`admin-enter` in admin.css). Before this the panel was replaced between two
           // frames, which reports "the screen is different now" and not what changed.
           key={tab}
+          ref={panelRef}
           id={PANEL_ID}
           role="tabpanel"
           aria-label={String(TAB_LABEL(tab))}

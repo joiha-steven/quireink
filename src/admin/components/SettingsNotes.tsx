@@ -20,8 +20,15 @@
 //
 // ⚠️ OFF by default since 2026-09-04, and worth writing down because it
 // costs something real: a person opening Settings for the first time meets bare controls with
-// no guidance, and the guidance is good. The default is the `=== '1'` below and nothing else.
-import { useEffect, useState, type ReactNode } from 'react'
+// no guidance, and the guidance is good.
+//
+// SINCE 2026-09-07 THE DEFAULT IS MEASURED RATHER THAN FIXED, because the reason to hide the
+// explanations is BULK, and on a tab that does not fill the paper there is no bulk to hide.
+// The sheet has a 60vh floor; a tab whose content stops above it leaves blank paper below,
+// and taking the guidance away to make room in a space that is already empty buys nothing
+// and costs the guidance. So a short tab opens with them shown, a long one without — until
+// the owner touches the switch, and from then on their answer is the answer everywhere.
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { SHEET_TOOL } from './sheet'
 import { NOTE_TEXT } from './scale'
 import { useAdminT } from './I18nProvider'
@@ -36,16 +43,34 @@ const KEY = 'quireink-admin-settings-notes'
  * for the same three preferences. The cost is a frame at the default for an owner who turned
  * them on; the alternative is a hydration mismatch on every admin load.
  */
-export function useSettingsNotes(): [boolean, () => void] {
-  const [on, setOn] = useState(false)
+export function useSettingsNotes(): [boolean, () => void, (shortTab: boolean) => void] {
+  // THREE states, not two. `null` is "this owner has never answered", which is what lets the
+  // measurement decide; the moment they do answer it is written down and the measurement
+  // stops being consulted. A boolean could not tell the two apart, which is why the absent
+  // key used to read as a deliberate no.
+  const [chosen, setChosen] = useState<boolean | null>(null)
+  const [auto, setAuto] = useState(false)
+  // The switch flips away from what is ON SCREEN, which on an unanswered preference is the
+  // measured default rather than `false`. Read through a ref so the callback stays stable and
+  // the layout effect that calls `suggest` does not re-run on every render.
+  const shown = useRef(false)
+  shown.current = chosen ?? auto
+
   useEffect(() => {
-    Promise.resolve().then(() => setOn(localStorage.getItem(KEY) === '1'))
+    Promise.resolve().then(() => {
+      const raw = localStorage.getItem(KEY)
+      setChosen(raw === '1' ? true : raw === '0' ? false : null)
+    })
   }, [])
-  return [on, () => setOn((v) => {
-    const next = !v
+
+  const toggle = useCallback(() => {
+    const next = !shown.current
     localStorage.setItem(KEY, next ? '1' : '0')
-    return next
-  })]
+    setChosen(next)
+  }, [])
+
+  const suggest = useCallback((shortTab: boolean) => setAuto(shortTab), [])
+  return [chosen ?? auto, toggle, suggest]
 }
 
 /**

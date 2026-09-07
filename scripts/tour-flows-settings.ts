@@ -320,4 +320,46 @@ export function registerSettingsFlows({ flow, expect }: Tour): void {
       const still = (counts?.data?.posts ?? []).length + (counts?.data?.media ?? []).length
       return still > 0 ? 'ok (asked, backed out, trash intact)' : 'backing out emptied it anyway'
     })()`, 1000))
+
+  // ITEM 14, and the reason it is a flow rather than a screenshot: what is asserted is a
+  // DIFFERENCE between two tabs, and a difference is the one thing a photograph of either
+  // one cannot show. The explanations are hidden by default because they are bulk; a tab
+  // that stops short of the sheet's 60vh floor has no bulk to hide, so it opens with them.
+  // The owner's own answer, once given, outranks both — which is why the flow clears the
+  // preference before it measures anything.
+  //
+  // NOTE: this body is a template literal. No backticks.
+  flow('admin: a settings tab with paper to spare opens with its explanations', () => expect('/admin/settings?tab=people', `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      const panel = () => document.getElementById('settings-panel')
+      if (!panel()) return 'no settings panel'
+      const state = () => panel().getAttribute('data-explanations')
+      // Measured the way the screen measures it: with the explanations flipped off, so the
+      // answer is the tab's own height and not the height it grew to after being answered.
+      const bare = () => {
+        const p = panel()
+        const was = p.getAttribute('data-explanations')
+        p.setAttribute('data-explanations', 'off')
+        const h = Math.round(p.getBoundingClientRect().height)
+        if (was !== null) p.setAttribute('data-explanations', was)
+        return h
+      }
+      const floor = innerHeight * 0.6
+      const shortH = bare()
+      if (shortH >= floor) return 'Comments and mail measures ' + shortH + 'px against a ' + Math.round(floor) + 'px floor, so it is no longer the short tab'
+      if (state() !== 'on') return 'a tab with ' + Math.round(floor - shortH) + 'px of spare paper still hid its explanations'
+      const visible = Array.from(document.querySelectorAll('.admin-note')).filter((n) => n.getBoundingClientRect().height > 0).length
+      if (visible < 2) return 'the flag says on and ' + visible + ' explanation(s) are drawn'
+      // The long tab, reached the way a person reaches it, so the measurement is taken again.
+      const tabs = Array.from(document.querySelectorAll('[role=tab]'))
+      if (tabs.length < 6) return 'only ' + tabs.length + ' tab(s) to compare across'
+      tabs[5].click()
+      await sleep(400)
+      const longH = bare()
+      if (longH < floor) return 'the tab meant to be the long one measured ' + longH + 'px'
+      if (state() !== 'off') return 'a tab past the floor opened its explanations too, so nothing is being measured'
+      return 'ok ' + shortH + 'px shows ' + visible + ', ' + longH + 'px shows none, floor ' + Math.round(floor)
+    })()`, 900))
+
 }
