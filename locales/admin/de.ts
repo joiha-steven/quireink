@@ -458,6 +458,7 @@ const de = {
   postsPerPage: 'Beiträge pro Seite',
   postsPerPageHint: 'Wie viele Beiträge auf einer Seite von Start-/Kategorie-/Schlagwort-Listen erscheinen (Standard 10).',
   saveSettings: 'Einstellungen speichern',
+  settingsSavesPerCard: 'Jede Karte speichert selbst',
   save: 'Speichern',
   saveAndTest: 'Speichern und testen',
   connectionOk: 'Gespeichert, und die Gegenstelle hat geantwortet',

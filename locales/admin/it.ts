@@ -458,6 +458,7 @@ const it = {
   postsPerPage: 'Articoli per pagina',
   postsPerPageHint: 'Quanti articoli mostra una pagina delle liste home/categoria/tag (10 di default).',
   saveSettings: 'Salva le impostazioni',
+  settingsSavesPerCard: 'Ogni scheda si salva da sé',
   save: 'Salva',
   saveAndTest: 'Salva e prova',
   connectionOk: 'Salvato, e il servizio ha risposto',

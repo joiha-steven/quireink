@@ -458,6 +458,7 @@ const vi = {
   postsPerPage: 'Số bài mỗi trang',
   postsPerPageHint: 'Số bài hiển thị trên một trang ở trang chủ, danh mục, thẻ (mặc định 10).',
   saveSettings: 'Lưu cài đặt',
+  settingsSavesPerCard: 'Mỗi thẻ tự lưu',
   save: 'Lưu',
   saveAndTest: 'Lưu và thử',
   connectionOk: 'Đã lưu, đầu kia có trả lời',

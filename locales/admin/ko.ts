@@ -458,6 +458,7 @@ const ko = {
   postsPerPage: '페이지당 게시물 수',
   postsPerPageHint: '홈/카테고리/태그 목록의 한 페이지에 표시할 게시물 수(기본값 10).',
   saveSettings: '설정 저장',
+  settingsSavesPerCard: '카드마다 따로 저장합니다',
   save: '저장',
   saveAndTest: '저장하고 확인',
   connectionOk: '저장됨, 상대 쪽이 응답함',

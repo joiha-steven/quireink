@@ -42,16 +42,26 @@ export const TAB_TRACK = 'flex w-full flex-wrap items-end gap-6 border-b border-
 // rather than the other way round. A MINIMUM rather than a fixed height, because three call
 // sites let the strip wrap and a fixed one would halve their rows; a single-line strip lands
 // on 32 exactly, its items stretching to 30 inside the 1px edge.
-// ⚠️ THE TRACK IS THE GROOVE, `neutral-200`, since 2026-09-07 — it was `neutral-50`, one
-// point off the card it sits on, so the strip had no edges of its own and the chosen key had
-// to be drawn DARKER than its own track to be seen at all. That inverted the object: a
-// pressed key is not darker than the panel it is set into, it is the panel's own face pushed
-// down. With a real groove the key can be white and carved, which is what every physical
-// segmented control on a desk looks like.
+// ⚠️ TWO TRACKS, AND THE ROLE PICKS ONE. A groove is a CHOOSER's furniture: a value control
+// that needs its chosen key to sit visibly lower than its neighbours. A `place` strip is
+// NAVIGATION — the settings tabs, the trash's kinds — and it is the page's own first row;
+// dressing it as a heavy grey control makes the top of every settings screen read as a
+// widget rather than as a set of sections. Both were the same string for a few hours on
+// 2026-09-07 and the settings tabs came out looking like a machine part.
+//
+// THE GROOVE, `neutral-200`, for a chooser. It was `neutral-50` — one point off the card it
+// sits on, so the strip had no edges of its own and the chosen key had to be drawn DARKER
+// than its own track to be seen. That inverts the object: a pressed key is not darker than
+// the panel it is set into, it is the panel's face pushed down. With a real groove the key
+// can be white and carved, which is what a segmented control on a desk looks like.
 export const SEGMENT_TRACK = 'flex min-h-8 w-fit max-w-full overflow-x-auto no-scrollbar rounded-md border border-neutral-200 bg-neutral-200 p-0.5 shadow-[inset_0_1px_2px_rgba(0,0,0,.09)] dark:border-neutral-800 dark:bg-neutral-950/60 dark:shadow-[inset_0_1px_2px_rgba(0,0,0,.5)]'
+/** The quiet track a PLACE strip wears: an outline on the sheet, not a control set into it. */
+const SEGMENT_TRACK_PLACE = 'flex min-h-8 w-fit max-w-full overflow-x-auto no-scrollbar rounded-md border border-neutral-200 bg-neutral-50 p-0.5 dark:border-neutral-800 dark:bg-neutral-950/40'
 // The dense variant is full-width with growing items: five segments whose right edge lands
 // on the pane's own edge instead of stopping short of it, which read as a gap left over.
 const SEGMENT_TRACK_DENSE = 'flex min-h-8 w-full overflow-x-auto no-scrollbar rounded-md border border-neutral-200 bg-neutral-200 p-0.5 shadow-[inset_0_1px_2px_rgba(0,0,0,.09)] dark:border-neutral-800 dark:bg-neutral-950/60 dark:shadow-[inset_0_1px_2px_rgba(0,0,0,.5)]'
+/** Full-width and quiet: the write pane's scope strip is a place strip that fills its column. */
+const SEGMENT_TRACK_DENSE_PLACE = 'flex min-h-8 w-full overflow-x-auto no-scrollbar rounded-md border border-neutral-200 bg-neutral-50 p-0.5 dark:border-neutral-800 dark:bg-neutral-950/40'
 
 /**
  * What an active item MEANS, which turns out to be two different things wearing one costume.
@@ -261,7 +271,13 @@ export function Tabs<K extends string>({
       ref={track}
       role={tablist ? 'tablist' : undefined}
       onKeyDown={onKeyDown}
-      className={`${size === 'lg' ? TAB_TRACK : dense ? SEGMENT_TRACK_DENSE : SEGMENT_TRACK} ${edges ? EDGE_MASK[edges] : ''} ${className}`}
+      className={`${
+        size === 'lg'
+          ? TAB_TRACK
+          : dense
+            ? (role === 'place' ? SEGMENT_TRACK_DENSE_PLACE : SEGMENT_TRACK_DENSE)
+            : (role === 'place' ? SEGMENT_TRACK_PLACE : SEGMENT_TRACK)
+      } ${edges ? EDGE_MASK[edges] : ''} ${className}`}
     >
       {tabs.map((tb) => (
         <button

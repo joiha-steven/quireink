@@ -458,6 +458,7 @@ const es = {
   postsPerPage: 'Entradas por página',
   postsPerPageHint: 'Cuántas entradas se muestran en una página de las listas de inicio/categoría/etiqueta (10 por defecto).',
   saveSettings: 'Guardar ajustes',
+  settingsSavesPerCard: 'Cada tarjeta se guarda sola',
   save: 'Guardar',
   saveAndTest: 'Guardar y probar',
   connectionOk: 'Guardado, y el otro extremo respondió',

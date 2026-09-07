@@ -684,6 +684,7 @@ export type AdminStrings = {
   cssNamesNote: string
   cssStructure: string
   saveSettings: string
+  settingsSavesPerCard: string
   /** A card that owns its own keys: its button, and the five things its lamp can mean. */
   save: string
   saveAndTest: string

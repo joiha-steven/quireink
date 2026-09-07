@@ -458,6 +458,7 @@ const zh = {
   postsPerPage: '每页文章数',
   postsPerPageHint: '首页/分类/标签列表每页显示的文章数（默认 10）。',
   saveSettings: '保存设置',
+  settingsSavesPerCard: '每张卡片各自保存',
   save: '保存',
   saveAndTest: '保存并测试',
   connectionOk: '已保存，对方有回应',

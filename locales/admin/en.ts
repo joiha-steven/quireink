@@ -458,6 +458,7 @@ const en = {
   postsPerPage: 'Posts per page',
   postsPerPageHint: 'How many posts show on one page of home/category/tag lists (default 10).',
   saveSettings: 'Save settings',
+  settingsSavesPerCard: 'Each card saves itself',
   save: 'Save',
   saveAndTest: 'Save and test',
   connectionOk: 'Saved, and the far end answered',

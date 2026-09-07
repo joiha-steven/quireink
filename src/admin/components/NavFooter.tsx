@@ -133,11 +133,15 @@ function OwnerMenu({ avatar, iconsOn, collapsed, onIcons, onArrange, signOut, cl
       {open && (
         <>
           <button className="fixed inset-0 z-40 cursor-default" aria-hidden onClick={() => setOpen(false)} />
-          {/* UPWARD, and anchored to the rail's own edge rather than to the button: the strip
-              sits at the bottom of a full-height column, so anything opening downward opens
-              off the window. Collapsed the rail is 72px, so the menu starts at the left edge
-              of the button and runs right, over the page. */}
-          <div className={`absolute bottom-full z-50 mb-2 w-52 overflow-hidden rounded-lg border border-neutral-200 bg-white py-1 shadow-lg dark:border-neutral-700 dark:bg-neutral-900 ${collapsed ? 'left-0' : 'right-0'}`}>
+          {/* UPWARD, and OPENING RIGHT in both rail states.
+              ⚠️ It was `right-0` on the open rail, which anchors a 208px menu to the right
+              edge of a button that sits at the right edge of a 208px rail — so it ran from
+              x=-12 to x=196 and hung twelve pixels off the left of the WINDOW, measured. The
+              rail is against the left edge of the screen; there is nothing to the left of it
+              to open into. `left-0` runs the menu into the page, where there is always room,
+              and the viewport cap is the belt for the phone drawer, where the strip can sit
+              near the right edge instead. */}
+          <div className="absolute bottom-full left-0 z-50 mb-2 w-52 max-w-[calc(100vw-2rem)] overflow-hidden rounded-lg border border-neutral-200 bg-white py-1 shadow-lg dark:border-neutral-700 dark:bg-neutral-900">
             <Link href={ACCOUNT_HREF} onClick={() => { setOpen(false); close() }} className={item}>
               {t.tabAccount}
             </Link>

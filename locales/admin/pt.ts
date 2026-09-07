@@ -459,6 +459,7 @@ const pt = {
   postsPerPage: 'Posts por página',
   postsPerPageHint: 'Quantos posts aparecem em uma página das listas de início/categoria/tag (padrão 10).',
   saveSettings: 'Salvar configurações',
+  settingsSavesPerCard: 'Cada cartão guarda sozinho',
   save: 'Guardar',
   saveAndTest: 'Guardar e testar',
   connectionOk: 'Guardado, e o outro lado respondeu',

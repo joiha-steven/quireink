@@ -458,6 +458,7 @@ const ja = {
   postsPerPage: '1ページあたりの投稿数',
   postsPerPageHint: 'ホーム/カテゴリー/タグ一覧の1ページに表示する投稿数（デフォルト10）。',
   saveSettings: '設定を保存',
+  settingsSavesPerCard: '各カードが自分で保存します',
   save: '保存',
   saveAndTest: '保存して確認',
   connectionOk: '保存済み。相手側からの応答あり',

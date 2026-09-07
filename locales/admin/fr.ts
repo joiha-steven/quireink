@@ -458,6 +458,7 @@ const fr = {
   postsPerPage: 'Articles par page',
   postsPerPageHint: 'Combien d’articles s’affichent sur une page des listes accueil/catégorie/étiquette (10 par défaut).',
   saveSettings: 'Enregistrer les réglages',
+  settingsSavesPerCard: 'Chaque carte s’enregistre seule',
   save: 'Enregistrer',
   saveAndTest: 'Enregistrer et tester',
   connectionOk: 'Enregistré, et le service a répondu',

@@ -235,6 +235,15 @@ export function SettingsView({ settings, presets, commentEnv, integrations, post
             {saving ? t.saving : changed === 0 ? t.saveSettings : t.saveSettingsCount.replace('{n}', String(changed))}
           </Button>
           )}
+          {/* ⚠️ A MISSING BUTTON HAS TO SAY SO. On tabs 5-7 every card owns its keys and
+              saves them itself, which is ADR 0041's whole point — and the owner read the
+              empty slot as a fault the first time they met it, which it looks exactly like.
+              A sentence in the place the eye goes for Save costs one line and answers the
+              question; a Save button that silently did nothing for most of the screen is the
+              arrangement this replaced. */}
+          {!savesAsOne && (
+            <span className="shrink-0 text-xs text-neutral-500 dark:text-neutral-400">{t.settingsSavesPerCard}</span>
+          )}
           <SettingsSearch
             tabLabel={(k) => String(TAB_LABEL(k))}
             onPick={(entry) => { setTab(entry.tab); jumpToSetting(String(t[entry.label])) }}
