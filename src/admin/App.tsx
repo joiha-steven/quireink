@@ -15,7 +15,9 @@ import { ThemeProvider } from '@/admin/ui/ThemeProvider'
 import { TopProgress } from '@/admin/ui/TopProgress'
 import { ErrorBoundary } from '@/admin/ui/ErrorBoundary'
 import { throughDeploys } from '@/admin/ui/stale-build'
-import { Loading } from '@/admin/pages/state'
+import { Failed, Loading } from '@/admin/pages/state'
+import { isSiteLang } from '@/locales/langs'
+import type { SiteLang } from '@/types'
 import { AdminSidebar } from '@/admin/components/AdminSidebar'
 import { CommandPalette } from '@/admin/components/CommandPalette'
 import { ShortcutSheet } from '@/admin/components/ShortcutSheet'
@@ -190,14 +192,37 @@ async function signOut(): Promise<void> {
   location.href = '/'
 }
 
+/** The language the server painted the shell in, for the one screen that cannot ask. */
+function shellLang(): SiteLang {
+  const said = document.documentElement.lang
+  return isSiteLang(said) ? said : 'en'
+}
+
 function Shell() {
   // One round trip before anything renders, for the two facts the whole shell needs. The
   // frozen tree read them in the layout's server component; there is nowhere else to put
   // them now, and a language flash is worse than a blank frame.
-  const { data } = useView('shell')
+  const { data, error, reload } = useView('shell')
   // Read here rather than inside the boundary: it is the boundary's KEY, so it has to change
   // in the tree that renders it.
   const path = usePathname()
+  // A shell that cannot load is not a slow shell. `error` and `reload` were both being
+  // thrown away here, so a 500 from `/api/admin/view/shell` — a locked database, a settings
+  // blob that will not parse — left the owner on an empty grey page with no message, no way
+  // to try again, and no clue that anything had happened. Every screen BELOW this one has
+  // had a retry since the day `Failed` was written; the one that decides whether they mount
+  // at all had none.
+  //
+  // The language comes off `<html lang>` because the answer that would have carried it is
+  // the one that failed. `spa.ts` writes it into the served shell for exactly this kind of
+  // first paint.
+  if (error) {
+    return (
+      <AdminI18nProvider lang={shellLang()}>
+        <div className="mx-auto max-w-md p-8"><Failed error={error} onRetry={reload} /></div>
+      </AdminI18nProvider>
+    )
+  }
   if (!data) return <div className="min-h-screen bg-neutral-100 dark:bg-neutral-950" />
   return (
     <AdminI18nProvider lang={data.language}>

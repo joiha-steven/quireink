@@ -59,11 +59,6 @@ export function RouterProvider({ children }: { children: ReactNode }) {
   const guard = useRef<NavGuard | null>(null)
   const guardApi = useMemo(() => ({ set: (g: NavGuard | null) => { guard.current = g } }), [])
 
-  useEffect(() => {
-    const onPop = () => startTransition(() => setState((s) => ({ ...readLocation(), epoch: s.epoch })))
-    addEventListener('popstate', onPop)
-    return () => removeEventListener('popstate', onPop)
-  }, [])
 
   /**
    * The route change runs inside a transition, and that is the whole of why the admin stopped
@@ -88,6 +83,44 @@ export function RouterProvider({ children }: { children: ReactNode }) {
     else history.replaceState(null, '', href)
     startNavigation(() => setState((s) => ({ ...readLocation(), epoch: s.epoch })))
   }, [])
+
+  // Where the reader is, for the one thing that needs it outside a render: putting the
+  // address back when they answer a guard by staying.
+  const here = useRef(state)
+  here.current = state
+
+  useEffect(() => {
+    /**
+     * Back and Forward go through the guard too.
+     *
+     * They did not, and the gap was the whole of it: a settings form with five changes on it
+     * unmounted silently on the browser's Back button, because `beforeunload` does not fire
+     * for a same-document history move and only `go()` asked the question. The click that
+     * asks and the gesture that does not were the same navigation to the reader.
+     *
+     * The order is forced by what has already happened. `popstate` fires AFTER the address
+     * has moved, so staying means pushing the old address back on before the question is
+     * asked, and leaving means going to the answer the reader gave rather than the one the
+     * browser assumed.
+     */
+    const onPop = () => {
+      const g = guard.current
+      const to = readLocation()
+      if (!g?.blocked()) {
+        startTransition(() => setState((s) => ({ ...to, epoch: s.epoch })))
+        return
+      }
+      const from = here.current
+      history.pushState(null, '', from.path + from.search)
+      void g.ask().then((leave) => {
+        if (!leave) return
+        guard.current = null
+        commit(to.path + to.search, 'push')
+      })
+    }
+    addEventListener('popstate', onPop)
+    return () => removeEventListener('popstate', onPop)
+  }, [commit])
 
   /**
    * ⚠️ The URL must NOT move before the question is answered.
