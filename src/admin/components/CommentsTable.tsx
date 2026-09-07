@@ -15,7 +15,7 @@
 //
 // Delete is a soft delete (moves to Trash); the row drops from its card on success. The text
 // is collapsed to three lines — click it to expand, click again to collapse.
-import { useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { AdminComment, ApiResponse } from '@/types'
 import { useToast } from '@/admin/ui/Toast'
 import { formatDateTimeShort, foldAccents } from '@/utils'
@@ -23,8 +23,12 @@ import { PageHeader, EmptyState, Tabs, type TabItem } from './kit'
 import { SHEET, SHEET_FOOT, SHEET_TOOL, SHEET_TOOL_DANGER, SheetTop, NumBand } from './sheet'
 import { Marked } from './Marked'
 import { useAdminT } from './I18nProvider'
+import { SelectionBar } from './SelectionBar'
+import { Tick } from '@/admin/ui/Tick'
 
 type Sort = 'recent' | 'busiest'
+/** The one time question a moderator asks of this screen, beside "all of it". */
+type Age = 'all' | 'week'
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000
 
@@ -38,6 +42,17 @@ export function CommentsTable({ initial }: { initial: AdminComment[] }) {
   const [expanded, setExpanded] = useState<Set<number>>(new Set())
   const [query, setQuery] = useState('')
   const [sort, setSort] = useState<Sort>('recent')
+  const [age, setAge] = useState<Age>('all')
+  const [chosen, setChosen] = useState<Set<number>>(new Set())
+  const [busy, setBusy] = useState(false)
+  /**
+   * WHERE THE KEYBOARD IS. `j` and `k` walk the comments in the order they are drawn, which
+   * is why this is an index into the flattened groups rather than an id: moving DOWN has to
+   * mean "the next one on the screen", and the screen is grouped by post.
+   *
+   * -1 is "nowhere yet", so the first `j` lands on the first comment rather than the second.
+   */
+  const [walk, setWalk] = useState(-1)
 
   function toggle(id: number) {
     setExpanded((prev) => {
@@ -78,9 +93,9 @@ export function CommentsTable({ initial }: { initial: AdminComment[] }) {
   // The search reaches the text, the name and the post title, accent-folded — typing "cafe"
   // finds "café", which is the only behaviour that is not a surprise in a Vietnamese admin.
   const needle = foldAccents(query.trim().toLowerCase())
-  const shown = needle
-    ? rows.filter((c) => foldAccents(`${c.content} ${c.name} ${c.postTitle ?? ''}`.toLowerCase()).includes(needle))
-    : rows
+  const since = Date.now() - WEEK_MS
+  const shown = rows.filter((c) => (age === 'all' || (Date.parse(c.createdAt) || 0) >= since)
+    && (!needle || foldAccents(`${c.content} ${c.name} ${c.postTitle ?? ''}`.toLowerCase()).includes(needle)))
 
   // One pass, memoised: grouping two hundred comments on every keystroke of the search box
   // is work nobody asked for.
@@ -98,6 +113,52 @@ export function CommentsTable({ initial }: { initial: AdminComment[] }) {
     list.sort((a, b) => (sort === 'busiest' ? b.items.length - a.items.length || b.newest - a.newest : b.newest - a.newest))
     return list
   }, [shown, sort])
+
+  /** Every comment in the order it is DRAWN, which is what j and k have to follow. */
+  const order = useMemo(() => groups.flatMap((g) => g.items.map((c) => c.id)), [groups])
+
+  const step = useCallback((dir: 1 | -1) => {
+    setWalk((prev) => {
+      const next = Math.max(0, Math.min(prev + dir, order.length - 1))
+      const id = order[next]
+      // Scrolled into view here rather than in an effect: this is the only thing that moves
+      // the cursor, so the scroll belongs with the move.
+      if (id !== undefined) document.querySelector(`[data-comment="${id}"]`)?.scrollIntoView({ block: 'nearest' })
+      return next
+    })
+  }, [order])
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      // ⚠️ NOT WHILE TYPING. The search box is on this screen and "j" is a letter; a bare
+      // key that steals a keystroke from a field is the bug every j/k list ships first.
+      const el = document.activeElement
+      const typing = el instanceof HTMLElement
+        && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable)
+      if (typing || e.metaKey || e.ctrlKey || e.altKey) return
+      if (e.key === 'j') { e.preventDefault(); step(1) }
+      else if (e.key === 'k') { e.preventDefault(); step(-1) }
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [step])
+
+  const pick = (id: number) => setChosen((prev) => {
+    const next = new Set(prev)
+    if (next.has(id)) next.delete(id)
+    else next.add(id)
+    return next
+  })
+
+  async function deleteChosen() {
+    setBusy(true)
+    try {
+      for (const id of chosen) await handleDelete(id)
+      setChosen(new Set())
+    } finally {
+      setBusy(false)
+    }
+  }
 
   // The band's four numbers, off the FULL set rather than the filtered one: a total that
   // changes as you type is not a total.
@@ -131,7 +192,18 @@ export function CommentsTable({ initial }: { initial: AdminComment[] }) {
       <div className={SHEET}>
         <SheetTop>
           <Tabs tabs={SORTS} value={sort} onChange={setSort} size="sm" role="choice" />
+          {/* WHEN, beside HOW IT IS SORTED. Two questions, two strips: "what arrived this
+              week" is the one a moderator opens this screen for, and until 2026-09-07 the
+              only way to ask it was to read dates down a column. */}
+          <Tabs
+            tabs={[{ key: 'all', label: t.filterAll }, { key: 'week', label: t.commentsFilterWeek }]}
+            value={age}
+            onChange={setAge}
+            size="sm"
+            role="choice"
+          />
           <span className="flex-1" />
+          <SelectionBar count={chosen.size} onClear={() => setChosen(new Set())} onDelete={() => { void deleteChosen() }} />
           <span className={SHEET_TOOL}>
             {t.commentsInPosts
               .replace('{n}', shown.length.toLocaleString())
@@ -178,7 +250,19 @@ export function CommentsTable({ initial }: { initial: AdminComment[] }) {
                 </div>
                 <ul>
                   {g.items.map((c) => (
-                    <li key={c.id} className="group flex gap-2.5 py-2">
+                    <li
+                      key={c.id}
+                      data-comment={c.id}
+                      // The keyboard's place is a RULE at the leading edge, not a fill: the
+                      // row already carries a hover and a chosen state, and a third background
+                      // would be three greys arguing about which one you are looking at.
+                      className={`group flex gap-2.5 py-2 ${
+                        order[walk] === c.id
+                          ? '-ml-3 border-l-2 border-[var(--pen-edge)] pl-[calc(0.75rem-2px)]'
+                          : ''
+                      }`}
+                    >
+                      <Tick checked={chosen.has(c.id)} onChange={() => pick(c.id)} disabled={busy} className="mt-1 self-start" />
                       {/* The initial, so a name is findable by SHAPE while scanning — the
                           same person twice in a card is then obvious at a glance. */}
                       <span
@@ -230,7 +314,7 @@ export function CommentsTable({ initial }: { initial: AdminComment[] }) {
             ))}
           </div>
         )}
-        <div className={SHEET_FOOT}>{t.commentsFootHint}</div>
+        <div className={SHEET_FOOT}>{t.commentsFootHint} {t.commentsWalkHint}</div>
       </div>
     </div>
   )
