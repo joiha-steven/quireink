@@ -257,8 +257,15 @@ body:has(.book-overlay[open]){overflow:hidden}
    space-between the controls, once pushed onto a second line, were the only item on it and
    space-between put them at the LEFT — under the wordmark, at the opposite edge from where
    they sit when the row fits. End-justified plus one auto margin gives the same answer on
-   both: name at the left edge, everything else against the right, on however many lines. */
-.site-bar > .title{margin-right:auto}
+   both: name at the left edge, everything else against the right, on however many lines.
+
+   BOTH SPELLINGS OF THE NAME. On a page with no heading of its own the site name becomes the
+   page's h1 and the link is wrapped in one — which is every listing, the home page included.
+   A direct-child selector stopped matching there, the auto margin went with it, and the
+   wordmark was drawn 235px in from the left edge of a 608px bar: floating in the middle of
+   the screen on the front door, and flush left on every article. The wrapper was added on the
+   promise that it carried no styling of its own and nothing on screen would move. */
+.site-bar > .title,.site-bar > .site-h1{margin-right:auto}
 /* -0.625rem optically aligns the LAST icon's glyph with the column's right margin: the
    40px button centres a 20px glyph, so the glyph sits 10px inside the button edge. Pulling
    the row right by that 10px lands it flush, matching the logo's flush-left edge. */

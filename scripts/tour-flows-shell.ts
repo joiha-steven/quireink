@@ -30,6 +30,28 @@ export function registerShellFlows({ flow, expect, atWidth }: Tour): void {
       return 'ok ' + rail.querySelectorAll('a').length + ' link(s) behind one button'
     })()`, 600))
 
+  // THE NAME SITS AT THE LEFT EDGE, on a page whose heading it IS.
+  //
+  // The bar is end-justified with one auto margin on the name, which is what keeps the
+  // controls against the right edge whether or not they wrap. On a listing the name is also
+  // the page's h1, so the link is wrapped in one — and the direct-child selector carrying
+  // that margin stopped matching, which drew the wordmark 235px into a 608px bar. It looked
+  // centred on the front door and flush left on every article, and the wrapper had been added
+  // on the promise that nothing on screen would move.
+  // A DEEP PAGE, not the home page: a listing's own h1 is its lead card, the lead card is a
+  // switch, and the tour's fixture has it on. Page two never has one, so the site name is
+  // always the heading there and this flow can never quietly stop testing anything.
+  flow('shell: the site name is flush left on the page it is the heading of', () => atWidth(1440, '/page/2', `
+    (async () => {
+      const bar = document.querySelector('.site-bar')
+      const name = bar && bar.querySelector('.title')
+      if (!bar || !name) return 'no header bar on the deep page'
+      if (!bar.querySelector('.site-h1')) return 'the site name is not the heading of a page that has none of its own'
+      const gap = Math.round(name.getBoundingClientRect().left - bar.getBoundingClientRect().left)
+      if (gap > 1) return 'the name starts ' + gap + 'px in from the left edge of the bar'
+      return 'ok flush left, and the controls still end at ' + Math.round(bar.getBoundingClientRect().right) + 'px'
+    })()`, 600))
+
   // HOW FAR A KEYBOARD IS FROM THE WORDS, and what the first key press does about it.
   //
   // Measured at 1440 on a post: TWENTY focusable stops stand between the top of the document
