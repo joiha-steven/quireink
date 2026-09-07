@@ -80,6 +80,7 @@ export async function saveSmtpConfig(input: Partial<SmtpConfig>): Promise<void> 
   const text = (next: string | undefined, stored: string | null | undefined) =>
     next === undefined ? (stored ?? null) : next.trim() || null
 
+  closeMailPool()
   run(
     `insert into integration_keys (id, smtp_host, smtp_port, smtp_user, smtp_pass, smtp_from, smtp_secure)
      values (1, $host, $port, $user, $pass, $from, $secure)
@@ -100,6 +101,67 @@ export async function saveSmtpConfig(input: Partial<SmtpConfig>): Promise<void> 
     },
   )
   clearCache()
+}
+
+/**
+ * ONE CONNECTION FOR A WHOLE BROADCAST, NOT ONE PER RECIPIENT.
+ *
+ * `createTransport` sat inside the send loop, so a thousand subscribers cost a thousand TCP
+ * connections and a thousand TLS handshakes, strictly one after another, inside a request the
+ * server closes after two minutes. The admin was then told the broadcast had failed while the
+ * mail was still going out, and the button offered to send the whole list again.
+ *
+ * Nodemailer's pool holds connections open and reuses them, which is right for a run of a
+ * thousand and wrong for a confirmation email: the pool has no idle timeout, so a transport
+ * left standing after one message holds a socket open against the owner's relay until the
+ * process ends. So the pool is OPENED for a run and closed with it, and a message sent
+ * outside a run still gets its own transport and still closes it.
+ *
+ * Three connections is a floor rather than a tuned number: comfortably under what a small
+ * relay treats as abuse, and the point is to stop paying a handshake per message.
+ */
+type Transport = { sendMail: (m: Record<string, unknown>) => Promise<unknown>; close: () => void }
+type Pool = { key: string; transport: Transport }
+
+let pooled: Pool | null = null
+
+const poolKey = (cfg: SmtpConfig) => JSON.stringify([cfg.host, cfg.port, cfg.secure, cfg.user, cfg.pass])
+
+// Nodemailer is loaded on the FIRST SEND, not at boot: a blog with no SMTP configured never
+// loads the stack at all, and one that has it pays the import once per process.
+async function makeTransport(cfg: SmtpConfig, pool: boolean): Promise<Transport> {
+  const { default: nodemailer } = await import('nodemailer')
+  const auth = cfg.user ? { user: cfg.user, pass: cfg.pass } : undefined
+  const base = { host: cfg.host, port: cfg.port, secure: cfg.secure, auth }
+  const made = pool
+    ? nodemailer.createTransport({ ...base, pool: true, maxConnections: 3 })
+    : nodemailer.createTransport(base)
+  return made as unknown as Transport
+}
+
+/**
+ * Open the pool for a run of many messages. `close()` ends it, and must always be called.
+ *
+ * Returns null when SMTP is not configured, so a caller can treat "no pool" and "nothing to
+ * send over" the same way.
+ */
+export async function openMailPool(): Promise<{ close: () => void } | null> {
+  const cfg = await getSmtpConfig()
+  if (!isMailConfigured(cfg)) return null
+  closeMailPool()
+  pooled = { key: poolKey(cfg), transport: await makeTransport(cfg, true) }
+  const mine = pooled
+  return {
+    close: () => {
+      // Only if it is still ours: a config saved mid-run has already closed and replaced it.
+      if (pooled === mine) closeMailPool()
+    },
+  }
+}
+
+export function closeMailPool(): void {
+  pooled?.transport.close()
+  pooled = null
 }
 
 // Send one email. Returns { sent } — degrades gracefully (never throws) when SMTP is
@@ -126,28 +188,26 @@ export async function sendMail(msg: {
     await record(false, 'smtp_not_configured')
     return { sent: false, error: 'smtp_not_configured' }
   }
+  // Inside a run, the open pool. Outside one, a transport of its own, closed below.
+  const shared = pooled?.key === poolKey(cfg) ? pooled.transport : null
   try {
-    // After the `isMailConfigured` guard on purpose: a blog with no SMTP configured never
-    // loads nodemailer at all, and one that has it pays the import once per process.
-    const { default: nodemailer } = await import('nodemailer')
-    const transport = nodemailer.createTransport({
-      host: cfg.host,
-      port: cfg.port,
-      secure: cfg.secure,
-      auth: cfg.user ? { user: cfg.user, pass: cfg.pass } : undefined,
-    })
-    await transport.sendMail({
-      from: cfg.from,
-      to: msg.to,
-      subject: msg.subject,
-      html: msg.html,
-      // Tag-strip for the plain-text alternative. Deliberately naive, and CodeQL flags it
-      // as an incomplete sanitizer (alert #10, dismissed): it is not a sanitizer. The
-      // output is the `text/plain` part of an email, never an HTML context, and the input
-      // is HTML this codebase generated. If either of those ever stops being true, this
-      // needs a real html-to-text pass, not a better regex.
-      text: msg.text || msg.html.replace(/<[^>]+>/g, ''),
-    })
+    const transport = shared ?? (await makeTransport(cfg, false))
+    try {
+      await transport.sendMail({
+        from: cfg.from,
+        to: msg.to,
+        subject: msg.subject,
+        html: msg.html,
+        // Tag-strip for the plain-text alternative. Deliberately naive, and CodeQL flags it
+        // as an incomplete sanitizer (alert #10, dismissed): it is not a sanitizer. The
+        // output is the `text/plain` part of an email, never an HTML context, and the input
+        // is HTML this codebase generated. If either of those ever stops being true, this
+        // needs a real html-to-text pass, not a better regex.
+        text: msg.text || msg.html.replace(/<[^>]+>/g, ''),
+      })
+    } finally {
+      if (!shared) transport.close()
+    }
     await record(true)
     return { sent: true }
   } catch (error) {

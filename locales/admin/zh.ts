@@ -1217,6 +1217,7 @@ const zh = {
   nlSendButton: '发送给订阅者',
   nlArmed: '发送给 {n} 位订阅者 — 再按一次 · {s}',
   nlSendDone: '已发送 {sent}/{total}',
+  nlSendGoing: '发送中 {sent}/{total}',
   nlSendFailed: '发送失败',
   nlSendHint: '不会自动发送。定时文章仍会准时发布，但邮件通讯只在你按下这个按钮时才寄出。',
   nlDigestHint: '勾选的 {n} 篇会合并成一封邮件发出（最新在前），不是每篇一封。',

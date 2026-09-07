@@ -13,7 +13,7 @@ import type { SmtpConfig } from '@/news/mail'
 import { getSmtpConfig, isMailConfigured, saveSmtpConfig, sendMail } from '@/news/mail'
 import { broadcastEmail, confirmEmail } from '@/news/newsletter-email'
 import { emailBrand } from '@/news/email-brand'
-import { BroadcastError, broadcastPosts, previewBroadcast } from '@/news/broadcast'
+import { BroadcastError, broadcastPosts, broadcastRun, previewBroadcast } from '@/news/broadcast'
 import { listSubscribers, subscriberCounts, deleteSubscriber } from '@/news/subscribers'
 import { statsByEmail } from '@/news/newsletter-log'
 import { describeComment, softDeleteComment } from '@/comments/comments'
@@ -157,14 +157,19 @@ export function newsRoutes() {
       : []
     if (slugs.length === 0) return fail(c, 'missing_slug', 400)
     try {
-      const result = await broadcastPosts(slugs, { force: input.force === true })
-      void logActivity('newsletter.send', `${slugs.join(',')} — ${result.sent}/${result.recipients}`)
-      return json(result)
+      // Answers as soon as the send has STARTED. Everything that can refuse it has already
+      // been decided by then; the delivering outlives this request, and the screen watches
+      // it below. The activity line is written when the run ends, not when it begins.
+      return json(await broadcastPosts(slugs, { force: input.force === true }))
     } catch (error) {
       const { status, code } = broadcastFailure(error)
       return fail(c, code, status)
     }
   })
+
+  // How far the run has got. Polled by the send screen while a broadcast is going out, and
+  // the only way it can report a number: the request that started the send is long gone.
+  router.get('/api/broadcast/status', () => json(broadcastRun()))
 
   // ----- subscribers ----------------------------------------------------------
 

@@ -1217,6 +1217,7 @@ const vi = {
   nlSendButton: 'Gửi tới người đăng ký',
   nlArmed: 'Gửi cho {n} người đăng ký — bấm lần nữa · {s}',
   nlSendDone: 'Đã gửi {sent}/{total}',
+  nlSendGoing: 'Đang gửi {sent}/{total}',
   nlSendFailed: 'Gửi thất bại',
   nlSendHint: 'Không có gì tự động gửi. Bài hẹn giờ vẫn tự lên đúng giờ, nhưng bản tin chỉ đi khi bạn bấm nút này.',
   nlDigestHint: '{n} bài đã tick sẽ đi trong MỘT email gộp, bài mới nhất lên đầu, chứ không phải mỗi bài một email.',

@@ -1217,6 +1217,7 @@ const it = {
   nlSendButton: 'Invia agli iscritti',
   nlArmed: 'Invia a {n} iscritti — premi di nuovo · {s}',
   nlSendDone: 'Inviato a {sent} su {total}',
+  nlSendGoing: 'Invio {sent} di {total}',
   nlSendFailed: 'Invio non riuscito',
   nlSendHint: 'Niente parte per email da solo. Un articolo programmato esce puntuale, ma la newsletter parte solo quando premi qui.',
   nlDigestHint: 'I {n} articoli spuntati partono come UNA email riassuntiva, dal più nuovo al più vecchio — non una email ciascuno.',

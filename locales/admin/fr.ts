@@ -1217,6 +1217,7 @@ const fr = {
   nlSendButton: 'Envoyer aux abonnés',
   nlArmed: 'Envoyer à {n} abonnés — appuyez encore · {s}',
   nlSendDone: 'Envoyé à {sent} sur {total}',
+  nlSendGoing: 'Envoi de {sent} sur {total}',
   nlSendFailed: 'L’envoi a échoué',
   nlSendHint: 'Rien ne part automatiquement. Un article programmé se publie à l’heure dite, mais la newsletter ne part que quand vous appuyez ici.',
   nlDigestHint: 'Les {n} articles cochés partent en UN SEUL e-mail récapitulatif, du plus récent au plus ancien — pas un e-mail chacun.',

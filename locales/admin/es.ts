@@ -1217,6 +1217,7 @@ const es = {
   nlSendButton: 'Enviar a los suscriptores',
   nlArmed: 'Enviar a {n} suscriptores — pulsa otra vez · {s}',
   nlSendDone: 'Enviado a {sent} de {total}',
+  nlSendGoing: 'Enviando {sent} de {total}',
   nlSendFailed: 'No se pudo enviar',
   nlSendHint: 'Nada se envía por correo automáticamente. Una entrada programada se publica a su hora, pero el boletín solo sale cuando pulsas esto.',
   nlDigestHint: 'Las {n} entradas marcadas salen en UN solo correo resumen, de más nueva a más vieja — no un correo por cada una.',

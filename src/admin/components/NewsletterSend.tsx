@@ -17,7 +17,7 @@ type Stats = { sent: number; failed: number; opened: number; broadcasts: number;
 export type SendablePost = { slug: string; title: string; date: string; stats: Stats | null }
 
 type Preview = { subject: string; html: string; recipients: number }
-type SendResult = { sent: number; failed: number; recipients: number }
+type SendRun = { sent: number; failed: number; recipients: number; done: boolean }
 
 export function NewsletterSend({ posts }: { posts: SendablePost[] }) {
   const t = useAdminT()
@@ -37,6 +37,11 @@ export function NewsletterSend({ posts }: { posts: SendablePost[] }) {
   // Sent counts come from the server on load; a send in this session is remembered here
   // so the button locks again without a page reload.
   const [sentNow, setSentNow] = useState<string[]>([])
+  // How far the run has got, while it is going. Null at rest.
+  const [going, setGoing] = useState<{ sent: number; total: number } | null>(null)
+  // Leaving the screen mid-send stops the watching, not the sending.
+  const alive = useRef(true)
+  useEffect(() => () => { alive.current = false }, [])
 
   const isArmed = armed > 0
   useEffect(() => {
@@ -89,6 +94,29 @@ export function NewsletterSend({ posts }: { posts: SendablePost[] }) {
     return () => ctrl.abort()
   }, [key])
 
+  /**
+   * WATCH THE RUN, BECAUSE THE REQUEST THAT STARTED IT IS ALREADY OVER.
+   *
+   * The send used to happen inside the POST, which meant a list long enough to take two
+   * minutes came back as a failure while the mail was going out. The POST now answers as soon
+   * as the send has started, and the count comes from asking.
+   */
+  async function watch(): Promise<void> {
+    for (;;) {
+      await new Promise((r) => setTimeout(r, 1200))
+      if (!alive.current) return
+      const res = await fetch('/api/broadcast/status')
+      const j = (await res.json()) as ApiResponse<SendRun | null>
+      if (!j.success || !j.data) return
+      const run = j.data
+      if (!alive.current) return
+      setGoing({ sent: run.sent, total: run.recipients })
+      if (!run.done) continue
+      notify(t.nlSendDone.replace('{sent}', String(run.sent)).replace('{total}', String(run.recipients)), 'success')
+      return
+    }
+  }
+
   async function press() {
     if (picked.length === 0 || sending) return
     if (!isArmed) {
@@ -97,24 +125,29 @@ export function NewsletterSend({ posts }: { posts: SendablePost[] }) {
     }
     setArmed(0)
     setSending(true)
+    setGoing({ sent: 0, total: preview?.recipients ?? 0 })
     try {
       const res = await fetch('/api/broadcast', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ slugs: picked, force: resend }),
       })
-      const j = (await res.json()) as ApiResponse<SendResult>
+      const j = (await res.json()) as ApiResponse<SendRun>
       if (j.success && j.data) {
         setSentNow((s) => [...new Set([...s, ...picked])])
         setResend(false)
-        notify(t.nlSendDone.replace('{sent}', String(j.data.sent)).replace('{total}', String(j.data.recipients)), 'success')
+        setGoing({ sent: j.data.sent, total: j.data.recipients })
+        await watch()
       } else {
         notify(`${t.nlSendFailed}: ${j.success ? '' : j.error}`, 'error')
       }
     } catch {
       notify(t.nlSendFailed, 'error')
     } finally {
-      setSending(false)
+      if (alive.current) {
+        setSending(false)
+        setGoing(null)
+      }
     }
   }
 
@@ -169,7 +202,9 @@ export function NewsletterSend({ posts }: { posts: SendablePost[] }) {
                 <span aria-hidden className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-amber-500 motion-reduce:animate-none" />
               )}
               {sending
-                ? t.loading
+                ? going
+                  ? t.nlSendGoing.replace('{sent}', String(going.sent)).replace('{total}', String(going.total))
+                  : t.loading
                 : isArmed
                   ? t.nlArmed.replace('{n}', preview ? String(preview.recipients) : '…').replace('{s}', String(armed))
                   : t.nlSendButton}

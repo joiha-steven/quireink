@@ -1217,6 +1217,7 @@ const en = {
   nlSendButton: 'Send to subscribers',
   nlArmed: 'Send to {n} subscribers — press again · {s}',
   nlSendDone: 'Sent to {sent} of {total}',
+  nlSendGoing: 'Sending {sent} of {total}',
   nlSendFailed: 'Send failed',
   nlSendHint: 'Nothing is emailed automatically. A scheduled post goes live on time, but the newsletter only goes out when you press this.',
   nlDigestHint: 'The {n} ticked posts go out as ONE digest email, newest first — not one email each.',

@@ -1218,6 +1218,7 @@ const pt = {
   nlSendButton: 'Enviar aos assinantes',
   nlArmed: 'Enviar a {n} assinantes — pressione de novo · {s}',
   nlSendDone: 'Enviado para {sent} de {total}',
+  nlSendGoing: 'Enviando {sent} de {total}',
   nlSendFailed: 'O envio falhou',
   nlSendHint: 'Nada é enviado por email sozinho. Um post agendado entra no ar na hora certa, mas a newsletter só sai quando você aperta aqui.',
   nlDigestHint: 'Os {n} posts marcados saem em UM email de resumo, do mais novo ao mais velho — não um email para cada.',

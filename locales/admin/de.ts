@@ -1217,6 +1217,7 @@ const de = {
   nlSendButton: 'An Abonnenten senden',
   nlArmed: 'An {n} Abonnenten senden — erneut drücken · {s}',
   nlSendDone: 'An {sent} von {total} gesendet',
+  nlSendGoing: 'Sende {sent} von {total}',
   nlSendFailed: 'Senden fehlgeschlagen',
   nlSendHint: 'Es wird nichts automatisch verschickt. Ein geplanter Beitrag geht pünktlich online, der Newsletter aber erst auf Knopfdruck.',
   nlDigestHint: 'Die {n} markierten Beiträge gehen als EINE Sammel-E-Mail raus, neueste zuerst — nicht je eine pro Beitrag.',

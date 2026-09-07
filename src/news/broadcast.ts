@@ -16,7 +16,7 @@
 // SERVER-ONLY.
 
 import { getConfirmedSubscribers } from '@/news/subscribers'
-import { getSmtpConfig, isMailConfigured, sendMail } from '@/news/mail'
+import { getSmtpConfig, isMailConfigured, openMailPool, sendMail } from '@/news/mail'
 import { getSettings } from '@/content/settings'
 import { emailBrand } from '@/news/email-brand'
 import { broadcastEmail, type EmailPost } from '@/news/newsletter-email'
@@ -26,6 +26,7 @@ import { isPublicallyVisible } from '@/utils'
 import type { SiteLang } from '@/types'
 import { t, formatDate } from '@/i18n/i18n'
 import { all, run } from '@/store/query'
+import { logActivity } from '@/server/activity'
 import { liveOnly, nowMs, toIso } from '@/store/db'
 
 export class BroadcastError extends Error {}
@@ -72,12 +73,51 @@ export async function previewBroadcast(slugs: string[]): Promise<{ subject: stri
   return { ...email, recipients: (await getConfirmedSubscribers()).length }
 }
 
+/**
+ * A SEND IS NOT A REQUEST.
+ *
+ * The loop used to run inside the POST that started it. `Bun.serve` closes a response that
+ * has sent no bytes after two minutes, and a thousand addresses over one connection per
+ * address took far longer than that, so the admin was told "broadcast_failed" while the mail
+ * was still going out — and the only thing offered next was a button that sends the whole
+ * list a second time. The run is detached now and the request answers at once with what it
+ * has started; the screen watches it through `broadcastRun`.
+ *
+ * One at a time, in this process. Two overlapping runs of the same posts is the duplicate
+ * send this whole file is built to prevent.
+ */
+export type BroadcastRun = {
+  slugs: string[]
+  recipients: number
+  sent: number
+  failed: number
+  done: boolean
+  startedAt: number
+}
+
+let current: BroadcastRun | null = null
+
+/** The run in progress, or the last one to finish. Null before the first send of a process. */
+export function broadcastRun(): BroadcastRun | null {
+  return current
+}
+
+/** Test seam: a run left behind by one test must not refuse the next one's send. */
+export function resetBroadcastRun(): void {
+  current = null
+}
+
 // Send the chosen posts as one email to every confirmed subscriber. Each send is logged
 // (kind 'broadcast') with its own open token.
+//
+// Everything that can REFUSE the send is decided here, before returning: an unknown slug, a
+// post that is not public, a repeat without consent, no SMTP. What is left is the delivering,
+// and that is what runs on without us.
 export async function broadcastPosts(
   slugs: string[],
   opts: { force?: boolean } = {},
-): Promise<{ sent: number; failed: number; recipients: number }> {
+): Promise<BroadcastRun> {
+  if (current && !current.done) throw new BroadcastError('already_running')
   const settings = await getSettings()
   const posts = await readSendablePosts(slugs, settings.language, settings.timezone)
   if (!opts.force) {
@@ -88,23 +128,42 @@ export async function broadcastPosts(
   if (!isMailConfigured(cfg)) throw new BroadcastError('smtp_not_configured')
 
   const subs = await getConfirmedSubscribers()
-  const brand = emailBrand(settings)
-  const tx = t(settings.language)
-
-  let sent = 0
-  let failed = 0
-  for (const s of subs) {
-    const openToken = newOpenToken()
-    const { subject, html } = broadcastEmail(tx, brand, posts, s.token, openToken)
-    const res = await sendMail({ to: s.email, subject, html, kind: 'broadcast', postSlugs: slugs, openToken })
-    if (res.sent) sent++
-    else failed++
+  const started: BroadcastRun = {
+    slugs, recipients: subs.length, sent: 0, failed: 0, done: false, startedAt: Date.now(),
   }
-  // Stamp even when nobody was reachable: it records that these posts have been through
-  // the send flow, and keeps the column meaningful for anything still reading it.
-  run(
-    `update posts set broadcast_at = ? where slug in (select value from json_each(?))`,
-    nowMs(), keyList(slugs),
-  )
-  return { sent, failed, recipients: subs.length }
+  current = started
+  void deliver(started, subs, posts, emailBrand(settings), t(settings.language))
+  return started
+}
+
+async function deliver(
+  state: BroadcastRun,
+  subs: { email: string; token: string }[],
+  posts: EmailPost[],
+  brand: ReturnType<typeof emailBrand>,
+  tx: ReturnType<typeof t>,
+): Promise<void> {
+  // One pooled connection for the whole run rather than one per address, and closed with it.
+  const pool = await openMailPool()
+  try {
+    for (const s of subs) {
+      const openToken = newOpenToken()
+      const { subject, html } = broadcastEmail(tx, brand, posts, s.token, openToken)
+      const res = await sendMail({ to: s.email, subject, html, kind: 'broadcast', postSlugs: state.slugs, openToken })
+      if (res.sent) state.sent++
+      else state.failed++
+    }
+  } catch (error) {
+    console.error(`[ERROR] broadcast.deliver: ${(error as Error).message}`)
+  } finally {
+    pool?.close()
+    // Stamp even when nobody was reachable: it records that these posts have been through
+    // the send flow, and keeps the column meaningful for anything still reading it.
+    run(
+      `update posts set broadcast_at = ? where slug in (select value from json_each(?))`,
+      nowMs(), keyList(state.slugs),
+    )
+    state.done = true
+    void logActivity('newsletter.send', `${state.slugs.join(',')} — ${state.sent}/${state.recipients}`)
+  }
 }

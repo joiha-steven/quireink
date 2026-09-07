@@ -1393,6 +1393,7 @@ export type AdminStrings = {
   nlSendButton: string
   nlArmed: string
   nlSendDone: string
+  nlSendGoing: string
   nlSendFailed: string
   nlSendHint: string
   nlDigestHint: string

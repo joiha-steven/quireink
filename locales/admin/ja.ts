@@ -1217,6 +1217,7 @@ const ja = {
   nlSendButton: '購読者に送信',
   nlArmed: '{n}人の購読者に送信 — もう一度押す · {s}',
   nlSendDone: '{total} 件中 {sent} 件に送信',
+  nlSendGoing: '送信中 {sent}/{total}',
   nlSendFailed: '送信に失敗しました',
   nlSendHint: '自動送信はありません。予約記事は時間どおり公開されますが、ニュースレターはこのボタンを押したときだけ送られます。',
   nlDigestHint: 'チェックした {n} 本は 1 通のまとめメールで送られます（新しい順）。記事ごとに 1 通ではありません。',

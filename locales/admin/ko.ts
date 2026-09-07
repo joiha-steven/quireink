@@ -1217,6 +1217,7 @@ const ko = {
   nlSendButton: '구독자에게 보내기',
   nlArmed: '구독자 {n}명에게 발송 — 한 번 더 누르기 · {s}',
   nlSendDone: '{total}명 중 {sent}명에게 발송',
+  nlSendGoing: '보내는 중 {sent}/{total}',
   nlSendFailed: '발송 실패',
   nlSendHint: '자동 발송은 없습니다. 예약 글은 제때 공개되지만 뉴스레터는 이 버튼을 눌러야 나갑니다.',
   nlDigestHint: '선택한 {n}개는 한 통의 모아보기 메일로 나갑니다(최신순). 글마다 한 통이 아닙니다.',
