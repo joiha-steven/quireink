@@ -122,14 +122,14 @@ Two audits in a day and a half, and everything they turned up. **Settings are re
 
 These are off the network, first visit, nothing cached. It is what a stranger on a phone actually waits for.
 
-The CSS and JavaScript rows are build artefacts, the same bytes on every install, read off the 2.2.8 build — **brotli from the origin since 2.2.5**, which is where they lost about a kilobyte each. The totals were measured against a live site running Vietnamese, Literata to read and JetBrains Mono for the furniture, and moved by exactly what those rows saved. They are not a property of the software: the fonts are cut per script, so a browser fetches only the ranges your pages actually use. The pen's stroke shapes ride in two further immutable sheets, **11 KB together now against 20 before**, and they board only a page that carries a mark or an underline ([ADR 0027](docs/decisions/0027-the-pen-ships-only-where-it-wrote.md)). An inkless page never pays for them. Offline reading adds a service worker of 0.7 KB, fetched once and only on a blog that switched it on.
+The CSS and JavaScript rows are build artefacts, the same bytes on every install, read off the 2.2.9 build at the origin — **brotli from the origin since 2.2.5**, which is where they lost about a kilobyte each. The totals were measured against a live site running Vietnamese, Literata to read and JetBrains Mono for the furniture, and moved by exactly what those rows saved. They are not a property of the software: the fonts are cut per script, so a browser fetches only the ranges your pages actually use. The pen's stroke shapes ride in two further immutable sheets, **11 KB together now against 20 before**, and they board only a page that carries a mark or an underline ([ADR 0027](docs/decisions/0027-the-pen-ships-only-where-it-wrote.md)). An inkless page never pays for them. Offline reading adds a service worker of 0.7 KB, fetched once and only on a blog that switched it on.
 
 | | Home | A post | |
 |:---|---:|---:|:---|
 | **Requests** | 8 | 9 | 11 on a post with book mode and comments switched on |
 | **Total&nbsp;transferred** | **100&nbsp;KB** | **98&nbsp;KB** | 68&nbsp;KB of that is the fonts |
-| **JavaScript** | **4.2&nbsp;KB** | **7.3&nbsp;KB** | written by hand, no framework; +5.7&nbsp;KB only when book mode and comments are on |
-| **CSS** | 9.5&nbsp;KB | 9.5&nbsp;KB | +11&nbsp;KB only on a page carrying the pen |
+| **JavaScript** | **3.7&nbsp;KB** | **6.3&nbsp;KB** | written by hand, no framework; +5.0&nbsp;KB only when book mode and comments are on |
+| **CSS** | 9.9&nbsp;KB | 9.9&nbsp;KB | +11&nbsp;KB only on a page carrying the pen |
 | **Third&#8209;party&nbsp;requests** | **0** | **0** | no CDN, no font host, no tracker |
 | **Coming&nbsp;back** | **0&nbsp;bytes** | **0&nbsp;bytes** | the same page answers `304`; a page you have not read yet still costs its HTML |
 

@@ -196,8 +196,8 @@ Số đo từ mạng, lần vào đầu tiên, chưa cache gì. Đúng bằng c�
 |:---|---:|---:|:---|
 | **Số&nbsp;request** | 8 | 9 | |
 | **Tổng&nbsp;tải&nbsp;về** | **100&nbsp;KB** | **98&nbsp;KB** | 68&nbsp;KB trong đó là font |
-| **JavaScript** | **3,5&nbsp;KB** | **9,0&nbsp;KB** | viết tay, không framework |
-| **CSS** | 9,5&nbsp;KB | 9,5&nbsp;KB | +11&nbsp;KB chỉ ở trang có vệt bút |
+| **JavaScript** | **3,7&nbsp;KB** | **6,3&nbsp;KB** | viết tay, không framework; +5,0&nbsp;KB chỉ khi bật chế độ đọc sách và bình luận |
+| **CSS** | 9,9&nbsp;KB | 9,9&nbsp;KB | +11&nbsp;KB chỉ ở trang có vệt bút |
 | **Request&nbsp;bên&nbsp;thứ&nbsp;ba** | **0** | **0** | không CDN, không font host, không tracker |
 | **Lần&nbsp;vào&nbsp;sau** | **0&nbsp;byte** | **0&nbsp;byte** | đúng trang đó trả `304` |
 
