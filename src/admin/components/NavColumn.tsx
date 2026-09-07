@@ -18,27 +18,29 @@ import Link from '@/admin/router'
 import { Fragment, type ReactNode } from 'react'
 import type { SiteLang, NavOrder } from '@/types'
 import { useAdminT } from './I18nProvider'
-import { SIDEBAR_NAV, SIDEBAR_NAV_ACTIVE, SIDEBAR_NAV_QUIET, SIDEBAR_UTIL } from './headerActions'
+import { SIDEBAR_GROUP, SIDEBAR_ICON, SIDEBAR_NAV, SIDEBAR_NAV_ACTIVE, SIDEBAR_NAV_QUIET, SIDEBAR_UTIL } from './headerActions'
 import { CacheButton } from './CacheButton'
 import { ThemeToggle } from '@/admin/ui/ThemeToggle'
 import {
-  IconExternal, IconCache, IconSignOut, IconChevronLeft, IconGlyphs, IconMore, IconSearch, IconArrange,
+  IconExternal, IconCache, IconSignOut, IconChevronLeft, IconGlyphs, IconMore, IconArrange,
 } from './navIcons'
 import { BrandMark, BrandWord } from './Wordmark'
-import { openPalette } from './CommandPalette'
-import { chordFor, printChord, tip } from './editorKeys'
 import { primaryNav, secondaryNav, defaultNavOrder, type Destination } from './navDestinations'
 import { useNavArrange, ZONES, type Zone } from './useNavArrange'
 import { useNavDrag } from './useNavDrag'
 import { Arrangeable, ZoneFloor, SwitchRow } from './NavArrange'
+import { RailStrip } from './NavFooter'
+import { SearchKey, SearchRow } from './NavSearch'
 import { useToast } from '@/admin/ui/Toast'
 
 export function useNavColumn({
-  lang, signOut, aiConfigured, navOrder, icons, more, onMore, onIcons, onCollapse, close, isActive,
+  lang, signOut, aiConfigured, navOrder, avatar, icons, more, onMore, onIcons, onCollapse, close, isActive,
 }: {
   lang: SiteLang
   signOut: () => Promise<void>
   aiConfigured: boolean
+  /** The owner's portrait for the foot of the rail, or '' — `NavFooter` draws the fallback. */
+  avatar: string
   /** What the server has stored; reconciled with the live rail inside `useNavArrange`. */
   navOrder: NavOrder
   icons: boolean
@@ -66,7 +68,16 @@ export function useNavColumn({
     const rowClass = (active = false): string =>
       // The active row takes the QUIET base: a highlighted row has nothing to gain from a
       // hover state — you are already there — and the grey one would paint over the mark.
-      `${active ? SIDEBAR_NAV_QUIET : SIDEBAR_NAV} ${c ? 'justify-center' : 'gap-3'} ${active ? SIDEBAR_NAV_ACTIVE : ''}`
+      //
+      // `group` so the GLYPH can answer the pointer as well as the ground: 2px to the right
+      // over 120ms, which is the smallest movement that reads as the row leaning towards the
+      // page it opens. The row itself never moves — a label that shifts under the cursor is
+      // the thing you were about to click moving away from you.
+      `group ${active ? SIDEBAR_NAV_QUIET : SIDEBAR_NAV} ${c ? 'justify-center' : 'gap-3'} ${active ? SIDEBAR_NAV_ACTIVE : ''}`
+    /** The wrapper that lets a glyph lean. Never on the active row: it is already home. */
+    const glyph = (node: ReactNode, active = false): ReactNode => (
+      <span className={`flex shrink-0 transition-transform duration-[120ms] ${active ? '' : 'group-hover:translate-x-0.5'}`}>{node}</span>
+    )
     const utilClass = `${SIDEBAR_UTIL} ${c ? 'justify-center' : 'gap-2.5'}`
 
     const navLink = (l: Destination): ReactNode => (
@@ -77,7 +88,7 @@ export function useNavColumn({
         title={c ? l.label : undefined}
         className={rowClass(isActive(l.href))}
       >
-        {(c || icons) && l.icon}
+        {(c || icons) && glyph(l.icon, isActive(l.href))}
         {!c && <span className="truncate">{l.label}</span>}
       </Link>
     )
@@ -106,10 +117,15 @@ export function useNavColumn({
               onClick={onMore}
               aria-expanded={more}
               title={c ? t.navMore : undefined}
-              className={`${rowClass()} ${!c ? 'justify-between gap-2' : ''}`}
+              // AN EYEBROW, not a fifth destination. It names no page — it folds the rest of
+              // the rail out — and at the destinations' 15px/500 it read as one more place to
+              // go, which is what put a chevron and a glyph on a row that had to compete with
+              // them for width. 12px uppercase settles both: it is visibly a heading, and the
+              // label has room again in all eleven languages.
+              className={`group ${c ? `${rowClass()} justify-center` : `${SIDEBAR_GROUP} justify-between gap-2`}`}
             >
-              <span className={`flex min-w-0 items-center ${c ? '' : 'gap-3'}`}>
-                {(c || icons) && <IconMore />}
+              <span className={`flex min-w-0 items-center ${c ? '' : 'gap-2.5'}`}>
+                {(c || icons) && glyph(<IconMore />)}
                 {!c && <span className="truncate">{t.navMore}</span>}
               </span>
               {!c && (
@@ -132,7 +148,7 @@ export function useNavColumn({
         case 'viewBlog':
           return (
             <a href="/" target="_blank" rel="noopener" onClick={close} title={c ? t.navViewBlog : undefined} className={rowClass()}>
-              {(c || icons) && <IconExternal />}
+              {(c || icons) && glyph(<IconExternal />)}
               {!c && <span className="truncate">{t.navViewBlog}</span>}
             </a>
           )
@@ -242,56 +258,6 @@ export function useNavColumn({
       </>
     )
 
-    /**
-     * Search as a ROW rather than as chrome beside the wordmark.
-     *
-     * Where it goes when the wordmark is switched off. Up on the top row it is chrome balanced
-     * against the mark; with the mark gone it would be one small glyph floating over a column
-     * of left-aligned labels, so it becomes what everything else at that edge is — a row, with
-     * its label and its chord, sitting directly above Home.
-     */
-    const searchRow: ReactNode = (
-      // Same handle as the chrome placement above: it is ONE control in two positions, and
-      // which one is on screen is exactly what a test wants to ask. The `nav` scope in a
-      // selector separates them — the row is in the column, the chrome is not.
-      <button type="button" data-nav-search onClick={() => { close(); openPalette() }} title={c ? tip(t.paletteTitle, 'palette') : undefined} className={`${rowClass()} ${!c ? 'justify-between' : ''}`}>
-        <span className={`flex min-w-0 items-center ${c ? '' : 'gap-3'}`}>
-          <IconSearch />
-          {!c && <span className="truncate">{t.paletteTitle}</span>}
-        </span>
-        {!c && (
-          <span className="rounded border border-neutral-200 px-1 py-px text-xs tabular-nums leading-none text-neutral-500 dark:border-neutral-700 dark:text-neutral-400">
-            {printChord(chordFor('palette'))}
-          </span>
-        )}
-      </button>
-    )
-
-    /**
-     * Search as chrome, on the wordmark's row.
-     *
-     * THE CHORD STILL HAS TO BE PRINTED, which is the whole reason this control exists: a chord cannot
-     * be discovered, and a mouse teaches a keyboard by showing the chord on the thing the mouse
-     * clicks. Collapsed there is no room for the badge and it moves into the tooltip.
-     */
-    const searchBtn: ReactNode = (
-      <button
-        type="button"
-        data-nav-search
-        onClick={() => { close(); openPalette() }}
-        title={tip(t.paletteTitle, 'palette')}
-        aria-label={t.paletteTitle}
-        className="flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-transparent px-2 text-neutral-500 transition-colors hover:border-neutral-200 hover:bg-neutral-50 hover:text-neutral-700 dark:text-neutral-400 dark:hover:border-neutral-700 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
-      >
-        <IconSearch />
-        {!c && (
-          <span className="rounded border border-neutral-200 px-1 py-px text-xs tabular-nums leading-none dark:border-neutral-700">
-            {printChord(chordFor('palette'))}
-          </span>
-        )}
-      </button>
-    )
-
     const wordmark: ReactNode = (
       // LEFT padding only, and only when the rail is open: every label in this rail starts 24px
       // from its edge, while the mark sat at 12px and alone hung off the left. Collapsed the
@@ -318,7 +284,7 @@ export function useNavColumn({
         // (2026-09-07). A structural fact deserves a structural handle.
         <div data-nav-top className={c ? 'flex flex-col items-center gap-2' : 'flex min-w-0 items-center justify-between gap-1'}>
           <span className="min-w-0 truncate">{wordmark}</span>
-          {showSearch && searchBtn}
+          {showSearch && <SearchKey collapsed={c} close={close} />}
         </div>
       ),
       /**
@@ -328,7 +294,7 @@ export function useNavColumn({
        */
       nav: (
         <>
-          {!showLogo && showSearch && searchRow}
+          {!showLogo && showSearch && <SearchRow collapsed={c} close={close} rowClass={rowClass()} />}
           {list('primary')}
           {(more || arranging) && (
             // Indented by a rule rather than by padding: `SIDEBAR_NAV` is the one row string
@@ -340,10 +306,42 @@ export function useNavColumn({
           )}
         </>
       ),
-      /** The controls at the foot, and the two switches that belong to arrange mode. */
+      /**
+       * The foot. TWO SHAPES, and the split is the point of `NavFooter`.
+       *
+       * Reading, it is one strip of icon keys with tooltips: a control that fits in its own
+       * glyph should be one, and six full-width labelled rows under four destinations put
+       * "Light" in the column as though it were a page. Arranging, it is back to labelled
+       * rows — a 32px glyph is not something a hand can pick up and place, and the whole
+       * mode is about picking rows up.
+       */
       controls: (
         <>
-          {list('footer')}
+          {arranging ? list('footer') : (
+            <RailStrip
+              ids={arrange.order.footer}
+              collapsed={c}
+              lang={lang}
+              iconsOn={icons}
+              avatar={avatar}
+              onCollapse={onCollapse}
+              onIcons={onIcons}
+              onArrange={arrange.toggleArranging}
+              signOut={signOut}
+              close={close}
+              // A DESTINATION dragged down here becomes a key like the rest of the strip.
+              // It keeps its glyph and its tooltip; what it loses is the label, which is the
+              // trade the whole strip makes.
+              destination={(id) => {
+                const d = byId.get(id)
+                return d ? (
+                  <Link href={d.href} onClick={close} title={d.label} aria-label={d.label} className={SIDEBAR_ICON}>
+                    {d.icon}
+                  </Link>
+                ) : null
+              }}
+            />
+          )}
           {/* The two things on the top row cannot be dragged — a wordmark dropped into a
               column of destinations becomes one — so they are switches, and they appear only
               while arranging, next to everything else about how the rail is laid out. */}

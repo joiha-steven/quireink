@@ -230,7 +230,7 @@ function Shell() {
           >
             <SkipLabel />
           </a>
-          <AdminSidebar lang={data.language} signOut={signOut} aiConfigured={data.aiConfigured} navOrder={data.navOrder} />
+          <AdminSidebar lang={data.language} signOut={signOut} aiConfigured={data.aiConfigured} navOrder={data.navOrder} avatar={data.avatar} />
           {/* Outside the canvas and outside the error boundary: it is how you LEAVE a screen
               that has gone wrong, so it must not be inside the thing that went wrong. */}
           <CommandPalette />

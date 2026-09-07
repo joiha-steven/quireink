@@ -74,6 +74,7 @@ export function AdminSidebar({
   signOut,
   aiConfigured = false,
   navOrder,
+  avatar = '',
 }: {
   lang: SiteLang
   signOut: () => Promise<void>
@@ -81,6 +82,8 @@ export function AdminSidebar({
   aiConfigured?: boolean
   /** The owner's own running order for these rows (`content/nav-order.ts`). */
   navOrder: NavOrder
+  /** The owner's portrait for the strip at the foot. '' draws the glyph in its place. */
+  avatar?: string
 }) {
   const t = useAdminT()
   const pathname = usePathname()
@@ -160,6 +163,7 @@ export function AdminSidebar({
     signOut,
     aiConfigured,
     navOrder,
+    avatar,
     icons,
     more,
     onMore: () => setMore((v) => {
@@ -185,7 +189,7 @@ export function AdminSidebar({
         // `z-30`, because `sticky` makes the rail its own stacking context: without a
         // z-index the CONTENT — a later sibling — painted over the theme menu that opens
         // from the rail's footer, and the menu read as cut off behind a media card.
-        className={`admin-case sticky top-0 z-30 h-[100dvh] shrink-0 flex-col px-3 py-5 transition-[width] duration-200 hidden lg:flex ${
+        className={`rail-glyphs admin-case sticky top-0 z-30 h-[100dvh] shrink-0 flex-col px-3 py-5 transition-[width] duration-200 hidden lg:flex ${
           // WIDER WHILE ARRANGING, and it is a measurement rather than a preference: the grip
           // and the two steppers take 62px off a 208px rail, which left "Everything else" as
           // "Ever…" and "Collapse sidebar" as "Collapse sid…". A row you cannot read is a row
@@ -207,7 +211,12 @@ export function AdminSidebar({
             that can grow, and in arrange mode it grows by a floor per zone and a taller row
             each. Without this the footer controls — including the way OUT of arrange mode —
             are pushed past the bottom of the glass on a 900px screen. */}
-        <nav className={`flex min-h-0 flex-col gap-1 overflow-y-auto ${column.top(collapsed) ? 'mt-6' : ''}`}>{column.nav(collapsed)}</nav>
+        {/* `-mx-3 px-3` and not just the flow it had: `overflow-y-auto` makes this a scroll
+            container, which clips on BOTH axes, and the active row's marker stroke is drawn in
+            the rail's 12px gutter OUTSIDE the row. Without the padding inside the scroll box
+            the stroke was computed, painted and clipped — present in the DOM, absent from the
+            screen, which is the failure a screenshot catches and a class-list test does not. */}
+        <nav className={`-mx-3 flex min-h-0 flex-col gap-1 overflow-y-auto px-3 ${column.top(collapsed) ? 'mt-6' : ''}`}>{column.nav(collapsed)}</nav>
         {/* Collapse lives with the rail's other CONTROLS, at the foot: it is a preference
             about this rail on this device, the same kind of thing as "Show icons" sitting
             beside it — not a destination, and not chrome competing with the wordmark. It is
@@ -235,7 +244,7 @@ export function AdminSidebar({
       {open && (
         <>
           <button type="button" aria-label={t.navHome} onClick={close} className="admin-scrim fixed inset-0 top-[65px] z-20 bg-black/20 lg:hidden" />
-          <nav className={`admin-drawer fixed inset-x-3 top-[72px] z-30 scroll-fade max-h-[calc(100dvh-84px)] overflow-y-auto p-3 lg:hidden ${OVERLAY}`}>
+          <nav className={`rail-glyphs admin-drawer fixed inset-x-3 top-[72px] z-30 scroll-fade max-h-[calc(100dvh-84px)] overflow-y-auto p-3 lg:hidden ${OVERLAY}`}>
             {column.nav(false)}
             <span className="my-1 block h-px w-full bg-neutral-200 dark:bg-neutral-700" aria-hidden />
             {column.controls(false)}

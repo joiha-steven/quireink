@@ -40,6 +40,19 @@ describe('the highlighter marks a place', () => {
     expect(SIDEBAR_NAV_ACTIVE).toContain('text-neutral-950')
     expect(SIDEBAR_NAV_ACTIVE).toContain('shadow-[inset')
   })
+
+  it('strokes the rail gutter beside that key, in the tab marker ink', () => {
+    // Since 2026-09-07. The wash alone is a pale field on a pale column; the stroke is what
+    // the eye catches scanning down. `--pen-edge`, which is the ink an active TAB strokes
+    // under its label, so where-you-are is one shape in two orientations.
+    expect(SIDEBAR_NAV_ACTIVE).toContain('before:bg-[var(--pen-edge)]')
+    // OUTSIDE the key, in the rail's own 12px gutter. Inside, #c3e844 on #d5f856 is four
+    // points of lightness and invisible — the placement is the whole reason it reads.
+    expect(SIDEBAR_NAV_ACTIVE).toContain('before:-left-3')
+    // And the row it hangs off has to be a positioning parent, or the stroke lands on the
+    // page instead of the row.
+    expect(SIDEBAR_NAV_QUIET).toContain('relative')
+  })
 })
 
 describe('the highlighter does NOT mark a choice', () => {

@@ -155,6 +155,12 @@ export function registerShellFlows({ flow, expect, atWidth }: Tour): void {
       const before = await stored()
       if (!before) return 'the shell view carries no navOrder'
 
+      // The way in moved into the owner's menu at the foot on 2026-09-07, when the rail's
+      // six labelled control rows became one strip of icon keys. The handle is unchanged, so
+      // what this had to learn is one click: open the menu, then take the same door.
+      const owner = await wait(() => document.querySelector('aside [data-nav-owner]'))
+      if (!owner) return 'the rail has no owner menu at its foot'
+      owner.click()
       const enter = await wait(() => document.querySelector('aside [data-nav-arrange="off"]'))
       if (!enter) return 'the rail offers no way into arrange mode'
       enter.click()

@@ -246,7 +246,9 @@ async function assistantView() {
 async function shellView() {
   const settings = await getSettings()
   const { aiConfigured } = await getIntegrationStatus()
-  return { language: settings.language, version: VERSION, aiConfigured, navOrder: settings.navOrder }
+  // The portrait rides along for the same reason `navOrder` does: the rail's foot draws it
+  // on the first frame, and a second request for one string would show a blank ring first.
+  return { language: settings.language, version: VERSION, aiConfigured, navOrder: settings.navOrder, avatar: settings.author.avatarUrl }
 }
 
 /** Storage totals for the media page's header, without listing every blob twice. */

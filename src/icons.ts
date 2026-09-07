@@ -121,6 +121,11 @@ export const ICONS = {
   // Rows, and one of them moving: the sidebar's arrange mode. Not a grip (that is the handle
   // ON a row) and not a chevron (that is a direction) — this is the mode itself.
   arrange: '<path d="M4 7h9M4 12h7M4 17h9"/><path d="M17.5 8v9M17.5 17.5 15 15M17.5 17.5 20 15"/>',
+  // The owner, standing in for a portrait that has not been set. Shoulders, not a bust in a
+  // circle: the circle is drawn by whatever frames it, and two rings would be two marks.
+  person:
+    '<circle cx="12" cy="8.2" r="3.8"/><path d="M4.8 20.5a7.2 7.2 0 0 1 14.4 0"/>'
+    + '<path d="M9.7 6.8a3 3 0 0 1 1.8-1.2" stroke-width="1.4"/>',
   glyphs:
     '<path d="m5 17 4-10 4 10M6.3 13.5h5.4"/><path d="M15.5 17V9.5"/>'
     + '<circle cx="17.5" cy="13.5" r="2.6"/><path d="M20.1 11v6"/>',

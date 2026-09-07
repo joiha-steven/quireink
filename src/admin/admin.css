@@ -742,6 +742,13 @@ input[type='color']::-moz-color-swatch {
 [data-explanations='off'] .card-body > .panel-list:first-child { margin-top: -1rem; }
 [data-explanations='off'] .card-body > .panel-list:last-child { margin-bottom: -1rem; }
 
+/* THE RAIL'S GLYPH SIZE, set on the surface rather than at twenty-one call sites.
+   `navIcons.tsx` draws every icon at `var(--admin-glyph, 1.25rem)`; 20px is right in a 14px
+   context (a media tile's keys, a table row's actions) and too heavy beside the rail's 15px
+   labels, where the mark out-weighed the word it belongs to. 18px, stroke 1.8, which is the
+   set's own hand at the size it was drawn for. */
+.rail-glyphs { --admin-glyph: 1.125rem; }
+
 /* A 44 × 44 HIT BOX FOR A FINGER, and nothing at all for a cursor.
 
    `kit.tsx`'s `TAP_TOUCH` carries the reasoning. The short version: three 28px keys sit on a

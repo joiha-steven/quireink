@@ -7,7 +7,13 @@
 // one generic `<Icon name>` prop at each of them — the seam to the shared set lives here.
 import { GLYPHS, ICONS, type GlyphName, type IconName } from '@/icons'
 
-const C = 'h-5 w-5 shrink-0'
+// 20px, unless the SURFACE says otherwise. The rail sets `--admin-glyph` to 18px on itself
+// (`.rail-glyphs` in admin.css) because a rail's glyph stands beside a 15px label and a 20px
+// mark out-weighed the word it belongs to; every other holder — a media tile's keys, a table
+// row's actions, the editor's menus — is a 14px context where 20px is right. One variable on
+// the container beats a size prop at twenty-one call sites, and beats shrinking the set for
+// everyone to suit its loudest consumer.
+const C = 'h-[var(--admin-glyph,1.25rem)] w-[var(--admin-glyph,1.25rem)] shrink-0'
 
 // The bodies are module CONSTANTS from our own file — no request data ever passes through
 // this, which is what makes `dangerouslySetInnerHTML` ordinary here rather than a hole.
@@ -85,3 +91,5 @@ export function EmptyGlyph({ name }: { name: GlyphName }) {
     />
   )
 }
+
+export function IconPerson() { return <I name="person" /> }
