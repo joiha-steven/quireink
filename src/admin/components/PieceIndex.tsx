@@ -18,13 +18,16 @@
 import { useMemo, useState } from 'react'
 import Link from '@/admin/router'
 import type { PieceStat } from '@/analytics/types'
-import { TABLE_SCROLL, THEAD, TROW } from './kit'
+import { TABLE_SCROLL, TAP, THEAD, TROW } from './kit'
 import { useAdminT } from './I18nProvider'
 import type { Range } from './AnalyticsView'
 
 type Row = { path: string; title: string; views: number; visitors: number }
 
 /** Fold to something a search can match across cases and Vietnamese diacritics. */
+/** How many rows stand without being asked for. Ten is the shape of "what is read most". */
+const TOP_N = 10
+
 const fold = (s: string): string =>
   s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd')
 
@@ -65,6 +68,12 @@ export function PieceIndex({
     return rows.filter((r) => fold(r.title).includes(needle) || fold(r.path).includes(needle))
   }, [rows, query])
 
+  // Ten unless asked, and SEARCHING OPENS IT: somebody who typed a title wants the answer,
+  // not the answer plus a button admitting there might be more of it.
+  const [all, setAll] = useState(false)
+  const open = all || query.trim().length > 0
+  const visible = open ? shown : shown.slice(0, TOP_N)
+
   return (
     <div className="border-b border-neutral-100 dark:border-neutral-800">
       <div className="flex flex-wrap items-center gap-3 px-4 py-3">
@@ -86,15 +95,16 @@ export function PieceIndex({
       {shown.length === 0 ? (
         <p className="px-4 pb-4 text-sm text-neutral-500 dark:text-neutral-400">{t.analyticsNoData}</p>
       ) : (
-        // Capped in HEIGHT, never in row count: everything is present and reachable by
-        // scrolling or by typing, which is the difference between a long list and a top N.
+        // TEN ROWS AND A WAY TO SEE THE REST — no scroll box of its own, since 2026-09-07.
         //
-        // `scroll-fade` since 2026-09-07, and it is the difference between a clip that MEANS
-        // something and one that looks like a mistake: the box ends 384px down, wherever that
-        // falls, and it fell through the middle of a row's glyphs — a line of type sliced
-        // horizontally, with three cards starting immediately under it. The mask says "this
-        // continues" in the one place a reader is looking when they need to know it.
-        <div className={`${TABLE_SCROLL} scroll-fade max-h-96 overflow-y-auto`}>
+        // It was `max-h-96 overflow-y-auto`: a 384px window inside a page that already
+        // scrolls, so a wheel over the table moved the table and a wheel two pixels to the
+        // left moved the page, and the box ended wherever 384px happened to fall — measured,
+        // through the middle of a row's glyphs, with three cards starting directly under it.
+        // A fade was tried on that clip and it is the wrong fix: it makes a bad edge legible
+        // instead of removing it. Ten rows is the shape of the answer ("what is read most"),
+        // the rest is one click away, and typing in the box searches all of it either way.
+        <div className={TABLE_SCROLL}>
           <table className="w-full text-sm">
             <thead className={THEAD}>
               <tr>
@@ -104,7 +114,7 @@ export function PieceIndex({
               </tr>
             </thead>
             <tbody>
-              {shown.map((r) => (
+              {visible.map((r) => (
                 <tr key={r.path} className={TROW}>
                   <td className="w-full max-w-0 px-4 py-2.5">
                     <Link
@@ -122,6 +132,31 @@ export function PieceIndex({
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+      {/* The way to the rest, only when there IS a rest and only when nothing is typed —
+          a search already shows everything it matched. */}
+      {!open && shown.length > TOP_N && (
+        <div className="px-4 pb-3">
+          <button
+            type="button"
+            onClick={() => setAll(true)}
+            data-piece-showall
+            className={`${TAP} text-xs text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white`}
+          >
+            {t.analyticsShowAll.replace('{n}', shown.length.toLocaleString())}
+          </button>
+        </div>
+      )}
+      {all && !query.trim() && shown.length > TOP_N && (
+        <div className="px-4 pb-3">
+          <button
+            type="button"
+            onClick={() => setAll(false)}
+            className={`${TAP} text-xs text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white`}
+          >
+            {t.analyticsShowFewer}
+          </button>
         </div>
       )}
     </div>
