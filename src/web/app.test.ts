@@ -93,6 +93,10 @@ describe('article page', () => {
       // Exactly one LCP candidate, and on a light page it is the light mark.
       expect((html.match(/fetchpriority="high"/g) ?? []).length).toBe(1)
       expect(html).toMatch(/class="logo" src="[^"]*light\.svg"[^>]*fetchpriority="high"/)
+      // ...and the twin nobody is looking at is not fetched. A `display:none` image is
+      // still downloaded, so without this every reader on a light page paid for the dark
+      // mark on every page.
+      expect(html).toMatch(/class="logo logo-dark" src="[^"]*dark\.svg"[^>]*loading="lazy"/)
     })
 
     it('emits one mark when no dark twin is set', async () => {

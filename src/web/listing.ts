@@ -76,7 +76,12 @@ function card(post: Post, settings: SiteSettings, opts: CardOptions = {}): strin
   const thumb = thumbKind !== 'none' && opts.ready
     ? postImage(post, opts.ready, thumbKind === 'side'
       ? '96px'
-      : `(max-width: 700px) 100vw, ${settings.contentWidth}px`) ?? ''
+      : `(max-width: 700px) 100vw, ${settings.contentWidth}px`,
+    // The FIRST card's picture is the one above the fold, and on a listing with large
+    // thumbnails it is the largest thing on the first screen: the LCP candidate. Lazy on
+    // that one takes it out of the preload scanner's reach, so the browser only asks for
+    // it after the layout says where it goes. Every card after it stays lazy.
+    opts.lead === true) ?? ''
     : ''
   const thumbBlock = thumb ? `<div class="card-thumb">${thumb}</div>` : ''
   const shape = thumb ? ` data-thumb="${thumbKind}"` : ''

@@ -80,10 +80,13 @@ function siteTitle(settings: SiteSettings, asHeading = false): string {
   const darkSrc = settings.showLogo && settings.logoDarkUrl
     ? (settings.logoDarkRenderUrl || settings.logoDarkUrl)
     : ''
+  // The dark twin is LAZY, and that is not cosmetic: both marks are in the markup and CSS
+  // hides one, but a browser fetches a `display:none` image all the same — so every reader
+  // on a light page was downloading a logo they will never see, on every page.
   const img = (url: string, cls: string, height: number, priority: boolean) =>
     `<img class="${cls}" src="${escapeAttr(url)}" alt="${escapeAttr(settings.title)}"
  width="${settings.logoWidth}"${height ? ` height="${height}"` : ''}
- style="width:${settings.logoWidth}px"${priority ? ' fetchpriority="high"' : ''} decoding="async">`
+ style="width:${settings.logoWidth}px"${priority ? ' fetchpriority="high"' : ' loading="lazy"'} decoding="async">`
   // BOTH marks are emitted and CSS picks one. The page cache is keyed by URL alone
   // (Invariant 1), so a server-side branch on the reader's theme would cache whichever
   // mode the first visitor happened to have and serve it to everyone. The dark one is
