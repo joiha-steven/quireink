@@ -158,9 +158,11 @@ export async function deletePage(slug: string): Promise<void> {
   run(`update pages set deleted_at = ? where slug = ?`, nowMs(), slug)
 }
 
-// Restore a trashed page back to live (clear deleted_at).
+// Restore a trashed page back to live (clear deleted_at). The redirect at that path goes
+// with it, for the reason set out on `restorePost`: live content wins, both directions.
 export async function restorePage(slug: string): Promise<void> {
   run(`update pages set deleted_at = null where slug = ?`, slug)
+  await clearRedirectForPath(`/${slug}`)
 }
 
 // Permanently remove a page (hard delete, irreversible). Only reached from Trash.

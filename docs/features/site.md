@@ -22,9 +22,14 @@ they have a blog to configure. [ADR 0014](../decisions/0014-homepage-modes.md).
   made the auto-301 below silently untrue: every rename in that window lost its old URL.
   There is no in-process cache; the frozen tree's 60s one paid for an HTTP fetch to PostgREST,
   and here the lookup is an indexed read of a local file on the same thread.
-- **Live content always wins.** Saving a post/page at slug X deletes any redirect whose
-  `source` is `/X` (`clearRedirectForPath`), so a live URL is never shadowed by a stale
-  redirect and a rename-back (A→B then B→A) cannot create a self-loop.
+- **Live content always wins, and three places enforce it.** Saving a post/page at slug X
+  deletes any redirect whose `source` is `/X` (`clearRedirectForPath`), so a live URL is
+  never shadowed by a stale redirect and a rename-back (A→B then B→A) cannot create a
+  self-loop. **Restoring** one from the Trash does the same, because trashing a post and
+  then pointing its path elsewhere is an ordinary thing to do and the row coming back has
+  to win. And `saveRedirect` **refuses** a single-segment source that live content already
+  holds (`live_content:`), rather than saving a row that would quietly make a post
+  unreachable. A trashed slug is still redirectable: the restore is the other half.
 - **Admin:** a Redirects card (list + add + delete) in Settings → Search & URLs. `source` is normalized
   (leading slash, no query/trailing slash); `destination` is a path or an absolute http(s) URL;
   a self-redirect is rejected. CRUD via the owner-gated `/api/redirects` (+ `/:id`).

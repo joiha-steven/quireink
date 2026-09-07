@@ -52,3 +52,19 @@ export function slugTaken(slug: string): boolean {
   return !!one<{ slug: string }>(`select slug from posts where slug = ?`, slug)
     || !!one<{ slug: string }>(`select slug from pages where slug = ?`, slug)
 }
+
+/**
+ * The same question asked of LIVE content only, for the one caller that has to answer it
+ * differently: a redirect.
+ *
+ * A trashed row keeps its slug reserved against a SAVE, because restoring it has to work.
+ * A redirect is the opposite case: sending `/old` somewhere else after trashing the post
+ * that lived there is an ordinary thing to want, and refusing it because a row sits in the
+ * Trash would be refusing the common workflow. What must never happen is a redirect
+ * shadowing content a reader can actually reach, and `restorePost`/`restorePage` close the
+ * other half by clearing the redirect when the row comes back.
+ */
+export function liveSlugTaken(slug: string): boolean {
+  return !!one<{ slug: string }>(`select slug from posts where slug = ? and deleted_at is null`, slug)
+    || !!one<{ slug: string }>(`select slug from pages where slug = ? and deleted_at is null`, slug)
+}

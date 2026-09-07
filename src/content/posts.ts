@@ -306,8 +306,14 @@ export async function deletePost(slug: string): Promise<void> {
 }
 
 // Restore to live (clear deleted_at); slug was reserved → no collision check.
+//
+// The redirect goes with it. Trashing a post and then pointing its path somewhere else is
+// an ordinary thing to do, and the redirect middleware runs BEFORE the router: without
+// this, restoring the post put it back in the table and left it unreachable, answering the
+// old redirect instead, with nothing to say why. Live content wins, both directions.
 export async function restorePost(slug: string): Promise<void> {
   run(`update posts set deleted_at = null where slug = ?`, slug)
+  await clearRedirectForPath(`/${slug}`)
 }
 
 // Hard delete a post + its revisions (Trash UI only). `post_terms` cascades.

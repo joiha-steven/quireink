@@ -10,7 +10,7 @@ import {
   purgePost, getTrashedPosts, emptyPostsTrash, getRelatedPosts,
 } from '@/content/posts'
 import { getRevisions } from '@/content/revisions'
-import { getRedirects } from '@/server/redirects'
+import { getRedirects, saveRedirect, RedirectInputError } from '@/server/redirects'
 import { addComment, getCommentTree } from '@/comments/comments'
 import { logSend, statsByPost } from '@/news/newsletter-log'
 
@@ -121,6 +121,30 @@ describe('savePost', () => {
     expect(saved.slug).toBe('fresh')
     expect(await getPost('fresh')).not.toBeNull()
     expect(await getRedirects()).toHaveLength(0)
+  })
+
+  // The redirect middleware answers before the router, so a redirect left over a restored
+  // post makes the post unreachable with nothing anywhere saying why.
+  it('restoring a trashed post clears the redirect that took its path', async () => {
+    await savePost({ title: 'Old', status: 'published', date: PAST })
+    await deletePost('old')
+    await saveRedirect({ source: '/old', destination: '/somewhere', permanent: true })
+    expect(await getRedirects()).toHaveLength(1)
+
+    await restorePost('old')
+
+    expect(await getRedirects()).toHaveLength(0)
+    expect(await getPost('old')).not.toBeNull()
+  })
+
+  it('refuses a redirect that would shadow a live post, and allows one over a trashed slug', async () => {
+    await savePost({ title: 'Live', status: 'published', date: PAST })
+    await expect(saveRedirect({ source: '/live', destination: '/elsewhere' }))
+      .rejects.toBeInstanceOf(RedirectInputError)
+
+    await deletePost('live')
+    await saveRedirect({ source: '/live', destination: '/elsewhere' })
+    expect(await getRedirects()).toHaveLength(1)
   })
 
   it('a rename keeps the birthday instead of restamping it as today', async () => {

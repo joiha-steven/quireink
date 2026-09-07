@@ -9,6 +9,7 @@
 import { normalizePath, isValidDestination } from '@/server/redirect-path'
 import { all, one, run } from '@/store/query'
 import { nowMs } from '@/store/db'
+import { liveSlugTaken } from '@/content/slugs'
 
 export type Redirect = {
   id: number
@@ -77,6 +78,15 @@ export async function saveRedirect(input: {
   if (!source) throw new RedirectInputError('A source path is required')
   if (!isValidDestination(destination)) throw new RedirectInputError('Destination must be a path or an http(s) URL')
   if (source === destination) throw new RedirectInputError('Source and destination are the same')
+  // Live content beats a redirect at the same path, and the middleware answers BEFORE the
+  // router, so a redirect saved over a live slug does not lose the argument: it wins, and
+  // the post simply stops being reachable with nothing anywhere saying why. Refusing is
+  // the only honest answer. Only a single segment can collide, so an imported
+  // `/2020/05/title` is never affected.
+  const sourceSlug = source.slice(1)
+  if (sourceSlug && !sourceSlug.includes('/') && liveSlugTaken(sourceSlug)) {
+    throw new RedirectInputError(`live_content: ${source} is a post or page`)
+  }
   run(
     `insert into redirects (source, destination, permanent, created_at)
      values ($source, $destination, $permanent, $now)

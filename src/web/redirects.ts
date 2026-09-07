@@ -10,8 +10,10 @@
 // Hono has no such rule, but "a moved URL answers with a real 301 before anything renders"
 // is the behaviour rather than the workaround, so it is still resolved ahead of the router:
 // a redirect whose source is also a live listing (`/category/old`) has to win, and it only
-// wins from here. Live CONTENT cannot be shadowed either way — `clearRedirectForPath`
-// deletes any row whose source is a slug that content is saved at.
+// wins from here. Live CONTENT cannot be shadowed either way, and three places hold that:
+// `clearRedirectForPath` deletes any row whose source is a slug content is SAVED at, the
+// same call runs when a trashed row is RESTORED, and `saveRedirect` refuses a source that
+// live content already holds.
 
 import type { MiddlewareHandler } from 'hono'
 import { findRedirect } from '@/server/redirects'
