@@ -295,6 +295,11 @@ again every time". Two things were wrong and both are cheap:
   rather than after it. The two that remain are the lazy route and its own deps, which is
   what code-splitting by route means.
 
+- The static graph carried two things nobody asked for: all eleven READER dictionaries, through
+  a type import that pulled the module, and Tiptap through a `PostSettings` type. **1,063 KB
+  before the first frame became 375 KB** (2026-09-07); the other ten dictionaries arrive on
+  demand, and `check:admin-bundle` fails on a translation back in the entry's static graph.
+
 Dynamic imports are deliberately NOT preloaded: `import("./Content-hash.js")` is a screen the
 owner may never open, and preloading all fourteen would trade one problem for a worse one.
 

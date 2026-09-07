@@ -3,7 +3,7 @@
 
 # Homepage mode
 
-## Homepage mode — `src/web/home-mode.ts`, Admin → Settings → Layout → Front page
+## Homepage mode — `src/web/home-mode.ts`, Admin → Settings → Home & menu → Front page
 
 What `/` serves. [ADR 0014](decisions/0014-homepage-modes.md). `home.mode` is **`list`
 (default: page 1 of the post list, byte for byte what this always did)** or **`page`

@@ -43,7 +43,7 @@ Google account.
 - **Sign-in, in 2.0** (`src/web/comment-auth.ts`, `src/comments/{commenter,google-oauth}.ts`,
   [ADR 0013](../decisions/0013-google-sign-in-for-commenters.md)): `next-auth` is gone, so a
   commenter is a signed `__Host-` cookie rather than a session row — 30 days, HMAC over name +
-  address + expiry, no table. The client id and secret are entered in **Settings → Connections**.
+  address + expiry, no table. The client id and secret are entered in **Settings → Comments & mail**.
   A signed-in comment takes its identity from the cookie and IGNORES the request body, records
   `provider = 'google'` and skips Turnstile. Turning the toggle off stops trusting cookies
   already issued, rather than waiting for them to lapse.
@@ -68,7 +68,7 @@ Google account.
   re-solves a fresh challenge and sends again (a page can sit in a cache longer than a stamp
   lives), everything else answers 400. The issue time doubles as a floor — under three seconds
   was not typed. **Turnstile takes over whenever its keys are set** (since 2026-08-27);
-  Settings → Connections says which gate is standing. A signed-in Google reader skips both.
+  Settings → Comments & mail says which gate is standing. A signed-in Google reader skips both.
   Without a secure context there is no `crypto.subtle`, so only the age check stands: that
   install needs TLS.
 - **Abuse:** manual comments only accept a published, visible post + a per-IP in-memory rate limit
@@ -76,7 +76,7 @@ Google account.
   moderation — admin-only, NEVER sent to the public comment tree.
 - **Integration keys live in the ADMIN, not (just) env (`src/store/integration-keys.ts`).**
   Turnstile AND Google keys are SECRETS, kept in the server-only `integration_keys` table (single
-  row), set via Admin → Settings → Connections (owner-gated `POST /api/comments/keys`) — NEVER in
+  row), set via Admin → Settings → Comments & mail (owner-gated `POST /api/comments/keys`) — NEVER in
   `settings.data`. An env var of the same name is a fallback. `getCommentEnv()`
   (`src/comments/comment-env.ts`) reports which integrations are usable (booleans) + the public
   Turnstile site key; no secret is ever sent to a client. Saving the pair calls `clearCache()`,

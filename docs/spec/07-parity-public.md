@@ -74,7 +74,7 @@ which was never true. The boxes came off on 2026-08-03; **not one line of conten
 - `✂` `/series/[slug]` listing preserves the given order; 2.0 never paginates it ([reading.md](../features/reading.md))
 - Admin Series tab: rename across all posts (merging on collision), remove (clears the
   fields, posts untouched), reorder with arrows
-- Owner-managed 301/302 redirects, CRUD in Settings → SEO
+- Owner-managed 301/302 redirects, CRUD in Settings → Server & connections
 - `⚠` Renaming a slug **auto-adds a 301** so existing links survive
 - `⚠` Saving content at slug X **deletes any redirect whose source is /X**, so a live URL
   is never shadowed and an A→B→A rename cannot self-loop
@@ -200,7 +200,7 @@ which was never true. The boxes came off on 2026-08-03; **not one line of conten
 
 ## 6. Comments
 
-- Off by default; enable in Settings → Reading
+- Off by default; enable in Settings → Posts
 - Manual identity (name + email + optional website) or a signed-in account
 - `⚠` Limited markdown only: `**bold**` and `*italic*`, escape-first, hard cap 1000 chars
   on both server and client

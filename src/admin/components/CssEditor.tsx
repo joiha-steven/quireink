@@ -1,7 +1,7 @@
 // The box where this product stops having answers and hands you the pen.
 //
 // It was an eight-row `<textarea>`. That is fine for a two-line tweak and wrong for what
-// this box actually IS here: Quire Ink ships no themes, so when the 155 settings run out,
+// this box actually IS here: Quire Ink ships no themes, so when the 166 settings run out,
 // your own CSS is the whole of the remaining answer. A plain textarea makes that answer feel
 // like a fallback. It is not a fallback; it is the door.
 //

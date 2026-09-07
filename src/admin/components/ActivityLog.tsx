@@ -20,7 +20,7 @@ import { useToast } from '@/admin/ui/Toast'
 import { useConfirm } from '@/admin/ui/ConfirmDialog'
 import { EmptyState, PageHeader, Select } from './kit'
 import { SHEET, SHEET_TOOL, SheetTop, SHEET_TOOL_DANGER } from './sheet'
-import { useAdminCount, useAdminT } from './I18nProvider'
+import { useAdminCount, useAdminT, useTabbed } from './I18nProvider'
 import { fold } from './settings-index'
 import { glyphOf, kindOf, logSentence, type LogKind } from './logSentence'
 import { ICONS } from '@/icons'
@@ -43,6 +43,7 @@ function Glyph({ action }: { action: string }) {
 
 export function ActivityLog({ entries, enabled }: { entries: ActivityEntry[]; enabled: boolean }) {
   const t = useAdminT()
+  const tabbed = useTabbed()
   const count = useAdminCount()
   const router = useRouter()
   const { notify } = useToast()
@@ -151,7 +152,7 @@ export function ActivityLog({ entries, enabled }: { entries: ActivityEntry[]; en
 
         {!enabled && (
           <p className="border-b border-neutral-100 bg-neutral-50 px-5 py-2.5 text-sm text-neutral-600 dark:border-neutral-800 dark:bg-neutral-900/60 dark:text-neutral-400">
-            {t.logDisabled}
+            {tabbed(t.logDisabled, t.tabAccount)}
           </p>
         )}
 

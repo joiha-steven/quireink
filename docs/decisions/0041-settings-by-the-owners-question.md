@@ -84,8 +84,9 @@ Three consequences follow, and they are the decision as much as the table is:
    shared settings record (the SEO switches, custom head/body code, the cache and storage
    lines) beside four cards with their own endpoints. They go into a single "Settings" card at
    the top of the tab with its own Save, which calls `PUT /api/settings` with only that card's
-   keys. The rule "one tab, one way to save" survives; the storage shape does not have to
-   change to keep it.
+   keys. One card, one way to save it; the storage shape does not have to change to keep that.
+   (Consequence 1 was revised the same day: the sheet's Save renders on every tab, so a tab
+   made of self-saving cards is no longer a tab with no Save on it.)
 
 **No stored shape changes.** `SiteSettings` keeps every key it has and keeps its name for each;
 this ADR moves which tab renders a key, not where a key lives. That is what makes it reversible.

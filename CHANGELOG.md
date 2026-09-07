@@ -2,7 +2,13 @@
 
 ## 2026-09-07 — Quire Ink 2.2.9
 
-One fix. 2.2.8 signed in to a blank admin, and this is the release that takes it back.
+Two audits and everything they turned up in a day and a half, eighty-nine commits of it. One
+audit went over the admin screen by screen, the other over the reading site and the code
+beneath it. Settings are regrouped around the question the owner is holding rather than the
+part of the code a key belongs to; the browser's own dialogs are gone; every layout shift
+measured on arrival is zero; the admin's first frame is 375 KB where it was 1,063; and a
+dozen ways of losing work are closed, from two tabs saving settings at once to an editor that
+reopened the piece it had just saved. It also carries the fix 2.2.8 needed.
 
 ### The admin loaded React twice
 
@@ -27,6 +33,190 @@ One fix. 2.2.8 signed in to a blank admin, and this is the release that takes it
 - **Nothing a reader sees was affected.** Public pages arrive as finished HTML and were never
   blank; this was the admin's bundle alone.
 
+### Settings, regrouped by the question you are holding
+
+- **Seven tabs, each printing its question under its name** ([ADR 0041](./docs/decisions/0041-settings-by-the-owners-question.md)).
+  The eight tabs before them were grouped by which part of the CODE a key belonged to.
+  Measured at 1440px: Appearance held 137 controls over 2,825px while five other tabs sat
+  within 31px of 1,236 — 36% of every control on the screen behind one word — and the answer
+  to "how do readers sign in to comment" lived three tabs from "should there be comments".
+  It is Blog · Home & menu · Posts · Appearance · Comments & mail · Server & connections ·
+  Account now, 21 · 39 · 62 · 95 · 17 · 40 · 19 controls. Every old `?tab=` address lands on
+  the tab that now holds those keys, and `?setting=<key>` still jumps to the card.
+- **The Save key names the work waiting on it** — "Save · 3 change(s)", disabled at zero,
+  counted by comparing the form against the settings the server last sent. It is on all seven
+  tabs. It began on four, because the other three are made of cards that save themselves; a
+  control that stands in the place the eye goes on four screens and is missing on three reads
+  as a fault, whatever sentence is put in its place. The cards keep their own key, because
+  storing a mail host and TESTING it are not one act.
+- **The backup card held three settings and no way to save them** — automatic backups on or
+  off, how often, how many to keep. It was filed with the cards made of actions (run a
+  snapshot, download the archive), so changing the schedule marked the form dirty and stored
+  nothing from that tab.
+- **Leaving with unsaved changes asks a three-way question** in the product's own dialog: save
+  and go, discard, stay. Back and Forward go through it too — a same-document history move
+  fires no `beforeunload`, so the browser's own buttons threw an edited form away in silence.
+- **A refused field points at the field.** A list path a post already holds used to arrive as
+  "Save failed" in a corner toast on a screen of forty controls; the tab opens and the field
+  says what is wrong.
+- **The language applies when it is stored, not when it is picked.** Trying one out handed
+  somebody an admin in it, an unsaved form and a Save key to find in a language they had not
+  chosen; leaving put it back without a word, which reads as the setting having failed.
+
+### The browser's twenty dialogs come out
+
+- **Sixteen `confirm()` and four `prompt()` in the admin, now none**, and `check:admin-kit`
+  fails the next one. The browser draws those boxes, so the question deciding whether a post
+  is destroyed forever wore none of this product's grammar; `confirm()` takes one string, so
+  "Permanently delete this item?" was the whole question and WHICH item was left to whichever
+  row the pointer was over; and they freeze the page behind them for as long as somebody
+  thinks about it. The replacement splits by whether the act can be walked back.
+- **A toast waits to be read and can be sent away.** It also reaches a screen reader now:
+  the live regions are in the document before the message lands, which is the only order in
+  which they are announced.
+- **One shape for waiting, one for empty, and a failure that can be asked again.** Three
+  spellings of "loading" and two of "nothing here" became one each, and three screens that
+  swallowed a failed fetch — subscribers, redirects, the media grid — say so and offer the
+  retry. The shell itself does: a 500 from its one view used to leave an empty grey page.
+- **Every empty screen offers the thing you came to do.** Trash, the assistant, the write
+  sheet and the 404 were 2,000px of white paper with a bare heading.
+
+### Nothing that could lose work
+
+- **The editor's snapshot follows the piece, not the screen.** The local key is
+  `quire:draft:post:new` until a post has a row, and it was fixed at the value it had when
+  the editor mounted: everything typed after a new post's FIRST save went on being written
+  under `new`, invisible to the editor that reopens that post, and reopened by the next blank
+  sheet as a piece of its own.
+- **New post after a save gives a blank sheet.** The editor moves the address itself when a
+  new piece is first saved — a raw history call, because routing there would remount the
+  editor and take the caret and the undo stack with it — so the router still held
+  `/admin/editor` and the next click on New post pushed the path it believed it was already
+  on. Nothing remounted, the blank sheet came up holding the saved piece, and the next article
+  typed into it overwrote the first. The router counts address moves and the route is keyed on
+  that count as well as the path.
+- **An unsaved draft is reopened into the editor** rather than offered back to it. A writer
+  who typed, left without pressing Save and came back met an empty page with a one-line offer
+  above it; the text was in storage the whole time.
+- **Two settings saves at once stop erasing each other.** Two tabs, or a card and the sheet,
+  each PUT the whole record they had read; the writes are queued so the second runs on the
+  result of the first.
+- **A mistyped setting cannot break the site**, at either end: the write path refuses a value
+  of the wrong type and the read path clamps what it finds. A settings blob that will not
+  parse is kept beside the database before anything overwrites it — one corrupt byte used to
+  mean a silent reset to defaults.
+- **A rename and a purge either finish or never happened.** Both wrote several tables outside
+  a transaction, so a failure halfway left a post under one name in one table and another in
+  the next.
+- **A restored post takes its path back**, a redirect can no longer be saved over live
+  content, and a renamed post carries its send log and its birthday with it.
+- **A save stops claiming what it did not carry**, and a refused publish stops saying
+  Published. A refusal is heard elsewhere too: a rejected rail order slides back, and a failed
+  trash or redirect says so instead of looking done.
+- **The newsletter send outlives the request that started it.** A thousand subscribers meant a
+  thousand TLS handshakes inside one HTTP request that the server closes at two minutes, so
+  the admin was told the broadcast had failed while the mail was still going out — and the
+  button offered to send the whole list again. It runs in the background over three pooled
+  connections now, with a progress endpoint the screen reads.
+
+### Nothing on a page moves as the reader arrives
+
+Measured with Chrome's own `layout-shift` entries, `buffered`, on the author's blog:
+
+| Page | Before | After |
+|---|--:|--:|
+| Home, 1440 | 0.059 | **0.0000** |
+| Home, 390 | 0.136 | **0.0000** |
+| A post, 390 | 0.086 | **0.0000** |
+
+- **A listing carries thirty posts and a link**, not the whole archive with most of it
+  hidden: a blog with hundreds of posts rendered every one of them into the first response and
+  reflowed as the images arrived. Infinite scroll fetches the next thirty two screens early,
+  and a reader with no JavaScript still gets every page.
+- Every reserved space that was missing is reserved: the comment thread, the newsletter panel,
+  the first thumbnail is fetched early, and the dark logo is not fetched at all on a light
+  page.
+
+### Speed, measured
+
+| What | Before | After |
+|---|--:|--:|
+| The admin's first frame | 1,063 KB | **375 KB** |
+| The whole admin bundle | 2,471 KB | 2,423 KB |
+| Reading the settings, per request | 65.5 µs | **4.8 µs** |
+| A 404, against 200k analytics rows | 6.5 ms | **0** |
+| An upload, against 6,144 stored files | two walks of 77.3 ms | **1.36 ms, no walk** |
+| The unused-media sweep, 500 posts + 1,500 revisions | 23.3 ms | **10.0 ms** |
+
+- **The admin fetched all eleven reader dictionaries and the editor before its first frame.**
+  It fetches the one dictionary it speaks; the other ten arrive on demand, and a guard walks
+  the built graph and fails if a translation is in the entry again.
+- **A backup no longer holds the whole archive in memory** on the way to the browser, a `304`
+  carries the same caching instructions as the `200` it revalidates, and every page stopped
+  prefetching the one route that is never cached.
+
+### Every control says what it is
+
+- **Names on the controls that had none**: the calendar arrows, the time field, six editor
+  toolbar keys, the phone's menu button. A label points at its field, and a note or a refusal
+  is the field's description rather than part of its name.
+- **The upload zone is a button.** It was a `<div>` with a click handler: reachable by mouse
+  only, on the one screen a blog is filled from.
+- **The settings strip is a real tablist** — arrows, Home/End, one tab stop for the whole
+  strip instead of seven — and the drawer, the attributes sheet and the media picker are real
+  dialogs that take focus, close on Escape and give focus back.
+- **The skip link is the first thing a keyboard reaches on an article**, and it lands on the
+  body. Twenty focusable stops stand between the top of the page and the first paragraph; the
+  order is right (a contents list belongs before what it indexes) and the way past it now
+  works. The admin has one too, over eighteen rail stops.
+- Two reader targets under 24px grew, counts and scheduled hours print in the language the
+  admin is set to, and the activity log speaks sentences rather than the sixty-one machine
+  codes it stores.
+
+### The reading site
+
+- **One `h1` per listing page**, and the site name goes back to the left edge on every page it
+  is the heading of: the rule that pushes it there stopped matching once the name became the
+  page's heading, so the wordmark sat 235px into a 608px bar on the front page while an
+  article had it flush left.
+- **One address per document.** An old term spelling redirects instead of answering twice, the
+  front door owns its canonical, leading zeros in a page number stop minting cache entries,
+  and six names the router answers first — `admin`, `login`, `og`, `search`, `setup`,
+  `uploads` — can no longer be taken by a post.
+- **The year a post is filed under is the year the site is in**, in the feed and the archive
+  both; it was the server's UTC, so a post published at nine in the evening in Saigon on 31
+  December was filed under the following year.
+- **A scheduled post goes out on the blog's clock**, not on the clock of the machine that
+  typed it.
+- The phone paints the page's own colour behind the address bar, the fade at the edge of a
+  scrolled article narrows to one line there, the dark highlighter's contrast is computed
+  rather than remembered, and the pen's loop round the book-mode key waits for the pointer
+  instead of standing on the page.
+
+### Mail
+
+- **The plain-text half of every email is written by a scanner, not by a tag-strip.** No
+  caller passes a text alternative, so one regular expression was writing the `text/plain`
+  part of every newsletter, confirmation and reply notice: one paragraph with no line breaks,
+  no addresses at all (the unsubscribe link included), raw `&nbsp;` and `&#39;` spellings, and
+  the hidden inbox-preview line printed as the letter's first sentence, said twice. A link is
+  now `label (address)`, block tags are line breaks, and what the HTML half hides is dropped.
+- It also answers the standing CodeQL alert (`js/incomplete-multi-character-sanitization`).
+  Removing a bracketed run JOINS what stood either side of it, so one pass over `<scr<x>ipt>`
+  hands back a working tag. The alert had twice been dismissed on the true grounds that this
+  output is never an HTML context; the code was still the wrong code.
+
+### Under the hood
+
+- **The activity log has a retention.** It had none: it is copied whole into every backup, and
+  one of the things it records is a refused sign-in, written whatever the owner's toggle says,
+  so anybody could grow this blog's database one slow guess at a time. A year, a ceiling of
+  20,000 rows, and refusals are trimmed first so a flood cannot push out what the owner did.
+- **Cleaning up after an import stops reading the whole blog** on every batch of five images,
+  and stops pushing the post's written history out with near-identical snapshots of a body
+  that had not changed.
+- The comment beacon stops waiting on a flush, a flood of comments costs one timestamp, and a
+  search query has one length cap rather than three.
 ## 2026-09-06 — Quire Ink 2.2.8
 
 Four days on how the thing moves and how it feels under a hand: one motion engine for the

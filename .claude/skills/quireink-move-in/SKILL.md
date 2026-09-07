@@ -11,7 +11,7 @@ going badly happens after the upload succeeds.
 
 ## Run the import
 
-**Admin → Settings → System → Import.** Upload the export file; the server works out whose
+**Admin → Settings → Server & connections → Import content.** Upload the export file; the server works out whose
 it is.
 
 | From | The file | What it is |
@@ -46,7 +46,7 @@ cancel the old hosting before this list is empty or accepted.
 (`/2019/07/some-post/`) and a Substack post's `/p/some-post` become 301s at import time,
 in the same table as the owner's own redirects — the response says how many. What that
 cannot cover: Medium (its old URLs live on medium.com), a category/tag/feed URL shape,
-and anything unpublished. Check **Settings → SEO → Redirects** against the export and
+and anything unpublished. Check **Settings → Server & connections → Redirects** against the export and
 add what matters by hand.
 
 **3. What the converter could not know.** Shortcodes with no meaning outside their old

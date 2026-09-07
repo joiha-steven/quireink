@@ -26,7 +26,7 @@ overwrite every table in itself is a bigger risk than the one it removes.
 
 ## Export, and snapshots
 
-Both live in **Settings → System → Backups**, and both are owner-only.
+Both live in **Settings → Server & connections → Backups**, and both are owner-only.
 
 **Export** builds an archive into a temp directory and streams it to the browser, sweeping
 the directory when the stream ends or the reader cancels. It is deliberately not kept on the
@@ -62,7 +62,7 @@ the default reaches only installs that never chose.
 
 ## Off-server, built in (ADR 0035)
 
-**Settings → System → Off-server copy.** Paste a bucket, an access key pair, and (for
+**Settings → Server & connections → Off-server copy.** Paste a bucket, an access key pair, and (for
 R2/MinIO) the endpoint — every archive the schedule or the "take one now" button writes is
 also PUT into the bucket, and the remote copies are pruned to the same `keep` as the local
 directory. Env fallbacks exist for a fleet: `S3_ENDPOINT`, `S3_REGION`, `S3_BUCKET`,

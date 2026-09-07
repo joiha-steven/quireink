@@ -72,7 +72,7 @@ HOST=127.0.0.1
 **`MAX_UPLOAD_MB` and `STORAGE_QUOTA_GB` are the app's own limits, 64 MB and 5 GB by
 default.** Keep the proxy's number and this one in step: the proxy refuses first and more
 cheaply, this one refuses what never passes through a proxy at all, including an image the
-MCP tool fetches from a URL. `0` disables either. The admin (Settings → System → Storage) can
+MCP tool fetches from a URL. `0` disables either. The admin (Settings → Server & connections → This install) can
 lower them for this blog and never raise them, so on a server you run for somebody else these
 two lines are the ceiling.
 
@@ -94,7 +94,7 @@ It is not derived from the request `Host` on purpose, and that is a security cho
 than an omission: the page cache is keyed by path alone, so one request carrying
 `Host: evil.example` would render those URLs and then serve the cached copy to everyone. What
 the app does instead is complain — a `[WARN]` line at boot, and the hint under
-Settings → Search & URLs → Site address.
+Settings → Blog → Site address.
 
 **`TRUST_PROXY=1`, and only if your proxy is not on this machine or this private network.**
 Rate limits and the analytics visitor hash are keyed by the reader's address, and the app
@@ -113,7 +113,7 @@ the proxy that just handed over the connection, and it is the only entry in the 
 any reason to believe. Caddy needs none of this: it replaces the header with the peer it saw.
 
 **`CF-Connecting-IP` is believed only once the Cloudflare zone is filled in** under
-Settings → Connections. That is not a preference, it is the difference between a header that
+Settings → Comments & mail. That is not a preference, it is the difference between a header that
 means something and one that does not: Cloudflare overwrites it, and no other proxy touches
 it. Measured on 2026-09-01 through a real Caddy in front of the app — 45 requests against a
 30-per-minute cap, each carrying a different made-up `CF-Connecting-IP`, were refused **zero**

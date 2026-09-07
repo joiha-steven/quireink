@@ -292,7 +292,7 @@ stacks, with cards assigned to a side by hand so the two come out close in heigh
 single card and Reading held fifteen toggles beside one switch. Two tabs of seven behaving
 differently reads as a mistake. Split the CONTENT, do not leave the layout ragged.
 
-**A settings tab is grouped by the QUESTION it answers, and it saves ONE way**
+**A settings tab is grouped by the QUESTION it answers, and Save is where the eye looks**
 ([ADR 0041](./decisions/0041-settings-by-the-owners-question.md), 2026-09-07, superseding the
 grouping in [0011](./decisions/0011-settings-regrouped-into-seven.md)). The eight tabs were
 grouped by which part of the CODE a key belonged to, and the count measured on 2026-09-07 says

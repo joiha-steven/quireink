@@ -14,7 +14,7 @@ that is the name to use: `bun run build:assets`, `bun run check:all`, `bun run u
   are embedded and applied at boot; the migrations are two files, one per database
   (`src/store/migrations.sql`, `src/store/migrations-analytics.sql`), not a directory.
   Nothing has to be run by hand on a fresh install.
-- **WordPress import is an in-app feature** (Admin → Settings → System →
+- **WordPress import is an in-app feature** (Admin → Settings → Server & connections →
   `src/import/wordpress.ts`), NOT a script. `turndown`, `turndown-plugin-gfm` and
   `fast-xml-parser` are runtime **dependencies** because the importer uses them.
 - **`scripts/checks/`** holds the static guards `check:all` runs — `file-size`, `css-literal`,

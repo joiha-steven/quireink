@@ -37,7 +37,7 @@ body cache warm, and the full 74-page warm sweep **3,948 ms → 203 ms**.
 
 ### The switch
 
-Both layers can be turned off together in **Settings → System → Cache**
+Both layers can be turned off together in **Settings → Server & connections → This install**
 (`settings.cache.enabled`), for the hour you are changing the design and want to see what
 you changed. Off means:
 

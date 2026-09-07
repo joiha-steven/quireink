@@ -5,7 +5,7 @@
 What `/` serves: the post list, a chosen page, or the composed front page. Its own file, both
 because it is long and because it is the one feature somebody installing Quire Ink reads before
 they have a blog to configure. [ADR 0014](../decisions/0014-homepage-modes.md).
-## URL redirects — `src/server/redirects.ts`, Admin → Settings → Search & URLs
+## URL redirects — `src/server/redirects.ts`, Admin → Settings → Server & connections
 
 - **What:** owner-managed 301 (permanent) / 302 (temporary) redirects, plus an automatic
   301 whenever a post/page slug is renamed (so existing links + search results survive a
@@ -30,6 +30,6 @@ they have a blog to configure. [ADR 0014](../decisions/0014-homepage-modes.md).
   to win. And `saveRedirect` **refuses** a single-segment source that live content already
   holds (`live_content:`), rather than saving a row that would quietly make a post
   unreachable. A trashed slug is still redirectable: the restore is the other half.
-- **Admin:** a Redirects card (list + add + delete) in Settings → Search & URLs. `source` is normalized
+- **Admin:** a Redirects card (list + add + delete) in Settings → Server & connections. `source` is normalized
   (leading slash, no query/trailing slash); `destination` is a path or an absolute http(s) URL;
   a self-redirect is rejected. CRUD via the owner-gated `/api/redirects` (+ `/:id`).

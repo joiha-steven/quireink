@@ -227,7 +227,7 @@ The base32 secret is shown as text beside it, grouped in fours. That is not a fa
 is what makes the screen complete without the QR, since every authenticator accepts a typed
 key.
 
-**Settings → System → Security** (`SecurityFields.tsx`, routes in `web/admin/security.ts`,
+**Settings → Account → Security** (`SecurityFields.tsx`, routes in `web/admin/security.ts`,
 shipped 2026-08-31): change password, re-enrol 2FA, regenerate recovery codes, and the list
 of signed-in devices with revoke. Every action that CHANGES something asks for the current
 password and is rate limited per IP — a stolen session is the threat these controls answer,

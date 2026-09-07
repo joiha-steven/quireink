@@ -57,7 +57,7 @@ no stored file, and that log alone is rotated at two days rather than fourteen. 
 alternative on the table was collecting each blog's domain, which would have made the count
 identifiable rather than accurate; this was chosen instead.
 
-Turn it off with `UPDATE_CHECK=0` in the environment, or in Settings → System → Updates.
+Turn it off with `UPDATE_CHECK=0` in the environment, or in Settings → Server & connections → This install.
 Off means your blog makes no outbound request of any kind. Nothing updates itself either
 way: knowing a release exists and installing it are separate acts, and the second one is
 yours ([self-host.md, section 9](self-host.md#9-upgrading)).
@@ -73,7 +73,7 @@ The code is [`src/server/update-check.ts`](../src/server/update-check.ts), which
 and says the same thing this section does.
 
 **One more outbound exists, and only if you build it yourself by pasting a key.** Give
-Settings → Connections an AI key (Anthropic, OpenAI, Gemini or DeepSeek) and pick a model
+Settings → Server & connections an AI key (Anthropic, OpenAI, Gemini or DeepSeek) and pick a model
 that can see images, and each image you upload is sent to that provider once, to have its
 alt text written. A text-only model leaves this job switched off and says so. Your key, your provider,
 your bill; the site's language is the answer's language; and removing the key removes the

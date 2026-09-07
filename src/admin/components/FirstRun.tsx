@@ -45,12 +45,19 @@ const HREFS = [
   '/admin/newsletter',
 ] as const
 
-/** The five, read out of the dictionary so every language gets the same path. */
+/**
+ * The five, read out of the dictionary so every language gets the same path.
+ *
+ * `{tab}` is filled from the same entry the tab strip reads. The first step used to SPELL the
+ * tab out — "Settings → Site" in eleven languages — and ADR 0041 renamed every tab underneath
+ * it, so the first instruction a new owner is given sent them looking for a word that is no
+ * longer on the screen.
+ */
 export function firstRunSteps(t: AdminStrings): { href: string; label: string; body: string }[] {
   return HREFS.map((href, i) => ({
     href,
     label: t[`firstRun${i + 1}Label` as keyof AdminStrings] as string,
-    body: t[`firstRun${i + 1}Body` as keyof AdminStrings] as string,
+    body: (t[`firstRun${i + 1}Body` as keyof AdminStrings] as string).replace('{tab}', t.tabBlog),
   }))
 }
 

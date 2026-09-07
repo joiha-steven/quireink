@@ -81,7 +81,7 @@
   rather than wrap, so most of them — every crop ratio and frame weight, which is to say every
   actual choice — were cut off and unclickable. Taken out of flow it lays out against the writing
   column, above the picture whose crop is being chosen.
-- **Gallery defaults, site-wide** (*Settings → Layout → Galleries*, `GalleryFields.tsx`): the shape
+- **Gallery defaults, site-wide** (*Settings → Posts → Galleries*, `GalleryFields.tsx`): the shape
   and caption state every gallery follows when it has no opinion of its own. Each option is
   THREE-valued and the third value is silence: no token means "follow Settings", which is what lets
   one screen restyle a whole imported archive, and `asis` / `cap` exist so a gallery can disagree
@@ -92,7 +92,7 @@
   INPUT, so a default that changed the HTML would leave every already-rendered body serving the old
   shape until something unrelated evicted it. The per-gallery override wins on specificity (tile
   class beats `:root`), not on source order.
-- **Frame default, site-wide** (*Settings → Layout → Pictures*, `FigureFields.tsx`): the mat every
+- **Frame default, site-wide** (*Settings → Posts → Pictures*, `FigureFields.tsx`): the mat every
   picture wears when it has no opinion of its own — `settings.figure` = a weight
   (`none` | `thin` | `medium` | `thick`) and a mat colour (paper or ink). **`none` at install**, on
   the owner's instruction: a frame is a decision about a site's voice, and arriving with one already
@@ -208,7 +208,7 @@
   Both are checked from `File.size` **before** the body is read, so an oversized upload
   never becomes resident memory, and again in `blob-local.put()` — the one function every
   stored byte passes through — so a route that forgets cannot write past the ceiling.
-  Settings → System → Storage can lower either for this blog and can never raise it.
+  Settings → Server & connections → This install can lower either for this blog and can never raise it.
 - **Host limits, still there and still first:** the reverse proxy caps upload size (nginx
   `client_max_body_size`), and proxies/CDNs (e.g. Cloudflare free: 100 MB) cap request
   bodies — a huge video fails at the edge, more cheaply than in the app. What the app's
@@ -217,7 +217,7 @@
   long/heavy video, a platform embed (unlisted YouTube/Vimeo) is still the better tool:
   transcoding + adaptive bitrate.
 
-## WordPress import — `src/import/wordpress.ts`, Admin → Settings → System
+## WordPress import — `src/import/wordpress.ts`, Admin → Settings → Server & connections
 
 - **One-click import** from a WordPress export (`Tools → Export → All content` = a WXR `.xml`).
   `ImportFields` uploads the file (multipart) to owner-gated `POST /api/import/wordpress`.

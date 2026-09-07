@@ -63,16 +63,25 @@ that file first; this one only adds what is true here.
   DevTools and to a Firefox private window.
 - **The autosave is TWO copies and neither of them is the published body.** localStorage on
   this device (since M2) and `posts.autosave_json` on the server (2026-08-30), written on the
-  same timer and on the same three flushes — interval, `pagehide`, `visibilitychange` to
-  hidden — with the last two going by `sendBeacon`, because a `fetch` started as the tab goes
-  away is routinely killed mid-flight. Only Save/Publish moves `content`, so editing a live
-  post still cannot push half a sentence to a reader.
+  same timer and on the same flushes — interval, `pagehide`, `visibilitychange` to hidden, and
+  leaving the screen — with the middle two going by `sendBeacon`, because a `fetch` started as
+  the tab goes away is routinely killed mid-flight. The interval is a setting
+  (`autosaveSeconds`, 120 by default, floored at 15), and the flushes are why widening it is
+  safe: none of them may be dropped to "simplify" this. Only Save/Publish moves `content`, so
+  editing a live post still cannot push half a sentence to a reader.
   ⚠️ **Uniform for drafts and published posts**, and that is the decision rather than the
   shortcut. "A draft is not live, so autosave straight into its row" is a RACE: it can be
   published a second later and the status the write read is already stale.
   The editor offers back whichever copy is newer, and says which — the device's almost always,
   the server's in the one case the device cannot help with. A piece that has never been saved
-  has no row to hang a snapshot on, so localStorage stays its only copy until the first save.
+  has no row to hang a snapshot on, so localStorage stays its only copy until the first save,
+  and on the way back in it is REOPENED into the editor rather than offered above an empty
+  page: it is the only copy there is, so there is nothing for it to be restored over.
+  ⚠️ **The key follows the PIECE, not the screen** — `quire:draft:post:new` until the piece has
+  a row, then its own slug. Fixed at the value it had when the editor mounted (until
+  2026-09-07), everything typed after a new post's first save went on being written under
+  `new`, where the editor that reopens that post never looks and the next blank sheet reopens
+  it as a piece of its own.
 - The attributes are a right-hand slide-over (`SlideOver`) over a scrim, never a docked
   column — a column squeezed the writing to make room for the questions. The first Publish
   on an unpublished piece opens it as the publish sheet, footered "Later / Publish".

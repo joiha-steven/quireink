@@ -27,7 +27,7 @@ being wrong meant a published post nobody could see. 2.0 removes the problem ins
 managing it: the page cache is one `Map` in one process, so throwing all of it away costs a
 few renders and cannot be wrong.
 
-The owner can switch the cache off entirely (Settings → System, `settings.cache.enabled`),
+The owner can switch the cache off entirely (Settings → Server & connections, `settings.cache.enabled`),
 which does not weaken this rule: it decides whether there is a cache to clear, never how one
 is invalidated. When it is on, a write still empties all of it. See
 [`delivery.md`](delivery.md), "The switch".

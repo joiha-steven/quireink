@@ -91,7 +91,7 @@ that word for Settings, and `CommandPalette.tsx` is the same index reached from 
 with the screens, the two actions and the writing beside it — so "make the text bigger",
 "go to the trash" and "write something" are one gesture.
 
-- **It REPLACES nothing.** The rail, the eight tabs and the settings search all stay. A palette
+- **It REPLACES nothing.** The rail, the seven tabs and the settings search all stay. A palette
   that removes the menus it shortcuts has to be discovered before the admin can be used at all,
   which makes it a lock rather than a door. This one is for hands that already know it is there.
 - **It navigates; it does not set.** Landing on the tab is honest about what the index knows —

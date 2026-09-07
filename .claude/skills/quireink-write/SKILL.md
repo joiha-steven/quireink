@@ -14,7 +14,7 @@ Tool internals: [`docs/mcp.md`](../../../docs/mcp.md). Worked prompts:
 
 ## Before the first call
 
-MCP is **off until the owner turns it on** (Admin → Settings → Connections → MCP) and
+MCP is **off until the owner turns it on** (Admin → Settings → Server & connections → MCP) and
 issues a token. Tokens are shown once, hashed after that, and **expire 180 days after
 creation**. A 401 on every call usually means one of those two things, not a bug worth
 debugging: ask the owner to check the toggle and the token's age.

@@ -174,7 +174,7 @@
     `/api/admin/view/analytics-now`; the poll pauses while the tab is hidden). No socket: the flush
     buffer holds writes for at most 2 s, so one indexed five-minute scan is already honest to real
     time.
-  - **Timezone:** time buckets are truncated in the site's zone — **Settings → Site →
+  - **Timezone:** time buckets are truncated in the site's zone — **Settings → Blog →
     Timezone**, falling back to the `ANALYTICS_TZ` variable and then to UTC — so "days" line
     up with local midnight rather than with UTC. Since 2026-08-22 that one setting is the
     whole site's clock and not just this chart's: it also decides the date printed under
@@ -258,7 +258,7 @@
 - **What:** a chat box in the admin whose every ability is a tool from
   [`src/mcp/registry.ts`](../mcp.md) — the SAME surface an MCP client gets. Somebody with a
   Claude subscription connects over MCP and never needs this; somebody who put an API key in
-  Settings → AI gets the same steward without leaving the admin.
+  Settings → Server & connections gets the same steward without leaving the admin.
 - **One list, two doors, one rulebook.** The assistant cannot do anything MCP cannot, by
   construction: it holds no private tool, so a tool absent from the registry (the newsletter
   broadcast, token minting) is absent from both doors at once. That is what keeps the security
@@ -309,8 +309,8 @@ are a scroll container behaving as one.
 
 - **A segmented track SCROLLS, it does not clip** (`SEGMENT_TRACK`). `overflow-hidden` makes a
   box a scroll container that no finger can move — script and focus can, a user cannot. Five
-  of the eight Settings tabs sat past the edge at 390px, AI and System among them, reachable
-  only by typing a `?tab=` URL. Its items also carry `shrink-0 whitespace-nowrap`, or a
+  of the eight Settings tabs of the time sat past the edge at 390px, reachable only by
+  typing a `?tab=` URL. Its items also carry `shrink-0 whitespace-nowrap`, or a
   squeezed strip wraps its labels instead of scrolling — "Search & URLs" broke over three
   lines and made a 32px control 130px tall.
 - **`min-w-0` on the Settings columns** (`COL`). A grid item defaults to `min-width: auto` and
@@ -330,14 +330,16 @@ are a scroll container behaving as one.
 
 ## Settings (Admin → settings) — `SettingsView.tsx`
 
-- **ONE form, ONE save button, EIGHT task-based tabs** (`site | layout | reading | appearance |
-  seo | connections | ai | system`; tab state not persisted, but `?tab=` deep-links). Each tab
-  answers exactly one question and prints that question under itself —
-  [ADR 0011](../decisions/0011-settings-regrouped-into-seven.md) is the argument, and it was
-  seven when that decision was written; `ai` joined them on 2026-08-23 when the key stopped
-  being a single field and became a provider, a model and three jobs. One
-  `useState<SiteSettings>` → one PUT `/api/settings`.
-- **AI tab** — the provider (Anthropic / OpenAI / Gemini / DeepSeek), the key, the model, and which jobs
+- **ONE form, SEVEN tabs grouped by the owner's question** (`blog | home | post | appearance |
+  people | server | account`; tab state not persisted, but `?tab=` deep-links, and the eight
+  old ids still resolve to whichever tab holds those keys). Each tab prints its question under
+  itself — [ADR 0041](../decisions/0041-settings-by-the-owners-question.md) is the argument,
+  superseding the grouping in [0011](../decisions/0011-settings-regrouped-into-seven.md). The
+  sheet's Save stores every ordinary settings key waiting on the screen and names how many
+  (one `useState<SiteSettings>` → one PUT `/api/settings`); the cards on the last three tabs
+  own their keys as well and each carries its own key, because a card that reaches an SMTP
+  host or a Cloudflare zone TESTS what it just stored, which no page-level key can do.
+- **The AI card** (Server & connections) — the provider (Anthropic / OpenAI / Gemini / DeepSeek), the key, the model, and which jobs
   the model does on its own: `ai.altText` (describe an uploaded image), `ai.excerpt` (write the
   excerpt when a post publishes with the field blank), `ai.commentGuard` (hold spam in the
   Trash — NOTE: this one sends a READER'S comment text to the configured provider, which the
@@ -348,26 +350,28 @@ are a scroll container behaving as one.
   provider: DeepSeek sells both kinds under one key. Like the other credentials it is written and never read back. The model list is
   the provider's own, with a measured default per provider (`DEFAULT_MODELS` in
   `src/server/ai-provider.ts`).
-- **Footer is owner-editable** (Layout tab): `settings.footer` is limited inline markdown
+- **Footer is owner-editable** (Home & menu tab): `settings.footer` is limited inline markdown
   (`src/render/inline-md.ts` — **bold / italic / underline / link** only, escape-first like
   `comment-md`, link hrefs protocol-checked) authored via `FooterField` (textarea + B/I/U/Link
   toolbar + live preview). `{year}`/`{title}` tokens expand at render. The public layout renders it
   in `<footer class="site-footer">`; default keeps the "© {year} {title} · powered by Quire Ink" line.
 - Controlled field groups (no own state/save), per tab, each composed by its own
-  `Settings<Tab>Tab.tsx` where the tab outgrew `SettingsView.tsx`: **Site** `SiteFields` +
-  `BrandFields` + `AuthorFields`; **Layout** `LayoutMenuFields` + `FrontFields` + `FooterField` +
-  `PostImageFields` + `GalleryFields` + `FigureFields`; **Reading** `FeatureFields` +
+  `Settings<Tab>Tab.tsx`: **Blog** `SiteFields` + `BrandFields` + `AuthorFields` + the canonical
+  address; **Home & menu** `LayoutMenuFields` + `FrontFields` + `FooterField` + the thumbnail
+  half of `PostImageFields` + the listing switches; **Posts** the reading switches +
+  `PostHeadFields` / `PostBodyFields` / `PostEndFields` / `PostReachFields` + the hero half of
+  `PostImageFields` + `GalleryFields` + `FigureFields` + `TableFields` + `InkFields` +
   `CommentFields`; **Appearance** `ThemeFields` (the **Default appearance** selector, then the
-  palette grid) + custom CSS on the left, `FontFields` / `FontUpload` / `TypographyFields` /
-  `AdvancedFields` (Rendering: font smoothing, IDE chrome, the **Motion** switch →
-  `settings.motion.enabled`, the editor **Key feedback** instrument and its volume →
-  `settings.motion.keys` / `keyVolume`) on the right; **Search & URLs** `SeoFields` +
-  `RedirectsManager`; **Connections** `NewsletterFields` + `CloudflareFields` +
-  `CommentIntegrations` + `McpFields` + custom code (every credential here is written to the
-  server and never read back, which is why these cards show status rather than values);
-  **System** `ImportFields` + `SecurityFields` + `CacheFields` + the **Dashboard** switch
-  (`settings.dashboard.systemLine`) + `UpdateFields` + `ActivityLogField` + `ExportFields` +
-  `OffsiteFields` + `StorageFields`. `SettingsSearch` (⌘K's index) reaches every one of them.
+  palette grid) + `ShapeFields` + custom CSS on the left, `FontFields` / `FontUpload` /
+  `TypographyFields` on the right; **Comments & mail** `CommentFields` + `CommentIntegrations` +
+  `NewsletterCard`; **Server & connections** `SeoFields` + custom code + `RedirectsManager` +
+  `ImportFields` + `CacheFields` + `UpdateFields` + `StorageFields` + `AiCard` + `McpFields` +
+  `ExportFields` + `CloudflareCard` + `OffsiteCard`; **Account** `SecurityFields` + the
+  **Dashboard** switch (`settings.dashboard.systemLine`) + `ActivityLogField` + `AdvancedFields`
+  (IDE chrome, the **Motion** switch → `settings.motion.enabled`, the editor **Key feedback**
+  instrument and its volume → `settings.motion.keys` / `keyVolume`, the autosave interval).
+  Every credential on those cards is written to the server and never read back, which is why
+  they show status rather than values. `SettingsSearch` (⌘K's index) reaches every one of them.
   `McpFields` is the EXCEPTION to "no own state/save": the MCP enable toggle flows through the
   settings form, but its token manager has its own `/api/mcp/tokens` API (plaintext shown once).
 - **Palette is FRONTEND-ONLY now** — the admin chrome no longer carries a `PaletteToggle` (only the

@@ -1,6 +1,6 @@
 // The Custom CSS box, in a real browser.
 //
-// This product ships no themes, so this box is the whole of the answer once the 155 settings
+// This product ships no themes, so this box is the whole of the answer once the 166 settings
 // run out — and what makes it usable is not the textarea, it is the list of names beside it.
 // `check:contract` proves those names still describe the software; nothing but a browser can
 // prove they are still OFFERED, that clicking one writes it where the caret is, and that a
