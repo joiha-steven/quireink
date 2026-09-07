@@ -342,6 +342,10 @@ export type AdminStrings = {
   footerHint: string
   editorPlaceholder: string
   writeEmpty: string
+  writeNothingOpen: string
+  recentlyEdited: string
+  notFoundTitle: string
+  notFoundBody: string
   dateNow: string
   tbHeading: string
   slashHint: string
@@ -930,6 +934,7 @@ export type AdminStrings = {
   commentsColIp: string
   commentsColDelete: string
   commentsConfirmDelete: string
+  commentsEmptyHint: string
   commentsEmpty: string
   // reader-feature toggles
   featSearch: string
@@ -1077,6 +1082,7 @@ export type AdminStrings = {
   featTransferStatsDesc: string
   logTitle: string
   logEmpty: string
+  logEmptyHint: string
   /** The log's own controls: which kinds, how far back, and what to look for. */
   logKindAll: string
   logKindWriting: string
@@ -1113,6 +1119,7 @@ export type AdminStrings = {
   trashTitle: string
   trashHint: string
   trashEmpty: string
+  trashEmptyHint: string
   colDeletedAt: string
   restored: string
   restoreFailed: string

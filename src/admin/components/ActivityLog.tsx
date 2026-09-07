@@ -158,9 +158,12 @@ export function ActivityLog({ entries, enabled }: { entries: ActivityEntry[]; en
             2026-09-07 and this was the other one — a sentence at the top left of an otherwise
             blank sheet, where every other empty screen in the admin centres its. */}
         {entries.length === 0 ? (
-          <EmptyState title={t.logEmpty} />
+          <EmptyState glyph="blankPage" title={t.logEmpty} description={t.logEmptyHint} />
         ) : rows.length === 0 ? (
-          <EmptyState title={t.logNoMatch} />
+          // The lens, not the blank page: "nothing matched what you typed" and "nothing has
+          // happened yet" are different facts, and the drawing is what tells them apart
+          // before the sentence is read.
+          <EmptyState glyph="lens" title={t.logNoMatch} />
         ) : (
           <>
           <ul className="admin-stagger paper-cols">

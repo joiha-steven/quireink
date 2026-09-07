@@ -4,6 +4,8 @@
 // (neutral scale, no public theme tokens). No `'use client'`: these are presentational
 // — pure primitives render in server OR client trees; Tabs only takes props.
 import type { ReactNode, SelectHTMLAttributes } from 'react'
+import type { GlyphName } from '@/icons'
+import { EmptyGlyph } from './navIcons'
 
 // --- The sheet -----------------------------------------------------------------------------
 //
@@ -102,7 +104,10 @@ export function Setting({
           {badge && <code className="rounded-md bg-neutral-100 px-1.5 py-0.5 text-xs font-normal text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400">{badge}</code>}
         </div>
       )}
-      {note && <p className={NOTE}>{note}</p>}
+      {/* A DIV, not a paragraph. The update-check note is a <details>, and a <details>
+          inside a <p> makes the parser close the paragraph early and re-parent it — so the
+          note lost its own class list, in the browser only, where no test looks. */}
+      {note && <div className={NOTE}>{note}</div>}
     </div>
   )
   if (inline) {
@@ -325,23 +330,33 @@ export function PageHeader({
   )
 }
 
-// Empty / zero state — centered muted message, optional icon + action.
+// Empty / zero state — a picture, what the state is, why, and the way out of it.
+//
+// The `glyph` is not decoration and it is not an `icon` prop taking whatever a call site
+// hands it, which is what this took before and what NOTHING passed: eleven files used it at
+// thirteen call sites on 2026-09-07, and every one was a single grey sentence in the middle
+// of a large blank card, indistinguishable at a glance from a page that failed to load. A named
+// drawing from `GLYPHS` gives the state a shape the eye lands on first, and closing the prop
+// to a name is what stops eleven screens each choosing a different picture for "nothing here".
 export function EmptyState({
   title,
   description,
-  icon,
+  glyph,
   action,
   className = '',
 }: {
   title: ReactNode
   description?: ReactNode
-  icon?: ReactNode
+  glyph?: GlyphName
   action?: ReactNode
   className?: string
 }) {
   return (
     <div className={`flex flex-col items-center justify-center px-6 py-16 text-center ${className}`}>
-      {icon && <div className="mb-3 text-neutral-300 dark:text-neutral-600">{icon}</div>}
+      {/* Two steps lighter than the sentence under it. A 96px drawing at text ink would be
+          the loudest thing on the screen, and what it has to say is that there is nothing
+          here — it sets the mood and then gets out of the way. */}
+      {glyph && <div className="mb-5 text-neutral-300 dark:text-neutral-700"><EmptyGlyph name={glyph} /></div>}
       {/* The title is a STATE ("No posts yet"), which is the machine talking, so it keeps the
           chrome font. The description explains the state in a sentence, and takes the other
           face — the same split as a label and its note. */}

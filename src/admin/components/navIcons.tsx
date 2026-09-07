@@ -5,7 +5,7 @@
 //
 // The named exports stay, because eighteen call sites naming their icon is worth more than
 // one generic `<Icon name>` prop at each of them — the seam to the shared set lives here.
-import { ICONS, type IconName } from '@/icons'
+import { GLYPHS, ICONS, type GlyphName, type IconName } from '@/icons'
 
 const C = 'h-5 w-5 shrink-0'
 
@@ -59,3 +59,29 @@ export function IconClose() { return <I name="close" /> }
 export const SharedGlyph = ({ name }: { name: IconName }) => (
   <g dangerouslySetInnerHTML={{ __html: ICONS[name] }} />
 )
+
+/**
+ * The picture at the top of an empty state, at 96px.
+ *
+ * Its own wrapper because its board is its own: `GLYPHS` is drawn on 48 units so that the
+ * stroke can stay a LINE at this size — 1.1 of 48, shown at 96, is 2.2px on the glass. The
+ * small set's 1.8 of 24 would be 7.2px here.
+ *
+ * `aria-hidden`, always. The sentence under the drawing is the empty state, and a picture
+ * that repeats it in the accessibility tree makes a screen reader say the same thing twice.
+ */
+export function EmptyGlyph({ name }: { name: GlyphName }) {
+  return (
+    <svg
+      viewBox="0 0 48 48"
+      className="h-24 w-24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.1}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+      dangerouslySetInnerHTML={{ __html: GLYPHS[name] }}
+    />
+  )
+}

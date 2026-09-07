@@ -78,7 +78,7 @@ export function NewsletterSubscribers() {
         ]}
       />
       {subs.length === 0 ? (
-        <div className="p-8"><EmptyState title={t.nlNoSubs} description={t.nlNoSubsHint} /></div>
+        <div className="p-8"><EmptyState glyph="letter" title={t.nlNoSubs} description={t.nlNoSubsHint} /></div>
       ) : (
         <ul className="admin-stagger paper-cols">
           {subs.map((s, i) => (

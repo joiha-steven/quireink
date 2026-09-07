@@ -115,7 +115,7 @@ export function CommentsTable({ initial }: { initial: AdminComment[] }) {
     return (
       <div>
         <PageHeader title={t.commentsNavTitle} />
-        <EmptyState title={t.commentsEmpty} />
+        <EmptyState glyph="letter" title={t.commentsEmpty} description={t.commentsEmptyHint} />
       </div>
     )
   }

@@ -257,4 +257,56 @@ export function registerShellFlows({ flow, expect, atWidth }: Tour): void {
       document.querySelector('aside [data-nav-arrange="on"]').click()
       return 'ok (' + carried + ' dragged and kept, stepper moved, wordmark switched, order reset)'
     })()`, 900))
+
+  // A DEAD END IS THE PLACE A LINK IS WORTH MOST, and the admin's own miss was the emptiest
+  // screen it had: the number 404 in small grey type and one link home. It now carries a
+  // drawing, a sentence saying what probably went wrong, the search, and the three pieces
+  // touched last — which is the list somebody who mistyped an address most often wanted.
+  //
+  // NOTE: this body is a template literal. No backticks.
+  flow('admin: a miss offers a picture, the search and what was touched last', () => expect('/admin/no-such-screen', `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      const box = document.querySelector('[data-admin-404]')
+      if (!box) return 'the admin router did not report a miss'
+      const glyph = box.querySelector('svg')
+      if (!glyph) return 'the empty state has no drawing'
+      // 96 is the rule; the assertion is loose on purpose, because what would break it is a
+      // glyph rendered at icon size, not a pixel of rounding.
+      const size = Math.round(glyph.getBoundingClientRect().width)
+      if (size < 80) return 'the drawing is ' + size + 'px, which is an icon and not a glyph'
+      if (!box.querySelector('button')) return 'no way to search'
+      if (!box.querySelector('a[href="/admin"]')) return 'no way home'
+      // The recent list arrives with the content view, so it is polled rather than read once.
+      let recent = []
+      for (let i = 0; i < 40 && recent.length === 0; i++) {
+        recent = Array.from(box.querySelectorAll('a[href*="/admin/editor/"], a[href*="/admin/page-editor/"]'))
+        if (recent.length === 0) await sleep(150)
+      }
+      if (recent.length === 0) return 'nothing recently edited was offered'
+      if (recent.length > 3) return recent.length + ' pieces offered: a 404 is not the Write screen'
+      return 'ok ' + size + 'px glyph, search, home and ' + recent.length + ' recent piece(s)'
+    })()`, 900))
+
+  // The other dead end. The sheet beside the write list offered one grey sentence and two
+  // buttons that both start something NEW, to a screen most often reached by somebody coming
+  // back to something old. 1440 because the sheet only exists beside the pane.
+  //
+  // NOTE: this body is a template literal. No backticks.
+  flow('admin: the empty write sheet offers what was touched last', () => atWidth(1440, '/admin/content', `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      const sheet = document.querySelector('[data-write-empty]')
+      if (!sheet) return 'the write screen has no empty sheet'
+      if (!sheet.offsetParent) return 'the sheet is hidden at 1440, where it is meant to show'
+      if (!sheet.querySelector('svg')) return 'the empty sheet has no drawing'
+      let recent = []
+      for (let i = 0; i < 40 && recent.length === 0; i++) {
+        recent = Array.from(sheet.querySelectorAll('a[href*="/admin/editor/"], a[href*="/admin/page-editor/"]'))
+        if (recent.length === 0) await sleep(150)
+      }
+      if (recent.length === 0) return 'nothing recently edited was offered'
+      return 'ok a drawing and ' + recent.length + ' recent piece(s) beside the two new-piece buttons'
+    })()`, 900))
+
 }

@@ -65,6 +65,18 @@ in all eleven languages — the row may not wrap.
 (`stat-band.tsx`) are the two, and a third is a copy. `EmptyState` existed and two files used it while
 five hand-rolled a message in three styles.
 
+**An empty state is a picture, a state, a sentence and a way out.** `EmptyState` takes a
+`glyph` — a NAME from `GLYPHS` in `src/icons.ts`, not a node — drawn at 96px two ink steps
+below the text. The prop is closed to a name on purpose: it took an arbitrary `icon` node
+before 2026-09-07 and nothing ever passed one, so thirteen empty states in eleven files each
+showed a single grey sentence in the middle of a large blank card, which is what a page that
+FAILED to load also looks like. `GLYPHS` is its own 48-unit board because the icon set's 1.8-of-24 stroke renders
+at 7.2px this size, and because a mark drawn to survive at 20px throws away what a 96px
+picture has room for — `page` carries ruled lines, `blankPage` carries none, and the second
+one is the whole message. The two dead ends, the admin 404 and the empty Write sheet, also
+carry `RecentPieces`: the three pieces touched last, read off the same `useWritingItems` sort
+the write pane uses, so both screens name the same piece first.
+
 **A button is a fixed object; the text beside it gives way.** `ui/Button` carries
 `whitespace-nowrap shrink-0` for that reason: without them a button in a flex row beside
 anything long is squeezed until its own LABEL wraps. The MCP card shipped "Tạo token" broken

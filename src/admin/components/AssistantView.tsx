@@ -294,6 +294,7 @@ export function AssistantView({ title, configured, model }: {
             // like a page that failed to load the rest of itself.
             <div className="flex h-full items-center justify-center">
             <EmptyState
+              glyph="pen"
               title={configured ? t.assistantEmpty : t.assistantNoModel}
               description={configured ? t.assistantIntro : t.assistantNeedsModel}
               action={configured

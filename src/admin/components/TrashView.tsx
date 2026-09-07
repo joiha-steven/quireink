@@ -172,7 +172,7 @@ export function TrashView({
   // ----- per-kind tables (kept inline so they share act/onRestore/onPurge) -----
 
   function Empty() {
-    return <div className="p-8"><EmptyState title={t.trashEmpty} /></div>
+    return <div className="p-8"><EmptyState glyph="emptyBox" title={t.trashEmpty} description={t.trashEmptyHint} /></div>
   }
 
   // A trashed item's row: the thing first, then one line of small print — when it was

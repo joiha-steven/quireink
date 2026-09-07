@@ -128,6 +128,59 @@ export const ICONS = {
 
 export type IconName = keyof typeof ICONS
 
+// ─────────────────────────────────────────────────────────────────────────────
+// The BIG drawings — the picture at the top of an empty state, read at 96px.
+//
+// A second board, and the reason is arithmetic. Every body above is drawn on 24 units at
+// stroke 1.8; blown up to 96 that stroke renders at 7.2px, which is not a line drawing but
+// a fat sign. Scaling the stroke down instead fixes the weight and leaves the DRAWING wrong:
+// a mark meant to survive at 20px throws away everything a 96px picture has room for, and
+// its simplifications — two ruled lines standing in for a page of text — read as crude once
+// they are five times the size.
+//
+// So these are drawn for the size: 48 units, stroke 1.1 from the wrapper (2.2px at 96), and
+// the same hand as the set above — round caps, filled dots, one echo stroke at 0.85 where
+// the object carries a fold or a shadow.
+//
+// They also say different things from their small cousins, which is the other half of why
+// there are six rather than five re-used ones. `page` carries ruled lines because a page
+// icon must look like writing; `blankPage` carries NONE, because the whole message is that
+// nothing has been written. `mail` is a sealed envelope; `letter` stands open and empty.
+// `trash` is a bin you drop things into; `emptyBox` is a crate with its lid off and nothing
+// in it. `compass` has no small cousin at all — being lost is a state only a 404 reaches.
+export const GLYPHS = {
+  /** Nothing written yet. The corner is folded; the face is bare. */
+  blankPage:
+    '<path d="M9.5 4h19L38.5 13.5V44H9.5z"/><path d="M28.5 4v9.5h10"/>',
+  /** The archive box the bin actually is, with a bare label line and nothing weighing it. */
+  emptyBox:
+    '<path d="M8 17.5h32v24a2.5 2.5 0 0 1-2.5 2.5h-27A2.5 2.5 0 0 1 8 41.5z"/>'
+    + '<rect x="5" y="9.5" width="38" height="8" rx="1.5"/>'
+    + '<path d="M19.5 26h9" stroke-width="0.85"/>',
+  /** Searched, and nothing came back. The lens is empty on purpose. */
+  lens:
+    '<circle cx="20.5" cy="20.5" r="13.5"/><path d="m30 30 13 13"/>'
+    + '<path d="M13 16.5A9 9 0 0 1 17.2 12.3" stroke-width="0.85"/>',
+  /** The nib, resting on the line it has not written on yet. */
+  pen:
+    '<path d="M28 7 41 20 17 44H4V31z"/><path d="m17 30.8-6.6 6.6"/>'
+    + '<circle cx="18.9" cy="28.9" r="2.2" fill="currentColor" stroke="none"/>'
+    + '<path d="M6 45.5h34" stroke-width="0.85"/>',
+  /** An envelope standing open: the flap is up and there is nothing in it. */
+  letter:
+    '<path d="M5 18.5h38v21a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z"/>'
+    + '<path d="M5 18.5 24 4.5l19 14"/>'
+    + '<path d="m6.5 41.5 12.5-11M41.5 41.5l-12.5-11" stroke-width="0.85"/>',
+  /** Lost. The needle still points somewhere, which is the whole consolation on a 404. */
+  compass:
+    '<circle cx="24" cy="24" r="20"/>'
+    + '<path d="m32.9 15.1-5.1 12.7-12.7 5.1 5.1-12.7z"/>'
+    + '<circle cx="24" cy="24" r="1.7" fill="currentColor" stroke="none"/>'
+    + '<path d="M11.3 17.3a14.4 14.4 0 0 1 6-6" stroke-width="0.85"/>',
+} as const
+
+export type GlyphName = keyof typeof GLYPHS
+
 /**
  * The pen's own mark: a loop round a word, overshooting its start the way a real one does.
  * INLINE SVG, not a CSS mask, since 2026-09-06. It was a data-URI mask on a pseudo-element
