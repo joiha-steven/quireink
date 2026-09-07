@@ -139,9 +139,28 @@ export function DateField({
               onChange={(e) => setTime(e.target.value)}
               className={`${CONTROL} w-28 tabular-nums`}
             />
-            <button type="button" onClick={() => { onChange(toValue(new Date())); setView(new Date(today.getFullYear(), today.getMonth(), 1)) }} className={`${NOTE} hover:text-neutral-900 dark:hover:text-white`}>
-              {t.dateNow}
-            </button>
+            {/* TWO SHORTCUTS, and the second is the one a scheduler actually reaches for.
+                "Now" answers "publish this" and is one click; a post being QUEUED is almost
+                always queued for a morning, and picking tomorrow 9:00 out of the grid is
+                three — find the month, find the cell, then type the time. */}
+            <span className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  const at = new Date()
+                  at.setDate(at.getDate() + 1)
+                  at.setHours(9, 0, 0, 0)
+                  onChange(toValue(at))
+                  setView(new Date(at.getFullYear(), at.getMonth(), 1))
+                }}
+                className={`${NOTE} hover:text-neutral-900 dark:hover:text-white`}
+              >
+                {t.dateTomorrow}
+              </button>
+              <button type="button" onClick={() => { onChange(toValue(new Date())); setView(new Date(today.getFullYear(), today.getMonth(), 1)) }} className={`${NOTE} hover:text-neutral-900 dark:hover:text-white`}>
+                {t.dateNow}
+              </button>
+            </span>
           </div>
         </div>
       )}
