@@ -288,6 +288,37 @@ export function yearTotals(): YearStat[] {
   }
 }
 
+/**
+ * The same totals, for the surface that asks for them on almost every request.
+ *
+ * `getViewTotals` is a GROUP BY over a table nothing ever deletes from, and the public
+ * sidebar asks for it on every uncached listing render, every `/search` (never cached by
+ * design) and every 404 (never cached either, so a bot walking dead URLs pays for a full
+ * scan per miss). A year of traffic makes that tens of milliseconds of single-threaded CPU
+ * that nothing is waiting on.
+ *
+ * A minute of staleness, because the block it feeds is "most viewed of all time" and the
+ * ranking of an all-time list does not move inside a minute. The admin's own reads stay
+ * exact: they happen a few times an hour and the owner may be watching a number change.
+ */
+const VIEW_TOTALS_TTL_MS = 60_000
+let viewTotalsAt = 0
+let viewTotalsValue: Record<string, number> = {}
+
+export async function getViewTotalsCached(): Promise<Record<string, number>> {
+  const now = Date.now()
+  if (now - viewTotalsAt < VIEW_TOTALS_TTL_MS) return viewTotalsValue
+  viewTotalsValue = await getViewTotals()
+  viewTotalsAt = now
+  return viewTotalsValue
+}
+
+/** Only for tests, which write analytics rows straight into the table. */
+export function resetViewTotalsCache(): void {
+  viewTotalsAt = 0
+  viewTotalsValue = {}
+}
+
 export async function getViewTotals(): Promise<Record<string, number>> {
   try {
     const out: Record<string, number> = {}

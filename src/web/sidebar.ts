@@ -11,7 +11,7 @@
 
 import type { MenuItem, SiteSettings } from '@/types'
 import { getPublicPosts, getPublicTaxonomy } from '@/content/posts'
-import { getViewTotals } from '@/analytics/summary'
+import { getViewTotalsCached } from '@/analytics/summary'
 import { getSeriesList } from '@/content/series'
 import { tagText, termSlug } from '@/content/taxonomy'
 import { byYear, yearAnchor } from '@/content/archive'
@@ -145,7 +145,12 @@ export async function renderSidebar(
   if (!settings.features.sidebar) return menuRail(settings)
 
   const [{ categories, tags }, posts, viewTotals, allSeries] = await Promise.all([
-    getPublicTaxonomy(), getPublicPosts(), getViewTotals(),
+    getPublicTaxonomy(), getPublicPosts(),
+    // Only when the block will draw something. 0 hides it, and asking anyway meant a
+    // GROUP BY over every analytics row ever recorded on a site that had switched it off.
+    settings.mostViewedCount > 0
+      ? getViewTotalsCached()
+      : Promise.resolve({} as Record<string, number>),
     // Only fetched when the block is on. A series list is its own query and the sidebar
     // renders on every listing page.
     settings.features.sidebarSeries
