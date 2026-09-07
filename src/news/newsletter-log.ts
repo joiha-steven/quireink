@@ -151,7 +151,7 @@ export async function recordOpen(token: string): Promise<void> {
  * wrapping commas are trimmed back off afterwards. `instr` rather than `like` so a slug
  * never has to be escaped.
  */
-export async function renameSends(from: string, to: string): Promise<void> {
+export function renameSends(from: string, to: string): void {
   if (!from || !to || from === to) return
   try {
     run(

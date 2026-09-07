@@ -296,11 +296,11 @@ export async function emptyCommentsTrash(): Promise<number> {
 }
 
 // Move a post's comments when its slug changes (called from savePost's rename path).
-export async function renameComments(oldSlug: string, newSlug: string): Promise<void> {
+export function renameComments(oldSlug: string, newSlug: string): void {
   run(`update comments set post_slug = ? where post_slug = ?`, newSlug, oldSlug)
 }
 
 // Hard-delete every comment of a post (called when the post itself is purged).
-export async function deleteCommentsForPost(postSlug: string): Promise<void> {
+export function deleteCommentsForPost(postSlug: string): void {
   run(`delete from comments where post_slug = ?`, postSlug)
 }

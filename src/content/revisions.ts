@@ -100,12 +100,12 @@ export async function pushRevision(previous: PostWithContent): Promise<void> {
 }
 
 // Move a post's revisions when its slug changes (keep history attached).
-export async function renameRevisions(from: string, to: string): Promise<void> {
+export function renameRevisions(from: string, to: string): void {
   if (from === to) return
   run(`update post_revisions set slug = ? where slug = ?`, to, from)
 }
 
 // Drop all revisions for a post (called when the post itself is deleted).
-export async function deleteRevisions(slug: string): Promise<void> {
+export function deleteRevisions(slug: string): void {
   run(`delete from post_revisions where slug = ?`, slug)
 }

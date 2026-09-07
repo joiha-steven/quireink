@@ -6,65 +6,25 @@ import type { Post, PostWithContent } from '@/types'
 import { collapseBlob, expandBlob } from '@/media/blob'
 import { slugify, deriveExcerpt, clampExcerpt, isPublicallyVisible, readingMinutes } from '@/utils'
 import { ensureSlugFree } from '@/content/slugs'
-import { pushRevision, renameRevisions, deleteRevisions } from '@/content/revisions'
-import { renameComments, deleteCommentsForPost } from '@/comments/comments'
+import { pushRevision, renameRevisions } from '@/content/revisions'
+import { renameComments } from '@/comments/comments'
 import { saveRedirect, clearRedirectForPath } from '@/server/redirects'
 import { getSettings } from '@/content/settings'
 import { writeExcerpt } from '@/content/ai-excerpt'
-import { TERM_SELECT, parseTerms, writeTerms, updateTermRows, type TermKind } from '@/content/post-terms'
+import { writeTerms, updateTermRows, type TermKind } from '@/content/post-terms'
+import { META_COLS, rowToMeta, type PostRow } from '@/content/post-row'
 import { all, one, run, tx } from '@/store/query'
-import { liveOnly, nowMs, toIso, fromIso } from '@/store/db'
+import { liveOnly, nowMs, fromIso } from '@/store/db'
 import { clearAutosave } from '@/content/autosave'
 import { renameSends } from '@/news/newsletter-log'
 
 export type { TermKind }
+// The trash half moved into its own file when this one reached its ceiling. Re-exported so no
+// call site has to know where it went.
+export {
+  deletePost, restorePost, purgePost, getTrashedPosts, emptyPostsTrash,
+} from '@/content/posts-trash'
 
-// Metadata columns (everything except the heavy `content` body) for list reads.
-const META_COLS = `p.slug, p.title, p.date, p.status, p.featured_image, p.excerpt,
-  p.reading_minutes, p.series, p.series_order, p.meta_title, p.meta_description,
-  p.cover_image, p.updated_at,${TERM_SELECT}`
-
-// A row as stored (snake_case, store-relative image refs). Timestamps are integer
-// milliseconds; `categories`/`tags` arrive as JSON text from the junction table.
-type PostRow = {
-  slug: string
-  title: string
-  date: number
-  status: string
-  categories: string | null
-  tags: string | null
-  featured_image: string | null
-  excerpt: string | null
-  reading_minutes: number | null
-  series: string | null
-  series_order: number | null
-  meta_title: string | null
-  meta_description: string | null
-  cover_image: string | null
-  updated_at?: number | null
-  content?: string | null
-}
-
-// Row -> Post metadata (absolute image URLs, no body).
-function rowToMeta(row: PostRow): Post {
-  return {
-    title: row.title,
-    slug: row.slug,
-    date: toIso(row.date),
-    status: row.status === 'published' ? 'published' : 'draft',
-    categories: parseTerms(row.categories),
-    tags: parseTerms(row.tags),
-    featuredImage: row.featured_image ? expandBlob(row.featured_image) : undefined,
-    excerpt: row.excerpt ?? undefined,
-    readingMinutes: row.reading_minutes ?? undefined,
-    series: row.series ?? undefined,
-    seriesOrder: row.series != null ? (row.series_order ?? 0) : undefined,
-    metaTitle: row.meta_title ?? undefined,
-    metaDescription: row.meta_description ?? undefined,
-    coverImage: row.cover_image ? expandBlob(row.cover_image) : undefined,
-    updatedAt: row.updated_at == null ? undefined : toIso(row.updated_at),
-  }
-}
 
 // Stable projection of meaningful fields — to decide whether a save changed
 // anything (so a no-op autosave skips a revision).
@@ -221,6 +181,10 @@ export async function savePost(
     }
   }
 
+  // `existing` decides whether this is a rename at all: a PUT naming a slug with no row is a
+  // CREATE, and without that guard one mistyped slug in an MCP call left a second copy of the
+  // post and a permanent redirect out of a path that never held anything.
+  const renaming = !!previousSlug && previousSlug !== post.slug && !!existing
   // The row and its terms move together: a half-applied save would leave a post carrying
   // its predecessor's categories.
   tx(() => {
@@ -261,24 +225,22 @@ export async function savePost(
       },
     )
     writeTerms(post.slug, post.categories, post.tags)
+    // A RENAME FINISHES HERE, or none of it happened. The new row is an INSERT, so until the
+    // old one goes there are two live rows for one post; this used to be four statements after
+    // the commit, and a process that stopped between them left both rows standing with
+    // `ensureSlugFree` refusing the old slug for good. The send log moves too: keyed by slug,
+    // and the only thing telling the newsletter tab this post already went out.
+    if (renaming) {
+      run(`delete from posts where slug = ?`, previousSlug)
+      renameRevisions(previousSlug, post.slug)
+      renameComments(previousSlug, post.slug)
+      renameSends(previousSlug, post.slug)
+    }
   })
 
-  // Slug changed → drop the old row, move everything keyed by the old slug, and leave a
-  // 301 from the old path so existing links + search results keep working.
-  //
-  // `existing` is the guard: a PUT naming a slug that has no row is a CREATE, not a rename.
-  // Without it one mistyped slug in an MCP call left a second copy of the post and a
-  // permanent redirect out of a path that never held anything.
-  //
-  // The send log moves too: it is keyed by slug and is the only thing telling the newsletter
-  // tab this post already went out. A newsletter cannot be recalled.
-  if (previousSlug && previousSlug !== post.slug && existing) {
-    run(`delete from posts where slug = ?`, previousSlug)
-    await renameRevisions(previousSlug, post.slug)
-    await renameComments(previousSlug, post.slug)
-    await renameSends(previousSlug, post.slug)
-    await saveRedirect({ source: `/${previousSlug}`, destination: `/${post.slug}`, permanent: true })
-  }
+  // The 301 is outside it: it validates its own input and can refuse, and a rename with no
+  // redirect is still a rename where a half-applied one is two posts.
+  if (renaming) await saveRedirect({ source: `/${previousSlug}`, destination: `/${post.slug}`, permanent: true })
   // The autosave is now the OLDER text, so it stops being offered. Here rather than in the
   // route, because the MCP server and the importer save through this same function and a
   // snapshot surviving one of those would offer to restore what the author just replaced.
@@ -297,50 +259,6 @@ export async function savePost(
   }
 
   return toMeta(post)
-}
-
-// Soft-delete (set deleted_at): row/body/revisions/blobs kept, slug stays reserved
-// so restore always works. Nothing purged until an explicit Trash purge.
-export async function deletePost(slug: string): Promise<void> {
-  run(`update posts set deleted_at = ? where slug = ?`, nowMs(), slug)
-}
-
-// Restore to live (clear deleted_at); slug was reserved → no collision check.
-//
-// The redirect goes with it. Trashing a post and then pointing its path somewhere else is
-// an ordinary thing to do, and the redirect middleware runs BEFORE the router: without
-// this, restoring the post put it back in the table and left it unreachable, answering the
-// old redirect instead, with nothing to say why. Live content wins, both directions.
-export async function restorePost(slug: string): Promise<void> {
-  run(`update posts set deleted_at = null where slug = ?`, slug)
-  await clearRedirectForPath(`/${slug}`)
-}
-
-// Hard delete a post + its revisions (Trash UI only). `post_terms` cascades.
-export async function purgePost(slug: string): Promise<void> {
-  run(`delete from posts where slug = ?`, slug)
-  await deleteRevisions(slug)
-  await deleteCommentsForPost(slug)
-}
-
-// Trashed posts (metadata only), most-recently-deleted first, for the Trash view.
-export async function getTrashedPosts(): Promise<Post[]> {
-  try {
-    return all<PostRow & { deleted_at: number }>(
-      `select ${META_COLS}, p.deleted_at from posts p
-        where p.deleted_at is not null order by p.deleted_at desc`,
-    ).map((row) => ({ ...rowToMeta(row), deletedAt: toIso(row.deleted_at) }))
-  } catch (error) {
-    console.error(`[ERROR] posts.getTrashedPosts: ${(error as Error).message}`)
-    return []
-  }
-}
-
-// Permanently remove EVERY trashed post (empty the posts Trash). Returns the count.
-export async function emptyPostsTrash(): Promise<number> {
-  const trashed = await getTrashedPosts()
-  await Promise.all(trashed.map((p) => purgePost(p.slug)))
-  return trashed.length
 }
 
 // Up to `limit` other public posts sharing the most tags/categories (tags weighted
