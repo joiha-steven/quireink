@@ -26,6 +26,8 @@ import { foldAccents } from '@/utils'
 import { SETTINGS_INDEX } from './settings-index'
 import { useAdminT } from './I18nProvider'
 import { OVERLAY } from './sheet'
+import { UTIL } from './scale'
+import { useToast } from '@/admin/ui/Toast'
 import type { AdminStrings } from '@/locales/types'
 
 /**
@@ -40,6 +42,8 @@ import type { AdminStrings } from '@/locales/types'
 export const PALETTE_EVENT = 'quireink:palette'
 export const openPalette = (): void => { window.dispatchEvent(new Event(PALETTE_EVENT)) }
 
+type Group = 'recent' | 'action' | 'post' | 'screen' | 'setting'
+
 type Row = {
   id: string
   label: string
@@ -47,8 +51,33 @@ type Row = {
   hint: string
   /** What the typing is matched against — wider than what is shown. */
   search: string
+  /** Where it goes. Empty for a row that DOES something instead of going somewhere. */
   href: string
-  group: 'action' | 'screen' | 'setting' | 'post'
+  /** What it does, for the rows that are verbs rather than places. */
+  run?: () => Promise<void> | void
+  group: Group
+}
+
+/** The five most recently used rows, by id. A device preference: it never leaves this browser. */
+const RECENT_KEY = 'quireink-admin-palette-recent'
+const RECENT_MAX = 5
+
+function readRecent(): string[] {
+  try {
+    const raw = JSON.parse(localStorage.getItem(RECENT_KEY) ?? '[]') as unknown
+    return Array.isArray(raw) ? raw.filter((x): x is string => typeof x === 'string').slice(0, RECENT_MAX) : []
+  } catch {
+    // A private window, or somebody's hand-edited value. An empty history is the right
+    // answer to both, and neither is worth a message.
+    return []
+  }
+}
+
+function rememberRecent(id: string): void {
+  try {
+    const next = [id, ...readRecent().filter((x) => x !== id)].slice(0, RECENT_MAX)
+    localStorage.setItem(RECENT_KEY, JSON.stringify(next))
+  } catch { /* storage refused; the palette still works, it just forgets */ }
 }
 
 /**
@@ -109,7 +138,10 @@ function buildRows(t: AdminStrings): Row[] {
   ]
 }
 
-const GROUP_ORDER: Row['group'][] = ['action', 'post', 'screen', 'setting']
+// RECENT FIRST, and it is the whole reason a palette beats a menu: the thing you did an
+// hour ago is the thing you are most likely doing again. Then the verbs, then the writing,
+// then the places, then the 107 settings rows which only ever appear once something is typed.
+const GROUP_ORDER: Group[] = ['recent', 'action', 'post', 'screen', 'setting']
 
 export function CommandPalette() {
   const t = useAdminT()
@@ -118,7 +150,13 @@ export function CommandPalette() {
   const [query, setQuery] = useState('')
   const [cursor, setCursor] = useState(0)
   const [posts, setPosts] = useState<Row[]>([])
+  const [recent, setRecent] = useState<string[]>([])
   const inputRef = useRef<HTMLInputElement>(null)
+  const { notify } = useToast()
+
+  // Read on OPEN rather than on mount: the palette outlives every screen in the admin, and a
+  // list read once at boot would still be showing this morning's five at midnight.
+  useEffect(() => { if (open) setRecent(readRecent()) }, [open])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -173,15 +211,68 @@ export function CommandPalette() {
     return () => clearTimeout(timer)
   }, [open, query, t])
 
-  const rows = useMemo(() => buildRows(t), [t])
+  /**
+   * The two verbs the palette carries that are not a destination.
+   *
+   * They live here rather than in `buildRows` because they need the toast and the refresh —
+   * `buildRows` is a pure function of the dictionary, and keeping it that way is what lets it
+   * be memoised on `t` alone.
+   */
+  const verbs: Row[] = useMemo(() => [
+    {
+      id: 'v:cache',
+      label: t.clearCache,
+      hint: '',
+      search: t.clearCache,
+      href: '',
+      group: 'action',
+      run: async () => {
+        const res = await fetch('/api/cache/clear', { method: 'POST' })
+        notify(res.ok ? t.cacheCleared : t.saveFailed, res.ok ? 'success' : 'error')
+      },
+    },
+    {
+      id: 'v:backup',
+      label: t.paletteBackupNow,
+      hint: '',
+      search: t.paletteBackupNow,
+      href: '',
+      group: 'action',
+      run: async () => {
+        const res = await fetch('/api/backup/run', { method: 'POST' })
+        notify(res.ok ? t.paletteBackupDone : t.saveFailed, res.ok ? 'success' : 'error')
+      },
+    },
+  ], [t, notify])
+
+  const rows = useMemo(() => [...buildRows(t), ...verbs], [t, verbs])
   const needle = foldAccents(query.trim())
   const shown = useMemo(() => {
     const all = [...rows, ...posts]
     const matched = needle
       ? all.filter((r) => foldAccents(`${r.search} ${r.hint}`).includes(needle))
       : all.filter((r) => r.group !== 'setting') // an empty box offers the short list, not 107 rows
-    return [...matched].sort((a, b) => GROUP_ORDER.indexOf(a.group) - GROUP_ORDER.indexOf(b.group)).slice(0, 40)
-  }, [rows, posts, needle])
+    // RECENT IS A COPY, not a move: a row that is both recent and an action appears twice on
+    // purpose — once where you left it and once where it lives — because the second is how
+    // somebody learns where it lives.
+    const byId = new Map(all.map((r) => [r.id, r]))
+    const recentRows: Row[] = needle
+      ? []
+      : recent.map((id) => byId.get(id)).filter((r): r is Row => r !== undefined)
+        .map((r) => ({ ...r, id: `r:${r.id}`, group: 'recent' as const }))
+    return [...recentRows, ...matched]
+      .sort((a, b) => GROUP_ORDER.indexOf(a.group) - GROUP_ORDER.indexOf(b.group))
+      .slice(0, 40)
+  }, [rows, posts, needle, recent])
+
+  /** The heading a row opens, or null when the row before it was in the same group. */
+  const GROUP_LABEL: Record<Group, string> = {
+    recent: t.paletteGroupRecent,
+    action: t.paletteGroupAction,
+    post: t.paletteGroupPost,
+    screen: t.paletteGroupScreen,
+    setting: t.paletteGroupSetting,
+  }
 
   useEffect(() => setCursor(0), [query])
   useEffect(() => { if (open) inputRef.current?.focus() }, [open])
@@ -192,7 +283,11 @@ export function CommandPalette() {
     if (!row) return
     setOpen(false)
     setQuery('')
-    router.push(row.href)
+    // The RECENT copy remembers what it is a copy OF, so choosing it twice does not fill the
+    // list with `r:r:r:` prefixes.
+    rememberRecent(row.id.startsWith('r:') ? row.id.slice(2) : row.id)
+    if (row.run) void row.run()
+    else router.push(row.href)
   }
 
   const onKeyDown = (e: React.KeyboardEvent) => {
@@ -231,6 +326,13 @@ export function CommandPalette() {
           <ul className="max-h-[50vh] overflow-y-auto py-1">
             {shown.map((row, i) => (
               <li key={row.id}>
+                {/* THE HEADING, drawn by the FIRST row of each group rather than by a second
+                    pass over the list. The list was sorted into groups already and showed no
+                    sign of it, so "Settings" and "Screens" ran together as one column of
+                    forty rows with a change of subject somewhere in the middle. */}
+                {(i === 0 || shown[i - 1]?.group !== row.group) && (
+                  <p className={`${UTIL} px-4 pb-1 ${i === 0 ? 'pt-1.5' : 'pt-3'}`}>{GROUP_LABEL[row.group]}</p>
+                )}
                 <button
                   type="button"
                   onMouseEnter={() => setCursor(i)}
