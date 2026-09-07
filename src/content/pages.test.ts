@@ -66,6 +66,23 @@ describe('savePage', () => {
     expect(redirects[0]).toMatchObject({ source: '/old-name', destination: '/new-name', permanent: true })
   })
 
+  // Same guard as `savePost`: a slug nothing holds is a create, not a rename.
+  it('a save naming a slug nothing holds creates the page and writes no redirect', async () => {
+    const saved = await savePage({ title: 'Fresh', content: 'body' }, 'never-existed')
+    expect(saved.slug).toBe('fresh')
+    expect((await getPage('fresh'))!.content).toBe('body')
+    expect(await getRedirects()).toHaveLength(0)
+  })
+
+  it('a rename keeps the birthday instead of restamping it as today', async () => {
+    await savePage({ title: 'Old Name', content: 'body' })
+    const born = one<{ created_at: number }>(`select created_at from pages where slug = 'old-name'`)!.created_at
+    db().run(`update pages set created_at = ? where slug = 'old-name'`, [born - 90_000_000])
+    await savePage({ title: 'New Name', content: 'body' }, 'old-name')
+    expect(one<{ created_at: number }>(`select created_at from pages where slug = 'new-name'`)!.created_at)
+      .toBe(born - 90_000_000)
+  })
+
   it('clears a redirect that pointed AWAY from the slug now going live (no self-loop)', async () => {
     await savePage({ title: 'A', content: '1' })
     await savePage({ title: 'B', content: '1' }, 'a') // leaves /a -> /b

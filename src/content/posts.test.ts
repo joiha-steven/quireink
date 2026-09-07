@@ -12,6 +12,7 @@ import {
 import { getRevisions } from '@/content/revisions'
 import { getRedirects } from '@/server/redirects'
 import { addComment, getCommentTree } from '@/comments/comments'
+import { logSend, statsByPost } from '@/news/newsletter-log'
 
 const DIR = './.tmp/test-posts'
 freshDatabase(DIR)
@@ -21,7 +22,7 @@ const PAST = '2020-01-01T00:00:00.000Z'
 const FUTURE = '2099-01-01T00:00:00.000Z'
 
 beforeEach(() => {
-  for (const t of ['posts', 'pages', 'post_revisions', 'comments', 'redirects', 'settings']) {
+  for (const t of ['posts', 'pages', 'post_revisions', 'comments', 'redirects', 'settings', 'newsletter_sends']) {
     db().run(`delete from ${t}`)
   }
 })
@@ -93,6 +94,44 @@ describe('savePost', () => {
     expect((await getRevisions('new')).map((r) => r.content)).toEqual(['v2', 'v1'])
     expect(await getCommentTree('new')).toHaveLength(1)
     expect((await getRedirects())[0]).toMatchObject({ source: '/old', destination: '/new', permanent: true })
+  })
+
+  // The send log is keyed by slug and is the only record that a post already went out. A
+  // rename that left it behind re-armed the send button, and a newsletter cannot be unsent.
+  it('a rename carries the newsletter send log, including a digest that named other posts', async () => {
+    await savePost({ title: 'Old', status: 'published', date: PAST })
+    await savePost({ title: 'Kept', status: 'published', date: PAST })
+    await logSend({ email: 'a@b.co', kind: 'broadcast', ok: true, postSlugs: ['old'] })
+    await logSend({ email: 'c@d.co', kind: 'broadcast', ok: true, postSlugs: ['kept', 'old'] })
+
+    await savePost({ title: 'New', status: 'published', date: PAST }, 'old')
+
+    const stats = await statsByPost()
+    expect(stats.get('old')).toBeUndefined()
+    expect(stats.get('new')?.broadcasts).toBe(2)
+    // The other post in the digest keeps its own credit: the swap is on the list, by
+    // comma boundary, not on the column.
+    expect(stats.get('kept')?.broadcasts).toBe(1)
+  })
+
+  // A slug that names nothing is a CREATE. Treating it as a rename wrote a 301 out of a
+  // path that never existed and left the typo's post beside the real one.
+  it('a save naming a slug nothing holds creates the post and writes no redirect', async () => {
+    const saved = await savePost({ title: 'Fresh', status: 'published', date: PAST }, 'never-existed')
+    expect(saved.slug).toBe('fresh')
+    expect(await getPost('fresh')).not.toBeNull()
+    expect(await getRedirects()).toHaveLength(0)
+  })
+
+  it('a rename keeps the birthday instead of restamping it as today', async () => {
+    await savePost({ title: 'Old', status: 'published', date: PAST })
+    const born = one<{ created_at: number }>(`select created_at from posts where slug = 'old'`)!.created_at
+    db().run(`update posts set created_at = ? where slug = 'old'`, [born - 90_000_000])
+
+    await savePost({ title: 'New', status: 'published', date: PAST }, 'old')
+
+    const after = one<{ created_at: number }>(`select created_at from posts where slug = 'new'`)!
+    expect(after.created_at).toBe(born - 90_000_000)
   })
 })
 

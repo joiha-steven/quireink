@@ -101,12 +101,20 @@ export async function savePage(
   await ensureSlugFree(page.slug, 'page', previousSlug)
 
   const now = nowMs()
+  // The row being written over, read BEFORE the write. Two things need it: the birthday
+  // below, and knowing whether a `previousSlug` names anything at all.
+  const existing = one<{ created_at: number }>(
+    `select created_at from pages where slug = ?`, previousSlug ?? page.slug,
+  )
   // `created_at` is absent from the update list ON PURPOSE: an overwrite must not restamp
   // the row's birth. `deleted_at` is absent for the same reason it was in the frozen tree's
   // payload — saving a trashed page must not silently untrash it.
+  //
+  // A RENAME inserts rather than updates, so that clause never runs and the page was
+  // restamped as created today every time its slug moved. Hence the carried value.
   run(
     `insert into pages (slug, title, status, featured_image, content, created_at, updated_at)
-     values ($slug, $title, $status, $featuredImage, $content, $now, $now)
+     values ($slug, $title, $status, $featuredImage, $content, $createdAt, $now)
      on conflict(slug) do update set
        title          = excluded.title,
        status         = excluded.status,
@@ -119,12 +127,17 @@ export async function savePage(
       status: page.status,
       featuredImage: page.featuredImage ? collapseBlob(page.featuredImage) : null,
       content: collapseBlob(page.content),
+      createdAt: existing?.created_at ?? now,
       now: now,
     },
   )
 
   // If the slug changed, drop the old row + leave a 301 from the old path.
-  if (previousSlug && previousSlug !== page.slug) {
+  //
+  // Only when there WAS an old row: a PUT naming a slug nothing holds is a create, and
+  // treating it as a rename wrote a permanent redirect out of a path that never existed.
+  // Same guard, same reason, as `savePost`.
+  if (previousSlug && previousSlug !== page.slug && existing) {
     run(`delete from pages where slug = ?`, previousSlug)
     await saveRedirect({ source: `/${previousSlug}`, destination: `/${page.slug}`, permanent: true })
   }

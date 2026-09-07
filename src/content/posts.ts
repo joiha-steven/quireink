@@ -15,6 +15,7 @@ import { TERM_SELECT, parseTerms, writeTerms, updateTermRows, type TermKind } fr
 import { all, one, run, tx } from '@/store/query'
 import { liveOnly, nowMs, toIso, fromIso } from '@/store/db'
 import { clearAutosave } from '@/content/autosave'
+import { renameSends } from '@/news/newsletter-log'
 
 export type { TermKind }
 
@@ -208,8 +209,8 @@ export async function savePost(
 
   // Time machine: snapshot the current version before overwriting.
   const overwriting = previousSlug ?? post.slug
-  const existing = one<PostRow>(
-    `select ${META_COLS}, p.content from posts p where p.slug = ?`, overwriting,
+  const existing = one<PostRow & { created_at: number }>(
+    `select ${META_COLS}, p.content, p.created_at from posts p where p.slug = ?`, overwriting,
   )
   if (existing) {
     const prev: PostWithContent = { ...rowToMeta(existing), content: expandBlob(existing.content ?? '') }
@@ -227,7 +228,7 @@ export async function savePost(
                           cover_image, created_at, updated_at)
        values ($slug, $title, $date, $status, $featuredImage, $excerpt, $readingMinutes,
                $content, $series, $seriesOrder, $metaTitle, $metaDescription,
-               $coverImage, $now, $now)
+               $coverImage, $createdAt, $now)
        on conflict(slug) do update set
          title = excluded.title, date = excluded.date, status = excluded.status,
          featured_image = excluded.featured_image, excerpt = excluded.excerpt,
@@ -250,18 +251,32 @@ export async function savePost(
         metaTitle: post.metaTitle?.trim() || null,
         metaDescription: post.metaDescription?.trim() || null,
         coverImage: post.coverImage ? collapseBlob(post.coverImage) : null,
+        // A rename INSERTS a row rather than updating one, so `on conflict do update` is
+        // not there to leave the birthday alone: without this the post is restamped as
+        // created today every time its slug changes.
+        createdAt: existing?.created_at ?? nowMs(),
         now: nowMs(),
       },
     )
     writeTerms(post.slug, post.categories, post.tags)
   })
 
-  // Slug changed → drop the old row, move its revisions + comments, and leave a 301
-  // from the old path so existing links + search results keep working.
-  if (previousSlug && previousSlug !== post.slug) {
+  // Slug changed → drop the old row, move everything keyed by the old slug, and leave a
+  // 301 from the old path so existing links + search results keep working.
+  //
+  // `existing` is the guard and not decoration: a PUT naming a slug that has no row is a
+  // CREATE, not a rename. Without the check it deleted nothing, then wrote a permanent
+  // redirect from a path that never held anything, so one mistyped slug in an MCP call
+  // left a second copy of the post and a 301 out of nowhere.
+  //
+  // The send log moves too. It is keyed by slug and it is the only thing that tells the
+  // newsletter tab this post already went out; leaving it behind re-arms a button that
+  // mails every subscriber a second time, and a newsletter cannot be recalled.
+  if (previousSlug && previousSlug !== post.slug && existing) {
     run(`delete from posts where slug = ?`, previousSlug)
     await renameRevisions(previousSlug, post.slug)
     await renameComments(previousSlug, post.slug)
+    await renameSends(previousSlug, post.slug)
     await saveRedirect({ source: `/${previousSlug}`, destination: `/${post.slug}`, permanent: true })
   }
   // The autosave is now the OLDER text, so it stops being offered. Here rather than in the

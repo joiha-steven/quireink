@@ -137,6 +137,36 @@ export async function recordOpen(token: string): Promise<void> {
   }
 }
 
+/**
+ * Follow a post that changed its slug, so its send history follows it too.
+ *
+ * THE BUG THIS EXISTS FOR: `statsByPost` is keyed by slug and it is what tells the send
+ * tab a post has already gone out, which is the only thing standing between a rename and
+ * a second copy of the same newsletter in every subscriber's inbox. A newsletter cannot be
+ * unsent, so this is the one rename that has to be atomic with the post's own.
+ *
+ * `post_slug` holds a COMMA-SEPARATED list, because a digest row credits every post it
+ * carried. So the swap is done on the list and not on the column: both sides are wrapped
+ * in commas first, which is what keeps `pen` from matching inside `open-letter`, and the
+ * wrapping commas are trimmed back off afterwards. `instr` rather than `like` so a slug
+ * never has to be escaped.
+ */
+export async function renameSends(from: string, to: string): Promise<void> {
+  if (!from || !to || from === to) return
+  try {
+    run(
+      `update newsletter_sends
+          set post_slug = trim(
+                replace(',' || post_slug || ',', ',' || $from || ',', ',' || $to || ','), ',')
+        where post_slug is not null
+          and instr(',' || post_slug || ',', ',' || $from || ',') > 0`,
+      { from, to },
+    )
+  } catch (error) {
+    console.error(`[ERROR] newsletter-log.renameSends: ${(error as Error).message}`)
+  }
+}
+
 // Drop an address's history when its subscriber row is deleted (the admin's delete is
 // a real delete, so leaving the log behind would keep the address on file).
 export async function deleteSendsFor(email: string): Promise<void> {
