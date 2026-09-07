@@ -17,6 +17,7 @@ import { PEN_LIGHT } from '@/render/pen'
 import { tip } from './editorKeys'
 // Link, picture and bin come from the shared set; the rest is editing notation, drawn here.
 import { SharedGlyph as Shared } from './navIcons'
+import { Tip } from '@/admin/ui/Tip'
 
 const BTN = 'grid h-9 min-w-9 shrink-0 place-items-center rounded-md px-1 text-[15px] hover:bg-white dark:hover:bg-neutral-700'
 
@@ -30,16 +31,19 @@ function Glyph({ children }: { children: React.ReactNode }) {
 
 function ToolButton({ label, active = false, onClick, children }: { label: string; active?: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
-    <button
-      type="button"
-      title={label}
-      aria-label={label}
-      aria-pressed={active || undefined}
-      onClick={onClick}
-      className={`${BTN} ${active ? 'bg-white text-neutral-950 shadow-[inset_0_1.5px_2px_rgba(0,0,0,.14)] ring-1 ring-neutral-200 dark:bg-neutral-700 dark:text-white dark:shadow-[inset_0_1.5px_2px_rgba(0,0,0,.5)] dark:ring-neutral-600' : 'text-neutral-600 dark:text-neutral-300'}`}
-    >
-      {children}
-    </button>
+    // `Tip` draws the label in this product's type after 400ms; `title` stays for touch.
+    <Tip label={label}>
+      <button
+        type="button"
+        title={label}
+        aria-label={label}
+        aria-pressed={active || undefined}
+        onClick={onClick}
+        className={`${BTN} ${active ? 'bg-white text-neutral-950 shadow-[inset_0_1.5px_2px_rgba(0,0,0,.14)] ring-1 ring-neutral-200 dark:bg-neutral-700 dark:text-white dark:shadow-[inset_0_1.5px_2px_rgba(0,0,0,.5)] dark:ring-neutral-600' : 'text-neutral-600 dark:text-neutral-300'}`}
+      >
+        {children}
+      </button>
+    </Tip>
   )
 }
 
@@ -107,6 +111,8 @@ export function Toolbar({
       <ToolButton label={tip(t.tbTask, 'taskList')} active={editor.isActive('taskList')} onClick={() => editor.chain().focus().toggleTaskList().run()}>
         <Glyph><rect x="3.5" y="4.5" width="6" height="6" rx="1" /><path d="m5 7 1.5 1.5L9 5.5M13 7h7M4 16h5M13 16h7" /></Glyph>
       </ToolButton>
+      {/* LISTS end, BLOCKS begin: one run of five held two ideas. */}
+      {sep}
       <ToolButton label={tip(t.tbQuote, 'blockquote')} active={editor.isActive('blockquote')} onClick={() => editor.chain().focus().toggleBlockquote().run()}>
         <Glyph><path d="M7 8H4v4h4v4H4M17 8h-3v4h4v4h-4" /></Glyph>
       </ToolButton>
