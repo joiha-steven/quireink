@@ -2,6 +2,7 @@
 // malformed or partial blob silently reshapes the site. These cover the read contract
 // (never throw, always merge over defaults) and Invariant 3 across the store boundary.
 import { describe, it, expect, beforeEach, afterAll } from 'bun:test'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { freshDatabase, dropDatabase } from '@/test/db'
 import { db } from '@/store/db'
 import { one } from '@/store/query'
@@ -118,5 +119,69 @@ describe('saveSettings', () => {
       expect(s.home.mode).toBe('list')
       expect(s.home.front.kind).toBe('image')
     })
+  })
+})
+
+describe('a blob that has gone wrong', () => {
+  it('refuses a value of the wrong type instead of storing it', async () => {
+    // The route hands over parsed JSON, and JSON has no types worth trusting. A number in
+    // `title` used to throw inside `.trim()` and come back a 500; a number in `description`
+    // was stored, and then every public page threw at `escapeHtml` until somebody put a
+    // string back through the API — which the settings screen could not do, because it loads
+    // the same block.
+    const wrong = { title: 5, description: 5, footer: 5, showLogo: 'yes', postsPerPage: 'lots' }
+    const saved = await saveSettings(wrong as unknown as Parameters<typeof saveSettings>[0])
+    expect(saved.title).toBe(DEFAULT_SETTINGS.title)
+    expect(saved.description).toBe(DEFAULT_SETTINGS.description)
+    expect(saved.footer).toBe(DEFAULT_SETTINGS.footer)
+    expect(saved.showLogo).toBe(DEFAULT_SETTINGS.showLogo)
+    expect(saved.postsPerPage).toBe(DEFAULT_SETTINGS.postsPerPage)
+    expect((await getSettings()).description).toBe(DEFAULT_SETTINGS.description)
+  })
+
+  it('clamps a stored scalar on the way OUT as well', async () => {
+    // Nothing writes these any more, but a blob is also a file on disk, an import and a row
+    // written by an older version. `postsPerPage: 0` reached the paginator and made the page
+    // count Infinity.
+    write({ postsPerPage: 0, contentWidth: 20, relatedCount: 'many', title: 5 })
+    const s = await getSettings()
+    // Clamped to the floor, the same answer the write path gives the same value. What
+    // matters is that it is a number the paginator can divide by.
+    expect(s.postsPerPage).toBe(1)
+    expect(s.contentWidth).toBe(360)
+    // Not a number at all, so the default rather than an edge of the range.
+    expect(s.relatedCount).toBe(DEFAULT_SETTINGS.relatedCount)
+    expect(s.title).toBe(DEFAULT_SETTINGS.title)
+  })
+
+  it('keeps a copy of an unreadable blob before writing over it', async () => {
+    // Reading it answers with the defaults, and this is what writes them back: one corrupt
+    // byte turned the next press of Save into a factory reset with nothing to go back to.
+    db().run(`insert into settings (id, data) values (1, 'not json, and full of choices')`)
+    await saveSettings({ title: 'Starting again' })
+
+    const kept = readdirSync(DIR).filter((f) => f.startsWith('settings-unreadable-'))
+    expect(kept).toHaveLength(1)
+    expect(readFileSync(`${DIR}/${kept[0]}`, 'utf8')).toBe('not json, and full of choices')
+    expect(existsSync(`${DIR}/quire.db`)).toBe(true)
+  })
+})
+
+describe('two saves at once', () => {
+  it('does not let the second silently erase the first', async () => {
+    // A read-modify-write with several awaits in the middle: the whole block is read, a logo
+    // may be re-rendered, and only then is everything written back from what was read at the
+    // start. The rail saves on every drag and the MCP tools call this too, so two in flight
+    // is not a hypothetical.
+    await saveSettings({ title: 'A blog', description: 'about things' })
+    const [a, b] = await Promise.all([
+      saveSettings({ title: 'A new name' }),
+      saveSettings({ description: 'about other things' }),
+    ])
+    const after = await getSettings()
+    expect(after.title).toBe('A new name')
+    expect(after.description).toBe('about other things')
+    // And whichever ran second saw the first: no answer is missing half the change.
+    expect([a?.title, b?.title]).toContain('A new name')
   })
 })

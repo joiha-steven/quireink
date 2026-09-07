@@ -4,14 +4,12 @@
 
 import type { SiteSettings } from '@/types'
 import { DEFAULT_INKS } from '@/render/ink-palette'
-import { collapseBlob, expandBlob, deleteByPathname } from '@/media/blob'
-import { renderLogo } from '@/media/files'
-import { one, run } from '@/store/query'
-import { isSiteLang } from '@/locales/langs'
+import { expandBlob } from '@/media/blob'
+import { one } from '@/store/query'
 import { EMPTY_NAV_ORDER, sanitizeNavOrder } from '@/content/nav-order'
 import { DEFAULT_PRESET_ID, isPresetId, isFontPresetId, defaultThemes, ALL_PALETTE_IDS, DEFAULT_FONT, DEFAULT_FONT_PRESET, isChromeFontId, DEFAULT_CHROME_FONT, isScheme, getFontPreset } from '@/content/themes'
 import {
-  DEFAULT_HOME, DEFAULT_GALLERY, DEFAULT_FIGURE, sanitizeMenu, migrateThemes, sanitizeThemes, sanitizeEnabledPalettes, sanitizeSeo, sanitizeFeatures, sanitizeHome, sanitizeGallery, sanitizeFigure, sanitizeMcp, sanitizeMotion, sanitizeCache, sanitizeDashboard,
+  DEFAULT_HOME, DEFAULT_GALLERY, DEFAULT_FIGURE, migrateThemes, sanitizeThemes, sanitizeEnabledPalettes, sanitizeSeo, sanitizeFeatures, sanitizeHome, sanitizeGallery, sanitizeFigure, sanitizeMcp, sanitizeMotion, sanitizeCache, sanitizeDashboard,
   sanitizeBackups, sanitizeComments, sanitizeCss, sanitizeSnippet, sanitizeUrl, clampNumber, sanitizeFeatured,
   sanitizeTimezone, sanitizeAi, sanitizeInks,
 } from '@/content/settings-sanitize'
@@ -34,6 +32,9 @@ export { tableToCss } from '@/content/settings-table'
 export {
   DEFAULT_SEO, DEFAULT_BACKUPS, DEFAULT_FEATURES, DEFAULT_COMMENTS,
 } from '@/content/settings-defaults'
+// The write half lives in its own file: it is one long merge, and it grew a queue and a
+// rescue of its own. Re-exported so no call site has to know where it moved to.
+export { saveSettings } from '@/content/settings-save'
 
 /**
  * The type numbers a fresh install starts with: the DEFAULT FACE's own, never the neutral
@@ -183,6 +184,25 @@ export async function getSettings(): Promise<SiteSettings> {
       faviconUrl: expandBlob(stored.faviconUrl ?? DEFAULT_SETTINGS.faviconUrl),
       appIconUrl: expandBlob(stored.appIconUrl ?? DEFAULT_SETTINGS.appIconUrl),
       siteUrl: sanitizeUrl(stored.siteUrl),
+      /**
+       * THE SCALARS THE SPREAD USED TO CARRY THROUGH UNTOUCHED.
+       *
+       * `...stored` puts whatever is in the row into the answer, and only the keys named
+       * below were ever named again. A `postsPerPage` of 0 reached `paginate.ts` and made
+       * `totalPages` Infinity; a `title` that is not a string threw at `escapeHtml` on every
+       * public page. Values only get in here through `saveSettings`, which now refuses both —
+       * but a blob is also a file on disk, an import, and a row written by an older version,
+       * and the read path is where a blog either survives that or does not.
+       */
+      title: typeof stored.title === 'string' ? stored.title : DEFAULT_SETTINGS.title,
+      description: typeof stored.description === 'string' ? stored.description : DEFAULT_SETTINGS.description,
+      footer: typeof stored.footer === 'string' ? stored.footer : DEFAULT_SETTINGS.footer,
+      showLogo: typeof stored.showLogo === 'boolean' ? stored.showLogo : DEFAULT_SETTINGS.showLogo,
+      showDescription: typeof stored.showDescription === 'boolean' ? stored.showDescription : DEFAULT_SETTINGS.showDescription,
+      firstRunDone: typeof stored.firstRunDone === 'boolean' ? stored.firstRunDone : DEFAULT_SETTINGS.firstRunDone,
+      logoWidth: clampNumber(stored.logoWidth, 24, 600, DEFAULT_SETTINGS.logoWidth),
+      contentWidth: clampNumber(stored.contentWidth, 360, 1600, DEFAULT_SETTINGS.contentWidth),
+      postsPerPage: clampNumber(stored.postsPerPage, 1, 100, DEFAULT_SETTINGS.postsPerPage),
       relatedCount: clampNumber(stored.relatedCount, 0, 12, DEFAULT_SETTINGS.relatedCount),
       excerptLength: clampNumber(stored.excerptLength, 10, 100, DEFAULT_SETTINGS.excerptLength),
       // Generous upper bound on purpose — these only narrow (`media/limits.ts`), so a number
@@ -247,152 +267,3 @@ export async function getSettings(): Promise<SiteSettings> {
   }
 }
 
-// Merge a partial update over current settings and persist. Returns the result.
-export async function saveSettings(input: Partial<SiteSettings>): Promise<SiteSettings> {
-  const current = await getSettings()
-
-  // Logo: keep the original untouched; (re)build the small display WebP when the
-  // source/width changes or none exists yet. Delete the prior derived file (one
-  // ever exists); clear when logo removed/hidden. Vector/animated → null (served as-is).
-  const showLogo = input.showLogo ?? current.showLogo
-  const logoUrl = input.logoUrl ?? current.logoUrl
-  const logoWidth = clampNumber(input.logoWidth, 24, 600, current.logoWidth)
-  let logoRenderUrl = current.logoRenderUrl
-  let logoRenderHeight = current.logoRenderHeight
-  let logoEmailUrl = current.logoEmailUrl
-  // Both derived files are rebuilt and cleaned up together — the email PNG twin must
-  // never outlive the logo it was made from, or a stale mark ships in a newsletter.
-  const dropDerived = async () => {
-    if (current.logoRenderUrl) await deleteByPathname(collapseBlob(current.logoRenderUrl)).catch(() => {})
-    if (current.logoEmailUrl) await deleteByPathname(collapseBlob(current.logoEmailUrl)).catch(() => {})
-  }
-  if (!showLogo || !logoUrl) {
-    await dropDerived()
-    logoRenderUrl = ''
-    logoRenderHeight = 0
-    logoEmailUrl = ''
-  } else if (logoUrl !== current.logoUrl || logoWidth !== current.logoWidth || !current.logoRenderUrl) {
-    const rendered = await renderLogo(logoUrl, logoWidth)
-    await dropDerived()
-    logoRenderUrl = rendered?.url ?? ''
-    logoRenderHeight = rendered?.height ?? 0
-    logoEmailUrl = rendered?.emailUrl ?? ''
-  }
-
-  // The dark twin, same pipeline and same width so the two marks are interchangeable in
-  // the header. It has no email variant: a newsletter has no dark mode to respond to.
-  const logoDarkUrl = input.logoDarkUrl ?? current.logoDarkUrl
-  let logoDarkRenderUrl = current.logoDarkRenderUrl
-  let logoDarkRenderHeight = current.logoDarkRenderHeight
-  const dropDark = async () => {
-    if (current.logoDarkRenderUrl) {
-      await deleteByPathname(collapseBlob(current.logoDarkRenderUrl)).catch(() => {})
-    }
-  }
-  if (!showLogo || !logoDarkUrl) {
-    await dropDark()
-    logoDarkRenderUrl = ''
-    logoDarkRenderHeight = 0
-  } else if (
-    logoDarkUrl !== current.logoDarkUrl
-    || logoWidth !== current.logoWidth
-    || !current.logoDarkRenderUrl
-  ) {
-    const rendered = await renderLogo(logoDarkUrl, logoWidth)
-    await dropDark()
-    logoDarkRenderUrl = rendered?.url ?? ''
-    logoDarkRenderHeight = rendered?.height ?? 0
-  }
-
-  // The (possibly new) default palette — used both as `themePreset` and as the
-  // always-included member of `enabledPalettes`.
-  const themePreset = isPresetId(input.themePreset) ? input.themePreset : current.themePreset
-
-  const next: SiteSettings = {
-    language: isSiteLang(input.language) ? input.language : current.language,
-    title: (input.title ?? current.title).trim() || DEFAULT_SETTINGS.title,
-    description: input.description ?? current.description,
-    siteUrl: input.siteUrl !== undefined ? sanitizeUrl(input.siteUrl) : current.siteUrl,
-    logoUrl,
-    logoWidth,
-    logoRenderUrl,
-    logoRenderHeight,
-    logoEmailUrl,
-    logoDarkUrl,
-    logoDarkRenderUrl,
-    logoDarkRenderHeight,
-    showLogo,
-    showDescription: input.showDescription ?? current.showDescription,
-    faviconUrl: input.faviconUrl ?? current.faviconUrl,
-    appIconUrl: input.appIconUrl ?? current.appIconUrl,
-    // Never unset by a merge: an owner who dismissed the steps has dismissed them, and a
-    // PUT that omits the flag is every other settings save on the screen.
-    firstRunDone: input.firstRunDone ?? current.firstRunDone,
-    contentWidth: clampNumber(input.contentWidth, 360, 1600, current.contentWidth),
-    postsPerPage: clampNumber(input.postsPerPage, 1, 100, current.postsPerPage),
-    relatedCount: clampNumber(input.relatedCount, 0, 12, current.relatedCount),
-    excerptLength: clampNumber(input.excerptLength, 10, 100, current.excerptLength),
-    autosaveSeconds: clampNumber(input.autosaveSeconds, 15, 600, current.autosaveSeconds),
-    maxUploadMb: clampNumber(input.maxUploadMb, 0, 4096, current.maxUploadMb),
-    storageQuotaGb: clampNumber(input.storageQuotaGb, 0, 4096, current.storageQuotaGb),
-    customCss: input.customCss !== undefined ? sanitizeCss(input.customCss) : current.customCss,
-    navOrder: input.navOrder !== undefined ? sanitizeNavOrder(input.navOrder, current.navOrder) : current.navOrder,
-    customHead: input.customHead !== undefined ? sanitizeSnippet(input.customHead) : current.customHead,
-    customBodyEnd: input.customBodyEnd !== undefined
-      ? sanitizeSnippet(input.customBodyEnd) : current.customBodyEnd,
-    // Footer is rendered through renderInlineMarkdown (escape-first), so here we only
-    // trim + cap length; markup safety is the renderer's job.
-    footer: typeof input.footer === 'string' ? input.footer.slice(0, 600) : current.footer,
-    menu: sanitizeMenu(input.menu, current.menu),
-    featured: sanitizeFeatured(input.featured, current.featured),
-    mostViewedCount: clampNumber(input.mostViewedCount, 0, 10, current.mostViewedCount),
-    sidebarLayout: input.sidebarLayout === 'two' || input.sidebarLayout === 'single' ? input.sidebarLayout : current.sidebarLayout,
-    defaultScheme: isScheme(input.defaultScheme) ? input.defaultScheme : current.defaultScheme,
-    themePreset,
-    fontPreset: isFontPresetId(input.fontPreset) ? input.fontPreset : current.fontPreset,
-    chromeFont: isChromeFontId(input.chromeFont) ? input.chromeFont : current.chromeFont,
-    ideChrome: typeof input.ideChrome === 'boolean' ? input.ideChrome : current.ideChrome,
-    enabledPalettes: sanitizeEnabledPalettes(input.enabledPalettes ?? current.enabledPalettes, themePreset),
-    themes: sanitizeThemes(input.themes, current.themes),
-    typography: sanitizeTypography(input.typography, current.typography),
-    customFont: sanitizeFont(input.customFont, current.customFont),
-    seo: sanitizeSeo(input.seo, current.seo),
-    features: sanitizeFeatures(input.features, current.features),
-    home: sanitizeHome(input.home, current.home),
-    figure: sanitizeFigure(input.figure, current.figure),
-    gallery: sanitizeGallery(input.gallery, current.gallery),
-    postImage: sanitizePostImage(input.postImage, current.postImage),
-    shape: sanitizeShape(input.shape, current.shape),
-    table: sanitizeTable(input.table, current.table),
-    author: sanitizeAuthor(input.author, current.author),
-    comments: sanitizeComments(input.comments, current.comments),
-    mcp: sanitizeMcp(input.mcp, current.mcp),
-    ai: sanitizeAi(input.ai, current.ai),
-    inks: sanitizeInks(input.inks, current.inks),
-    motion: sanitizeMotion(input.motion, current.motion),
-    cache: sanitizeCache(input.cache, current.cache),
-    dashboard: sanitizeDashboard(input.dashboard, current.dashboard),
-    backups: sanitizeBackups(input.backups, current.backups),
-    timezone: input.timezone !== undefined ? sanitizeTimezone(input.timezone, current.timezone) : current.timezone,
-    updateCheck: typeof input.updateCheck === 'boolean' ? input.updateCheck : current.updateCheck,
-  }
-  // Persist image refs store-relative (collapse); keep `next` absolute for the client.
-  const stored: SiteSettings = {
-    ...next,
-    logoUrl: collapseBlob(next.logoUrl),
-    logoRenderUrl: collapseBlob(next.logoRenderUrl),
-    logoEmailUrl: collapseBlob(next.logoEmailUrl),
-    logoDarkUrl: collapseBlob(next.logoDarkUrl),
-    logoDarkRenderUrl: collapseBlob(next.logoDarkRenderUrl),
-    faviconUrl: collapseBlob(next.faviconUrl),
-    appIconUrl: collapseBlob(next.appIconUrl),
-    customFont: { ...next.customFont, faces: next.customFont.faces.map((x) => ({ ...x, url: collapseBlob(x.url) })) },
-    seo: { ...next.seo, ogFallbackImage: collapseBlob(next.seo.ogFallbackImage) },
-  }
-  run(
-    `insert into settings (id, data) values (1, $data)
-     on conflict(id) do update set data = excluded.data`,
-    { data: JSON.stringify(stored) },
-  )
-  return next
-}
