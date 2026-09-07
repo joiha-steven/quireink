@@ -28,9 +28,13 @@ overwrite every table in itself is a bigger risk than the one it removes.
 
 Both live in **Settings → System → Backups**, and both are owner-only.
 
-**Export** builds an archive into a temp directory and streams it to the browser. It is
-deliberately not kept on the server, so taking a copy never pushes a scheduled snapshot out
-of the retention window.
+**Export** builds an archive into a temp directory and streams it to the browser, sweeping
+the directory when the stream ends or the reader cancels. It is deliberately not kept on the
+server, so taking a copy never pushes a scheduled snapshot out of the retention window. ⚠ It
+did not stream until 2026-09-07: both the build and the send read the whole archive into
+memory, so an export held two copies of it and the hourly snapshot held one. With
+`STORAGE_QUOTA_GB` at its default of 5 that is the difference between a backup and an
+OOM-killed process, and the only trace was a restart in the log.
 
 **Snapshots** are written to `BACKUP_DIR` (default `<DATA_DIR>/backups`) by the cron tick,
 every `intervalDays`, keeping the newest `keep`. Those two fields have been in Settings

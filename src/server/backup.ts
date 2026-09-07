@@ -100,15 +100,31 @@ export async function buildArchive(dest: string): Promise<number> {
     if (existsSync(uploads)) args.push('-C', resolve(uploads, '..'), uploads.split(/[\\/]/).pop()!)
 
     const proc = Bun.spawn(['tar', ...args], { stdout: 'pipe', stderr: 'pipe' })
-    // Read fully, then write. Handing the live stdout stream straight to `Bun.write`
-    // deadlocks on Windows, and this runs off the request path where a few hundred
-    // megabytes held briefly costs nothing.
-    const body = await new Response(proc.stdout).arrayBuffer()
+    // PUMPED, not buffered. This used to read the whole archive into memory and then write
+    // it, on the argument that a few hundred megabytes held briefly costs nothing off the
+    // request path — but `STORAGE_QUOTA_GB` is 5 by default, so on a blog of photographs the
+    // hourly backup tick spiked resident memory by the size of the store and the process was
+    // OOM-killed with nothing in the log but a restart.
+    //
+    // Handing `proc.stdout` straight to `Bun.write` is what deadlocks on Windows, and this
+    // is not that: the loop below reads every chunk as it arrives, so tar is never left
+    // blocked on a full pipe, and the writer applies backpressure the other way.
+    const writer = Bun.file(dest).writer()
+    const reader = proc.stdout.getReader()
+    try {
+      for (;;) {
+        const { done, value } = await reader.read()
+        if (done) break
+        await writer.write(value)
+      }
+    } finally {
+      reader.releaseLock()
+      await writer.end()
+    }
     const code = await proc.exited
     if (code !== 0) {
       throw new Error(`tar exited ${code}: ${(await new Response(proc.stderr).text()).trim()}`)
     }
-    await Bun.write(dest, body)
     return (await stat(dest)).size
   } finally {
     await rm(stage, { recursive: true, force: true })

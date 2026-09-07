@@ -246,6 +246,11 @@ describe('the manual archive', () => {
     // The gzip magic number. A zero-length or error body would not carry it.
     expect(bytes[0]).toBe(0x1f)
     expect(bytes[1]).toBe(0x8b)
+    // The body is a STREAM read after the handler returned, and the file it reads lives in a
+    // staging directory the handler used to delete on its way out. Reading it whole here is
+    // what proves the sweep now waits for the stream: a length declared and no bytes behind
+    // it is exactly what that bug looked like.
+    expect(bytes.byteLength).toBe(Number(res.headers.get('content-length')))
 
     // And it really contains the databases: list the archive rather than trust its size.
     const listed = Bun.spawnSync(['tar', '-tzf', '-'], { stdin: bytes, stdout: 'pipe' })

@@ -38,22 +38,40 @@ export function backupRoutes() {
     const path = join(stage, name)
     try {
       await buildArchive(path)
-      // Read fully rather than streaming: the archive has to be complete before the
-      // staging directory is removed, and a browser download wants a length anyway.
-      const body = await Bun.file(path).arrayBuffer()
-      logActivity('backup.export', mb(body.byteLength))
+      // STREAMED, with the staging directory swept when the stream ends. Reading the whole
+      // archive into memory to send it meant the export held a second copy of a file the
+      // build had just held one of; on a store near the 5 GB default quota that is the
+      // difference between a download and an OOM. The length is still declared, because a
+      // browser download without one has no progress bar.
+      const file = Bun.file(path)
+      const size = file.size
+      const sweep = () => { void rm(stage, { recursive: true, force: true }) }
+      const source = file.stream().getReader()
+      const body = new ReadableStream<Uint8Array>({
+        async pull(controller) {
+          const { done, value } = await source.read()
+          if (done) { controller.close(); sweep(); return }
+          controller.enqueue(value)
+        },
+        // A reader who cancels the download still gets their temp directory back.
+        cancel() { source.cancel().catch(() => {}); sweep() },
+      })
+      logActivity('backup.export', mb(size))
       return new Response(body, {
         headers: {
           'content-type': 'application/gzip',
           'content-disposition': `attachment; filename="${name}"`,
-          'content-length': String(body.byteLength),
+          'content-length': String(size),
         },
       })
     } catch (error) {
+      // NO `finally`, and that is the whole of the change: the response body is now a stream
+      // that is read after this handler returns, so sweeping here would delete the file out
+      // from under the download. The stream sweeps when it ends or is cancelled; this
+      // catches the case where there is no stream because the build threw.
+      await rm(stage, { recursive: true, force: true })
       console.error(`[ERROR] backup.export: ${(error as Error).message}`)
       return fail(c, 'Could not build the archive', 500)
-    } finally {
-      await rm(stage, { recursive: true, force: true })
     }
   })
 
