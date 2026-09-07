@@ -189,5 +189,16 @@ export const ISLANDS_CSS = `
   border-radius:.5rem;padding:.5rem 1rem;font-size:var(--fs-small);
   line-height:var(--lh-small);letter-spacing:var(--ls-small);margin:0 0 1.5rem}
 
+/* The thread is fetched when the reader nears it, so the mount is empty until then and the
+   page is that much shorter. Reserving the space it is about to need is what stops the
+   footer sliding up under a reader who has just arrived at it.
+   MEASURED on the demo, heading plus the form with no thread in it: 474px at 1440 and 573px
+   at 390, where the fields stop sitting side by side. The thread's own height cannot be
+   reserved and is not: what this buys is the common case, a post with no comments yet.
+   The :empty test ends the reservation the moment the island fills it, and a <noscript>
+   beside the mount zeroes it where nothing ever will. */
+#comments:empty{min-height:30rem}
+@media (max-width:639px){#comments:empty{min-height:36rem}}
+
 /* The two motion gates (the owner's switch, the OS preference) are in motion.css.ts. */
 `.trim()

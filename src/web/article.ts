@@ -257,19 +257,19 @@ export async function renderArticle(slug: string, canonicalPath?: string): Promi
     ? ` data-turnstile="${escapeAttr(commentEnv.turnstileSiteKey)}"`
     : ''
   // No Turnstile means the blog's own gate (ADR 0032): a signed challenge, minted here so
-  // the island needs no round trip. It is per-render and therefore per-cached-page, which
-  // is why the island can ask for a fresh one when a long-cached page hands back a stale
-  // stamp — the page stays cacheable and nothing is stored server-side.
+  // the island needs no round trip. Per-render and therefore per-cached-page, which is why
+  // the island can ask for a fresh one when a long-cached page hands back a stale stamp.
   const stamp = commentEnv && !usingTurnstile
     ? ` data-stamp="${escapeAttr(JSON.stringify(issueStamp()))}"`
     : ''
-  // A flag, not a key: the island only needs to know whether to draw the Google button and
-  // ask who the reader is. The client id lives on the server and travels in the redirect.
+  // A flag, not a key: the island only needs to know whether to draw the Google button. The
+  // client id lives on the server and travels in the redirect.
   const googleAuth = settings.comments.googleAuth && commentEnv?.googleConfigured
     ? ' data-google="1"'
     : ''
   const commentsMount = post && settings.comments.enabled
     ? `<section id="comments" data-post="${escapeAttr(post.slug)}"${turnstile}${stamp}${googleAuth}></section>`
+      + '<noscript><style>#comments:empty{min-height:0}</style></noscript>'
     : ''
 
   const { configured: mailConfigured } = await getMailStatus()

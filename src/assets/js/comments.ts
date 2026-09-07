@@ -329,6 +329,10 @@ export function comments(): void {
     if (!entries.some((e) => e.isIntersecting)) return
     observer.disconnect()
     void load()
-  }, { rootMargin: '400px' })
+    // Two viewports, not 400px. On a phone one flick travels further than 400px between
+    // frames, so the thread arrived exactly as the reader reached it and the footer moved
+    // under their eyes. The sheet reserves the form's height for the same reason; this is
+    // the half that also covers a thread with something in it.
+  }, { rootMargin: `${innerHeight * 2}px` })
   observer.observe(root)
 }

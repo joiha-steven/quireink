@@ -204,6 +204,19 @@ describe('the colour the phone paints around the page', () => {
   })
 })
 
+// The thread is fetched when the reader nears it, so the space it will need is reserved
+// first. Hiding space is only safe when something is guaranteed to undo it.
+describe('the room kept for the comment thread', () => {
+  it('reserves it, and hands it back where no island can run', async () => {
+    await saveSettings({ comments: { ...(await getSettings()).comments, enabled: true } })
+    await savePost({ title: 'Talkable', slug: 'talkable', content: 'x', status: 'published', date: PAST })
+    const html = await (await get('/talkable')).text()
+    expect(html).toContain('<noscript><style>#comments:empty{min-height:0}</style></noscript>')
+    const sheet = await sheetText()
+    expect(sheet).toContain('#comments:empty{min-height:30rem}')
+  })
+})
+
 describe('what must NOT be reachable', () => {
   it('404s a draft', async () => {
     await savePost({ title: 'Secret', content: 'unpublished', status: 'draft', date: PAST })
