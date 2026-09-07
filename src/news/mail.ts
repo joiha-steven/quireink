@@ -7,6 +7,7 @@
 // the reader's path (`getMailStatus` decides whether a page draws a subscribe form), so a
 // static import here put the whole SMTP stack into every process that has never sent mail.
 import { logSend, type SendKind } from '@/news/newsletter-log'
+import { htmlToText } from '@/news/mail-text'
 import { clearCache } from '@/server/cache'
 import { one, run } from '@/store/query'
 
@@ -198,12 +199,9 @@ export async function sendMail(msg: {
         to: msg.to,
         subject: msg.subject,
         html: msg.html,
-        // Tag-strip for the plain-text alternative. Deliberately naive, and CodeQL flags it
-        // as an incomplete sanitizer (alert #10, dismissed): it is not a sanitizer. The
-        // output is the `text/plain` part of an email, never an HTML context, and the input
-        // is HTML this codebase generated. If either of those ever stops being true, this
-        // needs a real html-to-text pass, not a better regex.
-        text: msg.text || msg.html.replace(/<[^>]+>/g, ''),
+        // The plain-text part, from the HTML one. `news/mail-text.ts` carries what it does
+        // and why it is a scanner rather than the tag-strip regex that stood here.
+        text: msg.text || htmlToText(msg.html),
       })
     } finally {
       if (!shared) transport.close()
