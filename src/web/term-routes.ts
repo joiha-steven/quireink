@@ -20,7 +20,8 @@ import { resolveTerm, tagText } from '@/content/taxonomy'
 import { t } from '@/i18n/i18n'
 import { escapeHtml } from '@/utils'
 import { renderListing } from '@/web/listing'
-import { cached, listingPage, notFoundPage, pageNumber, renderFeedBody } from '@/web/listing-page'
+import { cached, listingPage, notFoundPage, renderFeedBody } from '@/web/listing-page'
+import { parsePathPage } from '@/content/paginate'
 import { renderArchive } from '@/web/archive-page'
 import { renderArticle } from '@/web/article'
 import { renderFeed } from '@/web/feeds'
@@ -114,7 +115,7 @@ export function registerTermRoutes(app: Hono): void {
       cached(`/${kind}/${c.req.param('slug')}`, () => term(c.req.param('slug'), 1))())
 
     app.get(`/${kind}/:slug/page/:n`, async (c) => {
-      const page = pageNumber(c.req.param('n'))
+      const page = parsePathPage(c.req.param('n'))
       if (page === null) return notFoundPage()
       const slug = c.req.param('slug')
       return cached(`/${kind}/${slug}/page/${page}`, () => term(slug, page))()

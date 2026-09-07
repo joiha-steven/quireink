@@ -14,6 +14,16 @@ describe('parsePathPage', () => {
     expect(parsePathPage('abc')).toBeNull()
     expect(parsePathPage('2x')).toBeNull()
   })
+
+  // `Number()` said yes to every one of these, so each was a second address for a page
+  // that already had one, and leading zeros never run out.
+  it('takes one spelling of a number and no others', () => {
+    for (const raw of ['01', '007', '1.0', '2.0', '+2', ' 2', '2 ', '1e1', '0x2', '0b10', '2n', '', '-2', '٢']) {
+      expect([raw, parsePathPage(raw)]).toEqual([raw, null])
+    }
+    expect(parsePathPage('2')).toBe(2)
+    expect(parsePathPage('10')).toBe(10)
+  })
 })
 
 describe('paginate', () => {

@@ -11,7 +11,8 @@
 import { Hono } from 'hono'
 import type { Context } from 'hono'
 import { getSettings } from '@/content/settings'
-import { cached, notFoundPage, pageNumber } from '@/web/listing-page'
+import { cached, notFoundPage } from '@/web/listing-page'
+import { parsePathPage } from '@/content/paginate'
 import { renderHome, renderPostList, slugRole } from '@/web/home-mode'
 import { registerFeedRoutes } from '@/web/feed-routes'
 import { registerTermRoutes } from '@/web/term-routes'
@@ -120,7 +121,7 @@ export function createApp(): Hono {
   app.get('/', async () => cached('/', renderHome)())
 
   app.get('/page/:n', async (c) => {
-    const page = pageNumber(c.req.param('n'))
+    const page = parsePathPage(c.req.param('n'))
     if (page === null) return notFoundPage()
     return cached(`/page/${page}`, () => renderPostList(page))()
   })

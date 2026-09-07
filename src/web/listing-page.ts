@@ -130,16 +130,6 @@ ${siteFooter(settings, { mailConfigured })}
   )
 }
 
-/**
- * A page number from a URL segment. Anything that is not a positive integer is a 404, not a 1.
- *
- * Here rather than in either router, because both `/page/:n` and `/{term}/:slug/page/:n` read
- * one and they now live in different files. Two copies of four lines is where a rule drifts.
- */
-export function pageNumber(raw: string): number | null {
-  const n = Number(raw)
-  return Number.isInteger(n) && n >= 1 ? n : null
-}
 
 /**
  * A feed of posts: the home page and every taxonomy archive.
