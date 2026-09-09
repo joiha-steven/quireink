@@ -13,7 +13,7 @@ import { PEN_LINES_SHEET, PEN_MARKS_SHEET, penSheets } from '@/web/assets'
 import { inkSignature, resolveInks } from '@/pen/palette'
 
 /** The body data for a post or a page: `isPost` gates the gestures a page never gets. */
-export function articleLabels(settings: SiteSettings, s: Dict, isPost: boolean): Record<string, string> {
+export function articleLabels(settings: SiteSettings, s: Dict, isPost: boolean, google = false): Record<string, string> {
   const post = isPost
   return {
     ...chromeLabels(settings),
@@ -48,7 +48,7 @@ export function articleLabels(settings: SiteSettings, s: Dict, isPost: boolean):
     bookModeSmaller: s.bookModeSmaller,
     bookModeLarger: s.bookModeLarger,
     ...(post && settings.features.resume ? { resumePrompt: s.resumePrompt } : {}),
-    ...(post && settings.features.readerPen ? readerPenData(settings.inks, s) : {}),
+    ...(post && settings.features.readerPen ? readerPenData(settings.inks, s, google) : {}),
   }
 }
 
@@ -57,7 +57,7 @@ export function articleLabels(settings: SiteSettings, s: Dict, isPost: boolean):
  * (it links them itself, the moment a mark needs them — ADR 0027 keeps them off a page
  * with no ink), the five highlighter pigments as this site writes them, and its words.
  */
-export function readerPenData(inks: InkSettings, s: Dict): Record<string, string> {
+export function readerPenData(inks: InkSettings, s: Dict, google = false): Record<string, string> {
   const sheets = inkSignature(inks) ? penSheets(inks) : { marks: PEN_MARKS_SHEET, lines: PEN_LINES_SHEET }
   const light = resolveInks(inks).light
   return {
@@ -73,5 +73,19 @@ export function readerPenData(inks: InkSettings, s: Dict): Record<string, string
     readerPenSend: s.readerPenSend,
     readerPenNotebookAsk: s.readerPenNotebookAsk,
     readerPenNotebookGo: s.readerPenNotebookGo,
+    // Tier two (ADR 0047): the words of the keep panel, and whether Google is one of its doors.
+    readerPenKeptHere: s.readerPenKeptHere,
+    readerPenKeep: s.readerPenKeep,
+    readerPenKeepGoogle: s.readerPenKeepGoogle,
+    readerPenKeepCode: s.readerPenKeepCode,
+    readerPenKeepHave: s.readerPenKeepHave,
+    readerPenKeepUse: s.readerPenKeepUse,
+    readerPenKept: s.readerPenKept,
+    readerPenKeepHint: s.readerPenKeepHint,
+    readerPenForgetHere: s.readerPenForgetHere,
+    readerPenForgetAll: s.readerPenForgetAll,
+    readerPenKeepBad: s.readerPenKeepBad,
+    readerPenShowCode: s.readerPenShowCode,
+    ...(google ? { readerPenGoogle: '1' } : {}),
   }
 }

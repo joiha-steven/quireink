@@ -250,3 +250,20 @@ create table if not exists webmentions (
 );
 create index if not exists webmentions_target_idx on webmentions (target);
 
+
+-- migration: 014-reader-marks
+-- ADR 0047: a reader's marks across devices, and the codes that name a reader. Same shape as
+-- `schema.sql` creates fresh.
+create table if not exists reader_marks (
+  reader     text not null,
+  path       text not null,
+  body       text not null,
+  updated_at integer not null,
+  primary key (reader, path)
+);
+create index if not exists reader_marks_updated_idx on reader_marks (updated_at);
+create table if not exists reader_keys (
+  key_hash     text primary key,
+  created_at   integer not null,
+  last_used_at integer not null
+);

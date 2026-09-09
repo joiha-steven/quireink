@@ -786,7 +786,7 @@ const fr = {
   featResume: 'Retenir la position de lecture',
   featResumeDesc: 'Revenir sur un article à moitié lu propose de reprendre où le lecteur s’était arrêté. Gardé uniquement dans son navigateur.',
   featReaderPen: 'Le stylo du lecteur',
-  featReaderPenDesc: 'Les lecteurs peuvent surligner, souligner, entourer et annoter un billet. Les marques restent dans leur navigateur et ne sont jamais envoyées. Désactivé retire le geste.',
+  featReaderPenDesc: 'Les lecteurs peuvent surligner, souligner, entourer et annoter un billet. Les marques restent dans leur navigateur ; qui le souhaite peut les garder sur tous ses appareils avec un code ou sa connexion Google, sous un nom qui n\'est pas le sien. Rien ne vous est montré. Désactivé retire le geste.',
   featDeckDesc: 'Affiche l’extrait sous le titre de l’article, au-dessus du texte.',
   seoCanonical: 'Adresse du site (canonique)',
   seoCanonicalHint: 'Utilisée pour le sitemap, le RSS, le schéma, llms.txt, l’image OG et la balise canonique. Vide, c’est SITE_URL qui sert — et si celui-ci n’est pas défini non plus, tout cela dit http://localhost:3000, que les lecteurs ne voient jamais et que les robots voient toujours.',

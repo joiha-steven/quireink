@@ -17,6 +17,9 @@ import { one, run } from '@/store/query'
  */
 export type SecretName =
   | 'analytics-visitor' | 'session-ip' | 'mcp-oauth' | 'preview-link' | 'commenter-session'
+  // ADR 0047: a commenter's address becomes an opaque reader id for their marks. Its own
+  // salt, so the marks table can never be joined back to an address by the commenter secret.
+  | 'reader-marks'
   // The daily token in `server/update-check.ts`. Its own salt like every other: the
   // token leaves the machine, and one that shared the analytics salt would let anybody
   // holding it test guesses against the visitor hashes in the database.

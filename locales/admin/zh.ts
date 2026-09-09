@@ -786,7 +786,7 @@ const zh = {
   featResume: '记住阅读位置',
   featResumeDesc: '回到读了一半的文章时，提示从上次的位置继续。只保存在读者的浏览器里。',
   featReaderPen: '读者的笔',
-  featReaderPenDesc: '读者可以在文章上高亮、下划线、圈出和批注。标记只保存在他们的浏览器中，不会发送到任何地方。关闭后此功能消失。',
+  featReaderPenDesc: '读者可以在文章上高亮、下划线、圈出和批注。标记保存在他们的浏览器中；愿意的话可以用一个代码或 Google 登录在所有设备上保留，名下并非其本人身份。你看不到任何内容。关闭后此功能消失。',
   featDeckDesc: '在文章标题下方、正文上方显示摘要。',
   seoCanonical: '站点地址（canonical）',
   seoCanonicalHint: '用于站点地图、RSS、schema、llms.txt、OG 图片和 canonical 标签。留空则使用 SITE_URL；若 SITE_URL 也未设置，它们全都会写成 http://localhost:3000——读者看不到，但爬虫每次都看到。',

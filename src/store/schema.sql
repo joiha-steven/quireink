@@ -530,3 +530,22 @@ create table if not exists assistant_chats (
   updated_at     integer not null
 );
 create index if not exists assistant_chats_updated_idx on assistant_chats (updated_at desc);
+
+-- ADR 0047: a reader's marks, kept across their devices. `reader` is opaque — the hash of a
+-- notebook code, or an HMAC of a commenter's address — so the table holds neither. One row
+-- per page a reader has marked; `body` is the same JSON the browser keeps in localStorage.
+create table if not exists reader_marks (
+  reader     text not null,
+  path       text not null,
+  body       text not null,
+  updated_at integer not null,
+  primary key (reader, path)
+);
+create index if not exists reader_marks_updated_idx on reader_marks (updated_at);
+
+-- The notebook codes readers minted, hashed. A row is what makes a code known here.
+create table if not exists reader_keys (
+  key_hash     text primary key,
+  created_at   integer not null,
+  last_used_at integer not null
+);

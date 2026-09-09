@@ -786,7 +786,7 @@ const de = {
   featResume: 'Leseposition merken',
   featResumeDesc: 'Bei Rückkehr zu einem halb gelesenen Beitrag wird angeboten, dort weiterzulesen. Nur im Browser der Lesenden gespeichert.',
   featReaderPen: 'Der Stift des Lesers',
-  featReaderPenDesc: 'Leser können im Beitrag markieren, unterstreichen, einkreisen und notieren. Die Zeichen bleiben in ihrem Browser und werden nirgendwohin gesendet. Aus entfernt die Geste.',
+  featReaderPenDesc: 'Leser können im Beitrag markieren, unterstreichen, einkreisen und notieren. Die Zeichen bleiben in ihrem Browser; wer will, behält sie per Code oder Google-Anmeldung auf allen Geräten, unter einem Namen, der nicht seiner ist. Dir wird nichts gezeigt. Aus entfernt die Geste.',
   featDeckDesc: 'Auszug unter dem Titel über dem Fließtext zeigen.',
   seoCanonical: 'Website-Adresse (kanonisch)',
   seoCanonicalHint: 'Wird für Sitemap, RSS, Schema, llms.txt, OG-Bild und den Canonical-Tag verwendet. Leer lassen, um SITE_URL zu nutzen — ist auch das nicht gesetzt, steht in allen http://localhost:3000, was Leser nie und Crawler immer sehen.',

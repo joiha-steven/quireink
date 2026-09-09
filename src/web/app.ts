@@ -38,6 +38,7 @@ import { noteRoutes } from '@/web/admin/notes'
 import { renderNotePage, renderNotesIndex } from '@/web/notes-page'
 import { clipRoutes, handleClipPage } from '@/web/clip-page'
 import { micropubRoutes } from '@/web/micropub'
+import { penRoutes } from '@/web/pen-routes'
 import { handleWebmention } from '@/web/webmention-route'
 import { securityRoutes } from '@/web/admin/security'
 import { siteRoutes } from '@/web/admin/site'
@@ -203,6 +204,8 @@ export function createApp(): Hono {
   app.route('/', clipRoutes().routes)
   // The open standards (ADR 0046): Micropub into the notebook, Webmention in.
   app.route('/', micropubRoutes())
+  // A reader's marks across their devices (ADR 0047): a code or the commenter cookie, no account.
+  app.route('/', penRoutes())
   app.post('/webmention', handleWebmention)
   // A GET on the endpoint says what it is, so a person who follows the rel link is not
   // handed somebody's post by that name; the slug is reserved for the same reason.

@@ -107,6 +107,21 @@ export const ISLANDS_CSS = `
   border-radius:var(--radius,.5rem);background:var(--c-bg);color:inherit;font:inherit}
 .pen-go{padding:.3rem .7rem;border:1px solid var(--c-rule);border-radius:999px;
   background:var(--c-heading);color:var(--c-bg);font:inherit;cursor:pointer}
+/* Tier two (ADR 0047): the line under a mark's card that says where its marks live, and the
+   small panel that lets the reader keep them everywhere. Same footing as the ask above. */
+.pen-keep{margin-top:.5rem;padding-top:.5rem;border-top:1px solid var(--c-rule);color:var(--c-meta)}
+.pen-keep>span{margin-right:.9rem}
+.pen-keep button{padding:0;border:0;background:none;color:var(--c-heading);font:inherit;cursor:pointer;
+  margin-right:.9rem}
+.pen-keep button:hover{text-decoration:underline}
+.pen-keep a{color:var(--c-heading);margin-right:.9rem}
+.pen-keep input{width:100%;margin:.35rem 0;padding:.3rem .5rem;border:1px solid var(--c-rule);
+  border-radius:var(--radius,.5rem);background:var(--c-bg);color:inherit;font:inherit}
+.pen-keep code{display:block;margin:.35rem 0;padding:.3rem .5rem;border:1px dashed var(--c-rule);
+  border-radius:var(--radius,.5rem);font-family:var(--font-mono);font-size:var(--fs-code);
+  line-height:var(--lh-code);letter-spacing:var(--ls-code);color:var(--c-heading);user-select:all}
+.pen-keep p{margin:.25rem 0 0}
+.pen-keep [hidden]{display:none}
 .pen-note{margin:.35em 0 1em;padding:.15em 0 .15em .85em;border-left:2px solid var(--c-rule);
   color:var(--c-meta);font-family:var(--font-sans);font-size:var(--fs-small);
   line-height:var(--lh-small);letter-spacing:var(--ls-small);white-space:pre-wrap}

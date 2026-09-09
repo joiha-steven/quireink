@@ -786,7 +786,7 @@ const en = {
   featResume: 'Remember reading position',
   featResumeDesc: 'Coming back to a half-read post offers to continue where the reader left off. Stored in their browser only.',
   featReaderPen: 'The reader\'s pen',
-  featReaderPenDesc: 'Readers can highlight, underline, ring and note a post. Marks stay in their browser and are never sent anywhere. Off removes the gesture.',
+  featReaderPenDesc: 'Readers can highlight, underline, ring and note a post. Marks stay in their browser; a reader may keep them across devices with a code or their Google sign-in, under a name that is not theirs. Nothing is shown to you. Off removes the gesture.',
   featDeckDesc: 'Show the excerpt under a post title, above the body.',
   seoCanonical: 'Site address (canonical)',
   seoCanonicalHint: 'Used for sitemap, RSS, schema, llms.txt, OG image and the canonical tag. Leave blank to use SITE_URL — and if that is not set either, all of them say http://localhost:3000, which readers never see and crawlers always do.',

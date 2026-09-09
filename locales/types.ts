@@ -140,6 +140,18 @@ export type Dict = {
   readerPenNote: string
   readerPenDelete: string
   readerPenNoteHint: string
+  readerPenKeptHere: string
+  readerPenKeep: string
+  readerPenKeepGoogle: string
+  readerPenKeepCode: string
+  readerPenKeepHave: string
+  readerPenKeepUse: string
+  readerPenKept: string
+  readerPenKeepHint: string
+  readerPenForgetHere: string
+  readerPenForgetAll: string
+  readerPenKeepBad: string
+  readerPenShowCode: string
   // image lightbox
   lightboxPrev: string
   lightboxNext: string

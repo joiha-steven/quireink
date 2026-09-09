@@ -787,7 +787,7 @@ const pt = {
   featResume: 'Lembrar a posição de leitura',
   featResumeDesc: 'Ao voltar a um post lido pela metade, oferece continuar de onde o leitor parou. Guardado só no navegador dele.',
   featReaderPen: 'A caneta do leitor',
-  featReaderPenDesc: 'Os leitores podem marcar, sublinhar, circular e anotar um artigo. As marcas ficam no browser deles e nunca são enviadas. Desligado remove o gesto.',
+  featReaderPenDesc: 'Os leitores podem marcar, sublinhar, circular e anotar um artigo. As marcas ficam no browser deles; quem quiser guarda-as em todos os dispositivos com um código ou o login Google, sob um nome que não é o seu. Nada lhe é mostrado. Desligado remove o gesto.',
   featDeckDesc: 'Mostra o resumo abaixo do título do post, acima do corpo.',
   seoCanonical: 'Endereço do site (canônico)',
   seoCanonicalHint: 'Usado no sitemap, RSS, schema, llms.txt, imagem OG e na tag canônica. Em branco usa SITE_URL — e se ela também não existir, tudo isso diz http://localhost:3000, que os leitores nunca veem e os robôs veem sempre.',

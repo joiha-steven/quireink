@@ -786,7 +786,7 @@ const ko = {
   featResume: '읽던 위치 기억',
   featResumeDesc: '읽다 만 글로 돌아오면 멈춘 곳부터 이어 읽도록 권합니다. 독자의 브라우저에만 저장됩니다.',
   featReaderPen: '독자의 펜',
-  featReaderPenDesc: '독자가 글에 형광펜, 밑줄, 동그라미, 메모를 남길 수 있습니다. 표시는 독자의 브라우저에만 남고 어디로도 전송되지 않습니다. 끄면 이 기능이 사라집니다.',
+  featReaderPenDesc: '독자가 글에 형광펜, 밑줄, 동그라미, 메모를 남길 수 있습니다. 표시는 독자의 브라우저에 남고, 원하면 코드나 Google 로그인으로 본인이 아닌 이름 아래 모든 기기에 보관할 수 있습니다. 당신에게는 아무것도 보이지 않습니다. 끄면 이 기능이 사라집니다.',
   featDeckDesc: '글 제목 아래, 본문 위에 요약을 표시합니다.',
   seoCanonical: '사이트 주소(canonical)',
   seoCanonicalHint: '사이트맵, RSS, 스키마, llms.txt, OG 이미지 및 canonical 태그에 사용됩니다. 비워두면 SITE_URL을 쓰고, 그것도 설정되지 않았다면 전부 http://localhost:3000으로 나갑니다. 독자는 보지 못하고 크롤러는 항상 봅니다.',

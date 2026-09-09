@@ -31,6 +31,9 @@ describe("the reader's pen on a post page", () => {
     expect(html).toContain('data-pen-inks="d5f856,aaef83,faaad9,8ed6f9,fac881"')
     expect(html).toContain('data-reader-pen-note-hint=')
     expect(html).toContain('data-reader-pen-send="Send to my notebook"')
+    // Tier two's words travel too; Google is a door only when the owner has configured it.
+    expect(html).toContain('data-reader-pen-keep="Keep on every device"')
+    expect(html).not.toContain('data-reader-pen-google')
     expect(html).toMatch(/<script src="\/assets\/reader-pen\.[a-z0-9]+\.js" defer><\/script>/)
     // A page with no ink still links no pen sheet: the island links them itself, later.
     expect(html).not.toMatch(/<link[^>]*pen-marks\./)

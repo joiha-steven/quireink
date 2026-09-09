@@ -786,7 +786,7 @@ const ja = {
   featResume: '読書位置を記憶',
   featResumeDesc: '読みかけの記事に戻ると、続きから読むよう促します。保存先は読者のブラウザーのみ。',
   featReaderPen: '読者のペン',
-  featReaderPenDesc: '読者は記事にマーカー、下線、囲み、メモを付けられます。印は読者のブラウザに残り、どこにも送られません。オフにするとこの操作はなくなります。',
+  featReaderPenDesc: '読者は記事にマーカー、下線、囲み、メモを付けられます。印は読者のブラウザに残り、望めばコードかGoogleログインで本人以外には分からない名前のもとに全端末で残せます。あなたには何も表示されません。オフにするとこの操作はなくなります。',
   featDeckDesc: '記事タイトルの下、本文の上に抜粋を表示します。',
   seoCanonical: 'サイトアドレス（canonical）',
   seoCanonicalHint: 'サイトマップ、RSS、スキーマ、llms.txt、OG画像、canonicalタグに使用されます。空欄なら SITE_URL を使い、それも未設定ならすべてが http://localhost:3000 になります。読者には見えず、クローラーには必ず見えます。',

@@ -14,11 +14,16 @@
 // Its own bundle, fetched only where the owner's switch is on, and the owner of the
 // selection menu while it is: `quote.ts` stands down when this island is present and its
 // copy gesture rides along here instead.
+//
+// Tier two (ADR 0047) lives in `pen-sync.ts`: a reader who chose to may keep the same marks
+// on the server under a code or their commenter sign-in, and this island then reads the
+// server's copy first and writes every change back.
 
 import { el, label } from './dom'
 import { flatten, locate, rangeFrom, selectorFor, unwrap, wrap } from './pen-anchor'
 import { fragment } from './quote'
 import { load, newId, save, type Ann, type Kind } from './pen-store'
+import { codeHere, forgetAll, keepsHere, mint, pull, push, whoami, writeKey, type Via } from './pen-sync'
 
 /** Below this, a selection is a click that slipped rather than a mark. */
 const MIN_CHARS = 2
@@ -88,7 +93,15 @@ function readerPen(): void {
     return true
   }
 
-  const persist = () => save(path, items)
+  /* ---- tier two: the same marks on the server, once the reader chose that ---------- */
+  let kept: Via = null
+  let pushTimer = 0
+  const persist = () => {
+    save(path, items)
+    if (!kept) return
+    clearTimeout(pushTimer)
+    pushTimer = window.setTimeout(() => { void push(path, items) }, 400)
+  }
 
   const remove = (id: string) => {
     unwrap(prose.querySelectorAll(`[data-reader="${id}"]`))
@@ -97,7 +110,32 @@ function readerPen(): void {
     persist()
   }
 
-  if (items.length) void ensureSheets().then(() => { for (const a of items) draw(a) })
+  const drawAll = () => { if (items.length) void ensureSheets().then(() => { for (const a of items) draw(a) }) }
+  const clearAll = () => {
+    unwrap(prose.querySelectorAll('[data-reader]'))
+    for (const n of prose.querySelectorAll('.pen-note')) n.remove()
+  }
+  // The server's list replaces this browser's once the page has one there; a page it has
+  // never seen is seeded from here. Local marks are drawn first so nothing waits on the wire.
+  const adopt = async () => {
+    const remote = await pull(path)
+    if (remote) {
+      clearAll()
+      items = remote
+      save(path, items)
+      drawAll()
+    } else if (items.length) {
+      void push(path, items)
+    }
+  }
+  drawAll()
+  if (keepsHere()) {
+    void whoami().then(async (via) => {
+      kept = via
+      if (via) await adopt()
+      else writeKey('') // the code is gone from the server, or the sign-in lapsed
+    })
+  }
 
   /* ---- the bar over a selection ------------------------------------------------------ */
   const inks = label('penInks').split(',')
@@ -212,7 +250,63 @@ function readerPen(): void {
     ask.hidden = true
     sendHome(open, v)
   })
-  pop.append(area, send, ask, del)
+  /* ---- tier two: where the marks live, and the panel that keeps them everywhere ------ */
+  const btn = (text: string) => el('button', { type: 'button' }, text)
+  const keep = el('div', { class: 'pen-keep' })
+  const keepLine = el('span', {})
+  const keepBtn = btn(label('readerPenKeep'))
+  const showBtn = btn(label('readerPenShowCode'))
+  const forgetHere = btn(label('readerPenForgetHere'))
+  const forgetEvery = btn(label('readerPenForgetAll'))
+  const panel = el('div', { hidden: '' })
+  // Google is a door only where the owner offers it to commenters; the sign-in is theirs
+  // (`web/comment-auth.ts`) and comes back to this page with the cookie set.
+  const google = label('readerPenGoogle')
+    ? el('a', { href: `/comment-auth/google?return=${encodeURIComponent(path)}` }, label('readerPenKeepGoogle'))
+    : null
+  const getBtn = btn(label('readerPenKeepCode'))
+  const codeIn = el('input', { type: 'text', placeholder: label('readerPenKeepHave'), autocomplete: 'off', spellcheck: 'false' })
+  const useBtn = btn(label('readerPenKeepUse'))
+  const codeOut = el('code', {})
+  const hint = el('p', {}, label('readerPenKeepHint'))
+  const bad = el('p', { hidden: '' }, label('readerPenKeepBad'))
+  const doors = () => panel.replaceChildren(...(google ? [google] : []), getBtn, codeIn, useBtn, bad)
+  const showCode = (code: string) => { codeOut.textContent = code; panel.replaceChildren(codeOut, hint); panel.hidden = false }
+  const renderKeep = () => {
+    keepLine.textContent = label(kept ? 'readerPenKept' : 'readerPenKeptHere')
+    keepBtn.hidden = !!kept
+    showBtn.hidden = !codeHere()
+    forgetHere.hidden = forgetEvery.hidden = !kept
+    panel.hidden = true
+    bad.hidden = true
+    codeIn.value = ''
+    doors()
+  }
+  keep.append(keepLine, keepBtn, showBtn, forgetHere, forgetEvery, panel)
+  keepBtn.addEventListener('click', () => { panel.hidden = !panel.hidden })
+  google?.addEventListener('click', () => writeKey('g'))
+  showBtn.addEventListener('click', () => showCode(codeHere()))
+  getBtn.addEventListener('click', async () => {
+    const code = await mint()
+    if (!code) return
+    kept = 'code'
+    if (items.length) void push(path, items)
+    renderKeep()
+    showCode(code)
+  })
+  useBtn.addEventListener('click', async () => {
+    const code = codeIn.value.trim()
+    const via = code ? await whoami(code) : null
+    if (!via) { bad.hidden = false; return codeIn.focus() }
+    writeKey(code)
+    kept = via
+    closePop()
+    await adopt()
+  })
+  forgetHere.addEventListener('click', () => { writeKey(''); kept = null; renderKeep() })
+  forgetEvery.addEventListener('click', async () => { await forgetAll(); kept = null; renderKeep() })
+
+  pop.append(area, send, ask, del, keep)
   document.body.appendChild(pop)
   let open: Ann | null = null
   let noteTimer = 0
@@ -222,6 +316,7 @@ function readerPen(): void {
     if (!first) return
     open = a
     area.value = a.note
+    renderKeep()
     pop.hidden = false
     place(first.getBoundingClientRect(), pop, true)
     area.focus()

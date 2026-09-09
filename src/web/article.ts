@@ -298,7 +298,7 @@ export async function renderArticle(slug: string, canonicalPath?: string): Promi
   // Each island checks for its own markup first, so a post with no code blocks and no
   // images runs a few cheap queries that find nothing rather than downloading a file each.
   const shell = {
-    bodyData: articleLabels(settings, s, !!post),
+    bodyData: articleLabels(settings, s, !!post, settings.comments.googleAuth && commentEnv?.googleConfigured === true),
     scripts: articleScripts(!!post && settings.features.bookMode, commentsMount !== '',
       !!post && settings.features.readerPen),
     customHead: settings.customHead,

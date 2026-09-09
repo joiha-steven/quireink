@@ -111,7 +111,7 @@ transaction. Flush on `SIGTERM` before exit so a deploy does not drop the buffer
 ## Table-by-table
 
 Unchanged tables (straight translation, only the type mapping above applies):
-`pages`, `notes` (added 2026-09-09, migration `012-notes` — the notebook, [ADR 0044](../decisions/0044-a-note-is-not-a-post.md): a post's shape less taxonomy, plus `source_url`, `source_title` and `quote` for a clip), `webmentions` (added 2026-09-09, migration `013-webmentions`, [ADR 0046](../decisions/0046-the-notebook-speaks-the-open-standards.md)), `post_revisions`, `media`, `files`, `settings`, `mcp_tokens`, `mcp_clients`,
+`pages`, `notes` (added 2026-09-09, migration `012-notes` — the notebook, [ADR 0044](../decisions/0044-a-note-is-not-a-post.md): a post's shape less taxonomy, plus `source_url`, `source_title` and `quote` for a clip), `webmentions` (added 2026-09-09, migration `013-webmentions`, [ADR 0046](../decisions/0046-the-notebook-speaks-the-open-standards.md)), `reader_marks` and `reader_keys` (added 2026-09-09, migration `014-reader-marks`, [ADR 0047](../decisions/0047-a-readers-marks-travel-by-a-code.md): a reader's marks per page under an opaque id, and the hashed notebook codes that name a reader), `post_revisions`, `media`, `files`, `settings`, `mcp_tokens`, `mcp_clients`,
 `mcp_used_codes`, `backup_state`, `integration_keys`, `subscribers`,
 `newsletter_sends`, `activity_log`, `redirects`, `analytics_scroll`,
 `schema_migrations`.

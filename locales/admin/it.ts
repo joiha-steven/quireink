@@ -786,7 +786,7 @@ const it = {
   featResume: 'Ricorda la posizione di lettura',
   featResumeDesc: 'Tornando su un articolo letto a metà, propone di riprendere da dove il lettore era rimasto. Conservato solo nel suo browser.',
   featReaderPen: 'La penna del lettore',
-  featReaderPenDesc: 'I lettori possono evidenziare, sottolineare, cerchiare e annotare un articolo. I segni restano nel loro browser e non vengono mai inviati. Disattivato rimuove il gesto.',
+  featReaderPenDesc: 'I lettori possono evidenziare, sottolineare, cerchiare e annotare un articolo. I segni restano nel loro browser; chi vuole li conserva su tutti i dispositivi con un codice o l\'accesso Google, sotto un nome che non è il suo. A te non viene mostrato nulla. Disattivato rimuove il gesto.',
   featDeckDesc: 'Mostra l’estratto sotto il titolo dell’articolo, sopra il corpo.',
   seoCanonical: 'Indirizzo del sito (canonico)',
   seoCanonicalHint: 'Usato per sitemap, RSS, schema, llms.txt, immagine OG e il tag canonico. Vuoto usa SITE_URL — e se manca anche quello, tutto dice http://localhost:3000, che i lettori non vedono mai e i crawler vedono sempre.',
