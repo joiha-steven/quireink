@@ -12,8 +12,8 @@ import { NodeSelection, type EditorState } from '@tiptap/pm/state'
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import { useAdminT } from './I18nProvider'
 import { editLink, useLinkAsker } from './editorLink'
-import { DEFAULT_INK, INKS } from '@/render/ink'
-import { PEN_LIGHT } from '@/render/pen'
+import { DEFAULT_INK, INKS } from '@/pen/grammar'
+import { PEN_LIGHT } from '@/pen/pigments'
 import { tip } from './editorKeys'
 // Link, picture and bin come from the shared set; the rest is editing notation, drawn here.
 import { SharedGlyph as Shared } from './navIcons'
@@ -254,7 +254,7 @@ export function SlashMenu({
 // the ink IS the gesture here, the way choosing bold is not. The swatches carry the real
 // pigments, so the bar shows you the pen you are about to pick up rather than a word for it.
 //
-// READ from `render/pen.ts`, not typed out. All five were written out here a second time,
+// READ from `pen/pigments.ts`, not typed out. All five were written out here a second time,
 // and a swatch that is a near-miss of the ink it applies is the worst kind of wrong: it
 // looks deliberate. The `#` is added here because CSS wants it and the stroke wants the
 // bare hex.

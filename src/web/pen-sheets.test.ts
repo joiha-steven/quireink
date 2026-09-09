@@ -7,8 +7,8 @@
 
 import { describe, expect, it } from 'bun:test'
 import { assetBody, penSheets, penSheetsFor, PEN_LINES_SHEET, PEN_MARKS_SHEET } from '@/web/assets'
-import { DEFAULT_INKS } from '@/render/ink-palette'
-import { PEN_LIGHT } from '@/render/pen'
+import { DEFAULT_INKS } from '@/pen/palette'
+import { PEN_LIGHT } from '@/pen/pigments'
 
 const MARKED = '<p><mark data-pen="3">một câu</mark></p>'
 

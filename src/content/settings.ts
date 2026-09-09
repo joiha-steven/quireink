@@ -3,7 +3,7 @@
 // store-relative, binaries on Blob. Validation/migration lives in settings-sanitize.ts.
 
 import type { SiteSettings } from '@/types'
-import { DEFAULT_INKS } from '@/render/ink-palette'
+import { DEFAULT_INKS } from '@/pen/palette'
 import { expandBlob } from '@/media/blob'
 import { one } from '@/store/query'
 import { EMPTY_NAV_ORDER, sanitizeNavOrder } from '@/content/nav-order'

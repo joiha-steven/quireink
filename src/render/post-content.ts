@@ -12,7 +12,7 @@ import { highlightCode } from '@/render/highlight'
 import { readRendered, renderKey, writeRendered } from '@/render/render-cache'
 import { prepareFootnotes, applyFootnotes } from '@/render/footnotes'
 import { buildSha } from '@/server/build-info'
-import { inkExtension, ringExtension, underExtension } from '@/render/ink'
+import { inkExtension, ringExtension, underExtension } from '@/pen/marked'
 import { mathBlockExtension, mathInlineExtension } from '@/render/math'
 import { escapeAttr, slugify } from '@/utils'
 
@@ -62,7 +62,7 @@ async function highlightBlocks(html: string): Promise<string> {
 marked.setOptions({ gfm: true, breaks: true })
 // The highlighter pen. The FIRST syntax this codebase adds that Quire 1.x did not have, so
 // it is the first place the golden gate can only say "nothing that already rendered changed"
-// rather than "the port is exact" — see `render/ink.ts` for why no corpus fixture moves.
+// rather than "the port is exact" — see `pen/grammar.ts` for why no corpus fixture moves.
 marked.use({ extensions: [inkExtension, underExtension, ringExtension] })
 // Maths. Same standing as the pen above: syntax Quire 1.x did not have, so the golden gate
 // can only say "nothing that already rendered changed". It can say that honestly here —

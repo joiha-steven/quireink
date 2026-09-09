@@ -12,8 +12,8 @@ import commentThreadJs from '@/assets/dist/comment-thread.js' with { type: 'text
 import loginJs from '@/assets/dist/login.js' with { type: 'text' }
 import swJs from '@/assets/dist/sw.js' with { type: 'text' }
 import { PUBLIC_CSS } from '@/web/public.css'
-import { INK_HIGHLIGHT_CSS, INK_LINES_CSS, inkHighlightCss, inkLinesCss } from '@/web/ink.css'
-import { inkSignature, resolveInks } from '@/render/ink-palette'
+import { INK_HIGHLIGHT_CSS, INK_LINES_CSS, inkHighlightCss, inkLinesCss } from '@/pen/ink.css'
+import { inkSignature, resolveInks } from '@/pen/palette'
 import type { InkSettings } from '@/types'
 import { minifyCss } from '@/web/css-min'
 

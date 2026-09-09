@@ -71,7 +71,7 @@ if (css.exitCode !== 0) {
 // gestures a post will use before the owner writes them — a stroke you cannot see while
 // writing is a stroke you cannot place.
 const { PROSE_CSS } = await import(`${ROOT}src/web/prose.css.ts`)
-const { INK_CSS } = await import(`${ROOT}src/web/ink.css.ts`)
+const { INK_CSS } = await import(`${ROOT}src/pen/ink.css.ts`)
 const sheetText = await Bun.file(`${OUT}/admin.css`).text()
 await Bun.write(`${OUT}/admin.css`, `${sheetText}\n${PROSE_CSS}\n${INK_CSS}`)
 

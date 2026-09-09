@@ -15,8 +15,8 @@ import { resetLimits } from '@/server/rate-limit'
 import { createApp } from '@/web/app'
 import { renderOgCard, OG_SIZE } from '@/render/og-card'
 import { ogFontsCover } from '@/render/og'
-import { PEN_LIGHT, penStroke } from '@/render/pen'
-import { INK_CSS } from '@/web/ink.css'
+import { PEN_LIGHT, penStroke } from '@/pen/pigments'
+import { INK_CSS } from '@/pen/ink.css'
 
 const DIR = './.tmp/test-og'
 freshDatabase(DIR)
@@ -341,11 +341,11 @@ describe('the cap on card renders', () => {
  * This is the test og-card.ts's comment said existed. It did not, and in its absence the
  * card's copy of the stroke drifted from the reader's: same first path, a second path four
  * numbers away, and the same measured yellow typed out a second time. Both now read
- * `render/pen.ts`, which the typechecker enforces; what these two assertions add is that
+ * `pen/pigments.ts`, which the typechecker enforces; what these two assertions add is that
  * neither side has quietly gone back to a literal of its own.
  */
 describe('the highlighter, on the card and on the page', () => {
-  it('gives the page the stroke that render/pen.ts draws', () => {
+  it('gives the page the stroke that pen/pigments.ts draws', () => {
     // A bare <mark> means yellow, so it is the element's own rule and carries no data-ink.
     expect(INK_CSS).toContain(`.prose mark{--ink-stroke:${penStroke(PEN_LIGHT.yellow)}}`)
   })

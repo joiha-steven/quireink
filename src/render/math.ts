@@ -38,7 +38,7 @@ export type { MathDelim, MathMatch } from '@/render/math-syntax'
  * The fallback's escaper, written out here rather than imported from `@/utils`.
  *
  * `utils` imports the grammar next door, so importing it back would close a cycle, and
- * `render/ink.ts` keeps itself import-free for the same reason. Four characters is a cheap
+ * `pen/grammar.ts` keeps itself import-free for the same reason. Four characters is a cheap
  * price for a module that every other reader of the grammar can load without dragging the
  * utility surface behind it.
  */

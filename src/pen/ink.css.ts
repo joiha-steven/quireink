@@ -1,4 +1,4 @@
-// The highlighter pen's ink. `render/ink.ts` decides WHAT is highlighted (and stamps each
+// The highlighter pen's ink. `pen/grammar.ts` decides WHAT is highlighted (and stamps each
 // highlight's `data-pen` identity); this decides what the stroke looks like, and the two are
 // separate on purpose: rendered bodies are cached under a hash of their Markdown, so a
 // stroke baked into the HTML could not be restyled without evicting every body on the site.
@@ -13,27 +13,27 @@
 //
 // ONE STROKE STYLE, MANY HANDS. There used to be a three-way site setting here (marker /
 // swipe / double) driving `--ink-h0`-family variables from `layout.ts`. It went when the
-// pen learned to vary ITSELF: `render/pen-dies.ts` grows the dies and the forty grips, each
+// pen learned to vary ITSELF: `pen/dies.ts` grows the dies and the forty grips, each
 // highlight is dealt one by the `data-pen` hash of its own text, and a picker choosing
 // between three uniformities had nothing left to offer.
 
-// The pen's pigments and its stroke are DATA, and they live in `render/pen.ts`. They were
+// The pen's pigments and its stroke are DATA, and they live in `pen/pigments.ts`. They were
 // written out here, again on the share card and a third time in the editor's swatches, and
 // the card's copy of the path had already drifted four numbers from this one.
-import { penStroke as pen } from '@/render/pen'
+import { penStroke as pen } from '@/pen/pigments'
 import {
   PEN_AUX_DARK, PEN_AUX_LIGHT, penDash, penRing, penSolidRule, penUnder,
-} from '@/render/pen'
+} from '@/pen/pigments'
 import {
   PEN_DIE_COUNT, PEN_GRIPS, RING_DIE_COUNT, RING_GRIPS, UNDER_DIE_COUNT, UNDER_GRIPS,
-} from '@/render/pen-dies'
+} from '@/pen/dies'
 // The palette this sheet is drawn in — the built-ins unless the owner has chosen otherwise.
-import { BUILT_IN_INKS, type InkPalette } from '@/render/ink-palette'
+import { BUILT_IN_INKS, type InkPalette } from '@/pen/palette'
 
 const inks = (set: Record<string, string>, prefix: string) =>
   Object.entries(set)
     // Yellow is what a bare `<mark>` means, so it is the element's own rule rather than an
-    // attribute selector — `render/ink.ts` emits no `data-ink` for the default.
+    // attribute selector — `pen/grammar.ts` emits no `data-ink` for the default.
     .map(([name, hex]) => `${prefix} ${name === 'yellow' ? 'mark' : `mark[data-ink=${name}]`}`
       + `{--ink-stroke:${pen(hex)}}`)
     .join('\n')

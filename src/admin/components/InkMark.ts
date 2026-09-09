@@ -2,9 +2,9 @@
 //
 // A stroke you cannot see while writing is a stroke you cannot place, so the pen is a real
 // mark in the writing surface rather than literal `==`. It renders as `<mark data-ink="…">`,
-// the SAME element the published page uses, so `web/ink.css.ts` styles both from one place.
+// the SAME element the published page uses, so `pen/ink.css.ts` styles both from one place.
 //
-// THE GRAMMAR IS NOT RESTATED HERE; `render/ink.ts` owns it and this imports it. Three readers
+// THE GRAMMAR IS NOT RESTATED HERE; `pen/grammar.ts` owns it and this imports it. Three readers
 // of `==text==` exist — marked on the server, markdown-it here, `toPlainText` for excerpts —
 // and the only way three parsers stay in step is one regex. They drifted once already, when
 // `toPlainText` did not know the syntax and put the word "green" into every excerpt.
@@ -22,7 +22,7 @@ import type MarkdownIt from 'markdown-it'
 // The `.mjs` specifier the runtime uses has no declaration; `@types/markdown-it` ships this
 // one, and it is the same class.
 import type StateInline from 'markdown-it/lib/rules_inline/state_inline.js'
-import { INKS, DEFAULT_INK, isInk, inkOf, INK_SYNTAX_SOURCE, INK_SYNTAX_CONTENT_LAST } from '@/render/ink'
+import { INKS, DEFAULT_INK, isInk, inkOf, INK_SYNTAX_SOURCE, INK_SYNTAX_CONTENT_LAST } from '@/pen/grammar'
 import { parseInlineInto } from './markdown-nested'
 
 declare module '@tiptap/core' {

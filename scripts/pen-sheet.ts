@@ -1,13 +1,13 @@
 // A proof sheet for the pen: every die, at three stretches, in all five inks, plus the 40
 // grips dealt onto sample sentences. Look at this BEFORE shipping a seed bump in
-// `render/pen-dies.ts` — the seed is the design, and the only review it can get is an eye.
+// `pen/dies.ts` — the seed is the design, and the only review it can get is an eye.
 //
 //   bun scripts/pen-sheet.ts > .tmp/pen-sheet.html && open .tmp/pen-sheet.html
 
-import { PEN_AUX_DARK, PEN_AUX_LIGHT, PEN_DARK, PEN_LIGHT, penRing, penStroke, penUnder } from '@/render/pen'
+import { PEN_AUX_DARK, PEN_AUX_LIGHT, PEN_DARK, PEN_LIGHT, penRing, penStroke, penUnder } from '@/pen/pigments'
 import {
   PEN_DIE_COUNT, PEN_GRIPS, RING_DIE_COUNT, RING_GRIPS, UNDER_DIE_COUNT, UNDER_GRIPS,
-} from '@/render/pen-dies'
+} from '@/pen/dies'
 
 const inks = Object.entries(PEN_LIGHT)
 const widths = [90, 260, 560]

@@ -5,7 +5,7 @@
 // 4.50, a margin of zero. They passed, and any later nudge to a background or a hue would
 // have taken one under without anything saying so, because nothing computed this.
 //
-// The bar is 5.0, not 4.5, and that number is the repository's own: `web/ink.css.ts` mixes
+// The bar is 5.0, not 4.5, and that number is the repository's own: `pen/ink.css.ts` mixes
 // the dark-mode highlighter at "the brightest mix at which all five clear 5.0:1", having
 // rejected 55% for putting three inks in the 3.7-4.4 range. A site cannot hold its
 // highlighter to 5.0 and its dates to 4.5.

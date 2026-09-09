@@ -1,7 +1,7 @@
 // The highlighter pen itself: five measured pigments, and the shape of one stroke.
 //
 // This file exists because the pen was written down THREE times and had already drifted.
-// `web/ink.css.ts` drew it for the reader, `render/og-card.ts` drew it on the share card and
+// `pen/ink.css.ts` drew it for the reader, `render/og-card.ts` drew it on the share card and
 // `admin/components/EditorMenus.tsx` painted the five swatches in the toolbar — each with its
 // own copy of `d5f856`, and two of them with their own copy of the path. The card's second
 // path was four numbers different from the page's, so the stroke under a shared headline was
@@ -9,7 +9,7 @@
 // comment claimed a test pinned the two together; there was no such test.
 //
 // So the pen is data now, in one import-free module, and the three readers ask for it. Same
-// arrangement `render/ink.ts` and `render/math.ts` already use for their grammars, and for
+// arrangement `pen/grammar.ts` and `render/math.ts` already use for their grammars, and for
 // the same reason: a fact restated in three places is a fact that will disagree with itself.
 //
 // THE PIGMENTS ARE HARDCODED HEX, AND THAT IS A DELIBERATE EXCEPTION to "public UI colours
@@ -82,12 +82,12 @@ export const PEN_LINE_DARK: Record<PenInk, string> = {
 
 // The die shapes are GROWN from a seeded generator rather than drawn — `pen-dies.ts` holds
 // the hand and the argument for it. This module stays the single place a pigment exists.
-import { DIES, RING_DIES, UNDER_DIES } from '@/render/pen-dies'
-import { LINK_DASH_DIE, LINK_SOLID_DIE } from '@/render/pen-link'
+import { DIES, RING_DIES, UNDER_DIES } from '@/pen/dies'
+import { LINK_DASH_DIE, LINK_SOLID_DIE } from '@/pen/dies-link'
 export {
   PEN_DIE_COUNT, PEN_VARIANT_COUNT, PEN_GRIPS,
   UNDER_DIE_COUNT, UNDER_GRIPS, RING_DIE_COUNT, RING_GRIPS,
-} from '@/render/pen-dies'
+} from '@/pen/dies'
 
 /**
  * One stroke, in one colour, stamped from one die, as a `url()` an element can carry as a

@@ -10,8 +10,8 @@
 // the measured inks live in the code where they can still be corrected rather than being
 // copied into every install's database. Reset writes empty back to all nine.
 import type { InkSettings } from '@/types'
-import { PEN_AUX_LIGHT, PEN_LIGHT } from '@/render/pen'
-import { contrastRatio } from '@/render/pen-derive'
+import { PEN_AUX_LIGHT, PEN_LIGHT } from '@/pen/pigments'
+import { contrastRatio } from '@/pen/derive'
 import { NOTE_TEXT, SETTING_GAP, Setting } from './kit'
 import { ColorGrid, ColorRow } from './ColorControls'
 import { useAdminT } from './I18nProvider'

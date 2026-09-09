@@ -26,7 +26,7 @@ import { InkFields } from './InkFields'
 import { CommentFields } from './CommentFields'
 import { ResetButton } from './kit'
 import { SHEET_TOOL } from './sheet'
-import { DEFAULT_INKS } from '@/render/ink-palette'
+import { DEFAULT_INKS } from '@/pen/palette'
 
 export function SettingsPostTab({ s, update, onCommentSignIn, grid, col }: {
   s: SiteSettings

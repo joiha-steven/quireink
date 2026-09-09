@@ -21,7 +21,7 @@ import {
 import { DEFAULT_FIGURE, DEFAULT_GALLERY, DEFAULT_HOME } from '@/content/settings-sanitize'
 import { DEFAULT_POST_IMAGE, DEFAULT_SHAPE, DEFAULT_AUTHOR } from '@/content/settings-shape'
 import { DEFAULT_TABLE } from '@/content/settings-table'
-import { DEFAULT_INKS } from '@/render/ink-palette'
+import { DEFAULT_INKS } from '@/pen/palette'
 
 /**
  * The fetch mocks each `onTab` installs, drained by the caller.

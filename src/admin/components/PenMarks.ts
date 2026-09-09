@@ -4,13 +4,13 @@
 // `underline` mark with no markdown serialization, and tiptap-markdown's answer to that is
 // `"underline" mark is only available in html mode` — logged, not thrown, while it saves
 // the document WITHOUT the mark. Press U, save, and the underline is silently gone. The
-// mark here serializes to `++text++` (the grammar `render/ink.ts` owns), so what the button
+// mark here serializes to `++text++` (the grammar `pen/grammar.ts` owns), so what the button
 // applies is what the file keeps. StarterKit is configured with `underline: false` in
 // `editorExtensions.ts`; this mark keeps the name, the Mod-U shortcut and the
 // `toggleUnderline` command, so the toolbar did not have to learn anything.
 //
 // THE GRAMMARS ARE NOT RESTATED HERE — same rule, same reason as `InkMark.ts`: every
-// parser of `++`/`@@` is built from the one regex in `render/ink.ts`, because the two
+// parser of `++`/`@@` is built from the one regex in `pen/grammar.ts`, because the two
 // copies this repo once had of `==` drifted within the hour.
 import { getMarkRange, InputRule, Mark, markInputRule, markPasteRule, mergeAttributes } from '@tiptap/core'
 import type { MarkType } from '@tiptap/pm/model'
@@ -19,8 +19,8 @@ import type StateInline from 'markdown-it/lib/rules_inline/state_inline.js'
 import {
   INKS, isInk, RING_SYNTAX_CONTENT_LAST, RING_SYNTAX_SOURCE,
   UNDER_SYNTAX_CONTENT_LAST, UNDER_SYNTAX_SOURCE,
-} from '@/render/ink'
-import type { Ink } from '@/render/ink'
+} from '@/pen/grammar'
+import type { Ink } from '@/pen/grammar'
 import { parseInlineInto } from './markdown-nested'
 
 declare module '@tiptap/core' {

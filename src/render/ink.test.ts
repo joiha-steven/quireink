@@ -4,7 +4,7 @@
 
 import { describe, expect, it } from 'bun:test'
 import { renderPostContent } from '@/render/post-content'
-import { INKS, DEFAULT_INK, penSeed } from '@/render/ink'
+import { INKS, DEFAULT_INK, penSeed } from '@/pen/grammar'
 import { toPlainText } from '@/utils'
 
 const render = (md: string) => renderPostContent({ markdown: md }).then((h) => h.trim())

@@ -1,6 +1,6 @@
 // Pure helpers shared across lib and components. No side effects, no I/O.
 
-import { INK_SYNTAX_GLOBAL, RING_SYNTAX_GLOBAL, UNDER_SYNTAX_GLOBAL } from '@/render/ink'
+import { INK_SYNTAX_GLOBAL, RING_SYNTAX_GLOBAL, UNDER_SYNTAX_GLOBAL } from '@/pen/grammar'
 // `math-syntax`, NOT `math`: the grammar, not the renderer. Fifteen admin files import this
 // module, so whatever it reaches for lands in the chunk every admin screen loads — and
 // `render/math.ts` imports Temml. Three regexes cost 212 KB of LaTeX engine until this line

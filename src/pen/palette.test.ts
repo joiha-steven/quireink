@@ -6,8 +6,8 @@
 // throw away a cache it had every right to keep.
 
 import { describe, expect, it } from 'bun:test'
-import { BUILT_IN_INKS, DEFAULT_INKS, inkSignature, resolveInks } from '@/render/ink-palette'
-import { PEN_AUX_LIGHT, PEN_LIGHT } from '@/render/pen'
+import { BUILT_IN_INKS, DEFAULT_INKS, inkSignature, resolveInks } from '@/pen/palette'
+import { PEN_AUX_LIGHT, PEN_LIGHT } from '@/pen/pigments'
 
 describe('inkSignature', () => {
   it('is empty when nothing has been chosen', () => {

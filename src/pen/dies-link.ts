@@ -14,8 +14,8 @@
 // reordered import could silently redraw every highlight on every site. A separate seed
 // cannot do that: nothing here can move a single stroke over there.
 
-import { o2, r1, wavy } from '@/render/pen-dies'
-import type { Die, DiePath } from '@/render/pen-dies'
+import { o2, r1, wavy } from '@/pen/dies'
+import type { Die, DiePath } from '@/pen/dies'
 
 /* mulberry32 again, seeded differently on purpose — see the note above. */
 function mulberry(seed: number): () => number {

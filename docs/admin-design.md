@@ -104,7 +104,7 @@ character and none of its typographic rules **except one**, below.
   actions that destroy something, and nothing else.** `SHEET_TOOL_DANGER` and the `danger`
   button variant are its only two homes; Restore, Cancel and Close stay grey beside them,
   because a delete that looks like its neighbour is what put a native `confirm()` in the way
-  of a deleted post. Values from `PEN_AUX_LIGHT`/`PEN_AUX_DARK` in `render/pen.ts`, the one
+  of a deleted post. Values from `PEN_AUX_LIGHT`/`PEN_AUX_DARK` in `pen/pigments.ts`, the one
   source — measured off a photograph of a real pen box, never re-typed by eye.
   A colour that means one thing is a signal; a palette is not. The test for a third ink is
   the same as it always was: what does this pen MEAN on a page?

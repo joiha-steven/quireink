@@ -9,7 +9,7 @@
 // it, which is what every generated card on the web looks like and which said nothing about
 // what a reader would find on the other side of the link. It is now paper, set in the site's
 // own face, with the title and the date under the SAME highlighter stroke the reader meets
-// inside an article — the literal pen from `web/ink.css.ts`, the same measured pigment and
+// inside an article — the literal pen from `pen/ink.css.ts`, the same measured pigment and
 // the same hand-drawn edges, carried here as the SVG it already is.
 //
 // The pen is the one part of this file that does not follow the palette, and deliberately:
@@ -22,7 +22,7 @@
 
 import type { SatoriOptions } from 'satori'
 import { DEFAULT_THEME } from '@/content/themes'
-import { PEN_LIGHT, penStroke } from '@/render/pen'
+import { PEN_LIGHT, penStroke } from '@/pen/pigments'
 import interLatin from '@/render/fonts/inter-latin.woff' with { type: 'file' }
 import interLatinExt from '@/render/fonts/inter-latin-ext.woff' with { type: 'file' }
 import interVietnamese from '@/render/fonts/inter-vietnamese.woff' with { type: 'file' }
@@ -99,7 +99,7 @@ const { bg: PAPER, heading: HEADING, text: TEXT, meta: META, rule: RULE } = DEFA
  * L200,29.5 on the page. The card was not showing the reader's pen. It was showing one four
  * numbers away from it, on the picture that represents the site everywhere it is shared.
  *
- * `render/pen.ts` holds the pen now, the page reads it from there too, and `og.test.ts`
+ * `pen/pigments.ts` holds the pen now, the page reads it from there too, and `og.test.ts`
  * compares the two — which is what the old comment described and what nothing did.
  */
 const STROKE = {

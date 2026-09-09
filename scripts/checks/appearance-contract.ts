@@ -21,7 +21,7 @@ import { PROMISED_NAMES, PROMISED_SELECTORS, PROMISED_VARS } from '../../src/con
 const DOC = 'docs/appearance.md'
 
 /** Everything that can emit a variable or a class onto a public page. */
-const SOURCE_DIRS = ['src/web', 'src/render', 'src/content', 'src/assets/js']
+const SOURCE_DIRS = ['src/web', 'src/render', 'src/pen', 'src/content', 'src/assets/js']
 
 /**
  * ⚠️ THE CONTRACT ITSELF IS NOT EVIDENCE THAT THE CONTRACT HOLDS.

@@ -78,7 +78,7 @@ export const SHEET_TOOL_ON_CANVAS = SHEET_TOOL.replace('text-neutral-500', 'text
  * DERIVED, not re-typed, for the reason `SHEET_TOOL_ON_CANVAS` is: the two must differ by
  * exactly one thing — the ink — and a hand-written copy drifts on the other five within a
  * month. The ink is the product's own red ballpoint (`--pen-red`, PEN_AUX_LIGHT in
- * `render/pen.ts`), which is what you strike a line through something with on paper.
+ * `pen/pigments.ts`), which is what you strike a line through something with on paper.
  */
 export const SHEET_TOOL_DANGER = SHEET_TOOL
   .replace('text-neutral-500', 'text-[var(--pen-red)]')

@@ -50,7 +50,7 @@ export function darkStroke(hex: string): string {
  * The pigment AS A LINE: same hue, ballpoint strength.
  *
  * A highlighter sweep reads because of its area. A line has none, so the five inks carry
- * separate line values — see `render/pen.ts`. For a chosen colour those are derived: hold
+ * separate line values — see `pen/pigments.ts`. For a chosen colour those are derived: hold
  * the hue, take saturation and lightness to the range the built-in lines occupy.
  */
 export function lineInk(hex: string, mode: 'light' | 'dark'): string {

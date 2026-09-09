@@ -19,15 +19,14 @@
 
 import { readdirSync, readFileSync } from 'node:fs'
 
-const SHEET_DIR = 'src/web'
+const SHEET_DIRS = ['src/web', 'src/pen']
 const NOT_SCANNED = new Set(['login.css.ts'])
-const SHEETS = readdirSync(SHEET_DIR)
-  .filter((f) => f.endsWith('.css.ts') && !NOT_SCANNED.has(f))
-  .map((f) => `${SHEET_DIR}/${f}`)
+const SHEETS = SHEET_DIRS.flatMap((dir) => readdirSync(dir)
+  .filter((f) => f.endsWith('.css.ts') && !NOT_SCANNED.has(f)).map((f) => `${dir}/${f}`))
   .sort()
 
 if (SHEETS.length === 0) {
-  console.error(`✗ check:type-roles: no *.css.ts found in ${SHEET_DIR}/, which cannot be right`)
+  console.error(`✗ check:type-roles: no *.css.ts found in ${SHEET_DIRS.join(' or ')}, which cannot be right`)
   process.exit(1)
 }
 

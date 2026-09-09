@@ -15,10 +15,10 @@
 //
 // ⚠️ DETERMINISTIC ON PURPOSE, twice over. The PRNG is seeded with a constant, so every build
 // emits byte-identical CSS and the public sheet's hash holds still. And which die a highlight
-// wears is a hash of its own text (`render/ink.ts`), so a phrase keeps its stroke across
+// wears is a hash of its own text (`pen/grammar.ts`), so a phrase keeps its stroke across
 // reloads — a page that reshuffled its ink every visit would feel haunted, not hand-made.
 //
-// The ceiling every die respects is the dark-mode contrast audit in `render/pen.ts`: composite
+// The ceiling every die respects is the dark-mode contrast audit in `pen/pigments.ts`: composite
 // alpha nowhere exceeds ~.91. Sweep and band compound to at most .905, and every pool is
 // placed clear of the band so it compounds with the sweep alone and tops out under .87.
 
@@ -254,7 +254,7 @@ function makeUnderDie(r: () => number): Die {
  * is, and the stretch all happens in the near-straight run over and under the letters.
  *
  * So the die is a left cap, a middle, and a right cap. The caps ride at a FIXED em width
- * (`web/ink.css.ts` sizes them; only the middle stretches), each cap is a round arc
+ * (`pen/ink.css.ts` sizes them; only the middle stretches), each cap is a round arc
  * ribbon, the middle is two lightly wavering lines hugging the word, and one cap carries
  * the crossing tail — the overshoot where the pen ran over its own start, which every
  * ringed word in the reference photographs has. The pieces overlap slightly where they

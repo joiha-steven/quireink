@@ -3,7 +3,7 @@
 The logo is the pen's own marks on one glyph: a Literata **Q** with the highlighter behind
 it, the red ballpoint ring around it, the graphite underline beneath it, and a full stop in
 ink. Every colour is the product's own — the highlighter and ballpoint pigments from
-[`src/render/pen.ts`](../../src/render/pen.ts) (light and dark values both), paper
+[`src/pen/pigments.ts`](../../src/pen/pigments.ts) (light and dark values both), paper
 `#fcfcfc`, ink `#161513`. The letterforms are outlines, not live text, so the files render
 identically with no font installed.
 

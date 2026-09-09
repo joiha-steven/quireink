@@ -5,8 +5,8 @@
 // reproducing them, the formula has drifted from the values ADR 0018 audited at 5.0:1.
 
 import { describe, expect, it } from 'bun:test'
-import { PEN_DARK, PEN_LIGHT } from '@/render/pen'
-import { contrastRatio, darkStroke, lineInk, parseHex } from '@/render/pen-derive'
+import { PEN_DARK, PEN_LIGHT } from '@/pen/pigments'
+import { contrastRatio, darkStroke, lineInk, parseHex } from '@/pen/derive'
 
 describe('darkStroke', () => {
   it('reproduces the measured dark inks from their light pigments', () => {

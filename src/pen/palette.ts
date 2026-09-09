@@ -6,12 +6,39 @@
 // the code where they can still be corrected, rather than being copied into every install's
 // database on first save.
 
-import type { InkSettings } from '@/types'
 import {
   PEN_AUX_DARK, PEN_AUX_LIGHT, PEN_DARK, PEN_LIGHT, PEN_LINE_DARK, PEN_LINE_LIGHT,
   type PenInk,
-} from '@/render/pen'
-import { darkStroke, lineInk } from '@/render/pen-derive'
+} from '@/pen/pigments'
+import { darkStroke, lineInk } from '@/pen/derive'
+
+/**
+ * The pen's colours, and the selection highlight. EVERY FIELD IS AN OVERRIDE, and '' means
+ * "the built-in", which is why the defaults are all empty strings.
+ *
+ * That shape is the whole design. ADR 0018 measured the five highlighter pigments off a
+ * photograph of a real pen box and hand-tuned each one twice more (a dark-page mix audited
+ * at 5.0:1, and a ballpoint-strength line version, because a pale sweep is invisible as a
+ * 2px underline). Storing a full colour here would mean shipping a copy of those values into
+ * every install's database, where they could never be corrected again. An override left
+ * empty keeps the measured ink; an override that is set derives its own dark and line
+ * variants (`pen/derive.ts`) from the one colour somebody chose.
+ *
+ * Owner's call, 2026-08-24, amending ADR 0018's "the colours are NOT a setting": the
+ * argument there is that a highlighter should not restyle itself per PALETTE, and that still
+ * holds — one pen for the whole site, whatever the reader picks. Which pen it is, is his.
+ */
+export type InkSettings = {
+  yellow: string // '' = the measured pigment. Hex, with or without '#'
+  green: string
+  pink: string
+  blue: string
+  orange: string
+  ring: string // the ballpoint a circled word defaults to; '' = the built-in red
+  underline: string // the pencil an underline defaults to; '' = the built-in graphite
+  selection: string // what dragging across text looks like on a light page; '' = the heading colour
+  selectionDark: string // ...and on a dark one; '' = the palette's mid grey
+}
 
 /**
  * Every colour the two pen sheets need, resolved. Four maps and two pairs, because a

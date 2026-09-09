@@ -21,7 +21,7 @@
 
 /**
  * The full stop, in ink. The red ballpoint the product's ring gesture defaults to
- * (`src/render/pen.ts`), one value for both admin themes: at this size the dot needs
+ * (`src/pen/pigments.ts`), one value for both admin themes: at this size the dot needs
  * vividness, and the muted dark-mode mix is tuned for areas, not points.
  */
 export const BRAND_RED = '#c23b2b'

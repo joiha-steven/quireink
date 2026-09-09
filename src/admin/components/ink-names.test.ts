@@ -13,7 +13,7 @@
 // renderer and the strings are keys in `locales/`, and nothing but this connects them.
 
 import { describe, expect, it } from 'bun:test'
-import { INKS } from '@/render/ink'
+import { INKS } from '@/pen/grammar'
 import { adminT } from '@/i18n/admin-i18n'
 import { LANG_CODES } from '@/locales/langs'
 

@@ -116,12 +116,12 @@
   instead of a 16:9 `video-embed`. Plain `<iframe>` like the video embeds — NO third-party
   script, so no CSP change (the CSP sets no `frame-src`/`default-src`, so iframes are allowed).
   The Apple Music URL is quote-guarded against an `src` breakout.
-## Highlighter + callouts + copy-code — `src/render/ink.ts`, `src/render/post-content.ts` (`buildCallouts`), `src/assets/js/code-copy.ts`
+## Highlighter + callouts + copy-code — `src/pen/` (grammar, dies, pigments, sheets — one self-contained module, door at `src/pen/index.ts`), `src/render/post-content.ts` (`buildCallouts`), `src/assets/js/code-copy.ts`
 
 - **Highlighter:** `==text==` → `<mark data-pen=…>`; `==text==#green` adds `data-ink=…` (5 inks).
   Inline marked extension, so bold/links/code ride under one stroke; `==` may not open/close on
-  space, so `x == y` is untouched. The look is CSS, never markup (`src/web/ink.css.ts`): 10 grown
-  dies × 40 grips (`src/render/pen-dies.ts`), dealt per highlight by the `data-pen` hash of its own
+  space, so `x == y` is untouched. The look is CSS, never markup (`src/pen/ink.css.ts`): 10 grown
+  dies × 40 grips (`src/pen/dies.ts`), dealt per highlight by the `data-pen` hash of its own
   text — identity in the markup, appearance in the sheet. ADR 0018, amended by 0025.
 - **Underline & ring:** `++text++` → `<u data-pen>` (graphite pencil; `#green` picks a
   ballpoint-strength ink) and `@@word@@` → `<mark data-form="o" data-pen>` (red ballpoint). Same

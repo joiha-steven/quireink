@@ -21,14 +21,15 @@ import { readdirSync, readFileSync } from 'node:fs'
 //
 // A rule that has to be remembered in a second file at the same time as the first one is
 // written is a rule that gets forgotten, so the list is now the directory.
-const SHEET_DIR = 'src/web'
-const SHEETS = readdirSync(SHEET_DIR)
-  .filter((name) => name.endsWith('.css.ts'))
-  .map((name) => `${SHEET_DIR}/${name}`)
+// Two directories since the pen moved into a module of its own: its sheet is a `*.css.ts`
+// like the others and gets the same guard.
+const SHEET_DIRS = ['src/web', 'src/pen']
+const SHEETS = SHEET_DIRS.flatMap((dir) => readdirSync(dir)
+  .filter((name) => name.endsWith('.css.ts')).map((name) => `${dir}/${name}`))
   .sort()
 
 if (SHEETS.length === 0) {
-  console.error(`✗ check:css-literal: no *.css.ts found in ${SHEET_DIR}/, which cannot be right`)
+  console.error(`✗ check:css-literal: no *.css.ts found in ${SHEET_DIRS.join(' or ')}, which cannot be right`)
   process.exit(1)
 }
 

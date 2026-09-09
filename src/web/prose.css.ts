@@ -9,7 +9,7 @@
 // NO BACKTICKS anywhere below: this is one template literal and a backtick ends it.
 // `check:css-literal` enforces that.
 
-import { LINK_INK_CSS } from '@/web/ink.css'
+import { LINK_INK_CSS } from '@/pen/ink.css'
 import { MATH_CSS } from '@/web/math.css'
 
 export const PROSE_CSS = `

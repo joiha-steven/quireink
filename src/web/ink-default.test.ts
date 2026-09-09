@@ -1,7 +1,7 @@
 // The highlighter's variety reaching the page.
 //
 // There used to be a three-way stroke setting here (marker / swipe / double). It was
-// retired when the pen learned to vary itself — `render/pen-dies.ts` grows the dies, and
+// retired when the pen learned to vary itself — `pen/dies.ts` grows the dies, and
 // each highlight is dealt one by the `data-pen` hash of its own text — so what this suite
 // now holds is the DEAL: every variant has a grip, every die is reachable in every pigment
 // in both modes, and the hash that deals them is stable. If one of these breaks, the page
@@ -9,20 +9,20 @@
 
 import { describe, expect, it, afterAll } from 'bun:test'
 import { PUBLIC_CSS } from '@/web/public.css'
-import { INK_CSS, INK_HIGHLIGHT_CSS, INK_LINES_CSS } from '@/web/ink.css'
+import { INK_CSS, INK_HIGHLIGHT_CSS, INK_LINES_CSS } from '@/pen/ink.css'
 import { assetBody, penSheetsFor, PEN_LINES_SHEET, PEN_MARKS_SHEET, PUBLIC_SHEET } from '@/web/assets'
 import { freshDatabase, dropDatabase } from '@/test/db'
 import { pageStyles, renderDocument } from '@/web/layout'
 import { DEFAULT_SETTINGS } from '@/content/settings'
-import { INKS, penSeed } from '@/render/ink'
+import { INKS, penSeed } from '@/pen/grammar'
 import {
   PEN_DIE_COUNT, PEN_GRIPS, PEN_VARIANT_COUNT, RING_DIE_COUNT, RING_GRIPS,
   UNDER_DIE_COUNT, UNDER_GRIPS,
-} from '@/render/pen-dies'
+} from '@/pen/dies'
 import {
   PEN_AUX_DARK, PEN_AUX_LIGHT, PEN_DARK, PEN_LIGHT, PEN_LINE_DARK, PEN_LINE_LIGHT,
   penRing, penStroke, penUnder,
-} from '@/render/pen'
+} from '@/pen/pigments'
 
 describe('the pen deal', () => {
   it('retired the stroke setting: no site-settings variables are left in the sheet', () => {
