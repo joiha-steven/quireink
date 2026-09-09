@@ -36,8 +36,8 @@ to [0049](./docs/decisions/0049-the-pen-answers-the-hand.md)), and three finding
 ### The reader gets a pen
 
 - **Select words on a post and a bar offers the five inks, the underline, the ring, a note
-  and the quote** ([ADR 0043](./docs/decisions/0043-the-reader-gets-a-pen.md)). Off by
-  default; the owner turns it on under Settings → Posts. A mark is anchored to its words,
+  and the quote** ([ADR 0043](./docs/decisions/0043-the-reader-gets-a-pen.md)). On by
+  default, with one switch under Settings → Posts to turn it off. A mark is anchored to its words,
   never to a position: the exact words and thirty-two characters either side, the W3C
   text-quote shape, so a typo fixed three paragraphs up moves nothing, and a sentence that
   is gone makes the mark fail to land rather than land on the wrong words. It draws with the

@@ -21,6 +21,7 @@ import { rmSync } from 'node:fs'
 import { openDatabases } from '@/store/db'
 import { savePost } from '@/content/posts'
 import { savePage } from '@/content/pages'
+import { saveNote } from '@/content/notes'
 import { saveSettings, getSettings } from '@/content/settings'
 import { DEFAULT_HOME } from '@/content/settings-sanitize'
 import { bufferEvent, bufferScroll, flushAnalytics } from '@/analytics/buffer'
@@ -28,6 +29,7 @@ import { createUser, setTotpSecret } from '@/auth/users'
 import { generateSecret } from '@/auth/totp'
 import { createSession } from '@/auth/sessions'
 import { POSTS } from './seed-content'
+import { NOTES } from './seed-content-notes'
 import { seedComments } from './seed-comments'
 import { seedAdmin } from './seed-admin'
 import { seedActivity } from './seed-activity'
@@ -84,9 +86,26 @@ for (let i = 0; i < POSTS.length; i += 1) {
     categories: [p.category],
     tags: p.tags,
     ...(p.series ? { series: p.series, seriesOrder: p.order } : {}),
-    // A file the server already serves, so the image kind is photographable without an
-    // upload. It has no responsive variants, which is the path a fresh install takes anyway.
-    ...(KIND === 'image' && i % 3 !== 2 ? { featuredImage: '/app-icon.png' } : {}),
+    // THE POST'S OWN FIRST PICTURE, when it has one. It was the app icon on two posts in
+    // three, which made every thumbnail and every card the same Q, blown up: a list of
+    // pictures that told you nothing. A post with no picture gets none — no placeholder,
+    // by the rule in docs/appearance.md — so the rows that carry art are the ones about it.
+    ...(picture(p.body) ? { featuredImage: picture(p.body) } : {}),
+  })
+}
+
+/** The first picture in a post's body, as the store path the renderer resolves. */
+function picture(body: string): string | undefined {
+  const m = /!\[[^\]]*\]\((\/uploads\/media\/[^)#\s]+)/.exec(body)
+  return m?.[1]
+}
+
+// The notebook (ADR 0044): five notes, three of them clips, dated like the posts.
+for (const n of NOTES) {
+  await saveNote({
+    title: n.title, slug: n.slug, status: 'published',
+    date: new Date(START - n.ago * DAY).toISOString(),
+    sourceUrl: n.sourceUrl, sourceTitle: n.sourceTitle, quote: n.quote, content: n.content,
   })
 }
 
@@ -115,6 +134,7 @@ await saveSettings({
     // the menu on 2026-08-23 — five entries read as clutter, and the menu is the pitch.
     { label: 'Typography', href: '/category/typography' },
     { label: 'Calligraphy', href: '/category/calligraphy' },
+    { label: 'Notes', href: '/notes' },
     { label: 'Colophon', href: '/colophon' },
     // The way back out. The demo is reached from quireink.com and was a dead end once you
     // were in it: every menu entry above stays inside the fixture, so a visitor who wanted
@@ -123,8 +143,16 @@ await saveSettings({
   ],
   // The timeline in the listing's right gutter is part of infinite scroll, and it is what
   // the spread-out dates above are for: a month marker per group, a sticky year.
-  // The reader's pen is on: the demo is where the beta asks to have it tried.
-  features: { ...s.features, infiniteScroll: true, readerPen: true },
+  features: { ...s.features, infiniteScroll: true },
+  // A picture beside the rows that have one. The list is the demo's second door and it read
+  // as a column of grey; with the art on the rows that carry it, it reads as a blog.
+  postImage: { ...s.postImage, thumb: 'side' },
+  // An author box under every post, so the part of the page a byline lives in is not blank.
+  // The portrait is one of the fixture's own public-domain plates.
+  author: {
+    name: 'The editor', url: 'https://quireink.com', avatarUrl: '/uploads/media/van-gogh-self-portrait.jpg',
+    bio: 'Notes on letterforms and the making of pages. Every post here is fixture content, written to show what the software does; every picture is out of copyright.',
+  },
   featured: ['the-broad-edged-pen', 'a-type-scale-you-can-defend', 'imposition-why-page-one-sits-beside-page-eight'],
   mostViewedCount: 3,
   comments: { ...s.comments, enabled: true },
@@ -255,7 +283,7 @@ const owner = await createUser({
 setTotpSecret(owner.id, generateSecret())
 const { token } = createSession(owner.id, { userAgent: 'showcase' })
 
-console.log(`seeded ${DIR}: ${POSTS.length} posts, home=${MODE}, front kind=${KIND}`)
+console.log(`seeded ${DIR}: ${POSTS.length} posts, ${NOTES.length} notes, home=${MODE}, front kind=${KIND}`)
 console.log(
   `  + ${admin.drafts} draft(s), ${admin.scheduled} scheduled, ${comments} comment(s), `
   + `${media} media, ${files} file(s), ${admin.subscribers} subscriber(s), `

@@ -180,7 +180,7 @@ Select a sentence on any post and a small bar offers the five inks, the pencil u
 
 Press *Keep on every device* and the marks travel: by the Google sign-in commenters already have, or by a twenty-character code for anyone who would rather not sign in to anything. The server keeps a hash and one row per page, never an address, and you as the owner see none of it. *Send to my notebook* opens a page on the reader's own Quire Ink, or any site that speaks Micropub, with the passage and their words already filled in.
 
-It is off until you switch it on (Settings → Posts → *The reader's pen*), and it costs a reader 4.5 KB of script only on the pages where it is on. Try it on [the demo](https://demo.quireink.com).
+It is on from the first install and one switch turns it off (Settings → Posts → *The reader's pen*); it costs a reader 4.5 KB of script, only on a post. Try it on [the demo](https://demo.quireink.com).
 
 ## Install
 

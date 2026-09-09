@@ -61,7 +61,7 @@ Bôi một câu trên bất kỳ bài nào là hiện một thanh nhỏ: năm m�
 
 Bấm *Giữ trên mọi thiết bị* là dấu đi theo người: bằng đăng nhập Google sẵn có của người bình luận, hoặc một mã hai mươi ký tự cho ai không muốn đăng nhập gì. Máy chủ chỉ giữ mã băm và một dòng mỗi trang, không bao giờ có email, và chủ blog không thấy gì. *Gửi về sổ tay* mở một trang trên Quire Ink của chính người đọc, hoặc bất kỳ trang nào nói Micropub, với đoạn trích và lời của họ điền sẵn.
 
-Tính năng tắt cho tới khi bạn bật (Cài đặt → Bài → *Bút cho người đọc*), và chỉ tốn người đọc 4,5 KB script ở những trang bật nó. Thử ngay trên [trang demo](https://demo.quireink.com).
+Tính năng bật sẵn từ lúc cài, một công tắc để tắt (Cài đặt → Bài → *Bút cho người đọc*); chỉ tốn người đọc 4,5 KB script, và chỉ trên trang bài. Thử ngay trên [trang demo](https://demo.quireink.com).
 
 ## Cài đặt
 
