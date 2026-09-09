@@ -1,7 +1,7 @@
 # Quire Ink
 
 Public, source-available blog platform (PolyForm Noncommercial, [ADR 0015](./docs/decisions/0015-relicense-polyform-noncommercial.md);
-unmodified releases may be run commercially, [ADR 0023](./docs/decisions/0023-commercial-use-of-unmodified-releases.md)).
+unmodified releases may be run commercially, [ADR 0023](./docs/decisions/0023-commercial-use-of-unmodified-releases.md); it opens by itself after 48 months without a release, [ADR 0050](./docs/decisions/0050-the-licence-opens-by-itself-after-48-months-without-a-release.md)).
 One **Bun + Hono + SQLite** process; `src/` at the repository root serves the live site.
 
 **Zero personal data in this repo.** No IP, user, port or host, ever: they live in the private

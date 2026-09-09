@@ -42,7 +42,8 @@
   - *Send* — tick one or MORE published posts, review the REAL `broadcastEmail()` HTML in a
     `sandbox=""` iframe (scripts/forms/navigation all blocked), then send. Several posts go out as
     ONE digest, never one email each. A post that already has successful sends needs the resend
-    checkbox first; the send itself is `confirm()`-gated.
+    checkbox first; the send itself is a two-press latch: the first press arms the button and prints
+    the recipient count, a second within five seconds sends ([admin-design.md](../admin-design.md)).
   - *Test* — the three sample sends.
 - **Test send** (`POST /api/mail/test`, owner only, `NewsletterTest`). Three kinds — `smtp`
   (bare "it works" note), `post` (the broadcast, built from the newest published post, or a

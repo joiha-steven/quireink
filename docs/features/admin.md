@@ -93,7 +93,7 @@
 - `/admin/content` IS the two-pane Write screen (ADR 0024; the Writing Desk mock): the
   write pane — one stream of posts and pages, most recently touched first — beside an
   empty sheet inviting the next piece. Opening a row swaps the sheet for that piece's
-  editor; the pane rides along on both editor pages from `xl` up.
+  editor; the pane rides along on both editor pages from 1640px up (measured, `WritePane.tsx`).
 - `WritePane` renders; `useWritingItems` owns the stream: title+terms filtering, the
   debounced body search (`/api/admin/search`, hits marked with the pen), and two filters
   that STACK — a kind row (All · Posts · Pages · Notes, words on a hairline, the pane's own

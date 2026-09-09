@@ -39,8 +39,9 @@ Stated so a report can say which of these is wrong, which is more useful than a 
 - Sessions are a 32-byte CSPRNG token in a `__Host-` prefixed, `HttpOnly`, `Secure`,
   `SameSite=Lax` cookie. Only its SHA-256 is stored. The prefix scopes it to one host, so
   a session does not follow a domain change.
-- Passwords are argon2id (`Bun.password`). TOTP is required, not optional, and a used step
-  is recorded so a code cannot be replayed. Ten single-use recovery codes are hashed at
+- Passwords are argon2id (`Bun.password`). TOTP is required once the blog has a public
+  address; while it has none, first enrolment may be skipped once ([ADR 0030](./docs/decisions/0030-two-factor-can-wait-until-there-is-an-address.md)),
+  and a used step is recorded so a code cannot be replayed. Ten single-use recovery codes are hashed at
   rest and shown once.
 - Every write route is protected by **where it is mounted**, not by a check inside the
   handler, and a static guard (`bun run check:routes`) fails the build if a route escapes

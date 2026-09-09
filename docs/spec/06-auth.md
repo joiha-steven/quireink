@@ -78,7 +78,8 @@ SHA-1, 30-second step, 6 digits. About 80 lines using `crypto.createHmac`, no li
 - Enrolment produces an `otpauth://totp/QuireInk:<username>?secret=...&issuer=QuireInk` URI,
   rendered as a QR code, with the base32 secret shown as text for manual entry.
 - 2FA is **required**, not optional. One user, no support desk, no reason for a weaker
-  path to exist.
+  path to exist. (Amended by [ADR 0030](../decisions/0030-two-factor-can-wait-until-there-is-an-address.md):
+  while the blog has no public address, enrolment may be skipped once.)
 
 ## Recovery codes
 

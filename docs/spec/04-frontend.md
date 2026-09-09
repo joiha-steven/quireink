@@ -220,6 +220,7 @@ The editor features that must not regress are therefore not a risk register entr
 more; they are existing code:
 
 - Autosave to `localStorage` only, **never to the server** — see [`../features/editing.md`](../features/editing.md)
+  (amended 2026-08-30: a server copy in `posts.autosave_json` joined it, [`../admin-editor.md`](../admin-editor.md))
 - Crash recovery offering a newer local draft
 - Conflict detection warning instead of overwriting
 - Revision history (SQLite makes rows cheap, so raising the limit past 3 is now a product

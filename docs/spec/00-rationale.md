@@ -36,7 +36,8 @@ browsers never fetched it. It is excluded from every number above.
 
 **Compression is not a lever, measured 2026-07-26. Do not revisit this.** The origin gzips
 and Cloudflare passes it through. Forcing brotli was tested per chunk and saved **956 bytes
-out of 194,888, or 0.5%**. HTML and CSS already arrive as zstd.
+out of 194,888, or 0.5%**. HTML and CSS already arrive as zstd. (Revisited 2026-09-01: at a
+higher quality brotli did pay, and it ships, gzip behind it; [`../delivery.md`](../delivery.md).)
 
 The other two reasons were operational: 1.x needed Node, Next, PostgreSQL, PostgREST,
 generated JWT keys, DB roles and grants and a migration runner, all maintained by one person

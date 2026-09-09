@@ -85,7 +85,8 @@ character and none of its typographic rules **except one**, below.
   will use, only a second press within five seconds sends, and Esc, an outside click or the
   countdown stands it down — it replaced a native `confirm()` that asked with none of the
   numbers, for the one action this product cannot undo.
-- **Square corners are a PUBLIC rule.** Admin uses a 10 / 8 / 6px radius hierarchy — sheet,
+- **The public radius is the owner's Shape setting** (`--radius`, square · soft · round;
+  [conventions/layout.md](conventions/layout.md)). **The admin has its own scale**: a 10 / 8 / 6px radius hierarchy — sheet,
   nested panel, control — never a global square reset, never arbitrary per-component rounding.
   It was 16 / 12 / 8; a 16px radius on a 1200px panel reads as a pill rather than as a page.
   Audited by measurement on 2026-08-28: every computed radius across every admin screen is

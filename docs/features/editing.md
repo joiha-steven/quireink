@@ -31,11 +31,12 @@
   word count · Markdown/Attributes · Preview/Save/Publish) is the card's first row and the toolbar
   sticks under it, full-width, groups centred, WRAPPING on a narrow window rather than scrolling
   (three owner verdicts, 2026-08-17). The title grows instead of clipping (`SheetTitle`, reading
-  face). The write pane — the list of everything written — rides beside the sheet from `xl` up.
+  face). The write pane — the list of everything written — rides beside the sheet from 1640px up
+  (measured, not chosen: `WritePane.tsx`).
   Icon actions keep localized accessible names. Focusing prose must not draw a black outline
   around the document.
-- **Key feedback, as a choice of instrument:** `settings.motion.keys` — typewriter,
-  mechanical-tactile, mechanical-linear, off — draws the caret this product owns and plays a
+- **Key feedback, as a choice of instrument:** `settings.motion.keys` — `woody`, `crisp`,
+  `deep`, `off`, older spellings migrated on read — draws the caret this product owns and plays a
   synthesized filtered-noise click (no audio file), at `settings.motion.keyVolume` out of 100.
   Applying a highlight, underline or ring draws the stroke in over 200ms and, with
   `settings.motion.penSqueak` on, squeaks like a felt tip (ADR 0049).
@@ -117,10 +118,11 @@
   column are shaded with `--c-rule` (the table's own border colour) as a visual spine — the
   left-column shade is CSS-only (GFM has no header-column), so it never changes the saved Markdown.
   **GOTCHA:** list items wrap content in `<p>`; `.prose li > p{margin:0}` keeps them tight.
-- **Local (offline) autosave** (`useLocalDraft.ts`): unsaved edits are stashed in `localStorage`
-  on the `autosaveSeconds` tick while dirty — NEVER to the server, so editing a *published* post
-  can't push half-finished text live; only Save/Publish writes to the server. What happens on
-  return depends on whether the piece has a row:
+- **Autosave is TWO copies** (`useLocalDraft.ts`; [admin-editor.md](../admin-editor.md)): unsaved
+  edits go to `localStorage` on this device and to `posts.autosave_json` on the server (since
+  2026-08-30), on the `autosaveSeconds` tick while dirty. Neither is the published body — only
+  Save/Publish moves `content`, so editing a *published* post still cannot push half-finished
+  text live. What happens on return depends on whether the piece has a row:
   - **Never saved** (the `:new` key): the snapshot is the ONLY copy there is, so it is REOPENED
     into the editor rather than offered, read synchronously so the editor mounts with it, and the
     snapshot stays in storage until a real save clears it. Until 2026-09-07 it was offered
@@ -161,9 +163,10 @@
   window, used on the first sweep after a boot so a restart between two ticks cannot drop a
   crossing. ⚠ A fixed window is what this replaced, and with a tick faster than the window a
   post answered "newly live" on every tick it stayed inside: one publish cost six cache
-  flushes and six edge purges. Nothing inside the process calls
-  `/api/cron`: an external scheduler has to, and setting one up is
-  [`self-host.md`](../self-host.md) §8.
+  flushes and six edge purges. Since [ADR 0031](../decisions/0031-the-blog-winds-its-own-clock.md)
+  the process runs the sweep itself (`src/server/tick.ts`: every minute for publishing, hourly
+  for the rest). `/api/cron` stays for an operator who sets `CRON_INTERNAL=0` and schedules it
+  from outside; the crontab in [`self-host.md`](../self-host.md) §8 fires every five minutes.
 
 ## Per-post SEO + cover + dateModified — `posts` columns, `src/web/article.ts`
 
