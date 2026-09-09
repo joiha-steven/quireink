@@ -11,6 +11,22 @@
 // without being added to that list is a sheet nothing checks, which has happened here before.
 
 export const UTILITY_CSS = `
+/* The notebook's receiving door (/notes/clip): one form, no script, the same fields the
+   subscribe card wears. And the bookmarklet, drawn as a thing to be dragged. */
+.clip-line{margin:.5rem 0}
+.clip-form{display:flex;flex-direction:column;gap:.9rem;max-width:34rem;margin-top:1.25rem}
+.clip-form label{display:flex;flex-direction:column;gap:.35rem;color:var(--c-meta)}
+.clip-form input[type=text],.clip-form textarea{padding:.5rem .75rem;border:1px solid var(--c-rule);
+  border-radius:var(--radius,.5rem);background:var(--c-bg);color:var(--c-text);font:inherit;
+  resize:vertical}
+.clip-form input:focus,.clip-form textarea:focus{border-color:var(--c-heading);outline:none}
+.clip-status{display:flex;gap:1.25rem}
+.clip-status label{flex-direction:row;align-items:center}
+.clip-form button{align-self:flex-start;padding:.5rem 1.1rem;border:1px solid var(--c-rule);
+  border-radius:var(--radius,.5rem);background:var(--c-heading);color:var(--c-bg);font:inherit;cursor:pointer}
+.clip-tool{display:inline-block;padding:.45rem 1rem;border:1px solid var(--c-rule);
+  border-radius:999px;background:var(--c-bg);color:var(--c-heading);cursor:grab;text-decoration:none}
+
 /* Type ROLES, ported from the frozen tree. A card composes these rather than declaring
    its own sizes, which is why the listing and the article agree without anyone keeping
    two numbers in step. Every size is the owner's --fs-* setting times --type-scale, so

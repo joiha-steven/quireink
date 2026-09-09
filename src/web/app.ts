@@ -36,6 +36,7 @@ import { errorHandler, notFoundHandler, requestLogger } from '@/web/api'
 import { contentRoutes } from '@/web/admin/content'
 import { noteRoutes } from '@/web/admin/notes'
 import { renderNotePage, renderNotesIndex } from '@/web/notes-page'
+import { clipRoutes, handleClipPage } from '@/web/clip-page'
 import { securityRoutes } from '@/web/admin/security'
 import { siteRoutes } from '@/web/admin/site'
 import { uploadRoutes } from '@/web/admin/uploads'
@@ -197,6 +198,7 @@ export function createApp(): Hono {
 
   app.route('/', contentRoutes().routes)
   app.route('/', noteRoutes().routes)
+  app.route('/', clipRoutes().routes)
   app.route('/', securityRoutes().routes)
   app.route('/', siteRoutes().routes)
   app.route('/', uploadRoutes().routes)
@@ -313,6 +315,8 @@ export function createApp(): Hono {
 
   // ----- the notebook (ADR 0044): its own address, never in the post namespace ----
   app.get('/notes', async () => cached('/notes', renderNotesIndex)())
+  // The receiving door (ADR 0045): the owner's, never cached, before the slug route.
+  app.get('/notes/clip', handleClipPage)
   app.get('/notes/:slug', async (c) => {
     const slug = c.req.param('slug')
     return cached(`/notes/${slug}`, () => renderNotePage(slug))()

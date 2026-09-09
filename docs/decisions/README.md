@@ -66,6 +66,7 @@ abandoned on 2026-07-26, and the only trace was a private memory file.
 | [0042](0042-the-pen-inks-unevenly.md) | The pen inks unevenly, knows a word from a sentence, and moves into a module of its own | 2026-09-09 | ✅ |
 | [0043](0043-the-reader-gets-a-pen.md) | The reader gets a pen, and it writes in their browser first | 2026-09-09 | ✅ |
 | [0044](0044-a-note-is-not-a-post.md) | A note is written like a post and kept apart from the posts: its own table, address and list | 2026-09-09 | ✅ |
+| [0045](0045-the-notebook-opens-a-door.md) | The notebook opens a door: a clip page the owner keeps from, a bookmarklet, and the pen that sends | 2026-09-09 | ✅ |
 
 ## Written after the fact, and why that is allowed
 

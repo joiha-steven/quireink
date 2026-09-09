@@ -51,6 +51,10 @@ describe('saveNote', () => {
     expect((await getNote('about'))?.content).toBe('note')
   })
 
+  it("refuses the notebook's own route names", async () => {
+    await expect(saveNote({ title: 'Clip', content: '', date: PAST })).rejects.toBeInstanceOf(SlugConflictError)
+  })
+
   it('refuses a name another note holds, and lets a note keep its own', async () => {
     await saveNote({ title: 'One', content: '', date: PAST })
     await saveNote({ title: 'Two', content: '', date: PAST })

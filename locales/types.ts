@@ -80,6 +80,21 @@ export type Dict = {
   notesMeta: string
   notesEmpty: string
   noteSourcePrefix: string
+  clipHeading: string
+  clipTitleLabel: string
+  clipNoteLabel: string
+  clipPrivate: string
+  clipPublic: string
+  clipSave: string
+  clipSavedHeading: string
+  clipSavedView: string
+  clipAgain: string
+  clipToolHeading: string
+  clipToolHint: string
+  clipToolLabel: string
+  readerPenSend: string
+  readerPenNotebookAsk: string
+  readerPenNotebookGo: string
   previewNotice: string
   nlInvalid: string
   nlNoMail: string

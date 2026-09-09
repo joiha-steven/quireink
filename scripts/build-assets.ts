@@ -169,7 +169,9 @@ const BUDGET: Record<string, number> = {
   // again by its surroundings), the store, the note card and the copy gesture it absorbed
   // from post.js. 9,229 at first landing (2026-09-09), about 3.5 KB gzipped, on a page
   // that has already chosen to fetch it; each raise gets named here like the others.
-  'reader-pen.js': 9_400,
+  // 10,600 since the pen learned to send a mark home (ADR 0045): the button, the one-time
+  // question for the notebook's address, and the URL the door reads.
+  'reader-pen.js': 10_600,
   // /login only, and NOT loaded with core.js: the sign-in page carries no beacon, no
   // search overlay and no listing controls, so it pays for the reveal toggle, the caps-lock
   // warning and the one-time-code paste, and nothing else.

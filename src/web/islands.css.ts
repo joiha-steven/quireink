@@ -94,9 +94,19 @@ export const ISLANDS_CSS = `
 .pen-pop textarea{display:block;width:100%;min-height:3.2em;padding:.4rem .5rem;
   border:1px solid var(--c-rule);border-radius:var(--radius,.5rem);background:var(--c-bg);
   color:inherit;font:inherit;resize:vertical}
-.pen-del{margin-top:.45rem;padding:0;border:0;background:none;color:var(--c-meta);
+.pen-del,.pen-send{margin-top:.45rem;padding:0;border:0;background:none;color:var(--c-meta);
   font:inherit;cursor:pointer}
-.pen-del:hover{color:var(--c-heading)}
+.pen-del:hover,.pen-send:hover{color:var(--c-heading)}
+.pen-send{margin-right:.9rem;color:var(--c-heading)}
+/* The one-time question: where the reader's own notebook is. */
+.pen-ask{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem;margin-top:.5rem;
+  padding-top:.5rem;border-top:1px solid var(--c-rule)}
+.pen-ask[hidden]{display:none}
+.pen-ask span{flex:1 0 100%;color:var(--c-meta)}
+.pen-ask input{flex:1;min-width:0;padding:.3rem .5rem;border:1px solid var(--c-rule);
+  border-radius:var(--radius,.5rem);background:var(--c-bg);color:inherit;font:inherit}
+.pen-go{padding:.3rem .7rem;border:1px solid var(--c-rule);border-radius:999px;
+  background:var(--c-heading);color:var(--c-bg);font:inherit;cursor:pointer}
 .pen-note{margin:.35em 0 1em;padding:.15em 0 .15em .85em;border-left:2px solid var(--c-rule);
   color:var(--c-meta);font-family:var(--font-sans);font-size:var(--fs-small);
   line-height:var(--lh-small);letter-spacing:var(--ls-small);white-space:pre-wrap}

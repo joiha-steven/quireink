@@ -180,7 +180,39 @@ function readerPen(): void {
   const pop = el('div', { class: 'pen-pop', hidden: '' })
   const area = el('textarea', { rows: '3', placeholder: label('readerPenNoteHint') })
   const del = el('button', { type: 'button', class: 'pen-del' }, label('readerPenDelete'))
-  pop.append(area, del)
+  // Home: the reader's own Quire Ink, asked for once and remembered in this browser. The
+  // clip travels as a URL the notebook's door reads (`web/clip-page.ts`); nothing here
+  // needs a token, because the reader is the owner over there and already signed in.
+  const NB = 'quire:notebook'
+  const send = el('button', { type: 'button', class: 'pen-send' }, label('readerPenSend'))
+  const ask = el('div', { class: 'pen-ask', hidden: '' })
+  const askIn = el('input', { type: 'url', placeholder: 'https://', 'aria-label': label('readerPenNotebookAsk') })
+  ask.append(el('span', {}, label('readerPenNotebookAsk')), askIn,
+    el('button', { type: 'button', class: 'pen-go' }, label('readerPenNotebookGo')))
+  const homeOf = () => { try { return localStorage.getItem(NB) ?? '' } catch { return '' } }
+  const sendHome = (a: Ann, home: string) => {
+    const base = home.replace(/\/+$/, '')
+    const u = `${base}/notes/clip?url=${encodeURIComponent(location.href.split('#')[0]!)}`
+      + `&title=${encodeURIComponent(document.title)}&quote=${encodeURIComponent(a.exact)}`
+      + `&note=${encodeURIComponent(a.note)}`
+    window.open(u, 'quire-clip', 'width=560,height=680,noopener')
+  }
+  send.addEventListener('click', () => {
+    if (!open) return
+    const home = homeOf()
+    if (/^https?:\/\//.test(home)) return sendHome(open, home)
+    ask.hidden = false
+    askIn.focus()
+  })
+  ask.addEventListener('click', (e) => {
+    if (!(e.target as Element).closest('.pen-go') || !open) return
+    const v = askIn.value.trim().replace(/\/+$/, '')
+    if (!/^https?:\/\/\S+$/.test(v)) return askIn.focus()
+    try { localStorage.setItem(NB, v) } catch { /* then it is asked again next time */ }
+    ask.hidden = true
+    sendHome(open, v)
+  })
+  pop.append(area, send, ask, del)
   document.body.appendChild(pop)
   let open: Ann | null = null
   let noteTimer = 0
@@ -194,7 +226,7 @@ function readerPen(): void {
     place(first.getBoundingClientRect(), pop, true)
     area.focus()
   }
-  const closePop = () => { pop.hidden = true; open = null }
+  const closePop = () => { pop.hidden = true; ask.hidden = true; open = null }
 
   area.addEventListener('input', () => {
     if (!open) return

@@ -22,6 +22,9 @@ import { fromIso, liveOnly, nowMs, toIso } from '@/store/db'
 
 const META_COLS = 'slug, title, date, status, source_url, source_title, quote, updated_at'
 
+/** Names under /notes/ that are routes, not notes. */
+export const NOTE_RESERVED: ReadonlySet<string> = new Set(['clip', 'feed.xml'])
+
 type NoteRow = {
   slug: string
   title: string
@@ -113,6 +116,8 @@ function toMeta(note: NoteWithContent): Note {
 /** Create or overwrite a note. A rename leaves a permanent redirect behind, like a post. */
 export async function saveNote(input: Partial<NoteWithContent>, previousSlug?: string): Promise<Note> {
   const note = normalize(input)
+  // Two names the notebook's own routes answer first: the receiving door, and a feed.
+  if (NOTE_RESERVED.has(note.slug)) throw new SlugConflictError(note.slug)
   // Its own namespace: only another live-or-trashed note can hold the name already.
   const holder = one<{ slug: string }>(`select slug from notes where slug = ?`, note.slug)
   if (holder && !(previousSlug === note.slug || (previousSlug && holder.slug === previousSlug))) {

@@ -70,5 +70,8 @@ export function readerPenData(inks: InkSettings, s: Dict): Record<string, string
     readerPenNote: s.readerPenNote,
     readerPenDelete: s.readerPenDelete,
     readerPenNoteHint: s.readerPenNoteHint,
+    readerPenSend: s.readerPenSend,
+    readerPenNotebookAsk: s.readerPenNotebookAsk,
+    readerPenNotebookGo: s.readerPenNotebookGo,
   }
 }

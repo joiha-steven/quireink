@@ -36,8 +36,22 @@ Written like a post, kept apart from the posts ([ADR 0044](../decisions/0044-a-n
 and the editor's `autosave_json` / `autosave_at` pair. Searched through `notes_fts`, shaped
 like the posts' index.
 
+## The door — `src/web/clip-page.ts`, `/notes/clip` ([ADR 0045](../decisions/0045-the-notebook-opens-a-door.md))
+
+- **`GET /notes/clip?url=&title=&quote=&note=`**: the owner's page (anyone else is sent to
+  sign in and returned). Shows the passage and its source, and one form — title, note,
+  private (default) or public, *Keep* — that **posts to itself**; no script on the page.
+  `POST /notes/clip` (owner-gated) writes the note and answers `303` to
+  `/notes/clip?saved=<slug>`. A name already taken keeps the passage under `clip-<time>`
+  rather than refusing it. Passage and note are capped at 4,000 characters; the source must
+  be `http(s)`.
+- **With nothing to keep** it is the tool's page: a bookmarklet to drag to the bookmarks bar
+  which, on any page, opens the door with the selection and where it came from.
+- **From the reader's pen** (`reader-pen.ts`): a mark's card has *Send to my notebook*. The
+  first time it asks for the notebook's address and remembers it in that browser
+  (`quire:notebook`); then it opens the door in a small window. No token travels.
+
 ## What it does not do yet
 
-Receive a passage from another site. That is the next tier of the reader's pen
-([ADR 0043](../decisions/0043-the-reader-gets-a-pen.md)): a receiving door, then the open
-standards it speaks (IndieAuth, Micropub, Webmention).
+Identify the sender to the source, or take a passage with no browser in the loop. Those are
+the open standards next: IndieAuth, Micropub, Webmention.
