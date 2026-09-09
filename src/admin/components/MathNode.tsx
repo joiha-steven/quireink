@@ -21,8 +21,8 @@ import { useEffect, useRef, useState } from 'react'
 import { Node, InputRule } from '@tiptap/core'
 import { ReactNodeViewRenderer, NodeViewWrapper, type NodeViewProps } from '@tiptap/react'
 import type MarkdownIt from 'markdown-it'
-import type StateInline from 'markdown-it/lib/rules_inline/state_inline.js'
-import type StateBlock from 'markdown-it/lib/rules_block/state_block.js'
+import type StateInline from 'markdown-it/lib/rules_inline/state_inline.mjs'
+import type StateBlock from 'markdown-it/lib/rules_block/state_block.mjs'
 import {
   matchMathAt, matchDisplayBlockAt, mathToMarkdown, renderMath, type MathDelim,
   INLINE_PAREN_SOURCE, DISPLAY_DOLLAR_SOURCE, DISPLAY_BRACKET_SOURCE,

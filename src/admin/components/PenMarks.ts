@@ -15,7 +15,7 @@
 import { getMarkRange, InputRule, Mark, markInputRule, markPasteRule, mergeAttributes } from '@tiptap/core'
 import type { MarkType } from '@tiptap/pm/model'
 import type MarkdownIt from 'markdown-it'
-import type StateInline from 'markdown-it/lib/rules_inline/state_inline.js'
+import type StateInline from 'markdown-it/lib/rules_inline/state_inline.mjs'
 import {
   INKS, isInk, RING_SYNTAX_CONTENT_LAST, RING_SYNTAX_SOURCE,
   UNDER_SYNTAX_CONTENT_LAST, UNDER_SYNTAX_SOURCE,

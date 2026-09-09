@@ -19,8 +19,8 @@
 //
 // The fix: give the nested parse its own array and append the finished tokens, so the outer
 // state's indices never move while it is still holding them.
-import type StateInline from 'markdown-it/lib/rules_inline/state_inline.js'
-import type Token from 'markdown-it/lib/token.js'
+import type StateInline from 'markdown-it/lib/rules_inline/state_inline.mjs'
+import type Token from 'markdown-it/lib/token.mjs'
 
 /**
  * Parse `text` as inline Markdown and append the result to the tokens `state` is building.

@@ -46,7 +46,7 @@ describe('Ghost', () => {
 
   it('recognises both export shapes', () => {
     expect(looksLikeGhost(doc)).toBe(true)
-    expect(looksLikeGhost({ data: (doc.db[0] as any).data })).toBe(true)
+    expect(looksLikeGhost({ data: doc.db[0].data })).toBe(true)
     expect(looksLikeGhost({ rss: {} })).toBe(false)
   })
 

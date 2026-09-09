@@ -21,7 +21,7 @@ import { getMarkRange, InputRule, Mark, markInputRule, markPasteRule, mergeAttri
 import type MarkdownIt from 'markdown-it'
 // The `.mjs` specifier the runtime uses has no declaration; `@types/markdown-it` ships this
 // one, and it is the same class.
-import type StateInline from 'markdown-it/lib/rules_inline/state_inline.js'
+import type StateInline from 'markdown-it/lib/rules_inline/state_inline.mjs'
 import { INKS, DEFAULT_INK, isInk, inkOf, INK_SYNTAX_SOURCE, INK_SYNTAX_CONTENT_LAST } from '@/pen/grammar'
 import { parseInlineInto } from './markdown-nested'
 
