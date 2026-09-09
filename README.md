@@ -172,6 +172,16 @@ The fade-in and the progress bar are pure CSS: no script, off the main thread, a
 
 </div>
 
+## Your readers get a pen
+
+<img src="docs/demo-reader-pen.jpg" alt="Left: a post with a reader's yellow highlight and a pencil underline, and the pen bar open over a selected sentence offering five inks, underline, ring, note and copy quote. Right: the card over a highlight, with a note box, Send to my notebook, and a twenty-character notebook code under Kept on every device" width="960">
+
+Select a sentence on any post and a small bar offers the five inks, the pencil underline, the ballpoint ring, a note and the quote. The mark is drawn with the site's own hand, anchored to the words rather than to a position, so it survives the author fixing a typo three paragraphs up. It lives in the reader's browser, and nothing is sent anywhere.
+
+Press *Keep on every device* and the marks travel: by the Google sign-in commenters already have, or by a twenty-character code for anyone who would rather not sign in to anything. The server keeps a hash and one row per page, never an address, and you as the owner see none of it. *Send to my notebook* opens a page on the reader's own Quire Ink, or any site that speaks Micropub, with the passage and their words already filled in.
+
+It is off until you switch it on (Settings → Posts → *The reader's pen*), and it costs a reader 4.5 KB of script only on the pages where it is on. Try it on [the demo](https://demo.quireink.com).
+
 ## Install
 
 **Where can it live?** Any of these, and the blog is the same on all of them.

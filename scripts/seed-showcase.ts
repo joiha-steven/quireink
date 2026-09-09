@@ -123,7 +123,8 @@ await saveSettings({
   ],
   // The timeline in the listing's right gutter is part of infinite scroll, and it is what
   // the spread-out dates above are for: a month marker per group, a sticky year.
-  features: { ...s.features, infiniteScroll: true },
+  // The reader's pen is on: the demo is where the beta asks to have it tried.
+  features: { ...s.features, infiniteScroll: true, readerPen: true },
   featured: ['the-broad-edged-pen', 'a-type-scale-you-can-defend', 'imposition-why-page-one-sits-beside-page-eight'],
   mostViewedCount: 3,
   comments: { ...s.comments, enabled: true },

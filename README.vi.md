@@ -53,6 +53,16 @@ Bản này là cây bút, đi cho trọn. **Người đọc có bút**: bôi ch�
 
 **Và bản này KHÔNG làm được gì.** Là bản thử: 2.2.10 có thể còn đổi. Hai máy đánh dấu cùng một trang cùng lúc thì ghi đè nhau, lần lưu sau thắng. Trang quản trị chưa có màn nào cho biết đoạn nào được người đọc giữ nhiều nhất, mới có tool MCP `list_mentions` trả lời. Webmention có kiểm nguồn và giới hạn tốc độ nhưng chưa nối bộ lọc rác. Tiếng rít mới đo phổ chứ chưa ai ngoài tác giả nghe, và vòng Google của "Giữ lại" mới đo tới bước chuyển hướng, chưa bấm tay trọn vòng. Màn Trợ giúp vẫn chỉ tiếng Anh, vài chỗ đếm vẫn ra "1 words", và mọi giới hạn cũ còn nguyên: NAS và Kubernetes cố ý không có Caddy, công tắc Chuyển động là của chủ chứ không theo từng người đọc, bản cài chèn HTML bằng `sub_filter` của nginx mất nén và ETag của origin, origin không CDN thì người đọc ở nửa kia địa cầu trả thêm một vòng mạng.
 
+## Người đọc cũng có bút
+
+<img src="docs/demo-reader-pen.jpg" alt="Trái: một bài với vệt tô vàng và gạch chì của người đọc, thanh bút mở trên câu đang chọn với năm màu mực, gạch, khoanh, ghi chú và chép trích. Phải: thẻ trên một vệt tô, có ô ghi chú, nút Gửi về sổ tay, và mã sổ tay hai mươi ký tự dưới dòng Giữ trên mọi thiết bị" width="960">
+
+Bôi một câu trên bất kỳ bài nào là hiện một thanh nhỏ: năm màu mực, gạch chì, khoanh bút bi, ghi chú và chép trích. Dấu vẽ bằng đúng nét tay của trang, bám vào chữ chứ không bám vị trí, nên tác giả sửa lỗi chính tả ba đoạn phía trên thì dấu vẫn nằm yên. Dấu sống trong trình duyệt của người đọc, không gửi đi đâu.
+
+Bấm *Giữ trên mọi thiết bị* là dấu đi theo người: bằng đăng nhập Google sẵn có của người bình luận, hoặc một mã hai mươi ký tự cho ai không muốn đăng nhập gì. Máy chủ chỉ giữ mã băm và một dòng mỗi trang, không bao giờ có email, và chủ blog không thấy gì. *Gửi về sổ tay* mở một trang trên Quire Ink của chính người đọc, hoặc bất kỳ trang nào nói Micropub, với đoạn trích và lời của họ điền sẵn.
+
+Tính năng tắt cho tới khi bạn bật (Cài đặt → Bài → *Bút cho người đọc*), và chỉ tốn người đọc 4,5 KB script ở những trang bật nó. Thử ngay trên [trang demo](https://demo.quireink.com).
+
 ## Cài đặt
 
 Cài lên đâu cũng được, và blog y hệt nhau ở mọi chỗ:
