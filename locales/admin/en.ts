@@ -584,6 +584,8 @@ const en = {
   keyVolumeLabel: 'Key volume',
   keyVolumeDesc: 'How loud that click is, from silence to the top of the range. Moving it plays a key, so you can hear where you are putting it.',
   keyHear: 'Play a few keys',
+  penSqueakLabel: 'The pen squeaks',
+  penSqueakDesc: 'A felt tip squeaks across the paper when you highlight, underline or ring words in the editor. Made on the spot, no sound file; it follows the instrument and volume above.',
   autosaveLabel: 'Keep a local copy every (seconds)',
   autosaveHint: 'Seconds between local snapshots while you type, from 15 to 600. Nothing is sent to the server until you press Save — this is the copy that survives a crashed tab or a phone that reloaded under your thumb.',
   overviewTitle: 'Overview',

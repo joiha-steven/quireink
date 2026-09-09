@@ -338,6 +338,13 @@ export type MotionSettings = {
    * different thing from `keys: 'off'` and worth having: some people want the caret.
    */
   keyVolume: number
+  /**
+   * Whether the pen squeaks in the editor when a highlight, underline or ring is applied
+   * (ADR 0049). Heard only while `keys` is not off and the volume is above zero: the
+   * instrument switch and the slider are the owner's one answer about sound, and the pen
+   * rides them rather than adding a second.
+   */
+  penSqueak: boolean
 }
 
 // Google Drive backup config (non-secret, lives in settings.data). The Drive

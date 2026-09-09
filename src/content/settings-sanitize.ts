@@ -325,6 +325,7 @@ export function sanitizeMotion(input: unknown, fallback: MotionSettings): Motion
     // 0 is a real answer, not a missing one: it is the caret with the sound turned off.
     // Which is why this clamps rather than treating a falsy value as absent.
     keyVolume: clampNumber(o.keyVolume, 0, 100, fallback.keyVolume),
+    penSqueak: typeof o.penSqueak === 'boolean' ? o.penSqueak : fallback.penSqueak,
   }
 }
 

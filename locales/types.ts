@@ -859,6 +859,8 @@ export type AdminStrings = {
   keyVolumeLabel: string
   keyVolumeDesc: string
   keyHear: string
+  penSqueakLabel: string
+  penSqueakDesc: string
   autosaveLabel: string
   autosaveHint: string
   // overview

@@ -165,7 +165,7 @@ describe('sanitizeFront', () => {
  * the worse of the two, because somebody turned it off for a reason.
  */
 describe('sanitizeMotion, upgrading from the old boolean', () => {
-  const M = { enabled: true, keys: 'woody', keyVolume: 60 } as const
+  const M = { enabled: true, keys: 'woody', keyVolume: 60, penSqueak: true } as const
 
   it('reads the old switch as the choice it stood for', () => {
     expect(sanitizeMotion({ enabled: true, typewriter: true }, M).keys).toBe('woody')
@@ -178,7 +178,7 @@ describe('sanitizeMotion, upgrading from the old boolean', () => {
 
   it('keeps the current setting for a value it cannot read', () => {
     expect(sanitizeMotion({ keys: 'clicky' }, M).keys).toBe('woody')
-    expect(sanitizeMotion({}, { enabled: true, keys: 'crisp', keyVolume: 60 }).keys).toBe('crisp')
+    expect(sanitizeMotion({}, { enabled: true, keys: 'crisp', keyVolume: 60, penSqueak: true }).keys).toBe('crisp')
   })
 
   // The three carried the names of the machines they are modelled on until 2026-08-25, when
@@ -202,6 +202,12 @@ describe('sanitizeMotion, upgrading from the old boolean', () => {
   it('gives a settings row that predates the volume the default one', () => {
     expect(sanitizeMotion({ keys: 'deep' }, M).keyVolume).toBe(60)
     expect(sanitizeMotion({ enabled: true, typewriter: true }, M).keyVolume).toBe(60)
+  })
+
+  it('reads the squeak as a boolean, and gives a row that predates it the default', () => {
+    expect(sanitizeMotion({ ...M, penSqueak: false }, M).penSqueak).toBe(false)
+    expect(sanitizeMotion({ enabled: true, keys: 'woody', keyVolume: 60 }, M).penSqueak).toBe(true)
+    expect(sanitizeMotion({ ...M, penSqueak: 'yes' }, M).penSqueak).toBe(true)
   })
 
   it('keeps silence, because 0 is an answer and not a missing value', () => {

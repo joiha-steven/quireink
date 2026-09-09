@@ -9,6 +9,7 @@ import { Button } from '@/admin/ui/Button'
 import { Range } from '@/admin/ui/Range'
 import { ToggleRow } from '@/admin/ui/Switch'
 import { playPhrase, previewKey } from './key-sound'
+import { playSqueak } from './pen-sound'
 import { useAdminT } from './I18nProvider'
 import { FIELD_W, PANEL_LIST, Select, Setting } from './kit'
 
@@ -122,6 +123,19 @@ export function AdvancedFields({
           </div>
         </Setting>
       </div>
+      {/* The pen's squeak (ADR 0049) rides the instrument and the slider above rather than
+          adding a second volume: one answer about sound. Disabled with the instrument off,
+          and heard on the spot, for the same reason the keys are. */}
+      <ToggleRow
+        label={t.penSqueakLabel}
+        desc={t.penSqueakDesc}
+        checked={motion.penSqueak}
+        disabled={motion.keys === 'off'}
+        onChange={(penSqueak) => {
+          onMotion({ ...motion, penSqueak })
+          if (penSqueak) playSqueak({ mode: motion.keys, volume: motion.keyVolume, squeak: true }, 'hl')
+        }}
+      />
       {/* The floor is 15s and it is enforced by the settings sanitiser, not only here: the
           editor also flushes on hide, on leave and on unmount, and those are what make a long
           interval safe. A very short one would make the interval the whole safety net again.

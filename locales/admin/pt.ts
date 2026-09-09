@@ -585,6 +585,8 @@ const pt = {
   keyVolumeLabel: 'Volume das teclas',
   keyVolumeDesc: 'O quanto esse clique soa, do silêncio ao máximo. Mexer no controle toca uma tecla, para você ouvir onde está deixando.',
   keyHear: 'Tocar umas teclas',
+  penSqueakLabel: 'A caneta range',
+  penSqueakDesc: 'Uma caneta de feltro range no papel quando marca, sublinha ou circula palavras no editor. Gerado na hora, sem ficheiro de som; segue o instrumento e o volume acima.',
   autosaveLabel: 'Guardar uma cópia local a cada (segundos)',
   autosaveHint: 'Segundos entre cópias locais enquanto você digita, de 15 a 600. Nada vai ao servidor até você apertar Salvar — esta é a cópia que sobrevive a uma aba travada ou a um celular que recarregou embaixo do seu polegar.',
   overviewTitle: 'Visão geral',

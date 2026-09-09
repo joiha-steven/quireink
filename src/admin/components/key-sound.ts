@@ -23,7 +23,12 @@ export type { Strike } from './key-voices'
  * grows would have been three: the shape of the answer belongs in a type, not in a prop
  * list that every intermediate component has to re-type without caring about either half.
  */
-export type KeySound = { mode: KeyFeedback; volume: number }
+export type KeySound = {
+  mode: KeyFeedback
+  volume: number
+  /** The pen's squeak on a mark (ADR 0049), riding the same instrument and slider. */
+  squeak?: boolean
+}
 
 /**
  * What the top of the slider means: the gain applied to an instrument at `LEVEL` 1.
@@ -213,6 +218,23 @@ function strike(sound: KeySound, kinds: Strike[]): void {
     return
   }
   fire(context, sound, kinds)
+}
+
+/**
+ * The one context and the one ceiling, for a sound that is not a key (`pen-sound.ts`).
+ * Same unlock dance as `strike`, for the same Safari reason; `fn` is handed the context
+ * and the node to connect to, and is not called at all when the context cannot be had.
+ */
+export function withAudio(fn: (context: AudioContext, out: AudioNode) => void): void {
+  const AudioContextClass = window.AudioContext
+  if (!AudioContextClass) return
+  audio ??= new AudioContextClass()
+  const context = audio
+  if (context.state === 'suspended') {
+    void context.resume().then(() => fn(context, ceiling(context))).catch(() => {})
+    return
+  }
+  fn(context, ceiling(context))
 }
 
 function fire(context: AudioContext, sound: KeySound, kinds: Strike[]): void {

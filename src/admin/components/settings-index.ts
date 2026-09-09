@@ -145,6 +145,7 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { tab: 'account', label: 'motionLabel' },
   { tab: 'account', label: 'keyFeedbackLabel', note: 'keyFeedbackDesc' },
   { tab: 'account', label: 'keyVolumeLabel', note: 'keyVolumeDesc' },
+  { tab: 'account', label: 'penSqueakLabel', note: 'penSqueakDesc' },
   { tab: 'account', label: 'keyHear' },
   { tab: 'account', label: 'autosaveLabel', note: 'autosaveHint' },
 

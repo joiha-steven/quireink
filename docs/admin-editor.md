@@ -135,6 +135,17 @@ that file first; this one only adds what is true here.
   it. A volume control you cannot hear while setting it is a trip to the editor per nudge.
   The sound is NOT gated by the motion engine or by reduced-motion: somebody who asked for
   less movement did not ask for silence, and those are not the same request.
+- **The pen answers the hand** (2026-09-09, ADR 0049): a highlight, underline or ring JUST
+  applied draws itself across the words — 200ms for the highlighter, 160 for the underline,
+  240 for the ring — by growing the background the pen sheet already paints from nothing to
+  its width. `pen-feedback.ts` notices the mark step after the fact and puts `pen-fresh` on
+  the element for a beat; nothing enters the document, an existing mark never replays, and
+  a document opening full of marks does not sweep. The words do not move. Gated by the two
+  motion rules like everything else. With it, a felt-tip squeak (`pen-sound.ts`, rendered as
+  arithmetic like the key click and measured by `pen-sound.test.ts`: 1.5-3 kHz, rising across
+  a highlight, up and back around a ring), at `motion.penSqueak` — heard only with an
+  instrument chosen and the slider above zero, and held at 0.45 of a key because it sits in
+  the ear's loudest octave and lasts five times as long.
 - **The caret stops blinking while the hands are moving**, and fades rather than switching:
   700ms past the last keystroke before it resumes, 1.2s ease-in-out, and never all the way
   to zero. A blink means "the cursor is here and nothing is happening", and during a burst of

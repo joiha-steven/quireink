@@ -584,6 +584,8 @@ const vi = {
   keyVolumeLabel: 'Độ to tiếng gõ',
   keyVolumeDesc: 'Tiếng lách ấy to đến đâu, từ im lặng đến hết nấc. Kéo tới đâu nghe tới đó, khỏi phải sang trình soạn thảo thử.',
   keyHear: 'Gõ thử vài phím',
+  penSqueakLabel: 'Bút kêu khi tô',
+  penSqueakDesc: 'Đầu bút dạ rít trên giấy khi bạn tô, gạch hay khoanh chữ trong trình soạn. Tạo tại chỗ, không có tệp âm thanh; theo nhạc cụ và âm lượng ở trên.',
   autosaveLabel: 'Giữ bản nháp trên máy mỗi (giây)',
   autosaveHint: 'Số giây giữa hai lần lưu tạm khi bạn đang gõ, từ 15 đến 600. Không có gì được gửi lên máy chủ cho tới khi bạn bấm Lưu — đây là bản sống sót khi tab sập hoặc điện thoại tự tải lại.',
   overviewTitle: 'Tổng quan',

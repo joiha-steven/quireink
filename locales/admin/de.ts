@@ -584,6 +584,8 @@ const de = {
   keyVolumeLabel: 'Anschlaglautstärke',
   keyVolumeDesc: 'Wie laut dieses Klicken ist, von Stille bis ans obere Ende. Beim Schieben erklingt eine Taste, damit Sie hören, wohin Sie sie stellen.',
   keyHear: 'Ein paar Tasten anhören',
+  penSqueakLabel: 'Der Stift quietscht',
+  penSqueakDesc: 'Ein Filzstift quietscht über das Papier, wenn du im Editor markierst, unterstreichst oder einkreist. Vor Ort erzeugt, keine Audiodatei; folgt Instrument und Lautstärke oben.',
   autosaveLabel: 'Lokale Kopie sichern alle (Sekunden)',
   autosaveHint: 'Sekunden zwischen lokalen Schnappschüssen beim Schreiben, von 15 bis 600. Nichts geht an den Server, bis Sie auf Speichern drücken — das ist die Kopie, die einen abgestürzten Tab oder ein neu geladenes Handy überlebt.',
   overviewTitle: 'Übersicht',

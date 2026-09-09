@@ -888,6 +888,21 @@ html.admin [role='dialog'] {
   transition-duration: .15s;
 }
 
+/* THE PEN ANSWERING THE HAND (ADR 0049). A mark the writer has JUST applied draws itself
+   across the words in 200ms — the highlighter's stroke, the underline, the ring — by
+   growing the background the pen sheet already paints, from nothing to its full width. The
+   class is put on the DOM element by `pen-feedback.ts` for a beat and taken off again, so
+   an existing mark never replays it, and a document opening full of marks does not sweep.
+   The TEXT does not move: only the ink under it is arriving, which is the rule the key
+   feedback lives by too (nothing animates the words). Gated like everything else by the
+   two rules below. */
+@keyframes pen-draw { from { background-size: 0 var(--ink-h, 1.05em); } }
+@keyframes pen-under { from { background-size: 0 var(--u-h, .42em); } }
+@keyframes pen-ring { from { background-size: 0 100%, 0 100%, 0 100%; } }
+.prose mark.pen-fresh { animation: pen-draw 200ms cubic-bezier(.2, .7, .3, 1) both; }
+.prose u.pen-fresh { animation: pen-under 160ms cubic-bezier(.2, .7, .3, 1) both; }
+.prose mark[data-form=o].pen-fresh { animation: pen-ring 240ms cubic-bezier(.2, .7, .3, 1) both; }
+
 /* THE TWO GATES. The owner's one switch (server-rendered as data-motion on <html>) and the
    OS preference each set every animation and transition to none in one rule, exactly as
    the reading site does in web/motion.css.ts. Until 2026-09-06 the admin gated four rules

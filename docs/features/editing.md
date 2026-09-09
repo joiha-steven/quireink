@@ -37,6 +37,8 @@
 - **Key feedback, as a choice of instrument:** `settings.motion.keys` — typewriter,
   mechanical-tactile, mechanical-linear, off — draws the caret this product owns and plays a
   synthesized filtered-noise click (no audio file), at `settings.motion.keyVolume` out of 100.
+  Applying a highlight, underline or ring draws the stroke in over 200ms and, with
+  `settings.motion.penSqueak` on, squeaks like a felt tip (ADR 0049).
   It ignores composition, modifier/navigation keys, paste, and held repeats. The master
   `settings.motion.enabled` and `prefers-reduced-motion` still gate the visual half; `off`
   makes the editor standard and silent, and a volume of 0 keeps the caret without the sound.

@@ -70,6 +70,7 @@ abandoned on 2026-07-26, and the only trace was a private memory file.
 | [0046](0046-the-notebook-speaks-the-open-standards.md) | The notebook speaks the open standards: IndieAuth on the MCP OAuth server, Micropub into the notebook, Webmention out and in | 2026-09-09 | ✅ |
 | [0047](0047-a-readers-marks-travel-by-a-code.md) | A reader's marks travel by a code, not an account: tier two of the reader's pen keeps them on the server under an opaque id | 2026-09-09 | ✅ |
 | [0048](0048-the-pen-is-a-stylesheet-anyone-may-link.md) | The pen is a stylesheet anyone may link: `/pen.css` under the `.pen` class, in this blog's inks, at a stable revalidating path | 2026-09-09 | ✅ |
+| [0049](0049-the-pen-answers-the-hand.md) | The pen answers the hand: in the editor a mark just applied draws itself in 200 ms, and a felt tip squeaks, on the key feedback's own switch and slider | 2026-09-09 | ✅ |
 
 ## Written after the fact, and why that is allowed
 

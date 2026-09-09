@@ -12,6 +12,7 @@ import { BubbleBar, SlashMenu, Toolbar } from './EditorMenus'
 import { useLinkAsker } from './editorLink'
 import { useFocusMode } from './useFocusMode'
 import { placeCaret, pulseInput } from './key-feedback'
+import { penStrokes } from './pen-feedback'
 
 // The sticky band above the writing: the action line (~56px) plus the toolbar strip that
 // sticks under it (~60px with its margins). The bubble bar must not be placed inside this
@@ -264,6 +265,10 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
     },
     onSelectionUpdate({ editor }) {
       if (keySound.mode !== 'off') placeCaret(editor.view, caretRef.current)
+    },
+    // The pen answering the hand (ADR 0049): a mark just applied draws itself, and squeaks.
+    onTransaction({ editor, transaction }) {
+      penStrokes(editor.view, transaction, keySound)
     },
     onUpdate({ editor }) {
       // Per-keystroke work is kept tiny: flag dirty now, serialize the whole

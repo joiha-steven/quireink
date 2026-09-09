@@ -584,6 +584,8 @@ const es = {
   keyVolumeLabel: 'Volumen de las teclas',
   keyVolumeDesc: 'Cuánto suena ese clic, del silencio al tope. Mover el control toca una tecla, para que oigas dónde lo dejas.',
   keyHear: 'Tocar unas teclas',
+  penSqueakLabel: 'El rotulador chirría',
+  penSqueakDesc: 'Un rotulador chirría sobre el papel al resaltar, subrayar o rodear palabras en el editor. Generado al momento, sin archivo de audio; sigue el instrumento y el volumen de arriba.',
   autosaveLabel: 'Guardar una copia local cada (segundos)',
   autosaveHint: 'Segundos entre copias locales mientras escribes, de 15 a 600. Nada viaja al servidor hasta que pulsas Guardar — esta es la copia que sobrevive a una pestaña colgada o a un teléfono que se recargó bajo tu pulgar.',
   overviewTitle: 'Resumen',

@@ -584,6 +584,8 @@ const it = {
   keyVolumeLabel: 'Volume dei tasti',
   keyVolumeDesc: 'Quanto suona quel clic, dal silenzio al massimo. Muovere il cursore suona un tasto, così senti dove lo stai mettendo.',
   keyHear: 'Suona qualche tasto',
+  penSqueakLabel: 'Il pennarello stride',
+  penSqueakDesc: 'Un pennarello stride sulla carta quando evidenzi, sottolinei o cerchi le parole nell\'editor. Generato al momento, nessun file audio; segue strumento e volume qui sopra.',
   autosaveLabel: 'Tieni una copia locale ogni (secondi)',
   autosaveHint: 'Secondi tra un salvataggio locale e l’altro mentre scrivi, da 15 a 600. Niente parte verso il server finché non premi Salva — questa è la copia che sopravvive a una scheda bloccata o a un telefono ricaricato sotto il pollice.',
   overviewTitle: 'Panoramica',

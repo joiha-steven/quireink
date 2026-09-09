@@ -103,7 +103,7 @@ async function editorView(slug: string) {
     // decide whether to offer it, and the body is fetched only if somebody says yes.
     autosaveAt: slug ? (getAutosave('post', slug)?.at ?? null) : null,
     contentWidth: settings.contentWidth,
-    keySound: { mode: settings.motion.keys, volume: settings.motion.keyVolume },
+    keySound: { mode: settings.motion.keys, volume: settings.motion.keyVolume, squeak: settings.motion.penSqueak },
     autosaveSeconds: settings.autosaveSeconds,
     // A schedule is a wall-clock time on the BLOG's clock, not on the clock of whichever
     // machine happens to be typing it. Without this the editor read and wrote the browser's
@@ -122,7 +122,7 @@ async function pageEditorView(slug: string) {
     page,
     autosaveAt: slug ? (getAutosave('page', slug)?.at ?? null) : null,
     contentWidth: settings.contentWidth,
-    keySound: { mode: settings.motion.keys, volume: settings.motion.keyVolume },
+    keySound: { mode: settings.motion.keys, volume: settings.motion.keyVolume, squeak: settings.motion.penSqueak },
     autosaveSeconds: settings.autosaveSeconds,
   }
 }
@@ -136,7 +136,7 @@ async function noteEditorView(slug: string) {
     note,
     autosaveAt: slug ? (getAutosave('note', slug)?.at ?? null) : null,
     contentWidth: settings.contentWidth,
-    keySound: { mode: settings.motion.keys, volume: settings.motion.keyVolume },
+    keySound: { mode: settings.motion.keys, volume: settings.motion.keyVolume, squeak: settings.motion.penSqueak },
     autosaveSeconds: settings.autosaveSeconds,
     timezone: settings.timezone,
   }
