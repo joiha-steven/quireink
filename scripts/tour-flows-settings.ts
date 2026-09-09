@@ -346,20 +346,32 @@ export function registerSettingsFlows({ flow, expect }: Tour): void {
         return h
       }
       const floor = innerHeight * 0.6
-      const shortH = bare()
-      if (shortH >= floor) return 'Comments and mail measures ' + shortH + 'px against a ' + Math.round(floor) + 'px floor, so it is no longer the short tab'
-      if (state() !== 'on') return 'a tab with ' + Math.round(floor - shortH) + 'px of spare paper still hid its explanations'
-      const visible = Array.from(document.querySelectorAll('.admin-note')).filter((n) => n.getBoundingClientRect().height > 0).length
-      if (visible < 2) return 'the flag says on and ' + visible + ' explanation(s) are drawn'
-      // The long tab, reached the way a person reaches it, so the measurement is taken again.
+      // WHICH tab is the short one is not the claim; the claim is that the short one opens
+      // and the long one does not. The flow used to name Comments and mail, and stopped
+      // passing the day the tour's viewport came out shorter (floor 454 against a 524px
+      // tab) with nothing in the product changed. So every tab is measured, reached the way
+      // a person reaches it, and the shortest and the tallest are the two compared.
       const tabs = Array.from(document.querySelectorAll('[role=tab]'))
       if (tabs.length < 6) return 'only ' + tabs.length + ' tab(s) to compare across'
-      tabs[5].click()
+      const heights = []
+      for (const tab of tabs) {
+        tab.click()
+        await sleep(400)
+        heights.push({ tab, h: bare(), label: tab.textContent.trim() })
+      }
+      heights.sort((a, b) => a.h - b.h)
+      const short = heights[0], long = heights[heights.length - 1]
+      if (short.h >= floor) return 'skip: no tab under the ' + Math.round(floor) + 'px floor at this window; the shortest (' + short.label + ') is ' + short.h + 'px'
+      if (long.h < floor) return 'skip: every tab is under the ' + Math.round(floor) + 'px floor; the tallest (' + long.label + ') is ' + long.h + 'px'
+      short.tab.click()
       await sleep(400)
-      const longH = bare()
-      if (longH < floor) return 'the tab meant to be the long one measured ' + longH + 'px'
-      if (state() !== 'off') return 'a tab past the floor opened its explanations too, so nothing is being measured'
-      return 'ok ' + shortH + 'px shows ' + visible + ', ' + longH + 'px shows none, floor ' + Math.round(floor)
+      if (state() !== 'on') return short.label + ', with ' + Math.round(floor - short.h) + 'px of spare paper, still hid its explanations'
+      const visible = Array.from(document.querySelectorAll('.admin-note')).filter((n) => n.getBoundingClientRect().height > 0).length
+      if (visible < 2) return 'the flag says on and ' + visible + ' explanation(s) are drawn'
+      long.tab.click()
+      await sleep(400)
+      if (state() !== 'off') return long.label + ', past the floor at ' + long.h + 'px, opened its explanations too, so nothing is being measured'
+      return 'ok ' + short.label + ' ' + short.h + 'px shows ' + visible + ', ' + long.label + ' ' + long.h + 'px shows none, floor ' + Math.round(floor) + ' of ' + innerHeight
     })()`, 900))
 
 

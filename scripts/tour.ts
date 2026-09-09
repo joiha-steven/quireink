@@ -155,6 +155,13 @@ const send = (method: string, params: Record<string, unknown> = {}) =>
 
 await send('Page.enable')
 await send('Runtime.enable')
+// THE VIEWPORT IS SET OVER THE PROTOCOL, the way drive.ts sets it. `--window-size=1440,900`
+// alone gives a page 900 tall in chrome-headless-shell (CI) and 757 tall in full Chrome's
+// headless mode (a laptop), which takes the window's own frame out of the same number. A
+// flow that measures against the viewport (the 60vh floor on a settings tab) then passes on
+// one machine and not the other with nothing in the product changed.
+const DESKTOP = { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false }
+await send('Emulation.setDeviceMetricsOverride', DESKTOP)
 await send('Network.enable')
 
 // `url`, not `domain`: the `__Host-` prefix requires no Domain attribute, and setting one makes
@@ -217,7 +224,8 @@ const atWidth = async (width: number, path: string, expr: string, settleMs?: num
   try {
     return await expect(path, expr, settleMs)
   } finally {
-    await send('Emulation.clearDeviceMetricsOverride')
+    // Back to the desktop viewport set at startup, not to no override at all.
+    await send('Emulation.setDeviceMetricsOverride', DESKTOP)
   }
 }
 
