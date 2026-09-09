@@ -2,7 +2,7 @@ Required Notice: Copyright 2026 Quire Ink contributors (https://github.com/joiha
 
 # Cho phép bổ sung — dùng bản Quire Ink chưa sửa đổi cho mục đích thương mại
 
-Phiên bản 1.1, ngày 29/08/2026. [English](./LICENSE-EXCEPTION.md) · **Tiếng Việt**
+Phiên bản 1.2, ngày 10/09/2026. [English](./LICENSE-EXCEPTION.md) · **Tiếng Việt**
 
 > Bản tiếng Anh là bản có hiệu lực. Bản tiếng Việt này dịch sát nghĩa để đọc cho dễ; nếu hai
 > bản hiểu khác nhau ở chỗ nào thì theo bản tiếng Anh.
@@ -77,3 +77,19 @@ tuân thủ sau khi nhận thông báo bằng văn bản.
 Ai nhận được một bản sao của phần mềm thì nhận luôn cho phép này kèm theo, với cùng những điều
 khoản trên. Giống như giấy phép, nó có hiệu lực từ bản phát hành mang nó trở đi; nó không thêm
 và cũng không bớt điều khoản của bất kỳ bản sao nào lấy về trước đó.
+
+## 6. Nếu dự án im lặng, nó tự mở ra
+
+Bên cấp phép trao, ngay từ bây giờ, một giấy phép tự có hiệu lực vào ngày kế tiếp sau khi
+**48 tháng trôi qua mà không có bản phát hành nào**. Bản phát hành là một thẻ phiên bản đẩy
+lên kho mã này, hoặc một gói hay image do bên cấp phép công bố từ nó; đếm từ bản gần nhất.
+
+Vào ngày đó, mọi người nhận được phần mềm ở trạng thái lúc ấy — bản phát hành cuối và nhánh
+mặc định tại ngày đó — theo [Apache License, phiên bản 2.0](https://www.apache.org/licenses/LICENSE-2.0),
+thêm vào PolyForm Noncommercial License và cho phép này. Điều khoản Apache khi đó cho phép
+những gì mục 2 và mục 3 đang giữ lại, kể cả sửa mã nguồn và thu tiền từ bản đã sửa. Thứ nó
+vẫn giữ là thứ văn bản này giữ từ đầu: các dòng ghi chú bản quyền còn nguyên, và tệp nào đã
+sửa thì phải nói rõ là đã sửa.
+
+Một bản phát hành trước khi hết 48 tháng sẽ đếm lại từ đầu. Không có gì ở đây cần bên cấp
+phép còn liên lạc được, hay phải làm gì, vào ngày đó; đó chính là mục đích của điều khoản.

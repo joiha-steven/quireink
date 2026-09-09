@@ -387,6 +387,8 @@ Two different things, and they are not covered by the same terms.
 
 **What you write stays yours.** Your posts and images are not covered by the code licence and are not in this repository.
 
+**If the project ever goes quiet, it opens.** Forty-eight months without a release, and the code as it then stands is also yours under the Apache License 2.0, by a grant already made today. Nobody has to be reachable for that to happen. It is section 6 of the [additional permission](./LICENSE-EXCEPTION.md).
+
 > **Everything up to and including v2.0.0 was MIT, and stays MIT forever.** A licence change
 > does not reach backwards: a copy taken before this one keeps the rights it came with. See
 > [ADR 0015](./docs/decisions/0015-relicense-polyform-noncommercial.md).

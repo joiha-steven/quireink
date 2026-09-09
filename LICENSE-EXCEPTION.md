@@ -2,7 +2,7 @@ Required Notice: Copyright 2026 Quire Ink contributors (https://github.com/joiha
 
 # Additional Permission — commercial use of unmodified Quire Ink
 
-Version 1.1, 2026-08-29. **English** · [Tiếng Việt](./LICENSE-EXCEPTION.vi.md)
+Version 1.2, 2026-09-10. **English** · [Tiếng Việt](./LICENSE-EXCEPTION.vi.md)
 
 > English is the authoritative text. The Vietnamese translation is there to be read, and
 > where the two are read differently, this one governs.
@@ -74,3 +74,19 @@ back into compliance after written notice.
 Anyone who receives a copy of the software receives this permission with it, on these same
 terms. Like the licence, it applies going forward from the release that carries it; it neither
 adds to nor takes away from the terms any earlier copy was given under.
+
+## 6. If the project goes quiet, it opens
+
+The licensor grants, now, a licence that takes effect by itself on the day after **48 months
+have passed without a release**. A release is a version tag pushed to this repository, or a
+package or image published from it by the licensor; the count starts from the most recent one.
+
+On that day, everyone receives the software as it then stands — the last release and the
+default branch at that date — under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0),
+in addition to the PolyForm Noncommercial License and this permission. The Apache terms then
+allow what section 2 and section 3 withhold, including changing the code and earning from the
+changed copy. What they keep is what this document has always kept: the copyright notices
+stay, and a changed file says that it was changed.
+
+A release before the 48 months are up resets the count. Nothing here needs the licensor to be
+reachable, or to act, on that day; that is the point of it.
