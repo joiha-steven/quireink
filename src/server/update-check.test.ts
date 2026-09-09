@@ -105,6 +105,12 @@ describe('the pure parts', () => {
     expect(isNewer('2.1.3', '2.1.3')).toBe(false)
     expect(isNewer('2.1.2', '2.1.3')).toBe(false)
     expect(isNewer('nonsense', '2.1.3')).toBe(false)
+    // A pre-release is behind its own final number, and never ahead of anything it is not.
+    expect(isNewer('2.2.10', '2.2.10-beta.1')).toBe(true)
+    expect(isNewer('2.2.9', '2.2.10-beta.1')).toBe(false)
+    expect(isNewer('2.2.11', '2.2.10-beta.1')).toBe(true)
+    expect(isNewer('2.2.10-beta.1', '2.2.10-beta.1')).toBe(false)
+    expect(isNewer('2.2.10-beta.2', '2.2.10-beta.1')).toBe(false)
   })
 
   it('keeps only an answer shaped like a release', () => {
@@ -126,7 +132,7 @@ describe('the call', () => {
     const url = new URL(calls[0]!)
     expect(url.origin + url.pathname).toBe('https://check.quireink.com/releases.json')
     expect(url.searchParams.get('t')).toBe(dailyToken(SECRET, '2026-08-22'))
-    expect(url.searchParams.get('v')).toMatch(/^\d+\.\d+\.\d+$/)
+    expect(url.searchParams.get('v')).toMatch(/^\d+\.\d+\.\d+(-[0-9A-Za-z.]+)?$/)
     // No site address is set in this database, so this instance is a trial.
     expect(url.searchParams.get('d')).toBe('0')
     expect(url.searchParams.get('new')).toBe('1')

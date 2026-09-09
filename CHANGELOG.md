@@ -1,5 +1,183 @@
 # CHANGELOG
 
+## 2026-09-09 — Quire Ink 2.2.10-beta.1
+
+A pre-release, for testing before 2.2.10 proper. Its Docker tag is `2.2.10-beta.1` and
+nothing else: `latest` and `2.2` still point at 2.2.9, so nobody gets a beta by accident. It
+runs the author's own blog at manhhung.me and the demo. What it wants tested is the pen: a
+reader marking a post, keeping the marks across devices, sending a passage to a notebook of
+their own, another site linking the pen's stylesheet, and the editor drawing and squeaking as
+a mark lands. Sixteen commits, eight decisions ([ADR 0042](./docs/decisions/0042-the-pen-inks-unevenly.md)
+to [0049](./docs/decisions/0049-the-pen-answers-the-hand.md)), and three findings from the
+2.2.9 reading audit that had been waiting on the owner's answer. Report what breaks at
+[the issue tracker](https://github.com/joiha-steven/quireink/issues).
+
+### The pen is its own module, and it inks unevenly
+
+- **`src/pen/` is a module with one door** (`src/pen/index.ts`) and a test that holds its
+  boundary. The highlighter, the underline, the ring, their dies, pigments and the two
+  stylesheets moved there from the renderer, byte for byte at first (the sheet's hash did
+  not change), so everything below could be built against one seam.
+- **A die carries its physics** ([ADR 0042](./docs/decisions/0042-the-pen-inks-unevenly.md)).
+  Fibre grain as an alpha mask, edge tremor, and wet-to-dry along the stroke in a dealt
+  direction, with a faint ghost under it all because paper soaks. The deck is eighty
+  variants: forty for phrases over about twenty-eight characters, forty for a word or two,
+  and the short ones tilt harder, overshoot further and dry faster. The ring is an oval that
+  crosses itself, with a tail that comes from inside the loop. The underline sits on the
+  baseline, crossing the descenders, with a pressure envelope instead of a wobble.
+- **Three generators, three seeds.** The highlighter, the lines and the link's dashes each
+  draw from their own stream, so growing one can never move a stroke of another.
+- **Lists are marked by the pen too.** Ink dots for bullets, short dashes for the level
+  under them, and numerals set in a hand (Kalam, the ten digits and a full stop), so a list
+  in a marked-up post reads as the same hand that marked it.
+- **The sheets grew, on purpose.** `pen-marks` from 11.6 to 19.6 KB gzipped, `pen-lines`
+  from 8.5 to 15.2, and both still arrive only on a page that carries ink.
+
+### The reader gets a pen
+
+- **Select words on a post and a bar offers the five inks, the underline, the ring, a note
+  and the quote** ([ADR 0043](./docs/decisions/0043-the-reader-gets-a-pen.md)). Off by
+  default; the owner turns it on under Settings → Posts. A mark is anchored to its words,
+  never to a position: the exact words and thirty-two characters either side, the W3C
+  text-quote shape, so a typo fixed three paragraphs up moves nothing, and a sentence that
+  is gone makes the mark fail to land rather than land on the wrong words. It draws with the
+  writer's pen: the same elements, the same dies, the same two sheets, so there is one hand
+  on the page and it is the site's.
+- **Tier one asks nothing.** Marks live in the browser's own storage under the page's path.
+  Nothing is sent, and the owner cannot see them.
+- **Tier two: the marks travel by a code, not an account**
+  ([ADR 0047](./docs/decisions/0047-a-readers-marks-travel-by-a-code.md)). *Keep these*
+  offers two ways across devices: the Google sign-in commenters already have, when the owner
+  has it configured, or a notebook code in five groups of four (`mg8b-hz94-nzkf-ewg4-j9ns`)
+  for anyone who will not. The server keeps a hash of the code, or a keyed hash of the
+  signed-in address, never the address itself, and one row per page. Five hundred pages a
+  reader, 128 KB a page, kept a year past the last touch, forgotten everywhere in one click.
+  The owner sees none of it: no screen lists a reader's marks, and the API answers only to
+  the reader's own code or cookie.
+
+### The notebook
+
+- **A note is a third kind of writing**
+  ([ADR 0044](./docs/decisions/0044-a-note-is-not-a-post.md)): its own table, its own list
+  at `/notes`, its own address under `/notes/{slug}`, its own namespace, so a note called
+  `about` and a page called `about` can both exist. A note is never in the post feed, the
+  front page, the archive or the newsletter; it is in the sitemap and in `llms.txt` under
+  its own heading. Written in the same editor, autosaved under its own kind, trashed and
+  restored like a post. In the Write list it is one more kind beside posts and pages.
+- **A clip is a note with three more fields**: where the passage came from, that page's
+  title, and the passage itself, as columns rather than lines of Markdown, because a later
+  step sends a Webmention to the source. A clip reads as the passage first, in the reading
+  face, then the owner's own words.
+- **Agents get the same verbs**: `list_notes` `get_note` `create_note` `update_note`
+  `delete_note` `restore_note`, and `list_mentions` for what other sites have said about
+  this one and which passages readers keep most.
+- **The notebook opens a door**
+  ([ADR 0045](./docs/decisions/0045-the-notebook-opens-a-door.md)). `/notes/clip` is a page
+  the owner keeps from, with no script: it reads the source, the title, the passage and the
+  words off the query string and offers one form, private by default. A reader's pen gains
+  *Send to my notebook*, which asks once for the notebook's address and from then on opens
+  that door in a small window. A bookmarklet makes any page on the web a source.
+
+### The notebook speaks the open standards
+
+- **IndieAuth, Micropub and Webmention**
+  ([ADR 0046](./docs/decisions/0046-the-notebook-speaks-the-open-standards.md)). The site
+  is an IndieAuth provider on the MCP server's existing OAuth door, so the owner signs in to
+  other IndieWeb sites with their own address. `/micropub` accepts a note from any Micropub
+  client, with the scope carried inside the signed code. `/webmention` receives mentions and
+  verifies the source really links here; a clip that names its source sends one. Every note
+  page carries an `h-entry`, and a clip marks its quotation with `u-quotation-of`. The head
+  of every page carries the five `rel` links a client discovers all this by.
+- **Nine names no post can take**: `admin` `login` `micropub` `notes` `og` `search` `setup`
+  `uploads` `webmention`, measured by a test that proves each one really is shadowed by a
+  route.
+
+### The pen is a stylesheet anyone may link
+
+- **`/pen.css`** ([ADR 0048](./docs/decisions/0048-the-pen-is-a-stylesheet-anyone-may-link.md)).
+  One `<link>` and a `pen` class on any element, on any site, and `==text==`,
+  `++text++` and `@@word@@` written as the same `<mark>` and `<u>` elements draw with this
+  blog's own inks, light and dark. About 35 KB gzipped, cached an hour with a day of
+  stale-while-revalidate, an ETag so a second visit costs no bytes, CORS open. This is a
+  public promise, so a change to it gets a line here.
+
+### The editor answers the hand
+
+- **A mark just applied draws itself, once**
+  ([ADR 0049](./docs/decisions/0049-the-pen-answers-the-hand.md)): 200 ms for the
+  highlighter, 160 for the underline, 240 for the ring. Nothing enters the document: the
+  transaction that added the mark is noticed after the fact and the elements it became wear
+  a class for a beat. An existing mark never replays, a document opening full of marks does
+  not sweep, and the words never move. The two motion gates zero it like every animation.
+- **A felt tip squeaks.** Rendered as arithmetic like the key click, no audio file: noise
+  through a resonant band-pass whose centre glides, three takes a gesture. The highlighter
+  rises, the underline is short and flat, the ring goes up and comes down. One switch,
+  Settings → Account → Motion → *pen squeak*, on by default and heard only while an
+  instrument is chosen and the key volume is above zero; held at 0.45 of a key.
+
+### The Write screen
+
+- **Two questions on two rows.** Kind and status shared one segmented row of six since
+  Notes joined it, and six segments in a 288px column broke their labels over two lines in
+  every language. Now a kind row of four words on a hairline (All · Posts · Pages · Notes,
+  measured to one line in all eleven languages) and two status lamps under it, the amber
+  and green each row already wears, beside the sort. The two stack: the drafts of posts is
+  now a question the list can answer. Five languages' sort labels lost a word to fit.
+- **The sheet beside the list takes its width.** It had been 375px wide in a 1440px window
+  since 2.2.9's entrance animation wrapped it in a box with no `flex-1`.
+- **The pane follows a save.** A first save put the new piece nowhere with no row selected,
+  and a rename left the row under its old name, because a save deliberately bumps no refresh
+  epoch (the editor would remount). The pane now refetches only when something its row shows
+  changed, and the selected row is read from the address bar, which every save syncs.
+
+### The reading site
+
+- **The contents stand under the title on a tablet.** The rail had two states, a gutter
+  above a breakpoint computed from the column (1272px for the default) and a drawer below
+  60rem, and an iPad on its side at 1024 fell in the hole between them: no index, and a menu
+  button opening a drawer over the article. In that range the rail is now a band under the
+  title: the menu and the index as wrapped rows on a hairline, the index folding on its
+  heading with no script. Above the breakpoint nothing changed.
+- **A phone shows no grid button.** At 390px it dropped the excerpts and kept the one
+  column. Under 640px it is not offered; a choice made on a laptop still travels.
+- **A newspaper row ends on a full line.** A three-column row on a two-column screen (641
+  to 900px) ended on its third card alone beside a hole. That card now takes the whole line,
+  sideways when it has a picture.
+
+### Under the hood
+
+- **CI was red for a day and the pen was not why.** A test wrote twenty thousand rows one
+  autocommit at a time and took nine seconds on the runner; it writes them in one
+  transaction now. `bun audit` named three advisories (nodemailer, hono, sharp), all bumped,
+  with an override for the hono nested under the MCP SDK; `bun audit` is clean.
+- **The browser tour sets its viewport over the protocol.** `--window-size` alone gives a
+  page 900 tall in chrome-headless-shell and 757 tall in full Chrome, which made one flow
+  pass on CI and fail on a laptop. 109 flows, all green on both.
+- **The update check understands a pre-release.** `2.2.10-beta.1` compares as behind
+  its own final number, so the day 2.2.10 is announced every beta hears about it, and it
+  never reads a beta as ahead of a release it is not.
+- New tables `notes` (migration 012), `webmentions` (013), `reader_marks` and
+  `reader_keys` (014); a new secret name `reader-marks`; the `readerPen` feature switch;
+  `motion.penSqueak`.
+
+### What this pre-release does not do
+
+- **It is a beta.** `latest` stays 2.2.9. Install it by naming the tag, and expect a
+  2.2.10 that may still move things.
+- **Two devices marking the same page at once overwrite each other**: the last save wins,
+  by design for now ([ADR 0047](./docs/decisions/0047-a-readers-marks-travel-by-a-code.md)).
+- **Nothing in the admin shows which passages readers keep most**; only the `list_mentions`
+  MCP tool answers that, and readers are not shown it either.
+- **Webmention has a rate limit and source verification but no spam judgement**; the
+  comment gate is not wired to it yet.
+- **The squeak was measured, not listened to** by anyone but its author; the Google
+  round trip of *Keep these* was measured to the redirect and not clicked through by hand;
+  the paint cost of a page carrying hundreds of reader marks on a slow phone is unmeasured.
+- The Help screens are still English only, a few counts still read "1 words", and the
+  standing limits hold: a NAS and a Kubernetes cluster get no Caddy, the Motion switch is
+  the owner's rather than per-reader, and an install that rewrites its own HTML with nginx
+  `sub_filter` loses the origin's compression and validator.
+
 ## 2026-09-07 — Quire Ink 2.2.9
 
 Two audits and everything they turned up in a day and a half, eighty-nine commits of it. One

@@ -115,7 +115,7 @@ describe('the reading half of the tool surface', () => {
   it('get_update_status names the running version even before any check has run', async () => {
     const { text } = await call('get_update_status')
     const data = JSON.parse(text) as { running: string; update: { state: string } }
-    expect(data.running).toMatch(/^\d+\.\d+\.\d+$/)
+    expect(data.running).toMatch(/^\d+\.\d+\.\d+(-[0-9A-Za-z.]+)?$/)
     expect(data.update.state).toBe('unknown')
   })
 })

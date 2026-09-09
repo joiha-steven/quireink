@@ -25,6 +25,14 @@ debugging: ask the owner to check the toggle and the token's age.
 `delete_post` · `create_page` `update_page` `get_page` `list_pages` `delete_page` ·
 `list_categories` `list_tags`
 
+**The notebook.** `list_notes` `get_note` `create_note` `update_note` `delete_note`
+`restore_note` · `list_mentions`. A note is a third kind of writing, kept apart from the
+posts: it never joins the feed, the front page or the newsletter, and lives under
+`/notes/{slug}` in its own namespace. A note with `sourceUrl` is a clip — pass `sourceUrl`,
+`sourceTitle` and `quote` as fields, never folded into the body, because a clip that names
+its source sends a Webmention to it when published. `list_mentions` answers two questions:
+which pages elsewhere link here, and which passages readers keep most.
+
 **The site itself.** `compose_homepage` (the composed front: lead, picks, category rows,
 most-read) · `update_appearance` (palette, fonts, sizes) · `get_settings` ·
 `list_settings` (every setting that can be changed: path, type, value now — call it to FIND

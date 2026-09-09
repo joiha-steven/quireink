@@ -172,17 +172,24 @@ export function isPublicAddress(siteUrl: string): boolean {
   return host.includes('.')
 }
 
-/** Is `latest` newer than `current`? Three numeric parts, compared as numbers — the
-    project's own versioning rule (`docs/conventions/releases.md`) never issues anything
-    else, and a string comparison would put 2.1.10 behind 2.1.9. */
+/** `2.2.10-beta.1` → the three numbers and whether a pre-release suffix was there. */
+function parts(v: string): { n: number[]; pre: boolean } | null {
+  const m = /^(\d+)\.(\d+)\.(\d+)(-[0-9A-Za-z.]+)?$/.exec(v)
+  if (!m) return null
+  return { n: [Number(m[1]), Number(m[2]), Number(m[3])], pre: m[4] !== undefined }
+}
+
+/** Is `latest` newer than `current`? Three numeric parts, compared as numbers — a string
+    comparison would put 2.1.10 behind 2.1.9. A pre-release (`2.2.10-beta.1`, first issued
+    2026-09-09) sits BEHIND its own final number: the day 2.2.10 is announced, every beta
+    hears about it. The announcement itself is never a pre-release (`parseRelease`). */
 export function isNewer(latest: string, current: string): boolean {
-  const a = latest.split('.').map(Number)
-  const b = current.split('.').map(Number)
-  if (a.length !== 3 || b.length !== 3 || [...a, ...b].some((n) => !Number.isInteger(n))) return false
+  const a = parts(latest), b = parts(current)
+  if (!a || !b) return false
   for (let i = 0; i < 3; i++) {
-    if (a[i]! !== b[i]!) return a[i]! > b[i]!
+    if (a.n[i]! !== b.n[i]!) return a.n[i]! > b.n[i]!
   }
-  return false
+  return b.pre && !a.pre
 }
 
 /** What the answer has to look like before any of it is kept. A static file behind a CDN
