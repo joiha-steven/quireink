@@ -321,13 +321,10 @@ export function registerSettingsFlows({ flow, expect }: Tour): void {
       return still > 0 ? 'ok (asked, backed out, trash intact)' : 'backing out emptied it anyway'
     })()`, 1000))
 
-  // ITEM 14, and the reason it is a flow rather than a screenshot: what is asserted is a
-  // DIFFERENCE between two tabs, and a difference is the one thing a photograph of either
-  // one cannot show. The explanations are hidden by default because they are bulk; a tab
-  // that stops short of the sheet's 60vh floor has no bulk to hide, so it opens with them.
-  // The owner's own answer, once given, outranks both — which is why the flow clears the
-  // preference before it measures anything.
-  //
+  // ITEM 14: a DIFFERENCE between two tabs, which no photograph of either shows. The
+  // explanations are hidden by default because they are bulk; a tab that stops short of the
+  // sheet's 60vh floor has no bulk to hide, so it opens with them. The owner's own answer
+  // outranks both, which is why the flow clears the preference before it measures.
   // NOTE: this body is a template literal. No backticks.
   flow('admin: a settings tab with paper to spare opens with its explanations', () => expect('/admin/settings?tab=people', `
     (async () => {
@@ -346,30 +343,21 @@ export function registerSettingsFlows({ flow, expect }: Tour): void {
         return h
       }
       const floor = innerHeight * 0.6
-      // WHICH tab is the short one is not the claim; the claim is that the short one opens
-      // and the long one does not. The flow used to name Comments and mail, and stopped
-      // passing the day the tour's viewport came out shorter (floor 454 against a 524px
-      // tab) with nothing in the product changed. So every tab is measured, reached the way
-      // a person reaches it, and the shortest and the tallest are the two compared.
+      // WHICH tab is short is not the claim, so every tab is measured (reached the way a
+      // person reaches it) and the shortest is compared with the tallest.
       const tabs = Array.from(document.querySelectorAll('[role=tab]'))
       if (tabs.length < 6) return 'only ' + tabs.length + ' tab(s) to compare across'
       const heights = []
-      for (const tab of tabs) {
-        tab.click()
-        await sleep(400)
-        heights.push({ tab, h: bare(), label: tab.textContent.trim() })
-      }
+      for (const tab of tabs) { tab.click(); await sleep(400); heights.push({ tab, h: bare(), label: tab.textContent.trim() }) }
       heights.sort((a, b) => a.h - b.h)
       const short = heights[0], long = heights[heights.length - 1]
       if (short.h >= floor) return 'skip: no tab under the ' + Math.round(floor) + 'px floor at this window; the shortest (' + short.label + ') is ' + short.h + 'px'
       if (long.h < floor) return 'skip: every tab is under the ' + Math.round(floor) + 'px floor; the tallest (' + long.label + ') is ' + long.h + 'px'
-      short.tab.click()
-      await sleep(400)
+      short.tab.click(); await sleep(400)
       if (state() !== 'on') return short.label + ', with ' + Math.round(floor - short.h) + 'px of spare paper, still hid its explanations'
       const visible = Array.from(document.querySelectorAll('.admin-note')).filter((n) => n.getBoundingClientRect().height > 0).length
       if (visible < 2) return 'the flag says on and ' + visible + ' explanation(s) are drawn'
-      long.tab.click()
-      await sleep(400)
+      long.tab.click(); await sleep(400)
       if (state() !== 'off') return long.label + ', past the floor at ' + long.h + 'px, opened its explanations too, so nothing is being measured'
       return 'ok ' + short.label + ' ' + short.h + 'px shows ' + visible + ', ' + long.label + ' ' + long.h + 'px shows none, floor ' + Math.round(floor) + ' of ' + innerHeight
     })()`, 900))
