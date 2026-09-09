@@ -49,7 +49,7 @@ describe('/notes', () => {
     expect(res.status).toBe(200)
     const html = await res.text()
     expect(html.indexOf('The passage.')).toBeLessThan(html.indexOf('My own words.'))
-    expect(html).toContain('From <a class="link-accent" href="https://example.com/a"')
+    expect(html).toContain('From <a class="link-accent u-quotation-of" href="https://example.com/a"')
     expect(html).toContain('<link rel="canonical" href="http://localhost:3000/notes/kept">')
     expect((await get('/notes/hidden')).status).toBe(404)
     expect((await get('/notes/later')).status).toBe(404)

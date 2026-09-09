@@ -15,14 +15,14 @@ import { getSettings } from '@/content/settings'
  * a slug when it is one bare segment (`/search`) or a segment with a wildcard under it
  * (`/uploads/*`, which Hono matches with the wildcard empty). A parameter does not, so
  * `/assets/:file` leaves `assets` free and `/api/track` leaves `api` free. That is why this
- * list is six names and not the twenty a reading of `app.ts` would suggest.
+ * list is nine names and not the twenty a reading of `app.ts` would suggest.
  *
  * `archive` is deliberately NOT here. `/archive` asks for the owner's own document first
  * and only draws the year index when there is none, which is the opposite trade and is set
  * out where that route is registered.
  */
 export const RESERVED_SLUGS: ReadonlySet<string> = new Set([
-  'admin', 'login', 'notes', 'og', 'search', 'setup', 'uploads',
+  'admin', 'login', 'micropub', 'notes', 'og', 'search', 'setup', 'uploads', 'webmention',
 ])
 
 // Thrown by save* when a slug is already taken by a different post/page.

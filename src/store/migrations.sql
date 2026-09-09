@@ -237,3 +237,16 @@ create trigger if not exists notes_fts_au after update of title, content on note
   insert into notes_fts(rowid, title, content) values (new.rowid, new.title, new.content);
 end;
 
+-- migration: 013-webmentions
+-- ADR 0046: mentions received from other sites. Same shape as `schema.sql` creates fresh.
+create table if not exists webmentions (
+  id          integer primary key autoincrement,
+  source      text not null unique,
+  target      text not null,
+  quote       text,
+  status      text not null default 'pending' check (status in ('pending','verified','failed')),
+  received_at integer not null,
+  verified_at integer
+);
+create index if not exists webmentions_target_idx on webmentions (target);
+

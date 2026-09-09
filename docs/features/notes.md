@@ -51,7 +51,23 @@ like the posts' index.
   first time it asks for the notebook's address and remembers it in that browser
   (`quire:notebook`); then it opens the door in a small window. No token travels.
 
-## What it does not do yet
+## The standards — `src/web/micropub.ts`, `src/server/webmention.ts` ([ADR 0046](../decisions/0046-the-notebook-speaks-the-open-standards.md))
 
-Identify the sender to the source, or take a passage with no browser in the loop. Those are
-the open standards next: IndieAuth, Micropub, Webmention.
+- **IndieAuth** rides the MCP OAuth server (`docs/mcp.md`): an `https:` `client_id` whose
+  `redirect_uri` shares its origin needs no registration; the requested `scope` travels in
+  the code and a writing scope mints a `full` token; the token response carries `me`; the
+  authorization endpoint answers the sign-in-only exchange with `{ me }`. Gated by the MCP
+  switch, and the head's `rel` links (`indieauth-metadata`, `authorization_endpoint`,
+  `token_endpoint`, `micropub`) appear only while it is on.
+- **Micropub** at `POST /micropub`: `h-entry` as form or JSON with a bearer token; `name`,
+  `content`, `bookmark-of` / `quotation-of` / `in-reply-to` (a clip), `post-status`,
+  `mp-slug`; `q=config`, `q=source`; `action=delete`. Always a note. A `read` token gets
+  `insufficient_scope`.
+- **Webmention out**: a published clip tells its source from every write path — endpoint by
+  `Link` header or `rel="webmention"` markup, through the SSRF guard, never awaited.
+- **Webmention in** at `POST /webmention` (advertised on every page): target on this site,
+  `202`, verified in the background by fetching the source; kept in `webmentions` with the
+  passage when the source is a Quire Ink clip. Read with the `list_mentions` tool
+  (`mostKept` counts which sentence readers keep most). Nothing is shown to readers.
+- The note page is an `h-entry` (`p-name`, `dt-published`, `e-content`, `u-url`, `p-author
+  h-card`, `u-quotation-of` on the source link).

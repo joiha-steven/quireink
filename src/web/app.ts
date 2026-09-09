@@ -37,6 +37,8 @@ import { contentRoutes } from '@/web/admin/content'
 import { noteRoutes } from '@/web/admin/notes'
 import { renderNotePage, renderNotesIndex } from '@/web/notes-page'
 import { clipRoutes, handleClipPage } from '@/web/clip-page'
+import { micropubRoutes } from '@/web/micropub'
+import { handleWebmention } from '@/web/webmention-route'
 import { securityRoutes } from '@/web/admin/security'
 import { siteRoutes } from '@/web/admin/site'
 import { uploadRoutes } from '@/web/admin/uploads'
@@ -199,6 +201,12 @@ export function createApp(): Hono {
   app.route('/', contentRoutes().routes)
   app.route('/', noteRoutes().routes)
   app.route('/', clipRoutes().routes)
+  // The open standards (ADR 0046): Micropub into the notebook, Webmention in.
+  app.route('/', micropubRoutes())
+  app.post('/webmention', handleWebmention)
+  // A GET on the endpoint says what it is, so a person who follows the rel link is not
+  // handed somebody's post by that name; the slug is reserved for the same reason.
+  app.get('/webmention', (c) => c.text('Webmention endpoint. POST source and target, form-encoded.'))
   app.route('/', securityRoutes().routes)
   app.route('/', siteRoutes().routes)
   app.route('/', uploadRoutes().routes)

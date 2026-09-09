@@ -67,6 +67,7 @@ abandoned on 2026-07-26, and the only trace was a private memory file.
 | [0043](0043-the-reader-gets-a-pen.md) | The reader gets a pen, and it writes in their browser first | 2026-09-09 | ✅ |
 | [0044](0044-a-note-is-not-a-post.md) | A note is written like a post and kept apart from the posts: its own table, address and list | 2026-09-09 | ✅ |
 | [0045](0045-the-notebook-opens-a-door.md) | The notebook opens a door: a clip page the owner keeps from, a bookmarklet, and the pen that sends | 2026-09-09 | ✅ |
+| [0046](0046-the-notebook-speaks-the-open-standards.md) | The notebook speaks the open standards: IndieAuth on the MCP OAuth server, Micropub into the notebook, Webmention out and in | 2026-09-09 | ✅ |
 
 ## Written after the fact, and why that is allowed
 

@@ -13,7 +13,7 @@
 import { Hono } from 'hono'
 import type { Context } from 'hono'
 import { isRedirectAllowed, registerClient } from '@/mcp/clients'
-import { createToken, deleteToken, listTokens, mintOAuthToken } from '@/mcp/tokens'
+import { createToken, deleteToken, listTokens, mintOAuthToken, type McpScope } from '@/mcp/tokens'
 import { issueCode, mcpEnabled, verifyCode } from '@/mcp/auth'
 import { consentPage, csrfToken, verifyCsrf, type OAuthParams } from '@/mcp/consent'
 import { clientIp, rateLimited } from '@/server/rate-limit'
@@ -46,6 +46,7 @@ function parseParams(src: URLSearchParams): {
       redirectUri: src.get('redirect_uri') ?? '',
       challenge: src.get('code_challenge') ?? '',
       state: src.get('state') ?? '',
+      scope: (src.get('scope') ?? '').trim().slice(0, 200),
     },
     method: src.get('code_challenge_method'),
     responseType: src.get('response_type'),
@@ -69,16 +70,37 @@ async function validate(
   } catch {
     return new Response('invalid redirect_uri', { status: 400 })
   }
-  if (!(await isRedirectAllowed(p.clientId, p.redirectUri))) {
+  if (!(await isRedirectAllowed(p.clientId, p.redirectUri)) && !isIndieAuthClient(p.clientId, p.redirectUri)) {
     return new Response('invalid_request: redirect_uri not registered for this client', { status: 400 })
   }
   return null
 }
 
+/**
+ * IndieAuth (ADR 0046): a client is a URL, and it need not register. The spec's own rule
+ * for trusting its redirect without fetching the client page is that the redirect shares
+ * the client's scheme, host and port — which is what is checked here. The consent page
+ * still names both, and the owner still clicks Approve.
+ */
+export function isIndieAuthClient(clientId: string, redirectUri: string): boolean {
+  try {
+    const client = new URL(clientId), redirect = new URL(redirectUri)
+    if (client.protocol !== 'https:' || client.username || client.password || client.hash) return false
+    return redirect.origin === client.origin
+  } catch {
+    return false
+  }
+}
+
+/** The scope a token gets: any writing scope an IndieAuth client asks for is `full`. */
+function tokenScope(requested: string): McpScope {
+  return !requested || /\b(full|create|update|delete|media|draft)\b/.test(requested) ? 'full' : 'read'
+}
+
 /** Issue a code and 302 to the ALREADY VALIDATED redirect_uri, carrying state through. */
 function issueAndRedirect(p: OAuthParams): Response {
   const dest = new URL(p.redirectUri)
-  dest.searchParams.set('code', issueCode(p.redirectUri, p.challenge))
+  dest.searchParams.set('code', issueCode(p.redirectUri, p.challenge, 300, p.scope ?? ''))
   if (p.state) dest.searchParams.set('state', p.state)
   return new Response(null, { status: 302, headers: { location: dest.toString() } })
 }
@@ -119,6 +141,18 @@ export function mcpAdminRoutes() {
   return router
 }
 
+/**
+ * The origin a CLIENT reaches this server on — which is not the one the request arrived
+ * with: a CDN terminates TLS and forwards over plain HTTP. `x-forwarded-proto` is what the
+ * proxy accepted. (The .well-known documents below explain why this must be exact.)
+ */
+function origin(c: Context): string {
+  const url = new URL(c.req.url)
+  const proto = c.req.header('x-forwarded-proto')?.split(',')[0]?.trim()
+  if (proto) url.protocol = `${proto}:`
+  return url.origin
+}
+
 /** The OAuth endpoints. Public by protocol; each has its own gate. */
 export function mcpOAuthRoutes(): Hono {
   const app = new Hono()
@@ -153,11 +187,23 @@ export function mcpOAuthRoutes(): Hono {
     })
   })
 
+  app.options('/api/mcp/authorize', () => new Response(null, { status: 204, headers: CORS }))
+
   // The Approve button. Everything is re-checked: never trust that the GET validated.
   app.post('/api/mcp/authorize', async (c) => {
     if (!(await mcpEnabled())) return new Response('MCP is disabled', { status: 503 })
     const form = await c.req.formData().catch(() => null)
     if (form === null) return new Response('invalid_request', { status: 400 })
+
+    // IndieAuth's sign-in-only exchange (ADR 0046): a client that wants to know WHO signed
+    // in, and no token, redeems the code here and gets the profile URL back. Same code,
+    // same single use, no token minted.
+    if (String(form.get('grant_type') ?? '') === 'authorization_code') {
+      const ok = await verifyCode(String(form.get('code') ?? ''), String(form.get('redirect_uri') ?? ''),
+        String(form.get('code_verifier') ?? ''))
+      if (!ok) return corsJson({ error: 'invalid_grant' }, 400)
+      return corsJson({ me: `${origin(c)}/` })
+    }
 
     const src = new URLSearchParams()
     for (const [k, v] of form.entries()) if (typeof v === 'string') src.set(k, v)
@@ -194,7 +240,8 @@ export function mcpOAuthRoutes(): Hono {
     const verifier = String(form.get('code_verifier') ?? '')
 
     if (grantType !== 'authorization_code') return corsJson({ error: 'unsupported_grant_type' }, 400)
-    if (!code || !redirectUri || !verifier || !(await verifyCode(code, redirectUri, verifier))) {
+    const payload = code && redirectUri && verifier ? await verifyCode(code, redirectUri, verifier) : false
+    if (!payload) {
       // One error for every failure mode. Which check failed is not the client's business
       // and telling them turns this into an oracle.
       return corsJson({ error: 'invalid_grant' }, 400)
@@ -202,9 +249,11 @@ export function mcpOAuthRoutes(): Hono {
 
     try {
       // A fresh 180-day token. Nothing else is touched: existing tokens persist until the
-      // owner deletes them, so re-authorizing never severs another connection.
-      const minted = await mintOAuthToken()
-      return corsJson({ access_token: minted.token, token_type: 'Bearer', scope: 'full' })
+      // owner deletes them, so re-authorizing never severs another connection. The scope is
+      // the one the code carried; `me` is what IndieAuth clients read the identity off.
+      const requested = payload.scope ?? ''
+      const minted = await mintOAuthToken(tokenScope(requested))
+      return corsJson({ access_token: minted.token, token_type: 'Bearer', scope: requested || 'full', me: `${origin(c)}/` })
     } catch {
       return corsJson({ error: 'server_error', error_description: 'could not mint token' }, 500)
     }
@@ -254,26 +303,7 @@ export function mcpOAuthRoutes(): Hono {
   // ----- .well-known metadata -------------------------------------------------
   // How a connector discovers all of the above. Both are CORS-open by protocol.
 
-  /**
-   * The origin a CLIENT reaches this server on — which is not the one the request arrived
-   * with.
-   *
-   * A CDN terminates TLS and forwards to the origin over plain HTTP, so `c.req.url` is
-   * `http://…` and every URL in these two documents came out `http://example.com/...`. A
-   * connector fetches the discovery document over https, reads an issuer on http, and
-   * rejects the pair: RFC 8414 and RFC 9728 both require the issuer to match the origin the
-   * document was served from, exactly. That is the whole of why connecting failed.
-   *
-   * `x-forwarded-proto` is what the proxy says it accepted, and it is trusted for the same
-   * reason the rest of the app trusts this deployment's proxy. Falls back to the request's
-   * own scheme, which is correct for a direct connection with no proxy in front.
-   */
-  const origin = (c: Context): string => {
-    const url = new URL(c.req.url)
-    const proto = c.req.header('x-forwarded-proto')?.split(',')[0]?.trim()
-    if (proto) url.protocol = `${proto}:`
-    return url.origin
-  }
+  // `origin(c)` above: the scheme the proxy accepted, not the one the request arrived with.
 
   for (const path of ['/.well-known/oauth-protected-resource', '/.well-known/oauth-authorization-server']) {
     app.options(path, () => new Response(null, { status: 204, headers: CORS }))
@@ -294,7 +324,7 @@ export function mcpOAuthRoutes(): Hono {
     grant_types_supported: ['authorization_code'],
     code_challenge_methods_supported: ['S256'],
     token_endpoint_auth_methods_supported: ['none'],
-    scopes_supported: ['full'],
+    scopes_supported: ['full', 'read', 'create', 'update', 'delete'],
   }))
 
   return app

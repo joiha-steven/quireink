@@ -10,6 +10,8 @@ import { clearCache } from '@/server/cache'
 import { logActivity } from '@/server/activity'
 import { SlugConflictError } from '@/content/slugs'
 import { asText, asJson, asError } from '@/mcp/result'
+import { afterNoteSaved, listMentions, mostKept } from '@/server/webmention'
+import { getSettings, resolveSiteUrl } from '@/content/settings'
 
 const noteFields = {
   title: z.string().optional(),
@@ -49,6 +51,7 @@ export function registerNoteTools(server: ToolHost): void {
         const meta = await saveNote(args as Partial<NoteWithContent>)
         clearCache()
         await logActivity('note.create', meta.title || meta.slug)
+        afterNoteSaved(meta, resolveSiteUrl(await getSettings()))
         return asJson(meta)
       } catch (e) {
         if (e instanceof SlugConflictError) return asError('slug_taken: another note already has that slug')
@@ -65,6 +68,7 @@ export function registerNoteTools(server: ToolHost): void {
         const meta = await saveNote(rest as Partial<NoteWithContent>, slug)
         clearCache()
         await logActivity('note.update', meta.title || meta.slug)
+        afterNoteSaved(meta, resolveSiteUrl(await getSettings()))
         return asJson(meta)
       } catch (e) {
         if (e instanceof SlugConflictError) return asError('slug_taken: another note already has that slug')
@@ -82,6 +86,12 @@ export function registerNoteTools(server: ToolHost): void {
       await logActivity('note.delete', slug)
       return asText(`Moved note to Trash: ${slug}`)
     },
+  )
+
+  server.registerTool(
+    'list_mentions',
+    { readOnly: true, description: 'Webmentions this site has received (other pages that link here), newest first, and which passages readers keep most — from clips sent by other Quire Ink notebooks.', inputSchema: {} },
+    async () => asJson({ mentions: listMentions(), mostKept: mostKept() }),
   )
 
   server.registerTool(

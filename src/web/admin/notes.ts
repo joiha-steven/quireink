@@ -11,6 +11,8 @@ import { finalizeContentMedia } from '@/media/finalize'
 import { clearCache } from '@/server/cache'
 import { logActivity } from '@/server/activity'
 import { fail, json } from '@/web/api'
+import { afterNoteSaved } from '@/server/webmention'
+import { getSettings, resolveSiteUrl } from '@/content/settings'
 import { ownerRouter, param } from '@/web/guard'
 import type { Context } from 'hono'
 
@@ -34,6 +36,7 @@ export function noteRoutes() {
       void finalizeContentMedia(input.content ?? '')
       clearCache()
       void logActivity('note.create', meta.title || meta.slug)
+      afterNoteSaved(meta, resolveSiteUrl(await getSettings()))
       return json(meta, 201)
     } catch (error) {
       if (error instanceof SlugConflictError) return fail(c, 'slug_taken', 409)
@@ -54,6 +57,7 @@ export function noteRoutes() {
       void finalizeContentMedia(input.content ?? '')
       clearCache()
       void logActivity('note.update', meta.title || meta.slug)
+      afterNoteSaved(meta, resolveSiteUrl(await getSettings()))
       return json(meta)
     } catch (error) {
       if (error instanceof SlugConflictError) return fail(c, 'slug_taken', 409)

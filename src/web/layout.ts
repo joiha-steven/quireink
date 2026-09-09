@@ -317,6 +317,14 @@ export function renderDocument(
   // correctly and NOTHING on the site points at it, so a reader's aggregator cannot find the
   // feed and neither can anything crawling for one. Gated on the setting the route is gated
   // on, so a site with the feed switched off does not advertise a 404.
+  // The open standards a reader's tools look for (ADR 0046): the notebook's Webmention
+  // endpoint always; the IndieAuth and Micropub doors only while the switch that gates them
+  // (Settings → Server & connections, the MCP switch) is on, so a site never advertises a 503.
+  const standards = '<link rel="webmention" href="/webmention">' + (settings.mcp.enabled
+    ? '<link rel="indieauth-metadata" href="/.well-known/oauth-authorization-server">'
+      + '<link rel="authorization_endpoint" href="/api/mcp/authorize">'
+      + '<link rel="token_endpoint" href="/api/mcp/token"><link rel="micropub" href="/micropub">'
+    : '')
   const feed = settings.seo.rss
     ? `<link rel="alternate" type="application/rss+xml"`
       + ` title="${escapeAttr(settings.title)}" href="/feed.xml">`
@@ -358,7 +366,7 @@ export function renderDocument(
 <meta name="viewport" content="width=device-width, initial-scale=1">
 ${themeColor}<meta name="generator" content="Quire Ink ${escapeAttr(VERSION)}">
 <title>${escapeHtml(head.title)}</title>
-${description}${canonical}${robots}${icon}${manifest}${feed}${og}${sheet}${preloads}${jsonLd}
+${description}${canonical}${robots}${icon}${manifest}${feed}${standards}${og}${sheet}${preloads}${jsonLd}
 <style>${styles}</style>
 ${head.extra ?? ''}${shell.customHead ?? ''}
 </head>

@@ -21,7 +21,7 @@ import { serverSecret } from '@/auth/secret'
 
 const secret = (): string => process.env.MCP_OAUTH_SECRET || serverSecret('mcp-oauth')
 
-export type OAuthParams = { clientId: string; redirectUri: string; challenge: string; state: string }
+export type OAuthParams = { clientId: string; redirectUri: string; challenge: string; state: string; scope?: string }
 
 /**
  * The session-bound value the CSRF token is keyed to.
@@ -99,11 +99,12 @@ export function consentPage(p: OAuthParams, csrf: string, denyHref: string): str
   <dl>
     <dt>Client ID</dt><dd>${esc(p.clientId || '(none)')}</dd>
     <dt>Redirect URI</dt><dd>${esc(p.redirectUri)}</dd>
+    ${p.scope ? `<dt>Scope</dt><dd>${esc(p.scope)}</dd>` : ''}
   </dl>
   <div class="row">
     <form method="POST">
       ${hidden('client_id', p.clientId)}${hidden('redirect_uri', p.redirectUri)}
-      ${hidden('code_challenge', p.challenge)}${hidden('state', p.state)}${hidden('csrf', csrf)}
+      ${hidden('code_challenge', p.challenge)}${hidden('state', p.state)}${hidden('scope', p.scope ?? '')}${hidden('csrf', csrf)}
       <button type="submit">Approve</button>
     </form>
     <a class="deny" href="${esc(denyHref)}">Deny</a>

@@ -20,7 +20,8 @@ import type { Note } from '@/types'
 function sourceLine(note: Note, prefix: string): string {
   if (!note.sourceUrl) return ''
   const name = note.sourceTitle || note.sourceUrl.replace(/^https?:\/\//, '')
-  return `<p class="note-source t-small text-meta">${escapeHtml(prefix)} <a class="link-accent" href="${
+  // `u-quotation-of`: the microformat a receiver reads the source off (ADR 0046).
+  return `<p class="note-source t-small text-meta">${escapeHtml(prefix)} <a class="link-accent u-quotation-of" href="${
     escapeAttr(note.sourceUrl)}" rel="noopener">${escapeHtml(name)}</a></p>`
 }
 
@@ -65,14 +66,17 @@ export async function renderNotePage(slug: string): Promise<string | null> {
   const kept = note.quote
     ? `<blockquote class="note-quote"><p>${escapeHtml(note.quote)}</p></blockquote>`
     : ''
-  const article = `<article>
+  // An h-entry, so a site the clip mentions can read what this is: its name, its date, the
+  // source it quotes, its words, and who kept it (the site, as an h-card).
+  const article = `<article class="h-entry">
 <header>
-<p class="t-small text-meta post-meta"><time datetime="${escapeAttr(note.date)}">${
+<p class="t-small text-meta post-meta"><time class="dt-published" datetime="${escapeAttr(note.date)}">${
     escapeHtml(formatDate(note.date, settings.language, settings.timezone))}</time></p>
-<h1 class="reading-font mt-2 fs-h1 font-semibold">${escapeHtml(title)}</h1>
+<h1 class="reading-font mt-2 fs-h1 font-semibold p-name">${escapeHtml(title)}</h1>
 ${sourceLine(note, s.noteSourcePrefix)}
 </header>
-<div id="post-body" class="prose">${kept}${body}</div>
+<div id="post-body" class="prose">${kept}<div class="e-content">${body}</div></div>
+<a class="u-url" href="/notes/${escapeAttr(note.slug)}" hidden></a><span class="p-author h-card" hidden>${escapeHtml(settings.title)}</span>
 </article>`
   return listingPage({
     title: `${title} · ${settings.title}`,

@@ -10,7 +10,7 @@ import { collectTools } from '@/mcp/registry'
 const READ_ONLY = [
   'list_posts', 'get_post', 'search_posts', 'list_trashed_posts',
   'list_pages', 'get_page', 'list_trashed_pages',
-  'list_notes', 'get_note',
+  'list_notes', 'get_note', 'list_mentions',
   'list_categories', 'list_tags',
   'list_media', 'list_trashed_media', 'list_files', 'list_trashed_files',
   'get_settings', 'list_settings',

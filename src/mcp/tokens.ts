@@ -110,8 +110,8 @@ export async function createToken(name: string, scope: McpScope = 'full'): Promi
 // "limit reached". Expires 180 days after creation like every token; a connector silently
 // re-authorizes across that boundary to mint a fresh one, so it stays connected.
 // An OAuth connector negotiates no scope UI, so it gets what it always got: full.
-export async function mintOAuthToken(): Promise<{ token: string; info: McpTokenInfo }> {
-  return insertToken(OAUTH_TOKEN_NAME, 'full')
+export async function mintOAuthToken(scope: McpScope = 'full'): Promise<{ token: string; info: McpTokenInfo }> {
+  return insertToken(OAUTH_TOKEN_NAME, scope)
 }
 
 export async function deleteToken(id: number): Promise<void> {

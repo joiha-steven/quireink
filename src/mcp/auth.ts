@@ -62,18 +62,21 @@ export async function verifyMcpToken(bearer?: string): Promise<McpAuth | undefin
  * endpoint records it on first exchange and rejects any later code carrying the same one.
  * Without it an HMAC code is replayable for its whole lifetime.
  */
-type CodePayload = { redirectUri: string; challenge: string; exp: number; jti: string }
+type CodePayload = { redirectUri: string; challenge: string; exp: number; jti: string; scope?: string }
 
 const sign = (data: string): string =>
   createHmac('sha256', secret()).update(data).digest('base64url')
 
 /** A short-lived code bound to the client's redirect_uri and PKCE challenge. */
-export function issueCode(redirectUri: string, challenge: string, ttlSec = 300): string {
+export function issueCode(redirectUri: string, challenge: string, ttlSec = 300, scope = ''): string {
   const payload: CodePayload = {
     redirectUri,
     challenge,
     exp: Date.now() + ttlSec * 1000,
     jti: randomBytes(16).toString('base64url'),
+    // IndieAuth (ADR 0046): the scope the owner approved travels inside the code, so the
+    // token endpoint mints exactly that and a client cannot widen it at exchange time.
+    ...(scope ? { scope } : {}),
   }
   const body = Buffer.from(JSON.stringify(payload)).toString('base64url')
   return `${body}.${sign(body)}`
@@ -83,11 +86,12 @@ export function issueCode(redirectUri: string, challenge: string, ttlSec = 300):
  * Validate a code at the token endpoint: signature, expiry, redirect_uri match, PKCE
  * (S256 — the verifier must hash to the baked-in challenge) and single use.
  *
- * Returns false on ANY failure, with no distinction between them.
+ * Returns false on ANY failure, with no distinction between them; on success, the payload
+ * (so the caller can read the scope the code was issued for).
  */
 export async function verifyCode(
   code: string, redirectUri: string, verifier: string,
-): Promise<boolean> {
+): Promise<CodePayload | false> {
   const [body, sig] = code.split('.')
   if (!body || !sig || !safeEq(sig, sign(body))) return false
 
@@ -104,5 +108,5 @@ export async function verifyCode(
 
   // Consumed LAST, after every stateless check has passed, so an invalid code never burns
   // a nonce. A false here means it was already spent — a replay.
-  return consumeCodeJti(payload.jti, payload.exp)
+  return (await consumeCodeJti(payload.jti, payload.exp)) ? payload : false
 }

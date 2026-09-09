@@ -183,6 +183,21 @@ create trigger if not exists notes_fts_au after update of title, content on note
   insert into notes_fts(rowid, title, content) values (new.rowid, new.title, new.content);
 end;
 
+-- ----- webmentions (received; ADR 0046) --------------------------------------
+-- A page elsewhere said it links here. Kept small: the two URLs, when, whether the link was
+-- confirmed by fetching the source, and — when the source is a Quire Ink clip — the passage
+-- it kept, so the owner can ask which sentence readers keep most. Never shown to readers.
+create table if not exists webmentions (
+  id          integer primary key autoincrement,
+  source      text not null unique,
+  target      text not null,
+  quote       text,
+  status      text not null default 'pending' check (status in ('pending','verified','failed')),
+  received_at integer not null,
+  verified_at integer
+);
+create index if not exists webmentions_target_idx on webmentions (target);
+
 -- ----- post_revisions (time machine: last 3 per post) ------------------------
 create table if not exists post_revisions (
   id       integer primary key autoincrement,

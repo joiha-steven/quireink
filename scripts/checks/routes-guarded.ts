@@ -38,6 +38,8 @@ const PUBLIC_WRITES = new Map<string, string>([
   ['/api/mcp/token', 'the OAuth token exchange. Authorised by a signed, single-use, PKCE-bound code rather than a session.'],
   ['/api/mcp', 'the MCP endpoint itself. Authorised by a bearer token the owner minted, not by the session cookie, and it must answer 401 with the resource-metadata pointer that starts the OAuth flow rather than the plain refusal the gate would give. Refused outright while MCP is off.'],
   ['/api/mcp/authorize', 'the consent form POST. Requires an owner session AND a session-bound CSRF token; it is listed here only because the GET half must be reachable to sign in from.'],
+  ['/webmention', 'another site saying it linked here (ADR 0046). Public by definition, like a comment form without a comment: rate limited per address, the target must be on this site, and what is kept is two URLs plus a pending flag the owner alone can read. Verified afterwards by fetching the source through the SSRF guard.'],
+  ['/micropub', 'a Micropub client posting into the notebook (ADR 0046). Authorised by a bearer token from the OAuth flow, exactly like /api/mcp, and refused with insufficient_scope unless that token may write.'],
 ])
 
 type Finding = { file: string; line: number; method: string; path: string }

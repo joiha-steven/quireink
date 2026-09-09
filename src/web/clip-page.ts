@@ -25,6 +25,7 @@ import { listingPage } from '@/web/listing-page'
 import { currentOwner, ownerRouter } from '@/web/guard'
 import { t } from '@/i18n/i18n'
 import { escapeAttr, escapeHtml, fill } from '@/utils'
+import { afterNoteSaved } from '@/server/webmention'
 
 /** The longest passage the door accepts: a page of a book, not a book. */
 const MAX_QUOTE = 4000
@@ -126,6 +127,7 @@ export function clipRoutes() {
       })
       clearCache()
       void logActivity('note.create', meta.title || meta.slug)
+      afterNoteSaved(meta, resolveSiteUrl(await getSettings()))
       return c.redirect(`/notes/clip?saved=${encodeURIComponent(meta.slug)}`, 303)
     } catch (error) {
       if (error instanceof SlugConflictError) {
