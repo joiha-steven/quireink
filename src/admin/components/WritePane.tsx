@@ -32,9 +32,10 @@ import { SeriesManager } from './SeriesManager'
 import { Tick } from '@/admin/ui/Tick'
 import { Lamp } from '@/admin/ui/Lamp'
 import { useAdminCount, useAdminT } from './I18nProvider'
-import { useWritingItems, type WriteNeeds, type WriteScope, type WriteSort } from './useWritingItems'
+import { useWritingItems, type WriteKind, type WriteNeeds, type WriteSort, type WriteStatus } from './useWritingItems'
 import { Marked } from './Marked'
 import { SHEET_TOOL, SHEET_TOOL_DANGER } from './sheet'
+import { StatusLine } from './StatusLine'
 
 type ContentView = {
   posts: Post[]
@@ -56,7 +57,8 @@ function Rows({
   const router = useRouter()
   const { notify } = useToast()
   const [query, setQuery] = useState('')
-  const [scope, setScope] = useState<WriteScope>('all')
+  const [kind, setKind] = useState<WriteKind>('all')
+  const [status, setStatus] = useState<WriteStatus>('all')
   const [sort, setSort] = useState<WriteSort>('updated')
   // THE DASHBOARD'S FILTER, arriving in the URL. Read once into state rather than read live,
   // because it has to be dismissable: a filter you cannot take off is a list that has
@@ -64,7 +66,7 @@ function Rows({
   // "35 posts need X" link that lands somewhere filtered without saying so.
   const arrived = useSearchParams().get('needs')
   const [needs, setNeeds] = useState<WriteNeeds>(arrived === 'excerpt' || arrived === 'image' ? arrived : null)
-  const { shown, bodyHits } = useWritingItems(posts, pages, notes, query, scope, sort, needs)
+  const { shown, bodyHits } = useWritingItems(posts, pages, notes, query, kind, status, sort, needs)
   // Selection is a MODE, not a permanent control on every row. A trash icon that lives on
   // the row sits a few pixels from the title you click dozens of times a day, and it has to
   // appear on hover to stay out of the way — which on a touch screen means it never appears
@@ -135,15 +137,19 @@ function Rows({
     else router.refresh()
   }
 
-  // The scope* keys, not tabPages/statusPublished: five words must share ONE line in a
-  // 320px column in every language, so this row carries its own deliberately short set.
-  const scopeTabs: { key: WriteScope; label: string }[] = [
+  // WHAT, then WHERE IT STANDS: two rows, because they are two questions. Kind and status
+  // shared one segmented row of six until 2026-09-09, and six segments in a 288px column
+  // broke their own labels over two lines in every language the moment Notes joined them.
+  // The kind row is the desk mock's strip — words on a hairline, the chosen one underlined —
+  // and the status is a pair of lamps with their words on the small-print line under it,
+  // beside the sort: the same lamp each row wears, so pressing "Drafts" lights the amber
+  // that marks a draft. Both unlit is everything. The `scope*` keys, not tabPages or
+  // statusPublished: four words on one line in every language is still a promise.
+  const kindTabs: { key: WriteKind; label: string }[] = [
     { key: 'all', label: t.filterAll },
-    { key: 'page', label: t.scopePages },
     { key: 'post', label: t.scopePosts },
+    { key: 'page', label: t.scopePages },
     { key: 'note', label: t.scopeNotes },
-    { key: 'published', label: t.scopePublished },
-    { key: 'draft', label: t.scopeDrafts },
   ]
 
   return (
@@ -171,7 +177,8 @@ function Rows({
             <Button size="sm">{t.newPost}</Button>
           </Link>
         </div>
-        <Tabs tabs={scopeTabs} value={scope} onChange={setScope} size="sm" dense role="choice" />
+        <Tabs tabs={kindTabs} value={kind} onChange={setKind} size="lg" dense role="choice" />
+        <StatusLine status={status} onStatus={setStatus} sort={sort} onSort={setSort} />
         {/* THE FILTER SAYS SO, and carries its own way off. It is a whole band rather than a
             word in the toolbar because it changes what the list IS, and the one thing worse
             than an unfiltered list is a filtered one that looks unfiltered. */}
@@ -188,9 +195,10 @@ function Rows({
             </button>
           </div>
         )}
-        {/* One thin line of small print: the pane's tools on the left (the Write screen
-            hangs Taxonomy and Series here — they lived below the fold, where nobody would
-            find them), the sort cycle on the right.
+        {/* One thin line of small print: the pane's tools (the Write screen hangs Taxonomy
+            and Series here — they lived below the fold, where nobody would find them). The
+            sort cycle sat at its right end until the status lamps took their own line above;
+            the sort narrows the list the way they do, so it rides with them.
             Selecting SWAPS this line rather than adding one. The pane already stacks four
             bands above the list in a 320px column, and a fifth would push the first row of
             writing further down on every screen for the sake of a mode that is off almost
@@ -219,13 +227,6 @@ function Rows({
                 </button>
                 {tools}
               </span>
-              <button
-                type="button"
-                onClick={() => setSort(sort === 'updated' ? 'created' : 'updated')}
-                className={SHEET_TOOL}
-              >
-                ↓ {sort === 'updated' ? t.sortUpdated : t.sortCreated}
-              </button>
             </>
           )}
         </div>

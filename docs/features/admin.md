@@ -95,10 +95,13 @@
   empty sheet inviting the next piece. Opening a row swaps the sheet for that piece's
   editor; the pane rides along on both editor pages from `xl` up.
 - `WritePane` renders; `useWritingItems` owns the stream: title+terms filtering, the
-  debounced body search (`/api/admin/search`, hits marked with the pen), five scopes on
-  one dense row (All · Pages · Posts · Published · Draft — kind and status are two
-  families, and the pane's own short `scope*` strings keep five words on one line in six
-  languages), and the sort cycle (last-updated / date-created). The date beside
+  debounced body search (`/api/admin/search`, hits marked with the pen), and two filters
+  that STACK — a kind row (All · Posts · Pages · Notes, words on a hairline, the pane's own
+  short `scope*` strings measured to one line in all eleven languages) and, on the small-print
+  line under it, two status lamps (Drafts, Published: press one to keep only those, press it
+  again for everything; the lamp is the one each row wears) beside the sort cycle
+  (last-updated / date-created). They were one segmented row of six until 2026-09-09, and
+  six segments in 288px broke their labels over two lines in every language. The date beside
   "Published" is the PUBLICATION date; a draft's only honest date is its save.
 - Taxonomy and Series open as right-hand `SlideOver`s from the pane's tool line —
   `TaxonomyManager`: rename (merge) / remove terms across all posts → `updateTerm`.

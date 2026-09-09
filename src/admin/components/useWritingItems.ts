@@ -10,7 +10,12 @@ import type { Post, Page, Note, ApiResponse } from '@/types'
 import type { OwnerHit } from '@/content/search-owner'
 import { foldAccents, untitledNumbers } from '@/utils'
 
-export type WriteScope = 'all' | 'page' | 'post' | 'note' | 'published' | 'draft'
+/** WHAT a row is — and 'all' is the mixed stream, most recently touched first. */
+export type WriteKind = 'all' | 'page' | 'post' | 'note'
+/** WHERE a row stands. Two questions, two controls: they used to share one row of six
+ *  segments, which could not hold its own labels in any language (2026-09-09), and a
+ *  reader asking for "drafts" could not also ask "of posts". Now the two stack. */
+export type WriteStatus = 'all' | 'published' | 'draft'
 export type WriteSort = 'updated' | 'created'
 /** The dashboard's two "needs attention" checks, as a filter this list can be asked for. */
 export type WriteNeeds = 'excerpt' | 'image' | null
@@ -49,7 +54,7 @@ export type WriteItem = {
 
 const stamp = (iso?: string): number => (iso ? new Date(iso).getTime() : 0)
 
-export function useWritingItems(posts: Post[], pages: Page[], notes: Note[], query: string, scope: WriteScope, sort: WriteSort = 'updated', needs: WriteNeeds = null) {
+export function useWritingItems(posts: Post[], pages: Page[], notes: Note[], query: string, kind: WriteKind, status: WriteStatus = 'all', sort: WriteSort = 'updated', needs: WriteNeeds = null) {
   // Where the words were found, keyed by `kind:slug`. Null means the server has not answered
   // for this query yet, which is NOT the same as "nothing matched" — see the empty state.
   const [bodyHits, setBodyHits] = useState<Map<string, string> | null>(null)
@@ -132,12 +137,10 @@ export function useWritingItems(posts: Post[], pages: Page[], notes: Note[], que
   const needle = foldAccents(query.trim())
   const shown = useMemo(() => {
     return items.filter((it) => {
-      // Two scopes are a KIND and two are a STATUS; both families share one row of
-      // tabs, so the filter reads which family the word belongs to.
-      if (scope === 'page' || scope === 'post' || scope === 'note') {
-        if (it.kind !== scope) return false
-      } else if (scope !== 'all' && it.status !== scope) return false
-      // The dashboard's filter, and it stacks WITH the scope rather than replacing it: a
+      // Kind and status STACK: "drafts of posts" is one question, not two lists.
+      if (kind !== 'all' && it.kind !== kind) return false
+      if (status !== 'all' && it.status !== status) return false
+      // The dashboard's filter, and it stacks WITH both rather than replacing them: a
       // person who arrives on "no share image" and then presses Drafts is asking a narrower
       // question, not starting again.
       if (needs === 'excerpt' && !it.noExcerpt) return false
@@ -146,7 +149,7 @@ export function useWritingItems(posts: Post[], pages: Page[], notes: Note[], que
       if (foldAccents(`${it.title} ${it.terms}`).includes(needle)) return true
       return bodyHits?.has(`${it.kind}:${it.slug}`) ?? false
     })
-  }, [items, scope, needle, bodyHits, needs])
+  }, [items, kind, status, needle, bodyHits, needs])
 
   return { items, shown, bodyHits }
 }

@@ -99,7 +99,7 @@ const de = {
   scopePosts: 'Posts',
   scopePublished: 'Online',
   scopeDrafts: 'Entwürfe',
-  sortUpdated: 'Zuletzt geändert',
+  sortUpdated: 'Geändert',
   sortCreated: 'Erstellt',
   commentsSearch: 'Kommentare durchsuchen...',
   commentsSortRecent: 'Neueste',

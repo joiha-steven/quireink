@@ -294,7 +294,13 @@ function Shell() {
                   minimum — so this wrapper, added only to carry the entrance, took the
                   editor's own shrink chain out and the phone scrolled sideways by 591px.
                   The same declaration is the fix in three other places in this admin. */}
-              <div className="admin-enter min-w-0">
+              {/* ⚠️ `flex-1` TOO, and it is the other half of the same wrapper's cost. On the
+                  Write screen this div is the flex item beside the pane, not the page inside
+                  it — so the page's own `flex-1` was `flex-1` of nothing and the sheet sat at
+                  its content's width: 370px in a 1440px window, with 445px of bare canvas to
+                  its right, from the day the wrapper arrived (2026-09-07) until it was
+                  looked at. Outside the Write screen the parent is a block and this is inert. */}
+              <div className="admin-enter min-w-0 flex-1">
               {/* Reached on the FIRST paint only. Every later route change runs inside a
                   transition, which keeps the current page on screen instead of falling back
                   here — see the note in `router.tsx`. */}

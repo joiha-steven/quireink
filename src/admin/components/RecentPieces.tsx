@@ -19,7 +19,7 @@ import { useWritingItems } from './useWritingItems'
 export function RecentPieces({ limit = 3 }: { limit?: number }) {
   const t = useAdminT()
   const { data } = useView('content')
-  const { items } = useWritingItems(data?.posts ?? [], data?.pages ?? [], data?.notes ?? [], '', 'all', 'updated')
+  const { items } = useWritingItems(data?.posts ?? [], data?.pages ?? [], data?.notes ?? [], '', 'all', 'all', 'updated')
   const shown = items.slice(0, limit)
   // Nothing written yet, or the list has not arrived: draw NOTHING. A heading over an empty
   // list on a screen whose whole message is "there is nothing here" is a second empty state

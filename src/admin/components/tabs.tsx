@@ -26,6 +26,11 @@ export type TabSize = 'lg' | 'sm'
 // own copy of the markup, one padding step off and with a different hover, which is how one
 // control came to look like two. A link-driven strip wears these and gets the real thing.
 export const TAB_TRACK = 'flex w-full flex-wrap items-end gap-6 border-b border-neutral-200 dark:border-neutral-800'
+// The underlined strip at the write pane's width: a 288px column cannot hold four words
+// 24px apart, so the gap closes to 16 and the type steps down to the pane's own 13px.
+// It does NOT wrap — four short words in every language, measured — because a strip that
+// folds puts one word on a line of its own, which is what the segmented row used to do.
+const TAB_TRACK_DENSE = 'flex w-full items-end gap-4 border-b border-neutral-200 dark:border-neutral-800'
 // `overflow-x-auto`, not `overflow-hidden`, and the difference is the whole control on a
 // phone. A hidden box IS a scroll container — script and focus can move it — but the browser
 // gives the user no way to: a finger cannot pan it. So a segmented strip wider than its box
@@ -93,7 +98,8 @@ export const tabItemClass = (
 ): string =>
   size === 'lg'
     // `-mb-px` so the item's own 2px border sits ON the track's hairline rather than under it.
-    ? `-mb-px border-b-2 pb-2.5 text-sm font-medium transition ${
+    // Dense is the write pane's size: 13px and a shorter stem, whole words never broken.
+    ? `-mb-px border-b-2 font-medium transition ${dense ? 'whitespace-nowrap pb-1.5 text-[0.8125rem]' : 'pb-2.5 text-sm'} ${
         active
           // A marker stroke under the label, not a wash behind it: an underlined strip is
           // already a quiet control and a lime block in it would be the loudest thing on the
@@ -200,9 +206,13 @@ export function Tabs<K extends string>({
       and a filter is closer to a value than a destination anyway. */
   role?: TabRole
   /**
-   * A tighter `sm`, for a row of five in a 320px pane. The row does NOT wrap — the owner
-   * called the folded second line crooked — so every caller owes labels short enough to
-   * fit in every language (the write pane carries its own `scope*` strings for this).
+   * A tighter strip, for a 320px pane. Neither size wraps when dense — a folded second line
+   * is a crooked control — so every caller owes labels short enough to fit in every language
+   * (the write pane carries its own `scope*` strings for this). `sm dense` is the full-width
+   * segmented row; `lg dense` is the underlined strip at 13px with a 16px gap, which is what
+   * the write pane's kind row wears: six segments in 288px broke their own labels over two
+   * lines in every language once Notes joined them (2026-09-09), and a strip of words on a
+   * hairline is the row the desk mock drew there in the first place.
    */
   dense?: boolean
   className?: string
@@ -273,7 +283,7 @@ export function Tabs<K extends string>({
       onKeyDown={onKeyDown}
       className={`${
         size === 'lg'
-          ? TAB_TRACK
+          ? (dense ? TAB_TRACK_DENSE : TAB_TRACK)
           : dense
             ? (role === 'place' ? SEGMENT_TRACK_DENSE_PLACE : SEGMENT_TRACK_DENSE)
             : (role === 'place' ? SEGMENT_TRACK_PLACE : SEGMENT_TRACK)
