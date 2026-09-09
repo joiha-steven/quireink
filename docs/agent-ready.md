@@ -85,6 +85,7 @@ Emerging/low-fit standards left out, with the reason — revisit if a real agent
 - **Agent Skills index** (the discovery ENDPOINT, not the files above), **A2A Agent
   Card**, **WebMCP** — the MCP server already covers
   agent tool-use; these are early specs (unstable schemas / Chrome-only) that don't map
-  cleanly onto a blog. The MCP Server Card is the stable equivalent.
+  cleanly onto a blog. The MCP endpoint itself is the stable equivalent; its Server Card is
+  one of the unported items above.
 - **Web Bot Auth** (HTTP message-signature verification) — niche; adds request-signing
   verification with little benefit for public content.

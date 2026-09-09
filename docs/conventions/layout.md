@@ -65,15 +65,17 @@ inside it. In book mode the same break becomes the asterism.
   in CSS; the layout hides the button above the breakpoint via `.rail-toggle`). The rail carries the
   site menu at its top (`SidebarMenu`) — the header has no separate menu dropdown. In the gutter the
   rail is type on the page: no border, no shadow, no background.
-- **Rounded corners are allowed site-wide (public + admin).** The old global `border-radius: 0`
-  reset that forced the public frontend square has been DROPPED — elements now carry their own
-  `rounded-*` radius and unstyled elements stay square by default. Use ONE radius scale everywhere:
-  cards/tables/modals `rounded-2xl` (16px), grouped controls/segmented tracks `rounded-xl` (12px),
-  buttons/inputs/selects/nav rows `rounded-lg` (8px), pills/switches/badges fully round. Do not
-  invent one-off radii (no `rounded-md`); change shared primitives first (`kit.tsx` CARD/CONTROL/
-  Select/Tabs, `ui/*`, `iconButton.ts`). Admin `<select>` uses the styled `Select` (kit.tsx) and
-  free-text-with-suggestions uses `Combobox` — never a raw native `<select>`/`<datalist>` (their
-  OS popups can't be themed: wrong font, cramped, no hover).
+- **Rounded corners are allowed site-wide (public + admin), each side from ONE source.** The old
+  global `border-radius: 0` reset is gone. On the public site a box radius is `var(--radius)`,
+  which `src/content/settings-shape.ts` emits from the owner's Shape setting (square 0 · soft
+  .5rem · round 1rem; [appearance.md](../appearance.md)); the literals left are the fully round
+  pills (`999px`, `50%`), the `.5rem` on a figure's image and the sign-in page, which has no
+  Shape to read. The admin has
+  its own 10 / 8 / 6px hierarchy (sheet, nested panel, control), held by the kit and described
+  in [admin-design.md](../admin-design.md); change `kit.tsx` CARD/CONTROL/Select/Tabs, `ui/*` or
+  `iconButton.ts` rather than inventing a one-off. Admin `<select>` uses the styled `Select`
+  (kit.tsx) and free-text-with-suggestions uses `Combobox` — never a raw native
+  `<select>`/`<datalist>` (their OS popups can't be themed: wrong font, cramped, no hover).
 
 ## The article's right gutter — the info panel (HARD RULES)
 

@@ -12,6 +12,7 @@
   active rail marker and the title hover underline. It is seeded from each palette's `link`, so
   Mono stays monochrome. Never hardcode a highlight colour.
 - **Public UI colours come ONLY from theme tokens — never hardcode `neutral-*`/`white`/`black`
-  or a hex.** Vars `--c-bg/text/heading/meta/link/rule` are utilities (`bg-bg`, `text-text`,
-  `text-heading`, `text-meta`, `text-link`, `border-rule`). Every line/border + faint surface
+  or a hex.** Vars `--c-bg/text/heading/meta/link/rule` are the palette; the only colour
+  utilities in `src/web/utility.css.ts` are `.text-meta` and `.text-text`, everything else
+  names the variable in its own rule. Every line/border + faint surface
   (code blocks, hovers, banners) uses `--c-rule`. Admin tooling may stay neutral.

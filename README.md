@@ -101,7 +101,7 @@ The pen, all the way through. **Readers get a pen**: select words on a post and 
 | 🌍&nbsp;**Languages** | Eleven, in the admin and on the site, and anyone can add one more in a single file. No CJK webfont ships, because they run to megabytes, but each of the three names its own face so 直 is drawn the Japanese way on a Japanese site |
 | 🔐&nbsp;**Sign-in** | Your own username and password, hashed with argon2id. An authenticator code every time, and ten recovery codes for the day the phone goes missing. Change the password, re-enrol the authenticator, and see every signed-in device with a button to end it — one at a time or all at once. There is a way back in when the password AND the phone are both gone. No Google anywhere in the login path |
 | 🤖&nbsp;**Assistant** | Your own model key, in the admin: Claude, GPT, Gemini or DeepSeek. Answers arrive as they are written, conversations are kept and listed, and each one carries a receipt of what it cost. It also writes the alt text for a picture you upload and sorts spam into the trash |
-| ⌨️&nbsp;**The&nbsp;admin** | ⌘K finds any named setting and jumps to it, so it stops mattering which of the seven tabs holds it. The rail's order is yours to drag, and its wordmark can go. Every control is a key with relief: raised means you can press it, carved means it is held down. Six chords in the editor |
+| ⌨️&nbsp;**The&nbsp;admin** | ⌘K finds any named setting and jumps to it, so it stops mattering which of the seven tabs holds it. The rail's order is yours to drag, and its wordmark can go. Every control is a key with relief: raised means you can press it, carved means it is held down. Eight chords in the editor |
 | 📱&nbsp;**Phone** | Install it to the home screen and it opens like an app |
 
 **Made for** one person, one server, one blog they mean to keep.
@@ -348,7 +348,7 @@ SMTP, Turnstile and CDN credentials go in **Settings → Comments & mail** (mail
 
 The interface speaks **eleven languages** on the reader's side and in the admin: English, Tiếng Việt, Deutsch, 日本語, 简体中文, 한국어, Français, Español, Português (Brasil), Italiano and Русский. The first question setup asks is which one this blog speaks.
 
-**Help translate.** Every language is one folder at the repository root: [`locales/`](./locales). To improve a translation, edit `locales/<code>.ts` (what readers see) and `locales/admin/<code>.ts` (what the owner sees) — plain files of quoted strings. To add a language, copy the two `en` files, translate, and register the code in three places, `locales/langs.ts`, `src/types.ts` and `DATE_LOCALE` in `src/i18n/i18n.ts`; the compiler refuses to build until every key exists, so a half-done translation cannot ship silently. Pull requests welcome — a native speaker's ear beats ours.
+**Help translate.** Every language is one folder at the repository root: [`locales/`](./locales). To improve a translation, edit `locales/<code>.ts` (what readers see) and `locales/admin/<code>.ts` (what the owner sees) — plain files of quoted strings. To add a language, copy the two `en` files, translate, and register the code in three places, `locales/langs.ts`, `src/types.ts` and `DATE_LOCALE` in `src/i18n/format.ts`; the compiler refuses to build until every key exists, so a half-done translation cannot ship silently. Pull requests welcome — a native speaker's ear beats ours.
 
 ## Develop
 

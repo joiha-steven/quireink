@@ -30,7 +30,9 @@
   OUTSIDE `.prose` use `.fs-h1…fs-h5` (titles) + `.t-small` (secondary text) + `.t-body`
   (body-role text outside prose: card excerpts, footer). H1 = single post/page titles +
   category/tag headings + draft preview; list cards (`PostCard`) = H2; brand wordmark = `.fs-h4`.
-  Only fixed public size left: the 404 numeral.
+  Two fixed sizes remain, both on purpose: the sign-in page's 15px body (`login.css.ts`, the one
+  sheet `check:type` skips, because no `--fs-*` is defined there) and the `max(16px,1em)` FLOOR on
+  form controls in `mobile.css.ts`, which stops iOS Safari zooming the page on focus.
 - **No hardcoded letter-spacing on public text either — tracking comes from `--ls-<role>`.** The
   `.fs-h*`/`.t-*` classes already emit `letter-spacing: var(--ls-<role>)`, so NEVER write a literal
   `letter-spacing` on a public heading or title: it overrides the owner's tuned value and the Admin
@@ -75,8 +77,11 @@
   monos carry no fallback on purpose: their files only download on pages with code, and a
   code block's box, not its glyphs, sets that layout. Pinned in `typography.test.ts`.
 - **Inter is self-hosted** (`src/assets/static/fonts/inter-{latin,latin-ext,vietnamese}.woff2`,
-  variable, declared via `@font-face` + `unicode-range` in `src/render/font-faces.ts`, which is
-  also where `--font-inter` is set). **Never fetch a font from Google** at build or at runtime —
+  variable, declared via `@font-face` + `unicode-range` in `src/render/font-faces.ts`). The
+  family name every chain falls back to is `--font-sans`, set in `layout.ts` and `admin/spa.ts`.
+  **Open question (2026-09-10):** `settings-css.ts` ends the reading-font chain with
+  `var(--font-inter)`, and nothing in `src/` or the built CSS defines that variable, so the
+  fallback resolves to nothing; measure what the browser does with it before changing either file. **Never fetch a font from Google** at build or at runtime —
   it broke offline and CI builds, and it is the reason all of these are in the tree. The OG
   route self-hosts the same Inter separately as `.woff` (Satori can't decode woff2). To update
   Inter, re-drop the woff2 files. **Which font files are `<link rel=preload>`-ed is one

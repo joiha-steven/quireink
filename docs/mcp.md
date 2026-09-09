@@ -4,7 +4,7 @@
 
 - **What it is.** A remote MCP endpoint (Streamable HTTP, `@modelcontextprotocol/sdk`)
   that lets an MCP client (Claude/ChatGPT) operate the blog. Tools are THIN wrappers over the same
-  `lib/` functions the admin routes use — same slug rules, revisions, soft-delete, revalidation,
+  `src/content/` and `src/server/` functions the admin routes use — same slug rules, revisions, soft-delete, revalidation,
   activity log. **Off unless the owner enables it** (Admin → Settings → Server & connections toggle,
   `settings.mcp.enabled`); `verifyMcpToken` 401s every call while off.
 - **The 2.0 transport is hand-written** (`src/web/admin/mcp-transport.ts`), because `mcp-handler`
@@ -71,8 +71,8 @@
   list, many doors, one rulebook — a door must never grow a private tool, and
   `registry.test.ts` pins the forbidden names (broadcast, token minting) at the registry
   level so they are absent from every door at once.
-- **Tools** (`src/mcp/tools.ts` posts/pages/taxonomy, `src/mcp/tools-library.ts`
-  media/files/settings, `src/mcp/tools-insight.ts` the READING half — traffic, audience
+- **Tools** (`src/mcp/tools.ts` posts/pages/taxonomy, `src/mcp/tools-notes.ts` the
+  notebook, `src/mcp/tools-library.ts` media/files/settings, `src/mcp/tools-insight.ts` the READING half — traffic, audience
   counts, comments, owner search, update status — and `src/mcp/tools-steward.ts` the
   STEWARD half: front-page curation, appearance from the curated menus, per-post traffic,
   owner replies, the test send, snapshots; results via `src/mcp/result.ts`).

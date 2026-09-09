@@ -305,9 +305,9 @@ owner may never open, and preloading all fourteen would trade one problem for a 
 
 ## JS — ship only what's used, only when it's used
 
-1. **Four bundles on public pages, plus `login.js` on the sign-in page, and a budget in a
-   test.** `core.js` on every public page, `post.js` added on an article, and
-   **`book-mode.js` / `comment-thread.js` only on an article whose switch is on**
+1. **Five bundles on public pages, plus `login.js` on the sign-in page and the service worker
+   `sw.js`, and a budget in a test.** `core.js` on every public page, `post.js` on an article,
+   **`book-mode.js` / `comment-thread.js` / `reader-pen.js` only on an article whose switch is on**
    (`articleScripts()` in `web/assets.ts` emits the tag or does not); `scripts/build-assets.ts` builds them
    from `src/assets/js/` and FAILS the build when any passes the byte budget written beside
    it. There is no framework baseline to hide inside, which is the point of the whole rewrite.

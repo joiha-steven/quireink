@@ -14,11 +14,12 @@ INTEGER epoch. Chosen: **INTEGER milliseconds**.
 
 - Unambiguous. No parsing, no format drift, no accidental local-time storage.
 - Cheap to compare and index, which matters for `analytics_events`.
-- All timezone logic already has to move into application code (see "The five RPCs"
-  below), so keeping ISO strings for the sake of SQLite's date functions buys nothing.
+- All timezone logic already has to move into application code (see "The six SQL functions"
+  below; this said "five RPCs" until 2026-09-10), so keeping ISO strings for the sake of SQLite's date functions buys nothing.
 
 Cost: hand-inspecting the DB is less pleasant. Mitigated by a `quire db` CLI
-subcommand that renders timestamps for humans.
+subcommand that renders timestamps for humans. (Never built, as of 2026-09-10: `sqlite3`
+and `datetime(ms/1000,'unixepoch')` do the job.)
 
 NULL stays NULL for optional timestamps (`deleted_at`, `confirmed_at`, `opened_at`).
 
@@ -76,7 +77,7 @@ temp_store   = MEMORY
 
 | File | Contents | Backup |
 |---|---|---|
-| `quire.db` | Everything except analytics | `VACUUM INTO` snapshot, in all three copies ([backups.md](../backups.md)) |
+| `quire.db` | Everything except analytics | `VACUUM INTO` snapshot, in every copy ([backups.md](../backups.md) counts four since ADR 0035; this said three) |
 | `analytics.db` | `analytics_events`, `analytics_scroll` | same snapshot, same schedule; loss is tolerable |
 
 Reasons for the split:
@@ -372,7 +373,9 @@ and the one-shot importer from 1.x targeted the current schema directly. The led
 live now, so a schema change ships as a migration.
 
 Schema and migrations are imported as text (`with { type: 'text' }`) so they compile into
-the executable, and applied at boot inside a transaction. A failed migration aborts
+the executable, and applied at boot inside a transaction. (There is no executable since
+[ADR 0022](../decisions/0022-ship-from-source-not-a-compiled-binary.md); the text import
+still means the SQL ships with the source and needs no file path at runtime.) A failed migration aborts
 startup rather than degrading.
 
 **The accepted risk from the frozen tree does not carry over.** There, `schema.sql` was

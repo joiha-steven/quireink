@@ -234,7 +234,7 @@ because it is the highest-value cleanup left in the admin.
 ## Building
 
 - **Public JS: `bun run build:assets`.** Six entry points (`core`, `post`, `login`, `book-mode`,
-  `comment-thread`, `sw`) built
+  `comment-thread`, `sw`; a seventh, `reader-pen`, since ADR 0043, noted 2026-09-10) built
   from `src/assets/js/` as minified **IIFE** bundles — not ESM: they are injected as classic
   `<script src defer>`, so three ESM bundles put every top-level declaration on the global
   scope and stamped on each other. Each bundle has a byte BUDGET the build fails on.

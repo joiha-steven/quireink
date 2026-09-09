@@ -20,8 +20,8 @@ which was never true. The boxes came off on 2026-08-03; **not one line of conten
 
 ## How to read it
 
-- `⚠` marks a behaviour that is **easy to lose and has no test covering it**. 48 of them
-  across both files. These are the ones that actually go missing. Read the note before
+- `⚠` marks a behaviour that is **easy to lose and has no test covering it**, in both
+  files (the count drifts; grep for the mark rather than trusting a number here). These are the ones that actually go missing. Read the note before
   changing anything near it.
 - `✂` marks a change that is **deliberate**, with the parity exception it belongs to
   ([00-rationale.md](00-rationale.md)). Do not "restore" these.

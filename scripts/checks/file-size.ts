@@ -1,4 +1,4 @@
-// Holds the 400-line rule from CLAUDE.md. Prose rots, a red check does not.
+// Holds the 400-line rule from docs/spec/02-structure.md. Prose rots, a red check does not.
 //
 // Locale dictionaries and type declarations are exempt: they are data and generated
 // surface, and splitting them by line count would make them harder to read, not easier.

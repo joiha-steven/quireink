@@ -150,7 +150,8 @@ quire user create --username <username> --email <email>
 quire user set-password --username <username>
 ```
 
-Implemented as `bun run user <create|set-password|list>` (`scripts/user.ts`).
+Implemented as `bun run user <create|set-password|reset-2fa|list>` (`scripts/user.ts`;
+`reset-2fa` joined the three the spec named, for the owner who lost the phone).
 
 The password is read from stdin, never from an argument, so it does not land in shell
 history. On a TTY it is read in raw mode with no echo; when stdin is a pipe it is read once

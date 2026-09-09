@@ -2,7 +2,7 @@
 // than by prose nobody re-reads. See docs/README.md for the layout itself, and ADR 0010
 // for why it exists.
 //
-// Six rules, because the messes they catch are the ones this repository actually had:
+// Seven rules, because the messes they catch are the ones this repository actually had:
 //   1. No broken relative link between markdown files. Moving a doc used to leave dangling
 //      links in five other files and nothing noticed. That is precisely what the reshuffle
 //      that produced this file did to forty of them.
@@ -12,11 +12,12 @@
 //      library; it was 275 lines of restated rules before this check existed.
 //   4. Nothing in docs/ carries a date in its filename. A dated file is a snapshot, and
 //      snapshots left this repository with `state/` (ADR 0017).
-//   5. No markdown file over 700 lines, CHANGELOG excepted (append-only by design).
+//   5. No markdown file over 400 lines, CHANGELOG excepted (append-only by design).
 //   6. A repository path written as code in a LIVE document exists. Rule 1 only sees links
 //      between markdown files, so CLAUDE.md's debug router spent months pointing at two
 //      source files that were not there, and the self-hosting guide documented a migration
 //      command deleted a release earlier. Both were found by reading, not by a check.
+//   7. The version, everywhere it is written down, is the one in package.json.
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 
@@ -25,7 +26,8 @@ const CLAUDE_MD_MAX = 120
 // 400, down from 700 on 2026-08-03. The old cap was reached by `docs/features.md`, which sat
 // at exactly 700 for weeks: the next feature line would have broken the build for whoever
 // happened to add it. Both it and the parity inventory are now directories of files by area,
-// and the largest document left is 318 lines. A file at the cap gets split, not squeezed.
+// and the largest document left was 318 lines; several sit at 399 now. A file at the cap
+// gets split, not squeezed.
 const FILE_MAX = 400
 
 // `.claude/skills` and not `.claude`: the skills ship with the repository and are read by
@@ -144,10 +146,11 @@ const RECORDS = (p: string) =>
 // Paths a live document names BECAUSE they are gone. Listed with the reason, the same way
 // `check:routes` lists each public write route: an exception on the record is a decision,
 // an exception in someone's head is an omission.
-const GONE: Record<string, string> = {
-  'scripts/import-v1.ts': 'removed with the frozen tree (ADR 0019); self-host.md says so explicitly',
-  'scripts/subset-font-axes.py': 'never in this tree; performance.md says so explicitly',
-}
+//
+// Empty since 2026-09-10: the two paths it carried (`scripts/import-v1.ts`, removed with the
+// frozen tree, and `scripts/subset-font-axes.py`, never in this tree) are now named only by
+// records, which this rule skips. The map stays so the next exception is a line here.
+const GONE: Record<string, string> = {}
 
 const REPO_PATH = /`((?:src|scripts|golden|docs)\/[A-Za-z0-9._/-]*[A-Za-z0-9._/-])`/g
 
@@ -165,7 +168,7 @@ for (const file of files) {
 
 // 7. The version, everywhere it is written down, is the version in package.json.
 //
-// The release checklist's step one is bumping FOUR tracked places, and
+// The release checklist's step one is bumping SEVEN tracked places, and
 // `docs/conventions/releases.md` records the number going out inconsistent THREE times.
 // A checklist that has failed three times is not a checklist problem, it is a missing
 // guard — the same lesson as every other file in this directory. The chip is the line

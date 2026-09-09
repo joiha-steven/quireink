@@ -35,10 +35,10 @@ src/
     schema.sql          embedded, applied at boot
     schema-analytics.sql
     migrations.sql      one file per database (+ migrations-analytics.sql), not a directory
-  import/               WordPress WXR parsing, for the admin's import page
+  import/               WordPress WXR parsing, for the admin's import page; ghost.ts and archive.ts joined it later (noted 2026-09-10)
   admin/                the React SPA, ported from the frozen src/components/admin
   assets/
-    js/                 core, post, login, book-mode, comment-thread, sw (scripts/build-assets.ts)
+    js/                 core, post, login, book-mode, comment-thread, sw, and since ADR 0043 reader-pen (scripts/build-assets.ts)
     static/             fonts and icons
   i18n/                 dates and the locale table; the 11 languages live in locales/ at the root
 scripts/                build, checks/, ops/, user.ts, drive.ts, shot.ts
@@ -106,7 +106,8 @@ needed:
 `/.well-known/*`, `/api/md/:slug`. Server-rendered HTML built as strings, not JSX.
 
 **Admin (`src/admin`):** one route, `/admin/*`, serving the embedded SPA shell. Routing
-inside it stays client-side. 13 pages, unchanged.
+inside it stays client-side. 13 pages, unchanged. (15 files in `src/admin/pages/` by
+2026-09-10: the assistant, ADR 0040, and the notebook editor, ADR 0044, came later.)
 
 **API:** the existing routes, same paths, same shapes, registered in `src/web/` beside
 the views rather than in a directory of their own. Split into two router groups:

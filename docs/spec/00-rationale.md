@@ -57,7 +57,8 @@ documents: append, never renumber.**
 1. **Google Drive backup is removed from the application.** Removes OAuth, refresh-token
    storage, the in-app destructive restore and ~730 lines. Backup became an operational
    concern instead: an owner-triggered export, scheduled on-disk snapshots, and an
-   off-server copy to R2 written by cron — the three in [`../backups.md`](../backups.md).
+   off-server copy to R2 written by cron — the three in [`../backups.md`](../backups.md)
+   (four since ADR 0035 added the built-in S3 shipping; the file counts them).
    ⚠️ **This entry said "replaced by litestream to R2, continuous point-in-time
    replication" until 2026-08-18, and litestream was never adopted.** It came from the
    retired Go plan ([ADR 0004](../decisions/0004-rewrite-in-go-on-sqlite.md)) and outlived

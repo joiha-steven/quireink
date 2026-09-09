@@ -1,12 +1,12 @@
 # Docs & releases — keep current
 
-On any behavior change, update the matching doc in the SAME change (Working principle #3):
+On any behavior change, update the matching doc in the SAME change:
 - **CLAUDE.md** = a router, and nothing else. **`docs/`** = how it works now, one rule in one
   file. **`docs/decisions/`** = why, append-only. **CHANGELOG.md** = one entry per user-facing
   change. **README.md** = setup + features. Direction, dated snapshots and the worklog are
   **not in this repository** ([ADR 0017](../decisions/0017-move-state-and-instance-config-private.md)).
-- **README is the canonical install/usage doc — keep it current.** Its **two install paths**
-  (1️⃣ do-it-yourself, 2️⃣ hand-to-an-AI-agent) + the **MCP "let an agent write & publish"** section
+- **README is the canonical install/usage doc — keep it current.** Its **Install** section
+  (the five places a blog can live, the one-command path and the hand-to-an-agent path) + the **MCP "let an agent write & publish"** section
   + the **env-var table** must be updated in the SAME change whenever setup/deploy/env/auth/MCP/backup
   behavior changes (new/renamed env var, a new owner setup step, a changed redirect URI, etc.).
   Never let the README drift from how the app is actually installed and run.
@@ -35,12 +35,13 @@ On any behavior change, update the matching doc in the SAME change (Working prin
 - **Cutting a release** (only when asked): `bun run check:all` and `bun run build` both exit 0
   (there is no binary — [ADR 0022](../decisions/0022-ship-from-source-not-a-compiled-binary.md)); the CHANGELOG entry is written and dated; push `main`; then
   `gh release create v<version> --title "v<version> — <tagline>" --notes-file <file>`.
-  The version lives in exactly **six** tracked places — `package.json`, the version chip
+  The version lives in exactly **seven** tracked places — `package.json`, the version chip
   right under the wordmark at the top of **both** READMEs (a line that is just `` `<version>` ``
   — the text title left when the wordmark image arrived, 2026-08-27), this line, and
   `server.json`, the manifest the MCP registry publishes from (added 2026-08-30, found two
   releases behind at `2.2.1` because nothing had ever named it), and the image pin in
-  `deploy/kubernetes/statefulset.yaml` (the one manifest that pins an exact tag) — plus
+  `deploy/kubernetes/statefulset.yaml` (the one manifest that pins an exact tag) and the tag
+  table in `docs/dockerhub-overview.md` — plus
   the CHANGELOG entry heading and each README's release-note paragraph, which is rewritten
   per release anyway.
   This line has lagged the product three times; `grep -rn '<old>' package.json server.json README.md README.vi.md docs/conventions/releases.md`

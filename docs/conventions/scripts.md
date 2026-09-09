@@ -1,8 +1,8 @@
 # Scripts — `scripts/`
 
-`bun scripts/<name>.ts` — idempotent. Every one of them is a `package.json` script too, and
-that is the name to use: `bun run build:assets`, `bun run check:all`, `bun run user`,
-`bun run shot`, `bun run drive`. Node is not in the toolchain
+`bun scripts/<name>.ts` — idempotent. The ones run by hand day to day are `package.json`
+scripts too, and that is the name to use: `bun run build:assets`, `bun run check:all`,
+`bun run user`, `bun run shot`, `bun run drive`; the rest are run by path. Node is not in the toolchain
 ([ADR 0005](../decisions/0005-rewrite-in-bun-hono-sqlite.md)).
 
 - **`install.sh` sits at the repository root, and is shell rather than `bun scripts/…`,**
