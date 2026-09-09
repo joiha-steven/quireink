@@ -79,6 +79,10 @@ describe('reads', () => {
 describe('sweepActivityLog', () => {
   const put = (action: string, at: number) =>
     db().run(`insert into activity_log (at, action, detail) values (?, ?, '')`, [at, action])
+  // Twenty thousand rows one autocommit at a time is a disk sync per row: 9 s on a CI
+  // runner, and the test timed out there while passing on a laptop's SSD. One transaction.
+  const putMany = (action: string, from: number, n: number) =>
+    db().transaction(() => { for (let i = 0; i < n; i++) put(action, from + i) })()
 
   it('drops what is older than the window and keeps the rest', () => {
     const now = Date.now()
@@ -94,7 +98,7 @@ describe('sweepActivityLog', () => {
     // grows without bound and what says the same thing after the first hundred.
     const now = Date.now()
     put('post.create', now - 9000) // the oldest row in the table, and the one to keep
-    for (let i = 0; i < ACTIVITY_RETENTION.ceiling + 50; i++) put('auth.login.failed', now - 8000 + i)
+    putMany('auth.login.failed', now - 8000, ACTIVITY_RETENTION.ceiling + 50)
 
     expect(sweepActivityLog(now)).toBe(51)
     expect(one<{ n: number }>(`select count(*) as n from activity_log where action = 'post.create'`)?.n).toBe(1)
@@ -103,7 +107,7 @@ describe('sweepActivityLog', () => {
 
   it('falls back to the oldest of anything once the refusals are gone', () => {
     const now = Date.now()
-    for (let i = 0; i < ACTIVITY_RETENTION.ceiling + 5; i++) put('post.update', now - 8000 + i)
+    putMany('post.update', now - 8000, ACTIVITY_RETENTION.ceiling + 5)
     expect(sweepActivityLog(now)).toBe(5)
     expect(one<{ n: number }>(`select count(*) as n from activity_log`)?.n).toBe(ACTIVITY_RETENTION.ceiling)
   })
