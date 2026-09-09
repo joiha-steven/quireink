@@ -36,6 +36,7 @@ import { useWritingItems, type WriteKind, type WriteNeeds, type WriteSort, type 
 import { Marked } from './Marked'
 import { SHEET_TOOL, SHEET_TOOL_DANGER } from './sheet'
 import { StatusLine } from './StatusLine'
+import { pieceAtPath } from './listed'
 
 type ContentView = {
   posts: Post[]
@@ -67,6 +68,7 @@ function Rows({
   const arrived = useSearchParams().get('needs')
   const [needs, setNeeds] = useState<WriteNeeds>(arrived === 'excerpt' || arrived === 'image' ? arrived : null)
   const { shown, bodyHits } = useWritingItems(posts, pages, notes, query, kind, status, sort, needs)
+  const openPiece = typeof window === 'undefined' ? null : pieceAtPath(window.location.pathname)
   // Selection is a MODE, not a permanent control on every row. A trash icon that lives on
   // the row sits a few pixels from the title you click dozens of times a day, and it has to
   // appear on hover to stay out of the way — which on a touch screen means it never appears
@@ -245,7 +247,9 @@ function Rows({
             // The open piece is NOT marked while selecting. The lifted background means "this
             // one", and in this mode "this one" is what the checkbox says; two meanings for one
             // background is how a row nobody ticked comes to read as ticked.
-            const active = !picking && it.slug === activeSlug
+            // The bar first, the router second (`pieceAtPath` says why they differ).
+            const open = openPiece ? openPiece.kind === it.kind && openPiece.slug === it.slug : it.slug === activeSlug
+            const active = !picking && open
             const ticked = chosen.has(key)
             const drafty = it.status !== 'published'
             // Published with a date still ahead: out of your hands, not out of the door.

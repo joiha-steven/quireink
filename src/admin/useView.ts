@@ -68,6 +68,24 @@ export function forgetView(name: ViewName, query = ''): void {
   lastSeen.delete(`${name}${query}`)
 }
 
+/** Every mounted reader of a view, by key, so a screen that changed the truth can say so. */
+const readers = new Map<string, Set<() => void>>()
+
+/**
+ * Forget one view AND refetch it everywhere it is on screen right now.
+ *
+ * `forgetView` is for the NEXT open; this is for the reader that is already open. The write
+ * pane draws the content view beside the editor, and a save bumps no epoch (see above), so
+ * the pane went on showing the list from before: a first save put the new piece nowhere,
+ * a rename left its row under the old name, and a title typed and saved did not reach the
+ * column standing beside it. The editor is not remounted by this — nothing here touches the
+ * epoch — and a reader whose data is already on screen keeps it until the new answer lands.
+ */
+export function touchView(name: ViewName, query = ''): void {
+  forgetView(name, query)
+  for (const reload of readers.get(`${name}${query}`) ?? []) reload()
+}
+
 export function useView<N extends ViewName>(name: N, query = ''): ViewState<ViewPayloads[N]> {
   type T = ViewPayloads[N]
   const epoch = useRefreshEpoch()
@@ -120,5 +138,18 @@ export function useView<N extends ViewName>(name: N, query = ''): ViewState<View
   }, [name, query, epoch, tick])
 
   const reload = useCallback(() => setTick((t) => t + 1), [])
+
+  // Listed while mounted, so `touchView` can reach this reader.
+  useEffect(() => {
+    const key = `${name}${query}`
+    const set = readers.get(key) ?? new Set<() => void>()
+    set.add(reload)
+    readers.set(key, set)
+    return () => {
+      set.delete(reload)
+      if (set.size === 0) readers.delete(key)
+    }
+  }, [name, query, reload])
+
   return { data, error, loading, reload }
 }

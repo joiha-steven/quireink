@@ -21,6 +21,7 @@ import { readSnapshot, saveStatusLine, useReopenedNotice, useStickyOffset, useUn
 import { useDraftSafety } from './serverDraft'
 import { useAdminT } from './I18nProvider'
 import { forgetView } from '@/admin/useView'
+import { useListedRow } from './listed'
 
 type Props = {
   initial?: PostWithContent
@@ -71,6 +72,8 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
 
   const slugTouched = useRef(Boolean(initial?.slug))
   const currentSlug = useRef<string | null>(initial?.slug ?? null)
+  // What the write pane's row shows of this piece; a save that changes it refetches the pane.
+  const listed = useListedRow(initial ? [initial.slug, initial.title, initial.status, initial.excerpt ?? ''] : null)
   const editorApi = useRef<EditorApi | null>(null)
   // Live editor content lives here (not in React state) so typing never
   // re-renders the form. Saves read editorApi.getMarkdown() for the latest text.
@@ -142,6 +145,7 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
         currentSlug.current = json.data.slug
         setSavedSlug(json.data.slug)
         setSavedAt(new Date().toISOString())
+        listed([json.data.slug, d.title, statusOverride ?? d.status, d.excerpt ?? ''])
         // ONLY IF NOTHING MOVED WHILE THE REQUEST WAS IN THE AIR. `content` was read before
         // the fetch, so marking the form clean over a sentence typed during it turned off
         // the exit warning and dropped the recovery copies for exactly that sentence.

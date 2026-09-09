@@ -19,6 +19,7 @@ import { readSnapshot, saveStatusLine, useReopenedNotice, useStickyOffset, useUn
 import { useDraftSafety } from './serverDraft'
 import { useAdminT } from './I18nProvider'
 import { forgetView } from '@/admin/useView'
+import { useListedRow } from './listed'
 
 type Props = {
   initial?: PageWithContent
@@ -78,6 +79,7 @@ export function PageForm({ initial, contentWidth, keySound, autosaveSeconds, aut
 
   const slugTouched = useRef(Boolean(initial?.slug))
   const currentSlug = useRef<string | null>(initial?.slug ?? null)
+  const listed = useListedRow(initial ? [initial.slug, initial.title, initial.status] : null)
   const editorApi = useRef<EditorApi | null>(null)
   // Live editor content lives here (not in React state) so typing never
   // re-renders the form. Saves read editorApi.getMarkdown() for the latest text.
@@ -136,6 +138,7 @@ export function PageForm({ initial, contentWidth, keySound, autosaveSeconds, aut
         currentSlug.current = json.data.slug
         setSavedSlug(json.data.slug)
         setSavedAt(new Date().toISOString())
+        listed([json.data.slug, d.title, statusOverride ?? d.status])
         // Only if nothing moved while the request was in the air, and the slug stops being
         // derived from the title once there is a row. Both reasons are on `PostForm`.
         if ((editorApi.current?.getMarkdown() ?? contentRef.current) === content) {
