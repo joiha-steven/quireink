@@ -20,6 +20,8 @@ import inter_latin from '@/assets/static/fonts/inter-latin.woff2' with { type: '
 import inter_latin_ext from '@/assets/static/fonts/inter-latin-ext.woff2' with { type: 'file' }
 import inter_vietnamese from '@/assets/static/fonts/inter-vietnamese.woff2' with { type: 'file' }
 import jetbrainsmono_latin from '@/assets/static/fonts/jetbrainsmono-latin.woff2' with { type: 'file' }
+// The pen's numerals for a numbered list: ten digits and a full stop of Kalam, 1.4 KB.
+import kalam_digits from '@/assets/static/fonts/kalam-digits.woff2' with { type: 'file' }
 import jetbrainsmono_latin_ext from '@/assets/static/fonts/jetbrainsmono-latin-ext.woff2' with { type: 'file' }
 import jetbrainsmono_vietnamese from '@/assets/static/fonts/jetbrainsmono-vietnamese.woff2' with { type: 'file' }
 import literata_latin from '@/assets/static/fonts/literata-latin.woff2' with { type: 'file' }
@@ -46,6 +48,7 @@ const FILES: Record<string, string> = {
   '/fonts/inter-latin-ext.woff2': inter_latin_ext,
   '/fonts/inter-vietnamese.woff2': inter_vietnamese,
   '/fonts/jetbrainsmono-latin.woff2': jetbrainsmono_latin,
+  '/fonts/kalam-digits.woff2': kalam_digits,
   '/fonts/jetbrainsmono-latin-ext.woff2': jetbrainsmono_latin_ext,
   '/fonts/jetbrainsmono-vietnamese.woff2': jetbrainsmono_vietnamese,
   '/fonts/literata-latin.woff2': literata_latin,

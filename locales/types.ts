@@ -1015,6 +1015,8 @@ export type AdminStrings = {
   featPenUnderlineDesc: string
   featPenRing: string
   featPenRingDesc: string
+  featPenLists: string
+  featPenListsDesc: string
   featBookText: string
   featBookTextDesc: string
   featBookMode: string

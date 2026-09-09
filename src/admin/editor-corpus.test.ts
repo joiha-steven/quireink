@@ -110,7 +110,7 @@ const MAY_DIFFER: Record<string, { behaviour: string; why: string }> = {
 
   // ── One link notation for another, and one list becoming loose.
   'reference-links.md': { behaviour: 'link form', why: '[a][ref] is written back inline as [a](url); the link and its label survive, the definition list goes' },
-  'task-lists.md': { behaviour: 'list looseness', why: 'items gain the blank line between them that makes a list loose, so each gets a <p>' },
+  'task-lists.md': { behaviour: 'list looseness', why: 'items gain the blank line between them that makes a list loose, so each gets a <p> (and, since 2026-09-09, the class the renderer stamps on a task item)' },
 }
 
 /**

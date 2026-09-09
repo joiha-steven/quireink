@@ -766,6 +766,8 @@ const it = {
   featPenUnderlineDesc: '++testo++ è tracciato come un vero segno di penna — inclinazione, pressione e tutto. Spento diventa la sottolineatura dritta del browser.',
   featPenRing: 'Cerchio a penna',
   featPenRingDesc: '@@parola@@ cerchia la parola in penna rossa (o in un inchiostro con nome). Spento, le parole restano nude.',
+  featPenLists: 'Elenchi a mano',
+  featPenListsDesc: 'I punti elenco diventano punti d\'inchiostro e trattini, gli elenchi numerati contano in cifre scritte a mano. Disattivato ripristina punto e numero del browser.',
   featBookText: 'Testo da libro',
   featBookTextDesc: 'Rientra la prima riga di ogni paragrafo invece di lasciare una riga vuota, e giustifica entrambi i margini sugli schermi larghi.',
   featBookMode: 'Modalità libro',

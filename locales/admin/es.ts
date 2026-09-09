@@ -766,6 +766,8 @@ const es = {
   featPenUnderlineDesc: '++texto++ se dibuja como un trazo real de bolígrafo — inclinación, presión y todo. Apagado usa el subrayado recto del navegador.',
   featPenRing: 'Círculo de bolígrafo',
   featPenRingDesc: '@@palabra@@ rodea la palabra con bolígrafo rojo (o una tinta con nombre). Apagado deja las palabras tal cual.',
+  featPenLists: 'Listas a mano',
+  featPenListsDesc: 'Las viñetas se convierten en puntos de tinta y guiones, y las listas numeradas cuentan con cifras manuscritas. Desactivado restaura el punto y el número del navegador.',
   featBookText: 'Texto de libro',
   featBookTextDesc: 'Sangra la primera línea de cada párrafo en lugar de dejar una línea en blanco, y justifica ambos márgenes en pantallas anchas.',
   featBookMode: 'Modo libro',

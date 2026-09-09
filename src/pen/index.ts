@@ -22,6 +22,8 @@
 //   palette.ts   the owner's overrides resolved against the built-ins, and the signature
 //                that says whether anything was chosen at all.
 //   ink.css.ts   the two sheets and the link rule, in whichever inks a site writes with.
+//   lists.css.ts the marks at the head of a list item — dots, dashes, numerals — and the
+//                off path that gives the browser's back (`dies-lists.ts` grows them).
 //
 // The contract with the page is three elements and two sheets: `<mark data-pen>` (with
 // `data-ink` for a colour and `data-form="o"` for a ring), `<u data-pen>`, and the CSS that
@@ -49,3 +51,5 @@ export type { InkPalette, InkSettings } from '@/pen/palette'
 export {
   inkHighlightCss, inkLinesCss, INK_HIGHLIGHT_CSS, INK_LINES_CSS, INK_CSS, LINK_INK_CSS,
 } from '@/pen/ink.css'
+export { LISTS_INK_CSS, LISTS_PLAIN_CSS } from '@/pen/lists.css'
+export { DOT_MASKS, DASH_MASKS, NUMERAL_LEANS } from '@/pen/dies-lists'

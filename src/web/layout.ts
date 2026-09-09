@@ -18,6 +18,7 @@ import { typographyToCss, fontToCss, shapeToCss, tableToCss, resolveAppIcon, get
 import { singleRailCss } from '@/render/rail-css'
 import { fontFaceCss, MONO_TRACKING } from '@/render/font-faces'
 import { penSheetsFor } from '@/web/assets'
+import { LISTS_PLAIN_CSS } from '@/pen/lists.css'
 /**
  * THE ONE PLACE THE SOFTWARE NAMES ITSELF THAT AN OWNER CANNOT EDIT AWAY.
  *
@@ -131,6 +132,9 @@ function penGesturesCss(f: FeatureSettings): string {
     parts.push('.prose mark[data-form=o],.prose mark[data-form=o][data-pen]'
       + '{background-image:none;padding:0;margin:0}')
   }
+  // The list markers: dots, dashes and numerals in a hand, on by default. Off gives the
+  // browser's disc and decimal back, and this wins the tie with the prose sheet by order.
+  if (!f.penLists) parts.push(LISTS_PLAIN_CSS)
   return parts.join('')
 }
 

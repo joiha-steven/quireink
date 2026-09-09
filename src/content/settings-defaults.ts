@@ -55,6 +55,7 @@ export const DEFAULT_FEATURES: FeatureSettings = {
   deck: true,
   penUnderline: true,
   penRing: true,
+  penLists: true,
   bookText: false,
   bookMode: true,
   readNext: true,

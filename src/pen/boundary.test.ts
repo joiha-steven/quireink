@@ -35,7 +35,7 @@ describe('the pen module boundary', () => {
 
   it('has a door, and the door names every layer', () => {
     const index = readFileSync(join(DIR, 'index.ts'), 'utf8')
-    for (const layer of ['grammar', 'marked', 'pigments', 'derive', 'palette', 'ink.css']) {
+    for (const layer of ['grammar', 'marked', 'pigments', 'derive', 'palette', 'ink.css', 'lists.css']) {
       expect(index).toContain(`from '@/pen/${layer}'`)
     }
   })

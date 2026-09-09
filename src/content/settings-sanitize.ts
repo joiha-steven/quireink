@@ -119,6 +119,7 @@ export function sanitizeFeatures(input: unknown, fallback: FeatureSettings): Fea
     bookText: bool(o.bookText, fallback.bookText),
     penUnderline: bool(o.penUnderline, fallback.penUnderline),
     penRing: bool(o.penRing, fallback.penRing),
+    penLists: bool(o.penLists, fallback.penLists),
     bookMode: bool(o.bookMode, fallback.bookMode),
     readNext: bool(o.readNext, fallback.readNext),
     resume: bool(o.resume, fallback.resume),

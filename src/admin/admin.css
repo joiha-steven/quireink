@@ -309,6 +309,22 @@ body {
   pointer-events: none;
 }
 
+/* A task item in the editor: the box and the words on ONE line. TipTap prints a <label>
+   and a <div> as two blocks and nothing had ever laid them side by side, so the box sat
+   above its words — seen once the pen's list marks took the disc away (2026-09-09). */
+.ProseMirror ul[data-type="taskList"] > li {
+  display: flex;
+  gap: 0.5em;
+  align-items: baseline;
+}
+.ProseMirror ul[data-type="taskList"] > li > label {
+  flex: none;
+}
+.ProseMirror ul[data-type="taskList"] > li > div {
+  flex: 1;
+  min-width: 0;
+}
+
 /* PAPER, not a dashboard canvas. Isolated from the public palette tokens either way.
 
    This was #f5f5f5 — a true neutral gray — with white cards on it. That pairing is the shape

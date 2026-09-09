@@ -767,6 +767,8 @@ const pt = {
   featPenUnderlineDesc: '++texto++ é desenhado como um traço de caneta de verdade — inclinação, pressão e tudo. Desligado, vira o sublinhado reto do navegador.',
   featPenRing: 'Círculo de caneta',
   featPenRingDesc: '@@palavra@@ circula a palavra em caneta vermelha (ou numa tinta nomeada). Desligado, as palavras ficam como estão.',
+  featPenLists: 'Listas à mão',
+  featPenListsDesc: 'Os marcadores viram pontos de tinta e traços, e as listas numeradas contam em algarismos manuscritos. Desligado restaura o ponto e o número do navegador.',
   featBookText: 'Texto de livro',
   featBookTextDesc: 'Recuo na primeira linha de cada parágrafo em vez de linha em branco, e justificação das duas margens em telas largas.',
   featBookMode: 'Modo livro',

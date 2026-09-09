@@ -766,6 +766,8 @@ const ko = {
   featPenUnderlineDesc: '++텍스트++ 를 실제 펜 선처럼 그립니다. 끄면 브라우저의 곧은 밑줄로 바뀝니다.',
   featPenRing: '볼펜 동그라미',
   featPenRingDesc: '@@단어@@ 를 빨간 볼펜으로 동그라미 칩니다(잉크 지정 가능). 끄면 꾸밈 없이 표시됩니다.',
+  featPenLists: '손글씨 목록',
+  featPenListsDesc: '글머리 기호는 잉크 점과 짧은 줄로, 번호 목록은 손글씨 숫자로 표시됩니다. 끄면 브라우저 기본 점과 숫자로 돌아갑니다.',
   featBookText: '책 조판',
   featBookTextDesc: '문단 사이를 비우는 대신 첫 줄을 들여쓰고, 넓은 화면에서는 양쪽 정렬합니다.',
   featBookMode: '책 읽기 모드',

@@ -766,6 +766,8 @@ const ja = {
   featPenUnderlineDesc: '++テキスト++ を本物のペンの線として描きます。オフにするとブラウザーの直線の下線になります。',
   featPenRing: 'ボールペンの丸囲み',
   featPenRingDesc: '@@単語@@ を赤ボールペンで丸く囲みます（色指定も可）。オフでは装飾されません。',
+  featPenLists: '手書きのリスト',
+  featPenListsDesc: '箇条書きの点はインクの点と短い線に、番号付きリストは手書き数字になります。オフにするとブラウザ標準の点と数字に戻ります。',
   featBookText: '書籍組み',
   featBookTextDesc: '段落の間を空けずに一行目を字下げし、広い画面では両端揃えにします。',
   featBookMode: 'ブック表示モード',

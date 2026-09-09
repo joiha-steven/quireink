@@ -121,7 +121,7 @@ Hard invariants (also in [`conventions/type.md`](./conventions/type.md)):
   Files in `src/assets/static/fonts/`, served at `/fonts/*` by `src/web/static.ts`, subset
   `-latin` / `-latin-ext` / `-vietnamese`.
 - **Never preload `latin-ext` or a specific weight.** Built-in reading fonts are variable
-  (one file per subset carries every weight); `latin-ext` glyphs are rare and load on demand.
+  (one file per subset carries every weight); `latin-ext` glyphs are rare and load on demand. The pen's `kalam-digits` (numbered lists) is never preloaded either: 1.4 KB, fetched only when a numeral renders.
 - **Preload the chrome font only when it is a self-hosted family of its own** (`isChromeFontId`
   decides); `chromeFont: 'reading'` preloads nothing extra. The table above has the
   measurement, and the trap: `getChromeFont` falls back to Inter for an unknown id, which is

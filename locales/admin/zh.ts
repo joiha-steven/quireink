@@ -766,6 +766,8 @@ const zh = {
   featPenUnderlineDesc: '++文字++ 会画成真实的笔线——有倾斜和笔压。关闭后改用浏览器的直线下划线。',
   featPenRing: '圆珠笔圈注',
   featPenRingDesc: '@@词语@@ 用红色圆珠笔圈出（也可指定颜色）。关闭后文字保持原样。',
+  featPenLists: '手写列表',
+  featPenListsDesc: '项目符号变为墨点和短横线，编号列表使用手写数字。关闭后恢复浏览器默认的圆点和数字。',
   featBookText: '书籍排版',
   featBookTextDesc: '每段首行缩进而非空行分段，宽屏时两端对齐。',
   featBookMode: '书籍阅读模式',

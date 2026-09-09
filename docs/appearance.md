@@ -38,6 +38,7 @@ not cover.
 | Motion | Account → This admin | Every transition, entrance and smooth scroll, on the site, the sign-in page and the admin alike. A reader's own reduced-motion preference wins either way ([conventions/motion.md](conventions/motion.md)) |
 | IDE chrome | Account → This admin | Dresses the furniture around your words as source code. Off by default; it is a strong taste and it is one click either way |
 | Footer | Home & menu → Footer | Your own line, with `{year}` and `{title}` tokens |
+| **Hand-drawn lists** | Posts → What is on a post | Bullets become ink dots and level dashes, and a numbered list counts in a handwritten numeral (Kalam, ten digits, 1.4 KB). **On by default.** Off restores the browser's disc and decimal; a list that starts past 1 and a task list keep the browser's marker either way |
 | Feature switches | Posts → What is on a post | Table of contents, progress bar, book mode, related posts, reading time, the scroll fade, and a dozen more |
 
 **Two of those read differently on a phone, and neither is a setting.** The reading-progress

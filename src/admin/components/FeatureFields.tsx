@@ -73,6 +73,7 @@ export function PostBodyFields({ features, onChange }: Omit<Props, 'relatedCount
     { key: 'resume', label: t.featResume, desc: t.featResumeDesc },
     { key: 'penUnderline', label: t.featPenUnderline, desc: t.featPenUnderlineDesc },
     { key: 'penRing', label: t.featPenRing, desc: t.featPenRingDesc },
+    { key: 'penLists', label: t.featPenLists, desc: t.featPenListsDesc },
     { key: 'bookText', label: t.featBookText, desc: t.featBookTextDesc },
     { key: 'bookMode', label: t.featBookMode, desc: t.featBookModeDesc },
   ]

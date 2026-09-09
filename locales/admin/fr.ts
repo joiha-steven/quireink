@@ -766,6 +766,8 @@ const fr = {
   featPenUnderlineDesc: '++texte++ est tracé comme un vrai trait de stylo — inclinaison, pression et tout. Désactivé, c’est le soulignement droit du navigateur.',
   featPenRing: 'Cercle au stylo bille',
   featPenRingDesc: '@@mot@@ entoure le mot au stylo bille rouge (ou d’une encre nommée). Désactivé, les mots restent nus.',
+  featPenLists: 'Listes à la main',
+  featPenListsDesc: 'Les puces deviennent des points d\'encre et des tirets, les listes numérotées comptent en chiffres manuscrits. Désactivé rétablit la puce et le chiffre du navigateur.',
   featBookText: 'Texte de livre',
   featBookTextDesc: 'Renfonce la première ligne de chaque paragraphe au lieu de sauter une ligne, et justifie les deux marges sur grand écran.',
   featBookMode: 'Mode livre',

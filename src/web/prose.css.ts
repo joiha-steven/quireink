@@ -10,6 +10,7 @@
 // `check:css-literal` enforces that.
 
 import { LINK_INK_CSS } from '@/pen/ink.css'
+import { LISTS_INK_CSS } from '@/pen/lists.css'
 import { MATH_CSS } from '@/web/math.css'
 
 export const PROSE_CSS = `
@@ -59,8 +60,8 @@ export const PROSE_CSS = `
    headings, so a preset can dial it back through --reading-bold. */
 .prose strong,.prose b{font-weight:var(--reading-bold, 700)}
 ${LINK_INK_CSS}
-.prose ul{list-style:disc;padding-left:1.4em}
-.prose ol{list-style:decimal;padding-left:1.4em}
+/* The list markers are the pen's (dots, dashes, numerals in a hand): pen/lists.css.ts. */
+${LISTS_INK_CSS}
 .prose li{margin:calc(var(--sp) * .25) 0}
 .prose blockquote{border-left:2px solid var(--c-rule);margin-left:0;
   padding-left:var(--sp);color:var(--c-meta)}

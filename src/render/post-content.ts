@@ -118,6 +118,22 @@ marked.use({
 const CALLOUT_LABELS: Record<string, string> = {
   note: 'Note', tip: 'Tip', warning: 'Warning', important: 'Important', caution: 'Caution',
 }
+
+/**
+ * A GFM task item wears a class, so a stylesheet can tell it from a bullet.
+ *
+ * marked prints `<li><input disabled="" type="checkbox"> …` with nothing on the `<li>`
+ * itself, and the pen's list marks (`pen/lists.css.ts`) draw a dot before EVERY item of
+ * a `<ul>` — which put an ink dot beside every checkbox. A `:has()` selector would tell
+ * them apart without touching the markup, and is the one selector this site does not use:
+ * it has crashed WebKit. So the item says what it is. Golden: `task-lists` diverges from
+ * 1.x by this attribute and nothing else.
+ */
+function markTaskItems(html: string): string {
+  // A loose list wraps the item in a paragraph first; the checkbox is still what leads.
+  return html.replace(/<li>(<p>)?<input /g, '<li class="task">$1<input ')
+}
+
 function buildCallouts(html: string): string {
   return html.replace(/<blockquote>\s*([\s\S]*?)<\/blockquote>/g, (whole, inner: string) => {
     const m = inner.match(/^\s*<p>\s*\[!(\w+)\]/i)
@@ -245,7 +261,7 @@ export async function renderPostContent({
   // Pull footnote refs/defs out of the markdown FIRST (references become placeholders
   // that survive marked), then re-insert the <sup> links + list after rendering.
   const fn = prepareFootnotes(markdown)
-  const parsed = dedupeHeadingIds(wrapTables(buildVideos(groupGalleries(buildFigures(buildCallouts(await marked.parse(fn.markdown)), readyOriginals, imageDims)))))
+  const parsed = dedupeHeadingIds(wrapTables(buildVideos(groupGalleries(buildFigures(buildCallouts(markTaskItems(await marked.parse(fn.markdown))), readyOriginals, imageDims)))))
   const html = applyFootnotes(await highlightBlocks(parsed), fn.refs, fn.defs)
   writeRendered(key, html)
   return html

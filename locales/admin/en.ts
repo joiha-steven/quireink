@@ -766,6 +766,8 @@ const en = {
   featPenUnderlineDesc: '++text++ is drawn as a real pen line — tilt, pressure and all. Off swaps it for the browser\'s straight underline.',
   featPenRing: 'Ballpoint ring',
   featPenRingDesc: '@@word@@ circles the word in red ballpoint (or a named ink). Off leaves the words plain.',
+  featPenLists: 'Hand-drawn lists',
+  featPenListsDesc: 'Bullets become ink dots and level dashes, and a numbered list counts in a handwritten numeral. Off restores the browser\'s disc and decimal.',
   featBookText: 'Book text',
   featBookTextDesc: 'Indent the first line of each paragraph instead of leaving a blank line, and justify both margins on wide screens.',
   featBookMode: 'Book reading mode',

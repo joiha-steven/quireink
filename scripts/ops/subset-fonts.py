@@ -126,6 +126,9 @@ FAMILIES = {
     "plexmono-400": (f"{GF}/ibmplexmono/IBMPlexMono-Regular.ttf", MONO, None),
     "plexmono-600": (f"{GF}/ibmplexmono/IBMPlexMono-SemiBold.ttf", MONO, None),
     "jetbrainsmono": (f"{GF}/jetbrainsmono/JetBrainsMono%5Bwght%5D.ttf", MONO, "trim"),
+    # The pen's numerals for a numbered list (pen/lists.css.ts): ten digits and a full stop
+    # of a handwriting face, and nothing else -- 1.4 KB, fetched only when a numeral renders.
+    "kalam": (f"{GF}/kalam/Kalam-Regular.ttf", {"digits": "U+0030-0039,U+002E"}, None),
 }
 
 

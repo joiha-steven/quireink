@@ -766,6 +766,8 @@ const de = {
   featPenUnderlineDesc: '++Text++ wird als echte Stiftlinie gezeichnet. Aus: die gerade Browser-Unterstreichung.',
   featPenRing: 'Kugelschreiber-Kreis',
   featPenRingDesc: '@@Wort@@ umkreist das Wort mit rotem Kugelschreiber. Aus: der Text bleibt schlicht.',
+  featPenLists: 'Handgezeichnete Listen',
+  featPenListsDesc: 'Aufzählungspunkte werden zu Tintenpunkten und Strichen, nummerierte Listen zählen in handschriftlichen Ziffern. Aus stellt Punkt und Zahl des Browsers wieder her.',
   featBookText: 'Buchsatz',
   featBookTextDesc: 'Erste Zeile jedes Absatzes einrücken statt Leerzeile, und auf breiten Bildschirmen Blocksatz.',
   featBookMode: 'Buch-Lesemodus',

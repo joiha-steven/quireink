@@ -95,6 +95,11 @@ const DIVERGED: Record<string, { behaviour: string; why: string }> = {
   'gfm-table-pipes': { behaviour: 'table scope', why: 'th carries scope="col"; the table is wrapped to scroll' },
   'list-with-table': { behaviour: 'table scope', why: 'th carries scope="col"; the table is wrapped to scroll' },
   'mixed-everything': { behaviour: 'table scope', why: 'th carries scope="col"; the table is wrapped to scroll' },
+  // ── A task item says it is one (2026-09-09, with the pen's list marks — ADR 0042).
+  //    `class="task"` on the `<li>` round a GFM checkbox, from `markTaskItems` in
+  //    `post-content.ts`, so the stylesheet can keep its ink dot off an item that already
+  //    has a box. Three lines differ from 1.x by that attribute and nothing else.
+  'task-lists': { behaviour: 'task item', why: 'li carries class="task" round a checkbox' },
 }
 
 describe('golden: the deliberate divergences from 1.x', () => {

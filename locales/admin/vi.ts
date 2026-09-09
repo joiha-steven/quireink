@@ -766,6 +766,8 @@ const vi = {
   featPenUnderlineDesc: '++chữ++ được vẽ như nét bút thật — có nghiêng, có lực tay. Tắt thì thay bằng gạch dưới thẳng của trình duyệt.',
   featPenRing: 'Khoanh tròn bút bi',
   featPenRingDesc: '@@chữ@@ khoanh tròn chữ bằng bút bi đỏ (hoặc màu chỉ định). Tắt thì chữ hiển thị bình thường.',
+  featPenLists: 'Đầu dòng viết tay',
+  featPenListsDesc: 'Chấm đầu dòng thành chấm mực, cấp con thành gạch ngắn, danh sách đánh số dùng chữ số viết tay. Tắt thì về chấm tròn và số thường của trình duyệt.',
   featBookText: 'Dàn trang kiểu sách',
   featBookTextDesc: 'Thụt đầu dòng mỗi đoạn thay vì chừa dòng trống, và canh đều hai bên trên màn hình rộng.',
   featBookMode: 'Chế độ đọc sách',

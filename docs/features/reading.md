@@ -130,6 +130,11 @@
   grammar guards, same hash-dealt dies; the ring is two fixed-width caps plus a stretching middle
   so its end curves never flatten on a long word. Owner toggles `features.penUnderline` /
   `features.penRing` flip the CSS only — cached bodies never re-render. ADR 0026.
+- **Lists by the pen:** `src/pen/lists.css.ts` — bullets are ink dots and level dashes (masks painted
+  in `currentColor`, so one shape serves every palette), numbered lists count in a Kalam digit
+  subset (`/fonts/kalam-digits.woff2`, fetched only when a glyph needs it). A task item
+  (`li.task`, stamped by the renderer) and an `ol[start]` keep the browser's marker. Owner
+  toggle `features.penLists`, CSS only. ADR 0042.
 - **Mathematics:** `$$…$$` / `\[…\]` display, `$…$` / `\(…\)` inline. Temml renders LaTeX to
   **MathML at render time**, so a reader downloads no script, no sheet and no font for it. The TeX
   is never parsed as Markdown (`a_1` would become emphasis). `$…$` carries Pandoc's three guards
