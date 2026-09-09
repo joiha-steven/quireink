@@ -35,7 +35,7 @@ import { NOTE_TEXT } from './kit'
 import { useAdminT } from './I18nProvider'
 
 export function TrashLink({ kind, slug, onGone }: {
-  kind: 'post' | 'page'
+  kind: 'post' | 'page' | 'note'
   slug: string
   /** Called instead of routing away, so a caller that owns the screen can decide. */
   onGone?: () => void
@@ -50,14 +50,14 @@ export function TrashLink({ kind, slug, onGone }: {
     void fetch('/api/trash', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ kind: kind === 'post' ? 'posts' : 'pages', action: 'restore', ids: [slug] }),
+      body: JSON.stringify({ kind: `${kind}s`, action: 'restore', ids: [slug] }),
     }).then(() => router.refresh())
   }
 
   const move = async () => {
     setBusy(true)
     try {
-      const res = await fetch(`/api/${kind === 'post' ? 'posts' : 'pages'}/${encodeURIComponent(slug)}`, {
+      const res = await fetch(`/api/${kind}s/${encodeURIComponent(slug)}`, {
         method: 'DELETE',
       })
       // A failed delete must not navigate: leaving the editor would look like it worked.

@@ -56,6 +56,27 @@ export type PageWithContent = Page & {
   content: string
 }
 
+/**
+ * A note: written like a post, kept apart from the posts (ADR 0044). Its own table, its own
+ * URL space (`/notes/{slug}`), never in the post feed. The `source*` fields are what a CLIP
+ * carries — a passage kept from somewhere else — and are absent on a note the owner wrote.
+ */
+export type Note = {
+  title: string
+  slug: string
+  date: string // ISO 8601; a note has its own date, so a notebook reads in order
+  status: PostStatus
+  sourceUrl?: string // where a clipped passage came from
+  sourceTitle?: string // the title of that page, as it was when clipped
+  quote?: string // the passage itself, verbatim
+  updatedAt?: string // ISO 8601 of the last save
+  deletedAt?: string // ISO 8601; set only on trashed rows
+}
+
+export type NoteWithContent = Note & {
+  content: string
+}
+
 // One entry in media/_index.json.
 export type MediaItem = {
   url: string // ORIGINAL (uncompressed) — stored store-relative, absolute on read

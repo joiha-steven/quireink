@@ -69,6 +69,12 @@ const ko = {
   archiveMeta: '{site}의 모든 글을 연도별로.',
   archiveYears: '연도',
   archiveEmpty: '아카이브에 아직 아무것도 없습니다.',
+  // /notes: the owner's notebook (ADR 0044) — its heading, its description, its empty state,
+  // and the word before a clip's source.
+  notesTitle: '노트',
+  notesMeta: '{site}에 남긴 노트와 발췌.',
+  notesEmpty: '아직 노트가 없습니다.',
+  noteSourcePrefix: '출처',
   previewNotice: '미리보기: 이 페이지는 공개되지 않으며 색인되지 않습니다.',
   nlInvalid: '이메일 주소 형식이 아닙니다.',
   nlNoMail: '등록되었습니다. 이메일이 설정되지 않아 확인 메일을 보내지 못했습니다.',

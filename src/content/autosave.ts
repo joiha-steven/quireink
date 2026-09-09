@@ -23,10 +23,10 @@
 import { one, run } from '@/store/query'
 import { nowMs } from '@/store/db'
 
-export type AutosaveKind = 'post' | 'page'
+export type AutosaveKind = 'post' | 'page' | 'note'
 
 /** The table a kind lives in. A closed set, and the only identifier interpolated below. */
-const TABLE: Record<AutosaveKind, string> = { post: 'posts', page: 'pages' }
+const TABLE: Record<AutosaveKind, string> = { post: 'posts', page: 'pages', note: 'notes' }
 
 export type Autosave = { json: string; at: number }
 

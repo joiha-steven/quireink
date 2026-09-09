@@ -22,7 +22,7 @@ import { getSettings } from '@/content/settings'
  * out where that route is registered.
  */
 export const RESERVED_SLUGS: ReadonlySet<string> = new Set([
-  'admin', 'login', 'og', 'search', 'setup', 'uploads',
+  'admin', 'login', 'notes', 'og', 'search', 'setup', 'uploads',
 ])
 
 // Thrown by save* when a slug is already taken by a different post/page.

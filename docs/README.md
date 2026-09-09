@@ -24,6 +24,7 @@ copies of a rule means one is wrong within a month
 | [features/newsletter.md](features/newsletter.md) | Subscribers, broadcast, the send log, the double-send guard |
 | [features/comments.md](features/comments.md) | The tree, tombstones, the markdown subset, notifications |
 | [features/site.md](features/site.md) | Homepage mode and URL redirects |
+| [features/notes.md](features/notes.md) | The notebook: notes and clips, apart from the posts — reading, writing, API, MCP |
 | [conventions/](conventions/README.md) | One file per surface — [type](conventions/type.md) · [layout](conventions/layout.md) · [colour](conventions/colour.md) · [motion](conventions/motion.md) · [IDE chrome](conventions/ide-chrome.md) · [i18n](conventions/i18n.md) · [scripts](conventions/scripts.md) · [releases](conventions/releases.md) |
 | [performance.md](performance.md) | The resource-loading law: images, fonts, CSS split, island JS |
 | [delivery.md](delivery.md) | What the server does before it answers: the render cache, the switch, the CDN purge, compression |

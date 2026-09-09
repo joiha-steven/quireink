@@ -69,6 +69,12 @@ const zh = {
   archiveMeta: '{site} 的全部文章，按年份排列。',
   archiveYears: '年份',
   archiveEmpty: '归档中还没有内容。',
+  // /notes: the owner's notebook (ADR 0044) — its heading, its description, its empty state,
+  // and the word before a clip's source.
+  notesTitle: '笔记',
+  notesMeta: '{site} 上保存的笔记与摘录。',
+  notesEmpty: '还没有笔记。',
+  noteSourcePrefix: '来自',
   previewNotice: '预览：此页面未公开，也不会被索引。',
   nlInvalid: '这似乎不是一个邮箱地址。',
   nlNoMail: '已订阅。邮件服务未配置，因此没有发送确认信。',

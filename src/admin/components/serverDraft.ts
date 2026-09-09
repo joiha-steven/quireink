@@ -3,7 +3,7 @@
 // `useLocalDraft.ts` keeps the snapshot in localStorage and has since M2. It survives a crash,
 // a pull-to-refresh and a closed tab, and it cannot survive the laptop — which is the failure
 // that actually costs somebody a morning. This hook sends the same snapshot to
-// `POST /api/{posts,pages}/:slug/autosave`, where it lands in a column of its own and NEVER in
+// `POST /api/{posts,pages,notes}/:slug/autosave`, where it lands in a column of its own and NEVER in
 // the body a reader is served (`content/autosave.ts` carries that promise and its reasoning).
 //
 // THE SAME THREE FLUSHES as the local hook, for the same reason its header gives: widening the
@@ -18,10 +18,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLocalAutosave, useLocalDraft } from './useLocalDraft'
 
-export type ServerDraftKind = 'post' | 'page'
+export type ServerDraftKind = 'post' | 'page' | 'note'
 
 const path = (kind: ServerDraftKind, slug: string): string =>
-  `/api/${kind === 'post' ? 'posts' : 'pages'}/${encodeURIComponent(slug)}/autosave`
+  `/api/${kind}s/${encodeURIComponent(slug)}/autosave`
 
 /**
  * Is there a server at the other end of a relative URL?

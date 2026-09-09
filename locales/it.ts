@@ -69,6 +69,12 @@ const it = {
   archiveMeta: 'Tutti gli articoli di {site}, per anno.',
   archiveYears: 'Anni',
   archiveEmpty: 'Non c’è ancora nulla nell’archivio.',
+  // /notes: the owner's notebook (ADR 0044) — its heading, its description, its empty state,
+  // and the word before a clip's source.
+  notesTitle: 'Note',
+  notesMeta: 'Note e ritagli conservati su {site}.',
+  notesEmpty: 'Ancora nessuna nota.',
+  noteSourcePrefix: 'Da',
   previewNotice: 'Anteprima: questa pagina non è pubblica e non viene indicizzata.',
   nlInvalid: 'Non sembra un indirizzo email.',
   nlNoMail: 'Iscrizione registrata. L’email non è configurata, quindi non è stata inviata alcuna conferma.',

@@ -21,7 +21,7 @@
 import { useState } from 'react'
 import Link, { useRouter, useSearchParams } from '@/admin/router'
 import { useView } from '@/admin/useView'
-import type { Post, Page } from '@/types'
+import type { Post, Page, Note } from '@/types'
 import { useToast } from '@/admin/ui/Toast'
 import { formatDateTimeShort } from '@/utils'
 import { Button } from '@/admin/ui/Button'
@@ -39,12 +39,14 @@ import { SHEET_TOOL, SHEET_TOOL_DANGER } from './sheet'
 type ContentView = {
   posts: Post[]
   pages: Page[]
+  notes: Note[]
   views: Record<string, number>
 }
 
 function Rows({
   posts,
   pages,
+  notes,
   views,
   activeSlug,
   tools,
@@ -62,7 +64,7 @@ function Rows({
   // "35 posts need X" link that lands somewhere filtered without saying so.
   const arrived = useSearchParams().get('needs')
   const [needs, setNeeds] = useState<WriteNeeds>(arrived === 'excerpt' || arrived === 'image' ? arrived : null)
-  const { shown, bodyHits } = useWritingItems(posts, pages, query, scope, sort, needs)
+  const { shown, bodyHits } = useWritingItems(posts, pages, notes, query, scope, sort, needs)
   // Selection is a MODE, not a permanent control on every row. A trash icon that lives on
   // the row sits a few pixels from the title you click dozens of times a day, and it has to
   // appear on hover to stay out of the way — which on a touch screen means it never appears
@@ -96,7 +98,7 @@ function Rows({
         const kind = key.slice(0, key.indexOf(':'))
         const slug = key.slice(key.indexOf(':') + 1)
         try {
-          const res = await fetch(`/api/${kind === 'post' ? 'posts' : 'pages'}/${encodeURIComponent(slug)}`, {
+          const res = await fetch(`/api/${kind === 'post' ? 'posts' : kind === 'page' ? 'pages' : 'notes'}/${encodeURIComponent(slug)}`, {
             method: 'DELETE',
           })
           return res.ok ? slug : null
@@ -110,10 +112,10 @@ function Rows({
     leave()
     const restore = () => {
       const byKind = (k: string) => keys
-        .filter((key) => key.startsWith(`${k === 'posts' ? 'post' : 'page'}:`))
+        .filter((key) => key.startsWith(`${k === 'posts' ? 'post' : k === 'pages' ? 'page' : 'note'}:`))
         .map((key) => key.slice(key.indexOf(':') + 1))
         .filter((slug) => gone.includes(slug))
-      void Promise.all(['posts', 'pages'].filter((k) => byKind(k).length > 0).map((kind) =>
+      void Promise.all(['posts', 'pages', 'notes'].filter((k) => byKind(k).length > 0).map((kind) =>
         fetch('/api/trash', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -139,6 +141,7 @@ function Rows({
     { key: 'all', label: t.filterAll },
     { key: 'page', label: t.scopePages },
     { key: 'post', label: t.scopePosts },
+    { key: 'note', label: t.scopeNotes },
     { key: 'published', label: t.scopePublished },
     { key: 'draft', label: t.scopeDrafts },
   ]
@@ -296,6 +299,7 @@ function Rows({
                     {under && (
                       <span className="mt-0.5 line-clamp-2 block text-xs text-neutral-500 dark:text-neutral-400">
                         {it.kind === 'page' && <span className="mr-1 text-neutral-500 dark:text-neutral-400">{t.kindPage}</span>}
+                        {it.kind === 'note' && <span className="mr-1 text-neutral-500 dark:text-neutral-400">{t.kindNote}</span>}
                         <Marked text={under} needle={query} />
                       </span>
                     )}

@@ -6,7 +6,7 @@
 // source of truth, a global `pending` flag just disables actions mid-request.
 import { useState } from 'react'
 import { useRouter } from '@/admin/router'
-import type { Post, Page, MediaItem, FileItem, AdminComment, ApiResponse } from '@/types'
+import type { Post, Page, MediaItem, FileItem, AdminComment, ApiResponse, Note } from '@/types'
 import { useToast } from '@/admin/ui/Toast'
 import { useConfirm } from '@/admin/ui/ConfirmDialog'
 import { foldAccents, formatDateTimeShort } from '@/utils'
@@ -15,7 +15,7 @@ import { Tick } from '@/admin/ui/Tick'
 import { SHEET, SHEET_FOOT, SHEET_TOOL, SHEET_TOOL_DANGER, SheetTop } from './sheet'
 import { useAdminT } from './I18nProvider'
 
-type Kind = 'posts' | 'pages' | 'media' | 'files' | 'comments' | 'subscribers'
+type Kind = 'posts' | 'pages' | 'notes' | 'media' | 'files' | 'comments' | 'subscribers'
 
 // The slice of a subscriber the trash row prints. Status rides along so a restored row's
 // meaning is visible before restoring it: putting back a confirmed reader is not the same
@@ -25,6 +25,7 @@ type TrashedSubscriber = { id: number; email: string; status: string; deletedAt?
 export function TrashView({
   posts,
   pages,
+  notes,
   media,
   files,
   comments,
@@ -32,6 +33,7 @@ export function TrashView({
 }: {
   posts: Post[]
   pages: Page[]
+  notes: Note[]
   media: MediaItem[]
   files: FileItem[]
   comments: AdminComment[]
@@ -67,6 +69,7 @@ export function TrashView({
   const counts: Record<Kind, number> = {
     posts: posts.length,
     pages: pages.length,
+    notes: notes.length,
     media: media.length,
     files: files.length,
     comments: comments.length,
@@ -75,6 +78,7 @@ export function TrashView({
   const tabs: { key: Kind; label: string }[] = [
     { key: 'posts', label: `${t.tabPosts} (${counts.posts})` },
     { key: 'pages', label: `${t.tabPages} (${counts.pages})` },
+    { key: 'notes', label: `${t.tabNotes} (${counts.notes})` },
     { key: 'media', label: `${t.tabImages} (${counts.media})` },
     { key: 'files', label: `${t.tabFiles} (${counts.files})` },
     { key: 'comments', label: `${t.commentsNavTitle} (${counts.comments})` },
@@ -196,6 +200,7 @@ export function TrashView({
 
         {tab === 'posts' && <SlugTable rows={posts} kind="posts" />}
         {tab === 'pages' && <SlugTable rows={pages} kind="pages" />}
+        {tab === 'notes' && <SlugTable rows={notes} kind="notes" />}
         {tab === 'media' && <MediaTable rows={media} />}
         {tab === 'files' && <FileTable rows={files} />}
         {tab === 'comments' && <CommentTable rows={comments} />}
@@ -253,7 +258,7 @@ export function TrashView({
     return <ul className="paper-cols">{children}</ul>
   }
 
-  function SlugTable({ rows, kind }: { rows: (Post | Page)[]; kind: 'posts' | 'pages' }) {
+  function SlugTable({ rows, kind }: { rows: (Post | Page | Note)[]; kind: 'posts' | 'pages' | 'notes' }) {
     if (rows.length === 0) return <Empty />
     return (
       <Rows>

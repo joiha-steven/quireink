@@ -70,6 +70,12 @@ const pt = {
   archiveMeta: 'Todos os posts de {site}, por ano.',
   archiveYears: 'Anos',
   archiveEmpty: 'Ainda não há nada no arquivo.',
+  // /notes: the owner's notebook (ADR 0044) — its heading, its description, its empty state,
+  // and the word before a clip's source.
+  notesTitle: 'Notas',
+  notesMeta: 'Notas e recortes guardados em {site}.',
+  notesEmpty: 'Ainda não há notas.',
+  noteSourcePrefix: 'De',
   previewNotice: 'Prévia: esta página não é pública e não é indexada.',
   nlInvalid: 'Isso não parece um endereço de email.',
   nlNoMail: 'Inscrição registrada. O email não está configurado, então nenhuma confirmação foi enviada.',

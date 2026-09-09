@@ -65,6 +65,7 @@ abandoned on 2026-07-26, and the only trace was a private memory file.
 | [0041](0041-settings-by-the-owners-question.md) | Settings are grouped by the owner's question, and each tab saves one way | 2026-09-07 | ✅ supersedes the grouping in [0011](0011-settings-regrouped-into-seven.md), keeps its one-question-per-tab rule; its first consequence was revised the same day, and the sheet's Save now renders on every tab |
 | [0042](0042-the-pen-inks-unevenly.md) | The pen inks unevenly, knows a word from a sentence, and moves into a module of its own | 2026-09-09 | ✅ |
 | [0043](0043-the-reader-gets-a-pen.md) | The reader gets a pen, and it writes in their browser first | 2026-09-09 | ✅ |
+| [0044](0044-a-note-is-not-a-post.md) | A note is written like a post and kept apart from the posts: its own table, address and list | 2026-09-09 | ✅ |
 
 ## Written after the fact, and why that is allowed
 

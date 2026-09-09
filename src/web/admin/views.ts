@@ -31,6 +31,7 @@ import { getIntegrationStatus } from '@/store/integration-keys'
 import { updateCheckStatus } from '@/server/update-check'
 import { getIndex, getCategories, getTags, getPublicPosts, getTrashedPosts } from '@/content/posts'
 import { getPageIndex, getTrashedPages, getPage, getPublicPages } from '@/content/pages'
+import { getNoteIndex, getTrashedNotes, getNote } from '@/content/notes'
 import { getPost } from '@/content/posts'
 import { getAllSeriesNames } from '@/content/series'
 import { searchEverything } from '@/content/search-owner'
@@ -73,15 +74,15 @@ function rangeOf(raw: string | undefined): Window {
 
 // ----- the payload builders ---------------------------------------------------
 
-/** Posts and pages, with the view totals and comment counts each table shows. */
+/** Posts, pages and notes, with the view totals and comment counts each table shows. */
 async function contentView() {
   const settings = await getSettings()
   const commentsEnabled = settings.comments.enabled
-  const [posts, pages, views, commentCounts] = await Promise.all([
-    getIndex(), getPageIndex(), getViewTotals(),
+  const [posts, pages, notes, views, commentCounts] = await Promise.all([
+    getIndex(), getPageIndex(), getNoteIndex(), getViewTotals(),
     commentsEnabled ? countsByPosts() : Promise.resolve({} as Record<string, number>),
   ])
-  return { posts, pages, views, commentCounts, commentsEnabled }
+  return { posts, pages, notes, views, commentCounts, commentsEnabled }
 }
 
 /**
@@ -123,6 +124,21 @@ async function pageEditorView(slug: string) {
     contentWidth: settings.contentWidth,
     keySound: { mode: settings.motion.keys, volume: settings.motion.keyVolume },
     autosaveSeconds: settings.autosaveSeconds,
+  }
+}
+
+async function noteEditorView(slug: string) {
+  const [note, settings] = await Promise.all([
+    slug ? getNote(slug) : Promise.resolve(null), getSettings(),
+  ])
+  if (slug && !note) return null
+  return {
+    note,
+    autosaveAt: slug ? (getAutosave('note', slug)?.at ?? null) : null,
+    contentWidth: settings.contentWidth,
+    keySound: { mode: settings.motion.keys, volume: settings.motion.keyVolume },
+    autosaveSeconds: settings.autosaveSeconds,
+    timezone: settings.timezone,
   }
 }
 
@@ -219,11 +235,11 @@ async function logView() {
 }
 
 async function trashView() {
-  const [posts, pages, media, files, comments, subscribers] = await Promise.all([
-    getTrashedPosts(), getTrashedPages(), getTrashedMedia(),
+  const [posts, pages, notes, media, files, comments, subscribers] = await Promise.all([
+    getTrashedPosts(), getTrashedPages(), getTrashedNotes(), getTrashedMedia(),
     getTrashedFiles(), getTrashedComments(), getTrashedSubscribers(),
   ])
-  return { posts, pages, media, files, comments, subscribers }
+  return { posts, pages, notes, media, files, comments, subscribers }
 }
 
 /**
@@ -273,6 +289,7 @@ export type ViewPayloads = {
   content: Awaited<ReturnType<typeof contentView>>
   editor: NonNullable<Awaited<ReturnType<typeof editorView>>>
   'page-editor': NonNullable<Awaited<ReturnType<typeof pageEditorView>>>
+  'note-editor': NonNullable<Awaited<ReturnType<typeof noteEditorView>>>
   // One endpoint, two faces: the summary, or one page's detail when `path` is given. The
   // client narrows on the `detail` key, which only one face has.
   analytics:
@@ -315,6 +332,12 @@ export function viewRoutes(): OwnerRouter {
 
   routes.get('/api/admin/view/page-editor', async (c) => {
     const data = await pageEditorView(c.req.query('slug') ?? '')
+    if (data === null) return c.json({ error: 'Not found' }, 404)
+    return c.json({ data })
+  })
+
+  routes.get('/api/admin/view/note-editor', async (c) => {
+    const data = await noteEditorView(c.req.query('slug') ?? '')
     if (data === null) return c.json({ error: 'Not found' }, 404)
     return c.json({ data })
   })

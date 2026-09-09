@@ -69,6 +69,12 @@ const vi = {
   archiveMeta: 'Toàn bộ bài trên {site}, xếp theo năm.',
   archiveYears: 'Các năm',
   archiveEmpty: 'Chưa có bài nào trong kho lưu trữ.',
+  // /notes: the owner's notebook (ADR 0044) — its heading, its description, its empty state,
+  // and the word before a clip's source.
+  notesTitle: 'Sổ tay',
+  notesMeta: 'Ghi chú và trích dẫn giữ lại trên {site}.',
+  notesEmpty: 'Chưa có ghi chú nào.',
+  noteSourcePrefix: 'Từ',
   previewNotice: 'Bản xem trước: trang này không công khai và không được lập chỉ mục.',
   nlInvalid: 'Địa chỉ email không hợp lệ.',
   nlNoMail: 'Đã đăng ký. Email chưa được cấu hình nên chưa gửi thư xác nhận.',

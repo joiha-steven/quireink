@@ -139,6 +139,50 @@ create trigger if not exists pages_fts_au after update of title, content on page
   insert into pages_fts(rowid, title, content) values (new.rowid, new.title, new.content);
 end;
 
+-- ----- notes (the owner's notebook — ADR 0044) -------------------------------
+-- A note is written like a post and kept apart from the posts: its own table, its own
+-- URL space (/notes/<slug>), never in the post feed. The three `source_*` columns are what
+-- a CLIP carries — a passage kept from somewhere else, with where it came from — and are
+-- null on a note the owner simply wrote. `date` is the note's own date, ms since the epoch
+-- like `posts.date`, so a notebook reads in order.
+create table if not exists notes (
+  slug           text primary key,
+  title          text not null default '',
+  date           integer not null,
+  status         text not null default 'draft' check (status in ('draft','published')),
+  content        text not null default '',
+  source_url     text,
+  source_title   text,
+  quote          text,
+  created_at     integer not null,
+  updated_at     integer not null,
+  deleted_at     integer,
+  -- Same pair as `posts`, same rule: never rendered, cleared by a real save.
+  autosave_json  text,
+  autosave_at    integer
+);
+create index if not exists notes_date_idx on notes (date);
+create index if not exists notes_deleted_at_idx on notes (deleted_at);
+
+-- Searched like posts and pages, by the same index shape, for the owner's one search.
+create virtual table if not exists notes_fts using fts5(
+  title,
+  content,
+  content = 'notes',
+  content_rowid = 'rowid',
+  tokenize = "unicode61 remove_diacritics 2"
+);
+create trigger if not exists notes_fts_ai after insert on notes begin
+  insert into notes_fts(rowid, title, content) values (new.rowid, new.title, new.content);
+end;
+create trigger if not exists notes_fts_ad after delete on notes begin
+  insert into notes_fts(notes_fts, rowid, title, content) values ('delete', old.rowid, old.title, old.content);
+end;
+create trigger if not exists notes_fts_au after update of title, content on notes begin
+  insert into notes_fts(notes_fts, rowid, title, content) values ('delete', old.rowid, old.title, old.content);
+  insert into notes_fts(rowid, title, content) values (new.rowid, new.title, new.content);
+end;
+
 -- ----- post_revisions (time machine: last 3 per post) ------------------------
 create table if not exists post_revisions (
   id       integer primary key autoincrement,

@@ -17,6 +17,7 @@ import {
   restorePost, purgePost, emptyPostsTrash, updateTerm, type TermKind,
 } from '@/content/posts'
 import { restorePage, purgePage, emptyPagesTrash } from '@/content/pages'
+import { restoreNote, purgeNote, emptyNotesTrash } from '@/content/notes'
 import {
   restoreMediaBatch, purgeMediaBatch, emptyMediaTrash, getTrashedMedia,
 } from '@/media/media'
@@ -38,13 +39,13 @@ const body = async <T>(c: Context): Promise<Partial<T>> =>
 const strings = (value: unknown): string[] =>
   Array.isArray(value) ? value.filter((x): x is string => typeof x === 'string') : []
 
-type Kind = 'posts' | 'pages' | 'media' | 'files' | 'comments' | 'subscribers'
+type Kind = 'posts' | 'pages' | 'notes' | 'media' | 'files' | 'comments' | 'subscribers'
 type Action = 'restore' | 'purge' | 'empty'
-const KINDS: Kind[] = ['posts', 'pages', 'media', 'files', 'comments', 'subscribers']
+const KINDS: Kind[] = ['posts', 'pages', 'notes', 'media', 'files', 'comments', 'subscribers']
 const ACTIONS: Action[] = ['restore', 'purge', 'empty']
 // The activity log uses singular per-kind verbs, matching the actions that already exist.
 const SINGULAR: Record<Kind, string> = {
-  posts: 'post', pages: 'page', media: 'media', files: 'file', comments: 'comment',
+  posts: 'post', pages: 'page', notes: 'note', media: 'media', files: 'file', comments: 'comment',
   subscribers: 'subscriber',
 }
 
@@ -225,6 +226,11 @@ export function siteRoutes() {
         if (action === 'restore') await Promise.all(ids.map(restorePage))
         else if (action === 'purge') await Promise.all(ids.map(purgePage))
         else count = await emptyPagesTrash()
+        break
+      case 'notes':
+        if (action === 'restore') await Promise.all(ids.map(restoreNote))
+        else if (action === 'purge') await Promise.all(ids.map(purgeNote))
+        else count = await emptyNotesTrash()
         break
       case 'media': {
         if (action === 'restore') { await restoreMediaBatch(ids); break }

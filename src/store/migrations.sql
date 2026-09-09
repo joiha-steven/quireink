@@ -195,3 +195,45 @@ create table if not exists assistant_chats (
   updated_at     integer not null
 );
 create index if not exists assistant_chats_updated_idx on assistant_chats (updated_at desc);
+
+-- migration: 012-notes
+-- ADR 0044: the owner's notebook. Same shape as the table `schema.sql` now creates for a
+-- fresh database; an existing instance gets it here, empty, with its search index.
+create table if not exists notes (
+  slug           text primary key,
+  title          text not null default '',
+  date           integer not null,
+  status         text not null default 'draft' check (status in ('draft','published')),
+  content        text not null default '',
+  source_url     text,
+  source_title   text,
+  quote          text,
+  created_at     integer not null,
+  updated_at     integer not null,
+  deleted_at     integer,
+  -- Same pair as `posts`, same rule: never rendered, cleared by a real save.
+  autosave_json  text,
+  autosave_at    integer
+);
+create index if not exists notes_date_idx on notes (date);
+create index if not exists notes_deleted_at_idx on notes (deleted_at);
+
+-- Searched like posts and pages, by the same index shape, for the owner's one search.
+create virtual table if not exists notes_fts using fts5(
+  title,
+  content,
+  content = 'notes',
+  content_rowid = 'rowid',
+  tokenize = "unicode61 remove_diacritics 2"
+);
+create trigger if not exists notes_fts_ai after insert on notes begin
+  insert into notes_fts(rowid, title, content) values (new.rowid, new.title, new.content);
+end;
+create trigger if not exists notes_fts_ad after delete on notes begin
+  insert into notes_fts(notes_fts, rowid, title, content) values ('delete', old.rowid, old.title, old.content);
+end;
+create trigger if not exists notes_fts_au after update of title, content on notes begin
+  insert into notes_fts(notes_fts, rowid, title, content) values ('delete', old.rowid, old.title, old.content);
+  insert into notes_fts(rowid, title, content) values (new.rowid, new.title, new.content);
+end;
+

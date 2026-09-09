@@ -5,19 +5,19 @@
 // the ITEMS and the SEARCH are the part that must never fork between screens, and the hook
 // is the seam that guarantees it.
 import { useEffect, useMemo, useState } from 'react'
-import type { Post, Page, ApiResponse } from '@/types'
+import type { Post, Page, Note, ApiResponse } from '@/types'
 // Type-only, and it must stay that way: the module it comes from opens the database.
 import type { OwnerHit } from '@/content/search-owner'
 import { foldAccents, untitledNumbers } from '@/utils'
 
-export type WriteScope = 'all' | 'page' | 'post' | 'published' | 'draft'
+export type WriteScope = 'all' | 'page' | 'post' | 'note' | 'published' | 'draft'
 export type WriteSort = 'updated' | 'created'
 /** The dashboard's two "needs attention" checks, as a filter this list can be asked for. */
 export type WriteNeeds = 'excerpt' | 'image' | null
 
-/** Posts and pages, flattened to the few things a row actually renders. */
+/** Posts, pages and notes, flattened to the few things a row actually renders. */
 export type WriteItem = {
-  kind: 'post' | 'page'
+  kind: 'post' | 'page' | 'note'
   slug: string
   title: string
   status: string
@@ -49,7 +49,7 @@ export type WriteItem = {
 
 const stamp = (iso?: string): number => (iso ? new Date(iso).getTime() : 0)
 
-export function useWritingItems(posts: Post[], pages: Page[], query: string, scope: WriteScope, sort: WriteSort = 'updated', needs: WriteNeeds = null) {
+export function useWritingItems(posts: Post[], pages: Page[], notes: Note[], query: string, scope: WriteScope, sort: WriteSort = 'updated', needs: WriteNeeds = null) {
   // Where the words were found, keyed by `kind:slug`. Null means the server has not answered
   // for this query yet, which is NOT the same as "nothing matched" — see the empty state.
   const [bodyHits, setBodyHits] = useState<Map<string, string> | null>(null)
@@ -83,12 +83,28 @@ export function useWritingItems(posts: Post[], pages: Page[], query: string, sco
       noExcerpt: false,
       noImage: false,
     }))
-    const all = [...fromPosts, ...fromPages]
+    // A note (ADR 0044): dated like a post, addressed under /notes/, and a clip shows where
+    // it came from where a post shows its excerpt.
+    const fromNotes = notes.map<WriteItem>((n) => ({
+      kind: 'note',
+      slug: n.slug,
+      title: n.title || n.sourceTitle || '',
+      status: n.status,
+      touched: stamp(n.updatedAt) || stamp(n.date),
+      created: stamp(n.date),
+      standing: n.sourceTitle ?? n.quote ?? `/notes/${n.slug}`,
+      terms: '',
+      editHref: `/admin/note-editor/${n.slug}`,
+      viewHref: n.status === 'published' ? `/notes/${n.slug}` : undefined,
+      noExcerpt: false,
+      noImage: false,
+    }))
+    const all = [...fromPosts, ...fromPages, ...fromNotes]
     const numbers = untitledNumbers(all)
     for (const i of all) i.untitledNo = numbers.get(`${i.kind}:${i.slug}`)
     const key = sort === 'created' ? (i: WriteItem) => i.created : (i: WriteItem) => i.touched
     return all.sort((a, b) => key(b) - key(a))
-  }, [posts, pages, sort])
+  }, [posts, pages, notes, sort])
 
   // The body search is the SERVER's, because the body is not here: this hook is handed
   // metadata and nothing else. Debounced, because it runs per keystroke.
@@ -118,7 +134,7 @@ export function useWritingItems(posts: Post[], pages: Page[], query: string, sco
     return items.filter((it) => {
       // Two scopes are a KIND and two are a STATUS; both families share one row of
       // tabs, so the filter reads which family the word belongs to.
-      if (scope === 'page' || scope === 'post') {
+      if (scope === 'page' || scope === 'post' || scope === 'note') {
         if (it.kind !== scope) return false
       } else if (scope !== 'all' && it.status !== scope) return false
       // The dashboard's filter, and it stacks WITH the scope rather than replacing it: a

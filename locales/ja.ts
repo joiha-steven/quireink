@@ -69,6 +69,12 @@ const ja = {
   archiveMeta: '{site} のすべての記事を、年ごとに。',
   archiveYears: '年',
   archiveEmpty: 'アーカイブにはまだ何もありません。',
+  // /notes: the owner's notebook (ADR 0044) — its heading, its description, its empty state,
+  // and the word before a clip's source.
+  notesTitle: 'ノート',
+  notesMeta: '{site} に残したノートと抜き書き。',
+  notesEmpty: 'まだノートはありません。',
+  noteSourcePrefix: '出典',
   previewNotice: 'プレビュー: このページは公開されておらず、インデックスもされません。',
   nlInvalid: 'メールアドレスの形式が正しくありません。',
   nlNoMail: '登録しました。メールが未設定のため確認メールは送信されていません。',

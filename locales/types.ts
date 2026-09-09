@@ -76,6 +76,10 @@ export type Dict = {
   archiveMeta: string
   archiveYears: string
   archiveEmpty: string
+  notesTitle: string
+  notesMeta: string
+  notesEmpty: string
+  noteSourcePrefix: string
   previewNotice: string
   nlInvalid: string
   nlNoMail: string
@@ -206,6 +210,15 @@ export type AdminStrings = {
   kindPage: string
   newPost: string
   newPage: string
+  newNote: string
+  kindNote: string
+  scopeNotes: string
+  tabNotes: string
+  noteSourceUrl: string
+  noteSourceTitle: string
+  noteQuote: string
+  noteSourceHint: string
+  viewNote: string
   noPosts: string
   noPages: string
   colTitle: string

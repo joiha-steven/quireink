@@ -41,16 +41,17 @@ describe('savePage', () => {
   })
 
   it('does not restamp created_at when overwriting, but does bump updated_at', async () => {
-    await savePage({ title: 'Notes', content: 'v1' })
+    // `colophon` and not `notes`: the notebook took that word for its own address (ADR 0044).
+    await savePage({ title: 'Colophon', content: 'v1' })
     const first = one<{ created_at: number; updated_at: number }>(
-      `select created_at, updated_at from pages where slug = 'notes'`,
+      `select created_at, updated_at from pages where slug = 'colophon'`,
     )!
-    db().run(`update pages set created_at = 1, updated_at = 1 where slug = 'notes'`)
+    db().run(`update pages set created_at = 1, updated_at = 1 where slug = 'colophon'`)
     // An overwrite always names the row it is replacing; without it the slug it wants is
     // already taken by itself and `ensureSlugFree` rejects the save.
-    await savePage({ title: 'Notes', content: 'v2' }, 'notes')
+    await savePage({ title: 'Colophon', content: 'v2' }, 'colophon')
     const after = one<{ created_at: number; updated_at: number }>(
-      `select created_at, updated_at from pages where slug = 'notes'`,
+      `select created_at, updated_at from pages where slug = 'colophon'`,
     )!
     expect(after.created_at).toBe(1)
     expect(after.updated_at).toBeGreaterThanOrEqual(first.created_at)

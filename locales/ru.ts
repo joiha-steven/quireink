@@ -69,6 +69,12 @@ const ru = {
   archiveMeta: 'Все записи на {site}, по годам.',
   archiveYears: 'Годы',
   archiveEmpty: 'В архиве пока ничего нет.',
+  // /notes: the owner's notebook (ADR 0044) — its heading, its description, its empty state,
+  // and the word before a clip's source.
+  notesTitle: 'Заметки',
+  notesMeta: 'Заметки и выписки, сохранённые на {site}.',
+  notesEmpty: 'Заметок пока нет.',
+  noteSourcePrefix: 'Из',
   previewNotice: 'Предпросмотр: эта страница не публична и не индексируется.',
   nlInvalid: 'Это не похоже на адрес почты.',
   nlNoMail: 'Подписка записана. Почта не настроена, поэтому письмо с подтверждением не отправлено.',

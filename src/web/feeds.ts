@@ -5,7 +5,7 @@
 // than serving an empty document: an empty feed looks like a broken site to a reader's
 // aggregator, while a 404 looks like what it is.
 
-import type { HomeSettings, Page, Post, SiteSettings } from '@/types'
+import type { HomeSettings, Page, Post, SiteSettings, Note } from '@/types'
 import { termSlug } from '@/content/taxonomy'
 import { clampExcerpt } from '@/utils'
 
@@ -74,7 +74,7 @@ function postImages(p: Post, site: string): string[] {
 }
 
 export function renderSitemap(
-  posts: Post[], pages: Page[], site: string, home: HomeSettings, archive = false,
+  posts: Post[], pages: Page[], site: string, home: HomeSettings, archive = false, notes: Note[] = [],
 ): string {
   const url = (loc: string, lastmod?: string, images: string[] = []) =>
     `  <url><loc>${escapeXml(loc)}</loc>${lastmod ? `<lastmod>${isoDay(lastmod)}</lastmod>` : ''}${
@@ -130,6 +130,10 @@ export function renderSitemap(
     ...posts.filter((p) => p.slug !== homeSlug)
       .map((p) => url(`${site}/${p.slug}`, p.updatedAt ?? p.date, postImages(p, site))),
     ...pages.filter((p) => p.slug !== homeSlug).map((p) => url(`${site}/${p.slug}`)),
+    // The notebook (ADR 0044): its index once there is anything in it, and each note under
+    // its own address. Never mixed into the post entries above.
+    ...(notes.length ? [url(`${site}/notes`, notes[0]!.updatedAt ?? notes[0]!.date)] : []),
+    ...notes.map((n) => url(`${site}/notes/${n.slug}`, n.updatedAt ?? n.date)),
     ...terms('category', (p) => p.categories),
     ...terms('tag', (p) => p.tags),
   ]
@@ -203,7 +207,7 @@ export function renderRobots(settings: SiteSettings, site: string): string {
  * `llms.txt`: the site as an index a model can read, newest first. Titles and one-line
  * summaries, not bodies — a model that wants the body follows the link.
  */
-export function renderLlms(posts: Post[], pages: Page[], settings: SiteSettings, site: string): string {
+export function renderLlms(posts: Post[], pages: Page[], settings: SiteSettings, site: string, notes: Note[] = []): string {
   const line = (title: string, slug: string, summary: string) =>
     `- [${title}](${site}/${slug})${summary ? `: ${summary}` : ''}`
   // No excerpt, no summary. It used to fall back to `toPlainText('')`, which is the empty
@@ -221,5 +225,9 @@ ${postLines.join('\n')}
 ## Pages
 
 ${pageLines.join('\n')}
-`
+${notes.length ? `
+## Notes
+
+${notes.map((n) => line(n.title || n.sourceTitle || n.slug, `notes/${n.slug}`, n.quote ? clampExcerpt(n.quote) : '')).join('\n')}
+` : ''}`
 }

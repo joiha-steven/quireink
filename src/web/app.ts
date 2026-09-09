@@ -34,6 +34,8 @@ import { updatePing } from '@/web/update-ping'
 import { compression } from '@/web/compress'
 import { errorHandler, notFoundHandler, requestLogger } from '@/web/api'
 import { contentRoutes } from '@/web/admin/content'
+import { noteRoutes } from '@/web/admin/notes'
+import { renderNotePage, renderNotesIndex } from '@/web/notes-page'
 import { securityRoutes } from '@/web/admin/security'
 import { siteRoutes } from '@/web/admin/site'
 import { uploadRoutes } from '@/web/admin/uploads'
@@ -194,6 +196,7 @@ export function createApp(): Hono {
   // it (Invariant 4), and `check:routes` fails the build if one escapes.
 
   app.route('/', contentRoutes().routes)
+  app.route('/', noteRoutes().routes)
   app.route('/', securityRoutes().routes)
   app.route('/', siteRoutes().routes)
   app.route('/', uploadRoutes().routes)
@@ -307,6 +310,13 @@ export function createApp(): Hono {
   // reached its line ceiling.
 
   registerFeedRoutes(app)
+
+  // ----- the notebook (ADR 0044): its own address, never in the post namespace ----
+  app.get('/notes', async () => cached('/notes', renderNotesIndex)())
+  app.get('/notes/:slug', async (c) => {
+    const slug = c.req.param('slug')
+    return cached(`/notes/${slug}`, () => renderNotePage(slug))()
+  })
 
   // ----- the catch-all: one /{slug} namespace for posts AND pages -------------
 

@@ -29,6 +29,7 @@ export default function Content() {
           action={
             <div className="flex flex-col items-center">
               <div className="flex items-center gap-2">
+                <Link href="/admin/note-editor" className={buttonClass('secondary')}>{t.newNote}</Link>
                 <Link href="/admin/page-editor" className={buttonClass('secondary')}>{t.newPage}</Link>
                 <Link href="/admin/editor"><Button>{t.newPost}</Button></Link>
               </div>

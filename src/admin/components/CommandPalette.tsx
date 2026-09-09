@@ -105,6 +105,7 @@ const SCREENS: { label: StringKey; href: string }[] = [
 const ACTIONS: { label: StringKey; href: string }[] = [
   { label: 'newPost', href: '/admin/editor' },
   { label: 'newPage', href: '/admin/page-editor' },
+  { label: 'newNote', href: '/admin/note-editor' },
 ]
 
 /**

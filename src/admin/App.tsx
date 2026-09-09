@@ -37,6 +37,7 @@ const load = {
   content: () => import('@/admin/pages/Content'),
   postEditor: () => import('@/admin/pages/PostEditor'),
   pageEditor: () => import('@/admin/pages/PageEditor'),
+  noteEditor: () => import('@/admin/pages/NoteEditor'),
   media: () => import('@/admin/pages/Media'),
   comments: () => import('@/admin/pages/Comments'),
   newsletter: () => import('@/admin/pages/Newsletter'),
@@ -58,6 +59,7 @@ const Dashboard = lazy(throughDeploys(load.dashboard))
 const Content = lazy(throughDeploys(load.content))
 const PostEditor = lazy(throughDeploys(load.postEditor))
 const PageEditor = lazy(throughDeploys(load.pageEditor))
+const NoteEditor = lazy(throughDeploys(load.noteEditor))
 const Media = lazy(throughDeploys(load.media))
 const Comments = lazy(throughDeploys(load.comments))
 const Newsletter = lazy(throughDeploys(load.newsletter))
@@ -76,6 +78,7 @@ function loaderFor(path: string): Loader {
   if (p === '/admin/content') return load.content
   if (p === '/admin/editor' || p.startsWith('/admin/editor/')) return load.postEditor
   if (p === '/admin/page-editor' || p.startsWith('/admin/page-editor/')) return load.pageEditor
+  if (p === '/admin/note-editor' || p.startsWith('/admin/note-editor/')) return load.noteEditor
   if (p === '/admin/media') return load.media
   if (p === '/admin/comments') return load.comments
   if (p === '/admin/newsletter') return load.newsletter
@@ -117,6 +120,7 @@ function Route(): ReactNode {
   if (path === '/admin/content') return <Content />
   if (path === '/admin/editor' || path.startsWith('/admin/editor/')) return <PostEditor />
   if (path === '/admin/page-editor' || path.startsWith('/admin/page-editor/')) return <PageEditor />
+  if (path === '/admin/note-editor' || path.startsWith('/admin/note-editor/')) return <NoteEditor />
   if (path === '/admin/media') return <Media />
   if (path === '/admin/comments') return <Comments />
   if (path === '/admin/newsletter') return <Newsletter />
@@ -147,8 +151,8 @@ function Canvas({ children }: { children: ReactNode }) {
   )
 }
 
-/** The three routes that are the writing screen: the list, and the two editors. */
-const WRITING = /^\/admin\/(content|editor|page-editor)(\/|$)/
+/** The four routes that are the writing screen: the list, and the three editors. */
+const WRITING = /^\/admin\/(content|editor|page-editor|note-editor)(\/|$)/
 
 /**
  * The write pane, drawn HERE and not by the pages it appears on.

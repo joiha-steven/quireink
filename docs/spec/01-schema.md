@@ -111,7 +111,7 @@ transaction. Flush on `SIGTERM` before exit so a deploy does not drop the buffer
 ## Table-by-table
 
 Unchanged tables (straight translation, only the type mapping above applies):
-`pages`, `post_revisions`, `media`, `files`, `settings`, `mcp_tokens`, `mcp_clients`,
+`pages`, `notes` (added 2026-09-09, migration `012-notes` — the notebook, [ADR 0044](../decisions/0044-a-note-is-not-a-post.md): a post's shape less taxonomy, plus `source_url`, `source_title` and `quote` for a clip), `post_revisions`, `media`, `files`, `settings`, `mcp_tokens`, `mcp_clients`,
 `mcp_used_codes`, `backup_state`, `integration_keys`, `subscribers`,
 `newsletter_sends`, `activity_log`, `redirects`, `analytics_scroll`,
 `schema_migrations`.
