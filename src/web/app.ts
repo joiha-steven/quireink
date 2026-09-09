@@ -39,6 +39,7 @@ import { renderNotePage, renderNotesIndex } from '@/web/notes-page'
 import { clipRoutes, handleClipPage } from '@/web/clip-page'
 import { micropubRoutes } from '@/web/micropub'
 import { penRoutes } from '@/web/pen-routes'
+import { handlePenCss } from '@/web/pen-css'
 import { handleWebmention } from '@/web/webmention-route'
 import { securityRoutes } from '@/web/admin/security'
 import { siteRoutes } from '@/web/admin/site'
@@ -206,6 +207,8 @@ export function createApp(): Hono {
   app.route('/', micropubRoutes())
   // A reader's marks across their devices (ADR 0047): a code or the commenter cookie, no account.
   app.route('/', penRoutes())
+  // The pen as a stylesheet anyone may link (ADR 0048): stable path, revalidating, CORS open.
+  app.get('/pen.css', handlePenCss)
   app.post('/webmention', handleWebmention)
   // A GET on the endpoint says what it is, so a person who follows the rel link is not
   // handed somebody's post by that name; the slug is reserved for the same reason.

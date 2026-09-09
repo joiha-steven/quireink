@@ -138,6 +138,8 @@
   on the server under a notebook code or their commenter sign-in — `reader_marks` holds the
   page's list under an opaque id, the server's copy wins on load, every change is written back,
   and a year untouched sweeps it. The owner sees none of it; `features.readerPen` off is a 404.
+- **The pen elsewhere:** `GET /pen.css` is both halves under the `.pen` class in this blog's inks,
+  for a page that is not a Quire Ink — `docs/pen.md`, ADR 0048.
 - **Lists by the pen:** `src/pen/lists.css.ts` — bullets are ink dots and level dashes (masks painted
   in `currentColor`, so one shape serves every palette), numbered lists count in a Kalam digit
   subset (`/fonts/kalam-digits.woff2`, fetched only when a glyph needs it). A task item

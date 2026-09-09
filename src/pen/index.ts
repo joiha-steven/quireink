@@ -49,7 +49,9 @@ export { contrastRatio, darkStroke, lineInk, parseHex } from '@/pen/derive'
 export { BUILT_IN_INKS, DEFAULT_INKS, inkSignature, resolveInks } from '@/pen/palette'
 export type { InkPalette, InkSettings } from '@/pen/palette'
 export {
-  inkHighlightCss, inkLinesCss, INK_HIGHLIGHT_CSS, INK_LINES_CSS, INK_CSS, LINK_INK_CSS,
+  inkHighlightCss, inkLinesCss, inkEmbedCss, INK_HIGHLIGHT_CSS, INK_LINES_CSS, INK_CSS, LINK_INK_CSS,
+  SITE_SCOPE, EMBED_SCOPE,
 } from '@/pen/ink.css'
+export type { PenScope } from '@/pen/ink.css'
 export { LISTS_INK_CSS, LISTS_PLAIN_CSS } from '@/pen/lists.css'
 export { DOT_MASKS, DASH_MASKS, NUMERAL_LEANS } from '@/pen/dies-lists'

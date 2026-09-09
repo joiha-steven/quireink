@@ -60,8 +60,8 @@ const dies = (set: Record<string, string>, prefix: string) => {
 /* How each variant holds the pen: weight, register, and asymmetric overshoot past the
    words. Colour-blind rules — they never touch `--ink-stroke`, so they cannot fight the
    pigment rules whatever the order. */
-const grips = () =>
-  PEN_GRIPS.map((g, i) => `.prose mark[data-pen="${i}"]{--ink-h:${g.h};--ink-y:${g.y};`
+const grips = (prefix: string) =>
+  PEN_GRIPS.map((g, i) => `${prefix} mark[data-pen="${i}"]{--ink-h:${g.h};--ink-y:${g.y};`
     + `padding:0 ${g.padr} 0 ${g.padl};margin:0 ${g.marr} 0 ${g.marl}}`).join('\n')
 
 /* ------------------------------------------------------------------------------------- *
@@ -90,8 +90,8 @@ const underDies = (set: Record<string, string>, aux: Record<string, string>, pre
   return out.join('\n')
 }
 
-const underGrips = () =>
-  UNDER_GRIPS.map((g, i) => `.prose u[data-pen="${i}"]{--u-h:${g.h};--u-y:${g.y};`
+const underGrips = (prefix: string) =>
+  UNDER_GRIPS.map((g, i) => `${prefix} u[data-pen="${i}"]{--u-h:${g.h};--u-y:${g.y};`
     // The .35em of bottom padding is LOAD-BEARING: an inline background clips at the
     // font's descent, and a line drawn under the baseline lives exactly in the strip that
     // gets clipped. Vertical padding on an inline paints without moving any line.
@@ -130,8 +130,8 @@ const ringDies = (set: Record<string, string>, aux: Record<string, string>, pref
   return out.join('\n')
 }
 
-const ringGrips = () =>
-  RING_GRIPS.map((g, i) => `.prose mark[data-form=o][data-pen="${i}"]`
+const ringGrips = (prefix: string) =>
+  RING_GRIPS.map((g, i) => `${prefix} mark[data-form=o][data-pen="${i}"]`
     + `{padding:${g.pady} ${g.padx};margin:0 ${g.marx}}`).join('\n')
 
 /* ------------------------------------------------------------------------------------- *
@@ -145,6 +145,17 @@ const ringGrips = () =>
  * ------------------------------------------------------------------------------------- */
 
 /**
+ * Where a sheet applies. The site's own sheets hang off `.prose`, its dark mode off the
+ * `.dark` class the theme island sets, and a dark highlight takes the heading colour so it
+ * stays legible over ink. The EMBEDDABLE sheet (`/pen.css`, ADR 0048) hangs off `.pen`, a
+ * class the host page puts on any container, keeps the `.dark` ancestor convention, and
+ * asks the host for nothing else — no variable of this blog's may be assumed to exist there.
+ */
+export type PenScope = { light: string; dark: string; darkText: string }
+export const SITE_SCOPE: PenScope = { light: '.prose', dark: '.dark .prose', darkText: 'var(--c-heading)' }
+export const EMBED_SCOPE: PenScope = { light: '.pen', dark: '.dark .pen', darkText: 'inherit' }
+
+/**
  * The highlighter half, in whichever inks this site writes with.
  *
  * A FUNCTION since 2026-08-24, when the pen's colours became a setting rather than a
@@ -152,11 +163,11 @@ const ringGrips = () =>
  * nothing gets a byte-identical sheet under the same hash — which is the property that
  * matters, because the sheet is served immutable under a hash of its own content.
  */
-export function inkHighlightCss(p: InkPalette = BUILT_IN_INKS): string {
+export function inkHighlightCss(p: InkPalette = BUILT_IN_INKS, s: PenScope = SITE_SCOPE): string {
   return `
 /* A highlight is a stroke of ink UNDER the words, never a box around them. The browser's
    default mark is a solid yellow rectangle with its own text colour; both go. */
-.prose mark{color:inherit;background-color:transparent;background-repeat:no-repeat;
+${s.light} mark{color:inherit;background-color:transparent;background-repeat:no-repeat;
   padding:0 .16em;margin:0 -.12em;
   -webkit-box-decoration-break:clone;box-decoration-break:clone;
   mix-blend-mode:multiply;
@@ -167,49 +178,57 @@ export function inkHighlightCss(p: InkPalette = BUILT_IN_INKS): string {
    its own start and finish — a pen lifted at the margin and put down again on the next
    line. That is box-decoration-break above; without it the whole span gets one box wrapped
    around both lines, which is the tell that gives away every CSS highlight on the web. */
-${grips()}
-${inks(p.light, '.prose')}
-${dies(p.light, '.prose')}
-.dark .prose mark{mix-blend-mode:normal;color:var(--c-heading)}
-${inks(p.dark, '.dark .prose')}
-${dies(p.dark, '.dark .prose')}
+${grips(s.light)}
+${inks(p.light, s.light)}
+${dies(p.light, s.light)}
+${s.dark} mark{mix-blend-mode:normal;color:${s.darkText}}
+${inks(p.dark, s.dark)}
+${dies(p.dark, s.dark)}
 `.trim()
 }
 
 /** The lines half: the underline and the ring, in this site's inks. */
-export function inkLinesCss(p: InkPalette = BUILT_IN_INKS): string {
+export function inkLinesCss(p: InkPalette = BUILT_IN_INKS, s: PenScope = SITE_SCOPE): string {
   return `
 /* The underline: a pen line under the words, never the browser's text-decoration — that is
    a perfectly straight rule at 1px, which is the same tell as the box. Descenders cross it,
    exactly as they do on paper. */
-.prose u{text-decoration:none;background-color:transparent;background-repeat:no-repeat;
+${s.light} u{text-decoration:none;background-color:transparent;background-repeat:no-repeat;
   -webkit-box-decoration-break:clone;box-decoration-break:clone;
   mix-blend-mode:multiply;
   padding-bottom:.4em;
   background-image:var(--u-stroke);
   background-size:100% var(--u-h,.42em);
   background-position:0 var(--u-y,.94em)}
-${underGrips()}
-${underInks(p.lineLight, p.auxLight, '.prose')}
-${underDies(p.lineLight, p.auxLight, '.prose')}
-.dark .prose u{mix-blend-mode:normal}
-${underInks(p.lineDark, p.auxDark, '.dark .prose')}
-${underDies(p.lineDark, p.auxDark, '.dark .prose')}
+${underGrips(s.light)}
+${underInks(p.lineLight, p.auxLight, s.light)}
+${underDies(p.lineLight, p.auxLight, s.light)}
+${s.dark} u{mix-blend-mode:normal}
+${underInks(p.lineDark, p.auxDark, s.dark)}
+${underDies(p.lineDark, p.auxDark, s.dark)}
 /* The ring. Everything below outranks every highlight rule above (the extra
    [data-form=o]) and replaces the sweep with the loop's three pieces: two caps at a FIXED
    em width, so their curvature never stretches with the word, and a middle that does all
    the stretching. The pieces overlap .14em at each seam; each carries alpha, so the joins
    darken like re-inked paper. Vertical padding paints without moving any line. */
-.prose mark[data-form=o]{padding:.18em .45em;margin:0 -.25em;
+${s.light} mark[data-form=o]{padding:.18em .45em;margin:0 -.25em;
   background-image:var(--o-set);
   background-size:.62em 100%,calc(100% - .96em) 100%,.62em 100%;
   background-position:0 50%,50% 50%,100% 50%}
-${ringGrips()}
-${ringInks(p.lineLight, p.auxLight, '.prose')}
-${ringDies(p.lineLight, p.auxLight, '.prose')}
-${ringInks(p.lineDark, p.auxDark, '.dark .prose')}
-${ringDies(p.lineDark, p.auxDark, '.dark .prose')}
+${ringGrips(s.light)}
+${ringInks(p.lineLight, p.auxLight, s.light)}
+${ringDies(p.lineLight, p.auxLight, s.light)}
+${ringInks(p.lineDark, p.auxDark, s.dark)}
+${ringDies(p.lineDark, p.auxDark, s.dark)}
 `.trim()
+}
+
+/**
+ * The whole pen for a page that is not this blog (ADR 0048): both halves under `.pen`, in
+ * the inks given. Served at `/pen.css` by `web/pen-css.ts`.
+ */
+export function inkEmbedCss(p: InkPalette = BUILT_IN_INKS): string {
+  return `${inkHighlightCss(p, EMBED_SCOPE)}\n${inkLinesCss(p, EMBED_SCOPE)}`
 }
 
 /** The built-in sheets, for every caller that has no opinion about ink. */
