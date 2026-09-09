@@ -113,7 +113,7 @@ the proxy that just handed over the connection, and it is the only entry in the 
 any reason to believe. Caddy needs none of this: it replaces the header with the peer it saw.
 
 **`CF-Connecting-IP` is believed only once the Cloudflare zone is filled in** under
-Settings → Comments & mail. That is not a preference, it is the difference between a header that
+Settings → Server & connections. That is not a preference, it is the difference between a header that
 means something and one that does not: Cloudflare overwrites it, and no other proxy touches
 it. Measured on 2026-09-01 through a real Caddy in front of the app — 45 requests against a
 30-per-minute cap, each carrying a different made-up `CF-Connecting-IP`, were refused **zero**

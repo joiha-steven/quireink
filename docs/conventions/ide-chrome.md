@@ -1,8 +1,8 @@
 # IDE chrome — one switch, `settings.ideChrome` (HARD RULES)
 
 The furniture around the article reads as source code; the reading column stays analogue.
-The contrast is the point, and because it is a taste it is a switch (Admin → Appearance →
-Rendering), server-rendered as `<html data-ide-chrome="on">` so the first paint is right
+The contrast is the point, and because it is a taste it is a switch (Admin → Settings →
+Account → This admin), server-rendered as `<html data-ide-chrome="on">` so the first paint is right
 and no island runs.
 
 - **Every rule hangs off `html[data-ide-chrome=on]`.** Off leaves not a trace. Tested.

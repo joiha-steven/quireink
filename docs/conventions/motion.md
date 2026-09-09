@@ -29,7 +29,7 @@ four values for three intents.
   rule at a time: the admin did, and every Tailwind `transition`, six skeleton pulses and the
   sidebar's width kept moving with the switch off. A STATE that must survive with motion off
   (the progress bar's static two-thirds) is a rule of its own under both gates; a duration
-  never is. Toggle in Admin → Appearance → Rendering.
+  never is. Toggle in Admin → Settings → Account → This admin.
 - ⚠️ **The gates do NOT zero the tokens** (measured: `--dur-base` still reads .2s with the
   switch off). Script therefore never reads a token to decide whether to move: it asks
   `motionOn()` — the attribute and the media query — and `scrollBehavior()` for any

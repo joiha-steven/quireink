@@ -131,15 +131,15 @@
   log, rendered as the inverted (ink-on-ink) chip in `ActivityLog.tsx` — the admin is
   monochrome, so "error" is the one chip printed in reverse. Only genuine errors land here
   (validation 400s use `fail()`).
-- **Overview (`Overview.tsx`):** the admin home. A header with a **New post** action, five **stat
-  cards** — Posts / Pages / Comments / Images / Storage (each links to its section; Comments = sum of
-  `countsByPosts()` when comments are on) — then the **dashboard widgets** (`DashboardWidgets.tsx`): a
-  **Traffic** card (30-day views + visitors with an inline sparkline + last-7-days, from
-  `getAnalytics(30)`), **Most viewed** (top 5 posts/pages by all-time views, `getViewTotals` mapped to
-  titles), and **Needs attention** (**draft count only** — unused-media is deliberately excluded, too
-  heavy to compute per load; no "pending comments" — comments publish on submit). Below that a **Recent
-  activity** list (latest few from `getActivity`, gated by `features.activityLog`, "view all" → Log) and
-  a one-line **system footer** — DB reachability · storage · a **View site** link, from `getSystemInfo()`.
+- **Overview (`Overview.tsx`, data from `src/web/admin/views-home.ts`):** the admin home, in the
+  owner's question order ([ADR 0024](../decisions/0024-the-admin-is-rebuilt-around-writing.md) step 6,
+  [admin-design.md](../admin-design.md)). A header with a **New post** action, a first-run checklist
+  that takes itself off once done, the **Traffic** strip full width (30-day views, visitors, dwell,
+  read-through, sparkline), then **Pick up where you left off** (`PickUpBand.tsx`: the four newest
+  unfinished posts and pages, each opening the editor), then a 2×2 of `DashboardWidgets.tsx`: **Needs
+  attention** (published posts with no excerpt or no share image, each row a filter into the write
+  pane), **Most viewed**, **Sources** and **Recent activity** (gated by `features.activityLog`). The
+  five counts (Posts / Pages / Comments / Images / Storage) come LAST as a `StatBand`, then the system line.
 - **The editorial redesign** removed the old home-page duplicate cards (SEO health, traffic sources,
   quick-actions row, taxonomy breakdown, and the rich system panel) — that data lives on its own pages
   now; only the compact footer remains. See `docs/admin-design.md`.

@@ -53,7 +53,7 @@ Stated so a report can say which of these is wrong, which is more useful than a 
   every tool that writes waits for the owner's click (`docs/features/admin.md`, the assistant).
 - The HTML the software itself writes ships **no inline script**, which is what lets the
   recommended CSP omit `'unsafe-inline'` from `script-src`. A report that this is violated
-  is a real finding. The one exception is by design: **Connections → Custom code** inserts
+  is a real finding. The one exception is by design: **Server & connections → Custom code** inserts
   whatever the owner pastes, verbatim, on public pages only (never the admin, the sign-in
   page or a preview). That is the owner's script on the owner's site, and it runs only where
   the owner's own policy allows it.

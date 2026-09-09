@@ -76,7 +76,7 @@ between a line here and the running software is either a bug or an unrecorded `â
 
 ## 12. Settings
 
-- ONE form, ONE save, five tabs (now eight: [admin.md](../features/admin.md)), `?tab=` deep links
+- ONE form, ONE save, five tabs (seven since ADR 0041: [admin.md](../features/admin.md)), `?tab=` deep links
 - Save calls a refresh so the admin shell and public header update immediately
 - Site: title, logo, header menu, language, content width, sidebar layout, most-viewed count,
   featured slugs
