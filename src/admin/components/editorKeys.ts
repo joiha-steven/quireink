@@ -24,7 +24,7 @@
 export type Shortcut = { id: string; chord: string; does: string }
 
 export const SHORTCUTS: Shortcut[] = [
-  { id: 'save', chord: 'Mod-s', does: 'Save the draft. The editor autosaves to this device only, never to the server — this is what puts the work on the server.' },
+  { id: 'save', chord: 'Mod-s', does: 'Save the draft. Autosave keeps a copy on this device and on the server, but only Save writes the piece itself — the text a preview or a Publish reads.' },
   { id: 'link', chord: 'Mod-k', does: 'Add a link, or edit the one the cursor is inside. Clearing the box removes it.' },
   { id: 'ink', chord: 'Mod-Shift-h', does: 'Highlighter over the selection (==text==).' },
   { id: 'ring', chord: 'Mod-Shift-o', does: 'Ballpoint ring around the selection (@@word@@).' },
