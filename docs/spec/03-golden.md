@@ -38,7 +38,7 @@ golden/
 The gate itself is [`src/render/golden.test.ts`](../../src/render/golden.test.ts): every
 fixture, byte-identical, in `bun test`. The crawl-and-diff half described below —
 `capture.ts` against a running 1.x instance, `compare.ts`, `accepted.yaml`, `report.html`
-— was **planned and not built**; the corpus proved sufficient and the URL crawl was never
+— was **planned and not built**; the corpus gate replaced them, and the URL crawl was never
 needed.
 
 `golden/v1/corpus/` is committed. Regenerating it is a reviewed change, because it
@@ -50,16 +50,8 @@ Runs against a local Quire v1 (`docker compose -f docker-compose.dev.yml up -d` 
 `npm run dev`) loaded with a **copy of production data**. Not seed data: the point is to
 exercise the real corpus, including the posts with unusual markdown.
 
-URLs crawled:
-
-1. Every post and page slug, live and draft (draft via `/preview/{slug}`)
-2. Every category, tag and series page, and every pagination page of each
-3. `/`, `/page/{n}` for all n
-4. `/feed.xml`, `/sitemap.xml`, `/sitemaps.xml`, `/robots.txt`, `/llms.txt`,
-   `/manifest.webmanifest`
-5. `/api/md/{slug}` for every slug
-6. `/og?...` for a representative 20 posts
-7. Each of the 6 locales and each of the 6 theme palettes for a representative subset
+(The list of URL classes the crawl would have covered stood here until 2026-09-10; it named
+six locales where there are now eleven, for a crawler that was never built.)
 
 ### Normalisation before storing
 
@@ -130,12 +122,6 @@ porting bug in the surrounding pipeline, not a parser difference.
   golden comparison is what proves it did. The read path self-heals on a miss, so a
   failure here shows up as a slow first render rather than wrong output, which is exactly
   the kind of silent gap a byte comparison is good at catching.
-
-## The crawl tooling was not built
-
-`capture.ts`, `compare.ts`, `accepted.yaml` and `report.html` were planned and not built: the
-corpus gate above (`src/render/golden.test.ts` over `golden/v1/corpus/`, on every commit)
-replaced them.
 
 ## What this harness does not cover
 

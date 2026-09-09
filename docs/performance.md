@@ -1,7 +1,6 @@
-> Split from CLAUDE.md — the **resource-loading law**: how fonts, CSS, and JS reach a
-> reader. One rule set, applied system-wide (every language, every font preset, every
-> uploaded font). Touching `src/web/layout.ts`, the font helpers in `src/content/fonts.ts`,
-> the `src/web/*.css.ts` sheets, or adding an island? Read this first.
+> The **resource-loading law**: how fonts, CSS and JS reach a reader, one rule set for every
+> language, font preset and uploaded font. Read when touching `src/web/layout.ts`,
+> `src/content/fonts.ts`, a `src/web/*.css.ts` sheet, or adding an island.
 
 # Performance — resource loading (fonts · CSS · JS)
 

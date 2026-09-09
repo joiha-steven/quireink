@@ -1,7 +1,7 @@
 # Docker, instead of systemd
 
-> Split out of [`self-host.md`](self-host.md) on 2026-08-25: a complete alternative to the
-> native install rather than a step inside it.
+> A complete alternative to the native install in [`self-host.md`](self-host.md), not a step
+> inside it. Read when touching the image, the compose files or `deploy/`.
 
 The native guide's sections **1, 2, 4 and 9** are replaced by what follows. Still yours to
 do from [`self-host.md`](self-host.md): **nginx** (section 5), **your account** (section 6 —

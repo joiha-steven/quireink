@@ -1,5 +1,5 @@
-> Split from the README's MCP section — worked examples of what an agent can DO with the
-> tool surface, for owners. The tool internals live in [`mcp.md`](./mcp.md); the discovery
+> Worked examples of what an agent can DO with the tool surface, for owners; read when
+> writing a prompt or a connector guide. The tool internals live in [`mcp.md`](./mcp.md); the discovery
 > endpoints in [`agent-ready.md`](./agent-ready.md).
 
 # Agent cookbook

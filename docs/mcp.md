@@ -1,4 +1,4 @@
-> Split from CLAUDE.md — read when touching the MCP server (`/api/mcp`, `src/mcp/`), its tokens, or the OAuth flow.
+> Read when touching the MCP server (`/api/mcp`, `src/mcp/`), its tokens, or the OAuth flow.
 
 # MCP server — `/api/mcp` + `src/mcp/`
 

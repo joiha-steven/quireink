@@ -1,6 +1,5 @@
-> Split from CLAUDE.md, and split again on 2026-08-11 when the single file reached 400 of 400
-> lines — read when touching typography, header alignment, layout, colour, motion, IDE chrome,
-> i18n, scripts or a release. Hard rules used everywhere stay in
+> Read when touching typography, header alignment, layout, colour, motion, IDE chrome, i18n,
+> scripts or a release. Hard rules used everywhere stay in
 > [`CLAUDE.md`](../../CLAUDE.md); these files are the per-area detail.
 
 # Conventions (detail)
@@ -21,7 +20,7 @@ governs the reader, the rail or the admin.
 | [scripts.md](scripts.md) | What is a script and what is not |
 | [releases.md](releases.md) | Which doc a change updates, keeping instance values out, versioning, cutting a release — **and that a GitHub release publishes the Docker image, with no second step** |
 
-Two rules govern the set. **One rule lives in exactly one file** — if a rule appears to belong
-in two, it belongs in the one a person would open first, and the other links to it. And **a
-file at the cap gets split, not squeezed**: `check:docs` fails a markdown file over 400 lines
-and warns from 360, which is what produced this directory.
+The rule that governs the set, one rule in exactly one file, is stated once in
+[`../README.md`](../README.md). Its corollary is what produced this directory: **a file at the
+cap gets split, not squeezed** (`check:docs` fails a markdown file over 400 lines and warns
+from 360).

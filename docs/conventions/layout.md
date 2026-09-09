@@ -2,8 +2,13 @@
 
 ## Header (public) — alignment is a HARD RULE
 
-- Logo + the icon row share ONE flex line (`items-center`) so icons stay on the logo's
-  vertical midline; the description sits below.
+- The bar is `.site-bar` (`src/web/chrome.ts`; rules and their measurements in
+  `src/web/book.css.ts`): ONE flex row, `align-items:center`, end-justified, with
+  `margin-right:auto` on the title (both spellings, `.title` and `.site-h1`, because a listing
+  wraps the name in the page's `h1`) so the name sits at the left edge and everything else
+  against the right, on however many lines. It WRAPS at every width: a title, a menu and five
+  controls do not fit a 672px column (measured at 1648px with four links: the menu wanted 403px
+  and had 321). The tagline sits below the bar.
 - **The logo is auto-sized, never the raw original.** `settings.logoUrl` = the owner's
   untouched source; the header renders `settings.logoRenderUrl` (small WebP scaled to
   `logoWidth` @2x for retina, built on save by `renderLogo` in `files.ts`), falling back to
@@ -14,12 +19,14 @@
   palette circles, applied-theme sun/moon, and the asymmetric two-line menu. They use a 24px
   viewBox and render at 20px with 1.5–1.6px round strokes. A four-dot palette, split-contrast
   theme mark, and three-line menu were tried on 2026-07-12 and reverted; do not reintroduce
-  them without visual approval. Their shared 40px button chrome still comes from `ICON_BTN`.
-- **The icon row is pulled right by `-mr-2.5` (10px) so the LAST glyph aligns flush with the
-  content column's right margin** — the 40px button centers a 20px glyph, leaving a 10px inset;
-  without the negative margin the rightmost icon sits 10px inside the margin while the logo is
-  flush-left (asymmetric). Every icon shares `ICON_BTN`, so this aligns whichever icon is last
-  (theme when palettes/grid are off; menu on mobile). Verified with a Playwright edge measure.
+  them without visual approval. Their shared 40px button chrome is `.icon-btn` (2.5rem square,
+  `var(--radius)`), never a copied class list.
+- **`.site-actions` is pulled right by `margin-right:-.625rem` (10px) so the LAST glyph aligns
+  flush with the content column's right margin** — the 40px button centres a 20px glyph, leaving
+  a 10px inset; without the negative margin the rightmost icon sits 10px inside the margin while
+  the logo is flush-left. Every icon shares `.icon-btn`, so this aligns whichever icon is last
+  (theme when palettes/grid are off; menu on mobile). Nothing measures the flush edge for you:
+  verify the rendered header before shipping.
 
 ## The article's section break is a SHORT centred rule (HARD RULE)
 
@@ -38,7 +45,8 @@ inside it. In book mode the same break becomes the asterism.
   settings/editor save bars offset past it). Nav links use `headerActions.ts` `SIDEBAR_NAV` (active
   links add `SIDEBAR_NAV_ACTIVE`); the footer holds the **light/dark toggle + Clear cache + Sign out**
   (palette selection moved to the public site); on mobile
-  it's a hamburger drawer (always icon+label). (`ADMIN_NAV` is the older horizontal variant.)
+  it's a hamburger drawer (always icon+label). (`ADMIN_NAV`, the inline `h-9` box, is the base
+  `SIDEBAR_NAV` was derived from, and still what `CacheButton` wears by default.)
   By default it lists **four destinations** and puts the rest behind one "Everything else" button
   (the owner can reorder and hide rows: [admin-design.md](../admin-design.md))
   ([ADR 0024](../decisions/0024-the-admin-is-rebuilt-around-writing.md) step 6) — the group is
@@ -49,11 +57,10 @@ inside it. In book mode the same break becomes the asterism.
 - **Never put `overflow-hidden` on the editor frame:** it creates a scroll container and
   prevents the toolbar from sticking to the viewport. (The toolbar wraps by owner verdict,
   2026-08-17: [features/editing.md](../features/editing.md).)
-- **Header/menu alignment must be pixel-exact — the owner is very sensitive and it has drifted
-  repeatedly.** Every header-row item (incl. the bigger brand wordmark) is an
-  `inline-flex h-9 items-center` box; the row is `items-center`. NEVER align a bigger wordmark
-  by `items-baseline` (the recurring bug); never leave an item without the `h-9` box. Verify the
-  rendered result before shipping.
+- **Admin rows align by a fixed-height box, never by baseline.** `ADMIN_NAV`
+  (`headerActions.ts`) is `inline-flex h-9 items-center` and `SIDEBAR_NAV` is the same box laid
+  out as a row; an item that opts out of the box, or a larger wordmark aligned by
+  `items-baseline`, is the drift this rule exists for. The public bar's rule is above.
 - **One divider style site-wide:** the global `<hr>` (full width, faint). Never bespoke
   `border-t`/`border-b` as content dividers; never ALL-CAPS (no `uppercase`) in shipped UI.
 - **The sidebar rail never moves the reading column.** `.rail` is absolutely placed inside

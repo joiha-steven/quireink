@@ -3,13 +3,6 @@
 What the admin admits to being, and what a change to it may not break. Read this before
 touching a screen under `src/admin`.
 
-This file used to be a LOG: five dated sections, each recording what one pass changed, in
-the order the passes happened. That is a snapshot, and snapshots live in the private
-repository (ADR 0017) — the dated report of any given pass is not here and does not belong
-here. `check:docs` only rejects a dated FILENAME, so this drifted for a month without
-failing anything. What is below is the same knowledge rewritten as rules that hold today,
-with the measurement that produced each one kept where it is the reason to believe the rule.
-
 ## What the admin is
 
 An application workspace, not a reading surface. It shares the product's quiet, editorial

@@ -1,4 +1,4 @@
-> Split from CLAUDE.md — read when touching SEO toggles, sitemap/feed/llms/robots, OG image, PWA, or the web manifest.
+> Read when touching SEO toggles, sitemap/feed/llms/robots, OG image, PWA, or the web manifest.
 
 # SEO & PWA
 

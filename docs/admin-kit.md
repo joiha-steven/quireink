@@ -1,7 +1,6 @@
 # The admin kit, one of each
 
-Split from [admin-design.md](./admin-design.md) at its 400-line cap. That file says what
-the admin IS; this one says the kit's rules — found by photographing and measuring the
+[admin-design.md](./admin-design.md) says what the admin IS; this one says the kit's rules — found by photographing and measuring the
 running admin, enforced by `check:admin-kit` and the primitives themselves.
 
 ## One of each

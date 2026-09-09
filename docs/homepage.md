@@ -1,5 +1,5 @@
-> Split out of the feature docs when that file hit its 700-line cap. What `/` serves, and what
-> happens to the post list when it is no longer there.
+> What `/` serves, and what happens to the post list when it is no longer there. Read when
+> touching `src/web/home-mode.ts` or the front-page settings.
 
 # Homepage mode
 

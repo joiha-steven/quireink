@@ -1,9 +1,9 @@
 # Getting from one screen to the next
 
 What the admin does BETWEEN screens: how a route change is committed, what says it is
-happening, and what happens when the file a screen needs is not there any more. Split from
-[`admin-design.md`](./admin-design.md) on 2026-08-28: everything here is about time, not
-appearance. Read this one before touching `router.tsx`, `App.tsx`, `ui/TopProgress.tsx` or
+happening, and what happens when the file a screen needs is not there any more. Everything
+here is about time, not appearance ([`admin-design.md`](./admin-design.md) has the look).
+Read this one before touching `router.tsx`, `App.tsx`, `ui/TopProgress.tsx` or
 `ui/stale-build.ts`.
 
 ## The cost of a first click

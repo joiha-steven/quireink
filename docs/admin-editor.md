@@ -1,8 +1,7 @@
 # The editor's own contract
 
-The rules that are true of the WRITING SURFACE and of nothing else in the admin. Split out
-of [`admin-design.md`](./admin-design.md) on 2026-08-24, when the key-feedback rework put
-that file over its 400-line cap.
+The rules that are true of the WRITING SURFACE and of nothing else in the admin; the rest of
+the admin is [`admin-design.md`](./admin-design.md). Read when touching the editor.
 
 The seam is real rather than arithmetic. Every other screen in this admin is a form or a
 list, and the visual contract next door is written for those: cards, gaps, one setting, one
