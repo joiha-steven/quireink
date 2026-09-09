@@ -38,7 +38,7 @@ export type { Ink } from '@/pen/grammar'
 export { inkExtension, underExtension, ringExtension } from '@/pen/marked'
 export {
   PEN_LIGHT, PEN_DARK, PEN_AUX_LIGHT, PEN_AUX_DARK, PEN_LINE_LIGHT, PEN_LINE_DARK,
-  penStroke, penUnder, penRing, penDash, penSolidRule,
+  penStroke, penStrokeFlat, penUnder, penRing, penDash, penSolidRule,
   PEN_DIE_COUNT, PEN_VARIANT_COUNT, PEN_GRIPS,
   UNDER_DIE_COUNT, UNDER_GRIPS, RING_DIE_COUNT, RING_GRIPS,
 } from '@/pen/pigments'

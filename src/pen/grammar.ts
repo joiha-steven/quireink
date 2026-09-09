@@ -12,7 +12,7 @@
 // The markup is deliberately the ONLY thing the parsers decide. What the stroke looks like is
 // CSS (`pen/ink.css.ts`), because rendered bodies are cached under a hash of their Markdown:
 // a stroke baked into the HTML could not be restyled without evicting every cached body.
-import { PEN_VARIANT_COUNT } from '@/pen/dies'
+import { PEN_SHORT_CHARS, PEN_SHORT_FROM } from '@/pen/dies-kit'
 
 /**
  * The five pigments, and the order is the order they are offered in.
@@ -85,14 +85,22 @@ export const inkOf = (raw: string): Ink => {
  */
 export const INK_SYNTAX_GLOBAL = new RegExp(INK_SYNTAX_SOURCE, 'g')
 
-/** FNV-1a, folded to a pen-variant number. Stable by construction — cached bodies carry it. */
+/**
+ * FNV-1a of the gesture's source, folded to a pen-variant number — from the SHORT half of
+ * the deck when the words inside the fences run to four or so, from the long half otherwise.
+ * A hand does different things to a word and to a sentence (`dies-highlight.ts`), and the
+ * only place that knows which it is marking is here, at render time. Stable by construction:
+ * cached bodies carry the number.
+ */
 export function penSeed(raw: string): number {
   let h = 0x811c9dc5
   for (let i = 0; i < raw.length; i++) {
     h ^= raw.charCodeAt(i)
     h = Math.imul(h, 0x01000193)
   }
-  return (h >>> 0) % PEN_VARIANT_COUNT
+  const inner = raw.replace(/^(==|\+\+|@@)/, '').replace(/(==|\+\+|@@)(#[a-z]+)?$/, '')
+  const half = inner.length <= PEN_SHORT_CHARS ? PEN_SHORT_FROM : 0
+  return half + (h >>> 0) % PEN_SHORT_FROM
 }
 
 /* ------------------------------------------------------------------------------------- *

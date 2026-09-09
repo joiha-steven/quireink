@@ -22,7 +22,7 @@
 
 import type { SatoriOptions } from 'satori'
 import { DEFAULT_THEME } from '@/content/themes'
-import { PEN_LIGHT, penStroke } from '@/pen/pigments'
+import { PEN_LIGHT, penStrokeFlat } from '@/pen/pigments'
 import interLatin from '@/render/fonts/inter-latin.woff' with { type: 'file' }
 import interLatinExt from '@/render/fonts/inter-latin-ext.woff' with { type: 'file' }
 import interVietnamese from '@/render/fonts/inter-vietnamese.woff' with { type: 'file' }
@@ -103,7 +103,7 @@ const { bg: PAPER, heading: HEADING, text: TEXT, meta: META, rule: RULE } = DEFA
  * compares the two — which is what the old comment described and what nothing did.
  */
 const STROKE = {
-  backgroundImage: penStroke(PEN_LIGHT.yellow),
+  backgroundImage: penStrokeFlat(PEN_LIGHT.yellow),
   backgroundSize: '100% 100%',
   backgroundRepeat: 'no-repeat',
 } as const

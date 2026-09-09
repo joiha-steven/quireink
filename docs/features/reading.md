@@ -120,8 +120,10 @@
 
 - **Highlighter:** `==text==` → `<mark data-pen=…>`; `==text==#green` adds `data-ink=…` (5 inks).
   Inline marked extension, so bold/links/code ride under one stroke; `==` may not open/close on
-  space, so `x == y` is untouched. The look is CSS, never markup (`src/pen/ink.css.ts`): 10 grown
-  dies × 40 grips (`src/pen/dies.ts`), dealt per highlight by the `data-pen` hash of its own
+  space, so `x == y` is untouched. The look is CSS, never markup (`src/pen/ink.css.ts`): 12 grown
+  dies × 80 grips (`src/pen/dies-highlight.ts`), each die carrying its physics — fibre grain,
+  edge tremor, wet-to-dry — applied inside the data-URI (ADR 0042); dealt per highlight by the
+  `data-pen` hash of its own
   text — identity in the markup, appearance in the sheet. ADR 0018, amended by 0025.
 - **Underline & ring:** `++text++` → `<u data-pen>` (graphite pencil; `#green` picks a
   ballpoint-strength ink) and `@@word@@` → `<mark data-form="o" data-pen>` (red ballpoint). Same

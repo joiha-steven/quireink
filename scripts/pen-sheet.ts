@@ -6,7 +6,8 @@
 
 import { PEN_AUX_DARK, PEN_AUX_LIGHT, PEN_DARK, PEN_LIGHT, penRing, penStroke, penUnder } from '@/pen/pigments'
 import {
-  PEN_DIE_COUNT, PEN_GRIPS, RING_DIE_COUNT, RING_GRIPS, UNDER_DIE_COUNT, UNDER_GRIPS,
+  PEN_DIE_COUNT, PEN_GRIPS, PEN_SHORT_FROM, RING_DIE_COUNT, RING_GRIPS, UNDER_DIE_COUNT,
+  UNDER_GRIPS,
 } from '@/pen/dies'
 
 const inks = Object.entries(PEN_LIGHT)
@@ -37,9 +38,14 @@ for (let d = 0; d < PEN_DIE_COUNT; d++) {
 const words = ['một cụm ngắn', 'a mid-length highlighted phrase in a line',
   'một câu được tô dài hơn hẳn, đủ để kéo khuôn giãn ra và ngắt qua dòng nếu cột hẹp lại']
 let grips = ''
+// The deal is by length (`grammar.ts`): the first half of the variants goes to phrases that
+// run long, the second to a word or two — so the sheet shows each half on what it would mark.
+const shortWords = ['một cụm ngắn', 'cease', 'phải nhớ lấy', 'a load-bearing word']
 PEN_GRIPS.forEach((g, i) => {
+  const short = i >= PEN_SHORT_FROM
+  const text = short ? shortWords[i % shortWords.length] : words[1 + (i % 2)]
   grips += `<p>v${i} (die ${g.die}, h ${g.h}) — trước <mark class="v${i} d${g.die} ${inks[i % 5]![0]}">`
-    + `${words[i % words.length]}</mark> sau.</p>`
+    + `${text}</mark> sau.</p>`
 })
 
 // The underline and the ring, dealt across the same variants.
@@ -89,7 +95,7 @@ console.log(`<!doctype html><meta charset="utf-8"><title>pen proof sheet</title>
 <style>${css}</style>
 <body style="font:17px/1.55 Georgia,serif;max-width:720px;margin:2rem auto;color:#222;background:#faf9f6">
 <h2>Dies × stretch × pigment</h2><table>${rows}</table>
-<h2>The 40 grips on words</h2>${grips}
+<h2>The 80 grips on words — long hand first, short hand from v40</h2>${grips}
 <h2>Underlines</h2>${unders}
 <h2>Rings</h2><p style="line-height:2.4">${ringsRow}</p>
 <div class="dark" style="background:#17181a;padding:1rem;margin-top:2rem"><p style="color:#eee">dark mode</p>${darks}</div>`)

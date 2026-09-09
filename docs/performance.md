@@ -157,7 +157,7 @@ gzipped, paid by every page including the ones with no ink on them. It now ships
 same immutable footing, linked render-blocking right after `site.css` — but only when
 `penSheetsFor` (`web/assets.ts`) finds the elements they paint in the page's HTML. After
 the split `site.css` is **7.6 KB gzipped**; an inkless page carries nothing of the pen, a
-marked page carries exactly what it shows, and no page's pixels or paint order change.
+marked page carries exactly what it shows, and no page's pixels or paint order change. Since [ADR 0042](./decisions/0042-the-pen-inks-unevenly.md) the two sheets weigh **19.6 KB and 15.2 KB gzipped**: each stroke carries its felt, a filter and a gradient inside the data-URI.
 Deferred loading was rejected: a stylesheet that arrives late shows bare words before the
 ink lands.
 

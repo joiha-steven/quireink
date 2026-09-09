@@ -82,7 +82,7 @@ export const PEN_LINE_DARK: Record<PenInk, string> = {
 
 // The die shapes are GROWN from a seeded generator rather than drawn — `pen-dies.ts` holds
 // the hand and the argument for it. This module stays the single place a pigment exists.
-import { DIES, RING_DIES, UNDER_DIES } from '@/pen/dies'
+import { DIES, RING_DIES, UNDER_DIES, type Die } from '@/pen/dies'
 import { LINK_DASH_DIE, LINK_SOLID_DIE } from '@/pen/dies-link'
 export {
   PEN_DIE_COUNT, PEN_VARIANT_COUNT, PEN_GRIPS,
@@ -106,6 +106,26 @@ export {
  */
 export function penStroke(hex: string, die = 0): string {
   return penUrl(DIES[die]!, hex, 34)
+}
+
+/**
+ * The same stroke with no physics — the paths alone, inked flat. For the share card:
+ * satori hands the SVG to a rasteriser that draws neither the filter nor the gradient, so
+ * the card would get the ghost pass alone and a title sitting on a barely-tinted box. At
+ * card size the fibres would not read anyway.
+ */
+export function penStrokeFlat(hex: string): string {
+  // One printing of each outline, plain. The ghost and the wet sweep share an outline and
+  // the rasteriser behind the card draws neither a `<use>` nor a gradient, so the sweep is
+  // printed once, at the density a wet felt lays down (.8 — the top of the sweep's range,
+  // and the value the first pen inked every stroke at). Nothing else changes.
+  const byOutline = new Map<string, string>()
+  for (const [d, o, mode] of DIES[0]!.paths) {
+    if (mode === 'w') byOutline.set(d, '.8')
+    else if (!byOutline.has(d)) byOutline.set(d, o)
+  }
+  const paths = [...byOutline].map(([d, o]) => [d, o] as const)
+  return penUrl({ paths }, hex, 34)
 }
 
 /** An underline stroke: the same contract as `penStroke`, in the underline's 200×20 box. */
@@ -136,11 +156,60 @@ export function penSolidRule(hex: string): string {
   return penUrl(LINK_SOLID_DIE, hex, 16, undefined, 240)
 }
 
-function penUrl(die: readonly (readonly [string, string])[], hex: string, boxH: number,
-  extra = '', boxW = 200): string {
-  const paths = die
-    .map(([d, o]) => `%3Cpath d='${d}' fill='%23${hex}' opacity='${o}'${extra}/%3E`)
+/**
+ * The stamp. A die's paths in one pigment, as a `url()` an element can carry — and, when the
+ * die asks for it, the physics inside the same data-URI: a `<filter>` for fibre grain and
+ * edge tremor, a `<linearGradient>` for wet-to-dry. Both must live INSIDE the image, because
+ * an SVG used as a background can reference nothing outside itself.
+ *
+ * `%23` for every `#`: a data-URI in a CSS `url("…")` reads a bare `#` as a fragment and the
+ * image ends there. Quotes, spaces and `=` are left as they are — every browser this site
+ * supports accepts them, and encoding them would double the sheet.
+ */
+function penUrl(die: Die, hex: string, boxH: number, extra = '', boxW = 200): string {
+  const fx = die.fx
+  let defs = ''
+  const fxSteps: string[] = []
+  if (fx?.grain) {
+    const [gx, gy, gain, bias] = fx.grain
+    fxSteps.push(`%3CfeTurbulence type='fractalNoise' baseFrequency='${gx} ${gy}' numOctaves='3' seed='${fx.seed}' result='n'/%3E`
+      + `%3CfeColorMatrix in='n' type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ${gain} ${bias}' result='a'/%3E`)
+  }
+  if (fx?.tremor) {
+    const [tf, ts] = fx.tremor
+    fxSteps.push(`%3CfeTurbulence type='turbulence' baseFrequency='${tf}' numOctaves='1' seed='${fx ? fx.seed + 3 : 0}' result='d'/%3E`
+      + `%3CfeDisplacementMap in='SourceGraphic' in2='d' scale='${ts}' xChannelSelector='R' yChannelSelector='G' result='s'/%3E`)
+  }
+  if (fxSteps.length > 0) {
+    const src = fx?.tremor ? 's' : 'SourceGraphic'
+    if (fx?.grain) fxSteps.push(`%3CfeComposite in='${src}' in2='a' operator='in'/%3E`)
+    // The default filter region (-10%..120%) already covers a displaced edge; naming one
+    // costs ~60 bytes a stroke for nothing.
+    defs += `%3Cfilter id='f'%3E${fxSteps.join('')}%3C/filter%3E`
+  }
+  if (fx?.wet) {
+    const [dir, from, o0, o1, o2] = fx.wet
+    defs += `%3ClinearGradient id='g' x1='${dir}' x2='${1 - dir}'%3E`
+      + `%3Cstop offset='0' stop-color='%23${hex}' stop-opacity='${o0}'/%3E`
+      + `%3Cstop offset='${from}' stop-color='%23${hex}' stop-opacity='${o1}'/%3E`
+      + `%3Cstop offset='1' stop-color='%23${hex}' stop-opacity='${o2}'/%3E%3C/linearGradient%3E`
+  }
+  // A die may print the same outline twice (the highlighter's ghost under its wet sweep);
+  // the second printing references the first rather than restating the path data.
+  const seen = new Map<string, number>()
+  const paths = die.paths
+    .map(([d, o, mode = 'p'], i) => {
+      const filtered = mode !== 'p' && fxSteps.length > 0 ? ` filter='url(%23f)'` : ''
+      const fill = mode === 'w' && fx?.wet ? `url(%23g)` : `%23${hex}`
+      // A wet path's gradient runs 1 → .92 → dry, and the path's own opacity scales it: the
+      // sweep is never inked past the value the dark-mode audit was run at.
+      const attrs = ` fill='${fill}' opacity='${o}'${filtered}${extra}`
+      const first = seen.get(d)
+      if (first !== undefined) return `%3Cuse href='%23p${first}'${attrs}/%3E`
+      seen.set(d, i)
+      return `%3Cpath id='p${i}' d='${d}'${attrs}/%3E`
+    })
     .join('')
   return `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${boxW} ${boxH}'`
-    + ` preserveAspectRatio='none'%3E${paths}%3C/svg%3E")`
+    + ` preserveAspectRatio='none'%3E${defs ? `%3Cdefs%3E${defs}%3C/defs%3E` : ''}${paths}%3C/svg%3E")`
 }

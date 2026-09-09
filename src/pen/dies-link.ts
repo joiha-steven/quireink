@@ -14,19 +14,8 @@
 // reordered import could silently redraw every highlight on every site. A separate seed
 // cannot do that: nothing here can move a single stroke over there.
 
-import { o2, r1, wavy } from '@/pen/dies'
-import type { Die, DiePath } from '@/pen/dies'
-
-/* mulberry32 again, seeded differently on purpose — see the note above. */
-function mulberry(seed: number): () => number {
-  let a = seed >>> 0
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0
-    let t = Math.imul(a ^ (a >>> 15), a | 1)
-    t = (t + Math.imul(t ^ (t >>> 7), t | 61)) ^ t
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
-  }
-}
+import { mulberry, o2, r1, wavy } from '@/pen/dies-kit'
+import type { Die, DiePath } from '@/pen/dies-kit'
 
 
 
@@ -45,7 +34,7 @@ function mulberry(seed: number): () => number {
  * under actual words, a line that wanders too far stops reading as a hand and starts
  * reading as a misaligned rule.
  */
-function makeDashDie(r: () => number): Die {
+function makeDashDie(r: () => number): Die['paths'] {
   const lerp = (a: number, b: number) => a + (b - a) * r()
   const paths: DiePath[] = []
   // The whole run leans a little, because a hand does; each dash then leans again on its
@@ -73,7 +62,7 @@ function makeDashDie(r: () => number): Die {
 }
 
 /** One SOLID run, for hover: the same hand pressing down instead of skipping. */
-function makeSolidDie(r: () => number): Die {
+function makeSolidDie(r: () => number): Die['paths'] {
   const lerp = (a: number, b: number) => a + (b - a) * r()
   const y0 = 7 + lerp(-0.4, 0.4)
   const t = lerp(2.3, 3.0)
@@ -87,5 +76,5 @@ function makeSolidDie(r: () => number): Die {
 
 const rand = mulberry(0x0d_a5_11)
 
-export const LINK_DASH_DIE: Die = makeDashDie(rand)
-export const LINK_SOLID_DIE: Die = makeSolidDie(rand)
+export const LINK_DASH_DIE: Die = { paths: makeDashDie(rand) }
+export const LINK_SOLID_DIE: Die = { paths: makeSolidDie(rand) }
