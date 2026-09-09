@@ -93,7 +93,7 @@ history is never needed to fix or understand code.
 - **No VALUE is ever interpolated into SQL.** Values are bound, always. Only a fixed
   IDENTIFIER from a module constant or a closed set may be — a column list (`META_COLS`), the
   `liveOnly()` predicate, a table name, the analytics facet
-  ([`docs/spec/01-schema.md`](./docs/spec/01-schema.md) §3). Sixteen such sites, none reads a
+  ([`docs/spec/01-schema.md`](./docs/spec/01-schema.md) §3). A handful of such sites, none reads a
   request.
 - **Every write route is mounted on the owner-gated router group**, not checked inside the
   handler ([invariant 4](./docs/invariants.md)).
