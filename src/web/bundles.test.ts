@@ -29,12 +29,13 @@ describe('the bundles an article names', () => {
   it('ships deferred scripts only, and a switch-gated bundle only when its switch is on', async () => {
     await savePost({ title: 'Quiet', content: 'body', status: 'published', date: PAST })
     const { features, comments } = await getSettings()
-    await saveSettings({ features: { ...features, bookMode: true }, comments: { ...comments, enabled: true } })
+    await saveSettings({ features: { ...features, bookMode: true, readerPen: true }, comments: { ...comments, enabled: true } })
     let html = await get('/quiet').then((r) => r.text())
-    // The budget is a number, not a vibe: the moment a fifth bundle or an inline block
+    // The budget is a number, not a vibe: the moment a sixth bundle or an inline block
     // appears on an article page, this fails. `core` is the analytics beacon, which every
-    // public page carries; `post` is the islands every article has; the other two ride
-    // ONLY behind their switches, measured 2026-09-06 at three quarters of the old post.js.
+    // public page carries; `post` is the islands every article has; the other three ride
+    // ONLY behind their switches — two measured 2026-09-06 at three quarters of the old
+    // post.js, and the reader's pen since 2026-09-09 (ADR 0043).
     //
     // EXECUTABLE scripts, which is the property the recommended CSP depends on. A
     // `type="application/ld+json"` block is a DATA block: the browser never executes it and
@@ -43,20 +44,21 @@ describe('the bundles an article names', () => {
     // console stayed empty. Counting every `<script` instead made this test fail the day
     // structured data arrived, which is a test failing for being imprecise, not for a bug.
     const executable = (h: string) => h.match(/<script(?![^>]*\btype="application\/ld\+json")/g) ?? []
-    expect(executable(html).length).toBe(4)
+    expect(executable(html).length).toBe(5)
     expect(html).toMatch(/<script src="\/assets\/core\.[a-z0-9]+\.js" defer><\/script>/)
     expect(html).toMatch(/<script src="\/assets\/post\.[a-z0-9]+\.js" defer><\/script>/)
     expect(html).toMatch(/<script src="\/assets\/book-mode\.[a-z0-9]+\.js" defer><\/script>/)
     expect(html).toMatch(/<script src="\/assets\/comment-thread\.[a-z0-9]+\.js" defer><\/script>/)
+    expect(html).toMatch(/<script src="\/assets\/reader-pen\.[a-z0-9]+\.js" defer><\/script>/)
     // No inline block that a browser would RUN.
     expect(html).not.toMatch(/<script(?![^>]*\b(?:src=|type="application\/ld\+json"))/)
     expect(html).not.toContain('onload=')
     expect(html).not.toContain('onclick=')
 
-    // Both switches off: neither bundle is named, so neither is ever fetched. The page
+    // All three switches off: no gated bundle is named, so none is ever fetched. The page
     // cache is emptied by hand because this write does not pass through the owner gate,
     // which is what empties it in production (Invariant 1).
-    await saveSettings({ features: { ...features, bookMode: false }, comments: { ...comments, enabled: false } })
+    await saveSettings({ features: { ...features, bookMode: false, readerPen: false }, comments: { ...comments, enabled: false } })
     clearCache()
     html = await get('/quiet').then((r) => r.text())
     expect(executable(html).length).toBe(2)

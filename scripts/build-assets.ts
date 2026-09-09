@@ -26,6 +26,9 @@ const result = await Bun.build({
     // fetches it (the measurement is in book-mode.ts).
     `${ROOT}src/assets/js/book-mode.ts`,
     `${ROOT}src/assets/js/comment-thread.ts`,
+    // The reader's pen, gated the same way (article.ts): a site with the switch off never
+    // fetches a byte of it.
+    `${ROOT}src/assets/js/reader-pen.ts`,
     // The service worker (ADR 0039). Built here like the islands, but it is NOT a page
     // bundle: it is served from the root as `/sw.js`, because a worker's scope is the
     // directory its script came from and `/assets/` would leave it unable to see a page.
@@ -162,6 +165,11 @@ const BUDGET: Record<string, number> = {
   // opened it, so focus fell to the body: it now follows the reader in and back out.
   'book-mode.js': 7_700,
   'comment-thread.js': 6_700,
+  // The reader's pen: the selection bar, the anchor maths (a text-quote selector, found
+  // again by its surroundings), the store, the note card and the copy gesture it absorbed
+  // from post.js. 9,229 at first landing (2026-09-09), about 3.5 KB gzipped, on a page
+  // that has already chosen to fetch it; each raise gets named here like the others.
+  'reader-pen.js': 9_400,
   // /login only, and NOT loaded with core.js: the sign-in page carries no beacon, no
   // search overlay and no listing controls, so it pays for the reveal toggle, the caps-lock
   // warning and the one-time-code paste, and nothing else.

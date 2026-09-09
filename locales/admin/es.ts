@@ -776,6 +776,8 @@ const es = {
   featReadNextDesc: 'Una señal al final de cada entrada: la siguiente parte de su serie, o la entrada vecina.',
   featResume: 'Recordar la posición de lectura',
   featResumeDesc: 'Al volver a una entrada a medio leer, ofrece continuar donde el lector lo dejó. Se guarda solo en su navegador.',
+  featReaderPen: 'El lápiz del lector',
+  featReaderPenDesc: 'Los lectores pueden resaltar, subrayar, rodear y anotar una entrada. Las marcas se quedan en su navegador y nunca se envían. Desactivado quita el gesto.',
   featDeckDesc: 'Muestra el extracto bajo el título de la entrada, encima del cuerpo.',
   seoCanonical: 'Dirección del sitio (canónica)',
   seoCanonicalHint: 'Se usa para el sitemap, el RSS, el schema, llms.txt, la imagen OG y la etiqueta canónica. En blanco se usa SITE_URL — y si tampoco está definida, todo eso dice http://localhost:3000, que los lectores nunca ven y los rastreadores ven siempre.',

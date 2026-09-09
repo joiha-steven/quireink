@@ -60,6 +60,7 @@ export const DEFAULT_FEATURES: FeatureSettings = {
   bookMode: true,
   readNext: true,
   resume: true,
+  readerPen: true,
   infiniteScroll: false,
   gridView: true,
   // ON, because it is what every install has done since M2 and turning it off for existing

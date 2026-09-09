@@ -71,6 +71,7 @@ export function PostBodyFields({ features, onChange }: Omit<Props, 'relatedCount
     { key: 'toc', label: t.featToc, desc: t.featTocDesc },
     { key: 'progressBar', label: t.featProgress, desc: t.featProgressDesc },
     { key: 'resume', label: t.featResume, desc: t.featResumeDesc },
+    { key: 'readerPen', label: t.featReaderPen, desc: t.featReaderPenDesc },
     { key: 'penUnderline', label: t.featPenUnderline, desc: t.featPenUnderlineDesc },
     { key: 'penRing', label: t.featPenRing, desc: t.featPenRingDesc },
     { key: 'penLists', label: t.featPenLists, desc: t.featPenListsDesc },

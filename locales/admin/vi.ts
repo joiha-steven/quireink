@@ -776,6 +776,8 @@ const vi = {
   featReadNextDesc: 'Cuối mỗi bài gợi một lối đi tiếp: phần sau trong series, không thì bài kế bên.',
   featResume: 'Nhớ chỗ đang đọc',
   featResumeDesc: 'Quay lại bài đọc dở thì mời đọc tiếp từ chỗ dừng. Chỉ lưu trong trình duyệt của người đọc.',
+  featReaderPen: 'Bút cho người đọc',
+  featReaderPenDesc: 'Người đọc tô, gạch, khoanh và ghi chú ngay trên bài. Dấu lưu trong trình duyệt của họ, không gửi đi đâu. Tắt thì không còn cử chỉ này.',
   featDeckDesc: 'Hiện phần tóm tắt dưới tiêu đề bài, trên phần thân bài.',
   seoCanonical: 'Địa chỉ trang (canonical)',
   seoCanonicalHint: 'Dùng cho sitemap, RSS, schema, llms.txt, ảnh OG và thẻ canonical. Để trống sẽ dùng SITE_URL — mà nếu SITE_URL cũng chưa đặt thì tất cả đều ghi http://localhost:3000, người đọc không thấy nhưng công cụ tìm kiếm thì luôn thấy.',

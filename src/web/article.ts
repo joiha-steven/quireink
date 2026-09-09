@@ -12,7 +12,7 @@ import { getSettings, resolveSiteUrl } from '@/content/settings'
 import { getMailStatus } from '@/news/mail'
 import { getCommentEnv } from '@/comments/comment-env'
 import { issueStamp } from '@/comments/stamp'
-import { chromeLabels, siteFooter, siteHeader, subscribeCard } from '@/web/chrome'
+import { siteFooter, siteHeader, subscribeCard } from '@/web/chrome'
 import { heroImage, byline, authorBox } from '@/web/article-blocks'
 import { getSeriesForPost } from '@/content/series'
 import { collapseBlob } from '@/media/blob'
@@ -24,6 +24,7 @@ import { menuBlock } from '@/web/sidebar'
 import { termSlug } from '@/content/taxonomy'
 import { formatCount, formatDate, t } from '@/i18n/i18n'
 import { PUBLIC_SHEET, articleScripts } from '@/web/assets'
+import { articleLabels } from '@/web/article-labels'
 import { ogImageUrl } from '@/render/og'
 import { isPublicallyVisible, clampExcerpt, readingMinutes, toPlainText, wordCount } from '@/utils'
 import { renderDocument, pageStyles } from '@/web/layout'
@@ -293,45 +294,13 @@ export async function renderArticle(slug: string, canonicalPath?: string): Promi
     ? '<div class="progress" aria-hidden="true"><div class="progress-fill"></div></div>'
     : ''
 
-  // The one bundle a reader loads, and the strings it will show them. Each island inside
-  // it checks for its own markup first, so a post with no code blocks and no images runs
-  // a few cheap queries that find nothing rather than downloading a file each.
+  // The bundles a reader loads and the strings they will show them (`article-labels.ts`).
+  // Each island checks for its own markup first, so a post with no code blocks and no
+  // images runs a few cheap queries that find nothing rather than downloading a file each.
   const shell = {
-    bodyData: {
-      ...chromeLabels(settings),
-      copyCode: s.copyCode,
-      copiedCode: s.copiedCode,
-      backToTop: s.backToTop,
-      quoteCopy: s.quoteCopy,
-      quoteCopied: s.quoteCopied,
-      lightboxPrev: s.lightboxPrev,
-      lightboxNext: s.lightboxNext,
-      lightboxClose: s.lightboxClose,
-      commentsHeading: s.commentsHeading,
-      commentsEmpty: s.commentsEmpty,
-      commentReply: s.commentReply,
-      commentDeleted: s.commentDeleted,
-      commentName: s.commentName,
-      commentEmail: s.commentEmail,
-      commentEmailNote: s.commentEmailNote,
-      commentWebsite: s.commentWebsite,
-      commentBody: s.commentBody,
-      commentSubmit: s.commentSubmit,
-      commentError: s.commentError,
-      commentChecking: s.commentChecking,
-      commentSignInGoogle: s.commentSignInGoogle,
-      commentAs: s.commentAs,
-      commentSignOut: s.commentSignOut,
-      commentSignInError: s.commentSignInError,
-      bookMode: s.bookMode,
-      bookModePrev: s.bookModePrev,
-      bookModeNext: s.bookModeNext,
-      bookModeClose: s.bookModeClose,
-      bookModeSmaller: s.bookModeSmaller,
-      bookModeLarger: s.bookModeLarger,
-      ...(post && settings.features.resume ? { resumePrompt: s.resumePrompt } : {}),
-    },
-    scripts: articleScripts(!!post && settings.features.bookMode, commentsMount !== ''),
+    bodyData: articleLabels(settings, s, !!post),
+    scripts: articleScripts(!!post && settings.features.bookMode, commentsMount !== '',
+      !!post && settings.features.readerPen),
     customHead: settings.customHead,
     customBodyEnd: settings.customBodyEnd,
   }

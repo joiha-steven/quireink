@@ -184,6 +184,7 @@ export type FeatureSettings = {
   bookMode: boolean // reader can open a post as a fullscreen 2-column "book" (desktop/iPad)
   readNext: boolean // one pointer at the end of an article: the next part of its series, else the adjacent post
   resume: boolean // coming back to a half-read post offers the reader's own last position (their browser only)
+  readerPen: boolean // readers can highlight, underline, ring and note a post; marks live in their browser only (ADR 0043)
   infiniteScroll: boolean // reveal posts on scroll instead of pagination; adds a date timeline in the right gutter (desktop)
   gridView: boolean // reader can switch the listing to a card grid (header grid/list toggle); off = list only
   offline: boolean // register a service worker so a post the reader already opened still opens with no network (ADR 0039). OFF by default: a worker outlives the page that installed it, and installing one on every existing blog's readers because the software updated is not a decision to make for the owner. Off also UNINSTALLS it from anyone who has it

@@ -69,6 +69,38 @@ export const ISLANDS_CSS = `
 .quote-copy:hover{opacity:.85}
 .quote-copy[hidden]{display:none}
 
+/* The reader's pen (reader-pen.ts): the bar over a selection, the card over a mark, and
+   the note under a paragraph. Same footing as the quote pill — the heading colour on the
+   paper's, so it reads as a control and not as part of the text. The five swatches take
+   the pen's own pigments inline: a highlighter is not UI (ADR 0018). */
+.pen-bar{position:absolute;z-index:40;display:flex;align-items:center;gap:.2rem;
+  padding:.3rem .5rem;border-radius:999px;background:var(--c-heading);color:var(--c-bg);
+  font-family:var(--font-sans);font-size:var(--fs-small);line-height:var(--lh-small);
+  letter-spacing:var(--ls-small);white-space:nowrap}
+.pen-bar[hidden]{display:none}
+.pen-bar button{border:0;background:none;color:inherit;font:inherit;cursor:pointer;
+  padding:.15rem .5rem;border-radius:999px}
+.pen-bar button:hover{background:color-mix(in srgb,var(--c-bg) 16%,transparent)}
+.pen-swatch{width:1.05rem;height:1.05rem;padding:0!important;border-radius:50%;
+  box-shadow:inset 0 0 0 2px var(--c-heading);opacity:.92}
+.pen-swatch:hover{opacity:1}
+.pen-sep{width:1px;height:1em;margin:0 .2rem;background:var(--c-bg);opacity:.35}
+.prose [data-reader]{cursor:pointer}
+.pen-pop{position:absolute;z-index:41;width:min(20rem,calc(100vw - 2rem));padding:.6rem .7rem;
+  border:1px solid var(--c-rule);border-radius:var(--radius,.5rem);background:var(--c-bg);
+  color:var(--c-text);box-shadow:var(--well);font-family:var(--font-sans);
+  font-size:var(--fs-small);line-height:var(--lh-small);letter-spacing:var(--ls-small)}
+.pen-pop[hidden]{display:none}
+.pen-pop textarea{display:block;width:100%;min-height:3.2em;padding:.4rem .5rem;
+  border:1px solid var(--c-rule);border-radius:var(--radius,.5rem);background:var(--c-bg);
+  color:inherit;font:inherit;resize:vertical}
+.pen-del{margin-top:.45rem;padding:0;border:0;background:none;color:var(--c-meta);
+  font:inherit;cursor:pointer}
+.pen-del:hover{color:var(--c-heading)}
+.pen-note{margin:.35em 0 1em;padding:.15em 0 .15em .85em;border-left:2px solid var(--c-rule);
+  color:var(--c-meta);font-family:var(--font-sans);font-size:var(--fs-small);
+  line-height:var(--lh-small);letter-spacing:var(--ls-small);white-space:pre-wrap}
+
 /* A <dialog>, so Escape, focus trapping and the inert background come from the browser.
    The viewer is deliberately NOT themed: a light backdrop behind a photograph is a worse
    reading of the photograph, and readers expect a lightbox to be dark. */

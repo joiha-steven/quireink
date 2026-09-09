@@ -130,6 +130,10 @@
   grammar guards, same hash-dealt dies; the ring is two fixed-width caps plus a stretching middle
   so its end curves never flatten on a long word. Owner toggles `features.penUnderline` /
   `features.penRing` flip the CSS only — cached bodies never re-render. ADR 0026.
+- **The reader's pen:** `src/assets/js/reader-pen.ts` (own bundle, `features.readerPen`), anchored by
+  text-quote selector in `pen-anchor.ts`, stored per path in `localStorage` (`pen-store.ts`).
+  Draws with the writer's elements and sheets, linking the sheets on demand; the quote gesture
+  moves into its bar. ADR 0043.
 - **Lists by the pen:** `src/pen/lists.css.ts` — bullets are ink dots and level dashes (masks painted
   in `currentColor`, so one shape serves every palette), numbered lists count in a Kalam digit
   subset (`/fonts/kalam-digits.woff2`, fetched only when a glyph needs it). A task item

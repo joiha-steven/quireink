@@ -115,6 +115,12 @@ export type Dict = {
   backToTop: string
   quoteCopy: string
   quoteCopied: string
+  readerPenHighlight: string
+  readerPenUnderline: string
+  readerPenRing: string
+  readerPenNote: string
+  readerPenDelete: string
+  readerPenNoteHint: string
   // image lightbox
   lightboxPrev: string
   lightboxNext: string
@@ -1025,6 +1031,8 @@ export type AdminStrings = {
   featReadNextDesc: string
   featResume: string
   featResumeDesc: string
+  featReaderPen: string
+  featReaderPenDesc: string
   // SEO fields
   seoCanonical: string
   seoCanonicalHint: string

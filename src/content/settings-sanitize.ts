@@ -123,6 +123,7 @@ export function sanitizeFeatures(input: unknown, fallback: FeatureSettings): Fea
     bookMode: bool(o.bookMode, fallback.bookMode),
     readNext: bool(o.readNext, fallback.readNext),
     resume: bool(o.resume, fallback.resume),
+    readerPen: bool(o.readerPen, fallback.readerPen),
     infiniteScroll: bool(o.infiniteScroll, fallback.infiniteScroll),
     gridView: bool(o.gridView, fallback.gridView),
     scrollFade: bool(o.scrollFade, fallback.scrollFade),

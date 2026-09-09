@@ -99,7 +99,7 @@ export function settingsFixture(): SiteSettings {
       activityLog: true, transferStats: true, sidebar: true, sidebarSeries: true, leadPost: true,
       sidebarCategories: true, sidebarTags: true, sidebarArchive: true,
       categoryLabel: true, deck: true, penUnderline: true, penRing: true, penLists: true, bookText: false,
-      bookMode: true, readNext: true, resume: true, infiniteScroll: false, gridView: true, scrollFade: true,
+      bookMode: true, readNext: true, resume: true, readerPen: true, infiniteScroll: false, gridView: true, scrollFade: true,
       archive: true, offline: false,
     },
     comments: { enabled: false, turnstile: false, googleAuth: false },

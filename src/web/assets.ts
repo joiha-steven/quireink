@@ -9,6 +9,7 @@ import coreJs from '@/assets/dist/core.js' with { type: 'text' }
 import postJs from '@/assets/dist/post.js' with { type: 'text' }
 import bookModeJs from '@/assets/dist/book-mode.js' with { type: 'text' }
 import commentThreadJs from '@/assets/dist/comment-thread.js' with { type: 'text' }
+import readerPenJs from '@/assets/dist/reader-pen.js' with { type: 'text' }
 import loginJs from '@/assets/dist/login.js' with { type: 'text' }
 import swJs from '@/assets/dist/sw.js' with { type: 'text' }
 import { PUBLIC_CSS } from '@/web/public.css'
@@ -20,6 +21,7 @@ import { minifyCss } from '@/web/css-min'
 /** Bundles by logical name. Adding one is an import and a line. */
 const BUNDLES: Record<string, string> = {
   core: coreJs, post: postJs, login: loginJs, 'book-mode': bookModeJs, 'comment-thread': commentThreadJs,
+  'reader-pen': readerPenJs,
 }
 
 /**
@@ -182,9 +184,10 @@ export function scriptTag(name: string): string {
  * book and a page with no comment block never fetches the thread. Measured 2026-09-06
  * before the split: the two were three quarters of post.js, sent to every reader.
  */
-export function articleScripts(bookMode: boolean, thread: boolean): string {
+export function articleScripts(bookMode: boolean, thread: boolean, readerPen = false): string {
   return scriptTag('core') + scriptTag('post')
     + (bookMode ? scriptTag('book-mode') : '') + (thread ? scriptTag('comment-thread') : '')
+    + (readerPen ? scriptTag('reader-pen') : '')
 }
 
 /**

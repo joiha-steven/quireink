@@ -51,7 +51,7 @@ const words = (slice: string, from: 'start' | 'end') => {
  * that was quoted. A long one is anchored on its two ends — the syntax's own answer, and
  * the reason a link to a paragraph is not a paragraph of link.
  */
-function fragment(quote: string): string {
+export function fragment(quote: string): string {
   if (quote.length <= MAX_WHOLE) return `:~:text=${enc(quote)}`
   const head = words(quote.slice(0, ANCHOR), 'start')
   const tail = words(quote.slice(-ANCHOR), 'end')
@@ -59,6 +59,9 @@ function fragment(quote: string): string {
 }
 
 export function quote(): void {
+  // The reader's pen (`reader-pen.ts`) owns the selection menu where it is on, and carries
+  // this gesture inside it; two menus over one selection is one menu nobody can press.
+  if (document.body.dataset.readerPen) return
   const prose = document.querySelector<HTMLElement>('.prose')
   const text = label('quoteCopy')
   // No clipboard, no button. A control that cannot do its one job is worse than no control,
