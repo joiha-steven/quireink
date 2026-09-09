@@ -121,4 +121,11 @@ html[data-rail=open],html[data-rail=open] body{overflow:hidden}
 /* Below the rail breakpoint the ToC is the drawer, and a post with a long index needs the
    whole column: the listing rail is not on this page to share it with. */
 .toc li{margin-top:.5rem}
+/* The index's heading is a summary, but only the BAND (rail-css.ts, 60rem to the rail
+   breakpoint) lets it fold. Everywhere else it is a heading: display:block drops the
+   disclosure marker, and pointer-events:none keeps a stray click in the gutter or the
+   drawer from putting the whole index away. The details stays open, so nothing is hidden. */
+.toc summary{display:block;pointer-events:none;cursor:default}
+.toc summary::-webkit-details-marker{display:none}
+.toc summary h2{margin-bottom:.75rem}
 `.trim()

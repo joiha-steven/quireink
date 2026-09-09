@@ -72,6 +72,11 @@ from. Rows, in order: **lead → featured → one per category → most read →
   most-viewed beside most-viewed (`listingPage({ noRail: true })`).
 - **The picture comes AFTER the text in source order**, so a phone reads headline → standfirst
   → image with no work, and the desktop grid puts it back on the right. Same as NYT.
+- **The orphan on a two-column screen.** A three-column row between 641 and 900px (an iPad
+  upright) is two columns, so its third card started a line alone beside a hole. The card that
+  starts the last line alone now takes the whole line: with a picture it turns sideways
+  (thumbnail a third, words two thirds), without one its text is capped at a reading measure.
+  CSS only, `front.css.ts`; a one-card row is not an orphan and is left alone.
 - Column counts are **static in the sheet, mobile-first** (1 → 2 at 641px → 3 at 901px). They
   were emitted per render once; that string lands in the page's inline style, after the sheet,
   so it beat the media queries and handed a phone a two-column grid it could not fit.

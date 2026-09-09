@@ -109,6 +109,20 @@ export const FRONT_CSS = `
 @media (min-width:901px){
   .front-grid.cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
+/* THE ORPHAN. A three-column row on a two-column screen (641 to 900, an iPad upright) puts
+   its third card alone on a second line beside an empty cell, and the row ends on a hole.
+   The card that STARTS a line alone at the end of the row takes the whole line instead:
+   with a picture it turns sideways, the thumbnail a third and the words two thirds, so the
+   row closes on a full line; without one the words are capped at a reading measure rather
+   than run across 800px. The odd/last pair is what says "alone on its line" in two columns;
+   a single-card row is excluded because it is not an orphan, it is the row. */
+@media (min-width:641px) and (max-width:900px){
+  .front-grid.cols-3 > .fc:nth-child(odd):last-child:not(:first-child){grid-column:1 / -1}
+  .front-grid.cols-3 > .fc.has-media:nth-child(odd):last-child:not(:first-child){display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:1.5rem;align-items:start}
+  .front-grid.cols-3 > .fc.has-media:nth-child(odd):last-child:not(:first-child) .fc-media{margin:0}
+  .front-grid.cols-3 > .fc:not(.has-media):nth-child(odd):last-child:not(:first-child) .fc-text{max-width:42rem}
+}
 @media (max-width:640px){
   .front{gap:2rem}
   .front-row+.front-row{padding-top:2rem}

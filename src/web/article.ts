@@ -228,12 +228,17 @@ export async function renderArticle(slug: string, canonicalPath?: string): Promi
   const row = (href: string, text: string, extra = '') =>
     `<li><a class="rail-row link-accent t-small${extra}" href="${escapeAttr(href)}">${escapeHtml(text)}</a></li>`
   const contents = post && settings.features.toc && (headings.length > 0 || endLabel)
+    // `details`, open, with the heading as its summary. In the gutter and in the drawer the
+    // summary is inert and this is the plain list it always was; between 60rem and the rail
+    // breakpoint the rail stands ABOVE the article as a band (rail-css.ts), and there the
+    // heading is the fold, so a long index can be put away with one click and no script.
     ? `<nav class="toc" aria-label="${escapeAttr(s.tocIndex)}">
-<h2>${escapeHtml(s.tocIndex)}</h2>
+<details open><summary><h2>${escapeHtml(s.tocIndex)}</h2></summary>
 <ul>${row('#top', post.title, ' is-active')}${
       headings.map((h) => row(`#${h.id}`, h.text,
         mixed ? (h.level === 3 ? ' rail-sub' : ' rail-lead') : '')).join('')
     }${endLabel ? row(`#${endAnchor}`, endLabel, ' toc-end') : ''}</ul>
+</details>
 </nav>`
     : ''
   // ONE MENU, ONE PLACE: the rail, in the position the listing rail already leads with. An

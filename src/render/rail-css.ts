@@ -38,6 +38,42 @@ const INNER =
 export function singleRailCss(colWidth: number): string {
   const at = breakpoint(colWidth)
   return (
+    // THE BAND: from 60rem up to the rail breakpoint the rail is neither a drawer nor a
+    // gutter. Measured at 1024 (an iPad on its side) with the default 672px column the
+    // breakpoint is 1272, so a screen with 176px spare each side had no index at all and a
+    // menu button that opened a drawer over the article. Here the rail stands ABOVE the
+    // article as a band: the menu and the index as wrapped rows of words on a hairline, the
+    // index folding on its own heading (details/summary, article.ts) so a long one can be put
+    // away. The rail is the article's own child, after its header and before its body, so
+    // in flow it stands where a book prints its contents: under the title, above the first
+    // line. Nothing else about the page moves; above the breakpoint the gutter rules take over.
+    `@media (min-width:60rem) and (max-width:${at - 1}px){` +
+    `.rail{position:static;width:auto;height:auto;margin:1.5rem 0 2.5rem;padding:0 0 1.25rem;` +
+    `border:0;border-bottom:1px solid var(--c-rule);background:none;transform:none;visibility:visible;` +
+    `overflow:visible;transition:none}` +
+    `.rail-inner{position:static;max-height:none;overflow:visible}` +
+    `.rail-inner > * + *{margin-top:1rem}` +
+    `.rail h2{margin:0;padding-left:0}` +
+    // The site menu rides in the same band, and a bare row of links under a title reads as
+    // tags; it takes the label the nav already carries for the screen reader.
+    `.rail-inner > nav:not(.toc)::before{content:attr(aria-label);display:block;margin-bottom:.5rem;` +
+    `font-weight:var(--fw-heading,600);color:var(--c-heading);` +
+    `font-size:var(--fs-small);line-height:var(--lh-small);letter-spacing:var(--ls-small)}` +
+    `.rail ul{display:flex;flex-wrap:wrap;gap:.4rem 1.5rem}` +
+    `.rail li,.toc li{margin-top:0}` +
+    `.rail-row{padding-left:0}` +
+    // Row marks turn with the rows: the current section's hairline goes under the word.
+    `.rail-row[aria-current]::after{left:0;right:0;top:auto;bottom:-4px;width:auto;height:2px}` +
+    `.toc-end{margin-top:0}` +
+    // The fold. A chevron drawn in border, from the meta ink, turning when open.
+    `.toc summary{pointer-events:auto;cursor:pointer;display:flex;align-items:center;gap:.5rem;` +
+    `margin-bottom:.6rem}` +
+    `.toc summary h2{margin:0}` +
+    `.toc summary::before{content:"";width:.4em;height:.4em;flex:none;` +
+    `border-right:1.5px solid var(--c-meta);border-bottom:1.5px solid var(--c-meta);` +
+    `transform:rotate(-45deg);transition:transform var(--dur-base) ease}` +
+    `.toc details[open] > summary::before{transform:rotate(45deg)}` +
+    `.rail-toggle,.rail-scrim{display:none}}` +
     `@media (min-width:${at}px){` +
     `.rail{${GUTTER};right:calc(100% + var(--rail-gap));left:auto;text-align:right}` +
     `.rail::after{content:"";position:absolute;top:0;bottom:0;right:-${DIVIDER}px;width:1px;background:var(--c-rule);z-index:-1}` +

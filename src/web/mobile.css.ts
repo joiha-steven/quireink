@@ -23,6 +23,12 @@ export const MOBILE_CSS = `
 form.search input,form.subscribe input,.search-input,
 .comment-form input,.comment-form textarea{font-size:max(16px,1em)}
 
+/* The grid button does nothing a phone can see: measured at 390, pressing it dropped the
+   excerpts and kept the one column, so the control promised a layout the screen could not
+   give. A choice made on a laptop still travels (the island keeps it), and lands as the same
+   one column; the button simply is not offered where it cannot answer. */
+[data-grid-toggle]{display:none}
+
 /* THE GUTTER IS THE MEASURE, on a phone and nowhere else.
    The shell has always taken 2rem a side. Above the phone breakpoint that padding is dead
    weight -- the 42rem max-width binds first -- so it only ever spends anything on the one

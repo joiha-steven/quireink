@@ -152,6 +152,8 @@ describe('the table of contents', () => {
     // The list is real markup and its links are real anchors. The bundle only adds the
     // active-section highlight, which is the part that genuinely needs a script.
     expect(html).toContain('<nav class="toc"')
+    // The index folds on its own heading (the band, rail-css.ts); open, so nothing is hidden.
+    expect(html).toContain('<details open><summary><h2>')
     expect(html).toContain('href="#first-section"')
     expect(html).toContain('href="#a-sub-heading"')
     // Nesting survives: a post that MIXES H2 and H3 marks the children as sub-rows.

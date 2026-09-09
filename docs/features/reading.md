@@ -7,6 +7,8 @@
   `bookText` = book-page typesetting on the post body (first-line indent + justify ≥600px). `gridView` =
   the reader's grid/list header toggle (`GridToggle`); off hides the button AND `listing.ts` ignores a
   stored `list=grid`, so every listing stays a list (and the infinite-scroll timeline, hidden in grid, always shows).
+  Under 640px the button is not offered at all (`mobile.css.ts`): measured at 390, a grid there
+  was the same one column minus its excerpts. A choice made on a laptop still travels.
 - **Sidebar** (`sidebar`): the MAIN (listing) sidebar has two layouts, chosen by `settings.sidebarLayout`
   (**Settings → Home & menu**): `single` (default) = one left rail with every block stacked
   (full-width column); `two` = **TWO gutter rails on desktop** flanking a narrower reading column
@@ -24,8 +26,12 @@
   is injected from `src/render/rail-css.ts` (`singleRailCss` for the layout's default/post ToC rail,
   `listingRailCss` for the two rails — the latter uses higher-specificity `.rail.rail-left|right` so it
   wins without ordering games). Each block self-hides when empty. **Post/page reading views show ONLY the
-  `toc`** in a single left rail (full width; the free right gutter stays for wide images). Below the rail
-  breakpoint the drawer opens from the **header menu button** (`RailToggle`, mobile only; self-hides on
+  `toc`** in a single left rail (full width; the free right gutter stays for wide images). **Between
+  60rem and the rail breakpoint the rail is a BAND** under the title (`singleRailCss`): the menu and
+  the index as wrapped rows on a hairline, the index folding on its heading (`details`/`summary` in
+  `article.ts`, inert everywhere else). Measured at 1024 with the default 672px column the breakpoint
+  is 1272, so an iPad on its side had no index and a drawer over the article. Below 60rem the drawer
+  opens from the **header menu button** (`RailToggle`, mobile only; self-hides on
   pages with no rail) — no separate header dropdown. **The menu is on the header row ONLY where no
   rail can hold it** — today the composed front page alone (`siteMenu` in `web/chrome.ts` behind
   `ChromeOptions.menuInHeader`, `.site-menu` from 60rem up). It briefly rendered on every page, which
