@@ -63,26 +63,42 @@ On any behavior change, update the matching doc in the SAME change:
   route*. Under about 72 characters, because a longer one is cut in the releases list and in
   every notification that carries it.
 
-  **The body is ordered by what a reader needs first**, in three kinds of block:
+  **The body is ordered by what a reader needs first**, in three sections. There is exactly ONE
+  `## New feature:` heading per release, and each feature is an `###` under it carrying a short
+  note in brackets:
 
+  ```markdown
+  ## New feature:
+
+  ### <The feature> (<a short note, three to nine words>)
+
+  <an optional paragraph: what was wrong without it, or why it is built this way>
+
+  * <what it does>
+  * <what it does>
+
+  ### <The second feature> (<a short note>)
+
+  * <what it does>
+
+  ## A few improvements
+
+  * <the small things, one line each, no heading of their own>
+
+  ## Fixed
+
+  * <what was broken, and what it cost>
   ```
-  **New feature: <what it is>**
-  <a sentence or two saying what it is for, or what was wrong without it>
-  - <what it does>
-  - <what it does>
 
-  **A few improvements**
-  - <the small things, one line each>
+  The features come first, most important at the top. **Never repeat `New feature:` per
+  feature**, and never give a small piece of work a heading of its own: it goes under **A few
+  improvements** (or *A few optimisations*) as a bare bullet. Fixes go last of the three, under
+  `## Fixed`; a release with several kinds of fix may group them as `###` under it. The bracketed
+  note must not restate the opening of the paragraph below it, which is the easiest thing to get
+  wrong when both are written in one pass.
 
-  **Bug fixes**
-  - <what was broken, and what it cost>
-  ```
-
-  The `New feature:` blocks come first, most important at the top, each one a heading plus a
-  note plus several bullets. Small work never gets a heading of its own: it goes under **A few
-  improvements** (or *A few optimisations* where that is what it is) as bare bullets. Bug fixes
-  go under the features. A release with no feature in it has no `New feature:` block and says so
-  in its opening line, which is honest rather than a gap: 2.2.6 is the example.
+  A release with no feature in it has no `## New feature:` section and says so in its opening
+  line, which is honest rather than a gap: 2.2.6 is the example.
 
   Two things stay wherever they belong rather than being forced into that order: a **breaking
   change or an upgrade step** goes above everything, because somebody has to read it before
