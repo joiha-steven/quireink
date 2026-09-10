@@ -121,6 +121,20 @@ describe('recording', () => {
     expect(Object.keys(await getViewTotals())).toHaveLength(200)
   })
 
+  // Real strings, because each one was a live visitor read the wrong way round: Telegram's
+  // in-app browser was dropped as the Telegram bot, and Google's two page-executing fetchers
+  // were counted as Android Chrome readers.
+  it('tells the Telegram reader from the Telegram bot, and names Google\'s JS-running fetchers', () => {
+    const telegramReader = 'Mozilla/5.0 (Linux; Android 13; SM-A536E Build/TP1A.220624.014; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/124.0.6367.179 Mobile Safari/537.36 Telegram-Android/10.14.4 (Samsung SM-A536E; Android 13; SDK 33; AVERAGE)'
+    expect(isBot(telegramReader)).toBe(false)
+    expect(isBot('TelegramBot (like TwitterBot)')).toBe(true)
+    expect(isBot('Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.7258.66 Mobile Safari/537.36 (compatible; Google-InspectionTool/1.0;)')).toBe(true)
+    expect(isBot('Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.7258.66 Mobile Safari/537.36 (compatible; Google-Read-Aloud; +https://support.google.com/webmasters/answer/1061943)')).toBe(true)
+    expect(isBot('Mediapartners-Google')).toBe(true)
+    expect(isBot('Mozilla/5.0 (Linux; Android 7.0;) AppleWebKit/537.36 (KHTML, like Gecko) Mobile Safari/537.36 (compatible; PetalBot;+https://webmaster.petalsearch.com/site/petalbot)')).toBe(true)
+    expect(isBot('Mozilla/5.0 (compatible; Yeti/1.1; +https://naver.me/spd)')).toBe(true)
+  })
+
   it('isBot and normalizePath keep their frozen-tree behaviour', () => {
     expect(isBot('')).toBe(true)
     expect(isBot('claudebot')).toBe(true)

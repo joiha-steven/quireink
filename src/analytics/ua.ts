@@ -34,7 +34,13 @@ export function parseUa(ua: string, touch = false): UaInfo {
 }
 
 function device(s: string): string {
-  if (/ipad|tablet|playbook|silk|(android(?!.*mobile))/.test(s)) return 'tablet'
+  if (/ipad|tablet|playbook|silk/.test(s)) return 'tablet'
+  // An Android string without `mobile` after it is a tablet. Tested from the FIRST
+  // `android`: the regex this replaced, `android(?!.*mobile)`, was free to match a later
+  // occurrence, and Telegram's in-app browser appends `Telegram-Android/10.x` after
+  // `Mobile Safari`, so every phone arriving from a Telegram chat counted as a tablet.
+  const android = s.indexOf('android')
+  if (android !== -1 && !s.includes('mobile', android)) return 'tablet'
   if (/mobi|iphone|ipod|android|windows phone|blackberry|iemobile|opera mini/.test(s)) return 'mobile'
   return 'desktop'
 }

@@ -28,7 +28,13 @@ import { getSettings } from '@/content/settings'
 import { serverSecret } from '@/auth/secret'
 
 // Common crawlers / preview bots — don't count them as readers.
-const BOT_RE = /bot|crawl|spider|slurp|bingpreview|facebookexternalhit|embedly|quora|pinterest|vkshare|whatsapp|telegram|discord|headless|lighthouse|pagespeed|gtmetrix|monitor|uptime|curl|wget|python-requests|axios|node-fetch|gptbot|oai-searchbot|chatgpt|claudebot|claude-web|anthropic|ccbot|perplexity|bytespider|amazonbot|google-extended|meta-external|scrapy|semrush|ahrefs|dataforseo/i
+//
+// `telegrambot`, not `telegram`: Telegram's in-app browser on Android identifies itself
+// with a trailing `Telegram-Android/10.x`, and the bare word dropped every reader who
+// opened a link from a chat. `inspectiontool` and `read-aloud` are Google's URL inspector
+// and its text-to-speech fetcher; both run the page's JavaScript, so until they were named
+// here each one counted as an Android Chrome visitor.
+const BOT_RE = /bot|crawl|spider|slurp|bingpreview|facebookexternalhit|embedly|quora|pinterest|vkshare|whatsapp|telegrambot|discord|headless|lighthouse|pagespeed|gtmetrix|monitor|uptime|curl|wget|python-requests|axios|node-fetch|gptbot|oai-searchbot|chatgpt|claudebot|claude-web|anthropic|ccbot|perplexity|bytespider|amazonbot|google-extended|meta-external|scrapy|semrush|ahrefs|dataforseo|inspectiontool|read-aloud|mediapartners|petalbot|yeti/i
 
 export function isBot(ua: string): boolean {
   return !ua || BOT_RE.test(ua)

@@ -38,6 +38,18 @@ describe('parseUa', () => {
     })
   })
 
+  // The in-app browser appends its own token after `Mobile Safari`, and a lookahead that
+  // was free to start at that later `Android` read the phone as a tablet.
+  it('reads a phone arriving from a Telegram chat as the phone it is', () => {
+    const ua = 'Mozilla/5.0 (Linux; Android 13; SM-A536E Build/TP1A.220624.014; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/124.0.6367.179 Mobile Safari/537.36 Telegram-Android/10.14.4 (Samsung SM-A536E; Android 13; SDK 33; AVERAGE)'
+    expect(parseUa(ua)).toEqual({ device: 'mobile', browser: 'Chrome', os: 'Android' })
+  })
+
+  it('still reads an Android string with no Mobile token as a tablet', () => {
+    const ua = 'Mozilla/5.0 (Linux; Android 13; SM-X710) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
+    expect(parseUa(ua).device).toBe('tablet')
+  })
+
   it('falls back to Other/desktop for an empty or unknown UA', () => {
     expect(parseUa('')).toEqual({ device: 'desktop', browser: 'Other', os: 'Other' })
   })
