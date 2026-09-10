@@ -24,9 +24,13 @@ beforeEach(() => {
   resetCacheStats()
 })
 
-/** A leave sample from a browser that reported `bytes`, on a path the site can serve. */
-async function visit(bytes?: number): Promise<void> {
-  await recordScroll('/', 80, '198.51.100.7', 'Mozilla/5.0 (Macintosh) Safari/17', 42_000, bytes)
+/**
+ * A leave sample from a browser that reported `bytes`, on a path the site can serve. `ip`
+ * tells one reader from another: two samples from the SAME reader on the same page inside
+ * half an hour are one visit, and the second updates the first (`buffer.ts`).
+ */
+async function visit(bytes?: number, ip = '198.51.100.7'): Promise<void> {
+  await recordScroll('/', 80, ip, 'Mozilla/5.0 (Macintosh) Safari/17', 42_000, bytes)
   flushAnalytics()
 }
 
@@ -71,9 +75,9 @@ describe('what gets stored', () => {
   })
 
   it('does not let one visit stand in for a month', async () => {
-    await visit(100_000)
-    await visit(undefined)
-    await visit(300_000)
+    await visit(100_000, '198.51.100.1')
+    await visit(undefined, '198.51.100.2')
+    await visit(300_000, '198.51.100.3')
     const out = transferred(0, null)
     expect(out.totalBytes).toBe(400_000)
     // Averaged over the TWO that measured, not the three that happened. `count(bytes)`

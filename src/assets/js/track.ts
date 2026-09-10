@@ -115,14 +115,22 @@ export function track(): void {
         engaged += delta
       }
     }
-    const interval = setInterval(() => meter(), TICK_MS)
+    setInterval(() => meter(), TICK_MS)
     for (const kind of ['pointerdown', 'pointermove', 'keydown', 'touchstart'] as const) {
       addEventListener(kind, active, { passive: true })
     }
 
-    // The depth sample is sent ONCE, when the reader leaves. `pagehide` and a hidden tab
-    // both count as leaving, and either can be the last event a browser delivers, so both
-    // are wired and `sent` makes the second one a no-op.
+    // The depth sample is sent when the reader leaves. `pagehide` and a hidden tab both
+    // count as leaving, and either can be the last event a browser delivers, so both are
+    // wired and `sent` makes the second one a no-op.
+    //
+    // Leaving is not always final. A reader who opens a post, switches app for a moment
+    // and comes back to read for five minutes was recorded as the three seconds before
+    // the switch, because the first hide was the only sample ever sent. So the tab
+    // coming back RE-ARMS the sample: the next hide sends the accumulated visit — depth
+    // is the deepest point so far, dwell the engaged total — and the server replaces the
+    // earlier sample for the same reader and page rather than adding a second one
+    // (`analytics/buffer.ts`).
     // ⚠️ `max > 0` was a condition here until 2026-08-30, and it was silently deleting the
     // one cohort worth measuring. `depth()` returns 0 for a long article nobody scrolled, so
     // a reader who arrived, looked, and left in four seconds sent NO sample at all — while
@@ -137,14 +145,22 @@ export function track(): void {
       if (sent) return
       sent = true
       meter(true) // close the open slice, so a quick bounce still measures
-      clearInterval(interval)
       beacon({ path, depth: max, dwell: Math.round(engaged), bytes: bytes() })
+    }
+    // The time away is not reading: the slice restarts at the moment of return, and
+    // coming back counts as activity so the idle clock does not fire on the first tick.
+    const back = () => {
+      if (!sent) return
+      sent = false
+      lastTick = now()
+      active()
     }
 
     addEventListener('scroll', () => { max = Math.max(max, depth()); active() }, { passive: true })
     addEventListener('pagehide', send)
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'hidden') send()
+      else back()
     })
   })
 }

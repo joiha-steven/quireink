@@ -33,6 +33,18 @@ export type ScrollRow = {
 const FLUSH_MS = 2_000
 const MAX_ROWS = 200
 
+/**
+ * How long one reader on one page stays ONE visit.
+ *
+ * The beacon sends a leave sample every time the tab is hidden and re-arms when it comes
+ * back (`assets/js/track.ts`), so a reader who switches app twice sends three samples for
+ * a single reading. Each carries the visit so far — deepest point, engaged total — and the
+ * later ones supersede the earlier, so the row is updated rather than joined by a second.
+ * Half an hour is the same line `DWELL_CAP_MS` draws under a dwell: past it, a sample on
+ * the same page is a return, not the same sitting.
+ */
+export const SAME_VISIT_MS = 30 * 60_000
+
 let events: EventRow[] = []
 let scrolls: ScrollRow[] = []
 let timer: ReturnType<typeof setTimeout> | null = null
@@ -97,6 +109,23 @@ export function flushAnalytics(): void {
         )
       }
       for (const r of s) {
+        // One statement pair: the most recent row for this reader and page inside the
+        // window takes the new sample, and only when there is none is one inserted. Depth
+        // keeps its maximum; dwell and bytes are totals the browser accumulated, so the
+        // later value replaces the earlier — unless it is NULL, which means unmeasured
+        // and must not erase a measurement.
+        const merged = analyticsQuery.run(
+          `update analytics_scroll
+              set depth = max(depth, $depth),
+                  dwell_ms = coalesce($dwellMs, dwell_ms),
+                  bytes = coalesce($bytes, bytes)
+            where id = (select id from analytics_scroll
+                         where created_at >= $from and visitor = $visitor and path = $path
+                         order by created_at desc limit 1)`,
+          { depth: r.depth, dwellMs: r.dwellMs, bytes: r.bytes,
+            from: r.createdAt - SAME_VISIT_MS, visitor: r.visitor, path: r.path },
+        ).changes
+        if (merged > 0) continue
         analyticsQuery.run(
           `insert into analytics_scroll (path, depth, dwell_ms, bytes, visitor, created_at)
            values ($path, $depth, $dwellMs, $bytes, $visitor, $createdAt)`,

@@ -43,7 +43,9 @@ create index if not exists analytics_events_device_idx  on analytics_events (dev
 create index if not exists analytics_events_created_path_idx    on analytics_events (created_at, path);
 create index if not exists analytics_events_created_visitor_idx on analytics_events (created_at, visitor);
 
--- One sample per LEAVE. `bytes` sits here beside `dwell_ms` rather than on the view row
+-- One sample per VISIT: a reader on a page, within half an hour. A later leave from the
+-- same tab updates the row (deepest point, dwell total) rather than adding a second one;
+-- see `analytics/buffer.ts`. `bytes` sits here beside `dwell_ms` rather than on the view row
 -- because both are only knowable at the end: a view is recorded the moment the page
 -- activates, when its stylesheets, fonts and pictures are still arriving, so bytes counted
 -- then would always be short.

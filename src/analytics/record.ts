@@ -12,8 +12,8 @@
 //   visits are excluded by the route.
 // - Retention: events are kept FOREVER (no purge) — the owner wants the full history.
 // - Scroll depth: a separate `analytics_scroll` table holds one "% of page reached before
-//   leaving" sample per post-leave, so a missed pagehide loses a depth sample but never
-//   a view.
+//   leaving" sample per visit (a reader on a page, within half an hour — a later leave
+//   updates it, see buffer.ts), so a missed pagehide loses a depth sample but never a view.
 //
 // Writes go through the buffer (Invariant 7), never straight to the database. The frozen
 // tree inserted inline and carried a retry for a pre-migration schema; there is one schema

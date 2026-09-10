@@ -101,12 +101,63 @@ describe('recording', () => {
   })
 
   it('clamps a scroll sample to 0-100 and a dwell to a day', async () => {
+    // Two READERS, or the second sample would update the first (same visitor, same page).
     await recordScroll('/a', 999, '1.1.1.1', 'Mozilla/5.0', 99_999_999_999)
-    await recordScroll('/a', -5, '1.1.1.1', 'Mozilla/5.0')
+    await recordScroll('/a', -5, '2.2.2.2', 'Mozilla/5.0')
     flushAnalytics()
     const rows = analyticsDb().query<{ depth: number; dwell_ms: number | null }, []>(
       `select depth, dwell_ms from analytics_scroll order by depth`).all()
     expect(rows).toEqual([{ depth: 0, dwell_ms: null }, { depth: 100, dwell_ms: 86_400_000 }])
+  })
+
+  /**
+   * The beacon sends a leave sample every time the tab is hidden and again after it comes
+   * back, so one reading can arrive as several samples. Each carries the visit so far, so
+   * the later one replaces the earlier for the same reader and page — a second ROW would
+   * count the three seconds before the app switch as a bounce beside the five minutes after.
+   */
+  describe('a later leave from the same visit updates the sample', () => {
+    const rows = () => analyticsDb().query<{ depth: number; dwell_ms: number | null; bytes: number | null }, []>(
+      `select depth, dwell_ms, bytes from analytics_scroll order by id`).all()
+
+    it('keeps one row per reader and page, with the deepest point and the latest dwell', async () => {
+      await recordScroll('/a', 10, '1.1.1.1', 'Mozilla/5.0', 3_000, 500)
+      await recordScroll('/a', 80, '1.1.1.1', 'Mozilla/5.0', 300_000, 900)
+      flushAnalytics()
+      expect(rows()).toEqual([{ depth: 80, dwell_ms: 300_000, bytes: 900 }])
+    })
+
+    it('keeps the deepest point when the reader came back and stayed near the top', async () => {
+      await recordScroll('/a', 90, '1.1.1.1', 'Mozilla/5.0', 60_000)
+      flushAnalytics() // already on disk, as it would be two seconds later
+      await recordScroll('/a', 5, '1.1.1.1', 'Mozilla/5.0', 65_000)
+      flushAnalytics()
+      expect(rows()).toEqual([{ depth: 90, dwell_ms: 65_000, bytes: null }])
+    })
+
+    it('does not let an unmeasured value erase a measured one', async () => {
+      await recordScroll('/a', 50, '1.1.1.1', 'Mozilla/5.0', 4_000, 700)
+      await recordScroll('/a', 50, '1.1.1.1', 'Mozilla/5.0', undefined, undefined)
+      flushAnalytics()
+      expect(rows()).toEqual([{ depth: 50, dwell_ms: 4_000, bytes: 700 }])
+    })
+
+    it('still writes a row per reader, and per page', async () => {
+      await recordScroll('/a', 50, '1.1.1.1', 'Mozilla/5.0', 1_000)
+      await recordScroll('/a', 50, '2.2.2.2', 'Mozilla/5.0', 1_000)
+      await recordScroll('/b', 50, '1.1.1.1', 'Mozilla/5.0', 1_000)
+      flushAnalytics()
+      expect(rows()).toHaveLength(3)
+    })
+
+    it('treats a sample after half an hour as a new visit', async () => {
+      await recordScroll('/a', 30, '1.1.1.1', 'Mozilla/5.0', 2_000)
+      flushAnalytics()
+      analyticsDb().run(`update analytics_scroll set created_at = created_at - ?`, [31 * 60_000])
+      await recordScroll('/a', 60, '1.1.1.1', 'Mozilla/5.0', 9_000)
+      flushAnalytics()
+      expect(rows().map((r) => r.depth)).toEqual([30, 60])
+    })
   })
 
   it('flushes automatically once the buffer is full, on the next turn rather than in-line', async () => {
