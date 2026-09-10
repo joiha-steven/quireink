@@ -236,9 +236,10 @@ only: 2.0 keeps this logic in TypeScript, never in SQL):
 
 ### `analytics_channel(host)` -> `analytics/channel.ts`
 
-A pure function over three regexes (search engines, social networks, else referral,
-with empty host meaning direct). Trivially portable, trivially testable. The existing
-regex literals are copied verbatim so classification does not shift.
+A pure function over host patterns (search engines, social networks, else referral,
+with empty host meaning direct). Trivially portable, trivially testable. The port copied
+the regex literals verbatim; since 2026-09-10 every pattern is anchored to a label boundary
+and the end of the host, plus a small table for `android-app://` package names.
 
 ### `analytics_facet` -> a generic helper
 

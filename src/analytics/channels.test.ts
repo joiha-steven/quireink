@@ -95,4 +95,37 @@ describe('channelOf', () => {
     expect(channelOf('x.com')).toBe('social')
     expect(channelOf('news.ycombinator.com')).toBe('referral')
   })
+
+  // The patterns were bare substrings until 2026-09-10, and a substring reads too much:
+  // `google\.` is in Gmail's Android package name and in every Google product's host,
+  // `t\.co` is in `microsoft.com`. Each host below was a real referrer on a live blog.
+  it('does not read a Google product, or Gmail, as a search engine', () => {
+    for (const host of ['com.google.android.gm', 'mail.google.com', 'docs.google.com', 'drive.google.com']) {
+      expect(channelOf(host)).toBe('referral')
+    }
+    for (const host of ['google.com', 'www.google.com.vn', 'google.co.uk', 'www.google.de']) {
+      expect(channelOf(host)).toBe('search')
+    }
+  })
+
+  it('does not read a host that merely contains t.co as Twitter', () => {
+    for (const host of ['microsoft.com', 'chatgpt.com', 'producthunt.com', 'research.example.com']) {
+      expect(channelOf(host)).toBe('referral')
+    }
+  })
+
+  it('knows the search engines a Vietnamese reader uses', () => {
+    for (const host of ['coccoc.com', 'naver.com', 'search.naver.com', 'vn.search.yahoo.com', 'search.brave.com', 'cn.bing.com']) {
+      expect(channelOf(host)).toBe('search')
+    }
+  })
+
+  it('knows Zalo and Messenger, on the web and as Android apps', () => {
+    for (const host of [
+      'zalo.me', 'chat.zalo.me', 'com.zing.zalo', 'messenger.com', 'l.messenger.com',
+      'com.facebook.katana', 'com.facebook.orca', 'l.facebook.com', 'youtu.be', 'mastodon.social',
+    ]) {
+      expect(channelOf(host)).toBe('social')
+    }
+  })
 })

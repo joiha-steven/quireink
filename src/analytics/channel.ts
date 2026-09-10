@@ -1,23 +1,80 @@
 // Traffic-channel classification, ported from the `analytics_channel(host)` plpgsql
-// function. The three regexes are copied verbatim from the migration so a visitor that
-// counted as "search" yesterday still counts as "search" tomorrow; the only change is
-// Postgres `~*` becoming a JavaScript case-insensitive test.
+// function: three buckets by referrer host, direct when there is none.
 //
 // Pure and dependency-free, which is the point: the classification was the one part of
 // the SQL function with judgement in it, and it is now directly testable.
+//
+// Every host pattern is ANCHORED to a label boundary and to the end of the host. The
+// original regexes were bare substrings, copied verbatim from the migration, and a
+// substring reads too much: `google\.` matched `mail.google.com`, `docs.google.com` and
+// Gmail's Android app (`com.google.android.gm`, the host of an `android-app://` referrer)
+// as search, and `t\.co` matched `microsoft.com`, `chatgpt.com` and `producthunt.com` as
+// social. `(^|\.)host$` matches the host and its subdomains and nothing else.
 
 export type Channel = 'direct' | 'search' | 'social' | 'referral'
 
-const SEARCH = /google\.|bing\.|yahoo\.|duckduckgo|yandex|baidu|ecosia\.|brave\.|startpage|search\./i
-const SOCIAL = /facebook|fb\.com|instagram|twitter|(^|\.)x\.com|t\.co|linkedin|reddit|youtu|pinterest|tiktok|threads\.net|mastodon|telegram|t\.me|whatsapp|(^|\.)vk\.com/i
+/**
+ * Google is the exception to "any subdomain": only the search faces count, because the
+ * same registrable domain serves Mail, Docs, Drive and Sites, and a link opened from any of
+ * those is a referral. The TLD varies by country (`google.com.vn`, `google.co.uk`).
+ */
+const GOOGLE_SEARCH = /^(www\.)?google\.[a-z]{2,3}(\.[a-z]{2})?$/i
+
+const SEARCH = new RegExp(
+  '(^|\\.)('
+  + [
+    'bing\\.com', 'search\\.yahoo\\.com', 'search\\.yahoo\\.co\\.jp', 'duckduckgo\\.com',
+    'yandex\\.(ru|com|com\\.tr)', 'baidu\\.com', 'ecosia\\.org', 'search\\.brave\\.com',
+    'startpage\\.com', 'coccoc\\.com', 'naver\\.com',
+  ].join('|')
+  // `search.` as a leading label keeps the long tail (`search.seznam.cz`, `search.aol.com`)
+  // the original's bare `search\.` was there for, minus `research.example.com`.
+  + ')$|(^|\\.)search\\.',
+  'i',
+)
+
+const SOCIAL = new RegExp(
+  '(^|\\.)('
+  + [
+    'facebook\\.com', 'fb\\.com', 'fb\\.me', 'messenger\\.com', 'instagram\\.com', 'threads\\.net',
+    'threads\\.com', 'twitter\\.com', 'x\\.com', 't\\.co', 'linkedin\\.com', 'lnkd\\.in',
+    'reddit\\.com', 'redd\\.it', 'youtube\\.com', 'youtu\\.be', 'pinterest\\.[a-z]{2,3}(\\.[a-z]{2})?',
+    'tiktok\\.com', 'telegram\\.org', 't\\.me', 'whatsapp\\.com', 'vk\\.com', 'zalo\\.me',
+  ].join('|')
+  // Mastodon has no one host: an instance is `mastodon.social`, `mastodon.online`, …
+  + ')$|(^|\\.)mastodon\\.',
+  'i',
+)
+
+/**
+ * The host of an `android-app://` referrer is a package name, and Android sends one when a
+ * link is opened from inside an app. None of them ends in a domain, so the patterns above
+ * see every one as a referral — right for Gmail, wrong for the apps that ARE a social
+ * network or a search box. The Google app is the search one; Gmail is deliberately absent.
+ */
+const ANDROID_APPS: Record<string, Channel> = {
+  'com.google.android.googlequicksearchbox': 'search',
+  'com.facebook.katana': 'social',
+  'com.facebook.orca': 'social',
+  'com.instagram.android': 'social',
+  'com.zing.zalo': 'social',
+  'com.twitter.android': 'social',
+  'com.linkedin.android': 'social',
+  'com.reddit.frontpage': 'social',
+  'org.telegram.messenger': 'social',
+}
 
 /** No referrer host means the visitor typed the URL or came from inside the site. */
 export function channelOf(host: string | null | undefined): Channel {
   if (!host) return 'direct'
-  if (SEARCH.test(host)) return 'search'
-  if (SOCIAL.test(host)) return 'social'
+  const h = host.trim().toLowerCase()
+  const app = ANDROID_APPS[h]
+  if (app) return app
+  if (GOOGLE_SEARCH.test(h) || SEARCH.test(h)) return 'search'
+  if (SOCIAL.test(h)) return 'social'
   return 'referral'
 }
+
 
 /**
  * Subdomain labels that are plumbing, not identity: `l.facebook.com` is Facebook's link
