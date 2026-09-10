@@ -110,8 +110,18 @@ export function receiveWebmention(source: string, target: string, site: string):
 export function keptPassage(html: string): string {
   const m = /<blockquote class="note-quote[^"]*">\s*<p>([\s\S]*?)<\/p>/i.exec(html)
   if (!m) return ''
-  return m[1]!.replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/\s+/g, ' ').trim().slice(0, 4000)
+  // Entities first, `&amp;` last of all, so `&amp;lt;` comes out as the text `&lt;` and not as
+  // a `<`. Then every tag, to a fixed point: the passage was escaped text on its page, so a
+  // `<` that survives decoding is markup somebody wrote into the quote, not prose to keep.
+  const text = m[1]!.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'").replace(/&amp;/g, '&')
+  return stripTags(text).replace(/\s+/g, ' ').trim().slice(0, 4000)
+}
+
+const stripTags = (s: string): string => {
+  let prev: string
+  do { prev = s; s = s.replace(/<[^>]*>/g, '') } while (s !== prev)
+  return s
 }
 
 /** Fetch the source and confirm it links to the target; record what was found. */

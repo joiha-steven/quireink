@@ -88,4 +88,12 @@ describe('receiving', () => {
     expect(keptPassage('<blockquote class="note-quote"><p>a <b>bold</b> line</p></blockquote>')).toBe('a bold line')
     expect(keptPassage('<blockquote><p>plain</p></blockquote>')).toBe('')
   })
+  it('decodes entities once and leaves no tag behind', () => {
+    const q = (inner: string) => keptPassage(`<blockquote class="note-quote"><p>${inner}</p></blockquote>`)
+    expect(q('a &amp;lt; b')).toBe('a &lt; b')
+    expect(q('a &lt; b &amp; c')).toBe('a < b & c')
+    expect(q('&lt;script&gt;alert(1)&lt;/script&gt; kept')).toBe('alert(1) kept')
+    expect(q('&lt;&lt;b&gt;script&gt;x&lt;/&lt;b&gt;script&gt;')).not.toContain('<')
+    expect(q('<b>bold</b> &lt;i&gt;kept&lt;/i&gt;')).toBe('bold kept')
+  })
 })
