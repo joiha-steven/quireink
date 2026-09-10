@@ -17,7 +17,7 @@ The reasoning behind each is in [`spec/02-structure.md`](spec/02-structure.md).
 | 4 | **Write routes are owner-gated by router-group MEMBERSHIP**, not by a check inside the handler. A new write route is protected because of where it is mounted, or it fails the build | [`src/web/guard.ts`](../src/web/guard.ts) | `check:routes` · `src/web/admin.test.ts` |
 | 5 | **Raw HTML in user content is escaped, never executed.** `escapeHtml` first; `javascript:`/`data:`/`vbscript:` hrefs are dropped | [`src/utils.ts`](../src/utils.ts) | `src/render/post-content.test.ts` · `src/comments/comment-md.test.ts` |
 | 6 | **Every delete is a soft delete.** `deleted_at` is set; every live read filters through the single `liveOnly()` fragment, and Trash reads its complement | [`src/store/db.ts`](../src/store/db.ts) | `src/store/db.test.ts` |
-| 7 | **Analytics writes go through the flush buffer**, never straight from a handler. A request never waits on an analytics write | [`src/analytics/buffer.ts`](../src/analytics/buffer.ts) | `src/analytics/analytics.test.ts` |
+| 7 | **Analytics writes go through the flush buffer**, never straight from a handler. A request never waits on an analytics write | [`src/analytics/buffer.ts`](../src/analytics/buffer.ts) | `src/analytics/record.test.ts` |
 
 ## Why 1 is blunt on purpose
 

@@ -25,6 +25,10 @@ import { bufferEvent, bufferScroll } from '@/analytics/buffer'
 import { nowMs } from '@/store/db'
 import { one } from '@/store/query'
 import { getSettings } from '@/content/settings'
+import { getPublicPosts } from '@/content/posts'
+import { listPageSize, parsePathPage } from '@/content/paginate'
+import { resolveSeries } from '@/content/series'
+import { resolveTerm } from '@/content/taxonomy'
 import { serverSecret } from '@/auth/secret'
 
 // Common crawlers / preview bots — don't count them as readers.
@@ -64,6 +68,13 @@ export function normalizePath(raw: string): string | null {
   return p.slice(0, 512) || '/'
 }
 
+/** Does page `n` of a list with this many posts exist? Page 1 is the list's own address. */
+async function listPageExists(n: string, posts: number): Promise<boolean> {
+  const page = parsePathPage(n)
+  if (page === null) return false
+  return page <= Math.ceil(posts / listPageSize(await getSettings()))
+}
+
 /**
  * Is this a path the site can actually serve? The beacon is an open POST — the shape cap
  * in `normalizePath` bounded each row at 512 bytes but not the SET of rows, so any script
@@ -72,13 +83,28 @@ export function normalizePath(raw: string): string | null {
  * all. The route list here mirrors `web/app.ts`; a single-segment path must be a real
  * post, page, or the list's own address. One indexed point-lookup per view, on the
  * buffered (never request-blocking) side — see Invariant 7.
+ *
+ * An archive-shaped path is resolved the way the router resolves it, through the same
+ * `resolveTerm` and `resolveSeries` over the public posts, and a list page has to be one
+ * the list has. Until 2026-09-10 the shape was enough, so `/page/999` and
+ * `/tag/nonexistent` — a crawler's guess, a link that had rotted — counted as views of a
+ * page that answers 404. This costs one read of the post index, and only on the archive
+ * shapes: a post view still pays the one point-lookup.
  */
 export async function pathIsServable(p: string): Promise<boolean> {
   if (p === '/' || p === '/search') return true
-  if (/^\/page\/\d+$/.test(p)) return true
-  // Term and series archives keep a shape check only: validating term existence would
-  // couple analytics to the taxonomy tables for rows that are clearly labelled already.
-  if (/^\/(category|tag|series)\/[^/]+(\/page\/\d+)?$/.test(p)) return true
+  const paged = /^\/page\/(\d+)$/.exec(p)
+  if (paged) return listPageExists(paged[1]!, (await getPublicPosts()).length)
+  const term = /^\/(category|tag)\/([^/]+)(?:\/page\/(\d+))?$/.exec(p)
+  if (term) {
+    const field = term[1] === 'category' ? 'categories' : 'tags'
+    const { name, posts } = resolveTerm(await getPublicPosts(), field, term[2]!)
+    if (name === null) return false
+    return term[3] === undefined ? true : listPageExists(term[3], posts.length)
+  }
+  // A series is never paginated, so `/series/x/page/2` is not a route either.
+  const series = /^\/series\/([^/]+)$/.exec(p)
+  if (series) return (await resolveSeries(series[1]!)).name !== null
   const slug = p.slice(1)
   if (slug === '' || slug.includes('/')) return false
   const { home } = await getSettings()

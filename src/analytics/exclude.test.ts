@@ -42,7 +42,7 @@ beforeEach(async () => {
   ownerCookie = `__Host-quire_session=${token}`
   // The beacon aims at '/' — always servable — because since 2026-08-29 `pathIsServable`
   // drops a single-segment path that is not real content, and these tests are about WHO
-  // counts, not WHAT paths count (analytics.test.ts covers that).
+  // counts, not WHAT paths count (record.test.ts covers that).
 })
 
 describe('who counts as a reader', () => {

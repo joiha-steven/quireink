@@ -8,7 +8,7 @@ import type { SiteSettings } from '@/types'
 import { formatDate, t } from '@/i18n/i18n'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { getSettings, resolveSiteUrl } from '@/content/settings'
-import { paginate } from '@/content/paginate'
+import { listPageSize, paginate } from '@/content/paginate'
 import { pageCache, countCacheHit, countCacheMiss } from '@/server/cache'
 import { renderDocument, pageStyles } from '@/web/layout'
 import { renderListing, type ListingView } from '@/web/listing'
@@ -166,25 +166,17 @@ async function readyThumbs(): Promise<ReadyImages> {
 }
 
 /**
- * How many reveal chunks one timeline page carries.
+ * The list body for one page of `posts`, or null when that page is past the end.
  *
- * The whole archive used to be in the HTML, hidden past the first chunk. That is fine at
- * thirty posts and is not what a blog becomes: measured on the demo's 33 posts the home page
- * was 49,905 bytes before compression, so a five-hundred-post blog would have been around
- * 450 KB, on every visit, and the page cache held that per URL. Three chunks is deep enough
- * that a reader who scrolls a little never waits, and the rest arrives a page at a time.
+ * The page size, and why an infinite feed's is three times the setting, is `listPageSize`
+ * in `content/paginate.ts`.
  */
-const TIMELINE_CHUNKS = 3
-
 export async function renderFeedBody(
   posts: Posts, page: number, view: Omit<ListingView, 'paged' | 'timeline'>,
 ): Promise<{ body: string; css: string; noindex: boolean } | null> {
   const settings: SiteSettings = await getSettings()
   const timeline = settings.features.infiniteScroll
-  const perPage = timeline
-    ? Math.max(1, settings.postsPerPage) * TIMELINE_CHUNKS
-    : settings.postsPerPage
-  const paged = paginate(posts, page, perPage)
+  const paged = paginate(posts, page, listPageSize(settings))
   // `paginate` CLAMPS an out-of-range page, so an emptiness check never fires: /page/9
   // would silently serve the last page under a ninth URL, which is duplicate content at
   // every number a crawler tries. Compare against the real total instead.

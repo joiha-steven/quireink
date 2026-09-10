@@ -129,9 +129,9 @@ describe('POST /api/track', () => {
   })
 
   it('caps one IP so a script cannot flood the table', async () => {
-    // Servable-by-shape paths, so the CAP is what stops row 241 — a junk path is
-    // dropped earlier by `pathIsServable` and would prove nothing about the limiter.
-    for (let i = 0; i < 260; i++) await beacon({ path: `/page/${i + 1}` }, '203.0.113.9')
+    // A real post, so the CAP is what stops row 241 — a junk path is dropped earlier by
+    // `pathIsServable` and would prove nothing about the limiter.
+    for (let i = 0; i < 260; i++) await beacon({ path: '/hello' }, '203.0.113.9')
     // Counted in the TABLE, not in the buffer: the buffer flushes itself at MAX_ROWS, so
     // by this point most of these are already on disk. 240 a minute, and every call over
     // it is a silent 204 — telling a flooder they have been limited tells them what to

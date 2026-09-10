@@ -23,6 +23,26 @@ export function parsePathPage(raw: string): number | null {
   return n >= 2 ? n : null
 }
 
+/**
+ * How many posts a list page holds. The setting, times three when the list is an infinite
+ * feed.
+ *
+ * The whole archive used to be in the HTML, hidden past the first chunk. That is fine at
+ * thirty posts and is not what a blog becomes: measured on the demo's 33 posts the home page
+ * was 49,905 bytes before compression, so a five-hundred-post blog would have been around
+ * 450 KB, on every visit, and the page cache held that per URL. Three chunks is deep enough
+ * that a reader who scrolls a little never waits, and the rest arrives a page at a time.
+ *
+ * Here rather than in the renderer because the beacon asks the same question: whether
+ * `/page/9` is a page the site has is decided by this number (analytics/record.ts).
+ */
+const TIMELINE_CHUNKS = 3
+export function listPageSize(settings: { postsPerPage: number; features: { infiniteScroll: boolean } }): number {
+  return settings.features.infiniteScroll
+    ? Math.max(1, settings.postsPerPage) * TIMELINE_CHUNKS
+    : settings.postsPerPage
+}
+
 // Slice `all` into the requested page; clamps page into range.
 export function paginate<T>(all: T[], page: number, perPage: number): Paged<T> {
   const totalPages = Math.max(1, Math.ceil(all.length / perPage))
