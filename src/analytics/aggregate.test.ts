@@ -178,14 +178,14 @@ describe('windowCounts', () => {
 })
 
 describe('facet', () => {
-  it('folds a missing device into Unknown rather than dropping the visitor', () => {
+  // A NULL device is a row written before the column existed (the 1.x import), not a
+  // device nobody could name. Folded into an "Unknown" row it led every facet on a blog
+  // with years of history, and there is no label that would make that row true.
+  it('skips a row that predates the device columns instead of inventing a label', () => {
     view({ visitor: 'a', device: 'mobile' })
     view({ visitor: 'b', device: '' })
     view({ visitor: 'c', device: null })
-    expect(facet(T0, 'device', 10)).toEqual([
-      { name: 'Unknown', visitors: 2 },
-      { name: 'mobile', visitors: 1 },
-    ])
+    expect(facet(T0, 'device', 10)).toEqual([{ name: 'mobile', visitors: 1 }])
   })
 })
 

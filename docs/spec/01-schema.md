@@ -243,8 +243,9 @@ and the end of the host, plus a small table for `android-app://` package names.
 
 ### `analytics_facet` -> a generic helper
 
-`select coalesce(nullif(col,''),'Unknown'), count(distinct visitor) ... group by 1
-order by 2 desc limit ?` over one of `device`, `browser`, `os`. The column name comes
+`select col, count(distinct visitor) ... where col is not null group by 1
+order by 2 desc limit ?` over one of `device`, `browser`, `os`. A NULL is a row imported
+before the column existed and is skipped, not labelled. The column name comes
 from a fixed lookup table, never interpolated from input. This is the one place allowed to
 assemble SQL from a variable **on the request path**, and the allowlist is the reason.
 

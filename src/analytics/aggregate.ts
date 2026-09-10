@@ -272,13 +272,21 @@ export function windowCounts(from: number, to: number | null, path: string | nul
 // The three audience facets. One complete literal each, chosen by key: the column name is
 // never interpolated, so the "one place allowed to assemble SQL" that 01-schema.md
 // reserved for this turned out not to be needed.
+//
+// A NULL is a row from before the column existed — every event imported from the 1.x tree
+// before 2026-07-22 — and there is nothing to know about it, so it is left out rather than
+// labelled. The port folded these into an "Unknown" row, and over a 90-day window that row
+// came first: 129 visitors on a live blog, ahead of every real device, browser and system.
 const FACET_SQL = {
-  device: `select coalesce(nullif(device, ''), 'Unknown') as name, count(distinct visitor) as visitors
-             from analytics_events where created_at >= $since group by name order by visitors desc, name limit $limit`,
-  browser: `select coalesce(nullif(browser, ''), 'Unknown') as name, count(distinct visitor) as visitors
-              from analytics_events where created_at >= $since group by name order by visitors desc, name limit $limit`,
-  os: `select coalesce(nullif(os, ''), 'Unknown') as name, count(distinct visitor) as visitors
-         from analytics_events where created_at >= $since group by name order by visitors desc, name limit $limit`,
+  device: `select device as name, count(distinct visitor) as visitors from analytics_events
+            where created_at >= $since and device is not null and device != ''
+            group by name order by visitors desc, name limit $limit`,
+  browser: `select browser as name, count(distinct visitor) as visitors from analytics_events
+             where created_at >= $since and browser is not null and browser != ''
+             group by name order by visitors desc, name limit $limit`,
+  os: `select os as name, count(distinct visitor) as visitors from analytics_events
+        where created_at >= $since and os is not null and os != ''
+        group by name order by visitors desc, name limit $limit`,
 } as const
 
 export function facet(since: number, column: keyof typeof FACET_SQL, limit: number): NameStat[] {

@@ -39,7 +39,7 @@ const view = (v: View = {}) =>
     `insert into analytics_events (path, visitor, referrer_host, country, device, browser, os, created_at)
      values (?, ?, ?, ?, ?, 'Chrome', 'macOS', ?)`,
     // `?? 'desktop'` would turn an EXPLICIT null into a value, which is exactly the case
-    // the Unknown-facet test needs, so absence and null are distinguished here.
+    // the facet test needs, so absence and null are distinguished here.
     [v.path ?? '/a', v.visitor ?? 'v1', v.host ?? null, v.country ?? null,
      'device' in v ? (v.device ?? null) : 'desktop', v.at ?? ago(1)],
   )
@@ -234,10 +234,10 @@ describe('summary', () => {
     expect(s.topCountries!.map((c) => c.country).sort()).toEqual(['DE', 'VN'])
   })
 
-  it('surfaces a missing audience value as Unknown', async () => {
+  it('leaves a row with no audience value out of the facet', async () => {
     view({ visitor: 'v1', device: 'mobile' })
-    view({ visitor: 'v2', device: null })
-    expect((await getAnalytics(7)).devices!.map((d) => d.name).sort()).toEqual(['Unknown', 'mobile'])
+    view({ visitor: 'v2', device: null }) // imported before the column existed
+    expect((await getAnalytics(7)).devices!.map((d) => d.name)).toEqual(['mobile'])
   })
 
   it('buckets read depth into quartiles', async () => {
