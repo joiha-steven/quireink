@@ -9,8 +9,10 @@
 //
 //   1. A request carrying a LIVE owner session. The frozen tree gated its track route with
 //      `requireOwner()`; 2.0 had no session to ask until M3 and the gap stayed open.
-//   2. A request from an IP a live session was created from — the owner in a second browser, a
-//      private window, or the phone beside the desk, where there is no cookie to find.
+//   2. A request from an IP a live session was created from and used within the last day —
+//      the owner in a second browser, a private window, or the phone beside the desk, where
+//      there is no cookie to find. A day and not the session's life: on a carrier network
+//      the address is shared and handed on (`OWNER_ADDRESS_MS` in auth/sessions.ts).
 //   3. A request from a loopback or private address: nothing on the public internet reaches the
 //      site that way, so it is the box talking to itself — a warm-up, a probe, a health check.
 //

@@ -69,6 +69,28 @@ describe('who counts as a reader', () => {
     expect(viewCount()).toBe(0)
   })
 
+  /**
+   * The address, not the session, is what expires. A session lives thirty days from its
+   * last use, and on a carrier network the owner's phone shares its public address with
+   * hundreds of strangers and hands it on every few days — so a match on any live session
+   * dropped every reader behind that address for as long as the owner stayed signed in.
+   */
+  it('counts that IP again a day after the owner last used the session from it', async () => {
+    db().run(`update sessions set last_seen_at = ?`, [Date.now() - 25 * 60 * 60 * 1000])
+    expect((await track(OWNER_IP)).status).toBe(204)
+    const { flushAnalytics } = await import('@/analytics/buffer')
+    flushAnalytics()
+    expect(viewCount()).toBe(1)
+  })
+
+  it('still does not count the IP while the owner used the session today', async () => {
+    db().run(`update sessions set last_seen_at = ?`, [Date.now() - 23 * 60 * 60 * 1000])
+    expect((await track(OWNER_IP)).status).toBe(204)
+    const { flushAnalytics } = await import('@/analytics/buffer')
+    flushAnalytics()
+    expect(viewCount()).toBe(0)
+  })
+
   it('counts that IP again once the session is gone', async () => {
     db().run(`delete from sessions`)
     expect((await track(OWNER_IP)).status).toBe(204)

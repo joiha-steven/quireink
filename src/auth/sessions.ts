@@ -23,6 +23,17 @@ const IDLE_MS = 30 * 24 * 60 * 60 * 1000
 const MAX_MS = 90 * 24 * 60 * 60 * 1000
 /** `last_seen_at` is written at most this often, so reading a page is not a write. */
 const TOUCH_MS = 60 * 60 * 1000
+/**
+ * How long an address stays the owner's after the owner last used a session from it.
+ *
+ * A day, not the session's life. A session lives thirty days from its last use and up to
+ * ninety in all, and a phone on a carrier network shares its public address with hundreds
+ * of strangers (CGNAT) and gets a new one every few days — so matching on any live session
+ * dropped every reader behind the same address for as long as the owner stayed signed in
+ * on the phone. `last_seen_at` is touched hourly while a session is in use, so a day still
+ * covers the whole of any working day the owner spends reading their own site.
+ */
+const OWNER_ADDRESS_MS = 24 * 60 * 60 * 1000
 
 export type SessionRow = {
   id: string
@@ -134,23 +145,25 @@ export function resolveSession(token: string | null | undefined): SessionRow | n
   return toSession(row)
 }
 
-/** The owner's device list. Most recently used first. */
 /**
- * Was a live session ever created from this address?
+ * Was a live session created from this address used within the last day?
  *
  * Analytics asks, so the owner's own reading is not counted as a reader's even when there is
  * no cookie to find (a second browser, a private window, the phone on the desk). It compares
  * the SALTED hash the table already stores, so answering costs no new stored data and the
- * raw address still never lands anywhere.
+ * raw address still never lands anywhere. The day is `OWNER_ADDRESS_MS`, above.
  */
 export function isSessionIp(ip: string): boolean {
   if (!ip) return false
+  const at = nowMs()
   const row = one<{ n: number }>(
-    `select count(*) as n from sessions where ip_hash = ? and expires_at > ?`,
-    hashIp(ip), nowMs(),
+    `select count(*) as n from sessions where ip_hash = ? and expires_at > ? and last_seen_at > ?`,
+    hashIp(ip), at, at - OWNER_ADDRESS_MS,
   )
   return (row?.n ?? 0) > 0
 }
+
+/** The owner's device list. Most recently used first. */
 
 export function listSessions(userId: number): SessionRow[] {
   return all<DbRow>(
