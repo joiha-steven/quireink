@@ -119,12 +119,29 @@ export function topCountries(since: number, limit: number, path: string | null):
       )
 }
 
+/**
+ * The site-wide read depth and dwell are measured on POSTS AND PAGES, not on the lists.
+ *
+ * A listing is scrolled, not read: nobody finishes the front page, and a reader who found
+ * the post they wanted on it leaves it at once, which is the right thing to do and is
+ * also a shallow, short sample. The front page is the most-viewed path on most blogs, so
+ * it was the largest single contributor to a figure labelled "read depth" and pulled it
+ * down by construction. The per-path drill-down is untouched: a list's own numbers are
+ * still there for anyone who opens it.
+ *
+ * The shapes are the router's, the same ones `pathIsServable` (analytics/record.ts)
+ * admits as listings. A fixed literal from this constant, never assembled from a request.
+ */
+const READ_PATHS = `path not in ('/', '/search', '/notes')
+  and path not glob '/page/*' and path not glob '/category/*'
+  and path not glob '/tag/*' and path not glob '/series/*'`
+
 /** Quartile distribution of scroll samples. Integer division, as in the original. */
 export function depthBuckets(since: number, path: string | null): DepthBucket[] {
   return path === null
     ? all<DepthBucket>(
         `select min(3, depth / 25) as bucket, count(*) as samples from analytics_scroll
-          where created_at >= $since group by bucket order by bucket`,
+          where created_at >= $since and ${READ_PATHS} group by bucket order by bucket`,
         { since },
       )
     : all<DepthBucket>(
@@ -141,7 +158,8 @@ export function engagement(since: number, path: string | null): { avgReadDepth: 
   // amounted to. The ceiling itself is DWELL_CAP_MS at the top of this file.
   const row = path === null
     ? one<{ depth: number | null; dwell: number | null }>(
-        `select avg(depth) as depth, avg(min(dwell_ms, $cap)) as dwell from analytics_scroll where created_at >= $since`,
+        `select avg(depth) as depth, avg(min(dwell_ms, $cap)) as dwell from analytics_scroll
+          where created_at >= $since and ${READ_PATHS}`,
         { since, cap: DWELL_CAP_MS },
       )
     : one<{ depth: number | null; dwell: number | null }>(

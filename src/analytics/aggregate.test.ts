@@ -141,6 +141,28 @@ describe('depthBuckets', () => {
 })
 
 describe('engagement', () => {
+  // The front page is scrolled, not read, and on most blogs it is the most-viewed path, so
+  // its shallow, short samples were the largest single weight on a number labelled "read
+  // depth". Site-wide, only posts and pages count; each list keeps its own numbers.
+  it('measures posts and pages, not the lists', () => {
+    scroll(80, 60_000, T0, '/a-post')
+    for (const list of ['/', '/search', '/notes', '/page/2', '/category/x', '/tag/y', '/series/z', '/category/x/page/2']) {
+      scroll(0, 1_000, T0, list)
+    }
+    expect(engagement(T0, null)).toEqual({ avgReadDepth: 80, avgDwellMs: 60_000 })
+    expect(depthBuckets(T0, null)).toEqual([{ bucket: 3, samples: 1 }])
+    // A note is content, and so is a page whose slug happens to start like a list's.
+    scroll(40, 2_000, T0, '/notes/one')
+    scroll(40, 2_000, T0, '/pages-of-history')
+    expect(engagement(T0, null).avgReadDepth).toBe(Math.round((80 + 40 + 40) / 3))
+  })
+
+  it('still answers for a list when asked about that list', () => {
+    scroll(10, 500, T0, '/')
+    expect(engagement(T0, '/')).toEqual({ avgReadDepth: 10, avgDwellMs: 500 })
+    expect(depthBuckets(T0, '/')).toEqual([{ bucket: 0, samples: 1 }])
+  })
+
   it('averages depth over every sample', () => {
     scroll(20, null)
     scroll(80, null)
