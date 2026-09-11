@@ -28,7 +28,7 @@
   `shouldRerenderOnTransaction: true` — TipTap 3 disables it by default, which leaves every
   `isActive()` (toolbar highlights, the table-tools row) stale until an unrelated re-render.
 - **Writing shell:** the sheet carries its own chrome — the action line (back link · save state ·
-  word count · Markdown/Attributes · Preview/Save/Publish) is the card's first row and the toolbar
+  word count · Markdown/Attributes · Preview/View post/Save/Publish) is the card's first row and the toolbar
   sticks under it, full-width, groups centred, WRAPPING on a narrow window rather than scrolling
   (three owner verdicts, 2026-08-17). The title grows instead of clipping (`SheetTitle`, reading
   face). The write pane — the list of everything written — rides beside the sheet from 1640px up
@@ -152,7 +152,7 @@
   meanwhile. `isScheduled` is its exact complement for published posts.
 - **Editor cue:** with a future date the Publish button reads **Schedule**, its toast says
   **Scheduled**, a "Scheduled for <local time>" note shows under the date field, and the live
-  "View post" link is hidden (the URL 404s until it goes live). "Preview draft" still works.
+  "View post" button is not drawn (the URL 404s until it goes live). "Preview draft" still works.
 - **Going live on time:** `sweepScheduled` (called from `/api/cron`) is what makes it punctual —
   it finds posts that crossed their time in the window since the LAST sweep (`newlyLive`, a
   pure `(since, now]` window) and, when any did, calls `clearCache()`, which warms the origin

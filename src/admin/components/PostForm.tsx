@@ -328,6 +328,9 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
             recovered={safety.recovered ? { ...safety.recovered, onRestore: () => void restoreDraft(), onDiscard: safety.dismiss } : null}
             getText={() => `${draftRef.current.title} ${editorApi.current?.getMarkdown() ?? contentRef.current}`}
             onPreview={openPreview}
+            // Published, saved, and its date has arrived: the same three conditions the
+            // attributes sheet used to hold this link behind.
+            live={draft.status === 'published' && savedSlug && !scheduled ? { href: `/${savedSlug}`, label: t.viewPost } : null}
             onSaveDraft={() => void handleSave('draft', t.savedDraft)}
             // The FIRST publish opens the attributes instead of publishing: they are the
             // publish-time questions, and they all already carry an answer (ADR 0024, step 5).

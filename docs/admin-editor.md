@@ -13,11 +13,18 @@ that file first; this one only adds what is true here.
 
 - The chrome is the SHEET'S OWN top rows (the Writing Desk mock's `sheettop`): the action
   line — back link + save state + word count on the left, quiet Markdown/Attributes text
-  controls and the Preview/Save/Publish buttons on the right — is the card's first row, and
+  controls and the Preview/View/Save/Publish buttons on the right — is the card's first row, and
   the toolbar sticks directly under it. One piece: a floating band over a crack of page
   between it and the paper was rejected as looking off (2026-08-17). Never shadowed.
   The global sidebar shows again since the two-pane write screen; the write pane (the list
   column) sits beside the sheet from 1640px up, pinned at the same top as the sheet's chrome.
+- **Reading the piece is a button on that row, beside Preview** (2026-09-11) — for a post that
+  is published, saved and past its date; a note points at `/notes/<slug>`. It lived only in the
+  attributes sheet's header before, so looking at your own published post cost opening a panel
+  first. It is not in both places: the sheet keeps History and Analytics. On a phone it joins
+  Preview inside the row's "⋯". ⚠️ **Measured 2026-09-11:** with it the action line wraps to two
+  rows above `lg` in the long-label locales (Russian at 1920: 56px → 100px). Vietnamese and
+  English stay on one row at 1640, which is where the write pane arrives beside the sheet.
 - The title lives ON the sheet (`SheetTitle`), in the reading face, with the meta line
   (status · last touched) under it. It aligns with the public reading column, wraps
   naturally, and uses content-driven height so a long one is never clipped.

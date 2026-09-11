@@ -272,6 +272,8 @@ export function PageForm({ initial, contentWidth, keySound, autosaveSeconds, aut
             recovered={safety.recovered ? { ...safety.recovered, onRestore: () => void restoreDraft(), onDiscard: safety.dismiss } : null}
             getText={() => `${draftRef.current.title} ${editorApi.current?.getMarkdown() ?? contentRef.current}`}
             onPreview={() => undefined}
+            // A page has no schedule, so being published is the whole condition.
+            live={draft.status === 'published' && savedSlug ? { href: `/${savedSlug}`, label: t.viewPost } : null}
             onSaveDraft={() => void handleSave('draft', t.savedDraft)}
             // Same publish contract as a post (ADR 0024, step 5): the first Publish on a page
             // never published opens its attributes — the slug is a question worth one look.
@@ -305,11 +307,6 @@ export function PageForm({ initial, contentWidth, keySound, autosaveSeconds, aut
         <SlideOver
           label={asking ? t.pubTitle : t.attributes}
           intro={asking ? t.publishReview : undefined}
-          headerRight={
-            draft.status === 'published' && savedSlug ? (
-              <a href={`/${savedSlug}`} target="_blank" rel="noopener" className="text-neutral-500 dark:text-neutral-400 hover:text-neutral-900">{t.viewPost}</a>
-            ) : undefined
-          }
           onClose={() => { setSettingsOpen(false); setAsking(false) }}
           footer={
             <>

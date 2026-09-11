@@ -1,5 +1,10 @@
-// The three things you can do to a piece that are not editing it: read its past, look at
-// it as a reader does, and see whether anybody did.
+// The two things you can do to a piece that are not editing it: read its past, and see
+// whether anybody read it.
+//
+// Reading the piece itself was the third until 2026-09-11, when it moved to the button row
+// beside Preview: it is the one of the three somebody wants WHILE writing, and it was the
+// one that cost opening a panel to reach. It is not duplicated here — two doors to the same
+// room is how a row of controls grows.
 //
 // They sit in the attributes sheet's header (`PublishPanel`'s `links`), because none of
 // them is an attribute — they are ways OUT of the editor and back to the same piece seen
@@ -26,18 +31,14 @@ export function EditorLinks({
 }) {
   const t = useAdminT()
   const quiet = 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-  // Both of the outward links need a piece that is actually public: there is nothing to
-  // view and nothing measured otherwise, and a link to a certainly-empty screen is worse
-  // than no link at all.
+  // Analytics needs a piece that is actually public: nothing is measured otherwise, and a
+  // link to a certainly-empty screen is worse than no link at all.
   const live = published && !!slug && !scheduled
 
   return (
     <>
       {!!slug && (
         <button type="button" onClick={onHistory} className={quiet}>{t.history}</button>
-      )}
-      {live && (
-        <a href={`/${slug}`} target="_blank" rel="noopener" className={quiet}>{t.viewPost}</a>
       )}
       {live && (
         <Link

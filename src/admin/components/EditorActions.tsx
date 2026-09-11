@@ -20,7 +20,7 @@
 // "⋯" so the row holds four objects rather than seven. Above `lg` nothing changes.
 import { useEffect, useRef, useState, type RefObject } from 'react'
 import Link from '@/admin/router'
-import { Button } from '@/admin/ui/Button'
+import { Button, buttonClass } from '@/admin/ui/Button'
 import { formatTime } from '@/utils'
 import { useAdminT } from './I18nProvider'
 import { OVERLAY } from './sheet'
@@ -72,6 +72,7 @@ export function EditorActions({
   mdView,
   onToggleMd,
   onPreview,
+  live,
   onSaveDraft,
   onPublish,
   publishLabel,
@@ -92,6 +93,15 @@ export function EditorActions({
   mdView: boolean
   onToggleMd: () => void
   onPreview: () => void
+  /**
+   * Where the piece can be read as a reader sees it, and what to call that. Null while
+   * there is nothing public to read — a draft, or a post whose date has not arrived.
+   *
+   * The caller names the address because the three editors do not share one: a post sits at
+   * `/{slug}` and a note under `/notes/`. It used to live ONLY in the attributes sheet,
+   * which meant reading your own published post took opening a panel first (2026-09-11).
+   */
+  live?: { href: string; label: string } | null
   onSaveDraft: () => void
   onPublish: () => void
   publishLabel: string
@@ -193,6 +203,9 @@ export function EditorActions({
             {savedSlug && (
               <button type="button" onClick={onPreview} className={`${QUIET} text-left`}>{t.previewDraft}</button>
             )}
+            {live && (
+              <a href={live.href} target="_blank" rel="noopener" className={`${QUIET} text-left`}>{live.label}</a>
+            )}
           </div>
         </details>
         {/* Quiet, and BEFORE the session-ending pair: these two change what you look AT,
@@ -229,6 +242,17 @@ export function EditorActions({
             <Button variant="secondary" type="button" title={t.previewDraft} onClick={onPreview}>
               {t.previewDraft}
             </Button>
+          </span>
+        )}
+        {/* Beside Preview, because the pair answers one question — how does this read? — with
+            the draft on the left and the live piece on the right. An `<a>` wearing the button's
+            own class rather than a hand-copied one (`buttonClass`), and the same `hidden
+            lg:contents` wrapper for the reason spelled out above it. */}
+        {live && (
+          <span className="hidden lg:contents">
+            <a href={live.href} target="_blank" rel="noopener" title={live.label} className={buttonClass('secondary')}>
+              {live.label}
+            </a>
           </span>
         )}
         <Button variant="secondary" title={tip(t.saveDraft, 'save')} onClick={onSaveDraft} disabled={saving || !dirty}>
