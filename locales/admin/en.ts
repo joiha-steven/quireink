@@ -352,7 +352,7 @@ const en = {
   authorBioHint: 'A sentence or two under an article. Empty means no author box, even with a name set.',
   authorAvatar: 'Portrait',
   authorAvatarHint: 'A square picture for the author box. Optional — the box reads fine without one.',
-  authorNoAvatar: 'No portrait chosen.',
+  authorNoAvatar: 'No portrait chosen',
   authorLink: 'Link',
   authorLinkHint: 'Where the name points: a homepage, a profile, anywhere. Empty leaves the name as plain text.',
   captionPlaceholder: 'Image caption',

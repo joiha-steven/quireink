@@ -352,7 +352,7 @@ const ko = {
   authorBioHint: '글 아래에 놓을 한두 문장입니다. 비워 두면 이름을 넣었더라도 글쓴이 상자는 나오지 않습니다.',
   authorAvatar: '사진',
   authorAvatarHint: '글쓴이 상자에 쓸 정사각형 이미지입니다. 선택 사항이며 없어도 상자는 잘 읽힙니다.',
-  authorNoAvatar: '사진을 고르지 않았습니다.',
+  authorNoAvatar: '사진을 고르지 않았습니다',
   authorLink: '링크',
   authorLinkHint: '이름이 가리킬 곳입니다. 홈페이지든 프로필이든 상관없습니다. 비워 두면 이름은 그냥 글자로 남습니다.',
   captionPlaceholder: '이미지 설명',

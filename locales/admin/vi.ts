@@ -352,7 +352,7 @@ const vi = {
   authorBioHint: 'Một hai câu đặt dưới bài viết. Để trống thì không có khối tác giả, kể cả khi đã điền tên.',
   authorAvatar: 'Ảnh chân dung',
   authorAvatarHint: 'Ảnh vuông cho khối tác giả. Không bắt buộc — thiếu ảnh thì khối vẫn đọc tốt.',
-  authorNoAvatar: 'Chưa chọn ảnh.',
+  authorNoAvatar: 'Chưa chọn ảnh',
   authorLink: 'Liên kết',
   authorLinkHint: 'Tên trỏ về đâu: trang cá nhân, hồ sơ, chỗ nào cũng được. Để trống thì tên chỉ là chữ, bấm vào không đi đâu cả.',
   captionPlaceholder: 'Chú thích ảnh',

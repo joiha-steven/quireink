@@ -352,7 +352,7 @@ const fr = {
   authorBioHint: "Une ou deux phrases sous l'article. Vide, il n'y a pas d'encadré d'auteur, même avec un nom renseigné.",
   authorAvatar: 'Portrait',
   authorAvatarHint: "Une image carrée pour l'encadré d'auteur. Facultative : l'encadré se lit très bien sans.",
-  authorNoAvatar: 'Aucun portrait choisi.',
+  authorNoAvatar: 'Aucun portrait choisi',
   authorLink: 'Lien',
   authorLinkHint: "Où mène le nom : une page personnelle, un profil, n'importe où. Vide, le nom reste du texte simple.",
   captionPlaceholder: 'Légende de l’image',

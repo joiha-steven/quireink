@@ -352,7 +352,7 @@ const it = {
   authorBioHint: "Una o due frasi sotto l'articolo. Vuoto significa nessun riquadro autore, anche con un nome impostato.",
   authorAvatar: 'Ritratto',
   authorAvatarHint: "Un'immagine quadrata per il riquadro autore. Facoltativa: il riquadro si legge bene anche senza.",
-  authorNoAvatar: 'Nessun ritratto scelto.',
+  authorNoAvatar: 'Nessun ritratto scelto',
   authorLink: 'Collegamento',
   authorLinkHint: 'Dove porta il nome: una home page, un profilo, ovunque. Vuoto lascia il nome come testo semplice.',
   captionPlaceholder: 'Didascalia dell’immagine',

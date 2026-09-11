@@ -352,7 +352,7 @@ const de = {
   authorBioHint: 'Ein, zwei Sätze unter dem Artikel. Leer heißt kein Autorenkasten, auch wenn ein Name gesetzt ist.',
   authorAvatar: 'Porträt',
   authorAvatarHint: 'Ein quadratisches Bild für den Autorenkasten. Optional — der Kasten liest sich auch ohne gut.',
-  authorNoAvatar: 'Kein Porträt gewählt.',
+  authorNoAvatar: 'Kein Porträt gewählt',
   authorLink: 'Link',
   authorLinkHint: 'Wohin der Name führt: eine Startseite, ein Profil, irgendwohin. Leer bleibt der Name einfacher Text.',
   captionPlaceholder: 'Bildunterschrift',

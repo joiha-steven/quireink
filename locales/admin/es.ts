@@ -352,7 +352,7 @@ const es = {
   authorBioHint: 'Una o dos frases bajo el artículo. Vacío significa que no hay recuadro de autor, aunque haya un nombre.',
   authorAvatar: 'Retrato',
   authorAvatarHint: 'Una imagen cuadrada para el recuadro de autor. Opcional: el recuadro se lee bien sin ella.',
-  authorNoAvatar: 'Sin retrato elegido.',
+  authorNoAvatar: 'Sin retrato elegido',
   authorLink: 'Enlace',
   authorLinkHint: 'Adónde lleva el nombre: una página personal, un perfil, donde sea. Vacío deja el nombre como texto normal.',
   captionPlaceholder: 'Pie de la imagen',

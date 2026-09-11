@@ -353,7 +353,7 @@ const pt = {
   authorBioHint: 'Uma ou duas frases sob o artigo. Vazio significa nenhuma caixa de autor, mesmo com um nome definido.',
   authorAvatar: 'Retrato',
   authorAvatarHint: 'Uma imagem quadrada para a caixa de autor. Opcional: a caixa lê-se bem sem ela.',
-  authorNoAvatar: 'Nenhum retrato escolhido.',
+  authorNoAvatar: 'Nenhum retrato escolhido',
   authorLink: 'Ligação',
   authorLinkHint: 'Para onde aponta o nome: uma página pessoal, um perfil, qualquer sítio. Vazio deixa o nome como texto simples.',
   captionPlaceholder: 'Legenda da imagem',
