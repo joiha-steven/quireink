@@ -22,7 +22,8 @@ Typecheck, the nine static guards (`filesize` · `css` · `nul` · `routes` · `
 
 `check:all` proves the code compiles and the seams hold. It cannot tell you a column
 collapsed to `reader@e…` or that three columns are 14px out of alignment. Both shipped,
-because nobody opened the page.
+because nobody opened the page. **CI runs the tour below on every push**, so a change to
+anything rendered goes red there if it was pushed on `check:all` alone (2026-09-11, twice).
 
 ```
 bun run tour
