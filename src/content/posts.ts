@@ -5,6 +5,7 @@
 import type { Post, PostWithContent } from '@/types'
 import { collapseBlob, expandBlob } from '@/media/blob'
 import { slugify, deriveExcerpt, clampExcerpt, isPublicallyVisible, readingMinutes } from '@/utils'
+import { accentedWords, keepsAccents } from '@/accent'
 import { ensureSlugFree } from '@/content/slugs'
 import { pushRevision, renameRevisions } from '@/content/revisions'
 import { renameComments } from '@/comments/comments'
@@ -85,22 +86,36 @@ function ftsQuery(input: string): string {
 }
 
 // Full-text over title + BODY. `remove_diacritics 2` folds accents in the INDEX, so
-// "lap trinh" finds "lập trình" with no accent-stripping layer above.
+// "lap trinh" finds "lập trình" with no accent-stripping layer above — and `keepsAccents`
+// then puts back the half of the old Postgres behaviour that folding threw away: a reader
+// who DID type the accents meant them (see `accent.ts`).
 // Ordering stays date-desc, as in the frozen tree; bm25 relevance ranking is an ALLOWED
 // parity exception that has deliberately not been taken during the port.
+const SEARCH_LIMIT = 50
+/** Rows read before the accent pass narrows them, and only when the query has accents.
+ *  Reading exactly `SEARCH_LIMIT` would let discarded near-spellings eat the answer. */
+const SEARCH_CANDIDATES = 200
+
 export async function searchPosts(query: string): Promise<Post[]> {
   // 200 chars, because `ftsQuery` makes one AND-ed phrase per token: the length of the
   // string is the work. The `/search` page capped its input and the JSON API did not.
   const q = query.trim().slice(0, 200)
   if (!q) return []
+  const accented = accentedWords(q).length > 0
+  // The body is read only when there is an accent to check it against, and it is read into
+  // this process and dropped by `rowToMeta`: the endpoint above still answers with metadata
+  // and never with a body.
   try {
     return all<PostRow>(
-      `select ${META_COLS} from posts_fts f
+      `select ${META_COLS}${accented ? ', p.content' : ''} from posts_fts f
          join posts p on p.rowid = f.rowid
         where posts_fts match ? and ${liveOnly('p')} and p.status = 'published'
-        order by p.date desc limit 50`,
+        order by p.date desc limit ?`,
       ftsQuery(q),
+      accented ? SEARCH_CANDIDATES : SEARCH_LIMIT,
     )
+      .filter((row) => keepsAccents(`${row.title}\n${row.content ?? ''}`, q))
+      .slice(0, SEARCH_LIMIT)
       .map(rowToMeta)
       .filter((p) => isPublicallyVisible(p.status, p.date))
   } catch (error) {

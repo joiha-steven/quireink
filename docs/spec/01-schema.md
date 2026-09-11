@@ -196,9 +196,15 @@ Postgres uses `to_tsvector('simple', ...)`. `simple` means no stemming and, cruc
 in application code.
 
 FTS5 with `remove_diacritics 2` folds diacritics in the index itself, so `lap trinh`
-matches `lập trình` natively and the application layer disappears. Vietnamese is
-space-separated at the syllable level, so `unicode61` tokenizes it correctly without a
-segmenter.
+matches `lập trình` natively. Vietnamese is space-separated at the syllable level, so
+`unicode61` tokenizes it correctly without a segmenter.
+
+The application layer does not disappear entirely, and assuming it did was a bug for a
+year: a folded index cannot tell `lề` from `lệ`, `lê` or `lẻ`, which are four words.
+`src/accent.ts` keeps the index as the thing that finds candidates and narrows them after
+with the accents the person typed — per word, so an unaccented word still asks the wide
+question. No second index and nothing to reindex: an accented query reads a few more rows
+(`CANDIDATES`, `SEARCH_CANDIDATES`) and drops the ones that only matched unaccented.
 
 Additional gains, free: `bm25()` ranking (today there is no ranking), and `snippet()`
 / `highlight()` for result excerpts (today the excerpt is derived by hand).

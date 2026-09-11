@@ -67,8 +67,13 @@ documents: append, never renumber.**
    answered, in the private sibling, where nobody planning a recovery would look. A
    backup mechanism named in a spec and absent from the machine is the most expensive
    kind of stale line there is, so it is corrected rather than deleted.
-2. **Search is accent-insensitive at the index level.** FTS5 with `remove_diacritics 2`
-   does natively what the 1.x `/search` route bolted on. Ranking changed from "none" to BM25.
+2. **Search folds accents at the index level, and puts them back for a query that has
+   them.** FTS5 with `remove_diacritics 2` does natively what the 1.x `/search` route bolted
+   on, so "lap trinh" finds "lập trình". On its own that is only half of 1.x, which was
+   accent-SENSITIVE underneath: a folded index answers "lề" with every "lệ", "lê" and "lẻ"
+   as well, and in Vietnamese those are different words. `src/accent.ts` narrows the folded
+   index's candidates with the accents that were actually typed — word by word, so one box
+   still answers both kinds of typing. Ranking changed from "none" to BM25.
 3. **Cache invalidation is total instead of targeted.** See [02-structure.md](02-structure.md).
 4. **Sessions did not survive cutover. MCP tokens did**, deliberately: an MCP token that
    silently stops working takes AI publishing down with no error anywhere.

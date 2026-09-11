@@ -57,7 +57,8 @@ Google account.
   its own) over one small-print ledger — name, email, post, time, IP with the ISO country in parens
   (`1.2.3.4 (VN)`, best-effort from the proxy/Cloudflare edge header, blank when absent, `—` on
   pre-feature rows) — and a quiet Delete at its end. Rows fill two newspaper columns from `lg` up.
-  The sheet-top search reaches the text, the name and the post title (accent-folded) and paints
+  The sheet-top search reaches the text, the name and the post title (accent-folded one way only —
+  `src/accent.ts`: typed WITH accents it means them) and paints
   hits with the pen (`Marked`). Delete = soft delete via owner-gated `DELETE /api/comments/[id]`
   → Trash (restore/purge in `TrashView`'s Comments tab).
 - **The gate — `src/comments/stamp.ts`, `src/assets/js/stamp.ts` ([ADR 0032](../decisions/0032-the-comment-gate-needs-no-account.md)).**

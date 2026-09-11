@@ -157,6 +157,7 @@ which was never true. The boxes came off on 2026-08-03; **not one line of conten
 - Grid/list toggle, remembered in `localStorage`, honoured pre-paint by the no-FOUC script
 - `gridView` off hides the button AND makes the no-FOUC script ignore a stored `list=grid`
 - Search: local index (instant, accent-insensitive) merged with server FTS over title + body
+  (unaccented query folds, accented query means its accents — `src/accent.ts`)
 - Search overlay from the header, plus the `/search` route for deep links and no-JS
 - Related posts: shared tags weighted double, then categories
 - Reading progress bar; back to top; reveal-on-scroll (CSS first, JS fallback only where
@@ -299,8 +300,9 @@ which was never true. The boxes came off on 2026-08-03; **not one line of conten
 - `⚠` Buckets truncated in `ANALYTICS_TZ` so days line up with local midnight. Port the
   existing timezone test cases FIRST
 - View totals column on the content tables
-- `✂` Search ranking changes from none to BM25 and becomes accent-insensitive at the index
-  level (parity exception 2)
+- `✂` Search ranking changes from none to BM25, and the index folds accents (parity
+  exception 2). 1.x was accent-SENSITIVE underneath; `src/accent.ts` keeps that half by
+  narrowing the folded index with the accents a query actually carries
 
 ## 9. SEO, feeds, agent surface
 

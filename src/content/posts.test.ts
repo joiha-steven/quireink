@@ -203,6 +203,16 @@ describe('search', () => {
     expect((await searchPosts('lap trinh')).map((p) => p.slug)).toEqual(['lap-trinh-hang-ngay'])
   })
 
+  // The reader gets the same rule the owner's search follows (`accent.ts`). The index is
+  // folded, so on its own it answers "lề" with every "lệ" and "lê" that was ever published.
+  it('an accented query means its accents, while an unaccented one still finds everything', async () => {
+    await publish('Căn lề', 'căn lề trái cho đoạn văn')
+    await publish('Tỉ lệ', 'tỉ lệ chuyển đổi của trang')
+    expect((await searchPosts('lề')).map((p) => p.slug)).toEqual(['can-le'])
+    expect((await searchPosts('lệ')).map((p) => p.slug)).toEqual(['ti-le'])
+    expect((await searchPosts('le')).map((p) => p.slug).sort()).toEqual(['can-le', 'ti-le'])
+  })
+
   it('searches the body, not just the title', async () => {
     await publish('Untitled', 'a paragraph about sqlite internals')
     expect(await searchPosts('sqlite')).toHaveLength(1)

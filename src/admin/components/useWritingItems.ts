@@ -8,7 +8,8 @@ import { useEffect, useMemo, useState } from 'react'
 import type { Post, Page, Note, ApiResponse } from '@/types'
 // Type-only, and it must stay that way: the module it comes from opens the database.
 import type { OwnerHit } from '@/content/search-owner'
-import { foldAccents, untitledNumbers } from '@/utils'
+import { untitledNumbers } from '@/utils'
+import { indexIn, lanes } from '@/accent'
 
 /** WHAT a row is — and 'all' is the mixed stream, most recently touched first. */
 export type WriteKind = 'all' | 'page' | 'post' | 'note'
@@ -134,7 +135,7 @@ export function useWritingItems(posts: Post[], pages: Page[], notes: Note[], que
     return () => clearTimeout(timer)
   }, [query])
 
-  const needle = foldAccents(query.trim())
+  const needle = query.trim()
   const shown = useMemo(() => {
     return items.filter((it) => {
       // Kind and status STACK: "drafts of posts" is one question, not two lists.
@@ -146,7 +147,7 @@ export function useWritingItems(posts: Post[], pages: Page[], notes: Note[], que
       if (needs === 'excerpt' && !it.noExcerpt) return false
       if (needs === 'image' && !it.noImage) return false
       if (!needle) return true
-      if (foldAccents(`${it.title} ${it.terms}`).includes(needle)) return true
+      if (indexIn(lanes(`${it.title} ${it.terms}`), needle) !== -1) return true
       return bodyHits?.has(`${it.kind}:${it.slug}`) ?? false
     })
   }, [items, kind, status, needle, bodyHits, needs])

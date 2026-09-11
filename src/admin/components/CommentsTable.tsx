@@ -18,7 +18,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { AdminComment, ApiResponse } from '@/types'
 import { useToast } from '@/admin/ui/Toast'
-import { formatDateTimeShort, foldAccents } from '@/utils'
+import { formatDateTimeShort } from '@/utils'
+import { indexIn, lanes } from '@/accent'
 import { PageHeader, EmptyState, Tabs, type TabItem } from './kit'
 import { SHEET, SHEET_FOOT, SHEET_TOOL, SHEET_TOOL_DANGER, SheetTop, NumBand } from './sheet'
 import { Marked } from './Marked'
@@ -93,10 +94,11 @@ export function CommentsTable({ initial }: { initial: AdminComment[] }) {
 
   // The search reaches the text, the name and the post title, accent-folded — typing "cafe"
   // finds "café", which is the only behaviour that is not a surprise in a Vietnamese admin.
-  const needle = foldAccents(query.trim().toLowerCase())
+  // Typed WITH accents it means them, so "lề" no longer drags in "lệ" (`accent.ts`).
+  const needle = query.trim()
   const since = Date.now() - WEEK_MS
   const shown = rows.filter((c) => (age === 'all' || (Date.parse(c.createdAt) || 0) >= since)
-    && (!needle || foldAccents(`${c.content} ${c.name} ${c.postTitle ?? ''}`.toLowerCase()).includes(needle)))
+    && (!needle || indexIn(lanes(`${c.content} ${c.name} ${c.postTitle ?? ''}`), needle) !== -1))
 
   // One pass, memoised: grouping two hundred comments on every keystroke of the search box
   // is work nobody asked for.

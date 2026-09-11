@@ -95,7 +95,8 @@
   empty sheet inviting the next piece. Opening a row swaps the sheet for that piece's
   editor; the pane rides along on both editor pages from 1640px up (measured, `WritePane.tsx`).
 - `WritePane` renders; `useWritingItems` owns the stream: title+terms filtering, the
-  debounced body search (`/api/admin/search`, hits marked with the pen), and two filters
+  debounced body search (`/api/admin/search`, hits and passage marked with the pen, accents
+  folded one way only — typed WITH them they are meant, `src/accent.ts`), and two filters
   that STACK — a kind row (All · Posts · Pages · Notes, words on a hairline, the pane's own
   short `scope*` strings measured to one line in all eleven languages) and, on the small-print
   line under it, two status lamps (Drafts, Published: press one to keep only those, press it

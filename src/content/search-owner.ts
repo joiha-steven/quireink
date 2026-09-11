@@ -10,6 +10,7 @@
 // list here too, each carrying `kind` so the caller knows which editor to open.
 import { all } from '@/store/query'
 import { liveOnly } from '@/store/db'
+import { accentedWords, indexIn, keepsAccents, lanes } from '@/accent'
 
 /**
  * One result. `WritingList` imports this with `import type`, which erases at build time —
@@ -33,7 +34,7 @@ type HitRow = {
   title: string
   status: string
   updated_at: number | null
-  line: string | null
+  body: string | null
 }
 
 /**
@@ -53,14 +54,28 @@ function ftsQuery(input: string): string {
     .join(' ')
 }
 
-// `snippet()` returns the passage the match sits in, taken from the BODY column (index 1),
-// with empty markers: the row highlights the words itself, because the body is Markdown and
-// any marker inserted here would have to survive escaping on the way to the DOM.
+// The body comes back whole rather than as `snippet()`, which is both the correct answer and
+// the cheap one. Correct: SQLite reads the FOLDED index, so on an accented query it centred
+// the passage on the wrong word — a search for "lề" underlined "lệ" in a sentence that had
+// nothing to do with the question. Cheap: measured 2026-09-11 over 500 posts of ~6 KB,
+// `snippet()` costs 23 ms per 60 rows because it re-tokenizes every document it quotes,
+// against 1 ms to read those bodies and cut the passage here.
 //
 // Both queries are written out rather than templated over a table name. Two near-identical
 // strings are cheaper to read than one string with a hole in it, and this file then contains
 // no SQL that is assembled at runtime at all.
 const LIMIT = 60
+
+/**
+ * Rows read before the accent pass narrows them, and only when a query carries accents:
+ * that pass drops rows, so reading exactly `LIMIT` of them would leave a search for "lề"
+ * showing four results because the other fifty-six were spellings of "lệ".
+ */
+const CANDIDATES = 240
+
+/** Words of context in a passage — the number `snippet()` was asked for, kept so that a row
+ *  reads the way it always has. */
+const CONTEXT = 14
 
 export async function searchEverything(query: string): Promise<OwnerHit[]> {
   // The same cap the reader's search has, and for the same reason: one AND-ed phrase per
@@ -68,37 +83,43 @@ export async function searchEverything(query: string): Promise<OwnerHit[]> {
   const q = query.trim().slice(0, 200)
   if (!q) return []
   const match = ftsQuery(q)
+  const words = q.split(/\s+/).filter(Boolean)
+  const cap = accentedWords(q).length > 0 ? CANDIDATES : LIMIT
 
   try {
     const posts = all<HitRow>(
-      `select p.slug, p.title, p.status, p.updated_at,
-              snippet(posts_fts, 1, '', '', '…', 14) as line
+      `select p.slug, p.title, p.status, p.updated_at, p.content as body
          from posts_fts f
          join posts p on p.rowid = f.rowid
         where posts_fts match ? and ${liveOnly('p')}
         order by p.updated_at desc, p.date desc
         limit ?`,
       match,
-      LIMIT,
+      cap,
     )
     const pages = all<HitRow>(
-      `select g.slug, g.title, g.status, g.updated_at,
-              snippet(pages_fts, 1, '', '', '…', 14) as line
+      `select g.slug, g.title, g.status, g.updated_at, g.content as body
          from pages_fts f
          join pages g on g.rowid = f.rowid
         where pages_fts match ? and ${liveOnly('g')}
         order by g.updated_at desc
         limit ?`,
       match,
-      LIMIT,
+      cap,
     )
 
     return [
-      ...posts.map((r) => toHit(r, 'post')),
-      ...pages.map((r) => toHit(r, 'page')),
+      ...posts.map((row) => ({ row, kind: 'post' as const })),
+      ...pages.map((row) => ({ row, kind: 'page' as const })),
     ]
-      .sort((a, b) => (b.updatedAt ?? 0) - (a.updatedAt ?? 0))
+      // The narrowing. The index matched these rows with the accents taken off; this asks
+      // whether the words the owner actually typed are in them.
+      .filter(({ row }) => keepsAccents(`${row.title}\n${row.body ?? ''}`, q))
+      .sort((a, b) => (b.row.updated_at ?? 0) - (a.row.updated_at ?? 0))
+      // Cut to the answer BEFORE reading any body for its passage: cutting afterwards would
+      // pay for up to 480 of them to show 60.
       .slice(0, LIMIT)
+      .map(({ row, kind }) => toHit(row, kind, words))
   } catch (error) {
     // A malformed match string is the one failure that reaches here, and a search that
     // returns nothing is better than a screen that shows an error while somebody types.
@@ -107,13 +128,32 @@ export async function searchEverything(query: string): Promise<OwnerHit[]> {
   }
 }
 
-function toHit(row: HitRow, kind: 'post' | 'page'): OwnerHit {
+function toHit(row: HitRow, kind: 'post' | 'page', words: string[]): OwnerHit {
   return {
     kind,
     slug: row.slug,
     title: row.title,
     status: row.status,
     updatedAt: row.updated_at ?? null,
-    line: (row.line ?? '').replace(/\s+/g, ' ').trim(),
+    line: passage(row.body ?? '', words),
   }
+}
+
+/**
+ * The passage the words were found in. It starts AT the match with a leading ellipsis,
+ * which is what `snippet()` did, and it finds the match the way the caller's filter did —
+ * so the sentence under the row is the sentence that answered the question.
+ */
+function passage(body: string, words: string[]): string {
+  const hay = lanes(body.replace(/\s+/g, ' ').trim())
+  let at = -1
+  for (const word of words) {
+    const found = indexIn(hay, word)
+    if (found !== -1 && (at === -1 || found < at)) at = found
+  }
+  // -1 means the words matched the TITLE and not the body, so the opening line is the
+  // passage: a row with an empty second line looks like a row that failed to load.
+  const from = at === -1 ? 0 : hay.text.lastIndexOf(' ', at) + 1
+  const rest = hay.text.slice(from).split(' ')
+  return `${from > 0 ? '…' : ''}${rest.slice(0, CONTEXT).join(' ')}${rest.length > CONTEXT ? '…' : ''}`
 }

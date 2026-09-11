@@ -9,7 +9,8 @@ import { useRouter } from '@/admin/router'
 import type { Post, Page, MediaItem, FileItem, AdminComment, ApiResponse, Note } from '@/types'
 import { useToast } from '@/admin/ui/Toast'
 import { useConfirm } from '@/admin/ui/ConfirmDialog'
-import { foldAccents, formatDateTimeShort } from '@/utils'
+import { formatDateTimeShort } from '@/utils'
+import { indexIn, lanes } from '@/accent'
 import { CONTROL_SM, EmptyState, NOTE_TEXT, PageHeader, Tabs } from './kit'
 import { Tick } from '@/admin/ui/Tick'
 import { SHEET, SHEET_FOOT, SHEET_TOOL, SHEET_TOOL_DANGER, SheetTop } from './sheet'
@@ -60,10 +61,11 @@ export function TrashView({
     else next.add(id)
     return next
   })
-  /** Accent-folded, so "cafe" finds "café" — the same rule the write pane's search follows. */
+  /** Accent-folded, so "cafe" finds "café" — the same rule the write pane's search follows,
+   *  including its other half: typed WITH accents, "lề" no longer finds "lệ" (`accent.ts`). */
   const keep = (name: string) => {
-    const needle = foldAccents(query.trim().toLowerCase())
-    return !needle || foldAccents(name.toLowerCase()).includes(needle)
+    const needle = query.trim()
+    return !needle || indexIn(lanes(name), needle) !== -1
   }
 
   const counts: Record<Kind, number> = {

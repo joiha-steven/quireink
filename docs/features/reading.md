@@ -72,7 +72,9 @@
 - `/search` — **two layers:** a lean local index (`GET /api/search/index`, `{slug,title,date,terms}`,
   instant + accent-insensitive) merged with `GET /api/search?q=` (SQLite FTS5 over title + BODY via
   `searchPosts`, `posts_fts match ?` joined back to live published rows). FTS5 folds diacritics in
-  the index (`remove_diacritics 2`, `schema.sql`), so both layers are accent-insensitive. The header search is a
+  the index (`remove_diacritics 2`, `schema.sql`), so a query typed without accents finds accented
+  text; a query typed WITH them is narrowed back to them by `src/accent.ts`, because a folded index
+  answers "lề" with every "lệ" and "lê" as well. The header search is a
   `<dialog>` overlay opened by `src/assets/js/search.ts`, on the one `.overlay` panel the
   sign-up overlay shares (`subscribe.css.ts`); the `/search` route stays for deep links
   and no-JS.

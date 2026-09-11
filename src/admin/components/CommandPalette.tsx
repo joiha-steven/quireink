@@ -22,7 +22,7 @@
 // the current value back and say what it did.
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from '@/admin/router'
-import { foldAccents } from '@/utils'
+import { indexIn, lanes } from '@/accent'
 import { SETTINGS_INDEX } from './settings-index'
 import { useAdminT } from './I18nProvider'
 import { OVERLAY } from './sheet'
@@ -247,11 +247,11 @@ export function CommandPalette() {
   ], [t, notify])
 
   const rows = useMemo(() => [...buildRows(t), ...verbs], [t, verbs])
-  const needle = foldAccents(query.trim())
+  const needle = query.trim()
   const shown = useMemo(() => {
     const all = [...rows, ...posts]
     const matched = needle
-      ? all.filter((r) => foldAccents(`${r.search} ${r.hint}`).includes(needle))
+      ? all.filter((r) => indexIn(lanes(`${r.search} ${r.hint}`), needle) !== -1)
       : all.filter((r) => r.group !== 'setting') // an empty box offers the short list, not 107 rows
     // RECENT IS A COPY, not a move: a row that is both recent and an action appears twice on
     // purpose — once where you left it and once where it lives — because the second is how
