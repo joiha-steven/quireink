@@ -187,7 +187,7 @@ character and none of its typographic rules **except one**, below.
   a rail that hides where you are is worse than a long one. Eleven rows was eleven decisions
   before the one that matters, and the four are what the owner came to do.
 - **The rail is the owner's to arrange** (2026-09-06). "Rearrange sidebar", under the collapse
-  row, turns every row into something that can be dragged — or walked with the up/down buttons,
+  row and in the owner's menu at the foot, turns every row into something that can be dragged — or walked with the up/down buttons,
   which are the touch and keyboard route and reach across the three groups the same way a drag
   does. The wordmark and the search button are the two things that cannot be dragged, because a
   logo dropped into a column of destinations becomes a destination; they get switches instead,
@@ -204,7 +204,11 @@ character and none of its typographic rules **except one**, below.
   migration —
   `content/nav-order.ts` reconciles a stored order against the live rail on every mount. The
   rail widens from 208 to 256px while arranging, measured: the grip and two steppers take 62px,
-  and at 208 "Everything else" read as "Ever…".
+  and at 208 "Everything else" read as "Ever…". **Done and Reset are two real keys at the FOOT
+  of the rail** (2026-09-11), under the last row and under the two switches. They rode under the
+  collapse row until then — which is a row the owner can DRAG, so on a rail whose collapse row
+  had been moved up, the one control that ends the mode sat in the middle of the thing being
+  rearranged, dressed like the rows around it.
 - **Writing is the primary task.** Since the two-pane Write screen (2026-08-17) the editor
   no longer hides the rail: the mock draws it, and the owner circled the whole frame. The
   write pane — the list of everything written — rides beside the sheet on the Write screen

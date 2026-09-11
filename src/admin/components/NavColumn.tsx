@@ -32,6 +32,7 @@ import { Arrangeable, ZoneFloor, SwitchRow } from './NavArrange'
 import { RailStrip } from './NavFooter'
 import { SearchKey, SearchRow } from './NavSearch'
 import { useToast } from '@/admin/ui/Toast'
+import { Button } from '@/admin/ui/Button'
 
 export function useNavColumn({
   signOut, aiConfigured, navOrder, avatar, icons, more, onMore, onIcons, onCollapse, close, isActive,
@@ -196,29 +197,34 @@ export function useNavColumn({
     const walk = ZONES.flatMap((zone) => arrange.order[zone].map((id) => ({ id, zone })))
 
     /**
-     * The switch into arrange mode — and, while it is on, the way back out and the way back
-     * to the shipped order.
-     *
-     * Reset gets its OWN class rather than `SIDEBAR_UTIL`, which is `w-full`: beside a
-     * flexed Done it kept asking for the whole width and its hover state hung over the edge
-     * of the rail.
+     * The switch INTO arrange mode, drawn under the collapse row when that row is in the
+     * column. The way back out is not here — see `arrangeFoot`.
      */
-    const arrangeControl = c ? null : (
-      <div className="flex items-center gap-1">
-        <button type="button" data-nav-arrange={arranging ? 'on' : 'off'} onClick={arrange.toggleArranging} className={`${utilClass} min-w-0 flex-1`}>
-          {(c || icons || arranging) && <IconArrange />}
-          <span className="truncate">{arranging ? t.navArrangeDone : t.navArrange}</span>
-        </button>
-        {arranging && (
-          <button
-            type="button"
-            data-nav-reset
-            onClick={arrange.reset}
-            className="h-8 shrink-0 rounded-md px-2 text-xs text-neutral-500 transition-colors hover:bg-neutral-200/70 hover:text-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-300"
-          >
-            {t.navArrangeReset}
-          </button>
-        )}
+    const arrangeControl = c || arranging ? null : (
+      <button type="button" data-nav-arrange="off" onClick={arrange.toggleArranging} className={utilClass}>
+        {icons && <IconArrange />}
+        <span className="truncate">{t.navArrange}</span>
+      </button>
+    )
+
+    /**
+     * The way back out, and the way back to the shipped order. AT THE FOOT OF THE RAIL, under
+     * everything arrange mode drew, and as two real keys rather than two quiet rows.
+     *
+     * It used to ride under the collapse row, which is a row the owner can DRAG — so on a
+     * rail whose collapse row sits mid-column, the one control that ends the mode sat in the
+     * middle of the thing being rearranged, dressed like the rows around it (2026-09-11).
+     * Done is the primary key because it is what the screen is for; Reset is secondary and
+     * keeps its own width, since it is the rarer of the two.
+     */
+    const arrangeFoot = !arranging ? null : (
+      <div className="mt-2 flex items-center gap-2 border-t border-neutral-200 pt-2 dark:border-neutral-800">
+        <Button type="button" data-nav-arrange="on" onClick={arrange.toggleArranging} className="min-w-0 flex-1">
+          {t.navArrangeDone}
+        </Button>
+        <Button variant="secondary" type="button" data-nav-reset onClick={arrange.reset}>
+          {t.navArrangeReset}
+        </Button>
       </div>
     )
 
@@ -227,11 +233,12 @@ export function useNavColumn({
         {arrange.order[zone].map((id) => {
           const drawn = row(id)
           if (!drawn) return null
-          // The mode switch rides UNDER THE COLLAPSE ROW, wherever the collapse row has been
-          // put: the two are siblings — both are about this rail rather than about the blog —
-          // and it is the row the hand already goes to when it wants the rail to look
-          // different. It is not itself arrangeable: a control that can be dragged out of
-          // reach while it is the thing doing the dragging is a door that closes behind you.
+          // The way IN rides under the collapse row, wherever the collapse row has been put:
+          // the two are siblings — both are about this rail rather than about the blog — and
+          // it is the row the hand already goes to when it wants the rail to look different.
+          // It is not itself arrangeable: a control that can be dragged out of reach while it
+          // is the thing doing the dragging is a door that closes behind you. While the mode
+          // is ON it is not drawn here at all; ending it belongs at the foot (`arrangeFoot`).
           const after = id === 'collapse' ? arrangeControl : null
           // A FRAGMENT, not a wrapper. `display:contents` looks like no element at all and is
           // not: it is still a node, so `aside nav > a` — which is how the rail's own guards
@@ -252,7 +259,7 @@ export function useNavColumn({
               {drawn}
             </Arrangeable>
           )
-        }).flatMap((el, i) => (arranging && arrange.order[zone][i] === 'collapse' ? [el, <Fragment key="arrange-control">{arrangeControl}</Fragment>] : [el]))}
+        })}
         {arranging && <ZoneFloor zone={zone} empty={arrange.order[zone].length === 0} />}
       </>
     )
@@ -349,6 +356,7 @@ export function useNavColumn({
               <SwitchRow id="search" label={t.navShowSearch} on={showSearch} onToggle={() => arrange.toggleHidden('search')} />
             </div>
           )}
+          {arrangeFoot}
         </>
       ),
     }
