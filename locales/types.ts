@@ -1513,6 +1513,8 @@ export type AdminStrings = {
   setupLede: string
   setupEmail: string
   setupEmailHint: string
+  setupUsernameHint: string
+  setupPwHint: string
   setupCreate: string
   setupClaimed: string
   setupUnclaimedTitle: string
@@ -1548,6 +1550,12 @@ export type AdminStrings = {
   faceListHint: string
   faceFront: string
   faceFrontHint: string
+  penStepTitle: string
+  penStepLede: string
+  penStepOn: string
+  penStepOnHint: string
+  penStepOff: string
+  penStepOffHint: string
   setupFinish: string
   // Shown on the enrolment screen ONLY while the blog has no public address. Before anyone
   // has enrolled, two-factor protects nothing — whoever has the password first enrols their

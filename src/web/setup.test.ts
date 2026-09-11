@@ -9,14 +9,14 @@ import { freshDatabase, dropDatabase } from '@/test/db'
 import { db } from '@/store/db'
 import { createApp } from '@/web/app'
 import { createUser, noUsersYet } from '@/auth/users'
-import { saveSettings } from '@/content/settings'
+import { saveSettings, getSettings } from '@/content/settings'
+import { adminT } from '@/i18n/admin-i18n'
 import { resetPending } from '@/auth/login'
 import { resetEnrolment } from '@/web/enrol-routes'
 import { resetLimits } from '@/server/rate-limit'
 import { setupToken, forgetSetupToken, resetSetupToken, setupCodeConfigured } from '@/server/setup-token'
 import { setupBanner } from '@/web/setup-routes'
 import { afterEach } from 'bun:test'
-import { getSettings } from '@/content/settings'
 
 const DIR = './.tmp/test-setup'
 freshDatabase(DIR)
@@ -108,6 +108,29 @@ describe('claiming', () => {
     expect((await claim()).status).toBe(409)
   })
 
+  // The language question used to live on the site step, which is the THIRD screen: a
+  // Vietnamese owner met "Claim this blog" and then a whole authenticator screen in English.
+  it('takes the language from the claim form, so the authenticator screen is already in it', async () => {
+    const res = await claim({ language: 'vi' })
+    expect(res.status).toBe(200)
+    expect((await getSettings()).language).toBe('vi')
+    // And the screen it hands over to is rendered in it, not in the language it started as.
+    expect(await res.text()).toContain(adminT('vi').authSetUp)
+  })
+
+  it('writes no language for a claim that was refused', async () => {
+    // Everything above the token check runs for a request nobody has authenticated, so a
+    // settings write there would be a way to edit a blog by posting at it.
+    setupToken()
+    expect((await claim({ token: 'wrong', language: 'vi' })).status).toBe(403)
+    expect((await getSettings()).language).toBe('en')
+  })
+
+  it('ignores a language that is not one of ours', async () => {
+    await claim({ language: 'klingon' })
+    expect((await getSettings()).language).toBe('en')
+  })
+
   it('says WHICH password rule was broken, and creates nothing', async () => {
     const short = await claim({ password: 'short' })
     expect(short.status).toBe(400)
@@ -182,7 +205,7 @@ describe('where enrolment lets you out', () => {
   })
 })
 
-describe('the two questions after the account', () => {
+describe('the three questions after the account', () => {
   const session = async (): Promise<string> => {
     const ticket = (await (await claim()).text()).match(/name="ticket" value="([^"]+)"/)?.[1] ?? ''
     const res = await post('/api/auth/enrol/skip', { ticket })
@@ -205,11 +228,12 @@ describe('the two questions after the account', () => {
       body: new URLSearchParams(data),
     })
 
-  it('refuses both steps without a session, because they write settings', async () => {
+  it('refuses every step without a session, because they write settings', async () => {
     // Invariant 4: they are protected by the router they are registered on, not by a check
     // inside them, and this is the assertion that would notice if they moved.
     expect((await app.request('/setup/site')).status).toBe(401)
     expect((await app.request('/setup/face')).status).toBe(401)
+    expect((await app.request('/setup/reader')).status).toBe(401)
   })
 
   it('saves the site step and moves on to the face', async () => {
@@ -227,11 +251,30 @@ describe('the two questions after the account', () => {
     expect(saved.siteUrl).toBe('https://quiet.example')
   })
 
-  it('saves the face and ends in the editor, not the dashboard', async () => {
+  it('saves the face and moves on to the reader', async () => {
     const cookie = await session()
     const res = await asOwner('/setup/face', { mode: 'front' })(cookie)
-    expect(res.headers.get('location')).toBe('/admin/editor')
+    expect(res.headers.get('location')).toBe('/setup/reader')
     expect((await getSettings()).home.mode).toBe('front')
+  })
+
+  it('saves the reader\'s pen and ends in the editor, not the dashboard', async () => {
+    const cookie = await session()
+    const off = await asOwner('/setup/reader', { pen: 'off' })(cookie)
+    expect(off.headers.get('location')).toBe('/admin/editor')
+    expect((await getSettings()).features.readerPen).toBe(false)
+
+    await asOwner('/setup/reader', { pen: 'on' })(cookie)
+    expect((await getSettings()).features.readerPen).toBe(true)
+  })
+
+  it('keeps the pen ON for a form that carried no answer at all', async () => {
+    // A submit from a browser that lost the markup should land on the default, and the
+    // default is on — the quieter site is the one somebody has to ask for.
+    const cookie = await session()
+    await asOwner('/setup/reader', { pen: 'off' })(cookie)
+    await asOwner('/setup/reader', {})(cookie)
+    expect((await getSettings()).features.readerPen).toBe(true)
   })
 
   it('reads anything that is not the newspaper as the list', async () => {

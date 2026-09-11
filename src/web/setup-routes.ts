@@ -29,7 +29,7 @@ import { fail, json } from '@/web/api'
 import { ownerRouter, type OwnerRouter } from '@/web/guard'
 import { saveSettings } from '@/content/settings'
 import { isSiteLang } from '@/locales/langs'
-import { siteStepScreen, faceStepScreen } from '@/web/setup-page'
+import { siteStepScreen, faceStepScreen, readerStepScreen } from '@/web/setup-page'
 
 const html = (body: string, status = 200): Response =>
   new Response(body, { status, headers: { 'content-type': 'text/html; charset=utf-8' } })
@@ -67,7 +67,12 @@ export async function handleSetupPage(c: Context): Promise<Response> {
     recordHit(tries(c), TRIES_WINDOW)
     return html(unclaimedScreen(settings, { error: askCode ? s.setupBadCode : s.setupBadLink, askCode }), 403)
   }
-  return html(claimScreen(settings, { token: given }))
+  // `?lang=` renders the claim form in the language the select was just changed to, exactly
+  // as the site step does. NOTHING is saved here — there is no owner yet, so a settings
+  // write from an unauthenticated request would be a way to edit a blog by visiting it.
+  // The claim POST is what makes the choice stick.
+  const picked = c.req.query('lang')
+  return html(claimScreen(isSiteLang(picked) ? { ...settings, language: picked } : settings, { token: given }))
 }
 
 /**
@@ -88,11 +93,22 @@ export async function handleSetupClaim(c: Context): Promise<Response> {
   const field = (name: string): string =>
     typeof source[name] === 'string' ? (source[name] as string).trim() : ''
 
-  const settings = await getSettings()
-  const s = adminT(settings.language)
+  const stored = await getSettings()
   const token = field('token')
   const username = field('username')
   const email = field('email')
+  /**
+   * The language picked on this very screen (`languageField`).
+   *
+   * Applied to a LOCAL VIEW of the settings straight away, so that an error sent back from
+   * here is in the language the person just chose — and SAVED only once the claim succeeds,
+   * because everything above the token check runs for a request nobody has authenticated
+   * and a settings write there would be a way to edit a blog by posting to it. Validated,
+   * so a hand-posted value cannot set a site to a language that does not exist.
+   */
+  const language = field('language')
+  const settings = isSiteLang(language) ? { ...stored, language } : stored
+  const s = adminT(settings.language)
   // NOT trimmed: a password is bytes the owner chose, and silently eating a leading space
   // here means the same password fails at every later sign-in.
   const password = typeof source.password === 'string' ? source.password : ''
@@ -123,6 +139,10 @@ export async function handleSetupClaim(c: Context): Promise<Response> {
     return html(claimScreen(settings, { token, username, email, error: message }), 400)
   }
 
+  // Now it is a real claim, so the choice is written down. The screen this hands over to is
+  // the authenticator — the one screen of setup somebody is least able to guess their way
+  // through in a language they do not read.
+  if (settings.language !== stored.language) await saveSettings({ language: settings.language })
   await createUser({ username, email, password })
   forgetSetupToken()
   logAuthEvent('auth.owner.claimed')
@@ -250,6 +270,19 @@ export function setupWizardRoutes(): OwnerRouter {
     const mode = form.mode === 'front' ? 'front' : 'list'
     const current = await getSettings()
     await saveSettings({ home: { ...current.home, mode } })
+    return c.redirect('/setup/reader', 303)
+  })
+
+  router.get('/setup/reader', async () => html(readerStepScreen(await getSettings())))
+
+  router.post('/setup/reader', async (c) => {
+    const form = await c.req.parseBody().catch(() => ({})) as Record<string, unknown>
+    // ON unless the answer is exactly 'off', which is how a form with no radio at all — a
+    // submit from a browser that lost the markup — lands on the default rather than on the
+    // quieter site.
+    const readerPen = form.pen !== 'off'
+    const current = await getSettings()
+    await saveSettings({ features: { ...current.features, readerPen } })
     // Into the editor, not the dashboard. The last thing setup should do is hand somebody a
     // control panel; the first post is the reason they installed this.
     return c.redirect('/admin/editor', 303)

@@ -146,6 +146,9 @@
   on the server under a notebook code or their commenter sign-in — `reader_marks` holds the
   page's list under an opaque id, the server's copy wins on load, every change is written back,
   and a year untouched sweeps it. The owner sees none of it; `features.readerPen` off is a 404.
+  ON by default, and **asked once during setup** (step three, `setup-page.ts`): it is the only
+  switch here that changes what other people may do on your pages, and an owner who never opens
+  Settings never learns it is there.
 - **The pen elsewhere:** `GET /pen.css` is both halves under the `.pen` class in this blog's inks,
   for a page that is not a Quire Ink — `docs/pen.md`, ADR 0048.
 - **Lists by the pen:** `src/pen/lists.css.ts` — bullets are ink dots and level dashes (masks painted

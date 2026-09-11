@@ -21,6 +21,7 @@
 // this file, public.css.ts and islands.css.ts.
 
 import { MOTION_GATES, MOTION_TOKENS } from '@/web/motion.css'
+import { PEN_LIGHT } from '@/pen/pigments'
 
 export const LOGIN_CSS = `
 ${MOTION_TOKENS}
@@ -174,6 +175,20 @@ html[data-motion=off] .login-reveal button:active{transform:translateY(-50%)}
 .face-lead{height:1.5rem}
 .face-art .face-cols{display:flex;flex-direction:row;gap:.28rem;background:none;flex:1}
 .face-art .face-cols>span{flex:1 1 0;height:100%}
+/* The marked line in step three's drawing.
+   Scoped through .face-art for the reason the .face-cols rule two blocks up records: the bar
+   rule is (0,1,1) and a bare .face-mark is (0,1,0), so an unscoped version loses and the
+   mark comes out the same grey as the words under it — which is what it did on the first
+   try, drawn in var(--c-accent): the default palette's accent is #121212, so a mark meant
+   to read as a highlighter read as a slightly thicker grey bar.
+   The PIGMENT, therefore, and taken from the pen rather than typed here. Not a palette token
+   and deliberately so: a highlighter is not UI, it is the same yellow whatever the page
+   around it (ADR 0018, and the note at the head of pen/pigments.ts). The stroke itself is
+   280 drawings and 270 KB of sheet (ADR 0027), which is not a thing to link on the third
+   screen of setup; this is a flat band saying "a mark on the words", which is what is being
+   asked. */
+.face-art .face-mark{width:62%;height:.4rem;border-radius:.12rem;
+  background:#${PEN_LIGHT.yellow}}
 .face-name{display:block;margin:.5rem 0 .1rem;font-weight:600;font-size:.9rem}
 .face-hint{display:block;font-size:.8rem;color:var(--c-meta);line-height:1.45}
 /* The select repeats the input's box EXACTLY rather than approximating it. Written first

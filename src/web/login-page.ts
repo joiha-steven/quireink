@@ -25,6 +25,8 @@ import { LOGIN_CSS } from '@/web/login.css'
 import { quireLockup } from '@/web/brand'
 import { scriptTag } from '@/web/assets'
 import { escapeAttr, escapeHtml } from '@/utils'
+import { SITE_LANGS } from '@/locales/langs'
+import { MIN_LENGTH } from '@/auth/password'
 
 /** `{n}` style interpolation, the same shape the admin strings already use. */
 const fill = (template: string, values: Record<string, string | number>): string =>
@@ -257,9 +259,13 @@ export function claimScreen(
 ${errorBox(opts.error)}
 <form method="post" action="/api/setup/claim" class="login-form">
 <input type="hidden" name="token" value="${escapeAttr(opts.token)}">
+
+${languageField(settings)}
+
 <label for="username">${escapeHtml(s.authUsername)}</label>
 <input id="username" name="username" type="text" autocomplete="username" autocapitalize="none"
        spellcheck="false" required autofocus value="${escapeAttr(opts.username ?? '')}">
+<p class="login-hint">${escapeHtml(s.setupUsernameHint)}</p>
 
 <label for="email">${escapeHtml(s.setupEmail)}</label>
 <input id="email" name="email" type="email" autocomplete="email" autocapitalize="none"
@@ -275,9 +281,29 @@ ${errorBox(opts.error)}
           aria-label="${escapeAttr(s.authShowPassword)}">${EYE}</button>
 </div>
 <p class="login-caps" data-caps hidden>${escapeHtml(s.authCapsLock)}</p>
+<p class="login-hint">${escapeHtml(fill(s.setupPwHint, { n: MIN_LENGTH }))}</p>
 
 <button type="submit" class="login-submit">${escapeHtml(s.setupCreate)}</button>
 </form>`)
+}
+
+/**
+ * The language select, on the FIRST screen of setup rather than only on the third.
+ *
+ * The wizard has always asked this, and it asked too late: until 2026-09-11 the two screens
+ * before it — claim the blog, then set up an authenticator — were in English for everybody,
+ * and those are the two a person is least able to guess their way through. It is the same
+ * control the site step carries, the same `data-setup-lang` island (which reloads with
+ * `?lang=` and keeps the setup token in the URL while it does), and the claim form SAVES the
+ * answer, so the authenticator screen after it is already in the right language.
+ */
+export function languageField(settings: SiteSettings): string {
+  const s = adminT(settings.language)
+  const options = SITE_LANGS.map(({ value, label }) =>
+    `<option value="${escapeAttr(value)}"${value === settings.language ? ' selected' : ''}>`
+    + `${escapeHtml(label)}</option>`).join('')
+  return `<label for="language">${escapeHtml(s.siteStepLanguage)}</label>
+<select id="language" name="language" data-setup-lang>${options}</select>`
 }
 
 export { fill as fillTemplate }

@@ -1,4 +1,4 @@
-// First run, after the account: the only two questions worth interrupting somebody for.
+// First run, after the account: the only three questions worth interrupting somebody for.
 //
 // The list of what is NOT here is the design. Palettes, fonts, book mode, the feature
 // switches — none of them belongs in a wizard, because nobody can judge them before the site
@@ -8,11 +8,17 @@
 // dashboard's "first five minutes" card, which is re-openable, which is the right shape for
 // them: a choice you can return to is a choice you can safely postpone.
 //
-// What is left qualifies on one of two grounds. The site address and the time zone are
+// What is left qualifies on one of three grounds. The site address and the time zone are
 // WRONG BY DEFAULT AND SILENT ABOUT IT — one makes every feed, sitemap and share card say
 // `localhost:3000`, the other makes every date on the site read in the server's timezone —
 // and the browser happens to know both. The front page is the one honest coin-flip: it
 // decides what `/` even is.
+//
+// The reader's pen (2026-09-11) is the third, and it is not a taste question like the ones
+// ruled out above. It is the only switch on this software that changes what OTHER PEOPLE may
+// do on your pages, and it is the thing Quire Ink has that the blog you came from does not
+// (ADR 0043) — an owner who never opens Settings never learns it is there. So it is asked
+// once, with the answer it already has, and one click in Settings undoes the asking.
 
 import type { SiteSettings } from '@/types'
 import { adminT } from '@/i18n/admin-i18n'
@@ -101,6 +107,45 @@ export function faceStepScreen(settings: SiteSettings): string {
 <div class="face-grid">
 ${option('list', listArt, s.faceList, s.faceListHint)}
 ${option('front', frontArt, s.faceFront, s.faceFrontHint)}
+</div>
+<button type="submit" class="login-submit">${escapeHtml(s.authContinue)}</button>
+</form>`)
+}
+
+/**
+ * Step three: the reader's pen, drawn rather than argued.
+ *
+ * Same two-card shape as the front page, for the same reason and out of the same CSS: the
+ * question is what a page LOOKS like after a reader has been at it. The mark in the drawing
+ * is a flat band in the site's own accent and not the pen's real stroke — the sheets that
+ * carry the real one are 280 drawings and 270 KB (ADR 0027), which is not a thing to put in
+ * front of somebody on the third screen of setup. The drawing says "a mark on the words",
+ * which is the whole of what is being asked.
+ */
+export function readerStepScreen(settings: SiteSettings): string {
+  const s = adminT(settings.language)
+  const on = settings.features.readerPen
+
+  const lines = (marked: boolean): string =>
+    Array.from({ length: 4 }, (_, i) =>
+      `<span class="face-line${i === 3 ? ' face-short' : ''}${marked && i === 1 ? ' face-mark' : ''}"></span>`)
+      .join('')
+
+  const option = (value: string, art: string, label: string, hint: string, checked: boolean): string => `
+<label class="face-choice">
+  <input type="radio" name="pen" value="${escapeAttr(value)}"${checked ? ' checked' : ''}>
+  <span class="face-art" aria-hidden="true">${art}</span>
+  <span class="face-name">${escapeHtml(label)}</span>
+  <span class="face-hint">${escapeHtml(hint)}</span>
+</label>`
+
+  return loginShell(settings, s.penStepTitle, `
+<h1>${escapeHtml(s.penStepTitle)}</h1>
+<p class="login-lede">${escapeHtml(s.penStepLede)}</p>
+<form method="post" action="/setup/reader" class="login-form">
+<div class="face-grid">
+${option('on', lines(true), s.penStepOn, s.penStepOnHint, on)}
+${option('off', lines(false), s.penStepOff, s.penStepOffHint, !on)}
 </div>
 <button type="submit" class="login-submit">${escapeHtml(s.setupFinish)}</button>
 </form>`)
