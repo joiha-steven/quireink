@@ -3,7 +3,7 @@
 // dropping the first breaks somebody typing on a keyboard with no Vietnamese layout, and
 // dropping the second is the bug this file was written for.
 import { describe, it, expect } from 'bun:test'
-import { accentedWords, indexIn, isAccented, keepsAccents, lanes } from '@/accent'
+import { accentedWords, indexIn, isAccented, keepsAccents, lanes, wordIndexIn } from '@/accent'
 
 describe('isAccented', () => {
   it('sees a tone mark, and sees đ', () => {
@@ -47,6 +47,23 @@ describe('indexIn', () => {
   })
 })
 
+describe('wordIndexIn', () => {
+  it('will not answer with a hit inside a longer word', () => {
+    // Measured on the live blog 2026-09-11: as a substring, "lê" sits inside "lên", and
+    // almost every Vietnamese post has that word — the narrowing filtered nothing.
+    const h = lanes('Đi lên rồi đi xuống')
+    expect(indexIn(h, 'lê')).toBeGreaterThan(-1)
+    expect(wordIndexIn(h, 'lê')).toBe(-1)
+    expect(wordIndexIn(lanes('Quả lê chín'), 'lê')).toBe(4)
+  })
+
+  it('falls back to a substring where a script has no word boundaries', () => {
+    // Japanese runs words together, so the boundary rule has nothing to stand on and would
+    // answer "no" to every true hit.
+    expect(wordIndexIn(lanes('がたがた揺れる'), 'がた')).toBe(0)
+  })
+})
+
 describe('keepsAccents', () => {
   const text = 'Tỉ lệ chuyển đổi của trang'
 
@@ -64,6 +81,16 @@ describe('keepsAccents', () => {
     expect(keepsAccents('Căn lề trái, rồi xét tỉ lệ', 'lề')).toBe(true)
   })
 
+  it('asks for a whole word, so "lê" is not answered by "lên"', () => {
+    expect(keepsAccents('Đi lên rồi đi xuống', 'lê')).toBe(false)
+    expect(keepsAccents('Quả lê chín trên bàn', 'lê')).toBe(true)
+  })
+
+  it('cuts the query where the index cuts it, so stray punctuation loses nothing', () => {
+    expect(keepsAccents('Căn lề trái cho đoạn văn', 'lề,')).toBe(true)
+    expect(keepsAccents('Căn lề trái cho đoạn văn', '"lề"')).toBe(true)
+  })
+
   it('checks each accented word, and leaves the unaccented ones to the index', () => {
     // "trang" is unaccented, so it is not re-checked here; "lề" is, and it is not there.
     expect(keepsAccents(text, 'lề trang')).toBe(false)
@@ -75,5 +102,10 @@ describe('accentedWords', () => {
   it('names only the words worth a second pass', () => {
     expect(accentedWords('can lề trái')).toEqual(['lề', 'trái'])
     expect(accentedWords('lap trinh')).toEqual([])
+  })
+
+  it('cuts on punctuation, the way the tokenizer does', () => {
+    expect(accentedWords('lề, trái.')).toEqual(['lề', 'trái'])
+    expect(accentedWords(`"lề"`)).toEqual(['lề'])
   })
 })

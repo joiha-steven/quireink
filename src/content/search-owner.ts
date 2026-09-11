@@ -10,7 +10,7 @@
 // list here too, each carrying `kind` so the caller knows which editor to open.
 import { all } from '@/store/query'
 import { liveOnly } from '@/store/db'
-import { accentedWords, indexIn, keepsAccents, lanes } from '@/accent'
+import { accentedWords, indexIn, keepsAccents, lanes, wordIndexIn } from '@/accent'
 
 /**
  * One result. `WritingList` imports this with `import type`, which erases at build time —
@@ -146,11 +146,15 @@ function toHit(row: HitRow, kind: 'post' | 'page', words: string[]): OwnerHit {
  */
 function passage(body: string, words: string[]): string {
   const hay = lanes(body.replace(/\s+/g, ' ').trim())
-  let at = -1
-  for (const word of words) {
-    const found = indexIn(hay, word)
-    if (found !== -1 && (at === -1 || found < at)) at = found
-  }
+  const earliest = (seek: (h: typeof hay, w: string) => number) =>
+    words.reduce((best, word) => {
+      const found = seek(hay, word)
+      return found !== -1 && (best === -1 || found < best) ? found : best
+    }, -1)
+  // The whole word first, because that is what the index matched. A hit inside a longer
+  // word is worth quoting only when there is no standing one.
+  const whole = earliest(wordIndexIn)
+  const at = whole === -1 ? earliest(indexIn) : whole
   // -1 means the words matched the TITLE and not the body, so the opening line is the
   // passage: a row with an empty second line looks like a row that failed to load.
   const from = at === -1 ? 0 : hay.text.lastIndexOf(' ', at) + 1
