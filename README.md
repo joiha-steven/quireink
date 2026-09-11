@@ -5,7 +5,7 @@
   <img src="docs/brand/wordmark-light.svg" alt="quireINK" width="360">
 </picture>
 
-`2.2.10-beta.1`
+`2.2.10-beta.2`
 
 **A blog you host yourself, and an AI agent can run it for you.**
 No algorithm, no ads, no platform standing between you and your readers.
@@ -156,11 +156,11 @@ Five decisions keep it there, and all five are hard to walk back.
 
 ## This release
 
-**2.2.10-beta.1** is a pre-release, out for testing before 2.2.10. It runs the demo above and the author's own blog at [manhhung.me](https://manhhung.me); the [changelog](./CHANGELOG.md) has everything that changed. Its Docker tag is `2.2.10-beta.1` and only that: `latest` is still 2.2.9, so nobody gets a beta by accident.
+**2.2.10-beta.2** is the second pre-release before 2.2.10. It runs the demo above and the author's own blog at [manhhung.me](https://manhhung.me); the [changelog](./CHANGELOG.md) has everything that changed. Its Docker tag is `2.2.10-beta.2` and only that: `latest` is still 2.2.9, so nobody gets a beta by accident.
 
-**What it adds** is the pen, all the way through. Readers get one: a bar over a selection, marks anchored to their words, kept in the browser and carried across devices by a notebook code or the Google sign-in commenters already have, with the server holding hashes and the owner seeing nothing. Notes and clips become a third kind of writing under `/notes`, with a door at `/notes/clip` that a reader's pen or a bookmarklet on any page can send a passage through. The open standards came with it: IndieAuth on the MCP server's OAuth door, Micropub in, Webmention both ways, `h-entry` on every note, and a `/pen.css` any site may link to write with your inks. In the editor a mark just applied draws itself in 200 milliseconds and a felt tip squeaks, both on switches you already have. The Write list asks two questions on two rows instead of six segments on one, and the sheet beside it takes its width back.
+**What it changes** is mostly correction. A search now means the accents that were typed: the index folds them so "lap trinh" finds "lập trình", and the query was folded with it, so "lề" used to come back with every "lệ", "lê" and "lẻ" on the blog. Measured on a live blog, "lề" went from 50 results to 10. Seven analytics counts were reading the wrong rows: read depth was weighted by the front page, which is scrolled rather than read, and rows written before the device columns existed led every facet as "Unknown". The first-run screens ask the language on the first screen rather than the third, ask once whether readers get a pen, and say what the username is for. The licence gained a clause that takes effect on its own: 48 months with no release from the author and the code is Apache 2.0 as well, so the last release can still be improved by somebody else.
 
-**And what it does not do.** It is a beta, so expect 2.2.10 to still move things. Two devices marking the same page at once overwrite each other, last save wins. Nothing in the admin shows which passages readers keep most; only the `list_mentions` MCP tool answers that. Webmention verifies its source and rate-limits, but no spam judgement is wired to it. The Help screens are still English only, a few counts still read "1 words", and every standing limit holds: a NAS and a Kubernetes cluster get no Caddy, the Motion switch is the owner's rather than per-reader, an install that rewrites its own HTML with nginx `sub_filter` loses the origin's compression and validator, and an origin with no CDN makes a reader on the far side of the planet pay a round trip that saved bytes cannot buy back.
+**And what it does not do.** It is a beta, so expect 2.2.10 to still move things. Two devices marking the same page at once overwrite each other, last save wins. Nothing in the admin shows which passages readers keep most; only the `list_mentions` MCP tool answers that. Webmention verifies its source and rate-limits, but no spam judgement is wired to it. The accent rule narrows the folded index rather than replacing it, so an accented search reads a few more rows before it answers. The Help screens are still English only, a few counts still read "1 words", and every standing limit holds: a NAS and a Kubernetes cluster get no Caddy, the Motion switch is the owner's rather than per-reader, an install that rewrites its own HTML with nginx `sub_filter` loses the origin's compression and validator, and an origin with no CDN makes a reader on the far side of the planet pay a round trip that saved bytes cannot buy back.
 
 ## Install
 

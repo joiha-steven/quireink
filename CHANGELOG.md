@@ -1,5 +1,102 @@
 # CHANGELOG
 
+## 2026-09-11 — Quire Ink 2.2.10-beta.2
+
+The second pre-release before 2.2.10, and the same rule as the first: its Docker tag is
+`2.2.10-beta.2` and nothing else, so `latest` and `2.2` still point at 2.2.9 and nobody gets
+a beta by accident. It runs the author's blog at manhhung.me and the demo.
+
+Most of it is correction rather than addition. A search in a language with tone marks was
+answering with a different word, seven analytics counts were reading the wrong rows, and the
+first-run screens asked somebody to read English before asking which language they read.
+Thirty-one commits and one decision
+([ADR 0050](./docs/decisions/0050-the-licence-opens-by-itself-after-48-months-without-a-release.md)).
+
+### The licence opens by itself if this project stops
+
+- **`LICENSE-EXCEPTION` 1.2 grants, today, a licence that takes effect on its own** the day
+  after 48 months pass with no release from the licensor
+  ([ADR 0050](./docs/decisions/0050-the-licence-opens-by-itself-after-48-months-without-a-release.md)).
+  On that day the code as it then stands is also under Apache 2.0: a changed file still has
+  to say it was changed and the copyright notices still stay, but nobody has to be reachable
+  for the last release to be improved and offered as a service. Any release resets the count.
+  It is a present grant and not a promise, because a promise needs somebody left to keep it.
+
+### A search means the accents that were typed
+
+- **A word typed with its accents is matched with them** (`src/accent.ts`). The index folds
+  diacritics so that "lap trinh" finds "lập trình", and the query was folded with it, so a
+  search for "lề" came back with every "lệ", "lê" and "lẻ" on the blog. In Vietnamese those
+  are four words. Measured on a live blog: "lề" went from 50 results to 10, "lê" from 50 to
+  6, and an unaccented "le" still finds all of them. The folded index still finds the
+  candidates and this narrows them, so there is no second index and nothing to reindex.
+- **The narrowing asks for a whole word.** A substring test was tried first and filtered
+  almost nothing, because "lê" sits inside "lên" and most Vietnamese posts carry that word.
+  Scripts that put no space between words are the exception, and are matched as a substring.
+- **The passage under a hit quotes the sentence that answered the search.** It opens where
+  the query's words sit closest together rather than on the first one of them, so searching
+  "widen the leading" no longer quotes an opening paragraph whose only claim on it was the
+  word "the". SQLite's `snippet()` is no longer asked for it, which also took 23 ms per 60
+  rows off the owner's search: it re-tokenizes every document it quotes.
+- The same rule reaches every other box that folded one way only: the write pane's title
+  filter, the highlighter under the hits, the comments queue, the trash and the command
+  palette.
+
+### The first-run questions
+
+- **The language is asked on the first screen.** It was the third screen's first field, so
+  somebody who does not read English met the claim form and a whole authenticator screen
+  before reaching it. The claim form saves the answer, so the screen after it is already in
+  the right language.
+- **The reader's pen is asked once**, with the answer it already has. It is the only switch
+  in this software that decides what other people may do on your pages, and an owner who
+  never opened Settings never learned it was there.
+- **Two answers the form expected you to know**: the username never leaves the server and is
+  not the name under your posts, and the twelve-character password rule is under the field
+  instead of only in the error after failing it.
+
+### Analytics counts the rows it means
+
+- **Read depth and dwell are measured on posts and pages, not on the lists.** A front page is
+  scrolled rather than read, and on most blogs it is the most-viewed path, so its shallow
+  short samples were the heaviest single weight on a number labelled "read depth". Each list
+  keeps its own figures.
+- **A row written before the device columns existed is left out of the facets**, rather than
+  folded into an "Unknown" that led every one of them: 129 visitors on a live blog, ahead of
+  every real device, browser and system.
+- **A leave sample follows the reader back to the tab.** The beacon sends one every time the
+  tab is hidden and again when it comes back, and the later sample now replaces the earlier
+  for the same reader and page. A second row counted the three seconds before an app switch
+  as a bounce beside the five minutes after it.
+- **The owner's exclusion expires with the day, not with the session.** A session lives
+  thirty days from its last use, and a phone on a carrier network shares its address with
+  hundreds of strangers and hands it on every few days, so a match on any live session was
+  dropping every reader behind that address for as long as the owner stayed signed in.
+- **An archive page that does not exist is not a view**, and neither is a request from
+  Google's inspection tool or its read-aloud agent. A reader arriving from Telegram is no
+  longer counted as the Telegram bot.
+- **Cốc Cốc and Naver are search, Zalo and Messenger are social**, and a referring host is
+  matched anchored, so a domain that merely ends in a known one is not mistaken for it.
+
+### A few improvements
+
+- **Reading your own published post is a button on the editor's row**, beside Preview. It was
+  a link inside the attributes panel, so looking at what a reader sees cost opening a panel
+  first. Measured: the row wraps to two lines above `lg` in the locales with the longest
+  labels.
+- **Done and Reset in the sidebar's arrange mode are two keys at the foot of the rail.** They
+  rode under the collapse row, which is a row the owner can drag, so the one control that
+  ends the mode could end up in the middle of the thing being rearranged.
+- **A kept passage decodes entities once and strips tags to a fixed point** (CodeQL 25 and
+  26). `&amp;lt;` used to come back as a `<`, and the single-pass tag strip ran before the
+  decoding, so a `&lt;script` in a quote came out as one.
+- **Both READMEs lead with what nothing else does**, and the Vietnamese one takes the same
+  spine and speed table. A release note now has a written shape, and all 37 past releases
+  were rewritten to it.
+- **Twenty-two packages move**, nodemailer to 10, three transitive ones become declared, and
+  one dead dependency goes.
+- The demo carries the posts' own pictures on its rows, five notes and an author box.
+
 ## 2026-09-09 — Quire Ink 2.2.10-beta.1
 
 A pre-release, for testing before 2.2.10 proper. Its Docker tag is `2.2.10-beta.1` and

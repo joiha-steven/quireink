@@ -5,7 +5,7 @@
   <img src="docs/brand/wordmark-light.svg" alt="quireINK" width="360">
 </picture>
 
-`2.2.10-beta.1`
+`2.2.10-beta.2`
 
 **Blog tự host cho một người viết. Nhờ được AI viết và trông coi hộ.**
 Không thuật toán, không quảng cáo, không nền tảng nào đứng giữa bạn và người đọc. Tên bạn trên đó, không phải tên chúng tôi.
@@ -126,11 +126,11 @@ Giữ được như vậy là nhờ mấy luật cứng: mỗi gói JavaScript c
 
 ## Bản này
 
-**2.2.10-beta.1** là bản thử, đưa ra để người dùng thử trước khi có 2.2.10. Nó đang chạy trang demo ở trên lẫn blog của chính tác giả tại [manhhung.me](https://manhhung.me). [Nhật ký thay đổi](./CHANGELOG.md) ghi đủ. Tag Docker của nó là `2.2.10-beta.1` và chỉ vậy: `latest` vẫn là 2.2.9, không ai lỡ tay cài phải bản thử.
+**2.2.10-beta.2** là bản thử thứ hai trước khi có 2.2.10. Nó đang chạy trang demo ở trên lẫn blog của chính tác giả tại [manhhung.me](https://manhhung.me). [Nhật ký thay đổi](./CHANGELOG.md) ghi đủ. Tag Docker của nó là `2.2.10-beta.2` và chỉ vậy: `latest` vẫn là 2.2.9, không ai lỡ tay cài phải bản thử.
 
-Bản này là cây bút, đi cho trọn. **Người đọc có bút**: bôi chữ trên một bài là hiện thanh chọn năm màu mực, gạch chì, khoanh, ghi chú và trích, vẽ bằng đúng nét tay của trang; dấu bám vào chữ chứ không bám vị trí, giữ trong trình duyệt của người đọc, mang sang máy khác bằng một mã sổ tay hai mươi ký tự hoặc đăng nhập Google sẵn có của người bình luận, máy chủ chỉ giữ mã băm và chủ blog không thấy gì. **Sổ tay**: ghi chú và trích đoạn là loại viết thứ ba dưới `/notes`, tách khỏi bài, có một cửa ở `/notes/clip` để cây bút của người đọc hay một bookmarklet trên bất kỳ trang nào gửi một đoạn vào. **Chuẩn mở**: IndieAuth ngay trên cửa OAuth của máy chủ MCP, nhận Micropub, Webmention hai chiều, `h-entry` trên mọi ghi chú. **`/pen.css`**: trang nào cũng link được và viết bằng mực của bạn. Trong trình soạn, nét vừa tô tự vẽ trong 200 mili giây và bút dạ rít lên, đều theo công tắc đã có. Danh sách bài hỏi hai câu trên hai hàng thay vì sáu ô một hàng, khung soạn bên cạnh rộng trở lại và theo kịp mỗi lần lưu. Trên máy tính bảng mục lục đứng dưới tiêu đề thay vì biến mất, điện thoại không còn nút lưới, và dải trang báo kết bằng một hàng đầy.
+**Bản này chủ yếu là sửa.** Tìm kiếm giờ hiểu dấu bạn gõ: chỉ mục gấp dấu để ai gõ "lap trinh" vẫn ra "lập trình", nhưng nó gấp luôn câu hỏi, nên gõ "lề" là nhận về đủ mọi "lệ", "lê", "lẻ" trong kho. Đo trên blog thật: "lề" từ 50 kết quả còn 10. Bảy con số thống kê đang đếm nhầm hàng: độ đọc sâu bị trang chủ kéo xuống trong khi trang chủ là để lướt chứ không phải để đọc, còn những hàng ghi từ trước khi có cột thiết bị thì dẫn đầu mọi bảng dưới tên "Không rõ". Màn cài đặt lần đầu hỏi ngôn ngữ ngay màn đầu thay vì màn thứ ba, hỏi một lần có đưa bút cho người đọc không, và nói rõ tên đăng nhập dùng để làm gì. Giấy phép có thêm một điều tự có hiệu lực: 48 tháng không ra bản mới thì mã nguồn đồng thời là Apache 2.0, để bản cuối cùng vẫn có người khác cải tiến được.
 
-**Và bản này KHÔNG làm được gì.** Là bản thử: 2.2.10 có thể còn đổi. Hai máy đánh dấu cùng một trang cùng lúc thì ghi đè nhau, lần lưu sau thắng. Trang quản trị chưa có màn nào cho biết đoạn nào được người đọc giữ nhiều nhất, mới có tool MCP `list_mentions` trả lời. Webmention có kiểm nguồn và giới hạn tốc độ nhưng chưa nối bộ lọc rác. Tiếng rít mới đo phổ chứ chưa ai ngoài tác giả nghe, và vòng Google của "Giữ lại" mới đo tới bước chuyển hướng, chưa bấm tay trọn vòng. Màn Trợ giúp vẫn chỉ tiếng Anh, vài chỗ đếm vẫn ra "1 words", và mọi giới hạn cũ còn nguyên: NAS và Kubernetes cố ý không có Caddy, công tắc Chuyển động là của chủ chứ không theo từng người đọc, bản cài chèn HTML bằng `sub_filter` của nginx mất nén và ETag của origin, origin không CDN thì người đọc ở nửa kia địa cầu trả thêm một vòng mạng.
+**Và bản này KHÔNG làm được gì.** Là bản thử: 2.2.10 có thể còn đổi. Hai máy đánh dấu cùng một trang cùng lúc thì ghi đè nhau, lần lưu sau thắng. Trang quản trị chưa có màn nào cho biết đoạn nào được người đọc giữ nhiều nhất, mới có tool MCP `list_mentions` trả lời. Webmention có kiểm nguồn và giới hạn tốc độ nhưng chưa nối bộ lọc rác. Luật dấu chỉ lọc lại kết quả của chỉ mục đã gấp dấu chứ không thay nó, nên câu tìm có dấu phải đọc thêm ít hàng trước khi trả lời. Màn Trợ giúp vẫn chỉ tiếng Anh, vài chỗ đếm vẫn ra "1 words", và mọi giới hạn cũ còn nguyên: NAS và Kubernetes cố ý không có Caddy, công tắc Chuyển động là của chủ chứ không theo từng người đọc, bản cài chèn HTML bằng `sub_filter` của nginx mất nén và ETag của origin, origin không CDN thì người đọc ở nửa kia địa cầu trả thêm một vòng mạng.
 
 ## Cài đặt
 
