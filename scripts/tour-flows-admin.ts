@@ -380,4 +380,20 @@ export function registerAdminFlows({ flow, expect, atWidth }: Tour): void {
       })
       return r.status === 401 ? 'ok' : 'a cookieless write got ' + r.status
     })()`))
+
+  // ONE COLUMN PER CARD, which no unit test can see: a control starts on its card's left edge,
+  // or, if it is a boolean, ends on its right one. NOTE: a template literal. No backticks.
+  flow('admin: every control in a settings card stands in one column', () => expect('/admin/settings?tab=blog', `
+    (() => {
+      const p = document.getElementById('settings-panel')
+      if (!p || p.dataset.explanations !== 'off') return 'no panel with its explanations hidden'
+      const bad = Array.from(p.querySelectorAll('.card-body')).flatMap((body) => {
+        const box = body.getBoundingClientRect(), cs = getComputedStyle(body), l = Math.round(box.left + parseFloat(cs.paddingLeft)), r = Math.round(box.right - parseFloat(cs.paddingRight))
+        return Array.from(body.querySelectorAll('input,select,textarea,[role=switch]'))
+          .filter((c) => c.offsetParent && c.type !== 'file' && c.type !== 'hidden')
+          .filter((c) => { const b = c.getBoundingClientRect(); return c.getAttribute('role') === 'switch' ? Math.round(b.right) !== r : Math.round(b.left) !== l })
+          .map((c) => (c.getAttribute('aria-label') || c.type || c.tagName) + ' in ' + l + '-' + r)
+      })
+      return bad.length ? bad.length + ' out of the column: ' + bad.slice(0, 3).join(' | ') : 'ok every control on the card edge it belongs to'
+    })()`, 900))
 }
