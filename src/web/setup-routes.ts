@@ -142,7 +142,14 @@ export async function handleSetupClaim(c: Context): Promise<Response> {
   // Now it is a real claim, so the choice is written down. The screen this hands over to is
   // the authenticator — the one screen of setup somebody is least able to guess their way
   // through in a language they do not read.
-  if (settings.language !== stored.language) await saveSettings({ language: settings.language })
+  // `setupDone: false` unconditionally, and not merely left to the default: the language
+  // line above may already have made a settings row, and a row with no answer in it reads as
+  // an install that predates the question (`fromStored`). This is the one moment anything
+  // knows for certain that a first run is starting.
+  await saveSettings({
+    setupDone: false,
+    ...(settings.language !== stored.language ? { language: settings.language } : {}),
+  })
   await createUser({ username, email, password })
   forgetSetupToken()
   logAuthEvent('auth.owner.claimed')
@@ -220,8 +227,8 @@ export function setupBanner(base: string): string {
  * there and never did.
  *
  * Nothing forces a first-run owner through these — `handleEnrolDone` only sends them here
- * while the site address is unset. Reaching them later is harmless: they are two small
- * settings forms holding what is already saved.
+ * while `setupDone` is false. Reaching them later is harmless: they are three small settings
+ * forms holding what is already saved.
  */
 export function setupWizardRoutes(): OwnerRouter {
   const router = ownerRouter()
@@ -238,7 +245,14 @@ export function setupWizardRoutes(): OwnerRouter {
     // here would put it in every feed and every share card.
     const url = new URL(c.req.url)
     const proto = c.req.header('x-forwarded-proto') ?? url.protocol.replace(':', '')
-    const address = url.host === '' ? '' : `${proto}://${url.host}`
+    // `SITE_URL` FIRST WHEN THE OPERATOR SET ONE. Until 2026-09-12 this step was skipped
+    // entirely on any install that had one, so nothing here could disagree with it. Now that
+    // it is always asked, offering the request's host instead would let a first run reached
+    // at a temporary address — an IP, a preview host, a tunnel — write that address into the
+    // settings, where it OUTRANKS the environment from then on and goes into every feed,
+    // sitemap and share card. The operator's answer is the one on offer; the owner can still
+    // change it in the field.
+    const address = process.env.SITE_URL || (url.host === '' ? '' : `${proto}://${url.host}`)
     // `?lang=` renders THIS screen in the picked language before anything is saved —
     // the island reloads with it when the select changes. The choice only persists when
     // the form is submitted, through the same field.
@@ -282,7 +296,9 @@ export function setupWizardRoutes(): OwnerRouter {
     // quieter site.
     const readerPen = form.pen !== 'off'
     const current = await getSettings()
-    await saveSettings({ features: { ...current.features, readerPen } })
+    // The last question, so this is where the run is finished. Written here rather than at
+    // each step: a setup somebody abandoned halfway is one they should be offered again.
+    await saveSettings({ setupDone: true, features: { ...current.features, readerPen } })
     // Into the editor, not the dashboard. The last thing setup should do is hand somebody a
     // control panel; the first post is the reason they installed this.
     return c.redirect('/admin/editor', 303)

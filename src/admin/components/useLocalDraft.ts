@@ -96,6 +96,18 @@ export function useReopenedNotice(
 
 export function useLocalDraft<T>(key: string) {
   const [recovered, setRecovered] = useState<LocalSnapshot<T> | null>(null)
+  /**
+   * WHEN the stored snapshot was written — whether or not the offer is on screen.
+   *
+   * Separate from `recovered`, because the offer is taken down in two ways that do not mean
+   * the copy is gone: the author dismisses it, and a never-saved piece takes it down itself
+   * after reopening from it. In both cases the work IS on this device, and the save bar had
+   * no way to know: `useLocalAutosave` only reports what IT wrote, so a writer who reopened
+   * their work met "unsaved" over text that had just been restored from disk, for as long as
+   * it took the next tick to fire — two minutes at the default. That is the same untruth this
+   * file's own header records being fixed once already, arriving from the other side.
+   */
+  const [storedAt, setStoredAt] = useState<number | null>(null)
 
   // Read any lingering snapshot once on mount. A snapshot only survives if the
   // previous session ended without a successful server save (which clears it).
@@ -103,8 +115,15 @@ export function useLocalDraft<T>(key: string) {
   // never in the server HTML) and isn't a synchronous in-effect update.
   useEffect(() => {
     const snap = readSnapshot<T>(key)
-    if (!snap) return
-    const raf = requestAnimationFrame(() => setRecovered(snap))
+    if (!snap) {
+      setStoredAt(null)
+      return
+    }
+    const at = Date.parse(snap.at)
+    const raf = requestAnimationFrame(() => {
+      setRecovered(snap)
+      setStoredAt(Number.isNaN(at) ? null : at)
+    })
     return () => cancelAnimationFrame(raf)
   }, [key])
 
@@ -127,12 +146,13 @@ export function useLocalDraft<T>(key: string) {
       // ignore
     }
     setRecovered(null)
+    setStoredAt(null)
   }, [key])
 
   // Hide the bar but keep the snapshot (the author dismissed it without restoring).
   const dismiss = useCallback(() => setRecovered(null), [])
 
-  return { recovered, save, clear, dismiss }
+  return { recovered, storedAt, save, clear, dismiss }
 }
 
 /**

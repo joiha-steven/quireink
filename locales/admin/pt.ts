@@ -192,14 +192,15 @@ const pt = {
   // costs you the morning. `serverDraftFound` is the recovery line's wording when the snapshot
   // being offered came from the server — usually because it was typed on another machine.
   keptOnServerPrefix: 'guardado no servidor às',
-  serverDraftFound: 'Alterações não guardadas recuperadas do servidor',
+  serverDraftFound: 'Há alterações não guardadas no servidor',
   saveFailed: 'Não foi possível salvar',
   slugTaken: 'Esse slug já está em uso, escolha outro',
   needTitle: 'É preciso um título para publicar',
   savedDraft: 'Rascunho salvo',
   published: 'Publicado',
   imageUploadFailed: 'O envio da imagem falhou',
-  localDraftFound: 'Alterações locais não salvas recuperadas',
+  localDraftFound: 'Há alterações não guardadas neste dispositivo',
+  draftRestored: 'Alterações não guardadas recuperadas',
   localDraftRestore: 'Restaurar',
   localDraftDiscard: 'Descartar',
   promptLink: 'Digite a URL do link:',

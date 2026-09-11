@@ -191,14 +191,15 @@ const ko = {
   // costs you the morning. `serverDraftFound` is the recovery line's wording when the snapshot
   // being offered came from the server — usually because it was typed on another machine.
   keptOnServerPrefix: '서버에 보관됨',
-  serverDraftFound: '서버에서 저장되지 않은 변경을 되살렸습니다',
+  serverDraftFound: '저장되지 않은 변경 사항이 서버에 있습니다',
   saveFailed: '저장 실패',
   slugTaken: '이미 사용 중인 슬러그입니다. 다른 슬러그를 선택하세요',
   needTitle: '게시하려면 제목이 필요합니다',
   savedDraft: '초안이 저장되었습니다',
   published: '게시되었습니다',
   imageUploadFailed: '이미지 업로드 실패',
-  localDraftFound: '저장되지 않은 로컬 변경 사항을 복구했습니다',
+  localDraftFound: '저장되지 않은 변경 사항이 이 기기에 있습니다',
+  draftRestored: '저장되지 않은 변경 사항을 복구했습니다',
   localDraftRestore: '복원',
   localDraftDiscard: '버리기',
   promptLink: '링크 URL 입력:',

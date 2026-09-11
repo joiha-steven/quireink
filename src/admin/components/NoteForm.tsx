@@ -195,7 +195,7 @@ export function NoteForm({ initial, contentWidth, keySound, autosaveSeconds, aut
 
   useUnsavedGuard(() => dirtyRef.current)
 
-  useReopenedNotice(reopened !== null, safety.recovered !== null, safety.dismiss, () => notify(t.localDraftFound))
+  useReopenedNotice(reopened !== null, safety.recovered !== null, safety.dismiss, () => notify(t.draftRestored))
 
   async function handleSave(status: NoteDraft['status'], successMsg: string) {
     if (status === 'published' && !draftRef.current.title.trim() && !draftRef.current.sourceTitle.trim()) {

@@ -65,6 +65,10 @@ export function useServerAutosave(
   useEffect(() => {
     if (!slug) return
     const url = path(kind, slug)
+    // WHAT THE SERVER HOLDS IS PER SLUG. The memo lives outside this effect so it survives a
+    // re-render, which means it also survived a RENAME — and the first snapshot for the new
+    // address was then skipped as "already sent", because it had been sent to the old one.
+    sentRef.current = null
 
     // `keepalive`, not a beacon: this one runs while the page is alive and wants to know
     // whether it worked, and a beacon reports nothing back.
@@ -205,25 +209,44 @@ export function useDraftSafety<T>(opts: {
 
   return {
     recovered,
+    /**
+     * ONE PIECE OF WORK, TWO COPIES OF IT — so taking one back retires both.
+     *
+     * Each of these retired only the copy it had just dealt with, and the other one came
+     * straight back on screen. Driven on 2026-09-12: press Restore on the device copy, it
+     * goes in, `local.clear()` makes `localAt` null, `useServer` reads that null as "there is
+     * no device copy" and the bar reappears offering the server's — the same keystrokes, a
+     * second time, one frame later. It reads as a screen that did not hear the click.
+     *
+     * The two are written on the same tick by the same snapshot function, which is what makes
+     * this safe: they are not two different pieces of work that both deserve an answer.
+     */
     restore: async () => {
       if (useServer && opts.slug) {
         const fetched = await fetchServerDraft<T>(opts.kind, opts.slug)
-        if (fetched) setServerDismissed(true)
+        // Only on success: clearing the device copy after a failed fetch would throw away
+        // the one copy still standing.
+        if (fetched) {
+          setServerDismissed(true)
+          local.clear()
+        }
         return fetched
       }
       const data = local.recovered?.data ?? null
+      setServerDismissed(true)
       local.clear()
       return data
     },
     dismiss: () => {
-      if (useServer) setServerDismissed(true)
-      else local.dismiss()
+      setServerDismissed(true)
+      local.dismiss()
     },
     clear: () => {
       setServerDismissed(true)
       local.clear()
     },
-    keptAt,
+    // What this device holds, whether this session wrote it or found it. See `useLocalDraft`.
+    keptAt: keptAt ?? local.storedAt,
     sentAt,
   }
 }

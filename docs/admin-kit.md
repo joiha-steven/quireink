@@ -114,7 +114,18 @@ failed:
   2026-08-29 as wasted space and hard on the eyes. **`ui/Input`
   decides it for `type="number"`**, from the same test that gave a number `FIELD_W.short`: a
   field as wide as its answer needs no row of its own. `inline={false}` opts out.
+- **`FIELD_GAP`** is the space between a setting's words and the control under them. It was
+  8px in `ui/Input` and 10px in `Setting`, so a field and a picker in one card sat two pixels
+  apart from their own labels.
 - **`SETTING_GAP`** is the space between two settings in a card. One number.
+- **ONE COLUMN PER CARD, in both states of the explanations switch.** With the sentences
+  shown, an inline row is `justify-between` and every control ends on the card's right edge.
+  With them hidden there is no sentence to fill the middle, so the row STACKS like the text
+  fields beside it and every control starts on the card's left edge. A BOOLEAN keeps the far
+  end either way (`.switch-row`), which puts its column on the card's right edge — where the
+  full-width fields already end. Measured on the Blog tab at 1440 on 2026-09-12, before the
+  rule held: 294, 502 and 753 in six rows of one card, and 137px of nothing between a 55px
+  label and the box it belonged to.
 - **One control style per kind.** `ui/Tick` is the box — a real `input[type=checkbox]` under
   `appearance-none`, drawn, since `accent-` colours a fill and leaves the platform's border.
 

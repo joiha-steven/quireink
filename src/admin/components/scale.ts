@@ -179,6 +179,16 @@ export const CLUSTER_GAP = 'mb-4'
 export const SETTING_GAP = 'space-y-5'
 
 /**
+ * The gap between a setting's words and the control UNDER them — the fifth number, and the
+ * one the ladder above never named.
+ *
+ * It was 8px in `ui/Input` and 10px in `Setting`, so a text field and a picker in the same
+ * card sat two pixels apart from their own labels. 8, because that is the one the text
+ * fields use and they are most of the screen.
+ */
+export const FIELD_GAP = 'mt-2'
+
+/**
  * A tappable hit box around text that is only 16px tall.
  *
  * The quiet text buttons in this admin — Export CSV, Taxonomy, Check unused, Copy URL,

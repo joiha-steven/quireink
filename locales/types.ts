@@ -374,7 +374,15 @@ export type AdminStrings = {
   published: string
   imageUploadFailed: string
   // local (offline) autosave recovery bar
+  /**
+   * The OFFER: this piece has work in it that was never saved, here is where that copy
+   * lives, press Restore to take it back. It is not an announcement that anything has
+   * been restored — `draftRestored` is, and the two shared one string until 2026-09-12,
+   * so the bar read "unsaved changes recovered" beside a button asking to recover them.
+   */
   localDraftFound: string
+  /** The toast after a never-saved piece has put its own snapshot back by itself. */
+  draftRestored: string
   localDraftRestore: string
   localDraftDiscard: string
   // toolbar

@@ -61,9 +61,9 @@ export { TAB_TRACK, SEGMENT_TRACK, tabItemClass, Tabs, type TabItem, type TabSiz
 export { TAP, TAP_TOUCH } from './scale'
 export {
   READING, PAGE_TITLE_FACE, TITLE, SECTION, SETTING_LABEL, NOTE_TEXT, NOTE_ALERT, NOTE, META, UTIL, FIGURE,
-  SECTION_GAP, CARD_GAP, CARD_STACK, HEADER_GAP, GROUP_GAP, CLUSTER_GAP, SETTING_GAP,
+  SECTION_GAP, CARD_GAP, CARD_STACK, HEADER_GAP, GROUP_GAP, CLUSTER_GAP, SETTING_GAP, FIELD_GAP,
 } from './scale'
-import { HEADER_GAP, NOTE, NOTE_TEXT, SECTION, SETTING_LABEL, TITLE } from './scale'
+import { FIELD_GAP, HEADER_GAP, NOTE, NOTE_TEXT, SECTION, SETTING_LABEL, TITLE } from './scale'
 
 // --- One setting ------------------------------------------------------------------------
 //
@@ -132,7 +132,7 @@ export function Setting({
   return (
     <div className={className}>
       {head}
-      <div className={label || note ? 'mt-2.5' : ''}>{children}</div>
+      <div className={label || note ? FIELD_GAP : ''}>{children}</div>
     </div>
   )
 }

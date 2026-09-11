@@ -191,14 +191,15 @@ const zh = {
   // costs you the morning. `serverDraftFound` is the recovery line's wording when the snapshot
   // being offered came from the server — usually because it was typed on another machine.
   keptOnServerPrefix: '已在服务器保留于',
-  serverDraftFound: '已从服务器恢复未保存的修改',
+  serverDraftFound: '服务器上有未保存的修改',
   saveFailed: '保存失败',
   slugTaken: '该别名已被占用，请选择其他别名',
   needTitle: '发布前需要填写标题',
   savedDraft: '草稿已保存',
   published: '已发布',
   imageUploadFailed: '图片上传失败',
-  localDraftFound: '已恢复未保存的本地更改',
+  localDraftFound: '此设备上有未保存的修改',
+  draftRestored: '已恢复未保存的修改',
   localDraftRestore: '恢复',
   localDraftDiscard: '放弃',
   promptLink: '输入链接地址:',

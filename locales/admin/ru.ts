@@ -191,14 +191,15 @@ const ru = {
   // costs you the morning. `serverDraftFound` is the recovery line's wording when the snapshot
   // being offered came from the server — usually because it was typed on another machine.
   keptOnServerPrefix: 'сохранено на сервере в',
-  serverDraftFound: 'Несохранённые изменения восстановлены с сервера',
+  serverDraftFound: 'Несохранённые правки есть на сервере',
   saveFailed: 'Не удалось сохранить',
   slugTaken: 'Этот слаг уже занят, выберите другой',
   needTitle: 'Для публикации нужен заголовок',
   savedDraft: 'Черновик сохранён',
   published: 'Опубликовано',
   imageUploadFailed: 'Не удалось загрузить изображение',
-  localDraftFound: 'Найдены несохранённые локальные правки',
+  localDraftFound: 'Несохранённые правки есть на этом устройстве',
+  draftRestored: 'Несохранённые изменения восстановлены',
   localDraftRestore: 'Вернуть',
   localDraftDiscard: 'Отбросить',
   promptLink: 'Введите адрес ссылки:',

@@ -24,13 +24,13 @@ import { DEFAULT_SETTINGS } from '@/content/settings'
  *
  * Every one is derived from something else and would be silently rebuilt or overwritten:
  * the logo's rendered twins are made from `logoUrl` and `logoWidth` on save, and
- * `firstRunDone` is a dismissal, not a preference. Offering them would be offering a lever
- * attached to nothing.
+ * `firstRunDone` is a dismissal and `setupDone` is a fact about the install's own history,
+ * not preferences. Offering them would be offering a lever attached to nothing.
  */
 const DERIVED = new Set([
   'logoRenderUrl', 'logoRenderHeight', 'logoEmailUrl',
   'logoDarkRenderUrl', 'logoDarkRenderHeight',
-  'firstRunDone',
+  'firstRunDone', 'setupDone',
 ])
 
 function leaves(value: unknown, prefix = ''): string[] {

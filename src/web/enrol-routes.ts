@@ -91,13 +91,20 @@ export function enrolmentSkippable(settings: SiteSettings): boolean {
 /**
  * Where a session that has just come through enrolment lands.
  *
- * `/setup/site` only while the site address is unset, which is the same signal the boot warning
- * uses and the one thing that step exists to fix. An owner who enrolled again after a TOTP
- * reset has an address by then and goes straight to the admin. An explicit `next` always wins.
+ * `/setup/site` while this install has not been through the questions that follow the
+ * account, and the admin once it has. An owner who enrolled again after a TOTP reset went
+ * through them long ago and is not dragged back. An explicit `next` always wins.
+ *
+ * It used to ask whether a SITE ADDRESS was set, on the reasoning that the site step exists
+ * to set one. But `SITE_URL` in the environment is an address, and every deployment path
+ * this project ships sets it — so on a real install the three questions were skipped
+ * silently, including the two (the home face, the reader's pen) that no address can answer.
+ * Reported from a fresh install on 2026-09-12 and reproduced with `SITE_URL` set: two-factor
+ * handed straight over to `/admin`.
  */
 function firstRunNext(settings: SiteSettings, next: string): string {
   if (next !== '') return safeNext(next)
-  return siteUrlIsUnset(settings) ? '/setup/site' : '/admin'
+  return settings.setupDone ? '/admin' : '/setup/site'
 }
 
 export async function handleEnrol(c: Context): Promise<Response> {

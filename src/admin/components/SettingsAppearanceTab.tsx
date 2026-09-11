@@ -67,15 +67,15 @@ export function SettingsAppearanceTab(
             onChangeScheme={(defaultScheme) => update({ defaultScheme })}
           />
         </SettingsCard>
-        <SettingsCard title={t.customCss}>
-          <div className="space-y-1.5">
-            <CssEditor value={s.customCss} onChange={(customCss) => update({ customCss })} />
-            <p className={NOTE_TEXT}>{t.customCssHint}</p>
-          </div>
-        </SettingsCard>
       </div>
       <div className={col}>
-        {/* TYPE, and only type: the face, the sizes it is set at, and how it is drawn. */}
+        {/* Type, and then the owner's own CSS under it.
+            ⚠️ The right column was type and ONLY type, and what that cost was measured at
+            1440 on 2026-09-12: left 1,534 against right 535, so the tab ended in 999px of
+            blank paper beside the palette table — the hole the two-column rule exists to
+            close. Custom CSS is the one card on this tab that belongs to no subject in
+            particular and is the right size to move: 1,187 against 882 with it over here.
+            Re-measure before moving it again. */}
         <SettingsCard title={t.cardFont}>
           <FontFields
             value={s.fontPreset}
@@ -85,6 +85,12 @@ export function SettingsAppearanceTab(
           />
           <div className="mt-4 border-t border-neutral-200 pt-4 dark:border-neutral-800">
             <FontUpload value={s.customFont} onChange={(customFont) => update({ customFont })} />
+          </div>
+        </SettingsCard>
+        <SettingsCard title={t.customCss}>
+          <div className="space-y-1.5">
+            <CssEditor value={s.customCss} onChange={(customCss) => update({ customCss })} />
+            <p className={NOTE_TEXT}>{t.customCssHint}</p>
           </div>
         </SettingsCard>
       </div>

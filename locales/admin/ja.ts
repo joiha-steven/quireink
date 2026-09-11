@@ -191,14 +191,15 @@ const ja = {
   // costs you the morning. `serverDraftFound` is the recovery line's wording when the snapshot
   // being offered came from the server — usually because it was typed on another machine.
   keptOnServerPrefix: 'サーバーに保持',
-  serverDraftFound: 'サーバーから未保存の変更を復元しました',
+  serverDraftFound: '未保存の変更がサーバーにあります',
   saveFailed: '保存に失敗しました',
   slugTaken: 'このスラッグは既に使用されています。別のものを選んでください',
   needTitle: '公開するにはタイトルが必要です',
   savedDraft: '下書きを保存しました',
   published: '公開しました',
   imageUploadFailed: '画像のアップロードに失敗しました',
-  localDraftFound: '未保存のローカル変更を復元しました',
+  localDraftFound: '未保存の変更がこの端末にあります',
+  draftRestored: '未保存の変更を復元しました',
   localDraftRestore: '復元',
   localDraftDiscard: '破棄',
   promptLink: 'リンクのURLを入力:',

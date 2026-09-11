@@ -717,17 +717,38 @@ input[type='color']::-moz-color-swatch {
    edge of a 560px card, a "0" box at the right edge, and nothing in between. His words were
    "thu hẹp mỗi dòng lại": bring the row in.
 
-   So the head stops growing and the row packs from the left. `min-width` rather than a cap on
-   the row: a label shorter than 12rem still reserves 12rem, so every control in a card starts
-   at the SAME x and a column of switches stays a column — which is the thing the far-right
-   alignment was buying, kept at a tenth of the distance. A label longer than that pushes its
-   own control along and only that row goes ragged. `min()` so a container narrower than 12rem
-   (a phone, a split column) still gets a row that fits rather than one that overflows.
+   The first answer was a 12rem floor under the head, so that a label shorter than that still
+   reserved the column and every control started at the same x. It did not hold, and the three
+   ways it failed were all measured on the Blog tab at 1440 on 2026-09-12, in ONE card:
 
-   Only with explanations OFF. With them on the head is holding a paragraph and needs every
-   pixel of the free space; 12rem would set it in a column three words wide. */
-[data-explanations='off'] .setting-row { justify-content: flex-start; }
-[data-explanations='off'] .setting-row > :first-child { flex: 0 1 auto; min-width: min(12rem, 100%); }
+     294  the site title, its description and the canonical address (stacked fields, which are
+          not `.setting-row` at all and so never saw the rule)
+     502  the language, the timezone and the excerpt length (the 12rem column)
+     753  "show the description" (a switch, pinned to the far end)
+
+   Three left edges in six rows, and the floor's own cost on top: a 55px label reserving 192px
+   puts 137px of nothing between "Múi giờ" and the box it belongs to, which is what was
+   reported — the words too far from the field.
+
+   So with the sentence gone the row simply STACKS, like the text fields it sits among, and
+   every control in the card starts at the card's own left edge. Nothing is invented: it is
+   the layout the fields beside it already had, extended to the rows that were holding out.
+   The gap between the words and the control is `FIELD_GAP`, the same 8px a text field uses.
+
+   A BOOLEAN is the exception and keeps its far end (`.switch-row`). Its control column is
+   then the card's right edge — an edge the card already draws — so it aligns with the right
+   edge of every full-width field above it, and a card of nine toggles stays a list instead of
+   becoming nine labels with a switch stranded under each.
+
+   Only with explanations OFF. With them on the head is holding a paragraph, the control at
+   the far end is what the paragraph fills the space in front of, and stacking would put a
+   two-line sentence between a label and its control. */
+[data-explanations='off'] .setting-row:not(.switch-row) { display: block; }
+[data-explanations='off'] .setting-row:not(.switch-row) > :last-child { margin-top: 0.5rem; }
+/* And the switch keeps the far end it already had, centred on its label rather than hung from
+   the top of it: with the sentence hidden the head is one 20px line beside a 24px switch, and
+   `items-start` left them 2px out. */
+[data-explanations='off'] .switch-row { align-items: center; }
 /* And the HEIGHT of it, which is the half that was actually complained about.
    A `ToggleRow` is a `Setting` wearing `p-4`: 16px of air above and below a 24px switch, so a
    row that says "Table of contents · on" is 65px tall and a card of nine of them is 585px of
@@ -740,10 +761,21 @@ input[type='color']::-moz-color-swatch {
    reaches the padded rows and leaves the bare ones (a plain `ui/Input` row has no padding of
    its own) at the height they already had. */
 [data-explanations='off'] .setting-row.p-4 { padding-block: 0.5rem; }
+/* And the SIDES of that same padding, which belong to the list and not to the row.
+   `PANEL_LIST` runs full width (`-mx-4`) and its rows pad 16px back in, so a switch in a
+   ruled list lands exactly on the card's content edge. A `ToggleRow` standing on its own
+   carries the same `p-4` with no `-mx-4` under it, so its switch stops 16px short — measured
+   on the Posts tab, "Hiện chú thích" ending at 1338 against "Dòng kẻ sọc" at 1354 and every
+   field in both cards at 1354. One column, or it is not a column. */
+.switch-row.p-4 { padding-inline: 0; }
+.panel-list .switch-row.p-4 { padding-inline: 1rem; }
 /* The other 8px, and it is invisible until you measure: the control's wrapper is a block, so
    the 24px switch inside it sits in a 32px line box and the row pays for six pixels of
    descender space that nothing is using. `flex` takes the line box out of it. */
 [data-explanations='off'] .setting-row > :last-child { display: flex; padding-top: 0; }
+/* A stacked row's control wrapper is `flex` by the line above, which would stretch a 112px
+   number field to the width of the card. Left, and only as wide as it asked to be. */
+[data-explanations='off'] .setting-row:not(.switch-row) > :last-child { justify-content: flex-start; }
 /* And the strip at each end of a list card. `PANEL_LIST` runs full width (`-mx-4`) inside a
    body that pads 16px all round, so above the first row and below the last there is a band of
    nothing between the card's own rule and the first row — 32px a card, near 200px on a tab of

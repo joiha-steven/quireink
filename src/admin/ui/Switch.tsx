@@ -61,16 +61,24 @@ export function ToggleRow({
   // `<details>` so it stays verbatim without printing eleven lines under a switch.
 }: SwitchProps & { label: string; desc?: ReactNode; badge?: string; disabled?: boolean }) {
   return (
-    <Setting label={label} note={desc} badge={badge} inline className={`p-4 ${disabled ? 'opacity-50' : ''}`}>
+    <Setting label={label} note={desc} badge={badge} inline className={`switch-row p-4 ${disabled ? 'opacity-50' : ''}`}>
       <Switch checked={checked} onChange={onChange} label={label} disabled={disabled} />
     </Setting>
   )
 }
 
-// A boolean with no note of its own, inside a denser group (the palette cards, a form row).
+/**
+ * A boolean with no note of its own, inside a denser group (the palette cards, a form row).
+ *
+ * `setting-row switch-row` even though it lays itself out: those two classes are how
+ * `admin.css` recognises a BOOLEAN, and a boolean is the one setting that keeps its control
+ * at the row's far end when the explanations are hidden. Without them this was the third
+ * alignment in a card that was meant to have one — a switch pinned right between fields that
+ * had just been stacked and a select sitting in a column of its own.
+ */
 export function ToggleField({ label, checked, onChange }: SwitchProps & { label: string }) {
   return (
-    <label className="flex cursor-pointer items-center justify-between gap-4">
+    <label className="setting-row switch-row flex cursor-pointer items-center justify-between gap-4">
       <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{label}</span>
       <Switch checked={checked} onChange={onChange} label={label} />
     </label>

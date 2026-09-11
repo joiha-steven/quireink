@@ -11,6 +11,7 @@ import { createApp } from '@/web/app'
 import { createUser, noUsersYet } from '@/auth/users'
 import { saveSettings, getSettings } from '@/content/settings'
 import { adminT } from '@/i18n/admin-i18n'
+import { codeForStep, stepAt } from '@/auth/totp'
 import { resetPending } from '@/auth/login'
 import { resetEnrolment } from '@/web/enrol-routes'
 import { resetLimits } from '@/server/rate-limit'
@@ -193,15 +194,35 @@ describe('where enrolment lets you out', () => {
   it('goes to the site step while no address is set', async () => {
     expect(await claimAndSkip()).toBe('/setup/site')
   })
-
-  it('goes straight to the admin once there is one', async () => {
-    // An owner re-enrolling after a TOTP reset must not be dragged back through setup.
-    await saveSettings({ siteUrl: 'https://example.com' })
+  /** Claim (from unclaimed, so it can run twice in a test) and enrol the long way — the only
+   *  path once an address is set, because the skip is refused then. `before` runs between the
+   *  account and the last step. */
+  const claimAndEnrol = async (before?: () => Promise<void>): Promise<string> => {
     db().run(`delete from users`)
     forgetSetupToken()
-    const ticket = (await (await claim()).text()).match(/name="ticket" value="([^"]+)"/)?.[1] ?? ''
-    // The skip is refused with an address set, so finish enrolment the long way instead.
-    expect((await post('/api/auth/enrol/skip', { ticket })).status).toBe(401)
+    const page = await (await claim()).text()
+    const ticket = page.match(/name="ticket" value="([^"]+)"/)?.[1] ?? ''
+    const secret = (page.match(/<code[^>]*>([A-Z2-7 ]{16,})<\/code>/)?.[1] ?? '').replace(/ /g, '')
+    await post('/api/auth/enrol', { ticket, code: codeForStep(secret, stepAt(Date.now()))! })
+    await before?.()
+    return (await post('/api/auth/enrol/done', { ticket, saved: '1' })).headers.get('location') ?? ''
+  }
+
+  it('asks the questions even when the ADDRESS came from the environment', async () => {
+    // The whole bug: every deployment path this project ships sets `SITE_URL`, and the
+    // landing asked whether an address was known.
+    process.env.SITE_URL = 'https://from-the-environment.example'
+    try {
+      expect(await claimAndEnrol()).toBe('/setup/site')
+    } finally {
+      delete process.env.SITE_URL
+    }
+    // And stops asking once they are answered, or once the row predates the question. The
+    // skip is refused with an address set, which is why this path enrols the long way.
+    expect(await claimAndEnrol(async () => { await saveSettings({ setupDone: true }) })).toBe('/admin')
+    expect((await post('/api/auth/enrol/skip', { ticket: 'gone' })).status).toBe(401)
+    db().run(`insert or replace into settings (id, data) values (1, ?)`, [JSON.stringify({ title: 'Older' })])
+    expect((await getSettings()).setupDone).toBe(true)
   })
 })
 
@@ -252,8 +273,7 @@ describe('the three questions after the account', () => {
   })
 
   it('saves the face and moves on to the reader', async () => {
-    const cookie = await session()
-    const res = await asOwner('/setup/face', { mode: 'front' })(cookie)
+    const res = await asOwner('/setup/face', { mode: 'front' })(await session())
     expect(res.headers.get('location')).toBe('/setup/reader')
     expect((await getSettings()).home.mode).toBe('front')
   })
@@ -263,14 +283,12 @@ describe('the three questions after the account', () => {
     const off = await asOwner('/setup/reader', { pen: 'off' })(cookie)
     expect(off.headers.get('location')).toBe('/admin/editor')
     expect((await getSettings()).features.readerPen).toBe(false)
-
     await asOwner('/setup/reader', { pen: 'on' })(cookie)
     expect((await getSettings()).features.readerPen).toBe(true)
   })
 
   it('keeps the pen ON for a form that carried no answer at all', async () => {
-    // A submit from a browser that lost the markup should land on the default, and the
-    // default is on — the quieter site is the one somebody has to ask for.
+    // A browser that lost the markup lands on the default, and the default is on.
     const cookie = await session()
     await asOwner('/setup/reader', { pen: 'off' })(cookie)
     await asOwner('/setup/reader', {})(cookie)
@@ -278,20 +296,27 @@ describe('the three questions after the account', () => {
   })
 
   it('reads anything that is not the newspaper as the list', async () => {
-    const cookie = await session()
-    await asOwner('/setup/face', { mode: 'nonsense' })(cookie)
+    await asOwner('/setup/face', { mode: 'nonsense' })(await session())
     expect((await getSettings()).home.mode).toBe('list')
   })
 
   it('offers the address of the host actually being used', async () => {
     const cookie = await session()
-    const res = await app.request('http://blog.example/setup/site', {
-      headers: { cookie, 'x-forwarded-proto': 'https' },
-    })
     // The one field, not the whole page: a `toContain` over a rendered document prints the
     // document when it fails, which buries the reason it failed.
-    const value = (await res.text()).match(/id="siteUrl"[^>]*value="([^"]*)"/s)?.[1]
-    expect(value).toBe('https://blog.example')
+    const field = async (r: Response) => (await r.text()).match(/id="siteUrl"[^>]*value="([^"]*)"/s)?.[1]
+    expect(await field(await app.request('http://blog.example/setup/site', {
+      headers: { cookie, 'x-forwarded-proto': 'https' },
+    }))).toBe('https://blog.example')
+    // But the OPERATOR's address outranks the host: a first run reached at a temporary one
+    // must not write that over the `SITE_URL` the deployment was configured with.
+    process.env.SITE_URL = 'https://configured.example'
+    try {
+      expect(await field(await app.request('http://10.0.0.4:3000/setup/site', { headers: { cookie } })))
+        .toBe('https://configured.example')
+    } finally {
+      delete process.env.SITE_URL
+    }
   })
 })
 

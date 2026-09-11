@@ -43,16 +43,24 @@ export function IconUpload({ kind, value, onChange, previewClassName }: Props) {
 
   return (
     <div className="flex items-center gap-3">
-      {value ? (
-        <img src={value} alt="" className={`bg-neutral-100 object-contain p-1 ${previewClassName}`} />
-      ) : (
-        <>
-          {/* The slot, at the size the picture will be, so the row does not change height
-              the moment one goes in. The words stay beside it: a 32px square has no room
-              for them, and "no image" is worth saying rather than implying. */}
+      {/* ONE FOOTPRINT, whatever size the picture inside it is.
+          The slot is drawn at the size the picture will be — a favicon is 32px and an app
+          icon is not — so the row does not change height the moment one goes in. What that
+          cost was measured on the Blog tab: the two rows sit in the same card and their
+          "Choose an image" buttons landed 16px apart, because the 32px slot and the 48px
+          slot pushed the words along by different amounts. The box is the larger of the two;
+          the picture is centred in it and keeps its own size. */}
+      <span className="flex h-12 w-12 shrink-0 items-center justify-center">
+        {value ? (
+          <img src={value} alt="" className={`bg-neutral-100 object-contain p-1 ${previewClassName}`} />
+        ) : (
           <span aria-hidden className={`${EMPTY_SLOT} shrink-0 ${previewClassName}`} />
-          <span className="text-xs text-neutral-500 dark:text-neutral-400">{t.noImageSelected}</span>
-        </>
+        )}
+      </span>
+      {!value && (
+        // "No image" is worth saying rather than implying, and it goes beside the slot
+        // because a 32px square has no room for it.
+        <span className="text-xs text-neutral-500 dark:text-neutral-400">{t.noImageSelected}</span>
       )}
       <input
         ref={inputRef}

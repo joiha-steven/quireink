@@ -102,7 +102,7 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
   })
   useUnsavedGuard(() => dirtyRef.current)
 
-  useReopenedNotice(reopened !== null, safety.recovered !== null, safety.dismiss, () => notify(t.localDraftFound))
+  useReopenedNotice(reopened !== null, safety.recovered !== null, safety.dismiss, () => notify(t.draftRestored))
 
   const update = useCallback((partial: Partial<Draft>) => {
     setDirty(true)

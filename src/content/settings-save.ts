@@ -172,6 +172,7 @@ async function applySave(input: Partial<SiteSettings>): Promise<SiteSettings> {
     // Never unset by a merge: an owner who dismissed the steps has dismissed them, and a
     // PUT that omits the flag is every other settings save on the screen.
     firstRunDone: yesNo(input.firstRunDone, current.firstRunDone),
+    setupDone: yesNo(input.setupDone, current.setupDone),
     contentWidth: clampNumber(input.contentWidth, 360, 1600, current.contentWidth),
     postsPerPage: clampNumber(input.postsPerPage, 1, 100, current.postsPerPage),
     relatedCount: clampNumber(input.relatedCount, 0, 12, current.relatedCount),

@@ -274,6 +274,11 @@ export type SiteSettings = {
   storageQuotaGb: number // largest the whole blob store may grow, in GB (0 = whatever the deployment allows). Counts derived variants and icons, because on a photo blog those are most of the disk. Same narrow-only rule as maxUploadMb
   /** Has the owner dismissed the first-run steps? Set once, never unset by the app. */
   firstRunDone: boolean
+  /** Has this install been through the questions that follow the account? Written false at
+   *  the claim and true by the last step — a fact, where it used to be inferred from whether
+   *  a site address was set (`web/enrol-routes.ts` has what that cost). A row written before
+   *  the field existed reads as DONE: see `fromStored`. */
+  setupDone: boolean
   contentWidth: number // px, max width of the content column (desktop)
   postsPerPage: number // posts shown per page on home/category/tag lists
   relatedCount: number // related posts shown at the end of an article (0 = none)

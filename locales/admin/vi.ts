@@ -191,14 +191,15 @@ const vi = {
   // costs you the morning. `serverDraftFound` is the recovery line's wording when the snapshot
   // being offered came from the server — usually because it was typed on another machine.
   keptOnServerPrefix: 'đã giữ trên máy chủ lúc',
-  serverDraftFound: 'Đã khôi phục nội dung chưa lưu từ máy chủ',
+  serverDraftFound: 'Có nội dung chưa lưu trên máy chủ',
   saveFailed: 'Lưu thất bại',
   slugTaken: 'Đường dẫn (slug) đã tồn tại, chọn đường dẫn khác',
   needTitle: 'Cần tiêu đề để đăng bài',
   savedDraft: 'Đã lưu nháp',
   published: 'Đã đăng bài',
   imageUploadFailed: 'Tải ảnh thất bại',
-  localDraftFound: 'Đã khôi phục nội dung chưa lưu',
+  localDraftFound: 'Có nội dung chưa lưu trên máy này',
+  draftRestored: 'Đã khôi phục nội dung chưa lưu',
   localDraftRestore: 'Khôi phục',
   localDraftDiscard: 'Bỏ qua',
   promptLink: 'Nhập đường dẫn liên kết:',

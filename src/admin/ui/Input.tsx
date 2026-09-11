@@ -6,7 +6,7 @@
 // for it the order is decided ONCE, here, and no call site can hold a different opinion.
 // The order is the one rule: what it is, what to know about it, then the control.
 import { useId, useState, type FocusEvent, type InputHTMLAttributes, type ReactNode, type TextareaHTMLAttributes } from 'react'
-import { CONTROL, FIELD_W, NOTE, SETTING_LABEL } from '@/admin/components/kit'
+import { CONTROL, FIELD_GAP, FIELD_W, NOTE, SETTING_LABEL } from '@/admin/components/kit'
 import { NOTE_ALERT } from '@/admin/components/scale'
 import { useAdminT } from '@/admin/components/I18nProvider'
 
@@ -148,7 +148,7 @@ export function Input({ label, note, className = '', inline, error, onBlur, ...p
       {title}
       {hint}
       <input
-        className={`${FIELD} ${widthFor(props.type, className)} ${label || note ? 'mt-2' : ''} ${shown ? INVALID : ''} ${className}`}
+        className={`${FIELD} ${widthFor(props.type, className)} ${label || note ? FIELD_GAP : ''} ${shown ? INVALID : ''} ${className}`}
         aria-invalid={shown ? true : undefined}
         onBlur={check}
         {...props}
@@ -171,7 +171,7 @@ export function Textarea({ label, note, className = '', ...props }: TextareaProp
       {label && <label htmlFor={id} className={SETTING_LABEL}>{label}</label>}
       {note && <span id={noteId} className={`${NOTE} block`}>{note}</span>}
       <textarea
-        className={`${FIELD} ${FIELD_W.full} resize-y ${label || note ? 'mt-2' : ''} ${className}`}
+        className={`${FIELD} ${FIELD_W.full} resize-y ${label || note ? FIELD_GAP : ''} ${className}`}
         {...props}
         id={id}
         aria-describedby={describedBy(note && noteId, props['aria-describedby'])}

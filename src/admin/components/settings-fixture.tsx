@@ -61,6 +61,7 @@ export function settingsFixture(): SiteSettings {
     maxUploadMb: 0,
     storageQuotaGb: 0,
     firstRunDone: true,
+    setupDone: true,
     timezone: '',
     updateCheck: true,
     contentWidth: 672,

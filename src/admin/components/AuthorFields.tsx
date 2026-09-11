@@ -52,18 +52,20 @@ export function AuthorFields({ author, onChange }: {
       />
 
       <Setting label={t.authorAvatar} note={t.authorAvatarHint}>
-        <div className="space-y-3">
+        {/* SLOT · WORDS · BUTTON, on one line — the shape every picture in the admin is
+            picked with. This one put its buttons on a line of their own, which is a fourth
+            arrangement of the same three pieces in a screen that already had three. */}
+        <div className="flex flex-wrap items-center gap-3">
           {author.avatarUrl
-            ? <img src={author.avatarUrl} alt="" className="h-16 w-16 rounded-lg object-cover" />
-            : (
-              // The slot at the portrait's own size, so choosing one does not move the
-              // buttons under it, with the sentence beside it: 64px has no room for words.
-              <div className="flex items-center gap-3">
-                <span aria-hidden className={`${EMPTY_SLOT} h-16 w-16 shrink-0 rounded-lg`} />
-                <p className={NOTE_TEXT}>{t.authorNoAvatar}</p>
-              </div>
-            )}
-          <div className="flex flex-wrap gap-2">
+            ? <img src={author.avatarUrl} alt="" className="h-16 w-16 shrink-0 rounded-lg object-cover" />
+            : <span aria-hidden className={`${EMPTY_SLOT} h-16 w-16 shrink-0 rounded-lg`} />}
+          {/* NOT `NOTE_TEXT`: that carries `admin-note`, so with the explanations hidden this
+              one row lost the words beside its slot while the favicon and app-icon rows kept
+              theirs. "No image chosen" is the slot's STATE, not an explanation of it. */}
+          {!author.avatarUrl && (
+            <span className="text-xs text-neutral-500 dark:text-neutral-400">{t.authorNoAvatar}</span>
+          )}
+          <div className="flex gap-2">
             <Button variant="secondary" type="button" onClick={() => setPicking(true)}>{t.chooseImage}</Button>
             {author.avatarUrl && (
               <Button variant="ghost" type="button" onClick={() => onChange({ ...author, avatarUrl: '' })}>

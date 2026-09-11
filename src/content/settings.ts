@@ -76,6 +76,10 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   maxUploadMb: 0,
   storageQuotaGb: 0,
   firstRunDone: false,
+  // NO ROW AT ALL is the one state that means nobody has claimed this install yet, which is
+  // why this default is false and the fallback in `fromStored` is not. The claim writes it
+  // explicitly, because the claim may also write a language and that would make a row.
+  setupDone: false,
   // On, and the reason is in `types.ts`. An operator who disagrees has one environment
   // variable; an owner who disagrees has one switch.
   // Empty, not 'UTC': an operator who set ANALYTICS_TZ on an existing install keeps their
@@ -171,6 +175,8 @@ export async function getSettings(): Promise<SiteSettings> {
     // catch below returns defaults, which is the same "never crash the header" contract
     // the frozen tree had against a failed query.
     const stored = (row ? JSON.parse(row.data) : {}) as Partial<SiteSettings>
+    // Whether this blog has a settings row at all — see `setupDone` below.
+    const had = row != null
     const seo = sanitizeSeo(stored.seo, DEFAULT_SEO)
     // Expand store-relative image refs to absolute Blob URLs.
     const built: SiteSettings = {
@@ -200,6 +206,10 @@ export async function getSettings(): Promise<SiteSettings> {
       showLogo: typeof stored.showLogo === 'boolean' ? stored.showLogo : DEFAULT_SETTINGS.showLogo,
       showDescription: typeof stored.showDescription === 'boolean' ? stored.showDescription : DEFAULT_SETTINGS.showDescription,
       firstRunDone: typeof stored.firstRunDone === 'boolean' ? stored.firstRunDone : DEFAULT_SETTINGS.firstRunDone,
+      // `had`, not the default: a row written before this field existed belongs to a blog
+      // that is already running, and dropping its owner into first-run setup the next time
+      // they enrol an authenticator would be the same wrong answer pointing the other way.
+      setupDone: typeof stored.setupDone === 'boolean' ? stored.setupDone : had,
       logoWidth: clampNumber(stored.logoWidth, 24, 600, DEFAULT_SETTINGS.logoWidth),
       contentWidth: clampNumber(stored.contentWidth, 360, 1600, DEFAULT_SETTINGS.contentWidth),
       postsPerPage: clampNumber(stored.postsPerPage, 1, 100, DEFAULT_SETTINGS.postsPerPage),

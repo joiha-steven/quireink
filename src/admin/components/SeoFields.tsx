@@ -67,13 +67,17 @@ export function SeoFields({ s, update }: Props) {
 
       <div className="space-y-2">
         <div className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{t.seoFallbackLabel}</div>
-        <div className="flex items-center gap-4">
+        {/* The words go BESIDE the slot, not inside it. This slot is 144×80 and had room to
+            hold them, which is why it was the one picker that did — and it put its button
+            136px further right than every other picker's. Same three pieces, same order. */}
+        <div className="flex flex-wrap items-center gap-3">
           {s.seo.ogFallbackImage ? (
-            <img src={s.seo.ogFallbackImage} alt="OG" className="h-20 w-36 rounded-lg border border-neutral-200 object-cover dark:border-neutral-800" />
+            <img src={s.seo.ogFallbackImage} alt="OG" className="h-20 w-36 shrink-0 rounded-lg border border-neutral-200 object-cover dark:border-neutral-800" />
           ) : (
-            <div className={`${EMPTY_SLOT} h-20 w-36 rounded-lg`}>
-              {t.noImageSelected}
-            </div>
+            <span aria-hidden className={`${EMPTY_SLOT} h-20 w-36 shrink-0 rounded-lg`} />
+          )}
+          {!s.seo.ogFallbackImage && (
+            <span className="text-xs text-neutral-500 dark:text-neutral-400">{t.noImageSelected}</span>
           )}
           <div className="flex gap-2">
             <Button variant="secondary" type="button" onClick={() => setPicking(true)}>{t.chooseImage}</Button>
