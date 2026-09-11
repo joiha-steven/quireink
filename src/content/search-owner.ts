@@ -10,7 +10,7 @@
 // list here too, each carrying `kind` so the caller knows which editor to open.
 import { all } from '@/store/query'
 import { liveOnly } from '@/store/db'
-import { accentedWords, indexIn, keepsAccents, lanes, wordIndexIn } from '@/accent'
+import { accentedWords, indexIn, keepsAccents, lanes } from '@/accent'
 
 /**
  * One result. `WritingList` imports this with `import type`, which erases at build time —
@@ -140,24 +140,48 @@ function toHit(row: HitRow, kind: 'post' | 'page', words: string[]): OwnerHit {
 }
 
 /**
- * The passage the words were found in. It starts AT the match with a leading ellipsis,
- * which is what `snippet()` did, and it finds the match the way the caller's filter did —
- * so the sentence under the row is the sentence that answered the question.
+ * The passage the words were found in: the `CONTEXT` words beginning where the query's words
+ * sit CLOSEST together — most of them, in the shortest run, earliest wins the ties.
+ *
+ * Not simply the first hit, and the difference is the whole function. Searching "widen the
+ * leading" on a post whose opening paragraph contains "the" quoted that opening paragraph:
+ * the first hit in a body is the commonest word in the query. Not simply the densest window
+ * either — a window can hold all three words and still open eleven words before the first of
+ * them. `snippet()` used to answer this, and being asked to go on answering it as well as it
+ * did is why this function reads the body at all (see the note above `LIMIT`).
  */
 function passage(body: string, words: string[]): string {
-  const hay = lanes(body.replace(/\s+/g, ' ').trim())
-  const earliest = (seek: (h: typeof hay, w: string) => number) =>
-    words.reduce((best, word) => {
-      const found = seek(hay, word)
-      return found !== -1 && (best === -1 || found < best) ? found : best
-    }, -1)
-  // The whole word first, because that is what the index matched. A hit inside a longer
-  // word is worth quoting only when there is no standing one.
-  const whole = earliest(wordIndexIn)
-  const at = whole === -1 ? earliest(indexIn) : whole
-  // -1 means the words matched the TITLE and not the body, so the opening line is the
-  // passage: a row with an empty second line looks like a row that failed to load.
-  const from = at === -1 ? 0 : hay.text.lastIndexOf(' ', at) + 1
-  const rest = hay.text.slice(from).split(' ')
-  return `${from > 0 ? '…' : ''}${rest.slice(0, CONTEXT).join(' ')}${rest.length > CONTEXT ? '…' : ''}`
+  const flat = body.replace(/\s+/g, ' ').trim()
+  if (!flat) return ''
+  const tokens = flat.split(' ')
+  // Which of the query's words each token carries. `indexIn` inside ONE token, so the
+  // punctuation stuck to it — "leading." — does not cost the word its match.
+  const carries = tokens.map((token) => {
+    const lane = lanes(token)
+    return words.flatMap((word, i) => (indexIn(lane, word) === -1 ? [] : [i]))
+  })
+
+  let start = -1
+  let bestWords = 0
+  let bestRun = Infinity
+  for (let i = 0; i < tokens.length; i++) {
+    if (carries[i]!.length === 0) continue
+    const seen = new Set<number>()
+    // Where the LAST new word turned up: the run this window needs to say what it says.
+    let closes = i
+    for (let j = i; j < Math.min(tokens.length, i + CONTEXT); j++) {
+      for (const w of carries[j]!) if (!seen.has(w)) { seen.add(w); closes = j }
+    }
+    const run = closes - i + 1
+    if (seen.size > bestWords || (seen.size === bestWords && run < bestRun)) {
+      bestWords = seen.size
+      bestRun = run
+      start = i
+    }
+  }
+  // Nothing in the body: the words matched the TITLE. The opening line is the passage then,
+  // because a row with an empty second line looks like a row that failed to load.
+  const from = start === -1 ? 0 : start
+  const cut = tokens.slice(from, from + CONTEXT).join(' ')
+  return `${from > 0 ? '…' : ''}${cut}${from + CONTEXT < tokens.length ? '…' : ''}`
 }

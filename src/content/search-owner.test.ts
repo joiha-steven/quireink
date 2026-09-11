@@ -89,6 +89,20 @@ describe('searchEverything', () => {
     expect(hit?.line).not.toContain('nothing in particular')
   })
 
+  it('quotes the passage that holds MOST of the words, not the first common one', async () => {
+    // Caught by the browser tour and not by anything here (2026-09-11): the first hit in a
+    // body is usually the commonest word in the query, so a passage anchored on it quoted an
+    // opening paragraph that had nothing to do with the search.
+    await savePost({
+      title: 'Measure', status: 'published',
+      content: 'The opening paragraph, and the one after it, are about the weather.\n\n'
+        + 'Widen the leading before you widen the column.',
+    })
+    const [hit] = await searchEverything('widen the leading')
+    expect(hit?.line).toContain('leading')
+    expect(hit?.line).not.toContain('weather')
+  })
+
   it('never leaks a trashed post', async () => {
     await savePost({ title: 'Gone', status: 'published', content: 'a sentence that exists' })
     db().run(`update posts set deleted_at = 1 where slug = 'gone'`)
