@@ -165,7 +165,15 @@ export function SettingsServerTab({ s, update, integrations, updateStatus, updat
           dirty={form.changedIn('mcp')}
           onSave={() => form.savePartial({ mcp: s.mcp })}
         >
-          <McpFields mcp={s.mcp} siteUrl={s.siteUrl} onChange={(mcp) => update({ mcp })} />
+          {/* `live` is the switch as the SERVER has it, derived rather than fetched: an
+              unchanged card means the form value and the stored one are the same, so a clean
+              card plus `enabled` is exactly "the endpoint is answering". */}
+          <McpFields
+            mcp={s.mcp}
+            live={s.mcp.enabled && !form.changedIn('mcp')}
+            siteUrl={s.siteUrl}
+            onChange={(mcp) => update({ mcp })}
+          />
         </ConnectionCard>
         {/* ⚠️ A CARD WITH KEYS NEEDS A KEY. The backup schedule — on/off, how often, how many
             to keep — is three ordinary settings keys, and this card was a plain one: the

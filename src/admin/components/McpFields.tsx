@@ -17,8 +17,15 @@ import { PANEL, PANEL_LIST, Setting, TABLE_SCROLL } from './kit'
 const MAX = 5 // manual tokens only; OAuth-connector tokens are exempt
 
 export function McpFields(
-  { mcp, siteUrl, onChange }:
-  { mcp: McpSettings; siteUrl: string; onChange: (m: McpSettings) => void },
+  { mcp, live, siteUrl, onChange }:
+  {
+    mcp: McpSettings
+    // The SAVED value of the switch, not the one in the form. Everything below the toggle
+    // is a promise that the endpoint is answering, and only a saved switch can keep it.
+    live: boolean
+    siteUrl: string
+    onChange: (m: McpSettings) => void
+  },
 ) {
   const t = useAdminT()
   // The address a connector is pointed at. `siteUrl` may be blank, in which case the server
@@ -142,8 +149,16 @@ export function McpFields(
         />
 
         {/* The endpoint itself. Everything else on this card assumes the owner already knows
-            where to point a client, and nothing anywhere told them. */}
-        {mcp.enabled && (
+            where to point a client, and nothing anywhere told them.
+
+            Gated on `live`, not on `mcp.enabled`: this card has its OWN Save, so flipping the
+            switch leaves the endpoint off until that button is pressed. Showing the URL on the
+            flip meant the card handed out an address, and the token manager below handed out a
+            credential, for a door that was still shut. Measured 2026-09-11 on a fresh install:
+            switch flipped, token minted, URL copied, and every call answered 404 until the
+            settings row was actually written. The card's own "Unsaved" badge was the only
+            thing saying so, next to two controls that said the opposite. */}
+        {live && (
           <div className="border-t border-neutral-200 p-4 dark:border-neutral-800">
             <Setting label={t.mcpUrlLabel} note={t.mcpUrlHint}>
               <div className="flex items-center gap-2">
@@ -160,100 +175,105 @@ export function McpFields(
         )}
       </div>
 
-      <div className="space-y-3">
-        {/* Label, note, then the controls under them — the same order as every other
-            setting. Side by side these two buttons had nowhere to go but into their own
-            labels: the note beside them is three lines of prose on a narrow card. */}
-        <Setting label={t.mcpTokensTitle} note={t.mcpTokensHint} inline>
-          <div className="flex flex-wrap items-center gap-2">
-            <Button type="button" onClick={() => void generate()} disabled={pending || tokens.filter((tk) => !tk.oauth).length >= MAX}>
-              {t.mcpGenerate}
-            </Button>
-            <Button type="button" variant="ghost" onClick={() => refresh()}>{t.mcpRefresh}</Button>
-            <label className="flex cursor-pointer items-center gap-2 text-sm text-neutral-600 dark:text-neutral-300" title={t.mcpReadOnlyHint}>
-              <input
-                type="checkbox"
-                checked={readScope}
-                onChange={(e) => setReadScope(e.target.checked)}
-                className="size-4 rounded border-neutral-300 dark:border-neutral-700"
-              />
-              {t.mcpReadOnly}
-            </label>
-          </div>
-        </Setting>
-
-        {/* The just-created plaintext token, shown ONCE. */}
-        {created && (
-          <div className="space-y-2 rounded-lg border border-neutral-300 bg-neutral-50 p-3 dark:border-neutral-700 dark:bg-neutral-800/60">
-            <p className="text-xs font-medium text-neutral-600 dark:text-neutral-300">{t.mcpOnceWarning}</p>
-            <div className="flex items-center gap-2">
-              <code className="flex min-h-9 min-w-0 flex-1 items-center truncate rounded-lg border border-neutral-300 bg-white px-3 text-xs dark:border-neutral-700 dark:bg-neutral-900">
-                {created}
-              </code>
-              <Button type="button" onClick={() => copy(created, t.mcpCopied)}>{t.mcpCopy}</Button>
-              <Button type="button" variant="ghost" onClick={() => setCreated(null)}>{t.close}</Button>
+      {/* The token manager, gated the same way and for the same reason. Minting is its own
+          API call and lands in the database at once, so before this gate a fresh install
+          could hold five live credentials for an endpoint that had never been switched on. */}
+      {live && (
+        <div className="space-y-3">
+          {/* Label, note, then the controls under them — the same order as every other
+              setting. Side by side these two buttons had nowhere to go but into their own
+              labels: the note beside them is three lines of prose on a narrow card. */}
+          <Setting label={t.mcpTokensTitle} note={t.mcpTokensHint} inline>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button type="button" onClick={() => void generate()} disabled={pending || tokens.filter((tk) => !tk.oauth).length >= MAX}>
+                {t.mcpGenerate}
+              </Button>
+              <Button type="button" variant="ghost" onClick={() => refresh()}>{t.mcpRefresh}</Button>
+              <label className="flex cursor-pointer items-center gap-2 text-sm text-neutral-600 dark:text-neutral-300" title={t.mcpReadOnlyHint}>
+                <input
+                  type="checkbox"
+                  checked={readScope}
+                  onChange={(e) => setReadScope(e.target.checked)}
+                  className="size-4 rounded border-neutral-300 dark:border-neutral-700"
+                />
+                {t.mcpReadOnly}
+              </label>
             </div>
-          </div>
-        )}
+          </Setting>
 
-        {tokens.length === 0 ? (
-          <p className="py-6 text-center text-sm text-neutral-500 dark:text-neutral-400">{t.mcpNoTokens}</p>
-        ) : (
-          <div className={PANEL}>
-            <div className={TABLE_SCROLL}>
-            <table className="w-full text-sm">
-              <thead className="border-b border-neutral-200 bg-neutral-50 text-left text-neutral-500 dark:text-neutral-400 dark:border-neutral-800 dark:bg-neutral-900">
-                <tr>
-                  <th className="px-3 py-2 font-medium">{t.mcpColName}</th>
-                  <th className="hidden px-3 py-2 font-medium sm:table-cell">{t.mcpColCreated}</th>
-                  <th className="hidden px-3 py-2 font-medium sm:table-cell">{t.mcpColLastUsed}</th>
-                  <th className="hidden px-3 py-2 font-medium sm:table-cell">{t.mcpColExpires}</th>
-                  <th className="px-3 py-2" />
-                </tr>
-              </thead>
-              <tbody>
-                {tokens.map((tok) => (
-                  <tr key={tok.id} className="border-b border-neutral-100 last:border-0 dark:border-neutral-800">
-                    <td className="px-3 py-2">
-                      <span className="font-medium">{tok.name}</span>
-                      <code className="ml-2 text-xs text-neutral-500 dark:text-neutral-400">{tok.prefix}…</code>
-                      {tok.scope === 'read' && (
-                        <span className="ml-2 rounded border border-neutral-300 px-1.5 py-0.5 text-xs text-neutral-500 dark:border-neutral-700 dark:text-neutral-400">
-                          {t.mcpReadOnly}
-                        </span>
-                      )}
-                    </td>
-                    <td className="hidden whitespace-nowrap px-3 py-2 text-neutral-500 sm:table-cell dark:text-neutral-400">
-                      {formatDateTimeShort(tok.createdAt)}
-                    </td>
-                    <td className="hidden whitespace-nowrap px-3 py-2 text-neutral-500 sm:table-cell dark:text-neutral-400">
-                      {tok.lastUsedAt ? formatDateTimeShort(tok.lastUsedAt) : t.mcpNeverUsed}
-                    </td>
-                    <td className="hidden whitespace-nowrap px-3 py-2 sm:table-cell">
-                      {tok.expired ? (
-                        <span className="font-medium text-neutral-900 dark:text-white">{t.mcpExpired}</span>
-                      ) : (
-                        <span className="text-neutral-500 dark:text-neutral-400">{formatDateTimeShort(tok.expiresAt)}</span>
-                      )}
-                    </td>
-                    <td className="px-3 py-2 text-right">
-                      <button
-                        type="button"
-                        onClick={() => void remove(tok.id, tok.name)}
-                        disabled={pending}
-                        className="rounded-lg px-2.5 py-1 text-xs text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 disabled:opacity-50 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white"
-                      >
-                        {t.delete}
-                      </button>
-                    </td>
+          {/* The just-created plaintext token, shown ONCE. */}
+          {created && (
+            <div className="space-y-2 rounded-lg border border-neutral-300 bg-neutral-50 p-3 dark:border-neutral-700 dark:bg-neutral-800/60">
+              <p className="text-xs font-medium text-neutral-600 dark:text-neutral-300">{t.mcpOnceWarning}</p>
+              <div className="flex items-center gap-2">
+                <code className="flex min-h-9 min-w-0 flex-1 items-center truncate rounded-lg border border-neutral-300 bg-white px-3 text-xs dark:border-neutral-700 dark:bg-neutral-900">
+                  {created}
+                </code>
+                <Button type="button" onClick={() => copy(created, t.mcpCopied)}>{t.mcpCopy}</Button>
+                <Button type="button" variant="ghost" onClick={() => setCreated(null)}>{t.close}</Button>
+              </div>
+            </div>
+          )}
+
+          {tokens.length === 0 ? (
+            <p className="py-6 text-center text-sm text-neutral-500 dark:text-neutral-400">{t.mcpNoTokens}</p>
+          ) : (
+            <div className={PANEL}>
+              <div className={TABLE_SCROLL}>
+              <table className="w-full text-sm">
+                <thead className="border-b border-neutral-200 bg-neutral-50 text-left text-neutral-500 dark:text-neutral-400 dark:border-neutral-800 dark:bg-neutral-900">
+                  <tr>
+                    <th className="px-3 py-2 font-medium">{t.mcpColName}</th>
+                    <th className="hidden px-3 py-2 font-medium sm:table-cell">{t.mcpColCreated}</th>
+                    <th className="hidden px-3 py-2 font-medium sm:table-cell">{t.mcpColLastUsed}</th>
+                    <th className="hidden px-3 py-2 font-medium sm:table-cell">{t.mcpColExpires}</th>
+                    <th className="px-3 py-2" />
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {tokens.map((tok) => (
+                    <tr key={tok.id} className="border-b border-neutral-100 last:border-0 dark:border-neutral-800">
+                      <td className="px-3 py-2">
+                        <span className="font-medium">{tok.name}</span>
+                        <code className="ml-2 text-xs text-neutral-500 dark:text-neutral-400">{tok.prefix}…</code>
+                        {tok.scope === 'read' && (
+                          <span className="ml-2 rounded border border-neutral-300 px-1.5 py-0.5 text-xs text-neutral-500 dark:border-neutral-700 dark:text-neutral-400">
+                            {t.mcpReadOnly}
+                          </span>
+                        )}
+                      </td>
+                      <td className="hidden whitespace-nowrap px-3 py-2 text-neutral-500 sm:table-cell dark:text-neutral-400">
+                        {formatDateTimeShort(tok.createdAt)}
+                      </td>
+                      <td className="hidden whitespace-nowrap px-3 py-2 text-neutral-500 sm:table-cell dark:text-neutral-400">
+                        {tok.lastUsedAt ? formatDateTimeShort(tok.lastUsedAt) : t.mcpNeverUsed}
+                      </td>
+                      <td className="hidden whitespace-nowrap px-3 py-2 sm:table-cell">
+                        {tok.expired ? (
+                          <span className="font-medium text-neutral-900 dark:text-white">{t.mcpExpired}</span>
+                        ) : (
+                          <span className="text-neutral-500 dark:text-neutral-400">{formatDateTimeShort(tok.expiresAt)}</span>
+                        )}
+                      </td>
+                      <td className="px-3 py-2 text-right">
+                        <button
+                          type="button"
+                          onClick={() => void remove(tok.id, tok.name)}
+                          disabled={pending}
+                          className="rounded-lg px-2.5 py-1 text-xs text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 disabled:opacity-50 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white"
+                        >
+                          {t.delete}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }
