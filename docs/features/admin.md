@@ -370,14 +370,14 @@ are a scroll container behaving as one.
   half of `PostImageFields` + the listing switches; **Posts** the reading switches +
   `PostHeadFields` / `PostBodyFields` / `PostEndFields` / `PostReachFields` + the hero half of
   `PostImageFields` + `GalleryFields` + `FigureFields` + `TableFields` + `InkFields` +
-  `CommentFields`; **Appearance** `ThemeFields` (the **Default appearance** selector, then the
-  palette grid) + `ShapeFields` + custom CSS on the left, `FontFields` / `FontUpload` /
-  `TypographyFields` on the right; **Comments & mail** `CommentFields` + `CommentIntegrations` +
+  `CommentFields`; **Appearance** `LookFields` (**Looks like** → `settings.look`, first: the coarsest
+  decision here) + `ThemeFields` (**Default appearance**, then the palette grid) +
+  `ShapeFields` + custom CSS left, `FontFields` / `FontUpload` / `TypographyFields` right; **Comments & mail** `CommentFields` + `CommentIntegrations` +
   `NewsletterCard`; **Server & connections** `SeoFields` + custom code + `RedirectsManager` +
   `ImportFields` + `CacheFields` + `UpdateFields` + `StorageFields` + `AiCard` + `McpFields` +
   `ExportFields` + `CloudflareCard` + `OffsiteCard`; **Account** `SecurityFields` + the
   **Dashboard** switch (`settings.dashboard.systemLine`) + `ActivityLogField` + `AdvancedFields`
-  (IDE chrome, the **Motion** switch → `settings.motion.enabled`, the editor **Key feedback**
+  (font smoothing, **Motion** → `settings.motion.enabled`, the editor **Key feedback**
   instrument and its volume → `settings.motion.keys` / `keyVolume`, the autosave interval).
   Every credential on those cards is written to the server and never read back, which is why
   they show status rather than values. `SettingsSearch` (⌘K's index) reaches every one of them.

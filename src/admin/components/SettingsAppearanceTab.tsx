@@ -18,6 +18,7 @@ import { CssEditor } from './CssEditor'
 import { useAdminT } from './I18nProvider'
 import { ThemeFields } from './ThemeFields'
 import { ShapeFields } from './ShapeFields'
+import { LookFields } from './LookFields'
 import { FontFields } from './FontFields'
 import { FontUpload } from './FontUpload'
 import { TypographyFields } from './TypographyFields'
@@ -48,6 +49,12 @@ export function SettingsAppearanceTab(
             of the left stack and that stopped being true — measured at 1440px, left 2,224
             against right 2,992. Moving it back across puts them at 2,752 and 2,464 and leaves
             the right column as exactly one subject: type. Re-measure before moving it again. */}
+        {/* WHAT KIND OF PUBLICATION THIS IS, before what shape it is and what colour: the
+            look decides the furniture round the words, and everything else on this tab
+            decides the words. */}
+        <SettingsCard title={t.lookLabel}>
+          <LookFields look={s.look} onChange={(look) => update({ look })} />
+        </SettingsCard>
         <SettingsCard title={t.cardShape}>
           <ShapeFields shape={s.shape} onChange={(shape) => update({ shape })} />
         </SettingsCard>

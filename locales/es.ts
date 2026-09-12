@@ -10,6 +10,8 @@ const es = {
   emptyTag: 'Todavía no hay entradas con esta etiqueta.',
   categoryLabel: 'Categoría',
   tagLabel: 'Etiqueta',
+  figureLabel: 'Fig.',
+  tableLabel: 'Tabla',
   skipToContent: 'Saltar al contenido',
   menu: 'Menú',
   // Short tokens for the header controls, shown INSTEAD of the icons when the IDE chrome

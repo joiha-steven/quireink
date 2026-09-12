@@ -1,4 +1,4 @@
-> Read when touching typography, header alignment, layout, colour, motion, IDE chrome, i18n,
+> Read when touching typography, header alignment, layout, colour, motion, the looks, i18n,
 > scripts or a release. Hard rules used everywhere stay in
 > [`CLAUDE.md`](../../CLAUDE.md); these files are the per-area detail.
 
@@ -15,7 +15,7 @@ governs the reader, the rail or the admin.
 | [layout.md](layout.md) | Header alignment, the section break, chrome reuse, the divider, the rail, the article's right gutter, tag display |
 | [colour.md](colour.md) | Theme tokens, mode × palette, the one accent |
 | [motion.md](motion.md) | The three duration tokens, the one switch that gates all motion |
-| [ide-chrome.md](ide-chrome.md) | `settings.ideChrome`: what the switch is allowed to touch, and what it must not |
+| [looks.md](looks.md) | `settings.look`: the four dialects the public site can wear, what each is allowed to touch, and what none of them may |
 | [i18n.md](i18n.md) | `locales/`, adding a language, adding a string |
 | [scripts.md](scripts.md) | What is a script and what is not |
 | [releases.md](releases.md) | Which doc a change updates, keeping instance values out, versioning, cutting a release — **and that a GitHub release publishes the Docker image, with no second step** |

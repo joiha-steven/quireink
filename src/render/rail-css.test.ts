@@ -28,7 +28,7 @@ describe('singleRailCss', () => {
     // "// Contents".
     const band = singleRailCss(672).split('@media (min-width:1272px)')[0]!
     expect(band).toContain('.rail-inner > nav:not(.toc)::before{content:attr(aria-label)')
-    expect(band).toContain('html[data-ide-chrome=on] .rail-inner > nav:not(.toc)::before{content:"// " attr(aria-label)}')
+    expect(band).toContain('html[data-look=code] .rail-inner > nav:not(.toc)::before{content:"// " attr(aria-label)}')
   })
 
   it('sets the index as a column and the menu as a row, which is what each of them is', () => {
@@ -43,6 +43,6 @@ describe('singleRailCss', () => {
     expect(band).toContain('.toc ul{display:block}')
     expect(band).toContain('.toc li{width:max-content;max-width:100%')
     // And no line numbers wedged between two menu words, where there is no gutter to hold them.
-    expect(band).toContain('html[data-ide-chrome=on] .rail-inner > nav:not(.toc) li::before{content:none}')
+    expect(band).toContain('html[data-look=code] .rail-inner > nav:not(.toc) li::before{content:none}')
   })
 })

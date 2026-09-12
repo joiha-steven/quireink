@@ -10,6 +10,8 @@ const it = {
   emptyTag: 'Ancora nessun articolo con questo tag.',
   categoryLabel: 'Categoria',
   tagLabel: 'Tag',
+  figureLabel: 'Fig.',
+  tableLabel: 'Tab.',
   skipToContent: 'Vai al contenuto',
   menu: 'Menu',
   // Short tokens for the header controls, shown INSTEAD of the icons when the IDE chrome

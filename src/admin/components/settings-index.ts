@@ -141,7 +141,7 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { tab: 'appearance', label: 'cardFont', note: 'fontPresetHint' },
   { tab: 'appearance', label: 'chromeFontLabel', note: 'chromeFontHint' },
   { tab: 'appearance', label: 'fontSmoothing' },
-  { tab: 'account', label: 'ideChromeLabel' },
+  { tab: 'appearance', label: 'lookLabel' },
   { tab: 'account', label: 'motionLabel' },
   { tab: 'account', label: 'keyFeedbackLabel', note: 'keyFeedbackDesc' },
   { tab: 'account', label: 'keyVolumeLabel', note: 'keyVolumeDesc' },

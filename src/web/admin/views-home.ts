@@ -230,9 +230,13 @@ export async function dashboardView() {
     setup: {
       named: settings.title.trim() !== DEFAULT_SETTINGS.title,
       published: published.length > 0,
-      // Either half of "choose the look": a different preset, or the same preset with its
-      // inks edited. Somebody who tuned the palette by hand has chosen a look.
-      styled: settings.themePreset !== DEFAULT_SETTINGS.themePreset
+      // Any of the three ways to have chosen how the site looks: a dialect, a different
+      // palette, or the same palette with its inks edited by hand. The dialect joined the
+      // list when it became a choice of four rather than a switch — picking one IS the
+      // step this row is asking about, and a blog that had picked one still read as
+      // "you have not chosen a look yet".
+      styled: settings.look !== DEFAULT_SETTINGS.look
+        || settings.themePreset !== DEFAULT_SETTINGS.themePreset
         || JSON.stringify(settings.themes) !== JSON.stringify(DEFAULT_SETTINGS.themes),
       // The host and a From address — `isMailConfigured`'s own test, so this cannot come to
       // disagree with whether mail will actually send.

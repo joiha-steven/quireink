@@ -10,6 +10,8 @@ const ko = {
   emptyTag: '이 태그의 게시물이 아직 없습니다.',
   categoryLabel: '카테고리',
   tagLabel: '태그',
+  figureLabel: '그림',
+  tableLabel: '표',
   skipToContent: '본문으로 건너뛰기',
   menu: '메뉴',
   // Short tokens for the header controls, shown INSTEAD of the icons when the IDE chrome

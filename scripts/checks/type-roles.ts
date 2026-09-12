@@ -53,6 +53,12 @@ const ALLOWED = new Map<string, string>([
     + 'control sits below 16px and --fs-small measures 14px here, so tapping the sign-up '
     + 'field shifted the layout sideways and left it there. A larger type role still wins.',
   ],
+  [
+    'html[data-look=paper] .fc-lead .fc-title',
+    'a front page\'s lead headline, and the one size a scale of nine roles does not have. '
+    + 'DERIVED from the owner\'s h1 rather than typed, so it still moves with their scale: '
+    + 'a paper\'s lead is the one thing on the page allowed to be larger than a heading.',
+  ],
 ])
 
 /**

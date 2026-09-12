@@ -13,9 +13,12 @@ import readerPenJs from '@/assets/dist/reader-pen.js' with { type: 'text' }
 import loginJs from '@/assets/dist/login.js' with { type: 'text' }
 import swJs from '@/assets/dist/sw.js' with { type: 'text' }
 import { PUBLIC_CSS } from '@/web/public.css'
+import { LOOK_CODE_CSS } from '@/web/look-code.css'
+import { LOOK_PAPER_CSS } from '@/web/look-paper.css'
+import { LOOK_NOTES_CSS } from '@/web/look-notes.css'
 import { INK_HIGHLIGHT_CSS, INK_LINES_CSS, inkHighlightCss, inkLinesCss } from '@/pen/ink.css'
 import { inkSignature, resolveInks } from '@/pen/palette'
-import type { InkSettings } from '@/types'
+import type { InkSettings, SiteLook } from '@/types'
 import { minifyCss } from '@/web/css-min'
 
 /** Bundles by logical name. Adding one is an import and a line. */
@@ -154,6 +157,36 @@ export function penSheets(inks: InkSettings): { marks: string; lines: string } {
 }
 
 /**
+ * The three dialects, each on the pen's terms: its own hashed sheet, linked render-blocking
+ * right after `site.css`, and ONLY on a blog that wears it.
+ *
+ * The source-code sheet used to ride inside `PUBLIC_CSS`, which charged every blog on earth
+ * for a look that was off by default — 20 KB raw, and the only thing most readers ever got
+ * from it was a longer download. A dialect is the clearest case there is for a sheet that
+ * boards only the pages wearing it: it is large, it is optional, and it is chosen once and
+ * then never changes, so it caches for a year like everything else here.
+ *
+ * `plain` has no sheet at all, which is what makes it free.
+ */
+const LOOK_CSS: Record<Exclude<SiteLook, 'plain'>, string> = {
+  code: minifyCss(LOOK_CODE_CSS),
+  paper: minifyCss(LOOK_PAPER_CSS),
+  notes: minifyCss(LOOK_NOTES_CSS),
+}
+
+const LOOK_SHEETS = new Map<SiteLook, string>()
+for (const [name, css] of Object.entries(LOOK_CSS)) {
+  const path = `/assets/look-${name}.${hashOf(css)}.css`
+  LOOK_SHEETS.set(name as SiteLook, path)
+  BY_PATH.set(path, css)
+}
+
+/** The stylesheet a look needs, or '' when it needs none. */
+export function lookSheet(look: SiteLook): string {
+  return LOOK_SHEETS.get(look) ?? ''
+}
+
+/**
  * The service worker: one fixed path, and the build in a query string.
  *
  * The PATH cannot carry the hash the way every other bundle's does. A worker controls the
@@ -209,10 +242,13 @@ export function articleScripts(bookMode: boolean, thread: boolean, readerPen = f
  * current URL and never asks again — so no client can observe a URL changing under it.
  */
 function staleSheet(path: string): string | null {
-  const m = /^\/assets\/(site|pen-marks|pen-lines)\.[a-z0-9]+\.css$/.exec(path)
+  const m = /^\/assets\/(site|pen-marks|pen-lines|look-code|look-paper|look-notes)\.[a-z0-9]+\.css$/.exec(path)
   if (!m) return null
-  return m[1] === 'site' ? PUBLIC_CSS_SERVED
-    : m[1] === 'pen-marks' ? PEN_MARKS_CSS_SERVED : PEN_LINES_CSS_SERVED
+  const name = m[1]
+  if (name === 'site') return PUBLIC_CSS_SERVED
+  if (name === 'pen-marks') return PEN_MARKS_CSS_SERVED
+  if (name === 'pen-lines') return PEN_LINES_CSS_SERVED
+  return LOOK_CSS[name!.slice('look-'.length) as Exclude<SiteLook, 'plain'>]
 }
 
 /** The bundle served at a request path, or null when nothing matches. */

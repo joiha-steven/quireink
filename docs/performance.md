@@ -188,7 +188,7 @@ one, and both break it silently:
 
 It found a bug on the way in: `ide.css.ts` carried a paragraph of prose with a closing `*/`
 and **no opener**, so a browser read the prose as a selector, failed, and discarded the rule
-that followed it — seven selectors meant to darken every count and date under the IDE chrome,
+that followed it — seven selectors meant to darken every count and date under the source-code look,
 which had therefore never applied. `check:css` (`scripts/checks/css-literal.ts`) now counts `/*` against `*/` in every
 sheet, because nothing about that failure was visible: no error, no log, and the sheet reads
 correctly in the editor.
@@ -204,7 +204,7 @@ the sign-in page renders with no base sheet and a role reference there resolves 
 
 ### A fourth sheet: the phone
 
-`web/mobile.css.ts` is appended after the islands, the IDE chrome and the motion engine, and
+`web/mobile.css.ts` is appended after the islands and the motion engine, and
 before print, because several of its rules win on a specificity tie alone. `book-phone.css.ts`
 is the second phone sheet: the scrolled book reader that replaces the spread under 640px. The seam is a real one rather than a split at
 the line limit: a phone is not a narrow desktop. It carries the 16px floor on form controls

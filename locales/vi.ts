@@ -10,6 +10,8 @@ const vi = {
   emptyTag: 'Chưa có bài viết với tag này.',
   categoryLabel: 'Danh mục',
   tagLabel: 'Tag',
+  figureLabel: 'Hình',
+  tableLabel: 'Bảng',
   skipToContent: 'Tới nội dung',
   menu: 'Menu',
   // Short tokens for the header controls, shown INSTEAD of the icons when the IDE chrome

@@ -5,7 +5,7 @@
 
 import { writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
-import type { SiteSettings } from '@/types'
+import type { SiteSettings, SiteLook } from '@/types'
 import { DEFAULT_SETTINGS, getSettings } from '@/content/settings'
 import { collapseBlob, deleteByPathname } from '@/media/blob'
 import { renderLogo } from '@/media/files'
@@ -84,6 +84,11 @@ function rescueUnreadable(): void {
  * short, and the second one simply happens after the first, against what the first wrote.
  */
 let queue: Promise<unknown> = Promise.resolve()
+
+/** The four dialects. A write naming anything else keeps the look the site already wears. */
+const LOOKS: readonly SiteLook[] = ['plain', 'code', 'paper', 'notes']
+const isLook = (value: unknown): value is SiteLook =>
+  typeof value === 'string' && (LOOKS as readonly string[]).includes(value)
 
 export function saveSettings(input: Partial<SiteSettings>): Promise<SiteSettings> {
   const mine = queue.then(() => applySave(input), () => applySave(input))
@@ -196,7 +201,7 @@ async function applySave(input: Partial<SiteSettings>): Promise<SiteSettings> {
     themePreset,
     fontPreset: isFontPresetId(input.fontPreset) ? input.fontPreset : current.fontPreset,
     chromeFont: isChromeFontId(input.chromeFont) ? input.chromeFont : current.chromeFont,
-    ideChrome: typeof input.ideChrome === 'boolean' ? input.ideChrome : current.ideChrome,
+    look: isLook(input.look) ? input.look : current.look,
     enabledPalettes: sanitizeEnabledPalettes(input.enabledPalettes ?? current.enabledPalettes, themePreset),
     themes: sanitizeThemes(input.themes, current.themes),
     typography: sanitizeTypography(input.typography, current.typography),

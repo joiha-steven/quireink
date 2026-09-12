@@ -65,13 +65,13 @@ export function singleRailCss(colWidth: number): string {
     // for by the label. So the marker is restated here, inside the band that creates it.
     // Without this line the menu's heading stood bare directly above a marked "// Contents"
     // — two chrome headings, one screen, two registers (measured at 1180 on 2026-09-12).
-    `html[data-ide-chrome=on] .rail-inner > nav:not(.toc)::before{content:"// " attr(aria-label)}` +
+    `html[data-look=code] .rail-inner > nav:not(.toc)::before{content:"// " attr(aria-label)}` +
     // AND NO LINE NUMBERS ON THE MENU HERE. In the gutter they stand in a column of their own
     // out past the text, which is what a line number is. In this band there is no gutter: the
     // ring lands INSIDE the 24px between two menu words, three pixels from each, and the row
     // reads as one run-on string. The index below keeps its numbers, because there each entry
     // is a line of its own and the number falls at the end of it.
-    `html[data-ide-chrome=on] .rail-inner > nav:not(.toc) li::before{content:none}` +
+    `html[data-look=code] .rail-inner > nav:not(.toc) li::before{content:none}` +
     `.rail ul{display:flex;flex-wrap:wrap;gap:.4rem 1.5rem}` +
     `.rail li,.toc li{margin-top:0}` +
     // THE INDEX IS NOT A ROW OF WORDS. The menu is — five single words read fine wrapped on

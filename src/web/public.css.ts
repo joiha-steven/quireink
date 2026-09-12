@@ -28,7 +28,6 @@ import { BOOK_TEXT_CSS } from '@/web/book-text.css'
 import { BOOK_PHONE_CSS } from '@/web/book-phone.css'
 import { MOTION_CSS } from '@/web/motion.css'
 import { SUBSCRIBE_CSS } from '@/web/subscribe.css'
-import { IDE_CSS } from '@/web/ide.css'
 import { MOBILE_CSS } from '@/web/mobile.css'
 import { PROSE_CSS } from '@/web/prose.css'
 import { FRONT_CSS } from '@/web/front.css'
@@ -373,7 +372,6 @@ ${BOOK_PHONE_CSS}
 ${SUBSCRIBE_CSS}
 ${FRONT_CSS}
 ${POST_IMAGE_CSS}
-${IDE_CSS}
 ${MOTION_CSS}
 ${MOBILE_CSS}
 ${PRINT_CSS}`

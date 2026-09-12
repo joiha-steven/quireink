@@ -109,7 +109,7 @@ article header is then the title and the deck alone. `post-info.ts` renders it;
   killed the contents list's last row on every desktop, silently.
 - **Facts first, the one ACTION last.** Date, length, tags, categories run at one even
   rhythm; book mode sits at the foot with air above it, in `--c-heading` at 500, and takes
-  the IDE chrome's `//` because it is the only row that does something. Order is tested.
+  the source-code look's `//` because it is the only row that does something. Order is tested.
 - **The panel's VALUES are `--c-heading`**, a step darker than the words around them — the
   same ink the contents list gives the row you are on. It is the only place a desktop
   reader sees the date and the length, so it carries the hierarchy alone.

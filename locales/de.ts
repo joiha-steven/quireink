@@ -10,6 +10,8 @@ const de = {
   emptyTag: 'Noch keine Beiträge mit diesem Schlagwort.',
   categoryLabel: 'Kategorie',
   tagLabel: 'Schlagwort',
+  figureLabel: 'Abb.',
+  tableLabel: 'Tab.',
   skipToContent: 'Zum Inhalt springen',
   menu: 'Menü',
   // Short tokens for the header controls, shown INSTEAD of the icons when the IDE chrome

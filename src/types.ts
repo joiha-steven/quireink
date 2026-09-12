@@ -103,6 +103,13 @@ export type FileItem = {
 }
 
 // Site-wide settings, stored at settings/site.json.
+/**
+ * The four dialects the public site can be dressed in. A closed list rather than a theme
+ * store on purpose: each one has to reach a group of writers that would otherwise not use
+ * this software, and three is the ceiling agreed with it ('plain' is the absence of one).
+ */
+export type SiteLook = 'plain' | 'code' | 'paper' | 'notes'
+
 export type SiteLang = 'vi' | 'en' | 'de' | 'ja' | 'zh' | 'ko' | 'fr' | 'es' | 'pt' | 'it' | 'ru'
 
 // One configurable header navigation link (page, category, or custom URL).
@@ -265,7 +272,7 @@ export type SiteSettings = {
   showLogo: boolean
   showDescription: boolean
   fontPreset: string // built-in font choice id (lib/themes FONT_PRESETS); '' -> Inter
-  ideChrome: boolean // dress the SYSTEM CHROME as source code (comment markers on rail headings, bracketed counts in the accent, an editor line-number gutter). Deliberately a switch: the contrast it creates with an analogue reading column is a taste, and a taste has to be reversible in one click. Public site only; the admin has its own scale
+  look: SiteLook // which dialect the PUBLIC site is dressed in ('Looks like' in the admin). 'plain' adds nothing; the other three each ship as their own stylesheet (src/web/look-*.css.ts) and are linked only when chosen, so a blog pays for the look it wears and for nothing else. Public site only; the admin has its own scale. Replaced the `ideChrome` boolean on 2026-09-13 and reads it as 'code' when migrating
   chromeFont: string // system-chrome font (lib/themes CHROME_FONTS): 'inter' | 'reading' (follow the reading font) | 'plex-mono' (IBM Plex Mono). Drives --font-sans (header/footer/rail/meta/admin); leaves the article body alone
   faviconUrl: string // browser-tab icon; '' = the bundled default favicon
   appIconUrl: string // PWA / home-screen app icon (square); '' = favicon, else bundled default

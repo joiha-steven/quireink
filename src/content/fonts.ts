@@ -331,7 +331,13 @@ export const CHROME_FONTS: ChromeFont[] = [
   { id: 'jetbrains-mono', name: 'JetBrains Mono', slug: 'jetbrainsmono', sans: `'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace` },
 ]
 
-export const DEFAULT_CHROME_FONT = 'jetbrains-mono'
+// INTER, not the monospace, since 2026-09-13. The default used to be JetBrains Mono, which
+// meant a blog nobody had touched already read as technical — and it left the source-code
+// LOOK with almost nothing to say that the plain page was not already saying, because the
+// plain page was speaking in code. The monospace belongs to that look and is set there
+// (`web/look-code.css.ts`). A blog that has already stored a choice keeps it: this is the
+// value a FRESH install lands on, not a migration.
+export const DEFAULT_CHROME_FONT = 'inter'
 
 export function getChromeFont(id: string): ChromeFont {
   return CHROME_FONTS.find((f) => f.id === id) ?? CHROME_FONTS[0]

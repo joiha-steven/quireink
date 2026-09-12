@@ -2,7 +2,7 @@
 // defaults on any failure so the header/<title> never crash. Image refs stored
 // store-relative, binaries on Blob. Validation/migration lives in settings-sanitize.ts.
 
-import type { SiteSettings } from '@/types'
+import type { SiteSettings, SiteLook } from '@/types'
 import { DEFAULT_INKS } from '@/pen/palette'
 import { expandBlob } from '@/media/blob'
 import { one } from '@/store/query'
@@ -94,7 +94,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   postsPerPage: 10,
   relatedCount: 3,
   excerptLength: 50,
-  ideChrome: false,
+  look: 'plain',
   customCss: '',
   customHead: '',
   customBodyEnd: '',
@@ -145,6 +145,22 @@ function resolveChromeFont(stored: Partial<SiteSettings> & { fontChromeInter?: u
   if (isChromeFontId(stored.chromeFont)) return stored.chromeFont
   if (stored.fontChromeInter === false) return 'reading'
   return DEFAULT_CHROME_FONT
+}
+
+// Back-compat: the old boolean `ideChrome` becomes the `look` selector. A blog that had the
+// source-code chrome on keeps it, under its new name; every other blog lands on 'plain',
+// which is what the boolean meant. A stored `look` wins outright.
+//
+// LOOKS, not themes: this is a closed list of four, and anything unrecognised - a blob
+// written by a newer build naming a dialect this one cannot draw - falls back to 'plain'
+// rather than to a half-drawn page.
+const LOOKS: readonly SiteLook[] = ['plain', 'code', 'paper', 'notes']
+const isLook = (value: unknown): value is SiteLook =>
+  typeof value === 'string' && (LOOKS as readonly string[]).includes(value)
+
+function resolveLook(stored: Partial<SiteSettings> & { ideChrome?: unknown }): SiteLook {
+  if (isLook(stored.look)) return stored.look
+  return stored.ideChrome === true ? 'code' : 'plain'
 }
 
 // Settings merged over defaults; defaults on any error.
@@ -229,7 +245,7 @@ export async function getSettings(): Promise<SiteSettings> {
       themePreset: isPresetId(stored.themePreset) ? stored.themePreset : DEFAULT_PRESET_ID,
       fontPreset: isFontPresetId(stored.fontPreset) ? stored.fontPreset : DEFAULT_FONT_PRESET,
       chromeFont: resolveChromeFont(stored),
-      ideChrome: stored.ideChrome === true,
+      look: resolveLook(stored),
       featured: sanitizeFeatured(stored.featured, []),
       mostViewedCount: clampNumber(stored.mostViewedCount, 0, 10, DEFAULT_SETTINGS.mostViewedCount),
       sidebarLayout: stored.sidebarLayout === 'two' ? 'two' : 'single',

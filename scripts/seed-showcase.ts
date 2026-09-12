@@ -127,7 +127,7 @@ await saveSettings({
   showDescription: true,
   fontPreset: 'literata',
   chromeFont: 'jetbrains-mono',
-  ideChrome: true,
+  look: 'code',
   menu: [
     // Typography and Calligraphy carry the fixture's two voices (machine type, the hand);
     // Printing still exists as a category and in the archive, but the owner cut it from

@@ -21,7 +21,7 @@ Google account.
   typeface as the piece two steps smaller, which reads as a caption rather than as somebody
   talking. Only the words grow: the meta line, the reply link and the whole form stay small.
   The meta line itself is `// name · [date at time]` — the marker is the one every block on
-  the page opens with (IDE chrome only), and the time is there because two replies on the
+  the page opens with (the source-code look only), and the time is there because two replies on the
   same day said nothing about their order without it.
 
 - **Instant, never cached — by design.** The page itself is cached; the comment block is an

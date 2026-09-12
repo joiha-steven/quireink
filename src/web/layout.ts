@@ -17,7 +17,8 @@ import { cjkLangCss } from '@/content/fonts'
 import { typographyToCss, fontToCss, shapeToCss, tableToCss, resolveAppIcon, getDefaultTheme } from '@/content/settings'
 import { singleRailCss } from '@/render/rail-css'
 import { fontFaceCss, MONO_TRACKING } from '@/render/font-faces'
-import { penSheetsFor } from '@/web/assets'
+import { penSheetsFor, lookSheet } from '@/web/assets'
+import { paperLabelCss } from '@/web/look-paper.css'
 import { LISTS_PLAIN_CSS } from '@/pen/lists.css'
 /**
  * THE ONE PLACE THE SOFTWARE NAMES ITSELF THAT AN OWNER CANNOT EDIT AWAY.
@@ -219,6 +220,10 @@ export function pageStyles(settings: SiteSettings, extra = ''): string {
     // language is none of the three — no selector matches, and it is ~700 bytes.
     cjkLangCss(settings.fontPreset),
     chromeFontCss(settings.chromeFont),
+    // The newspaper dialect's two translated words. Nothing when another look is on, and
+    // nothing at all when the look is plain: see `look-paper.css.ts` for why these two
+    // strings cannot ride in the dialect's own cached sheet.
+    settings.look === 'paper' ? paperLabelCss(settings.language) : '',
     // `enabledPalettes` third: a reader can only ever reach what the owner turned on, so a
     // blog with one palette ships one rather than all six (`content/themes.ts`).
     themesToCss(settings.themes, settings.themePreset, settings.enabledPalettes,
@@ -294,7 +299,8 @@ export function renderDocument(
   // it did when the ink lived inside it, and gated on `head.stylesheet` because a page
   // that declines the public sheet (sign-in) has no prose to ink.
   const sheet = head.stylesheet
-    ? [head.stylesheet, ...penSheetsFor(body, settings.inks)]
+    ? [head.stylesheet, lookSheet(settings.look), ...penSheetsFor(body, settings.inks)]
+        .filter(Boolean)
         .map((href) => `<link rel="stylesheet" href="${escapeAttr(href)}">`)
         .join('')
     : ''
@@ -335,11 +341,12 @@ export function renderDocument(
   // correction for the two mono faces. Both were missed in the port, so the owner's Motion
   // toggle did nothing and a mono chrome rendered untracked.
   const motion = settings.motion.enabled ? 'on' : 'off'
-  // The third switch of the same kind, and stamped here for the same reason: CSS reads it,
-  // the server writes it, so the first paint is already right and no island has to run for
-  // the page to look like itself. Absent rather than "off" when the owner has it off, so
-  // the whole IDE ruleset is one attribute selector that simply never matches.
-  const ide = settings.ideChrome ? ' data-ide-chrome="on"' : ''
+  // The third of the same kind, and stamped here for the same reason: CSS reads it, the
+  // server writes it, so the first paint is already right and no island has to run for the
+  // page to look like itself. ABSENT on 'plain', so a blog wearing no dialect carries no
+  // attribute, links no dialect sheet, and cannot be told from one built before looks
+  // existed. Each dialect's whole ruleset hangs off this one attribute selector.
+  const look = settings.look === 'plain' ? '' : ` data-look="${escapeAttr(settings.look)}"`
   // And the fourth, for the scroll fade: the cards easing in at the foot of a listing and
   // the text dimming at the edges of an article are one effect on two screens, so they are
   // one attribute. Written only when it is ON, so the whole ruleset is a selector that
@@ -360,7 +367,7 @@ export function renderDocument(
     escapeAttr(paper.light.bg)}">\n<meta name="theme-color" media="(prefers-color-scheme: dark)" content="${
     escapeAttr(paper.dark.bg)}">\n`
   return `<!DOCTYPE html>
-<html lang="${escapeAttr(settings.language)}" data-motion="${motion}" data-chrome-font="${escapeAttr(settings.chromeFont)}"${ide}${fade}>
+<html lang="${escapeAttr(settings.language)}" data-motion="${motion}" data-chrome-font="${escapeAttr(settings.chromeFont)}"${look}${fade}>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">

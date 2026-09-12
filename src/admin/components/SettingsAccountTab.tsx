@@ -45,11 +45,10 @@ export function SettingsAccountTab({ s, update, form, grid, col }: {
         <ConnectionCard
           title={t.cardThisAdmin}
           connected
-          dirty={form.changedIn('dashboard', 'features', 'ideChrome', 'motion', 'autosaveSeconds', 'typography')}
+          dirty={form.changedIn('dashboard', 'features', 'motion', 'autosaveSeconds', 'typography')}
           onSave={() => form.savePartial({
             dashboard: s.dashboard,
             features: s.features,
-            ideChrome: s.ideChrome,
             motion: s.motion,
             autosaveSeconds: s.autosaveSeconds,
             typography: s.typography,
@@ -76,8 +75,6 @@ export function SettingsAccountTab({ s, update, form, grid, col }: {
             <AdvancedFields
               typography={s.typography}
               onTypography={(typography) => update({ typography })}
-              ideChrome={s.ideChrome}
-              onIdeChrome={(ideChrome) => update({ ideChrome })}
               motion={s.motion}
               onMotion={(motion) => update({ motion })}
               autosaveSeconds={s.autosaveSeconds}

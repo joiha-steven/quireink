@@ -390,5 +390,5 @@ export function registerShellFlows({ flow, expect, atWidth }: Tour): void {
 
   // Two public-page flows that need line boxes and a scroll. Their own file: this one and
   // `tour-flows.ts` are both a dozen lines from the 400-line rule.
-  registerReadingFlows({ flow, atWidth })
+  registerReadingFlows({ flow, atWidth, expect })
 }

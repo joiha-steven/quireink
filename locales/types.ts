@@ -12,6 +12,11 @@ export type Dict = {
   emptyTag: string
   categoryLabel: string
   tagLabel: string
+  // The words the newspaper dialect prints before a figure's and a table's number. Nowhere
+  // else: a CSS content string cannot be translated, so these ride in the per-page settings
+  // block instead of in the dialect's cached sheet (src/web/look-paper.css.ts).
+  figureLabel: string
+  tableLabel: string
   menu: string
   skipToContent: string
   shortSearch: string
@@ -854,8 +859,12 @@ export type AdminStrings = {
   cardRendering: string
   fontSmoothing: string
   fontSmoothingDesc: string
-  ideChromeLabel: string
-  ideChromeDesc: string
+  lookLabel: string
+  lookDesc: string
+  lookPlain: string
+  lookCode: string
+  lookPaper: string
+  lookNotes: string
   motionLabel: string
   motionDesc: string
   keyFeedbackLabel: string

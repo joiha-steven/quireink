@@ -10,6 +10,8 @@ const fr = {
   emptyTag: 'Aucun article avec cette étiquette pour le moment.',
   categoryLabel: 'Catégorie',
   tagLabel: 'Étiquette',
+  figureLabel: 'Fig.',
+  tableLabel: 'Tabl.',
   skipToContent: 'Aller au contenu',
   menu: 'Menu',
   // Short tokens for the header controls, shown INSTEAD of the icons when the IDE chrome

@@ -16,7 +16,7 @@
 
 import { describe, expect, it } from 'bun:test'
 import { PUBLIC_CSS } from '@/web/public.css'
-import { IDE_CSS } from '@/web/ide.css'
+import { LOOK_CODE_CSS } from '@/web/look-code.css'
 
 describe('the mobile rail drawer', () => {
   it('names overflow-x explicitly, so overflow-y cannot make it scroll sideways', () => {
@@ -34,18 +34,18 @@ describe('the IDE chrome rail', () => {
   // for it, belongs to the gutter. Below the breakpoint the rail is a drawer and there is no
   // gutter to hang anything in.
   const GUTTER_ONLY = [
-    'html[data-ide-chrome=on] .rail-inner{width:calc(100% + 24px);padding-right:24px}',
-    'html[data-ide-chrome=on] .toc .rail-inner{width:calc(100% + 32px);padding-right:32px}',
+    'html[data-look=code] .rail-inner{width:calc(100% + 24px);padding-right:24px}',
+    'html[data-look=code] .toc .rail-inner{width:calc(100% + 32px);padding-right:32px}',
   ]
 
   it.each(GUTTER_ONLY)('keeps %s inside a min-width media query', (rule) => {
-    const at = IDE_CSS.indexOf(rule)
+    const at = LOOK_CODE_CSS.indexOf(rule)
     expect(at).toBeGreaterThan(-1)
 
     // Walk the braces from the top of the sheet to the rule and check we are still inside a
     // media block when we arrive. Counting `{` and `}` is enough here because these sheets
     // carry no brace inside a string or a comment, which `check:css-literal` also relies on.
-    const before = IDE_CSS.slice(0, at)
+    const before = LOOK_CODE_CSS.slice(0, at)
     const opened = (before.match(/@media \(min-width:\d+px\)\{/g) ?? []).length
     expect(opened).toBeGreaterThan(0)
 
@@ -58,13 +58,13 @@ describe('the IDE chrome rail', () => {
     // is reaching for the gutter, and must be gated. Stated as "every occurrence sits at
     // brace depth > 0" so it holds for rules nobody has written yet.
     //
-    // The first draft of this test compared against `IDE_CSS.split(@media)[0]`, which covers
+    // The first draft of this test compared against `LOOK_CODE_CSS.split(@media)[0]`, which covers
     // only the sheet ABOVE its first media block — and the rail rules live below it, so the
     // assertion passed with the bug present and could never have gone red.
     // Comments come out first. These sheets are commented the way the code is, so the prose
     // names the very selectors it explains — the first run of this test flagged the comment
     // that documents the fix — and a stray brace in a sentence would skew the depth count.
-    const css = IDE_CSS.replace(/\/\*[\s\S]*?\*\//g, '')
+    const css = LOOK_CODE_CSS.replace(/\/\*[\s\S]*?\*\//g, '')
     const ungated: string[] = []
     for (const match of css.matchAll(/\.rail-inner/g)) {
       const before = css.slice(0, match.index)

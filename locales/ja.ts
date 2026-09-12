@@ -10,6 +10,8 @@ const ja = {
   emptyTag: 'このタグの投稿はまだありません。',
   categoryLabel: 'カテゴリー',
   tagLabel: 'タグ',
+  figureLabel: '図',
+  tableLabel: '表',
   skipToContent: '本文へスキップ',
   menu: 'メニュー',
   // Short tokens for the header controls, shown INSTEAD of the icons when the IDE chrome

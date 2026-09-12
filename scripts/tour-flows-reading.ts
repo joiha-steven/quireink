@@ -11,7 +11,7 @@ import type { Tour } from './tour'
 
 // `expect` is unused here: both flows pin a width, because both faults are about what a
 // LAYOUT does and neither is visible at the tour's own window.
-export function registerReadingFlows({ flow, atWidth }: Pick<Tour, 'flow' | 'atWidth'>): void {
+export function registerReadingFlows({ flow, atWidth, expect }: Pick<Tour, 'flow' | 'atWidth' | 'expect'>): void {
   // ONE LEFT EDGE PER PARAGRAPH. A feed card floats its picture and lets the words close up
   // underneath, which assumed four lines of standfirst would run past it. What actually sits
   // beside a 96px square is the kind line and the headline, so the standfirst got one or two
@@ -68,4 +68,23 @@ export function registerReadingFlows({ flow, atWidth }: Pick<Tour, 'flow' | 'atW
       if (wrong.length) return 'standing in a section the index did not mark: ' + wrong.join('; ')
       return 'ok the index followed all ' + heads.length + ' sections'
     })()`, 400))
+
+  // A LOOK IS ONE ATTRIBUTE AND ONE SHEET, and the sheet boards only the blog wearing it.
+  // Static tests hold the CSS; only a browser can prove the page actually LINKS the one it
+  // needs and none of the others, which is the whole argument for splitting them out of the
+  // sheet every blog downloads. The fixture wears the source-code dialect.
+  flow('the look ships as its own sheet, and only the one being worn', () =>
+    expect('/a-type-scale-you-can-defend', `
+    (() => {
+      const worn = document.documentElement.getAttribute('data-look')
+      if (worn !== 'code') return 'the fixture is wearing ' + worn + ', not code'
+      const hrefs = [...document.querySelectorAll('link[rel=stylesheet]')].map((l) => l.getAttribute('href'))
+      const looks = hrefs.filter((h) => h.includes('/look-'))
+      if (looks.length !== 1) return 'linked ' + looks.length + ' look sheets: ' + looks.join(' ')
+      if (!/\\/assets\\/look-code\\.[a-z0-9]+\\.css$/.test(looks[0])) return 'wrong sheet: ' + looks[0]
+      // ...and it carries the dialect, not a stub.
+      const marker = getComputedStyle(document.querySelector('.rail h2'), '::before').content
+      if (!marker.includes('//')) return 'the code sheet loaded but marked no heading: ' + marker
+      return 'ok one sheet, ' + looks[0]
+    })()`))
 }

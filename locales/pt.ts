@@ -11,6 +11,8 @@ const pt = {
   emptyTag: 'Ainda não há posts com esta tag.',
   categoryLabel: 'Categoria',
   tagLabel: 'Tag',
+  figureLabel: 'Fig.',
+  tableLabel: 'Tabela',
   skipToContent: 'Pular para o conteúdo',
   menu: 'Menu',
   // Short tokens for the header controls, shown INSTEAD of the icons when the IDE chrome

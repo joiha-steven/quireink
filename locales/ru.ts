@@ -10,6 +10,8 @@ const ru = {
   emptyTag: 'С этой меткой пока нет записей.',
   categoryLabel: 'Рубрика',
   tagLabel: 'Метка',
+  figureLabel: 'Рис.',
+  tableLabel: 'Табл.',
   skipToContent: 'Перейти к содержимому',
   menu: 'Меню',
   // Short tokens for the header controls, shown INSTEAD of the icons when the IDE chrome

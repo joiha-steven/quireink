@@ -1,10 +1,12 @@
-// The IDE chrome: one switch on the site's furniture, and what it must never touch.
+// The source-code dialect (settings.look = 'code'): what it dresses, and what it must
+// never touch.
 //
 // Split out of `typography.test.ts` when that file passed the 400-line cap. The cut is by
 // SUBJECT rather than by size: everything here hangs off one attribute, has its own
-// convention page (`docs/conventions/ide-chrome.md`), and none of it is about the owner's
+// convention page (`docs/conventions/looks.md`), and none of it is about the owner's
 // type settings — which is what the other file is about.
 import { describe, expect, it } from 'bun:test'
+import { LOOK_CODE_CSS } from '@/web/look-code.css'
 import { PUBLIC_CSS } from '@/web/public.css'
 
 describe('the IDE chrome is one switch, and off leaves no trace', () => {
@@ -13,20 +15,20 @@ describe('the IDE chrome is one switch, and off leaves no trace', () => {
   // and every rule behind it hangs off one attribute selector.
   /** Only the lines the switch owns — never the base sheet's, which say different things. */
   const idelines = () =>
-    PUBLIC_CSS.split('\n').filter((l) => l.includes('data-ide-chrome')).join('\n')
+    LOOK_CODE_CSS.split('\n').filter((l) => l.includes('data-look=code')).join('\n')
 
   it('gates every rule on the attribute, so nothing leaks when it is off', () => {
-    const ide = PUBLIC_CSS.split('\n').filter((l) => l.includes('data-ide-chrome'))
+    const ide = LOOK_CODE_CSS.split('\n').filter((l) => l.includes('data-look=code'))
     expect(ide.length).toBeGreaterThan(8)
     // A rule that mentions the attribute in a comment but selects without it would apply
     // unconditionally. Every declaration line must carry the selector.
-    for (const line of ide) expect(line).toContain('html[data-ide-chrome=on]')
+    for (const line of ide) expect(line).toContain('html[data-look=code]')
   })
 
   it('never touches the reading column', () => {
     // The half that must NOT look technical: the article body, its title, the card
     // excerpts and the comment bodies are the reader's own words.
-    for (const line of PUBLIC_CSS.split('\n').filter((l) => l.includes('data-ide-chrome'))) {
+    for (const line of LOOK_CODE_CSS.split('\n').filter((l) => l.includes('data-look=code'))) {
       for (const reading of ['.prose', '.reading-font', '.deck', '.comment-body', '.fs-h1']) {
         expect(line).not.toContain(reading)
       }
@@ -41,7 +43,7 @@ describe('the IDE chrome is one switch, and off leaves no trace', () => {
     // NOT --c-accent, which it was for one deploy. The accent is seeded from each palette's
     // link colour, so on a blog whose accent is red every date and count read as a link
     // that was not one. A syntax colour must not be the colour that means "click me".
-    const ide = PUBLIC_CSS.split('\n').filter((l) => l.includes('data-ide-chrome')).join('\n')
+    const ide = LOOK_CODE_CSS.split('\n').filter((l) => l.includes('data-look=code')).join('\n')
     expect(ide).toContain('var(--c-text)')
     expect(ide).toContain('var(--c-meta)')
     expect(ide).not.toContain('var(--c-accent)')
@@ -92,8 +94,8 @@ describe('the IDE chrome is one switch, and off leaves no trace', () => {
     // The whole of what the switch does to it: lift the base sheet's .6 opacity. Anything
     // more and the ring is back. (`border-radius:50%` alone is no test — the feed's dots and
     // the index's line numbers are circles too.)
-    const block = /html\[data-ide-chrome=on] \.term-count\{[^}]*}/.exec(PUBLIC_CSS)?.[0] ?? ''
-    expect(block).toBe('html[data-ide-chrome=on] .term-count{opacity:1}')
+    const block = /html\[data-look=code] \.term-count\{[^}]*}/.exec(LOOK_CODE_CSS)?.[0] ?? ''
+    expect(block).toBe('html[data-look=code] .term-count{opacity:1}')
   })
 
   it('marks the info panel\'s one ACTION, and leaves the comment invitation alone', () => {
@@ -112,7 +114,9 @@ describe('the IDE chrome is one switch, and off leaves no trace', () => {
     const ide = idelines()
     expect(ide).toContain('.icon-btn svg{display:none}')
     expect(ide).toContain('.btn-token{display:inline}')
-    expect(PUBLIC_CSS).toContain('.btn-token{display:none;') // ...and OFF is the default
+    // ...and OFF is the default, which is stated in the BASE sheet: the token is hidden for
+    // every blog and this dialect's own sheet is the only thing that ever shows it.
+    expect(PUBLIC_CSS).toContain('.btn-token{display:none;')
   })
 
   it('numbers a sub-heading within its parent, not straight through the list', () => {

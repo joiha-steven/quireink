@@ -68,7 +68,7 @@ export function settingsFixture(): SiteSettings {
     postsPerPage: 10,
     relatedCount: 3,
     excerptLength: 50,
-    ideChrome: false,
+    look: 'plain',
     customCss: '',
     navOrder: { primary: [], more: [], footer: [], hidden: [] },
     customHead: '',

@@ -241,4 +241,14 @@ const CHROME_TRACKED = [
 const track = (id: string, em: string): string =>
   `${CHROME_TRACKED.map((s) => `html[data-chrome-font="${id}"] ${s}`).join(',')}{letter-spacing:${em}}`
 
+/**
+ * ...and the source-code LOOK sets the chrome in JetBrains Mono whatever the chrome-font
+ * setting says (`web/look-code.css.ts`), so it needs the same correction keyed on the look
+ * rather than on the font. Without it a blog wearing that dialect on the Inter default read
+ * loose at zero tracking, which is the exact fault this block exists to fix. Last, so it
+ * wins over a plex-mono setting whose face is no longer the one being drawn.
+ */
+const trackLook = CHROME_TRACKED.map((s) => `html[data-look=code] ${s}`).join(',')
+
 export const MONO_TRACKING = `${track('plex-mono', '-0.04em')}${track('jetbrains-mono', '-0.05em')}`
+  + `${trackLook}{letter-spacing:-0.05em}`

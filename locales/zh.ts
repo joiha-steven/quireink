@@ -10,6 +10,8 @@ const zh = {
   emptyTag: '该标签下还没有文章。',
   categoryLabel: '分类',
   tagLabel: '标签',
+  figureLabel: '图',
+  tableLabel: '表',
   skipToContent: '跳到内容',
   menu: '菜单',
   // Short tokens for the header controls, shown INSTEAD of the icons when the IDE chrome
