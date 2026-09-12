@@ -53,8 +53,18 @@ export const BOOK_TEXT_CSS = `
 .book-flow.prose > h1{line-height:calc(2 * var(--book-line))}
 /* Everything that is not a paragraph or a heading — a list, a quote, a figure, a rule —
    takes one blank line above and one below, so it occupies whole lines too. */
-.book-flow.prose > :is(ul,ol,blockquote,figure,pre,table,.table-scroll,hr){
+.book-flow.prose > :is(ul,ol,blockquote,pre,table,.table-scroll,hr){
   margin-top:var(--book-line);margin-bottom:0}
-.book-flow.prose > :is(ul,ol,blockquote,figure,pre,table,.table-scroll,hr) + *{
+.book-flow.prose > :is(ul,ol,blockquote,pre,table,.table-scroll,hr) + *{
   margin-top:var(--book-line)}
+/* A PICTURE IS A PLATE, AND ITS CAPTION BELONGS TO IT. The caption sits 8px under the
+   picture and the text resumed ONE line after the caption — which, now that a paragraph
+   break costs nothing but an indent, is the same distance as the gap between two ordinary
+   paragraphs. So the caption glued itself to the words underneath and read as their opening
+   line. Two lines each side, so the plate stands clear and still lands on whole lines.
+   ⚠️ Its own rule rather than a name in the list above: :is() takes the specificity of its
+   most specific argument, so that list carries the CLASS in .table-scroll and outranks a
+   plain figure element — which is why two lines here looked like one until it was measured. */
+.book-flow.prose > figure{margin-top:calc(2 * var(--book-line));margin-bottom:0}
+.book-flow.prose > figure + *{margin-top:calc(2 * var(--book-line))}
 `

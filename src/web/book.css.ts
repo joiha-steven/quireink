@@ -163,13 +163,16 @@ body:has(.book-overlay[open]){overflow:hidden}
    it as exactly that — buttons, with a dark seam between them on first paint. The size
    difference IS the label, so nothing else is drawn.
 
-   BOTH GLYPHS ON ONE BASELINE, and the row on one centre line. Bottom-aligning the buttons
-   put their shared baseline 9px below the middle of a 34px row, so the pair sat low against
-   the close button and the row read as tilted. */
-.book-sizes{display:flex;align-items:baseline;gap:2px}
+   EVERY GLYPH ON THE ROW'S OWN CENTRE LINE. The three boxes were centred and the glyphs
+   inside them were not: the pair shared a BASELINE, which is right for two letters read as
+   one control and wrong against the rest of the row, and it put the small a 2.9px below the
+   middle while the count and the close button sat on it. Four marks, three heights. Centred
+   instead, and the size difference still says which is which — it is the only thing that
+   ever said so. */
+.book-sizes{display:flex;align-items:center;gap:2px}
 .book-size{background:none;border:0;cursor:pointer;color:var(--c-meta);line-height:1;
   font-family:var(--font-reading);min-width:32px;padding:6px 7px;
-  display:flex;align-items:baseline;justify-content:center;
+  display:flex;align-items:center;justify-content:center;
   transition:color var(--dur-fast)}
 .book-smaller{font-size:.8em}
 .book-larger{font-size:1.2em}

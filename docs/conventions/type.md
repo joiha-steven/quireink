@@ -143,6 +143,13 @@ font, only the site language's subset(s), never the chrome font or an uploaded c
   it (measured: 7 of 8 columns on the grid, the eighth 2.8px off). Putting pictures on it
   means letterboxing every one into a whole number of lines, which is a decision about the
   look of the page. Guarded by the tour flow `book mode sets its pages on one baseline grid`.
+- **A picture is a PLATE and its caption belongs to it.** The caption sits 8px under the
+  picture; below it the text used to resume one line later, which — once a paragraph break
+  cost nothing but an indent — was the same distance as the gap between two ordinary
+  paragraphs, so the caption glued itself to the words underneath. Two lines each side in
+  book mode; in the scrolling article the figure's bottom margin went from `2 × --sp` to 3
+  (measured: 63px under a caption against 55px between two paragraphs, 15% more for a
+  picture, a caption and the end of a thought).
 - **Two things a browser will not do for us.** `hanging-punctuation` is Safari-only, and
   `orphans`/`widows` are ignored by Chrome's column engine — tested by raising both to 3 on a
   spread that stranded a single line at the top of a page, which did not move it. A book

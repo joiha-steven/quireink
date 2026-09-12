@@ -358,4 +358,29 @@ export function registerSecurityFlows({ flow, expect }: Tour): void {
       if (off > ph.length / 2) return off + ' of ' + ph.length + ' columns off the grid: ' + ph.join(', ')
       return 'ok paragraph breaks whole, ' + (ph.length - off) + '/' + ph.length + ' columns on one grid'
     })()`, 600))
+
+  // FOUR MARKS, ONE LINE. The three boxes in the overlay's corner were centred and the
+  // glyphs inside them were not: the size pair shared a baseline, which put the small a
+  // 2.9px below the middle while the count and the close button sat on it, and the row read
+  // as tilted. Reported from a phone. NOTE: a template literal. No backticks.
+  flow('book mode: the corner controls sit on one line', () => expect(
+    '/the-reed-pen-in-van-goghs-letters', `
+    (async () => {
+      document.querySelector('[data-book-open]').click()
+      await new Promise((r) => setTimeout(r, 600))
+      const row = document.querySelector('.book-overlay[open] .book-topright')
+      if (!row) return 'the overlay did not open'
+      const b = row.getBoundingClientRect()
+      const mid = (b.top + b.bottom) / 2
+      const marks = [...row.querySelectorAll('*')]
+        .filter((e) => e.children.length === 0 && (e.textContent || '').trim())
+        .map((e) => { const r = document.createRange(); r.selectNodeContents(e)
+          const g = r.getBoundingClientRect()
+          return { t: e.textContent.trim().slice(0, 3), off: +(((g.top + g.bottom) / 2) - mid).toFixed(2) } })
+      document.querySelector('.book-x').click()
+      if (marks.length < 3) return 'only ' + marks.length + ' mark(s) in the corner'
+      const crooked = marks.filter((m) => Math.abs(m.off) > 1)
+      if (crooked.length) return crooked.map((m) => m.t + ' ' + m.off + 'px off').join(', ')
+      return 'ok ' + marks.length + ' marks within ' + Math.max(...marks.map((m) => Math.abs(m.off))).toFixed(2) + 'px of the line'
+    })()`, 600))
 }

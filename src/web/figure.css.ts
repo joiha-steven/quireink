@@ -15,7 +15,11 @@
 // NO BACKTICKS below: this is one template literal and a backtick ends it.
 
 export const FIGURE_CSS = `
-figure{margin:calc(var(--sp) * 2) 0}
+/* MORE BELOW THAN ABOVE, because the caption is part of the plate and hangs under it.
+   Measured at 1440: a caption's last line sat 63px above the next block while two ordinary
+   paragraphs sat 55px apart — 15% more for a picture, a caption and the end of a thought.
+   It read as a caption left hanging between two things rather than fixed to its picture. */
+figure{margin:calc(var(--sp) * 2) 0 calc(var(--sp) * 3)}
 figure img{display:block;margin:0 auto;border-radius:.5rem}
 figcaption{color:var(--c-meta);font-size:var(--fs-caption);line-height:var(--lh-caption);
   letter-spacing:var(--ls-caption);text-align:center;margin-top:calc(var(--sp) * .5)}
