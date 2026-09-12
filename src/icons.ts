@@ -22,16 +22,32 @@ export const ICONS = {
   search:
     '<circle cx="11" cy="11" r="6"/><path d="M15.4 15.4 20.5 20.5"/>'
     + '<path d="M7.6 9.3A4.3 4.3 0 0 1 9.9 7.1" stroke-width="1.4"/>',
+  // A SMALL DISC AND LONG RAYS, and the proportion is the whole of it. The ray was 2 units
+  // long at stroke 1.8, and a round cap adds half the stroke at each end: the mark drawn was
+  // 3.8 long by 1.8 thick, which at the 20px this renders at is 3.2px by 1.5px — a dot, not
+  // a ray. Eight dots around a disc read as a smudge, which is what was on the header.
+  // Now: disc r 3.5, rays from radius 6.5 to 9.5, so the drawn ray is 4.8 by 1.8 and the
+  // gap between disc and ray survives at 20px (1.8 units, 1.5px).
+  //
+  // NO ECHO STROKE. The rule for it is "where the real object carries a shadow or a fold"
+  // (above); a sun carries neither, and inside a disc 5.8px across the extra arc was 1.2px
+  // of noise in the one place the mark needed to stay clean.
   theme:
-    '<circle cx="12" cy="12" r="4"/>'
-    + '<path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M18.7 5.3l-1.4 1.4M6.7 17.3l-1.4 1.4"/>'
-    + '<path d="M10.2 10.5a2.5 2.5 0 0 1 1.5-1" stroke-width="1.4"/>',
+    '<circle cx="12" cy="12" r="3.5"/>'
+    + '<path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M18.7 5.3l-2.1 2.1M5.3 18.7l2.1-2.1"/>',
+  // THE PAINTER'S BLOB, not a ring with dots in it. The ring version read as a FACE: two
+  // dots level near the top and a third below the centre is the arrangement a person's
+  // features make, and once seen it cannot be unseen. The silhouette is what carries the
+  // meaning at 20px — the swelling top, the thumb notch bitten out of the lower right — so
+  // the outline does the work and the dots are only paint on it.
+  //
+  // The notch IS this object's fold, so it needs no echo stroke: the rule above asks for one
+  // where the real thing carries a shadow, and here the outline already draws it.
   palette:
-    '<circle cx="12" cy="12" r="8.5"/>'
-    + '<circle cx="12" cy="16" r="1.4" fill="currentColor" stroke="none"/>'
-    + '<circle cx="8.7" cy="10" r="1.2" fill="currentColor" stroke="none"/>'
-    + '<circle cx="15.3" cy="10" r="1.2" fill="currentColor" stroke="none"/>'
-    + '<path d="M6.6 8.8A6.4 6.4 0 0 1 9.2 6.3" stroke-width="1.4"/>',
+    '<path d="M12 3.2c5 0 8.8 3.4 8.8 7.6 0 2.6-2 3.6-3.6 3.6h-1.6c-1.2 0-2.1.9-2.1 2 0 .5.2 1 .5 1.4.3.4.5.8.5 1.3 0 1-.8 1.7-2 1.7-4.8 0-8.8-3.9-8.8-8.8S7.2 3.2 12 3.2Z"/>'
+    + '<circle cx="8.2" cy="9.2" r="1.25" fill="currentColor" stroke="none"/>'
+    + '<circle cx="13.4" cy="7.4" r="1.25" fill="currentColor" stroke="none"/>'
+    + '<circle cx="16.8" cy="10.6" r="1.25" fill="currentColor" stroke="none"/>',
   grid:
     '<rect x="4" y="4" width="6.5" height="6.5" rx="1"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1"/>'
     + '<rect x="4" y="13.5" width="6.5" height="6.5" rx="1"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1"/>',

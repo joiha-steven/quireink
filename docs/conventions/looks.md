@@ -113,17 +113,37 @@ A masthead, a lead headline, column rules, and a piece printed as an offprint. T
 front-page shapes are dressed, not one: `list`, `grid` (the reader's own toggle) and the
 composed `front`.
 
-- **`display:contents` on `.site-bar`** is what lets the masthead put the strapline BETWEEN
-  the name and the section menu: those three are inside the bar and the strapline is its
-  sibling, so no alignment inside the bar can interleave them. Dropping the bar's box
-  promotes its children into the header's own flex column. The name then needs
+- **`display:contents` on `.site-bar`** is what lets the masthead interleave the strapline
+  with the name and the section menu: those three are inside the bar and the strapline is
+  its sibling, so no alignment inside the bar can put one between the others. Dropping the
+  bar's box promotes its children into the header itself. The name then needs
   `margin-inline: 0`, because in the bar's own row it carries `margin-right: auto` to push
   the controls right — with the bar's box gone that auto margin ate 917px and pinned the
   name to the left edge under a centred strapline.
-- **The controls come out of the flow.** On the composed front page the section menu is in
-  that same bar, and four icons were being painted over its last word.
-- **Column rules are centred IN the gap** (`margin-left:-14px;padding-left:14px` against the
-  grid's 28px), never drawn at a card's edge.
+- **The header is a GRID of `1fr auto 1fr`, and the controls end the strapline's row.**
+  They were absolute at the top right, which on a masthead centred everywhere else left
+  them in a corner with nothing opposite and, on an article, alone over 90px of white. A
+  column flex cannot pair two children on one line, which is why it is a grid; the outer
+  columns stay equal whatever the controls measure, so the strapline keeps the name's axis.
+  Place the name as `:is(.title,.site-h1)` — it is a bare anchor on most pages and an `h1`
+  wrapping that anchor on a listing whose lead card is off.
+- **Under 44rem the controls take their own row, centred**, and give up the `-.625rem`
+  optical pull: that exists to line the last glyph up with the rule at the column edge, and
+  centred there is no edge to line up with.
+- **Never set `display` on `.site-menu` here.** The base sheet hides it under 60rem and
+  paints its links only above that width, so a flat `display:flex` outranked the hide and
+  put five default-blue underlined links across a phone masthead — beside a drawer button
+  that opens the same five.
+- **One gutter for every column rule on the page** (`margin-left:-20px;padding-left:20px`
+  against a 40px gap), centred IN the gap and never drawn at a card's edge. The card grid
+  ships 28px of its own, so this look restates it: the same hairline standing 14px off a
+  picture in one place and 20px off words in another reads as a mistake.
+- **An all-caps label in a ruled band takes `line-height: 1`.** A line box reserves room
+  for a descender and for an ascender above the cap, and a caps label uses neither, so at
+  inherited leading it sat 2px high between its own rules. This face closes that by itself:
+  Inter's ascender less its cap height (0.2413em) is its descender (0.2412em), so at
+  leading 1 equal padding centres the ink. Measured: 9px over the cap, 9px under the
+  baseline.
 - **In grid mode each card takes a rule across its HEAD, not down its side.** A column rule
   does not survive a wrapping grid: the column count changes with the width, and the feed
   wraps each year's entries in their own block, so `nth-child` counts the year marker as the

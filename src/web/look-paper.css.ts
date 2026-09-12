@@ -60,8 +60,15 @@ html[data-look=paper] .post-list :is(h1,h2,h3){font-weight:400}
    they still move with their scale. */
 html[data-look=paper] article > header h1{font-size:calc(var(--fs-h1) * 1.3);
   line-height:1.1;letter-spacing:-.012em}
+/* The nameplate is set in the HEADLINE face, not the reading one: on a paper the name and
+   the headlines are cut from the same metal, and it is the one line every page opens with.
+   This rule shipped once already and never applied - the masthead block below restated
+   font-size four rules later, at plain --fs-h1 and in the reading face, and same-specificity
+   order handed it the argument. */
 html[data-look=paper] .site-bar > .title{font-size:calc(var(--fs-h1) * 1.5);
-  line-height:1.05;letter-spacing:-.02em}
+  line-height:1.05;letter-spacing:-.02em;
+  font-family:'Source Serif 4','Source Serif 4 Fallback','Source Serif 4 Fallback 2',
+    Georgia,'Times New Roman',serif}
 
 /* --- LABELS ARE A GROTESQUE, SMALL, LETTERSPACED ----------------------------
    Every kicker, section head, byline and date on a paper is set in a sans at ten or eleven
@@ -90,35 +97,80 @@ html[data-look=paper] :is(.post-meta,.fc-meta,.t-small.text-meta,.post-taxo){
 html[data-look=paper] body{font-family:var(--font-reading)}
 
 /* --- THE MASTHEAD -----------------------------------------------------------
-   A paper announces itself once, in the middle: the name, the strapline under it, then
-   the sections, then a heavy rule closing the lot.
+   A paper announces itself once, in the middle: the name, then one line carrying the
+   strapline in the centre and the reader's controls at the right end of it, then the
+   sections, then a heavy rule closing the lot.
 
-   'display:contents' on the bar is what makes that ORDER possible. The name, the section
-   menu and the controls all live inside .site-bar while the strapline is its sibling, so
-   no amount of alignment inside the bar can put the strapline between them. Dropping the
-   bar's own box promotes its three children into the header's flex column, where 'order'
-   can interleave them with the strapline.
+   A GRID, and that is what puts the controls on the strapline's line. They cannot share a
+   row in a column flex: the name, the section menu and the controls live inside .site-bar
+   while the strapline is its sibling, so the four become siblings only once the bar's own
+   box is dropped - and in a column every sibling then takes a row of its own. Explicit
+   placement also stops the DOM order mattering: the controls are written third and sit on
+   the second row.
+
+   THE CONTROLS USED TO BE ABSOLUTE, pinned to the top right corner, and that is what this
+   replaces. On a masthead whose every other part is centred they hung in the corner with
+   nothing opposite them, higher up the page than the name itself; on an article, which
+   carries no section menu, they sat alone above 90px of empty white.
+
+   '1fr auto 1fr' keeps the strapline centred on the PAGE rather than in what the controls
+   leave of it: the outer columns stay equal whatever those controls measure, so the
+   strapline sits on the same axis as the name above it. Measured at 1440: name centre
+   720.0, strapline centre 720.0.
 
    'margin-inline:0' on the name is load-bearing: in the bar's own flex ROW it carries
    'margin-right:auto' to push the controls to the far end, and once the bar's box is gone
    that auto margin ate 917px of the column and pinned the name to the left edge while the
-   strapline under it sat centred.
-
-   The controls come out of the flow entirely. On the composed front page the section menu
-   is IN this bar, and absolutely positioning them was the only way to stop four icons
-   being painted over the last word of it. */
-html[data-look=paper] header.site{display:flex;flex-direction:column;align-items:center;
-  position:relative;padding-bottom:.85rem;border-bottom:3px solid var(--c-heading)}
+   strapline under it sat centred. */
+html[data-look=paper] header.site{display:grid;grid-template-columns:1fr auto 1fr;
+  align-items:center;padding-bottom:.9rem;border-bottom:3px solid var(--c-heading)}
 html[data-look=paper] .site-bar{display:contents}
-html[data-look=paper] .site-bar > .title{order:1;margin-inline:0;
-  font-family:var(--font-reading);font-size:var(--fs-h1);line-height:var(--lh-h1);
-  letter-spacing:var(--ls-h1)}
-html[data-look=paper] header.site .tagline{order:2;text-align:center;font-style:italic;
-  margin-top:.35rem}
-html[data-look=paper] .site-bar > .site-menu{order:3;display:flex;flex-wrap:wrap;
-  justify-content:center;gap:.3rem 1.5rem;margin-top:.7rem;padding-top:.55rem;
-  border-top:1px solid var(--c-rule);width:100%}
-html[data-look=paper] .site-bar > .site-actions{position:absolute;top:0;right:0;margin:0}
+/* The name is the <a> on most pages and an <h1> wrapping it on a listing whose lead card
+   is switched off, so the placement has to name both or the masthead loses its row on
+   exactly those pages. */
+html[data-look=paper] .site-bar > :is(.title,.site-h1){grid-area:1/1/2/-1;
+  justify-self:center;margin-inline:0}
+html[data-look=paper] header.site .tagline{grid-area:2/2/3/3;text-align:center;
+  font-style:italic;margin:0}
+/* THE CONTROLS END THE STRAPLINE'S ROW. -.625rem is the base sheet's own optical
+   correction, put back: a 40px hit box round a 20px glyph carries 10px of air inside it,
+   so a box flush with the column edge draws the last icon 10px short of the rule that
+   closes the masthead, and the eye reads the icons as falling short rather than as
+   aligned. The box still ends where the rule does; only the glyph moves. */
+html[data-look=paper] .site-bar > .site-actions{grid-area:2/3/3/4;justify-self:end;
+  margin:0 -.625rem 0 0}
+/* BOTH margins to zero, and the padding with them. The base sheet pushes this menu to the
+   right of the header row with 'margin-left:auto' and clears the controls with
+   'padding-right:.5rem'; in a grid cell an auto margin beats the default stretch, so the
+   sections came out flush right - centre 1021.5 under a name centred on 720 - and the half
+   rem of padding would have thrown the centring 4px out even once that was fixed. */
+/* NO 'display' HERE, and that is the fix rather than an omission. The base sheet hides this
+   menu under 60rem and shows it above, because below that width the header is the name and
+   up to five controls and the sections live in the drawer instead. This rule used to set
+   'display:flex' flat, which outranked the hide and put the sections back on a phone - in
+   the DEFAULT link colour and underlined, since the base only paints them inside that same
+   media query, so a phone masthead carried five blue underlined links; and on the composed
+   front page it offered the same five links the drawer button opens. Everything else here
+   is inert while the menu is hidden. */
+html[data-look=paper] .site-bar > .site-menu{grid-area:3/1/4/-1;flex-wrap:wrap;
+  justify-content:center;gap:.3rem 1.5rem;margin:.8rem 0 0;padding:.65rem 0 0;
+  border-top:1px solid var(--c-rule)}
+
+/* NARROW: THE CONTROLS TAKE THEIR OWN ROW, centred under a centred nameplate. Sharing the
+   strapline's line needs room for the strapline, a symmetric column opposite the controls
+   and the controls themselves; measured at 390 with a 36-character strapline it did not
+   have it - the strapline was squeezed to 186px hard against the left edge with four icons
+   on the right, under a name centred between them. The optical -.625rem goes with it: it
+   exists to line the last glyph up with a rule at the column edge, and centred there is no
+   edge to line up with. */
+@media (max-width:44rem){
+  html[data-look=paper] header.site{grid-template-columns:1fr}
+  html[data-look=paper] .site-bar > :is(.title,.site-h1){grid-area:1/1/2/2}
+  html[data-look=paper] header.site .tagline{grid-area:2/1/3/2}
+  html[data-look=paper] .site-bar > .site-actions{grid-area:3/1/4/2;justify-self:center;
+    margin:.45rem 0 0}
+  html[data-look=paper] .site-bar > .site-menu{grid-area:4/1/5/2}
+}
 
 /* --- THE PIECE'S OWN PAGE SHAPE ---------------------------------------------
    The facts about the piece leave the right-hand panel and go under the headline where a
@@ -198,13 +250,25 @@ html[data-look=paper] #comments h2{border-bottom:1px solid var(--c-rule);
    the way a paper separates Business from Sport. */
 html[data-look=paper] .front-head{border-top:2px solid var(--c-heading);
   border-bottom:1px solid var(--c-rule);margin-bottom:1.1rem}
-html[data-look=paper] .front-label{padding:.3rem 0}
+/* LINE-HEIGHT 1 IS WHAT CENTRES THE LABEL, not the padding. A line box carries room for a
+   descender under the baseline and room for an ascender over the cap, and an all-caps word
+   uses neither: at the inherited leading the band read 7px of air over the caps and 9px
+   under the baseline, so the label sat 2px high inside its own rules. At leading 1 this
+   face puts the same 2.1px above the cap as below the baseline, because Inter's ascender
+   less its cap height (0.2413em) is its descender (0.2412em) - so equal padding then
+   centres the ink rather than the box. Measured after: 9.3 over, 9.3 under. */
+html[data-look=paper] .front-label{padding:.45rem 0;line-height:1}
 
 /* COLUMN RULES, centred IN the gap rather than drawn at the edge of a card: the grid sets
    28px between columns and 40px beside the lead, so each rule is pulled back by half of
    its own gap and pads it straight back. Nothing moves; a line appears between columns. */
+/* ONE GUTTER FOR EVERY COLUMN RULE ON THE PAGE. The row beside the lead sets 40px and the
+   card grid set 28, so the same hairline stood 20px off the words in one place and 14px in
+   the other - and 14px beside a card whose picture is a filled block read as a rule leaning
+   on the picture. The grid takes the row's gutter, so both rules now breathe the same. */
+html[data-look=paper] .front-grid{column-gap:40px}
 html[data-look=paper] .front-grid > .fc + .fc{border-left:1px solid var(--c-rule);
-  margin-left:-14px;padding-left:14px}
+  margin-left:-20px;padding-left:20px}
 html[data-look=paper] .front-secondary{border-left:1px solid var(--c-rule);
   margin-left:-20px;padding-left:20px}
 html[data-look=paper] .front-secondary > .fc + .fc{border-top:1px solid var(--c-rule);

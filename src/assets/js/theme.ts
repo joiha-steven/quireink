@@ -65,17 +65,26 @@ function resolve(mode: Mode): 'light' | 'dark' {
   return h >= 18 || h < 6 ? 'dark' : 'light'
 }
 
-const SUN = 'M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2'
-  + 'M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4'
 const MOON = 'M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z'
+/**
+ * The sun, KEPT rather than redrawn: whatever the server put in the button is captured on
+ * the first pass and put back when the reader returns to light.
+ *
+ * This file used to carry its own copy of the sun's path, which made two drawings of one
+ * icon in two files, and they had already drifted — the set's sun (`src/icons.ts`) carried
+ * an eight-ray disc and an echo stroke, this one an eight-ray disc and no echo, so the glyph
+ * changed under the reader the moment the bundle ran. Keeping the server's markup means the
+ * icon set is the single place a shape is drawn, which is that file's whole premise, and it
+ * takes fewer bytes out of a budget measured in bytes than the duplicate path did.
+ */
+let sun = ''
 
 /** Repaint the button's glyph to match what the reader is actually looking at. */
 function drawIcon(button: HTMLElement, dark: boolean): void {
   const svg = button.querySelector('svg')
   if (!svg) return
-  svg.innerHTML = dark
-    ? `<path d="${MOON}"/>`
-    : `<circle cx="12" cy="12" r="4"/><path d="${SUN}"/>`
+  if (!sun) sun = svg.innerHTML
+  svg.innerHTML = dark ? `<path d="${MOON}"/>` : sun
 }
 
 /**

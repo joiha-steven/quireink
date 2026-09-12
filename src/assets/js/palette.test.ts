@@ -10,6 +10,7 @@
 // the default gets a block of its own so switching back has somewhere to land.
 
 import { beforeEach, describe, expect, it } from 'bun:test'
+import { ICONS } from '../../icons'
 import { palette, theme } from './theme'
 import { page, useDom } from './test-dom'
 
@@ -232,5 +233,59 @@ describe("the owner's default light/dark", () => {
     // happy-dom reports no dark preference, so system resolves light. What matters is that
     // nothing threw and the island still wrote an answer.
     expect(['light', 'dark']).toContain(document.documentElement.dataset.scheme!)
+  })
+})
+
+describe('the sun on the theme button is the SET\'s, not a second drawing', () => {
+  /** The button as the server renders it: the icon set's sun already inside the <svg>. */
+  const withSun = () => {
+    page(
+      '<button data-theme-toggle aria-haspopup="true" aria-expanded="false">'
+      + `<svg>${ICONS.theme}</svg></button>`,
+      { theme: 'Theme', themeLight: 'Light', themeDark: 'Dark', themeSystem: 'System', themeTime: 'Time' },
+    )
+    document.documentElement.removeAttribute('data-scheme')
+    document.documentElement.classList.remove('dark')
+  }
+  const svg = () => document.querySelector('[data-theme-toggle] svg')!
+
+  beforeEach(() => localStorage.clear())
+
+  /** The set's sun as the DOM spells it back — same markup, tags closed the long way. */
+  const served = () => {
+    withSun()
+    return svg().innerHTML
+  }
+
+  it('keeps the served drawing when the reader is in light', () => {
+    const before = served()
+    // It really is the set's drawing and not an empty <svg> the assertions would also pass.
+    expect(before).toContain('M12 2.5v3M12 18.5v3')
+    theme()
+    expect(svg().innerHTML).toBe(before)
+  })
+
+  it('puts the SAME drawing back after a trip through dark', () => {
+    // This is the whole reason the island stopped carrying its own copy of the path. It had
+    // one, and the two had already drifted — the set's sun carried an echo stroke that this
+    // file's did not — so the glyph changed under the reader the moment the bundle ran, and
+    // nothing could go red.
+    const before = served()
+    localStorage.setItem('theme', 'dark')
+    theme()
+    expect(svg().innerHTML).not.toContain('circle')
+    localStorage.setItem('theme', 'light')
+    theme()
+    expect(svg().innerHTML).toBe(before)
+  })
+
+  it('carries no sun of its own for the two to drift apart again', async () => {
+    // Read from DISK, because the point is what the file says rather than what it exports:
+    // the path lived here as a string constant and nothing could see that it had gone stale.
+    const src = await Bun.file(new URL('./theme.ts', import.meta.url)).text()
+    for (const ray of ICONS.theme.split('M').slice(1, 4)) {
+      expect(src).not.toContain(ray.split('"')[0])
+    }
+    expect(src).not.toContain('const SUN')
   })
 })

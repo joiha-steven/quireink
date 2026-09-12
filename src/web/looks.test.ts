@@ -88,7 +88,34 @@ describe('the newspaper dialect', () => {
     // With `display:contents` on the bar, the name's own `margin-right:auto` — there to
     // push the controls to the far end of the ROW — ate 917px of the column and left the
     // name ranged left under a centred strapline.
-    expect(LOOK_PAPER_CSS).toContain('.site-bar > .title{order:1;margin-inline:0')
+    //
+    // BOTH SPELLINGS of the name. It is a bare <a class="title"> on most pages and an
+    // <h1 class="site-h1"> wrapping that anchor on a listing whose lead card is switched
+    // off, so a rule naming only `.title` would place the masthead on every page but those.
+    expect(LOOK_PAPER_CSS).toContain('.site-bar > :is(.title,.site-h1){grid-area:1/1/2/-1;')
+    expect(LOOK_PAPER_CSS).toContain('margin-inline:0')
+  })
+
+  it('gives the strapline and the controls ONE row, and centres on the page', () => {
+    // The controls were absolute at the top right of a masthead centred everywhere else.
+    // They now end the strapline's row, which needs the header to be a grid: in the column
+    // flex it was, every child took a row of its own and no alignment could pair two.
+    expect(LOOK_PAPER_CSS).toContain('header.site{display:grid;grid-template-columns:1fr auto 1fr')
+    // The outer columns are equal whatever the controls measure, so the strapline sits on
+    // the name's axis rather than in what the controls leave. Measured at 1440: 720.0/720.0.
+    expect(LOOK_PAPER_CSS).toContain('.tagline{grid-area:2/2/3/3')
+    expect(LOOK_PAPER_CSS).toContain('.site-actions{grid-area:2/3/3/4;justify-self:end')
+    // Nothing is left positioned: an absolute control in a grid cell ignores the cell.
+    expect(LOOK_PAPER_CSS).not.toContain('.site-actions{position:absolute')
+  })
+
+  it('does not put the section menu back on a phone', () => {
+    // The base sheet hides it under 60rem and paints its links only above that width, so a
+    // flat `display:flex` here outranked the hide and printed five DEFAULT-BLUE underlined
+    // links across a phone masthead — beside a drawer button that opens the same five.
+    const menu = LOOK_PAPER_CSS.split('\n').filter((l) => l.includes('.site-bar > .site-menu'))
+    expect(menu.length).toBeGreaterThan(0)
+    for (const line of menu) expect(line).not.toContain('display:flex')
   })
 
   it('moves the shelf inline on a PIECE and never on a listing', () => {
