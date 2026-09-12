@@ -19,6 +19,7 @@
 // this needs an `onScroll` that copies `scrollTop`/`scrollLeft`, and the caret will visibly
 // separate from the text until it does.
 import { useMemo, type RefObject } from 'react'
+import type { Hit } from './editorFind'
 
 /**
  * `&`, `<`, `>` and nothing else.
@@ -155,20 +156,75 @@ export function mark(source: string): string {
   }).join('\n')
 }
 
+/**
+ * Wrap the find hits in the ALREADY-MARKED HTML, counting source characters as it walks.
+ *
+ * The mirror is where this has to happen, for the same reason the mirror exists at all: a
+ * `<textarea>` renders one uniform run and nothing can style a part of it. In the writing
+ * surface the equivalent is a ProseMirror decoration; here it is a `<mark>` in the layer
+ * underneath, and in both cases the text itself is untouched.
+ *
+ * IT WALKS THE OUTPUT RATHER THAN THE INPUT. Marking the source first and then dimming it
+ * would mean running the marker rules over HTML this function produced, which is the mistake
+ * `inlineMarks` already carries a warning about. So `mark()` runs first on the whole source,
+ * fence state and all, and this counts characters through the result: a tag costs nothing, an
+ * entity costs the one character it stands for, everything else costs itself.
+ *
+ * Exported for the test, which is the only other caller.
+ *
+ * A hit that straddles a tag CLOSES AND REOPENS around it. `<i>x<mark>y</i></mark>` is
+ * malformed and every browser guesses differently at it; `<i>x<mark>y</mark></i><mark>…` is
+ * the same drawing and is valid.
+ */
+export function withHits(html: string, hits: Hit[], current: number): string {
+  if (hits.length === 0) return html
+  const open = (i: number): string =>
+    `<mark class="find-hit${i === current ? ' find-hit-now' : ''}">`
+  let out = ''
+  let at = 0 // how many SOURCE characters have been walked past
+  let hit = 0
+  let inside = false
+  for (let i = 0; i < html.length;) {
+    if (html[i] === '<') {
+      const end = html.indexOf('>', i)
+      const tag = end === -1 ? html.slice(i) : html.slice(i, end + 1)
+      out += inside ? `</mark>${tag}${open(hit)}` : tag
+      i += tag.length
+      continue
+    }
+    if (!inside && hit < hits.length && at === hits[hit]!.from) { out += open(hit); inside = true }
+    const entity = html[i] === '&' ? /^&(?:amp|lt|gt);/.exec(html.slice(i)) : null
+    const piece = entity ? entity[0] : html[i]!
+    out += piece
+    i += piece.length
+    at += 1
+    if (inside && at === hits[hit]!.to) { out += '</mark>'; inside = false; hit += 1 }
+  }
+  return inside ? `${out}</mark>` : out
+}
+
 type Props = {
   value: string
   onChange: (next: string) => void
   onDirty: () => void
   taRef: RefObject<HTMLTextAreaElement | null>
+  /** Find hits, as offsets into `value`. The strip above the sheet owns them. */
+  hits?: Hit[]
+  /** Which hit is current, so it can take the louder of the two highlights. */
+  current?: number
 }
 
-export function MarkdownSource({ value, onChange, onDirty, taRef }: Props) {
+export function MarkdownSource({ value, onChange, onDirty, taRef, hits, current = 0 }: Props) {
   // Only when the text changes, not on every parent render: this walks every line.
   const html = useMemo(() => mark(value), [value])
+  // A second pass, and only while something is being looked for. An unfocused textarea draws
+  // no selection at all in Chrome, so without this the Markdown view could count its hits and
+  // not show one of them.
+  const drawn = useMemo(() => withHits(html, hits ?? [], current), [html, hits, current])
   return (
     <div className="relative">
       {/* A trailing newline so the mirror's last line has height while the caret sits on it. */}
-      <pre className="md-box md-mirror" aria-hidden="true" dangerouslySetInnerHTML={{ __html: `${html}\n` }} />
+      <pre className="md-box md-mirror" aria-hidden="true" dangerouslySetInnerHTML={{ __html: `${drawn}\n` }} />
       <textarea
         ref={taRef}
         value={value}

@@ -9,7 +9,7 @@
 // in the eleventh rule pointed at the first rule's group, matched empty, and turned
 // `**Spacing**` into `**S**pacing**`. Every paired rule is checked here for that reason.
 import { describe, it, expect } from '@/test/vitest'
-import { mark } from '@/admin/components/MarkdownSource'
+import { mark, withHits } from '@/admin/components/MarkdownSource'
 
 describe('mark: line structure', () => {
   it('dims a heading marker and leaves the words', () => {
@@ -85,5 +85,51 @@ describe('mark: the HTML it produces', () => {
     const hostile = '<img src=x onerror=alert(1)> **[a](b)** `c` | d |'
     const tags = [...mark(hostile).matchAll(/<\/?([a-z]+)/g)].map((m) => m[1])
     expect(new Set(tags)).toEqual(new Set(['i']))
+  })
+})
+
+// The find strip's hits, drawn in the mirror because an unfocused textarea shows no
+// selection at all. It counts SOURCE characters through HTML that already has tags and
+// entities in it, which is the kind of arithmetic that is either exact or quietly one out.
+describe('withHits: drawing the find hits in the mirror', () => {
+  it('leaves the html alone when nothing is being looked for', () => {
+    expect(withHits('<i>##</i> Title', [], 0)).toBe('<i>##</i> Title')
+  })
+
+  it('counts a tag as no characters at all', () => {
+    // `## Title`: the marker and the space after it are wrapped, so "Title" starts at source
+    // offset 3 and the eight characters of tag in front of it must not shift the count.
+    const html = mark('## Title')
+    expect(html).toBe('<i>## </i>Title')
+    expect(withHits(html, [{ from: 3, to: 8 }], 0))
+      .toBe('<i>## </i><mark class="find-hit find-hit-now">Title</mark>')
+  })
+
+  it('counts an entity as the one character it stands for', () => {
+    // `a & b`, where the ampersand is three source characters wide in the HTML and one in
+    // the text. Getting this wrong moves every hit after the first entity in the piece.
+    const html = mark('a & b')
+    expect(html).toContain('&amp;')
+    expect(withHits(html, [{ from: 4, to: 5 }], 0)).toBe('a &amp; <mark class="find-hit find-hit-now">b</mark>')
+  })
+
+  it('closes and reopens around a tag rather than crossing it', () => {
+    // The hit covers all of `a *em* b`, which the mirror has already split around two dimmed
+    // markers. A single mark spanning them would close inside an <i> pair it did not open,
+    // and every browser guesses differently at that. Closed and reopened, every mark nests
+    // inside whatever the mirror wrapped and the output is well formed wherever the hit
+    // falls. The asterisks are highlighted too, which is right: they are characters of the
+    // source and the query matched them.
+    const html = mark('a *em* b')
+    const hit = '<mark class="find-hit find-hit-now">'
+    expect(withHits(html, [{ from: 0, to: 8 }], 0)).toBe(
+      `${hit}a </mark><i>${hit}*</mark></i>${hit}em</mark>`
+      + `<i>${hit}*</mark></i>${hit} b</mark>`,
+    )
+  })
+
+  it('gives only the current hit the louder mark', () => {
+    const out = withHits(mark('one one'), [{ from: 0, to: 3 }, { from: 4, to: 7 }], 1)
+    expect(out).toBe('<mark class="find-hit">one</mark> <mark class="find-hit find-hit-now">one</mark>')
   })
 })

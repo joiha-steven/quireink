@@ -87,6 +87,15 @@ function moreOnScroll(): void {
   // the fold in order to fade it in is a flash, not an effect.
   // The owner's switch first: with the fade off nothing is armed, so a Firefox reader sees
   // the same solid list as everyone else rather than the fallback still hiding cards.
+  //
+  // ⚠️ WATCH THE CARDS THAT ARRIVE LATER TOO. This observed the cards the server sent with the
+  // page and nothing else, and the tail of the archive is fetched a page at a time by the
+  // very same function — so on an engine taking this path, every card past the first page was
+  // appended already carrying `opacity: 0` with nothing left to take it off. The reader
+  // scrolled into a run of blank cards: real height, real gaps between them, no words. It
+  // only shows where view() timelines do not exist, which is why it could sit unnoticed on a
+  // Chrome that never runs this branch at all.
+  let watchNew = (_: ParentNode): void => {}
   if (html.dataset.scrollFade === 'on'
     && CSS.supports?.('animation-timeline', 'view()') !== true && html.dataset.motion !== 'off') {
     for (const c of feed.querySelectorAll<HTMLElement>('.reveal')) {
@@ -96,7 +105,10 @@ function moreOnScroll(): void {
     const seen = new IntersectionObserver((es) => {
       for (const e of es) if (e.isIntersecting) e.target.classList.add('is-in')
     }, { rootMargin: '0px 0px -10% 0px' })
-    for (const c of feed.querySelectorAll('.reveal:not(.is-in)')) seen.observe(c)
+    watchNew = (where) => {
+      for (const c of where.querySelectorAll('.reveal:not(.is-in)')) seen.observe(c)
+    }
+    watchNew(feed)
   }
 
   // The tail of the archive, fetched a page at a time as the reader reaches it.
@@ -141,6 +153,9 @@ function moreOnScroll(): void {
       const incoming = doc.content.querySelector('.post-list')
       if (!incoming) throw res
       merge(incoming)
+      // The cards that just landed, so the fallback can fade them in rather than leaving
+      // them hidden. A no-op on every engine that has view() timelines.
+      watchNew(feed)
       // The next address is taken as the RELATIVE href it was written as: a detached
       // fragment has no base URL of its own to resolve one against.
       const onward = doc.content.querySelector('[data-feed-more] a[rel=next]')?.getAttribute('href')

@@ -85,7 +85,7 @@ Blog cá nhân thì không tốn gì, và bạn được phép thu tiền. Chi t
 | 🌍&nbsp;**Ngôn&nbsp;ngữ** | Mười một thứ tiếng, cả trong quản trị lẫn ngoài site |
 | 🔐&nbsp;**Đăng&nbsp;nhập** | Mật khẩu băm argon2id, mã xác thực mỗi lần vào, mười mã khôi phục, và danh sách thiết bị đang đăng nhập kèm nút cắt. Không có Google trong đường đăng nhập |
 | 🤖&nbsp;**Trợ&nbsp;lý** | Khoá model của chính bạn, ngay trong trang quản trị: Claude, GPT, Gemini hay DeepSeek. Mỗi cuộc trò chuyện kèm một hoá đơn |
-| ⌨️&nbsp;**Quản&nbsp;trị** | ⌘K gõ tên là nhảy thẳng tới thiết lập cần tìm, không phải nhớ nó nằm ở tab nào |
+| ⌨️&nbsp;**Quản&nbsp;trị** | ⌘K gõ tên là nhảy thẳng tới thiết lập cần tìm, không phải nhớ nó nằm ở tab nào. ⌘F tìm và thay trong bài, cả ở mặt soạn thảo lẫn ở mã Markdown |
 | 📱&nbsp;**Điện&nbsp;thoại** | Cài ra màn hình chính là nó mở như một ứng dụng |
 
 **Làm cho** một người, một máy chủ, một cái blog định giữ lâu dài.

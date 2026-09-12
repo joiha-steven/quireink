@@ -78,4 +78,82 @@ export function registerSheetFlows({ flow, atWidth }: Pick<Tour, 'flow' | 'atWid
       if (panel.getAttribute('aria-modal') === 'true') return 'the docked sheet still calls itself modal'
       return 'ok ' + Math.round(-covered) + 'px of paper between the words and the sheet'
     })()`, 1200))
+
+  // FIND AND REPLACE, end to end on a real document. Three things are being watched, and only
+  // one of them is "does it find anything": that the highlight is DRAWN rather than applied
+  // (the editor's hard contract is that a save may not change the reader's page, and a find
+  // box that reaches for a mark instead of a decoration serialises its own highlighter into
+  // the piece), that Replace all reaches every hit including one wearing formatting, and that
+  // the strip's own chord takes the key back from the browser.
+  //
+  // A BLANK SHEET, typed into: a piece with no row has no server autosave to leave behind.
+  // NOTE: a template literal. No backticks.
+  flow('editor: find and replace, and the highlight never reaches the text', () => atWidth(1440, '/admin/editor', `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      const wait = async (fn, tries = 60) => {
+        for (let i = 0; i < tries; i++) { const hit = fn(); if (hit) return hit; await sleep(100) }
+        return null
+      }
+      // A POST OF ITS OWN, made and removed here. Typing into the blank sheet was tried and
+      // is not deterministic in a full run: an earlier flow leaves a local recovery copy on
+      // this device, so a blank /admin/editor can open holding somebody else's sentence and
+      // the insert lands after it. The count then depends on what ran before, which is the
+      // one thing a flow may never depend on. NOTE: a template literal. No backticks.
+      const slug = 'tour-find-' + Date.now()
+      const made = await fetch('/api/posts', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ title: 'Tour find', slug, content: 'a reed pen, and the reed it was cut from', status: 'draft', categories: [], tags: [] }),
+      })
+      const done = async (verdict) => { await fetch('/api/posts/' + slug, { method: 'DELETE' }); return verdict }
+      if (!made.ok) return 'POST /api/posts -> ' + made.status
+      history.pushState(null, '', '/admin/editor/' + slug)
+      dispatchEvent(new PopStateEvent('popstate'))
+      const surface = await wait(() => {
+        const el = document.querySelector('.ProseMirror')
+        return el && el.textContent.includes('reed') ? el : null
+      })
+      if (!surface) return await done('the post never opened in the editor')
+
+      // The chord, taken from the browser.
+      // Mod-Shift-f: the strip WITH its replace field. Plain Mod-f opens the find row alone.
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'F', metaKey: true, shiftKey: true, bubbles: true }))
+      const bar = await wait(() => document.querySelector('[data-find-bar]'), 20)
+      if (!bar) return await done('Mod-f raised no find strip')
+
+      const type = (input, value) => {
+        const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set
+        setter.call(input, value)
+        input.dispatchEvent(new Event('input', { bubbles: true }))
+      }
+      const fields = bar.querySelectorAll('input')
+      type(fields[0], 'reed')
+      await sleep(400)
+      const drawn = document.querySelectorAll('.ProseMirror .find-hit').length
+      if (drawn !== 2) return await done('two hits should be drawn, found ' + drawn)
+      if (!document.querySelector('.ProseMirror .find-hit-now')) return await done('no current hit is marked')
+      // DRAWN, not applied: the words themselves are untouched.
+      if (surface.textContent !== 'a reed pen, and the reed it was cut from') {
+        return await done('the highlight changed the text: ' + surface.textContent)
+      }
+
+      type(fields[1], 'quill')
+      await sleep(200)
+      const all = [...bar.querySelectorAll('button')].find((b) => /all/i.test(b.textContent || ''))
+      if (!all) return await done('no Replace all key')
+      all.click()
+      await sleep(400)
+      if (surface.textContent !== 'a quill pen, and the quill it was cut from') {
+        return await done('Replace all left: ' + surface.textContent)
+      }
+      if (document.querySelectorAll('.ProseMirror .find-hit').length !== 0) {
+        return await done('the old hits are still highlighted after replacing them')
+      }
+
+      // Escape puts the strip away and takes its highlight with it.
+      fields[0].dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+      await sleep(300)
+      if (document.querySelector('[data-find-bar]')) return await done('Escape did not close the strip')
+      return await done('ok two found, two replaced, nothing drawn on the text')
+    })()`, 1200))
 }

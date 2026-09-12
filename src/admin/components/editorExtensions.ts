@@ -24,6 +24,7 @@ import { LinkKey } from './editorLinkKey'
 import { PenRing, PenUnderline } from './PenMarks'
 import { MathInline, MathBlock } from './MathNode'
 import { MixedList } from './MixedList'
+import { Find } from './FindExtension'
 
 /**
  * @param placeholder The per-block placeholder text, which is the one thing here that has to
@@ -76,6 +77,12 @@ export function editorExtensions(
     // Mod-k. The rest of this product's keyboard is in `editorKeys.ts`; only the link needs
     // to run inside the editor, holding the selection it is about to mark.
     LinkKey.configure({ askLink }),
+    // Find and replace. It adds no keys and no commands: it holds the query and DRAWS the
+    // hits, and the strip above the sheet drives it. Mounted here rather than conditionally
+    // so the seven round-trip suites run against the same document the writer sees — a
+    // decoration changes nothing the serializer can see, which is the property being relied
+    // on and therefore the one worth exercising.
+    Find,
     // Per-block placeholder (adds the is-editor-empty class + data-placeholder
     // the CSS reads). The old root data-placeholder attribute rendered nothing.
     Placeholder.configure({ placeholder }),

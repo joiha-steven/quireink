@@ -19,9 +19,12 @@ import { penStrokes } from './pen-feedback'
 // sticks under it (~60px with its margins). The bubble bar must not be placed inside this
 // band, because both are sticky and would cover it — the first line is where that happens.
 const ACTIONBAR_HEIGHT = 116
-import { isVideoUrl } from '@/render/video'
 import { useAdminT } from './I18nProvider'
 import { MarkdownSource } from './MarkdownSource'
+import { FindBar } from './FindBar'
+import { useEditorFind } from './useEditorFind'
+import { captionFromUrl, readMarkdown, videoUrlsToNodes } from './editorDoc'
+import { isVideoUrl } from '@/render/video'
 import { CARD } from './kit'
 
 export type EditorApi = {
@@ -39,39 +42,6 @@ export type EditorApi = {
   getMarkdown: () => string
   // Replace the whole document (used by the time machine to load a revision).
   setMarkdown: (md: string) => void
-}
-
-// tiptap-markdown augments storage at runtime but ships no type for it.
-type MarkdownStorage = { markdown: { getMarkdown: () => string } }
-function readMarkdown(editor: TiptapEditor): string {
-  return (editor.storage as unknown as MarkdownStorage).markdown.getMarkdown()
-}
-
-// Default caption from a media URL: the file name without its upload-timestamp
-// prefix or extension (e.g. ".../1781-my-photo.jpg" -> "my-photo").
-function captionFromUrl(url: string): string {
-  const base = decodeURIComponent(url.split('/').pop() ?? '').replace(/[#?].*$/, '')
-  return base.replace(/^\d+-/, '').replace(/\.[a-z0-9]+$/i, '')
-}
-
-// After loading/parsing markdown, promote any paragraph that is just a video URL
-// into a video node, so reloaded posts show the embed (not a bare link).
-function videoUrlsToNodes(editor: TiptapEditor): void {
-  const { state } = editor
-  const videoType = state.schema.nodes.video
-  if (!videoType) return
-  const hits: { from: number; to: number; src: string }[] = []
-  state.doc.descendants((node, pos) => {
-    if (node.type.name !== 'paragraph') return
-    const text = node.textContent.trim()
-    if (text && !/\s/.test(text) && isVideoUrl(text)) hits.push({ from: pos, to: pos + node.nodeSize, src: text })
-  })
-  if (!hits.length) return
-  let tr = state.tr
-  hits.reverse().forEach(({ from, to, src }) => {
-    tr = tr.replaceWith(from, to, videoType.create({ src }))
-  })
-  editor.view.dispatch(tr)
 }
 
 type Props = {
@@ -281,6 +251,15 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
   })
 
   const taRef = useRef<HTMLTextAreaElement>(null)
+
+  // Find and replace, for whichever view is showing (`useEditorFind.ts`). It owns the chord.
+  const find = useEditorFind({
+    editor,
+    raw,
+    taRef,
+    rawTextRef,
+    onRawText: (next) => { setRawText(next); onChange(next) },
+  })
   // Grow the Markdown source box to fit its content (no tiny inner scrollbox).
   useEffect(() => {
     const ta = taRef.current
@@ -347,8 +326,19 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
     // the owner called ugly. The paper continues; the writing just hasn't reached it.
     <div className={`${CARD} lg:min-h-[calc(100dvh-1.5rem)]`}>
       {actions}
-      {/* Floating menu on a text selection / link — not in raw source mode. */}
-      {!raw && <BubbleBar editor={editor} avoidTop={toolbarTop + ACTIONBAR_HEIGHT} />}
+      {/* Under the action line and over the toolbar, sticky with them: this strip is part of
+          the sheet's own top stack, not a band floating over the paper. */}
+      {find.open && (
+        <div className="sticky z-20" style={{ top: toolbarTop }}>
+          <FindBar target={find.target} withReplace={find.open === 'replace'} onHeight={find.onHeight} />
+        </div>
+      )}
+      {/* Floating menu on a text selection / link — not in raw source mode, and not while the
+          find strip is open. The strip SELECTS each hit as it steps onto it, so without this
+          the formatting bubble rose over every match and covered the line above the very word
+          the writer had gone looking for. While the strip is open the selection is the find's
+          rather than the writer's, and the bubble has nothing to offer about it. */}
+      {!raw && !find.open && <BubbleBar editor={editor} avoidTop={toolbarTop + ACTIONBAR_HEIGHT} />}
       {!raw && slash && (
         <SlashMenu
           editor={editor}
@@ -364,7 +354,7 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
       {/* Focus mode takes the row away; the bubble bar and "/" still carry every command
           it holds, which is the arrangement Medium made famous and the reason putting it
           away costs nothing. */}
-      {!raw && !focus && <Toolbar editor={editor} onPickImage={onPickImage} onPickGallery={onPickGallery} stickyTop={toolbarTop} />}
+      {!raw && !focus && <Toolbar editor={editor} onPickImage={onPickImage} onPickGallery={onPickGallery} stickyTop={toolbarTop + find.height} />}
       {/* Center the writing column at the public single-post width so what you
           type wraps exactly like the published article.
 
@@ -376,6 +366,8 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
         {raw ? (
           <MarkdownSource
             taRef={taRef}
+            hits={find.rawHits}
+            current={find.rawIndex}
             value={rawText}
             onDirty={onDirty}
             onChange={(next) => {

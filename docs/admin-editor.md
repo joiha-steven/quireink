@@ -45,6 +45,27 @@ that file first; this one only adds what is true here.
   moves while it is being aimed at is not a toolbar. Clusters are told apart by a 12px gap
   rather than a hairline for the same reason: a rule can end up the first mark on a wrapped
   line, and a stray tick at the start of a row reads as damage.
+- **Find and replace is DRAWN, never applied** (2026-09-13). `Mod-f` raises a strip under the
+  action line with the find field alone; `Mod-Shift-f` raises the same strip with the replace
+  field open, and a chevron at its head opens that field for a hand that came in through the
+  first chord. TWO CHORDS because most of the time it is find: a replace box that is always
+  there is a box that is usually in the way, and a second empty field under the cursor while
+  somebody is only reading is an invitation to type into the wrong one. The strip sits in the
+  sheet's own sticky stack rather than floating over the paper, and pushes the toolbar down
+  while it is open. In the writing surface the hits are ProseMirror
+  DECORATIONS (`FindExtension.ts`) and in the Markdown view they are `<mark>` in the mirror
+  (`MarkdownSource.withHits`) — in both cases beside the text rather than on it, which is the
+  only shape the contract below allows: a mark would go into the undo history, into the
+  Markdown the piece saves as, and out to the reader. Matching is plain text and never a
+  regular expression (`editorFind.ts` says why), non-overlapping so stepping agrees with what
+  Replace all will do, and case-insensitive unless the `Aa` switch says otherwise. Replace all
+  is ONE transaction, walked backwards so no position needs mapping, so one undo puts it all
+  back. ⚠️ The strip SELECTS each hit as it steps onto it, so the formatting bubble is
+  suppressed while it is open — without that it rose over every match and covered the line
+  above the word the writer had gone looking for.
+  ⚠️ `Mod-f` is taken from the browser, the only chord here that is. Same trade as `Mod-s`:
+  the browser's find cannot search the Markdown view's textarea usefully, cannot replace, and
+  matches the rail and the write pane as readily as the piece.
 - **A SAVE MAY NOT CHANGE THE READER'S PAGE.** This is the editor's one hard contract and it
   was unwritten until 2026-08-30, when it turned out to be broken: 19 of the 45 fixtures in
   `golden/corpus` published differently after one pass through the writing surface. Footnote
@@ -66,9 +87,9 @@ that file first; this one only adds what is true here.
   the same shape `src/render/golden.test.ts` uses for its divergences from 1.x.
 - **Keyboard: one table, in `editorKeys.ts`**, read by the handlers AND by the Help screen, so a
   chord cannot move without the printed sheet following it. Tiptap's own bindings are left as
-  they come; what this product adds is `Mod-s` (save), `Mod-k` (link), `Mod-Shift-h`
-  (highlighter), `Mod-Shift-o` (ring), `Mod-Shift-x` (strip marks), `Mod-Shift-a` (Attributes),
-  `Mod-Shift-m` (Markdown source) and `Mod-\` (focus).
+  they come; what this product adds is `Mod-s` (save), `Mod-k` (link), `Mod-f` (find),
+  `Mod-Shift-f` (find and replace), `Mod-Shift-h` (highlighter), `Mod-Shift-o` (ring), `Mod-Shift-x` (strip marks),
+  `Mod-Shift-a` (Attributes), `Mod-Shift-m` (Markdown source) and `Mod-\` (focus).
   ⚠️ **`Mod-s` is not a convenience.** Autosave here writes to localStorage and NEVER to the
   server — deliberately, so editing a published post cannot push half a sentence live. Before
   this chord existed, a writer pressing Cmd+S got the browser's own "Save page as…" dialog and

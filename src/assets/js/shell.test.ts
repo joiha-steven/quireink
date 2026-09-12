@@ -48,6 +48,66 @@ describe('listing controls', () => {
     expect(document.querySelector<HTMLButtonElement>('[data-grid-toggle]')!.hidden).toBe(false)
   })
 
+  // The scroll-fade fallback, on an engine with no view() timelines. It hides a card and
+  // then takes the hiding off when the card comes into view — so a card it never watches is a
+  // card that stays hidden for ever, and the tail of the archive is fetched a page at a time
+  // by this very island. Found from the reading page: a run of blank cards with real height
+  // and real gaps between them, past the first page, on that engine only.
+  it('watches the cards that arrive with a later page, not only the ones the server sent', async () => {
+    const watched: Element[] = []
+    const observers: ((entries: { isIntersecting: boolean; target: Element }[]) => void)[] = []
+    globalThis.IntersectionObserver = class {
+      constructor(cb: (e: { isIntersecting: boolean; target: Element }[]) => void) { observers.push(cb) }
+      observe(el: Element): void { watched.push(el) }
+      disconnect(): void {}
+    } as unknown as typeof IntersectionObserver
+
+    page(
+      '<div class="post-list"><div class="tl-yr"><span class="tl-year-tag">2026</span>'
+      + '<article class="reveal">One</article></div></div>'
+      + '<nav data-feed-more><a rel="next" href="/page/2">More</a></nav>',
+      LABELS,
+    )
+    // AFTER `page()`, which rewrites the document and takes the root's attributes with it.
+    document.documentElement.dataset.scrollFade = 'on'
+    document.documentElement.dataset.motion = 'on'
+    // happy-dom answers `true` to every `CSS.supports`, so the branch under test — the one
+    // for engines WITHOUT view() timelines — is unreachable until this says no. The whole
+    // namespace is replaced rather than its method: `globalThis.CSS` hands back a fresh
+    // object on every read, so an assignment to `CSS.supports` lands on a copy and the next
+    // reader sees the original.
+    const realCss = globalThis.CSS
+    Object.defineProperty(globalThis, 'CSS', {
+      value: { supports: (prop: string) => prop !== 'animation-timeline' },
+      configurable: true,
+    })
+    const before = watched.length
+    listing()
+    // The fallback only arms where view() timelines are missing, which is the case here.
+    expect(document.documentElement.dataset.revealJs).toBe('on')
+
+    // Page two arrives, carrying a card of its own.
+    const original = globalThis.fetch
+    globalThis.fetch = (async () => new Response(
+      '<div class="post-list"><div class="tl-yr"><span class="tl-year-tag">2026</span>'
+      + '<article class="reveal">Two</article></div></div>',
+    )) as unknown as typeof fetch
+    try {
+      // The sentinel is the last card; firing every observer drives the fetch.
+      for (const cb of observers) cb([{ isIntersecting: true, target: document.querySelector('article')! }])
+      await new Promise((r) => setTimeout(r, 0))
+      await new Promise((r) => setTimeout(r, 0))
+    } finally {
+      globalThis.fetch = original
+      Object.defineProperty(globalThis, 'CSS', { value: realCss, configurable: true })
+    }
+
+    const cards = [...document.querySelectorAll('.post-list article')]
+    expect(cards.map((c) => c.textContent)).toEqual(['One', 'Two'])
+    // Both of them are being watched — the one the page came with and the one that landed.
+    expect(watched.slice(before)).toContain(cards[1])
+  })
+
   it('hides the toggle on a page with no list', () => {
     page('<button data-grid-toggle></button><article>a post</article>', LABELS)
     listing()

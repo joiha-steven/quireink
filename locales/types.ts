@@ -438,6 +438,16 @@ export type AdminStrings = {
   dateTime: string
   tbHeading: string
   slashHint: string
+  findFind: string
+  findReplaceWith: string
+  findMatchCase: string
+  findPrevious: string
+  findNext: string
+  findReplace: string
+  findReplaceAll: string
+  findCount: string
+  findNoMatch: string
+  findReplacedN: string
   edWords: string
   edFocus: string
   edReadMinutes: string

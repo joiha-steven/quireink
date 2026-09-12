@@ -91,7 +91,7 @@ bun src/index.ts
 | 🌍&nbsp;**Languages** | Eleven, in the admin and on the site, and one more is one file. No CJK webfont ships, because they run to megabytes, but each of the three names its own face so 直 is drawn the Japanese way on a Japanese site |
 | 🔐&nbsp;**Sign-in** | Username and password hashed with argon2id, an authenticator code every time, ten recovery codes, and every signed-in device listed with a button to end it. There is a way back in when the password AND the phone are both gone. No Google in the login path |
 | 🤖&nbsp;**Assistant** | Your own model key in the admin: Claude, GPT, Gemini or DeepSeek. Answers arrive as they are written, conversations are kept, and each carries a receipt of what it cost. It also writes alt text and sorts spam into the trash |
-| ⌨️&nbsp;**The&nbsp;admin** | ⌘K finds any named setting and jumps to it, so it stops mattering which of the seven tabs holds it. The rail's order is yours to drag. Every control is a key with relief: raised means press me, carved means held down. Eight chords in the editor |
+| ⌨️&nbsp;**The&nbsp;admin** | ⌘K finds any named setting and jumps to it, so it stops mattering which of the seven tabs holds it. The rail's order is yours to drag. Every control is a key with relief: raised means press me, carved means held down. Nine chords in the editor, find and replace among them, in the writing surface and in the Markdown source alike |
 | 📱&nbsp;**Phone** | Install it to the home screen and it opens like an app |
 
 **Made for** one person, one server, one blog they mean to keep.

@@ -32,6 +32,15 @@ export const SHORTCUTS: Shortcut[] = [
   { id: 'attributes', chord: 'Mod-Shift-a', does: 'The Attributes panel: slug, date, terms, both pictures, the SEO fields and the Trash.' },
   { id: 'markdown', chord: 'Mod-Shift-m', does: 'Switch between the writing surface and the Markdown source.' },
   { id: 'focus', chord: 'Mod-\\', does: 'Focus mode: everything but the paper goes away.' },
+  // ⚠️ TAKEN FROM THE BROWSER, deliberately, and the only chord here that is. The argument is
+  // the one `Mod-s` made: the browser's own find cannot search the Markdown view's textarea
+  // usefully, cannot replace anything, and matches the rail and the write pane beside the
+  // sheet as readily as the piece. Handled in `useEditorFind.ts` rather than in
+  // `EditorActions` — the strip's open state lives with the editor, not with the action line
+  // — so the loop there finds this row and matches no branch, which is correct and is why
+  // the row carries this note.
+  { id: 'find', chord: 'Mod-f', does: 'Find, in either view. Enter steps to the next match, Shift-Enter to the one before, Escape closes it.' },
+  { id: 'replace', chord: 'Mod-Shift-f', does: 'Find and replace: the same strip with the replace field open. The chevron at its head opens it too.' },
   // Not the editor's, but it is printed by the same two things — the Help sheet and a
   // tooltip — and a second table would be a second place for a chord to drift.
   // ⚠️ `Mod-Shift-k`, and it moved there on 2026-09-07. `Mod-k` was assigned TWICE — this

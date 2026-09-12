@@ -983,3 +983,32 @@ html.admin [role='dialog'] {
   animation: none !important;
   transition: none !important;
 }
+
+/* ---------------------------------------------------------------------------
+   THE FIND HIGHLIGHT (`FindExtension.ts`).
+
+   Drawn as a decoration, never as a mark, so none of this reaches the Markdown the piece
+   saves as. Two weights, and both are needed: every hit gets the quiet one so the writer can
+   see at a glance where a word falls in the piece, and the one they are standing on gets the
+   loud one so stepping through is visible without reading the count.
+
+   The pen's own two colours rather than a browser yellow. The highlighter ink is what this
+   product already uses to mean "this bit, here", and the current hit takes the ballpoint red
+   that every other "you are here" mark in the admin takes.
+
+   `box-decoration-break` because a hit can wrap: without it the background is drawn once
+   across the whole box and the padding lands only at the two far ends, so the first line of a
+   wrapped match is missing its right edge and the second its left. */
+.find-hit {
+  /* `color: inherit` because the Markdown mirror draws its hits as `<mark>`, which every
+     browser gives a colour of its own along with the yellow this rule is replacing. */
+  color: inherit;
+  background: color-mix(in srgb, var(--pen-edge) 45%, transparent);
+  border-radius: 2px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+.find-hit-now {
+  background: color-mix(in srgb, var(--pen-red) 28%, transparent);
+  box-shadow: inset 0 -1.5px 0 var(--pen-red);
+}
