@@ -26,21 +26,19 @@ describe('every look is one attribute, one sheet, and nothing else', () => {
     }
   })
 
-  it('writes a hex only where it DECLARES the palette, never where it uses one', () => {
+  it('writes no colour at all, because the palette is the only source of one', () => {
     // Theme tokens only, everywhere a look paints — a hex in a rule is a colour that
     // survives the reader changing the palette, which is the one thing a palette is for.
     //
-    // THE ONE EXEMPTION, since 2026-09-13: a look may declare the seven palette tokens
-    // itself. The newspaper does, because a newspaper is a material — ink on newsprint —
-    // and inheriting whichever of the six palettes an owner happened to pick meant a paper
-    // printed in forest green. What it declares is the same seven names every palette
-    // declares, so everything downstream (custom CSS, the pen, the tables, the reader's own
-    // light/dark switch) goes on reading them and knows no difference.
-    const TOKENS = /^\s*(html\[data-look=\w+\][^{]*|\s+)\{?\s*(--c-[a-z-]+:#[0-9a-fA-F]{3,8};?\s*)+\}?\s*$/
-    for (const css of Object.values(SHEETS)) {
+    // THE EXEMPTION IS GONE. For two releases a look was allowed to declare the seven
+    // palette tokens itself, on the argument that a newspaper and a notebook are materials.
+    // It made four of the six rows in the palette menu dead controls on those two looks:
+    // `html[data-look=paper]` is (0,1,1) and `[data-palette=mono]` is (0,1,0), so choosing
+    // Mono, Sepia or Forest changed not one pixel. The owner settled it on 2026-09-13 — a
+    // look sets shape, type and marks, and what colour they come out in is the reader's.
+    for (const [name, css] of Object.entries(SHEETS)) {
       for (const line of rules(css)) {
-        if (!/#[0-9a-fA-F]{3,8}/.test(line)) continue
-        expect(line).toMatch(TOKENS)
+        expect(`${name}: ${line}`).not.toMatch(/#[0-9a-fA-F]{3,8}/)
       }
     }
   })
@@ -214,7 +212,8 @@ describe('the notebook dialect', () => {
     // The desk was the paper with the ink mixed into it, and at night the ink is the pale
     // one: the same mix lifted the desk ABOVE the page, so the sheet read as a hole cut in
     // the board. Measured then: page rgb(27,32,39) on a desk of rgb(40,45,52). Now it is the
-    // page's own lightness taken down, one formula for both halves.
+    // page's own lightness taken down, one formula for both halves — and DERIVED from
+    // --c-bg, so it follows the reader's palette wherever they take it.
     expect(LOOK_NOTES_CSS).toContain('oklch(from var(--c-bg) calc(l * .955) c h)')
     expect(LOOK_NOTES_CSS).toContain('oklch(from var(--c-bg) calc(l * .72) c h)')
     // Behind @supports, because a custom property swallows a value it cannot use and fails
@@ -223,12 +222,13 @@ describe('the notebook dialect', () => {
     expect(LOOK_NOTES_CSS).toContain('--desk:color-mix(in srgb,var(--c-text) 7%,var(--c-bg))')
   })
 
-  it('brings its own ink, and never a second FACE', () => {
-    // Its own palette on the newspaper's argument: a notebook is a material, and cream
-    // paper, a pale blue rule and blue-black ink are not decisions a blog makes.
-    expect(LOOK_NOTES_CSS).toMatch(/html\[data-look=notes]\{--c-bg:#[0-9a-f]{6}/)
-    expect(LOOK_NOTES_CSS).toContain('html[data-look=notes].dark{--c-bg:')
-    // But NO @font-face and no family this dialect alone would have to download. The
+  it('brings no ink of its own, and no second FACE either', () => {
+    // It declared cream paper, a pale blue rule and blue-black ink for one release. The
+    // palette is the only source of colour on this site, and a look that brings its own
+    // makes the palette menu a control that lies.
+    expect(LOOK_NOTES_CSS).not.toContain('--c-bg:')
+    expect(LOOK_NOTES_CSS).not.toContain('--c-rule:')
+    // And NO @font-face and no family this dialect alone would have to download. The
     // newspaper earns a second serif because a paper cuts its headlines from one; the face
     // that would say "notebook" is a handwriting face, and the ones in reach carry no
     // Vietnamese — which on a blog in this product's own first language means a system

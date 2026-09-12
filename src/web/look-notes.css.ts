@@ -4,34 +4,18 @@
 // The argument: a page of a working notebook lying on a desk. Everything below is either a
 // surface, a rule printed on that surface, or a mark a hand would have made.
 //
+// NONE OF IT IS A COLOUR. This sheet declared cream paper, a pale blue rule and blue-black
+// ink for one release, on the argument that a notebook is a material. The owner settled it
+// the other way on 2026-09-13: THE PALETTE IS THE ONLY SOURCE OF COLOUR ON THIS SITE, and a
+// look that brings its own makes four of the six rows in the palette menu dead controls —
+// measured, with this dialect on, choosing Mono or Forest changed not one pixel, because
+// `html[data-look=notes]` outranks `[data-palette=x]`. The paper, the rule and the ink are
+// whatever the reader's palette says they are; what this file still owns is the SHAPE.
+//
 // NO BACKTICKS anywhere below: this is one template literal and a backtick ends it.
 // `check:css-literal` enforces that, and this file is IN its list.
 
 export const LOOK_NOTES_CSS = `
-/* --- THE NOTEBOOK'S OWN INK -------------------------------------------------
-   THE SECOND LOOK THAT BRINGS ITS OWN PALETTE, on the newspaper's argument: a notebook is a
-   MATERIAL, and its three colours are not decisions a blog makes. Paper is cream and not
-   white, the rule printed on it is pale BLUE and not grey, and what a pen leaves is
-   blue-black and not #000 - which is why the dialect read as a grey web page with hairlines
-   on it however carefully the rest was drawn.
-
-   Same seven tokens every palette declares, so nothing downstream knows the difference:
-   custom CSS, the pen, the tables and the reader's own light/dark switch all go on reading
-   them. It is the six HUES this look overrules, never the switch.
-
-   The night half is a notebook under a lamp, not an inverted page: paper goes to a cold
-   blue-grey board, the rule stays blue and loses its light, and the ink warms up rather
-   than turning into white. */
-html[data-look=notes]{--c-bg:#faf6ed;--c-text:#1e2833;--c-heading:#14212e;
-  --c-meta:#6a7685;--c-rule:#c3d3e2;--c-link:#2b5c8a;--c-accent:#2b5c8a}
-html[data-look=notes].dark{--c-bg:#1b2027;--c-text:#d5dae0;--c-heading:#ffffff;
-  --c-meta:#8b95a1;--c-rule:#333f4d;--c-link:#85b2dc;--c-accent:#85b2dc}
-@media (prefers-color-scheme:dark){
-  html[data-look=notes]:not([data-scheme=light]){--c-bg:#1b2027;--c-text:#d5dae0;
-    --c-heading:#ffffff;--c-meta:#8b95a1;--c-rule:#333f4d;--c-link:#85b2dc;
-    --c-accent:#85b2dc}
-}
-
 /* --- THE CHROME IS THE NEUTRAL FACE -----------------------------------------
    Three dialects, three faces: the source-code one keeps the monospace, the paper one takes
    the reading face, this one takes the sans. On body and never on --font-sans, for the
@@ -173,10 +157,17 @@ html[data-look=notes] .rail h2::before{content:"";display:inline-block;width:1re
    where the words stop or it is a border and not an underline, so the heading is shrunk to
    its content with fit-content - a heading that wraps then underlines to its widest line,
    which is also what a hand does. In the ink rather than in the printed blue: the ruling is
-   on the paper before anybody writes, this is not. */
+   on the paper before anybody writes, this is not.
+
+   ONE PIXEL, NOT TWO. At two the stroke carried as much weight as the letters above it and
+   the pair read as a box lid rather than as a mark on a word. Thinner and NOT paler: fading
+   the ink instead was tried at 30% and 45% and both stop looking like a pen - a grey band
+   under black letters is a highlighter's smudge, or a printed rule, and the one thing this
+   mark has to say is that a hand made it. A hand lightens its underline by pressing less,
+   which makes the stroke finer and leaves the colour where it was. */
 html[data-look=notes] .prose :is(h2,h3){width:fit-content;max-width:100%;
-  padding-bottom:.12em;border-bottom:2px solid var(--c-heading)}
-html[data-look=notes] .prose h3{border-bottom-width:1px;border-bottom-color:var(--c-meta)}
+  padding-bottom:.12em;border-bottom:1px solid var(--c-heading)}
+html[data-look=notes] .prose h3{border-bottom-color:var(--c-meta)}
 
 /* A LINK THAT STAYS IN THIS NOTEBOOK is written the way a notebook writes one. The site's
    own drawn underline stays under both kinds; what separates them is the brackets.

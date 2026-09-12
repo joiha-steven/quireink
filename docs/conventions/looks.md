@@ -107,22 +107,39 @@ server-rendered as `<html data-look="code">` so the first paint is right and no 
   its siblings, and the children go on reading the outer one — measured, the index ran
   `1.1 1.2 2.3 2.4 2.5 3.6`. With the switch off the index keeps its bullet and smaller size.
 
+## A LOOK CONTAINS NO COLOUR
+
+Settled 2026-09-13, after two releases the other way. A look sets shape, type and marks;
+what colour they come out in is the **palette's**, always — the owner's default, or whatever
+the reader has picked from the menu. `looks.test.ts` fails on a hex anywhere in a look
+sheet, and there is no exemption.
+
+The argument for the other way was that a newspaper and a notebook are *materials*: ink on
+newsprint, cream paper and a blue rule, not decisions a blog makes. What it cost was the
+palette menu. `html[data-look=paper]` is (0,1,1) and `[data-palette=mono]` is (0,1,0), so on
+those two looks choosing Mono, Sepia or Forest changed **not one pixel** — four of six rows
+were dead controls, and nothing said so. A control that lies is worse than a green
+newspaper.
+
+What a look may still derive: anything computed **from** the tokens. The notebook's desk is
+`oklch(from var(--c-bg) …)`, so it follows the reader wherever they take the palette.
+
 ## notes — the notebook dialect, in brief
 
-Cream paper on a darker board, a pale blue rule printed on it, blue-black ink. The second
-look that brings its own palette, on the newspaper's argument: a notebook is a material.
+A sheet lying on a desk, ruled, written on by hand. Every colour in it is the palette's.
 
 - **The desk is the page's own lightness taken down**, one formula for both halves of the
-  day (`oklch(from var(--c-bg) calc(l * …) c h)`, behind `@supports`). It used to be the ink
-  mixed into the paper, and at night the ink is the pale one — so the desk rose ABOVE the
-  page and the sheet read as a hole cut in the board. A custom property swallows a value it
-  cannot use and fails only when something reads it, hence the `@supports` and the
-  `color-mix` left standing as the fallback.
+  day (`oklch(from var(--c-bg) calc(l * …) c h)`, behind `@supports`) — and derived, so it
+  follows the palette. It used to be the ink mixed into the paper, and at night the ink is
+  the pale one, so the desk rose ABOVE the page and the sheet read as a hole cut in the
+  board. A custom property swallows a value it cannot use and fails only when something
+  reads it, hence the `@supports` and the `color-mix` left standing as the fallback.
 - **The sheet goes under all THREE layouts.** `main > article` is the piece, `.post-list` is
   a feed, and `div.front` is the composed front — the one most visitors land on, and the one
   that had no paper under it at all.
 - **No second face, and that is a decision rather than an omission.** The newspaper earns
-  one because a paper really does cut its headlines from a second serif. The face that would
+  one because a paper really does cut its headlines from a second serif. A FACE is not a
+  colour: the rule above forbids the second, not the first. The face that would
   say "notebook" is a handwriting face, and the ones within reach carry no Vietnamese: on a
   blog in this product's own first language that is a system fallback on every accented
   word. The name on the cover takes the reading face instead, which is the closest thing

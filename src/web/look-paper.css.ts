@@ -11,6 +11,15 @@ import { t } from '@/i18n/i18n'
 // whole page is a publication, so the rule does not carry over. What it still never does is
 // change the reading face, the measure, or the words.
 //
+// AND IT CARRIES NO COLOUR. It carried seven palette tokens of its own for two releases, on
+// the argument that a newspaper is a material: ink on newsprint, and inheriting whichever
+// palette an owner happened to pick meant a paper printed in forest green. The owner
+// settled it the other way on 2026-09-13, and the rule is now flat: THE PALETTE IS THE ONLY
+// SOURCE OF COLOUR ON THIS SITE. Six palettes in a menu, four of which did nothing on this
+// look, is a control that lies — measured: with the dialect on, choosing Mono, Sepia or
+// Forest changed not one pixel, because `html[data-look=paper]` outranks `[data-palette=x]`.
+// A look sets shape, type and marks; what colour those come out in is the reader's.
+//
 // The SHELF lives in `look-paper-shelf.css.ts` and is concatenated back on at the foot of
 // this file: one sheet reaches the page, and every guard still reads one string. It was cut
 // out when this file passed the 400-line cap, by subject rather than by size.
@@ -21,30 +30,6 @@ import { t } from '@/i18n/i18n'
 import { LOOK_PAPER_SHELF_CSS } from '@/web/look-paper-shelf.css'
 
 const LOOK_PAPER_HEAD_CSS = `
-/* --- THE PAPER'S OWN INK ----------------------------------------------------
-   THE ONE LOOK THAT BRINGS ITS OWN PALETTE, and the reason is that a newspaper is a
-   MATERIAL: ink on newsprint, black and one grey and a rule. Inheriting whichever of the
-   six palettes an owner happened to pick meant a paper printed in forest green, which is
-   not a paper. Measured against the real thing on 2026-09-13: the New York Times sets its
-   text at #121212, its secondary at #666 and its rules at about #dfdfdf, and carries no
-   other colour on the front page at all.
-
-   These are the same seven tokens every palette declares, so nothing downstream knows the
-   difference — custom CSS, the pen, the tables and the reader's dark toggle all keep
-   working off them. The reader's LIGHT/DARK choice still decides which half applies; it is
-   the six HUES this look overrules, not the switch.
-
-   A night edition rather than an inverted page: newsprint in the dark is not #000. */
-html[data-look=paper]{--c-bg:#ffffff;--c-text:#121212;--c-heading:#121212;
-  --c-meta:#666666;--c-rule:#dfdfdf;--c-link:#326891;--c-accent:#326891}
-html[data-look=paper].dark{--c-bg:#121212;--c-text:#d8d8d8;--c-heading:#ffffff;
-  --c-meta:#8b8b8b;--c-rule:#2c2c2c;--c-link:#7aa9d6;--c-accent:#7aa9d6}
-@media (prefers-color-scheme:dark){
-  html[data-look=paper]:not([data-scheme=light]){--c-bg:#121212;--c-text:#d8d8d8;
-    --c-heading:#ffffff;--c-meta:#8b8b8b;--c-rule:#2c2c2c;--c-link:#7aa9d6;
-    --c-accent:#7aa9d6}
-}
-
 /* --- THE HEADLINE FACE ------------------------------------------------------
    A SECOND SERIF, beside the one the words are set in, which is what a paper does: the
    Times sets headlines in Cheltenham and body in Imperial. Source Serif 4 is already in
