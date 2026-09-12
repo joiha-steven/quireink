@@ -15,6 +15,73 @@ import { t } from '@/i18n/i18n'
 // `check:css-literal` enforces that, and this file is IN its list.
 
 export const LOOK_PAPER_CSS = `
+/* --- THE PAPER'S OWN INK ----------------------------------------------------
+   THE ONE LOOK THAT BRINGS ITS OWN PALETTE, and the reason is that a newspaper is a
+   MATERIAL: ink on newsprint, black and one grey and a rule. Inheriting whichever of the
+   six palettes an owner happened to pick meant a paper printed in forest green, which is
+   not a paper. Measured against the real thing on 2026-09-13: the New York Times sets its
+   text at #121212, its secondary at #666 and its rules at about #dfdfdf, and carries no
+   other colour on the front page at all.
+
+   These are the same seven tokens every palette declares, so nothing downstream knows the
+   difference — custom CSS, the pen, the tables and the reader's dark toggle all keep
+   working off them. The reader's LIGHT/DARK choice still decides which half applies; it is
+   the six HUES this look overrules, not the switch.
+
+   A night edition rather than an inverted page: newsprint in the dark is not #000. */
+html[data-look=paper]{--c-bg:#ffffff;--c-text:#121212;--c-heading:#121212;
+  --c-meta:#666666;--c-rule:#dfdfdf;--c-link:#326891;--c-accent:#326891}
+html[data-look=paper].dark{--c-bg:#121212;--c-text:#d8d8d8;--c-heading:#ffffff;
+  --c-meta:#8b8b8b;--c-rule:#2c2c2c;--c-link:#7aa9d6;--c-accent:#7aa9d6}
+@media (prefers-color-scheme:dark){
+  html[data-look=paper]:not([data-scheme=light]){--c-bg:#121212;--c-text:#d8d8d8;
+    --c-heading:#ffffff;--c-meta:#8b8b8b;--c-rule:#2c2c2c;--c-link:#7aa9d6;
+    --c-accent:#7aa9d6}
+}
+
+/* --- THE HEADLINE FACE ------------------------------------------------------
+   A SECOND SERIF, beside the one the words are set in, which is what a paper does: the
+   Times sets headlines in Cheltenham and body in Imperial. Source Serif 4 is already in
+   the tree as a reading preset, so a blog wearing this look downloads one more file and
+   every other blog downloads nothing.
+
+   AND AT REGULAR WEIGHT. Measured on the real front page: 400, leading 1.15, tracking
+   +0.01em — not bold. The authority is in the face and the leading, and a bold serif at
+   that size reads as a blog shouting rather than as a paper. The SIZES stay the owner's:
+   this sets the two numbers a scale does not fix. */
+html[data-look=paper] :is(h1,h2,h3,.fc-title,.read-next-title){
+  font-family:'Source Serif 4','Source Serif 4 Fallback','Source Serif 4 Fallback 2',
+    Georgia,'Times New Roman',serif;
+  font-weight:400;line-height:1.15;letter-spacing:.01em}
+html[data-look=paper] .post-list :is(h1,h2,h3){font-weight:400}
+/* TWO SIZES THE SCALE CANNOT HOLD, and both are the same argument: a paper's masthead and
+   a paper's headline are not headings in a document, they are the two things the page is
+   recognised by across a room. Both are DERIVED from the owner's h1 rather than typed, so
+   they still move with their scale. */
+html[data-look=paper] article > header h1{font-size:calc(var(--fs-h1) * 1.3);
+  line-height:1.1;letter-spacing:-.012em}
+html[data-look=paper] .site-bar > .title{font-size:calc(var(--fs-h1) * 1.5);
+  line-height:1.05;letter-spacing:-.02em}
+
+/* --- LABELS ARE A GROTESQUE, SMALL, LETTERSPACED ----------------------------
+   Every kicker, section head, byline and date on a paper is set in a sans at ten or eleven
+   pixels with the letters opened up, and that single habit is most of what separates a
+   newspaper from a website. Uppercase by TEXT-TRANSFORM, never by typing capitals: the feed,
+   the search result and the screen reader all still receive the word as it was written. */
+/* The shelf's own headings are labels, not headlines: "Contents" over a list of sections is
+   the same kind of word as "Featured" over a row of cards. */
+html[data-look=paper] :is(.front-label,.fc-cat,.read-next-label,.rail h2),
+/* Its own rule, and that is not tidiness: :is() is a FORGIVING selector list, so a
+   pseudo-element written inside it is dropped in silence and the rest of the list goes on
+   working. The shelf's invented heading sat in that list for one build and was the only
+   label on the page still in sentence case, with nothing anywhere saying why. */
+html[data-look=paper] article .rail-inner > nav:not(.toc)::before{
+  font-family:'Inter','Inter Fallback',system-ui,-apple-system,'Segoe UI',sans-serif;
+  text-transform:uppercase;letter-spacing:.08em;font-weight:600}
+html[data-look=paper] :is(.post-meta,.fc-meta,.t-small.text-meta,.post-taxo){
+  font-family:'Inter','Inter Fallback',system-ui,-apple-system,'Segoe UI',sans-serif;
+  letter-spacing:.02em}
+
 /* --- THE CHROME IS SET IN THE READING FACE ----------------------------------
    A paper has no monospace on it anywhere, and this is the move that changes the most:
    rail, meta, panel and footer stop being a second voice. The file is on the page

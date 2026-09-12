@@ -12,7 +12,7 @@
 // strings. Only the faces a page can actually use are emitted: the reading preset and the
 // chrome font, six declarations, rather than every family the binary happens to carry.
 
-import { getChromeFont, getFontPreset } from '@/content/themes'
+import { DISPLAY_SLUG, getChromeFont, getFontPreset } from '@/content/themes'
 
 /**
  * The unicode ranges each subset covers, and the files are built to match them by
@@ -169,10 +169,13 @@ const declare = (f: Face): string => {
  * fetches the file; a post with code gets the face it asked for instead of whatever
  * `ui-monospace` happens to be on that machine.
  */
-export function fontFaceCss(fontPreset: string, chromeFont: string): string {
+export function fontFaceCss(fontPreset: string, chromeFont: string, look = 'plain'): string {
   const wanted = new Set<string>(['inter', 'jetbrains-mono', getFontPreset(fontPreset).slug])
   // 'reading' follows the reading font and 'inter' is already in; neither adds a family.
   if (getChromeFont(chromeFont).sans && chromeFont !== 'reading') wanted.add(chromeFont)
+  // The newspaper look sets its headlines in a second serif. Declared only on that look, so
+  // a blog wearing any other one never learns the family exists.
+  if (look === 'paper') wanted.add(DISPLAY_SLUG)
   return [...wanted].flatMap((id) => FACES[id] ?? []).map(declare).join('')
 }
 

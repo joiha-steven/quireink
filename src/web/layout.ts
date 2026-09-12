@@ -185,7 +185,7 @@ import { escapeAttr, escapeHtml } from '@/utils'
 export function pageStyles(settings: SiteSettings, extra = ''): string {
   return [
     // FIRST: a family has to be declared before anything can ask for it by name.
-    fontFaceCss(settings.fontPreset, settings.chromeFont),
+    fontFaceCss(settings.fontPreset, settings.chromeFont, settings.look),
     // The chrome face, and the reading face's fallback until a preset repoints it. Inter
     // is the universal base, exactly as in the frozen tree. --font-mono is the third and
     // last handle: code, and only code. It is a constant rather than a setting because
@@ -257,7 +257,7 @@ export function renderDocument(
     .map(([k, v]) => ` ${dataAttr(k)}="${escapeAttr(v)}"`)
     .join('')
   const preloads = fontPreloadHrefs(settings.fontPreset, settings.language,
-    !!settings.customFont.family, settings.chromeFont)
+    !!settings.customFont.family, settings.chromeFont, settings.look)
     .map((href) => `<link rel="preload" href="${escapeAttr(href)}" as="font" type="font/woff2" crossorigin>`)
     .join('')
   const description = head.description

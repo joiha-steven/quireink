@@ -26,11 +26,22 @@ describe('every look is one attribute, one sheet, and nothing else', () => {
     }
   })
 
-  it('never writes a colour of its own', () => {
-    // Theme tokens only, like the rest of the public site. A hex here is a colour that
+  it('writes a hex only where it DECLARES the palette, never where it uses one', () => {
+    // Theme tokens only, everywhere a look paints — a hex in a rule is a colour that
     // survives the reader changing the palette, which is the one thing a palette is for.
+    //
+    // THE ONE EXEMPTION, since 2026-09-13: a look may declare the seven palette tokens
+    // itself. The newspaper does, because a newspaper is a material — ink on newsprint —
+    // and inheriting whichever of the six palettes an owner happened to pick meant a paper
+    // printed in forest green. What it declares is the same seven names every palette
+    // declares, so everything downstream (custom CSS, the pen, the tables, the reader's own
+    // light/dark switch) goes on reading them and knows no difference.
+    const TOKENS = /^\s*(html\[data-look=\w+\][^{]*|\s+)\{?\s*(--c-[a-z-]+:#[0-9a-fA-F]{3,8};?\s*)+\}?\s*$/
     for (const css of Object.values(SHEETS)) {
-      for (const line of rules(css)) expect(line).not.toMatch(/#[0-9a-fA-F]{3,8}/)
+      for (const line of rules(css)) {
+        if (!/#[0-9a-fA-F]{3,8}/.test(line)) continue
+        expect(line).toMatch(TOKENS)
+      }
     }
   })
 
@@ -83,10 +94,13 @@ describe('the newspaper dialect', () => {
   it('moves the shelf inline on a PIECE and never on a listing', () => {
     // Moved on a listing it landed under thirty-three posts. Every inline-shelf rule is
     // scoped inside an <article>, which a listing's rail is not.
-    for (const line of LOOK_PAPER_CSS.split('\n')) {
-      if (line.includes('.rail{') || line.includes('.rail-inner') || line.includes('.toc summary')) {
-        expect(line).toContain('article ')
-      }
+    // Keyed on what a rule DOES, not on what it mentions: the label rules name `.rail` too
+    // and are right to apply on a listing, because they set the shelf's face rather than
+    // its place. A rule that moves it says so with `position` or `display`.
+    for (const block of LOOK_PAPER_CSS.split('}')) {
+      if (!/\.rail|\.toc/.test(block)) continue
+      if (!/(position|display):/.test(block)) continue
+      expect(block).toContain('article ')
     }
   })
 })

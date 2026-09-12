@@ -94,7 +94,7 @@ export type FontPreset = {
 // `hasCustomFont` = an owner typeface is set (see FontSettings); when true the reading
 // font is that upload, so the built-in preset is not the one painting the title.
 export function fontPreloadHrefs(
-  id: string, lang: string, hasCustomFont: boolean, chromeFont: string,
+  id: string, lang: string, hasCustomFont: boolean, chromeFont: string, look = 'plain',
 ): string[] {
   if (lang === 'ja' || lang === 'zh' || lang === 'ko' || lang === 'ru') return []
   const subsets = (slug: string): string[] => (lang === 'vi'
@@ -113,7 +113,13 @@ export function fontPreloadHrefs(
   // preloading nothing. Measured — that mistake cost 160ms of LCP.
   const chrome = isChromeFontId(chromeFont) ? getChromeFont(chromeFont).slug : null
   const extra = chrome && chrome !== getFontPreset(id).slug ? subsets(chrome) : []
-  return [...reading, ...extra]
+  // ...and the newspaper look's headline face, which on that look IS the LCP element: the
+  // title is set in it, not in the reading font (`web/look-paper.css.ts`). Without this the
+  // one piece of text the page is judged by paints in a fallback and then swaps.
+  const display = look === 'paper' && DISPLAY_SLUG !== getFontPreset(id).slug
+    ? subsets(DISPLAY_SLUG)
+    : []
+  return [...reading, ...extra, ...display]
 }
 
 // A preset's typography = the tuned defaults with a few roles overridden.
@@ -338,6 +344,19 @@ export const CHROME_FONTS: ChromeFont[] = [
 // (`web/look-code.css.ts`). A blog that has already stored a choice keeps it: this is the
 // value a FRESH install lands on, not a migration.
 export const DEFAULT_CHROME_FONT = 'inter'
+
+/**
+ * The headline face the newspaper look sets its titles in.
+ *
+ * A second serif beside the reading one, which is what a paper actually does: the New York
+ * Times sets its headlines in Cheltenham and its body in Imperial, and the two disagreeing
+ * politely is most of what makes a page look like a newspaper rather than like a blog with
+ * rules drawn on it. Source Serif 4 is already in the tree — it is one of the reading
+ * presets — so this costs a blog wearing that look one more file and every other blog
+ * nothing, on the same argument that gave each look its own stylesheet.
+ */
+export const DISPLAY_SLUG = 'sourceserif'
+export const DISPLAY_FAMILY = 'Source Serif 4'
 
 export function getChromeFont(id: string): ChromeFont {
   return CHROME_FONTS.find((f) => f.id === id) ?? CHROME_FONTS[0]

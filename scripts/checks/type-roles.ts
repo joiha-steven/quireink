@@ -54,6 +54,16 @@ const ALLOWED = new Map<string, string>([
     + 'field shifted the layout sideways and left it there. A larger type role still wins.',
   ],
   [
+    'html[data-look=paper] article > header h1',
+    'a paper\'s headline. Not a heading in a document but the thing the page is recognised '
+    + 'by across a room, and the nine roles have no size for that. DERIVED from the owner\'s '
+    + 'h1, so it still moves with their scale.',
+  ],
+  [
+    'html[data-look=paper] .site-bar > .title',
+    'a paper\'s masthead, on the same argument as its headline. Derived from the owner\'s h1.',
+  ],
+  [
     'html[data-look=paper] .fc-lead .fc-title',
     'a front page\'s lead headline, and the one size a scale of nine roles does not have. '
     + 'DERIVED from the owner\'s h1 rather than typed, so it still moves with their scale: '

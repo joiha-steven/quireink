@@ -25,6 +25,7 @@ export {
   TYPE_ROLES, FONT_WEIGHTS, DEFAULT_TYPOGRAPHY, DEFAULT_FONT, fontPreloadHrefs,
   FONT_PRESETS, DEFAULT_FONT_PRESET, getFontPreset, isFontPresetId, fontPresetCss,
   CHROME_FONTS, DEFAULT_CHROME_FONT, getChromeFont, isChromeFontId, chromeFontCss,
+  DISPLAY_SLUG, DISPLAY_FAMILY,
 } from '@/content/fonts'
 export type { FontPreset, ChromeFont } from '@/content/fonts'
 
