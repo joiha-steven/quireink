@@ -208,6 +208,7 @@ body:has(.book-overlay[open]){overflow:hidden}
   width:100%;max-width:100%;margin-left:auto;margin-right:auto}
 /* The first column opens flush with the top of the page. */
 .book-flow.prose > :first-child{margin-top:0}
+
 /* Drop cap: the first paragraph opens with a large raised initial spanning about three
    lines, which is the classic chapter opening. The line beside it is not also indented. */
 .book-flow.prose > p:first-child::first-letter{float:left;margin:.02em .09em 0 0;

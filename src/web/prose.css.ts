@@ -31,6 +31,23 @@ export const PROSE_CSS = `
    enhancement is allowed to do. It inherits, and a code block is the one place it would
    be wrong — a line starting with a quoted string would slip its indent — so pre opts out. */
 .prose pre{hanging-punctuation:none}
+/* A BOOK HYPHENATES WHETHER OR NOT IT JUSTIFIES, and this sheet only did it inside the
+   justified path — so the setting every blog starts on, and every phone at any setting,
+   never hyphenated at all. That is where the rag is worst: measured on a 608px column of
+   English, the ninth-decile line ended 59px short of the edge and the worst 68px; with
+   hyphens on the same paragraphs, 35 and 59. On a 327px phone column, the worst line went
+   from 65px short to 51. The line COUNT did not move in either, so the page is no longer
+   and nothing below it shifted.
+   The limits are what keep it from reading like a ransom note: no word under six letters is
+   broken, never fewer than three letters either side of the hyphen. Vietnamese pays nothing
+   — its syllables do not hyphenate and no browser ships a dictionary for it — and English,
+   German, French and Spanish are where it earns its keep.
+   Paragraphs and list items only: a broken word in a HEADING is a different thing, and a
+   line of code is not prose. */
+.prose p,.prose li{hyphens:auto;-webkit-hyphens:auto;
+  hyphenate-limit-chars:6 3 3;
+  -webkit-hyphenate-limit-before:3;-webkit-hyphenate-limit-after:3}
+.prose :is(h1,h2,h3,h4,h5),.prose pre,.prose code{hyphens:manual;-webkit-hyphens:manual}
 .prose > * + *{margin-top:1.4em}
 .prose h1,.prose h2,.prose h3,.prose h4,.prose h5{color:var(--c-heading);font-weight:var(--fw-heading,600);
   scroll-margin-top:2rem}

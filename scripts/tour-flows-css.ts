@@ -310,4 +310,52 @@ export function registerSecurityFlows({ flow, expect }: Tour): void {
       return 'ok invisible at rest, ' + lit + ' when it is asked for'
     })()`, 600))
 
+  // THE BASELINE GRID, and the two columns of a spread only read as one page while it holds.
+  // Before the rule that keeps every gap a whole line, the paragraph break measured 1.85 of
+  // them and the left and right pages sat 11.7px out of phase. No unit test can see it.
+  // NOTE: this body is a template literal. No backticks.
+  flow('book mode sets its pages on one baseline grid', () => expect(
+    '/the-reed-pen-in-van-goghs-letters', `
+    (async () => {
+      document.querySelector('[data-book-open]').click()
+      await new Promise((r) => setTimeout(r, 600))
+      const flow = document.querySelector('.book-overlay[open] .book-flow')
+      if (!flow) return 'the overlay did not open'
+      const cs = getComputedStyle(flow)
+      const pitch = parseFloat(cs.columnWidth) + parseFloat(cs.columnGap)
+      const p0 = flow.querySelector('p')
+      const lh = parseFloat(getComputedStyle(p0).lineHeight)
+      const body = Math.round(parseFloat(getComputedStyle(p0).fontSize) * 1.58)
+      const rects = (el) => { const r = document.createRange(); r.selectNodeContents(el)
+        return [...r.getClientRects()].filter((b) => b.height > 5)
+          .map((b) => ({ top: b.top, col: Math.round(b.left / pitch), h: b.height })) }
+      // Paragraph to paragraph, inside one column: exactly one line, never 1.85 of one.
+      const kids = [...flow.children]
+      for (let i = 1; i < kids.length; i++) {
+        if (kids[i - 1].tagName !== 'P' || kids[i].tagName !== 'P') continue
+        const a = rects(kids[i - 1]), b = rects(kids[i])
+        if (!a.length || !b.length) continue
+        const last = a[a.length - 1], first = b[0]
+        if (last.col !== first.col) continue
+        const n = (first.top - last.top) / lh
+        if (Math.abs(n - Math.round(n)) > 0.04) return 'a paragraph break measures ' + n.toFixed(2) + ' lines'
+      }
+      // And every column's text sits at the same place on that grid.
+      const phase = {}
+      for (const p of flow.querySelectorAll('p')) for (const r of rects(p)) {
+        if (Math.abs(r.h - body) > 3) continue
+        if (phase[r.col] === undefined || r.top < phase[r.col]) phase[r.col] = r.top
+      }
+      const ph = Object.values(phase).map((t) => +((t % lh).toFixed(1)))
+      const mode = ph.sort()[Math.floor(ph.length / 2)]
+      const off = ph.filter((v) => Math.abs(v - mode) > 1).length
+      document.querySelector('.book-x').click()
+      // A column that OPENS WITH A PICTURE is the one exception, and it is measured rather
+      // than asserted: an illustration's height is whatever its proportions give, so the
+      // text under it lands wherever that leaves it. Putting pictures on the grid means
+      // letterboxing every one of them into a whole number of lines, which is a decision
+      // about the look of the page and not a bug to be fixed quietly.
+      if (off > ph.length / 2) return off + ' of ' + ph.length + ' columns off the grid: ' + ph.join(', ')
+      return 'ok paragraph breaks whole, ' + (ph.length - off) + '/' + ph.length + ' columns on one grid'
+    })()`, 600))
 }

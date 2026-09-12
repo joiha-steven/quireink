@@ -114,6 +114,42 @@ font, only the site language's subset(s), never the chrome font or an uploaded c
   the only Tailwind in the project; the rule and the seam live in
   [`performance.md`](../performance.md) "The two sheets".
 
+## What a book does that a web page does not (2026-09-12)
+
+- **Hyphenation is not a partner of justification.** A book hyphenates whether or not it
+  justifies, and this sheet only did it inside the justified path — so the setting every blog
+  starts on, and every phone at any setting, never hyphenated. Now `.prose p`/`.prose li`
+  carry `hyphens:auto` with `hyphenate-limit-chars: 6 3 3` everywhere; headings, `pre` and
+  `code` opt back out. Measured on a 608px column of English: the ninth-decile line ended
+  58.9px short of the edge, and 34.5 with hyphens; the worst went 68.4 → 58.9. On a 327px
+  phone column the worst went 65 → 51. **The line count did not move** in either, so nothing
+  below the paragraph shifted. Vietnamese pays nothing: its syllables do not hyphenate.
+- **Book mode sets its OWN text** (`web/book-text.css.ts`), not the article's. The overlay
+  already kept its own paper, ink, drop cap, asterism and spine; the WORDS were left to
+  `features.bookText`, which is a setting about the SCROLLING article and is off on a fresh
+  install. What that shipped, measured on a blog that had not turned it on, was a spread with
+  a drop cap and a centre spine setting its paragraphs ragged, unindented and unhyphenated.
+- **The baseline grid, and it is the thing a printed book has that a column of HTML does
+  not.** Two columns of a spread read as one page only while their lines sit at the same
+  heights, and that holds only while every gap between blocks is a whole number of lines.
+  Measured at 1440 before the rule: the line is 31.32px, a paragraph break measured 58px
+  (1.85 lines), heading gaps 67 and 42 (2.14 and 1.34), and the left and right pages sat
+  11.7px out of phase. So in book mode a paragraph leads with NOTHING but its indent (one
+  line exactly), a heading takes two lines above and one below with its own line box set to
+  one line of the body, and every other block takes a line above and below. After: paragraph
+  break 1.000 lines, heading 5.000 text-to-text, and every column on one phase.
+  ⚠️ **A picture is the exception and is left off the grid on purpose.** Its height is
+  whatever its proportions give, so a column that opens with one starts wherever that leaves
+  it (measured: 7 of 8 columns on the grid, the eighth 2.8px off). Putting pictures on it
+  means letterboxing every one into a whole number of lines, which is a decision about the
+  look of the page. Guarded by the tour flow `book mode sets its pages on one baseline grid`.
+- **Two things a browser will not do for us.** `hanging-punctuation` is Safari-only, and
+  `orphans`/`widows` are ignored by Chrome's column engine — tested by raising both to 3 on a
+  spread that stranded a single line at the top of a page, which did not move it. A book
+  never strands one; we cannot stop it without paginating ourselves.
+- **`text-wrap: pretty` buys nothing here.** Tried on a justified Vietnamese article: 251
+  lines, 3 short last lines, 9 tails under a third of the column — identical with it on.
+
 ## Book mode is ONE number, and the reader may move it (HARD RULE)
 
     book mode reading text = article reading text x the scale

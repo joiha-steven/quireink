@@ -24,6 +24,7 @@
 import { RAIL_CSS } from '@/web/rail.css'
 import { ISLANDS_CSS } from '@/web/islands.css'
 import { BOOK_CSS } from '@/web/book.css'
+import { BOOK_TEXT_CSS } from '@/web/book-text.css'
 import { BOOK_PHONE_CSS } from '@/web/book-phone.css'
 import { MOTION_CSS } from '@/web/motion.css'
 import { SUBSCRIBE_CSS } from '@/web/subscribe.css'
@@ -367,6 +368,7 @@ ${FIGURE_CSS}
 ${RAIL_CSS}
 ${ISLANDS_CSS}
 ${BOOK_CSS}
+${BOOK_TEXT_CSS}
 ${BOOK_PHONE_CSS}
 ${SUBSCRIBE_CSS}
 ${FRONT_CSS}
