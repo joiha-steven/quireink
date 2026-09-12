@@ -57,3 +57,60 @@ describe('palette contrast', () => {
     }
   }
 })
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ONE ARCHITECTURE, SIX HUES. Clearing a floor is not the same as being a SET: before the
+// 2026-09-13 rebalance every palette cleared 5.0 and the six were still six separate
+// designs — body text ran 10.22:1 on Sepia against 14.75:1 on Mono, headings 13.83 against
+// 18.26. The same words came out a third heavier or lighter depending on a choice that
+// should only have changed a colour, and nothing computed it.
+//
+// So the SPREAD is the assertion. Each role's six ratios must sit inside one band; the band
+// is wide enough that a hex may be nudged and narrow enough that a palette cannot drift back
+// into a design of its own. `palettes.ts` carries the targets and how they were solved.
+describe('the six are one set', () => {
+  /** `rule` is not read as text, so it is measured too — the notebook draws the page with it. */
+  const ROLES = [
+    { role: 'text', band: [12.4, 13.6] },
+    { role: 'heading', band: [16.3, 17.7] },
+    { role: 'meta', band: [4.9, 5.6] },
+    { role: 'rule', band: [1.2, 1.42] },
+  ] as const
+
+  for (const mode of ['light', 'dark'] as const) {
+    for (const { role, band } of ROLES) {
+      it(`${mode}: every palette's ${role} lands in ${band[0]}-${band[1]}:1`, () => {
+        const out = THEME_PRESETS
+          .map((p) => ({ id: p.id, ratio: +contrast(p.theme[mode][role], p.theme[mode].bg).toFixed(2) }))
+          .filter((r) => r.ratio < band[0] || r.ratio > band[1])
+        expect(out).toEqual([])
+      })
+    }
+  }
+
+  /**
+   * How much colour a hex carries, as the spread between its channels.
+   *
+   * Crude on purpose. Contrast is the wrong tool here — it measures LIGHTNESS, and these two
+   * papers are meant to differ in HUE at the same lightness, so a contrast ratio between
+   * them reads 1.00 whatever their colours. This reads 15 for a blue page and 2 for a grey
+   * one, which is the whole distinction in one number and needs no colour space.
+   */
+  const colourfulness = (hex: string): number => {
+    const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16))
+    return Math.max(r!, g!, b!) - Math.min(r!, g!, b!)
+  }
+
+  it('gives Ocean and Sci-Fi papers a reader can tell apart', () => {
+    // They had become the same palette: papers at L97 with chroma 5 and 4, inks at L31 and
+    // L28 with chroma 24 and 23. The only thing telling them apart was a link, and a page
+    // can go a screen without one. Ocean is a blue PAGE now; Sci-Fi is graphite with an
+    // electric mark on it, and the papers are where a reader meets that difference first.
+    for (const mode of ['light', 'dark'] as const) {
+      const ocean = THEME_PRESETS.find((p) => p.id === 'ocean')!.theme[mode]
+      const scifi = THEME_PRESETS.find((p) => p.id === 'scifi')!.theme[mode]
+      expect(colourfulness(scifi.bg)).toBeLessThanOrEqual(6)
+      expect(colourfulness(ocean.bg)).toBeGreaterThanOrEqual(colourfulness(scifi.bg) * 3)
+    }
+  })
+})
