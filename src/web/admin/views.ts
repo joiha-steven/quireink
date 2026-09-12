@@ -43,11 +43,11 @@ import { listBlobs } from '@/media/blob'
 import { statsByPost } from '@/news/newsletter-log'
 import { getMailStatus } from '@/news/mail'
 import { OwnerRouter } from '@/web/guard'
-import pkg from '../../../package.json' with { type: 'json' }
+import { APP_VERSION } from '@/version'
 import { dashboardView } from '@/web/admin/views-home'
 
 /** Printed by the Help page and the dashboard, so the two can never disagree. */
-const VERSION = (pkg as { version: string }).version
+const VERSION = APP_VERSION
 
 /**
  * A window of days, from the `range` query. The frozen tree offered these four (plus the
@@ -269,7 +269,10 @@ async function shellView() {
   const { aiConfigured } = await getIntegrationStatus()
   // The portrait rides along for the same reason `navOrder` does: the rail's foot draws it
   // on the first frame, and a second request for one string would show a blank ring first.
-  return { language: settings.language, version: VERSION, aiConfigured, navOrder: settings.navOrder, avatar: settings.author.avatarUrl }
+  // `seenRelease` and `look` ride along for the what's-new panel: one comparison decides
+  // whether it appears at all, and it must be answered before the first paint rather than
+  // by a second round trip that would let the panel arrive after the page.
+  return { language: settings.language, version: VERSION, aiConfigured, navOrder: settings.navOrder, avatar: settings.author.avatarUrl, seenRelease: settings.seenRelease, look: settings.look }
 }
 
 /** Storage totals for the media page's header, without listing every blob twice. */

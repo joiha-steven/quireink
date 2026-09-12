@@ -286,6 +286,7 @@ export type SiteSettings = {
    *  a site address was set (`web/enrol-routes.ts` has what that cost). A row written before
    *  the field existed reads as DONE: see `fromStored`. */
   setupDone: boolean
+  seenRelease: string // the release this blog has been SHOWN; empty = never (admin/components/WhatsNew.tsx)
   contentWidth: number // px, max width of the content column (desktop)
   postsPerPage: number // posts shown per page on home/category/tag lists
   relatedCount: number // related posts shown at the end of an article (0 = none)

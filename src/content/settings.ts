@@ -80,6 +80,10 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   // why this default is false and the fallback in `fromStored` is not. The claim writes it
   // explicitly, because the claim may also write a language and that would make a row.
   setupDone: false,
+  // EMPTY, and it has to be: an existing blog upgrading into this build has no such field,
+  // reads as empty, and is exactly the blog that should be shown the panel and asked the
+  // question. A fresh install is stamped at the end of setup.
+  seenRelease: '',
   // On, and the reason is in `types.ts`. An operator who disagrees has one environment
   // variable; an owner who disagrees has one switch.
   // Empty, not 'UTC': an operator who set ANALYTICS_TZ on an existing install keeps their
@@ -226,6 +230,9 @@ export async function getSettings(): Promise<SiteSettings> {
       // that is already running, and dropping its owner into first-run setup the next time
       // they enrol an authenticator would be the same wrong answer pointing the other way.
       setupDone: typeof stored.setupDone === 'boolean' ? stored.setupDone : had,
+      // Unlike `setupDone` above this does NOT fall back to `had`: a row written before the
+      // field existed is precisely the case the panel is for, so it must read as empty.
+      seenRelease: typeof stored.seenRelease === 'string' ? stored.seenRelease : '',
       logoWidth: clampNumber(stored.logoWidth, 24, 600, DEFAULT_SETTINGS.logoWidth),
       contentWidth: clampNumber(stored.contentWidth, 360, 1600, DEFAULT_SETTINGS.contentWidth),
       postsPerPage: clampNumber(stored.postsPerPage, 1, 100, DEFAULT_SETTINGS.postsPerPage),

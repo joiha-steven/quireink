@@ -10,6 +10,7 @@
 // wearing the site's own domain, and that is worth closing separately.
 
 import type { Context } from 'hono'
+import type { SiteLook } from '@/types'
 import { getSettings } from '@/content/settings'
 import { adminT } from '@/i18n/admin-i18n'
 import { noUsersYet, createUser } from '@/auth/users'
@@ -29,7 +30,8 @@ import { fail, json } from '@/web/api'
 import { ownerRouter, type OwnerRouter } from '@/web/guard'
 import { saveSettings } from '@/content/settings'
 import { isSiteLang } from '@/locales/langs'
-import { siteStepScreen, faceStepScreen, readerStepScreen } from '@/web/setup-page'
+import { siteStepScreen, faceStepScreen, readerStepScreen, lookStepScreen } from '@/web/setup-page'
+import { APP_VERSION } from '@/version'
 
 const html = (body: string, status = 200): Response =>
   new Response(body, { status, headers: { 'content-type': 'text/html; charset=utf-8' } })
@@ -296,9 +298,30 @@ export function setupWizardRoutes(): OwnerRouter {
     // quieter site.
     const readerPen = form.pen !== 'off'
     const current = await getSettings()
-    // The last question, so this is where the run is finished. Written here rather than at
+    await saveSettings({ features: { ...current.features, readerPen } })
+    return c.redirect('/setup/look', 303)
+  })
+
+  router.get('/setup/look', async () => html(lookStepScreen(await getSettings())))
+
+  router.post('/setup/look', async (c) => {
+    const form = await c.req.parseBody().catch(() => ({})) as Record<string, unknown>
+    const look = form.look
+    // THE LAST QUESTION, so this is where the run is finished. Written here rather than at
     // each step: a setup somebody abandoned halfway is one they should be offered again.
-    await saveSettings({ setupDone: true, features: { ...current.features, readerPen } })
+    //
+    // And where the release is stamped. An install that has answered this has been asked
+    // which dialect it wants, so the admin's what's-new panel must never ask it again — and
+    // an install that predates the field reads as empty, which is exactly the blog the panel
+    // exists for (`content/settings.ts`).
+    await saveSettings({
+      setupDone: true,
+      seenRelease: APP_VERSION,
+      // The sanitiser keeps the current value for anything it does not recognise, so a
+      // submit from a browser that lost the radios lands on the default rather than on a
+      // dialect nobody chose.
+      ...(typeof look === 'string' ? { look: look as SiteLook } : {}),
+    })
     // Into the editor, not the dashboard. The last thing setup should do is hand somebody a
     // control panel; the first post is the reason they installed this.
     return c.redirect('/admin/editor', 303)

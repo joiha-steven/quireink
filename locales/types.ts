@@ -1574,6 +1574,18 @@ export type AdminStrings = {
   penStepOff: string
   penStepOffHint: string
   setupFinish: string
+  /** The fourth setup step and the admin's what's-new panel: one question about the
+   *  writing, answered once, and the news that follows an upgrade. */
+  lookStepTitle: string
+  lookStepLede: string
+  lookStepPlainHint: string
+  lookStepCodeHint: string
+  lookStepPaperHint: string
+  lookStepNotesHint: string
+  newsTitle: string
+  newsBody: string
+  newsNotes: string
+  newsDone: string
   // Shown on the enrolment screen ONLY while the blog has no public address. Before anyone
   // has enrolled, two-factor protects nothing — whoever has the password first enrols their
   // own authenticator — so skipping on a laptop trial widens nothing. Setting a real address

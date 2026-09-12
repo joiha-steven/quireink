@@ -34,10 +34,10 @@ import { ageBucket, installKind, sizeBucket } from '@/server/update-facts'
 import { getSettings, resolveSiteUrl } from '@/content/settings'
 import { isBlockedAddress } from '@/server/safe-fetch'
 import { one, run, tx } from '@/store/query'
-import pkg from '../../package.json' with { type: 'json' }
+import { APP_VERSION } from '@/version'
 
 const ENDPOINT = 'https://check.quireink.com/releases.json'
-const VERSION = (pkg as { version: string }).version
+const VERSION = APP_VERSION
 const DAY_MS = 86_400_000
 
 /** Short. Nothing waits on this call, but a socket held open for a minute is still a

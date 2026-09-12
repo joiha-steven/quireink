@@ -11,6 +11,7 @@ import { useView } from '@/admin/useView'
 import { AdminI18nProvider, useAdminT } from '@/admin/components/I18nProvider'
 import { ToastProvider } from '@/admin/ui/Toast'
 import { ConfirmProvider } from '@/admin/ui/ConfirmDialog'
+import { WhatsNew } from '@/admin/components/WhatsNew'
 import { ThemeProvider } from '@/admin/ui/ThemeProvider'
 import { TopProgress } from '@/admin/ui/TopProgress'
 import { ErrorBoundary } from '@/admin/ui/ErrorBoundary'
@@ -242,6 +243,10 @@ function Shell() {
             the palette is: the navigation guard asks its question WHILE a page is being left,
             so the thing drawing it cannot be the thing being unmounted. */}
         <ConfirmProvider>
+        {/* What changed, once, after an upgrade. Inside the providers because it saves — and
+            outside the route for the reason the palette and the confirm dialog are: it is
+            not about the screen somebody happens to be on. */}
+        <WhatsNew version={data.version} seen={data.seenRelease} look={data.look} />
         {/* From lg up the shell is the INSTRUMENT PANEL: locked to the viewport, nothing on it
             moves. Only the canvas scrolls — so the rail, the write pane and the editor's
             sticky rows hold still while the paper passes, and a rubber-band at the top of a

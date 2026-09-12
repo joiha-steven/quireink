@@ -178,6 +178,10 @@ async function applySave(input: Partial<SiteSettings>): Promise<SiteSettings> {
     // PUT that omits the flag is every other settings save on the screen.
     firstRunDone: yesNo(input.firstRunDone, current.firstRunDone),
     setupDone: yesNo(input.setupDone, current.setupDone),
+    // A version string and nothing else. Trimmed and capped, because it is written by the
+    // admin and the only thing downstream does with it is compare it to the build's own.
+    seenRelease: typeof input.seenRelease === 'string'
+      ? input.seenRelease.trim().slice(0, 32) : current.seenRelease,
     contentWidth: clampNumber(input.contentWidth, 360, 1600, current.contentWidth),
     postsPerPage: clampNumber(input.postsPerPage, 1, 100, current.postsPerPage),
     relatedCount: clampNumber(input.relatedCount, 0, 12, current.relatedCount),

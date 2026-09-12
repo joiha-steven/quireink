@@ -23,6 +23,7 @@ import { savePost } from '@/content/posts'
 import { savePage } from '@/content/pages'
 import { saveNote } from '@/content/notes'
 import { saveSettings, getSettings } from '@/content/settings'
+import { APP_VERSION } from '@/version'
 import { DEFAULT_HOME } from '@/content/settings-sanitize'
 import { bufferEvent, bufferScroll, flushAnalytics } from '@/analytics/buffer'
 import { createUser, setTotpSecret } from '@/auth/users'
@@ -128,6 +129,13 @@ await saveSettings({
   fontPreset: 'literata',
   chromeFont: 'jetbrains-mono',
   look: 'code',
+  // A SEEDED BLOG IS ONE THAT HAS BEEN SET UP, so it is stamped with the release it is on.
+  // Left empty it reads as a row that predates the field, which is what the admin's
+  // what's-new panel is for — and the panel would then open modal over every screen of the
+  // tour and eat the first click on each. It did: one flow reported the confirm dialog
+  // refusing to close, and another that the fixture was wearing no dialect at all, because
+  // a click meant for the page underneath had landed on the panel's Plain paper button.
+  seenRelease: APP_VERSION,
   menu: [
     // Typography and Calligraphy carry the fixture's two voices (machine type, the hand);
     // Printing still exists as a category and in the archive, but the owner cut it from

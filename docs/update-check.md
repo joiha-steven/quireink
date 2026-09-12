@@ -11,6 +11,30 @@ used. There is no second call and no separate telemetry service.
 
 Since 2026-08-29 the hourly clock asks too, so a quiet day still counts.
 
+## And the other direction: what you just installed
+
+The check above tells you when something **newer** exists. It cannot tell you what the
+release you are already running actually is — you updated by pulling an image, and nothing
+in that act says what changed.
+
+So the admin shows a panel, **once**, after an upgrade: the version you are now on and a link
+to its release notes. It asks the server nothing; it compares two strings it already has.
+
+One setting decides it. `seenRelease` is the release this blog has already been shown, and
+the last step of setup stamps it, so a fresh install never meets the panel for the release it
+was installed on.
+
+| `seenRelease` | What happens |
+|---|---|
+| the release you are running | nothing |
+| an older release | the news, once |
+| **empty** | the news, **and** the question about how the site looks |
+
+Empty means the settings row predates the field, which is the one thing the panel can tell:
+a blog installed before the four dialects existed never saw the setup step that asks which
+one it wants, so the panel asks there instead. Pressing one saves it straight away; pressing
+Done records the release and the panel does not come back.
+
 This is the whole request:
 
 ```

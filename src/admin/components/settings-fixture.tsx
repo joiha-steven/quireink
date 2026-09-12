@@ -62,6 +62,7 @@ export function settingsFixture(): SiteSettings {
     storageQuotaGb: 0,
     firstRunDone: true,
     setupDone: true,
+    seenRelease: '',
     timezone: '',
     updateCheck: true,
     contentWidth: 672,

@@ -1,4 +1,4 @@
-// First run, after the account: the only three questions worth interrupting somebody for.
+// First run, after the account: the only four questions worth interrupting somebody for.
 //
 // The list of what is NOT here is the design. Palettes, fonts, book mode, the feature
 // switches — none of them belongs in a wizard, because nobody can judge them before the site
@@ -19,8 +19,19 @@
 // do on your pages, and it is the thing Quire Ink has that the blog you came from does not
 // (ADR 0043) — an owner who never opens Settings never learns it is there. So it is asked
 // once, with the answer it already has, and one click in Settings undoes the asking.
+//
+// The dialect (2026-09-13) is the fourth, and it looks at first like exactly the taste
+// question ruled out above. It is not, and the difference is what the question ASKS. A
+// palette or a typeface asks you to judge a thing you have not seen on writing you have not
+// done. This asks what you are about to write — which you know before you have written a
+// word, and which is the only fact the four dialects differ on. It is also the one setting
+// here that a screenshot carries whole, so an owner who never opens Settings would never
+// learn that their blog could have looked like anything else.
+//
+// LAST, and that is also where the run is finished and the release stamped: a blog that has
+// answered this has been asked, and the admin's what's-new panel must never ask it again.
 
-import type { SiteSettings } from '@/types'
+import type { SiteLook, SiteSettings } from '@/types'
 import { adminT } from '@/i18n/admin-i18n'
 import { SITE_LANGS } from '@/locales/langs'
 import { loginShell } from '@/web/login-page'
@@ -146,6 +157,59 @@ export function readerStepScreen(settings: SiteSettings): string {
 <div class="face-grid">
 ${option('on', lines(true), s.penStepOn, s.penStepOnHint, on)}
 ${option('off', lines(false), s.penStepOff, s.penStepOffHint, !on)}
+</div>
+<button type="submit" class="login-submit">${escapeHtml(s.setupFinish)}</button>
+</form>`)
+}
+
+/**
+ * Step four: what you are about to write, which is what the site dresses itself for.
+ *
+ * Four cards, same shape as the two before it, and DRAWN for the same reason: "the furniture
+ * reads as source code while your text stays analogue" is a sentence nobody can picture. The
+ * drawings are the same bars the other steps use plus three small parts — a gutter of line
+ * numbers, a masthead over columns, a ruled sheet — because that is the whole of what
+ * separates the four at this size.
+ *
+ * The names are the ones the Settings field uses. A person who meets "Newspaper" here and
+ * goes looking for it later finds the same word.
+ */
+export function lookStepScreen(settings: SiteSettings): string {
+  const s = adminT(settings.language)
+  const worn: SiteLook = settings.look
+
+  const lines = (n: number): string =>
+    Array.from({ length: n }, (_, i) =>
+      `<span class="face-line${i === n - 1 ? ' face-short' : ''}"></span>`).join('')
+  // A gutter of numbers beside each line: the one mark that says "editor" at this size.
+  const gutter = (n: number): string =>
+    Array.from({ length: n }, (_, i) =>
+      `<span class="face-gut"><span class="face-num"></span>`
+      + `<span class="face-line${i === n - 1 ? ' face-short' : ''}"></span></span>`).join('')
+  // A centred nameplate over a heavy rule, then columns: a masthead and nothing else.
+  const masthead = '<span class="face-plate"></span><span class="face-heavy"></span>'
+    + '<span class="face-cols"><span></span><span></span><span></span></span>'
+  // A sheet lifted off the desk, with the printing already on it.
+  const sheet = `<span class="face-sheet">${
+    Array.from({ length: 4 }, () => '<span class="face-ruled"></span>').join('')}</span>`
+
+  const option = (value: SiteLook, art: string, label: string, hint: string): string => `
+<label class="face-choice">
+  <input type="radio" name="look" value="${escapeAttr(value)}"${value === worn ? ' checked' : ''}>
+  <span class="face-art" aria-hidden="true">${art}</span>
+  <span class="face-name">${escapeHtml(label)}</span>
+  <span class="face-hint">${escapeHtml(hint)}</span>
+</label>`
+
+  return loginShell(settings, s.lookStepTitle, `
+<h1>${escapeHtml(s.lookStepTitle)}</h1>
+<p class="login-lede">${escapeHtml(s.lookStepLede)}</p>
+<form method="post" action="/setup/look" class="login-form">
+<div class="face-grid">
+${option('plain', lines(4), s.lookPlain, s.lookStepPlainHint)}
+${option('code', gutter(4), s.lookCode, s.lookStepCodeHint)}
+${option('paper', masthead, s.lookPaper, s.lookStepPaperHint)}
+${option('notes', sheet, s.lookNotes, s.lookStepNotesHint)}
 </div>
 <button type="submit" class="login-submit">${escapeHtml(s.setupFinish)}</button>
 </form>`)
