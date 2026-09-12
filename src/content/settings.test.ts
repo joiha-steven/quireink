@@ -6,7 +6,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { freshDatabase, dropDatabase } from '@/test/db'
 import { db } from '@/store/db'
 import { one } from '@/store/query'
-import { getSettings, saveSettings, DEFAULT_SETTINGS } from '@/content/settings'
+import { resetSettingsCache, getSettings, saveSettings, DEFAULT_SETTINGS } from '@/content/settings'
 
 const DIR = './.tmp/test-settings'
 freshDatabase(DIR)
@@ -20,6 +20,27 @@ const write = (data: unknown) =>
 describe('getSettings', () => {
   it('returns the defaults when no row exists', async () => {
     expect(await getSettings()).toEqual(DEFAULT_SETTINGS)
+  })
+
+  /**
+   * The two defaults that are NOT the same answer for a new install and an old one.
+   * A default that changes is a redesign of every blog that never answered the question,
+   * so `setupDone` and `bookText` read the presence of a settings row as "already running".
+   */
+  it('gives a blog that already has a row the answers it already had', async () => {
+    expect(DEFAULT_SETTINGS.setupDone).toBe(false)
+    expect(DEFAULT_SETTINGS.features.bookText).toBe(true)
+    write({ title: 'Running since before either question existed' })
+    const s = await getSettings()
+    expect(s.setupDone).toBe(true)
+    expect(s.features.bookText).toBe(false)
+    // And a row that ANSWERS one keeps its own answer, whichever way it points.
+    db().run(`delete from settings`)
+    resetSettingsCache()
+    write({ setupDone: false, features: { bookText: true } })
+    const said = await getSettings()
+    expect(said.setupDone).toBe(false)
+    expect(said.features.bookText).toBe(true)
   })
 
   it('returns the defaults rather than throwing on a malformed blob', async () => {

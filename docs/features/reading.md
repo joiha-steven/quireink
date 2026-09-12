@@ -4,7 +4,10 @@
 
 - The feature switches are `FeatureSettings` in `src/types.ts` (Admin → Settings → Posts),
   gated in header / `/search` / post page.
-  `bookText` = book-page typesetting on the post body (first-line indent + justify ≥600px). `gridView` =
+  `bookText` = book-page typesetting on the post body (first-line indent + justify ≥600px);
+  **ON for a new blog since 2026-09-12**, and a blog that already has a settings row keeps
+  the look it had (the asymmetry is in `fromStored`). It governs the SCROLLING article only:
+  book mode sets its own text either way (`web/book-text.css.ts`). `gridView` =
   the reader's grid/list header toggle (`GridToggle`); off hides the button AND `listing.ts` ignores a
   stored `list=grid`, so every listing stays a list (and the infinite-scroll timeline, hidden in grid, always shows).
   Under 640px the button is not offered at all (`mobile.css.ts`): measured at 390, a grid there

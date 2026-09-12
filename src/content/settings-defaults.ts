@@ -56,7 +56,10 @@ export const DEFAULT_FEATURES: FeatureSettings = {
   penUnderline: true,
   penRing: true,
   penLists: true,
-  bookText: false,
+  // ON since 2026-09-12: this product is named after a quire and a new blog should read
+  // like one. An install that already has a settings row keeps what it looked like — the
+  // asymmetry is in `fromStored`, with its reasoning.
+  bookText: true,
   bookMode: true,
   readNext: true,
   resume: true,

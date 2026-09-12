@@ -31,6 +31,17 @@ export const PROSE_CSS = `
    enhancement is allowed to do. It inherits, and a code block is the one place it would
    be wrong — a line starting with a quoted string would slip its indent — so pre opts out. */
 .prose pre{hanging-punctuation:none}
+/* OLD-STYLE FIGURES, which is how a book sets a number inside a sentence: 1979 takes an
+   ascender and two descenders and reads as writing rather than as data. Book mode has asked
+   for them since the subsets were rebuilt to carry them, and the scrolling article did not —
+   so the same paragraph was set two ways depending on which way it was being read.
+   Only the serifs have the feature (measured: the shipped Literata and Source Serif latin
+   subsets carry the onum feature, Inter's does not), so a sans blog is unchanged and the browser simply
+   ignores it. A TABLE is the exception a book makes too — a column of figures has to line up,
+   which is what tabular lining figures are for — and a mono face has neither. */
+.prose{font-variant-numeric:oldstyle-nums}
+.prose table{font-variant-numeric:tabular-nums}
+.prose :is(code,pre,kbd,samp){font-variant-numeric:normal}
 /* A BOOK HYPHENATES WHETHER OR NOT IT JUSTIFIES, and this sheet only did it inside the
    justified path — so the setting every blog starts on, and every phone at any setting,
    never hyphenated at all. That is where the rag is worst: measured on a 608px column of

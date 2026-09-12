@@ -241,7 +241,13 @@ export async function getSettings(): Promise<SiteSettings> {
         return { ...f, faces: f.faces.map((x) => ({ ...x, url: expandBlob(x.url) })) }
       })(),
       seo: { ...seo, ogFallbackImage: expandBlob(seo.ogFallbackImage) },
-      features: sanitizeFeatures(stored.features, DEFAULT_FEATURES),
+      /**
+       * `bookText` is the one feature whose DEFAULT changed after installs existed, and a
+       * default that changes is a redesign of every blog that never answered the question.
+       * So the new answer is for new blogs: no settings row at all is an install nobody has
+       * configured, and a row is a blog with a look of its own to keep.
+       */
+      features: sanitizeFeatures(stored.features, had ? { ...DEFAULT_FEATURES, bookText: false } : DEFAULT_FEATURES),
       home: sanitizeHome(stored.home, DEFAULT_SETTINGS.home),
       figure: sanitizeFigure(stored.figure, DEFAULT_FIGURE),
       gallery: sanitizeGallery(stored.gallery, DEFAULT_GALLERY),
