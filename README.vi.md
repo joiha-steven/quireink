@@ -5,7 +5,7 @@
   <img src="docs/brand/wordmark-light.svg" alt="quireINK" width="360">
 </picture>
 
-`2.2.10-beta.2`
+`2.2.10-beta.3`
 
 **Blog tự host cho một người viết. Nhờ được AI viết và trông coi hộ.**
 Không thuật toán, không quảng cáo, không nền tảng nào đứng giữa bạn và người đọc. Tên bạn trên đó, không phải tên chúng tôi.
@@ -69,7 +69,7 @@ Blog cá nhân thì không tốn gì, và bạn được phép thu tiền. Chi t
 |:---|:---|
 | 🖋️&nbsp;**Viết** | Trình soạn Markdown thật: bảng, video, chú thích chân trang, công thức toán, nhúng Spotify. Thả ảnh vào là tự cắt cho mọi cỡ màn hình. Lưu trong lúc gõ, giữ ba bản gần nhất |
 | 🏠&nbsp;**Trang&nbsp;chủ** | Danh sách bài, một trang bạn tự viết, hoặc trang nhất kiểu báo dựng sẵn. [Cách hoạt động](./docs/homepage.md) |
-| 🎨&nbsp;**Giao&nbsp;diện** | Sáu bảng màu sáng và tối, bốn font đọc, hoặc tải font của bạn lên. Sửa một chỗ là cả trang đổi theo |
+| 🎨&nbsp;**Giao&nbsp;diện** | Bốn lối: giấy trơn, mã nguồn, báo in tự đánh số mục, và sổ tay kẻ dòng theo đúng giãn dòng của bạn. Phủ lên đó là sáu bảng màu sáng và tối, bốn font đọc hoặc font của bạn. Sửa một chỗ là cả trang đổi theo |
 | 🏷️&nbsp;**Không&nbsp;thương&nbsp;hiệu** | Không có gì của chúng tôi trên trang hay màn hình của bạn. Không dòng "powered by": footer là dòng chữ của bạn hoặc không có gì, logo trong admin và dòng phiên bản ở bảng điều khiển đều có công tắc tắt. Chỗ duy nhất phần mềm còn ghi tên mình là một thẻ meta người đọc không thấy |
 | 🖍️&nbsp;**Cây&nbsp;bút** | `==tô sáng==`, `++gạch chì++`, `@@khoanh bút đỏ@@`. Nét vẽ như tay người, mực không đều, không vệt nào trên trang giống vệt nào. Cho người đọc cầm bút nếu bạn muốn: dấu giữ trong trình duyệt của họ, mang sang máy khác bằng một mã chứ không cần tài khoản, gửi được về sổ tay riêng. Trang nào cũng link được `/pen.css` để viết bằng mực của bạn |
 | 📓&nbsp;**Sổ&nbsp;tay** | Loại viết thứ ba bên cạnh bài và trang: ghi chú và trích đoạn, nguồn của đoạn trích là một trường riêng. Nói IndieAuth, Micropub và Webmention, nên ghi chú đến được từ mọi client và nguồn biết mình được trích |
@@ -92,6 +92,10 @@ Blog cá nhân thì không tốn gì, và bạn được phép thu tiền. Chi t
 **Không làm cho** một đội cần phân vai, duyệt bài và hàng đợi biên tập. Nó cố ý chỉ có một chủ.
 
 <div align="center">
+
+<img src="docs/demo-looks.jpg" alt="Cùng một bài viết trong bốn lối giao diện: giấy trơn, mã nguồn với khung ngoặc vuông và số dòng, báo in với măng sét và một mục đã đánh số, và sổ tay với dòng kẻ chạy sau chữ" width="960">
+
+<sub>Một bài, bốn lối, một bảng màu. Lối quyết định hình dáng, kiểu chữ và các dấu; còn màu trên cả bốn đều lấy từ bảng màu, nên đổi bảng màu là cả bốn đổi theo.</sub>
 
 <img src="docs/demo-admin.jpg" alt="Trang quản trị Quire Ink: trình soạn bài với nút gạch dưới và khoanh tròn trên thanh công cụ, câu gạch chì, chữ khoanh đỏ, câu tô sáng và bức thư tay đóng khung trong bài; bên cạnh là trang cấu hình giao diện với sáu bảng màu và bốn font đọc" width="960">
 
@@ -126,11 +130,11 @@ Giữ được như vậy là nhờ mấy luật cứng: mỗi gói JavaScript c
 
 ## Bản này
 
-**2.2.10-beta.2** là bản thử thứ hai trước khi có 2.2.10. Nó đang chạy trang demo ở trên lẫn blog của chính tác giả tại [manhhung.me](https://manhhung.me). [Nhật ký thay đổi](./CHANGELOG.md) ghi đủ. Tag Docker của nó là `2.2.10-beta.2` và chỉ vậy: `latest` vẫn là 2.2.9, không ai lỡ tay cài phải bản thử.
+**2.2.10-beta.3** là bản thử thứ ba trước khi có 2.2.10. Nó đang chạy trang demo ở trên lẫn blog của chính tác giả tại [manhhung.me](https://manhhung.me). [Nhật ký thay đổi](./CHANGELOG.md) ghi đủ. Tag Docker của nó là `2.2.10-beta.3` và chỉ vậy: `latest` vẫn là 2.2.9, không ai lỡ tay cài phải bản thử.
 
-**Bản này chủ yếu là sửa.** Tìm kiếm giờ hiểu dấu bạn gõ: chỉ mục gấp dấu để ai gõ "lap trinh" vẫn ra "lập trình", nhưng nó gấp luôn câu hỏi, nên gõ "lề" là nhận về đủ mọi "lệ", "lê", "lẻ" trong kho. Đo trên blog thật: "lề" từ 50 kết quả còn 10. Bảy con số thống kê đang đếm nhầm hàng: độ đọc sâu bị trang chủ kéo xuống trong khi trang chủ là để lướt chứ không phải để đọc, còn những hàng ghi từ trước khi có cột thiết bị thì dẫn đầu mọi bảng dưới tên "Không rõ". Màn cài đặt lần đầu hỏi ngôn ngữ ngay màn đầu thay vì màn thứ ba, hỏi một lần có đưa bút cho người đọc không, và nói rõ tên đăng nhập dùng để làm gì. Giấy phép có thêm một điều tự có hiệu lực: 48 tháng không ra bản mới thì mã nguồn đồng thời là Apache 2.0, để bản cuối cùng vẫn có người khác cải tiến được.
+**Bản này thêm giao diện.** Blog đã xuất bản giờ mặc được một trong bốn lối, và đó cũng là câu hỏi cuối cùng của màn cài đặt. Báo in là lối duy nhất động tới chữ của bạn: nó đánh số mục, số hình, số bảng, in tên chuyên mục lên trên tiêu đề và đặt cả hai vào một font serif thứ hai. Những con số đó chỉ sống trên trang chứ không đi đâu khác, nên feed, thư gửi người đọc và đoạn ai đó chép đi vẫn nguyên như cũ. Sổ tay vẽ trang thành một tờ giấy đặt trên mặt bàn, kẻ dòng đúng theo giãn dòng bạn đang chọn. Mã nguồn chỉ thay phần khung, chừa nguyên cột đọc. Mỗi lối là một tệp CSS riêng, chỉ blog nào mặc mới tải, nên giấy trơn không trả một byte nào cho ba lối kia. Sáu bảng màu cũng được cân lại cùng dịp, mọi màu đều giải theo độ tương phản trên chính nền giấy của nó, và từ bản này một lối giao diện không còn chứa màu: nó ra màu gì là do bảng màu bạn chọn và do người đọc chọn đè lên. Blog đang chạy giữ nguyên màu đang có.
 
-**Và bản này KHÔNG làm được gì.** Là bản thử: 2.2.10 có thể còn đổi. Hai máy đánh dấu cùng một trang cùng lúc thì ghi đè nhau, lần lưu sau thắng. Trang quản trị chưa có màn nào cho biết đoạn nào được người đọc giữ nhiều nhất, mới có tool MCP `list_mentions` trả lời. Webmention có kiểm nguồn và giới hạn tốc độ nhưng chưa nối bộ lọc rác. Luật dấu chỉ lọc lại kết quả của chỉ mục đã gấp dấu chứ không thay nó, nên câu tìm có dấu phải đọc thêm ít hàng trước khi trả lời. Màn Trợ giúp vẫn chỉ tiếng Anh, vài chỗ đếm vẫn ra "1 words", và mọi giới hạn cũ còn nguyên: NAS và Kubernetes cố ý không có Caddy, công tắc Chuyển động là của chủ chứ không theo từng người đọc, bản cài chèn HTML bằng `sub_filter` của nginx mất nén và ETag của origin, origin không CDN thì người đọc ở nửa kia địa cầu trả thêm một vòng mạng.
+**Và bản này KHÔNG làm được gì.** Là bản thử: 2.2.10 có thể còn đổi. Có bốn lối và không có lối thứ năm: một lối là tệp CSS nằm trong bản build chứ không phải thứ soạn được trong trang quản trị, muốn đi xa hơn vẫn phải viết CSS riêng. Lối áp cho cả site, không thể để bài này là báo in còn bài sau là sổ tay, và nó chỉ thay trang đã xuất bản chứ không bao giờ đụng tới trang quản trị. Bảng hiện một lần sau khi nâng cấp chỉ nói bạn đang ở bản nào và dẫn tới ghi chú phát hành, chứ không mang theo ghi chú, và ghi chú đó là tiếng Anh. Hai máy đánh dấu cùng một trang cùng lúc thì ghi đè nhau, lần lưu sau thắng. Trang quản trị chưa có màn nào cho biết đoạn nào được người đọc giữ nhiều nhất, mới có tool MCP `list_mentions` trả lời. Webmention có kiểm nguồn và giới hạn tốc độ nhưng chưa nối bộ lọc rác. Màn Trợ giúp vẫn chỉ tiếng Anh, vài chỗ đếm vẫn ra "1 words", và mọi giới hạn cũ còn nguyên: NAS và Kubernetes cố ý không có Caddy, công tắc Chuyển động là của chủ chứ không theo từng người đọc, bản cài chèn HTML bằng `sub_filter` của nginx mất nén và ETag của origin, origin không CDN thì người đọc ở nửa kia địa cầu trả thêm một vòng mạng.
 
 ## Cài đặt
 

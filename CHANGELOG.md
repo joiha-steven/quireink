@@ -1,5 +1,125 @@
 # CHANGELOG
 
+## 2026-09-13 — Quire Ink 2.2.10-beta.3
+
+The third pre-release before 2.2.10, and the same rule as the two before it: its Docker tag
+is `2.2.10-beta.3` and nothing else, so `latest` and `2.2` still point at 2.2.9 and nobody
+gets a beta by accident. It runs the demo and the author's blog at manhhung.me.
+
+This one is a look. A published blog can wear one of four now, and which one is the last
+question setup asks. Nineteen commits.
+
+### Looks like: four dialects, one setting
+
+- **Appearance → Looks like, and the published site wears one of four**: Plain paper, Source
+  code, Newspaper or Notebook (`settings.look`). Only the published site; this admin never
+  changes. A blog that had the old IDE chrome switch on reads as Source code with nothing to
+  migrate.
+- **Newspaper is the one that touches your words.** It numbers sections, figures and tables,
+  prints the section over the headline and the date and byline under it, and sets both in a
+  second serif beside your reading face. The numbers live on the page and nowhere else: not
+  in the feed, the newsletter, a search result, or what a reader copies.
+- **Notebook draws the page as a sheet lying on a desk**, ruled at the leading your own type
+  settings use, with internal links written the way a notebook writes one and tags as hashes.
+  The ruling is drawn per paragraph: one background across the whole sheet has one fixed
+  step, and a picture is not a whole number of lines tall, so the lines drift and start
+  cutting through the text.
+- **Source code dresses the furniture and leaves the reading column alone.** Labels take a
+  `//`, every figure is bracketed, the shelf carries line numbers, and from 640px up the
+  header's icons become `[/find] [dark] [hue]`.
+- **Each look is its own stylesheet, linked only by a blog wearing it.** Plain links none.
+  The rules used to ride inside `site.css`, where every blog on earth paid 5.2 KB for
+  something that was off by default.
+- **The default chrome font is Inter**, on new installs only. It was a monospace, which gave
+  a blog nobody had touched a technical air of its own and left Source code with almost
+  nothing left to say.
+
+### A look contains no colour
+
+- **The palette is the only source of colour on this site.** Two of the looks declared their
+  own for two releases, on the argument that a newspaper and a notebook are materials. What
+  it cost was the palette menu: on those looks, choosing Mono, Sepia or Forest changed not
+  one pixel, because a look's selector outranks a palette's, and nothing said so. Four of six
+  rows were dead controls.
+- A look sets shape, type and marks. What colour they come out in belongs to the owner's
+  palette and to whatever a reader picks over it, and a test now fails on a single hex
+  anywhere in a look's stylesheet. What a look may still do is DERIVE from the tokens: the
+  notebook's desk is the page's own lightness taken down, so it follows the reader.
+
+### The six palettes become one set
+
+- **Every colour is solved for a contrast against its own paper**, so the six differ in hue
+  and in nothing else. Body text ran 10.22:1 on Sepia against 14.75:1 on Mono, and headings
+  13.83 against 18.26: the same words came out a third heavier or lighter depending on a
+  choice that should only have changed a colour. Now 12.88 to 13.08 for text and 16.92 to
+  17.10 for headings, across all six. Hue and chroma are untouched; only lightness moved.
+- **Ocean and Sci-Fi had become the same palette.** Papers at the same lightness with almost
+  no colour in either, inks three points apart, and the only thing telling them apart was a
+  link, which a page can go a screen without. Ocean is a blue page now, paper and ink alike;
+  Sci-Fi is graphite with an electric mark on it.
+- **`--c-rule` carries more than it did.** It used to draw hairlines between cards; the
+  notebook draws it under every line of every paragraph, so it is a surface. One weight for
+  all six, chosen by photographing the two extremes side by side.
+- **No existing blog moves.** Every blog stores its own copy of all six, written at install,
+  and that copy is read before these values. A fresh install gets the new set, and Reset in
+  the admin restores from it.
+
+### Setup asks what you are about to write
+
+- **A fourth first-run question, last of them**, with the four looks drawn rather than
+  described. It asks what you are about to write, which you know before you have written a
+  word, and which is the only fact the four differ on. A palette or a typeface would be the
+  other kind of question: judging a thing you have not seen, on writing you have not done.
+- It is also where the run is finished and the release recorded.
+
+### An upgrade says what it brought
+
+- **A panel in the admin, once, after an upgrade**: the version you are now on, and a link to
+  its release notes. Updating by pulling an image tells you nothing about what you got, and
+  the changelog is a file on a machine you may never open.
+- **A blog that has never been asked which look it wants is asked here**, which is every blog
+  installed before the four existed. A fresh install is stamped by setup and never meets the
+  panel for the release it was installed on.
+- It asks the server nothing and compares two strings it already has. The update check still
+  says when something newer exists; this says what the one you have IS.
+
+### A book that hyphenates, and a blog that opens like one
+
+- **Book mode hyphenates whether or not it justifies.** The rule only applied inside the
+  justified path, so the setting every blog starts on, and every phone at any setting, never
+  hyphenated at all, which is where the rag is worst. Measured on a 608px column of English:
+  the ninth-decile line ended 58.9px short of the column edge, and 34.5px with hyphens on.
+- **Book mode sets its columns on one baseline grid**, so a paragraph never breaks across a
+  column mid-line.
+- **A new blog opens like a quire**: the first-line indent and the justified column are on by
+  default. Only for a blog that has never answered the question, because a default that
+  changes is a redesign of every blog that never chose.
+
+### Fixed
+
+- **The MCP card stopped handing out a URL and a token for a switch nobody had saved.** The
+  connection URL appeared the moment the switch was flipped and the token manager under it
+  was never gated, so the working order ended at a client reading "server is currently
+  unavailable" from an endpoint that was still off.
+- **The three questions after the account were being skipped on every real install.** Where a
+  first-run owner landed was decided by whether a site address was known, and every
+  deployment path this project ships sets one in the environment.
+- **A caption belongs to its picture.** It sat 8px under the image with the text resuming one
+  line later, which is the same distance as the gap between two ordinary paragraphs, so it
+  read as the opening line of the words underneath. Reported from a phone.
+- **The write list is a list again.** A summary carried a clamp beside a display utility that
+  wins the cascade, so rows ran from 44px to 199px and five of forty-nine pieces fitted on a
+  900px screen. Ten fit now.
+- **Two marks on the header no longer read as something else.** The sun's rays were two units
+  long on a 1.8 stroke, and a round cap adds half the stroke at each end, so each ray drew as
+  a dot and eight dots round a disc is a smudge. The palette icon was a ring with two dots
+  level near the top and one below the centre, which is where a face's features go.
+- **The menu mark has three bars.** Two of unequal length is an equals sign at the size the
+  header draws it.
+- **The name on the header speaks the same dialect as the chrome around it.** It carried its
+  own font setting, so Source code wore an Inter wordmark over a monospace strapline, menu
+  and controls.
+
 ## 2026-09-11 — Quire Ink 2.2.10-beta.2
 
 The second pre-release before 2.2.10, and the same rule as the first: its Docker tag is

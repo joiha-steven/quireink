@@ -5,7 +5,7 @@
   <img src="docs/brand/wordmark-light.svg" alt="quireINK" width="360">
 </picture>
 
-`2.2.10-beta.2`
+`2.2.10-beta.3`
 
 **A blog you host yourself, and an AI agent can run it for you.**
 No algorithm, no ads, no platform standing between you and your readers.
@@ -76,7 +76,7 @@ bun src/index.ts
 |:---|:---|
 | 🖋️&nbsp;**Writing** | A real editor over Markdown: tables, video, footnotes, callouts, mathematics, Spotify. An image dropped in is cut for every screen, described for you if Settings has an AI key, and can hold the column, float, join a gallery or wear a paper mat. Saves as you type, keeps three versions, holds a post until Tuesday |
 | 🏠&nbsp;**Front&nbsp;page** | The post list, a page you wrote, or a composed front: lead story, picks, a row per category, most read. Works with photographs and with only words. [How it works](./docs/homepage.md) |
-| 🎨&nbsp;**Looks** | Six palettes, light and dark. Four reading fonts, or upload your own. Every size comes from a role, so one change moves the whole page instead of one heading |
+| 🎨&nbsp;**Looks** | Four of them: plain paper, source code, a newspaper that numbers its own sections, a notebook ruled at your leading. Over that, six palettes in light and dark, four reading fonts or your own. Every size comes from a role, so one change moves the whole page instead of one heading |
 | 🖍️&nbsp;**The&nbsp;pen** | `==text==` highlights in five inks, `++text++` underlines in pencil, `@@word@@` rings a word in red ballpoint. Strokes grow from a seeded hand that inks unevenly, so no two on a page share a shape, in pigments measured off a real pen box. Any site may link `/pen.css` and write with your inks |
 | 📓&nbsp;**Notebook** | Notes and clips as a third kind of writing beside posts and pages, keeping where a passage came from. Speaks IndieAuth, Micropub and Webmention. [How it works](./docs/features/notes.md) |
 | 💻&nbsp;**Code** | Highlighted on the server, so the reader downloads no highlighter. Twenty-one languages, and the names people actually type. A fence naming nothing is guessed at timidly, so program output stays plain |
@@ -98,6 +98,10 @@ bun src/index.ts
 **Not made for** a team that needs roles, approvals and an editorial queue. It has one owner on purpose.
 
 <div align="center">
+
+<img src="docs/demo-looks.jpg" alt="The same article in four looks: plain paper, source code with bracketed furniture and line numbers, a newspaper with a masthead and a numbered section, and a notebook sheet ruled behind the text" width="960">
+
+<sub>One post, four looks, one palette. The look decides shape, type and marks; every colour on all four comes from the palette, so changing it moves all of them together.</sub>
 
 <img src="docs/demo-reading.jpg" alt="Book mode, a two-column reader on paper with a drop cap, beside the dark theme showing a gallery of paintings above a table" width="960">
 
@@ -156,11 +160,11 @@ Five decisions keep it there, and all five are hard to walk back.
 
 ## This release
 
-**2.2.10-beta.2** is the second pre-release before 2.2.10. It runs the demo above and the author's own blog at [manhhung.me](https://manhhung.me); the [changelog](./CHANGELOG.md) has everything that changed. Its Docker tag is `2.2.10-beta.2` and only that: `latest` is still 2.2.9, so nobody gets a beta by accident.
+**2.2.10-beta.3** is the third pre-release before 2.2.10. It runs the demo above and the author's own blog at [manhhung.me](https://manhhung.me); the [changelog](./CHANGELOG.md) has everything that changed. Its Docker tag is `2.2.10-beta.3` and only that: `latest` is still 2.2.9, so nobody gets a beta by accident.
 
-**What it changes** is mostly correction. A search now means the accents that were typed: the index folds them so "lap trinh" finds "lập trình", and the query was folded with it, so "lề" used to come back with every "lệ", "lê" and "lẻ" on the blog. Measured on a live blog, "lề" went from 50 results to 10. Seven analytics counts were reading the wrong rows: read depth was weighted by the front page, which is scrolled rather than read, and rows written before the device columns existed led every facet as "Unknown". The first-run screens ask the language on the first screen rather than the third, ask once whether readers get a pen, and say what the username is for. The licence gained a clause that takes effect on its own: 48 months with no release from the author and the code is Apache 2.0 as well, so the last release can still be improved by somebody else.
+**What it adds is a look.** A published blog can wear one of four now, and which one is the last question setup asks. Newspaper is the one that touches your words: it numbers sections, figures and tables, prints the section over the headline and sets both in a second serif, and those numbers live on the page and nowhere else, so a feed, a newsletter and a copied paragraph stay as they were. Notebook draws the page as a sheet lying on a desk, ruled at the leading your own type settings use. Source code dresses the furniture and leaves the reading column alone. Each is its own stylesheet, linked only by a blog wearing it, so plain paper pays nothing for the other three. The six palettes were rebalanced at the same time, every colour solved for a contrast against its own paper, and a look now carries no colour of its own at all: whatever it puts on the page comes out in the palette you chose and in whatever your reader picks over it. A blog that already exists keeps the colours it has.
 
-**And what it does not do.** It is a beta, so expect 2.2.10 to still move things. Two devices marking the same page at once overwrite each other, last save wins. Nothing in the admin shows which passages readers keep most; only the `list_mentions` MCP tool answers that. Webmention verifies its source and rate-limits, but no spam judgement is wired to it. The accent rule narrows the folded index rather than replacing it, so an accented search reads a few more rows before it answers. The Help screens are still English only, a few counts still read "1 words", and every standing limit holds: a NAS and a Kubernetes cluster get no Caddy, the Motion switch is the owner's rather than per-reader, an install that rewrites its own HTML with nginx `sub_filter` loses the origin's compression and validator, and an origin with no CDN makes a reader on the far side of the planet pay a round trip that saved bytes cannot buy back.
+**And what it does not do.** It is a beta, so expect 2.2.10 to still move things. There are four looks and no fifth: a look is a stylesheet in the build rather than something you can write in the admin, so going further is still custom CSS. A look is site-wide, so one post cannot be a newspaper and the next a notebook, and it dresses the published site only, never the admin. The panel that appears once after an upgrade says which version you are now on and links its notes; it does not carry the notes, and they are in English. Two devices marking the same page at once overwrite each other, last save wins. Nothing in the admin shows which passages readers keep most; only the `list_mentions` MCP tool answers that. Webmention verifies its source and rate-limits, but no spam judgement is wired to it. The Help screens are still English only, a few counts still read "1 words", and every standing limit holds: a NAS and a Kubernetes cluster get no Caddy, the Motion switch is the owner's rather than per-reader, an install that rewrites its own HTML with nginx `sub_filter` loses the origin's compression and validator, and an origin with no CDN makes a reader on the far side of the planet pay a round trip that saved bytes cannot buy back.
 
 ## Install
 
