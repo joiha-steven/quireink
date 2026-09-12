@@ -118,6 +118,38 @@ describe('the newspaper dialect', () => {
     for (const line of menu) expect(line).not.toContain('display:flex')
   })
 
+  it('puts the section over the headline and the byline under it', () => {
+    // A paper opens on a headline, not on a grey line of housekeeping. The two halves are
+    // one paragraph in the markup, so the paragraph has to give up its box before either
+    // can be placed: without `display:contents` this dialect could only move all of it or
+    // none of it.
+    expect(LOOK_PAPER_CSS).toContain('.post-meta{display:contents')
+    const row = (sel: string) =>
+      new RegExp(`${sel.replace(/[.>[\]]/g, '\\$&')}\\{grid-row:(\\d)`).exec(LOOK_PAPER_CSS)?.[1]
+    expect(row('.post-cat')).toBe('1')
+    expect(row('article > header h1')).toBe('2')
+    expect(row('article > header .deck')).toBe('3')
+    expect(row('.post-facts')).toBe('4')
+    // The base sheet's middot separates two halves of one sentence. They are two lines here.
+    expect(LOOK_PAPER_CSS).toContain('.post-cat::after{content:none}')
+  })
+
+  it('sets the series box as a standing box, with no corner radius anywhere', () => {
+    // A rounded card with a hairline round it is a web component, and it was the last thing
+    // on the page still saying so. Nothing in this dialect draws a corner.
+    expect(LOOK_PAPER_CSS).toContain('aside.series{border:0;border-radius:0')
+    expect(LOOK_PAPER_CSS).not.toMatch(/border-radius:(?!0)/)
+    // Its marker is the margin's change bar, a printed convention. It was the accent, which
+    // in this look is the link blue: a blue bar beside black type says the line is a link.
+    const bar = /aside\.series li\[aria-current]::after\{[^}]*}/.exec(LOOK_PAPER_CSS)?.[0] ?? ''
+    expect(bar).toContain('var(--c-heading)')
+    expect(bar).not.toContain('--c-accent')
+    // The index's own you-are-here rule is the same mark three inches down the same page,
+    // and it inherited the same accent from the same base rule.
+    const row = /\.rail-row\[aria-current]::after\{[^}]*}/.exec(LOOK_PAPER_CSS)?.[0] ?? ''
+    expect(row).toContain('background:var(--c-heading)')
+  })
+
   it('moves the shelf inline on a PIECE and never on a listing', () => {
     // Moved on a listing it landed under thirty-three posts. Every inline-shelf rule is
     // scoped inside an <article>, which a listing's rail is not.

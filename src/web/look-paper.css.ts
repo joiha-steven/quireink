@@ -11,10 +11,16 @@ import { t } from '@/i18n/i18n'
 // whole page is a publication, so the rule does not carry over. What it still never does is
 // change the reading face, the measure, or the words.
 //
+// The SHELF lives in `look-paper-shelf.css.ts` and is concatenated back on at the foot of
+// this file: one sheet reaches the page, and every guard still reads one string. It was cut
+// out when this file passed the 400-line cap, by subject rather than by size.
+//
 // NO BACKTICKS anywhere below: this is one template literal and a backtick ends it.
 // `check:css-literal` enforces that, and this file is IN its list.
 
-export const LOOK_PAPER_CSS = `
+import { LOOK_PAPER_SHELF_CSS } from '@/web/look-paper-shelf.css'
+
+const LOOK_PAPER_HEAD_CSS = `
 /* --- THE PAPER'S OWN INK ----------------------------------------------------
    THE ONE LOOK THAT BRINGS ITS OWN PALETTE, and the reason is that a newspaper is a
    MATERIAL: ink on newsprint, black and one grey and a rule. Inheriting whichever of the
@@ -177,11 +183,35 @@ html[data-look=paper] .site-bar > .site-menu{grid-area:3/1/4/-1;flex-wrap:wrap;
    paper puts them, and the taxonomy returns to the foot. This is the half that makes it a
    different page rather than the same page with rules drawn on it. */
 html[data-look=paper] .post-info{display:none}
-html[data-look=paper] .post-meta{display:block;text-align:center;letter-spacing:.04em}
+html[data-look=paper] .post-meta{display:contents;letter-spacing:.04em}
 html[data-look=paper] .taxo-rule,html[data-look=paper] .post-taxo{display:block}
 html[data-look=paper] .post-taxo{text-align:center}
-html[data-look=paper] article > header{text-align:center;padding-bottom:.2rem}
-html[data-look=paper] article > header h1{margin-top:.5rem;text-wrap:balance}
+
+/* THE SECTION OVER THE HEADLINE, THE DATE AND THE BYLINE UNDER IT. Every paper does this,
+   and the web habit of stacking all of it above the title is what made the page open on a
+   grey line of housekeeping instead of on a headline.
+
+   The four are ONE PARAGRAPH and a heading in the markup, so nothing can reorder them until
+   the paragraph gives up its box: 'display:contents' above promotes the section link and
+   the facts to siblings of the headline and the standfirst, and this grid then places all
+   four by hand. Same move as the masthead, for the same reason.
+
+   Row 1 is empty on a piece filed under nothing, and an empty grid row with no gap set
+   measures zero, so the headline stays where it was. */
+html[data-look=paper] article > header{display:grid;text-align:center;padding-bottom:.2rem}
+html[data-look=paper] .post-cat{grid-row:1;justify-self:center}
+html[data-look=paper] article > header h1{grid-row:2;margin-top:.5rem;text-wrap:balance}
+html[data-look=paper] article > header .deck{grid-row:3}
+html[data-look=paper] .post-facts{grid-row:4;justify-self:center;margin-top:1.1rem}
+/* The middot the base sheet sets between the two is a separator between two halves of one
+   sentence. They are not one sentence any more. */
+html[data-look=paper] .post-cat::after{content:none}
+/* The section is a KICKER: the same small letterspaced capitals the front page puts over a
+   card, so a piece opens the way its own summary on the front page did. */
+html[data-look=paper] .post-cat{font-family:'Inter','Inter Fallback',system-ui,-apple-system,
+    'Segoe UI',sans-serif;
+  text-transform:uppercase;letter-spacing:.08em;font-weight:600;color:var(--c-heading);
+  text-decoration:none}
 html[data-look=paper] article > header .mt-2{margin-top:.5rem}
 
 /* THE STANDFIRST BECOMES AN ABSTRACT: ranged left inside a narrower measure, between two
@@ -239,6 +269,31 @@ html[data-look=paper] hr.fn-rule{width:8rem;margin-left:0;border-top-color:var(-
 html[data-look=paper] .footnotes{font-size:var(--fs-small);line-height:var(--lh-small);
   letter-spacing:var(--ls-small)}
 
+/* --- THE SERIES BOX IS A STANDING BOX ---------------------------------------
+   A rounded card with a hairline all round it is a web component, and it was the one thing
+   left on the page that said so. A paper sets a standing box the way it sets a section: a
+   heavy rule over it, the head as small letterspaced capitals on a band of its own, a
+   hairline under that, then the list. Nothing else on this page draws a corner radius, and
+   nothing else should.
+
+   Capitals by TEXT-TRANSFORM, never typed: the series name reaches the feed, the search
+   result and a screen reader as the owner wrote it.
+
+   The marker beside the part being read is the margin's CHANGE BAR, which is a printed
+   convention rather than a borrowed web one - so it moves to the column edge and takes
+   heading ink. It was the accent, which in this look is the link blue, and a blue bar
+   beside a line of black type says the line is a link. */
+html[data-look=paper] aside.series{border:0;border-radius:0;padding:0 0 1rem;
+  border-top:2px solid var(--c-heading);border-bottom:1px solid var(--c-rule)}
+html[data-look=paper] aside.series .series-head{margin:0 0 1rem;padding:.45rem 0;
+  line-height:1;color:var(--c-heading);border-bottom:1px solid var(--c-rule);
+  font-family:'Inter','Inter Fallback',system-ui,-apple-system,'Segoe UI',sans-serif;
+  text-transform:uppercase;letter-spacing:.08em;font-weight:600}
+html[data-look=paper] aside.series .series-head a{color:inherit;text-decoration:none}
+html[data-look=paper] aside.series ol{border-top:0;padding:0 0 0 1.25rem}
+html[data-look=paper] aside.series li[aria-current]::after{left:-1.25rem;
+  background:var(--c-heading)}
+
 /* The apparatus at the end takes the same rule as a section head, so the page closes the
    way it opened. */
 html[data-look=paper] .related h2,
@@ -293,66 +348,10 @@ html[data-look=paper] .post-list article + article{border-top:1px solid var(--c-
 html[data-look=paper][data-list=grid] .post-list article{
   border-top:1px solid var(--c-rule);padding-top:.75rem}
 
-/* --- NO NAVIGATION RUNNING DOWN THE MARGIN, ON A PIECE ----------------------
-   A paper does not carry a site menu beside its text, and with the facts already moved out
-   of the right-hand panel the piece was sitting against one full gutter and one empty one.
-   The shelf becomes what a printed paper puts there: a contents block at the head of the
-   piece, under a rule.
-
-   ON A PIECE ONLY. A listing has no contents of its own to head, and its shelf IS the
-   navigation: moved inline there it landed at y=8167, under thirty-three posts, which is
-   not a menu. The hook is structural - on a piece the shelf sits INSIDE the <article>, on a
-   listing it is a sibling of the feed - and deliberately not a class, because the first
-   hook tried was the book-typography class, which is a SETTING: the dialect would have come
-   apart silently on any blog that turned that setting off.
-
-   These rules restate the layout the rail already takes between 60rem and the rail
-   breakpoint (render/rail-css.ts). Restated rather than shared because that block is
-   generated per column width inside a media query, and this one is neither. */
-html[data-look=paper] article .rail{text-align:left;position:static;width:auto;height:auto;
-  margin:1.5rem 0 2.5rem;padding:0 0 1.25rem;border:0;
-  border-bottom:1px solid var(--c-rule);background:none;transform:none;visibility:visible;
-  overflow:visible;transition:none}
-html[data-look=paper] article .rail::after{display:none}
-html[data-look=paper] article .rail-inner{position:static;max-height:none;overflow:visible;
-  width:auto;padding:0}
-html[data-look=paper] article .rail-inner > * + *{margin-top:1rem}
-html[data-look=paper] article .rail h2{margin:0;padding-left:0}
-html[data-look=paper] article .rail-inner > nav:not(.toc)::before{content:attr(aria-label);
-  display:block;margin-bottom:.5rem;font-weight:var(--fw-heading,600);color:var(--c-heading);
-  font-size:var(--fs-small);line-height:var(--lh-small);letter-spacing:var(--ls-small)}
-html[data-look=paper] article .rail ul{display:flex;flex-wrap:wrap;gap:.4rem 1.5rem}
-html[data-look=paper] article .rail li,
-html[data-look=paper] article .toc li{margin-top:0}
-html[data-look=paper] article .toc ul{display:block;counter-reset:tocsec}
-html[data-look=paper] article .toc li{width:max-content;max-width:100%;margin-top:.45rem;
-  counter-increment:tocsec}
-html[data-look=paper] article .toc li:first-child{margin-top:0}
-html[data-look=paper] article .rail-row{padding-left:0}
-html[data-look=paper] article .rail-row[aria-current]::after{left:0;right:0;top:auto;
-  bottom:-4px;width:auto;height:2px}
-html[data-look=paper] article .toc-end{margin-top:0}
-html[data-look=paper] article .toc summary{pointer-events:auto;cursor:pointer;display:flex;
-  align-items:center;gap:.5rem;margin-bottom:.6rem}
-html[data-look=paper] article .toc summary h2{margin:0}
-html[data-look=paper] article .toc summary::before{content:"";width:.4em;height:.4em;
-  flex:none;border-right:1.5px solid var(--c-meta);border-bottom:1.5px solid var(--c-meta);
-  transform:rotate(-45deg)}
-html[data-look=paper] article .toc details[open] > summary::before{transform:rotate(45deg)}
-html[data-look=paper] article .rail-toggle,
-html[data-look=paper] article .rail-scrim{display:none}
-/* THE CONTENTS CARRY THE SECTION NUMBERS, so the index and the piece agree. The first row
-   is the title and the last is the jump to the taxonomy; neither is a section, so neither
-   takes a number. Ranged left and tight: .rail-row spreads its children with
-   space-between, which is right for a label and its count and put the number hard against
-   the far edge of the rail, a thumb's width from the words it belongs to. */
-html[data-look=paper] article .toc .rail-row{justify-content:flex-start;gap:.6ch}
-html[data-look=paper] article .toc li:first-child,
-html[data-look=paper] article .toc li:has(.toc-end){counter-increment:none}
-html[data-look=paper] article .toc li:not(:first-child):not(:has(.toc-end)) .rail-row::before{
-  content:counter(tocsec) ".";color:var(--c-meta);flex:none;
-  font-variant-numeric:tabular-nums}
 `.trim()
+
+/** The dialect, in one string: everything above, then the shelf. */
+export const LOOK_PAPER_CSS = `${LOOK_PAPER_HEAD_CSS}\n${LOOK_PAPER_SHELF_CSS}`
 
 /**
  * The two words this dialect needs, and the only part of it that is not cached.

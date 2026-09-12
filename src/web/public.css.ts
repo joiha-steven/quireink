@@ -172,6 +172,11 @@ header.site .tagline{color:var(--c-meta);font-size:var(--fs-small);
    come from the type-role classes. */
 article > header h1{color:var(--c-heading);margin:0}
 article > header .t-small{margin:0}
+/* The section and the facts are two elements in one line, so a dialect can put the first
+   over the headline and the second under it (web/article.ts says why). Here they stay one
+   sentence, which is what the middot is doing in the sheet rather than in the markup: the
+   newspaper dialect takes it away in the same rule that separates the two. */
+.post-cat::after{content:" · "}
 /* Standfirst: the excerpt, so a long read opens on a sentence rather than a wall.
    It is the AUTHOR'S words — the same string a list card prints — so it is set in the
    reading face. It was not: with no family of its own it fell to --font-sans, so the same

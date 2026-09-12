@@ -138,6 +138,18 @@ composed `front`.
   against a 40px gap), centred IN the gap and never drawn at a card's edge. The card grid
   ships 28px of its own, so this look restates it: the same hairline standing 14px off a
   picture in one place and 20px off words in another reads as a mistake.
+- **The section goes over the headline, the date and the byline under it.** That is what a
+  paper does, and the web habit of stacking all of it above the title opens the page on
+  housekeeping. The two halves are one paragraph in the markup, so the paragraph gives up
+  its box with `display: contents` and the header grid then places the section, the
+  headline, the standfirst and the facts by hand. The middot between the two halves comes
+  from the base sheet (`.post-cat::after`), which is what lets this look drop it; the ONE
+  space stays in the markup, or `textContent` reads "TypographySeptember".
+- **The series box is a standing box, and nothing here draws a corner radius.** A heavy rule
+  over it, the head as small letterspaced capitals on a band of its own, a hairline, then
+  the parts. The marker beside the part being read is the margin's change bar in heading
+  ink: it was the accent, and in this look the accent is the link blue, so a blue bar beside
+  black type said the line was a link.
 - **An all-caps label in a ruled band takes `line-height: 1`.** A line box reserves room
   for a descender and for an ascender above the cap, and a caps label uses neither, so at
   inherited leading it sat 2px high between its own rules. This face closes that by itself:

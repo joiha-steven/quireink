@@ -236,6 +236,12 @@ describe('the markup hooks the IDE chrome needs', () => {
     const html = await get('/gutter').then((r) => r.text())
     expect(html).toContain('<aside class="post-info')
     expect(html).toContain('class="t-small text-meta post-meta"')
+    // The section and the facts are two elements inside it, which is what lets a dialect
+    // print the first over the headline and the second under it. The middot between them is
+    // the SHEET's, so the markup must not carry one of its own.
+    expect(html).toContain('class="post-cat link-accent"')
+    expect(html).toContain('<span class="post-facts">')
+    expect(html).not.toContain('</a> · <span class="post-facts">')
     expect(html).toContain('.post-meta,.taxo-rule,.post-taxo{display:none}')
     // Both copies carry the wrappers the IDE chrome needs, or the panel would be the one
     // surface on the site where a date is not a literal.

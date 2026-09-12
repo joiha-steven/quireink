@@ -43,6 +43,15 @@ describe('a mark has to still be that mark at 20px', () => {
     expect(inner - r - STROKE).toBeGreaterThanOrEqual(1)
   })
 
+  it('spends three strokes on the menu, because two cannot say "list"', () => {
+    // It was two bars of unequal length, and at 20px that is an EQUALS SIGN: two lines with
+    // one gap between them have no rhythm to read as a list. The set's taste for asymmetry
+    // stays in the LENGTHS - the last bar is short - but never in the count, which is the
+    // part that carries what the mark is.
+    const bars = ICONS.menu.match(/M[\d.]+ [\d.]+h[\d.]+/g) ?? []
+    expect(bars.length).toBeGreaterThanOrEqual(3)
+  })
+
   it('gives the palette a silhouette, because a ring with dots in it is a face', () => {
     // Two dots level near the top and a third below the centre is where a person's features
     // go. The ring version was read as a face on the live header and could not be unseen;

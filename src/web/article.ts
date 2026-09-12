@@ -113,13 +113,26 @@ export async function renderArticle(slug: string, canonicalPath?: string): Promi
       : ''
     // `post-meta` is the handle the wide layout hides it by: above the rail breakpoint the
     // same facts are in the right gutter, one per line, and two copies would be two copies.
+    //
+    // TWO ELEMENTS INSIDE IT, and they are what let a dialect take the line apart. The
+    // section is a KICKER and the rest is a BYLINE: a paper prints the first over the
+    // headline and the second under it, and a sheet cannot move half of one paragraph. With
+    // the two named, `display:contents` on the paragraph promotes them to siblings of the
+    // headline and each can be placed on its own (`web/look-paper.css.ts`).
+    //
+    // The separator between them comes from the SHEET, the rule every literal on this site
+    // follows, and it is what lets the dialect drop it when the two stop sharing a line. The
+    // ONE space between them stays in the markup, because generated content is the only
+    // thing in that gap otherwise and `textContent` would read "TypographySeptember". A grid
+    // does not make an item of it: an anonymous item holding nothing but white space is not
+    // rendered, so the promoted row it would otherwise claim never exists.
     header = `<header>
 <p class="t-small text-meta post-meta">${category
-      ? `<a class="link-accent" href="/category/${escapeAttr(termSlug(category))}">${escapeHtml(category)}</a> · `
-      : ''}<time datetime="${escapeAttr(post.date)}">${
+      ? `<a class="post-cat link-accent" href="/category/${escapeAttr(termSlug(category))}">${escapeHtml(category)}</a>`
+      : ''} <span class="post-facts"><time datetime="${escapeAttr(post.date)}">${
       escapeHtml(formatDate(post.date, settings.language, settings.timezone))}</time>${length}${
       // Who wrote it, when the owner has said. '' on every blog that has not.
-      byline(settings, s.bylinePrefix)}${book}</p>
+      byline(settings, s.bylinePrefix)}${book}</span></p>
 <h1 class="reading-font mt-2 fs-h1 font-semibold">${escapeHtml(item.title)}</h1>${
       // Standfirst: the excerpt, so a long read opens on a sentence rather than a wall.
       features.deck && post.excerpt ? `

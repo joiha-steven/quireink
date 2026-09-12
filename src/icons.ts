@@ -7,7 +7,9 @@
 // The hand is the product's own, settled on an approved interactive board (the private
 // repository keeps it under `brand/signal/`):
 //   · stroke 1.8, round caps and joins — a pen moving on paper, not a die-cut pictogram;
-//   · deliberate asymmetry where a grid would be sterile (the menu's two unequal lines);
+//   · deliberate asymmetry where a grid would be sterile (the menu's short last bar) —
+//     but never at the cost of the mark: the count of strokes is what says what a thing
+//     IS, and only their lengths are free;
 //   · FILLED DOTS as the signature, from the wordmark's full stop;
 //   · the ECHO STROKE — one short line at stroke-width 1.4, placed only where the real
 //     object carries a shadow or a fold: the glint inside a lens, the line under a mail
@@ -51,7 +53,11 @@ export const ICONS = {
   grid:
     '<rect x="4" y="4" width="6.5" height="6.5" rx="1"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1"/>'
     + '<rect x="4" y="13.5" width="6.5" height="6.5" rx="1"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1"/>',
-  menu: '<path d="M4 8h16M7 16h13"/>',
+  // THREE BARS. It was two of unequal length, on the set's own taste for asymmetry where a
+  // grid would be sterile, and at the 20px the header draws it that is an EQUALS SIGN: two
+  // lines with one gap have no way to say "list". Three carry the meaning at 16px, and the
+  // asymmetry survives in the last bar rather than in the count.
+  menu: '<path d="M4 6.5h16M4 12h16M4 17.5h13"/>',
   mail:
     '<rect x="3" y="5" width="18" height="14" rx="1.5"/><path d="m3.5 7.5 8.5 5.5 8.5-5.5"/>'
     + '<path d="M9 16h6" stroke-width="1.4"/>',
