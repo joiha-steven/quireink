@@ -192,8 +192,50 @@ describe('the notebook dialect', () => {
     // and nowhere else, so anyone who met this look on the front page met a blank sheet —
     // and they were drawn at 38% of `--c-rule`, which on #ebebeb over #fcfcfc is not faint
     // but absent. `--c-rule` is already the lightest line this design has.
-    expect(LOOK_NOTES_CSS).toContain('html[data-look=notes] .post-list article > p{')
+    expect(LOOK_NOTES_CSS).toContain('html[data-look=notes] .post-list article > p')
     expect(LOOK_NOTES_CSS).toContain('var(--c-rule) calc(var(--step) - 1px)')
     expect(LOOK_NOTES_CSS).not.toMatch(/var\(--c-rule\) \d\d%,transparent\) calc\(var\(--step\)/)
+    // And the composed front, which is the third shape and the one a visitor lands on.
+    expect(LOOK_NOTES_CSS).toContain('html[data-look=notes] .fc-intro')
+  })
+
+  it('puts a page under all THREE layouts, not just the two that are named article', () => {
+    // The composed front page's container is `div.front` — neither the piece nor a feed, so
+    // it matched neither name and the layout most visitors arrive on had no paper under it
+    // at all: three ruled sections and a row of pictures lying straight on the desk.
+    const sheet = /html\[data-look=notes] main > article,[\s\S]*?background-size[^}]*}/.exec(
+      LOOK_NOTES_CSS,
+    )?.[0] ?? LOOK_NOTES_CSS
+    expect(sheet).toContain('html[data-look=notes] main > .front')
+    expect(sheet).toContain('html[data-look=notes] .post-list')
+  })
+
+  it('keeps the page lighter than the desk in BOTH halves of the day', () => {
+    // The desk was the paper with the ink mixed into it, and at night the ink is the pale
+    // one: the same mix lifted the desk ABOVE the page, so the sheet read as a hole cut in
+    // the board. Measured then: page rgb(27,32,39) on a desk of rgb(40,45,52). Now it is the
+    // page's own lightness taken down, one formula for both halves.
+    expect(LOOK_NOTES_CSS).toContain('oklch(from var(--c-bg) calc(l * .955) c h)')
+    expect(LOOK_NOTES_CSS).toContain('oklch(from var(--c-bg) calc(l * .72) c h)')
+    // Behind @supports, because a custom property swallows a value it cannot use and fails
+    // only when something reads it — here, with the body left carrying no background at all.
+    expect(LOOK_NOTES_CSS).toContain('@supports (color:oklch(from red l c h)){')
+    expect(LOOK_NOTES_CSS).toContain('--desk:color-mix(in srgb,var(--c-text) 7%,var(--c-bg))')
+  })
+
+  it('brings its own ink, and never a second FACE', () => {
+    // Its own palette on the newspaper's argument: a notebook is a material, and cream
+    // paper, a pale blue rule and blue-black ink are not decisions a blog makes.
+    expect(LOOK_NOTES_CSS).toMatch(/html\[data-look=notes]\{--c-bg:#[0-9a-f]{6}/)
+    expect(LOOK_NOTES_CSS).toContain('html[data-look=notes].dark{--c-bg:')
+    // But NO @font-face and no family this dialect alone would have to download. The
+    // newspaper earns a second serif because a paper cuts its headlines from one; the face
+    // that would say "notebook" is a handwriting face, and the ones in reach carry no
+    // Vietnamese — which on a blog in this product's own first language means a system
+    // fallback on every accented word.
+    expect(LOOK_NOTES_CSS).not.toContain('@font-face')
+    for (const family of ['Kalam', 'Caveat', 'Patrick', 'Comic']) {
+      expect(LOOK_NOTES_CSS).not.toContain(family)
+    }
   })
 })

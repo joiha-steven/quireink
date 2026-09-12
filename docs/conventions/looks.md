@@ -107,6 +107,29 @@ server-rendered as `<html data-look="code">` so the first paint is right and no 
   its siblings, and the children go on reading the outer one — measured, the index ran
   `1.1 1.2 2.3 2.4 2.5 3.6`. With the switch off the index keeps its bullet and smaller size.
 
+## notes — the notebook dialect, in brief
+
+Cream paper on a darker board, a pale blue rule printed on it, blue-black ink. The second
+look that brings its own palette, on the newspaper's argument: a notebook is a material.
+
+- **The desk is the page's own lightness taken down**, one formula for both halves of the
+  day (`oklch(from var(--c-bg) calc(l * …) c h)`, behind `@supports`). It used to be the ink
+  mixed into the paper, and at night the ink is the pale one — so the desk rose ABOVE the
+  page and the sheet read as a hole cut in the board. A custom property swallows a value it
+  cannot use and fails only when something reads it, hence the `@supports` and the
+  `color-mix` left standing as the fallback.
+- **The sheet goes under all THREE layouts.** `main > article` is the piece, `.post-list` is
+  a feed, and `div.front` is the composed front — the one most visitors land on, and the one
+  that had no paper under it at all.
+- **No second face, and that is a decision rather than an omission.** The newspaper earns
+  one because a paper really does cut its headlines from a second serif. The face that would
+  say "notebook" is a handwriting face, and the ones within reach carry no Vietnamese: on a
+  blog in this product's own first language that is a system fallback on every accented
+  word. The name on the cover takes the reading face instead, which is the closest thing
+  here to the owner's own hand.
+- **A heading is underlined to the width of its WORDS** (`width: fit-content`), in ink. A
+  rule that runs the column is a border; a hand stops where the writing stops.
+
 ## paper — the newspaper dialect
 
 A masthead, a lead headline, column rules, and a piece printed as an offprint. Three

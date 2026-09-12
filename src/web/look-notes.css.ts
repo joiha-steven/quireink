@@ -8,19 +8,75 @@
 // `check:css-literal` enforces that, and this file is IN its list.
 
 export const LOOK_NOTES_CSS = `
+/* --- THE NOTEBOOK'S OWN INK -------------------------------------------------
+   THE SECOND LOOK THAT BRINGS ITS OWN PALETTE, on the newspaper's argument: a notebook is a
+   MATERIAL, and its three colours are not decisions a blog makes. Paper is cream and not
+   white, the rule printed on it is pale BLUE and not grey, and what a pen leaves is
+   blue-black and not #000 - which is why the dialect read as a grey web page with hairlines
+   on it however carefully the rest was drawn.
+
+   Same seven tokens every palette declares, so nothing downstream knows the difference:
+   custom CSS, the pen, the tables and the reader's own light/dark switch all go on reading
+   them. It is the six HUES this look overrules, never the switch.
+
+   The night half is a notebook under a lamp, not an inverted page: paper goes to a cold
+   blue-grey board, the rule stays blue and loses its light, and the ink warms up rather
+   than turning into white. */
+html[data-look=notes]{--c-bg:#faf6ed;--c-text:#1e2833;--c-heading:#14212e;
+  --c-meta:#6a7685;--c-rule:#c3d3e2;--c-link:#2b5c8a;--c-accent:#2b5c8a}
+html[data-look=notes].dark{--c-bg:#1b2027;--c-text:#d5dae0;--c-heading:#ffffff;
+  --c-meta:#8b95a1;--c-rule:#333f4d;--c-link:#85b2dc;--c-accent:#85b2dc}
+@media (prefers-color-scheme:dark){
+  html[data-look=notes]:not([data-scheme=light]){--c-bg:#1b2027;--c-text:#d5dae0;
+    --c-heading:#ffffff;--c-meta:#8b95a1;--c-rule:#333f4d;--c-link:#85b2dc;
+    --c-accent:#85b2dc}
+}
+
 /* --- THE CHROME IS THE NEUTRAL FACE -----------------------------------------
    Three dialects, three faces: the source-code one keeps the monospace, the paper one takes
    the reading face, this one takes the sans. On body and never on --font-sans, for the
    reason look-code.css.ts gives. */
 html[data-look=notes] body{font-family:'Inter','Inter Fallback',system-ui,-apple-system,
   'Segoe UI',sans-serif}
+/* THE NAME ON THE COVER IS THE ONE THING WRITTEN, so it takes the reading face - the
+   closest thing this product has to the owner's own hand - while everything else in the
+   chrome stays the neutral sans. It carried --font-sans, which on a blog whose chrome font
+   is a monospace set the notebook's own name in code.
+   AND NO SECOND FACE IS DOWNLOADED FOR IT. The newspaper earns one because a paper really
+   does cut its headlines from a second serif; a notebook has exactly one hand in it. The
+   face that would say "notebook" is a handwriting face, and every one of them in reach
+   carries no Vietnamese - on a blog in this product's own first language it would fall back
+   to a system face on every accented word, which is worse than not trying. */
+html[data-look=notes] .site-bar > .title{font-family:var(--font-reading)}
 
 /* --- THE DESK, AND THE PAGE ON IT -------------------------------------------
    The desk is a TONE darker than the page and nothing else. A dotted desk was drawn first
    and dropped once the page itself was ruled: two patterns on one screen is a texture
    competition, and what makes a sheet look like a sheet is simply that the thing under it
    is not the same colour. */
-html[data-look=notes]{--desk:color-mix(in srgb,var(--c-text) 4%,var(--c-bg));--sheet-inset:20px}
+/* The desk is DERIVED rather than typed, and that is not shyness about one more hex: --desk
+   is this dialect's own name, not one of the seven a palette declares, so a literal here
+   would be a colour the reader's light/dark switch cannot move. Seven percent rather than
+   four: against cream the old four read as the same cream, and the sheet stopped being a
+   sheet. */
+html[data-look=notes]{--desk:color-mix(in srgb,var(--c-text) 7%,var(--c-bg));--sheet-inset:20px}
+/* THE DESK IS THE PAGE, DARKENED - and mixing the ink into the paper only does that in
+   daylight. At night the ink is the pale one, so the same mix lifted the desk ABOVE the
+   page and the sheet read as a hole cut in the board rather than as paper lying on it.
+   Measured before: page rgb(27,32,39) on a desk of rgb(40,45,52).
+
+   Relative colour takes the page's own lightness down instead, which is one formula for
+   both halves of the day and stays tied to whatever the palette says the paper is. Behind
+   @supports because a custom property accepts a value it cannot use and only fails later,
+   when the body would be left with no background at all; the mix above is what any engine
+   that cannot read this keeps. */
+@supports (color:oklch(from red l c h)){
+  html[data-look=notes]{--desk:oklch(from var(--c-bg) calc(l * .955) c h)}
+  html[data-look=notes].dark{--desk:oklch(from var(--c-bg) calc(l * .72) c h)}
+  @media (prefers-color-scheme:dark){
+    html[data-look=notes]:not([data-scheme=light]){--desk:oklch(from var(--c-bg) calc(l * .72) c h)}
+  }
+}
 html[data-look=notes] body{background-color:var(--desk)}
 
 /* ONE INSET ON ALL FOUR SIDES, and the sheet grows OUTWARD by exactly what it pads, so the
@@ -36,7 +92,12 @@ html[data-look=notes] body{background-color:var(--desk)}
    selector drew a bordered card round every entry on the front page and printed a hairline
    above and below each one. The piece is the direct child of main; the rows never are. */
 @media (max-width:46rem){html[data-look=notes]{--sheet-inset:12px}}
+/* AND div.front, which is the composed front page's own container. It is neither the piece
+   nor a feed, so it matched neither name, and the one layout a visitor is most likely to
+   arrive on had no page under it at all: three sections and a row of pictures lying
+   straight on the desk. */
 html[data-look=notes] main > article,
+html[data-look=notes] main > .front,
 html[data-look=notes] .post-list{background:var(--c-bg);
   padding:var(--sheet-inset);
   margin:calc(-1px - var(--sheet-inset)) calc(-1 * var(--sheet-inset)) 0;
@@ -86,7 +147,12 @@ html[data-look=notes] .post-info .info-action::after{display:none}
    nowhere else — so anyone who met this look on the front page met an unruled sheet. */
 html[data-look=notes] .prose > p,
 html[data-look=notes] .prose > :is(ul,ol) > li,
-html[data-look=notes] .post-list article > p{
+html[data-look=notes] .post-list article > p,
+/* The composed front page writes its lead out in full, and those paragraphs are the only
+   prose on that layout. Unruled, the page a visitor most often lands on was the one page in
+   the notebook nobody had ruled. */
+html[data-look=notes] .fc-deck,
+html[data-look=notes] .fc-intro{
   --step:calc(var(--lh-body,1.7) * 1em);
   margin-inline:calc(-1 * var(--sheet-inset));padding-inline:var(--sheet-inset);
   background-image:linear-gradient(to bottom,transparent calc(var(--step) - 1px),
@@ -102,6 +168,15 @@ html[data-look=notes] .prose h2::before{content:"";display:block;width:1.75rem;
   border-top:2px solid var(--c-meta);margin-bottom:.55rem}
 html[data-look=notes] .rail h2::before{content:"";display:inline-block;width:1rem;
   border-top:2px solid var(--c-meta);vertical-align:.32em;margin-right:.45em}
+
+/* AND THE HEADING IS UNDERLINED, which is what a hand does to one. The rule has to stop
+   where the words stop or it is a border and not an underline, so the heading is shrunk to
+   its content with fit-content - a heading that wraps then underlines to its widest line,
+   which is also what a hand does. In the ink rather than in the printed blue: the ruling is
+   on the paper before anybody writes, this is not. */
+html[data-look=notes] .prose :is(h2,h3){width:fit-content;max-width:100%;
+  padding-bottom:.12em;border-bottom:2px solid var(--c-heading)}
+html[data-look=notes] .prose h3{border-bottom-width:1px;border-bottom-color:var(--c-meta)}
 
 /* A LINK THAT STAYS IN THIS NOTEBOOK is written the way a notebook writes one. The site's
    own drawn underline stays under both kinds; what separates them is the brackets.
@@ -121,6 +196,23 @@ html[data-look=notes] .deck{font-style:italic;border-left:2px solid var(--c-rule
    rail also carries categories, series and archive years, and "#2026" is not a tag. */
 html[data-look=notes] .term-list a[href^="/tag/"]::before,
 html[data-look=notes] .rail-tags a[href^="/tag/"]::before{content:"#";color:var(--c-meta)}
+
+/* --- THE LIST OF PARTS IS BOXED BY HAND -------------------------------------
+   A rounded card with a hairline round it is an app panel. Somebody keeping a notebook who
+   wants a list to stand apart from the page draws a box round it, in the pen they are
+   already holding: square corners, ink weight, and the head ticked the way a section head
+   is. The radius goes with it - nothing on this page has one except the index card, which
+   is meant to be a different object lying on the desk. */
+html[data-look=notes] aside.series{border:2px solid var(--c-meta);border-radius:0;
+  padding:1rem 1.1rem}
+html[data-look=notes] aside.series .series-head{display:flex;align-items:baseline;
+  gap:.5em;margin-bottom:.7rem;color:var(--c-heading)}
+html[data-look=notes] aside.series .series-head::before{content:"";flex:none;width:1rem;
+  border-top:2px solid var(--c-meta);transform:translateY(-.32em)}
+html[data-look=notes] aside.series ol{border-top:1px solid var(--c-rule);padding-top:.8rem}
+/* The part being read is ticked in ink, not barred in the accent: the accent here is the
+   link colour, and a blue bar beside black type says the line is a link. */
+html[data-look=notes] aside.series li[aria-current]::after{background:var(--c-heading)}
 
 /* THE PANEL IS AN INDEX CARD lying on the same desk, and the date that matters in a
    notebook is the last one. */
