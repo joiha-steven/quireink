@@ -107,7 +107,18 @@ const BUDGET: Record<string, number> = {
   // and picking the LAST rail rather than the first. The last one is not decoration — on a
   // two-rail listing the first `.rail` is `display:none` below the breakpoint, so the drawer
   // opened and focus stayed behind it, and Escape restored nothing.
-  'core.js': 11_500,
+  //
+  // 11,800 since 2026-09-13, and it bought a card you can read. Two faults in the scroll
+  // fade, both of them about a list that GROWS while it is being read. The fallback for
+  // engines with no view() timelines watched the cards the server sent and not the pages
+  // fetched after them, so past page one every card was appended already hidden. And on an
+  // engine that HAS view() timelines, a range resolved before the list grew is not
+  // recomputed after, which leaves a card standing part-way through its own fade with its
+  // neighbours solid — reported from Safari, and not reproducible in Chrome, which is the
+  // evidence that the declaration is not what differs. The fade is still CSS and still off
+  // the main thread; 108 bytes now decide when it is OVER, which no stale range can argue
+  // with. Left at 11,500 the next change to this file would have been golf.
+  'core.js': 11_800,
   // /{slug}: back to top, code copy, lightbox, subscribe, comments, the ToC highlight and
   // book mode. Same rule as above — each raise is named and priced.
   //

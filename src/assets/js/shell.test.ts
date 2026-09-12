@@ -55,9 +55,12 @@ describe('listing controls', () => {
   // and real gaps between them, past the first page, on that engine only.
   it('watches the cards that arrive with a later page, not only the ones the server sent', async () => {
     const watched: Element[] = []
-    const observers: ((entries: { isIntersecting: boolean; target: Element }[]) => void)[] = []
+    // The entry shape the island actually reads: it asks for the ratio and the rectangle as
+    // well as the flag, so a stub carrying only `isIntersecting` throws inside the callback.
+    type Entry = { isIntersecting: boolean; intersectionRatio: number; boundingClientRect: { top: number }; target: Element }
+    const observers: ((entries: Entry[]) => void)[] = []
     globalThis.IntersectionObserver = class {
-      constructor(cb: (e: { isIntersecting: boolean; target: Element }[]) => void) { observers.push(cb) }
+      constructor(cb: (e: Entry[]) => void) { observers.push(cb) }
       observe(el: Element): void { watched.push(el) }
       disconnect(): void {}
     } as unknown as typeof IntersectionObserver
@@ -94,7 +97,9 @@ describe('listing controls', () => {
     )) as unknown as typeof fetch
     try {
       // The sentinel is the last card; firing every observer drives the fetch.
-      for (const cb of observers) cb([{ isIntersecting: true, target: document.querySelector('article')! }])
+      for (const cb of observers) {
+        cb([{ isIntersecting: true, intersectionRatio: 1, boundingClientRect: { top: 10 }, target: document.querySelector('article')! }])
+      }
       await new Promise((r) => setTimeout(r, 0))
       await new Promise((r) => setTimeout(r, 0))
     } finally {

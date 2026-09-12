@@ -95,18 +95,43 @@ function moreOnScroll(): void {
   // scrolled into a run of blank cards: real height, real gaps between them, no words. It
   // only shows where view() timelines do not exist, which is why it could sit unnoticed on a
   // Chrome that never runs this branch at all.
+  //
+  // ⚠️ AND A BACKSTOP FOR THE ENGINES THAT DO HAVE view(). Reported from the reading page on
+  // Safari, 2026-09-13: now and then, one card in the middle of the window stays part-faded
+  // while its neighbours are solid. It could not be reproduced in Chrome — 77 cards over
+  // 18,881px, nothing under 0.95 opacity that was fully inside the window — and both engines
+  // run the same declaration, so what differs is when the range is RESOLVED. This list grows
+  // while it is read: the tail is appended a page at a time, and a view() range computed
+  // before that and not recomputed after leaves a card standing mid-animation for ever.
+  //
+  // So `.is-set` ends the animation once a card is FULLY inside the window, which is the same
+  // instant `entry 100%` ends it on an engine that resolved the range correctly — there, this
+  // changes nothing anyone can see. Where the range went stale, it is the difference between
+  // a card you can read and a card that stays grey. The fade itself is still CSS and still off
+  // the main thread; this only decides when it is over.
   let watchNew = (_: ParentNode): void => {}
-  if (html.dataset.scrollFade === 'on'
-    && CSS.supports?.('animation-timeline', 'view()') !== true && html.dataset.motion !== 'off') {
-    for (const c of feed.querySelectorAll<HTMLElement>('.reveal')) {
-      if (c.getBoundingClientRect().top < innerHeight) c.classList.add('is-in')
+  if (html.dataset.scrollFade === 'on' && html.dataset.motion !== 'off') {
+    if (CSS.supports?.('animation-timeline', 'view()') !== true) {
+      for (const c of feed.querySelectorAll<HTMLElement>('.reveal')) {
+        if (c.getBoundingClientRect().top < innerHeight) c.classList.add('is-in')
+      }
+      html.dataset.revealJs = 'on'
     }
-    html.dataset.revealJs = 'on'
+    // ⚠️ WATCH THE CARDS THAT ARRIVE LATER TOO. This observed the cards the server sent with
+    // the page and nothing else, while the tail is fetched by the very same function — so on
+    // an engine taking the fallback, every card past the first page was appended already
+    // carrying `opacity: 0` with nothing left to take it off: a run of blank cards with real
+    // height and real gaps between them.
     const seen = new IntersectionObserver((es) => {
-      for (const e of es) if (e.isIntersecting) e.target.classList.add('is-in')
-    }, { rootMargin: '0px 0px -10% 0px' })
+      for (const e of es) {
+        // Arrived: the fallback's cue, and only the fallback reads it.
+        if (e.isIntersecting) e.target.classList.add('is-in')
+        // Done arriving: fully inside, or already scrolled past the top.
+        if (e.intersectionRatio >= 1 || e.boundingClientRect.top < 0) e.target.classList.add('is-set')
+      }
+    }, { rootMargin: '0px 0px -10% 0px', threshold: [0, 1] })
     watchNew = (where) => {
-      for (const c of where.querySelectorAll('.reveal:not(.is-in)')) seen.observe(c)
+      for (const c of where.querySelectorAll('.reveal:not(.is-set)')) seen.observe(c)
     }
     watchNew(feed)
   }

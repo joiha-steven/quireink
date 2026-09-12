@@ -174,6 +174,16 @@ export const ISLANDS_CSS = `
   }
 }
 @keyframes reveal-in{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+/* THE BACKSTOP (listing.ts). A card that is fully inside the window has finished arriving,
+   and this says so in the one place a stale view() range cannot argue with. On an engine that
+   resolved the range correctly the class lands at the same instant entry 100% ends the
+   animation, so nothing anyone can see changes; where it did not, this is the difference
+   between a card you can read and a card that stays grey. Reported on Safari 2026-09-13 and
+   not reproducible in Chrome, which is itself the evidence that the declaration is not what
+   differs between them. */
+@supports (animation-timeline:view()){
+  html[data-scroll-fade=on][data-motion=on] .reveal.is-set{animation:none;opacity:1;transform:none}
+}
 /* The same reveal for engines with no view() timeline (Firefox today). Armed by the island
    ONLY on those engines, and only for cards that are not already on screen, so nothing
    above the fold can flash. */
