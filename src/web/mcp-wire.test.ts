@@ -168,6 +168,44 @@ describe('the MCP endpoint', () => {
     expect(db().query<{ n: number }, []>(`select count(*) as n from posts`).get()!.n).toBe(0)
   })
 
+  // The third door. `full` is a token that publishes for you; `admin` is one that may put
+  // code on your readers' screens. They were the same grant until 2026-09-13, and the four
+  // settings in `mcp/guarded-paths.ts` are the difference.
+  it('refuses custom head and body HTML to a full token, and allows them to an admin one', async () => {
+    const mint = async (scope: string) => {
+      const res = await asOwner('/api/mcp/tokens', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ name: scope, scope }),
+      })
+      return payload<{ token: string; info: { scope: string } }>(res)
+    }
+    const setHead = (token: string, value: string) => rpc(token, {
+      jsonrpc: '2.0', id: 21, method: 'tools/call',
+      params: { name: 'update_settings', arguments: { path: 'customHead', value } },
+    })
+
+    const full = await mint('full')
+    expect(full.info.scope).toBe('full')
+    const refused = await (await setHead(full.token, '<script src="//evil.example/x.js"></script>')).json() as
+      { result?: { isError?: boolean; content?: { text?: string }[] } }
+    expect(refused.result?.isError).toBe(true)
+    expect(refused.result?.content?.[0]?.text ?? '').toContain('customHead')
+    expect((await getSettings()).customHead).toBe('')
+
+    // The same token still writes everything else: this narrows one grant, not the scope.
+    await rpc(full.token, {
+      jsonrpc: '2.0', id: 22, method: 'tools/call',
+      params: { name: 'update_settings', arguments: { path: 'features.search', value: false } },
+    })
+    expect((await getSettings()).features.search).toBe(false)
+
+    const admin = await mint('admin')
+    expect(admin.info.scope).toBe('admin')
+    await setHead(admin.token, '<meta name="x" content="y">')
+    expect((await getSettings()).customHead).toBe('<meta name="x" content="y">')
+  })
+
   it('mints a full token by default, so existing clients keep their writes', async () => {
     const token = await mintToken()
     const res = await rpc(token, { jsonrpc: '2.0', id: 9, method: 'tools/list' })

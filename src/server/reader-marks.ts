@@ -37,6 +37,45 @@ export const MAX_PAGES = 500
 /** A mark nobody has touched in a year, or a code nobody has used in one, is gone. */
 export const RETENTION_MS = 365 * 24 * 60 * 60 * 1000
 
+/**
+ * A code with NOTHING under it, unused for this long, is gone.
+ *
+ * The year above is right for a code that holds somebody's marks and wrong for one that
+ * holds nothing: minting is the cheap half of this pair (a row and twenty characters) and
+ * storing is the expensive half, so a code nobody ever wrote under is pure inventory. It is
+ * also the first step of the only way to fill this table on purpose — five codes an hour
+ * per address, each able to hold `MAX_PAGES` pages, held for a year.
+ *
+ * Seven days rather than one: `last_used_at` is stamped on every request the browser makes
+ * with the code, so a week means the browser has not been near the blog either. A reader who
+ * wrote a code on paper and has not opened it in a week has nothing stored under it to lose.
+ */
+const UNUSED_CODE_TTL_MS = 7 * 24 * 60 * 60 * 1000
+
+/**
+ * Everything this table may hold, across every reader.
+ *
+ * The per-reader caps bound one reader; nothing bounded the sum, and the sum is what fills a
+ * disk. At the ceiling that is 4,096 readers each holding `MAX_PAGES` pages of the largest
+ * body this accepts, which no blog will reach and a script cannot pass. A real page of marks
+ * measures in single kilobytes, so this is millions of them.
+ *
+ * Trimmed oldest-first when it is exceeded, in the tick and never on the request path: the
+ * budget is for the operator's disk, and a reader mid-save is not who should pay for it.
+ */
+export const MAX_TOTAL_BYTES = 256 * 1024 * 1024
+
+/**
+ * Rows dropped per pass, and passes per tick: bounded work on a table nobody is waiting on.
+ *
+ * Small on purpose. The loop re-measures between passes, so the batch size is the most it
+ * can overshoot the budget by — twenty-five pages of whoever has not marked anything in the
+ * longest time. Fifty passes is 1,250 pages a tick, which is more than the ceiling can gain
+ * between two ticks; what one pass cannot finish the next tick does.
+ */
+const TRIM_BATCH = 25
+const TRIM_PASSES = 50
+
 export type Reader = { id: string; via: 'code' | 'google' }
 
 const sha256 = (s: string): string => createHash('sha256').update(s).digest('hex')
@@ -106,12 +145,41 @@ export function forgetReader(reader: Reader): void {
   if (reader.via === 'code') run(`delete from reader_keys where key_hash = ?`, reader.id.slice(2))
 }
 
-/** Rows past the retention window, both tables; returns how many went. */
-export function sweepReaderMarks(now = nowMs()): number {
+/**
+ * Rows past the retention window, both tables, plus the two ceilings; how many went.
+ *
+ * `budget` is a parameter so the ceiling can be exercised without writing 256 MB to a disk
+ * in a test. Callers pass nothing.
+ */
+export function sweepReaderMarks(now = nowMs(), budget = MAX_TOTAL_BYTES): number {
   try {
     const cutoff = now - RETENTION_MS
-    return run(`delete from reader_marks where updated_at < ?`, cutoff).changes
+    let gone = run(`delete from reader_marks where updated_at < ?`, cutoff).changes
       + run(`delete from reader_keys where last_used_at < ?`, cutoff).changes
+
+    // A code holding nothing, untouched for a week. `substr(reader, 3)` drops the `k:`
+    // prefix `readerOfCode` puts on the id; a Google-signed reader has no key row at all.
+    gone += run(
+      `delete from reader_keys where last_used_at < ? and key_hash not in (
+         select substr(reader, 3) from reader_marks where reader like 'k:%')`,
+      now - UNUSED_CODE_TTL_MS,
+    ).changes
+
+    // The table's own ceiling, oldest first, in small batches with a re-measure between
+    // them. Not one computed delete: `sum(length(body))` counts CHARACTERS, so a body with
+    // any multi-byte text in it reads short, and a single delete sized from that number
+    // would take out more rows than the overage called for. A hundred at a time overshoots
+    // by at most a hundred; what a pass cannot finish, the next tick does.
+    for (let pass = 0; pass < TRIM_PASSES; pass++) {
+      const used = one<{ n: number }>(`select coalesce(sum(length(body)), 0) as n from reader_marks`)?.n ?? 0
+      if (used <= budget) break
+      gone += run(
+        `delete from reader_marks where rowid in (
+           select rowid from reader_marks order by updated_at asc limit ?)`,
+        TRIM_BATCH,
+      ).changes
+    }
+    return gone
   } catch (error) {
     console.error(`[ERROR] reader-marks.sweep: ${(error as Error).message}`)
     return 0

@@ -25,6 +25,19 @@ configMapGenerator:
   - name: quire-config
     literals:
       - SITE_URL=https://blog.example.com
+      # The Content-Security-Policy, sent by the app itself.
+      #
+      # HERE rather than as an ingress annotation because it has to work whatever controller
+      # this cluster runs: ingress-nginx, Traefik and the cloud ones each spell a response
+      # header differently, and a policy that only lands on one of them is a policy most
+      # clusters do not get. The app sends it verbatim when this is set and sends none when
+      # it is not, so nothing here narrows a policy your ingress already adds.
+      #
+      # Character for character the one in `Caddyfile` and `docs/self-host.md`: it is what
+      # every production instance runs, so embeds are tested against it. With Cloudflare
+      # Turnstile keys in Settings, use the second line instead.
+      - "CSP=default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data: blob: https:; font-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; media-src 'self' blob: https:; worker-src 'self' blob:; manifest-src 'self'; frame-src 'self' https://open.spotify.com https://www.youtube-nocookie.com; upgrade-insecure-requests"
+      # - "CSP=default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data: blob: https:; font-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' https://challenges.cloudflare.com; connect-src 'self' https://challenges.cloudflare.com; media-src 'self' blob: https:; worker-src 'self' blob:; manifest-src 'self'; frame-src 'self' https://challenges.cloudflare.com https://open.spotify.com https://www.youtube-nocookie.com; upgrade-insecure-requests"
       # Uncomment on a cluster whose ingress controller is NOT on a private address —
       # a tunnel, or a load balancer that talks to the pod from a public one. Left alone,
       # a proxy on 10.x is already trusted for `X-Forwarded-For` and this is not needed.

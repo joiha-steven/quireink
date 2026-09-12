@@ -89,6 +89,29 @@ if (siteUrlIsUnset(bootSettings)) {
     '[WARN] No site address is set. Feeds, the sitemap, OG images and newsletter links will'
     + ' all say http://localhost:3000. Set SITE_URL, or Settings → Search & URLs → Site address.',
   )
+} else if (plainHttpAddress(resolveSiteUrl(bootSettings))) {
+  // The one way sign-in fails with nothing to read. The session cookie is `__Host-`, which a
+  // browser keeps only in a secure context, so on a blog whose own address is `http://` at
+  // anything but localhost the password and the code are both accepted and the cookie is
+  // dropped on the floor. The login screen says so too, from the browser that actually knows
+  // (`web/login-page.ts`); this is for the operator who is looking at a terminal instead.
+  console.warn(
+    '[WARN] The site address is plain HTTP. Sign-in cannot complete over it: the session'
+    + ' cookie requires a secure connection, so the admin will bounce back to the login form.'
+    + ' Put a reverse proxy with a certificate in front, or reach the blog at http://localhost.',
+  )
+}
+
+/** True for an `http://` address that a browser will not treat as a secure context. */
+function plainHttpAddress(url: string): boolean {
+  try {
+    const u = new URL(url)
+    if (u.protocol !== 'http:') return false
+    return !(u.hostname === 'localhost' || u.hostname.endsWith('.localhost')
+      || u.hostname === '127.0.0.1' || u.hostname === '::1' || u.hostname === '[::1]')
+  } catch {
+    return false
+  }
 }
 
 // Re-fill the page cache after any write, and purge the CDN behind it. Registered HERE

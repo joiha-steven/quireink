@@ -119,6 +119,16 @@ databases plus every upload), or `docker compose cp quire:/var/lib/quire/data ./
 
 ## On a NAS or a home server
 
+**Two things a NAS install has to get right, and neither reports itself.** The box already
+has a reverse proxy with its own certificate UI, so use it: sign-in cannot complete over
+plain HTTP at a LAN address, because the session cookie is `__Host-` and a browser keeps
+that only on a secure connection. The password and the code are both accepted and the
+cookie is dropped, over and over. The login screen says so when it happens. And set `CSP`
+in the container's environment to the policy in
+[`docs/self-host.md`](./self-host.md) section 07: the NAS proxy sends no
+Content-Security-Policy of its own, and the app sends none unless asked.
+
+
 Every box below runs the same published image and none of them needs a shell. What they
 share is one trap, so it comes first.
 

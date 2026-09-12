@@ -22,6 +22,8 @@ import { registerTools } from '@/mcp/tools'
 import { verifyMcpToken } from '@/mcp/auth'
 import { getSettings, resolveSiteUrl } from '@/content/settings'
 import { clearCache } from '@/server/cache'
+import { refusalFor } from '@/mcp/guarded-paths'
+import { asError } from '@/mcp/result'
 
 /**
  * A transport that carries exactly one exchange.
@@ -90,7 +92,8 @@ export async function handleMcp(c: Context): Promise<Response> {
   const token = auth.toLowerCase().startsWith('bearer ') ? auth.slice(7).trim() : ''
   const verified = token ? await verifyMcpToken(token) : undefined
   if (!verified) return unauthorized()
-  const readOnlyDoor = !verified.scopes.includes('full')
+  const readOnlyDoor = !verified.scopes.includes('full') && !verified.scopes.includes('admin')
+  const adminDoor = verified.scopes.includes('admin')
 
   // DELETE ends a session, and there are no sessions to end. GET would open the SSE
   // stream this deliberately does not implement. Both are answered, not ignored.
@@ -125,6 +128,11 @@ export async function handleMcp(c: Context): Promise<Response> {
       if (readOnlyDoor && !meta.readOnly) return
       if (meta.readOnly) { host.registerTool(name, meta, handler); return }
       host.registerTool(name, meta, async (args) => {
+        // AT THE DOOR, not inside the tool, for the same reason the read gate is: a rule
+        // about which door a call came through cannot be forgotten by a handler that does
+        // not know there are doors. The tool itself stays one tool with one behaviour.
+        const refusal = adminDoor ? null : refusalFor(name, args as Record<string, unknown>)
+        if (refusal) return asError(refusal)
         try { return await handler(args) } finally { clearCache() }
       })
     },

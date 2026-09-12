@@ -13,6 +13,7 @@
 // CSP stays a deployment decision, documented in `docs/self-host.md`.
 
 import type { MiddlewareHandler } from 'hono'
+import { readEnv } from '@/env'
 
 /**
  * A SHORT `Permissions-Policy`, and the shortness is the design.
@@ -59,8 +60,21 @@ const HEADERS: Record<string, string> = {
 }
 
 export function securityHeaders(): MiddlewareHandler {
+  // Read ONCE, at construction. It cannot change while the process lives, and this runs on
+  // every response including the ones the page cache serves.
+  const csp = readEnv().csp
   return async (c, next) => {
     await next()
+    // The operator's policy, when they set one (`CSP`). Never a default: see `env.ts` for
+    // why a policy this software invents would narrow a proxy's tuned one in silence.
+    //
+    // `has` FIRST, and it is load-bearing here rather than tidy: `/uploads/*` answers an SVG
+    // with its own `default-src 'none'; sandbox` policy, which is the thing standing between
+    // a stored SVG and script on this origin. Overwriting that with a site-wide policy would
+    // take the sandbox off.
+    if (csp && !c.res.headers.has('content-security-policy')) {
+      c.res.headers.set('content-security-policy', csp)
+    }
     // Never overwrite. A handler that has already said something more specific — and a
     // future one that wants to allow framing on a single route — keeps its answer.
     for (const [name, value] of Object.entries(HEADERS)) {

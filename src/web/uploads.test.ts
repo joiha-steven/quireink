@@ -41,6 +41,21 @@ afterAll(() => {
 })
 
 describe('GET /uploads/*', () => {
+  it('keeps its own sandbox even when the operator set a site-wide CSP', async () => {
+    // A site-wide policy overwriting this one would take the sandbox off the single response
+    // that needs it most: an SVG navigated to directly renders as a document on this origin,
+    // and the sandbox is what stops the script inside it running there. The header middleware
+    // only fills in what a handler has not already said (`web/security-headers.ts`).
+    process.env.CSP = "default-src 'self'"
+    try {
+      const withCsp = createApp()
+      const res = await withCsp.request('/uploads/media/mark.svg')
+      expect(res.headers.get('content-security-policy')).toContain('sandbox')
+    } finally {
+      delete process.env.CSP
+    }
+  })
+
   it('sandboxes an SVG, so a script inside one cannot reach this origin', async () => {
     const res = await get('/uploads/media/mark.svg')
     expect(res.status).toBe(200)

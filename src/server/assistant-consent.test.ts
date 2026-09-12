@@ -56,9 +56,14 @@ describe('the list', () => {
 describe("after readers' words", () => {
   const def = async (name: string) => (await collectTools()).find((t) => t.name === name)
 
-  it('exactly one tool is marked untrusted, and it is a read', async () => {
+  // PINNED BY NAME, both ways. Marking a tool costs the owner a click, so the list should
+  // not grow by accident; leaving one unmarked costs the rule, which is worse. All three
+  // carry text that arrived through an endpoint taking no credentials: a comment form, the
+  // webmention door, the analytics beacon.
+  it('marks exactly the tools carrying somebody else\'s words, and all of them are reads', async () => {
     const marked = (await collectTools()).filter((t) => t.meta.untrusted)
-    expect(marked.map((t) => `${t.name}:${t.meta.readOnly ?? false}`)).toEqual(['list_comments:true'])
+    expect(marked.map((t) => `${t.name}:${t.meta.readOnly ?? false}`).sort())
+      .toEqual(['get_traffic:true', 'list_comments:true', 'list_mentions:true'])
   })
 
   it('an ordinary write runs before, and asks after', async () => {

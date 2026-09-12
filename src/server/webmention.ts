@@ -12,14 +12,34 @@
 // Ink clip — the passage it kept, so the owner can ask which sentence readers keep most.
 // Nothing is shown on the public page; a mention is the owner's to read.
 
-import { safeFetch } from '@/server/safe-fetch'
+import { readTextCapped, safeFetch } from '@/server/safe-fetch'
 import { all, one, run } from '@/store/query'
 import { nowMs, toIso } from '@/store/db'
 import type { Note } from '@/types'
 
 type Fetcher = (url: string, init?: RequestInit) => Promise<Response>
 
-const isHttp = (v: string) => /^https?:\/\/\S+$/i.test(v)
+/**
+ * How much of somebody else's page this server will hold while looking for one link.
+ *
+ * Both directions read to it through `readTextCapped`, which stops the stream here. It used
+ * to be a `.slice()` applied AFTER `res.text()` had read the whole body, so the number
+ * described what was inspected and not what was in memory, and `/webmention` is a door
+ * anybody may knock on: the URL fetched is the caller's choice.
+ */
+const MAX_PAGE_BYTES = 512_000
+
+/**
+ * A URL this endpoint will accept, shape and LENGTH.
+ *
+ * The length cap is not decoration. Every distinct `source` is its own row, the endpoint is
+ * public, and nothing here validated size: a long string in that field was a way to grow
+ * somebody else's database with one request each. 2048 is the practical ceiling every
+ * browser and proxy already enforces on a URL, so nothing real is refused by it.
+ */
+const MAX_URL_LEN = 2048
+
+const isHttp = (v: string) => v.length <= MAX_URL_LEN && /^https?:\/\/\S+$/i.test(v)
 
 /** The `rel="webmention"` endpoint a page advertises, or null. Header first, then markup. */
 export function discoverEndpoint(html: string, linkHeader: string | null, base: string): string | null {
@@ -49,7 +69,7 @@ export async function sendWebmention(
 ): Promise<'sent' | 'no-endpoint' | 'failed'> {
   try {
     const page = await fetcher(target, { headers: { accept: 'text/html' } })
-    const html = page.ok ? (await page.text()).slice(0, 512_000) : ''
+    const html = page.ok ? await readTextCapped(page, MAX_PAGE_BYTES) : ''
     const endpoint = discoverEndpoint(html, page.headers.get('link'), target)
     if (!endpoint) return 'no-endpoint'
     const res = await fetcher(endpoint, {
@@ -133,7 +153,7 @@ export async function verifyMention(id: number, fetcher: Fetcher = safeFetch): P
   try {
     const res = await fetcher(row.source, { headers: { accept: 'text/html' } })
     if (res.ok) {
-      const html = (await res.text()).slice(0, 512_000)
+      const html = await readTextCapped(res, MAX_PAGE_BYTES)
       if (html.includes(row.target)) {
         status = 'verified'
         quote = keptPassage(html)
@@ -158,4 +178,39 @@ export function mostKept(limit = 20): { target: string; quote: string; count: nu
       where status = 'verified' and quote is not null and quote != ''
       group by target, quote order by count desc, max(received_at) desc limit ?`, limit,
   )
+}
+
+/** A mention that never verified is noise; one that did is the owner's, and kept. */
+const UNVERIFIED_TTL_MS = 30 * 24 * 60 * 60 * 1000
+/** Rows kept at all, newest first. `listMentions` shows 200, so this is years of real ones. */
+const MAX_ROWS = 5000
+
+/**
+ * Retention for `webmentions`, run from the tick.
+ *
+ * The table had none, and it is written by an endpoint that takes no credentials: one row
+ * per distinct source URL, 20 a minute per address, kept for ever. The activity log was in
+ * the same position and for the same reason ("anybody could grow this blog's database one
+ * slow guess at a time"); this is the same answer.
+ *
+ * Two rules rather than one age: a verified mention is a fact about the owner's own pages
+ * and should not expire on a timer, while a row that has sat unverified for a month is a
+ * fetch that failed, and there is nothing to come back for.
+ */
+export function sweepWebmentions(now = nowMs()): number {
+  try {
+    const stale = run(
+      `delete from webmentions where status != 'verified' and received_at < ?`,
+      now - UNVERIFIED_TTL_MS,
+    ).changes
+    const over = run(
+      `delete from webmentions where id in (
+         select id from webmentions order by received_at desc limit -1 offset ?)`,
+      MAX_ROWS,
+    ).changes
+    return stale + over
+  } catch (error) {
+    console.error(`[ERROR] webmention.sweep: ${(error as Error).message}`)
+    return 0
+  }
 }

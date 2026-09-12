@@ -76,6 +76,20 @@ MCP tool fetches from a URL. `0` disables either. The admin (Settings → Server
 lower them for this blog and never raise them, so on a server you run for somebody else these
 two lines are the ceiling.
 
+**`CSP` sends a Content-Security-Policy from the app, and is empty by default.** Leave it
+alone behind the nginx block below or the shipped `Caddyfile`: both already send one, a
+browser enforces the intersection of every policy it receives, and a second one from here
+could only narrow a policy those have tuned for embeds. Set it on an install where neither
+is in front — a NAS with its own reverse proxy, a PaaS, a Kubernetes ingress — because
+those serve the whole site with no policy at all otherwise. Paste the same line section 07
+gives nginx; `deploy/kubernetes/kustomization.yaml` already carries it.
+
+**Sign-in needs HTTPS, and this is the one failure with nothing to read.** The session
+cookie is `__Host-`, which a browser keeps only on a secure connection, so reaching the
+blog at `http://192.168.1.50:3000` gets the password and the code accepted and the cookie
+dropped, over and over. `http://localhost` counts as secure, so a local trial is fine. The
+login screen says so when it happens and the log warns at boot.
+
 **`HOST` defaults to `127.0.0.1`, and the layout below is why:** nginx proxies to
 `http://127.0.0.1:<port>`, so the app never needs to be reachable from anywhere else. Set
 `HOST=0.0.0.0` when the proxy is on a different machine; the Docker image sets it already,

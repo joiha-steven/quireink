@@ -29,6 +29,22 @@ export type Env = {
    */
   siteUrl: string
   /**
+   * A Content-Security-Policy to send on every response, or '' to send none.
+   *
+   * EMPTY BY DEFAULT, and that is the safe answer rather than the lazy one. A browser
+   * enforces the INTERSECTION of every policy it receives, so a default from here would
+   * silently narrow a policy a proxy has already tuned — the recommended nginx and Caddy
+   * configs both widen `frame-src` for YouTube, Vimeo and Spotify, and an embed that stops
+   * loading reports nothing to the owner. So the app says nothing unless an operator asks.
+   *
+   * It exists because two shipped install paths put no proxy of ours in front: a Kubernetes
+   * cluster terminates TLS at its own ingress, and a NAS has its own reverse proxy with its
+   * own header UI. Both were serving the whole site with no policy at all, and the only
+   * documented one lived in a vhost neither of them uses. `docs/self-host.md` carries a
+   * policy to paste.
+   */
+  csp: string
+  /**
    * Largest single upload the SOFTWARE will store, in bytes. `0` = no cap.
    *
    * This is the DEPLOYMENT'S CEILING, not the owner's preference: the admin setting can
@@ -79,6 +95,9 @@ export function readEnv(source: NodeJS.ProcessEnv = process.env): Env {
     // disagree about where they are.
     dataDir: source.DATA_DIR ?? './data',
     siteUrl: (source.SITE_URL ?? '').replace(/\/+$/, ''),
+    // One line, verbatim. Not assembled from parts: a policy is a sentence an operator has
+    // to be able to read back and compare against the one in the docs.
+    csp: (source.CSP ?? '').trim(),
     // 64 MB matches the `client_max_body_size` in the recommended vhost, so the software
     // and the proxy in `docs/self-host.md` refuse the same upload rather than one of them
     // being the only thing that does.

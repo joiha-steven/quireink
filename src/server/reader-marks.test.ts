@@ -6,7 +6,7 @@ import { db } from '@/store/db'
 import { resetSecretCache } from '@/auth/secret'
 import {
   forgetReader, getMarks, mintCode, pagesOf, putMarks, readerOfCode, readerOfEmail, sweepReaderMarks,
-  MAX_BODY_BYTES, MAX_PAGES, RETENTION_MS,
+  MAX_BODY_BYTES, MAX_PAGES, MAX_TOTAL_BYTES, RETENTION_MS,
 } from '@/server/reader-marks'
 
 const DIR = './.tmp/test-reader-marks'
@@ -118,5 +118,54 @@ describe('keeping marks', () => {
     expect(getMarks('k:old', '/a')).toBeNull()
     expect(getMarks('k:new', '/a')).not.toBeNull()
     expect(db().query<{ n: number }, []>(`select count(*) as n from reader_keys`).get()!.n).toBe(1)
+  })
+})
+
+// Two ceilings, because the per-reader ones bound one reader and nothing bounded the sum.
+// Minting is the cheap half of this pair and storing is the expensive half, so the table can
+// only be filled on purpose by holding codes: both rules aim at that.
+describe('what the table will hold', () => {
+  it('drops a code that holds nothing and has not been used in a week, and keeps one that does', () => {
+    const now = Date.now()
+    const week = 7 * 24 * 60 * 60 * 1000
+    const empty = mintCode()
+    const used = mintCode()
+    const reader = readerOfCode(used)!
+    putMarks(reader.id, '/a', marks(1))
+    db().run(`update reader_keys set last_used_at = ?`, [now - week - 1])
+    expect(sweepReaderMarks(now)).toBe(1)
+    expect(readerOfCode(empty)).toBeNull()
+    expect(readerOfCode(used)).not.toBeNull()
+  })
+
+  it('keeps an unused code that is still fresh', () => {
+    const code = mintCode()
+    expect(sweepReaderMarks(Date.now())).toBe(0)
+    expect(readerOfCode(code)).not.toBeNull()
+  })
+
+  it('trims the oldest pages when the whole table goes past its budget', () => {
+    // A budget in bytes rather than 256 MB written to disk; the rule is the same one.
+    // Enough rows that the batch size matters — a table smaller than one batch would only
+    // prove the loop can empty it.
+    const ROWS = 200
+    // Real instants, an hour apart: anything older than the retention window would be swept
+    // by the rule above this one and the ceiling would never be reached.
+    const base = Date.now() - ROWS * 3600_000
+    for (let i = 0; i < ROWS; i++) {
+      const reader = `k:r${String(i).padStart(3, '0')}`
+      putMarks(reader, '/a', marks(2))
+      db().run(`update reader_marks set updated_at = ? where reader = ?`, [base + i * 3600_000, reader])
+    }
+    const used = db().query<{ n: number }, []>(`select sum(length(body)) as n from reader_marks`).get()!.n
+    // Room for roughly three-quarters; the loop re-measures, so the exact number is its job.
+    sweepReaderMarks(Date.now(), Math.floor(used * 0.75))
+    const left = db().query<{ r: string }, []>(`select reader as r from reader_marks order by updated_at`).all()
+    expect(left.length).toBeLessThan(ROWS)
+    expect(left.length).toBeGreaterThan(ROWS / 2)
+    // Oldest first: whatever survived is the newest end of the list.
+    expect(left.map((x) => x.r)).toEqual(left.map((x) => x.r).sort())
+    expect(left.at(-1)?.r).toBe('k:r199')
+    expect(MAX_TOTAL_BYTES).toBeGreaterThan(0)
   })
 })

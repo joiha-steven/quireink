@@ -85,6 +85,19 @@ describe('GET /login', () => {
     expect(await (await app.request('/login')).text()).toContain('name="robots" content="noindex"')
   })
 
+  // The one failure sign-in has with nothing to read: the session cookie is `__Host-`, which
+  // a browser keeps only in a secure context, so on plain HTTP at a LAN address the password
+  // and the code are both accepted and the cookie is dropped, over and over.
+  it('carries the insecure-connection note, hidden, on every render', async () => {
+    const html = await (await app.request('/login')).text()
+    // SENT ALWAYS and revealed by the island, because the server cannot tell: behind a proxy
+    // that terminates TLS it sees plain HTTP on every request and everything is fine. Only
+    // the browser knows, and `window.isSecureContext` is the exact question the cookie will
+    // be judged by. So the assertion is that the note is present AND hidden.
+    expect(html).toContain('data-insecure')
+    expect(html).toMatch(/<p class="login-warn" data-insecure hidden>/)
+  })
+
   it('redirects someone who is already signed in', async () => {
     const { cookie } = await enrolFully()
     const res = await app.request('/login', { headers: { cookie } })

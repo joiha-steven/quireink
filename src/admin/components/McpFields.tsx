@@ -39,9 +39,13 @@ export function McpFields(
   const [tokens, setTokens] = useState<McpTokenInfo[]>([])
   const [created, setCreated] = useState<string | null>(null) // plaintext shown once
   const [pending, setPending] = useState(false)
-  // Scope for the NEXT token. Unchecked mints 'full' — what every token was before scopes
+  // Scope for the NEXT token. Neither box mints 'full' — what every token was before scopes
   // existed, and what a connector that publishes needs.
   const [readScope, setReadScope] = useState(false)
+  // The rarer grant: `full` PLUS the settings written straight into every public page
+  // (`mcp/guarded-paths.ts`). Off by default and mutually exclusive with read-only, because
+  // "reads nothing but may set custom head HTML" is not a thing anybody means.
+  const [codeScope, setCodeScope] = useState(false)
 
   // Refresh used by the create/delete handlers (event handlers — setState is fine).
   const refresh = useCallback(async () => {
@@ -90,7 +94,7 @@ export function McpFields(
       const res = await fetch('/api/mcp/tokens', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, scope: readScope ? 'read' : 'full' }),
+        body: JSON.stringify({ name, scope: readScope ? 'read' : codeScope ? 'admin' : 'full' }),
       })
       const json = (await res.json()) as ApiResponse<{ token: string; info: McpTokenInfo }>
       if (!json.success || !json.data) {
@@ -189,15 +193,35 @@ export function McpFields(
                 {t.mcpGenerate}
               </Button>
               <Button type="button" variant="ghost" onClick={() => refresh()}>{t.mcpRefresh}</Button>
-              <label className="flex cursor-pointer items-center gap-2 text-sm text-neutral-600 dark:text-neutral-300" title={t.mcpReadOnlyHint}>
-                <input
-                  type="checkbox"
-                  checked={readScope}
-                  onChange={(e) => setReadScope(e.target.checked)}
-                  className="size-4 rounded border-neutral-300 dark:border-neutral-700"
-                />
-                {t.mcpReadOnly}
-              </label>
+              {/* The two scope boxes travel TOGETHER. Loose in the row they wrapped one at a
+                  time, so at the width the settings column actually is, Read-only sat beside
+                  Refresh and Custom code landed alone on the next line under the key — two
+                  halves of one question, drawn as if they were unrelated.
+
+                  `basis-full` rather than letting it wrap on its own: a pair that sometimes
+                  fits beside the keys and sometimes does not is a layout that moves when the
+                  window does. Its own row, always, aligned with the key above it. */}
+              <div className="flex w-full basis-full flex-wrap items-center gap-x-4 gap-y-1.5">
+                <label className="flex cursor-pointer items-center gap-2 text-sm text-neutral-600 dark:text-neutral-300" title={t.mcpReadOnlyHint}>
+                  <input
+                    type="checkbox"
+                    checked={readScope}
+                    onChange={(e) => setReadScope(e.target.checked)}
+                    className="size-4 rounded border-neutral-300 dark:border-neutral-700"
+                  />
+                  {t.mcpReadOnly}
+                </label>
+                <label className="flex cursor-pointer items-center gap-2 text-sm text-neutral-600 dark:text-neutral-300" title={t.mcpCustomCodeHint}>
+                  <input
+                    type="checkbox"
+                    checked={codeScope}
+                    disabled={readScope}
+                    onChange={(e) => setCodeScope(e.target.checked)}
+                    className="size-4 rounded border-neutral-300 disabled:opacity-40 dark:border-neutral-700"
+                  />
+                  {t.mcpCustomCode}
+                </label>
+              </div>
             </div>
           </Setting>
 
@@ -236,9 +260,9 @@ export function McpFields(
                       <td className="px-3 py-2">
                         <span className="font-medium">{tok.name}</span>
                         <code className="ml-2 text-xs text-neutral-500 dark:text-neutral-400">{tok.prefix}…</code>
-                        {tok.scope === 'read' && (
+                        {tok.scope !== 'full' && (
                           <span className="ml-2 rounded border border-neutral-300 px-1.5 py-0.5 text-xs text-neutral-500 dark:border-neutral-700 dark:text-neutral-400">
-                            {t.mcpReadOnly}
+                            {tok.scope === 'read' ? t.mcpReadOnly : t.mcpCustomCode}
                           </span>
                         )}
                       </td>

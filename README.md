@@ -320,6 +320,7 @@ These are the only things that live outside the admin.
 | `BACKUP_DIR` | ◻️ | Where snapshots are written. Defaults to `<DATA_DIR>/backups` ([backups](./docs/backups.md)) |
 | `MCP_OAUTH_SECRET` | ◻️ | Signs MCP OAuth codes. Leave it out and the server makes its own, which is the recommended way |
 | `ANALYTICS_TZ` | ◻️ | Default timezone until the owner picks one in **Settings → Blog → Timezone**, which is the site's whole clock: post dates, month markers, the day a chart starts on. Defaults to UTC |
+| `CSP` | ◻️ | A Content-Security-Policy to send on every response. Empty by default, and leave it that way behind the shipped `Caddyfile` or the documented nginx block: both send one already, and a browser enforces the intersection, so a second could only narrow theirs. Set it where neither is in front, such as a NAS proxy, a PaaS, or a Kubernetes ingress |
 | `TRUST_PROXY` | ◻️ | Set to `1` only when the proxy in front reaches you over a PUBLIC address. Rate limits key on the socket address; `CF-Connecting-IP`/`X-Forwarded-For` are believed automatically from loopback or a private network |
 | `UPDATE_CHECK` | ◻️ | `0` stops the one request this software makes on its own: once a day it asks what the newest release is, and by asking is counted as a blog in use. It sends the version you run and four coarse facts, never your address, posts, readers or an exact number. Also a switch in Settings. [The whole call](./docs/update-check.md) |
 

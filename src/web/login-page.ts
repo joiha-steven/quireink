@@ -70,6 +70,26 @@ const EYE = '<svg class="eye-on" viewBox="0 0 24 24" fill="none" stroke="current
 const errorBox = (message: string | undefined): string =>
   message === undefined ? '' : `<p class="login-error" role="alert">${escapeHtml(message)}</p>`
 
+/**
+ * The one dead end sign-in has, said out loud on the screen where it happens.
+ *
+ * The session cookie is `__Host-`, which a browser stores only over a secure connection. On
+ * a blog reached at `http://192.168.1.50:3000` — a NAS behind no reverse proxy, a LAN
+ * address, a plain tunnel — the password and the code are both accepted, the cookie is set,
+ * the browser drops it, and the next page asks to sign in again. Nothing anywhere said why.
+ *
+ * SENT ALWAYS AND REVEALED BY THE BROWSER, rather than decided on the server. The server
+ * cannot tell: behind a proxy that terminates TLS this process sees plain HTTP on every
+ * request and everything is fine, and a proxy that omits `X-Forwarded-Proto` would make a
+ * server-side guess cry wolf on a perfectly good install. `window.isSecureContext` is the
+ * browser's own answer to the exact question the cookie will be judged by, and
+ * `http://localhost` is a secure context, so a local trial run is not warned at.
+ */
+function insecureNote(text: string): string {
+  return `<p class="login-warn" data-insecure hidden>${escapeHtml(text)}</p>`
+}
+
+
 export function passwordScreen(
   settings: SiteSettings,
   opts: { error?: string; username?: string; next?: string } = {},
@@ -79,6 +99,7 @@ export function passwordScreen(
   return loginShell(settings, s.authSignIn, `
 <h1>${escapeHtml(s.authSignIn)}</h1>
 <p class="login-lede">${escapeHtml(fill(s.authSignInLede, { site: settings.title }))}</p>
+${insecureNote(s.authNeedsHttps)}
 ${errorBox(opts.error)}
 <form method="post" action="/api/auth/login" class="login-form">
 ${next}

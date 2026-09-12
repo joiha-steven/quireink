@@ -267,3 +267,24 @@ create table if not exists reader_keys (
   created_at   integer not null,
   last_used_at integer not null
 );
+
+
+-- migration: 015-mcp-admin-scope
+-- A third MCP scope. SQLite cannot alter a CHECK constraint, so the table is rebuilt: same
+-- columns, same index, one more value allowed. Every existing row keeps the scope it has,
+-- which is the point — a `full` token stays `full` and loses the four guarded settings.
+create table if not exists mcp_tokens_new (
+  id           integer primary key autoincrement,
+  name         text not null default '',
+  token_hash   text not null unique,
+  prefix       text not null default '',
+  scope        text not null default 'full' check (scope in ('full', 'read', 'admin')),
+  created_at   integer not null,
+  expires_at   integer not null,
+  last_used_at integer
+);
+insert into mcp_tokens_new (id, name, token_hash, prefix, scope, created_at, expires_at, last_used_at)
+  select id, name, token_hash, prefix, scope, created_at, expires_at, last_used_at from mcp_tokens;
+drop table mcp_tokens;
+alter table mcp_tokens_new rename to mcp_tokens;
+create index if not exists mcp_tokens_hash_idx on mcp_tokens (token_hash);

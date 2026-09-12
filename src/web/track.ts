@@ -23,6 +23,21 @@ import { clientCountry, clientIp, rateLimited } from '@/server/rate-limit'
  */
 const PER_MINUTE = 240
 
+/**
+ * The referrer as a host, or '' for anything that is not one.
+ *
+ * Deliberately narrow: letters, digits, dots and hyphens, plus the `android-app://` package
+ * names `analytics/channel.ts` reads (dots and underscores), and an optional port. Not
+ * `new URL()`, because the beacon sends a bare host rather than a URL and always has.
+ */
+function referrerHost(raw: unknown): string {
+  if (typeof raw !== 'string') return ''
+  const host = raw.trim().toLowerCase()
+  // 253 is the longest a DNS name can be; a package name is shorter still.
+  if (!host || host.length > 253) return ''
+  return /^[a-z0-9][a-z0-9._-]*(?::\d{1,5})?$/.test(host) ? host : ''
+}
+
 type Payload = {
   path?: unknown; depth?: unknown; referrer?: unknown; dwell?: unknown; bytes?: unknown
   touch?: unknown
@@ -30,15 +45,24 @@ type Payload = {
 
 export async function handleTrack(c: Context): Promise<Response> {
   try {
-    const body = (await c.req.json().catch(() => ({}))) as Payload
-    const path = typeof body.path === 'string' ? body.path : ''
-    if (!path) return c.body(null, 204)
-
+    // THE LIMIT COMES FIRST, and the order is the point. Reading the body is the most
+    // expensive thing this route does, and it used to happen above the limiter: a caller
+    // could post a body as large as the deployment allows — 64 MB behind the shipped Caddy
+    // and nginx configs, 128 MB against a process exposed directly, since Bun's default is
+    // what applies when nothing in front says otherwise — and the JSON parser ran on every
+    // one of them before anything counted the request. Every other public write on this
+    // site (`/api/comments`, `/api/subscribe`, `/webmention`, `/og`) limits before it
+    // parses; this was the one that did not. `clientIp` reads headers and the socket peer,
+    // so nothing here needs the body.
     const ip = clientIp(c)
     if (rateLimited(`track:${ip}`, PER_MINUTE)) return c.body(null, 204)
     // Before the rate limiter's own budget is spent on it, and before anything is parsed
     // further: the owner and the box are not readers.
     if (!isCountableVisit(c, ip)) return c.body(null, 204)
+
+    const body = (await c.req.json().catch(() => ({}))) as Payload
+    const path = typeof body.path === 'string' ? body.path : ''
+    if (!path) return c.body(null, 204)
 
     const ua = c.req.header('user-agent') ?? ''
     // Buffered in memory (Invariant 7), so neither of these touches the disk on the
@@ -53,7 +77,13 @@ export async function handleTrack(c: Context): Promise<Response> {
     } else {
       // Source attribution: the referrer HOST only, sent by the beacon on session entry
       // and only when it is external, plus the country the CDN saw. Both privacy-light.
-      const referrer = typeof body.referrer === 'string' ? body.referrer.slice(0, 255) : ''
+      //
+      // A HOST, checked to be one. This was a 255-character free-text field written straight
+      // into `referrer_host`, on an open POST, and read back in two places that matter: the
+      // owner's traffic panel, and `get_traffic` over MCP, which puts it in front of a model.
+      // The sibling field on this same route has always been checked — `path` has to name a
+      // route this site actually serves — and this one was not.
+      const referrer = referrerHost(body.referrer)
       const country = clientCountry(c)
       // Multi-touch, which the user agent cannot say and an iPad needs (`analytics/ua.ts`).
       // Read as a strict boolean: this is an open POST, and the flag decides a bucket.

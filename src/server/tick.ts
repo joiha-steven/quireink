@@ -13,6 +13,7 @@ import { maybeRunUpdateCheck } from '@/server/update-check'
 import { purgeExpiredSessions } from '@/auth/sessions'
 import { sweepActivityLog } from '@/server/activity'
 import { sweepReaderMarks } from '@/server/reader-marks'
+import { sweepWebmentions } from '@/server/webmention'
 import { sweepPendingSubscribers } from '@/news/subscribers'
 import { pruneRendered } from '@/render/render-cache'
 import { sweepScheduled, PUBLISH_TICK_LOOKBACK_MS, HOURLY_LOOKBACK_MS } from '@/server/scheduled'
@@ -31,6 +32,8 @@ export type FullTick = {
   activityRows: number
   /** A reader's marks and codes untouched for a year (ADR 0047). */
   readerRows: number
+  /** Webmention rows that never verified, and anything past the table's ceiling. */
+  mentionRows: number
   renderRows: number
   backup: { ran: boolean; name?: string; error?: string }
 }
@@ -129,6 +132,10 @@ export async function fullTick(opts: { purge?: boolean } = {}): Promise<FullTick
   // sees; a year untouched and they go, like a code nobody has used in one.
   const readerRows = sweepReaderMarks()
 
+  // Webmentions, which had no retention either. The row is written by a public endpoint
+  // before anything is verified, so the table grows at whatever rate strangers knock.
+  const mentionRows = sweepWebmentions()
+
   // The render cache is insert-only for the same reason it needs no invalidation, so this
   // is the only thing that ever removes a row from it. Bounded per tick, and it swallows
   // its own failures.
@@ -145,7 +152,7 @@ export async function fullTick(opts: { purge?: boolean } = {}): Promise<FullTick
     console.error(`[ERROR] tick backup: ${(error as Error).message}`)
   }
 
-  return { purged, finalized, thumbs, published, sessions, staleSignups, activityRows, readerRows, renderRows, backup }
+  return { purged, finalized, thumbs, published, sessions, staleSignups, activityRows, readerRows, mentionRows, renderRows, backup }
 }
 
 // ----- the clock ------------------------------------------------------------------------
@@ -219,7 +226,8 @@ export function startClock(): () => void {
         announced = true
         console.log(
           `clock: first sweep done (published ${result.published}, variants ${result.finalized},`
-          + ` sessions ${result.sessions}, log rows ${result.activityRows}, reader rows ${result.readerRows}, cached rows ${result.renderRows})`,
+          + ` sessions ${result.sessions}, log rows ${result.activityRows}, reader rows ${result.readerRows},`
+          + ` mention rows ${result.mentionRows}, cached rows ${result.renderRows})`,
         )
       }).catch((error: unknown) => {
         console.error(`[ERROR] clock full: ${(error as Error).message}`)

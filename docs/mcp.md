@@ -16,9 +16,16 @@
   never returned, and the client showed a spinner and then "server is currently unavailable".
 - **Tokens, minted in the admin.** Up to five manual ones, named, shown ONCE, stored as a
   SHA-256 hash in `mcp_tokens` (`src/mcp/tokens.ts`). Each carries a **scope** chosen at mint
-  time — `full` (the default) or `read`; a `read` token's door registers only the tools marked
-  `readOnly`, so write tools are ABSENT from its `tools/list` rather than refused
-  (`src/mcp/registry.ts`, pinned by `src/mcp/scope.test.ts`). Every token **expires 180 days
+  time — `full` (the default), `read`, or `admin`; a `read` token's door registers only the
+  tools marked `readOnly`, so write tools are ABSENT from its `tools/list` rather than refused
+  (`src/mcp/registry.ts`, pinned by `src/mcp/scope.test.ts`). **`admin` is `full` plus four
+  settings**, `customHead`, `customBodyEnd`, `customCss` and `siteUrl`: the first three are
+  written verbatim into every public page, so a token that can set them can run script on the
+  owner's own origin, and the fourth decides where every canonical and newsletter link points.
+  A `full` token is refused those paths at the door (`src/mcp/guarded-paths.ts`) with a message
+  that names the fix. Existing `full` tokens NARROW on upgrade rather than keeping the grant.
+  The OAuth flow never mints `admin`: a connector negotiating a scope string is not the owner
+  ticking a box. Every token **expires 180 days
   after creation**; `verifyMcpToken` hashes the bearer, rejects it past `expires_at`, else
   stamps `last_used_at`. There is **no `MCP_TOKEN` env var**.
 - **OAuth, for connectors that require it.** A minimal OAuth 2.1 authorization-code + PKCE flow

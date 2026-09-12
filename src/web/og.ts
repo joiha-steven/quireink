@@ -20,6 +20,7 @@ import type { Context } from 'hono'
 import { readEnv } from '@/env'
 import { clientIp, rateLimited } from '@/server/rate-limit'
 import { safeFetch } from '@/server/safe-fetch'
+import { readCapped } from '@/media/limits'
 import { renderOgCard, type OgCard } from '@/render/og-card'
 
 /**
@@ -30,6 +31,19 @@ import { renderOgCard, type OgCard } from '@/render/og-card'
  * accepts the connection and then says nothing parks a request per call.
  */
 const FETCH_TIMEOUT_MS = 5_000
+
+/**
+ * And neither may hold the MEMORY open, which the timeout says nothing about.
+ *
+ * Both fetches are same-origin — `sameOrigin()` below refuses anything else — so the
+ * ceiling was whatever the largest file on this site happens to be, decided by whoever
+ * writes the query string rather than by the owner. A card is 1200x630: a background past
+ * this is not making it better, and a text face past it is not a text face. Over the cap
+ * the piece is dropped, which is the same outcome as a fetch that failed, and this route
+ * already draws a gradient when there is no picture.
+ */
+const MAX_BG_BYTES = 8 * 1024 * 1024
+const MAX_FONT_BYTES = 4 * 1024 * 1024
 
 /**
  * Cards per minute per IP.
@@ -75,8 +89,9 @@ async function inlineImage(url: string): Promise<string | undefined> {
     if (!res.ok) return undefined
     const type = res.headers.get('content-type') ?? 'image/jpeg'
     if (!type.startsWith('image/')) return undefined
-    const bytes = new Uint8Array(await res.arrayBuffer())
-    return `data:${type};base64,${Buffer.from(bytes).toString('base64')}`
+    const read = await readCapped(res, MAX_BG_BYTES)
+    if ('tooLarge' in read) return undefined
+    return `data:${type};base64,${Buffer.from(read.body).toString('base64')}`
   } catch {
     return undefined // a missing background is a gradient, not an error page
   }
@@ -115,7 +130,11 @@ export async function handleOg(c: Context): Promise<Response> {
   const font = q.get('font') ?? ''
   if (sameOrigin(font, origin)) {
     card.customFont = await safeFetch(font, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) })
-      .then((r) => (r.ok ? r.arrayBuffer() : undefined))
+      .then(async (r) => {
+        if (!r.ok) return undefined
+        const read = await readCapped(r, MAX_FONT_BYTES)
+        return 'tooLarge' in read ? undefined : read.body
+      })
       .catch(() => undefined)
   }
 

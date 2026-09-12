@@ -92,7 +92,13 @@ export function isIndieAuthClient(clientId: string, redirectUri: string): boolea
   }
 }
 
-/** The scope a token gets: any writing scope an IndieAuth client asks for is `full`. */
+/**
+ * The scope a token gets: any writing scope an IndieAuth client asks for is `full`.
+ *
+ * Never `admin`. A connector negotiating a scope string is not the owner ticking a box, and
+ * the consent page has no wording for "may put script on every page" — so the grant that
+ * carries that is mintable only from the token card in Settings, by hand.
+ */
 function tokenScope(requested: string): McpScope {
   return !requested || /\b(full|create|update|delete|media|draft)\b/.test(requested) ? 'full' : 'read'
 }
@@ -115,9 +121,13 @@ export function mcpAdminRoutes() {
     const input = (await c.req.json().catch(() => ({}))) as { name?: unknown; scope?: unknown }
     const name = typeof input.name === 'string' ? input.name.trim() : ''
     if (!name) return fail(c, 'Name is required', 400)
-    // Anything that is not exactly 'read' mints a full token — the value every token was
-    // before scopes existed, and the one an unaware client still expects.
-    const scope = input.scope === 'read' ? 'read' as const : 'full' as const
+    // NAMED, both of the narrow ones. Anything else mints a full token, which is the value
+    // every token was before scopes existed and the one an unaware client still expects.
+    // `admin` has to be asked for by name: it is `full` plus the settings that put markup on
+    // a public page (`mcp/guarded-paths.ts`), and a default nobody chose is not consent.
+    const scope: McpScope = input.scope === 'read' ? 'read'
+      : input.scope === 'admin' ? 'admin'
+        : 'full'
     try {
       const { token, info } = await createToken(name, scope)
       void logActivity('mcp.token.create', info.name)

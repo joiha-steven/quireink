@@ -3,7 +3,8 @@ import { afterAll, beforeEach, describe, expect, it } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
 import { db } from '@/store/db'
 import {
-  discoverEndpoint, keptPassage, listMentions, mostKept, receiveWebmention, sendWebmention, verifyMention,
+  discoverEndpoint, keptPassage, listMentions, mostKept, receiveWebmention, sendWebmention,
+  sweepWebmentions, verifyMention,
 } from '@/server/webmention'
 
 const DIR = './.tmp/test-webmention'
@@ -95,5 +96,39 @@ describe('receiving', () => {
     expect(q('&lt;script&gt;alert(1)&lt;/script&gt; kept')).toBe('alert(1) kept')
     expect(q('&lt;&lt;b&gt;script&gt;x&lt;/&lt;b&gt;script&gt;')).not.toContain('<')
     expect(q('<b>bold</b> &lt;i&gt;kept&lt;/i&gt;')).toBe('bold kept')
+  })
+})
+
+// The endpoint takes no credentials, so what it will accept and how long it keeps it are
+// both security questions rather than housekeeping ones.
+describe('what the open door will hold', () => {
+  it('refuses a URL past the length any browser would send', () => {
+    const long = `https://b.example/${'a'.repeat(2100)}`
+    expect(receiveWebmention(long, `${SITE}/p`, SITE)).toBe('invalid')
+    expect(receiveWebmention('https://b.example/a', `${SITE}/${'b'.repeat(2100)}`, SITE)).toBe('invalid')
+    // The boundary itself still passes: 2048 is a real ceiling, not a round number to sit under.
+    const exact = `https://b.example/${'a'.repeat(2048 - 'https://b.example/'.length)}`
+    expect(typeof receiveWebmention(exact, `${SITE}/p`, SITE)).toBe('number')
+  })
+
+  it('reads only the first 512 KB of a source, whatever the source sends', async () => {
+    // The link sits AFTER the cap, so finding it would mean the whole body was held.
+    const id = receiveWebmention('https://b.example/huge', `${SITE}/p`, SITE) as number
+    const huge = `${'x'.repeat(600_000)}<a href="${SITE}/p">late</a>`
+    expect((await verifyMention(id, async () => page(huge)))?.status).toBe('failed')
+  })
+
+  it('drops what never verified after a month and keeps what did', () => {
+    const old = Date.now() - 40 * 24 * 60 * 60 * 1000
+    const put = (source: string, status: string, at: number) =>
+      db().run(`insert into webmentions (source, target, status, received_at) values (?, ?, ?, ?)`,
+        [source, `${SITE}/p`, status, at])
+    put('https://b.example/1', 'pending', old)
+    put('https://b.example/2', 'failed', old)
+    put('https://b.example/3', 'verified', old)
+    put('https://b.example/4', 'pending', Date.now())
+    expect(sweepWebmentions()).toBe(2)
+    expect(listMentions().map((m) => m.source).sort())
+      .toEqual(['https://b.example/3', 'https://b.example/4'])
   })
 })

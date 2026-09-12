@@ -131,6 +131,14 @@ html[data-motion=off] .login-reveal button:active{transform:translateY(-50%)}
   border:1px solid color-mix(in srgb, var(--c-accent) 35%, var(--c-rule));border-radius:8px;
   background:color-mix(in srgb, var(--c-accent) 6%, var(--c-bg))}
 
+/* The same box as an error, in the meta ink rather than the accent: it is not a refusal of
+   what was just typed, it is the reason the next step will not work. The hidden attribute is set on the
+   server and removed by the island only when the browser says the context is not secure. */
+.login-warn{margin:1.25rem 0 0;padding:.65rem .75rem;font-size:.875rem;color:var(--c-meta);
+  border:1px solid var(--c-rule);border-radius:8px;
+  background:color-mix(in srgb, var(--c-meta) 5%, var(--c-bg))}
+.login-warn[hidden]{display:none}
+
 .login-alt{margin:1.25rem 0 0;font-size:.875rem;text-align:center}
 .login-alt a{color:var(--c-link);text-decoration:none}
 .login-alt a:hover{text-decoration:underline}

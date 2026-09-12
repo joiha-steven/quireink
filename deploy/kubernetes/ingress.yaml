@@ -21,6 +21,10 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
     # Uncomment with cert-manager installed, and the certificate issues itself.
     # cert-manager.io/cluster-issuer: letsencrypt-prod
+    # NO security headers here on purpose. The app sends nosniff, frame-options,
+    # referrer-policy and permissions-policy itself on every response, and the
+    # Content-Security-Policy is the `CSP` entry in `kustomization.yaml` — set there so it
+    # lands whatever ingress controller this cluster runs, rather than only on this one.
 spec:
   ingressClassName: nginx
   tls:

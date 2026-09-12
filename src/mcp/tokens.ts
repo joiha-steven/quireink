@@ -25,7 +25,16 @@ const expiryMs = (): number => nowMs() + TOKEN_TTL_DAYS * 86_400_000
 export const OAUTH_TOKEN_NAME = 'OAuth connector'
 
 /** What a token may do. 'read' registers only the read-only tools on its door. */
-export type McpScope = 'full' | 'read'
+/**
+ * Three, and they narrow rather than nest neatly: `read` sees only the tools marked
+ * readOnly, `full` gets every tool, and `admin` is `full` plus the handful of settings that
+ * put markup on a public page (`mcp/guarded-paths.ts` says which and why).
+ *
+ * `full` used to be the top and now is not. That is deliberate: a token minted before this
+ * existed keeps its scope and loses those settings, because a change that leaves old grants
+ * at their old width protects nobody already holding one.
+ */
+export type McpScope = 'full' | 'read' | 'admin'
 
 // What the admin UI sees — never the secret itself.
 export type McpTokenInfo = {

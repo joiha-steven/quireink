@@ -164,3 +164,44 @@ export async function safeFetch(url: string, init?: RequestInit): Promise<Respon
   }
   throw new BlockedUrlError(`Too many redirects (>${MAX_REDIRECT_HOPS}): ${url}`)
 }
+
+/**
+ * Read a response body as text, stopping at `maxBytes` rather than after it.
+ *
+ * `(await res.text()).slice(0, N)` reads the WHOLE body into memory and only then throws
+ * most of it away, which makes the cap a description of what the caller looks at rather
+ * than of what the process holds. That is fine for a host the owner named and wrong for one
+ * a stranger did: `/webmention` is open by protocol, so anybody may hand this server a URL
+ * and have it fetch the URL's contents, and the fetch timeout is a clock rather than a size.
+ *
+ * TRUNCATES rather than refusing, because that is what the old expression did: the callers
+ * search the first N bytes for a link, and a page longer than N was already only read that
+ * far. Refusing would silently stop verifying long pages that used to verify.
+ *
+ * The byte cap is applied to the encoded stream, so a multi-byte character straddling the
+ * boundary is dropped rather than mangled (`TextDecoder` without `stream` discards a partial
+ * sequence at the end). Callers are looking for ASCII URLs, so that costs nothing.
+ */
+export async function readTextCapped(res: Response, maxBytes: number): Promise<string> {
+  if (res.body === null) return ''
+  const reader = res.body.getReader()
+  const chunks: Uint8Array[] = []
+  let total = 0
+  try {
+    for (;;) {
+      const { done, value } = await reader.read()
+      if (done || value === undefined) break
+      const room = maxBytes - total
+      if (value.byteLength >= room) {
+        chunks.push(value.subarray(0, room))
+        await reader.cancel()
+        break
+      }
+      chunks.push(value)
+      total += value.byteLength
+    }
+  } finally {
+    reader.releaseLock()
+  }
+  return new TextDecoder('utf-8', { fatal: false }).decode(Buffer.concat(chunks))
+}

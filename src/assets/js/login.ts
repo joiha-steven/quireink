@@ -107,6 +107,13 @@ function setupLanguage(): void {
   })
 }
 
+/**
+ * `__Host-` cookies need a secure context, so on plain HTTP sign-in cannot finish. The
+ * browser is the only thing that knows; the server sees plain HTTP behind every TLS proxy
+ * too. `http://localhost` counts as secure, so a local trial is not warned at.
+ */
+if (!window.isSecureContext) document.querySelector('[data-insecure]')?.removeAttribute('hidden')
+
 reveal()
 capsLock()
 otpPaste()

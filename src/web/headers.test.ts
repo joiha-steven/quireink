@@ -38,6 +38,30 @@ describe('the headers the app owes every response', () => {
     expect(res.headers.get('referrer-policy')).toBe('strict-origin-when-cross-origin')
   })
 
+  // CSP is an operator's line, not the app's: a browser enforces the intersection of every
+  // policy it receives, so one invented here could only narrow a proxy's tuned one.
+  it('sends no Content-Security-Policy unless the operator set one', async () => {
+    await savePost({ title: 'Policed', content: 'body', status: 'published', date: PAST })
+    expect((await get('/policed')).headers.get('content-security-policy')).toBeNull()
+  })
+
+  it('sends the operator\'s policy verbatim when CSP is set', async () => {
+    const POLICY = "default-src 'self'; frame-ancestors 'none'"
+    process.env.CSP = POLICY
+    try {
+      // Built fresh: the middleware reads the value once at construction, because it runs on
+      // every response including the ones the page cache serves.
+      const withCsp = createApp()
+      await savePost({ title: 'Policed2', content: 'body', status: 'published', date: PAST })
+      clearCache()
+      expect((await withCsp.request('/policed2')).headers.get('content-security-policy')).toBe(POLICY)
+    } finally {
+      delete process.env.CSP
+    }
+    // The one response that must keep a policy of its OWN is an SVG from `/uploads`; that
+    // lives in `uploads.test.ts`, where there is a stored SVG to ask for.
+  })
+
   it('sends them on an upload too, which is where nosniff earns its keep', async () => {
     // `/uploads/*` serves owner-uploaded bytes from the site's own origin, typed from the
     // file extension. This is the response whose sniffing must not be guessed at.
