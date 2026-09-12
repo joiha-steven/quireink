@@ -148,6 +148,24 @@ describe('the newspaper dialect', () => {
     expect(row).toContain('background:var(--c-heading)')
   })
 
+  it('gives the name on the header the same face as the chrome around it', () => {
+    // `.title` carries `--font-sans` of its own, which the chrome-font setting fills in — so
+    // a dialect that changes the chrome face on `body` changes everything in the header
+    // EXCEPT the one word the site is introduced by. The source-code look wore an Inter
+    // wordmark over a monospace strapline, a monospace menu and bracketed monospace controls
+    // for two releases; the notebook wore a monospace one over a sans.
+    //
+    // Keyed on the sheet that moves the face: a look that leaves `body` alone has nothing to
+    // answer for, and `plain` is exactly that.
+    for (const [name, css] of Object.entries(SHEETS)) {
+      if (!css.includes('body{font-family')) continue
+      // The declaration can sit anywhere in the rule, so the RULE is what is read — the
+      // newspaper writes its size first and its face last.
+      const rule = new RegExp(`\\.site-bar > \\.title\\{[^}]*font-family`).test(css)
+      expect(`${name}: ${rule}`).toBe(`${name}: true`)
+    }
+  })
+
   it('moves the shelf inline on a PIECE and never on a listing', () => {
     // Moved on a listing it landed under thirty-three posts. Every inline-shelf rule is
     // scoped inside an <article>, which a listing's rail is not.

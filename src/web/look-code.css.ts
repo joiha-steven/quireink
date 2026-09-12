@@ -307,6 +307,12 @@ html[data-look=code] .toc .rail-inner{width:calc(100% + 32px);padding-right:32px
    space, and every page of the blog grows a horizontal scrollbar. */
 html[data-look=code]{overflow-x:clip}
 html[data-look=code] body{font-family:var(--font-mono)}
+/* THE NAME ON THE HEADER TOO. It carries --font-sans of its own, which the chrome font
+   setting fills in — and since that default moved to Inter, the one word this dialect is
+   introduced by was the one word in the header not speaking it: an Inter wordmark over a
+   monospace strapline, monospace menu and bracketed monospace controls. The notebook's own
+   name rule exists for the mirror image of this (look-notes.css.ts). */
+html[data-look=code] .site-bar > .title{font-family:var(--font-mono)}
 html[data-look=code] header.site,
 html[data-look=code] footer.site{margin-inline:calc(50% - 50vw);padding-inline:calc(50vw - 50%)}
 html[data-look=code] header.site{border-bottom:1px solid var(--c-rule)}
