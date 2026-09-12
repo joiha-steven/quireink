@@ -122,8 +122,15 @@ describe('the newspaper dialect', () => {
     // can be placed: without `display:contents` this dialect could only move all of it or
     // none of it.
     expect(LOOK_PAPER_CSS).toContain('.post-meta{display:contents')
+    // THE BACKSLASH GOES IN THE CLASS TOO, and leaving it out is what a scanner calls
+    // incomplete sanitization: an escaper that does not escape its own escape character can
+    // be walked straight past by an input carrying one. Nothing reaches this but the four
+    // literals below, so nothing was ever wrong on this page — but a half-escape copied into
+    // a place that does take input is a real hole, and the half-escape is what gets copied.
+    // `>` was in the old class and is not a metacharacter; this is the standard set.
+    const quoted = (sel: string) => sel.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&')
     const row = (sel: string) =>
-      new RegExp(`${sel.replace(/[.>[\]]/g, '\\$&')}\\{grid-row:(\\d)`).exec(LOOK_PAPER_CSS)?.[1]
+      new RegExp(`${quoted(sel)}\\{grid-row:(\\d)`).exec(LOOK_PAPER_CSS)?.[1]
     expect(row('.post-cat')).toBe('1')
     expect(row('article > header h1')).toBe('2')
     expect(row('article > header .deck')).toBe('3')
