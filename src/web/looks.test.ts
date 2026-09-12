@@ -113,4 +113,14 @@ describe('the notebook dialect', () => {
     expect(LOOK_NOTES_CSS).toContain('--step:calc(var(--lh-body,1.7) * 1em)')
     expect(LOOK_NOTES_CSS).toContain('background-size:100% var(--step)')
   })
+
+  it('rules a listing as well as a piece, and at a weight that can be seen', () => {
+    // Both of these shipped wrong once. The rules reached `.prose`, which exists on a piece
+    // and nowhere else, so anyone who met this look on the front page met a blank sheet —
+    // and they were drawn at 38% of `--c-rule`, which on #ebebeb over #fcfcfc is not faint
+    // but absent. `--c-rule` is already the lightest line this design has.
+    expect(LOOK_NOTES_CSS).toContain('html[data-look=notes] .post-list article > p{')
+    expect(LOOK_NOTES_CSS).toContain('var(--c-rule) calc(var(--step) - 1px)')
+    expect(LOOK_NOTES_CSS).not.toMatch(/var\(--c-rule\) \d\d%,transparent\) calc\(var\(--step\)/)
+  })
 })

@@ -75,19 +75,23 @@ html[data-look=notes] .post-info .info-action::after{display:none}
 
    THE RULES RUN THE WIDTH OF THE PAGE, not the width of the words: drawn at the column's
    width they read as underlined text. The paragraph grows outward by the sheet's inset and
-   pads it straight back, so not one line rewraps. */
+   pads it straight back, so not one line rewraps.
+
+   AT THE FULL WEIGHT OF --c-rule, which is the lightest line this design has. It was drawn
+   at 38% of that for one deploy, on the reasoning that ruling should be faint: 38% of
+   #ebebeb on #fcfcfc is not faint, it is absent, and the look shipped as a blank sheet.
+   Faint means the quietest line on the page, not a line nobody can see.
+
+   AND ON A LISTING TOO. The rules used to reach .prose alone, which exists on a piece and
+   nowhere else — so anyone who met this look on the front page met an unruled sheet. */
 html[data-look=notes] .prose > p,
-html[data-look=notes] .prose > :is(ul,ol) > li{
+html[data-look=notes] .prose > :is(ul,ol) > li,
+html[data-look=notes] .post-list article > p{
   --step:calc(var(--lh-body,1.7) * 1em);
   margin-inline:calc(-1 * var(--sheet-inset));padding-inline:var(--sheet-inset);
   background-image:linear-gradient(to bottom,transparent calc(var(--step) - 1px),
-    color-mix(in srgb,var(--c-rule) 38%,transparent) calc(var(--step) - 1px));
+    var(--c-rule) calc(var(--step) - 1px));
   background-size:100% var(--step)}
-
-/* THE MARGIN RULE an exercise book is printed with, in the blog's own accent. */
-html[data-look=notes] .prose{position:relative}
-html[data-look=notes] .prose::before{content:"";position:absolute;top:0;bottom:0;
-  left:-1.1rem;border-left:1px solid color-mix(in srgb,var(--c-accent) 40%,transparent)}
 
 /* --- THE MARKS A HAND WOULD MAKE --------------------------------------------
    A section opens with a tick in the margin above it. Above the heading rather than beside
