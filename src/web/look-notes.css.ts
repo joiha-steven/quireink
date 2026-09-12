@@ -80,8 +80,16 @@ html[data-look=notes] body{background-color:var(--desk)}
    nor a feed, so it matched neither name, and the one layout a visitor is most likely to
    arrive on had no page under it at all: three sections and a row of pictures lying
    straight on the desk. */
+/* AND THE COMMENTS, which are a sibling of the piece and not part of it. Everything else
+   under an article - the author box, what to read next, the related list - sits INSIDE it
+   and was on the paper already; the conversation is the one block that is not, so it lay
+   straight on the desk with nothing under it and read as though it had come loose. It gets
+   its own sheet rather than a share of the piece's: they cannot be one box without moving
+   markup, and two sheets is the truer answer anyway - what other people wrote is a second
+   page, not the foot of the first. */
 html[data-look=notes] main > article,
 html[data-look=notes] main > .front,
+html[data-look=notes] main > #comments,
 html[data-look=notes] .post-list{background:var(--c-bg);
   padding:var(--sheet-inset);
   margin:calc(-1px - var(--sheet-inset)) calc(-1 * var(--sheet-inset)) 0;
@@ -89,6 +97,11 @@ html[data-look=notes] .post-list{background:var(--c-bg);
     0 6px 18px color-mix(in srgb,var(--c-text) 6%,transparent)}
 /* A 1px rule with a radius is the language of an app panel; a page lying on a desk is told
    by its shadow. The border was drawn first and rejected for exactly that. */
+/* The second sheet keeps the outward growth but not the negative TOP margin: that one exists
+   so the piece's first line lands on the line the shelf starts on, and on a sheet that
+   follows another it would only close the gap between the two to 19px. A desk with two
+   pages on it shows some desk between them. */
+html[data-look=notes] main > #comments{margin-top:calc(var(--sheet-inset) * 1.75)}
 
 /* Below 46rem the only side space is the page's own padding, 25px, and a 20px sheet left
    FOUR pixels of desk showing at each edge, which is not a margin, it is a near miss. */
@@ -136,7 +149,12 @@ html[data-look=notes] .post-list article > p,
    prose on that layout. Unruled, the page a visitor most often lands on was the one page in
    the notebook nobody had ruled. */
 html[data-look=notes] .fc-deck,
-html[data-look=notes] .fc-intro{
+html[data-look=notes] .fc-intro,
+/* And what other people wrote. Its sheet is ruled because the piece's is: an unruled second
+   page beside a ruled first one reads as a different paper rather than as the next page. A
+   comment body is a bare div holding a text node, so it takes the rules directly; a reply's
+   own indent mark then sits ON the ruling, which is what a mark on paper does. */
+html[data-look=notes] #comments .comment-body{
   --step:calc(var(--lh-body,1.7) * 1em);
   margin-inline:calc(-1 * var(--sheet-inset));padding-inline:var(--sheet-inset);
   background-image:linear-gradient(to bottom,transparent calc(var(--step) - 1px),
