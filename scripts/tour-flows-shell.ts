@@ -5,6 +5,7 @@
 // drawer is a drawer only under the rail breakpoint, and a 404 looks like any other empty
 // listing at a glance — so both regressions were live for weeks with every other guard green.
 import type { Tour } from './tour'
+import { registerReadingFlows } from './tour-flows-reading'
 
 export function registerShellFlows({ flow, expect, atWidth }: Tour): void {
 
@@ -386,4 +387,8 @@ export function registerShellFlows({ flow, expect, atWidth }: Tour): void {
       return 'ok a drawing and ' + recent.length + ' recent piece(s) beside the two new-piece buttons'
     })()`, 900))
 
+
+  // Two public-page flows that need line boxes and a scroll. Their own file: this one and
+  // `tour-flows.ts` are both a dozen lines from the 400-line rule.
+  registerReadingFlows({ flow, atWidth })
 }

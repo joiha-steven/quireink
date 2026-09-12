@@ -314,6 +314,7 @@ export function NoteForm({ initial, contentWidth, keySound, autosaveSeconds, aut
         <SlideOver
           label={asking ? t.pubTitle : t.attributes}
           intro={asking ? t.publishReview : undefined}
+          dock={!asking}
           onClose={() => { setSettingsOpen(false); setAsking(false) }}
           footer={
             <>

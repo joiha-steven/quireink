@@ -324,7 +324,12 @@ export function CommandPalette() {
         {shown.length === 0 ? (
           <p className="px-4 py-6 text-sm text-neutral-500 dark:text-neutral-400">{t.filterEmpty}</p>
         ) : (
-          <ul className="max-h-[50vh] overflow-y-auto py-1">
+          // `scroll-fade`, like every other capped scroller in this admin. Without it the
+          // list ended in a hard edge halfway down its own contents: measured 2026-09-12 at
+          // 1440, eleven of sixteen rows were shown and the five below them — Comments,
+          // Trash, Settings, Log, Help — were cut off with nothing on screen to say they
+          // were there.
+          <ul className="scroll-fade max-h-[50vh] overflow-y-auto py-1">
             {shown.map((row, i) => (
               <li key={row.id}>
                 {/* THE HEADING, drawn by the FIRST row of each group rather than by a second

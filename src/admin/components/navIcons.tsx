@@ -13,7 +13,7 @@ import { GLYPHS, ICONS, type GlyphName, type IconName } from '@/icons'
 // row's actions, the editor's menus — is a 14px context where 20px is right. One variable on
 // the container beats a size prop at twenty-one call sites, and beats shrinking the set for
 // everyone to suit its loudest consumer.
-const C = 'h-[var(--admin-glyph,1.25rem)] w-[var(--admin-glyph,1.25rem)] shrink-0'
+export const GLYPH = 'h-[var(--admin-glyph,1.25rem)] w-[var(--admin-glyph,1.25rem)] shrink-0'
 
 // The bodies are module CONSTANTS from our own file — no request data ever passes through
 // this, which is what makes `dangerouslySetInnerHTML` ordinary here rather than a hole.
@@ -21,7 +21,7 @@ function I({ name }: { name: IconName }) {
   return (
     <svg
       viewBox="0 0 24 24"
-      className={C}
+      className={GLYPH}
       fill="none"
       stroke="currentColor"
       strokeWidth={1.8}

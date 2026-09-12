@@ -32,11 +32,19 @@ that file first; this one only adds what is true here.
   (2026-08-17 — "/" alone is fine in the Markdown view, but the normal view wants a
   toolbar, reversing ADR 0024 step 4's removal, which the mock had endorsed). It sits at the top of the sheet under the
   action line, full-width, its groups centered, wrapping on a narrow window rather than
-  scrolling. The Markdown source view has NO toolbar — raw text needs no formatting
-  buttons. The called controls remain beside it: a selection raises the bubble, `/` on an
-  empty line raises the insert menu (which prints each block's Markdown shortcut beside
-  its row), and the table tools exist only while the cursor is in a table. The closing
-  line under the writing says the two gestures once.
+  scrolling — and when it wraps its lines range LEFT, on the same edge the action line
+  starts from, rather than each line centring itself. The Markdown source view has NO
+  toolbar — raw text needs no formatting buttons. The called controls remain beside it: a
+  selection raises the bubble, `/` on an empty line raises the insert menu (which prints
+  each block's Markdown shortcut beside its row). The closing line under the writing says
+  the two gestures once.
+- **The table's tools get their own line**, under the strip and ranged left, and only while
+  the cursor is in a table. They used to join the end of the main run, and because that run
+  is centred, five buttons arriving slid every button already there 62.5px to the left
+  (measured at 1440, 2026-09-12) and taking the cursor out slid them back. A toolbar that
+  moves while it is being aimed at is not a toolbar. Clusters are told apart by a 12px gap
+  rather than a hairline for the same reason: a rule can end up the first mark on a wrapped
+  line, and a stray tick at the start of a row reads as damage.
 - **A SAVE MAY NOT CHANGE THE READER'S PAGE.** This is the editor's one hard contract and it
   was unwritten until 2026-08-30, when it turned out to be broken: 19 of the 45 fixtures in
   `golden/corpus` published differently after one pass through the writing surface. Footnote
@@ -88,9 +96,19 @@ that file first; this one only adds what is true here.
   2026-09-07), everything typed after a new post's first save went on being written under
   `new`, where the editor that reopens that post never looks and the next blank sheet reopens
   it as a piece of its own.
-- The attributes are a right-hand slide-over (`SlideOver`) over a scrim, never a docked
-  column — a column squeezed the writing to make room for the questions. The first Publish
-  on an unpublished piece opens it as the publish sheet, footered "Later / Publish".
+- The attributes are a right-hand sheet (`SlideOver`). The first Publish on an unpublished
+  piece opens it as the PUBLISH sheet, footered "Later / Publish", and that one always lies
+  on top of the page over a scrim: those are questions being answered about the piece, and
+  a column that squeezed the writing to make room for them is what ADR 0024 step 5 ended.
+- **A sheet the writer opens themselves DOCKS from 85rem up** (`dock` on `SlideOver`). On
+  top of the page it hid 232px of the writing column at 1280 (34.5% of every line), 104px at
+  1440 and 200px at 1920 — while 348px of paper stood empty beside the text at that last
+  width (measured 2026-09-12). Above 85rem the canvas holds its right edge clear, the column
+  keeps its measure and re-centres in what is left, and the sheet drops its scrim and its
+  `aria-modal` because the page behind it has not gone anywhere. Below that width there is not
+  enough room for both and it goes back on top. (672px exactly at 1440; 666 at 1700 with the
+  write pane beside the editor as well, which is the only place the sheet costs the column
+  anything at all.)
 - The editor frame must NOT use `overflow-hidden` — it breaks the nested sticky bars. The
   table bar's sticky offset is measured from the real action-header height, so it does not
   drift with the viewport or the translation.

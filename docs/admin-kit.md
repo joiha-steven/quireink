@@ -92,6 +92,14 @@ reworded so its own rule stops matching — which is how `check:css` came to rep
 tick against two sheets it had never read. A signature only catches a COPY, so three rules
 match an idea: a raised white surface, a named typeface, a field drawing its own focus.
 
+It also refuses **`line-clamp-N` standing beside a display utility**. The clamp works by
+switching the box to `display:-webkit-box`, so `block` (or `flex`, or a `lg:` variant of
+either) in the same class list wins the cascade and the clamp is silently ignored. Measured
+on the write pane, 2026-09-12: the summary line carried `line-clamp-2 block` and rendered
+112px, which is seven lines against the two it asked for; the rows of that list ran from
+44px to 199px, and five pieces fitted on a 900px screen out of forty-nine. Nothing else in
+the tree could see it — the class was right there in the markup, doing nothing.
+
 ## One setting
 
 **A setting reads top to bottom: what it is, what to know about it, then the control.** The

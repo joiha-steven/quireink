@@ -59,6 +59,9 @@ describe('the IDE chrome is one switch, and off leaves no trace', () => {
       '.rail h2::before', 'header.site .tagline::before', 'aside.series .series-head::before',
       '.related h2::before', '.subscribe-card h2::before', '#comments h2::before',
       '.empty::before',
+      // ⚠️ The band's own invented heading is marked too, and it is NOT asserted here: that
+      // rule is generated per column width by `render/rail-css.ts` and never reaches this
+      // sheet. `render/rail-css.test.ts` holds it.
     ]) expect(ide).toContain(label)
   })
 

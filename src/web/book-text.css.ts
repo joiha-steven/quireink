@@ -32,6 +32,15 @@ export const BOOK_TEXT_CSS = `
     -webkit-hyphenate-limit-before:3;-webkit-hyphenate-limit-after:3}
 }
 
+/* A CODE LINE HAS NOWHERE TO SCROLL ON A PAGE, so it wraps instead of being cut off.
+   The scrolling article gives a wide block overflow-x:auto and the reader pans it, which is
+   fine on a page that already moves under the finger. A paged column does not move: measured
+   on 2026-09-12, one block hid 126px of a 690px line at 1440 and 294px at 949, and the only
+   thing on screen saying so was a 2px overlay scrollbar in a reading surface where every
+   other gesture turns the page. Wrapping shows every character; break-word is for the one
+   long unbroken token (a path, a URL) that no space can fold. */
+.book-flow.prose pre{white-space:pre-wrap;overflow-wrap:break-word;overflow-x:visible}
+
 /* THE BASELINE GRID, which is the thing a printed book has and a column of HTML does not.
    Two columns of a spread only read as one page if their lines sit at the same heights, and
    that holds only while every gap between blocks is a whole number of lines. Measured at

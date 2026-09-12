@@ -207,11 +207,14 @@ html[data-ide-chrome=on] .rail ul{counter-reset:ln}
    width - the ring lives out on the line, past the text - which is why the row keeps its
    normal padding and nothing here reserves a column.
 
-   -22px = the divider's own -13px offset, minus half the 18px ring. The ring carries a
-   --c-bg fill so the line breaks around it rather than running through it. */
+   CENTRED ON THAT LINE, and the arithmetic is the whole rule: the divider is 1px sitting
+   13px past the rail's edge, so its middle is at 12.5, and an 18px ring (border-box) centred
+   there has its right edge at 21.5. It was -23 until 2026-09-12, which put the ring 1.5px to
+   the right of the hairline threading it. The ring carries a --c-bg fill so the line breaks
+   around it rather than running through it. */
 html[data-ide-chrome=on] .rail li{counter-increment:ln;position:relative}
 html[data-ide-chrome=on] .rail li::before{content:counter(ln);position:absolute;
-  top:.05em;right:-23px;width:18px;height:18px;border-radius:50%;
+  top:.05em;right:-21.5px;width:18px;height:18px;border-radius:50%;
   display:flex;align-items:center;justify-content:center;
   background:var(--c-bg);border:1px solid var(--c-rule);color:var(--c-meta);
   /* Air around the ring, the way the feed's markers get it: their --c-bg mask is a

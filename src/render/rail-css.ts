@@ -59,8 +59,32 @@ export function singleRailCss(colWidth: number): string {
     `.rail-inner > nav:not(.toc)::before{content:attr(aria-label);display:block;margin-bottom:.5rem;` +
     `font-weight:var(--fw-heading,600);color:var(--c-heading);` +
     `font-size:var(--fs-small);line-height:var(--lh-small);letter-spacing:var(--ls-small)}` +
+    // The heading this band INVENTS has to wear the same marker as the ones the markup
+    // carries, and it cannot get it from `ide.css.ts` the way they do: that sheet marks
+    // `.rail h2::before`, this heading is not an h2, and its own ::before is already spoken
+    // for by the label. So the marker is restated here, inside the band that creates it.
+    // Without this line the menu's heading stood bare directly above a marked "// Contents"
+    // — two chrome headings, one screen, two registers (measured at 1180 on 2026-09-12).
+    `html[data-ide-chrome=on] .rail-inner > nav:not(.toc)::before{content:"// " attr(aria-label)}` +
+    // AND NO LINE NUMBERS ON THE MENU HERE. In the gutter they stand in a column of their own
+    // out past the text, which is what a line number is. In this band there is no gutter: the
+    // ring lands INSIDE the 24px between two menu words, three pixels from each, and the row
+    // reads as one run-on string. The index below keeps its numbers, because there each entry
+    // is a line of its own and the number falls at the end of it.
+    `html[data-ide-chrome=on] .rail-inner > nav:not(.toc) li::before{content:none}` +
     `.rail ul{display:flex;flex-wrap:wrap;gap:.4rem 1.5rem}` +
     `.rail li,.toc li{margin-top:0}` +
+    // THE INDEX IS NOT A ROW OF WORDS. The menu is — five single words read fine wrapped on
+    // a hairline — but an index entry is a sentence, and two of them on one line are told
+    // apart by 24px of space and nothing else. Measured at 1180 on 2026-09-12: "Three
+    // separate cuts, and they compound" and "What the cuts are worth" shared a line, with
+    // the IDE chrome's section number sitting in the gap between them.
+    // `max-content` rather than a plain block, so each entry still hugs its own text: it
+    // keeps the current-row underline the width of the words, and keeps the gutter number
+    // beside the entry it counts instead of out at the column's edge.
+    `.toc ul{display:block}` +
+    `.toc li{width:max-content;max-width:100%;margin-top:.45rem}` +
+    `.toc li:first-child{margin-top:0}` +
     `.rail-row{padding-left:0}` +
     // Row marks turn with the rows: the current section's hairline goes under the word.
     `.rail-row[aria-current]::after{left:0;right:0;top:auto;bottom:-4px;width:auto;height:2px}` +

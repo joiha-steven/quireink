@@ -63,11 +63,24 @@ export function toc(): void {
   aim()
   addEventListener('resize', aim, { passive: true })
 
+  // THE END ROW IS NOT A SECTION, and leaving it in this list broke the highlight outright.
+  //
+  // `aim` above points that row at whichever copy of the taxonomy is on screen, and on a
+  // desktop that copy is the gutter panel at the TOP of the article. So the row's target
+  // passed the reading line within the first screenful, and because it is LAST in the list it
+  // won every pass from then on: measured 2026-09-12 at 1440, the lit row jumped to the end
+  // row at 165px of scroll and stayed there through all three sections of the piece. Every
+  // long post on every desktop had an index that marked the wrong thing for the whole read.
+  //
+  // It is excluded rather than re-ordered: the row names the end matter, which is not a place
+  // in the argument, so no scroll position should ever light it.
+  const sections = links.filter((a) => !a.classList.contains('toc-end'))
+
   // The READ half measures every heading; the WRITE half moves the class. Split so the
   // engine can run every island's reads before any island's writes in the same frame.
   onScrollFrame(() => {
     let current: HTMLAnchorElement | null = null
-    for (const link of links) {
+    for (const link of sections) {
       const el = document.getElementById(idOf(link))
       if (el && el.getBoundingClientRect().top <= READING_LINE) current = link
     }
@@ -78,7 +91,7 @@ export function toc(): void {
     // The title row is the one anchor with no element behind it (#top scrolls the
     // document). Falling back to `targets[0]` instead would light the first HEADING while
     // the reader is still above it, which is a different claim.
-    return current ?? links.find((a) => idOf(a) === 'top') ?? null
+    return current ?? sections.find((a) => idOf(a) === 'top') ?? null
   }, (lit) => {
     for (const link of links) {
       const on = link === lit

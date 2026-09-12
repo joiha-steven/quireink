@@ -311,4 +311,33 @@ export function registerPaletteFlows({ flow, expect }: Tour): void {
       if (document.querySelector('[role=dialog] input')) return 'the palette stayed open after choosing'
       return 'ok (' + landed + ')'
     })()`, 1500))
+
+  // TWO LINES OF SUMMARY, AND THE ROWS STAY A LIST. `line-clamp-2` works by switching the box
+  // to a webkit box, so a display utility beside it wins the cascade and the clamp goes
+  // quietly dead — no warning, and the only symptom is text longer than it was meant to be.
+  // Measured on 2026-09-12 with `block` in that class list: the summary ran 112px, which is
+  // SEVEN lines against the two it asked for, rows ran from 44px to 199px, and five pieces
+  // fitted on a 900px screen out of forty-nine. `check:admin-kit` refuses the pairing now;
+  // this proves the clamp is doing its job in a browser, which is the only place it can.
+  flow('admin: a piece\'s summary in the write list stops after two lines', () => expect('/admin/content', `
+    (async () => {
+      const wait = async (fn, tries = 40) => {
+        for (let i = 0; i < tries; i++) { const hit = fn(); if (hit) return hit; await new Promise((r) => setTimeout(r, 100)) }
+        return null
+      }
+      const summaries = await wait(() => {
+        const found = [...document.querySelectorAll('[data-write-summary]')]
+        return found.length >= 3 ? found : null
+      })
+      if (!summaries) return 'skip: fewer than three pieces carry a summary'
+      const tall = []
+      for (const el of summaries) {
+        const lines = el.getBoundingClientRect().height / parseFloat(getComputedStyle(el).lineHeight)
+        if (lines > 2.1) tall.push(lines.toFixed(1))
+      }
+      if (tall.length) return tall.length + ' summary line(s) past two lines: ' + tall.join(', ')
+      const rows = [...document.querySelectorAll('[data-write-row]')].map((a) => a.getBoundingClientRect().height)
+      return 'ok ' + summaries.length + ' summaries within two lines, rows '
+        + Math.round(Math.min(...rows)) + '-' + Math.round(Math.max(...rows)) + 'px'
+    })()`, 900))
 }

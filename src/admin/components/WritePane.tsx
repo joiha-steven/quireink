@@ -298,11 +298,21 @@ function Rows({
                     </span>
                   )}
                   <span className="min-w-0">
-                    <span className={`block text-sm ${active ? 'font-semibold' : 'font-medium'} text-neutral-900 dark:text-white ${!it.title ? 'italic text-neutral-500 dark:text-neutral-400' : ''}`}>
+                    {/* Clamped like the line under it, so a row's height is bounded by its
+                        SHAPE rather than by whatever somebody typed: two lines of title, two
+                        of summary, one of standing. Same warning as below about `block`. */}
+                    <span className={`line-clamp-2 text-sm ${active ? 'font-semibold' : 'font-medium'} text-neutral-900 dark:text-white ${!it.title ? 'italic text-neutral-500 dark:text-neutral-400' : ''}`}>
                       {it.title ? <Marked text={it.title} needle={query} /> : `${t.untitled} #${it.untitledNo ?? 1}`}
                     </span>
                     {under && (
-                      <span className="mt-0.5 line-clamp-2 block text-xs text-neutral-500 dark:text-neutral-400">
+                      // ⚠️ NO `block` HERE, and it is not a tidy-up: `line-clamp-2` works by
+                      // setting `display:-webkit-box`, so a display utility beside it wins the
+                      // cascade and the clamp goes quietly dead. Measured 2026-09-12 with
+                      // `block` present: this line ran 112px, which is SEVEN lines, not two,
+                      // and the rows of the list came out anywhere from 44px to 199px tall —
+                      // five pieces on a 900px screen out of forty-nine. The clamp is what
+                      // makes the column a list rather than a stack of paragraphs.
+                      <span data-write-summary className="mt-0.5 line-clamp-2 text-xs text-neutral-500 dark:text-neutral-400">
                         {it.kind === 'page' && <span className="mr-1 text-neutral-500 dark:text-neutral-400">{t.kindPage}</span>}
                         {it.kind === 'note' && <span className="mr-1 text-neutral-500 dark:text-neutral-400">{t.kindNote}</span>}
                         <Marked text={under} needle={query} />

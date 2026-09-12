@@ -150,6 +150,13 @@ font, only the site language's subset(s), never the chrome font or an uploaded c
   book mode; in the scrolling article the figure's bottom margin went from `2 × --sp` to 3
   (measured: 63px under a caption against 55px between two paragraphs, 15% more for a
   picture, a caption and the end of a thought).
+- **A code line wraps in book mode, because a page has nowhere to scroll.** The scrolling
+  article gives a wide block `overflow-x:auto` and the reader pans it, which is fine on a page
+  that already moves under the finger. A paged column does not move: measured 2026-09-12, one
+  block hid 126px of a 690px line at 1440 and 294px at 949, and the only thing on screen
+  saying so was a 2px overlay scrollbar in a surface where every other gesture turns the page.
+  `white-space:pre-wrap` with `overflow-wrap:break-word` for the one unbroken token no space
+  can fold, in `book-text.css.ts` and nowhere else.
 - **Two things a browser will not do for us.** `hanging-punctuation` is Safari-only, and
   `orphans`/`widows` are ignored by Chrome's column engine — tested by raising both to 3 on a
   spread that stranded a single line at the top of a page, which did not move it. A book

@@ -29,6 +29,17 @@ and no island runs.
   article, so the toggle moves nothing but the gutter. The line numbers are rings sitting ON the
   rail's divider out past the text, so they cost the rail no width. An earlier pass ranged
   the rail left to put a gutter column where an editor puts it, and it was rejected.
+  **The ring is CENTRED on that divider**: the line is 1px at 13px past the rail's edge, so
+  its middle is 12.5 and an 18px ring centred there ends at 21.5. It ended at 23 until
+  2026-09-12, which left the hairline meeting every ring 1.5px off its diameter.
+- **In the band (60rem to the rail breakpoint) there is no gutter, so there are no line
+  numbers on the menu.** A ring there lands INSIDE the 24px between two menu words, three
+  pixels from each, and the row reads as one run-on string. The index keeps its numbers,
+  because there each entry is a line of its own and the number falls at the end of it. The
+  band's own invented heading — the menu has none in the markup and takes one from its
+  `aria-label` — carries the comment marker like any other chrome heading; it cannot get it
+  from this sheet (it is not an `h2`, and its `::before` is already the label), so
+  `render/rail-css.ts` restates it and `render/rail-css.test.ts` holds it.
 - **The gutter is legible** (`--c-meta`, 4.56:1), not a hairline. `--c-rule` measured
   1.16:1 against the page, and a generated counter is still announced by some screen
   readers. What makes a gutter a gutter is where it sits and that its figures are tabular.

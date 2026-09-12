@@ -124,7 +124,11 @@ export function useNavColumn({
               // label has room again in all eleven languages.
               className={`group ${c ? `${rowClass()} justify-center` : `${SIDEBAR_GROUP} justify-between gap-2`}`}
             >
-              <span className={`flex min-w-0 items-center ${c ? '' : 'gap-2.5'}`}>
+              {/* `gap-3`, the SAME gap the destinations above it use, because the labels of
+                  this rail stand in one column: at 2.5 this one began 2px to their left, which
+                  is a rail with two left edges for its words. It costs the label 2px of the
+                  184px it has and it has never needed them. */}
+              <span className={`flex min-w-0 items-center ${c ? '' : 'gap-3'}`}>
                 {(c || icons) && glyph(<IconMore />)}
                 {!c && <span className="truncate">{t.navMore}</span>}
               </span>

@@ -295,5 +295,43 @@ for (const file of files) {
   failed = true
 }
 
+/**
+ * A CLAMP STANDING NEXT TO A DISPLAY UTILITY, which is a clamp that does nothing.
+ *
+ * `line-clamp-N` works by switching the box to `display:-webkit-box`. Put `block` (or `flex`,
+ * or a `lg:` variant of either) in the same class list and that utility wins the cascade, the
+ * box is no longer a webkit box, and the clamp is silently ignored — no warning anywhere, and
+ * the only symptom is text that is longer than it was meant to be.
+ *
+ * Measured 2026-09-12 on the write pane, where the summary line carried `line-clamp-2 block`:
+ * it rendered 112px, which is seven lines against the two it asked for, and the rows of the
+ * list ran from 44px to 199px. Ten pieces fit on a 900px screen afterwards where five had.
+ *
+ * The clamp already makes the box block-level, so the display utility beside it is never
+ * needed — which is why this is a flat refusal rather than a judgement call.
+ */
+const CLAMP = /line-clamp-\d/g
+const DISPLAY = /(?:^|\s)(?:[a-z-]+:)*(block|flex|grid|inline-block|inline-flex|inline-grid|table|flow-root|contents)(?=\s|$)/
+for (const file of files) {
+  const path = file.replaceAll('\\', '/')
+  const code = readFileSync(file, 'utf8')
+  for (const hit of code.matchAll(CLAMP)) {
+    // The class list this clamp lives in, and nothing else on the line: bounded by the quote
+    // or backtick that opened the string, so a neighbouring element's classes cannot be read
+    // as this one's.
+    const open = Math.max(code.lastIndexOf('"', hit.index), code.lastIndexOf("'", hit.index), code.lastIndexOf('`', hit.index))
+    const close = Math.min(
+      ...['"', "'", '`'].map((q) => { const i = code.indexOf(q, hit.index); return i === -1 ? code.length : i }),
+    )
+    const clash = DISPLAY.exec(code.slice(open + 1, close))
+    if (!clash) continue
+    console.error(`✗ check:admin-kit: ${path} puts ${JSON.stringify(clash[1])} beside ${hit[0]}`)
+    console.error('  The display utility wins and the clamp is ignored — the text runs to full')
+    console.error('  length with nothing to say so. Drop the display utility: the clamp already')
+    console.error('  makes the box block-level.')
+    failed = true
+  }
+}
+
 if (failed) process.exit(1)
 console.log(`✓ check:admin-kit: ok (${RULES.length} primitive(s), ${files.length} file(s))`)

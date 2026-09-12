@@ -230,6 +230,28 @@ describe('table of contents', () => {
     expect(current()).toBe('Two')
   })
 
+  it('never marks the end row, whose target sits at the TOP of the article on a desktop', async () => {
+    // The shape a desktop serves: a gutter panel holding the taxonomy at the top of the
+    // piece, and the contents list's last row aimed at it rather than at the copy under the
+    // article. That target passes the reading line within the first screenful, and the row is
+    // last in the list — so as a section candidate it won every pass from there to the end of
+    // the piece, and no heading was ever marked again. Measured 2026-09-12 at 1440: the lit
+    // row moved to the end row at 165px of scroll and stayed there for the whole article.
+    page(`<aside class="post-info"><span id="post-info-tags"></span></aside>
+      <nav class="toc"><ol>
+        <li><a href="#one">One</a></li>
+        <li><a class="toc-end" href="#post-tags">Tags</a></li>
+      </ol></nav>
+      <h2 id="one">One</h2><span id="post-tags"></span>`, LABELS)
+    toc()
+    place('post-info-tags', -900)
+    place('post-tags', 3000)
+    place('one', -600)
+    scrolledTo(1000, 4000)
+    await frame()
+    expect(current()).toBe('One')
+  })
+
   it('marks exactly one row', async () => {
     page(nav, LABELS)
     toc()

@@ -12,9 +12,10 @@
 // have seen it.
 
 import type { Tour } from './tour'
+import { registerSheetFlows } from './tour-flows-sheet'
 import { KITCHEN_SINK } from './tour-kitchen-sink'
 
-export function registerEditorFlows({ flow, expect }: Tour): void {
+export function registerEditorFlows({ flow, expect, atWidth }: Tour): void {
 
 
   flow('admin: the editor opens with a title field and a body', () => expect('/admin/editor', `
@@ -376,4 +377,8 @@ export function registerEditorFlows({ flow, expect }: Tour): void {
     })()`, 1200))
 
 
+
+  // The furniture AROUND the form: the button strip and the attributes panel. Their own file,
+  // this one being a dozen lines from the 400-line rule.
+  registerSheetFlows({ flow, atWidth })
 }

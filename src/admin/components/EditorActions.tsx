@@ -216,7 +216,9 @@ export function EditorActions({
         <button type="button" title={tip(t.tbMarkdown, 'markdown')} onClick={onToggleMd} aria-pressed={mdView} className={`hidden lg:block ${QUIET} ${mdView ? 'font-medium text-neutral-900 dark:text-white' : ''}`}>
           {t.tbMarkdown}
         </button>
-        <button type="button" title={tip(t.attributes, 'attributes')} onClick={onToggleSettings} className={`hidden lg:block ${QUIET}`}>
+        {/* `data-attrs` so the tour can find this without matching a word in eleven
+            languages — the sheet it opens is measured against the writing column. */}
+        <button type="button" data-attrs title={tip(t.attributes, 'attributes')} onClick={onToggleSettings} className={`hidden lg:block ${QUIET}`}>
           {settingsOpen ? t.hideAttributes : t.attributes}
         </button>
         {/* The third of the look-at-it group. It takes the button row and the write pane

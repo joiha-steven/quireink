@@ -68,12 +68,17 @@ export const SIDEBAR_NAV = `${SIDEBAR_NAV_QUIET} ${SIDEBAR_NAV_HOVER}`
 // The wash alone is a mark you have to be looking at the rail to read — a pale field on a pale
 // column — so the row gains a 3px stroke in `--pen-edge`, the same ink an active TAB strokes
 // under its label (`tabs.tsx`): where-you-are is one shape in two orientations rather than two
-// ideas. `-left-3` puts it on the PAPER, in the rail's own 12px gutter, and that placement is
-// measured rather than chosen: inside the key the stroke would be #c3e844 on #d5f856, four
-// points of lightness apart and invisible in a screenshot; on the canvas at #f7f6f4 it is the
-// second loudest thing in the column after the key itself.
+// ideas. It goes on the PAPER, in the rail's own 12px gutter, and that placement is measured
+// rather than chosen: inside the key the stroke would be #c3e844 on #d5f856, four points of
+// lightness apart and invisible in a screenshot; on the canvas at #f7f6f4 it is the second
+// loudest thing in the column after the key itself.
+//
+// CENTRED IN THAT GUTTER, at 7.5px: the stroke is 3px, the gutter is 12, and 12 - 7.5 leaves
+// it at 4.5 with 4.5 of paper each side. It was `-left-3`, which put it at 0 — hard against
+// the window's own edge, where it read as a sliver bleeding off the glass rather than as a
+// mark on the rail.
 export const SIDEBAR_NAV_ACTIVE =
-  'bg-[var(--pen)] font-medium text-neutral-950 dark:text-white shadow-[inset_0_2px_3px_rgba(0,0,0,.3),inset_0_-1px_0_rgba(255,255,255,.35)] before:absolute before:-left-3 before:top-1.5 before:bottom-1.5 before:w-[3px] before:rounded-full before:bg-[var(--pen-edge)] before:content-[\'\']' 
+  'bg-[var(--pen)] font-medium text-neutral-950 dark:text-white shadow-[inset_0_2px_3px_rgba(0,0,0,.3),inset_0_-1px_0_rgba(255,255,255,.35)] before:absolute before:-left-[7.5px] before:top-1.5 before:bottom-1.5 before:w-[3px] before:rounded-full before:bg-[var(--pen-edge)] before:content-[\'\']' 
 
 // The rail's UTILITY register. The footer's rows (theme, cache, sign out) are CONTROLS,
 // and for a while they wore SIDEBAR_NAV — four more destinations, one apparently a page

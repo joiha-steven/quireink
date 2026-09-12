@@ -61,6 +61,16 @@ export const POST_IMAGE_CSS = `
 .post-list article[data-thumb=side] .card-thumb{float:left;width:96px;
   margin:.2rem calc(var(--sp) * 1.1) calc(var(--sp) * .45) 0}
 
+/* THE STANDFIRST STARTS UNDER THE PICTURE, not beside it, and this is the half the rule above
+   got wrong. It assumed four lines would run past the picture and close up; what actually sits
+   beside a 96px square is the kind line and the headline, and the standfirst gets one or two
+   lines before the float ends. Measured at 1440 on 2026-09-12: one card ran two lines at 529.6
+   and then dropped to 416, another ran a SINGLE line at 529.6 before dropping — a paragraph
+   whose left edge steps 113.6px in the middle of itself, which reads as a mistake rather than
+   as a wrap. Clearing it costs the white beside a one-line headline and buys every line of
+   every standfirst on the front page one left edge. */
+.post-list article[data-thumb=side] > :is(h2,h3) + p{clear:left}
+
 /* A phone has ~230px left beside a 96px picture, which is not a column for a headline.
    Smaller picture, tighter gutter: the words still wrap under it, just sooner. */
 @media (max-width:559px){

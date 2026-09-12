@@ -46,9 +46,11 @@ describe('the highlighter marks a place', () => {
     // the eye catches scanning down. `--pen-edge`, which is the ink an active TAB strokes
     // under its label, so where-you-are is one shape in two orientations.
     expect(SIDEBAR_NAV_ACTIVE).toContain('before:bg-[var(--pen-edge)]')
-    // OUTSIDE the key, in the rail's own 12px gutter. Inside, #c3e844 on #d5f856 is four
-    // points of lightness and invisible — the placement is the whole reason it reads.
-    expect(SIDEBAR_NAV_ACTIVE).toContain('before:-left-3')
+    // OUTSIDE the key, CENTRED in the rail's own 12px gutter. Inside, #c3e844 on #d5f856 is
+    // four points of lightness and invisible — the placement is the whole reason it reads.
+    // 7.5 rather than the full 12: pushed the whole gutter the 3px stroke starts at 0, which
+    // is the window's edge and not the rail's, and it read as cut off by the glass.
+    expect(SIDEBAR_NAV_ACTIVE).toContain('before:-left-[7.5px]')
     // And the row it hangs off has to be a positioning parent, or the stroke lands on the
     // page instead of the row.
     expect(SIDEBAR_NAV_QUIET).toContain('relative')

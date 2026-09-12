@@ -1,6 +1,7 @@
 // Theme button + dropdown: Light / Dark / System / By time.
 import { useState, useSyncExternalStore } from 'react'
 import { useAdminT } from '@/admin/components/I18nProvider'
+import { GLYPH } from '@/admin/components/navIcons'
 import { ICON_BTN } from '@/admin/ui/iconButton'
 import { useTheme, type ThemeMode } from '@/admin/ui/ThemeProvider'
 
@@ -21,7 +22,10 @@ function useIsDark(): boolean {
   )
 }
 
-const ICON = 'h-5 w-5'
+// THE SURFACE'S SIZE, not a hand-typed one. This is the only glyph in the rail's foot that
+// was not reading `--admin-glyph`, so it drew at 20px beside two that drew at 18 — measured
+// 2026-09-12, an 11% difference between neighbours in a row of three.
+const ICON = GLYPH
 const STROKE = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round' } as const
 
 function SunIcon() {

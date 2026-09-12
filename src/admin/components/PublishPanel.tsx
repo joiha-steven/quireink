@@ -55,6 +55,10 @@ export function PublishPanel({
       intro={asking ? t.publishReview : undefined}
       headerRight={links}
       onClose={onClose}
+      // The publish step stays a sheet ON TOP, which is the point of that step: the questions
+      // are being answered about the piece, not alongside it. A plain attributes visit is the
+      // other thing entirely and stands beside the words where the window allows.
+      dock={!asking}
       // The footer holds the pair the mock names: walk away, or finish it. A plain
       // attributes visit gets only the walk-away, since nothing is being decided.
       footer={

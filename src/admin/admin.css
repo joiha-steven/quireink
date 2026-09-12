@@ -343,6 +343,38 @@ body {
 .dark .admin-canvas {
   background: #0f0f0f;
 }
+
+/* THE ATTRIBUTES SHEET, and the one number both halves of it read.
+   `SlideOver` sets the width here rather than in its own class list because the canvas has
+   to hold exactly this much of its right edge clear, and a sheet 24rem wide beside a canvas
+   that reserved 20 would cover 64px of the writing with nothing to say so. One value, two
+   readers. */
+:root {
+  --admin-sheet-w: 24rem;
+}
+.admin-sheet {
+  width: 100%;
+  max-width: var(--admin-sheet-w);
+}
+/* STANDING BESIDE THE WORDS INSTEAD OF ON THEM. The attribute is written by `SlideOver` only
+   when the sheet is one the writer opened AND the window is wide enough to give it room
+   without narrowing the writing column ([`SlideOver.tsx`](../admin/components/SlideOver.tsx)
+   carries the arithmetic). The column keeps its full measure and re-centres in what is left,
+   which moves the text once, on a deliberate click, instead of hiding a third of every line
+   for as long as the sheet is open. */
+[data-admin-sheet='docked'] .admin-canvas {
+  padding-right: var(--admin-sheet-w);
+}
+/* On the canvas rather than under the attribute, or only the OPENING would be animated and
+   closing the sheet would snap the column back across 192px in one frame. */
+.admin-canvas {
+  transition: padding-right var(--dur-base) var(--ease-out);
+}
+@media (prefers-reduced-motion: reduce) {
+  .admin-canvas {
+    transition: none;
+  }
+}
 /* MILLED OUT OF THE CASE, rather than butted against it behind a drawn line. The rail used
    to end in a 1px border — the same hairline the sheet's own edge is drawn with, so the case
    seam and the paper's edge were the same stroke and neither said which was structure. A
