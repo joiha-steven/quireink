@@ -74,7 +74,7 @@ function escapeText(value: string, atLineStart: boolean): string {
   // the letters. The repair is `ReaderSyntax.ts`'s, and it is the smallest one that is true:
   // un-escape the two COMPLETE shapes the renderer treats as syntax. A lone `\[`, a half
   // written `\[^` — still escaped.
-  return out.replace(/\\\[\^([^\][\\]+)\\\]/g, '[^$1]').replace(/\\\[!([^\][\\]+)\\\]/g, '[!$1]')
+  return out.replace(/\\\[\^([^\][\\]+)\]/g, '[^$1]').replace(/\\\[!([^\][\\]+)\]/g, '[!$1]')
 }
 
 function inlineToMarkdown(nodes: Inline[], atLineStart = true): string {
