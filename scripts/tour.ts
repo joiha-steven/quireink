@@ -20,6 +20,7 @@
 
 import { mkdirSync, openSync, readFileSync, rmSync, mkdtempSync } from 'node:fs'
 import { chromePath } from './chrome-path'
+import { sweepAbandonedProfiles } from './chrome-scratch'
 import { registerFlows } from './tour-flows'
 
 const CHROME = chromePath()
@@ -30,7 +31,6 @@ const ONLY = process.env.ONLY ?? ''
 // ---------------------------------------------------------------------------------------------
 // The browser, over the DevTools protocol. Same approach as `drive.ts`, kept open.
 
-const PORT = 9333
 // `--user-data-dir` is LOAD-BEARING for full Chrome, not tidiness: since Chrome 136 the
 // remote-debugging switches are silently IGNORED on the default profile (a data-theft
 // mitigation), so without a private dir the port never opens and the error below reads
@@ -40,6 +40,19 @@ const PORT = 9333
 //
 // Unique per run rather than named after the pid: a pid comes round again, and a run that
 // died before its cleanup leaves its directory behind for the next one to open.
+//
+// `.tmp` FIRST: `mkdtempSync` does not make the parent, so on a fresh clone — where nothing
+// has written under `.tmp` yet — this line was the first thing the tour did and it threw
+// ENOENT before the tour had printed a word.
+mkdirSync('.tmp', { recursive: true })
+
+// PROFILES FROM RUNS THAT DIED, SWEPT ON THE WAY IN. A browser killed with SIGTERM keeps
+// writing into its profile for a beat after the signal, so the tidy-up at the end waits for
+// the process to be gone — and a run that is itself killed cannot wait for anything.
+// `chrome-scratch.ts` holds the rule and the measurement.
+const swept = sweepAbandonedProfiles('tour-chrome-profile-')
+if (swept) console.log(`  swept ${swept} abandoned chrome profile(s) from earlier runs`)
+
 const PROFILE = mkdtempSync('.tmp/tour-chrome-profile-')
 // CHROME'S STDERR IS KEPT, not discarded. When the port does not open, the process is
 // usually still running and has already said why on stderr — a profile it could not lock, a
@@ -48,84 +61,124 @@ const PROFILE = mkdtempSync('.tmp/tour-chrome-profile-')
 // here on 2026-09-01 (run 33522127129), passed on a rerun of the same commit, and left
 // nothing anybody could read to tell the two apart.
 const CHROME_LOG = `.tmp/tour-chrome-${process.pid}.log`
-mkdirSync('.tmp', { recursive: true })
 
 /**
- * REFUSE TO RUN AGAINST SOMEBODY ELSE'S BROWSER.
+ * THE DEBUGGING PORT IS CHOSEN BY CHROME AND READ BACK OUT OF THIS RUN'S OWN PROFILE.
  *
- * `endpoint()` below asks the debugging port for a tab, and a port answers whoever is on it.
- * With another headless Chrome already there — one of this repository's own screenshot
- * scripts, or a tour that died without taking its browser with it — the tour spawns a
- * browser, ignores it, and drives the OLD one instead. That browser has a different profile
- * and therefore a different HTTP cache.
+ * It used to be the constant 9333, and a constant is a place two browsers can meet. A port
+ * answers whoever is on it, so with another headless Chrome already there — one of this
+ * repository's own screenshot scripts, or a tour that was killed without taking its browser
+ * with it — the tour spawned a browser, ignored it, and drove the OLD one, which has a
+ * different profile and therefore a different HTTP cache.
  *
  * It cost an afternoon on 2026-09-07. A stale browser was serving a post page cached from a
  * server that no longer existed, so the comment flow solved a proof-of-work challenge whose
  * signature belonged to a dead instance's secret and read `a solved comment was refused:
  * 400` against a build with nothing wrong with it. Every other flow passed, because nothing
- * else in the tour cares which copy of a page it looks at.
+ * else in the tour cares which copy of a page it looks at. The answer then was a guard that
+ * REFUSED to start when the port was taken — which turned a leaked browser from the previous
+ * run into a red run of its own, seen again on 2026-09-14.
  *
- * `tour.sh` has guarded the APP's port since the same class of confusion; this is the other
- * port the tour depends on and it had no guard at all.
+ * Port 0 ends both. Chrome takes a free port and writes it into `DevToolsActivePort` in the
+ * profile directory, and that directory is one this process made a minute ago: the port
+ * cannot belong to anybody else, two tours cannot collide, and an orphan holds a number
+ * nothing will ever ask for.
  */
-async function refuseIfPortTaken(): Promise<void> {
-  const answered = await fetch(`http://127.0.0.1:${PORT}/json/version`, {
-    signal: AbortSignal.timeout(1500),
-  }).then((r) => r.ok).catch(() => false)
-  if (!answered) return
-  console.error(`✗ something is already listening on the debugging port ${PORT}.`)
-  console.error('  The tour would drive THAT browser, with its own profile and its own cache,')
-  console.error('  and report failures that belong to whatever it has held since.')
-  console.error(`  Close it first:  pkill -f 'remote-debugging-port=${PORT}'`)
-  process.exit(1)
-}
-await refuseIfPortTaken()
+const PORT_FILE = `${PROFILE}/DevToolsActivePort`
+
 const chromeLog = openSync(CHROME_LOG, 'w')
 const chrome = Bun.spawn([
   CHROME, '--headless', '--disable-gpu', '--no-sandbox', '--hide-scrollbars',
   '--force-color-profile=srgb', '--font-render-hinting=none',
   `--user-data-dir=${PROFILE}`,
-  `--remote-debugging-port=${PORT}`, '--window-size=1440,900', 'about:blank',
+  '--remote-debugging-port=0', '--window-size=1440,900', 'about:blank',
 ], { stdout: 'ignore', stderr: chromeLog })
+
+/**
+ * TAKE THE BROWSER WITH US, WHATEVER ENDS THIS PROCESS.
+ *
+ * The kill used to sit on the happy path only, so every other way a run can end — a Ctrl-C, a
+ * `kill` from the shell that started it, a throw before the flows, a CI job that timed out —
+ * left a headless Chrome and a profile directory behind. Seen on 2026-09-14: one leaked
+ * browser from an interrupted run, and the next run refused to start at all.
+ *
+ * Idempotent, because the normal path calls it and then exits, which calls it again. SIGKILL
+ * is the one signal that cannot be answered; the ephemeral port above is what keeps even that
+ * from costing the next run anything.
+ */
+let closed = false
+function closeBrowser(): void {
+  if (closed) return
+  closed = true
+  try { chrome.kill() } catch { /* already gone */ }
+  try { rmSync(PROFILE, { recursive: true, force: true }) } catch { /* scratch under .tmp */ }
+  try { rmSync(CHROME_LOG, { force: true }) } catch { /* scratch under .tmp */ }
+}
+
+/**
+ * The same, for the paths that can wait — which is every path but a signal.
+ *
+ * ⚠️ THE WAIT IS WHAT MAKES THE PROFILE GO AWAY. `kill()` returns the moment the signal is
+ * sent, and Chrome writes into `Default/` for a beat after it: removing the directory in that
+ * beat leaves the browser to recreate it, which is how twenty-eight profiles accumulated
+ * under `.tmp` while every run reported a clean exit.
+ */
+async function partWithBrowser(): Promise<void> {
+  try { chrome.kill(); await chrome.exited } catch { /* already gone */ }
+  closeBrowser()
+}
+
+process.on('exit', closeBrowser)
+for (const signal of ['SIGINT', 'SIGTERM', 'SIGHUP'] as const) {
+  // 128 + the signal number, the shell's own convention for "ended by this signal".
+  process.on(signal, () => { closeBrowser(); process.exit(signal === 'SIGINT' ? 130 : 143) })
+}
 
 async function endpoint(): Promise<string> {
   // 30s, not 10: full Chrome's first start on a cold CI runner unpacks crashpad and
   // friends, and a timeout that only ever fires there is a flake, not a signal.
-  //
-  // THREE FAILURES WEAR THE SAME FACE and the old message covered all three with one
-  // sentence: the process died on startup, the port never answered, or the port answered
-  // with no page in it. They are fixed in different places, so the wait records which one
-  // it is on the way out.
+  let port = ''
   let answered = false
   let types = 'none'
   for (let i = 0; i < 300; i++) {
     // A dead browser will not open a port. Polling one for the full thirty seconds turns a
     // crash into a timeout and hides the exit code that says what happened.
     if (chrome.exitCode !== null) break
-    try {
-      const tabs = await (await fetch(`http://127.0.0.1:${PORT}/json/list`)).json() as
-        { type: string; webSocketDebuggerUrl: string }[]
-      answered = true
-      types = tabs.map((t) => t.type).join(', ') || 'none'
-      const tab = tabs.find((t) => t.type === 'page')
-      if (tab) return tab.webSocketDebuggerUrl
-    } catch { /* not up yet */ }
+    // The port file is written as the LAST step of startup, so its absence is simply "not
+    // yet" for as long as the process is alive.
+    if (!port) {
+      try { port = readFileSync(PORT_FILE, 'utf8').split('\n')[0]?.trim() ?? '' } catch { /* not yet */ }
+    }
+    if (port) {
+      try {
+        const tabs = await (await fetch(`http://127.0.0.1:${port}/json/list`)).json() as
+          { type: string; webSocketDebuggerUrl: string }[]
+        answered = true
+        types = tabs.map((t) => t.type).join(', ') || 'none'
+        const tab = tabs.find((t) => t.type === 'page')
+        if (tab) return tab.webSocketDebuggerUrl
+      } catch { /* not up yet */ }
+    }
     await Bun.sleep(100)
   }
 
+  // FOUR FAILURES WEAR THE SAME FACE and the old message covered them with one sentence: the
+  // process died on startup, it never said which port it took, the port never answered, or it
+  // answered with no page in it. They are fixed in different places, so the wait records which
+  // one it is on the way out.
   const why = chrome.exitCode !== null
     ? `chrome exited with code ${chrome.exitCode}`
-    : answered
-      ? `the port answered but served no page tab (tabs: ${types})`
-      : 'the port never answered'
+    : !port
+      ? 'chrome never wrote a debugging port into its profile'
+      : answered
+        ? `the port answered but served no page tab (tabs: ${types})`
+        : `port ${port} never answered`
   let said = ''
   try {
     said = readFileSync(CHROME_LOG, 'utf8').trimEnd().split('\n').slice(-8).join('\n')
   } catch { /* nothing was written */ }
-  // Kill it here rather than leaving it to the runner: the failing run left three orphan
-  // chrome processes for the job cleanup to reap.
-  chrome.kill()
-  try { rmSync(PROFILE, { recursive: true, force: true }) } catch { /* scratch under .tmp */ }
+  // The log is read BEFORE this, because closing takes it with it.
+  await partWithBrowser()
   throw new Error(
     `chrome never opened its debugging port — ${why}\n`
     + `  binary:  ${CHROME}\n`
@@ -255,9 +308,7 @@ for (const f of flows) {
 }
 
 socket.close()
-chrome.kill()
-try { rmSync(PROFILE, { recursive: true, force: true }) } catch { /* scratch under .tmp */ }
-try { rmSync(CHROME_LOG, { force: true }) } catch { /* scratch under .tmp */ }
+await partWithBrowser()
 
 const skipped = results.filter((r) => r.verdict.startsWith('skip:'))
 const failed = results.filter((r) => r.verdict !== 'ok' && !r.verdict.startsWith('ok ') && !r.verdict.startsWith('skip:'))

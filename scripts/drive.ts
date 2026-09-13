@@ -1,4 +1,6 @@
+import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { chromePath } from './chrome-path'
+import { sweepAbandonedProfiles } from './chrome-scratch'
 // Screenshot a page AFTER doing something to it.
 //
 // `shot.ts` photographs a URL as the server sent it, which cannot see anything a reader has
@@ -21,7 +23,10 @@ if (!url || !out || script === undefined) {
   process.exit(1)
 }
 
-const PORT = 9222
+mkdirSync('.tmp', { recursive: true })
+// What earlier runs left when they were interrupted. `chrome-scratch.ts` holds the rule.
+sweepAbandonedProfiles('drive-chrome-profile-')
+const PROFILE = mkdtempSync('.tmp/drive-chrome-profile-')
 const proc = Bun.spawn([
   CHROME, '--headless', '--disable-gpu', '--no-sandbox', '--hide-scrollbars',
   // sRGB and hinting off: two runs of the same shot otherwise differ in colour and in
@@ -31,24 +36,51 @@ const proc = Bun.spawn([
   // A private profile dir: Chrome 136+ silently IGNORES the remote-debugging switches on
   // the default profile, so full Chrome never opens the port without this. tour.ts tells
   // the whole story.
-  `--user-data-dir=.tmp/drive-chrome-profile-${process.pid}`,
-  `--remote-debugging-port=${PORT}`, `--window-size=${width},${height}`, 'about:blank',
+  `--user-data-dir=${PROFILE}`,
+  // PORT 0, and the number comes back out of the profile. This was 9222, which two shots
+  // running at once would fight over and which a browser left behind by an interrupted run
+  // would already be holding — and a port answers whoever is on it, so the second run would
+  // photograph the first one's page. `tour.ts` pays the same rent for the same reason.
+  '--remote-debugging-port=0', `--window-size=${width},${height}`, 'about:blank',
 ], { stdout: 'ignore', stderr: 'ignore' })
+
+/** Take the browser and its profile with us, whatever ends this process. */
+let closed = false
+function closeBrowser(): void {
+  if (closed) return
+  closed = true
+  try { proc.kill() } catch { /* already gone */ }
+  try { rmSync(PROFILE, { recursive: true, force: true }) } catch { /* scratch under .tmp */ }
+}
+process.on('exit', closeBrowser)
+for (const signal of ['SIGINT', 'SIGTERM', 'SIGHUP'] as const) {
+  process.on(signal, () => { closeBrowser(); process.exit(signal === 'SIGINT' ? 130 : 143) })
+}
 
 /** The debugging port is not open the instant the process is. Poll rather than sleep. */
 async function endpoint(): Promise<string> {
+  let port = ''
   for (let i = 0; i < 100; i++) {
-    try {
-      const res = await fetch(`http://127.0.0.1:${PORT}/json/list`)
-      const tabs = await res.json() as { type: string; webSocketDebuggerUrl: string }[]
-      const tab = tabs.find((t) => t.type === 'page')
-      if (tab) return tab.webSocketDebuggerUrl
-    } catch {
-      /* not up yet */
+    if (proc.exitCode !== null) break
+    // Written as the last step of startup, so its absence is "not yet" while chrome lives.
+    if (!port) {
+      try {
+        port = readFileSync(`${PROFILE}/DevToolsActivePort`, 'utf8').split('\n')[0]?.trim() ?? ''
+      } catch { /* not yet */ }
+    }
+    if (port) {
+      try {
+        const res = await fetch(`http://127.0.0.1:${port}/json/list`)
+        const tabs = await res.json() as { type: string; webSocketDebuggerUrl: string }[]
+        const tab = tabs.find((t) => t.type === 'page')
+        if (tab) return tab.webSocketDebuggerUrl
+      } catch {
+        /* not up yet */
+      }
     }
     await Bun.sleep(100)
   }
-  throw new Error('chrome never opened its debugging port')
+  throw new Error(`chrome never opened its debugging port (${CHROME})`)
 }
 
 const socket = new WebSocket(await endpoint())
@@ -117,6 +149,10 @@ await Bun.sleep(Number(settle))
 const shot = await send('Page.captureScreenshot', { format: 'png' })
 await Bun.write(out, Buffer.from(String(shot.data), 'base64'))
 socket.close()
-proc.kill()
+// The WAIT is what makes the profile go away: `kill()` returns when the signal is sent and
+// Chrome writes into the profile for a beat after it, recreating a directory removed too
+// early. `tour.ts` learned this the same way.
+try { proc.kill(); await proc.exited } catch { /* already gone */ }
+closeBrowser()
 
 console.log(`${out}  ${width}x${height}  ${(Bun.file(out).size / 1024).toFixed(0)} KB  <- ${url}`)
