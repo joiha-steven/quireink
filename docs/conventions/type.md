@@ -144,12 +144,14 @@ font, only the site language's subset(s), never the chrome font or an uploaded c
   means letterboxing every one into a whole number of lines, which is a decision about the
   look of the page. Guarded by the tour flow `book mode sets its pages on one baseline grid`.
 - **A picture is a PLATE and its caption belongs to it.** The caption sits 8px under the
-  picture; below it the text used to resume one line later, which — once a paragraph break
-  cost nothing but an indent — was the same distance as the gap between two ordinary
-  paragraphs, so the caption glued itself to the words underneath. Two lines each side in
-  book mode; in the scrolling article the figure's bottom margin went from `2 × --sp` to 3
-  (measured: 63px under a caption against 55px between two paragraphs, 15% more for a
-  picture, a caption and the end of a thought).
+  picture, and book mode gives the plate two lines on each side. The scrolling article gives it
+  `2 × --sp` on each side too, and the asymmetry tried on 2026-09-12 was taken back on
+  2026-09-14: `3 × --sp` below was measured against paragraphs sitting 55px apart, where it is
+  15% more and reads as part of the plate, but a blog set like a book separates paragraphs by an
+  INDENT — measured on the live site, two paragraphs sit 12px apart, and 48px under a caption is
+  four times the body rhythm, which reads as a hole. A plate's margin is spent in `--sp`; the
+  body's rhythm is not, so a fixed multiple cannot be right for both and the smaller one is the
+  one that never looks broken.
 - **A code line wraps in book mode, because a page has nowhere to scroll.** The scrolling
   article gives a wide block `overflow-x:auto` and the reader pans it, which is fine on a page
   that already moves under the finger. A paged column does not move: measured 2026-09-12, one

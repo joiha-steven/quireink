@@ -222,9 +222,10 @@ describe('book mode is one number, and the reader may move it', () => {
       // top (settings/table, 2026-08-29) and defaults to 1, so a blog that never opens that
       // card gets the identical number this line has always asserted.
       'padding:calc(var(--sp) * .4 * var(--tbl-pad, 1)) calc(var(--sp) * .6 * var(--tbl-pad, 1))',
-      // More BELOW than above since 2026-09-12: the caption hangs under the plate and belongs
-      // to it. Still spent in --sp, which is the claim this line makes.
-      'figure{margin:calc(var(--sp) * 2) 0 calc(var(--sp) * 3)}',
+      // Symmetric again since 2026-09-14: measured on the live site, two paragraphs sit 12px
+      // apart and the extra --sp put the text 49px under the caption. Still spent in --sp,
+      // which is the claim this line makes.
+      'figure{margin:calc(var(--sp) * 2) 0}',
     ]) {
       expect(PUBLIC_CSS).toContain(frozen)
     }
