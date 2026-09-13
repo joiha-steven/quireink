@@ -394,5 +394,4 @@ export function registerSettingsFlows({ flow, expect }: Tour): void {
       if (unnamed.length) return unnamed.length + ' unnamed mark(s) still open a card title'
       return 'ok card ' + cs + '/' + c.fontWeight + ', group ' + gs + ' uppercase, ' + marks.length + ' mark(s)'
     })()`, 900))
-
 }

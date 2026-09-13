@@ -68,30 +68,45 @@ export function ExportFields({
   useEffect(() => { void refresh() }, [refresh])
 
   /**
-   * A blob, not a plain link: every one of these routes is owner-gated, so the file has to
-   * be fetched with the session's cookies and handed to the browser as a download after.
+   * A PLAIN LINK, handed to the browser. Not a fetch, and not a blob.
+   *
+   * The version this replaces read the whole archive into a blob first, and the comment
+   * above it said a blob was necessary because these routes are owner-gated. That was
+   * wrong: a same-origin link IS a request with the session cookie on it — `SameSite=Lax`
+   * sends it on exactly this kind of navigation — so the gate was never the reason.
+   *
+   * What the blob cost was the download itself. `/api/backup/export` streams the archive
+   * with a declared length precisely so the browser can write it to disk as it arrives and
+   * draw a progress bar; pulling it through `fetch().blob()` undid all of that and held the
+   * whole file in the tab's memory instead. On a 262 MB archive over a real connection that
+   * is minutes with NOTHING on screen — no bar, no bytes, no way to resume — and a browser
+   * free to drop the tab's allocation at any point in it. Reported 2026-09-13 by the owner,
+   * who had never had reason to press the button before: the first backup he tried to take
+   * away was one he could not.
+   *
+   * And a second bug underneath the first: `URL.revokeObjectURL` ran on the line after
+   * `click()`, while the download it had just started was still asynchronous. On a small
+   * file the browser usually wins that race. On a large one it does not.
+   *
+   * Straight to the browser, the download survives the tab, resumes, and shows its progress
+   * where every other download on the machine shows it.
    */
-  async function download(url: string, fallback: string): Promise<void> {
-    const res = await fetch(url)
-    if (!res.ok) throw new Error(String(res.status))
-    const objectUrl = URL.createObjectURL(await res.blob())
+  function download(url: string, filename: string): void {
     const a = document.createElement('a')
-    a.href = objectUrl
-    a.download = res.headers.get('content-disposition')?.match(/filename="(.+)"/)?.[1] ?? fallback
+    a.href = url
+    a.download = filename
+    // IN the document: a detached anchor's click is ignored by some browsers, and this is
+    // the one button where "works on mine" is not good enough.
+    document.body.appendChild(a)
     a.click()
-    URL.revokeObjectURL(objectUrl)
+    a.remove()
   }
 
-  async function exportNow(): Promise<void> {
-    setBusy('export')
-    try {
-      await download('/api/backup/export', 'quire-archive.tar.gz')
-      notify(t.backupToastOk)
-    } catch {
-      notify(t.backupToastFail, 'error')
-    } finally {
-      setBusy(null)
-    }
+  function exportNow(): void {
+    // No `busy` state and no toast on success: the browser owns the download now, and it
+    // reports on it in its own downloads shelf. A spinner here would be this panel claiming
+    // to know about something it handed away.
+    download('/api/backup/export', 'quire-archive.tar.gz')
   }
 
   async function runNow(): Promise<void> {
@@ -202,7 +217,7 @@ export function ExportFields({
                   <button
                     type="button"
                     className="underline hover:text-neutral-900 dark:hover:text-white"
-                    onClick={() => { void download(`/api/backup/download?name=${encodeURIComponent(s.name)}`, s.name) }}
+                    onClick={() => { download(`/api/backup/download?name=${encodeURIComponent(s.name)}`, s.name) }}
                   >
                     {t.download}
                   </button>
