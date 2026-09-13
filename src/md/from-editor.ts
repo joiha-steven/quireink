@@ -56,8 +56,20 @@ function marksOf(node: PMNode): Piece['marks'] {
 /** A leaf inline node — text, a break, a formula — with no marks left to apply. */
 function leaf(node: PMNode): Inline[] {
   switch (node.type.name) {
-    case 'text':
-      return node.text ? [{ type: 'text', value: node.text }] : []
+    case 'text': {
+      if (!node.text) return []
+      // A NEWLINE INSIDE A TEXT NODE IS A SOFT BREAK, not a character. The editor has no node
+      // for one, so it rides in the text — and reading it back as an ordinary character makes
+      // the serializer escape the line away, which is how `> [!NOTE]` on its own line became
+      // `> [!NOTE] Body` and stopped being a callout.
+      if (!node.text.includes('\n')) return [{ type: 'text', value: node.text }]
+      const out: Inline[] = []
+      node.text.split('\n').forEach((part, i) => {
+        if (i > 0) out.push({ type: 'softbreak' })
+        if (part !== '') out.push({ type: 'text', value: part })
+      })
+      return out
+    }
     case 'hardBreak':
       return [{ type: 'hardbreak' }]
     case 'image':

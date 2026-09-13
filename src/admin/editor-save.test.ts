@@ -27,6 +27,8 @@ import { join } from 'node:path'
 import { toHtml } from '@/md/index'
 import { toMarkdown } from '@/md/to-markdown'
 import { fromEditor, type PMNode } from '@/md/from-editor'
+import { parse } from '@/md/index'
+import { toEditor } from '@/md/to-editor'
 
 beforeAll(() => GlobalRegistrator.register())
 afterAll(() => GlobalRegistrator.unregister())
@@ -123,5 +125,47 @@ describe('what a save must never do', () => {
     expect(fresh).toContain('[^1]')
     expect(fresh).toContain('[!NOTE]')
     expect(fresh).not.toContain('\\[')
+  })
+})
+
+// ----- the whole circle -----------------------------------------------------------------
+
+/**
+ * MARKDOWN → TREE → EDITOR → TREE → MARKDOWN, with the engine owning every step.
+ *
+ * The suite above still opens each post with `tiptap-markdown`, because that is what the
+ * editor does today. This one closes the loop: `to-editor.ts` builds the ProseMirror document
+ * straight from the tree, and the page has to survive the round trip. It is the test that says
+ * the engine can replace both halves of the bridge, not just the writing half.
+ */
+const NO_RAW_HTML: Record<string, string> = {
+  // `Markdown.configure({ html: false })` — raw HTML arrives in this editor as the characters
+  // somebody typed, and saves back escaped. The old bridge does the same; the fixture is here
+  // to say the limitation is the EDITOR'S and is unchanged, not to excuse a regression.
+  'raw-html-block': 'raw HTML is text in this editor, by configuration',
+  'raw-html-inline': 'raw HTML is text in this editor, by configuration',
+}
+
+describe('the whole circle, with no old bridge in it', () => {
+  for (const file of FIXTURES) {
+    const name = file.replace(/\.md$/, '')
+    if (name in NO_RAW_HTML) continue
+    it(`survives: ${name}`, async () => {
+      const source = readFileSync(join(CORPUS, file), 'utf8')
+      const { Editor } = await import('@tiptap/core')
+      const { editorExtensions } = await import('@/admin/components/editorExtensions')
+      const editor = new Editor({
+        extensions: editorExtensions(''),
+        content: toEditor(parse(source)) as never,
+      })
+      const back = toMarkdown(fromEditor(editor.state.doc as unknown as PMNode))
+      editor.destroy()
+      expect(toHtml(back)).toBe(toHtml(source))
+    })
+  }
+
+  it('names every fixture it excuses, and excuses few', () => {
+    for (const name of Object.keys(NO_RAW_HTML)) expect(FIXTURES).toContain(`${name}.md`)
+    expect(Object.keys(NO_RAW_HTML).length).toBeLessThan(FIXTURES.length / 8)
   })
 })
