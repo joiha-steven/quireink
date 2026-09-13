@@ -69,6 +69,7 @@ export class Line {
       if (ch === ' ') {
         this.pos += 1
         this.col += 1
+        this.partialTab = 0
         left -= 1
       } else if (ch === '\t') {
         const width = TAB_STOP - (this.col % TAB_STOP)
@@ -81,6 +82,11 @@ export class Line {
         }
         this.pos += 1
         this.col += width
+        // THE TAB IS FULLY EATEN, so the remainder it left behind is gone too. Leaving the
+        // flag set made `rest()` hand back a phantom space AND skip the character after the
+        // tab: `\t - baz` under two list levels came out as ` baz`, and its third bullet
+        // vanished into the paragraph above it.
+        this.partialTab = 0
         left -= width
       } else {
         return

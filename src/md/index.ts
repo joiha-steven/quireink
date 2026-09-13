@@ -9,7 +9,7 @@
 // Nothing else in `src/` may parse Markdown.
 
 import type { Document } from './ast'
-import { parseBlocks } from './block'
+import { BlockParser } from './block'
 import { toAst } from './to-ast'
 import { setHtmlFiltering, toHtml as renderHtml } from './html'
 
@@ -17,7 +17,9 @@ export type { Block, Document, Inline, ListItem } from './ast'
 
 /** Markdown to the syntax tree. The expensive half; every renderer below is cheap. */
 export function parse(source: string): Document {
-  return toAst(parseBlocks(source))
+  const blocks = new BlockParser()
+  const root = blocks.parse(source)
+  return toAst(root, blocks.defs)
 }
 
 export type HtmlOptions = {

@@ -13,36 +13,19 @@ import type { Block, Document, ListItem } from './ast'
 import { decideLoose, type Node } from './block-tree'
 import { parseInline } from './inline'
 import { tableCells } from './block-scan'
-import { resolveEntities } from './entity'
-import { stripDefinitions, type LinkDefs } from './link-ref'
+import type { LinkDefs } from './link-ref'
 
 /**
- * TWO PASSES, and the second one is why.
+ * The block tree becomes the AST, with the definitions the block parse already collected.
  *
- * A link may point at a definition written further down the document — `[see later][x]` in the
- * first paragraph and `[x]: /url` in the last — so every definition has to be collected before
- * any inline is parsed. The first pass walks the block tree and peels definitions off the
- * front of every paragraph; the second turns what is left into inlines, with the whole map in
- * hand. A parser that resolved links as it met them would get every forward reference wrong.
+ * THE ORDER IS THE POINT. A link may point at a definition written further down the document —
+ * `[see later][x]` in the first paragraph and `[x]: /url` in the last — so the whole map has to
+ * exist before any inline is parsed. `BlockParser` builds it as it closes each paragraph, which
+ * is also the only moment a setext underline can ask whether the paragraph above it has
+ * anything left.
  */
-export function toAst(root: Node): Document {
-  const defs: LinkDefs = new Map()
-  collectDefinitions(root, defs)
+export function toAst(root: Node, defs: LinkDefs): Document {
   return { type: 'document', children: blocksOf(root, defs) }
-}
-
-function collectDefinitions(parent: Node, defs: LinkDefs): void {
-  for (const child of parent.children) {
-    if (child.kind === 'paragraph') {
-      const text = child.lines.join('\n').replace(/^[ \t]+|[ \t]+$/g, '')
-      const rest = stripDefinitions(text, defs, resolveEntities)
-      // The paragraph keeps only what the definitions left. One that was nothing but
-      // definitions ends up empty, and `oneBlock` drops it.
-      child.lines = rest === '' ? [] : [rest]
-    } else {
-      collectDefinitions(child, defs)
-    }
-  }
 }
 
 function blocksOf(parent: Node, defs: LinkDefs): Block[] {

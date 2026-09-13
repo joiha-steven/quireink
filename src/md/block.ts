@@ -23,9 +23,21 @@ import {
   listMarker, setextUnderline, tableCells, tableDelimiterRow, taskMarker, thematicBreak,
 } from './block-scan'
 import { CONSUMED, NOT_MATCHED, continuesBlock } from './block-continue'
+import { resolveEntities } from './entity'
+import { stripDefinitions, type LinkDefs } from './link-ref'
 
 export class BlockParser {
   doc: Node = node('document', null)
+  /**
+   * The link reference definitions, collected AS THE BLOCKS ARE BUILT.
+   *
+   * They used to be peeled off afterwards, and two examples showed why that cannot work: a
+   * setext underline has to know whether the paragraph above it has anything left once its
+   * definitions are taken out. `[foo]: /url` with `===` under it is not a heading — the
+   * paragraph is empty — and `[foo]: /url\nbar` with `===` under it is a heading reading
+   * `bar`. Neither answer is available to a pass that runs later.
+   */
+  defs: LinkDefs = new Map()
   private tip: Node = this.doc
   private lastMatched: Node = this.doc
   private line = new Line('')
@@ -201,6 +213,10 @@ export class BlockParser {
       const setext = setextUnderline(this.line)
       if (setext && container.kind === 'paragraph' && !lazy) {
         const para = container
+        // Definitions come out first, and what is left decides whether this is a heading at
+        // all. An underline over nothing but definitions is a paragraph of its own.
+        this.takeDefinitions(para)
+        if (para.lines.length === 0) break
         para.kind = 'heading'
         para.level = setext
         this.finalize(para)
@@ -328,10 +344,19 @@ export class BlockParser {
     }
   }
 
+  /** Peel every definition off the front of a paragraph, leaving what the reader sees. */
+  private takeDefinitions(para: Node): void {
+    if (para.lines.length === 0) return
+    const text = para.lines.join('\n').replace(/^[ \t]+|[ \t]+$/g, '')
+    const rest = stripDefinitions(text, this.defs, resolveEntities)
+    para.lines = rest === '' ? [] : [rest]
+  }
+
   /** Close a block: it stops accepting lines, and a list decides whether it is loose. */
   private finalize(block: Node): void {
     if (!block.open) return
     block.open = false
+    if (block.kind === 'paragraph') this.takeDefinitions(block)
     if (block.kind === 'list') block.loose = decideLoose(block)
     if (block.kind === 'item') {
       const first = block.children[0]
