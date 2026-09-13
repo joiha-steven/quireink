@@ -136,6 +136,33 @@ function skipSpace(text: string, from: number): number {
   return i
 }
 
+/**
+ * THE WORK A DOCUMENT'S LINK DESTINATIONS MAY COST, in characters scanned.
+ *
+ * ⚠️ WITHOUT THIS THE PARSER IS QUADRATIC, and the input that proves it is four characters
+ * repeated. `[a](` opens a destination that never closes, so the scanner walks to the end of
+ * the text looking for one; the next `[` does it again from one position further along. The
+ * `)` early-out in `inline-link.ts` answers the common shape of this in constant time, and a
+ * single `)` at the end of the document defeats it. MEASURED 2026-09-14: `[a](` repeated 4,000
+ * times with one `)` after it is 16 KB and took 161ms, quadrupling on every doubling, so 64 KB
+ * was three seconds of one thread and 256 KB was a minute.
+ *
+ * A budget rather than a length cap on the destination: a cap would refuse a long but honest
+ * URL — a `data:` one runs to kilobytes — while this only refuses to keep PAYING. Eight times
+ * the document's own length is an allowance no real writing approaches: this blog's longest
+ * post is 84,000 characters and spends 2,600, a third of one percent of it.
+ *
+ * Spent down per parse and reset by `index.ts`, never keyed on the text: a budget that
+ * remembered the string would give a second render of the same document a different answer
+ * from the first.
+ */
+let scanBudget = 0
+
+/** Called once per parse, from `index.ts`. */
+export function resetLinkScanBudget(sourceLength: number): void {
+  scanBudget = sourceLength * 8 + 4096
+}
+
 /** `<a url>` or a bare one, which may carry balanced parentheses but no spaces. */
 export function matchUrl(text: string, from: number): { value: string; next: number } | null {
   let i = from
@@ -157,12 +184,18 @@ export function matchUrl(text: string, from: number): { value: string; next: num
     return null
   }
 
+  // ⚠️ SCAN, THEN SLICE ONCE. This used to append every character to a growing string, and the
+  // destination that FAILS is the one that runs longest: `[a](` with no closer walks to the end
+  // of the text, so a document made of `[a](` repeated built one string per opening bracket,
+  // each as long as the rest of the document. MEASURED 2026-09-14 before the change: 4,000
+  // repeats (16 KB) took 215ms and the cost quadrupled on every doubling — quadratic, on an
+  // input small enough to paste. The characters kept are exactly `text.slice`, escapes and all,
+  // which is why slicing is not a rewrite of the rule.
+  if (scanBudget <= 0) return null
   let depth = 0
-  let value = ''
   while (i < text.length) {
     const ch = text[i]!
     if (ch === '\\' && i + 1 < text.length && /[!-/:-@[-`{-~]/.test(text[i + 1]!)) {
-      value += ch + text[i + 1]
       i += 2
       continue
     }
@@ -172,12 +205,11 @@ export function matchUrl(text: string, from: number): { value: string; next: num
       if (depth === 0) break
       depth--
     }
-    value += ch
     i++
   }
+  scanBudget -= i - from
   if (depth !== 0) return null
-  if (value === '' && i === from) return { value: '', next: i }
-  return { value, next: i }
+  return { value: text.slice(from, i), next: i }
 }
 
 /** `"title"`, `'title'` or `(title)`, with the quotes off. */

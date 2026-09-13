@@ -67,11 +67,23 @@ const DISALLOWED = /<(\/?)(title|textarea|style|xmp|iframe|noembed|noframes|scri
  * A module-level value rather than an argument threaded through twenty recursive functions,
  * and safe because rendering is wholly synchronous: `toHtml` sets it, walks the tree and puts
  * it back before anything else can run. `index.ts` is the only caller that sets it.
+ *
+ * ⚠️ PUT BACK WHAT WAS THERE, not the default. Restoring `SPEC` unconditionally is correct for
+ * exactly one caller at a time and wrong the moment a render happens INSIDE a render — the
+ * inner call's `finally` would hand the outer one `SPEC`, and the rest of the outer page would
+ * be rendered under rules its caller never asked for, silently. Nothing in this repository
+ * nests today; a library published for other people to embed cannot assume that, and the cost
+ * of not assuming it is one saved value.
  */
 let rules: PageRules = SPEC
 
 export function setPageRules(next: PageRules): void {
   rules = next
+}
+
+/** The rules in force, so a caller can put back exactly what it displaced. */
+export function getPageRules(): PageRules {
+  return rules
 }
 
 function filterHtml(value: string): string {

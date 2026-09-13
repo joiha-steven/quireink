@@ -53,6 +53,14 @@ export function linkLabelLength(text: string, from: number): number {
  */
 export function inlineLinkTail(text: string, from: number): { url: string; title?: string; next: number } | null {
   if (text[from] !== '(') return null
+  // ⚠️ NO CLOSER, NO TAIL — and this line is the difference between linear and quadratic.
+  // Every `(` after a label makes the destination scanner walk forward looking for the end of
+  // a URL, and the run that FAILS is the one that walks furthest: with no `)` anywhere it goes
+  // to the end of the text, for every `[` in the document. MEASURED 2026-09-14: `[a](` repeated
+  // 4,000 times is 16 KB and took 161ms, quadrupling on every doubling, so 64 KB was already
+  // three seconds of one thread. A tail must end in `)`; if the text holds none from here on,
+  // it cannot be one, and that is answerable before any scanning.
+  if (!closeParenAtOrAfter(text, from)) return null
   let i = skipWhitespace(text, from + 1)
 
   const dest = matchUrl(text, i)
@@ -73,6 +81,21 @@ export function inlineLinkTail(text: string, from: number): { url: string; title
 
   if (text[i] !== ')') return null
   return { url: dest.value, title, next: i + 1 }
+}
+
+/**
+ * Is there a `)` at or after `from`?
+ *
+ * ONE ENTRY OF MEMO, because the parser works through one text run at a time and asks this
+ * once per `[` in it: computing `lastIndexOf` per question would put the scan back, in a
+ * cheaper loop. Correct for the same reason the rules global is (`html.ts`): parsing is wholly
+ * synchronous, so there is only ever one text run in flight.
+ */
+let lastClose = { text: '', at: -1 }
+
+function closeParenAtOrAfter(text: string, from: number): boolean {
+  if (lastClose.text !== text) lastClose = { text, at: text.lastIndexOf(')') }
+  return lastClose.at >= from
 }
 
 function skipWhitespace(text: string, from: number): number {

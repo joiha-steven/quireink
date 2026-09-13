@@ -10,15 +10,19 @@
 
 import type { Document } from './ast'
 import { BlockParser } from './block'
+import { resetLinkScanBudget } from './link-ref'
 import { toAst } from './to-ast'
-import { setPageRules, toHtml as renderHtml } from './html'
-import { GFM, type PageRules, SPEC } from './html-rules'
+import { getPageRules, setPageRules, toHtml as renderHtml } from './html'
+import { GFM, type PageRules } from './html-rules'
 
 export type { Block, Document, Inline, ListItem } from './ast'
 export { GFM, PAGE, SPEC, type PageRules } from './html-rules'
 
 /** Markdown to the syntax tree. The expensive half; every renderer below is cheap. */
 export function parse(source: string): Document {
+  // The document's allowance for scanning link destinations, spent down by `link-ref.ts` and
+  // reset here so two parses of one string always answer the same. See that file for why.
+  resetLinkScanBudget(source.length)
   const blocks = new BlockParser()
   const root = blocks.parse(source)
   return toAst(root, blocks.defs)
@@ -33,10 +37,13 @@ export function parse(source: string): Document {
  * `render/post-content.ts` asks for them by name.
  */
 export function toHtml(source: string, rules: Partial<PageRules> = {}): string {
+  // Save and restore rather than reset: a render that happens inside another render must give
+  // the outer one back its own rules, not the default. See `html.ts`.
+  const held = getPageRules()
   setPageRules({ ...GFM, ...rules })
   try {
     return renderHtml(parse(source))
   } finally {
-    setPageRules(SPEC)
+    setPageRules(held)
   }
 }
