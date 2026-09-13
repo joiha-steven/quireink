@@ -83,13 +83,18 @@ describe('the pen deal', () => {
   })
 
   it('every fallback in the sheet is the middle of the grips it stands in for', () => {
-    // ⚠️ THE FALLBACKS ARE WHAT THE WRITER SEES, which is what makes this a test and not a
-    // tidiness rule. Nothing in `src/admin` has ever set `data-pen`, so every stroke in the
-    // editor is drawn by the `var(--x, default)` on four lines of `ink.css.ts` while the
-    // published page deals one of forty grips per mark. `--u-y` sat at .94em from before the
+    // ⚠️ THE FALLBACKS ARE WHAT A STROKE WITH NO `data-pen` IS DRAWN WITH, which is what
+    // makes this a test and not a tidiness rule. They were the whole editor until
+    // 2026-09-14: nothing in `src/admin` had ever written the attribute, so every stroke in
+    // the writing surface came out of these four `var(--x, default)` values while the
+    // published page dealt one of forty grips per mark. `--u-y` sat at .94em from before the
     // 2026-09-09 pen while the grips moved to 1.05–1.09em, and nothing here noticed for five
     // days: at 18.08px type that is 2.0–2.7px high, which put the ink through the middle of
     // the letters instead of at their feet. Reported from the editor, 2026-09-14.
+    //
+    // `admin/components/pen-deal.ts` deals the editor its forty now, so these stand in for
+    // the beat before a stroke is dealt and for every other reader of the sheet — the
+    // embeddable `pen.css` (ADR 0048) styles whatever markup a stranger hands it.
     const mid = (xs: readonly string[]): number => {
       const ns = xs.map((x) => parseFloat(x))
       return (Math.min(...ns) + Math.max(...ns)) / 2

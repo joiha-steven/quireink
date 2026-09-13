@@ -22,6 +22,7 @@ import { Ink } from './InkMark'
 import { CaptionedImage } from './CaptionedImage'
 import { LinkKey } from './editorLinkKey'
 import { PenRing, PenUnderline } from './PenMarks'
+import { PenDeal } from './pen-deal'
 import { MathInline, MathBlock } from './MathNode'
 import { Find } from './FindExtension'
 
@@ -56,6 +57,10 @@ export function editorExtensions(
     Ink, // the pen: `==text==` inks as you type, and saves back as `==text==` (InkMark.ts)
     PenUnderline, // `++text++`, and the U button that used to lose its work (PenMarks.ts)
     PenRing, // `@@word@@`, the ballpoint ring (PenMarks.ts)
+    // Which of the forty pens each of those three is drawn with. The page hashes every
+    // gesture into a `data-pen` variant and the editor never did, so one fallback grip
+    // stood in for all forty (pen-deal.ts).
+    PenDeal,
     // Maths. NOT optional decoration: without these two the serializer doubles every
     // backslash in a formula and deletes `\(…\)` outright on save (MathNode.tsx).
     MathInline,

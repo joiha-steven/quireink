@@ -191,6 +191,17 @@ that file first; this one only adds what is true here.
   a highlight, up and back around a ring), at `motion.penSqueak` — heard only with an
   instrument chosen and the slider above zero, and held at 0.45 of a key because it sits in
   the ear's loudest octave and lasts five times as long.
+- **The writer is dealt the same forty pens the page is** (2026-09-14): the published page
+  hashes every gesture's Markdown into `data-pen="0".."79"` and `pen/ink.css.ts` gives each
+  variant its own grip and die. The editor wrote no `data-pen` at all — the attribute does not
+  appear anywhere in the history of `src/admin` — so every stroke in the writing surface came
+  out of the four `var(--x, default)` fallbacks: one pen, however many strokes. Found by the
+  underline sitting through the middle of the letters in the editor and at their feet on the
+  page, which was the same cause. `pen-deal.ts` stamps the attribute on the drawn element from
+  the element's own words, never in the document — the seed is a view concern, and a mark
+  attribute would make two neighbouring strokes stop being one mark and save as `==a====b==`.
+  THE STROKE UNDER THE HAND KEEPS ITS PEN: a hash of the words would change grip on every
+  keystroke, so a stroke settles to the page's variant when the caret leaves it.
 - **The caret stops blinking while the hands are moving**, and fades rather than switching:
   700ms past the last keystroke before it resumes, 1.2s ease-in-out, and never all the way
   to zero. A blink means "the cursor is here and nothing is happening", and during a burst of
