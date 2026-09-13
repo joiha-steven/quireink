@@ -80,50 +80,41 @@ describe('the corpus, opened in the editor', () => {
 /**
  * The fixtures whose PAGE is allowed to move, and what moves in each.
  *
- * Every one is a normalisation Markdown itself permits, checked by hand on 2026-08-30 — none
- * loses a feature, a word or a link. The list is short on purpose: an entry here is a promise
- * that somebody looked, so adding one is a decision, and adding one to make a red check go
- * away is the failure this file exists to prevent.
+ * Every one is a normalisation Markdown itself permits — none loses a feature, a word or a
+ * link. The list is short on purpose: an entry here is a promise that somebody looked, so
+ * adding one is a decision, and adding one to make a red check go away is the failure this file
+ * exists to prevent.
  *
- * ⚠️ THE SHAPE CHANGED ON 2026-08-30, and the reason is that the first cut of this hatch was
- * far weaker than the one it was modelled on. An excused fixture was asserted only to render
- * SOMETHING (`after.length > 0`), so any of these eight could have collapsed to a single
- * character and this file would still have said ok — in the exact place where four data-loss
- * bugs had just been found. `render/golden.test.ts` had solved the same problem years of
- * fixtures earlier and its answer is copied here wholesale: group by BEHAVIOUR, bound both
- * counts, and pin the new answer on disk so an excused fixture is still compared byte for
- * byte — against what it renders after a save rather than against what it rendered before.
+ * ⚠️ IT WAS EIGHT ENTRIES AND IS NOW ONE (2026-09-13), and that is the whole argument for the
+ * engine rather than any number in a benchmark. Seven fixtures stopped moving on the day
+ * `tiptap-markdown` came out, each for a reason worth naming:
+ *
+ *   callout-unknown, lazy-continuation   a line break between two lines of a quote, dropped
+ *   entities                             `&copy;` decoded on the way in and written back as ©
+ *   dangerous-hrefs, dangerous-href-…    `[js](…)` saved as `\[js\](…)`, which the renderer
+ *                                        then read as DISPLAY MATHS — a link published as a
+ *                                        formula, on two fixtures
+ *   reference-links                      the same bug on `[two][missing]`
+ *   task-lists                           a tight checklist saved loose, a blank line per item
+ *
+ * Five of those seven were the SERIALIZER escaping both brackets, which is the bug that cost 19
+ * of 45 fixtures in August and was repaired in `ReaderSyntax.ts` for the two shapes anybody had
+ * noticed. The engine does not have it: `md/to-markdown.ts` escapes the opening bracket only.
+ *
+ * The shape of this list was copied from `render/golden.test.ts` on 2026-08-30 — group by
+ * BEHAVIOUR, bound both counts, and pin the new answer on disk so an excused fixture is still
+ * compared byte for byte, against what it renders AFTER a save rather than against what it
+ * rendered before. An earlier cut asserted only that an excused fixture rendered SOMETHING,
+ * which would have passed on a post collapsed to a single character.
  */
 const MAY_DIFFER: Record<string, { behaviour: string; why: string }> = {
-  // ── Two lines becoming one. Both are places where Markdown's own line rules already said
-  //    the second line belongs to the first; what goes is the <br> between them.
-  'callout-unknown.md': { behaviour: 'line joining', why: '[!MYSTERY] is not one of the five, so it is a blockquote either way, and its two lines join' },
-  'lazy-continuation.md': { behaviour: 'line joining', why: 'a lazy second line is folded onto the first, which is what it already meant' },
-
-  // ── Text that is not markup, spelled differently. In every one of these the CHARACTERS a
-  //    reader sees are identical; only the entity spelling behind them moves. Two of the four
-  //    are the escaping promise doing its job, and the pinned files prove it still is.
-  //
-  // ⚠️ TWO OF THE PINNED ANSWERS MOVED ON 2026-09-13, and not by whitespace — this one and
-  //    `reference-links` below. `marked` rendered the SPACE before `\[two\]` as a `<br>`:
-  //    there is no newline anywhere in the saved source, and its maths extension together with
-  //    `breaks: true` invented the line break. The engine renders the space as a space. Both
-  //    pages are nonsense either way — both are showing what the OLD WRITER does to
-  //    `[two][missing]`, which is the whole reason these fixtures are excused — and the new one
-  //    is the nonsense the source actually spells. Accepted by name through
-  //    `golden/recapture-editor.ts --accept`, which deliberately has no flag taking them in bulk.
-  'dangerous-hrefs.md': { behaviour: 'text that is not markup', why: 'javascript:/data:/vbscript: never became links; inert text before and after, escaped differently' },
-  'dangerous-href-obfuscated.md': { behaviour: 'text that is not markup', why: 'the tab inside the scheme becomes a space in inert text' },
-  // `entities.md` WAS excused here and no longer needs to be (2026-09-13). The excuse said
-  // markdown-it decodes `&copy;` on the way in, so a save wrote back the character and the page
-  // moved. The engine decodes it on the way in TOO — CommonMark says to — so the page before a
-  // save and the page after it are now the same bytes, and the guard below is what noticed:
-  // an excuse for a fixture that no longer moves is a rule guarding nothing.
-  'raw-html-block.md': { behaviour: 'text that is not markup', why: 'html:false — raw HTML is text here, and text is written back as entities. The promise, working' },
-
-  // ── One link notation for another, and one list becoming loose.
-  'reference-links.md': { behaviour: 'link form', why: '[a][ref] is written back inline as [a](url); the link and its label survive, the definition list goes' },
-  'task-lists.md': { behaviour: 'list looseness', why: 'items gain the blank line between them that makes a list loose, so each gets a <p> (and, since 2026-09-09, the class the renderer stamps on a task item)' },
+  // The one that is left, and it is a limit rather than a loss. Raw HTML is TEXT in this editor
+  // — the blog's promise, and `md/to-editor.ts` keeps it — so a block of it arrives as a
+  // paragraph, and a paragraph cannot carry the indentation of its continuation lines: every
+  // Markdown parser strips them. What moves is two spaces before a `<script>` that is being
+  // shown, not run. Nothing a reader sees moves at all, because HTML collapses the whitespace
+  // either way; what moves is the source, once, and then it holds.
+  'raw-html-block.md': { behaviour: 'text that is not markup', why: 'raw HTML is text here, and a paragraph cannot keep the indentation of a continuation line' },
 }
 
 /**

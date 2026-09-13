@@ -44,7 +44,10 @@ describe('bullets and checkboxes in one list', () => {
     // The split must be invisible to every list that is not mixed, which is nearly all of them.
     expect(await roundTrip('- một\n- hai\n- ba\n')).toBe('- một\n- hai\n- ba')
     expect(await roundTrip('1. một\n2. hai\n')).toBe('1. một\n2. hai')
-    expect(await roundTrip('- [x] một\n- [ ] hai\n')).toBe('- [x] một\n\n- [ ] hai')
+    // A TIGHT CHECKLIST STAYS TIGHT since 2026-09-13. It came back `- [x] một\n\n- [ ] hai`
+    // under the old bridge, whose list extension marked every task list loose — a blank line
+    // per item, added to a file whose author had not written them.
+    expect(await roundTrip('- [x] một\n- [ ] hai\n')).toBe('- [x] một\n- [ ] hai')
   })
 
   it('keeps a numbered list numbered when a checkbox joins it', async () => {
@@ -54,24 +57,23 @@ describe('bullets and checkboxes in one list', () => {
     expect(await roundTrip(out)).toBe(out)
   })
 
-  it('settles the TIGHT mixed list on the next save, and then holds', async () => {
-    // The one case that is not a fixed point on the first pass, pinned rather than hidden.
-    // `- a\n- b\n- [x] c` has no blank lines, so its bullets are tight; splitting it puts a
-    // blank line between the two lists, and CommonMark says a list with a blank line in it is
-    // LOOSE. So the second save reads its own output honestly and spaces the bullets out.
+  it('settles the TIGHT mixed list on the FIRST save, and then holds', async () => {
+    // `- a\n- b\n- [x] c` is one list to Markdown and two to this schema, so a save has to put
+    // a blank line in to keep the halves apart. That is the whole cost, and it is paid once.
     //
-    // It costs one blank line per item, once, and nothing else: no text is added, removed or
-    // reordered, and the third save changes nothing. There is no version of this that both
-    // splits the list and keeps the source tight — two adjacent lists in Markdown need a blank
-    // line between them, and that blank line is what makes the list loose.
+    // ⚠️ IT USED TO COST MORE, and the difference is what `MarkdownTightLists` did. Markdown
+    // says a blank line ANYWHERE in a list makes the whole list loose, so the old bridge read
+    // its own output back as one loose list and spaced every bullet out on the second save —
+    // the test this replaces asserted `twice !== once` and pinned that as unavoidable. It was
+    // not. The editor no longer stores looseness as an attribute and `md/from-editor.ts`
+    // infers it from what an item HOLDS, so two tight lists read back as two tight lists.
     const once = await roundTrip('- a\n- b\n- [x] c\n')
-    const twice = await roundTrip(once)
-    expect(twice).not.toBe(once)
-    expect(await roundTrip(twice)).toBe(twice)
-    // What matters: every item is still there, and there is no invented one.
-    expect(twice).toContain('- a')
-    expect(twice).toContain('- b')
-    expect(twice).toContain('- [x] c')
-    expect(twice.startsWith('- [ ]')).toBe(false)
+    expect(once).toBe('- a\n- b\n\n- [x] c')
+    expect(await roundTrip(once)).toBe(once)
+    // What matters most: every item is still there, and there is no invented one.
+    expect(once).toContain('- a')
+    expect(once).toContain('- b')
+    expect(once).toContain('- [x] c')
+    expect(once.startsWith('- [ ]')).toBe(false)
   })
 })

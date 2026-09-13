@@ -16,6 +16,21 @@ import table from './entities.json'
 export const ENTITIES: Record<string, string> = table as Record<string, string>
 
 /**
+ * Where an `&` in this text would be read as an entity on the way back in.
+ *
+ * The SERIALIZER'S question, not the parser's. A bare `&` means nothing in Markdown unless it
+ * opens a complete reference, so `M&A` needs no backslash — and escaping every one anyway put
+ * `M\&A` into 44 of this blog's 92 posts on their first save, a diff in the author's file with
+ * no author behind it. `&amp;` does need one, or it resolves to `&` on the next read.
+ */
+export function entityStarts(text: string): Set<number> {
+  const at = new Set<number>()
+  const re = /&(?:[A-Za-z][A-Za-z0-9]{1,31}|#\d{1,7}|#[xX][0-9a-fA-F]{1,6});/g
+  for (let m = re.exec(text); m !== null; m = re.exec(text)) at.add(m.index)
+  return at
+}
+
+/**
  * Every entity and numeric reference in a string, resolved.
  *
  * Used where a value is NOT inline content and so never reaches the inline parser: a link's

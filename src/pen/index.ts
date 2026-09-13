@@ -12,8 +12,11 @@
 //
 //   grammar.ts   the three fences as one regex each, and the hash that deals a stroke its
 //                variant. Import-free, so four parsers can be built from it without drift.
-//   marked.ts    the server's parser, as `marked` inline extensions. The editor's TipTap
-//                marks (`admin/components/InkMark.ts`, `PenMarks.ts`) are the other reader.
+//   (the parser)  NOT here any more. `marked.ts` held the server's inline extensions and came
+//                out on 2026-09-13 with `marked` itself: `md/inline-pen.ts` reads the three
+//                fences now, once, for the page and the editor and the excerpt together. The
+//                editor's TipTap marks (`admin/components/InkMark.ts`, `PenMarks.ts`) are what
+//                DRAWS a stroke while it is being written; they no longer parse one.
 //   dies.ts      the hand: every stroke shape, grown from one seed. `dies-link.ts` grows the
 //                link's dashes from a seed of its own.
 //   pigments.ts  the five measured inks and the pencil and ballpoint, and the data-URI that
@@ -37,7 +40,6 @@ export {
   RING_SYNTAX_SOURCE, RING_SYNTAX_CONTENT_LAST, RING_SYNTAX_GLOBAL,
 } from '@/pen/grammar'
 export type { Ink } from '@/pen/grammar'
-export { inkExtension, underExtension, ringExtension } from '@/pen/marked'
 export {
   PEN_LIGHT, PEN_DARK, PEN_AUX_LIGHT, PEN_AUX_DARK, PEN_LINE_LIGHT, PEN_LINE_DARK,
   penStroke, penStrokeFlat, penUnder, penRing, penDash, penSolidRule,

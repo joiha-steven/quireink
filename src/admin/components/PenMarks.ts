@@ -14,14 +14,8 @@
 // copies this repo once had of `==` drifted within the hour.
 import { getMarkRange, InputRule, Mark, markInputRule, markPasteRule, mergeAttributes } from '@tiptap/core'
 import type { MarkType } from '@tiptap/pm/model'
-import type MarkdownIt from 'markdown-it'
-import type StateInline from 'markdown-it/lib/rules_inline/state_inline.mjs'
-import {
-  INKS, isInk, RING_SYNTAX_CONTENT_LAST, RING_SYNTAX_SOURCE,
-  UNDER_SYNTAX_CONTENT_LAST, UNDER_SYNTAX_SOURCE,
-} from '@/pen/grammar'
+import { INKS, isInk, RING_SYNTAX_CONTENT_LAST, UNDER_SYNTAX_CONTENT_LAST } from '@/pen/grammar'
 import type { Ink } from '@/pen/grammar'
-import { parseInlineInto } from './markdown-nested'
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
@@ -41,29 +35,6 @@ declare module '@tiptap/core' {
 const suffixOf = (raw: string): Ink | undefined => {
   const m = /#([a-z]+)$/.exec(raw)
   return m && isInk(m[1]) ? m[1] : undefined
-}
-
-/** markdown-it half, for content ARRIVING in the editor — the `inkPlugin` shape exactly. */
-function gesturePlugin(name: string, first: number, source: string, tag: string,
-  attrs: readonly (readonly [string, string])[]): (md: MarkdownIt) => void {
-  const rule = new RegExp(`^${source}`)
-  return (md) => {
-    md.inline.ruler.before('emphasis', name, (state: StateInline, silent: boolean) => {
-      if (state.src.charCodeAt(state.pos) !== first) return false
-      const m = rule.exec(state.src.slice(state.pos, state.posMax))
-      if (!m) return false
-      // See the note in `InkMark.ts`: a silent claim that does not move the cursor makes
-      // markdown-it throw while it scans a link label.
-      if (silent) { state.pos += m[0].length; return true }
-      const open = state.push(`${name}_open`, tag, 1)
-      for (const [k, v] of attrs) open.attrSet(k, v)
-      if (m[2]) open.attrSet('data-ink', m[2])
-      parseInlineInto(state, m[1]!)
-      state.push(`${name}_close`, tag, -1)
-      state.pos += m[0].length
-      return true
-    })
-  }
 }
 
 /** The `#colour` afterthought: recolour the gesture just closed, swallow the suffix.
@@ -99,15 +70,6 @@ const inkAttribute = {
     renderHTML: (attrs: { ink?: string }) => (isInk(attrs.ink) ? { 'data-ink': attrs.ink } : {}),
   },
 }
-
-const serialize = (fence: string) => ({
-  open: fence,
-  close: (_state: unknown, mark: { attrs: { ink?: string } }) =>
-    (isInk(mark.attrs.ink) ? `${fence}#${mark.attrs.ink}` : fence),
-  expelEnclosingWhitespace: true,
-  // Not optional — see InkMark's serialize block for the corrupted document it prevents.
-  mixable: true,
-})
 
 export const PenUnderline = Mark.create({
   name: 'underline',
@@ -147,18 +109,6 @@ export const PenUnderline = Mark.create({
     })]
   },
 
-  addStorage() {
-    return {
-      markdown: {
-        serialize: serialize('++'),
-        parse: {
-          setup(markdownit: MarkdownIt) {
-            markdownit.use(gesturePlugin('under', 0x2b, UNDER_SYNTAX_SOURCE, 'u', []))
-          },
-        },
-      },
-    }
-  },
 })
 
 export const PenRing = Mark.create({
@@ -204,17 +154,4 @@ export const PenRing = Mark.create({
     })]
   },
 
-  addStorage() {
-    return {
-      markdown: {
-        serialize: serialize('@@'),
-        parse: {
-          setup(markdownit: MarkdownIt) {
-            markdownit.use(gesturePlugin('ring', 0x40, RING_SYNTAX_SOURCE, 'mark',
-              [['data-form', 'o']]))
-          },
-        },
-      },
-    }
-  },
 })

@@ -22,10 +22,8 @@
 //
 // WHAT MAY LIVE IN THIS FILE is anything that RENDERS or TOKENIZES: it already costs Temml
 // and `marked`. Anything that only needs to recognise a formula belongs next door.
-import type { Tokens, TokenizerAndRendererExtension } from 'marked'
 import temml from 'temml'
 
-import { matchMathAt, matchDisplayBlockAt } from '@/render/math-syntax'
 
 export {
   INLINE_PAREN_SOURCE, DISPLAY_DOLLAR_SOURCE, DISPLAY_BRACKET_SOURCE,
@@ -69,62 +67,4 @@ export function renderMath(tex: string, display: boolean): string {
   }
 }
 
-/**
- * The inline half. The TeX is NOT handed to marked's inline lexer, and that is the point.
- *
- * Markdown would read `x_1 + y_2` as an emphasis run and hand back `x<em>1 + y</em>2` — the
- * underscore is the single most common character in a subscript and the single most common
- * emphasis delimiter, so a formula parsed as Markdown is not a rendering bug, it is a
- * different formula. Returning the raw text and rendering it ourselves is what keeps the
- * writer's source intact all the way to Temml.
- *
- * Inline code is safe without any work here: marked's own tokenizer claims a code span whole
- * from its opening backtick, so `` `$5` `` never reaches this rule.
- */
-export const mathInlineExtension: TokenizerAndRendererExtension = {
-  name: 'math',
-  level: 'inline',
-  // marked uses this to skip ahead to where a match could begin. Any of the four openers.
-  start(src: string) {
-    const hits = [src.indexOf('$'), src.indexOf('\\('), src.indexOf('\\[')].filter((i) => i >= 0)
-    return hits.length ? Math.min(...hits) : -1
-  },
-  tokenizer(src: string) {
-    const m = matchMathAt(src)
-    return m ? { type: 'math', raw: m.raw, tex: m.tex, display: m.display } : undefined
-  },
-  renderer(token) {
-    const t = token as Tokens.Generic & { tex: string; display: boolean }
-    return renderMath(t.tex, t.display)
-  },
-}
 
-/**
- * The block half, for a display formula standing alone between two blank lines.
- *
- * Without it the inline rule still renders the formula, but marked has already wrapped the
- * paragraph around it — and a `<math display="block">` inside a `<p>` inherits the
- * paragraph's text-indent and first-line rules, so the formula sits off-centre under book
- * mode's indented prose. As its own block it is laid out as one.
- */
-export const mathBlockExtension: TokenizerAndRendererExtension = {
-  name: 'mathBlock',
-  level: 'block',
-  start(src: string) {
-    const hits = [src.indexOf('$$'), src.indexOf('\\[')].filter((i) => i >= 0)
-    return hits.length ? Math.min(...hits) : -1
-  },
-  tokenizer(src: string) {
-    const m = matchDisplayBlockAt(src)
-    return m ? { type: 'mathBlock', raw: m.raw, tex: m.tex } : undefined
-  },
-  renderer(token) {
-    const t = token as Tokens.Generic & { tex: string }
-    // The wrapper is what scrolls. A long derivation is wider than the measure and must
-    // take its own scrollbar rather than widen the page. Maths gets a wrapper of its own
-    // because it can: a table arrives from `marked` bare, and the byte-identical golden
-    // compare means nothing may wrap it — so `prose.css.ts` scrolls the article around it
-    // instead. Same law, and two mechanisms, because only one of them was free.
-    return `<div class="math-block">${renderMath(t.tex, true)}</div>\n`
-  },
-}

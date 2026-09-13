@@ -12,18 +12,17 @@
 import type { Extensions } from '@tiptap/core'
 import StarterKit from '@tiptap/starter-kit'
 import { TableRow, TableHeader, TableCell } from '@tiptap/extension-table'
-import { MarkdownTable } from './TableMarkdown'
+import { Table } from '@tiptap/extension-table'
 import { TaskList } from '@tiptap/extension-task-list'
 import { TaskItem } from '@tiptap/extension-task-item'
 import { Placeholder } from '@tiptap/extension-placeholder'
-import { Markdown } from 'tiptap-markdown'
+import { MarkdownBridge } from './MarkdownBridge'
 import { Video } from './VideoNode'
 import { Ink } from './InkMark'
-import { BlockImage, ReaderSyntax } from './ReaderSyntax'
+import { CaptionedImage } from './CaptionedImage'
 import { LinkKey } from './editorLinkKey'
 import { PenRing, PenUnderline } from './PenMarks'
 import { MathInline, MathBlock } from './MathNode'
-import { MixedList } from './MixedList'
 import { Find } from './FindExtension'
 
 /**
@@ -45,13 +44,14 @@ export function editorExtensions(
     // and `underline` is now switched OFF, because StarterKit's underline cannot reach
     // Markdown: pressing U applied a mark the serializer then dropped on save, silently.
     // `PenMarks.ts` supplies the replacement under the same name and command.
-    // `text: false` for the same reason as `underline` above, and with the same replacement
-    // beside it: `ReaderSyntax.ts` is the text node, and it exists because the library's
-    // escaping destroyed every footnote reference and every callout tag on save.
-    StarterKit.configure({ link: { openOnClick: false }, underline: false, text: false }),
-    ReaderSyntax,
-    // `CaptionedImage` with a serializer that closes its block — see `ReaderSyntax.ts`.
-    BlockImage,
+    //
+    // StarterKit's own TEXT node is back since 2026-09-13. `ReaderSyntax.ts` replaced it for
+    // one reason — `prosemirror-markdown` escaped `[` and `]` on every text node, so every
+    // footnote reference and every callout tag was destroyed on save — and that serializer is
+    // gone. `md/to-markdown.ts` escapes the opening bracket only, in the engine, for every
+    // caller at once.
+    StarterKit.configure({ link: { openOnClick: false }, underline: false }),
+    CaptionedImage,
     Video,
     Ink, // the pen: `==text==` inks as you type, and saves back as `==text==` (InkMark.ts)
     PenUnderline, // `++text++`, and the U button that used to lose its work (PenMarks.ts)
@@ -60,10 +60,11 @@ export function editorExtensions(
     // backslash in a formula and deletes `\(…\)` outright on save (MathNode.tsx).
     MathInline,
     MathBlock,
-    // NOT `Table` from the package: `TableMarkdown.ts` replaces the library's serializer,
-    // which deletes a cell holding only a formula or an image and lets an escaped pipe
-    // re-cut the row on the next save. Same configuration, one method different.
-    MarkdownTable,
+    // `Table` from the package again since 2026-09-13. `TableMarkdown.ts` existed to replace
+    // the library's serializer — it deleted a cell holding only a formula or an image, wrote a
+    // flat `| --- |` that lost every column's alignment, and let an escaped pipe re-cut the row
+    // on the next save. `md/from-editor.ts` reads all three off the document instead.
+    Table,
     TableRow,
     TableHeader,
     TableCell,
@@ -72,8 +73,7 @@ export function editorExtensions(
     TaskItem.configure({ nested: true }),
     // One list that is part bullets and part checkboxes arrives tagged as all checkboxes, and
     // the repair ProseMirror makes for that adds an empty `- [ ]` to the post on every save
-    // (MixedList.ts). It splits the runs before the schema sees them.
-    MixedList,
+
     // Mod-k. The rest of this product's keyboard is in `editorKeys.ts`; only the link needs
     // to run inside the editor, holding the selection it is about to mark.
     LinkKey.configure({ askLink }),
@@ -96,11 +96,15 @@ export function editorExtensions(
     // that reaches the database reads `\# Heading` and `&gt; quote`, and it publishes that
     // way. Measured 2026-08-21 on a draft pasted in whole.
     //
-    // On, the pasted text goes through the same markdown-it the editor already uses to open
-    // a post — same rules, same extensions, so `$…$`, `==ink==` and the tables arrive as the
-    // nodes they are. Two things it deliberately does not touch: a paste inside a code block
-    // (ProseMirror hands `code` context plain text before any parser is consulted), and a
-    // paste made with Shift held, which is the browser's own "as plain text" gesture.
-    Markdown.configure({ html: false, transformPastedText: true }),
+    // On, the pasted text goes through the same parser the editor uses to open a post — same
+    // rules, same notation, so `$…$`, `==ink==` and the tables arrive as the nodes they are.
+    // Two things it deliberately does not touch: a paste inside a code block (ProseMirror
+    // hands `code` context plain text before any parser is consulted), and a paste made with
+    // Shift held, which is the browser's own "as plain text" gesture.
+    //
+    // No `html: false` to configure any more, because there is no option: `md/to-editor.ts`
+    // puts raw HTML in the document as the characters somebody typed, always. That was the
+    // promise this blog made — 100% Markdown — and it is now a property rather than a setting.
+    MarkdownBridge,
   ]
 }

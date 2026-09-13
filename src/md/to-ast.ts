@@ -76,7 +76,7 @@ function oneBlock(n: Node, defs: LinkDefs): Block | null {
     case 'mathBlock':
       // The TeX as written, trimmed only at the ends: a derivation laid out over several lines
       // is laid out that way on purpose, and Temml reads the newlines.
-      return { type: 'mathBlock', value: n.lines.join('\n').trim() }
+      return { type: 'mathBlock', value: n.lines.join('\n').trim(), delim: n.mathDelim ?? 'dollar' }
 
     case 'blockquote':
       return { type: 'blockquote', children: blocksOf(n, defs) }

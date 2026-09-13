@@ -61,6 +61,7 @@ const page = `<!doctype html>
   const lines = []
   let sameText = 0
   let sameBox = 0
+  let sameGeometry = 0
   for (const p of pairs) {
     a.innerHTML = p.a
     b.innerHTML = p.b
@@ -70,17 +71,23 @@ const page = `<!doctype html>
     const bb = boxes(b)
     const okText = ta === tb
     const okBox = ba === bb
+    // EVERY BOX IN THE SAME PLACE, whatever order the elements are listed in. A bold link
+    // nested the two ways round puts the same ink in the same pixels and differs only in which
+    // tag is outside; walking the tree in order calls that a difference, and it is not one a
+    // reader can see. Reported separately so the two questions stay apart.
+    const okGeom = ba.split('|').sort().join('|') === bb.split('|').sort().join('|')
     if (okText) sameText++
     if (okBox) sameBox++
-    if (!okText || !okBox) {
-      lines.push('--- ' + p.name + (okText ? '' : '  CHỮ KHÁC') + (okBox ? '' : '  HỘP KHÁC'))
+    if (okGeom) sameGeometry++
+    if (!okText || !okGeom) {
+      lines.push('--- ' + p.name + (okText ? '' : '  CHỮ KHÁC') + (okGeom ? '' : '  HỘP KHÁC'))
       if (!okText) {
         let i = 0
         while (i < ta.length && i < tb.length && ta[i] === tb[i]) i++
         lines.push('    cũ:  ' + JSON.stringify(ta.slice(Math.max(0, i - 40), i + 40)))
         lines.push('    mới: ' + JSON.stringify(tb.slice(Math.max(0, i - 40), i + 40)))
       }
-      if (!okBox) {
+      if (!okGeom) {
         const xa = ba.split('|')
         const xb = bb.split('|')
         const at = xa.findIndex((v, i) => v !== xb[i])
@@ -94,7 +101,8 @@ const page = `<!doctype html>
   document.getElementById('report').textContent =
     'khung nhìn: ' + innerWidth + 'x' + innerHeight + '\\n' +
     'chữ vẽ ra giống hệt: ' + sameText + '/' + pairs.length + '\\n' +
-    'hộp vẽ ra giống hệt: ' + sameBox + '/' + pairs.length + '\\n\\n' +
+    'mọi hộp cùng chỗ cùng cỡ: ' + sameGeometry + '/' + pairs.length + '\\n' +
+    '  (trong đó cùng cả thứ tự lồng nhau: ' + sameBox + ')\\n\\n' +
     (lines.length ? lines.join('\\n') : 'không bài nào khác')
 </script>
 `

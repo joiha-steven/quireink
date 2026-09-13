@@ -6,19 +6,12 @@
 // hook, a prop or a piece of state. `editorExtensions.ts` came out of the same file for the
 // same reason and the split held.
 import type { Editor as TiptapEditor } from '@tiptap/react'
-import type { Node as PMNode } from '@tiptap/pm/model'
 import { TextSelection } from '@tiptap/pm/state'
 import { isVideoUrl } from '@/render/video'
+import { documentToMarkdown } from './MarkdownBridge'
 
-// tiptap-markdown augments storage at runtime but ships no type for it.
-type MarkdownStorage = {
-  markdown: {
-    getMarkdown: () => string
-    serializer: { serialize: (node: PMNode) => string }
-  }
-}
 export function readMarkdown(editor: TiptapEditor): string {
-  return (editor.storage as unknown as MarkdownStorage).markdown.getMarkdown()
+  return documentToMarkdown(editor.state.doc)
 }
 
 /**
@@ -38,8 +31,7 @@ export function readMarkdown(editor: TiptapEditor): string {
  * starting points, the first click in the source view went to offset 0.
  */
 export function markdownOffsetAt(editor: TiptapEditor, pos: number): number {
-  const { serializer } = (editor.storage as unknown as MarkdownStorage).markdown
-  return serializer.serialize(editor.state.doc.cut(0, pos)).length
+  return documentToMarkdown(editor.state.doc.cut(0, pos)).length
 }
 
 /**

@@ -4,10 +4,12 @@
 // mark in the writing surface rather than literal `==`. It renders as `<mark data-ink="…">`,
 // the SAME element the published page uses, so `pen/ink.css.ts` styles both from one place.
 //
-// THE GRAMMAR IS NOT RESTATED HERE; `pen/grammar.ts` owns it and this imports it. Three readers
-// of `==text==` exist — marked on the server, markdown-it here, `toPlainText` for excerpts —
-// and the only way three parsers stay in step is one regex. They drifted once already, when
-// `toPlainText` did not know the syntax and put the word "green" into every excerpt.
+// THE GRAMMAR IS NOT RESTATED HERE; `pen/grammar.ts` owns it and this imports it. There used to
+// be three readers of `==text==` — marked on the server, markdown-it here, `toPlainText` for
+// excerpts — kept in step by one shared regex, and they drifted anyway: `toPlainText` did not
+// know the syntax and put the word "green" into every excerpt on the site. Since 2026-09-13
+// there is ONE reader (`md/inline-pen.ts`), and what is left in this file is the MARK: how a
+// stroke looks while it is being written, and the keys and typing rules that draw it.
 //
 // ⚠️ ONE THING THE EDITOR CANNOT HOLD, deliberately: a stroke running across an inline CODE
 // span. StarterKit's `code` mark is `excludes: '_'` and that cannot be overridden from outside
@@ -18,12 +20,8 @@
 // anyway — the chip paints its own opaque `--c-rule` over it. The degraded form is a fixed
 // point and valid Markdown, so nothing is corrupted. Pinned by a test.
 import { getMarkRange, InputRule, Mark, markInputRule, markPasteRule, mergeAttributes } from '@tiptap/core'
-import type MarkdownIt from 'markdown-it'
-// The `.mjs` specifier the runtime uses has no declaration; `@types/markdown-it` ships this
 // one, and it is the same class.
-import type StateInline from 'markdown-it/lib/rules_inline/state_inline.mjs'
-import { INKS, DEFAULT_INK, isInk, inkOf, INK_SYNTAX_SOURCE, INK_SYNTAX_CONTENT_LAST } from '@/pen/grammar'
-import { parseInlineInto } from './markdown-nested'
+import { INKS, DEFAULT_INK, isInk, inkOf, INK_SYNTAX_CONTENT_LAST } from '@/pen/grammar'
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
@@ -32,45 +30,6 @@ declare module '@tiptap/core' {
       toggleInk: (ink?: string) => ReturnType
     }
   }
-}
-
-/**
- * The markdown-it half of the parser, for content ARRIVING in the editor.
- *
- * tiptap-markdown runs markdown-it over the stored Markdown and feeds the resulting HTML
- * through the schema's `parseHTML`, so this rule only has to produce a `<mark>` token pair —
- * TipTap does the rest.
- *
- * The nested inline parse on the inner text is what lets bold, a link and a code span live
- * under the stroke. Pushing the content as one plain text token would have been three lines
- * shorter and would silently flatten every one of them. It goes through `parseInlineInto`
- * rather than `state.md.inline.parse` directly, and that file says why: handing the nested
- * parse the outer token array is what used to blank the admin on `**bold** and ==ink==`.
- */
-function inkPlugin(md: MarkdownIt): void {
-  const rule = new RegExp(`^${INK_SYNTAX_SOURCE}`)
-  md.inline.ruler.before('emphasis', 'ink', (state: StateInline, silent: boolean) => {
-    // Cheap reject first: this runs at every character of every inline span.
-    if (state.src.charCodeAt(state.pos) !== 0x3d) return false
-    const m = rule.exec(state.src.slice(state.pos, state.posMax))
-    if (!m) return false
-    // SILENT MODE MUST STILL ADVANCE `state.pos`, and getting this wrong does not produce a
-    // wrong document — it throws. markdown-it scans a link label by running every inline rule
-    // with `silent` set (`skipToken`), and it checks afterwards that a rule which claimed the
-    // match actually moved the cursor: `inline rule didn't increment state.pos`. A bare
-    // `return true` claims and does not move, so the whole parse dies — inside `setContent`,
-    // inside a React render, which is a white admin. It needs a link whose LABEL carries one
-    // of these delimiters to happen at all, e.g. `[**@@Quire Ink@@**](https://…)`, which is
-    // why it hid behind the pen's other bug for a day. Measured on a real draft.
-    if (silent) { state.pos += m[0].length; return true }
-
-    const open = state.push('ink_open', 'mark', 1)
-    if (m[2] && m[2] !== DEFAULT_INK) open.attrSet('data-ink', m[2])
-    parseInlineInto(state, m[1])
-    state.push('ink_close', 'mark', -1)
-    state.pos += m[0].length
-    return true
-  })
 }
 
 export const Ink = Mark.create({
@@ -179,40 +138,5 @@ export const Ink = Mark.create({
         getAttributes: (match) => ({ ink: inkOf(match[0]) }),
       }),
     ]
-  },
-
-  addStorage() {
-    return {
-      markdown: {
-        serialize: {
-          open: '==',
-          // The colour rides on the CLOSING delimiter, so it has to be computed per mark.
-          // prosemirror-markdown allows a function here for exactly this.
-          close: (_state: unknown, mark: { attrs: { ink?: string } }) => {
-            const ink = mark.attrs.ink
-            return ink && ink !== DEFAULT_INK && INKS.includes(ink as never) ? `==#${ink}` : '=='
-          },
-          // Without this, highlighting a phrase and then extending the selection by one space
-          // writes `== word ==`, which the grammar deliberately refuses to read back.
-          expelEnclosingWhitespace: true,
-          // MIXABLE IS NOT OPTIONAL, and leaving it off corrupts the post rather than merely
-          // looking wrong. prosemirror-markdown serializes marks per text node, so a stroke
-          // containing bold and a link was closed and reopened around each one:
-          //
-          //   ==chữ **in đậm**, một [liên kết](/x)==#orange
-          //     became  ==chữ ==#orange**==in đậm==#orange**==, một ==#orange[==liên…
-          //
-          // which is not even the same document. `mixable` tells the serializer this mark may
-          // stay open across the others and be merged, which is exactly what one stroke over
-          // several inline marks means. Caught by round-tripping the fixture, not by reading.
-          mixable: true,
-        },
-        parse: {
-          setup(markdownit: MarkdownIt) {
-            markdownit.use(inkPlugin)
-          },
-        },
-      },
-    }
   },
 })

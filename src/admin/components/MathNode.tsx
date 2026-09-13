@@ -20,11 +20,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { Node, InputRule } from '@tiptap/core'
 import { ReactNodeViewRenderer, NodeViewWrapper, type NodeViewProps } from '@tiptap/react'
-import type MarkdownIt from 'markdown-it'
-import type StateInline from 'markdown-it/lib/rules_inline/state_inline.mjs'
-import type StateBlock from 'markdown-it/lib/rules_block/state_block.mjs'
 import {
-  matchMathAt, matchDisplayBlockAt, mathToMarkdown, renderMath, type MathDelim,
+  renderMath, type MathDelim,
   INLINE_PAREN_SOURCE, DISPLAY_DOLLAR_SOURCE, DISPLAY_BRACKET_SOURCE,
 } from '@/render/math'
 import { useAdminT } from './I18nProvider'
@@ -36,58 +33,6 @@ declare module '@tiptap/core' {
       setMath: (display: boolean, tex?: string) => ReturnType
     }
   }
-}
-
-/**
- * The markdown-it half, for content ARRIVING in the editor.
- *
- * `before('escape')` is not a preference, it is the fix for the vanishing `\(a\)` above:
- * markdown-it's escape rule claims a backslash pair before any later rule can look at it, so
- * a maths rule registered after it never sees an opening delimiter at all.
- *
- * The tokens are plain HTML because that is what tiptap-markdown feeds to the schema's
- * `parseHTML`. The TeX rides in an attribute rather than as the element's text so that
- * nothing downstream is tempted to parse it as prose.
- */
-function mathPlugin(md: MarkdownIt): void {
-  md.inline.ruler.before('escape', 'math', (state: StateInline, silent: boolean) => {
-    const ch = state.src.charCodeAt(state.pos)
-    // Cheap reject first: this runs at every character of every inline span. `$` or `\`.
-    if (ch !== 0x24 && ch !== 0x5c) return false
-    const m = matchMathAt(state.src.slice(state.pos, state.posMax))
-    if (!m) return false
-    // Silent mode still has to move the cursor — see the note in `InkMark.ts`. A formula
-    // inside a link label (`[giá $5$ đây](/x)`) is the shape that reaches this.
-    if (silent) { state.pos += m.raw.length; return true }
-    // An OPEN/CLOSE pair, not one self-closing token. markdown-it renders a `nesting: 0`
-    // token as a bare `<span …>` with nothing after it, and an unclosed span swallows the
-    // rest of the paragraph into an atom node that discards its children — so
-    // `inline $M$ here` saved back as `inline $M$` and the word "here" was gone. Measured.
-    const open = state.push('math_inline_open', 'span', 1)
-    open.attrSet('data-math', m.display ? 'display' : 'inline')
-    open.attrSet('data-tex', m.tex)
-    open.attrSet('data-delim', m.delim)
-    state.push('math_inline_close', 'span', -1)
-    state.pos += m.raw.length
-    return true
-  })
-
-  md.block.ruler.before('paragraph', 'math_block', (state: StateBlock, startLine, endLine, silent) => {
-    const start = state.bMarks[startLine] + state.tShift[startLine]
-    // A block formula may run over several lines, so the rule is handed everything from here
-    // to the end of the parsed range and decides for itself where it stops.
-    const m = matchDisplayBlockAt(state.src.slice(start, state.eMarks[endLine - 1] ?? state.src.length))
-    if (!m) return false
-    if (silent) return true
-    const open = state.push('math_block_open', 'div', 1)
-    open.attrSet('data-math', 'block')
-    open.attrSet('data-tex', m.tex)
-    open.attrSet('data-delim', m.delim)
-    open.map = [startLine, startLine + m.raw.replace(/\n+$/, '').split('\n').length]
-    state.push('math_block_close', 'div', -1)
-    state.line = open.map[1]
-    return true
-  })
 }
 
 /**
@@ -183,15 +128,6 @@ const parseAttrs = (el: HTMLElement) => ({
   delim: (el.getAttribute('data-delim') || 'dollar') as MathDelim,
 })
 
-const serialize = (
-  state: { write: (s: string) => void; closeBlock: (n: unknown) => void },
-  node: { attrs: { tex: string; display: boolean; delim: MathDelim } },
-  block: boolean,
-) => {
-  state.write(mathToMarkdown(node.attrs.tex, node.attrs.display, node.attrs.delim))
-  if (block) state.closeBlock(node)
-}
-
 export const MathInline = Node.create({
   ...common,
   name: 'mathInline',
@@ -239,9 +175,6 @@ export const MathInline = Node.create({
           }),
     }
   },
-  addStorage() {
-    return { markdown: { serialize: (s: never, n: never) => serialize(s, n, false), parse: { setup: (md: MarkdownIt) => md.use(mathPlugin) } } }
-  },
 })
 
 export const MathBlock = Node.create({
@@ -266,8 +199,5 @@ export const MathBlock = Node.create({
   },
   renderHTML({ node }) {
     return ['div', { 'data-math': 'block', 'data-tex': node.attrs.tex, 'data-delim': node.attrs.delim }]
-  },
-  addStorage() {
-    return { markdown: { serialize: (s: never, n: never) => serialize(s, n, true), parse: {} } }
   },
 })

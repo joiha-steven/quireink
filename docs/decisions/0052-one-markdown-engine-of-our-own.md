@@ -177,3 +177,61 @@ introduced, and then fixed, the two greedy failures now written on `md/block-mat
 must be known to CLOSE before it opens, and nothing may follow its closer on the line. `callout`
 is the other one and is still unbuilt — the callout is `buildCallouts`'s job after rendering,
 exactly as in 1.x, and the dead handlers come out with milestone 7.
+
+## What milestones 6 and 7 cost (2026-09-14)
+
+The bridge is out. `tiptap-markdown`, `markdown-it` and `prosemirror-markdown` came out with
+`marked`, and nothing in `src/` parses or writes Markdown except `src/md/`.
+
+**A save on a long draft went from 144ms to 7ms.** Measured on the shape that started this: an
+18,001-word draft carrying 3,900 pen marks saves in 7.2ms (median of twelve). The original
+measurement was 144ms on a draft with 2,159 marks, of which 118ms was `ReaderSyntax.ts` reading
+the whole buffer once per text node; after that repair, ~60ms was left inside `tiptap-markdown`
+doing the same thing for `expelEnclosingWhitespace`. Ours reads the two ends of one string.
+
+**134 KB less JavaScript** in the admin bundle: 2,552 KB to 2,418 KB.
+
+**Four files stopped being needed at all.** `TableMarkdown.ts` and `ReaderSyntax.ts` were
+serializer overrides and nothing else, so their nodes are the library's again; `MixedList.ts`
+repaired mixed bullet-and-checkbox lists in the HTML between markdown-it and the schema, and
+there is no HTML in the middle any more, so the split moved into `md/to-editor.ts`;
+`markdown-nested.ts` was one line of markdown-it plumbing. `InkMark.ts`, `PenMarks.ts` and
+`MathNode.tsx` each lost their parser half and their serializer half and kept what they are
+for — how a stroke or a formula LOOKS while it is being written.
+
+**The excuse list in `editor-corpus.test.ts` went from eight fixtures to one**, and that is the
+measurement that matters, because each entry was a post whose page changed after somebody opened
+it and pressed nothing:
+
+| fixture | what the old bridge did |
+|---|---|
+| `dangerous-hrefs`, `dangerous-href-obfuscated`, `reference-links` | a link saved with BOTH brackets escaped, which this blog's renderer reads as DISPLAY MATHS — the link published as a formula |
+| `task-lists` | a tight checklist saved loose, a blank line per item |
+| `callout-unknown`, `lazy-continuation` | the line break between two lines of a quote, dropped |
+| `entities` | `&copy;` decoded on the way in and written back as the character |
+
+The one that is left is raw HTML, and it moves in the SOURCE rather than on the page: raw HTML
+is text here, a paragraph cannot carry the indentation of a continuation line, and the two spaces
+before a shown-not-run `<script>` come off. HTML collapses that whitespace either way.
+
+**What the wiring found, and each was live.** A display formula written mid-paragraph was built
+as a BLOCK node, which ProseMirror refuses inside a paragraph — the equation was dropped from the
+document before the writer saw it. A link whose whole label is a formula lost its URL, because
+`to-editor.ts` built the inline node without the marks. An empty fenced block built an empty text
+node, which ProseMirror forbids outright, so the block vanished. A pen stroke drawn across a link
+came back as three strokes, because marks were nested by a fixed table rather than by how far
+each one RUNS. And the serializer escaped more than it needed three times over: every `==` (so
+`x == y` became `x \== y`), every `&` (so `M&A` became `M\&A`, in 44 of 92 posts), and every bare
+URL expanded into the explicit bracket-and-parenthesis form with its own address as the label.
+
+**How the promise was measured.** All 92 of this blog's real posts, opened in the REAL editor and
+saved, both bodies laid out in Chrome: 92 of 92 paint identical text, 91 of 92 have every element
+at identical coordinates. The one exception merges three adjacent links that share a destination
+— a WordPress-import artifact ProseMirror cannot represent as three — into one link over the same
+pixels. The SOURCE is normalised (a trailing newline, `-   x` to `- x`, `* * *` to `---`, one
+nesting order for a bold link) the way every Markdown editor normalises, and the old bridge did
+more of it and worse.
+
+Milestone 3's 19.8% is answered: the engine and `marked` disagreed on 78 posts by whitespace and
+entity spelling, and on three by something a reader could see — two broken YouTube embeds and an
+invented `<br>`, all three repairs.

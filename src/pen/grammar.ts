@@ -3,7 +3,7 @@
 // stroke its variant.
 //
 // IMPORT-FREE ON PURPOSE (one constant from `dies.ts` aside). Four parsers read this grammar:
-// `marked` on the server (`pen/marked.ts`), markdown-it inside the editor, the editor's typing
+// the engine's inline parser (`md/inline-pen.ts`), the editor's typing
 // rules (`admin/components/InkMark.ts`, `PenMarks.ts`) and `toPlainText` for excerpts. Each is
 // built from the one regex SOURCE exported here rather than restating it — the two that were
 // once written out separately drifted within the hour, and `toPlainText` put the word "green"

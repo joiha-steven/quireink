@@ -19,6 +19,7 @@
 // differently. `MARK_ORDER` below is that decision, written down once.
 
 import type { Block, Inline, ListItem, Document } from './ast'
+import type { MathDelim } from '@/render/math-syntax'
 
 /** The minimum of a ProseMirror node this file reads. Structural, so tests can stand in. */
 export type PMNode = {
@@ -33,11 +34,12 @@ export type PMNode = {
 }
 
 /**
- * Outermost first. A link wraps emphasis rather than the other way round, and the pen sits
- * under everything: `==**bold**==` and `**==bold==**` mean the same thing to a reader, so the
- * serializer has to pick one and always pick it.
+ * THE TIEBREAK, not the rule. Which mark nests outside which is decided by how far each one
+ * RUNS (see `group` below); this list only settles the case where two cover the same words,
+ * where either spelling means the same thing to a reader and the serializer has to pick one
+ * and always pick it. A link wraps emphasis, and the pen sits under both.
  */
-const MARK_ORDER = ['link', 'ink', 'underline', 'ring', 'strong', 'bold', 'em', 'italic', 'strike', 'code']
+const MARK_ORDER = ['link', 'strong', 'bold', 'em', 'italic', 'strike', 'ink', 'underline', 'ring', 'code']
 
 const rank = (name: string): number => {
   const i = MARK_ORDER.indexOf(name)
@@ -46,11 +48,30 @@ const rank = (name: string): number => {
 
 type Piece = { node: PMNode; marks: { name: string; attrs: Record<string, unknown> }[] }
 
-/** One text piece's marks, sorted into the nesting order above. */
+/** One text piece's marks. Order settled per run in `group`, not here. */
 function marksOf(node: PMNode): Piece['marks'] {
-  return [...(node.marks ?? [])]
-    .map((m) => ({ name: m.type.name, attrs: m.attrs ?? {} }))
-    .sort((a, b) => rank(a.name) - rank(b.name))
+  return [...(node.marks ?? [])].map((m) => ({ name: m.type.name, attrs: m.attrs ?? {} }))
+}
+
+/** How many consecutive pieces from `i` carry this same mark, attributes included. */
+function runOf(pieces: Piece[], i: number, mark: Piece['marks'][number]): number {
+  let end = i + 1
+  while (end < pieces.length) {
+    const here = pieces[end]!.marks.find((m) => m.name === mark.name)
+    if (!here || JSON.stringify(here.attrs) !== JSON.stringify(mark.attrs)) break
+    end += 1
+  }
+  return end - i
+}
+
+/**
+ * Which delimiter the author wrote a formula with. `MathNode.tsx` stores it on the node for
+ * exactly this moment: normalising `\(a\)` to `$a$` on save edits a file nobody asked to have
+ * edited, and the editor has carried the attribute since the feature shipped.
+ */
+function mathDelimOf(node: PMNode): MathDelim {
+  const d = String(node.attrs?.delim ?? 'dollar')
+  return d === 'bracket' || d === 'paren' ? d : 'dollar'
 }
 
 /** A leaf inline node — text, a break, a formula — with no marks left to apply. */
@@ -80,7 +101,17 @@ function leaf(node: PMNode): Inline[] {
         alt: node.attrs?.alt ? [{ type: 'text', value: String(node.attrs.alt) }] : [],
       }]
     case 'mathInline':
-      return [{ type: 'math', value: String(node.attrs?.tex ?? ''), display: false }]
+      // `display` IS READ, not assumed false. An inline node can be display maths — `$$…$$`
+      // written mid-paragraph — and `MathNode.tsx` has carried the attribute for that since the
+      // feature shipped. Hardcoding `false` here wrote `$M \times V = P \times Q$` back over a
+      // `$$…$$` the author had written, which is a smaller formula on the page and a diff in
+      // their file with no author behind it.
+      return [{
+        type: 'math',
+        value: String(node.attrs?.tex ?? ''),
+        display: node.attrs?.display === true,
+        delim: mathDelimOf(node),
+      }]
     case 'video':
       // A video is a paragraph holding its URL in the source; the editor shows an embed.
       return [{ type: 'text', value: String(node.attrs?.src ?? '') }]
@@ -92,31 +123,48 @@ function leaf(node: PMNode): Inline[] {
 /**
  * A run of inline pieces, grouped by the marks they share.
  *
- * Recursive on DEPTH: the outermost mark common to a stretch of pieces becomes a node, and the
- * stretch is re-grouped inside it with that mark removed. Pieces with no marks left are leaves.
+ * ⚠️ THE WIDEST MARK GOES OUTSIDE, and it has to be measured rather than looked up. The first
+ * version nested by a fixed table with the pen above links, and a stroke drawn across a link
+ * came back as three strokes:
+ *
+ *     ==chữ **in đậm**, một [liên kết](/x) và cả thế==#orange
+ *     ==chữ **in đậm**, một ==#orange[==liên kết==#orange](/x)== và cả thế==#orange
+ *
+ * because the link covered one piece, the ink covered eleven, and whichever the table put on
+ * top cut the other into fragments at its edges. Marks are RANGES: the one that runs furthest
+ * is the one that can contain the rest. `MARK_ORDER` still decides when two cover exactly the
+ * same words, which is the only case where both spellings are the same document.
+ *
+ * Recursive on the remaining marks: the widest becomes a node, and the stretch it covers is
+ * re-grouped with that mark taken out. Pieces with nothing left are leaves.
  */
-function group(pieces: Piece[], depth: number): Inline[] {
+function group(pieces: Piece[]): Inline[] {
   const out: Inline[] = []
   let i = 0
   while (i < pieces.length) {
-    const mark = pieces[i]!.marks[depth]
-    if (!mark) {
+    const marks = pieces[i]!.marks
+    if (marks.length === 0) {
       out.push(...leaf(pieces[i]!.node))
       i += 1
       continue
     }
-    // How far this same mark runs. Compared by name AND attributes: two highlights in
-    // different colours are two marks, and merging them would lose one of the colours.
-    let end = i + 1
-    while (end < pieces.length) {
-      const next = pieces[end]!.marks[depth]
-      if (!next || next.name !== mark.name) break
-      if (JSON.stringify(next.attrs) !== JSON.stringify(mark.attrs)) break
-      end += 1
+    // Widest run wins; equal runs fall back to the table. Compared by name AND attributes,
+    // because two highlights in different colours are two marks and merging them loses one.
+    let best = marks[0]!
+    let bestRun = runOf(pieces, i, best)
+    for (const mark of marks.slice(1)) {
+      const run = runOf(pieces, i, mark)
+      if (run > bestRun || (run === bestRun && rank(mark.name) < rank(best.name))) {
+        best = mark
+        bestRun = run
+      }
     }
-    const children = group(pieces.slice(i, end), depth + 1)
-    out.push(wrap(mark, children))
-    i = end
+    const inner = pieces.slice(i, i + bestRun).map((p) => ({
+      node: p.node,
+      marks: p.marks.filter((m) => m !== best && !(m.name === best.name && JSON.stringify(m.attrs) === JSON.stringify(best.attrs))),
+    }))
+    out.push(wrap(best, group(inner)))
+    i += bestRun
   }
   return out
 }
@@ -162,7 +210,7 @@ function plain(nodes: Inline[]): string {
 function inlinesOf(node: PMNode): Inline[] {
   const pieces: Piece[] = []
   node.forEach((child) => pieces.push({ node: child, marks: marksOf(child) }))
-  return group(pieces, 0)
+  return group(pieces)
 }
 
 function blocksOf(node: PMNode): Block[] {
@@ -196,7 +244,7 @@ function oneBlock(node: PMNode): Block | null {
         value: `${textOf(node)}\n`,
       }
     case 'mathBlock':
-      return { type: 'mathBlock', value: String(node.attrs?.tex ?? '') }
+      return { type: 'mathBlock', value: String(node.attrs?.tex ?? ''), delim: mathDelimOf(node) }
     case 'blockquote':
       return { type: 'blockquote', children: blocksOf(node) }
     case 'bulletList':
@@ -257,16 +305,37 @@ function tableOf(node: PMNode): Block {
     const cells: { children: Inline[] }[] = []
     const rowAlign: (('left' | 'center' | 'right') | null)[] = []
     row.forEach((cell) => {
-      // A cell holds blocks; a Markdown table holds one line, so its blocks are flattened.
+      // A CELL HOLDING TWO BLOCKS JOINS WITH A SPACE. A Markdown table holds one line per row,
+      // so the blocks are flattened — and flattening them with nothing between runs the last
+      // word of one into the first of the next: `một` above `thêm` came out `mộtthêm`.
+      const parts: Inline[][] = []
+      cell.forEach((block) => parts.push(inlinesOf(block)))
       const inline: Inline[] = []
-      cell.forEach((block) => inline.push(...inlinesOf(block)))
+      parts.filter((p) => p.length > 0).forEach((p, i) => {
+        if (i > 0) inline.push({ type: 'text', value: ' ' })
+        inline.push(...p)
+      })
       cells.push({ children: inline })
       const a = String(cell.attrs?.align ?? '')
       rowAlign.push(a === 'center' || a === 'right' || a === 'left' ? a : null)
+      // A MERGED CELL WRITES ONCE AND LEAVES THE COLUMNS IT COVERS EMPTY. ProseMirror can hold
+      // a table Markdown cannot express, and the repair `TableMarkdown.ts` chose — keep the
+      // words, square the shape — is kept here: the columns a `colspan` spans exist in GFM,
+      // they are simply blank. Without it the row is short and every column after the merge
+      // shifts one to the left.
+      for (let extra = Math.max(1, Number(cell.attrs?.colspan ?? 1)); extra > 1; extra--) {
+        cells.push({ children: [] })
+        rowAlign.push(null)
+      }
     })
     if (index === 0) align = rowAlign
     rows.push(cells)
   })
+  // A `rowspan` leaves the rows below it SHORT rather than wide, so the same rule covers it:
+  // every row is padded out to the widest one, and a ragged table comes out square.
+  const width = rows.reduce((n, row) => Math.max(n, row.length), 0)
+  for (const row of rows) while (row.length < width) row.push({ children: [] })
+  while (align.length < width) align.push(null)
   const [head = [], ...body] = rows
   return { type: 'table', align, head, rows: body }
 }

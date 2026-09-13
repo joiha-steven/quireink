@@ -124,6 +124,20 @@ function splitText(value: string): Inline[] | null {
  * Find them everywhere text can be, except inside a link — a link inside a link is not a thing,
  * and the label of an existing one is its author's words rather than an address to be found.
  */
+/**
+ * Whether this URL, written BARE in prose, reads back as exactly this link.
+ *
+ * The serializer's question. GFM turns a URL standing in text into a link by itself, so a link
+ * whose label IS its destination can be written as the URL and nothing else — which is what the
+ * author typed. It asks the real matcher rather than testing for `https://`, because the
+ * trailing-punctuation rules decide it: `https://x.test/a.` linkifies without the full stop, so
+ * writing that one bare would lose a character on the next read.
+ */
+export function isBareAutolink(url: string): boolean {
+  const m = matchAt(url, 0)
+  return m !== null && m.length === url.length && m.url === url
+}
+
 export function linkifyAll(nodes: Inline[]): Inline[] {
   const out: Inline[] = []
   for (const node of nodes) {

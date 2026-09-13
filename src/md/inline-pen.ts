@@ -10,7 +10,7 @@
 // notation this blog invented, and everything left there is Markdown.
 
 import { INK_SYNTAX_SOURCE, RING_SYNTAX_SOURCE, UNDER_SYNTAX_SOURCE } from '@/pen/grammar'
-import { matchMathAt } from '@/render/math-syntax'
+import { matchMathAt, type MathDelim } from '@/render/math-syntax'
 
 const PEN = {
   ink: new RegExp(`^${INK_SYNTAX_SOURCE}`),
@@ -49,9 +49,9 @@ export function penAt(
  * prices in it. The shared matcher is deliberately NOT changed: `marked` and the editor read it
  * too, and neither has this bug.
  */
-export function mathAt(text: string, pos: number): { value: string; display: boolean; length: number } | null {
+export function mathAt(text: string, pos: number): { value: string; display: boolean; delim: MathDelim; length: number } | null {
   const m = matchMathAt(text.slice(pos))
   if (!m) return null
   if (m.delim === 'dollar' && !m.display && /\*\*|__/.test(m.tex)) return null
-  return { value: m.tex, display: m.display, length: m.raw.length }
+  return { value: m.tex, display: m.display, delim: m.delim, length: m.raw.length }
 }

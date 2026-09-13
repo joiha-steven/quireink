@@ -114,7 +114,7 @@ export class InlineParser {
   private math(): boolean {
     const m = mathAt(this.text, this.pos)
     if (!m) return false
-    this.list.push({ type: 'math', value: m.value, display: m.display })
+    this.list.push({ type: 'math', value: m.value, display: m.display, delim: m.delim })
     this.pos += m.length
     return true
   }

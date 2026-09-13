@@ -23,6 +23,8 @@
 // it does with it, which is the property that keeps the outputs in step.
 
 /** Where a node came from, in the source. Line and column are 1-based, as every editor is. */
+import type { MathDelim } from '@/render/math-syntax'
+
 export type Pos = { line: number; col: number; offset: number }
 
 export type Span = { start: Pos; end: Pos }
@@ -61,8 +63,14 @@ export type Inline =
    * A formula. The value is TeX, UNTOUCHED — no inline parsing happens inside it, or
    * `x_1 + y_2` would come back as `x<em>1 + y</em>2`. `src/render/math.ts` turns it into
    * MathML; the parser's only job is to find where it starts and stops.
+   *
+   * ⚠️ `delim` IS THE AUTHOR'S CHOICE AND IS CARRIED, not derived. Four spellings mean maths
+   * here — `$…$`, `\\(…\\)`, `$$…$$`, `\\[…\\]` — and a serializer that normalises them
+   * rewrites a file its author never asked it to touch. `render/math-syntax.ts` says the same
+   * thing about the same field and has since the feature shipped; the engine dropped it on the
+   * way through, and sixteen editor tests said so the moment the editor was wired to it.
    */
-  | { type: 'math'; value: string; display: boolean }
+  | { type: 'math'; value: string; display: boolean; delim: MathDelim }
   /** `[^label]` in the prose. The definition is a block. */
   | { type: 'footnoteRef'; label: string }
 
@@ -79,7 +87,7 @@ export type Block =
   | { type: 'blockquote'; children: Block[] }
   | { type: 'list'; ordered: boolean; start: number; tight: boolean; items: ListItem[] }
   /** `$$…$$` on its own. TeX, untouched. */
-  | { type: 'mathBlock'; value: string }
+  | { type: 'mathBlock'; value: string; delim: MathDelim }
   | { type: 'table'; align: (Align | null)[]; head: TableCell[]; rows: TableCell[][] }
   /** `[^label]: …`, collected out of the flow and rendered at the foot of the piece. */
   | { type: 'footnoteDef'; label: string; children: Block[] }

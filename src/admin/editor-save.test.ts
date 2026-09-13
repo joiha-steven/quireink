@@ -1,171 +1,125 @@
-// A POST OPENED IN THE EDITOR AND SAVED AGAIN — the new writer against the old one.
+// THE FOUR SHAPES A SAVE USED TO DESTROY, held against the engine that replaced the writer.
 //
-// The editor still OPENS a post with `tiptap-markdown`; what this exercises is the way back:
-// `from-editor.ts` turning the ProseMirror document into the tree, and `to-markdown.ts`
-// turning the tree into the file. That is the direction that overwrites the author's words,
-// and its failures do not look like bugs — they look like a sentence that is no longer there.
+// This file was a COMPARISON while there were two writers: `prosemirror-markdown` through
+// `tiptap-markdown`, and this engine, run over the same editor document so the difference could
+// be read rather than argued about. That comparison is over — the old bridge came out on
+// 2026-09-13 (ADR 0052) — and what it found is the reason the file stays.
 //
-// WHAT IS COMPARED, and why it is not the source. Opening a post changes it: the editor has
-// no node for a soft line break inside a paragraph, none for raw HTML (`html: false`, so a
-// `<b>` arrives as text), and it resolves a reference link where it stands. Comparing a save
-// against the SOURCE fails on all of that and says nothing about the thing being replaced.
+// It found four shapes the old writer published wrong, across five fixtures. Four of the five
+// were ONE bug: the serializer escaped both brackets, and `\[ … \]` is display maths on this
+// blog (ADR 0020), so `[js](javascript:…)` published as a formula reading "js" followed by a
+// naked URL, and `[two][missing]` as an empty formula in the middle of a sentence. The fifth
+// was a tight checklist saved loose — a blank line per item, added to a file that had none.
 //
-// So the comparison is between the two WRITERS, on the same document: `prosemirror-markdown`
-// through `tiptap-markdown`, and this engine. Same input, same editor, two files — and the
-// question is whether the new one produces a different page. Where it does, the difference is
-// named below with which of the two is right, because "different" is not the same as "worse"
-// and on this corpus it is mostly the opposite.
+// None of them threw. None of them looked like a bug. Every one was a post that read
+// differently after somebody opened it and pressed nothing, which is the failure this whole
+// engine was written against — so the shapes are pinned here as assertions on the NEW writer,
+// where they stay checked long after anybody remembers what `tiptap-markdown` was.
 //
-// It lives in `src/admin/` rather than beside the engine because it mounts the real editor,
-// and the admin's tsconfig is the one that knows about a DOM. happy-dom is registered for THIS
-// FILE ONLY, the rule every editor suite here follows.
+// The corpus-wide round trip lives in `editor-corpus.test.ts`, which renders the page before and
+// after a save across all 45 fixtures. It reports 44 of 45 identical; the one that moves is raw
+// HTML, and it moves in the source rather than on the page.
+//
+// happy-dom is registered for THIS FILE ONLY, the rule every editor suite here follows.
 
 import { describe, expect, it, beforeAll, afterAll } from 'bun:test'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
-import { readdirSync, readFileSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { toHtml } from '@/md/index'
-import { toMarkdown } from '@/md/to-markdown'
-import { fromEditor, type PMNode } from '@/md/from-editor'
-import { parse } from '@/md/index'
-import { toEditor } from '@/md/to-editor'
+import { PAGE, toHtml } from '@/md/index'
 
 beforeAll(() => GlobalRegistrator.register())
 afterAll(() => GlobalRegistrator.unregister())
 
 type MarkdownStorage = { markdown: { getMarkdown: () => string } }
 
-/** Open a document in the REAL extension set; hand back what each writer would save. */
-async function bothWriters(source: string): Promise<{ old: string; fresh: string }> {
+/** Open a document in the REAL extension set and hand back what a save would write. */
+async function save(source: string): Promise<string> {
   const { Editor } = await import('@tiptap/core')
   const { editorExtensions } = await import('@/admin/components/editorExtensions')
   const editor = new Editor({ extensions: editorExtensions(''), content: source })
-  const old = (editor.storage as unknown as MarkdownStorage).markdown.getMarkdown()
-  const fresh = toMarkdown(fromEditor(editor.state.doc as unknown as PMNode))
+  const out = (editor.storage as unknown as MarkdownStorage).markdown.getMarkdown()
   editor.destroy()
-  return { old, fresh }
+  return out
 }
 
 const CORPUS = 'golden/corpus'
-const FIXTURES = readdirSync(CORPUS).filter((f) => f.endsWith('.md')).sort()
+const read = (name: string) => readFileSync(join(CORPUS, `${name}.md`), 'utf8')
 
-/**
- * Where the two writers produce different pages, and which one is right.
- *
- * Every entry here was read side by side against the SOURCE, which is the tiebreak: the writer
- * whose page matches what the author wrote is the correct one. On this corpus that is the new
- * writer in all four, and two of them are the same bug in the old one.
- */
-const DIFFERS: Record<string, string> = {
-  // `\[ … \]` is display maths on this blog (ADR 0020), so escaping BOTH brackets turns any
-  // bracketed text into a formula. The old writer does exactly that: `[js](javascript:…)`
-  // comes back as `<math>js</math>(javascript:…)`, and `[two][missing]` as `<math>two</math>`.
-  // The new writer escapes only the opening bracket, which reads back as the same text and
-  // cannot be a formula. Same bug, two fixtures.
-  'dangerous-hrefs': 'the old writer turns `\\[js\\]` into a formula; the new one keeps the text',
-  'dangerous-href-obfuscated': 'the old writer turns `\\[tab\\]` into a formula; the new one keeps the text',
-  'reference-links': 'the old writer turns `\\[two\\]\\[missing\\]` into a formula; the new one keeps the text',
-  // The source is a TIGHT list — no blank lines. The old writer saves it loose, so every item
-  // grows a `<p>` and the list the author wrote is not the list that publishes.
-  'task-lists': 'the old writer makes a tight list loose; the new one keeps it tight',
-}
+describe('a bracketed link does not become a formula', () => {
+  // THE BUG, in one line: `\[js\]` is an escaped bracket to Markdown and DISPLAY MATHS to this
+  // blog. A serializer that escapes the closing bracket as well as the opening one has written
+  // a formula. `md/to-markdown.ts` escapes the opening bracket only — `\[js]` reads back as the
+  // text `[js]`, cannot open a link, and is not a formula because a formula needs `\]`.
+  for (const name of ['dangerous-hrefs', 'dangerous-href-obfuscated', 'reference-links']) {
+    it(`${name}: no formula where the author wrote brackets`, async () => {
+      const source = read(name)
+      const saved = await save(source)
+      expect(saved).not.toContain('\\]')
+      expect(toHtml(saved)).not.toContain('<math')
+      // The page is the same page, which is the claim that matters. All three round-trip
+      // exactly now; `editor-corpus.test.ts` holds that over the whole corpus.
+      expect(toHtml(saved)).toBe(toHtml(source))
+    })
+  }
 
-describe('the two writers, on the same editor document', () => {
-  it('has fixtures to run', () => {
-    expect(FIXTURES.length).toBeGreaterThan(40)
-    for (const name of Object.keys(DIFFERS)) expect(FIXTURES).toContain(`${name}.md`)
-    // Bounded: a list of excuses that can grow without limit is not a gate.
-    expect(Object.keys(DIFFERS).length).toBeLessThan(FIXTURES.length / 8)
+  it('leaves the dangerous schemes disarmed and the safe link working', async () => {
+    const html = toHtml(await save(read('dangerous-hrefs')), PAGE)
+    expect(html).toContain('href="#"')
+    expect(html).toContain('https://example.com')
+    expect(html).not.toContain('href="javascript:')
   })
+})
 
-  for (const file of FIXTURES) {
-    const name = file.replace(/\.md$/, '')
-    if (name in DIFFERS) continue
-    it(`agree: ${name}`, async () => {
-      const { old, fresh } = await bothWriters(readFileSync(join(CORPUS, file), 'utf8'))
-      expect(toHtml(fresh)).toBe(toHtml(old))
-    })
-  }
-
-  for (const [name, why] of Object.entries(DIFFERS)) {
-    it(`${name} — ${why}`, async () => {
-      const source = readFileSync(join(CORPUS, `${name}.md`), 'utf8')
-      const { old, fresh } = await bothWriters(source)
-      // They differ…
-      expect(toHtml(fresh)).not.toBe(toHtml(old))
-      // …and the new one is the one that did not invent a formula. Asserted rather than
-      // asserted-in-prose: a claim in a comment is not a gate.
-      expect(toHtml(fresh)).not.toContain('<math')
-    })
-  }
+describe('a tight list stays tight', () => {
+  it('the list the author wrote is the list that publishes', async () => {
+    const source = read('task-lists')
+    const saved = await save(source)
+    // A loose list puts a `<p>` inside every item, and the source has no blank lines in it.
+    expect(saved).not.toMatch(/\n\n-/)
+    expect(toHtml(saved)).toBe(toHtml(source))
+  })
 })
 
 describe('what a save must never do', () => {
   it('keeps the pen on the words it was drawn over', async () => {
-    const { fresh } = await bothWriters('A ==highlighted==#green word and a @@ringed@@ one.\n')
-    expect(fresh).toContain('==highlighted==#green')
-    expect(fresh).toContain('@@ringed@@')
+    const saved = await save('A ==highlighted==#green word and a @@ringed@@ one.\n')
+    expect(saved).toContain('==highlighted==#green')
+    expect(saved).toContain('@@ringed@@')
   })
 
-  it('keeps a formula a formula', async () => {
-    const { fresh } = await bothWriters('The identity $M \\times V = P \\times Q$ holds.\n')
-    expect(fresh).toContain('$M \\times V = P \\times Q$')
+  it('keeps a formula a formula, in the delimiters the author chose', async () => {
+    expect(await save('The identity $M \\times V = P \\times Q$ holds.\n'))
+      .toContain('$M \\times V = P \\times Q$')
+    // Four spellings mean maths here, and a save may not pick its favourite.
+    expect(await save('Trước \\(a_1\\) sau.\n')).toContain('\\(a_1\\)')
   })
 
   it('keeps a table aligned', async () => {
     // The alignment lives on the header cells, and dropping it is a bug this repository has
     // had once already — every centred column went left on the first save and stayed there.
-    const { fresh } = await bothWriters('| a | b |\n| :---: | ---: |\n| 1 | 2 |\n')
-    expect(fresh).toContain(':---:')
-    expect(fresh).toContain('---:')
+    const saved = await save('| a | b |\n| :---: | ---: |\n| 1 | 2 |\n')
+    expect(saved).toContain(':---:')
+    expect(saved).toContain('---:')
   })
 
   it('keeps a footnote reference and a callout marker', async () => {
-    const { fresh } = await bothWriters('A note[^1].\n\n> [!NOTE]\n> Body.\n')
-    expect(fresh).toContain('[^1]')
-    expect(fresh).toContain('[!NOTE]')
-    expect(fresh).not.toContain('\\[')
+    const saved = await save('A note[^1].\n\n> [!NOTE]\n> Body.\n')
+    expect(saved).toContain('[^1]')
+    expect(saved).toContain('[!NOTE]')
+    expect(saved).not.toContain('\\[')
   })
-})
 
-// ----- the whole circle -----------------------------------------------------------------
+  it('keeps a link whose whole label is a formula', async () => {
+    // An inline NODE carries marks too, and the first cut of `md/to-editor.ts` dropped them:
+    // the URL was gone from the document before the writer had touched anything.
+    expect(await save('giá [$x^2$](https://a.test) đây\n')).toContain('](https://a.test)')
+  })
 
-/**
- * MARKDOWN → TREE → EDITOR → TREE → MARKDOWN, with the engine owning every step.
- *
- * The suite above still opens each post with `tiptap-markdown`, because that is what the
- * editor does today. This one closes the loop: `to-editor.ts` builds the ProseMirror document
- * straight from the tree, and the page has to survive the round trip. It is the test that says
- * the engine can replace both halves of the bridge, not just the writing half.
- */
-const NO_RAW_HTML: Record<string, string> = {
-  // `Markdown.configure({ html: false })` — raw HTML arrives in this editor as the characters
-  // somebody typed, and saves back escaped. The old bridge does the same; the fixture is here
-  // to say the limitation is the EDITOR'S and is unchanged, not to excuse a regression.
-  'raw-html-block': 'raw HTML is text in this editor, by configuration',
-  'raw-html-inline': 'raw HTML is text in this editor, by configuration',
-}
-
-describe('the whole circle, with no old bridge in it', () => {
-  for (const file of FIXTURES) {
-    const name = file.replace(/\.md$/, '')
-    if (name in NO_RAW_HTML) continue
-    it(`survives: ${name}`, async () => {
-      const source = readFileSync(join(CORPUS, file), 'utf8')
-      const { Editor } = await import('@tiptap/core')
-      const { editorExtensions } = await import('@/admin/components/editorExtensions')
-      const editor = new Editor({
-        extensions: editorExtensions(''),
-        content: toEditor(parse(source)) as never,
-      })
-      const back = toMarkdown(fromEditor(editor.state.doc as unknown as PMNode))
-      editor.destroy()
-      expect(toHtml(back)).toBe(toHtml(source))
-    })
-  }
-
-  it('names every fixture it excuses, and excuses few', () => {
-    for (const name of Object.keys(NO_RAW_HTML)) expect(FIXTURES).toContain(`${name}.md`)
-    expect(Object.keys(NO_RAW_HTML).length).toBeLessThan(FIXTURES.length / 8)
+  it('does not put a backslash where the author typed none', async () => {
+    // Over-escaping is corruption too — of the file the author opens next. `pen/grammar.ts`
+    // can read neither of these as a stroke, so neither needs a backslash.
+    expect(await save('x == y and z == w\n')).toBe('x == y and z == w\n')
+    expect(await save('C++ và ++i, x @@ y\n')).toBe('C++ và ++i, x @@ y\n')
   })
 })
