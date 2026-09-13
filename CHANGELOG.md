@@ -1,5 +1,111 @@
 # CHANGELOG
 
+## 2026-09-14 — Quire Ink 2.2.10-beta.4
+
+The fourth pre-release before 2.2.10, and the same rule as the three before it: its Docker tag
+is `2.2.10-beta.4` and nothing else, so `latest` and `2.2` still point at 2.2.9 and nobody
+gets a beta by accident. It runs the demo and the author's blog at manhhung.me.
+
+This one is the Markdown. Four libraries used to answer the same question here and all four
+are gone. Thirty-nine commits.
+
+### One Markdown engine of our own
+
+- **`marked`, `markdown-it`, `tiptap-markdown` and `prosemirror-markdown` are out.** One
+  engine in `src/md` renders the reader's page, opens a post in the editor, saves it back,
+  cuts the excerpt and writes the plain text a search index reads, all from one parse.
+- **Measured against the specifications rather than against itself**: CommonMark 0.31.2 at
+  648 of 652 examples and GFM at 24 of 24, on every run. The four it does not pass are shapes
+  this blog disagrees with on purpose, each named in the suite.
+- **The two engines were compared on 92 real posts before the switch**, three ways: byte
+  equality, a ladder of rewrites that are provably invisible, and a DOM walk comparing the
+  trees node by node. The comparison found a hole nobody had noticed: a `javascript:`
+  destination published as a working link.
+- **A save on a long draft went from 144ms to 7ms**, measured on an 18,000 word piece
+  carrying 2,159 pen marks.
+- **The engine has no dependencies.** Its own suites pass with `node_modules` deleted, and
+  `md/boundary.test.ts` holds it to one import from the rest of the tree.
+- **A hostile paste can no longer stall the process.** Three shapes were quadratic or worse:
+  4,000 unclosed link brackets went from 215ms to 2.2ms, a paragraph of 2,000 deepening
+  indents from 11,817ms to 69ms, and a run of 20,000 backslashes from 1,767ms to 1.7ms. The
+  last two were one regular expression and one string copy, at 98.5% and 99.3% of the
+  engine's whole running time.
+
+### Find and replace in the writing surface
+
+- **`Mod-f` raises a strip under the action line with the find field alone**; `Mod-Shift-f`
+  raises the same strip with replace open, and a chevron at its head opens that field for a
+  hand that came in through the first chord.
+- **It works in both views.** One is a document whose hits are positions and the other is a
+  text box holding a string, and nobody should have to notice which they are in before
+  pressing a key.
+- Nothing enters the document: the hits are drawn beside it, so looking through a piece is
+  not an edit and there is nothing to undo.
+
+### The writer is dealt the same forty pens the reader is
+
+- **Every stroke in the editor came out of one fallback.** The published page hashes each
+  highlight, underline and ring into one of forty variants with its own grip and die; nothing
+  in the admin had ever written that attribute. 38 of 38 strokes now match the published page
+  on the document it was measured on.
+- **The stroke under the cursor keeps the pen it was dealt**, because the variant is a hash
+  of the words and re-dealing on every keystroke would change the grip under the hands. It
+  settles when the caret leaves.
+- Cost: 0.021ms per keystroke at 38 strokes, 0.0086ms on 600 paragraphs with no mark in them.
+
+### The editor stops working between sentences
+
+- **Every edit armed a 400ms timer that serialized the whole document.** That is shorter than
+  the pause a writer takes between two sentences, so the stall landed inside each one: 126ms
+  of frozen editor, five times in six seconds of ordinary typing. Nothing read what it
+  produced.
+- **A text node stopped reading the whole document back.** The repair that keeps `[^1]` and
+  `[!NOTE]` unescaped re-read everything written so far, once per text node, and a mark
+  boundary starts a new one: 9,161 nodes and 118ms of a 144ms serialize on that draft.
+- **The Markdown switch keeps the line you were in the middle of.** It kept a pixel offset
+  between two views of different heights, so 85% of the way down the writing arrived as 66%
+  of the way down the source, and the source then opened with its caret at the top.
+
+### Backups
+
+- **The rendered-page cache stopped riding along in every archive.** On the author's blog the
+  database was 538 MB, of which `render_cache` was 530.3 MB: 98.5% of every backup was a file
+  the app rebuilds from the Markdown beside it.
+- **The download streams to disk** instead of being pulled through the tab's memory, which is
+  what made a 262 MB archive impossible to take away.
+
+### Book mode
+
+- **The page turns instead of blinking.** The spread used to fade to nothing, jump, and fade
+  back, 150ms each way. The flow slides now and the gutter holds still, because the spine is
+  drawn on the window rather than on the pages.
+- **A heading's air is inside its own line box** rather than all in its margins: 50px above
+  the words and 18.7px below, in three lines of the grid rather than four. The paragraph
+  indent went to 2em, because on a paged column it is the only thing saying a paragraph has
+  started.
+
+### Fixed
+
+- **A picture comes out of the paragraph Markdown wrote it in.** Markdown has one shape for a
+  picture and it is inline, so a picture on its own line was a block node inside a paragraph:
+  ProseMirror keeps a text position alive beside it with a separator image and a trailing
+  line break, which is 46 pixels of empty line under every picture. On the reader's page the
+  same shape put a `<figure>` inside a `<p>`, 43 times across 20 posts.
+- **The pen's underline clears the feet of the letters.** In the editor it was drawn through
+  the middle of them: the fallback it used sat at 0.94em while the grips it stood in for had
+  moved to 1.05 to 1.09em, and nothing compared the two.
+- **The source-code look draws no rule under the header and none over the footer**, and its
+  footer takes the 3rem the rest of the product gives it. It was 0.6rem, which left the
+  copyright line 9.6 pixels off the bottom of the page.
+- **A sub-heading's number in the contents index fits.** The pill was 30px wide and `2.10`
+  needs 51.8px, so the tenth sub-heading of a section onwards lost its last digit. It sizes
+  itself now, and the rail's overhang that was meant to make room for it had been written
+  backwards and never applied.
+- **Six holes found in a security review of the public surface**, every one reachable without
+  credentials.
+- A picture gets the same margin above and below it again. The find strip is even, and a card
+  is no longer left mid-fade.
+
 ## 2026-09-13 — Quire Ink 2.2.10-beta.3
 
 The third pre-release before 2.2.10, and the same rule as the two before it: its Docker tag
