@@ -165,10 +165,39 @@ function blockNodes(blocks: Block[]): EditorNode[] {
   return out
 }
 
+/**
+ * A picture that IS the paragraph, lifted out of it.
+ *
+ * ⚠️ THE IMAGE IS A BLOCK NODE HERE. `CaptionedImage` extends Tiptap's `Image`, which is
+ * `group: 'block'`, while Markdown has only one shape for a picture and it is inline. Left
+ * inside the paragraph, ProseMirror draws `<p>` around a block `<div>` and then has to keep a
+ * text position alive beside it — a `ProseMirror-separator` image and a trailing `<br>`. Both
+ * are real layout: a blank line under every picture, in the writing pane only.
+ *
+ * MEASURED IN CHROME on this blog's own post, same post and same database on both builds
+ * (2026-09-14): the image at top level is a 542px node, the same image inside a paragraph is a
+ * 588px one. Forty-six pixels under every picture in the piece.
+ *
+ * The bridge this replaced never met it: it went through HTML, and ProseMirror's DOM parser
+ * lifts a block node out of a paragraph on the way in. Building the JSON directly means doing
+ * the lift here.
+ *
+ * ⚠️ ONLY WHEN THE IMAGE IS THE WHOLE PARAGRAPH, and the narrowness is the point. A picture
+ * written mid-sentence — `text ![a](b) text` — is ONE paragraph on the reader's page, and
+ * splitting it into three blocks changes that page. `golden/corpus/reference-links.md` says so
+ * in two suites: the save law is that a page may not change, and it outranks the layout of the
+ * writing pane. So that rarer shape keeps the blank line, and keeps the page. None of this
+ * blog's 92 posts writes one; every picture in all of them stands on its own line.
+ */
+function liftLoneImage(inline: EditorNode[]): EditorNode[] {
+  if (inline.length === 1 && inline[0].type === 'image') return [inline[0]]
+  return [{ type: 'paragraph', content: inline }]
+}
+
 function oneBlock(node: Block): EditorNode[] {
   switch (node.type) {
     case 'paragraph':
-      return [{ type: 'paragraph', content: inlineNodes(node.children, []) }]
+      return liftLoneImage(inlineNodes(node.children, []))
     case 'heading':
       return [{ type: 'heading', attrs: { level: node.level }, content: inlineNodes(node.children, []) }]
     case 'thematicBreak':
