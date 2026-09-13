@@ -14,3 +14,22 @@
 import table from './entities.json'
 
 export const ENTITIES: Record<string, string> = table as Record<string, string>
+
+/**
+ * Every entity and numeric reference in a string, resolved.
+ *
+ * Used where a value is NOT inline content and so never reaches the inline parser: a link's
+ * URL, a title, a link reference definition. `[link](foo&auml;)` points at `fooä`, and leaving
+ * the entity alone sent readers to a URL with a literal `&auml;` in it.
+ */
+export function resolveEntities(text: string): string {
+  return text.replace(
+    /&(?:([A-Za-z][A-Za-z0-9]{1,31})|#(\d{1,7})|#[xX]([0-9a-fA-F]{1,6}));/g,
+    (whole, name: string | undefined, dec: string | undefined, hex: string | undefined) => {
+      if (name) return ENTITIES[name] ?? whole
+      const n = dec ? Number(dec) : parseInt(hex!, 16)
+      if (n === 0 || n > 0x10ffff || (n >= 0xd800 && n <= 0xdfff)) return '\uFFFD'
+      return String.fromCodePoint(n)
+    },
+  )
+}

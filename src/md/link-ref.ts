@@ -20,7 +20,10 @@ export type LinkDefs = Map<string, LinkDef>
  * the spec asks for, and it is what makes `[ẞ]` and `[ß]` match.
  */
 export function normalizeLabel(label: string): string {
-  return label.trim().replace(/[ \t\r\n]+/g, ' ').toUpperCase().toLowerCase()
+  // THREE STEPS, not two. `ẞ` lowercases to `ß`, which uppercases to `SS`, which lowercases to
+  // `ss` — the same key `SS` reaches. Starting with uppercase leaves `ẞ` alone and the two
+  // labels never meet.
+  return label.trim().replace(/[ \t\r\n]+/g, ' ').toLowerCase().toUpperCase().toLowerCase()
 }
 
 /** A backslash escape or an entity inside a URL or a title, resolved. */

@@ -127,6 +127,9 @@ export class DelimStack {
   }
 }
 
+/** The three characters that pair up into emphasis. `~` is GFM's and behaves like the others. */
+const EMPHASIS_CHARS = new Set(['*', '_', '~'])
+
 // Unicode punctuation and whitespace, as CommonMark 0.31.2 defines them for flanking.
 const PUNCT = /[\p{P}\p{S}]/u
 const SPACE = /[\s\p{Zs}]/u
@@ -173,13 +176,14 @@ export function processEmphasis(list: ChunkList, stack: DelimStack, bottom: Deli
   const openersBottom: Record<string, (Delim | null)[]> = {
     '*': [bottom, bottom, bottom, bottom],
     _: [bottom, bottom, bottom, bottom],
+    '~': [bottom, bottom, bottom, bottom],
   }
 
   let closer = stack.top
   while (closer && closer.prev !== bottom) closer = closer.prev
 
   while (closer) {
-    if (!closer.canClose || (closer.char !== '*' && closer.char !== '_')) {
+    if (!closer.canClose || !EMPHASIS_CHARS.has(closer.char)) {
       closer = closer.next
       continue
     }
@@ -188,12 +192,15 @@ export function processEmphasis(list: ChunkList, stack: DelimStack, bottom: Deli
     let opener = closer.prev
     let found = false
     while (opener && opener !== bottom && opener !== limit) {
-      // THE RULE OF THREE.
+      // THE RULE OF THREE — for `*` and `_`. GFM's `~` has a rule of its own: a run matches
+      // only a run of the SAME length, which is what keeps `~~a~` from striking anything.
       const oddMatch =
+        closer.char !== '~' &&
         (closer.canOpen || opener.canClose) &&
         closer.origCount % 3 !== 0 &&
         (opener.origCount + closer.origCount) % 3 === 0
-      if (opener.char === closer.char && opener.canOpen && !oddMatch) {
+      const lengthOk = closer.char !== '~' || opener.count === closer.count
+      if (opener.char === closer.char && opener.canOpen && lengthOk && !oddMatch) {
         found = true
         break
       }
@@ -212,7 +219,8 @@ export function processEmphasis(list: ChunkList, stack: DelimStack, bottom: Deli
     }
 
     // Two delimiters make strong, one makes emphasis; a longer run gives up two at a time.
-    const use = closer.count >= 2 && opener.count >= 2 ? 2 : 1
+    // A `~` run is spent whole — there is no "strong strikethrough" to give the rest to.
+    const use = closer.char === '~' ? closer.count : closer.count >= 2 && opener.count >= 2 ? 2 : 1
     opener.count -= use
     closer.count -= use
     const openText = opener.chunk.node as Extract<Inline, { type: 'text' }>
@@ -221,7 +229,10 @@ export function processEmphasis(list: ChunkList, stack: DelimStack, bottom: Deli
     closeText.value = closeText.value.slice(0, closeText.value.length - use)
 
     const children = list.take(opener.chunk.next, closer.chunk)
-    const wrapped: Inline = use === 1 ? { type: 'emph', children } : { type: 'strong', children }
+    const wrapped: Inline =
+      closer.char === '~' ? { type: 'strike', children }
+        : use === 1 ? { type: 'emph', children }
+          : { type: 'strong', children }
     list.insertAfter(opener.chunk, wrapped)
 
     // Every delimiter between the two is now inside the wrapper and can match nothing.

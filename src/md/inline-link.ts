@@ -4,6 +4,7 @@
 // position and they answer — and because the link algorithm in `inline.ts` is hard enough to
 // read without the bracket counting inlined into it.
 
+import { resolveEntities } from './entity'
 import { matchTitle, matchUrl } from './link-ref'
 
 /**
@@ -80,7 +81,12 @@ function skipWhitespace(text: string, from: number): number {
   return i
 }
 
-/** A backslash escape resolved, for a URL or a title on its way into the tree. */
+/**
+ * A URL or a title on its way into the tree: backslash escapes resolved, then entities.
+ *
+ * THAT ORDER. `\&auml;` is a literal ampersand followed by letters, not the character ä, and
+ * resolving entities first would turn the escape's own target into something else.
+ */
 export function unescapeString(text: string): string {
-  return text.replace(/\\([!-/:-@[-`{-~])/g, '$1')
+  return resolveEntities(text.replace(/\\([!-/:-@[-`{-~])/g, '$1'))
 }

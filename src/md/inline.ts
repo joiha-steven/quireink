@@ -14,6 +14,7 @@ import { ENTITIES } from './entity'
 import { ChunkList, DelimStack, processEmphasis, scanDelims, type Chunk, type Delim } from './inline-chunks'
 import { inlineLinkTail, linkLabelLength, unescapeString } from './inline-link'
 import { normalizeLabel, type LinkDefs } from './link-ref'
+import { linkifyAll } from './gfm-autolink'
 
 const ESCAPABLE = /[!-/:-@[-`{-~]/
 
@@ -50,7 +51,9 @@ export class InlineParser {
       if (!this.step()) this.pushText(this.text[this.pos++]!)
     }
     processEmphasis(this.list, this.delims, null)
-    return this.list.toArray()
+    // GFM's bare URLs, last: they are found in the text that survived every other rule, so a
+    // code span or a link written the CommonMark way has already taken its characters away.
+    return linkifyAll(this.list.toArray())
   }
 
   private step(): boolean {
@@ -68,6 +71,7 @@ export class InlineParser {
         return this.lineBreak()
       case '*':
       case '_':
+      case '~':
         return this.delimiterRun(ch)
       case '[':
         return this.openBracket(false)
@@ -120,7 +124,12 @@ export class InlineParser {
     this.pos += 1
     const startPos = this.pos
     const opener = this.brackets
-    if (!opener) return false
+    // The cursor has already moved past the `]`, so handing back "not mine" would drop the
+    // character entirely — `[link] bar](/uri)` came out missing its second bracket.
+    if (!opener) {
+      this.pushText(']')
+      return true
+    }
     if (!opener.active) {
       this.brackets = opener.prev
       this.pushText(']')

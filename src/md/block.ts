@@ -20,7 +20,7 @@ import {
 } from './block-tree'
 import {
   atxHeading, blockquoteMarker, codeFence, htmlBlockEnds, htmlBlockStart,
-  listMarker, setextUnderline, taskMarker, thematicBreak,
+  listMarker, setextUnderline, tableCells, tableDelimiterRow, taskMarker, thematicBreak,
 } from './block-scan'
 import { CONSUMED, NOT_MATCHED, continuesBlock } from './block-continue'
 
@@ -179,6 +179,23 @@ export class BlockParser {
         break
       }
 
+      // A GFM table: the line above was its header, this one declares the alignment. Checked
+      // before the setext underline, because `---` under one word is a heading and `---` under
+      // `a | b` is a table, and the difference is only the cell count matching.
+      if (container.kind === 'paragraph' && container.lines.length === 1 && !lazy) {
+        const align = tableDelimiterRow(this.line.rest())
+        if (align && align.length === tableCells(container.lines[0]!).length) {
+          container.kind = 'table'
+          container.tableAlign = align
+          container.tableHead = container.lines[0]
+          container.tableRows = []
+          container.lines = []
+          this.opened = true
+          this.lineSpent = true
+          return container
+        }
+      }
+
       // A setext underline turns the paragraph above it into a heading — only when that
       // paragraph is the block this line would have continued.
       const setext = setextUnderline(this.line)
@@ -245,6 +262,13 @@ export class BlockParser {
     // `-\n  foo` render as `<li>\nfoo</li>`, and made an item that should have closed on the
     // next blank line look like it had content.
     this.blank = this.line.blank()
+
+    if (container.kind === 'table') {
+      // A line that is not a row ends the table; the caller has already decided it belongs to
+      // this block, so anything arriving here is one.
+      container.tableRows!.push(this.line.rest())
+      return
+    }
 
     if (acceptsLines(container)) {
       this.addLine(container)

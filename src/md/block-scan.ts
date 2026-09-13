@@ -195,3 +195,66 @@ export function htmlBlockEnds(kind: number, text: string): boolean {
       return false
   }
 }
+
+// ----- GFM tables ---------------------------------------------------------------------------
+
+export type TableAlign = 'left' | 'center' | 'right' | null
+
+/**
+ * Split a table row into its cells.
+ *
+ * `\|` is a literal pipe and does not cut a cell — the only escape that matters inside a table,
+ * and the reason this is a scan rather than `split('|')`. A leading and a trailing pipe are
+ * both optional and neither makes an empty cell.
+ */
+export function tableCells(text: string): string[] {
+  const cells: string[] = []
+  let cur = ''
+  let i = 0
+  let trimmed = text.trim()
+  if (trimmed.startsWith('|')) trimmed = trimmed.slice(1)
+  if (/(?<!\\)\|$/.test(trimmed)) trimmed = trimmed.slice(0, -1)
+  while (i < trimmed.length) {
+    const ch = trimmed[i]!
+    if (ch === '\\' && trimmed[i + 1] === '|') {
+      cur += '|'
+      i += 2
+      continue
+    }
+    if (ch === '|') {
+      cells.push(cur.trim())
+      cur = ''
+      i += 1
+      continue
+    }
+    cur += ch
+    i += 1
+  }
+  cells.push(cur.trim())
+  return cells
+}
+
+/**
+ * The `|---|:--:|---:|` line under a table's header, as the alignment it declares.
+ *
+ * Null when the line is not one. The COUNT is what makes a table a table: a delimiter row with
+ * a different number of cells than the header above it is just a paragraph of dashes, and that
+ * check belongs to the caller, which is the only place both lines are in hand.
+ */
+export function tableDelimiterRow(text: string): TableAlign[] | null {
+  if (!text.includes('-')) return null
+  // A PIPE IS REQUIRED, and leaving it out cost eleven setext examples: `---` under one word
+  // is a level-two heading, and without this it parsed as a one-column table whose delimiter
+  // row happened to have the same cell count as its header.
+  if (!text.includes('|')) return null
+  const cells = tableCells(text)
+  const out: TableAlign[] = []
+  for (const cell of cells) {
+    const m = /^(:?)-+(:?)$/.exec(cell)
+    if (!m) return null
+    const left = m[1] === ':'
+    const right = m[2] === ':'
+    out.push(left && right ? 'center' : right ? 'right' : left ? 'left' : null)
+  }
+  return out.length > 0 ? out : null
+}

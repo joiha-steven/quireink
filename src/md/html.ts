@@ -36,7 +36,9 @@ export function escapeUrl(url: string): string {
       i += 2
       continue
     }
-    if (/[a-zA-Z0-9\-_.~!*'();:@&=+$,/?#[\]]/.test(ch)) {
+    // `[` and `]` are NOT in this set. They are legal in a URL only inside a host literal,
+    // and CommonMark percent-encodes them everywhere else — `example.com/\[` becomes `%5B`.
+    if (/[a-zA-Z0-9\-_.~!*'();:@&=+$,/?#]/.test(ch)) {
       out += ch === '&' ? '&amp;' : ch
       continue
     }
@@ -191,9 +193,11 @@ function listToHtml(node: Extract<Block, { type: 'list' }>): string {
  * why `tight` is passed down rather than stored on each item.
  */
 function itemToHtml(item: ListItem, tight: boolean): string {
+  // The attribute order is GFM's, not ours: `checked`, then `disabled`, then `type`, and no
+  // self-closing slash. Byte equality against the spec is the test, so the shape is copied.
   const check = item.checked === null
     ? ''
-    : `<input type="checkbox"${item.checked ? ' checked=""' : ''} disabled="" /> `
+    : `<input ${item.checked ? 'checked="" ' : ''}disabled="" type="checkbox"> `
 
   if (tight) {
     let inner = ''

@@ -12,7 +12,8 @@
 import type { Block, Document, ListItem } from './ast'
 import { decideLoose, type Node } from './block-tree'
 import { parseInline } from './inline'
-import { ENTITIES } from './entity'
+import { tableCells } from './block-scan'
+import { resolveEntities } from './entity'
 import { stripDefinitions, type LinkDefs } from './link-ref'
 
 /**
@@ -28,16 +29,6 @@ export function toAst(root: Node): Document {
   const defs: LinkDefs = new Map()
   collectDefinitions(root, defs)
   return { type: 'document', children: blocksOf(root, defs) }
-}
-
-/** An entity in a definition's URL or title is resolved before it is stored. */
-function resolveEntities(text: string): string {
-  return text.replace(/&(?:([A-Za-z][A-Za-z0-9]{1,31})|#(\d{1,7})|#[xX]([0-9a-fA-F]{1,6}));/g, (whole, name, dec, hex) => {
-    if (name) return ENTITIES[name] ?? whole
-    const n = dec ? Number(dec) : parseInt(hex, 16)
-    if (n === 0 || n > 0x10ffff || (n >= 0xd800 && n <= 0xdfff)) return '\uFFFD'
-    return String.fromCodePoint(n)
-  })
 }
 
 function collectDefinitions(parent: Node, defs: LinkDefs): void {
@@ -114,6 +105,23 @@ function oneBlock(n: Node, defs: LinkDefs): Block | null {
         start: n.listStart ?? 1,
         tight,
         items,
+      }
+    }
+
+    case 'table': {
+      const align = n.tableAlign ?? []
+      // A row with fewer cells than the header is padded and one with more is cut: GFM says
+      // the header decides the width, and a ragged row is not an error worth refusing a table
+      // over. Somebody wrote the table; drawing it is more useful than complaining.
+      const row = (text: string) => {
+        const cells = tableCells(text)
+        return align.map((_, i) => ({ children: parseInline(cells[i] ?? '', defs) }))
+      }
+      return {
+        type: 'table',
+        align,
+        head: row(n.tableHead ?? ''),
+        rows: (n.tableRows ?? []).map(row),
       }
     }
 

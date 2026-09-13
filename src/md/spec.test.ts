@@ -28,7 +28,17 @@ const FLOOR: { commonmark: number; gfm: number } = JSON.parse(readFileSync('spec
  * that the standard's answer is the wrong one for this product, which has happened zero times
  * so far and should stay rare enough to read.
  */
-const DIVERGED: Record<number, string> = {}
+const DIVERGED: Record<number, string> = {
+  // GFM'S AUTOLINK EXTENSION IS ON, and these three are where the two specs disagree about
+  // it rather than where this engine is wrong. CommonMark leaves a bare `https://example.com`
+  // as text; GFM makes it a link, and so does every place anybody writes Markdown today —
+  // including the editor this blog ships, where a pasted URL that stayed text would read as
+  // a bug. The extension cannot be half on: turning it off to win these three would lose the
+  // eleven GFM examples that require it.
+  608: 'bare URL inside `< … >` with spaces: GFM links it, CommonMark does not',
+  611: 'bare `https://example.com`: GFM links it, CommonMark does not',
+  612: 'bare email address: GFM links it, CommonMark does not',
+}
 
 function run(set: Example[]): { pass: number; fails: Example[] } {
   let pass = 0
