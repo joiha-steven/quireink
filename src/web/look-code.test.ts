@@ -130,6 +130,32 @@ describe('the IDE chrome is one switch, and off leaves no trace', () => {
     expect(ide).toContain('.rail-sub::before{content:"/"')
   })
 
+  it('draws no rule under the header and none over the footer', () => {
+    // They were the last filled-in furniture this dialect had, and they went on 2026-09-14.
+    // The three rules that existed only to carry them went with them: the full-bleed stretch
+    // on both bars, and the overflow-x on the root that stopped the stretch growing a
+    // scrollbar. A border coming back would bring all three back as dead weight.
+    const ide = idelines()
+    expect(ide).not.toMatch(/header\.site\{[^}]*border/)
+    expect(ide).not.toMatch(/footer\.site\{[^}]*border/)
+    expect(ide).not.toContain('calc(50% - 50vw)')
+    expect(ide).not.toContain('overflow-x:clip')
+    // And the footer keeps the 3rem the rest of the product gives it, rather than .6rem.
+    expect(ide).not.toMatch(/footer\.site\{[^}]*padding-block/)
+  })
+
+  it('lets a sub-heading number size itself, and centres it by arithmetic that survives that', () => {
+    // A fixed 30px clipped the last digit off every number from 2.10 on, and was 1.8px too
+    // narrow for 2.1 as well. Reported from a published post, 2026-09-14. Pinning the
+    // CENTRING rather than a width: the width is now the number's business.
+    // The whole sheet, not `idelines()`: the rule wraps, and the half that carries the
+    // arithmetic is the continuation line, which has no attribute selector on it.
+    expect(LOOK_CODE_CSS).toContain('left:calc(100% + 12.5px);transform:translateX(-50%)')
+    expect(LOOK_CODE_CSS).not.toMatch(/li:has\(\.rail-sub\)::before\{[^}]*width:30px/)
+    // The scroller has to be wider than the widest pill reaches, or it clips them itself.
+    expect(idelines()).toContain('.rail-inner{width:calc(100% + 56px);padding-right:56px}')
+  })
+
   it('gives the archive year a path mark rather than brackets', () => {
     // The feed's right gutter is a year over its months: a path, not a count. Brackets mean
     // "index" everywhere else here, and using them for a directory would say the wrong

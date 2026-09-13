@@ -228,8 +228,20 @@ html[data-look=code] .rail li::before{content:counter(ln);position:absolute;
   font-size:.62em;font-variant-numeric:tabular-nums;pointer-events:none}
 /* .rail-inner scrolls a long index, and overflow-y:auto clips horizontally too - so the
    ring would be cut in half by its own container. The box grows right by the overhang and
-   pads it back, which puts the ring inside the padding box where nothing clips it. */
-html[data-look=code] .rail-inner{width:calc(100% + 24px);padding-right:24px}
+   pads it back, which puts the ring inside the padding box where nothing clips it.
+
+   ⚠️ THE OVERHANG HAS TO CLEAR THE WIDEST NUMBER, and 24px cleared neither. Measured on a
+   post with fourteen sub-headings in one section (2026-09-14): the pill for "2.10" wants
+   51.8px and reaches 38.4px past the rail's edge, so the rail cut the last digit off every
+   number from 2.10 down — and the plain ring's own 5px halo was 2.5px over even before that.
+   56px clears "10.12" (43.4px) and its halo with room to spare. It costs no width: the box
+   grows and the padding gives it straight back.
+
+   ONE RULE, and there used to be a second: .toc .rail-inner asked for 32px and matched
+   nothing, because the ToC is INSIDE the scroller (div.rail-inner > nav.toc) rather than
+   around it. A selector written backwards fails in the one way that is hard to see — it does
+   not error, it simply never applies, and the number it carried looked like the live one. */
+html[data-look=code] .rail-inner{width:calc(100% + 56px);padding-right:56px}
 /* The active marker sits at the row's right edge, which used to be the rail's edge and
    nothing else - now the ring is out past it, so at 0 the hairline read as belonging to
    the ring rather than to the row it marks. Pulled in, but only 3px: 6px put it close
@@ -279,10 +291,19 @@ html[data-look=code] .toc li:has(.rail-lead){counter-increment:h2;counter-set:h3
 html[data-look=code] .toc li:has(.rail-lead)::before{content:counter(h2)}
 html[data-look=code] .toc li:has(.rail-sub){counter-increment:h3}
 /* A pill rather than a circle: "2.1" is three characters and will not fit an 18px ring.
-   Wider, and pushed out by half the extra width, so its centre stays on the divider. */
+   IT SIZES ITSELF, because a fixed width is a bet on how many sub-headings a section has.
+   The bet was 30px and it lost twice over: "2.10" needs 51.8px at this size, so the tenth
+   sub-heading of a section onwards lost its last digit, and even "2.1" was 1.8px over the
+   28px content box. Reported from a published post, 2026-09-14.
+
+   CENTRED BY ARITHMETIC THAT DOES NOT DEPEND ON THE WIDTH. The divider's middle is 12.5px
+   past the rail's edge; left:calc(100% + 12.5px) puts the pill's LEFT edge there and the
+   half-width shift moves its centre onto it, whatever the number inside turns out to be.
+   The old spelling pinned the right edge instead, so every width needed its own offset —
+   and the one it had was 1.5px off the hairline it was meant to thread. */
 html[data-look=code] .toc li:has(.rail-sub)::before{content:counter(h2) "." counter(h3);
-  width:30px;right:-29px;border-radius:999px}
-html[data-look=code] .toc .rail-inner{width:calc(100% + 32px);padding-right:32px}
+  width:auto;min-width:18px;padding-inline:5px;border-radius:999px;
+  right:auto;left:calc(100% + 12.5px);transform:translateX(-50%)}
 }
 
 /* --- THE WINDOW'S TWO EDGES, AND THE FACE THE CHROME SPEAKS IN --------------
@@ -301,11 +322,14 @@ html[data-look=code] .toc .rail-inner{width:calc(100% + 32px);padding-right:32px
    font has --font-reading: var(--font-sans), so moving that variable would set the ARTICLE
    in monospace, which is the one thing this dialect must never do.
 
-   overflow-x:clip and not hidden: hidden makes the root a scroll container and kills every
-   position:sticky on the page (the contents index and the feed's year marker are both
-   sticky). Without it the bars are one scrollbar-width too wide wherever scrollbars take
-   space, and every page of the blog grows a horizontal scrollbar. */
-html[data-look=code]{overflow-x:clip}
+   NO RULE UNDER THE HEADER AND NONE OVER THE FOOTER since 2026-09-14. They were two
+   hairlines the width of the window, and with them went the three rules that existed only to
+   carry them: the full-bleed margin-inline / padding-inline on both bars, which stretched
+   a border no reader can see any more, and the overflow-x:clip on the root that stopped
+   those full-bleed bars growing a horizontal scrollbar. Neither bar has a background, so
+   removing the stretch moves nothing. The header keeps its 28px of air and the footer takes
+   the 3rem the rest of the product gives it (public.css.ts) — it was .6rem here, which put
+   the copyright line nine pixels off the bottom edge of the page with nothing under it. */
 html[data-look=code] body{font-family:var(--font-mono)}
 /* THE NAME ON THE HEADER TOO. It carries --font-sans of its own, which the chrome font
    setting fills in — and since that default moved to Inter, the one word this dialect is
@@ -313,8 +337,4 @@ html[data-look=code] body{font-family:var(--font-mono)}
    monospace strapline, monospace menu and bracketed monospace controls. The notebook's own
    name rule exists for the mirror image of this (look-notes.css.ts). */
 html[data-look=code] .site-bar > .title{font-family:var(--font-mono)}
-html[data-look=code] header.site,
-html[data-look=code] footer.site{margin-inline:calc(50% - 50vw);padding-inline:calc(50vw - 50%)}
-html[data-look=code] header.site{border-bottom:1px solid var(--c-rule)}
-html[data-look=code] footer.site{border-top:1px solid var(--c-rule);padding-block:.6rem}
 `.trim()

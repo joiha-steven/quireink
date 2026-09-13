@@ -9,10 +9,10 @@
 //    So the drawer was a horizontal scroller by accident, waiting for anything to be a pixel
 //    too wide.
 // 2. The IDE chrome then supplied that pixel. Its line-number ring hangs 23px outside the
-//    row, on the gutter rail's divider hairline, and `.rail-inner` was widened by 32px and
-//    padded back so the gutter's own `overflow-y:auto` could not clip it. Both of those are
-//    facts about the DESKTOP rail. Ungated, they applied to a drawer that has no divider and
-//    no inner scroller, and made it 32px too wide.
+//    row, on the gutter rail's divider hairline, and `.rail-inner` was widened and padded
+//    back so the gutter's own `overflow-y:auto` could not clip it. Both of those are facts
+//    about the DESKTOP rail. Ungated, they applied to a drawer that has no divider and no
+//    inner scroller, and made it that much too wide.
 
 import { describe, expect, it } from 'bun:test'
 import { PUBLIC_CSS } from '@/web/public.css'
@@ -33,9 +33,13 @@ describe('the IDE chrome rail', () => {
   // Everything that positions something outside a rail row, or widens the rail to make room
   // for it, belongs to the gutter. Below the breakpoint the rail is a drawer and there is no
   // gutter to hang anything in.
+  //
+  // ONE RULE SINCE 2026-09-14, and there used to be two. The second asked for 32px on
+  // `.toc .rail-inner` and matched nothing — the ToC is INSIDE the scroller, not around it —
+  // so the overhang the index actually got was the 24px below, which cut the last digit off
+  // every sub-heading number from 2.10 on. The live rule is 56px and the dead one is gone.
   const GUTTER_ONLY = [
-    'html[data-look=code] .rail-inner{width:calc(100% + 24px);padding-right:24px}',
-    'html[data-look=code] .toc .rail-inner{width:calc(100% + 32px);padding-right:32px}',
+    'html[data-look=code] .rail-inner{width:calc(100% + 56px);padding-right:56px}',
   ]
 
   it.each(GUTTER_ONLY)('keeps %s inside a min-width media query', (rule) => {

@@ -48,12 +48,15 @@ server-rendered as `<html data-look="code">` so the first paint is right and no 
   moving that variable would set the article in monospace). Until 2026-09-13 the product's
   DEFAULT chrome font was JetBrains Mono, which meant an untouched blog already read as
   technical and left this dialect with almost nothing to say; the default is Inter now.
-- **No filled surfaces.** A tinted sidebar was drawn and rejected, then tinted bars top and
-  foot, rejected too: this dialect dresses the chrome, and a filled panel turns furniture
-  into a second surface arguing with the words. Two full-width hairlines are what a window
-  has that a page does not — and they need `overflow-x: clip` on the root, never `hidden`,
-  which would make the root a scroll container and kill every `position: sticky` on the
-  page.
+- **No filled surfaces, and since 2026-09-14 no bars either.** A tinted sidebar was drawn and
+  rejected, then tinted bars top and foot, rejected too: this dialect dresses the chrome, and
+  a filled panel turns furniture into a second surface arguing with the words. What was left
+  was two full-width hairlines, one under the header and one over the footer — and those are
+  gone as well. With them went the full-bleed `margin-inline`/`padding-inline` that stretched
+  them and the `overflow-x: clip` on the root that stopped the stretch growing a scrollbar:
+  three rules that existed only to carry a line nobody wanted. The footer takes the 3rem the
+  rest of the product gives it; it was `.6rem` here, which left the copyright line nine
+  pixels off the bottom of the page.
 
 - **It never touches the reading column** — not `.prose`, `.reading-font`, `.deck`,
   `.comment-body` or `.fs-*`. Those are the reader's own words and are the half that must
@@ -81,6 +84,10 @@ server-rendered as `<html data-look="code">` so the first paint is right and no 
   **The ring is CENTRED on that divider**: the line is 1px at 13px past the rail's edge, so
   its middle is 12.5 and an 18px ring centred there ends at 21.5. It ended at 23 until
   2026-09-12, which left the hairline meeting every ring 1.5px off its diameter.
+  **A sub-heading's number is a pill that sizes itself**, centred by putting its left edge on
+  12.5 and shifting it half its own width — so the arithmetic holds whatever the number is.
+  It was a fixed 30px, which clipped the last digit off every number from `2.10` on and was
+  1.8px too narrow for `2.1` as well; the rail's overhang is 56px so nothing there is cut.
 - **In the band (60rem to the rail breakpoint) there is no gutter, so there are no line
   numbers on the menu.** A ring there lands INSIDE the 24px between two menu words, three
   pixels from each, and the row reads as one run-on string. The index keeps its numbers,
