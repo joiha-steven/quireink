@@ -87,13 +87,19 @@ export const UNDER_GRIPS: readonly UnderGrip[] = Array.from({ length: PEN_VARIAN
     return {
       die: i % UNDER_DIE_COUNT,
       h: e2(0.36 + rand() * 0.06),
-      // AGAINST the letters. Literata's ascent is 1.16em (canvas fontBoundingBoxAscent on the
-      // rendered page), so the baseline sits 1.16em below the top of an inline background
-      // box; the ribbon's centre rides ~.36 of the way down its own box. A box top at
-      // 1.0–1.04em puts the ink on the baseline, touching the feet of the letters and
-      // crossing the descenders, which is where a person draws it. The first pens sat it
-      // .1em lower and the review said so.
-      y: e2(1.0 + rand() * 0.04),
+      // JUST OFF the letters. Literata's ascent is 1.16em (canvas fontBoundingBoxAscent on the
+      // rendered page), so the baseline sits 1.16em below the top of an inline background box;
+      // the ribbon's centre rides ~.36 of the way down its own box.
+      //
+      // Three settings have been looked at. 1.10–1.14em was the first, and it read as a rule
+      // under the line rather than a stroke through it. 1.00–1.04em replaced it and puts the
+      // ink ON the baseline, touching the feet of the letters and crossing every descender —
+      // at 18px type the band's top lands 18.6px down a 34px box, and a `g` or a `y` is cut
+      // by it. 1.05–1.09em is the third and the one in force since 2026-09-14: the stroke
+      // still crosses the baseline, so it is a pen and not a rule, but it clears the feet of
+      // the letters and takes the descenders lower down their tails. Half a step, measured:
+      // +0.05em is +0.9px at this blog's 18.08px body, against the +1.8px that was rejected.
+      y: e2(1.05 + rand() * 0.04),
       padl: e2(padl), padr: e2(padr),
       marl: e2(-(padl - 0.02)), marr: e2(-(padr - 0.02)),
     }
