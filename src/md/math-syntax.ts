@@ -5,6 +5,11 @@
 // syntax drifted across those readers within an hour of being written in two places and put
 // the word "green" into every excerpt on the site. So every reader builds from these strings.
 //
+// IT LIVES IN THE ENGINE since 2026-09-14, and that is where it belongs: the four delimiters
+// are notation the parser reads, and everything that RENDERS a formula is a dependency the
+// engine must not have. `render/math.ts` re-exports all of it, so the two callers outside
+// (`@/utils` for excerpts, `admin/MathNode.tsx` for the editor) did not have to move.
+//
 // ⚠️ THIS FILE MAY NEVER IMPORT A RENDERER, and that is the whole rule. `@/utils` needs three
 // things from here so `toPlainText` can drop a formula out of an excerpt; it used to take them
 // from `math.ts`, and an ESM import is not a menu — three regex helpers took the whole module,

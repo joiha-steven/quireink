@@ -76,6 +76,11 @@ lesson of ADR 0018's pen, which drifted between two hand-written copies of its r
 an hour and put the word "green" into every excerpt on the site.
 
 > **2026-08-15 — that file is now `render/math-syntax.ts`, and the decision is unchanged.**
+>
+> **2026-09-14 — and now `md/math-syntax.ts`: the delimiters are notation the engine parses,
+> so they moved into it (ADR 0052). `render/math.ts` still re-exports every one of them and
+> still owns Temml, which the engine now receives as a `PageRules` function rather than
+> importing. The decision is unchanged.**
 > The grammar and the Temml renderer had shared `render/math.ts`, which was fine until you
 > notice an ESM import is not a menu: `@/utils` wanted three regex helpers so `toPlainText`
 > could drop a formula out of an excerpt, and took a LaTeX engine with them. Fifteen admin

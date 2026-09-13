@@ -22,7 +22,7 @@
 // rule here is: escape a character only where it could START something on the way back in.
 
 import type { Block, Document, Inline, ListItem } from './ast'
-import { mathToMarkdown } from '@/render/math-syntax'
+import { mathToMarkdown } from './math-syntax'
 import { INK_SYNTAX_GLOBAL, RING_SYNTAX_GLOBAL, UNDER_SYNTAX_GLOBAL } from '@/pen/grammar'
 import { entityStarts } from './entity'
 import { isBareAutolink } from './gfm-autolink'
@@ -201,7 +201,7 @@ function oneInline(node: Inline, atLineStart: boolean): string {
       // THE DELIMITER THE AUTHOR CHOSE, never a normalised one. Four spellings mean maths on
       // this blog and a save that picks its favourite rewrites a file nobody asked it to
       // touch — `\(a\)` coming back as `$a$` is a diff in the author's source with no author
-      // behind it. `render/math-syntax.ts` owns the four; this asks rather than restating two.
+      // behind it. `md/math-syntax.ts` owns the four; this asks rather than restating two.
       return mathToMarkdown(node.value, node.display, node.delim)
     case 'footnoteRef':
       return `[^${node.label}]`

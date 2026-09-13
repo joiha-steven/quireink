@@ -1,7 +1,7 @@
 // This blog's own notation, as two matchers: the pen's three gestures and the four maths
 // delimiters.
 //
-// Neither grammar is written here. `pen/grammar.ts` and `render/math-syntax.ts` own them and
+// Neither grammar is written here. `pen/grammar.ts` and `md/math-syntax.ts` own them and
 // every parser in this repository reads them from there — which is the whole reason those
 // files exist. Four parsers once spelled `==text==` out separately and two of them drifted
 // within the hour, putting the word "green" into every excerpt on the site.
@@ -10,7 +10,7 @@
 // notation this blog invented, and everything left there is Markdown.
 
 import { INK_SYNTAX_SOURCE, RING_SYNTAX_SOURCE, UNDER_SYNTAX_SOURCE } from '@/pen/grammar'
-import { matchMathAtPos, type MathDelim } from '@/render/math-syntax'
+import { matchMathAtPos, type MathDelim } from './math-syntax'
 
 const PEN = {
   ink: new RegExp(`^${INK_SYNTAX_SOURCE}`),

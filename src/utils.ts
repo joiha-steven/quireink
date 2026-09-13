@@ -5,7 +5,7 @@ import { INK_SYNTAX_GLOBAL, RING_SYNTAX_GLOBAL, UNDER_SYNTAX_GLOBAL } from '@/pe
 // module, so whatever it reaches for lands in the chunk every admin screen loads — and
 // `render/math.ts` imports Temml. Three regexes cost 212 KB of LaTeX engine until this line
 // pointed one file to the left. See the header of `math-syntax.ts`.
-import { MATH_SYNTAX_GLOBAL, mathOf, isDisplayMatch } from '@/render/math-syntax'
+import { MATH_SYNTAX_GLOBAL, mathOf, isDisplayMatch } from '@/md/math-syntax'
 
 /** TeX source -> the letters and numbers in it: control words, braces, `&` and `\\` go. */
 const stripTex = (tex: string) =>

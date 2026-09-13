@@ -4,7 +4,7 @@
 // pipeline test being rewritten: the escape semantics, and the running time.
 
 import { describe, expect, test } from 'bun:test'
-import { matchMathAt, MATH_SYNTAX_GLOBAL } from '@/render/math-syntax'
+import { matchMathAt, MATH_SYNTAX_GLOBAL } from './math-syntax'
 
 describe('escapes inside a dollar formula', () => {
   test('an escaped dollar belongs to the formula instead of closing it', () => {

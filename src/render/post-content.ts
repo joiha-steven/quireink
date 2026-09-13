@@ -13,7 +13,8 @@
 // identically, measured in a browser (`scripts/md-paint-diff.ts`). The three that moved are in
 // the commit message, and all three are repairs.
 import { buildFigures, groupGalleries, type ImageDims, type ReadyOriginals } from '@/render/figures'
-import { PAGE, toHtml as mdToHtml } from '@/md/index'
+import { toHtml as mdToHtml } from '@/md/index'
+import { PAGE } from '@/render/page-rules'
 import { videoEmbed, videoFileUrl } from '@/render/video'
 import { highlightCode } from '@/render/highlight'
 import { readRendered, renderKey, writeRendered } from '@/render/render-cache'

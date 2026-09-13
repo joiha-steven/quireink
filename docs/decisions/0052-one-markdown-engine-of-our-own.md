@@ -139,9 +139,19 @@ and each is written down because each was a decision rather than a discovery.
 `marked` options and renderer overrides, and none of them is in any Markdown specification: a
 `javascript:` destination rewritten to `#`, a body `#` demoted to `<h2>` with a slug id, a
 `<th scope="col">`, raw HTML shown as text, and — the one nobody had written down — `breaks:
-true`, which makes a lone newline a line break. They now live in `md/html-rules.ts` as `PAGE`,
-asked for by name, with the spec as the default. That separation is what keeps the engine
-publishable on its own later: `PAGE` has exactly one import that is not portable.
+true`, which makes a lone newline a line break. The rules and their spec defaults live in
+`md/html-rules.ts`; the answers this blog gives are `render/page-rules.ts`, asked for by name.
+That separation is what keeps the engine publishable on its own.
+
+> **2026-09-14 — and the separation is now a red test.** The engine reached four ways out of
+> `src/md`, and the expensive one was invisible: `html.ts` called `renderMath` directly, so
+> one function compiled Temml — a 212 KB LaTeX engine — into anything that could render a
+> page and into any attempt to lift the engine out. A sixth rule, `math`, is the slot it left;
+> a host with no renderer publishes the author's own TeX. `slugify` went the same way, out to
+> `render/page-rules.ts` with the rest of this blog's answers. The four maths delimiters moved
+> the other way, INTO the engine as `md/math-syntax.ts`, because notation is the parser's and
+> that file can render nothing. What is left is one import, `@/pen/grammar`, held to one by
+> `md/boundary.test.ts`, which also says what extraction day has to decide about it.
 
 `breaks: true` is the one that would have been shipped silently. CommonMark reflows a lone
 newline into the paragraph, so every post written with Enter instead of a blank line would have

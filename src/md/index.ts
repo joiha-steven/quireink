@@ -16,7 +16,7 @@ import { getPageRules, setPageRules, toHtml as renderHtml } from './html'
 import { GFM, type PageRules } from './html-rules'
 
 export type { Block, Document, Inline, ListItem } from './ast'
-export { GFM, PAGE, SPEC, type PageRules } from './html-rules'
+export { GFM, SPEC, type PageRules } from './html-rules'
 
 /** Markdown to the syntax tree. The expensive half; every renderer below is cheap. */
 export function parse(source: string): Document {
@@ -32,9 +32,9 @@ export function parse(source: string): Document {
  * The reader's page. Measured against the specs' own examples in `spec.test.ts`.
  *
  * The rules default to GFM — the spec plus its list of tags that never pass through — and NOT
- * to this blog's `PAGE`. A renderer whose default is one site's opinion is a renderer nobody
- * else can use, and the four things `PAGE` adds are all things a host should have to ask for.
- * `render/post-content.ts` asks for them by name.
+ * to this blog's own answers. A renderer whose default is one site's opinion is a renderer
+ * nobody else can use, and every one of the six overrides in `render/page-rules.ts` is
+ * something a host should have to ask for. `render/post-content.ts` asks for them by name.
  */
 export function toHtml(source: string, rules: Partial<PageRules> = {}): string {
   // Save and restore rather than reset: a render that happens inside another render must give

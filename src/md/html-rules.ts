@@ -8,9 +8,12 @@
 //
 // Keeping them here rather than in the renderer is what makes the engine portable: the
 // default below is the spec and nothing else, so a second site — or this engine published on
-// its own — starts from CommonMark and adds what it wants. `PAGE` is what this blog wants.
+// its own — starts from CommonMark and adds what it wants. What THIS blog wants is
+// `render/page-rules.ts`, on the other side of the line, because two of its answers are
+// things the engine must not own — a slug function that knows Vietnamese and Cyrillic, and
+// a LaTeX engine.
 //
-// ⚠️ ONE OF THE FIVE IS A SECURITY CONTROL, not a preference. `safeLinks` is what stops
+// ⚠️ ONE OF THEM IS A SECURITY CONTROL, not a preference. `safeLinks` is what stops
 // `[js](javascript:alert(1))` from publishing as a working link, and the engine had the hole
 // open until the golden suite printed it beside the page v1 produces:
 //
@@ -19,8 +22,6 @@
 //
 // It was found by wiring the engine up as a MEASUREMENT rather than as a switch, which is the
 // only reason it turned up on the bench instead of on the site.
-
-import { slugify } from '@/utils'
 
 /** The rules a host sets. Every default is the spec's answer, so omitting them all is CommonMark. */
 export type PageRules = {
@@ -58,6 +59,16 @@ export type PageRules = {
   headingId: ((text: string, level: number) => string | null) | null
   /** `scope="col"` on a table's header cells. WCAG 1.3.1 asks for it by name. */
   tableScope: boolean
+  /**
+   * TeX to markup, or `null` to print the formula as the characters it was written with.
+   *
+   * ⚠️ THE ONE RULE THAT EXISTS TO KEEP A DEPENDENCY OUT. `html.ts` used to call
+   * `render/math.ts` directly, and an ESM import is not a menu: one function pulled Temml —
+   * 212 KB unpacked — into everything that could render a page, and into anything that ever
+   * lifted this engine out. A host that wants MathML passes the function; a host that does
+   * not gets its author's own TeX back, readable, on the page where it can be corrected.
+   */
+  math: ((tex: string, display: boolean) => string) | null
 }
 
 /** CommonMark and nothing more. What the engine is when nobody has an opinion. */
@@ -68,30 +79,11 @@ export const SPEC: PageRules = {
   demoteHeadings: false,
   headingId: null,
   tableScope: false,
+  math: null,
 }
 
 /** GFM: the spec, plus its list of tags that never pass through. */
 export const GFM: PageRules = { ...SPEC, rawHtml: 'filter' }
-
-/**
- * What this blog asks for. The five overrides `render/post-content.ts` carries today.
- *
- * ⚠️ THE ONE IMPORT THAT IS NOT PORTABLE lives here on purpose. `slugify` knows about
- * Vietnamese diacritics and Cyrillic because this blog's headings are written in both, and a
- * host with different alphabets wants a different function — so it arrives as one, and
- * cutting this file's single `@/` line is what turns the engine loose.
- */
-export const PAGE: PageRules = {
-  rawHtml: 'escape',
-  softBreak: 'br',
-  safeLinks: true,
-  demoteHeadings: true,
-  // H2 and H3 only: those are the two levels the table of contents lists, and an id on a
-  // heading nothing links to is a promise to keep for no reader. A heading that slugifies to
-  // nothing — `## !!!` — gets none, which is what keeps the ToC and the page in step.
-  headingId: (text, level) => (level === 2 || level === 3 ? slugify(text) || null : null),
-  tableScope: true,
-}
 
 /** Below this code point, and DEL, a character is a control character and never part of a URL. */
 const LOWEST_PRINTABLE = 0x20

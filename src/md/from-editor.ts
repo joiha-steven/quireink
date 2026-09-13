@@ -19,7 +19,7 @@
 // differently. `MARK_ORDER` below is that decision, written down once.
 
 import type { Block, Inline, ListItem, Document } from './ast'
-import type { MathDelim } from '@/render/math-syntax'
+import type { MathDelim } from './math-syntax'
 
 /** The minimum of a ProseMirror node this file reads. Structural, so tests can stand in. */
 export type PMNode = {

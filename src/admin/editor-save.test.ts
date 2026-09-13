@@ -26,7 +26,8 @@ import { describe, expect, it, beforeAll, afterAll } from 'bun:test'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { PAGE, toHtml } from '@/md/index'
+import { toHtml } from '@/md/index'
+import { PAGE } from '@/render/page-rules'
 
 beforeAll(() => GlobalRegistrator.register())
 afterAll(() => GlobalRegistrator.unregister())

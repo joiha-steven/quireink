@@ -23,7 +23,7 @@
 // it does with it, which is the property that keeps the outputs in step.
 
 /** Where a node came from, in the source. Line and column are 1-based, as every editor is. */
-import type { MathDelim } from '@/render/math-syntax'
+import type { MathDelim } from './math-syntax'
 
 export type Pos = { line: number; col: number; offset: number }
 
@@ -66,7 +66,7 @@ export type Inline =
    *
    * ⚠️ `delim` IS THE AUTHOR'S CHOICE AND IS CARRIED, not derived. Four spellings mean maths
    * here — `$…$`, `\\(…\\)`, `$$…$$`, `\\[…\\]` — and a serializer that normalises them
-   * rewrites a file its author never asked it to touch. `render/math-syntax.ts` says the same
+   * rewrites a file its author never asked it to touch. `md/math-syntax.ts` says the same
    * thing about the same field and has since the feature shipped; the engine dropped it on the
    * way through, and sixteen editor tests said so the moment the editor was wired to it.
    */

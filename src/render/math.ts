@@ -29,8 +29,8 @@ export {
   INLINE_PAREN_SOURCE, DISPLAY_DOLLAR_SOURCE, DISPLAY_BRACKET_SOURCE,
   MATH_SYNTAX_SOURCE, MATH_SYNTAX_GLOBAL, mathOf, isDisplayMatch,
   matchMathAt, matchDisplayBlockAt, mathToMarkdown,
-} from '@/render/math-syntax'
-export type { MathDelim, MathMatch } from '@/render/math-syntax'
+} from '@/md/math-syntax'
+export type { MathDelim, MathMatch } from '@/md/math-syntax'
 
 /**
  * The fallback's escaper, written out here rather than imported from `@/utils`.

@@ -13,7 +13,6 @@ import type { Block, Document, Inline, ListItem } from './ast'
 import { resolveEntities } from './entity'
 import { type PageRules, SPEC, safeHref } from './html-rules'
 import { DEFAULT_INK, penSeed } from '@/pen/grammar'
-import { renderMath } from '@/render/math'
 
 /** The five characters that cannot appear raw in HTML text, escaped the way the spec does. */
 export function escapeText(value: string): string {
@@ -101,6 +100,19 @@ function attr(name: string, value: string | undefined): string {
 }
 
 /**
+ * A formula as the host renders it, or as its author wrote it.
+ *
+ * The fallback is the SOURCE, escaped and marked — not a blank and not an error. A host that
+ * has not wired a renderer still publishes the writer's TeX, which is readable and correctable
+ * on the page it is wrong on; `render/math.ts` makes the same bargain when Temml throws.
+ */
+function renderFormula(tex: string, display: boolean): string {
+  if (rules.math) return rules.math(tex, display)
+  const tag = display ? 'div' : 'span'
+  return `<${tag} class="math">${escapeText(tex.trim())}</${tag}>`
+}
+
+/**
  * A link's destination under the host's rules.
  *
  * Only `<a href>`, deliberately. An `<img src>` with a `javascript:` scheme does not execute
@@ -167,9 +179,9 @@ function oneInline(node: Inline): string {
       return `<mark data-form="o"${ink} data-pen="${penSeed(node.raw)}">${inlineToHtml(node.children)}</mark>`
     }
     case 'math':
-      // `render/math.ts` owns the TeX-to-MathML step, and keeps owning it: one formula
-      // renderer, whichever parser found the formula.
-      return renderMath(node.value, node.display)
+      // The HOST owns the TeX-to-markup step (`PageRules.math`): one formula renderer,
+      // whichever parser found the formula, and none at all in an engine nobody gave one to.
+      return renderFormula(node.value, node.display)
     case 'footnoteRef':
       return `<sup class="footnote-ref"><a href="#fn-${escapeText(node.label)}">${escapeText(node.label)}</a></sup>`
   }
@@ -238,7 +250,7 @@ function oneBlock(node: Block): string {
     case 'mathBlock':
       // The wrapper is what scrolls: a long derivation is wider than the measure and takes
       // its own scrollbar rather than widening the page.
-      return `<div class="math-block">${renderMath(node.value, true)}</div>\n`
+      return `<div class="math-block">${renderFormula(node.value, true)}</div>\n`
     case 'table':
       return tableToHtml(node)
     case 'footnoteDef':
