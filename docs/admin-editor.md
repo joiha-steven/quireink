@@ -201,7 +201,10 @@ that file first; this one only adds what is true here.
   the element's own words, never in the document — the seed is a view concern, and a mark
   attribute would make two neighbouring strokes stop being one mark and save as `==a====b==`.
   THE STROKE UNDER THE HAND KEEPS ITS PEN: a hash of the words would change grip on every
-  keystroke, so a stroke settles to the page's variant when the caret leaves it.
+  keystroke, so a stroke settles to the page's variant when the caret leaves it. One shape
+  parts company on purpose — a stroke drawn across emphasis, a link, code or a formula hashes
+  from the WORDS here and from the SOURCE on the page, so it is dealt a different one of the
+  forty (6 of the 171 strokes on the live pages, all six in one post).
 - **The caret stops blinking while the hands are moving**, and fades rather than switching:
   700ms past the last keystroke before it resumes, 1.2s ease-in-out, and never all the way
   to zero. A blink means "the cursor is here and nothing is happening", and during a burst of

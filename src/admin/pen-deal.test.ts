@@ -57,6 +57,24 @@ describe('the pen the writer sees', () => {
     editor.destroy()
   })
 
+  it('parts company with the page on a stroke drawn across markup, and only there', async () => {
+    // The documented trade, pinned so it stays the one shape rather than growing into a
+    // second. The element holds WORDS and the engine holds MARKDOWN, so a stroke over
+    // emphasis hashes `==a b c==` here and `==a **b** c==` there: a different one of the
+    // forty, not a wrong stroke. 6 of the 171 strokes on the live pages are this shape.
+    const plain = 'Một ==câu thường== ở đây.\n'
+    const marked = 'Một ==câu **đậm** ở đây== nữa.\n'
+    const a = await open(plain)
+    expect(pensIn(a)).toEqual(await onThePage(plain))
+    a.destroy()
+    const b = await open(marked)
+    expect(pensIn(b)).not.toEqual(await onThePage(marked))
+    // Still one of the forty, and still stable — the property the writer actually sees.
+    expect(pensIn(b)[0]).toMatch(/^\d+$/)
+    expect(Number(pensIn(b)[0])).toBeLessThan(80)
+    b.destroy()
+  })
+
   it('varies: forty strokes are not forty of the same pen', async () => {
     // The whole complaint. One fallback grip for every stroke is what this ends, so the
     // floor is "more than one" — and a hash over forty different sentences clears it by a

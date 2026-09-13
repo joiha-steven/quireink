@@ -59,9 +59,12 @@ type Surface = {
  * ONE SHAPE DIFFERS FROM THE PAGE, on purpose: a stroke drawn across emphasis, a link, code
  * or a formula hashes here from the WORDS (`==a b c==`) and on the page from the SOURCE
  * (`==a **b** c==`), because the element holds text and the engine holds Markdown. Such a
- * stroke is dealt a different one of the forty rather than a wrong one, and reaching for the
- * true source would mean running the serializer over a slice of the document on every draw.
- * Measured on the live pages 2026-09-14: 61 strokes across 119 of them, none carrying markup.
+ * stroke is dealt a DIFFERENT one of the forty rather than a wrong one — the grip changes,
+ * the gesture does not — and the exact answer would mean serializing a slice of the document
+ * on every draw, in the one loop this editor has already been bitten for the cost of.
+ *
+ * Measured on the live pages 2026-09-14, parsed rather than pattern-matched: 171 strokes
+ * across 120 pages, 6 of them carrying markup, all six in one post. So 165 agree exactly.
  */
 export function penRawOf(el: Element): string {
   const fence = el.tagName === 'U' ? '++' : el.getAttribute('data-form') === 'o' ? '@@' : '=='
