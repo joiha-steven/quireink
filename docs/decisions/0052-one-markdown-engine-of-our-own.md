@@ -128,3 +128,52 @@ nobody has read is not a review.
 | 5 | The reader's page: 45 golden byte-identical, the list from 3 resolved, switch moves |
 | 6 | Plain text, opening a post, saving a post — the other three libraries come out |
 | 7 | The 2,075 lines of teaching deleted; dependencies dropped |
+
+## What milestone 5 actually cost (2026-09-13)
+
+The switch moved. The reader's page is drawn by `src/md/` and `marked` no longer runs on a
+published post. Four things were learned in the moving that the plan above did not foresee,
+and each is written down because each was a decision rather than a discovery.
+
+**The five rules that were never Markdown.** `render/post-content.ts` carried five opinions as
+`marked` options and renderer overrides, and none of them is in any Markdown specification: a
+`javascript:` destination rewritten to `#`, a body `#` demoted to `<h2>` with a slug id, a
+`<th scope="col">`, raw HTML shown as text, and — the one nobody had written down — `breaks:
+true`, which makes a lone newline a line break. They now live in `md/html-rules.ts` as `PAGE`,
+asked for by name, with the spec as the default. That separation is what keeps the engine
+publishable on its own later: `PAGE` has exactly one import that is not portable.
+
+`breaks: true` is the one that would have been shipped silently. CommonMark reflows a lone
+newline into the paragraph, so every post written with Enter instead of a blank line would have
+had its lines joined. One fixture — `golden/corpus/lazy-continuation.md` — spells the
+difference, and nothing else in 676 spec examples or 45 fixtures would have said a word.
+
+**A byte gate cannot grade a replaced engine.** `golden.test.ts` compares bytes, which is the
+right instrument for a port and the wrong one for an engine written to a different
+specification: `<br>` against `<br />` and a newline between two block tags are real bytes that
+no reader can see, and thirteen red lines saying so teach everyone to skip the gate. A third
+tier was added — `SAME_PAGE`, which asserts a fixture differs ONLY through a named rung of
+`render/html-equivalence.ts`'s ladder of provably invisible rewrites. Behaviour still belongs
+in `DIVERGED` with a reason; the ladder cannot dissolve a changed word.
+
+**Three instruments, and the middle one was wrong.** The ladder said every difference in the
+corpus was invisible. A DOM walk comparing the two trees node by node said six of them left a
+stray space. Chrome, laying both bodies out and comparing `innerText` and every bounding box,
+said 45/45 and 89/92 — and the DOM walk was the one that had modelled CSS whitespace collapsing
+and modelled it short. It was deleted rather than fixed. `scripts/md-paint-diff.ts` is the one
+that survived, and the answer it gives is the only one that is not a model.
+
+**The three posts that did move, and all three are repairs.** Two of this blog's YouTube embeds
+have been broken since the day they were published: the old editor escaped the underscore in
+`…/shorts/8rMO\_J1UbPM`, `marked` kept the backslash in the destination, `buildVideos` did not
+recognise a video URL, and the post published a bare link that 404s. Four such URLs exist across
+two posts and all four now play. The third is an invisible `<br>` that `marked` invented from a
+space, which is gone; the paragraph and the formula are at identical coordinates either way.
+
+**Two node types existed with no producer.** `mathBlock` was handled by four renderers and built
+by nothing, so every display formula rendered inside a `<p>` and lost the wrapper that lets a
+wide derivation scroll; `math.test.ts` said so the moment the engine was wired. Building it
+introduced, and then fixed, the two greedy failures now written on `md/block-math.ts`: a formula
+must be known to CLOSE before it opens, and nothing may follow its closer on the line. `callout`
+is the other one and is still unbuilt — the callout is `buildCallouts`'s job after rendering,
+exactly as in 1.x, and the dead handlers come out with milestone 7.

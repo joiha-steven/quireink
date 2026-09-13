@@ -22,9 +22,10 @@ import {
   atxHeading, blockquoteMarker, codeFence, htmlBlockEnds, htmlBlockStart,
   listMarker, setextUnderline, tableCells, tableDelimiterRow, taskMarker, thematicBreak,
 } from './block-scan'
+import { closesMath, mathBlockAt } from './block-math'
 import { CONSUMED, NOT_MATCHED, continuesBlock } from './block-continue'
 import { resolveEntities } from './entity'
-import { stripDefinitions, type LinkDefs } from './link-ref'
+import { takeDefinitions, type LinkDefs } from './link-ref'
 
 export class BlockParser {
   doc: Node = node('document', null)
@@ -55,8 +56,13 @@ export class BlockParser {
    */
   private lineSpent = false
 
+  /** The source lines, for the one lookahead in the parser — see `block-math.ts`. */
+  private lines: string[] = []
+  private at = 0
+
   parse(source: string): Node {
-    for (const text of toLines(source)) this.incorporate(text)
+    this.lines = toLines(source)
+    for (this.at = 0; this.at < this.lines.length; this.at++) this.incorporate(this.lines[this.at]!)
     // Close the whole stack, from the deepest open block up to the document. Walking by
     // `parent` rather than by `tip` because `finalize` moves `tip`, and a loop that reads the
     // thing it is changing never ends — which is exactly what the first draft did.
@@ -77,6 +83,12 @@ export class BlockParser {
       this.blank = this.line.blank()
       const verdict = continuesBlock(container, this.line, this.blank)
       if (verdict === CONSUMED) {
+        // A display formula's closing line may hold the last of the formula; a fence's never
+        // does, which is why this is the only kind asked.
+        if (container.kind === 'mathBlock') {
+          const tail = closesMath(this.line, container.mathDelim ?? 'dollar')
+          if (tail !== null && tail.trim() !== '') container.lines.push(tail)
+        }
         this.finalize(container)
         return
       }
@@ -181,6 +193,20 @@ export class BlockParser {
         return created
       }
 
+      // A display formula on its own line. Checked AFTER the code fence — `$$` inside a
+      // fenced block is code — and the whole decision lives in `block-math.ts`.
+      const math = mathBlockAt(this.line, this.lines, this.at)
+      if (math) {
+        if (!this.opened) this.closeUnmatchedFrom(container)
+        const created = this.addChild('mathBlock', container)
+        created.mathDelim = math.delim
+        if (math.first !== null) created.lines.push(math.first)
+        if (math.closed) this.finalize(created)
+        this.opened = true
+        this.lineSpent = true
+        return created
+      }
+
       const html = htmlBlockStart(this.line, container.kind === 'paragraph')
       if (html !== null) {
         if (!this.opened) this.closeUnmatchedFrom(container)
@@ -215,7 +241,7 @@ export class BlockParser {
         const para = container
         // Definitions come out first, and what is left decides whether this is a heading at
         // all. An underline over nothing but definitions is a paragraph of its own.
-        this.takeDefinitions(para)
+        takeDefinitions(para, this.defs, resolveEntities)
         if (para.lines.length === 0) break
         para.kind = 'heading'
         para.level = setext
@@ -344,19 +370,11 @@ export class BlockParser {
     }
   }
 
-  /** Peel every definition off the front of a paragraph, leaving what the reader sees. */
-  private takeDefinitions(para: Node): void {
-    if (para.lines.length === 0) return
-    const text = para.lines.join('\n').replace(/^[ \t]+|[ \t]+$/g, '')
-    const rest = stripDefinitions(text, this.defs, resolveEntities)
-    para.lines = rest === '' ? [] : [rest]
-  }
-
   /** Close a block: it stops accepting lines, and a list decides whether it is loose. */
   private finalize(block: Node): void {
     if (!block.open) return
     block.open = false
-    if (block.kind === 'paragraph') this.takeDefinitions(block)
+    if (block.kind === 'paragraph') takeDefinitions(block, this.defs, resolveEntities)
     if (block.kind === 'list') block.loose = decideLoose(block)
     if (block.kind === 'item') {
       const first = block.children[0]

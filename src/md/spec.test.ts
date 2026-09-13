@@ -65,7 +65,7 @@ function run(set: Example[], disallowRawHtml: boolean): { pass: number; fails: E
     if (DIVERGED[ex.example]) continue
     let out: string
     try {
-      out = toHtml(ex.markdown, { disallowRawHtml })
+      out = toHtml(ex.markdown, { rawHtml: disallowRawHtml ? 'filter' : 'pass' })
     } catch {
       fails.push(ex)
       continue

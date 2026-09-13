@@ -11,9 +11,11 @@
 import type { Document } from './ast'
 import { BlockParser } from './block'
 import { toAst } from './to-ast'
-import { setHtmlFiltering, toHtml as renderHtml } from './html'
+import { setPageRules, toHtml as renderHtml } from './html'
+import { GFM, type PageRules, SPEC } from './html-rules'
 
 export type { Block, Document, Inline, ListItem } from './ast'
+export { GFM, PAGE, SPEC, type PageRules } from './html-rules'
 
 /** Markdown to the syntax tree. The expensive half; every renderer below is cheap. */
 export function parse(source: string): Document {
@@ -22,23 +24,19 @@ export function parse(source: string): Document {
   return toAst(root, blocks.defs)
 }
 
-export type HtmlOptions = {
-  /**
-   * Escape the tags GFM disallows — `<script>`, `<style>`, `<title>`, `<iframe>` and the rest.
-   * On by default: this blog renders Markdown that arrived from a WordPress import and from
-   * its own MCP server, and those tags rewrite or run the page around them.
-   *
-   * Off only where CommonMark's own answer is being measured.
-   */
-  disallowRawHtml?: boolean
-}
-
-/** The reader's page. Measured against the specs' own examples in `spec.test.ts`. */
-export function toHtml(source: string, options: HtmlOptions = {}): string {
-  setHtmlFiltering(options.disallowRawHtml !== false)
+/**
+ * The reader's page. Measured against the specs' own examples in `spec.test.ts`.
+ *
+ * The rules default to GFM — the spec plus its list of tags that never pass through — and NOT
+ * to this blog's `PAGE`. A renderer whose default is one site's opinion is a renderer nobody
+ * else can use, and the four things `PAGE` adds are all things a host should have to ask for.
+ * `render/post-content.ts` asks for them by name.
+ */
+export function toHtml(source: string, rules: Partial<PageRules> = {}): string {
+  setPageRules({ ...GFM, ...rules })
   try {
     return renderHtml(parse(source))
   } finally {
-    setHtmlFiltering(true)
+    setPageRules(SPEC)
   }
 }

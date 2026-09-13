@@ -11,6 +11,7 @@
 
 import type { Block, Document, Inline, ListItem } from './ast'
 import { resolveEntities } from './entity'
+import { type PageRules, SPEC, safeHref } from './html-rules'
 import { DEFAULT_INK, penSeed } from '@/pen/grammar'
 import { renderMath } from '@/render/math'
 
@@ -61,27 +62,42 @@ export function escapeUrl(url: string): string {
 const DISALLOWED = /<(\/?)(title|textarea|style|xmp|iframe|noembed|noframes|script|plaintext)(?=[\s/>])/gi
 
 /**
- * WHETHER TO FILTER IS A SETTING, and the two specs are why.
+ * THE HOST'S RULES, held for the duration of one render.
  *
- * GFM escapes these tags; CommonMark passes them through, and six of its examples check that
- * it does. Both are right about their own document, so the engine does both and the caller
- * says which — `spec.test.ts` measures each spec under its own rule, and the product runs with
- * the filter ON, because a blog that renders imported Markdown is exactly the case GFM wrote
- * the rule for.
+ * A module-level value rather than an argument threaded through twenty recursive functions,
+ * and safe because rendering is wholly synchronous: `toHtml` sets it, walks the tree and puts
+ * it back before anything else can run. `index.ts` is the only caller that sets it.
  */
-let filtering = true
+let rules: PageRules = SPEC
 
-export function setHtmlFiltering(on: boolean): void {
-  filtering = on
+export function setPageRules(next: PageRules): void {
+  rules = next
 }
 
 function filterHtml(value: string): string {
-  if (!filtering) return value
+  if (rules.rawHtml === 'pass') return value
+  // NONE OF IT IS HTML. Not the disallowed tags escaped and the rest let through — every
+  // character, as typed. `&` first, or the escaping eats its own output.
+  if (rules.rawHtml === 'escape') {
+    return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  }
   return value.replace(DISALLOWED, (_m, slash: string, tag: string) => `&lt;${slash}${tag}`)
 }
 
 function attr(name: string, value: string | undefined): string {
   return value === undefined ? '' : ` ${name}="${escapeText(value)}"`
+}
+
+/**
+ * A link's destination under the host's rules.
+ *
+ * Only `<a href>`, deliberately. An `<img src>` with a `javascript:` scheme does not execute
+ * in any current browser, and `data:` in an image source is ordinary and useful — narrowing
+ * the control to the one place a scheme actually runs is what keeps it from being turned off
+ * later for getting in the way.
+ */
+function href(url: string): string {
+  return rules.safeLinks ? safeHref(url) : url
 }
 
 // ----- inline ---------------------------------------------------------------------------
@@ -97,7 +113,10 @@ function oneInline(node: Inline): string {
     case 'text':
       return escapeText(node.value)
     case 'softbreak':
-      return '\n'
+      // A newline under the spec, a line break under this blog's rule. The newline after the
+      // tag is the shape every hard break in the spec's own examples has, and it costs
+      // nothing: whitespace at the start of a line is dropped before anything is painted.
+      return rules.softBreak === 'br' ? '<br />\n' : '\n'
     case 'hardbreak':
       return '<br />\n'
     case 'code':
@@ -111,7 +130,10 @@ function oneInline(node: Inline): string {
     case 'strike':
       return `<del>${inlineToHtml(node.children)}</del>`
     case 'link':
-      return `<a href="${escapeUrl(node.url)}"${attr('title', node.title)}>${inlineToHtml(node.children)}</a>`
+      // The scheme is judged BEFORE the URL is escaped, because escaping is what would hide
+      // it: `escapeUrl` leaves every character of `javascript:alert(1)` alone, so a check
+      // afterwards is looking at a string the browser will happily run.
+      return `<a href="${escapeUrl(href(node.url))}"${attr('title', node.title)}>${inlineToHtml(node.children)}</a>`
     case 'image':
       // The alt text is the tree's inlines FLATTENED to their words: an `alt` attribute holds
       // text, so `![a *b*](x)` is `alt="a b"`, which is what the spec's examples show.
@@ -186,7 +208,7 @@ function oneBlock(node: Block): string {
     case 'paragraph':
       return `<p>${inlineToHtml(node.children)}</p>\n`
     case 'heading':
-      return `<h${node.level}>${inlineToHtml(node.children)}</h${node.level}>\n`
+      return headingToHtml(node)
     case 'thematicBreak':
       return '<hr />\n'
     case 'codeBlock': {
@@ -212,6 +234,26 @@ function oneBlock(node: Block): string {
     case 'callout':
       return `<blockquote class="callout callout-${escapeText(node.kind.toLowerCase())}">\n${blocksToHtml(node.children)}</blockquote>\n`
   }
+}
+
+/**
+ * A heading, and the two things a page wants from one that Markdown has no opinion about.
+ *
+ * DEMOTING is about the outline: the page already prints the post's title as its single
+ * `<h1>`, so a body `#` would make a second one and a screen reader would announce two
+ * documents. It becomes `<h2>`, and everything below keeps its depth.
+ *
+ * THE ID is the table of contents. It is computed from the heading's WORDS — `plainOf`, not
+ * the source line — which is the difference between `## [Tài liệu](/docs)` anchoring at
+ * `tai-lieu` and anchoring at `tai-lieuDocs`. `utils.ts`'s `extractHeadings` walks the same
+ * tree for the same reason: two walks that agree because they read one parse, rather than two
+ * regular expressions that have to be kept in step by hand.
+ */
+function headingToHtml(node: Extract<Block, { type: 'heading' }>): string {
+  const level = rules.demoteHeadings ? Math.min(6, Math.max(2, node.level)) : node.level
+  const slug = rules.headingId?.(plainOf(node.children), level) ?? null
+  const id = slug ? ` id="${escapeText(slug)}"` : ''
+  return `<h${level}${id}>${inlineToHtml(node.children)}</h${level}>\n`
 }
 
 /** An info string is source text: its escapes AND its entities resolve before it names a class. */
@@ -263,12 +305,23 @@ function itemToHtml(item: ListItem, tight: boolean): string {
     return `<li>${check}${lead}${inner}</li>\n`
   }
   if (item.children.length === 0) return '<li></li>\n'
+  // A LOOSE ITEM PUTS THE CHECKBOX INSIDE ITS FIRST PARAGRAPH, not in front of it. In a tight
+  // item there is no `<p>` to be inside, so the two branches look different and mean the same:
+  // the box is the first thing in the item's first line of prose. Writing `<li>\n<input> <p>x</p>`
+  // instead put the box in the `<li>` itself, where `markTaskItems` could not find it either —
+  // so a loose task list lost both its layout and the `class="task"` the stylesheet needs to
+  // keep its bullet off an item that already has a box.
+  if (check !== '' && item.children[0]?.type === 'paragraph') {
+    const [first, ...rest] = item.children
+    const head = `<p>${check}${inlineToHtml((first as Extract<Block, { type: 'paragraph' }>).children)}</p>\n`
+    return `<li>\n${head}${blocksToHtml(rest)}</li>\n`
+  }
   return `<li>\n${check}${blocksToHtml(item.children)}</li>\n`
 }
 
 function tableToHtml(node: Extract<Block, { type: 'table' }>): string {
   const cell = (tag: string, content: string, align: string | null): string =>
-    `<${tag}${align ? ` align="${align}"` : ''}>${content}</${tag}>`
+    `<${tag}${tag === 'th' && rules.tableScope ? ' scope="col"' : ''}${align ? ` align="${align}"` : ''}>${content}</${tag}>`
   let out = '<table>\n<thead>\n<tr>\n'
   node.head.forEach((c, i) => { out += cell('th', inlineToHtml(c.children), node.align[i] ?? null) + '\n' })
   out += '</tr>\n</thead>\n'

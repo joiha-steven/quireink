@@ -136,3 +136,44 @@ describe('excerpts, meta descriptions, OG cards and the RSS summary', () => {
     expect(toPlainText('**$M$ (Money Supply):** tổng cung tiền.')).toBe('M (Money Supply): tổng cung tiền.')
   })
 })
+
+/**
+ * AN OPENING DELIMITER THAT IS NEVER CLOSED, which is where a block tokenizer eats a post.
+ *
+ * The engine's first display-maths block opened on any line starting with the delimiter and
+ * went looking for the closer afterwards. CommonMark example 14 is nine lines of escaped
+ * punctuation, one of which is `\[not a link](/foo)`; there is no `\]` below it, and the block
+ * swallowed the six lines that followed into one formula. The spec suite caught it — but the
+ * same shape is ordinary prose here, because `\[` is how this blog writes display maths and a
+ * writer who escapes a bracket gets the same characters.
+ *
+ * So the rule is: a formula opens only if it CLOSES, and the search for the closer stops at a
+ * blank line. The tests below are the two halves of that, and the second is the one that
+ * matters — it is the difference between a stray `$$` on the page and a lost article.
+ */
+describe('a delimiter that opens nothing', () => {
+  test('an escaped bracket in prose stays prose', async () => {
+    const out = await html('\\[not a link](/foo)\nand the line after it\n')
+    expect(out).toContain('and the line after it')
+    expect(out).not.toContain('math-block')
+  })
+
+  test('an unclosed $$ does not eat the paragraphs below it', async () => {
+    const out = await html('$$ x = 1\n\nMột đoạn văn.\n\nMột đoạn nữa.\n')
+    expect(out).toContain('Một đoạn văn.')
+    expect(out).toContain('Một đoạn nữa.')
+  })
+
+  test('a formula written over several lines still gets its wrapper', async () => {
+    const out = await html('$$\nM \\times V = P \\times Q\n$$\n')
+    expect(out).toContain('<div class="math-block">')
+    expect(out).toContain('×')
+  })
+
+  test('a formula closing at the end of a content line keeps that line', async () => {
+    // `x = 1$$` both ends the formula and is part of it, unlike a code fence's closing line.
+    const out = await html('$$\nx = 1$$\n')
+    expect(out).toContain('<div class="math-block">')
+    expect(out).toContain('<mn')
+  })
+})

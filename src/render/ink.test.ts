@@ -67,7 +67,11 @@ describe('the highlighter pen', () => {
   })
 
   it('spans a source line break, because a wrapped sentence is still one stroke', async () => {
-    expect(await render('==across\ntwo lines==')).toBe(`<p><mark${pen('==across\ntwo lines==')}>across<br>two lines</mark></p>`)
+    // The break is spelled `<br />` and carries a newline, which is CommonMark's shape and not
+    // `marked`'s `<br>` — the engine changed under this test on 2026-09-13 (ADR 0052). What
+    // the test is FOR did not move: one `<mark>` still covers both lines, and a stroke that
+    // ended at the line break would show as two marks here.
+    expect(await render('==across\ntwo lines==')).toBe(`<p><mark${pen('==across\ntwo lines==')}>across<br />\ntwo lines</mark></p>`)
   })
 })
 

@@ -201,3 +201,17 @@ export function matchTitle(text: string, from: number): { value: string; next: n
   }
   return null
 }
+
+/**
+ * Peel every definition off the front of a paragraph, leaving what the reader sees.
+ *
+ * Takes the paragraph's LINES rather than a parse tree node, so this file still knows nothing
+ * about blocks — which is what lets `block.ts` call it while a paragraph is still open, and a
+ * setext underline ask whether anything is left once the definitions come out.
+ */
+export function takeDefinitions(para: { lines: string[] }, defs: LinkDefs, entity: (s: string) => string): void {
+  if (para.lines.length === 0) return
+  const text = para.lines.join('\n').replace(/^[ \t]+|[ \t]+$/g, '')
+  const rest = stripDefinitions(text, defs, entity)
+  para.lines = rest === '' ? [] : [rest]
+}

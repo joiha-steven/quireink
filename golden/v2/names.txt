@@ -1,0 +1,11 @@
+# The fixtures that deliberately diverge from 1.x — the names in golden.test.ts DIVERGED.
+# Kept here so recapture-v2.ts and the test cannot drift apart about which they are.
+fence-alias
+fence-no-lang
+fence-unknown-lang
+footnote-in-table
+gfm-table-align
+gfm-table-pipes
+list-with-table
+mixed-everything
+task-lists

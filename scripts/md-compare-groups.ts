@@ -9,15 +9,17 @@
 // the character it names — and whatever SURVIVES that ladder is a real difference, printed in
 // full. A difference that dissolves at a rung is counted under that rung's name.
 //
-// The ladder is the argument. Each rung has to be a rewrite that cannot change what a browser
-// draws, and each is named so the owner can disagree with it individually.
+// THE LADDER IS SHARED with `render/html-equivalence.ts`, which is what the golden gate holds
+// itself to. It used to be copied here, and a copy is a second definition of "the same page"
+// that agrees with the first until the day one of them is corrected. The one rung below is the
+// exception, and it is here because it is NOT harmless in general.
 
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { marked } from 'marked'
 import { inkExtension, underExtension, ringExtension } from '@/pen/marked'
 import { mathBlockExtension, mathInlineExtension } from '@/render/math'
-import { resolveEntities } from '@/md/entity'
+import { LADDER as SHARED } from '@/render/html-equivalence'
 import { toHtml } from '@/md/index'
 
 marked.use({ gfm: true })
@@ -30,33 +32,20 @@ if (!dir) {
   process.exit(1)
 }
 
-/** Each rung: a name, and a rewrite that provably cannot change the rendered page. */
-const LADDER: { name: string; apply: (html: string) => string }[] = [
-  {
-    name: 'void tags written with a slash (<br /> vs <br>)',
-    apply: (h) => h.replace(/<(br|hr|img|input|meta|link)([^>]*?)\s*\/>/g, '<$1$2>'),
-  },
-  {
-    name: 'a newline between two tags',
-    apply: (h) => h.replace(/>\s*\n\s*</g, '><'),
-  },
-  {
-    // CommonMark writes `<br />\n`; marked writes `<br>`. The newline is collapsed to nothing
-    // by every HTML parser at that position, which is why it is on this ladder and not below.
-    name: 'a newline after a line break',
-    apply: (h) => h.replace(/<br\s*\/?>\s*\n/g, '<br>'),
-  },
-  {
-    name: 'trailing space before a closing tag',
-    apply: (h) => h.replace(/[ \t]+<\//g, '</'),
-  },
-  {
-    name: 'an entity resolved to its character (&copy; vs ©)',
-    apply: (h) => resolveEntities(h),
-  },
+/**
+ * The shared ladder, plus the one rung that belongs only to this comparison.
+ *
+ * ⚠️ THE EXTRA RUNG UNDOES A SAFETY RULE, which is why it is not in the shared ladder and must
+ * never be moved there. `marked` hands a raw `<script>` through and the engine escapes it, and
+ * calling that "the same page" is true of nothing except this one question: whether the two
+ * PARSERS found the same structure. Anywhere else it would dissolve exactly the difference
+ * that matters.
+ */
+const LADDER = [
+  ...SHARED,
   {
     name: 'a raw <script>/<style> disabled (GFM safety rule)',
-    apply: (h) => h.replace(/&lt;(\/?)(script|style|title|textarea|iframe|xmp|noembed|noframes|plaintext)/gi, '<$1$2'),
+    apply: (h: string) => h.replace(/&lt;(\/?)(script|style|title|textarea|iframe|xmp|noembed|noframes|plaintext)/gi, '<$1$2'),
   },
 ]
 

@@ -103,9 +103,22 @@ const MAY_DIFFER: Record<string, { behaviour: string; why: string }> = {
   // ── Text that is not markup, spelled differently. In every one of these the CHARACTERS a
   //    reader sees are identical; only the entity spelling behind them moves. Two of the four
   //    are the escaping promise doing its job, and the pinned files prove it still is.
+  //
+  // ⚠️ TWO OF THE PINNED ANSWERS MOVED ON 2026-09-13, and not by whitespace — this one and
+  //    `reference-links` below. `marked` rendered the SPACE before `\[two\]` as a `<br>`:
+  //    there is no newline anywhere in the saved source, and its maths extension together with
+  //    `breaks: true` invented the line break. The engine renders the space as a space. Both
+  //    pages are nonsense either way — both are showing what the OLD WRITER does to
+  //    `[two][missing]`, which is the whole reason these fixtures are excused — and the new one
+  //    is the nonsense the source actually spells. Accepted by name through
+  //    `golden/recapture-editor.ts --accept`, which deliberately has no flag taking them in bulk.
   'dangerous-hrefs.md': { behaviour: 'text that is not markup', why: 'javascript:/data:/vbscript: never became links; inert text before and after, escaped differently' },
   'dangerous-href-obfuscated.md': { behaviour: 'text that is not markup', why: 'the tab inside the scheme becomes a space in inert text' },
-  'entities.md': { behaviour: 'text that is not markup', why: 'markdown-it decodes &copy; and friends on the way in; the characters they name are what comes back' },
+  // `entities.md` WAS excused here and no longer needs to be (2026-09-13). The excuse said
+  // markdown-it decodes `&copy;` on the way in, so a save wrote back the character and the page
+  // moved. The engine decodes it on the way in TOO — CommonMark says to — so the page before a
+  // save and the page after it are now the same bytes, and the guard below is what noticed:
+  // an excuse for a fixture that no longer moves is a rule guarding nothing.
   'raw-html-block.md': { behaviour: 'text that is not markup', why: 'html:false — raw HTML is text here, and text is written back as entities. The promise, working' },
 
   // ── One link notation for another, and one list becoming loose.
@@ -154,6 +167,15 @@ describe('the excuses stay few, and stay excuses', () => {
 
   it('names only fixtures that exist, so no rule here is guarding nothing', () => {
     for (const file of Object.keys(MAY_DIFFER)) expect(FIXTURES).toContain(file)
+  })
+
+  it('pins an answer for every excused fixture and for nothing else', () => {
+    // `golden/recapture-editor.ts` works from the DIRECTORY, this list works from the code, and
+    // an entry in only one of them is invisible to both: a pinned file nothing reads, or an
+    // excuse whose answer cannot be refreshed. Comparing the two sets is what lets the script
+    // keep no list of its own.
+    const pinned = readdirSync(AFTER).filter((f) => f.endsWith('.html')).map((f) => f.replace(/\.html$/, '.md'))
+    expect(pinned.sort()).toEqual(Object.keys(MAY_DIFFER).sort())
   })
 
   it('excuses only fixtures that really do move, so the list cannot grow by habit', async () => {

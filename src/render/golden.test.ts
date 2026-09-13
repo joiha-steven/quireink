@@ -19,6 +19,7 @@ import { describe, expect, test } from 'bun:test'
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { renderPostContent } from '@/render/post-content'
+import { classify, firstDifference } from '@/render/html-equivalence'
 
 const ROOT = join(import.meta.dir, '..', '..', 'golden')
 const CORPUS = join(ROOT, 'corpus')
@@ -34,12 +35,62 @@ describe('golden: article bodies are byte-identical to Quire 1.x', () => {
 
   for (const file of fixtures) {
     const name = file.replace(/\.md$/, '')
-    // The names in DIVERGED are asserted in the block underneath, against what 2.x prints.
-    if (name in DIVERGED) continue
+    // The names in DIVERGED are asserted in the block underneath, against what 2.x prints;
+    // the names in SAME_PAGE are asserted in the block after that, against the ladder.
+    if (name in DIVERGED || name in SAME_PAGE) continue
     test(name, async () => {
       const markdown = readFileSync(join(CORPUS, file), 'utf8')
       const expected = readFileSync(join(REFERENCE, `${name}.html`), 'utf8')
       expect(await renderPostContent({ markdown })).toBe(expected)
+    })
+  }
+})
+
+/**
+ * THE THIRD TIER, added when this blog stopped renting its Markdown engine (ADR 0052).
+ *
+ * The two tiers above both end in a byte comparison, and both should: one says a port moved
+ * nothing, the other says a deliberate change moved exactly what it said it would. Neither can
+ * express what a REPLACED ENGINE promises. `src/md/` is written to CommonMark and `marked` was
+ * not, so the two spell a line break `<br />` and `<br>`, and one writes a newline between two
+ * block tags where the other does not. Those are real bytes. No reader can see one of them.
+ *
+ * A gate that reports those the same way it reports a lost sentence is a gate somebody turns
+ * off, so the names below are held to a different and narrower claim: they differ from 1.x
+ * ONLY through `html-equivalence.ts`'s ladder, and the rung is named here. A difference that
+ * survives the ladder fails, and the whole difference is printed.
+ *
+ * ⚠️ THIS TIER IS FOR WHITESPACE AND SPELLING, never for behaviour. Anything a reader could
+ * notice belongs in DIVERGED with a reason, or is a bug. The ladder is what enforces that —
+ * it cannot dissolve a changed word, a lost tag or a moved attribute.
+ */
+const SAME_PAGE: Record<string, string> = {
+  'callout-unknown': 'a newline after a line break',
+  entities: 'an entity resolved to its character (&copy; vs ©)',
+  'hard-breaks': 'a newline after a line break',
+  'lazy-continuation': 'a newline after a line break',
+  'list-with-code': 'a newline between two tags',
+  'nested-lists': 'a newline between text and a block tag',
+  'raw-html-block': 'a newline between text and a block tag',
+}
+
+describe('golden: our own engine writes the same page in different bytes', () => {
+  test('the tier stays small, and every name is a real fixture', () => {
+    // Same guard as DIVERGED's, for the same reason: a tier that grows without anyone
+    // deciding is a tier that has eaten the gate above it.
+    expect(Object.keys(SAME_PAGE).length).toBeLessThan(fixtures.length / 4)
+    for (const name of Object.keys(SAME_PAGE)) expect(fixtures).toContain(`${name}.md`)
+  })
+
+  for (const [name, rung] of Object.entries(SAME_PAGE)) {
+    test(`${name} — ${rung}`, async () => {
+      const markdown = readFileSync(join(CORPUS, `${name}.md`), 'utf8')
+      const expected = readFileSync(join(REFERENCE, `${name}.html`), 'utf8')
+      const actual = await renderPostContent({ markdown })
+      const kind = classify(expected, actual)
+      // The rung is named, not merely required to exist: a fixture that starts differing for a
+      // NEW reason has to be looked at, even when the new reason is also harmless.
+      if (kind !== rung) throw new Error(`${name}: expected "${rung}", got "${kind}"\n${firstDifference(expected, actual)}`)
     })
   }
 })
@@ -113,6 +164,19 @@ describe('golden: the deliberate divergences from 1.x', () => {
     expect(behaviours.size).toBeLessThan(4)
     expect(Object.keys(DIVERGED).length).toBeLessThan(fixtures.length / 4)
     for (const name of Object.keys(DIVERGED)) expect(fixtures).toContain(`${name}.md`)
+  })
+
+  test('the list golden/recapture-v2.ts works from is this same list', () => {
+    // TWO HAND-KEPT COPIES OF ONE LIST DO NOT CHECK EACH OTHER, and a name in only one of them
+    // is the worst shape this can take: `recapture-v2.ts` would refresh a reference the gate no
+    // longer reads, or the gate would hold a reference nothing can refresh — and in both cases
+    // everything stays green. So they are compared, and the comparison is the only reason the
+    // second copy is allowed to exist.
+    const listed = readFileSync(join(ROOT, 'v2', 'names.txt'), 'utf8')
+      .split('\n')
+      .map((n) => n.trim())
+      .filter((n) => n !== '' && !n.startsWith('#'))
+    expect(listed.sort()).toEqual(Object.keys(DIVERGED).sort())
   })
 
   for (const [name, { behaviour, why }] of Object.entries(DIVERGED)) {

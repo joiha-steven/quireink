@@ -1,46 +1,24 @@
 // Markdown -> HTML. 100% Markdown: raw HTML/CSS is escaped and shown verbatim,
 // never rendered. Only Markdown-generated elements (incl. GFM tables) are produced.
 //
-// Ported from the frozen tree's `components/blog/PostContent.tsx`. Every transform below
-// is byte-for-byte the same; the ONLY change is the return value. It was a React server
-// component ending in `dangerouslySetInnerHTML`, and it is now a function that returns
-// the HTML string, because the M2 gate is that article bodies come out identical.
+// Ported from the frozen tree's `components/blog/PostContent.tsx`, and the transforms below
+// are still byte-for-byte that port. WHAT CHANGED ON 2026-09-13 is the parser underneath them:
+// `marked` drew this page for two years and `src/md/` draws it now (ADR 0052). The five things
+// this site wants that no Markdown spec mentions used to live here as `marked` renderer
+// overrides — a safe `href`, a demoted body `h1`, `scope="col"`, raw HTML as text, and a lone
+// newline as a line break — and they are now `md/html-rules.ts`'s `PAGE`, asked for by name in
+// `renderPostContent` below.
+//
+// The gate held: 45 of 45 golden fixtures and 89 of 92 of this blog's real posts paint
+// identically, measured in a browser (`scripts/md-paint-diff.ts`). The three that moved are in
+// the commit message, and all three are repairs.
 import { buildFigures, groupGalleries, type ImageDims, type ReadyOriginals } from '@/render/figures'
-import { marked, type Tokens } from 'marked'
+import { PAGE, toHtml as mdToHtml } from '@/md/index'
 import { videoEmbed, videoFileUrl } from '@/render/video'
 import { highlightCode } from '@/render/highlight'
 import { readRendered, renderKey, writeRendered } from '@/render/render-cache'
 import { prepareFootnotes, applyFootnotes } from '@/render/footnotes'
 import { buildSha } from '@/server/build-info'
-import { inkExtension, ringExtension, underExtension } from '@/pen/marked'
-import { mathBlockExtension, mathInlineExtension } from '@/render/math'
-import { escapeAttr, slugify } from '@/utils'
-
-/**
- * Body TEXT escaping, and it is frozen at three replacements by the golden gate.
- *
- * `docs/spec/03-golden.md` makes the rendered article body a hard equality check against
- * Quire 1.x: "if an article body differs by one byte, a template was ported wrong. There is
- * nothing to review and nothing to accept." The frozen tree escaped `& < >` here, so an
- * escaped-for-display raw HTML block renders `class="danger"` and not `class=&quot;danger&quot;`.
- * Both are safe and both LOOK identical to a reader; only one of them is the same bytes.
- *
- * So this is NOT the canonical `escapeHtml` and must not be "upgraded" into it. It carries its
- * own name for exactly that reason: the hazard this codebase already shipped was two functions
- * called `escapeHtml` with different strengths, one of which reflected a search query into an
- * attribute. Attributes in this file go through the canonical `escapeAttr`, which does escape
- * quotes, so nothing here depends on this being weak.
- */
-const escapeBodyText = (s: string) =>
-  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-
-// Drop dangerous schemes (javascript:/data:/vbscript:) — marked v5+ no longer
-// sanitizes URLs. Strip control chars first so `java\tscript:` can't slip through.
-const safeHref = (href: string): string => {
-  const cleaned = href.trim().replace(/[\u0000-\u001F\u007F]/g, '')
-  return /^(?:javascript|data|vbscript):/i.test(cleaned) ? '#' : cleaned
-}
-
 
 // Reverse of escapeHtml — Shiki needs the raw text back before re-highlighting.
 const unescapeHtml = (s: string) =>
@@ -58,57 +36,6 @@ async function highlightBlocks(html: string): Promise<string> {
   let i = 0
   return html.replace(re, (whole) => out[i++] ?? whole)
 }
-
-marked.setOptions({ gfm: true, breaks: true })
-// The highlighter pen. The FIRST syntax this codebase adds that Quire 1.x did not have, so
-// it is the first place the golden gate can only say "nothing that already rendered changed"
-// rather than "the port is exact" — see `pen/grammar.ts` for why no corpus fixture moves.
-marked.use({ extensions: [inkExtension, underExtension, ringExtension] })
-// Maths. Same standing as the pen above: syntax Quire 1.x did not have, so the golden gate
-// can only say "nothing that already rendered changed". It can say that honestly here —
-// no corpus fixture contains a `$`, a `\(` or a `\[`, which was checked before the grammar
-// was written rather than discovered by a red run afterwards.
-marked.use({ extensions: [mathBlockExtension, mathInlineExtension] })
-marked.use({
-  renderer: {
-    // Raw HTML tokens (block + inline) -> shown as visible text, never executed.
-    html(token: Tokens.HTML | Tokens.Tag) {
-      return escapeBodyText(token.raw)
-    },
-    // H2/H3 slug ids for ToC anchors; duplicates de-duped in dedupeHeadingIds
-    // (kept in sync with extractHeadings).
-    heading(token: Tokens.Heading) {
-      const inner = this.parser.parseInline(token.tokens)
-      // The page already renders the post TITLE as the single <h1>; a body `#` would
-      // make a second h1 and break the outline, so demote body H1 to H2 (cap depth at
-      // 2..6). Only H2/H3 get ToC anchors; a heading that slugifies to "" gets no id.
-      const level = Math.min(6, Math.max(2, token.depth === 1 ? 2 : token.depth))
-      const slug = level === 2 || level === 3 ? slugify(token.text) : ''
-      const id = slug ? ` id="${slug}"` : ''
-      return `<h${level}${id}>${inner}</h${level}>
-`
-    },
-    // A column header that SAYS it is one. marked prints a bare `<th>`, which a screen
-    // reader can still associate by position in a simple table — `scope="col"` is the thing
-    // WCAG 1.3.1 asks for by name, and it is the only association a complex table gets at
-    // all. Everything else about the cell is marked's own output, attribute order included,
-    // so the golden diff is exactly this one attribute and nothing else.
-    tablecell(token: Tokens.TableCell) {
-      const inner = this.parser.parseInline(token.tokens)
-      const tag = token.header ? 'th' : 'td'
-      const scope = token.header ? ' scope="col"' : ''
-      const align = token.align ? ` align="${token.align}"` : ''
-      return `<${tag}${scope}${align}>${inner}</${tag}>
-`
-    },
-    // Sanitize link hrefs (drop javascript:/data:/vbscript:); marked no longer does.
-    link(token: Tokens.Link) {
-      const inner = this.parser.parseInline(token.tokens)
-      const title = token.title ? ` title="${escapeAttr(token.title)}"` : ''
-      return `<a href="${escapeAttr(safeHref(token.href))}"${title}>${inner}</a>`
-    },
-  },
-})
 
 // GFM-style callouts: a blockquote whose first line is `[!NOTE]` (TIP/WARNING/
 // IMPORTANT/CAUTION) becomes a labelled callout box. Monochrome by design (an accent
@@ -131,7 +58,12 @@ const CALLOUT_LABELS: Record<string, string> = {
  */
 function markTaskItems(html: string): string {
   // A loose list wraps the item in a paragraph first; the checkbox is still what leads.
-  return html.replace(/<li>(<p>)?<input /g, '<li class="task">$1<input ')
+  //
+  // THE NEWLINE IS OPTIONAL AND HAS TO BE. CommonMark writes `<li>\n<p>` where `marked` wrote
+  // `<li><p>`, and a pattern spelling the two tags adjacent stopped matching the loose case on
+  // the day the engine changed (ADR 0052) — quietly, because an item missing `class="task"`
+  // still renders, with a bullet AND a checkbox sitting next to each other.
+  return html.replace(/<li>(\n?)(<p>)?<input /g, '<li class="task">$1$2<input ')
 }
 
 function buildCallouts(html: string): string {
@@ -261,7 +193,7 @@ export async function renderPostContent({
   // Pull footnote refs/defs out of the markdown FIRST (references become placeholders
   // that survive marked), then re-insert the <sup> links + list after rendering.
   const fn = prepareFootnotes(markdown)
-  const parsed = dedupeHeadingIds(wrapTables(buildVideos(groupGalleries(buildFigures(buildCallouts(markTaskItems(await marked.parse(fn.markdown))), readyOriginals, imageDims)))))
+  const parsed = dedupeHeadingIds(wrapTables(buildVideos(groupGalleries(buildFigures(buildCallouts(markTaskItems(mdToHtml(fn.markdown, PAGE))), readyOriginals, imageDims)))))
   const html = applyFootnotes(await highlightBlocks(parsed), fn.refs, fn.defs)
   writeRendered(key, html)
   return html

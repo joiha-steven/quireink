@@ -11,6 +11,7 @@
 import type { Line } from './line'
 import type { Node } from './block-tree'
 import { blockquoteMarker, closesFence } from './block-scan'
+import { closesMath } from './block-math'
 
 /** What a block says when asked whether a line is still its own. */
 export const MATCHED = 0
@@ -73,6 +74,13 @@ export function continuesBlock(block: Node, line: Line, blank: boolean): number 
         line.advanceWhitespace(Math.min(block.fenceIndent ?? 0, line.indent()))
         return MATCHED
       }
+
+      // A display formula ends at its closing delimiter. Unlike a code fence's closing line,
+      // that line may also CARRY content — `x = 1$$` is both — so the loop in `block.ts` takes
+      // the text before the closer when it handles CONSUMED. Reading it twice is the price of
+      // this file not touching the tree, and the seam is worth more than the second scan.
+      case 'mathBlock':
+        return closesMath(line, block.mathDelim ?? 'dollar') === null ? MATCHED : CONSUMED
 
       case 'html': {
         const kind = block.htmlKind ?? 6

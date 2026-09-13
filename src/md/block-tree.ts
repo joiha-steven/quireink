@@ -17,6 +17,7 @@ export type Kind =
   | 'html'
   | 'thematicBreak'
   | 'table'
+  | 'mathBlock'
 
 export type Node = {
   kind: Kind
@@ -37,6 +38,9 @@ export type Node = {
 
   // html block
   htmlKind?: number
+
+  // display maths standing as its own block
+  mathDelim?: 'dollar' | 'bracket'
 
   // list
   ordered?: boolean
@@ -85,7 +89,8 @@ export function canContain(parent: Kind, child: Kind): boolean {
 
 /** Whether a leaf accepts more lines at all. A heading is one line and done. */
 export function acceptsLines(n: Node): boolean {
-  return n.kind === 'paragraph' || n.kind === 'codeIndented' || n.kind === 'codeFenced' || n.kind === 'html' || n.kind === 'table'
+  return n.kind === 'paragraph' || n.kind === 'codeIndented' || n.kind === 'codeFenced'
+    || n.kind === 'html' || n.kind === 'table' || n.kind === 'mathBlock'
 }
 
 export function lastChild(n: Node): Node | undefined {
