@@ -113,6 +113,11 @@ export type MathDelim = 'dollar' | 'bracket' | 'paren'
 export type MathMatch = { raw: string; tex: string; display: boolean; delim: MathDelim }
 
 const ANCHORED = new RegExp(`^(?:${MATH_SYNTAX_SOURCE})`)
+// THE SAME PATTERN, STUCK TO A POSITION. Built from the same source string rather than written
+// out again — this file's one rule is that the pattern is never spelled twice — and with `y`
+// instead of `^`, because the two cannot be combined: without `m` a `^` only ever matches index
+// zero, and `y` is what makes "match exactly here" mean a position other than the start.
+const STICKY = new RegExp(`(?:${MATH_SYNTAX_SOURCE})`, 'y')
 // A display formula standing as its own block, and the trailing newlines it owns. Without
 // consuming them marked opens an empty paragraph after every formula.
 const ANCHORED_BLOCK = new RegExp(`^(?:${DISPLAY_DOLLAR}|${DISPLAY_BRACKET})[ \\t]*(?:\\n+|$)`)
@@ -126,7 +131,26 @@ const ANCHORED_BLOCK = new RegExp(`^(?:${DISPLAY_DOLLAR}|${DISPLAY_BRACKET})[ \\
  * four readers.
  */
 export function matchMathAt(src: string): MathMatch | null {
-  const m = ANCHORED.exec(src)
+  return fromMatch(ANCHORED.exec(src))
+}
+
+/**
+ * The same answer, at a position, WITHOUT CUTTING THE STRING FIRST.
+ *
+ * ⚠️ `matchMathAt(text.slice(pos))` IS QUADRATIC and it was 99% of the engine's time on one
+ * shape. The inline parser asks at every candidate character, and a slice copies everything
+ * from there to the end of the paragraph: a run of 20,000 backslashes is 20 KB and took 1.77
+ * seconds, quadrupling on every doubling. MEASURED with `bun --cpu-prof`, 2026-09-14.
+ *
+ * The sticky flag asks the same question of the same pattern without the copy: 20,000 comes
+ * back in single milliseconds and the growth is linear.
+ */
+export function matchMathAtPos(src: string, pos: number): MathMatch | null {
+  STICKY.lastIndex = pos
+  return fromMatch(STICKY.exec(src))
+}
+
+function fromMatch(m: RegExpExecArray | null): MathMatch | null {
   if (!m) return null
   const display = m[1] !== undefined || m[2] !== undefined
   const delim: MathDelim =

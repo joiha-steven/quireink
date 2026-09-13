@@ -10,7 +10,7 @@
 // notation this blog invented, and everything left there is Markdown.
 
 import { INK_SYNTAX_SOURCE, RING_SYNTAX_SOURCE, UNDER_SYNTAX_SOURCE } from '@/pen/grammar'
-import { matchMathAt, type MathDelim } from '@/render/math-syntax'
+import { matchMathAtPos, type MathDelim } from '@/render/math-syntax'
 
 const PEN = {
   ink: new RegExp(`^${INK_SYNTAX_SOURCE}`),
@@ -50,7 +50,7 @@ export function penAt(
  * too, and neither has this bug.
  */
 export function mathAt(text: string, pos: number): { value: string; display: boolean; delim: MathDelim; length: number } | null {
-  const m = matchMathAt(text.slice(pos))
+  const m = matchMathAtPos(text, pos)
   if (!m) return null
   if (m.delim === 'dollar' && !m.display && /\*\*|__/.test(m.tex)) return null
   return { value: m.tex, display: m.display, delim: m.delim, length: m.raw.length }

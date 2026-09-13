@@ -95,11 +95,22 @@ describe('a hostile document still has a bounded cost', () => {
     expect(opens).toBeGreaterThan(40)
   })
 
-  it('runs of every delimiter finish', () => {
-    // None of these was ever slow; they are here because an emphasis or code-span rewrite is
+  it('runs of every delimiter cost what ordinary prose of the same length costs', () => {
+    // AGAINST PROSE ON THE SAME MACHINE, not against a clock. The first version of this gave
+    // each run a 500ms ceiling; it passed here in single milliseconds and went red on CI at
+    // 2,695ms, because a shared runner is slow and the ceiling was measuring the runner.
+    // A ratio cannot be: whatever the machine, a delimiter run that is linear costs a small
+    // multiple of the same number of ordinary characters, and a quadratic one costs hundreds.
+    //
+    // None of these was ever slow. They are here because an emphasis or code-span rewrite is
     // exactly where a delimiter run turns quadratic, and the cost of asking is nothing.
+    const SIZE = 5000
+    const baseline = Math.max(render('một câu bình thường. '.repeat(SIZE / 20)), 0.05)
     for (const run of ['*', '_', '`', '[', '(', '~', '=', '+', '@', '$', '\\', '<', '&', '#']) {
-      expect(render(run.repeat(20000))).toBeLessThan(500)
+      // The worst of the fourteen is `$`, at 4.6 — it is the only one that opens a scan for a
+      // closing delimiter. Forty leaves nine times that as headroom and still catches the
+      // hundredfold a quadratic costs: `\\` was 35 before `matchMathAtPos`.
+      expect({ run, over: render(run.repeat(SIZE)) / baseline < 40 }).toEqual({ run, over: true })
     }
   })
 })
