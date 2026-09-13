@@ -91,7 +91,6 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
   const onDirtyRef = useRef(onDirty)
   const rawRef = useRef(raw)
   const rawTextRef = useRef(rawText)
-  const flushTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const caretRef = useRef<HTMLSpanElement>(null)
   // The editorProps closures below are created once (on the first useEditor call,
   // when `editor` is still null). Reading the live instance through a ref instead
@@ -241,12 +240,14 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
     onTransaction({ editor, transaction }) {
       penStrokes(editor.view, transaction, keySound)
     },
-    onUpdate({ editor }) {
-      // Per-keystroke work is kept tiny: flag dirty now, serialize the whole
-      // document to Markdown on a trailing debounce so typing never stutters.
+    onUpdate() {
+      // ONE FLAG, AND NOTHING ELSE. This used to serialize the whole document on a 400ms
+      // trailing debounce, said to be what kept typing smooth. It was the opposite: 400ms is
+      // shorter than the pause between two sentences, so the stall landed in every one —
+      // 126ms frozen on an 18k-word draft carrying 2,159 pen marks (2026-09-13). And nothing
+      // read it: every reader asks the editor first and takes the parent's copy only when
+      // there is none (`editorApi.current?.getMarkdown() ?? contentRef.current`, all three).
       onDirtyRef.current()
-      if (flushTimer.current) clearTimeout(flushTimer.current)
-      flushTimer.current = setTimeout(() => onChangeRef.current(readMarkdown(editor)), 400)
     },
   })
 
@@ -298,8 +299,14 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
     }
   }, [editor, apiRef])
 
-  // Drop any pending debounce when the editor unmounts.
-  useEffect(() => () => { if (flushTimer.current) clearTimeout(flushTimer.current) }, [])
+  // The parent's copy, refreshed once on the way out — the only moment it can be read.
+  // `isDestroyed` because Tiptap's own cleanup runs before this one.
+  useEffect(() => {
+    if (!editor) return
+    return () => {
+      if (!rawRef.current && !editor.isDestroyed) onChangeRef.current(readMarkdown(editor))
+    }
+  }, [editor])
 
   if (!editor) return <div className="min-h-[480px] animate-pulse rounded-[10px] bg-neutral-100 dark:bg-neutral-900" />
 
