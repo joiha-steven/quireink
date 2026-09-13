@@ -155,11 +155,12 @@ const DIVERGED: Record<string, { behaviour: string; why: string }> = {
   // ── A picture leaves the paragraph it was written in (2026-09-14).
   //    `<figure>` is a block and `<p>` may not hold one, so the browser's parser CLOSES the
   //    paragraph before it: what a reader got was an empty `<p>`, the figure, and the rest of
-  //    the sentence as a bare text node with no paragraph round it. `.prose p{text-indent:1.6em}`
-  //    cannot reach a text node, so that run of words lost its indent — measured on the live
-  //    site at 29px against 0. 43 pictures in 20 of this blog's 92 posts were in that state,
-  //    and 1.x printed the same shape, which is why this is a divergence and not a port bug.
-  //    `buildFigures` now splits the paragraph, which is what the parser was doing anyway.
+  //    the sentence as a bare text node with no paragraph round it. Measured on the live site:
+  //    that run of words now takes `text-align:justify`, `hyphens:auto` and a 25.3px top margin
+  //    from `.prose p` and had none of them before, so it sat ragged-right in a justified piece.
+  //    43 pictures in 20 of this blog's 92 posts were in that state, and 1.x printed the same
+  //    shape, which is why this is a divergence and not a port bug. `buildFigures` now splits
+  //    the paragraph, which is what the parser was doing anyway.
   'reference-links': { behaviour: 'picture out of paragraph', why: 'the paragraph is split round the figure, not repaired by the parser' },
 }
 

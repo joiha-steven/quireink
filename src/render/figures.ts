@@ -202,10 +202,15 @@ const VOID = new Set(['img', 'br', 'hr', 'source', 'wbr', 'input', 'col', 'embed
  * parser repairs by CLOSING the paragraph before the figure. What comes out is an empty `<p>`,
  * the figure, and the rest of the sentence as a BARE TEXT NODE with no paragraph around it.
  *
- * MEASURED ON THE LIVE SITE, 2026-09-14: a paragraph's first line is indented 29px and the run
- * of text after a picture started at 0, because `.prose p{text-indent:1.6em}` cannot reach a
- * text node. 43 pictures in 20 of this blog's 92 posts were in that state, and had been since
- * long before the engine changed — `marked` produced the same shape.
+ * WHAT THAT COSTS, measured on the live site after the fix landed, 2026-09-14: the run of words
+ * after a picture is now `text-align:justify` with `hyphens:auto` and a 25.3px top margin, and
+ * as a bare text node it had none of them — `.prose` itself is `text-align:start`, so that one
+ * paragraph sat ragged-right and unhyphenated in the middle of a justified piece. NOT the
+ * first-line indent: `figure + p` sets that to 0 on purpose (`prose.css.ts`), so it read the
+ * same either way and an earlier note here said otherwise.
+ *
+ * 43 pictures in 20 of this blog's 92 posts were in that state, and had been since long before
+ * the engine changed — `marked` produced the same shape.
  *
  * Only an image at the paragraph's OWN level is lifted. One nested inside an inline element
  * (`<a><img></a>`) would leave that element torn in half by the split, and the paragraph keeps
