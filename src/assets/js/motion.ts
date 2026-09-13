@@ -9,10 +9,10 @@
 //     here): four islands used to run four requestAnimationFrame loops on a post, and the
 //     second one's layout reads landed after the first one's class writes, which is a forced
 //     layout every frame. One loop, reads first, then writes;
-//   - CROSS-FADE a change (`fadeSwap`) on the Web Animations API, so the fade reads the
-//     token and honours the gate itself. A CSS transition plus a timer cannot: with the
-//     switch off the transition is gone and the timer still waits, which is a blank frame
-//     for as long as the timer says.
+//   - MOVE something (`glide`) on the Web Animations API, so the move reads the token and
+//     honours the gate itself. A CSS transition plus a timer cannot: with the switch off the
+//     transition is gone and the timer still waits, which is a blank frame for as long as
+//     the timer says.
 
 /** Whether anything may move: the owner's switch is on AND the reader has not asked for less. */
 export function motionOn(): boolean {
@@ -23,25 +23,48 @@ export function motionOn(): boolean {
 /** The `behavior` for a programmatic scroll: smooth only where motion is on. */
 export const scrollBehavior = (): ScrollBehavior => (motionOn() ? 'smooth' : 'auto')
 
-/** A duration token, in milliseconds, read off the document so there is one source. */
+/** A token off the document, so a scripted move and a CSS transition read one source. */
+const token = (name: string): string =>
+  getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+
+/** A duration token, in milliseconds. */
 export function dur(name: 'fast' | 'base' | 'slow'): number {
-  return parseFloat(getComputedStyle(document.documentElement).getPropertyValue(`--dur-${name}`)) * 1000 || 0
+  return parseFloat(token(`--dur-${name}`)) * 1000 || 0
 }
 
 /**
- * Fade an element out, apply a change, fade it back in - a page turn, a swap of content.
- * Instant where motion is off, and where the engine has no `animate` at all.
+ * Move an element to a new transform, over the engine's own duration.
+ *
+ * ⚠️ THIS REPLACED A CROSS-FADE, and the difference is what a page turn feels like. Book
+ * mode used to fade the spread to nothing, jump the flow, and fade it back — 150ms down and
+ * 150ms up, measured on the published page — which is a blink whatever it is called. The
+ * pages are already laid out side by side behind a window that clips them, and the spine is
+ * drawn on the window rather than on the flow, so sliding the flow under it is the motion
+ * the object already implies: the pages move and the gutter stays.
+ *
+ * THE DESTINATION IS SET FIRST, then animated FROM where the element was. That order is the
+ * whole trick: a Web Animations keyframe with no `fill` hands the element back to its base
+ * value the instant it ends, so animating TO a value the base does not carry paints one
+ * frame of the old position on the way out. Setting the style first makes the base the
+ * destination, and the animation is only the ramp.
+ *
+ * A turn asked for mid-turn starts from where the flow actually IS — a held arrow key is
+ * the common case — so the running animation is cancelled rather than left to fight.
+ *
+ * Instant where motion is off, and where the engine has no `animate` at all: the spread
+ * still lands on the right page, which is the part that is not decoration. The curve falls
+ * back to `ease` only where the token sheet is not loaded, which is the test DOM.
  */
-export function fadeSwap(el: HTMLElement, change: () => void): void {
+export function glide(el: HTMLElement, transform: string): void {
   // `'animate' in el`, because the test DOM has no Web Animations and the types say every
   // element does.
-  const ms = motionOn() && 'animate' in el ? dur('fast') : 0
-  if (!ms) return change()
-  const frames = [{ opacity: 1 }, { opacity: 0 }]
-  el.animate(frames, { duration: ms, easing: 'ease' }).onfinish = () => {
-    change()
-    el.animate(frames.slice().reverse(), { duration: ms, easing: 'ease' })
-  }
+  const ms = motionOn() && 'animate' in el ? dur('base') : 0
+  const from = ms ? getComputedStyle(el).transform : ''
+  // Before the style is written, so `from` is where the flow actually is. Cancelled even
+  // with motion off, because the switch can be thrown mid-turn.
+  el.getAnimations?.().forEach((running) => running.cancel())
+  el.style.transform = transform
+  if (ms) el.animate([{ transform: from }, { transform }], { duration: ms, easing: token('--ease-out') || 'ease' })
 }
 
 export { onScrollFrame } from './scroll'

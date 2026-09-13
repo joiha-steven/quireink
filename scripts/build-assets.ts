@@ -174,7 +174,14 @@ const BUDGET: Record<string, number> = {
   // which is as often as not the one that is display:none. The clone's anchors are now its
   // own. And the phone reader hides everything outside itself, including the button that
   // opened it, so focus fell to the body: it now follows the reader in and back out.
-  'book-mode.js': 7_700,
+  //
+  // 7,800 since 2026-09-14, for 104 bytes that turn a blink into a page turn. The spread
+  // used to cross-fade: out over 150ms, jump, back over 150ms, which is a blink whatever it
+  // is called. It slides now (`glide`), and the extra bytes are what makes that correct
+  // rather than merely different: the helper reads the flow's LIVE transform, so a turn
+  // asked for while one is still running starts from where the pages actually are instead
+  // of snapping to the last destination first. A held arrow key is the common case.
+  'book-mode.js': 7_800,
   'comment-thread.js': 6_700,
   // The reader's pen: the selection bar, the anchor maths (a text-quote selector, found
   // again by its surroundings), the store, the note card and the copy gesture it absorbed

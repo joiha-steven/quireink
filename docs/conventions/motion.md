@@ -36,8 +36,10 @@ four values for three intents.
   programmatic scroll. Four admin call sites decided this for themselves before the engine
   (two read only the OS, two read nothing), so the switch stopped a hover and not a smooth
   scroll; the book's page turn held a BLANK spread for 130ms with the switch off, because its
-  timer did not know the transition had gone. `fadeSwap()` is the replacement: a Web
-  Animations fade that reads `--dur-fast` off the document and is instant behind the gate.
+  timer did not know the transition had gone. `glide()` is the replacement: a Web Animations
+  move that reads `--dur-base` and `--ease-out` off the document and is an instant jump behind
+  the gate. It took over from a cross-fade on 2026-09-14 — see the reading page for why a
+  page turn slides rather than blinks.
 - **One scroll loop.** Anything that watches the scroll goes through `onScrollFrame(read,
   write)`: one `requestAnimationFrame` shared by every island, every island's READ (rects,
   `scrollY`) before any island's WRITE (a class), so a scroll frame forces layout once rather

@@ -20,7 +20,12 @@ export const BOOK_TEXT_CSS = `
    centre spine and an asterism, setting its paragraphs ragged, unindented and unhyphenated,
    which is a web page cut into pages. The indent is what tells a reader a paragraph
    CONTINUES when there is no blank line to say so, and on a paged column there is none. */
-.book-flow.prose p{text-indent:1.6em}
+/* TWO EMS, up from 1.6 on 2026-09-14. A paragraph break on a paged column is the indent
+   and nothing else — there is no blank line to add and no room for one on a baseline grid —
+   so the indent is the ONLY thing saying a new paragraph has started, and at 1.6em over a
+   57-character justified measure it was saying it under its breath. Two ems is the top of
+   the range a printed book uses and about four characters here. */
+.book-flow.prose p{text-indent:2em}
 .book-flow.prose :is(h1,h2,h3,h4,h5,blockquote,figure,pre,ul,ol,hr,table,.table-scroll,.gallery,.video-embed) + p{text-indent:0}
 .book-flow.prose li p,.book-flow.prose blockquote p{text-indent:0}
 @media (min-width:600px){
@@ -49,17 +54,28 @@ export const BOOK_TEXT_CSS = `
    out of phase at the first paragraph break and drifted from there.
 
    A paragraph therefore leads with NOTHING but its indent, which is what a book does and
-   what leaves the gap at exactly one line. A heading takes two lines above and one below —
-   above still beats below, which is this admin's own rule about what a heading belongs to —
-   and its own line box is set to whole lines of the body: a heading whose leading is not a
-   multiple of the text's leading knocks everything under it off the grid, however tidy its
-   own margins are. h1 takes two lines because 2em of face does not fit in one. */
+   what leaves the gap at exactly one line. A heading's own line box is set to whole lines of
+   the body: a heading whose leading is not a multiple of the text's leading knocks
+   everything under it off the grid, however tidy its own margins are.
+
+   ⚠️ THE HEADING'S AIR IS INSIDE ITS LINE BOX, not all in its margins, and that is what
+   makes the section breaks stop shouting. It used to be two lines of margin above, a
+   one-line box, and one line below: four line-slots, and 81px of white above the words
+   against 34px below, on a page whose paragraphs are separated by an indent and nothing
+   else. Reported from a published spread, 2026-09-14 — the gaps between sections read as
+   the loudest thing on the page.
+
+   One line of margin and a TWO-line box now: the face sits in the middle of its own air, so
+   the reader gets about a line and a half above the words and half a line below, in three
+   slots rather than four. Above still beats below, which is this admin's rule about what a
+   heading belongs to, and every gap is still a whole number of lines — which is the only
+   thing keeping the two columns of a spread in phase. h1 already took a two-line box,
+   because 2em of face does not fit in one. */
 .book-flow.prose{--book-line:calc(var(--fs-body) * var(--lh-body))}
 .book-flow.prose > p{margin-top:0}
-.book-flow.prose > :is(h1,h2,h3,h4,h5){margin-top:calc(2 * var(--book-line))}
-.book-flow.prose > :is(h1,h2,h3,h4,h5) + *{margin-top:var(--book-line)}
-.book-flow.prose > :is(h2,h3,h4,h5){line-height:var(--book-line)}
-.book-flow.prose > h1{line-height:calc(2 * var(--book-line))}
+.book-flow.prose > :is(h1,h2,h3,h4,h5){margin-top:var(--book-line);
+  line-height:calc(2 * var(--book-line))}
+.book-flow.prose > :is(h1,h2,h3,h4,h5) + *{margin-top:0}
 /* Everything that is not a paragraph or a heading — a list, a quote, a figure, a rule —
    takes one blank line above and one below, so it occupies whole lines too. */
 .book-flow.prose > :is(ul,ol,blockquote,pre,table,.table-scroll,hr){

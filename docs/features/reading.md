@@ -334,9 +334,15 @@ Both owner-approved 2026-08-27, both default **on**, both toggled from the Readi
   reads `scrollWidth` to count columns → spreads = `ceil(cols / pages)`. The flow is itself `.prose`,
   so the reading view's indents and justification apply unchanged. **Wide images
   (`figure.img-wide`) render at column width here**, so a wide image never spills into the next
-  column. Advancing is one **transform on the flow** plus `fadeSwap()` at `--dur-fast`, instant behind the motion gate — the browser has
+  column. Advancing is one **transform on the flow**, slid by `glide()` at `--dur-base` on the
+  sheet's own curve and an instant jump behind the motion gate — the browser has
   already done the pagination, and re-implementing it is how this becomes a measurement loop that
-  fights the layout engine. Recomputes on resize. The base page keeps normal scroll, so **SEO,
+  fights the layout engine. **It slides; it does not blink.** Until 2026-09-14 the turn
+  cross-faded the whole spread — out over 150ms, jump, back over 150ms, measured on the
+  published page — and pages arriving out of nothing read as a blink however carefully it is
+  timed. The window already clips and the spine is drawn on the WINDOW rather than on the
+  flow, so moving the flow under it is the motion the object was always describing: the pages
+  travel and the gutter holds still. Recomputes on resize. The base page keeps normal scroll, so **SEO,
   a11y and find-in-page are untouched**.
 - **It was `scrollLeft` until Chrome 148, and that is worth knowing before you "simplify" it
   back.** The engine stopped treating a multicol's overflow columns as scrollable overflow —

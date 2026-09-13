@@ -16,7 +16,7 @@
 // palette. That is deliberate, and carried over from the frozen tree.
 
 import { el, label } from './dom'
-import { fadeSwap, onScrollFrame } from './motion'
+import { glide, onScrollFrame } from './motion'
 import { openScrollReader, sizeControl, renameAnchors } from './book-scroll'
 
 const OUTER_MARGIN = 48 // px, the minimum gap from the spread to the viewport edge
@@ -108,10 +108,6 @@ export function book(): void {
       // The counter moves with the key, not with the animation: it says where you are
       // going, and a number that lags 200ms behind the arrow feels broken.
       update()
-      // Fade out, jump, fade back in - the frozen tree's transition, and the reason a page
-      // turn reads as a page turn rather than as a jolt. An instant scroll is what made it
-      // feel broken even on the turns that landed correctly.
-      //
       // A TRANSFORM, not scrollLeft, since 2026-08-21. Chrome 148 stopped counting a
       // multicol's overflow columns as scrollable overflow: measured on this page,
       // flow.scrollWidth said 3,964px while viewport.scrollWidth said 279 and an assigned
@@ -120,11 +116,15 @@ export function book(): void {
       // error anywhere. The columns are still laid out; only the scroll machinery went
       // blind to them. Translating the flow under the clipping viewport asks nothing of
       // scroll semantics, so it cannot regress the same way.
-      // fadeSwap, not a CSS transition and a timer: the engine's fade reads --dur-fast and
-      // is instant with the switch off, where the timer used to hold a blank spread.
-      fadeSwap(viewport, () => {
-        flow.style.transform = `translateX(${-spread * step}px)`
-      })
+      //
+      // ⚠️ THE FLOW SLIDES; IT NO LONGER BLINKS. Until 2026-09-14 this cross-faded the whole
+      // spread — out over 150ms, jump, back over 150ms — and the pages arriving out of
+      // nothing is a blink however carefully it is timed. The window already clips, and the
+      // spine is drawn on the WINDOW rather than on the flow, so moving the flow under it is
+      // the motion the object was always describing: the pages travel and the gutter holds
+      // still. `glide` reads --dur-base and --ease-out off the document and is an instant
+      // jump behind the motion gate.
+      glide(flow, `translateX(${-spread * step}px)`)
     }
     const turn = (delta: number) => goto(spread + delta)
     // The spread is exactly TWO columns, sized to the page's own footprint. Leaving the

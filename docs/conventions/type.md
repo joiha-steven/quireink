@@ -109,7 +109,7 @@ font, only the site language's subset(s), never the chrome font or an uploaded c
   everything about the owner's own WORDS — palette, type scale, reading preset, uploaded face
   — because the editor is WYSIWYG. See `web/admin/spa.ts` `adminStyles` and
   [`admin-design.md`](../admin-design.md).
-- Editor exposes H1–H5; `marked` renders `####`/`#####` → `h4`/`h5`.
+- Editor exposes H1–H5; the engine renders `####`/`#####` → `h4`/`h5`.
 - **A reader never downloads admin CSS.** The public sheets are hand-written and the admin's is
   the only Tailwind in the project; the rule and the seam live in
   [`performance.md`](../performance.md) "The two sheets".
@@ -135,9 +135,17 @@ font, only the site language's subset(s), never the chrome font or an uploaded c
   Measured at 1440 before the rule: the line is 31.32px, a paragraph break measured 58px
   (1.85 lines), heading gaps 67 and 42 (2.14 and 1.34), and the left and right pages sat
   11.7px out of phase. So in book mode a paragraph leads with NOTHING but its indent (one
-  line exactly), a heading takes two lines above and one below with its own line box set to
-  one line of the body, and every other block takes a line above and below. After: paragraph
-  break 1.000 lines, heading 5.000 text-to-text, and every column on one phase.
+  line exactly), a heading takes ONE line above with its own line box set to TWO lines of the
+  body and nothing below, and every other block takes a line above and below. After:
+  paragraph break 1.000 lines, and every column on one phase.
+  ⚠️ **A heading's air is inside its line box, not all in its margins**, and that is what
+  stops the section breaks shouting. Two lines of margin, a one-line box and a line below is
+  four line-slots — 81px of white above the words against 34px below, on a page where
+  paragraphs are separated by an indent and nothing else, so the gaps between sections read as
+  the loudest thing on the spread (reported 2026-09-14). One line of margin and a two-line box
+  puts the face in the middle of its own air: 50px above and 18.7px below, in three slots, and
+  every gap still a whole number of lines. The indent went 1.6em → **2em** in the same pass,
+  because on a paged column it is the only thing saying a paragraph has started.
   ⚠️ **A picture is the exception and is left off the grid on purpose.** Its height is
   whatever its proportions give, so a column that opens with one starts wherever that leaves
   it (measured: 7 of 8 columns on the grid, the eighth 2.8px off). Putting pictures on it
