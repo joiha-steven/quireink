@@ -149,3 +149,27 @@ export function toLines(source: string): string[] {
   if (lines.length > 1 && lines[lines.length - 1] === '') lines.pop()
   return lines
 }
+
+/**
+ * Spaces and tabs off both ends, and NOT with a regular expression.
+ *
+ * ⚠️ `/^[ \t]+|[ \t]+$/g` IS QUADRATIC ON A LONG RUN OF SPACES, and it was 98.5% of the
+ * engine's time on one shape of document. The `$` branch is the trap: at every position inside
+ * a run of whitespace the engine takes the whole run, finds a letter where it wanted the end of
+ * the string, and gives one character back at a time. A thousand spaces is half a million
+ * steps, and a paragraph whose continuation lines are indented further each time pays it once
+ * per line. MEASURED 2026-09-14 with `bun --cpu-prof`: 1,000 such lines is 979 KB and took
+ * 1.5 seconds, of which this regular expression was all but twenty milliseconds; 2,000 lines
+ * took 11.7 seconds. The same bytes with the indentation held CONSTANT took 5.4ms.
+ *
+ * Two loops from the ends do the same job in the length of what they remove. Same answer: with
+ * no `m` flag `^` and `$` are the string's own ends, so the regular expression only ever
+ * trimmed there either.
+ */
+export function trimSpaceTab(text: string): string {
+  let from = 0
+  let to = text.length
+  while (from < to && (text[from] === ' ' || text[from] === '\t')) from++
+  while (to > from && (text[to - 1] === ' ' || text[to - 1] === '\t')) to--
+  return from === 0 && to === text.length ? text : text.slice(from, to)
+}

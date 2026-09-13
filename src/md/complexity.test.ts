@@ -72,6 +72,29 @@ describe('a hostile document still has a bounded cost', () => {
     expect(out).toContain('x')
   })
 
+  it('a paragraph whose lines are indented further each time is linear in its bytes', () => {
+    // THE SHAPE THAT COST 98.5% OF THE ENGINE'S TIME. `/^[ \t]+|[ \t]+$/g` trimmed the joined
+    // paragraph, and its `$` branch backtracks through a run of spaces one character at a time;
+    // a paragraph whose continuation lines grow their indent pays it once per line.
+    // MEASURED 2026-09-14 before `trimSpaceTab`: 1,000 lines is 979 KB and took 1,503ms, 2,000
+    // lines took 11,817ms. After: 18ms and 69ms, and the per-byte rate stopped falling.
+    //
+    // The law is the RATE, not the clock: this input quadruples when n doubles, so a time
+    // ceiling would have to quadruple with it and would say nothing. Bytes per millisecond may
+    // not collapse — half would still pass, and the bug made it fall by a factor of thirty.
+    const build = (n: number) => Array.from({ length: n }, (_, i) => ' '.repeat(i * 2) + 'x').join('\n')
+    const rate = (n: number) => { const s = build(n); return s.length / Math.max(render(s), 0.001) }
+    expect(rate(1000)).toBeGreaterThan(rate(250) / 2)
+  })
+
+  it('nesting stops at the ceiling instead of growing without one', () => {
+    // 100 containers, so 50 levels of list-and-item. Asked for six times that.
+    const source = Array.from({ length: 300 }, (_, i) => ' '.repeat(i * 2) + '- x').join('\n')
+    const opens = (toHtml(source, {}).match(/<ul>/g) ?? []).length
+    expect(opens).toBeLessThanOrEqual(50)
+    expect(opens).toBeGreaterThan(40)
+  })
+
   it('runs of every delimiter finish', () => {
     // None of these was ever slow; they are here because an emphasis or code-span rewrite is
     // exactly where a delimiter run turns quadratic, and the cost of asking is nothing.

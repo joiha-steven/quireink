@@ -68,6 +68,33 @@ export function node(kind: Kind, parent: Node | null): Node {
   return created
 }
 
+/**
+ * HOW DEEP A DOCUMENT MAY NEST, in containers.
+ *
+ * Every line has to be offered to every open container in turn, so a document that opens one
+ * more container on every line does work in the square of its own line count. The engine is
+ * linear in bytes on that shape since the trim in `line.ts` was fixed, and this is the belt to
+ * that brace: it bounds the per-line matching whatever the input does.
+ *
+ * A HUNDRED, and the number is measured rather than chosen. The deepest nesting in this blog's
+ * 92 posts is 6. The deepest in CommonMark 0.31.2's own 652 examples is 6, and in GFM's 24 it
+ * is 4. A hundred is more than ten times anything either specification or any real piece of
+ * writing has needed here, and it is the number markdown-it has used for years, so a document
+ * that trips it is a document no other engine would render either.
+ *
+ * At the ceiling a marker stops being a marker: the `>` or the `-` stays in the line and
+ * becomes part of the text, which is what a reader would see from any capped parser.
+ */
+export const MAX_NESTING = 100
+
+/** How many containers deep a node sits. Bounded by the ceiling, so it cannot be the cost. */
+export function depthOf(n: Node): number {
+  let d = 0
+  let at: Node | null = n
+  while (at && d <= MAX_NESTING) { d++; at = at.parent }
+  return d
+}
+
 /** Containers hold other blocks; leaves hold lines. The loop treats the two differently. */
 export function isContainer(n: Node): boolean {
   return n.kind === 'document' || n.kind === 'blockquote' || n.kind === 'list' || n.kind === 'item'

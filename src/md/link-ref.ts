@@ -9,6 +9,8 @@
 // link may point at a definition written further down the document. A parser that resolved
 // links as it met them would get every forward reference wrong.
 
+import { trimSpaceTab } from './line'
+
 export type LinkDef = { url: string; title?: string }
 export type LinkDefs = Map<string, LinkDef>
 
@@ -243,7 +245,7 @@ export function matchTitle(text: string, from: number): { value: string; next: n
  */
 export function takeDefinitions(para: { lines: string[] }, defs: LinkDefs, entity: (s: string) => string): void {
   if (para.lines.length === 0) return
-  const text = para.lines.join('\n').replace(/^[ \t]+|[ \t]+$/g, '')
+  const text = trimSpaceTab(para.lines.join('\n'))
   const rest = stripDefinitions(text, defs, entity)
   para.lines = rest === '' ? [] : [rest]
 }

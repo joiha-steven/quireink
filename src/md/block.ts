@@ -16,7 +16,8 @@
 
 import { Line, toLines } from './line'
 import {
-  acceptsLines, canContain, decideLoose, isContainer, lastChild, node, sameList, type Kind, type Node,
+  acceptsLines, canContain, decideLoose, depthOf, isContainer, lastChild, MAX_NESTING, node, sameList,
+  type Kind, type Node,
 } from './block-tree'
 import {
   atxHeading, blockquoteMarker, codeFence, htmlBlockEnds, htmlBlockStart,
@@ -156,7 +157,7 @@ export class BlockParser {
         break
       }
 
-      if (blockquoteMarker(this.line)) {
+      if (blockquoteMarker(this.line) && depthOf(container) < MAX_NESTING) {
         this.line.advanceWhitespace(indent)
         this.line.advance()
         if (this.line.peek() === ' ' || this.line.peek() === '\t') this.line.advanceWhitespace(1)
@@ -260,7 +261,9 @@ export class BlockParser {
         return created
       }
 
-      const marker = listMarker(this.line, container.kind === 'paragraph')
+      const marker = depthOf(container) < MAX_NESTING
+        ? listMarker(this.line, container.kind === 'paragraph')
+        : null
       if (marker) {
         if (!this.opened) this.closeUnmatchedFrom(container)
         // The item's continuation indent: everything up to where its content begins.

@@ -14,6 +14,7 @@ import { decideLoose, type Node } from './block-tree'
 import { parseInline } from './inline'
 import { tableCells } from './block-scan'
 import type { LinkDefs } from './link-ref'
+import { trimSpaceTab } from './line'
 
 /**
  * The block tree becomes the AST, with the definitions the block parse already collected.
@@ -40,7 +41,7 @@ function blocksOf(parent: Node, defs: LinkDefs): Block[] {
 function oneBlock(n: Node, defs: LinkDefs): Block | null {
   switch (n.kind) {
     case 'paragraph': {
-      const text = n.lines.join('\n').replace(/^[ \t]+|[ \t]+$/g, '')
+      const text = trimSpaceTab(n.lines.join('\n'))
       if (text === '') return null
       return { type: 'paragraph', children: parseInline(text, defs) }
     }
