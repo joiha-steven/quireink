@@ -77,6 +77,31 @@ describe('what a picture tells the browser about its width', () => {
   })
 })
 
+describe('nothing in a picture tag can leave the attribute it is written in', () => {
+  it('keeps an escaped quote escaped, and does not escape anything twice', async () => {
+    // THE QUOTE IS THE ONLY CHARACTER THAT COULD LEAVE, and the only one escaped here. The
+    // values arrive already through the engine's escaper, so touching `&` as well would
+    // publish `&amp;amp;` in every URL carrying a query string. Both halves are measured:
+    // a quote in the alt text stays one entity, and an ampersand stays one.
+    //
+    // A quote CANNOT reach the attribute today — the tags are read back with `[^"]*`, which
+    // stops at the first one — so this pins a guard rather than a fix. That is deliberate:
+    // the safety lived two regular expressions away from the attribute it protected, which
+    // is also how CodeQL reads it (js/incomplete-html-attribute-sanitization, 2026-09-14).
+    const html = await body('![He said "no" & left](/uploads/media/plate.jpg?a=1&b=2)\n')
+    const alt = /alt="([^"]*)"/.exec(html)?.[1] ?? ''
+    expect(alt).toContain('&quot;no&quot;')
+    expect(alt).toContain('&amp;')
+    expect(alt).not.toContain('&amp;amp;')
+    expect(alt).not.toContain('&amp;quot;')
+    // One src, one alt: a value that broke out would show up as a second attribute or a
+    // stray `>` rather than as a wrong string.
+    expect((html.match(/<img\b/g) ?? []).length).toBe(1)
+    expect((html.match(/\balt="/g) ?? []).length).toBe(1)
+    expect(/<img[^>]*src="[^"]*"[^>]*>/.test(html)).toBe(true)
+  })
+})
+
 describe('a gallery on a phone', () => {
   it('is capped at two columns, whatever the count chose', () => {
     // Measured at 390px before the cap: a run of five drew 109x72px tiles and a run of ten

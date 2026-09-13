@@ -31,6 +31,23 @@ const safeImageSrc = (src: string): string => {
   return /^(?:javascript|vbscript):/i.test(cleaned) ? '' : cleaned
 }
 
+/**
+ * A value about to be written inside double quotes, with the one character that could leave.
+ *
+ * ⚠️ THE QUOTE AND NOTHING ELSE. Everything this file puts in an attribute has already been
+ * through the engine's escaper (`md/html.ts`), so `&` is already `&amp;` and escaping it
+ * again would publish `&amp;amp;` in every URL that carries a query string.
+ *
+ * IT CANNOT FIRE TODAY, and it is here anyway. The values are read back out of rendered HTML
+ * with `[^"]*`, which stops at the first quote, so one cannot be in them — a safety that
+ * lives two regular expressions away from the attribute it protects and would be lost by any
+ * future change to how these tags are found. CodeQL reads it the same way and files it as an
+ * incomplete sanitizer (js/incomplete-html-attribute-sanitization, six alerts, 2026-09-14).
+ * Making it true HERE costs one replace per attribute and stops the property being an
+ * argument.
+ */
+const attr = (value: string): string => (value.includes('"') ? value.replaceAll('"', '&quot;') : value)
+
 // Intrinsic dims of uploaded originals, keyed by collapsed pathname. width/height
 // on the <img> reserves the box from the aspect ratio → no CLS.
 export type ImageDims = Map<string, { width: number; height: number }>
@@ -185,8 +202,8 @@ export function responsiveSources(cleanSrc: string, ready: ReadyOriginals, sizes
   const widths = version >= 2 ? [512, 1024, 1600] : [1024, 1600]
   const set = (fmt: string) => widths.map((w) => `${m[1]}-${w}.${fmt} ${w}w`).join(', ')
   return (
-    `<source type="image/avif" srcset="${set('avif')}" sizes="${sizes}">` +
-    `<source type="image/webp" srcset="${set('webp')}" sizes="${sizes}">`
+    `<source type="image/avif" srcset="${attr(set('avif'))}" sizes="${sizes}">` +
+    `<source type="image/webp" srcset="${attr(set('webp'))}" sizes="${sizes}">`
   )
 }
 /** Elements that never have a closing tag, so they never change nesting depth. */
@@ -261,12 +278,12 @@ export function buildFigures(html: string, ready: ReadyOriginals, dims: ImageDim
       // First image = likely LCP → eager + high priority; later images stay lazy.
       const priority = seen === 0 ? ' fetchpriority="high"' : ' loading="lazy"'
       seen++
-      const img = `<img src="${cleanSrc}" alt="${alt}"${sizeAttrs}${priority}>`
+      const img = `<img src="${attr(cleanSrc)}" alt="${attr(alt)}"${sizeAttrs}${priority}>`
       // The classes decide the shape, and the shape decides what `sizes` may honestly say,
       // so they are computed BEFORE the sources rather than after.
       const cls = imgClasses(frag)
       const sources = responsiveSources(cleanSrc, ready, sizesFor(cls))
       const media = sources ? `<picture>${sources}${img}</picture>` : img
-      return `<figure class="${cls}">${media}${caption}</figure>`
+      return `<figure class="${attr(cls)}">${media}${caption}</figure>`
     })
 }

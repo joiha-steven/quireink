@@ -67,6 +67,33 @@ describe('the two shapes a save has destroyed before', () => {
     expect(saved).not.toContain('\\[!NOTE\\]')
   })
 
+  it('keeps a pipe a pipe next to a backslash, in prose and inside a verbatim span', () => {
+    // A TABLE CELL IS THE ONE PLACE `|` HAS TO BE ESCAPED, and `tableToMarkdown` escapes it
+    // AFTER the inlines are serialized — so the string it works on already holds backslashes
+    // that `escapeText` put there, and in a code span or a formula it holds the author's own.
+    // CodeQL reads that as an incomplete escape (js/incomplete-sanitization, alert 28,
+    // 2026-09-14) and it is right about the shape: escaping one character of a pair is how a
+    // serializer usually loses the other.
+    //
+    // It does not lose it here, and this is the measurement rather than the argument. The
+    // three shapes that carry a backslash beside a pipe all survive a save and a reopen —
+    // ordinary prose, a code span, and TeX, where `\\|` is the double bar and a real thing to
+    // write. `$\\|x\\|$` in a table is what sent this looking.
+    const cases = [
+      ['prose', '| a | b |\n| --- | --- |\n| x \\\\\\| y | z |\n'],
+      ['a code span', '| a | b |\n| --- | --- |\n| `x \\\\| y` | z |\n'],
+      ['a formula', '| a | b |\n| --- | --- |\n| $\\\\|x\\\\|$ | z |\n'],
+    ] as const
+    for (const [name, source] of cases) {
+      const once = toMarkdown(parse(source))
+      const twice = toMarkdown(parse(once))
+      // A fixed point, and a row that is still two cells rather than three.
+      expect({ name, twice }).toEqual({ name, twice: once })
+      expect({ name, cells: (toHtml(once, {}).match(/<td/g) ?? []).length }).toEqual({ name, cells: 2 })
+      expect({ name, html: toHtml(once, {}) }).toEqual({ name, html: toHtml(source, {}) })
+    }
+  })
+
   it('does not turn a bracketed word into maths on the second save', () => {
     // `\[ … \]` is display maths on this blog, so escaping BOTH brackets made `[two]` a
     // formula one save later. Found by the fixed-point law on `reference-links.md`; the

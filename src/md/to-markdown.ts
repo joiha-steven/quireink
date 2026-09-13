@@ -290,6 +290,24 @@ function itemToMarkdown(
   return [head, ...rest].join('\n')
 }
 
+/**
+ * A row's cells, with the one character that would re-cut the row escaped.
+ *
+ * ⚠️ THE PIPE IS ESCAPED AND THE BACKSLASH IS NOT, and that asymmetry is the design rather
+ * than an oversight. The string this works on is ALREADY Markdown: `escapeText` has put a
+ * backslash in front of every literal one, so escaping them again would double what an author
+ * typed. What it has not touched are the verbatim spans — a code span and a formula are
+ * emitted as written — and there a backslash beside a pipe is the author's own, which is why
+ * CodeQL files this as an incomplete escape (js/incomplete-sanitization, alert 28).
+ *
+ * It reads back correctly, and `round-trip.test.ts` measures it on all three shapes: prose, a
+ * code span, and TeX, where the double bar is written `\|` and belongs in a table as much as
+ * anywhere. Each survives a save and a reopen as two cells with the same page.
+ *
+ * GFM cannot do better, and that is the real answer: inside a table row `\|` MEANS a pipe, so
+ * a literal backslash-then-pipe has no spelling there at all. The information is lost by the
+ * format, not by this line — and what this engine writes, this engine reads.
+ */
 function tableToMarkdown(node: Extract<Block, { type: 'table' }>): string {
   const cell = (children: Inline[]) => inlineToMarkdown(children, false).replace(/\|/g, '\\|')
   const row = (cells: { children: Inline[] }[]) => `| ${cells.map((c) => cell(c.children)).join(' | ')} |`
