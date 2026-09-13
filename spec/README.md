@@ -21,3 +21,6 @@ because a spec that can change under the suite is not a contract.
 **Do not edit either file.** A failing example is the engine's answer being wrong, or a
 deliberate divergence — and a deliberate divergence is named in `src/md/spec.test.ts`, where
 it has to carry a reason, not silently deleted from the data.
+
+As of 2026-09-13 every example passes except the four named there, so the suite asserts
+exactly that rather than a moving floor: a change that loses one is red and says which.

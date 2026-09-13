@@ -19,7 +19,17 @@ type Example = { markdown: string; html: string; example: number; section: strin
 
 const CM: Example[] = JSON.parse(readFileSync('spec/commonmark-0.31.2.json', 'utf8'))
 const GFM: Example[] = JSON.parse(readFileSync('spec/gfm-extensions.json', 'utf8'))
-const FLOOR: { commonmark: number; gfm: number } = JSON.parse(readFileSync('spec/floor.json', 'utf8'))
+/**
+ * THE RATCHET REACHED THE TOP, so it became a wall.
+ *
+ * While the engine was being built this file asserted against a floor in `spec/floor.json`
+ * that could only be raised — a suite that stays red until the last sitting tells nobody
+ * anything on any of the days in between. On 2026-09-13 the count reached every example that
+ * is not deliberately diverged, and at that point a floor is the weaker statement: it would
+ * let a later change lose three examples and stay green.
+ *
+ * So the contract is now exact. Every example passes, or this is red and says which.
+ */
 
 /**
  * Examples this engine deliberately answers differently, each with the reason.
@@ -38,6 +48,14 @@ const DIVERGED: Record<number, string> = {
   608: 'bare URL inside `< … >` with spaces: GFM links it, CommonMark does not',
   611: 'bare `https://example.com`: GFM links it, CommonMark does not',
   612: 'bare email address: GFM links it, CommonMark does not',
+
+  // `\[ … \]` IS A FORMULA HERE. CommonMark reads it as an escaped pair of brackets; this
+  // blog has read it as display maths since ADR 0020, and `marked` with the same extension
+  // loaded produces exactly the output this engine now produces — checked side by side on
+  // 2026-09-13, both rendering an empty `<math display="block">`. Matching the standard here
+  // would change what every existing post with a `\[…\]` formula renders as, which is the
+  // one thing this replacement promised not to do.
+  12: '`\\[ … \\]` is display maths on this blog (ADR 0020), not an escaped bracket',
 }
 
 function run(set: Example[], disallowRawHtml: boolean): { pass: number; fails: Example[] } {
@@ -75,17 +93,19 @@ describe('the Markdown engine against the specs', () => {
     expect(GFM.length).toBe(24)
   })
 
-  it(`renders at least ${FLOOR.commonmark} of CommonMark 0.31.2`, () => {
+  it('renders every CommonMark 0.31.2 example that is not deliberately diverged', () => {
     // CommonMark passes `<script>` and friends through; six of its examples say so.
     const { pass, fails } = run(CM, false)
     report('CommonMark 0.31.2', CM.length, pass, fails)
-    expect(pass).toBeGreaterThanOrEqual(FLOOR.commonmark)
+    expect(fails.map((f) => `${f.example} ${f.section}`)).toEqual([])
+    expect(pass).toBe(CM.length - Object.keys(DIVERGED).length)
   })
 
-  it(`renders at least ${FLOOR.gfm} of the GFM extensions`, () => {
+  it('renders every GFM extension example', () => {
     const { pass, fails } = run(GFM, true)
     report('GFM extensions', GFM.length, pass, fails)
-    expect(pass).toBeGreaterThanOrEqual(FLOOR.gfm)
+    expect(fails.map((f) => `${f.example} ${f.section}`)).toEqual([])
+    expect(pass).toBe(GFM.length)
   })
 
   it('never throws, on any example in either spec', () => {

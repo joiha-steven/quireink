@@ -11,6 +11,8 @@
 
 import type { Block, Document, Inline, ListItem } from './ast'
 import { resolveEntities } from './entity'
+import { DEFAULT_INK, penSeed } from '@/pen/grammar'
+import { renderMath } from '@/render/math'
 
 /** The five characters that cannot appear raw in HTML text, escaped the way the spec does. */
 export function escapeText(value: string): string {
@@ -114,17 +116,26 @@ function oneInline(node: Inline): string {
       // The alt text is the tree's inlines FLATTENED to their words: an `alt` attribute holds
       // text, so `![a *b*](x)` is `alt="a b"`, which is what the spec's examples show.
       return `<img src="${escapeUrl(node.url)}" alt="${escapeText(plainOf(node.alt))}"${attr('title', node.title)} />`
-    case 'ink':
-      return node.ink && node.ink !== 'yellow'
-        ? `<mark data-ink="${escapeText(node.ink)}">${inlineToHtml(node.children)}</mark>`
-        : `<mark>${inlineToHtml(node.children)}</mark>`
-    case 'underline':
-      return `<u>${inlineToHtml(node.children)}</u>`
-    case 'ring':
-      return `<mark data-form="o">${inlineToHtml(node.children)}</mark>`
+    case 'ink': {
+      // No attribute for the default. Yellow is what a bare `==` means, so spelling it out
+      // would put a colour nobody chose into every cached body.
+      const ink = node.ink && node.ink !== DEFAULT_INK ? ` data-ink="${escapeText(node.ink)}"` : ''
+      return `<mark${ink} data-pen="${penSeed(node.raw)}">${inlineToHtml(node.children)}</mark>`
+    }
+    case 'underline': {
+      // Unlike the highlighter, a NAMED default is still a choice here: the underline's own
+      // default is graphite, so `#yellow` on one is never elided.
+      const ink = node.ink ? ` data-ink="${escapeText(node.ink)}"` : ''
+      return `<u${ink} data-pen="${penSeed(node.raw)}">${inlineToHtml(node.children)}</u>`
+    }
+    case 'ring': {
+      const ink = node.ink ? ` data-ink="${escapeText(node.ink)}"` : ''
+      return `<mark data-form="o"${ink} data-pen="${penSeed(node.raw)}">${inlineToHtml(node.children)}</mark>`
+    }
     case 'math':
-      // Left for `src/render/math.ts`, which owns the TeX-to-MathML step and its cache.
-      return `<span class="math-inline">${escapeText(node.value)}</span>`
+      // `render/math.ts` owns the TeX-to-MathML step, and keeps owning it: one formula
+      // renderer, whichever parser found the formula.
+      return renderMath(node.value, node.display)
     case 'footnoteRef':
       return `<sup class="footnote-ref"><a href="#fn-${escapeText(node.label)}">${escapeText(node.label)}</a></sup>`
   }
@@ -191,7 +202,9 @@ function oneBlock(node: Block): string {
     case 'list':
       return listToHtml(node)
     case 'mathBlock':
-      return `<div class="math-block">${escapeText(node.value)}</div>\n`
+      // The wrapper is what scrolls: a long derivation is wider than the measure and takes
+      // its own scrollbar rather than widening the page.
+      return `<div class="math-block">${renderMath(node.value, true)}</div>\n`
     case 'table':
       return tableToHtml(node)
     case 'footnoteDef':

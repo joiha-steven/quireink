@@ -44,14 +44,25 @@ export type Inline =
   | { type: 'strike'; children: Inline[] }
   | { type: 'link'; url: string; title?: string; children: Inline[] }
   | { type: 'image'; url: string; title?: string; alt: Inline[] }
-  /** The pen's highlight: `==words==` or `==words==#green`. `ink` is the colour's name. */
-  | { type: 'ink'; ink: string; children: Inline[] }
-  /** The pen's underline: `++words++`. */
-  | { type: 'underline'; children: Inline[] }
-  /** The pen's ring: `@@word@@`. */
-  | { type: 'ring'; children: Inline[] }
-  /** `$x$`. The value is TeX, untouched — `src/render/math.ts` turns it into MathML. */
-  | { type: 'math'; value: string }
+  /**
+   * The pen's three gestures: `==highlight==`, `++underline++`, `@@ring@@`, each with an
+   * optional `#colour`.
+   *
+   * `raw` IS LOAD-BEARING and not debugging residue. Every stroke wears one of the pen's
+   * variants, chosen by hashing the gesture's own source (`pen/grammar.ts`, `penSeed`) — so a
+   * phrase keeps the same stroke across re-renders and cached bodies stay deterministic. The
+   * hash needs the source text, fences and colour suffix included, and this is the only place
+   * it survives the parse.
+   */
+  | { type: 'ink'; ink?: string; raw: string; children: Inline[] }
+  | { type: 'underline'; ink?: string; raw: string; children: Inline[] }
+  | { type: 'ring'; ink?: string; raw: string; children: Inline[] }
+  /**
+   * A formula. The value is TeX, UNTOUCHED — no inline parsing happens inside it, or
+   * `x_1 + y_2` would come back as `x<em>1 + y</em>2`. `src/render/math.ts` turns it into
+   * MathML; the parser's only job is to find where it starts and stops.
+   */
+  | { type: 'math'; value: string; display: boolean }
   /** `[^label]` in the prose. The definition is a block. */
   | { type: 'footnoteRef'; label: string }
 
