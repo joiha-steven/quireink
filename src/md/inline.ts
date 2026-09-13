@@ -15,23 +15,7 @@ import { ChunkList, DelimStack, processEmphasis, scanDelims, type Chunk, type De
 import { inlineLinkTail, linkLabelLength, unescapeString } from './inline-link'
 import { normalizeLabel, type LinkDefs } from './link-ref'
 import { linkifyAll } from './gfm-autolink'
-import { INK_SYNTAX_SOURCE, RING_SYNTAX_SOURCE, UNDER_SYNTAX_SOURCE } from '@/pen/grammar'
-import { matchMathAt } from '@/render/math-syntax'
-
-/**
- * THE PEN'S GRAMMAR COMES FROM `pen/grammar.ts`, not from a copy of it here.
- *
- * That file's own warning is the reason: four parsers used to read `==text==` and the two that
- * spelled the rule out separately drifted within the hour — `toPlainText` put the word "green"
- * into every excerpt of a post that used a colour suffix. This engine is what ends the other
- * three, and it would be a poor start to copy the regex on the way.
- */
-const PEN = {
-  ink: new RegExp(`^${INK_SYNTAX_SOURCE}`),
-  underline: new RegExp(`^${UNDER_SYNTAX_SOURCE}`),
-  ring: new RegExp(`^${RING_SYNTAX_SOURCE}`),
-} as const
-
+import { mathAt, penAt, type PenKind } from './inline-pen'
 const ESCAPABLE = /[!-/:-@[-`{-~]/
 
 /** An open `[` or `![`, waiting for the `]` that may turn it into a link. */
@@ -127,26 +111,25 @@ export class InlineParser {
    * stack of the inner run is its own, which is correct: a `*` inside a highlight may not pair
    * with one outside it.
    */
-  /**
-   * A formula, in any of the delimiters this blog accepts: `$…$`, `\\(…\\)`, `$$…$$`, `\\[…\\]`.
-   *
-   * The match comes from `render/math-syntax.ts`, which every parser here already shares, and
-   * the TeX inside is never handed to the inline scan — `x_1 + y_2` would come back with an
-   * `<em>` in the middle of it.
-   */
   private math(): boolean {
-    const m = matchMathAt(this.text.slice(this.pos))
+    const m = mathAt(this.text, this.pos)
     if (!m) return false
-    this.list.push({ type: 'math', value: m.tex, display: m.display })
-    this.pos += m.raw.length
+    this.list.push({ type: 'math', value: m.value, display: m.display })
+    this.pos += m.length
     return true
   }
 
-  private pen(type: 'ink' | 'underline' | 'ring'): boolean {
-    const m = PEN[type].exec(this.text.slice(this.pos))
+  /**
+   * One of the pen's gestures. Its content is parsed as inline Markdown of its own, so bold,
+   * a link and a code span all survive under a stroke — the first thing anybody tries. The
+   * inner run gets its own delimiter stack, which is correct: a `*` inside a highlight may
+   * not pair with one outside it.
+   */
+  private pen(kind: PenKind): boolean {
+    const m = penAt(kind, this.text, this.pos)
     if (!m) return false
-    this.list.push({ type, ink: m[2], raw: m[0], children: parseInline(m[1]!, this.defs) })
-    this.pos += m[0].length
+    this.list.push({ type: kind, ink: m.ink, raw: m.raw, children: parseInline(m.inner, this.defs) })
+    this.pos += m.length
     return true
   }
 
