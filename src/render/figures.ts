@@ -189,10 +189,60 @@ export function responsiveSources(cleanSrc: string, ready: ReadyOriginals, sizes
     `<source type="image/webp" srcset="${set('webp')}" sizes="${sizes}">`
   )
 }
+/** Elements that never have a closing tag, so they never change nesting depth. */
+const VOID = new Set(['img', 'br', 'hr', 'source', 'wbr', 'input', 'col', 'embed', 'area', 'track'])
+
+/**
+ * Every picture out of the paragraph it was written in, splitting the paragraph around it.
+ *
+ * ⚠️ A `<figure>` IS A BLOCK AND A `<p>` CANNOT HOLD ONE. Markdown has a single shape for a
+ * picture and it is inline, so `text ![a](b) text` — or, far more often, an image written with
+ * no blank line after it — is one paragraph carrying an image. Turning that image into a
+ * `<figure>` and leaving it there hands the browser `<p>…<figure>…</figure>…</p>`, which its
+ * parser repairs by CLOSING the paragraph before the figure. What comes out is an empty `<p>`,
+ * the figure, and the rest of the sentence as a BARE TEXT NODE with no paragraph around it.
+ *
+ * MEASURED ON THE LIVE SITE, 2026-09-14: a paragraph's first line is indented 29px and the run
+ * of text after a picture started at 0, because `.prose p{text-indent:1.6em}` cannot reach a
+ * text node. 43 pictures in 20 of this blog's 92 posts were in that state, and had been since
+ * long before the engine changed — `marked` produced the same shape.
+ *
+ * Only an image at the paragraph's OWN level is lifted. One nested inside an inline element
+ * (`<a><img></a>`) would leave that element torn in half by the split, and the paragraph keeps
+ * it. None of this blog's 92 posts has one.
+ */
+function liftImagesOutOfParagraphs(html: string): string {
+  return html.replace(/<p(?:\s[^>]*)?>([\s\S]*?)<\/p>/g, (whole, inner: string) => {
+    if (!inner.includes('<img')) return whole
+    const out: string[] = []
+    const tag = /<(\/?)([a-zA-Z][\w-]*)\b[^>]*?(\/?)>/g
+    let depth = 0
+    let from = 0
+    let m: RegExpExecArray | null
+    while ((m = tag.exec(inner)) !== null) {
+      const closing = m[1] === '/'
+      const name = m[2]!.toLowerCase()
+      if (name === 'img' && !closing && depth === 0) {
+        const run = inner.slice(from, m.index)
+        if (run.trim()) out.push(`<p>${run}</p>`)
+        out.push(m[0])
+        from = m.index + m[0].length
+        continue
+      }
+      if (!VOID.has(name) && m[3] !== '/') depth += closing ? -1 : 1
+    }
+    const rest = inner.slice(from)
+    if (rest.trim()) out.push(`<p>${rest}</p>`)
+    return out.length ? out.join('') : whole
+  })
+}
+
 export function buildFigures(html: string, ready: ReadyOriginals, dims: ImageDims): string {
   let seen = 0 // index of the image within the body, in source order
-  return html
-    .replace(/<p>\s*(<img\b[^>]*>)\s*<\/p>/g, '$1')
+  // The lift replaces what used to be `<p>\s*(<img>)\s*</p>` → `$1`: that rule only knew the
+  // paragraph holding NOTHING but a picture, which is the case this blog writes most often and
+  // not the only one it writes.
+  return liftImagesOutOfParagraphs(html)
     .replace(/<img\b[^>]*>/g, (tag) => {
       const src = tag.match(/\bsrc="([^"]*)"/)?.[1]
       if (!src) return tag

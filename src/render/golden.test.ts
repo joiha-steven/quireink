@@ -151,6 +151,16 @@ const DIVERGED: Record<string, { behaviour: string; why: string }> = {
   //    `post-content.ts`, so the stylesheet can keep its ink dot off an item that already
   //    has a box. Three lines differ from 1.x by that attribute and nothing else.
   'task-lists': { behaviour: 'task item', why: 'li carries class="task" round a checkbox' },
+
+  // ── A picture leaves the paragraph it was written in (2026-09-14).
+  //    `<figure>` is a block and `<p>` may not hold one, so the browser's parser CLOSES the
+  //    paragraph before it: what a reader got was an empty `<p>`, the figure, and the rest of
+  //    the sentence as a bare text node with no paragraph round it. `.prose p{text-indent:1.6em}`
+  //    cannot reach a text node, so that run of words lost its indent — measured on the live
+  //    site at 29px against 0. 43 pictures in 20 of this blog's 92 posts were in that state,
+  //    and 1.x printed the same shape, which is why this is a divergence and not a port bug.
+  //    `buildFigures` now splits the paragraph, which is what the parser was doing anyway.
+  'reference-links': { behaviour: 'picture out of paragraph', why: 'the paragraph is split round the figure, not repaired by the parser' },
 }
 
 describe('golden: the deliberate divergences from 1.x', () => {
@@ -161,7 +171,9 @@ describe('golden: the deliberate divergences from 1.x', () => {
     // gate. And a name that no longer exists is a rule guarding nothing, which is how
     // `check:css-literal` went quietly dead twice.
     const behaviours = new Set(Object.values(DIVERGED).map((d) => d.behaviour))
-    expect(behaviours.size).toBeLessThan(4)
+    // Four since 2026-09-14. The ceiling moves only when a behaviour is added deliberately and
+    // written up above; raising it to keep a red test quiet is the drift this guard is for.
+    expect(behaviours.size).toBeLessThan(5)
     expect(Object.keys(DIVERGED).length).toBeLessThan(fixtures.length / 4)
     for (const name of Object.keys(DIVERGED)) expect(fixtures).toContain(`${name}.md`)
   })

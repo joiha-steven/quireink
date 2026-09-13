@@ -9,3 +9,4 @@ gfm-table-pipes
 list-with-table
 mixed-everything
 task-lists
+reference-links
