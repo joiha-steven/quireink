@@ -12,33 +12,70 @@
 import type { Block, Document, ListItem } from './ast'
 import { decideLoose, type Node } from './block-tree'
 import { parseInline } from './inline'
+import { ENTITIES } from './entity'
+import { stripDefinitions, type LinkDefs } from './link-ref'
 
+/**
+ * TWO PASSES, and the second one is why.
+ *
+ * A link may point at a definition written further down the document — `[see later][x]` in the
+ * first paragraph and `[x]: /url` in the last — so every definition has to be collected before
+ * any inline is parsed. The first pass walks the block tree and peels definitions off the
+ * front of every paragraph; the second turns what is left into inlines, with the whole map in
+ * hand. A parser that resolved links as it met them would get every forward reference wrong.
+ */
 export function toAst(root: Node): Document {
-  return { type: 'document', children: blocksOf(root) }
+  const defs: LinkDefs = new Map()
+  collectDefinitions(root, defs)
+  return { type: 'document', children: blocksOf(root, defs) }
 }
 
-function blocksOf(parent: Node): Block[] {
+/** An entity in a definition's URL or title is resolved before it is stored. */
+function resolveEntities(text: string): string {
+  return text.replace(/&(?:([A-Za-z][A-Za-z0-9]{1,31})|#(\d{1,7})|#[xX]([0-9a-fA-F]{1,6}));/g, (whole, name, dec, hex) => {
+    if (name) return ENTITIES[name] ?? whole
+    const n = dec ? Number(dec) : parseInt(hex, 16)
+    if (n === 0 || n > 0x10ffff || (n >= 0xd800 && n <= 0xdfff)) return '\uFFFD'
+    return String.fromCodePoint(n)
+  })
+}
+
+function collectDefinitions(parent: Node, defs: LinkDefs): void {
+  for (const child of parent.children) {
+    if (child.kind === 'paragraph') {
+      const text = child.lines.join('\n').replace(/^[ \t]+|[ \t]+$/g, '')
+      const rest = stripDefinitions(text, defs, resolveEntities)
+      // The paragraph keeps only what the definitions left. One that was nothing but
+      // definitions ends up empty, and `oneBlock` drops it.
+      child.lines = rest === '' ? [] : [rest]
+    } else {
+      collectDefinitions(child, defs)
+    }
+  }
+}
+
+function blocksOf(parent: Node, defs: LinkDefs): Block[] {
   const out: Block[] = []
   for (const child of parent.children) {
-    const block = oneBlock(child)
+    const block = oneBlock(child, defs)
     if (block) out.push(block)
   }
   return out
 }
 
-function oneBlock(n: Node): Block | null {
+function oneBlock(n: Node, defs: LinkDefs): Block | null {
   switch (n.kind) {
     case 'paragraph': {
       const text = n.lines.join('\n').replace(/^[ \t]+|[ \t]+$/g, '')
       if (text === '') return null
-      return { type: 'paragraph', children: parseInline(text) }
+      return { type: 'paragraph', children: parseInline(text, defs) }
     }
 
     case 'heading':
       return {
         type: 'heading',
         level: (n.level ?? 1) as 1 | 2 | 3 | 4 | 5 | 6,
-        children: parseInline(n.lines.join('\n').trim()),
+        children: parseInline(n.lines.join('\n').trim(), defs),
       }
 
     case 'thematicBreak':
@@ -63,12 +100,12 @@ function oneBlock(n: Node): Block | null {
       return { type: 'htmlBlock', value: n.lines.join('\n').replace(/\n+$/, '') }
 
     case 'blockquote':
-      return { type: 'blockquote', children: blocksOf(n) }
+      return { type: 'blockquote', children: blocksOf(n, defs) }
 
     case 'list': {
       const tight = !decideLoose(n)
       const items: ListItem[] = n.children.map((item) => ({
-        children: blocksOf(item),
+        children: blocksOf(item, defs),
         checked: item.checked ?? null,
       }))
       return {

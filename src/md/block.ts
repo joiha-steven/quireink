@@ -16,18 +16,13 @@
 
 import { Line, toLines } from './line'
 import {
-  acceptsLines, decideLoose, isContainer, lastChild, node, sameList, type Kind, type Node,
+  acceptsLines, canContain, decideLoose, isContainer, lastChild, node, sameList, type Kind, type Node,
 } from './block-tree'
 import {
-  atxHeading, blockquoteMarker, closesFence, codeFence, htmlBlockEnds, htmlBlockStart,
+  atxHeading, blockquoteMarker, codeFence, htmlBlockEnds, htmlBlockStart,
   listMarker, setextUnderline, taskMarker, thematicBreak,
 } from './block-scan'
-
-/** What a block says when asked whether a line is still its own. */
-const MATCHED = 0
-const NOT_MATCHED = 1
-/** The block consumed the line itself and closed — a fence's closing line. */
-const CONSUMED = 2
+import { CONSUMED, NOT_MATCHED, continuesBlock } from './block-continue'
 
 export class BlockParser {
   doc: Node = node('document', null)
@@ -68,8 +63,11 @@ export class BlockParser {
     while (child && child.open) {
       container = child
       this.blank = this.line.blank()
-      const verdict = this.continues(container)
-      if (verdict === CONSUMED) return
+      const verdict = continuesBlock(container, this.line, this.blank)
+      if (verdict === CONSUMED) {
+        this.finalize(container)
+        return
+      }
       if (verdict === NOT_MATCHED) {
         container = container.parent!
         allMatched = false
@@ -87,7 +85,13 @@ export class BlockParser {
 
     this.opened = false
     this.lineSpent = false
-    const target = acceptsLines(container) ? container : this.openNew(container, wasLazy)
+    // A PARAGRAPH DOES NOT STOP THE SEARCH. Almost everything may interrupt one — a heading,
+    // a fence, a list, a rule, and above all a setext underline, which turns the paragraph
+    // above it into a heading and therefore can only be found while that paragraph is open.
+    // Skipping `openNew` whenever the block could hold lines cost all 17 setext examples.
+    // Only the three blocks that hold RAW text are exempt: inside them a `#` is a `#`.
+    const raw = container.kind === 'codeIndented' || container.kind === 'codeFenced' || container.kind === 'html'
+    const target = raw ? container : this.openNew(container, wasLazy)
 
     if (wasLazy && !this.opened) {
       this.addLine(this.tip)
@@ -98,81 +102,6 @@ export class BlockParser {
     // this after it would close the block it just built — two lists where one was meant.
     if (!this.opened) this.closeUnmatched()
     this.acceptLine(target)
-  }
-
-  /** Whether this open block still owns the current line, consuming its marker if so. */
-  private continues(block: Node): number {
-    switch (block.kind) {
-      case 'document':
-        return MATCHED
-
-      case 'blockquote': {
-        if (!blockquoteMarker(this.line)) return NOT_MATCHED
-        this.line.advanceWhitespace(this.line.indent())
-        this.line.advance() // the '>'
-        // One optional space after the marker, and a tab counts as that space.
-        if (this.line.peek() === ' ' || this.line.peek() === '\t') this.line.advanceWhitespace(1)
-        return MATCHED
-      }
-
-      case 'item': {
-        const indent = block.itemIndent ?? 2
-        if (this.blank) {
-          // An item that has nothing in it yet cannot be continued by a blank line: `-` on
-          // its own followed by a blank line is an empty item, not the start of something.
-          if (block.children.length === 0) return NOT_MATCHED
-          this.line.advanceWhitespace(Math.min(indent, this.line.indent()))
-          return MATCHED
-        }
-        if (this.line.indent() >= indent) {
-          this.line.advanceWhitespace(indent)
-          return MATCHED
-        }
-        return NOT_MATCHED
-      }
-
-      case 'list':
-        return MATCHED
-
-      case 'paragraph':
-        return this.blank ? NOT_MATCHED : MATCHED
-
-      case 'codeIndented': {
-        if (this.line.indent() >= 4) {
-          this.line.advanceWhitespace(4)
-          return MATCHED
-        }
-        if (this.blank) {
-          this.line.advanceWhitespace(this.line.indent())
-          return MATCHED
-        }
-        return NOT_MATCHED
-      }
-
-      case 'codeFenced': {
-        if (closesFence(this.line, block.fenceChar!, block.fenceLength!)) {
-          this.finalize(block)
-          return CONSUMED
-        }
-        // The opening fence's own indentation comes off every line inside it, but only as
-        // much of it as the line actually has.
-        this.line.advanceWhitespace(Math.min(block.fenceIndent ?? 0, this.line.indent()))
-        return MATCHED
-      }
-
-      case 'html': {
-        const kind = block.htmlKind ?? 6
-        if (kind >= 6) return this.blank ? NOT_MATCHED : MATCHED
-        return MATCHED
-      }
-
-      case 'table':
-        return this.blank ? NOT_MATCHED : MATCHED
-
-      default:
-        // A heading or a thematic break is one line and finished.
-        return NOT_MATCHED
-    }
   }
 
   // ----- opening ------------------------------------------------------------------------
@@ -190,13 +119,11 @@ export class BlockParser {
     let container = from
 
     for (;;) {
-      if (!isContainer(container) && container.kind !== 'document') break
-
       const indent = this.line.indent()
 
       // Indented code, but never where a paragraph is running: four spaces under a paragraph
       // is a continuation line, not a code block.
-      if (indent >= 4 && this.tip.kind !== 'paragraph' && !lazy) {
+      if (indent >= 4 && container.kind !== 'paragraph' && !lazy) {
         this.line.advanceWhitespace(4)
         if (!this.blank) {
           container = this.addChild('codeIndented', container)
@@ -242,7 +169,7 @@ export class BlockParser {
         return created
       }
 
-      const html = htmlBlockStart(this.line, this.tip.kind === 'paragraph' && !this.allClosedFrom(container))
+      const html = htmlBlockStart(this.line, container.kind === 'paragraph')
       if (html !== null) {
         if (!this.opened) this.closeUnmatchedFrom(container)
         const created = this.addChild('html', container)
@@ -255,8 +182,8 @@ export class BlockParser {
       // A setext underline turns the paragraph above it into a heading — only when that
       // paragraph is the block this line would have continued.
       const setext = setextUnderline(this.line)
-      if (setext && this.tip.kind === 'paragraph' && this.tip.parent === container && !lazy) {
-        const para = this.tip
+      if (setext && container.kind === 'paragraph' && !lazy) {
+        const para = container
         para.kind = 'heading'
         para.level = setext
         this.finalize(para)
@@ -274,7 +201,7 @@ export class BlockParser {
         return created
       }
 
-      const marker = listMarker(this.line, this.tip.kind === 'paragraph')
+      const marker = listMarker(this.line, container.kind === 'paragraph')
       if (marker) {
         if (!this.opened) this.closeUnmatchedFrom(container)
         // The item's continuation indent: everything up to where its content begins.
@@ -312,6 +239,12 @@ export class BlockParser {
 
   private acceptLine(container: Node): void {
     if (this.lineSpent) return
+    // BLANK IS RE-READ HERE, and it has to be. `this.blank` was measured before `openNew` ate
+    // the markers, so `-` on its own looked non-blank — the marker was still on the line — and
+    // the item got a paragraph containing the empty remainder. That empty first line then made
+    // `-\n  foo` render as `<li>\nfoo</li>`, and made an item that should have closed on the
+    // next blank line look like it had content.
+    this.blank = this.line.blank()
 
     if (acceptsLines(container)) {
       this.addLine(container)
@@ -322,11 +255,17 @@ export class BlockParser {
     }
 
     if (this.blank) {
-      // Remember a blank line on the block that just ended, so a list can work out whether
-      // it is loose when it closes.
-      const last = lastChild(this.lastMatched)
-      if (last) last.endsWithBlank = true
-      else this.lastMatched.endsWithBlank = true
+      // Remember a blank line on the block that just ended, so a list can work out whether it
+      // is loose when it closes — EXCEPT on an item that opened on this very line and holds
+      // nothing yet. `-` alone followed by its content on the next line is one item written
+      // over two lines, not an item with a blank line in it, and counting it made every such
+      // list loose: `<li>\nfoo</li>` where the spec says `<li>foo</li>`.
+      const emptyFreshItem = container.kind === 'item' && container.children.length === 0
+      if (!emptyFreshItem) {
+        const last = lastChild(this.lastMatched)
+        if (last) last.endsWithBlank = true
+        else this.lastMatched.endsWithBlank = true
+      }
       return
     }
 
@@ -344,17 +283,13 @@ export class BlockParser {
 
   private addChild(kind: Kind, parent: Node): Node {
     let target = parent
-    while (!isContainer(target) && target.kind !== 'document') {
+    while (!canContain(target.kind, kind)) {
       this.finalize(target)
       target = target.parent!
     }
     const created = node(kind, target)
     this.tip = created
     return created
-  }
-
-  private allClosedFrom(container: Node): boolean {
-    return container === this.tip
   }
 
   private closeUnmatched(): void {

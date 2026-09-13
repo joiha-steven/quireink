@@ -69,6 +69,20 @@ export function isContainer(n: Node): boolean {
   return n.kind === 'document' || n.kind === 'blockquote' || n.kind === 'list' || n.kind === 'item'
 }
 
+/**
+ * Whether a block of this kind may hold a block of that kind.
+ *
+ * A LIST HOLDS ONLY ITEMS, and that single rule is what this exists for. Without it a
+ * paragraph that followed a list but was not indented enough to continue its item got added
+ * to the LIST — where the renderer, reasonably, drew it as an empty `<li>`. Four spec examples
+ * showed the same phantom bullet.
+ */
+export function canContain(parent: Kind, child: Kind): boolean {
+  if (parent === 'list') return child === 'item'
+  if (parent === 'document' || parent === 'blockquote' || parent === 'item') return child !== 'item'
+  return false
+}
+
 /** Whether a leaf accepts more lines at all. A heading is one line and done. */
 export function acceptsLines(n: Node): boolean {
   return n.kind === 'paragraph' || n.kind === 'codeIndented' || n.kind === 'codeFenced' || n.kind === 'html' || n.kind === 'table'

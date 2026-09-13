@@ -197,13 +197,20 @@ function itemToHtml(item: ListItem, tight: boolean): string {
 
   if (tight) {
     let inner = ''
-    for (const block of item.children) {
-      inner += block.type === 'paragraph' ? inlineToHtml(block.children) : oneBlock(block)
-    }
-    // A tight item whose content is only a paragraph sits on one line; anything else keeps
-    // the newlines its blocks came with.
-    const oneLine = item.children.every((b) => b.type === 'paragraph')
-    return oneLine ? `<li>${check}${inner}</li>\n` : `<li>${check}${inner}</li>\n`
+    item.children.forEach((block, i) => {
+      if (block.type === 'paragraph') {
+        inner += inlineToHtml(block.children)
+        // A paragraph that has a block after it still needs the line break it lost with its
+        // `<p>`, or the list that follows starts on the same line as the words above it.
+        if (i < item.children.length - 1) inner += '\n'
+      } else {
+        inner += oneBlock(block)
+      }
+    })
+    // `<li>` is followed by a newline unless the item opens with words. `<li>foo` but
+    // `<li>\n<pre>` — the spec draws that distinction and five examples turn on it.
+    const lead = item.children[0]?.type === 'paragraph' ? '' : '\n'
+    return `<li>${check}${lead}${inner}</li>\n`
   }
   if (item.children.length === 0) return '<li></li>\n'
   return `<li>\n${check}${blocksToHtml(item.children)}</li>\n`
