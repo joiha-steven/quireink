@@ -242,7 +242,14 @@ export class InlineParser {
     const open = /^`+/.exec(this.text.slice(this.pos))![0]
     const after = this.pos + open.length
     const closer = new RegExp(`(?<!\`)\`{${open.length}}(?!\`)`).exec(this.text.slice(after))
-    if (!closer) return false
+    if (!closer) {
+      // THE WHOLE RUN BECOMES TEXT, and the cursor goes past all of it. Backing off by one
+      // character instead let the run be re-scanned a backtick shorter, so ```` ```foo`` ````
+      // found a two-backtick span inside a three-backtick opener that had no match at all.
+      this.pushText(open)
+      this.pos = after
+      return true
+    }
     let value = this.text.slice(after, after + closer.index).replace(/\n/g, ' ')
     if (value.length > 2 && value.startsWith(' ') && value.endsWith(' ') && value.trim() !== '') {
       value = value.slice(1, -1)
@@ -314,7 +321,7 @@ const ATTR = `(?:[ \\t\\n]+[_:A-Za-z][\\w.:-]*(?:[ \\t\\n]*=[ \\t\\n]*(?:[^ \\t\
 const HTML_TAG_RE = new RegExp(
   `^(?:<${NAME}${ATTR}[ \\t\\n]*/?>` +
     `|</${NAME}[ \\t\\n]*>` +
-    `|<!--(?!>|->)(?:[^-]|-(?!-))*-->` +
+    `|<!-->|<!--->|<!--[\\s\\S]*?-->` +
     `|<\\?[\\s\\S]*?\\?>` +
     `|<![A-Za-z][^>]*>` +
     `|<!\\[CDATA\\[[\\s\\S]*?\\]\\]>)`,

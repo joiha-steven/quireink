@@ -10,6 +10,7 @@
 // judgements is not a test. Byte equality is a test.
 
 import type { Block, Document, Inline, ListItem } from './ast'
+import { resolveEntities } from './entity'
 
 /** The five characters that cannot appear raw in HTML text, escaped the way the spec does. */
 export function escapeText(value: string): string {
@@ -47,6 +48,36 @@ export function escapeUrl(url: string): string {
   return out
 }
 
+/**
+ * The tags GFM refuses to pass through, whatever the source says.
+ *
+ * Not a formatting rule — a safety one. `<title>` and `<style>` rewrite the page around them,
+ * `<script>` and `<iframe>` run code, and `<textarea>` and `<xmp>` swallow everything after
+ * them as text. A blog that renders other people's Markdown lets none of them through, so the
+ * `<` is escaped and the tag arrives as the words somebody typed.
+ */
+const DISALLOWED = /<(\/?)(title|textarea|style|xmp|iframe|noembed|noframes|script|plaintext)(?=[\s/>])/gi
+
+/**
+ * WHETHER TO FILTER IS A SETTING, and the two specs are why.
+ *
+ * GFM escapes these tags; CommonMark passes them through, and six of its examples check that
+ * it does. Both are right about their own document, so the engine does both and the caller
+ * says which — `spec.test.ts` measures each spec under its own rule, and the product runs with
+ * the filter ON, because a blog that renders imported Markdown is exactly the case GFM wrote
+ * the rule for.
+ */
+let filtering = true
+
+export function setHtmlFiltering(on: boolean): void {
+  filtering = on
+}
+
+function filterHtml(value: string): string {
+  if (!filtering) return value
+  return value.replace(DISALLOWED, (_m, slash: string, tag: string) => `&lt;${slash}${tag}`)
+}
+
 function attr(name: string, value: string | undefined): string {
   return value === undefined ? '' : ` ${name}="${escapeText(value)}"`
 }
@@ -70,7 +101,7 @@ function oneInline(node: Inline): string {
     case 'code':
       return `<code>${escapeText(node.value)}</code>`
     case 'html':
-      return node.value
+      return filterHtml(node.value)
     case 'emph':
       return `<em>${inlineToHtml(node.children)}</em>`
     case 'strong':
@@ -154,7 +185,7 @@ function oneBlock(node: Block): string {
       return `<pre><code${cls}>${escapeText(node.value)}</code></pre>\n`
     }
     case 'htmlBlock':
-      return `${node.value}\n`
+      return `${filterHtml(node.value)}\n`
     case 'blockquote':
       return `<blockquote>\n${blocksToHtml(node.children)}</blockquote>\n`
     case 'list':
@@ -170,9 +201,9 @@ function oneBlock(node: Block): string {
   }
 }
 
-/** A backslash escape inside an info string is resolved before it becomes a class name. */
+/** An info string is source text: its escapes AND its entities resolve before it names a class. */
 function unescapeInfo(info: string): string {
-  return info.replace(/\\([!-/:-@[-`{-~])/g, '$1')
+  return resolveEntities(info.replace(/\\([!-/:-@[-`{-~])/g, '$1'))
 }
 
 function listToHtml(node: Extract<Block, { type: 'list' }>): string {
@@ -213,7 +244,9 @@ function itemToHtml(item: ListItem, tight: boolean): string {
     })
     // `<li>` is followed by a newline unless the item opens with words. `<li>foo` but
     // `<li>\n<pre>` — the spec draws that distinction and five examples turn on it.
-    const lead = item.children[0]?.type === 'paragraph' ? '' : '\n'
+    // An EMPTY item is `<li></li>`, not `<li>\n</li>`. Four examples, and the missing case was
+    // `children[0]` being undefined falling through to the newline branch.
+    const lead = item.children.length === 0 || item.children[0]?.type === 'paragraph' ? '' : '\n'
     return `<li>${check}${lead}${inner}</li>\n`
   }
   if (item.children.length === 0) return '<li></li>\n'

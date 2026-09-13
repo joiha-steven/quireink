@@ -11,7 +11,7 @@
 import type { Document } from './ast'
 import { parseBlocks } from './block'
 import { toAst } from './to-ast'
-import { toHtml as renderHtml } from './html'
+import { setHtmlFiltering, toHtml as renderHtml } from './html'
 
 export type { Block, Document, Inline, ListItem } from './ast'
 
@@ -20,7 +20,23 @@ export function parse(source: string): Document {
   return toAst(parseBlocks(source))
 }
 
+export type HtmlOptions = {
+  /**
+   * Escape the tags GFM disallows — `<script>`, `<style>`, `<title>`, `<iframe>` and the rest.
+   * On by default: this blog renders Markdown that arrived from a WordPress import and from
+   * its own MCP server, and those tags rewrite or run the page around them.
+   *
+   * Off only where CommonMark's own answer is being measured.
+   */
+  disallowRawHtml?: boolean
+}
+
 /** The reader's page. Measured against the specs' own examples in `spec.test.ts`. */
-export function toHtml(source: string): string {
-  return renderHtml(parse(source))
+export function toHtml(source: string, options: HtmlOptions = {}): string {
+  setHtmlFiltering(options.disallowRawHtml !== false)
+  try {
+    return renderHtml(parse(source))
+  } finally {
+    setHtmlFiltering(true)
+  }
 }

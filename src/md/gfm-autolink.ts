@@ -77,10 +77,13 @@ function matchAt(text: string, from: number): { url: string; label: string; leng
 
   const mail = EMAIL.exec(rest)
   if (mail) {
-    // An address may not end on `-` or `_`; `a@b.co_` is text with an address inside it.
-    const whole = mail[0].replace(/[-_]+$/, '')
-    if (!/\.[A-Za-z0-9-]+$/.test(whole)) return null
-    return { url: `mailto:${whole}`, label: whole, length: whole.length }
+    // A `-` or `_` RIGHT AFTER the address refuses the whole thing rather than being trimmed
+    // off it: `a.b@c.d-` is not an address with a dash after it, it is text. A `.` after one
+    // is the sentence's full stop and does come off, which `trimTrailing` above handles for
+    // URLs and the regex's own tail handles here.
+    const next = rest[mail[0].length]
+    if (next === '-' || next === '_') return null
+    return { url: `mailto:${mail[0]}`, label: mail[0], length: mail[0].length }
   }
 
   return null

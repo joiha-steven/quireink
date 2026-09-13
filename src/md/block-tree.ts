@@ -111,14 +111,40 @@ export function sameList(list: Node, ordered: boolean, delim: string): boolean {
  * list closes, because until then a blank line at the end might just be the line that ends
  * the list — and a list that ends with a blank line is not loose for it.
  */
+/**
+ * Whether a block's last line was blank — looking THROUGH lists and items to reach it.
+ *
+ * A blank line inside the last item of the last list inside an item is still that item ending
+ * on a blank line, and the loose/tight decision has to see it. Stopping at the item itself
+ * missed every list written with a blank line between its bullets, which is most of them.
+ */
+function endsBlank(n: Node): boolean {
+  let cur: Node | undefined = n
+  while (cur) {
+    if (cur.endsWithBlank) return true
+    if (cur.kind !== 'list' && cur.kind !== 'item') return false
+    cur = lastChild(cur)
+  }
+  return false
+}
+
+/**
+ * A list is TIGHT unless something made it loose, and this is where that is decided.
+ *
+ * Loose means: a blank line between two items, or a blank line between two blocks inside an
+ * item. Either one makes every paragraph in the list keep its `<p>`. The check runs when the
+ * list closes, because until then a blank line at the end might just be the line that ended
+ * the list — and a list that ends with a blank line is not loose for it. That last clause is
+ * why both tests below ask whether something FOLLOWS.
+ */
 export function decideLoose(list: Node): boolean {
   if (list.loose) return true
   for (let i = 0; i < list.children.length; i++) {
     const item = list.children[i]!
-    // A blank line inside an item, between two of its blocks.
-    if (item.endsWithBlank && i !== list.children.length - 1) return true
-    for (let j = 0; j < item.children.length - 1; j++) {
-      if (item.children[j]!.endsWithBlank) return true
+    const hasNextItem = i < list.children.length - 1
+    if (hasNextItem && endsBlank(item)) return true
+    for (let j = 0; j < item.children.length; j++) {
+      if (endsBlank(item.children[j]!) && (hasNextItem || j < item.children.length - 1)) return true
     }
   }
   return false

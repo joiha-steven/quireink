@@ -40,14 +40,14 @@ const DIVERGED: Record<number, string> = {
   612: 'bare email address: GFM links it, CommonMark does not',
 }
 
-function run(set: Example[]): { pass: number; fails: Example[] } {
+function run(set: Example[], disallowRawHtml: boolean): { pass: number; fails: Example[] } {
   let pass = 0
   const fails: Example[] = []
   for (const ex of set) {
     if (DIVERGED[ex.example]) continue
     let out: string
     try {
-      out = toHtml(ex.markdown)
+      out = toHtml(ex.markdown, { disallowRawHtml })
     } catch {
       fails.push(ex)
       continue
@@ -76,13 +76,14 @@ describe('the Markdown engine against the specs', () => {
   })
 
   it(`renders at least ${FLOOR.commonmark} of CommonMark 0.31.2`, () => {
-    const { pass, fails } = run(CM)
+    // CommonMark passes `<script>` and friends through; six of its examples say so.
+    const { pass, fails } = run(CM, false)
     report('CommonMark 0.31.2', CM.length, pass, fails)
     expect(pass).toBeGreaterThanOrEqual(FLOOR.commonmark)
   })
 
   it(`renders at least ${FLOOR.gfm} of the GFM extensions`, () => {
-    const { pass, fails } = run(GFM)
+    const { pass, fails } = run(GFM, true)
     report('GFM extensions', GFM.length, pass, fails)
     expect(pass).toBeGreaterThanOrEqual(FLOOR.gfm)
   })
