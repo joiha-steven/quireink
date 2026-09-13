@@ -73,6 +73,7 @@ abandoned on 2026-07-26, and the only trace was a private memory file.
 | [0049](0049-the-pen-answers-the-hand.md) | The pen answers the hand: in the editor a mark just applied draws itself in 200 ms, and a felt tip squeaks, on the key feedback's own switch and slider | 2026-09-09 | ✅ |
 | [0050](0050-the-licence-opens-by-itself-after-48-months-without-a-release.md) | The licence opens by itself: 48 months without a release, and the code as it stands is also Apache 2.0, by a grant made today | 2026-09-10 | ✅ |
 | [0051](0051-a-connector-that-publishes-is-not-a-connector-that-can-run-script.md) | A third MCP scope: `full` publishes, `admin` may also set the four settings that put markup on a public page. Existing tokens narrow | 2026-09-13 | ✅ narrows the `full` scope from [0037](0037-an-mcp-token-carries-a-scope.md) |
+| [0052](0052-one-markdown-engine-of-our-own.md) | One Markdown parser of our own, CommonMark 0.31.2 in full plus GFM plus the pen's notation, rendering to HTML, plain text, the editor's document and back to Markdown | 2026-09-13 | 🚧 proposed; supersedes *"no second markdown engine"* in [0005](0005-rewrite-in-bun-hono-sqlite.md) |
 
 ## Written after the fact, and why that is allowed
 
