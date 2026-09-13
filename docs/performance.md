@@ -319,9 +319,11 @@ owner may never open, and preloading all fourteen would trade one problem for a 
    switch is on; an island every article has stays in `post.js` (7.1 KB after the split).
    Each gated bundle carries its own copy of `dom` and `motion` (~1.5 KB) because an IIFE
    cannot share and a shared chunk would be a request every page pays.
-3. **Heavy libs stay off the reader.** `@tiptap`/ProseMirror, `shiki`, `turndown` and
-   `marked` are admin-only or run server-side (Shiki highlights at save time into
-   `render_cache` → zero client JS). Never import one from `src/assets/js/`.
+3. **Heavy libs stay off the reader.** `@tiptap`/ProseMirror, `shiki` and `turndown` are
+   admin-only or run server-side (Shiki highlights at save time into `render_cache` → zero
+   client JS). Never import one from `src/assets/js/`. The Markdown engine is ours and has no
+   dependencies at all since 2026-09-14 (ADR 0052), so the four parsers that used to be on
+   this list are not installed any more.
 4. **No third-party analytics/tag JS on the reader.** Built-in cookieless analytics only
    (`track.ts` → `/api/track`). (Edge injections — e.g. Cloudflare Web Analytics / Bot JS
    Detections — are a dashboard concern, not code, and are redundant here.)

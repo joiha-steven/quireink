@@ -6,6 +6,14 @@ Replaces the Go plan's golden spec, and the change is large enough to state up f
 corpus differently. That risk no longer exists: `marked` is kept.** So is `shiki`, and so
 is `satori`.
 
+> **2026-09-13 — `marked` is not kept any more, and this harness is what let it go.** An
+> engine written here replaced it and three others (ADR 0052). The risk the Go plan feared
+> was taken on deliberately, and the harness stopped being a byte gate to measure it: a third
+> tier, `SAME_PAGE`, asserts a fixture differs only through a named rung of a ladder of
+> rewrites that are provably invisible, and a fourth instrument walks both DOM trees node by
+> node. Everything below still describes what the corpus is for; only the thing on the other
+> side of the comparison changed.
+
 The harness therefore stops being a negotiation over acceptable differences and becomes
 a **hard equality gate**. If an article body differs by one byte, a template was ported
 wrong. There is nothing to review and nothing to accept.
@@ -80,8 +88,9 @@ thousands of meaningless differences that hide the real ones.
 
 Real posts do not exercise the edge cases where implementations disagree, and although
 the parser is unchanged, the corpus is still worth building: it becomes the **regression
-suite for `marked` itself**, which is a live dependency that will be upgraded over the
-next ten years.
+suite for the ENGINE itself**, which is now ours and will be edited over the next ten years.
+It was written as a regression suite for `marked`, a dependency that would be upgraded; the
+reason it earns its keep did not change when the thing under it did.
 
 `golden/corpus/` holds hand-written fixtures, each a small markdown file with an
 expected-HTML sibling, covering at minimum:

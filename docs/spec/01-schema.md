@@ -357,8 +357,8 @@ practice and absent after an import.
 The rendered **body** is in here too, on the same terms: keyed by the build commit, the
 media facts and the markdown. This section used to say the opposite — that only
 highlighting is cached, because "`marked` is fast and a body cache would have to key on
-media variants, theme and locale". `marked` is not fast: **measured on the live site
-2026-07-29 it took 360ms on an 85,000-character post**, which was 359ms of a 364ms page
+media variants, theme and locale". No renderer is fast at that size, and `marked`, which ran
+then, was not: **measured on the live site 2026-07-29 it took 360ms on an 85,000-character post**, which was 359ms of a 364ms page
 render, and `clearCache()` made the next reader pay it again after every write anywhere. Of
 the three inputs, the theme is CSS and never reaches the body HTML, the locale does not
 either, and the media facts are IN the key rather than invalidated out of it — which is the

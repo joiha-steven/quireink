@@ -141,8 +141,9 @@ not be one. It caught a forgotten `/api/auth/enrol/done` the first time it ran.
    site serves images from `/wp-content/uploads/…`.
 4. **Write routes are owner-gated by router-group membership**, not by a per-handler
    check.
-5. **Raw HTML in markdown is escaped, never executed.** `marked` with the existing
-   `html` renderer override plus `safeHref`. Unchanged code, unchanged test.
+5. **Raw HTML in markdown is escaped, never executed.** `rawHtml: 'escape'` in the
+   engine's page rules plus `safeHref`, which is where the `marked` renderer override and its
+   test moved on 2026-09-13 (ADR 0052). Same behaviour, same test.
 6. **Every delete is a soft delete.** One `liveOnly` SQL fragment shared by every live
    read.
 7. **Analytics writes go through the flush buffer**, never straight to a request handler.

@@ -90,6 +90,15 @@ not know about each other; running both against one bucket is harmless but point
 | `quire.db`, `analytics.db` | `VACUUM INTO` a temporary file, then `tar -czf` | **Never a file copy.** A live SQLite database has a write-ahead log, and copying the file can capture a torn state that only reveals itself on restore |
 | `uploads/` | `rclone sync` with `--backup-dir` | A deleted or overwritten file stays recoverable for 7 days instead of vanishing on the next run |
 
+**`render_cache` is emptied out of the copy, not backed up** (2026-09-13). It is a pure
+function of the Markdown beside it, keyed by a hash of that Markdown, so a restore rebuilds
+it on the first read of each post. What it cost to carry was not small: measured on the
+author's blog, `quire.db` was 538 MB of which the cache was 530.3 MB, so **98.5% of every
+archive was a derived artifact** and the archives had grown 185 → 229 → 253 → 263 MB over
+four weeks in which almost nothing was written. That matters beyond disk: the archive is the
+thing somebody downloads on their worst day, and 263 MB through a CDN with a request timeout
+is a download that can fail where a 30 MB one cannot.
+
 `.env` is deliberately NOT in the backup, and in 2.0 that costs nothing: it holds the port,
 the data directory and the site URL, all of which are reconstructed by following
 [`self-host.md`](./self-host.md). The two secrets it used to hold are not there any more —

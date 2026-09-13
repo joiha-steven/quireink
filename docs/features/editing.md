@@ -3,16 +3,19 @@
 ## Editor (Admin → editor) — `src/admin/components/Editor.tsx`
 
 - StarterKit + underline, inline code, bullet/numbered/**task** lists (GFM `- [ ]`), quote,
-  code block, hr, link, captioned image, GFM tables, video. `tiptap-markdown` serializes all.
+  code block, hr, link, captioned image, GFM tables, video. `md/from-editor.ts` serializes all
+  (ADR 0052); `tiptap-markdown` and `prosemirror-markdown` came out on 2026-09-13.
 - **The extension set is `editorExtensions.ts`, not a literal in `Editor.tsx`.** Both round-trip
   suites (`ink-mark.test.ts`, `math-node.test.ts`) import that one list. They used to rebuild it by
   hand under a comment claiming it was what the editor mounts, so a node added to the editor was
   absent from its own test.
 - **Mathematics** (`MathNode.tsx`): atom nodes for inline and display, rendered live with the same
-  `renderMath` the server uses, TeX editable in place when the node is selected. The markdown-it
-  rule registers `before('escape')` and the delimiter the author typed is stored on the node — both
-  are correctness, not polish: without the first, `\(a\)` loses its delimiters on save; without the
-  node at all, every `\times` gains a second backslash. ADR 0020.
+  `renderMath` the server uses, TeX editable in place when the node is selected. The delimiter
+  the author typed is stored on the node, which is correctness rather than polish: without it
+  `\(a\)` loses its delimiters on save, and without the node at all every `\times` gains a
+  second backslash. The markdown-it rule that used to register `before('escape')` is gone with
+  markdown-it; the engine reads all four delimiters in one matcher (`md/math-syntax.ts`).
+  ADR 0020, ADR 0052.
   - **Two toolbar buttons**, `tbMath` (display) and `tbMathInline`. Both insert an EMPTY formula
     with the caret already in its TeX box. The glyph is a pi and the lines around it carry the
     distinction: full rules above and below for its own line, a dash either side for in-sentence.
@@ -142,6 +145,33 @@
   last — `setImage` selects the node it inserts, so the next insert replaces it).
 - Time machine: each overwrite snapshots the prior version (`revisions.ts`, keeps 3); restore
   loads it into the editor (non-destructive — current version is snapshotted on next save).
+
+## The Markdown this blog speaks — `src/md/` (ADR 0052)
+
+One engine, written here, with no dependencies. It renders the reader's page, opens a post in
+the editor, saves it back, cuts the excerpt and writes the plain text a search index reads,
+all from one parse. Four libraries used to answer those five questions separately and drifted.
+
+- **CommonMark 0.31.2 and GFM**, measured against both specs' own examples on every run
+  (`src/md/spec.test.ts`): 648 of 652 and 24 of 24. GFM adds tables, strikethrough, task
+  lists and autolinks.
+- **Four deliberate disagreements**, each named in that suite rather than silently failing:
+  three are where GFM's autolink extension and CommonMark disagree about a bare URL or email
+  (GFM links it, and so does everywhere anyone writes Markdown today), and the fourth is
+  `\[ … \]`, which is display maths here rather than an escaped pair of brackets (ADR 0020).
+- **This blog's own notation on top**: the pen's three gestures (`==ink==`, `++underline++`,
+  `@@ring@@`, each with an optional `#colour`), maths in four delimiters, footnotes, and
+  callouts.
+- **What a host may change is six rules** (`md/html-rules.ts`), all defaulting to the spec:
+  raw HTML passed, filtered or escaped; a soft break as a wrap or a line break; unsafe link
+  schemes rewritten; a body `#` demoted; heading anchors; `scope` on a table header; and the
+  function that turns TeX into markup. What this blog answers is `render/page-rules.ts`.
+- **A save may not change the reader's page.** Two laws hold it: serializing twice gives the
+  same text, and rendering the source and rendering what a save would write give the same
+  HTML. Both run over `golden/corpus` on every test run (`src/md/round-trip.test.ts`).
+- **A hostile document has a bounded cost** (`src/md/complexity.test.ts`). The suite measures
+  rates against ordinary prose rather than a clock, because a wall-clock ceiling measures the
+  machine: three quadratic shapes were found and fixed that way.
 
 ## Scheduled publishing — `src/server/scheduled.ts`, `/api/cron`, `src/utils.ts` (`isScheduled`)
 

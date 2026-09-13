@@ -17,7 +17,7 @@ bun run check:all
 ```
 
 Typecheck, the nine static guards (`filesize` · `css` · `nul` · `routes` · `type` ·
-`admin-kit` · `bundle` · `contract` · `docs`) and `bun test`. About 2 minutes. A change under `src/render` or
+`admin-kit` · `bundle` · `contract` · `docs`) and `bun test`. About 2 minutes. A change under `src/md`, `src/render` or
 `src/web` also runs the golden compare.
 
 `check:all` proves the code compiles and the seams hold. It cannot tell you a column
@@ -70,7 +70,7 @@ history is never needed to fix or understand code.
 | Routing, middleware, what a request does | `src/web/app.ts`, `src/web/guard.ts`, `src/web/cache-headers.ts` |
 | Cache, or content not updating | `src/server/cache.ts` (in-process), `src/web/cache-headers.ts` (shared), `src/server/edge-cache.ts` |
 | A page's HTML | `src/web/{layout,chrome,article,listing}.ts`, `src/web/*.css.ts` |
-| Markdown → HTML, highlighting, footnotes · the pen (highlighter, underline, ring) | `src/render/` · `src/pen/` (self-contained, door at `src/pen/index.ts`) |
+| Markdown → HTML, the editor's document, the excerpt · highlighting, footnotes · the pen | `src/md/` (the engine, ADR 0052; one import out, held by `src/md/boundary.test.ts`) · `src/render/` · `src/pen/` (self-contained, door at `src/pen/index.ts`) |
 | Island JS: search, theme, comments, subscribe, book mode | `src/assets/js/` |
 | Admin SPA, editor | `src/admin/`, `src/web/admin/` |
 | Sign-in, TOTP, sessions, recovery codes | `src/auth/`, `src/web/auth-routes.ts`, `src/web/enrol-routes.ts` (first run) |

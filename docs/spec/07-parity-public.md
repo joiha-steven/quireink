@@ -89,7 +89,7 @@ which was never true. The boxes came off on 2026-08-03; **not one line of conten
 
 ## 3. Markdown rendering
 
-- CommonMark + GFM through `marked`, unchanged
+- CommonMark + GFM through the engine in `src/md` (ADR 0052), measured against both specs' own examples: 648 of 652 and 24 of 24
 - `⚠` Raw HTML in markdown is **escaped, never executed**; `safeHref` drops
   `javascript:` / `data:` / `vbscript:`
 - Headings H1 to H6; ToC built from them
