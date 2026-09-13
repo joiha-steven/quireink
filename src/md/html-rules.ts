@@ -1,10 +1,10 @@
 // What a HOST asks of the renderer, as against what the spec asks.
 //
 // `html.ts` answers to CommonMark and GFM: every rule in it is one a spec example measures,
-// and it may not hold an opinion the spec does not. This file holds the opinions — the five
-// things THIS blog needs that no Markdown spec mentions, each carried today by a `marked`
-// option or renderer override in `render/post-content.ts`, and each a rule a different host
-// would reasonably set differently.
+// and it may not hold an opinion the spec does not. This file holds the SLOTS for the
+// opinions — six things no Markdown spec mentions, five of them carried until 2026-09-13 as
+// a `marked` option or a renderer override in `render/post-content.ts`, and every one of
+// them a rule a different host would reasonably set differently.
 //
 // Keeping them here rather than in the renderer is what makes the engine portable: the
 // default below is the spec and nothing else, so a second site — or this engine published on
