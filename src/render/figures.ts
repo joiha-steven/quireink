@@ -45,8 +45,14 @@ const safeImageSrc = (src: string): string => {
  * incomplete sanitizer (js/incomplete-html-attribute-sanitization, six alerts, 2026-09-14).
  * Making it true HERE costs one replace per attribute and stops the property being an
  * argument.
+ *
+ * UNCONDITIONAL, and the short-circuit it replaced is why. It was written
+ * `value.includes('"') ? value.replaceAll(…) : value`, which saves a scan on the string that
+ * never has a quote in it — and hands every reader, CodeQL included, a branch where nothing
+ * is escaped at all. The six alerts moved to the call sites and stayed open. A guard that is
+ * only sometimes applied is not a guard.
  */
-const attr = (value: string): string => (value.includes('"') ? value.replaceAll('"', '&quot;') : value)
+const attr = (value: string): string => value.replace(/"/g, '&quot;')
 
 // Intrinsic dims of uploaded originals, keyed by collapsed pathname. width/height
 // on the <img> reserves the box from the aspect ratio → no CLS.
