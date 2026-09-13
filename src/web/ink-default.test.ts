@@ -82,6 +82,30 @@ describe('the pen deal', () => {
     expect(INK_CSS).toContain(INK_LINES_CSS)
   })
 
+  it('every fallback in the sheet is the middle of the grips it stands in for', () => {
+    // ⚠️ THE FALLBACKS ARE WHAT THE WRITER SEES, which is what makes this a test and not a
+    // tidiness rule. Nothing in `src/admin` has ever set `data-pen`, so every stroke in the
+    // editor is drawn by the `var(--x, default)` on four lines of `ink.css.ts` while the
+    // published page deals one of forty grips per mark. `--u-y` sat at .94em from before the
+    // 2026-09-09 pen while the grips moved to 1.05–1.09em, and nothing here noticed for five
+    // days: at 18.08px type that is 2.0–2.7px high, which put the ink through the middle of
+    // the letters instead of at their feet. Reported from the editor, 2026-09-14.
+    const mid = (xs: readonly string[]): number => {
+      const ns = xs.map((x) => parseFloat(x))
+      return (Math.min(...ns) + Math.max(...ns)) / 2
+    }
+    const fallback = (name: string): number => {
+      const m = new RegExp(`var\\(${name},\\s*([0-9.]+)em\\)`).exec(INK_CSS)
+      if (!m) throw new Error(`no fallback for ${name} in INK_CSS`)
+      return parseFloat(m[1]!)
+    }
+    // Two decimals, because that is the precision the sheet is written in.
+    expect(fallback('--ink-y')).toBeCloseTo(mid(PEN_GRIPS.map((g) => g.y)), 2)
+    expect(fallback('--ink-h')).toBeCloseTo(mid(PEN_GRIPS.map((g) => g.h)), 2)
+    expect(fallback('--u-y')).toBeCloseTo(mid(UNDER_GRIPS.map((g) => g.y)), 2)
+    expect(fallback('--u-h')).toBeCloseTo(mid(UNDER_GRIPS.map((g) => g.h)), 2)
+  })
+
   it('draws the underline in graphite by default and in ballpoint-strength inks by name', () => {
     // The pastel highlighter pigments vanish as thin lines, so the line gestures carry
     // their own five hues — if a rule ever reaches for PEN_LIGHT here, green underlines

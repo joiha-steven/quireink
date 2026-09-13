@@ -172,8 +172,8 @@ ${s.light} mark{color:inherit;background-color:transparent;background-repeat:no-
   -webkit-box-decoration-break:clone;box-decoration-break:clone;
   mix-blend-mode:multiply;
   background-image:var(--ink-stroke);
-  background-size:100% var(--ink-h,1.05em);
-  background-position:0 var(--ink-y,.5em)}
+  background-size:100% var(--ink-h,1.08em);
+  background-position:0 var(--ink-y,.47em)}
 /* A highlight that runs past the end of a line breaks into one stroke per line, each with
    its own start and finish — a pen lifted at the margin and put down again on the next
    line. That is box-decoration-break above; without it the whole span gets one box wrapped
@@ -193,13 +193,23 @@ export function inkLinesCss(p: InkPalette = BUILT_IN_INKS, s: PenScope = SITE_SC
 /* The underline: a pen line under the words, never the browser's text-decoration — that is
    a perfectly straight rule at 1px, which is the same tell as the box. Descenders cross it,
    exactly as they do on paper. */
+/* ⚠️ THE FALLBACKS ARE WHAT THE WRITER SEES. Nothing in the admin sets \`data-pen\` — it never
+   has — so every stroke in the editor is drawn by the \`var(…, default)\` on these four lines,
+   while the published page deals one of forty grips per mark. That makes a stale default a
+   bug with a reader, not a dead branch: \`--u-y\` sat at .94em from before the 2026-09-09 pen
+   and the grips now run 1.05–1.09em, so the ink landed 0.11–0.15em high — 2.0–2.7px at this
+   blog's 18.08px type, which is the distance between the feet of the letters and the middle
+   of them. MEASURED in the editor: the baseline sits 1.189em below the inline box's top and
+   the x-height top at about .69em, so .94em is their midpoint exactly. It read as a strike.
+   Each default is now the MIDDLE of its own grip range, and \`ink-default.test.ts\` holds them
+   inside it. */
 ${s.light} u{text-decoration:none;background-color:transparent;background-repeat:no-repeat;
   -webkit-box-decoration-break:clone;box-decoration-break:clone;
   mix-blend-mode:multiply;
   padding-bottom:.4em;
   background-image:var(--u-stroke);
-  background-size:100% var(--u-h,.42em);
-  background-position:0 var(--u-y,.94em)}
+  background-size:100% var(--u-h,.39em);
+  background-position:0 var(--u-y,1.07em)}
 ${underGrips(s.light)}
 ${underInks(p.lineLight, p.auxLight, s.light)}
 ${underDies(p.lineLight, p.auxLight, s.light)}
