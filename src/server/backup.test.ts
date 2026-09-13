@@ -9,9 +9,11 @@ import { freshDatabase, dropDatabase } from '@/test/db'
 import { saveSettings } from '@/content/settings'
 import { savePost } from '@/content/posts'
 import {
-  isSnapshotName, lastRunAt, listSnapshots, maybeRunBackup, runBackup, snapshotName,
-  deleteSnapshot,
+  buildArchive, isSnapshotName, lastRunAt, listSnapshots, maybeRunBackup, runBackup,
+  snapshotName, deleteSnapshot,
 } from '@/server/backup'
+import { db } from '@/store/db'
+import { Database } from 'bun:sqlite'
 
 const DIR = './.tmp/test-backup'
 const SNAPSHOTS = `${DIR}/snapshots`
@@ -159,5 +161,44 @@ describe('maybeRunBackup', () => {
     const longAgo = new Date(Date.now() - 5 * 86_400_000)
     await Bun.spawn(['touch', '-d', longAgo.toISOString(), old]).exited
     expect((await maybeRunBackup()).ran).toBe(true)
+  })
+})
+
+describe('the rendered-HTML cache', () => {
+  it('is left out of the archive, and everything else survives', async () => {
+    // A post, so the archive has content to keep, and cache rows to throw away. The real
+    // proportion is worse than anything worth writing here: measured on manhhung.me on
+    // 2026-09-13, `render_cache` was 530 MB of a 538 MB database — 98.5% of every backup was
+    // a derived artifact, and the owner's archive had grown past what the download could
+    // carry. The cache is a pure function of the Markdown beside it; restoring without it
+    // costs the first reader of each post one render.
+    await savePost({ slug: 'cached', title: 'Cached', content: 'Body.', status: 'published' })
+    db().exec("insert into render_cache (key, html, created_at) values ('k1', '<p>x</p>', 1)")
+    const before = db().query('select count(*) c from render_cache').get() as { c: number }
+    expect(before.c).toBeGreaterThan(0)
+
+    const out = join(DIR, 'cache-check.tar.gz')
+    await buildArchive(out)
+
+    const unpacked = join(DIR, 'cache-check')
+    mkdirSync(unpacked, { recursive: true })
+    await Bun.$`tar -xzf ${out} -C ${unpacked}`.quiet()
+
+    const restored = new Database(join(unpacked, 'quire.db'), { readonly: true })
+    try {
+      // The cache is empty…
+      const cached = restored.query('select count(*) c from render_cache').get() as { c: number }
+      expect(cached.c).toBe(0)
+      // …and the writing is not. This half is the one that matters: a backup that dropped a
+      // table it should have kept would pass a test that only checked the cache was gone.
+      const posts = restored.query('select count(*) c from posts').get() as { c: number }
+      expect(posts.c).toBeGreaterThan(0)
+      expect(Object.values(restored.query('pragma integrity_check').get() as object)[0]).toBe('ok')
+    } finally {
+      restored.close()
+    }
+    // And the live database keeps its cache: the copy is what was emptied, never this one.
+    const after = db().query('select count(*) c from render_cache').get() as { c: number }
+    expect(after.c).toBe(before.c)
   })
 })

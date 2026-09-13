@@ -21,6 +21,7 @@ import { mkdtemp, readdir, rm, stat, mkdir } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { existsSync } from 'node:fs'
+import { Database } from 'bun:sqlite'
 import { db, analyticsDb } from '@/store/db'
 import { getSettings } from '@/content/settings'
 import { replicateSnapshot } from '@/server/backup-offsite'
@@ -61,6 +62,41 @@ export const isSnapshotName = (name: string): boolean =>
   /^quire-\d{4}-\d{2}-\d{2}T\d{4}\.tar\.gz$/.test(name)
 
 /**
+ * The rendered-HTML cache does not go in the archive.
+ *
+ * MEASURED ON A REAL BLOG, 2026-09-13: `quire.db` was 538 MB, of which `render_cache` was
+ * 530.3 MB. Everything a reader has ever written — 90 posts, their revisions, every setting —
+ * came to about 8 MB. So 98.5% of every backup was a derived artifact, and the owner's
+ * archives had grown 185 → 229 → 253 → 263 MB over four weeks of writing almost nothing.
+ *
+ * That is not merely wasteful. The archive is the thing somebody downloads on their worst
+ * day, and 263 MB through a CDN with a request timeout is a download that can fail where a
+ * 30 MB one cannot. A backup nobody can take away is not a backup — which is how this was
+ * found: the owner tried, on the day the cache had grown past what the button could carry.
+ *
+ * The cache is a pure function of the Markdown beside it, keyed by a hash of that Markdown.
+ * Restoring without it costs the first reader of each post one render, once.
+ *
+ * Emptied on the COPY, never on the live database: `VACUUM INTO` has already taken a
+ * consistent snapshot by this point, and the running blog keeps its cache.
+ */
+function dropRenderCache(snapshot: string): void {
+  const copy = new Database(snapshot)
+  try {
+    const exists = copy
+      .query("select 1 from sqlite_master where type='table' and name='render_cache'")
+      .get()
+    if (!exists) return
+    copy.exec('delete from render_cache')
+    // Without this the file keeps the pages the rows used to sit in and the archive is no
+    // smaller. VACUUM is what actually gives the space back.
+    copy.exec('vacuum')
+  } finally {
+    copy.close()
+  }
+}
+
+/**
  * Build one archive at `dest`. Throws with tar's own stderr if it fails.
  *
  * Shared with the download route, so the file the owner takes by hand and the file the
@@ -86,8 +122,10 @@ export async function buildArchive(dest: string): Promise<number> {
     // are doubled, which is SQLite's own escape for a string literal.
     //
     // Do not generalise from it. The rule in CLAUDE.md stands: a VALUE is bound, always.
-    db().exec(`vacuum into '${join(stage, 'quire.db').replace(/'/g, "''")}'`)
+    const snapshot = join(stage, 'quire.db')
+    db().exec(`vacuum into '${snapshot.replace(/'/g, "''")}'`)
     analyticsDb().exec(`vacuum into '${join(stage, 'analytics.db').replace(/'/g, "''")}'`)
+    dropRenderCache(snapshot)
 
     const uploads = uploadsDir()
     // To STDOUT, then written here. NOT `-f <dest>`: GNU tar reads an `-f` argument
