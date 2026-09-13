@@ -24,6 +24,7 @@ import { MarkdownSource } from './MarkdownSource'
 import { FindBar } from './FindBar'
 import { useEditorFind } from './useEditorFind'
 import { captionFromUrl, readMarkdown, videoUrlsToNodes } from './editorDoc'
+import { useRawView } from './useRawView'
 import { isVideoUrl } from '@/render/video'
 import { CARD } from './kit'
 
@@ -75,13 +76,10 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
   // Mod-k opens the same box the toolbar and the bubble bar do; the extension takes it as
   // an option because it holds no React (`editorKeys.ts`).
   const askLink = useLinkAsker()
-  // Markdown source view: edit the raw markdown directly (still saves live).
-  const [raw, setRaw] = useState(false)
   // Read straight from the shared switch rather than as a prop: the two forms above this
   // one have no interest in it, and a prop threaded through a component that does not care
   // is how the next person ends up with two of them.
   const [focus] = useFocusMode()
-  const [rawText, setRawText] = useState('')
   // Where the "/" menu is open, in viewport coordinates — null when it is not.
   const [slash, setSlash] = useState<{ left: number; top: number } | null>(null)
   const slashRef = useRef(slash)
@@ -89,8 +87,6 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
   // Refs so getMarkdown / the debounce read live values without re-subscribing.
   const onChangeRef = useRef(onChange)
   const onDirtyRef = useRef(onDirty)
-  const rawRef = useRef(raw)
-  const rawTextRef = useRef(rawText)
   const caretRef = useRef<HTMLSpanElement>(null)
   // The editorProps closures below are created once (on the first useEditor call,
   // when `editor` is still null). Reading the live instance through a ref instead
@@ -132,13 +128,10 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
 
   useEffect(() => { onChangeRef.current = onChange }, [onChange])
   useEffect(() => { onDirtyRef.current = onDirty }, [onDirty])
-  useEffect(() => { rawRef.current = raw }, [raw])
-  useEffect(() => { rawTextRef.current = rawText }, [rawText])
   // Report raw-view flips from the STATE, not from inside toggleRaw: the toggle is called
   // through `apiRef` where a captured prop would go stale, and the state is the truth.
   const onRawChangeRef = useRef(onRawChange)
   useEffect(() => { onRawChangeRef.current = onRawChange }, [onRawChange])
-  useEffect(() => { onRawChangeRef.current?.(raw) }, [raw])
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -251,30 +244,26 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
     },
   })
 
-  const taRef = useRef<HTMLTextAreaElement>(null)
+  // The Markdown source view and the switch into it (`useRawView.ts`). Declared here rather
+  // than with the other state because it needs the editor, and it reads it through the ref
+  // the drag-drop and paste closures already use — the same reason they do.
+  const rawView = useRawView(editorRef, onChange)
+  const raw = rawView.on
+  useEffect(() => { onRawChangeRef.current?.(raw) }, [raw])
 
   // Find and replace, for whichever view is showing (`useEditorFind.ts`). It owns the chord.
   const find = useEditorFind({
     editor,
     raw,
-    taRef,
-    rawTextRef,
-    onRawText: (next) => { setRawText(next); onChange(next) },
+    taRef: rawView.taRef,
+    rawTextRef: rawView.textRef,
+    onRawText: (next) => { rawView.setText(next); onChange(next) },
   })
-  // Grow the Markdown source box to fit its content (no tiny inner scrollbox).
-  useEffect(() => {
-    const ta = taRef.current
-    if (raw && ta) {
-      ta.style.height = 'auto'
-      ta.style.height = `${ta.scrollHeight}px`
-    }
-  }, [raw, rawText])
-
   useEffect(() => {
     if (!editor) return
     editorRef.current = editor // keep the drag-drop / paste closures on the live instance
     apiRef.current = {
-      toggleRaw,
+      toggleRaw: rawView.toggle,
       // The described alt (media/alt-text.ts) wins when the library hands one over;
       // the filename-derived caption stays the fallback, as it always was.
       insertImage: (url: string, alt?: string) =>
@@ -288,13 +277,12 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
         editor.chain().focus().insertContent(nodes).run()
       },
       // In raw mode the textarea is the source of truth; otherwise serialize live.
-      getMarkdown: () => (rawRef.current ? rawTextRef.current : readMarkdown(editor)),
+      getMarkdown: () => (rawView.onRef.current ? rawView.textRef.current : readMarkdown(editor)),
       // Load a full document, leaving raw mode so the formatted view shows it.
       setMarkdown: (md: string) => {
         editor.commands.setContent(md)
         videoUrlsToNodes(editor)
-        setRawText(md)
-        setRaw(false)
+        rawView.load(md)
       },
     }
   }, [editor, apiRef])
@@ -304,28 +292,11 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
   useEffect(() => {
     if (!editor) return
     return () => {
-      if (!rawRef.current && !editor.isDestroyed) onChangeRef.current(readMarkdown(editor))
+      if (!rawView.onRef.current && !editor.isDestroyed) onChangeRef.current(readMarkdown(editor))
     }
   }, [editor])
 
   if (!editor) return <div className="min-h-[480px] animate-pulse rounded-[10px] bg-neutral-100 dark:bg-neutral-900" />
-
-  // Review -> Markdown: snapshot the current markdown. Markdown -> Review:
-  // re-parse the (possibly edited) markdown back into the formatted editor.
-  // Reads through the REFS so repeated toggles never hand the editor a stale snapshot.
-  function toggleRaw() {
-    if (!editor) return
-    if (rawRef.current) {
-      const text = rawTextRef.current
-      editor.commands.setContent(text)
-      videoUrlsToNodes(editor)
-      onChangeRef.current(text)
-      setRaw(false)
-    } else {
-      setRawText(readMarkdown(editor))
-      setRaw(true)
-    }
-  }
 
   return (
     // The sheet runs at least the height of the window beside the write pane: a short
@@ -372,13 +343,13 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
         {header}
         {raw ? (
           <MarkdownSource
-            taRef={taRef}
+            taRef={rawView.taRef}
             hits={find.rawHits}
             current={find.rawIndex}
-            value={rawText}
+            value={rawView.text}
             onDirty={onDirty}
             onChange={(next) => {
-              setRawText(next)
+              rawView.setText(next)
               onChange(next)
             }}
           />
