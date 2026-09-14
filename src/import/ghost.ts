@@ -8,7 +8,7 @@
 // source, but `html` is present on every export and is the one rendering truth.
 
 import {
-  makeTurndown, htmlToMarkdown, slugTracker, deriveExcerpt,
+  htmlToMarkdown, slugTracker, deriveExcerpt,
   type ImportedPost, type ImportedPage, type ImportResult,
 } from '@/import/convert'
 import { slugify } from '@/utils'
@@ -62,7 +62,6 @@ export function parseGhost(doc: unknown, now: string): ImportResult {
   }
 
   const uniqueSlug = slugTracker()
-  const td = makeTurndown()
   const posts: ImportedPost[] = []
   const pages: ImportedPage[] = []
   let skipped = 0
@@ -77,7 +76,7 @@ export function parseGhost(doc: unknown, now: string): ImportResult {
     }
     const title = str(p.title).trim() || 'Untitled'
     const slug = uniqueSlug(slugify(str(p.slug) || title))
-    const body = htmlToMarkdown(td, str(p.html))
+    const body = htmlToMarkdown(str(p.html))
     const published = status === 'published' || status === 'sent'
 
     if (str(p.type) === 'page') {

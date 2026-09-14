@@ -1,6 +1,6 @@
 // Parse a WordPress export (WXR .xml) into Quire Ink posts + pages. PURE — no I/O; the
 // API route (api/import/wordpress) persists the result via savePost/savePage. Each
-// post's HTML body is converted to Markdown (turndown + GFM), and categories, tags,
+// post's HTML body is converted to Markdown (`html-parse.ts` then `html-to-md.ts`), and tags,
 // dates, status and excerpt are preserved. Image URLs are kept as-is (they point at
 // the source site) — the importer does not download/rehost binaries.
 //
@@ -11,7 +11,7 @@
 
 import { parseXml } from '@/import/xml'
 import {
-  makeTurndown, htmlToMarkdown, slugTracker, decodeEntities, deriveExcerpt,
+  htmlToMarkdown, slugTracker, decodeEntities, deriveExcerpt,
   type ImportedPost, type ImportedPage, type ImportResult,
 } from '@/import/convert'
 import { slugify } from '@/utils'
@@ -58,7 +58,6 @@ function toIso(wpDate: unknown, fallback: string): string {
 // ---- parse ------------------------------------------------------------------
 
 export function parseWxr(xml: string, now: string): WxrResult {
-  const td = makeTurndown()
   const doc = parseXml(xml) as { rss?: { channel?: { item?: unknown } } }
   const items = asArray(doc?.rss?.channel?.item) as Record<string, unknown>[]
 
@@ -78,7 +77,7 @@ export function parseWxr(xml: string, now: string): WxrResult {
     const title = text(item.title).trim() || 'Untitled'
     const slug = uniqueSlug(slugify(text(item['wp:post_name']) || title))
     const html = raw(item['content:encoded'])
-    const body = htmlToMarkdown(td, html)
+    const body = htmlToMarkdown(html)
     const mappedStatus = status === 'publish' ? 'published' : 'draft'
     const path = oldPath(item.link, mappedStatus === 'published')
 

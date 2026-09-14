@@ -7,7 +7,7 @@
 // class names. The owner uploads "my export" and the server works out whose it is.
 
 import {
-  makeTurndown, htmlToMarkdown, slugTracker, decodeEntities, deriveExcerpt,
+  htmlToMarkdown, slugTracker, decodeEntities, deriveExcerpt,
   type ImportedPost, type ImportResult,
 } from '@/import/convert'
 import { slugify } from '@/utils'
@@ -67,7 +67,6 @@ export function parseSubstack(entries: Entry[], now: string): ImportResult {
   }
 
   const uniqueSlug = slugTracker()
-  const td = makeTurndown()
   const posts: ImportedPost[] = []
   let skipped = 0
 
@@ -82,7 +81,7 @@ export function parseSubstack(entries: Entry[], now: string): ImportResult {
     // Substack's post_id is `123456.the-slug` — the slug half is the public URL's.
     const slugPart = id.includes('.') ? id.slice(id.indexOf('.') + 1) : id
     const title = decodeEntities((r[titleC] ?? '').trim()) || 'Untitled'
-    const content = htmlToMarkdown(td, body)
+    const content = htmlToMarkdown(body)
     const excerpt = decodeEntities((r[subC] ?? '').trim()) || deriveExcerpt(content)
     const d = new Date(r[dateC] ?? '')
     const publicSlug = slugify(slugPart) || slugify(title)
@@ -128,7 +127,6 @@ function stripTags(s: string): string {
 
 export function parseMedium(entries: Entry[], now: string): ImportResult {
   const uniqueSlug = slugTracker()
-  const td = makeTurndown()
   const posts: ImportedPost[] = []
   let skipped = 0
 
@@ -147,7 +145,7 @@ export function parseMedium(entries: Entry[], now: string): ImportResult {
     const isDraft = !published || /^draft_/.test(m[1]!)
 
     const section = first(e.text, /<section[^>]*data-field="body"[^>]*>([\s\S]*?)<\/section>/)
-    let content = htmlToMarkdown(td, section || e.text)
+    let content = htmlToMarkdown(section || e.text)
     // Medium repeats the title as the body's first heading; one copy is enough.
     const esc = title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     content = content.replace(new RegExp(`^#{1,4} ${esc}\\n+`), '')
