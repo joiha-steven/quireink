@@ -156,4 +156,85 @@ export function registerSheetFlows({ flow, atWidth }: Pick<Tour, 'flow' | 'atWid
       if (document.querySelector('[data-find-bar]')) return await done('Escape did not close the strip')
       return await done('ok two found, two replaced, nothing drawn on the text')
     })()`, 1200))
+
+  // ⚠️ THE KEYBOARD STAYS IN THE FIELD. Every field in this sheet threw focus away after a
+  // single keystroke: type one digit into the publish time and the caret was gone, so setting
+  // 14:30 took four clicks for four digits. The cause was a focus effect keyed on `onClose`,
+  // which all three editors pass as an inline arrow — a new function on every render, so every
+  // keystroke tore the effect down and set it up again, and setting up focuses the panel.
+  //
+  // A BROWSER FLOW and not only a mount test, because that is what the bug taught: the mount
+  // test that now covers the mechanism did not exist, and nothing else in 3,357 tests could
+  // see a caret. Two fields, because the failure was in neither of them: a plain text box and
+  // the time inside the date picker, which is where it was found.
+  //
+  // A POST OF ITS OWN, made and removed here, for the reason the find flow states: typing into
+  // the blank editor leaves a local recovery copy on this device and the next flow opens
+  // holding it. NOTE: a template literal. No backticks.
+  flow('editor: the attributes sheet keeps the keyboard in the field being typed in', () => atWidth(1280, '/admin/editor', `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      const wait = async (fn, tries = 60) => {
+        for (let i = 0; i < tries; i++) { const hit = fn(); if (hit) return hit; await sleep(100) }
+        return null
+      }
+      const slug = 'tour-focus-' + Date.now()
+      const made = await fetch('/api/posts', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ title: 'Tour focus', slug, content: 'one line', status: 'draft', categories: [], tags: [] }),
+      })
+      const done = async (verdict) => { await fetch('/api/posts/' + slug, { method: 'DELETE' }); return verdict }
+      if (!made.ok) return 'POST /api/posts -> ' + made.status
+      history.pushState(null, '', '/admin/editor/' + slug)
+      dispatchEvent(new PopStateEvent('popstate'))
+      // WAIT FOR THE PIECE, not just for a surface: the blank editor already has a
+      // .ProseMirror, so waiting on the element alone returns before the route has swapped and
+      // the click then lands on a screen that is about to be replaced.
+      const surface = await wait(() => {
+        const el = document.querySelector('.ProseMirror')
+        return el && el.textContent.includes('one line') ? el : null
+      })
+      if (!surface) return await done('the post never opened in the editor')
+
+      const open = document.querySelector('[data-attrs]')
+      if (!open) return await done('no way to open the attributes')
+      open.click()
+      const panel = await wait(() => document.querySelector('aside[role=dialog]'))
+      if (!panel) return await done('the attributes never opened')
+      await sleep(400)
+
+      // A KEYSTROKE, as React sees one: the native setter past its value tracker, then the
+      // input event. The re-render that follows is the whole mechanism under test.
+      const key = (el, value) => {
+        const proto = el instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype
+        Object.getOwnPropertyDescriptor(proto, 'value').set.call(el, value)
+        el.dispatchEvent(new Event('input', { bubbles: true }))
+      }
+      const where = () => document.activeElement.tagName
+        + (document.activeElement.type ? '[' + document.activeElement.type + ']' : '')
+
+      const text = [...panel.querySelectorAll('input')].find((i) => i.type === 'text')
+      if (!text) return await done('the sheet has no text field')
+      text.focus()
+      key(text, 'one')
+      await sleep(150)
+      if (document.activeElement !== text) return await done('one keystroke in the slug threw the keyboard to ' + where())
+      key(text, 'one-two')
+      await sleep(150)
+      if (document.activeElement !== text) return await done('the second keystroke threw the keyboard to ' + where())
+
+      // And the field it was reported on: the time inside the date picker.
+      const dateBtn = [...panel.querySelectorAll('button')].find((b) => b.getAttribute('aria-haspopup') === 'dialog')
+      if (!dateBtn) return await done('no date control in the attributes')
+      dateBtn.click()
+      const time = await wait(() => panel.querySelector('input[type=time]'), 20)
+      if (!time) return await done('the calendar never opened')
+      time.focus()
+      const was = time.value
+      key(time, '14:30')
+      await sleep(150)
+      if (document.activeElement !== time) return await done('typing the hour threw the keyboard to ' + where())
+      if (time.value !== '14:30') return await done('the time read ' + time.value + ' after being set, was ' + was)
+      return await done('ok three keystrokes, the caret never left the field')
+    })()`, 1200))
 }

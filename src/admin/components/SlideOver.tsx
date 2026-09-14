@@ -82,22 +82,24 @@ export function SlideOver({
   const docked = useDocked(dock)
 
   /**
-   * The three things that make a panel a dialog, none of which this had.
+   * Focus belongs to the sheet's LIFE: taken when it opens, handed back when it goes.
    *
-   * Escape closed nothing, so the only way out was the pointer. Focus stayed behind the
-   * sheet, so a keyboard reader opened it and then tabbed through the toolbar underneath.
-   * And it went back nowhere on close, which for a sheet opened by ⌘⇧A means the keyboard
-   * lands on the body. `aria-modal` is the fourth: without it a screen reader walks straight
-   * out of the panel into the page it is covering.
+   * ⚠️ THE DEPENDENCIES ARE EMPTY AND MUST STAY EMPTY. This effect and the Escape listener
+   * below were one effect keyed on `[onClose]`, and all three editors pass `onClose` as an
+   * inline arrow, so it was a new function on every render. Every keystroke in the sheet
+   * changes the draft, every draft change re-renders the editor, and the effect then tore
+   * down and set up again - and setting up means `panel.focus()`. The measured result was
+   * that a writer could enter exactly ONE character into any field here before the keyboard
+   * was pulled back to the panel: the publish time took four clicks to type four digits.
+   *
+   * Splitting them is not a tidy-up. The two facts have different lifetimes: focus is about
+   * the sheet being open at all, the key listener is about which handler is current.
    */
   useEffect(() => {
     const el = panel.current
     const opener = document.activeElement as HTMLElement | null
     el?.focus()
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
-    addEventListener('keydown', onKey)
     return () => {
-      removeEventListener('keydown', onKey)
       // Give focus back UNLESS something else has taken it: a close that followed a click on
       // a control elsewhere must not drag the keyboard away from it.
       //
@@ -111,6 +113,16 @@ export function SlideOver({
       const elsewhere = now && now !== document.body && !el?.contains(now)
       if (!elsewhere) opener?.focus()
     }
+  }, [])
+
+  /**
+   * Escape closes it. A window listener rather than a handler on the panel, because the
+   * keyboard may legitimately be inside a field, a menu or the calendar by then.
+   */
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    addEventListener('keydown', onKey)
+    return () => removeEventListener('keydown', onKey)
   }, [onClose])
 
   return (
