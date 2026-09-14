@@ -85,6 +85,25 @@ already converted fifteen others.
 5. **The editor.** Last, and on its own, and in two steps: `@tiptap/react` first (the three React
    node views become plain ProseMirror ones), then Tiptap itself.
 
+⚠️ **THE LIBRARY MOVED TO THE END, WITH THE EDITOR.** `/admin/content` looks like step 2 and is
+not: `pages/Content.tsx` is 43 lines of empty sheet, and the list on that screen is `WritePane`,
+which the shell mounts for the library AND for all three editors so that clicking a row swaps
+only the sheet. Converting the library alone would leave that one 399-line pane written twice —
+once as HTML for `/admin/content`, once as React for `/admin/editor/*` — and two copies of the
+same list is precisely the drift this ADR's markup rules exist to prevent. So the library, the
+pane and the editors convert together, and the order above becomes 1, 2 (minus the library), 3,
+4, then the library with 5. Decided 2026-09-14, after the assistant.
+
+⚠️ **AND SETTINGS IS NOT STEP 1.** "Mostly inputs that POST" was a guess, and the survey says
+otherwise: seven tabs over about 7,400 lines, TWO save protocols on one screen (a page-level
+`PUT /api/settings` and a card-level partial of the same route) plus roughly thirty card-owned
+endpoints, of which a dozen are irreversible or reach outside the machine. It also holds two
+code editors with synced gutters, a palette grid of native colour pickers, a live type
+specimen, a keystroke-sound synthesiser, three file dropzones — and three fields that open the
+MEDIA PICKER, which the Media screen owns. So Media converts first and brings the picker with
+it as the fourth bridge (`quire:pick-media`); Settings is the last screen before the editor.
+Groundwork for it — the field vocabulary and the form's diff engine — is written and parked.
+
 ### What proves each step
 
 - **The tour's flows for that screen stay green.** They are written against the rendered page and
