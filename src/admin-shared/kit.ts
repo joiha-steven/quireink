@@ -315,3 +315,20 @@ export const LAMP_HUES: Record<LampState, string> = {
 
 /** The lamp's own shape, without its hue: a 8px round mark that never shrinks in a flex row. */
 export const LAMP_SHAPE = 'inline-block h-2 w-2 shrink-0 rounded-full'
+
+/**
+ * THE NATIVE TICK. No `accent-color` does not mean unstyled, it means the OS accent, which is
+ * BLUE, in an admin of black, white and neutrals. Five controls shipped that way and the two
+ * that had remembered disagreed on the shade, so the admin drew its tick three ways. This is
+ * the primary button's fill: a tick is ink, and there is one ink.
+ *
+ * NOT `TICK_BOX` above, and the difference is deliberate. That one is the DRAWN checkbox the
+ * lists use, where the box has to carry a hover and a selection. This is the plain browser
+ * control, for a short pick list inside a card, where the platform's own widget is the right
+ * amount of furniture.
+ *
+ * Here rather than in `components/kit.tsx` since the newsletter became a page (ADR 0054): the
+ * server draws the send screen's post picker. `components/kit.tsx` re-exports it.
+ */
+export const CHECK = 'accent-neutral-900 dark:accent-white'
+

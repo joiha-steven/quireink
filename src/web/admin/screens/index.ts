@@ -19,6 +19,7 @@ import { commentsScreen } from '@/web/admin/screens/comments'
 import { dashboardScreen } from '@/web/admin/screens/dashboard'
 import { helpScreen } from '@/web/admin/screens/help'
 import { logScreen } from '@/web/admin/screens/log'
+import { newsletterScreen } from '@/web/admin/screens/newsletter'
 import { trashScreen } from '@/web/admin/screens/trash'
 
 export type Screen = {
@@ -53,6 +54,9 @@ export const SCREENS: Record<string, Screen> = {
   // Two faces behind one address, both drawn here: the summary, and one page's drill-down at
   // `?path=`. The island is a filter and a ten-second poll; everything else is reading.
   '/admin/analytics': { render: analyticsScreen, island: 'analytics' },
+  // Three tabs over one audience, all three drawn. It holds the admin's one irreversible
+  // action, so nothing on it is a form: see `screens/newsletter-send.ts`.
+  '/admin/newsletter': { render: newsletterScreen, island: 'newsletter' },
 }
 
 /** The screen for a path, or null while it is still React's. */

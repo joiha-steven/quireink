@@ -184,10 +184,9 @@ export const CONTROL_GROUP = CONTROL_CHROME.replaceAll('focus:', 'focus-within:'
  */
 export const CONTROL_NUM = `${CONTROL_CHROME} tabular-nums [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`
 
-/** The tick. No `accent-color` does not mean unstyled, it means the OS accent, which is BLUE, in
- *  an admin of black, white and neutrals. Five shipped so and the two that remembered disagreed
- *  — three ticks. This is the primary button's fill: a tick is ink, and there is one ink. */
-export const CHECK = 'accent-neutral-900 dark:accent-white'
+// The tick moved to `@/admin-shared/kit` with ADR 0054's newsletter screen, where the server
+// draws the same picker. Re-exported so every `import { CHECK } from './kit'` is unchanged.
+export { CHECK } from '@/admin-shared/kit'
 
 // A field whose CONTENT has a known size does not run to the edge of its card. A three-digit
 // word count in a 580px box, a date in a 580px box and a site title in the same 580px box say

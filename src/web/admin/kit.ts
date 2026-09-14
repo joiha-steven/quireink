@@ -23,7 +23,7 @@ import {
 import {
   SEGMENT_TRACK, SEGMENT_TRACK_PLACE, tabItemClass, type TabRole, type TabSize,
 } from '@/admin-shared/tabs'
-import { FIGURE, HEADER_GAP, META, NOTE_TEXT, SECTION, TITLE } from '@/admin-shared/scale'
+import { FIGURE, HEADER_GAP, META, NOTE_TEXT, SECTION, TAP, TITLE } from '@/admin-shared/scale'
 
 /** A glyph from the shared set, at the surface's own size. */
 export const icon = (name: IconName, cls = 'h-[var(--admin-glyph,1.25rem)] w-[var(--admin-glyph,1.25rem)] shrink-0'): string =>
@@ -154,16 +154,20 @@ export function tabs({ items, value, role = 'place', attrs = '' }: {
 
 /**
  * THE BAND OF NUMBERS at the head of a sheet: the figures somebody would otherwise work out by
- * scrolling. `n` and `label` are already-escaped text; `after` and `sub` are raw HTML, as in
- * the React `NumBand` they mirror.
+ * scrolling. `n` and `label` are already-escaped text; `after`, `sub` and `labelHtml` are raw
+ * HTML, as in the React `NumBand` they mirror.
+ *
+ * `labelHtml` is the raw door beside `label`, and it exists because one label on the subscriber
+ * band is not a string: "Pending" carries the pen's own mark in front of it, the same mark the
+ * write list puts against an unfinished piece. Exactly one of the pair is honoured, raw first.
  */
-export function numBand(items: { n: string; label: string; after?: string; sub?: string }[]): string {
+export function numBand(items: { n: string; label?: string; labelHtml?: string; after?: string; sub?: string }[]): string {
   return `<div class="flex flex-wrap border-b border-neutral-100 dark:border-neutral-800">`
     + items.map((it) =>
       `<div class="min-w-32 flex-1 border-r border-neutral-100 px-5 py-4 last:border-r-0 dark:border-neutral-800">`
       + `<span class="flex items-baseline gap-2">`
       + `<b class="text-2xl font-semibold tracking-tight tabular-nums">${escapeHtml(it.n)}</b>${it.after ?? ''}</span>`
-      + `<span class="block text-xs text-neutral-500 dark:text-neutral-400">${escapeHtml(it.label)}</span>`
+      + `<span class="block text-xs text-neutral-500 dark:text-neutral-400">${it.labelHtml ?? escapeHtml(it.label ?? '')}</span>`
       + (it.sub ? `<span class="block text-xs text-neutral-500 dark:text-neutral-400">${it.sub}</span>` : '')
       + `</div>`).join('')
     + `</div>`
@@ -315,4 +319,34 @@ export function lamp({ state, title = '', pulse = false, attrs = '' }: {
     : ' aria-hidden="true"'
   return `<span${attrs ? ` ${attrs}` : ''}${named}`
     + ` class="${LAMP_SHAPE} ${LAMP_HUES[state]}${pulse ? ' lamp-pulse' : ''}"></span>`
+}
+
+/**
+ * "Clear · <extras> · Delete (n)", the bar a list raises once something is ticked.
+ *
+ * ⚠️ IT SHIPS HIDDEN AND THE ISLAND UNHIDES IT. The React `SelectionBar` returns null at a
+ * count of zero, which is a thing the server cannot do and then change its mind about — so
+ * both states are in the markup, as everywhere else under ADR 0054. This is the same shape
+ * that has caught six tour flows: a flow that clicks "Delete selected (0)" is clicking a
+ * control nobody can see.
+ *
+ * THE ORDER IS THE POINT. The one irreversible verb sits at the END of the row, where a hand
+ * travelling left to right arrives at it last, and `extras` (export, and whatever a later list
+ * adds) go before it for the same reason Cancel sits before Save everywhere else.
+ *
+ * `count` rides in a span of its own so the island writes a number rather than a sentence.
+ */
+export function selectionBar({ clearLabel, deleteLabel, attrs = '', extras = '' }: {
+  clearLabel: string
+  deleteLabel: string
+  attrs?: string
+  extras?: string
+}): string {
+  const quiet = `${TAP} text-sm text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white`
+  return `<div${attrs ? ` ${attrs}` : ''} class="flex flex-wrap items-center justify-end gap-4" hidden>`
+    + `<button type="button" data-pick-clear class="${quiet}">${escapeHtml(clearLabel)}</button>`
+    + extras
+    + `<button type="button" data-pick-delete`
+    + ` class="${TAP} text-sm font-medium text-neutral-800 hover:text-black dark:text-neutral-200 dark:hover:text-white">`
+    + `${escapeHtml(deleteLabel)} (<span data-pick-count>0</span>)</button></div>`
 }

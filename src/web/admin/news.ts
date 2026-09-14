@@ -14,8 +14,8 @@ import { getSmtpConfig, isMailConfigured, saveSmtpConfig, sendMail } from '@/new
 import { broadcastEmail, confirmEmail } from '@/news/newsletter-email'
 import { emailBrand } from '@/news/email-brand'
 import { BroadcastError, broadcastPosts, broadcastRun, previewBroadcast } from '@/news/broadcast'
-import { listSubscribers, subscriberCounts, deleteSubscriber } from '@/news/subscribers'
-import { statsByEmail } from '@/news/newsletter-log'
+import { listSubscribers, deleteSubscriber } from '@/news/subscribers'
+import { subscribersView } from '@/web/admin/views-news'
 import { describeComment, softDeleteComment } from '@/comments/comments'
 import { getIntegrationKeys, saveIntegrationKeys } from '@/store/integration-keys'
 import { getPublicPosts } from '@/content/posts'
@@ -173,16 +173,11 @@ export function newsRoutes() {
 
   // ----- subscribers ----------------------------------------------------------
 
-  router.get('/api/subscribers', async () => {
-    const [subscribers, counts, stats] = await Promise.all([
-      listSubscribers(), subscriberCounts(), statsByEmail(),
-    ])
-    // One rollup read joined in memory, not a query per row.
-    return json({
-      subscribers: subscribers.map((s) => ({ ...s, stats: stats.get(s.email) ?? null })),
-      counts,
-    })
-  })
+  // The SAME builder the server-rendered screen calls (ADR 0054), so the two faces of this
+  // list cannot disagree about who is on it. It also reads the table once: this handler used
+  // to ask `subscriberCounts()` for the three totals, and that function is implemented by
+  // calling `listSubscribers()` a second time and filtering it three ways.
+  router.get('/api/subscribers', async () => json(await subscribersView()))
 
   router.delete('/api/subscribers/:id', async (c) => {
     const id = intParam(c, 'id')

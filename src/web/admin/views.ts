@@ -40,11 +40,10 @@ import { THEME_PRESETS } from '@/content/themes'
 import { getTrashedMedia } from '@/media/media'
 import { getTrashedFiles } from '@/media/files'
 import { listBlobs } from '@/media/blob'
-import { statsByPost } from '@/news/newsletter-log'
-import { getMailStatus } from '@/news/mail'
 import { OwnerRouter } from '@/web/guard'
 import { APP_VERSION } from '@/version'
 import { dashboardView } from '@/web/admin/views-home'
+import { newsletterView } from '@/web/admin/views-news'
 
 /** Printed by the Help page and the dashboard, so the two can never disagree. */
 const VERSION = APP_VERSION
@@ -213,18 +212,6 @@ async function settingsView() {
     // has been told about. Read here rather than from a route of its own: it is one
     // small fact belonging to one card, and the settings screen already round-trips.
     update: updateCheckStatus(),
-  }
-}
-
-async function newsletterView() {
-  const [posts, stats, mail] = await Promise.all([
-    getPublicPosts(), statsByPost(), getMailStatus(),
-  ])
-  return {
-    posts: posts.map((p) => ({
-      slug: p.slug, title: p.title, date: p.date, stats: stats.get(p.slug) ?? null,
-    })),
-    mailConfigured: mail.configured,
   }
 }
 

@@ -78,8 +78,10 @@ const RULES: Rule[] = [
     // remembered disagreed on the shade, so the admin drew its tick three ways.
     what: 'the checkbox / radio tick',
     signature: 'accent-neutral-900 dark:accent-white',
-    home: 'src/admin/components/kit.tsx',
-    instead: 'import CHECK from components/kit, or use ui/Switch’s CheckField',
+    // Moved on 2026-09-14 with ADR 0054's newsletter screen: the server draws the send
+    // picker and may not import React. `components/kit.tsx` re-exports it.
+    home: 'src/admin-shared/kit.ts',
+    instead: 'import CHECK from components/kit, or from @/admin-shared/kit on the server',
   },
   {
     // `CHECK` above is what a NATIVE box is painted with; this is the drawn one that replaced

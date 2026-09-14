@@ -43,6 +43,19 @@ function tabIds(): string[] {
 
 const TABS = tabIds()
 
+/**
+ * BOTH ADMIN TREES, and the second one is why this test failed on 2026-09-14.
+ *
+ * It read `src/admin` only, which was every screen in the admin until ADR 0054 began moving
+ * them to `src/web/admin/screens`. Deleting the newsletter's React files took the link count
+ * under its floor, and that floor is the only reason anybody looked: the screens that had
+ * already moved were carrying `?tab=` links that nothing checked, and a dead one there would
+ * have landed the owner on the Site tab in silence exactly as the 2026-08 bug did.
+ */
+const ROOTS = [join(import.meta.dir, '..'), join(import.meta.dir, '../../web/admin')]
+
+const allSources = (): string[] => ROOTS.flatMap(sourceFiles)
+
 function sourceFiles(dir: string): string[] {
   const out: string[] = []
   for (const entry of readdirSync(dir)) {
@@ -54,13 +67,26 @@ function sourceFiles(dir: string): string[] {
   return out
 }
 
+/**
+ * A SETTINGS LINK, not any `?tab=` anywhere.
+ *
+ * The bare matcher was right while every screen lived in `src/admin` and `?tab=` meant one
+ * thing. It stopped being right the moment this test learned to read `src/web/admin`: the
+ * trash keeps WHICH KIND IS OPEN in `?tab=` too, so `?tab=media` — a perfectly good trash
+ * address — was reported as a dead settings tab. A matcher that cries about working links is
+ * a matcher somebody turns off.
+ *
+ * The optional group before `tab=` is for a settings URL that ever grows a second parameter.
+ */
+const SETTINGS_TAB = /\/admin\/settings\?(?:[^"'\s]*[?&])?tab=([a-z-]+)/g
+
 describe('settings tab links', () => {
   it('never point at a tab that does not exist', () => {
     const bad: string[] = []
-    for (const file of sourceFiles(join(import.meta.dir, '..'))) {
+    for (const file of allSources()) {
       const src = readFileSync(file, 'utf8')
-      for (const m of src.matchAll(/[?&]tab=([a-z-]+)/g)) {
-        if (!TABS.includes(m[1]!)) bad.push(`${file.split('/admin/')[1]}: ?tab=${m[1]}`)
+      for (const m of src.matchAll(SETTINGS_TAB)) {
+        if (!TABS.includes(m[1]!)) bad.push(`${file.split('/src/')[1]}: ?tab=${m[1]}`)
       }
     }
     expect(bad).toEqual([])
@@ -68,8 +94,13 @@ describe('settings tab links', () => {
 
   it('finds the links it is meant to be checking', () => {
     // A matcher that silently matches nothing passes forever. The admin does link to tabs.
-    const found = sourceFiles(join(import.meta.dir, '..'))
-      .flatMap((f) => [...readFileSync(f, 'utf8').matchAll(/[?&]tab=([a-z-]+)/g)])
+    const found = allSources()
+      .flatMap((f) => [...readFileSync(f, 'utf8').matchAll(SETTINGS_TAB)])
     expect(found.length).toBeGreaterThan(2)
+    // And from BOTH trees, so that converting the last React screen cannot quietly leave this
+    // checking one empty directory.
+    const fromServer = sourceFiles(ROOTS[1]!)
+      .flatMap((f) => [...readFileSync(f, 'utf8').matchAll(SETTINGS_TAB)])
+    expect(fromServer.length).toBeGreaterThan(0)
   })
 })
