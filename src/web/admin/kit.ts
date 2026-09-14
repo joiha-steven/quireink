@@ -17,9 +17,12 @@
 import { escapeAttr, escapeHtml } from '@/utils'
 import { ICONS, GLYPHS, type GlyphName, type IconName } from '@/icons'
 import {
-  CARD, CONTROL_SM, SHEET, SHEET_TOP, TICK_BOX, TICK_MARK, TICK_PATH, TICK_WRAP,
+  CARD, CONTROL_SM, LAMP_HUES, LAMP_SHAPE, SHEET, SHEET_TOP,
+  TICK_BOX, TICK_MARK, TICK_PATH, TICK_WRAP, type LampState,
 } from '@/admin-shared/kit'
-import { SEGMENT_TRACK, SEGMENT_TRACK_PLACE, tabItemClass, type TabRole } from '@/admin-shared/tabs'
+import {
+  SEGMENT_TRACK, SEGMENT_TRACK_PLACE, tabItemClass, type TabRole, type TabSize,
+} from '@/admin-shared/tabs'
 import { FIGURE, HEADER_GAP, META, NOTE_TEXT, SECTION, TITLE } from '@/admin-shared/scale'
 
 /** A glyph from the shared set, at the surface's own size. */
@@ -33,15 +36,26 @@ export const icon = (name: IconName, cls = 'h-[var(--admin-glyph,1.25rem)] w-[va
  * `actions` is raw HTML the caller has already escaped. `flex-wrap` and not `shrink-0`: a wide
  * action set is wider than a phone viewport and would otherwise push the page into horizontal
  * scroll instead of dropping onto a second line.
+ *
+ * ⚠️ `title` AND `description` ARE ESCAPED; `titleHtml` and `descriptionHtml` are the raw
+ * doors beside them, and they exist because a drill-down's header is not a string: the
+ * analytics detail puts a back link over the piece's name and the piece's address under it, as
+ * a link out. Passing markup through `title` printed the anchor as visible text, which
+ * compiles, renders and is wrong — the reason this pair is spelled out rather than left to the
+ * caller's memory. Exactly one of each pair is honoured, the raw one first.
  */
-export function pageHeader({ title, description = '', actions = '' }: {
-  title: string
+export function pageHeader({ title = '', titleHtml = '', description = '', descriptionHtml = '', actions = '' }: {
+  title?: string
+  titleHtml?: string
   description?: string
+  descriptionHtml?: string
   actions?: string
 }): string {
+  const name = titleHtml || escapeHtml(title)
+  const note = descriptionHtml || (description ? escapeHtml(description) : '')
   return `<div class="${HEADER_GAP} flex flex-wrap items-center justify-between gap-4">`
-    + `<div class="min-w-0"><h1 class="${TITLE}">${escapeHtml(title)}</h1>`
-    + (description ? `<p class="mt-2 max-w-2xl text-[0.8125rem] leading-[1.6] text-neutral-500 dark:text-neutral-400">${escapeHtml(description)}</p>` : '')
+    + `<div class="min-w-0"><h1 class="${TITLE}">${name}</h1>`
+    + (note ? `<p class="mt-2 max-w-2xl text-[0.8125rem] leading-[1.6] text-neutral-500 dark:text-neutral-400">${note}</p>` : '')
     + `</div>`
     + (actions ? `<div class="flex flex-wrap items-center gap-2">${actions}</div>` : '')
     + `</div>`
@@ -246,3 +260,59 @@ export const statBand = (tiles: string): string =>
       [&>*:nth-child(-n+2)]:border-t-0 [&>*:nth-child(odd)]:border-l-0
       sm:[&>*:nth-child(-n+3)]:border-t-0 sm:[&>*:nth-child(odd)]:border-l sm:[&>*:nth-child(3n+1)]:border-l-0
       lg:[&>*]:border-t-0 lg:[&>*:nth-child(3n+1)]:border-l lg:[&>*:first-child]:border-l-0">${tiles}</div>`
+
+/**
+ * A STRIP OF LINKS, for a strip whose state lives in the address.
+ *
+ * The sibling of `tabs` above, and the difference is the whole reason both exist: that one
+ * draws buttons an island presses, this one draws anchors the browser follows. The analytics
+ * range strip cannot be buttons — `?range=30` has to survive a reload and be something the
+ * owner can send to themselves — and a button that calls `location.assign` is a link with the
+ * middle-click, the back button and the status bar taken away.
+ *
+ * `aria-current="page"` rather than `aria-pressed`: these are addresses, and a screen reader
+ * that says "pressed" about the page you are already on is describing a control that is not
+ * there. The class is the same `tabItemClass` either way, so the two strips cannot drift.
+ */
+export function linkTabs({ items, value, size = 'sm', role = 'choice', attrs = '' }: {
+  items: { key: string; label: string; href: string }[]
+  value: string
+  size?: TabSize
+  role?: TabRole
+  attrs?: string
+}): string {
+  return `<div class="${role === 'place' ? SEGMENT_TRACK_PLACE : SEGMENT_TRACK}"${attrs ? ` ${attrs}` : ''}>`
+    + items.map(({ key, label, href }) =>
+      `<a href="${escapeAttr(href)}" data-tab="${escapeAttr(key)}"`
+      + (key === value ? ' aria-current="page"' : '')
+      + ` class="${tabItemClass(key === value, size, false, role)} whitespace-nowrap">${escapeHtml(label)}</a>`).join('')
+    + `</div>`
+}
+
+/**
+ * The pilot lamp: a small round mark that says whether a thing is working.
+ *
+ * `title` is the SENTENCE, and it is not decoration — colour never carries the message alone
+ * here. With one the lamp is an `img` with that name; without one it is hidden from the
+ * reading order entirely, because a mark nobody can name is noise in a screen reader.
+ *
+ * `pulse` is a slow breath for one meaning only: something that has not happened YET.
+ * `admin.css` gates the keyframe behind the motion switch.
+ *
+ * `attrs` rides on the lamp ITSELF rather than on a wrapper around it, and that is measured
+ * rather than tidy: an extra span holding the island's hook became a flex item of its own and
+ * took the line-height, so the live strip's 8px mark sat in a 16px box and pushed the strip
+ * open. The hook goes on the thing it hooks.
+ */
+export function lamp({ state, title = '', pulse = false, attrs = '' }: {
+  state: LampState
+  title?: string
+  pulse?: boolean
+  attrs?: string
+}): string {
+  const named = title
+    ? ` role="img" aria-label="${escapeAttr(title)}" title="${escapeAttr(title)}"`
+    : ' aria-hidden="true"'
+  return `<span${attrs ? ` ${attrs}` : ''}${named}`
+    + ` class="${LAMP_SHAPE} ${LAMP_HUES[state]}${pulse ? ' lamp-pulse' : ''}"></span>`
+}

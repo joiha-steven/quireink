@@ -14,6 +14,7 @@
 // React route it used to have is deleted in the same commit, and `check:routes-guarded` and
 // the tour both cover the address either way.
 import type { SiteSettings } from '@/types'
+import { analyticsScreen } from '@/web/admin/screens/analytics'
 import { commentsScreen } from '@/web/admin/screens/comments'
 import { dashboardScreen } from '@/web/admin/screens/dashboard'
 import { helpScreen } from '@/web/admin/screens/help'
@@ -49,6 +50,9 @@ export const SCREENS: Record<string, Screen> = {
   '/admin/trash': { render: trashScreen, island: 'trash' },
   // Grouped by post BY THE SERVER, which is where the grouping always happened in effect.
   '/admin/comments': { render: commentsScreen, island: 'comments' },
+  // Two faces behind one address, both drawn here: the summary, and one page's drill-down at
+  // `?path=`. The island is a filter and a ten-second poll; everything else is reading.
+  '/admin/analytics': { render: analyticsScreen, island: 'analytics' },
 }
 
 /** The screen for a path, or null while it is still React's. */

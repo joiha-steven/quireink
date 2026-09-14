@@ -17,21 +17,12 @@
 // here — red means something was DESTROYED, and a connection that did not answer has
 // destroyed nothing.
 
-/**
- * `good` — stored, and the far end answered.
- * `attention` — changed and not yet tried, or tried and refused.
- * `off` — the feature is not turned on, so there is nothing to be right or wrong.
- *
- * There is no "unknown": a lamp that cannot say anything draws nothing at all, which is the
- * rule the version dot already follows — not knowing is not the same as being current.
- */
-export type LampState = 'good' | 'attention' | 'off'
+// The three states and their hues moved to `@/admin-shared/kit` when the analytics screen
+// became a page (ADR 0054) and a server-drawn lamp needed the same emerald. Re-exported here
+// so every `import { Lamp, type LampState } from '@/admin/ui/Lamp'` is unchanged.
+import { LAMP_HUES, LAMP_SHAPE, type LampState } from '@/admin-shared/kit'
 
-const HUES: Record<LampState, string> = {
-  good: 'bg-emerald-600 dark:bg-emerald-500',
-  attention: 'bg-amber-500',
-  off: 'bg-neutral-300 dark:bg-neutral-600',
-}
+export type { LampState }
 
 export function Lamp({ state, title, pulse = false }: { state: LampState; title?: string; pulse?: boolean }) {
   return (
@@ -47,7 +38,7 @@ export function Lamp({ state, title, pulse = false }: { state: LampState; title?
       // scheduled post is not waiting on the owner the way an unsaved card is, so it wears
       // the amber without the alarm — 2s in and out is a lamp on standby, not a blink.
       // `admin.css` gates the keyframe behind the motion switch like every other one.
-      className={`inline-block h-2 w-2 shrink-0 rounded-full ${HUES[state]} ${pulse ? 'lamp-pulse' : ''}`}
+      className={`${LAMP_SHAPE} ${LAMP_HUES[state]} ${pulse ? 'lamp-pulse' : ''}`}
     />
   )
 }

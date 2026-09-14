@@ -1246,3 +1246,13 @@ html[data-daypart='afternoon'] [data-greet='afternoon'],
 html[data-daypart='evening'] [data-greet='evening'],
 html[data-daypart='night'] [data-greet='night'] { display: inline; }
 html:not([data-daypart]) [data-greet]:last-child { display: inline; }
+
+/* THE LAST ROW SHOWING, in a table whose other rows are still in the DOM.
+   `TROW`'s `last:border-0` asks for `:last-child`, and since the analytics piece index became
+   server-rendered HTML (ADR 0054) that is row forty-one standing hidden behind thirty others —
+   so the ten rows on screen ended with a rule the React face never drew, sitting between the
+   last title and the "Show all" link. The server marks the row, the island moves the mark.
+   An attribute pair outranks the utility it overrides without needing !important. */
+tr[data-piece][data-last] {
+  border-bottom-width: 0;
+}

@@ -89,7 +89,11 @@ already converted fifteen others.
 
 - **The tour's flows for that screen stay green.** They are written against the rendered page and
   not against React, so they do not need rewriting to keep working. A flow that has to change to
-  pass is a behaviour that changed, and that is the signal.
+  pass is a behaviour that changed, and that is the signal. It has fired once: the analytics
+  piece index now sends every row and hides all but ten, so a flow that counted rows compared
+  forty-one against forty-one. The behaviour that changed is real and intended — the whole index
+  arrives in the first response — and the flow now counts what is VISIBLE
+  ([`docs/admin-one-dom.md`](../admin-one-dom.md)).
 - **`check:admin-css` keeps every class honest**, which is what makes moving markup between files
   safe at all.
 - **The editor's own suites**: 2,074 lines and 122 blocks, including the corpus round trip whose

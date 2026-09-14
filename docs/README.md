@@ -30,6 +30,7 @@ copies of a rule means one is wrong within a month
 | [navigation-speculation.md](navigation-speculation.md) | Prefetch every link, prerender on hover: the journey BETWEEN pages |
 | [delivery.md](delivery.md) | What the server does before it answers: the render cache, the switch, the CDN purge, compression |
 | [admin-design.md](admin-design.md) | The admin visual contract |
+| [admin-one-dom.md](admin-one-dom.md) | One DOM per state: the rule the server-rendered admin is built on, and its four traps |
 | [admin-kit.md](admin-kit.md) | The kit's one-of-each rules, enforced by `check:admin-kit` |
 | [admin-navigation.md](admin-navigation.md) | How the admin moves between screens, and how it recovers from an update underneath an open tab |
 | [admin-editor.md](admin-editor.md) | The editor's own contract: the writing surface, the caret, the key feedback |

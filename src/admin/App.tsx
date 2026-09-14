@@ -41,7 +41,6 @@ const load = {
   noteEditor: () => import('@/admin/pages/NoteEditor'),
   media: () => import('@/admin/pages/Media'),
   newsletter: () => import('@/admin/pages/Newsletter'),
-  analytics: () => import('@/admin/pages/Analytics'),
   settings: () => import('@/admin/pages/Settings'),
   assistant: () => import('@/admin/pages/Assistant'),
   notFound: () => import('@/admin/pages/NotFound'),
@@ -58,7 +57,6 @@ const PageEditor = lazy(throughDeploys(load.pageEditor))
 const NoteEditor = lazy(throughDeploys(load.noteEditor))
 const Media = lazy(throughDeploys(load.media))
 const Newsletter = lazy(throughDeploys(load.newsletter))
-const Analytics = lazy(throughDeploys(load.analytics))
 const Settings = lazy(throughDeploys(load.settings))
 const NotFound = lazy(throughDeploys(load.notFound))
 const Assistant = lazy(throughDeploys(load.assistant))
@@ -72,7 +70,6 @@ function loaderFor(path: string): Loader {
   if (p === '/admin/note-editor' || p.startsWith('/admin/note-editor/')) return load.noteEditor
   if (p === '/admin/media') return load.media
   if (p === '/admin/newsletter') return load.newsletter
-  if (p === '/admin/analytics') return load.analytics
   if (p === '/admin/settings') return load.settings
   if (p === '/admin/assistant') return load.assistant
   return load.notFound
@@ -117,7 +114,6 @@ function Route(): ReactNode {
   if (path === '/admin/note-editor' || path.startsWith('/admin/note-editor/')) return <NoteEditor />
   if (path === '/admin/media') return <Media />
   if (path === '/admin/newsletter') return <Newsletter />
-  if (path === '/admin/analytics') return <Analytics />
   if (path === '/admin/settings') return <Settings />
   if (path === '/admin/assistant') return <Assistant />
   return <NotFound />

@@ -55,7 +55,7 @@ const VERSION = APP_VERSION
  * carries it to the client, and typing it loosely here is how the client came to believe
  * 90 was impossible — its `Range` type listed four values while this accepted five.
  */
-function rangeOf(raw: string | undefined): Window {
+export function rangeOf(raw: string | undefined): Window {
   const n = Number(raw)
   if (n === 1) return { days: 1, bucket: 'hour', range: 1 }
   if (n === 7 || n === 30 || n === 90 || n === 365) return { days: n, bucket: 'day', range: n }
@@ -147,7 +147,7 @@ async function noteEditorView(slug: string) {
  * asked for. `range` is what the tab strip highlights, and it is the ONLY field that
  * carries 'all' — `days` is always a number, so every aggregate below stays untouched.
  */
-type Window = { days: number; bucket: Bucket; range: 1 | 7 | 30 | 90 | 365 | 'all' }
+export type Window = { days: number; bucket: Bucket; range: 1 | 7 | 30 | 90 | 365 | 'all' }
 
 /** Titles by public path, so a chart row can say what it is rather than "/slug". */
 async function analyticsTitles() {
@@ -158,7 +158,7 @@ async function analyticsTitles() {
 }
 
 /** One page's detail, when the analytics screen is drilled into a path. */
-async function analyticsDetailView(path: string, { days, bucket, range }: Window) {
+export async function analyticsDetailView(path: string, { days, bucket, range }: Window) {
   const titles = await analyticsTitles()
   return {
     detail: await getPageAnalytics(path, days, bucket),
@@ -174,18 +174,17 @@ async function analyticsDetailView(path: string, { days, bucket, range }: Window
  * default face; this is the index behind it, and it is joined to `titles` on the client
  * rather than here so that a piece with no views at all still has a row to click.
  */
-async function analyticsSummaryView({ days, bucket, range }: Window) {
-  return {
-    summary: await getAnalytics(days, bucket),
-    rightNow: await getRightNow(),
-    titles: await analyticsTitles(),
-    pieces: await getPieces(days, bucket),
-    // Every year that has data, independent of the window above: the question "2024 against
-    // 2025" is not a window question, and answering it by making the owner set a window
-    // twice and hold both numbers in their head is not answering it.
-    years: yearTotals(),
-    range,
-  }
+export async function analyticsSummaryView({ days, bucket, range }: Window) {
+  // TOGETHER, not one after another. Four independent reads that were awaited in a row, which
+  // cost nothing worth naming while a fetch filled an already-painted screen and costs the
+  // whole wait when the HTML response itself is the thing being held up (ADR 0054).
+  const [summary, rightNow, titles, pieces] = await Promise.all([
+    getAnalytics(days, bucket), getRightNow(), analyticsTitles(), getPieces(days, bucket),
+  ])
+  // Every year that has data, independent of the window above: the question "2024 against
+  // 2025" is not a window question, and answering it by making the owner set a window twice
+  // and hold both numbers in their head is not answering it.
+  return { summary, rightNow, titles, pieces, years: yearTotals(), range }
 }
 
 export async function commentsView() {
