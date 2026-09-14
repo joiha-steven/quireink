@@ -53,9 +53,10 @@ try {
  * bundler's hash, were `immutable` and free. The public side has always done this
  * (`/assets/site.<hash>.css`); this is the same trick.
  *
- * Tailwind writes this file, not Bun, so there is no bundler hash to use and the name is
- * computed here. That is safe for a SHEET and was not safe for the entry: nothing imports a
- * stylesheet by name, where a JavaScript module is identified BY ITS URL.
+ * The sheet is concatenated by `build-admin.ts` rather than emitted by Bun's bundler, so there
+ * is no bundler hash to use and the name is computed here. That is safe for a SHEET and was not
+ * safe for the entry: nothing imports a stylesheet by name, where a JavaScript module is
+ * identified BY ITS URL.
  */
 function fingerprint(name: string): string {
   const asset = ASSETS.get(name)
