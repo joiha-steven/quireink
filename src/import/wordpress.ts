@@ -9,7 +9,7 @@
 // carried a hand copy. This file keeps only what is WordPress: WXR's field names, its
 // zero dates, and its shortcode habits (handled inside the shared cleanup).
 
-import { XMLParser } from 'fast-xml-parser'
+import { parseXml } from '@/import/xml'
 import {
   makeTurndown, htmlToMarkdown, slugTracker, decodeEntities, deriveExcerpt,
   type ImportedPost, type ImportedPage, type ImportResult,
@@ -59,8 +59,7 @@ function toIso(wpDate: unknown, fallback: string): string {
 
 export function parseWxr(xml: string, now: string): WxrResult {
   const td = makeTurndown()
-  const parser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: '@_', trimValues: false })
-  const doc = parser.parse(xml) as { rss?: { channel?: { item?: unknown } } }
+  const doc = parseXml(xml) as { rss?: { channel?: { item?: unknown } } }
   const items = asArray(doc?.rss?.channel?.item) as Record<string, unknown>[]
 
   const uniqueSlug = slugTracker()

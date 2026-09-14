@@ -88,9 +88,9 @@ export function opsRoutes() {
     }
 
     // Loaded here rather than at the top of the file: the parser pulls turndown, its GFM
-    // plugin and fast-xml-parser, none of which any other route touches. A blog that never
-    // came from WordPress — which is most of them, forever — never loads them. The shape
-    // check above runs first, so a wrong file is rejected without the import.
+    // plugin and this repository's XML reader, none of which any other route touches. A blog
+    // that never came from WordPress — which is most of them, forever — never loads them. The
+    // shape check above runs first, so a wrong file is rejected without the import.
     const { parseWxr } = await import('@/import/wordpress')
     return json(await persist(parseWxr(xml, new Date().toISOString()), 'wordpress'))
   })
