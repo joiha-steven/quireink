@@ -4,13 +4,31 @@
 // answers from a script and keeps a transcript, so every assertion is about the bytes this
 // client put on the wire.
 //
-// ⚠️ WHAT IS NOT TESTED HERE, AND WHY. The STARTTLS upgrade itself needs a server that can turn
-// an open socket into a TLS one mid-conversation, and Bun cannot: `new tls.TLSSocket(socket,
-// { isServer: true })` never completes its handshake, measured both ways round on 2026-09-14.
-// The CLIENT half works (`tls.connect({ socket })` upgrades fine, which is what this uses), so
-// what is checked here is that the command sequence reaches STARTTLS at the right moment and
-// stops there. The upgrade is proved against a real relay instead, at deploy time: connect,
-// EHLO, STARTTLS, AUTH, QUIT, with no message in between.
+// ⚠️ THE UPGRADE ITSELF IS NOT IN THIS SUITE, AND HERE IS WHY AND HOW IT WAS PROVED INSTEAD.
+//
+// A STARTTLS test needs a server that can turn an open socket into a TLS one mid-conversation,
+// and Bun cannot: `new tls.TLSSocket(socket, { isServer: true })` never finishes its handshake,
+// measured both ways round on 2026-09-14, with and without a `secureContext`. OpenSSL 3.6 no
+// longer has `s_server -starttls` either. The CLIENT half is what this module uses and it works.
+//
+// So it was run by hand against a Node server, which can, and this was the transcript:
+//
+//   ["EHLO host", "STARTTLS", "TLS:EHLO host", "TLS:QUIT"]
+//
+// The last two lines arriving on the TLS side is the proof: the same TCP connection carried
+// them after the upgrade. To repeat it, from the repository root:
+//
+//   openssl req -x509 -newkey rsa:2048 -keyout .tmp/k.pem -out .tmp/c.pem \
+//     -days 2 -nodes -subj "/CN=localhost"
+//   # a Node script: net.createServer, answer EHLO with 250 STARTTLS, then
+//   # new tls.TLSSocket(socket, { isServer: true, secureContext }) and log what arrives
+//   NODE_EXTRA_CA_CERTS=$PWD/.tmp/c.pem bun -e "…SmtpSession.open({host:'127.0.0.1',…})"
+//
+// `NODE_EXTRA_CA_CERTS` is needed because this client VALIDATES certificates and a test one is
+// self-signed. That is the correct default and there is deliberately no option to turn it off:
+// an option the settings screen cannot set is an option nobody has decided to use.
+//
+// That run is also what found the SNI bug pinned below.
 import { afterEach, describe, expect, it } from 'bun:test'
 import net from 'node:net'
 import os from 'node:os'
@@ -196,6 +214,21 @@ describe('a server that says no', () => {
     const attempt = SmtpSession.open({ host: '127.0.0.1', port: running.port, secure: false, timeoutMs: 4000 })
     await expect(attempt).rejects.toThrow(/STARTTLS was refused: 454/)
     expect(running.said[1]).toBe('STARTTLS')
+  })
+
+  it('does not choke on a relay configured by IP address rather than by name', async () => {
+    // SNI carries a hostname, and `tls.connect` THROWS when handed an IP literal instead of
+    // ignoring it. A relay on a LAN box or a nameless VPS is configured by address every day,
+    // and before this was fixed the upgrade threw before a single message went out. The fake
+    // server here says 220 and then is not TLS, so the handshake fails either way; what this
+    // pins is that it fails as a handshake and not as an argument.
+    running = await fakeServer({ EHLO: '250-fake\r\n250 STARTTLS', STARTTLS: '220 go ahead' })
+    const attempt = SmtpSession.open({ host: '127.0.0.1', port: running.port, secure: false, timeoutMs: 2000 })
+    await expect(attempt).rejects.toThrow()
+    await attempt.catch((error: Error) => {
+      expect(error.message).not.toContain('ServerName')
+      expect(error.message).not.toContain('not permitted')
+    })
   })
 
   it('carries the code and the text of a refused recipient', async () => {

@@ -41,6 +41,17 @@ const isLoopback = (host: string): boolean =>
   host === 'localhost' || host === '::1' || /^127\./.test(host)
 
 /**
+ * The name to put in the TLS handshake, or nothing.
+ *
+ * SNI carries a HOSTNAME, and `tls.connect` throws outright when handed an IP literal rather
+ * than quietly ignoring it. A relay configured by address is an ordinary thing to configure —
+ * a box on the same network, a VPS with no name yet — and without this the upgrade throws
+ * before a single message goes out. Found by pointing the client at 127.0.0.1.
+ */
+const sniFor = (host: string): string | undefined =>
+  /^\d{1,3}(\.\d{1,3}){3}$/.test(host) || host.includes(':') ? undefined : host
+
+/**
  * The socket, as one thing that can be written to, read a reply from, and upgraded.
  *
  * Replies arrive in whatever chunks the network felt like, so reads are served from a buffer:
@@ -118,7 +129,7 @@ class Wire {
       this.socket.removeAllListeners('data')
       this.socket.removeAllListeners('error')
       this.socket.removeAllListeners('close')
-      const secured = tls.connect({ socket: this.socket as net.Socket, servername: host }, () => {
+      const secured = tls.connect({ socket: this.socket as net.Socket, servername: sniFor(host) }, () => {
         this.socket = secured
         this.buffer = ''
         this.listen()
@@ -142,7 +153,7 @@ class Wire {
 function connect(opts: SmtpOptions, timeoutMs: number): Promise<Wire> {
   return new Promise((resolve, reject) => {
     const socket = opts.secure
-      ? tls.connect({ host: opts.host, port: opts.port, servername: opts.host })
+      ? tls.connect({ host: opts.host, port: opts.port, servername: sniFor(opts.host) })
       : net.connect({ host: opts.host, port: opts.port })
     const timer = setTimeout(() => {
       socket.destroy()
