@@ -16,7 +16,10 @@
 // lists nobody has looked at on a screen.
 import { escapeAttr, escapeHtml } from '@/utils'
 import { ICONS, GLYPHS, type GlyphName, type IconName } from '@/icons'
-import { CONTROL_SM, SHEET, SHEET_TOP } from '@/admin-shared/kit'
+import {
+  CONTROL_SM, SHEET, SHEET_TOP, TICK_BOX, TICK_MARK, TICK_PATH, TICK_WRAP,
+} from '@/admin-shared/kit'
+import { SEGMENT_TRACK_PLACE, tabItemClass } from '@/admin-shared/tabs'
 import { HEADER_GAP, NOTE_TEXT, TITLE } from '@/admin-shared/scale'
 
 /** A glyph from the shared set, at the surface's own size. */
@@ -101,4 +104,54 @@ export function select({ name, label, options, value, attrs = '' }: {
     + ` stroke-linecap="round" stroke-linejoin="round"`
     + ` class="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-500 dark:text-neutral-400">`
     + `${ICONS.down}</svg></span>`
+}
+
+/**
+ * A STRIP OF KINDS, with every tab drawn and the current one marked.
+ *
+ * The React `Tabs` is a much larger thing: it measures its own overflow to fade the edge it
+ * can scroll towards, it scrolls the chosen tab into view, and in a tablist it moves selection
+ * with the arrow keys. None of that is here, and the ones that matter are the island's job —
+ * this function draws the strip, and the screen that uses it says which of those behaviours it
+ * wants. The trash's strip is not a tablist today and this keeps it as it was: buttons that
+ * carry `aria-pressed`, which is what a filter is.
+ *
+ * `attrs` rides on the track and `key` becomes `data-tab` on each item, so an island can find
+ * the strip and know what was pressed without a second dictionary.
+ */
+export function tabs({ items, value, attrs = '' }: {
+  items: { key: string; label: string }[]
+  value: string
+  attrs?: string
+}): string {
+  return `<div class="${SEGMENT_TRACK_PLACE}"${attrs ? ` ${attrs}` : ''}>`
+    + items.map(({ key, label }) =>
+      `<button type="button" data-tab="${escapeAttr(key)}" aria-pressed="${key === value}"`
+      + ` class="${tabItemClass(key === value, 'sm', false, 'place')}">${escapeHtml(label)}</button>`).join('')
+    + `</div>`
+}
+
+/**
+ * The admin's checkbox: a real `input[type=checkbox]` with the platform widget removed and the
+ * tick drawn over it. See `TICK_BOX` for why the box is not the browser's.
+ *
+ * `label` rather than a wrapping `<label>` element: every row that carries one of these names
+ * the thing beside it already, and a second visible name is not what an unlabelled box needs.
+ *
+ * ⚠️ `className` LANDS ON THE WRAPPER, not on the box, and `attrs` lands on the box and may not
+ * carry a class. It is `Tick`'s own rule for its own reason — a margin on the input moves the
+ * 16px box out from under the 16px tick drawn over it — and here it is also a correctness one:
+ * a class inside `attrs` would emit a second `class` attribute and the browser would keep the
+ * first, which is to say none of the box's own styling.
+ */
+export function tick({ label, className = '', attrs = '' }: {
+  label: string
+  className?: string
+  attrs?: string
+}): string {
+  return `<span class="${TICK_WRAP}${className ? ` ${className}` : ''}">`
+    + `<input type="checkbox" aria-label="${escapeAttr(label)}"${attrs ? ` ${attrs}` : ''} class="${TICK_BOX}">`
+    + `<svg viewBox="0 0 16 16" aria-hidden="true" class="${TICK_MARK}">`
+    + `<path d="M4 8.4 6.6 11 12 5" fill="none" stroke-width="2" stroke-linecap="round"`
+    + ` stroke-linejoin="round" class="${TICK_PATH}"/></svg></span>`
 }

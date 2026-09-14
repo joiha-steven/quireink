@@ -16,10 +16,17 @@
 import type { SiteSettings } from '@/types'
 import { helpScreen } from '@/web/admin/screens/help'
 import { logScreen } from '@/web/admin/screens/log'
+import { trashScreen } from '@/web/admin/screens/trash'
 
 export type Screen = {
-  /** The finished markup, for the canvas. */
-  render: (settings: SiteSettings) => Promise<string>
+  /**
+   * The finished markup, for the canvas.
+   *
+   * `query` is the request's own, because a screen's state can be IN the address: the trash
+   * opens on `?tab=media` the way the settings screen opens on `?tab=account`. A screen that
+   * has no such state ignores it, which is most of them.
+   */
+  render: (settings: SiteSettings, query: URLSearchParams) => Promise<string>
   /**
    * The island's build name, or null for a screen that needs no JavaScript at all.
    *
@@ -34,6 +41,8 @@ export const SCREENS: Record<string, Screen> = {
   // The one screen with no behaviour at all: an index of `#` links is the browser's own.
   '/admin/help': { render: helpScreen, island: null },
   '/admin/log': { render: logScreen, island: 'log' },
+  // Seven kinds and five ways to write, all of it over rows that are already in the markup.
+  '/admin/trash': { render: trashScreen, island: 'trash' },
 }
 
 /** The screen for a path, or null while it is still React's. */

@@ -250,7 +250,7 @@ function tabHead(settings: SiteSettings): string {
   return `<title>${title}</title>${icon}`
 }
 
-export async function adminShell(settings: SiteSettings, path: string): Promise<string> {
+export async function adminShell(settings: SiteSettings, path: string, query = new URLSearchParams()): Promise<string> {
   if (ASSETS.size === 0) {
     return `<!DOCTYPE html><meta charset="utf-8">${tabHead(settings)}`
       + '<p style="font:14px system-ui;padding:2rem">The admin bundle has not been built. '
@@ -263,7 +263,7 @@ export async function adminShell(settings: SiteSettings, path: string): Promise<
   // told not to draw a route for it. A screen that is still React's leaves `#admin` empty, as
   // it has always been.
   const found = screenFor(path)
-  const screen = found ? await found.screen.render(settings) : ''
+  const screen = found ? await found.screen.render(settings, query) : ''
   const island = found?.screen.island
     ? `\n<script type="module" src="/admin/assets/${islandNamed(found.screen.island)}"></script>`
     : ''

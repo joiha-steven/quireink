@@ -15,17 +15,13 @@
 // `rounded` is 4px, not the 6px control step: on a 16px box 6px is a 38% corner, which reads
 // as a blob rather than as a checkbox. That exception is `CheckField`'s, from 2026-08-27,
 // and it is the same exception for the same measurement.
+//
+// The class strings moved to `@/admin-shared/kit` when the trash became a page (ADR 0054), so
+// the server can draw the same box without importing React.
 import type { InputHTMLAttributes } from 'react'
+import { TICK_BOX, TICK_MARK, TICK_PATH, TICK_WRAP } from '@/admin-shared/kit'
 
 type Props = Omit<InputHTMLAttributes<HTMLInputElement>, 'type' | 'size'>
-
-const BOX =
-  'peer h-4 w-4 shrink-0 cursor-pointer appearance-none rounded border border-neutral-300 bg-white transition-colors shadow-[inset_0_1px_1.5px_rgba(0,0,0,.07)] checked:shadow-[inset_0_1.5px_2px_rgba(0,0,0,.4)] ' +
-  'checked:border-neutral-900 checked:bg-neutral-900 ' +
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-300 ' +
-  'disabled:cursor-not-allowed disabled:opacity-50 ' +
-  'dark:border-neutral-600 dark:bg-neutral-900 dark:checked:border-white dark:checked:bg-white ' +
-  'dark:focus-visible:ring-neutral-700'
 
 /**
  * `className` lands on the WRAPPER, not the box: every caller that has wanted to touch this
@@ -34,22 +30,16 @@ const BOX =
  */
 export function Tick({ className = '', ...props }: Props & { className?: string }) {
   return (
-    <span className={`relative inline-flex h-4 w-4 shrink-0 ${className}`}>
-      <input type="checkbox" className={BOX} {...props} />
-      {/* The stroke is the GROUND the box fills with, so it reads in both themes without a
-          second rule: white on the dark fill, dark on the white one. */}
-      <svg
-        viewBox="0 0 16 16"
-        aria-hidden
-        className="pointer-events-none absolute inset-0 h-4 w-4 opacity-0 transition-opacity peer-checked:opacity-100"
-      >
+    <span className={`${TICK_WRAP} ${className}`}>
+      <input type="checkbox" className={TICK_BOX} {...props} />
+      <svg viewBox="0 0 16 16" aria-hidden className={TICK_MARK}>
         <path
           d="M4 8.4 6.6 11 12 5"
           fill="none"
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
-          className="stroke-white dark:stroke-neutral-900"
+          className={TICK_PATH}
         />
       </svg>
     </span>

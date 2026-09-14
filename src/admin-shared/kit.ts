@@ -257,3 +257,36 @@ export const THEAD =
   'whitespace-nowrap border-b border-neutral-200 text-left text-xs text-neutral-500 dark:border-neutral-800 dark:text-neutral-400'
 export const TROW = 'border-b border-neutral-100 last:border-0 hover:bg-neutral-100/60 dark:border-neutral-800 dark:hover:bg-neutral-800/40'
 
+
+/**
+ * THE ADMIN'S CHECKBOX, and it is still a real `input[type=checkbox]`.
+ *
+ * `appearance-none` removes the platform widget and leaves the element, so the box stays
+ * focusable, keyboard-operable, announced as a checkbox and nameable by a wrapping label. The
+ * tick drawn over it is an SVG with `pointer-events-none`, which is why the input alone is the
+ * hit target and the check cannot swallow a click.
+ *
+ * `rounded` is 4px rather than the 6px control step: on a 16px box 6px is a 38% corner, which
+ * reads as a blob rather than as a checkbox.
+ *
+ * Here rather than in `ui/Tick.tsx` since the trash became a page (ADR 0054) and the server
+ * draws the same box. `Tick` is the React component around it and imports this.
+ */
+export const TICK_BOX =
+  'peer h-4 w-4 shrink-0 cursor-pointer appearance-none rounded border border-neutral-300 bg-white transition-colors shadow-[inset_0_1px_1.5px_rgba(0,0,0,.07)] checked:shadow-[inset_0_1.5px_2px_rgba(0,0,0,.4)] '
+  + 'checked:border-neutral-900 checked:bg-neutral-900 '
+  + 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-300 '
+  + 'disabled:cursor-not-allowed disabled:opacity-50 '
+  + 'dark:border-neutral-600 dark:bg-neutral-900 dark:checked:border-white dark:checked:bg-white '
+  + 'dark:focus-visible:ring-neutral-700'
+
+/** The wrapper that holds the box and the tick drawn over it on one 16px square. */
+export const TICK_WRAP = 'relative inline-flex h-4 w-4 shrink-0'
+
+/**
+ * The tick itself. The stroke is the GROUND the box fills with, so it reads in both themes
+ * without a second rule: white on the dark fill, dark on the white one.
+ */
+export const TICK_MARK =
+  'pointer-events-none absolute inset-0 h-4 w-4 opacity-0 transition-opacity peer-checked:opacity-100'
+export const TICK_PATH = 'stroke-white dark:stroke-neutral-900'

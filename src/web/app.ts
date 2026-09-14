@@ -83,7 +83,8 @@ async function adminPage(c: Context): Promise<Response> {
   // The PATH goes in too, since ADR 0054: the rail is server-rendered and the where-you-are
   // mark is a fact about this request. It was a client-side comparison against `location`,
   // which is the same answer arrived at one paint later.
-  return c.html(await adminShell(await getSettings(), c.req.path), 200, { 'x-robots-tag': 'noindex, nofollow' })
+  const query = new URL(c.req.url).searchParams
+  return c.html(await adminShell(await getSettings(), c.req.path, query), 200, { 'x-robots-tag': 'noindex, nofollow' })
 }
 
 export function createApp(): Hono {

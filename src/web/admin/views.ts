@@ -234,7 +234,7 @@ export async function logView() {
   return { entries, enabled: settings.features.activityLog }
 }
 
-async function trashView() {
+export async function trashView() {
   const [posts, pages, notes, media, files, comments, subscribers] = await Promise.all([
     getTrashedPosts(), getTrashedPages(), getTrashedNotes(), getTrashedMedia(),
     getTrashedFiles(), getTrashedComments(), getTrashedSubscribers(),

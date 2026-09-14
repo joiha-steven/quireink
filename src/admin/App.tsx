@@ -44,7 +44,6 @@ const load = {
   comments: () => import('@/admin/pages/Comments'),
   newsletter: () => import('@/admin/pages/Newsletter'),
   analytics: () => import('@/admin/pages/Analytics'),
-  trash: () => import('@/admin/pages/Trash'),
   settings: () => import('@/admin/pages/Settings'),
   assistant: () => import('@/admin/pages/Assistant'),
   notFound: () => import('@/admin/pages/NotFound'),
@@ -64,7 +63,6 @@ const Media = lazy(throughDeploys(load.media))
 const Comments = lazy(throughDeploys(load.comments))
 const Newsletter = lazy(throughDeploys(load.newsletter))
 const Analytics = lazy(throughDeploys(load.analytics))
-const Trash = lazy(throughDeploys(load.trash))
 const Settings = lazy(throughDeploys(load.settings))
 const NotFound = lazy(throughDeploys(load.notFound))
 const Assistant = lazy(throughDeploys(load.assistant))
@@ -81,7 +79,6 @@ function loaderFor(path: string): Loader {
   if (p === '/admin/comments') return load.comments
   if (p === '/admin/newsletter') return load.newsletter
   if (p === '/admin/analytics') return load.analytics
-  if (p === '/admin/trash') return load.trash
   if (p === '/admin/settings') return load.settings
   if (p === '/admin/assistant') return load.assistant
   return load.notFound
@@ -129,7 +126,6 @@ function Route(): ReactNode {
   if (path === '/admin/comments') return <Comments />
   if (path === '/admin/newsletter') return <Newsletter />
   if (path === '/admin/analytics') return <Analytics />
-  if (path === '/admin/trash') return <Trash />
   if (path === '/admin/settings') return <Settings />
   if (path === '/admin/assistant') return <Assistant />
   return <NotFound />

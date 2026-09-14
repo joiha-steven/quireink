@@ -50,8 +50,10 @@ const RULES: Rule[] = [
   {
     what: 'the segmented tab track',
     signature: 'items-end gap-6 border-b border-neutral-200',
-    home: 'src/admin/components/tabs.tsx',
-    instead: 'use <Tabs>: size="lg" is the underlined section strip, size="sm" the inline filter',
+    // Moved out of `components/tabs.tsx` when the trash became a page (ADR 0054): the server
+    // draws that screen's kind strip and cannot import React. `Tabs` re-exports every string.
+    home: 'src/admin-shared/tabs.ts',
+    instead: 'use <Tabs> in React (size="lg" is the section strip, size="sm" the inline filter), or tabs() from web/admin/kit on the server',
   },
   {
     what: 'the button shape',
@@ -87,8 +89,10 @@ const RULES: Rule[] = [
     // the box comes out invisible.
     what: 'the drawn checkbox',
     signature: 'cursor-pointer appearance-none rounded border border-neutral-300',
-    home: 'src/admin/ui/Tick.tsx',
-    instead: 'use <Tick> from ui/Tick',
+    // Moved for the same reason as the tab track, and by the same screen: the trash's rows
+    // carry a tick each. `Tick` is the React component around it and imports the string.
+    home: 'src/admin-shared/kit.ts',
+    instead: 'use <Tick> from ui/Tick in React, or tick() from web/admin/kit on the server',
   },
   {
     // Thirty-eight screens hand-typed this rather than import it, plus three that went as far

@@ -87,4 +87,85 @@ export function registerReadingFlows({ flow, atWidth, expect }: Pick<Tour, 'flow
       if (!marker.includes('//')) return 'the code sheet loaded but marked no heading: ' + marker
       return 'ok one sheet, ' + looks[0]
     })()`))
+
+  // BOOK MODE, moved here from `tour-flows.ts` on 2026-09-14 when that file reached its
+  // 400-line ceiling. The seam is the file's own: these are the reading site's behaviour at a
+  // given width, which is what everything else in here is about.
+
+  // Book mode had NO flow when Chrome 148 stopped scrolling to — and painting — a
+  // multicol's overflow columns, so every instance quietly showed "1 / 1" of every article
+  // with dead arrows, and 57 green flows said nothing. These two pin the three things that
+  // broke: the count sees every column, a turn actually moves the flow, and the flow is
+  // sized to hold its columns as real boxes (the sized flow is what makes them paint).
+  flow('book mode paginates a long article and the pages turn', () => expect(
+    '/the-reed-pen-in-van-goghs-letters', `
+    (async () => {
+      const btn = document.querySelector('[data-book-open]')
+      if (!btn) return 'no book toggle on the article'
+      btn.click()
+      await new Promise((r) => setTimeout(r, 400))
+      const d = document.querySelector('.book-overlay[open]')
+      if (!d) return 'the overlay did not open'
+      const count = () => d.querySelector('.book-count').textContent
+      const m = /^1 \\/ (\\d+)$/.exec(count())
+      if (!m) return 'counter reads ' + count()
+      if (+m[1] < 2) return 'a 700-word article measured ' + count() + ' — pagination has gone blind again'
+      if (d.querySelector('.book-prev').hidden) return 'arrows hidden with ' + m[1] + ' spreads'
+      const flowEl = d.querySelector('.book-flow')
+      const vp = d.querySelector('.book-viewport')
+      if (!(parseFloat(flowEl.style.width) > vp.clientWidth))
+        return 'the flow is not sized to hold its columns, so pages past 1 will not paint'
+      const before = flowEl.style.transform
+      d.querySelector('.book-next').click()
+      await new Promise((r) => setTimeout(r, 350))
+      if (!count().startsWith('2 /')) return 'the turn did not advance: ' + count()
+      if (flowEl.style.transform === before) return 'the counter moved but the pages did not'
+      d.querySelector('.book-x').click()
+      return 'ok (' + m[1] + ' spreads)'
+    })()`, 400))
+
+  // The phone: the floating doorway exists (both server-rendered entries hide under 768px),
+  // it opens the one-page reader, and the reserved chrome does not print the title into the
+  // controls.
+  flow('a phone can enter book mode through the floating button', () => atWidth(375,
+    '/the-reed-pen-in-van-goghs-letters', `
+    (async () => {
+      const fab = document.querySelector('.book-fab')
+      if (!fab) return 'no floating book button'
+      if (getComputedStyle(fab).display === 'none') return 'the button is display:none at 375px'
+      fab.click()
+      await new Promise((r) => setTimeout(r, 500))
+      // A PHONE GETS THE SCROLLED READER, not the spread — since 2026-09-06, because a modal
+      // dialog takes the scroll off the document and iOS then keeps its own bars for the
+      // whole read. What that reader has to do is asserted in tour-flows-shell.ts; this
+      // flow owns the DOORWAY, so it only checks that the button opens the right thing.
+      const r = document.querySelector('.book-reader')
+      if (!r) return document.querySelector('.book-overlay[open]') ? 'the phone got the desktop spread' : 'nothing opened'
+      const flow = r.querySelector('.book-flow')
+      if (!flow || !flow.textContent.trim()) return 'the reader opened empty'
+      r.querySelector('.book-x').click()
+      await new Promise((r2) => setTimeout(r2, 400))
+      return document.querySelector('.book-reader') ? 'it would not close' : 'ok'
+    })()`, 400))
+
+  // An unfolded foldable: 673px of glass with the fold's crease down the exact middle. One
+  // page here is a 577px column with the crease through every line; two 288px pages put the
+  // crease inside the gutter, which is the whole reason a book mode belongs on this device.
+  flow('an unfolded foldable gets two pages with the crease in the gutter', () => atWidth(673,
+    '/the-reed-pen-in-van-goghs-letters', `
+    (async () => {
+      document.querySelector('[data-book-open]').click()
+      await new Promise((r) => setTimeout(r, 400))
+      const d = document.querySelector('.book-overlay[open]')
+      if (!d) return 'the overlay did not open'
+      if (d.querySelector('.book-viewport').dataset.pages !== '2')
+        return 'an unfolded foldable got ' + d.querySelector('.book-viewport').dataset.pages + ' page(s)'
+      const vp = d.querySelector('.book-viewport').getBoundingClientRect()
+      // The spine must straddle the fold: the spread's centre within a gutter's half-width
+      // of the glass's centre, or the crease is running through one of the pages.
+      if (Math.abs((vp.left + vp.right) / 2 - innerWidth / 2) > 28)
+        return 'the spine sits ' + Math.round((vp.left + vp.right) / 2 - innerWidth / 2) + 'px off the fold'
+      d.querySelector('.book-x').click()
+      return 'ok'
+    })()`, 400))
 }
