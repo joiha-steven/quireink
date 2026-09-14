@@ -15,7 +15,8 @@ import { formatCount } from '@/i18n/format'
 import { TABLE_SCROLL, THEAD, TROW } from '@/admin-shared/kit'
 import { NOTE_TEXT } from '@/admin-shared/scale'
 import { formatDuration } from '@/admin-shared/analytics'
-import { lamp, statCard } from '@/web/admin/kit'
+import { lamp } from '@/web/admin/kit'
+import { statCard } from '@/web/admin/kit-figures'
 
 /** The address of one page's drill-down, at the window the reader is already looking at. */
 export const detailHref = (path: string, range: string): string =>

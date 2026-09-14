@@ -199,13 +199,20 @@ export function registerHomeFlows({ flow, expect }: Tour): void {
     (async () => {
       const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
       const said = ${Number(count)}
+      // The band is drawn on every visit and hidden when nothing is filtered, so PRESENT is
+      // not the question any more — SHOWING is.
       let chip = null
       for (let i = 0; i < 40 && !chip; i++) {
-        chip = document.querySelector('[data-write-needs]')
+        const band = document.querySelector('[data-write-needs]')
+        chip = band && band.offsetParent !== null ? band : null
         if (!chip) await sleep(150)
       }
       if (!chip) return 'the list applied a filter and did not say so'
-      const rows = document.querySelectorAll('[data-write-row]').length
+      // ⚠️ VISIBLE, not present. The filter hides (docs/admin-one-dom.md, trap 3) and this
+      // reported 46 rows against a count of 25 the day the column became server-rendered.
+      const seen = () => [...document.querySelectorAll('[data-write-row]')]
+        .filter((r) => r.offsetParent !== null).length
+      const rows = seen()
       if (rows === 0) return 'the filtered list is empty, and the card said ' + said
       if (rows > said) return 'the filter left ' + rows + ' rows for a count of ' + said
       // And the way OFF it, which is the half that makes a filtered list honest.
@@ -213,7 +220,7 @@ export function registerHomeFlows({ flow, expect }: Tour): void {
       if (!off) return 'the filter cannot be taken off'
       off.click()
       await sleep(400)
-      const all = document.querySelectorAll('[data-write-row]').length
+      const all = seen()
       if (all <= rows) return 'clearing the filter left ' + all + ' rows against ' + rows
       return 'ok ' + said + ' counted, ' + rows + ' listed, ' + all + ' with the filter off'
     })()`, 1400)

@@ -76,11 +76,12 @@ describe('the highlighter does NOT mark a choice', () => {
     const tabs = readFileSync('src/admin/components/tabs.tsx', 'utf8')
     expect(tabs).toContain("role = 'place'")
     expect(tabs).toContain('tabItemClass(value === tb.key, size, dense, role)')
-    // Every chooser that is still React, plus the two the server draws. `SiteFields.tsx` was
-    // on this list until the settings screen became a page (ADR 0054); its segmented strips are
-    // `choice()` and `pick()` in `src/web/admin/fields-pick.ts` now, and neither can ask for
-    // 'place' — `choice` hands `tabItemClass` its own two constants and nothing else.
-    for (const f of ['src/admin/components/WritePane.tsx', 'src/web/admin/fields-pick.ts']) {
+    // Every chooser the server draws. `SiteFields.tsx` was on this list until the settings
+    // screen became a page (ADR 0054), and `WritePane.tsx` until the write column did; its kind
+    // strip is `tabs({ role: 'choice' })` in `src/web/admin/screens/content-pane.ts` now. The
+    // rule is unchanged and so is what it is worth: a filter that wears the highlighter claims
+    // to be WHERE YOU ARE, and the reader then cannot tell a place from a choice.
+    for (const f of ['src/web/admin/screens/content-pane.ts', 'src/web/admin/fields-pick.ts']) {
       expect(readFileSync(f, 'utf8')).not.toContain("'place'")
     }
   })

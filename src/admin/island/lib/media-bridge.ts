@@ -8,8 +8,18 @@ import { uploadAttachments, uploadImages } from '@/admin/upload-client'
 
 export type Words = Partial<Record<string, string>>
 
-export const say = (message: string, kind?: 'error'): void => {
-  window.dispatchEvent(new CustomEvent('quire:toast', { detail: { message, kind } }))
+/**
+ * A sentence, and optionally the way back out of what it is reporting.
+ *
+ * The ACTION is not a convenience. Binning several pieces asks nothing before it acts, and the
+ * whole argument for asking nothing is that the undo is in the toast — an island that could
+ * only say a sentence would have had to put the question back. `run` travels as a live
+ * function, which is why this is a `CustomEvent` and not a string in an attribute.
+ */
+export const say = (
+  message: string, kind?: 'error', action?: { label: string; run: () => void },
+): void => {
+  window.dispatchEvent(new CustomEvent('quire:toast', { detail: { message, kind, action } }))
 }
 
 /**

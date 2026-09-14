@@ -20,7 +20,8 @@ import { DAY_PARTS, dayPartName, relativeDay, sinceStart } from '@/admin-shared/
 import { firstRunSteps } from '@/admin-shared/first-run'
 
 import { REPO } from '@/admin-shared/help'
-import { card, icon, statBand, statCard } from '@/web/admin/kit'
+import { icon } from '@/web/admin/kit'
+import { card, statBand, statCard } from '@/web/admin/kit-figures'
 import { trafficCard, widgets } from '@/web/admin/screens/dashboard-cards'
 import { dashboardView } from '@/web/admin/views-home'
 

@@ -11,7 +11,6 @@ export default function NoteEditor() {
   const state = useView('note-editor', slug ? `?slug=${encodeURIComponent(slug)}` : '')
   return (
     // The list is drawn by the shell — see `PostEditor`.
-    <div className="min-w-0 flex-1">
         <View state={state}>
           {(d) => (
         <NoteForm
@@ -26,6 +25,5 @@ export default function NoteEditor() {
         />
           )}
       </View>
-    </div>
   )
 }

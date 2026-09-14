@@ -71,55 +71,6 @@ export function registerEditorFlows({ flow, expect, atWidth }: Tour): void {
   // It trashes a SEEDED post and restores it, rather than making one: a new post is not in
   // the already-rendered pane, and refetching the pane from here means a reload, which ends
   // the expression. Restore is the cleanup, and it is also half the assertion.
-  flow('admin: the editor can move a piece to the trash', () => expect('/admin/content', `
-    (async () => {
-      window.confirm = () => true
-      // VISIBLE controls only. Since ADR 0054 the rail is one DOM in every state and CSS
-      // decides what is shown, so a folded group still holds a link that says "Trash" — and a
-      // search by WORDS found the rail's row instead of the editor's button. offsetParent is
-      // null for anything display:none, which is the same reason a person cannot click it.
-      const find = (re) => [...document.querySelectorAll('button, a')]
-        .filter((b) => b.offsetParent !== null)
-        .find((b) => re.test((b.textContent || '').trim()))
-      const wait = async (fn, tries = 60, gap = 100) => {
-        for (let i = 0; i < tries; i++) {
-          const hit = fn()
-          if (hit) return hit
-          await new Promise((r) => setTimeout(r, gap))
-        }
-        return null
-      }
-
-      const row = await wait(() => [...document.querySelectorAll('[data-write-row]')]
-        .find((a) => /^\\/admin\\/editor\\/[^/]+$/.test(new URL(a.href).pathname)))
-      if (!row) return 'the write pane offered no post to open'
-      const slug = new URL(row.href).pathname.split('/').pop()
-      row.click()
-
-      const attributes = await wait(() => find(/attribut|thuộc tính/i))
-      if (!attributes) return 'the editor never showed its Attributes control'
-      attributes.click()
-
-      const trash = await wait(() => find(/trash|rác|papierkorb|corbeille|papelera|lixo|cestino|ごみ箱|휴지통|回收站|корзину/i), 40)
-      if (!trash) return 'the Attributes panel offers no way to trash the piece'
-      trash.click()
-
-      // Gone when the PUBLIC url stops answering — what a reader would check, rather than
-      // trusting the button's own optimism.
-      const gone = await wait(async () => (await fetch('/' + slug)).status === 404 ? true : null, 60, 200)
-      const listed = await (await fetch('/api/admin/view/trash')).json()
-        .then((j) => (j?.data?.posts ?? []).some((p) => p.slug === slug))
-      // Put it back before reporting either way: a tour that eats a seeded post changes
-      // what every later run is testing. SOFT is also what the confirmation promises.
-      const back = await fetch('/api/trash', {
-        method: 'POST', headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ kind: 'posts', action: 'restore', ids: [slug] }),
-      })
-      if (!gone) return 'the piece still answers after Move to Trash'
-      if (!listed) return 'it left the site but never reached the trash'
-      return back.ok ? 'ok (' + slug + ')' : 'restore -> ' + back.status
-    })()`, 1200))
-
   flow('admin: a draft saves and appears in the list', () => expect('/admin/editor', `
     (async () => {
       const slug = 'tour-draft-' + Date.now()

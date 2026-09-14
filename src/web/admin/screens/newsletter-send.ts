@@ -22,7 +22,7 @@ import { escapeAttr, escapeHtml } from '@/utils'
 import { CHECK, CONTROL } from '@/admin-shared/kit'
 import { NOTE_TEXT, SETTING_LABEL } from '@/admin-shared/scale'
 import { buttonClass } from '@/admin-shared/kit'
-import { card } from '@/web/admin/kit'
+import { card } from '@/web/admin/kit-figures'
 import type { newsletterView } from '@/web/admin/views-news'
 
 type Letter = Awaited<ReturnType<typeof newsletterView>>

@@ -17,6 +17,7 @@ import type { SiteSettings } from '@/types'
 import { analyticsScreen } from '@/web/admin/screens/analytics'
 import { assistantScreen } from '@/web/admin/screens/assistant'
 import { commentsScreen } from '@/web/admin/screens/comments'
+import { contentScreen, editorFrame } from '@/web/admin/screens/content'
 import { dashboardScreen } from '@/web/admin/screens/dashboard'
 import { helpScreen } from '@/web/admin/screens/help'
 import { mediaScreen } from '@/web/admin/screens/media'
@@ -41,6 +42,19 @@ export type Screen = {
    * the bundler's hash decides the filename.
    */
   island: string | null
+  /**
+   * ⚠️ THE SCREEN DRAWS ITS OWN `<div id="admin">`, so React mounts INSIDE it rather than
+   * beside it.
+   *
+   * One screen needs this and it is the transitional one: the three editor addresses are
+   * server-drawn frames — rail, write column, sheet — with ProseMirror still React's inside the
+   * paper. ADR 0054 keeps the editor for last and on its own, so until then React has to be
+   * handed a place in a page it no longer owns. Everything else leaves `#admin` where the shell
+   * puts it, empty, for the overlays.
+   *
+   * It goes when the editor converts, and so does `data-admin-react`.
+   */
+  sheet?: boolean
 }
 
 /** Keyed by the exact path. A screen with children states its own prefix rule here later. */
@@ -71,13 +85,40 @@ export const SCREENS: Record<string, Screen> = {
   // Three tabs over one audience, all three drawn. It holds the admin's one irreversible
   // action, so nothing on it is a form: see `screens/newsletter-send.ts`.
   '/admin/newsletter': { render: newsletterScreen, island: 'newsletter' },
+  // The write list and the empty paper beside it. Every piece is drawn once and the filters
+  // hide (trap 2); the island is the search, the selection and the two drawers.
+  '/admin/content': { render: contentScreen, island: 'content' },
 }
+
+/**
+ * The three addresses whose FRAME the server draws and whose SHEET is still React's.
+ *
+ * A prefix rather than a path, because each of them carries a slug — and `Screen.render` takes
+ * the query rather than the path, so these get their own entry point that does. They share the
+ * write column with `/admin/content`, which is the entire reason they convert with it: one
+ * column drawn twice, once as HTML and once as React, is the drift this ADR's markup rules
+ * exist to prevent.
+ */
+const WRITING: [prefix: string, island: string][] = [
+  ['/admin/editor', 'content'],
+  ['/admin/page-editor', 'content'],
+  ['/admin/note-editor', 'content'],
+]
 
 /** The screen for a path, or null while it is still React's. */
 export function screenFor(path: string): { name: string; screen: Screen } | null {
   const p = path.replace(/\/+$/, '') || '/admin'
   const screen = SCREENS[p]
-  return screen ? { name: p.slice('/admin/'.length) || 'home', screen } : null
+  if (screen) return { name: p.slice('/admin/'.length) || 'home', screen }
+  // A writing address, which carries a slug and so cannot be a key above.
+  for (const [prefix, island] of WRITING) {
+    if (p !== prefix && !p.startsWith(`${prefix}/`)) continue
+    return {
+      name: prefix.slice('/admin/'.length),
+      screen: { render: (settings) => editorFrame(settings, p), island, sheet: true },
+    }
+  }
+  return null
 }
 
 /**
@@ -91,4 +132,4 @@ export function screenFor(path: string): { name: string; screen: Screen } | null
  *
  * It gets shorter as this work finishes, and leaves with React.
  */
-export const SERVER_PATHS = Object.keys(SCREENS).join(' ')
+export const SERVER_PATHS = [...Object.keys(SCREENS), ...WRITING.map(([p]) => p)].join(' ')

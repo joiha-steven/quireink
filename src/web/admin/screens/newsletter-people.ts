@@ -26,7 +26,8 @@ import { escapeAttr, escapeHtml } from '@/utils'
 import { formatCount } from '@/i18n/format'
 import { CONTROL_SM, TABLE_SCROLL, THEAD, TROW } from '@/admin-shared/kit'
 import { TAP_TOUCH } from '@/admin-shared/scale'
-import { emptyState, icon, lamp, numBand, selectionBar, tabs, tick } from '@/web/admin/kit'
+import { emptyState, icon, lamp, selectionBar, tabs, tick } from '@/web/admin/kit'
+import { numBand } from '@/web/admin/kit-figures'
 import type { subscribersView } from '@/web/admin/views-news'
 
 type People = Awaited<ReturnType<typeof subscribersView>>

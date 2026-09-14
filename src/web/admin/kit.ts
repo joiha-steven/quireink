@@ -17,13 +17,14 @@
 import { escapeAttr, escapeHtml } from '@/utils'
 import { ICONS, GLYPHS, type GlyphName, type IconName } from '@/icons'
 import {
-  CARD, CONTROL_SM, LAMP_HUES, LAMP_SHAPE, SHEET, SHEET_TOP,
+  CONTROL_SM, LAMP_HUES, LAMP_SHAPE, SHEET, SHEET_TOP,
   TICK_BOX, TICK_MARK, TICK_PATH, TICK_WRAP, type LampState,
 } from '@/admin-shared/kit'
 import {
-  SEGMENT_TRACK, SEGMENT_TRACK_PLACE, tabItemClass, type TabRole, type TabSize,
+  SEGMENT_TRACK, SEGMENT_TRACK_DENSE, SEGMENT_TRACK_DENSE_PLACE, SEGMENT_TRACK_PLACE,
+  TAB_TRACK, TAB_TRACK_DENSE, tabItemClass, type TabRole, type TabSize,
 } from '@/admin-shared/tabs'
-import { FIGURE, HEADER_GAP, META, NOTE_TEXT, SECTION, TAP, TITLE } from '@/admin-shared/scale'
+import { HEADER_GAP, NOTE_TEXT, TAP, TITLE } from '@/admin-shared/scale'
 
 /** A glyph from the shared set, at the surface's own size. */
 export const icon = (name: IconName, cls = 'h-[var(--admin-glyph,1.25rem)] w-[var(--admin-glyph,1.25rem)] shrink-0'): string =>
@@ -136,9 +137,25 @@ export function select({ name, label, options, value, attrs = '' }: {
  * `attrs` rides on the track and `key` becomes `data-tab` on each item, so an island can find
  * the strip and know what was pressed without a second dictionary.
  */
-export function tabs({ items, value, role = 'place', tablist = false, panelId = '', attrs = '' }: {
+export function tabs({
+  items, value, role = 'place', tablist = false, panelId = '', attrs = '',
+  size = 'sm', dense = false,
+}: {
   items: { key: string; label: string }[]
   value: string
+  /**
+   * `sm` is the segmented track — a strip of keys in a sunken well. `lg` is the UNDERLINED
+   * strip, a marker stroke under the label rather than a wash behind it.
+   *
+   * It defaults to `sm` because that is what every server-drawn strip has wanted so far, and
+   * `lg dense` exists because the write column asked for it: four words 24px apart do not fit a
+   * 288px column, so the gap closes to 16 and the type steps to 13px. Drawing that column with
+   * the segmented track was the first cut, and it read as a different control from the one it
+   * replaced — caught by photographing the two builds side by side (2026-09-15).
+   */
+  size?: TabSize
+  /** A tighter strip, for a 320px pane. Neither size wraps when dense. */
+  dense?: boolean
   /**
    * A REAL TABLIST: `role=tab` in a `role=tablist`, ONE keyboard stop, and the arrows walking
    * the strip.
@@ -167,7 +184,11 @@ export function tabs({ items, value, role = 'place', tablist = false, panelId = 
   role?: TabRole
   attrs?: string
 }): string {
-  const track = role === 'place' ? SEGMENT_TRACK_PLACE : SEGMENT_TRACK
+  const track = size === 'lg'
+    ? (dense ? TAB_TRACK_DENSE : TAB_TRACK)
+    : dense
+      ? (role === 'place' ? SEGMENT_TRACK_DENSE_PLACE : SEGMENT_TRACK_DENSE)
+      : (role === 'place' ? SEGMENT_TRACK_PLACE : SEGMENT_TRACK)
   return `<div class="${track}"${tablist ? ' role="tablist"' : ''}${attrs ? ` ${attrs}` : ''}>`
     + items.map(({ key, label }) => {
       const on = key === value
@@ -178,29 +199,8 @@ export function tabs({ items, value, role = 'place', tablist = false, panelId = 
           + (panelId ? ` aria-controls="${escapeAttr(`${panelId}-${key}`)}"` : '')
         : ` aria-pressed="${on}"`
       return `<button type="button" data-tab="${escapeAttr(key)}"${tab}`
-        + ` class="${tabItemClass(on, 'sm', false, role)}">${escapeHtml(label)}</button>`
+        + ` class="${tabItemClass(on, size, dense, role)}">${escapeHtml(label)}</button>`
     }).join('')
-    + `</div>`
-}
-
-/**
- * THE BAND OF NUMBERS at the head of a sheet: the figures somebody would otherwise work out by
- * scrolling. `n` and `label` are already-escaped text; `after`, `sub` and `labelHtml` are raw
- * HTML, as in the React `NumBand` they mirror.
- *
- * `labelHtml` is the raw door beside `label`, and it exists because one label on the subscriber
- * band is not a string: "Pending" carries the pen's own mark in front of it, the same mark the
- * write list puts against an unfinished piece. Exactly one of the pair is honoured, raw first.
- */
-export function numBand(items: { n: string; label?: string; labelHtml?: string; after?: string; sub?: string }[]): string {
-  return `<div class="flex flex-wrap border-b border-neutral-100 dark:border-neutral-800">`
-    + items.map((it) =>
-      `<div class="min-w-32 flex-1 border-r border-neutral-100 px-5 py-4 last:border-r-0 dark:border-neutral-800">`
-      + `<span class="flex items-baseline gap-2">`
-      + `<b class="text-2xl font-semibold tracking-tight tabular-nums">${escapeHtml(it.n)}</b>${it.after ?? ''}</span>`
-      + `<span class="block text-xs text-neutral-500 dark:text-neutral-400">${it.labelHtml ?? escapeHtml(it.label ?? '')}</span>`
-      + (it.sub ? `<span class="block text-xs text-neutral-500 dark:text-neutral-400">${it.sub}</span>` : '')
-      + `</div>`).join('')
     + `</div>`
 }
 
@@ -228,73 +228,6 @@ export function tick({ label, className = '', attrs = '' }: {
     + `<path d="M4 8.4 6.6 11 12 5" fill="none" stroke-width="2" stroke-linecap="round"`
     + ` stroke-linejoin="round" class="${TICK_PATH}"/></svg></span>`
 }
-
-/**
- * A TITLED PANEL on the canvas — the React `Card` without its `panel` variant, which is the
- * one a screen uses inside a sheet and which no server-drawn screen has needed yet.
- *
- * `title` and `actions` are raw HTML the caller has escaped, because both carry markup on
- * every screen that uses them: a link out, a count, a progress bar.
- */
-export function card({ title = '', actions = '', body, className = '', bodyClass = '' }: {
-  title?: string
-  actions?: string
-  body: string
-  className?: string
-  bodyClass?: string
-}): string {
-  const head = title || actions
-    ? `<div class="mb-5 flex items-center justify-between gap-3">`
-      + (title ? `<h2 class="${SECTION}">${title}</h2>` : '')
-      + actions + `</div>`
-    : ''
-  return `<section class="${CARD} p-5 sm:p-6${className ? ` ${className}` : ''}">`
-    + head + `<div class="${bodyClass}">${body}</div></section>`
-}
-
-/** A tile inside a band: no edge of its own, the band's divider does that job. */
-const BARE_TILE = 'px-5 py-4'
-
-/**
- * A headline figure with its label under it, bare (inside a band) or on its own card.
- *
- * `value` and `label` are already-escaped text; `after` is raw HTML (the analytics trend
- * arrow, which sits inside the figure). With `href` the whole tile is a link, and the hover
- * darkens its own edge rather than lifting — a tile that rises and casts a shadow is the
- * dashboard costume `admin-design.md` took out.
- */
-export function statCard({ label, value, sub = '', after = '', href = '', bare = false }: {
-  label: string
-  value: string
-  sub?: string
-  after?: string
-  href?: string
-  bare?: boolean
-}): string {
-  const inner = `<div class="flex items-start justify-between gap-2"><div class="${FIGURE}">${escapeHtml(value)}${after}</div></div>`
-    + `<div class="${META} mt-2.5">${escapeHtml(label)}</div>`
-    + (sub ? `<div class="${META} mt-1">${escapeHtml(sub)}</div>` : '')
-  const shape = bare ? BARE_TILE : `${CARD} p-5`
-  if (!href) return `<div class="${shape}">${inner}</div>`
-  const hover = bare
-    ? 'hover:bg-neutral-100/70 dark:hover:bg-neutral-800/40'
-    : 'hover:border-neutral-400 dark:hover:border-neutral-600 dark:hover:bg-neutral-800/40'
-  return `<a href="${escapeAttr(href)}" class="${shape} block transition ${hover}">${inner}</a>`
-}
-
-/**
- * The figures of a page as ONE BAND divided by hairlines, instead of five floating sheets.
- *
- * `divide-x` alone is wrong once the grid wraps — it skips only the very first child, so the
- * first cell of every later ROW keeps a left edge. The border goes on every cell and the
- * per-row firsts are cleared by column position, which is why the counts are spelled out.
- */
-export const statBand = (tiles: string): string =>
-  `<div class="${CARD} overflow-hidden grid grid-cols-2 divide-neutral-200 sm:grid-cols-3 lg:grid-cols-5 dark:divide-neutral-800
-      [&>*]:border-l [&>*]:border-t [&>*]:border-neutral-200 dark:[&>*]:border-neutral-800
-      [&>*:nth-child(-n+2)]:border-t-0 [&>*:nth-child(odd)]:border-l-0
-      sm:[&>*:nth-child(-n+3)]:border-t-0 sm:[&>*:nth-child(odd)]:border-l sm:[&>*:nth-child(3n+1)]:border-l-0
-      lg:[&>*]:border-t-0 lg:[&>*:nth-child(3n+1)]:border-l lg:[&>*:first-child]:border-l-0">${tiles}</div>`
 
 /**
  * A STRIP OF LINKS, for a strip whose state lives in the address.

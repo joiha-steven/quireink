@@ -1268,3 +1268,52 @@ tr[data-piece][data-last] {
    weight takes it. An attribute pair on the row outranks the class outright. */
 [data-ai-chat]:not([data-ai-confirming]) [data-ai-confirm] { display: none; }
 [data-ai-chat][data-ai-confirming] [data-ai-del] { display: none; }
+
+/* ─── THE WRITE COLUMN ─────────────────────────────────────────────────────────────────────
+   Every piece is drawn once and the filters HIDE rather than remove (`docs/admin-one-dom.md`
+   trap 2) — but the hiding is the ISLAND's `hidden`, not a rule here, and that is a correction
+   worth writing down. Kind, status and "what is missing" were CSS rules against attributes on
+   the column, which drew correctly and left the island unable to COUNT: `shown` was the number
+   of rows that passed the search, so a filter that hid all forty-six of them still reported
+   forty-six and the "nothing matches your filter" line never appeared. Found by diffing this
+   build against the React one it replaces, which said the sentence and this did not.
+
+   One mechanism, one counter. What CSS still does here is the part that is genuinely a LOOK. */
+
+/* THE TICK TAKES THE LAMP'S PLACE. Both ship drawn; the mode picks. Adding a column instead
+   moved every title 24px right and re-wrapped half the list at the moment somebody went to
+   pick from it — swapping costs 8px and nothing re-wraps. `display:flex` on the wrapper is why
+   this is a rule and not a `hidden` attribute: a `hidden` attribute against a display utility
+   is a tie the utility wins, because preflight writes `[hidden]{display:none}` first. */
+[data-write-pane]:not([data-picking]) .write-tick { display: none; }
+[data-write-pane][data-picking] .write-lamp { display: none; }
+
+/* A ROW BEING PICKED IS NOT A LINK, and the island takes its `href` away to make that true for
+   the keyboard and for a screen reader as well as for the mouse. What is left here is the
+   pointer: the whole row is the tick's target, so a tap anywhere ticks. */
+[data-write-pane][data-picking] [data-piece] { cursor: pointer; }
+
+/* THE OPEN ROW IS A KEY HELD DOWN, carved into the paper. Not while picking: the lifted ground
+   means "this one", and in that mode "this one" is what the tick says — two meanings for one
+   background is how a row nobody ticked comes to read as ticked. */
+[data-write-pane]:not([data-picking]) [data-piece][aria-current='page'] {
+  background: #fff;
+  box-shadow: inset 0 2px 3px rgb(0 0 0 / 0.14);
+}
+[data-write-pane]:not([data-picking]) [data-piece][aria-current='page'] .write-title {
+  font-weight: 600;
+}
+.dark [data-write-pane]:not([data-picking]) [data-piece][aria-current='page'] {
+  background: #171717;
+  box-shadow: inset 0 2px 3px rgb(0 0 0 / 0.5);
+}
+[data-write-pane] [data-piece]:not([aria-current='page']):hover { background: rgb(255 255 255 / 0.6); }
+.dark [data-write-pane] [data-piece]:not([aria-current='page']):hover { background: rgb(23 23 23 / 0.6); }
+/* A ticked row lifts too, without the carve: it is chosen, not open.
+
+   ⚠️ AN ATTRIBUTE THE ISLAND WRITES, NEVER `:has()`. The obvious rule here is
+   `[data-piece]:has([data-write-tick]:checked)`, and it TAKES SAFARI DOWN — the whole page, not
+   the rule (`docs/admin-one-dom.md` trap 4, and it has cost this project a live site before).
+   Chrome shows nothing wrong, which is what makes it worth a warning rather than a note. */
+[data-write-pane][data-picking] [data-piece][data-picked] { background: #fff; }
+.dark [data-write-pane][data-picking] [data-piece][data-picked] { background: #171717; }

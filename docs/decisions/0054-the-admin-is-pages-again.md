@@ -210,6 +210,59 @@ and this list was the browser's until it moved to the server, where the engine h
 26. A stored zone the runtime does not offer is now prepended to its own control, because a
 `<select>` whose value matches no option silently shows its first one instead.
 
+### The write column, and the one number this ADR paid for it
+
+The library, the column and the editors were always one conversion (see the correction above).
+This step did the first two thirds: `/admin/content` and the three editor addresses are all
+server-drawn frames now — rail, write column, sheet — and what is still React is only what goes
+IN the sheet. `WritePane.tsx` and its six helpers are gone; `<div id="admin">` moved INSIDE the
+paper on those three addresses, and `data-admin-react="sheet"` is the server telling React it
+may still draw a route there. Both leave when the editor converts.
+
+⚠️ **A ROW CLICK IS A REAL NAVIGATION NOW, and here is what that cost.** Measured 2026-09-15,
+two builds on one seeded database, click to the writing surface:
+
+| | old (React) | new |
+|---|---|---|
+| the write list itself | 79 ms | **85 ms** |
+| opening a post, first time | 346 ms | **373 ms** |
+| opening the next post | **12 ms** | 373 ms |
+
+So the list is unchanged and the first open is unchanged; what went is the warm click. It went
+because the column was mounted outside the router precisely so it would survive one, and
+nothing survives a page load. 373ms is also the TRANSITIONAL number: almost all of it is React
+and Tiptap booting from nothing on every open, which is what step 5 removes.
+
+⚠️ **AND A MEASUREMENT THAT WAS WRONG BY 2.1 SECONDS.** The first reading said 2,512 ms, which
+would have been a reason to stop. It was the PROBE's own `sleep(2500)` before evaluating: a
+harness that waits and then asks the page for `performance.now()` is told how long it waited,
+whatever the page did. Every resource had finished by 571ms. A measurement that cannot say what
+it is measuring is worth less than no measurement, because it gets acted on.
+
+**What the column gives back, and how.** Scroll position, the search text and the three filters
+are in `sessionStorage` — per tab, cleared with the tab, never told to the server. They are put
+back after the filters are applied, because the scroll height depends on how many rows show.
+
+**Two faults this screen taught, both about counting rather than drawing:**
+
+- ⚠️ **TWO MECHANISMS DECIDING ONE `display` IS ONE TOO MANY.** The first cut left kind, status
+  and "what is missing" to CSS rules against attributes on the column and kept only the search
+  in the island. It DREW correctly and could not COUNT — `shown` was the number of rows that
+  passed the search, so a filter hiding all forty-six still reported forty-six and the "nothing
+  matches your filter" line never appeared. Found by diffing against the React build, which said
+  the sentence. One mechanism now: `hidden`, written by the island, and by the server for the
+  one filter that arrives in the address.
+- **A lamp in a plain span takes a line box.** 16px of it for an 8px mark, which grew the filter
+  row by 8px. The same fault cost every settings card 7px of header height in the step before
+  this one. There the fix was `flex` on the wrapper; here it was not having a wrapper — the
+  attribute goes on the lamp.
+
+**The drawers had no check at all before this.** `TaxonomyManager.tsx` and `SeriesManager.tsx`
+had no unit test and no flow, while driving the most far-reaching pair of writes in the admin:
+renaming a category rewrites the front matter of every post carrying it and merges on collision.
+Two flows now — one that opens both, counts what they list, and proves the rename ASKS; one that
+reorders a series and proves the server kept it.
+
 ### The fourth bridge: `quire:pick-media`
 
 The first one that answers back. The picker is an overlay island now

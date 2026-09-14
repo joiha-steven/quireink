@@ -14,9 +14,6 @@ export default function PostEditor() {
   const slug = decodeURIComponent(path.replace(/^\/admin\/editor\/?/, ''))
   const state = useView('editor', slug ? `?slug=${encodeURIComponent(slug)}` : '')
   return (
-    // The list is drawn by the shell and outlives this page — see `App.tsx`. Only the sheet
-    // waits for the payload, which is what makes clicking a row swap one thing and not two.
-    <div className="min-w-0 flex-1">
         <View state={state}>
           {(d) => (
         <PostForm
@@ -36,6 +33,5 @@ export default function PostEditor() {
         />
           )}
       </View>
-    </div>
   )
 }

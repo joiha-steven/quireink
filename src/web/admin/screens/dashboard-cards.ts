@@ -17,7 +17,7 @@ import { UTIL } from '@/admin-shared/scale'
 import { FEED_LIST, FEED_MARK, FEED_ROW, inkFor, markFor } from '@/admin-shared/activity-mark'
 import { ago } from '@/admin-shared/when'
 import { logSentence } from '@/admin-shared/log-sentence'
-import { card } from '@/web/admin/kit'
+import { card } from '@/web/admin/kit-figures'
 
 export type DashboardData = {
   traffic: { views30: number; visitors30: number; views7: number; spark: number[]; avgDwellMs: number; avgReadDepth: number }

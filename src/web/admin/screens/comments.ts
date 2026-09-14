@@ -21,7 +21,8 @@ import { escapeAttr, escapeHtml, formatDateTimeShort } from '@/utils'
 import { formatCount } from '@/i18n/format'
 import { TAP } from '@/admin-shared/scale'
 import { SHEET_FOOT, SHEET_TOOL, SHEET_TOOL_DANGER } from '@/admin-shared/kit'
-import { emptyState, numBand, pageHeader, sheet, sheetTop, tabs, tick } from '@/web/admin/kit'
+import { emptyState, pageHeader, sheet, sheetTop, tabs, tick } from '@/web/admin/kit'
+import { numBand } from '@/web/admin/kit-figures'
 import { commentsView } from '@/web/admin/views'
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000

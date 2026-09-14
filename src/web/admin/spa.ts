@@ -301,7 +301,7 @@ export async function adminShell(settings: SiteSettings, path: string, query = n
   // emitted here. Stamping it would leave a hook that says the admin follows a setting it
   // does not.
   return `<!DOCTYPE html>
-<html lang="${esc(settings.language)}" class="admin" data-motion="${settings.motion.enabled ? 'on' : 'off'}"${railHtmlAttrs(settings)}${found ? ` data-admin-screen="${found.name}"` : ''} data-admin-screens="${SERVER_PATHS}">
+<html lang="${esc(settings.language)}" class="admin" data-motion="${settings.motion.enabled ? 'on' : 'off'}"${railHtmlAttrs(settings)}${found ? ` data-admin-screen="${found.name}"` : ''}${found?.screen.sheet ? ' data-admin-react="sheet"' : ''} data-admin-screens="${SERVER_PATHS}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -344,7 +344,7 @@ ${PRELOADS}
 <a href="#admin-content" class="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-md focus:border focus:border-neutral-300 focus:bg-white focus:px-3 focus:py-2 focus:text-sm focus:font-medium focus:text-neutral-900 focus:shadow-lg dark:focus:border-neutral-700 dark:focus:bg-neutral-900 dark:focus:text-neutral-100">${escapeHtml(adminT(settings.language).skipToContent)}</a>
 ${railHtml({ settings, aiConfigured, path })}
 <main id="admin-content" class="admin-canvas min-w-0 flex-1 lg:h-[100dvh] lg:overflow-y-auto lg:overscroll-y-contain">
-<div class="mx-auto w-full max-w-[1480px] px-4 py-6 sm:px-7 lg:px-10 lg:py-9 xl:px-12">${screen}<div id="admin"></div></div>
+<div class="mx-auto w-full max-w-[1480px] px-4 py-6 sm:px-7 lg:px-10 lg:py-9 xl:px-12">${screen}${found?.screen.sheet ? '' : '<div id="admin"></div>'}</div>
 </main>
 </div>
 ${await shellData()}

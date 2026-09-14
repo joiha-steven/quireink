@@ -11,7 +11,6 @@ export default function PageEditor() {
   const state = useView('page-editor', slug ? `?slug=${encodeURIComponent(slug)}` : '')
   return (
     // The list is drawn by the shell — see `PostEditor`.
-    <div className="min-w-0 flex-1">
         <View state={state}>
           {(d) => (
         <PageForm
@@ -25,6 +24,5 @@ export default function PageEditor() {
         />
           )}
       </View>
-    </div>
   )
 }

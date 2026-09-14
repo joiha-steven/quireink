@@ -107,10 +107,18 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
    */
   useEffect(() => {
     const onAsk = (e: Event) => {
-      const detail = (e as CustomEvent<{ request?: ConfirmRequest; respond?: (a: ConfirmAnswer) => void }>).detail
+      const detail = (e as CustomEvent<{
+        request?: ConfirmRequest
+        respond?: (a: ConfirmAnswer, value?: string) => void
+      }>).detail
       if (!detail?.request || typeof detail.respond !== 'function') return
       e.preventDefault()
-      void api.ask(detail.request).then(detail.respond)
+      // ⚠️ THE TYPED VALUE TRAVELS BACK TOO, as a second argument every existing caller
+      // ignores. `api.ask` throws the value away, which is right for a yes/no — and wrong for
+      // the one question an island asks that HAS an answer: renaming a category is a dialog
+      // with a field in it, and without this the island could only learn that somebody pressed
+      // Save. Widened when the write column converted (ADR 0054).
+      void raw(detail.request).then(({ answer, value }) => detail.respond?.(answer, value))
     }
     addEventListener('quire:confirm', onAsk)
     return () => removeEventListener('quire:confirm', onAsk)

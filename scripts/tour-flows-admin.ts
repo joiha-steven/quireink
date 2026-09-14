@@ -7,6 +7,8 @@
 
 import type { Tour } from './tour'
 import { registerEditorFlows } from './tour-flows-editor'
+import { registerTrashFromEditorFlows } from './tour-flows-bin'
+import { registerDrawerFlows } from './tour-flows-terms'
 import { registerSettingsFlows } from './tour-flows-settings'
 import { registerHomeFlows } from './tour-flows-home'
 import { registerAutosaveFlows, registerKeyFlows, registerPaletteFlows, registerPaneFlows } from './tour-flows-pane'
@@ -174,6 +176,8 @@ export function registerAdminFlows({ flow, expect, atWidth }: Tour): void {
 
   // The editor half, next door — see its header for the seam.
   registerEditorFlows({ flow, expect, atWidth })
+  registerTrashFromEditorFlows({ flow, expect, atWidth })
+  registerDrawerFlows({ flow, expect, atWidth })
 
   // The home screen and the rail (ADR 0024 step 6), likewise.
   registerHomeFlows({ flow, expect, atWidth })
@@ -319,8 +323,11 @@ export function registerAdminFlows({ flow, expect, atWidth }: Tour): void {
       const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set
       setter.call(box, 'widen the leading')
       box.dispatchEvent(new Event('input', { bubbles: true }))
-      await sleep(800)
-      const rows = [...document.querySelectorAll('[data-write-row]')]
+      await sleep(900)
+      // ⚠️ VISIBLE ROWS. Since the column became server-rendered HTML the filters HIDE rather
+      // than remove (docs/admin-one-dom.md, trap 3), so every piece in the blog is still in the
+      // DOM and rows[0] would be whichever one the server drew first — not the match.
+      const rows = [...document.querySelectorAll('[data-write-row]')].filter((r) => r.offsetParent !== null)
       if (!rows.length) return 'searching a body phrase listed no post at all'
       const titles = rows.map((r) => (r.querySelector('span span span') || {}).textContent || '')
       if (titles.some((t) => /widen|leading/i.test(t))) return 'a TITLE carries the words, so this proves nothing'

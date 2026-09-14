@@ -122,7 +122,24 @@ export function registerPaneFlows({ flow, expect }: Tour): void {
  * server, so this chord is the whole difference between saved and not.
  */
 export function registerKeyFlows({ flow, expect }: Tour): void {
-  flow('admin: the save chord saves, and the browser does not get the key', () => expect('/admin/content', `
+  // ⚠️ THE PIECE IS OPENED BY ITS ADDRESS, not by clicking a row. Since the write column became
+  // server-rendered HTML a row click is a real navigation, so everything after one ran in a
+  // document that no longer existed. What a row click proves is the column's, and
+  // `tour-flows-layout.ts` proves it there.
+  flow('admin: the save chord saves, and the browser does not get the key', async () => {
+    const picked = await expect('/admin/content', `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      let row = null
+      for (let i = 0; i < 60 && !row; i++) {
+        row = [...document.querySelectorAll('[data-write-row]')]
+          .find((a) => /^\\/admin\\/editor\\/[^/]+$/.test(new URL(a.href).pathname))
+        if (!row) await sleep(100)
+      }
+      return row ? new URL(row.href).pathname : 'the write column offered no post to open'
+    })()`, 900)
+    if (!picked.startsWith('/admin/editor/')) return picked
+    return await expect(picked, `
     (async () => {
       const wait = async (fn, tries = 60, gap = 100) => {
         for (let i = 0; i < tries; i++) {
@@ -137,12 +154,8 @@ export function registerKeyFlows({ flow, expect }: Tour): void {
       const touched = async (slug) => (await (await fetch('/api/admin/view/content')).json())
         ?.data?.posts?.find((p) => p.slug === slug)?.updatedAt ?? null
 
-      const row = await wait(() => [...document.querySelectorAll('[data-write-row]')]
-        .find((a) => /^\\/admin\\/editor\\/[^/]+$/.test(new URL(a.href).pathname)))
-      if (!row) return 'the write pane offered no post to open'
-      const slug = new URL(row.href).pathname.split('/').pop()
+      const slug = location.pathname.split('/').pop()
       const before = await touched(slug)
-      row.click()
 
       const surface = await wait(() => document.querySelector('.ProseMirror'))
       if (!surface) return 'the editor never showed its writing surface'
@@ -169,7 +182,8 @@ export function registerKeyFlows({ flow, expect }: Tour): void {
       if (!after) return 'the chord fired but the server never saw a save'
       if (!prevented) return 'the key reached the browser — its own Save dialog wins'
       return 'ok (' + slug + ')'
-    })()`, 1500))
+    })()`, 1500)
+  })
 }
 
 /**
@@ -185,7 +199,29 @@ export function registerKeyFlows({ flow, expect }: Tour): void {
  * not move while they did.
  */
 export function registerAutosaveFlows({ flow, expect }: Tour): void {
-  flow('admin: leaving the tab puts unsaved words on the server, not on the page', () => expect('/admin/content', `
+  // ⚠️ THE PIECE IS OPENED BY ITS ADDRESS. A row click is a real navigation since the write
+  // column became server-rendered HTML (ADR 0054), so everything after one ran in a document
+  // that no longer existed and this reported "(no value)".
+  flow('admin: leaving the tab puts unsaved words on the server, not on the page', async () => {
+    // A PUBLISHED post, because that is the dangerous case: its body is the live page.
+    const picked = await expect('/admin/content', `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      const feed = await (await fetch('/feed.xml')).text()
+      const link = [...feed.matchAll(/<link>([^<]+)<\\/link>/g)].map((m) => m[1])
+        .map((u) => new URL(u).pathname).find((p) => p !== '/')
+      if (!link) return 'the feed named no published post'
+      const slug = link.replace(/^\\//, '')
+      let row = null
+      for (let i = 0; i < 60 && !row; i++) {
+        row = [...document.querySelectorAll('[data-write-row]')]
+          .find((a) => new URL(a.href).pathname === '/admin/editor/' + slug)
+        if (!row) await sleep(100)
+      }
+      return row ? '/admin/editor/' + slug : 'the write column did not list ' + slug
+    })()`, 900)
+    if (!picked.startsWith('/admin/editor/')) return picked
+    return await expect(picked, `
     (async () => {
       const wait = async (fn, tries = 60, gap = 100) => {
         for (let i = 0; i < tries; i++) {
@@ -195,18 +231,7 @@ export function registerAutosaveFlows({ flow, expect }: Tour): void {
         }
         return null
       }
-
-      // A PUBLISHED post, because that is the dangerous case: its body is the live page.
-      const feed = await (await fetch('/feed.xml')).text()
-      const link = [...feed.matchAll(/<link>([^<]+)<\\/link>/g)].map((m) => m[1])
-        .map((u) => new URL(u).pathname).find((p) => p !== '/')
-      if (!link) return 'the feed named no published post'
-      const slug = link.replace(/^\\//, '')
-
-      const row = await wait(() => [...document.querySelectorAll('[data-write-row]')]
-        .find((a) => new URL(a.href).pathname === '/admin/editor/' + slug))
-      if (!row) return 'the write pane did not list ' + slug
-      row.click()
+      const slug = location.pathname.replace('/admin/editor/', '')
 
       const surface = await wait(() => document.querySelector('.ProseMirror'))
       if (!surface) return 'the editor never showed its writing surface'
@@ -240,7 +265,8 @@ export function registerAutosaveFlows({ flow, expect }: Tour): void {
         body: JSON.stringify({ snapshot: '' }),
       })
       return 'ok (' + slug + ')'
-    })()`, 2000))
+    })()`, 2000)
+  })
 }
 
 /**

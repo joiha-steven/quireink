@@ -20,8 +20,6 @@ import { isSiteLang } from '@/locales/langs'
 import type { SiteLang } from '@/types'
 import { CommandPalette } from '@/admin/components/CommandPalette'
 import { ShortcutSheet } from '@/admin/components/ShortcutSheet'
-import { WritePane } from '@/admin/components/WritePane'
-import { useFocusMode } from '@/admin/components/useFocusMode'
 
 // The editor pulls in Tiptap and its extensions, which is most of the bundle. Splitting it
 // out means the dashboard, the settings and every table load without paying for an editor
@@ -35,7 +33,6 @@ type Loader = () => Promise<{ default: ComponentType }>
 // `web/admin/screens/index.ts` is the table that says so. A converted screen leaves this map in
 // the same commit that adds it there, so the two can never both claim one address.
 const load = {
-  content: () => import('@/admin/pages/Content'),
   postEditor: () => import('@/admin/pages/PostEditor'),
   pageEditor: () => import('@/admin/pages/PageEditor'),
   noteEditor: () => import('@/admin/pages/NoteEditor'),
@@ -47,7 +44,6 @@ const load = {
 // build on the server DELETES the file this tab is about to ask for; the fix is to fetch the
 // new bundle, which is a reload. `ui/stale-build.ts` carries the reasoning and the loop
 // guard. Everything else a page can throw still goes to the boundary, unchanged.
-const Content = lazy(throughDeploys(load.content))
 const PostEditor = lazy(throughDeploys(load.postEditor))
 const PageEditor = lazy(throughDeploys(load.pageEditor))
 const NoteEditor = lazy(throughDeploys(load.noteEditor))
@@ -56,7 +52,6 @@ const NotFound = lazy(throughDeploys(load.notFound))
 /** Which loader serves a path. The single place the route table's shape is decided. */
 function loaderFor(path: string): Loader {
   const p = path.replace(/\/+$/, '') || '/admin'
-  if (p === '/admin/content') return load.content
   if (p === '/admin/editor' || p.startsWith('/admin/editor/')) return load.postEditor
   if (p === '/admin/page-editor' || p.startsWith('/admin/page-editor/')) return load.pageEditor
   if (p === '/admin/note-editor' || p.startsWith('/admin/note-editor/')) return load.noteEditor
@@ -95,8 +90,13 @@ function Route(): ReactNode {
   // the palette, the shortcut sheet, the confirm dialog, the toast. Read off `<html>` rather
   // than from a list in this file, because a second list is a second thing to keep in step —
   // and the one that decides is the one that rendered.
-  if (document.documentElement.dataset.adminScreen) return null
-  if (path === '/admin/content') return <Content />
+  // ⚠️ EXCEPT WHERE THE SERVER LEFT A SHEET. The three editor addresses are server-drawn
+  // FRAMES — rail, write column, paper — with `#admin` inside the paper rather than beside it,
+  // because ProseMirror is an application and ADR 0054 keeps it for last and on its own. So on
+  // exactly those three, React still draws a route: the sheet's contents, and nothing around
+  // them. `data-admin-react` is the server saying so, and it leaves when the editor converts.
+  const sheet = document.documentElement.dataset.adminReact === 'sheet'
+  if (document.documentElement.dataset.adminScreen && !sheet) return null
   if (path === '/admin/editor' || path.startsWith('/admin/editor/')) return <PostEditor />
   if (path === '/admin/page-editor' || path.startsWith('/admin/page-editor/')) return <PageEditor />
   if (path === '/admin/note-editor' || path.startsWith('/admin/note-editor/')) return <NoteEditor />
@@ -108,45 +108,21 @@ function Route(): ReactNode {
 // the skip link and the rail are all written by `web/admin/spa.ts` and arrive with the page.
 // What is left below mounts into `#admin`, which is the one div inside that canvas.
 
-/** The four routes that are the writing screen: the list, and the three editors. */
-const WRITING = /^\/admin\/(content|editor|page-editor|note-editor)(\/|$)/
-
 /**
- * The write pane, drawn HERE and not by the pages it appears on.
+ * The write column is the SERVER's now (ADR 0054).
  *
- * It was rendered by each of the three pages, which meant it was destroyed and rebuilt on
- * every click inside itself: a route change swaps the page component, and `ErrorBoundary` is
- * keyed by path, so the whole subtree goes. The list came back looking the same and scrolled
- * back to the top — on the one screen whose entire job is picking something out of a list.
+ * It was `WriteLayout` here plus `WritePane`, 399 lines, mounted outside the router so that a
+ * route change did not destroy it — the list came back looking the same and scrolled to the
+ * top, on the one screen whose entire job is picking something out of a list. Under this ADR a
+ * row click is a real navigation, so there is nothing to keep alive across one and nothing for
+ * this layer to hold: `web/admin/screens/content-pane.ts` draws the column on all four writing
+ * addresses and `island/content.ts` gives the search, the filters and the selection back.
  *
- * Out here it is mounted once for the whole writing session. Clicking a row changes the sheet
- * beside it and nothing else: the scroll stays, the search box keeps what was typed, and the
- * selected row moves the moment the click lands rather than after a round trip, because
- * `activeSlug` is read from the PATH and not from a payload.
- *
- * The pane fetches its own list, so this knows nothing about content — only which routes have
- * one, and that focus mode puts it away BESIDE A SHEET.
- *
- * ⚠️ On the Write screen itself the pane is not chrome beside the writing, it IS the screen:
- * the sheet there holds one line and two buttons. Focus mode hid it on all three routes, so
- * turning it on inside an editor emptied the Write screen for every later visit — the list
- * gone, `Content.tsx`'s invitation still saying to pick something on the left, and below
- * `xl` (where that invitation is hidden because the pane is normally the whole width) a
- * blank page. It also took the way back out with it: `Mod-\` is registered by the editor's
- * action line, so the screen that had lost its list had no switch on it either.
+ * Focus mode is the island's too, and the rule it has to keep is the one that was a bug here:
+ * the column goes away BESIDE A SHEET and never on the write screen itself, where it IS the
+ * screen. Hiding it on all three emptied that screen for every later visit and took the way
+ * back out with it, because the chord is registered by the editor's action line.
  */
-function WriteLayout({ path, children }: { path: string; children: ReactNode }) {
-  const [focus] = useFocusMode()
-  if (!WRITING.test(path)) return <>{children}</>
-  const list = path === '/admin/content'
-  const slug = decodeURIComponent(path.replace(/^\/admin\/(editor|page-editor)\/?/, ''))
-  return (
-    <div className="flex items-start gap-6">
-      {(list || !focus) && <WritePane activeSlug={list ? undefined : slug || undefined} always={list} />}
-      {children}
-    </div>
-  )
-}
 
 /** The language the server painted the shell in, for the one screen that cannot ask. */
 function shellLang(): SiteLang {
@@ -201,25 +177,18 @@ function Shell() {
             listener that has to live inside a screen is a key that stops working on the
             screens that screen is not. */}
         <ShortcutSheet />
-        {/* The pane is OUTSIDE the boundary and outside the route: it must survive both a
-            navigation and a page that threw, because it is how you get to another one. */}
-        <WriteLayout path={path}>
-          {/* KEYED BY PATH, which is what makes the arrival possible: a new key mounts a new
+        {/* KEYED BY PATH, which is what makes the arrival possible: a new key mounts a new
               subtree, and `@starting-style` only fires on something that has just come into
               existence. The boundary was already keyed this way for its own reason — leaving a
               broken page is what resets it — so the class rides along rather than adding a
               wrapper. */}
           <ErrorBoundary key={`${path}#${nav}`}>
-          {/* ⚠️ `min-w-0`, and it is load-bearing rather than tidy. A flex item defaults to
-              `min-width: auto`, which refuses to shrink below its content's intrinsic minimum —
-              so this wrapper, added only to carry the entrance, took the editor's own shrink
-              chain out and the phone scrolled sideways by 591px. */}
-          {/* ⚠️ `flex-1` TOO. On the Write screen this div is the flex item beside the pane, not
-              the page inside it — so the page's own `flex-1` was `flex-1` of nothing and the
-              sheet sat at its content's width: 370px in a 1440px window, with 445px of bare
-              canvas to its right. Outside the Write screen the parent is a block and this is
-              inert. */}
-          <div className="admin-enter min-w-0 flex-1">
+          {/* ⚠️ `min-w-0` AND `flex-1` MOVED TO THE SERVER, into the sheet column that
+              `screens/content.ts` draws. Both are load-bearing and neither is tidy-up: a flex
+              item defaults to `min-width:auto` and refuses to shrink below its content, which
+              cost the editor its shrink chain and scrolled a phone sideways by 591px; and
+              without `flex-1` the sheet sat at its content's width, 370px in a 1440px window
+              with 445px of bare canvas beside it. */}
           {/* Reached on the FIRST paint only. Every later route change runs inside a
               transition, which keeps the current page on screen instead of falling back here.
               `Loading` with no shape — the shell does not yet know whether a list or a form is
@@ -227,9 +196,7 @@ function Shell() {
           <Suspense fallback={<Loading />}>
             <Route />
           </Suspense>
-          </div>
           </ErrorBoundary>
-        </WriteLayout>
         </ConfirmProvider>
       </ToastProvider>
     </AdminI18nProvider>
