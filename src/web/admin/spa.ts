@@ -14,6 +14,7 @@ import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { Context } from 'hono'
 import type { SiteSettings } from '@/types'
+import { shellView } from '@/web/admin/views'
 import { allFontFaceCss } from '@/render/font-faces'
 import { fontPresetCss, themesToCss } from '@/content/themes'
 import { typographyToCss, fontToCss, tableToCss } from '@/content/settings'
@@ -170,10 +171,27 @@ function adminStyles(settings: SiteSettings): string {
 }
 
 /**
- * The shell. Deliberately empty of CONTENT: there is no server rendering of the admin,
- * because a second rendering path for a tool only one person opens is a second set of bugs
- * for no reader's benefit. It is not empty of settings, which is a different thing — the
- * language, the typeface and the palette have to be right in the first paint.
+ * THE SHELL'S OWN DATA, in the document rather than a round trip after it.
+ *
+ * `App.tsx` opened with `useView('shell')` and drew nothing until it answered: the language,
+ * the version, whether a model is plugged in, the nav order, the owner's portrait. Its comment
+ * said, correctly, that a language flash is worse than a blank frame — but the third option is
+ * neither, and this is it. The server already holds every one of those facts while it is
+ * writing this page.
+ *
+ * `useView` seeds itself from this at epoch 0 and revalidates behind the first paint, so
+ * nothing here can go stale; what it removes is the WAIT, not the request. Step 0 of ADR 0054.
+ *
+ * `<` is escaped because a value could otherwise close the script tag from inside a string.
+ */
+async function shellData(): Promise<string> {
+  const json = JSON.stringify(await shellView()).replace(/</g, '\\u003c')
+  return `<script type="application/json" id="admin-shell">${json}</script>`
+}
+
+/**
+ * The shell. Still empty of the SCREEN, which is React's until ADR 0054's five steps move it,
+ * and no longer empty of what the chrome needs to draw itself.
  *
  * The class on <body> is the neutral canvas: the one paint the bundle must not be
  * responsible for, or the admin flashes white before React mounts.
@@ -200,7 +218,7 @@ function tabHead(settings: SiteSettings): string {
   return `<title>${title}</title>${icon}`
 }
 
-export function adminShell(settings: SiteSettings): string {
+export async function adminShell(settings: SiteSettings): Promise<string> {
   if (ASSETS.size === 0) {
     return `<!DOCTYPE html><meta charset="utf-8">${tabHead(settings)}`
       + '<p style="font:14px system-ui;padding:2rem">The admin bundle has not been built. '
@@ -232,6 +250,7 @@ ${PRELOADS}
      three places that happened to be noticed. -->
 <body class="bg-neutral-100 text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">
 <div id="admin"></div>
+${await shellData()}
 <script type="module" src="${ENTRY}"></script>
 </body>
 </html>

@@ -79,7 +79,7 @@ async function adminPage(c: Context): Promise<Response> {
   }
   // The shell carries the owner's language, typeface and palette, so the first paint is
   // already correct. The frozen tree got them from the root layout the admin sat inside.
-  return c.html(adminShell(await getSettings()), 200, { 'x-robots-tag': 'noindex, nofollow' })
+  return c.html(await adminShell(await getSettings()), 200, { 'x-robots-tag': 'noindex, nofollow' })
 }
 
 export function createApp(): Hono {

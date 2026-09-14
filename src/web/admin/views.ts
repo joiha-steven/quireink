@@ -264,7 +264,7 @@ async function assistantView() {
  * every row goes, so fetching it separately would draw the rail in one order and then
  * rearrange it under the pointer.
  */
-async function shellView() {
+export async function shellView() {
   const settings = await getSettings()
   const { aiConfigured } = await getIntegrationStatus()
   // The portrait rides along for the same reason `navOrder` does: the rail's foot draws it

@@ -53,6 +53,28 @@ export type ViewState<T> = {
 const lastSeen = new Map<string, { epoch: number; data: unknown }>()
 
 /**
+ * The shell's own answer, already in the document. Step 0 of ADR 0054.
+ *
+ * `App.tsx` opens with `useView('shell')` and draws nothing until it lands, so the admin's
+ * first frame used to be a blank one waiting on a round trip for seven small facts the server
+ * had in its hand while it wrote the page. `spa.ts` now puts them in a JSON script tag, and
+ * seeding the cache here is all it takes for the first render to have them.
+ *
+ * EPOCH 0 because that is where `RouterProvider` starts. The entry revalidates behind the
+ * first paint like any other seeded one, so this cannot serve anything stale; it removes the
+ * WAIT and not the request.
+ *
+ * Wrapped, and silent on failure: an older shell held by a tab across a deploy has no such
+ * tag, and the answer to that is the round trip that was there before.
+ */
+try {
+  const seed = document.getElementById('admin-shell')?.textContent
+  if (seed) lastSeen.set('shell', { epoch: 0, data: JSON.parse(seed) })
+} catch {
+  /* no tag, or not JSON: `useView` fetches, exactly as it did before this existed */
+}
+
+/**
  * Drop one entry, for a screen that has just made it untrue.
  *
  * ⚠️ THE EDITOR IS WHY. A save deliberately does not bump the epoch — that would remount the
