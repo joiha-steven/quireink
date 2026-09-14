@@ -1,9 +1,8 @@
 # 0024 — The admin is rebuilt around writing. Everything else moves out of the way
 
 Date: 2026-08-16
-Status: accepted
-Extends [0011](0011-settings-regrouped-into-seven.md) and the visual contract in
-[`../admin-design.md`](../admin-design.md), which stays in force.
+Status: accepted · extends [0011](0011-settings-regrouped-into-seven.md) and the visual contract in [`../admin-design.md`](../admin-design.md)
+In force: see the [index](README.md). The index is maintained; this file is not.
 
 ## Context
 

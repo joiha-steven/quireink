@@ -1,7 +1,8 @@
 # 0052 — One Markdown engine of our own
 
 Date: 2026-09-13
-Status: proposed
+Status: accepted · supersedes *"no second markdown engine"* in [0005](0005-rewrite-in-bun-hono-sqlite.md)
+In force: see the [index](README.md). The index is maintained; this file is not.
 
 ## Context
 

@@ -1,6 +1,8 @@
 # 0002. Quire is one instance for its author. No SaaS, no multi-tenancy
 
-Date: 2026-07-26 · Status: **in force**
+Date: 2026-07-26
+Status: accepted
+In force: see the [index](README.md). The index is maintained; this file is not.
 
 ## Context
 

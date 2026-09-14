@@ -1,9 +1,8 @@
 # 0041 — Settings are grouped by the owner's question, and each tab saves one way
 
 Date: 2026-09-07
-Status: accepted
-Supersedes the grouping in [0011](0011-settings-regrouped-into-seven.md); keeps its rule that
-each tab answers one printed question.
+Status: accepted · supersedes the grouping in [0011](0011-settings-regrouped-into-seven.md); keeps its rule that each tab answers one printed question
+In force: see the [index](README.md). The index is maintained; this file is not.
 
 ## Context
 

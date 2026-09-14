@@ -1,6 +1,8 @@
 # 0003. Freeze the Next tree and rewrite as Quire 2.0
 
-Date: 2026-07-26 · Status: **in force**
+Date: 2026-07-26
+Status: accepted
+In force: see the [index](README.md). The index is maintained; this file is not.
 
 ## Context
 

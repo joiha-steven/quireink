@@ -2,6 +2,7 @@
 
 Date: 2026-08-29 (recording a decision taken 2026-08-21)
 Status: accepted
+In force: see the [index](README.md). The index is maintained; this file is not.
 
 > Written after the fact. The decision was made on 2026-08-21, built in `f1b365e`, widened in
 > `ea1432d`, and documented three times over — [`update-check.md`](../update-check.md), the

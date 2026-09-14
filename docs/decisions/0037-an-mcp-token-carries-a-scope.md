@@ -2,6 +2,7 @@
 
 Date: 2026-08-29
 Status: accepted
+In force: see the [index](README.md). The index is maintained; this file is not.
 
 > Also written after the fact, in the same audit that produced
 > [0036](0036-the-blog-asks-for-updates-and-is-counted-by-asking.md). The change shipped in

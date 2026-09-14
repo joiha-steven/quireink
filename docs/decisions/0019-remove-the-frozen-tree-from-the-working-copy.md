@@ -1,7 +1,8 @@
 # 0019. Remove the frozen 1.x tree from the working copy
 
-**Date:** 2026-08-03 · **Status:** accepted · **Supersedes:** the `v1/` bullet of
-[ADR 0017](0017-move-state-and-instance-config-private.md)
+Date: 2026-08-03
+Status: accepted · supersedes the `v1/` bullet of [0017](0017-move-state-and-instance-config-private.md)
+In force: see the [index](README.md). The index is maintained; this file is not.
 
 ## Context
 

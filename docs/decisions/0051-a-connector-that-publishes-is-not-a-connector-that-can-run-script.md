@@ -1,8 +1,8 @@
 # 0051 — A connector that publishes is not a connector that can run script
 
 Date: 2026-09-13
-Status: accepted
-Narrows: the `full` scope from [0037](0037-an-mcp-token-carries-a-scope.md). Existing tokens keep their scope and lose four settings.
+Status: accepted · narrows the `full` scope from [0037](0037-an-mcp-token-carries-a-scope.md); existing tokens keep their scope and lose four settings
+In force: see the [index](README.md). The index is maintained; this file is not.
 
 ## Context
 

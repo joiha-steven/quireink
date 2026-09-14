@@ -1,6 +1,8 @@
 # 0001. Self-host natively on Postgres + PostgREST
 
-Date: 2026-07-04 · Status: **in force**, until the v2 cutover ([0005](0005-rewrite-in-bun-hono-sqlite.md)) replaces the storage layer
+Date: 2026-07-04
+Status: accepted
+In force: see the [index](README.md). The index is maintained; this file is not.
 
 ## Context
 

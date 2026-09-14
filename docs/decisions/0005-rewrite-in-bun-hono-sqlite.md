@@ -1,6 +1,8 @@
 # 0005. Rewrite in Bun + Hono on SQLite, porting rather than reimplementing
 
-Date: 2026-07-27 · Status: **in force** · Supersedes [0004](0004-rewrite-in-go-on-sqlite.md)
+Date: 2026-07-27
+Status: accepted · supersedes [0004](0004-rewrite-in-go-on-sqlite.md)
+In force: see the [index](README.md). The index is maintained; this file is not.
 
 ## Context
 

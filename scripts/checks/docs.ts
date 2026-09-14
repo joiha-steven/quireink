@@ -18,6 +18,10 @@
 //      source files that were not there, and the self-hosting guide documented a migration
 //      command deleted a release earlier. Both were found by reading, not by a check.
 //   7. The version, everywhere it is written down, is the one in package.json.
+//   8. Every ADR header is the same three lines, and no proposal is left standing. Rule 2
+//      checks that an ADR is FINDABLE; nothing checked that its status was true. ADR 0001
+//      said "in force" for seven weeks after the cutover that ended it, and 0052 said
+//      "proposed" while it was already running in production.
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 
@@ -79,9 +83,9 @@ for (const file of files) {
 
 // 2. The decisions index and the ADR files agree, in both directions.
 const ADR_DIR = 'docs/decisions'
+const index = join(ADR_DIR, 'README.md')
+const adrs = files.filter((p) => p.startsWith(`${ADR_DIR}/`) && !p.endsWith('README.md'))
 if (existsSync(ADR_DIR)) {
-  const index = join(ADR_DIR, 'README.md')
-  const adrs = files.filter((p) => p.startsWith(`${ADR_DIR}/`) && !p.endsWith('README.md'))
   if (!existsSync(index)) {
     violations.push(`${ADR_DIR}/README.md is missing (the still-in-force index)`)
   } else {
@@ -93,6 +97,60 @@ if (existsSync(ADR_DIR)) {
     for (const [, cited] of body.matchAll(/\]\((\d{4}-[^)#]+\.md)\)/g)) {
       if (cited !== undefined && !existsSync(join(ADR_DIR, cited))) {
         violations.push(`${index}: cites missing ${cited}`)
+      }
+    }
+  }
+}
+
+// 8. The ADR header is three lines, and it never answers "does this still bind?".
+//
+// That question has exactly one home, the `In force` column of the decisions index, and the
+// directory's own rules say so. It drifted anyway, in both directions, because a second copy
+// of an answer is a second thing to keep current and nothing was watching either copy:
+// `0001` carried `Status: **in force**, until the v2 cutover replaces the storage layer` for
+// seven weeks after that cutover, while its row correctly read ended; `0052` was `proposed`
+// in both places on the day its engine went to production.
+//
+// So the header carries only durable facts (when it was decided, what became of it, what it
+// amends) and a fixed pointer here. The deadline on `proposed` is the part rule 2 never had:
+// a proposal that is neither accepted nor superseded after a fortnight is not pending, it is
+// forgotten, and this is the only way a file can notice that without someone reading it.
+const ADR_POINTER = 'In force: see the [index](README.md). The index is maintained; this file is not.'
+const PROPOSED_DAYS = 14
+
+if (existsSync(index)) {
+  const rows = readFileSync(index, 'utf8').split('\n')
+  for (const adr of adrs) {
+    const lines = readFileSync(adr, 'utf8').split('\n')
+    const date = /^Date: (\d{4}-\d{2}-\d{2})\b/.exec(lines[2] ?? '')?.[1]
+    const status = /^Status: (accepted|proposed|superseded)\b/.exec(lines[3] ?? '')?.[1]
+    if (date === undefined) violations.push(`${adr}: line 3 must be \`Date: YYYY-MM-DD\``)
+    if (status === undefined) {
+      violations.push(`${adr}: line 4 must be \`Status: \` then accepted, proposed or superseded`)
+    }
+    if (lines[4] !== ADR_POINTER) violations.push(`${adr}: line 5 must be exactly \`${ADR_POINTER}\``)
+
+    // The file and its row have to agree about whether the decision has been taken. They are
+    // the two copies that drifted, so this is the seam that gets the check.
+    const name = adr.slice(ADR_DIR.length + 1)
+    // Anchored on the row's FIRST cell, not on the link appearing anywhere in it: an
+    // `In force` note routinely cites other ADRs, so a loose match returns whichever row
+    // happens to mention this one. 0005's note cites 0052, and that is the row it found.
+    const row = rows.find((l) => l.startsWith(`| [${name.slice(0, 4)}](${name})`))
+    if (row !== undefined && status !== undefined) {
+      const flagged = row.includes('🚧')
+      if (status === 'proposed' && !flagged) {
+        violations.push(`${adr}: says proposed; its index row does not. One of them is wrong`)
+      }
+      if (status !== 'proposed' && flagged) {
+        violations.push(`${index}: still flags ${name} 🚧 proposed; the file says ${status}`)
+      }
+    }
+
+    if (date !== undefined && status === 'proposed') {
+      const days = Math.floor((Date.now() - Date.parse(date)) / 86_400_000)
+      if (days > PROPOSED_DAYS) {
+        violations.push(`${adr}: proposed ${days} days ago. Accept it, supersede it, or delete it`)
       }
     }
   }

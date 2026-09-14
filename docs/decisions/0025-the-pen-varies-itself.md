@@ -1,7 +1,8 @@
 # 0025 — The pen varies itself: grown dies, a per-highlight deal, and the stroke setting retires
 
 Date: 2026-08-20
-Status: accepted (amends 0018: its "three strokes, and they are a site setting" paragraph)
+Status: accepted · amends 0018: its "three strokes, and they are a site setting" paragraph
+In force: see the [index](README.md). The index is maintained; this file is not.
 
 ## Context
 

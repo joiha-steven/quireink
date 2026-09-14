@@ -2,6 +2,7 @@
 
 Date: 2026-09-09
 Status: accepted
+In force: see the [index](README.md). The index is maintained; this file is not.
 
 ## Context
 

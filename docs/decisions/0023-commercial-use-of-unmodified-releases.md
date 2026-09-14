@@ -1,8 +1,8 @@
 # 0023 — Commercial use of an unmodified release is allowed. A modified copy sold is not
 
 Date: 2026-08-16
-Status: accepted
-Amends [0015](0015-relicense-polyform-noncommercial.md), which stays in force for everything else.
+Status: accepted · amends [0015](0015-relicense-polyform-noncommercial.md), which is otherwise untouched
+In force: see the [index](README.md). The index is maintained; this file is not.
 
 ## Context
 

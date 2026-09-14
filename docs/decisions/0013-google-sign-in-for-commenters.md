@@ -1,6 +1,8 @@
 # 0013. Bring back Google sign-in, for commenters only
 
-Date: 2026-07-29 · Status: **in force**
+Date: 2026-07-29
+Status: accepted
+In force: see the [index](README.md). The index is maintained; this file is not.
 
 ## Context
 

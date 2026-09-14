@@ -12,21 +12,32 @@ abandoned on 2026-07-26, and the only trace was a private memory file.
    written. The history is the point.
 2. **The index below is the answer to "does this still bind?"** Keep the `In force`
    column current; it is the one part of this directory that is maintained.
-3. **One decision per file**, numbered, named for the decision and not the topic.
-4. Small is fine. Context, the decision, and what it costs. If it needs 200 lines it is
+3. **An ADR file never answers that question itself.** Its header is exactly three lines:
+   `Date:`, when it was decided; `Status:`, what became of the decision (`accepted`,
+   `proposed`, or `superseded by NNNN`, plus any amends / supersedes / narrows it performs
+   on another ADR); and `In force:`, which points at this index and says nothing else.
+   A second copy of the verdict is a second thing to keep current, and it was not kept:
+   0001 carried "Status: **in force**, until the v2 cutover replaces the storage layer"
+   for seven weeks after that cutover, while the row below said it had ended.
+4. **One decision per file**, numbered, named for the decision and not the topic.
+5. Small is fine. Context, the decision, and what it costs. If it needs 200 lines it is
    probably a spec (`docs/`), not a decision.
-5. `check:docs` fails if an ADR is missing from this index, or if the index cites an ADR
-   that does not exist.
+6. `check:docs` fails if an ADR is missing from this index, if the index cites an ADR that
+   does not exist, if a header is not those three lines, if the file and its row disagree
+   about `proposed`, or if an ADR has been `proposed` for more than fourteen days. That
+   last one is the guard rule 2 never had: 0052 shipped the day it was written, and its
+   row still read 🚧 the day after, because only a person re-reading this table could see
+   it.
 
 ## Index
 
 | # | Decision | Date | In force |
 |:--|:--|:--|:--|
-| [0001](0001-self-hosted-native-postgres.md) | Self-host natively on Postgres + PostgREST, drop Vercel and Supabase cloud | 2026-07-04 | ❌ ended at the 2026-07-28 cutover; 1.x only |
+| [0001](0001-self-hosted-native-postgres.md) | Self-host natively on Postgres + PostgREST, drop Vercel and Supabase cloud | 2026-07-04 | ❌ **ended at the 2026-07-28 cutover** ([0012](0012-flatten-repo-after-cutover.md)). [0005](0005-rewrite-in-bun-hono-sqlite.md) replaced Postgres + PostgREST with SQLite in one process, and the tree that ran them left the working copy at [0019](0019-remove-the-frozen-tree-from-the-working-copy.md). It describes 1.x only |
 | [0002](0002-no-saas-single-instance.md) | Quire is one instance for its author. No SaaS, no multi-tenancy | 2026-07-26 | ⚠️ **its premise has collapsed; only `tenant_id` still binds.** A hosted tier became a goal at [0021](0021-hosted-quire-ink-one-process-per-blog.md), and the rest of its reasoning — *"there are no third-party self-hosters"*, *"nobody depends on it"*, *"parity is judged by the one person who uses the product"* — stopped being true once there were releases, a Docker image, eleven translations and a counted install base. **Do not cite it for "we have no users."** |
 | [0003](0003-freeze-v1-rewrite-as-v2.md) | Freeze the Next tree and rewrite as Quire 2.0 | 2026-07-26 | ✅ **discharged** — the rewrite shipped ([0012](0012-flatten-repo-after-cutover.md)) and the tree it froze was removed ([0019](0019-remove-the-frozen-tree-from-the-working-copy.md)). Nothing in it constrains work today |
 | [0004](0004-rewrite-in-go-on-sqlite.md) | Rewrite in Go on SQLite | 2026-07-26 | ❌ superseded by 0005 |
-| [0005](0005-rewrite-in-bun-hono-sqlite.md) | Rewrite in Bun + Hono on SQLite, porting rather than reimplementing | 2026-07-27 | ✅ |
+| [0005](0005-rewrite-in-bun-hono-sqlite.md) | Rewrite in Bun + Hono on SQLite, porting rather than reimplementing | 2026-07-27 | ⚠️ **the port shipped; four of its clauses have since expired.** Its *"keep `marked`"* and its *"no second markdown engine"* both ended at [0052](0052-one-markdown-engine-of-our-own.md), which is the one place its title no longer describes: Markdown was reimplemented, not ported. *"Article bodies stay byte-identical, so the golden harness becomes a hard equality gate"* ended with the `SAME_PAGE` tier in `src/render/golden.test.ts`: bytes are still compared, they are no longer the whole gate. *"Three weeks across four milestones"* is discharged, like [0003](0003-freeze-v1-rewrite-as-v2.md)'s plan. **The rest holds**, and it is most of it: Bun, Hono, SQLite, `shiki`, `sharp`, `satori`, `nodemailer`, the MCP SDK, and porting as the default posture |
 | [0006](0006-admin-stays-react-spa.md) | Keep the admin as an embedded React SPA | 2026-07-27 | ⚠️ holds, except *"embed it in the executable"*: there is no executable, per [0022](0022-ship-from-source-not-a-compiled-binary.md). The SPA is built and served from disk |
 | [0007](0007-self-hosted-password-totp-auth.md) | Replace Google login with password + TOTP + recovery codes | 2026-07-27 | ⚠️ holds, except its flat **mandatory** TOTP: amended by [0030](0030-two-factor-can-wait-until-there-is-an-address.md) — skippable only while the blog has no public address |
 | [0008](0008-hand-written-css-no-tailwind-public.md) | Hand-write the public CSS, drop Tailwind from the reader path | 2026-07-27 | ⚠️ the decision holds; its *consequence* does not. *"Small enough to inline, so an article page makes zero blocking stylesheet requests"* was reversed two days later by measurement — the static rules ship as a hashed `site.css` link with only the settings inline after it ([`performance.md`](../performance.md) §CSS), and the pen adds a second sheet ([0027](0027-the-pen-ships-only-where-it-wrote.md)) |
@@ -73,7 +84,7 @@ abandoned on 2026-07-26, and the only trace was a private memory file.
 | [0049](0049-the-pen-answers-the-hand.md) | The pen answers the hand: in the editor a mark just applied draws itself in 200 ms, and a felt tip squeaks, on the key feedback's own switch and slider | 2026-09-09 | ✅ |
 | [0050](0050-the-licence-opens-by-itself-after-48-months-without-a-release.md) | The licence opens by itself: 48 months without a release, and the code as it stands is also Apache 2.0, by a grant made today | 2026-09-10 | ✅ |
 | [0051](0051-a-connector-that-publishes-is-not-a-connector-that-can-run-script.md) | A third MCP scope: `full` publishes, `admin` may also set the four settings that put markup on a public page. Existing tokens narrow | 2026-09-13 | ✅ narrows the `full` scope from [0037](0037-an-mcp-token-carries-a-scope.md) |
-| [0052](0052-one-markdown-engine-of-our-own.md) | One Markdown parser of our own, CommonMark 0.31.2 in full plus GFM plus the pen's notation, rendering to HTML, plain text, the editor's document and back to Markdown | 2026-09-13 | 🚧 proposed; supersedes *"no second markdown engine"* in [0005](0005-rewrite-in-bun-hono-sqlite.md) |
+| [0052](0052-one-markdown-engine-of-our-own.md) | One Markdown parser of our own, CommonMark 0.31.2 in full plus GFM plus the pen's notation, rendering to HTML, plain text, the editor's document and back to Markdown | 2026-09-13 | ✅ shipped the same day and released in 2.2.10-beta.4; supersedes *"no second markdown engine"* in [0005](0005-rewrite-in-bun-hono-sqlite.md) |
 
 ## Written after the fact, and why that is allowed
 

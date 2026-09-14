@@ -1,9 +1,8 @@
 # 0038 — The commercial permission reaches the install people actually run, and the credit has somewhere to point
 
 Date: 2026-08-29
-Status: accepted
-Amends: [0023](0023-commercial-use-of-unmodified-releases.md), whose grant is unchanged. This
-corrects two places where its TEXT did not reach the software it was written about.
+Status: accepted · amends [0023](0023-commercial-use-of-unmodified-releases.md), whose grant is unchanged; this corrects two places where its TEXT did not reach the software it was written about
+In force: see the [index](README.md). The index is maintained; this file is not.
 
 ## Context
 

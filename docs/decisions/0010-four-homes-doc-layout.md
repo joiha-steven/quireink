@@ -1,6 +1,8 @@
 # 0010. Adopt the four-homes documentation layout
 
-Date: 2026-07-27 · Status: **in force**
+Date: 2026-07-27
+Status: accepted
+In force: see the [index](README.md). The index is maintained; this file is not.
 
 ## Context
 

@@ -1,9 +1,8 @@
 # 0032 — The comment gate needs no account
 
 Date: 2026-08-27
-Status: accepted
-Amends: nothing. Turnstile keeps working exactly as it does today, and gains a default
-underneath it.
+Status: accepted · amends nothing: Turnstile keeps working exactly as it does today, and gains a default underneath it
+In force: see the [index](README.md). The index is maintained; this file is not.
 
 ## Context
 

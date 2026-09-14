@@ -1,6 +1,8 @@
 # 0021. A hosted Quire Ink, as one process per blog. `tenant_id` stays rejected
 
-Date: 2026-08-11 · Status: **in force** · Supersedes [0002](0002-no-saas-single-instance.md) in part
+Date: 2026-08-11
+Status: accepted · supersedes [0002](0002-no-saas-single-instance.md) in part
+In force: see the [index](README.md). The index is maintained; this file is not.
 
 ## Context
 

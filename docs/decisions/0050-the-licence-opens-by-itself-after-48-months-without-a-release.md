@@ -1,8 +1,8 @@
 # 0050 — The licence opens by itself after 48 months without a release
 
 Date: 2026-09-10
-Status: accepted
-Amends: [0023](0023-commercial-use-of-unmodified-releases.md) and [0038](0038-the-permission-reaches-the-install-people-actually-run.md), whose grant is unchanged. This adds a clause about what happens when the grant's author stops.
+Status: accepted · amends [0023](0023-commercial-use-of-unmodified-releases.md) and [0038](0038-the-permission-reaches-the-install-people-actually-run.md), whose grant is unchanged; this adds a clause about what happens when the grant's author stops
+In force: see the [index](README.md). The index is maintained; this file is not.
 
 ## Context
 

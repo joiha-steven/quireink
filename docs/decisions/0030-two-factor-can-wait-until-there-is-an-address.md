@@ -1,9 +1,8 @@
 # 0030 — Two-factor can wait, but only until the blog has an address
 
 Date: 2026-08-25
-Status: accepted
-Amends: [0007](0007-self-hosted-password-totp-auth.md), whose **mandatory** TOTP now has one
-named exception
+Status: accepted · amends [0007](0007-self-hosted-password-totp-auth.md), whose **mandatory** TOTP now has one named exception
+In force: see the [index](README.md). The index is maintained; this file is not.
 
 ## Context
 

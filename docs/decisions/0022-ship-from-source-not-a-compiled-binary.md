@@ -1,6 +1,8 @@
 # 0022. Quire Ink ships as source run by Bun. There is no compiled binary
 
-Date: 2026-08-11 · Status: **in force**
+Date: 2026-08-11
+Status: accepted
+In force: see the [index](README.md). The index is maintained; this file is not.
 
 ## Context
 

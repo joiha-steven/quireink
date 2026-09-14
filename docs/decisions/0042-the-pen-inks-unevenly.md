@@ -1,8 +1,8 @@
 # 0042 — The pen inks unevenly, knows a word from a sentence, and moves into a module of its own
 
 Date: 2026-09-09
-Status: accepted (amends 0025's "grown dies" — the dies are still grown, and now carry their
-physics; amends 0026's underline register and ring construction)
+Status: accepted · amends 0025's "grown dies" (still grown, now carrying their physics) and 0026's underline register and ring construction
+In force: see the [index](README.md). The index is maintained; this file is not.
 
 ## Context
 

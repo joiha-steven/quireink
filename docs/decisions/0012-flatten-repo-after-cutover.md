@@ -1,6 +1,8 @@
 # 0012. Flatten the repository after cutover: 2.0 to the root, the Next tree to `v1/`
 
-Date: 2026-07-28 · Status: **in force**
+Date: 2026-07-28
+Status: accepted
+In force: see the [index](README.md). The index is maintained; this file is not.
 
 ## Context
 

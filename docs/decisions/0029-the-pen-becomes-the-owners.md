@@ -1,8 +1,8 @@
 # 0029 — The pen's colours become the owner's, and the defaults stay measured
 
 Date: 2026-08-24
-Status: accepted
-Amends: [0018](0018-highlighter-pen.md), whose "the colours are NOT a setting" this replaces
+Status: accepted · amends [0018](0018-highlighter-pen.md), whose "the colours are NOT a setting" this replaces
+In force: see the [index](README.md). The index is maintained; this file is not.
 
 ## Context
 

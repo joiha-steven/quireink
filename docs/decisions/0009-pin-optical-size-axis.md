@@ -1,6 +1,8 @@
 # 0009. Pin the `opsz` axis in the bundled variable fonts
 
-Date: 2026-07-27 · Status: **in force** · Reverses an earlier undocumented decision to keep the axis
+Date: 2026-07-27
+Status: accepted · reverses an earlier undocumented decision to keep the axis
+In force: see the [index](README.md). The index is maintained; this file is not.
 
 ## Context
 

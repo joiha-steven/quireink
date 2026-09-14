@@ -1,7 +1,8 @@
 # 0040. The assistant keeps its conversations
 
-Date: 2026-08-31 · Status: accepted · Reverses a behaviour stated in
-[`docs/features/admin.md`](../features/admin.md), not a prior ADR
+Date: 2026-08-31
+Status: accepted · reverses a behaviour stated in [`docs/features/admin.md`](../features/admin.md), not a prior ADR
+In force: see the [index](README.md). The index is maintained; this file is not.
 
 ## What was true until today
 

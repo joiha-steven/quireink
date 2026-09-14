@@ -1,6 +1,8 @@
 # 0004. Rewrite in Go on SQLite
 
-Date: 2026-07-26 · Status: **superseded** by [0005](0005-rewrite-in-bun-hono-sqlite.md) on 2026-07-27
+Date: 2026-07-26
+Status: superseded by [0005](0005-rewrite-in-bun-hono-sqlite.md) on 2026-07-27
+In force: see the [index](README.md). The index is maintained; this file is not.
 
 > Kept in full, per the append-only rule. No Go code was ever written. The specs it
 > produced were salvaged into `docs/spec/` (schema and importer moved nearly unchanged,
