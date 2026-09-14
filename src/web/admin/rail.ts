@@ -144,9 +144,10 @@ export function railHtml({ settings, aiConfigured, path }: RailOptions): string 
  * the rail, so reading them after the first paint means a rail that is briefly the wrong width,
  * the wrong density, or printing `Ctrl` to somebody on a Mac.
  *
- * INLINE AND SYNCHRONOUS, in the head, for that reason alone — the one shape of script this
- * codebase allows there (`docs/performance.md`), and the same shape the reading site's theme
- * has used since it was written.
+ * SYNCHRONOUS, in the head, for that reason alone. ⚠️ NOT INLINE: `spa.ts` serves this as
+ * `/admin/assets/boot.<hash>.js`, because a strict `script-src 'self'` blocks an inline script
+ * and three of the four public instances send one. See `BOOT` there, and the rule it amends in
+ * `docs/performance.md`.
  *
  * It writes the attributes and STOPS. Every click after this is the island's, which arrives
  * with the rest of the page; a rail that could only be collapsed once the bundle had loaded
@@ -162,6 +163,13 @@ export function railHtml({ settings, aiConfigured, path }: RailOptions): string 
  * The four boundaries here and `partOfDay` in `admin-shared/when.ts` are the same arithmetic
  * written twice, which is the one duplication in this file: the boot script cannot import.
  * `when.ts` names this as its pair, and the greeting test walks both.
+ *
+ * ⚠️ THE THEME IS IN HERE NOW, and the comment above this script in `spa.ts` has claimed it was
+ * since the day that comment was written. It was not: the resolution lived only in the island
+ * (`wireTheme`), which is a MODULE and therefore deferred, so a dark-mode admin painted light
+ * until the bundle ran. The four modes are resolved twice, here and there, for the same reason
+ * the day boundaries are — and the island keeps its copy because the mode can change while the
+ * page is open, which this one-shot cannot see.
  */
 export function railBootScript(): string {
   return `(function(){try{
@@ -178,6 +186,8 @@ var c=document.currentScript;addEventListener('DOMContentLoaded',function(){
 var n=document.querySelectorAll('[data-chord]');for(var i=0;i<n.length;i++)n[i].textContent=n[i].getAttribute('data-mac');},{once:true});void c}
 var hr=new Date().getHours();
 h.setAttribute('data-daypart',hr<5?'night':hr<12?'morning':hr<18?'afternoon':hr<22?'evening':'night');
+var m=S.getItem('theme')||'system';
+if(m==='dark'||(m==='system'&&matchMedia('(prefers-color-scheme: dark)').matches)||(m==='time'&&(hr>=18||hr<6)))h.classList.add('dark');
 }catch(e){}})()`
 }
 

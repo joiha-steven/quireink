@@ -26,7 +26,8 @@ copies of a rule means one is wrong within a month
 | [features/site.md](features/site.md) | Homepage mode and URL redirects |
 | [features/notes.md](features/notes.md) | The notebook: notes and clips, apart from the posts — reading, writing, API, MCP |
 | [conventions/](conventions/README.md) | One file per surface — [type](conventions/type.md) · [layout](conventions/layout.md) · [colour](conventions/colour.md) · [motion](conventions/motion.md) · [looks](conventions/looks.md) · [i18n](conventions/i18n.md) · [scripts](conventions/scripts.md) · [releases](conventions/releases.md) |
-| [performance.md](performance.md) | The resource-loading law: images, fonts, CSS split, island JS |
+| [performance.md](performance.md) | The resource-loading law: images, fonts, CSS split, island JS, and the no-inline-script rule |
+| [navigation-speculation.md](navigation-speculation.md) | Prefetch every link, prerender on hover: the journey BETWEEN pages |
 | [delivery.md](delivery.md) | What the server does before it answers: the render cache, the switch, the CDN purge, compression |
 | [admin-design.md](admin-design.md) | The admin visual contract |
 | [admin-kit.md](admin-kit.md) | The kit's one-of-each rules, enforced by `check:admin-kit` |

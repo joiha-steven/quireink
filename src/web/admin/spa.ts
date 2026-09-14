@@ -124,6 +124,35 @@ const ENTRY = `/admin/assets/${ENTRY_NAME}`
 const STYLES = `/admin/assets/${STYLES_NAME}`
 
 /**
+ * THE BOOT SCRIPT, AS A FILE, and the reason is a Content Security Policy.
+ *
+ * It was inline in the head — the one shape of script `docs/performance.md` allows there — and
+ * on 2026-09-14 the deploy was measured on prod and the browser said: *"Executing inline script
+ * violates the following Content Security Policy directive 'script-src 'self''."* Three of the
+ * four public instances send that header from nginx, the owner's own blog among them, so on all
+ * three the script had NEVER RUN: the rail was briefly the wrong width on every load, the Mac
+ * chords printed Ctrl, and the theme arrived only when the island did. Silently, for weeks —
+ * the page still worked, it just worked a beat late and nobody was measuring the first frame.
+ *
+ * A same-origin FILE with a fingerprinted name passes `script-src 'self'` with nothing for an
+ * operator to configure, and that is the point: the frame's correctness must not depend on an
+ * instance's headers. A CLASSIC script, not a module, and no `defer` — a module is deferred by
+ * definition and would run after parsing, which is exactly the beat this exists to beat.
+ *
+ * The cost is one blocking request on a connection the HTML just arrived on. Measured at
+ * 500 KB/s before shipping it, and written down in `docs/performance.md` beside the rule it
+ * amends.
+ *
+ * Built here rather than by the bundler because it is generated from constants the server
+ * shares with the rail (`admin-shared/rail.ts`), and because it must be ONE file that never
+ * imports anything — an import would be a second request before the first paint.
+ */
+const BOOT_BODY = railBootScript()
+const BOOT_NAME = `boot.${Bun.hash(new TextEncoder().encode(BOOT_BODY)).toString(36)}.js`
+ASSETS.set(BOOT_NAME, { body: new TextEncoder().encode(BOOT_BODY), type: TYPES['.js'] ?? 'text/javascript' })
+const BOOT = `/admin/assets/${BOOT_NAME}`
+
+/**
  * Every chunk the entry needs before it can run, found by following STATIC imports.
  *
  * Without these the browser discovers the module graph one level at a time, because it
@@ -281,13 +310,14 @@ ${tabHead(settings)}
 <link rel="stylesheet" href="${STYLES}">
 ${PRELOADS}
 <style>${adminStyles(settings)}</style>
-<!-- Before the first paint, and the only kind of script this codebase puts in a head (see
-     docs/performance.md). Everything in it is a decision the SERVER cannot make: three
-     localStorage preferences, a media query, the theme the owner picked, and whether the
-     keyboard has a Command key. Reading them after the first paint means a rail that is
-     briefly the wrong width — and, measured on 2026-09-14, an admin that was LIGHT for
-     189 to 246ms on a throttled connection before it turned dark. -->
-<script>${railBootScript()}</script>
+<!-- Before the first paint. Everything in it is a decision the SERVER cannot make: three
+     localStorage preferences, a media query, the theme the owner picked, what o'clock it is
+     where the reader is, and whether the keyboard has a Command key. Reading them after the
+     first paint means a rail that is briefly the wrong width — and, measured on 2026-09-14, an
+     admin that was LIGHT for 189 to 246ms on a throttled connection before it turned dark.
+     A FILE rather than inline since 2026-09-14: see BOOT above, and the CSP that had been
+     silently blocking the inline one on three of the four public instances. -->
+<script src="${BOOT}"></script>
 </head>
 <!-- The base text colour belongs HERE, with the background it has to be legible on.
      Without it every element that does not name its own \`text-neutral-*\` inherits the
