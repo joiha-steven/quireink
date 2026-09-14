@@ -164,7 +164,9 @@ export function Setting({
  * hand-copy of `CONTROL_CHROME` is exactly the drift `check:admin-kit` exists to catch, and
  * the only difference that belongs between them is which element the focus ring answers to.
  */
-export const CONTROL_GROUP = CONTROL_CHROME.replaceAll('focus:', 'focus-within:')
+// Moved to `@/admin-shared/kit` with ADR 0054's settings screen, where the server draws the
+// colour cells this exists for. Re-exported, so every call site keeps the import it had.
+export { CONTROL_GROUP } from '@/admin-shared/controls'
 
 /**
  * A number field with the browser's stepper taken off.
@@ -179,7 +181,9 @@ export const CONTROL_GROUP = CONTROL_CHROME.replaceAll('focus:', 'focus-within:'
  * `tabular-nums` for the same reason the hex fields have it: a column of numbers that
  * changes width per digit reads as wobbling.
  */
-export const CONTROL_NUM = `${CONTROL_CHROME} tabular-nums [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`
+// Moved to `@/admin-shared/kit` with ADR 0054's settings screen, where the server draws the
+// same number fields. Re-exported, so every call site keeps the import it had.
+export { CONTROL_NUM } from '@/admin-shared/controls'
 
 // The tick moved to `@/admin-shared/kit` with ADR 0054's newsletter screen, where the server
 // draws the same picker. Re-exported so every `import { CHECK } from './kit'` is unchanged.
@@ -189,7 +193,9 @@ export { CHECK } from '@/admin-shared/kit'
 // word count in a 580px box, a date in a 580px box and a site title in the same 580px box say
 // the three are the same kind of answer, and they are not. Callers pick one; `w-full` stays
 // the default for anything free-text.
-export const FIELD_W = { short: 'w-28', medium: 'w-64', full: 'w-full' } as const
+// Moved to `@/admin-shared/scale` with ADR 0054's settings screen: the server draws fields
+// now and may not import this file. Re-exported, so every call site keeps its import.
+export { FIELD_W } from '@/admin-shared/scale'
 
 // Styled <select>: kills the OS-native arrow (`appearance-none`) and draws our own
 // chevron, so a select matches the input chrome + the app font instead of the ugly

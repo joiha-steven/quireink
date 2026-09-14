@@ -190,7 +190,17 @@ export async function commentsView() {
   return { rows }
 }
 
-async function settingsView() {
+/**
+ * Everything the settings screen reads, in one pass.
+ *
+ * Exported since that screen became a page (ADR 0054): the server-rendered screen and the JSON
+ * route behind `/api/admin/view/settings` read the SAME builder, the way the analytics screen
+ * and its route do. Two builders would be two answers to one question.
+ *
+ * It sends no secret. `getIntegrationStatus` turns every stored credential into a boolean, and
+ * nothing here touches `users`, `recovery_codes`, `sessions` or `mcp_tokens`.
+ */
+export async function settingsView() {
   const [settings, commentEnv, integrations, posts, pages, categories] = await Promise.all([
     getSettings(), getCommentEnv(), getIntegrationStatus(), getPublicPosts(), getPublicPages(),
     getCategories(),

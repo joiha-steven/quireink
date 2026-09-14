@@ -47,35 +47,12 @@ import { SettingsServerTab } from './SettingsServerTab'
 import { SettingsAccountTab } from './SettingsAccountTab'
 import type { UpdateStatus } from './UpdateFields'
 
-export type Tab = 'blog' | 'home' | 'post' | 'appearance' | 'people' | 'server' | 'account'
-
-/**
- * Every member of `Tab`, and the list `?tab=` is validated against — so a tab missing here is
- * a tab no link can reach. That happened once: `ai` was left out when its tab was added on
- * 2026-08-23, which made the assistant's own settings link land silently on Site — the address
- * its error message hands the owner, and the one the guide on quireink.com prints.
- */
-const TAB_IDS: Tab[] = ['blog', 'home', 'post', 'appearance', 'people', 'server', 'account']
-
-/**
- * The eight old ids, pointed at the tab that now holds their keys.
- *
- * Help, the home screen's setup band, the newsletter's SMTP link, the assistant's error
- * message and the command palette all address settings by these URLs, and a decision about
- * GROUPING is not a licence to break five screens that had no part in it. `?setting=` still
- * works alongside, because it names a key rather than a tab.
- *
- * `connections` lands on Comments & mail rather than on Server, and that is a judgement about
- * what people were looking for when they followed the link: SMTP is the reason that tab was
- * opened. `seo`, `ai` and `system` all land on Server, which absorbed all three.
- */
-const OLD_TABS: Record<string, Tab> = {
-  site: 'blog', layout: 'home', reading: 'post', appearance: 'appearance',
-  seo: 'server', connections: 'people', ai: 'server', system: 'server',
-}
-
-const resolveTab = (param: string | null): Tab =>
-  (TAB_IDS as string[]).includes(param ?? '') ? (param as Tab) : (OLD_TABS[param ?? ''] ?? 'blog')
+// The tab list, the eight old ids it still answers to, and the resolver all live in
+// `@/admin-shared/settings-tabs` since the screen became server-rendered (ADR 0054). One list:
+// two hand-kept copies do not check each other, they only make the wrong answer look confirmed,
+// which is what `settings-tab-links.test.ts` exists to catch.
+export type { Tab } from '@/admin-shared/settings-tabs'
+import { resolveTab, type Tab } from '@/admin-shared/settings-tabs'
 
 /**
  * The region the strip switches, named so the strip can point at it.

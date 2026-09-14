@@ -19,6 +19,7 @@
 
 import { describe, expect, it } from 'bun:test'
 import { readdirSync, readFileSync, statSync } from 'node:fs'
+import { TAB_IDS } from '@/admin-shared/settings-tabs'
 import { join } from 'node:path'
 
 /**
@@ -31,14 +32,13 @@ import { join } from 'node:path'
  * wrong answer look confirmed. There is one list now, and this reads it.
  */
 function tabIds(): string[] {
-  const src = readFileSync(join(import.meta.dir, 'SettingsView.tsx'), 'utf8')
-  const block = src.match(/const TAB_IDS: Tab\[\] = \[([\s\S]*?)\]/)
-  if (!block) throw new Error('settings-tab-links: no TAB_IDS in SettingsView.tsx')
-  const ids = [...block[1]!.matchAll(/'([a-z-]+)'/g)].map((m) => m[1]!)
-  // A parse that quietly returns nothing would call every link in the admin broken, which
-  // is the loud failure — but half a list would call SOME of them broken, which is worse.
-  if (ids.length < 5) throw new Error(`settings-tab-links: read only ${ids.length} tabs`)
-  return ids
+  // Read from `@/admin-shared/settings-tabs`, which is where the list lives since the screen
+  // became server-rendered (ADR 0054). It was parsed out of `SettingsView.tsx` with a regular
+  // expression before that, and before THAT it was a hand-typed copy here — which on
+  // 2026-08-24 was stale in exactly the way this file exists to catch: the AI tab had shipped a
+  // day earlier, the copy had never been told, and the two agreed with each other while both
+  // disagreed with the screen. Two copies of one list do not check each other.
+  return [...TAB_IDS]
 }
 
 const TABS = tabIds()

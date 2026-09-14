@@ -223,3 +223,12 @@ export const TAP = '-my-2 py-2'
  * that also positions it (an overlay key on a tile) states its own and wins by order.
  */
 export const TAP_TOUCH = 'tap-touch'
+
+/**
+ * How wide a field is.
+ *
+ * A field should be as wide as its answer. The excerpt-length box held two digits in 580px,
+ * next to a site title in 580px and a description in 580px, so three answers of wildly
+ * different shape were drawn as the same question.
+ */
+export const FIELD_W = { short: 'w-28', medium: 'w-64', full: 'w-full' } as const
