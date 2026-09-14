@@ -39,7 +39,6 @@ const ALLOWED: Record<string, string> = {
   hono: 'C. A thin HTTP router, but 50 call sites. Last, and only when the rest is done',
   react: 'C. Admin only. Goes with the Tiptap work; needs an ADR to replace 0006 first',
   'react-dom': 'C. With react',
-  '@tailwindcss/cli': 'C. Admin CSS only; the public site dropped it at ADR 0008',
   '@tiptap/starter-kit': 'C. The editor. ADR 0006 has to be replaced before this moves',
   '@tiptap/react': 'C. With the editor',
   '@tiptap/extension-image': 'C. With the editor',

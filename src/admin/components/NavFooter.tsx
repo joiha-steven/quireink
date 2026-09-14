@@ -64,7 +64,7 @@ export function RailStrip({
         // `variant='text'` with the word dropped: the text variant is the one whose menu opens
         // UPWARD and inside the rail. The icon variant's menu drops downward off a header,
         // which from the foot of a full-height column would open below the window.
-        return <ThemeToggle key={id} variant="text" showIcon showLabel={false} triggerClassName={SIDEBAR_ICON} />
+        return <ThemeToggle key={id} showIcon showLabel={false} triggerClassName={SIDEBAR_ICON} />
       case 'cache':
         return <CacheButton key={id} className={SIDEBAR_ICON} icon={<IconCache />} collapsed />
       // Both moved into the menu below. A stored order that still lists them draws nothing

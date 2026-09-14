@@ -1,32 +1,25 @@
-/* The admin stylesheet: Tailwind utilities scanned from the admin tree ONLY, plus the
-   admin chrome. Compiled by the Tailwind CLI in `scripts/build-admin.ts` and served to the
-   owner alone, so none of it reaches the public site.
+/* The admin chrome: everything the utility classes in `utilities.css` do not cover.
+   Served to the owner alone, so none of it reaches the public site.
+
+   Until 2026-09-14 this file began by importing Tailwind and pointing it at the admin tree,
+   and the CLI compiled the two together. The utilities now live beside it as plain CSS and
+   `scripts/build-admin.ts` concatenates them (ADR 0053). Three things the framework used to do
+   from here are worth keeping on the record, because all three are still true of the output:
+
+   1. `dark:` is a CLASS, not a media query. `ThemeProvider` toggles `.dark` on <html> and offers
+      light / dark / system / by-time exactly as the public site does. Under the framework's
+      default those 668 dark utilities landed in one `prefers-color-scheme` block, so choosing
+      "Dark" repainted the canvas and precisely three other things while every card, border,
+      input and label stayed light, and an owner whose OS was dark got the dark admin whichever
+      setting they picked. The captured rules carry the class selector.
+   2. The utilities are inside `@layer utilities`, which is what keeps them losing to the
+      unlayered rules below. That was true before and the admin's own styles rely on it.
+   3. The transition utilities run on `--dur-fast`, not a literal. Before that they ran
+      Tailwind's own 150ms beside this sheet's 150ms, equal by luck.
 
    The frozen tree layered this on `globals.css` and inherited the runtime theme tokens and
-   `.prose` from it. There is no globals.css here, so the handful of tokens the admin
-   actually leans on are declared below rather than inherited by luck. */
-@import "tailwindcss" source(none);
-@source "../../src/admin";
-
-/* Tailwind v4 compiles `dark:` to `@media (prefers-color-scheme: dark)` unless told
-   otherwise. This admin does NOT follow the OS: `ThemeProvider` toggles a `.dark` CLASS on
-   <html> and offers light / dark / system / by-time, exactly as the public site does. With
-   the default variant those 668 `dark:` utilities all landed in one media block, so
-   choosing "Dark" repainted the canvas and precisely three other things while every card,
-   border, input and label stayed light, and an owner whose OS was dark got the dark admin
-   no matter which setting they picked. The class has to be the switch. */
-@custom-variant dark (&:where(.dark, .dark *));
-
-/* THE MOTION ENGINE, admin half. The same three durations and one curve the reading site
-   declares in web/motion.css.ts, declared again here because the admin never receives the
-   public sheet; the numbers must not drift between the two, and docs/conventions/motion.md
-   is where that is promised. Tailwind's own `transition` utilities are pointed at the fast
-   token, so a `transition` in a className and a `transition` written here run at one
-   speed - before this every utility ran Tailwind's 150ms literal beside the sheet's own
-   150ms literal, equal by luck. The gates are at the foot of this file. */
-@theme {
-  --default-transition-duration: var(--dur-fast);
-}
+   `.prose` from it. There is no globals.css here, so the handful of tokens the admin actually
+   leans on are declared below rather than inherited by luck. */
 
 /* The tokens the admin borrows from the public sheet. The editor renders `.prose`, so it
    needs the same reading face and the same meta colour the article page uses; everything
@@ -1003,12 +996,20 @@ html.admin [role='dialog'] {
   /* `color: inherit` because the Markdown mirror draws its hits as `<mark>`, which every
      browser gives a colour of its own along with the yellow this rule is replacing. */
   color: inherit;
+  /* Declared twice on purpose, and this is one of the two places where dropping Tailwind took
+     something away that has to be put back by hand. Its compiler wrapped every `color-mix` in
+     an `@supports` and left a flat colour underneath; without that, a browser that does not
+     know the function drops the declaration and the hit has NO highlight at all rather than a
+     solid one. Two declarations do the same job: the second wins wherever it is understood. */
+  background: var(--pen-edge);
   background: color-mix(in srgb, var(--pen-edge) 45%, transparent);
   border-radius: 2px;
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
 }
 .find-hit-now {
+  /* The other one. See `.find-hit` above. */
+  background: var(--pen-red);
   background: color-mix(in srgb, var(--pen-red) 28%, transparent);
   box-shadow: inset 0 -1.5px 0 var(--pen-red);
 }

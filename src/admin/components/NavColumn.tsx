@@ -171,7 +171,7 @@ export function useNavColumn({
           // `variant='text'` in BOTH states, with the word dropped when collapsed. The rail
           // needs one row object, and `variant='icon'` is the public header's — it ignores the
           // row class and drew this line 4px left of the two under it.
-          return <ThemeToggle variant="text" showIcon={c || icons} showLabel={!c} triggerClassName={utilClass} />
+          return <ThemeToggle showIcon={c || icons} showLabel={!c} triggerClassName={utilClass} />
         case 'icons':
           // Never on the collapsed rail, where it would be an unlabelled glyph offering to
           // remove the glyphs.

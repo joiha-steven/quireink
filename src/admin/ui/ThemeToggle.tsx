@@ -2,7 +2,6 @@
 import { useState, useSyncExternalStore } from 'react'
 import { useAdminT } from '@/admin/components/I18nProvider'
 import { GLYPH } from '@/admin/components/navIcons'
-import { ICON_BTN } from '@/admin/ui/iconButton'
 import { useTheme, type ThemeMode } from '@/admin/ui/ThemeProvider'
 
 // Reflect the actually-applied theme by reading the <html> `dark` class (set by
@@ -59,13 +58,21 @@ function MoonIcon() {
 //
 // `menuSide` stays tied to `variant`: an admin rail is against the left edge, so the menu opens
 // beside it, not under it.
+/**
+ * The theme button, for the admin rail.
+ *
+ * It used to take a `variant`, because it served the public header too. It does not any more:
+ * both call sites pass `variant="text"` and nothing outside `src/admin` imports it, so the
+ * other branch was styling itself with classes from the PUBLIC stylesheet — `t-small`,
+ * `text-heading`, `bg-bg`, `border-rule` — that the admin sheet has never defined. Dead code
+ * that could not have worked if it had run. Found by `check:admin-css` on 2026-09-14, which is
+ * the guard that replaced Tailwind's scan of this tree (ADR 0053).
+ */
 export function ThemeToggle({
-  variant = 'icon',
   showIcon = true,
   showLabel = true,
   triggerClassName = '',
 }: {
-  variant?: 'icon' | 'text'
   showIcon?: boolean
   showLabel?: boolean
   triggerClassName?: string
@@ -91,14 +98,10 @@ export function ThemeToggle({
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-label={s.themeLabel}
-        className={triggerClassName || (variant === 'text' ? '' : ICON_BTN)}
+        className={triggerClassName}
       >
-        {variant === 'text' ? (
-          <>
-            {showIcon && (isDark ? <MoonIcon /> : <SunIcon />)}
-            {showLabel && <span>{isDark ? s.themeDark : s.themeLight}</span>}
-          </>
-        ) : isDark ? <MoonIcon /> : <SunIcon />}
+        {showIcon && (isDark ? <MoonIcon /> : <SunIcon />)}
+        {showLabel && <span>{isDark ? s.themeDark : s.themeLight}</span>}
       </button>
       {open && (
         <>
@@ -108,11 +111,9 @@ export function ThemeToggle({
               Escape and picking a row both close the menu, so the scrim is for the pointer
               alone and has nothing to say to anyone else. */}
           <div className="fixed inset-0 z-40 cursor-default" aria-hidden onClick={() => setOpen(false)} />
-          {/* The admin variant wears the popover radius; the public one stays square —
-              square corners are a PUBLIC rule and this component serves both sides.
-              It opens UPWARD from the rail's footer, inside the rail, not floating off
-              its right edge over whatever the content happens to show there. */}
-          <div className={`absolute z-50 w-44 overflow-hidden border py-1 shadow-lg ${variant === 'text' ? 'bottom-full left-0 mb-1 rounded-lg border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-900' : 'right-0 mt-2 border-rule bg-bg'}`}>
+          {/* It opens UPWARD from the rail's footer, inside the rail, not floating off its
+              right edge over whatever the content happens to show there. */}
+          <div className="absolute bottom-full left-0 z-50 mb-1 w-44 overflow-hidden rounded-lg border border-neutral-200 bg-white py-1 shadow-lg dark:border-neutral-700 dark:bg-neutral-900">
             {items.map((it) => (
               <button
                 key={it.key}
@@ -121,13 +122,13 @@ export function ThemeToggle({
                   setMode(it.key)
                   setOpen(false)
                 }}
-                // `text-sm` for the admin, `t-small` for the public header: the type roles
-                // live in the PUBLIC sheet, so on the admin `t-small` resolved to nothing
-                // and the menu spoke at 16px inside a 14px rail — suddenly oversized.
-                className={`flex w-full items-center justify-between px-3 py-2 text-left ${variant === 'text' ? 'text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800' : 't-small hover:bg-rule'} ${
+                // `text-sm`, not the public sheet's `t-small`: the type roles live over there,
+                // so `t-small` resolved to nothing here and the menu spoke at 16px inside a
+                // 14px rail — measured 2026-09-12, suddenly oversized.
+                className={`flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800 ${
                   mode === it.key
-                    ? variant === 'text' ? 'font-semibold text-neutral-900 dark:text-white' : 'font-semibold text-heading'
-                    : variant === 'text' ? 'text-neutral-500 dark:text-neutral-400' : 'text-meta'
+                    ? 'font-semibold text-neutral-900 dark:text-white'
+                    : 'text-neutral-500 dark:text-neutral-400'
                 }`}
               >
                 {it.label}

@@ -44,27 +44,23 @@ if (!result.success) {
   process.exit(1)
 }
 
-// Tailwind v4 scans the source tree named in `@source`, so the utilities that reach the
-// stylesheet are exactly the ones the admin uses. The installed binary is invoked by path
-// rather than through `bunx`: `bunx` is not on PATH inside a Bun script on Windows, and
-// resolving it here also pins the build to the version in the lockfile.
-const cli = `${ROOT}node_modules/.bin/tailwindcss${process.platform === 'win32' ? '.exe' : ''}`
-const css = Bun.spawnSync([
-  cli,
-  '-i', `${ROOT}src/admin/admin.css`,
-  '-o', `${OUT}/admin.css`,
-  '--minify',
-], { stdout: 'inherit', stderr: 'inherit' })
-
-if (css.exitCode !== 0) {
-  console.error('admin: the stylesheet failed to build')
-  process.exit(1)
-}
+// THE STYLESHEET IS TWO FILES CONCATENATED, and that is the whole build step now.
+//
+// `utilities.css` holds the utility classes, the reset and the design tokens, captured once
+// from the Tailwind CLI that used to produce them on every build and kept as plain CSS
+// (ADR 0053). `admin.css` holds the admin's own chrome, and goes SECOND because its rules are
+// unlayered and the utilities are inside `@layer utilities`: that ordering is what lets the
+// chrome win, and it is the ordering the CLI produced.
+//
+// The minifier is this repository's own, the one the reading page's sheets go through.
+const { minifyCss } = await import(`${ROOT}src/web/css-min.ts`)
+const utilities = await Bun.file(`${ROOT}src/admin/utilities.css`).text()
+const chrome = await Bun.file(`${ROOT}src/admin/admin.css`).text()
+const styles = minifyCss(`${utilities}\n${chrome}`)
 
 // The editor is a `.prose` surface, so it needs the article's own typography — the same
-// rules, from the same constant the public sheet uses. Appended after Tailwind rather than
-// imported into `admin.css`, because Tailwind cannot import a TypeScript module and a
-// second copy of a type scale stays in step for about a month.
+// rules, from the same constant the public sheet uses. Appended rather than pasted into
+// `admin.css`, because a second copy of a type scale stays in step for about a month.
 //
 // The pen comes too, and ALL of it. The public side links each half of the ink only to the
 // pages whose HTML contains its element (ADR 0027), but the editor cannot know which
@@ -72,8 +68,7 @@ if (css.exitCode !== 0) {
 // writing is a stroke you cannot place.
 const { PROSE_CSS } = await import(`${ROOT}src/web/prose.css.ts`)
 const { INK_CSS } = await import(`${ROOT}src/pen/ink.css.ts`)
-const sheetText = await Bun.file(`${OUT}/admin.css`).text()
-await Bun.write(`${OUT}/admin.css`, `${sheetText}\n${PROSE_CSS}\n${INK_CSS}`)
+await Bun.write(`${OUT}/admin.css`, `${styles}\n${PROSE_CSS}\n${INK_CSS}`)
 
 let total = 0
 for (const output of result.outputs) {
