@@ -33,6 +33,15 @@ function I({ name }: { name: IconName }) {
   )
 }
 
+/**
+ * A set body by NAME, for a caller that has one rather than a chosen icon.
+ *
+ * The rail's rows are described in `@/admin-rail`, which is framework-free and therefore
+ * carries icon NAMES — it cannot hold an element, and that is what lets the server draw the
+ * same rail. This is the one door from a name back to this face's wrapper.
+ */
+export function NavIcon({ name }: { name: IconName }) { return <I name={name} /> }
+
 export function IconHome() { return <I name="home" /> }
 export function IconAnalytics() { return <I name="chart" /> }
 export function IconContent() { return <I name="page" /> }

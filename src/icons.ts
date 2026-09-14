@@ -37,6 +37,18 @@ export const ICONS = {
   theme:
     '<circle cx="12" cy="12" r="3.5"/>'
     + '<path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M18.7 5.3l-2.1 2.1M5.3 18.7l2.1-2.1"/>',
+  // THE NIGHT HALF OF THE THEME KEY, and it belongs in the set rather than in the one
+  // component that draws it. The admin's theme control carried its own sun and its own moon
+  // at stroke 1.6 while the reading site's header drew `theme` at 1.8 — two hands on one
+  // product, found when the server had to render the same control (ADR 0054).
+  //
+  // A CRESCENT WITH A BITE, not a circle with a circle cut out of it: the set draws objects
+  // with one closed outline, and the arc that comes back is what says which way the light is.
+  // The echo stroke rides along the inner curve, where a real moon carries its terminator —
+  // the same rule as the fold under a mail flap and the glint inside a lens.
+  moon:
+    '<path d="M20.5 14.3A8.5 8.5 0 0 1 9.7 3.5a8.5 8.5 0 1 0 10.8 10.8Z"/>'
+    + '<path d="M12.4 6.6a6 6 0 0 0 5 5" stroke-width="1.4"/>',
   // THE PAINTER'S BLOB, not a ring with dots in it. The ring version read as a FACE: two
   // dots level near the top and a third below the centre is the arrangement a person's
   // features make, and once seen it cannot be unseen. The silhouette is what carries the

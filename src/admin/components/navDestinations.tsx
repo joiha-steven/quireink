@@ -1,22 +1,27 @@
-// WHERE THE ADMIN CAN GO, and in what order.
+// WHERE THE ADMIN CAN GO — the React face of `@/admin-rail`.
 //
-// Lifted out of `AdminSidebar` when that file reached its 400-line cap. It is a clean seam
-// rather than a convenient one: the rail's BEHAVIOUR (collapse, the drawer, the icon
-// switch, the remembered group) is one subject, and the list of places it can send you is
-// another. Only the second changes when a screen is added.
+// The list itself is not here any more. It moved to `src/admin-rail.ts` when the server had
+// to draw the same rail (ADR 0054): a row's id, href, label and icon are facts about the
+// product, and a fact kept in a `.tsx` file can only ever be read by React. What is left here
+// is the wrapping — turning an icon NAME into an element — which is the only part that is
+// about React at all.
 import type { ReactNode } from 'react'
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import type { NavId } from '@/content/nav-order'
 import type { NavOrder } from '@/types'
-import {
-  IconHome, IconAnalytics, IconContent, IconComment, IconMedia, IconNewsletter,
-  IconTrash, IconSettings, IconLog, IconHelp, IconAssistant,
-} from './navIcons'
+import { defaultOrder, railRows, type RailRow } from '@/admin-rail'
+import { NavIcon } from './navIcons'
 
 export type Destination = { id: NavId; href: string; label: string; icon: ReactNode }
 
-const assistant = (t: AdminStrings): Destination =>
-  ({ id: 'assistant', href: '/admin/assistant', label: t.navAssistant, icon: <IconAssistant /> })
+/** One shared row, dressed as this face needs it. Rows with no `href` are not destinations. */
+const dress = (r: RailRow | undefined): Destination | null =>
+  r && r.href ? { id: r.id, href: r.href, label: r.label, icon: r.icon ? <NavIcon name={r.icon} /> : null } : null
+
+const pick = (t: AdminStrings, ids: readonly NavId[]): Destination[] => {
+  const rows = railRows(t)
+  return ids.map((id) => dress(rows.get(id))).filter((d): d is Destination => d !== null)
+}
 
 /**
  * Four destinations, and everything else one click further (ADR 0024 step 6).
@@ -32,13 +37,7 @@ const assistant = (t: AdminStrings): Destination =>
  * screen they meant to visit twice a month. Until they do, it is a door onto a refusal.
  */
 export function primaryNav(t: AdminStrings, aiConfigured: boolean): Destination[] {
-  return [
-    { id: 'home', href: '/admin', label: t.navHome, icon: <IconHome /> },
-    ...(aiConfigured ? [assistant(t)] : []),
-    { id: 'write', href: '/admin/content', label: t.navWrite, icon: <IconContent /> },
-    { id: 'media', href: '/admin/media', label: t.navMedia, icon: <IconMedia /> },
-    { id: 'newsletter', href: '/admin/newsletter', label: t.navNewsletter, icon: <IconNewsletter /> },
-  ]
+  return pick(t, ['home', ...(aiConfigured ? (['assistant'] as const) : []), 'write', 'media', 'newsletter'])
 }
 
 /**
@@ -48,35 +47,8 @@ export function primaryNav(t: AdminStrings, aiConfigured: boolean): Destination[
  * a row in two places is a rail that answers "where is it?" twice, differently.
  */
 export function secondaryNav(t: AdminStrings, aiConfigured: boolean): Destination[] {
-  return [
-    ...(aiConfigured ? [] : [assistant(t)]),
-    { id: 'analytics', href: '/admin/analytics', label: t.navAnalytics, icon: <IconAnalytics /> },
-    { id: 'comments', href: '/admin/comments', label: t.commentsNavTitle, icon: <IconComment /> },
-    { id: 'trash', href: '/admin/trash', label: t.navTrash, icon: <IconTrash /> },
-    { id: 'settings', href: '/admin/settings', label: t.navSettings, icon: <IconSettings /> },
-    { id: 'log', href: '/admin/log', label: t.navLog, icon: <IconLog /> },
-    { id: 'help', href: '/admin/help', label: t.navHelp, icon: <IconHelp /> },
-  ]
+  return pick(t, [...(aiConfigured ? [] : (['assistant'] as const)), 'analytics', 'comments', 'trash', 'settings', 'log', 'help'])
 }
 
-/**
- * The rail as the PRODUCT has it, for a given install — the order every stored order is
- * reconciled against (`content/nav-order.ts`).
- *
- * It is computed rather than a constant because one row moves on its own: the assistant
- * rides at the top only once a model is configured, and sits in the group until then. A
- * frozen default would have to pick one of those, and the rail would stop reacting to the
- * key being pasted.
- *
- * `viewBlog` is a destination like any other here even though it leaves the admin, and the
- * five controls are listed because the owner may drag them anywhere the rows go.
- */
-export function defaultNavOrder(aiConfigured: boolean): NavOrder {
-  return {
-    primary: ['home', ...(aiConfigured ? ['assistant'] : []), 'write', 'media', 'newsletter', 'more'],
-    more: [...(aiConfigured ? [] : ['assistant']), 'analytics', 'comments', 'trash', 'settings', 'log', 'help', 'viewBlog'],
-    footer: ['collapse', 'theme', 'icons', 'cache', 'signout'],
-    // Nothing hidden: the wordmark and the search button are both on.
-    hidden: [],
-  }
-}
+/** The rail as the product ships it. Re-exported so call sites need not learn a second module. */
+export const defaultNavOrder = (aiConfigured: boolean): NavOrder => defaultOrder(aiConfigured)

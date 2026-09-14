@@ -21,6 +21,8 @@
 // window in Firefox). Both already have a toolbar button and a `/` entry, so nothing is lost.
 
 /** id · chord (Tiptap spelling) · what it does, in the Help screen's voice. */
+import { PALETTE_CHORD, onMac, printChord as print } from '@/admin-rail'
+
 export type Shortcut = { id: string; chord: string; does: string }
 
 export const SHORTCUTS: Shortcut[] = [
@@ -48,7 +50,7 @@ export const SHORTCUTS: Shortcut[] = [
   // it while writing opened both: the link box took the selection and the palette opened over
   // it. `Mod-k` is the link in every editor anybody has used, so the palette is the one that
   // moves, and the rail's search button prints the new chord beside itself.
-  { id: 'palette', chord: 'Mod-Shift-k', does: 'Search everything: the screens, the settings and your writing. Also the button at the top of the rail.' },
+  { id: 'palette', chord: PALETTE_CHORD, does: 'Search everything: the screens, the settings and your writing. Also the button at the top of the rail.' },
 ]
 
 /**
@@ -82,25 +84,12 @@ export const BUILTIN: Shortcut[] = [
  * The chord as a reader sees it. `Mod` is the platform's own word for the same key, and
  * printing `Ctrl` to somebody on a Mac makes the whole table useless to them.
  *
- * The platform test is `navigator.platform`, deprecated but still the only thing that answers
- * on every browser this admin runs in; `userAgentData` is Chromium-only and undefined in
- * Safari and Firefox, which is half the readers of this table.
+ * The SPELLING moved to `@/admin-rail` on 2026-09-14 (ADR 0054): the server draws the rail's
+ * search key, which prints this chord, and a server module may not import anything under
+ * `src/admin`. What stays here is the platform question, which only a browser can answer.
  */
-export function printChord(chord: string): string {
-  const mac = typeof navigator !== 'undefined' && /mac|iphone|ipad/i.test(navigator.platform ?? '')
-  const parts = chord.split('-')
-  // The letter goes UP. Every keyboard prints its letters as capitals and every shortcut
-  // sheet ever written follows: `⌘S`, not `⌘s`, which reads as a typo next to `⌘⇧H`.
-  // ONE character only — a named key is not a letter, and `Enter` upper-cased to `ENTER`
-  // shouted one row of the sheet at the reader.
-  const printed = parts.map((part, i) => {
-    if (part === 'Mod') return mac ? '⌘' : 'Ctrl'
-    if (part === 'Shift') return mac ? '⇧' : 'Shift'
-    if (part === 'Alt') return mac ? '⌥' : 'Alt'
-    return i === parts.length - 1 && part.length === 1 ? part.toUpperCase() : part
-  })
-  return printed.join(mac ? '' : '+')
-}
+export const printChord = (chord: string): string =>
+  print(chord, typeof navigator !== 'undefined' && onMac(navigator.platform ?? ''))
 
 /**
  * Does this keydown match that chord?

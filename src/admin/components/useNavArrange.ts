@@ -18,66 +18,20 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { NavOrder } from '@/types'
 import { reconcileNavOrder } from '@/content/nav-order'
+import { ZONES, findSpot, moveTo, step, type Spot, type Zone } from '@/admin-rail'
 
-/** The three lists, in the order they are drawn — which is also the order a row steps through. */
-export const ZONES = ['primary', 'more', 'footer'] as const
-export type Zone = (typeof ZONES)[number]
-
-export type Spot = { zone: Zone; index: number }
+// WHERE ROWS GO is not here. `findSpot`, `moveTo` and `step` are pure functions over an order
+// and they moved to `@/admin-rail` when the server had to draw the same rail (ADR 0054): the
+// arithmetic of a reorder has nothing to do with React, and a second copy of it would be a
+// second place for the off-by-one every drag list has.
+//
+// Re-exported rather than re-pointed at nine call sites, because the seam a caller wants is
+// still "the thing that arranges the rail".
+export { ZONES, findSpot, moveTo, step }
+export type { Spot, Zone }
 
 const clone = (o: NavOrder): NavOrder =>
   ({ primary: [...o.primary], more: [...o.more], footer: [...o.footer], hidden: [...o.hidden] })
-
-/** Where an id currently sits, or null when it is not in the order at all. */
-export function findSpot(order: NavOrder, id: string): Spot | null {
-  for (const zone of ZONES) {
-    const index = order[zone].indexOf(id)
-    if (index !== -1) return { zone, index }
-  }
-  return null
-}
-
-/**
- * Move `id` so that it lands at `to`.
- *
- * The index is read AFTER the row is lifted out, which is the whole reason this is a function
- * rather than a splice at the call site: dragging a row down inside its own list, the target
- * index counts the row itself, and inserting at that number leaves it one place short of
- * where it was dropped. Every off-by-one in a drag list is this one.
- */
-export function moveTo(order: NavOrder, id: string, to: Spot): NavOrder {
-  const from = findSpot(order, id)
-  if (!from) return order
-  const next = clone(order)
-  next[from.zone].splice(from.index, 1)
-  const shift = from.zone === to.zone && from.index < to.index ? 1 : 0
-  const at = Math.max(0, Math.min(to.index - shift, next[to.zone].length))
-  next[to.zone].splice(at, 0, id)
-  return next
-}
-
-/**
- * One step up or down, treating the three lists as ONE column.
- *
- * The buttons are the touch and keyboard route, so they have to reach everywhere a drag can,
- * and that includes across a zone boundary: stepping off the bottom of the main column puts
- * the row at the top of the group, and off the bottom of the group puts it in the footer.
- * Stopping at each boundary would leave rows that can be dragged into the footer but never
- * walked there.
- */
-export function step(order: NavOrder, id: string, dir: -1 | 1): NavOrder {
-  const from = findSpot(order, id)
-  if (!from) return order
-  const zoneAt = ZONES.indexOf(from.zone)
-  const target = from.index + dir
-
-  if (target >= 0 && target <= order[from.zone].length - 1) {
-    return moveTo(order, id, { zone: from.zone, index: dir === 1 ? target + 1 : target })
-  }
-  const nextZone = ZONES[zoneAt + dir]
-  if (!nextZone) return order
-  return moveTo(order, id, { zone: nextZone, index: dir === 1 ? 0 : order[nextZone].length })
-}
 
 /**
  * The order the rail draws, the mode it is in, and the two ways to change it.

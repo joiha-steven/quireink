@@ -16,7 +16,7 @@
 
 import { describe, expect, it } from 'bun:test'
 import { readFileSync } from 'node:fs'
-import { NARROW } from '@/admin/components/AdminSidebar'
+import { NARROW, RAIL_WIDTH } from '@/admin-rail'
 
 const source = readFileSync('src/admin/components/AdminSidebar.tsx', 'utf8')
 
@@ -70,17 +70,36 @@ describe('restore and band cannot race', () => {
 })
 
 describe('the 136px that justifies all of this', () => {
-  it('keeps both rail widths at the numbers the measurement used', () => {
+  it('keeps all three rail widths at the numbers the measurement used', () => {
     // 13rem = 208px open, 4.5rem = 72px shut. The difference is the entire argument; if
     // someone tunes either number the band may no longer be worth having, and this test is
     // where they find that out.
-    expect(source).toContain("applyWidthVar = (c: boolean, arranging = false) =>")
-    expect(source).toContain("c ? '4.5rem' : arranging ? '16rem' : '13rem'")
+    expect(RAIL_WIDTH).toEqual({ shut: '4.5rem', open: '13rem', arranging: '16rem' })
+    expect(13 * 16 - 4.5 * 16).toBe(136)
+  })
+
+  it('says the same three widths in the class list as in the variable', () => {
     // The CSS var and the Tailwind class have to agree, or fixed chrome offsets past a rail
     // that is not the width it thinks: w-52 IS 13rem, and w-64 IS 16rem. Arrange mode added
     // the third width on 2026-09-06 and the variable had to learn it in the same commit —
     // the settings save bar is positioned off this number.
-    expect(source).toContain("collapsed ? 'lg:w-[4.5rem]' : column.arranging ? 'lg:w-64' : 'lg:w-52'")
-    expect(13 * 16 - 4.5 * 16).toBe(136)
+    //
+    // ⚠️ READ FROM `RAIL_WIDTH`, never retyped here. This assertion used to be a copy of the
+    // source line, so moving the three numbers into one exported constant (ADR 0054, for the
+    // server that now paints the rail's first frame) failed it while the rail was pixel for
+    // pixel unchanged — a guard that watches how code is SPELLED rather than what it says.
+    const w = (rem: string): string => {
+      const px = Number(rem.replace('rem', '')) * 16
+      // Tailwind's own scale where it has the number, an arbitrary value where it does not:
+      // `w-52` is 208px and `w-64` is 256px, and 72px has no step of its own.
+      return { 208: 'lg:w-52', 256: 'lg:w-64' }[px] ?? `lg:w-[${rem}]`
+    }
+    expect(source).toContain(
+      `collapsed ? '${w(RAIL_WIDTH.shut)}' : column.arranging ? '${w(RAIL_WIDTH.arranging)}' : '${w(RAIL_WIDTH.open)}'`,
+    )
+    // And the variable is set from the constant rather than from three more literals.
+    expect(source).toContain('RAIL_WIDTH.shut')
+    expect(source).toContain('RAIL_WIDTH.arranging')
+    expect(source).toContain('RAIL_WIDTH.open')
   })
 })

@@ -23,51 +23,13 @@ import { useAdminT } from './I18nProvider'
 import { secondaryNav } from './navDestinations'
 import { useNavColumn } from './NavColumn'
 import { OVERLAY } from './sheet'
+import { NARROW, RAIL_KEYS, RAIL_WIDTH } from '@/admin-rail'
 
-const STORE_KEY = 'quireink-admin-nav-collapsed'
-/**
- * The band where the rail costs more than it returns: wide enough that a rail belongs on
- * screen at all (the `lg` decision at the top of this file), but not wide enough to spend
- * 208px of it on words. An iPad in landscape and a foldable opened and turned both land here.
- *
- * Measured on the Settings screen: at 1024 the full rail leaves the form 816px and the icon
- * rail leaves it 952. That 136px is the whole reason this exists.
- *
- * It forces the rail shut WITHOUT writing localStorage. The stored value is what the owner
- * chose, and a window that happens to be 1100px wide is not them changing their mind; leaving
- * the band puts their own choice back. Clicking the control inside the band still persists,
- * because that IS them changing their mind.
- */
-export const NARROW = '(min-width: 64rem) and (max-width: 79.9375rem)'
-/**
- * Whether the rail draws icons BESIDE ITS LABELS. **ON by default since 2026-09-07**; the
- * switch stays, so a rail of pure words is one click away.
- *
- * It was OFF from 2026-08-15 on the argument that eleven outline glyphs are eleven things to
- * look at before the word you were going to read anyway. What retired that argument is the
- * rail it produced, measured 2026-09-07: after ADR 0024 the rail holds FOUR destinations and
- * a group, not eleven, and every row is 40px of 14px grey `oklch(0.556)` — one size, one
- * weight, one ink, nothing on the column but text. Four glyphs are not clutter; they are the
- * only thing on that rail a person can recognise without reading it.
- *
- * ⚠️ Beside its LABELS, which is why the collapsed rail ignores it and always draws them. A
- * collapsed rail has no labels — icons are the only thing it can be. The first version of this
- * read the setting as "no icons anywhere", so it had to hide the collapse control too, and the
- * owner's next words were that he could not find it. The two are separate wishes: one is about
- * how the rail reads, the other is about getting 208px back.
- *
- * A DEVICE preference, so it lives in localStorage beside the collapse state rather than in
- * site settings — the same reason the collapse state is not a setting. Nothing about the blog
- * changes; this is how one person's rail looks on one machine.
- */
-const ICONS_KEY = 'quireink-admin-nav-icons'
-/**
- * Whether "Everything else" stands open. The rule: an EXPLICIT toggle persists across
- * sessions in both directions — closed stays closed on the next visit, open stays open. Arriving on a page inside the group still opens it for the visit (a
- * rail that hides where you are is worse than a long one), but that visit-driven opening
- * is never WRITTEN: only the owner's own click on the row records a preference.
- */
-const MORE_KEY = 'quireink-admin-nav-more'
+// The three device preferences, the band that overrides one of them, and the rail's three
+// widths all live in `@/admin-rail` (ADR 0054): the server paints the rail's first frame and
+// has to know every one of them, and a second copy of three `localStorage` keys is a
+// preference that gets written under one name and read under another.
+const { collapsed: STORE_KEY, icons: ICONS_KEY, more: MORE_KEY } = RAIL_KEYS
 
 export function AdminSidebar({
   signOut,
@@ -99,7 +61,7 @@ export function AdminSidebar({
   // bar) offsets past the rail by this variable, so a rail that is 16rem wide while the
   // variable still says 13 puts that bar 48px into the rail it is supposed to clear.
   const applyWidthVar = (c: boolean, arranging = false) =>
-    document.documentElement.style.setProperty('--admin-nav-w', c ? '4.5rem' : arranging ? '16rem' : '13rem')
+    document.documentElement.style.setProperty('--admin-nav-w', c ? RAIL_WIDTH.shut : arranging ? RAIL_WIDTH.arranging : RAIL_WIDTH.open)
 
   // Restore the desktop collapsed state after mount (client-only; server renders
   // expanded so hydration matches, then we sync). Deferred a microtask so the
