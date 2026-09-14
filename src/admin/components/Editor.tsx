@@ -141,6 +141,7 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
     shouldRerenderOnTransaction: true,
     extensions: editorExtensions(t.editorPlaceholder, askLink, {
       video: { column: t.imgSizeColumn, wide: t.imgSizeWide },
+      math: { placeholder: t.mathPlaceholder },
     }),
     content: initialContent,
     editorProps: {

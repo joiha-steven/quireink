@@ -17,14 +17,14 @@
 // So the editor has to know the grammar — but it does not restate it: `render/math.ts` owns it
 // and this calls `matchMathAt` / `matchDisplayBlockAt`, the same discipline `InkMark.ts`
 // follows, and for the same reason.
-import { useEffect, useRef, useState } from 'react'
-import { Node, InputRule } from '@tiptap/core'
-import { ReactNodeViewRenderer, NodeViewWrapper, type NodeViewProps } from '@tiptap/react'
+import { Node, InputRule, type NodeViewRenderer } from '@tiptap/core'
+import type { Node as PMNode } from '@tiptap/pm/model'
 import {
   renderMath, type MathDelim,
   INLINE_PAREN_SOURCE, DISPLAY_DOLLAR_SOURCE, DISPLAY_BRACKET_SOURCE,
 } from '@/render/math'
-import { useAdminT } from './I18nProvider'
+
+export type MathWords = { placeholder: string }
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
@@ -38,49 +38,104 @@ declare module '@tiptap/core' {
 /**
  * What a formula looks like while you are writing it.
  *
- * Rendered, not shown as source, because the argument the pen makes applies here twice over:
- * a stroke you cannot see is one you cannot place, and a formula you cannot see is one you
- * cannot check. A misplaced brace in `\frac{a}{b}` is invisible in the source and obvious the
- * moment it is set. Selecting the node swaps in the TeX so it can be corrected, and the same
- * `renderMath` the server uses draws it — one function, so the writing surface cannot show
- * something the published page will not.
+ * Rendered, not shown as source, because the argument the pen makes applies here twice over: a
+ * stroke you cannot see is one you cannot place, and a formula you cannot see is one you cannot
+ * check. A misplaced brace in `\frac{a}{b}` is invisible in the source and obvious the moment it
+ * is set. Selecting the node swaps in the TeX so it can be corrected, and the same `renderMath`
+ * the server uses draws it — one function, so the writing surface cannot show something the
+ * published page will not.
+ *
+ * ⚠️ A PLAIN PROSEMIRROR NODE VIEW (ADR 0054 step 5). It was the only one of the three with real
+ * React state — a `draft` mirroring the TeX so the `<input>` could be controlled — and that
+ * state disappears here rather than being ported: a DOM input holds its own value, so the
+ * double-write of `setDraft` AND `updateAttributes` collapses into the second one.
  */
-function MathView({ node, updateAttributes, selected }: NodeViewProps) {
-  const t = useAdminT()
-  const tex = (node.attrs.tex as string) || ''
-  const display = node.attrs.display as boolean
-  const [draft, setDraft] = useState(tex)
-  const input = useRef<HTMLInputElement>(null)
-  // Selecting an empty formula (the toolbar just inserted one) should put the caret in the
-  // box, not make the writer click it as well.
-  useEffect(() => {
-    if (selected) { setDraft(tex); input.current?.focus() }
-  }, [selected, tex])
-  const commit = (v: string) => { setDraft(v); updateAttributes({ tex: v }) }
-  return (
-    <NodeViewWrapper as={display ? 'div' : 'span'} className={display ? 'my-4 block' : 'inline-block'}>
-      {selected ? (
-        <input
-          ref={input}
-          value={draft}
-          onChange={(e) => commit(e.target.value)}
-          placeholder={t.mathPlaceholder}
-          spellCheck={false}
-          className="w-full rounded-lg border border-neutral-300 bg-neutral-50 px-2 py-1 font-mono text-sm text-neutral-800 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100"
-        />
-      ) : tex.trim() ? (
-        <span
-          className={display ? 'block overflow-x-auto text-center' : ''}
-          // The MathML comes from `renderMath`, which builds it from the TeX with Temml and
-          // escapes its own fallback. Nothing here is reader-supplied: the only person who
-          // can put TeX into a post is the signed-in owner.
-          dangerouslySetInnerHTML={{ __html: renderMath(tex, display) }}
-        />
-      ) : (
-        <span className="text-sm text-neutral-400">{t.mathPlaceholder}</span>
-      )}
-    </NodeViewWrapper>
-  )
+class MathView {
+  readonly dom: HTMLElement
+  private readonly box: HTMLInputElement
+  private readonly shown: HTMLElement
+  private node: PMNode
+  private selected = false
+
+  constructor(node: PMNode, private readonly words: MathWords) {
+    this.node = node
+    const display = node.attrs.display as boolean
+    this.dom = document.createElement(display ? 'div' : 'span')
+    this.dom.className = display ? 'my-4 block' : 'inline-block'
+    this.box = document.createElement('input')
+    this.box.className = 'w-full rounded-lg border border-neutral-300 bg-neutral-50 px-2 py-1'
+      + ' font-mono text-sm text-neutral-800 dark:border-neutral-600 dark:bg-neutral-800'
+      + ' dark:text-neutral-100'
+    this.box.placeholder = words.placeholder
+    this.box.spellcheck = false
+    this.box.addEventListener('input', () => this.attrs({ tex: this.box.value }))
+    // Typing in the box is typing in a field, not in the document: without this every keystroke
+    // also reaches ProseMirror, which reads it as an edit at the node's position.
+    this.box.addEventListener('keydown', (e) => e.stopPropagation())
+    this.shown = document.createElement('span')
+    this.dom.append(this.box, this.shown)
+    this.paint()
+  }
+
+  private paint(): void {
+    const tex = ((this.node.attrs.tex as string) || '')
+    const display = this.node.attrs.display as boolean
+    this.box.hidden = !this.selected
+    this.shown.hidden = this.selected
+    // ⚠️ THE VALUE IS ONLY PUSHED IN WHEN THE BOX IS NOT BEING TYPED IN. Writing it on every
+    // paint would move the caret to the end on every keystroke, because each keystroke is a
+    // transaction and every transaction repaints.
+    if (document.activeElement !== this.box) this.box.value = tex
+    if (this.selected) return
+    this.shown.className = display && tex.trim() ? 'block overflow-x-auto text-center' : ''
+    if (tex.trim()) {
+      // The MathML comes from `renderMath`, which builds it from the TeX with Temml and escapes
+      // its own fallback. Nothing here is reader-supplied: the only person who can put TeX into
+      // a post is the signed-in owner.
+      this.shown.innerHTML = renderMath(tex, display)
+    } else {
+      this.shown.className = 'text-sm text-neutral-400'
+      this.shown.textContent = this.words.placeholder
+    }
+  }
+
+  /** Set by the extension, which is the only place that can reach `getPos`. */
+  attrs: (next: Record<string, unknown>) => void = () => {}
+
+  update(node: PMNode): boolean {
+    if (node.type !== this.node.type) return false
+    this.node = node
+    this.paint()
+    return true
+  }
+
+  /**
+   * Selecting an empty formula — the toolbar has just inserted one — should put the caret in
+   * the box rather than make the writer click it as well.
+   */
+  selectNode(): void {
+    this.selected = true
+    this.paint()
+    this.box.focus()
+  }
+
+  deselectNode(): void { this.selected = false; this.paint() }
+
+  /**
+   * ⚠️ ONLY WHAT HAPPENS INSIDE THE BOX IS THE VIEW'S, and `true` for everything was a bug that
+   * made the formula uneditable. A click on the RENDERED maths has to reach ProseMirror, because
+   * that click is what selects the atom — and `selectNode` is what swaps the box in. Swallowing
+   * it meant the box never appeared, so a formula could be read and never corrected. Every unit
+   * test passed: the node's attributes, its serializer and its input rules are all reachable
+   * without a pointer. Found by clicking one (2026-09-15).
+   */
+  stopEvent(e: Event): boolean {
+    // `globalThis.Node`, because `Node` in this file is Tiptap's extension class. Written bare
+    // it type-checks against the wrong Node and the test is always false.
+    return this.box.contains(e.target as globalThis.Node | null)
+  }
+
+  ignoreMutation(): boolean { return true }
 }
 
 /**
@@ -117,8 +172,22 @@ const common = {
       delim: { default: 'dollar' as MathDelim },
     }
   },
-  addNodeView() {
-    return ReactNodeViewRenderer(MathView)
+  addOptions() {
+    return { words: { placeholder: 'LaTeX formula' } as MathWords }
+  },
+  addNodeView(this: { options: { words: MathWords } }): NodeViewRenderer {
+    const words = this.options.words
+    return ({ node, editor, getPos }) => {
+      const view = new MathView(node, words)
+      view.attrs = (next) => {
+        const pos = getPos?.()
+        if (pos == null) return
+        const at = editor.view.state.doc.nodeAt(pos)
+        if (!at) return
+        editor.view.dispatch(editor.view.state.tr.setNodeMarkup(pos, undefined, { ...at.attrs, ...next }))
+      }
+      return view
+    }
   },
 }
 

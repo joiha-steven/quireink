@@ -23,7 +23,7 @@ import { CaptionedImage } from './CaptionedImage'
 import { LinkKey } from './editorLinkKey'
 import { PenRing, PenUnderline } from './PenMarks'
 import { PenDeal } from './pen-deal'
-import { MathInline, MathBlock } from './MathNode'
+import { MathInline, MathBlock, type MathWords } from './MathNode'
 import { Find } from './FindExtension'
 
 /**
@@ -41,9 +41,12 @@ import { Find } from './FindExtension'
  * languages are — the alternative is a node view importing all eleven to print two labels.
  * Defaulted, so the fourteen round-trip suites keep calling this with one argument.
  */
-export type NodeWords = { video: VideoWords }
+export type NodeWords = { video: VideoWords; math: MathWords }
 
-const ENGLISH: NodeWords = { video: { column: 'Column', wide: 'Large' } }
+const ENGLISH: NodeWords = {
+  video: { column: 'Column', wide: 'Large' },
+  math: { placeholder: 'LaTeX formula' },
+}
 
 export function editorExtensions(
   placeholder: string,
@@ -76,8 +79,8 @@ export function editorExtensions(
     PenDeal,
     // Maths. NOT optional decoration: without these two the serializer doubles every
     // backslash in a formula and deletes `\(…\)` outright on save (MathNode.tsx).
-    MathInline,
-    MathBlock,
+    MathInline.configure({ words: words.math }),
+    MathBlock.configure({ words: words.math }),
     // `Table` from the package again since 2026-09-13. `TableMarkdown.ts` existed to replace
     // the library's serializer — it deleted a cell holding only a formula or an image, wrote a
     // flat `| --- |` that lost every column's alignment, and let an escaped pipe re-cut the row

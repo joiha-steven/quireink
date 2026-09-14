@@ -8,6 +8,68 @@
 import type { Tour } from './tour'
 
 export function registerSheetFlows({ flow, atWidth }: Pick<Tour, 'flow' | 'atWidth'>): void {
+  /**
+   * A FORMULA CAN BE CORRECTED, which is the half of "maths in the editor" that a unit test
+   * cannot reach.
+   *
+   * The node renders its TeX rather than showing it, so the only way back to the source is to
+   * SELECT the node — and a node view that swallows its own pointer events is a formula that
+   * can be read and never edited. That is what happened the day the three node views became
+   * plain ProseMirror (2026-09-15): `stopEvent` returned true for everything, the click that
+   * selects an atom never reached ProseMirror, and the editing box never opened. Every unit
+   * test passed, because a node's attributes, its serializer and its input rules are all
+   * reachable without a pointer.
+   */
+  flow('editor: a formula opens for correction when you click it', async () => {
+    const slug = 'tour-math-' + Date.now()
+    // Planted through the API in its own visit, because opening a piece is a real navigation
+    // since the write column became server-rendered HTML (ADR 0054).
+    const made = await atWidth(1700, '/admin/editor', `
+    (async () => {
+      const res = await fetch('/api/posts', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          title: 'Tour: a formula', slug: '${slug}', status: 'draft', categories: [], tags: [],
+          content: 'Before.\\n\\n$$a^2 + b^2 = c^2$$\\n\\nAfter.',
+        }),
+      })
+      return res.ok ? 'ok' : 'could not plant a post with a formula'
+    })()`, 900)
+    if (made !== 'ok') return made
+
+    return await atWidth(1700, '/admin/editor/' + slug, `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      const done = async (verdict) => {
+        await fetch('/api/posts/${slug}', { method: 'DELETE' })
+        return verdict
+      }
+      let pm = null
+      for (let i = 0; i < 120 && !pm; i++) { pm = document.querySelector('.ProseMirror'); if (!pm) await sleep(50) }
+      if (!pm) return done('the editor never opened')
+      let set = null
+      for (let i = 0; i < 80 && !set; i++) { set = pm.querySelector('math'); if (!set) await sleep(50) }
+      if (!set) return done('the formula was not SET, only stored')
+
+      // Clicked the way a pointer does: on the drawing, with coordinates. A bare synthetic
+      // event on the wrapper is not the same question and passes against a broken build.
+      const box = set.getBoundingClientRect()
+      const where = {
+        bubbles: true, cancelable: true, button: 0,
+        clientX: Math.round(box.left + box.width / 2),
+        clientY: Math.round(box.top + box.height / 2),
+      }
+      for (const kind of ['mousedown', 'mouseup', 'click']) set.dispatchEvent(new MouseEvent(kind, where))
+      await sleep(400)
+
+      const field = [...pm.querySelectorAll('input')].find((i) => i.offsetParent !== null)
+      if (!field) return done('clicking the formula did not open a box to correct it in')
+      if (!field.value.includes('a^2')) return done('the box opened holding ' + JSON.stringify(field.value))
+      if (document.activeElement !== field) return done('the box opened without the caret in it')
+      return done('ok (set, clicked, and the TeX came back: ' + field.value + ')')
+    })()`, 1500)
+  })
+
   // THE TOOLBAR HOLDS STILL. It is centred over the writing, so anything joining the run
   // moves every button already in it: putting the caret in a table added five and slid the
   // row 62.5px to the left, measured at 1440 on 2026-09-12, and taking the caret out slid it

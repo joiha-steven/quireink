@@ -163,11 +163,18 @@ class VideoView {
   deselectNode(): void { this.selected = false; this.paint() }
 
   /**
-   * ⚠️ EVERY EVENT INSIDE THIS VIEW IS THE VIEW'S. Without this, a click on the size key is an
-   * event ProseMirror tries to interpret as a position in the document — which is how a toolbar
-   * inside a node ends up moving the caret instead of pressing a button.
+   * ⚠️ ONLY THE BAR'S EVENTS ARE THE VIEW'S. Without this a click on the size key is an event
+   * ProseMirror tries to read as a position in the document, which is how a toolbar inside a
+   * node moves the caret instead of pressing a button — and with `true` for EVERYTHING the
+   * node can no longer be dragged or selected by the machinery that does those things. The
+   * maths node lost its editing box to exactly that (2026-09-15); this one only kept working
+   * because its overlay selects the node itself.
    */
-  stopEvent(): boolean { return true }
+  stopEvent(e: Event): boolean {
+    // `globalThis.Node`, because `Node` in this file is Tiptap's extension class. Written bare
+    // it type-checks against the wrong Node and the test is always false.
+    return this.bar.contains(e.target as globalThis.Node | null)
+  }
 
   /** The bar and the player are drawn by this class; ProseMirror must not read them back. */
   ignoreMutation(): boolean { return true }
