@@ -151,6 +151,17 @@ export function railHtml({ settings, aiConfigured, path }: RailOptions): string 
  * It writes the attributes and STOPS. Every click after this is the island's, which arrives
  * with the rest of the page; a rail that could only be collapsed once the bundle had loaded
  * would still be correct, and this is about the frame before that.
+ *
+ * ⚠️ `data-daypart` IS NOT THE RAIL'S, and it is here anyway. The dashboard's greeting reads
+ * the BROWSER's clock on purpose — a site in Asia/Bangkok read by its owner in Berlin should
+ * say good evening when it is evening where the eyes are — so the server draws all four
+ * greetings and this decides which one shows. It belongs to whichever script runs before the
+ * first paint, and there is exactly one of those; a second inline script in the head to carry
+ * one attribute would be a second thing in the place `docs/performance.md` guards most.
+ *
+ * The four boundaries here and `partOfDay` in `admin-shared/when.ts` are the same arithmetic
+ * written twice, which is the one duplication in this file: the boot script cannot import.
+ * `when.ts` names this as its pair, and the greeting test walks both.
  */
 export function railBootScript(): string {
   return `(function(){try{
@@ -165,6 +176,8 @@ h.style.setProperty('--admin-nav-w',shut?${JSON.stringify(RAIL_WIDTH.shut)}:${JS
 if(/mac|iphone|ipad/i.test(navigator.platform||'')){h.setAttribute('data-mac','1');
 var c=document.currentScript;addEventListener('DOMContentLoaded',function(){
 var n=document.querySelectorAll('[data-chord]');for(var i=0;i<n.length;i++)n[i].textContent=n[i].getAttribute('data-mac');},{once:true});void c}
+var hr=new Date().getHours();
+h.setAttribute('data-daypart',hr<5?'night':hr<12?'morning':hr<18?'afternoon':hr<22?'evening':'night');
 }catch(e){}})()`
 }
 

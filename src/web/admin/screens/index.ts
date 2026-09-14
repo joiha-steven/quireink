@@ -15,6 +15,7 @@
 // the tour both cover the address either way.
 import type { SiteSettings } from '@/types'
 import { commentsScreen } from '@/web/admin/screens/comments'
+import { dashboardScreen } from '@/web/admin/screens/dashboard'
 import { helpScreen } from '@/web/admin/screens/help'
 import { logScreen } from '@/web/admin/screens/log'
 import { trashScreen } from '@/web/admin/screens/trash'
@@ -39,6 +40,8 @@ export type Screen = {
 
 /** Keyed by the exact path. A screen with children states its own prefix rule here later. */
 export const SCREENS: Record<string, Screen> = {
+  // The admin's front door, and almost pure reading: one island, for one dismissible band.
+  '/admin': { render: dashboardScreen, island: 'dashboard' },
   // The one screen with no behaviour at all: an index of `#` links is the browser's own.
   '/admin/help': { render: helpScreen, island: null },
   '/admin/log': { render: logScreen, island: 'log' },

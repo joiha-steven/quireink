@@ -193,7 +193,25 @@ await new Promise((ok) => socket.addEventListener('open', ok, { once: true }))
 let nextId = 1
 const pending = new Map<number, (v: Record<string, unknown>) => void>()
 socket.addEventListener('message', (e) => {
-  const msg = JSON.parse(String(e.data)) as { id?: number; result?: Record<string, unknown> }
+  const msg = JSON.parse(String(e.data)) as { id?: number; method?: string; result?: Record<string, unknown> }
+  /**
+   * ⚠️ A DIALOG IS ANSWERED, NOT WAITED ON, and without this the tour can stop dead.
+   *
+   * A screen with unsaved work registers `beforeunload` (`router.tsx`), and the browser then
+   * raises a confirm panel on any REAL navigation away from it. `Page.navigate` does not reply
+   * until that panel is answered, and nothing was answering it — so the run hung on the page it
+   * was leaving, with no output, looking exactly like a tour still working. Cost forty minutes
+   * on 2026-09-14, and it will only get more common: every screen ADR 0054 converts turns
+   * another in-app route into a real navigation.
+   *
+   * ACCEPT, which for `beforeunload` means "leave the page". The tour is not testing that the
+   * browser's own warning appears — `router.guard.test.tsx` covers the guard — it is testing
+   * what is on the next page, and a tour that cannot leave a dirty form cannot reach it.
+   */
+  if (msg.method === 'Page.javascriptDialogOpening') {
+    socket.send(JSON.stringify({ id: nextId++, method: 'Page.handleJavaScriptDialog', params: { accept: true } }))
+    return
+  }
   if (msg.id === undefined) return
   const resolve = pending.get(msg.id)
   if (typeof resolve === 'function') resolve(msg.result ?? {})
@@ -227,12 +245,34 @@ if (process.env.QUIRE_SESSION) {
 }
 
 /** Evaluate in the page and hand back whatever it returned, as a string. */
+/**
+ * How long one flow's script may run before the tour gives up on it.
+ *
+ * ⚠️ A CEILING, NOT A BUDGET. Nothing here should take thirty seconds; the number exists
+ * because a script that NAVIGATES THE PAGE IT IS RUNNING IN destroys its own execution
+ * context, so `Runtime.evaluate` never replies and the whole run stops with no output on the
+ * page it was leaving. That happened twice on 2026-09-14, forty minutes each, and it will keep
+ * happening: every screen ADR 0054 converts turns another in-app route into a real navigation,
+ * so a flow that used to click a link and stay put now leaves.
+ *
+ * The verdict says so in as many words, because the cause is not guessable from a timeout.
+ */
+const FLOW_MS = 30_000
+
 async function evaluate(expression: string): Promise<string> {
-  const res = await send('Runtime.evaluate', {
+  const answered = send('Runtime.evaluate', {
     expression: `(async () => { try { return String(await (${expression})) } catch (e) { return 'threw: ' + e.message } })()`,
     awaitPromise: true,
     returnByValue: true,
-  }) as { result?: { value?: unknown }; exceptionDetails?: { text?: string } }
+  }) as Promise<{ result?: { value?: unknown }; exceptionDetails?: { text?: string } }>
+  const res = await Promise.race([
+    answered,
+    Bun.sleep(FLOW_MS).then(() => null),
+  ])
+  if (res === null) {
+    return `never answered in ${FLOW_MS / 1000}s — a script that navigates the page it runs in`
+      + ' destroys its own context; hand the href back and open it with a second expect()'
+  }
   if (res.exceptionDetails) return `threw: ${res.exceptionDetails.text ?? 'unknown'}`
   return String(res.result?.value ?? '(no value)')
 }
@@ -295,8 +335,17 @@ registerFlows({ flow, expect, atWidth })
 // Run them, in order, and report.
 
 const results: { name: string; verdict: string; ms: number }[] = []
-for (const f of flows) {
-  if (ONLY && !f.name.includes(ONLY)) continue
+const picked = flows.filter((f) => !ONLY || f.name.includes(ONLY))
+for (const [i, f] of picked.entries()) {
+  // ⚠️ THE NAME GOES OUT BEFORE THE FLOW RUNS, on stderr, and this is a diagnostic that paid
+  // for itself the day it was written. The verdicts below print only when the whole tour is
+  // over, so a flow that never returns — a script that navigates the page it is running in,
+  // say, which destroys its own execution context — looks exactly like a tour that is still
+  // working. Twice that cost forty minutes of waiting on a run that was already dead.
+  //
+  // `\r` and no newline: a finished flow's line is overwritten by the next one, so a passing
+  // run still ends with the clean summary below and only a STALL leaves a name on the screen.
+  process.stderr.write(`\r  [${i + 1}/${picked.length}] ${f.name.slice(0, 78).padEnd(78)}`)
   const started = Date.now()
   let verdict: string
   try {
@@ -306,6 +355,7 @@ for (const f of flows) {
   }
   results.push({ name: f.name, verdict, ms: Date.now() - started })
 }
+process.stderr.write(`\r${' '.repeat(92)}\r`)
 
 socket.close()
 await partWithBrowser()

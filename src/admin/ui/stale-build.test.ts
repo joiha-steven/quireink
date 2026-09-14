@@ -102,8 +102,14 @@ describe('where it is wired in', () => {
     // Matched on the DECLARATION line, not on the text `lazy(` anywhere in the file: the
     // prose above these lines discusses `lazy()` too, and a test that reads comments passes
     // or fails on how the comments are worded.
+    //
+    // ⚠️ THE NUMBER SHRINKS, and that is the work going well: every screen ADR 0054 converts
+    // leaves this table, so a floor written as "about as many as today" would go red on the
+    // next conversion for the right reason and read as a regression. What this holds is that
+    // the ones STILL routed are all wrapped — the loop below is the assertion — and that the
+    // table has not emptied itself by accident while screens remain.
     const declarations = [...APP.matchAll(/^const \w+ = lazy\((.+)\)$/gm)].map((m) => m[1])
-    expect(declarations.length).toBeGreaterThan(10)
+    expect(declarations.length).toBeGreaterThan(0)
     for (const inner of declarations) expect(inner).toStartWith('throughDeploys(load.')
   })
 

@@ -1224,3 +1224,25 @@ html.admin [role='dialog'] {
   background: color-mix(in srgb, var(--pen-red) 28%, transparent);
   box-shadow: inset 0 -1.5px 0 var(--pen-red);
 }
+
+/* THE GREETING, one of four, chosen before the first paint (ADR 0054).
+ *
+ * The dashboard draws all four parts of the day and the boot script stamps `data-daypart` on
+ * the root; this shows the one that matches. It is the same shape as the rail's collapsed and
+ * icons states: the server cannot know what o'clock it is where the reader is sitting, so it
+ * draws every answer and the browser picks.
+ *
+ * The DEFAULT is the last one in the file rather than a rule of its own: if no attribute is
+ * stamped — a browser that threw inside the boot script — every greeting stays hidden except
+ * the last, which is a sentence rather than a blank line where a name should be. */
+/* ⚠️ THE SPANS ARE `data-greet`, THE ROOT IS `data-daypart`, and they must never be the same
+ * name. Written as one name first: `[data-daypart]{display:none}` matched `<html>` itself,
+ * which the boot script stamps, and the whole admin rendered as a blank page — on every
+ * screen, not just this one. Two names cannot collide, and each says what it is: one is a
+ * fact about the browser's clock, the other is a greeting waiting to be chosen. */
+[data-greet] { display: none; }
+html[data-daypart='morning'] [data-greet='morning'],
+html[data-daypart='afternoon'] [data-greet='afternoon'],
+html[data-daypart='evening'] [data-greet='evening'],
+html[data-daypart='night'] [data-greet='night'] { display: inline; }
+html:not([data-daypart]) [data-greet]:last-child { display: inline; }

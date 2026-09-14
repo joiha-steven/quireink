@@ -35,7 +35,6 @@ type Loader = () => Promise<{ default: ComponentType }>
 // `web/admin/screens/index.ts` is the table that says so. A converted screen leaves this map in
 // the same commit that adds it there, so the two can never both claim one address.
 const load = {
-  dashboard: () => import('@/admin/pages/Dashboard'),
   content: () => import('@/admin/pages/Content'),
   postEditor: () => import('@/admin/pages/PostEditor'),
   pageEditor: () => import('@/admin/pages/PageEditor'),
@@ -53,7 +52,6 @@ const load = {
 // build on the server DELETES the file this tab is about to ask for; the fix is to fetch the
 // new bundle, which is a reload. `ui/stale-build.ts` carries the reasoning and the loop
 // guard. Everything else a page can throw still goes to the boundary, unchanged.
-const Dashboard = lazy(throughDeploys(load.dashboard))
 const Content = lazy(throughDeploys(load.content))
 const PostEditor = lazy(throughDeploys(load.postEditor))
 const PageEditor = lazy(throughDeploys(load.pageEditor))
@@ -68,7 +66,6 @@ const Assistant = lazy(throughDeploys(load.assistant))
 /** Which loader serves a path. The single place the route table's shape is decided. */
 function loaderFor(path: string): Loader {
   const p = path.replace(/\/+$/, '') || '/admin'
-  if (p === '/admin') return load.dashboard
   if (p === '/admin/content') return load.content
   if (p === '/admin/editor' || p.startsWith('/admin/editor/')) return load.postEditor
   if (p === '/admin/page-editor' || p.startsWith('/admin/page-editor/')) return load.pageEditor
@@ -114,7 +111,6 @@ function Route(): ReactNode {
   // than from a list in this file, because a second list is a second thing to keep in step —
   // and the one that decides is the one that rendered.
   if (document.documentElement.dataset.adminScreen) return null
-  if (path === '/admin') return <Dashboard />
   if (path === '/admin/content') return <Content />
   if (path === '/admin/editor' || path.startsWith('/admin/editor/')) return <PostEditor />
   if (path === '/admin/page-editor' || path.startsWith('/admin/page-editor/')) return <PageEditor />

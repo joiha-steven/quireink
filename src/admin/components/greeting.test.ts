@@ -5,7 +5,10 @@
 // good morning at midnight, or "last published in 10 days", is worse than the category name
 // it replaced, because it is personal AND wrong.
 import { describe, expect, it } from 'bun:test'
-import { partOfDay, relative } from './Greeting'
+// `Greeting.tsx` went with the dashboard (ADR 0054); its two pieces of arithmetic live in
+// `@/admin-shared/when`, where the server renderer and the boot script's own copy of the four
+// boundaries both sit beside them.
+import { partOfDay, relativeDay } from '@/admin-shared/when'
 
 describe('what part of the day it is', () => {
   it('walks the four boundaries', () => {
@@ -23,32 +26,34 @@ describe('what part of the day it is', () => {
 })
 
 describe('when the last piece went out', () => {
-  const T = { greetToday: 'today' }
-  const now = new Date('2026-08-30T14:00:00Z')
+  // `relativeDay` takes the word, the clock in ms and the language, rather than a `t` object
+  // and a Date: a server renderer knows its language from settings and has no DOM to ask.
+  const now = new Date('2026-08-30T14:00:00Z').getTime()
+  const relative = (iso: string): string => relativeDay('today', iso, now, 'en')
 
   it('says today rather than a number for something published today', () => {
-    expect(relative(T, '2026-08-30T02:00:00.000Z', now)).toBe('today')
+    expect(relative('2026-08-30T02:00:00.000Z')).toBe('today')
   })
 
   it('answers for a piece from last week', () => {
-    expect(relative(T, '2026-08-23T14:00:00.000Z', now)).toMatch(/7/)
+    expect(relative('2026-08-23T14:00:00.000Z')).toMatch(/7/)
   })
 
   it('drops to months, then years, rather than counting hundreds of days', () => {
-    expect(relative(T, '2026-05-30T14:00:00.000Z', now)).toMatch(/3/)
-    expect(relative(T, '2024-08-30T14:00:00.000Z', now)).toMatch(/2/)
+    expect(relative('2026-05-30T14:00:00.000Z')).toMatch(/3/)
+    expect(relative('2024-08-30T14:00:00.000Z')).toMatch(/2/)
   })
 
   // The demo's newest post is queued for next week, which is what found this: a plain maximum
   // over published posts read "last published in 10 days". The view now filters to what is
   // already out, and this holds the formatter honest about the shape it would have printed.
   it('would have printed a FUTURE date as a future date — hence the filter in the view', () => {
-    const ahead = relative(T, '2026-09-09T14:00:00.000Z', now)
+    const ahead = relative('2026-09-09T14:00:00.000Z')
     expect(ahead).not.toBe('')
     expect(ahead).toMatch(/10/)
   })
 
   it('says nothing at all for a date that is not one', () => {
-    expect(relative(T, 'not-a-date', now)).toBe('')
+    expect(relative('not-a-date')).toBe('')
   })
 })

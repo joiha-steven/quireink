@@ -1,9 +1,11 @@
-// The list screens the SERVER draws (ADR 0054): the trash today, the rest as they convert.
+// The screens the SERVER draws (ADR 0054), and what their islands do on top.
+//
+// Named for lists at first, because the first three were lists. The dashboard is not one and
+// the question is the same for all of them: did the page arrive finished, and does the island
+// narrow, reorder or answer WITHOUT rebuilding what the server sent.
 //
 // Its own file because `tour-flows-admin.ts` and `tour-flows-settings.ts` are both within a
-// couple of lines of the 400-line ceiling, and because the seam is real: every flow here asks
-// the same question of a different screen — did the server draw it, and does the island do the
-// screen's work over rows that were already in the markup.
+// couple of lines of the 400-line ceiling.
 //
 // ⚠️ THESE FLOWS ARE THE ONLY THING THAT CHECKS THE ISLAND AT ALL. An island is a plain-TS
 // entry with no React and no mount test: `check:all` can prove it compiles and nothing else, so
@@ -11,7 +13,7 @@
 // be green everywhere except here.
 import type { Tour } from './tour'
 
-export function registerListFlows({ flow, expect }: Pick<Tour, 'flow' | 'expect'>): void {
+export function registerPageFlows({ flow, expect }: Pick<Tour, 'flow' | 'expect'>): void {
   // THE SCREEN ARRIVES FINISHED. Not "eventually renders" — the markup that comes off the wire
   // already holds the heading, all seven kinds and every row, which is the whole claim of the
   // conversion and the one thing a client-side assertion cannot distinguish from React having
@@ -207,4 +209,87 @@ export function registerListFlows({ flow, expect }: Pick<Tour, 'flow' | 'expect'
       if (body.textContent !== whole) return 'the highlighter ate the text it was drawn over'
       return 'ok busiest ordered ' + busiest.join('>') + ', one word narrowed to ' + narrowed + ' card(s)'
     })()`, 1200))
+
+  // THE ADMIN'S FRONT DOOR, and the one fact on it the server cannot know: what o'clock it is
+  // where the reader is sitting. A site in Asia/Bangkok read by its owner in Berlin should say
+  // good evening when it is evening where the EYES are, so the server draws all four greetings
+  // and the boot script stamps `data-daypart` before the first paint. Exactly one may show.
+  //
+  // ⚠️ THE TWO ATTRIBUTES MUST STAY DIFFERENT NAMES. Written as one name, the hide rule matched
+  // `<html>` itself — the element the boot script stamps — and the entire admin rendered as a
+  // blank page, on every screen. This flow measures the root, so that failure is loud here.
+  // NOTE: a template literal. No backticks.
+  flow('admin: the dashboard arrives finished, and greets by the browser clock', () => expect('/admin', `
+    (async () => {
+      const html = await (await fetch('/admin')).text()
+      if (!html.includes('data-screen="dashboard"')) return 'the server did not draw the dashboard'
+      if (getComputedStyle(document.documentElement).display === 'none') {
+        return 'the root element is hidden: a rule meant for the greeting spans matched html itself'
+      }
+      const part = document.documentElement.getAttribute('data-daypart')
+      if (!part) return 'the boot script stamped no part of the day'
+      const spans = [...document.querySelectorAll('h1 [data-greet]')]
+      if (spans.length !== 4) return 'expected four greetings in the markup, found ' + spans.length
+      const shown = spans.filter((s) => getComputedStyle(s).display !== 'none')
+      if (shown.length !== 1) return shown.length + ' greetings are showing at once'
+      if (shown[0].getAttribute('data-greet') !== part) {
+        return 'showing ' + shown[0].getAttribute('data-greet') + ' while the clock says ' + part
+      }
+      // And the rest of the page is really there, not waiting for React: the traffic card's
+      // sparkline is drawn from the server's own numbers.
+      if (!document.querySelector('[data-screen="dashboard"] svg polyline')) return 'no sparkline was drawn'
+      if (document.querySelectorAll('[data-screen="dashboard"] section').length < 4) {
+        return 'the widgets did not arrive with the page'
+      }
+      return 'ok four greetings drawn, one shown, matching ' + part
+    })()`, 900))
+
+  // THE FIRST-RUN BAND, moved here from `tour-flows-admin.ts` on 2026-09-14: that file was at
+  // its 400-line ceiling and this is a flow about a screen the server draws, which is what this
+  // file is for. It absorbed the one assertion a second flow was making — that the five steps
+  // are the SAME elements after the band is dismissed and re-opened, so nothing was rebuilt.
+  flow('admin: the first-run steps show, dismiss, and come back', () => expect('/admin', `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      const put = (body) => fetch('/api/settings', {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+      })
+      // No reload to set this up: a reload tears down the very evaluation this flow IS, and
+      // the verdict comes back empty. The seeded instance has never dismissed anything, so
+      // the card is on screen already; the flow puts it back that way on the way out.
+      // VISIBLE ONLY (docs/admin-design.md, one DOM per state): the band and its re-open link
+      // are both in the markup, so counting nodes says five with none of them on screen.
+      const stepsOn = () => [...document.querySelectorAll('main ol li p')].filter((p) => p.offsetParent !== null)
+      if (stepsOn().length !== 5) return 'expected 5 first-run steps, saw ' + stepsOn().length
+      // Every step is a link, and a link to a tab that exists — the four that pointed at a
+      // deleted tab shipped for two weeks without anything noticing.
+      const hrefs = [...document.querySelectorAll('main ol li a')].slice(0, 5).map((a) => a.getAttribute('href'))
+      // Compared against a list, NOT a regex: this whole flow is a template literal, so a
+      // \\b in it is a backspace character long before it is a word boundary, and the first
+      // version called two perfectly good links dead.
+      const TABS = ['blog','home','post','appearance','people','server','account']
+      const bad = hrefs.filter((h) => h.includes('tab=') && !TABS.includes(h.split('tab=')[1]))
+      if (bad.length) return 'step links at a tab that does not exist: ' + bad.join(', ')
+
+      const dismiss = document.querySelector('[data-first-run-dismiss]')
+      if (!dismiss) return 'no dismiss button under the steps'
+      dismiss.click()
+      await sleep(700)
+      if (stepsOn().length) return 'dismissing left the steps on screen'
+
+      const saved = (await (await fetch('/api/admin/view/dashboard')).json())?.data?.firstRunDone
+      if (saved !== true) return 'dismissal did not reach the settings (firstRunDone=' + saved + ')'
+
+      const reopen = document.querySelector('[data-first-run-reopen]')
+      if (!reopen) return 'dismissed and left no way back'
+      reopen.click()
+      await sleep(400)
+      const back = stepsOn().length
+      // NOTHING WAS REBUILT: both states are in the markup and one attribute decides, so the
+      // five that came back are the five that went away.
+      const all = document.querySelectorAll('main ol li p').length
+      await put({ firstRunDone: false })
+      if (all !== 5) return 'the steps were rebuilt: ' + all + ' in the markup'
+      return back === 5 ? 'ok' : 'reopening showed ' + back + ' steps'
+    })()`, 1500))
 }

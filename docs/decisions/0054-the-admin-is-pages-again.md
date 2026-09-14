@@ -23,7 +23,7 @@ here the default and a dependency the exception. React and the Tiptap wrapper ar
 
 **The harness 0006 asked for exists, and is four times the size it asked for.** That ADR made
 the admin's lack of parity coverage a condition and required "a scripted headless tour of at
-least 30 flows". `bun run tour` runs **126**, in a real browser, and asserts geometry and
+least 30 flows". `bun run tour` runs **127**, in a real browser, and asserts geometry and
 contrast as well as behaviour. A screen-by-screen rewrite is measurable in a way it was not.
 
 **The other half of the product already works this way.** The reading site is Hono rendering

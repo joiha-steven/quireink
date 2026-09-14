@@ -259,9 +259,27 @@ that surprises people:
    a switched-off top row is still in the DOM. So anything that searches the page by WORDS, or
    counts `li`, must ask whether the element is VISIBLE — `el.offsetParent !== null`, which is
    null for anything `display:none` and is therefore the same condition that keeps it out of
-   the tab order and the accessibility tree. Four tour flows learned this the hard way: one
-   found the rail's "Trash" link instead of the editor's button, another counted twelve
-   destinations on a rail that shows four.
+   the tab order and the accessibility tree. **Six tour flows** have learned this the hard way:
+   one found the rail's "Trash" link instead of the editor's button, another counted twelve
+   destinations on a rail that shows four, a third clicked the comments queue's "Delete
+   selected (0)" — in the markup, hidden until something is ticked — and reported that a
+   comment had gone with no way back.
+
+⚠️ **AN ATTRIBUTE THAT PICKS A STATE MUST NOT ALSO MATCH THE ELEMENT IT IS STAMPED ON.** The
+dashboard's greeting draws all four parts of the day and the boot script stamps the root, and
+the first cut used one name for both: `[data-daypart] { display: none }` matched `<html>`, and
+the whole admin rendered as a blank page on every screen. Two names — one for the fact, one for
+the candidates — cannot collide. The rail's `data-rail-collapsed` is safe only because nothing
+inside it wears that attribute.
+
+⚠️ **A CONVERTED SCREEN'S LINKS ARE REAL NAVIGATIONS**, and there is no fixing that while the
+conversion is half done. `router.tsx` declines any `quire:navigate` FROM a server-drawn page,
+because React renders no route on one and so has nothing to swap; widening the rail island's
+bridge to every `/admin` anchor was tried on 2026-09-14 and reverted as a no-op. Two
+consequences: a click costs a page load rather than 4ms until the last screen converts, and
+leaving a dirty form now raises the BROWSER's generic warning rather than the product's
+three-way question. The second is `useNavigationGuard` working as written — both halves exist
+precisely because a real navigation can only ever get the generic one.
 
 ## One sheet per page
 

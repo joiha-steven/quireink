@@ -65,7 +65,8 @@ export function registerHomeFlows({ flow, expect }: Tour): void {
   // A count of drafts used to be the whole of this. The band has to hand back the WRITING —
   // a chip that opens the editor on the piece it names — or it is the count again with more
   // furniture around it.
-  flow('admin: the home hands back an unfinished piece', () => expect('/admin', `
+  flow('admin: the home hands back an unfinished piece', async () => {
+    const said = await expect('/admin', `
     (async () => {
       // ⚠️ Whether there is anything unfinished is asked of the CONTENT view, not of the band.
       // The first version read it off the band itself and so answered "skip: nothing
@@ -85,15 +86,24 @@ export function registerHomeFlows({ flow, expect }: Tour): void {
         return 'a chip points at ' + href + ' rather than at an editor'
       }
       const named = chips[0].textContent.trim()
-      chips[0].click()
-      await new Promise((r) => setTimeout(r, 900))
-      if (location.pathname !== href) return 'the chip did not navigate: ' + location.pathname
-      // The editor, on the piece the chip named. The title field is the one element every
-      // editor screen has and no other admin screen does.
-      const title = document.querySelector('textarea, input[name=title], [data-editor-title]')
-      if (!title) return 'landed on ' + href + ' with no editor on it'
-      return 'ok ' + chips.length + ' chip(s), first one opened ' + named.slice(0, 40)
-    })()`, 1000))
+      // ⚠️ THE CHIP IS NOT CLICKED HERE, and that is not timidity. Since the dashboard became a
+      // page (ADR 0054) the chip is a plain anchor and a click is a real navigation, which
+      // destroys the execution context this very script is running in: the evaluation never
+      // returns and the whole tour HANGS rather than going red. The flow hands the href back
+      // and the second half opens it properly.
+      return 'ok|' + href + '|' + chips.length + '|' + named.slice(0, 40)
+    })()`, 1000)
+    if (!said.startsWith('ok|')) return said
+    const [, href, count, named] = said.split('|')
+    // THE SECOND HALF: open what the chip points at, the way the browser would, and check the
+    // editor is really on it. The title field is the one element every editor screen has and no
+    // other admin screen does.
+    const landed = await expect(href ?? '/admin', `
+      (() => document.querySelector('textarea, input[name=title], [data-editor-title]')
+        ? 'ok'
+        : 'landed on ' + location.pathname + ' with no editor on it')()`, 1400)
+    return landed === 'ok' ? `ok ${count} chip(s), first one opened ${named}` : landed
+  })
 
   // THE RAIL FOLLOWS THE KEY. Promoting the assistant was the owner's call, made on
   // 2026-08-31, and the condition is the thing worth pinning: nobody pastes an API key for
@@ -165,19 +175,30 @@ export function registerHomeFlows({ flow, expect }: Tour): void {
   // NOTE: this body is a template literal. No backticks, AND NO BACKSLASHES — `\d` inside one
   // is not an escape JavaScript knows, so it collapses to a plain `d` and the regex silently
   // matches the letter. Both of these flows failed that way once. Character classes only.
-  flow('admin: a needs-attention row lands on the pieces that need it', () => expect('/admin', `
+  flow('admin: a needs-attention row lands on the pieces that need it', async () => {
+    // ⚠️ TWO HALVES since the dashboard became a page (ADR 0054): the row is a plain anchor
+    // now, so clicking it is a REAL navigation and destroys the context this script runs in —
+    // the flow came back "(no value)" rather than red. The first half reads the promise off
+    // the card, the second opens it the way a browser would and checks it was kept.
+    const said = await expect('/admin', `
+      (() => {
+        const row = document.querySelector('a[href*="needs=image"]')
+        if (!row) return 'the needs-attention card offers no filtered link'
+        // The badge is the row's last element, so the count is read as an ELEMENT rather than
+        // parsed out of a sentence that is translated eleven ways.
+        const badge = row.lastElementChild
+        const n = Number((badge && badge.textContent || '').trim())
+        if (!Number.isFinite(n)) return 'the row prints no count: ' + row.textContent.trim()
+        if (n === 0) return 'skip: nothing needs a share image on this seed'
+        return 'ok|' + n + '|' + row.getAttribute('href')
+      })()`, 900)
+    if (said.startsWith('skip:')) return said
+    if (!said.startsWith('ok|')) return said
+    const [, count, href] = said.split('|')
+    return await expect(href ?? '/admin/content?needs=image', `
     (async () => {
       const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
-      const row = document.querySelector('a[href*="needs=image"]')
-      if (!row) return 'the needs-attention card offers no filtered link'
-      // The badge is the row's last element, so the count is read as an ELEMENT rather than
-      // parsed out of a sentence that is translated eleven ways.
-      const badge = row.lastElementChild
-      const said = Number((badge && badge.textContent || '').trim())
-      if (!Number.isFinite(said)) return 'the row prints no count: ' + row.textContent.trim()
-      if (said === 0) return 'skip: nothing needs a share image on this seed'
-      row.click()
-      await sleep(900)
+      const said = ${Number(count)}
       let chip = null
       for (let i = 0; i < 40 && !chip; i++) {
         chip = document.querySelector('[data-write-needs]')
@@ -195,7 +216,8 @@ export function registerHomeFlows({ flow, expect }: Tour): void {
       const all = document.querySelectorAll('[data-write-row]').length
       if (all <= rows) return 'clearing the filter left ' + all + ' rows against ' + rows
       return 'ok ' + said + ' counted, ' + rows + ' listed, ' + all + ' with the filter off'
-    })()`, 900))
+    })()`, 1400)
+  })
 
   // The five-step band reads the INSTALL now, not a dismissal. `data-first-run-progress` is
   // the state as a fact: the count is printed in eleven languages and the ticks are styling,

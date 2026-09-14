@@ -291,12 +291,12 @@ describe('the admin bundle is cacheable and does not arrive one wave at a time',
     (await app.request('/admin', { headers: { cookie } })).text()
 
   it('links both entries and the sheet under a fingerprinted name', async () => {
-    // TWO module scripts since ADR 0054 — the rail's island and the React SPA, built apart so
-    // the frame need not wait for React — the rail FIRST, since they run in document order.
+    // RAIL FIRST, REACT SPA LAST, with a server-drawn screen's own island optionally between
+    // them (ADR 0054; Help registers `island: null`). Document order is run order.
     const html = await shell()
     const js = [...html.matchAll(/<script type="module" src="([^"]+)">/g)].map((m) => m[1] ?? '')
     const sheet = /<link rel="stylesheet" href="(\/admin\/assets\/[^"]+)">/.exec(html)?.[1] ?? ''
-    expect(js.join(' ')).toMatch(/^\/admin\/assets\/rail\.\w+\.js \/admin\/assets\/admin\.\w+\.js$/)
+    expect(js.join(' ')).toMatch(/^\/admin\/assets\/rail\.\w+\.js( \/admin\/assets\/\w+\.\w+\.js)? \/admin\/assets\/admin\.\w+\.js$/)
     expect(sheet).toMatch(/^\/admin\/assets\/admin\.[a-z0-9]+\.css$/)
     for (const href of [...js, sheet]) {
       const res = await app.request(href)

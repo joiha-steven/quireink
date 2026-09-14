@@ -280,12 +280,20 @@ function wireDrawer(): void {
 /**
  * A rail link, handed to whoever is rendering the page.
  *
- * ⚠️ TEMPORARY, and it has an end date: it exists only while the admin's SCREENS are still a
- * React application behind a client router. Measured on 2026-09-14, a rail click that reloads
- * the page costs 341ms against 4ms for a client navigation, because a reload re-boots React,
- * its route chunk, the shell call and the screen's own fetch. Once the screens are pages that
- * cost is gone — a server-rendered admin page reaches its heading in 17ms — and so is this
- * function; deleting the listener in `router.tsx` is the whole removal.
+ * ⚠️ TEMPORARY, and it has an end date: it exists only while some of the admin's SCREENS are
+ * still a React application behind a client router. Measured on 2026-09-14, a click that
+ * reloads the page costs 341ms against 4ms for a client navigation, because a reload re-boots
+ * React, its route chunk, the shell call and the screen's own fetch. Once every screen is a
+ * page that cost is gone — a server-rendered admin page reaches its heading in 17ms — and so is
+ * this function; deleting the listener in `router.tsx` is the whole removal.
+ *
+ * ⚠️ THE RAIL'S LINKS ONLY, and widening it to every `/admin` anchor was tried and reverted on
+ * 2026-09-14. The dashboard is made of links — five number tiles, four card links, the pick-up
+ * chips, the needs-attention rows — and as plain anchors every one is a full reload where
+ * React's `Link` was instant. Widening the selector buys nothing: `router.tsx` declines any
+ * navigation FROM a server-drawn page, because React renders no route on one and so has nothing
+ * to swap. That cost is inherent to the half-converted state and leaves with the last screen,
+ * which is the same end date this whole function has.
  *
  * A CANCELABLE EVENT rather than a global, so there is nothing to clean up and nothing to
  * check: if the router is mounted it calls `preventDefault`, and if it is not, the browser
