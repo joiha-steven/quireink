@@ -1,16 +1,17 @@
 // The enrolment QR code, as inline SVG.
 //
-// `qrcode-generator` rather than a hand-written encoder: QR is Reed-Solomon error
-// correction over a bit-interleaved layout, and a subtly wrong implementation produces an
-// image that looks exactly like a QR code and cannot be scanned. That is the failure mode
-// worth paying a dependency to avoid — and this one is a single file with no dependencies
-// of its own, which is why it was chosen over the more popular `qrcode` (29 packages,
-// including a CLI argument parser and a PNG encoder we would never call).
+// The encoder is ours, in `qr-encode.ts` and `qr-matrix.ts`. The header this replaces said the
+// opposite, and gave the right reason for it: QR is Reed-Solomon over a bit-interleaved layout,
+// and a subtly wrong implementation produces an image that looks exactly like a QR code and
+// cannot be scanned. Nothing about that changed. What changed is that the failure mode is now
+// held by a check rather than by trust — every payload from 1 to 2331 bytes was encoded both
+// ways and compared module by module before `qrcode-generator` was removed, and
+// `qr-encode.test.ts` keeps a slice of that run.
 //
-// SVG, not PNG: it needs no raster pipeline, so unlike the OG card this works in the
-// compiled binary with nothing beside it, and it stays sharp on any display.
+// SVG, not PNG: it needs no raster pipeline, so this works with nothing beside it, and it stays
+// sharp on any display.
 
-import qrcode from 'qrcode-generator'
+import { qrMatrix } from './qr-matrix'
 
 /** Quiet zone, in modules. Four is the specification's minimum and scanners rely on it. */
 const MARGIN = 4
@@ -19,17 +20,15 @@ const MARGIN = 4
  * An `<svg>` element for `text`, drawn as one path.
  *
  * Error correction level M (~15%) is the usual choice for a screen: a QR on a monitor is
- * not getting scratched, and a higher level makes the code denser for no gain here.
+ * not getting scratched, and a higher level makes the code denser for no gain here. It is a
+ * constant rather than an argument, in `qr-tables.ts`, which is also where the capacities live.
  *
- * Type 0 asks the library to pick the smallest version that fits, so this does not need a
- * table of capacities that would have to stay in step with the input length.
+ * The version is the smallest one the text fits in, chosen by `qr-encode.ts`. Nothing here has
+ * to know how big the answer will be.
  */
 export function qrSvg(text: string): string {
-  const qr = qrcode(0, 'M')
-  qr.addData(text)
-  qr.make()
-
-  const count = qr.getModuleCount()
+  const modules = qrMatrix(text)
+  const count = modules.length
   const size = count + MARGIN * 2
 
   // One path of rectangles rather than one <rect> per module: a version-6 code is ~1,700
@@ -37,7 +36,7 @@ export function qrSvg(text: string): string {
   let d = ''
   for (let row = 0; row < count; row++) {
     for (let col = 0; col < count; col++) {
-      if (qr.isDark(row, col)) d += `M${col + MARGIN} ${row + MARGIN}h1v1h-1z`
+      if (modules[row]![col]) d += `M${col + MARGIN} ${row + MARGIN}h1v1h-1z`
     }
   }
 

@@ -61,7 +61,6 @@
     "fast-xml-parser": "^5.11.1",
     "hono": "^4.13.7",
     "nodemailer": "^10.0.2",
-    "qrcode-generator": "^2.0.4",
     "satori": "^0.29.1",
     "sharp": "^0.35.4",
     "shiki": "4.4.3",
