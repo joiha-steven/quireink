@@ -52,8 +52,11 @@ const RULES: Rule[] = [
   {
     what: 'the button shape',
     signature: 'whitespace-nowrap rounded-md',
-    home: 'src/admin/ui/Button.tsx',
-    instead: 'use <Button>, or buttonClass() for an <a>',
+    // Moved out of `ui/Button.tsx` on 2026-09-14: the server renders admin markup now and
+    // cannot import from `src/admin`. The component is still there and still the thing to
+    // reach for from React.
+    home: 'src/admin-kit.ts',
+    instead: 'use <Button>, or buttonClass() for an <a> or for server-rendered markup',
   },
   {
     what: 'the stat tile',
@@ -105,6 +108,18 @@ const RULES: Rule[] = [
   },
 ]
 
+/**
+ * WHERE ADMIN MARKUP IS WRITTEN, which stopped being one directory on 2026-09-14.
+ *
+ * ADR 0054 moves the admin to server-rendered HTML, so `src/web/admin` now writes class lists
+ * too — and the shared modules at `src/` hold the class strings themselves, because a server
+ * module may not import from `src/admin`. A guard that still scanned one tree would have been
+ * green while a primitive was re-typed in the other, which is the precise failure it exists to
+ * stop.
+ */
+const TREES = ['src/admin', 'src/web/admin']
+const LOOSE = ['src/admin-kit.ts', 'src/admin-rail.ts']
+
 /** Source only. `dist/` is the built bundle and contains every signature by construction. */
 function sources(dir: string): string[] {
   const out: string[] = []
@@ -118,7 +133,7 @@ function sources(dir: string): string[] {
 }
 
 let failed = false
-const files = sources('src/admin')
+const files = [...TREES.flatMap(sources), ...LOOSE]
 
 if (files.length < 50) {
   console.error(`✗ check:admin-kit: only ${files.length} source files found, which cannot be right`)
@@ -201,7 +216,15 @@ for (const file of files) {
 // A DECLARATION, not a mention: the colon is required. Without it the check failed on a
 // locale key called `fontFamilyLabel` and on this file's own prose about font families —
 // and a guard that cries wolf is a guard somebody switches off.
-const FAMILY = /fontFamily\s*:|font-family\s*:/
+//
+// AND NOT A `var()`, since 2026-09-14. `font-family: var(--font-sans), system-ui, …` names no
+// typeface — it READS a role and lists the platform's fallbacks behind it, which is the
+// opposite of the thing this rule is about. The shell does exactly that once, to set the
+// admin's base face from the variable it has just declared, and widening the scan to
+// `src/web/admin` (where the server renders admin markup now) is what first asked the
+// question. Expressed as the distinction itself rather than as a filename, because a list of
+// exempt files goes stale in silence and says nothing about why.
+const FAMILY = /(?:fontFamily|font-family)\s*:\s*(?!var\()/
 for (const file of files) {
   const text = readFileSync(file, 'utf8')
   if (!FAMILY.test(text) || text.includes('data-specimen')) continue

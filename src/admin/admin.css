@@ -832,6 +832,217 @@ input[type='color']::-moz-color-swatch {
    set's own hand at the size it was drawn for. */
 .rail-glyphs { --admin-glyph: 1.125rem; }
 
+/* ═══ THE RAIL'S STATES, AS CSS ═══════════════════════════════════════════════════════════
+
+   The rail is one DOM whatever state it is in (`web/admin/rail.ts`), and these rules are the
+   other half of that decision. Four attributes on <html>, written before the first paint by
+   `railBootScript`, and afterwards by the island:
+
+     data-rail-collapsed  1 = 72px of glyphs, 0 = 208px with words
+     data-rail-icons      0 = words alone, beside the labels only (see below)
+     data-rail-more       1 = "everything else" stands open
+     data-rail-arranging  1 = rows can be picked up, and the rail is wider to say so
+     data-rail-logo/search  0 = that piece of the top row is switched off
+
+   WHY NOT REDRAW. Until 2026-09-14 the rail was React and drew a different tree per state, so
+   collapsing it rebuilt eleven rows, four SVGs and a menu. Here it sets one character. Nothing
+   is rebuilt, so nothing can be rebuilt wrongly — and, the part that is visible, the server can
+   send a rail it cannot know the state of and have it arrive in the right one anyway.
+
+   SCOPE IS THE WHOLE DIFFICULTY. `collapsed` is about the STICKY COLUMN and nothing else: the
+   phone's drawer is always full width with its words showing, and a rule that forgot to say
+   `#admin-rail` emptied it. `icons` is about BOTH, because it is a preference about density and
+   the drawer honours it. Every selector below says which it means. */
+
+/* --- the width, and it only exists from `lg` up, where the column is drawn at all --------- */
+@media (min-width: 64rem) {
+  #admin-rail { width: 13rem; }
+  /* WIDER WHILE ARRANGING, and it is a measurement rather than a preference: the grip and the
+     two steppers take 62px off a 208px rail, which left "Everything else" as "Ever…" and
+     "Collapse sidebar" as "Collapse sid…". A row you cannot read is a row you cannot place.
+     256px puts every label back and returns to 208 on the way out. */
+  :root[data-rail-arranging='1'] #admin-rail { width: 16rem; }
+  /* Last, because collapsed wins: arrange mode belongs to the open rail and simply does not
+     draw on a shut one. */
+  :root[data-rail-collapsed='1'] #admin-rail { width: 4.5rem; }
+}
+
+/* --- open: the gap between a glyph and its word ------------------------------------------
+   12px, the same gap every label in this rail starts its words at, and it is a RULE rather
+   than a utility on the row because the collapsed rail has to take it away — an unlayered rule
+   beats `@layer utilities`, so a `gap-3` in the markup would have won and the shut rail's
+   glyphs would sit off centre. Missed on the first pass and caught by photographing the two
+   rails side by side: every label had moved 12px left, which no assertion about rows, labels
+   or hrefs could see. */
+.rail-row { gap: .75rem; }
+/* The group row carries TWO glyphs — its own, and the chevron that says which way it moves —
+   so the chevron goes to the FAR edge and the label keeps the column's left edge. The face is
+   glyph-and-word, and it takes the SAME 12px gap the destinations above it use: at 10px this
+   row's label began 2px to their left, which is a rail with two left edges for its words. */
+.rail-more { justify-content: space-between; gap: .5rem; }
+.rail-more-face { gap: .75rem; }
+:root[data-rail-collapsed='1'] #admin-rail .rail-more-face { gap: 0; }
+/* Collapsed it is NOT an eyebrow, because there is no word for an eyebrow to be. It is one
+   more glyph in a column of glyphs, so it takes the destinations' 40px rather than the 32px a
+   heading wears — at 32 it sat 4px high in its own row and the dots read as mis-aligned
+   against the four marks above them. */
+:root[data-rail-collapsed='1'] #admin-rail .rail-more { height: 2.5rem; }
+
+/* A zone's floor only exists while something is being arranged. It is a DROP TARGET, and at
+   rest it was 12px of nothing between the destinations and the group — which made the phone's
+   drawer 32px taller than it had been. */
+.rail-floor { display: none; }
+:root[data-rail-arranging='1'] .rail-floor { display: block; }
+
+/* --- shut: the words go, the glyphs centre ------------------------------------------------ */
+:root[data-rail-collapsed='1'] #admin-rail .rail-label,
+:root[data-rail-collapsed='1'] #admin-rail .rail-chord,
+:root[data-rail-collapsed='1'] #admin-rail .rail-more-chevron,
+/* Never on the collapsed rail, where it would be an unlabelled glyph offering to remove the
+   glyphs — and where switching them off would leave a column of nothing at all. */
+:root[data-rail-collapsed='1'] #admin-rail .rail-icons-switch { display: none; }
+:root[data-rail-collapsed='1'] #admin-rail .rail-row { justify-content: center; gap: 0; }
+:root[data-rail-collapsed='1'] #admin-rail .rail-top { flex-direction: column; align-items: center; gap: .5rem; }
+:root[data-rail-collapsed='1'] #admin-rail .rail-strip { justify-content: center; }
+/* Collapsed, there is nothing to indent: the group's rows join the column they came from.
+   `display: contents` is exactly that — the wrapper stops existing for layout.
+   ⚠️ AND ONLY WHILE THE GROUP IS OPEN. Written as `[data-rail-collapsed='1'] #admin-rail
+   .rail-group`, this out-specified the rule that hides a folded group — an id beats an
+   attribute — so shutting the rail unfolded seven rows nobody had asked for. Caught by
+   counting the rows a person can SEE in each state rather than by reading the DOM. */
+:root[data-rail-collapsed='1'][data-rail-more='1'] #admin-rail .rail-group { display: contents; }
+/* LEFT PADDING ONLY, and only when the rail is open: every label starts 24px from the edge
+   while the mark sat at 12 and alone hung off the left. Collapsed the mark is centred in a
+   72px rail, where a one-sided pad would push it off centre. */
+:root[data-rail-collapsed='0'] #admin-rail .rail-wordmark { padding-left: .75rem; }
+/* The way back out points the other way. */
+:root[data-rail-collapsed='1'] #admin-rail .rail-collapse-chevron { rotate: 180deg; }
+/* The owner's menu sits at the END of the strip on an open rail and in the MIDDLE of a shut
+   one, where there is no end to sit at: 72px holds one row of centred keys. */
+.rail-strip-end { margin-left: auto; }
+:root[data-rail-collapsed='1'] #admin-rail .rail-strip-end { margin-left: 0; }
+
+/* The wordmark is `Q.` at 72px and `quireINK` above it: the same logo at the size where the
+   word would be a smear. Both are in the markup; this picks. */
+#admin-rail .rail-mark,
+:root[data-rail-collapsed='1'] #admin-rail .rail-word { display: none; }
+:root[data-rail-collapsed='1'] #admin-rail .rail-mark { display: block; }
+/* The drawer and the phone bar are never collapsed, whatever the column is doing. */
+.admin-drawer .rail-mark, .admin-bar .rail-mark { display: none; }
+
+/* --- the glyphs, BESIDE THE LABELS ------------------------------------------------------- */
+/* ⚠️ Beside its LABELS, which is why the collapsed rail ignores this and always draws them. A
+   collapsed rail has no labels — icons are the only thing it can be. The first version of this
+   read the setting as "no icons anywhere", so it had to hide the collapse control too, and the
+   next report was that it could not be found. Two separate wishes: one is about how the rail
+   reads, the other is about getting 208px back. */
+:root[data-rail-icons='0'] .rail-glyph { display: none; }
+:root[data-rail-icons='0'] #admin-rail .rail-icons-on,
+:root[data-rail-icons='1'] #admin-rail .rail-icons-off { display: none; }
+:root[data-rail-collapsed='1'] #admin-rail .rail-glyph { display: flex; }
+
+/* --- the group ---------------------------------------------------------------------------- */
+:root[data-rail-more='0'] .rail-group { display: none; }
+/* In arrange mode it is FORCED OPEN: its rows are half of what is being arranged, and a folded
+   group would hide them behind a toggle whose own row is being dragged at the time. */
+:root[data-rail-arranging='1'] .rail-group { display: flex; }
+:root[data-rail-more='0'] #admin-rail .rail-more-chevron { rotate: -90deg; }
+:root[data-rail-more='1'] #admin-rail .rail-more-chevron { rotate: 90deg; }
+/* The drawer carries its own copy of the column and reads the same preference. */
+:root[data-rail-more='0'] .admin-drawer .rail-more-chevron { rotate: -90deg; }
+:root[data-rail-more='1'] .admin-drawer .rail-more-chevron { rotate: 90deg; }
+
+/* --- the two switches on the top row ------------------------------------------------------ */
+/* Search is CHROME when the wordmark is on: a small key balanced against the mark. Switch the
+   wordmark off and that balance has nothing to balance against — one glyph floating over a
+   column of left-aligned labels — so it becomes what everything else at that edge is: a row,
+   above Home, with its label and its chord. ONE control in two dresses, both in the markup. */
+.rail-search-row { display: none; }
+:root[data-rail-logo='0'] .rail-top { display: none; }
+:root[data-rail-logo='0'] .rail-search-row { display: flex; }
+:root[data-rail-search='0'] .rail-search-key,
+:root[data-rail-search='0'] .rail-search-row { display: none; }
+/* `mt-6` only when there IS a top row: with the wordmark switched off the column starts at the
+   top of the rail, and the gap would be air over nothing. */
+:root[data-rail-logo='1'] #admin-rail .rail-column { margin-top: 1.5rem; }
+
+/* --- the theme key's two faces ------------------------------------------------------------ */
+/* Which one is right is decided by the `dark` class the no-flash script has already written,
+   so both are in the markup and neither is ever drawn wrongly for a frame. */
+.rail-moon { display: none; }
+.dark .rail-sun { display: none; }
+.dark .rail-moon { display: block; }
+
+/* --- the phone's burger ------------------------------------------------------------------- */
+.rail-cross { display: none; }
+[data-rail-open] .rail-burger { display: none; }
+[data-rail-open] .rail-cross { display: block; }
+
+/* --- arrange mode: what the markup already holds, unhidden ------------------------------- */
+/* Reading, the foot is one strip of icon keys. ARRANGING, it is back to labelled rows: a 32px
+   glyph is not something a hand can pick up and place, and the whole mode is about picking rows
+   up. Both are in the markup; this is the swap. */
+.rail-foot-rows, .rail-arrange-foot { display: none; }
+:root[data-rail-arranging='1'] #admin-rail .rail-strip { display: none; }
+:root[data-rail-arranging='1'] #admin-rail .rail-foot-rows,
+:root[data-rail-arranging='1'] #admin-rail .rail-arrange-foot { display: flex; }
+:root[data-rail-arranging='1'] #admin-rail .rail-arrange-foot { flex-direction: column; }
+/* A tick rather than a coloured switch: it reads the way the rail's other preferences do and
+   needs no colour to say which state it is in. */
+.rail-tickbox { border-color: var(--color-neutral-300, #d4d4d4); color: transparent; }
+.dark .rail-tickbox { border-color: var(--color-neutral-600, #525252); }
+[aria-checked='true'] > .rail-tickbox {
+  border-color: var(--color-neutral-900, #171717);
+  background: var(--color-neutral-900, #171717);
+  color: #fff;
+}
+.dark [aria-checked='true'] > .rail-tickbox {
+  border-color: #fff;
+  background: #fff;
+  color: var(--color-neutral-900, #171717);
+}
+
+/* --- arrange mode, which the island builds --------------------------------------------------
+   The grip and the two steppers on eighteen rows are ~14 KB of SVG for a mode entered twice a
+   year, so they are not in the markup — the island adds them on the way in. These are the rules
+   they land into.
+
+   `touch-action: none` is load-bearing on a touch screen: without it the browser claims the
+   gesture for scrolling the instant the finger moves vertically, which is every drag in a
+   vertical list. The wrapped row is inert while arranging, so a press anywhere along it is a
+   grab rather than a click on the link inside. */
+.rail-arrangeable {
+  display: flex;
+  align-items: center;
+  gap: .125rem;
+  border-radius: .5rem;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+.rail-arrangeable > .rail-carried { min-width: 0; flex: 1; pointer-events: none; }
+.rail-arrangeable[data-held] {
+  position: relative;
+  z-index: 10;
+  cursor: grabbing;
+  background: #fff;
+  box-shadow: 0 2px 8px rgb(0 0 0 / .16);
+}
+.dark .rail-arrangeable[data-held] { background: var(--color-neutral-800, #262626); }
+.rail-grip { flex-shrink: 0; color: var(--color-neutral-400, #a3a3a3); }
+
+/* An empty list still has to be reachable: move every row out of "Everything else" and the
+   group becomes a zero-height div with no rows to aim at, so the list would be closed for
+   good. Each zone gets a floor with a height of its own while it is empty. */
+.rail-floor {
+  border-radius: .5rem;
+  border: 1px dashed transparent;
+  height: .75rem;
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+.rail-floor[data-empty] { height: 2.25rem; border-color: var(--color-neutral-300, #d4d4d4); }
+.dark .rail-floor[data-empty] { border-color: var(--color-neutral-600, #525252); }
+
 /* A 44 × 44 HIT BOX FOR A FINGER, and nothing at all for a cursor.
 
    `kit.tsx`'s `TAP_TOUCH` carries the reasoning. The short version: three 28px keys sit on a

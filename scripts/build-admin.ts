@@ -44,6 +44,32 @@ if (!result.success) {
   process.exit(1)
 }
 
+// THE RAIL'S ISLAND, built on its own (ADR 0054).
+//
+// Separate from the SPA above because it must not wait for it: the rail is the frame the owner
+// navigates by, and step 0 of that ADR is that it arrives with the page rather than on the
+// browser's second pass. It shares no module with React — its imports are `admin-rail.ts`,
+// `content/nav-order.ts` and `admin/motion.ts`, all of them pure — so one bundle would have cost
+// it that independence and bought nothing.
+//
+// `splitting` is ON for one reason: arrange mode is a dynamic import, and it should stay a
+// separate file nobody downloads until they open it.
+const island = await Bun.build({
+  entrypoints: [`${ROOT}src/admin/island/rail.ts`],
+  outdir: OUT,
+  target: 'browser',
+  format: 'esm',
+  splitting: true,
+  minify: true,
+  naming: { entry: 'rail.[hash].js', chunk: 'rail-[name]-[hash].js' },
+  define: { 'process.env.NODE_ENV': '"production"' },
+})
+
+if (!island.success) {
+  for (const log of island.logs) console.error(log)
+  process.exit(1)
+}
+
 // THE STYLESHEET IS TWO FILES CONCATENATED, and that is the whole build step now.
 //
 // `utilities.css` holds the utility classes, the reset and the design tokens, captured once

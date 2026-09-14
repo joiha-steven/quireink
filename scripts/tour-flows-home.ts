@@ -18,7 +18,13 @@ export function registerHomeFlows({ flow, expect }: Tour): void {
     (async () => {
       const rail = document.querySelector('aside nav')
       if (!rail) return 'no desktop rail'
-      const hrefs = () => [...rail.querySelectorAll('a')].map((a) => a.getAttribute('href'))
+      // WHAT IS SHOWN, not what is in the DOM. Since ADR 0054 the rail is one tree in every
+      // state and CSS decides — so the seven rows behind "Manage" are always nodes, and the
+      // promise they are behind one click is a promise about what the owner can SEE.
+      // offsetParent is null for anything display:none, which is also what keeps those rows
+      // out of the tab order and out of the accessibility tree.
+      const hrefs = () => [...rail.querySelectorAll('a')]
+        .filter((a) => a.offsetParent !== null).map((a) => a.getAttribute('href'))
       const atRest = hrefs()
       if (atRest.length !== 4) return 'the rail offers ' + atRest.length + ' destinations at rest: ' + atRest.join(' ')
       const wanted = ['/admin', '/admin/content', '/admin/media', '/admin/newsletter']

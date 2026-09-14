@@ -16,7 +16,16 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 
-const SOURCE = 'src/admin'
+/**
+ * WHERE ADMIN MARKUP IS WRITTEN. It was one directory until 2026-09-14; ADR 0054 makes the
+ * server render the rail, and it writes `class="…"` rather than `className={…}`.
+ *
+ * That difference is the reason this had to be widened deliberately rather than by adding a
+ * path: a utility used only by the server's markup was invisible to this guard, which is the
+ * silent failure it was written for — a class with no rule behind it does nothing, on a screen
+ * only the owner ever opens.
+ */
+const SOURCES = ['src/admin', 'src/web/admin']
 const SHEET = 'src/admin/dist/admin.css'
 
 /**
@@ -73,12 +82,31 @@ function used(files: readonly string[], rulesOf: ReadonlySet<string>): Map<strin
   const out = new Map<string, string[]>()
   for (const file of files) {
     const text = readFileSync(file, 'utf8')
-    for (const m of text.matchAll(/className\s*=\s*(\{|")/g)) {
+    // `className={…}` is React's and `class="…"` is the server's. One expression, because the
+    // two are the same question asked in two languages and a second loop would be a second
+    // place to forget one.
+    for (const m of text.matchAll(/(?:className|class)\s*=\s*(\{|")/g)) {
       const start = m.index! + m[0].length - 1
       // The attribute's extent: to the closing quote, or across balanced braces.
       let end = start
       if (m[1] === '"') {
-        end = text.indexOf('"', start + 1)
+        // ⚠️ SKIPPING `${…}`, because a quoted class list inside a template literal routinely
+        // contains one — `class="find-hit${i === at ? ' find-hit-now' : ''}"` — and the
+        // quotes inside it are not the attribute's closing quote. Stopping at the first `"`
+        // cut the attribute in half and reported the remainder as a class name.
+        end = -1
+        for (let i = start + 1; i < text.length; i++) {
+          if (text[i] === '$' && text[i + 1] === '{') {
+            let depth = 0
+            for (i += 1; i < text.length; i++) {
+              if (text[i] === '{') depth++
+              else if (text[i] === '}' && --depth === 0) break
+            }
+            continue
+          }
+          if (text[i] === '"') { end = i; break }
+          if (text[i] === '\n') break
+        }
       } else {
         let depth = 0
         for (end = start; end < text.length; end++) {
@@ -88,10 +116,34 @@ function used(files: readonly string[], rulesOf: ReadonlySet<string>): Map<strin
       }
       if (end < 0) continue
       const body = text.slice(start, end + 1)
-      // Only the STRING literals inside it, so `clsx(open && 'block')` gives `block` and the
-      // condition gives nothing.
-      for (const lit of body.matchAll(/'([^'\n]*)'|"([^"\n]*)"|`([^`\n$]*)`/g)) {
-        for (const token of (lit[1] ?? lit[2] ?? lit[3] ?? '').split(/\s+/)) {
+      // Two kinds of text in here, and both carry class names. The BARE text of a quoted
+      // attribute is a class list as written; the text inside `${…}` or `{…}` is an
+      // expression, where only its STRING LITERALS are classes — so `clsx(open && 'block')`
+      // gives `block` and the condition gives nothing.
+      const spans: string[] = []
+      let plain = ''
+      for (let i = 0; i < body.length; i++) {
+        if (body[i] === '$' && body[i + 1] === '{') {
+          let depth = 0
+          const from = i
+          for (i += 1; i < body.length; i++) {
+            if (body[i] === '{') depth++
+            else if (body[i] === '}' && --depth === 0) break
+          }
+          spans.push(body.slice(from, i + 1))
+          continue
+        }
+        plain += body[i]
+      }
+      const literals = [...spans.join(' ').matchAll(/'([^'\n]*)'|"([^"\n]*)"|`([^`\n$]*)`/g)]
+        .map((lit) => lit[1] ?? lit[2] ?? lit[3] ?? '')
+      // A `class="…"` attribute's own text is not a literal inside anything, so it is added
+      // as one. For `className={…}` the plain part is just braces and contributes nothing.
+      // The extent includes its own delimiters, and a class name contains neither — so they
+      // become whitespace rather than the tail of the last token. Without this every quoted
+      // attribute reported its final class as `w-full\"`.
+      for (const piece of [...literals, m[1] === '"' ? plain.replaceAll('"', ' ') : '']) {
+        for (const token of piece.split(/\s+/)) {
           if (!token || token.includes('$') || !/^[-A-Za-z[]/.test(token)) continue
           // SHAPED LIKE A UTILITY, or it is not judged. A `className={...}` expression holds
           // strings that are not classes at all: the right-hand side of a comparison, a label,
@@ -116,7 +168,7 @@ if (!existsSync(SHEET)) {
 }
 
 const rulesOf = defined(readFileSync(SHEET, 'utf8'))
-const classes = used(sources(SOURCE), rulesOf)
+const classes = used(SOURCES.flatMap(sources), rulesOf)
 const missing: string[] = []
 for (const [token, files] of classes) {
   if (rulesOf.has(token) || ELSEWHERE.has(token)) continue

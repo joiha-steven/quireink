@@ -74,7 +74,12 @@ export function registerEditorFlows({ flow, expect, atWidth }: Tour): void {
   flow('admin: the editor can move a piece to the trash', () => expect('/admin/content', `
     (async () => {
       window.confirm = () => true
+      // VISIBLE controls only. Since ADR 0054 the rail is one DOM in every state and CSS
+      // decides what is shown, so a folded group still holds a link that says "Trash" — and a
+      // search by WORDS found the rail's row instead of the editor's button. offsetParent is
+      // null for anything display:none, which is the same reason a person cannot click it.
       const find = (re) => [...document.querySelectorAll('button, a')]
+        .filter((b) => b.offsetParent !== null)
         .find((b) => re.test((b.textContent || '').trim()))
       const wait = async (fn, tries = 60, gap = 100) => {
         for (let i = 0; i < tries; i++) {

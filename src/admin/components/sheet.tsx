@@ -130,9 +130,6 @@ export function NumBand({ items }: { items: { n: ReactNode; label: ReactNode; af
  * sheet casts across the paper. NO inset lip — in this grammar a light lip means PRESSABLE,
  * and an overlay is not a key. It floats; it does not depress.
  */
-export const OVERLAY_LIFT =
-  'shadow-[0_16px_32px_-12px_rgba(0,0,0,.22),0_3px_8px_-4px_rgba(0,0,0,.12)] dark:shadow-[0_16px_32px_-12px_rgba(0,0,0,.7),0_3px_8px_-4px_rgba(0,0,0,.5)]'
-
-/** A sheet laid ON TOP of the page: the paper's own radius, its own edge, and the lift. */
-export const OVERLAY =
-  `rounded-[10px] border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900 ${OVERLAY_LIFT}`
+// Both moved to `@/admin-kit` on 2026-09-14: the server renders overlays too now (ADR 0054)
+// and may not import from `src/admin`. Re-exported, so nothing that had them has to move.
+export { OVERLAY, OVERLAY_LIFT } from '@/admin-kit'

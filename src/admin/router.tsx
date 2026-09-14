@@ -159,6 +159,35 @@ export function RouterProvider({ children }: { children: ReactNode }) {
     commit(href, mode)
   }, [commit])
 
+  /**
+   * A rail link, taken from the island.
+   *
+   * ⚠️ TEMPORARY, and it has an end date. The rail is server-rendered HTML since ADR 0054's
+   * step 0, so its links are plain `<a href>` — and while the SCREENS are still this React
+   * application, letting the browser follow one costs a full reboot of it. Measured
+   * 2026-09-14: 341ms to the heading against 4ms for a client navigation, because a reload
+   * re-runs the bundle, the route chunk, the shell call and the screen's own fetch.
+   *
+   * When the screens are pages that cost is gone — a server-rendered admin page reaches its
+   * heading in 17ms — and so is this listener. Deleting it IS the removal; nothing else knows
+   * it exists.
+   *
+   * `preventDefault` is the answer, so the island can tell whether anybody took the click
+   * without asking whether React is mounted. It goes through `go`, which means a screen with
+   * unsaved work still gets to ask its question — a rail click that bypassed the guard would
+   * be the one navigation in the admin that can lose work.
+   */
+  useEffect(() => {
+    const onAsk = (e: Event) => {
+      const href = (e as CustomEvent<{ href?: string }>).detail?.href
+      if (typeof href !== 'string') return
+      e.preventDefault()
+      go(href, 'push')
+    }
+    addEventListener('quire:navigate', onAsk)
+    return () => removeEventListener('quire:navigate', onAsk)
+  }, [go])
+
   // Scrolling belongs AFTER the commit, not beside the click. During a transition the old
   // page is still the one on screen, and yanking it to the top while the reader is still
   // looking at it is the jolt this whole change exists to remove.

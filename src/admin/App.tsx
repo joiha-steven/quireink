@@ -8,18 +8,16 @@
 import { Suspense, lazy, type ComponentType, type ReactNode } from 'react'
 import { RouterProvider, usePathname, useNavSeq } from '@/admin/router'
 import { useView } from '@/admin/useView'
-import { AdminI18nProvider, useAdminT } from '@/admin/components/I18nProvider'
+import { AdminI18nProvider } from '@/admin/components/I18nProvider'
 import { ToastProvider } from '@/admin/ui/Toast'
 import { ConfirmProvider } from '@/admin/ui/ConfirmDialog'
 import { WhatsNew } from '@/admin/components/WhatsNew'
-import { ThemeProvider } from '@/admin/ui/ThemeProvider'
 import { TopProgress } from '@/admin/ui/TopProgress'
 import { ErrorBoundary } from '@/admin/ui/ErrorBoundary'
 import { throughDeploys } from '@/admin/ui/stale-build'
 import { Failed, Loading } from '@/admin/pages/state'
 import { isSiteLang } from '@/locales/langs'
 import type { SiteLang } from '@/types'
-import { AdminSidebar } from '@/admin/components/AdminSidebar'
 import { CommandPalette } from '@/admin/components/CommandPalette'
 import { ShortcutSheet } from '@/admin/components/ShortcutSheet'
 import { WritePane } from '@/admin/components/WritePane'
@@ -134,23 +132,10 @@ function Route(): ReactNode {
   return <NotFound />
 }
 
-/**
- * The padded canvas, right of the sidebar.
- *
- * EVERY page sits in it, the editor included. An earlier version of this file made the
- * editor an exception and let it run edge to edge, which is not what the frozen tree does —
- * its admin layout wraps `children` in this div unconditionally. The sidebar already gets
- * out of the editor's way by publishing `--admin-nav-w: 0px`, so the editor is wide without
- * needing the padding removed as well, and removing it was the whole of "the editor page
- * looks wrong". Ported behaviour, not improved behaviour.
- */
-function Canvas({ children }: { children: ReactNode }) {
-  return (
-    <main id="admin-content" className="admin-canvas min-w-0 flex-1 lg:h-[100dvh] lg:overflow-y-auto lg:overscroll-y-contain">
-      <div className="mx-auto w-full max-w-[1480px] px-4 py-6 sm:px-7 lg:px-10 lg:py-9 xl:px-12">{children}</div>
-    </main>
-  )
-}
+// THE CANVAS AND THE FRAME AROUND IT ARE THE SERVER'S since ADR 0054's step 0. `<main
+// id="admin-content">`, its max-width wrapper, the shell that locks the panel to the viewport,
+// the skip link and the rail are all written by `web/admin/spa.ts` and arrive with the page.
+// What is left below mounts into `#admin`, which is the one div inside that canvas.
 
 /** The four routes that are the writing screen: the list, and the three editors. */
 const WRITING = /^\/admin\/(content|editor|page-editor|note-editor)(\/|$)/
@@ -192,11 +177,6 @@ function WriteLayout({ path, children }: { path: string; children: ReactNode }) 
   )
 }
 
-async function signOut(): Promise<void> {
-  await fetch('/api/auth/logout', { method: 'POST' })
-  location.href = '/'
-}
-
 /** The language the server painted the shell in, for the one screen that cannot ask. */
 function shellLang(): SiteLang {
   const said = document.documentElement.lang
@@ -204,9 +184,9 @@ function shellLang(): SiteLang {
 }
 
 function Shell() {
-  // One round trip before anything renders, for the two facts the whole shell needs. The
-  // frozen tree read them in the layout's server component; there is nowhere else to put
-  // them now, and a language flash is worse than a blank frame.
+  // One round trip for the two facts this level still needs — the language and what the
+  // what's-new panel compares against. It does not WAIT for one: `spa.ts` writes the same
+  // payload into the page and `useView` seeds itself from it at epoch 0.
   const { data, error, reload } = useView('shell')
   // Read here rather than inside the boundary: it is the boundary's KEY, so it has to change
   // in the tree that renders it.
@@ -216,16 +196,12 @@ function Shell() {
   // on New post afterwards is a push to the path this router still believes it is on. Keyed on
   // the path alone, nothing remounted and the blank sheet came up holding the saved piece.
   const nav = useNavSeq()
-  // A shell that cannot load is not a slow shell. `error` and `reload` were both being
-  // thrown away here, so a 500 from `/api/admin/view/shell` — a locked database, a settings
-  // blob that will not parse — left the owner on an empty grey page with no message, no way
-  // to try again, and no clue that anything had happened. Every screen BELOW this one has
-  // had a retry since the day `Failed` was written; the one that decides whether they mount
-  // at all had none.
+  // A shell that cannot load is not a slow shell. A 500 from `/api/admin/view/shell` — a
+  // locked database, a settings blob that will not parse — left the owner on an empty grey
+  // page with no message and no way to try again.
   //
-  // The language comes off `<html lang>` because the answer that would have carried it is
-  // the one that failed. `spa.ts` writes it into the served shell for exactly this kind of
-  // first paint.
+  // The language comes off `<html lang>` because the answer that would have carried it is the
+  // one that failed. `spa.ts` writes it into the served shell for exactly this kind of paint.
   if (error) {
     return (
       <AdminI18nProvider lang={shellLang()}>
@@ -233,7 +209,7 @@ function Shell() {
       </AdminI18nProvider>
     )
   }
-  if (!data) return <div className="min-h-screen bg-neutral-100 dark:bg-neutral-950" />
+  if (!data) return null
   return (
     <AdminI18nProvider lang={data.language}>
       {/* Toasts are ADMIN-only (save and upload feedback), so the provider lives here. */}
@@ -247,98 +223,56 @@ function Shell() {
             outside the route for the reason the palette and the confirm dialog are: it is
             not about the screen somebody happens to be on. */}
         <WhatsNew version={data.version} seen={data.seenRelease} look={data.look} />
-        {/* From lg up the shell is the INSTRUMENT PANEL: locked to the viewport, nothing on it
-            moves. Only the canvas scrolls — so the rail, the write pane and the editor's
-            sticky rows hold still while the paper passes, and a rubber-band at the top of a
-            page bounces the paper, never the frame. Below lg the page scrolls as pages do:
-            a phone drawer inside a height-locked shell is a trap.
-            ⚠️ `dvh`, NEVER `vh`, and it is the whole fix on an iPad. Mobile Safari resolves
-            `100vh` against the viewport it would have WITH THE TOOLBAR HIDDEN, so a shell
-            told to be `h-screen` is taller than the glass by exactly that toolbar — and the
-            page scrolls that much, carrying the rail and the editor's frame up with it while
-            the "locked" panel looked locked on every desktop it was tested on. `dvh` is the
-            height that is actually visible right now. Reported from an iPad in Safari. */}
-        <div className="admin-shell admin-case min-h-screen lg:flex lg:h-[100dvh] lg:overflow-hidden">
-          {/* THE FIRST STOP, and it was missing. The rail holds four destinations, a group of
-              seven and six footer controls, so reaching the page itself from the keyboard cost
-              up to eighteen presses of Tab on every single visit. It is invisible until it has
-              focus, which is the whole convention: the people who need it find it with the
-              first key they press, and nobody else ever sees it. */}
-          <a
-            href="#admin-content"
-            className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-md focus:border focus:border-neutral-300 focus:bg-white focus:px-3 focus:py-2 focus:text-sm focus:font-medium focus:text-neutral-900 focus:shadow-lg dark:focus:border-neutral-700 dark:focus:bg-neutral-900 dark:focus:text-neutral-100"
-          >
-            <SkipLabel />
-          </a>
-          <AdminSidebar lang={data.language} signOut={signOut} aiConfigured={data.aiConfigured} navOrder={data.navOrder} avatar={data.avatar} />
-          {/* Outside the canvas and outside the error boundary: it is how you LEAVE a screen
-              that has gone wrong, so it must not be inside the thing that went wrong. */}
-          <CommandPalette />
-          {/* `?` from anywhere. Its own component for the same reason the palette is one:
-              the rail is drawn at the top of the shell and this at the bottom, and a key
-              listener that has to live inside a screen is a key that stops working on the
-              screens that screen is not. */}
-          <ShortcutSheet />
-          <Canvas>
-            {/* One page may fail without taking the admin with it. INSIDE the canvas and
-                outside the sidebar, so the rail still works and the owner can leave; keyed by
-                path, so leaving is also what resets it. Before this existed, a parser that
-                threw while opening a post unmounted everything and left a white page
-                (`ui/ErrorBoundary.tsx`). */}
-            {/* The pane is OUTSIDE the boundary and outside the route: it must survive both
-                a navigation and a page that threw, because it is how you get to another one. */}
-            <WriteLayout path={path}>
-              {/* KEYED BY PATH, which is what makes the arrival possible: a new key mounts a
-                  new subtree, and `@starting-style` only fires on something that has just
-                  come into existence. The boundary was already keyed this way for its own
-                  reason — leaving a broken page is what resets it — so the class rides along
-                  rather than adding a wrapper. */}
-              <ErrorBoundary key={`${path}#${nav}`}>
-              {/* ⚠️ `min-w-0`, and it is load-bearing rather than tidy. A flex item defaults
-                  to `min-width: auto`, which refuses to shrink below its content's intrinsic
-                  minimum — so this wrapper, added only to carry the entrance, took the
-                  editor's own shrink chain out and the phone scrolled sideways by 591px.
-                  The same declaration is the fix in three other places in this admin. */}
-              {/* ⚠️ `flex-1` TOO, and it is the other half of the same wrapper's cost. On the
-                  Write screen this div is the flex item beside the pane, not the page inside
-                  it — so the page's own `flex-1` was `flex-1` of nothing and the sheet sat at
-                  its content's width: 370px in a 1440px window, with 445px of bare canvas to
-                  its right, from the day the wrapper arrived (2026-09-07) until it was
-                  looked at. Outside the Write screen the parent is a block and this is inert. */}
-              <div className="admin-enter min-w-0 flex-1">
-              {/* Reached on the FIRST paint only. Every later route change runs inside a
-                  transition, which keeps the current page on screen instead of falling back
-                  here — see the note in `router.tsx`. */}
-              {/* `Loading` with no shape — the shared ellipsis, not a second hand-typed one.
-                  This fallback is reached on the FIRST paint only, before the route's chunk
-                  has arrived, so the shell does not yet know whether a list or a form is
-                  coming; the page's own `View` draws the right skeleton a moment later. */}
-              <Suspense fallback={<Loading />}>
-                <Route />
-              </Suspense>
-              </div>
-              </ErrorBoundary>
-            </WriteLayout>
-          </Canvas>
-        </div>
+        {/* Outside the route and outside the error boundary: it is how you LEAVE a screen
+            that has gone wrong, so it must not be inside the thing that went wrong. */}
+        <CommandPalette />
+        {/* `?` from anywhere. Its own component for the same reason the palette is one: a key
+            listener that has to live inside a screen is a key that stops working on the
+            screens that screen is not. */}
+        <ShortcutSheet />
+        {/* The pane is OUTSIDE the boundary and outside the route: it must survive both a
+            navigation and a page that threw, because it is how you get to another one. */}
+        <WriteLayout path={path}>
+          {/* KEYED BY PATH, which is what makes the arrival possible: a new key mounts a new
+              subtree, and `@starting-style` only fires on something that has just come into
+              existence. The boundary was already keyed this way for its own reason — leaving a
+              broken page is what resets it — so the class rides along rather than adding a
+              wrapper. */}
+          <ErrorBoundary key={`${path}#${nav}`}>
+          {/* ⚠️ `min-w-0`, and it is load-bearing rather than tidy. A flex item defaults to
+              `min-width: auto`, which refuses to shrink below its content's intrinsic minimum —
+              so this wrapper, added only to carry the entrance, took the editor's own shrink
+              chain out and the phone scrolled sideways by 591px. */}
+          {/* ⚠️ `flex-1` TOO. On the Write screen this div is the flex item beside the pane, not
+              the page inside it — so the page's own `flex-1` was `flex-1` of nothing and the
+              sheet sat at its content's width: 370px in a 1440px window, with 445px of bare
+              canvas to its right. Outside the Write screen the parent is a block and this is
+              inert. */}
+          <div className="admin-enter min-w-0 flex-1">
+          {/* Reached on the FIRST paint only. Every later route change runs inside a
+              transition, which keeps the current page on screen instead of falling back here.
+              `Loading` with no shape — the shell does not yet know whether a list or a form is
+              coming; the page's own `View` draws the right skeleton a moment later. */}
+          <Suspense fallback={<Loading />}>
+            <Route />
+          </Suspense>
+          </div>
+          </ErrorBoundary>
+        </WriteLayout>
         </ConfirmProvider>
       </ToastProvider>
     </AdminI18nProvider>
   )
 }
 
-/** Its own component so the shell need not become a consumer of the dictionary. */
-function SkipLabel() {
-  return <>{useAdminT().skipToContent}</>
-}
-
 export function App() {
+  // No `ThemeProvider`. The theme is the rail's island since ADR 0054 — it draws the control,
+  // it owns the four modes, and the no-flash script in the head applies the answer before the
+  // first paint. A second copy in React would be a second thing writing `.dark` on <html>.
   return (
-    <ThemeProvider>
-      <RouterProvider>
-        <TopProgress />
-        <Shell />
-      </RouterProvider>
-    </ThemeProvider>
+    <RouterProvider>
+      <TopProgress />
+      <Shell />
+    </RouterProvider>
   )
 }

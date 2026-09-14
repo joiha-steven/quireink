@@ -15,6 +15,10 @@ import { join } from 'node:path'
 import type { Context } from 'hono'
 import type { SiteSettings } from '@/types'
 import { shellView } from '@/web/admin/views'
+import { getIntegrationStatus } from '@/store/integration-keys'
+import { railBootScript, railData, railHtml, railHtmlAttrs } from '@/web/admin/rail'
+import { adminT } from '@/i18n/admin-i18n'
+import { escapeHtml } from '@/utils'
 import { allFontFaceCss } from '@/render/font-faces'
 import { fontPresetCss, themesToCss } from '@/content/themes'
 import { typographyToCss, fontToCss, tableToCss } from '@/content/settings'
@@ -86,7 +90,21 @@ function entryName(): string {
   return 'admin.dev.js'
 }
 
+/**
+ * The rail's island, which is a SEPARATE build and a separate request.
+ *
+ * Separate because it must not wait for React: the rail is the frame the owner navigates by,
+ * and the whole of ADR 0054's step 0 is that it arrives with the page. It shares no code with
+ * the SPA — its imports are `admin-rail.ts` and two pure helpers — so bundling them together
+ * would buy nothing and cost the island its independence.
+ */
+function railEntryName(): string {
+  for (const name of ASSETS.keys()) if (/^rail\.[a-z0-9]+\.js$/.test(name)) return name
+  return 'rail.dev.js'
+}
+
 const ENTRY_NAME = entryName()
+const RAIL_ENTRY = `/admin/assets/${railEntryName()}`
 const STYLES_NAME = `admin.${fingerprint('admin.css')}.css`
 const ENTRY = `/admin/assets/${ENTRY_NAME}`
 const STYLES = `/admin/assets/${STYLES_NAME}`
@@ -218,7 +236,7 @@ function tabHead(settings: SiteSettings): string {
   return `<title>${title}</title>${icon}`
 }
 
-export async function adminShell(settings: SiteSettings): Promise<string> {
+export async function adminShell(settings: SiteSettings, path: string): Promise<string> {
   if (ASSETS.size === 0) {
     return `<!DOCTYPE html><meta charset="utf-8">${tabHead(settings)}`
       + '<p style="font:14px system-ui;padding:2rem">The admin bundle has not been built. '
@@ -226,12 +244,13 @@ export async function adminShell(settings: SiteSettings): Promise<string> {
   }
   const esc = (s: string) => s.replace(/[<>"&]/g, (c) =>
     ({ '<': '&lt;', '>': '&gt;', '"': '&quot;', '&': '&amp;' })[c] ?? c)
+  const { aiConfigured } = await getIntegrationStatus()
   // No `data-chrome-font`: the admin does not wear the site's chrome face (see adminStyles),
   // and the only rule that ever read the attribute was `MONO_TRACKING`, which is no longer
   // emitted here. Stamping it would leave a hook that says the admin follows a setting it
   // does not.
   return `<!DOCTYPE html>
-<html lang="${esc(settings.language)}" class="admin" data-motion="${settings.motion.enabled ? 'on' : 'off'}">
+<html lang="${esc(settings.language)}" class="admin" data-motion="${settings.motion.enabled ? 'on' : 'off'}"${railHtmlAttrs(settings)}>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -240,6 +259,13 @@ ${tabHead(settings)}
 <link rel="stylesheet" href="${STYLES}">
 ${PRELOADS}
 <style>${adminStyles(settings)}</style>
+<!-- Before the first paint, and the only kind of script this codebase puts in a head (see
+     docs/performance.md). Everything in it is a decision the SERVER cannot make: three
+     localStorage preferences, a media query, the theme the owner picked, and whether the
+     keyboard has a Command key. Reading them after the first paint means a rail that is
+     briefly the wrong width — and, measured on 2026-09-14, an admin that was LIGHT for
+     189 to 246ms on a throttled connection before it turned dark. -->
+<script>${railBootScript()}</script>
 </head>
 <!-- The base text colour belongs HERE, with the background it has to be legible on.
      Without it every element that does not name its own \`text-neutral-*\` inherits the
@@ -249,8 +275,29 @@ ${PRELOADS}
      no floor for them to fall back to. A default at the root fixes the class, not the
      three places that happened to be noticed. -->
 <body class="bg-neutral-100 text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">
-<div id="admin"></div>
+<!-- THE FRAME IS THE SERVER'S (ADR 0054). From lg up it is an INSTRUMENT PANEL: locked to
+     the viewport, nothing on it moves, and only the canvas scrolls — so the rail, the write
+     pane and the editor's sticky rows hold still while the paper passes, and a rubber-band at
+     the top of a page bounces the paper rather than the frame. Below lg the page scrolls as
+     pages do: a phone drawer inside a height-locked shell is a trap.
+     ⚠️ dvh, NEVER vh. Mobile Safari resolves 100vh against the viewport it would have WITH
+     THE TOOLBAR HIDDEN, so a shell told to be h-screen is taller than the glass by
+     exactly that toolbar, and the page scrolls that much — carrying the "locked" rail up with
+     it on every iPad. dvh is the height that is actually visible right now. -->
+<div class="admin-shell admin-case min-h-screen lg:flex lg:h-[100dvh] lg:overflow-hidden">
+<!-- THE FIRST STOP. The rail holds four destinations, a group of seven and a strip of
+     controls, so reaching the page itself from the keyboard cost up to eighteen presses of Tab
+     on every visit. Invisible until it has focus, which is the whole convention: the people who
+     need it find it with the first key they press, and nobody else ever sees it. -->
+<a href="#admin-content" class="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-md focus:border focus:border-neutral-300 focus:bg-white focus:px-3 focus:py-2 focus:text-sm focus:font-medium focus:text-neutral-900 focus:shadow-lg dark:focus:border-neutral-700 dark:focus:bg-neutral-900 dark:focus:text-neutral-100">${escapeHtml(adminT(settings.language).skipToContent)}</a>
+${railHtml({ settings, aiConfigured, path })}
+<main id="admin-content" class="admin-canvas min-w-0 flex-1 lg:h-[100dvh] lg:overflow-y-auto lg:overscroll-y-contain">
+<div class="mx-auto w-full max-w-[1480px] px-4 py-6 sm:px-7 lg:px-10 lg:py-9 xl:px-12"><div id="admin"></div></div>
+</main>
+</div>
 ${await shellData()}
+${railData(settings, aiConfigured)}
+<script type="module" src="${RAIL_ENTRY}"></script>
 <script type="module" src="${ENTRY}"></script>
 </body>
 </html>

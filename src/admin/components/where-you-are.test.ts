@@ -102,11 +102,12 @@ describe('the mark cannot be painted over', () => {
   })
 
   it('composes the active row from the quiet base', () => {
-    // In `NavColumn.tsx` since 2026-09-06: the rail's rows moved out of `AdminSidebar` when
-    // arrange mode arrived, and this guard has to follow the row definition rather than the
-    // file it used to live in.
-    const rows = readFileSync('src/admin/components/NavColumn.tsx', 'utf8')
-    expect(rows).toContain('active ? SIDEBAR_NAV_QUIET : SIDEBAR_NAV')
+    // In `web/admin/rail.ts` since 2026-09-14: the rail is server-rendered HTML (ADR 0054), and
+    // this guard follows the row definition rather than the file it used to live in. It has
+    // moved twice now — out of `AdminSidebar` when arrange mode arrived, and out of React
+    // altogether — which is the argument for asserting the COMPOSITION and not the address.
+    const rows = readFileSync('src/web/admin/rail-rows.ts', 'utf8')
+    expect(rows).toContain('isActive ? SIDEBAR_NAV_QUIET : SIDEBAR_NAV')
   })
 })
 

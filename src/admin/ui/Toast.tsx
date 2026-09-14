@@ -105,6 +105,23 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     return () => { for (const timer of pending.values()) clearTimeout(timer) }
   }, [])
 
+  /**
+   * The same toast, asked for by something that is not React.
+   *
+   * The rail is a plain-TypeScript island since ADR 0054, and it has two things to say — the
+   * cache was cleared, and an arrangement was refused. An EVENT rather than a shared function
+   * because the island must not import from this tree: it would pull React in behind it, and
+   * the whole point of the island is that it loads without waiting for React.
+   */
+  useEffect(() => {
+    const onSay = (e: Event) => {
+      const said = (e as CustomEvent<{ message?: string; kind?: ToastKind }>).detail
+      if (typeof said?.message === 'string') notify(said.message, said.kind ?? 'success')
+    }
+    addEventListener('quire:toast', onSay)
+    return () => removeEventListener('quire:toast', onSay)
+  }, [notify])
+
   return (
     <ToastContext.Provider value={{ notify }}>
       {children}

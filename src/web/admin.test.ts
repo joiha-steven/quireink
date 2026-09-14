@@ -290,14 +290,15 @@ describe('the admin bundle is cacheable and does not arrive one wave at a time',
   const shell = async (): Promise<string> =>
     (await app.request('/admin', { headers: { cookie } })).text()
 
-  it('links the entry and the sheet under a fingerprinted name', async () => {
+  it('links both entries and the sheet under a fingerprinted name', async () => {
+    // TWO module scripts since ADR 0054 — the rail's island and the React SPA, built apart so
+    // the frame need not wait for React — the rail FIRST, since they run in document order.
     const html = await shell()
-    const entry = /<script type="module" src="([^"]+)">/.exec(html)?.[1] ?? ''
+    const js = [...html.matchAll(/<script type="module" src="([^"]+)">/g)].map((m) => m[1] ?? '')
     const sheet = /<link rel="stylesheet" href="(\/admin\/assets\/[^"]+)">/.exec(html)?.[1] ?? ''
-    expect(entry).toMatch(/^\/admin\/assets\/admin\.[a-z0-9]+\.js$/)
+    expect(js.join(' ')).toMatch(/^\/admin\/assets\/rail\.\w+\.js \/admin\/assets\/admin\.\w+\.js$/)
     expect(sheet).toMatch(/^\/admin\/assets\/admin\.[a-z0-9]+\.css$/)
-
-    for (const href of [entry, sheet]) {
+    for (const href of [...js, sheet]) {
       const res = await app.request(href)
       expect(res.status).toBe(200)
       expect(res.headers.get('cache-control')).toContain('immutable')

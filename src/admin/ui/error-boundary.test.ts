@@ -43,12 +43,21 @@ describe('the admin error boundary', () => {
     expect(APP).toContain('<ErrorBoundary key={`${path}#${nav}`}>')
   })
 
-  it('sits INSIDE the canvas, with the sidebar outside it', async () => {
+  it('cannot take the rail down with it, because the rail is not in this tree', async () => {
     // The placement IS the feature: the rail keeps working, so a screen that dies is a screen
-    // you can leave. If a refactor ever hoists this above `<AdminSidebar>`, the white page is
-    // back with a nicer message on it.
-    expect(APP.indexOf('<AdminSidebar')).toBeLessThan(APP.indexOf('<ErrorBoundary'))
-    expect(APP.indexOf('<Canvas>')).toBeLessThan(APP.indexOf('<ErrorBoundary'))
+    // you can leave. It used to be an ORDERING inside this file — the sidebar had to be
+    // rendered before the boundary — and since ADR 0054 it is structural: the rail is HTML the
+    // server writes, outside `#admin` entirely, so no React error can unmount it.
+    //
+    // Asserted on the shell rather than on App.tsx, because that is where the fact now lives.
+    const shell = readFileSync('src/web/admin/spa.ts', 'utf8')
+    const rail = shell.indexOf('${railHtml(')
+    const mount = shell.indexOf('<div id="admin"></div>')
+    expect(rail).toBeGreaterThan(-1)
+    expect(rail).toBeLessThan(mount)
+    // And React still mounts into a div that is INSIDE the canvas, so a page that throws is
+    // replaced in its own frame rather than taking the frame with it.
+    expect(shell.indexOf('id="admin-content"')).toBeLessThan(mount)
   })
 
   it('speaks all six languages', async () => {
