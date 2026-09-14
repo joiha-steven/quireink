@@ -22,6 +22,18 @@ const DATE_LOCALE: Record<SiteLang, string> = {
   ru: 'ru-RU',
 }
 
+/**
+ * The same tag the functions below format with, for a caller that has to hand it to `Intl`
+ * itself — the date field's calendar, which needs a weekday narrow and a month long and
+ * cannot get either from a finished string.
+ *
+ * It exists so that "which locale does the admin print dates in" has ONE answer. The calendar
+ * asked `Intl` with no locale at all, which means the machine's, and the note printed directly
+ * under that same field had already been moved off that for the reason `formatWallClock`
+ * states below.
+ */
+export const dateLocale = (lang: SiteLang): string => DATE_LOCALE[lang] ?? 'en-US'
+
 // Group a plain integer (e.g. a word count) for the reader's language: 1234 -> "1.234"
 // (vi/de) / "1,234" (en). Uses the same BCP-47 tag as dates.
 export function formatCount(n: number, lang: SiteLang): string {

@@ -6,19 +6,32 @@
 // the native control was fine; the calendar half is what this file redraws.
 //
 // The VALUE stays the `datetime-local` string ("YYYY-MM-DDTHH:mm"), so every caller and
-// every save path is untouched. Weekday and month names come from `Intl` in the browser's
-// locale — a device-level display choice, like the collapse state of the rail.
+// every save path is untouched.
+//
+// ⚠️ IT PRINTS IN THE ADMIN'S LANGUAGE, not the machine's. Weekday, month and the closed
+// field all used `Intl` with no locale, which means whatever the device is set to: a
+// Vietnamese admin read "Sep 14, 2026, 7:59 AM" on the button and "14 thg 9, 2026, 14:30" on
+// the line directly under it, because that line had already been moved off the machine's
+// locale. `formatWallClock`'s own note names both halves of that mistake and this field was
+// the last place in the admin still making them.
+//
+// The closed field goes through `formatWallClock` rather than through a Date of its own for
+// the second half: `new Date("2026-03-08T02:30")` is read in the MACHINE's zone, and an hour
+// that zone does not have is silently moved to one it does — so a post scheduled for 02:30
+// from a browser in New York printed back as 03:30 while the stored value stayed 02:30.
 import { useEffect, useId, useRef, useState } from 'react'
 import { CONTROL, NOTE, SETTING_LABEL } from '@/admin/components/kit'
-import { useAdminT } from '@/admin/components/I18nProvider'
+import { useAdminLang, useAdminT } from '@/admin/components/I18nProvider'
+import { dateLocale, formatWallClock } from '@/i18n/format'
+import type { SiteLang } from '@/types'
 
 const pad = (n: number) => String(n).padStart(2, '0')
 const toValue = (d: Date) =>
   `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
 
 /** Monday-first weekday initials, from Intl rather than an i18n table of seven × six. */
-function weekdayInitials(): string[] {
-  const fmt = new Intl.DateTimeFormat(undefined, { weekday: 'narrow' })
+function weekdayInitials(lang: SiteLang): string[] {
+  const fmt = new Intl.DateTimeFormat(dateLocale(lang), { weekday: 'narrow' })
   // 2024-01-01 is a Monday; six more days follow it.
   return Array.from({ length: 7 }, (_, i) => fmt.format(new Date(2024, 0, 1 + i)))
 }
@@ -33,6 +46,7 @@ export function DateField({
   onChange: (next: string) => void
 }) {
   const t = useAdminT()
+  const lang = useAdminLang()
   const [open, setOpen] = useState(false)
   // The label is a caption over a button, not a `<label>` over an input: the control here is
   // the button that opens the calendar. Naming it by both ids reads the caption and then the
@@ -54,7 +68,7 @@ export function DateField({
     return () => { document.removeEventListener('mousedown', away); document.removeEventListener('keydown', key) }
   }, [open])
 
-  const monthLabel = new Intl.DateTimeFormat(undefined, { month: 'long', year: 'numeric' }).format(view)
+  const monthLabel = new Intl.DateTimeFormat(dateLocale(lang), { month: 'long', year: 'numeric' }).format(view)
   // Monday-first offset of the 1st (getDay: Sun=0), then a 6-week grid so the height never jumps.
   const lead = (new Date(view.getFullYear(), view.getMonth(), 1).getDay() + 6) % 7
   const days = Array.from({ length: 42 }, (_, i) => {
@@ -93,7 +107,12 @@ export function DateField({
         onClick={() => { setView(new Date(shown.getFullYear(), shown.getMonth(), 1)); setOpen((v) => !v) }}
         className={`${CONTROL} mt-2 flex w-full items-center justify-between text-left`}
       >
-        <span>{valid ? new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(picked) : '—'}</span>
+        {/* `value &&`, because the closed field now prints the STRING rather than a Date
+            built from it: an empty value used to fall back to today through `picked`, and
+            through `formatWallClock` it would come back as an empty button instead. Nothing
+            hands this field an empty value today; a blank control that looks broken is the
+            wrong way to find out that something started to. */}
+        <span>{value && valid ? formatWallClock(value, lang) : '—'}</span>
         <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-neutral-500 dark:text-neutral-400" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden>
           <rect x="4" y="5.5" width="16" height="14" rx="1.5" /><path d="M4 9.5h16M8.5 3.5v3M15.5 3.5v3" />
         </svg>
@@ -113,7 +132,7 @@ export function DateField({
             </div>
           </div>
           <div className="grid grid-cols-7 text-center text-xs text-neutral-500 dark:text-neutral-400">
-            {weekdayInitials().map((w, i) => <span key={i} className="py-1">{w}</span>)}
+            {weekdayInitials(lang).map((w, i) => <span key={i} className="py-1">{w}</span>)}
           </div>
           <div className="grid grid-cols-7">
             {days.map((d) => {
