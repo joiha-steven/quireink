@@ -115,3 +115,19 @@ export const DAY_PARTS: DayPart[] = ['greetNight', 'greetMorning', 'greetAfterno
 
 /** The attribute value for a part of day: the dictionary key without its prefix, lowercased. */
 export const dayPartName = (part: DayPart): string => part.slice('greet'.length).toLowerCase()
+
+/**
+ * Terse date + 24h time for the admin tables, e.g. "4/6/26 - 14:05".
+ *
+ * In whichever timezone is asking: the server prints it for the rows it draws, and the island
+ * prints it for a row it adds afterwards. On a blog whose owner sits in the server's own
+ * timezone — which is the ordinary case for something self-hosted — those are the same clock.
+ */
+export function formatDateTimeShort(iso: string): string {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return iso
+  const yy = String(d.getFullYear()).slice(-2)
+  const hh = String(d.getHours()).padStart(2, '0')
+  const mm = String(d.getMinutes()).padStart(2, '0')
+  return `${d.getDate()}/${d.getMonth() + 1}/${yy} - ${hh}:${mm}`
+}

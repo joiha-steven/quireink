@@ -74,10 +74,12 @@ export const sheetTop = (body: string): string => `<div class="${SHEET_TOP}">${b
  * `hidden` rather than left out, at the caller's option: a screen whose emptiness depends on a
  * filter draws every state once and lets CSS pick, the same way the rail does.
  */
-export function emptyState({ title, description = '', glyph, hidden = false }: {
+export function emptyState({ title, description = '', glyph, actionHtml = '', hidden = false }: {
   title: string
   description?: string
   glyph?: GlyphName
+  /** One thing to do about it, already markup: the chips the assistant offers to ask for you. */
+  actionHtml?: string
   hidden?: boolean
 }): string {
   return `<div class="flex flex-col items-center justify-center px-6 py-16 text-center"${hidden ? ' hidden' : ''}>`
@@ -92,6 +94,7 @@ export function emptyState({ title, description = '', glyph, hidden = false }: {
     // chrome font. The description explains it in a sentence and takes the other face.
     + `<p class="text-sm font-medium text-neutral-700 dark:text-neutral-300">${escapeHtml(title)}</p>`
     + (description ? `<p class="${NOTE_TEXT} mt-1.5 max-w-sm">${escapeHtml(description)}</p>` : '')
+    + (actionHtml ? `<div class="mt-4">${actionHtml}</div>` : '')
     + `</div>`
 }
 

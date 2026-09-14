@@ -1,4 +1,4 @@
-// The small subset of Markdown a chat answer actually uses, rendered as it arrives.
+// The small subset of Markdown a chat answer actually uses, described as marks.
 //
 // THE RULE THAT SHAPES THIS: a mark is only a mark once it is CLOSED. While `**Ligature`
 // is still arriving it is four literal characters and stays four literal characters; the
@@ -10,26 +10,35 @@
 // tables, mathematics, syntax highlighting, and a bundle to match. The admin does not need
 // it to show a sentence with two bold words in it, and `check:bundle` watches the size of
 // what the owner downloads.
-import type { JSX } from 'react'
+//
+// ⚠️ It answers in `Mark`s rather than in React elements (ADR 0054). The same answer is drawn
+// by the server for a conversation reopened from the database and by the island for one
+// arriving over the wire, and those two have to be the same markup or a reload would change
+// the page under the reader. See `admin-shared/markup.ts`.
+import { el, leaf, txt, type Mark } from '@/admin-shared/markup'
 
 /** `**bold**`, `*italic*`, `` `code` `` — each only once its closing mark has arrived. */
 const INLINE = /(\*\*[^*\n]+\*\*|(?<!\*)\*[^*\n]+\*(?!\*)|`[^`\n]+`)/g
 
 const CODE = 'rounded bg-neutral-100 px-1 py-0.5 font-mono text-[0.85em] dark:bg-neutral-800'
 
-function inline(text: string, key: string): (JSX.Element | string)[] {
-  return text.split(INLINE).filter((p) => p !== '').map((piece, i) => {
-    const at = `${key}-${i}`
+const TH = 'border-b border-neutral-200 pb-1.5 pr-4 font-medium text-neutral-900'
+  + ' dark:border-neutral-700 dark:text-neutral-100'
+const TD = 'border-b border-neutral-100 py-1.5 pr-4 align-top dark:border-neutral-800'
+const MARKER = 'shrink-0 tabular-nums text-neutral-400 dark:text-neutral-500'
+
+function inline(text: string): Mark[] {
+  return text.split(INLINE).filter((p) => p !== '').map((piece) => {
     if (piece.startsWith('**') && piece.endsWith('**') && piece.length > 4) {
-      return <strong key={at} className="font-semibold">{piece.slice(2, -2)}</strong>
+      return leaf('strong', 'font-semibold', piece.slice(2, -2))
     }
     if (piece.startsWith('`') && piece.endsWith('`') && piece.length > 2) {
-      return <code key={at} className={CODE}>{piece.slice(1, -1)}</code>
+      return leaf('code', CODE, piece.slice(1, -1))
     }
     if (piece.startsWith('*') && piece.endsWith('*') && piece.length > 2) {
-      return <em key={at}>{piece.slice(1, -1)}</em>
+      return leaf('em', '', piece.slice(1, -1))
     }
-    return piece
+    return txt(piece)
   })
 }
 
@@ -61,7 +70,7 @@ type Row =
  * pipes stay pipes, so a table being streamed does not flicker into existence one row at
  * a time and then re-lay itself out when the widths change.
  */
-function rows(source: string): Row[] {
+export function rows(source: string): Row[] {
   const lines = source.split('\n')
   const out: Row[] = []
 
@@ -86,61 +95,34 @@ function rows(source: string): Row[] {
   return out
 }
 
+const table = (row: { head: string[]; body: string[][] }): Mark =>
+  // Scrolls INSIDE its own box: a four-column answer must not widen the sheet and give the
+  // whole transcript a horizontal scrollbar.
+  el('span', 'my-3 block overflow-x-auto', [
+    el('table', 'w-full border-collapse text-left', [
+      el('thead', '', [el('tr', '', row.head.map((h) => el('th', TH, inline(h))))]),
+      el('tbody', '', row.body.map((cs) => el('tr', '', cs.map((c) => el('td', TD, inline(c)))))),
+    ]),
+  ])
+
 /**
  * A chat answer, drawn.
  *
  * Blank lines become spacing rather than empty paragraphs, and a list item keeps its
  * marker in a fixed column so a five-item answer lines up instead of stepping right.
  */
-export function RichText({ text }: { text: string }): JSX.Element {
-  return (
-    <>
-      {rows(text).map((row, i) => {
-        if (row.kind === 'table') {
-          return (
-            // Scrolls INSIDE its own box: a four-column answer must not widen the sheet
-            // and give the whole transcript a horizontal scrollbar.
-            <span key={i} className="my-3 block overflow-x-auto">
-              <table className="w-full border-collapse text-left">
-                <thead>
-                  <tr>
-                    {row.head.map((h, j) => (
-                      <th key={j} className="border-b border-neutral-200 pb-1.5 pr-4 font-medium text-neutral-900 dark:border-neutral-700 dark:text-neutral-100">
-                        {inline(h, `h${i}-${j}`)}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {row.body.map((cellsIn, r) => (
-                    <tr key={r}>
-                      {cellsIn.map((c, j) => (
-                        <td key={j} className="border-b border-neutral-100 py-1.5 pr-4 align-top dark:border-neutral-800">
-                          {inline(c, `c${i}-${r}-${j}`)}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </span>
-          )
-        }
-        if (row.kind === 'rule') {
-          return <span key={i} className="my-3 block border-t border-neutral-200 dark:border-neutral-700" />
-        }
-        if (row.kind === 'item') {
-          return (
-            <span key={i} className="flex gap-2">
-              <span className="shrink-0 tabular-nums text-neutral-400 dark:text-neutral-500">{row.marker}</span>
-              <span>{inline(row.text, String(i))}</span>
-            </span>
-          )
-        }
-        // An empty line is a gap, not a paragraph with nothing in it.
-        if (row.text.trim() === '') return <span key={i} className="block h-2" />
-        return <span key={i} className="block">{inline(row.text, String(i))}</span>
-      })}
-    </>
-  )
+export function richMarks(text: string): Mark[] {
+  return rows(text).map((row) => {
+    if (row.kind === 'table') return table(row)
+    if (row.kind === 'rule') return el('span', 'my-3 block border-t border-neutral-200 dark:border-neutral-700', [])
+    if (row.kind === 'item') {
+      return el('span', 'flex gap-2', [
+        leaf('span', MARKER, row.marker),
+        el('span', '', inline(row.text)),
+      ])
+    }
+    // An empty line is a gap, not a paragraph with nothing in it.
+    if (row.text.trim() === '') return el('span', 'block h-2', [])
+    return el('span', 'block', inline(row.text))
+  })
 }

@@ -93,7 +93,31 @@ already converted fifteen others.
   piece index now sends every row and hides all but ten, so a flow that counted rows compared
   forty-one against forty-one. The behaviour that changed is real and intended — the whole index
   arrives in the first response — and the flow now counts what is VISIBLE
-  ([`docs/admin-one-dom.md`](../admin-one-dom.md)).
+  ([`docs/admin-one-dom.md`](../admin-one-dom.md)). It has fired twice more, both on the
+  assistant, and both are improvements the React shape was in the way of:
+  - **A conversation is in the address** (`/admin/assistant?chat=12`). The React face opened a
+    chat by id rather than routing to it, because a route change would have swapped the page
+    component and taken the conversations column with it. There is no component to swap now, so
+    what is left is what that cost: a reload lost the conversation you were reading, Back left
+    the screen entirely, and switching chats mid-pause could send a verdict naming calls from
+    the conversation you had just left.
+  - **"New conversation" no longer inserts a row.** It posted a chat the moment it was pressed,
+    so pressing it three times left three empty conversations in the list and in the database.
+    It is a link to the bare address; a question already opens a chat for itself when there is
+    none.
+
+### One description, two renderers
+
+The assistant is the first screen whose markup is produced twice: by the server for a stored
+conversation, and by the island for one still arriving over the wire. Written twice they drift,
+and the transcript then reads as two different screens depending on whether you reloaded.
+
+So the SHAPE is data ([`src/admin-shared/markup.ts`](../../src/admin-shared/markup.ts)) and the
+two renderers are about twenty lines each: `htmlOf` escapes into a string, `elOf` builds nodes
+and sets text as text. Neither can inject markup, because neither is ever handed any — they are
+given a tree that already says what every element is.
+[`src/admin/island/mark-agreement.test.ts`](../../src/admin/island/mark-agreement.test.ts) holds
+them to the same answer, through one serializer, for every state an exchange can be in.
 - **`check:admin-css` keeps every class honest**, which is what makes moving markup between files
   safe at all.
 - **The editor's own suites**: 2,074 lines and 122 blocks, including the corpus round trip whose

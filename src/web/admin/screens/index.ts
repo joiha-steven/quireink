@@ -15,6 +15,7 @@
 // the tour both cover the address either way.
 import type { SiteSettings } from '@/types'
 import { analyticsScreen } from '@/web/admin/screens/analytics'
+import { assistantScreen } from '@/web/admin/screens/assistant'
 import { commentsScreen } from '@/web/admin/screens/comments'
 import { dashboardScreen } from '@/web/admin/screens/dashboard'
 import { helpScreen } from '@/web/admin/screens/help'
@@ -54,6 +55,9 @@ export const SCREENS: Record<string, Screen> = {
   // Two faces behind one address, both drawn here: the summary, and one page's drill-down at
   // `?path=`. The island is a filter and a ten-second poll; everything else is reading.
   '/admin/analytics': { render: analyticsScreen, island: 'analytics' },
+  // The one screen that streams. The conversation is in the address now (`?chat=`), so the
+  // server draws the transcript it holds and the island only ever adds what arrives after.
+  '/admin/assistant': { render: assistantScreen, island: 'assistant' },
   // Three tabs over one audience, all three drawn. It holds the admin's one irreversible
   // action, so nothing on it is a form: see `screens/newsletter-send.ts`.
   '/admin/newsletter': { render: newsletterScreen, island: 'newsletter' },

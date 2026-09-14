@@ -12,19 +12,17 @@
 // does nothing everywhere else.
 import { OPENAI_COMPATIBLE, echoesReasoning } from '@/server/ai-capabilities'
 
-export type Turn =
-  | { kind: 'user'; text: string }
-  | { kind: 'assistant'; text: string }
-  // `reasoning` is what the model thought on its way to these calls. Only some providers
-  // hand it out, and DeepSeek REFUSES the next round without it back (`echoesReasoning`),
-  // so it rides on the turn rather than being dropped at the door.
-  // `at` is when the call was DISPATCHED, stamped by the server so a conversation reopened
-  // from the database still knows when its work happened. `reasoning` is what the model
-  // thought on the way there: some providers hand it out and DeepSeek refuses the next
-  // round without it back (`echoesReasoning`), so it rides on the turn rather than being
-  // dropped at the door.
-  | { kind: 'tool_use'; id: string; name: string; args: Record<string, unknown>; reasoning?: string; at?: number }
-  | { kind: 'tool_result'; id: string; name: string; text: string }
+// A conversation's turns. Defined in `@/admin-shared/assistant` because three files were
+// each declaring it word for word — this one, and the two React components that drew it — and
+// a fourth was about to (ADR 0054's island). Re-exported so every import here still resolves.
+//
+// `reasoning` is what the model thought on its way to a set of calls. Only some providers hand
+// it out, and DeepSeek REFUSES the next round without it back (`echoesReasoning`), so it rides
+// on the turn rather than being dropped at the door. `at` is when the call was DISPATCHED,
+// stamped by the server so a conversation reopened from the database still knows when its work
+// happened.
+export type { Turn } from '@/admin-shared/assistant'
+import type { Turn } from '@/admin-shared/assistant'
 
 export type ToolSpec = { name: string; description: string; parameters: Record<string, unknown> }
 export type ChatRequest = { url: string; headers: Record<string, string>; body: string }

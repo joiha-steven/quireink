@@ -1256,3 +1256,15 @@ html:not([data-daypart]) [data-greet]:last-child { display: inline; }
 tr[data-piece][data-last] {
   border-bottom-width: 0;
 }
+
+/* THE CHAT ROW'S TWO FACES: the cross that offers to delete, and the pair that confirms it.
+   Confirming in place rather than in a dialog, because a chat is small enough that a modal
+   asking about it is heavier than the thing it is protecting.
+
+   Both are drawn and CSS picks (`docs/admin-one-dom.md`), and the picking is done HERE rather
+   than with a `hidden` attribute for one reason: the confirm pair carries `flex`, and a
+   `hidden` attribute against a display utility is a tie that the utility wins — Tailwind's
+   preflight writes `[hidden]{display:none}` before any utility, and a later rule of equal
+   weight takes it. An attribute pair on the row outranks the class outright. */
+[data-ai-chat]:not([data-ai-confirming]) [data-ai-confirm] { display: none; }
+[data-ai-chat][data-ai-confirming] [data-ai-del] { display: none; }

@@ -41,7 +41,6 @@ const load = {
   noteEditor: () => import('@/admin/pages/NoteEditor'),
   media: () => import('@/admin/pages/Media'),
   settings: () => import('@/admin/pages/Settings'),
-  assistant: () => import('@/admin/pages/Assistant'),
   notFound: () => import('@/admin/pages/NotFound'),
 } satisfies Record<string, Loader>
 
@@ -57,7 +56,6 @@ const NoteEditor = lazy(throughDeploys(load.noteEditor))
 const Media = lazy(throughDeploys(load.media))
 const Settings = lazy(throughDeploys(load.settings))
 const NotFound = lazy(throughDeploys(load.notFound))
-const Assistant = lazy(throughDeploys(load.assistant))
 
 /** Which loader serves a path. The single place the route table's shape is decided. */
 function loaderFor(path: string): Loader {
@@ -68,7 +66,6 @@ function loaderFor(path: string): Loader {
   if (p === '/admin/note-editor' || p.startsWith('/admin/note-editor/')) return load.noteEditor
   if (p === '/admin/media') return load.media
   if (p === '/admin/settings') return load.settings
-  if (p === '/admin/assistant') return load.assistant
   return load.notFound
 }
 
@@ -111,7 +108,6 @@ function Route(): ReactNode {
   if (path === '/admin/note-editor' || path.startsWith('/admin/note-editor/')) return <NoteEditor />
   if (path === '/admin/media') return <Media />
   if (path === '/admin/settings') return <Settings />
-  if (path === '/admin/assistant') return <Assistant />
   return <NotFound />
 }
 

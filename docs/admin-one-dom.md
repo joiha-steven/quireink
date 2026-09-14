@@ -54,3 +54,18 @@ precisely because a real navigation can only ever get the generic one.
    than trap 3 because nothing is wrong in the accessibility tree, nothing is wrong in the
    markup, and no flow that counts or clicks can see it: it is one hairline, and it was found
    by diffing the two builds' computed styles.
+
+5. ⚠️ **A STATE ATTRIBUTE READ THROUGH AN ANCESTOR MUST HAVE A NAME NOTHING ELSE WEARS.** The
+   assistant's chat rows pick between a delete cross and a delete confirm with
+   `[data-ai-chat]:not([data-ai-confirming]) [data-ai-confirm] { display: none }`, i.e. a rule
+   that asks about an ancestor. The screen root also said `data-ai-chat` — it meant "the
+   conversation this page has open", the row means "this row's id" — so every confirm in the
+   column matched through the root as well, which never carries `data-ai-confirming`. The
+   confirm could not open on any row, ever.
+
+   Nothing catches this but a browser. The markup is right, the island sets the attribute it
+   meant to set, the unit tests pass, and `check:admin-css` is satisfied because every class
+   has a rule. It was found by measuring `getComputedStyle().display` on the confirm after a
+   click; the fix is `data-ai-open` on the screen and a flow that asserts the screen never
+   wears a row's name. **A descendant selector is a contract with every ancestor in the page,**
+   so state attributes are named for the thing they are ON and are never reused one level up.
