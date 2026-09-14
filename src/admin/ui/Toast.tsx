@@ -112,11 +112,20 @@ export function ToastProvider({ children }: { children: ReactNode }) {
    * cache was cleared, and an arrangement was refused. An EVENT rather than a shared function
    * because the island must not import from this tree: it would pull React in behind it, and
    * the whole point of the island is that it loads without waiting for React.
+   *
+   * ⚠️ IT CARRIES THE WAY BACK TOO. `action` is the same `{ label, run }` a React caller
+   * passes, and `run` travels as a live function on the event — the way `quire:confirm`
+   * carries `respond`. It is not a convenience: trashing a comment ASKS NOTHING, and the
+   * whole argument for asking nothing is that the undo is in the toast. An island that could
+   * only say a sentence would have had to put the question back.
    */
   useEffect(() => {
     const onSay = (e: Event) => {
-      const said = (e as CustomEvent<{ message?: string; kind?: ToastKind }>).detail
-      if (typeof said?.message === 'string') notify(said.message, said.kind ?? 'success')
+      const said = (e as CustomEvent<{ message?: string; kind?: ToastKind; action?: ToastAction }>).detail
+      if (typeof said?.message !== 'string') return
+      const act = said.action
+      const ok = act && typeof act.label === 'string' && typeof act.run === 'function'
+      notify(said.message, said.kind ?? 'success', ok ? act : undefined)
     }
     addEventListener('quire:toast', onSay)
     return () => removeEventListener('quire:toast', onSay)

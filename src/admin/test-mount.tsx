@@ -2,7 +2,7 @@
 // cannot see ("a column collapsed to reader@e…", CLAUDE.md). The unit suites here test
 // parsers and pure logic; the tour tests a real browser but needs a seeded server. This
 // sits between: React 19's own createRoot against happy-dom's DOM, so a test can mount
-// CommentsTable with three rows and read what an owner would actually be shown.
+// a table with three rows and read what an owner would actually be shown.
 //
 // EVERY test file that uses this must register happy-dom itself (the per-file pattern of
 // `editor-corpus.test.ts`) and import this module DYNAMICALLY inside a test or beforeAll —

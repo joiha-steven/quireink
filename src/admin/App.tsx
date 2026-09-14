@@ -41,7 +41,6 @@ const load = {
   pageEditor: () => import('@/admin/pages/PageEditor'),
   noteEditor: () => import('@/admin/pages/NoteEditor'),
   media: () => import('@/admin/pages/Media'),
-  comments: () => import('@/admin/pages/Comments'),
   newsletter: () => import('@/admin/pages/Newsletter'),
   analytics: () => import('@/admin/pages/Analytics'),
   settings: () => import('@/admin/pages/Settings'),
@@ -60,7 +59,6 @@ const PostEditor = lazy(throughDeploys(load.postEditor))
 const PageEditor = lazy(throughDeploys(load.pageEditor))
 const NoteEditor = lazy(throughDeploys(load.noteEditor))
 const Media = lazy(throughDeploys(load.media))
-const Comments = lazy(throughDeploys(load.comments))
 const Newsletter = lazy(throughDeploys(load.newsletter))
 const Analytics = lazy(throughDeploys(load.analytics))
 const Settings = lazy(throughDeploys(load.settings))
@@ -76,7 +74,6 @@ function loaderFor(path: string): Loader {
   if (p === '/admin/page-editor' || p.startsWith('/admin/page-editor/')) return load.pageEditor
   if (p === '/admin/note-editor' || p.startsWith('/admin/note-editor/')) return load.noteEditor
   if (p === '/admin/media') return load.media
-  if (p === '/admin/comments') return load.comments
   if (p === '/admin/newsletter') return load.newsletter
   if (p === '/admin/analytics') return load.analytics
   if (p === '/admin/settings') return load.settings
@@ -123,7 +120,6 @@ function Route(): ReactNode {
   if (path === '/admin/page-editor' || path.startsWith('/admin/page-editor/')) return <PageEditor />
   if (path === '/admin/note-editor' || path.startsWith('/admin/note-editor/')) return <NoteEditor />
   if (path === '/admin/media') return <Media />
-  if (path === '/admin/comments') return <Comments />
   if (path === '/admin/newsletter') return <Newsletter />
   if (path === '/admin/analytics') return <Analytics />
   if (path === '/admin/settings') return <Settings />

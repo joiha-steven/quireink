@@ -188,7 +188,7 @@ async function analyticsSummaryView({ days, bucket, range }: Window) {
   }
 }
 
-async function commentsView() {
+export async function commentsView() {
   const { rows } = await getAdminComments(1, 200)
   return { rows }
 }

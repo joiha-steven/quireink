@@ -130,10 +130,12 @@ export function registerSettingsFlows({ flow, expect }: Tour): void {
   flow('admin: trashing a comment asks nothing and offers the way back', () => expect('/admin/comments', `
     (async () => {
       const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
-      const rows = () => document.querySelectorAll('main [data-comment-row], main li').length
+      const rows = () => [...document.querySelectorAll('main li')].filter((r) => !r.hidden).length
       const before = rows()
+      // VISIBLE ONLY (docs/admin-design.md, one DOM per state): the selection bar's Delete is
+      // in the markup and hidden until something is ticked, so a search by words found it first.
       const del = [...document.querySelectorAll('main button')]
-        .find((b) => /delete|xoá|xóa/i.test(b.textContent.trim()))
+        .find((b) => b.offsetParent !== null && /delete|xoá|xóa/i.test(b.textContent.trim()))
       if (!del) return 'no delete control on a comment'
       del.click()
       await sleep(600)

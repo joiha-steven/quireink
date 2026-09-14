@@ -14,6 +14,7 @@
 // React route it used to have is deleted in the same commit, and `check:routes-guarded` and
 // the tour both cover the address either way.
 import type { SiteSettings } from '@/types'
+import { commentsScreen } from '@/web/admin/screens/comments'
 import { helpScreen } from '@/web/admin/screens/help'
 import { logScreen } from '@/web/admin/screens/log'
 import { trashScreen } from '@/web/admin/screens/trash'
@@ -43,6 +44,8 @@ export const SCREENS: Record<string, Screen> = {
   '/admin/log': { render: logScreen, island: 'log' },
   // Seven kinds and five ways to write, all of it over rows that are already in the markup.
   '/admin/trash': { render: trashScreen, island: 'trash' },
+  // Grouped by post BY THE SERVER, which is where the grouping always happened in effect.
+  '/admin/comments': { render: commentsScreen, island: 'comments' },
 }
 
 /** The screen for a path, or null while it is still React's. */

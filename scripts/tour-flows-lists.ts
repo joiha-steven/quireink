@@ -129,4 +129,82 @@ export function registerListFlows({ flow, expect }: Pick<Tour, 'flow' | 'expect'
       if (!row.hidden) return await end('a DIFFERENT accent matched: the search is folding both sides')
       return await end('ok le finds lề, lề finds lề, lê does not')
     })()`, 1200))
+
+  // THE GROUPING IS THE SERVER'S. It always was in effect: the React face fetched one flat list
+  // of every comment and grouped it in the browser on every keystroke, so the grouping was never
+  // a client decision, only a client cost. What this checks is that the cards come off the wire
+  // built, with their counts, and that the band's four numbers are off the FULL set — a total
+  // that changes as you type is not a total.
+  // NOTE: a template literal. No backticks.
+  flow('admin: the comments queue arrives grouped by post', () => expect('/admin/comments', `
+    (async () => {
+      const html = await (await fetch('/admin/comments')).text()
+      if (!html.includes('data-screen="comments"')) return 'the server did not draw the queue'
+      const cards = [...document.querySelectorAll('[data-card]')]
+      if (cards.length === 0) return 'skip: the fixture left no comments to group'
+      const rows = document.querySelectorAll('[data-comment]').length
+      const inMarkup = (html.match(/data-comment=/g) || []).length
+      if (inMarkup !== rows) return 'markup held ' + inMarkup + ' comments, the page shows ' + rows
+      // Every card's badge is its own number of comments, written by the server.
+      for (const card of cards) {
+        const said = Number(card.querySelector('[data-card-count]').textContent)
+        const has = card.querySelectorAll('[data-comment]').length
+        if (said !== has) return 'a card says ' + said + ' and holds ' + has
+      }
+      const band = [...document.querySelectorAll('[data-screen="comments"] b')].map((b) => Number(b.textContent))
+      if (band.length !== 4) return 'the band should carry four numbers, it carries ' + band.length
+      if (band[0] !== rows) return 'the band says ' + band[0] + ' comments and the page holds ' + rows
+      if (band[1] !== cards.length) return 'the band says ' + band[1] + ' posts and the page draws ' + cards.length
+      return 'ok ' + rows + ' comment(s) on ' + cards.length + ' card(s), counted by the server'
+    })()`, 900))
+
+  // NARROW, REORDER, HIGHLIGHT — the three things the island does to an arrangement it did not
+  // build. The highlighter is the one that can destroy what it is drawn over: it must rebuild
+  // each span from the row's own text rather than from what it painted last time, or two
+  // keystrokes in the row holds marks inside marks and the next match lands on the wrong letters.
+  // So the flow types, checks a mark was drawn, clears, and checks the text is byte-for-byte
+  // what the server sent.
+  flow('admin: the comments queue narrows, reorders and highlights without a route', () => expect('/admin/comments', `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      const cards = () => [...document.querySelectorAll('[data-card]')].filter((c) => !c.hidden)
+      if (cards().length < 2) return 'skip: the fixture left too few posts to reorder'
+
+      // BUSIEST puts the fullest card first, and falls back to recency inside a tie.
+      const counts = () => cards().map((c) => Number(c.querySelector('[data-card-count]').textContent))
+      document.querySelector('[data-comment-sort] [data-tab="busiest"]').click()
+      await sleep(200)
+      const busiest = counts()
+      for (let i = 1; i < busiest.length; i++) {
+        if (busiest[i] > busiest[i - 1]) return 'busiest put ' + busiest[i - 1] + ' before ' + busiest[i]
+      }
+      document.querySelector('[data-comment-sort] [data-tab="recent"]').click()
+      await sleep(200)
+
+      const body = document.querySelector('[data-comment] [data-mark][class*="line-clamp"]')
+      if (!body) return 'a comment carries no markable text'
+      const whole = body.getAttribute('data-text')
+      const word = (whole.split(' ').find((w) => w.length > 4) || '')
+      if (!word) return 'skip: no word long enough to search for'
+      const box = document.querySelector('[data-comment-search]')
+      const type = (v) => {
+        Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(box, v)
+        box.dispatchEvent(new Event('input', { bubbles: true }))
+      }
+      type(word)
+      await sleep(250)
+      if (document.querySelectorAll('[data-card]:not([hidden]) mark').length === 0) {
+        return 'the search matched nothing it could paint'
+      }
+      const narrowed = cards().length
+      type('zzzz-nothing-matches-this')
+      await sleep(250)
+      if (cards().length !== 0) return 'a query matching nothing still showed ' + cards().length + ' card(s)'
+      if (document.querySelector('[data-comment-nomatch]').hidden) return 'nothing said the filter matched nothing'
+      type('')
+      await sleep(250)
+      if (document.querySelectorAll('mark').length !== 0) return 'clearing the search left the highlighter behind'
+      if (body.textContent !== whole) return 'the highlighter ate the text it was drawn over'
+      return 'ok busiest ordered ' + busiest.join('>') + ', one word narrowed to ' + narrowed + ' card(s)'
+    })()`, 1200))
 }

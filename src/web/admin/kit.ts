@@ -19,7 +19,7 @@ import { ICONS, GLYPHS, type GlyphName, type IconName } from '@/icons'
 import {
   CONTROL_SM, SHEET, SHEET_TOP, TICK_BOX, TICK_MARK, TICK_PATH, TICK_WRAP,
 } from '@/admin-shared/kit'
-import { SEGMENT_TRACK_PLACE, tabItemClass } from '@/admin-shared/tabs'
+import { SEGMENT_TRACK, SEGMENT_TRACK_PLACE, tabItemClass, type TabRole } from '@/admin-shared/tabs'
 import { HEADER_GAP, NOTE_TEXT, TITLE } from '@/admin-shared/scale'
 
 /** A glyph from the shared set, at the surface's own size. */
@@ -119,15 +119,39 @@ export function select({ name, label, options, value, attrs = '' }: {
  * `attrs` rides on the track and `key` becomes `data-tab` on each item, so an island can find
  * the strip and know what was pressed without a second dictionary.
  */
-export function tabs({ items, value, attrs = '' }: {
+export function tabs({ items, value, role = 'place', attrs = '' }: {
   items: { key: string; label: string }[]
   value: string
+  /**
+   * A `place` is a tab you navigated to; a `choice` is a value you set. See `tabItemClass` for
+   * the argument — the highlighter marks WHERE YOU ARE and nothing else, so a filter takes the
+   * sunken paper key instead. The trash's kinds are places; the comments queue's sort and age
+   * strips are choices.
+   */
+  role?: TabRole
   attrs?: string
 }): string {
-  return `<div class="${SEGMENT_TRACK_PLACE}"${attrs ? ` ${attrs}` : ''}>`
+  return `<div class="${role === 'place' ? SEGMENT_TRACK_PLACE : SEGMENT_TRACK}"${attrs ? ` ${attrs}` : ''}>`
     + items.map(({ key, label }) =>
       `<button type="button" data-tab="${escapeAttr(key)}" aria-pressed="${key === value}"`
-      + ` class="${tabItemClass(key === value, 'sm', false, 'place')}">${escapeHtml(label)}</button>`).join('')
+      + ` class="${tabItemClass(key === value, 'sm', false, role)}">${escapeHtml(label)}</button>`).join('')
+    + `</div>`
+}
+
+/**
+ * THE BAND OF NUMBERS at the head of a sheet: the figures somebody would otherwise work out by
+ * scrolling. `n` and `label` are already-escaped text; `after` and `sub` are raw HTML, as in
+ * the React `NumBand` they mirror.
+ */
+export function numBand(items: { n: string; label: string; after?: string; sub?: string }[]): string {
+  return `<div class="flex flex-wrap border-b border-neutral-100 dark:border-neutral-800">`
+    + items.map((it) =>
+      `<div class="min-w-32 flex-1 border-r border-neutral-100 px-5 py-4 last:border-r-0 dark:border-neutral-800">`
+      + `<span class="flex items-baseline gap-2">`
+      + `<b class="text-2xl font-semibold tracking-tight tabular-nums">${escapeHtml(it.n)}</b>${it.after ?? ''}</span>`
+      + `<span class="block text-xs text-neutral-500 dark:text-neutral-400">${escapeHtml(it.label)}</span>`
+      + (it.sub ? `<span class="block text-xs text-neutral-500 dark:text-neutral-400">${it.sub}</span>` : '')
+      + `</div>`).join('')
     + `</div>`
 }
 
