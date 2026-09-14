@@ -95,7 +95,7 @@ function entryName(): string {
  *
  * Separate because it must not wait for React: the rail is the frame the owner navigates by,
  * and the whole of ADR 0054's step 0 is that it arrives with the page. It shares no code with
- * the SPA — its imports are `admin-rail.ts` and two pure helpers — so bundling them together
+ * the SPA — its imports are `admin-shared/rail.ts` and two pure helpers — so bundling them together
  * would buy nothing and cost the island its independence.
  */
 function railEntryName(): string {

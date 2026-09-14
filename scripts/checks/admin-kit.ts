@@ -55,7 +55,7 @@ const RULES: Rule[] = [
     // Moved out of `ui/Button.tsx` on 2026-09-14: the server renders admin markup now and
     // cannot import from `src/admin`. The component is still there and still the thing to
     // reach for from React.
-    home: 'src/admin-kit.ts',
+    home: 'src/admin-shared/kit.ts',
     instead: 'use <Button>, or buttonClass() for an <a> or for server-rendered markup',
   },
   {
@@ -117,8 +117,7 @@ const RULES: Rule[] = [
  * green while a primitive was re-typed in the other, which is the precise failure it exists to
  * stop.
  */
-const TREES = ['src/admin', 'src/web/admin']
-const LOOSE = ['src/admin-kit.ts', 'src/admin-rail.ts']
+const TREES = ['src/admin', 'src/web/admin', 'src/admin-shared']
 
 /** Source only. `dist/` is the built bundle and contains every signature by construction. */
 function sources(dir: string): string[] {
@@ -133,7 +132,7 @@ function sources(dir: string): string[] {
 }
 
 let failed = false
-const files = [...TREES.flatMap(sources), ...LOOSE]
+const files = TREES.flatMap(sources)
 
 if (files.length < 50) {
   console.error(`✗ check:admin-kit: only ${files.length} source files found, which cannot be right`)

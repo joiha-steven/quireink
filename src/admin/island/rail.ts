@@ -15,7 +15,7 @@
 // WHAT THIS FILE MAY NOT DO: know what a row looks like. Every class, every label and every
 // glyph is the server's, and a style written here would be a second opinion about the rail
 // that only one of the two could win.
-import { NARROW, RAIL_KEYS, RAIL_WIDTH } from '@/admin-rail'
+import { NARROW, RAIL_KEYS, RAIL_WIDTH } from '@/admin-shared/rail'
 import type { NavOrder } from '@/types'
 
 /**

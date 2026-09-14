@@ -36,7 +36,7 @@ function I({ name }: { name: IconName }) {
 /**
  * A set body by NAME, for a caller that has one rather than a chosen icon.
  *
- * The rail's rows are described in `@/admin-rail`, which is framework-free and therefore
+ * The rail's rows are described in `@/admin-shared/rail`, which is framework-free and therefore
  * carries icon NAMES — it cannot hold an element, and that is what lets the server draw the
  * same rail. This is the one door from a name back to this face's wrapper.
  */

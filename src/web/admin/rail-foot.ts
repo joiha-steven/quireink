@@ -6,8 +6,8 @@
 
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import { escapeAttr, escapeHtml } from '@/utils'
-import { SIDEBAR_ICON, type RailRow } from '@/admin-rail'
-import { buttonClass } from '@/admin-kit'
+import { SIDEBAR_ICON, type RailRow } from '@/admin-shared/rail'
+import { buttonClass } from '@/admin-shared/kit'
 import { floor, glyph, renderRow } from '@/web/admin/rail-rows'
 
 /**

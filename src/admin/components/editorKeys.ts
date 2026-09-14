@@ -21,7 +21,7 @@
 // window in Firefox). Both already have a toolbar button and a `/` entry, so nothing is lost.
 
 /** id · chord (Tiptap spelling) · what it does, in the Help screen's voice. */
-import { PALETTE_CHORD, onMac, printChord as print } from '@/admin-rail'
+import { PALETTE_CHORD, onMac, printChord as print } from '@/admin-shared/rail'
 
 export type Shortcut = { id: string; chord: string; does: string }
 
@@ -84,7 +84,7 @@ export const BUILTIN: Shortcut[] = [
  * The chord as a reader sees it. `Mod` is the platform's own word for the same key, and
  * printing `Ctrl` to somebody on a Mac makes the whole table useless to them.
  *
- * The SPELLING moved to `@/admin-rail` on 2026-09-14 (ADR 0054): the server draws the rail's
+ * The SPELLING moved to `@/admin-shared/rail` on 2026-09-14 (ADR 0054): the server draws the rail's
  * search key, which prints this chord, and a server module may not import anything under
  * `src/admin`. What stays here is the platform question, which only a browser can answer.
  */

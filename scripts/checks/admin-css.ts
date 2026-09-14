@@ -25,7 +25,7 @@ import { join } from 'node:path'
  * silent failure it was written for — a class with no rule behind it does nothing, on a screen
  * only the owner ever opens.
  */
-const SOURCES = ['src/admin', 'src/web/admin']
+const SOURCES = ['src/admin', 'src/web/admin', 'src/admin-shared']
 const SHEET = 'src/admin/dist/admin.css'
 
 /**

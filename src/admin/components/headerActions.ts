@@ -14,7 +14,7 @@ export const ADMIN_NAV =
   'inline-flex h-9 items-center text-sm text-neutral-600 transition-colors hover:text-neutral-900 disabled:opacity-50 dark:text-neutral-300 dark:hover:text-white'
 
 // THE RAIL'S FIVE STRINGS MOVED. `SIDEBAR_NAV`, `SIDEBAR_NAV_QUIET`, `SIDEBAR_NAV_ACTIVE`,
-// `SIDEBAR_UTIL`, `SIDEBAR_ICON` and `SIDEBAR_GROUP` are in `@/admin-rail` since 2026-09-14,
+// `SIDEBAR_UTIL`, `SIDEBAR_ICON` and `SIDEBAR_GROUP` are in `@/admin-shared/rail` since 2026-09-14,
 // because the SERVER draws the rail now (ADR 0054) and cannot import anything under
 // `src/admin` — that exclusion is what stops a server module reaching for `document`, and it
 // is worth more than the convenience of leaving them here.
@@ -24,4 +24,4 @@ export const ADMIN_NAV =
 // still holds: a new header item reuses one of these, it does not hand-roll a class list.
 export {
   SIDEBAR_NAV, SIDEBAR_NAV_QUIET, SIDEBAR_NAV_ACTIVE, SIDEBAR_UTIL, SIDEBAR_ICON, SIDEBAR_GROUP,
-} from '@/admin-rail'
+} from '@/admin-shared/rail'

@@ -18,7 +18,7 @@
 // EVERY MOVE IS SAVED, immediately. The alternative is a Save button on a rail, and a rail is
 // where you go to leave the screen — an arrangement that only survives if you remember to press
 // something is an arrangement that gets lost by the second click.
-import { ZONES, findSpot, moveTo, step, type Spot, type Zone } from '@/admin-rail'
+import { ZONES, findSpot, moveTo, step, type Spot, type Zone } from '@/admin-shared/rail'
 import { reconcileNavOrder } from '@/content/nav-order'
 import { motionOn } from '@/admin/motion'
 import type { NavOrder } from '@/types'

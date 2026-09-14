@@ -20,7 +20,7 @@
 // copies is the copy nobody reads.
 import { describe, expect, it } from 'bun:test'
 import { readFileSync } from 'node:fs'
-import { NARROW, RAIL_WIDTH } from '@/admin-rail'
+import { NARROW, RAIL_WIDTH } from '@/admin-shared/rail'
 
 const boot = readFileSync('src/web/admin/rail.ts', 'utf8')
 const island = readFileSync('src/admin/island/rail.ts', 'utf8')

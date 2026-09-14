@@ -13,7 +13,7 @@ import {
 import {
   PALETTE_CHORD, SIDEBAR_GROUP, SIDEBAR_NAV, SIDEBAR_NAV_ACTIVE, SIDEBAR_NAV_QUIET, SIDEBAR_UTIL,
   printChord, type RailRow,
-} from '@/admin-rail'
+} from '@/admin-shared/rail'
 
 /**
  * A glyph from the shared set.

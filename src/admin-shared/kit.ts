@@ -1,13 +1,17 @@
 // THE ADMIN'S BUTTON, as class strings both faces can read.
 //
-// It sits at `src/` beside `admin-rail.ts` for the same reason (ADR 0054): the server renders
-// admin markup now, and `src/admin` is excluded from the root TypeScript project on purpose —
+// It sits in `src/admin-shared/` beside `rail.ts` for the same reason (ADR 0054): the server
+// renders admin markup now, and `src/admin` is excluded from the root TypeScript project —
 // a server module that reaches for `document` must fail to compile rather than fail on a
 // request. `ui/Button.tsx` is the React component around this and re-exports `buttonClass`, so
 // nothing that already imported it has to learn a second module.
 //
 // `check:admin-kit` guards the shape fragment against being re-typed anywhere; this file is its
 // home now, and that guard is the reason the strings may live in exactly one place.
+//
+// EVERYTHING IN THIS DIRECTORY IS FRAMEWORK-FREE: no React, no hono, no DOM. That is not a
+// style rule, it is the whole reason the directory exists — the moment one of these files
+// imports from `src/admin`, the server can no longer read it.
 
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'armed'
 

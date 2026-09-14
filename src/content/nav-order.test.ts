@@ -6,7 +6,7 @@
 // what each one produces.
 import { expect, test, describe } from 'bun:test'
 import { EMPTY_NAV_ORDER, isDefaultOrder, reconcileNavOrder, sanitizeNavOrder } from '@/content/nav-order'
-import { moveTo, step } from '@/admin-rail'
+import { moveTo, step } from '@/admin-shared/rail'
 import type { NavOrder } from '@/types'
 
 const order = (primary: string[], more: string[] = [], footer: string[] = [], hidden: string[] = []): NavOrder =>

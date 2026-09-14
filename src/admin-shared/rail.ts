@@ -1,7 +1,6 @@
 // THE RAIL, DESCRIBED ONCE — every row the admin's left column can hold, and where rows go.
 //
-// It sits at `src/` beside `icons.ts` and `brand-art.ts` for the reason those do: two faces
-// wear it. The server renders the rail into HTML (`web/admin/rail.ts`) and the island runs it
+// It sits in `src/admin-shared/` because two faces wear it: The server renders the rail into HTML (`web/admin/rail.ts`) and the island runs it
 // in the browser (`admin/island/rail.ts`), and a row that exists in one and not the other is a
 // door that appears or disappears depending on which of them last drew it.
 //

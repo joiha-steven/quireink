@@ -27,9 +27,9 @@ import type { AdminStrings } from '@/i18n/admin-i18n'
 import { adminT } from '@/i18n/admin-i18n'
 import { escapeAttr } from '@/utils'
 import { reconcileNavOrder } from '@/content/nav-order'
-import { NARROW, RAIL_KEYS, RAIL_WIDTH, ZONES, defaultOrder, railRows, type RailRow } from '@/admin-rail'
+import { NARROW, RAIL_KEYS, RAIL_WIDTH, ZONES, defaultOrder, railRows, type RailRow } from '@/admin-shared/rail'
 import { WORDMARK, floor, renderRow, searchKey, searchRow } from '@/web/admin/rail-rows'
-import { OVERLAY } from '@/admin-kit'
+import { OVERLAY } from '@/admin-shared/kit'
 import { arrangeFoot, arrangeTemplate, footStrip } from '@/web/admin/rail-foot'
 
 /**
