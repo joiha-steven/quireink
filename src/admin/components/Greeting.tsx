@@ -15,10 +15,10 @@
 // read by its owner in Berlin should say good evening when it is evening where the eyes are;
 // the site timezone is for the reader's dateline, which is a different question.
 import Link from '@/admin/router'
-import { META_ON_CANVAS } from './scale'
+import { META_ON_CANVAS } from '@/admin-shared/scale'
 import { useAdminT } from './I18nProvider'
 import { IconPerson } from './navIcons'
-import { TITLE } from './scale'
+import { TITLE } from '@/admin-shared/scale'
 
 export type GreetingAuthor = { name: string; avatarUrl: string }
 

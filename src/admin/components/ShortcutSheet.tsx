@@ -17,7 +17,7 @@
 import { useEffect, useState } from 'react'
 import { BUILTIN, SHORTCUTS, printChord } from './editorKeys'
 import { OVERLAY } from './sheet'
-import { SECTION, UTIL } from './scale'
+import { SECTION, UTIL } from '@/admin-shared/scale'
 import { useAdminT } from './I18nProvider'
 
 export function ShortcutSheet() {

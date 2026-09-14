@@ -8,7 +8,7 @@ import { describe, expect, it } from 'bun:test'
 import { readFileSync, readdirSync } from 'node:fs'
 import { adminT } from '@/i18n/admin-i18n'
 import { LANG_CODES } from '@/locales/langs'
-import { logSentence, kindOf, glyphOf } from './logSentence'
+import { logSentence, kindOf, glyphOf } from '@/admin-shared/log-sentence'
 
 /** The `ActivityAction` union, read out of its declaration. */
 function declared(): string[] {

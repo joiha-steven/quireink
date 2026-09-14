@@ -44,24 +44,31 @@ if (!result.success) {
   process.exit(1)
 }
 
-// THE RAIL'S ISLAND, built on its own (ADR 0054).
+// THE ISLANDS, built apart from the SPA (ADR 0054).
 //
-// Separate from the SPA above because it must not wait for it: the rail is the frame the owner
-// navigates by, and step 0 of that ADR is that it arrives with the page rather than on the
-// browser's second pass. It shares no module with React — its imports are `admin-rail.ts`,
-// `content/nav-order.ts` and `admin/motion.ts`, all of them pure — so one bundle would have cost
-// it that independence and bought nothing.
+// One entry per file in `src/admin/island/`, and separate from React because that is the whole
+// point: the rail is the frame the owner navigates by and a converted screen is the page
+// itself, so neither may wait for a bundle to be fetched, parsed and run. They share no module
+// with React — their imports are `admin-shared/*` and a pure helper or two — so one bundle
+// would have cost them that independence and bought nothing.
+//
+// A SCREEN'S ISLAND IS REQUESTED ONLY BY ITS OWN PAGE. `spa.ts` links the one the screen
+// names, so the log's filters are not downloaded by anybody looking at the media library.
 //
 // `splitting` is ON for one reason: arrange mode is a dynamic import, and it should stay a
 // separate file nobody downloads until they open it.
+const islands = (await Array.fromAsync(new Bun.Glob('*.ts').scan({ cwd: `${ROOT}src/admin/island` })))
+  .filter((n) => !n.endsWith('.test.ts'))
+  .map((n) => `${ROOT}src/admin/island/${n}`)
+  .sort()
 const island = await Bun.build({
-  entrypoints: [`${ROOT}src/admin/island/rail.ts`],
+  entrypoints: islands,
   outdir: OUT,
   target: 'browser',
   format: 'esm',
   splitting: true,
   minify: true,
-  naming: { entry: 'rail.[hash].js', chunk: 'rail-[name]-[hash].js' },
+  naming: { entry: '[name].[hash].js', chunk: 'island-[name]-[hash].js' },
   define: { 'process.env.NODE_ENV': '"production"' },
 })
 

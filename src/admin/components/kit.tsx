@@ -3,6 +3,12 @@
 // shadow, header size were all inconsistent before). Admin is monochrome by design
 // (neutral scale, no public theme tokens). No `'use client'`: these are presentational
 // — pure primitives render in server OR client trees; Tabs only takes props.
+import { CARD, CONTROL, CONTROL_CHROME, CONTROL_SM } from '@/admin-shared/kit'
+
+export { CARD, CONTROL, CONTROL_CHROME, CONTROL_SM }
+
+import { ICONS } from '@/icons'
+
 import type { ReactNode, SelectHTMLAttributes } from 'react'
 import type { GlyphName } from '@/icons'
 import { EmptyGlyph } from './navIcons'
@@ -33,8 +39,6 @@ import { EmptyGlyph } from './navIcons'
  * spread at 4% black. It says "this is a surface above the page" and stops. There is no second
  * step, and a card that wants one wants to be an overlay instead.
  */
-export const CARD =
-  'rounded-[10px] border border-neutral-200/80 bg-white shadow-[0_1px_2px_rgba(0,0,0,.05)] dark:border-neutral-800 dark:bg-neutral-900 dark:shadow-none'
 
 // The surfaces INSIDE a card. ENCLOSURE WEAKENS INWARD — each line lighter than the one around
 // it — and on Search & URLs it ran backwards: sheet neutral-200/80, card neutral-100, box in
@@ -58,12 +62,12 @@ export const DROPZONE_OVER = 'border-neutral-500 bg-neutral-100 text-neutral-700
 // Both scales live in `scale.ts` and are re-exported here, because thirty-eight screens
 // already import them from the kit and the split is a fact about this file's length.
 export { TAB_TRACK, SEGMENT_TRACK, tabItemClass, Tabs, type TabItem, type TabSize } from './tabs'
-export { TAP, TAP_TOUCH } from './scale'
+export { TAP, TAP_TOUCH } from '@/admin-shared/scale'
 export {
   READING, PAGE_TITLE_FACE, TITLE, SECTION, SETTING_LABEL, NOTE_TEXT, NOTE_ALERT, NOTE, META, UTIL, FIGURE,
   SECTION_GAP, CARD_GAP, CARD_STACK, HEADER_GAP, GROUP_GAP, CLUSTER_GAP, SETTING_GAP, FIELD_GAP,
-} from './scale'
-import { FIELD_GAP, HEADER_GAP, NOTE, NOTE_TEXT, SECTION, SETTING_LABEL, TITLE } from './scale'
+} from '@/admin-shared/scale'
+import { FIELD_GAP, HEADER_GAP, NOTE, NOTE_TEXT, SECTION, SETTING_LABEL, TITLE } from '@/admin-shared/scale'
 
 // --- One setting ------------------------------------------------------------------------
 //
@@ -150,20 +154,6 @@ export function Setting({
  * — no ring at all — against this focus treatment, so the admin had two answers to what a
  * focused field looks like. `check:admin-kit` now fails on that class.
  */
-export const CONTROL_CHROME =
-  // The inset is the relief grammar's other half: raised means pressable, CARVED means it
-  // holds something — and a field holds the value. 1px of shading, not a style.
-  'rounded-md border border-neutral-300 bg-white text-neutral-900 outline-none transition focus:border-neutral-500 focus:ring-2 focus:ring-neutral-200 placeholder:text-neutral-400 shadow-[inset_0_1px_1.5px_rgba(0,0,0,.06)] dark:shadow-[inset_0_1px_1.5px_rgba(0,0,0,.35)] dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500 dark:focus:ring-neutral-800 dark:placeholder:text-neutral-500'
-
-// The canonical control — chrome plus the size nearly every field wants. `ui/Input.tsx`
-// IMPORTS this rather than keeping a matching copy. Callers add width (see FIELD_W).
-// `min-h-9` is `ui/Button`'s height: an earlier padding measured 42 against the button's 40,
-// and a field two pixels proud of the button that acts on it is one row broken.
-export const CONTROL = `${CONTROL_CHROME} min-h-9 px-3 py-1.5 text-sm`
-// The SECOND size, and there are only two. A sheet's tools row takes its height from the
-// segmented strip that starts it — 32 — so a field standing on one is 32, not the 36 a field
-// inside a form wears. `h-8` and not a minimum: a tools row does not grow.
-export const CONTROL_SM = `${CONTROL_CHROME} h-8 px-3 text-sm`
 
 /**
  * The same chrome worn by a box that CONTAINS controls instead of being one.
@@ -231,9 +221,11 @@ export function Select({
         strokeLinecap="round"
         strokeLinejoin="round"
         className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-500 dark:text-neutral-400"
-      >
-        <path d="m6 9 6 6 6-6" />
-      </svg>
+        /* The shared set's own chevron since 2026-09-14. The shape was typed here and nowhere
+           else, which made it the last glyph in this file drawn by hand — and the server had
+           to draw the same select (ADR 0054), which would have made it two. */
+        dangerouslySetInnerHTML={{ __html: ICONS.down }}
+      />
     </span>
   )
 }

@@ -111,7 +111,12 @@ export function registerAdminFlows({ flow, expect, atWidth }: Tour): void {
   flow('admin: the log speaks, filters, and keeps the code in reach', () => expect('/admin/log', `
     (async () => {
       const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
-      const rows = () => [...document.querySelectorAll('main ul li')]
+      // VISIBLE rows. Since ADR 0054 this screen is server-rendered HTML and its filters HIDE
+      // what does not match rather than removing it — the server sends every row once and a
+      // keystroke costs no round trip, which is what the React version was already doing in
+      // memory. offsetParent is null for anything display:none, so this is the same question
+      // asked of the thing the owner can actually see.
+      const rows = () => [...document.querySelectorAll('main ul li')].filter((r) => r.offsetParent !== null)
       const first = rows()[0]
       if (!first) return 'the log is empty; the fixture should have written to it'
       // The row's own title holds the code; the face must not repeat it. Compared against

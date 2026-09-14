@@ -7,7 +7,7 @@
 import type { ReactNode } from 'react'
 import Link from '@/admin/router'
 import { CARD } from './kit'
-import { FIGURE, META } from './scale'
+import { FIGURE, META } from '@/admin-shared/scale'
 
 // A headline figure with its label under it. ONE of these, used by the Overview tiles, the
 // Analytics tiles and the newsletter counts — `analytics-kit`'s `StatTile` was a second copy

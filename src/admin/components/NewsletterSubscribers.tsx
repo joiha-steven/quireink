@@ -27,7 +27,7 @@ import { Tabs } from './tabs'
 import { Tick } from '@/admin/ui/Tick'
 import { Lamp, type LampState } from '@/admin/ui/Lamp'
 import { IconClose } from './navIcons'
-import { TAP } from './scale'
+import { TAP } from '@/admin-shared/scale'
 import { useAdminCount, useAdminT } from './I18nProvider'
 import { useToast } from '@/admin/ui/Toast'
 

@@ -30,7 +30,7 @@
 // the owner touches the switch, and from then on their answer is the answer everywhere.
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { SHEET_TOOL } from './sheet'
-import { NOTE_TEXT } from './scale'
+import { NOTE_TEXT } from '@/admin-shared/scale'
 import { useAdminT } from './I18nProvider'
 
 const KEY = 'quireink-admin-settings-notes'

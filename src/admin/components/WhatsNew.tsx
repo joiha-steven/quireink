@@ -28,7 +28,7 @@ import type { SiteLook } from '@/types'
 import { api } from '@/admin/api'
 import { useAdminT } from './I18nProvider'
 import { OVERLAY } from './sheet'
-import { SECTION, UTIL } from './scale'
+import { SECTION, UTIL } from '@/admin-shared/scale'
 import { REPO } from './help-kit'
 import { Button } from '@/admin/ui/Button'
 

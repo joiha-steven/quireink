@@ -27,7 +27,7 @@ import type { IconName } from '@/icons'
 import { formatDateTimeShort } from '@/utils'
 import { SharedGlyph } from './navIcons'
 import { useAdminT } from './I18nProvider'
-import { logSentence } from './logSentence'
+import { logSentence } from '@/admin-shared/log-sentence'
 
 /**
  * The mark for an action.

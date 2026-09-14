@@ -13,7 +13,7 @@ character and none of its typographic rules **except one**, below.
 - **ONE FACE. The admin is Inter everywhere, with TWO carve-outs** (one face since
   2026-08-15; the second carve-out 2026-09-07). A form is scanned, not read: two faces
   between a setting's label and the sentence under it read as two voices, not as meaning.
-  Rank by SIZE and WEIGHT instead (`src/admin/components/scale.ts`).
+  Rank by SIZE and WEIGHT instead (`src/admin-shared/scale.ts`).
   - **The editor**, because it is WYSIWYG: the writing surface, the title field and the font
     picker's specimen tiles are set in the face the post publishes in — the holders of
     `.reading-font`. `--font-reading` and `spa.ts`'s `fontPresetCss` therefore stay.

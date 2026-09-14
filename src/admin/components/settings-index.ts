@@ -202,18 +202,12 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { tab: 'server', label: 'storageQuotaLabel', note: 'storageQuotaHint' },
 ]
 
-/**
- * Fold accents away so a Vietnamese owner can type without them.
- *
- * Typing "be rong" for "Bề rộng" is what people actually do — it is faster than reaching for
- * tone marks, and every Vietnamese search box on the planet accepts it. NFD splits a letter
- * from its marks and the range strips the marks; `đ` is not a combining pair and has to be
- * replaced on its own.
- */
-export function fold(s: string): string {
-  return s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D')
-    .toLowerCase().trim()
-}
+// `fold` moved to `@/admin-shared/fold` (ADR 0054): the log screen is server-rendered now and
+// folds its haystack there, so the two faces have to strip accents the same way.
+import { fold } from '@/admin-shared/fold'
+
+export { fold }
+
 
 /**
  * The settings whose label or note matches, in index order.

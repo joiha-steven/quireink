@@ -23,7 +23,7 @@ import { createContext, useCallback, useContext, useEffect, useState, type React
 import { Button } from './Button'
 import { Input } from './Input'
 import { OVERLAY } from '@/admin/components/sheet'
-import { SECTION } from '@/admin/components/scale'
+import { SECTION } from '@/admin-shared/scale'
 
 /** What the reader chose. `alt` is the third button, and it is absent unless one was asked for. */
 export type ConfirmAnswer = 'confirm' | 'alt' | 'cancel'
@@ -92,6 +92,29 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
       return out.answer === 'confirm' ? out.value.trim() : null
     },
   }), [raw])()
+
+  /**
+   * The same question, asked by something that is not React.
+   *
+   * ADR 0054's screens are server-rendered HTML with islands, and an island cannot call a
+   * hook. An EVENT rather than a shared function because the island must not import from this
+   * tree: it would pull React in behind it, and the whole point is that a page draws without
+   * waiting for React.
+   *
+   * `cancelable` is how the caller learns whether anybody was listening: no `preventDefault`
+   * means no dialog, and the island falls back to the browser's own question rather than
+   * deleting something in silence.
+   */
+  useEffect(() => {
+    const onAsk = (e: Event) => {
+      const detail = (e as CustomEvent<{ request?: ConfirmRequest; respond?: (a: ConfirmAnswer) => void }>).detail
+      if (!detail?.request || typeof detail.respond !== 'function') return
+      e.preventDefault()
+      void api.ask(detail.request).then(detail.respond)
+    }
+    addEventListener('quire:confirm', onAsk)
+    return () => removeEventListener('quire:confirm', onAsk)
+  }, [api])
 
   const answer = useCallback((a: ConfirmAnswer) => {
     setPending((prev) => {

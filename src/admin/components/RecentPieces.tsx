@@ -13,7 +13,7 @@ import Link from '@/admin/router'
 import { useView } from '@/admin/useView'
 import { formatDateTimeShort } from '@/utils'
 import { useAdminT } from './I18nProvider'
-import { UTIL } from './scale'
+import { UTIL } from '@/admin-shared/scale'
 import { useWritingItems } from './useWritingItems'
 
 export function RecentPieces({ limit = 3 }: { limit?: number }) {

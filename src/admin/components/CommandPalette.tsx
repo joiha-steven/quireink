@@ -26,7 +26,7 @@ import { indexIn, lanes } from '@/accent'
 import { SETTINGS_INDEX } from './settings-index'
 import { useAdminT } from './I18nProvider'
 import { OVERLAY } from './sheet'
-import { UTIL } from './scale'
+import { UTIL } from '@/admin-shared/scale'
 import { useToast } from '@/admin/ui/Toast'
 import type { AdminStrings } from '@/locales/types'
 

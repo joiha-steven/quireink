@@ -181,6 +181,15 @@ export function RouterProvider({ children }: { children: ReactNode }) {
     const onAsk = (e: Event) => {
       const href = (e as CustomEvent<{ href?: string }>).detail?.href
       if (typeof href !== 'string') return
+      // ⚠️ ONLY WHAT THIS ROUTER ACTUALLY RENDERS. A screen the server draws arrives as markup
+      // in the canvas, so pushing its path would move the address and leave the PREVIOUS
+      // screen's HTML on the page — the one failure this bridge can cause that a reload
+      // cannot. Two tests, and the second is the one that is easy to forget: a page that is
+      // itself server-rendered has no route mounted, so every link leaving it is a load too.
+      const mine = document.documentElement.dataset.adminScreens ?? ''
+      const here = document.documentElement.dataset.adminScreen
+      const path = href.split('?')[0]?.replace(/\/+$/, '') ?? href
+      if (here || mine.split(' ').includes(path)) return
       e.preventDefault()
       go(href, 'push')
     }

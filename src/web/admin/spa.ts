@@ -17,6 +17,7 @@ import type { SiteSettings } from '@/types'
 import { shellView } from '@/web/admin/views'
 import { getIntegrationStatus } from '@/store/integration-keys'
 import { railBootScript, railData, railHtml, railHtmlAttrs } from '@/web/admin/rail'
+import { SERVER_PATHS, screenFor } from '@/web/admin/screens'
 import { adminT } from '@/i18n/admin-i18n'
 import { escapeHtml } from '@/utils'
 import { allFontFaceCss } from '@/render/font-faces'
@@ -99,8 +100,21 @@ function entryName(): string {
  * would buy nothing and cost the island its independence.
  */
 function railEntryName(): string {
-  for (const name of ASSETS.keys()) if (/^rail\.[a-z0-9]+\.js$/.test(name)) return name
-  return 'rail.dev.js'
+  return islandNamed('rail')
+}
+
+/**
+ * An island's built file, by the name its entry has on disk.
+ *
+ * Every file in `src/admin/island/` is its own entry (`build-admin.ts`), so a screen's
+ * behaviour is a request only the pages that need it make. The hash is the bundler's, which is
+ * what makes the URL immutable; finding it by pattern is how the shell links a name it did not
+ * choose. See the note on `entryName` for why a computed name would be a bug here.
+ */
+function islandNamed(stem: string): string {
+  const want = new RegExp(`^${stem}\\.[a-z0-9]+\\.js$`)
+  for (const name of ASSETS.keys()) if (want.test(name)) return name
+  return `${stem}.dev.js`
 }
 
 const ENTRY_NAME = entryName()
@@ -245,12 +259,20 @@ export async function adminShell(settings: SiteSettings, path: string): Promise<
   const esc = (s: string) => s.replace(/[<>"&]/g, (c) =>
     ({ '<': '&lt;', '>': '&gt;', '"': '&quot;', '&': '&amp;' })[c] ?? c)
   const { aiConfigured } = await getIntegrationStatus()
+  // ADR 0054: a screen the server draws arrives as finished HTML in the canvas, and React is
+  // told not to draw a route for it. A screen that is still React's leaves `#admin` empty, as
+  // it has always been.
+  const found = screenFor(path)
+  const screen = found ? await found.screen.render(settings) : ''
+  const island = found?.screen.island
+    ? `\n<script type="module" src="/admin/assets/${islandNamed(found.screen.island)}"></script>`
+    : ''
   // No `data-chrome-font`: the admin does not wear the site's chrome face (see adminStyles),
   // and the only rule that ever read the attribute was `MONO_TRACKING`, which is no longer
   // emitted here. Stamping it would leave a hook that says the admin follows a setting it
   // does not.
   return `<!DOCTYPE html>
-<html lang="${esc(settings.language)}" class="admin" data-motion="${settings.motion.enabled ? 'on' : 'off'}"${railHtmlAttrs(settings)}>
+<html lang="${esc(settings.language)}" class="admin" data-motion="${settings.motion.enabled ? 'on' : 'off'}"${railHtmlAttrs(settings)}${found ? ` data-admin-screen="${found.name}"` : ''} data-admin-screens="${SERVER_PATHS}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -292,12 +314,12 @@ ${PRELOADS}
 <a href="#admin-content" class="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-md focus:border focus:border-neutral-300 focus:bg-white focus:px-3 focus:py-2 focus:text-sm focus:font-medium focus:text-neutral-900 focus:shadow-lg dark:focus:border-neutral-700 dark:focus:bg-neutral-900 dark:focus:text-neutral-100">${escapeHtml(adminT(settings.language).skipToContent)}</a>
 ${railHtml({ settings, aiConfigured, path })}
 <main id="admin-content" class="admin-canvas min-w-0 flex-1 lg:h-[100dvh] lg:overflow-y-auto lg:overscroll-y-contain">
-<div class="mx-auto w-full max-w-[1480px] px-4 py-6 sm:px-7 lg:px-10 lg:py-9 xl:px-12"><div id="admin"></div></div>
+<div class="mx-auto w-full max-w-[1480px] px-4 py-6 sm:px-7 lg:px-10 lg:py-9 xl:px-12">${screen}<div id="admin"></div></div>
 </main>
 </div>
 ${await shellData()}
 ${railData(settings, aiConfigured)}
-<script type="module" src="${RAIL_ENTRY}"></script>
+<script type="module" src="${RAIL_ENTRY}"></script>${island}
 <script type="module" src="${ENTRY}"></script>
 </body>
 </html>

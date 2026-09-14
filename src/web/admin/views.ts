@@ -229,7 +229,7 @@ async function newsletterView() {
   }
 }
 
-async function logView() {
+export async function logView() {
   const [entries, settings] = await Promise.all([getActivity(), getSettings()])
   return { entries, enabled: settings.features.activityLog }
 }

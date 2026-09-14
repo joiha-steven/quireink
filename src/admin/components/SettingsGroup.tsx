@@ -15,7 +15,7 @@
 // `first` drops that rule, because a rule directly under the card's own header row is two
 // lines with nothing between them.
 import type { ReactNode } from 'react'
-import { NOTE_TEXT, UTIL } from './scale'
+import { NOTE_TEXT, UTIL } from '@/admin-shared/scale'
 
 export function SettingsGroup({ title, note, first = false, children }: {
   title: ReactNode

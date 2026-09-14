@@ -15,7 +15,7 @@ import { PickUpBand } from './PickUpBand'
 import { ActivityFeed } from './ActivityFeed'
 import { useAdminT } from './I18nProvider'
 import { REPO } from './help-kit'
-import { META_ON_CANVAS } from './scale'
+import { META_ON_CANVAS } from '@/admin-shared/scale'
 
 // ⚠️ `Taxo`, `SeoHealth` and `TrafficSources` were declared here and threaded through Props
 // for six values this component never read. The two that were worth showing are now inside

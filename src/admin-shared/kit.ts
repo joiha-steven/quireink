@@ -13,6 +13,8 @@
 // style rule, it is the whole reason the directory exists — the moment one of these files
 // imports from `src/admin`, the server can no longer read it.
 
+import { TAP } from '@/admin-shared/scale'
+
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'armed'
 
 /**
@@ -123,3 +125,95 @@ export const OVERLAY_LIFT =
 
 export const OVERLAY =
   `rounded-[10px] border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900 ${OVERLAY_LIFT}`
+
+// ═══ SURFACES AND FIELDS ═══════════════════════════════════════════════════════════════════
+//
+// Lifted out of `admin/components/{kit,sheet}.tsx` as ADR 0054's screens began converting: the
+// server draws them now and may not import from `src/admin`. Both files re-export what moved,
+// so nothing that already had them has to learn a second module, and `check:admin-kit` follows
+// the strings rather than the filenames.
+
+export const CARD =
+  'rounded-[10px] border border-neutral-200/80 bg-white shadow-[0_1px_2px_rgba(0,0,0,.05)] dark:border-neutral-800 dark:bg-neutral-900 dark:shadow-none'
+
+export const CONTROL_CHROME =
+  // The inset is the relief grammar's other half: raised means pressable, CARVED means it
+  // holds something — and a field holds the value. 1px of shading, not a style.
+  'rounded-md border border-neutral-300 bg-white text-neutral-900 outline-none transition focus:border-neutral-500 focus:ring-2 focus:ring-neutral-200 placeholder:text-neutral-400 shadow-[inset_0_1px_1.5px_rgba(0,0,0,.06)] dark:shadow-[inset_0_1px_1.5px_rgba(0,0,0,.35)] dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500 dark:focus:ring-neutral-800 dark:placeholder:text-neutral-500'
+
+// The canonical control — chrome plus the size nearly every field wants. `ui/Input.tsx`
+// IMPORTS this rather than keeping a matching copy. Callers add width (see FIELD_W).
+// `min-h-9` is `ui/Button`'s height: an earlier padding measured 42 against the button's 40,
+// and a field two pixels proud of the button that acts on it is one row broken.
+export const CONTROL = `${CONTROL_CHROME} min-h-9 px-3 py-1.5 text-sm`
+// The SECOND size, and there are only two. A sheet's tools row takes its height from the
+// segmented strip that starts it — 32 — so a field standing on one is 32, not the 36 a field
+// inside a form wears. `h-8` and not a minimum: a tools row does not grow.
+export const CONTROL_SM = `${CONTROL_CHROME} h-8 px-3 text-sm`
+
+export const SHEET = `${CARD} flex flex-col min-h-[60vh]`
+
+/**
+ * The sheet for a page that must fit the WINDOW instead of growing past it.
+ *
+ * `SHEET` sets a FLOOR, so a page taller than the fold simply scrolls — right for every
+ * screen whose content is a list. It is wrong for a conversation: the composer belongs to
+ * the sheet's bottom edge, and with a floor that edge walks off the screen the moment the
+ * transcript is longer than the window. Here the sheet is exactly as tall as the room it
+ * has and the TRANSCRIPT scrolls inside it.
+ *
+ * The 9rem is the chrome above and below, measured rather than guessed: the canvas pads
+ * `lg:py-9` (36 top, 36 bottom) and `PageHeader` is a 22px title on `mb-10` (~68). 144px
+ * covers it with a few pixels to spare, and being a few pixels out costs a few pixels of
+ * scroll rather than a broken layout. Below `lg` the page scrolls as pages do.
+ */
+export const SHEET_FIXED = `${CARD} flex flex-col min-h-[70dvh] lg:h-[calc(100dvh-9rem)]`
+
+/** The sheet's closing line of small print: counts, hints, what a click does. */
+export const SHEET_FOOT =
+  'mt-auto border-t border-neutral-100 px-4 py-2.5 text-xs text-neutral-500 dark:border-neutral-800 dark:text-neutral-400'
+
+/** A quiet tool on the sheet-top row — same voice as the write pane's sort cycle. */
+export const SHEET_TOOL =
+  `${TAP} text-xs text-neutral-500 transition hover:text-neutral-900 disabled:opacity-50 dark:text-neutral-400 dark:hover:text-neutral-200`
+
+/**
+ * The same tool, for a `PageHeader` action — which is NOT on a sheet.
+ *
+ * Everything else that wears `SHEET_TOOL` sits on a white card and measures 4.61:1. A page
+ * header sits on the canvas, which is tinted, and the same ink there measures 4.39:1 — under
+ * the 4.5:1 a 12px line has to clear. The call site that needs it is the newsletter's SMTP
+ * link; Analytics used to be the other, and its CSV export was removed on 2026-08-30.
+ *
+ * DERIVED from `SHEET_TOOL` rather than typed out, because a hand-copy of this constant is a
+ * thing that has already happened here more than once — and because the ONLY difference that
+ * belongs between them is the one notch of ink.
+ */
+export const SHEET_TOOL_ON_CANVAS = SHEET_TOOL.replace('text-neutral-500', 'text-neutral-600')
+
+/**
+ * The same tool, in red ballpoint, for one that DESTROYS something.
+ *
+ * "Restore" and "Delete permanently" sat side by side in the Trash wearing the identical
+ * class — the same size, the same weight, the same grey — with a native `confirm()` as the
+ * only thing between a mis-tap and a post that is gone. Nothing on the row said which of the
+ * two was the one you cannot undo.
+ *
+ * DERIVED, not re-typed, for the reason `SHEET_TOOL_ON_CANVAS` is: the two must differ by
+ * exactly one thing — the ink — and a hand-written copy drifts on the other five within a
+ * month. The ink is the product's own red ballpoint (`--pen-red`, PEN_AUX_LIGHT in
+ * `pen/pigments.ts`), which is what you strike a line through something with on paper.
+ */
+export const SHEET_TOOL_DANGER = SHEET_TOOL
+  .replace('text-neutral-500', 'text-[var(--pen-red)]')
+  .replace('hover:text-neutral-900', 'hover:text-[var(--pen-red)] hover:underline')
+  .replace('dark:text-neutral-400', 'dark:text-[var(--pen-red)]')
+  .replace('dark:hover:text-neutral-200', 'dark:hover:text-[var(--pen-red)]')
+
+/**
+ * The sheet's FIRST ROW: the page's tools on one thin band over a hairline.
+ *
+ * A constant rather than a class list inside a component, because two faces draw it now.
+ */
+export const SHEET_TOP =
+  'flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-neutral-100 px-4 py-2.5 dark:border-neutral-800'

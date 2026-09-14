@@ -7,7 +7,7 @@
 // The order is the one rule: what it is, what to know about it, then the control.
 import { useId, useState, type FocusEvent, type InputHTMLAttributes, type ReactNode, type TextareaHTMLAttributes } from 'react'
 import { CONTROL, FIELD_GAP, FIELD_W, NOTE, SETTING_LABEL } from '@/admin/components/kit'
-import { NOTE_ALERT } from '@/admin/components/scale'
+import { NOTE_ALERT } from '@/admin-shared/scale'
 import { useAdminT } from '@/admin/components/I18nProvider'
 
 // `CONTROL`, not a copy of it. This file used to declare its own `FIELD` with the same

@@ -79,6 +79,11 @@ export const ICONS = {
   close: '<path d="m6.5 6.5 11 11M17.5 6.5l-11 11"/>',
   prev: '<path d="M14.5 5.5 8 12l6.5 6.5"/>',
   next: '<path d="m9.5 5.5 6.5 6.5-6.5 6.5"/>',
+  // The one direction `prev` and `next` do not cover, and a select needs it: the mark that
+  // says "this opens downward". Added 2026-09-14, when the server had to draw a select too
+  // (ADR 0054) and the only copy of this shape was a path typed inside `kit.tsx`. Clean, like
+  // the other chevrons — a mark, not an object, so no echo stroke.
+  down: '<path d="m6 9 6 6 6-6"/>',
   check: '<path d="m5 12.5 4.5 4.5L19.5 6.5"/>',
   add: '<path d="M12 5v14M5 12h14"/>',
   more: '<circle cx="5.5" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="18.5" cy="12" r="1.3" fill="currentColor" stroke="none"/>',

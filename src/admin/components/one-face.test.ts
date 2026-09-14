@@ -55,6 +55,17 @@ const code = (file: string): string =>
     .filter((l) => !l.trimStart().startsWith('//'))
     .join('\n')
 
+/**
+ * WHERE THE ADMIN'S FACES CAN BE NAMED, which stopped being one directory on 2026-09-14.
+ *
+ * `scale.ts` declares both carve-outs and it moved to `src/admin-shared` under ADR 0054, so
+ * the server can read it — a server module may not import from `src/admin`. `src/web/admin`
+ * is here for the same reason: it writes admin markup now, and a `font-family` smuggled in
+ * there would be exactly the drift this file exists to catch, one call site at a time.
+ */
+const TREES = ['src/admin', 'src/web/admin', 'src/admin-shared']
+const everywhere = (): string[] => TREES.flatMap(sources)
+
 function sources(dir: string): string[] {
   const out: string[] = []
   for (const name of readdirSync(dir, { withFileTypes: true })) {
@@ -93,7 +104,7 @@ describe('the admin wears one face', () => {
     // `TypographyFields` is the font picker's specimen tiles, which are not a preview if
     // they are not painted in the family they offer. `scale.ts` is the declaration. A
     // fourth file means the 2026-08-15 decision is being re-opened by accident.
-    const holders = sources('src/admin')
+    const holders = everywhere()
       .filter((f) => /\bREADING\b/.test(code(f)))
       .map((f) => f.replaceAll('\\', '/'))
       .sort()
@@ -101,7 +112,7 @@ describe('the admin wears one face', () => {
       'src/admin/components/SheetTitle.tsx',
       'src/admin/components/TypographyFields.tsx',
       'src/admin/components/kit.tsx', // re-export only
-      'src/admin/components/scale.ts',
+      'src/admin-shared/scale.ts',
     ].sort())
   })
 
@@ -110,14 +121,16 @@ describe('the admin wears one face', () => {
     // `kit.tsx` holds `PageHeader` itself and re-exports the token; `scale.ts` declares it.
     // A third file means some other heading has started wearing a serif, which is the exact
     // drift the one-face rule exists to catch: two faces arrive one call site at a time.
-    const holders = sources('src/admin')
+    const holders = everywhere()
       .filter((f) => /\bPAGE_TITLE_FACE\b/.test(code(f)))
       .map((f) => f.replaceAll('\\', '/'))
       .sort()
+    // `.sort()` on both sides, because the two paths no longer sort the way they read:
+    // `admin-shared` comes BEFORE `admin/` (a dash is 0x2D, a slash is 0x2F).
     expect(holders).toEqual([
       'src/admin/components/kit.tsx',
-      'src/admin/components/scale.ts',
-    ])
+      'src/admin-shared/scale.ts',
+    ].sort())
   })
 
   it('points the page-title class at a FIXED serif, never at the site\'s reading face', () => {
@@ -142,7 +155,7 @@ describe('the admin wears one face', () => {
     // face there is nothing for it to switch to, and a rule that switches nothing is the thing
     // this file keeps being rewritten because of.
     expect(DECLARATIONS).not.toContain('data-prose')
-    for (const file of sources('src/admin')) {
+    for (const file of everywhere()) {
       expect(code(file)).not.toContain('data-prose')
     }
   })

@@ -6,7 +6,7 @@
 // below describes one KNOB on it. The two are read at different times by different people.
 //
 // Re-exported from `@/types`, so no import site had to change. That is the same bargain
-// `admin/components/scale.ts` made when it left the kit: a split nobody has to learn.
+// `admin-shared/scale.ts` made when it left the kit: a split nobody has to learn.
 
 // MCP server settings. Just an on/off switch — the access tokens live in their own
 // `mcp_tokens` table (hashed), managed from Admin → Settings → Advanced.

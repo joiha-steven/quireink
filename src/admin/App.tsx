@@ -31,6 +31,9 @@ import { useFocusMode } from '@/admin/components/useFocusMode'
 // STARTED before React asks for it — see `preloadRoute` below.
 type Loader = () => Promise<{ default: ComponentType }>
 
+// `/admin/log` is not here: it is the first screen the SERVER draws (ADR 0054, step 1), and
+// `web/admin/screens/index.ts` is the table that says so. A converted screen leaves this map in
+// the same commit that adds it there, so the two can never both claim one address.
 const load = {
   dashboard: () => import('@/admin/pages/Dashboard'),
   content: () => import('@/admin/pages/Content'),
@@ -41,7 +44,6 @@ const load = {
   comments: () => import('@/admin/pages/Comments'),
   newsletter: () => import('@/admin/pages/Newsletter'),
   analytics: () => import('@/admin/pages/Analytics'),
-  log: () => import('@/admin/pages/Log'),
   trash: () => import('@/admin/pages/Trash'),
   settings: () => import('@/admin/pages/Settings'),
   help: () => import('@/admin/pages/Help'),
@@ -63,7 +65,6 @@ const Media = lazy(throughDeploys(load.media))
 const Comments = lazy(throughDeploys(load.comments))
 const Newsletter = lazy(throughDeploys(load.newsletter))
 const Analytics = lazy(throughDeploys(load.analytics))
-const Log = lazy(throughDeploys(load.log))
 const Trash = lazy(throughDeploys(load.trash))
 const Settings = lazy(throughDeploys(load.settings))
 const Help = lazy(throughDeploys(load.help))
@@ -82,7 +83,6 @@ function loaderFor(path: string): Loader {
   if (p === '/admin/comments') return load.comments
   if (p === '/admin/newsletter') return load.newsletter
   if (p === '/admin/analytics') return load.analytics
-  if (p === '/admin/log') return load.log
   if (p === '/admin/trash') return load.trash
   if (p === '/admin/settings') return load.settings
   if (p === '/admin/help') return load.help
@@ -100,6 +100,8 @@ function loaderFor(path: string): Loader {
  * wrapper below resolves against this one rather than starting a second fetch.
  */
 export function preloadRoute(path: string): void {
+  // Nothing to warm for a screen the server draws: it arrives finished, in one response.
+  if (document.documentElement.dataset.adminScreen) return
   void loaderFor(path)().catch(() => {
     /* the render will surface it; a warm-up must never be the thing that throws */
     /* NOT wrapped in `throughDeploys`, deliberately: this fires on hover and on mount, and a
@@ -115,6 +117,12 @@ export function preloadRoute(path: string): void {
  */
 function Route(): ReactNode {
   const path = usePathname().replace(/\/+$/, '') || '/admin'
+  // THE SERVER GOT THERE FIRST (ADR 0054). A screen it drew is already in the canvas above
+  // this div, so React draws nothing and goes on providing the overlays that are still its:
+  // the palette, the shortcut sheet, the confirm dialog, the toast. Read off `<html>` rather
+  // than from a list in this file, because a second list is a second thing to keep in step —
+  // and the one that decides is the one that rendered.
+  if (document.documentElement.dataset.adminScreen) return null
   if (path === '/admin') return <Dashboard />
   if (path === '/admin/content') return <Content />
   if (path === '/admin/editor' || path.startsWith('/admin/editor/')) return <PostEditor />
@@ -124,7 +132,6 @@ function Route(): ReactNode {
   if (path === '/admin/comments') return <Comments />
   if (path === '/admin/newsletter') return <Newsletter />
   if (path === '/admin/analytics') return <Analytics />
-  if (path === '/admin/log') return <Log />
   if (path === '/admin/trash') return <Trash />
   if (path === '/admin/settings') return <Settings />
   if (path === '/admin/help') return <Help />

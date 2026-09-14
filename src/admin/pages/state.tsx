@@ -11,7 +11,7 @@ import { Button } from '@/admin/ui/Button'
 import { useAdminT } from '@/admin/components/I18nProvider'
 import { Skeleton, type SkeletonShape } from '@/admin/components/Skeleton'
 import { SHEET } from '@/admin/components/sheet'
-import { HEADER_GAP } from '@/admin/components/scale'
+import { HEADER_GAP } from '@/admin-shared/scale'
 
 /**
  * Waiting, in the shape of what is coming.

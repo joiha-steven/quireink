@@ -25,7 +25,7 @@
 import { useState, type ReactNode } from 'react'
 import { Button } from '@/admin/ui/Button'
 import { Lamp, type LampState } from '@/admin/ui/Lamp'
-import { NOTE_ALERT } from './scale'
+import { NOTE_ALERT } from '@/admin-shared/scale'
 import { SettingsCard } from './SettingsCard'
 import { useAdminT } from './I18nProvider'
 

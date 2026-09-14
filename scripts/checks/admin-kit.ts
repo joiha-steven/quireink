@@ -34,14 +34,18 @@ const RULES: Rule[] = [
     // the primitive later grows, and the copy stays behind where nothing can see it.
     what: 'the quiet sheet-top tool',
     signature: 'text-xs text-neutral-500 transition hover:text-neutral-900',
-    home: 'src/admin/components/sheet.tsx',
-    instead: 'import SHEET_TOOL from components/sheet',
+    // Moved to `src/admin-shared` on 2026-09-14 with ADR 0054's first screens: the server
+    // draws a sheet now and may not import from `src/admin`. `components/sheet.tsx`
+    // re-exports it, so the advice below is unchanged for anything in React.
+    home: 'src/admin-shared/kit.ts',
+    instead: 'import SHEET_TOOL from components/sheet, or from @/admin-shared/kit on the server',
   },
   {
     what: 'the form-control chrome',
     signature: 'focus:ring-2 focus:ring-neutral-200',
-    home: 'src/admin/components/kit.tsx',
-    instead: 'import CONTROL from components/kit, or use ui/Input',
+    // Moved with the sheet's tool, and for the same reason.
+    home: 'src/admin-shared/kit.ts',
+    instead: 'import CONTROL from components/kit, or from @/admin-shared/kit on the server',
   },
   {
     what: 'the segmented tab track',
@@ -61,7 +65,7 @@ const RULES: Rule[] = [
   {
     what: 'the stat tile',
     signature: 'text-[1.875rem] font-medium leading-none tracking-[-0.02em] tabular-nums',
-    home: 'src/admin/components/scale.ts',
+    home: 'src/admin-shared/scale.ts',
     instead: 'use <StatCard> (or <StatTile>, which is StatCard with a trend)',
   },
   {
@@ -103,7 +107,7 @@ const RULES: Rule[] = [
     // size, the slant and the leading and swaps the ink (`NOTE_ALERT`), and a signature that
     // still named the grey would have been a rule this kit could no longer satisfy.
     signature: 'text-[0.8125rem] italic leading-[1.55]',
-    home: 'src/admin/components/scale.ts',
+    home: 'src/admin-shared/scale.ts',
     instead: 'import NOTE_TEXT from components/kit — or pass `note` to Setting / ui/Input',
   },
 ]
@@ -295,7 +299,7 @@ for (const file of files) {
 /**
  * TYPE SMALLER THAN THE SCALE'S FLOOR.
  *
- * The scale runs 30 · 28 · 17 · 16 · 14 · 13 · 12 (`components/scale.ts`), and 12 is the
+ * The scale runs 30 · 28 · 17 · 16 · 14 · 13 · 12 (`admin-shared/scale.ts`), and 12 is the
  * floor on purpose: measured `#737373` on white is 4.74:1 against the 4.5 a 13px line has to
  * clear, and the next neutral step is 2.58 — there is no room under it. Thirteen runs of
  * `text-[11px]` and two of `text-[10px]` were counted on 2026-09-07, every one of them on a
@@ -313,7 +317,7 @@ for (const file of files) {
   if (!hit) continue
   console.error(`✗ check:admin-kit: ${path} sets type below the scale's floor (${hit[0]})`)
   console.error("  Twelve is the smallest this admin sets, and it is a contrast limit rather")
-  console.error('  than a taste: use META or UTIL from components/scale.ts.')
+  console.error('  than a taste: use META or UTIL from admin-shared/scale.ts.')
   failed = true
 }
 
