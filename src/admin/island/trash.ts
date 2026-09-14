@@ -17,6 +17,7 @@
 // matches any accents in the text, a word typed WITH them means them. Five Vietnamese words
 // live inside one folded spelling, so folding both sides makes a search for "lề" return "lệ".
 import { indexIn, lanes, type Lanes } from '@/accent'
+import { showTab } from './lib/tab-strip'
 
 const root = document.querySelector<HTMLElement>('[data-screen="trash"]')
 
@@ -113,6 +114,7 @@ if (root) {
       tab.setAttribute('aria-pressed', String(on))
       tab.className = on ? ON : OFF
     }
+    showTab(strip)
     if (search) { search.value = ''; search.hidden = rowsOf(kind).length === 0 }
     if (emptyKey) emptyKey.hidden = rowsOf(kind).length === 0
     apply()
@@ -122,6 +124,10 @@ if (root) {
     const tab = (e.target as HTMLElement).closest<HTMLElement>('[data-tab]')
     if (tab?.dataset.tab) swap(tab.dataset.tab)
   })
+
+  // On arrival too: the server draws the selected tab, so the painter above has never run
+  // when the page opens, and a strip too wide for a phone opens showing the wrong end.
+  showTab(strip)
   search?.addEventListener('input', apply)
   root.addEventListener('change', (e) => {
     if ((e.target as HTMLElement).hasAttribute('data-trash-pick')) countPicked()

@@ -12,12 +12,12 @@
 // job's own toggle in Settings → AI.
 
 import { getIntegrationKeys } from '@/store/integration-keys'
-import { AI_PROVIDERS, DEFAULT_MODELS, OPENAI_COMPATIBLE, seesImages } from '@/server/ai-capabilities'
+import { AI_PROVIDERS, AI_PROVIDER_NAMES, DEFAULT_MODELS, OPENAI_COMPATIBLE, seesImages } from '@/server/ai-capabilities'
 
 // The tables live in a file that imports nothing (`ai-capabilities.ts`) so the key store
 // can read them without closing a cycle; they are re-exported here because this is where
 // every caller already looks for them.
-export { AI_PROVIDERS, DEFAULT_MODELS, seesImages }
+export { AI_PROVIDERS, AI_PROVIDER_NAMES, DEFAULT_MODELS, seesImages }
 
 /**
  * The output ceiling for a one-sentence job, which is not one sentence' worth.

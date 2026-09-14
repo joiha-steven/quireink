@@ -13,6 +13,7 @@ import type { SiteLang } from '@/types'
 import { formatCount } from '@/i18n/format'
 import { buttonClass } from '@/admin-shared/kit'
 import { wireSubscribers } from './lib/subscriber-list'
+import { showTab } from './lib/tab-strip'
 
 const root = document.querySelector<HTMLElement>('[data-screen="newsletter"]')
 
@@ -52,6 +53,7 @@ if (root) {
       b.setAttribute('aria-pressed', String(on))
       b.className = on ? ON : OFF
     }
+    showTab(strip)
     if (tab === 'send') void preview()
   }
 
@@ -59,6 +61,10 @@ if (root) {
     const b = (e.target as HTMLElement).closest<HTMLElement>('[data-tab]')
     if (b?.dataset.tab) swap(b.dataset.tab)
   })
+
+  // On arrival too: the server draws the selected tab, so the painter above has never run
+  // when the page opens, and a strip too wide for a phone opens showing the wrong end.
+  showTab(strip)
 
   // ---- People -----------------------------------------------------------------------
   // Its own module under `island/lib/`, which the build's `*.ts` glob does not reach: a list

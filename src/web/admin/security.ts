@@ -25,6 +25,7 @@ import { rateLimited } from '@/server/rate-limit'
 import { clientIp } from '@/server/rate-limit'
 import { fail, json } from '@/web/api'
 import { owner, ownerRouter, param } from '@/web/guard'
+import type { SecurityWire } from '@/admin-shared/wire'
 
 const body = async <T>(c: Context): Promise<Partial<T>> =>
   (await c.req.json().catch(() => ({}))) as Partial<T>
@@ -60,7 +61,10 @@ export function securityRoutes() {
    */
   router.get('/api/security', async (c) => {
     const { user, session } = owner(c)
-    return json({
+    // ANNOTATED, not inferred. The island reads this reply through the same type, so a column
+    // that changes shape in `sessions` fails here instead of throwing in a browser nobody is
+    // watching (`src/admin-shared/wire.ts` carries the case that taught us).
+    const payload: SecurityWire = {
       currentSessionId: session.id,
       recoveryLeft: remainingCodes(user.id),
       totpEnabled: totpStateFor(user.id)?.secret != null,
@@ -71,7 +75,8 @@ export function securityRoutes() {
         lastSeenAt: s.lastSeenAt,
         current: s.id === session.id,
       })),
-    })
+    }
+    return json(payload)
   })
 
   /**

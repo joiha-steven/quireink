@@ -20,7 +20,12 @@ export function registerCssFlows({ flow, expect }: Tour): void {
         setter.call(ed, v)
         ed.dispatchEvent(new Event('input', { bubbles: true }))
       }
-      const status = () => document.querySelector('[data-css-status]')?.textContent ?? ''
+      // ⚠️ innerText, NOT textContent. Under ADR 0054 all three faces of this line are DRAWN
+      // and two are hidden, so textContent hands back the byte count AND the unclosed warning
+      // AND the stray-brace warning glued together — one string that matches every test this
+      // flow makes, whatever the box actually says. innerText leaves out what is display:none,
+      // which is the same question docs/admin-one-dom.md answers with offsetParent elsewhere.
+      const status = () => document.querySelector('[data-css-status]')?.innerText ?? ''
 
       // A sheet that would do nothing has to SAY it does nothing.
       setValue('.prose {')
@@ -63,53 +68,12 @@ export function registerCssFlows({ flow, expect }: Tour): void {
 }
 
 /**
- * The account screen, which is the third capability this week that existed and had no door.
+ * The reader-facing effects that only a real browser can measure.
  *
- * `listSessions` and `revokeAllSessions` were written and tested and called by nobody; the
- * spec described a screen nothing had ever built. A unit test proves the routes answer — only
- * a browser proves the owner can reach them.
+ * The account screen moved to `tour-flows-security.ts` on 2026-09-15, when this file crossed
+ * the 400-line limit.
  */
 export function registerSecurityFlows({ flow, expect }: Tour): void {
-  flow('admin: the account can be defended from the admin', () =>
-    expect('/admin/settings?tab=account', `
-    (async () => {
-      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
-      const cur = document.querySelector('[data-security-current]')
-      if (!cur) return 'the Account tab has no Security card'
-
-      const rows = [...document.querySelectorAll('[data-security-session]')]
-      if (!rows.length) return 'no signed-in device is listed, not even this one'
-      if (!rows.some((r) => /this device|thiết bị này/i.test(r.textContent))) {
-        return 'the list does not say which session is the one asking'
-      }
-
-      // Re-read after every render: React replaces these nodes, so a reference captured
-      // earlier reports the disabled state of a button that is no longer on the page.
-      const acting = () => [...document.querySelectorAll('button')]
-        .filter((b) => /codes|enrol|mã mới|Đăng ký lại/i.test(b.textContent))
-      if (acting().length < 2) return 'only ' + acting().length + ' password-only actions on screen'
-      // Both are changes, so neither may be reachable until the password is typed. "Change
-      // password" is deliberately NOT in this set: it waits for the new password as well,
-      // which is why asserting all three go live failed on its first run.
-      if (!acting().every((b) => b.disabled)) return 'an action was live before the password was given'
-
-      const set = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set
-      set.call(cur, 'definitely not the password')
-      cur.dispatchEvent(new Event('input', { bubbles: true }))
-      await sleep(250)
-      if (acting().some((b) => b.disabled)) return 'typing a password left an action disabled'
-
-      // THE POINT: a valid session plus a wrong password changes nothing.
-      acting().find((b) => /codes|mã mới/i.test(b.textContent)).click()
-      await sleep(900)
-      if (document.querySelector('[data-security-codes]')) return 'a wrong password minted recovery codes'
-      if (!/not right|không đúng/i.test(document.body.innerText)) return 'a wrong password was refused silently'
-
-      set.call(cur, '')
-      cur.dispatchEvent(new Event('input', { bubbles: true }))
-      return 'ok (' + rows.length + ' device(s))'
-    })()`, 1800))
-
   // The scroll fade, both halves of it, through the owner's switch.
   //
   // THREE VISITS, not one expression, for the reason `tour-flows-home.ts` spells out: the

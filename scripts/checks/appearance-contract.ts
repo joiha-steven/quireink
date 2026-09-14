@@ -60,8 +60,10 @@ function sources(): string {
  * still sends the owner to the wrong tab, which is precisely the failure this check was
  * written for — the settings were reorganised and the map was not. So the map is a map.
  *
- * Two sources, because the screen has two: `SettingsView.tsx` renders five tabs inline as
- * `{tab === 'x' && (...)}` blocks, and three more live in their own `Settings<X>Tab.tsx`.
+ * ONE source since the screen became a page (ADR 0054): `src/web/admin/screens/settings-<tab>.ts`,
+ * one file per tab, each drawing its cards with `panelCard({ title: t.cardX })` or
+ * `connectionCard({ title: t.cardX })`. It read two React files before that — `SettingsView.tsx`
+ * for five tabs rendered inline and `Settings<X>Tab.tsx` for three more — and both are gone.
  */
 const TABS: Map<string, Set<string>> = (() => {
   const en = readFileSync('locales/admin/en.ts', 'utf8')
@@ -71,20 +73,29 @@ const TABS: Map<string, Set<string>> = (() => {
   }
   const titles = (src: string): Set<string> => {
     const out = new Set<string>()
-    for (const m of src.matchAll(/title=\{t\.(\w+)\}/g)) {
+    // `panelCard({ title: t.cardX })` and `connectionCard({ title: t.cardX })`, which is how
+    // every card on every tab names itself now.
+    for (const m of src.matchAll(/\btitle: t\.(\w+)/g)) {
       const v = value(m[1]!)
       if (v) out.add(v.toLowerCase())
     }
     return out
   }
   const byKey = new Map<string, Set<string>>()
-  const view = readFileSync('src/admin/components/SettingsView.tsx', 'utf8')
-  const parts = view.split(/\{tab === '([a-z]+)' && \(/)
-  for (let i = 1; i < parts.length; i += 2) byKey.set(parts[i]!, titles(parts[i + 1]!))
-  for (const f of readdirSync('src/admin/components')) {
-    const m = /^Settings([A-Z][a-z]+)Tab\.tsx$/.exec(f)
-    if (!m) continue
-    byKey.set(m[1]!.toLowerCase(), titles(readFileSync(join('src/admin/components', f), 'utf8')))
+  const dir = 'src/web/admin/screens'
+  for (const f of readdirSync(dir)) {
+    // `settings-blog.ts`, not `settings-appearance-theme.ts`: a tab is one file, and the ones
+    // split out of it are read through their own tab's file below.
+    const m = /^settings-([a-z]+)\.ts$/.exec(f)
+    if (!m || m[1] === 'shell' || m[1] === 'safety') continue
+    const own = readFileSync(join(dir, f), 'utf8')
+    // A tab that split its cards into helper files imports them; read those too, so a card
+    // moved out of the tab's own file does not disappear from this map.
+    const extra = [...own.matchAll(/from '@\/web\/admin\/screens\/(settings-[a-z-]+)'/g)]
+      .map((x) => join(dir, `${x[1]!}.ts`))
+      .filter((path) => existsSync(path))
+      .map((path) => readFileSync(path, 'utf8'))
+    byKey.set(m[1]!, titles([own, ...extra].join('\n')))
   }
   // Keyed by the LABEL a reader sees ("Search & URLs"), not by the internal id ("seo").
   const out = new Map<string, Set<string>>()

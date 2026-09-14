@@ -343,7 +343,9 @@ export function registerAdminFlows({ flow, expect, atWidth }: Tour): void {
   // or, if it is a boolean, ends on its right one. NOTE: a template literal. No backticks.
   flow('admin: every control in a settings card stands in one column', () => expect('/admin/settings?tab=blog', `
     (() => {
-      const p = document.getElementById('settings-panel')
+      // data-explanations rides the STACK now, not one panel: all seven ship drawn and the
+      // switch quiets every one of them at once (ADR 0054).
+      const p = document.querySelector('[data-settings-panels]')
       if (!p || p.dataset.explanations !== 'off') return 'no panel with its explanations hidden'
       const bad = Array.from(p.querySelectorAll('.card-body')).flatMap((body) => {
         const box = body.getBoundingClientRect(), cs = getComputedStyle(body), l = Math.round(box.left + parseFloat(cs.paddingLeft)), r = Math.round(box.right - parseFloat(cs.paddingRight))

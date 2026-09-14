@@ -60,10 +60,11 @@
   five-token cap. Deleting the connector in Claude only lets it re-authorize, minting a new row
   beside the old one. So authorizing once stays connected across the expiry boundary, and an
   admin delete is final unless the owner authorizes again. Token CRUD is owner-only
-  `/api/mcp/tokens` (+ `/:id`); the UI is `src/admin/components/McpFields.tsx`, whose cap counts
-  manual tokens only and which **shows the endpoint URL with a copy button** while the toggle is
-  on — a client has to be pointed somewhere and nothing else on the card says where. It prefers
-  `settings.siteUrl` and falls back to the browser's origin, since a blank `siteUrl` resolves
+  `/api/mcp/tokens` (+ `/:id`); the UI is `src/web/admin/screens/settings-server-mcp.ts`, whose cap
+  counts manual tokens only and which **shows the endpoint URL with a copy button** while the
+  toggle is on — a client has to be pointed somewhere and nothing else on the card says where. It
+  prefers `settings.siteUrl` and falls back to the address the request arrived on (the server has
+  that from the request; the React card used the browser's origin), since a blank `siteUrl` resolves
   from the environment, which the admin cannot read.
 - **The consent screen needs an nginx exception**, so anyone putting this behind a proxy with
   a CSP has to make it too:

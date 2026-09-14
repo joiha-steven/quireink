@@ -23,7 +23,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from '@/admin/router'
 import { indexIn, lanes } from '@/accent'
-import { SETTINGS_INDEX } from './settings-index'
+import { SETTINGS_INDEX } from '@/admin-shared/settings-index'
 import { useAdminT } from './I18nProvider'
 import { OVERLAY } from './sheet'
 import { UTIL } from '@/admin-shared/scale'

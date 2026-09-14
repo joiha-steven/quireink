@@ -187,22 +187,37 @@ export function registerSettingsFlows({ flow, expect }: Tour): void {
   // ⚠️ AN EMPTY ANSWER AND A BROKEN QUESTION ARE NOT THE SAME FACT. Three components used to
   // render them identically: a refused request printed "nothing here" to somebody whose rows
   // were all still on the server.
+  //
+  // IT ASKS THE BACKUPS CARD NOW, not the redirects. Under ADR 0054 the redirect rows arrive
+  // DRAWN — the server can read them, so there is no request to refuse and no failure to show.
+  // What is still fetched after the page loads is the snapshot list and the MCP tokens, and on
+  // the snapshot card the distinction is the whole reason the rule exists: "there are no
+  // backups" and "I could not find out whether there are backups" are opposite instructions to
+  // the person reading them.
+  //
+  // The refusal has to be in place BEFORE the island runs, so the page is entered with the stub
+  // already installed rather than re-entering a tab: the island fetches once, on load.
   flow('admin: a refused list says so, and offers to ask again', () => expect('/admin/settings?tab=server', `
     (async () => {
       const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      const seen = (el) => el && el.offsetParent !== null
+      const card = () => document.querySelector('[data-backup-list]').closest('section')
+      const failed = () => card().querySelector('[data-backup-failed]')
+      const empty = () => card().querySelector('[data-backup-none]')
+
       const real = window.fetch
       let refuse = true
-      window.fetch = (u, i) => (refuse && String(u).includes('/api/redirects') && (!i || !i.method || i.method === 'GET')
+      window.fetch = (u, i) => (refuse && String(u).includes('/api/backup/list')
         ? Promise.reject(new Error('offline'))
         : real(u, i))
-      // Re-enter the tab so the redirect table mounts behind the refusal.
-      const other = [...document.querySelectorAll('main .no-scrollbar button')][0]
-      const server = [...document.querySelectorAll('main .no-scrollbar button')].find((b) => /server|máy chủ/i.test(b.textContent))
-      other.click(); await sleep(400); server.click(); await sleep(900)
-      const boxes = [...document.querySelectorAll('main div')].filter((d) => /border-neutral-900|border-white/.test(d.className))
-      if (!boxes.length) { window.fetch = real; return 'a refused list drew no failure box' }
-      const retry = [...boxes[0].querySelectorAll('button')][0]
+      // Make the island ask again with the stub in place, the way a reload would.
+      const retryAll = () => { for (const k of document.querySelectorAll('[data-load-retry]')) k.click() }
+      retryAll(); await sleep(700)
+      if (!seen(failed())) { window.fetch = real; return 'a refused list drew no failure box' }
+      if (seen(empty())) { window.fetch = real; return 'a refused list ALSO claimed there is nothing there' }
+      const retry = failed().querySelector('[data-load-retry]')
       if (!retry) { window.fetch = real; return 'the failure box offered no way to ask again' }
+
       // Let it through this time: the retry must refetch in place, not reload the admin.
       refuse = false
       const path = location.pathname
@@ -210,8 +225,8 @@ export function registerSettingsFlows({ flow, expect }: Tour): void {
       await sleep(900)
       window.fetch = real
       if (location.pathname !== path) return 'Try again left the page'
-      const stillBroken = [...document.querySelectorAll('main div')].some((d) => /border-neutral-900|border-white/.test(d.className))
-      return stillBroken ? 'Try again did not clear the failure' : 'ok (failed, asked again, recovered in place)'
+      if (seen(failed())) return 'Try again did not clear the failure'
+      return 'ok (failed, said so, asked again, recovered in place)'
     })()`, 1400))
 
   flow('admin: a failed save leaves its toast up, and the close button removes it', () => expect('/admin/settings', `
@@ -277,17 +292,23 @@ export function registerSettingsFlows({ flow, expect }: Tour): void {
   flow('admin: a settings tab with paper to spare opens with its explanations', () => expect('/admin/settings?tab=people', `
     (async () => {
       const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
-      const panel = () => document.getElementById('settings-panel')
+      // The OPEN panel. Each tab has its own tabpanel since the screen became server-drawn and
+      // all seven ship at once (ADR 0054); #settings-panel was the single panel React swapped.
+      const panel = () => document.querySelector('[data-settings-panel]:not([hidden])')
       if (!panel()) return 'no settings panel'
-      const state = () => panel().getAttribute('data-explanations')
+      // The switch is ONE answer for the whole screen, so it rides the stack that holds the
+      // seven panels rather than any one of them (ADR 0054). It was on the single panel React
+      // swapped in and out, which is the same place when there is only ever one.
+      const stack = () => document.querySelector('[data-settings-panels]')
+      const state = () => stack().getAttribute('data-explanations')
       // Measured the way the screen measures it: with the explanations flipped off, so the
       // answer is the tab's own height and not the height it grew to after being answered.
       const bare = () => {
-        const p = panel()
-        const was = p.getAttribute('data-explanations')
-        p.setAttribute('data-explanations', 'off')
-        const h = Math.round(p.getBoundingClientRect().height)
-        if (was !== null) p.setAttribute('data-explanations', was)
+        const box = stack()
+        const was = box.getAttribute('data-explanations')
+        box.setAttribute('data-explanations', 'off')
+        const h = Math.round(panel().getBoundingClientRect().height)
+        if (was !== null) box.setAttribute('data-explanations', was)
         return h
       }
       const floor = innerHeight * 0.6
@@ -320,7 +341,7 @@ export function registerSettingsFlows({ flow, expect }: Tour): void {
   // NOTE: this body is a template literal. No backticks.
   flow('admin: a settings card, a group and a row are three ranks apart', () => expect('/admin/settings?tab=post', `
     (() => {
-      const panel = document.getElementById('settings-panel')
+      const panel = document.querySelector('[data-settings-panel]:not([hidden])')
       if (!panel) return 'no settings panel'
       const card = panel.querySelector('h2')
       const group = panel.querySelector('h3')

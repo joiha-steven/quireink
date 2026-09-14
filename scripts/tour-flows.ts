@@ -15,11 +15,13 @@ import type { Tour } from './tour'
 import { registerAdminFlows } from './tour-flows-admin'
 import { registerAiFlows } from './tour-flows-ai'
 import { registerMediaFlows } from './tour-flows-media'
+import { registerSettings2Flows } from './tour-flows-settings2'
 import { registerBackupFlows } from './tour-flows-backup'
 import { registerNewsFlows } from './tour-flows-news'
 import { registerStatsFlows } from './tour-flows-stats'
 import { registerShellFlows } from './tour-flows-shell'
 import { registerCssFlows, registerSecurityFlows } from './tour-flows-css'
+import { registerAccountFlows } from './tour-flows-security'
 import { registerGuardFlows } from './tour-flows-guard'
 import { registerPageFlows } from './tour-flows-pages'
 
@@ -319,6 +321,7 @@ export function registerFlows({ flow, expect, atWidth }: Tour): void {
   registerAdminFlows({ flow, expect, atWidth })
   registerAiFlows({ flow, expect })
   registerMediaFlows({ flow, expect })
+  registerSettings2Flows({ flow, expect })
   registerBackupFlows({ flow, expect, atWidth })
   registerNewsFlows({ flow, expect, atWidth })
   registerStatsFlows({ flow, expect, atWidth })
@@ -326,5 +329,6 @@ export function registerFlows({ flow, expect, atWidth }: Tour): void {
   registerGuardFlows({ flow, expect })
   registerPageFlows({ flow, expect })
   registerCssFlows({ flow, expect, atWidth })
+  registerAccountFlows({ flow, expect, atWidth })
   registerSecurityFlows({ flow, expect, atWidth })
 }

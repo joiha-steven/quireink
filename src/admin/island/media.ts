@@ -12,6 +12,7 @@ import type { SiteLang } from '@/types'
 import { wireImages } from './lib/media-images'
 import { wireAttachments } from './lib/media-attachments'
 import type { Words } from './lib/media-bridge'
+import { showTab } from './lib/tab-strip'
 
 const root = document.querySelector<HTMLElement>('[data-screen="media"]')
 
@@ -42,12 +43,17 @@ if (root) {
       b.setAttribute('aria-pressed', String(on))
       b.className = on ? ON : OFF
     }
+    showTab(strip)
   }
 
   strip?.addEventListener('click', (e) => {
     const b = (e.target as HTMLElement).closest<HTMLElement>('[data-tab]')
     if (b?.dataset.tab) swap(b.dataset.tab)
   })
+
+  // On arrival too: the server draws the selected tab, so the painter above has never run
+  // when the page opens, and a strip too wide for a phone opens showing the wrong end.
+  showTab(strip)
 
   for (const panel of panels) {
     const kind = panel.dataset.mediaPanel

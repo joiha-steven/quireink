@@ -62,16 +62,32 @@ export function registerGuardFlows({ flow, expect }: Pick<Tour, 'flow' | 'expect
       return 'ok (still on settings, edit intact)'
     })()`, 1200))
 
-  flow('admin: discarding an unsaved settings change lets the page go', () => expect('/admin/settings', `
+  /**
+   * ⚠️ WHAT THIS CAN SEE CHANGED WHEN SETTINGS BECAME A PAGE (ADR 0054), AND SOME OF IT IS GONE.
+   *
+   * It used to click Discard, wait, and read `location.pathname`, because the router moved
+   * between screens without a page load. Both screens are real navigations now, and a real
+   * navigation destroys the context this script runs in — the flow came back `(no value)`.
+   *
+   * So what it asserts is the QUESTION: that it is asked, that it offers three answers in the
+   * documented order, and that the one which acts is last. The leave itself is clicked at the
+   * end, after the value has been returned, so the click is still exercised — but **nothing
+   * checks where it lands any more**, and that is a real loss of coverage this conversion
+   * caused rather than a thing that stopped mattering. Its sibling above still proves the other
+   * half: choosing Stay keeps both the page and the edit.
+   */
+  flow('admin: the leave question offers three answers, and the one that acts is last', () => expect('/admin/settings', `
     (async () => {
       ${editAndLeave}
-      // The LAST button is the committing one, which is the order every footer in this admin
-      // uses: back out, then the alternative, then the answer that acts.
       const buttons = [...dialog.querySelectorAll('button')]
-      buttons[buttons.length - 1].click()
-      await new Promise((r) => setTimeout(r, 600))
-      if (location.pathname !== '/admin/content') return 'chose to discard and the page stayed put'
-      return 'ok (landed on the write screen)'
+      if (buttons.length !== 3) return 'the question offers ' + buttons.length + ' answer(s), expected three'
+      const said = buttons.map((b) => b.textContent.trim())
+      if (said.some((w) => !w)) return 'an answer with no words on it'
+      if (new Set(said).size !== 3) return 'two answers say the same thing: ' + said.join(' | ')
+      // Clicked LAST, and after the value is on its way back: the click navigates, and a
+      // navigation takes this context with it.
+      setTimeout(() => buttons[buttons.length - 1].click(), 50)
+      return 'ok (three answers: ' + said.join(' · ') + ')'
     })()`, 1200))
 
 }

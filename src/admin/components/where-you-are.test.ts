@@ -76,9 +76,12 @@ describe('the highlighter does NOT mark a choice', () => {
     const tabs = readFileSync('src/admin/components/tabs.tsx', 'utf8')
     expect(tabs).toContain("role = 'place'")
     expect(tabs).toContain('tabItemClass(value === tb.key, size, dense, role)')
-    for (const f of ['SiteFields.tsx', 'WritePane.tsx']) {
-      const caller = readFileSync('src/admin/components/' + f, 'utf8')
-      expect(caller).not.toContain("'place'")
+    // Every chooser that is still React, plus the two the server draws. `SiteFields.tsx` was
+    // on this list until the settings screen became a page (ADR 0054); its segmented strips are
+    // `choice()` and `pick()` in `src/web/admin/fields-pick.ts` now, and neither can ask for
+    // 'place' — `choice` hands `tabItemClass` its own two constants and nothing else.
+    for (const f of ['src/admin/components/WritePane.tsx', 'src/web/admin/fields-pick.ts']) {
+      expect(readFileSync(f, 'utf8')).not.toContain("'place'")
     }
   })
 })

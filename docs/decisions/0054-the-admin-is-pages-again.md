@@ -125,6 +125,91 @@ Groundwork for it — the field vocabulary and the form's diff engine — is wri
     It is a link to the bare address; a question already opens a chat for itself when there is
     none.
 
+### Settings, and the two rules it forced
+
+**All seven panels ship drawn, and here that is load-bearing.** The Save key stores the WHOLE
+form: an owner changes the blog's name on one tab, the front page's shape on another and a
+palette on a third, and presses Save once. Drawing one tab and navigating between them would
+make every switch a page load, and a page load with unsaved work either loses it or raises the
+browser's own two-button warning. Measured: **554 KB of markup, 49 KB gzipped** (the app
+brotli-compresses its own HTML, so the wire figure is lower again), 244 controls, 7 panels, 112
+search rows. Appearance is 210 KB of the 554 on its own.
+
+**There is no copy of the settings in the page.** What a field WAS is what the browser already
+holds for it — `defaultValue` on an input, the `selected` attribute on an option, `data-was` on
+the three kinds of control that have neither. So the unsaved count is exact and sixty-three
+settings keys do not ride into the browser twice.
+
+⚠️ **THE THREE-WAY LEAVE QUESTION SURVIVED, and it is a fix rather than a port.** This document's
+own trap 3 says a converted screen's links are real navigations, so leaving a dirty form would
+have raised the browser's generic warning — two buttons, neither of which can save — on the one
+screen where leaving without saving throws work away. The island catches the click itself and
+asks the product's own question; `beforeunload` stays underneath it for the ways out a click
+handler cannot see.
+
+**Six bugs the conversion found, four of which would have saved the wrong thing silently:**
+
+- An **emptied number field** sent `0`. "Posts per page" to none, "upload limit" to zero bytes.
+- **Array-shaped keys** (`menu`, `featured`, `home.front.strips`) built objects, so `menu.0.label`
+  sent `{menu:{0:{label}}}` and `sanitizeMenu` — which walks an array — stored nothing.
+- **A boolean behind a segmented strip** (`figure.ink`) sent the string, and `bool()` discarded it.
+- ⚠️ **A hidden field could never look changed.** `input[type=hidden]` keeps `value` and
+  `defaultValue` in lockstep, so five settings — both logos, the portrait, `enabledPalettes`,
+  `customFont` — would have been chosen in the picker, drawn on screen, and not sent. This is why
+  `hiddenField()` writes `data-was` and why a test asserts every hidden field has one.
+- **`enabledPalettes` failed in the worst direction**: `sanitizeEnabledPalettes` reads a non-array
+  as "turn all six on", so sending the string would have switched on palettes the owner had
+  switched off.
+- **One switch drawn on two tabs.** The comments master switch is on Posts and on Comments & mail
+  — React drew one component twice over one piece of state. Two independent controls do not stay
+  in step, so the island mirrors them and the count counts KEYS rather than controls.
+
+**And six more that only a photograph found.** Each one type-checked, passed the suite and the
+tour, and would have shipped. They were caught by running the new build and the React build side
+by side on one seeded database and comparing the screens by their text, by every element's
+computed box, and finally pixel for pixel — which is a check that stops being available the day
+the React build is deleted, so what it found is written here and pinned by tests.
+
+- ⚠️ **A LAMP WRAPPER THAT LOST ITS `flex` MADE EVERY CARD WITH A LAMP 7px TALLER.** Without it
+  the wrapper is a block holding an inline-block, so it takes a 24px line box for an 8px mark.
+  Twenty-two cards on one screen, half of them with lamps, and the header heights no longer
+  agreed. Nothing in the markup is wrong to read; it is only wrong to measure.
+- **Every select lost its chevron.** The control sets `appearance-none`, which takes the
+  platform's own caret away, and the replacement was written as `<svg data-glyph="down"></svg>`
+  — an attribute that means something only inside a `Mark` tree. In raw markup nothing fills it,
+  so the svg was empty and a dropdown looked exactly like a text box.
+- **A slider's readout dropped its unit.** The server printed "60%" from a string the caller
+  passed; the island rewrote the box from `value` + `data-unit` and printed "60". Two renderers,
+  two answers; `slider()` takes the unit now and both read it.
+- **The SMTP card said "Loading..." forever.** It is the one card on the screen whose values are
+  not in the site record — they sit behind `GET /api/mail` — and nothing was ever written to ask.
+  Every stored SMTP field was invisible on the screen whose job is showing them, and the only
+  symptom was a word that is supposed to be brief.
+- **Two lamps read grey where they should read amber.** Grey is "switched off", which is a
+  settled state somebody chose. A connection with no credentials has no switch, so the only
+  thing off could mean there is "never set up" — something to do. React defaulted `enabled` to
+  true for exactly this reason.
+- **A number field holding one digit was 380px wide,** because the caller asked for the full
+  column. A short answer sits in a short field: the width of a field is a claim about how much
+  belongs in it.
+
+**Three differences are deliberate, and they are the whole list.** A conversion that changes how
+a screen reads is hiding a decision inside a move, so every other difference above was closed:
+
+1. A segmented strip's explanation now sits ABOVE the strip, where every other row in the admin
+   has always put it. React made the strip the exception; five rows on Home and Posts move.
+2. "Looks like" appears once — as the card's title — where React drew it as the title AND as the
+   control's label.
+3. The site-language select takes the same width as the timezone select beside it, where React
+   sized it to its content. Two dropdowns in one card at two widths was the older answer.
+
+The timezone list also lost its 26 `Etc/GMT±N` entries. In those names the sign is INVERTED
+against every other way a person writes an offset — `Etc/GMT+1` is UTC minus one hour — and they
+are in the database for POSIX compatibility. The browser leaves them out of `supportedValuesOf`
+and this list was the browser's until it moved to the server, where the engine hands back all
+26. A stored zone the runtime does not offer is now prepended to its own control, because a
+`<select>` whose value matches no option silently shows its first one instead.
+
 ### The fourth bridge: `quire:pick-media`
 
 The first one that answers back. The picker is an overlay island now

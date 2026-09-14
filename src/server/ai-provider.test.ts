@@ -7,7 +7,7 @@
 // naming a provider, and a fifth one inherits them for free.
 
 import { describe, it, expect } from 'bun:test'
-import { AI_PROVIDERS, DEFAULT_MODELS, buildParts, parseText, readListFailure, seesImages } from './ai-provider'
+import { AI_PROVIDERS, AI_PROVIDER_NAMES, DEFAULT_MODELS, buildParts, parseText, readListFailure, seesImages } from './ai-provider'
 import { buildChat, parseChat, type Turn } from './assistant-dialects'
 
 const TEXT = [{ text: 'describe this' }]
@@ -27,13 +27,16 @@ describe('the closed set', () => {
     expect(buildChat('mistral', 'm', 'k', 's', [{ kind: 'user', text: 'x' }], [])).toBeNull()
   })
 
-  // The menu the owner sees and the set the server accepts are written in different files
-  // and different languages. A provider in one and not the other is either a dead option
-  // or an unreachable feature, and neither announces itself.
-  it('the admin menu names exactly this set', async () => {
-    const source = await Bun.file('src/admin/components/AiFields.tsx').text()
-    const offered = [...source.matchAll(/<option value="([a-z]*)"/g)].map((m) => m[1]).filter(Boolean)
-    expect(offered.sort()).toEqual([...AI_PROVIDERS].sort())
+  // The menu the owner sees and the set the server accepts used to be written in two files and
+  // two languages, and this read the card's `<option>` markup with a regular expression to catch
+  // the day they disagreed. The card DERIVES its menu now (ADR 0054), so they cannot — what is
+  // left to check is that every provider has a name to show, which is the half a type can only
+  // half enforce: a `Record` keyed on the table catches a missing one, and this catches a blank.
+  it('every provider the server accepts has a name on the menu', () => {
+    for (const id of AI_PROVIDERS) {
+      expect(AI_PROVIDER_NAMES[id], `no name for ${id}`).toBeTruthy()
+    }
+    expect(Object.keys(AI_PROVIDER_NAMES).sort()).toEqual([...AI_PROVIDERS].sort())
   })
 })
 

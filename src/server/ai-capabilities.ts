@@ -47,6 +47,25 @@ export const DEFAULT_MODELS: Record<string, string> = {
 export const AI_PROVIDERS: readonly string[] = Object.keys(DEFAULT_MODELS)
 
 /**
+ * WHAT TO CALL EACH ONE ON THE SCREEN.
+ *
+ * Here rather than in the card, and keyed by the same record the set is derived from, so the
+ * menu and the set the routes accept cannot disagree: adding a provider without naming it is a
+ * compile error, and naming one that does not exist is too. `ai-provider.test.ts` checked that
+ * by reading the React card's `<option>` markup with a regular expression — a check that could
+ * only ever notice the drift after it had shipped, and that broke the moment the card stopped
+ * being JSX. Derived beats checked.
+ *
+ * Brand names, so they stay as they are in every language.
+ */
+export const AI_PROVIDER_NAMES: Record<keyof typeof DEFAULT_MODELS, string> = {
+  anthropic: 'Anthropic (Claude)',
+  openai: 'OpenAI (GPT)',
+  gemini: 'Google (Gemini)',
+  deepseek: 'DeepSeek',
+}
+
+/**
  * Whether a picture can be put in front of this model.
  *
  * SEEING IS A PROPERTY OF THE MODEL, NOT THE PROVIDER — the first cut of this asked only

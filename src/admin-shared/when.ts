@@ -122,10 +122,17 @@ export const dayPartName = (part: DayPart): string => part.slice('greet'.length)
  * In whichever timezone is asking: the server prints it for the rows it draws, and the island
  * prints it for a row it adds afterwards. On a blog whose owner sits in the server's own
  * timezone — which is the ordinary case for something self-hosted — those are the same clock.
+ *
+ * ⚠️ A STRING **OR** EPOCH MILLISECONDS, and the second is not a convenience. The admin holds
+ * both: content stamps are ISO text, and a session row's `lastSeenAt` is the integer the
+ * sessions table stores. Typed `string` alone, this function was already being handed numbers
+ * by a caller whose own type was a lie — it survived only because `new Date()` takes either.
+ * The next reader of that field reached for `.slice()` instead and the device list threw on
+ * every load (2026-09-15). Saying out loud what may arrive is what stops the next one.
  */
-export function formatDateTimeShort(iso: string): string {
-  const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) return iso
+export function formatDateTimeShort(at: string | number): string {
+  const d = new Date(at)
+  if (Number.isNaN(d.getTime())) return String(at)
   const yy = String(d.getFullYear()).slice(-2)
   const hh = String(d.getHours()).padStart(2, '0')
   const mm = String(d.getMinutes()).padStart(2, '0')

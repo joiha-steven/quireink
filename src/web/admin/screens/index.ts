@@ -22,6 +22,7 @@ import { helpScreen } from '@/web/admin/screens/help'
 import { mediaScreen } from '@/web/admin/screens/media'
 import { logScreen } from '@/web/admin/screens/log'
 import { newsletterScreen } from '@/web/admin/screens/newsletter'
+import { settingsScreen } from '@/web/admin/screens/settings'
 import { trashScreen } from '@/web/admin/screens/trash'
 
 export type Screen = {
@@ -63,6 +64,10 @@ export const SCREENS: Record<string, Screen> = {
   // grid's behaviour — selection, search, sort, upload — and it lends the picker to the screens
   // that are still React through `quire:pick-media`.
   '/admin/media': { render: mediaScreen, island: 'media' },
+  // Seven tabs over one form, ALL SEVEN drawn — the Save key stores the whole thing, so drawing
+  // one tab and navigating between them would lose unsaved work at every switch. It holds the
+  // admin's most dangerous routes, so nothing on it is a form: see `screens/settings.ts`.
+  '/admin/settings': { render: settingsScreen, island: 'settings' },
   // Three tabs over one audience, all three drawn. It holds the admin's one irreversible
   // action, so nothing on it is a form: see `screens/newsletter-send.ts`.
   '/admin/newsletter': { render: newsletterScreen, island: 'newsletter' },

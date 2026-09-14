@@ -22,6 +22,7 @@ import { offsiteTest } from '@/server/backup-offsite'
 import { logActivity } from '@/server/activity'
 import { fail, json } from '@/web/api'
 import { ownerRouter } from '@/web/guard'
+import type { BackupListWire } from '@/admin-shared/wire'
 
 const mb = (bytes: number): string => `${(bytes / 1024 / 1024).toFixed(1)} MB`
 
@@ -77,8 +78,11 @@ export function backupRoutes() {
 
   // ----- the copies kept here -------------------------------------------------
 
-  router.get('/api/backup/list', async () =>
-    json({ snapshots: await listSnapshots(), lastRunAt: await lastRunAt() }))
+  router.get('/api/backup/list', async () => {
+    // Annotated so the island's reader and this builder cannot drift; see `admin-shared/wire.ts`.
+    const payload: BackupListWire = { snapshots: await listSnapshots(), lastRunAt: await lastRunAt() }
+    return json(payload)
+  })
 
   router.post('/api/backup/run', async (c) => {
     try {

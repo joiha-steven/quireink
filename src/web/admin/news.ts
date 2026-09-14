@@ -27,6 +27,7 @@ import { logActivity } from '@/server/activity'
 import { fail, json } from '@/web/api'
 import { owner, ownerRouter, param } from '@/web/guard'
 import { escapeHtml } from '@/utils'
+import type { MailWire } from '@/admin-shared/wire'
 
 const body = async <T>(c: Context): Promise<Partial<T>> =>
   (await c.req.json().catch(() => ({}))) as Partial<T>
@@ -64,7 +65,10 @@ export function newsRoutes() {
     const config = await getSmtpConfig()
     // `hasPass`, never `pass`. The password is a secret and this response goes to a
     // browser; the form shows a filled placeholder from this boolean instead.
-    return json({
+    //
+    // Annotated so this builder and the island that reads it cannot drift apart; the case that
+    // taught us is in `src/admin-shared/wire.ts`.
+    const payload: MailWire = {
       host: config.host,
       port: config.port,
       user: config.user,
@@ -72,7 +76,8 @@ export function newsRoutes() {
       secure: config.secure,
       hasPass: !!config.pass,
       configured: isMailConfigured(config),
-    })
+    }
+    return json(payload)
   })
 
   router.post('/api/mail', async (c) => {

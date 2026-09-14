@@ -101,18 +101,19 @@ describe('the admin wears one face', () => {
     // THE list, and it is short on purpose. `SheetTitle` is the title field — the published
     // headline being typed, so it has to be the published face; it moved there from
     // `PostForm` on 2026-08-17 when both editors started sharing one title block.
-    // `TypographyFields` is the font picker's specimen tiles, which are not a preview if
-    // they are not painted in the family they offer. `scale.ts` is the declaration. A
-    // fourth file means the 2026-08-15 decision is being re-opened by accident.
+    // `settings-appearance-type.ts` is the type scale's specimens, which are not a preview if
+    // they are not painted in the family they offer — it is what `TypographyFields.tsx` became
+    // when ADR 0054 moved the screen to the server. `scale.ts` is the declaration. A fourth
+    // file means the 2026-08-15 decision is being re-opened by accident.
     const holders = everywhere()
       .filter((f) => /\bREADING\b/.test(code(f)))
       .map((f) => f.replaceAll('\\', '/'))
       .sort()
     expect(holders).toEqual([
       'src/admin/components/SheetTitle.tsx',
-      'src/admin/components/TypographyFields.tsx',
       'src/admin/components/kit.tsx', // re-export only
       'src/admin-shared/scale.ts',
+      'src/web/admin/screens/settings-appearance-type.ts',
     ].sort())
   })
 
@@ -189,8 +190,11 @@ describe('the admin does not wear the site\'s chrome font either', () => {
   })
 
   it('marks a surface that names a typeface, which is what check:admin-kit allows one on', () => {
-    for (const file of ['FontFields', 'TypographyFields']) {
-      expect(readFileSync(`src/admin/components/${file}.tsx`, 'utf8')).toContain('data-specimen')
+    // The two surfaces are the font pickers and the type scale's specimens, and both moved to
+    // the server under ADR 0054 — `FontFields.tsx` and `TypographyFields.tsx` are gone. The
+    // assertion follows the SURFACE, not the file it used to live in.
+    for (const file of ['settings-appearance', 'settings-appearance-type']) {
+      expect(readFileSync(`src/web/admin/screens/${file}.ts`, 'utf8')).toContain('data-specimen')
     }
   })
 })

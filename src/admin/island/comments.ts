@@ -13,6 +13,7 @@
 // it reads the DOM each time instead of holding a list: the order changes with the sort, and
 // what is on screen changes with the filter.
 import { indexIn, lanes, type Lanes } from '@/accent'
+import { showTab } from './lib/tab-strip'
 
 const root = document.querySelector<HTMLElement>('[data-screen="comments"]')
 const cardHost = root?.querySelector<HTMLElement>('[data-comment-cards]')
@@ -135,8 +136,11 @@ if (root && cardHost) {
       tab.setAttribute('aria-pressed', String(on))
       tab.className = on ? ON : OFF
     }
+    showTab(strip)
   }
   for (const strip of [sortStrip, ageStrip]) {
+    // On arrival too: the server draws the pressed key, so the painter has never run yet.
+    showTab(strip)
     strip?.addEventListener('click', (e) => {
       const tab = (e.target as HTMLElement).closest<HTMLElement>('[data-tab]')
       if (!tab?.dataset.tab) return

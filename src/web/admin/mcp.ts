@@ -20,6 +20,7 @@ import { clientIp, rateLimited } from '@/server/rate-limit'
 import { logActivity } from '@/server/activity'
 import { currentOwner, ownerRouter, param } from '@/web/guard'
 import { fail, json } from '@/web/api'
+import type { McpTokenWire } from '@/admin-shared/wire'
 
 /** These endpoints are called cross-origin by connectors, so they answer preflight. */
 const CORS: Record<string, string> = {
@@ -115,7 +116,11 @@ function issueAndRedirect(p: OAuthParams): Response {
 export function mcpAdminRoutes() {
   const router = ownerRouter()
 
-  router.get('/api/mcp/tokens', async () => json(await listTokens()))
+  router.get('/api/mcp/tokens', async () => {
+    // Annotated so the island's reader and this builder cannot drift; see `admin-shared/wire.ts`.
+    const payload: McpTokenWire[] = await listTokens()
+    return json(payload)
+  })
 
   router.post('/api/mcp/tokens', async (c) => {
     const input = (await c.req.json().catch(() => ({}))) as { name?: unknown; scope?: unknown }

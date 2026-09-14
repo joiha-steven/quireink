@@ -136,9 +136,28 @@ export function select({ name, label, options, value, attrs = '' }: {
  * `attrs` rides on the track and `key` becomes `data-tab` on each item, so an island can find
  * the strip and know what was pressed without a second dictionary.
  */
-export function tabs({ items, value, role = 'place', attrs = '' }: {
+export function tabs({ items, value, role = 'place', tablist = false, panelId = '', attrs = '' }: {
   items: { key: string; label: string }[]
   value: string
+  /**
+   * A REAL TABLIST: `role=tab` in a `role=tablist`, ONE keyboard stop, and the arrows walking
+   * the strip.
+   *
+   * Off by default, because most strips in this admin are filters rather than places and a
+   * filter announcing itself as a tab is a lie a screen reader repeats. The settings strip is
+   * the one that is genuinely a tablist, and it was one in React: seven tabs and a single stop,
+   * so Tab reaches the PANEL instead of walking seven buttons to get there.
+   */
+  tablist?: boolean
+  /**
+   * The PREFIX of the panel each tab controls — `<panelId>-<key>` — so the strip and the paper
+   * under it are linked both ways.
+   *
+   * A prefix rather than one id, because a screen that draws every panel at once has seven of
+   * them: one `aria-controls` pointing at a container holding all seven says the whole stack is
+   * one panel, which is what a screen reader would then read out.
+   */
+  panelId?: string
   /**
    * A `place` is a tab you navigated to; a `choice` is a value you set. See `tabItemClass` for
    * the argument — the highlighter marks WHERE YOU ARE and nothing else, so a filter takes the
@@ -148,10 +167,19 @@ export function tabs({ items, value, role = 'place', attrs = '' }: {
   role?: TabRole
   attrs?: string
 }): string {
-  return `<div class="${role === 'place' ? SEGMENT_TRACK_PLACE : SEGMENT_TRACK}"${attrs ? ` ${attrs}` : ''}>`
-    + items.map(({ key, label }) =>
-      `<button type="button" data-tab="${escapeAttr(key)}" aria-pressed="${key === value}"`
-      + ` class="${tabItemClass(key === value, 'sm', false, role)}">${escapeHtml(label)}</button>`).join('')
+  const track = role === 'place' ? SEGMENT_TRACK_PLACE : SEGMENT_TRACK
+  return `<div class="${track}"${tablist ? ' role="tablist"' : ''}${attrs ? ` ${attrs}` : ''}>`
+    + items.map(({ key, label }) => {
+      const on = key === value
+      // ROVING: exactly one tab is a keyboard stop. Seven stops would make Tab walk the strip
+      // before it ever reached the paper the strip is about.
+      const tab = tablist
+        ? ` role="tab" aria-selected="${on}" tabindex="${on ? '0' : '-1'}"`
+          + (panelId ? ` aria-controls="${escapeAttr(`${panelId}-${key}`)}"` : '')
+        : ` aria-pressed="${on}"`
+      return `<button type="button" data-tab="${escapeAttr(key)}"${tab}`
+        + ` class="${tabItemClass(on, 'sm', false, role)}">${escapeHtml(label)}</button>`
+    }).join('')
     + `</div>`
 }
 
