@@ -164,7 +164,7 @@ h.setAttribute('data-rail-more',more?'1':'0');
 h.style.setProperty('--admin-nav-w',shut?${JSON.stringify(RAIL_WIDTH.shut)}:${JSON.stringify(RAIL_WIDTH.open)});
 if(/mac|iphone|ipad/i.test(navigator.platform||'')){h.setAttribute('data-mac','1');
 var c=document.currentScript;addEventListener('DOMContentLoaded',function(){
-var n=document.querySelectorAll('[data-rail-chord]');for(var i=0;i<n.length;i++)n[i].textContent=n[i].getAttribute('data-mac');},{once:true});void c}
+var n=document.querySelectorAll('[data-chord]');for(var i=0;i<n.length;i++)n[i].textContent=n[i].getAttribute('data-mac');},{once:true});void c}
 }catch(e){}})()`
 }
 

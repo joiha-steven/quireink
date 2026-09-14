@@ -217,3 +217,43 @@ export const SHEET_TOOL_DANGER = SHEET_TOOL
  */
 export const SHEET_TOP =
   'flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-neutral-100 px-4 py-2.5 dark:border-neutral-800'
+
+// ═══ THE HELP SCREEN'S FIVE ═══════════════════════════════════════════════════════════════
+//
+// Moved out of `admin/components/help-kit.tsx` when that screen became a page (ADR 0054). The
+// React helpers there — `<C>`, `<Ext>`, `<In>`, `<Links>` — are still used by the dashboard and
+// the what's-new panel, and they wear these same strings, so the two faces of an inline literal
+// or a link cannot drift.
+
+/** A link in body copy: underlined in a lighter ink, so a paragraph is not a row of blue. */
+export const A =
+  'text-neutral-900 underline decoration-neutral-300 underline-offset-2 hover:decoration-neutral-600 dark:text-neutral-100 dark:decoration-neutral-600 dark:hover:decoration-neutral-300'
+
+/** Body copy on this screen. The reading face, because these are sentences rather than labels. */
+export const P = 'text-sm leading-relaxed text-neutral-600 dark:text-neutral-300'
+
+export const UL = `${P} space-y-2 list-disc pl-4`
+
+/** Inline literal: a syntax, a path, a setting name. One style, used everywhere here. */
+export const CODE =
+  'rounded-md bg-neutral-100 px-1.5 py-0.5 text-[0.8125rem] text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200'
+
+/** The row of quick links that closes a section. */
+export const LINKS = 'mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm text-neutral-500 dark:text-neutral-400'
+
+// ═══ A TABLE ═══════════════════════════════════════════════════════════════════════════
+//
+// Moved with the Help screen (ADR 0054), which draws three of them. `components/kit.tsx`
+// re-exports all four and still owns `TableFrame`, the React wrapper around them.
+
+export const TABLE_FRAME = `overflow-hidden ${CARD}`
+/** Goes between TABLE_FRAME and the table. Never let a table be the frame's direct child. */
+export const TABLE_SCROLL = 'overflow-x-auto overscroll-x-contain [scrollbar-width:thin]'
+// No fill on the head. `bg-neutral-50` behind the column names is the shadow's instinct again —
+// a tint standing in for a rule — and it made a table read as a spreadsheet widget rather than
+// a list. The rule under it already separates head from body. `text-xs` too: a column NAME is
+// the smallest print on a page and it was set at the same size as the data under it.
+export const THEAD =
+  'whitespace-nowrap border-b border-neutral-200 text-left text-xs text-neutral-500 dark:border-neutral-800 dark:text-neutral-400'
+export const TROW = 'border-b border-neutral-100 last:border-0 hover:bg-neutral-100/60 dark:border-neutral-800 dark:hover:bg-neutral-800/40'
+

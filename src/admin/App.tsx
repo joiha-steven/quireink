@@ -31,7 +31,7 @@ import { useFocusMode } from '@/admin/components/useFocusMode'
 // STARTED before React asks for it — see `preloadRoute` below.
 type Loader = () => Promise<{ default: ComponentType }>
 
-// `/admin/log` is not here: it is the first screen the SERVER draws (ADR 0054, step 1), and
+// `/admin/log` and `/admin/help` are not here: they are screens the SERVER draws (ADR 0054, step 1), and
 // `web/admin/screens/index.ts` is the table that says so. A converted screen leaves this map in
 // the same commit that adds it there, so the two can never both claim one address.
 const load = {
@@ -46,7 +46,6 @@ const load = {
   analytics: () => import('@/admin/pages/Analytics'),
   trash: () => import('@/admin/pages/Trash'),
   settings: () => import('@/admin/pages/Settings'),
-  help: () => import('@/admin/pages/Help'),
   assistant: () => import('@/admin/pages/Assistant'),
   notFound: () => import('@/admin/pages/NotFound'),
 } satisfies Record<string, Loader>
@@ -67,7 +66,6 @@ const Newsletter = lazy(throughDeploys(load.newsletter))
 const Analytics = lazy(throughDeploys(load.analytics))
 const Trash = lazy(throughDeploys(load.trash))
 const Settings = lazy(throughDeploys(load.settings))
-const Help = lazy(throughDeploys(load.help))
 const NotFound = lazy(throughDeploys(load.notFound))
 const Assistant = lazy(throughDeploys(load.assistant))
 
@@ -85,7 +83,6 @@ function loaderFor(path: string): Loader {
   if (p === '/admin/analytics') return load.analytics
   if (p === '/admin/trash') return load.trash
   if (p === '/admin/settings') return load.settings
-  if (p === '/admin/help') return load.help
   if (p === '/admin/assistant') return load.assistant
   return load.notFound
 }
@@ -134,7 +131,6 @@ function Route(): ReactNode {
   if (path === '/admin/analytics') return <Analytics />
   if (path === '/admin/trash') return <Trash />
   if (path === '/admin/settings') return <Settings />
-  if (path === '/admin/help') return <Help />
   if (path === '/admin/assistant') return <Assistant />
   return <NotFound />
 }

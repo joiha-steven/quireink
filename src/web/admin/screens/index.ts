@@ -14,6 +14,7 @@
 // React route it used to have is deleted in the same commit, and `check:routes-guarded` and
 // the tour both cover the address either way.
 import type { SiteSettings } from '@/types'
+import { helpScreen } from '@/web/admin/screens/help'
 import { logScreen } from '@/web/admin/screens/log'
 
 export type Screen = {
@@ -30,6 +31,8 @@ export type Screen = {
 
 /** Keyed by the exact path. A screen with children states its own prefix rule here later. */
 export const SCREENS: Record<string, Screen> = {
+  // The one screen with no behaviour at all: an index of `#` links is the browser's own.
+  '/admin/help': { render: helpScreen, island: null },
   '/admin/log': { render: logScreen, island: 'log' },
 }
 

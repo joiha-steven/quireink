@@ -111,20 +111,15 @@ export function registerAdminFlows({ flow, expect, atWidth }: Tour): void {
   flow('admin: the log speaks, filters, and keeps the code in reach', () => expect('/admin/log', `
     (async () => {
       const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
-      // VISIBLE rows. Since ADR 0054 this screen is server-rendered HTML and its filters HIDE
-      // what does not match rather than removing it — the server sends every row once and a
-      // keystroke costs no round trip, which is what the React version was already doing in
-      // memory. offsetParent is null for anything display:none, so this is the same question
-      // asked of the thing the owner can actually see.
+      // VISIBLE only: the filters hide rather than remove (docs/admin-design.md, one DOM per state).
       const rows = () => [...document.querySelectorAll('main ul li')].filter((r) => r.offsetParent !== null)
       const first = rows()[0]
       if (!first) return 'the log is empty; the fixture should have written to it'
-      // The row's own title holds the code; the face must not repeat it. Compared against
-      // THE ACTUAL CODE rather than against a pattern for one — "media.upload" and a filename
-      // like "nib-angles.png" look identical to a regex, and the first version of this flow
-      // failed on a perfectly good row because of that. No regex at all: this whole body is a
-      // template literal, and a backslash in it is one escape away from meaning something
-      // else by the time the browser sees it.
+      // The row's own title holds the code; the face must not repeat it. Compared against THE
+      // ACTUAL CODE rather than against a pattern for one — "media.upload" and a filename like
+      // "nib-angles.png" look identical to a regex, and the first version of this flow failed
+      // on a perfectly good row because of that. No regex at all: this whole body is a template
+      // literal, and a backslash in it is one escape from meaning something else in the page.
       const title = first.getAttribute('title') || ''
       const code = title.split(' — ')[0].trim()
       if (!code.includes('.')) return 'the row dropped the machine code entirely: ' + title

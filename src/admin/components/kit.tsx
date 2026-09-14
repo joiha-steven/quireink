@@ -3,9 +3,9 @@
 // shadow, header size were all inconsistent before). Admin is monochrome by design
 // (neutral scale, no public theme tokens). No `'use client'`: these are presentational
 // — pure primitives render in server OR client trees; Tabs only takes props.
-import { CARD, CONTROL, CONTROL_CHROME, CONTROL_SM } from '@/admin-shared/kit'
+import { CARD, CONTROL, CONTROL_CHROME, CONTROL_SM, TABLE_FRAME, TABLE_SCROLL, THEAD, TROW } from '@/admin-shared/kit'
 
-export { CARD, CONTROL, CONTROL_CHROME, CONTROL_SM }
+export { CARD, CONTROL, CONTROL_CHROME, CONTROL_SM, TABLE_FRAME, TABLE_SCROLL, THEAD, TROW }
 
 import { ICONS } from '@/icons'
 
@@ -367,17 +367,6 @@ export function EmptyState({
 // clips a table wider than the sheet with no way to reach the rest — measured at 390px, the
 // analytics table ran to 426px and its last column sat past the viewport edge, unreachable, on
 // every phone. The inner `overflow-x-auto` gives the overflow somewhere to go.
-export const TABLE_FRAME = `overflow-hidden ${CARD}`
-/** Goes between TABLE_FRAME and the table. Never let a table be the frame's direct child. */
-export const TABLE_SCROLL = 'overflow-x-auto overscroll-x-contain [scrollbar-width:thin]'
-// No fill on the head. `bg-neutral-50` behind the column names is the shadow's instinct again —
-// a tint standing in for a rule — and it made a table read as a spreadsheet widget rather than
-// a list. The rule under it already separates head from body. `text-xs` too: a column NAME is
-// the smallest print on a page and it was set at the same size as the data under it.
-export const THEAD =
-  'whitespace-nowrap border-b border-neutral-200 text-left text-xs text-neutral-500 dark:border-neutral-800 dark:text-neutral-400'
-export const TROW = 'border-b border-neutral-100 last:border-0 hover:bg-neutral-100/60 dark:border-neutral-800 dark:hover:bg-neutral-800/40'
-
 export function TableFrame({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
     <div className={`${TABLE_FRAME} ${className}`}>

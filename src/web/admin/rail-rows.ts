@@ -143,7 +143,7 @@ export function renderRow(row: RailRow, path: string): string {
  * has no platform to ask, so it writes both and the boot script picks — see `printChord`.
  */
 export const chordBadge = (extra = ''): string =>
-  `<span data-rail-chord data-mac="${escapeAttr(printChord(PALETTE_CHORD, true))}"`
+  `<span data-chord data-mac="${escapeAttr(printChord(PALETTE_CHORD, true))}"`
   + ` class="rail-chord rounded border border-neutral-200 px-1 py-px text-xs tabular-nums leading-none dark:border-neutral-700${extra ? ` ${extra}` : ''}">`
   + `${escapeHtml(printChord(PALETTE_CHORD, false))}</span>`
 

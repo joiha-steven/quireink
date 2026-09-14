@@ -34,32 +34,12 @@ import { useState } from 'react'
 import Link from '@/admin/router'
 import { Card, TAP } from './kit'
 import { useAdminT } from './I18nProvider'
-import type { AdminStrings } from '@/locales/types'
 
 /** Where each step goes. The words are in `t`; only the destinations live here. */
-const HREFS = [
-  '/admin/settings',
-  '/admin/editor',
-  '/admin/settings?tab=appearance',
-  '/admin/settings?tab=people',
-  '/admin/newsletter',
-] as const
-
-/**
- * The five, read out of the dictionary so every language gets the same path.
- *
- * `{tab}` is filled from the same entry the tab strip reads. The first step used to SPELL the
- * tab out — "Settings → Site" in eleven languages — and ADR 0041 renamed every tab underneath
- * it, so the first instruction a new owner is given sent them looking for a word that is no
- * longer on the screen.
- */
-export function firstRunSteps(t: AdminStrings): { href: string; label: string; body: string }[] {
-  return HREFS.map((href, i) => ({
-    href,
-    label: t[`firstRun${i + 1}Label` as keyof AdminStrings] as string,
-    body: (t[`firstRun${i + 1}Body` as keyof AdminStrings] as string).replace('{tab}', t.tabBlog),
-  }))
-}
+// The five steps moved to `@/admin-shared/first-run` when the Help screen became a page
+// (ADR 0054): that page renders the same five as REFERENCE, and the server draws it now.
+export { firstRunSteps } from '@/admin-shared/first-run'
+import { firstRunSteps } from '@/admin-shared/first-run'
 
 /**
  * The list itself, so the dashboard card and the Help page render one thing.

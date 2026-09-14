@@ -6,14 +6,13 @@
 // canonical source. Only the nav label + page title come from `adminT`.
 import Link from '@/admin/router'
 import type { ReactNode } from 'react'
+import { A, CODE, LINKS } from '@/admin-shared/kit'
 
-export const REPO = 'https://github.com/joiha-steven/quireink'
-export const doc = (p: string) => `${REPO}/blob/main/${p}`
-
-export const A =
-  'text-neutral-900 underline decoration-neutral-300 underline-offset-2 hover:decoration-neutral-600 dark:text-neutral-100 dark:decoration-neutral-600 dark:hover:decoration-neutral-300'
-export const P = 'text-sm leading-relaxed text-neutral-600 dark:text-neutral-300'
-export const UL = `${P} space-y-2 list-disc pl-4`
+// The strings and the two constants moved to `@/admin-shared` when Help became a page
+// (ADR 0054); the server writes the same markup from them. Re-exported, so the dashboard and
+// the what's-new panel — which use the components below — keep the import they had.
+export { REPO, doc } from '@/admin-shared/help'
+export { A, P, UL } from '@/admin-shared/kit'
 
 export function Ext({ href, children }: { href: string; children: ReactNode }) {
   return <a href={href} target="_blank" rel="noopener noreferrer" className={A}>{children}</a>
@@ -25,15 +24,13 @@ export function In({ href, children }: { href: string; children: ReactNode }) {
 
 // A row of quick links closing a section.
 export function Links({ children }: { children: ReactNode }) {
-  return <p className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm text-neutral-500 dark:text-neutral-400">{children}</p>
+  return <p className={LINKS}>{children}</p>
 }
 
 // Inline literal — syntax, a path, a setting name. One style, used everywhere here.
 export function C({ children }: { children: ReactNode }) {
   return (
-    <code className="rounded-md bg-neutral-100 px-1.5 py-0.5 text-[0.8125rem] text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200">
-      {children}
-    </code>
+    <code className={CODE}>{children}</code>
   )
 }
 

@@ -240,6 +240,29 @@ character and none of its typographic rules **except one**, below.
   drafts is not the same fact as the drafts; the band names them and opens the editor on one.
   Administration counts (posts, pages, comments, images, storage) sit BELOW the widgets.
 
+## One DOM per state
+
+Adopted 2026-09-14 with ADR 0054, which makes the admin server-rendered HTML with islands.
+
+The server cannot read `localStorage`, so it cannot know whether the rail is collapsed, which
+group is open, or which filter a list is under. It draws **every state at once** and an
+attribute on `<html>` decides which is shown. Three things follow, and the third is the one
+that surprises people:
+
+1. **A toggle is an attribute, not a redraw.** Collapsing the rail sets one character and the
+   browser does the rest from CSS it already has. Nothing is rebuilt, so nothing can be
+   rebuilt wrongly — and the rail is correct in the first frame, before any script runs.
+2. **A filter hides, it does not remove.** The log sends its two hundred rows once, with the
+   facts a filter asks about written into each one, and the island sets `hidden`. That is what
+   the React version already did in memory; what changed is that the server writes the row.
+3. ⚠️ **A hidden thing is still a node.** A folded group still holds a link that says "Trash";
+   a switched-off top row is still in the DOM. So anything that searches the page by WORDS, or
+   counts `li`, must ask whether the element is VISIBLE — `el.offsetParent !== null`, which is
+   null for anything `display:none` and is therefore the same condition that keeps it out of
+   the tab order and the accessibility tree. Four tour flows learned this the hard way: one
+   found the rail's "Trash" link instead of the editor's button, another counted twelve
+   destinations on a rail that shows four.
+
 ## One sheet per page
 
 Adopted 2026-08-18 from the admin-pages mock, which replaced a page-by-page fix session:
