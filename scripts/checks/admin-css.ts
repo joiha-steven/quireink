@@ -82,14 +82,22 @@ function used(files: readonly string[], rulesOf: ReadonlySet<string>): Map<strin
   const out = new Map<string, string[]>()
   for (const file of files) {
     const text = readFileSync(file, 'utf8')
-    // `className={…}` is React's and `class="…"` is the server's. One expression, because the
-    // two are the same question asked in two languages and a second loop would be a second
-    // place to forget one.
-    for (const m of text.matchAll(/(?:className|class)\s*=\s*(\{|")/g)) {
+    // `className={…}` is React's, `class="…"` is the server's, and `className: '…'` is a node
+    // view's — an element built in TypeScript rather than written as markup. One expression,
+    // because the three are the same question asked in three languages and a second loop would
+    // be a second place to forget one.
+    //
+    // ⚠️ THE THIRD FORM IS WHY THIS GUARD DID NOT GO BLIND. The editor's node views became plain
+    // ProseMirror on 2026-09-15, which means they BUILD their elements — and the first cut
+    // passed the class list as a bare argument, where nothing here could see it. The count
+    // dropped by one and the check stayed green, which is precisely the shape of a guard that
+    // has quietly stopped checking. A named `className` is the convention that keeps it honest.
+    for (const m of text.matchAll(/(?:className|class)\s*[=:]\s*(\{|"|')/g)) {
       const start = m.index! + m[0].length - 1
       // The attribute's extent: to the closing quote, or across balanced braces.
       let end = start
-      if (m[1] === '"') {
+      if (m[1] === '"' || m[1] === "'") {
+        const quote = m[1]
         // ⚠️ SKIPPING `${…}`, because a quoted class list inside a template literal routinely
         // contains one — `class="find-hit${i === at ? ' find-hit-now' : ''}"` — and the
         // quotes inside it are not the attribute's closing quote. Stopping at the first `"`
@@ -104,7 +112,7 @@ function used(files: readonly string[], rulesOf: ReadonlySet<string>): Map<strin
             }
             continue
           }
-          if (text[i] === '"') { end = i; break }
+          if (text[i] === quote) { end = i; break }
           if (text[i] === '\n') break
         }
       } else {
@@ -142,7 +150,8 @@ function used(files: readonly string[], rulesOf: ReadonlySet<string>): Map<strin
       // The extent includes its own delimiters, and a class name contains neither — so they
       // become whitespace rather than the tail of the last token. Without this every quoted
       // attribute reported its final class as `w-full\"`.
-      for (const piece of [...literals, m[1] === '"' ? plain.replaceAll('"', ' ') : '']) {
+      const quoted = m[1] === '"' || m[1] === "'"
+      for (const piece of [...literals, quoted ? plain.replaceAll(m[1], ' ') : '']) {
         for (const token of piece.split(/\s+/)) {
           if (!token || token.includes('$') || !/^[-A-Za-z[]/.test(token)) continue
           // SHAPED LIKE A UTILITY, or it is not judged. A `className={...}` expression holds

@@ -17,7 +17,7 @@ import { TaskList } from '@tiptap/extension-task-list'
 import { TaskItem } from '@tiptap/extension-task-item'
 import { Placeholder } from '@tiptap/extension-placeholder'
 import { MarkdownBridge } from './MarkdownBridge'
-import { Video } from './VideoNode'
+import { Video, type VideoWords } from './VideoNode'
 import { Ink } from './InkMark'
 import { CaptionedImage } from './CaptionedImage'
 import { LinkKey } from './editorLinkKey'
@@ -33,9 +33,22 @@ import { Find } from './FindExtension'
  *   unlink, or null if the reader backed out. A callback rather than a translated string
  * reason, and defaulted so the seven round-trip suites can keep calling this with one argument.
  */
+/**
+ * The WORDS the node views print, which they cannot look up for themselves.
+ *
+ * A node view runs inside the document rather than inside the application, so it has no context
+ * and no dictionary. Passing them in keeps every string in `locales/` where the eleven
+ * languages are — the alternative is a node view importing all eleven to print two labels.
+ * Defaulted, so the fourteen round-trip suites keep calling this with one argument.
+ */
+export type NodeWords = { video: VideoWords }
+
+const ENGLISH: NodeWords = { video: { column: 'Column', wide: 'Large' } }
+
 export function editorExtensions(
   placeholder: string,
   askLink: (previous: string) => Promise<string | null> = async () => null,
+  words: NodeWords = ENGLISH,
 ): Extensions {
   return [
     // StarterKit already ships `link` and `underline` in Tiptap 3. Registering them again
@@ -53,7 +66,7 @@ export function editorExtensions(
     // caller at once.
     StarterKit.configure({ link: { openOnClick: false }, underline: false }),
     CaptionedImage,
-    Video,
+    Video.configure({ words: words.video }),
     Ink, // the pen: `==text==` inks as you type, and saves back as `==text==` (InkMark.ts)
     PenUnderline, // `++text++`, and the U button that used to lose its work (PenMarks.ts)
     PenRing, // `@@word@@`, the ballpoint ring (PenMarks.ts)
