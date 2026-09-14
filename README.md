@@ -33,6 +33,17 @@ One process. Two SQLite files. No cloud account anywhere in the path. Your name 
 
 </div>
 
+> ### ⚠️ Still being built
+>
+> **This changes most days.** It runs the demo above and the author's own blog, every push goes
+> through the test suite and a browser tour of every screen, and a release is only cut when both
+> are green. None of that makes it finished: it is a pre-release, the admin is being rebuilt
+> screen by screen right now, and bugs still ship.
+>
+> **Try it, take it apart, and [tell the issue tracker](https://github.com/joiha-steven/quireink/issues)
+> what broke.** Do not yet put a blog on it that you would mind losing. When that changes, this
+> notice goes and the version number stops saying `beta`.
+
 ## What it is
 
 A blog you write in and publish from, on a server you rent. This first part is for a reader who is not technical. Everything after it is for whoever sets it up.

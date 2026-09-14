@@ -31,6 +31,18 @@ Không thuật toán, không quảng cáo, không nền tảng nào đứng gi�
 
 </div>
 
+> ### ⚠️ Vẫn đang làm
+>
+> **Dự án này thay đổi gần như mỗi ngày.** Nó đang chạy bản demo ở trên và blog của chính tác
+> giả, mỗi lần đẩy code đều chạy qua bộ test và một vòng tour duyệt mọi màn hình bằng trình
+> duyệt thật, và chỉ cắt bản phát hành khi cả hai đều xanh. Chừng đó vẫn chưa có nghĩa là nó
+> xong: đây là bản tiền phát hành, trang quản trị đang được dựng lại từng màn một, và lỗi vẫn
+> còn lọt.
+>
+> **Cứ thử, cứ vọc, và [báo lại chỗ nào hỏng](https://github.com/joiha-steven/quireink/issues).**
+> Nhưng đừng đặt lên đó một cái blog mà bạn tiếc
+> nếu mất. Khi nào khác đi thì dòng này sẽ biến mất và số phiên bản sẽ bỏ chữ `beta`.
+
 ## Nó là gì
 
 Một cái blog bạn viết và đăng, chạy trên máy chủ bạn thuê.
