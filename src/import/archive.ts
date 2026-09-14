@@ -1,5 +1,5 @@
 // Parse a Substack or Medium export — both arrive as a ZIP of HTML files — into Quire
-// Ink posts. PURE over unzipped entries: the route does the unzip (fflate) and hands
+// Ink posts. PURE over unzipped entries: the route does the unzip (`import/unzip.ts`) and hands
 // `{ name, text }` pairs in, so these parsers stay I/O-free like the other two.
 //
 // Sniffing is structural, not by filename: a Substack zip has `posts.csv` beside a

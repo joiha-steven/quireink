@@ -166,15 +166,23 @@ export function opsRoutes() {
     // the server tells them apart by structure (posts.csv vs h-entry markup), not by
     // asking. Only .html/.csv entries are read as text; images and everything else in
     // the archive stay untouched — this importer, like the others, keeps image URLs.
-    const { unzipSync } = await import('fflate')
+    const { unzip, ZipError } = await import('@/import/unzip')
     let entries: { name: string; text: string }[]
     try {
-      const files = unzipSync(new Uint8Array(await file.arrayBuffer()))
-      entries = Object.entries(files)
-        .filter(([name]) => /\.(html|csv)$/i.test(name))
-        .map(([name, data]) => ({ name, text: new TextDecoder().decode(data) }))
-    } catch {
-      return fail(c, 'not_a_zip', 400)
+      // The filter is passed IN rather than applied after: `unzip` decompresses only what it
+      // is asked for, and a blog export is mostly images. `fflate` inflated the whole archive
+      // into memory first and these two lines then threw most of it away.
+      const decoder = new TextDecoder()
+      entries = unzip(
+        new Uint8Array(await file.arrayBuffer()),
+        (name) => /\.(html|csv)$/i.test(name),
+      ).map(({ name, bytes }) => ({ name, text: decoder.decode(bytes) }))
+    } catch (cause) {
+      // Two codes rather than four: `unzip` distinguishes a corrupt entry from an unreadable
+      // container, but this route's answers are part of the API's contract and the admin knows
+      // these two. An entry that will not fit is the same answer as a file that will not fit.
+      const tooBig = cause instanceof ZipError && cause.code === 'entry_too_large'
+      return fail(c, tooBig ? 'file_too_large' : 'not_a_zip', tooBig ? 413 : 400)
     }
     const { isSubstack, isMedium, parseSubstack, parseMedium } = await import('@/import/archive')
     const now = new Date().toISOString()
