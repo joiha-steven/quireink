@@ -24,7 +24,7 @@
   Trash only — is the hard delete, and the moment `deleteSendsFor` clears the address from
   the send log. A trashed address neither receives broadcasts nor answers its own links;
   re-subscribing it starts over as a fresh pending row with a fresh token.
-- **SMTP (`src/news/mail.ts`, Nodemailer).** Config lives on `integration_keys` (server-only secrets,
+- **SMTP (`src/news/mail.ts`, speaking the protocol itself via `src/news/smtp.ts` and `src/news/mime.ts`).** Config lives on `integration_keys` (server-only secrets,
   env fallback) — set in Admin → Settings → Comments & mail (`NewsletterFields`, via `api/mail`).
   `sendMail` never throws: `{ sent:false, error:'smtp_not_configured' }` when unset, so subscribe
   still records the pending row. `isMailConfigured` = host + From present.

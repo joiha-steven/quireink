@@ -1,11 +1,11 @@
-// SMTP mail (Nodemailer). Config lives on the `integration_keys` row (server-only
+// SMTP mail. Config lives on the `integration_keys` row (server-only
 // secrets, like the Turnstile/Cloudflare keys) — NEVER in settings.data / the client
 // payload. Env vars of the same name are a fallback. No-lock-in: the owner points this
 // at their own SMTP server; nothing proprietary. SERVER-ONLY.
 
-// Nodemailer is loaded on the FIRST SEND, not at boot — see `sendMail`. This module is on
-// the reader's path (`getMailStatus` decides whether a page draws a subscribe form), so a
-// static import here put the whole SMTP stack into every process that has never sent mail.
+// The SMTP client is loaded on the FIRST SEND, not at boot — see `makeTransport`. This module
+// is on the reader's path (`getMailStatus` decides whether a page draws a subscribe form), so a
+// static import here put `node:net` and `node:tls` into every process that has never sent mail.
 import { logSend, type SendKind } from '@/news/newsletter-log'
 import { htmlToText } from '@/news/mail-text'
 import { clearCache } from '@/server/cache'
@@ -112,32 +112,72 @@ export async function saveSmtpConfig(input: Partial<SmtpConfig>): Promise<void> 
  * server closes after two minutes. The admin was then told the broadcast had failed while the
  * mail was still going out, and the button offered to send the whole list again.
  *
- * Nodemailer's pool holds connections open and reuses them, which is right for a run of a
- * thousand and wrong for a confirmation email: the pool has no idle timeout, so a transport
- * left standing after one message holds a socket open against the owner's relay until the
- * process ends. So the pool is OPENED for a run and closed with it, and a message sent
- * outside a run still gets its own transport and still closes it.
+ * So one connection is held open for a run and closed with it, and a message sent outside a
+ * run gets its own and still closes it. Holding one open forever is the other failure: a
+ * transport left standing after a single confirmation email keeps a socket against the owner's
+ * relay until the process ends.
  *
- * Three connections is a floor rather than a tuned number: comfortably under what a small
- * relay treats as abuse, and the point is to stop paying a handshake per message.
+ * ONE connection, not three. `nodemailer` was configured with a pool of three, which buys
+ * nothing here: `broadcast.ts` awaits each message before starting the next, so two of the
+ * three never carried anything.
  */
-type Transport = { sendMail: (m: Record<string, unknown>) => Promise<unknown>; close: () => void }
+type Transport = {
+  sendMail: (m: { to: string; subject: string; html: string; text: string }) => Promise<void>
+  close: () => Promise<void>
+}
 type Pool = { key: string; transport: Transport }
 
 let pooled: Pool | null = null
 
 const poolKey = (cfg: SmtpConfig) => JSON.stringify([cfg.host, cfg.port, cfg.secure, cfg.user, cfg.pass])
 
-// Nodemailer is loaded on the FIRST SEND, not at boot: a blog with no SMTP configured never
-// loads the stack at all, and one that has it pays the import once per process.
-async function makeTransport(cfg: SmtpConfig, pool: boolean): Promise<Transport> {
-  const { default: nodemailer } = await import('nodemailer')
-  const auth = cfg.user ? { user: cfg.user, pass: cfg.pass } : undefined
-  const base = { host: cfg.host, port: cfg.port, secure: cfg.secure, auth }
-  const made = pool
-    ? nodemailer.createTransport({ ...base, pool: true, maxConnections: 3 })
-    : nodemailer.createTransport(base)
-  return made as unknown as Transport
+// Loaded on the FIRST SEND, not at boot: a blog with no SMTP configured never loads the socket
+// stack at all, and one that has it pays the import once per process.
+async function makeTransport(cfg: SmtpConfig): Promise<Transport> {
+  const { SmtpSession, SmtpError } = await import('@/news/smtp')
+  const { buildMessage, bareAddress } = await import('@/news/mime')
+  const options = {
+    host: cfg.host,
+    port: cfg.port,
+    secure: cfg.secure,
+    auth: cfg.user ? { user: cfg.user, pass: cfg.pass } : undefined,
+  }
+
+  let session = await SmtpSession.open(options)
+  const from = bareAddress(cfg.from)
+
+  /**
+   * True when the failure was the CONNECTION rather than the message.
+   *
+   * The difference decides whether retrying is a repair or a second delivery. A relay that
+   * said 550 means it; a socket that died between two messages of a long run means nothing,
+   * and every relay closes one eventually.
+   */
+  const droppedUs = (error: unknown): boolean =>
+    !(error instanceof SmtpError) || error.code === 0
+
+  return {
+    async sendMail(msg) {
+      const body = buildMessage({
+        from: cfg.from,
+        to: msg.to,
+        subject: msg.subject,
+        text: msg.text,
+        html: msg.html,
+      })
+      const envelope = { from, to: bareAddress(msg.to), body }
+      try {
+        await session.send(envelope)
+      } catch (error) {
+        if (!droppedUs(error)) throw error
+        // Exactly once. A second failure is a failure, and a retry loop against a relay that
+        // has stopped answering is how a broadcast turns into an outage.
+        session = await SmtpSession.open(options)
+        await session.send(envelope)
+      }
+    },
+    close: () => session.close(),
+  }
 }
 
 /**
@@ -150,7 +190,19 @@ export async function openMailPool(): Promise<{ close: () => void } | null> {
   const cfg = await getSmtpConfig()
   if (!isMailConfigured(cfg)) return null
   closeMailPool()
-  pooled = { key: poolKey(cfg), transport: await makeTransport(cfg, true) }
+  let transport: Transport
+  try {
+    transport = await makeTransport(cfg)
+  } catch (error) {
+    // OPENING THE CONNECTION IS WHERE THE RELAY IS FIRST REACHED, and it can refuse. Nodemailer
+    // built a transport object without connecting, so this function could not fail and no
+    // caller was written to expect it to. A relay that is down must not throw past
+    // `broadcast.ts`'s own try: it must look the same as no SMTP at all, which is one failure
+    // recorded per subscriber, each with its reason, and a run that finishes and says so.
+    console.error(`[ERROR] mail.openMailPool: ${(error as Error).message}`)
+    return null
+  }
+  pooled = { key: poolKey(cfg), transport }
   const mine = pooled
   return {
     close: () => {
@@ -161,7 +213,9 @@ export async function openMailPool(): Promise<{ close: () => void } | null> {
 }
 
 export function closeMailPool(): void {
-  pooled?.transport.close()
+  // Not awaited: every caller is a `close()` on the way out of a run, and a QUIT this process
+  // never hears the answer to has still delivered everything before it.
+  void pooled?.transport.close()
   pooled = null
 }
 
@@ -192,10 +246,9 @@ export async function sendMail(msg: {
   // Inside a run, the open pool. Outside one, a transport of its own, closed below.
   const shared = pooled?.key === poolKey(cfg) ? pooled.transport : null
   try {
-    const transport = shared ?? (await makeTransport(cfg, false))
+    const transport = shared ?? (await makeTransport(cfg))
     try {
       await transport.sendMail({
-        from: cfg.from,
         to: msg.to,
         subject: msg.subject,
         html: msg.html,
@@ -204,7 +257,7 @@ export async function sendMail(msg: {
         text: msg.text || htmlToText(msg.html),
       })
     } finally {
-      if (!shared) transport.close()
+      if (!shared) await transport.close()
     }
     await record(true)
     return { sent: true }
