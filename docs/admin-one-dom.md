@@ -55,6 +55,15 @@ precisely because a real navigation can only ever get the generic one.
    markup, and no flow that counts or clicks can see it: it is one hairline, and it was found
    by diffing the two builds' computed styles.
 
+   **`space-y-*` IS ONE OF THESE, and it is the one that will be hit most.** Tailwind v4 writes
+   it as `& > :not(:last-child) { margin-block-end }` — so in a stack that draws every state and
+   hides all but one, whichever element is followed by a hidden sibling takes a margin it would
+   not have had. The library's grid picked up 20px that way: it sits in a `space-y-5` with two
+   hidden empty states after it, so it stopped being `:last-child`. The fix is a WRAPPER — put
+   the mutually exclusive states in one box, and the stack has one child again whichever of them
+   is showing. Found on 2026-09-14 by the same computed-style diff, which is so far the only
+   thing that has ever found one of these.
+
 5. ⚠️ **A STATE ATTRIBUTE READ THROUGH AN ANCESTOR MUST HAVE A NAME NOTHING ELSE WEARS.** The
    assistant's chat rows pick between a delete cross and a delete confirm with
    `[data-ai-chat]:not([data-ai-confirming]) [data-ai-confirm] { display: none }`, i.e. a rule

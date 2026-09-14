@@ -8,6 +8,7 @@
 // In `island/lib/` and not beside the islands: `scripts/build-admin.ts` globs `*.ts` in
 // `island/` and that glob does not recurse, so a file one directory down is a module rather
 // than a browser entry of its own.
+import { ICONS, type IconName } from '@/icons'
 import type { Mark } from '@/admin-shared/markup'
 
 const SVG_NS = 'http://www.w3.org/2000/svg'
@@ -24,7 +25,13 @@ export function elOf(mark: Mark, svg = false): Node {
     : document.createElement(mark.tag)
   if (mark.cls) node.setAttribute('class', mark.cls)
   for (const [k, v] of Object.entries(mark.attrs ?? {})) node.setAttribute(k, v)
-  if (mark.kids) for (const kid of mark.kids) node.appendChild(elOf(kid, inSvg))
+  // THE ONE THING A TREE OF MARKS CANNOT SAY ON ITS OWN: a drawing. `data-glyph` names a shape
+  // in `@/icons`, a frozen table of strings written in this repo. It is the only `innerHTML` in
+  // either renderer, and what it is handed is a lookup in that table — never a value that
+  // arrived with a request, and never anything a caller composed.
+  const drawing = mark.attrs?.['data-glyph']
+  if (drawing) node.innerHTML = ICONS[drawing as IconName] ?? ''
+  else if (mark.kids) for (const kid of mark.kids) node.appendChild(elOf(kid, inSvg))
   else if (mark.text !== undefined) node.textContent = mark.text
   return node
 }

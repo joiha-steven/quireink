@@ -12,7 +12,7 @@ import { Editor, type EditorApi } from './Editor'
 import { EditorActions } from './EditorActions'
 import { NoteSettings, type NoteDraft } from './NoteSettings'
 import { TrashLink } from './TrashLink'
-import { MediaLibrary } from './MediaLibrary'
+import { usePickMedia } from './usePickMedia'
 import { SlideOver } from './SlideOver'
 import { SheetTitle } from './SheetTitle'
 import { readSnapshot, saveStatusLine, useReopenedNotice, useStickyOffset, useUnsavedGuard } from './useLocalDraft'
@@ -31,7 +31,6 @@ type Props = {
   /** The site's clock: the date field is a wall clock on it, not on this machine. */
   timezone: string
 }
-type PickTarget = 'editor' | 'gallery'
 
 function toDraft(initial: NoteWithContent | undefined, tz: string): NoteDraft {
   return {
@@ -61,7 +60,7 @@ export function NoteForm({ initial, contentWidth, keySound, autosaveSeconds, aut
   const [draft, setDraft] = useState<NoteDraft>(() => reopened?.data ?? toDraft(initial, timezone))
   const [saving, setSaving] = useState(false)
   const [savedAt, setSavedAt] = useState<string | null>(null)
-  const [picker, setPicker] = useState<PickTarget | null>(null)
+  const pick = usePickMedia()
   const [dirty, setDirty] = useState(reopened !== null)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [asking, setAsking] = useState(false)
@@ -213,16 +212,17 @@ export function NoteForm({ initial, contentWidth, keySound, autosaveSeconds, aut
     notify(successMsg)
   }
 
-  // Single pick (image). Gallery uses multi-select -> onPickedMany.
-  function onPicked(url: string, alt?: string) {
-    editorApi.current?.insertImage(url, alt)
-    setPicker(null)
-  }
-
-  // Gallery: insert every chosen image as a #grid item (they group into a grid).
-  function onPickedMany(urls: string[]) {
-    editorApi.current?.insertGalleryMany(urls)
-    setPicker(null)
+  /**
+   * ASK FOR A PICTURE, then put it in the note.
+   *
+   * The picker is an island now (`island/lib/media-picker.ts`) and `usePickMedia` is the bridge
+   * to it; a closed picker answers `null` and nothing happens.
+   */
+  async function choose(gallery: boolean) {
+    const got = await pick(gallery)
+    if (!got) return
+    if ('urls' in got) editorApi.current?.insertGalleryMany(got.urls)
+    else editorApi.current?.insertImage(got.url, got.alt)
   }
 
   // Pull the recovered snapshot back — device or server, whichever was newer.
@@ -299,8 +299,8 @@ export function NoteForm({ initial, contentWidth, keySound, autosaveSeconds, aut
         initialContent={draft.content}
         onChange={(md) => { contentRef.current = md }}
         onDirty={() => setDirty(true)}
-        onPickImage={() => setPicker('editor')}
-        onPickGallery={() => setPicker('gallery')}
+        onPickImage={() => void choose(false)}
+        onPickGallery={() => void choose(true)}
         onUploadFile={uploadInline}
         apiRef={editorApi}
         contentWidth={contentWidth}
@@ -335,15 +335,6 @@ export function NoteForm({ initial, contentWidth, keySound, autosaveSeconds, aut
         </SlideOver>
       )}
 
-      {picker && (
-        <MediaLibrary
-          mode="picker"
-          multi={picker === 'gallery'}
-          onSelect={onPicked}
-          onSelectMany={onPickedMany}
-          onClose={() => setPicker(null)}
-        />
-      )}
     </div>
   )
 }

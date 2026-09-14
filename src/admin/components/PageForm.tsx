@@ -12,7 +12,7 @@ import { Editor, type EditorApi } from './Editor'
 import { EditorActions } from './EditorActions'
 import { PageSettings, type PageDraft } from './PageSettings'
 import { TrashLink } from './TrashLink'
-import { MediaLibrary } from './MediaLibrary'
+import { usePickMedia } from './usePickMedia'
 import { SlideOver } from './SlideOver'
 import { SheetTitle } from './SheetTitle'
 import { readSnapshot, saveStatusLine, useReopenedNotice, useStickyOffset, useUnsavedGuard } from './useLocalDraft'
@@ -29,7 +29,6 @@ type Props = {
   /** `autosave_at` on the row, in ms — a snapshot waiting from another session or machine. */
   autosaveAt: number | null
 }
-type PickTarget = 'editor' | 'gallery' | 'featured'
 
 function toDraft(initial?: PageWithContent): PageDraft {
   return {
@@ -56,7 +55,7 @@ export function PageForm({ initial, contentWidth, keySound, autosaveSeconds, aut
   const [draft, setDraft] = useState<PageDraft>(() => reopened?.data ?? toDraft(initial))
   const [saving, setSaving] = useState(false)
   const [savedAt, setSavedAt] = useState<string | null>(null)
-  const [picker, setPicker] = useState<PickTarget | null>(null)
+  const pick = usePickMedia()
   const [dirty, setDirty] = useState(reopened !== null)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [asking, setAsking] = useState(false)
@@ -205,17 +204,19 @@ export function PageForm({ initial, contentWidth, keySound, autosaveSeconds, aut
     notify(successMsg)
   }
 
-  // Single pick (image / featured). Gallery uses multi-select -> onPickedMany.
-  function onPicked(url: string, alt?: string) {
-    if (picker === 'featured') update({ featuredImage: url })
-    else editorApi.current?.insertImage(url, alt)
-    setPicker(null)
-  }
-
-  // Gallery: insert every chosen image as a #grid item (they group into a grid).
-  function onPickedMany(urls: string[]) {
-    editorApi.current?.insertGalleryMany(urls)
-    setPicker(null)
+  /**
+   * ASK FOR A PICTURE, then do with it whatever this button was for.
+   *
+   * One function for three buttons: the ask is the same every time and only the answer's
+   * destination differs. The picker is an island now (`island/lib/media-picker.ts`) and
+   * `usePickMedia` is the bridge to it; a closed picker answers `null` and nothing happens.
+   */
+  async function choose(what: 'editor' | 'gallery' | 'featured') {
+    const got = await pick(what === 'gallery')
+    if (!got) return
+    if ('urls' in got) { editorApi.current?.insertGalleryMany(got.urls); return }
+    if (what === 'featured') update({ featuredImage: got.url })
+    else editorApi.current?.insertImage(got.url, got.alt)
   }
 
   // Pull the recovered snapshot back — device or server, whichever was newer.
@@ -292,8 +293,8 @@ export function PageForm({ initial, contentWidth, keySound, autosaveSeconds, aut
         initialContent={draft.content}
         onChange={(md) => { contentRef.current = md }}
         onDirty={() => setDirty(true)}
-        onPickImage={() => setPicker('editor')}
-        onPickGallery={() => setPicker('gallery')}
+        onPickImage={() => void choose('editor')}
+        onPickGallery={() => void choose('gallery')}
         onUploadFile={uploadInline}
         apiRef={editorApi}
         contentWidth={contentWidth}
@@ -321,21 +322,12 @@ export function PageForm({ initial, contentWidth, keySound, autosaveSeconds, aut
             </>
           }
         >
-          <PageSettings draft={draft} update={update} onPickFeatured={() => setPicker('featured')} />
+          <PageSettings draft={draft} update={update} onPickFeatured={() => void choose('featured')} />
           {/* Saved only: an unsaved page has no slug the server has ever seen. */}
           {savedSlug && <TrashLink kind="page" slug={savedSlug} />}
         </SlideOver>
       )}
 
-      {picker && (
-        <MediaLibrary
-          mode="picker"
-          multi={picker === 'gallery'}
-          onSelect={onPicked}
-          onSelectMany={onPickedMany}
-          onClose={() => setPicker(null)}
-        />
-      )}
     </div>
   )
 }

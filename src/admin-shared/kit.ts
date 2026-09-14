@@ -332,3 +332,17 @@ export const LAMP_SHAPE = 'inline-block h-2 w-2 shrink-0 rounded-full'
  */
 export const CHECK = 'accent-neutral-900 dark:accent-white'
 
+
+// The place you DROP something into: CARVED, because a well holds things (the inset a text
+// field wears, for the reason it wears it), and dashed, because it is waiting to be filled.
+// ONE definition — the image uploader drew a 1px dash on a 10px radius and the file uploader a
+// 2px dash on 8px, each with its own idea of the drag state. Dragging DEEPENS the well.
+export const DROPZONE = 'cursor-pointer rounded-lg border border-dashed p-8 text-center text-sm'
+  + ' transition shadow-[inset_0_1px_2px_rgba(0,0,0,.06)] dark:shadow-[inset_0_1px_2px_rgba(0,0,0,.35)]'
+
+export const DROPZONE_IDLE = 'border-neutral-300 bg-neutral-50/60 text-neutral-500'
+  + ' dark:border-neutral-700 dark:bg-neutral-950/40 dark:text-neutral-400'
+
+export const DROPZONE_OVER = 'border-neutral-500 bg-neutral-100 text-neutral-700'
+  + ' shadow-[inset_0_2px_5px_rgba(0,0,0,.12)] dark:border-neutral-400 dark:bg-neutral-800'
+  + ' dark:text-neutral-200 dark:shadow-[inset_0_2px_5px_rgba(0,0,0,.5)]'

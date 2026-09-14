@@ -14,11 +14,10 @@
 // stored image (Invariant 3 — stored bytes carry no origin), so a typed-in address would be
 // the one image ref on the site that does not travel.
 
-import { useState } from 'react'
 import type { AuthorSettings } from '@/types'
 import { Input, Textarea } from '@/admin/ui/Input'
 import { Button } from '@/admin/ui/Button'
-import { MediaLibrary } from './MediaLibrary'
+import { usePickMedia } from './usePickMedia'
 import { NOTE_TEXT, Setting, SETTING_GAP } from './kit'
 import { useAdminT } from './I18nProvider'
 import { EMPTY_SLOT } from './slot'
@@ -28,7 +27,7 @@ export function AuthorFields({ author, onChange }: {
   onChange: (a: AuthorSettings) => void
 }) {
   const t = useAdminT()
-  const [picking, setPicking] = useState(false)
+  const pick = usePickMedia()
 
   return (
     <div className={SETTING_GAP}>
@@ -66,7 +65,7 @@ export function AuthorFields({ author, onChange }: {
             <span className="text-xs text-neutral-500 dark:text-neutral-400">{t.authorNoAvatar}</span>
           )}
           <div className="flex gap-2">
-            <Button variant="secondary" type="button" onClick={() => setPicking(true)}>{t.chooseImage}</Button>
+            <Button variant="secondary" type="button" onClick={() => void pick().then((got) => { if (got && 'url' in got) onChange({ ...author, avatarUrl: got.url }) })}>{t.chooseImage}</Button>
             {author.avatarUrl && (
               <Button variant="ghost" type="button" onClick={() => onChange({ ...author, avatarUrl: '' })}>
                 {t.removeSelection}
@@ -86,16 +85,6 @@ export function AuthorFields({ author, onChange }: {
         onChange={(e) => onChange({ ...author, url: e.target.value })}
       />
 
-      {picking && (
-        <MediaLibrary
-          mode="picker"
-          onSelect={(url) => {
-            onChange({ ...author, avatarUrl: url })
-            setPicking(false)
-          }}
-          onClose={() => setPicking(false)}
-        />
-      )}
     </div>
   )
 }

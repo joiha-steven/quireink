@@ -1,6 +1,6 @@
 // Editor screen: a sheet of paper (title, meta, writing), one quiet action line above it,
 // and the attributes on a slide-over when they are asked for.
-// Handles auto-save, manual save (draft/publish) and the media picker modal.
+// Handles auto-save, manual save (draft/publish) and asking the picker island for a picture.
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { PostWithContent, PostRevision, ApiResponse } from '@/types'
 import type { KeySound } from './key-sound'
@@ -12,7 +12,7 @@ import { type Draft } from './PostSettings'
 import { toDraft, toPayload } from './post-draft'
 import { PublishPanel } from './PublishPanel'
 import { EditorActions } from './EditorActions'
-import { MediaLibrary } from './MediaLibrary'
+import { usePickMedia } from './usePickMedia'
 import { TimeMachine } from './TimeMachine'
 import { TrashLink } from './TrashLink'
 import { EditorLinks } from './EditorLinks'
@@ -37,7 +37,6 @@ type Props = {
   timezone: string
 }
 
-type PickTarget = 'editor' | 'gallery' | 'featured' | 'cover'
 
 export function PostForm({ initial, allCategories, allTags, allSeries, contentWidth, keySound, autosaveSeconds, autosaveAt , timezone}: Props) {
   const t = useAdminT()
@@ -54,7 +53,7 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
   const [draft, setDraft] = useState<Draft>(() => reopened?.data ?? toDraft(initial, timezone))
   const [saving, setSaving] = useState(false)
   const [savedAt, setSavedAt] = useState<string | null>(null)
-  const [picker, setPicker] = useState<PickTarget | null>(null)
+  const pick = usePickMedia()
   const [timeMachine, setTimeMachine] = useState(false)
   // CLOSED by default, and `asking` is true from the first Publish press until it publishes,
   // which is what turns the attributes into the publish sheet. They used to be open on every
@@ -208,18 +207,20 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
     notify(successMsg)
   }
 
-  // Single pick (image / featured). Gallery uses multi-select -> onPickedMany.
-  function onPicked(url: string, alt?: string) {
-    if (picker === 'featured') update({ featuredImage: url })
-    else if (picker === 'cover') update({ coverImage: url })
-    else editorApi.current?.insertImage(url, alt)
-    setPicker(null)
-  }
-
-  // Gallery: insert every chosen image as a #grid item (they group into a grid).
-  function onPickedMany(urls: string[]) {
-    editorApi.current?.insertGalleryMany(urls)
-    setPicker(null)
+  /**
+   * ASK FOR A PICTURE, then do with it whatever this button was for.
+   *
+   * One function for four buttons, because the ask is the same one every time and only the
+   * answer's destination differs. The picker is an island now (`island/lib/media-picker.ts`)
+   * and `usePickMedia` is the bridge to it; a closed picker answers `null` and nothing happens.
+   */
+  async function choose(what: 'editor' | 'gallery' | 'featured' | 'cover') {
+    const got = await pick(what === 'gallery')
+    if (!got) return
+    if ('urls' in got) { editorApi.current?.insertGalleryMany(got.urls); return }
+    if (what === 'featured') update({ featuredImage: got.url })
+    else if (what === 'cover') update({ coverImage: got.url })
+    else editorApi.current?.insertImage(got.url, got.alt)
   }
 
   // Pull the recovered snapshot back — device or server, whichever was newer. The slug and
@@ -349,8 +350,8 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
         initialContent={draft.content}
         onChange={(md) => { contentRef.current = md }}
         onDirty={() => setDirty(true)}
-        onPickImage={() => setPicker('editor')}
-        onPickGallery={() => setPicker('gallery')}
+        onPickImage={() => void choose('editor')}
+        onPickGallery={() => void choose('gallery')}
         onUploadFile={uploadInline}
         apiRef={editorApi}
         contentWidth={contentWidth}
@@ -366,8 +367,8 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
           allCategories={allCategories}
           allTags={allTags}
           allSeries={allSeries}
-          onPickFeatured={() => setPicker('featured')}
-          onPickCover={() => setPicker('cover')}
+          onPickFeatured={() => void choose('featured')}
+          onPickCover={() => void choose('cover')}
           asking={asking}
           saving={saving}
           scheduled={scheduled}
@@ -376,16 +377,6 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
           links={<EditorLinks slug={savedSlug} published={draft.status === 'published'}
             scheduled={scheduled} onHistory={() => setTimeMachine(true)} />}
           bottom={savedSlug ? <TrashLink kind="post" slug={savedSlug} /> : undefined}
-        />
-      )}
-
-      {picker && (
-        <MediaLibrary
-          mode="picker"
-          multi={picker === 'gallery'}
-          onSelect={onPicked}
-          onSelectMany={onPickedMany}
-          onClose={() => setPicker(null)}
         />
       )}
 

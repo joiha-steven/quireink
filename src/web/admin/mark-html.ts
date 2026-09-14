@@ -8,6 +8,7 @@
 // Its twin is `src/admin/island/lib/mark-dom.ts`, which does the same walk with real nodes.
 // `src/web/admin/screens/assistant.test.ts` holds the two to the same answer.
 import { escapeAttr, escapeHtml } from '@/utils'
+import { ICONS, type IconName } from '@/icons'
 import { VOID_TAGS, type Mark } from '@/admin-shared/markup'
 
 const attrsOf = (m: Mark): string => {
@@ -26,6 +27,12 @@ export function htmlOf(mark: Mark | Mark[]): string {
   if (mark.tag === '') return escapeHtml(mark.text ?? '')
   const open = `<${mark.tag}${attrsOf(mark)}>`
   if (VOID_TAGS.has(mark.tag)) return open
+  // THE ONE THING A TREE OF MARKS CANNOT SAY ON ITS OWN: a drawing. `data-glyph` names a shape
+  // in `@/icons`, which is a frozen table of strings written in this repo — it is never a value
+  // that arrived with a request, so this is the only markup either renderer inserts, and it can
+  // only ever be one of the twenty-odd shapes that table holds.
+  const drawing = mark.attrs?.['data-glyph']
+  if (drawing) return `${open}${ICONS[drawing as IconName] ?? ''}</${mark.tag}>`
   const body = mark.kids ? htmlOf(mark.kids) : escapeHtml(mark.text ?? '')
   return `${open}${body}</${mark.tag}>`
 }

@@ -39,7 +39,6 @@ import { getSettings } from '@/content/settings'
 import { THEME_PRESETS } from '@/content/themes'
 import { getTrashedMedia } from '@/media/media'
 import { getTrashedFiles } from '@/media/files'
-import { listBlobs } from '@/media/blob'
 import { OwnerRouter } from '@/web/guard'
 import { APP_VERSION } from '@/version'
 import { dashboardView } from '@/web/admin/views-home'
@@ -261,12 +260,6 @@ export async function shellView() {
   return { language: settings.language, version: VERSION, aiConfigured, navOrder: settings.navOrder, avatar: settings.author.avatarUrl, seenRelease: settings.seenRelease, look: settings.look }
 }
 
-/** Storage totals for the media page's header, without listing every blob twice. */
-async function mediaView() {
-  const blobs = await listBlobs()
-  return { count: blobs.length, totalBytes: blobs.reduce((sum, b) => sum + b.size, 0) }
-}
-
 /**
  * THE CONTRACT. `src/admin/useView.ts` resolves a view name to its payload type through
  * this map, so a renamed or retyped field on either side is a compile error on the other.
@@ -292,7 +285,6 @@ export type ViewPayloads = {
   trash: Awaited<ReturnType<typeof trashView>>
   assistant: Awaited<ReturnType<typeof assistantView>>
   shell: Awaited<ReturnType<typeof shellView>>
-  media: Awaited<ReturnType<typeof mediaView>>
 }
 
 // ----- the routes -------------------------------------------------------------
@@ -357,8 +349,6 @@ export function viewRoutes(): OwnerRouter {
   routes.get('/api/admin/view/assistant', async (c) => c.json({ data: await assistantView() }))
 
   routes.get('/api/admin/view/shell', async (c) => c.json({ data: await shellView() }))
-
-  routes.get('/api/admin/view/media', async (c) => c.json({ data: await mediaView() }))
 
   return routes
 }

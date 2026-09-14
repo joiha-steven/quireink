@@ -39,7 +39,6 @@ const load = {
   postEditor: () => import('@/admin/pages/PostEditor'),
   pageEditor: () => import('@/admin/pages/PageEditor'),
   noteEditor: () => import('@/admin/pages/NoteEditor'),
-  media: () => import('@/admin/pages/Media'),
   settings: () => import('@/admin/pages/Settings'),
   notFound: () => import('@/admin/pages/NotFound'),
 } satisfies Record<string, Loader>
@@ -53,7 +52,6 @@ const Content = lazy(throughDeploys(load.content))
 const PostEditor = lazy(throughDeploys(load.postEditor))
 const PageEditor = lazy(throughDeploys(load.pageEditor))
 const NoteEditor = lazy(throughDeploys(load.noteEditor))
-const Media = lazy(throughDeploys(load.media))
 const Settings = lazy(throughDeploys(load.settings))
 const NotFound = lazy(throughDeploys(load.notFound))
 
@@ -64,7 +62,6 @@ function loaderFor(path: string): Loader {
   if (p === '/admin/editor' || p.startsWith('/admin/editor/')) return load.postEditor
   if (p === '/admin/page-editor' || p.startsWith('/admin/page-editor/')) return load.pageEditor
   if (p === '/admin/note-editor' || p.startsWith('/admin/note-editor/')) return load.noteEditor
-  if (p === '/admin/media') return load.media
   if (p === '/admin/settings') return load.settings
   return load.notFound
 }
@@ -106,7 +103,6 @@ function Route(): ReactNode {
   if (path === '/admin/editor' || path.startsWith('/admin/editor/')) return <PostEditor />
   if (path === '/admin/page-editor' || path.startsWith('/admin/page-editor/')) return <PageEditor />
   if (path === '/admin/note-editor' || path.startsWith('/admin/note-editor/')) return <NoteEditor />
-  if (path === '/admin/media') return <Media />
   if (path === '/admin/settings') return <Settings />
   return <NotFound />
 }

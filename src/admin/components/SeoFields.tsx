@@ -1,11 +1,10 @@
 // Controlled SEO fields (canonical URL + crawler/feed toggles + OG fallback
 // image). Parent owns state + save.
-import { useState } from 'react'
 import type { SiteSettings, SeoSettings } from '@/types'
 import { Input } from '@/admin/ui/Input'
 import { Button } from '@/admin/ui/Button'
 import { ToggleRow } from '@/admin/ui/Switch'
-import { MediaLibrary } from './MediaLibrary'
+import { usePickMedia } from './usePickMedia'
 import { useAdminT } from './I18nProvider'
 import { PANEL_LIST } from './kit'
 import { EMPTY_SLOT } from './slot'
@@ -37,7 +36,7 @@ export function CanonicalField({ s, update }: Props) {
 
 export function SeoFields({ s, update }: Props) {
   const t = useAdminT()
-  const [picking, setPicking] = useState(false)
+  const pick = usePickMedia()
   const setFlag = (key: keyof SeoSettings, v: boolean) => update({ seo: { ...s.seo, [key]: v } })
 
   // Acronym labels (Sitemap, RSS Feed, llms.txt, robots.txt) stay literal.
@@ -80,7 +79,7 @@ export function SeoFields({ s, update }: Props) {
             <span className="text-xs text-neutral-500 dark:text-neutral-400">{t.noImageSelected}</span>
           )}
           <div className="flex gap-2">
-            <Button variant="secondary" type="button" onClick={() => setPicking(true)}>{t.chooseImage}</Button>
+            <Button variant="secondary" type="button" onClick={() => void pick().then((got) => { if (got && 'url' in got) update({ seo: { ...s.seo, ogFallbackImage: got.url } }) })}>{t.chooseImage}</Button>
             {s.seo.ogFallbackImage && (
               <Button variant="ghost" type="button" onClick={() => update({ seo: { ...s.seo, ogFallbackImage: '' } })}>{t.removeSelection}</Button>
             )}
@@ -88,16 +87,6 @@ export function SeoFields({ s, update }: Props) {
         </div>
       </div>
 
-      {picking && (
-        <MediaLibrary
-          mode="picker"
-          onSelect={(url) => {
-            update({ seo: { ...s.seo, ogFallbackImage: url } })
-            setPicking(false)
-          }}
-          onClose={() => setPicking(false)}
-        />
-      )}
     </div>
   )
 }

@@ -125,6 +125,20 @@ Groundwork for it — the field vocabulary and the form's diff engine — is wri
     It is a link to the bare address; a question already opens a chat for itself when there is
     none.
 
+### The fourth bridge: `quire:pick-media`
+
+The first one that answers back. The picker is an overlay island now
+([`src/admin/island/lib/media-picker.ts`](../../src/admin/island/lib/media-picker.ts)), opened
+by anything that needs a picture — the three editors and two settings cards, all still React —
+through a `CustomEvent` carrying the words to say and a callback to answer on. The rail island
+is on every admin page and imports the overlay only when that event arrives, so a page that
+never opens a picker never downloads one. An unheard ask resolves to "closed", which is the same
+rule the confirm bridge follows: nothing happens rather than something unasked-for.
+
+It replaces a `<MediaLibrary mode="picker">` mounted at six call sites, and it arrives with three
+things that component never had: `role="dialog"`, Escape, and the focus put back where it came
+from.
+
 ### One description, two renderers
 
 The assistant is the first screen whose markup is produced twice: by the server for a stored

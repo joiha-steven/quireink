@@ -224,17 +224,11 @@ export function clampExcerpt(text: string, maxChars = EXCERPT_MAX_CHARS): string
 }
 
 // Human-readable file size from bytes, e.g. "1.2 MB".
-export function formatBytes(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`
-  const units = ['KB', 'MB', 'GB']
-  let value = bytes / 1024
-  let i = 0
-  while (value >= 1024 && i < units.length - 1) {
-    value /= 1024
-    i++
-  }
-  return `${value.toFixed(1)} ${units[i]}`
-}
+// Bytes, read at a glance. It lives in `@/i18n/format` now, because the library's island draws
+// a tile for a picture it has just uploaded and may not import this module: three regexes at
+// the top of this file pull the pen grammar and the maths syntax in behind them. Re-exported,
+// so the twenty call sites that had it here keep the import they had.
+export { formatBytes } from '@/i18n/format'
 
 // Is this post visible on the public blog right now? Published + date reached.
 export function isPublicallyVisible(status: string, isoDate: string): boolean {

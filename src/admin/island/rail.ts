@@ -327,7 +327,37 @@ function read(): RailData | null {
   try { return JSON.parse(tag) as RailData } catch { return null }
 }
 
+/**
+ * THE FOURTH BRIDGE, and the first that answers back.
+ *
+ * `quire:pick-media` asks for a picture. Whatever is asking — a React editor, a React settings
+ * card, and later a server-drawn screen — dispatches it with the words it wants the overlay to
+ * say and a callback to answer on; the overlay is `island/lib/media-picker.ts`.
+ *
+ * It listens HERE because this island is the one that loads on every admin page, and it imports
+ * the overlay only when the event arrives: a page that never opens a picker never downloads one.
+ * The listener is registered whether or not the picker has been loaded, so the first ask is not
+ * the one that gets lost.
+ */
+function wirePicker(): void {
+  window.addEventListener('quire:pick-media', (e) => {
+    const detail = (e as CustomEvent).detail as { respond?: (answer: unknown) => void } | undefined
+    if (typeof detail?.respond !== 'function') return
+    // Says "heard", the way the navigate bridge does: the asker resolves `null` if nothing
+    // cancels, so a page whose island failed to load never awaits a promise that cannot settle.
+    e.preventDefault()
+    void import('./lib/media-picker')
+      .then((mod) => mod.openPicker(detail as never))
+      // A chunk that will not load must not leave the screen waiting on a callback that never
+      // comes: answering `null` is the same thing as the owner closing it.
+      .catch(() => detail.respond?.(null))
+  })
+}
+
 export function startRail(): void {
+  // Before the early return: the picker is asked for by screens that have nothing to do with
+  // the rail, and a page without rail data still has editors on it.
+  wirePicker()
   const data = read()
   if (!data || !document.getElementById('admin-rail')) return
   attr('icons', flag(RAIL_KEYS.icons, true))

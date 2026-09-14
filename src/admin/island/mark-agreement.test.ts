@@ -14,6 +14,7 @@ import { GlobalRegistrator } from '@happy-dom/global-registrator'
 import type { Turn } from '@/admin-shared/assistant'
 import type { Mark } from '@/admin-shared/markup'
 import { blockMarks, chatRowMark, logEntryMark } from '@/admin-shared/assistant-marks'
+import { mediaTileMark } from '@/admin-shared/media-marks'
 import { richMarks } from '@/admin-shared/rich-text'
 import { htmlOf } from '@/web/admin/mark-html'
 import { elOf } from './lib/mark-dom'
@@ -86,6 +87,49 @@ describe('the server draws what the island builds', () => {
 
   it('agrees on an answer that is trying to be markup', () => {
     for (const mark of richMarks('<b>no</b> & "quotes" — and **bold**')) same(mark)
+  })
+
+  // The library draws every tile; the picker draws the same tile over whatever screen asked
+  // for a picture. Eighteen of them to a screen makes this the loudest place two renderers
+  // could disagree.
+  const PICTURE = {
+    url: '/uploads/media/plate-14.png',
+    filename: 'plate-14.png',
+    size: 220_114,
+    uploadedAt: new Date(1_700_000_000_000).toISOString(),
+    width: 1400,
+    height: 900,
+    thumb: '/uploads/media/plate-14-thumb.webp',
+    alt: 'A nib at three angles',
+  }
+  const PICK_WORDS = { copyUrl: 'Copy URL', download: 'Download', delete: 'Delete', unusedBadge: 'Unused' }
+
+  it('agrees on a library tile, chosen and not, with its three keys', () => {
+    for (const selected of [false, true]) {
+      same(mediaTileMark(PICTURE, PICK_WORDS, {
+        mode: 'page', tickable: true, selected, unused: true, sizeLabel: '215.0 KB', title: 'plate-14.png',
+      }))
+    }
+  })
+
+  it('agrees on a picker tile, which has no keys and sometimes no tick', () => {
+    for (const tickable of [false, true]) {
+      same(mediaTileMark({ ...PICTURE, alt: undefined, thumb: undefined }, PICK_WORDS, {
+        mode: 'picker', tickable, sizeLabel: '215.0 KB', title: 'plate-14.png',
+      }))
+    }
+  })
+
+  it('draws the three keys as real drawings, on both sides', () => {
+    const built = document.createElement('div')
+    built.appendChild(elOf(mediaTileMark(PICTURE, PICK_WORDS, {
+      mode: 'page', tickable: true, sizeLabel: '215.0 KB', title: 'x',
+    })))
+    // `data-glyph` is the one thing a tree of marks cannot say on its own, and it is filled
+    // from `@/icons` by both renderers. An empty `<svg>` means the lookup silently missed.
+    const glyphs = [...built.querySelectorAll('[data-glyph]')]
+    expect(glyphs).toHaveLength(3)
+    for (const g of glyphs) expect(g.childElementCount).toBeGreaterThan(0)
   })
 
   it('puts the cross in the SVG namespace, where a stroke means something', () => {

@@ -163,3 +163,22 @@ export function formatWallClock(value: string, lang: SiteLang): string {
     dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC',
   }).format(at)
 }
+
+/**
+ * Bytes, read at a glance: `4.2 MB` rather than `4404019`.
+ *
+ * Not localised, and deliberately: `KB`/`MB`/`GB` are the same three letters in every language
+ * this admin speaks, and a translated unit would be one more thing eleven files could disagree
+ * about. The DIGITS take the reader's locale wherever they are set beside a count that does.
+ */
+export function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`
+  const units = ['KB', 'MB', 'GB']
+  let value = bytes / 1024
+  let i = 0
+  while (value >= 1024 && i < units.length - 1) {
+    value /= 1024
+    i++
+  }
+  return `${value.toFixed(1)} ${units[i]}`
+}

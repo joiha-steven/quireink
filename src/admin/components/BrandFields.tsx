@@ -5,12 +5,11 @@
 // Every note sits above the control it belongs to, through `Setting` — three of them used to
 // sit underneath.
 
-import { useState } from 'react'
 import type { SiteSettings } from '@/types'
 import { Input } from '@/admin/ui/Input'
 import { Button } from '@/admin/ui/Button'
 import { ToggleField } from '@/admin/ui/Switch'
-import { MediaLibrary } from './MediaLibrary'
+import { usePickMedia } from './usePickMedia'
 import { IconUpload } from './IconUpload'
 import { useAdminT } from './I18nProvider'
 import { NOTE_TEXT, Setting, SETTING_GAP } from './kit'
@@ -20,7 +19,7 @@ type Props = { s: SiteSettings; update: (p: Partial<SiteSettings>) => void }
 export function BrandFields({ s, update }: Props) {
   const t = useAdminT()
   // Which logo slot the media picker is filling. One picker, two targets.
-  const [picking, setPicking] = useState<'light' | 'dark' | null>(null)
+  const pick = usePickMedia()
 
   return (
     <div className={SETTING_GAP}>
@@ -35,7 +34,7 @@ export function BrandFields({ s, update }: Props) {
               <p className={NOTE_TEXT}>{t.noLogo}</p>
             )}
             <div className="flex flex-wrap gap-2">
-              <Button variant="secondary" type="button" onClick={() => setPicking('light')}>{t.chooseLogo}</Button>
+              <Button variant="secondary" type="button" onClick={() => void pick().then((got) => { if (got && 'url' in got) update({ logoUrl: got.url }) })}>{t.chooseLogo}</Button>
               {s.logoUrl && (
                 <Button variant="ghost" type="button" onClick={() => update({ logoUrl: '' })}>{t.removeLogo}</Button>
               )}
@@ -54,7 +53,7 @@ export function BrandFields({ s, update }: Props) {
                   <p className={NOTE_TEXT}>{t.noLogoDark}</p>
                 )}
                 <div className="flex flex-wrap gap-2">
-                  <Button variant="secondary" type="button" onClick={() => setPicking('dark')}>{t.chooseLogoDark}</Button>
+                  <Button variant="secondary" type="button" onClick={() => void pick().then((got) => { if (got && 'url' in got) update({ logoDarkUrl: got.url }) })}>{t.chooseLogoDark}</Button>
                   {s.logoDarkUrl && (
                     <Button variant="ghost" type="button" onClick={() => update({ logoDarkUrl: '' })}>{t.removeLogo}</Button>
                   )}
@@ -83,16 +82,6 @@ export function BrandFields({ s, update }: Props) {
         <IconUpload kind="app-icon" value={s.appIconUrl} onChange={(appIconUrl) => update({ appIconUrl })} previewClassName="h-12 w-12 rounded-lg" />
       </Setting>
 
-      {picking && (
-        <MediaLibrary
-          mode="picker"
-          onSelect={(url) => {
-            update(picking === 'dark' ? { logoDarkUrl: url } : { logoUrl: url })
-            setPicking(null)
-          }}
-          onClose={() => setPicking(null)}
-        />
-      )}
     </div>
   )
 }

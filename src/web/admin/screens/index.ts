@@ -19,6 +19,7 @@ import { assistantScreen } from '@/web/admin/screens/assistant'
 import { commentsScreen } from '@/web/admin/screens/comments'
 import { dashboardScreen } from '@/web/admin/screens/dashboard'
 import { helpScreen } from '@/web/admin/screens/help'
+import { mediaScreen } from '@/web/admin/screens/media'
 import { logScreen } from '@/web/admin/screens/log'
 import { newsletterScreen } from '@/web/admin/screens/newsletter'
 import { trashScreen } from '@/web/admin/screens/trash'
@@ -58,6 +59,10 @@ export const SCREENS: Record<string, Screen> = {
   // The one screen that streams. The conversation is in the address now (`?chat=`), so the
   // server draws the transcript it holds and the island only ever adds what arrives after.
   '/admin/assistant': { render: assistantScreen, island: 'assistant' },
+  // Three kinds in one sheet, all three drawn and the kind in the address. The island is the
+  // grid's behaviour — selection, search, sort, upload — and it lends the picker to the screens
+  // that are still React through `quire:pick-media`.
+  '/admin/media': { render: mediaScreen, island: 'media' },
   // Three tabs over one audience, all three drawn. It holds the admin's one irreversible
   // action, so nothing on it is a form: see `screens/newsletter-send.ts`.
   '/admin/newsletter': { render: newsletterScreen, island: 'newsletter' },

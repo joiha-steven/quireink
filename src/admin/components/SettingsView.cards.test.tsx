@@ -161,16 +161,34 @@ describe('author (Blog)', () => {
     await m.unmount()
   })
 
-  it('the portrait opens the media library, the same picker the logo uses', async () => {
-    const { m, t } = await onTab('tabBlog')
-    // Scoped to the Author CARD, not `m.button`, which returns the first match in the DOM.
-    // The Site tab prints THREE `Choose image` buttons — favicon, app icon, portrait — and
-    // this asserted the portrait's only for as long as Author happened to be rendered before
-    // Branding. Moving Author into the other column on 2026-08-29 made it click the favicon,
-    // which opens a file input rather than the library, and the test failed for a reason that
-    // had nothing to do with what it is about.
-    await m.click(buttonInCard(m.container, t.cardAuthor, t.chooseImage))
-    expect(m.text()).toContain(t.mediaTitle)
+  it('the portrait asks the picker for one image, and stores the answer', async () => {
+    // ⚠️ THE PICKER IS NOT IN REACT ANY MORE. It is an overlay island, reached through
+    // `quire:pick-media` (ADR 0054), so the thing to assert is the ASK and what is done with
+    // the answer — not that a title appeared in this tree. This is the stronger test of the
+    // two: the old one passed as long as some text was rendered, and said nothing about the
+    // url reaching the form.
+    const { m, t, fetchMock } = await onTab('tabBlog')
+    let asked: { multi?: boolean } | null = null
+    const hear = (e: Event): void => {
+      const detail = (e as CustomEvent).detail as { multi?: boolean; respond: (a: unknown) => void }
+      asked = detail
+      // Says "heard", the way the rail island does: without it the hook resolves `null`.
+      e.preventDefault()
+      detail.respond({ url: '/uploads/media/portrait.png' })
+    }
+    window.addEventListener('quire:pick-media', hear)
+    try {
+      // Scoped to the Author CARD, not `m.button`, which returns the first match in the DOM.
+      // The Blog tab prints THREE `Choose image` buttons — favicon, app icon, portrait.
+      await m.click(buttonInCard(m.container, t.cardAuthor, t.chooseImage))
+      expect(asked).not.toBeNull()
+      // A portrait is ONE picture: the gallery is the only thing that asks for several.
+      expect(asked!.multi).toBe(false)
+      const body = await saved(m, t, fetchMock)
+      expect(body.author?.avatarUrl).toBe('/uploads/media/portrait.png')
+    } finally {
+      window.removeEventListener('quire:pick-media', hear)
+    }
     await m.unmount()
   })
 })

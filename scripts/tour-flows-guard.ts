@@ -36,10 +36,13 @@ export function registerGuardFlows({ flow, expect }: Pick<Tour, 'flow' | 'expect
       await sleep(250)
       const save = [...document.querySelectorAll('main button')].find((b) => /[0-9]/.test(b.textContent) && !b.disabled)
       if (!save) return 'the save key never counted the change'
-      // ⚠️ A RAIL LINK THE ROUTER STILL OWNS (ADR 0054): this clicked home until /admin became
-      // a server-drawn page, and a declined route is a REAL navigation, which destroys the
-      // context this script runs in. The guard's in-app half is all this flow ever tested.
-      const away = document.querySelector('aside nav a[href="/admin/media"]')
+      // ⚠️ A RAIL LINK THE ROUTER STILL OWNS (ADR 0054), and the list of those keeps getting
+      // shorter. This clicked home until /admin became a server-drawn page, then the library
+      // until that did on 2026-09-14. A declined route is a REAL navigation, which raises the
+      // browser's own generic warning instead of the product's three-way question and destroys
+      // the context this script runs in — so the destination has to be a screen React still
+      // draws. When the write screen converts, this flow converts with it or goes.
+      const away = document.querySelector('aside nav a[href="/admin/content"]')
       if (!away) return 'no in-app destination left on the rail'
       away.click()
       await sleep(500)
@@ -67,8 +70,8 @@ export function registerGuardFlows({ flow, expect }: Pick<Tour, 'flow' | 'expect
       const buttons = [...dialog.querySelectorAll('button')]
       buttons[buttons.length - 1].click()
       await new Promise((r) => setTimeout(r, 600))
-      if (location.pathname !== '/admin/media') return 'chose to discard and the page stayed put'
-      return 'ok (landed on the library)'
+      if (location.pathname !== '/admin/content') return 'chose to discard and the page stayed put'
+      return 'ok (landed on the write screen)'
     })()`, 1200))
 
 }
