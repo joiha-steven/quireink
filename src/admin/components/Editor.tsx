@@ -142,6 +142,17 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
     extensions: editorExtensions(t.editorPlaceholder, askLink, {
       video: { column: t.imgSizeColumn, wide: t.imgSizeWide },
       math: { placeholder: t.mathPlaceholder },
+      image: {
+        alignLeft: t.imgAlignLeft, alignCenter: t.imgAlignCenter, alignRight: t.imgAlignRight,
+        sizeColumn: t.imgSizeColumn, sizeWide: t.imgSizeWide,
+        grid: t.imgGrid,
+        siteDefault: t.imgDefault, ratioNatural: t.imgRatioNatural,
+        captions: t.imgCaptions, noCaptions: t.imgNoCaptions,
+        frameNone: t.imgFrameNone, frameThin: t.imgFrameThin,
+        frameMedium: t.imgFrameMedium, frameThick: t.imgFrameThick,
+        framePaper: t.imgFramePaper, frameInk: t.imgFrameInk,
+        caption: t.captionPlaceholder,
+      },
     }),
     content: initialContent,
     editorProps: {

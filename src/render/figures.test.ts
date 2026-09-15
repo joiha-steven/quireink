@@ -126,13 +126,13 @@ describe('the column rule has one home', () => {
   })
 
   it('holds the editor sheet to those numbers, since CSS cannot import them', () => {
-    // The width belongs to the node view's PARENT, which React cannot style, so it is a
-    // rule in `admin.css` keyed on the count the node view writes as an attribute. That
-    // makes the numbers a copy — and a copy of a layout rule is exactly what let the editor
-    // and the page disagree for a year. This is the seam that stops it happening twice.
+    // CSS cannot import, so the three numbers live twice: here as the function, and in
+    // `admin.css` as a rule keyed on the count a ProseMirror decoration stamps on every tile.
+    // A copy of a layout rule is exactly what let the editor and the page disagree for a year.
+    // This is the seam that stops it happening twice.
     const css = readFileSync('src/admin/admin.css', 'utf8')
     for (const cols of [2, 3, 4]) {
-      expect(css).toContain(`figure[data-cols="${cols}"]) { width: ${editorTileWidth(cols)}; }`)
+      expect(css).toContain(`figure[data-cols="${cols}"] { width: ${editorTileWidth(cols)}; }`)
     }
   })
 })

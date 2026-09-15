@@ -97,7 +97,12 @@ function frameClasses(tokens: string[]): string {
   return ['img-frame', weight, ink].filter(Boolean).join(' ')
 }
 
-function imgClasses(frag: string): string {
+/**
+ * Exported for `admin/components/image-frag.test.ts`, which holds this and the EDITOR's reader
+ * of the same fragment to one answer. They have drifted before — the editor matched `right`
+ * as a substring, so `#bright` aligned a picture here and not there, silently.
+ */
+export function imgClasses(frag: string): string {
   // Exact hyphen tokens so `#bright` can't match `right`: left|right|wide|third|left-third|….
   const tokens = frag.split('-')
   // `#grid` marks a gallery item; groupGalleries() wraps consecutive ones. The

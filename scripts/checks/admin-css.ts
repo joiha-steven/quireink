@@ -128,6 +128,13 @@ function used(files: readonly string[], rulesOf: ReadonlySet<string>): Map<strin
       // attribute is a class list as written; the text inside `${…}` or `{…}` is an
       // expression, where only its STRING LITERALS are classes — so `clsx(open && 'block')`
       // gives `block` and the condition gives nothing.
+      //
+      // ⚠️ THE EXPRESSION'S OWN BODY COUNTS, not just its `${…}` holes, and until 2026-09-15
+      // this read only the holes. So `className={'block'}` and the literal half of
+      // `className={cond ? 'a' : 'b'}` — the commonest form in the React admin — were classes
+      // nothing here ever saw: 51 of them, found by planting a class with no rule and watching
+      // the check stay green. That is the second time this guard was caught half-blind in one
+      // day, and both times the symptom was the same: a number that did not move.
       const spans: string[] = []
       let plain = ''
       for (let i = 0; i < body.length; i++) {
@@ -143,14 +150,15 @@ function used(files: readonly string[], rulesOf: ReadonlySet<string>): Map<strin
         }
         plain += body[i]
       }
-      const literals = [...spans.join(' ').matchAll(/'([^'\n]*)'|"([^"\n]*)"|`([^`\n$]*)`/g)]
+      // The extent includes its own delimiters, and a class name contains neither — so for a
+      // quoted attribute they become whitespace rather than the tail of the last token.
+      // Without that every quoted attribute reported its final class as `w-full\"`.
+      const quoted = m[1] === '"' || m[1] === "'"
+      const literals = [...[...spans, quoted ? '' : plain].join(' ')
+        .matchAll(/'([^'\n]*)'|"([^"\n]*)"|`([^`\n$]*)`/g)]
         .map((lit) => lit[1] ?? lit[2] ?? lit[3] ?? '')
       // A `class="…"` attribute's own text is not a literal inside anything, so it is added
-      // as one. For `className={…}` the plain part is just braces and contributes nothing.
-      // The extent includes its own delimiters, and a class name contains neither — so they
-      // become whitespace rather than the tail of the last token. Without this every quoted
-      // attribute reported its final class as `w-full\"`.
-      const quoted = m[1] === '"' || m[1] === "'"
+      // as one.
       for (const piece of [...literals, quoted ? plain.replaceAll(m[1], ' ') : '']) {
         for (const token of piece.split(/\s+/)) {
           if (!token || token.includes('$') || !/^[-A-Za-z[]/.test(token)) continue

@@ -54,7 +54,7 @@
   ProseMirror, which has no parse rule for a file, so a pasted screenshot vanished with no
   message. It now goes through `insertImageFiles`, the same path a drop uses, so alt text,
   ordering and the caption default are identical whichever gesture you used.
-- **Images and galleries** (`CaptionedImage.tsx`): placement rides on the src fragment
+- **Images and galleries** (`CaptionedImage.ts`, a plain ProseMirror node view; the fragment grammar it shares with the renderer is `image-frag.ts`): placement rides on the src fragment
   (a Markdown image whose src ends `#right-wide`) and the caption is the alt, so the node still serializes to plain
   Markdown. Size is a three-way choice: column width (unmarked), `#third` (30% of the
   column; combined with `left`/`right` the figure floats and the text runs around it —

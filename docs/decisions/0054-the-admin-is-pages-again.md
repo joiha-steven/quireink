@@ -263,6 +263,74 @@ renaming a category rewrites the front matter of every post carrying it and merg
 Two flows now — one that opens both, counts what they list, and proves the rename ASKS; one that
 reorders a series and proves the server kept it.
 
+### The three node views, and what a unit test cannot reach
+
+Step 5's first half: `VideoNode`, `MathNode` and `CaptionedImage` stop being React components.
+None of them needed React — between them they held one piece of state, a `draft` string
+mirroring the maths node's TeX so its `<input>` could be controlled, and a DOM input holds its
+own value. What they needed React FOR was nothing; what they cost was everything, because a node
+view is the one piece of the editor that runs INSIDE the document. While any of the three is a
+React component, every document this admin can open is a document React has to be mounted to
+draw.
+
+**Their words arrive through `configure()`.** A node view has no context and no dictionary, and
+the alternative to passing them in is a node view importing all eleven languages to print a
+toolbar. Seventeen strings for the picture, two for the video, one for the maths.
+
+⚠️ **`stopEvent` MUST NOT ANSWER `true` FOR EVERYTHING, and all three were written that way
+first.** The maths node shipped it: the click that selects an atom never reached ProseMirror,
+selecting is what swaps the rendered formula for its source, so a formula could be read and
+never corrected. **Every unit test passed** — a node's attributes, its serializer and its input
+rules are all reachable without a pointer. Found by clicking one. The rule is that only the
+CHROME's events are the view's: the toolbar, and the field you type a caption or a formula into.
+
+⚠️ **AND THE FIRST MEASUREMENT OF THAT BUG WAS WRONG TWICE.** A synthetic `mousedown` on the
+wrapper reported the fault as still present after the fix, because ProseMirror reads the position
+from the event's own coordinates and wants it on the drawing. Confirmed the other way instead —
+`stopEvent: true` put back, box never opens, taken out again — which is the only form of proof
+that survives a harness bug.
+
+⚠️ **A GALLERY'S COLUMN COUNT IS A PROPERTY OF THE RUN, AND WAS BEING KEPT PER TILE.** Each React
+tile walked the whole document to count its own run, on every keystroke, and ProseMirror does not
+redraw a node whose own attributes did not change. Measured 2026-09-15 on the outgoing build:
+five tiles at three across, delete one, and the four left stayed 204px at three across while the
+published page rendered them 2x2. It is the same fault `galleryCols` was written to fix a year
+earlier, surviving in the half nobody measured. It is a ProseMirror decoration now — one walk per
+transaction instead of one per tile, and always the whole run.
+
+**Seven `:has()` selectors left the admin with the picture, which is the real reason that node
+went last.** `ReactNodeViewRenderer` wraps every node view in a `.react-renderer` div, and a
+gallery tile's width has to live on the element in the flow — so `admin.css` reached the wrapper
+through `:has(> figure.img-grid)` and six siblings. `:has()` runs on Safari and does not run
+well: WebKit has no de-duplication cache for it, and thirteen of these rules took a product page
+from 0.75s to 4.19s and crashed the render process outright on another site. Chrome was unaffected
+throughout, which is what makes it easy to ship. The figure is the node view's own element now
+and the rules key on it directly. **There is no `:has()` left in the admin.**
+
+**Two differences from the outgoing build are deliberate:**
+
+- **Every segmented key carries `aria-pressed`.** A control whose pressed state is only a
+  background colour is a control a screen reader cannot report. The server's own `tabs()` had
+  said so for a while; the React node views never did.
+- **A "Large" picture is previewed at large.** Until now the editor drew `#wide` exactly like a
+  column picture, so the size keys offered a choice the writing surface did not show — the same
+  complaint `galleryCols` answers for the column count. It cancels the sheet's own `px-4`, so it
+  spans the full sheet at every width and cannot overflow it.
+
+Everything else is identical, measured old against new on one seeded database: the text of the
+writing surface, and every figure's box to the pixel on a real gallery post. The escaping tile
+toolbar — `position:absolute; bottom:100%`, whose containing block used to be the React wrapper —
+lands in the same place to the pixel, because `position: relative` moved onto the figure with it.
+
+⚠️ **AND `check:admin-css` WAS HALF BLIND, TWICE IN ONE DAY.** That guard proves every class the
+admin writes has a rule behind it. A node view BUILDS its elements, and the first cut passed the
+class list as a bare positional argument — a whole file's chrome vanished from the guard's view,
+the count fell by one, and the check stayed green. Fixed by naming `className`, and then the same
+question asked again found the larger half: the guard read the literals inside `${…}` holes but
+not the body of a `className={…}` expression, which is the commonest form in the React admin.
+**51 classes had never been checked.** Both were found by planting a class with no rule and
+watching the check pass. A guard is worth what its last deliberate failure proved.
+
 ### The fourth bridge: `quire:pick-media`
 
 The first one that answers back. The picker is an overlay island now

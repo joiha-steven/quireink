@@ -214,19 +214,22 @@ body {
 
 /* Editor preview: the TipTap editor has no .gallery wrapper (grouping happens on
    publish), so make #grid figures flow side-by-side as thumbnails — a gallery
-   reads as columns in the editor too, not a vertical stack. Each node view is
-   wrapped in a block `.react-renderer` div, so the layout MUST target THAT
-   wrapper (styling the inner figure alone leaves the block wrapper stacking).
-   `:has()` scopes it to gallery items only — single images + videos stay full
-   width, so a gallery image is visibly treated differently from a lone one.
-   Scoped to .ProseMirror so the published page is unaffected. */
-.ProseMirror .react-renderer:has(> figure.img-grid) {
+   reads as columns in the editor too, not a vertical stack.
+   ⚠️ THESE RULES USED TO REACH THE FIGURE'S PARENT THROUGH `:has(> figure…)`, because
+   `ReactNodeViewRenderer` wrapped every node view in a `.react-renderer` div and the width had
+   to live on the element in the flow. Seven rules did, and they were the last `:has()` in the
+   admin — a construct that has already taken Safari's render process down on another site
+   (Chrome is unaffected, which is what makes it easy to miss). The node view is plain
+   ProseMirror since 2026-09-15 and the figure IS the element in the flow, so the rules key on
+   it. Scoped to .ProseMirror so the published page is unaffected. */
+.ProseMirror figure.img-grid {
   display: inline-block;
   /* Three across, always — while the published page uses two, three or four by count. So a
      gallery of four read 3+1 while you wrote it and 2x2 once you published it, and nothing
      said which was true. This is the fallback now: a tile that cannot find its own position
      between transactions. The real widths are keyed on the count below. */
   width: 31.5%;
+  /* `my-4` sits on the figure and a tile must not carry it: the margin is the grid's gutter. */
   margin: 0 1.5% 0.5rem 0;
   vertical-align: top;
   /* The containing block for the escaping toolbar below. */
@@ -236,9 +239,9 @@ body {
    `editorTileWidth(2|3|4)` in `render/gallery-cols.ts` — that function is the source and
    `figures.test.ts` holds this sheet to it, because CSS cannot import and a second copy of
    a layout rule is how the two sides drifted apart in the first place. */
-.ProseMirror .react-renderer:has(> figure[data-cols="2"]) { width: 48.5%; }
-.ProseMirror .react-renderer:has(> figure[data-cols="3"]) { width: 31.8%; }
-.ProseMirror .react-renderer:has(> figure[data-cols="4"]) { width: 23.5%; }
+.ProseMirror figure[data-cols="2"] { width: 48.5%; }
+.ProseMirror figure[data-cols="3"] { width: 31.8%; }
+.ProseMirror figure[data-cols="4"] { width: 23.5%; }
 
 /* THE SELECTED TILE'S TOOLBAR, out of the cell it could never fit in.
    A gallery cell is 202px on a desktop and 102px on a phone; the bar holds up to seventeen
@@ -268,9 +271,6 @@ body {
   background: #171717;
   box-shadow: 0 8px 24px rgb(0 0 0 / 0.5);
 }
-.ProseMirror figure.img-grid {
-  margin: 0;
-}
 .ProseMirror figure.img-grid img {
   aspect-ratio: 1 / 1;
   object-fit: cover;
@@ -279,15 +279,31 @@ body {
 /* A 30% figure previews at its published width. No float in the editor — a ProseMirror
    node view is a block and text does not wrap around it — so the alignment shows as
    position only, which is enough to tell the three sizes apart while writing. */
-.ProseMirror .react-renderer:has(> figure.img-third) {
+.ProseMirror figure.img-third {
   width: 30%;
 }
-.ProseMirror .react-renderer:has(> figure.img-third.img-center) {
+.ProseMirror figure.img-third.img-center {
   margin-left: auto;
   margin-right: auto;
 }
-.ProseMirror .react-renderer:has(> figure.img-third.img-right) {
+.ProseMirror figure.img-third.img-right {
   margin-left: auto;
+}
+/* The left case is the default and says so out loud, rather than being the absence of a rule:
+   `check:admin-css` proves every class the admin writes has a rule behind it, and a class that
+   is written but styled nowhere is exactly what it is there to catch. */
+.ProseMirror figure.img-third.img-left {
+  margin-right: auto;
+}
+
+/* A "Large" picture, previewed. Until 2026-09-15 the editor drew one exactly like a column
+   picture, so the size keys offered a choice the writing surface did not show — the same fault
+   `galleryCols` was written to fix for the column count. The published page nudges into the
+   gutter by `clamp(0px,4vw,4rem)`; here it cancels the writing sheet's own `px-4` instead, so
+   the figure spans the full sheet at every width and cannot overflow it. */
+.ProseMirror figure.img-wide {
+  margin-left: -1rem;
+  margin-right: -1rem;
 }
 
 /* TipTap empty-state placeholder. */

@@ -19,7 +19,7 @@ import { Placeholder } from '@tiptap/extension-placeholder'
 import { MarkdownBridge } from './MarkdownBridge'
 import { Video, type VideoWords } from './VideoNode'
 import { Ink } from './InkMark'
-import { CaptionedImage } from './CaptionedImage'
+import { CaptionedImage, type ImageWords } from './CaptionedImage'
 import { LinkKey } from './editorLinkKey'
 import { PenRing, PenUnderline } from './PenMarks'
 import { PenDeal } from './pen-deal'
@@ -41,11 +41,21 @@ import { Find } from './FindExtension'
  * languages are — the alternative is a node view importing all eleven to print two labels.
  * Defaulted, so the fourteen round-trip suites keep calling this with one argument.
  */
-export type NodeWords = { video: VideoWords; math: MathWords }
+export type NodeWords = { video: VideoWords; math: MathWords; image: ImageWords }
 
 const ENGLISH: NodeWords = {
   video: { column: 'Column', wide: 'Large' },
   math: { placeholder: 'LaTeX formula' },
+  image: {
+    alignLeft: 'Left', alignCenter: 'Center', alignRight: 'Right',
+    sizeColumn: 'Column', sizeWide: 'Large',
+    grid: 'Grid',
+    siteDefault: 'Default', ratioNatural: 'As shot',
+    captions: 'Captions', noCaptions: 'No captions',
+    frameNone: 'No frame', frameThin: 'Thin', frameMedium: 'Medium', frameThick: 'Thick',
+    framePaper: 'Paper', frameInk: 'Ink',
+    caption: 'Image caption',
+  },
 }
 
 export function editorExtensions(
@@ -68,7 +78,7 @@ export function editorExtensions(
     // gone. `md/to-markdown.ts` escapes the opening bracket only, in the engine, for every
     // caller at once.
     StarterKit.configure({ link: { openOnClick: false }, underline: false }),
-    CaptionedImage,
+    CaptionedImage.configure({ words: words.image }),
     Video.configure({ words: words.video }),
     Ink, // the pen: `==text==` inks as you type, and saves back as `==text==` (InkMark.ts)
     PenUnderline, // `++text++`, and the U button that used to lose its work (PenMarks.ts)
