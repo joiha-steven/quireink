@@ -113,12 +113,17 @@ export function plainPick(f: SettingText & {
 }): string {
   const opts = f.options.map(([v, label]) =>
     `<option value="${escapeAttr(v)}"${v === f.value ? ' selected' : ''}>${escapeHtml(label)}</option>`).join('')
+  // ⚠️ `attrs` BELONGS TO THE SELECT AND NOT TO THE ROW AROUND IT. Spreading `...f` handed both
+  // the same attribute, so `querySelector('[data-strip-columns]')` found the wrapping `<div>`
+  // first and read `undefined` off it — a hook that resolves to the wrong element is worse than
+  // one that resolves to nothing, because it resolves.
+  const { attrs, ...row } = f
   return settingRow({
-    ...f,
+    ...row,
     control: `<select class="${CONTROL} ${FIELD_W.full}"`
       + (f.k ? ` data-k="${escapeAttr(f.k)}"` : '')
       + (f.numeric ? ' data-k-number' : '')
-      + `${f.attrs ? ` ${f.attrs}` : ''}>${opts}</select>`,
+      + `${attrs ? ` ${attrs}` : ''}>${opts}</select>`,
   })
 }
 

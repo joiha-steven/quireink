@@ -16,7 +16,8 @@
 //
 // WHAT IT READS. Every `data-*` hook written in `src/web/admin`, against every name mentioned
 // anywhere in the islands (`src/admin`, `src/admin-shared`, `src/assets/js`) and in the built
-// stylesheet.
+// stylesheet, and against the tour's flows — a marker the tour steers by is a hook with a
+// reader, even though nothing in the product reads it.
 //
 // ⚠️ EVERY HOOK, NOT THE ONES INSIDE A `<button …>` — and the first cut of this guard made
 // exactly that mistake. It matched `<button[^>]*` and read the hooks out of the tag text, which
@@ -28,7 +29,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 
 const SCREENS = 'src/web/admin'
-const ISLANDS = ['src/admin', 'src/admin-shared', 'src/assets/js']
+const ISLANDS = ['src/admin', 'src/admin-shared', 'src/assets/js', 'scripts']
 const SHEET = 'src/admin/dist/admin.css'
 
 /**
@@ -39,6 +40,11 @@ const SHEET = 'src/admin/dist/admin.css'
  * where the browser itself is the handler.
  */
 const ELSEWHERE = new Map<string, string>([])
+
+/** Source with its comments taken out. See the note on `islands` below for why that matters. */
+const bare = (src: string): string => src
+  .replace(/\/\*[\s\S]*?\*\//g, ' ')
+  .replace(/(^|\n)\s*\/\/[^\n]*/g, '$1')
 
 function files(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {
@@ -60,7 +66,10 @@ function written(): Map<string, string> {
   const out = new Map<string, string>()
   for (const file of files(SCREENS)) {
     if (/\.test\.ts$/.test(file)) continue
-    for (const hook of readFileSync(file, 'utf8').matchAll(/data-([a-z][a-z0-9-]*)/g)) {
+    // ⚠️ COMMENTS ARE NOT MARKUP. The note explaining why a hook was REMOVED names the hook, and
+    // a scan that counts it reports the removal as the fault it was written about.
+    const text = bare(readFileSync(file, 'utf8'))
+    for (const hook of text.matchAll(/data-([a-z][a-z0-9-]*)/g)) {
       const name = `data-${hook[1]}`
       if (!out.has(name)) out.set(name, file)
     }
@@ -83,11 +92,25 @@ function heard(hook: string, prose: string, css: string): boolean {
   const camel = bare.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase())
   const parts = bare.split('-')
   const prefixes = parts.map((_, i) => `data-${parts.slice(0, i + 1).join('-')}`)
-  return prefixes.some((p) => prose.includes(p)) || new RegExp(`\\b${camel}\\b`).test(prose)
+  // ⚠️ `dataset.` IN FRONT OF THE CAMEL SPELLING, not the camel spelling loose. A bare
+  // `\bs3Bucket\b` is satisfied by `IntegrationStatus.s3Bucket` — a server type that has nothing
+  // to do with reading an attribute — and `data-s3-bucket` was excused by it while its five
+  // siblings were reported. A rule that lets a field name vouch for a hook is a rule that goes
+  // quiet exactly where the names line up.
+  return prefixes.some((p) => prose.includes(p))
+    || new RegExp(`dataset(?:\\.|\\[')${camel}\\b`).test(prose)
 }
 
-const islands = ISLANDS.flatMap(files).filter((f) => !/\.test\.ts$/.test(f))
-const prose = islands.map((f) => readFileSync(f, 'utf8')).join('\n')
+/**
+ * ⚠️ THIS FILE IS NOT A READER, AND NEITHER IS ANY OTHER GUARD. The first run with `scripts/`
+ * included excused `data-s3-*` and `data-mcp-delete` because THIS comment names them: a guard
+ * that reads its own prose as evidence reports every hook it has ever described as wired. The
+ * same goes for comments anywhere else — a note saying a control "is not wired yet" would
+ * otherwise be the proof that it is.
+ */
+const islands = ISLANDS.flatMap(files)
+  .filter((f) => !/\.test\.ts$/.test(f) && !f.includes('scripts/checks/'))
+const prose = islands.map((f) => bare(readFileSync(f, 'utf8'))).join('\n')
 const css = readFileSync(SHEET, 'utf8')
 const drawn = written()
 

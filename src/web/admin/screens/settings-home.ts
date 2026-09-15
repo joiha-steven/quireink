@@ -22,7 +22,7 @@ import { escapeAttr, escapeHtml } from '@/utils'
 import { renderInlineMarkdown } from '@/render/inline-md'
 import { CONTROL, buttonClass } from '@/admin-shared/kit'
 import { FIELD_W, NOTE_ALERT, NOTE_TEXT, SETTING_GAP, SETTING_LABEL } from '@/admin-shared/scale'
-import { hiddenField, panelCard, switchRow, textField } from '@/web/admin/fields'
+import { panelCard, settingRow, switchRow, textControl, textField } from '@/web/admin/fields'
 import { choice, plainPick } from '@/web/admin/fields-pick'
 import { pairGrid, panelList } from '@/web/admin/fields-box'
 import { gate } from '@/web/admin/fields-pic'
@@ -72,17 +72,49 @@ const TB_KEY = 'flex h-8 min-w-8 items-center justify-center rounded-lg border b
   + ' dark:text-neutral-200 dark:hover:bg-neutral-800'
 
 /**
+ * ⚠️ A LIST IS ONE VALUE, NOT ONE FIELD PER ROW — and that is the repair for a fault that was
+ * live on this tab until 2026-09-15.
+ *
+ * The rows used to carry `data-k="menu.0.label"`, `data-k="featured.2"` and so on. The screen's
+ * Save key sends a DEEP PARTIAL of only what changed, so editing one field of one row sent an
+ * array with holes in every other index — which `JSON.stringify` writes as `null` — and the
+ * sanitisers then dropped them. Editing one menu link deleted the whole menu. That half is
+ * repaired in `content/settings-sanitize.ts`, but a per-row field cannot express the other half
+ * at all: REMOVING a row renumbers the survivors back onto their own stored values, so nothing
+ * is dirty, nothing is sent, and the row comes back on the next page load.
+ *
+ * So the list rides as ONE `data-k-json` field, the way `customFont` has since ADR 0053 — the
+ * island owns the whole array and writes it here. The visible rows store nothing and wear
+ * `data-menu-*` / `data-featured-*` instead, which the form's reader does not look at.
+ *
+ * It goes LAST in its stack: a `space-y-*` parent puts a top margin on every child but the
+ * first, and a hidden field placed first would hand the next one a gap it never had.
+ */
+function listField(k: string, value: unknown): string {
+  const json = escapeAttr(JSON.stringify(value))
+  return `<input type="hidden" data-k="${escapeAttr(k)}" data-k-json value="${json}" data-was="${json}">`
+}
+
+/**
  * A SELECT THAT STORES NOTHING: it is the way to ADD a row, and the row is what stores. Drawn
  * here rather than by `pickControl`, which demands a `k` — and a `data-k` would tell the form
  * this screen holds a setting called "add", and the sheet's search would offer it. Its only name
  * is its first option, which is gone the moment something is chosen, so it takes `aria-label`.
  */
-function addPick(f: { label: string; options: [string, string][]; attrs: string }): string {
+function addPick(f: {
+  label: string; options: [string, string][]; attrs: string; taken?: ReadonlySet<string>
+}): string {
   return `<span class="relative flex ${FIELD_W.full}">`
     + `<select aria-label="${escapeAttr(f.label)}" ${f.attrs}`
     + ` class="${CONTROL} ${FIELD_W.full} cursor-pointer appearance-none pr-9">`
     + `<option value="" selected>${escapeHtml(f.label)}</option>`
-    + f.options.map(([v, l]) => `<option value="${escapeAttr(v)}">${escapeHtml(l)}</option>`).join('')
+    // ⚠️ EVERY OPTION SHIPS, AND THE USED ONES SHIP `hidden`. Listing only the free ones is what
+    // the server did until 2026-09-15, and it left the island with nothing to put back when a row
+    // was removed: a category that had been taken at render time had no `<option>` to unhide, and
+    // building one here would be this file's markup written in JavaScript, without its words.
+    + f.options.map(([v, l]) =>
+      `<option value="${escapeAttr(v)}"${f.taken?.has(v) ? ' hidden' : ''}>${escapeHtml(l)}</option>`)
+      .join('')
     + `</select>`
     + icon('down', 'pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2'
       + ' text-neutral-500 dark:text-neutral-400')
@@ -95,22 +127,24 @@ function addPick(f: { label: string; options: [string, string][]; attrs: string 
  *  content, so a filled menu was a column of unnamed boxes and a screen reader never had the
  *  names at all. */
 function menu(t: AdminStrings, s: SiteSettings): string {
-  const row = (m: { label: string; href: string }, i: number): string =>
-    `<div class="flex gap-2" data-menu-row="${i}">`
-    + `<input class="${FIELD}" data-k="menu.${i}.label" value="${escapeAttr(m.label)}"`
+  const row = (m: { label: string; href: string }): string =>
+    `<div class="flex gap-2" data-menu-row>`
+    + `<input class="${FIELD}" data-menu-label value="${escapeAttr(m.label)}"`
     + ` placeholder="${escapeAttr(t.menuLabelField)}"`
-    + ` aria-label="${escapeAttr(`${t.menuLabelField} ${i + 1}`)}">`
-    + `<input class="${FIELD}" data-k="menu.${i}.href" value="${escapeAttr(m.href)}"`
+    + ` aria-label="${escapeAttr(t.menuLabelField)}">`
+    + `<input class="${FIELD}" data-menu-href value="${escapeAttr(m.href)}"`
     + ` placeholder="${escapeAttr(t.menuHrefField)}"`
-    + ` aria-label="${escapeAttr(`${t.menuHrefField} ${i + 1}`)}">`
-    + `<button type="button" data-menu-remove="${i}" aria-label="${escapeAttr(t.delete)}"`
+    + ` aria-label="${escapeAttr(t.menuHrefField)}">`
+    + `<button type="button" data-menu-remove aria-label="${escapeAttr(t.delete)}"`
     + ` class="${ICON_KEY}">×</button></div>`
   return `<div class="space-y-3" data-menu>`
     + `<span class="${SETTING_LABEL}">${escapeHtml(t.menuTitle)}</span>`
-    + s.menu.map(row).join('')
+    + `<div class="space-y-3" data-menu-rows>${s.menu.map(row).join('')}</div>`
     + `<button type="button" data-menu-add class="${buttonClass('secondary')}">`
     + `${escapeHtml(t.menuAdd)}</button>`
-    + `<p class="${NOTE_TEXT}">${escapeHtml(t.menuHint)}</p></div>`
+    + `<p class="${NOTE_TEXT}">${escapeHtml(t.menuHint)}</p>`
+    + listField('menu', s.menu)
+    + `<template data-menu-tpl>${row({ label: '', href: '' })}</template></div>`
 }
 
 /**
@@ -125,24 +159,24 @@ function featured(t: AdminStrings, s: SiteSettings, v: HomeTabView): string {
   const key = (label: string, mark: string, attr: string, off: boolean): string =>
     `<button type="button" ${attr} aria-label="${escapeAttr(label)}"`
     + ` class="${ICON_KEY}"${off ? ' disabled' : ''}>${mark}</button>`
-  const row = (slug: string, i: number): string =>
+  const row = (slug: string, i: number, last: number): string =>
     `<div class="${PICKED_ROW}" data-featured-row="${escapeAttr(slug)}">`
-    // No control holds a slug, so a hidden input does — the same trick `pickedImage` uses for a
-    // URL that has no field.
-    + hiddenField(`featured.${i}`, slug)
-    + `<span class="flex-1 truncate">${escapeHtml(titleOf(slug))}</span>`
+    + `<span class="flex-1 truncate" data-featured-title>${escapeHtml(titleOf(slug))}</span>`
     + key(t.moveUp, '↑', 'data-featured-up', i === 0)
-    + key(t.moveDown, '↓', 'data-featured-down', i === chosen.length - 1)
+    + key(t.moveDown, '↓', 'data-featured-down', i === last)
     + key(t.delete, '×', 'data-featured-remove', false) + `</div>`
   return `<div class="space-y-3" data-featured>`
     + `<p class="text-sm text-neutral-500 dark:text-neutral-400" data-featured-none`
     + `${chosen.length > 0 ? ' hidden' : ''}>${escapeHtml(t.featuredEmpty)}</p>`
-    + chosen.map(row).join('')
+    + `<div class="space-y-3" data-featured-rows>`
+    + chosen.map((slug, i) => row(slug, i, chosen.length - 1)).join('') + `</div>`
     + gate(free.length > 0, addPick({
-      label: t.featuredAdd, attrs: 'data-featured-add',
-      options: free.map((p) => [p.slug, p.title || p.slug] as [string, string]),
+      label: t.featuredAdd, attrs: 'data-featured-add', taken: new Set(chosen),
+      options: v.posts.map((p) => [p.slug, p.title || p.slug] as [string, string]),
     }), 'data-featured-add-box')
-    + `<p class="${NOTE_TEXT}">${escapeHtml(t.featuredHint)}</p></div>`
+    + `<p class="${NOTE_TEXT}">${escapeHtml(t.featuredHint)}</p>`
+    + listField('featured', chosen)
+    + `<template data-featured-tpl>${row('', 0, -1)}</template></div>`
 }
 
 function layout(t: AdminStrings, s: SiteSettings, v: HomeTabView): string {
@@ -226,12 +260,35 @@ function footer(t: AdminStrings, s: SiteSettings): string {
 
 // --- The front-page card --------------------------------------------------------------------
 
-/** A count and a column choice: the two numbers almost every row has. */
+/**
+ * A count and a column choice: the two numbers almost every row has.
+ *
+ * ⚠️ `numeric: true` ON THE COLUMNS, and it was missing until 2026-09-15. A `<select>` value is
+ * a string, `data-k-number` is what turns it into one on the way out, and `columns()` in
+ * `content/settings-front.ts` accepts only `1 | 2 | 3` — so the string `"2"` failed the check and
+ * fell back to 3. The setting saved, the screen reported success, and the number went nowhere.
+ */
 function rowSize(t: AdminStrings, k: string, count: number, columns: number, max: number): string {
   return pairGrid(
     textField({ k: `${k}.count`, label: t.frontCount, type: 'number', value: count,
       attrs: `min="1" max="${max}"` })
-    + plainPick({ k: `${k}.columns`, label: t.frontColumns, value: String(columns),
+    + plainPick({ k: `${k}.columns`, label: t.frontColumns, value: String(columns), numeric: true,
+      options: [['1', '1'], ['2', '2'], ['3', '3']] }),
+  )
+}
+
+/**
+ * The same two numbers for a STRIP, which stores through the list's one field rather than its
+ * own — so neither control carries a `data-k`. See `listField`.
+ */
+function stripSize(t: AdminStrings, count: number, columns: number): string {
+  return pairGrid(
+    settingRow({
+      label: t.frontCount,
+      control: textControl({ value: count, type: 'number', label: t.frontCount,
+        attrs: 'min="1" max="12" data-strip-count' }),
+    })
+    + plainPick({ label: t.frontColumns, value: String(columns), attrs: 'data-strip-columns',
       options: [['1', '1'], ['2', '2'], ['3', '3']] }),
   )
 }
@@ -253,8 +310,8 @@ function front(t: AdminStrings, f: FrontSettings, v: HomeTabView): string {
     `<div class="mt-3 space-y-2 border-l-2 border-neutral-200 pl-3 dark:border-neutral-800"`
     + ` data-strip="${escapeAttr(s.category)}">`
     + `<div class="flex items-center justify-between gap-2">`
-    + `<span class="text-sm text-neutral-700 dark:text-neutral-300">${escapeHtml(s.category)}</span>`
-    + hiddenField(`${k}.strips.${i}.category`, s.category)
+    + `<span class="text-sm text-neutral-700 dark:text-neutral-300" data-strip-name>`
+    + `${escapeHtml(s.category)}</span>`
     // Order is the owner's, so it is MOVED rather than dragged: two keys are the whole
     // interaction and they work on a phone and with a keyboard.
     + `<div class="flex gap-1">`
@@ -262,7 +319,7 @@ function front(t: AdminStrings, f: FrontSettings, v: HomeTabView): string {
     + `${i === 0 ? ' disabled' : ''}>↑</button>`
     + `<button type="button" data-strip-remove class="${buttonClass('ghost')}">`
     + `${escapeHtml(t.removeSelection)}</button></div></div>`
-    + rowSize(t, `${k}.strips.${i}`, s.count, s.columns, 12) + `</div>`
+    + stripSize(t, s.count, s.columns) + `</div>`
   return `<div class="${SETTING_GAP}">`
     // The one dial that moves the whole page.
     + choice({
@@ -294,18 +351,24 @@ function front(t: AdminStrings, f: FrontSettings, v: HomeTabView): string {
     + `<div class="${BAND}" data-strips>`
     + `<div class="space-y-3"><span class="${SETTING_LABEL}">${escapeHtml(t.frontStrips)}</span>`
     + `<p class="${NOTE_TEXT}">${escapeHtml(t.frontStripsHint)}</p></div>`
-    + f.strips.map(strip).join('')
+    + `<div data-strip-rows>${f.strips.map(strip).join('')}</div>`
     + gate(f.strips.length < 8 && free.length > 0, addPick({
-      label: t.frontStripAdd, attrs: 'data-strip-add',
-      options: free.map((c) => [c, c] as [string, string]),
-    }), 'class="mt-3" data-strip-add-box') + `</div>`
+      label: t.frontStripAdd, attrs: 'data-strip-add', taken,
+      options: v.categories.map((c) => [c, c] as [string, string]),
+    }), 'class="mt-3" data-strip-add-box')
+    + listField(`${k}.strips`, f.strips)
+    + `<template data-strip-tpl>${strip({ category: '', count: 3, columns: 3 }, 1)}</template>`
+    + `</div>`
     // ----- what people are actually reading -----
     + `<div class="${BAND}">`
     + toggle(`${k}.popular.on`, t.frontPopularRow, f.popular.on, t.frontPopularHint)
     + gate(f.popular.on, pairGrid(
       textField({ k: `${k}.popular.count`, label: t.frontCount, type: 'number',
         value: f.popular.count, attrs: 'min="1" max="12"' })
+      // `numeric: true` for the same reason the columns need it: `settings-front.ts` compares
+      // against 7, 30 and 0, and a string never equals any of them.
       + plainPick({ k: `${k}.popular.days`, label: t.frontWindow, value: String(f.popular.days),
+        numeric: true,
         options: [['7', t.frontWindow7], ['30', t.frontWindow30], ['0', t.frontWindowAll]] }),
     ), `class="mt-3" data-gate="${k}.popular.on"`) + `</div>`
     // ----- and everything else -----

@@ -86,6 +86,8 @@ function words(t: AdminStrings): string {
     // that did not take, and there is no key of its own for it — see OPEN_QUESTIONS.
     importDone: t.importDone, importImagesDone: t.importImagesDone,
     importImagesFailed: t.importImagesFailed, importFailed: t.uploadFailed,
+    // The footer's link key asks for an address in the product's own dialog, not the browser's.
+    linkTitle: t.tbLink, promptLink: t.promptLink, linkSave: t.save,
     // The account's four flows report what they did; the server's REFUSALS ride on the card
     // itself, because each belongs to the control that can provoke it.
     passwordChanged: t.securityPasswordChanged, signedOut: t.securitySignedOut,

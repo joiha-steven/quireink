@@ -14,6 +14,8 @@ import { fold } from '@/admin-shared/fold'
 import { resolveTab, type Tab } from '@/admin-shared/settings-tabs'
 import { wireCards } from './lib/settings-cards'
 import { wireCode } from './lib/settings-code'
+import { wireFont } from './lib/settings-font'
+import { wireHome } from './lib/settings-home'
 import { wireImport } from './lib/settings-import'
 import { wireControls } from './lib/settings-controls'
 import { wireLists } from './lib/settings-lists'
@@ -58,6 +60,9 @@ if (root) {
   // until 2026-09-15. `check:admin-wired` is the guard that will not let that happen twice.
   wireImport(screen, words)
   wireSound(screen)
+  wireFont(screen, words)
+  // The Home tab's four lists. Each is one `data-k-json` value this owns, not a field per row.
+  wireHome(screen, words)
   // The account's four flows, none of which is a setting and every one of which asks for the
   // current password first: being signed in is not enough.
   wireSecurity(screen, words)
