@@ -77,6 +77,48 @@ function defined(css: string): Set<string> {
   return found
 }
 
+
+/**
+ * An expression with its COMMENTS taken out, before its string literals are read as classes.
+ *
+ * ⚠️ PROSE IN BACKTICKS LOOKS EXACTLY LIKE A TEMPLATE LITERAL. A class table carries comments
+ * explaining each entry, and those comments name things — `check:admin-kit`, `qi-tile-bar` —
+ * between backticks, which is this project's way of quoting an identifier. Read as code they
+ * are class names, and the guard then reports a rule missing for a sentence. That is the
+ * opposite failure from the three blind spots above and it is worse in one way: a guard that
+ * cries wolf gets its complaint dismissed, and the next complaint with it.
+ *
+ * Quote state is tracked, so a `//` inside a string (a URL, say) is not the start of a comment.
+ */
+function withoutComments(src: string): string {
+  let out = ''
+  let quote = ''
+  for (let i = 0; i < src.length; i++) {
+    const c = src[i]!
+    if (quote) {
+      out += c
+      if (c === '\\') { out += src[i + 1] ?? ''; i++; continue }
+      if (c === quote) quote = ''
+      continue
+    }
+    if (c === "'" || c === '"' || c === '`') { quote = c; out += c; continue }
+    if (c === '/' && src[i + 1] === '/') {
+      while (i < src.length && src[i] !== '\n') i++
+      out += '\n'
+      continue
+    }
+    if (c === '/' && src[i + 1] === '*') {
+      i += 2
+      while (i < src.length && !(src[i] === '*' && src[i + 1] === '/')) i++
+      i++
+      out += ' '
+      continue
+    }
+    out += c
+  }
+  return out
+}
+
 /** Class tokens, from every `className` in the tree. Interpolations are skipped, not guessed. */
 function used(files: readonly string[], rulesOf: ReadonlySet<string>): Map<string, string[]> {
   const out = new Map<string, string[]>()
@@ -176,7 +218,7 @@ function used(files: readonly string[], rulesOf: ReadonlySet<string>): Map<strin
       // The extent includes its own delimiters, and a class name contains neither — so for a
       // quoted attribute they become whitespace rather than the tail of the last token.
       // Without that every quoted attribute reported its final class as `w-full\"`.
-      const literals = [...[...spans, quoted ? '' : plain].join(' ')
+      const literals = [...[...spans, quoted ? '' : withoutComments(plain)].join(' ')
         .matchAll(/'([^'\n]*)'|"([^"\n]*)"|`([^`\n$]*)`/g)]
         .map((lit) => lit[1] ?? lit[2] ?? lit[3] ?? '')
       // A `class="…"` attribute's own text is not a literal inside anything, so it is added

@@ -15,7 +15,7 @@ import { useEffect, useReducer, useRef, useState } from 'react'
 import { Editor as TiptapEditor } from '@tiptap/core'
 import { editorExtensions } from './editorExtensions'
 import { BubbleBar, SlashMenu } from './EditorMenus'
-import { Toolbar } from './EditorToolbar'
+import { mountToolbar, toolbarWords, type Toolbar } from './editor-toolbar'
 import { useLinkAsker } from './editorLink'
 import { useFocusMode } from './useFocusMode'
 import { placeCaret } from './key-feedback'
@@ -237,6 +237,39 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
     rawTextRef: rawView.textRef,
     onRawText: (next) => { rawView.setText(next); onChange(next) },
   })
+
+  /**
+   * THE BAR IS PLAIN TYPESCRIPT (`editor-toolbar.ts`), mounted into a div React owns.
+   *
+   * It was a React component asking twenty-one `isActive` questions per render, and the editor
+   * was told to re-render on every transaction so those answers stayed live — so every keystroke
+   * rebuilt the tree of the whole sheet to decide whether Bold looks pressed. It subscribes to
+   * the editor itself now and writes twenty-one attributes.
+   *
+   * Mounted and unmounted rather than hidden, because that is what the conditional above did:
+   * the bar is sticky and takes space, and the Markdown view and focus mode both want it gone
+   * rather than invisible.
+   */
+  const toolbarHost = useRef<HTMLDivElement>(null)
+  const barRef = useRef<Toolbar | null>(null)
+  const showBar = !raw && !focus
+  useEffect(() => {
+    const host = toolbarHost.current
+    if (!editor || !host || !showBar) return
+    const bar = mountToolbar(host, {
+      editor,
+      askLink,
+      onPickImage,
+      onPickGallery,
+      words: toolbarWords(t),
+    })
+    barRef.current = bar
+    return () => { bar.destroy(); barRef.current = null }
+  }, [editor, showBar])
+
+  // The sticky band above the bar is measured at runtime and moves when the find strip opens,
+  // so the offset arrives after the mount and is pushed in rather than re-mounting the bar.
+  useEffect(() => { barRef.current?.setTop(toolbarTop + find.height) }, [toolbarTop, find.height, showBar, editor])
   useEffect(() => {
     if (!editor) return
     editorRef.current = editor // keep the drag-drop / paste closures on the live instance
@@ -325,7 +358,7 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
       {/* Focus mode takes the row away; the bubble bar and "/" still carry every command
           it holds, which is the arrangement Medium made famous and the reason putting it
           away costs nothing. */}
-      {!raw && !focus && <Toolbar editor={editor} onPickImage={onPickImage} onPickGallery={onPickGallery} stickyTop={toolbarTop + find.height} />}
+      {!raw && !focus && <div ref={toolbarHost} />}
       {/* Center the writing column at the public single-post width so what you
           type wraps exactly like the published article.
 

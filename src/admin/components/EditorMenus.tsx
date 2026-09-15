@@ -1,10 +1,10 @@
 // The two menus that open AT THE WRITING rather than standing over it:
 //  - SlashMenu: the inserts, opened at the caret by typing "/" on an empty line.
 //  - BubbleBar: a floating menu on a text selection or with the cursor inside a link.
-// The fixed button strip is next door in `EditorToolbar.tsx`, which is where this file's
+// The fixed button strip is next door in `editor-toolbar.ts`, which is where this file's
 // first half went when it reached the size cap.
-// Both need the editor to re-render on selection change; Editor.tsx enables
-// `shouldRerenderOnTransaction` so isActive() stays live (off by default in TipTap 3).
+// The bubble bar reads `isActive()` during render and Editor.tsx still redraws per
+// transaction to keep it live; the button strip subscribes to the editor itself.
 import React, { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { type Editor as TiptapEditor } from '@tiptap/core'
