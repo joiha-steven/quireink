@@ -61,6 +61,15 @@ export function bubblePlugin(opts: BubbleOptions): Plugin {
   bar.hidden = true
 
   const place = (view: EditorView): void => {
+    // ⚠️ NOTHING HERE MAY THROW PAST THE VIEW. A plugin view's `update` runs inside the
+    // editor's own dispatch, after the state is committed but before it tells anybody: a throw
+    // keeps the edit and loses the events, so the document changes while the save flag and the
+    // toolbar are never told. `coordsAtPos` is the realistic thrower — it reads the DOM, and a
+    // DOM the browser has changed under ProseMirror can raise from inside a Range.
+    try { position(view) } catch { bar.hidden = true }
+  }
+
+  const position = (view: EditorView): void => {
     const { state } = view
     const { from, to } = state.selection
     if (!opts.shouldShow({ state, from, to })) { bar.hidden = true; return }
@@ -100,6 +109,16 @@ export function bubblePlugin(opts: BubbleOptions): Plugin {
       // context — on the body it is being compared with the sheet's card instead, which then
       // takes the click. The tour caught that too, in the same flow, one attempt later.
       if (bar.parentElement === null) (view.dom.parentElement ?? document.body).appendChild(bar)
+      // ⚠️ THE BAR CHANGES SIZE AFTER IT IS PLACED, and nothing else notices. Its contents are
+      // rewritten by the toolbar's own `transaction` listener — the Remove-link key appears
+      // when the caret enters a link — and that listener runs AFTER this one, so the bar was
+      // measured at its old width and left off-centre until the next keystroke. On a phone the
+      // extra key can wrap it onto a second row, which puts it over the text it was meant to
+      // sit clear of. `floating-ui` had an observer for this; so does this.
+      const watcher = typeof ResizeObserver === 'function'
+        ? new ResizeObserver(() => { if (!bar.hidden) place(view) })
+        : null
+      watcher?.observe(bar)
       // The window's own two: a scroll moves the selection under a bar that is fixed, and a
       // resize changes what "there is room above" means.
       const again = (): void => place(view)
@@ -111,6 +130,7 @@ export function bubblePlugin(opts: BubbleOptions): Plugin {
         destroy: () => {
           window.removeEventListener('scroll', again, true)
           window.removeEventListener('resize', again)
+          watcher?.disconnect()
           bar.hidden = true
           bar.remove()
         },

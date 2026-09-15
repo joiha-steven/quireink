@@ -21,10 +21,26 @@ afterAll(async () => { await GlobalRegistrator.unregister() })
 
 type Ed = import('./editor').Editor
 
+/**
+ * An editor with the caret where a writer would be: at the end of the last block that HAS
+ * something in it.
+ *
+ * ⚠️ NOT `doc.content.size`, which is the end of the TRAILING PARAGRAPH — the empty one the
+ * editor keeps under the writing so a piece ending in a table can be clicked below. Putting the
+ * caret there means Enter splits that paragraph instead of the list above it, and two tests
+ * here reported a broken editor when what had moved was the caret.
+ */
 async function open(markdown = ''): Promise<Ed> {
   const { Editor } = await import('./editor')
   const ed = new Editor({ element: document.createElement('div'), content: markdown })
-  ed.commands.setTextSelection(ed.state.doc.content.size)
+  // The end of the last textblock that has words in it — which is inside the last list item
+  // when the piece ends in a list, and not the empty paragraph after it.
+  let at = 1
+  ed.state.doc.descendants((node, pos) => {
+    if (node.isTextblock && node.content.size > 0) at = pos + node.nodeSize - 1
+    return true
+  })
+  ed.commands.setTextSelection(at)
   return ed
 }
 

@@ -16,7 +16,7 @@ import { EditorView, type EditorProps } from 'prosemirror-view'
 import type { Node as PMNode } from 'prosemirror-model'
 import { DOMSerializer } from 'prosemirror-model'
 import { schema } from './schema'
-import { editorPlugins } from './plugins'
+import { editorPlugins, trailingOf } from './plugins'
 import { chainOn, runOne, type Chain, type Cmd } from './run'
 import { COMMANDS, type CommandName } from './commands'
 import { markActive, markAttrs } from './commands-marks'
@@ -70,10 +70,12 @@ export class Editor {
   constructor(opts: EditorOptions) {
     this.options = { content: opts.content ?? '' }
     const nodes = contentToNodes(opts.content ?? '')
-    const doc = schema.topNodeType.create(
+    // The trailing paragraph from the FIRST frame: the plugin that maintains it is an
+    // `appendTransaction`, and there has not been a transaction yet.
+    const doc = trailingOf(schema.topNodeType.create(
       null,
       nodes.length ? nodes : schema.nodes.paragraph!.create(),
-    )
+    ))
     const state = EditorState.create({
       doc,
       plugins: editorPlugins({

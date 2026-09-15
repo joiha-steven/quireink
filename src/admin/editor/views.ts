@@ -12,7 +12,7 @@
 import { NodeSelection } from 'prosemirror-state'
 import { TableView } from 'prosemirror-tables'
 import type { Node as PMNode } from 'prosemirror-model'
-import type { EditorView, NodeViewConstructor } from 'prosemirror-view'
+import type { EditorView, NodeView, NodeViewConstructor } from 'prosemirror-view'
 import { ImageView } from '@/admin/components/CaptionedImage'
 import { applyToGallery } from '@/admin/components/image-gallery'
 import type { GridOpts } from '@/admin/components/image-frag'
@@ -67,20 +67,26 @@ const writer = (view: EditorView, getPos: () => number | undefined) =>
 /**
  * A task item's checkbox, and the one thing that makes it a control rather than a character.
  *
- * ⚠️ `contenteditable="false"` ON THE INPUT. Without it the browser treats the checkbox as part
- * of the text: clicking puts a caret beside it instead of ticking it, and Backspace deletes it.
- * The `toDOM` in the schema deliberately does NOT carry that attribute — that one is the
- * clipboard's copy, where an uneditable input would be a strange thing to paste.
+ * ⚠️ `contenteditable="false"` GOES ON THE `<label>`, NOT ON THE `<input>`, and the first cut put
+ * it on the input. An `<input>` is a replaced element — the attribute on it is close to a no-op
+ * — while the `<label>` and the `<span>` around it inherited `contenteditable=true` from the
+ * ProseMirror root and became an editable island inside a node view: a place the caret can land
+ * and Backspace can eat, holding text that is in no document. The package this replaced walled
+ * off the wrapper, which is what actually works.
+ *
+ * `ignoreMutation` for the same reason the other four views carry one: this subtree is drawn by
+ * this code, and ProseMirror must not try to read a document back out of it.
+ *
+ * The `toDOM` in the schema deliberately carries none of this — that one is the clipboard's
+ * copy, where an uneditable input would be a strange thing to paste.
  */
-function taskItemView(node: PMNode, view: EditorView, getPos: () => number | undefined): {
-  dom: HTMLElement; contentDOM: HTMLElement; update: (n: PMNode) => boolean
-} {
+function taskItemView(node: PMNode, view: EditorView, getPos: () => number | undefined): NodeView {
   const li = document.createElement('li')
   li.dataset.type = 'taskItem'
   const label = document.createElement('label')
+  label.contentEditable = 'false'
   const box = document.createElement('input')
   box.type = 'checkbox'
-  box.contentEditable = 'false'
   const seen = document.createElement('span')
   const body = document.createElement('div')
   label.append(box, seen)
@@ -108,6 +114,15 @@ function taskItemView(node: PMNode, view: EditorView, getPos: () => number | und
       if (next.type.name !== 'taskItem') return false
       paint(next)
       return true
+    },
+    // The checkbox and its label are drawn here; ProseMirror must not read them back. `body` is
+    // the `contentDOM` and is deliberately outside this — that half IS the document.
+    ignoreMutation(record: { target: globalThis.Node }) {
+      return label.contains(record.target)
+    },
+    // A click on the box is a control being used, not a caret being placed.
+    stopEvent(event: Event) {
+      return label.contains(event.target as globalThis.Node | null)
     },
   }
 }

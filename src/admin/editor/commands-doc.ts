@@ -22,16 +22,61 @@ import { toEditor } from '@/md/to-editor'
 import type { Cmd } from './run'
 import { schema } from './schema'
 
-/** Markdown, a node's JSON, or a run of them, as nodes this schema can hold. */
+/**
+ * Markdown, a node's JSON, or a run of them, as nodes this schema can hold.
+ *
+ * ⚠️ `nodeFromJSON` DOES NOT CHECK, and a document that breaks the schema does not announce
+ * itself: it opens, it draws, and the first Enter in the wrong place throws
+ * `Called contentMatchAt on a node with invalid content` from inside ProseMirror, where nothing
+ * can catch it usefully.
+ *
+ * One input reaches this today and it is one THE EDITOR ITSELF WRITES. Nest a bullet, clear its
+ * text, and the save is `- one\n  - `; `  - ` is a setext underline as well as an empty list
+ * item, the parser reads the first, and `listItem` is `paragraph block*` so a heading cannot
+ * lead it. Both builds do this — it is `md/`'s, not this editor's, and deciding what that
+ * Markdown MEANS is a question about the reader's page as much as about the writing surface.
+ * What is decided here is only that the editor will not hold a document it cannot edit.
+ */
 export function contentToNodes(content: unknown): PMNode[] {
   if (typeof content === 'string') {
-    const doc = schema.nodeFromJSON(toEditor(parse(content)))
+    const doc = repaired(schema.nodeFromJSON(toEditor(parse(content))))
     const out: PMNode[] = []
     doc.forEach((child) => out.push(child))
     return out
   }
   const list = Array.isArray(content) ? content : [content]
   return list.map((item) => schema.nodeFromJSON(item))
+}
+
+/**
+ * A document the schema accepts, repaired only where it does not.
+ *
+ * ⚠️ IT CHECKS FIRST AND RETURNS THE ORIGINAL WHEN IT PASSES, so the ordinary path — every post
+ * anybody has ever written — is one `check()` and nothing else. The repair is a re-creation
+ * through `createChecked`'s forgiving sibling: `createAndFill` inserts whatever the content
+ * expression requires, which for a `listItem` led by a heading is the paragraph it is missing.
+ */
+function repaired(doc: PMNode): PMNode {
+  try {
+    doc.check()
+    return doc
+  } catch {
+    const fixed = schema.topNodeType.createAndFill(doc.attrs, mend(doc))
+    // If even that fails there is nothing honest left to do but let the original through and
+    // let ProseMirror say so, which is better than an empty post.
+    return fixed ?? doc
+  }
+}
+
+/** Each node rebuilt so its content satisfies its own type, deepest first. */
+function mend(node: PMNode): PMNode[] {
+  const kids: PMNode[] = []
+  node.forEach((child) => {
+    if (child.isText || child.isAtom) { kids.push(child); return }
+    const inner = mend(child)
+    kids.push(child.type.createAndFill(child.attrs, inner, child.marks) ?? child)
+  })
+  return kids
 }
 
 /**

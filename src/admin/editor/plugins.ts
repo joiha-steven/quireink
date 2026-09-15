@@ -15,7 +15,7 @@ import { gapCursor } from 'prosemirror-gapcursor'
 import { tableEditing } from 'prosemirror-tables'
 import { Plugin, PluginKey } from 'prosemirror-state'
 import { Decoration, DecorationSet } from 'prosemirror-view'
-import { Slice } from 'prosemirror-model'
+import { Fragment, Slice } from 'prosemirror-model'
 import { parse } from '@/md/index'
 import { toEditor } from '@/md/to-editor'
 import { schema } from './schema'
@@ -101,7 +101,21 @@ function markdownClipboard(): Plugin {
  * trailing one is invisible to a save; `editor-corpus.test.ts`'s first law — serialize twice,
  * compare — is what holds that, because a paragraph that DID serialize would make every
  * document grow by a blank line on every open.
+ *
+ * ⚠️ `appendTransaction` DOES NOT RUN AT LOAD, which the word ALWAYS above used to promise and
+ * did not deliver. `EditorState.create` never consults it — only `applyTransaction` does — so a
+ * post that ends in a table opened with nothing under it and grew the paragraph later, as a
+ * jump, on the first click. The outgoing build had exactly the same hole. `trailingOf` below is
+ * what the editor calls when it builds its first document, so the promise is kept from the
+ * first frame.
  */
+export function trailingOf(doc: import('prosemirror-model').Node): import('prosemirror-model').Node {
+  return doc.lastChild?.type === schema.nodes.paragraph
+    ? doc
+    : doc.type.create(doc.attrs, doc.content.append(
+      Fragment.from(schema.nodes.paragraph!.create()),
+    ), doc.marks)
+}
 function trailingParagraph(): Plugin {
   return new Plugin({
     key: new PluginKey('quireTrailingParagraph'),
