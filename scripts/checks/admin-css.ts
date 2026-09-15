@@ -8,6 +8,18 @@
 //
 // That is a silent failure, and this turns it into a loud one.
 //
+// ⚠️ IT RUNS ONE WAY ONLY, AND THE OTHER WAY IS NOT SAFE. Asking "which RULE does nothing" looks
+// like the same question and is not: on 2026-09-15 that scan named 339 of 908 classes unused,
+// 208 of them were cut, both CSS guards stayed green — and the tour went red in five flows at
+// once. A group title lost its eyebrow, the dashboard scrolled sideways on a phone, the editor's
+// action bar left the bottom of the screen. The reason is that `used()` below is deliberately
+// conservative about what counts as a class in an expression, which is right for "is this rule
+// MISSING" — a false positive there is a build somebody has to argue with — and exactly wrong
+// for "is this rule UNNEEDED", where the same caution deletes rules that are in use.
+//
+// A sheet with rules nobody asks for costs 22 KB of source. Trusting a scan built for the other
+// question cost a working admin, and only a browser found it.
+//
 // WHAT IT READS. Class names come out of `className=` in the admin tree, and rules come out of
 // the BUILT stylesheet — `src/admin/dist/admin.css`, after `utilities.css`, `admin.css`, the
 // prose sheet and the pen have all been concatenated. Reading the built file rather than the
