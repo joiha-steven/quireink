@@ -8,6 +8,7 @@
 // controls that only move the FORM — plus `PUT /api/settings`, which the existing settings flows
 // already exercise and which is restored afterwards.
 import type { Tour } from './tour'
+import { SCREEN_FORMS } from './tour-ask'
 
 export function registerSettings2Flows({ flow, expect }: Pick<Tour, 'flow' | 'expect'>): void {
   flow('admin: settings arrives finished, all seven tabs of it', () => expect('/admin/settings', `
@@ -29,7 +30,8 @@ export function registerSettings2Flows({ flow, expect }: Pick<Tour, 'flow' | 'ex
   // screen has the most to lose by a stray Enter.
   flow('admin: nothing in settings is a form, and no secret is in the page', () => expect('/admin/settings', `
     (() => {
-      const forms = document.querySelectorAll('form').length
+      ${SCREEN_FORMS}
+      const forms = screenForms().length
       if (forms) return forms + ' form(s) on the screen that changes the password'
       const buttons = [...document.querySelectorAll('main button')]
       const untyped = buttons.filter((b) => b.getAttribute('type') !== 'button')

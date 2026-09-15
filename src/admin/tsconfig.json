@@ -1,10 +1,11 @@
 {
-  // The admin SPA: browser code, React, and the second directory that gets DOM types.
+  // The admin's browser code: the islands and the editor, and the second directory that gets
+  // DOM types.
   //
-  // The root tsconfig excludes this folder for the same reason it excludes `assets/js` —
-  // a server module that reaches for `document` must fail to compile, not fail on the
-  // first request. It also sets `jsxImportSource` to hono/jsx for server-rendered markup;
-  // this one is React, which is why the two cannot share a config.
+  // The root tsconfig excludes this folder for the same reason it excludes `assets/js` — a
+  // server module that reaches for `document` must fail to compile, not fail on the first
+  // request. It carried React and a second JSX runtime until ADR 0054's step 6; what is left
+  // is the DOM lib, which is still a reason for two configs.
   "compilerOptions": {
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "target": "ES2022",
@@ -12,7 +13,6 @@
     "moduleResolution": "bundler",
     "moduleDetection": "force",
     "types": ["bun"],
-    "jsx": "react-jsx",
     "strict": true,
     // Turned on 2026-08-02 with the root project; see the note in the root tsconfig.json.
     "noUnusedLocals": true,

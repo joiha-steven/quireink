@@ -33,19 +33,19 @@ column measured 12, 16, 20 and 28 in a single scroll, which reads as a page asse
 four screens. A component that wants a third number wants one of these two.
 
 **A field is as tall as the button beside it.** `CONTROL` is `min-h-9 px-3 py-1.5`, the same
-36px as `ui/Button`'s `md`, so a Copy-next-to-a-token or Choose-image-next-to-a-filename row
-sits level. `ui/Input.tsx` IMPORTS `CONTROL`
-rather than declaring a matching copy, which is what its comment used to promise and nothing
+36px as `buttonClass`'s `md` (`admin-shared/kit.ts`), so a Copy-next-to-a-token or Choose-image-next-to-a-filename row
+sits level. `textField` in [`web/admin/fields.ts`](../src/web/admin/fields.ts)
+IMPORTS `CONTROL` rather than declaring a matching copy, which is what its comment used to promise and nothing
 enforced — as do the ten settings fields that had each drawn their own at 38px, an 8px radius,
 no focus ring and no placeholder shade. One with a measured size of its own takes `CONTROL_CHROME`.
 
 **A field is as wide as its answer.** A two-digit excerpt length in 580px, beside a site
-title in 580px and a description in 580px, draws three different questions as one. `Input`
+title in 580px and a description in 580px, draws three different questions as one. `textField`
 gives a `type="number"` field `FIELD_W.short` unless the caller states a width, and emits
 exactly one width class — two competing ones resolve by stylesheet order, which no call site
 can reason about.
 
-**One button, two sizes.** There were four: `ui/Button`; a New post link that copied the
+**One button, two sizes.** There were four: a `Button` component; a New post link that copied the
 classes and lost `shrink-0`, `whitespace-nowrap` and the dark hover; two integration cards at
 `px-3 py-1.5` with no minimum height; and a restore-draft pair with **square corners**,
 against the rule above. `buttonClass()` is exported so an `<a>` can wear the button without
@@ -60,11 +60,12 @@ modifier, `dense` (2026-08-17): tighter padding for the write pane's row of five
 labels are the pane's own deliberately short `scope*` strings so five words share one line
 in all eleven languages — the row may not wrap.
 
-**Two stat shapes, one empty state.** `StatCard` (`analytics-kit.tsx`) and `StatTile`
-(`stat-band.tsx`) are the two, and a third is a copy. `EmptyState` existed and two files used it while
-five hand-rolled a message in three styles.
+**Two stat shapes, one empty state.** `statCard` and the band it stands in, `statBand`, are
+both in [`web/admin/kit-figures.ts`](../src/web/admin/kit-figures.ts) — two shapes, and a third
+is a copy. `emptyState` ([`web/admin/kit.ts`](../src/web/admin/kit.ts)) existed and two files
+used it while five hand-rolled a message in three styles.
 
-**An empty state is a picture, a state, a sentence and a way out.** `EmptyState` takes a
+**An empty state is a picture, a state, a sentence and a way out.** `emptyState` takes a
 `glyph` — a NAME from `GLYPHS` in `src/icons.ts`, not a node — drawn at 96px two ink steps
 below the text. The prop is closed to a name on purpose: it took an arbitrary `icon` node
 before 2026-09-07 and nothing ever passed one, so thirteen empty states in eleven files each
@@ -73,10 +74,10 @@ FAILED to load also looks like. `GLYPHS` is its own 48-unit board because the ic
 at 7.2px this size, and because a mark drawn to survive at 20px throws away what a 96px
 picture has room for — `page` carries ruled lines, `blankPage` carries none, and the second
 one is the whole message. The two dead ends, the admin 404 and the empty Write sheet, also
-carry `RecentPieces`: the three pieces touched last, read off the same `useWritingItems` sort
+carry `recentPieces()`: the three pieces touched last, read off the same `writeItems` sort
 the write pane uses, so both screens name the same piece first.
 
-**A button is a fixed object; the text beside it gives way.** `ui/Button` carries
+**A button is a fixed object; the text beside it gives way.** `buttonClass()` carries
 `whitespace-nowrap shrink-0` for that reason: without them a button in a flex row beside
 anything long is squeezed until its own LABEL wraps. The MCP card shipped "Tạo token" broken
 across two lines beside a 28px field.
@@ -111,19 +112,20 @@ saying related things at two sizes, and the gap between a label and its control 
 It is enforced by primitives, not by discipline, because discipline is what had already
 failed:
 
-- **`Setting` in `components/kit.tsx`** places the three parts for any control that is not a
-  text field. `SETTING_LABEL` and `NOTE` come from the same file and `ui/Input.tsx` builds a
-  text field from them, so a field and a picker cannot drift apart.
-- **`Input`/`Textarea` take a `note`.** They took a label and nothing else, which is why
+- **`settingRow` in [`web/admin/fields.ts`](../src/web/admin/fields.ts)** places the three
+  parts for any control that is not a text field. `SETTING_LABEL` and `NOTE` come from
+  `admin-shared/scale.ts` and `textField` builds a text field from the same three, so a field and
+  a picker cannot drift apart.
+- **`textField`/`textArea` take a `note`.** They took a label and nothing else, which is why
   every hint was hand-placed and no two callers agreed.
 - **`inline` is the one variation, and it is for a SHORT ANSWER** — a boolean, a two-digit
   number, a short list; the ORDER is unchanged. It was booleans only, and ten settings paid
   for it: a number under a label and a sentence is three stacked rows to say "10", reported
-  2026-08-29 as wasted space and hard on the eyes. **`ui/Input`
+  2026-08-29 as wasted space and hard on the eyes. **`textField`
   decides it for `type="number"`**, from the same test that gave a number `FIELD_W.short`: a
   field as wide as its answer needs no row of its own. `inline={false}` opts out.
 - **`FIELD_GAP`** is the space between a setting's words and the control under them. It was
-  8px in `ui/Input` and 10px in `Setting`, so a field and a picker in one card sat two pixels
+  8px in the text field and 10px in the setting row, so a field and a picker in one card sat two pixels
   apart from their own labels.
 - **`SETTING_GAP`** is the space between two settings in a card. One number.
 - **ONE COLUMN PER CARD, in both states of the explanations switch.** With the sentences

@@ -106,7 +106,7 @@ SHA-1, 30-second step, 6 digits. About 80 lines using `crypto.createHmac`, no li
 
 `SameSite=Lax` blocks cross-site form POSTs. On top of that, every state-changing
 request must present `Sec-Fetch-Site: same-origin` **or** a matching `Origin` header;
-requests with neither are rejected. The admin SPA sends JSON with a custom header, so
+requests with neither are rejected. The admin's islands send JSON with a custom header, so
 the simple-request bypass does not apply to it.
 
 No token table, no hidden field. This is the modern shape and it has less to go wrong.
@@ -229,7 +229,7 @@ The base32 secret is shown as text beside it, grouped in fours. That is not a fa
 is what makes the screen complete without the QR, since every authenticator accepts a typed
 key.
 
-**Settings → Account → Security** (`SecurityFields.tsx`, routes in `web/admin/security.ts`,
+**Settings → Account → Security** (`screens/settings-account.ts`, routes in `web/admin/security.ts`,
 shipped 2026-08-31): change password, re-enrol 2FA, regenerate recovery codes, and the list
 of signed-in devices with revoke. Every action that CHANGES something asks for the current
 password and is rate limited per IP — a stolen session is the threat these controls answer,

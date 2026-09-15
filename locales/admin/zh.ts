@@ -1357,13 +1357,8 @@ const zh = {
   newsDone: '完成',
   authSkipNow: '稍后设置',
   authSkipWhy: '仅在博客尚未设置公开地址时提供。设置之后，下次登录会重新要求验证器。',
-  crashTitle: '此页面已停止',
-  crashText: '本页在绘制时出了问题，因此后台停在这里，而不是变成一片空白。你输入的内容仍保存在这台设备上，重新打开页面时会提示恢复。后台其余部分不受影响，侧边栏仍可使用。',
-  crashMissingTitle: '这个页面没能下载下来',
-  crashMissingText: '后台请求了自身的一部分，但文件没有送达。通常是因为博客更新时这个标签页一直开着，或者连接中断了。重新载入会取回当前版本。你之前输入的内容仍然保存在这台设备上。',
-  crashDetail: '出错的地方',
-  crashReload: '重新加载此页',
-  crashHome: '回到仪表板',
+  chunkGone: '后台的一部分没能下载下来。这个标签页比博客旧。',
+  chunkReload: '重新加载此页',
 } satisfies AdminStrings
 
 export default zh

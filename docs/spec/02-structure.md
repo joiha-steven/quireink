@@ -36,7 +36,10 @@ src/
     schema-analytics.sql
     migrations.sql      one file per database (+ migrations-analytics.sql), not a directory
   import/               WordPress WXR parsing, for the admin's import page; ghost.ts and archive.ts joined it later (noted 2026-09-10)
-  admin/                the React SPA, ported from the frozen src/components/admin
+  admin/                the admin's BROWSER half: island/ (one entry per screen) and the editor.
+                        It was the React SPA ported from src/components/admin until ADR 0054;
+                        the markup moved to src/web/admin/ and src/admin-shared/ holds what
+                        both sides read
   assets/
     js/                 core, post, login, book-mode, comment-thread, sw, and since ADR 0043 reader-pen (scripts/build-assets.ts)
     static/             fonts and icons
@@ -105,9 +108,10 @@ needed:
 `/sitemap.xml`, `/robots.txt`, `/llms.txt`, `/manifest.webmanifest`, `/og`, `/uploads/*`,
 `/.well-known/*`, `/api/md/:slug`. Server-rendered HTML built as strings, not JSX.
 
-**Admin (`src/admin`):** one route, `/admin/*`, serving the embedded SPA shell. Routing
-inside it stays client-side. 13 pages, unchanged. (15 files in `src/admin/pages/` by
-2026-09-10: the assistant, ADR 0040, and the notebook editor, ADR 0044, came later.)
+**Admin (`src/web/admin` drawing, `src/admin` wiring):** every address is a page the server
+draws, and the browser gets one island per screen — ADR 0054, which replaced 0006. It was one
+route serving an embedded SPA shell with client-side routing and 13 pages; there is no shell, no
+router and no bundle now, and `src/admin` holds only what runs in the browser.
 
 **API:** the existing routes, same paths, same shapes, registered in `src/web/` beside
 the views rather than in a directory of their own. Split into two router groups:

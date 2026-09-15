@@ -17,6 +17,12 @@
 // that only one of the two could win.
 import { NARROW, RAIL_KEYS, RAIL_WIDTH } from '@/admin-shared/rail'
 import type { NavOrder } from '@/types'
+import { wireToast } from './lib/overlay-toast'
+import { wireConfirm } from './lib/overlay-confirm'
+import { wireShortcutSheet } from './lib/overlay-keys'
+import { wirePalette } from './lib/overlay-palette'
+import { wireWhatsNew } from './lib/overlay-news'
+import { isChunkGone, sayChunkGone } from './lib/chunk-gone'
 
 /**
  * What the server told the rail, in one tag.
@@ -33,6 +39,19 @@ export type RailWords = {
   navArrange: string; navArrangeDone: string; navArrangeReset: string; navArrangeFailed: string
   navMoveUp: string; navMoveDown: string
   navShowLogo: string; navShowSearch: string
+  /**
+   * What to say when a file this tab asks for is not on the server any more, and the way out.
+   *
+   * Chunk names carry a content hash, so an update DELETES the file an already-open tab is
+   * about to ask for. Every screen is a navigation now and therefore always fetches markup
+   * naming the current build — the two things below are what is left, because they are
+   * fetched on demand from a page that was already open.
+   */
+  chunkGone: string; chunkReload: string
+  /** The overlays' own, which ride with the rail because they belong to every page. */
+  close: string
+  cacheClearedPalette: string; saveFailed: string; paletteBackupDone: string
+  kindPage: string; scopePosts: string
 }
 
 export type RailData = {
@@ -218,7 +237,7 @@ function wireTheme(): void {
   paint()
 }
 
-/** A message in the admin's own toast. An EVENT, so this file need not know React exists. */
+/** A message in the admin's own toast. An EVENT, so the rail need not import the overlay. */
 const say = (message: string, kind: 'success' | 'error' = 'success'): void => {
   window.dispatchEvent(new CustomEvent('quire:toast', { detail: { message, kind } }))
 }
@@ -247,10 +266,11 @@ function wireActions(words: RailWords): void {
       location.href = '/'
     })
   }
-  // The palette is still React's, and it already opened on a window event before this file
-  // existed (`CommandPalette.tsx` › PALETTE_EVENT) — so this is not a bridge, it is the door
-  // that was always there. The name is written out rather than imported: importing it would
-  // pull the palette, and everything it imports, into an island that has to be small.
+  // The palette is server-drawn and wired by `lib/overlay-palette.ts` since step 6, and it
+  // still opens on the window event it opened on while it was React — so this is not a bridge,
+  // it is the door that was always there. The name is written out rather than imported:
+  // importing it would pull the palette, and everything it imports, into an island that has to
+  // stay small enough to load on every page.
   for (const b of document.querySelectorAll('[data-nav-search]')) {
     b.addEventListener('click', () => { closeDrawer(); window.dispatchEvent(new Event('quireink:palette')) })
   }
@@ -282,8 +302,17 @@ function wireArrange(data: RailData): void {
   for (const b of document.querySelectorAll('[data-nav-arrange="off"]')) {
     b.addEventListener('click', async () => {
       for (const m of document.querySelectorAll<HTMLElement>('[data-rail-menu]')) m.hidden = true
-      const { enterArrangeMode } = await import('./rail-arrange')
-      enterArrangeMode(data, publishWidth)
+      try {
+        const { enterArrangeMode } = await import('./rail-arrange')
+        enterArrangeMode(data, publishWidth)
+      } catch (error) {
+        // ⚠️ THE MENU IS ALREADY SHUT BY THE TIME THIS RUNS. Without the catch, a tab older
+        // than the server answered this press by closing the menu and doing nothing at all —
+        // twice, three times, however often it was pressed — and left an unhandled rejection
+        // where nobody was looking. Anything that is not the missing file is rethrown.
+        sayChunkGone(data.words, error)
+        if (!isChunkGone(error)) throw error
+      }
     })
   }
 }
@@ -306,7 +335,7 @@ function read(): RailData | null {
  * The listener is registered whether or not the picker has been loaded, so the first ask is not
  * the one that gets lost.
  */
-function wirePicker(): void {
+function wirePicker(words: RailWords | undefined): void {
   window.addEventListener('quire:pick-media', (e) => {
     const detail = (e as CustomEvent).detail as { respond?: (answer: unknown) => void } | undefined
     if (typeof detail?.respond !== 'function') return
@@ -315,17 +344,37 @@ function wirePicker(): void {
     e.preventDefault()
     void import('./lib/media-picker')
       .then((mod) => mod.openPicker(detail as never))
-      // A chunk that will not load must not leave the screen waiting on a callback that never
-      // comes: answering `null` is the same thing as the owner closing it.
-      .catch(() => detail.respond?.(null))
+      .catch((error: unknown) => {
+        // A chunk that will not load must not leave the screen waiting on a callback that never
+        // comes: answering `null` is the same thing as the owner closing it. It must also not
+        // do that SILENTLY — a picker that opens on every other press and not this one reads as
+        // a broken button, so the same sentence the arrange key says is said here.
+        detail.respond?.(null)
+        if (words) sayChunkGone(words, error)
+      })
   })
 }
 
 export function startRail(): void {
-  // Before the early return: the picker is asked for by screens that have nothing to do with
-  // the rail, and a page without rail data still has editors on it.
-  wirePicker()
+  // ⚠️ ALL THREE BEFORE THE EARLY RETURN, and for one reason each. The picker is asked for by
+  // screens that have nothing to do with the rail. The toast and the confirm dialog answer
+  // events from anywhere in the admin — including the sign-in shell, which draws no rail — and
+  // a question nobody hears is a delete that happens in silence.
   const data = read()
+  wirePicker(data?.words)
+  wireToast(data?.words.close ?? '')
+  wireConfirm()
+  wireShortcutSheet()
+  wireWhatsNew()
+  if (data) {
+    wirePalette({
+      cacheCleared: data.words.cacheClearedPalette,
+      saveFailed: data.words.saveFailed,
+      paletteBackupDone: data.words.paletteBackupDone,
+      kindPage: data.words.kindPage,
+      scopePosts: data.words.scopePosts,
+    })
+  }
   if (!data || !document.getElementById('admin-rail')) return
   attr('icons', flag(RAIL_KEYS.icons, true))
   attr('more', flag(RAIL_KEYS.more, false))

@@ -11,7 +11,8 @@ import { registerTrashFromEditorFlows } from './tour-flows-bin'
 import { registerDrawerFlows } from './tour-flows-terms'
 import { registerSettingsFlows } from './tour-flows-settings'
 import { registerHomeFlows } from './tour-flows-home'
-import { registerAutosaveFlows, registerKeyFlows, registerPaletteFlows, registerPaneFlows } from './tour-flows-pane'
+import { registerAutosaveFlows, registerKeyFlows, registerPaneFlows } from './tour-flows-pane'
+import { registerPaletteFlows } from './tour-flows-palette'
 import { registerFocusFlows, registerWriteLayoutFlows } from './tour-flows-layout'
 
 export function registerAdminFlows({ flow, expect, atWidth }: Tour): void {

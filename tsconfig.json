@@ -68,7 +68,7 @@
   // here is what stops a server module reaching for `document`: the root project has no
   // DOM lib, so such a reference fails to compile instead of failing on a request.
   // `src/assets/dist` is the bundler's output, imported as text, never type-checked.
-  // `src/admin` is the React SPA and has its own config for the same reason: DOM types,
-  // and a different JSX runtime (React, not hono/jsx). `src/admin/dist` is bundler output.
+  // `src/admin` is the admin's browser half — the islands and the editor — and has its own
+  // config for the same reason: DOM types. `src/admin/dist` is bundler output.
   "exclude": ["src/assets/js", "src/assets/dist", "src/admin", "src/admin/dist"]
 }

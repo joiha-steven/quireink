@@ -37,8 +37,6 @@ const ALLOWED: Record<string, string> = {
 
   // ---- C: going, and the order is the owner's --------------------------------------------
   hono: 'C. A thin HTTP router, but 50 call sites. Last, and only when the rest is done',
-  react: 'C. Admin only. Goes with the Tiptap work; needs an ADR to replace 0006 first',
-  'react-dom': 'C. With react',
   '@tiptap/starter-kit': 'C. The editor. ADR 0006 has to be replaced before this moves',
   '@tiptap/core':
     'C. With the editor. Named on 2026-09-15 rather than added: it arrived under `@tiptap/react` and the two files that used the adapter now build the instance themselves',
@@ -54,8 +52,6 @@ const ALLOWED: Record<string, string> = {
   // ---- T: tools, which never reach a reader ---------------------------------------------
   typescript: 'T. The compiler',
   '@types/bun': 'T. Types for the runtime',
-  '@types/react': 'T. Types, with react',
-  '@types/react-dom': 'T. Types, with react-dom',
   '@happy-dom/global-registrator': 'T. A DOM for the editor suites, registered per test file',
 }
 

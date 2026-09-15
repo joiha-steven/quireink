@@ -5,6 +5,7 @@
 // same one the editor, home, pane and newsletter flows use.
 
 import type { Tour } from './tour'
+import { OPEN_DIALOG } from './tour-ask'
 
 export function registerSettingsFlows({ flow, expect }: Tour): void {
   flow('admin: every settings label is reachable from the search', () => expect('/admin/settings', `
@@ -85,7 +86,8 @@ export function registerSettingsFlows({ flow, expect }: Tour): void {
       if (!del) return 'no delete control on a comment'
       del.click()
       await sleep(600)
-      if (document.querySelector('[role=dialog]')) return 'trashing a comment put a dialog in the way'
+      ${OPEN_DIALOG}
+      if (openDialog()) return 'trashing a comment put a dialog in the way'
       const undo = [...document.querySelectorAll('.admin-toast button')]
         .find((b) => b.textContent.trim().length > 0)
       if (!undo) return 'the comment went with no way back offered'
@@ -273,12 +275,13 @@ export function registerSettingsFlows({ flow, expect }: Tour): void {
       if (!empty) return 'no Empty trash control'
       empty.click()
       await sleep(500)
-      const dialog = document.querySelector('[role=dialog]')
+      ${OPEN_DIALOG}
+      const dialog = openDialog()
       if (!dialog) return 'emptying the trash asked nothing'
       if (!/[a-z]/i.test(dialog.textContent)) return 'the dialog carried no words'
       document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
       await sleep(400)
-      if (document.querySelector('[role=dialog]')) return 'Esc did not close the dialog'
+      if (openDialog()) return 'Esc did not close the dialog'
       const counts = await (await fetch('/api/admin/view/trash')).json()
       const still = (counts?.data?.posts ?? []).length + (counts?.data?.media ?? []).length
       return still > 0 ? 'ok (asked, backed out, trash intact)' : 'backing out emptied it anyway'

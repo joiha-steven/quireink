@@ -35,14 +35,18 @@ the whole admin rendered as a blank page on every screen. Two names — one for 
 the candidates — cannot collide. The rail's `data-rail-collapsed` is safe only because nothing
 inside it wears that attribute.
 
-⚠️ **A CONVERTED SCREEN'S LINKS ARE REAL NAVIGATIONS**, and there is no fixing that while the
-conversion is half done. `router.tsx` declines any `quire:navigate` FROM a server-drawn page,
-because React renders no route on one and so has nothing to swap; widening the rail island's
-bridge to every `/admin` anchor was tried on 2026-09-14 and reverted as a no-op. Two
-consequences: a click costs a page load rather than 4ms until the last screen converts, and
-leaving a dirty form now raises the BROWSER's generic warning rather than the product's
-three-way question. The second is `useNavigationGuard` working as written — both halves exist
-precisely because a real navigation can only ever get the generic one.
+⚠️ **EVERY LINK IN THIS ADMIN IS A REAL NAVIGATION**, and that is the arrangement rather than a
+stage in reaching it. There was a `quire:navigate` bridge while the conversion was half done, so
+that a converted screen could hand a click back to React's router; it declined any navigation FROM
+a server-drawn page — React renders no route on one and so has nothing to swap — and it left with
+the router on the date its own comment set for it.
+
+The consequence that outlives it: **leaving a dirty form raises the BROWSER's generic warning, not
+the product's three-way question.** A page load can only ever get the generic one, so the
+three-way question is asked where the click can still be caught — the settings screen intercepts
+its own in-page links ([`island/lib/settings-save.ts`](../src/admin/island/lib/settings-save.ts))
+and offers Save-and-go, Leave, Stay; `beforeunload` is the floor under everything it cannot see,
+which is a typed address, a closed tab or a reload.
 
 4. ⚠️ **A CSS RULE THAT COUNTS POSITION COUNTS HIDDEN NODES TOO.** `:last-child`,
    `:first-child` and `:nth-child` are structural: they see the document, not the screen. The

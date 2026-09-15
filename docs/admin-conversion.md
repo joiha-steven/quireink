@@ -272,3 +272,77 @@ delete is soft and asks nothing, and the whole argument for asking nothing is th
 in the toast — then the piece is gone, the editor has to leave, and the toast goes with the
 page. `island/lib/say-across.ts` carries the sentence and the undo's INGREDIENTS across the
 load, read once on the other side.
+
+### Step 6: React leaves, and four overlays come with it
+
+The last of it. `react`, `react-dom` and their two type packages are out of `package.json`, `jsx`
+is out of `src/admin/tsconfig.json`, the React `Bun.build` block is out of `scripts/build-admin.ts`
+and four lines are out of `scripts/checks/deps.ts`. **45 files went**, and the admin stopped being
+two kinds of program.
+
+**What was left to convert was not a screen.** Step 5 ended with the React tree routing ONE page —
+the dead end — and holding four things that belong to no screen at all: the command palette, the
+shortcut sheet, the confirm dialog and the toast. They are [`web/admin/overlays.ts`](../src/web/admin/overlays.ts)
+now, drawn by the server on every admin page, wired by five files under
+[`island/lib/`](../src/admin/island/lib/) that the rail imports before its own early return —
+because the picker, the toast and the confirm dialog are asked for by screens that have nothing to
+do with the rail, including the sign-in shell, which draws no rail at all. **A question nobody
+hears is a delete that happens in silence.**
+
+⚠️ **AND THE NUMBER THE WHOLE ADR WAS FOR.** What the browser must have before the first frame, on
+every admin page:
+
+| | old (React) | new |
+|---|---|---|
+| before the first frame | 297 KB | **22 KB** |
+
+There is no admin bundle any more. Every island is an entry of its own and a screen links the one
+it needs; `check:bundle` measures the RAIL entry, because that is the one every page loads.
+
+**The palette ships its hundred-odd rows as markup.** It is the clearest case of this ADR's second
+decision: the rows are a fixed list the server already holds — `settings-index.ts` plus the
+screens, the actions and the writing — so drawing them is the server's job and the island's job is
+to hide the ones that do not match. It carries **both search lanes** (`data-pal-lower` and
+`data-pal-fold`), which is `src/accent.ts`'s rule and not a fold of both sides: an unaccented query
+finds every accent and an accented one finds only itself, because five Vietnamese words live inside
+one folded spelling.
+
+⚠️ **TEN TOUR FLOWS WENT RED FOR ONE REASON, AND AN ELEVENTH WENT WORSE THAN RED.** React mounted
+an overlay the moment something opened it, so `document.querySelector('[role=dialog]')` could only
+ever find the one that was open. Four are drawn and hidden on every page now, so that same line
+finds the FIRST in the document — the confirm box — whatever is on screen. Three flows counted a
+`<form>` that is the confirm dialog's own typed-name box; the picker flows opened the picker and
+then measured the confirm box; the palette flows typed into its hidden input and found no rows.
+
+The eleventh is the one worth writing down. **"Staying keeps an unsaved settings change" kept
+passing while reaching into the hidden confirm box**, because clicking a hidden button does
+nothing, and the page it therefore failed to leave is the page the flow wanted to still be on. A
+guard that passes by not working is worth less than one that is red.
+
+[`scripts/tour-ask.ts`](../scripts/tour-ask.ts) holds the answer once — `openDialog()` filters on
+`checkVisibility()`, because only the confirm box carries `hidden` itself and the other three are
+hidden by the scrim around them, and `offsetParent` is null for all four either way. `screenForms`
+names the confirm dialog's form as the one exception, with its reason, rather than scoping the
+check to `main`: a form arriving anywhere else must still turn the flow red.
+
+**What the React deletion left behind, found by asking which files the island entries can still
+reach.** Five modules nobody imported: the fetch layer every React page read its props through,
+two re-export shims kept so call sites that no longer exist would not have to change their import,
+and the browser's dictionary loader — 45 lines plus a green test, for a job the server does inside
+the HTML now. Also 39 lines of CSS for a progress bar nothing draws any more, and **six of the
+seven `crash*` strings in eleven languages**: they described a React error boundary, and a page
+whose island fails to wire leaves its markup standing rather than going blank.
+
+⚠️ **ONE THING THE ERROR BOUNDARY DID IS STILL NEEDED, and it had gone with it.** Chunk names carry
+a content hash, so an update deletes the file an already-open tab is about to ask for. A navigation
+always fetches markup naming the current build, so thirteen of the fourteen cases cannot happen any
+more — but two things are still fetched on demand from a page that is already open, arrange mode
+and the media picker, and one of them had no catch at all: a tab older than the server answered the
+press by closing the menu and doing nothing, however often it was pressed, and left an unhandled
+rejection where nobody was looking. Both say so now, in one sentence with a reload beside it, and
+**neither reloads by itself** — the rail is on every admin page including the editor, and a reload
+started there would be a reload of somebody's half-written post, begun because they pressed
+"Arrange the menu". Details in [`admin-navigation.md`](./admin-navigation.md).
+
+**What is left of React in this repo is nothing.** What is left of the wrapper around ProseMirror
+is step 7.

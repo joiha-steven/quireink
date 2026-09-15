@@ -70,8 +70,10 @@ character and none of its typographic rules **except one**, below.
   down. Grey shading in 1–2px, never a gradient; what is neither pressable nor on stays flat.
   THE CLICK: travel and the carved shadow land instantly (`active:duration-0`), only the
   release is sprung — easing both ways feels like a screen. Reduced motion keeps the shadow,
-  drops the travel. Homes: `ui/Button`, `ui/Switch`, `ui/Tick`, `CONTROL_CHROME`, the
-  segmented item in `tabs.tsx`; screens inherit and add nothing. The toast is now ONE neutral
+  drops the travel. Homes: `buttonClass`, `TICK_BOX` and `CONTROL_CHROME` in
+  [`admin-shared/kit.ts`](../src/admin-shared/kit.ts), `switchControl` in
+  [`web/admin/fields.ts`](../src/web/admin/fields.ts), and the segmented item in
+  [`admin-shared/tabs.ts`](../src/admin-shared/tabs.ts); screens inherit and add nothing. The toast is now ONE neutral
   sheet with a pilot lamp in the version dot's hues — green good, amber needs you — plus the
   glyph, so colour never carries the message alone. The newsletter send button is a TWO-STAGE
   LATCH in the same amber: the first press arms it and prints the recipient count the send
@@ -87,7 +89,7 @@ character and none of its typographic rules **except one**, below.
   square one.
   **Under 16px the hierarchy does not apply**, and that is a judgement rather than an
   oversight: 6px on a 16px checkbox is a 38% corner, which reads as a blob. Checkboxes and
-  the small state dots keep 4px, and `ui/Switch.tsx` says so where somebody would otherwise
+  the small state dots keep 4px, and `switchControl` says so where somebody would otherwise
   "fix" it.
 - **TWO INKS NOW, since 2026-08-29** — and the rule below is kept because its argument
   is still the test, not because the count is still one. The wordmark took three colours
@@ -139,9 +141,11 @@ character and none of its typographic rules **except one**, below.
   backwards until 2026-09-01: the sheet `neutral-200/80`, the card `neutral-100`, and a box
   inside the card `neutral-200` at the card's own 8px radius, so the innermost frame shouted
   loudest and drew a corner inside an identical corner. The three ranks are **card**
-  (`SettingsCard`: a hairline box, its name on a ruled header row at 16px/600), **group**
-  (`SettingsGroup`: one rule and a 12px `UTIL` eyebrow, no box — a box inside a card is the
-  arrangement above, one level further in) and **list** (`PANEL_LIST`: the card's full width,
+  (`panelCard` in [`web/admin/fields.ts`](../src/web/admin/fields.ts): a hairline box, its name
+  on a ruled header row at 16px/600), **group** (`group` in the same file: one rule and a 12px
+  `UTIL` eyebrow, no box — a box inside a card is the arrangement above, one level further in)
+  and **list** (`PANEL_LIST` in
+  [`web/admin/fields-box.ts`](../src/web/admin/fields-box.ts): the card's full width,
   `-mx-4` against the body's `p-4`, the rows keeping their padding so their labels land on the
   card's own left edge, and a rule BETWEEN them and nowhere else).
   **A rank is set by type, never by decoration.** Until 2026-09-07 a settings card wore a 17px
@@ -252,7 +256,7 @@ Its four rules and the traps under each one moved to [`docs/admin-one-dom.md`](.
 Adopted 2026-08-18 from the admin-pages mock, which replaced a page-by-page fix session:
 mock every page first, then work through them, and stop the pages coming out at different
 widths. Four laws, held by the
-primitives in `components/sheet.tsx` (`SHEET`, `SheetTop`, `NumBand`, `SHEET_FOOT`,
+primitives in `admin-shared/kit.ts` (`SHEET`, `SHEET_TOP`, `SHEET_FOOT`,
 `SHEET_TOOL`) and `.paper-cols` in `admin.css`:
 
 1. **Every page is ONE full-width sheet at ONE width, as long as what is on it** — the

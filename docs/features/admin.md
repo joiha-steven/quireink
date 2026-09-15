@@ -9,7 +9,7 @@
   items leave the site, lists, search, sitemap/feed/llms and the libraries at once.
 - **The way IN is the editor's Attributes panel** (`screens/sheet-frame.ts` draws it,
   `island/lib/sheet-errands.ts` acts on it), beside History and View post, and only for a piece
-  that has been saved. It went missing between 2026-08-17 and 2026-08-30: the old content table's `RowActions` carried the trash icon and the
+  that has been saved. It went missing between 2026-08-17 and 2026-08-30: the old content table's row actions carried the trash icon and the
   `DELETE /api/{posts,pages}/:slug` behind it, and neither was rebuilt when the Write screen
   became two panes (`b4459b4`). For thirteen days and four releases the admin could reach
   `/admin/trash` and had no way to put anything in it — reported from outside as issue #60.
@@ -24,14 +24,14 @@
   restore never collides.
 - **Purge-in-use guard:** a media `purge`/`empty` first checks `usedMediaKeys()` (posts + pages +
   revisions + settings); if any target image is still referenced it returns `in_use:<n>` (409) and
-  `TrashView` re-asks with a stronger confirm, retrying with `force:true`. Stops a purge silently
+  the island re-asks with a stronger confirm, retrying with `force:true`. Stops a purge silently
   breaking a live page.
 - Per kind the lib exports `restoreX`, `purgeX` (hard delete: row + revisions/blobs),
-  `getTrashedX`, `emptyXTrash`. The Trash page server-loads all four lists; `TrashView` (4 tabs)
-  acts via **`POST /api/trash`** `{ kind, action: restore|purge|empty, ids? }` (owner-gated) then
-  `router.refresh()`. **Nothing auto-purges** — permanent removal is manual (per-item or Empty
-  trash). Restore and purge are writes like any other, so each clears the whole page cache
-  (Invariant 1); there is no per-surface invalidation to get wrong.
+  `getTrashedX`, `emptyXTrash`. `screens/trash.ts` draws all four lists (4 tabs) and `island/trash.ts` acts via
+  **`POST /api/trash`** `{ kind, action: restore|purge|empty, ids? }` (owner-gated) then reloads — which is why the
+  kind is in the address as `?tab=media`: a kind held only in the page put the owner back on Posts after emptying
+  the picture trash. **Nothing auto-purges** — removal is manual. Restore and purge are writes like any other, so
+  each clears the whole page cache (Invariant 1); there is no per-surface invalidation to get wrong.
 - Adding a mutating trash action → log it (activity actions `*.restore` / `*.purge` /
   `trash.empty`) and keep the i18n keys in sync.
 
@@ -39,7 +39,7 @@
 
 - The in-admin manual. **Body copy is ENGLISH by design** (it mirrors the repo docs, which are
   canonical); only the nav label + page title come from `adminT`. It is a lazily loaded route in
-  the admin SPA like any other, so a reader of the public site never fetches it.
+  the admin's own bundle like any other, so a reader of the public site never fetches it.
 - Shape: a numbered **first-five-minutes** path (the order a new blog is actually set up in, each
   step a link), a **jump index** of chips, the reference **sections**, then two lookup **tables**.
   The index is kept in the same order the sections render, so a chip's position predicts where it
@@ -51,19 +51,18 @@
   callouts, footnotes, embeds) and **Troubleshooting** (symptom → fix, e.g. the 465-vs-587 TLS pair
   that produces an opaque OpenSSL "wrong version number", and Cloudflare caching HTML so a reader
   cannot refresh a stale page away).
-- Split across three files purely to stay under the 400-line cap: `HelpGuide` (shell),
-  `HelpSections` (reference cards), `HelpTables` (the two lookups), sharing `help-kit.tsx`.
-- **Adding a feature? Add it here too** — the page is the only place a non-technical owner learns
-  the feature exists.
+- `screens/help.ts` draws it, `admin-shared/help.ts` holds the content. The first screen registered with
+  `island: null`: the only interactive thing on it is an index of `#` links.
+- **Adding a feature? Add it here too** — the page is the only place a non-technical owner learns it exists.
 
-## Admin UI kit — `src/admin/components/kit.tsx`
+## Admin UI kit — `src/admin-shared/kit.ts` and `src/web/admin/kit.ts`
 
 - ONE source of truth for shared admin chrome so no page hand-rolls its own (radius /
   padding / shadow / header size used to drift): `Card` (canonical `CARD` surface, plus a
   `panel` mode for a card living INSIDE a sheet), `PageHeader`, `Tabs` (`lg` underline +
   `sm` segments, with a `dense` modifier), `StatCard`, `EmptyState`, and table tokens
   (`TableFrame` / `THEAD` / `TROW`). The one-sheet page itself lives in
-  `components/sheet.tsx` — `SHEET`, `SheetTop`, `NumBand`, `SHEET_FOOT`, `SHEET_TOOL` —
+  `admin-shared/kit.ts` — `SHEET`, `SHEET_TOP`, `SHEET_FOOT`, `SHEET_TOOL` —
   with `.paper-cols` (two newspaper columns) in `admin.css`; see "One sheet per page" in
   `docs/admin-design.md`. Admin is monochrome plus the product's own PEN BOX, and each ink
   keeps the meaning it has on paper: highlighter marks where you are (the rail's current row,
@@ -94,7 +93,7 @@
   write pane — one stream of posts and pages, most recently touched first — beside an
   empty sheet inviting the next piece. Opening a row swaps the sheet for that piece's
   editor; the pane rides along on both editor pages from 1640px up (measured, `screens/content-pane.ts`).
-- `WritePane` renders; `useWritingItems` owns the stream: title+terms filtering, the
+- `screens/content-pane.ts` draws it, `island/content.ts` owns the stream: title+terms filtering, the
   debounced body search (`/api/admin/search`, hits and passage marked with the pen, accents
   folded one way only — typed WITH them they are meant, `src/accent.ts`), and two filters
   that STACK — a kind row (All · Posts · Pages · Notes, words on a hairline, the pane's own
@@ -129,25 +128,25 @@
 - **Error log (same table):** `errorHandler()` in `src/web/api.ts` — the one handler every route
   falls through to — calls `logActivityError("METHOD /path", message)`, recording an
   `error`-action entry (gated by the same toggle). So unexpected server failures show up in the
-  log, rendered as the inverted (ink-on-ink) chip in `ActivityLog.tsx` — the admin is
+  log, rendered as the inverted (ink-on-ink) chip by `screens/log.ts` — the admin is
   monochrome, so "error" is the one chip printed in reverse. Only genuine errors land here
   (validation 400s use `fail()`).
-- **Overview (`Overview.tsx`, data from `src/web/admin/views-home.ts`):** the admin home, in the
+- **Overview (`screens/dashboard.ts`, data from `src/web/admin/views-home.ts`):** the admin home, in the
   owner's question order ([ADR 0024](../decisions/0024-the-admin-is-rebuilt-around-writing.md) step 6,
   [admin-design.md](../admin-design.md)). A header with a **New post** action, a first-run checklist
   that takes itself off once done, the **Traffic** strip full width (30-day views, visitors, dwell,
-  read-through, sparkline), then **Pick up where you left off** (`PickUpBand.tsx`: the four newest
-  unfinished posts and pages, each opening the editor), then a 2×2 of `DashboardWidgets.tsx`: **Needs
-  attention** (published posts with no excerpt or no share image, each row a filter into the write
-  pane), **Most viewed**, **Sources** and **Recent activity** (gated by `features.activityLog`). The
-  five counts (Posts / Pages / Comments / Images / Storage) come LAST as a `StatBand`, then the system line.
+  read-through, sparkline), then **Pick up where you left off** (`recentPieces` in `screens/recent-pieces.ts`: the
+  four newest unfinished pieces, each opening the editor), then a 2×2 from `screens/dashboard-cards.ts`: **Needs
+  attention** (published posts with no excerpt or no share image, each row a filter into the write pane), **Most
+  viewed**, **Sources** and **Recent activity** (gated by `features.activityLog`). The five counts (Posts / Pages /
+  Comments / Images / Storage) come LAST as a `statBand` (`web/admin/kit-figures.ts`), then the system line.
 - **The editorial redesign** removed the old home-page duplicate cards (SEO health, traffic sources,
   quick-actions row, taxonomy breakdown, and the rich system panel) — that data lives on its own pages
   now; only the compact footer remains. See `docs/admin-design.md`.
 - **Analytics:** Admin → Analytics (24h/7d/30d/1y). The **overview** shows five headline metrics — views, visitors (with
   **period-over-period trend** + a **new-vs-returning** split), **avg time on page** (dwell), avg
   read depth, and **one page only** (the share of readers who never opened a second page) — a **dual-series time chart** (views
-  + visitors, an SVG in `analytics-kit.tsx`; the year range buckets by month, 24h by hour), a **top
+  + visitors, an SVG in `screens/analytics-kit.ts`; the year range buckets by month, 24h by hour), a **top
   pages** table (each row links to its drill-down), **sources** (traffic **channels**
   Direct/Search/Social/Referral + top external referrers), **audience** (countries + **device /
   browser / OS**), and the **read-depth distribution**. Referrers/countries/channels/facets count
@@ -326,7 +325,7 @@ are a scroll container behaving as one.
   refuses to shrink below its content's intrinsic minimum, so the Layout tab pushed the page
   160px sideways at 344px and took the fixed Save bar off the edge with it. One declaration,
   every tab at exactly 0.
-- **The rail waits for `lg` (1024), not `md` (768)** — see `AdminSidebar.tsx` for the numbers.
+- **The rail waits for `lg` (1024), not `md` (768)** — [admin-navigation.md](../admin-navigation.md) has the measurement.
   It cost 208px of a 768px screen, which made unfolding a phone a step backwards: a Z Fold
   open and upright gave a form all 673px, and the same device turned to landscape gave it 633.
 - **A table in the writing sheet scrolls on its own wrapper**, not by panning the whole sheet:
@@ -337,7 +336,7 @@ are a scroll container behaving as one.
   chooser (`border px-3 py-2`) instead of using the kit's segmented track; they now use it,
   which is also three fewer copies of a control the kit already owns.
 
-## Settings (Admin → settings) — `SettingsView.tsx`
+## Settings (Admin → settings) — `screens/settings-shell.ts`
 
 - **ONE form, SEVEN tabs grouped by the owner's question** (`blog | home | post | appearance |
   people | server | account`; tab state not persisted, but `?tab=` deep-links, and the eight
@@ -365,7 +364,7 @@ are a scroll container behaving as one.
   toolbar + live preview). `{year}`/`{title}` tokens expand at render. The public layout renders it
   in `<footer class="site-footer">`; default keeps the "© {year} {title} · powered by Quire Ink" line.
 - Controlled field groups (no own state/save), per tab, each composed by its own
-  `Settings<Tab>Tab.tsx`: **Blog** `SiteFields` + `BrandFields` + `AuthorFields` + the canonical
+  `screens/settings-<tab>.ts`: **Blog** `SiteFields` + `BrandFields` + `AuthorFields` + the canonical
   address; **Home & menu** `LayoutMenuFields` + `FrontFields` + `FooterField` + the thumbnail
   half of `PostImageFields` + the listing switches; **Posts** the reading switches +
   `PostHeadFields` / `PostBodyFields` / `PostEndFields` / `PostReachFields` + the hero half of
@@ -395,6 +394,7 @@ are a scroll container behaving as one.
   longer emitted. Disabled palettes stay fully editable — visibility ≠ customization. Sanitizer
   (`sanitizeEnabledPalettes`): known ids only, preset order, default forced in; a missing field
   (legacy settings) = all on. Pinned by `settings-sanitize.test.ts`.
-- Tabs lay cards out on `GRID` in `SettingsView.tsx` (`grid items-start gap-5 xl:grid-cols-2`: explicit columns, NOT CSS `columns`).
-- **Save calls `router.refresh()`** so the admin shell + public header reflect the change
-  immediately.
+- Tabs lay cards out on `GRID` in `screens/settings-shell.ts` (`grid items-start gap-5 xl:grid-cols-2`: explicit columns, NOT CSS `columns`).
+- **Save prints a receipt, and nothing is re-rendered** (`island/lib/settings-save.ts`) — `PUT /api/settings`, then
+  "Saved at 14:02" beside a Save key back to disabled. The admin chrome and the public header pick the change up on
+  the next page the server draws.

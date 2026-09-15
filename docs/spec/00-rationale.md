@@ -79,8 +79,10 @@ documents: append, never renumber.**
    silently stops working takes AI publishing down with no error anywhere.
 5. **Google login is removed.** Replaced by self-hosted password + TOTP
    ([06-auth.md](06-auth.md), [ADR 0007](../decisions/0007-self-hosted-password-totp-auth.md)).
-6. **Tailwind is removed from the public site.** Retained for the admin SPA, where its
-   churn is contained and its payload does not matter.
+6. **Tailwind is removed from the public site.** Retained for the admin, where its
+   churn is contained and its payload does not matter — and removed from there too by
+   [ADR 0053](../decisions/0053-a-dependency-is-a-decision.md), which replaced it with a
+   hand-written sheet and a guard that fails the build for a class with no rule behind it.
 
 ## Risks that were accepted, and how they landed
 

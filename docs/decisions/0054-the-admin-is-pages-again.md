@@ -280,6 +280,21 @@ change and none of them could honestly be shipped drawn. Everything AROUND the w
 as HTML. The line between the two turned out to be easy to state and worth stating: markup is
 what a state can be drawn in, and an application is what has to be computed to exist.
 
+### Step 6: the last of React, and the four things that belong to no screen
+
+The fourteen screens converted one at a time and left React routing ONE page — the dead end — and
+holding four things that are not screens at all: the command palette, the shortcut sheet, the
+confirm dialog and the toast. Those are markup the server draws on every admin page now
+([`src/web/admin/overlays.ts`](../../src/web/admin/overlays.ts)), wired by five files the rail
+island imports before its own early return, because three of them are asked for by screens that
+have nothing to do with the rail — including the sign-in shell, which draws no rail at all.
+
+`react`, `react-dom` and their two type packages are out of `package.json`, `jsx` is out of the
+admin's tsconfig, and **what the browser must have before the first frame went from 297 KB to
+22 KB**. What each piece cost and what it found is in
+[`../admin-conversion.md`](../admin-conversion.md), including a guard that was passing by not
+working and a failure mode the deleted error boundary had been the only answer to.
+
 ### The fourth bridge: `quire:pick-media`
 
 The first one that answers back. The picker is an overlay island now
@@ -321,7 +336,15 @@ them to the same answer, through one serializer, for every state an exchange can
   not matter for speed on the owner's machine and was never the argument; it matters because it
   is 2 MB of somebody else's decisions.
 - **This is the largest single change since the port**, and it is the one with the most ways to
-  be quietly wrong. It is deliberately cut into five steps that each ship.
+  be quietly wrong. It is deliberately cut into steps that each ship — five screens-and-chrome
+  steps as written, then a sixth for the framework itself, which the ADR folded into the others
+  and which turned out to be its own piece of work: the four overlays belong to no screen, so
+  nothing converted them on the way past.
+- ⚠️ **A DRAWN-AND-HIDDEN OVERLAY ON EVERY PAGE CHANGES WHAT A TEST CAN SEE.** React mounted one
+  when something opened it, so `querySelector('[role=dialog]')` could only find the one that was
+  open; four ship on every page now. Ten flows went red for that one reason and an eleventh went
+  quietly green. It is trap 4 of [`../admin-one-dom.md`](../admin-one-dom.md) arriving on the
+  chrome rather than on a list, and it will arrive again on anything else that ships drawn.
 - **`@tiptap/*` leaves; `prosemirror-*` arrives.** The count of packages barely moves. The point
   is which layer this project depends on: the wrapper has a commercial tier and a company behind
   it, and the engine underneath is MIT, one author, and older than this product.

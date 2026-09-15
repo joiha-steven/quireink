@@ -75,7 +75,16 @@ export function writingSheet(frame: SheetFrame): string {
     + `<div data-find-slot class="sticky z-20"></div>`
     // At the very TOP of the sheet, the full width of it: on top, full-width, wrapping not
     // scrolling, grouped in the middle, and GONE in the Markdown view and in focus mode.
-    + `<div data-toolbar-slot></div>`
+    //
+    // ⚠️ `contents`, AND IT IS THE WHOLE OF WHETHER THE STRIP STAYS PUT. A sticky element
+    // travels inside its own CONTAINING BLOCK, and a wrapper that is exactly as tall as the
+    // strip gives it nowhere to travel — so it left with the first pixel of scroll and the
+    // formatting keys were gone for the rest of a long post. `display: contents` removes this
+    // box, which makes the sheet itself the containing block: the strip then sticks for the
+    // whole height of the paper, which is what a writer means by a toolbar. Measured at 1440
+    // on a 24-paragraph draft: scrolled 1,500px, the strip was at y=-1406 before and holds at
+    // its offset after.
+    + `<div data-toolbar-slot class="contents"></div>`
     // `pb-20` below `lg`: the action bar is FIXED to the bottom edge on a phone, so without room
     // under the paper the last line of a post sits behind Publish and cannot be scrolled clear.
     + `<div class="mx-auto w-full pb-20 lg:pb-0" style="max-width:${Number(contentWidth)}px">`

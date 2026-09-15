@@ -611,45 +611,6 @@ input[type='color']::-moz-color-swatch {
   border-radius: 0;
 }
 
-/* The top progress bar. Full width and pushed off to the left, then eased back toward the
-   edge it never reaches: nothing here knows how far along a fetch is, and a bar that
-   invents a percentage stalls at it. `data-done` is the finish, and it is a separate rule
-   rather than a longer animation so the bar snaps closed the instant the work does. */
-.quireink-progress-bar {
-  transform: translateX(-100%);
-  animation: quireink-progress-run 6s cubic-bezier(0.05, 0.8, 0.2, 1) forwards;
-}
-@keyframes quireink-progress-run {
-  to { transform: translateX(-12%); }
-}
-.quireink-progress-bar[data-done='true'] {
-  animation: none;
-  transform: translateX(0);
-  opacity: 0;
-  transition: transform var(--dur-fast) var(--ease-out), opacity var(--dur-base) var(--ease-out) var(--dur-fast);
-}
-/* HELD: more work arrived while the finished bar was fading. It stays full and fully
-   visible until that work ends, rather than being un-finished — which would replay the
-   keyframes from the left and draw the same click twice (TopProgress.tsx has the measure). */
-.quireink-progress-bar[data-done='true'][data-hold='true'] {
-  opacity: 1;
-  transition: opacity var(--dur-fast) var(--ease-out);
-}
-/* With motion off - the owner's switch OR the OS preference - the bar still SAYS something
-   is happening, it just says it without moving: a static two-thirds. Both gates, because
-   the foot of this file sets the animation to none for both, and a bar whose only transform
-   was in its keyframes sat at translateX(-100%), off screen, for anyone on reduced motion. */
-:root[data-motion='off'] .quireink-progress-bar {
-  animation: none;
-  transform: translateX(-35%);
-}
-@media (prefers-reduced-motion: reduce) {
-  .quireink-progress-bar {
-    animation: none;
-    transform: translateX(-35%);
-  }
-}
-
 /* iOS Safari zooms the whole page when a focused control is set below 16px, and every field
    in this admin is text-sm (14px): tapping any input on a phone shifted the layout sideways
    and left it there, once per field. A FLOOR on touch widths only, so the desktop keeps the
@@ -1351,3 +1312,41 @@ tr[data-piece][data-last] {
    Chrome shows nothing wrong, which is what makes it worth a warning rather than a note. */
 [data-write-pane][data-picking] [data-piece][data-picked] { background: #fff; }
 .dark [data-write-pane][data-picking] [data-piece][data-picked] { background: #171717; }
+
+/* THE FOUR DIALECTS on the what's-new panel, told apart by `aria-pressed` rather than by a
+   class the island swaps. The chosen one is the ink-on-paper pair the whole admin uses for a
+   latched control; the other three are outlined. One state, said once, in the attribute that
+   is already true. */
+.news-look {
+  border-color: rgb(212 212 212);
+  color: rgb(64 64 64);
+}
+.news-look:hover {
+  background: rgb(245 245 245);
+}
+.news-look[aria-pressed='true'] {
+  border-color: #171717;
+  background: #171717;
+  color: #fff;
+}
+.dark .news-look {
+  border-color: rgb(82 82 82);
+  color: rgb(212 212 212);
+}
+.dark .news-look:hover {
+  background: rgb(38 38 38);
+}
+.dark .news-look[aria-pressed='true'] {
+  border-color: #fff;
+  background: #fff;
+  color: #171717;
+}
+
+/* THE COMMAND PALETTE'S FIRST GROUP HEADING sits closer to the box than the gaps between
+   groups do — and WHICH heading that is depends on what the typing has left showing, not on
+   which one is first in the markup. `:first-child` would count the four hidden ones
+   (`docs/admin-one-dom.md`, trap 4), so the island marks it and this is the rule. */
+[data-pal-head][data-pal-first] {
+  padding-top: 0.375rem;
+}
+

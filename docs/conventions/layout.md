@@ -40,26 +40,28 @@ inside it. In book mode the same break becomes the asterism.
 
 - **Repeated chrome shares ONE class constant — never hand-roll per element.** Sibling controls
   import the same string so they can't drift. Admin nav is a **collapsible left sidebar**
-  (`AdminSidebar.tsx`): each item has an icon (`navIcons.tsx`) + label; a toggle collapses the rail
+  (drawn by [`web/admin/rail.ts`](../../src/web/admin/rail.ts) and wired by
+  [`admin/island/rail.ts`](../../src/admin/island/rail.ts)): each item has an icon + label; a toggle collapses the rail
   to icon-only (persisted in localStorage; it publishes its width as `--admin-nav-w` so the fixed
-  settings/editor save bars offset past it). Nav links use `headerActions.ts` `SIDEBAR_NAV` (active
+  settings/editor save bars offset past it). Nav links use `SIDEBAR_NAV` from
+  [`admin-shared/rail.ts`](../../src/admin-shared/rail.ts) (active
   links add `SIDEBAR_NAV_ACTIVE`); the footer holds the **light/dark toggle + Clear cache + Sign out**
   (palette selection moved to the public site); on mobile
-  it's a hamburger drawer (always icon+label). (`ADMIN_NAV`, the inline `h-9` box, is the base
-  `SIDEBAR_NAV` was derived from, and still what `CacheButton` wears by default.)
+  it's a hamburger drawer (always icon+label).
   By default it lists **four destinations** and puts the rest behind one "Everything else" button
   (the owner can reorder and hide rows: [admin-design.md](../admin-design.md))
   ([ADR 0024](../decisions/0024-the-admin-is-rebuilt-around-writing.md) step 6) — the group is
   indented by a RULE on its wrapper, never by padding on the rows, because those rows share the
   one class constant this bullet is about.
-  The public header's icon buttons are `.icon-btn` (`src/web/chrome.ts`); the admin's are `ICON_BTN`
-  (`ui/iconButton.ts`). Adding an item = reuse the constant, never copy a class list.
+  The public header's icon buttons are `.icon-btn` (`src/web/chrome.ts`); the admin draws its
+  glyph keys through `icon()` in [`web/admin/kit.ts`](../../src/web/admin/kit.ts). Adding an item
+  = reuse the constant, never copy a class list.
 - **Never put `overflow-hidden` on the editor frame:** it creates a scroll container and
   prevents the toolbar from sticking to the viewport. (The toolbar wraps by owner verdict,
   2026-08-17: [features/editing.md](../features/editing.md).)
-- **Admin rows align by a fixed-height box, never by baseline.** `ADMIN_NAV`
-  (`headerActions.ts`) is `inline-flex h-9 items-center` and `SIDEBAR_NAV` is the same box laid
-  out as a row; an item that opts out of the box, or a larger wordmark aligned by
+- **Admin rows align by a fixed-height box, never by baseline.** `SIDEBAR_NAV`
+  ([`admin-shared/rail.ts`](../../src/admin-shared/rail.ts)) is a fixed-height `items-center` box
+  laid out as a row; an item that opts out of the box, or a larger wordmark aligned by
   `items-baseline`, is the drift this rule exists for. The public bar's rule is above.
 - **One divider style site-wide:** the global `<hr>` (full width, faint). Never bespoke
   `border-t`/`border-b` as content dividers; never ALL-CAPS (no `uppercase`) in shipped UI.
@@ -79,9 +81,11 @@ inside it. In book mode the same break becomes the asterism.
   pills (`999px`, `50%`), the `.5rem` on a figure's image and the sign-in page, which has no
   Shape to read. The admin has
   its own 10 / 8 / 6px hierarchy (sheet, nested panel, control), held by the kit and described
-  in [admin-design.md](../admin-design.md); change `kit.tsx` CARD/CONTROL/Select/Tabs, `ui/*` or
-  `iconButton.ts` rather than inventing a one-off. Admin `<select>` uses the styled `Select`
-  (kit.tsx) and free-text-with-suggestions uses `pickField` — never a raw native
+  in [admin-design.md](../admin-design.md); change `CARD`/`CONTROL` in
+  [`admin-shared/kit.ts`](../../src/admin-shared/kit.ts), or `select`/`tabs` in
+  [`web/admin/kit.ts`](../../src/web/admin/kit.ts), rather than inventing a one-off. Admin
+  `<select>` uses the styled `select()` and free-text-with-suggestions uses `pickField`
+  ([`screens/sheet-fields.ts`](../../src/web/admin/screens/sheet-fields.ts)) — never a raw native
   `<select>`/`<datalist>` (their OS popups can't be themed: wrong font, cramped, no hover).
 
 ## The article's right gutter — the info panel (HARD RULES)

@@ -12,6 +12,7 @@
 // What IS driven: the chat CRUD routes, which are cheap and local, and everything the island
 // does to markup the server already sent.
 import type { Tour } from './tour'
+import { SCREEN_FORMS } from './tour-ask'
 
 // Storing and clearing the fake key, in the two flows that need the configured face. Never
 // used to call anything: a key is what the SCREEN reads to decide whether to open its
@@ -45,14 +46,20 @@ export function registerAiFlows({ flow, expect }: Pick<Tour, 'flow' | 'expect'>)
       const screen = document.querySelector('[data-screen="assistant"]')
       if (!screen) return 'the assistant did not come from the server'
       if (document.documentElement.dataset.adminScreen !== 'assistant') return 'the page is not stamped'
-      const forms = document.querySelectorAll('form').length
+      ${SCREEN_FORMS}
+      const forms = screenForms().length
       if (forms) return forms + ' form(s) on a screen that must have none'
       const buttons = [...document.querySelectorAll('button')]
       const untyped = buttons.filter((b) => b.getAttribute('type') !== 'button')
       if (untyped.length) return untyped.length + ' button(s) with no type="button": ' + untyped.map((b) => b.textContent.trim()).join(' | ')
       if (!buttons.length) return 'no buttons at all, so this flow proves nothing'
       const inputs = document.querySelectorAll('textarea, input')
-      for (const el of inputs) if (el.closest('form')) return 'a field sits inside a form'
+      for (const el of inputs) {
+        // The confirm dialog's own box is named for the same reason screenForms names it: it is
+        // on every admin page, hidden, and Return submitting it is the point of it.
+        const owner = el.closest('form')
+        if (owner && !owner.hasAttribute('data-confirm-form')) return 'a field sits inside a form'
+      }
       return 'ok (' + buttons.length + ' buttons, 0 forms, ' + inputs.length + ' fields)'
     })()`, 900))
 

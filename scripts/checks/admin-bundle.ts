@@ -1,11 +1,10 @@
-// The admin bundle must not contain server code. Guard #8.
+// The admin's browser bundles must not contain server code. Guard #8.
 //
-// The boundary this pins is real but was held by nothing: the admin imports server types
-// (`import type { McpTokenInfo } from '@/mcp/tokens'`, and friends in `SettingsAiTab`,
-// `McpFields`, `UpdateFields`, `Overview`) and the ONLY thing keeping the store out of the
-// browser bundle is the word `type` in those lines. Delete it on any one of them and the
-// bundler follows the value import through `store/query` into `bun:sqlite` — either the
-// build breaks in a confusing place, or worse, server internals ship to every admin
+// The boundary this pins is real but was held by nothing: the islands import server types
+// (`import type { McpTokenInfo } from '@/mcp/tokens'` and friends) and the ONLY thing keeping
+// the store out of the browser is the word `type` in those lines. Delete it on any one of them
+// and the bundler follows the value import through `store/query` into `bun:sqlite` — either
+// the build breaks in a confusing place, or worse, server internals ship to every admin
 // browser. Seven guards existed and none of them looked at what `build:admin` produced.
 //
 // So this one reads the OUTPUT. Not the import graph — the artifact. A canary string in
@@ -53,21 +52,24 @@ for (const f of files) {
   }
 }
 
-// The second thing this guard reads the OUTPUT for: every module has exactly ONE name.
+// The second thing this guard reads the OUTPUT for: every name a chunk imports is a file that
+// EXISTS.
 //
-// The admin shipped blank in 2.2.8 because it had two. The entry was written to disk as
-// `main.js` and served under a fingerprint computed at runtime (`main.<hash>.js`), and Bun 1.4
-// began emitting `from"./main.js"` inside every lazy route chunk where 1.3 emitted none. The
-// browser fetched the entry under both names, a second module record gave a second copy of
-// React, and the first lazy screen to call a hook threw React error #321.
+// The admin shipped blank in 2.2.8 for the neighbouring reason. Its entry was written to disk
+// as `main.js` and served under a fingerprint computed at runtime, and Bun 1.4 began emitting
+// `from"./main.js"` inside every lazy chunk where 1.3 emitted none: the browser fetched it
+// under both names and the second module record was a second copy of React.
 //
 // A bundler is free to point a chunk at any other chunk. What must hold is that the name it
-// writes is a file that EXISTS — a dangling import is the same blank screen by a different
-// route — and that the entry is not reachable under a second name. Both are answered here,
-// from the artifact, because neither is visible in the source.
-const ENTRY = files.filter((f) => /^admin\.[a-z0-9]+\.js$/.test(f))
-if (ENTRY.length !== 1) {
-  console.error(`admin-bundle: expected exactly one entry (admin.<hash>.js), found ${ENTRY.length}`)
+// writes resolves — a dangling import is the same blank screen by a different route — and that
+// is answered here, from the artifact, because it is not visible in the source.
+//
+// ⚠️ THE RAIL IS THE ENTRY EVERY PAGE LOADS, and it is the one measured below. There is no
+// single admin bundle any more (ADR 0054, step 6): every island is an entry of its own and a
+// screen links the one it needs.
+const RAIL = files.filter((f) => /^rail\.[a-z0-9]+\.js$/.test(f))
+if (RAIL.length !== 1) {
+  console.error(`admin-bundle: expected exactly one rail entry (rail.<hash>.js), found ${RAIL.length}`)
   bad++
 }
 
@@ -87,13 +89,13 @@ for (const f of files) {
 // The third thing, and it is about WEIGHT: what the browser must have before the first frame.
 //
 // `@/i18n/admin-i18n` imports all eleven admin dictionaries so the server can answer a login
-// page in any of them from one process. One value import of it from the SPA put all eleven in
-// the chunk the entry waits for: the eager payload measured 1063 KB, of which about 71 KB was
-// a language the owner reads. It is 374 KB with ten of them behind `import()`.
+// page in any of them from one process. One value import of it from the browser put all eleven
+// in the chunk the entry waits for: the eager payload measured 1063 KB while the admin was
+// React, of which about 71 KB was a language the owner reads.
 //
-// Read from the artifact, and from the STATIC graph only: `import("./x.js")` is a later
-// request and belongs to whichever screen asks for it. A canary in a dictionary the admin is
-// not set to is proof the eleven came back, whatever import let them.
+// The server picks the language now and sends the words already chosen, inside the HTML — so a
+// dictionary in a browser bundle is not merely heavy, it is a second source for a string the
+// page already carries. Read from the artifact, and from the STATIC graph only.
 const eager = new Set<string>()
 const walkStatic = (f: string): void => {
   if (eager.has(f) || !files.includes(f)) return
@@ -101,7 +103,7 @@ const walkStatic = (f: string): void => {
   const text = readFileSync(join(DIST, f), 'utf8')
   for (const match of text.matchAll(/(?:from|import)\s*"\.\/([^"]+\.js)"/g)) walkStatic(match[1] ?? '')
 }
-if (ENTRY[0]) walkStatic(ENTRY[0])
+if (RAIL[0]) walkStatic(RAIL[0])
 
 /** A word that is in the Russian dictionary and in no other file the admin builds. */
 const OTHER_TONGUE = 'Настройки'
@@ -114,4 +116,4 @@ for (const f of eager) {
 const eagerKb = Math.round([...eager].reduce((n, f) => n + statSync(join(DIST, f)).size, 0) / 1024)
 
 if (bad > 0) process.exit(1)
-console.log(`admin-bundle: ${files.length} files clean of ${CANARIES.length} canaries, one entry, no dangling import, ${eagerKb} KB before the first frame`)
+console.log(`admin-bundle: ${files.length} files clean of ${CANARIES.length} canaries, one rail entry, no dangling import, ${eagerKb} KB before the first frame`)

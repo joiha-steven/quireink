@@ -1,11 +1,13 @@
-// Build the admin SPA: one JavaScript bundle (plus its lazy chunks) and one stylesheet.
+// Build the admin's islands and its stylesheet.
 //
-// Separate from `build-assets.ts` because the two have nothing in common but the word
-// "build". The public bundles are three hand-written files under a byte budget defended in
-// review; this is React, Tiptap and Tailwind, and its size is deliberately not budgeted —
-// only the owner ever loads it (ADR 0006, and 04-frontend.md on why admin payload is not a
-// public concern). Keeping them apart stops the admin's weight from ever being weighed
-// against the reader's.
+// Separate from `build-assets.ts` because the two have nothing in common but the word "build".
+// The public bundles are three hand-written files under a byte budget defended in review; this
+// is the admin's own, and its size is deliberately not budgeted — only the owner ever loads it
+// (04-frontend.md on why admin payload is not a public concern). Keeping them apart stops the
+// admin's weight from ever being weighed against the reader's.
+//
+// ⚠️ THERE IS NO SPA HALF ANY MORE. This built `src/admin/main.tsx` and its lazy chunks until
+// ADR 0054's step 6; every screen is HTML now and what is left is one entry per island.
 
 import { mkdir, rm } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
@@ -18,39 +20,13 @@ const OUT = `${ROOT}src/admin/dist`
 await rm(OUT, { recursive: true, force: true })
 await mkdir(OUT, { recursive: true })
 
-const result = await Bun.build({
-  entrypoints: [`${ROOT}src/admin/main.tsx`],
-  outdir: OUT,
-  target: 'browser',
-  format: 'esm',
-  splitting: true, // the editor's Tiptap chunk loads only when an editor opens
-  minify: true,
-  // The ENTRY carries the bundler's own hash, and that is a correctness rule before it is a
-  // caching one. A route chunk may import the entry back — Bun 1.4 emits `from"./main.js"` in
-  // every lazy chunk where 1.3 did not — so the name the shell loads and the name the chunks
-  // import have to be the SAME string. Fingerprinting the entry in the server (`main.<hash>.js`
-  // for a file on disk called `main.js`) made them two, the browser instantiated the module
-  // twice, and the second copy of React threw "invalid hook call" on the first lazy screen.
-  //
-  // `admin.` with a DOT, not `main-`, so the one file that must be found by name stays
-  // distinguishable from the twelve chunks that must not: those are `[name]-[hash].js` and
-  // `[name]` is `main` for all of them.
-  naming: { entry: 'admin.[hash].js', chunk: '[name]-[hash].js' },
-  define: { 'process.env.NODE_ENV': '"production"' },
-})
-
-if (!result.success) {
-  for (const log of result.logs) console.error(log)
-  process.exit(1)
-}
-
-// THE ISLANDS, built apart from the SPA (ADR 0054).
+// THE ISLANDS (ADR 0054).
 //
-// One entry per file in `src/admin/island/`, and separate from React because that is the whole
-// point: the rail is the frame the owner navigates by and a converted screen is the page
-// itself, so neither may wait for a bundle to be fetched, parsed and run. They share no module
-// with React — their imports are `admin-shared/*` and a pure helper or two — so one bundle
-// would have cost them that independence and bought nothing.
+// One entry per file in `src/admin/island/`. They were built apart from the React bundle
+// because that was the whole point: the rail is the frame the owner navigates by and a screen
+// is the page itself, so neither may wait for a bundle to be fetched, parsed and run. The
+// bundle is gone and the arrangement is the reason the admin is quick — a page carries the
+// behaviour of the page, and nothing else.
 //
 // A SCREEN'S ISLAND IS REQUESTED ONLY BY ITS OWN PAGE. `spa.ts` links the one the screen
 // names, so the log's filters are not downloaded by anybody looking at the media library.
@@ -103,11 +79,18 @@ const { PROSE_CSS } = await import(`${ROOT}src/web/prose.css.ts`)
 const { INK_CSS } = await import(`${ROOT}src/pen/ink.css.ts`)
 await Bun.write(`${OUT}/admin.css`, `${styles}\n${PROSE_CSS}\n${INK_CSS}`)
 
+// The ENTRIES only, largest first: the chunks they share are counted in the total and would
+// otherwise print twenty lines of four-kilobyte noise over the number that matters.
 let total = 0
-for (const output of result.outputs) {
+const named: [string, number][] = []
+for (const output of island.outputs) {
   const size = output.size ?? 0
   total += size
-  console.log(`  ${output.path.split(/[\\/]/).pop()}  ${(size / 1024).toFixed(0)} KB`)
+  const name = output.path.split(/[\\/]/).pop() ?? ''
+  if (!name.startsWith('island-')) named.push([name, size])
+}
+for (const [name, size] of named.sort((a, b) => b[1] - a[1])) {
+  console.log(`  ${name}  ${(size / 1024).toFixed(0)} KB`)
 }
 const sheet = Bun.file(`${OUT}/admin.css`).size
 console.log(`  admin.css  ${(sheet / 1024).toFixed(0)} KB`)

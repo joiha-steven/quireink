@@ -16,9 +16,7 @@
 // the only part of that state a person would notice going.
 import type { Post, SiteSettings } from '@/types'
 import { adminT } from '@/i18n/admin-i18n'
-import { escapeAttr, escapeHtml } from '@/utils'
-import { formatDateTimeShort } from '@/admin-shared/when'
-import { UTIL } from '@/admin-shared/scale'
+import { escapeHtml } from '@/utils'
 import { CARD, buttonClass } from '@/admin-shared/kit'
 import { emptyState } from '@/web/admin/kit'
 import { getIndex } from '@/content/posts'
@@ -28,6 +26,7 @@ import { getViewTotals } from '@/analytics/summary'
 import { needsFrom, writeItems, type WriteItem } from '@/web/admin/screens/content-items'
 import { writePane } from '@/web/admin/screens/content-pane'
 import { writeDrawers } from '@/web/admin/screens/content-drawers'
+import { recentPieces } from '@/web/admin/screens/recent-pieces'
 import { writingFrame } from '@/web/admin/screens/sheet-frame'
 
 /**
@@ -46,35 +45,6 @@ async function paneData(): Promise<{
   return { items: writeItems(posts, pages, notes), views, posts }
 }
 
-/**
- * The last three pieces touched, under the invitation.
- *
- * This sheet is reached most often by somebody RETURNING to work, and until 2026-09-07 the only
- * two things on it — New page, New post — both started something else.
- */
-function recent(items: WriteItem[], t: ReturnType<typeof adminT>): string {
-  const three = items.filter((it) => it.touched > 0).slice(0, 3)
-  if (three.length === 0) return ''
-  return `<div class="mt-8 w-full max-w-sm text-left">`
-    + `<p class="${UTIL}">${escapeHtml(t.recentlyEdited)}</p>`
-    + `<ul class="mt-1.5">`
-    + three.map((it) =>
-      `<li class="border-b border-neutral-100 last:border-0 dark:border-neutral-800">`
-      // `py-3` and not `py-2`: 20px of line plus 24px of padding is 44, which is the floor a
-      // finger needs. A 36px row here would put new sub-44 targets on the one screen a phone
-      // reaches by mistyping an address.
-      + `<a href="${escapeAttr(it.editHref)}" class="-mx-2 flex items-baseline justify-between`
-      + ` gap-3 rounded px-2 py-3 transition hover:bg-neutral-100/70 dark:hover:bg-neutral-800/50">`
-      + `<span class="min-w-0 truncate text-sm text-neutral-800 dark:text-neutral-200">`
-      + `${escapeHtml(it.title || `${t.untitled} #${it.untitledNo ?? 1}`)}</span>`
-      // Guarded: `touched` is 0 for a piece carrying no date at all, and an unguarded format
-      // prints 1/1/70 beside its title.
-      + `<span class="shrink-0 text-xs tabular-nums text-neutral-500 dark:text-neutral-400">`
-      + `${escapeHtml(formatDateTimeShort(it.touched))}</span>`
-      + `</a></li>`).join('')
-    + `</ul></div>`
-}
-
 /** The empty paper: the invitation, and what was touched last. */
 function blankSheet(items: WriteItem[], t: ReturnType<typeof adminT>): string {
   const keys = `<div class="flex flex-col items-center">`
@@ -82,7 +52,7 @@ function blankSheet(items: WriteItem[], t: ReturnType<typeof adminT>): string {
     + `<a href="/admin/note-editor" class="${buttonClass('secondary')}">${escapeHtml(t.newNote)}</a>`
     + `<a href="/admin/page-editor" class="${buttonClass('secondary')}">${escapeHtml(t.newPage)}</a>`
     + `<a href="/admin/editor" class="${buttonClass('primary')}">${escapeHtml(t.newPost)}</a>`
-    + `</div>${recent(items, t)}</div>`
+    + `</div>${recentPieces(items, t)}</div>`
   // Hidden where the pane takes the whole width — the list IS the screen there.
   return `<div data-write-empty class="hidden min-w-0 flex-1 xl:block ${CARD} lg:min-h-[calc(100vh-1.5rem)]">`
     + `<div class="flex min-h-[calc(100vh-1.5rem)] flex-col items-center justify-center">`

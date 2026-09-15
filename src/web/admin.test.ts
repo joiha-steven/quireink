@@ -282,21 +282,21 @@ describe('the admin shell carries the owner settings', () => {
 })
 
 /**
- * The two files the bundler does not hash are 194 KB and 68 KB, and they were `no-cache`
- * with no validator — so the owner re-downloaded 262 KB on every admin load, while the
- * chunks beside them were `immutable` and free.
+ * The two files the bundler did not hash were 194 KB and 68 KB, `no-cache` with no validator —
+ * so the owner re-downloaded 262 KB on every admin load while the chunks beside them were
+ * `immutable` and free.
  */
 describe('the admin bundle is cacheable and does not arrive one wave at a time', () => {
   const shell = async (): Promise<string> =>
     (await app.request('/admin', { headers: { cookie } })).text()
 
-  it('links both entries and the sheet under a fingerprinted name', async () => {
-    // RAIL FIRST, REACT SPA LAST, with a server-drawn screen's own island optionally between
-    // them (ADR 0054; Help registers `island: null`). Document order is run order.
+  it('links every entry and the sheet under a fingerprinted name', async () => {
+    // RAIL FIRST, then the screen's own island if it has one (ADR 0054; Help registers
+    // `island: null`). Document order is run order; React's entry used to come last.
     const html = await shell()
     const js = [...html.matchAll(/<script type="module" src="([^"]+)">/g)].map((m) => m[1] ?? '')
     const sheet = /<link rel="stylesheet" href="(\/admin\/assets\/[^"]+)">/.exec(html)?.[1] ?? ''
-    expect(js.join(' ')).toMatch(/^\/admin\/assets\/rail\.\w+\.js( \/admin\/assets\/\w+\.\w+\.js)? \/admin\/assets\/admin\.\w+\.js$/)
+    expect(js.join(' ')).toMatch(/^\/admin\/assets\/rail\.\w+\.js( \/admin\/assets\/\w+\.\w+\.js)?$/)
     expect(sheet).toMatch(/^\/admin\/assets\/admin\.[a-z0-9]+\.css$/)
     for (const href of [...js, sheet]) {
       const res = await app.request(href)
@@ -314,12 +314,11 @@ describe('the admin bundle is cacheable and does not arrive one wave at a time',
 
   /**
    * The blank admin of 2.2.8, as a test. The entry was served under a name computed here over
-   * a file the bundler called `main.js`, and Bun 1.4 began emitting `from"./main.js"` inside
-   * every lazy chunk: the browser fetched the entry under BOTH names, and a second module
-   * record is a second copy of React. Error #321, nothing rendered. So no two URLs under
-   * `/admin/assets/` may serve the same JavaScript — however the bundler splits it next.
+   * a file the bundler called `main.js`, and Bun 1.4 began emitting `from"./main.js"` in every
+   * lazy chunk: the browser fetched it under BOTH names and got a second copy of React.
+   * React is gone and the rule is not — a module loaded twice is two copies of its state.
    */
-  it('serves each module under exactly one name, so React cannot be loaded twice', async () => {
+  it('serves each module under exactly one name, so nothing is loaded twice', async () => {
     const entry = (/<script type="module" src="([^"]+)">/.exec(await shell())?.[1] ?? '')
       .replace('/admin/assets/', '')
     const seen = new Set<string>()
@@ -349,13 +348,14 @@ describe('the admin bundle is cacheable and does not arrive one wave at a time',
   it('preloads the chunks the entry needs to boot, and no route chunk', async () => {
     const hrefs = [...(await shell()).matchAll(/<link rel="modulepreload" href="([^"]+)">/g)]
       .map((m) => m[1] ?? '')
-    expect(hrefs.length).toBeGreaterThan(0)
+    // ⚠️ SHARED CHUNKS ONLY: an entry is `<name>.<hash>.js`, a chunk `island-<name>-<hash>.js`,
+    // and the name in a chunk is whichever entry the bundler attributed it to.
     for (const href of hrefs) {
-      expect(href).toMatch(/^\/admin\/assets\/main-[a-z0-9]+\.js$/)
+      expect(href).toMatch(/^\/admin\/assets\/island-[a-z0-9-]+\.js$/)
       expect((await app.request(href)).status).toBe(200)
     }
-    // The lazy routes are named after their component, and none of them may be preloaded.
-    expect(hrefs.some((h) => /\/(Dashboard|Content|PostEditor|Settings|Media)-/.test(h))).toBe(false)
+    // Arrange mode is a DYNAMIC import, so it is an entry of its own and must never be here.
+    expect(hrefs.some((h) => h.includes('rail-arrange'))).toBe(false)
   })
 })
 

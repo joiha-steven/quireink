@@ -1357,13 +1357,8 @@ const fr = {
   newsDone: 'Terminé',
   authSkipNow: 'Configurer plus tard',
   authSkipWhy: 'Proposé seulement tant que ce blog n’a pas d’adresse publique. Donnez-lui-en une et la prochaine connexion redemandera un authentificateur.',
-  crashTitle: 'Cet écran s’est arrêté',
-  crashText: 'Quelque chose dans cette page a échoué pendant son affichage, alors l’admin s’est arrêté ici plutôt que de devenir blanc. Ce que vous aviez tapé est toujours gardé sur cet appareil et vous sera proposé à la réouverture de la page. Le reste de l’admin n’est pas touché : la barre latérale fonctionne toujours.',
-  crashMissingTitle: 'Cette page n’a pas pu être téléchargée',
-  crashMissingText: 'L’admin a demandé une partie d’elle-même et le fichier n’est pas arrivé. C’est en général que cet onglet est resté ouvert pendant la mise à jour du blog, ou que la connexion a été coupée. Recharger récupère la version actuelle. Ce que vous aviez tapé reste gardé sur cet appareil.',
-  crashDetail: 'Ce qui a cassé',
-  crashReload: 'Recharger cette page',
-  crashHome: 'Aller au tableau de bord',
+  chunkGone: 'Une partie de l’admin n’a pas pu être téléchargée. Cet onglet est plus ancien que le blog.',
+  chunkReload: 'Recharger cette page',
 } satisfies AdminStrings
 
 export default fr
