@@ -17,7 +17,7 @@ import { findAll, firstAfter, replaceAllIn, step, type Hit } from './editorFind'
 import {
   hitsIn, readFind, replaceCurrent, replaceEveryHit, revealCurrent, setFind,
 } from './FindExtension'
-import type { FindTarget } from './FindBar'
+import type { FindTarget } from './editor-find-bar'
 import { matchesChord } from './editorKeys'
 
 type RawFind = { query: string; caseSensitive: boolean; index: number; hits: Hit[] }

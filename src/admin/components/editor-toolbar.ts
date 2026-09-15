@@ -12,7 +12,10 @@
 import type { Editor as TiptapEditor } from '@tiptap/core'
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import { ICONS } from '@/icons'
-import { el } from './node-dom'
+
+/** The bar's own SVG size, on the shared builder. */
+const glyph = (body: string): SVGSVGElement => svgGlyph(body, className.glyph)
+import { el, svgGlyph } from './node-dom'
 import { withTip } from './editor-tooltip'
 import { editLink } from './editorLink'
 import { tip } from './editorKeys'
@@ -90,23 +93,6 @@ export type ToolbarHooks = {
   askLink: (previous: string) => Promise<string | null>
   onPickImage: () => void
   onPickGallery: () => void
-}
-
-/** An SVG drawn from the shared set, or from paths written here. */
-function glyph(body: string): SVGSVGElement {
-  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-  svg.setAttribute('viewBox', '0 0 24 24')
-  svg.setAttribute('fill', 'none')
-  svg.setAttribute('stroke', 'currentColor')
-  svg.setAttribute('stroke-width', '1.8')
-  svg.setAttribute('stroke-linecap', 'round')
-  svg.setAttribute('stroke-linejoin', 'round')
-  svg.setAttribute('aria-hidden', 'true')
-  svg.setAttribute('class', className.glyph)
-  // The bodies are module CONSTANTS from our own files — no request data passes through this,
-  // which is what makes `innerHTML` ordinary here rather than a hole.
-  svg.innerHTML = body
-  return svg
 }
 
 /** One key of the bar: what it says, what it does, and what makes it look pressed. */

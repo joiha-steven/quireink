@@ -18,7 +18,10 @@
 // mirror pinned to the same box therefore cannot drift. If that autogrow is ever removed,
 // this needs an `onScroll` that copies `scrollTop`/`scrollLeft`, and the caret will visibly
 // separate from the text until it does.
-import { useMemo, type RefObject } from 'react'
+//
+// ⚠️ PLAIN TYPESCRIPT (ADR 0054 step 5). `mark` and `withHits` were always pure and are
+// unchanged; what left React is the pair of elements around them.
+import { el } from './node-dom'
 import type { Hit } from './editorFind'
 
 /**
@@ -203,38 +206,66 @@ export function withHits(html: string, hits: Hit[], current: number): string {
   return inside ? `${out}</mark>` : out
 }
 
-type Props = {
-  value: string
-  onChange: (next: string) => void
-  onDirty: () => void
-  taRef: RefObject<HTMLTextAreaElement | null>
-  /** Find hits, as offsets into `value`. The strip above the sheet owns them. */
-  hits?: Hit[]
-  /** Which hit is current, so it can take the louder of the two highlights. */
-  current?: number
+const className = {
+  hold: 'relative',
+  // `.md-box` in `admin.css` is where BOTH elements get their metrics, and there is no second
+  // place to change one of them in. These two add only what tells them apart.
+  mirror: 'md-box md-mirror',
+  source: 'md-box md-source relative min-h-[60vh] w-full resize-none overflow-hidden',
 }
 
-export function MarkdownSource({ value, onChange, onDirty, taRef, hits, current = 0 }: Props) {
-  // Only when the text changes, not on every parent render: this walks every line.
-  const html = useMemo(() => mark(value), [value])
-  // A second pass, and only while something is being looked for. An unfocused textarea draws
-  // no selection at all in Chrome, so without this the Markdown view could count its hits and
-  // not show one of them.
-  const drawn = useMemo(() => withHits(html, hits ?? [], current), [html, hits, current])
-  return (
-    <div className="relative">
-      {/* A trailing newline so the mirror's last line has height while the caret sits on it. */}
-      <pre className="md-box md-mirror" aria-hidden="true" dangerouslySetInnerHTML={{ __html: `${drawn}\n` }} />
-      <textarea
-        ref={taRef}
-        value={value}
-        onChange={(e) => {
-          onChange(e.target.value)
-          onDirty()
-        }}
-        spellCheck={false}
-        className="md-box md-source relative min-h-[60vh] w-full resize-none overflow-hidden"
-      />
-    </div>
-  )
+export type SourceView = {
+  /** The textarea, which is the only source of truth for the text. */
+  readonly area: HTMLTextAreaElement
+  /** Push the text in from outside — a document loaded, or a draft restored. */
+  setValue: (next: string) => void
+  /** Find hits, as offsets into the value, and which one is current. */
+  setHits: (hits: Hit[], current: number) => void
+  destroy: () => void
+}
+
+export function mountSource(
+  host: HTMLElement,
+  hooks: { onChange: (next: string) => void; onDirty: () => void },
+): SourceView {
+  const hold = el('div', { className: className.hold })
+  const mirror = el('pre', { className: className.mirror, 'aria-hidden': 'true' })
+  const area = el('textarea', { className: className.source, spellcheck: 'false' })
+  hold.append(mirror, area)
+  host.appendChild(hold)
+
+  let hits: Hit[] = []
+  let current = 0
+  // Drawn only when the text or the hits change, not on every touch: `mark` walks every line.
+  let drawnFor = '\u0000'
+  const paint = (): void => {
+    const key = `${area.value}\u0000${current}\u0000${hits.map((h) => `${h.from}-${h.to}`).join(',')}`
+    if (key === drawnFor) return
+    drawnFor = key
+    // A trailing newline so the mirror's last line has height while the caret sits on it.
+    // Everything in here came out of `mark`/`withHits`, which escape `&`, `<` and `>` before
+    // wrapping their own tags around what is left: no character of the writer's text reaches
+    // this as markup.
+    mirror.innerHTML = `${withHits(mark(area.value), hits, current)}\n`
+  }
+
+  area.addEventListener('input', () => {
+    paint()
+    hooks.onChange(area.value)
+    hooks.onDirty()
+  })
+  paint()
+
+  return {
+    area,
+    setValue: (next: string) => {
+      // Setting a textarea's value sends its caret to the end, so it is written only when it
+      // has actually changed — the same trap the caption field in `CaptionedImage.ts` names.
+      if (area.value === next) return
+      area.value = next
+      paint()
+    },
+    setHits: (next: Hit[], at: number) => { hits = next; current = at; paint() },
+    destroy: () => { hold.remove() },
+  }
 }

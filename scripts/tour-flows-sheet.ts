@@ -9,6 +9,68 @@ import type { Tour } from './tour'
 
 export function registerSheetFlows({ flow, atWidth }: Pick<Tour, 'flow' | 'atWidth'>): void {
   /**
+   * THE PAPER COMES BACK FROM THE MARKDOWN VIEW, which is a sentence nobody thought needed a
+   * test until it was not true.
+   *
+   * The writing surface is rendered only in the rich view, so switching to the Markdown source
+   * REMOVES the element it lives in. `EditorContent` handled that by parking the surface in a
+   * detached div on the way out and putting it back on the way in; the hand-written replacement
+   * that took its place on 2026-09-15 moved it in once and never again. Switching to Markdown
+   * and back left an empty sheet — the document intact, in an editor nobody could see — and it
+   * SHIPPED, because no unit test toggles a view and the Markdown flow below only goes one way.
+   *
+   * Two presses of one key. That is the whole flow, and it is the one that was missing.
+   */
+  flow('editor: the paper comes back from the Markdown view', async () => {
+    const slug = 'tour-md-round-' + Date.now()
+    const made = await atWidth(1700, '/admin/editor', `
+    (async () => {
+      const res = await fetch('/api/posts', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          title: 'Tour: there and back', slug: '${slug}', status: 'draft', categories: [], tags: [],
+          content: 'An opening paragraph.\\n\\n## A heading\\n\\nA closing paragraph.',
+        }),
+      })
+      return res.ok ? 'ok' : 'could not plant a post'
+    })()`, 900)
+    if (made !== 'ok') return made
+
+    return await atWidth(1700, '/admin/editor/' + slug, `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      const done = async (verdict) => {
+        await fetch('/api/posts/${slug}', { method: 'DELETE' })
+        return verdict
+      }
+      const wait = async (get, tries) => {
+        for (let i = 0; i < tries; i++) { const v = get(); if (v) return v; await sleep(50) }
+        return null
+      }
+      const pm = await wait(() => document.querySelector('.ProseMirror'), 140)
+      if (!pm) return done('the editor never opened')
+      if (!pm.innerText.includes('opening paragraph')) return done('the piece did not load')
+
+      const sheet = document.querySelector('.admin-enter') || document.body
+      const seen = (el) => el && el.offsetParent !== null
+      const key = [...sheet.querySelectorAll('button')].filter(seen).find((b) =>
+        /markdown/i.test((b.getAttribute('title') || '') + (b.getAttribute('aria-label') || '') + b.textContent))
+      if (!key) return done('no key for the Markdown view')
+
+      key.click()
+      const box = await wait(() => document.querySelector('textarea.md-source'), 80)
+      if (!box) return done('the Markdown view did not open')
+      if (!box.value.includes('## A heading')) return done('the source opened without the piece in it')
+
+      key.click()
+      const back = await wait(() => document.querySelector('.ProseMirror'), 140)
+      if (!back) return done('the paper did not come back: the sheet is empty')
+      if (!back.innerText.includes('opening paragraph')) return done('the paper came back blank')
+      return done('ok there and back, ' + back.innerText.split('\\n')[0])
+    })()`, 1400)
+  })
+
+  /**
    * A FORMULA CAN BE CORRECTED, which is the half of "maths in the editor" that a unit test
    * cannot reach.
    *

@@ -9,7 +9,7 @@
 // in the eleventh rule pointed at the first rule's group, matched empty, and turned
 // `**Spacing**` into `**S**pacing**`. Every paired rule is checked here for that reason.
 import { describe, it, expect } from '@/test/vitest'
-import { mark, withHits } from '@/admin/components/MarkdownSource'
+import { mark, withHits } from '@/admin/components/editor-source'
 
 describe('mark: line structure', () => {
   it('dims a heading marker and leaves the words', () => {

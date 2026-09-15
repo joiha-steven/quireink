@@ -13,6 +13,7 @@ import type { Editor as TiptapEditor } from '@tiptap/core'
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import { mountToolbar, toolbarWords, type Toolbar } from './editor-toolbar'
 import { mountBubbleBar, openSlashMenu, type BubbleBar } from './editor-menus'
+import { mountFindBar, type FindBar, type FindTarget } from './editor-find-bar'
 
 // The sticky band above the writing: the action line (~56px) plus the toolbar strip that sticks
 // under it (~60px with its margins). The bubble bar must not be placed inside this band, because
@@ -29,19 +30,31 @@ export type ChromeState = {
   raw: boolean
   /** Focus mode takes the button strip away; "/" and the bubble still carry every command. */
   focus: boolean
-  findOpen: boolean
+  /** 'find' or 'replace' while the strip is open, null when it is not. */
+  findOpen: 'find' | 'replace' | null
+  /** What the strip acts on. Rebuilt every render, so it is read through a ref. */
+  findTarget: FindTarget
+  onFindHeight: (px: number) => void
   toolbarTop: number
   findHeight: number
   slash: { left: number; top: number } | null
   setSlash: (at: { left: number; top: number } | null) => void
 }
 
-/** Returns where to draw the button strip. The other two position themselves. */
-export function useEditorChrome(state: ChromeState): React.RefObject<HTMLDivElement | null> {
+/** Returns where to draw the two strips. The bubble bar and the "/" menu place themselves. */
+export function useEditorChrome(state: ChromeState): {
+  toolbarHost: React.RefObject<HTMLDivElement | null>
+  findHost: React.RefObject<HTMLDivElement | null>
+} {
   const {
     editor, t, askLink, onPickImage, onPickGallery,
     raw, focus, findOpen, toolbarTop, findHeight, slash, setSlash,
   } = state
+  // The strip's callbacks close over state that changes every render, so they are reached
+  // through a ref rather than captured at mount. Capturing them would freeze the search on the
+  // view and the query that existed when the chord was pressed.
+  const targetRef = useRef(state.findTarget)
+  targetRef.current = state.findTarget
 
   /**
    * THE BAR IS PLAIN TYPESCRIPT (`editor-toolbar.ts`), mounted into a div React owns.
@@ -112,5 +125,34 @@ export function useEditorChrome(state: ChromeState): React.RefObject<HTMLDivElem
     })
   }, [editor, raw, slash])
 
-  return toolbarHost
+  /**
+   * The find strip, in the sheet's own stack rather than floating over the paper
+   * (`editor-find-bar.ts`). It is mounted by the chord and taken down by Escape, which is why
+   * the focus and the `select()` inside it belong to the mount rather than to a watcher.
+   */
+  const findHost = useRef<HTMLDivElement>(null)
+  const findRef = useRef<FindBar | null>(null)
+  useEffect(() => {
+    const host = findHost.current
+    if (!host || !findOpen) return
+    const bar = mountFindBar(host, {
+      t,
+      withReplace: findOpen === 'replace',
+      onHeight: (px) => state.onFindHeight(px),
+      target: {
+        onQuery: (q, c) => targetRef.current.onQuery(q, c),
+        onStep: (by) => targetRef.current.onStep(by),
+        onReplace: (r) => targetRef.current.onReplace(r),
+        onReplaceAll: (r) => targetRef.current.onReplaceAll(r),
+        onClose: () => targetRef.current.onClose(),
+      },
+    })
+    findRef.current = bar
+    return () => { bar.destroy(); findRef.current = null }
+  }, [findOpen])
+  useEffect(() => {
+    findRef.current?.setCount(state.findTarget.count, state.findTarget.index)
+  }, [state.findTarget.count, state.findTarget.index, findOpen])
+
+  return { toolbarHost, findHost }
 }

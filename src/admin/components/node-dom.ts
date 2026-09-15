@@ -15,3 +15,20 @@ export const el = <K extends keyof HTMLElementTagNameMap>(
   for (const [k, v] of Object.entries(attrs)) node.setAttribute(k, v)
   return node
 }
+
+/**
+ * An SVG from the shared icon set, or from paths written at the call site.
+ *
+ * ⚠️ The bodies are module CONSTANTS from our own files — no request data ever passes through
+ * this, which is what makes `innerHTML` ordinary here rather than a hole. The same argument the
+ * React set makes for `dangerouslySetInnerHTML` in `navIcons.tsx`.
+ */
+export function svgGlyph(body: string, cls: string, stroke = '1.8'): SVGSVGElement {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+  for (const [k, v] of Object.entries({
+    viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': stroke,
+    'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'aria-hidden': 'true', class: cls,
+  })) svg.setAttribute(k, v)
+  svg.innerHTML = body
+  return svg
+}

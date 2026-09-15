@@ -13,6 +13,7 @@
 // 18k-word draft: from three different starting points, every switch ended at offset 0.
 import { useEffect, useRef, useState } from 'react'
 import type { Editor as TiptapEditor } from '@tiptap/core'
+import type { SourceView } from './editor-source'
 import { markdownOffsetAt, posAtMarkdownOffset, readMarkdown, videoUrlsToNodes } from './editorDoc'
 
 export type RawView = {
@@ -20,7 +21,6 @@ export type RawView = {
   on: boolean
   text: string
   setText: (next: string) => void
-  taRef: React.RefObject<HTMLTextAreaElement | null>
   /** Reads the live values without re-subscribing (`Editor.tsx` holds them in closures). */
   onRef: React.MutableRefObject<boolean>
   textRef: React.MutableRefObject<string>
@@ -31,8 +31,20 @@ export type RawView = {
 }
 
 export function useRawView(
-  // A REF rather than the editor, because this hook is declared beside `useEditor` and the
-  // instance does not exist at that line — the same ref the drop and paste handlers read.
+  /**
+   * The source view, built by `editor-source.ts` before this hook is declared.
+   *
+   * ⚠️ IT ARRIVES FROM OUTSIDE NOW, and this hook does the WRITING. The box used not to exist
+   * until the render after the switch was thrown — hence the caret carried in a ref below. It is
+   * built once at the first render instead, and the effect that restores the caret puts the text
+   * in first: written by anybody else it would land AFTER that effect, and setting a textarea's
+   * value sends its caret to the end. Measured 2026-09-15: the caret arrived at 152 of 152
+   * instead of 97.
+   */
+  sourceRef: React.RefObject<SourceView | null>,
+  // A REF rather than the editor, because this hook is declared beside the editor's own
+  // construction and the instance does not exist at that line — the same ref the drop and paste
+  // handlers read.
   editorRef: React.MutableRefObject<TiptapEditor | null>,
   onText: (markdown: string) => void,
 ): RawView {
@@ -40,7 +52,6 @@ export function useRawView(
   const [text, setText] = useState('')
   const onRef = useRef(on)
   const textRef = useRef(text)
-  const taRef = useRef<HTMLTextAreaElement>(null)
   const onTextRef = useRef(onText)
   // Where the caret has to land in the source view, carried across the render that creates
   // the textarea — it does not exist yet at the moment the switch is thrown.
@@ -52,8 +63,11 @@ export function useRawView(
 
   // Grow the source box to fit its content (no tiny inner scrollbox), then put the caret in.
   useEffect(() => {
-    const ta = taRef.current
-    if (!on || !ta) return
+    const view = sourceRef.current
+    const ta = view?.area
+    if (!on || !view || !ta) return
+    // The text first, and the mirror with it: everything below measures the box.
+    view.setValue(text)
     ta.style.height = 'auto'
     ta.style.height = `${ta.scrollHeight}px`
     // AFTER the box has its real height, and not before: focusing a textarea scrolls the page
@@ -76,7 +90,7 @@ export function useRawView(
     if (!editor) return
     if (onRef.current) {
       const next = textRef.current
-      const at = taRef.current?.selectionStart ?? 0
+      const at = sourceRef.current?.area.selectionStart ?? 0
       editor.commands.setContent(next)
       videoUrlsToNodes(editor)
       onTextRef.current(next)
@@ -96,5 +110,5 @@ export function useRawView(
     setOn(false)
   }
 
-  return { on, text, setText, taRef, onRef, textRef, toggle, load }
+  return { on, text, setText, onRef, textRef, toggle, load }
 }

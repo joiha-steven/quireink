@@ -162,3 +162,37 @@ bar wrote it, on the three headings and the five inks; a bar where twenty-five k
 **Measured identical otherwise**, at rest, with the caret in a bold run, with a heading selected
 and with the caret in a table: 48, 48, 63 and 53 controls, and the bar lands on the same pixels
 from the first line of a piece and from the middle of it.
+
+### The find strip, the Markdown view, and a bug that shipped
+
+`FindBar.tsx` and `MarkdownSource.tsx` were the last two React components inside the editor.
+Both are plain modules now; `mark` and `withHits` were always pure and are untouched.
+
+⚠️ **AND THE MARKDOWN VIEW LOST THE PAPER, ON PRODUCTION, FOR THREE COMMITS.**
+
+The writing surface is rendered only in the rich view, so switching to the Markdown source
+REMOVES the element it lives in and takes the surface with it. `EditorContent` handled that: on
+the way out it parked the surface in a detached div, and on the way in it put it back, every
+time. The fifteen hand-written lines that replaced it on 2026-09-15 moved it in ONCE — the
+effect was keyed on the editor instance, which never changes. Switching to Markdown and back
+left an empty sheet, with the document intact in an editor nobody could see.
+
+**It shipped.** `check:all` was green, 3,516 tests; the tour was green, 159 flows. Nothing
+toggles a view in a unit test, and the tour's Markdown flow went one way and stopped.
+
+⚠️ **AND THE COMPARISON COULD NOT SEE IT EITHER, WHICH IS THE LESSON WORTH KEEPING.** The
+harness builds the previous commit and runs it beside the new one — and by then the previous
+commit already carried the fault. Both sides agreed, perfectly, on the wrong answer. The
+baseline for a conversion is the last build the OWNER had, not the last commit: `BASE=` had to
+be walked back four commits before the two sides disagreed, and the moment they did the cause
+was obvious.
+
+Found by pressing the key twice. Pinned by a flow that presses it twice, and that flow was
+proved to go red against the broken build before it was kept.
+
+**One more thing the browser caught here.** The source view's textarea is built once at the
+first render rather than when the switch is thrown, because `useRawView` restores the caret into
+it from an effect declared above — a box that does not exist at that moment is a caret that
+lands at the end of the document. The first cut let a second writer set the value afterwards,
+which sends a textarea's caret to the end: measured at 152 of 152 instead of 97. One writer now,
+inside the effect that does the restoring.

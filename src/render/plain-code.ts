@@ -28,7 +28,7 @@ const esc = (s: string): string =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
 /**
- * The two marks, in one pass, for the same reason `MarkdownSource` uses one: a second
+ * The two marks, in one pass, for the same reason `editor-source.ts` uses one: a second
  * `.replace()` would run over the first one's output.
  *
  * The lookbehind on the apostrophe is what keeps English prose out of it. Without it,

@@ -22,8 +22,7 @@ import { penStrokes } from './pen-feedback'
 import { writingSurface } from './editor-surface'
 
 import { useAdminT } from './I18nProvider'
-import { MarkdownSource } from './MarkdownSource'
-import { FindBar } from './FindBar'
+import { mountSource, type SourceView } from './editor-source'
 import { useEditorFind } from './useEditorFind'
 import { captionFromUrl, readMarkdown, videoUrlsToNodes } from './editorDoc'
 import { useRawView } from './useRawView'
@@ -200,6 +199,41 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
     // ⚠️ NOT DESTROYED HERE. See the last effect in this component for why the order matters.
   }, [])
 
+
+  /**
+   * The Markdown source view (`editor-source.ts`), built once at the first render.
+   *
+   * Declared HERE, above `useRawView`, and that order is load-bearing: the hook below restores
+   * the caret into this textarea from an effect, and React runs effects in declaration order.
+   * A textarea built after that effect is a caret that lands at the end of the document.
+   */
+  const rawRef = useRef<ReturnType<typeof useRawView> | null>(null)
+  const sourceHost = useRef<HTMLDivElement>(null)
+  const sourceRef = useRef<SourceView | null>(null)
+  // The find strip searches the textarea directly, so it needs the element rather than the view.
+  const sourceTaRef = useRef<HTMLTextAreaElement | null>(null)
+  // ⚠️ KEYED ON `editor`, NOT ON NOTHING. This component returns a placeholder until the
+  // instance exists, so on the very first pass there is no host to build into — and an effect
+  // with an empty dependency list runs exactly then and never again. It ran, found null, and
+  // the Markdown view never opened for the rest of the session. Caught by pressing the key.
+  useEffect(() => {
+    const host = sourceHost.current
+    if (!host || sourceRef.current) return
+    const made = mountSource(host, {
+      onChange: (next) => { rawRef.current?.setText(next); onChangeRef.current(next) },
+      onDirty: () => onDirtyRef.current(),
+    })
+    sourceRef.current = made
+    sourceTaRef.current = made.area
+  }, [editor])
+
+  // The Markdown source view and the switch into it (`useRawView.ts`). Declared here rather
+  // than with the other state because it needs the editor, and it reads it through the ref
+  // the drag-drop and paste closures already use — the same reason they do.
+  const rawView = useRawView(sourceRef, editorRef, onChange)
+  rawRef.current = rawView
+  const raw = rawView.on
+
   /**
    * The editor's DOM, moved into the paper.
    *
@@ -209,35 +243,43 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
    */
   useEffect(() => {
     const host = hostRef.current
-    // The detached div Tiptap made, reached through the view rather than through
-    // `options.element` — that option is a union of four shapes and only one of them is a node.
-    const made = editor?.view.dom.parentElement
-    if (!editor || !host || !made || host.childNodes.length > 0) return
-    host.append(...made.childNodes)
+    // Wherever the writing surface is living right now: the detached div Tiptap made at
+    // construction, or the host that has just been removed from the page. Reached through the
+    // view rather than through `options.element`, which is a union of four shapes and only one
+    // of them is a node.
+    const from = editor?.view.dom.parentElement
+    if (!editor || !host || !from || from === host) return
+    // ⚠️ `raw` IS IN THE DEPENDENCIES, AND THAT IS THE WHOLE BUG. The paper is rendered only in
+    // the rich view, so switching to the Markdown source REMOVES this host — the writing surface
+    // goes with it, still attached, now detached from the page. Switching back builds a NEW
+    // host, and an effect keyed on the editor alone never runs again: the sheet came back empty,
+    // with the document intact in an editor nobody could see. `EditorContent` re-attached on
+    // every mount; the hand-written replacement that took its place on 2026-09-15 did not, and
+    // it shipped. Nothing was red — no unit test toggles a view, and the tour's Markdown flow
+    // went one way. Found by pressing the key twice; pinned by a flow that presses it twice.
+    host.append(...from.childNodes)
     editor.setOptions({ element: host })
-  }, [editor])
-
-  // The Markdown source view and the switch into it (`useRawView.ts`). Declared here rather
-  // than with the other state because it needs the editor, and it reads it through the ref
-  // the drag-drop and paste closures already use — the same reason they do.
-  const rawView = useRawView(editorRef, onChange)
-  const raw = rawView.on
+  }, [editor, raw])
   useEffect(() => { onRawChangeRef.current?.(raw) }, [raw])
 
   // Find and replace, for whichever view is showing (`useEditorFind.ts`). It owns the chord.
   const find = useEditorFind({
     editor,
     raw,
-    taRef: rawView.taRef,
+    taRef: sourceTaRef,
     rawTextRef: rawView.textRef,
     onRawText: (next) => { rawView.setText(next); onChange(next) },
   })
 
   // The button strip, the floating bar and the "/" menu, all three plain TypeScript now
   // (`useEditorChrome.ts`). This component keeps only the CONDITIONS, which are React state.
-  const toolbarHost = useEditorChrome({
+  // The find strip highlights the source view too, and its hits are the hook's below.
+  useEffect(() => { sourceRef.current?.setHits(find.rawHits, find.rawIndex) }, [find.rawHits, find.rawIndex])
+
+  const { toolbarHost, findHost } = useEditorChrome({
     editor, t, askLink, onPickImage, onPickGallery,
-    raw, focus, findOpen: Boolean(find.open),
+    raw, focus, findOpen: find.open,
+    findTarget: find.target, onFindHeight: find.onHeight,
     toolbarTop, findHeight: find.height, slash, setSlash,
   })
   useEffect(() => {
@@ -304,7 +346,7 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
           the sheet's own top stack, not a band floating over the paper. */}
       {find.open && (
         <div className="sticky z-20" style={{ top: toolbarTop }}>
-          <FindBar target={find.target} withReplace={find.open === 'replace'} onHeight={find.onHeight} />
+          <div ref={findHost} />
         </div>
       )}
       {/* At the very TOP of the sheet, the full width of it — the owner's verdicts, one
@@ -322,19 +364,13 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
           post sits behind Publish and cannot be scrolled clear of it. */}
       <div className="mx-auto w-full pb-20 lg:pb-0" style={{ maxWidth: contentWidth }}>
         {header}
-        {raw ? (
-          <MarkdownSource
-            taRef={rawView.taRef}
-            hits={find.rawHits}
-            current={find.rawIndex}
-            value={rawView.text}
-            onDirty={onDirty}
-            onChange={(next) => {
-              rawView.setText(next)
-              onChange(next)
-            }}
-          />
-        ) : (
+        {/* ⚠️ MOUNTED ONCE AND HIDDEN, not mounted when the switch is thrown. `useRawView` carries
+            the caret across that switch and has to reach the textarea from an effect declared
+            ABOVE this one — a textarea that does not exist yet at that moment is a caret that
+            lands at the end of the document instead of where the writer left it. Built at the
+            first render, it is there whenever that effect looks. */}
+        <div ref={sourceHost} hidden={!raw} />
+        {!raw && (
           <div className="typewriter-stage relative">
             <div ref={hostRef} />
             {keySound.mode !== 'off' && <span ref={caretRef} className="typewriter-caret" aria-hidden="true" />}
