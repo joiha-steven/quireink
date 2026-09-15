@@ -278,11 +278,21 @@ the alternative to passing them in is a node view importing all eleven languages
 toolbar. Seventeen strings for the picture, two for the video, one for the maths.
 
 ⚠️ **`stopEvent` MUST NOT ANSWER `true` FOR EVERYTHING, and all three were written that way
-first.** The maths node shipped it: the click that selects an atom never reached ProseMirror,
-selecting is what swaps the rendered formula for its source, so a formula could be read and
-never corrected. **Every unit test passed** — a node's attributes, its serializer and its input
-rules are all reachable without a pointer. Found by clicking one. The rule is that only the
-CHROME's events are the view's: the toolbar, and the field you type a caption or a formula into.
+first.** On the maths node it made the formula uneditable: the click that selects an atom never
+reached ProseMirror, selecting is what swaps the rendered formula for its source, so a formula
+could be read and never corrected. **Every unit test passed** — a node's attributes, its
+serializer and its input rules are all reachable without a pointer. Found by clicking one. The
+rule is that only the CHROME's events are the view's: the toolbar, and the field you type a
+caption or a formula into.
+
+⚠️ **AND THE COMMIT MESSAGE FOR `92c9fb4c` OVERSTATES THAT: it says the fault "shipped", and it
+did not.** No commit ever carried an uneditable formula — `MathNode.ts` exists in exactly one
+commit and that commit has the fix. The hour it stood was an hour in a working tree. What DID
+reach a commit is the same `stopEvent(): true` on the video node (`f797d5fd`), where it was
+harmless only by accident: that node lays a transparent sheet over the player and selects itself
+from it, so the swallowed click was being replaced by an explicit one. Both were tightened in
+`92c9fb4c`. The distinction is worth writing down because "shipped" is the word that decides
+whether a reader has to go and check production.
 
 ⚠️ **AND THE FIRST MEASUREMENT OF THAT BUG WAS WRONG TWICE.** A synthetic `mousedown` on the
 wrapper reported the fault as still present after the fix, because ProseMirror reads the position
