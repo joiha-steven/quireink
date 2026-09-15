@@ -244,6 +244,7 @@ const vi = {
   dateMonthPrev: 'Tháng trước',
   dateMonthNext: 'Tháng sau',
   dateTime: 'Giờ',
+  dateCalendar: 'Mở lịch',
   tbHeading: 'Tiêu đề mục',
   slashHint: 'Gõ / để chèn ảnh, bảng, mã, công thức · bôi đen chữ để hiện thanh công cụ',
   findFind: 'Tìm',

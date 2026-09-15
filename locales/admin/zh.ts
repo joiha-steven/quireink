@@ -244,6 +244,7 @@ const zh = {
   dateMonthPrev: '上个月',
   dateMonthNext: '下个月',
   dateTime: '时间',
+  dateCalendar: '打开日历',
   tbHeading: '标题',
   slashHint: '输入 / 插入图片、表格、代码或公式 · 选中文字即显示格式栏',
   findFind: '查找',

@@ -15,19 +15,20 @@
 // locale. `formatWallClock`'s own note names both halves of that mistake and this field was
 // the last place in the admin still making them.
 //
-// The closed field goes through `formatWallClock` rather than through a Date of its own for
-// the second half: `new Date("2026-03-08T02:30")` is read in the MACHINE's zone, and an hour
-// that zone does not have is silently moved to one it does — so a post scheduled for 02:30
-// from a browser in New York printed back as 03:30 while the stored value stayed 02:30.
+// ⚠️ AND SINCE 2026-09-15 THE FIELD IS TYPED IN rather than clicked at. It was a button that
+// opened the grid, and the grid's only way to another month was a pair of arrows: nine clicks
+// to next March, twelve to correct a year. The box now takes the date as writing — in this
+// language's own day/month order, see `admin-shared/date-typing.ts` — and shows the shape it
+// accepts rather than the locale's prettier one, because a box somebody edits has to show what
+// they would type. The prettier form is still printed under the title, where it is read.
 import { useEffect, useId, useRef, useState } from 'react'
 import { CONTROL, NOTE, SETTING_LABEL } from '@/admin/components/kit'
 import { useAdminLang, useAdminT } from '@/admin/components/I18nProvider'
-import { dateLocale, formatWallClock } from '@/i18n/format'
+import { dateLocale } from '@/i18n/format'
+import { formatTyped, parseTyped, toValue, typedShape } from '@/admin-shared/date-typing'
 import type { SiteLang } from '@/types'
 
 const pad = (n: number) => String(n).padStart(2, '0')
-const toValue = (d: Date) =>
-  `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
 
 /** Monday-first weekday initials, from Intl rather than an i18n table of seven × six. */
 function weekdayInitials(lang: SiteLang): string[] {
@@ -48,9 +49,7 @@ export function DateField({
   const t = useAdminT()
   const lang = useAdminLang()
   const [open, setOpen] = useState(false)
-  // The label is a caption over a button, not a `<label>` over an input: the control here is
-  // the button that opens the calendar. Naming it by both ids reads the caption and then the
-  // date it currently holds, which is what a `<label>` around a native field would have said.
+  // A real `<label>` again, now that the control it names is a field rather than a button.
   const id = useId()
   const box = useRef<HTMLDivElement>(null)
   const picked = value ? new Date(value) : new Date()
@@ -58,6 +57,16 @@ export function DateField({
   const shown = valid ? picked : new Date()
   // The month the grid is LOOKING AT, which is not always the month of the value.
   const [view, setView] = useState(() => new Date(shown.getFullYear(), shown.getMonth(), 1))
+  // What is in the box. Seeded from the value and written back whenever the value changes from
+  // somewhere else — a day picked out of the grid, a revision loaded, a draft restored — but
+  // NOT while it is being typed into, or every keystroke would fight the person typing it.
+  const [typed, setTyped] = useState(() => formatTyped(value, lang))
+  const lastValue = useRef(value)
+  useEffect(() => {
+    if (lastValue.current === value) return
+    lastValue.current = value
+    setTyped(formatTyped(value, lang))
+  }, [value, lang])
 
   useEffect(() => {
     if (!open) return
@@ -97,26 +106,54 @@ export function DateField({
 
   return (
     <div className="relative" ref={box}>
-      <span id={`${id}-label`} className={SETTING_LABEL}>{label}</span>
-      <button
-        type="button"
-        id={`${id}-value`}
-        aria-labelledby={`${id}-label ${id}-value`}
-        aria-haspopup="dialog"
-        aria-expanded={open}
-        onClick={() => { setView(new Date(shown.getFullYear(), shown.getMonth(), 1)); setOpen((v) => !v) }}
-        className={`${CONTROL} mt-2 flex w-full items-center justify-between text-left`}
-      >
-        {/* `value &&`, because the closed field now prints the STRING rather than a Date
-            built from it: an empty value used to fall back to today through `picked`, and
-            through `formatWallClock` it would come back as an empty button instead. Nothing
-            hands this field an empty value today; a blank control that looks broken is the
-            wrong way to find out that something started to. */}
-        <span>{value && valid ? formatWallClock(value, lang) : '—'}</span>
-        <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-neutral-500 dark:text-neutral-400" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden>
-          <rect x="4" y="5.5" width="16" height="14" rx="1.5" /><path d="M4 9.5h16M8.5 3.5v3M15.5 3.5v3" />
-        </svg>
-      </button>
+      <label htmlFor={`${id}-value`} className={SETTING_LABEL}>{label}</label>
+      {/* ⚠️ A FIELD YOU CAN TYPE IN, not a button that opens a grid.
+          It was a button, and the only way to another month was the pair of arrows at the top
+          of the calendar: nine clicks to next March, twelve to correct a year. Somebody who
+          knows the date they want should be able to write it down. The grid stays for
+          browsing — it is one click away, and it is the only door for anybody who would
+          rather point.
+
+          The box shows the TYPEABLE shape rather than the locale's pretty date, and that is
+          the trade: `15 thg 9, 2026, 14:30` reads better and cannot be corrected without
+          clearing it first. The pretty form is still under the title, where it is read. */}
+      <div className={`${CONTROL} mt-2 flex w-full items-center gap-2`}>
+        <input
+          id={`${id}-value`}
+          value={typed}
+          inputMode="numeric"
+          spellCheck={false}
+          placeholder={typedShape(lang)}
+          aria-invalid={typed.trim() !== '' && parseTyped(typed, lang, new Date()) === null}
+          onChange={(e) => {
+            setTyped(e.target.value)
+            // Half a date is not a date. `parseTyped` answers null until it is sure, and null
+            // means the stored value is LEFT ALONE — so typing over a good date never destroys
+            // it on the way to the next one.
+            const read = parseTyped(e.target.value, lang, new Date())
+            if (read) {
+              onChange(read)
+              const at = new Date(read)
+              setView(new Date(at.getFullYear(), at.getMonth(), 1))
+            }
+          }}
+          // Tidied on the way out, so what is in the box is always what would be typed back in.
+          onBlur={() => setTyped(formatTyped(value, lang))}
+          className="min-w-0 flex-1 bg-transparent tabular-nums outline-none"
+        />
+        <button
+          type="button"
+          aria-label={t.dateCalendar}
+          aria-haspopup="dialog"
+          aria-expanded={open}
+          onClick={() => { setView(new Date(shown.getFullYear(), shown.getMonth(), 1)); setOpen((v) => !v) }}
+          className="shrink-0 text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
+        >
+          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden>
+            <rect x="4" y="5.5" width="16" height="14" rx="1.5" /><path d="M4 9.5h16M8.5 3.5v3M15.5 3.5v3" />
+          </svg>
+        </button>
+      </div>
 
       {open && (
         <div className="absolute z-30 mt-1 w-72 rounded-lg border border-neutral-200 bg-white p-3 shadow-lg dark:border-neutral-700 dark:bg-neutral-900">

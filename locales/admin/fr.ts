@@ -244,6 +244,7 @@ const fr = {
   dateMonthPrev: 'Mois précédent',
   dateMonthNext: 'Mois suivant',
   dateTime: 'Heure',
+  dateCalendar: 'Ouvrir le calendrier',
   tbHeading: 'Titre',
   slashHint: 'Tapez / pour insérer une image, un tableau, du code ou une formule · sélectionnez du texte pour faire apparaître la barre de mise en forme',
   findFind: 'Rechercher',

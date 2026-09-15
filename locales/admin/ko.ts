@@ -244,6 +244,7 @@ const ko = {
   dateMonthPrev: '이전 달',
   dateMonthNext: '다음 달',
   dateTime: '시간',
+  dateCalendar: '달력 열기',
   tbHeading: '제목',
   slashHint: '/ 를 입력해 이미지·표·코드·수식 삽입 · 텍스트를 선택하면 서식 막대가 나타납니다',
   findFind: '찾기',

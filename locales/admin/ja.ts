@@ -244,6 +244,7 @@ const ja = {
   dateMonthPrev: '前の月',
   dateMonthNext: '次の月',
   dateTime: '時刻',
+  dateCalendar: 'カレンダーを開く',
   tbHeading: '見出し',
   slashHint: '/ で画像・表・コード・数式を挿入 · テキストを選択すると書式バーが現れます',
   findFind: '検索',

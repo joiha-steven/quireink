@@ -436,6 +436,8 @@ export type AdminStrings = {
   dateMonthPrev: string
   dateMonthNext: string
   dateTime: string
+  /** The button beside the typed date, for anybody who would rather point. */
+  dateCalendar: string
   tbHeading: string
   slashHint: string
   findFind: string

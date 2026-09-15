@@ -244,6 +244,7 @@ const de = {
   dateMonthPrev: 'Voriger Monat',
   dateMonthNext: 'Nächster Monat',
   dateTime: 'Uhrzeit',
+  dateCalendar: 'Kalender öffnen',
   tbHeading: 'Überschrift',
   slashHint: 'Mit / Bild, Tabelle, Code oder Formel einfügen · Text markieren für die Formatleiste',
   findFind: 'Suchen',

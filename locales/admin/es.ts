@@ -244,6 +244,7 @@ const es = {
   dateMonthPrev: 'Mes anterior',
   dateMonthNext: 'Mes siguiente',
   dateTime: 'Hora',
+  dateCalendar: 'Abrir el calendario',
   tbHeading: 'Encabezado',
   slashHint: 'Escribe / para insertar una imagen, tabla, código o fórmula · selecciona texto para abrir la barra de formato',
   findFind: 'Buscar',

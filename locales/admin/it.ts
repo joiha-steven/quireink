@@ -244,6 +244,7 @@ const it = {
   dateMonthPrev: 'Mese precedente',
   dateMonthNext: 'Mese successivo',
   dateTime: 'Ora',
+  dateCalendar: 'Apri il calendario',
   tbHeading: 'Titolo di sezione',
   slashHint: 'Digita / per inserire un’immagine, una tabella, codice o una formula · seleziona del testo per far comparire la barra di formattazione',
   findFind: 'Cerca',

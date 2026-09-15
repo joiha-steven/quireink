@@ -245,6 +245,7 @@ const pt = {
   dateMonthPrev: 'Mês anterior',
   dateMonthNext: 'Próximo mês',
   dateTime: 'Hora',
+  dateCalendar: 'Abrir o calendário',
   tbHeading: 'Título de seção',
   slashHint: 'Digite / para inserir imagem, tabela, código ou fórmula · selecione um texto para abrir a barra de formatação',
   findFind: 'Procurar',

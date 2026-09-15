@@ -244,6 +244,7 @@ const en = {
   dateMonthPrev: 'Previous month',
   dateMonthNext: 'Next month',
   dateTime: 'Time',
+  dateCalendar: 'Open the calendar',
   tbHeading: 'Heading',
   slashHint: 'Type / to insert an image, table, code or formula · select text to raise the formatting bar',
   findFind: 'Find',
