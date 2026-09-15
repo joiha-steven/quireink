@@ -101,9 +101,16 @@ export function wireMail(screen: HTMLElement, w: MailWords): void {
     // would be a lie. A host that is not yet a working configuration is AMBER — something to
     // finish — and only a complete one is green. React's `ConnectionCard` drew exactly these
     // three from `enabled` and `connected`.
-    const state = !cfg.host.trim() ? 'off' : cfg.configured ? 'good' : 'attention'
-    setLamp(card.querySelector('[data-card-lamp]'), state,
-      (state === 'good' ? w.connectionOk : state === 'off' ? w.connectionOff : w.connectionUntested) ?? '')
+    // ⚠️ FOUR STATES NOW, and the new one is not a fault. `SMTP_OFF=1` means this machine is
+    // not ALLOWED to send: every field is right and nothing is unfinished, so the amber
+    // "something to finish" lamp would send somebody looking for a setting that is already
+    // correct. It reads as OFF, with the reason printed beside it.
+    const off = cfg.blocked === 'smtp_off'
+    const state = off || !cfg.host.trim() ? 'off' : cfg.configured ? 'good' : 'attention'
+    const said = off
+      ? w.mailSwitchedOff
+      : state === 'good' ? w.connectionOk : state === 'off' ? w.connectionOff : w.connectionUntested
+    setLamp(card.querySelector('[data-card-lamp]'), state, said ?? '')
     const key = card.querySelector<HTMLElement>('[data-card-save]')
     if (key && cfg.host.trim() && w.saveAndTest) key.textContent = w.saveAndTest
   }

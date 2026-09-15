@@ -499,6 +499,7 @@ const de = {
   connectionUntested: 'Gespeichert, aber noch nicht versucht',
   connectionUnsaved: 'Geändert, nicht gespeichert',
   connectionFailed: 'Der letzte Versuch ist fehlgeschlagen',
+  mailSwitchedOff: 'Auf diesem Rechner ist der Mailversand abgeschaltet (SMTP_OFF=1)',
   connectionOff: 'Ausgeschaltet',
   savedSettings: 'Einstellungen gespeichert',
   saveSettingsCount: 'Speichern · {n} Änderung(en)',

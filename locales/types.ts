@@ -782,6 +782,13 @@ export type AdminStrings = {
   connectionUntested: string
   connectionUnsaved: string
   connectionFailed: string
+  /**
+   * ⚠️ NOT "not configured". `SMTP_OFF=1` means this machine is not ALLOWED to send, which is a
+   * different thing for the owner to do something about: every field is right and nothing is
+   * unfinished. Printing the amber "something to finish" lamp for it would send somebody
+   * looking for a setting that is already correct.
+   */
+  mailSwitchedOff: string
   connectionOff: string
   savedSettings: string
   /** The Save key once the form has changes on it: the count is the reason to press it. */

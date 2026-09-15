@@ -9,19 +9,19 @@
 import { describe, it, expect, beforeEach, afterAll } from 'bun:test'
 import { freshDatabase, dropDatabase } from '@/test/db'
 import { db } from '@/store/db'
-import { getSmtpConfig, saveSmtpConfig, isMailConfigured, getMailStatus } from '@/news/mail'
+import { getSmtpConfig, saveSmtpConfig, isMailConfigured, getMailStatus, mailBlocked, sendMail } from '@/news/mail'
 import { saveIntegrationKeys } from '@/store/integration-keys'
 
 const DIR = './.tmp/test-mail'
 freshDatabase(DIR)
 afterAll(() => {
   dropDatabase(DIR)
-  for (const k of ['SMTP_HOST', 'SMTP_PORT', 'SMTP_FROM', 'SMTP_USER']) delete process.env[k]
+  for (const k of ['SMTP_HOST', 'SMTP_PORT', 'SMTP_FROM', 'SMTP_USER', 'SMTP_OFF']) delete process.env[k]
 })
 
 beforeEach(() => {
   db().run(`delete from integration_keys`)
-  for (const k of ['SMTP_HOST', 'SMTP_PORT', 'SMTP_FROM', 'SMTP_USER']) delete process.env[k]
+  for (const k of ['SMTP_HOST', 'SMTP_PORT', 'SMTP_FROM', 'SMTP_USER', 'SMTP_OFF']) delete process.env[k]
 })
 
 describe('getSmtpConfig', () => {
@@ -93,5 +93,72 @@ describe('isMailConfigured', () => {
     const status = await getMailStatus()
     expect(status).toEqual({ configured: true, from: 'a@b.co' })
     expect(JSON.stringify(status)).not.toContain('hunter2')
+  })
+})
+
+/**
+ * ⚠️ THE ONE THING THAT HAS EVER STOPPED THIS PRODUCT SENDING REAL MAIL FROM A COPY OF A REAL
+ * INSTANCE is that nobody happened to configure SMTP on it. That is not a safety measure, it is
+ * a coincidence — and it ends the moment somebody copies a production `.env` onto a staging box
+ * to reproduce something, which is the ordinary way to reproduce something.
+ *
+ * `SMTP_OFF=1` is the switch. It is checked at the ONE gate every sending path asks, so this
+ * file can hold it with a working configuration in place: if the gate says no with everything
+ * else right, nothing downstream has a way to send.
+ */
+describe('the environment can refuse to send at all', () => {
+  const working = { host: 'smtp.example.com', from: 'a@b.co', pass: 'x' }
+
+  it('refuses with a complete configuration in place, and says WHICH refusal it is', async () => {
+    await saveSmtpConfig(working)
+    expect(mailBlocked(await getSmtpConfig())).toBe(null)
+    process.env.SMTP_OFF = '1'
+    // Not `smtp_not_configured`: every field is right. An owner reading the send log to find
+    // out why nothing arrived must not be sent looking for a setting that is already correct.
+    expect(mailBlocked(await getSmtpConfig())).toBe('smtp_off')
+    expect(isMailConfigured(await getSmtpConfig())).toBe(false)
+  })
+
+  it('takes the subscribe form off the reader page with it, which is the point', async () => {
+    // `getMailStatus().configured` is what decides whether that form is drawn. A form that
+    // collects an address and can never send the confirmation leaves the reader waiting for an
+    // email that was never going to arrive.
+    await saveSmtpConfig(working)
+    expect((await getMailStatus()).configured).toBe(true)
+    process.env.SMTP_OFF = '1'
+    expect((await getMailStatus()).configured).toBe(false)
+  })
+
+  it('makes `sendMail` refuse and RECORD the reason rather than throwing', async () => {
+    await saveSmtpConfig(working)
+    process.env.SMTP_OFF = '1'
+    const out = await sendMail({ to: 'someone@example.com', subject: 's', html: '<p>h</p>', kind: 'test' })
+    expect(out).toEqual({ sent: false, error: 'smtp_off' })
+    // And it is in the log, because every send is written from that one choke point — a refusal
+    // that left no trace would be indistinguishable from a send nobody made.
+    const row = db().query(`select kind, ok, error from newsletter_sends order by id desc limit 1`)
+      .get() as { kind: string; ok: number; error: string } | null
+    expect(row).toMatchObject({ kind: 'test', ok: 0, error: 'smtp_off' })
+  })
+
+  /**
+   * ⚠️ A SAFETY SWITCH THAT FAILS OPEN IS NOT A SAFETY SWITCH. The first cut read `=== '1'`,
+   * which means `SMTP_OFF=true` — written by somebody who believed they had turned mail off —
+   * sends the newsletter. Anything present and not an explicit denial means OFF.
+   */
+  it('stops mail for ANY value that is not an explicit denial', async () => {
+    await saveSmtpConfig(working)
+    for (const value of ['1', 'true', 'yes', 'on', 'TRUE', ' 1 ']) {
+      process.env.SMTP_OFF = value
+      expect(`SMTP_OFF=${JSON.stringify(value)}: ${mailBlocked(await getSmtpConfig())}`)
+        .toBe(`SMTP_OFF=${JSON.stringify(value)}: smtp_off`)
+    }
+    // And the ways to say "no, send" — including an empty value, so a `.env` line left blank
+    // does not silence a working blog.
+    for (const value of ['', '0', 'false', 'no', 'FALSE']) {
+      process.env.SMTP_OFF = value
+      expect(`SMTP_OFF=${JSON.stringify(value)}: ${mailBlocked(await getSmtpConfig())}`)
+        .toBe(`SMTP_OFF=${JSON.stringify(value)}: null`)
+    }
   })
 })

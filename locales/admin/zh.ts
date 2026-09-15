@@ -499,6 +499,7 @@ const zh = {
   connectionUntested: '已保存，尚未测试',
   connectionUnsaved: '已改动，未保存',
   connectionFailed: '上一次尝试失败',
+  mailSwitchedOff: '这台机器上已关闭邮件发送（SMTP_OFF=1）',
   connectionOff: '已关闭',
   savedSettings: '设置已保存',
   saveSettingsCount: '保存 · {n} 处改动',

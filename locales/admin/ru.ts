@@ -499,6 +499,7 @@ const ru = {
   connectionUntested: 'Сохранено, но ещё не проверялось',
   connectionUnsaved: 'Изменено, не сохранено',
   connectionFailed: 'Последняя попытка не удалась',
+  mailSwitchedOff: 'Отправка почты отключена на этой машине (SMTP_OFF=1)',
   connectionOff: 'Выключено',
   savedSettings: 'Настройки сохранены',
   saveSettingsCount: 'Сохранить · изменений: {n}',

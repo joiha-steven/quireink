@@ -500,6 +500,7 @@ const pt = {
   connectionUntested: 'Guardado, mas ainda sem teste',
   connectionUnsaved: 'Alterado, por guardar',
   connectionFailed: 'A última tentativa falhou',
+  mailSwitchedOff: 'O envio de e-mail está desligado nesta máquina (SMTP_OFF=1)',
   connectionOff: 'Desligado',
   savedSettings: 'Configurações salvas',
   saveSettingsCount: 'Guardar · {n} alteração(ões)',

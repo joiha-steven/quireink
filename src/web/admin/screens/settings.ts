@@ -51,6 +51,7 @@ function words(t: AdminStrings): string {
     // The SMTP card fills itself from `/api/mail`, and both of these are facts only that reply
     // carries: whether the far end has credentials, and whether there is anything to try.
     connectionOff: t.connectionOff, connectionUntested: t.connectionUntested,
+    mailSwitchedOff: t.mailSwitchedOff,
     saveAndTest: t.saveAndTest,
     saveFailed: t.saveFailed,
     // The picker opens over this screen and carries no dictionary of its own.

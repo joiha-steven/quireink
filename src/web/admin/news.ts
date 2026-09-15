@@ -10,7 +10,7 @@
 import type { Context } from 'hono'
 import type { IntegrationKeys } from '@/store/integration-keys'
 import type { SmtpConfig } from '@/news/mail'
-import { getSmtpConfig, isMailConfigured, saveSmtpConfig, sendMail } from '@/news/mail'
+import { getSmtpConfig, isMailConfigured, mailBlocked, saveSmtpConfig, sendMail } from '@/news/mail'
 import { broadcastEmail, confirmEmail } from '@/news/newsletter-email'
 import { emailBrand } from '@/news/email-brand'
 import { BroadcastError, broadcastPosts, broadcastRun, previewBroadcast } from '@/news/broadcast'
@@ -76,6 +76,7 @@ export function newsRoutes() {
       secure: config.secure,
       hasPass: !!config.pass,
       configured: isMailConfigured(config),
+      blocked: mailBlocked(config),
     }
     return json(payload)
   })

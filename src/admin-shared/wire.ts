@@ -90,4 +90,9 @@ export type MailWire = {
   hasPass: boolean
   /** Whether the far end has everything it needs, decided by the server. */
   configured: boolean
+  /**
+   * WHY it cannot send, when it cannot. `smtp_off` is the environment's switch and is not a
+   * fault: every field is right and this machine is simply not allowed to send.
+   */
+  blocked: 'smtp_off' | 'smtp_not_configured' | null
 }

@@ -16,7 +16,7 @@
 // SERVER-ONLY.
 
 import { getConfirmedSubscribers } from '@/news/subscribers'
-import { getSmtpConfig, isMailConfigured, openMailPool, sendMail } from '@/news/mail'
+import { getSmtpConfig, mailBlocked, openMailPool, sendMail } from '@/news/mail'
 import { getSettings } from '@/content/settings'
 import { emailBrand } from '@/news/email-brand'
 import { broadcastEmail, type EmailPost } from '@/news/newsletter-email'
@@ -125,7 +125,10 @@ export async function broadcastPosts(
     if (slugs.some((s) => (prior.get(s)?.sent ?? 0) > 0)) throw new BroadcastError('already_sent')
   }
   const cfg = await getSmtpConfig()
-  if (!isMailConfigured(cfg)) throw new BroadcastError('smtp_not_configured')
+  // The reason, not just the refusal: the screen prints this code, and "switched off here" is
+  // a different thing for the owner to do about it than "not configured".
+  const blocked = mailBlocked(cfg)
+  if (blocked) throw new BroadcastError(blocked)
 
   const subs = await getConfirmedSubscribers()
   const started: BroadcastRun = {

@@ -499,6 +499,7 @@ const ja = {
   connectionUntested: '保存済み。まだ確認していません',
   connectionUnsaved: '変更あり、未保存',
   connectionFailed: '前回の試行は失敗しました',
+  mailSwitchedOff: 'このマシンではメール送信が無効です（SMTP_OFF=1）',
   connectionOff: 'オフ',
   savedSettings: '設定を保存しました',
   saveSettingsCount: '保存 · {n} 件の変更',

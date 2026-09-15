@@ -499,6 +499,7 @@ const ko = {
   connectionUntested: '저장됨, 아직 확인 안 함',
   connectionUnsaved: '변경됨, 저장 안 함',
   connectionFailed: '마지막 시도가 실패함',
+  mailSwitchedOff: '이 컴퓨터에서는 메일 발송이 꺼져 있습니다(SMTP_OFF=1)',
   connectionOff: '꺼짐',
   savedSettings: '설정이 저장되었습니다',
   saveSettingsCount: '저장 · 변경 {n}건',

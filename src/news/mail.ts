@@ -59,9 +59,44 @@ export async function getSmtpConfig(): Promise<SmtpConfig> {
   }
 }
 
-// Configured enough to send: a host and a From address.
+/**
+ * ⚠️ IT FAILS SAFE, WHICH IS WHY IT IS NOT `=== '1'`. A switch whose whole purpose is to stop
+ * something irreversible must not be the kind that quietly does nothing because somebody wrote
+ * `true` where the documentation said `1`. Anything present and not an explicit denial means
+ * OFF; `0`, `false`, `no` and an empty value are the ways to say "no, send".
+ */
+function mailSwitchedOff(): boolean {
+  const v = env('SMTP_OFF').trim().toLowerCase()
+  return v !== '' && v !== '0' && v !== 'false' && v !== 'no'
+}
+
+/**
+ * WHY MAIL CANNOT GO OUT, or null when it can.
+ *
+ * ⚠️ `SMTP_OFF=1` IS A SWITCH FOR THE ENVIRONMENT, and it exists because the only thing that
+ * has ever stopped this product sending real mail from a copy of a real instance is that
+ * nobody happened to configure SMTP on it. The moment somebody copies a production `.env` to a
+ * staging box to reproduce something — which is the ordinary way to reproduce something — every
+ * path that sends starts sending, to real addresses, from a machine nobody is watching. A
+ * newsletter cannot be unsent.
+ *
+ * It is checked HERE because this is the one gate: `openMailPool`, `sendMail`, `broadcastPosts`
+ * and the comment notifier all ask this question and nothing sends without asking it.
+ *
+ * ⚠️ AND IT TAKES THE SUBSCRIBE FORM OFF THE READER'S PAGE WITH IT, which is deliberate rather
+ * than a side effect. `getMailStatus().configured` is what decides whether that form is drawn,
+ * and a form that collects an address and can never send the confirmation is worse than no form
+ * — the reader is left waiting for an email that was never going to arrive.
+ */
+export function mailBlocked(cfg: SmtpConfig): 'smtp_off' | 'smtp_not_configured' | null {
+  if (mailSwitchedOff()) return 'smtp_off'
+  // Configured enough to send: a host and a From address.
+  return cfg.host && cfg.from ? null : 'smtp_not_configured'
+}
+
+/** Configured enough to send, AND allowed to. */
 export function isMailConfigured(cfg: SmtpConfig): boolean {
-  return !!(cfg.host && cfg.from)
+  return mailBlocked(cfg) === null
 }
 
 // Client-safe status (no secrets): whether mail can send + the From address.
@@ -239,9 +274,14 @@ export async function sendMail(msg: {
   const cfg = await getSmtpConfig()
   const record = (ok: boolean, error?: string) =>
     logSend({ email: msg.to, kind: msg.kind, ok, postSlugs: msg.postSlugs, error, openToken: msg.openToken })
-  if (!isMailConfigured(cfg)) {
-    await record(false, 'smtp_not_configured')
-    return { sent: false, error: 'smtp_not_configured' }
+  // ⚠️ THE REASON IS RECORDED, not merely the refusal. "Nobody configured SMTP" and "this
+  // machine is not allowed to send" are different problems, and an owner reading the send log
+  // to find out why nothing arrived will otherwise go looking for a setting that is already
+  // right.
+  const blocked = mailBlocked(cfg)
+  if (blocked) {
+    await record(false, blocked)
+    return { sent: false, error: blocked }
   }
   // Inside a run, the open pool. Outside one, a transport of its own, closed below.
   const shared = pooled?.key === poolKey(cfg) ? pooled.transport : null

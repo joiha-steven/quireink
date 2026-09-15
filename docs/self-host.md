@@ -76,6 +76,14 @@ MCP tool fetches from a URL. `0` disables either. The admin (Settings → Server
 lower them for this blog and never raise them, so on a server you run for somebody else these
 two lines are the ceiling.
 
+**`SMTP_OFF` stops this machine sending mail at all**, and it is the line to add the moment you
+make a copy of a blog that already has subscribers. The usual way to reproduce something is to
+copy the `.env` onto a second box — and then every path that sends starts sending, to real
+addresses, from a machine nobody is watching. A newsletter cannot be unsent. It fails safe: any
+value other than `0`, `false`, `no` or empty means off. The subscribe form goes off the reader's
+page with it, deliberately — a form that can never send its confirmation leaves somebody waiting
+for an email that was never coming.
+
 **`CSP` sends a Content-Security-Policy from the app, and is empty by default.** Leave it
 alone behind the nginx block below or the shipped `Caddyfile`: both already send one, a
 browser enforces the intersection of every policy it receives, and a second one from here
