@@ -6,7 +6,8 @@
 // GRAMMAR — a lead block, a featured row, named strips, a popular row and a latest row, each
 // with its own source, count and column rules. It is a subject, not a setting.
 import type { FrontSettings, FrontStrip } from '@/types'
-import { bool, clampNumber, withHolesFilled } from '@/content/settings-sanitize'
+import { bool, clampNumber } from '@/content/settings-sanitize'
+import { withHolesFilled } from '@/content/settings-partial'
 
 /** Columns in a row: 1, 2 or 3. Anything else is the fallback rather than a broken grid. */
 const columns = (v: unknown, fallback: number): number =>

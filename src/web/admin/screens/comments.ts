@@ -86,7 +86,7 @@ function card(t: AdminStrings, g: { slug: string; title: string; items: AdminCom
   // the title, so a wrapper would buy nothing and would put an element in the tree that the
   // React face did not have: measured against it, the first span inside this row stopped being
   // the count badge and the two builds' DOMs no longer lined up for comparison.
-  return `<section data-card data-slug="${escapeAttr(g.slug)}" data-newest="${g.newest}" class="px-5 py-4">`
+  return `<section data-card data-newest="${g.newest}" class="px-5 py-4">`
     + `<div class="mb-2 flex items-baseline gap-2 border-b border-neutral-100 pb-2 dark:border-neutral-800">`
     + `<a href="/${escapeAttr(g.slug)}" target="_blank" rel="noopener" title="${escapeAttr(g.title)}"`
     + ` data-mark data-text="${escapeAttr(g.title)}" class="${TITLE_LINK}">${escapeHtml(g.title)}</a>`

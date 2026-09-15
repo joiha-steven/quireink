@@ -12,6 +12,7 @@
 // work either loses it or raises the browser's own warning.
 import { fold } from '@/admin-shared/fold'
 import { resolveTab, type Tab } from '@/admin-shared/settings-tabs'
+import { wireAi } from './lib/settings-ai'
 import { wireCards } from './lib/settings-cards'
 import { wireCode } from './lib/settings-code'
 import { wireFont } from './lib/settings-font'
@@ -20,6 +21,7 @@ import { wireImport } from './lib/settings-import'
 import { wireControls } from './lib/settings-controls'
 import { wireLists } from './lib/settings-lists'
 import { wireMail } from './lib/settings-mail'
+import { wireNotes } from './lib/settings-notes'
 import { showTab } from './lib/tab-strip'
 import { wirePics } from './lib/settings-pics'
 import { wireSave, type SaveWords } from './lib/settings-save'
@@ -63,6 +65,10 @@ if (root) {
   wireFont(screen, words)
   // The Home tab's four lists. Each is one `data-k-json` value this owns, not a field per row.
   wireHome(screen, words)
+  // The model card's own request, which is also the only test of the key it holds.
+  wireAi(screen, words)
+  // The Google redirect address, and which of the language menu's two sentences is true.
+  wireNotes(screen)
   // The account's four flows, none of which is a setting and every one of which asks for the
   // current password first: being signed in is not enough.
   wireSecurity(screen, words)

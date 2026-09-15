@@ -41,7 +41,14 @@ const CF_TOKENS = 'https://dash.cloudflare.com/profile/api-tokens'
  */
 function secret(t: AdminStrings, f: {
   label: string
-  hook: string
+  /**
+   * The name the card's ROUTE takes this by, and the only hook these fields need.
+   *
+   * ⚠️ THEY USED TO WEAR A `data-cf-*` / `data-s3-*` HOOK AS WELL, as the marker that said "not
+   * a setting". `data-card-field` is that marker now and it carries the name too, so a second
+   * attribute would be a second answer to the same question with nothing reading it.
+   */
+  name: string
   /** Whether the server holds one already. Never the value — the server will not return it. */
   stored?: boolean
   /** A PUBLIC value worth showing as the ghost text, where there is one: the bucket's name. */
@@ -53,7 +60,13 @@ function secret(t: AdminStrings, f: {
     control: textControl({
       value: '', label: f.label, type: f.password ? 'password' : 'text',
       placeholder: f.shown || (f.stored ? t.commentsKeySet : ''),
-      attrs: f.hook,
+      // ⚠️ `data-card-field` IS WHAT SENDS IT. Until 2026-09-15 these boxes carried only their
+      // own `data-x` hook, and `settings-cards.ts` collects `[data-card-field]` — so nothing on
+      // any of the three cards was ever posted. Worse than a dead key: with no route on the card
+      // the island fell through to the settings partial, found no `data-k` inside, sent nothing,
+      // and turned the lamp GREEN. An owner pasted a token, pressed Save, was told the
+      // connection was good, and nothing had been stored.
+      attrs: `data-card-field="${escapeAttr(f.name)}"`,
     }),
   })
 }
@@ -76,6 +89,7 @@ export function cloudflareCard(t: AdminStrings, i: IntegrationStatus): string {
   return connectionCard({
     title: t.cardCloudflare,
     keys: [],
+    route: '/api/integrations/cloudflare',
     // ⚠️ AMBER, NOT GREY, WHEN THERE ARE NO CREDENTIALS. Grey is `connectionOff` and it means
     // somebody switched this off on purpose; this card has no switch, so the only thing "off"
     // could mean here is "never set up", and that is a thing to DO rather than a settled state.
@@ -90,11 +104,14 @@ export function cloudflareCard(t: AdminStrings, i: IntegrationStatus): string {
       + `<a href="${CF_TOKENS}" target="_blank" rel="noopener"`
       + ` class="font-medium underline hover:text-neutral-900 dark:hover:text-white">`
       + `${escapeHtml(t.commentsHelpOpen)}</a></p>`
-      + secret(t, { label: t.cfZoneId, hook: 'data-cf-zone', stored: Boolean(i.cloudflareZoneId) })
-      + secret(t, { label: t.cfToken, hook: 'data-cf-token', stored: on, password: true })
+      + secret(t, { label: t.cfZoneId, name: 'cloudflareZoneId',
+        stored: Boolean(i.cloudflareZoneId) })
+      + secret(t, { label: t.cfToken, name: 'cloudflareApiToken',
+        stored: on, password: true })
       + `<p class="${NOTE_TEXT}">${escapeHtml(t.cfWebhookHelp)}</p>`
       + secret(t, {
-        label: t.cfWebhook, hook: 'data-cf-webhook', stored: i.purgeWebhookConfigured, password: true,
+        label: t.cfWebhook, name: 'purgeWebhookUrl',
+        stored: i.purgeWebhookConfigured, password: true,
       })
       + `</div>`,
   })
@@ -142,7 +159,7 @@ export function aiCard(t: AdminStrings, s: SiteSettings, i: IntegrationStatus): 
     + ` class="${buttonClass('secondary')}">${escapeHtml(t.aiModelsLoad)}</button>${said}</div>`
   const model = `<span data-ai-model-box${i.aiModel ? '' : ' hidden'}>`
     + pickControl({
-      value: i.aiModel, width: 'full', label: t.aiModelLabel, attrs: 'data-ai-model disabled',
+      value: i.aiModel, width: 'full', label: t.aiModelLabel, attrs: 'data-ai-model data-card-field="aiModel" disabled',
       options: i.aiModel ? [[i.aiModel, i.aiModel]] : [],
     }) + `</span>`
   // THE KEY IS THE SWITCH for everything the model does with the owner's OWN material: alt text
@@ -170,6 +187,10 @@ export function aiCard(t: AdminStrings, s: SiteSettings, i: IntegrationStatus): 
   return connectionCard({
     title: t.cardAi,
     keys: ['ai'],
+    // ⚠️ BOTH HALVES, and the card said so for three days before either happened. The
+    // credentials go to their own endpoint and `ai.commentGuard` goes to the settings record;
+    // `settings-cards.ts` sends the route first, then the keys.
+    route: '/api/integrations/ai',
     state: off ? 'off' : i.aiConfigured ? 'good' : 'attention',
     lampTitle: off ? t.connectionOff : i.aiConfigured ? t.connectionOk : t.connectionUntested,
     saveLabel: off ? t.save : t.saveAndTest,
@@ -178,7 +199,7 @@ export function aiCard(t: AdminStrings, s: SiteSettings, i: IntegrationStatus): 
       + settingRow({
         label: t.aiProviderLabel, inline: true,
         control: pickControl({
-          value: i.aiProvider, width: 'medium', label: t.aiProviderLabel, attrs: 'data-ai-provider',
+          value: i.aiProvider, width: 'medium', label: t.aiProviderLabel, attrs: 'data-ai-provider data-card-field="aiProvider"',
           // Derived from the one table the routes check against, so the menu cannot offer a
           // provider the server would refuse, or miss one it would take.
           options: [['', t.aiProviderOff], ...AI_PROVIDERS.map((id) =>
@@ -200,7 +221,7 @@ export function aiCard(t: AdminStrings, s: SiteSettings, i: IntegrationStatus): 
           // telling the owner that leaving this blank keeps their key could be off the screen.
           value: '', label: t.aiKeyLabel, type: 'password',
           placeholder: i.aiConfigured ? t.commentsKeySet : t.aiKeyPh,
-          attrs: 'data-ai-key autocomplete="off"',
+          attrs: 'data-ai-key data-card-field="aiApiKey" autocomplete="off"',
         }),
       })
       + settingRow({ label: t.aiModelLabel, inline: true, control: model })
@@ -231,6 +252,7 @@ export function offsiteCard(t: AdminStrings, i: IntegrationStatus): string {
   return connectionCard({
     title: t.offsiteTitle,
     keys: [],
+    route: '/api/integrations/s3',
     // ⚠️ AMBER, NOT GREY, WHEN THERE ARE NO CREDENTIALS. Grey is `connectionOff` and it means
     // somebody switched this off on purpose; this card has no switch, so the only thing "off"
     // could mean here is "never set up", and that is a thing to DO rather than a settled state.
@@ -242,14 +264,15 @@ export function offsiteCard(t: AdminStrings, i: IntegrationStatus): string {
     saveLabel: t.saveAndTest,
     body: `<div class="space-y-3">`
       + `<p class="${NOTE_TEXT}">${escapeHtml(t.offsiteHelp)}</p>`
-      + secret(t, { label: t.s3Endpoint, hook: 'data-s3-endpoint' })
+      + secret(t, { label: t.s3Endpoint, name: 's3Endpoint' })
       + pairGrid(
-        secret(t, { label: t.s3Bucket, hook: 'data-s3-bucket', shown: i.s3Bucket })
-        + secret(t, { label: t.s3Region, hook: 'data-s3-region' }),
+        secret(t, { label: t.s3Bucket, name: 's3Bucket', shown: i.s3Bucket })
+        + secret(t, { label: t.s3Region, name: 's3Region' }),
       )
-      + secret(t, { label: t.s3Prefix, hook: 'data-s3-prefix' })
-      + secret(t, { label: t.s3KeyId, hook: 'data-s3-key-id', stored: on })
-      + secret(t, { label: t.s3Secret, hook: 'data-s3-secret', stored: on, password: true })
+      + secret(t, { label: t.s3Prefix, name: 's3Prefix' })
+      + secret(t, { label: t.s3KeyId, name: 's3AccessKeyId', stored: on })
+      + secret(t, { label: t.s3Secret, name: 's3SecretAccessKey',
+        stored: on, password: true })
       + `</div>`,
   })
 }

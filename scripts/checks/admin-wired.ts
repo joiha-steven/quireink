@@ -110,7 +110,29 @@ function heard(hook: string, prose: string, css: string): boolean {
  */
 const islands = ISLANDS.flatMap(files)
   .filter((f) => !/\.test\.ts$/.test(f) && !f.includes('scripts/checks/'))
-const prose = islands.map((f) => bare(readFileSync(f, 'utf8'))).join('\n')
+/**
+ * ⚠️ AND THE SCREENS READ A FEW OF THEIR OWN. `rail.ts` ships a boot script as a STRING — it has
+ * to run before the first frame, so it cannot be an island — and it reads `data-mac` off every
+ * chord to swap the key names on a Mac. A hook read by the markup file that draws it is read.
+ *
+ * Only the READING spellings count here, never the writing one: the attribute inside a
+ * `querySelector` bracket, `getAttribute('…')`, or `dataset.x`. Counting a screen's own
+ * `data-mac="…"` would make every hook vouch for itself and the guard would pass on an empty
+ * admin.
+ */
+function readsInMarkup(): string {
+  const out: string[] = []
+  for (const file of files(SCREENS)) {
+    if (/\.test\.ts$/.test(file)) continue
+    const text = bare(readFileSync(file, 'utf8'))
+    for (const hit of text.matchAll(/\[(data-[a-z0-9-]+)[\]=]|getAttribute\(['"`](data-[a-z0-9-]+)|dataset\.([A-Za-z0-9]+)/g)) {
+      out.push(hit[1] ?? hit[2] ?? `dataset.${hit[3] ?? ''}`)
+    }
+  }
+  return out.join('\n')
+}
+
+const prose = [...islands.map((f) => bare(readFileSync(f, 'utf8'))), readsInMarkup()].join('\n')
 const css = readFileSync(SHEET, 'utf8')
 const drawn = written()
 

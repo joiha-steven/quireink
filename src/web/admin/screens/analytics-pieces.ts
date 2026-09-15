@@ -67,7 +67,7 @@ export function pieceIndex(t: AdminStrings, lang: SiteLang, pieces: PieceStat[],
   // the rule off this attribute and the island moves it as the filter opens and closes.
   const lastShown = Math.min(TOP_N, rows.length) - 1
   const body = rows.map((r, i) =>
-    `<tr data-piece data-rank="${i}"${i === lastShown ? ' data-last' : ''}`
+    `<tr data-piece${i === lastShown ? ' data-last' : ''}`
     + ` data-find="${escapeAttr(fold(`${r.title} ${r.path}`))}"`
     + ` class="${TROW}"${i < TOP_N ? '' : ' hidden'}>`
     + `<td class="w-full max-w-0 px-4 py-2.5">`

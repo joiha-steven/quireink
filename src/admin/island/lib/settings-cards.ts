@@ -55,7 +55,13 @@ export function wireCards(screen: HTMLElement, fields: () => Field[], w: CardWor
     key.textContent = w.saving ?? ''
     show(error, '')
     try {
-      const res = route ? await postCard(card, route) : await saveKeys(card, fields())
+      // ⚠️ A CARD CAN HOLD BOTH, and this was an either/or until 2026-09-15. The AI card stores
+      // a credential at its own endpoint AND `ai.commentGuard` in the settings record, and its
+      // own comment said "the card's Save now writes both, credentials first" while the code
+      // wrote whichever one the route decided. Credentials go first, because a job switched on
+      // against a key that did not store is a switch pointing at nothing.
+      const sent = route ? await postCard(card, route) : { ok: true }
+      const res = sent.ok ? await saveKeys(card, fields()) : sent
       if (res.ok) {
         settle(ownFields(card, fields()))
         // A card that TESTED and passed is green; one that only stored is green too, because
@@ -83,6 +89,15 @@ export function wireCards(screen: HTMLElement, fields: () => Field[], w: CardWor
       || roots.some((r) => el.dataset.k === r || (el.dataset.k ?? '').startsWith(`${r}.`)))
   }
 
+  /**
+   * The card's own settings keys, if it has any.
+   *
+   * ⚠️ AN EMPTY PARTIAL IS "NOTHING TO SAY", NOT "SAVED". It answers ok so a credential card
+   * with no settings keys does not report a failure — but on a card with a route that is only
+   * true because the credentials went out above. Before the route existed on the three keys
+   * cards, this was the WHOLE of their save: no fields, an empty partial, `ok: true`, and a
+   * green lamp over a token that was never sent anywhere.
+   */
   async function saveKeys(card: HTMLElement, all: Field[]): Promise<{ ok: boolean; error?: string }> {
     const partial = partialOf(ownFields(card, all))
     if (Object.keys(partial).length === 0) return { ok: true }

@@ -123,11 +123,13 @@ const tile = (v: string, on: boolean, cls: string, style: string, body: string):
  * the reading setup travels with the font. The BOTTOM row sets `chromeFont` independently: pick
  * a code font for the furniture while the body stays readable.
  *
- * `data-specimen`: these tiles are painted in the face they offer, and the admin normalises the
- * x-height of any face that is not the chrome font (`admin.css`, "font-size-adjust").
- * Normalising a SPECIMEN would render all four options at one apparent size, which is the whole
- * of what is being chosen between — Source Serif 4 is 11% smaller than JetBrains Mono at the
- * same `font-size`, and a picker that hides that is lying about the choice.
+ * These tiles are painted in the face they offer, at one `font-size`, and the difference in
+ * apparent size is part of the answer: Source Serif 4 renders 11% smaller than JetBrains Mono at
+ * the same size, and a picker that hid that would be lying about the choice.
+ *
+ * ⚠️ THEY CARRIED A `data-specimen` HOOK TO OPT OUT OF THE ADMIN'S x-height NORMALISATION, and
+ * that normalisation left `admin.css` when `font-size-adjust` did — it broke every leading it
+ * touched. The hook outlived the rule by long enough that its note still described it.
  *
  * The note sits ABOVE the grid it explains, where it sat below both pickers. Two columns in the
  * chrome row, matching the reading grid: it was three, and `CHROME_FONTS` grew to four when
@@ -145,7 +147,7 @@ function fonts(t: AdminStrings, s: SiteSettings): string {
     'px-2 py-2 text-center text-sm', f.sans ?? `'Inter'`,
     escapeHtml(f.id === 'reading' ? t.chromeFontReading : f.name))).join('')
   const grid = (body: string, k: string, was: string): string =>
-    `<div class="grid grid-cols-2 gap-2" data-specimen data-choice-track`
+    `<div class="grid grid-cols-2 gap-2" data-choice-track`
     + ` data-k="${escapeAttr(k)}" data-was="${escapeAttr(was)}">${body}</div>`
   return `<div class="${SETTING_GAP}">`
     + settingRow({ note: t.fontPresetHint, control: grid(reading, 'fontPreset', s.fontPreset) })

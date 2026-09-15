@@ -8,6 +8,12 @@ export function wireWhatsNew(): void {
   const done = document.querySelector<HTMLButtonElement>('[data-news-done]')
   if (!scrim || !done) return
 
+  // ⚠️ THE PANEL TAKES FOCUS. It says `role="dialog" aria-modal="true" tabindex="-1"` and until
+  // 2026-09-15 nothing moved the keyboard into it, so a screen reader stayed on the page behind
+  // a panel that had declared itself modal — the reader is told the rest of the page is inert
+  // and then left standing in it. The `tabindex` was drawn for this and had no caller.
+  scrim.querySelector<HTMLElement>('[data-whats-new]')?.focus()
+
   const put = (body: Record<string, unknown>): Promise<unknown> =>
     fetch('/api/settings', {
       method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body),

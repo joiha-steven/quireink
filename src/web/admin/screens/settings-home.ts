@@ -17,16 +17,17 @@
 //
 // Save-all: every key here goes through the sheet's one Save key.
 import type { AdminStrings } from '@/i18n/admin-i18n'
-import type { FeatureSettings, FrontSettings, FrontStrip, SiteSettings } from '@/types'
+import { frontCard } from '@/web/admin/screens/settings-home-front'
+import { addPick, listField, BAND } from '@/web/admin/screens/settings-home-kit'
+import type { FeatureSettings, SiteSettings } from '@/types'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { renderInlineMarkdown } from '@/render/inline-md'
 import { CONTROL, buttonClass } from '@/admin-shared/kit'
 import { FIELD_W, NOTE_ALERT, NOTE_TEXT, SETTING_GAP, SETTING_LABEL } from '@/admin-shared/scale'
-import { panelCard, settingRow, switchRow, textControl, textField } from '@/web/admin/fields'
+import { panelCard, switchRow, textField } from '@/web/admin/fields'
 import { choice, plainPick } from '@/web/admin/fields-pick'
-import { pairGrid, panelList } from '@/web/admin/fields-box'
+import { panelList } from '@/web/admin/fields-box'
 import { gate } from '@/web/admin/fields-pic'
-import { icon } from '@/web/admin/kit'
 import { COL, GRID } from '@/web/admin/screens/settings-shell'
 
 /** What this tab needs that is not a setting: the lists its pickers choose from. */
@@ -42,7 +43,6 @@ export type HomeTabView = {
 }
 
 /** A group inside a card: one hairline above it and no box (`docs/admin-design.md`). */
-const BAND = 'border-t border-neutral-200 pt-5 dark:border-neutral-800'
 
 /** The BARE field, for a row of them: `textField` boxes its input, and two boxes in a `flex` row
  *  do not share the line the way two inputs do. */
@@ -70,56 +70,6 @@ const toggle = (k: string, label: string, on: boolean, note = ''): string =>
 const TB_KEY = 'flex h-8 min-w-8 items-center justify-center rounded-lg border border-neutral-300'
   + ' px-2 text-sm text-neutral-700 hover:bg-neutral-100 dark:border-neutral-700'
   + ' dark:text-neutral-200 dark:hover:bg-neutral-800'
-
-/**
- * ⚠️ A LIST IS ONE VALUE, NOT ONE FIELD PER ROW — and that is the repair for a fault that was
- * live on this tab until 2026-09-15.
- *
- * The rows used to carry `data-k="menu.0.label"`, `data-k="featured.2"` and so on. The screen's
- * Save key sends a DEEP PARTIAL of only what changed, so editing one field of one row sent an
- * array with holes in every other index — which `JSON.stringify` writes as `null` — and the
- * sanitisers then dropped them. Editing one menu link deleted the whole menu. That half is
- * repaired in `content/settings-sanitize.ts`, but a per-row field cannot express the other half
- * at all: REMOVING a row renumbers the survivors back onto their own stored values, so nothing
- * is dirty, nothing is sent, and the row comes back on the next page load.
- *
- * So the list rides as ONE `data-k-json` field, the way `customFont` has since ADR 0053 — the
- * island owns the whole array and writes it here. The visible rows store nothing and wear
- * `data-menu-*` / `data-featured-*` instead, which the form's reader does not look at.
- *
- * It goes LAST in its stack: a `space-y-*` parent puts a top margin on every child but the
- * first, and a hidden field placed first would hand the next one a gap it never had.
- */
-function listField(k: string, value: unknown): string {
-  const json = escapeAttr(JSON.stringify(value))
-  return `<input type="hidden" data-k="${escapeAttr(k)}" data-k-json value="${json}" data-was="${json}">`
-}
-
-/**
- * A SELECT THAT STORES NOTHING: it is the way to ADD a row, and the row is what stores. Drawn
- * here rather than by `pickControl`, which demands a `k` — and a `data-k` would tell the form
- * this screen holds a setting called "add", and the sheet's search would offer it. Its only name
- * is its first option, which is gone the moment something is chosen, so it takes `aria-label`.
- */
-function addPick(f: {
-  label: string; options: [string, string][]; attrs: string; taken?: ReadonlySet<string>
-}): string {
-  return `<span class="relative flex ${FIELD_W.full}">`
-    + `<select aria-label="${escapeAttr(f.label)}" ${f.attrs}`
-    + ` class="${CONTROL} ${FIELD_W.full} cursor-pointer appearance-none pr-9">`
-    + `<option value="" selected>${escapeHtml(f.label)}</option>`
-    // ⚠️ EVERY OPTION SHIPS, AND THE USED ONES SHIP `hidden`. Listing only the free ones is what
-    // the server did until 2026-09-15, and it left the island with nothing to put back when a row
-    // was removed: a category that had been taken at render time had no `<option>` to unhide, and
-    // building one here would be this file's markup written in JavaScript, without its words.
-    + f.options.map(([v, l]) =>
-      `<option value="${escapeAttr(v)}"${f.taken?.has(v) ? ' hidden' : ''}>${escapeHtml(l)}</option>`)
-      .join('')
-    + `</select>`
-    + icon('down', 'pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2'
-      + ' text-neutral-500 dark:text-neutral-400')
-    + `</span>`
-}
 
 // --- The layout & menu card -----------------------------------------------------------------
 
@@ -258,132 +208,6 @@ function footer(t: AdminStrings, s: SiteSettings): string {
     + `${renderInlineMarkdown(s.footer, { newTab: true })}</div></div></div>`
 }
 
-// --- The front-page card --------------------------------------------------------------------
-
-/**
- * A count and a column choice: the two numbers almost every row has.
- *
- * ⚠️ `numeric: true` ON THE COLUMNS, and it was missing until 2026-09-15. A `<select>` value is
- * a string, `data-k-number` is what turns it into one on the way out, and `columns()` in
- * `content/settings-front.ts` accepts only `1 | 2 | 3` — so the string `"2"` failed the check and
- * fell back to 3. The setting saved, the screen reported success, and the number went nowhere.
- */
-function rowSize(t: AdminStrings, k: string, count: number, columns: number, max: number): string {
-  return pairGrid(
-    textField({ k: `${k}.count`, label: t.frontCount, type: 'number', value: count,
-      attrs: `min="1" max="${max}"` })
-    + plainPick({ k: `${k}.columns`, label: t.frontColumns, value: String(columns), numeric: true,
-      options: [['1', '1'], ['2', '2'], ['3', '3']] }),
-  )
-}
-
-/**
- * The same two numbers for a STRIP, which stores through the list's one field rather than its
- * own — so neither control carries a `data-k`. See `listField`.
- */
-function stripSize(t: AdminStrings, count: number, columns: number): string {
-  return pairGrid(
-    settingRow({
-      label: t.frontCount,
-      control: textControl({ value: count, type: 'number', label: t.frontCount,
-        attrs: 'min="1" max="12" data-strip-count' }),
-    })
-    + plainPick({ label: t.frontColumns, value: String(columns), attrs: 'data-strip-columns',
-      options: [['1', '1'], ['2', '2'], ['3', '3']] }),
-  )
-}
-
-/**
- * The composed front page's options. ADR 0014, part 2.
- *
- * The ROW ORDER is not here, and that is the point: it is fixed in the renderer. This is a
- * prepared layout with options, not a block composer, so every control below chooses whether a
- * row appears, how big it is, or where its posts come from — never where it sits.
- */
-function front(t: AdminStrings, f: FrontSettings, v: HomeTabView): string {
-  const k = 'home.front'
-  // A category can hold at most one row. Offering the same one twice would produce a second strip
-  // that is empty, because the first row has already used those posts.
-  const taken = new Set(f.strips.map((s) => s.category))
-  const free = v.categories.filter((c) => !taken.has(c))
-  const strip = (s: FrontStrip, i: number): string =>
-    `<div class="mt-3 space-y-2 border-l-2 border-neutral-200 pl-3 dark:border-neutral-800"`
-    + ` data-strip="${escapeAttr(s.category)}">`
-    + `<div class="flex items-center justify-between gap-2">`
-    + `<span class="text-sm text-neutral-700 dark:text-neutral-300" data-strip-name>`
-    + `${escapeHtml(s.category)}</span>`
-    // Order is the owner's, so it is MOVED rather than dragged: two keys are the whole
-    // interaction and they work on a phone and with a keyboard.
-    + `<div class="flex gap-1">`
-    + `<button type="button" data-strip-up class="${buttonClass('ghost')}"`
-    + `${i === 0 ? ' disabled' : ''}>↑</button>`
-    + `<button type="button" data-strip-remove class="${buttonClass('ghost')}">`
-    + `${escapeHtml(t.removeSelection)}</button></div></div>`
-    + stripSize(t, s.count, s.columns) + `</div>`
-  return `<div class="${SETTING_GAP}">`
-    // The one dial that moves the whole page.
-    + choice({
-      k: `${k}.kind`, label: t.frontKindLabel, note: t.frontKindHint, value: f.kind,
-      options: [['image', t.frontKindImage], ['text', t.frontKindText]],
-    })
-    // ----- the lead -----
-    + `<div class="${BAND}">` + toggle(`${k}.lead.on`, t.frontLead, f.lead.on, t.frontLeadHint)
-    + gate(f.lead.on, plainPick({
-      k: `${k}.lead.source`, label: t.frontLeadSource, value: f.lead.source,
-      options: [['latest', t.frontLeadLatest], ['pinned', t.frontLeadPinned]],
-    })
-      // Its only name was its first option, which stops being on screen the moment something is
-      // chosen and was never announced as a name at all.
-      + gate(f.lead.source === 'pinned', plainPick({
-        k: `${k}.lead.slug`, value: f.lead.slug, options: [['', t.frontLeadPickPost],
-          ...v.posts.map((p) => [p.slug, p.title] as [string, string])],
-        attrs: `aria-label="${escapeAttr(t.frontLeadPickPost)}"`,
-      }), `data-gate-when="${k}.lead.source=pinned"`)
-      + textField({ k: `${k}.lead.secondary`, label: t.frontSecondary, type: 'number',
-        value: f.lead.secondary, attrs: 'min="0" max="3"' }),
-    `class="mt-3 space-y-3 pl-1" data-gate="${k}.lead.on"`) + `</div>`
-    // ----- the owner's own list -----
-    + `<div class="${BAND}">`
-    + toggle(`${k}.featured.on`, t.frontFeaturedRow, f.featured.on, t.frontFeaturedHint)
-    + gate(f.featured.on, rowSize(t, `${k}.featured`, f.featured.count, f.featured.columns, 12),
-      `class="mt-3" data-gate="${k}.featured.on"`) + `</div>`
-    // ----- one row per category -----
-    + `<div class="${BAND}" data-strips>`
-    + `<div class="space-y-3"><span class="${SETTING_LABEL}">${escapeHtml(t.frontStrips)}</span>`
-    + `<p class="${NOTE_TEXT}">${escapeHtml(t.frontStripsHint)}</p></div>`
-    + `<div data-strip-rows>${f.strips.map(strip).join('')}</div>`
-    + gate(f.strips.length < 8 && free.length > 0, addPick({
-      label: t.frontStripAdd, attrs: 'data-strip-add', taken,
-      options: v.categories.map((c) => [c, c] as [string, string]),
-    }), 'class="mt-3" data-strip-add-box')
-    + listField(`${k}.strips`, f.strips)
-    + `<template data-strip-tpl>${strip({ category: '', count: 3, columns: 3 }, 1)}</template>`
-    + `</div>`
-    // ----- what people are actually reading -----
-    + `<div class="${BAND}">`
-    + toggle(`${k}.popular.on`, t.frontPopularRow, f.popular.on, t.frontPopularHint)
-    + gate(f.popular.on, pairGrid(
-      textField({ k: `${k}.popular.count`, label: t.frontCount, type: 'number',
-        value: f.popular.count, attrs: 'min="1" max="12"' })
-      // `numeric: true` for the same reason the columns need it: `settings-front.ts` compares
-      // against 7, 30 and 0, and a string never equals any of them.
-      + plainPick({ k: `${k}.popular.days`, label: t.frontWindow, value: String(f.popular.days),
-        numeric: true,
-        options: [['7', t.frontWindow7], ['30', t.frontWindow30], ['0', t.frontWindowAll]] }),
-    ), `class="mt-3" data-gate="${k}.popular.on"`) + `</div>`
-    // ----- and everything else -----
-    + `<div class="${BAND}">`
-    + toggle(`${k}.latest.on`, t.frontLatestRow, f.latest.on, t.frontLatestHint)
-    + gate(f.latest.on, rowSize(t, `${k}.latest`, f.latest.count, f.latest.columns, 24),
-      `class="mt-3" data-gate="${k}.latest.on"`) + `</div>`
-    // ----- what each item says -----
-    + `<div class="space-y-3 ${BAND}">`
-    + toggle(`${k}.showDate`, t.frontShowDate, f.showDate)
-    + toggle(`${k}.showReadingTime`, t.frontShowReading, f.showReadingTime)
-    + toggle(`${k}.tagLinks`, t.frontTagLinks, f.tagLinks, t.frontTagLinksHint)
-    + `</div></div>`
-}
-
 // --- The listing card -----------------------------------------------------------------------
 
 /**
@@ -433,7 +257,7 @@ export function homeTab(t: AdminStrings, s: SiteSettings, view: HomeTabView): st
     // the answer is one attribute away instead of a page load, and it is FIRST of the two cards
     // here — a hidden node that is not the last one costs `space-y-5` nothing.
     + gate(s.home.mode === 'front',
-      panelCard({ title: t.cardFront, body: front(t, s.home.front, view) }),
+      panelCard({ title: t.cardFront, body: frontCard(t, s.home.front, view) }),
       'data-gate-when="home.mode=front"')
     + panelCard({ title: t.cardListing, body: listing(t, s) })
     + `</div></div>`

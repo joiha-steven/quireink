@@ -62,7 +62,7 @@ function row(t: AdminStrings, s: SiteSettings, role: TypeRole): string {
     + `</td>`
     + cell('size', t.colSize, SIZE) + cell('line', t.colLine, LINE)
     + cell('spacing', t.colSpacing, SPACING)
-    // THE SPECIMEN. `reading-font` + `data-specimen`: these samples ARE the reader's roles, so
+    // THE SPECIMEN. The `READING` class is what does it: these samples ARE the reader's roles, so
     // they show the reading face at the size the reader will get — not the admin's normalised
     // one (`admin.css`, the note on `font-size-adjust`). A preview of a size control that
     // quietly resizes is the one preview that must not. `truncate` keeps a 6rem heading inside
@@ -72,7 +72,10 @@ function row(t: AdminStrings, s: SiteSettings, role: TypeRole): string {
     // A HEADING sample for the heading roles and a sentence for the rest: "Heading sample" set
     // at the caption size is showing the right size and saying the wrong thing about what it
     // is for.
-    + `<td class="w-1/3 pl-3 align-middle ${READING}" data-specimen>`
+    // ⚠️ NO `data-specimen` ON THIS CELL. It carried one until 2026-09-15 and nothing read it:
+    // `admin.css` names it only in a comment, and the element the island reaches for is the
+    // `data-type-specimen` below. A hook with no reader is a claim that something happens here.
+    + `<td class="w-1/3 pl-3 align-middle ${READING}">`
     + `<div class="truncate text-neutral-900 dark:text-neutral-100"`
     + ` data-type-specimen="${escapeAttr(role)}"`
     + ` style="font-size:${st.size}rem;line-height:${st.line};letter-spacing:${st.spacing}em">`

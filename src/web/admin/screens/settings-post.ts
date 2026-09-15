@@ -145,7 +145,11 @@ function figure(t: AdminStrings, s: SiteSettings): string {
       k: 'figure.ink', label: t.figureFrameColour, note: t.figureFrameColourHint,
       value: s.figure.ink ? '1' : '0',
       options: [['0', t.imgFramePaper], ['1', t.imgFrameInk]],
-      attrs: 'data-bool',
+      // ⚠️ `bool: true`, WHICH EMITS `data-k-bool`. It said `attrs: 'data-bool'` until
+      // 2026-09-15 — an attribute nothing reads — so the form sent the STRING "1", `bool()` in
+      // the sanitiser takes only a real boolean, and the frame colour fell back to what it was.
+      // The card saved, the screen said so, and the setting never moved.
+      bool: true,
     }), 'data-reveal="figure.frame!=none"')
     + `</div>`
 }
