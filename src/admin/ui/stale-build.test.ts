@@ -118,7 +118,7 @@ describe('where it is wired in', () => {
     // link would be worse than the bug being cured, so the reload belongs to the navigation
     // the owner actually made.
     // The statement itself, for the same reason: the comment beside it says the word.
-    const call = APP.split('\n').find((line) => line.includes('void loaderFor(path)()'))
+    const call = APP.split('\n').find((line) => line.includes('void load.notFound()'))
     expect(call).toBeDefined()
     expect(call).not.toContain('throughDeploys')
   })

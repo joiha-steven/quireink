@@ -12,6 +12,8 @@
 // `sessionStorage` is where it waits: per-tab, cleared with the tab, and not a thing the server
 // should ever be told about.
 import { fold } from '@/admin-shared/fold'
+import { focusOn, onFocusChange } from './lib/focus-mode'
+import { saySettled } from './lib/say-across'
 import { showTab } from './lib/tab-strip'
 import { applyAll, keepStanding, pieces, showHits, sortBy } from './lib/write-filter'
 import { wirePicking } from './lib/write-pick'
@@ -39,14 +41,15 @@ const keep = (next: Kept): void => {
   }
 }
 
-export function wireContent(screen: HTMLElement): void {
+/** Everything about the COLUMN. Returns the way to stop, so the column can be redrawn. */
+function wirePane(screen: HTMLElement): () => void {
   const pane = screen.querySelector<HTMLElement>('[data-write-pane]')
-  if (!pane) return
+  if (!pane) return () => {}
   const list = pane.querySelector<HTMLElement>('[data-write-list]')
   const none = pane.querySelector<HTMLElement>('[data-write-none]')
   const search = pane.querySelector<HTMLInputElement>('[data-write-search]')
   const strip = pane.querySelector<HTMLElement>('[data-write-kinds]')
-  if (!list) return
+  if (!list) return () => {}
 
   const rows = pieces(pane)
   keepStanding(rows)
@@ -217,25 +220,70 @@ export function wireContent(screen: HTMLElement): void {
    * and this column stay in step without either importing the other.
    */
   const alone = pane.classList.contains('w-full')
-  const focus = (): void => {
-    if (alone) return
-    let on = false
-    try { on = localStorage.getItem('quireink-admin-focus') === '1' } catch { /* private window */ }
-    pane.hidden = on
-  }
-  window.addEventListener('quireink:focus', focus)
+  const focus = (): void => { if (!alone) pane.hidden = focusOn() }
+  const stopFocus = onFocusChange(focus)
   focus()
 
   showTab(strip)
   settle()
 
   wirePicking(pane, rows.map((p) => p.el), () => settle())
+  // Everything else this wired is INSIDE the pane and goes with the node when it is replaced.
+  // The focus switch is the one listener on `window`, so it is the one that has to be undone.
+  return stopFocus
+}
+
+let stopPane: () => void = () => {}
+
+export function wireContent(screen: HTMLElement): void {
+  stopPane = wirePane(screen)
+  // The two drawers live OUTSIDE the column, so they are wired once and survive a redraw.
   wireDrawers(screen)
+}
+
+/**
+ * DRAW THE COLUMN AGAIN, from the server.
+ *
+ * A save changes what a row shows — its title, its state, its address, and on a first save
+ * whether it is in the list at all — and the sheet beside it must not be reloaded to say so:
+ * that would cost the caret, the selection and the whole undo stack on the click that saved the
+ * work. So the column alone is fetched and swapped.
+ *
+ * ⚠️ FETCHED, NOT REBUILT. A row is thirty lines of markup with a lamp, a clamp, a standing
+ * line and a view count in it (`screens/content-pane.ts`); an island that assembled one would
+ * be a second copy of that file, drifting in the direction nobody looks — which is the exact
+ * drift this ADR's markup rules exist to prevent. The page is the source of the page.
+ *
+ * What the column remembers — the search text, the filters, the scroll — is in `sessionStorage`
+ * and is read back by the wiring below, so a redraw lands where the reader was.
+ */
+export async function redrawColumn(): Promise<void> {
+  const here = document.querySelector<HTMLElement>('[data-write-pane]')
+  const screen = here?.closest<HTMLElement>('main')
+  if (!here || !screen) return
+  try {
+    const res = await fetch(location.href)
+    if (!res.ok) return
+    const fresh = new DOMParser()
+      .parseFromString(await res.text(), 'text/html')
+      .querySelector<HTMLElement>('[data-write-pane]')
+    if (!fresh) return
+    stopPane()
+    here.replaceWith(fresh)
+    stopPane = wirePane(screen)
+  } catch {
+    // Offline, or the address 404s because the piece has just been trashed. The column stays
+    // as it was, which is stale rather than empty — and stale is the better of the two on a
+    // list whose only job is getting you back to something.
+  }
 }
 
 const screen = document.querySelector<HTMLElement>('[data-write-pane]')?.closest<HTMLElement>('main')
   ?? document.querySelector<HTMLElement>('main')
 if (screen) wireContent(screen)
+// Anything a screen that left said on its way out — a piece trashed from the editor, and the
+// Restore that goes with it.
+saySettled()
 
 /** Exported for the tests, which drive the column without the module's own boot. */
 export { fold }

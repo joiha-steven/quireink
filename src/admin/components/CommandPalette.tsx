@@ -173,7 +173,7 @@ export function CommandPalette() {
     }
     // A WINDOW EVENT is the second door, and it is why the rail can offer this without
     // importing it: the rail is drawn once at the top of the shell and the palette once at
-    // the bottom, and neither is the other's parent. `useFocusMode.ts` keeps three components
+    // the bottom, and neither is the other's parent. `island/lib/focus-mode.ts` keeps three readers
     // in step the same way and for the same reason.
     const onAsk = () => setOpen(true)
     window.addEventListener('keydown', onKey)

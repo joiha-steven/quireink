@@ -30,9 +30,6 @@ export function registerPageFlows({ flow, expect }: Pick<Tour, 'flow' | 'expect'
       const inMarkup = (html.match(/data-trash-row/g) || []).length
       const onScreen = document.querySelectorAll('[data-trash-row]').length
       if (inMarkup !== onScreen) return 'markup held ' + inMarkup + ' rows, the page shows ' + onScreen
-      // React owns no route for this address any more.
-      const screens = document.documentElement.getAttribute('data-admin-screens') || ''
-      if (!screens.includes('/admin/trash')) return 'the trash is not listed as a server screen'
       return 'ok seven kinds, ' + inMarkup + ' row(s), all of it in the first response'
     })()`, 900))
 

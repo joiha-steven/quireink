@@ -21,21 +21,14 @@ import type { SiteLang } from '@/types'
 import { CommandPalette } from '@/admin/components/CommandPalette'
 import { ShortcutSheet } from '@/admin/components/ShortcutSheet'
 
-// The editor pulls in Tiptap and its extensions, which is most of the bundle. Splitting it
-// out means the dashboard, the settings and every table load without paying for an editor
-// nobody has opened.
-//
-// The loaders are named separately from the `lazy()` wrappers so the first one can be
-// STARTED before React asks for it — see `preloadRoute` below.
+// ONE ROUTE IS LEFT, and it is the dead end (ADR 0054). Every address the admin has arrives
+// as finished HTML from `web/admin/screens/index.ts`, which is the table that says so; a
+// converted screen left this map in the same commit that added it there, so the two could
+// never both claim one address. What is still React's is the overlays, and the page below is
+// what answers an address nothing claims.
 type Loader = () => Promise<{ default: ComponentType }>
 
-// `/admin/log` and `/admin/help` are not here: they are screens the SERVER draws (ADR 0054, step 1), and
-// `web/admin/screens/index.ts` is the table that says so. A converted screen leaves this map in
-// the same commit that adds it there, so the two can never both claim one address.
 const load = {
-  postEditor: () => import('@/admin/pages/PostEditor'),
-  pageEditor: () => import('@/admin/pages/PageEditor'),
-  noteEditor: () => import('@/admin/pages/NoteEditor'),
   notFound: () => import('@/admin/pages/NotFound'),
 } satisfies Record<string, Loader>
 
@@ -44,19 +37,7 @@ const load = {
 // build on the server DELETES the file this tab is about to ask for; the fix is to fetch the
 // new bundle, which is a reload. `ui/stale-build.ts` carries the reasoning and the loop
 // guard. Everything else a page can throw still goes to the boundary, unchanged.
-const PostEditor = lazy(throughDeploys(load.postEditor))
-const PageEditor = lazy(throughDeploys(load.pageEditor))
-const NoteEditor = lazy(throughDeploys(load.noteEditor))
 const NotFound = lazy(throughDeploys(load.notFound))
-
-/** Which loader serves a path. The single place the route table's shape is decided. */
-function loaderFor(path: string): Loader {
-  const p = path.replace(/\/+$/, '') || '/admin'
-  if (p === '/admin/editor' || p.startsWith('/admin/editor/')) return load.postEditor
-  if (p === '/admin/page-editor' || p.startsWith('/admin/page-editor/')) return load.pageEditor
-  if (p === '/admin/note-editor' || p.startsWith('/admin/note-editor/')) return load.noteEditor
-  return load.notFound
-}
 
 /**
  * Start fetching a route's chunk without waiting for React to render it.
@@ -67,10 +48,10 @@ function loaderFor(path: string): Loader {
  * the two. The bundler hands out the same module promise for a repeat call, so the `lazy()`
  * wrapper below resolves against this one rather than starting a second fetch.
  */
-export function preloadRoute(path: string): void {
+export function preloadRoute(): void {
   // Nothing to warm for a screen the server draws: it arrives finished, in one response.
   if (document.documentElement.dataset.adminScreen) return
-  void loaderFor(path)().catch(() => {
+  void load.notFound().catch(() => {
     /* the render will surface it; a warm-up must never be the thing that throws */
     /* NOT wrapped in `throughDeploys`, deliberately: this fires on hover and on mount, and a
        tab that reloaded itself because a pointer crossed a link would be worse than the bug
@@ -79,27 +60,18 @@ export function preloadRoute(path: string): void {
   })
 }
 
-/**
- * The route table. Order matters only in that the longest prefix has to be tested first,
- * which is why this is a list and not an object.
- */
+/** What React draws inside `#admin`, which since ADR 0054 is one screen and a dead end. */
 function Route(): ReactNode {
-  const path = usePathname().replace(/\/+$/, '') || '/admin'
   // THE SERVER GOT THERE FIRST (ADR 0054). A screen it drew is already in the canvas above
   // this div, so React draws nothing and goes on providing the overlays that are still its:
   // the palette, the shortcut sheet, the confirm dialog, the toast. Read off `<html>` rather
   // than from a list in this file, because a second list is a second thing to keep in step —
   // and the one that decides is the one that rendered.
-  // ⚠️ EXCEPT WHERE THE SERVER LEFT A SHEET. The three editor addresses are server-drawn
-  // FRAMES — rail, write column, paper — with `#admin` inside the paper rather than beside it,
-  // because ProseMirror is an application and ADR 0054 keeps it for last and on its own. So on
-  // exactly those three, React still draws a route: the sheet's contents, and nothing around
-  // them. `data-admin-react` is the server saying so, and it leaves when the editor converts.
-  const sheet = document.documentElement.dataset.adminReact === 'sheet'
-  if (document.documentElement.dataset.adminScreen && !sheet) return null
-  if (path === '/admin/editor' || path.startsWith('/admin/editor/')) return <PostEditor />
-  if (path === '/admin/page-editor' || path.startsWith('/admin/page-editor/')) return <PageEditor />
-  if (path === '/admin/note-editor' || path.startsWith('/admin/note-editor/')) return <NoteEditor />
+  //
+  // The three editor addresses were the last exception, and they are not one any more: the
+  // writing sheet is HTML and the paper is an island (`island/sheet.ts`). What is left below is
+  // the dead end, for an address no screen claims.
+  if (document.documentElement.dataset.adminScreen) return null
   return <NotFound />
 }
 

@@ -7,9 +7,9 @@
   hard-deleted on a normal delete. EVERY live read filters `.is('deleted_at', null)`
   (index/search/getPost, page index/getPage, media/file lists, the finalize sweeps) so trashed
   items leave the site, lists, search, sitemap/feed/llms and the libraries at once.
-- **The way IN is the editor's Attributes panel** (`components/TrashLink.tsx`), beside History
-  and View post, and only for a piece that has been saved. It went missing between 2026-08-17
-  and 2026-08-30: the old content table's `RowActions` carried the trash icon and the
+- **The way IN is the editor's Attributes panel** (`screens/sheet-frame.ts` draws it,
+  `island/lib/sheet-errands.ts` acts on it), beside History and View post, and only for a piece
+  that has been saved. It went missing between 2026-08-17 and 2026-08-30: the old content table's `RowActions` carried the trash icon and the
   `DELETE /api/{posts,pages}/:slug` behind it, and neither was rebuilt when the Write screen
   became two panes (`b4459b4`). For thirteen days and four releases the admin could reach
   `/admin/trash` and had no way to put anything in it — reported from outside as issue #60.
@@ -93,7 +93,7 @@
 - `/admin/content` IS the two-pane Write screen (ADR 0024; the Writing Desk mock): the
   write pane — one stream of posts and pages, most recently touched first — beside an
   empty sheet inviting the next piece. Opening a row swaps the sheet for that piece's
-  editor; the pane rides along on both editor pages from 1640px up (measured, `WritePane.tsx`).
+  editor; the pane rides along on both editor pages from 1640px up (measured, `screens/content-pane.ts`).
 - `WritePane` renders; `useWritingItems` owns the stream: title+terms filtering, the
   debounced body search (`/api/admin/search`, hits and passage marked with the pen, accents
   folded one way only — typed WITH them they are meant, `src/accent.ts`), and two filters
@@ -163,7 +163,7 @@
     unranked and **uncapped** (a "top 50" would put the same wall one row lower); capped in HEIGHT
     only. Pieces with no views in the window are listed at zero — read by nobody is an answer — which
     is why `pieces` is joined to `titles` on the client rather than on the server. There is a second
-    door in the editor itself (`EditorLinks`), on the same condition as View post.
+    door in the editor itself (the panel's header line), on the same condition as View post.
   - **Left quickly** — on the drill-down, the share of measured leaves that were a glance: under ten
     seconds, **or** under a quarter read (`QUICK_MS` / `QUICK_DEPTH`, the latter deliberately the
     same boundary as the first bar of the read-depth split, so two numbers on one screen cannot

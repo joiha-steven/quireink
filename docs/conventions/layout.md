@@ -81,7 +81,7 @@ inside it. In book mode the same break becomes the asterism.
   its own 10 / 8 / 6px hierarchy (sheet, nested panel, control), held by the kit and described
   in [admin-design.md](../admin-design.md); change `kit.tsx` CARD/CONTROL/Select/Tabs, `ui/*` or
   `iconButton.ts` rather than inventing a one-off. Admin `<select>` uses the styled `Select`
-  (kit.tsx) and free-text-with-suggestions uses `Combobox` — never a raw native
+  (kit.tsx) and free-text-with-suggestions uses `pickField` — never a raw native
   `<select>`/`<datalist>` (their OS popups can't be themed: wrong font, cramped, no hover).
 
 ## The article's right gutter — the info panel (HARD RULES)

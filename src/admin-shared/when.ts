@@ -138,3 +138,16 @@ export function formatDateTimeShort(at: string | number): string {
   const mm = String(d.getMinutes()).padStart(2, '0')
   return `${d.getDate()}/${d.getMonth() + 1}/${yy} - ${hh}:${mm}`
 }
+
+/**
+ * An ISO time as `HH:mm`, on the reader's own clock.
+ *
+ * The autosave line's clock. Here rather than in `utils.ts` because the writing sheet's island
+ * prints it on every tick and that module pulls the pen grammar and the maths syntax in behind
+ * it; `utils.ts` re-exports it, so the dozen call sites that had it there keep their import.
+ */
+export function formatTime(iso: string): string {
+  const at = new Date(iso)
+  if (Number.isNaN(at.getTime())) return ''
+  return `${String(at.getHours()).padStart(2, '0')}:${String(at.getMinutes()).padStart(2, '0')}`
+}

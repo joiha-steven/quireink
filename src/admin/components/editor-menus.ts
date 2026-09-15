@@ -11,11 +11,11 @@
 import type { Editor as TiptapEditor } from '@tiptap/core'
 import { BubbleMenuPlugin } from '@tiptap/extension-bubble-menu'
 import { NodeSelection } from '@tiptap/pm/state'
-import type { AdminStrings } from '@/i18n/admin-i18n'
+import type { SheetWords } from '@/admin-shared/sheet-wire'
 import { DEFAULT_INK, INKS } from '@/pen/grammar'
 import { PEN_LIGHT } from '@/pen/pigments'
 import { el } from './node-dom'
-import { editLink } from './editorLink'
+import { editLink } from './editor-link'
 import { tip } from './editorKeys'
 
 /** Named, because unregistering a plugin needs the same key registering it used. */
@@ -64,7 +64,10 @@ const PEN: Record<string, string> = Object.fromEntries(
 )
 
 /** `yellow` -> the owner's word for yellow. The same lookup the settings screen uses. */
-function inkName(t: AdminStrings, ink: string): string {
+function inkName(t: SheetWords, ink: string): string {
+  // The five are NAMED in the subset the sheet ships (`SHEET_WORD_KEYS`) precisely because this
+  // lookup is computed: a key built at runtime cannot be seen by a type, and a dictionary that
+  // no longer carries it would fail here rather than at the compiler.
   return t[`ink${ink[0]!.toUpperCase()}${ink.slice(1)}` as 'inkYellow']
 }
 
@@ -80,7 +83,7 @@ export type BubbleBar = {
 
 export function mountBubbleBar(
   editor: TiptapEditor,
-  t: AdminStrings,
+  t: SheetWords,
   askLink: (previous: string) => Promise<string | null>,
 ): BubbleBar {
   const bar = el('div', { className: className.bar })
@@ -241,7 +244,7 @@ export function mountBubbleBar(
 
 export type SlashHooks = {
   editor: TiptapEditor
-  t: AdminStrings
+  t: SheetWords
   /** Viewport coordinates of the caret the "/" was typed at. */
   at: { left: number; top: number }
   onClose: () => void

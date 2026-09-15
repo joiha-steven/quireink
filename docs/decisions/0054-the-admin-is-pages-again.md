@@ -213,11 +213,11 @@ and this list was the browser's until it moved to the server, where the engine h
 ### The write column, and the one number this ADR paid for it
 
 The library, the column and the editors were always one conversion (see the correction above).
-This step did the first two thirds: `/admin/content` and the three editor addresses are all
-server-drawn frames now — rail, write column, sheet — and what is still React is only what goes
-IN the sheet. `WritePane.tsx` and its six helpers are gone; `<div id="admin">` moved INSIDE the
-paper on those three addresses, and `data-admin-react="sheet"` is the server telling React it
-may still draw a route there. Both leave when the editor converts.
+This step did the first two thirds: `/admin/content` and the three editor addresses became
+server-drawn frames — rail, write column, sheet — with React still drawing what went IN the
+sheet. `WritePane.tsx` and its six helpers are gone. The last third followed on the same day:
+the sheet is markup too, `<div id="admin">` is back beside the canvas where it belongs, and
+`data-admin-react` is gone with the routes that needed it.
 
 ⚠️ **A ROW CLICK IS A REAL NAVIGATION NOW, and here is what that cost.** Measured 2026-09-15,
 two builds on one seeded database, click to the writing surface:
@@ -230,8 +230,10 @@ two builds on one seeded database, click to the writing surface:
 
 So the list is unchanged and the first open is unchanged; what went is the warm click. It went
 because the column was mounted outside the router precisely so it would survive one, and
-nothing survives a page load. 373ms is also the TRANSITIONAL number: almost all of it is React
-and Tiptap booting from nothing on every open, which is what step 5 removes.
+nothing survives a page load. 373ms was also the TRANSITIONAL number: almost all of it was
+React and Tiptap booting from nothing on every open, and step 5 removed it — **107ms to a
+writing surface**, measured the same way, on the same seeded database
+([`../admin-conversion.md`](../admin-conversion.md)).
 
 ⚠️ **AND A MEASUREMENT THAT WAS WRONG BY 2.1 SECONDS.** The first reading said 2,512 ms, which
 would have been a reason to stop. It was the PROBE's own `sleep(2500)` before evaluating: a
@@ -268,7 +270,15 @@ reorders a series and proves the server kept it.
 Step 5 is the long one, so what each piece cost and what it found is in
 [`../admin-conversion.md`](../admin-conversion.md) rather than here. The decision is above; that
 file is the record of carrying it out — the three node views, the React adapter, the button
-strip, and the faults each one turned up.
+strip, the menus, the find strip, the Markdown view and finally the sheet around the paper, and
+the faults each one turned up.
+
+**Decision 3 held.** ProseMirror is still an application and is still built in TypeScript: the
+button strip, the bubble bar, the "/" menu and the find strip are assembled at runtime, and so
+are the calendar's forty-two cells and the time machine's rows, because all three are lists that
+change and none of them could honestly be shipped drawn. Everything AROUND the writing arrives
+as HTML. The line between the two turned out to be easy to state and worth stating: markup is
+what a state can be drawn in, and an application is what has to be computed to exist.
 
 ### The fourth bridge: `quire:pick-media`
 

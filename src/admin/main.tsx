@@ -12,7 +12,7 @@ import { isSiteLang } from '@/locales/langs'
 // Before React runs, not after: the shell blocks on one round trip before it mounts a page,
 // and this is the only moment the page's chunk can be fetched alongside that request rather
 // than after it.
-preloadRoute(location.pathname)
+preloadRoute()
 
 const root = document.getElementById('admin')
 if (!root) throw new Error('the admin mount point is missing from the shell HTML')

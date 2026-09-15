@@ -28,6 +28,7 @@ import { getViewTotals } from '@/analytics/summary'
 import { needsFrom, writeItems, type WriteItem } from '@/web/admin/screens/content-items'
 import { writePane } from '@/web/admin/screens/content-pane'
 import { writeDrawers } from '@/web/admin/screens/content-drawers'
+import { writingFrame } from '@/web/admin/screens/sheet-frame'
 
 /**
  * Everything the column needs, and nothing else.
@@ -126,17 +127,34 @@ export function openKeyOf(path: string): string {
   return ''
 }
 
+/** The kind and slug a writing address opens, or null when it is not one. */
+function opening(path: string): { kind: 'post' | 'page' | 'note'; slug: string } | null {
+  for (const [prefix, kind] of OPENS) {
+    if (path !== prefix && !path.startsWith(`${prefix}/`)) continue
+    return {
+      kind,
+      slug: decodeURIComponent(path.slice(prefix.length).replace(/^\//, '').replace(/\/+$/, '')),
+    }
+  }
+  return null
+}
+
 /**
- * An editor address: the same column, and a sheet the EDITOR fills.
+ * An editor address: the same column, and the writing sheet beside it.
  *
- * ⚠️ `<div id="admin">` GOES IN THE SHEET, not beside it, and that is the whole of this step's
- * bargain with the editor. ProseMirror is an application and stays one (ADR 0054 point 3), so
- * React still draws what is inside the paper — but it no longer draws the frame, the rail or
- * the list, and it no longer owns the address. `spa.ts` puts its mount point where this says.
+ * The sheet is the server's too since 2026-09-15 (`sheet-frame.ts`). ProseMirror is still an
+ * application and stays one — ADR 0054 point 3 — but it is an application built INTO a page
+ * that arrives finished, rather than a page React drew around it. Nothing here mounts React,
+ * and `<div id="admin">` is back where the shell puts it: beside the canvas, empty, for the
+ * overlays.
  */
 export async function editorFrame(settings: SiteSettings, path: string): Promise<string> {
   const t = adminT(settings.language)
-  const { items, views, posts } = await paneData()
+  const at = opening(path)
+  const [{ items, views, posts }, sheet] = await Promise.all([
+    paneData(),
+    at ? writingFrame(settings, at.kind, at.slug) : Promise.resolve(''),
+  ])
   const pane = writePane({
     t, lang: settings.language, items, views,
     needs: null, openKey: openKeyOf(path), alone: false, now: Date.now(),
@@ -144,7 +162,6 @@ export async function editorFrame(settings: SiteSettings, path: string): Promise
   // `min-w-0` is not tidy-up: a flex item's `min-width:auto` refuses to shrink below its
   // content, which on a phone gave the editor 591px of sideways scroll. `flex-1` is the other
   // half — without it the sheet sat at content width, 370px in a 1440px window.
-  return `<div class="flex items-start gap-6">${pane}`
-    + `<div class="admin-enter min-w-0 flex-1"><div id="admin"></div></div></div>`
+  return `<div class="flex items-start gap-6">${pane}${sheet}</div>`
     + writeDrawers(t, posts)
 }

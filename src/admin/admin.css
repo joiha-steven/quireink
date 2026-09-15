@@ -353,6 +353,19 @@ body {
   background: #0f0f0f;
 }
 
+/* THE TWO SWITCHES THAT CHANGE WHAT YOU LOOK AT say so in WEIGHT, not in colour. Markdown and
+   Focus are states, not actions, and a coloured control on this bar would read as the third
+   thing you can do to the piece — beside Save and Publish, which are. `aria-pressed` is
+   already the truthful attribute for a switch, so it is the one the look hangs off rather
+   than a class the island would have to add and remove in step with it. */
+[data-sheet-actions] [aria-pressed='true'] {
+  font-weight: 500;
+  color: #171717;
+}
+.dark [data-sheet-actions] [aria-pressed='true'] {
+  color: #fff;
+}
+
 /* THE ATTRIBUTES SHEET, and the one number both halves of it read.
    `SlideOver` sets the width here rather than in its own class list because the canvas has
    to hold exactly this much of its right edge clear, and a sheet 24rem wide beside a canvas
@@ -1278,10 +1291,14 @@ tr[data-piece][data-last] {
    asking about it is heavier than the thing it is protecting.
 
    Both are drawn and CSS picks (`docs/admin-one-dom.md`), and the picking is done HERE rather
-   than with a `hidden` attribute for one reason: the confirm pair carries `flex`, and a
-   `hidden` attribute against a display utility is a tie that the utility wins — Tailwind's
-   preflight writes `[hidden]{display:none}` before any utility, and a later rule of equal
-   weight takes it. An attribute pair on the row outranks the class outright. */
+   than with a `hidden` attribute because the state belongs to the ROW — one attribute on the
+   chat decides both halves, where two `hidden` attributes would be one state written twice.
+
+   ⚠️ NOT because the attribute would lose. It was written here that a `hidden` attribute
+   against a display utility is a tie the utility wins; that is not true in this build, and
+   acting on it nearly cost a rule nobody needed. `utilities.css` line 248 is the ONLY
+   `!important` in the whole sheet, and it is on `[hidden]` — so the attribute beats `flex`,
+   `contents`, `inline-block` and every other display utility outright. Checked 2026-09-15. */
 [data-ai-chat]:not([data-ai-confirming]) [data-ai-confirm] { display: none; }
 [data-ai-chat][data-ai-confirming] [data-ai-del] { display: none; }
 
@@ -1298,9 +1315,10 @@ tr[data-piece][data-last] {
 
 /* THE TICK TAKES THE LAMP'S PLACE. Both ship drawn; the mode picks. Adding a column instead
    moved every title 24px right and re-wrapped half the list at the moment somebody went to
-   pick from it — swapping costs 8px and nothing re-wraps. `display:flex` on the wrapper is why
-   this is a rule and not a `hidden` attribute: a `hidden` attribute against a display utility
-   is a tie the utility wins, because preflight writes `[hidden]{display:none}` first. */
+   pick from it — swapping costs 8px and nothing re-wraps. It is a rule rather than a `hidden`
+   attribute because ONE attribute on the column decides both halves for all forty-eight rows,
+   which is the same reason the pair above it is. (It is not that the attribute would lose: see
+   the note above — `[hidden]` carries the sheet's only `!important`.) */
 [data-write-pane]:not([data-picking]) .write-tick { display: none; }
 [data-write-pane][data-picking] .write-lamp { display: none; }
 

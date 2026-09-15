@@ -49,12 +49,15 @@ import { EmptyGlyph } from './navIcons'
 // header above the first row, the card's edge below the last.
 export const PANEL = 'overflow-hidden rounded-lg border border-neutral-100 dark:border-neutral-800'
 export const PANEL_LIST = 'panel-list -mx-4 divide-y divide-neutral-100 dark:divide-neutral-800'
-export const INSET = 'rounded-lg border border-neutral-100 p-4 dark:border-neutral-800'
 
 // The place you DROP something into moved to `@/admin-shared/kit` with ADR 0054's library
 // screen: the server draws the well and an island swaps its drag state. Re-exported, so every
 // call site keeps the import it had.
 export { DROPZONE, DROPZONE_IDLE, DROPZONE_OVER } from '@/admin-shared/kit'
+
+// `INSET` went the same way and for the same reason: the writing sheet's time machine builds
+// its rows in an island, which may not import a file that carries React behind it.
+export { INSET } from '@/admin-shared/kit'
 
 // Both scales live in `scale.ts` and are re-exported here, because thirty-eight screens
 // already import them from the kit and the split is a fact about this file's length.

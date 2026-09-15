@@ -212,27 +212,32 @@ export function registerSheetFlows({ flow, atWidth }: Pick<Tour, 'flow' | 'atWid
   //
   // A BLANK SHEET, typed into: a piece with no row has no server autosave to leave behind.
   // NOTE: a template literal. No backticks.
-  flow('editor: find and replace, and the highlight never reaches the text', () => atWidth(1440, '/admin/editor', `
+  // A POST OF ITS OWN, made in one visit and opened in the next. Typing into the blank sheet
+  // was tried and is not deterministic in a full run: an earlier flow leaves a local recovery
+  // copy on this device, so a blank /admin/editor can open holding somebody else's sentence and
+  // the insert lands after it. And opening a piece is a PAGE LOAD since the sheet converted, so
+  // it cannot be the same expression as the one that plants it.
+  // NOTE: a template literal. No backticks.
+  flow('editor: find and replace, and the highlight never reaches the text', async () => {
+    const slug = 'tour-find-' + Date.now()
+    const planted = await atWidth(1440, '/admin/content', `
+    (async () => {
+      const made = await fetch('/api/posts', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ title: 'Tour find', slug: '${slug}', status: 'draft', categories: [], tags: [], content: 'a reed pen, and the reed it was cut from' }),
+      })
+      return made.ok ? 'ok' : 'POST /api/posts -> ' + made.status
+    })()`, 600)
+    if (planted !== 'ok') return planted
+    return await atWidth(1440, '/admin/editor/' + slug, `
     (async () => {
       const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
       const wait = async (fn, tries = 60) => {
         for (let i = 0; i < tries; i++) { const hit = fn(); if (hit) return hit; await sleep(100) }
         return null
       }
-      // A POST OF ITS OWN, made and removed here. Typing into the blank sheet was tried and
-      // is not deterministic in a full run: an earlier flow leaves a local recovery copy on
-      // this device, so a blank /admin/editor can open holding somebody else's sentence and
-      // the insert lands after it. The count then depends on what ran before, which is the
-      // one thing a flow may never depend on. NOTE: a template literal. No backticks.
-      const slug = 'tour-find-' + Date.now()
-      const made = await fetch('/api/posts', {
-        method: 'POST', headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ title: 'Tour find', slug, content: 'a reed pen, and the reed it was cut from', status: 'draft', categories: [], tags: [] }),
-      })
+      const slug = '${slug}'
       const done = async (verdict) => { await fetch('/api/posts/' + slug, { method: 'DELETE' }); return verdict }
-      if (!made.ok) return 'POST /api/posts -> ' + made.status
-      history.pushState(null, '', '/admin/editor/' + slug)
-      dispatchEvent(new PopStateEvent('popstate'))
       const surface = await wait(() => {
         const el = document.querySelector('.ProseMirror')
         return el && el.textContent.includes('reed') ? el : null
@@ -279,7 +284,8 @@ export function registerSheetFlows({ flow, atWidth }: Pick<Tour, 'flow' | 'atWid
       await sleep(300)
       if (document.querySelector('[data-find-bar]')) return await done('Escape did not close the strip')
       return await done('ok two found, two replaced, nothing drawn on the text')
-    })()`, 1200))
+    })()`, 1200)
+  })
 
   // ⚠️ THE KEYBOARD STAYS IN THE FIELD. Every field in this sheet threw focus away after a
   // single keystroke: type one digit into the publish time and the caret was gone, so setting
@@ -295,25 +301,27 @@ export function registerSheetFlows({ flow, atWidth }: Pick<Tour, 'flow' | 'atWid
   // A POST OF ITS OWN, made and removed here, for the reason the find flow states: typing into
   // the blank editor leaves a local recovery copy on this device and the next flow opens
   // holding it. NOTE: a template literal. No backticks.
-  flow('editor: the attributes sheet keeps the keyboard in the field being typed in', () => atWidth(1280, '/admin/editor', `
+  flow('editor: the attributes sheet keeps the keyboard in the field being typed in', async () => {
+    const slug = 'tour-focus-' + Date.now()
+    const planted = await atWidth(1280, '/admin/content', `
+    (async () => {
+      const made = await fetch('/api/posts', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ title: 'Tour focus', slug: '${slug}', status: 'draft', categories: [], tags: [], content: 'one line' }),
+      })
+      return made.ok ? 'ok' : 'POST /api/posts -> ' + made.status
+    })()`, 600)
+    if (planted !== 'ok') return planted
+    return await atWidth(1280, '/admin/editor/' + slug, `
     (async () => {
       const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
       const wait = async (fn, tries = 60) => {
         for (let i = 0; i < tries; i++) { const hit = fn(); if (hit) return hit; await sleep(100) }
         return null
       }
-      const slug = 'tour-focus-' + Date.now()
-      const made = await fetch('/api/posts', {
-        method: 'POST', headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ title: 'Tour focus', slug, content: 'one line', status: 'draft', categories: [], tags: [] }),
-      })
+      const slug = '${slug}'
       const done = async (verdict) => { await fetch('/api/posts/' + slug, { method: 'DELETE' }); return verdict }
-      if (!made.ok) return 'POST /api/posts -> ' + made.status
-      history.pushState(null, '', '/admin/editor/' + slug)
-      dispatchEvent(new PopStateEvent('popstate'))
-      // WAIT FOR THE PIECE, not just for a surface: the blank editor already has a
-      // .ProseMirror, so waiting on the element alone returns before the route has swapped and
-      // the click then lands on a screen that is about to be replaced.
+      // WAIT FOR THE PIECE, not just for a surface: a blank editor also has a .ProseMirror.
       const surface = await wait(() => {
         const el = document.querySelector('.ProseMirror')
         return el && el.textContent.includes('one line') ? el : null
@@ -323,7 +331,13 @@ export function registerSheetFlows({ flow, atWidth }: Pick<Tour, 'flow' | 'atWid
       const open = document.querySelector('[data-attrs]')
       if (!open) return await done('no way to open the attributes')
       open.click()
-      const panel = await wait(() => document.querySelector('aside[role=dialog]'))
+      // ⚠️ WAIT FOR IT TO BE SHOWN, not to EXIST. The panel ships with the page and keeps its
+      // dialog role while hidden, so a selector alone answers before it has been opened — and
+      // every keystroke below would then be typed into a field nobody can see.
+      const panel = await wait(() => {
+        const el = document.querySelector('aside[role=dialog]')
+        return el && !el.hidden ? el : null
+      })
       if (!panel) return await done('the attributes never opened')
       await sleep(400)
 
@@ -360,5 +374,6 @@ export function registerSheetFlows({ flow, atWidth }: Pick<Tour, 'flow' | 'atWid
       if (document.activeElement !== time) return await done('typing the hour threw the keyboard to ' + where())
       if (time.value !== '14:30') return await done('the time read ' + time.value + ' after being set, was ' + was)
       return await done('ok three keystrokes, the caret never left the field')
-    })()`, 1200))
+    })()`, 1200)
+  })
 }

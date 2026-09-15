@@ -5,7 +5,7 @@
 // Thirty seconds into typing, "unsaved" was not even true — a local snapshot was already on
 // disk, the sentence just never said so.
 import { describe, expect, it } from 'bun:test'
-import { saveStatusLine } from './useLocalDraft'
+import { saveStatusLine } from '@/admin-shared/draft-keep'
 
 const T = {
   saving: 'Saving…',

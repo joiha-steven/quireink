@@ -9,18 +9,24 @@
 // are built ONCE, when the editor is constructed and before the instance exists; reading the
 // live editor through `editorRef` instead of a captured const is what makes a dropped image
 // land reliably, rather than only when the stale closure happened to hold a non-null editor.
+//
+// A `Holder` and not `React.RefObject`: the shape is the same one-property box, and naming
+// React here would be the last thing in this file that knows the caller's framework.
 import type { Editor as TiptapEditor, EditorOptions } from '@tiptap/core'
 import type { KeySound } from './key-sound'
 import { placeCaret, pulseInput } from './key-feedback'
 import { isVideoUrl } from '@/render/video'
 
+/** A box with one slot in it, read at call time rather than captured at build time. */
+export type Holder<T> = { current: T }
+
 export type SurfaceHooks = {
   keySound: KeySound
-  caretRef: React.RefObject<HTMLSpanElement | null>
+  caretRef: Holder<HTMLSpanElement | null>
   /** Where the "/" menu is open, read inside a handler registered once. */
-  slashRef: React.RefObject<{ left: number; top: number } | null>
+  slashRef: Holder<{ left: number; top: number } | null>
   setSlash: (at: { left: number; top: number } | null) => void
-  editorRef: React.RefObject<TiptapEditor | null>
+  editorRef: Holder<TiptapEditor | null>
   /** Upload and insert, in order, from wherever they came. */
   insertImages: (files: File[], at: number | undefined) => Promise<void>
   /** The image files out of a DataTransfer, from a drop or from the clipboard. */

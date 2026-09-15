@@ -277,8 +277,18 @@ async function evaluate(expression: string): Promise<string> {
   return String(res.result?.value ?? '(no value)')
 }
 
+/**
+ * Open a path and let it settle.
+ *
+ * ⚠️ THE SAME CEILING AS `evaluate`, and it is here because the run hung for forty-five minutes
+ * without it. A flow that leaves the page it is on — the editor's Move to Trash does, now that
+ * the sheet is a page — hands back its verdict and the browser goes on navigating; the NEXT
+ * flow's `Page.navigate` then lands mid-navigation and Chrome never answers it. `evaluate`
+ * already refused to wait forever for exactly this reason. A harness that can stop with no
+ * output is worse than one that reports a slow step: the flow after this one still runs.
+ */
 async function goto(path: string, settleMs = 700): Promise<void> {
-  await send('Page.navigate', { url: `${BASE}${path}` })
+  await Promise.race([send('Page.navigate', { url: `${BASE}${path}` }), Bun.sleep(FLOW_MS)])
   await Bun.sleep(settleMs)
 }
 

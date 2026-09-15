@@ -1,15 +1,15 @@
 # Writing and publishing
 
-## Editor (Admin → editor) — `src/admin/components/Editor.tsx`
+## Editor (Admin → editor) — `src/admin/island/sheet.ts`
 
 - StarterKit + underline, inline code, bullet/numbered/**task** lists (GFM `- [ ]`), quote,
   code block, hr, link, captioned image, GFM tables, video. `md/from-editor.ts` serializes all
   (ADR 0052); `tiptap-markdown` and `prosemirror-markdown` came out on 2026-09-13.
-- **The extension set is `editorExtensions.ts`, not a literal in `Editor.tsx`.** Both round-trip
+- **The extension set is `editorExtensions.ts`, not a literal in `sheet-paper.ts`.** Both round-trip
   suites (`ink-mark.test.ts`, `math-node.test.ts`) import that one list. They used to rebuild it by
   hand under a comment claiming it was what the editor mounts, so a node added to the editor was
   absent from its own test.
-- **Mathematics** (`MathNode.tsx`): atom nodes for inline and display, rendered live with the same
+- **Mathematics** (`MathNode.ts`): atom nodes for inline and display, rendered live with the same
   `renderMath` the server uses, TeX editable in place when the node is selected. The delimiter
   the author typed is stored on the node, which is correctness rather than polish: without it
   `\(a\)` loses its delimiters on save, and without the node at all every `\times` gains a
@@ -27,15 +27,15 @@
   - `nodeInputRule` from Tiptap is the WRONG helper here: it replaces only capture group 1 and
     leaves the delimiters standing (`\(x\)` saved as `\(\(x\)\)`). `mathInputRule` deletes the
     whole matched range first.
-- **Menus live in `EditorMenus.tsx`** (Toolbar + BubbleBar). The editor sets
+- **Menus live in `editor-menus.ts`** (the bubble bar and the "/" menu; the button strip is `editor-toolbar.ts`). The editor sets
   `shouldRerenderOnTransaction: true` — TipTap 3 disables it by default, which leaves every
   `isActive()` (toolbar highlights, the table-tools row) stale until an unrelated re-render.
 - **Writing shell:** the sheet carries its own chrome — the action line (back link · save state ·
   word count · Markdown/Attributes · Preview/View post/Save/Publish) is the card's first row and the toolbar
   sticks under it, full-width, groups centred, WRAPPING on a narrow window rather than scrolling
-  (three owner verdicts, 2026-08-17). The title grows instead of clipping (`SheetTitle`, reading
-  face). The write pane — the list of everything written — rides beside the sheet from 1640px up
-  (measured, not chosen: `WritePane.tsx`).
+  (three owner verdicts, 2026-08-17). The title grows instead of clipping (`screens/sheet.ts`,
+  reading face). The write pane — the list of everything written — rides beside the sheet from
+  1640px up (measured, not chosen: `screens/content-pane.ts`).
   Icon actions keep localized accessible names. Focusing prose must not draw a black outline
   around the document.
 - **Key feedback, as a choice of instrument:** `settings.motion.keys` — `woody`, `crisp`,
@@ -121,7 +121,7 @@
   column are shaded with `--c-rule` (the table's own border colour) as a visual spine — the
   left-column shade is CSS-only (GFM has no header-column), so it never changes the saved Markdown.
   **GOTCHA:** list items wrap content in `<p>`; `.prose li > p{margin:0}` keeps them tight.
-- **Autosave is TWO copies** (`useLocalDraft.ts`; [admin-editor.md](../admin-editor.md)): unsaved
+- **Autosave is TWO copies** (`island/lib/sheet-safety.ts`; [admin-editor.md](../admin-editor.md)): unsaved
   edits go to `localStorage` on this device and to `posts.autosave_json` on the server (since
   2026-08-30), on the `autosaveSeconds` tick while dirty. Neither is the published body — only
   Save/Publish moves `content`, so editing a *published* post still cannot push half-finished

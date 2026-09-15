@@ -196,3 +196,79 @@ it from an effect declared above — a box that does not exist at that moment is
 lands at the end of the document. The first cut let a second writer set the value afterwards,
 which sends a textarea's caret to the end: measured at 152 of 152 instead of 97. One writer now,
 inside the effect that does the restoring.
+
+### The sheet around the paper, and the end of the React admin's routes
+
+The last step, and the largest: the three writing addresses stopped being a React application
+with a server-drawn frame and became a page with an editor built into it. What moved is
+everything that is not the writing — the action line, the title, the attributes panel, the time
+machine's dialog — and it moved as markup, drawn by `screens/sheet*.ts` and wired by
+`island/sheet.ts` with its eight libraries. Three React forms of 384, 339 and 340 lines became
+one renderer and one island: what differs between a post, a page and a note is DATA now.
+
+**The piece travels in the HTML.** The React editor booted, then fetched
+`/api/admin/view/editor` for a post the server had been holding while it wrote the page — a
+blank sheet for as long as that took. The body, every attribute and the taxonomy lists are in
+the page.
+
+**One language, and a named subset of it.** `SHEET_WORD_KEYS` is 121 keys, 1.7 KB gzipped,
+against a whole admin dictionary's 1,258 keys and 25 KB — most of it for screens this one cannot
+reach. The list is named once; the TYPE and the picker are both derived from it, which is the
+only arrangement in which a subset cannot drift from what reads it.
+
+⚠️ **THE WORD COUNT NEVER APPEARED, AND THE FIRST EXPLANATION OF WHY WAS WRONG.** It is a
+SENTENCE the island writes or leaves empty, and it also carries `hidden sm:inline` — the
+breakpoint's answer to a different question. It shipped with a `hidden` ATTRIBUTE as well, which
+nothing ever removed, so it was hidden at every width. Caught by diffing the sheet's text against
+the build the owner was running.
+
+The fix was one word of markup. What went with it, and had to be taken back out, was a CSS rule
+written on a belief this repository states twice in `admin.css`: that "a `hidden` attribute
+against a display utility is a tie the utility wins, because preflight writes
+`[hidden]{display:none}` first". **It is not true in this build.** `utilities.css` line 248 is
+the only `!important` in the entire sheet and it is on `[hidden]`, so the attribute beats `flex`,
+`contents` and `inline-block` outright — which is exactly why every drawn-and-hidden part of this
+sheet works with no rule at all. Both comments now say so, with the line number, because a belief
+that is wrong and written down twice is how a third copy gets written.
+
+**The panel's five own shapes were four pixels out of step with the six around them.** A set of
+terms, a series name, a picture, a date and the draft/published pair are drawn here; the slug,
+the excerpt and the SEO pair are drawn by `fields.ts`. The first cut wrote its own captions —
+14px/500 in neutral-700 over a 6px gap, where every other field in the same stack is
+`SETTING_LABEL` in neutral-800 over 8. All eleven are `settingRow` now. The old panel had the
+same drift and had had it for longer: the note editor's status label and its quote box were both
+hand-copied class lists that no longer matched the control they were copied from.
+
+**Measured against the build the owner was running** (`BASE=4d692b6b`, not `HEAD` — see the
+Markdown-view entry above for why that distinction is load-bearing): on all three addresses the
+sheet's text is identical, the control set is identical — 102/103 controls at rest, 109/112/174
+with the panel open, the same 53 tag offers — and every control lands on the same pixel except
+the deliberate correction above. The toolbar is identical in all four states it can be in. The
+date field, the find strip, the Markdown round trip and a driven save all answer the same on
+both.
+
+⚠️ **AND THE NUMBER THIS STEP WAS FOR.** Opening a post, to the moment there is a writing
+surface to type into, three readings each on one seeded database:
+
+| | old (React) | new |
+|---|---|---|
+| ready to type | 394 / 396 / 402 ms | **106 / 107 / 108 ms** |
+| JavaScript fetched | 363 KB, 21 files | **357 KB, 18 files** |
+
+The bytes barely move and the wait falls by a factor of 3.7, which is the shape the write
+column's entry predicted: almost all of the old number was React and Tiptap booting from
+nothing on every open. What is still downloaded of React — 63 KB of the admin bundle and 29 KB
+of the entry — is the four overlays, and it leaves with them in the step after this one.
+
+**What left with this step**: 36 files, including the three forms, the three settings panels,
+`Editor.tsx`, `SlideOver`, `TimeMachine`, `MultiSelect`, `Combobox`, `DateField` and the four
+editor hooks. The React admin now routes ONE page — the dead end — and keeps only the overlays:
+the palette, the shortcut sheet, the confirm dialog and the toast. The temporary
+`quire:navigate` bridge between the rail's island and the router went with them, on the date its
+own comment set for it.
+
+⚠️ **A toast does not survive a navigation, and the editor's Trash key depended on one.** The
+delete is soft and asks nothing, and the whole argument for asking nothing is that the undo is
+in the toast — then the piece is gone, the editor has to leave, and the toast goes with the
+page. `island/lib/say-across.ts` carries the sentence and the undo's INGREDIENTS across the
+load, read once on the other side.

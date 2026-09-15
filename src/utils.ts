@@ -72,14 +72,9 @@ export function slugify(input: string): string {
 // them. Re-exported, so the dozen call sites that had it here keep the import they had.
 export { formatDateTimeShort } from '@/admin-shared/when'
 
-// Format an ISO date as "HH:mm" for the auto-save indicator.
-export function formatTime(iso: string): string {
-  const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) return ''
-  const hh = String(d.getHours()).padStart(2, '0')
-  const mm = String(d.getMinutes()).padStart(2, '0')
-  return `${hh}:${mm}`
-}
+// The clock beside the save state, for the same reason and by the same route as the line
+// above: the writing sheet's island prints it and may not import this module either.
+export { formatTime } from '@/admin-shared/when'
 
 /**
  * Max characters kept from an author-provided excerpt.

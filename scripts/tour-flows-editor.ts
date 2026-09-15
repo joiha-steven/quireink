@@ -15,6 +15,7 @@ import type { Tour } from './tour'
 import { registerSheetFlows } from './tour-flows-sheet'
 import { registerPictureFlows } from './tour-flows-picture'
 import { registerAttributeFlows } from './tour-flows-attributes'
+import { registerKeepFlows } from './tour-flows-keep'
 import { KITCHEN_SINK } from './tour-kitchen-sink'
 
 export function registerEditorFlows({ flow, expect, atWidth }: Tour): void {
@@ -108,24 +109,31 @@ export function registerEditorFlows({ flow, expect, atWidth }: Tour): void {
   // API and this one is a defect in the CLIENT: the post saves, the URL updates, and the shell
   // then throws the editor away for a red "Not found". So it drives the real form.
   //
-  // `pushState` + a synthetic `popstate` rather than `location.href`: the second is a reload,
-  // which kills the async expression mid-flight. The router listens for `popstate`, so this is
-  // a real SPA navigation.
-  flow('admin: renaming a draft\'s slug and publishing keeps the editor', () => expect('/admin/editor', `
+  // ⚠️ TWO VISITS, since the writing sheet became a page. It used to plant the post and reach
+  // it with `pushState` + a synthetic `popstate`, which was a real navigation while a React
+  // router was listening for one. Nothing listens now: the address moved and the page did not,
+  // so the flow went on driving the BLANK editor it had opened on and reported that pressing
+  // Publish opened no attributes. Opening a piece is a page load, and a page load needs its own
+  // `expect`.
+  flow('admin: renaming a draft\'s slug and publishing keeps the editor', async () => {
+    const slug = 'tour-rename-' + Date.now()
+    const planted = await expect('/admin/content', `
     (async () => {
-      const slug = 'tour-rename-' + Date.now()
       const r = await fetch('/api/posts', {
         method: 'POST', headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ title: 'Tour rename', slug, content: 'Renamed by the tour.', status: 'draft', categories: [], tags: [] }),
+        body: JSON.stringify({ title: 'Tour rename', slug: '${slug}', content: 'Renamed by the tour.', status: 'draft', categories: [], tags: [] }),
       })
-      if (!r.ok) return 'POST /api/posts -> ' + r.status
+      return r.ok ? 'ok' : 'POST /api/posts -> ' + r.status
+    })()`, 600)
+    if (planted !== 'ok') return planted
+    return await expect('/admin/editor/' + slug, `
+    (async () => {
+      const slug = '${slug}'
       const done = async (verdict) => {
         await fetch('/api/posts/' + slug, { method: 'DELETE' })
         await fetch('/api/posts/' + slug + '-moved', { method: 'DELETE' })
         return verdict
       }
-      history.pushState(null, '', '/admin/editor/' + slug)
-      dispatchEvent(new PopStateEvent('popstate'))
       await new Promise((r) => setTimeout(r, 1200))
 
       // The attributes are CLOSED while writing (ADR 0024, step 5), so the slug field is not
@@ -163,49 +171,56 @@ export function registerEditorFlows({ flow, expect, atWidth }: Tour): void {
       if (shouted) return done('the shell showed "Not found" for a post that saved')
       if (!stillEditing) return done('the editor was thrown away after its own save')
       return done('ok')
-    })()`, 900))
+    })()`, 1200)
+  })
 
   // THE ONE THAT OPENS A REAL POST FULL OF EVERYTHING, in a real browser, and saves it twice.
   //
   // `editor-corpus.test.ts` runs the same shapes under happy-dom and is faster and finer. What
-  // it cannot reach is the half of the editor that only exists once React draws — a node view
-  // that throws while rendering unmounts the admin, and a DOM shim never mounts React the way a
-  // browser does. Both of the blank pages of 2026-08-21 ENDED there, whatever their cause.
+  // it cannot reach is the half of the editor that only exists once the island runs — a node
+  // view that throws while building takes the writing surface with it, and a DOM shim never
+  // builds one the way a browser does. Both of the blank pages of 2026-08-21 ENDED there.
   //
   // Two saves is the assertion, not one. A serializer that rewrites the document does it
   // quietly and identically every time, so comparing a save to its source proves nothing about
   // stability; comparing the second save to the first is what catches a post that drifts a
   // little further every time it is opened. Three of the four bugs found this month were
   // exactly that shape.
-  flow('admin: a post of every shape opens, and saving it twice changes nothing', () => expect('/admin/editor', `
+  flow('admin: a post of every shape opens, and saving it twice changes nothing', async () => {
+    const slug = 'tour-kitchen-' + Date.now()
+    const planted = await expect('/admin/content', `
     (async () => {
-      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
-      const slug = 'tour-kitchen-' + Date.now()
-      const body = ${JSON.stringify(KITCHEN_SINK)}
       const made = await fetch('/api/posts', {
         method: 'POST', headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ title: 'Tour: bài kiểm tất cả', slug, content: body, status: 'draft', categories: [], tags: [] }),
+        body: JSON.stringify({
+          title: 'Tour: bài kiểm tất cả', slug: '${slug}', status: 'draft',
+          categories: [], tags: [], content: ${JSON.stringify(KITCHEN_SINK)},
+        }),
       })
-      if (!made.ok) return 'POST /api/posts -> ' + made.status
+      // The device copy of any earlier run, before the editor opens and offers it back.
+      try { localStorage.clear() } catch (e) { /* a private window */ }
+      return made.ok ? 'ok' : 'POST /api/posts -> ' + made.status
+    })()`, 600)
+    if (planted !== 'ok') return planted
+    return await expect('/admin/editor/' + slug, `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      const slug = '${slug}'
       const done = async (verdict) => { await fetch('/api/posts/' + slug, { method: 'DELETE' }); return verdict }
       const stored = async () => (await (await fetch('/api/admin/view/editor?slug=' + slug)).json())?.data?.post?.content ?? ''
       const save = async () => {
-        const button = [...document.querySelectorAll('button')].find((b) => /save draft|lưu nháp/i.test(b.textContent || ''))
+        const button = document.querySelector('[data-sheet-save]')
         if (!button) return 'no Save draft button'
         button.click()
         await sleep(1200)
         return null
       }
-
-      localStorage.clear()
-      history.pushState(null, '', '/admin/editor/' + slug)
-      dispatchEvent(new PopStateEvent('popstate'))
       await sleep(2000)
 
-      // 1. THE ADMIN IS STILL THERE. This is the white page, asserted directly: a throw during
-      //    render leaves #admin empty and every one of these null.
-      const root = document.getElementById('admin')
-      if (!root || root.innerHTML.length < 500) return done('the admin unmounted while opening the post')
+      // 1. THE SHEET IS STILL THERE. This is the white page, asserted directly: a throw while
+      //    the island builds leaves the paper empty and every one of these null.
+      const sheet = document.querySelector('[data-sheet]')
+      if (!sheet || sheet.innerHTML.length < 500) return done('the sheet never drew')
       if (!document.querySelector('nav, aside, .admin-shell')) return done('the shell is gone')
       const surface = document.querySelector('.ProseMirror')
       if (!surface) return done('no writing surface')
@@ -227,13 +242,11 @@ export function registerEditorFlows({ flow, expect, atWidth }: Tour): void {
       const first = await stored()
       if (!first) return done('the post had no content after the first save')
 
-      history.pushState(null, '', '/admin/content')
-      dispatchEvent(new PopStateEvent('popstate'))
+      // The SECOND save, from the same open sheet. It used to reopen the editor in between,
+      // which a page load cannot do without ending this expression — and reopening was never
+      // what the assertion was about: what has to hold is that saving an unchanged document
+      // twice writes the same bytes twice.
       await sleep(400)
-      localStorage.clear()
-      history.pushState(null, '', '/admin/editor/' + slug)
-      dispatchEvent(new PopStateEvent('popstate'))
-      await sleep(2000)
       const failedSecond = await save()
       if (failedSecond) return done(failedSecond)
       const second = await stored()
@@ -253,7 +266,8 @@ export function registerEditorFlows({ flow, expect, atWidth }: Tour): void {
       if (gone.length) return done('the round trip lost ' + gone.join(', '))
 
       return done('ok ' + first.length + ' bytes, unchanged by a second save')
-    })()`, 900))
+    })()`, 1500)
+  })
 
   // The mock's one inserting gesture: "/" on an empty line raises the insert menu, and the
   // character does NOT land in the text. Driven through execCommand so it exercises the same
@@ -282,19 +296,23 @@ export function registerEditorFlows({ flow, expect, atWidth }: Tour): void {
   // the one sentence he could not format. Asserted with `elementFromPoint` rather than by
   // comparing rectangles: what matters is not whether they overlap, it is which one the mouse
   // would actually hit.
-  flow('admin: the formatting bar is reachable on the FIRST line', () => expect('/admin/editor', `
+  flow('admin: the formatting bar is reachable on the FIRST line', async () => {
+    const slug = 'tour-bubble-' + Date.now()
+    const planted = await expect('/admin/content', `
+    (async () => {
+      const made = await fetch('/api/posts', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ title: 'Tour bubble', slug: '${slug}', status: 'draft', categories: [], tags: [], content: 'The first line of the post.\\n\\nAnd a second paragraph.' }),
+      })
+      return made.ok ? 'ok' : 'POST /api/posts -> ' + made.status
+    })()`, 600)
+    if (planted !== 'ok') return planted
+    return await expect('/admin/editor/' + slug, `
     (async () => {
      try {
       const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
-      const slug = 'tour-bubble-' + Date.now()
-      const made = await fetch('/api/posts', {
-        method: 'POST', headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ title: 'Tour bubble', slug, content: 'The first line of the post.\\n\\nAnd a second paragraph.', status: 'draft', categories: [], tags: [] }),
-      })
+      const slug = '${slug}'
       const done = async (verdict) => { await fetch('/api/posts/' + slug, { method: 'DELETE' }); return verdict }
-      if (!made.ok) return 'POST /api/posts -> ' + made.status
-      history.pushState(null, '', '/admin/editor/' + slug)
-      dispatchEvent(new PopStateEvent('popstate'))
       await sleep(1200)
 
       const surface = document.querySelector('[contenteditable="true"]')
@@ -332,7 +350,8 @@ export function registerEditorFlows({ flow, expect, atWidth }: Tour): void {
       }
       return done('ok (bar at y=' + Math.round(box.top) + ')')
      } catch (e) { return 'the flow itself threw: ' + (e && e.message) }
-    })()`, 1200))
+    })()`, 1200)
+  })
 
 
 
@@ -341,4 +360,5 @@ export function registerEditorFlows({ flow, expect, atWidth }: Tour): void {
   registerSheetFlows({ flow, atWidth })
   registerPictureFlows({ flow, atWidth })
   registerAttributeFlows({ flow, atWidth })
+  registerKeepFlows({ flow, atWidth })
 }

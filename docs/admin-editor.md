@@ -25,7 +25,7 @@ that file first; this one only adds what is true here.
   Preview inside the row's "⋯". ⚠️ **Measured 2026-09-11:** with it the action line wraps to two
   rows above `lg` in the long-label locales (Russian at 1920: 56px → 100px). Vietnamese and
   English stay on one row at 1640, which is where the write pane arrives beside the sheet.
-- The title lives ON the sheet (`SheetTitle`), in the reading face, with the meta line
+- The title lives ON the sheet (`screens/sheet.ts`), in the reading face, with the meta line
   (status · last touched) under it. It aligns with the public reading column, wraps
   naturally, and uses content-driven height so a long one is never clipped.
 - **The toolbar is BACK, by the owner's verdict after writing on the bare version**
@@ -117,11 +117,13 @@ that file first; this one only adds what is true here.
   2026-09-07), everything typed after a new post's first save went on being written under
   `new`, where the editor that reopens that post never looks and the next blank sheet reopens
   it as a piece of its own.
-- The attributes are a right-hand sheet (`SlideOver`). The first Publish on an unpublished
+- The attributes are a right-hand sheet (`screens/sheet-panel.ts`, opened by
+  `island/lib/sheet-open.ts`). The first Publish on an unpublished
   piece opens it as the PUBLISH sheet, footered "Later / Publish", and that one always lies
   on top of the page over a scrim: those are questions being answered about the piece, and
   a column that squeezed the writing to make room for them is what ADR 0024 step 5 ended.
-- **A sheet the writer opens themselves DOCKS from 85rem up** (`dock` on `SlideOver`). On
+- **A sheet the writer opens themselves DOCKS from 85rem up** (`DOCK_AT` in
+  `island/lib/sheet-open.ts`). On
   top of the page it hid 232px of the writing column at 1280 (34.5% of every line), 104px at
   1440 and 200px at 1920 — while 348px of paper stood empty beside the text at that last
   width (measured 2026-09-12). Above 85rem the canvas holds its right edge clear, the column

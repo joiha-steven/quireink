@@ -221,7 +221,7 @@ character and none of its typographic rules **except one**, below.
   the window less 650 and the row needs ~950 with air around it. Both the pane and the row
   are the owner's explicit picks; below 1640 they do not both fit, and the writing wins.
   Do not put it back to `xl` without re-measuring the row.
-- **Focus mode is the other half of that** (`components/useFocusMode.ts`, 2026-08-24). One
+- **Focus mode is the other half of that** (`island/lib/focus-mode.ts`, 2026-08-24). One
   switch in the action line, `Ctrl/Cmd + \`, takes the pane AND the button row off the
   screen at any width and leaves the paper. **It applies beside an EDITOR only.** On the
   Write screen the pane is not chrome around the paper, it is the screen — hiding it there

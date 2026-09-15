@@ -98,19 +98,19 @@ describe('the admin wears one face', () => {
   })
 
   it('gives the reading face to the editor and nothing else', () => {
-    // THE list, and it is short on purpose. `SheetTitle` is the title field — the published
-    // headline being typed, so it has to be the published face; it moved there from
-    // `PostForm` on 2026-08-17 when both editors started sharing one title block.
+    // THE list, and it is short on purpose. `screens/sheet.ts` draws the title field — the
+    // published headline being typed, so it has to be the published face; it is what
+    // `SheetTitle.tsx` became when ADR 0054's last step moved the writing sheet to the server.
     // `settings-appearance-type.ts` is the type scale's specimens, which are not a preview if
     // they are not painted in the family they offer — it is what `TypographyFields.tsx` became
-    // when ADR 0054 moved the screen to the server. `scale.ts` is the declaration. A fourth
-    // file means the 2026-08-15 decision is being re-opened by accident.
+    // when the same ADR moved that screen. `scale.ts` is the declaration. A fourth file means
+    // the 2026-08-15 decision is being re-opened by accident.
     const holders = everywhere()
       .filter((f) => /\bREADING\b/.test(code(f)))
       .map((f) => f.replaceAll('\\', '/'))
       .sort()
     expect(holders).toEqual([
-      'src/admin/components/SheetTitle.tsx',
+      'src/web/admin/screens/sheet.ts',
       'src/admin/components/kit.tsx', // re-export only
       'src/admin-shared/scale.ts',
       'src/web/admin/screens/settings-appearance-type.ts',

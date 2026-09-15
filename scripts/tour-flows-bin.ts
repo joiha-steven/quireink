@@ -6,6 +6,12 @@
 // navigation now, so picking a row and acting on it cannot be one expression. That growth put
 // the file over the 400-line limit, and this flow is the one that was least about the editor's
 // writing surface and most about what stands beside it.
+//
+// ⚠️ AND IT GREW A THIRD VISIT the day the sheet itself converted. Move to Trash LEAVES the
+// editor — the piece is gone, so staying would be a screen editing something that is not there
+// — and under ADR 0054 leaving is a real page load. A script that navigates the page it is
+// running in destroys its own execution context, so everything after the click has to be a
+// separate visit.
 import type { Tour } from './tour'
 
 export function registerTrashFromEditorFlows({ flow, expect }: Tour): void {
@@ -27,16 +33,17 @@ export function registerTrashFromEditorFlows({ flow, expect }: Tour): void {
       return row ? new URL(row.href).pathname : 'the write column offered no post to open'
     })()`, 900)
     if (!picked.startsWith('/admin/editor/')) return picked
-    return await expect(picked, `
+    const slug = picked.slice('/admin/editor/'.length)
+
+    // The CLICK, and nothing after it. The handler deletes and then leaves; anything awaited
+    // here would be awaited in a document that is on its way out.
+    const pressed = await expect(picked, `
     (async () => {
-      window.confirm = () => true
       // VISIBLE controls only. Since ADR 0054 the rail is one DOM in every state and CSS
       // decides what is shown, so a folded group still holds a link that says "Trash" — and a
       // search by WORDS found the rail's row instead of the editor's button. offsetParent is
       // null for anything display:none, which is the same reason a person cannot click it.
-      const find = (re) => [...document.querySelectorAll('button, a')]
-        .filter((b) => b.offsetParent !== null)
-        .find((b) => re.test((b.textContent || '').trim()))
+      const seen = (el) => el && el.offsetParent !== null
       const wait = async (fn, tries = 60, gap = 100) => {
         for (let i = 0; i < tries; i++) {
           const hit = fn()
@@ -45,31 +52,46 @@ export function registerTrashFromEditorFlows({ flow, expect }: Tour): void {
         }
         return null
       }
-
-      const slug = location.pathname.split('/').pop()
-
-      const attributes = await wait(() => find(/attribut|thuộc tính/i))
+      // ⚠️ THE VISIBLE ONE. Two of each of these ship — the phone's "⋯" menu and the desktop
+      // row — and querySelector hands back the first in the markup, which at this width is the
+      // one folded away inside a details element. A control nobody can see is not the control.
+      // (No backticks in here: the whole expression is a template literal.)
+      const shownOne = (hook) => [...document.querySelectorAll(hook)].find(seen) || null
+      const attributes = await wait(() => shownOne('[data-sheet-attrs]'))
       if (!attributes) return 'the editor never showed its Attributes control'
       attributes.click()
 
-      const trash = await wait(() => find(/trash|rác|papierkorb|corbeille|papelera|lixo|cestino|ごみ箱|휴지통|回收站|корзину/i), 40)
+      const trash = await wait(() => shownOne('[data-sheet-trash]'), 40)
       if (!trash) return 'the Attributes panel offers no way to trash the piece'
       trash.click()
+      return 'pressed'
+    })()`, 1200)
+    if (pressed !== 'pressed') return pressed
 
-      // Gone when the PUBLIC url stops answering — what a reader would check, rather than
-      // trusting the button's own optimism.
-      const gone = await wait(async () => (await fetch('/' + slug)).status === 404 ? true : null, 60, 200)
+    // The piece is gone when the PUBLIC url stops answering — what a reader would check, rather
+    // than trusting the button's own optimism — and it is in the bin rather than destroyed.
+    return await expect('/admin/trash', `
+    (async () => {
+      const wait = async (fn, tries = 60, gap = 200) => {
+        for (let i = 0; i < tries; i++) {
+          const hit = await fn()
+          if (hit) return hit
+          await new Promise((r) => setTimeout(r, gap))
+        }
+        return null
+      }
+      const gone = await wait(async () => (await fetch('/${slug}')).status === 404 ? true : null)
       const listed = await (await fetch('/api/admin/view/trash')).json()
-        .then((j) => (j?.data?.posts ?? []).some((p) => p.slug === slug))
-      // Put it back before reporting either way: a tour that eats a seeded post changes
-      // what every later run is testing. SOFT is also what the confirmation promises.
+        .then((j) => (j && j.data && j.data.posts ? j.data.posts : []).some((p) => p.slug === '${slug}'))
+      // Put it back before reporting either way: a tour that eats a seeded post changes what
+      // every later run is testing. SOFT is also what the confirmation promises.
       const back = await fetch('/api/trash', {
         method: 'POST', headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ kind: 'posts', action: 'restore', ids: [slug] }),
+        body: JSON.stringify({ kind: 'posts', action: 'restore', ids: ['${slug}'] }),
       })
       if (!gone) return 'the piece still answers after Move to Trash'
       if (!listed) return 'it left the site but never reached the trash'
-      return back.ok ? 'ok (' + slug + ')' : 'restore -> ' + back.status
+      return back.ok ? 'ok (${slug})' : 'restore -> ' + back.status
     })()`, 1200)
   })
 }

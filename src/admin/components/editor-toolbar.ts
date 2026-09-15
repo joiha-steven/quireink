@@ -10,14 +10,14 @@
 // answers stayed live — which means every keystroke rebuilt the React tree of the entire sheet
 // to decide whether Bold looks pressed. Now one subscription updates twenty-one attributes.
 import type { Editor as TiptapEditor } from '@tiptap/core'
-import type { AdminStrings } from '@/i18n/admin-i18n'
+import type { SheetWords } from '@/admin-shared/sheet-wire'
 import { ICONS } from '@/icons'
 
 /** The bar's own SVG size, on the shared builder. */
 const glyph = (body: string): SVGSVGElement => svgGlyph(body, className.glyph)
 import { el, svgGlyph } from './node-dom'
 import { withTip } from './editor-tooltip'
-import { editLink } from './editorLink'
+import { editLink } from './editor-link'
 import { tip } from './editorKeys'
 
 /**
@@ -297,7 +297,7 @@ export function mountToolbar(host: HTMLElement, hooks: ToolbarHooks): Toolbar {
  * names, and the file that prints them is the one that should say which key each belongs to.
  * A type-only import, so no dictionary ships with it.
  */
-export function toolbarWords(t: AdminStrings): ToolbarWords {
+export function toolbarWords(t: SheetWords): ToolbarWords {
   return {
     bold: t.tbBold, italic: t.tbItalic, underline: t.tbUnderline, ring: t.tbRing,
     strike: t.tbStrike, codeInline: t.tbCodeInline,

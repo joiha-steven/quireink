@@ -133,6 +133,15 @@ export const OVERLAY =
 // so nothing that already had them has to learn a second module, and `check:admin-kit` follows
 // the strings rather than the filenames.
 
+/**
+ * A surface INSIDE a card.
+ *
+ * ENCLOSURE WEAKENS INWARD — each line lighter than the one around it. Here rather than in
+ * `admin/components/kit.tsx`, which is where it was written, because the writing sheet's time
+ * machine builds its rows in an island and a `.tsx` import would pull React in behind it.
+ */
+export const INSET = 'rounded-lg border border-neutral-100 p-4 dark:border-neutral-800'
+
 export const CARD =
   'rounded-[10px] border border-neutral-200/80 bg-white shadow-[0_1px_2px_rgba(0,0,0,.05)] dark:border-neutral-800 dark:bg-neutral-900 dark:shadow-none'
 

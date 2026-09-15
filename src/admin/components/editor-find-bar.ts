@@ -14,7 +14,7 @@
 //
 // ⚠️ PLAIN TYPESCRIPT (ADR 0054 step 5): the editor is a client-side application and builds its
 // own chrome.
-import type { AdminStrings } from '@/i18n/admin-i18n'
+import type { SheetWords } from '@/admin-shared/sheet-wire'
 import { buttonClass, CONTROL_CHROME } from '@/admin-shared/kit'
 import { ICONS } from '@/icons'
 import { el, svgGlyph } from './node-dom'
@@ -86,7 +86,7 @@ export type FindBar = {
 }
 
 export type FindBarHooks = {
-  t: AdminStrings
+  t: SheetWords
   target: FindActions
   /**
    * Whether the replace row starts open.

@@ -110,8 +110,9 @@ export function wirePicking(pane: HTMLElement, rows: HTMLElement[], after: () =>
     // The rows that went, taken out here rather than by a reload — because a reload would take
     // the toast with it, and the toast is where the undo is. A piece that did NOT go stays on
     // screen, still ticked, which is the honest report of a partial answer.
-    const open = document.documentElement.dataset.adminReact === 'sheet'
-      && gone.includes(pane.dataset.writeOpen ?? '\u0000')
+    // Is one of the pieces just binned the one OPEN beside this column? `data-write-open` is
+    // empty on the list screen, where nothing is open and nothing has to be left.
+    const open = gone.includes(pane.dataset.writeOpen ?? '\u0000')
     for (const key of gone) pane.querySelector(`[data-piece="${CSS.escape(key)}"]`)?.remove()
     after()
 

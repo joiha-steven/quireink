@@ -115,8 +115,6 @@ export function registerStatsFlows({ flow, expect }: Tour): void {
       if (!html.includes('data-screen="analytics"')) return 'the server did not draw the analytics screen'
       if (!html.includes('data-admin-screen="analytics"')) return 'the page did not tell React to stand down'
 
-      const screens = document.documentElement.getAttribute('data-admin-screens') || ''
-      if (!screens.includes('/admin/analytics')) return 'analytics is not listed as a server screen'
 
       // Every piece row arrived as markup, not as a row built after a fetch.
       const inMarkup = (html.match(/data-piece-row/g) || []).length
