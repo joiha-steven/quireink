@@ -1,61 +1,71 @@
 # Getting from one screen to the next
 
-What the admin does BETWEEN screens: how a route change is committed, what says it is
-happening, and what happens when the file a screen needs is not there any more. Everything
-here is about time, not appearance ([`admin-design.md`](./admin-design.md) has the look).
-Read this one before touching `router.tsx`, `App.tsx`, `ui/TopProgress.tsx` or
-`ui/stale-build.ts`.
+What the admin does BETWEEN screens: what a click costs, what says it is happening, and what
+happens when a file the page needs is not there any more. Everything here is about time, not
+appearance ([`admin-design.md`](./admin-design.md) has the look). Read this one before touching
+[`src/admin/island/rail.ts`](../src/admin/island/rail.ts) or
+[`src/web/admin/rail.ts`](../src/web/admin/rail.ts).
 
-## The cost of a first click
+## The cost of a click
 
-Measured in headless Chromium against a throwaway instance seeded to the size of the real
-blog (70 posts, 40,000 analytics events).
+⚠️ **There is no router here any more.** Every admin address is a page the server draws, so a
+click on a rail row is a browser navigation: the old document goes, a new one arrives, and the
+island the new page needs is named in its own markup. ADR 0054's step 6 finished that, and this
+section used to describe the opposite arrangement in detail. What it found is kept below,
+because the numbers are the reason the arrangement changed.
 
-**The first click on any admin route cost 330-390ms; the same route clicked again cost
-23-35ms.** The difference was not data and not work: the CPU was idle for ~300ms of it and
-the page's own fetch had not started. Every page is a `lazy()` import, so a first visit
-suspends; outside a transition React answers a suspension with the Suspense fallback and then
-throttles putting real content back by a fixed 300ms.
+**What a navigation costs now**, measured in headless Chromium against a throwaway instance
+seeded to the size of the real blog (70 posts, 40,000 analytics events), two builds on one
+database:
 
-- **Route changes run inside `startTransition`** (`router.tsx`). The current page stays on
-  screen until the new one is ready, so no fallback is shown and there is no reveal to
-  throttle. The Suspense boundary in `App.tsx` is reached on the FIRST paint only.
-- **Scrolling to the top belongs after the commit.** During a transition the old page is
-  still the one being looked at.
-- **A navigation must show it is happening.** `ui/TopProgress.tsx` is the only signal a click
-  did anything. It covers the router's `pending` and every in-flight `useView`, through the
-  counter in `pending.ts`.
-- **One navigation, ONE sweep — and the cold load is the case that broke it.** The bar is a
-  CSS animation, and `[data-done] { animation: none }` means UN-marking a finished bar runs
-  the keyframes again from the left edge: the same element, drawn twice, which is why
-  counting elements found nothing while the owner kept seeing it. A cold load is two requests
-  that cannot overlap (the shell answers with the site's language, and only the commit after
-  that mounts a page which asks for its own data); measured at 6x CPU with 150ms latency, the
-  gap was 179–206ms on four screens, against a 120ms tolerance. An in-app navigation has no
-  such gap, because the transition holds `pending` true across it — hence "sometimes".
-  `BOOT_SEAM_MS` (400) is spent on the first run only, and `progress-seam.test.ts` pins the
-  floor against a future tidy-up back to one constant. **And a finished bar is never
-  un-finished** (2026-09-06): work that arrives during the 320ms exit — a save and the refresh
-  it triggers, the write pane's list and then its post — used to un-mark `done` and replay
-  the sweep; it now HOLDS the bar full and visible (`data-hold`) until that work ends, then
-  fades once. Work still running when an exit completes is new work and gets its own sweep.
-- ⚠️ **`/admin/media` reports nothing to the counter** and shows its own "Loading…" line
-  inside the sheet instead: both libraries fetch their own rows and predate the bar. It is
-  the one screen where a click draws no bar at all.
-- **The bar never claims a percentage.** Nothing here knows how far along a fetch is. It
-  eases toward an edge it never reaches, then snaps closed, and honours `data-motion`.
-- **The entry preloads the current route's chunk** before React runs (`main.tsx`).
-- **A tab older than the server heals itself.** Chunk filenames carry a content hash, so an
-  update DELETES the file an already-open admin is about to ask for: every screen the owner
-  had visited keeps working and the next one they touch fails to load. `ui/stale-build.ts`
-  catches that one error and reloads, once, guarded by a mark in `sessionStorage` — without
-  the mark a genuinely missing file would spin the tab forever, so a browser that cannot
-  write one does not get the reload. Only the routed `lazy()` pages are wrapped; the hover
-  preload is not, because a tab that reloaded under a passing pointer would be worse than
-  the bug. Reported on the demo 2026-08-28, and proved by deploying under a live tab.
+| | React, routed | pages |
+|---|---|---|
+| the write list | 79 ms | **85 ms** |
+| opening a post, first time | 346 ms | **107 ms** |
+| opening the next post | **12 ms** | 373 ms → 107 ms |
+| JavaScript before the first frame | 297 KB | **22 KB** |
 
-After: Content 355 → 49ms, Media 336 → 59ms, Comments 348 → 43ms, Settings 346 → 45ms,
-Analytics 418 → 83ms. Cold load of `/admin` 501 → 329ms.
+The warm click is what a page load costs and it is not coming back: the write column was
+mounted outside the router precisely so it would survive a route change, and nothing survives a
+navigation. The first open is more than three times faster, which is the trade this ADR was
+made for.
+
+**The signal that a click did something is the browser's own.** There was a top progress bar
+(`ui/TopProgress.tsx`, and about forty lines of CSS that outlived it by one commit), and it
+existed because of a number that no longer exists: **the first click on any admin route cost
+330-390ms, of which ~300ms was the CPU sitting idle.** Every page was a `lazy()` import, a
+first visit suspended, and outside a transition React answers a suspension with the Suspense
+fallback and then throttles putting real content back by a fixed 300ms. A click that does
+nothing visible for a third of a second has to be covered by something. A navigation is not
+silent in the same way — the browser spins its own tab — so the bar went with the router.
+
+Two findings from that bar are worth keeping, because both are about drawing rather than about
+React: **a CSS animation replayed from the left when a finished element was un-finished**, which
+is one element drawn twice and is invisible to anything that counts elements; and **a bar whose
+only transform lived in its keyframes sat off screen for anyone on reduced motion**, because the
+foot of the sheet sets `animation: none` for both motion gates.
+
+⚠️ **A TAB OLDER THAN THE SERVER, and what is left of that problem.** Chunk filenames carry a
+content hash, so an update DELETES the file an already-open admin is about to ask for. Under the
+router that was fourteen lazy routes: every screen the owner had visited kept working and the
+next one they touched failed to load, which is why `ui/stale-build.ts` existed and reloaded the
+tab once, guarded by a mark in `sessionStorage`.
+
+A navigation always fetches markup naming the current build, so thirteen of those fourteen cases
+cannot happen any more. **Two are left**, and both are fetched on demand from a page that is
+already open: arrange mode, and the media picker.
+
+- **Both say so, and neither reloads by itself.** `isChunkGone` in
+  [`island/rail.ts`](../src/admin/island/rail.ts) matches each browser's own wording verbatim —
+  Chrome, Firefox and Safari word it differently and there is no shared type to match on — and a
+  failure toast has no timer, so the sentence waits as long as it takes to be read. The reload is
+  the toast's action, not something this code does: the rail is on every admin page INCLUDING the
+  editor, and a reload started here would be a reload of somebody's half-written post, begun
+  because they pressed "Arrange the menu".
+- **Anything that is not the missing file is rethrown.** A pattern broad enough to cover all
+  three browsers would also swallow ordinary network failures, and those mean something else.
+- The picker answers `null` as well as speaking, because a screen waiting on a callback that
+  never comes is worse than a picker that closed.
 
 ## How wide the rail is, and who decides
 
@@ -78,10 +88,14 @@ the value in `localStorage` is the owner saying what they want, and a window tha
 be 1100px wide is not them saying anything. Leaving the band restores their choice untouched.
 Clicking the control inside the band does persist, because that is them changing their mind.
 
-The seam worth guarding is that both the restore and the band set the same piece of state. If
-they ever live in two effects, the deferred microtask in the restore path makes which one wins
-a coin flip. They are folded into one effect, and `narrow-rail.test.ts` counts the assignments
-so a split shows up as a failure rather than as an intermittent bug.
+⚠️ **THE BAND IS ASKED IN TWO PLACES, and that is what ADR 0054 changed here.** The width has
+to be right in the FIRST frame or the rail is drawn open and snaps shut while being looked at,
+and a page cannot wait for its island to load to know how wide its own left edge is. So the
+boot script the server puts in the head reads the band, and the island reads it again for every
+resize afterwards. [`narrow-rail.test.ts`](../src/admin/components/narrow-rail.test.ts) holds
+both copies to the same rule, because a rule enforced in one of two copies is the copy nobody
+reads — and it pins the media query itself against the `lg` the rail is drawn at, so a band that
+starts one pixel off cannot slip in.
 
 ## ⌘K — the answer to "which tab is it on"
 
@@ -102,8 +116,10 @@ with the screens, the two actions and the writing beside it — so "make the tex
   one in a `shrink-0` right-hand column took the entire row and squeezed the label it was
   explaining down to nothing. The note is still SEARCHED — people describe a setting rather than
   name it — it is just not printed.
-- It lives outside the canvas and outside the error boundary, because it is how you leave a
-  screen that has gone wrong.
+- **It is drawn by the server on every admin page and lives outside the canvas**
+  ([`web/admin/overlays.ts`](../src/web/admin/overlays.ts)), because it is how you leave a screen
+  that has gone wrong — and a screen that has gone wrong is now one whose island did not wire,
+  which leaves the palette's own markup standing and reachable.
 - **The rail carries a search control, and printing the chord on it is the point.** ⌘K cannot be
   discovered; a palette you must already know about is a lock rather than a door. Clicking it
   opens the palette and shows `⌘K` beside itself, which is how a mouse teaches a keyboard: use
@@ -121,28 +137,38 @@ with the screens, the two actions and the writing beside it — so "make the tex
   handler cannot drift apart. `tour-flows-pane.ts` presses the BUTTON and checks the palette
   opens: a control that prints a shortcut it does not perform teaches something false.
 
-## The write pane belongs to the SHELL, not to the pages
+## The write column, and what a page load has to give back
 
-The list beside the paper appears on three routes — `/admin/content` and the two editors — and
-was rendered by each of them. That made a click inside it destroy it: the route changes, the
-page component is swapped, `ErrorBoundary` is keyed by path, and the whole subtree goes with
-it. The list came back looking identical and scrolled back to the top, on the one screen whose
-entire job is picking something out of a list. It read as a page reload.
+The list beside the paper appears on four addresses — `/admin/content` and the three editors —
+and it is ONE function, [`screens/content-pane.ts`](../src/web/admin/screens/content-pane.ts),
+drawn by the server on each of them. Written twice it would drift, and two copies of the same
+list is precisely what ADR 0054's markup rules exist to prevent.
 
-`WriteLayout` in `App.tsx` draws it once for the whole writing session, outside the route and
-outside the error boundary — outside the boundary because the pane is how you LEAVE a page
-that has thrown.
+⚠️ **A ROW CLICK IS A REAL NAVIGATION, so the column is destroyed and redrawn on every one.**
+Under React it was mounted outside the router for exactly the opposite reason: a click inside
+it used to destroy it — the route changed, the page component was swapped, the error boundary
+was keyed by path, and the whole subtree went with it. The list came back looking identical and
+scrolled back to the top, on the one screen whose entire job is picking something out of a list,
+and it read as a page reload. Mounting it in the shell fixed that, and a page load undoes the
+fix: the warm click went from 12 ms to a navigation, and nothing brings it back.
 
-- **`activeSlug` comes from the PATH**, not from a payload, so the open row moves the instant
-  the click lands rather than after a round trip.
-- **The taxonomy and series drawers moved into `WritePane`.** They hung off the Write screen and
-  were handed down as a `tools` prop, which was the last thing tying the pane to a page. They
-  manage the categories and series of the list standing right there.
-- **`useView` seeds from the last answer it got**, keyed by the refresh epoch so
-  `router.refresh()` still costs a real fetch. Without it every remount started at `null` and
-  every page shell rendered a centred ellipsis first.
-- **A changed view key drops the old data** in the same render. `data` used to survive a query
-  change, so clicking post B rendered post A's editor until the fetch landed — and anything
-  typed in that window went into A's document and was discarded on the remount.
-- `tour-flows-pane.ts` asserts the pane's IDENTITY across the click, not its presence: a
-  replacement that looks the same is exactly the bug.
+**What it gives back, and how.** The scroll position, the search text and the three filters are
+in `sessionStorage` ([`island/content.ts`](../src/admin/island/content.ts)) — per tab, cleared
+with the tab, never told to the server. They are put back AFTER the filters are applied, because
+the scroll height depends on how many rows show. The open row needs nothing put back: the server
+knows which address it drew and stamps `aria-current="page"` on it.
+
+⚠️ **TWO MECHANISMS DECIDING ONE `display` IS ONE TOO MANY.** The first cut left kind, status and
+"what is missing" to CSS rules against attributes on the column and kept only the search in the
+island. It DREW correctly and could not COUNT — `shown` was the number of rows that passed the
+search, so a filter hiding all forty-six still reported forty-six and the "nothing matches your
+filter" line never appeared. One mechanism now: `hidden`, written by the island, and by the
+server for the one filter that arrives in the address
+([`admin-one-dom.md`](./admin-one-dom.md)).
+
+- **The taxonomy and series drawers belong to the column**, not to a screen. They manage the
+  categories and series of the list standing right there, and they drive the most far-reaching
+  pair of writes in the admin: renaming a category rewrites the front matter of every post
+  carrying it and merges on collision. Both had no unit test and no flow until step 5.
+- `tour-flows-pane.ts` presses the palette's own control and checks the palette opens: a control
+  that prints a shortcut it does not perform teaches something false.

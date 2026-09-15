@@ -235,6 +235,7 @@ export function railData(settings: SiteSettings, aiConfigured: boolean): string 
       navArrangeReset: t.navArrangeReset, navArrangeFailed: t.navArrangeFailed,
       navMoveUp: t.navMoveUp, navMoveDown: t.navMoveDown,
       navShowLogo: t.navShowLogo, navShowSearch: t.navShowSearch,
+      chunkGone: t.chunkGone, chunkReload: t.chunkReload,
       // The overlays' own words. They live on every admin page and belong to no screen
       // (`web/admin/overlays.ts`), so they ride with the rail rather than earning a second
       // script tag of their own. Only the ones an island SAYS: every word the overlays PRINT

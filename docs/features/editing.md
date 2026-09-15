@@ -87,7 +87,7 @@
   rather than wrap, so most of them — every crop ratio and frame weight, which is to say every
   actual choice — were cut off and unclickable. Taken out of flow it lays out against the writing
   column, above the picture whose crop is being chosen.
-- **Gallery defaults, site-wide** (*Settings → Posts → Galleries*, `GalleryFields.tsx`): the shape
+- **Gallery defaults, site-wide** (*Settings → Posts → Galleries*, `screens/settings-post.ts`): the shape
   and caption state every gallery follows when it has no opinion of its own. Each option is
   THREE-valued and the third value is silence: no token means "follow Settings", which is what lets
   one screen restyle a whole imported archive, and `asis` / `cap` exist so a gallery can disagree
@@ -98,7 +98,7 @@
   INPUT, so a default that changed the HTML would leave every already-rendered body serving the old
   shape until something unrelated evicted it. The per-gallery override wins on specificity (tile
   class beats `:root`), not on source order.
-- **Frame default, site-wide** (*Settings → Posts → Pictures*, `FigureFields.tsx`): the mat every
+- **Frame default, site-wide** (*Settings → Posts → Pictures*, `screens/settings-post.ts`): the mat every
   picture wears when it has no opinion of its own — `settings.figure` = a weight
   (`none` | `thin` | `medium` | `thick`) and a mat colour (paper or ink). **`none` at install**, on
   the owner's instruction: a frame is a decision about a site's voice, and arriving with one already
@@ -211,10 +211,11 @@ all from one parse. Four libraries used to answer those five questions separatel
   differs from `date`, so a post that was never saved again does not claim it was edited on
   the day it appeared. See [`seo-pwa.md`](../seo-pwa.md).
 
-## Library: Videos tab + self-hosted video — `VideoLibrary.tsx`, `src/render/video.ts`
+## Library: Videos tab + self-hosted video — `screens/media-files.ts`, `src/render/video.ts`
 
-- The Library page has THREE tabs (`LibraryTabs.tsx`, the shared kit `Tabs`): **Images**
-  (media library), **Videos**, **Files**. The Images grid has a **toolbar** (`MediaToolbar.tsx`):
+- The Library page has THREE tabs ([`screens/media.ts`](../../src/web/admin/screens/media.ts),
+  the shared kit's `tabs()`): **Images** (media library), **Videos**, **Files**. The Images grid
+  ([`screens/media-images.ts`](../../src/web/admin/screens/media-images.ts)) has a **toolbar**:
   total count + size, a name **search**, and a **sort** (newest / name / size); each tile keeps a
   compact `dims · size · shortdate` caption and its copy / download / delete actions **overlay the
   thumbnail** (revealed on hover, always on touch) so they add no layout height. The grid is 5-across

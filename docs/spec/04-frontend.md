@@ -4,8 +4,8 @@ Replaces the Go plan's frontend spec. Two frontends with opposite budgets.
 
 - **Public**: server-rendered HTML, no framework, no bundler, **zero JavaScript on an
   article page**.
-- **Admin**: the existing React SPA, built once and embedded. Only the owner loads it, so
-  its weight is irrelevant to readers and to SEO.
+- **Admin**: server-rendered HTML with plain-TS islands, like the reading site. It was the
+  existing React SPA, built once and embedded, until ADR 0054 — see the section below.
 
 ## Budgets
 
@@ -61,8 +61,10 @@ Reasons, in order:
 4. Modern CSS covers what the framework was providing: nesting, `:has()`, container
    queries, cascade layers, `color-mix()`.
 
-Tailwind is **kept for the admin SPA**, where its churn is contained behind a build that
-only the owner's browser sees.
+Tailwind was **kept for the admin**, where its churn was contained behind a build only the
+owner's browser sees. It left in ADR 0053: `src/admin/utilities.css` is a hand-written sheet of
+the utilities the admin actually uses, and `check:admin-css` fails the build for a class with no
+rule behind it — which is what nothing enforced while a CLI invented one on every build.
 
 Delivery, as SHIPPED: the sheet is served as one hashed, immutable
 `/assets/site.‹hash›.css` and only the settings-dependent half is inlined after it. This
@@ -195,10 +197,17 @@ returns **rendered HTML** and the client inserts it. This removes the client-sid
 rebuild, the orphan re-rooting and the tombstone logic from the browser, since all three
 already exist on the server.
 
-## Admin: the existing React SPA, embedded
+## Admin: extracted as a React SPA, and now pages again
 
-**61 of 66 admin components are already `'use client'`.** The admin is a React SPA that
-happens to be wrapped in Next. So it is extracted, not rewritten.
+⚠️ **THIS SECTION IS THE PLAN THAT WAS CARRIED OUT, AND THEN REVERSED.** The extraction below
+happened and was right for 2.0: it is what made the port possible at all. ADR 0054 replaced it in
+September 2026 — the admin is HTML the server draws with plain-TS islands, `react` and `react-dom`
+are out of `package.json`, and the editor is the only client application left. The plan is kept
+because the reasoning is the record of a real trade, and because the list of what must not regress
+below is still the list.
+
+**61 of 66 admin components were already `'use client'`.** The admin was a React SPA that happened
+to be wrapped in Next. So it was extracted, not rewritten.
 
 ```
 1. Move src/components/admin + src/app/admin  ->  src/admin/
@@ -211,10 +220,16 @@ happens to be wrapped in Next. So it is extracted, not rewritten.
 4. Embed and serve from Hono at /admin/*
 ```
 
-What this deletes from the Go plan: the Tiptap port to vanilla, the ProseMirror NodeView
-rewrites for `CaptionedImage` and `VideoNode`, the toolbar and bubble-menu rewrite, and
-the reimplementation of autosave, crash recovery, conflict detection and Vietnamese IME
-handling. All of it keeps working because none of it is touched.
+What this deleted from the Go plan: the Tiptap port to vanilla, the ProseMirror NodeView
+rewrites for `CaptionedImage` and `VideoNode`, the toolbar and bubble-menu rewrite, and the
+reimplementation of autosave, crash recovery, conflict detection and Vietnamese IME handling. All
+of it kept working because none of it was touched.
+
+⚠️ **AND ALL OF IT WAS DONE ANYWAY, THIRTEEN MONTHS LATER** (ADR 0054 step 5,
+[`../admin-conversion.md`](../admin-conversion.md)). That is not a refutation of the trade: the
+port shipped because this work was deferred, and the work was affordable when it came because
+fifteen other screens had been converted first. What was deferred was paid, with interest that
+turned out to be smaller than the principal.
 
 The editor features that must not regress are therefore not a risk register entry any
 more; they are existing code:
@@ -227,10 +242,12 @@ more; they are existing code:
   decision, not a technical one)
 - Vietnamese IME with Telex
 
-**Analytics is the one admin area worth revisiting later.** `AnalyticsView.tsx` plus
-`AnalyticsPageDetail.tsx` are about 13 KB of React producing charts that server-rendered
-SVG would produce with no client JavaScript and less code. Not in scope for v2.0; noted
-because it is the highest-value cleanup left in the admin.
+⚠️ **ANALYTICS WAS THE ONE ADMIN AREA WORTH REVISITING, AND IT HAS BEEN.** Two React views
+were about 13 KB producing charts that server-rendered SVG would produce with no client
+JavaScript and less code. ADR 0054 did exactly that: the charts are SVG the server draws
+(`screens/analytics-kit.ts`), and the island left on the screen is **2.3 KB** — the live strip's
+poll and the range links. The note is kept because the reasoning is reusable: a chart is a
+picture of numbers the server already has, and drawing it in the browser buys nothing.
 
 ## Building
 

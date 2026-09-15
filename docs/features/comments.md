@@ -60,7 +60,7 @@ Google account.
   The sheet-top search reaches the text, the name and the post title (accent-folded one way only —
   `src/accent.ts`: typed WITH accents it means them) and paints
   hits with the pen (`Marked`). Delete = soft delete via owner-gated `DELETE /api/comments/[id]`
-  → Trash (restore/purge in `TrashView`'s Comments tab).
+  → Trash (restore/purge on the Trash screen's Comments tab).
 - **The gate — `src/comments/stamp.ts`, `src/assets/js/stamp.ts` ([ADR 0032](../decisions/0032-the-comment-gate-needs-no-account.md)).**
   Manual comments carry a **stamp**: a challenge the server signs into the comments mount point,
   solved in the reader's browser with `crypto.subtle` while they type, and spent on send. No

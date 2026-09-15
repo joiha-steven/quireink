@@ -49,7 +49,7 @@ The variables go in front of `bash`, not in front of `curl`: on this side of a p
 would belong to the download and never reach the script.
 
 **Quire Ink runs from source: `bun src/index.ts`.** The checkout is the deployment, not a build
-input. `build:assets` produces the island bundles and `build:admin` the admin SPA; both are
+input. `build:assets` produces the reader's island bundles and `build:admin` the admin's; both are
 read from disk at runtime, so they have to exist before the service starts.
 
 > **`bun run build` builds those two artefacts and nothing else. There is no compiled binary**
@@ -352,7 +352,7 @@ cd /home/quire/app && git pull && bun install && bun run build:assets && bun run
 systemctl restart quire
 ```
 
-Re-run both builds, not just `git pull`: the island bundles and the admin SPA are build
+Re-run both builds, not just `git pull`: the reader's islands and the admin's are build
 outputs, and a restart that skips them serves yesterday's JavaScript against today's HTML.
 
 Schema changes are applied at boot, inside a transaction. **Take a backup first anyway** —

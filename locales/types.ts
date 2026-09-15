@@ -1607,14 +1607,17 @@ export type AdminStrings = {
   // takes the button away and the next sign-in asks again.
   authSkipNow: string
   authSkipWhy: string
-  // The error boundary's sheet (`admin/ui/ErrorBoundary.tsx`). Written for someone who was
-  // in the middle of a draft, not for whoever will read the stack: say what happened, say
-  // that the work is not gone, then offer the two things that actually help.
-  crashTitle: string
-  crashText: string
-  crashMissingTitle: string
-  crashMissingText: string
-  crashDetail: string
-  crashReload: string
-  crashHome: string
+  // The one failure a page-rendered admin can still have, and the way out of it.
+  //
+  // There was a seven-string error boundary here until ADR 0054's step 6. A React screen that
+  // threw while drawing went blank, so it had to be caught and explained; the server draws
+  // every screen now and an island that throws leaves the markup standing, which is a page
+  // that reads and does not respond rather than a page that is gone.
+  //
+  // What survives is the ABSENT file. Chunk names carry a content hash, so an update deletes
+  // the file an already-open tab is about to ask for. Two things are still fetched on demand
+  // — arrange mode and the media picker — and for those the cure is known and is a reload,
+  // which is why this is a sentence plus a key rather than an apology.
+  chunkGone: string
+  chunkReload: string
 }

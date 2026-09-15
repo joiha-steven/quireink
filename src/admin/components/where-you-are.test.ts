@@ -15,7 +15,7 @@
 import { describe, expect, it } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { tabItemClass } from '@/admin-shared/tabs'
-import { SIDEBAR_NAV, SIDEBAR_NAV_ACTIVE, SIDEBAR_NAV_QUIET } from '@/admin/components/headerActions'
+import { SIDEBAR_NAV, SIDEBAR_NAV_ACTIVE, SIDEBAR_NAV_QUIET } from '@/admin-shared/rail'
 
 describe('the highlighter marks a place', () => {
   it('paints an active tab you navigated to', () => {

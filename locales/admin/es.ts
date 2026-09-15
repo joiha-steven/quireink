@@ -1357,13 +1357,8 @@ const es = {
   newsDone: 'Listo',
   authSkipNow: 'Configurarlo más tarde',
   authSkipWhy: 'Se ofrece solo mientras este blog no tiene dirección pública. Ponle una y el siguiente inicio de sesión volverá a pedir un autenticador.',
-  crashTitle: 'Esta pantalla se detuvo',
-  crashText: 'Algo en esta página falló mientras se dibujaba, así que el admin se detuvo aquí en lugar de quedarse en blanco. Lo que hubieras escrito sigue guardado en este dispositivo y se te ofrecerá al reabrir la página. El resto del admin no se ve afectado: la barra lateral sigue funcionando.',
-  crashMissingTitle: 'No se pudo descargar esta página',
-  crashMissingText: 'La administración pidió una parte de sí misma y el archivo no llegó. Suele ocurrir cuando esta pestaña se quedó abierta mientras se actualizaba el blog, o cuando se cortó la conexión. Al recargar se obtiene la versión actual. Lo que hubieras escrito sigue guardado en este dispositivo.',
-  crashDetail: 'Qué se rompió',
-  crashReload: 'Recargar esta página',
-  crashHome: 'Ir al panel',
+  chunkGone: 'No se pudo descargar una parte de la administración. Esta pestaña es más antigua que el blog.',
+  chunkReload: 'Recargar esta página',
 } satisfies AdminStrings
 
 export default es

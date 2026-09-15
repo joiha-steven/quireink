@@ -189,11 +189,13 @@
   part: a `Part n/total` line linking to `/series/:slug` and the ordered list of parts (current
   part highlighted, not linked). Colours are theme tokens only (`border-rule`, `text-meta`,
   `text-heading`, `link-accent`).
-- **Admin management** (Content → **Series** tab, `SeriesManager.tsx`): every series (incl.
-  drafts) built from the dashboard's post index via `seriesEntries` (pure) — no extra fetch.
-  Per series: **rename** (across all its posts, merges on collision) / **remove** (clears
-  `series`+`series_order`, posts untouched) / **reorder** parts with up-down arrows. Each action
-  POSTs `/api/series` (`updateSeries` / `reorderSeries`, owner-gated) then `router.refresh()`.
+- **Admin management** (Content → **Series** drawer,
+  [`screens/content-drawers.ts`](../../src/web/admin/screens/content-drawers.ts) drawing and
+  [`island/lib/write-drawers.ts`](../../src/admin/island/lib/write-drawers.ts) acting): every
+  series (incl. drafts) built from the write column's own post index via `seriesEntries` (pure) —
+  no extra fetch. Per series: **rename** (across all its posts, merges on collision) / **remove**
+  (clears `series`+`series_order`, posts untouched) / **reorder** parts with up-down arrows. Each
+  action POSTs `/api/series` (`updateSeries` / `reorderSeries`, owner-gated) then reloads.
   `series_order` is otherwise set per-post in the editor's Settings panel.
 - **`/series/:slug`** lists a series in the owner's order and is never paginated: a series is read
   front to back and is not a timeline. Slug derived with `slugify` and reverse-resolved by

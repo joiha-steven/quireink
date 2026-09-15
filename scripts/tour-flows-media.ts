@@ -8,6 +8,7 @@
 // flows after them are counting. What IS driven: the tabs, the search, the sort, the ticks and
 // the shift-range, and the picker's own shape.
 import type { Tour } from './tour'
+import { OPEN_DIALOG, SCREEN_FORMS } from './tour-ask'
 
 export function registerMediaFlows({ flow, expect }: Pick<Tour, 'flow' | 'expect'>): void {
   // The whole library in the first response, and the two kinds that used to be a spinner.
@@ -31,7 +32,8 @@ export function registerMediaFlows({ flow, expect }: Pick<Tour, 'flow' | 'expect
   // batches and spends money, and `ui/Button` emits a button with no type.
   flow('admin: nothing in the library is a form', () => expect('/admin/media', `
     (() => {
-      const forms = document.querySelectorAll('form').length
+      ${SCREEN_FORMS}
+      const forms = screenForms().length
       if (forms) return forms + ' form(s) on a screen that deletes in batches'
       const buttons = [...document.querySelectorAll('main button')]
       const untyped = buttons.filter((b) => b.getAttribute('type') !== 'button')
@@ -152,8 +154,9 @@ export function registerMediaFlows({ flow, expect }: Pick<Tour, 'flow' | 'expect
         },
       }))
       if (!heard) return 'nobody is listening for quire:pick-media'
-      for (let i = 0; i < 40 && !document.querySelector('[role=dialog]'); i++) await sleep(100)
-      const dialog = document.querySelector('[role=dialog]')
+      ${OPEN_DIALOG}
+      for (let i = 0; i < 40 && !openDialog(); i++) await sleep(100)
+      const dialog = openDialog()
       if (!dialog) return 'the ask was heard and no picker opened'
       if (dialog.getAttribute('aria-modal') !== 'true') return 'the picker is not a modal'
       for (let i = 0; i < 40 && !dialog.querySelector('[data-media]'); i++) await sleep(100)
@@ -163,7 +166,7 @@ export function registerMediaFlows({ flow, expect }: Pick<Tour, 'flow' | 'expect
       if (dialog.querySelector('input[data-pick]')) return 'a single-pick picker drew ticks'
       document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
       await sleep(300)
-      if (document.querySelector('[role=dialog]')) return 'Escape did not close the picker'
+      if (openDialog()) return 'Escape did not close the picker'
       if (answered !== 'closed') return 'Escape answered ' + answered + ' instead of nothing'
       if (document.activeElement !== mark) return 'the picker did not put the focus back'
       return 'ok (' + tiles + ' picture(s), modal, Escape, focus restored)'
@@ -183,10 +186,11 @@ export function registerMediaFlows({ flow, expect }: Pick<Tour, 'flow' | 'expect
           respond: (a) => { got = a },
         },
       }))
+      ${OPEN_DIALOG}
       const dialog = await (async () => {
         for (let i = 0; i < 40; i++) {
-          const d = document.querySelector('[role=dialog] [data-media]')
-          if (d) return document.querySelector('[role=dialog]')
+          const d = openDialog()
+          if (d && d.querySelector('[data-media]')) return d
           await sleep(100)
         }
         return null
@@ -196,7 +200,7 @@ export function registerMediaFlows({ flow, expect }: Pick<Tour, 'flow' | 'expect
       const url = tile.dataset.media
       tile.querySelector('[data-open]').click()
       await sleep(300)
-      if (document.querySelector('[role=dialog]')) return 'choosing a picture left the picker open'
+      if (openDialog()) return 'choosing a picture left the picker open'
       if (!got || got.url !== url) return 'the picker answered ' + JSON.stringify(got)
       return 'ok (' + got.url + (got.alt ? ', described' : ', no description') + ')'
     })()`, 2500))

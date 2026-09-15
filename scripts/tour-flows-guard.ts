@@ -12,6 +12,7 @@
 // moves another rail link from the first half to the second. A flow here must pick a
 // destination React still owns, deliberately, and re-pick it when that stops being true.
 import type { Tour } from './tour'
+import { OPEN_DIALOG } from './tour-ask'
 
 export function registerGuardFlows({ flow, expect }: Pick<Tour, 'flow' | 'expect'>): void {
   // Unsaved settings are not lost by a click on the rail. Two flows, because the interesting
@@ -46,14 +47,16 @@ export function registerGuardFlows({ flow, expect }: Pick<Tour, 'flow' | 'expect
       if (!away) return 'no in-app destination left on the rail'
       away.click()
       await sleep(500)
-      const dialog = document.querySelector('[role=dialog]')
+      ${OPEN_DIALOG}
+      const dialog = openDialog()
       if (!dialog) return 'left the page with an unsaved change and asked nothing'
       if (location.pathname !== '/admin/settings') return 'the address moved before the question was answered'`
 
   flow('admin: staying keeps an unsaved settings change, and the page', () => expect('/admin/settings', `
     (async () => {
       ${editAndLeave}
-      const stay = [...dialog.querySelectorAll('button')][0]
+      const stay = [...dialog.querySelectorAll('button')].filter((b) => b.checkVisibility())[0]
+      if (!stay) return 'the question offered nothing to press'
       stay.click()
       await new Promise((r) => setTimeout(r, 400))
       if (location.pathname !== '/admin/settings') return 'chose to stay and the page left anyway'
@@ -79,7 +82,10 @@ export function registerGuardFlows({ flow, expect }: Pick<Tour, 'flow' | 'expect
   flow('admin: the leave question offers three answers, and the one that acts is last', () => expect('/admin/settings', `
     (async () => {
       ${editAndLeave}
-      const buttons = [...dialog.querySelectorAll('button')]
+      // THE ANSWERS ON OFFER, not the answers drawn. The box ships all four shapes a question
+      // can wear — plain yes and red yes, and the third answer between yes and no — and shows
+      // the three this question needs.
+      const buttons = [...dialog.querySelectorAll('button')].filter((b) => b.checkVisibility())
       if (buttons.length !== 3) return 'the question offers ' + buttons.length + ' answer(s), expected three'
       const said = buttons.map((b) => b.textContent.trim())
       if (said.some((w) => !w)) return 'an answer with no words on it'
