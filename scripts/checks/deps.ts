@@ -52,6 +52,17 @@ const ALLOWED: Record<string, string> = {
   'prosemirror-view': 'B. The editable surface itself, and the node views',
   'prosemirror-transform':
     'B. Steps and mapping — the half of the model a serializer and the find strip both walk',
+  // The rest of the engine, named as `editor/` came to use each one directly. Every one was
+  // already installed under Tiptap; what changed is who asked for it.
+  'prosemirror-commands': 'B. The base keymap and the commands every editor needs',
+  'prosemirror-history': 'B. Undo. Not a thing to write twice',
+  'prosemirror-keymap': 'B. Chords to commands, with the platform\'s own Mod key',
+  'prosemirror-inputrules': 'B. Markdown as it is typed, and the Backspace that takes it back',
+  'prosemirror-schema-list': 'B. Split, lift and sink a list item — the three hard ones',
+  'prosemirror-tables':
+    'B. Cell selection, column spans and the table keymap. The one piece here that is genuinely large',
+  'prosemirror-dropcursor': 'B. Where a dragged picture would land',
+  'prosemirror-gapcursor': 'B. A caret between two blocks that cannot hold one',
 
   // ---- C: going, and the order is the owner's --------------------------------------------
   hono: 'C. A thin HTTP router, but 50 call sites. Last, and only when the rest is done',
