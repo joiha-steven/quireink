@@ -9,7 +9,7 @@
 //
 // The strip knows nothing about documents, the extension knows nothing about textareas, and the
 // matching knows nothing about either; this is where the three meet.
-import type { Editor as TiptapEditor } from '@/admin/editor/editor'
+import type { Editor } from '@/admin/editor/editor'
 import type { SheetWords } from '@/admin-shared/sheet-wire'
 import { findAll, firstAfter, replaceAllIn, step, type Hit } from '@/admin/components/editorFind'
 import {
@@ -23,7 +23,7 @@ const NO_RAW: RawFind = { query: '', caseSensitive: false, index: 0, hits: [] }
 
 export type FindContext = {
   t: SheetWords
-  editor: TiptapEditor
+  editor: Editor
   /** The Markdown view's textarea, which owns the text while that view is showing. */
   area: HTMLTextAreaElement
   raw: () => boolean

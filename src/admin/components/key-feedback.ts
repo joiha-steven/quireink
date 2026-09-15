@@ -12,7 +12,7 @@
 // under the reader's eyes, and the owner's word for it was "nháy". Nothing that moves the
 // TEXT survives: the sound carries the keystroke, the caret carries the position, and the
 // words hold still. On a real machine the paper moves and the words do not.
-import type { Editor as TiptapEditor } from '@/admin/editor/editor'
+import type { Editor } from '@/admin/editor/editor'
 import { playKey, type KeySound } from './key-sound'
 import type { Strike } from './key-voices'
 import { motionOn } from '@/admin/motion'
@@ -29,7 +29,7 @@ import { motionOn } from '@/admin/motion'
 const SETTLE_MS = 700
 let settleTimer = 0
 
-export function placeCaret(view: TiptapEditor['view'], caret: HTMLElement | null): void {
+export function placeCaret(view: Editor['view'], caret: HTMLElement | null): void {
   if (!caret) return
   requestAnimationFrame(() => {
     const stage = caret.parentElement
@@ -76,7 +76,7 @@ function strikeOf(inputType: string, data: string | null, deleting: boolean): St
 }
 
 export function pulseInput(
-  view: TiptapEditor['view'],
+  view: Editor['view'],
   event: InputEvent,
   caret: HTMLElement | null,
   sound: KeySound,

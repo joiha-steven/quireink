@@ -13,7 +13,7 @@
 // A `Holder` and not `React.RefObject`: the shape is the same one-property box, and naming
 // React here would be the last thing in this file that knows the caller's framework.
 import type { EditorProps } from 'prosemirror-view'
-import type { Editor as TiptapEditor } from '@/admin/editor/editor'
+import type { Editor } from '@/admin/editor/editor'
 import type { KeySound } from './key-sound'
 import { placeCaret, pulseInput } from './key-feedback'
 import { isVideoUrl } from '@/render/video'
@@ -27,7 +27,7 @@ export type SurfaceHooks = {
   /** Where the "/" menu is open, read inside a handler registered once. */
   slashRef: Holder<{ left: number; top: number } | null>
   setSlash: (at: { left: number; top: number } | null) => void
-  editorRef: Holder<TiptapEditor | null>
+  editorRef: Holder<Editor | null>
   /** Upload and insert, in order, from wherever they came. */
   insertImages: (files: File[], at: number | undefined) => Promise<void>
   /** The image files out of a DataTransfer, from a drop or from the clipboard. */

@@ -4,8 +4,8 @@
 // screen. They were written out twice for about an hour, and that is exactly how two versions
 // of "how to set this up" end up disagreeing.
 //
-// Here rather than in `admin/components/FirstRun.tsx` since ADR 0054, because Help is
-// server-rendered HTML now and the dashboard is still React.
+// Here since ADR 0054, because both readers of it are server-rendered HTML: the Help screen
+// and the dashboard's first-run checklist.
 import type { AdminStrings } from '@/i18n/admin-i18n'
 
 const HREFS = [

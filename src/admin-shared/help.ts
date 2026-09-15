@@ -114,7 +114,7 @@ export const HELP_SECTIONS: HelpSection[] = [
     title: 'Cloudflare &amp; cache',
     body: `<p class="${P}">Put Cloudflare in front for TLS and a global edge cache — the big win when readers are far from your server.</p>
     <ul class="${UL} mt-2">
-    <li><b>Cache Rules</b>: bypass <code class="${CODE}">/admin</code> and <code class="${CODE}">/api</code>, cache everything else at the origin TTL. Turn <b>Rocket Loader off</b> (it breaks React). SSL: Full (Strict).</li>
+    <li><b>Cache Rules</b>: bypass <code class="${CODE}">/admin</code> and <code class="${CODE}">/api</code>, cache everything else at the origin TTL. Turn <b>Rocket Loader off</b> (it reorders and defers scripts, which breaks the admin). SSL: Full (Strict).</li>
     <li>Add a Cloudflare API token + Zone ID in Settings → Integrations and every save purges the zone automatically.</li>
     <li><b>Clear all cache</b> (sidebar) purges the origin and Cloudflare, then re-warms the home and newest pages.</li>
     <li>After deploying code, flush the edge with <code class="${CODE}">GET /api/cron?purge=1</code>. Cloudflare caches HTML, so a stale page is not something a reader can refresh away.</li>

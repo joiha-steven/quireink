@@ -1,6 +1,6 @@
 // The line-icon set, drawn ONCE — inner SVG markup keyed by name, worn by both faces of
-// the product: `src/web/chrome.ts` wraps a body in a server-rendered <svg>, the admin's
-// `components/navIcons.tsx` wraps the same body in a React one. Before this file the
+// the product: `src/web/chrome.ts` wraps a body in a server-rendered <svg> and so does the
+// admin's own `icon()` in `web/admin/kit.ts`. Before this file the
 // reading site carried seven icons and the admin about thirty-seven more, each drawn by
 // whoever needed it that day, in three stroke weights.
 //

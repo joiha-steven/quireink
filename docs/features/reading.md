@@ -34,8 +34,8 @@
   the index as wrapped rows on a hairline, the index folding on its heading (`details`/`summary` in
   `article.ts`, inert everywhere else). Measured at 1024 with the default 672px column the breakpoint
   is 1272, so an iPad on its side had no index and a drawer over the article. Below 60rem the drawer
-  opens from the **header menu button** (`RailToggle`, mobile only; self-hides on
-  pages with no rail) — no separate header dropdown. **The menu is on the header row ONLY where no
+  opens from the **header menu button** (`rail()` in `assets/js/theme.ts`, mobile only; self-hides
+  on pages with no rail) — no separate header dropdown. **The menu is on the header row ONLY where no
   rail can hold it** — today the composed front page alone (`siteMenu` in `web/chrome.ts` behind
   `ChromeOptions.menuInHeader`, `.site-menu` from 60rem up). It briefly rendered on every page, which
   doubled the links on every listing; reverted 2026-08-03. Trade: a desktop ARTICLE has no menu, its

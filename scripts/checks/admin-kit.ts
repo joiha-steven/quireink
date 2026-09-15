@@ -1,6 +1,6 @@
 // The admin kit says a thing ONCE. This check is what makes that true.
 //
-// Every drift found on 2026-08-02 had the same shape: a primitive exists in `kit.tsx` or
+// Every drift found on 2026-08-02 had the same shape: a primitive exists in the kit or
 // `ui/`, a screen needs it, and the screen copies the class list instead of importing it.
 // The copy then diverges by a shade, two pixels or a missing `shrink-0`, and nothing says so
 // — a settings field two pixels taller than the button beside it does not fail a type check
@@ -35,40 +35,39 @@ const RULES: Rule[] = [
     what: 'the quiet sheet-top tool',
     signature: 'text-xs text-neutral-500 transition hover:text-neutral-900',
     // Moved to `src/admin-shared` on 2026-09-14 with ADR 0054's first screens: the server
-    // draws a sheet now and may not import from `src/admin`. `components/sheet.tsx`
-    // re-exports it, so the advice below is unchanged for anything in React.
+    // draws a sheet now and may not import from `src/admin`, which is the browser's half.
     home: 'src/admin-shared/kit.ts',
-    instead: 'import SHEET_TOOL from components/sheet, or from @/admin-shared/kit on the server',
+    instead: 'import SHEET_TOOL from @/admin-shared/kit',
   },
   {
     what: 'the form-control chrome',
     signature: 'focus:ring-2 focus:ring-neutral-200',
     // Moved with the sheet's tool, and for the same reason.
     home: 'src/admin-shared/kit.ts',
-    instead: 'import CONTROL from components/kit, or from @/admin-shared/kit on the server',
+    instead: 'import CONTROL from @/admin-shared/kit',
   },
   {
     what: 'the segmented tab track',
     signature: 'items-end gap-6 border-b border-neutral-200',
-    // Moved out of `components/tabs.tsx` when the trash became a page (ADR 0054): the server
-    // draws that screen's kind strip and cannot import React. `Tabs` re-exports every string.
+    // Moved out of the editor's half when the trash became a page (ADR 0054): the server draws
+    // that screen's kind strip and cannot import from `src/admin`.
     home: 'src/admin-shared/tabs.ts',
-    instead: 'use <Tabs> in React (size="lg" is the section strip, size="sm" the inline filter), or tabs() from web/admin/kit on the server',
+    instead: 'use tabs() from web/admin/kit (size="lg" is the section strip, size="sm" the inline filter)',
   },
   {
     what: 'the button shape',
     signature: 'whitespace-nowrap rounded-md',
-    // Moved out of `ui/Button.tsx` on 2026-09-14: the server renders admin markup now and
-    // cannot import from `src/admin`. The component is still there and still the thing to
-    // reach for from React.
+    // Moved out of the browser's half on 2026-09-14: the server renders admin markup now and
+    // cannot import from `src/admin`. Every caller reads this string directly since React
+    // left with ADR 0054's step 6.
     home: 'src/admin-shared/kit.ts',
-    instead: 'use <Button>, or buttonClass() for an <a> or for server-rendered markup',
+    instead: 'use buttonClass() from @/admin-shared/kit',
   },
   {
     what: 'the stat tile',
     signature: 'text-[1.875rem] font-medium leading-none tracking-[-0.02em] tabular-nums',
     home: 'src/admin-shared/scale.ts',
-    instead: 'use <StatCard> (or <StatTile>, which is StatCard with a trend)',
+    instead: 'use statCard() from web/admin/kit-figures, and statBand() for the row it stands in',
   },
   {
     // The one that costs a COLOUR the admin does not have. A native checkbox or radio with
@@ -79,9 +78,9 @@ const RULES: Rule[] = [
     what: 'the checkbox / radio tick',
     signature: 'accent-neutral-900 dark:accent-white',
     // Moved on 2026-09-14 with ADR 0054's newsletter screen: the server draws the send
-    // picker and may not import React. `components/kit.tsx` re-exports it.
+    // picker and may not import from `src/admin`.
     home: 'src/admin-shared/kit.ts',
-    instead: 'import CHECK from components/kit, or from @/admin-shared/kit on the server',
+    instead: 'import CHECK from @/admin-shared/kit',
   },
   {
     // `CHECK` above is what a NATIVE box is painted with; this is the drawn one that replaced
@@ -92,9 +91,9 @@ const RULES: Rule[] = [
     what: 'the drawn checkbox',
     signature: 'cursor-pointer appearance-none rounded border border-neutral-300',
     // Moved for the same reason as the tab track, and by the same screen: the trash's rows
-    // carry a tick each. `Tick` is the React component around it and imports the string.
+    // carry a tick each; `tick()` in `web/admin/kit` draws it from this string.
     home: 'src/admin-shared/kit.ts',
-    instead: 'use <Tick> from ui/Tick in React, or tick() from web/admin/kit on the server',
+    instead: 'use tick() from web/admin/kit',
   },
   {
     // Thirty-eight screens hand-typed this rather than import it, plus three that went as far
@@ -114,7 +113,7 @@ const RULES: Rule[] = [
     // still named the grey would have been a rule this kit could no longer satisfy.
     signature: 'text-[0.8125rem] italic leading-[1.55]',
     home: 'src/admin-shared/scale.ts',
-    instead: 'import NOTE_TEXT from components/kit — or pass `note` to Setting / ui/Input',
+    instead: 'import NOTE_TEXT from @/admin-shared/scale — or pass `note` to settingRow / textField in web/admin/fields',
   },
 ]
 

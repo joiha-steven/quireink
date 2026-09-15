@@ -1,16 +1,20 @@
 // Settings → Server: THE DOOR AN AGENT COMES IN BY. One switch that is an ordinary settings
 // key, the address to point a client at, and the tokens that open it.
 //
-// ⚠️ THE TOKEN TABLE SHIPS EMPTY, and there is no server read that would fill it. Tokens come
-// from `GET /api/mcp/tokens`, which the page drawing this has not called — and the plaintext of
-// one is shown ONCE, on creation, and never retrievable after, so there is nothing here that
-// could be written into the markup even if the list were at hand. The table is drawn with its
-// head, an empty `<tbody>` and a `<template>` for a row; "No tokens yet." is what is VISIBLE,
-// because that is the honest state of a render that knows of none.
+// ⚠️ THE TOKEN TABLE SHIPS EMPTY, because the page drawing this has not called
+// `GET /api/mcp/tokens`. It is drawn with its head, an empty `<tbody>` and a `<template>` for a
+// row; "No tokens yet." is what is VISIBLE, because that is the honest state of a render that
+// knows of none. `island/lib/settings-mcp.ts` asks, and fills it.
 //
-// ⚠️ NOTHING HERE MINTS ANYTHING. Every key is inert: `data-mcp-generate` is a `type="button"`
-// with no handler, and the box that shows a new token is empty. A credential in this markup
-// would be a credential in the page source of every settings screen ever opened.
+// ⚠️ NOTHING HERE MINTS ANYTHING, and that is about this FILE, not about the card. Every key is
+// an inert `type="button"` carrying a hook; the island presses them. A credential written into
+// this markup would be a credential in the page source of every settings screen ever opened —
+// the plaintext of a token exists only in the reply that creates it, and the box that shows it
+// once ships empty for the island to fill.
+//
+// ⚠️ THE SECOND SENTENCE USED TO SAY THERE WAS NO HANDLER ANYWHERE, and for three days it was
+// true of Generate, Refresh, Copy and Delete as well. A card that lists tokens it cannot mint
+// or revoke is not the authority `docs/mcp.md` says the admin is.
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import type { SiteSettings } from '@/types'
 import { escapeAttr, escapeHtml } from '@/utils'

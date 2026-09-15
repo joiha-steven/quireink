@@ -84,8 +84,8 @@ export function wireImages(panel: HTMLElement, tools: HTMLElement | null, w: Wor
     refilter()
   }
 
-  async function remove(urls: string[], title: string): Promise<void> {
-    if (!await ask(w, title, w.noUndo ?? '')) return
+  async function remove(urls: string[], title: string, body?: string): Promise<void> {
+    if (!await ask(w, title, body ?? w.noUndo ?? '')) return
     try {
       const res = urls.length === 1
         ? await fetch(`/api/media/by?url=${encodeURIComponent(urls[0]!)}`, { method: 'DELETE' })
@@ -192,7 +192,12 @@ export function wireImages(panel: HTMLElement, tools: HTMLElement | null, w: Wor
   panel.querySelector('[data-media-del-unused]')?.addEventListener('click', () => {
     const urls = grid.tiles().filter((el) => el.dataset.unusedNow === '1').map((el) => el.dataset.media ?? '')
     if (urls.length === 0) return
-    void remove(urls, (w.askUnused ?? '').replace('{n}', String(urls.length))).then(() => {
+    // ⚠️ THE COUNT IS THE WHOLE POINT OF ASKING. "Delete every unused image?" is a different
+    // question at three images and at three hundred, and between 2026-09-12 and 2026-09-15 the
+    // dialog said neither: the title slot held the BODY sentence and a `.replace('{n}', …)`
+    // ran against a string no locale puts `{n}` in, so it substituted nothing, silently. One
+    // click here sends every unused URL in the library — there is no page and no cap.
+    void remove(urls, w.askUnusedTitle ?? '', `${w.askUnused ?? ''} (${urls.length})`).then(() => {
       for (const el of grid.tiles()) el.dataset.onlyUnused = '0'
       mark(new Set())
       refilter()

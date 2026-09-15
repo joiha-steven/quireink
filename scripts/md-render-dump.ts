@@ -4,7 +4,7 @@
 // The point is that it runs `renderPostContent` — footnotes, callouts, figures, galleries,
 // video embeds, Shiki — so what it dumps is the article body a reader is served, not the
 // Markdown step in isolation. Run it once on the old tree and once on the new one, then diff
-// the two directories with `md-dom-diff.ts`.
+// the two directories with `diff -r`.
 //
 //   bun scripts/md-render-dump.ts <dir of .md> <out dir>
 

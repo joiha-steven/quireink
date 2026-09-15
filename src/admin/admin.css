@@ -212,7 +212,7 @@ body {
   animation: setting-found 1.6s ease-out forwards;
 }
 
-/* Editor preview: the TipTap editor has no .gallery wrapper (grouping happens on
+/* Editor preview: the writing surface has no .gallery wrapper (grouping happens on
    publish), so make #grid figures flow side-by-side as thumbnails — a gallery
    reads as columns in the editor too, not a vertical stack.
    ⚠️ THESE RULES USED TO REACH THE FIGURE'S PARENT THROUGH `:has(> figure…)`, because
@@ -306,7 +306,9 @@ body {
   margin-right: -1rem;
 }
 
-/* TipTap empty-state placeholder. */
+/* The empty-state placeholder (`admin/editor/plugins.ts`). ⚠️ `:first-child` below is relative
+   to the PARENT, so this matches an empty paragraph inside a <td> or an <li> exactly as well as
+   one at the top of the sheet — which is why that plugin decorates TOP-LEVEL blocks only. */
 .ProseMirror:focus {
   outline: none;
 }
@@ -318,9 +320,10 @@ body {
   pointer-events: none;
 }
 
-/* A task item in the editor: the box and the words on ONE line. TipTap prints a <label>
-   and a <div> as two blocks and nothing had ever laid them side by side, so the box sat
-   above its words — seen once the pen's list marks took the disc away (2026-09-09). */
+/* A task item in the editor: the box and the words on ONE line. The node view
+   (`admin/editor/views.ts`) prints a <label> and a <div> as two blocks and nothing had ever
+   laid them side by side, so the box sat above its words — seen once the pen's list marks took
+   the disc away (2026-09-09). */
 .ProseMirror ul[data-type="taskList"] > li {
   display: flex;
   gap: 0.5em;
@@ -1138,7 +1141,7 @@ html.admin [role='dialog'] {
 }
 /* AND THE WAY OUT. A toast that arrives on a curve and then disappears on a frame reads as a
    glitch rather than as an exit: the eye tracks the entrance, so it is watching the thing at
-   the moment it vanishes. 150ms, which is what `ToastProvider` waits before unmounting —
+   the moment it vanishes. 150ms, which is `EXIT_MS` in `admin/island/lib/overlay-toast.ts` —
    the two numbers have to agree or the element is gone before the transition starts. */
 .admin-toast[data-leaving] {
   opacity: 0;

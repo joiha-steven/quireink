@@ -2,7 +2,7 @@
 //
 // In `admin-shared` since the settings screen became a page (ADR 0054): the SERVER draws the
 // result list now, once, with every row in it, and the island only narrows what is already
-// there. The command palette still reads the same index from the React side.
+// there. The command palette reads the same index, from `web/admin/overlays.ts`.
 //
 // [ADR 0011](../../../docs/decisions/0011-settings-regrouped-into-seven.md) split five
 // tangled tabs into seven defined ones (eight since `ai`), each printing the question it answers, because

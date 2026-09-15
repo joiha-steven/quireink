@@ -15,8 +15,8 @@
 //   (the parser)  NOT here any more. `marked.ts` held the server's inline extensions and came
 //                out on 2026-09-13 with `marked` itself: `md/inline-pen.ts` reads the three
 //                fences now, once, for the page and the editor and the excerpt together. The
-//                editor's TipTap marks (`admin/components/InkMark.ts`, `PenMarks.ts`) are what
-//                DRAWS a stroke while it is being written; they no longer parse one.
+//                editor's own marks (`admin/editor/schema-marks.ts`) are what DRAWS a stroke
+//                while it is being written; they no longer parse one.
 //   dies.ts      the hand: every stroke shape, grown from one seed. `dies-link.ts` grows the
 //                link's dashes from a seed of its own.
 //   pigments.ts  the five measured inks and the pencil and ballpoint, and the data-URI that

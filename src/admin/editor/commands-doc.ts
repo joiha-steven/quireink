@@ -8,7 +8,7 @@
 // bridge extension overrode two of the library's own commands to parse the string on the way in
 // — and it is one call now: `md/to-editor.ts` builds the ProseMirror JSON straight from the
 // parse, with no HTML in the middle and nothing to spell twice.
-import { undo as pmUndo, redo as pmRedo, undoDepth, redoDepth } from 'prosemirror-history'
+import { undo as pmUndo, redo as pmRedo } from 'prosemirror-history'
 import { undoInputRule as pmUndoInputRule } from 'prosemirror-inputrules'
 import {
   chainCommands, createParagraphNear, exitCode as pmExitCode, liftEmptyBlock,
@@ -173,8 +173,6 @@ export const setNodeSelection = (pos: number): Cmd => (state, dispatch) => {
 export const selectAll: Cmd = pmSelectAll as Cmd
 export const undo: Cmd = pmUndo as Cmd
 export const redo: Cmd = pmRedo as Cmd
-export const canUndo = (state: import('prosemirror-state').EditorState): boolean => undoDepth(state) > 0
-export const canRedo = (state: import('prosemirror-state').EditorState): boolean => redoDepth(state) > 0
 
 /** Backspace right after a typing rule fired puts the characters back. */
 export const undoInputRule: Cmd = pmUndoInputRule as Cmd

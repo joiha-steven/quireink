@@ -1,71 +1,20 @@
-// THE THREE LISTS THE SERVER COULD NOT DRAW, and the one it could.
+// THE TWO LISTS THE SERVER COULD NOT DRAW, and the one it could.
 //
-// MCP tokens and backups come from routes the page has not called when it is rendered, so both
-// ship as an empty list plus a `<template>` holding one row — every class and every translated
-// word already in it, written by the server. Redirects DO come with the page, and their template
-// is there only for rows added afterwards.
+// Backups come from a route the page has not called when it is rendered, so it ships as an
+// empty list plus a `<template>` holding one row — every class and every translated word
+// already in it, written by the server. Redirects DO come with the page, and their template is
+// there only for rows added afterwards. The MCP tokens are the third, and they moved to
+// `settings-mcp.ts` on 2026-09-15 when their five dead keys were wired.
 //
 // ⚠️ A ROW IS CLONED, NEVER BUILT. `settings-controls.ts` says the island builds no markup, and
 // a row assembled in JavaScript is a second copy of this screen's classes that drifts from the
 // server's in silence. The template is how a list that arrives later keeps one source.
-import type { BackupListWire, McpTokenWire, SnapshotWire } from '@/admin-shared/wire'
-import { formatDateTimeShort } from '@/admin-shared/when'
-import { say } from './media-bridge'
+import type { BackupListWire, SnapshotWire } from '@/admin-shared/wire'
+import { ask, owned, say } from './media-bridge'
+import { broke, put, read, row, show, type ListWords } from './list-dom'
+import { fillTokens, wireMcp } from './settings-mcp'
 
-export type ListWords = Partial<Record<string, string>>
-
-const show = (el: Element | null, on: boolean): void => {
-  if (el instanceof HTMLElement) el.hidden = !on
-}
-
-/**
- * One row from the list's own template, with its fields filled in.
- *
- * ⚠️ THE `<tr>` FIRST, AND THE TEMPLATE'S FIRST CHILD ONLY AS A FALLBACK. A table row cannot be
- * a template's first child and survive every parser — `settings-server-mcp.ts` explains why it
- * ships wrapped in a `<table><tbody>` skeleton — so taking `firstElementChild` there clones the
- * whole SKELETON and drops a nested table inside the real `<tbody>`. It fills, and the fields
- * read back, and every assertion on text passes: what is wrong is only that the row is its own
- * table and its columns no longer line up with the header above them. A list whose rows are
- * `<li>` has no `tr` and falls through to the first child, which is the row itself.
- */
-function row(list: HTMLElement, fill: (el: HTMLElement) => void): HTMLElement | null {
-  const tpl = list.closest('section')?.querySelector('template')
-  const source = tpl?.content.querySelector('tr') ?? tpl?.content.firstElementChild
-  const clone = source?.cloneNode(true)
-  if (!(clone instanceof HTMLElement)) return null
-  fill(clone)
-  return clone
-}
-
-const put = (el: HTMLElement, hook: string, text: string): void => {
-  const slot = el.querySelector<HTMLElement>(`[${hook}]`)
-  if (slot) slot.textContent = text
-}
-
-/**
- * ⚠️ NULL IS "THE QUESTION BROKE", NOT "THE ANSWER WAS EMPTY", and every caller has to keep
- * them apart. A list that prints its empty state after a refused request tells the owner their
- * rows are gone when all of them are still on the server — and on the backups card that same
- * sentence says there is no copy of the blog anywhere. Each filler below shows the failure box
- * the server drew for exactly this, and the box carries a key that asks again in place.
- */
-async function read<T>(url: string): Promise<T | null> {
-  const res = await fetch(url).catch(() => null)
-  if (!res) return null
-  if (res.status === 401) {
-    location.href = `/login?next=${encodeURIComponent(location.pathname + location.search)}`
-    return null
-  }
-  const json = await res.json().catch(() => null) as { success?: boolean; data?: T } | null
-  return json?.success && json.data !== undefined ? json.data : null
-}
-
-/** Show the failure box, and hide everything that would otherwise claim to be the answer. */
-function broke(card: Element | null, hook: string, faces: string[]): void {
-  for (const face of faces) show(card?.querySelector(`[${face}]`) ?? null, false)
-  show(card?.querySelector<HTMLElement>(`[${hook}]`) ?? null, true)
-}
+export type { ListWords }
 
 /**
  * The keys that ask again, armed ONCE at wiring time.
@@ -94,10 +43,10 @@ function wireRetries(screen: HTMLElement): void {
 
 
 export function wireLists(screen: HTMLElement, w: ListWords): void {
-  void fillTokens(screen)
   void fillBackups(screen)
   wireRedirects(screen, w)
   wireBackupKeys(screen, w)
+  wireMcp(screen, w)
   wireRetries(screen)
 }
 
@@ -118,6 +67,9 @@ function wireBackupKeys(screen: HTMLElement, w: ListWords): void {
       return
     }
 
+    const cache = target.closest<HTMLButtonElement>('[data-cache-clear]')
+    if (cache) { void clearCache(cache, w); return }
+
     const run = target.closest<HTMLButtonElement>('[data-backup-run]')
     if (run) { void take(screen, run, w); return }
 
@@ -125,6 +77,36 @@ function wireBackupKeys(screen: HTMLElement, w: ListWords): void {
     const row = gone?.closest<HTMLElement>('[data-backup]')
     if (gone && row?.dataset.backup) void dropBackup(row, row.dataset.backup, w)
   })
+}
+
+/**
+ * Clearing the cache: one POST, no body, and nothing to ask first.
+ *
+ * ⚠️ IT DOES NOT ASK. Nothing here is destroyed — the origin cache is a `Map` and the warm hook
+ * refills it three seconds later — and the rule this screen follows is that a question is for
+ * what cannot be undone. The React card did not ask either.
+ *
+ * ⚠️ IT IS THE THIRD DOOR TO THE SAME ACTION, and for three days it was the only dead one: the
+ * rail's footer key and the command palette both work. So an owner who pressed THIS key watched
+ * nothing happen, while the same action sat two clicks away behaving normally.
+ *
+ * ⚠️ `json.success`, NOT `res.ok` — which is what the rail reads, and the route answers through
+ * the envelope. It answers `purged: true` whether the CDN purge succeeded, was skipped for want
+ * of credentials, or was refused, so this can only report that the ASK went through.
+ */
+async function clearCache(key: HTMLButtonElement, w: ListWords): Promise<void> {
+  key.disabled = true
+  try {
+    const res = await fetch('/api/cache/clear', { method: 'POST' })
+    if (!await owned(res)) return
+    const json = await res.json().catch(() => null) as { success?: boolean } | null
+    if (!json?.success) throw new Error('failed')
+    say(w.cacheCleared ?? '')
+  } catch {
+    say(w.cacheFailed ?? '', 'error')
+  } finally {
+    key.disabled = false
+  }
 }
 
 /** Hand a URL to the browser and let it decide what a download looks like. */
@@ -140,87 +122,41 @@ function hand(href: string): void {
 async function take(screen: HTMLElement, key: HTMLButtonElement, w: ListWords): Promise<void> {
   const label = key.textContent ?? ''
   key.disabled = true
-  key.textContent = w.saving ?? label
+  key.textContent = w.backupBusy ?? label
   try {
     const res = await fetch('/api/backup/run', { method: 'POST' })
     if (!res.ok) throw new Error('failed')
     await fillBackups(screen)
-    say(w.saved ?? '')
+    say(w.backupDone ?? '')
   } catch {
-    say(w.saveFailed ?? '', 'error')
+    say(w.backupFailed ?? '', 'error')
   } finally {
     key.disabled = false
     key.textContent = label
   }
 }
 
+/**
+ * ⚠️ THE ONE DELETE ON THIS SCREEN THAT NOTHING CAN UNDO, so it asks first.
+ *
+ * Everything else the admin deletes goes to the Trash and comes back. A snapshot does not:
+ * `server/backup.ts` unlinks the archive, and if it was the only copy of a blog the blog is
+ * gone with it. Between 2026-09-12 and 2026-09-15 this fetched on its first statement — the
+ * React card it replaced had asked, and the screen's own comment said the button still had no
+ * handler, so the gap read as intended.
+ */
 async function dropBackup(row: HTMLElement, name: string, w: ListWords): Promise<void> {
+  // The archive's name goes in the BODY, because the title asks the question and no locale's
+  // `askDeleteBackupTitle` carries a placeholder to put it in.
+  const body = `${name} — ${w.askBackupBody ?? ''}`
+  if (!await ask(w, w.askBackupTitle ?? '', body)) return
   const res = await fetch('/api/backup/delete', {
     method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ name }),
   }).catch(() => null)
-  if (res?.ok) { row.remove(); say(w.deleted ?? '') }
+  if (res?.ok) { row.remove(); say(w.removed ?? '') }
   else say(w.deleteFailed ?? '', 'error')
 }
 
-/**
- * THE MCP TOKENS.
- *
- * A token's plaintext exists only in the reply that mints it — the table holds a prefix and
- * nothing else — so the "copy it now" box is shown once and never again.
- */
-async function fillTokens(screen: HTMLElement): Promise<void> {
-  const rows = screen.querySelector<HTMLElement>('[data-mcp-rows]')
-  if (!rows) return
-  const tokens = await read<McpTokenWire[]>('/api/mcp/tokens')
-  if (!tokens) {
-    broke(rows.closest('section'), 'data-mcp-failed', ['data-mcp-none', 'data-mcp-table'])
-    return
-  }
-  show(rows.closest('section')?.querySelector('[data-mcp-failed]') ?? null, false)
-  paintTokens(rows, tokens)
-}
-
-function paintTokens(rows: HTMLElement, tokens: McpTokenWire[]): void {
-  const made = tokens.map((tk) => row(rows, (el) => {
-    el.dataset.mcpTokenRow = String(tk.id)
-    put(el, 'data-mcp-name', tk.name)
-    put(el, 'data-mcp-prefix', tk.prefix)
-    // The admin's own stamp in all three columns, which is what the React table printed. Cut
-    // to ten characters they were a different format from every other date on this screen.
-    put(el, 'data-mcp-made', formatDateTimeShort(tk.createdAt))
-    // NEVER-USED IS A DRAWN SPAN, not a word this file holds. The template ships both halves
-    // and the island shows one; a string here would be an untranslated twelfth locale.
-    put(el, 'data-mcp-used', tk.lastUsedAt ? formatDateTimeShort(tk.lastUsedAt) : '')
-    show(el.querySelector('[data-mcp-used]'), tk.lastUsedAt != null)
-    show(el.querySelector('[data-mcp-never]'), tk.lastUsedAt == null)
-    // The expiry column, and the word that replaces it once the date has passed. `expired` is
-    // the SERVER's answer against the server's clock: a browser with a wrong clock must not be
-    // what decides whether a token still works, because it is not what the route asks.
-    put(el, 'data-mcp-expires', formatDateTimeShort(tk.expiresAt))
-    show(el.querySelector('[data-mcp-expires]'), !tk.expired)
-    show(el.querySelector('[data-mcp-expired]'), tk.expired)
-    // A BADGE ONLY WHEN THE GRANT IS NARROWER THAN FULL. `full` is what every token was before
-    // scopes existed and what an unaware client still expects, so it is the unremarkable case
-    // and labelling it would make the two that matter harder to pick out of the table.
-    show(el.querySelector('[data-mcp-scope]'), tk.scope !== 'full')
-    show(el.querySelector('[data-mcp-badge-read]'), tk.scope === 'read')
-    show(el.querySelector('[data-mcp-badge-code]'), tk.scope !== 'read')
-  })).filter((el): el is HTMLElement => el !== null)
-  rows.replaceChildren(...made)
-  const card = rows.closest('section')
-  show(card?.querySelector('[data-mcp-table]') ?? null, made.length > 0)
-  show(card?.querySelector('[data-mcp-none]') ?? null, made.length === 0)
-}
-
-/** THE BACKUPS, and the lamp that says how long it has been. */
-/**
- * The snapshot list's own date format, which is NOT the admin's terse stamp.
- *
- * It is `toLocaleString()` because that is what the React card printed here, and ADR 0054 is a
- * conversion: a screen that reads differently after it is a change hiding inside a move. The
- * inconsistency with every other date in this admin is real and predates this file — worth one
- * deliberate commit of its own, not a silent edit in the middle of a port.
- */
 const backupWhen = (iso: string): string => new Date(iso).toLocaleString()
 
 async function fillBackups(screen: HTMLElement): Promise<void> {
@@ -270,6 +206,23 @@ function wireRedirects(screen: HTMLElement, w: ListWords): void {
   const list = screen.querySelector<HTMLElement>('[data-redirect-list]')
   if (!list) return
 
+  /**
+   * ⚠️ THE ADD KEY SHIPS DISABLED AND SOMETHING HAS TO ARM IT. A server cannot know whether the
+   * two fields beside it are empty, so it draws the only state it can be sure of — and between
+   * 2026-09-12 and 2026-09-15 nothing changed that state, which left a complete `add()` below
+   * unreachable and manual redirects impossible to create. The React card it replaced recomputed
+   * `disabled` on every keystroke; this is that, without the render.
+   */
+  const from = screen.querySelector<HTMLInputElement>('[data-redirect-source]')
+  const to = screen.querySelector<HTMLInputElement>('[data-redirect-destination]')
+  const key = screen.querySelector<HTMLButtonElement>('[data-redirect-add]')
+  const arm = (): void => {
+    if (key) key.disabled = !from?.value.trim() || !to?.value.trim()
+  }
+  from?.addEventListener('input', arm)
+  to?.addEventListener('input', arm)
+  arm()
+
   screen.addEventListener('click', (e) => {
     const target = e.target as HTMLElement
     const gone = target.closest<HTMLElement>('[data-redirect-delete]')
@@ -285,7 +238,7 @@ function wireRedirects(screen: HTMLElement, w: ListWords): void {
 
 async function drop(line: HTMLElement, id: string, w: ListWords): Promise<void> {
   const res = await fetch(`/api/redirects/${id}`, { method: 'DELETE' }).catch(() => null)
-  if (res?.ok) { line.remove(); say(w.deleted ?? '') }
+  if (res?.ok) { line.remove(); say(w.removed ?? '') }
   else say(w.deleteFailed ?? '', 'error')
 }
 
@@ -299,8 +252,12 @@ async function add(screen: HTMLElement, list: HTMLElement, w: ListWords): Promis
     method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body),
   }).catch(() => null)
   if (!res?.ok) {
+    // The server's own sentence when it has one — "that source is a live post", "the
+    // destination is not a path" — and the redirect card's own fallback when it does not.
+    // `saveFailed` was the fallback for three days, which on a screen with one Save key reads
+    // as the whole form having failed.
     const said = await res?.json().catch(() => null) as { error?: string } | null
-    say(said?.error || (w.saveFailed ?? ''), 'error')
+    say(said?.error || (w.redirectFailed ?? ''), 'error')
     return
   }
   // The list is re-read rather than guessed at: the server sanitises a path and may answer with
@@ -319,5 +276,6 @@ async function add(screen: HTMLElement, list: HTMLElement, w: ListWords): Promis
   }
   from.value = ''
   to.value = ''
-  say(w.saved ?? '')
+  from.dispatchEvent(new Event('input'))
+  say(w.redirectSaved ?? '')
 }

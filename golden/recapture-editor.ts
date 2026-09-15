@@ -38,10 +38,13 @@ const accepted = new Set(
 )
 
 async function roundTrip(source: string): Promise<string> {
-  const { Editor } = await import('@tiptap/core')
-  const { editorExtensions } = await import('@/admin/components/editorExtensions')
-  const editor = new Editor({ extensions: editorExtensions(''), content: source })
-  const out = (editor.storage as unknown as { markdown: { getMarkdown: () => string } }).markdown.getMarkdown()
+  // ⚠️ IT BUILT A TIPTAP EDITOR UNTIL 2026-09-15 and was left behind when those packages went,
+  // so the documented way to refresh `golden/editor/` could not run at all — `Cannot find
+  // module '@tiptap/core'`. `editor-corpus.test.ts`, which points readers here, had already
+  // been moved to this door.
+  const { Editor } = await import('@/admin/editor/editor')
+  const editor = new Editor({ element: document.createElement('div'), content: source })
+  const out = editor.getMarkdown()
   editor.destroy()
   return out
 }

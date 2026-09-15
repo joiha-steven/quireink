@@ -67,9 +67,16 @@ export function wireSecurity(screen: HTMLElement, w: SecWords): void {
     return json.data ?? {}
   }
 
-  /** The refusal sentences ride as attributes, because the island has no dictionary. */
+  /**
+   * The refusal sentences ride as attributes, because the island has no dictionary.
+   *
+   * ⚠️ BOTH SEPARATORS. `web/admin/security.ts` sends `wrong_password`; `auth/password.ts` sends
+   * `too-short`. A regex that knew only `_` turned the second into `sayToo-short`, which is not
+   * a `dataset` key and matched nothing no matter what the markup carried — so the three
+   * password refusals fell through to "Save failed" even once their attributes were added.
+   */
   const said = (el: HTMLElement, code?: string): string =>
-    code ? (el.dataset[`say${code.replace(/(^|_)([a-z])/g, (_, __, c: string) => c.toUpperCase())}`] ?? '') : ''
+    code ? (el.dataset[`say${code.replace(/(^|[_-])([a-z])/g, (_, __, c: string) => c.toUpperCase())}`] ?? '') : ''
 
   // ---- the password -----------------------------------------------------------------------
 

@@ -4,7 +4,7 @@
 // long way — markdown-it produces HTML, `setContent` parses that HTML back into nodes through
 // every extension's `parseHTML` — and the trip costs more than time: whatever the HTML cannot
 // say is lost at the join. A maths node has to be spelled as a `<span>` with attributes that
-// `MathNode.tsx` will recognise, a table's alignment has to survive as an attribute on a `<td>`,
+// the maths node will recognise, a table's alignment has to survive as an attribute on a `<td>`,
 // and every one of those spellings is a second contract to keep in step with the first.
 //
 // The JSON is the schema itself, so there is nothing to spell and nothing to re-parse. The

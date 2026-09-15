@@ -70,7 +70,7 @@ inside it. In book mode the same break becomes the asterism.
   the article's first line) and sticks on scroll. Its breakpoint is COMPUTED from `contentWidth`
   in `src/render/rail-css.ts` — a media query cannot read a CSS variable — so a wider column simply
   keeps the rail hidden for longer. Below it the SAME DOM becomes a slide-out drawer opened by the
-  header menu button (`RailToggle`, mobile only — flips `<html data-rail>`; the drawer + scrim react
+  header menu button (`rail()` in `assets/js/theme.ts`, mobile only — flips `<html data-rail>`; drawer + scrim react
   in CSS; the layout hides the button above the breakpoint via `.rail-toggle`). The rail carries the
   site menu at its top (`SidebarMenu`) — the header has no separate menu dropdown. In the gutter the
   rail is type on the page: no border, no shadow, no background.

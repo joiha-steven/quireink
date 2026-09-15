@@ -14,14 +14,14 @@
 
 import { describe, expect, it, beforeAll, afterAll } from 'bun:test'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
-import type { Editor as TiptapEditor } from '@/admin/editor/editor'
+import type { Editor } from '@/admin/editor/editor'
 
 beforeAll(() => GlobalRegistrator.register())
 afterAll(() => GlobalRegistrator.unregister())
 
-async function open(source: string): Promise<TiptapEditor> {
+async function open(source: string): Promise<Editor> {
   const { Editor } = await import('@/admin/editor/editor')
-  return new Editor({ element: document.createElement('div'), content: source }) as unknown as TiptapEditor
+  return new Editor({ element: document.createElement('div'), content: source }) as unknown as Editor
 }
 
 /** A piece long enough that being off by a paragraph is visible, and marked up like a real one. */

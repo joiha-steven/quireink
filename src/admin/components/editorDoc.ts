@@ -5,12 +5,12 @@
 // an editor and answers a question about the document, and none of them has ever needed a
 // hook, a prop or a piece of state. `editorExtensions.ts` came out of the same file for the
 // same reason and the split held.
-import type { Editor as TiptapEditor } from '@/admin/editor/editor'
+import type { Editor } from '@/admin/editor/editor'
 import { TextSelection } from 'prosemirror-state'
 import { isVideoUrl } from '@/render/video'
 import { documentToMarkdown } from './MarkdownBridge'
 
-export function readMarkdown(editor: TiptapEditor): string {
+export function readMarkdown(editor: Editor): string {
   return documentToMarkdown(editor.state.doc)
 }
 
@@ -30,7 +30,7 @@ export function readMarkdown(editor: TiptapEditor): string {
  * jumped to the top. Measured 2026-09-13 on an 18k-word draft: from every one of three
  * starting points, the first click in the source view went to offset 0.
  */
-export function markdownOffsetAt(editor: TiptapEditor, pos: number): number {
+export function markdownOffsetAt(editor: Editor, pos: number): number {
   return documentToMarkdown(editor.state.doc.cut(0, pos)).length
 }
 
@@ -44,7 +44,7 @@ export function markdownOffsetAt(editor: TiptapEditor, pos: number): number {
  * `THRESHOLD` is in Markdown characters: closer than a short word is closer than a reader can
  * see, and chasing the last few characters costs a whole serialize each.
  */
-export function posAtMarkdownOffset(editor: TiptapEditor, offset: number, markdown: string): number {
+export function posAtMarkdownOffset(editor: Editor, offset: number, markdown: string): number {
   const size = editor.state.doc.content.size
   if (markdown.length === 0 || size === 0) return 0
   const THRESHOLD = 8
@@ -74,7 +74,7 @@ export function captionFromUrl(url: string): string {
 
 // After loading/parsing markdown, promote any paragraph that is just a video URL
 // into a video node, so reloaded posts show the embed (not a bare link).
-export function videoUrlsToNodes(editor: TiptapEditor): void {
+export function videoUrlsToNodes(editor: Editor): void {
   const { state } = editor
   const videoType = state.schema.nodes.video
   if (!videoType) return

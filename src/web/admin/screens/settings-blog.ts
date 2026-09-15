@@ -88,6 +88,7 @@ function general(t: AdminStrings, s: SiteSettings): string {
     + textField({ k: 'title', label: t.siteTitle, value: s.title, placeholder: 'Quire Ink' })
     + textArea({
       k: 'description', label: t.siteDescription, value: s.description, rows: 2,
+      placeholder: t.siteDescriptionPlaceholder,
     })
     + switchRow({ k: 'showDescription', label: t.showDescription, on: s.showDescription })
     + textField({

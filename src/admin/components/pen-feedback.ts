@@ -13,7 +13,7 @@
 // key feedback lives by holds here too — the words never move; only the ink under them is
 // arriving.
 
-import type { Editor as TiptapEditor } from '@/admin/editor/editor'
+import type { Editor } from '@/admin/editor/editor'
 import type { Transaction } from 'prosemirror-state'
 import { AddMarkStep } from 'prosemirror-transform'
 import { motionOn } from '@/admin/motion'
@@ -37,7 +37,7 @@ export function penStepsOf(tr: Transaction): { kind: Gesture; from: number; to: 
 }
 
 /** The mark elements under a range, once the view has drawn them. */
-function elementsIn(view: TiptapEditor['view'], from: number, to: number): HTMLElement[] {
+function elementsIn(view: Editor['view'], from: number, to: number): HTMLElement[] {
   const found = new Set<HTMLElement>()
   view.state.doc.nodesBetween(from, to, (node, pos) => {
     if (!node.isText) return
@@ -49,7 +49,7 @@ function elementsIn(view: TiptapEditor['view'], from: number, to: number): HTMLE
   return [...found]
 }
 
-export function penStrokes(view: TiptapEditor['view'], tr: Transaction, sound: KeySound): void {
+export function penStrokes(view: Editor['view'], tr: Transaction, sound: KeySound): void {
   const steps = penStepsOf(tr)
   if (steps.length === 0) return
   // One squeak per gesture per transaction: a mark across three text nodes is one stroke.

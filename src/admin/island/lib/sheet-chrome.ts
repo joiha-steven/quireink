@@ -9,7 +9,7 @@
 // The button strip is mounted and unmounted rather than hidden, and that is not a lapse from
 // the one-DOM rule: it is STICKY and takes space at the top of the sheet, so the Markdown view
 // and focus mode both want it gone rather than invisible.
-import type { Editor as TiptapEditor } from '@/admin/editor/editor'
+import type { Editor } from '@/admin/editor/editor'
 import type { SheetWords } from '@/admin-shared/sheet-wire'
 import { mountToolbar, toolbarWords, type Toolbar } from '@/admin/components/editor-toolbar'
 import { mountBubbleBar, openSlashMenu, type BubbleBar } from '@/admin/components/editor-menus'
@@ -31,7 +31,7 @@ export type ChromeParts = {
 }
 
 export type ChromeHooks = {
-  editor: TiptapEditor
+  editor: Editor
   t: SheetWords
   askLink: (previous: string) => Promise<string | null>
   onPickImage: () => void

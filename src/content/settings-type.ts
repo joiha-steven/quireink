@@ -100,10 +100,27 @@ function sanitizeFaces(input: unknown, legacyUrl: unknown): FontFace[] {
   return FONT_WEIGHTS.filter((w) => byWeight.has(w)).map((w) => ({ weight: w, url: byWeight.get(w)! }))
 }
 
+/**
+ * ⚠️ A SAVE THAT DOES NOT MENTION THE FONT LEAVES THE FONT ALONE, and until 2026-09-15 it did
+ * the opposite: it deleted it.
+ *
+ * `PUT /api/settings` takes a DEEP PARTIAL — the admin sends only what changed — and `family`
+ * already fell back when absent. `faces` did not: `sanitizeFaces(undefined, undefined)` answers
+ * `[]`, the `family && faces.length` gate then failed, and the whole value became `DEFAULT_FONT`.
+ * So changing the blog's title on one tab erased an uploaded typeface stored from another, with
+ * no warning and nothing in the log, and the owner's next clue was the site in Inter.
+ *
+ * It could not happen before ADR 0054: the React admin PUT the ENTIRE settings object, so
+ * `customFont` was always present. The partial is what made an absent key mean something, and
+ * this is the only sanitiser on the record that read absence as erasure.
+ */
 export function sanitizeFont(input: unknown, fallback: FontSettings): FontSettings {
-  const o = (input ?? {}) as Record<string, unknown>
+  if (input === undefined || input === null) return fallback
+  const o = input as Record<string, unknown>
   const family = o.family !== undefined ? sanitizeFamily(o.family) : fallback.family
-  const faces = sanitizeFaces(o.faces, o.url)
+  const faces = o.faces === undefined && o.url === undefined
+    ? fallback.faces
+    : sanitizeFaces(o.faces, o.url)
   // Need a family AND at least one face; otherwise "no custom font".
   return family && faces.length ? { family, faces } : DEFAULT_FONT
 }

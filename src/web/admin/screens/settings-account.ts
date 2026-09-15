@@ -302,13 +302,21 @@ export function accountTab(t: AdminStrings, s: SiteSettings): string {
     // off the element it is standing on, by the code the route sent. Without these the card
     // still refuses correctly and says "Could not save" while doing it, which on this card is
     // the difference between "you typed the wrong password" and "something is broken". React
-    // had the three sentences inline; this is where they live now.
+    // had the sentences inline; this is where they live now.
+    //
+    // ⚠️ SIX, NOT THREE. `auth/password.ts` refuses a weak new password with `too-short`,
+    // `too-common` or `contains-name`, and until 2026-09-15 none of the three was carried here:
+    // the strength rule still held, and the only thing the owner was told was "Save failed",
+    // which reads as a broken server rather than as a password to change.
     + panelCard({
       title: t.securityTitle,
       body: security(t),
       attrs: `data-say-wrong-password="${escapeAttr(t.securityWrongPassword)}"`
         + ` data-say-too-many-attempts="${escapeAttr(t.securityTooMany)}"`
-        + ` data-say-bad-code="${escapeAttr(t.securityBadCode)}"`,
+        + ` data-say-bad-code="${escapeAttr(t.securityBadCode)}"`
+        + ` data-say-too-short="${escapeAttr(t.pwTooShort)}"`
+        + ` data-say-too-common="${escapeAttr(t.pwTooCommon)}"`
+        + ` data-say-contains-name="${escapeAttr(t.pwContainsName)}"`,
     })
     + `</div><div class="${COL}">`
     + connectionCard({

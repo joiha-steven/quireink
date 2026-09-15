@@ -9,7 +9,7 @@
 // asked here on every render, and the editor was set to re-render on every transaction so the
 // answers stayed live — which means every keystroke rebuilt the React tree of the entire sheet
 // to decide whether Bold looks pressed. Now one subscription updates twenty-one attributes.
-import type { Editor as TiptapEditor } from '@/admin/editor/editor'
+import type { Editor } from '@/admin/editor/editor'
 import type { SheetWords } from '@/admin-shared/sheet-wire'
 import { ICONS } from '@/icons'
 
@@ -87,7 +87,7 @@ export type ToolbarWords = {
 }
 
 export type ToolbarHooks = {
-  editor: TiptapEditor
+  editor: Editor
   words: ToolbarWords
   /** Opens the product's link box and resolves to a URL, '' to unlink, or null on a back-out. */
   askLink: (previous: string) => Promise<string | null>

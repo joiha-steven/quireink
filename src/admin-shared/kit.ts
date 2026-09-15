@@ -3,8 +3,8 @@
 // It sits in `src/admin-shared/` beside `rail.ts` for the same reason (ADR 0054): the server
 // renders admin markup now, and `src/admin` is excluded from the root TypeScript project —
 // a server module that reaches for `document` must fail to compile rather than fail on a
-// request. `ui/Button.tsx` is the React component around this and re-exports `buttonClass`, so
-// nothing that already imported it has to learn a second module.
+// request. There was a React `Button` around this that re-exported `buttonClass`; it left with
+// the rest of React in ADR 0054's step 6, and every caller reads this file directly now.
 //
 // `check:admin-kit` guards the shape fragment against being re-typed anywhere; this file is its
 // home now, and that guard is the reason the strings may live in exactly one place.
@@ -229,10 +229,10 @@ export const SHEET_TOP =
 
 // ═══ THE HELP SCREEN'S FIVE ═══════════════════════════════════════════════════════════════
 //
-// Moved out of `admin/components/help-kit.tsx` when that screen became a page (ADR 0054). The
-// React helpers there — `<C>`, `<Ext>`, `<In>`, `<Links>` — are still used by the dashboard and
-// the what's-new panel, and they wear these same strings, so the two faces of an inline literal
-// or a link cannot drift.
+// Moved out of the Help screen's own kit when that screen became a page (ADR 0054). The React
+// helpers that wore these strings — `<C>`, `<Ext>`, `<In>`, `<Links>` — are gone with React; the
+// dashboard and the what's-new panel are server-drawn and read these same constants, so the two
+// faces of an inline literal or a link still cannot drift.
 
 /** A link in body copy: underlined in a lighter ink, so a paragraph is not a row of blue. */
 export const A =
@@ -252,8 +252,8 @@ export const LINKS = 'mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm text-neutral-5
 
 // ═══ A TABLE ═══════════════════════════════════════════════════════════════════════════
 //
-// Moved with the Help screen (ADR 0054), which draws three of them. `components/kit.tsx`
-// re-exports all four and still owns `TableFrame`, the React wrapper around them.
+// Moved with the Help screen (ADR 0054), which draws three of them. There was a `TableFrame`
+// React wrapper around them; it left with React, and the screens compose these directly.
 
 export const TABLE_FRAME = `overflow-hidden ${CARD}`
 /** Goes between TABLE_FRAME and the table. Never let a table be the frame's direct child. */
@@ -278,8 +278,8 @@ export const TROW = 'border-b border-neutral-100 last:border-0 hover:bg-neutral-
  * `rounded` is 4px rather than the 6px control step: on a 16px box 6px is a 38% corner, which
  * reads as a blob rather than as a checkbox.
  *
- * Here rather than in `ui/Tick.tsx` since the trash became a page (ADR 0054) and the server
- * draws the same box. `Tick` is the React component around it and imports this.
+ * Here since the trash became a page (ADR 0054) and the server draws the same box. There was a
+ * React `Tick` around it reading these strings; it left with React.
  */
 export const TICK_BOX =
   'peer h-4 w-4 shrink-0 cursor-pointer appearance-none rounded border border-neutral-300 bg-white transition-colors shadow-[inset_0_1px_1.5px_rgba(0,0,0,.07)] checked:shadow-[inset_0_1.5px_2px_rgba(0,0,0,.4)] '
@@ -310,9 +310,9 @@ export const TICK_PATH = 'stroke-white dark:stroke-neutral-900'
  * The red ballpoint is deliberately absent. Red means something was DESTROYED, and a
  * connection that did not answer has destroyed nothing.
  *
- * Here rather than in `ui/Lamp.tsx` since the analytics screen became a page (ADR 0054): the
- * live strip's lamp is drawn by the server and the subscriber list's by React, and one
- * emerald that drifts a shade from the other is the drift `check:admin-kit` exists to stop.
+ * Here since the analytics screen became a page (ADR 0054). Every lamp in the admin is drawn by
+ * the server now — the live strip's and the subscriber list's alike — and one emerald that
+ * drifts a shade from another is the drift `check:admin-kit` exists to stop.
  */
 export type LampState = 'good' | 'attention' | 'off'
 

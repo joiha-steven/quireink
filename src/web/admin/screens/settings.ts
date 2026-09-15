@@ -60,8 +60,32 @@ function words(t: AdminStrings): string {
     copyUrl: t.copyUrl, download: t.download, delete: t.delete, unusedBadge: t.unusedBadge,
     // An icon goes straight to the files store, and says so when it lands.
     uploaded: t.uploaded, uploadFailed: t.uploadFailed, loading: t.loading,
-    // The three lists, and the one of them that deletes.
-    never: t.mcpNeverUsed, deleted: t.movedToTrash, deleteFailed: t.deleteFailed,
+    // The three lists, and the two of them that delete.
+    //
+    // ⚠️ `removed`, NOT `movedToTrash`. A snapshot and a redirect are both deleted outright —
+    // `server/backup.ts` unlinks the archive and the redirect row is gone — and until
+    // 2026-09-15 both said "Moved to Trash", which names a place the owner can go and look.
+    never: t.mcpNeverUsed, removed: t.deleted, deleteFailed: t.deleteFailed,
+    // A snapshot is the one delete on this screen with nothing behind it, so it asks first.
+    askBackupTitle: t.askDeleteBackupTitle, askBackupBody: t.askDeleteBackupBody,
+    yes: t.askDeleteForever, no: t.askCancel,
+    // Taking a snapshot is not saving a setting, and for a while it said it was.
+    backupDone: t.backupToastOk, backupFailed: t.backupToastFail, backupBusy: t.exportBusy,
+    // A redirect is a row in its own table, not a setting, and it said "Settings saved".
+    redirectSaved: t.redirectSaved, redirectFailed: t.redirectSaveFailed,
+    // The MCP card's five keys. Every one of them was drawn and wired to nothing until
+    // 2026-09-15, so none of these had a reader either.
+    mcpGenerate: t.mcpGenerate, mcpNamePrompt: t.mcpNamePrompt,
+    mcpLimit: t.mcpLimitReached, mcpCreateFailed: t.mcpCreateFailed,
+    mcpTokenDeleted: t.mcpTokenDeleted, mcpUrlCopied: t.mcpUrlCopied, mcpCopied: t.mcpCopied,
+    askTokenTitle: t.askDeleteTokenTitle, askTokenBody: t.askDeleteTokenBody,
+    // Clearing the cache from this tab. The rail's footer key and the palette already said
+    // these two; the copy on this screen said nothing at all.
+    cacheCleared: t.cacheCleared, cacheFailed: t.clearCacheFailed,
+    // The importer. `importFailed` borrows the upload's sentence: a refused import is a file
+    // that did not take, and there is no key of its own for it — see OPEN_QUESTIONS.
+    importDone: t.importDone, importImagesDone: t.importImagesDone,
+    importImagesFailed: t.importImagesFailed, importFailed: t.uploadFailed,
     // The account's four flows report what they did; the server's REFUSALS ride on the card
     // itself, because each belongs to the control that can provoke it.
     passwordChanged: t.securityPasswordChanged, signedOut: t.securitySignedOut,

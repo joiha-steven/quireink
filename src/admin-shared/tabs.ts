@@ -2,9 +2,8 @@
 //
 // Moved out of `admin/components/tabs.tsx` when the trash screen became a page (ADR 0054):
 // the server renders that screen's kind strip now, and `src/admin` is excluded from the root
-// TypeScript project so a server module cannot reach into it. The React `Tabs` component is
-// the thing around these strings and re-exports every one of them, so nothing that already
-// imported from there has to learn a second module.
+// TypeScript project so a server module cannot reach into it. A React `Tabs` component used to
+// wrap these strings and re-export them; it left with React in ADR 0054's step 6.
 //
 // EVERYTHING IN THIS DIRECTORY IS FRAMEWORK-FREE: no React, no hono, no DOM. See the head of
 // `kit.ts` for why that is the whole reason the directory exists.

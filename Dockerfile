@@ -122,8 +122,9 @@ COPY locales ./locales
 COPY scripts ./scripts
 
 # Neither output is committed (`.gitignore` ignores every `dist/`), so both are built here:
-# the public island bundles, and the admin SPA with its stylesheet. `build:admin` needs
-# React, Tiptap and the Tailwind CLI, which is the only reason this stage installs them.
+# the reader's island bundles, and the admin's own with its stylesheet. Both are Bun's bundler
+# over this repository's TypeScript and nothing else — React, Tiptap and the Tailwind CLI were
+# what this stage used to install for, and all three left in September 2026.
 RUN bun run build:assets && bun run build:admin
 
 # --- runtime -----------------------------------------------------------------------------

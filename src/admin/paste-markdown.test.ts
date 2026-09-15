@@ -22,7 +22,7 @@
 
 import { describe, expect, it, beforeAll, afterAll } from 'bun:test'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
-import type { Editor as TiptapEditor } from '@/admin/editor/editor'
+import type { Editor } from '@/admin/editor/editor'
 import type { Slice, ResolvedPos } from 'prosemirror-model'
 
 beforeAll(() => GlobalRegistrator.register())
@@ -44,7 +44,7 @@ type ClipboardTextParser = (text: string, context: ResolvedPos, plainText: boole
  * `plainText` is the Shift-held flag, and it is a parameter here so the test below can hold
  * Shift too.
  */
-function paste(editor: TiptapEditor, text: string, plainText = false): void {
+function paste(editor: Editor, text: string, plainText = false): void {
   const { $from } = editor.state.selection
   const slice = editor.view.someProp('clipboardTextParser', (fn) =>
     (fn as ClipboardTextParser)(text, $from, plainText))
@@ -52,7 +52,7 @@ function paste(editor: TiptapEditor, text: string, plainText = false): void {
   editor.view.dispatch(editor.state.tr.replaceSelection(slice))
 }
 
-function markdownOf(editor: TiptapEditor): string {
+function markdownOf(editor: Editor): string {
   return editor.getMarkdown()
 }
 

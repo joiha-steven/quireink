@@ -11,7 +11,7 @@
 // whatever the HTML could not say was lost at the join. `md/to-editor.ts` builds the
 // ProseMirror JSON directly, so there is no HTML in the middle and nothing to spell twice.
 //
-// ⚠️ WHAT IS LEFT HERE IS TWO FUNCTIONS. This was a Tiptap `Extension` that overrode two of the
+// ⚠️ WHAT IS LEFT HERE IS ONE FUNCTION. This was a Tiptap `Extension` that overrode two of the
 // library's commands and hung a `getMarkdown` on the editor's storage, because an extension had
 // no other way to reach either. ADR 0054's step 7 removed the extension system: parsing on the
 // way in is `editor/commands-doc.ts`, the clipboard's own reader is `editor/plugins.ts`, and

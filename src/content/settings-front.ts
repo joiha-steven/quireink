@@ -6,7 +6,7 @@
 // GRAMMAR — a lead block, a featured row, named strips, a popular row and a latest row, each
 // with its own source, count and column rules. It is a subject, not a setting.
 import type { FrontSettings, FrontStrip } from '@/types'
-import { bool, clampNumber } from '@/content/settings-sanitize'
+import { bool, clampNumber, withHolesFilled } from '@/content/settings-sanitize'
 
 /** Columns in a row: 1, 2 or 3. Anything else is the fallback rather than a broken grid. */
 const columns = (v: unknown, fallback: number): number =>
@@ -35,9 +35,13 @@ export function sanitizeFront(input: unknown, fallback: FrontSettings): FrontSet
     },
     // Capped at eight rows. A front page that scrolls past every category is an archive
     // with extra steps, and each strip costs a reader a screen.
+    // ⚠️ HOLES FILLED FIRST. A partial that touches one strip's column count arrives with
+    // `null` in every index before it, and without this the filter dropped them and every
+    // surviving strip's count and columns fell back to 3 — see `withHolesFilled`.
     strips: Array.isArray(o.strips)
-      ? o.strips
-        .filter((s): s is FrontStrip => !!s && typeof s.category === 'string' && !!s.category.trim())
+      ? withHolesFilled(o.strips, fallback.strips)
+        .filter((s): s is FrontStrip => !!s && typeof (s as FrontStrip).category === 'string'
+          && !!(s as FrontStrip).category.trim())
         .slice(0, 8)
         .map((s) => ({
           category: s.category.trim().slice(0, 100),

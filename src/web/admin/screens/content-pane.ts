@@ -255,8 +255,12 @@ function head(t: AdminStrings, needs: WriteNeeds): string {
     // Picking: done, and the one key that acts.
     + `<span data-write-picking-tools hidden class="flex w-full items-center justify-between gap-2">`
     + `<button type="button" data-write-done class="${SHEET_TOOL}">${escapeHtml(t.selectDone)}</button>`
-    + `<button type="button" data-write-trash class="${SHEET_TOOL_DANGER}"`
-    + ` data-word-trash="${escapeAttr(t.moveToTrash)}">${escapeHtml(t.moveToTrash)} (0)</button>`
+    // ⚠️ NO `data-word-trash` HERE. The label this key rebuilds on every pick comes from
+    // `data-write-words`, which the pane already carries and `write-pick.ts` already reads; a
+    // second copy of the same sentence on the same element is two mechanisms deciding one
+    // thing, and the one nothing read sat there unnoticed until a wiring sweep found it.
+    + `<button type="button" data-write-trash class="${SHEET_TOOL_DANGER}">`
+    + `${escapeHtml(t.moveToTrash)} (0)</button>`
     + `</span></div>`
 
   return `<div class="space-y-3 px-4 pb-2 pt-4">`

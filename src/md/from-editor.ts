@@ -1,7 +1,7 @@
 // The editor's document, as the tree. The other half of a save.
 //
 // ProseMirror holds a post while somebody is writing it, in a shape of its own: nodes and
-// marks named by the Tiptap extensions in `admin/components/editorExtensions.ts`. This turns
+// marks named by the editor's own schema (`admin/editor/schema.ts`). This turns
 // that shape into `ast.ts`, and `to-markdown.ts` turns the tree into the file. Two steps
 // where `prosemirror-markdown` had one — and the step is what buys the property that matters:
 // the thing a save writes is produced by the same serializer the rest of this engine uses, so

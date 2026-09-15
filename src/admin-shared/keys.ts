@@ -40,7 +40,8 @@ export const SHORTCUTS: Shortcut[] = [
 ]
 
 /**
- * Tiptap's own bindings, for PRINTING only — no handler here answers them.
+ * The editor's own bindings, for PRINTING only — no handler here answers them. They are
+ * `admin/editor/keymap.ts`'s, and were the editor package's before ADR 0054's step 7.
  *
  * They are in this file because the sheet and the tooltips must be able to say `⌘B` beside
  * Bold, and because a chord this product later wants has to be checked against them. Kept as
@@ -48,7 +49,7 @@ export const SHORTCUTS: Shortcut[] = [
  * and could not be read by anything.
  *
  * Only what the toolbar has a button for. `Mod-Backspace`, `Shift-Tab` and the list-navigation
- * keys are Tiptap's furniture, true of every editor built on it, and nobody looks them up.
+ * keys are an editor's ordinary furniture, true of every editor, and nobody looks them up.
  */
 export const BUILTIN: Shortcut[] = [
   { id: 'bold', chord: 'Mod-b', does: 'Bold.' },

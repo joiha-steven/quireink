@@ -7,9 +7,13 @@
 // but the SCHEDULE beside it is three settings keys, and with no key on the card and none on
 // the tab there was nowhere to store them from.
 //
-// ⚠️ MARKUP AND NOTHING ELSE (ADR 0054). Clearing the cache re-renders every public page and
-// deleting a snapshot is the one delete on this tab with nothing behind it — both are inert
-// `type="button"` here, with a hook and no handler.
+// ⚠️ MARKUP HERE, BEHAVIOUR IN THE ISLAND (ADR 0054). Every key on this tab is an inert
+// `type="button"` in this file, carrying a hook; what a press does is
+// `admin/island/lib/settings-lists.ts`.
+//
+// ⚠️ AND THIS COMMENT ONCE SAID THE SNAPSHOT DELETE HAD NO HANDLER. It gained one and the
+// sentence stayed, so a reader checking whether that delete asked before unlinking an archive
+// was told there was nothing to check. It fetched on its first statement for three days.
 //
 // ⚠️ THE BACKUP LIST IS NOT A SERVER READ. It comes from `GET /api/backup/list`, which the page
 // that draws this has not called, so the list ships EMPTY with its row in a `<template>`, the

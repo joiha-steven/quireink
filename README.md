@@ -17,7 +17,7 @@ One process. Two SQLite files. No cloud account anywhere in the path. Your name 
 ![Hono](https://img.shields.io/badge/Hono-e36002?logo=hono&logoColor=white)
 ![SQLite](https://img.shields.io/badge/SQLite-003b57?logo=sqlite&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178c6?logo=typescript&logoColor=white)
-![React 19](https://img.shields.io/badge/React_19-20232a?logo=react&logoColor=61dafb)
+![ProseMirror](https://img.shields.io/badge/ProseMirror-6d5aca)
 ![MCP](https://img.shields.io/badge/MCP-ready-7c3aed)
 ![License: PolyForm Noncommercial plus paid hosting](https://img.shields.io/badge/License-PolyForm_NC_%2B_paid_hosting-22c55e)
 

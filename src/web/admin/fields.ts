@@ -121,8 +121,14 @@ export function textField(f: SettingText & {
     + `</div>`
 }
 
+/**
+ * ⚠️ IT TAKES A `placeholder` AND `textField` ALWAYS DID. Until 2026-09-15 this one did not, so
+ * the site description — the field whose whole difficulty is that "Description" does not say
+ * what kind of sentence belongs in it — lost the guide text React had shown there, and the
+ * dropped argument looked like a deliberate difference rather than a gap in this function.
+ */
 export function textArea(f: SettingText & {
-  k: string; value: string; rows?: number; className?: string; attrs?: string
+  k: string; value: string; rows?: number; className?: string; attrs?: string; placeholder?: string
 }): string {
   const id = idOf(f.k)
   const cls = f.className ? ` ${f.className}` : ''
@@ -130,6 +136,7 @@ export function textArea(f: SettingText & {
     + `<textarea id="${id}" class="${CONTROL} ${FIELD_W.full} resize-y`
     + `${f.label || f.note || f.noteHtml ? ` ${FIELD_GAP}` : ''}${cls}"`
     + ` rows="${f.rows ?? 4}" data-k="${escapeAttr(f.k)}"`
+    + `${f.placeholder ? ` placeholder="${escapeAttr(f.placeholder)}"` : ''}`
     + `${f.attrs ? ` ${f.attrs}` : ''}>${escapeHtml(f.value)}</textarea></div>`
 }
 

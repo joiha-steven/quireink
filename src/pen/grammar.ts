@@ -4,7 +4,7 @@
 //
 // IMPORT-FREE ON PURPOSE (one constant from `dies.ts` aside). Four parsers read this grammar:
 // the engine's inline parser (`md/inline-pen.ts`), the editor's typing
-// rules (`admin/components/InkMark.ts`, `PenMarks.ts`) and `toPlainText` for excerpts. Each is
+// rules (`admin/editor/input-rules.ts`) and `toPlainText` for excerpts. Each is
 // built from the one regex SOURCE exported here rather than restating it — the two that were
 // once written out separately drifted within the hour, and `toPlainText` put the word "green"
 // into every excerpt of a post that used a colour suffix.
@@ -60,9 +60,10 @@ export const INK_SYNTAX_SOURCE = `${STROKE}(?:#(${INKS.join('|')})\\b)?`
 /**
  * The same grammar with the colour NOT captured, so the words are the last capture group.
  *
- * This exists for TipTap alone, and only because of a convention that is invisible until it
- * bites: `markInputRule` and `markPasteRule` both take `match[match.length - 1]` as the text
- * to mark. With the colour captured last, typing `==go tay==#pink` marked the word "pink"
+ * This exists for the editor's typing rules alone, and only because of a convention that is
+ * invisible until it bites: `markInputRule` in `admin/editor/input-rules.ts` takes
+ * `match[match.length - 1]` as the text to mark — the convention it inherited from the package
+ * that wrote that helper before it. With the colour captured last, typing `==go tay==#pink` marked the word "pink"
  * and DELETED "go tay" — the rule did exactly what it promises, on the wrong group. Seen by
  * typing into the real editor; every unit test still passed, because the tests exercise the
  * parser and the serializer rather than the keystrokes between them.

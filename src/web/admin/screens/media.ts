@@ -40,7 +40,8 @@ const openKind = (query: URLSearchParams): Kind => {
  */
 function words(t: AdminStrings): string {
   return escapeAttr(JSON.stringify({
-    askOne: t.askPurgeTitle, askMany: t.askPurgeManyTitle, askUnused: t.askDeleteUnusedBody,
+    askOne: t.askPurgeTitle, askMany: t.askPurgeManyTitle,
+    askUnusedTitle: t.askDeleteUnusedTitle, askUnused: t.askDeleteUnusedBody,
     noUndo: t.askNoUndo, yes: t.askDeleteForever, no: t.askCancel,
     trashed: t.movedToTrash, deleteFailed: t.deleteFailed, noMatch: t.deleteNoMatch,
     copied: t.copiedUrl, uploaded: t.uploaded, uploadFailed: t.uploadFailed,

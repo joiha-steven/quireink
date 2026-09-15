@@ -30,9 +30,11 @@
     saved as `\(\(x\)\)`, and with `$$…$$` the block node split the paragraph and the stray
     dollars became two paragraphs of their own. The rule in
     [`editor/input-rules.ts`](../../src/admin/editor/input-rules.ts) replaces the WHOLE match.
-- **Menus live in `editor-menus.ts`** (the bubble bar and the "/" menu; the button strip is `editor-toolbar.ts`). The editor sets
-  `shouldRerenderOnTransaction: true` — TipTap 3 disables it by default, which leaves every
-  `isActive()` (toolbar highlights, the table-tools row) stale until an unrelated re-render.
+- **Menus live in `editor-menus.ts`** (the bubble bar and the "/" menu; the button strip is `editor-toolbar.ts`). Each
+  subscribes to the editor's `transaction` event and writes its own attributes back: one handler
+  updates twenty-one buttons plus the table-tools row. Before ADR 0054's step 6 the whole sheet
+  re-rendered on every transaction so that `isActive()` stayed live, which means every keystroke
+  rebuilt the tree to decide whether Bold looks pressed.
 - **Writing shell:** the sheet carries its own chrome — the action line (back link · save state ·
   word count · Markdown/Attributes · Preview/View post/Save/Publish) is the card's first row and the toolbar
   sticks under it, full-width, groups centred, WRAPPING on a narrow window rather than scrolling
@@ -116,7 +118,7 @@
   column. `figure-default.test.ts` pins exactly that, because the obvious implementation is the
   wrong one. Overridable in BOTH directions — a frame token on a picture overrides upward,
   `#noframe` overrides downward, which is the half that only matters once a site default exists.
-- **BubbleBar:** a floating `BubbleMenu` (`@tiptap/react/menus`) over a text selection or with the
+- **BubbleBar:** a floating bar (`editor/bubble.ts`) over a text selection or with the
   cursor in a link — bold/italic/underline/strike/code + link edit/remove. `shouldShow` skips node
   selections (image/video) so it never covers their own controls.
 - **Tables:** insert is a 3×3 with a header row; a contextual toolbar row (shown only when the

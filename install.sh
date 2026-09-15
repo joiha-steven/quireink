@@ -78,9 +78,10 @@ DIR_ABS=$(pwd)
 
 # --- build ------------------------------------------------------------------------------
 #
-# The full install, not --production: React, Tailwind and TipTap are devDependencies and the
-# admin cannot be built without them. The two build steps write artefacts the server READS
-# FROM DISK at runtime, which is why they run before it ever starts and again after a pull.
+# The full install, not --production: TypeScript and the DOM stand-in the editor's suites use
+# are devDependencies, and the two build steps below need the tree complete. Those steps write
+# artefacts the server READS FROM DISK at runtime, which is why they run before it ever starts
+# and again after a pull.
 
 say "Installing dependencies"
 bun install

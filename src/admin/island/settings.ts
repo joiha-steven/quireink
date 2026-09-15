@@ -14,6 +14,7 @@ import { fold } from '@/admin-shared/fold'
 import { resolveTab, type Tab } from '@/admin-shared/settings-tabs'
 import { wireCards } from './lib/settings-cards'
 import { wireCode } from './lib/settings-code'
+import { wireImport } from './lib/settings-import'
 import { wireControls } from './lib/settings-controls'
 import { wireLists } from './lib/settings-lists'
 import { wireMail } from './lib/settings-mail'
@@ -21,6 +22,7 @@ import { showTab } from './lib/tab-strip'
 import { wirePics } from './lib/settings-pics'
 import { wireSave, type SaveWords } from './lib/settings-save'
 import { wireSecurity } from './lib/settings-security'
+import { wireSound } from './lib/settings-sound'
 import { wireTheme } from './lib/settings-theme'
 import { wireType } from './lib/settings-type'
 
@@ -52,6 +54,10 @@ if (root) {
   wireTheme(screen)
   wireLists(screen, words)
   wireMail(screen, words)
+  // The importer and the key-sound previews, both of which were drawn and wired to nothing
+  // until 2026-09-15. `check:admin-wired` is the guard that will not let that happen twice.
+  wireImport(screen, words)
+  wireSound(screen)
   // The account's four flows, none of which is a setting and every one of which asks for the
   // current password first: being signed in is not enough.
   wireSecurity(screen, words)

@@ -8,7 +8,7 @@
 // subset, and that is deliberate here where it was not for the node views: the five pens are
 // named by a COMPUTED key (`ink` + the ink's name), so a fixed list of fields could not reach
 // them. The type is erased at compile time and nothing extra ships.
-import type { Editor as TiptapEditor } from '@/admin/editor/editor'
+import type { Editor } from '@/admin/editor/editor'
 import { bubblePlugin, BUBBLE_KEY } from '@/admin/editor/bubble'
 import { NodeSelection } from 'prosemirror-state'
 import type { SheetWords } from '@/admin-shared/sheet-wire'
@@ -81,7 +81,7 @@ export type BubbleBar = {
 }
 
 export function mountBubbleBar(
-  editor: TiptapEditor,
+  editor: Editor,
   t: SheetWords,
   askLink: (previous: string) => Promise<string | null>,
 ): BubbleBar {
@@ -248,7 +248,7 @@ export function mountBubbleBar(
 }
 
 export type SlashHooks = {
-  editor: TiptapEditor
+  editor: Editor
   t: SheetWords
   /** Viewport coordinates of the caret the "/" was typed at. */
   at: { left: number; top: number }
