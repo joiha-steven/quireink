@@ -625,6 +625,20 @@ input[type='color']::-moz-color-swatch {
   textarea {
     font-size: 16px;
   }
+
+  /* ⚠️ AND THE LINE BOX IS PINNED, or the floor above changes every field's HEIGHT.
+     16px at the inherited 1.4286 is a 22.857px line, so a field that is 36px on a desktop
+     becomes 36.86 on a phone while the key standing beside it stays exactly 36 — measured
+     2026-09-16 on the header-menu rows and on the account tab's password row. Nobody can name
+     a 0.86px step and everybody can see the row is not level.
+
+     22px, so 6 + 22 + 6 + 2 = 36 and the two agree exactly. Single-line controls only: a
+     textarea's height is its rows TIMES this number, and pinning it there would resize every
+     multi-line box on a phone to fix an alignment it is not part of. */
+  input:not([type='checkbox']):not([type='radio']),
+  select {
+    line-height: 22px;
+  }
 }
 
 /* A scrollable area that CLIPS mid-row reads as broken — the cut-off chip in the tag
