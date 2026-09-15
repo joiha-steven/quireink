@@ -15,12 +15,13 @@ four values for three intents.
 - **Tokens: `--dur-fast` .15s · `--dur-base` .2s · `--dur-slow` .5s · `--ease-out`
   `cubic-bezier(.2,.7,.3,1)`.** Declared twice on purpose — the admin never receives the
   public sheet — and the two declarations must stay equal; no guard can see a drift between
-  them, so a change to one is a change to both in the same commit. Tailwind's `transition*`
-  utilities read `--dur-fast` through `--default-transition-duration`, so a `transition` in a
-  className and one in the sheet run at one speed. `--ease-out` is the one curve, introduced
-  only once a real curve had been chosen (the rail's FLIP slide, then every entrance); the
-  scroll-driven animations do NOT use it and must stay `linear` — a timeline a reader scrubs
-  with a thumb is linear or it is wrong.
+  them, so a change to one is a change to both in the same commit. The captured
+  `transition*` utilities in `src/admin/utilities.css` read `--dur-fast` through
+  `--default-transition-duration`, so a `transition` in a `class` attribute and one in the
+  sheet run at one speed. `--ease-out` is the one curve, introduced only once a real curve
+  had been chosen (the rail's FLIP slide, then every entrance); the scroll-driven animations
+  do NOT use it and must stay `linear` — a timeline a reader scrubs with a thumb is linear
+  or it is wrong.
 - **ONE switch gates ALL motion, on both sides.** `<html data-motion>` is server-rendered from
   `settings.motion.enabled` (no flash, no client JS) on the reading site, the sign-in page and
   the admin. `html[data-motion=off]` AND `@media (prefers-reduced-motion: reduce)` each set

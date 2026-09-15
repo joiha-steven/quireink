@@ -1,16 +1,22 @@
 // THE UNSAVED-CHANGES GUARD, which is two questions and not one.
 //
 // A screen with work on it that has not been saved must not let a click take that work away
-// silently — and `useNavigationGuard` answers in two different ways depending on where the
-// click goes. An IN-APP navigation gets the product's own three-way question (stay · discard ·
-// save and go); a REAL navigation can only ever raise the browser's generic warning, because
-// that is all `beforeunload` is allowed to do. Both halves exist for that reason.
+// silently, and it is answered in two different ways depending on how the owner leaves. A click
+// on an anchor into `/admin` gets the product's own three-way question (stay · save and go ·
+// discard), because `admin/island/lib/settings-save.ts` catches that click and asks before it
+// lets the navigation start. Every other way out (a typed address, a closed tab, a reload) can
+// only ever raise the browser's generic warning, because that is all `beforeunload` is allowed
+// to do. Both halves exist for that reason.
 //
-// ⚠️ WHICH HALF A LINK GETS CHANGES AS ADR 0054 PROGRESSES, and that is why these flows have a
-// file of their own rather than sitting among the settings flows they happen to use as a
-// subject. `router.tsx` declines to route any path the server now draws, so every conversion
-// moves another rail link from the first half to the second. A flow here must pick a
-// destination React still owns, deliberately, and re-pick it when that stops being true.
+// ⚠️ WHICH HALF A LINK GETS STOPPED BEING A QUESTION ABOUT ROUTING, and these flows keep a
+// file of their own because it used to be one. While ADR 0054 was converting screens one at a
+// time, a destination the server had taken over was a real navigation and got the browser's
+// two-button warning instead, so a flow here had to pick its destination deliberately and
+// re-pick it after each conversion. Every screen is server-drawn now and every rail link is a
+// real navigation, so nothing is left to pick: the interception above is the only thing between
+// a dirty settings form and a dialog that cannot save. What these flows prove is therefore no
+// longer WHICH destination behaves, but that the product's question is the one that comes up at
+// all, and that its three answers are in the order the footer grammar promises.
 import type { Tour } from './tour'
 import { OPEN_DIALOG } from './tour-ask'
 
@@ -37,12 +43,13 @@ export function registerGuardFlows({ flow, expect }: Pick<Tour, 'flow' | 'expect
       await sleep(250)
       const save = [...document.querySelectorAll('main button')].find((b) => /[0-9]/.test(b.textContent) && !b.disabled)
       if (!save) return 'the save key never counted the change'
-      // ⚠️ A RAIL LINK THE ROUTER STILL OWNS (ADR 0054), and the list of those keeps getting
-      // shorter. This clicked home until /admin became a server-drawn page, then the library
-      // until that did on 2026-09-14. A declined route is a REAL navigation, which raises the
-      // browser's own generic warning instead of the product's three-way question and destroys
-      // the context this script runs in — so the destination has to be a screen React still
-      // draws. When the write screen converts, this flow converts with it or goes.
+      // ⚠️ ANY RAIL LINK THAT LEAVES THIS SCREEN WILL DO, and that was not always true: this
+      // clicked home until /admin became a server-drawn page, then the library until that did
+      // on 2026-09-14, because back then only a destination the client still routed got the
+      // product's question rather than the browser's. \`settings-save.ts\` intercepts the click
+      // on every \`/admin\` anchor while the form is dirty, so all that matters about this href
+      // is that it is a link OUT: the one thing it exempts is a \`?tab=\` link into this same
+      // screen, which is not leaving it.
       const away = document.querySelector('aside nav a[href="/admin/content"]')
       if (!away) return 'no in-app destination left on the rail'
       away.click()

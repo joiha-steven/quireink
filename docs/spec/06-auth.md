@@ -217,12 +217,16 @@ than by reading it:
   used to be enough to receive a session at `/api/auth/enrol/done`, which skipped two-factor
   entirely on the one flow whose whole purpose is that two-factor is not optional.
 
-**QR code:** inline SVG via `qrcode-generator` (`src/render/qr.ts`). A hand-written encoder
-was rejected: QR is Reed-Solomon over a bit-interleaved layout, and a subtly wrong one
-produces an image that looks exactly like a QR code and cannot be scanned. `qrcode-generator`
-is a single file with no dependencies, chosen over the more popular `qrcode` (29 packages,
-including a CLI argument parser and a PNG encoder). The code is black on white regardless of
-theme — a dark theme rendering it inverted produces a code many scanners refuse, and it is
+**QR code:** inline SVG from this repository's own encoder. `src/render/qr.ts` draws the SVG,
+`src/render/qr-encode.ts` and `src/render/qr-matrix.ts` do the encoding, and the capacities
+and the error correction level live in `src/render/qr-tables.ts`. The reason a hand-written
+encoder was refused for a long time has not changed: QR is Reed-Solomon over a bit-interleaved
+layout, and a subtly wrong one produces an image that looks exactly like a QR code and cannot
+be scanned. What changed is that a check holds that failure mode instead of trust. Every
+payload from 1 to 2331 bytes was encoded both ways and compared module by module before
+`qrcode-generator` was removed, and `src/render/qr-encode.test.ts` keeps a slice of that run.
+The code is black on white regardless of theme — a dark theme rendering it inverted produces
+a code many scanners refuse, and it is
 the one place in the codebase where a hardcoded colour is the right answer.
 
 The base32 secret is shown as text beside it, grouped in fours. That is not a fallback: it

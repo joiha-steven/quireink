@@ -45,9 +45,10 @@ was argued for in a diff somebody read.
 
 1.x shipped one 63 KB (raw) Tailwind stylesheet covering public and admin. As shipped in
 2.0 they are two sheets with nothing in common: the public one is hand-written, **42,890
-raw / 8,265 gzipped**, and the admin keeps Tailwind at 80,262 / 17,241, paid by the owner
-alone (measured 2026-08-18). The line here read "Currently one 63 KB stylesheet covering
-public and admin" until then — the same pre-port present tense as the JS figure above.
+raw / 8,265 gzipped**, and the admin's Tailwind stood at 80,262 / 17,241, paid by the owner
+alone (measured 2026-08-18, before ADR 0053 took the framework out). The line here read
+"Currently one 63 KB stylesheet covering public and admin" until then — the same pre-port
+present tense as the JS figure above.
 
 **Public CSS is rewritten by hand**, roughly 1,000 lines, built on custom properties.
 Reasons, in order:

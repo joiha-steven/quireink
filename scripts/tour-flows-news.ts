@@ -67,7 +67,7 @@ export function registerNewsFlows({ flow, expect }: Tour): void {
     (async () => {
       const html = await (await fetch('/admin/newsletter')).text()
       if (!html.includes('data-screen="newsletter"')) return 'the server did not draw the newsletter'
-      if (!html.includes('data-admin-screen="newsletter"')) return 'the page did not tell React to stand down'
+      if (!html.includes('data-admin-screen="newsletter"')) return 'the server did not name the newsletter as the screen it drew'
       const panels = (html.match(/data-nl-panel=/g) || []).length
       if (panels !== 3) return 'expected three panels in the markup, found ' + panels
       const inMarkup = (html.match(/data-sub /g) || []).length

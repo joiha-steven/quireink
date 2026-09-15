@@ -326,9 +326,11 @@ function read(): RailData | null {
 /**
  * THE FOURTH BRIDGE, and the first that answers back.
  *
- * `quire:pick-media` asks for a picture. Whatever is asking — a React editor, a React settings
- * card, and later a server-drawn screen — dispatches it with the words it wants the overlay to
- * say and a callback to answer on; the overlay is `island/lib/media-picker.ts`.
+ * `quire:pick-media` asks for a picture. Whatever is asking dispatches it with the words it
+ * wants the overlay to say and a callback to answer on; the overlay is
+ * `island/lib/media-picker.ts`. Two islands ask today, both on server-drawn screens: the
+ * editor sheet's picture fields (`island/lib/sheet-fields.ts`) and Settings' picture rows
+ * (`island/lib/settings-pics.ts`).
  *
  * It listens HERE because this island is the one that loads on every admin page, and it imports
  * the overlay only when the event arrives: a page that never opens a picker never downloads one.

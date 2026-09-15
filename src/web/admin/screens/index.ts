@@ -1,18 +1,22 @@
 // WHICH ADMIN SCREENS THE SERVER DRAWS, and what each one's island is called.
 //
-// ADR 0054 converts fourteen screens one at a time, so for a while the admin is two programs
-// at once: a screen listed here arrives as finished HTML, and a screen that is not still comes
-// from the React bundle. This table is the only place that difference is written down.
+// ADR 0054 converted fourteen screens one at a time, and all fourteen are here: every admin
+// address arrives as finished HTML, and this table is the only place a screen's name and its
+// island are written down. An address the table does not claim is no longer a gap waiting for
+// a second program to fill it, because there is no second program: `spa.ts` draws the dead end
+// itself. The overlays that belong to no screen (the palette, the shortcut sheet, the confirm
+// dialog, the toast) are drawn into the shell by `web/admin/overlays.ts`.
 //
-// HOW THE TWO LIVE TOGETHER. `spa.ts` asks this table; when it answers, the screen's markup
-// goes into the canvas and `<html>` is stamped `data-admin-screen`. React reads that stamp and
-// renders NO route — it keeps drawing the overlays that are still its (the palette, the
-// shortcut sheet, the confirm dialog, the toast), which every page needs and no screen owns.
-// One stamp, so there is no second list for the browser to disagree with.
+// WHAT THE STAMP IS FOR. `spa.ts` asks this table; when it answers, the screen's markup goes
+// into the canvas and `<html>` is stamped `data-admin-screen` with the name used here, or with
+// `not-found`. Nothing in the browser routes off it any more. It is kept because it is the one
+// place the SERVER states which screen it decided to draw, and the tour reads it to prove a
+// flow landed on the screen it asked for rather than on the dead end: markup that merely looks
+// right cannot answer that question. One stamp, so there is no second list to disagree with.
 //
 // A screen leaves this table only by being deleted from it, which cannot happen quietly: the
-// React route it used to have is deleted in the same commit, and `check:routes-guarded` and
-// the tour both cover the address either way.
+// address falls through to the dead end the moment the entry goes, and `check:routes` and the
+// tour both cover it either way.
 import type { SiteSettings } from '@/types'
 import { analyticsScreen } from '@/web/admin/screens/analytics'
 import { assistantScreen } from '@/web/admin/screens/assistant'
@@ -62,8 +66,9 @@ export const SCREENS: Record<string, Screen> = {
   // server draws the transcript it holds and the island only ever adds what arrives after.
   '/admin/assistant': { render: assistantScreen, island: 'assistant' },
   // Three kinds in one sheet, all three drawn and the kind in the address. The island is the
-  // grid's behaviour — selection, search, sort, upload — and it lends the picker to the screens
-  // that are still React through `quire:pick-media`.
+  // grid's behaviour: selection, search, sort, upload. The picker the other screens ask for
+  // with `quire:pick-media` is NOT this island's, so it works on pages this screen never
+  // loads on; it is an overlay the rail island imports on demand (`island/lib/media-picker.ts`).
   '/admin/media': { render: mediaScreen, island: 'media' },
   // Seven tabs over one form, ALL SEVEN drawn — the Save key stores the whole thing, so drawing
   // one tab and navigating between them would lose unsaved work at every switch. It holds the
@@ -93,7 +98,7 @@ const WRITING: [prefix: string, island: string][] = [
   ['/admin/note-editor', 'sheet'],
 ]
 
-/** The screen for a path, or null while it is still React's. */
+/** The screen for a path, or null when no entry claims it: `spa.ts` draws the dead end. */
 export function screenFor(path: string): { name: string; screen: Screen } | null {
   const p = path.replace(/\/+$/, '') || '/admin'
   const screen = SCREENS[p]

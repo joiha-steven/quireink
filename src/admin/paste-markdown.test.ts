@@ -28,7 +28,8 @@ import type { Slice, ResolvedPos } from 'prosemirror-model'
 beforeAll(() => GlobalRegistrator.register())
 afterAll(() => GlobalRegistrator.unregister())
 
-/** A fresh editor on the REAL extension set — the list `Editor.tsx` mounts, not a copy. */
+/** A fresh editor on the REAL stack: the schema and plugins `island/lib/sheet-paper.ts`
+ *  mounts, not a copy of them. */
 async function open(content = '') {
   const { Editor } = await import('@/admin/editor/editor')
   return new Editor({ element: document.createElement('div'), content })

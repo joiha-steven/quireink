@@ -97,7 +97,7 @@ both copies to the same rule, because a rule enforced in one of two copies is th
 reads — and it pins the media query itself against the `lg` the rail is drawn at, so a band that
 starts one pixel off cannot slip in.
 
-## ⌘K — the answer to "which tab is it on"
+## ⌘⇧K: the answer to "which tab is it on"
 
 **No grouping makes a person remember which of seven boxes holds one of a hundred things;
 what makes the grouping stop mattering is being able to type a word.** `settings-index.ts` is
@@ -120,10 +120,11 @@ with the screens, the two actions and the writing beside it — so "make the tex
   ([`web/admin/overlays.ts`](../src/web/admin/overlays.ts)), because it is how you leave a screen
   that has gone wrong — and a screen that has gone wrong is now one whose island did not wire,
   which leaves the palette's own markup standing and reachable.
-- **The rail carries a search control, and printing the chord on it is the point.** ⌘K cannot be
-  discovered; a palette you must already know about is a lock rather than a door. Clicking it
-  opens the palette and shows `⌘K` beside itself, which is how a mouse teaches a keyboard: use
-  it once, read what it says, and the second time your hands do it without the mouse.
+- **The rail carries a search control, and printing the chord on it is the point.** ⌘⇧K cannot
+  be discovered; a palette you must already know about is a lock rather than a door. Clicking
+  it opens the palette, and the control prints `printChord(PALETTE_CHORD, mac)` beside itself,
+  which is how a mouse teaches a keyboard: use it once, read what it says, and the second time
+  your hands do it without the mouse.
   It sits on the WORDMARK ROW, beside the collapse control — chrome next to chrome. It was a
   full-width row above the rule first, which worked and spent a line of the rail on a thing
   that is not a destination, next to the rows that are. Up there the rail is a list of places

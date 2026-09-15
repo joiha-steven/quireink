@@ -13,8 +13,9 @@
 // sets the font, size, leading, padding, wrapping and tab size for both, and there is no
 // second place to change one of them in.
 //
-// NO SCROLL SYNC, and that is not an oversight. `Editor.tsx` grows the textarea to its own
-// `scrollHeight` on every change, so the box never scrolls internally — the page does. A
+// NO SCROLL SYNC, and that is not an oversight. `wireRaw` in `island/lib/sheet-raw.ts` grows
+// the textarea to its own `scrollHeight` every time it reveals this view, and `className.source`
+// below keeps `overflow-hidden` on it, so the box never scrolls internally: the page does. A
 // mirror pinned to the same box therefore cannot drift. If that autogrow is ever removed,
 // this needs an `onScroll` that copies `scrollTop`/`scrollLeft`, and the caret will visibly
 // separate from the text until it does.

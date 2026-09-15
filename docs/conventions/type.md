@@ -100,7 +100,7 @@ font, only the site language's subset(s), never the chrome font or an uploaded c
   one `@font-face` per weight because faux-bold is disabled (`font-synthesis-weight: none`).
   `/og` renders Inter + the custom font (`src/web/og.ts` `?font=`). Empty = bundled Inter.
 - **Admin chrome does NOT follow the reader's type settings** — not the scale, and since
-  2026-08-14 not the FACE either. It uses Tailwind's standard scale and its own Inter; only
+  2026-08-14 not the FACE either. Its scale is Tailwind's numbers, captured as plain CSS; only
   the admin editor `.prose` mirrors the reader. Don't wire admin chrome to `--fs-*`, and don't
   wire it back to `chromeFont`: the admin followed that setting for a while, and putting a
   mono code face on every label, tab, button and table cell was then rejected as cluttered
@@ -110,9 +110,9 @@ font, only the site language's subset(s), never the chrome font or an uploaded c
   — because the editor is WYSIWYG. See `web/admin/spa.ts` `adminStyles` and
   [`admin-design.md`](../admin-design.md).
 - Editor exposes H1–H5; the engine renders `####`/`#####` → `h4`/`h5`.
-- **A reader never downloads admin CSS.** The public sheets are hand-written and the admin's is
-  the only Tailwind in the project; the rule and the seam live in
-  [`performance.md`](../performance.md) "The two sheets".
+- **A reader never downloads admin CSS.** The public sheets are hand-written, and so is the
+  admin's since ADR 0053: `src/admin/utilities.css` plus `src/admin/admin.css`. The rule and
+  the seam live in [`performance.md`](../performance.md) "The two sheets".
 
 ## What a book does that a web page does not (2026-09-12)
 

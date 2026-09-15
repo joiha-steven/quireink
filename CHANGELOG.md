@@ -1,5 +1,137 @@
 # CHANGELOG
 
+## 2026-09-16 — Quire Ink 2.2.10-beta.5
+
+The fifth pre-release before 2.2.10, and the same rule as the four before it: its Docker tag
+is `2.2.10-beta.5` and nothing else, so `latest` and `2.2` still point at 2.2.9 and nobody
+gets a beta by accident. It runs the demo and the author's blog at manhhung.me.
+
+This one is the admin. It was a React application that arrived as an empty page and then
+asked the server what to put in it; it is server-rendered HTML now, with behaviour added as
+islands of hand-written JavaScript. The framework left with the wrapper around the editor and
+six other libraries. Sixty-five commits.
+
+### The admin is pages again (ADR 0054)
+
+- **A screen arrives finished.** Time to the heading being on screen, old build and new
+  running side by side on one seeded database at 500 KB/s: activity log 1,038ms to 285ms,
+  help 1,019ms to 296ms, trash 953ms to 293ms, comments 957ms to 326ms, dashboard 940ms to
+  336ms. What the browser must have before the first frame went from 297 KB to 22 KB.
+- **Over the wire, cold cache, same seeded blog, measured on the finished release:** opening
+  the admin is 14 requests carrying 14.8 KB of JavaScript, where it was 30 requests and
+  141.3 KB. The write list is 17 requests and 19.8 KB, where it was 29 and 135.3. The editor
+  page is 27 requests and 220.1 KB, where it was 35 and 401.2. The whole page, everything but
+  the blog's own pictures, went 265.8 KB to 159.9 on the admin and 561.8 to 393.9 on the
+  editor.
+- **191 `.tsx` files and 25,713 lines of them are gone**, and there is no `.tsx` file left in
+  the tree.
+- **The admin stopped flashing light before going dark.** Its boot script was inline, and an
+  nginx install sends `script-src 'self'`, so on three of the four public instances it had
+  never run: 189 to 246ms of light admin on a throttled connection, the rail at the wrong
+  width on every load, and Ctrl printed to people on a Mac. It is a fingerprinted file now,
+  which `'self'` allows with nothing for an operator to configure.
+- **The cost, stated:** a row click is a real navigation, so nothing survives it. Opening a
+  post you had already opened was 12ms and is 107ms. Opening the first one went 346ms to
+  107ms.
+- **Settings is one page with all seven tabs drawn**: 244 controls, 22 cards, 112 search
+  rows, 554 KB of markup and 49 KB compressed.
+- **The tab is in the address** on Settings, Trash, Newsletter and Media, and the
+  conversation is in the address on the assistant.
+
+### The editor stands on ProseMirror directly
+
+- **The wrapper left.** Nine `@tiptap/*` packages out, twelve `prosemirror-*` in. Ready to
+  type went from 394, 396 and 402ms to 106, 107 and 108ms; the editor's JavaScript from
+  1,028 KB to 524 KB, 325 to 167 compressed; plugins mounted per editor from 102 to 15.
+- **45 corpus fixtures produce byte-identical Markdown through both editors**, and the schema
+  was compared against a running Tiptap editor across 310 assertions before the removal.
+- Three copies of `prosemirror-view` were riding in the editor chunk. There is one.
+
+### Six more libraries out
+
+- `nodemailer`, `fflate`, `qrcode-generator`, `fast-xml-parser`, `turndown` with its GFM
+  plugin, and the Tailwind CLI. Declared packages went from 31 to 22, the lockfile from 360
+  resolved packages to 221, and a clean install from 194 MB on disk to 138 MB.
+- **Each was proved against what it replaced.** The QR encoder payload by payload, every
+  length from 1 to 2331 bytes, 2331 of 2331 identical. The utility stylesheet block by block,
+  186 of 188 byte-identical, and the two that differ were a fault in the generated one. The
+  importer on the golden corpus: of 45 fixtures 27 agreed, 15 came back right here and wrong
+  there, and none the other way round.
+- **Imports carry more of the original.** `<mark>` arrives as a highlight and `<u>` as an
+  underline instead of arriving flat, a lazy-loaded image is collected instead of a grey
+  placeholder, and a ZIP written on Windows no longer turns Vietnamese filenames into
+  mojibake.
+
+### New
+
+- **`SMTP_OFF`.** One line in `.env` and the process sends nothing: no newsletter, no
+  confirmation, no comment notice. Any value other than `0`, `false`, `no` or empty means
+  off, so a typo stops the mail rather than sending it, and the subscribe form comes off the
+  reader's page with it.
+- **The publish date can be typed.** Reaching next March took nine clicks and correcting a
+  year took twelve. The day and month order comes from the admin's language rather than the
+  machine's, and the 31st of February is refused rather than moved.
+- **Analytics sends the whole index in the first response**, all forty-one pieces rather than
+  ten and a request for the rest.
+- **The media picker is one overlay instead of six**, with `role="dialog"`, Escape, and focus
+  put back where it came from.
+- **The trash is one line per item.** Every row used to carry the words Restore and Delete
+  permanently, 23% of the row's width, forty times over. The list went from 650px to 570px
+  and every row is 57px.
+
+### Fixed
+
+- **Deleting a backup archive asked nothing.** It unlinked the file and said "Moved to
+  Trash", and there is no trash for a backup.
+- **A save that did not mention the font deleted the font**, so changing the blog's title on
+  one tab erased an uploaded typeface. Editing one field of one menu row wiped the whole
+  menu, and the same shape cost the featured list every slug before the one touched.
+- **Three credential cards said a key was saved and had sent nothing.** Cloudflare, off-site
+  storage and the model provider each posted an empty object, read `ok: true` off it and
+  turned the lamp green.
+- **Twenty behaviours in all**, the three cards above among them, were drawn and wired to
+  nothing, found by comparing every `data-*` hook the admin draws against every hook an
+  island reads: minting, copying and revoking an MCP
+  token, all four importers, adding a redirect, clearing the cache, editing the header menu,
+  the featured list, the front page rows and the footer marks, uploading a custom font, and
+  the off-site storage test. `check:admin-wired` now holds all 627 hooks to having a reader.
+- **The Markdown view left an empty sheet on the way back**, with the document intact in an
+  editor nobody could see. That had been on production for three commits.
+- **The formatting strip scrolled off screen and never came back**, and a comment's delete
+  key was invisible on a phone while still being announced by a screen reader.
+- **Eleven keystroke faults in the writing surface**, found by driving the old build
+  character by character: a typed URL corrupted by one character, a checklist converting the
+  whole list, a rule or a formula leaving the node selected so the next character replaced
+  it, Tab in the last table cell leaving the editor, a cleared nested bullet reopening as a
+  heading. The editor could also save Markdown it could not reopen; both builds did that.
+- **A formula could be read and never corrected**, a gallery lied about its own width, and a
+  highlight could not run across an inline code span, so the editor disagreed with the
+  reader's page and a save changed what readers saw.
+- **Dates printed in the machine's language, not the admin's.** A Vietnamese admin read
+  "Sep 14, 2026, 7:59 AM" one line above "14 thg 9, 2026, 07:59", and a post scheduled for
+  02:30 from New York printed back as 03:30.
+- **The SMTP card said "Loading..." for ever**, so every stored SMTP field was invisible on
+  the screen whose job is showing them, and every `<select>` in Settings had lost its chevron.
+- **An emptied number field sent zero**, setting posts per page to none and the upload limit
+  to zero bytes; a value under a field's floor was rewritten in silence while the screen said
+  "Settings saved"; and the palette switch failed towards on, turning palettes back on that
+  the owner had switched off.
+- **Reloading the assistant lost the conversation you were reading**, and switching chats
+  mid-answer could deliver a verdict about the conversation you had just left.
+- **The last seven `:has()` rules left the admin.** On another site that selector took a
+  page from 0.75s to 4.19s and crashed WebKit's render process.
+- **On a phone a field was 0.86px taller than the key beside it** on every screen that pairs
+  the two, and a chosen tab in a segmented strip was a square block floating in a rounded
+  groove.
+- 53 strings nobody could reach are out of all eleven languages.
+
+### Guards
+
+- Three more in `check:all`, twelve now: `check:deps` (a dependency is a decision),
+  `check:admin-css` (the admin's stylesheet against the markup that uses it) and
+  `check:admin-wired` (every `data-*` the admin draws against every one an island reads).
+- 3,623 tests and 211 tour flows on the release commit.
+
 ## 2026-09-14 — Quire Ink 2.2.10-beta.4
 
 The fourth pre-release before 2.2.10, and the same rule as the three before it: its Docker tag

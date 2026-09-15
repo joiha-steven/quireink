@@ -1,19 +1,20 @@
-// One endpoint per admin page, returning exactly the props that page's component tree
-// already expects.
+// One payload per admin view, holding exactly the facts that view needs and nothing else.
 //
 // In the frozen tree each of these was a server component: it called `getIndex()` or
-// `getAnalytics()` directly, assembled the props and rendered. The admin is a static SPA
-// here, so the assembly has to happen somewhere the database is reachable — and this is
-// that somewhere. Deliberately NOT a generic query API: the shape each page needs is
-// already known, and a generic one would turn one round trip into five.
+// `getAnalytics()` directly, assembled the props and rendered. The assembly still has to
+// happen somewhere the database is reachable, and this is that somewhere. Two kinds of caller
+// reach it since ADR 0054: the screens in `web/admin/screens/` call these functions straight
+// while they draw the page, and `viewRoutes()` at the bottom, mounted by `web/app.ts`, serves
+// the few payloads the browser still fetches for itself (the palette's search, analytics' poll,
+// the writing sheet's own view). Deliberately NOT a generic query API: the shape each page
+// needs is already known, and a generic one would turn one round trip into five.
 //
-// Each payload is built by a NAMED function with an INFERRED return type, and the
-// `ViewPayloads` map at the bottom is the typed contract the admin SPA compiles against
-// (`useView` takes a view NAME, not a caller-supplied generic). Until 2026-08-29 these
-// were thirteen inline object literals and the client asserted whatever shape it liked —
-// rename one field here and `tsc` stayed green while the screen went blank. Now the
-// compiler reads the same shape both sides do. Keep the returns inferred: an annotation
-// like `Record<string, unknown>` reopens the hole this closed.
+// Each payload is built by a NAMED function with an INFERRED return type, and that is the
+// typed contract: a caller reads fields off what the builder returned, so renaming one here is
+// a compile error where it is read rather than a blank panel. Until 2026-08-29 these were
+// thirteen inline object literals and the reader asserted whatever shape it liked, so a rename
+// left `tsc` green while the screen went blank. Keep the returns inferred: an annotation like
+// `Record<string, unknown>` reopens the hole this closed.
 //
 // Everything is gated by the router group (Invariant 4) and nothing is cached: the admin
 // must never show a stale snapshot of the reader's own edits.
@@ -271,10 +272,18 @@ export async function shellView() {
 }
 
 /**
- * THE CONTRACT. `src/admin/useView.ts` resolves a view name to its payload type through
- * this map, so a renamed or retyped field on either side is a compile error on the other.
- * The admin imports it with `import type` only — guard #8 (`check:bundle`) reads the
- * built output to prove no value import ever follows.
+ * EVERY PAYLOAD'S TYPE, under the name its endpoint answers to.
+ *
+ * The shapes are the builders' own, so a caller that holds the builder is already held to
+ * them. What this map adds is the NAME: a reader that has only the string `'analytics'` can
+ * reach the type that address returns without writing the shape out a second time.
+ *
+ * ⚠️ NOTHING IMPORTS IT TODAY, counted 2026-09-16. `src/admin/useView.ts` resolved a name
+ * through it and left with the React admin in ADR 0054, and the screens that replaced it hold
+ * the builders directly. It is kept because the addresses it names are still served and the
+ * browser still fetches three of them; if it is ever imported again, the rule that mattered is
+ * that `src/admin` may take it with `import type` only, never as a value. Guard #8
+ * (`check:bundle`) proves that from the built output rather than from the import graph.
  */
 export type ViewPayloads = {
   dashboard: Awaited<ReturnType<typeof dashboardView>>

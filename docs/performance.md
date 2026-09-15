@@ -255,26 +255,30 @@ The split is now by implementation, not by a scanner's `@source` list, which is 
 - **Public** — hand-written `src/web/*.css.ts`, assembled into `PUBLIC_CSS` and served as
   the `site.css` sheet above. No Tailwind, no scanner, so an admin utility cannot leak into
   it by accident.
-- **Admin** — `src/admin/admin.css`, the only Tailwind in the project, compiled by
-  `scripts/build-admin.ts` and served under `/admin/assets/*`. A reader never requests that
-  path, so its size is the owner's problem alone.
+- **Admin** — `src/admin/utilities.css` and `src/admin/admin.css`, concatenated in that order
+  and minified by `scripts/build-admin.ts`, served under `/admin/assets/*`. The utilities, the
+  reset and the design tokens were captured once from the Tailwind CLI and kept as plain CSS
+  (ADR 0053); the chrome goes second because its rules are unlayered and the utilities sit in
+  `@layer utilities`, which is what lets the chrome win. A reader never requests that path, so
+  its size is the owner's problem alone.
 
 `PROSE_CSS` is the one sheet both need, so it is defined once in `src/web/prose.css.ts` and
-appended to the admin bundle by the build (Tailwind cannot import a TypeScript module).
+appended to the admin bundle by the build (a CSS file cannot import a TypeScript module).
 
 **Rule:** an admin-only rule never goes in a `src/web/*.css.ts` sheet.
 
 ### The admin's size is the owner's problem, but not on every load
 
-Not budgeted (ADR 0006) — but "the owner pays it" is not the same as "the owner pays it
+Not budgeted (ADR 0054) — but "the owner pays it" is not the same as "the owner pays it
 again every time". Two things were wrong and both are cheap:
 
 - The entry and `admin.css` went out `no-cache` with **no validator at all**, so 262 KB came
   down on every admin load while the twelve hashed chunks beside them were `immutable` and
   free. Both now carry a hash, but from two different places, and the difference is a bug that
-  shipped. The SHEET's is computed from the bytes in `web/admin/spa.ts` (Tailwind writes that
-  file, not Bun, so there is no bundler hash to use) and the bare `admin.css` still serves and
-  still revalidates. The ENTRY's is the BUNDLER's: `build-admin.ts` names it
+  shipped. The SHEET's is computed from the bytes in `web/admin/spa.ts` (`build-admin.ts`
+  writes that file with `Bun.write` rather than emitting it from `Bun.build`, so there is no
+  bundler hash to use) and the bare `admin.css` still serves and still revalidates. The
+  ENTRY's is the BUNDLER's: `build-admin.ts` names it
   `admin.<hash>.js`, with a dot, so it stays distinguishable from the `main-<hash>.js` chunks.
 
   ⚠️ The entry used to be fingerprinted the same way as the sheet — served as `main.<hash>.js`
@@ -319,9 +323,9 @@ owner may never open, and preloading all fourteen would trade one problem for a 
    switch is on; an island every article has stays in `post.js` (7.1 KB after the split).
    Each gated bundle carries its own copy of `dom` and `motion` (~1.5 KB) because an IIFE
    cannot share and a shared chunk would be a request every page pays.
-3. **Heavy libs stay off the reader.** ProseMirror, `shiki` and `turndown` are
-   admin-only or run server-side (Shiki highlights at save time into `render_cache` → zero
-   client JS). Never import one from `src/assets/js/`. The Markdown engine is ours and has no
+3. **Heavy libs stay off the reader.** ProseMirror and `shiki` are admin-only or run
+   server-side (Shiki highlights at save time into `render_cache` → zero client JS). Never
+   import one from `src/assets/js/`. The Markdown engine is ours and has no
    dependencies at all since 2026-09-14 (ADR 0052), so the four parsers that used to be on
    this list are not installed any more.
 4. **No third-party analytics/tag JS on the reader.** Built-in cookieless analytics only

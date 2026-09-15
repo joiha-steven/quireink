@@ -123,10 +123,11 @@ async function systemInfo() {
   }
 }
 
-// Return type INFERRED on purpose: this shape is one half of the typed contract with the
-// admin SPA (`ViewPayloads` in `views.ts`), and an annotation of `Record<string, unknown>`
-// here was the reason the contract could not be typed at all — the compiler knew less
-// about the payload than the code did.
+// Return type INFERRED on purpose: the screen that draws this reads the shape straight back
+// off the builder (`Awaited<ReturnType<typeof dashboardView>>` in `screens/dashboard.ts`), so
+// there is one definition and no second copy to drift. An annotation of
+// `Record<string, unknown>` here was the reason the contract could not be typed at all — the
+// compiler knew less about the payload than the code did.
 export async function dashboardView() {
   const settings = await getSettings()
   const commentsOn = settings.comments.enabled

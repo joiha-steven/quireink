@@ -72,7 +72,7 @@ history is never needed to fix or understand code.
 | A page's HTML | `src/web/{layout,chrome,article,listing}.ts`, `src/web/*.css.ts` |
 | Markdown → HTML, the editor's document, the excerpt · highlighting, footnotes · the pen | `src/md/` (the engine, ADR 0052; one import out, held by `src/md/boundary.test.ts`) · `src/render/` · `src/pen/` (self-contained, door at `src/pen/index.ts`) |
 | Island JS: search, theme, comments, subscribe, book mode | `src/assets/js/` |
-| Admin SPA, editor | `src/admin/`, `src/web/admin/` |
+| Admin screens, the editor | `src/web/admin/` (the markup the server draws), `src/admin/` (the browser half: `island/` and the editor), `src/admin-shared/` (what both sides read) |
 | Sign-in, TOTP, sessions, recovery codes | `src/auth/`, `src/web/auth-routes.ts`, `src/web/enrol-routes.ts` (first run) |
 | Posts, pages, slugs, series, revisions, settings | `src/content/` |
 | Uploads, image variants, ranges | `src/media/` |

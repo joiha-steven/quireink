@@ -5,7 +5,7 @@
   <img src="docs/brand/wordmark-light.svg" alt="quireINK" width="360">
 </picture>
 
-`2.2.10-beta.4`
+`2.2.10-beta.5`
 
 **Blog tự host cho một người viết. Nhờ được AI viết và trông coi hộ.**
 Không thuật toán, không quảng cáo, không nền tảng nào đứng giữa bạn và người đọc. Tên bạn trên đó, không phải tên chúng tôi.
@@ -16,8 +16,9 @@ Không thuật toán, không quảng cáo, không nền tảng nào đứng gi�
 ![Hono](https://img.shields.io/badge/Hono-e36002?logo=hono&logoColor=white)
 ![SQLite](https://img.shields.io/badge/SQLite-003b57?logo=sqlite&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178c6?logo=typescript&logoColor=white)
-![React 19](https://img.shields.io/badge/React_19-20232a?logo=react&logoColor=61dafb)
+![ProseMirror](https://img.shields.io/badge/ProseMirror-6d5aca)
 ![MCP](https://img.shields.io/badge/MCP-ready-7c3aed)
+![License: PolyForm Noncommercial plus paid hosting](https://img.shields.io/badge/License-PolyForm_NC_%2B_paid_hosting-22c55e)
 
 [English](./README.md) · **Tiếng Việt**
 
@@ -97,7 +98,7 @@ Blog cá nhân thì không tốn gì, và bạn được phép thu tiền. Chi t
 | 🌍&nbsp;**Ngôn&nbsp;ngữ** | Mười một thứ tiếng, cả trong quản trị lẫn ngoài site |
 | 🔐&nbsp;**Đăng&nbsp;nhập** | Mật khẩu băm argon2id, mã xác thực mỗi lần vào, mười mã khôi phục, và danh sách thiết bị đang đăng nhập kèm nút cắt. Không có Google trong đường đăng nhập |
 | 🤖&nbsp;**Trợ&nbsp;lý** | Khoá model của chính bạn, ngay trong trang quản trị: Claude, GPT, Gemini hay DeepSeek. Mỗi cuộc trò chuyện kèm một hoá đơn |
-| ⌨️&nbsp;**Quản&nbsp;trị** | ⌘K gõ tên là nhảy thẳng tới thiết lập cần tìm, không phải nhớ nó nằm ở tab nào. ⌘F tìm và thay trong bài, cả ở mặt soạn thảo lẫn ở mã Markdown |
+| ⌨️&nbsp;**Quản&nbsp;trị** | ⌘⇧K gõ tên là nhảy thẳng tới thiết lập cần tìm, không phải nhớ nó nằm ở tab nào. ⌘F tìm và thay trong bài, cả ở mặt soạn thảo lẫn ở mã Markdown |
 | 📱&nbsp;**Điện&nbsp;thoại** | Cài ra màn hình chính là nó mở như một ứng dụng |
 
 **Làm cho** một người, một máy chủ, một cái blog định giữ lâu dài.
@@ -138,15 +139,15 @@ Số đo từ mạng, lần vào đầu tiên, chưa cache gì. Đúng bằng c�
 | **Request&nbsp;bên&nbsp;thứ&nbsp;ba** | **0** | **0** | không CDN, không font host, không tracker |
 | **Lần&nbsp;vào&nbsp;sau** | **0&nbsp;byte** | **0&nbsp;byte** | đúng trang đó trả `304` |
 
-Giữ được như vậy là nhờ mấy luật cứng: mỗi gói JavaScript có hạn mức dung lượng do bản build canh, vượt là build đỏ; React ở lại trong trang quản trị và không bao giờ chạm tới người đọc; font cắt gọn theo từng ngôn ngữ. Không con số nào ở đây để lấy điểm benchmark, chúng dành cho một người cầm chiếc điện thoại bốn năm tuổi, chỉ muốn đọc bốn trăm chữ. [Cách đo và các quyết định phía sau](./docs/performance.md).
+Giữ được như vậy là nhờ mấy luật cứng: mỗi gói JavaScript có hạn mức dung lượng do bản build canh, vượt là build đỏ; trang quản trị không còn framework nào, và phần đó chưa bao giờ chạm tới người đọc; font cắt gọn theo từng ngôn ngữ. Không con số nào ở đây để lấy điểm benchmark, chúng dành cho một người cầm chiếc điện thoại bốn năm tuổi, chỉ muốn đọc bốn trăm chữ. [Cách đo và các quyết định phía sau](./docs/performance.md).
 
 ## Bản này
 
-**2.2.10-beta.4** là bản thử thứ tư trước khi có 2.2.10. Nó đang chạy trang demo ở trên lẫn blog của chính tác giả tại [manhhung.me](https://manhhung.me). [Nhật ký thay đổi](./CHANGELOG.md) ghi đủ. Tag Docker của nó là `2.2.10-beta.4` và chỉ vậy: `latest` vẫn là 2.2.9, không ai lỡ tay cài phải bản thử.
+**2.2.10-beta.5** là bản thử thứ năm trước khi có 2.2.10. Nó đang chạy trang demo ở trên lẫn blog của chính tác giả tại [manhhung.me](https://manhhung.me). [Nhật ký thay đổi](./CHANGELOG.md) ghi đủ. Tag Docker của nó là `2.2.10-beta.5` và chỉ vậy: `latest` vẫn là 2.2.9, không ai lỡ tay cài phải bản thử.
 
-**Bản này có bộ máy Markdown của riêng nó.** Trước đây bốn thư viện cùng trả lời một câu hỏi ở đây: một cái dựng trang cho người đọc, một cái mở bài trong trình soạn thảo, một cái lưu bài trở lại, và một mớ biểu thức chính quy cắt đoạn tóm tắt. Bốn câu trả lời cho một câu hỏi thì sẽ lệch nhau, và chúng đã lệch, ngay trên trang đã xuất bản. Giờ một bộ máy làm cả năm việc, từ một lần đọc văn bản của bạn, và nó được đo theo đúng đặc tả chứ không đo theo chính nó: CommonMark 0.31.2 đạt 648 trên 652 ví dụ, GFM đạt 24 trên 24, mỗi lần chạy. Trước khi chuyển hẳn, hai bộ máy được so trên 92 bài thật theo ba cách khác nhau, và đó là lúc lòi ra một lỗ chưa ai thấy: `[js](javascript:alert(1))` từng xuất bản thành một liên kết chạy được. Lưu một bài dài từ 144ms xuống 7ms, một đoạn dán ác ý không còn treo được tiến trình, và bộ máy không phụ thuộc thư viện nào. Trình soạn thảo cũng có tìm và thay thế trên tổ hợp phím riêng, và vẽ cây bút bằng đúng bốn mươi biến thể mà trang đã xuất bản dùng.
+**Bản này thay trang quản trị.** Trước đây nó là một ứng dụng React: mở ra là một trang trắng, rồi mới hỏi máy chủ xem phải vẽ gì vào đó. Giờ máy chủ gửi thẳng trang đã dựng xong, phần hành vi gắn thêm bằng những mẩu JavaScript viết tay, và màn hình hiện ra là đã xong: thời gian tới lúc thấy được tiêu đề đi từ 1.038ms xuống 285ms ở màn Nhật ký, 953ms xuống 293ms ở Thùng rác, 940ms xuống 336ms ở Bảng tin, đo bản cũ với bản mới trên cùng một cơ sở dữ liệu ở tốc độ 500 KB/s. Thứ trình duyệt phải có trước khung hình đầu tiên đi từ 297 KB xuống 22 KB. Trình soạn thảo đứng thẳng trên ProseMirror thay vì trên một lớp bọc quanh nó, nên thời gian tới lúc gõ được đi từ khoảng 395ms xuống khoảng 107ms và số plugin nạp cho một trình soạn đi từ 102 xuống 15; 45 mẫu trong bộ đối chiếu cho ra Markdown giống nhau từng byte qua cả hai, và đó là điều kiện để làm việc này. Có một cái giá, và đây là nửa thành thật của nó: bấm vào một dòng giờ là chuyển trang thật, nên mở lại một bài vừa mở đi từ 12ms lên 107ms. Sáu thư viện rời đi cùng framework, tệp khoá phiên bản đi từ 360 gói xuống 221, và đợt rà sau đó vá hai mươi hành vi trang quản trị có vẽ ra mà không làm, trong đó có ba thẻ mật khẩu bật đèn xanh mà chưa gửi gì và một nút xoá bản sao lưu không hỏi lấy một câu trước khi xoá tệp.
 
-**Và bản này KHÔNG làm được gì.** Là bản thử, và lần này nó thay chính thứ dựng ra mọi con chữ trên site: 92 bài đã được so ba cách trước khi chuyển, nhưng Markdown của bạn không phải 92 bài đó, nên hãy giữ bản sao lưu bạn tạo trước khi nâng cấp. Bộ máy giữ ba chỗ cố ý khác CommonMark, mỗi chỗ đều có tên trong bộ kiểm. Không có chế độ nhiều người dùng: một blog, một chủ, một tiến trình; phần bình luận có tài khoản còn phần viết thì không. Có bốn lối giao diện và không có lối thứ năm, lối áp cho cả site và chỉ thay trang đã xuất bản, muốn đi xa hơn vẫn phải viết CSS riêng. Hai máy đánh dấu cùng một trang cùng lúc thì ghi đè nhau, lần lưu sau thắng. Trang quản trị chưa có màn nào cho biết đoạn nào được người đọc giữ nhiều nhất, mới có tool MCP `list_mentions` trả lời. Webmention có kiểm nguồn và giới hạn tốc độ nhưng chưa nối bộ lọc rác. Màn Trợ giúp vẫn chỉ tiếng Anh, vài chỗ đếm vẫn ra "1 words", và mọi giới hạn cũ còn nguyên: NAS và Kubernetes cố ý không có Caddy, công tắc Chuyển động là của chủ chứ không theo từng người đọc, bản cài chèn HTML bằng `sub_filter` của nginx mất nén và ETag của origin, origin không CDN thì người đọc ở nửa kia địa cầu trả thêm một vòng mạng.
+**Và bản này KHÔNG làm được gì.** Là bản thử, và lần này nó dựng lại mọi màn hình chủ blog dùng hằng ngày; phần lưu trữ không đổi và không có bước chuyển dữ liệu nào, nhưng đúng cái mặt bạn sẽ thấy lỗi lại là cái vừa bị thay, nên hãy giữ bản sao lưu bạn tạo trước khi nâng cấp. Gõ tiếng Việt trong trình soạn thảo phải kiểm bằng tay, vì không bộ kiểm tự động nào ở đây chạm được tới bộ gõ. Bước nâng cấp STARTTLS chỉ được chứng minh trên một relay thật lúc deploy chứ không ở đâu khác, do Bun không biến được một socket đang mở thành TLS ở phía máy chủ. Gõ tiếp ngay sau một liên kết thì chữ rơi vào trong liên kết đó, đã tìm ra và cố ý để nguyên, có test ghim lại để nó không tự đổi khi chưa ai quyết. Không có chế độ nhiều người dùng: một blog, một chủ, một tiến trình; phần bình luận có tài khoản còn phần viết thì không. Có bốn lối giao diện và không có lối thứ năm, lối áp cho cả site và chỉ thay trang đã xuất bản, muốn đi xa hơn vẫn phải viết CSS riêng. Hai máy đánh dấu cùng một trang cùng lúc thì ghi đè nhau, lần lưu sau thắng. Trang quản trị chưa có màn nào cho biết đoạn nào được người đọc giữ nhiều nhất, mới có tool MCP `list_mentions` trả lời. Webmention có kiểm nguồn và giới hạn tốc độ nhưng chưa nối bộ lọc rác. Màn Trợ giúp vẫn chỉ tiếng Anh, vài chỗ đếm vẫn ra "1 words", 26 múi giờ `Etc/GMT` đã rời khỏi danh sách, và mọi giới hạn cũ còn nguyên: NAS và Kubernetes cố ý không có Caddy, công tắc Chuyển động là của chủ chứ không theo từng người đọc, bản cài chèn HTML bằng `sub_filter` của nginx mất nén và ETag của origin, origin không CDN thì người đọc ở nửa kia địa cầu trả thêm một vòng mạng.
 
 ## Cài đặt
 

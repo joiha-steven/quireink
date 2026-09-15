@@ -104,7 +104,7 @@ const vi = {
   commentsStatPeople: 'người',
   commentsFootHint: 'Bấm vào lời bình để đọc toàn văn. Xoá là xoá mềm — chuyển vào Thùng rác.',
   filterEmpty: 'Không có bài viết khớp bộ lọc.',
-  // The command palette (⌘K). Its placeholder is the whole instruction: one box, and it
+  // The command palette (⌘⇧K). Its placeholder is the whole instruction: one box, and it
   // reaches the screens, the settings and the writing. ADR 0011 is why it exists — no
   // arrangement makes a person remember which of eight tabs holds a setting.
   paletteTitle: 'Tìm kiếm',

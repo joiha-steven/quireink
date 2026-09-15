@@ -113,7 +113,7 @@ export function registerStatsFlows({ flow, expect }: Tour): void {
     (async () => {
       const html = await (await fetch('/admin/analytics')).text()
       if (!html.includes('data-screen="analytics"')) return 'the server did not draw the analytics screen'
-      if (!html.includes('data-admin-screen="analytics"')) return 'the page did not tell React to stand down'
+      if (!html.includes('data-admin-screen="analytics"')) return 'the server did not name analytics as the screen it drew'
 
 
       // Every piece row arrived as markup, not as a row built after a fetch.
@@ -151,7 +151,7 @@ export function registerStatsFlows({ flow, expect }: Tour): void {
 
       const html = await (await fetch(href)).text()
       if (!html.includes('data-analytics-detail=')) return 'the drill-down did not arrive server-drawn'
-      if (!html.includes('data-admin-screen="analytics"')) return 'the drill-down did not tell React to stand down'
+      if (!html.includes('data-admin-screen="analytics"')) return 'the server did not name analytics as the screen it drew for the drill-down'
       // Four windows there against the summary's five: all time is deliberately absent.
       const windows = (html.match(/range=[0-9]+"/g) || []).length
       if (windows < 4) return 'the drill-down offers ' + windows + ' windows, expected four'

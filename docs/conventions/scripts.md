@@ -15,11 +15,12 @@ scripts too, and that is the name to use: `bun run build:assets`, `bun run check
   (`src/store/migrations.sql`, `src/store/migrations-analytics.sql`), not a directory.
   Nothing has to be run by hand on a fresh install.
 - **WordPress import is an in-app feature** (Admin → Settings → Server & connections →
-  `src/import/wordpress.ts`), NOT a script. `turndown`, `turndown-plugin-gfm` and
-  `fast-xml-parser` are runtime **dependencies** because the importer uses them.
+  `src/import/wordpress.ts`), NOT a script. It needs no import library: `src/import/xml.ts`
+  reads the WXR, `src/import/html-parse.ts` and `src/import/html-to-md.ts` turn the HTML into
+  this blog's own syntax tree ([ADR 0053](../decisions/0053-a-dependency-is-a-decision.md)).
 - **`scripts/checks/`** holds the static guards `check:all` runs — `file-size`, `css-literal`,
   `no-nul`, `routes-guarded`, `type-roles`, `admin-kit`, `admin-bundle`, `appearance-contract`,
-  `docs`. A new load-bearing rule that a
+  `docs`, `deps`, `admin-css`, `admin-wired`, in that order. A new load-bearing rule that a
   test cannot hold belongs here, not in a comment.
 - **A check that needs a RUNNING instance does not go in `scripts/checks/`.** Those are static
   and `check:all` runs them with nothing serving. `restore-check.ts` needs an instance, a

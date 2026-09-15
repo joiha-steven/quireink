@@ -1,8 +1,10 @@
 // The three things every part of the library screen needs to ask the admin for, and one upload.
 //
-// The toast and the confirm dialog are still React, mounted beside this page by `App.tsx`. An
-// island that imported them would pull React in behind it, so both go out as events — the
-// bridge ADR 0054 established.
+// The toast and the confirm dialog are not this island's to call. They are drawn once into the
+// shell by `web/admin/overlays.ts` and wired by the rail island, which is the one island every
+// admin page loads; a screen island that imported the wiring instead would ship a second copy
+// of it per screen, and two live confirm dialogs over one page is worse than none. So both go
+// out as events, the bridge ADR 0054 established: `quire:toast` and `quire:confirm`.
 import type { FileItem, MediaItem } from '@/types'
 import { uploadAttachments, uploadImages } from '@/admin/upload-client'
 

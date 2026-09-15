@@ -6,7 +6,8 @@
    `scripts/build-admin.ts` concatenates them (ADR 0053). Three things the framework used to do
    from here are worth keeping on the record, because all three are still true of the output:
 
-   1. `dark:` is a CLASS, not a media query. `ThemeProvider` toggles `.dark` on <html> and offers
+   1. `dark:` is a CLASS, not a media query. The boot script written by `web/admin/rail.ts`
+      sets `.dark` on <html> before the first paint and the rail island keeps it, offering
       light / dark / system / by-time exactly as the public site does. Under the framework's
       default those 668 dark utilities landed in one `prefers-color-scheme` block, so choosing
       "Dark" repainted the canvas and precisely three other things while every card, border,
@@ -347,7 +348,8 @@ body {
 
    So: the same paper, one hair warmer than the sheet a card is drawn on, which leaves exactly
    enough separation to see an edge and not enough to make the card an object. The card's own
-   shadow came off at the same time (`kit.tsx`, CARD) — with a gray canvas the shadow was
+   shadow came off at the same time (`CARD` in `admin-shared/kit.ts`): with a gray canvas the
+   shadow was
    redundant, and on paper it would be the only thing casting one. */
 .admin-canvas {
   background: #f7f6f4;
@@ -381,10 +383,11 @@ body {
   width: 100%;
   max-width: var(--admin-sheet-w);
 }
-/* STANDING BESIDE THE WORDS INSTEAD OF ON THEM. The attribute is written by `SlideOver` only
-   when the sheet is one the writer opened AND the window is wide enough to give it room
-   without narrowing the writing column ([`SlideOver.tsx`](../admin/components/SlideOver.tsx)
-   carries the arithmetic). The column keeps its full measure and re-centres in what is left,
+/* STANDING BESIDE THE WORDS INSTEAD OF ON THEM. The attribute is written by the writing
+   sheet's island, in `admin/island/lib/sheet-open.ts`, and only when the panel is one the
+   writer opened AND the window is wide enough to give it room without narrowing the writing
+   column (`DOCK_AT` there is the 85rem the decision turns on; the server cannot make it,
+   because it is a question about the window). The column keeps its full measure and re-centres in what is left,
    which moves the text once, on a deliberate click, instead of hiding a third of every line
    for as long as the sheet is open. */
 [data-admin-sheet='docked'] .admin-canvas {
@@ -477,8 +480,8 @@ body {
    The mono face is the one already loaded for the editor's code button and its LaTeX
    input, so this costs nothing new — and it is the same face the published page sets a
    code block in, which is the point: source looks like source on both sides. */
-/* THE ONE PLACE BOTH BOXES ARE MEASURED. `MarkdownSource.tsx` draws the text twice — a
-   mirror that dims the markers, and the textarea you actually type in over it — and the
+/* THE ONE PLACE BOTH BOXES ARE MEASURED. `admin/components/editor-source.ts` draws the text
+   twice: a mirror that dims the markers, and the textarea you actually type in over it. The
    caret sits after the glyph the MIRROR drew. Every property below therefore has to be
    identical for the two, which is why neither element sets any of them itself and why this
    is one rule with two selectors rather than two rules that look the same today.
@@ -833,7 +836,10 @@ input[type='color']::-moz-color-swatch {
 .lamp-pulse { animation: admin-lamp-breathe 2s ease-in-out infinite; }
 
 /* THE RAIL'S GLYPH SIZE, set on the surface rather than at twenty-one call sites.
-   `navIcons.tsx` draws every icon at `var(--admin-glyph, 1.25rem)`; 20px is right in a 14px
+   Every glyph in the admin is drawn at `var(--admin-glyph, 1.25rem)`: `icon()` in
+   `web/admin/kit.ts` puts that pair of sizes on the `<svg>` it wraps around the shared set in
+   `src/icons.ts`, and the rail writes the same pair itself in `web/admin/rail-rows.ts`.
+   20px is right in a 14px
    context (a media tile's keys, a table row's actions) and too heavy beside the rail's 15px
    labels, where the mark out-weighed the word it belongs to. 18px, stroke 1.8, which is the
    set's own hand at the size it was drawn for. */
@@ -1063,7 +1069,7 @@ input[type='color']::-moz-color-swatch {
 
 /* A 44 × 44 HIT BOX FOR A FINGER, and nothing at all for a cursor.
 
-   `kit.tsx`'s `TAP_TOUCH` carries the reasoning. The short version: three 28px keys sit on a
+   `TAP_TOUCH` in `admin-shared/scale.ts` carries the reasoning. The short version: three 28px keys sit on a
    media thumbnail, and neither growing them nor padding them is available — one covers the
    picture, the other pushes them off the tile. A centred pseudo-element takes no space, moves
    nothing, and is 44px wide to a finger.
@@ -1131,8 +1137,10 @@ input[type='color']::-moz-color-swatch {
    the tenth get no delay at all, because a fortieth row appearing 800ms late is a bug that
    looks like a design.
 
-   An ANIMATION rather than a transition, because a row is created rather than changed: React
-   reuses DOM nodes, so this runs when a row first exists and never on a re-render. */
+   An ANIMATION rather than a transition, because a row is CREATED rather than changed: a
+   transition needs a value to move FROM, and an element that has just been inserted has none.
+   So this plays on the frame the row first exists in the document, and a row already standing
+   there does not play it again. */
 @keyframes admin-row-in {
   from { opacity: 0; translate: 0 4px; }
   to { opacity: 1; translate: 0 0; }
@@ -1167,7 +1175,9 @@ input[type='color']::-moz-color-swatch {
 
 /* THE ENTRANCES. A toast, the command palette and a slide-over ARRIVE rather than appear:
    a shade transparent and a few pixels short, settling on the one curve, from the
-   @starting-style the browser applies on the frame React mounts them. Where the engine has
+   @starting-style the browser applies the first time an element is rendered: the frame the
+   island inserts a toast, and the frame a dialog that shipped hidden in the shell is
+   unhidden. Where the engine has
    no @starting-style they simply appear, which is the state every rule starts from. Only
    opacity and translate, which cost a composite and never a layout. */
 .admin-toast,

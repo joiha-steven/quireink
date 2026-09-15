@@ -105,7 +105,7 @@ const pt = {
   commentsStatPeople: 'pessoas',
   commentsFootHint: 'Clique em um comentário para ler inteiro. Excluir é exclusão suave — vai para a lixeira.',
   filterEmpty: 'Nenhum post bate com o seu filtro.',
-  // The command palette (⌘K). Its placeholder is the whole instruction: one box, and it
+  // The command palette (⌘⇧K). Its placeholder is the whole instruction: one box, and it
   // reaches the screens, the settings and the writing. ADR 0011 is why it exists — no
   // arrangement makes a person remember which of eight tabs holds a setting.
   paletteTitle: 'Pesquisar',

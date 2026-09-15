@@ -264,8 +264,8 @@ all from one parse. Four libraries used to answer those five questions separatel
   `ImportFields` uploads the file (multipart) to owner-gated `POST /api/import/wordpress`.
 - **`parseWxr(xml, now)` is PURE** (no I/O; unit-tested in `src/import/wordpress.test.ts`): each `item`
   with `wp:post_type` post/page and a live status → a post/page. HTML `content:encoded` → Markdown
-  (`turndown` + GFM), `<figure><figcaption>` folded INTO the image alt (Quire Ink renders captions from
-  alt). A **gallery** (`figure.wp-block-gallery`, which nests one `<figure><img>` per photo)
+  (`src/import/html-to-md.ts`), `<figure><figcaption>` folded INTO the image alt (Quire Ink
+  renders captions from alt). A **gallery** (`figure.wp-block-gallery`, which nests one `<figure><img>` per photo)
   emits EVERY nested image, each tagged `#grid` so `groupGalleries` rebuilds it as a grid —
   reading only the first nested image drops the rest of the gallery on the floor.
   Categories/tags split by `@_domain`, `Uncategorized` dropped; dates via `wp:post_date_gmt`
@@ -284,5 +284,4 @@ all from one parse. Four libraries used to answer those five questions separatel
   for an agent. Stateless by rescan (a crash loses nothing; a blog imported earlier is served
   the same); failures are reported once, not retried forever — the failure list is the
   owner's checklist before the old hosting lapses. Logged as `import.images`.
-- `turndown`/`turndown-plugin-gfm`/`fast-xml-parser` are runtime deps. Max upload 100MB; non-WXR
-  files are rejected.
+- Max upload 100MB (`MAX_IMPORT_BYTES` in `src/web/admin/ops.ts`); non-WXR files are rejected.

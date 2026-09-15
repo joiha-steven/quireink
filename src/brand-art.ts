@@ -15,7 +15,7 @@
 //   3. `pageStyles` declares only the owner's own faces plus Inter and JetBrains Mono, so a logo
 //      may not assume any other family is even declared.
 //
-// Shared by the server-rendered sign-in page and the React admin, which is why it sits at the
+// Shared by the server-rendered sign-in page and the admin, which is why it sits at the
 // root rather than under `web/`: `src/admin` has its own tsconfig and resolves `@/*` to the same
 // `src/`, so one file feeds both and the two can never drift.
 

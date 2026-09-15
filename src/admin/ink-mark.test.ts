@@ -14,10 +14,11 @@ import { GlobalRegistrator } from '@happy-dom/global-registrator'
 beforeAll(() => GlobalRegistrator.register())
 afterAll(() => GlobalRegistrator.unregister())
 
-/** A fresh editor with the extension set `Editor.tsx` actually mounts — the REAL list, not
- *  a copy of it. This file used to rebuild the array by hand under a comment making exactly
- *  that claim, which meant a node added to the editor was silently absent from its own
- *  round-trip test. `editorExtensions.ts` is now the one list. */
+/** A fresh editor on the schema and plugin stack `island/lib/sheet-paper.ts` actually mounts,
+ *  the REAL thing and not a copy of it. This file used to rebuild the node list by hand under
+ *  a comment making exactly that claim, which meant a node added to the editor was silently
+ *  absent from its own round-trip test. `editor/schema.ts` and `editor/plugins.ts` are the one
+ *  list now, and `Editor` is the only thing that assembles them. */
 async function open(content: string) {
   const { Editor } = await import('@/admin/editor/editor')
   return new Editor({ element: document.createElement('div'), content })

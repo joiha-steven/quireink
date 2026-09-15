@@ -314,7 +314,7 @@ export const SIDEBAR_NAV = `${SIDEBAR_NAV_QUIET} ${SIDEBAR_NAV_HOVER}`
 // screen, sitting in the rail on every single page. Now it is the mark the rest of the
 // product already makes: a short bar in the pen's edge tone at the row's leading edge, over
 // a wash of the pen diluted into the paper. Same ink, same meaning as an active TAB
-// (`tabs.tsx`) — the highlighter marks the place you are in, never the value you chose —
+// (`tabs.ts`) — the highlighter marks the place you are in, never the value you chose —
 // but a run of a marker, not a slab of it.
 //
 // The row is a KEY, so the current page is a key HELD DOWN — in the SAME full pen the
@@ -331,7 +331,7 @@ export const SIDEBAR_NAV = `${SIDEBAR_NAV_QUIET} ${SIDEBAR_NAV_HOVER}`
 //
 // The wash alone is a mark you have to be looking at the rail to read — a pale field on a pale
 // column — so the row gains a 3px stroke in `--pen-edge`, the same ink an active TAB strokes
-// under its label (`tabs.tsx`): where-you-are is one shape in two orientations rather than two
+// under its label (`tabs.ts`): where-you-are is one shape in two orientations rather than two
 // ideas. It goes on the PAPER, in the rail's own 12px gutter, and that placement is measured
 // rather than chosen: inside the key the stroke would be #c3e844 on #d5f856, four points of
 // lightness apart and invisible in a screenshot; on the canvas at #f7f6f4 it is the second

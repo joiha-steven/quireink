@@ -150,10 +150,12 @@ export const CONTROL_CHROME =
   // holds something — and a field holds the value. 1px of shading, not a style.
   'rounded-md border border-neutral-300 bg-white text-neutral-900 outline-none transition focus:border-neutral-500 focus:ring-2 focus:ring-neutral-200 placeholder:text-neutral-400 shadow-[inset_0_1px_1.5px_rgba(0,0,0,.06)] dark:shadow-[inset_0_1px_1.5px_rgba(0,0,0,.35)] dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500 dark:focus:ring-neutral-800 dark:placeholder:text-neutral-500'
 
-// The canonical control — chrome plus the size nearly every field wants. `ui/Input.tsx`
-// IMPORTS this rather than keeping a matching copy. Callers add width (see FIELD_W).
-// `min-h-9` is `ui/Button`'s height: an earlier padding measured 42 against the button's 40,
-// and a field two pixels proud of the button that acts on it is one row broken.
+// The canonical control — chrome plus the size nearly every field wants. `textField` and
+// `textArea` in `web/admin/fields.ts` IMPORT this rather than keeping a matching copy, and a
+// screen whose field those two do not cover takes `CONTROL` itself rather than redrawing it
+// (`screens/settings-account.ts`). Callers add width (see FIELD_W).
+// `min-h-9` is `buttonClass`'s `md` height above: an earlier padding measured 42 against the
+// button's 40, and a field two pixels proud of the button that acts on it is one row broken.
 export const CONTROL = `${CONTROL_CHROME} min-h-9 px-3 py-1.5 text-sm`
 // The SECOND size, and there are only two. A sheet's tools row takes its height from the
 // segmented strip that starts it — 32 — so a field standing on one is 32, not the 36 a field
@@ -371,8 +373,10 @@ export const LAMP_SHAPE = 'inline-block h-2 w-2 shrink-0 rounded-full'
  * control, for a short pick list inside a card, where the platform's own widget is the right
  * amount of furniture.
  *
- * Here rather than in `components/kit.tsx` since the newsletter became a page (ADR 0054): the
- * server draws the send screen's post picker. `components/kit.tsx` re-exports it.
+ * Here rather than in `src/admin` since the newsletter became a page (ADR 0054): the server
+ * draws the send screen's post picker, and a server module may not import from `src/admin`.
+ * Three screens read it straight from this file now, all of them server-drawn:
+ * `screens/newsletter-send.ts`, `screens/sheet-fields.ts` and `screens/media-files.ts`.
  */
 export const CHECK = 'accent-neutral-900 dark:accent-white'
 

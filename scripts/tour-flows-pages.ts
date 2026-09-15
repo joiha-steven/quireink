@@ -23,7 +23,7 @@ export function registerPageFlows({ flow, expect }: Pick<Tour, 'flow' | 'expect'
     (async () => {
       const html = await (await fetch('/admin/trash')).text()
       if (!html.includes('data-screen="trash"')) return 'the server did not draw the trash'
-      if (!html.includes('data-admin-screen="trash"')) return 'the page did not tell React to stand down'
+      if (!html.includes('data-admin-screen="trash"')) return 'the server did not name the trash as the screen it drew'
       const panels = (html.match(/data-trash-panel=/g) || []).length
       if (panels !== 7) return 'expected seven kinds in the markup, found ' + panels
       // Every row of every kind, not just the open one: that is what makes a tab switch free.

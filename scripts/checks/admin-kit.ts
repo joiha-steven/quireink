@@ -256,18 +256,20 @@ for (const file of files) {
  * LABEL is the placeholder, so the naming of every field was left to the browser. The ten also
  * disagreed among themselves four ways, one of them a whole type size.
  *
- * `kit.tsx` is exempt because it is the home: the paragraph above has to be able to name the
- * class it bans, the same reason `FAMILY` insists on a colon.
+ * NO EXEMPTION, unlike `FAMILY` above, and none is needed. The kit's own focused border is
+ * `focus:border-neutral-500` (`CONTROL_CHROME` in `admin-shared/kit.ts`), so the home of the
+ * rule does not carry the string the rule bans; the only copy of it in the repository is the
+ * constant below, and this file is not one of the trees scanned.
  */
 const HAND_DRAWN = 'focus:border-neutral-900'
 for (const file of files) {
   const path = file.replaceAll('\\', '/')
-  if (path === 'src/admin/components/kit.tsx') continue
   if (!readFileSync(file, 'utf8').includes(HAND_DRAWN)) continue
   console.error(`✗ check:admin-kit: ${path} draws its own focus state`)
   console.error(`  Found ${JSON.stringify(HAND_DRAWN)}. The focused field is CONTROL's to define.`)
-  console.error('  Use <Input>/<Textarea>, or CONTROL. A field with a measured size of its own')
-  console.error('  takes CONTROL_CHROME and states only that size.')
+  console.error('  Use textField()/textArea() from web/admin/fields.ts, or CONTROL itself for a')
+  console.error('  control they do not cover. A field with a measured size of its own takes')
+  console.error('  CONTROL_CHROME and states only that size.')
   failed = true
 }
 
@@ -279,25 +281,35 @@ for (const file of files) {
  * destroyed forever wears none of this product's grammar; they name nothing, because
  * `confirm()` takes one string and "Delete this?" leaves WHICH to whatever row the pointer was
  * over; and they block the main thread, freezing the page behind them mid-render for as long
- * as somebody thinks about it. `ui/ConfirmDialog` replaced all twenty.
+ * as somebody thinks about it. A product-drawn dialog replaced all twenty.
  *
- * ⚠️ MATCHED WITH A LEADING BOUNDARY, because `useConfirm(`, `askFor(` and the word inside a
- * comment are not calls to the global. A guard that fires on prose about the thing rather than
- * the thing is a guard somebody switches off — this file's own header, and `one-face.test.ts`,
- * have each paid for that lesson once.
+ * WHAT REPLACED THEM IS AN EVENT, not an import. The box is markup the server draws once into
+ * the shell (`src/web/admin/overlays.ts`) and the rail island wires
+ * (`src/admin/island/lib/overlay-confirm.ts`); a caller asks for it by dispatching a cancelable
+ * `quire:confirm` and answering on the callback it carries. `src/admin/island/lib/ask-link.ts`
+ * is the shortest example, and `src/admin/components/editor-link.ts` is the half that only sees
+ * the answer. Cancelable, so an unheard ask is a refusal rather than a promise that never
+ * settles: that is the one behaviour the browser's dialogs could not get wrong.
+ *
+ * ⚠️ MATCHED WITH A LEADING BOUNDARY, because `askForLink(`, `wireConfirm(` and the word
+ * inside a comment are not calls to the global. A guard that fires on prose about the thing
+ * rather than the thing is a guard somebody switches off: this file's own header, and
+ * `one-face.test.ts`, have each paid for that lesson once.
  */
 const NATIVE = /(?<![.\w])(?:window\s*\.\s*)?(confirm|prompt)\s*\(/
+// No exemption. Nothing in these trees is allowed to reach for the globals, not even the module
+// that replaces them: `overlay-confirm.ts` draws a dialog, it does not call one.
 for (const file of files) {
   const path = file.replaceAll('\\', '/')
-  if (path === 'src/admin/ui/ConfirmDialog.tsx') continue
   const code = readFileSync(file, 'utf8')
     .replace(/\/\*[\s\S]*?\*\//g, '')
     .split('\n').filter((l) => !l.trimStart().startsWith('//')).join('\n')
   const hit = NATIVE.exec(code)
   if (!hit) continue
   console.error(`✗ check:admin-kit: ${path} calls the browser's ${hit[1]}()`)
-  console.error("  Use useConfirm() / useConfirmFor() from ui/ConfirmDialog: it names the object,")
-  console.error('  wears the product, closes on Esc, and does not freeze the page behind it.')
+  console.error("  Dispatch a cancelable 'quire:confirm' instead (see island/lib/ask-link.ts):")
+  console.error('  it names the object, wears the product, closes on Esc, can carry a typed')
+  console.error('  answer, and does not freeze the page behind it.')
   failed = true
 }
 

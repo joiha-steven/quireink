@@ -197,16 +197,19 @@ socket.addEventListener('message', (e) => {
   /**
    * ⚠️ A DIALOG IS ANSWERED, NOT WAITED ON, and without this the tour can stop dead.
    *
-   * A screen with unsaved work registers `beforeunload` (`router.tsx`), and the browser then
-   * raises a confirm panel on any REAL navigation away from it. `Page.navigate` does not reply
-   * until that panel is answered, and nothing was answering it — so the run hung on the page it
-   * was leaving, with no output, looking exactly like a tour still working. Cost forty minutes
-   * on 2026-09-14, and it will only get more common: every screen ADR 0054 converts turns
-   * another in-app route into a real navigation.
+   * A screen with unsaved work registers `beforeunload` (`admin/island/lib/settings-save.ts`
+   * for the settings form, `admin/island/lib/sheet-safety.ts` for the writing sheet), and the
+   * browser then raises a confirm panel on any REAL navigation away from it. `Page.navigate`
+   * does not reply until that panel is answered, and nothing was answering it, so the run hung
+   * on the page it was leaving, with no output, looking exactly like a tour still working. Cost
+   * forty minutes on 2026-09-14, when ADR 0054 was turning in-app routes into real navigations
+   * a screen at a time. Every admin route is a real navigation now, so this is permanent.
    *
    * ACCEPT, which for `beforeunload` means "leave the page". The tour is not testing that the
-   * browser's own warning appears — `router.guard.test.tsx` covers the guard — it is testing
-   * what is on the next page, and a tour that cannot leave a dirty form cannot reach it.
+   * browser's own warning appears: nothing running inside the page can see that dialog at all,
+   * and the half that IS assertable, the product's own three-way question, is covered by
+   * `tour-flows-guard.ts`. This is testing what is on the next page, and a tour that cannot
+   * leave a dirty form cannot reach it.
    */
   if (msg.method === 'Page.javascriptDialogOpening') {
     socket.send(JSON.stringify({ id: nextId++, method: 'Page.handleJavaScriptDialog', params: { accept: true } }))

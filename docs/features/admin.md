@@ -378,8 +378,8 @@ are a scroll container behaving as one.
   **Dashboard** switch (`settings.dashboard.systemLine`) + `ActivityLogField` + `AdvancedFields`
   (font smoothing, **Motion** → `settings.motion.enabled`, the editor **Key feedback**
   instrument and its volume → `settings.motion.keys` / `keyVolume`, the autosave interval).
-  Every credential on those cards is written to the server and never read back, which is why
-  they show status rather than values. `SettingsSearch` (⌘K's index) reaches every one of them.
+  Every credential on those cards is written to the server and never read back, which is why they
+  show status rather than values. `src/admin-shared/settings-index.ts` (⌘⇧K's index) reaches them all.
   `McpFields` is the EXCEPTION to "no own state/save": the MCP enable toggle flows through the
   settings form, but its token manager has its own `/api/mcp/tokens` API (plaintext shown once).
 - **Palette is FRONTEND-ONLY now** — the admin chrome no longer carries a `PaletteToggle` (only the

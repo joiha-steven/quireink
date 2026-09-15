@@ -76,10 +76,15 @@ function fingerprint(name: string): string {
 /**
  * The rail's island, which is a SEPARATE build and a separate request.
  *
- * Separate because it must not wait for React: the rail is the frame the owner navigates by,
- * and the whole of ADR 0054's step 0 is that it arrives with the page. It shares no code with
- * the SPA — its imports are `admin-shared/rail.ts` and two pure helpers — so bundling them together
- * would buy nothing and cost the island its independence.
+ * Separate because it must not wait for a SCREEN. The rail is the frame the owner navigates
+ * by, ADR 0054's step 0 is that it arrives with the page, and it is the one island every admin
+ * address loads: folded into each screen's entry it would be fetched again per screen and would
+ * run only after whatever else that screen needs. Its own immutable URL means it is fetched
+ * once and then cached for every page after.
+ *
+ * It also carries the parts that belong to no screen, which `overlays.ts` draws into the shell:
+ * the toast, the confirm dialog, the shortcut sheet, the palette and the media picker. So a
+ * page whose own island fails to load still has all five.
  */
 function railEntryName(): string {
   return islandNamed('rail')
@@ -234,11 +239,13 @@ async function shellData(): Promise<string> {
 }
 
 /**
- * The shell. Still empty of the SCREEN, which is React's until ADR 0054's five steps move it,
- * and no longer empty of what the chrome needs to draw itself.
+ * The shell, and it is no longer empty of anything. All five of ADR 0054's steps are
+ * discharged: the screen's own markup goes into the canvas below, beside the chrome data the
+ * rail needs to draw itself on the first frame.
  *
- * The class on <body> is the neutral canvas: the one paint the bundle must not be
- * responsible for, or the admin flashes white before React mounts.
+ * The class on <body> is the neutral canvas, and the SERVER states it for a reason: the first
+ * paint has to be the right colour already. Left to a script it would be white until that
+ * script ran, which is the same beat `BOOT` above exists to beat for the theme.
  */
 /**
  * What the browser tab says, and what it shows.
