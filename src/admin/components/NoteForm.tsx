@@ -14,6 +14,7 @@ import { NoteSettings, type NoteDraft } from './NoteSettings'
 import { TrashLink } from './TrashLink'
 import { usePickMedia } from './usePickMedia'
 import { SlideOver } from './SlideOver'
+import { withLiveIdentity } from './restore-identity'
 import { SheetTitle } from './SheetTitle'
 import { readSnapshot, saveStatusLine, useReopenedNotice, useStickyOffset, useUnsavedGuard } from './useLocalDraft'
 import { useDraftSafety } from './serverDraft'
@@ -231,9 +232,9 @@ export function NoteForm({ initial, contentWidth, keySound, autosaveSeconds, aut
   // not do: a whole-object `setDraft` carried the snapshot's slug over the live one, so
   // restoring into a saved note renamed its URL.
   async function restoreDraft() {
-    const d = await safety.restore()
-    if (!d) return
-    if (initial) d.slug = draftRef.current.slug
+    const snap = await safety.restore()
+    if (!snap) return
+    const d = withLiveIdentity(snap, draftRef.current, Boolean(initial))
     setDraft(d)
     draftRef.current = d
     editorApi.current?.setMarkdown(d.content)

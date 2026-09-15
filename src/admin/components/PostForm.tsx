@@ -16,6 +16,7 @@ import { usePickMedia } from './usePickMedia'
 import { TimeMachine } from './TimeMachine'
 import { TrashLink } from './TrashLink'
 import { EditorLinks } from './EditorLinks'
+import { withLiveIdentity } from './restore-identity'
 import { SheetTitle } from './SheetTitle'
 import { readSnapshot, saveStatusLine, useReopenedNotice, useStickyOffset, useUnsavedGuard } from './useLocalDraft'
 import { useDraftSafety } from './serverDraft'
@@ -224,16 +225,12 @@ export function PostForm({ initial, allCategories, allTags, allSeries, contentWi
   }
 
   // Pull the recovered snapshot back — device or server, whichever was newer. The slug and
-  // the date STAY on a piece that has a row, which this comment claimed and the code did
-  // not do: a whole-object `setDraft` carried the snapshot's slug over the live one, so a
-  // restore renamed a published post's URL.
+  // the date STAY on a piece that has a row; `restore-identity.ts` is that rule, and it is a
+  // file of its own because it was written three times here and the three did not agree.
   async function restoreDraft() {
-    const d = await safety.restore()
-    if (!d) return
-    if (initial) {
-      d.slug = draftRef.current.slug
-      d.date = draftRef.current.date
-    }
+    const snap = await safety.restore()
+    if (!snap) return
+    const d = withLiveIdentity(snap, draftRef.current, Boolean(initial))
     setDraft(d)
     draftRef.current = d
     editorApi.current?.setMarkdown(d.content)

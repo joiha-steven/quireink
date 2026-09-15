@@ -14,6 +14,7 @@ import { PageSettings, type PageDraft } from './PageSettings'
 import { TrashLink } from './TrashLink'
 import { usePickMedia } from './usePickMedia'
 import { SlideOver } from './SlideOver'
+import { withLiveIdentity } from './restore-identity'
 import { SheetTitle } from './SheetTitle'
 import { readSnapshot, saveStatusLine, useReopenedNotice, useStickyOffset, useUnsavedGuard } from './useLocalDraft'
 import { useDraftSafety } from './serverDraft'
@@ -225,9 +226,9 @@ export function PageForm({ initial, contentWidth, keySound, autosaveSeconds, aut
   // not do: a whole-object `setDraft` carried the snapshot's slug over the live one, so
   // restoring into a saved page renamed its URL.
   async function restoreDraft() {
-    const d = await safety.restore()
-    if (!d) return
-    if (initial) d.slug = draftRef.current.slug
+    const snap = await safety.restore()
+    if (!snap) return
+    const d = withLiveIdentity(snap, draftRef.current, Boolean(initial))
     setDraft(d)
     draftRef.current = d
     editorApi.current?.setMarkdown(d.content)
@@ -309,6 +310,12 @@ export function PageForm({ initial, contentWidth, keySound, autosaveSeconds, aut
           label={asking ? t.pubTitle : t.attributes}
           intro={asking ? t.publishReview : undefined}
           onClose={() => { setSettingsOpen(false); setAsking(false) }}
+          // The publish step stays a sheet ON TOP; a plain attributes visit stands BESIDE the
+          // words where the window allows. The reason is written once, in `PublishPanel.tsx`.
+          // This was the one editor of the three that never passed it, so a page's attributes
+          // were modal on a 27-inch screen while a post's and a note's docked — nothing said
+          // why, and nothing was red. Found while merging the three (2026-09-15).
+          dock={!asking}
           footer={
             <>
               <Button variant="secondary" type="button" onClick={() => { setSettingsOpen(false); setAsking(false) }}>
