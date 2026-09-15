@@ -24,9 +24,9 @@
 // transaction, nothing is in the undo history, and a save cannot see it.
 
 import { Extension } from '@tiptap/core'
-import { Plugin, PluginKey } from '@tiptap/pm/state'
-import { DOMSerializer, type Mark } from '@tiptap/pm/model'
-import type { MarkView } from '@tiptap/pm/view'
+import { Plugin, PluginKey } from 'prosemirror-state'
+import { DOMSerializer, type Mark } from 'prosemirror-model'
+import type { MarkView } from 'prosemirror-view'
 import { penSeed } from '@/pen/grammar'
 
 /** Every stroke the writing surface can be holding. `<u>` is the underline; `<mark>` is both

@@ -23,7 +23,7 @@
 import { describe, expect, it, beforeAll, afterAll } from 'bun:test'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
 import type { Editor as TiptapEditor } from '@tiptap/core'
-import type { Slice, ResolvedPos } from '@tiptap/pm/model'
+import type { Slice, ResolvedPos } from 'prosemirror-model'
 
 beforeAll(() => GlobalRegistrator.register())
 afterAll(() => GlobalRegistrator.unregister())

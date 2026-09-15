@@ -25,9 +25,9 @@
 // source, and the old bridge published it loose. Nothing reads the `tight` class it added.
 
 import { Extension, extensions } from '@tiptap/core'
-import { Plugin, PluginKey } from '@tiptap/pm/state'
-import { Slice } from '@tiptap/pm/model'
-import type { Node as PMNode } from '@tiptap/pm/model'
+import { Plugin, PluginKey } from 'prosemirror-state'
+import { Slice } from 'prosemirror-model'
+import type { Node as PMNode } from 'prosemirror-model'
 import { parse } from '@/md/index'
 import { toEditor } from '@/md/to-editor'
 import { toMarkdown } from '@/md/to-markdown'

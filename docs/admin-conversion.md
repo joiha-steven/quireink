@@ -346,3 +346,49 @@ started there would be a reload of somebody's half-written post, begun because t
 
 **What is left of React in this repo is nothing.** What is left of the wrapper around ProseMirror
 is step 7.
+
+### Step 7, first stage: the engine is named, and it was in the chunk three times
+
+ADR 0054's last step is `@tiptap/*` out and `prosemirror-*` in — a change of which LAYER this
+product depends on, not of what it does: the wrapper has a commercial tier and a company behind
+it, and the engine underneath is MIT, one author, and older than this product.
+
+The first stage is the cheapest half and it found the expensive thing. `prosemirror-model`,
+`prosemirror-state`, `prosemirror-view` and `prosemirror-transform` are named in
+`package.json` and on `check:deps`'s list with their reasons, and the twenty-three imports that
+reached them through `@tiptap/pm/*` — which is literally `export * from "prosemirror-view"` —
+now name them directly. Nothing about the editor changed.
+
+⚠️ **AND NAMING THEM IS WHAT LET THE DUPLICATES BE SEEN.** Five packages had
+`prosemirror-view@1.42.2` nested under them while the hoisted copy was 1.42.3, with ranges the
+hoisted one satisfies — a lockfile that had drifted, and nothing in the tree that could say so.
+Measured from the built artefact, not from `node_modules`:
+
+| | before | after |
+|---|---|---|
+| copies of `prosemirror-view` in the editor chunk | **3** | **1** |
+| the editor chunk, raw | 1,028 KB | **833 KB** |
+| the editor chunk, gzipped | 325 KB | **264 KB** |
+| the admin's JavaScript, all entries | 1,170 KB | **976 KB** |
+| ready to type, three readings at 1440 | — | 108 / 108 / 115 ms |
+
+Two `overrides` lines and a forced resolve. Ready-to-type does not move, and saying so is the
+point: on localhost that number is not paying for parse.
+
+**Two copies of ProseMirror is not merely weight.** Every `PluginKey` is identity-compared,
+`instanceof` is how the view decides what a node is, and a second module record makes both
+answer wrong — on a schema the two copies agree about, which is why it would surface as
+behaviour nobody can reproduce rather than as an error. The repo had already met it as a TYPE
+error and written a cast around it with a comment calling it a packaging fact: "when the
+duplicate is deduped the cast becomes a no-op rather than a lie". It has been, so the cast is
+gone rather than left standing.
+
+**`check:bundle` counts the copies now**, from the artefact, using a string that appears exactly
+once per copy of its package — and it fails when a probe stops matching at all, because a string
+reworded upstream reads exactly like a clean bill. Both failure modes were proved by breaking
+them on purpose. A `bun install` that re-nests a version now gets as far as the next build.
+
+One more thing the sweep turned up: `node_modules/tiptap-markdown` was on disk and **not in
+`bun.lock`**, left over from the day `MarkdownBridge.ts` replaced it. It was not shipping —
+nothing imports it and a fresh clone never had it — but it was pinning a second
+`prosemirror-markdown`. Removed.

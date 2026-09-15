@@ -95,7 +95,7 @@ describe('a table GFM cannot express is downgraded, not deleted', () => {
   /** Parse real HTML through the schema, the way a paste from a web page arrives. */
   async function fromHTML(html: string): Promise<string> {
     const editor = await open('')
-    const { DOMParser } = await import('@tiptap/pm/model')
+    const { DOMParser } = await import('prosemirror-model')
     const el = document.createElement('div')
     el.innerHTML = html
     editor.commands.setContent(DOMParser.fromSchema(editor.schema).parse(el).toJSON())

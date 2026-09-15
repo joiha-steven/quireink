@@ -11,13 +11,10 @@
 // which is what "find" has to mean in an editor whose save contract is that a save may not
 // change the reader's page.
 import { Extension } from '@tiptap/core'
-import { Plugin, PluginKey, TextSelection, type EditorState, type PluginSpec } from '@tiptap/pm/state'
-import type { Node as PMNode } from '@tiptap/pm/model'
-import { Decoration, DecorationSet } from '@tiptap/pm/view'
+import { Plugin, PluginKey, TextSelection, type EditorState } from 'prosemirror-state'
+import type { Node as PMNode } from 'prosemirror-model'
+import { Decoration, DecorationSet } from 'prosemirror-view'
 import { findAll, MAX_HIGHLIGHT, type FindOptions } from './editorFind'
-
-/** What this plugin's own spec says a decorations function is. Derived, so it cannot drift. */
-type DecorationsProp = NonNullable<NonNullable<PluginSpec<FindState>['props']>['decorations']>
 
 /** A hit in DOCUMENT positions, which is what a transaction and a decoration both want. */
 export type DocHit = { from: number; to: number }
@@ -134,20 +131,16 @@ export const Find = Extension.create({
           },
         },
         props: {
-          // ONE CAST, and it is a packaging fact rather than a type this file gets wrong.
+          // ⚠️ THERE WAS A CAST HERE, and it was a packaging fact rather than a type this file
+          // got wrong: two copies of `prosemirror-view` were installed — 1.42.3 hoisted, which
+          // is where `Decoration` came from, and 1.42.2 nested under `prosemirror-state` and
+          // four of its siblings. `DecorationSet` carries a private field, so TypeScript read
+          // the two as different classes although they are the same code.
           //
-          // TWO COPIES OF `prosemirror-view` ARE INSTALLED: 1.42.3 at the root, which is what
-          // `@tiptap/pm/view` resolves to and what `Decoration` here comes from, and 1.42.2
-          // nested under `prosemirror-state` and four of its siblings. `DecorationSet` carries
-          // a private field, so TypeScript treats the two as different classes even though
-          // they are the same code. The same shape as `mcp-transport.ts`'s one-way narrowing:
-          // the cast is written where the mismatch is, rather than by loosening the type.
-          //
-          // The target type is DERIVED from the Plugin this file actually constructs, so it
-          // cannot drift; when the duplicate is deduped the cast becomes a no-op rather than
-          // a lie.
-          decorations: ((state: EditorState) =>
-            decorate(state.doc, findKey.getState(state) ?? EMPTY)) as unknown as DecorationsProp,
+          // The comment said the cast would become a no-op when the duplicate was deduped. It
+          // has been (2026-09-15, `scripts/checks/deps.ts`), so the cast is gone rather than
+          // left standing as a lie about a problem that no longer exists.
+          decorations: (state: EditorState) => decorate(state.doc, findKey.getState(state) ?? EMPTY),
         },
       }),
     ]
@@ -162,8 +155,8 @@ export const Find = Extension.create({
 
 /** The minimum of Tiptap's editor this file uses, so the tests can stand in for it. */
 type Driveable = {
-  state: { doc: PMNode; tr: import('@tiptap/pm/state').Transaction }
-  view: { dispatch: (tr: import('@tiptap/pm/state').Transaction) => void; focus: () => void }
+  state: { doc: PMNode; tr: import('prosemirror-state').Transaction }
+  view: { dispatch: (tr: import('prosemirror-state').Transaction) => void; focus: () => void }
 }
 
 /** Change what is being looked for, or which hit is current. Never touches the document. */

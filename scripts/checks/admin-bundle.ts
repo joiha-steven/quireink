@@ -115,5 +115,42 @@ for (const f of eager) {
 }
 const eagerKb = Math.round([...eager].reduce((n, f) => n + statSync(join(DIST, f)).size, 0) / 1024)
 
+// The fourth thing, and it is the one nothing in the tree can see: ONE COPY OF THE EDITOR.
+//
+// ⚠️ THE EDITOR CHUNK CARRIED `prosemirror-view` THREE TIMES, and had for long enough that a
+// cast was written to work around it and a comment explained it as a packaging fact. Five
+// packages had 1.42.2 nested under them while the hoisted copy was 1.42.3 — with ranges the
+// hoisted one satisfies, so there was no reason for it beyond a lockfile that had drifted.
+// Two `overrides` lines took the admin's JavaScript from 1,170 KB to 976 KB.
+//
+// Two copies of ProseMirror is not merely weight. Every `PluginKey` is identity-compared,
+// `instanceof` is how the view decides what a node is, and a second module record makes both
+// of those answer wrong — on a schema the two copies agree about, which is why it shows up as
+// behaviour nobody can reproduce rather than as an error.
+//
+// So it is read from the ARTEFACT, like everything else here, using strings that appear
+// exactly once per copy of their package. A `bun install` that re-nests a version can then
+// only get as far as the next build.
+const ONE_EACH: Record<string, string> = {
+  'prosemirror-view': 'DOM position not inside the editor',
+  'prosemirror-state': 'Adding different instances of a keyed plugin',
+  'prosemirror-transform': 'Structure replace would overwrite content',
+}
+for (const [pkg, once] of Object.entries(ONE_EACH)) {
+  let seen = 0
+  for (const f of files) {
+    seen += readFileSync(join(DIST, f), 'utf8').split(once).length - 1
+  }
+  if (seen === 0) {
+    // A string that stopped appearing is a probe that has gone blind, which reads exactly like
+    // a clean bill. The same self-blinding the empty-dist check above exists for.
+    console.error(`admin-bundle: the probe for ${pkg} ("${once}") is in no bundle — it was reworded upstream, so this guard is measuring nothing`)
+    bad++
+  } else if (seen > 1) {
+    console.error(`admin-bundle: ${pkg} is in the bundles ${seen} times — two copies of ProseMirror break plugin keys and every instanceof. Check for a nested version under node_modules and pin it in package.json "overrides"`)
+    bad++
+  }
+}
+
 if (bad > 0) process.exit(1)
-console.log(`admin-bundle: ${files.length} files clean of ${CANARIES.length} canaries, one rail entry, no dangling import, ${eagerKb} KB before the first frame`)
+console.log(`admin-bundle: ${files.length} files clean of ${CANARIES.length} canaries, one rail entry, no dangling import, one copy of each of ${Object.keys(ONE_EACH).length} ProseMirror packages, ${eagerKb} KB before the first frame`)

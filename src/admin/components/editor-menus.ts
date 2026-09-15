@@ -10,7 +10,7 @@
 // them. The type is erased at compile time and nothing extra ships.
 import type { Editor as TiptapEditor } from '@tiptap/core'
 import { BubbleMenuPlugin } from '@tiptap/extension-bubble-menu'
-import { NodeSelection } from '@tiptap/pm/state'
+import { NodeSelection } from 'prosemirror-state'
 import type { SheetWords } from '@/admin-shared/sheet-wire'
 import { DEFAULT_INK, INKS } from '@/pen/grammar'
 import { PEN_LIGHT } from '@/pen/pigments'

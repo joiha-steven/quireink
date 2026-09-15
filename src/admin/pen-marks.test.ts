@@ -75,7 +75,7 @@ describe('the two gestures round-trip', () => {
     // editor (constructor, insertContent) is markdown-first (`html:false`), but a real
     // paste arrives as DOM and lands on exactly these parse rules.
     const editor = await open('')
-    const { DOMParser } = await import('@tiptap/pm/model')
+    const { DOMParser } = await import('prosemirror-model')
     const el = document.createElement('div')
     el.innerHTML = '<p>phải <mark data-form="o">cease</mark> ngay</p>'
     editor.commands.setContent(DOMParser.fromSchema(editor.schema).parse(el).toJSON())

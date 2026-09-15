@@ -13,7 +13,7 @@
 // element, so the rules key on it directly.
 import Image, { type ImageOptions } from '@tiptap/extension-image'
 import type { NodeViewRenderer } from '@tiptap/core'
-import type { Node as PMNode } from '@tiptap/pm/model'
+import type { Node as PMNode } from 'prosemirror-model'
 import { SEGMENT_TRACK, tabItemClass } from '@/admin-shared/tabs'
 import { el } from './node-dom'
 import { applyToGallery, galleryColsPlugin } from './image-gallery'

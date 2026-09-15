@@ -18,7 +18,7 @@
 // and this calls `matchMathAt` / `matchDisplayBlockAt`, the same discipline `InkMark.ts`
 // follows, and for the same reason.
 import { Node, InputRule, type NodeViewRenderer } from '@tiptap/core'
-import type { Node as PMNode } from '@tiptap/pm/model'
+import type { Node as PMNode } from 'prosemirror-model'
 import {
   renderMath, type MathDelim,
   INLINE_PAREN_SOURCE, DISPLAY_DOLLAR_SOURCE, DISPLAY_BRACKET_SOURCE,

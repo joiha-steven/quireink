@@ -35,6 +35,24 @@ const ALLOWED: Record<string, string> = {
   zod:
     'B. Not ours to remove: it is a dependency AND a peer dependency of the MCP SDK, so taking it out of this repository\'s own files would not take it out of the install',
 
+  // ADR 0054 named these as the layer this product wants to depend on, in place of the
+  // `@tiptap/*` wrapper above it: MIT, one author, and older than this product, where the
+  // wrapper has a commercial tier and a company behind it. They were already installed —
+  // every one of them arrives under Tiptap — so this is a change of WHO DECIDED, not of what
+  // is on disk.
+  //
+  // ⚠️ AND DECLARING THEM IS WHAT LET THE DUPLICATES BE SEEN. Measured 2026-09-15 from the
+  // built artefact, not from the tree: the editor chunk carried `prosemirror-view` THREE
+  // times and `prosemirror-transform` twelve paths' worth, because five packages had a
+  // 1.42.2 nested under them while the hoisted copy was 1.42.3 — with ranges that the
+  // hoisted one satisfies. Two `overrides` lines and a forced resolve took the admin's
+  // JavaScript from 1,170 KB to 976 KB, of which the editor chunk is 1,028 → 833.
+  'prosemirror-model': 'B. The document model: the schema, the nodes, the marks',
+  'prosemirror-state': 'B. The state and the plugin system every editor behaviour hangs off',
+  'prosemirror-view': 'B. The editable surface itself, and the node views',
+  'prosemirror-transform':
+    'B. Steps and mapping — the half of the model a serializer and the find strip both walk',
+
   // ---- C: going, and the order is the owner's --------------------------------------------
   hono: 'C. A thin HTTP router, but 50 call sites. Last, and only when the rest is done',
   '@tiptap/starter-kit': 'C. The editor. ADR 0006 has to be replaced before this moves',

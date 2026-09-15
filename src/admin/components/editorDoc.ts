@@ -6,7 +6,7 @@
 // hook, a prop or a piece of state. `editorExtensions.ts` came out of the same file for the
 // same reason and the split held.
 import type { Editor as TiptapEditor } from '@tiptap/core'
-import { TextSelection } from '@tiptap/pm/state'
+import { TextSelection } from 'prosemirror-state'
 import { isVideoUrl } from '@/render/video'
 import { documentToMarkdown } from './MarkdownBridge'
 

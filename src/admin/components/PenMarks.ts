@@ -13,7 +13,7 @@
 // parser of `++`/`@@` is built from the one regex in `pen/grammar.ts`, because the two
 // copies this repo once had of `==` drifted within the hour.
 import { getMarkRange, InputRule, Mark, markInputRule, markPasteRule, mergeAttributes } from '@tiptap/core'
-import type { MarkType } from '@tiptap/pm/model'
+import type { MarkType } from 'prosemirror-model'
 import { INKS, isInk, RING_SYNTAX_CONTENT_LAST, UNDER_SYNTAX_CONTENT_LAST } from '@/pen/grammar'
 import type { Ink } from '@/pen/grammar'
 

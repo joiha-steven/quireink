@@ -5,11 +5,11 @@
 // column count is a property of the run (adding a fifth photo changes the width of the four
 // already there), and so are the crop ratio and the caption switch (one square tile in a mosaic
 // of tall ones is not something anybody sets on purpose).
-import type { Node as PMNode } from '@tiptap/pm/model'
-import type { EditorState } from '@tiptap/pm/state'
-import { Plugin, PluginKey, type PluginSpec } from '@tiptap/pm/state'
-import { Decoration, DecorationSet } from '@tiptap/pm/view'
-import type { EditorView } from '@tiptap/pm/view'
+import type { Node as PMNode } from 'prosemirror-model'
+import type { EditorState } from 'prosemirror-state'
+import { Plugin, PluginKey, type PluginSpec } from 'prosemirror-state'
+import { Decoration, DecorationSet } from 'prosemirror-view'
+import type { EditorView } from 'prosemirror-view'
 import { galleryCols } from '@/render/gallery-cols'
 
 /** What this plugin's own spec says a decorations function is. Derived, so it cannot drift. */

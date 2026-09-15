@@ -14,8 +14,8 @@
 // arriving.
 
 import type { Editor as TiptapEditor } from '@tiptap/core'
-import type { Transaction } from '@tiptap/pm/state'
-import { AddMarkStep } from '@tiptap/pm/transform'
+import type { Transaction } from 'prosemirror-state'
+import { AddMarkStep } from 'prosemirror-transform'
 import { motionOn } from '@/admin/motion'
 import { playSqueak, type Gesture } from './pen-sound'
 import type { KeySound } from './key-sound'

@@ -12,7 +12,7 @@
 // from. `useAdminT()` was a React hook; the alternative to passing them in would be an island
 // importing all eleven dictionaries to print two labels.
 import { Node, type NodeViewRenderer } from '@tiptap/core'
-import type { Node as PMNode } from '@tiptap/pm/model'
+import type { Node as PMNode } from 'prosemirror-model'
 import { videoEmbed, videoFileUrl } from '@/render/video'
 import { SEGMENT_TRACK, tabItemClass } from '@/admin-shared/tabs'
 import { el } from './node-dom'
