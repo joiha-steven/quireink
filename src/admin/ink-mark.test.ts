@@ -19,14 +19,13 @@ afterAll(() => GlobalRegistrator.unregister())
  *  that claim, which meant a node added to the editor was silently absent from its own
  *  round-trip test. `editorExtensions.ts` is now the one list. */
 async function open(content: string) {
-  const { Editor } = await import('@tiptap/core')
-  const { editorExtensions } = await import('@/admin/components/editorExtensions')
-  return new Editor({ extensions: editorExtensions(''), content })
+  const { Editor } = await import('@/admin/editor/editor')
+  return new Editor({ element: document.createElement('div'), content })
 }
 
 async function roundTrip(md: string): Promise<string> {
   const editor = await open(md)
-  const out = (editor.storage as unknown as { markdown: { getMarkdown: () => string } }).markdown.getMarkdown()
+  const out = editor.getMarkdown()
   editor.destroy()
   return out.trim()
 }
@@ -105,7 +104,7 @@ describe('the highlighter in the editor', () => {
     type(editor as never, ' ==go tay==#pink xong')
     expect(editor.getHTML()).toBe('<p>x <mark data-ink="pink">go tay</mark> xong</p>')
     // And what gets saved is the syntax that was typed.
-    expect((editor.storage as unknown as { markdown: { getMarkdown: () => string } }).markdown.getMarkdown().trim())
+    expect(editor.getMarkdown().trim())
       .toBe('x ==go tay==#pink xong')
     editor.destroy()
   })

@@ -32,14 +32,12 @@ import { PAGE } from '@/render/page-rules'
 beforeAll(() => GlobalRegistrator.register())
 afterAll(() => GlobalRegistrator.unregister())
 
-type MarkdownStorage = { markdown: { getMarkdown: () => string } }
 
 /** Open a document in the REAL extension set and hand back what a save would write. */
 async function save(source: string): Promise<string> {
-  const { Editor } = await import('@tiptap/core')
-  const { editorExtensions } = await import('@/admin/components/editorExtensions')
-  const editor = new Editor({ extensions: editorExtensions(''), content: source })
-  const out = (editor.storage as unknown as MarkdownStorage).markdown.getMarkdown()
+  const { Editor } = await import('@/admin/editor/editor')
+  const editor = new Editor({ element: document.createElement('div'), content: source })
+  const out = editor.getMarkdown()
   editor.destroy()
   return out
 }

@@ -8,11 +8,10 @@ beforeAll(() => GlobalRegistrator.register())
 afterAll(() => GlobalRegistrator.unregister())
 
 async function open(content: string) {
-  const { Editor } = await import('@tiptap/core')
-  const { editorExtensions } = await import('@/admin/components/editorExtensions')
+  const { Editor } = await import('@/admin/editor/editor')
   const host = document.createElement('div')
   document.body.appendChild(host)
-  return new Editor({ element: host, extensions: editorExtensions(''), content })
+  return new Editor({ element: host, content })
 }
 
 const tick = () => new Promise<void>((r) => requestAnimationFrame(() => r()))
@@ -23,7 +22,7 @@ describe('penStepsOf', () => {
     const editor = await open('a reed pen, cut to a broad edge')
     editor.commands.setTextSelection({ from: 3, to: 11 })
     let tr = editor.state.tr
-    editor.on('transaction', ({ transaction }) => { tr = transaction })
+    editor.on<{ transaction: typeof tr }>('transaction', ({ transaction }) => { tr = transaction })
     editor.commands.toggleInk('green')
     expect(penStepsOf(tr)).toEqual([{ kind: 'hl', from: 3, to: 11 }])
     editor.commands.setTextSelection({ from: 13, to: 16 })
@@ -46,7 +45,8 @@ describe('penStrokes', () => {
     const { penStrokes } = await import('@/admin/components/pen-feedback')
     const editor = await open('a reed pen, cut to a broad edge')
     editor.commands.setTextSelection({ from: 3, to: 11 })
-    editor.on('transaction', ({ transaction }) => penStrokes(editor.view, transaction, { mode: 'off', volume: 0 }))
+    editor.on<{ transaction: import('prosemirror-state').Transaction }>('transaction',
+      ({ transaction }) => penStrokes(editor.view, transaction, { mode: 'off', volume: 0 }))
     editor.commands.toggleInk('pink')
     await tick()
     const mark = editor.view.dom.querySelector('mark')
@@ -60,7 +60,8 @@ describe('penStrokes', () => {
   it('leaves a document that opens full of marks alone', async () => {
     const { penStrokes } = await import('@/admin/components/pen-feedback')
     const editor = await open('a ==reed pen==, ++cut++ to a broad edge')
-    editor.on('transaction', ({ transaction }) => penStrokes(editor.view, transaction, { mode: 'off', volume: 0 }))
+    editor.on<{ transaction: import('prosemirror-state').Transaction }>('transaction',
+      ({ transaction }) => penStrokes(editor.view, transaction, { mode: 'off', volume: 0 }))
     editor.commands.setTextSelection({ from: 5, to: 5 })
     editor.commands.insertContent('x')
     await tick()

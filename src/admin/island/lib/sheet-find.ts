@@ -9,7 +9,7 @@
 //
 // The strip knows nothing about documents, the extension knows nothing about textareas, and the
 // matching knows nothing about either; this is where the three meet.
-import type { Editor as TiptapEditor } from '@tiptap/core'
+import type { Editor as TiptapEditor } from '@/admin/editor/editor'
 import type { SheetWords } from '@/admin-shared/sheet-wire'
 import { findAll, firstAfter, replaceAllIn, step, type Hit } from '@/admin/components/editorFind'
 import {

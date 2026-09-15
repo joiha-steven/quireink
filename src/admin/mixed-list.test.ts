@@ -12,10 +12,9 @@ beforeAll(() => GlobalRegistrator.register())
 afterAll(() => GlobalRegistrator.unregister())
 
 async function roundTrip(source: string): Promise<string> {
-  const { Editor } = await import('@tiptap/core')
-  const { editorExtensions } = await import('@/admin/components/editorExtensions')
-  const editor = new Editor({ extensions: editorExtensions(''), content: source })
-  const out = (editor.storage as unknown as { markdown: { getMarkdown: () => string } }).markdown.getMarkdown()
+  const { Editor } = await import('@/admin/editor/editor')
+  const editor = new Editor({ element: document.createElement('div'), content: source })
+  const out = editor.getMarkdown()
   editor.destroy()
   return out.trim()
 }

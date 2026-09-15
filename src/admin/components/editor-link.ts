@@ -5,7 +5,7 @@
 // three doors to it (the toolbar button, the bubble bar over a selection, and `Mod-k`) all ran
 // the same three lines around a `window.prompt` until 2026-09-07, and three copies of three
 // lines is how one of them ends up not clearing a link on an empty answer.
-import type { Editor as TiptapEditor } from '@tiptap/core'
+import type { Editor as TiptapEditor } from '@/admin/editor/editor'
 
 /**
  * `extendMarkRange` covers the whole link when the caret is merely inside it, so an existing

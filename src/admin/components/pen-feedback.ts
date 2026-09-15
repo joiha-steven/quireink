@@ -13,7 +13,7 @@
 // key feedback lives by holds here too — the words never move; only the ink under them is
 // arriving.
 
-import type { Editor as TiptapEditor } from '@tiptap/core'
+import type { Editor as TiptapEditor } from '@/admin/editor/editor'
 import type { Transaction } from 'prosemirror-state'
 import { AddMarkStep } from 'prosemirror-transform'
 import { motionOn } from '@/admin/motion'

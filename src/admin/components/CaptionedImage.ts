@@ -11,12 +11,9 @@
 // were the last seven `:has()` selectors in the admin, a construct that has already taken
 // Safari's render process down once on another site. The figure is now the node view's own
 // element, so the rules key on it directly.
-import Image, { type ImageOptions } from '@tiptap/extension-image'
-import type { NodeViewRenderer } from '@tiptap/core'
 import type { Node as PMNode } from 'prosemirror-model'
 import { SEGMENT_TRACK, tabItemClass } from '@/admin-shared/tabs'
 import { el } from './node-dom'
-import { applyToGallery, galleryColsPlugin } from './image-gallery'
 import {
   ALIGNS, CAPTIONS, FRAME_INKS, FRAME_WEIGHTS, RATIOS, RATIO_LABEL, SIZES,
   buildSrc, framed, parseFrag,
@@ -41,16 +38,6 @@ export type ImageWords = {
   caption: string
 }
 
-const ENGLISH: ImageWords = {
-  alignLeft: 'Left', alignCenter: 'Center', alignRight: 'Right',
-  sizeColumn: 'Column', sizeWide: 'Large',
-  grid: 'Grid',
-  siteDefault: 'Default', ratioNatural: 'As shot',
-  captions: 'Captions', noCaptions: 'No captions',
-  frameNone: 'No frame', frameThin: 'Thin', frameMedium: 'Medium', frameThick: 'Thick',
-  framePaper: 'Paper', frameInk: 'Ink',
-  caption: 'Image caption',
-}
 
 /**
  * EVERY CLASS THIS NODE VIEW WRITES, IN ONE TABLE.
@@ -98,7 +85,7 @@ const className = {
 }
 
 /** ONE ELEMENT, REDRAWN — `dom` is the figure itself, and ProseMirror holds that reference. */
-class ImageView {
+export class ImageView {
   readonly dom: HTMLElement
   private readonly bar: HTMLElement
   private readonly pic: HTMLImageElement
@@ -300,39 +287,3 @@ class ImageView {
   /** The toolbar, the picture and the caption are drawn here; ProseMirror must not read back. */
   ignoreMutation(): boolean { return true }
 }
-
-export const CaptionedImage = Image.extend<ImageOptions & { words: ImageWords }>({
-  addOptions() {
-    const base = this.parent?.()
-    return {
-      inline: base?.inline ?? false,
-      allowBase64: base?.allowBase64 ?? false,
-      HTMLAttributes: base?.HTMLAttributes ?? {},
-      resize: base?.resize ?? false,
-      words: ENGLISH,
-    }
-  },
-
-  addProseMirrorPlugins() {
-    return [...(this.parent?.() ?? []), galleryColsPlugin()]
-  },
-
-  addNodeView(): NodeViewRenderer {
-    const words = this.options.words
-    return ({ node, editor, getPos }) => {
-      const view = new ImageView(node, words)
-      view.attrs = (next) => {
-        const pos = getPos?.()
-        if (pos == null) return
-        editor.view.dispatch(editor.view.state.tr.setNodeMarkup(pos, undefined, {
-          ...editor.view.state.doc.nodeAt(pos)?.attrs, ...next,
-        }))
-      }
-      view.gallery = (opts) => {
-        const pos = getPos?.()
-        if (pos != null) applyToGallery(editor.view, pos, opts)
-      }
-      return view
-    }
-  },
-})

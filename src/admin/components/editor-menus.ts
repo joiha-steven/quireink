@@ -8,8 +8,8 @@
 // subset, and that is deliberate here where it was not for the node views: the five pens are
 // named by a COMPUTED key (`ink` + the ink's name), so a fixed list of fields could not reach
 // them. The type is erased at compile time and nothing extra ships.
-import type { Editor as TiptapEditor } from '@tiptap/core'
-import { BubbleMenuPlugin } from '@tiptap/extension-bubble-menu'
+import type { Editor as TiptapEditor } from '@/admin/editor/editor'
+import { bubblePlugin, BUBBLE_KEY } from '@/admin/editor/bubble'
 import { NodeSelection } from 'prosemirror-state'
 import type { SheetWords } from '@/admin-shared/sheet-wire'
 import { DEFAULT_INK, INKS } from '@/pen/grammar'
@@ -19,7 +19,6 @@ import { editLink } from './editor-link'
 import { tip } from './editorKeys'
 
 /** Named, because unregistering a plugin needs the same key registering it used. */
-const BAR_KEY = 'quireBubbleBar'
 
 const className = {
   // The floating bar. z-40, ABOVE the sticky toolbar's z-10: flipping keeps them apart in most
@@ -87,8 +86,12 @@ export function mountBubbleBar(
   askLink: (previous: string) => Promise<string | null>,
 ): BubbleBar {
   const bar = el('div', { className: className.bar })
-  bar.style.visibility = 'hidden'
-  bar.style.position = 'absolute'
+  // ⚠️ NOTHING HERE DECIDES WHETHER IT IS ON SCREEN, and it used to decide half of it: this
+  // file set `visibility: hidden` and `position: absolute` because the package that positioned
+  // the bar toggled `visibility` and placed it with a transform. `editor/bubble.ts` owns both
+  // now and hides it with the `hidden` attribute — so leaving the old pair here left the bar
+  // permanently invisible while every measurement said it was fine. Two mechanisms deciding one
+  // `display` is one too many (`docs/admin-one-dom.md`); this is the same fault a rung up.
 
   /** Every key that can look pressed, so one pass answers for all of them. */
   const lit: { on: () => boolean; button: HTMLButtonElement; extra: string; announce: boolean }[] = []
@@ -212,14 +215,15 @@ export function mountBubbleBar(
   // was both covered and unclickable, and the opening sentence of a piece could not be
   // formatted. `padding` is the height of the zone the toolbar occupies, measured and passed in;
   // inside it, Floating UI flips the bar below the selection instead.
-  const floating = { placement: 'top' as const, offset: 8, flip: { padding: 0 } }
-  editor.registerPlugin(BubbleMenuPlugin({
-    pluginKey: BAR_KEY,
-    editor,
+  // How much room the sticky chrome takes at the top of the window. Read fresh on every
+  // reposition rather than captured, which is what `setAvoidTop` below changes.
+  let avoidTop = 0
+  editor.registerPlugin(bubblePlugin({
     element: bar,
-    options: floating,
-    shouldShow: ({ editor: ed, state, from, to }) => {
-      if (ed.isActive('link')) return true // cursor in a link -> offer edit/remove
+    avoidTop: () => avoidTop,
+    offset: 8,
+    shouldShow: ({ state, from, to }) => {
+      if (editor.isActive('link')) return true // cursor in a link -> offer edit/remove
       if (from === to) return false // nothing selected
       // A node selection (image / video) carries its own controls — don't cover it.
       if (state.selection instanceof NodeSelection) return false
@@ -228,15 +232,16 @@ export function mountBubbleBar(
   }))
 
   return {
-    // The plugin reads `flip.padding` fresh on every reposition, so the object is mutated in
-    // place rather than replaced. Replacing it is the identity change that used to loop.
+    // The plugin reads this through a closure on every reposition, so setting it is enough and
+    // nothing has to be replaced. Replacing the options object is the identity change that used
+    // to loop.
     setAvoidTop: (px: number) => {
-      floating.flip.padding = px
-      if (!editor.isDestroyed) editor.view.dispatch(editor.state.tr.setMeta(BAR_KEY, 'updatePosition'))
+      avoidTop = px
+      if (!editor.isDestroyed) editor.view.dispatch(editor.state.tr.setMeta(BUBBLE_KEY, 'reposition'))
     },
     destroy: () => {
       editor.off('transaction', sync)
-      editor.unregisterPlugin(BAR_KEY)
+      editor.unregisterPlugin(BUBBLE_KEY)
       bar.remove()
     },
   }

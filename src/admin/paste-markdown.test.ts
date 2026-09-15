@@ -22,7 +22,7 @@
 
 import { describe, expect, it, beforeAll, afterAll } from 'bun:test'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
-import type { Editor as TiptapEditor } from '@tiptap/core'
+import type { Editor as TiptapEditor } from '@/admin/editor/editor'
 import type { Slice, ResolvedPos } from 'prosemirror-model'
 
 beforeAll(() => GlobalRegistrator.register())
@@ -30,9 +30,8 @@ afterAll(() => GlobalRegistrator.unregister())
 
 /** A fresh editor on the REAL extension set — the list `Editor.tsx` mounts, not a copy. */
 async function open(content = '') {
-  const { Editor } = await import('@tiptap/core')
-  const { editorExtensions } = await import('@/admin/components/editorExtensions')
-  return new Editor({ extensions: editorExtensions(''), content })
+  const { Editor } = await import('@/admin/editor/editor')
+  return new Editor({ element: document.createElement('div'), content })
 }
 
 type ClipboardTextParser = (text: string, context: ResolvedPos, plainText: boolean) => Slice | null
@@ -54,7 +53,7 @@ function paste(editor: TiptapEditor, text: string, plainText = false): void {
 }
 
 function markdownOf(editor: TiptapEditor): string {
-  return (editor.storage as unknown as { markdown: { getMarkdown: () => string } }).markdown.getMarkdown()
+  return editor.getMarkdown()
 }
 
 const ARTICLE = [

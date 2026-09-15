@@ -15,7 +15,7 @@
 // arrived as 66% of the way down the source; and the textarea opened with its caret at 0, so
 // the first click in it scrolled the piece to the top. Measured 2026-09-13 on an 18k-word
 // draft: from three different starting points, every switch ended at offset 0.
-import type { Editor as TiptapEditor } from '@tiptap/core'
+import type { Editor as TiptapEditor } from '@/admin/editor/editor'
 import type { SourceView } from '@/admin/components/editor-source'
 import {
   markdownOffsetAt, posAtMarkdownOffset, readMarkdown, videoUrlsToNodes,

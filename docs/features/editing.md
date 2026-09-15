@@ -2,13 +2,15 @@
 
 ## Editor (Admin → editor) — `src/admin/island/sheet.ts`
 
-- StarterKit + underline, inline code, bullet/numbered/**task** lists (GFM `- [ ]`), quote,
-  code block, hr, link, captioned image, GFM tables, video. `md/from-editor.ts` serializes all
-  (ADR 0052); `tiptap-markdown` and `prosemirror-markdown` came out on 2026-09-13.
-- **The extension set is `editorExtensions.ts`, not a literal in `sheet-paper.ts`.** Both round-trip
-  suites (`ink-mark.test.ts`, `math-node.test.ts`) import that one list. They used to rebuild it by
-  hand under a comment claiming it was what the editor mounts, so a node added to the editor was
-  absent from its own test.
+- Twenty-one nodes and eight marks: paragraph, heading, quote, fence, rule, hard break, the
+  three lists (GFM `- [ ]` among them), captioned image, GFM tables, video, inline and display
+  maths; bold, italic, strike, inline code, link, and the pen's three. `md/from-editor.ts`
+  serializes all of them (ADR 0052).
+- **The schema is [`editor/schema.ts`](../../src/admin/editor/schema.ts)**, written out, since
+  ADR 0054's step 7 took `@tiptap/*` out. It is ONE schema for the whole admin and every editor
+  built anywhere in this repository mounts the same plugin stack — including the tests, which is
+  not a detail: two suites once held a hand-copied list of extensions under a comment claiming it
+  was what the editor mounts, so a node added to the editor was absent from its own test.
 - **Mathematics** (`MathNode.ts`): atom nodes for inline and display, rendered live with the same
   `renderMath` the server uses, TeX editable in place when the node is selected. The delimiter
   the author typed is stored on the node, which is correctness rather than polish: without it
@@ -24,9 +26,10 @@
     guard ("closing `$` not followed by a digit") is a lookahead at exactly that. Typing
     `giá $5-$8`, the rule would see `$5-$` and convert the price mid-word. `$…$` stays valid
     everywhere and converts when the post is next opened, where the whole line is known.
-  - `nodeInputRule` from Tiptap is the WRONG helper here: it replaces only capture group 1 and
-    leaves the delimiters standing (`\(x\)` saved as `\(\(x\)\)`). `mathInputRule` deletes the
-    whole matched range first.
+  - ⚠️ **A RULE THAT REPLACES ONLY THE CAPTURE GROUP LEAVES THE DELIMITERS STANDING** — `\(x\)`
+    saved as `\(\(x\)\)`, and with `$$…$$` the block node split the paragraph and the stray
+    dollars became two paragraphs of their own. The rule in
+    [`editor/input-rules.ts`](../../src/admin/editor/input-rules.ts) replaces the WHOLE match.
 - **Menus live in `editor-menus.ts`** (the bubble bar and the "/" menu; the button strip is `editor-toolbar.ts`). The editor sets
   `shouldRerenderOnTransaction: true` — TipTap 3 disables it by default, which leaves every
   `isActive()` (toolbar highlights, the table-tools row) stale until an unrelated re-render.

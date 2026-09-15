@@ -52,20 +52,26 @@ const ALLOWED: Record<string, string> = {
   'prosemirror-view': 'B. The editable surface itself, and the node views',
   'prosemirror-transform':
     'B. Steps and mapping — the half of the model a serializer and the find strip both walk',
+  // The rest of the engine, named as `editor/` came to use each one directly. Every one was
+  // already installed under Tiptap; what changed is who asked for it.
+  'prosemirror-commands': 'B. The base keymap and the commands every editor needs',
+  'prosemirror-history': 'B. Undo. Not a thing to write twice',
+  'prosemirror-keymap': 'B. Chords to commands, with the platform\'s own Mod key',
+  'prosemirror-inputrules': 'B. Markdown as it is typed, and the Backspace that takes it back',
+  'prosemirror-schema-list': 'B. Split, lift and sink a list item — the three hard ones',
+  'prosemirror-tables':
+    'B. Cell selection, column spans and the table keymap. The one piece here that is genuinely large',
+  'prosemirror-dropcursor': 'B. Where a dragged picture would land',
+  'prosemirror-gapcursor': 'B. A caret between two blocks that cannot hold one',
 
   // ---- C: going, and the order is the owner's --------------------------------------------
   hono: 'C. A thin HTTP router, but 50 call sites. Last, and only when the rest is done',
-  '@tiptap/starter-kit': 'C. The editor. ADR 0006 has to be replaced before this moves',
-  '@tiptap/core':
-    'C. With the editor. Named on 2026-09-15 rather than added: it arrived under `@tiptap/react` and the two files that used the adapter now build the instance themselves',
-  '@tiptap/extension-bubble-menu':
-    'C. With the editor. Same day, same reason: it arrived under `@tiptap/react/menus` and the floating bar registers it as a plain ProseMirror plugin now',
-  '@tiptap/extension-image': 'C. With the editor',
-  '@tiptap/extension-placeholder': 'C. With the editor',
-  '@tiptap/extension-table': 'C. With the editor',
-  '@tiptap/extension-task-item': 'C. With the editor',
-  '@tiptap/extension-task-list': 'C. With the editor',
-  '@tiptap/extension-text': 'C. With the editor',
+  // ---- and what is no longer here ------------------------------------------------------
+  //
+  // `@tiptap/*` — nine packages — left on 2026-09-15, which is ADR 0054's step 7 discharged.
+  // `react` and `react-dom` left on the 15th too, with step 6. Both are recorded here rather
+  // than only in the history because tier C was written as a list of things on their way out,
+  // and a tier that empties without anybody noticing is a tier nobody was reading.
 
   // ---- T: tools, which never reach a reader ---------------------------------------------
   typescript: 'T. The compiler',

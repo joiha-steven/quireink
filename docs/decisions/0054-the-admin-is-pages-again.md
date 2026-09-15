@@ -291,9 +291,22 @@ have nothing to do with the rail — including the sign-in shell, which draws no
 
 `react`, `react-dom` and their two type packages are out of `package.json`, `jsx` is out of the
 admin's tsconfig, and **what the browser must have before the first frame went from 297 KB to
-22 KB**. What each piece cost and what it found is in
-[`../admin-conversion.md`](../admin-conversion.md), including a guard that was passing by not
-working and a failure mode the deleted error boundary had been the only answer to.
+22 KB**.
+
+### Step 7: the wrapper leaves, and the editor is this product's own
+
+Nine `@tiptap/*` packages out; a schema, a plugin stack, a keymap, a table of input rules, a
+command table and a small `Editor` class in `src/admin/editor/`. **The editor chunk went from
+1,028 KB to 524 KB** and the admin's JavaScript from 1,170 to 776 — 102 plugins became 15.
+
+What made it survivable is that the serializer never depended on the wrapper: `md/to-editor.ts`
+and `md/from-editor.ts` speak node names, not an API. **45 corpus fixtures produce byte-identical
+Markdown through both editors**, and the schema was proved equal field by field against a running
+Tiptap editor — 310 assertions — before the packages went, with the answer kept as
+`golden/editor/schema-before-step-7.json` so the comparison outlives them.
+
+Both steps, what each cost and the faults each turned up, are in
+[`../admin-no-framework.md`](../admin-no-framework.md).
 
 ### The fourth bridge: `quire:pick-media`
 
@@ -345,8 +358,14 @@ them to the same answer, through one serializer, for every state an exchange can
   open; four ship on every page now. Ten flows went red for that one reason and an eleventh went
   quietly green. It is trap 4 of [`../admin-one-dom.md`](../admin-one-dom.md) arriving on the
   chrome rather than on a list, and it will arrive again on anything else that ships drawn.
-- **`@tiptap/*` leaves; `prosemirror-*` arrives.** The count of packages barely moves. The point
-  is which layer this project depends on: the wrapper has a commercial tier and a company behind
-  it, and the engine underneath is MIT, one author, and older than this product.
+- **`@tiptap/*` leaves; `prosemirror-*` arrives.** The count of packages barely moves — nine out,
+  twelve in. The point is which layer this project depends on: the wrapper has a commercial tier
+  and a company behind it, and the engine underneath is MIT, one author, and older than this
+  product. ✅ **Done 2026-09-15.** And the prediction about the count held: 22 packages declared
+  where there were 31, because `react`, `react-dom` and their types went in the same week.
+- ⚠️ **A WRAPPER THAT WRAPS TWENTY EXTENSIONS SHIPS TWENTY EXTENSIONS.** The ADR said payload was
+  not the argument, and it was not — but the editor chunk halved. What was actually being paid
+  for was an extension system: each extension contributed its own keymap plugin and its own
+  input-rules plugin, so the editor mounted 102 plugins and a keystroke walked most of them.
 - **0006's parity concern outlives it.** The admin is still the area a type error cannot see.
   The tour is the answer, and every step of this owes it a flow.
