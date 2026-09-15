@@ -197,18 +197,14 @@ export type AdminStrings = {
   navMedia: string
   navSettings: string
   navViewBlog: string
-  // content row actions + taxonomy manager
-  openInNewTab: string
   tabTaxonomy: string
   rename: string
   renamePrompt: string
-  confirmDeleteTerm: string
   noTerms: string
   renamed: string
   // series manager (Content → Series tab)
   tabSeries: string
   noSeries: string
-  confirmDeleteSeries: string
   seriesReordered: string
   signOut: string
   clearCache: string
@@ -251,15 +247,6 @@ export type AdminStrings = {
   noteQuote: string
   noteSourceHint: string
   viewNote: string
-  noPosts: string
-  noPages: string
-  colTitle: string
-  colStatus: string
-  colDate: string
-  /** The writing list sorts on the last SAVE, so its column cannot be headed 'Date'. */
-  colTouched: string
-  colCategories: string
-  colViews: string
   untitled: string
   statusPublished: string
   statusDraft: string
@@ -340,8 +327,6 @@ export type AdminStrings = {
   // revisions and its slug. The strings this replaces said the action could not be
   // undone, which was never true of that endpoint.
   moveToTrash: string
-  confirmTrashPost: string
-  confirmTrashPage: string
   // The write pane's selection mode. `selectPieces` is a VERB and it shares one 320px line
   // with Taxonomy, Series and the sort cycle, so each language picks its shortest true word —
   // the same rule the scope tabs above are held to. The confirmation carries no number: a
@@ -349,7 +334,6 @@ export type AdminStrings = {
   // beside it already prints `(N)`.
   selectPieces: string
   selectDone: string
-  confirmTrashMany: string
   trashPartial: string
   // The line above the red button at the foot of the Attributes panel. It has to say BOTH
   // halves: the piece goes now, and it is recoverable.
@@ -482,23 +466,14 @@ export type AdminStrings = {
   imgFrameThick: string
   imgFramePaper: string
   imgFrameInk: string
-  // The SITE-WIDE default frame, in Settings. Applied as styling rather than markup, so a
-  // change reframes every picture at once without re-rendering a single post.
-  cardFigure: string
   figureFrame: string
   figureFrameHint: string
   figureFrameColour: string
   figureFrameColourHint: string
-  // Settings -> Layout -> Galleries
-  cardGallery: string
   galleryRatio: string
   galleryRatioHint: string
   galleryCaptions: string
   galleryCaptionsHint: string
-  // Settings -> Layout -> Post pictures. A post's cover is already stored, resized and
-  // served; these two decide whether a reader ever sees it. BOTH DEFAULT TO OFF, and
-  // `postImageHint` is the sentence that says so above the controls.
-  cardPostImage: string
   postImageHint: string
   postImageHero: string
   postImageHeroHint: string
@@ -633,7 +608,6 @@ export type AdminStrings = {
   download: string
   filesDropzone: string
   noFiles: string
-  loadFilesFailed: string
   unsupportedType: string
   checkUnused: string
   checkUnusedFailed: string
@@ -643,7 +617,6 @@ export type AdminStrings = {
   showUnusedOnly: string
   showAll: string
   deleteAllUnused: string
-  confirmDeleteUnused: string
   close: string
   moreActions: string
   skipToContent: string
@@ -660,12 +633,10 @@ export type AdminStrings = {
   fieldInvalid: string
   listPathTaken: string
   noMedia: string
-  confirmDeleteMedia: string
   deleteNoMatch: string
   libraryIntro: string
   deleteSelected: string
   clearSelection: string
-  confirmDeleteSelected: string
   iconsGroupTitle: string
   iconsManaged: string
   copiedUrl: string
@@ -899,8 +870,6 @@ export type AdminStrings = {
   penSqueakDesc: string
   autosaveLabel: string
   autosaveHint: string
-  // overview
-  overviewTitle: string
   // The home screen greeting (`Greeting.tsx`). Four parts of the day, and a PATTERN that
   // joins one to the name — so a language that puts no comma between them does not get one,
   // and eleven dictionaries hold five rows instead of eight.
@@ -956,12 +925,9 @@ export type AdminStrings = {
   groupPostBody: string
   groupPostEnd: string
   groupPostReach: string
-  groupSidebar: string
   linkCommentSignIn: string
   cardLayout: string
-  cardFeatures: string
   cardBranding: string
-  cardOnPage: string
   cardListing: string
   cardActivity: string
   // comments
@@ -1034,8 +1000,6 @@ export type AdminStrings = {
   commentsAuthDesc: string
   commentsKeySite: string
   commentsKeySecret: string
-  commentsKeySave: string
-  commentsKeySaved: string
   commentsKeySet: string
   commentsTurnstileHelp: string
   commentsGoogleHelp: string
@@ -1044,14 +1008,7 @@ export type AdminStrings = {
   commentsGoogleRedirect: string
   commentsHelpOpen: string
   commentsNavTitle: string
-  commentsCount: string
-  commentsColContent: string
-  commentsColPost: string
-  commentsColTime: string
-  commentsColName: string
-  commentsColIp: string
   commentsColDelete: string
-  commentsConfirmDelete: string
   commentsEmptyHint: string
   commentsEmpty: string
   // reader-feature toggles
@@ -1155,10 +1112,6 @@ export type AdminStrings = {
   analyticsFindPiece: string
   analyticsShowAll: string
   analyticsShowFewer: string
-  // Analytics -> Delivery. Reader-reported bytes and the in-process cache. Both labels
-  // have to keep saying what they are NOT: bytes are what browsers reported, never
-  // server egress, and the cache is this process's, never the CDN's.
-  analyticsDelivery: string
   analyticsBytesTotal: string
   analyticsBytesAvg: string
   analyticsBytesMeasured: string
@@ -1232,12 +1185,7 @@ export type AdminStrings = {
    */
   logActions: Record<string, string>
   logDisabled: string
-  logColTime: string
-  logColAction: string
-  logColDetail: string
   logClear: string
-  logClearConfirm: string
-  logCleared: string
   // system info panel (Overview)
   navTrash: string
   trashTitle: string
@@ -1249,10 +1197,7 @@ export type AdminStrings = {
   restored: string
   restoreFailed: string
   deletePermanently: string
-  confirmPurge: string
-  confirmPurgeInUse: string
   emptyTrash: string
-  confirmEmptyTrash: string
   trashEmptied: string
   purged: string
   purgeFailed: string
@@ -1283,7 +1228,6 @@ export type AdminStrings = {
   aiProviderOff: string
   aiTasksLabel: string
   aiAutoJobs: string
-  aiTaskAltText: string
   aiModelsLoading: string
   aiModelsFailed: string
   /** The model list is also the only free test of a key, so its outcome is spoken in
@@ -1294,7 +1238,6 @@ export type AdminStrings = {
   aiKeyLimited: string
   aiProviderRefused: string
   aiNoReach: string
-  aiTaskExcerpt: string
   aiTaskComments: string
   aiTaskCommentsDesc: string
   aiDescribeAll: string
@@ -1329,7 +1272,6 @@ export type AdminStrings = {
   assistantDelete: string
   assistantDeleteYes: string
   assistantContext: string
-  assistantSpent: string
   assistantNew: string
   assistantEg1: string
   assistantEg2: string
@@ -1372,7 +1314,6 @@ export type AdminStrings = {
   mcpExpired: string
   mcpRefresh: string
   mcpNeverUsed: string
-  mcpConfirmDelete: string
   mcpTokenDeleted: string
   mcpLimitReached: string
   mcpCreateFailed: string
@@ -1397,7 +1338,6 @@ export type AdminStrings = {
   s3KeyId: string
   s3Secret: string
   offsiteTest: string
-  offsiteTestOk: string
   exportHint: string
   exportNow: string
   exportBusy: string
@@ -1410,7 +1350,6 @@ export type AdminStrings = {
   backupNone: string
   backupLastRun: string
   backupNever: string
-  backupDeleteConfirm: string
   backupToastOk: string
   backupToastFail: string
   // redirects (Settings → SEO)
@@ -1433,8 +1372,6 @@ export type AdminStrings = {
   nlSmtpPass: string
   nlSmtpFrom: string
   nlSmtpSecure: string
-  nlSaveSmtp: string
-  nlSmtpSaved: string
   nlConfirmed: string
   nlPending: string
   nlUnsub: string
@@ -1469,8 +1406,6 @@ export type AdminStrings = {
   nlNoMatch: string
   nlPagePrev: string
   nlPageNext: string
-  nlColLastSend: string
-  nlFailedSuffix: string
   nlPickPost: string
   nlPreview: string
   nlPreviewHint: string

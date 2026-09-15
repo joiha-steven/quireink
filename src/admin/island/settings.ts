@@ -11,6 +11,7 @@
 // and navigating between them would make every switch a page load, and a page load with unsaved
 // work either loses it or raises the browser's own warning.
 import { fold } from '@/admin-shared/fold'
+import { wireFieldChecks } from './lib/field-check'
 import { resolveTab, type Tab } from '@/admin-shared/settings-tabs'
 import { wireAi } from './lib/settings-ai'
 import { wireCards } from './lib/settings-cards'
@@ -69,6 +70,9 @@ if (root) {
   wireAi(screen, words)
   // The Google redirect address, and which of the language menu's two sentences is true.
   wireNotes(screen)
+  // And the six sentences that say why a number or an address was refused. The browser will not
+  // say them: this screen has no `<form>` for native validation to fire from.
+  wireFieldChecks(screen, words)
   // The account's four flows, none of which is a setting and every one of which asks for the
   // current password first: being signed in is not enough.
   wireSecurity(screen, words)

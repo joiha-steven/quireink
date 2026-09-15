@@ -173,6 +173,37 @@ export function registerWiredFlows({ flow, expect }: Pick<Tour, 'flow' | 'expect
     })()`, 4000))
 
   /**
+   * ⚠️ THE BROWSER WILL NOT SAY THIS. Native constraint validation fires on a form submit, and
+   * this screen has no `<form>` — so between ADR 0054 and 2026-09-15 a number outside its range
+   * was accepted in silence, `clampNumber` rewrote it on save, and the screen said "Settings
+   * saved". Six translated sentences sat in `locales/` with nothing left that read them.
+   */
+  flow('admin: a number below its floor says so, in the admin\'s own words', () => expect('/admin/settings', `
+    (async () => {
+      const wait = (ms) => new Promise((go) => setTimeout(go, ms))
+      const box = document.querySelector('[data-k="excerptLength"]')
+      if (!box) return 'the excerpt length field is not on the screen'
+      if (!box.min) return 'the field carries no floor, so this proves nothing'
+      const slot = document.querySelector('[data-field-check="excerptLength"]')
+      if (!slot) return 'no line was drawn to say why a value was refused'
+      if (!slot.hidden) return 'the refusal line arrived already showing'
+      const was = box.value
+      box.value = String(Number(box.min) - 1)
+      box.dispatchEvent(new Event('blur', { bubbles: false }))
+      await wait(80)
+      if (slot.hidden) return 'a value under the floor was accepted without a word'
+      if (slot.textContent.indexOf(box.min) < 0) return 'the line does not say what the floor is'
+      if (box.getAttribute('aria-invalid') !== 'true') return 'a screen reader was not told'
+      // And it stops complaining once the value is back inside the range.
+      box.value = was
+      box.dispatchEvent(new Event('input', { bubbles: true }))
+      await wait(80)
+      if (!slot.hidden) return 'the line stayed up over a value that is fine'
+      if (box.hasAttribute('aria-invalid')) return 'aria-invalid outlived the problem'
+      return 'ok (refused below ' + box.min + ', named the floor, cleared on repair)'
+    })()`, 3000))
+
+  /**
    * The font block: four slots, and the value they all write into. Nothing is uploaded — the
    * Remove key is the half that needs no file, and it is the half that has to reach the value.
    */

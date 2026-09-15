@@ -118,7 +118,7 @@ export const SHEET_WORD_KEYS = [
   'dateMonthNext', 'dateMonthPrev', 'dateNow', 'dateTime', 'dateTomorrow', 'delete', 'download',
   'draftRestored', 'edFocus', 'edReadMinutes', 'edWords', 'editorPlaceholder', 'findCount',
   'findFind', 'findMatchCase', 'findNext', 'findNoMatch', 'findPrevious', 'findReplace',
-  'findReplaceAll', 'findReplaceWith', 'galleryAdd', 'galleryPickHint', 'galleryPickTitle',
+  'findReplaceAll', 'findReplaceWith', 'findReplacedN', 'galleryAdd', 'galleryPickHint', 'galleryPickTitle',
   'hideAttributes', 'imageUploadFailed', 'imgAlignCenter', 'imgAlignLeft', 'imgAlignRight',
   'imgCaptions', 'imgDefault', 'imgFrameInk', 'imgFrameMedium', 'imgFrameNone', 'imgFramePaper',
   'imgFrameThick', 'imgFrameThin', 'imgGrid', 'imgNoCaptions', 'imgRatioNatural',

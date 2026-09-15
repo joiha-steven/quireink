@@ -88,6 +88,10 @@ function words(t: AdminStrings): string {
     importImagesFailed: t.importImagesFailed, importFailed: t.uploadFailed,
     // The footer's link key asks for an address in the product's own dialog, not the browser's.
     linkTitle: t.tbLink, promptLink: t.promptLink, linkSave: t.save,
+    // Why a value was refused. Six sentences that had no reader left after ADR 0054, on a screen
+    // with no `<form>`, so nothing — not even the browser — was saying anything.
+    fieldMin: t.fieldMin, fieldMax: t.fieldMax, fieldEmail: t.fieldEmail,
+    fieldUrl: t.fieldUrl, fieldRequired: t.fieldRequired, fieldInvalid: t.fieldInvalid,
     // The account's four flows report what they did; the server's REFUSALS ride on the card
     // itself, because each belongs to the control that can provoke it.
     passwordChanged: t.securityPasswordChanged, signedOut: t.securitySignedOut,

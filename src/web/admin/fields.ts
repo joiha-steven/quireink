@@ -92,6 +92,27 @@ export function settingRow(t: SettingText & {
     + `<div class="${top ? FIELD_GAP : ''}">${t.control}</div></div>`
 }
 
+/**
+ * THE LINE THAT SAYS WHY A VALUE WAS REFUSED, drawn empty beside any field that can refuse one.
+ *
+ * ⚠️ NOT THE BROWSER'S BUBBLE, AND THE BROWSER HAS NOTHING TO SAY HERE ANYWAY. Native constraint
+ * validation only surfaces on a form submit or an explicit `reportValidity()`, and this admin has
+ * NO `<form>` anywhere — deliberately, so that Return in a field cannot fire whichever route the
+ * nearest button belongs to. So between ADR 0054 and 2026-09-15 a number outside its range was
+ * simply accepted, `clampNumber` rewrote it on save, the screen said "Settings saved", and the
+ * value the owner chose was discarded without a word. Six translated sentences existed the whole
+ * time with nothing left that read them.
+ *
+ * It ships DRAWN and hidden: a line that is not in the page cannot be filled in by an island.
+ */
+const CHECK = 'mt-1 text-sm text-red-700 dark:text-red-400'
+function refusal(k: string, type: string, attrs: string): string {
+  const constrained = type === 'number' || type === 'url' || type === 'email'
+    || /\b(?:min|max|step|pattern|required)\b/.test(attrs)
+  if (!constrained) return ''
+  return `<p class="${CHECK}" role="alert" data-field-check="${escapeAttr(k)}" hidden></p>`
+}
+
 /** A SHORT ANSWER SITS BESIDE ITS QUESTION: a number is inline and narrow unless told otherwise. */
 export function textField(f: SettingText & {
   k: string
@@ -111,13 +132,14 @@ export function textField(f: SettingText & {
     + attr('placeholder', f.placeholder ?? '')
     + (f.attrs ? ` ${f.attrs}` : '') + `>`
   const inline = f.inline ?? type === 'number'
+  const said = refusal(f.k, type, f.attrs ?? '')
   if (inline && (f.label || f.note || f.noteHtml)) {
     return `<div class="setting-row flex flex-wrap items-start justify-between gap-x-4 gap-y-2">`
-      + `<span class="min-w-0 flex-1 basis-48">${head(f, id)}</span>`
+      + `<span class="min-w-0 flex-1 basis-48">${head(f, id)}${said}</span>`
       + `<span class="shrink-0">${input}</span></div>`
   }
   return `<div class="block">${head(f, id)}`
-    + (f.label || f.note || f.noteHtml ? `<div class="${FIELD_GAP}">${input}</div>` : input)
+    + (f.label || f.note || f.noteHtml ? `<div class="${FIELD_GAP}">${input}${said}</div>` : input + said)
     + `</div>`
 }
 

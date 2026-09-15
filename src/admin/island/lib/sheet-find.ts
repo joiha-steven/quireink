@@ -17,6 +17,7 @@ import {
 } from '@/admin/components/FindExtension'
 import { mountFindBar, type FindBar } from '@/admin/components/editor-find-bar'
 import { matchesChord } from '@/admin/components/editorKeys'
+import { say } from './media-bridge'
 
 type RawFind = { query: string; caseSensitive: boolean; index: number; hits: Hit[] }
 const NO_RAW: RawFind = { query: '', caseSensitive: false, index: 0, hits: [] }
@@ -172,11 +173,20 @@ export function wireFind(host: HTMLElement, ctx: FindContext): Finder {
             counts()
           },
 
+          /**
+           * ⚠️ IT SAYS HOW MANY, because nothing else on the screen does. Replace All changes a
+           * document that is mostly off screen — the writer sees the two or three hits in view
+           * change and has no way to tell whether it touched three or ninety. The sentence
+           * existed in eleven languages and had no caller from ADR 0054 until 2026-09-15.
+           *
+           * Counted BEFORE the replacement, because afterwards there is nothing left to count.
+           */
           onReplaceAll(replacement) {
-            if (!ctx.raw()) { replaceEveryHit(editor, replacement); counts(); return }
-            ctx.onRawText(replaceAllIn(ctx.rawText(), rawFind.hits, replacement))
-            clearRaw()
+            const n = ctx.raw() ? rawFind.hits.length : readFind(editor.state).hits.length
+            if (!ctx.raw()) replaceEveryHit(editor, replacement)
+            else { ctx.onRawText(replaceAllIn(ctx.rawText(), rawFind.hits, replacement)); clearRaw() }
             counts()
+            if (n > 0) say(ctx.t.findReplacedN.replace('{n}', String(n)))
           },
         },
       })

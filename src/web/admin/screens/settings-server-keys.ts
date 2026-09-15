@@ -253,6 +253,16 @@ export function offsiteCard(t: AdminStrings, i: IntegrationStatus): string {
     title: t.offsiteTitle,
     keys: [],
     route: '/api/integrations/s3',
+    // ⚠️ AND IT TRIES THE BUCKET, which is what `saveAndTest` on the key below has been
+    // promising. `POST /api/backup/offsite-test` writes a marker object and removes it — the
+    // only way to learn that a pasted endpoint, region and secret agree with each other while
+    // the owner is still here to fix them. The route existed and nothing called it, so the card
+    // said "Save and test", saved nothing, tested nothing and went green.
+    //
+    // `data-card-test-when` on the bucket: with no bucket there is nothing to write into, and a
+    // test that cannot run must not report a failure.
+    attrs: 'data-card-tests data-card-test="/api/backup/offsite-test"'
+      + ' data-card-test-when="s3Bucket"',
     // ⚠️ AMBER, NOT GREY, WHEN THERE ARE NO CREDENTIALS. Grey is `connectionOff` and it means
     // somebody switched this off on purpose; this card has no switch, so the only thing "off"
     // could mean here is "never set up", and that is a thing to DO rather than a settled state.
