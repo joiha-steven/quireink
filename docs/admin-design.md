@@ -252,7 +252,7 @@ Its four rules and the traps under each one moved to [`docs/admin-one-dom.md`](.
 Adopted 2026-08-18 from the admin-pages mock, which replaced a page-by-page fix session:
 mock every page first, then work through them, and stop the pages coming out at different
 widths. Four laws, held by the
-primitives in `components/sheet.tsx` (`SHEET`, `SheetTop`, `NumBand`, `SHEET_FOOT`,
+primitives in `admin-shared/kit.ts` (`SHEET`, `SHEET_TOP`, `SHEET_FOOT`,
 `SHEET_TOOL`) and `.paper-cols` in `admin.css`:
 
 1. **Every page is ONE full-width sheet at ONE width, as long as what is on it** — the

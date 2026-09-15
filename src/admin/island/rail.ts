@@ -17,6 +17,11 @@
 // that only one of the two could win.
 import { NARROW, RAIL_KEYS, RAIL_WIDTH } from '@/admin-shared/rail'
 import type { NavOrder } from '@/types'
+import { wireToast } from './lib/overlay-toast'
+import { wireConfirm } from './lib/overlay-confirm'
+import { wireShortcutSheet } from './lib/overlay-keys'
+import { wirePalette } from './lib/overlay-palette'
+import { wireWhatsNew } from './lib/overlay-news'
 
 /**
  * What the server told the rail, in one tag.
@@ -33,6 +38,10 @@ export type RailWords = {
   navArrange: string; navArrangeDone: string; navArrangeReset: string; navArrangeFailed: string
   navMoveUp: string; navMoveDown: string
   navShowLogo: string; navShowSearch: string
+  /** The overlays' own, which ride with the rail because they belong to every page. */
+  close: string
+  cacheClearedPalette: string; saveFailed: string; paletteBackupDone: string
+  kindPage: string; scopePosts: string
 }
 
 export type RailData = {
@@ -322,10 +331,25 @@ function wirePicker(): void {
 }
 
 export function startRail(): void {
-  // Before the early return: the picker is asked for by screens that have nothing to do with
-  // the rail, and a page without rail data still has editors on it.
+  // ⚠️ ALL THREE BEFORE THE EARLY RETURN, and for one reason each. The picker is asked for by
+  // screens that have nothing to do with the rail. The toast and the confirm dialog answer
+  // events from anywhere in the admin — including the sign-in shell, which draws no rail — and
+  // a question nobody hears is a delete that happens in silence.
   wirePicker()
   const data = read()
+  wireToast(data?.words.close ?? '')
+  wireConfirm()
+  wireShortcutSheet()
+  wireWhatsNew()
+  if (data) {
+    wirePalette({
+      cacheCleared: data.words.cacheClearedPalette,
+      saveFailed: data.words.saveFailed,
+      paletteBackupDone: data.words.paletteBackupDone,
+      kindPage: data.words.kindPage,
+      scopePosts: data.words.scopePosts,
+    })
+  }
   if (!data || !document.getElementById('admin-rail')) return
   attr('icons', flag(RAIL_KEYS.icons, true))
   attr('more', flag(RAIL_KEYS.more, false))

@@ -87,7 +87,7 @@ so a split shows up as a failure rather than as an intermittent bug.
 
 **No grouping makes a person remember which of seven boxes holds one of a hundred things;
 what makes the grouping stop mattering is being able to type a word.** `settings-index.ts` is
-that word for Settings, and `CommandPalette.tsx` is the same index reached from anywhere,
+that word for Settings, and the command palette is the same index reached from anywhere,
 with the screens, the two actions and the writing beside it — so "make the text bigger",
 "go to the trash" and "write something" are one gesture.
 

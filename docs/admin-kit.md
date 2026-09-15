@@ -73,7 +73,7 @@ FAILED to load also looks like. `GLYPHS` is its own 48-unit board because the ic
 at 7.2px this size, and because a mark drawn to survive at 20px throws away what a 96px
 picture has room for — `page` carries ruled lines, `blankPage` carries none, and the second
 one is the whole message. The two dead ends, the admin 404 and the empty Write sheet, also
-carry `RecentPieces`: the three pieces touched last, read off the same `useWritingItems` sort
+carry `recentPieces()`: the three pieces touched last, read off the same `writeItems` sort
 the write pane uses, so both screens name the same piece first.
 
 **A button is a fixed object; the text beside it gives way.** `ui/Button` carries

@@ -14,7 +14,7 @@
 
 import { describe, expect, it } from 'bun:test'
 import { readFileSync } from 'node:fs'
-import { tabItemClass } from '@/admin/components/tabs'
+import { tabItemClass } from '@/admin-shared/tabs'
 import { SIDEBAR_NAV, SIDEBAR_NAV_ACTIVE, SIDEBAR_NAV_QUIET } from '@/admin/components/headerActions'
 
 describe('the highlighter marks a place', () => {
@@ -69,13 +69,15 @@ describe('the highlighter does NOT mark a choice', () => {
   })
 
   it('is asked for only by the one component that renders navigation', () => {
-    // The seam. `Tabs` is the admin's only navigation strip; 'place' reaches tabItemClass
-    // solely through Tabs' own DEFAULT (a caller may opt DOWN to 'choice' — the write
-    // pane's scope strip does, to keep the pen away from the writing — but never up).
-    // A chooser that starts passing 'place' is the drift this whole file exists to catch.
-    const tabs = readFileSync('src/admin/components/tabs.tsx', 'utf8')
+    // The seam. `tabs()` in `web/admin/kit.ts` is the one builder that renders the admin's
+    // navigation, and 'place' reaches `tabItemClass` solely through its own DEFAULT — a caller
+    // may opt DOWN to 'choice' (the write pane's scope strip does, to keep the pen away from
+    // the writing) but never up. A chooser that starts passing 'place' is the drift this whole
+    // file exists to catch. It read `components/tabs.tsx` until the admin stopped being React
+    // (ADR 0054, step 6); the default it is guarding did not move.
+    const tabs = readFileSync('src/web/admin/kit.ts', 'utf8')
     expect(tabs).toContain("role = 'place'")
-    expect(tabs).toContain('tabItemClass(value === tb.key, size, dense, role)')
+    expect(tabs).toContain('tabItemClass(')
     // Every chooser the server draws. `SiteFields.tsx` was on this list until the settings
     // screen became a page (ADR 0054), and `WritePane.tsx` until the write column did; its kind
     // strip is `tabs({ role: 'choice' })` in `src/web/admin/screens/content-pane.ts` now. The

@@ -20,7 +20,7 @@
 // post contains that. The exception is the scripts that put no spaces between words — a
 // whole-word test would answer "no" to every true hit in Japanese or Chinese, so a word
 // written in one of those is matched as a substring instead.
-import { foldAccents } from '@/utils'
+import { foldAccents } from '@/admin-shared/fold'
 
 /** Letter, mark or digit: what a whole word may not be sitting next to. Written as escapes
  *  for the reason `foldAccents` gives — a literal class here is a run of bytes a tool that

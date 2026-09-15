@@ -17,7 +17,8 @@
 import { describe, expect, it } from 'bun:test'
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { CARD, CONTROL, NOTE, NOTE_TEXT, PAGE_TITLE_FACE, READING, SETTING_LABEL, THEAD, TROW } from './kit'
+import { CARD, CONTROL, THEAD, TROW } from '@/admin-shared/kit'
+import { NOTE, NOTE_TEXT, PAGE_TITLE_FACE, READING, SETTING_LABEL } from '@/admin-shared/scale'
 
 const ADMIN_CSS = readFileSync('src/admin/admin.css', 'utf8')
 
@@ -89,12 +90,14 @@ describe('the admin wears one face', () => {
   })
 
   it('keeps the hint primitive shared, so no screen re-types it', () => {
-    // `ui/Input` must place `NOTE`, not a copy of its classes. Pinned to the CURRENT size
-    // string: the old assertion named `text-xs leading-5`, which the primitive stopped setting
-    // in the 2026-08-15 type rework, so it would have passed for the wrong reason forever.
-    const input = readFileSync('src/admin/ui/Input.tsx', 'utf8')
-    expect(input).toContain('NOTE')
-    expect(input).not.toContain('text-[0.8125rem]')
+    // The field builders must PLACE `NOTE`, never a copy of its classes. Pinned to the
+    // CURRENT size string: the old assertion named `text-xs leading-5`, which the primitive
+    // stopped setting in the 2026-08-15 type rework, so it would have passed for the wrong
+    // reason forever. `ui/Input.tsx` held this until the admin stopped being React; the
+    // server's own `fields.ts` is what draws every field now.
+    const fields = readFileSync('src/web/admin/fields.ts', 'utf8')
+    expect(fields).toContain('NOTE')
+    expect(fields).not.toContain('text-[0.8125rem]')
   })
 
   it('gives the reading face to the editor and nothing else', () => {
@@ -111,7 +114,6 @@ describe('the admin wears one face', () => {
       .sort()
     expect(holders).toEqual([
       'src/web/admin/screens/sheet.ts',
-      'src/admin/components/kit.tsx', // re-export only
       'src/admin-shared/scale.ts',
       'src/web/admin/screens/settings-appearance-type.ts',
     ].sort())
@@ -119,19 +121,16 @@ describe('the admin wears one face', () => {
 
   it('gives the page-title face to PageHeader and nothing else', () => {
     // THE SECOND CARVE-OUT, 2026-09-07 — and it is one LINE per screen, not one surface.
-    // `kit.tsx` holds `PageHeader` itself and re-exports the token; `scale.ts` declares it.
-    // A third file means some other heading has started wearing a serif, which is the exact
-    // drift the one-face rule exists to catch: two faces arrive one call site at a time.
+    // ONE file: `scale.ts`, which declares it. `admin/components/kit.tsx` held `PageHeader`
+    // and re-exported the token until the admin stopped being React (ADR 0054, step 6), and
+    // the server's page headers take it from the declaration. A second file means some other
+    // heading has started wearing a serif, which is the exact drift the one-face rule exists
+    // to catch: two faces arrive one call site at a time.
     const holders = everywhere()
       .filter((f) => /\bPAGE_TITLE_FACE\b/.test(code(f)))
       .map((f) => f.replaceAll('\\', '/'))
       .sort()
-    // `.sort()` on both sides, because the two paths no longer sort the way they read:
-    // `admin-shared` comes BEFORE `admin/` (a dash is 0x2D, a slash is 0x2F).
-    expect(holders).toEqual([
-      'src/admin/components/kit.tsx',
-      'src/admin-shared/scale.ts',
-    ].sort())
+    expect(holders).toEqual(['src/admin-shared/scale.ts'])
   })
 
   it('points the page-title class at a FIXED serif, never at the site\'s reading face', () => {

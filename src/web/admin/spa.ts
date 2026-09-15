@@ -17,6 +17,8 @@ import type { SiteSettings } from '@/types'
 import { shellView } from '@/web/admin/views'
 import { getIntegrationStatus } from '@/store/integration-keys'
 import { railBootScript, railData, railHtml, railHtmlAttrs } from '@/web/admin/rail'
+import { overlaysHtml } from '@/web/admin/overlays'
+import { notFoundScreen } from '@/web/admin/screens/not-found'
 import { screenFor } from '@/web/admin/screens'
 import { adminT } from '@/i18n/admin-i18n'
 import { escapeHtml } from '@/utils'
@@ -72,26 +74,6 @@ function fingerprint(name: string): string {
 }
 
 /**
- * The entry, under the name the BUNDLER gave it — never a name computed here.
- *
- * ⚠️ This was `main.<hash>.js`, a virtual name mapped back to a `main.js` on disk, and it
- * shipped a blank admin in 2.2.8. A lazy route chunk may import the entry back: Bun 1.4 emits
- * `from"./main.js"` in every one of them where 1.3 emitted none. The browser then held the
- * entry TWICE — once as the shell's `main.<hash>.js`, once as the chunk's `main.js` — and two
- * module records mean two copies of React. The first lazy screen to call a hook got a
- * dispatcher belonging to the other copy and threw React error #321; the admin rendered
- * nothing at all.
- *
- * A module's identity is its URL. So the file's name on disk IS the name the shell links, and
- * `build-admin.ts` puts the hash in it. `admin.` with a dot keeps it apart from the
- * `main-<hash>.js` chunks, which must be found by their own names and not by this one.
- */
-function entryName(): string {
-  for (const name of ASSETS.keys()) if (/^admin\.[a-z0-9]+\.js$/.test(name)) return name
-  return 'admin.dev.js'
-}
-
-/**
  * The rail's island, which is a SEPARATE build and a separate request.
  *
  * Separate because it must not wait for React: the rail is the frame the owner navigates by,
@@ -109,7 +91,8 @@ function railEntryName(): string {
  * Every file in `src/admin/island/` is its own entry (`build-admin.ts`), so a screen's
  * behaviour is a request only the pages that need it make. The hash is the bundler's, which is
  * what makes the URL immutable; finding it by pattern is how the shell links a name it did not
- * choose. See the note on `entryName` for why a computed name would be a bug here.
+ * choose. A COMPUTED name would be a bug: a module's identity is its URL, so the file's
+ * name on disk IS the name the shell links, and `build-admin.ts` puts the hash in it.
  */
 function islandNamed(stem: string): string {
   const want = new RegExp(`^${stem}\\.[a-z0-9]+\\.js$`)
@@ -117,10 +100,9 @@ function islandNamed(stem: string): string {
   return `${stem}.dev.js`
 }
 
-const ENTRY_NAME = entryName()
-const RAIL_ENTRY = `/admin/assets/${railEntryName()}`
+const RAIL_ENTRY_NAME = railEntryName()
+const RAIL_ENTRY = `/admin/assets/${RAIL_ENTRY_NAME}`
 const STYLES_NAME = `admin.${fingerprint('admin.css')}.css`
-const ENTRY = `/admin/assets/${ENTRY_NAME}`
 const STYLES = `/admin/assets/${STYLES_NAME}`
 
 /**
@@ -153,20 +135,21 @@ ASSETS.set(BOOT_NAME, { body: new TextEncoder().encode(BOOT_BODY), type: TYPES['
 const BOOT = `/admin/assets/${BOOT_NAME}`
 
 /**
- * Every chunk the entry needs before it can run, found by following STATIC imports.
+ * Every chunk a module entry needs before it can run, found by following STATIC imports.
  *
- * Without these the browser discovers the module graph one level at a time, because it
- * cannot know a chunk exists until it has parsed the file that imports it. Measured on the
- * dashboard: four waves, at 4ms, 13ms, 24ms and 31ms — on localhost, where a hop is a
- * millisecond. On a real connection that is four round trips of blank screen.
+ * Without these the browser discovers the module graph one level at a time, because it cannot
+ * know a chunk exists until it has parsed the file that imports it. Measured on the dashboard
+ * while the admin was still a React application: four waves, at 4ms, 13ms, 24ms and 31ms — on
+ * localhost, where a hop is a millisecond. On a real connection that is four round trips of
+ * blank screen.
  *
- * STATIC only. `import("./Content-hash.js")` is a route the owner may never open, and
- * preloading all fourteen of those would trade one problem for a worse one.
+ * STATIC only. A dynamic import is a thing the owner may never open, and preloading those
+ * would trade one problem for a worse one.
  */
-function bootChunks(): string[] {
+function bootChunks(entry: string): string[] {
   const found: string[] = []
-  const seen = new Set<string>([ENTRY_NAME])
-  const queue = [ENTRY_NAME]
+  const seen = new Set<string>([entry])
+  const queue = [entry]
   while (queue.length > 0) {
     const asset = ASSETS.get(queue.shift() ?? '')
     if (!asset) continue
@@ -184,7 +167,7 @@ function bootChunks(): string[] {
   return found
 }
 
-const PRELOADS = bootChunks()
+const PRELOADS = bootChunks(RAIL_ENTRY_NAME)
   .map((name) => `<link rel="modulepreload" href="/admin/assets/${name}">`)
   .join('')
 
@@ -288,11 +271,12 @@ export async function adminShell(settings: SiteSettings, path: string, query = n
   const esc = (s: string) => s.replace(/[<>"&]/g, (c) =>
     ({ '<': '&lt;', '>': '&gt;', '"': '&quot;', '&': '&amp;' })[c] ?? c)
   const { aiConfigured } = await getIntegrationStatus()
-  // ADR 0054: a screen the server draws arrives as finished HTML in the canvas, and React is
-  // told not to draw a route for it. A screen that is still React's leaves `#admin` empty, as
-  // it has always been.
+  // ADR 0054: every admin screen arrives as finished HTML in the canvas. An address the table
+  // does not claim is not a gap any more — it is the dead end, and the server draws that too.
   const found = screenFor(path)
-  const screen = found ? await found.screen.render(settings, query) : ''
+  const screen = found
+    ? await found.screen.render(settings, query)
+    : await notFoundScreen(settings)
   const island = found?.screen.island
     ? `\n<script type="module" src="/admin/assets/${islandNamed(found.screen.island)}"></script>`
     : ''
@@ -301,7 +285,7 @@ export async function adminShell(settings: SiteSettings, path: string, query = n
   // emitted here. Stamping it would leave a hook that says the admin follows a setting it
   // does not.
   return `<!DOCTYPE html>
-<html lang="${esc(settings.language)}" class="admin" data-motion="${settings.motion.enabled ? 'on' : 'off'}"${railHtmlAttrs(settings)}${found ? ` data-admin-screen="${found.name}"` : ''}>
+<html lang="${esc(settings.language)}" class="admin" data-motion="${settings.motion.enabled ? 'on' : 'off'}"${railHtmlAttrs(settings)} data-admin-screen="${found ? found.name : 'not-found'}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -347,10 +331,10 @@ ${railHtml({ settings, aiConfigured, path })}
 <div class="mx-auto w-full max-w-[1480px] px-4 py-6 sm:px-7 lg:px-10 lg:py-9 xl:px-12">${screen}<div id="admin"></div></div>
 </main>
 </div>
+${overlaysHtml(adminT(settings.language), settings)}
 ${await shellData()}
 ${railData(settings, aiConfigured)}
 <script type="module" src="${RAIL_ENTRY}"></script>${island}
-<script type="module" src="${ENTRY}"></script>
 </body>
 </html>
 `

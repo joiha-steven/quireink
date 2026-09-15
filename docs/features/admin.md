@@ -56,14 +56,14 @@
 - **Adding a feature? Add it here too** — the page is the only place a non-technical owner learns
   the feature exists.
 
-## Admin UI kit — `src/admin/components/kit.tsx`
+## Admin UI kit — `src/admin-shared/kit.ts` and `src/web/admin/kit.ts`
 
 - ONE source of truth for shared admin chrome so no page hand-rolls its own (radius /
   padding / shadow / header size used to drift): `Card` (canonical `CARD` surface, plus a
   `panel` mode for a card living INSIDE a sheet), `PageHeader`, `Tabs` (`lg` underline +
   `sm` segments, with a `dense` modifier), `StatCard`, `EmptyState`, and table tokens
   (`TableFrame` / `THEAD` / `TROW`). The one-sheet page itself lives in
-  `components/sheet.tsx` — `SHEET`, `SheetTop`, `NumBand`, `SHEET_FOOT`, `SHEET_TOOL` —
+  `admin-shared/kit.ts` — `SHEET`, `SHEET_TOP`, `SHEET_FOOT`, `SHEET_TOOL` —
   with `.paper-cols` (two newspaper columns) in `admin.css`; see "One sheet per page" in
   `docs/admin-design.md`. Admin is monochrome plus the product's own PEN BOX, and each ink
   keeps the meaning it has on paper: highlighter marks where you are (the rail's current row,

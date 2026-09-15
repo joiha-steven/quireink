@@ -1351,3 +1351,41 @@ tr[data-piece][data-last] {
    Chrome shows nothing wrong, which is what makes it worth a warning rather than a note. */
 [data-write-pane][data-picking] [data-piece][data-picked] { background: #fff; }
 .dark [data-write-pane][data-picking] [data-piece][data-picked] { background: #171717; }
+
+/* THE FOUR DIALECTS on the what's-new panel, told apart by `aria-pressed` rather than by a
+   class the island swaps. The chosen one is the ink-on-paper pair the whole admin uses for a
+   latched control; the other three are outlined. One state, said once, in the attribute that
+   is already true. */
+.news-look {
+  border-color: rgb(212 212 212);
+  color: rgb(64 64 64);
+}
+.news-look:hover {
+  background: rgb(245 245 245);
+}
+.news-look[aria-pressed='true'] {
+  border-color: #171717;
+  background: #171717;
+  color: #fff;
+}
+.dark .news-look {
+  border-color: rgb(82 82 82);
+  color: rgb(212 212 212);
+}
+.dark .news-look:hover {
+  background: rgb(38 38 38);
+}
+.dark .news-look[aria-pressed='true'] {
+  border-color: #fff;
+  background: #fff;
+  color: #171717;
+}
+
+/* THE COMMAND PALETTE'S FIRST GROUP HEADING sits closer to the box than the gaps between
+   groups do — and WHICH heading that is depends on what the typing has left showing, not on
+   which one is first in the markup. `:first-child` would count the four hidden ones
+   (`docs/admin-one-dom.md`, trap 4), so the island marks it and this is the rule. */
+[data-pal-head][data-pal-first] {
+  padding-top: 0.375rem;
+}
+

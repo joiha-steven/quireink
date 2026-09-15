@@ -16,6 +16,7 @@ import { registerSheetFlows } from './tour-flows-sheet'
 import { registerPictureFlows } from './tour-flows-picture'
 import { registerAttributeFlows } from './tour-flows-attributes'
 import { registerKeepFlows } from './tour-flows-keep'
+import { registerHoldFlows } from './tour-flows-hold'
 import { KITCHEN_SINK } from './tour-kitchen-sink'
 
 export function registerEditorFlows({ flow, expect, atWidth }: Tour): void {
@@ -361,4 +362,5 @@ export function registerEditorFlows({ flow, expect, atWidth }: Tour): void {
   registerPictureFlows({ flow, atWidth })
   registerAttributeFlows({ flow, atWidth })
   registerKeepFlows({ flow, atWidth })
+  registerHoldFlows({ flow, atWidth })
 }
