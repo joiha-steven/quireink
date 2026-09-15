@@ -14,18 +14,13 @@ import { useEffect, useReducer, useRef, useState } from 'react'
 // carry since the three node views became plain ProseMirror (2026-09-15).
 import { Editor as TiptapEditor } from '@tiptap/core'
 import { editorExtensions } from './editorExtensions'
-import { BubbleBar, SlashMenu } from './EditorMenus'
-import { mountToolbar, toolbarWords, type Toolbar } from './editor-toolbar'
+import { useEditorChrome } from './useEditorChrome'
 import { useLinkAsker } from './editorLink'
 import { useFocusMode } from './useFocusMode'
 import { placeCaret } from './key-feedback'
 import { penStrokes } from './pen-feedback'
 import { writingSurface } from './editor-surface'
 
-// The sticky band above the writing: the action line (~56px) plus the toolbar strip that
-// sticks under it (~60px with its margins). The bubble bar must not be placed inside this
-// band, because both are sticky and would cover it — the first line is where that happens.
-const ACTIONBAR_HEIGHT = 116
 import { useAdminT } from './I18nProvider'
 import { MarkdownSource } from './MarkdownSource'
 import { FindBar } from './FindBar'
@@ -238,38 +233,13 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
     onRawText: (next) => { rawView.setText(next); onChange(next) },
   })
 
-  /**
-   * THE BAR IS PLAIN TYPESCRIPT (`editor-toolbar.ts`), mounted into a div React owns.
-   *
-   * It was a React component asking twenty-one `isActive` questions per render, and the editor
-   * was told to re-render on every transaction so those answers stayed live — so every keystroke
-   * rebuilt the tree of the whole sheet to decide whether Bold looks pressed. It subscribes to
-   * the editor itself now and writes twenty-one attributes.
-   *
-   * Mounted and unmounted rather than hidden, because that is what the conditional above did:
-   * the bar is sticky and takes space, and the Markdown view and focus mode both want it gone
-   * rather than invisible.
-   */
-  const toolbarHost = useRef<HTMLDivElement>(null)
-  const barRef = useRef<Toolbar | null>(null)
-  const showBar = !raw && !focus
-  useEffect(() => {
-    const host = toolbarHost.current
-    if (!editor || !host || !showBar) return
-    const bar = mountToolbar(host, {
-      editor,
-      askLink,
-      onPickImage,
-      onPickGallery,
-      words: toolbarWords(t),
-    })
-    barRef.current = bar
-    return () => { bar.destroy(); barRef.current = null }
-  }, [editor, showBar])
-
-  // The sticky band above the bar is measured at runtime and moves when the find strip opens,
-  // so the offset arrives after the mount and is pushed in rather than re-mounting the bar.
-  useEffect(() => { barRef.current?.setTop(toolbarTop + find.height) }, [toolbarTop, find.height, showBar, editor])
+  // The button strip, the floating bar and the "/" menu, all three plain TypeScript now
+  // (`useEditorChrome.ts`). This component keeps only the CONDITIONS, which are React state.
+  const toolbarHost = useEditorChrome({
+    editor, t, askLink, onPickImage, onPickGallery,
+    raw, focus, findOpen: Boolean(find.open),
+    toolbarTop, findHeight: find.height, slash, setSlash,
+  })
   useEffect(() => {
     if (!editor) return
     editorRef.current = editor // keep the drag-drop / paste closures on the live instance
@@ -336,21 +306,6 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
         <div className="sticky z-20" style={{ top: toolbarTop }}>
           <FindBar target={find.target} withReplace={find.open === 'replace'} onHeight={find.onHeight} />
         </div>
-      )}
-      {/* Floating menu on a text selection / link — not in raw source mode, and not while the
-          find strip is open. The strip SELECTS each hit as it steps onto it, so without this
-          the formatting bubble rose over every match and covered the line above the very word
-          the writer had gone looking for. While the strip is open the selection is the find's
-          rather than the writer's, and the bubble has nothing to offer about it. */}
-      {!raw && !find.open && <BubbleBar editor={editor} avoidTop={toolbarTop + ACTIONBAR_HEIGHT} />}
-      {!raw && slash && (
-        <SlashMenu
-          editor={editor}
-          at={slash}
-          onClose={() => setSlash(null)}
-          onPickImage={() => { setSlash(null); onPickImage() }}
-          onPickGallery={() => { setSlash(null); onPickGallery() }}
-        />
       )}
       {/* At the very TOP of the sheet, the full width of it — the owner's verdicts, one
           sitting: on top, full-width, wrapping not scrolling, grouped in the middle, and

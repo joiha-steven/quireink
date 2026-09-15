@@ -1,7 +1,7 @@
 // Focus mode: one switch that takes everything off the writing screen except the writing.
 //
 // The DEFAULT does not change and is not up for debate here: the button row is the owner's
-// explicit pick (see `EditorMenus.tsx`) and the write pane is the Writing Desk mock's own
+// explicit pick (see `editor-menus.ts`) and the write pane is the Writing Desk mock's own
 // frame. This is the other half of both decisions — a way to put them away for an hour
 // without arguing with either. Formatting still works while they are away: the bubble bar
 // on a selection and "/" at the caret are the same commands the row holds.

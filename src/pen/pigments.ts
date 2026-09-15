@@ -2,7 +2,7 @@
 //
 // This file exists because the pen was written down THREE times and had already drifted.
 // `pen/ink.css.ts` drew it for the reader, `render/og-card.ts` drew it on the share card and
-// `admin/components/EditorMenus.tsx` painted the five swatches in the toolbar — each with its
+// `admin/components/editor-menus.ts` paints the five swatches in the bubble bar — each with its
 // own copy of `d5f856`, and two of them with their own copy of the path. The card's second
 // path was four numbers different from the page's, so the stroke under a shared headline was
 // not the stroke under a highlighted sentence, and nothing anywhere said so. The card's

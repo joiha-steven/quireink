@@ -17,7 +17,7 @@ import { INKS } from '@/pen/grammar'
 import { adminT } from '@/i18n/admin-i18n'
 import { LANG_CODES } from '@/locales/langs'
 
-/** The same derivation `EditorMenus` and `InkFields` both use. */
+/** The same derivation `editor-menus.ts` and `InkFields` both use. */
 const key = (ink: string) => `ink${ink[0]!.toUpperCase()}${ink.slice(1)}` as 'inkYellow'
 
 describe('the highlighter inks are named', () => {

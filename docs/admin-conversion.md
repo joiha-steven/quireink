@@ -134,3 +134,31 @@ comment is indistinguishable from a template literal to a regex. The guard repor
 rule for the words `check:admin-kit` — a sentence, not a class. Comments are stripped before the
 literals are read now. A guard that cries wolf gets its complaint dismissed, and the next
 complaint with it.
+
+### The floating bar and the "/" menu
+
+The bubble bar's BODY had stayed React after its positioning became a ProseMirror plugin; now the
+buttons are built too, and `EditorMenus.tsx` goes with the slash menu. Both are the editor's own
+furniture rather than the sheet's: the bar is placed by the plugin, and the menu is
+`position: fixed` at coordinates the editor measured when the key was pressed. Neither was ever
+really part of the page's markup.
+
+⚠️ **`title` IS THE NAME; `aria-label` IS THE NAME PLUS ITS CHORD** — and the first cut had them
+the wrong way round, which put the chord in the tooltip where it is noise and took it out of the
+one place a keyboard user would hear it. Caught by comparing the two builds' controls: the
+tooltip read "Bold (⌘B)" where it had read "Bold". `aria-pressed` is written only where the React
+bar wrote it, on the three headings and the five inks; a bar where twenty-five keys all announce
+"not pressed" is noise.
+
+**Two differences are deliberate and both are smaller than a pixel:**
+
+- **The heading keys are 0.02px narrower each.** `H{level}` in JSX is TWO text nodes, "H" and
+  "2", and a browser shapes them separately — so the kern pair between them was being lost. One
+  string shapes as one word. The bar measures 486.234 against 486.281, and rounds to 486 on both.
+- **"Remove link" is drawn and hidden rather than absent.** `display: none`, so it is not a flex
+  item, takes no gap and is out of the tab order: 17 laid-out children on both builds, 18 nodes
+  on the new one.
+
+**Measured identical otherwise**, at rest, with the caret in a bold run, with a heading selected
+and with the caret in a table: 48, 48, 63 and 53 controls, and the bar lands on the same pixels
+from the first line of a piece and from the middle of it.

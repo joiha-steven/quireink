@@ -1,6 +1,6 @@
 // The link box, and the three doors to it.
 //
-// Split out of `EditorMenus` when that file hit its 400-line cap: the toolbar button, the
+// Split out of the editor's menus when that file hit its 400-line cap: the toolbar button, the
 // bubble bar over a selection and `Mod-k` all ran the same three lines around a
 // `window.prompt` until 2026-09-07, and three copies of three lines is how one of them ends
 // up not clearing a link on an empty answer.
