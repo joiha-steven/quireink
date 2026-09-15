@@ -10,6 +10,7 @@
 // `addNodeView` that did exactly what the four functions below do: build the view, and give it a
 // way to write attributes back. That wrapper is what left.
 import { NodeSelection } from 'prosemirror-state'
+import { TableView } from 'prosemirror-tables'
 import type { Node as PMNode } from 'prosemirror-model'
 import type { EditorView, NodeViewConstructor } from 'prosemirror-view'
 import { ImageView } from '@/admin/components/CaptionedImage'
@@ -22,6 +23,29 @@ import type { VideoWords } from '@/admin/components/VideoNode'
 import type { MathWords } from '@/admin/components/MathNode'
 
 export type NodeWords = { image: ImageWords; video: VideoWords; math: MathWords }
+
+/**
+ * ⚠️ THE DEFAULT IS ENGLISH AND IT IS NOT DECORATION. A node view runs INSIDE the document: it
+ * has no context and no dictionary, so its labels have to be handed in. Making them REQUIRED
+ * would mean every caller that is not the writing sheet — fourteen test files among them —
+ * building an editor with no node views at all, which is a different editor from the one the
+ * writer uses. That is precisely the drift `editorExtensions.ts` was written to prevent, and it
+ * carried this same default for the same reason.
+ */
+export const ENGLISH: NodeWords = {
+  video: { column: 'Column', wide: 'Large' },
+  math: { placeholder: 'LaTeX formula' },
+  image: {
+    alignLeft: 'Left', alignCenter: 'Center', alignRight: 'Right',
+    sizeColumn: 'Column', sizeWide: 'Large',
+    grid: 'Grid',
+    siteDefault: 'Default', ratioNatural: 'As shot',
+    captions: 'Captions', noCaptions: 'No captions',
+    frameNone: 'No frame', frameThin: 'Thin', frameMedium: 'Medium', frameThick: 'Thick',
+    framePaper: 'Paper', frameInk: 'Ink',
+    caption: 'Image caption',
+  },
+}
 
 /**
  * Write attributes back onto the node a view is drawing.
@@ -88,9 +112,31 @@ function taskItemView(node: PMNode, view: EditorView, getPos: () => number | und
   }
 }
 
+/**
+ * THE TABLE'S OWN VIEW, which is `prosemirror-tables`' and not this file's.
+ *
+ * ⚠️ WITHOUT IT A TABLE HAS NO `<colgroup>`, and that is not cosmetic: `updateColumnsOnResize`
+ * gives every column a `min-width`, so a column whose cells are all empty still has a width to
+ * be clicked into. Without one it collapses to nothing and the writer cannot put the caret in
+ * it — which is exactly the state a table is in for the first few seconds after it is inserted.
+ *
+ * Measured against the outgoing build, 2026-09-15: it drew `<table style="min-width: 75px">`
+ * with a `<col style="min-width: 25px">` per column, and this schema drew a bare `<table>`. The
+ * 25 is `prosemirror-tables`' own default and the number the previous editor used.
+ *
+ * ⚠️ AND IT IS ALSO WHAT PUTS `.tableWrapper` AROUND THE TABLE, which `admin.css` line 653 needs
+ * and says why: a wide table has to pan inside its own box, because panning the WRITING surface
+ * sideways moves every paragraph away from the caret still sitting in one of them. Without this
+ * view there was no wrapper and the rule applied to nothing — a wide table dragged the whole
+ * sheet. No test could see it: nothing measures horizontal overflow of the writing surface.
+ * `tour-flows-hold.ts` measures it now.
+ */
+const CELL_MIN_WIDTH = 25
+
 /** Every node view, by node name, ready for `EditorView`'s `nodeViews` option. */
-export function nodeViews(words: NodeWords): Record<string, NodeViewConstructor> {
+export function nodeViews(words: NodeWords = ENGLISH): Record<string, NodeViewConstructor> {
   return {
+    table: (node) => new TableView(node, CELL_MIN_WIDTH) as never,
     image: (node, view, getPos) => {
       const v = new ImageView(node, words.image)
       v.attrs = writer(view, getPos)

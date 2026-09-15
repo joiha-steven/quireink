@@ -12,7 +12,7 @@
 // `plugins.ts`, the schema is a file, and the commands are a table. A name that is not in that
 // table cannot be called, which is the point.
 import { EditorState, Plugin, PluginKey, TextSelection, type Transaction } from 'prosemirror-state'
-import { EditorView, type EditorProps, type NodeViewConstructor } from 'prosemirror-view'
+import { EditorView, type EditorProps } from 'prosemirror-view'
 import type { Node as PMNode } from 'prosemirror-model'
 import { DOMSerializer } from 'prosemirror-model'
 import { schema } from './schema'
@@ -22,6 +22,7 @@ import { COMMANDS, type CommandName } from './commands'
 import { markActive, markAttrs } from './commands-marks'
 import { nodeActive, nodeAttrs } from './commands-blocks'
 import { contentToNodes } from './commands-doc'
+import { nodeViews, type NodeWords } from './views'
 import { documentToMarkdown } from '@/admin/components/MarkdownBridge'
 
 type Args<K extends CommandName> = Parameters<(typeof COMMANDS)[K]>
@@ -46,7 +47,14 @@ export type EditorOptions = {
   askLink?: (previous: string) => Promise<string | null>
   /** Anything mounted on top of the stack. The bubble bar arrives this way, after the fact. */
   plugins?: Plugin[]
-  nodeViews?: Record<string, NodeViewConstructor>
+  /**
+   * ⚠️ THE LABELS THE NODE VIEWS PRINT, NOT THE VIEWS THEMSELVES. The views are this editor's
+   * own and are always mounted; what a caller supplies is the WORDS, because a node view runs
+   * inside the document and has no dictionary to look them up in. An editor built with none
+   * gets English — the same default `editorExtensions.ts` carried, and for the same reason: an
+   * editor built anywhere in this repository has to be the editor the writer uses.
+   */
+  words?: NodeWords
   editorProps?: EditorProps
   editable?: boolean
 }
@@ -76,9 +84,15 @@ export class Editor {
     })
     this.view = new EditorView(opts.element, {
       state,
-      editable: () => opts.editable ?? true,
-      nodeViews: opts.nodeViews,
+      // ⚠️ THE CALLER'S PROPS GO FIRST, and the editor's own after them, because the editor's
+      // are not negotiable: `editable`, the node views and the two event bridges below. Spread
+      // the other way round — which the first cut did — and a caller's `editorProps.editable`
+      // silently overrode the argument beside it, and its `handleDOMEvents.focus` REPLACED the
+      // emitter rather than joining it. The shipping sheet passes both, so the editor's own
+      // `focus` and `blur` events were dead in the admin and nothing said so.
       ...opts.editorProps,
+      editable: () => opts.editable ?? true,
+      nodeViews: nodeViews(opts.words),
       // ⚠️ THE EVENTS GO OUT AFTER THE STATE IS UPDATED, not before. A listener that asks the
       // editor a question — and the save listener does, on every keystroke — must be told about
       // a document that is already there.
@@ -91,9 +105,19 @@ export class Editor {
         if (tr.selectionSet || tr.docChanged) this.emit('selectionUpdate', { editor: this })
       },
       handleDOMEvents: {
-        focus: () => { this.emit('focus', { editor: this }); return false },
-        blur: () => { this.emit('blur', { editor: this }); return false },
         ...(opts.editorProps?.handleDOMEvents ?? {}),
+        // Both halves run: the caller's handler first, and its answer is what the view is told,
+        // so a caller that takes an event over still takes it over.
+        focus: (view, event) => {
+          const said = opts.editorProps?.handleDOMEvents?.focus?.(view, event) ?? false
+          this.emit('focus', { editor: this })
+          return said
+        },
+        blur: (view, event) => {
+          const said = opts.editorProps?.handleDOMEvents?.blur?.(view, event) ?? false
+          this.emit('blur', { editor: this })
+          return said
+        },
       },
     })
     this.commands = this.makeCommands()
@@ -167,7 +191,9 @@ export class Editor {
     }
     proxy.run = () => {
       const ok = chain.run()
-      if (ok && wantFocus) this.view.focus()
+      // ⚠️ NOT WHEN THIS IS A QUESTION. `can()` is the same chain with the dispatch withheld, and
+      // a question that steals the keyboard is not a question. The first cut focused in both.
+      if (ok && wantFocus && !chain.dry) this.view.focus()
       return ok
     }
     return proxy
@@ -221,15 +247,21 @@ export class Editor {
    * comparing a caller's plain string against it never matches. The prefix before the `$` is
    * what a caller means.
    */
-  unregisterPlugin(key: string | PluginKey | { key: string } | Plugin): void {
-    const name = typeof key === 'string'
+  unregisterPlugin(key: string | PluginKey | Plugin): void {
+    // ⚠️ A `Plugin` HAS A `key` STRING TOO, which is what made the first cut dangerous: it read
+    // that field, decided it had been given a NAME, and then matched every plugin whose key
+    // shared the prefix before the `$`. ProseMirror names an unkeyed plugin `plugin$<n>`, so
+    // passing any such plugin removed EVERY unkeyed plugin — measured: 15 down to 8, taking all
+    // three keymaps and the input rules with them, leaving an editor that answers no keystroke.
+    // A plugin is matched by IDENTITY; only a string or a `PluginKey` is a name.
+    const byName = typeof key === 'string'
       ? key
-      : typeof (key as { key?: string }).key === 'string' ? (key as { key: string }).key : null
+      : key instanceof Plugin ? null : (key as unknown as { key: string }).key
     this.view.updateState(this.state.reconfigure({
       plugins: this.state.plugins.filter((p) => {
-        if (!name) return p !== key
+        if (byName === null) return p !== key
         const own = (p as unknown as { key?: string }).key ?? ''
-        return own !== name && own.split('$')[0] !== name.split('$')[0]
+        return own !== byName && own.split('$')[0] !== byName.split('$')[0]
       }),
     }))
   }

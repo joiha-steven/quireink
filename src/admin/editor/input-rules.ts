@@ -14,8 +14,9 @@
 // rules would add is applying those grammars to text pasted as HTML from somewhere else, where
 // a literal `**` is far more likely to be two asterisks somebody meant.
 import { InputRule, wrappingInputRule, textblockTypeInputRule } from 'prosemirror-inputrules'
+import { Selection, TextSelection, type Transaction } from 'prosemirror-state'
 import type { MarkType } from 'prosemirror-model'
-import { isBareAutolink } from '@/md/gfm-autolink'
+import { bareLinkAt } from '@/md/gfm-autolink'
 import {
   DISPLAY_BRACKET_SOURCE, DISPLAY_DOLLAR_SOURCE, INLINE_PAREN_SOURCE,
 } from '@/md/math-syntax'
@@ -44,8 +45,11 @@ const mark = (name: string) => schema.marks[name]!
  */
 function markInputRule(find: RegExp, type: MarkType, getAttrs?: (m: RegExpMatchArray) => Record<string, unknown> | null): InputRule {
   return new InputRule(find, (state, match, start, end) => {
-    const attrs = getAttrs?.(match) ?? {}
-    if (attrs === null) return null
+    // Read BEFORE the default is applied: `?? {}` would turn a deliberate `null` — a rule
+    // saying "not this time" — into "no attributes", and fire anyway.
+    const asked = getAttrs?.(match)
+    if (asked === null) return null
+    const attrs = asked ?? {}
     const content = match[match.length - 1]
     const whole = match[0]
     if (!content || !whole) return null
@@ -91,8 +95,28 @@ function mathRule(source: string, name: string, display: boolean, delim: string)
   return new InputRule(new RegExp(`${source}$`), (state, match, start, end) => {
     const tex = (match[1] ?? '').trim()
     if (!tex) return null
-    return state.tr.replaceRangeWith(start, end, node(name).create({ tex, display, delim }))
+    return afterNode(state.tr.replaceRangeWith(start, end, node(name).create({ tex, display, delim })))
   })
+}
+
+/**
+ * A caret the writer can keep typing at, after a rule has inserted a BLOCK node.
+ *
+ * ⚠️ `replaceRangeWith` LEAVES THE NEW NODE SELECTED, and the next character typed therefore
+ * replaces it. Measured: typing `---` and then `after` left `ftera` — the rule, and four of the
+ * five characters, gone. The same for `$$x$$` and for a picture. It has to move on to a
+ * position that can hold a caret, making one after the node when there is nothing there.
+ */
+function afterNode(tr: Transaction): Transaction {
+  const at = tr.selection.to
+  const near = Selection.findFrom(tr.doc.resolve(Math.min(at, tr.doc.content.size)), 1, true)
+  if (near) return tr.setSelection(near).scrollIntoView()
+  // Nothing after it: the trailing paragraph plugin will add one, but not before this
+  // transaction lands, so the place to stand is made here.
+  const para = node('paragraph').createAndFill()
+  if (!para) return tr
+  tr.insert(at, para)
+  return tr.setSelection(TextSelection.near(tr.doc.resolve(at))).scrollIntoView()
 }
 
 /** The colour afterthought: `==word==#pink` typed one piece at a time. */
@@ -131,38 +155,74 @@ export function inputRules(): InputRule[] {
       (match) => ({ start: Number(match[1]) }),
       (match, listNode) => listNode.childCount + (listNode.attrs.start as number) === Number(match[1]),
     ),
-    // `- [ ] ` inside a bullet item turns that item into a task item, which is how GFM writes
-    // one and therefore how somebody types it.
+    // `- [ ] ` INSIDE A BULLET ITEM MAKES A CHECKBOX, which is how GFM writes one and therefore
+    // how somebody types it.
+    //
+    // ⚠️ FOUR THINGS THE FIRST CUT GOT WRONG, all of them measured by typing `- [ ] buy milk`:
+    //
+    //  · It built the replacement from the document BEFORE deleting the typed `[ ] `, so every
+    //    task item was born holding its own syntax as text — `- [ ] \[ ]`.
+    //  · It applied the TYPED tick to every item in the list, so three items the writer never
+    //    touched silently became ticked checkboxes.
+    //  · It accepted an ordered list, which lost the numbering.
+    //  · It never put the caret back, so everything typed afterwards landed in a new paragraph
+    //    after the list.
+    //
+    // THE WHOLE LIST CONVERTS, and that is the schema rather than a choice: a `taskItem` cannot
+    // live in a `bulletList` and a `listItem` cannot live in a `taskList`. Only the item being
+    // typed in takes the tick; the others come across unchecked, which is what opening the same
+    // Markdown does.
     new InputRule(/^\s*(\[([( |x])?\])\s$/, (state, match, start, end) => {
       const { $from } = state.selection
-      const item = $from.node(-1)
-      if (item.type !== node('listItem')) return null
-      const list = $from.node(-2)
-      const listStart = $from.before(-2)
-      const kids: import('prosemirror-model').Node[] = []
-      list.forEach((child) => kids.push(node('taskItem').create(
-        { checked: match[2] === 'x' }, child.content, child.marks,
-      )))
+      if ($from.depth < 2) return null
+      if ($from.node(-1).type !== node('listItem')) return null
+      if ($from.node(-2).type !== node('bulletList')) return null
+      const listAt = $from.before(-2)
+      const here = $from.before(-1)
+      const caret = $from.pos
+
       const tr = state.tr.delete(start, end)
-      const mapped = tr.mapping.map(listStart)
-      tr.replaceWith(mapped, tr.mapping.map(listStart + list.nodeSize), node('taskList').create(null, kids))
+      // ⚠️ READ AFTER THE DELETE, BEFORE THE REPLACEMENT. The replacement is exactly as long as
+      // what it replaces, so a position taken now is still valid afterwards — whereas mapping
+      // one THROUGH `replaceWith` pins it to the edge of the replaced range, which is how the
+      // caret ended up outside the list and everything typed next landed in a new paragraph.
+      const from = tr.mapping.map(listAt)
+      const caretNow = tr.mapping.map(caret)
+      const hereNow = tr.mapping.map(here)
+      const list = tr.doc.nodeAt(from)
+      if (!list) return null
+      const kids: import('prosemirror-model').Node[] = []
+      let offset = from + 1
+      for (let i = 0; i < list.childCount; i++) {
+        const child = list.child(i)
+        const mine = offset === hereNow
+        kids.push(node('taskItem').create(
+          { checked: mine && match[2] === 'x' }, child.content, child.marks,
+        ))
+        offset += child.nodeSize
+      }
+      tr.replaceWith(from, from + list.nodeSize, node('taskList').create(null, kids))
+      tr.setSelection(TextSelection.near(tr.doc.resolve(Math.min(caretNow, tr.doc.content.size))))
       return tr
     }),
     textblockTypeInputRule(/^```([a-z]+)?[\s\n]$/, node('codeBlock'), (m) => ({ language: m[1] ?? null })),
     textblockTypeInputRule(/^~~~([a-z]+)?[\s\n]$/, node('codeBlock'), (m) => ({ language: m[1] ?? null })),
     textblockTypeInputRule(/^(#{1,6})\s$/, node('heading'), (m) => ({ level: m[1]!.length })),
     new InputRule(/^(?:---|—-|___\s|\*\*\*\s)$/, (state, _match, start, end) =>
-      state.tr.replaceRangeWith(start, end, node('horizontalRule').create())),
+      afterNode(state.tr.replaceRangeWith(start, end, node('horizontalRule').create()))),
 
     // ----- pictures, formulas ------------------------------------------------------------
     new InputRule(/(?:^|\s)(!\[(.+|:?)]\((\S+)(?:(?:\s+)["'](\S+)["'])?\))$/,
-      (state, match, _start, end) => {
+      (state, match, start, end) => {
         const whole = match[1]
         if (!whole) return null
-        const from = end - whole.length
-        return state.tr.replaceRangeWith(from, end, node('image').create({
+        // `start + indexOf` and not `end - whole.length`: `whole` is `match[1]`, which includes
+        // the closing `)` that has not been inserted yet, so measuring back from the end lands
+        // one character too far left and eats whatever is in front of the picture.
+        const from = start + match[0]!.indexOf(whole)
+        return afterNode(state.tr.replaceRangeWith(from, end, node('image').create({
           src: match[3], alt: match[2] || null, title: match[4] ?? null,
-        }))
+        })))
       }),
     // ⚠️ THE THREE PATTERNS ARE IMPORTED, not written here. `md/math-syntax.ts` owns them and
     // exports them one at a time precisely so the editor can fire a rule per delimiter, and
@@ -204,18 +264,36 @@ export function inputRules(): InputRule[] {
 
     // ----- a URL typed as itself ----------------------------------------------------------
     //
-    // ⚠️ IT ASKS THE PRODUCT'S OWN MATCHER, which is the whole reason this is three lines
-    // rather than a dependency. `md/gfm-autolink.ts` decides what a bare URL is for the
-    // reader's page and for the serializer — including the trailing-punctuation rules, so
-    // `https://x.test/a.` links without the full stop — and a second opinion here would be a
-    // second grammar to keep in step. It went out of step within the hour the last time this
-    // repository had two readers of one syntax.
-    new InputRule(/(\S+)(\s)$/, (state, match, _start, end) => {
-      const url = match[1]
-      if (!url || !isBareAutolink(url)) return null
-      const from = end - match[0]!.length + (match[0]!.length - url.length - 1)
+    // ⚠️ IT ASKS THE PRODUCT'S OWN MATCHER, which is the whole reason this is short rather than
+    // a dependency. `md/gfm-autolink.ts` decides what a bare URL is for the reader's page and
+    // for the serializer — including the trailing-punctuation rule, and the `www.` and address
+    // forms, where the href differs from the text — and a second opinion here would be a second
+    // grammar to keep in step.
+    //
+    // ⚠️ AND THE TRIGGERING CHARACTER IS NOT IN THE DOCUMENT YET. `prosemirror-inputrules` hands
+    // a handler the range of the match that IS in the document; the character just typed is
+    // still only in the string that was matched against, and a handler returning a transaction
+    // has taken responsibility for it. The first cut forgot, so `https://a.test next` came out
+    // as `…testnext` — the space the writer pressed was eaten. It also placed the mark one
+    // character to the left, putting the preceding space inside the link and leaving the URL's
+    // last character outside it.
+    new InputRule(/(\S+)(\s)$/, (state, match, start, end) => {
+      const typed = match[1]
+      if (!typed) return null
+      const hit = bareLinkAt(typed, 0)
+      if (!hit || hit.length === 0) return null
+      // ⚠️ ONLY WHEN THE LINK WOULD SAVE BACK AS THE CHARACTERS THAT WERE TYPED. `www.a.test`
+      // and `a@b.test` are both links to the reader's page — with `http://` and `mailto:`
+      // prepended — but a link whose href differs from its label serializes as `[label](href)`,
+      // so marking them here would rewrite what the writer typed into something else on the
+      // next save. The reader's page linkifies them anyway (`md/gfm-autolink.ts`), so nothing
+      // is lost by leaving them as text here; what is avoided is a save that changes the file.
+      if (hit.url !== typed.slice(0, hit.length)) return null
       const tr = state.tr
-      tr.addMark(from, from + url.length, mark('link').create({ href: url }))
+      // The space goes in FIRST, so the positions below still name the URL — and so the space
+      // is not swallowed by the mark, which is inclusive.
+      tr.insertText(match[2] ?? ' ', end)
+      tr.addMark(start, start + hit.length, mark('link').create({ href: hit.url }))
       tr.removeStoredMark(mark('link'))
       return tr
     }),

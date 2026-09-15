@@ -248,8 +248,15 @@ const mathBlock: NodeSpec = {
  *
  * `align` is a fifth attribute that `prosemirror-tables` knows nothing about and the serializer
  * depends on: a table written with `| :--- | ---: |` loses every column's alignment on the first
- * save without it. It is deliberately NOT rendered — the writing surface has never shown
- * alignment — so it rides as data on the cell and is read back in `from-editor.ts`.
+ * save without it.
+ *
+ * ⚠️ AND IT IS RENDERED, which a first cut of this file got wrong and said so in a comment:
+ * "the writing surface has never shown alignment". Measured against the outgoing build,
+ * 2026-09-15: it always has — the package's cell carried
+ * `renderHTML: attrs.align ? { style: `text-align: …` } : {}`, so a writer with a right-aligned
+ * column of numbers saw it right-aligned while writing. Dropping it changed nothing about the
+ * file and everything about what the writer looks at, which is the worst shape a regression can
+ * have: the save is identical, so no round-trip test could see it.
  */
 const cellAttrs = {
   colspan: { default: 1 }, rowspan: { default: 1 },
@@ -277,6 +284,7 @@ const cellDOM = (tag: string): NodeSpec['toDOM'] => (node) => [tag, attrs({
   colspan: String(node.attrs.colspan),
   rowspan: String(node.attrs.rowspan),
   'data-colwidth': (node.attrs.colwidth as number[] | null)?.join(',') ?? null,
+  style: node.attrs.align ? `text-align: ${String(node.attrs.align)}` : null,
 }), 0]
 
 const table: NodeSpec = {

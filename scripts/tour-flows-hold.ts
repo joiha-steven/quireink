@@ -79,4 +79,89 @@ export function registerHoldFlows({ flow, atWidth }: Pick<Tour, 'flow' | 'atWidt
       return done('ok held at y=' + Math.round(box.y) + ' after ' + moved + 'px of scroll')
     })()`, 1700)
   })
+
+  /**
+   * A WIDE TABLE PANS INSIDE ITS OWN BOX, AND THE WRITING STAYS WHERE IT WAS PUT.
+   *
+   * ⚠️ FOUND BY AUDIT, 2026-09-15, and it had been live since the editor left Tiptap. A table
+   * wider than the sheet has to scroll sideways on its own — `admin.css` says so and says why:
+   * panning the WRITING surface moves every paragraph away from the caret that is still in one
+   * of them. The rule keys on `.tableWrapper`, which is put there by `prosemirror-tables`' own
+   * table node view — and that view was not mounted, so the rule applied to nothing.
+   *
+   * Nothing could see it. The document was identical, the save was identical, and no test in
+   * this repository measures horizontal overflow of the writing surface. This one does.
+   */
+  flow('editor: a wide table scrolls itself, not the whole sheet', async () => {
+    const slug = 'tour-wide-table-' + Date.now()
+    const planted = await atWidth(1280, '/admin/content', `
+    (async () => {
+      // Twelve columns at 1280: wider than the sheet whatever the sheet is doing.
+      const head = '| ' + new Array(12).fill(0).map((_, i) => 'column heading ' + i).join(' | ') + ' |'
+      const rule = '| ' + new Array(12).fill('---').join(' | ') + ' |'
+      const row = '| ' + new Array(12).fill('a fairly long cell value').join(' | ') + ' |'
+      // ⚠️ A PARAGRAPH BEFORE THE TABLE, and it is the whole of what this flow measures against.
+      // Without it the only paragraph in the piece is one INSIDE a cell, which moves with the
+      // table by definition — the flow then fails against a perfectly good editor, which is
+      // what it did on its first run.
+      // A blank line before the table, single newlines INSIDE it: joining every line with a
+      // blank one turns the pipe rows into four paragraphs and there is no table at all.
+      const body = 'A line of writing above the table.\\n\\n' + [head, rule, row, row].join('\\n')
+      const res = await fetch('/api/posts', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          title: 'Tour: a wide table', slug: '${slug}', status: 'draft',
+          categories: [], tags: [], content: body,
+        }),
+      })
+      return res.ok ? 'ok' : 'could not plant a post'
+    })()`, 900)
+    if (planted !== 'ok') return planted
+
+    return await atWidth(1280, '/admin/editor/' + slug, `
+    (async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      const done = async (verdict) => {
+        await fetch('/api/posts/${slug}', { method: 'DELETE' })
+        return verdict
+      }
+      for (let i = 0; i < 140 && !document.querySelector('.ProseMirror table'); i++) await sleep(60)
+      const table = document.querySelector('.ProseMirror table')
+      if (!table) return done('the table never arrived in the writing surface')
+
+      // The BOX the rule keys on. Found by what it is — the scroller the table sits in —
+      // rather than by its class, so a rename of the class fails this flow honestly.
+      const wrap = table.parentElement
+      if (!wrap) return done('the table has no box of its own')
+      // ⚠️ A BOX OF ITS OWN, not the writing surface. Without the table node view the table sits
+      // directly in the editing host, which is also wider than the sheet — so the scroll check
+      // below would pass while there was nothing to contain the pan. Naming it here is what
+      // makes the failure say which thing is missing.
+      // NOT isContentEditable, which is INHERITED: the wrapper lives inside the editing host,
+      // so it answers true either way and the check passed on a broken editor and a fixed one
+      // alike. The question is whether the table has a box that is not the host itself.
+      if (wrap === document.querySelector('.ProseMirror')) {
+        return done('the table sits directly in the writing surface: no box to pan inside')
+      }
+      const canScroll = wrap.scrollWidth > wrap.clientWidth + 2
+      if (!canScroll) return done('the table box does not scroll: ' + wrap.scrollWidth + ' in ' + wrap.clientWidth)
+
+      // THE WRITING MUST NOT MOVE WITH IT. A paragraph's left edge before and after the table
+      // is panned to its end: the same pixel, or the caret has walked off the screen.
+      //
+      // The paragraph OUTSIDE the table: a bare .ProseMirror p finds a cell's paragraph first
+      // in a piece that opens with a table, and a cell's paragraph is supposed to move.
+      const para = [...document.querySelectorAll('.ProseMirror > p')][0]
+      const before = para ? Math.round(para.getBoundingClientRect().left) : null
+      wrap.scrollLeft = wrap.scrollWidth
+      await sleep(200)
+      const after = para ? Math.round(para.getBoundingClientRect().left) : null
+      if (before !== null && before !== after) {
+        return done('the writing moved with the table: left was ' + before + ', now ' + after)
+      }
+      const moved = wrap.scrollLeft
+      if (moved < 40) return done('the table did not actually pan, so nothing was tested')
+      return done('ok table panned ' + moved + 'px, the writing held at x=' + after)
+    })()`, 1700)
+  })
 }

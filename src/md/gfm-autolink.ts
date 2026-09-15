@@ -52,8 +52,15 @@ function trimTrailing(url: string): string {
   }
 }
 
-/** One autolink starting exactly at `from`, or null. */
-function matchAt(text: string, from: number): { url: string; label: string; length: number } | null {
+/**
+ * One autolink starting exactly at `from`, or null.
+ *
+ * Exported since 2026-09-15 so the EDITOR's typing rule can ask the same question the reader's
+ * page and the serializer ask. It answers with the `url` (which may differ from the text — a
+ * `www.` host gets a scheme, an address gets `mailto:`) and the `length` of the text it
+ * consumed, which is how a sentence-final full stop stays outside the link.
+ */
+export function bareLinkAt(text: string, from: number): { url: string; label: string; length: number } | null {
   const rest = text.slice(from)
 
   const scheme = SCHEME.exec(rest)
@@ -99,7 +106,7 @@ function splitText(value: string): Inline[] | null {
   while (i < value.length) {
     const atBoundary = i === 0 || BOUNDARY.test(value[i - 1]!)
     if (atBoundary) {
-      const hit = matchAt(value, i)
+      const hit = bareLinkAt(value, i)
       if (hit) {
         if (plain) {
           out.push({ type: 'text', value: plain })
@@ -134,7 +141,7 @@ function splitText(value: string): Inline[] | null {
  * writing that one bare would lose a character on the next read.
  */
 export function isBareAutolink(url: string): boolean {
-  const m = matchAt(url, 0)
+  const m = bareLinkAt(url, 0)
   return m !== null && m.length === url.length && m.url === url
 }
 

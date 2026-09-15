@@ -11,7 +11,6 @@ import { Editor } from '@/admin/editor/editor'
 import type { KeySound } from '@/admin/components/key-sound'
 import type { SheetWords } from '@/admin-shared/sheet-wire'
 import type { Hit } from '@/admin/components/editorFind'
-import { nodeViews } from '@/admin/editor/views'
 import { writingSurface } from '@/admin/components/editor-surface'
 import { mountSource } from '@/admin/components/editor-source'
 import { captionFromUrl, readMarkdown, videoUrlsToNodes } from '@/admin/components/editorDoc'
@@ -108,7 +107,7 @@ export function mountPaper(parts: PaperParts, hooks: PaperHooks): Paper {
     content: hooks.content,
     placeholder: t.editorPlaceholder,
     askLink: hooks.askLink,
-    nodeViews: nodeViews({
+    words: {
       video: { column: t.imgSizeColumn, wide: t.imgSizeWide },
       math: { placeholder: t.mathPlaceholder },
       image: {
@@ -122,7 +121,7 @@ export function mountPaper(parts: PaperParts, hooks: PaperHooks): Paper {
         framePaper: t.imgFramePaper, frameInk: t.imgFrameInk,
         caption: t.captionPlaceholder,
       },
-    }),
+    },
     editorProps: writingSurface({
       keySound,
       caretRef,

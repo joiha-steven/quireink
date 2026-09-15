@@ -39,13 +39,22 @@ function placeholder(text: string): Plugin {
     props: {
       decorations(state) {
         const out: Decoration[] = []
-        state.doc.descendants((node, pos) => {
-          if (!node.isTextblock || node.content.size > 0) return true
-          out.push(Decoration.node(pos, pos + node.nodeSize, {
-            class: 'is-editor-empty',
-            'data-placeholder': text,
-          }))
-          return true
+        // ⚠️ TOP-LEVEL BLOCKS ONLY, and descending was a regression worth measuring. The rule
+        // that prints this is `.ProseMirror p.is-editor-empty:first-child::before`, and
+        // `:first-child` is relative to the PARENT element — so an empty paragraph inside a
+        // `<td>` or an `<li>` matches it exactly as well as one at the top of the sheet.
+        // Walking the whole tree put "Start writing…" inside every empty table cell and every
+        // empty list item. Measured against the outgoing build on one table and one list: it
+        // decorated 0 blocks, this decorated 3.
+        let at = 0
+        state.doc.forEach((node) => {
+          if (node.isTextblock && node.content.size === 0) {
+            out.push(Decoration.node(at, at + node.nodeSize, {
+              class: 'is-editor-empty',
+              'data-placeholder': text,
+            }))
+          }
+          at += node.nodeSize
         })
         return DecorationSet.create(state.doc, out)
       },

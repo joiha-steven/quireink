@@ -52,6 +52,8 @@ export function stateFor(base: EditorState, tr: Transaction): EditorState {
 }
 
 export type Chain = {
+  /** Whether this chain is a QUESTION: it runs the commands and dispatches nothing. */
+  readonly dry: boolean
   /** Add a command. A command that answers `false` stops the chain. */
   cmd: (fn: Cmd) => Chain
   /** Dispatch what was accumulated. `false` if any command refused, and then nothing is dispatched. */
@@ -72,6 +74,7 @@ export function chainOn(view: EditorView, dry = false): Chain {
   const tr = base.tr
   let ok = true
   const chain: Chain = {
+    dry,
     cmd(fn) {
       if (!ok) return chain
       // The dispatch is a no-op on purpose: the command has already written its steps into

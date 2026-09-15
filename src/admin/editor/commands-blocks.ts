@@ -7,8 +7,10 @@
 // has to change which kind it is rather than nest a second list inside the first.
 import { setBlockType, wrapIn, lift } from 'prosemirror-commands'
 import { wrapInList, liftListItem, sinkListItem, splitListItem } from 'prosemirror-schema-list'
-import { addColumnAfter, addRowAfter, deleteColumn, deleteRow, deleteTable, isInTable } from 'prosemirror-tables'
-import { NodeSelection } from 'prosemirror-state'
+import {
+  addColumnAfter, addRowAfter, deleteColumn, deleteRow, deleteTable, goToNextCell, isInTable,
+} from 'prosemirror-tables'
+import { NodeSelection, TextSelection } from 'prosemirror-state'
 import type { EditorState } from 'prosemirror-state'
 import type { NodeType, Node as PMNode } from 'prosemirror-model'
 import type { Cmd } from './run'
@@ -122,6 +124,71 @@ export const toggleBulletList: Cmd = toggleList('bulletList')
 export const toggleOrderedList: Cmd = toggleList('orderedList')
 export const toggleTaskList: Cmd = toggleList('taskList')
 
+/**
+ * DELETE AT THE END OF A LIST ITEM JOINS THE TWO ITEMS.
+ *
+ * ⚠️ `joinForward` ON ITS OWN DOES THE WRONG THING HERE, and that is what this replaces. It
+ * joins the two TEXTBLOCKS, which pulls the next item's paragraph up INSIDE the current item —
+ * `- one` / `- two` becomes one item holding two paragraphs, the second indented. The list has
+ * lost a row and gained an indent nobody typed. Measured against the outgoing build, which
+ * merged them into `- onetwo`; the package that left bound Delete in four places for this.
+ *
+ * `join(pos, 2)` rather than two joins: one step, one undo, and never a document that is
+ * briefly the wrong shape.
+ */
+export const joinItemForward: Cmd = (state, dispatch) => {
+  const { $from, empty } = state.selection
+  if (!empty || $from.parentOffset < $from.parent.content.size) return false
+  const depth = itemDepthAt($from)
+  if (depth === null) return false
+  // Only from the LAST block of the item: Delete in the middle of a multi-paragraph item is an
+  // ordinary join and the base keymap already does it right.
+  if ($from.index(depth) !== $from.node(depth).childCount - 1) return false
+  const list = $from.node(depth - 1)
+  if (!list.maybeChild($from.index(depth - 1) + 1)) return false
+  if (dispatch) dispatch(state.tr.join($from.after(depth), 2).scrollIntoView())
+  return true
+}
+
+/** The depth at which the selection sits inside a list ITEM, or null. */
+function itemDepthAt($pos: import('prosemirror-model').ResolvedPos): number | null {
+  for (let depth = $pos.depth; depth > 0; depth--) {
+    const name = $pos.node(depth).type.name
+    if (name === 'listItem' || name === 'taskItem') return depth
+  }
+  return null
+}
+
+/**
+ * TAB IN THE LAST CELL OF A TABLE ADDS A ROW.
+ *
+ * ⚠️ WITHOUT IT, TAB IN THE LAST CELL LEAVES THE EDITOR. `goToNextCell` answers false there, so
+ * the keystroke falls through to the browser and the focus goes to whatever is next on the
+ * page — in the middle of writing a table. The outgoing build added a row; so does this.
+ */
+export const tabOutOfTable: Cmd = (state, dispatch, view) => {
+  if (!isInTable(state)) return false
+  // A next cell to go to: that is the ordinary case and the whole of it.
+  if (goToNextCell(1)(state, dispatch, view)) return true
+  if (!addRowAfter(state)) return false
+  if (dispatch) {
+    // ⚠️ THE ROW AND THE CARET ARE ONE TRANSACTION, built by hand rather than by running the
+    // two commands in turn: `goToNextCell` reads the state it is given, and the state that has
+    // the new row in it does not exist until the first command's transaction is applied. So the
+    // row is added, the resulting state is derived here, and the caret is placed in it.
+    let made: import('prosemirror-state').Transaction | null = null
+    addRowAfter(state, (tr) => { made = tr })
+    const tr = made as import('prosemirror-state').Transaction | null
+    if (!tr) return false
+    goToNextCell(1)(state.apply(tr), (next) => {
+      // The selection the second command wants, replayed onto the first command's transaction.
+      dispatch(tr.setSelection(next.selection.map(tr.doc, tr.mapping)))
+    })
+    if (!tr.selectionSet) dispatch(tr)
+  }
+  return true
+}
+
 /** Enter inside a list item. Both item kinds, chosen by where the caret is. */
 export const splitItem: Cmd = (state, dispatch, view) => {
   const here = listKind(state)
@@ -137,6 +204,31 @@ export const sinkItem: Cmd = (state, dispatch, view) => {
   const here = listKind(state)
   if (!here) return false
   return sinkListItem(nodeType(itemFor(here.name)))(state, dispatch, view)
+}
+
+/**
+ * ENTER ON A LINE THAT IS ONLY A FENCE OPENER MAKES THE FENCE.
+ *
+ * ⚠️ THE TYPING RULE CANNOT DO THIS, and the first cut assumed it could. `^```([a-z]+)?[\s\n]$`
+ * fires on a typed WHITESPACE character, and Enter is not one — it is a key. So typing
+ * ```` ```js ```` and pressing Enter left three backticks as text, which the save then escaped:
+ * the writer got `\`\`\`js` in their post. The outgoing editor bound Enter for exactly this.
+ *
+ * The space still works through the rule; this is the other way in.
+ */
+export const fenceFromOpener: Cmd = (state, dispatch) => {
+  const { $from, empty } = state.selection
+  if (!empty || $from.parent.type !== nodeType('paragraph')) return false
+  const opener = /^(?:```|~~~)([\w+#.-]*)$/.exec($from.parent.textContent)
+  if (!opener) return false
+  if (dispatch) {
+    const from = $from.before()
+    const block = nodeType('codeBlock').createAndFill({ language: opener[1] || null })
+    if (!block) return false
+    const tr = state.tr.replaceWith(from, $from.after(), block)
+    dispatch(tr.setSelection(TextSelection.near(tr.doc.resolve(from + 1))).scrollIntoView())
+  }
+  return true
 }
 
 /** A node inserted at the caret, replacing whatever is selected. */

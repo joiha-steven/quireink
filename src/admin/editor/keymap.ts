@@ -12,13 +12,17 @@
 //
 // `Mod` is ProseMirror's own word for "Cmd on a Mac, Ctrl everywhere else".
 import { keymap } from 'prosemirror-keymap'
-import { baseKeymap, chainCommands, joinBackward, selectNodeBackward } from 'prosemirror-commands'
+import {
+  baseKeymap, chainCommands, deleteSelection, joinBackward, joinForward,
+  selectNodeBackward, selectNodeForward,
+} from 'prosemirror-commands'
 import { goToNextCell } from 'prosemirror-tables'
 import type { Plugin } from 'prosemirror-state'
 import type { Cmd } from './run'
 import {
   liftItem, sinkItem, splitItem, toggleBlockquote, toggleBulletList, toggleCodeBlock,
-  toggleHeading, toggleOrderedList, toggleTaskList, setParagraph,
+  toggleHeading, toggleOrderedList, toggleTaskList, setParagraph, fenceFromOpener,
+  joinItemForward, tabOutOfTable,
 } from './commands-blocks'
 import { toggleMark, unsetAllMarks } from './commands-marks'
 import {
@@ -58,12 +62,32 @@ const backspace: Cmd = chainCommands(
   selectNodeBackward,
 ) as Cmd
 
-/** Enter: a list item splits, a fence keeps its newline, everything else splits the block. */
-const enter: Cmd = chainCommands(splitItem as never, splitBlockSmart as never) as Cmd
+/**
+ * Enter: a fence opener becomes a fence, a list item splits, a fence keeps its newline, and
+ * everything else splits the block. The fence opener goes FIRST because the line it acts on is
+ * an ordinary paragraph, which every command after it would happily split instead.
+ */
+const enter: Cmd = chainCommands(
+  fenceFromOpener as never, splitItem as never, splitBlockSmart as never,
+) as Cmd
 
-/** Tab: the next cell in a table, or one level deeper in a list. Nothing elsewhere. */
-const tab: Cmd = chainCommands(goToNextCell(1) as never, sinkItem as never) as Cmd
+/**
+ * Tab: the next cell in a table — adding a row when there is no next cell — or one level deeper
+ * in a list. Nothing elsewhere, so Tab still moves the focus off a writing surface that is not
+ * in either.
+ */
+const tab: Cmd = chainCommands(tabOutOfTable as never, sinkItem as never) as Cmd
 const shiftTab: Cmd = chainCommands(goToNextCell(-1) as never, liftItem as never) as Cmd
+
+/**
+ * Delete: join two list items when that is what it means, otherwise the ordinary thing.
+ *
+ * ⚠️ IT WAS BOUND NOWHERE, so `baseKeymap`'s `joinForward` answered — and that pulls the next
+ * item's paragraph INSIDE the current item instead of merging the two rows.
+ */
+const del: Cmd = chainCommands(
+  deleteSelection, joinItemForward as never, joinForward, selectNodeForward,
+) as Cmd
 
 export function editorKeymap(hooks: KeyHooks): Plugin[] {
   const link: Cmd = (_state, _dispatch, view) => {
@@ -91,9 +115,15 @@ export function editorKeymap(hooks: KeyHooks): Plugin[] {
   const own: Record<string, Cmd> = {
     // ----- emphasis -----------------------------------------------------------------------
     'Mod-b': toggleMark('bold'),
-    'Mod-B': toggleMark('bold'),
-    'Mod-i': toggleMark('italic'),
+    // ⚠️ NO `Mod-B`, AND THAT IS A FIX RATHER THAN AN OMISSION. `prosemirror-keymap` tries the
+    // chord, then the chord with Shift STRIPPED, before it falls back to the key code — so a
+    // `Mod-B` binding answers `Mod-Shift-b` first and takes it. The blockquote chord below
+    // therefore never ran, on either build: measured on the outgoing one, Ctrl+Shift+B over a
+    // selection produced bold there too, while `admin-shared/keys.ts` prints it as Blockquote on
+    // the Help sheet. `Mod-b` alone still bolds; `Mod-I` stays, because nothing is bound at
+    // `Mod-Shift-i` for it to shadow.
     'Mod-I': toggleMark('italic'),
+    'Mod-i': toggleMark('italic'),
     'Mod-e': toggleMark('code'),
     'Mod-u': toggleMark('underline'),
     'Mod-Shift-s': toggleMark('strike'),
@@ -128,6 +158,8 @@ export function editorKeymap(hooks: KeyHooks): Plugin[] {
     Backspace: backspace,
     'Mod-Backspace': backspace,
     'Shift-Backspace': backspace,
+    Delete: del,
+    'Mod-Delete': del,
     'Mod-z': undo,
     'Shift-Mod-z': redo,
     'Mod-y': redo,

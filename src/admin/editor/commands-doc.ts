@@ -47,7 +47,12 @@ export const setContent = (content: unknown): Cmd => (state, dispatch) => {
     const nodes = contentToNodes(content)
     const doc = schema.topNodeType.create(null, nodes.length ? nodes : schema.nodes.paragraph!.create())
     const tr = state.tr.replaceWith(0, state.doc.content.size, doc.content)
-    tr.setSelection(TextSelection.create(tr.doc, 0))
+    // ⚠️ `near`, NOT `create` — the same trap `setTextSelection` below carries a paragraph
+    // about, and this line fell into it. Position 0 resolves to the DOCUMENT, not into the
+    // first paragraph, so `create` makes a selection whose endpoint is not in inline content:
+    // ProseMirror warns, and the next character typed lands in a NEW paragraph before the
+    // first one. Restoring a snapshot and typing was enough to see it.
+    tr.setSelection(TextSelection.near(tr.doc.resolve(0)))
     // Not part of the undo history: opening a piece is not an edit somebody made, and letting
     // Mod-Z walk back into the previous post is how a writer loses the one they are in.
     tr.setMeta('addToHistory', false)
