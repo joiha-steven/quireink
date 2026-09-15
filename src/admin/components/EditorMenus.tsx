@@ -5,16 +5,20 @@
 // first half went when it reached the size cap.
 // Both need the editor to re-render on selection change; Editor.tsx enables
 // `shouldRerenderOnTransaction` so isActive() stays live (off by default in TipTap 3).
-import React, { useCallback, useEffect, useMemo, useRef } from 'react'
-import { type Editor as TiptapEditor } from '@tiptap/react'
-import { BubbleMenu } from '@tiptap/react/menus'
-import { NodeSelection, type EditorState } from '@tiptap/pm/state'
+import React, { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
+import { type Editor as TiptapEditor } from '@tiptap/core'
+import { BubbleMenuPlugin } from '@tiptap/extension-bubble-menu'
+import { NodeSelection } from '@tiptap/pm/state'
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import { useAdminT } from './I18nProvider'
 import { editLink, useLinkAsker } from './editorLink'
 import { DEFAULT_INK, INKS } from '@/pen/grammar'
 import { PEN_LIGHT } from '@/pen/pigments'
 import { tip } from './editorKeys'
+
+/** Named, because unregistering a plugin needs the same key registering it used. */
+const BAR_KEY = 'quireBubbleBar'
 
 function Row({ label, hint, active = false, onClick }: { label: string; hint?: string; active?: boolean; onClick: () => void }) {
   return (
@@ -172,43 +176,69 @@ export function BubbleBar({ editor, avoidTop }: { editor: TiptapEditor; avoidTop
   const hold = (e: React.MouseEvent) => e.preventDefault()
   const askLink = useLinkAsker()
   const editLinkHere = () => { void editLink(editor, askLink) }
-  // These two MUST be referentially stable. BubbleMenu re-dispatches an
-  // "updateOptions" transaction whenever `options`/`shouldShow` change identity;
-  // with shouldRerenderOnTransaction on, a fresh inline object each render would
-  // loop (dispatch -> re-render -> new object -> dispatch -> ...) and crash.
-  //
+
+  /**
+   * ⚠️ THE BAR IS A ProseMirror PLUGIN NOW, not a React component, and that dissolves a trap
+   * rather than merely moving it. The React `<BubbleMenu>` re-dispatched an "updateOptions"
+   * transaction whenever its `options` or `shouldShow` props changed IDENTITY — so with a
+   * re-render on every transaction, one inline object here looped: dispatch, re-render, new
+   * object, dispatch. It crashed. `useMemo` and `useCallback` were load-bearing, which is a
+   * bad place for them to be. Registered once against the editor, there is no render to make
+   * a new object in and nothing to stabilise.
+   *
+   * React still draws the buttons, through a portal into the element the plugin owns and
+   * moves. The element is NOT part of React's child tree, because the plugin re-parents it and
+   * React must not be asked to remove a node it no longer holds.
+   */
+  const [bar] = useState(() => document.createElement('div'))
   // `flip` is not decoration: the bar sits ABOVE the selection, and the toolbar above the
   // writing surface is sticky — so selecting the FIRST line put the bar underneath it, where
-  // it was both covered and unclickable. Reported by the owner, who could not format his own
-  // opening sentence. `padding` is the height of the zone the toolbar occupies, measured and
-  // passed in; inside it, Floating UI flips the bar below the selection instead.
-  const options = useMemo(
-    () => ({ placement: 'top' as const, offset: 8, flip: { padding: avoidTop } }),
-    [avoidTop],
-  )
-  const shouldShow = useCallback(
-    ({ editor: ed, state, from, to }: { editor: TiptapEditor; state: EditorState; from: number; to: number }) => {
-      if (ed.isActive('link')) return true // cursor in a link -> offer edit/remove
-      if (from === to) return false // nothing selected
-      // A node selection (image / video) carries its own controls — don't cover it.
-      if (state.selection instanceof NodeSelection) return false
-      return true
-    },
-    [],
-  )
-  return (
-    <BubbleMenu
-      editor={editor}
-      options={options}
-      shouldShow={shouldShow}
-      // z-40, ABOVE the sticky toolbar's z-10: flipping keeps them apart in most cases, and
-      // when a selection spans the seam anyway, the bar the writer is reaching for wins.
-      // `flex-wrap` and a viewport-bounded width. The bar had neither: 411px of buttons on a
-      // 375px phone, `nowrap`, with the Link button off the right edge and unreachable —
-      // measured. 32rem because the row MEASURES 487px with the headings on it; 30rem was
-      // tried and folded a desktop that had the room. A phone takes the `100vw` half.
-      className="z-40 flex max-w-[min(32rem,calc(100vw-1.5rem))] flex-wrap items-center gap-0.5 rounded-lg border border-neutral-200 bg-white p-1 shadow-lg dark:border-neutral-700 dark:bg-neutral-800"
-    >
+  // it was both covered and unclickable, and the opening sentence of a piece could not be
+  // formatted. `padding` is the height of the zone the toolbar occupies, measured and passed
+  // in; inside it, Floating UI flips the bar below the selection instead.
+  const [floating] = useState(() => ({ placement: 'top' as const, offset: 8, flip: { padding: avoidTop } }))
+
+  useEffect(() => {
+    // z-40, ABOVE the sticky toolbar's z-10: flipping keeps them apart in most cases, and when
+    // a selection spans the seam anyway, the bar the writer is reaching for wins.
+    // `flex-wrap` and a viewport-bounded width. The bar had neither: 411px of buttons on a
+    // 375px phone, `nowrap`, with the Link button off the right edge and unreachable —
+    // measured. 32rem because the row MEASURES 487px with the headings on it; 30rem was
+    // tried and folded a desktop that had the room. A phone takes the `100vw` half.
+    bar.className = 'z-40 flex max-w-[min(32rem,calc(100vw-1.5rem))] flex-wrap items-center'
+      + ' gap-0.5 rounded-lg border border-neutral-200 bg-white p-1 shadow-lg'
+      + ' dark:border-neutral-700 dark:bg-neutral-800'
+    bar.style.visibility = 'hidden'
+    bar.style.position = 'absolute'
+    editor.registerPlugin(BubbleMenuPlugin({
+      pluginKey: BAR_KEY,
+      editor,
+      element: bar,
+      options: floating,
+      shouldShow: ({ editor: ed, state, from, to }) => {
+        if (ed.isActive('link')) return true // cursor in a link -> offer edit/remove
+        if (from === to) return false // nothing selected
+        // A node selection (image / video) carries its own controls — don't cover it.
+        if (state.selection instanceof NodeSelection) return false
+        return true
+      },
+    }))
+    return () => {
+      editor.unregisterPlugin(BAR_KEY)
+      bar.remove()
+    }
+  }, [editor, bar, floating])
+
+  // The sticky band's height is measured at runtime and can change on a resize. The plugin
+  // reads `flip.padding` fresh on every reposition, so the object is mutated in place rather
+  // than replaced — replacing it is the identity change that used to loop.
+  useEffect(() => {
+    floating.flip.padding = avoidTop
+    if (!editor.isDestroyed) editor.view.dispatch(editor.state.tr.setMeta(BAR_KEY, 'updatePosition'))
+  }, [avoidTop, editor, floating])
+
+  return createPortal(
+    <>
       {/* Every button carries its name. The bar is five glyphs and "mark this as code" was
           asked for as a missing feature, while it was the fifth one all along: a bare backtick,
           the width of a comma, next to letters. `</>` says code the way B says bold, and a
@@ -246,6 +276,7 @@ export function BubbleBar({ editor, avoidTop }: { editor: TiptapEditor; avoidTop
       {editor.isActive('link') && (
         <button type="button" onMouseDown={hold} onClick={() => editor.chain().focus().extendMarkRange('link').unsetLink().run()} className={cls(false)}>{t.tbLinkRemove}</button>
       )}
-    </BubbleMenu>
+    </>,
+    bar,
   )
 }

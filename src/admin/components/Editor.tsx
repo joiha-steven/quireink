@@ -5,15 +5,22 @@
 // Drag an image file in -> auto-uploads -> inserts at the drop point. A Markdown/Review
 // toggle swaps the formatted view for the raw Markdown source.
 import type { KeySound } from './key-sound'
-import { useEffect, useRef, useState } from 'react'
-import { useEditor, EditorContent, type Editor as TiptapEditor } from '@tiptap/react'
+import { useEffect, useReducer, useRef, useState } from 'react'
+// ⚠️ `@tiptap/core`, NOT `@tiptap/react`. `useEditor` and `EditorContent` were the last two
+// runtime uses of the React adapter in the whole repository, and they are both thin: the hook
+// builds an instance and forces a re-render per transaction, and the component moves the
+// editor's detached DOM into the tree. Both are done by hand below, in about fifteen lines,
+// and the adapter's remaining machinery — portals for React node views — has had nothing to
+// carry since the three node views became plain ProseMirror (2026-09-15).
+import { Editor as TiptapEditor } from '@tiptap/core'
 import { editorExtensions } from './editorExtensions'
 import { BubbleBar, SlashMenu } from './EditorMenus'
 import { Toolbar } from './EditorToolbar'
 import { useLinkAsker } from './editorLink'
 import { useFocusMode } from './useFocusMode'
-import { placeCaret, pulseInput } from './key-feedback'
+import { placeCaret } from './key-feedback'
 import { penStrokes } from './pen-feedback'
+import { writingSurface } from './editor-surface'
 
 // The sticky band above the writing: the action line (~56px) plus the toolbar strip that
 // sticks under it (~60px with its margins). The bubble bar must not be placed inside this
@@ -25,7 +32,6 @@ import { FindBar } from './FindBar'
 import { useEditorFind } from './useEditorFind'
 import { captionFromUrl, readMarkdown, videoUrlsToNodes } from './editorDoc'
 import { useRawView } from './useRawView'
-import { isVideoUrl } from '@/render/video'
 import { CARD } from './kit'
 
 export type EditorApi = {
@@ -133,130 +139,88 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
   const onRawChangeRef = useRef(onRawChange)
   useEffect(() => { onRawChangeRef.current = onRawChange }, [onRawChange])
 
-  const editor = useEditor({
-    immediatelyRender: false,
-    // Re-render the React tree on every transaction so the toolbar's isActive()
-    // states stay live — TipTap 3 disables this by default, which left the
-    // active highlights stale and the contextual table-tools row never showing.
-    shouldRerenderOnTransaction: true,
-    extensions: editorExtensions(t.editorPlaceholder, askLink, {
-      video: { column: t.imgSizeColumn, wide: t.imgSizeWide },
-      math: { placeholder: t.mathPlaceholder },
-      image: {
-        alignLeft: t.imgAlignLeft, alignCenter: t.imgAlignCenter, alignRight: t.imgAlignRight,
-        sizeColumn: t.imgSizeColumn, sizeWide: t.imgSizeWide,
-        grid: t.imgGrid,
-        siteDefault: t.imgDefault, ratioNatural: t.imgRatioNatural,
-        captions: t.imgCaptions, noCaptions: t.imgNoCaptions,
-        frameNone: t.imgFrameNone, frameThin: t.imgFrameThin,
-        frameMedium: t.imgFrameMedium, frameThick: t.imgFrameThick,
-        framePaper: t.imgFramePaper, frameInk: t.imgFrameInk,
-        caption: t.captionPlaceholder,
-      },
-    }),
-    content: initialContent,
-    editorProps: {
-      attributes: { class: 'prose max-w-none min-h-[420px] px-4 py-4' },
-      // "/" on an empty line CALLS the insert menu rather than typing a character (the
-      // Writing Desk mock's gesture). Anywhere else "/" is just a slash — dates, paths and
-      // fractions keep working.
-      //
-      // `handleTextInput`, not `handleKeyDown`: the text hook sees every way a "/" can
-      // arrive — a keypress, an IME commit, an `insertText` — where the key hook sees only
-      // the first, and it hands over the exact insert position instead of leaving it to be
-      // re-read from a selection that may not have synced yet.
-      handleTextInput(view, from, _to, text) {
-        if (text !== '/') return false
-        const { $from, empty } = view.state.selection
-        if (!empty || $from.parent.type.name !== 'paragraph' || $from.parent.content.size !== 0) return false
-        const caret = view.coordsAtPos(from)
-        setSlash({ left: caret.left, top: caret.top })
-        return true
-      },
-      // Escape closes the menu before it does anything else.
-      handleKeyDown(_view, event) {
-        if (event.key === 'Escape' && slashRef.current) {
-          setSlash(null)
-          return true
-        }
-        return false
-      },
-      handleDOMEvents: {
-        beforeinput(view, event) {
-          if (event instanceof InputEvent) pulseInput(view, event, caretRef.current, keySound)
-          return false
+  /**
+   * ⚠️ ONE RE-RENDER PER TRANSACTION, which is what `shouldRerenderOnTransaction: true` bought
+   * and what the toolbar's live highlights are made of: 36 `isActive` calls and one read of
+   * the find plugin's state, all of them recomputed from scratch after every keystroke. That
+   * is a lot of work for a highlight, and it is the NEXT thing to go — but it goes on its own,
+   * measured, not smuggled into the commit that drops the adapter. The adapter subscribed to
+   * `transactionNumber` for exactly this; so does the line below.
+   */
+  const [, redraw] = useReducer((n: number) => n + 1, 0)
+
+  // The instance is state rather than a ref because the chrome has to be drawn again once it
+  // exists, and null on the first pass because it cannot be built before the effect runs. That
+  // is the shape `useEditor` had, placeholder frame and all.
+  const [editor, setEditor] = useState<TiptapEditor | null>(null)
+  const hostRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const made = new TiptapEditor({
+      extensions: editorExtensions(t.editorPlaceholder, askLink, {
+        video: { column: t.imgSizeColumn, wide: t.imgSizeWide },
+        math: { placeholder: t.mathPlaceholder },
+        image: {
+          alignLeft: t.imgAlignLeft, alignCenter: t.imgAlignCenter, alignRight: t.imgAlignRight,
+          sizeColumn: t.imgSizeColumn, sizeWide: t.imgSizeWide,
+          grid: t.imgGrid,
+          siteDefault: t.imgDefault, ratioNatural: t.imgRatioNatural,
+          captions: t.imgCaptions, noCaptions: t.imgNoCaptions,
+          frameNone: t.imgFrameNone, frameThin: t.imgFrameThin,
+          frameMedium: t.imgFrameMedium, frameThick: t.imgFrameThick,
+          framePaper: t.imgFramePaper, frameInk: t.imgFrameInk,
+          caption: t.captionPlaceholder,
         },
-        focus(view) {
-          if (keySound.mode !== 'off') placeCaret(view, caretRef.current)
-          return false
-        },
-        blur() {
-          caretRef.current?.parentElement?.classList.remove('has-typewriter-caret')
-          return false
-        },
-        keyup(view) {
-          if (keySound.mode !== 'off') placeCaret(view, caretRef.current)
-          return false
-        },
-        mouseup(view) {
-          if (keySound.mode !== 'off') placeCaret(view, caretRef.current)
-          return false
-        },
+      }),
+      content: initialContent,
+      editorProps: writingSurface({
+        keySound, caretRef, slashRef, setSlash, editorRef, imageFiles,
+        insertImages: insertImageFiles,
+      }),
+      onCreate({ editor }) {
+        videoUrlsToNodes(editor)
       },
-      handleDrop(view, event) {
-        const files = imageFiles(event.dataTransfer?.files)
-        if (files.length === 0) return false
-        event.preventDefault()
-        // Capture WHERE the image was dropped now — uploads are async, so by the
-        // time they resolve the text cursor has wandered (the image used to land
-        // at the stale cursor, i.e. the end of the post). Insert at the drop point.
-        void insertImageFiles(files, view.posAtCoords({ left: event.clientX, top: event.clientY })?.pos)
-        return true
+      onSelectionUpdate({ editor }) {
+        if (keySound.mode !== 'off') placeCaret(editor.view, caretRef.current)
       },
-      handlePaste(_view, event) {
-        // AN IMAGE ON THE CLIPBOARD. Until 2026-08-28 this did nothing at all: the handler
-        // read `text/plain`, found no URL, and handed back to ProseMirror — which has no
-        // parse rule for a file, so a pasted screenshot vanished without a message. Taking
-        // a screenshot and pressing paste is how most people put a picture in a post, and
-        // the product answered it with silence. Same upload path as a drop, so alt text,
-        // ordering and the caption default are the ones the rest of the editor already uses.
-        const pasted = imageFiles(event.clipboardData?.files)
-        if (pasted.length > 0) {
-          event.preventDefault()
-          // No coordinates on a paste: it goes where the cursor is, which is where the
-          // person is looking. `undefined` means "wherever the selection is now".
-          void insertImageFiles(pasted, undefined)
-          return true
-        }
-        // Paste a lone video URL (YouTube/Vimeo/TikTok) -> insert a video embed.
-        const text = event.clipboardData?.getData('text/plain')?.trim() ?? ''
-        if (text && !/\s/.test(text) && isVideoUrl(text)) {
-          editorRef.current?.chain().focus().setVideo(text).run()
-          return true
-        }
-        return false
+      // The pen answering the hand (ADR 0049): a mark just applied draws itself, and squeaks.
+      onTransaction({ editor, transaction }) {
+        penStrokes(editor.view, transaction, keySound)
       },
-    },
-    onCreate({ editor }) {
-      videoUrlsToNodes(editor)
-    },
-    onSelectionUpdate({ editor }) {
-      if (keySound.mode !== 'off') placeCaret(editor.view, caretRef.current)
-    },
-    // The pen answering the hand (ADR 0049): a mark just applied draws itself, and squeaks.
-    onTransaction({ editor, transaction }) {
-      penStrokes(editor.view, transaction, keySound)
-    },
-    onUpdate() {
-      // ONE FLAG, AND NOTHING ELSE. This used to serialize the whole document on a 400ms
-      // trailing debounce, said to be what kept typing smooth. It was the opposite: 400ms is
-      // shorter than the pause between two sentences, so the stall landed in every one —
-      // 126ms frozen on an 18k-word draft carrying 2,159 pen marks (2026-09-13). And nothing
-      // read it: every reader asks the editor first and takes the parent's copy only when
-      // there is none (`editorApi.current?.getMarkdown() ?? contentRef.current`, all three).
-      onDirtyRef.current()
-    },
-  })
+      onUpdate() {
+        // ONE FLAG, AND NOTHING ELSE. This used to serialize the whole document on a 400ms
+        // trailing debounce, said to be what kept typing smooth. It was the opposite: 400ms is
+        // shorter than the pause between two sentences, so the stall landed in every one —
+        // 126ms frozen on an 18k-word draft carrying 2,159 pen marks (2026-09-13). And nothing
+        // read it: every reader asks the editor first and takes the parent's copy only when
+        // there is none (`editorApi.current?.getMarkdown() ?? contentRef.current`, all three).
+        onDirtyRef.current()
+      },
+    })
+    // The drag-drop and paste closures above read the live instance through this ref rather
+    // than a captured const, which is what makes a dropped image land reliably.
+    editorRef.current = made
+    made.on('transaction', redraw)
+    setEditor(made)
+    // ⚠️ NOT DESTROYED HERE. See the last effect in this component for why the order matters.
+  }, [])
+
+  /**
+   * The editor's DOM, moved into the paper.
+   *
+   * Built with no `element`, so Tiptap put the writing surface in a detached div; this hands
+   * that div's children to the one React draws. It is what `EditorContent` did, minus the
+   * portal machinery for React node views, which there are none of any more.
+   */
+  useEffect(() => {
+    const host = hostRef.current
+    // The detached div Tiptap made, reached through the view rather than through
+    // `options.element` — that option is a union of four shapes and only one of them is a node.
+    const made = editor?.view.dom.parentElement
+    if (!editor || !host || !made || host.childNodes.length > 0) return
+    host.append(...made.childNodes)
+    editor.setOptions({ element: host })
+  }, [editor])
 
   // The Markdown source view and the switch into it (`useRawView.ts`). Declared here rather
   // than with the other state because it needs the editor, and it reads it through the ref
@@ -302,12 +266,27 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
   }, [editor, apiRef])
 
   // The parent's copy, refreshed once on the way out — the only moment it can be read.
-  // `isDestroyed` because Tiptap's own cleanup runs before this one.
+  // `isDestroyed` is belt and braces: the effect below is declared after this one precisely so
+  // that it cannot have run yet.
   useEffect(() => {
     if (!editor) return
     return () => {
       if (!rawView.onRef.current && !editor.isDestroyed) onChangeRef.current(readMarkdown(editor))
     }
+  }, [editor])
+
+  /**
+   * ⚠️ DESTROYED LAST, AND THAT IS WHY IT IS AN EFFECT OF ITS OWN.
+   *
+   * React runs cleanups in the order the effects were declared, and the one above reads the
+   * finished document out of the editor on the way out — the parent's only chance to catch a
+   * last edit. Destroying in the effect that BUILDS the editor would put the teardown first
+   * and lose it. The adapter hid this by destroying on a `setTimeout(…, 1)`, so every React
+   * cleanup had already run; an explicit order is the same guarantee without the timer.
+   */
+  useEffect(() => {
+    if (!editor) return
+    return () => { editor.destroy() }
   }, [editor])
 
   if (!editor) return <div className="min-h-[480px] animate-pulse rounded-[10px] bg-neutral-100 dark:bg-neutral-900" />
@@ -369,7 +348,7 @@ export function Editor({ initialContent, onChange, onDirty, onPickImage, onPickG
           />
         ) : (
           <div className="typewriter-stage relative">
-            <EditorContent editor={editor} />
+            <div ref={hostRef} />
             {keySound.mode !== 'off' && <span ref={caretRef} className="typewriter-caret" aria-hidden="true" />}
           </div>
         )}

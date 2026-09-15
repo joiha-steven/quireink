@@ -40,7 +40,10 @@ const ALLOWED: Record<string, string> = {
   react: 'C. Admin only. Goes with the Tiptap work; needs an ADR to replace 0006 first',
   'react-dom': 'C. With react',
   '@tiptap/starter-kit': 'C. The editor. ADR 0006 has to be replaced before this moves',
-  '@tiptap/react': 'C. With the editor',
+  '@tiptap/core':
+    'C. With the editor. Named on 2026-09-15 rather than added: it arrived under `@tiptap/react` and the two files that used the adapter now build the instance themselves',
+  '@tiptap/extension-bubble-menu':
+    'C. With the editor. Same day, same reason: it arrived under `@tiptap/react/menus` and the floating bar registers it as a plain ProseMirror plugin now',
   '@tiptap/extension-image': 'C. With the editor',
   '@tiptap/extension-placeholder': 'C. With the editor',
   '@tiptap/extension-table': 'C. With the editor',

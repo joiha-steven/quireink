@@ -12,7 +12,7 @@
 // at 0, so the first click in it scrolled the piece to the top. Measured 2026-09-13 on an
 // 18k-word draft: from three different starting points, every switch ended at offset 0.
 import { useEffect, useRef, useState } from 'react'
-import type { Editor as TiptapEditor } from '@tiptap/react'
+import type { Editor as TiptapEditor } from '@tiptap/core'
 import { markdownOffsetAt, posAtMarkdownOffset, readMarkdown, videoUrlsToNodes } from './editorDoc'
 
 export type RawView = {

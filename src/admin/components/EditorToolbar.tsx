@@ -6,7 +6,7 @@
 // The editor re-renders on every selection change (`Editor.tsx` sets
 // `shouldRerenderOnTransaction`), so `isActive()` here is live.
 import React from 'react'
-import { type Editor as TiptapEditor } from '@tiptap/react'
+import { type Editor as TiptapEditor } from '@tiptap/core'
 import { useAdminT } from './I18nProvider'
 import { editLink, useLinkAsker } from './editorLink'
 import { tip } from './editorKeys'

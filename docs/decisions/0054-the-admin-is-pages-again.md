@@ -332,14 +332,21 @@ writing surface, and every figure's box to the pixel on a real gallery post. The
 toolbar — `position:absolute; bottom:100%`, whose containing block used to be the React wrapper —
 lands in the same place to the pixel, because `position: relative` moved onto the figure with it.
 
-⚠️ **AND `check:admin-css` WAS HALF BLIND, TWICE IN ONE DAY.** That guard proves every class the
-admin writes has a rule behind it. A node view BUILDS its elements, and the first cut passed the
-class list as a bare positional argument — a whole file's chrome vanished from the guard's view,
-the count fell by one, and the check stayed green. Fixed by naming `className`, and then the same
-question asked again found the larger half: the guard read the literals inside `${…}` holes but
-not the body of a `className={…}` expression, which is the commonest form in the React admin.
-**51 classes had never been checked.** Both were found by planting a class with no rule and
-watching the check pass. A guard is worth what its last deliberate failure proved.
+⚠️ **AND `check:admin-css` WAS BLIND IN THREE PLACES, ALL FOUND IN ONE DAY.** That guard proves
+every class the admin writes has a rule behind it, and it reads them by looking at what follows
+a `className`. It could not see:
+
+1. a class list passed as a bare positional argument to an element builder — a whole file's
+   chrome, gone from its view, the count down by one and the check still green;
+2. the body of a `className={…}` expression, as opposed to the literals inside its `${…}` holes
+   — the commonest form in the React admin, and **51 classes that had never been checked**;
+3. the continuation of `className = 'a b' + ' c d'`, which is how a long list is written when it
+   has to fit a line limit.
+
+Each was found the same way: plant a class with no rule, watch the check pass. Each showed the
+same symptom, and it is the one worth remembering — **a number that did not move**. A guard is
+worth what its last deliberate failure proved, so the count it prints is a measurement and
+should be read as one.
 
 ### The fourth bridge: `quire:pick-media`
 

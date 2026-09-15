@@ -4,7 +4,7 @@
 // bubble bar over a selection and `Mod-k` all ran the same three lines around a
 // `window.prompt` until 2026-09-07, and three copies of three lines is how one of them ends
 // up not clearing a link on an empty answer.
-import type { Editor as TiptapEditor } from '@tiptap/react'
+import type { Editor as TiptapEditor } from '@tiptap/core'
 import { useConfirmFor } from '@/admin/ui/ConfirmDialog'
 import { useAdminT } from './I18nProvider'
 

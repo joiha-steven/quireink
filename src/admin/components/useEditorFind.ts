@@ -12,7 +12,7 @@
 // and the chord that opens it, which is the entire point: a writer presses the key without
 // first having to notice which view they are in.
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react'
-import type { Editor as TiptapEditor } from '@tiptap/react'
+import type { Editor as TiptapEditor } from '@tiptap/core'
 import { findAll, firstAfter, replaceAllIn, step, type Hit } from './editorFind'
 import {
   hitsIn, readFind, replaceCurrent, replaceEveryHit, revealCurrent, setFind,

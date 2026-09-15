@@ -14,7 +14,7 @@
 
 import { describe, expect, it, beforeAll, afterAll } from 'bun:test'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
-import type { Editor as TiptapEditor } from '@tiptap/react'
+import type { Editor as TiptapEditor } from '@tiptap/core'
 
 beforeAll(() => GlobalRegistrator.register())
 afterAll(() => GlobalRegistrator.unregister())

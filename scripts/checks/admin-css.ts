@@ -93,6 +93,7 @@ function used(files: readonly string[], rulesOf: ReadonlySet<string>): Map<strin
     // dropped by one and the check stayed green, which is precisely the shape of a guard that
     // has quietly stopped checking. A named `className` is the convention that keeps it honest.
     for (const m of text.matchAll(/(?:className|class)\s*[=:]\s*(\{|"|')/g)) {
+      const quoted = m[1] === '"' || m[1] === "'"
       const start = m.index! + m[0].length - 1
       // The attribute's extent: to the closing quote, or across balanced braces.
       let end = start
@@ -123,7 +124,29 @@ function used(files: readonly string[], rulesOf: ReadonlySet<string>): Map<strin
         }
       }
       if (end < 0) continue
-      const body = text.slice(start, end + 1)
+      let body = text.slice(start, end + 1)
+      // ⚠️ AND A CLASS LIST BUILT WITH `+` IS STILL ONE CLASS LIST. A quoted attribute ends at
+      // its closing quote, but an ASSIGNMENT does not: `el.className = 'a b' + ' c d'` is how a
+      // long list is written when it has to fit inside a line limit, and reading only the first
+      // piece is the third shape of the same blindness this guard was caught in on 2026-09-15.
+      // Each continuation is appended to the extent, so the loop below sees all of it.
+      if (quoted) {
+        let at = end + 1
+        for (;;) {
+          const more = /^\s*\+\s*(['"`])/.exec(text.slice(at, at + 40))
+          if (!more) break
+          const from = at + more[0].length - 1
+          const quote = more[1]!
+          let close = -1
+          for (let i = from + 1; i < text.length; i++) {
+            if (text[i] === quote) { close = i; break }
+            if (text[i] === '\n') break
+          }
+          if (close < 0) break
+          body += ` ${text.slice(from + 1, close)} `
+          at = close + 1
+        }
+      }
       // Two kinds of text in here, and both carry class names. The BARE text of a quoted
       // attribute is a class list as written; the text inside `${…}` or `{…}` is an
       // expression, where only its STRING LITERALS are classes — so `clsx(open && 'block')`
@@ -153,7 +176,6 @@ function used(files: readonly string[], rulesOf: ReadonlySet<string>): Map<strin
       // The extent includes its own delimiters, and a class name contains neither — so for a
       // quoted attribute they become whitespace rather than the tail of the last token.
       // Without that every quoted attribute reported its final class as `w-full\"`.
-      const quoted = m[1] === '"' || m[1] === "'"
       const literals = [...[...spans, quoted ? '' : plain].join(' ')
         .matchAll(/'([^'\n]*)'|"([^"\n]*)"|`([^`\n$]*)`/g)]
         .map((lit) => lit[1] ?? lit[2] ?? lit[3] ?? '')
