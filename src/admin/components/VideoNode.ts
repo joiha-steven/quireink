@@ -11,24 +11,18 @@
 // ⚠️ ITS WORDS ARRIVE THROUGH `configure()`, because a node view has no context to read them
 // from. `useAdminT()` was a React hook; the alternative to passing them in would be an island
 // importing all eleven dictionaries to print two labels.
-import { Node, type NodeViewRenderer } from '@tiptap/core'
 import type { Node as PMNode } from 'prosemirror-model'
 import { videoEmbed, videoFileUrl } from '@/render/video'
 import { SEGMENT_TRACK, tabItemClass } from '@/admin-shared/tabs'
 import { el } from './node-dom'
 
-declare module '@tiptap/core' {
-  interface Commands<ReturnType> {
-    video: { setVideo: (src: string) => ReturnType }
-  }
-}
 
 export type VideoWords = { column: string; wide: string }
 /**
  * ONE ELEMENT, REDRAWN. A node view may rebuild its own insides on `update()` — what it must
  * not do is replace `dom`, which ProseMirror holds a reference to.
  */
-class VideoView {
+export class VideoView {
   readonly dom: HTMLElement
   private readonly bar: HTMLElement
   private readonly body: HTMLElement
@@ -162,62 +156,3 @@ class VideoView {
   /** The bar and the player are drawn by this class; ProseMirror must not read them back. */
   ignoreMutation(): boolean { return true }
 }
-
-export const Video = Node.create<{ words: VideoWords }>({
-  name: 'video',
-  group: 'block',
-  atom: true,
-  draggable: true,
-  selectable: true,
-
-  addOptions() {
-    return { words: { column: 'Column', wide: 'Large' } }
-  },
-
-  addAttributes() {
-    return { src: { default: '' } }
-  },
-  parseHTML() {
-    return [{ tag: 'div[data-video]', getAttrs: (node) => ({ src: (node as HTMLElement).getAttribute('data-src') || '' }) }]
-  },
-  renderHTML({ node }) {
-    return ['div', { 'data-video': '', 'data-src': node.attrs.src }]
-  },
-  addNodeView(): NodeViewRenderer {
-    const words = this.options.words
-    return ({ node, editor, getPos }) => {
-      const view = new VideoView(node, words, () => {
-        const pos = getPos?.()
-        if (pos != null) editor.commands.setNodeSelection(pos)
-      })
-      view.attrs = (next) => {
-        const pos = getPos?.()
-        if (pos == null) return
-        editor.view.dispatch(editor.view.state.tr.setNodeMarkup(pos, undefined, {
-          ...editor.view.state.doc.nodeAt(pos)?.attrs, ...next,
-        }))
-      }
-      return view
-    }
-  },
-  addCommands() {
-    return {
-      setVideo:
-        (src) =>
-        ({ commands }) =>
-          commands.insertContent({ type: this.name, attrs: { src } }),
-    }
-  },
-  addStorage() {
-    return {
-      markdown: {
-        // Serialize back to a bare URL line.
-        serialize(state: { write: (s: string) => void; closeBlock: (n: unknown) => void }, node: { attrs: { src: string } }) {
-          state.write(node.attrs.src || '')
-          state.closeBlock(node)
-        },
-        parse: {},
-      },
-    }
-  },
-})

@@ -14,11 +14,10 @@ beforeAll(() => GlobalRegistrator.register())
 afterAll(() => GlobalRegistrator.unregister())
 
 async function open(content: string) {
-  const { Editor } = await import('@tiptap/core')
-  const { editorExtensions } = await import('@/admin/components/editorExtensions')
+  const { Editor } = await import('@/admin/editor/editor')
   const host = document.createElement('div')
   document.body.appendChild(host)
-  return new Editor({ element: host, extensions: editorExtensions(''), content })
+  return new Editor({ element: host, content })
 }
 
 /** What the published page would stamp on the same source, straight from the renderer. */

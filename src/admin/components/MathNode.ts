@@ -17,23 +17,11 @@
 // So the editor has to know the grammar — but it does not restate it: `render/math.ts` owns it
 // and this calls `matchMathAt` / `matchDisplayBlockAt`, the same discipline `InkMark.ts`
 // follows, and for the same reason.
-import { Node, InputRule, type NodeViewRenderer } from '@tiptap/core'
 import type { Node as PMNode } from 'prosemirror-model'
-import {
-  renderMath, type MathDelim,
-  INLINE_PAREN_SOURCE, DISPLAY_DOLLAR_SOURCE, DISPLAY_BRACKET_SOURCE,
-} from '@/render/math'
+import { renderMath } from '@/render/math'
 
 export type MathWords = { placeholder: string }
 
-declare module '@tiptap/core' {
-  interface Commands<ReturnType> {
-    math: {
-      /** Drop a formula in at the cursor, display or inline, ready to be typed into. */
-      setMath: (display: boolean, tex?: string) => ReturnType
-    }
-  }
-}
 
 /**
  * What a formula looks like while you are writing it.
@@ -50,7 +38,7 @@ declare module '@tiptap/core' {
  * state disappears here rather than being ported: a DOM input holds its own value, so the
  * double-write of `setDraft` AND `updateAttributes` collapses into the second one.
  */
-class MathView {
+export class MathView {
   readonly dom: HTMLElement
   private readonly box: HTMLInputElement
   private readonly shown: HTMLElement
@@ -137,136 +125,3 @@ class MathView {
 
   ignoreMutation(): boolean { return true }
 }
-
-/**
- * A typing rule that swallows the WHOLE match, delimiters included.
- *
- * Tiptap ships `nodeInputRule` and it is the wrong tool here, which is not obvious until it
- * is measured: it replaces only capture group 1 and leaves everything around it standing. So
- * typing `\(x^2\)` produced a correct formula node with `\(` and `\)` still sitting either
- * side of it, and the post saved as `\(\(x^2\)\)`. With `$$…$$` it was worse — the block node
- * split the paragraph and the stray dollars became two paragraphs of their own.
- *
- * `range` is the span of `match[0]`, so deleting it first is what makes the delimiters go.
- */
-const mathInputRule = (find: RegExp, name: string, display: boolean, delim: MathDelim) =>
-  new InputRule({
-    find,
-    handler: ({ range, match, chain }) => {
-      const tex = (match[1] ?? '').trim()
-      // An empty pair (`$$$$`) is someone typing, not a formula. Leave the characters alone.
-      if (!tex) return null
-      chain().deleteRange(range).insertContent({ type: name, attrs: { tex, display, delim } }).run()
-      return undefined
-    },
-  })
-
-/** Everything both nodes share; only `inline`/`group` and the default delimiter differ. */
-const common = {
-  atom: true,
-  selectable: true,
-  addAttributes() {
-    return {
-      tex: { default: '' },
-      display: { default: false },
-      delim: { default: 'dollar' as MathDelim },
-    }
-  },
-  addOptions() {
-    return { words: { placeholder: 'LaTeX formula' } as MathWords }
-  },
-  addNodeView(this: { options: { words: MathWords } }): NodeViewRenderer {
-    const words = this.options.words
-    return ({ node, editor, getPos }) => {
-      const view = new MathView(node, words)
-      view.attrs = (next) => {
-        const pos = getPos?.()
-        if (pos == null) return
-        const at = editor.view.state.doc.nodeAt(pos)
-        if (!at) return
-        editor.view.dispatch(editor.view.state.tr.setNodeMarkup(pos, undefined, { ...at.attrs, ...next }))
-      }
-      return view
-    }
-  },
-}
-
-const parseAttrs = (el: HTMLElement) => ({
-  tex: el.getAttribute('data-tex') || '',
-  display: el.getAttribute('data-math') !== 'inline',
-  delim: (el.getAttribute('data-delim') || 'dollar') as MathDelim,
-})
-
-export const MathInline = Node.create({
-  ...common,
-  name: 'mathInline',
-  inline: true,
-  group: 'inline',
-  parseHTML() {
-    return [{ tag: 'span[data-math]', getAttrs: (el) => parseAttrs(el as HTMLElement) }]
-  },
-  renderHTML({ node }) {
-    return ['span', {
-      'data-math': node.attrs.display ? 'display' : 'inline',
-      'data-tex': node.attrs.tex,
-      'data-delim': node.attrs.delim,
-    }]
-  },
-  /**
-   * Typing `\(x\)` sets it on the spot. `$…$` DELIBERATELY DOES NOT, and the asymmetry is
-   * the point.
-   *
-   * An input rule fires on the text already typed, so it cannot see the character coming
-   * next — and the third of Pandoc's guards, "the closing `$` must not be followed by a
-   * digit", is a lookahead at exactly that character. Type `giá $5-$8` and at the instant
-   * the second `$` lands the rule sees `$5-$`, whose content ends on a non-space and so
-   * passes both guards it CAN check. The price would turn into a formula under the writer's
-   * hands, and the guard that exists to stop it has not been given its evidence yet.
-   *
-   * The renderer has no such problem: it reads a finished document. So `$…$` stays valid
-   * everywhere and simply is not a typing gesture — it converts when the post is next
-   * opened, through the markdown-it rule above, where the whole line is known.
-   */
-  addInputRules() {
-    return [
-      mathInputRule(new RegExp(`${INLINE_PAREN_SOURCE}$`), this.name, false, 'paren'),
-    ]
-  },
-
-  addCommands() {
-    return {
-      setMath:
-        (display, tex = '') =>
-        ({ commands }) =>
-          commands.insertContent({
-            type: display ? 'mathBlock' : 'mathInline',
-            attrs: { tex, display, delim: display ? 'dollar' : 'dollar' },
-          }),
-    }
-  },
-})
-
-export const MathBlock = Node.create({
-  ...common,
-  name: 'mathBlock',
-  group: 'block',
-  draggable: true,
-  // A block node is display maths by definition; the shared default is the inline one.
-  addAttributes() {
-    return { tex: { default: '' }, display: { default: true }, delim: { default: 'dollar' as MathDelim } }
-  },
-
-  /** `$$…$$` on its own is safe to fire on: two dollars in a row are never a price. */
-  addInputRules() {
-    return [
-      mathInputRule(new RegExp(`${DISPLAY_DOLLAR_SOURCE}$`), this.name, true, 'dollar'),
-      mathInputRule(new RegExp(`${DISPLAY_BRACKET_SOURCE}$`), this.name, true, 'bracket'),
-    ]
-  },
-  parseHTML() {
-    return [{ tag: 'div[data-math]', getAttrs: (el) => parseAttrs(el as HTMLElement) }]
-  },
-  renderHTML({ node }) {
-    return ['div', { 'data-math': 'block', 'data-tex': node.attrs.tex, 'data-delim': node.attrs.delim }]
-  },
-})

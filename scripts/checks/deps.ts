@@ -66,17 +66,12 @@ const ALLOWED: Record<string, string> = {
 
   // ---- C: going, and the order is the owner's --------------------------------------------
   hono: 'C. A thin HTTP router, but 50 call sites. Last, and only when the rest is done',
-  '@tiptap/starter-kit': 'C. The editor. ADR 0006 has to be replaced before this moves',
-  '@tiptap/core':
-    'C. With the editor. Named on 2026-09-15 rather than added: it arrived under `@tiptap/react` and the two files that used the adapter now build the instance themselves',
-  '@tiptap/extension-bubble-menu':
-    'C. With the editor. Same day, same reason: it arrived under `@tiptap/react/menus` and the floating bar registers it as a plain ProseMirror plugin now',
-  '@tiptap/extension-image': 'C. With the editor',
-  '@tiptap/extension-placeholder': 'C. With the editor',
-  '@tiptap/extension-table': 'C. With the editor',
-  '@tiptap/extension-task-item': 'C. With the editor',
-  '@tiptap/extension-task-list': 'C. With the editor',
-  '@tiptap/extension-text': 'C. With the editor',
+  // ---- and what is no longer here ------------------------------------------------------
+  //
+  // `@tiptap/*` — nine packages — left on 2026-09-15, which is ADR 0054's step 7 discharged.
+  // `react` and `react-dom` left on the 15th too, with step 6. Both are recorded here rather
+  // than only in the history because tier C was written as a list of things on their way out,
+  // and a tier that empties without anybody noticing is a tier nobody was reading.
 
   // ---- T: tools, which never reach a reader ---------------------------------------------
   typescript: 'T. The compiler',

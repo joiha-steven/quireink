@@ -12,7 +12,7 @@
 // under the reader's eyes, and the owner's word for it was "nháy". Nothing that moves the
 // TEXT survives: the sound carries the keystroke, the caret carries the position, and the
 // words hold still. On a real machine the paper moves and the words do not.
-import { type Editor as TiptapEditor } from '@tiptap/core'
+import type { Editor as TiptapEditor } from '@/admin/editor/editor'
 import { playKey, type KeySound } from './key-sound'
 import type { Strike } from './key-voices'
 import { motionOn } from '@/admin/motion'

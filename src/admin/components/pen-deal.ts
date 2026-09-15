@@ -23,7 +23,6 @@
 // The same seam `pen-feedback.ts` sits on, for the same reason (ADR 0049): nothing here is a
 // transaction, nothing is in the undo history, and a save cannot see it.
 
-import { Extension } from '@tiptap/core'
 import { Plugin, PluginKey } from 'prosemirror-state'
 import { DOMSerializer, type Mark } from 'prosemirror-model'
 import type { MarkView } from 'prosemirror-view'
@@ -130,22 +129,22 @@ function penMarkView(mark: Mark, _view: unknown, inline: boolean): MarkView {
   return { dom, contentDOM, ignoreMutation: (m) => m.type === 'attributes' }
 }
 
-export const PenDeal = Extension.create({
-  name: 'quirePenDeal',
-
-  addProseMirrorPlugins() {
-    return [
-      new Plugin({
-        key: new PluginKey('quirePenDeal'),
-        props: { markViews: { ink: penMarkView, underline: penMarkView, ring: penMarkView } },
-        // `update` runs after the view has redrawn, so the strokes a transaction produced
-        // are already in the DOM and no frame has to be waited for. Nothing is scheduled and
-        // nothing is remembered between calls: the attribute in the DOM is the state.
-        view: (view) => {
-          dealPens(view)
-          return { update: () => { dealPens(view) } }
-        },
-      }),
-    ]
-  },
-})
+/**
+ * Which of the forty pens each stroke is drawn with.
+ *
+ * It was an `Extension.create` whose whole body was one `addProseMirrorPlugins` returning this,
+ * until ADR 0054's step 7 took the wrapper off.
+ */
+export function penDealPlugin(): Plugin {
+  return new Plugin({
+    key: new PluginKey('quirePenDeal'),
+    props: { markViews: { ink: penMarkView, underline: penMarkView, ring: penMarkView } },
+    // `update` runs after the view has redrawn, so the strokes a transaction produced are
+    // already in the DOM and no frame has to be waited for. Nothing is scheduled and nothing is
+    // remembered between calls: the attribute in the DOM is the state.
+    view: (view) => {
+      dealPens(view)
+      return { update: () => { dealPens(view) } }
+    },
+  })
+}

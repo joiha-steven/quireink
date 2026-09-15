@@ -1,16 +1,20 @@
-// THE HAND-WRITTEN SCHEMA AGAINST THE ONE IT REPLACES, field by field.
+// THE HAND-WRITTEN SCHEMA AGAINST THE ONE IT REPLACED, field by field.
 //
-// ⚠️ THIS FILE HAS A DEADLINE, AND IT IS THE ONLY REASON IT EXISTS. It compares
-// `editor/schema.ts` with the schema `@tiptap/starter-kit` and seven other packages produce, so
-// the swap in ADR 0054's step 7 is a MEASURED equivalence rather than a careful reading. It goes
-// out with the packages: once `@tiptap/*` is gone there is nothing on the other side of the
-// comparison, and `editor-corpus.test.ts` is the permanent guard — 45 fixtures, opened and saved
-// and rendered, under two laws.
+// ⚠️ THE OTHER SIDE OF THIS COMPARISON IS A RECORDED FILE, AND IT MUST NEVER BE REGENERATED.
+// `golden/editor/schema-before-step-7.json` is the schema `@tiptap/starter-kit` and seven other
+// packages produced, captured from a worktree at `main` on 2026-09-15 — the last commit where
+// those packages were installed. Regenerating it from the schema it guards would turn a guard
+// into a copy of the thing it is guarding, which is a mistake this repository has already paid
+// for (`golden/v1/corpus/` carries the same warning, for the same reason).
 //
-// WHAT IT COMPARES AND WHAT IT DOES NOT. Names, content expressions, groups, attribute names and
-// their defaults, and the `toDOM` of every node and mark: those are what `md/to-editor.ts` and
-// `md/from-editor.ts` speak to, and what the browser draws. Not `parseDOM`, which differs in
-// shape between the two and is exercised by pasting rather than by reading.
+// While both existed, this file compared against a RUNNING Tiptap editor and 310 assertions
+// passed. What it does now is hold the answer: a change to any node, any mark, any attribute
+// default or any `toDOM` shows up here as a diff somebody has to accept on purpose.
+//
+// WHAT IT COMPARES AND WHAT IT DOES NOT. Names, content expressions, groups, the flags that
+// decide how a key behaves, attribute names with their defaults, the `toDOM` of everything, the
+// mark ORDER (which is the nesting order a save writes), and which marks each one excludes. Not
+// `parseDOM`, which has no comparable shape between the two and is exercised by pasting.
 //
 // ⚠️ TWO DIFFERENCES ARE DELIBERATE and are asserted AS differences below, so that this file
 // says what changed rather than hiding it in a tolerance.
@@ -18,19 +22,24 @@
 // happy-dom is registered for this file only, the rule every editor suite here follows.
 import { describe, expect, it, beforeAll, afterAll } from 'bun:test'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
+import { readFileSync } from 'node:fs'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- filled in beforeAll
-let theirs: import('prosemirror-model').Schema
+/** ⚠️ NEVER REGENERATED. See the warning at the top of this file. */
+const FIXTURE = 'golden/editor/schema-before-step-7.json'
+
+type Recorded = {
+  markOrder: string[]
+  nodes: Record<string, Record<string, unknown>>
+  marks: Record<string, Record<string, unknown>>
+}
+
+let was: Recorded
 let ours: import('prosemirror-model').Schema
 
 beforeAll(async () => {
   GlobalRegistrator.register()
-  const { Editor } = await import('@tiptap/core')
-  const { editorExtensions } = await import('@/admin/components/editorExtensions')
-  const editor = new Editor({ extensions: editorExtensions('Write…'), content: '' })
-  theirs = editor.schema
+  was = JSON.parse(readFileSync(FIXTURE, 'utf8')) as Recorded
   ours = (await import('./schema')).schema
-  editor.destroy()
 })
 
 afterAll(async () => { await GlobalRegistrator.unregister() })
@@ -77,70 +86,80 @@ const shape = (out: unknown): unknown => {
   return strip(plain)
 }
 
-describe('the schema this product writes and the schema it replaces', () => {
-  it('hold the same nodes and the same marks, by name', () => {
-    expect(Object.keys(ours.nodes).sort()).toEqual(Object.keys(theirs.nodes).sort())
-    expect(Object.keys(ours.marks).sort()).toEqual(Object.keys(theirs.marks).sort())
+describe('the schema this product writes and the schema it replaced', () => {
+  it('holds the same nodes and the same marks, by name', () => {
+    expect(Object.keys(ours.nodes).sort()).toEqual(Object.keys(was.nodes).sort())
+    expect(Object.keys(ours.marks).sort()).toEqual(Object.keys(was.marks).sort())
   })
 
-  it('rank the marks in the same order, which is the nesting order a save writes', () => {
-    // ⚠️ NOT A TIDINESS CHECK. `Mark.sort()` orders by rank, and rank is position in this map,
-    // so a different order here makes the serializer write `**==bold==**` where it wrote
-    // `==**bold**==`. Same document, different file, every save, for every reader.
-    expect(Object.keys(ours.marks)).toEqual(Object.keys(theirs.marks))
+  it('ranks the marks in the same order, which is the nesting order a save writes', () => {
+    // ⚠️ NOT A TIDINESS CHECK. `Mark.sort()` orders by rank, and rank is position in the
+    // schema's map, so a different order makes the serializer write `**==bold==**` where it
+    // wrote `==**bold**==`. Same document, different file, every save, for every reader.
+    expect(Object.keys(ours.marks)).toEqual(was.markOrder)
   })
 
-  it('agree on every node: content, group, and the flags that decide how a key behaves', () => {
-    for (const name of Object.keys(theirs.nodes)) {
-      const a = theirs.nodes[name]!.spec
-      const b = ours.nodes[name]!.spec
-      const fields = ['content', 'group', 'marks', 'inline', 'atom', 'selectable', 'draggable',
-        'code', 'defining', 'isolating', 'tableRole'] as const
-      for (const f of fields) {
-        expect(`${name}.${f}=${JSON.stringify(b[f as never])}`)
-          .toBe(`${name}.${f}=${JSON.stringify(a[f as never])}`)
+  it('agrees on every node: content, group, and the flags that decide how a key behaves', () => {
+    const FIELDS = ['content', 'group', 'marks', 'inline', 'atom', 'selectable', 'draggable',
+      'code', 'defining', 'isolating', 'tableRole'] as const
+    for (const name of Object.keys(was.nodes)) {
+      const mine = ours.nodes[name]!.spec as Record<string, unknown>
+      for (const f of FIELDS) {
+        expect(`${name}.${f}=${JSON.stringify(mine[f] ?? null)}`)
+          .toBe(`${name}.${f}=${JSON.stringify(was.nodes[name]![f] ?? null)}`)
       }
     }
   })
 
-  it('agree on every node attribute and every default', () => {
-    for (const name of Object.keys(theirs.nodes)) {
-      expect(`${name}: ${JSON.stringify(defaults(ours.nodes[name]!.spec))}`)
-        .toBe(`${name}: ${JSON.stringify(defaults(theirs.nodes[name]!.spec))}`)
+  it('agrees on every node attribute and every default', () => {
+    for (const name of Object.keys(was.nodes)) {
+      const mine = defaults(ours.nodes[name]!.spec)
+      expect(`${name}: ${JSON.stringify(mine, sorted)}`)
+        .toBe(`${name}: ${JSON.stringify(was.nodes[name]!.attrs, sorted)}`)
     }
   })
 
-  it('agree on every mark attribute and every default', () => {
-    for (const name of Object.keys(theirs.marks)) {
-      expect(`${name}: ${JSON.stringify(defaults(ours.marks[name]!.spec))}`)
-        .toBe(`${name}: ${JSON.stringify(defaults(theirs.marks[name]!.spec))}`)
+  it('agrees on every mark attribute and every default', () => {
+    for (const name of Object.keys(was.marks)) {
+      const mine = defaults(ours.marks[name]!.spec)
+      expect(`${name}: ${JSON.stringify(mine, sorted)}`)
+        .toBe(`${name}: ${JSON.stringify(was.marks[name]!.attrs, sorted)}`)
     }
   })
 
-  it('draw every node the same way', () => {
-    for (const name of Object.keys(theirs.nodes)) {
-      if (name === 'text' || name === 'doc') continue
-      const mine = ours.nodes[name]!.createAndFill()
-      const yours = theirs.nodes[name]!.createAndFill()
-      if (!mine || !yours) continue
-      // `table` is the one exception and it is prosemirror-tables' own doing: its spec adds a
-      // `<colgroup>` and a `style="width: 0px"` that the column-resizing plugin maintains, and
-      // that plugin is not mounted here. The tag and the content hole are what matter.
+  it('draws every node the same way', () => {
+    for (const name of Object.keys(was.nodes)) {
+      const recorded = was.nodes[name]!.toDOM
+      if (recorded === null) continue
+      const filled = ours.nodes[name]!.createAndFill()
+      if (!filled) continue
+      // `table` is prosemirror-tables' own doing: the previous spec added a `<colgroup>` and a
+      // `style="width: 0px"` that the column-resizing plugin maintains, and that plugin was not
+      // mounted then and is not mounted now. The tag and the content hole are what matter.
       if (name === 'table') {
-        expect(String(shape(ours.nodes[name]!.spec.toDOM?.(mine))).startsWith('table')).toBe(true)
+        expect(String(shape(ours.nodes[name]!.spec.toDOM?.(filled))).startsWith('table')).toBe(true)
         continue
       }
-      expect(`${name}: ${JSON.stringify(shape(ours.nodes[name]!.spec.toDOM?.(mine)))}`)
-        .toBe(`${name}: ${JSON.stringify(shape(theirs.nodes[name]!.spec.toDOM?.(yours)))}`)
+      expect(`${name}: ${JSON.stringify(shape(ours.nodes[name]!.spec.toDOM?.(filled)))}`)
+        .toBe(`${name}: ${JSON.stringify(recorded)}`)
     }
   })
 
-  it('draw every mark the same way', () => {
-    for (const name of Object.keys(theirs.marks)) {
-      const mine = ours.marks[name]!.create()
-      const yours = theirs.marks[name]!.create()
-      expect(`${name}: ${JSON.stringify(shape(ours.marks[name]!.spec.toDOM?.(mine, true)))}`)
-        .toBe(`${name}: ${JSON.stringify(shape(theirs.marks[name]!.spec.toDOM?.(yours, true)))}`)
+  it('draws every mark the same way', () => {
+    for (const name of Object.keys(was.marks)) {
+      const mine = shape(ours.marks[name]!.spec.toDOM?.(ours.marks[name]!.create(), true))
+      expect(`${name}: ${JSON.stringify(mine)}`).toBe(`${name}: ${JSON.stringify(was.marks[name]!.toDOM)}`)
+    }
+  })
+
+  it('agrees on which marks refuse to share a character, except where it does not', () => {
+    for (const name of Object.keys(was.marks)) {
+      if (name === 'code') continue // the one deliberate difference, asserted below
+      const recorded = was.marks[name]!.excludesByName as Record<string, boolean>
+      for (const other of Object.keys(recorded)) {
+        expect(`${name} excludes ${other}: ${ours.marks[name]!.excludes(ours.marks[other]!)}`)
+          .toBe(`${name} excludes ${other}: ${recorded[other]}`)
+      }
     }
   })
 })
@@ -159,24 +178,20 @@ describe('the two differences that are on purpose', () => {
    * reader's page — the thing `editor-corpus.test.ts`'s second law exists to forbid.
    */
   it('lets the three pen marks through a code span, where the old one excluded everything', () => {
-    expect(theirs.marks.code!.spec.excludes).toBe('_')
     // ⚠️ NOT `'_ ink underline ring'`. `_` is ProseMirror's word for "every mark", so a list
     // that starts with it still excludes every mark — the first term already said all of them.
-    // The marks this one excludes are NAMED, and the three pen gestures are the omission.
     expect(ours.marks.code!.spec.excludes).toBe('code bold italic strike link')
+    // The recorded schema excluded all eight, itself included.
+    const before = was.marks.code!.excludesByName as Record<string, boolean>
+    expect(Object.values(before).every(Boolean)).toBe(true)
+
     // ⚠️ EVERY MARK IN THE SCHEMA, not a list copied from the one above it. A ninth mark added
     // later lands in one of these two groups by name, and if nobody thought about which, this
     // says so rather than letting it become legal inside a code span by default.
     const PENS = new Set(['ink', 'underline', 'ring'])
     for (const name of Object.keys(ours.marks)) {
-      const excluded = ours.marks.code!.excludes(ours.marks[name]!)
-      expect(`${name} excluded by code: ${excluded}`)
+      expect(`${name} excluded by code: ${ours.marks.code!.excludes(ours.marks[name]!)}`)
         .toBe(`${name} excluded by code: ${!PENS.has(name)}`)
-    }
-    // And the old one excluded all eight, including itself.
-    for (const name of Object.keys(theirs.marks)) {
-      expect(`old: ${name} excluded by code: ${theirs.marks.code!.excludes(theirs.marks[name]!)}`)
-        .toBe(`old: ${name} excluded by code: true`)
     }
   })
 
@@ -185,6 +200,14 @@ describe('the two differences that are on purpose', () => {
     // INSIDE the link. Kept, because step 7 moves which layer the editor stands on and keeps
     // what it does — and this one changes what happens to text a writer has already typed.
     expect(ours.marks.link!.spec.inclusive).toBe(true)
-    expect(theirs.marks.link!.spec.inclusive).toBe(true)
+    expect(was.marks.link!.inclusive).toBe(true)
   })
 })
+
+/** Keys in a stable order, so two objects that hold the same thing compare equal. */
+function sorted(_key: string, value: unknown): unknown {
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    return Object.fromEntries(Object.entries(value as object).sort(([a], [b]) => a.localeCompare(b)))
+  }
+  return value
+}

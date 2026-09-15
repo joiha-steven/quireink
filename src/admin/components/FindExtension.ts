@@ -10,7 +10,6 @@
 // beside the document — nothing about the piece changes while a writer is looking through it,
 // which is what "find" has to mean in an editor whose save contract is that a save may not
 // change the reader's page.
-import { Extension } from '@tiptap/core'
 import { Plugin, PluginKey, TextSelection, type EditorState } from 'prosemirror-state'
 import type { Node as PMNode } from 'prosemirror-model'
 import { Decoration, DecorationSet } from 'prosemirror-view'
@@ -100,7 +99,10 @@ function decorate(doc: PMNode, state: FindState): DecorationSet {
 }
 
 /**
- * The extension. It holds the query and redraws when the document changes underneath it.
+ * The plugin. It holds the query and redraws when the document changes underneath it.
+ *
+ * It was an `Extension.create` whose whole body was one `addProseMirrorPlugins` returning this,
+ * until ADR 0054's step 7 took the wrapper off.
  *
  * RECOMPUTED ON EVERY DOC CHANGE rather than mapped through the transaction. Mapping is the
  * cheaper move and the wrong one here: a Replace changes the length of the text it sits in, so
@@ -108,44 +110,38 @@ function decorate(doc: PMNode, state: FindState): DecorationSet {
  * leaves a highlight over text that no longer matches. Re-scanning is one pass over the
  * block runs and happens only while a query is set.
  */
-export const Find = Extension.create({
-  name: 'quireFind',
-
-  addProseMirrorPlugins() {
-    return [
-      new Plugin<FindState>({
-        key: findKey,
-        state: {
-          init: () => EMPTY,
-          apply(tr, value) {
-            const meta = tr.getMeta(findKey) as FindMeta | undefined
-            if (!meta && !tr.docChanged) return value
-            const query = meta?.query ?? value.query
-            const caseSensitive = meta?.caseSensitive ?? value.caseSensitive
-            const hits = query ? hitsIn(tr.doc, query, { caseSensitive }) : []
-            // The index is clamped rather than kept: a replace removes a hit, and an index
-            // pointing past the end would leave the panel counting "4 of 3".
-            const wanted = meta?.index ?? value.index
-            const index = hits.length === 0 ? 0 : Math.min(Math.max(wanted, 0), hits.length - 1)
-            return { query, caseSensitive, index, hits }
-          },
-        },
-        props: {
-          // ⚠️ THERE WAS A CAST HERE, and it was a packaging fact rather than a type this file
-          // got wrong: two copies of `prosemirror-view` were installed — 1.42.3 hoisted, which
-          // is where `Decoration` came from, and 1.42.2 nested under `prosemirror-state` and
-          // four of its siblings. `DecorationSet` carries a private field, so TypeScript read
-          // the two as different classes although they are the same code.
-          //
-          // The comment said the cast would become a no-op when the duplicate was deduped. It
-          // has been (2026-09-15, `scripts/checks/deps.ts`), so the cast is gone rather than
-          // left standing as a lie about a problem that no longer exists.
-          decorations: (state: EditorState) => decorate(state.doc, findKey.getState(state) ?? EMPTY),
-        },
-      }),
-    ]
-  },
-})
+export function findPlugin(): Plugin<FindState> {
+  return new Plugin<FindState>({
+    key: findKey,
+    state: {
+      init: () => EMPTY,
+      apply(tr, value) {
+        const meta = tr.getMeta(findKey) as FindMeta | undefined
+        if (!meta && !tr.docChanged) return value
+        const query = meta?.query ?? value.query
+        const caseSensitive = meta?.caseSensitive ?? value.caseSensitive
+        const hits = query ? hitsIn(tr.doc, query, { caseSensitive }) : []
+        // The index is clamped rather than kept: a replace removes a hit, and an index
+        // pointing past the end would leave the panel counting "4 of 3".
+        const wanted = meta?.index ?? value.index
+        const index = hits.length === 0 ? 0 : Math.min(Math.max(wanted, 0), hits.length - 1)
+        return { query, caseSensitive, index, hits }
+      },
+    },
+    props: {
+      // ⚠️ THERE WAS A CAST HERE, and it was a packaging fact rather than a type this file
+      // got wrong: two copies of `prosemirror-view` were installed — 1.42.3 hoisted, which
+      // is where `Decoration` came from, and 1.42.2 nested under `prosemirror-state` and
+      // four of its siblings. `DecorationSet` carries a private field, so TypeScript read
+      // the two as different classes although they are the same code.
+      //
+      // The comment said the cast would become a no-op when the duplicate was deduped. It
+      // has been (2026-09-15, `scripts/checks/deps.ts`), so the cast is gone rather than
+      // left standing as a lie about a problem that no longer exists.
+      decorations: (state: EditorState) => decorate(state.doc, findKey.getState(state) ?? EMPTY),
+    },
+  })
+}
 
 // ----- driving it from the panel ------------------------------------------------------
 //

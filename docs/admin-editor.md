@@ -86,8 +86,10 @@ that file first; this one only adds what is true here.
   what it publishes after a save is pinned in `golden/editor/` and compared byte for byte —
   the same shape `src/render/golden.test.ts` uses for its divergences from 1.x.
 - **Keyboard: one table, in `editorKeys.ts`**, read by the handlers AND by the Help screen, so a
-  chord cannot move without the printed sheet following it. Tiptap's own bindings are left as
-  they come; what this product adds is `Mod-s` (save), `Mod-k` (link), `Mod-f` (find),
+  chord cannot move without the printed sheet following it. The editor's own table is
+  [`editor/keymap.ts`](../src/admin/editor/keymap.ts) — every chord it answers, in one place,
+  where twenty-one extensions each declared their own until ADR 0054's step 7. What this product
+  adds on top is `Mod-s` (save), `Mod-k` (link), `Mod-f` (find),
   `Mod-Shift-f` (find and replace), `Mod-Shift-h` (highlighter), `Mod-Shift-o` (ring), `Mod-Shift-x` (strip marks),
   `Mod-Shift-a` (Attributes), `Mod-Shift-m` (Markdown source) and `Mod-\` (focus).
   ⚠️ **`Mod-s` is not a convenience.** Autosave here writes to localStorage and NEVER to the
@@ -178,8 +180,8 @@ that file first; this one only adds what is true here.
   because the crest factors differ by 5× and two transients can land 14ms apart and add.
   Re-measure with the same method if a voice is retuned.
   The synthesis lives in `key-sound.ts`, apart from `key-feedback.ts`, because the settings
-  screen plays a key as you drag the slider and must not pull Tiptap into its bundle to do
-  it. A volume control you cannot hear while setting it is a trip to the editor per nudge.
+  screen plays a key as you drag the slider and must not pull the whole editor into its bundle
+  to do it. A volume control you cannot hear while setting it is a trip to the editor per nudge.
   The sound is NOT gated by the motion engine or by reduced-motion: somebody who asked for
   less movement did not ask for silence, and those are not the same request.
 - **The pen answers the hand** (2026-09-09, ADR 0049): a highlight, underline or ring JUST

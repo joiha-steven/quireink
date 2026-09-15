@@ -18,13 +18,11 @@ afterAll(() => GlobalRegistrator.unregister())
 const insensitive = { caseSensitive: false }
 
 async function open(content: string) {
-  const { Editor } = await import('@tiptap/core')
-  const { editorExtensions } = await import('@/admin/components/editorExtensions')
-  return new Editor({ extensions: editorExtensions(''), content })
+  const { Editor } = await import('@/admin/editor/editor')
+  return new Editor({ element: document.createElement('div'), content })
 }
 
-const md = (editor: { storage: unknown }) =>
-  (editor.storage as { markdown: { getMarkdown: () => string } }).markdown.getMarkdown().trim()
+const md = (editor: { getMarkdown: () => string }) => editor.getMarkdown().trim()
 
 describe('what counts as a match', () => {
   it('ignores case unless asked, because somebody searching a word means the word', () => {

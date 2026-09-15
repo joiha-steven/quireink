@@ -7,12 +7,11 @@
 // two empty slots and gets back an editor.
 //
 // ⚠️ THE TWO VIEWS ARE BOTH IN THE MARKUP, and this only flips `hidden`. See `sheet-raw.ts`.
-import type { Editor as TiptapEditor } from '@tiptap/core'
-import { Editor as TiptapEditorClass } from '@tiptap/core'
+import { Editor } from '@/admin/editor/editor'
 import type { KeySound } from '@/admin/components/key-sound'
 import type { SheetWords } from '@/admin-shared/sheet-wire'
 import type { Hit } from '@/admin/components/editorFind'
-import { editorExtensions } from '@/admin/components/editorExtensions'
+import { nodeViews } from '@/admin/editor/views'
 import { writingSurface } from '@/admin/components/editor-surface'
 import { mountSource } from '@/admin/components/editor-source'
 import { captionFromUrl, readMarkdown, videoUrlsToNodes } from '@/admin/components/editorDoc'
@@ -65,7 +64,7 @@ export type Paper = {
 
 export function mountPaper(parts: PaperParts, hooks: PaperHooks): Paper {
   const { t, keySound } = hooks
-  const editorRef: { current: TiptapEditor | null } = { current: null }
+  const editorRef: { current: Editor | null } = { current: null }
   const slashRef: { current: { left: number; top: number } | null } = { current: null }
   // The typewriter's caret: a span the key feedback moves to where the writing is. Drawn only
   // when there is a sound to go with it, because it is that feature's own sight of itself.
@@ -104,9 +103,12 @@ export function mountPaper(parts: PaperParts, hooks: PaperHooks): Paper {
     }
   }
 
-  const editor = new TiptapEditorClass({
+  const editor = new Editor({
     element: parts.paperSlot,
-    extensions: editorExtensions(t.editorPlaceholder, hooks.askLink, {
+    content: hooks.content,
+    placeholder: t.editorPlaceholder,
+    askLink: hooks.askLink,
+    nodeViews: nodeViews({
       video: { column: t.imgSizeColumn, wide: t.imgSizeWide },
       math: { placeholder: t.mathPlaceholder },
       image: {
@@ -121,7 +123,6 @@ export function mountPaper(parts: PaperParts, hooks: PaperHooks): Paper {
         caption: t.captionPlaceholder,
       },
     }),
-    content: hooks.content,
     editorProps: writingSurface({
       keySound,
       caretRef,
@@ -131,26 +132,22 @@ export function mountPaper(parts: PaperParts, hooks: PaperHooks): Paper {
       insertImages,
       imageFiles,
     }),
-    onCreate({ editor: made }) {
-      videoUrlsToNodes(made)
-    },
-    onSelectionUpdate({ editor: made }) {
-      if (keySound.mode !== 'off') placeCaret(made.view, caretRef.current)
-    },
-    // The pen answering the hand (ADR 0049): a mark just applied draws itself, and squeaks.
-    onTransaction({ editor: made, transaction }) {
-      penStrokes(made.view, transaction, keySound)
-    },
-    onUpdate() {
-      // ONE FLAG, AND NOTHING ELSE. This used to serialize the whole document on a 400ms
-      // trailing debounce, said to be what kept typing smooth. It was the opposite: 400ms is
-      // shorter than the pause between two sentences, so the stall landed in every one — 126ms
-      // frozen on an 18k-word draft carrying 2,159 pen marks (2026-09-13). Every reader asks
-      // the editor for the text at the moment it needs it instead.
-      hooks.onDirty()
-    },
   })
   editorRef.current = editor
+  videoUrlsToNodes(editor)
+  editor.on('selectionUpdate', () => {
+    if (keySound.mode !== 'off') placeCaret(editor.view, caretRef.current)
+  })
+  // The pen answering the hand (ADR 0049): a mark just applied draws itself, and squeaks.
+  editor.on<{ transaction: import('prosemirror-state').Transaction }>('transaction', ({ transaction }) => {
+    penStrokes(editor.view, transaction, keySound)
+  })
+  // ONE FLAG, AND NOTHING ELSE. This used to serialize the whole document on a 400ms trailing
+  // debounce, said to be what kept typing smooth. It was the opposite: 400ms is shorter than the
+  // pause between two sentences, so the stall landed in every one — 126ms frozen on an 18k-word
+  // draft carrying 2,159 pen marks (2026-09-13). Every reader asks the editor for the text at
+  // the moment it needs it instead.
+  editor.on('update', () => hooks.onDirty())
   if (caret) parts.paperSlot.appendChild(caret)
 
   // The source view is built ONCE, now, and never rebuilt: the switch into it carries a caret
