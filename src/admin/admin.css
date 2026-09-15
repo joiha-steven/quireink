@@ -933,7 +933,18 @@ input[type='color']::-moz-color-swatch {
    word would be a smear. Both are in the markup; this picks. */
 #admin-rail .rail-mark,
 :root[data-rail-collapsed='1'] #admin-rail .rail-word { display: none; }
-:root[data-rail-collapsed='1'] #admin-rail .rail-mark { display: block; }
+:root[data-rail-collapsed='1'] #admin-rail .rail-mark {
+  display: block;
+  /* ⚠️ THE LETTER IS CENTRED, NOT THE BOX. `Q.` is a Q plus a red dot that hangs off its right,
+     and the dot is inside the SVG's box — so a mark centred on its box puts the Q 3.04px left of
+     the column every icon below it stands on. Measured in the collapsed rail at 22px: box centre
+     36.00, Q centre 32.96, icons 36.00. Reported by eye first.
+
+     A PERCENTAGE of the mark's own width, not a pixel count: 13.09 of the viewBox's 120.1 units
+     is 10.9%, and that stays true if the mark is ever set at another height. The dot overhangs to
+     the right, which is what a dot after a letter does. */
+  translate: 10.9% 0;
+}
 /* The drawer and the phone bar are never collapsed, whatever the column is doing. */
 .admin-drawer .rail-mark, .admin-bar .rail-mark { display: none; }
 
@@ -1060,6 +1071,20 @@ input[type='color']::-moz-color-swatch {
    `pointer: coarse` and not a width query: what decides is whether the thing pointing is a
    fingertip, and an iPad in landscape is 1024px wide with no cursor at all. */
 @media (pointer: coarse) {
+  /* ⚠️ AN ACTION THAT WAITS FOR A POINTER NEVER ARRIVES ON A FINGER. The comments queue hides
+     its delete key with `opacity-0` and reveals it on `group-hover`, for a good reason it states
+     itself — a moderator reads far more rows than they act on — but there is no hover on a
+     phone, so that key was invisible and unreachable there. It is still focusable, which makes
+     it worse: a screen reader announces a control nobody can see.
+
+     Shown outright where the pointer is coarse. The quiet is a desktop luxury; on a phone the
+     row is wide enough to carry the key anyway. Found 2026-09-16 while redrawing the trash rows,
+     which nearly copied the pattern. */
+  .group:hover .group-hover\:opacity-100,
+  [class~='opacity-0'][class*='group-hover:opacity-100'] {
+    opacity: 1;
+  }
+
   .tap-touch { position: relative; }
   .tap-touch::after {
     content: '';

@@ -13,7 +13,7 @@
 // importing all eleven dictionaries to print two labels.
 import type { Node as PMNode } from 'prosemirror-model'
 import { videoEmbed, videoFileUrl } from '@/render/video'
-import { SEGMENT_TRACK, tabItemClass } from '@/admin-shared/tabs'
+import { SEGMENT_TRACK, edgeAt, tabItemClass } from '@/admin-shared/tabs'
 import { el } from './node-dom'
 
 
@@ -66,9 +66,10 @@ export class VideoView {
     this.bar.hidden = !(this.selected && (embed || file))
     if (!this.bar.hidden) {
       const track = el('div', { className: SEGMENT_TRACK })
-      for (const [on, label] of [[false, this.words.column], [true, this.words.wide]] as const) {
+      const pair = [[false, this.words.column], [true, this.words.wide]] as const
+      for (const [i, [on, label]] of pair.entries()) {
         const key = el('button', {
-          className: tabItemClass(wide === on, 'sm'),
+          className: tabItemClass(wide === on, 'sm', false, 'choice', edgeAt(i, pair.length)),
           type: 'button',
           // The server's own `tabs()` says this and the React node view never did: a segmented
           // control whose pressed state is only a background colour is a control a screen

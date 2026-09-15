@@ -8,14 +8,15 @@
 import { escapeAttr, escapeHtml } from '@/utils'
 import { CONTROL, TICK_BOX, TICK_MARK, TICK_PATH, TICK_WRAP } from '@/admin-shared/kit'
 import { CONTROL_GROUP, CONTROL_NUM } from '@/admin-shared/controls'
-import { SEGMENT_TRACK, tabItemClass } from '@/admin-shared/tabs'
+import { SEGMENT_TRACK, edgeAt, tabItemClass } from '@/admin-shared/tabs'
 import { FIELD_W, NOTE, SETTING_LABEL } from '@/admin-shared/scale'
 import { settingRow, type SettingText } from '@/web/admin/fields'
 import { icon } from '@/web/admin/kit'
 
 /** The strip's two faces, so the island moves `aria-pressed` and swaps a string it was given. */
-export const CHOICE_ON = tabItemClass(true, 'sm')
-export const CHOICE_OFF = tabItemClass(false, 'sm')
+/** A choice key, at its position in the strip: only the two ends take a curve. */
+const choiceKey = (on: boolean, i: number, n: number): string =>
+  tabItemClass(on, 'sm', false, 'choice', edgeAt(i, n))
 
 /**
  * A SEGMENTED CHOICE: three or four answers read at a glance.
@@ -42,9 +43,9 @@ export function choice(f: SettingText & {
   bool?: boolean
   attrs?: string
 }): string {
-  const items = f.options.map(([v, label]) =>
+  const items = f.options.map(([v, label], i) =>
     `<button type="button" data-choice="${escapeAttr(v)}" aria-pressed="${v === f.value}"`
-    + ` class="${v === f.value ? CHOICE_ON : CHOICE_OFF}">${escapeHtml(label)}</button>`).join('')
+    + ` class="${choiceKey(v === f.value, i, f.options.length)}">${escapeHtml(label)}</button>`).join('')
   return settingRow({
     ...f,
     // `data-was` because a `<div>` of buttons has no `defaultValue` for the form's diff to

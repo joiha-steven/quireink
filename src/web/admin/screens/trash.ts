@@ -18,9 +18,11 @@ import type { AdminComment, FileItem, MediaItem, Note, Page, Post, SiteSettings 
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import { adminT } from '@/i18n/admin-i18n'
 import { escapeAttr, escapeHtml, formatDateTimeShort } from '@/utils'
-import { NOTE_TEXT } from '@/admin-shared/scale'
-import { CONTROL_SM, SHEET_FOOT, SHEET_TOOL, SHEET_TOOL_DANGER } from '@/admin-shared/kit'
-import { emptyState, pageHeader, sheet, sheetTop, tabs, tick } from '@/web/admin/kit'
+import { META, NOTE_TEXT } from '@/admin-shared/scale'
+import {
+  CONTROL_SM, ICON_KEY, ICON_KEY_DANGER, SHEET_FOOT, SHEET_TOOL, SHEET_TOOL_DANGER,
+} from '@/admin-shared/kit'
+import { emptyState, icon, pageHeader, sheet, sheetTop, tabs, tick } from '@/web/admin/kit'
 import { trashView } from '@/web/admin/views'
 
 export type Kind = 'posts' | 'pages' | 'notes' | 'media' | 'files' | 'comments' | 'subscribers'
@@ -41,13 +43,36 @@ const openKind = (query: URLSearchParams): Kind => {
 }
 
 const LIST = 'paper-cols'
-const ROW = 'border-b border-neutral-100 px-5 py-3 hover:bg-neutral-50/60'
+// `py-2.5` and not `py-3`: the row's height is set by the 36px key at its end, and the padding
+// only has to keep the key off the rule above and below it. At `py-3` every row carried 4px it
+// was not using — 40px down a column of ten.
+const ROW = 'border-b border-neutral-100 px-5 py-2.5 hover:bg-neutral-50/60'
   + ' dark:border-neutral-800 dark:hover:bg-neutral-800/30'
-const NAME = 'text-sm font-medium text-neutral-800 dark:text-neutral-200'
+// ⚠️ `truncate`, so a long title cannot make one row taller than the rows around it. Measured
+// 2026-09-16: without it a two-line title made a 65px row in a list of 44px ones, and which rows
+// were tall depended on what had been deleted — a list whose rhythm changes with its contents.
+const NAME = 'truncate text-sm font-medium text-neutral-800 dark:text-neutral-200'
 
 /**
- * One trashed item: the thing first, then a line of small print — when it was deleted and the
- * two verbs that decide its fate, both quiet words.
+ * One trashed item: the thing, when it went, and the two keys that decide its fate.
+ *
+ * ⚠️ ONE LINE, AND THE VERBS ARE KEYS. This row was two lines and the second one existed to
+ * carry "Restore" and "Delete permanently" as words — 143px of every 614px row, the same two
+ * words twenty times down the page, and 65px of row height where 28 of it said nothing the row
+ * above had not already said. Measured 2026-09-16 on twenty rows.
+ *
+ * So the verbs become the square key every other list row in this admin uses for its actions,
+ * the date moves up beside the name, and the row is one line: 20 rows lost 420px of height and
+ * the screen stopped reading as a wall of repeated words.
+ *
+ * ⚠️ NOT HIDDEN UNTIL HOVER. The comments queue reveals its delete key that way and says why —
+ * a moderator reads far more rows than they act on — but it does it with `opacity-0` and no
+ * `pointer: coarse` answer, so on a phone that key is invisible and unreachable. A trash whose
+ * Restore could not be found on a phone would be worse than a noisy one.
+ *
+ * ⚠️ BOTH KEYS CARRY A NAME. An icon-only button has no accessible name of its own, and these
+ * two are the difference between putting something back and destroying it. `aria-label` for the
+ * screen reader, `title` for the pointer, and the red ballpoint for the eye.
  *
  * `data-find` is the name AS TYPED, not folded. The log folds its haystack on the server so a
  * keystroke costs one `includes` per row, and that is right for a ledger of two hundred lines
@@ -55,21 +80,35 @@ const NAME = 'text-sm font-medium text-neutral-800 dark:text-neutral-200'
  * typed without accents matches any, a word typed WITH them means them — which needs the three
  * lanes of the original text rather than one folded copy, and the island builds those once on
  * the first keystroke. Folding here would quietly turn "lề" back into a search that also finds
- * "lệ". `data-name` is what
- * the question will say out loud, so the island never has to read it back out of the markup it
- * drew — a name with a comma or a quote in it survives the trip as an attribute and would not
- * survive being re-parsed out of a paragraph.
+ * "lệ". `data-name` is what the question will say out loud, so the island never has to read it
+ * back out of the markup it drew — a name with a comma or a quote in it survives the trip as an
+ * attribute and would not survive being re-parsed out of a paragraph.
  */
 function row(t: AdminStrings, kind: Kind, id: string, name: string, deletedAt: string | null | undefined, body: string): string {
+  const key = (attrs: string, label: string, glyph: 'restore' | 'trash', cls: string): string =>
+    `<button type="button" ${attrs} aria-label="${escapeAttr(label)}" title="${escapeAttr(label)}"`
+    + ` class="${escapeAttr(cls)}">${icon(glyph, 'h-4 w-4')}</button>`
   return `<li class="${ROW}" data-trash-row data-find="${escapeAttr(name)}">`
-    + `<div class="flex items-start gap-3">`
-    + tick({ label: name, className: 'mt-0.5', attrs: `data-trash-pick data-id="${escapeAttr(id)}"` })
-    + `<div class="min-w-0 flex-1">${body}</div></div>`
-    + `<div class="mt-1 flex flex-wrap items-baseline gap-x-2 text-xs text-neutral-500 dark:text-neutral-400">`
-    + (deletedAt ? `<span class="whitespace-nowrap">${escapeHtml(t.colDeletedAt)} ${escapeHtml(formatDateTimeShort(deletedAt))}</span>` : '')
-    + `<span class="ml-auto flex gap-3">`
-    + `<button type="button" data-trash-restore data-kind="${kind}" data-id="${escapeAttr(id)}" class="${SHEET_TOOL}">${escapeHtml(t.restore)}</button>`
-    + `<button type="button" data-trash-purge data-kind="${kind}" data-id="${escapeAttr(id)}" data-name="${escapeAttr(name)}" class="${SHEET_TOOL_DANGER}">${escapeHtml(t.deletePermanently)}</button>`
+    + `<div class="flex items-center gap-3">`
+    + tick({ label: name, className: 'shrink-0', attrs: `data-trash-pick data-id="${escapeAttr(id)}"` })
+    + `<div class="min-w-0 flex-1">${body}</div>`
+    // The date is small print beside the name rather than a line of its own, and it goes before
+    // the keys so the two keys are the last thing on every row, in the same place on each.
+    // ⚠️ THE DATE WITHOUT ITS LABEL. Everything on this screen was deleted, so printing the word
+    // "Deleted" on every row says only what the screen's own title already says — the same noise
+    // the two verbs were, 48px of it per row, taken from the name. The label rides in `title`
+    // for a pointer that asks.
+    + (deletedAt
+      ? `<span class="${META} hidden shrink-0 whitespace-nowrap sm:inline"`
+        + ` title="${escapeAttr(`${t.colDeletedAt} ${formatDateTimeShort(deletedAt)}`)}">`
+        + `${escapeHtml(formatDateTimeShort(deletedAt))}</span>`
+      : '')
+    + `<span class="flex shrink-0 items-center">`
+    + key(`data-trash-restore data-kind="${kind}" data-id="${escapeAttr(id)}"`, t.restore, 'restore', ICON_KEY)
+    + key(
+      `data-trash-purge data-kind="${kind}" data-id="${escapeAttr(id)}" data-name="${escapeAttr(name)}"`,
+      t.deletePermanently, 'trash', ICON_KEY_DANGER,
+    )
     + `</span></div></li>`
 }
 

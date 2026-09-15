@@ -21,8 +21,7 @@ import {
   TICK_BOX, TICK_MARK, TICK_PATH, TICK_WRAP, type LampState,
 } from '@/admin-shared/kit'
 import {
-  SEGMENT_TRACK, SEGMENT_TRACK_DENSE, SEGMENT_TRACK_DENSE_PLACE, SEGMENT_TRACK_PLACE,
-  TAB_TRACK, TAB_TRACK_DENSE, tabItemClass, type TabRole, type TabSize,
+  SEGMENT_TRACK, SEGMENT_TRACK_DENSE, SEGMENT_TRACK_DENSE_PLACE, SEGMENT_TRACK_PLACE, TAB_TRACK, TAB_TRACK_DENSE, edgeAt, tabItemClass, type TabRole, type TabSize,
 } from '@/admin-shared/tabs'
 import { HEADER_GAP, NOTE_TEXT, TITLE } from '@/admin-shared/scale'
 
@@ -200,7 +199,7 @@ export function tabs({
       ? (role === 'place' ? SEGMENT_TRACK_DENSE_PLACE : SEGMENT_TRACK_DENSE)
       : (role === 'place' ? SEGMENT_TRACK_PLACE : SEGMENT_TRACK)
   return `<div class="${track}"${tablist ? ' role="tablist"' : ''}${attrs ? ` ${attrs}` : ''}>`
-    + items.map(({ key, label }) => {
+    + items.map(({ key, label }, i) => {
       const on = key === value
       // ROVING: exactly one tab is a keyboard stop. Seven stops would make Tab walk the strip
       // before it ever reached the paper the strip is about.
@@ -209,7 +208,7 @@ export function tabs({
           + (panelId ? ` aria-controls="${escapeAttr(`${panelId}-${key}`)}"` : '')
         : ` aria-pressed="${on}"`
       return `<button type="button" data-tab="${escapeAttr(key)}"${tab}`
-        + ` class="${tabItemClass(on, size, dense, role)}">${escapeHtml(label)}</button>`
+        + ` class="${tabItemClass(on, size, dense, role, edgeAt(i, items.length))}">${escapeHtml(label)}</button>`
     }).join('')
     + `</div>`
 }
@@ -260,10 +259,11 @@ export function linkTabs({ items, value, size = 'sm', role = 'choice', attrs = '
   attrs?: string
 }): string {
   return `<div class="${role === 'place' ? SEGMENT_TRACK_PLACE : SEGMENT_TRACK}"${attrs ? ` ${attrs}` : ''}>`
-    + items.map(({ key, label, href }) =>
+    + items.map(({ key, label, href }, i) =>
       `<a href="${escapeAttr(href)}" data-tab="${escapeAttr(key)}"`
       + (key === value ? ' aria-current="page"' : '')
-      + ` class="${tabItemClass(key === value, size, false, role)} whitespace-nowrap">${escapeHtml(label)}</a>`).join('')
+      + ` class="${tabItemClass(key === value, size, false, role, edgeAt(i, items.length))}`
+      + ` whitespace-nowrap">${escapeHtml(label)}</a>`).join('')
     + `</div>`
 }
 

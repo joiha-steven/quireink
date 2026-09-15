@@ -12,7 +12,7 @@
 // Safari's render process down once on another site. The figure is now the node view's own
 // element, so the rules key on it directly.
 import type { Node as PMNode } from 'prosemirror-model'
-import { SEGMENT_TRACK, tabItemClass } from '@/admin-shared/tabs'
+import { SEGMENT_TRACK, edgeAt, tabItemClass } from '@/admin-shared/tabs'
 import { el } from './node-dom'
 import {
   ALIGNS, CAPTIONS, FRAME_INKS, FRAME_WEIGHTS, RATIOS, RATIO_LABEL, SIZES,
@@ -147,9 +147,9 @@ export class ImageView {
     values: readonly T[], current: T, label: (v: T) => string, pick: (v: T) => void,
   ): HTMLElement {
     const track = el('div', { className: SEGMENT_TRACK })
-    for (const v of values) {
+    for (const [i, v] of values.entries()) {
       const key = el('button', {
-        className: tabItemClass(v === current, 'sm'),
+        className: tabItemClass(v === current, 'sm', false, 'choice', edgeAt(i, values.length)),
         type: 'button',
         // The server's own `tabs()` says this and the React node view never did: a segmented
         // control whose pressed state is only a background colour is a control a screen reader

@@ -137,10 +137,20 @@ export const ICONS = {
   comment:
     '<path d="M20 5.5H5.5A1.5 1.5 0 0 0 4 7v8a1.5 1.5 0 0 0 1.5 1.5H8V20l4.5-3.5H20z"/>'
     + '<path d="M8.5 10h7M8.5 12.8h4.5" stroke-width="1.4"/>',
+  /**
+   * ⚠️ DRAWN 1.5 UNITS RIGHT OF CENTRE, ON PURPOSE. A clock is a closed ring and three rules are
+   * three short strokes: this glyph carries about 31 units of ink on its left and 12 on its
+   * right, so a drawing centred on its BOUNDING BOX hangs visibly to the left. Reported by eye
+   * in the collapsed rail, then measured — a stroke-mass centroid over all thirteen rail icons
+   * put this one 1.47 units off and no other past 0.6.
+   *
+   * A box is not what anyone looks at. The bounding box is deliberately lopsided now (4.5 to 22
+   * against a 24 field) so that the INK sits on the column the icons above and below it stand on.
+   */
   log:
-    '<circle cx="8" cy="12" r="5"/><path d="M8 9.5V12l1.8 1.2"/>'
-    + '<path d="M16.5 7H21M16.5 12H21M16.5 17h3"/>'
-    + '<path d="M5.6 10a2.9 2.9 0 0 1 1.3-1.6" stroke-width="1.4"/>',
+    '<circle cx="9.5" cy="12" r="5"/><path d="M9.5 9.5V12l1.8 1.2"/>'
+    + '<path d="M18 7H22M18 12H22M18 17h2.5"/>'
+    + '<path d="M7.1 10a2.9 2.9 0 0 1 1.3-1.6" stroke-width="1.4"/>',
   help:
     '<circle cx="12" cy="12" r="8.5"/>'
     + '<path d="M9.5 9.5a2.5 2.5 0 1 1 3.6 2.2c-.8.4-1.1.9-1.1 1.8v.3"/>'
@@ -151,6 +161,15 @@ export const ICONS = {
   cache:
     '<path d="M4.5 12a7.5 7.5 0 0 1 13-5.1L20 9.5"/><path d="M20 4.5v5h-5"/>'
     + '<path d="M19.5 12a7.5 7.5 0 0 1-13 5.1L4 14.5"/><path d="M4 19.5v-5h5"/>',
+  /**
+   * PUT IT BACK: one arrow that turns and returns, which is the undo gesture everywhere.
+   *
+   * Not `cache`, which is the two-arrow cycle and means "do it again" — a trashed post is not
+   * being refreshed. Drawn open at the left so the arrowhead reads as arriving rather than as
+   * part of the loop: at 16px a closed circle of two arrows is a smudge.
+   */
+  restore:
+    '<path d="M4 9.5h10a5.5 5.5 0 1 1 0 11H7.5"/><path d="M7.5 5 3.5 9.5l4 4.5"/>',
   signOut:
     '<path d="M13.5 4.5H6a1.5 1.5 0 0 0-1.5 1.5v12A1.5 1.5 0 0 0 6 19.5h7.5"/>'
     + '<path d="M16 8.5 19.5 12 16 15.5M19.5 12H10"/>',

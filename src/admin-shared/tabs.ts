@@ -82,11 +82,35 @@ export const SEGMENT_TRACK_DENSE_PLACE = 'flex min-h-8 w-full overflow-x-auto no
  */
 export type TabRole = 'place' | 'choice'
 
+/**
+ * WHERE IN THE STRIP A KEY SITS, which is the only thing that decides its corners.
+ *
+ * ⚠️ A SEGMENTED KEY IS ROUNDED ONLY WHERE IT MEETS THE TRACK'S END. The chosen key fills its
+ * track edge to edge, so at the two ends its corner has to follow the track's own curve — and
+ * everywhere else it butts against the key beside it, where a curve would cut a notch out of a
+ * straight run. Rounding all four corners of a middle key was the first cut and it read as a
+ * pill floating in a groove rather than as one segment of a strip.
+ */
+export type TabEdge = 'start' | 'end' | 'both' | 'none'
+
+/** The edge a key at `i` of `n` has. One strip of one key is both ends of itself. */
+export const edgeAt = (i: number, n: number): TabEdge =>
+  n <= 1 ? 'both' : i === 0 ? 'start' : i === n - 1 ? 'end' : 'none'
+
+/** 5px is the track's 6px outer radius less its 1px border: the curve that border draws inside. */
+const CORNERS: Record<TabEdge, string> = {
+  start: 'rounded-l-[5px]',
+  end: 'rounded-r-[5px]',
+  both: 'rounded-[5px]',
+  none: '',
+}
+
 export const tabItemClass = (
   active: boolean,
   size: TabSize = 'lg',
   dense = false,
   role: TabRole = 'choice',
+  edge: TabEdge = 'both',
 ): string =>
   size === 'lg'
     // `-mb-px` so the item's own 2px border sits ON the track's hairline rather than under it.
@@ -110,13 +134,13 @@ export const tabItemClass = (
     // and the padding only has to be small enough to let it. At `py-1.5` the item measured
     // 31.5 and pushed the track to 33.5 — a third height on a row that has a 32px key and a
     // 32px field on it.
-    // ⚠️ `rounded-[5px]` AND NO PADDING ON THE TRACK, both from the same measurement. The key
-    // had no radius at all — a square block inside a 6px track — and the track held it 3px in
-    // from every edge (2px of padding over a 1px border), so the chosen segment floated in
-    // the middle of its own groove with four sharp corners. 5px is not a taste: it is the
-    // track's 6px outer radius less its 1px border, which is exactly the curve the inside of
-    // that border draws, so the key's corner lands ON it rather than near it.
-    : `rounded-[5px] ${dense ? 'grow px-2' : 'shrink-0 whitespace-nowrap px-3'} py-1 text-[0.8125rem] font-medium transition ${
+    // ⚠️ THE CORNERS COME FROM THE POSITION, and the track carries no padding. The key had no
+    // radius at all — a square block inside a 6px track — and the track held it 3px in from
+    // every edge (2px of padding over a 1px border), so the chosen segment floated in the middle
+    // of its own groove with four sharp corners. Rounding all four was the correction's first
+    // cut and it was wrong in the other direction: a middle key butts against its neighbours,
+    // and a curve there cuts a notch out of a straight run. See `TabEdge`.
+    : `${CORNERS[edge]} ${dense ? 'grow px-2' : 'shrink-0 whitespace-nowrap px-3'} py-1 text-[0.8125rem] font-medium transition ${
         active
           // INK on the highlighter, not the reading site's olive `--on-pen`: on a control
           // the olive read as grey and dull, and the owner called it. A mark in running

@@ -174,10 +174,114 @@ const MEASURE = `
  */
 const WIDTHS = [1440, 390] as const
 
+/**
+ * THE RAIL'S ICONS STAND ON ONE COLUMN, measured in INK rather than in boxes.
+ *
+ * ⚠️ A CENTRED BOX IS NOT A CENTRED DRAWING. Every rail icon sits in a 24-unit field and every
+ * field is centred, so nothing about the markup or the layout can be wrong — and the activity
+ * log's glyph still hung visibly to the left, because it is a closed ring carrying about 31
+ * units of stroke on one side and three short rules carrying 12 on the other. Reported by eye
+ * in the collapsed rail on 2026-09-16 and invisible to every other check in this repository.
+ *
+ * So this walks each path at fixed steps and averages the x it passes through, which is where
+ * the ink actually is. The threshold is 0.8 of 24 units — 0.6px at the size the rail draws them
+ * — because that is comfortably under what an eye picks out of a vertical column and comfortably
+ * over the rounding in a curve sampled this way. The log glyph measured 1.47 before it was moved
+ * and no other icon has ever passed 0.6.
+ */
+const INK = `
+  (async () => {
+    const wait = (ms) => new Promise((go) => setTimeout(go, ms))
+    // ⚠️ THE RAIL IS FOUND IN WHATEVER STATE THE LAST FLOW LEFT IT. A tour is one browser walking
+    // two hundred pages, so this cannot assume the column is open, the group is unfolded or the
+    // rail is shut — it has to put each of them where it needs them and then check that it did.
+    if (document.documentElement.dataset.railCollapsed === '1') {
+      document.querySelector('[data-rail-key="collapse"]')?.click()
+      await wait(250)
+    }
+    const shown = () => [...document.querySelectorAll('[data-rail-id]')]
+      .filter((r) => r.checkVisibility && r.checkVisibility())
+    if (shown().length < 12) {
+      document.querySelector('[data-rail-id="more"]')?.click()
+      await wait(250)
+    }
+
+    // ⚠️ MEASURED IN SCREEN PIXELS, not in the viewBox's own units. Reading the units meant
+    // parsing a viewBox attribute, and every reading came back NaN the moment this ran against
+    // the real rail — a silent NaN compares false against any threshold, so the check reported
+    // thirteen icons measured and no fault while measuring nothing at all. The matrix the
+    // browser already has cannot be misparsed.
+    //
+    // ⚠️ AND A HIDDEN SVG ANSWERS WITH NOTHING USABLE, which is why the two states above are set
+    // first. The first cut measured five icons of thirteen — the management group ships folded —
+    // and passed over the log glyph, the one it had just been written for.
+    const centre = (svg) => {
+      const m = svg.getScreenCTM()
+      if (!m) return null
+      let sum = 0
+      let total = 0
+      for (const el of svg.querySelectorAll('path,circle,rect,line,polyline')) {
+        let len = 0
+        try { len = el.getTotalLength ? el.getTotalLength() : 0 } catch (e) { len = 0 }
+        if (!len) continue
+        const step = Math.max(len / 40, 0.2)
+        for (let d = 0; d <= len; d += step) {
+          const p = el.getPointAtLength(d)
+          sum += (m.a * p.x + m.c * p.y + m.e) * step
+          total += step
+        }
+      }
+      return total ? sum / total : null
+    }
+
+    const off = []
+    const done = new Set()
+    for (const row of shown()) {
+      if (done.has(row.dataset.railId)) continue
+      const svg = row.querySelector('svg')
+      if (!svg) continue
+      const ink = centre(svg)
+      if (ink === null || !isFinite(ink)) continue
+      const b = svg.getBoundingClientRect()
+      if (b.width === 0) continue
+      done.add(row.dataset.railId)
+      // In pixels at the size the rail draws them, which is what an eye is comparing.
+      const drift = ink - (b.left + b.width / 2)
+      if (Math.abs(drift) > 0.6) off.push(row.dataset.railId + ' ' + (Math.round(drift * 100) / 100) + 'px')
+    }
+    // ⚠️ A PARTIAL READING IS REFUSED, not reported. A check that silently measures a third of
+    // its subject and says nothing is worse than no check: the number stands still and reads as
+    // health. Thirteen rows are drawn; twelve is the floor this will speak on.
+    if (done.size < 12) return 'only ' + done.size + ' icon(s) could be measured, so this proves nothing'
+
+    // And the wordmark, whose LETTER has to stand on the same column: the red dot after the Q is
+    // inside the box, so a box centred on the column puts the Q 3px to the left of it. It only
+    // exists on a shut rail, so the rail is shut for this and left that way — the next flow
+    // navigates, and the rail reads its state back from the page it lands on.
+    document.querySelector('[data-rail-key="collapse"]')?.click()
+    await wait(250)
+    const mark = document.querySelector('.rail-mark')
+    const home = document.querySelector('[data-rail-id="home"] svg')
+    if (!mark || !home || !mark.checkVisibility()) return 'the shut rail did not draw its mark'
+    const vb = (mark.getAttribute('viewBox') || '').split(/\s+/).map(Number)
+    const mb = mark.getBoundingClientRect()
+    const q = mark.querySelector('path').getBBox()
+    const scale = mb.width / vb[2]
+    const qMid = mb.left + (q.x + q.width / 2 - vb[0]) * scale
+    const hb = home.getBoundingClientRect()
+    const drift = qMid - (hb.left + hb.width / 2)
+    if (Math.abs(drift) > 0.6) off.push('wordmark Q ' + (Math.round(drift * 100) / 100) + 'px')
+
+    return off.length === 0
+      ? 'ok (' + done.size + ' icons and the mark on one column)'
+      : off.length + ' off the column: ' + off.join(' | ')
+  })()`
+
 export function registerEvenFlows({ flow, atWidth }: Pick<Tour, 'flow' | 'atWidth'>): void {
   for (const width of WIDTHS) {
     for (const path of SCREENS) {
       flow('even: ' + path + ' at ' + width, () => atWidth(width, path, MEASURE, 900))
     }
   }
+  flow('even: the shut rail draws its icons on one column', () => atWidth(1440, '/admin', INK, 900))
 }
