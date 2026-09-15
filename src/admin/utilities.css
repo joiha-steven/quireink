@@ -1317,6 +1317,14 @@
   .rounded-md {
     border-radius: var(--radius-md);
   }
+  /* The INNER curve of a `rounded-md` box with a 1px border: 6 - 1. The segmented strip's
+     chosen key fills its track edge to edge, so its corner has to land on that border's inside
+     rather than near it — `rounded` (4px) leaves a visible sliver of groove in each corner and
+     `rounded-md` (6px) overshoots it. Written by hand because nothing generates this file any
+     more (ADR 0053); `check:admin-css` is what keeps the pair honest. */
+  .rounded-\[5px\] {
+    border-radius: 5px;
+  }
   .rounded-sm {
     border-radius: var(--radius-sm);
   }

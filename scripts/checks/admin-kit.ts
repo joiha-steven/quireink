@@ -315,10 +315,23 @@ for (const file of files) {
  * moves, which is how the home page kept a 22px title through a change that took every other
  * page's to 28.
  */
-const TINY = /text-\[(?:9|10|11)px\]/
+// ⚠️ IN REM AS WELL AS IN PX, and the rem half was added on 2026-09-16 after three live sites
+// were found spelling 11px as `text-[0.6875rem]` and walking straight past this. A guard that
+// names one spelling of a banned value teaches the next author the other spelling.
+// 0.5625rem = 9px · 0.625rem = 10px · 0.6875rem = 11px.
+const TINY = /text-\[(?:9|10|11)px\]|text-\[0\.(?:5625|625|6875)rem\]/
+/**
+ * ⚠️ AND THE SCAN SKIPS COMMENTS, or the note explaining the ban is the ban being broken. The
+ * first run after the rem spelling was added failed on the very comment that records why it was
+ * added — and a guard that can be tripped by prose about itself is a guard people route around
+ * by not writing the prose.
+ */
+const bare = (src: string): string => src
+  .replace(/\/\*[\s\S]*?\*\//g, ' ')
+  .replace(/(^|\n)\s*\/\/[^\n]*/g, '$1')
 for (const file of files) {
   const path = file.replaceAll('\\', '/')
-  const hit = TINY.exec(readFileSync(file, 'utf8'))
+  const hit = TINY.exec(bare(readFileSync(file, 'utf8')))
   if (!hit) continue
   console.error(`✗ check:admin-kit: ${path} sets type below the scale's floor (${hit[0]})`)
   console.error("  Twelve is the smallest this admin sets, and it is a contrast limit rather")

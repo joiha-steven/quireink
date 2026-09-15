@@ -22,7 +22,7 @@ import { addPick, listField, BAND } from '@/web/admin/screens/settings-home-kit'
 import type { FeatureSettings, SiteSettings } from '@/types'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { renderInlineMarkdown } from '@/render/inline-md'
-import { CONTROL, buttonClass } from '@/admin-shared/kit'
+import { CONTROL, ICON_KEY, buttonClass } from '@/admin-shared/kit'
 import { FIELD_W, NOTE_ALERT, NOTE_TEXT, SETTING_GAP, SETTING_LABEL } from '@/admin-shared/scale'
 import { panelCard, switchRow, textField } from '@/web/admin/fields'
 import { choice, plainPick } from '@/web/admin/fields-pick'
@@ -51,9 +51,6 @@ const FIELD = `${CONTROL} ${FIELD_W.full}`
 /** A 36px square key with no face of its own: the × on a menu row, the ↑ ↓ × on a featured one.
  *  One list for both; the menu's × was this without the two `disabled:` rules, which it never
  *  uses. */
-const ICON_KEY = 'grid h-9 w-9 shrink-0 place-items-center rounded-lg text-neutral-500'
-  + ' dark:text-neutral-400 hover:bg-neutral-100 disabled:opacity-30 disabled:hover:bg-transparent'
-  + ' dark:hover:bg-neutral-800'
 
 /** One chosen post in the sidebar's featured list. */
 const PICKED_ROW = 'flex items-center gap-2 rounded-lg border border-neutral-200 px-3 py-2 text-sm'

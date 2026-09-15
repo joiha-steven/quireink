@@ -23,7 +23,7 @@ import type { AdminStrings } from '@/i18n/admin-i18n'
 import type { SiteSettings } from '@/types'
 import type { UpdateState } from '@/server/update-check'
 import { escapeAttr, escapeHtml } from '@/utils'
-import { buttonClass } from '@/admin-shared/kit'
+import { SHEET_TOOL, SHEET_TOOL_DANGER, buttonClass } from '@/admin-shared/kit'
 import { META, NOTE_TEXT, SETTING_GAP } from '@/admin-shared/scale'
 import { group, settingRow, switchList, switchRow, textField } from '@/web/admin/fields'
 import { PANEL_LIST, connectionCard, loadFailure, pairGrid } from '@/web/admin/fields-box'
@@ -153,9 +153,14 @@ const snapshotRow = (t: AdminStrings): string =>
   + `<span class="min-w-0 truncate"><span data-backup-when></span>`
   + `<span class="ml-2 text-neutral-500 dark:text-neutral-400" data-backup-size></span></span>`
   + `<span class="flex shrink-0 items-center gap-3">`
-  + `<button type="button" data-backup-download class="underline hover:text-neutral-900 dark:hover:text-white">`
+  // ⚠️ THE TWO KEYS ARE NOT THE SAME KIND OF KEY. Download takes a copy; Delete unlinks the
+  // archive and nothing brings it back — no trash, no restore. They wore the identical grey
+  // underline until 2026-09-16, which is the exact pairing `SHEET_TOOL_DANGER` was written for:
+  // "Restore" and "Delete permanently" sat side by side in the Trash looking alike, and a
+  // destructive key that looks like its harmless neighbour is a key somebody presses by reflex.
+  + `<button type="button" data-backup-download class="${escapeAttr(SHEET_TOOL)}">`
   + `${escapeHtml(t.download)}</button>`
-  + `<button type="button" data-backup-delete class="underline hover:text-neutral-900 dark:hover:text-white">`
+  + `<button type="button" data-backup-delete class="${escapeAttr(SHEET_TOOL_DANGER)}">`
   + `${escapeHtml(t.delete)}</button></span></li></template>`
 
 /**

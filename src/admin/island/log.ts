@@ -22,7 +22,7 @@ if (root) {
   const search = root.querySelector<HTMLInputElement>('[data-log-search]')
   const count = root.querySelector<HTMLElement>('[data-log-count]')
   const more = root.querySelector<HTMLElement>('[data-log-more]')
-  const noMatch = root.querySelector<HTMLElement>('[data-log-list]')?.previousElementSibling as HTMLElement | null
+  const noMatch = root.querySelector<HTMLElement>('[data-log-nomatch]')
   const noun = count?.textContent?.replace(/^\d+\s*·\s*/, '') ?? ''
 
   /** How many rows are on screen. Reset by any control, raised by "show more". */

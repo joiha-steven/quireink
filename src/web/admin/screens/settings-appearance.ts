@@ -27,7 +27,7 @@ import { formatCount } from '@/i18n/format'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { braceBalance } from '@/admin-shared/css-brace'
 import { SHEET_TOOL, buttonClass } from '@/admin-shared/kit'
-import { NOTE_TEXT, SETTING_GAP } from '@/admin-shared/scale'
+import { NOTE_TEXT, SETTING_GAP, UTIL } from '@/admin-shared/scale'
 import { panelCard, settingRow } from '@/web/admin/fields'
 import { PANEL } from '@/web/admin/fields-box'
 import { choice } from '@/web/admin/fields-pick'
@@ -216,14 +216,18 @@ function fontUpload(t: AdminStrings, s: SiteSettings): string {
 /** One promised name, as a key that writes itself at the cursor. */
 const nameKey = (n: { name: string; note: string }): string =>
   `<button type="button" data-css-insert="${escapeAttr(n.name)}" title="${escapeAttr(n.note)}"`
-  + ` class="rounded border border-neutral-200 bg-white px-1.5 py-0.5 font-mono text-[0.6875rem]`
+  // ⚠️ `text-xs`, NOT `text-[0.6875rem]`. 11px left this admin on 2026-09-07 and `check:admin-kit`
+  // fails a file that hand-types it — but the guard matches `text-[11px]`, and the same size
+  // spelled in rem walked straight past it. Three sites were still at 11px because of that.
+  + ` class="rounded border border-neutral-200 bg-white px-1.5 py-0.5 font-mono text-xs`
   + ` text-neutral-600 hover:border-neutral-400 hover:text-neutral-900 dark:border-neutral-700`
   + ` dark:bg-neutral-950 dark:text-neutral-300 dark:hover:text-white">`
   + `${escapeHtml(n.name)}</button>`
 
+/** An eyebrow over a stretch of keys, which is `UTIL`'s whole job — it was a hand-typed 11px
+ *  one notch lighter than `UTIL`, on a size the scale calls a contrast limit rather than a taste. */
 const nameGroup = (title: string, keys: string): string =>
-  `<div><h4 class="mb-1 text-[0.6875rem] font-medium uppercase tracking-wide text-neutral-400`
-  + ` dark:text-neutral-500">${escapeHtml(title)}</h4>`
+  `<div><h4 class="mb-1 ${UTIL}">${escapeHtml(title)}</h4>`
   + `<div class="flex flex-wrap gap-1">${keys}</div></div>`
 
 /**

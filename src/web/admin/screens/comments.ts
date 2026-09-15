@@ -19,9 +19,8 @@ import type { AdminStrings } from '@/i18n/admin-i18n'
 import { adminT } from '@/i18n/admin-i18n'
 import { escapeAttr, escapeHtml, formatDateTimeShort } from '@/utils'
 import { formatCount } from '@/i18n/format'
-import { TAP } from '@/admin-shared/scale'
 import { SHEET_FOOT, SHEET_TOOL, SHEET_TOOL_DANGER } from '@/admin-shared/kit'
-import { emptyState, pageHeader, sheet, sheetTop, tabs, tick } from '@/web/admin/kit'
+import { emptyState, pageHeader, selectionBar, sheet, sheetTop, tabs, tick } from '@/web/admin/kit'
 import { numBand } from '@/web/admin/kit-figures'
 import { commentsView } from '@/web/admin/views'
 
@@ -138,10 +137,12 @@ export async function commentsScreen(settings: SiteSettings): Promise<string> {
       value: 'all', role: 'choice', attrs: 'data-comment-age',
     })
     + `<span class="flex-1"></span>`
-    + `<div data-comment-selection class="flex flex-wrap items-center justify-end gap-4" hidden>`
-    + `<button type="button" data-comment-clear class="${TAP} text-sm text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white">${escapeHtml(t.clearSelection)}</button>`
-    + `<button type="button" data-comment-delete-picked class="${TAP} text-sm font-medium text-neutral-800 hover:text-black dark:text-neutral-200 dark:hover:text-white">`
-    + `${escapeHtml(t.deleteSelected)} (<span data-comment-picked>0</span>)</button></div>`
+    // ⚠️ THE SHARED BAR, not a third copy of it. This screen re-typed `selectionBar`'s markup
+    // byte for byte until 2026-09-16 — same wrapper, same two keys, same counter — which is how
+    // it kept the old `text-sm` neutral delete after the kit's own moved to the red ballpoint.
+    + selectionBar({
+      clearLabel: t.clearSelection, deleteLabel: t.deleteSelected, attrs: 'data-comment-selection',
+    })
     + `<span data-comment-tally class="${SHEET_TOOL}">`
     + `${escapeHtml(t.commentsInPosts.replace('{n}', n(rows.length)).replace('{p}', n(by.size)))}</span>`
     + `<input type="search" data-comment-search placeholder="${escapeAttr(t.commentsSearch)}"`

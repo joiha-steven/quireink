@@ -17,13 +17,10 @@ import type { AdminStrings } from '@/i18n/admin-i18n'
 import type { Post } from '@/types'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { seriesEntries } from '@/content/series-order'
-import { OVERLAY_LIFT, buttonClass } from '@/admin-shared/kit'
+import { ICON_KEY, OVERLAY_LIFT, buttonClass } from '@/admin-shared/kit'
 import { icon } from '@/web/admin/kit'
 
 /** A 40px hit target for a 16px mark, which is the floor a finger needs. */
-const ICON_BTN = 'inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md'
-  + ' text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900'
-  + ' dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white'
 
 const BOX = 'overflow-hidden rounded-lg border border-neutral-200 bg-white'
   + ' dark:border-neutral-800 dark:bg-neutral-900'
@@ -34,9 +31,9 @@ const ROW = 'flex items-center gap-2 border-b border-neutral-100 px-4 py-2.5 las
 /** Rename and remove, the pair every row in both drawers carries. */
 const rowKeys = (t: AdminStrings, kind: string, name: string): string =>
   `<button type="button" data-term-rename aria-label="${escapeAttr(t.rename)}"`
-  + ` title="${escapeAttr(t.rename)}" class="${ICON_BTN}">${icon('nib', 'h-4 w-4')}</button>`
+  + ` title="${escapeAttr(t.rename)}" class="${ICON_KEY}">${icon('nib', 'h-4 w-4')}</button>`
   + `<button type="button" data-term-delete aria-label="${escapeAttr(t.delete)}"`
-  + ` title="${escapeAttr(t.delete)}" class="${ICON_BTN}">${icon('trash', 'h-4 w-4')}</button>`
+  + ` title="${escapeAttr(t.delete)}" class="${ICON_KEY}">${icon('trash', 'h-4 w-4')}</button>`
   + `<span hidden data-term-kind="${escapeAttr(kind)}" data-term-name="${escapeAttr(name)}"></span>`
 
 /** Count each term across every post, by name. */
@@ -85,10 +82,10 @@ function series(t: AdminStrings, posts: Post[]): string {
       + `<a href="/admin/editor/${escapeAttr(p.slug)}" class="min-w-0 flex-1 truncate text-sm hover:underline">`
       + `${escapeHtml(p.title)}</a>`
       + `<button type="button" data-part-up aria-label="${escapeAttr(t.moveUp)}" title="${escapeAttr(t.moveUp)}"`
-      + `${i === 0 ? ' disabled' : ''} class="${ICON_BTN} ${dim}">`
+      + `${i === 0 ? ' disabled' : ''} class="${ICON_KEY} ${dim}">`
       + `${icon('down', 'h-4 w-4 rotate-180')}</button>`
       + `<button type="button" data-part-down aria-label="${escapeAttr(t.moveDown)}" title="${escapeAttr(t.moveDown)}"`
-      + `${i === s.parts.length - 1 ? ' disabled' : ''} class="${ICON_BTN} ${dim}">`
+      + `${i === s.parts.length - 1 ? ' disabled' : ''} class="${ICON_KEY} ${dim}">`
       + `${icon('down', 'h-4 w-4')}</button></li>`).join('')
     return `<div class="${BOX}" data-series="${escapeAttr(s.name)}">`
       + `<div class="flex items-center gap-2 border-b border-neutral-200 px-4 py-3 dark:border-neutral-800">`

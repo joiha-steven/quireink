@@ -29,7 +29,7 @@ if (root && cardHost) {
   const tally = root.querySelector<HTMLElement>('[data-comment-tally]')
   const noMatch = root.querySelector<HTMLElement>('[data-comment-nomatch]')
   const selection = root.querySelector<HTMLElement>('[data-comment-selection]')
-  const pickedCount = root.querySelector<HTMLElement>('[data-comment-picked]')
+  const pickedCount = root.querySelector<HTMLElement>('[data-pick-count]')
 
   const ON = sortStrip?.querySelector<HTMLElement>('[aria-pressed="true"]')?.className ?? ''
   const OFF = sortStrip?.querySelector<HTMLElement>('[aria-pressed="false"]')?.className ?? ''
@@ -164,7 +164,7 @@ if (root && cardHost) {
   screen.addEventListener('change', (e) => {
     if ((e.target as HTMLElement).hasAttribute('data-comment-pick')) countPicked()
   })
-  root.querySelector('[data-comment-clear]')?.addEventListener('click', () => {
+  root.querySelector('[data-pick-clear]')?.addEventListener('click', () => {
     for (const box of screen.querySelectorAll<HTMLInputElement>('[data-comment-pick]')) box.checked = false
     countPicked()
   })
@@ -210,7 +210,7 @@ if (root && cardHost) {
     }
     const gone = target.closest<HTMLElement>('[data-comment-delete]')
     if (gone?.dataset.id) { void remove([gone.dataset.id]); return }
-    if (target.closest('[data-comment-delete-picked]')) {
+    if (target.closest('[data-pick-delete]')) {
       void remove(ticked().map((box) => box.dataset.id ?? ''))
     }
   })

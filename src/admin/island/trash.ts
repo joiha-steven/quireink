@@ -77,9 +77,17 @@ if (root) {
   /** The search narrows the kind on screen; the tools follow what is left of it. */
   function apply(): void {
     const q = search?.value.trim() ?? ''
+    let shown = 0
     for (const row of rowsOf(current())) {
-      row.hidden = !!q && indexIn(lanesOf(row), q) === -1
+      const hide = !!q && indexIn(lanesOf(row), q) === -1
+      row.hidden = hide
+      if (!hide) shown++
     }
+    // The list and the lens are mutually exclusive: one of the two is on screen, never both and
+    // never neither. `shown` is counted here rather than asked of the DOM afterwards, because a
+    // `hidden` row still answers `querySelectorAll`.
+    const none = screen.querySelector<HTMLElement>(`[data-trash-nomatch="${current()}"]`)
+    if (none) none.hidden = shown > 0
     countPicked()
   }
 

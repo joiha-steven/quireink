@@ -13,7 +13,7 @@
 // style rule, it is the whole reason the directory exists — the moment one of these files
 // imports from `src/admin`, the server can no longer read it.
 
-import { TAP } from '@/admin-shared/scale'
+import { TAP, TAP_TOUCH } from '@/admin-shared/scale'
 
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'armed'
 
@@ -213,6 +213,29 @@ export const SHEET_TOOL_ON_CANVAS = SHEET_TOOL.replace('text-neutral-500', 'text
  * month. The ink is the product's own red ballpoint (`--pen-red`, PEN_AUX_LIGHT in
  * `pen/pigments.ts`), which is what you strike a line through something with on paper.
  */
+/**
+ * THE SQUARE KEY ON A LIST ROW: rename, remove, move up, move down.
+ *
+ * ⚠️ ONE DEFINITION, because there were five. A row's remove key was 40px and `rounded-md` in
+ * the taxonomy drawer, 36px and `rounded-lg` on the settings Home tab, 36px and `rounded-md`
+ * one ink lighter in the subscriber list, 40px with a border in the rail, and on the redirects
+ * card it had no box at all — a bare 16px glyph, which is a 16px hit target on a phone. All
+ * five are the same gesture on the same kind of row.
+ *
+ * 36 and `rounded-md`, because that is the admin's control step (`docs/admin-design.md`: sheet
+ * 10 / panel 8 / control 6) and 36 is what every other control on a settings row measures.
+ * `TAP_TOUCH` is not decoration: a 36px key is under the 44px a fingertip needs, and the
+ * pseudo-element that fixes that takes no space and moves nothing.
+ *
+ * The `disabled:` pair is for the two that can be at the end of their list — move up on the
+ * first row, move down on the last. A key that cannot act has to look unavailable rather than
+ * absent, or the row's controls move as you use them.
+ */
+export const ICON_KEY = `${TAP_TOUCH} grid h-9 w-9 shrink-0 place-items-center rounded-md`
+  + ' text-neutral-500 transition hover:bg-neutral-100 hover:text-neutral-900'
+  + ' disabled:opacity-30 disabled:hover:bg-transparent'
+  + ' dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white'
+
 export const SHEET_TOOL_DANGER = SHEET_TOOL
   .replace('text-neutral-500', 'text-[var(--pen-red)]')
   .replace('hover:text-neutral-900', 'hover:text-[var(--pen-red)] hover:underline')

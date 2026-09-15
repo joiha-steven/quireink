@@ -112,7 +112,13 @@ function subscriberRows(t: AdminStrings, rows: { id: number; email: string; stat
 const panel = (t: AdminStrings, kind: Kind, open: Kind, rows: string): string =>
   `<div data-trash-panel="${kind}"${kind === open ? '' : ' hidden'}>`
   + (rows
-    ? `<ul class="${LIST}">${rows}</ul>`
+    // ⚠️ THE THIRD FACE, which this screen did not have until 2026-09-16. The search above hides
+    // rows that do not match, so a word matching none left a blank panel with no sentence in it
+    // — the one state a list must never be silent about, because "nothing here" and "nothing
+    // matched what you typed" are different facts. The lens rather than the empty box, the way
+    // the activity log, the comments queue and the library all draw it.
+    ? `${emptyState({ title: t.filterEmpty, glyph: 'lens', hidden: true, attrs: `data-trash-nomatch="${kind}"` })}`
+      + `<ul class="${LIST}">${rows}</ul>`
     : `<div class="p-8">${emptyState({ title: t.trashEmpty, description: t.trashEmptyHint, glyph: 'emptyBox' })}</div>`)
   + `</div>`
 

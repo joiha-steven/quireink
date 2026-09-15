@@ -70,7 +70,7 @@ function sparkline(data: number[], lang: SiteLang): string {
     + ` vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"/></svg>`
     + `<span aria-hidden="true" class="${dot}" style="left:0;bottom:${up(data[0] ?? 0)}%"></span>`
     + `<span aria-hidden="true" class="${dot}" style="left:100%;bottom:${up(data[last] ?? 0)}%"></span>`
-    + `<span class="absolute bottom-full mb-0.5 text-[0.6875rem] font-medium tabular-nums text-neutral-500 dark:text-neutral-400 ${anchor}"`
+    + `<span class="absolute bottom-full mb-0.5 text-xs font-medium tabular-nums text-neutral-500 dark:text-neutral-400 ${anchor}"`
     + ` style="left:${across(peak)}%">${escapeHtml(formatCount(max, lang))}</span></div>`
 }
 

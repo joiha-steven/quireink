@@ -16,7 +16,7 @@ import type { Redirect } from '@/server/redirects'
 import { formatCount } from '@/i18n/format'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { unclosed, snippetBytes } from '@/admin-shared/snippet'
-import { buttonClass } from '@/admin-shared/kit'
+import { ICON_KEY, buttonClass } from '@/admin-shared/kit'
 import { NOTE_TEXT, SETTING_GAP } from '@/admin-shared/scale'
 import { group, panelCard, settingRow, switchList, switchRow, textControl } from '@/web/admin/fields'
 import { connectionCard, pairGrid } from '@/web/admin/fields-box'
@@ -168,9 +168,11 @@ function redirectRow(t: AdminStrings, r?: Redirect): string {
     + `${escapeHtml(r?.destination ?? '')}</code></span>`
     + `<span class="shrink-0 rounded-md border border-neutral-200 px-1.5 py-0.5 text-xs text-neutral-500 dark:border-neutral-700 dark:text-neutral-400" data-redirect-code>`
     + `${code}</span>`
+    // ⚠️ `ICON_KEY`, WHICH GIVES IT A BOX. This was a bare 16px glyph with no key around it —
+    // a 16px hit target on a phone, where the same gesture on every other list row in the admin
+    // is a 36px square with a 44px touch area behind it.
     + `<button type="button" data-redirect-delete aria-label="${escapeAttr(t.redirectDelete)}"`
-    + ` title="${escapeAttr(t.redirectDelete)}"`
-    + ` class="shrink-0 text-neutral-500 hover:text-neutral-900 disabled:opacity-50 dark:text-neutral-400 dark:hover:text-white">`
+    + ` title="${escapeAttr(t.redirectDelete)}" class="${escapeAttr(ICON_KEY)}">`
     + `${icon('close', 'h-4 w-4')}</button></li>`
 }
 

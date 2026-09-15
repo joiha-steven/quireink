@@ -17,14 +17,14 @@
 import { escapeAttr, escapeHtml } from '@/utils'
 import { ICONS, GLYPHS, type GlyphName, type IconName } from '@/icons'
 import {
-  CONTROL_SM, LAMP_HUES, LAMP_SHAPE, SHEET, SHEET_TOP,
+  CONTROL_SM, LAMP_HUES, LAMP_SHAPE, SHEET, SHEET_TOOL, SHEET_TOOL_DANGER, SHEET_TOP,
   TICK_BOX, TICK_MARK, TICK_PATH, TICK_WRAP, type LampState,
 } from '@/admin-shared/kit'
 import {
   SEGMENT_TRACK, SEGMENT_TRACK_DENSE, SEGMENT_TRACK_DENSE_PLACE, SEGMENT_TRACK_PLACE,
   TAB_TRACK, TAB_TRACK_DENSE, tabItemClass, type TabRole, type TabSize,
 } from '@/admin-shared/tabs'
-import { HEADER_GAP, NOTE_TEXT, TAP, TITLE } from '@/admin-shared/scale'
+import { HEADER_GAP, NOTE_TEXT, TITLE } from '@/admin-shared/scale'
 
 /** A glyph from the shared set, at the surface's own size. */
 export const icon = (name: IconName, cls = 'h-[var(--admin-glyph,1.25rem)] w-[var(--admin-glyph,1.25rem)] shrink-0'): string =>
@@ -75,15 +75,25 @@ export const sheetTop = (body: string): string => `<div class="${SHEET_TOP}">${b
  * `hidden` rather than left out, at the caller's option: a screen whose emptiness depends on a
  * filter draws every state once and lets CSS pick, the same way the rail does.
  */
-export function emptyState({ title, description = '', glyph, actionHtml = '', hidden = false }: {
+export function emptyState({ title, description = '', glyph, actionHtml = '', hidden = false, attrs = '' }: {
   title: string
   description?: string
   glyph?: GlyphName
   /** One thing to do about it, already markup: the chips the assistant offers to ask for you. */
   actionHtml?: string
   hidden?: boolean
+  /**
+   * A hook, for the ones an island shows and hides.
+   *
+   * ⚠️ IT EXISTS SO NOTHING HAS TO WALK SIBLINGS TO FIND ONE. The activity log reached its
+   * no-match box as `[data-log-list]`'s `previousElementSibling`, which is a selector that
+   * breaks the day anything is drawn between them and breaks silently — the box simply stops
+   * appearing, and a filter that matches nothing goes back to showing a blank panel.
+   */
+  attrs?: string
 }): string {
-  return `<div class="flex flex-col items-center justify-center px-6 py-16 text-center"${hidden ? ' hidden' : ''}>`
+  return `<div class="flex flex-col items-center justify-center px-6 py-16 text-center"`
+    + `${attrs ? ` ${attrs}` : ''}${hidden ? ' hidden' : ''}>`
     + (glyph
       ? `<div class="mb-5 text-neutral-300 dark:text-neutral-700">`
         // 48 units, not 24: the stroke has to stay a LINE at 96px, and the small set's 1.8 of
@@ -306,11 +316,15 @@ export function selectionBar({ clearLabel, deleteLabel, attrs = '', extras = '' 
   attrs?: string
   extras?: string
 }): string {
-  const quiet = `${TAP} text-sm text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white`
+  // ⚠️ THE KIT'S OWN TOOLS, and the delete one in RED. Until 2026-09-16 this bar hand-typed a
+  // near-miss of both: `text-sm` where `SHEET_TOOL` is `text-xs`, and a bold `neutral-800` for
+  // the delete where `SHEET_TOOL_DANGER` exists for exactly this. The cost was visible on ONE
+  // screen: the media library's Images tab draws its own action row from the kit, so Delete
+  // selected was red at 12px there and neutral at 14px on the Files and Videos tabs beside it.
+  // `SHEET_TOOL_DANGER`'s own note records the same fault being fixed in the Trash.
   return `<div${attrs ? ` ${attrs}` : ''} class="flex flex-wrap items-center justify-end gap-4" hidden>`
-    + `<button type="button" data-pick-clear class="${quiet}">${escapeHtml(clearLabel)}</button>`
+    + `<button type="button" data-pick-clear class="${SHEET_TOOL}">${escapeHtml(clearLabel)}</button>`
     + extras
-    + `<button type="button" data-pick-delete`
-    + ` class="${TAP} text-sm font-medium text-neutral-800 hover:text-black dark:text-neutral-200 dark:hover:text-white">`
+    + `<button type="button" data-pick-delete class="${SHEET_TOOL_DANGER}">`
     + `${escapeHtml(deleteLabel)} (<span data-pick-count>0</span>)</button></div>`
 }

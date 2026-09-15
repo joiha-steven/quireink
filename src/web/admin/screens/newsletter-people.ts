@@ -24,8 +24,8 @@ import type { SiteLang } from '@/types'
 import type { AdminStrings } from '@/i18n/admin-i18n'
 import { escapeAttr, escapeHtml } from '@/utils'
 import { formatCount } from '@/i18n/format'
-import { CONTROL_SM, TABLE_SCROLL, THEAD, TROW } from '@/admin-shared/kit'
-import { TAP_TOUCH } from '@/admin-shared/scale'
+import { CONTROL_SM, ICON_KEY, TABLE_SCROLL, THEAD, TROW } from '@/admin-shared/kit'
+
 import { emptyState, icon, lamp, selectionBar, tabs, tick } from '@/web/admin/kit'
 import { numBand } from '@/web/admin/kit-figures'
 import type { subscribersView } from '@/web/admin/views-news'
@@ -48,8 +48,6 @@ const LAMP = { confirmed: 'good', pending: 'attention', unsubscribed: 'off' } as
 const openRate = (s: Row['stats']): string | null =>
   s && s.broadcasts > 0 ? `${Math.round((s.opened / s.broadcasts) * 100)}%` : null
 
-const DELETE_BUTTON = `${TAP_TOUCH} grid h-9 w-9 place-items-center rounded-md text-neutral-400`
-  + ' transition hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-white'
 
 export function peoplePanel(t: AdminStrings, lang: SiteLang, data: People, open: boolean): string {
   const { subscribers, counts } = data
@@ -106,7 +104,7 @@ export function peoplePanel(t: AdminStrings, lang: SiteLang, data: People, open:
       + `<td class="whitespace-nowrap px-2 py-2 text-right align-middle tabular-nums text-neutral-500 dark:text-neutral-400">${n(s.stats?.sent ?? 0)}${failed}</td>`
       + `<td class="whitespace-nowrap px-2 py-2 text-right align-middle tabular-nums text-neutral-500 dark:text-neutral-400">${escapeHtml(rate ?? '—')}</td>`
       + `<td class="px-2 py-2 text-right align-middle">`
-      + `<button type="button" data-sub-drop data-id="${s.id}" class="${DELETE_BUTTON}" aria-label="${escapeAttr(t.nlDeleteSub)}">`
+      + `<button type="button" data-sub-drop data-id="${s.id}" class="${ICON_KEY}" aria-label="${escapeAttr(t.nlDeleteSub)}">`
       + icon('close') + `</button></td></tr>`
   }
 
@@ -124,7 +122,7 @@ export function peoplePanel(t: AdminStrings, lang: SiteLang, data: People, open:
       + `<span class="tabular-nums">${escapeHtml(t.nlColSent)} ${n(s.stats?.sent ?? 0)}</span>`
       + (rate ? `<span class="tabular-nums">${escapeHtml(t.nlColOpenRate)} ${escapeHtml(rate)}</span>` : '')
       + `</div></div>`
-      + `<button type="button" data-sub-drop data-id="${s.id}" class="${DELETE_BUTTON} -mr-1.5 shrink-0"`
+      + `<button type="button" data-sub-drop data-id="${s.id}" class="${ICON_KEY} -mr-1.5 shrink-0"`
       + ` aria-label="${escapeAttr(t.nlDeleteSub)}">${icon('close')}</button>`
       + `</div></li>`
   }

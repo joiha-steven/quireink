@@ -51,14 +51,14 @@ export const TAB_TRACK_DENSE = 'flex w-full items-end gap-4 border-b border-neut
 // than its own track to be seen. That inverts the object: a pressed key is not darker than
 // the panel it is set into, it is the panel's face pushed down. With a real groove the key
 // can be white and carved, which is what a segmented control on a desk looks like.
-export const SEGMENT_TRACK = 'flex min-h-8 w-fit max-w-full overflow-x-auto no-scrollbar rounded-md border border-neutral-200 bg-neutral-200 p-0.5 shadow-[inset_0_1px_2px_rgba(0,0,0,.09)] dark:border-neutral-800 dark:bg-neutral-950/60 dark:shadow-[inset_0_1px_2px_rgba(0,0,0,.5)]'
+export const SEGMENT_TRACK = 'flex min-h-8 w-fit max-w-full overflow-x-auto no-scrollbar rounded-md border border-neutral-200 bg-neutral-200 shadow-[inset_0_1px_2px_rgba(0,0,0,.09)] dark:border-neutral-800 dark:bg-neutral-950/60 dark:shadow-[inset_0_1px_2px_rgba(0,0,0,.5)]'
 /** The quiet track a PLACE strip wears: an outline on the sheet, not a control set into it. */
-export const SEGMENT_TRACK_PLACE = 'flex min-h-8 w-fit max-w-full overflow-x-auto no-scrollbar rounded-md border border-neutral-200 bg-neutral-50 p-0.5 dark:border-neutral-800 dark:bg-neutral-950/40'
+export const SEGMENT_TRACK_PLACE = 'flex min-h-8 w-fit max-w-full overflow-x-auto no-scrollbar rounded-md border border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-950/40'
 // The dense variant is full-width with growing items: five segments whose right edge lands
 // on the pane's own edge instead of stopping short of it, which read as a gap left over.
-export const SEGMENT_TRACK_DENSE = 'flex min-h-8 w-full overflow-x-auto no-scrollbar rounded-md border border-neutral-200 bg-neutral-200 p-0.5 shadow-[inset_0_1px_2px_rgba(0,0,0,.09)] dark:border-neutral-800 dark:bg-neutral-950/60 dark:shadow-[inset_0_1px_2px_rgba(0,0,0,.5)]'
+export const SEGMENT_TRACK_DENSE = 'flex min-h-8 w-full overflow-x-auto no-scrollbar rounded-md border border-neutral-200 bg-neutral-200 shadow-[inset_0_1px_2px_rgba(0,0,0,.09)] dark:border-neutral-800 dark:bg-neutral-950/60 dark:shadow-[inset_0_1px_2px_rgba(0,0,0,.5)]'
 /** Full-width and quiet: the write pane's scope strip is a place strip that fills its column. */
-export const SEGMENT_TRACK_DENSE_PLACE = 'flex min-h-8 w-full overflow-x-auto no-scrollbar rounded-md border border-neutral-200 bg-neutral-50 p-0.5 dark:border-neutral-800 dark:bg-neutral-950/40'
+export const SEGMENT_TRACK_DENSE_PLACE = 'flex min-h-8 w-full overflow-x-auto no-scrollbar rounded-md border border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-950/40'
 
 /**
  * What an active item MEANS, which turns out to be two different things wearing one costume.
@@ -110,7 +110,13 @@ export const tabItemClass = (
     // and the padding only has to be small enough to let it. At `py-1.5` the item measured
     // 31.5 and pushed the track to 33.5 — a third height on a row that has a 32px key and a
     // 32px field on it.
-    : `${dense ? 'grow px-2' : 'shrink-0 whitespace-nowrap px-3'} py-1 text-[0.8125rem] font-medium transition ${
+    // ⚠️ `rounded-[5px]` AND NO PADDING ON THE TRACK, both from the same measurement. The key
+    // had no radius at all — a square block inside a 6px track — and the track held it 3px in
+    // from every edge (2px of padding over a 1px border), so the chosen segment floated in
+    // the middle of its own groove with four sharp corners. 5px is not a taste: it is the
+    // track's 6px outer radius less its 1px border, which is exactly the curve the inside of
+    // that border draws, so the key's corner lands ON it rather than near it.
+    : `rounded-[5px] ${dense ? 'grow px-2' : 'shrink-0 whitespace-nowrap px-3'} py-1 text-[0.8125rem] font-medium transition ${
         active
           // INK on the highlighter, not the reading site's olive `--on-pen`: on a control
           // the olive read as grey and dull, and the owner called it. A mark in running
