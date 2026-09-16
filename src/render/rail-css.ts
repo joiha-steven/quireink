@@ -63,19 +63,19 @@ export function singleRailCss(colWidth: number): string {
     // in flow it stands where a book prints its contents: under the title, above the first
     // line. Nothing else about the page moves; above the breakpoint the gutter rules take over.
     `@media (min-width:60rem) and (max-width:${at - 1}px){` +
-    `.rail{position:static;width:auto;height:auto;margin:1.5rem 0 2.5rem;padding:0 0 1.25rem;` +
+    `.rail-toc{position:static;width:auto;height:auto;margin:1.5rem 0 2.5rem;padding:0 0 1.25rem;` +
     `border:0;border-bottom:1px solid var(--c-rule);background:none;transform:none;visibility:visible;` +
     `overflow:visible;transition:none}` +
-    `.rail-inner{position:static;max-height:none;overflow:visible}` +
-    `.rail-inner > * + *{margin-top:1rem}` +
-    `.rail h2{margin:0;padding-left:0}` +
+    `.rail-toc .rail-inner{position:static;max-height:none;overflow:visible}` +
+    `.rail-toc .rail-inner > * + *{margin-top:1rem}` +
+    `.rail-toc h2{margin:0;padding-left:0}` +
     // The site menu rides in the same band, and a bare row of links under a title reads as
     // tags; it takes the label the nav already carries for the screen reader.
-    `.rail-inner > nav:not(.toc)::before{content:attr(aria-label);display:block;margin-bottom:.5rem;` +
+    `.rail-toc .rail-inner > nav:not(.toc)::before{content:attr(aria-label);display:block;margin-bottom:.5rem;` +
     `font-weight:var(--fw-heading,600);color:var(--c-heading);` +
     `font-size:var(--fs-small);line-height:var(--lh-small);letter-spacing:var(--ls-small)}` +
-    `.rail ul{display:flex;flex-wrap:wrap;gap:.4rem 1.5rem}` +
-    `.rail li,.toc li{margin-top:0}` +
+    `.rail-toc ul{display:flex;flex-wrap:wrap;gap:.4rem 1.5rem}` +
+    `.rail-toc li{margin-top:0}` +
     // THE INDEX IS NOT A ROW OF WORDS. The menu is — five single words read fine wrapped on
     // a hairline — but an index entry is a sentence, and two of them on one line are told
     // apart by 24px of space and nothing else. Measured at 1180 on 2026-09-12: "Three
@@ -87,9 +87,9 @@ export function singleRailCss(colWidth: number): string {
     `.toc ul{display:block}` +
     `.toc li{width:max-content;max-width:100%;margin-top:.45rem}` +
     `.toc li:first-child{margin-top:0}` +
-    `.rail-row{padding-left:0}` +
+    `.rail-toc .rail-row{padding-left:0}` +
     // Row marks turn with the rows: the current section's hairline goes under the word.
-    `.rail-row[aria-current]::after{left:0;right:0;top:auto;bottom:-4px;width:auto;height:2px}` +
+    `.rail-toc .rail-row[aria-current]::after{left:0;right:0;top:auto;bottom:-4px;width:auto;height:2px}` +
     `.toc-end{margin-top:0}` +
     // The fold. A chevron drawn in border, from the meta ink, turning when open.
     `.toc summary{pointer-events:auto;cursor:pointer;display:flex;align-items:center;gap:.5rem;` +
@@ -99,7 +99,7 @@ export function singleRailCss(colWidth: number): string {
     `border-right:1.5px solid var(--c-meta);border-bottom:1.5px solid var(--c-meta);` +
     `transform:rotate(-45deg);transition:transform var(--dur-base) ease}` +
     `.toc details[open] > summary::before{transform:rotate(45deg)}` +
-    `.rail-toggle,.rail-scrim{display:none}}` +
+    `}` +
     `@media (min-width:${at}px){` +
     `.rail{${GUTTER};right:calc(100% + var(--rail-gap));left:auto;text-align:right}` +
     `.rail::after{content:"";position:absolute;top:0;bottom:0;right:-${DIVIDER}px;width:1px;background:var(--c-rule);z-index:-1}` +
@@ -156,6 +156,27 @@ export function singleRailCss(colWidth: number): string {
     // which puts the SECOND block level with it too.
     `.prose > :is(figure.img-wide,.video-wide):nth-child(-n+2){width:100%;margin-right:0}}`
   )
+}
+
+/**
+ * The article's band puts the drawer button away; a listing's does not, and that is the
+ * whole difference between them.
+ *
+ * Between 60rem and the gutter breakpoint an ARTICLE lays its rail out in flow, under the
+ * title (`singleRailCss`), so the button would open a drawer that is already on the page.
+ * A LISTING writes its rail last inside <main>, because above the breakpoint the rail is
+ * absolutely placed and the heading should lead the document; laid out in flow that same
+ * markup lands the menu, the categories and the tags at the FOOT of the page. Measured at
+ * 1180px on 2026-09-16: the rail began at y=2729 on a 3601px page, with the button hidden,
+ * so nothing in it could be reached without scrolling past every post. So a listing keeps
+ * the drawer it uses on a phone, and the button that opens it, right up to the breakpoint.
+ *
+ * Emitted by the article shell rather than baked into the cached sheet, because the sheet
+ * is shared by every page and cannot tell one from the other.
+ */
+export function articleBandCss(colWidth: number): string {
+  return `@media (min-width:60rem) and (max-width:${breakpoint(colWidth) - 1}px)` +
+    `{.rail-toggle,.rail-scrim{display:none}}`
 }
 
 // Infinite-scroll timeline. NOT a boxed rail: a spine runs the full height of the feed in

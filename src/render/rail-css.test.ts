@@ -1,7 +1,7 @@
 // The rail's three states are three media ranges, and the middle one is the newest: a band
 // under the title from 60rem to the rail breakpoint, where before there was only a drawer.
 import { describe, expect, it } from 'bun:test'
-import { DEFAULT_RAIL_WIDTH, railLookCss, singleRailCss } from '@/render/rail-css'
+import { articleBandCss, DEFAULT_RAIL_WIDTH, railLookCss, singleRailCss } from '@/render/rail-css'
 import { DEFAULT_SETTINGS } from '@/content/settings'
 import { PUBLIC_CSS } from '@/web/public.css'
 
@@ -14,11 +14,19 @@ describe('singleRailCss', () => {
     expect(css.indexOf('max-width:1271px')).toBeLessThan(css.indexOf('min-width:1272px'))
   })
 
-  it('lets the index fold only in the band, and puts the drawer button away there', () => {
+  it('lays out the ARTICLE rail in flow there, and leaves every other rail alone', () => {
     const band = singleRailCss(672).split('@media (min-width:1272px)')[0]!
     expect(band).toContain('.toc summary{pointer-events:auto;cursor:pointer')
-    expect(band).toContain('.rail-toggle,.rail-scrim{display:none}')
-    expect(band).toContain('.rail{position:static')
+    expect(band).toContain('.rail-toc{position:static')
+    // `.rail` bare would take the listing's rail with it, and a listing writes its rail LAST
+    // inside <main>: in flow that puts the menu, the categories and the tags at the foot of
+    // the page. Measured at 1180px on 2026-09-16: the rail began at y=2729 of 3601.
+    expect(band).not.toMatch(/`\.rail\{|\.rail \w/)
+    // The button is NOT hidden here any more: the listing still opens a drawer with it up to
+    // the breakpoint. The article shell hides it on its own pages.
+    expect(band).not.toContain('.rail-toggle')
+    expect(articleBandCss(672)).toBe(
+      '@media (min-width:60rem) and (max-width:1271px){.rail-toggle,.rail-scrim{display:none}}')
   })
 
   it('marks the heading it INVENTS, so the band has one register and not two', () => {
@@ -45,7 +53,7 @@ describe('singleRailCss', () => {
     // hugging its own words, which is what keeps the current-row underline off the empty half
     // of the line and the number beside the entry it counts.
     const band = singleRailCss(672).split('@media (min-width:1272px)')[0]!
-    expect(band).toContain('.rail ul{display:flex;flex-wrap:wrap')
+    expect(band).toContain('.rail-toc ul{display:flex;flex-wrap:wrap')
     expect(band).toContain('.toc ul{display:block}')
     expect(band).toContain('.toc li{width:max-content;max-width:100%')
     // And no line numbers wedged between two menu words, where there is no gutter to hold them.

@@ -191,10 +191,31 @@ describe('the owner menu on the header row', () => {
     clearCache()
     const html = await (await get('/published')).text()
     expect(html).not.toContain('class="site-menu')
-    const rail = /<aside class="rail">.*?<\/aside>/s.exec(html)?.[0] ?? ''
+    // `rail-toc` and not a bare `rail`: the band between 60rem and the gutter breakpoint is
+    // the ARTICLE's, and it selects on that class. A listing keeps its drawer in that range.
+    const rail = /<aside class="rail rail-toc">.*?<\/aside>/s.exec(html)?.[0] ?? ''
     expect(rail).toContain('href="/about"')
     // Above the contents, in the position the listing rail already gives it.
     expect(rail.indexOf('href="/about"')).toBeLessThan(rail.indexOf('class="toc"'))
+  })
+
+  it('leaves a listing its drawer up to the breakpoint, and the button that opens it', async () => {
+    // The band lays a rail out in flow. That is right for an article, whose rail is written
+    // under the title, and wrong for a listing, whose rail is written LAST inside <main> so
+    // that the heading leads the document: in flow it lands at the foot of the page. It was
+    // measured there on 2026-09-16 -- y=2729 of a 3601px page at 1180 -- with the button
+    // hidden by the same band, so the menu, the categories and the tags could not be reached
+    // at all between 960px and 1272px.
+    await saveSettings({ menu })
+    clearCache()
+    const listing = await (await get('/')).text()
+    expect(listing).toContain('<aside class="rail">')
+    expect(listing).not.toContain('rail-toc')
+    expect(listing).not.toContain('max-width:1271px){.rail-toggle')
+    // The article pays for its own line, on the pages that have a band to justify it.
+    const article = await (await get('/published')).text()
+    expect(article)
+      .toContain('@media (min-width:60rem) and (max-width:1271px){.rail-toggle,.rail-scrim{display:none}}')
   })
 
   it('keeps a rail for the menu alone when the sidebar is switched off', async () => {

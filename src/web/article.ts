@@ -28,6 +28,7 @@ import { articleLabels } from '@/web/article-labels'
 import { ogImageUrl } from '@/render/og'
 import { isPublicallyVisible, clampExcerpt, minutesFor, toPlainText, wordCount } from '@/utils'
 import { renderDocument, pageStyles } from '@/web/layout'
+import { articleBandCss } from '@/render/rail-css'
 import { blogPostingSchema } from '@/render/schema'
 import { postInfoPanel, termLinks, bookToggle } from '@/web/post-info'
 
@@ -262,12 +263,12 @@ export async function renderArticle(slug: string, canonicalPath?: string): Promi
   // article's rail was the contents and nothing else, so the menu was not on the page at
   // all — and a PAGE has no headings to build one from, which is why a blog whose homepage
   // is a page had no navigation on its front door (issue #61). The nav is a SIBLING of
-  // `.toc`, not a child: `.toc li` is what the terminal chrome numbers.
+  // `.toc`, not a child: `.toc li` is what the terminal chrome numbers, and `rail-toc` is
+  // what the band selects on -- a listing keeps its drawer there instead (`articleBandCss`).
   const menu = menuBlock(settings.menu, s.menu)
   const toc = contents || menu
-    ? `<aside class="rail"><div class="rail-inner">${menu}${contents}</div></aside>`
+    ? `<aside class="rail rail-toc"><div class="rail-inner">${menu}${contents}</div></aside>`
     : ''
-
   // The comment thread is a MOUNT POINT, not markup: the island fetches it. The article
   // page is cached HTML (Invariant 1) and a comment is not a post, so rendering the thread
   // here would force a choice between flushing the whole page cache whenever a stranger
@@ -373,7 +374,7 @@ export async function renderArticle(slug: string, canonicalPath?: string): Promi
         : undefined,
       stylesheet: PUBLIC_SHEET,
     },
-    pageStyles(settings),
+    pageStyles(settings, toc ? articleBandCss(settings.contentWidth) : ''),
     // `book-text` is the owner's book-typography switch: indented paragraphs, a tighter
     // lead between them, justified with hyphens once the column is wide enough. It sits on
     // the shell rather than on .prose so the editor and the reading view can share it.
