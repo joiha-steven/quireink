@@ -6,11 +6,12 @@
 // would only test that I transcribed my own port correctly, which is the thing least worth
 // testing.
 //
-// `marked` and `shiki` are pinned to EXACT versions in `package.json`, no caret. A byte
-// comparison against a floating dependency would fail on a patch release and teach everyone
-// to ignore it.
+// `shiki` is pinned to an EXACT version in `package.json`, no caret. A byte comparison
+// against a floating dependency would fail on a patch release and teach everyone to ignore
+// it. `marked` was pinned beside it until ADR 0052 took it out; the engine that replaced it
+// is ours, so its version is this repository's own history and there is nothing to pin.
 //
-// The pins are no longer the frozen tree's own (18.0.5 / 4.2.0): the 2026-08-11 security
+// The pins were no longer the frozen tree's own (18.0.5 / 4.2.0): the 2026-08-11 security
 // pass moved them to 18.0.9 and 4.4.3 and re-ran this gate, which stayed 46/46. That is what
 // the pins are FOR — a bump is a reviewed change that has to prove it moved nothing, not a
 // number nobody may touch. Deliberately not restated here as a version number, because the
