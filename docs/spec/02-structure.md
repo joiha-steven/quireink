@@ -24,7 +24,11 @@ src/
     scheduled.ts warm.ts redirects.ts rate-limit.ts activity.ts backup.ts
   content/              posts, pages, revisions, slugs, taxonomy, series, settings
   media/                media, files, blob, image variants (sharp)
-  render/               markdown (marked), footnotes, toc, video, inline-md, og
+  md/                   the Markdown engine: one parse, and from it the reader's HTML, the
+                        editor's document, the Markdown a save writes, the excerpt and the
+                        plain text a search index reads (ADR 0052; it replaced four libraries)
+  pen/                  the pen: grammar, dies, pigments, the forty variants a mark is dealt
+  render/               footnotes, toc, video, inline-md, og. It calls md/, it is not the engine
   comments/             tree, tombstones, markdown subset, notify
   news/                 subscribers, mail, broadcast, send log, email builders
   analytics/            record, aggregate, timezone buckets, ua buckets
@@ -36,10 +40,13 @@ src/
     schema-analytics.sql
     migrations.sql      one file per database (+ migrations-analytics.sql), not a directory
   import/               WordPress WXR parsing, for the admin's import page; ghost.ts and archive.ts joined it later (noted 2026-09-10)
-  admin/                the admin's BROWSER half: island/ (one entry per screen) and the editor.
+  admin/                the admin's BROWSER half: island/ (one entry per screen) and the editor,
+                        which stands on prosemirror-* directly since ADR 0054's step 7.
                         It was the React SPA ported from src/components/admin until ADR 0054;
-                        the markup moved to src/web/admin/ and src/admin-shared/ holds what
-                        both sides read
+                        the markup moved to src/web/admin/
+  admin-shared/         what both halves of the admin read: the control vocabulary, the rail,
+                        the tabs, the chords, the settings index. Imported by the server that
+                        draws the markup AND by the island that wires it
   assets/
     js/                 core, post, login, book-mode, comment-thread, sw, and since ADR 0043 reader-pen (scripts/build-assets.ts)
     static/             fonts and icons
