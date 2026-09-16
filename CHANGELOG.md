@@ -1,5 +1,61 @@
 # CHANGELOG
 
+## 2026-09-16 · Quire Ink 2.2.11
+
+No new feature in this one. It is the repair release for 2.2.10, cut the same day, and every
+number below was read off a rendered page in a browser rather than off the classes.
+
+### Fixed
+
+- **The spare menu button, on every blog still on the default column width.** 2.2.10 moved
+  the rail's geometry out of the page and into the cached stylesheet, which saves 1,046
+  compressed bytes on every view. It also moved the rule that puts the drawer button away
+  above the breakpoint: `.rail-toggle{display:none}` landed 130 rules ahead of
+  `.icon-btn{display:flex}` in the same sheet, one class each, so source order decided it and
+  the button stayed. Measured at 1440px: a drawer button drawn next to a rail that was already
+  standing in the left gutter, opening a copy of what was on the screen. The source-code look
+  prints a word beside every control, so on that look it read `[menu]`. The same move had also
+  cost the gutter rail its padding, 20px where it should have been 0. A blog whose owner had
+  moved the reading column never saw either: that one still gets its own geometry inline,
+  after the sheet. The geometry now sits second to last in the sheet, ahead of PRINT alone,
+  and a test holds it against the rule it has to outrank rather than against a line number.
+- **Page two of a category or a tag named page one as its canonical**, and wore page one's
+  title. A canonical pointing at page one asks a search engine to fold the deeper pages away
+  and take with them every post that appears nowhere else, which on a blog with two hundred
+  posts in one category is most of the category. The home pager had done both correctly since
+  the word for "page" moved into the locale table; the archives were never brought along.
+  Series is untouched: it is read front to back and is never paginated.
+- **A listing's rail stood at the foot of the page between 960px and 1272px**, with the button
+  that opens it hidden by the same rule. That range is an iPad on its side and a 13 inch
+  laptop. Measured at 1180px: the rail began at y=2729 on a 3601px page, so the menu, the
+  categories, the series and the tags could not be reached without scrolling past every post.
+  The band that lays a rail out in flow is the article's, whose rail is written under the
+  title; a listing writes its rail last inside `<main>` so the heading leads the document, and
+  it now keeps the drawer it uses on a phone right up to the width where the rail moves into
+  the gutter.
+
+### A few improvements
+
+- **A new install types quietly.** The key sound starts at 10 rather than 60, on a scale
+  rebuilt in August to be much louder than the one before it: a letter at 60 measures about
+  four times the amplitude of the old scale's maximum. Only the default moves, so a blog that
+  has already chosen a volume keeps it.
+- **The notebook look's quiet ink meets the desk it sits on.** That look darkens the page to
+  make the desk under the sheet, and the palette's `--c-meta` was measured against the page,
+  so the tagline, the pager count, the footer and the dates down the rail came out at 4.47:1
+  where AA asks 4.5 at that size, on all six palettes. 4.60:1 now, and dark was never short.
+- **The unchosen label on a segmented control answers to two numbers**, and had only ever
+  satisfied one: 4.5:1 against the neutral-200 groove it sits in, and 3:1 against the
+  near-black label on the chosen key. The two Tailwind steps either side give 3.76 and 4.2, or
+  6.2 and 2.53. The value in between reads 4.63 and 3.40.
+- **Four edges on the settings screens line up.** The tab row padded by 16 and the panel under
+  it by 20, so the strip began at x=273 while the cards began at 277, and the search field
+  ended at 1375 against the grid's 1371. A state lamp beside a card title moved that title,
+  and only some cards have a state to report, so one title stood 18px in from every other; the
+  lamp rides at the end of the header row now. Two stacks stepped 16 where the other 55 step
+  20, and one ruled division was 16/16 where the other nine are 24 above and 20 below.
+
+
 ## 2026-09-16 — Quire Ink 2.2.10
 
 The five pre-releases from 2026-09-09 to 2026-09-16, in one release. `latest`, `2.2` and

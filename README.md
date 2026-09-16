@@ -5,7 +5,7 @@
   <img src="docs/brand/wordmark-light.svg" alt="quireINK" width="360">
 </picture>
 
-`2.2.10`
+`2.2.11`
 
 **A blog you host yourself, and an AI agent can run it for you.**
 No algorithm, no ads, no platform standing between you and your readers.
@@ -152,13 +152,20 @@ The CSS and JavaScript rows are build artefacts, the same bytes on every install
 
 <img src="docs/demo-admin.jpg" alt="The Quire Ink admin: a post open in the editor with a pencil underline, a red ring and a highlighted sentence, beside the Appearance settings showing the four looks, the reading fonts, the shape controls and the colour presets" width="960">
 
-<sub>The admin as 2.2.10 draws it: server-rendered pages, no framework. Everything on the right, the four looks included, is a setting rather than code, and the chrome on both screens is wearing one of them.</sub>
+<sub>The admin as 2.2.11 draws it: server-rendered pages, no framework. Everything on the right, the four looks included, is a setting rather than code, and the chrome on both screens is wearing one of them.</sub>
 
 </div>
 
 ## This release
 
-**2.2.10** folds in the five pre-releases from 9 to 16 September. It runs the demo above and the author's own blog at [manhhung.me](https://manhhung.me); the [changelog](./CHANGELOG.md) has all of it, measurement by measurement.
+**2.2.11** is the repair release for 2.2.10, cut the same day. It runs the demo above and the author's own blog at [manhhung.me](https://manhhung.me); the [changelog](./CHANGELOG.md) has all of it, measurement by measurement.
+
+- **The spare menu button is gone.** 2.2.10 precomputed the rail geometry into the cached sheet, which saves 1,046 compressed bytes a view and moved the rule that hides the drawer button 130 rules ahead of the rule that sizes it. One class each, so source order decided it: every blog on the default column drew a button beside a rail that was already in the gutter, and the source-code look printed it as `[menu]`.
+- **Page two of a category or a tag is its own page**, with its own address and its own title. It had been naming page one as the canonical, which asks a search engine to fold the deeper pages away and take with them every post that appears nowhere else.
+- **A listing's rail is reachable between 960 and 1272px**, an iPad on its side and a 13 inch laptop. It was laid out at the foot of the page with the button that opens it hidden.
+- **A new install types quietly:** the key sound starts at 10 rather than 60. Four edges on the settings screens line up, and three contrast measurements that sat just under the line are over it.
+
+**2.2.10, the day before,** is where the subtraction landed.
 
 **Twenty-two declared packages left and twelve arrived**, among them React, the seven `@tiptap/*` packages wrapping the editor, `marked` and the Tailwind CLI. Declared dependencies went from 32 to 22, the lockfile from 360 resolved packages to 221, and a clean install from 194 MB on disk to 138 MB.
 

@@ -5,7 +5,7 @@
   <img src="docs/brand/wordmark-light.svg" alt="quireINK" width="360">
 </picture>
 
-`2.2.10`
+`2.2.11`
 
 **Blog tự host cho một người viết. Nhờ được AI viết và trông coi hộ.**
 Không thuật toán, không quảng cáo, không nền tảng nào đứng giữa bạn và người đọc. Tên bạn trên đó, không phải tên chúng tôi.
@@ -107,7 +107,7 @@ bun src/index.ts
 
 <img src="docs/demo-admin.jpg" alt="Trang quản trị Quire Ink: một bài mở trong trình soạn với câu gạch chì, chữ khoanh đỏ, câu tô sáng và bức thư tay đóng khung; bên cạnh là trang cấu hình Giao diện với bốn lối, bốn font đọc, các nút chỉnh hình dáng và dải bảng màu" width="960">
 
-<sub>Trang quản trị như 2.2.10 vẽ nó: trang do máy chủ dựng, không framework. Mọi thứ bên phải, kể cả bốn lối giao diện, đều là tuỳ chọn bấm chọn chứ không phải code, và khung trên cả hai màn đang mặc một trong số đó.</sub>
+<sub>Trang quản trị như 2.2.11 vẽ nó: trang do máy chủ dựng, không framework. Mọi thứ bên phải, kể cả bốn lối giao diện, đều là tuỳ chọn bấm chọn chứ không phải code, và khung trên cả hai màn đang mặc một trong số đó.</sub>
 
 </div>
 
@@ -141,7 +141,14 @@ Giữ được như vậy là nhờ mấy luật cứng: mỗi gói JavaScript c
 
 ## Bản này
 
-**2.2.10** gộp năm bản thử từ 9 tới 16 tháng 9. Nó đang chạy trang demo ở trên lẫn blog của chính tác giả tại [manhhung.me](https://manhhung.me). [Nhật ký thay đổi](./CHANGELOG.md) ghi đủ, kèm số đo từng mục.
+**2.2.11** là bản vá cho 2.2.10, cắt cùng ngày. Nó đang chạy trang demo ở trên lẫn blog của chính tác giả tại [manhhung.me](https://manhhung.me). [Nhật ký thay đổi](./CHANGELOG.md) ghi đủ, kèm số đo từng mục.
+
+- **Nút mở menu thừa đã đi.** 2.2.10 đem hình học thanh bên vào tệp kiểu dáng có bộ đệm, tiết kiệm 1.046 byte nén mỗi lượt xem, và đẩy luật cất nút đi xuống trước luật quy định cỡ nút 130 luật. Mỗi bên một lớp, nên thứ tự quyết định: blog nào để nguyên bề rộng cột mặc định cũng vẽ thêm một cái nút cạnh thanh bên vốn đã nằm ở lề, và lối chữ mã in nó ra thành `[menu]`.
+- **Trang hai của danh mục hay thẻ là trang của chính nó**, có địa chỉ riêng và tiêu đề riêng. Trước đó nó khai trang một là địa chỉ chuẩn, tức bảo máy tìm kiếm gộp các trang sau vào trang đầu, mang theo mọi bài chỉ xuất hiện ở đó.
+- **Thanh bên của trang danh sách với tới được ở khoảng 960 tới 1272px**, tức iPad nằm ngang và laptop 13 inch. Trước đó nó rơi xuống cuối trang, còn nút mở thì bị ẩn.
+- **Bản cài mới gõ khẽ:** tiếng gõ bắt đầu ở 10 thay vì 60. Bốn chỗ mép trong màn Cài đặt đã thẳng hàng, và ba phép đo tương phản nằm ngay dưới vạch nay đã qua vạch.
+
+**2.2.10, hôm trước,** là chỗ phép trừ diễn ra.
 
 **Hai mươi hai gói khai báo rời đi, mười hai gói đi vào**, trong đó có React, bảy gói `@tiptap/*` bọc quanh trình soạn thảo, `marked` và Tailwind CLI. Số gói khai báo đi từ 32 xuống 22, tệp khoá phiên bản từ 360 gói xuống 221, và bản cài sạch từ 194 MB xuống 138 MB.
 
