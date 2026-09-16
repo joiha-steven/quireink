@@ -68,7 +68,7 @@ body{margin:0;background:var(--c-bg);color:var(--c-text);font-family:var(--font-
    could see it. Excluding the one exception says the same thing and stays true. */
 .login-form input:not([type=checkbox]){
   width:100%;padding:.625rem .75rem;font:inherit;font-size:.9375rem;line-height:1.5;color:var(--c-text);
-  background:var(--field);border:1px solid var(--c-field-edge);border-radius:8px;
+  background:var(--field);border:1px solid var(--c-rule);border-radius:8px;
   /* The well. Black rather than a palette token on purpose: a shadow is dark in every
      palette, and a token here would light the inside of the field on a dark one. */
   box-shadow:inset 0 1px 1.5px rgba(0,0,0,.07);
@@ -78,7 +78,7 @@ body{margin:0;background:var(--c-bg);color:var(--c-text);font-family:var(--font-
      and its own copy of the press, and the gates never reached it at all. */
   transition:border-color var(--dur-fast), box-shadow var(--dur-fast)}
 .login-form input::placeholder{color:var(--c-meta)}
-.login-form input:hover{border-color:color-mix(in srgb, var(--c-text) 22%, var(--c-field-edge))}
+.login-form input:hover{border-color:color-mix(in srgb, var(--c-text) 22%, var(--c-rule))}
 /* A ring, not a 2px outline box. autofocus fires on load, so whatever this draws is the
    first thing anyone sees, and the old one drew a solid red rectangle. */
 .login-form input:focus{outline:none;border-color:var(--c-accent);
@@ -235,10 +235,10 @@ html[data-motion=off] .login-reveal button:active{transform:translateY(-50%)}
    being true. */
 .login-form select{width:100%;padding:.625rem .75rem;font:inherit;font-size:.9375rem;
   min-height:calc(1.5 * .9375rem + 2 * .625rem + 2px);
-  color:var(--c-text);background:var(--field);border:1px solid var(--c-field-edge);
+  color:var(--c-text);background:var(--field);border:1px solid var(--c-rule);
   border-radius:8px;box-shadow:inset 0 1px 1.5px rgba(0,0,0,.07);
   transition:border-color var(--dur-fast), box-shadow var(--dur-fast)}
-.login-form select:hover{border-color:color-mix(in srgb, var(--c-text) 22%, var(--c-field-edge))}
+.login-form select:hover{border-color:color-mix(in srgb, var(--c-text) 22%, var(--c-rule))}
 .login-form select:focus{outline:none;border-color:var(--c-accent);
   box-shadow:inset 0 1px 1.5px rgba(0,0,0,.07), 0 0 0 3px color-mix(in srgb, var(--c-accent) 16%, transparent)}
 /* Padding rather than a taller line: on an inline box the extra area is touchable without

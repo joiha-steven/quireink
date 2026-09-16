@@ -1,35 +1,5 @@
 # CHANGELOG
 
-## Unreleased
-
-### A control's edge is not a divider, and WCAG asks a different question of it
-
-A text input whose only boundary is `--c-rule` was **1.26 to 1.35:1 against its own paper**,
-measured across all six palettes in both schemes. WCAG 2.1 SC 1.4.11 asks for 3:1 on anything
-a reader needs in order to identify a control. That hairline is the right weight for a line
-between two cards and the wrong weight for the edge of a box somebody has to find and type
-into, and one token was doing both jobs.
-
-- **`--c-field-edge` is its own promised variable now**, mixed from `--c-text` and `--c-bg`
-  rather than added to the six palettes: a seventh colour per scheme would be a schema change
-  that every blog has a stored copy of, and every stored copy predates it. Mixing two colours
-  the palette already carries needs no migration and cannot drift from the palette it belongs
-  to.
-- **58% is the measurement, not a taste.** 50% still fails on Mono at 2.88:1, 55% is the first
-  mix that clears 3:1 everywhere, and 58% lands the worst case at 3.55:1 with the other eleven
-  between 3.59 and 5.10. It stays lighter than `--c-meta` in all twelve, so a field's edge
-  never out-weighs the muted words beside it. `palette-contrast.test.ts` holds both bounds and
-  computes the mix the way a browser computes it.
-- Sixteen rules move to it: the comment form's fields and button, the reader's pen note and
-  its two code boxes, the sign-in form's inputs and selects with their hover states, the
-  search field and its button, the clip form, and the subscribe box. Everything decorative
-  still takes `--c-rule`, which has not changed.
-- Measured in a browser on the rendered page afterwards: `#868685` on `#fcfcfc`, 3.55:1.
-
-This is also what unblocks `accessibility-ready` on the WordPress theme, which could not
-declare the tag while the hairline it inherits failed one criterion. The theme is generated
-from these values, so the fix belonged here rather than there.
-
 ## 2026-09-16 — Quire Ink 2.2.10
 
 The five pre-releases from 2026-09-09 to 2026-09-16, in one release. `latest`, `2.2` and

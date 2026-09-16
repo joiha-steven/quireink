@@ -83,31 +83,8 @@ export function getDefaultTheme(themes: Record<string, ThemeSettings>, defaultId
 // Every built-in palette id, in display order. The default "everything on" set.
 export const ALL_PALETTE_IDS: string[] = THEME_PRESETS.map((p) => p.id)
 
-/**
- * The boundary of a CONTROL, which is not the same thing as a hairline between two cards.
- *
- * ⚠️ IT IS ITS OWN TOKEN BECAUSE WCAG ASKS A DIFFERENT QUESTION OF IT. SC 1.4.11 wants 3:1 on
- * anything a reader needs in order to identify a control, and a text input whose only edge is
- * `--c-rule` does not come close: measured across all six palettes in both schemes, that
- * hairline is 1.26 to 1.35:1 against its own paper. It is the right weight for a divider,
- * which is decorative and should not shout, and the wrong weight for the edge of a box
- * somebody has to find and type into.
- *
- * Derived rather than added to the palettes, and that is deliberate: a seventh colour per
- * scheme would be a schema change every blog has a stored copy of, and every stored copy
- * predates it. Mixing two colours the palette already carries needs no migration and cannot
- * drift away from the palette it belongs to.
- *
- * 58% is the measurement, not a taste: 50% still fails on Mono at 2.88:1, 55% is the first
- * that clears everywhere, and 58% lands the worst case at 3.55:1 with the rest between 3.59
- * and 5.10. It stays LIGHTER than `--c-meta` in all twelve, so a field's edge never
- * out-weighs the muted words beside it. `palette-contrast.test.ts` holds both bounds.
- */
-const FIELD_EDGE = 'color-mix(in srgb, var(--c-text) 58%, var(--c-bg))'
-
 function vars(c: ThemeColors): string {
-  return `--c-bg:${c.bg};--c-text:${c.text};--c-heading:${c.heading};--c-meta:${c.meta};`
-    + `--c-link:${c.link};--c-accent:${c.accent};--c-rule:${c.rule};--c-field-edge:${FIELD_EDGE}`
+  return `--c-bg:${c.bg};--c-text:${c.text};--c-heading:${c.heading};--c-meta:${c.meta};--c-link:${c.link};--c-accent:${c.accent};--c-rule:${c.rule}`
 }
 
 // CSS for every ENABLED palette, so the switcher swaps instantly via `<html data-palette>`

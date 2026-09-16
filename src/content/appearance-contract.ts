@@ -38,8 +38,7 @@ export const PROMISED_VARS: { group: string; vars: Promised[] }[] = [
       { name: '--c-meta', note: 'dates, counts, small print' },
       { name: '--c-link', note: 'links' },
       { name: '--c-accent', note: 'the one accent: active states, markers' },
-      { name: '--c-rule', note: 'hairlines and dividers, decorative only' },
-      { name: '--c-field-edge', note: "a control's own edge: inputs, selects, outline buttons" },
+      { name: '--c-rule', note: 'hairlines and dividers' },
     ],
   },
   {
