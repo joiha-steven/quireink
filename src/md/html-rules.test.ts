@@ -18,6 +18,7 @@
 
 import { describe, expect, it } from 'bun:test'
 import { GFM, SPEC, toHtml, type PageRules } from './index'
+import { safeHref, safeImageSrc } from './html-rules'
 
 /** A host with an opinion about all six. The slug is ASCII-only on purpose: which words a
  *  heading is anchored by is the engine's business, and HOW they become a slug is the host's. */
@@ -93,6 +94,44 @@ describe('safeLinks: the schemes that execute', () => {
     // CommonMark says nothing about schemes, and an engine that quietly rewrites a URL is not
     // a CommonMark engine. The default is the spec; the blog asks.
     expect(toHtml('[js](javascript:alert(1))\n', SPEC)).toContain('javascript:alert(1)')
+  })
+})
+
+describe('safeImageSrc: a picture is not a link', () => {
+  // The rule moved in here on 2026-09-16 from `render/figures.ts`, where it was the only copy
+  // and the editor had none: `sheet-fields.ts` put a stored draft's picture straight into an
+  // `<img src>`. One rule with three readers now (the page, the editor, and whatever lifts
+  // this engine out), because the LINK rule is what happens when there are two spellings —
+  // the editor's read the whitespace before a scheme and the page's stripped control
+  // characters first, and the two disagreed for four releases.
+  const TAB = String.fromCharCode(9)
+
+  it('refuses the two schemes that execute', () => {
+    expect(safeImageSrc('javascript:alert(1)')).toBe('')
+    expect(safeImageSrc('VBScript:msgbox(1)')).toBe('')
+  })
+
+  it('refuses one broken up by a control character, the way a browser reads it', () => {
+    expect(safeImageSrc(`java${TAB}script:alert(1)`)).toBe('')
+    expect(safeImageSrc(` ${TAB}javascript:alert(1)`)).toBe('')
+  })
+
+  it('KEEPS `data:`, which `safeHref` refuses, because an inline picture is a real picture', () => {
+    // The one place the two guards differ, and it is deliberate: `data:image/png;base64,…` is
+    // a legitimate image and blocking it would break real posts to prevent nothing. Script in
+    // an SVG does not run when the SVG is loaded as an `<img>`.
+    expect(safeImageSrc('data:image/png;base64,iVBORw0KGgo=')).toBe('data:image/png;base64,iVBORw0KGgo=')
+    expect(safeHref('data:image/png;base64,iVBORw0KGgo=')).toBe('#')
+  })
+
+  it('leaves an ordinary address alone, trimmed', () => {
+    expect(safeImageSrc('  /uploads/media/plate.jpg?a=1  ')).toBe('/uploads/media/plate.jpg?a=1')
+    expect(safeImageSrc('https://example.com/p.png')).toBe('https://example.com/p.png')
+  })
+
+  it('answers the empty string, not `#`, because an image has nowhere else to point', () => {
+    expect(safeImageSrc('javascript:alert(1)')).toBe('')
+    expect(safeHref('javascript:alert(1)')).toBe('#')
   })
 })
 

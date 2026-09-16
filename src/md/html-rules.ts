@@ -103,10 +103,39 @@ const DEL = 0x7f
  * nothing left for an editor or a pipe to reinterpret.
  */
 export function safeHref(href: string): string {
+  const cleaned = stripControls(href)
+  return /^(?:javascript|data|vbscript):/i.test(cleaned) ? '#' : cleaned
+}
+
+/** The strip both guards below start with. See the warning on `safeHref` for why it is a loop. */
+function stripControls(url: string): string {
   let cleaned = ''
-  for (const ch of href.trim()) {
+  for (const ch of url.trim()) {
     const code = ch.codePointAt(0) ?? 0
     if (code >= LOWEST_PRINTABLE && code !== DEL) cleaned += ch
   }
-  return /^(?:javascript|data|vbscript):/i.test(cleaned) ? '#' : cleaned
+  return cleaned
+}
+
+/**
+ * A PICTURE's address, with the schemes that execute taken away. The same strip as `safeHref`
+ * and a shorter list, because an image is not a link.
+ *
+ * `data:` IS ALLOWED HERE and blocked there: `data:image/png;base64,…` is a legitimate inline
+ * picture and refusing it would break real posts to prevent nothing. Script inside an SVG does
+ * not run when the SVG is loaded as an `<img>`; the case where it DOES run, the SVG opened as
+ * its own document, is handled where that is served.
+ *
+ * The answer for a refused address is the EMPTY STRING rather than `#`, because an `<img>` has
+ * no useful fallback destination the way an `<a>` does: a broken picture is the honest result.
+ *
+ * ⚠️ IT LIVES BESIDE `safeHref` BECAUSE IT USED TO LIVE APART FROM IT. The rule had one copy
+ * in `render/figures.ts` and no copy at all in the editor, which set an `<img src>` straight
+ * from a stored draft. Two spellings of one rule is how the LINK guard drifted: the editor's
+ * read the whitespace before a scheme and the page's stripped control characters first, and
+ * the two disagreed for four releases (2026-09-16).
+ */
+export function safeImageSrc(src: string): string {
+  const cleaned = stripControls(src)
+  return /^(?:javascript|vbscript):/i.test(cleaned) ? '' : cleaned
 }

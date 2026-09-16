@@ -51,7 +51,12 @@ export async function openPreview(
     const res = await fetch(`/api/preview-link?slug=${encodeURIComponent(slug)}`)
     const json = await res.json() as { success?: boolean; data?: { token?: string } }
     if (!json.success || !json.data?.token) throw new Error('no token')
-    const url = `${location.origin}/preview/${slug}?key=${json.data.token}`
+    // Both parts ESCAPED, and the slug was not. Three lines up the same value goes through
+    // `encodeURIComponent` for the request that fetches the token, and here it was dropped
+    // raw into a path and a query string: a slug carrying `?` or `#` would have cut the URL
+    // short and opened the wrong page with no key (CodeQL alert 43).
+    const url = `${location.origin}/preview/${encodeURIComponent(slug)}`
+      + `?key=${encodeURIComponent(json.data.token)}`
     if (tab) tab.location.href = url
     else window.open(url, '_blank') // the popup was blocked — one best-effort second try
   } catch {

@@ -38,6 +38,24 @@ describe('slugify', () => {
     expect(slugify('!!! --- ...')).toBe('')
     expect(slugify('🔦')).toBe('')
   })
+
+  it('yields a URL segment that needs no escaping, whatever it is given', () => {
+    // WHY THIS IS PINNED. A slug is interpolated into paths all over the admin, and on
+    // 2026-09-16 one of those sites was escaping it and the site three lines below was not
+    // (the editor's preview link; CodeQL alert 43). Escaping it there is now a no-op for
+    // every slug this function can produce, and this is the assertion that keeps it one: if
+    // `slugify` ever widened its alphabet, `encodeURIComponent` would start changing the
+    // string and the two call sites would stop agreeing about what the URL is.
+    for (const title of [
+      'Suy nghĩ về Đời', 'Почерк и время: зачем писать медленно', '  Hello, World!  ',
+      'a/b?c#d&e', '100% sure', "it's a plan", 'a+b=c', 'tab\there', '<script>x</script>',
+      'a  b   c', '---edges---', 'MiXeD CaSe 42',
+    ]) {
+      const slug = slugify(title)
+      expect({ title, slug: encodeURIComponent(slug) }).toEqual({ title, slug })
+      expect(slug).toMatch(/^[a-z0-9-]*$/)
+    }
+  })
 })
 
 describe('wordCount', () => {

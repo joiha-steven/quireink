@@ -93,13 +93,13 @@ requests and 15.8 KB of JavaScript, not 9 and 6.5. The table now says what a def
 costs and what turning things off gives back, measured on the demo fixture so anyone with the
 repository can take the numbers again.
 
-### Four buttons that reported success after the server had refused
+### Four buttons that answered a refusal with silence or with the wrong screen
 
-Four places in the admin answered a failed request with the screen that means "done". They are
-one fault written four times, and the shape is worth naming because it is invisible to every
-check that exists: the request is made, the answer is discarded, and the interface moves on.
-Nothing throws, nothing is logged, and the screen is wrong only if you knew what it should
-have said.
+Four places in the admin discarded the server's answer and moved on. They are one fault
+written four times, and the shape is worth naming because it is invisible to every check that
+exists: the request is made, the answer is dropped, and the interface acts as though it had
+succeeded. Nothing throws, nothing is logged, and the screen is wrong only if you already knew
+what it should have said.
 
 - **Ending a signed-in device sent the owner to the sign-in page whether or not it worked.**
   The branch that recognises "this is the device you are using" ran before the status was read,
@@ -107,26 +107,45 @@ have said.
   session on that machine was still open and the device was still listed for whoever held it.
 - **Undo after trashing a piece from the editor reloaded the page on any answer.** The toast
   carrying the undo dies with the reload, so a refused restore and a completed one were the
-  same three seconds: the piece was still in the Trash and the only place that could have said
-  so was gone. A restore that never reached the server landed nowhere at all — no reload, no
+  same three seconds: the piece stayed in the Trash and the only thing that could have said so
+  was gone. A restore that never reached the server landed nowhere at all — no reload, no
   sentence, an unhandled rejection.
 - **Undo after trashing several pieces from the content list did the same**, and reloaded onto
-  a list still showing them.
+  a list those pieces were still missing from, with nothing to say why.
 - **Undo after deleting a comment failed silently.** The rows stayed off the screen, which is
   true, and nothing said whether that was because the undo had been refused or because the
   comments were gone for good.
 
-All four say what happened now, in the blog's own language — the sentence already existed in
-all eleven. Three of them are held by tests that were watched failing against the old code
-first.
+All four speak now, in the blog's own language: `restoreFailed` already existed in all eleven.
+Two of them — the device list and the editor's undo — are held by tests that were watched
+failing against the old code first; the other two share their branch and are covered on the
+happy path by the tour.
 
-**A pasted link was checked for one scheme; the published page checks three, and checks them
-after stripping.** The editor refused `javascript:` with a pattern that reads the whitespace
+### One rule for a URL, with three readers instead of two spellings
+
+The editor refused `javascript:` in a pasted link with a pattern that reads the whitespace
 BEFORE the scheme and nothing inside it, so `java<tab>script:` — which a browser runs, because
-it drops the tab — was called clean and kept. The reader was never reachable: the page's own
-`safeHref` strips every control character and then matches, and rewrites all three executing
-schemes to `#`. This closes the disagreement between the two layers rather than a hole, and it
-closes it by giving the editor the engine's own function instead of a second spelling of it.
+it drops the tab — was called clean and kept in the post's source. The published page was
+never reachable: its own `safeHref` strips every control character and then matches, and
+rewrites all three executing schemes to `#`. Two spellings of one rule is the fault; the
+editor uses the engine's function now.
+
+The same drift had started on the IMAGE side. The scheme guard for a picture's address lived
+in `render/figures.ts` as its only copy, and the editor had none — it put a stored draft's
+picture straight into an `<img src>`. Both guards live in `md/html-rules.ts` now, next to each
+other, and the one place they differ is written down: `data:` is refused for a link and kept
+for a picture, because `data:image/png;base64,…` is a real picture and blocking it would break
+real posts to prevent nothing.
+
+Two more from the same pass, both found by CodeQL:
+
+* **The preview link dropped the slug into a URL unescaped**, three lines below the same value
+  going through `encodeURIComponent` for the request that fetches the token. A slug carrying
+  `?` or `#` would have cut the URL short and opened the wrong page with no key.
+* The remaining two CodeQL alerts are recorded as examined rather than fixed, with the reason
+  on the alert: the gallery's column count is a number and cannot carry a quote, and a table
+  cell holding a backslash next to a pipe has no spelling in GFM at all — `round-trip.test.ts`
+  measures what the engine writes and reads back.
 
 ### Code blocks: 346 languages instead of 21, and a named fence is no longer reinterpreted
 

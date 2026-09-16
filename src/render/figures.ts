@@ -10,26 +10,8 @@
 // It exports only what `post-content.ts` calls: the two fact types, and the two passes.
 import { collapseBlob } from '@/media/blob'
 import { galleryCols } from '@/render/gallery-cols'
+import { safeImageSrc } from '@/md/html-rules'
 
-/**
- * The same guard for an image's `src`, minus the part that would break a real image.
- *
- * The LINK path has been scheme-checked since the port and the IMAGE path never was, so
- * `![x](javascript:alert(1))` came out as `<img src="javascript:alert(1)">`. No browser
- * executes that — a `javascript:` URL in `src` is dead — so this closes an inconsistency
- * rather than a hole, and it is worth closing precisely because the next person to move
- * this URL somewhere executable would inherit the gap rather than the guard.
- *
- * `data:` is deliberately NOT blocked here, unlike in `safeHref`: `data:image/png;base64,…`
- * is a legitimate inline image and blocking it would break real posts to prevent nothing.
- * Script inside an SVG does not run when the SVG is loaded as an `<img>`; the case where it
- * DOES run — the SVG opened as its own document — is handled where that is served
- * (`web/uploads.ts`).
- */
-const safeImageSrc = (src: string): string => {
-  const cleaned = src.trim().replace(/[\u0000-\u001F\u007F]/g, '')
-  return /^(?:javascript|vbscript):/i.test(cleaned) ? '' : cleaned
-}
 
 /**
  * A value about to be written inside double quotes, with the one character that could leave.
