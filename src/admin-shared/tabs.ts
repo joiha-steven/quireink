@@ -158,5 +158,9 @@ export const tabItemClass = (
             // an olive, and near-black on it measures 3.8:1 against the 5.0 white gets.
             ? 'bg-[var(--pen)] text-neutral-950 dark:text-white shadow-[inset_0_2px_3px_rgba(0,0,0,.3),inset_0_-1px_0_rgba(255,255,255,.35)]'
             : 'bg-white font-semibold text-neutral-950 shadow-[inset_0_2px_3px_rgba(0,0,0,.16)] dark:bg-neutral-800 dark:text-white dark:shadow-[inset_0_2px_3px_rgba(0,0,0,.55)]'
-          : 'text-neutral-500 dark:text-neutral-400 hover:bg-neutral-300/60 hover:text-neutral-900 dark:hover:bg-neutral-800/60 dark:hover:text-neutral-200'
+          // `600` and not the `500` the underlined strip uses, because this one sits on a
+          // GROOVE. The track is neutral-200, and 500 on it measures 3.76:1 where AA asks 4.5
+          // for a 13px label -- measured on the rendered control, 2026-09-16. 600 reads 6.2:1
+          // there. Dark is unchanged: 400 on the dark groove was already 6.94:1.
+          : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-300/60 hover:text-neutral-900 dark:hover:bg-neutral-800/60 dark:hover:text-neutral-200'
       }`
