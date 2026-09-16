@@ -153,6 +153,7 @@ export async function commentsScreen(settings: SiteSettings): Promise<string> {
   // on this screen is already written above.
   const words = escapeAttr(JSON.stringify({
     inPosts: t.commentsInPosts, trashed: t.trashedOne, undo: t.undo, failed: t.deleteFailed,
+    restoreFailed: t.restoreFailed,
   }))
   return `<div data-screen="comments" data-comment-words="${words}">`
     + pageHeader({ title: t.commentsNavTitle })

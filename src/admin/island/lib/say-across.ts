@@ -15,8 +15,15 @@ const SLOT = 'quire:say-next'
 
 export type Carried = {
   message: string
-  /** What Restore would put back: the trash API's own three arguments. */
-  undo?: { label: string; kind: string; ids: string[] }
+  /**
+   * What Restore would put back: the trash API's own three arguments, and the sentence to
+   * say when it refuses.
+   *
+   * ⚠️ `failed` TRAVELS WITH THEM because this side has no dictionary. The island holds no
+   * strings — every one lives in `locales/` — and the page that raises this toast is not the
+   * page that had the words. Carrying the sentence is the same rule as carrying the ids.
+   */
+  undo?: { label: string; kind: string; ids: string[]; failed?: string }
 }
 
 /** Leave the sentence for the page being navigated TO. */
@@ -47,11 +54,20 @@ export function saySettled(): void {
     ? {
       label: undo.label,
       run: () => {
+        // ⚠️ RELOAD ONLY ON `res.ok`. It used to reload on ANY answer, so a refused restore
+        // and a successful one looked identical: the toast went, the page came back, and the
+        // piece the owner had just pressed Undo on was still in the Trash with nothing said.
+        // A rejected fetch used to land nowhere at all — no catch, no message, no reload.
         void fetch('/api/trash', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({ kind: undo.kind, action: 'restore', ids: undo.ids }),
-        }).then(() => location.reload())
+        })
+          .then((res) => {
+            if (res.ok) location.reload()
+            else if (undo.failed) say(undo.failed, 'error')
+          })
+          .catch(() => { if (undo.failed) say(undo.failed, 'error') })
       },
     }
     : undefined)

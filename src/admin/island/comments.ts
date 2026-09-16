@@ -257,17 +257,30 @@ if (root && cardHost) {
         action: {
           label: words.undo,
           run: () => {
+            const fail = (): void => {
+              window.dispatchEvent(new CustomEvent('quire:toast', {
+                detail: { message: words.restoreFailed, kind: 'error' },
+              }))
+            }
             void fetch('/api/trash', {
               method: 'POST',
               headers: { 'content-type': 'application/json' },
               body: JSON.stringify({ kind: 'comments', action: 'restore', ids: done }),
-            }).then((r) => {
-              if (!r.ok) return
-              // Back where it was: the card is still on the page and its list is newest first,
-              // so the top is where a comment that was just deleted came from.
-              for (const { row, into } of off) into?.prepend(row)
-              apply()
             })
+              .then((r) => {
+                // ⚠️ A REFUSED UNDO HAS TO SAY SO. This branch used to be a bare `return`, and
+                // a `.catch` was not there at all: the owner pressed Undo, the rows stayed off
+                // the screen — which is the truth, they are still in the Trash — and nothing
+                // told them the press had failed rather than the comments having gone for
+                // good. That is a button that does nothing, and a button that does nothing is
+                // pressed again.
+                if (!r.ok) { fail(); return }
+                // Back where it was: the card is still on the page and its list is newest first,
+                // so the top is where a comment that was just deleted came from.
+                for (const { row, into } of off) into?.prepend(row)
+                apply()
+              })
+              .catch(fail)
           },
         },
       },

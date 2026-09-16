@@ -87,7 +87,7 @@ export async function moveToTrash(
     onGone()
     // ⚠️ THE SENTENCE TRAVELS, because this page is about to stop existing. Said here it would
     // be raised and destroyed in the same frame, and the undo with it — see `say-across.ts`.
-    sayAcross({ message: t.trashedOne, undo: { label: t.undo, kind: `${kind}s`, ids: [slug] } })
+    sayAcross({ message: t.trashedOne, undo: { label: t.undo, kind: `${kind}s`, ids: [slug], failed: t.trashFailed } })
     location.href = '/admin/content'
   } catch {
     say(t.trashFailed, 'error')

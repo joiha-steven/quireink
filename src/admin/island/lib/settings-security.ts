@@ -146,11 +146,16 @@ export function wireSecurity(screen: HTMLElement, w: SecWords): void {
     if (!id) return
     void fetch(`/api/security/sessions/${encodeURIComponent(id)}`, { method: 'DELETE' })
       .then((res) => {
+        // ⚠️ `res.ok` IS READ FIRST, and the order is the whole of it. The current-device
+        // branch used to run before the status was looked at, so a DELETE the server refused
+        // still sent the owner to the sign-in page: the one screen that means "you are signed
+        // out" was the answer to a session that is still open on this machine, and the device
+        // they were trying to end stayed listed for whoever had it.
+        if (!res.ok) { say(w.saveFailed ?? '', 'error'); return }
         // Ending the CURRENT device is signing yourself out, and the honest answer to that is
         // the sign-in page rather than a row quietly disappearing.
         if (row.querySelector('[data-sec-this]:not([hidden])')) { location.href = '/login'; return }
-        if (res.ok) row.remove()
-        else say(w.saveFailed ?? '', 'error')
+        row.remove()
       })
       .catch(() => say(w.saveFailed ?? '', 'error'))
   })

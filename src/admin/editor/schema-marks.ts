@@ -13,6 +13,7 @@
 // spread across eight files. One list is the same answer, written where it can be read.
 import type { MarkSpec } from 'prosemirror-model'
 import { DEFAULT_INK, isInk } from '@/pen/grammar'
+import { safeHref } from '@/md/html-rules'
 
 /** DOM attributes with the empty ones dropped, which is what every `toDOM` below wants. */
 export const attrs = (pairs: Record<string, string | null | undefined>): Record<string, string> =>
@@ -38,10 +39,19 @@ const link: MarkSpec = {
     getAttrs: (dom) => {
       const el = dom as HTMLElement
       const href = el.getAttribute('href')
-      // A `javascript:` URL in pasted HTML is the one thing a link mark must never carry.
-      // The serializer would write it back into the Markdown and the reader's page would
-      // publish it — `md/` escapes nothing about a URL, because a URL is not text.
-      if (!href || /^\s*javascript:/i.test(href)) return false
+      // A scheme that executes is the one thing a link mark must never carry out of a paste.
+      // The serializer would write it back into the Markdown and it would sit in the post's
+      // source — `md/` escapes nothing about a URL, because a URL is not text.
+      //
+      // ⚠️ THE ENGINE'S OWN TEST, not a second spelling of it. What stood here was
+      // `/^\s*javascript:/i`, which reads the whitespace BEFORE the scheme and nothing
+      // inside it — and a browser ignores a tab or a newline inside `java<tab>script:` and
+      // runs it. `safeHref` strips every control character first and then matches, which is
+      // the difference `md/html-rules.ts` is written around. Reusing it also means the
+      // editor and the published page now refuse the same three schemes rather than one.
+      // `#` alone is passed through: that is an anchor, and it is what `safeHref` answers
+      // for everything it rejects.
+      if (!href || (href !== '#' && safeHref(href) === '#')) return false
       return { href, title: el.getAttribute('title'), class: el.getAttribute('class') }
     },
   }],

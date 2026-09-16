@@ -130,18 +130,27 @@ export function wirePicking(pane: HTMLElement, rows: HTMLElement[], after: () =>
     if (open) location.href = '/admin/content'
   }
 
-  /** Undo: the trash's own restore, then a reload, because the list is the server's. */
+  /**
+   * Undo: the trash's own restore, then a reload, because the list is the server's.
+   *
+   * ⚠️ THE RELOAD IS CONDITIONAL, and it did not used to be. Every answer was discarded and
+   * the page came back regardless, so a refused restore and a done one were the same second:
+   * the toast carrying the undo was gone, the pieces were still in the Trash, and nothing on
+   * screen said which of those two things had happened. The reload is what makes the
+   * difference invisible — it takes away the only place the failure could have been reported.
+   */
   async function restore(keys: string[]): Promise<void> {
     const byKind = new Map<string, string[]>()
     for (const key of keys) {
       const [kind = '', slug = ''] = key.split(':')
       byKind.set(`${kind}s`, [...(byKind.get(`${kind}s`) ?? []), slug])
     }
-    await Promise.all([...byKind].map(([kind, ids]) => fetch('/api/trash', {
+    const answers = await Promise.all([...byKind].map(([kind, ids]) => fetch('/api/trash', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ kind, action: 'restore', ids }),
     }).catch(() => null)))
+    if (answers.some((res) => !res?.ok)) { say(words.restoreFailed ?? '', 'error'); return }
     location.reload()
   }
 

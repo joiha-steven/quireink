@@ -153,3 +153,68 @@ describe('a refusal', () => {
     }
   })
 })
+
+describe('ending one device', () => {
+  /** Route the DELETE separately: the list still has to load before a row can be clicked. */
+  function serveDelete(status: number): void {
+    globalThis.fetch = ((input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(typeof input === 'string' ? input : input instanceof URL ? input.href : input.url)
+      if (init?.method === 'DELETE') return Promise.resolve(answer({ success: status === 200 }, status))
+      if (url.includes('/api/security')) return Promise.resolve(answer({ success: true, data: state() }))
+      return Promise.resolve(answer({ success: true }))
+    }) as typeof fetch
+  }
+
+  const rowFor = (device: string): HTMLElement =>
+    [...root.querySelectorAll<HTMLElement>('[data-security-session]')]
+      .find((r) => r.textContent?.includes(device))!
+
+  it('takes the row away when the server actually ended it', async () => {
+    serveDelete(200)
+    wireSecurity(root, {})
+    await settle()
+    rowFor('Chrome on Android').querySelector<HTMLButtonElement>('[data-sec-end]')?.click()
+    await settle()
+    expect(root.querySelectorAll('[data-security-session]').length).toBe(1)
+  })
+
+  it('keeps the row and says so when the server refused', async () => {
+    serveDelete(500)
+    wireSecurity(root, {})
+    await settle()
+    rowFor('Chrome on Android').querySelector<HTMLButtonElement>('[data-sec-end]')?.click()
+    await settle()
+    expect(root.querySelectorAll('[data-security-session]').length).toBe(2)
+    expect(said.at(-1)?.kind).toBe('error')
+  })
+
+  it('says it failed when ending THIS device failed, instead of the sign-in page', async () => {
+    // The fault this test exists for. The current-device branch ran before `res.ok` was read,
+    // so a refused DELETE answered with the one screen that means "you are signed out" while
+    // the session on this machine was still open and the device was still listed.
+    //
+    // ⚠️ The REDIRECT ITSELF CANNOT BE ASSERTED HERE: happy-dom ignores an assignment to
+    // `location.href` and leaves it at `about:blank`, so `expect(location.href).toBe(before)`
+    // passes whether the branch ran or not. What separates the three outcomes is the pair
+    // below — a refusal SAYS so and keeps the row; a signing-out keeps the row and says
+    // nothing; an ordinary success takes the row away.
+    serveDelete(500)
+    wireSecurity(root, {})
+    await settle()
+    rowFor('Safari on a Mac').querySelector<HTMLButtonElement>('[data-sec-end]')?.click()
+    await settle()
+    expect(said.at(-1)?.kind).toBe('error')
+    expect(root.querySelectorAll('[data-security-session]').length).toBe(2)
+  })
+
+  it('signs the owner out rather than deleting the row, when THIS device ends for real', async () => {
+    serveDelete(200)
+    wireSecurity(root, {})
+    await settle()
+    rowFor('Safari on a Mac').querySelector<HTMLButtonElement>('[data-sec-end]')?.click()
+    await settle()
+    // Neither a refusal nor a vanished row: the card is left standing and the browser leaves.
+    expect(said.length).toBe(0)
+    expect(root.querySelectorAll('[data-security-session]').length).toBe(2)
+  })
+})

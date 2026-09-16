@@ -311,6 +311,7 @@ export function writePane(opts: {
 /** What the island has to be able to say, in whichever language the blog is written in. */
 const words = (t: AdminStrings): Record<string, string> => ({
   trash: t.moveToTrash, trashed: t.trashedMany, trashPartial: t.trashPartial, undo: t.undo,
+  restoreFailed: t.restoreFailed,
   saveFailed: t.saveFailed, renamed: t.renamed, deleted: t.deleted,
   renameTermTitle: t.renameTermTitle, renameSeriesTitle: t.renameSeriesTitle,
   renamePrompt: t.renamePrompt, save: t.save, askCancel: t.askCancel, askRemove: t.askRemove,

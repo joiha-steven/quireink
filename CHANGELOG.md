@@ -93,6 +93,41 @@ requests and 15.8 KB of JavaScript, not 9 and 6.5. The table now says what a def
 costs and what turning things off gives back, measured on the demo fixture so anyone with the
 repository can take the numbers again.
 
+### Four buttons that reported success after the server had refused
+
+Four places in the admin answered a failed request with the screen that means "done". They are
+one fault written four times, and the shape is worth naming because it is invisible to every
+check that exists: the request is made, the answer is discarded, and the interface moves on.
+Nothing throws, nothing is logged, and the screen is wrong only if you knew what it should
+have said.
+
+- **Ending a signed-in device sent the owner to the sign-in page whether or not it worked.**
+  The branch that recognises "this is the device you are using" ran before the status was read,
+  so a refused `DELETE` answered with the one screen that means *you are signed out* while the
+  session on that machine was still open and the device was still listed for whoever held it.
+- **Undo after trashing a piece from the editor reloaded the page on any answer.** The toast
+  carrying the undo dies with the reload, so a refused restore and a completed one were the
+  same three seconds: the piece was still in the Trash and the only place that could have said
+  so was gone. A restore that never reached the server landed nowhere at all — no reload, no
+  sentence, an unhandled rejection.
+- **Undo after trashing several pieces from the content list did the same**, and reloaded onto
+  a list still showing them.
+- **Undo after deleting a comment failed silently.** The rows stayed off the screen, which is
+  true, and nothing said whether that was because the undo had been refused or because the
+  comments were gone for good.
+
+All four say what happened now, in the blog's own language — the sentence already existed in
+all eleven. Three of them are held by tests that were watched failing against the old code
+first.
+
+**A pasted link was checked for one scheme; the published page checks three, and checks them
+after stripping.** The editor refused `javascript:` with a pattern that reads the whitespace
+BEFORE the scheme and nothing inside it, so `java<tab>script:` — which a browser runs, because
+it drops the tab — was called clean and kept. The reader was never reachable: the page's own
+`safeHref` strips every control character and then matches, and rewrites all three executing
+schemes to `#`. This closes the disagreement between the two layers rather than a hole, and it
+closes it by giving the editor the engine's own function instead of a second spelling of it.
+
 ### Code blocks: 346 languages instead of 21, and a named fence is no longer reinterpreted
 
 - **A grammar loads when a fence asks for one.** The highlighter used to hand twenty-one

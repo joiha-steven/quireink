@@ -78,6 +78,57 @@ describe('a sentence carried across a navigation', () => {
     expect(asked!.body).toEqual({ kind: 'notes', action: 'restore', ids: ['a-reed-pen'] })
   })
 
+  it('says the restore failed instead of reloading onto the same Trash', async () => {
+    // ⚠️ THE FAULT THIS PINS. `run` reloaded on ANY answer, so a refused restore and a done
+    // one were the same three seconds: the toast went, the page came back, and the piece the
+    // owner had just pressed Undo on was still in the Trash with nothing said about it.
+    const was = globalThis.fetch
+    let reloaded = 0
+    const hadReload = Object.getOwnPropertyDescriptor(location, 'reload')
+    Object.defineProperty(location, 'reload', { configurable: true, value: () => { reloaded++ } })
+    globalThis.fetch = (async (_url: string) => ({ ok: false, status: 500 }) as Response) as unknown as typeof fetch
+    const said: Said[] = []
+    const ear = (e: Event): void => { said.push((e as CustomEvent<Said>).detail) }
+    window.addEventListener('quire:toast', ear)
+    try {
+      sayAcross({
+        message: 'Moved to the Trash',
+        undo: { label: 'Undo', kind: 'posts', ids: ['a-reed-pen'], failed: 'Could not restore' },
+      })
+      heard(saySettled)[0]?.action?.run()
+      for (let i = 0; i < 6; i++) await Promise.resolve()
+    } finally {
+      window.removeEventListener('quire:toast', ear)
+      globalThis.fetch = was
+      if (hadReload) Object.defineProperty(location, 'reload', hadReload)
+    }
+    expect(reloaded).toBe(0)
+    expect(said.map((x) => x.message)).toContain('Could not restore')
+  })
+
+  it('does not fall silent when the restore never reaches the server', async () => {
+    // No catch at all stood here: a rejected fetch left an unhandled rejection, no reload and
+    // no sentence — a pressed button that does nothing, which is what gets pressed again.
+    const was = globalThis.fetch
+    globalThis.fetch = (async (_url: string) => { throw new Error('offline') }) as unknown as typeof fetch
+    const said: Said[] = []
+    const ear = (e: Event): void => { said.push((e as CustomEvent<Said>).detail) }
+    window.addEventListener('quire:toast', ear)
+    try {
+      sayAcross({
+        message: 'Moved to the Trash',
+        undo: { label: 'Undo', kind: 'posts', ids: ['a-reed-pen'], failed: 'Could not restore' },
+      })
+      const first = heard(saySettled)
+      first[0]?.action?.run()
+      for (let i = 0; i < 6; i++) await Promise.resolve()
+    } finally {
+      window.removeEventListener('quire:toast', ear)
+      globalThis.fetch = was
+    }
+    expect(said.map((x) => x.message)).toContain('Could not restore')
+  })
+
   it('survives storage being switched off, rather than taking the page down with it', () => {
     // A private window throws on read as readily as on write, and losing the screen because a
     // sentence could not be fetched would be the courtesy eating the thing it is attached to.
