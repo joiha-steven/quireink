@@ -737,6 +737,19 @@ input[type='color']::-moz-color-swatch {
    token rather than on two dozen call sites, and why `NOTE_ALERT` is deliberately left out
    of it. `.tab-hint` is exempt because it is the one line that says what a TAB is for, which
    is wayfinding rather than explanation: hiding it would leave eight unlabelled boxes. */
+/* THE UNCHOSEN LABEL ON A CARVED SEGMENT TRACK, which has to satisfy two numbers at once and
+   sits between two Tailwind steps.
+
+   The track is neutral-200, so the label must clear 4.5:1 against it to be read at 13px; the
+   chosen label is near-black on a white key, and the two labels must stay at least 3:1 apart
+   or the strip stops saying which one is chosen (`tour-flows-css.ts` holds that). Measured:
+   neutral-500 gives 3.76 on the track and 4.2 between the labels; neutral-600 gives 6.2 and
+   2.53 — each step passes one test and fails the other. #656565 reads 4.63 on the track and
+   3.40 between the labels, which is the only band that clears both, and there is no Tailwind
+   step inside it. Dark is untouched: on the dark track neutral-400 already measures 6.94. */
+.seg-off { color: #656565; }
+.dark .seg-off { color: var(--color-neutral-400, #a3a3a3); }
+
 [data-explanations='off'] .admin-note:not(.tab-hint) { display: none; }
 /* And the HOLE it leaves. Tailwind's `space-y-*` is `& > :not([hidden]) ~ :not([hidden])`,
    and an element with `display: none` still matches `:not([hidden])` — so a card whose first
