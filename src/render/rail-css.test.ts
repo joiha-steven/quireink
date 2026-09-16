@@ -80,6 +80,20 @@ describe('the default geometry lives in the cached sheet', () => {
     expect(PUBLIC_CSS).toContain(singleRailCss(DEFAULT_RAIL_WIDTH))
   })
 
+  it('sits after the rule that sizes the same button, because the two are a tie', () => {
+    // `.rail-toggle{display:none}` above the breakpoint and `.icon-btn{display:flex}` in
+    // `book.css.ts` are one class each, so the only thing that puts the drawer button away
+    // on a desktop is that the geometry comes LATER in the sheet. Inline in the page it
+    // always did. Moved into the sheet on 2026-09-16 it landed right after `RAIL_CSS`, 130
+    // rules ahead of the sizing, and lost the tie: measured at 1440px on a blog running the
+    // default column, the button computed `display:flex` beside a rail already in the gutter,
+    // and the source-code look draws a word next to every control, so it read `[menu]`.
+    const geometry = PUBLIC_CSS.indexOf(singleRailCss(DEFAULT_RAIL_WIDTH))
+    const sizing = PUBLIC_CSS.indexOf('.icon-btn{display:flex')
+    expect(sizing).toBeGreaterThan(-1)
+    expect(geometry).toBeGreaterThan(sizing)
+  })
+
   it('a moved column still gets its own, and it differs', () => {
     const moved = singleRailCss(900)
     expect(moved).not.toBe(singleRailCss(DEFAULT_RAIL_WIDTH))

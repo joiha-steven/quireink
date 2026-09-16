@@ -365,13 +365,23 @@ footer.site a:hover{color:var(--c-text)}
  *
  * ...except the PRINT sheet, which is after it for the same reason one step further: it has
  * to win against everything above, on paper, and it can only affect paper.
+ *
+ * THE RAIL GEOMETRY IS SECOND TO LAST, and for a tie rather than a preference. Above the
+ * breakpoint it puts the drawer button away with `.rail-toggle{display:none}`, and
+ * `book.css.ts` gives that same button its size with `.icon-btn{display:flex}`: one class
+ * each, so the later rule wins and position in this string is the whole of the argument.
+ * Inline in the page the geometry was always last and the tie never arose. Precomputing it
+ * into the sheet on 2026-09-16 put it right after `RAIL_CSS`, 130 rules AHEAD of the sizing,
+ * and every blog still on the default column then drew a drawer button next to a rail that
+ * was already in the gutter -- measured at 1440px, and loudest in the source-code look, which
+ * prints a word beside each control and so printed "[menu]". A blog whose owner had moved the
+ * column never saw it: that one still gets its own copy inline, after this sheet entirely.
  */
 export const PUBLIC_CSS = `${BASE_CSS}
 
 ${FIGURE_CSS}
 
 ${RAIL_CSS}
-${singleRailCss(DEFAULT_RAIL_WIDTH)}
 ${ISLANDS_CSS}
 ${BOOK_CSS}
 ${BOOK_TEXT_CSS}
@@ -381,4 +391,5 @@ ${FRONT_CSS}
 ${POST_IMAGE_CSS}
 ${MOTION_CSS}
 ${MOBILE_CSS}
+${singleRailCss(DEFAULT_RAIL_WIDTH)}
 ${PRINT_CSS}`
