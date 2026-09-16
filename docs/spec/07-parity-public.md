@@ -100,8 +100,10 @@ which was never true. The boxes came off on 2026-08-03; **not one line of conten
   def is dropped, definition text is escaped inline markdown
 - Callouts: `> [!NOTE|TIP|WARNING|IMPORTANT|CAUTION]` becomes a labelled box; an unknown
   `[!FOO]` and a plain quote are untouched; monochrome, no semantic colours
-- Fenced code highlighted by Shiki, server side, zero client JS. Unknown language degrades
-  to a plain block
+- Fenced code highlighted by Shiki, server side, zero client JS. Grammars load when a fence
+  asks for one, so a blog pays for the languages it writes and can name any of the 346 Shiki
+  ships. A fence naming something that is not a language degrades to a plain block and is
+  never guessed at; a fence naming nothing is guessed at by `detect-lang.ts`
 - Copy button on every code block
 - Tables with alignment; task lists; underline; inline code; blockquote; hr
 - YouTube / Vimeo / TikTok URL alone in a paragraph becomes a responsive iframe embed

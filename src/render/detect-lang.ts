@@ -15,8 +15,18 @@
 //
 // It only ever runs for a fence that named NOTHING. A writer who tags a block is obeyed, even
 // when the tag is wrong, because that is a choice and this is a fallback.
+//
+// ⚠️ THAT SENTENCE WAS NOT TRUE UNTIL 2026-09-16. `highlight.ts` carried twenty-one language
+// names by hand and sent everything else here, so a fence that DID name a language got read by
+// the Python rule below the moment its first line opened `def ` or `class ` — which is how
+// ```ruby and ```elixir were published coloured as Python. The rule is enforced there now.
 
-/** Only what `highlight.ts` has already loaded a grammar for. */
+/**
+ * The guesses this is allowed to make. Deliberately a short list and not every grammar
+ * Shiki has: a guess is a claim about text nobody labelled, so the bar is a signal prose
+ * and program output do not produce by accident. `highlight.ts` normalises these to the
+ * grammar id Shiki files them under, so `ts` here becomes `typescript` there.
+ */
 export type Detected = 'bash' | 'python' | 'sql' | 'json' | 'html' | 'yaml' | 'diff' | 'ts' | 'text'
 
 /** The first lines carry the signal; a long paste does not make the guess better. */

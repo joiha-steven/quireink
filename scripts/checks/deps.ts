@@ -27,7 +27,7 @@ const ALLOWED: Record<string, string> = {
   // ---- B: writing these would be a downgrade ------------------------------------------
   sharp:
     'B. Image codecs. A hand-written JPEG or AVIF decoder, on a public upload route, on the owner\'s own machine, is a memory-safety surface nobody here would audit',
-  shiki: 'B. The value is hundreds of TextMate grammars, not the code that reads them',
+  shiki: 'B. The value is hundreds of TextMate grammars, not the code that reads them. 346 of them, loaded one at a time when a fence names one (2026-09-16)',
   temml: 'B. LaTeX is a language, not a syntax',
   satori: 'B. HTML and CSS to SVG, for the social card',
   '@modelcontextprotocol/sdk':

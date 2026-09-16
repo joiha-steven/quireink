@@ -1,5 +1,36 @@
 # CHANGELOG
 
+## Unreleased
+
+### Code blocks: 346 languages instead of 21, and a named fence is no longer reinterpreted
+
+- **A grammar loads when a fence asks for one.** The highlighter used to hand twenty-one
+  language names to Shiki at startup, which is the wrong shape for software other people
+  install: it decided for every blog on earth which twenty-one languages are worth
+  colouring, and charged every one of them for all twenty-one. Measured on the shipped path,
+  one process each: a blog that writes bash paid **41.5 MB of heap and 40 grammars in
+  memory** and now pays **2.6 MB**, with the first coloured block arriving in 29ms rather
+  than about 75.
+- **Any of the 346 languages Shiki ships can be named now**, under any of the 104 spellings it
+  answers to, read out of the bundle rather than typed here. Kotlin, Zig, Dockerfile, TOML,
+  Lua, Nix, Haskell and three hundred others go from a plain block to a coloured one.
+- **`ruby` and `elixir` were published COLOURED AS PYTHON.** A fence naming a language the
+  hand-list did not carry fell through to the guesser, whose Python rule fires on a line
+  opening `def ` or `class `. The comment three lines above it had said since the port that a
+  named fence is obeyed right or wrong; it is now true. A name nobody has a grammar for is
+  left plain and never guessed at.
+- **A transcript is not a script.** `console` is Shiki's own alias for the shell SESSION
+  grammar and `terminal` now points at it too. Measured on a paste of two commands and their
+  replies: through the shell script grammar the line `added 42 packages in 3s` came back in
+  five colours, because program output was being read as code; it comes back in one.
+- **44 of 56 shapes are byte-identical** to the build before this, captured before and diffed
+  after: every one of the old twenty-one, every working alias, and every fence that named
+  nothing or named nonsense. The twelve that moved are the twelve listed above.
+- **Upgrading re-highlights each code block once.** Every spelling of a language now resolves
+  to the one id Shiki files its grammar under, so `bash`, `sh`, `zsh` and `shell` stop being
+  four cache rows of identical HTML. Existing rows go inert rather than wrong, which is what
+  the cache was built for.
+
 ## 2026-09-16 — Quire Ink 2.2.10-beta.5
 
 The fifth pre-release before 2.2.10, and the same rule as the four before it: its Docker tag
