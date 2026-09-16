@@ -62,6 +62,15 @@ html[data-look=notes]{--desk:color-mix(in srgb,var(--c-text) 7%,var(--c-bg));--s
   }
 }
 html[data-look=notes] body{background-color:var(--desk)}
+/* THE CHROME STANDS ON THE DESK, AND THE QUIET INK WAS MEASURED AGAINST THE PAGE. The desk
+   is the page darkened, so every line that does not sit on the sheet -- the tagline, the
+   pager count, the footer, the dates down the rail -- loses part of the difference it was
+   given: #6d6c6c on the mono desk measures 4.47:1 where AA asks 4.5 at this size, and every
+   palette loses the same slice. Stepped down on the BODY, where --c-meta still resolves to
+   whatever :root inherited, so this is a nudge away from the palette's own choice rather
+   than a second colour to keep in sync. 94% lands mono at 4.60:1; the sheet keeps the ink it
+   had, being lighter than the desk and already clear of the line. */
+html[data-look=notes] body{--c-meta:color-mix(in srgb,var(--c-meta) 94%,var(--c-text))}
 
 /* ONE INSET ON ALL FOUR SIDES, and the sheet grows OUTWARD by exactly what it pads, so the
    first line of the piece stays on the line the shelf and the card start on and not one

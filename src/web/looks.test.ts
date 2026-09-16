@@ -195,6 +195,17 @@ describe('the notebook dialect', () => {
     expect(LOOK_NOTES_CSS).not.toMatch(/^html\[data-look=notes] article/m)
   })
 
+  it('steps the quiet ink down, because the chrome stands on the desk', () => {
+    // The desk is the page darkened, and the palette's `--c-meta` was chosen against the
+    // page. Measured on 2026-09-16 with a real browser: the tagline, the pager count, the
+    // footer and every date in the rail came out at 4.47:1 on the mono desk, under the 4.5
+    // AA asks at that size, and every palette lost the same slice. It is declared on the
+    // BODY on purpose: there `--c-meta` still resolves to what :root inherited, so this is
+    // one step away from whatever the palette chose rather than a colour to keep in sync.
+    expect(LOOK_NOTES_CSS)
+      .toContain('html[data-look=notes] body{--c-meta:color-mix(in srgb,var(--c-meta) 94%,var(--c-text))}')
+  })
+
   it('grows the sheet outward by exactly what it pads', () => {
     // So the first line of the piece stays on the line the shelf and the card start on, and
     // not one word of the column moves when the dialect is switched. The extra pixel is the
