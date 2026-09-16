@@ -5,7 +5,7 @@
   <img src="docs/brand/wordmark-light.svg" alt="quireINK" width="360">
 </picture>
 
-`2.2.10-beta.5`
+`2.2.10`
 
 **Blog tự host cho một người viết. Nhờ được AI viết và trông coi hộ.**
 Không thuật toán, không quảng cáo, không nền tảng nào đứng giữa bạn và người đọc. Tên bạn trên đó, không phải tên chúng tôi.
@@ -22,7 +22,7 @@ Không thuật toán, không quảng cáo, không nền tảng nào đứng gi�
 
 [English](./README.md) · **Tiếng Việt**
 
-[**quireink.com**](https://quireink.com) · [**Xem thử**](https://demo.quireink.com) · [**Vì sao chọn nó**](#vì-sao-chọn-nó) · [**Cài đặt**](#cài-đặt) · [**Để AI viết hộ**](#để-ai-viết-hộ-mcp) · [**Giấy phép**](#giấy-phép)
+[**quireink.com**](https://quireink.com) · [**Xem thử**](https://demo.quireink.com) · [**Bạn được gì**](#bạn-được-gì) · [**Cài đặt**](#cài-đặt) · [**Để AI viết hộ**](#để-ai-viết-hộ-mcp) · [**Giấy phép**](#giấy-phép)
 
 <br/>
 
@@ -32,35 +32,21 @@ Không thuật toán, không quảng cáo, không nền tảng nào đứng gi�
 
 </div>
 
-> ### ⚠️ Vẫn đang làm
->
-> **Dự án này thay đổi gần như mỗi ngày.** Nó đang chạy bản demo ở trên và blog của chính tác
-> giả, mỗi lần đẩy code đều chạy qua bộ test và một vòng tour duyệt mọi màn hình bằng trình
-> duyệt thật, và chỉ cắt bản phát hành khi cả hai đều xanh. Chừng đó vẫn chưa có nghĩa là nó
-> xong: đây là bản tiền phát hành, trang quản trị đang được dựng lại từng màn một, và lỗi vẫn
-> còn lọt.
->
-> **Cứ thử, cứ vọc, và [báo lại chỗ nào hỏng](https://github.com/joiha-steven/quireink/issues).**
-> Nhưng đừng đặt lên đó một cái blog mà bạn tiếc
-> nếu mất. Khi nào khác đi thì dòng này sẽ biến mất và số phiên bản sẽ bỏ chữ `beta`.
+> **Nó đang chạy bản demo ở trên và blog của chính tác giả.** Mỗi lần đẩy code đều chạy qua bộ
+> test và một vòng tour duyệt mọi màn hình bằng trình duyệt thật, và chỉ cắt bản phát hành khi
+> cả hai đều xanh. Lỗi vẫn còn lọt: thấy chỗ nào hỏng thì
+> [báo lại](https://github.com/joiha-steven/quireink/issues). Những thứ bản này cố ý **không**
+> làm nằm ở [mục bên dưới](#bản-này).
 
 ## Nó là gì
 
-Một cái blog bạn viết và đăng, chạy trên máy chủ bạn thuê.
+Một cái blog bạn viết và đăng, chạy trên máy chủ bạn thuê. Nó có đủ đồ đạc của một cái blog: trang chủ, bài viết, chuyên mục, ô tìm kiếm, phần bình luận, và bản tin tự gửi email mỗi khi bạn đăng bài. Thứ nó không có là thuật toán quyết định ai được đọc bài bạn, quảng cáo chen ngang, và một công ty có thể đổi luật chơi vào năm sau.
 
-Nó có đủ đồ đạc của một cái blog: trang chủ, bài viết, chuyên mục, ô tìm kiếm, phần bình luận, và bản tin tự gửi email cho người theo dõi mỗi khi bạn đăng bài. Thứ nó không có là thuật toán quyết định ai được đọc bài bạn, quảng cáo chen ngang, và một công ty có thể đổi luật chơi vào năm sau.
+Màu, font, cỡ chữ, bố cục trang chủ, menu: đổi hết trong trang quản trị, sau lần đăng nhập của riêng bạn. Không phải sửa code dòng nào, và làm trên điện thoại cũng được. Trang nhẹ, khoảng 120 KB một bài, nên người lạ ở chỗ sóng yếu cầm máy đời cũ vẫn thấy chữ hiện ra gần như tức thì.
 
-Màu, font, cỡ chữ, bố cục trang chủ, menu: đổi hết trong trang quản trị, sau lần đăng nhập của riêng bạn. Không phải sửa code dòng nào, và làm trên điện thoại cũng được.
+Để bắt đầu bạn cần một tên miền và một máy chủ thuê, loại rẻ nhất là đủ. Riêng lần dựng đầu tiên là việc kỹ thuật, nên nhờ người biết về máy chủ, hoặc [giao hẳn cho một AI agent](#cài-đặt). Đổi lại, bạn tự giữ nhà mình: không ai sao lưu hộ bạn, có sẵn nút tải nguyên cả blog về máy nhưng bấm nó là việc của bạn.
 
-Trang nhẹ, khoảng 100 KB một bài. Một tấm ảnh chụp bằng điện thoại nặng gấp vài chục lần. Người lạ ở chỗ sóng yếu cầm máy đời cũ vẫn thấy chữ hiện ra gần như tức thì.
-
-Để bắt đầu bạn cần một tên miền và một máy chủ thuê, loại rẻ nhất là đủ. Riêng lần dựng đầu tiên là việc kỹ thuật, nên nhờ người biết về máy chủ, hoặc [giao hẳn cho một AI agent](#cài-đặt). Xong bước đó thì viết bài, đổi giao diện, xem thống kê đều nằm trong trang quản trị.
-
-Đổi lại, bạn tự giữ nhà mình. Không ai sao lưu hộ bạn. Có sẵn nút tải nguyên cả blog về máy, nhưng bấm nó là việc của bạn.
-
-Blog cá nhân thì không tốn gì, và bạn được phép thu tiền. Chi tiết ở [mục Giấy phép](#giấy-phép).
-
-## Vì sao chọn nó
+### Bốn thứ không nơi nào có đủ cùng lúc
 
 **Agent chạy được cả cái blog, không chỉ viết bài.** Máy chủ MCP nằm sẵn bên trong và đi qua đúng đoạn mã mà trang quản trị đi qua. Trợ lý soạn, gắn thẻ, hẹn giờ và đăng; nó còn đọc lượng truy cập, đếm người đăng ký mà không thấy email của ai, quét bình luận rác vào thùng rác chứ không xoá hẳn, sắp lại trang nhất theo bài người ta thật sự đọc, và sao lưu trước khi làm gì lớn. Nhiều blog cho robot đăng bài. Cái này giao cho nó cả cái bàn làm việc.
 
@@ -68,38 +54,47 @@ Blog cá nhân thì không tốn gì, và bạn được phép thu tiền. Chi t
 
 **Trang đọc mới là sản phẩm.** Font, màu, cỡ chữ, khoảng cách và bố cục đều là tuỳ chọn chứ không phải code. Không một cỡ chữ hay màu nào được viết cứng vào stylesheet của người đọc, và bản build đỏ nếu có ai nhét vào.
 
-**Không thương hiệu nào của chúng tôi bị ép lên trang bạn.** Không dòng "powered by": footer là dòng chữ của bạn hoặc không có gì, logo trong admin và dòng phiên bản đều có công tắc tắt. Chỗ duy nhất phần mềm còn ghi tên mình là một thẻ meta người đọc không thấy.
+**Không thương hiệu nào của chúng tôi bị ép lên trang bạn.** Không dòng "powered by": footer là dòng chữ của bạn hoặc không có gì, logo trong admin và dòng phiên bản đều có công tắc tắt.
 
-Đặt cạnh những lựa chọn quen thuộc:
+<details>
+<summary><b>Đặt cạnh những lựa chọn quen thuộc</b></summary>
+
+<br/>
+
 - **Thay vì một nền tảng có sẵn.** Bài của bạn là hai tệp SQLite nằm trên ổ đĩa của chính bạn. Không tài khoản, không gói cước, không có cái nút export mà bạn phải cầu cho nó còn chạy sau năm năm.
 - **Thay vì WordPress.** Không PHP, không MySQL, không đống plugin phải vá hàng tháng. Một tiến trình, và người đọc chỉ tải về vài KB JavaScript.
 - **Thay vì một static site generator.** Bạn có trang quản trị thật. Viết, tải ảnh, hẹn giờ, đăng, từ laptop hay điện thoại. Không build lại, không deploy, không phải git push chỉ để sửa một lỗi chính tả.
 - **Thay vì tự viết lấy.** Nửa phần chán đã làm xong và có test: đăng nhập hai lớp, phiên, cắt ảnh, feed, ảnh chia sẻ, chuyển hướng, hoàn tác khi xoá, lịch sử phiên bản, sao lưu, bộ nhập bài, mười một ngôn ngữ.
 
+</details>
+
+Không có gì phải deploy, không phải cài cơ sở dữ liệu nào:
+
+```bash
+bun src/index.ts
+```
+
 ## Bạn được gì
 
 | Phần | Làm được gì |
 |:---|:---|
-| 🖋️&nbsp;**Viết** | Trình soạn Markdown thật, và bộ máy Markdown là của chính nó: một bộ máy không phụ thuộc thư viện nào dựng trang, mở bài trong trình soạn, lưu bài trở lại và cắt đoạn tóm tắt, đo theo CommonMark và GFM mỗi lần chạy. Bảng, video, chú thích chân trang, công thức toán, nhúng Spotify. Thả ảnh vào là tự cắt cho mọi cỡ màn hình. Lưu trong lúc gõ, giữ ba bản gần nhất |
+| 🖋️&nbsp;**Viết** | Trình soạn Markdown thật, và bộ máy Markdown là của chính nó: một lần phân tích dựng trang, mở bài trong trình soạn, lưu lại và cắt đoạn tóm tắt. Bảng, video, chú thích chân trang, công thức toán. Thả ảnh vào là tự cắt cho mọi cỡ màn hình. Lưu trong lúc gõ, giữ ba bản gần nhất, hẹn giờ đăng |
 | 🏠&nbsp;**Trang&nbsp;chủ** | Danh sách bài, một trang bạn tự viết, hoặc trang nhất kiểu báo dựng sẵn. [Cách hoạt động](./docs/homepage.md) |
-| 🎨&nbsp;**Giao&nbsp;diện** | Bốn lối: giấy trơn, mã nguồn, báo in tự đánh số mục, và sổ tay kẻ dòng theo đúng giãn dòng của bạn. Phủ lên đó là sáu bảng màu sáng và tối, bốn font đọc hoặc font của bạn. Sửa một chỗ là cả trang đổi theo |
-| 🏷️&nbsp;**Không&nbsp;thương&nbsp;hiệu** | Không có gì của chúng tôi trên trang hay màn hình của bạn. Không dòng "powered by": footer là dòng chữ của bạn hoặc không có gì, logo trong admin và dòng phiên bản ở bảng điều khiển đều có công tắc tắt. Chỗ duy nhất phần mềm còn ghi tên mình là một thẻ meta người đọc không thấy |
-| 🖍️&nbsp;**Cây&nbsp;bút** | `==tô sáng==`, `++gạch chì++`, `@@khoanh bút đỏ@@`. Nét vẽ như tay người, mực không đều, không vệt nào trên trang giống vệt nào. Cho người đọc cầm bút nếu bạn muốn: dấu giữ trong trình duyệt của họ, mang sang máy khác bằng một mã chứ không cần tài khoản, gửi được về sổ tay riêng. Trang nào cũng link được `/pen.css` để viết bằng mực của bạn |
-| 📓&nbsp;**Sổ&nbsp;tay** | Loại viết thứ ba bên cạnh bài và trang: ghi chú và trích đoạn, nguồn của đoạn trích là một trường riêng. Nói IndieAuth, Micropub và Webmention, nên ghi chú đến được từ mọi client và nguồn biết mình được trích |
-| 💻&nbsp;**Code** | Tô màu sẵn ở máy chủ, hai mươi mốt ngôn ngữ. Người đọc không phải tải bộ tô màu nào |
-| 🔍&nbsp;**Đọc** | Tìm kiếm hiện kết quả ngay trong lúc gõ. Mục lục bài, bài liên quan, thời gian đọc. Và chế độ sách: hai cột trên nền giấy ở máy bàn, một cột cuộn trên điện thoại, nhớ chỗ bạn đang đọc |
-| 📈&nbsp;**Số&nbsp;liệu** | Thống kê không dùng cookie: ai đọc bài nào, đọc tới đâu, đến từ đâu. Kèm nhật ký hoạt động và thùng rác hoàn tác được. Không có gì bị xoá, nên bảng theo năm lùi được tới người đọc đầu tiên |
+| 🎨&nbsp;**Giao&nbsp;diện** | Bốn lối: giấy trơn, mã nguồn, báo in tự đánh số mục, sổ tay kẻ dòng theo đúng giãn dòng của bạn. Phủ lên đó là sáu bảng màu sáng và tối, bốn font đọc hoặc font của bạn. Sửa một chỗ là cả trang đổi theo |
+| 🖍️&nbsp;**Cây&nbsp;bút** | `==tô sáng==`, `++gạch chì++`, `@@khoanh bút đỏ@@`. Nét vẽ như tay người, mực không đều, không vệt nào giống vệt nào. Cho người đọc cầm bút nếu bạn muốn. Trang nào cũng link được `/pen.css` để viết bằng mực của bạn |
+| 📓&nbsp;**Sổ&nbsp;tay** | Loại viết thứ ba bên cạnh bài và trang: ghi chú và trích đoạn, nguồn của đoạn trích là một trường riêng. Nói IndieAuth, Micropub và Webmention |
+| 💻&nbsp;**Code** | Tô màu sẵn ở máy chủ, 346 ngôn ngữ nạp theo nhu cầu. Người đọc không phải tải bộ tô màu nào |
+| 🔍&nbsp;**Đọc** | Tìm kiếm hiện kết quả trong lúc gõ, và gõ dấu nào thì ra đúng chữ đó. Mục lục bài, bài liên quan, thời gian đọc. Chế độ sách: hai cột trên nền giấy ở máy bàn, một cột cuộn trên điện thoại, nhớ chỗ đang đọc |
+| 📈&nbsp;**Số&nbsp;liệu** | Thống kê không dùng cookie: ai đọc bài nào, đọc tới đâu, đến từ đâu. Không có gì bị xoá, nên bảng theo năm lùi được tới người đọc đầu tiên. Kèm nhật ký hoạt động và thùng rác hoàn tác được |
 | 💬&nbsp;**Bình&nbsp;luận** | Người đọc bình luận không cần tài khoản. Chống spam bằng cách tự ký thử thách, không qua bên thứ ba nào |
 | 🔎&nbsp;**Máy&nbsp;tìm&nbsp;kiếm** | Sitemap, RSS, `robots.txt`, `llms.txt`, ảnh chia sẻ vẽ riêng cho từng bài. Đổi đường dẫn thì link cũ vẫn chạy |
 | 📬&nbsp;**Bản&nbsp;tin** | Đăng ký có email xác nhận, một số tự gửi khi bạn đăng bài. SMTP của riêng bạn |
-| 📚&nbsp;**Loạt&nbsp;bài** | Viết thành nhiều phần, đánh số, phần nào cũng chỉ ra các phần kia |
-| 💾&nbsp;**Sao&nbsp;lưu** | Nút tải cả blog về máy, snapshot theo lịch, và mỗi snapshot gửi thêm một bản lên bucket R2 hay S3 của bạn. [Chi tiết](./docs/backups.md) |
+| 💾&nbsp;**Sao&nbsp;lưu** | Nút tải cả blog về máy, snapshot theo lịch, mỗi snapshot gửi thêm một bản lên bucket R2 hay S3 của bạn. [Chi tiết](./docs/backups.md) |
 | 📥&nbsp;**Dọn&nbsp;nhà&nbsp;sang** | Nhập từ WordPress, Ghost, Substack, Medium. Ảnh được tải về, URL cũ được chuyển hướng sẵn |
-| 🌍&nbsp;**Ngôn&nbsp;ngữ** | Mười một thứ tiếng, cả trong quản trị lẫn ngoài site |
-| 🔐&nbsp;**Đăng&nbsp;nhập** | Mật khẩu băm argon2id, mã xác thực mỗi lần vào, mười mã khôi phục, và danh sách thiết bị đang đăng nhập kèm nút cắt. Không có Google trong đường đăng nhập |
-| 🤖&nbsp;**Trợ&nbsp;lý** | Khoá model của chính bạn, ngay trong trang quản trị: Claude, GPT, Gemini hay DeepSeek. Mỗi cuộc trò chuyện kèm một hoá đơn |
-| ⌨️&nbsp;**Quản&nbsp;trị** | ⌘⇧K gõ tên là nhảy thẳng tới thiết lập cần tìm, không phải nhớ nó nằm ở tab nào. ⌘F tìm và thay trong bài, cả ở mặt soạn thảo lẫn ở mã Markdown |
-| 📱&nbsp;**Điện&nbsp;thoại** | Cài ra màn hình chính là nó mở như một ứng dụng |
+| 🌍&nbsp;**Ngôn&nbsp;ngữ** | Mười một thứ tiếng, cả trong quản trị lẫn ngoài site, thêm một thứ nữa là thêm một file |
+| 🔐&nbsp;**Đăng&nbsp;nhập** | Mật khẩu băm argon2id, mã xác thực mỗi lần vào, mười mã khôi phục, danh sách thiết bị đang đăng nhập kèm nút cắt. Không có Google trong đường đăng nhập |
+| 🤖&nbsp;**Trợ&nbsp;lý** | Khoá model của chính bạn: Claude, GPT, Gemini hay DeepSeek. Mỗi cuộc trò chuyện kèm một hoá đơn. Nó còn viết mô tả ảnh và lọc bình luận rác |
+| ⌨️&nbsp;**Quản&nbsp;trị** | HTML do máy chủ dựng, hành vi là những mẩu JavaScript viết tay, không framework. ⌘⇧K gõ tên là nhảy thẳng tới thiết lập cần tìm. ⌘F tìm và thay trong bài. Loạt bài, bản nháp, hẹn giờ, và làm trên điện thoại cũng được |
 
 **Làm cho** một người, một máy chủ, một cái blog định giữ lâu dài.
 **Không làm cho** một đội cần phân vai, duyệt bài và hàng đợi biên tập. Nó cố ý chỉ có một chủ.
@@ -110,9 +105,9 @@ Blog cá nhân thì không tốn gì, và bạn được phép thu tiền. Chi t
 
 <sub>Một bài, bốn lối, một bảng màu. Lối quyết định hình dáng, kiểu chữ và các dấu; còn màu trên cả bốn đều lấy từ bảng màu, nên đổi bảng màu là cả bốn đổi theo.</sub>
 
-<img src="docs/demo-admin.jpg" alt="Trang quản trị Quire Ink: trình soạn bài với nút gạch dưới và khoanh tròn trên thanh công cụ, câu gạch chì, chữ khoanh đỏ, câu tô sáng và bức thư tay đóng khung trong bài; bên cạnh là trang cấu hình giao diện với sáu bảng màu và bốn font đọc" width="960">
+<img src="docs/demo-admin.jpg" alt="Trang quản trị Quire Ink: một bài mở trong trình soạn với câu gạch chì, chữ khoanh đỏ, câu tô sáng và bức thư tay đóng khung; bên cạnh là trang cấu hình Giao diện với bốn lối, bốn font đọc, các nút chỉnh hình dáng và dải bảng màu" width="960">
 
-<sub>Trang quản trị xoay quanh việc viết. Bảng màu, font, cỡ chữ, bố cục và menu đều là tuỳ chọn bấm chọn, không cái nào là code.</sub>
+<sub>Trang quản trị như 2.2.10 vẽ nó: trang do máy chủ dựng, không framework. Mọi thứ bên phải, kể cả bốn lối giao diện, đều là tuỳ chọn bấm chọn chứ không phải code, và khung trên cả hai màn đang mặc một trong số đó.</sub>
 
 </div>
 
@@ -130,29 +125,34 @@ Tính năng bật sẵn từ lúc cài, một công tắc để tắt (Cài đ�
 
 Số đo từ mạng, lần vào đầu tiên, chưa cache gì. Đúng bằng cái mà một người lạ cầm điện thoại phải chờ.
 
-**Bản cài MẶC ĐỊNH, không tắt thứ gì.** Đo trên bộ dữ liệu demo, đúng thứ `bun run tour` tự
-dựng, nên ai có kho mã cũng đo lại được. Chế độ đọc sách và cây bút cho người đọc vốn đã BẬT
-sẵn, ở đây chúng được tính đúng như vậy; cột cuối là phần lấy lại được nếu tắt đi.
+**Bản cài MẶC ĐỊNH, không tắt thứ gì.** Đo trên bộ dữ liệu demo, đúng thứ `bun run tour` tự dựng, nên ai có kho mã cũng đo lại được. Số byte đã nén, đo ở origin; ảnh của chính blog đếm riêng vì đó là nội dung của bạn chứ không phải phần mềm. Chế độ đọc sách và cây bút cho người đọc vốn đã BẬT sẵn, ở đây chúng được tính đúng như vậy; cột cuối là phần lấy lại được nếu tắt hai thứ đó đi.
 
-| | Trang chủ | Một bài | Nếu tắt bớt |
+| | Trang chủ | Một bài | Nếu tắt hai thứ đó |
 |:---|---:|---:|:---|
-| **Số&nbsp;request** | 8 | 16 | 14 |
-| **Tổng&nbsp;tải&nbsp;về** | **128&nbsp;KB** | **131&nbsp;KB** | 122&nbsp;KB |
-| **JavaScript** | **4,2&nbsp;KB** | **15,8&nbsp;KB** | **7,5&nbsp;KB** nếu tắt chế độ đọc sách và cây bút; viết tay, không framework |
-| **CSS** | 12&nbsp;KB | 32,6&nbsp;KB | 20,6&nbsp;KB dôi ra là hai tệp vệt bút, và chỉ trang nào có vệt mới nạp chúng |
-| **Font** | 103&nbsp;KB | 73&nbsp;KB | cắt theo từng hệ chữ, nên đây là dòng duy nhất do nội dung của anh quyết: tiêu đề trong demo chạy qua ba bảng chữ cái |
+| **Số&nbsp;request** | 10 | 16 | 14 |
+| **Tổng&nbsp;tải&nbsp;về** | **118,9&nbsp;KB** | **122,8&nbsp;KB** | 114,9&nbsp;KB |
+| **JavaScript** | **3,7&nbsp;KB** | **15,9&nbsp;KB** | **8,7&nbsp;KB**; viết tay, không framework |
+| **CSS** | 12,4&nbsp;KB | 31,9&nbsp;KB | không đổi: hai tệp vệt bút đi theo vệt của chính tác giả trong bài |
+| **Font** | 91,5&nbsp;KB | 65,3&nbsp;KB | cắt theo từng hệ chữ, nên đây là dòng duy nhất do nội dung của bạn quyết: tiêu đề trong demo chạy qua ba bảng chữ cái |
 | **Request&nbsp;bên&nbsp;thứ&nbsp;ba** | **0** | **0** | không CDN, không font host, không tracker |
 | **Lần&nbsp;vào&nbsp;sau** | **0&nbsp;byte** | **0&nbsp;byte** | đúng trang đó trả `304` |
 
-Giữ được như vậy là nhờ mấy luật cứng: mỗi gói JavaScript có hạn mức dung lượng do bản build canh, vượt là build đỏ; trang quản trị không còn framework nào, và phần đó chưa bao giờ chạm tới người đọc; font cắt gọn theo từng ngôn ngữ. Không con số nào ở đây để lấy điểm benchmark, chúng dành cho một người cầm chiếc điện thoại bốn năm tuổi, chỉ muốn đọc bốn trăm chữ. [Cách đo và các quyết định phía sau](./docs/performance.md).
+Giữ được như vậy là nhờ mấy luật cứng: mỗi gói JavaScript có hạn mức dung lượng do bản build canh, vượt là build đỏ; trang quản trị không còn framework nào, và phần đó chưa bao giờ chạm tới người đọc; font cắt gọn theo từng ngôn ngữ và chỉ nạp sẵn mặt chữ mà trang thật sự vẽ bằng nó. Không con số nào ở đây để lấy điểm benchmark, chúng dành cho một người cầm chiếc điện thoại bốn năm tuổi, chỉ muốn đọc bốn trăm chữ. [Cách đo và các quyết định phía sau](./docs/performance.md).
 
 ## Bản này
 
-**2.2.10-beta.5** là bản thử thứ năm trước khi có 2.2.10. Nó đang chạy trang demo ở trên lẫn blog của chính tác giả tại [manhhung.me](https://manhhung.me). [Nhật ký thay đổi](./CHANGELOG.md) ghi đủ. Tag Docker của nó là `2.2.10-beta.5` và chỉ vậy: `latest` vẫn là 2.2.9, không ai lỡ tay cài phải bản thử.
+**2.2.10** gộp năm bản thử từ 9 tới 16 tháng 9. Nó đang chạy trang demo ở trên lẫn blog của chính tác giả tại [manhhung.me](https://manhhung.me). [Nhật ký thay đổi](./CHANGELOG.md) ghi đủ, kèm số đo từng mục.
 
-**Bản này thay trang quản trị.** Trước đây nó là một ứng dụng React: mở ra là một trang trắng, rồi mới hỏi máy chủ xem phải vẽ gì vào đó. Giờ máy chủ gửi thẳng trang đã dựng xong, phần hành vi gắn thêm bằng những mẩu JavaScript viết tay, và màn hình hiện ra là đã xong: thời gian tới lúc thấy được tiêu đề đi từ 1.038ms xuống 285ms ở màn Nhật ký, 953ms xuống 293ms ở Thùng rác, 940ms xuống 336ms ở Bảng tin, đo bản cũ với bản mới trên cùng một cơ sở dữ liệu ở tốc độ 500 KB/s. Thứ trình duyệt phải có trước khung hình đầu tiên đi từ 297 KB xuống 22 KB. Trình soạn thảo đứng thẳng trên ProseMirror thay vì trên một lớp bọc quanh nó, nên thời gian tới lúc gõ được đi từ khoảng 395ms xuống khoảng 107ms và số plugin nạp cho một trình soạn đi từ 102 xuống 15; 45 mẫu trong bộ đối chiếu cho ra Markdown giống nhau từng byte qua cả hai, và đó là điều kiện để làm việc này. Có một cái giá, và đây là nửa thành thật của nó: bấm vào một dòng giờ là chuyển trang thật, nên mở lại một bài vừa mở đi từ 12ms lên 107ms. Sáu thư viện rời đi cùng framework, tệp khoá phiên bản đi từ 360 gói xuống 221, và đợt rà sau đó vá hai mươi hành vi trang quản trị có vẽ ra mà không làm, trong đó có ba thẻ mật khẩu bật đèn xanh mà chưa gửi gì và một nút xoá bản sao lưu không hỏi lấy một câu trước khi xoá tệp.
+**Hai mươi hai gói khai báo rời đi, mười hai gói đi vào**, trong đó có React, bảy gói `@tiptap/*` bọc quanh trình soạn thảo, `marked` và Tailwind CLI. Số gói khai báo đi từ 32 xuống 22, tệp khoá phiên bản từ 360 gói xuống 221, và bản cài sạch từ 194 MB xuống 138 MB.
 
-**Và bản này KHÔNG làm được gì.** Là bản thử, và lần này nó dựng lại mọi màn hình chủ blog dùng hằng ngày; phần lưu trữ không đổi và không có bước chuyển dữ liệu nào, nhưng đúng cái mặt bạn sẽ thấy lỗi lại là cái vừa bị thay, nên hãy giữ bản sao lưu bạn tạo trước khi nâng cấp. Gõ tiếng Việt trong trình soạn thảo phải kiểm bằng tay, vì không bộ kiểm tự động nào ở đây chạm được tới bộ gõ. Bước nâng cấp STARTTLS chỉ được chứng minh trên một relay thật lúc deploy chứ không ở đâu khác, do Bun không biến được một socket đang mở thành TLS ở phía máy chủ. Gõ tiếp ngay sau một liên kết thì chữ rơi vào trong liên kết đó, đã tìm ra và cố ý để nguyên, có test ghim lại để nó không tự đổi khi chưa ai quyết. Không có chế độ nhiều người dùng: một blog, một chủ, một tiến trình; phần bình luận có tài khoản còn phần viết thì không. Có bốn lối giao diện và không có lối thứ năm, lối áp cho cả site và chỉ thay trang đã xuất bản, muốn đi xa hơn vẫn phải viết CSS riêng. Hai máy đánh dấu cùng một trang cùng lúc thì ghi đè nhau, lần lưu sau thắng. Trang quản trị chưa có màn nào cho biết đoạn nào được người đọc giữ nhiều nhất, mới có tool MCP `list_mentions` trả lời. Webmention có kiểm nguồn và giới hạn tốc độ nhưng chưa nối bộ lọc rác. Màn Trợ giúp vẫn chỉ tiếng Anh, vài chỗ đếm vẫn ra "1 words", 26 múi giờ `Etc/GMT` đã rời khỏi danh sách, và mọi giới hạn cũ còn nguyên: NAS và Kubernetes cố ý không có Caddy, công tắc Chuyển động là của chủ chứ không theo từng người đọc, bản cài chèn HTML bằng `sub_filter` của nginx mất nén và ETag của origin, origin không CDN thì người đọc ở nửa kia địa cầu trả thêm một vòng mạng.
+- **Trang quản trị trở lại là HTML do máy chủ dựng**, hành vi gắn thêm bằng những mẩu JavaScript viết tay. Màn hình hiện ra là đã xong: thời gian tới lúc thấy tiêu đề đi từ 1.038ms xuống 285ms ở màn Nhật ký và 940ms xuống 336ms ở Bảng tin, đo bản cũ với bản mới trên cùng một cơ sở dữ liệu ở 500 KB/s. Thứ trình duyệt phải có trước khung hình đầu tiên đi từ 297 KB xuống 22 KB. Cái giá, nói thẳng: bấm vào một dòng giờ là chuyển trang thật, nên mở lại một bài vừa mở đi từ 12ms lên 107ms.
+- **Trình soạn thảo đứng thẳng trên ProseMirror.** Thời gian tới lúc gõ được đi từ khoảng 395ms xuống khoảng 107ms, và 45 mẫu đối chiếu cho ra Markdown giống nhau từng byte qua cả trình soạn cũ lẫn mới. Đó là điều kiện để làm.
+- **Bộ máy Markdown là của chính nó**, đo theo CommonMark 0.31.2 đạt 648 trên 652 ví dụ và GFM 24 trên 24 mỗi lần chạy, không phụ thuộc thư viện nào.
+- **Người đọc được cầm bút**, dấu đi theo người bằng một mã chứ không cần tài khoản, và ghi chú với trích đoạn thành loại viết thứ ba, nói được IndieAuth, Micropub và Webmention.
+- **Bốn lối giao diện**, chọn ở câu hỏi cuối cùng lúc cài, và sáu bảng màu nay giải cùng một độ tương phản nên chỉ khác nhau ở sắc màu.
+- **Người đọc tải về ít hơn bản 2.2.9**: một bài còn 122,8 KB thay vì 131, trang chủ còn 118,9 KB thay vì 128. [Bảng ở trên](#tốc-độ) ghi từng dòng.
+
+**Và bản này KHÔNG làm được gì.** Không có chế độ nhiều người dùng: một blog, một chủ, một tiến trình; phần bình luận có tài khoản còn phần viết thì không. NAS và Kubernetes cố ý không có Caddy, vì cả hai đã có sẵn chỗ cắt TLS riêng. Hai máy đánh dấu cùng một trang cùng lúc thì ghi đè nhau, lần lưu sau thắng. Trang quản trị chưa có màn nào cho biết đoạn nào được người đọc giữ nhiều nhất, mới có tool MCP `list_mentions` trả lời. Webmention có kiểm nguồn và giới hạn tốc độ nhưng chưa nối bộ lọc rác. Gõ tiếp ngay sau một liên kết thì chữ rơi vào trong liên kết đó, đã tìm ra và cố ý để nguyên, có test ghim lại để nó không tự đổi khi chưa ai quyết. Có bốn lối giao diện và không có lối thứ năm, lối áp cho cả site và chỉ thay trang đã xuất bản, muốn đi xa hơn vẫn phải viết CSS riêng. Bước nâng cấp STARTTLS chỉ được chứng minh trên một relay thật lúc deploy chứ không ở đâu khác, do Bun không biến được một socket đang mở thành TLS ở phía máy chủ. Màn Trợ giúp vẫn chỉ tiếng Anh, vài chỗ đếm vẫn ra "1 words", công tắc Chuyển động là của chủ chứ không theo từng người đọc, bản cài chèn HTML bằng `sub_filter` của nginx mất nén và ETag của origin, và origin không CDN thì người đọc ở nửa kia địa cầu trả thêm một vòng mạng mà số byte tiết kiệm không mua lại được.
 
 ## Cài đặt
 

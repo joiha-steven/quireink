@@ -1,205 +1,32 @@
 # CHANGELOG
 
-## Unreleased
+## 2026-09-16 — Quire Ink 2.2.10
 
-### A sweep of the whole system: seven faults, three index changes, and a guard that ran one way
+The five pre-releases from 2026-09-09 to 2026-09-16, in one release. `latest`, `2.2` and
+`2.2.10` all point at it. 186 commits since 2.2.9.
 
-**Seven things that were wrong, not slow.**
-
-- **A fresh install preloaded 33 KB of a typeface it barely paints a glyph in.** The rule was
-  "preload the chrome face when it has a file of its own", written while the default chrome
-  face was JetBrains Mono, which has no metric-matched system twin and re-flows the header
-  when it lands. The default became Inter on 2026-09-13 and the rule did not move with it;
-  Inter ships two metric-matched twins, so its swap moves nothing. Measured: a default install
-  preloaded 73,812 bytes, a JetBrains Mono install 55,112, an unknown id 40,556. The default
-  was the most expensive of the three. The rule is a property of the face now, and
-  `fonts-preload.test.ts` holds it there.
-- **Setting a timezone made the home page render 4.3x slower.** Every printed date built an
-  `Intl.DateTimeFormat` to test whether the zone name was valid, threw it away, then built
-  another inside `toLocaleDateString`. Measured: `formatDate` cost 40.5us with no zone and
-  76.7us with one, against 0.43us for a formatter kept. A home page render built 185 of the
-  probes. Both are remembered now, the same way the file's own `DAY_PARTS` already was, and
-  800 printings across ten languages, eight zones and five dates come back byte for byte.
-- **One body, two reading times.** The published page said 14 minutes and the writing sheet
-  said 13, because the editor carried its own word counter at 220 words a minute against the
-  page's 200, with its own tokenizer that counted the address inside `![a](https://…)` as
-  prose. One arithmetic now. Fixing it found a second fault underneath: `toPlainText` stripped
-  a `*` bullet and not a `-` one, so a list written with hyphens counted one word per bullet,
-  in the excerpt, the meta description, the OG card and the RSS summary as well as the count.
-- **`/page/1` answered a 301 with no `Cache-Control` and no security headers**, because the
-  redirect was registered above the middleware that adds them and returned without calling
-  through. A 301 with no freshness is held hard by browsers, and this one's destination is a
-  setting, so renaming the list path left every reader who had seen `/page/1` being sent to
-  the old one with nothing on the server able to undo it. It takes `private, no-store` now.
-- **Filtering the activity log to nothing showed a blank panel.** The island looked for
-  `[data-log-nomatch]` on every keystroke and no screen has ever drawn it. The trash screen,
-  written the same week, passes it correctly.
-- **A settings field's named refusal never became visible.** The island walked up to
-  `[data-field-box]` to find the sentence, and nothing in `src/web/admin` has ever drawn that
-  either. It asks for the paragraph by the key it already has.
-- **`getPage` and `getNote` selected the autosave blob into the public render path**, which
-  `autosave.ts` forbids in capitals and `getPost` has always obeyed. Nothing leaked; the read
-  was 9.2us where naming the columns is 2.9us.
-
-**Three index changes on the analytics database, measured on 120,000 rows.**
-
-- `analytics_scroll (visitor, path, created_at)` arrives. The leave-sample merge is on the
-  WRITE path and had no usable index, so it read every row ever recorded for a path and sorted
-  them to keep one: 3.41ms to 0.00ms, inside a synchronous transaction that batches 100 rows.
-- `analytics_events (visitor, created_at)` arrives. Nothing led on `visitor`, so the
-  returning-reader count made SQLite build a transient index on every dashboard load: 54.94ms
-  to 3.05ms.
-- `analytics_events (device)` GOES, and removing it made the one query that reads that column
-  eight times faster: 16.60ms to 1.25ms, because SQLite drove off the device index and walked
-  the whole history for a 30-day question. Its two identical siblings have no such index.
-
-**Bytes.**
-
-- **8,576 compressed bytes off every admin page.** Two of the four stylesheets were appended
-  after the minifier rather than through it, so their comments were being served, which is the
-  thing the minifier's own header says it exists to prevent.
-- **About 1,600 compressed bytes off every public page view**, which is HTML and so is
-  refetched rather than kept: the rail's geometry moved into the immutable sheet for the
-  default column width, the three chrome-tracking blocks became the one a page can match, and
-  the comment and book-mode labels stop shipping when those switches are off. Moving the
-  geometry found two `html[data-look=code]` rules living inside it, which meant every blog was
-  downloading a correction to the source-code dialect on every page view whatever it wore.
-  `looks.test.ts` holds that a look ships as its own sheet and never in the common one; it had
-  never seen these, because it reads the sheet and these were inline.
-- **4.1 MB off the Docker image**, which was carrying the twelve guards, the 211 tour flows
-  and 3.2 MB of public-domain paintings that only the demo seeder reads. The image now takes
-  the four scripts a running blog actually uses.
-- **Seven dead view endpoints and 103 lines behind them.** `page-editor`, `note-editor`,
-  `analytics`, `comments`, `newsletter`, `log` and `assistant` had no caller in the source, in
-  any built bundle or in the tour. The seven that do have one are untouched, and six of those
-  are the tour's own oracle. The unread `#admin-shell` JSON on every admin page is out too,
-  and `jsx` left `tsconfig.json`, where it had outlived the last `.tsx` file.
-
-**And the guard that was half a guard.** `check:admin-wired` proved every hook the admin draws
-has a reader, and said nothing about a hook an island reads that nobody draws. That is the
-quieter fault: `querySelector` returns null and the screen simply never does the thing. Running
-the other direction by hand found the two log and settings faults above. It runs both ways now,
-and was made red by each of them before being trusted.
-
-Four small duplications went with it: the subscriber page size was written twice, once in the
-renderer and once in the island; `liveSlugTaken` was typed out a second time character for
-character; the MCP consent page had its own copy of `escapeHtml`; and the analytics
-internal-address test had its own list of private ranges, the shortest of three in the tree, so
-`fe80::`, CGNAT and `0.0.0.0` were being counted as public readers.
-
-**The README's speed table was measured against a configuration nobody installs.** It priced
-book mode and the reader's pen as opt-ins; both are on by default. A default post is 16
-requests and 15.8 KB of JavaScript, not 9 and 6.5. The table now says what a default install
-costs and what turning things off gives back, measured on the demo fixture so anyone with the
-repository can take the numbers again.
-
-### Four buttons that answered a refusal with silence or with the wrong screen
-
-Four places in the admin discarded the server's answer and moved on. They are one fault
-written four times, and the shape is worth naming because it is invisible to every check that
-exists: the request is made, the answer is dropped, and the interface acts as though it had
-succeeded. Nothing throws, nothing is logged, and the screen is wrong only if you already knew
-what it should have said.
-
-- **Ending a signed-in device sent the owner to the sign-in page whether or not it worked.**
-  The branch that recognises "this is the device you are using" ran before the status was read,
-  so a refused `DELETE` answered with the one screen that means *you are signed out* while the
-  session on that machine was still open and the device was still listed for whoever held it.
-- **Undo after trashing a piece from the editor reloaded the page on any answer.** The toast
-  carrying the undo dies with the reload, so a refused restore and a completed one were the
-  same three seconds: the piece stayed in the Trash and the only thing that could have said so
-  was gone. A restore that never reached the server landed nowhere at all — no reload, no
-  sentence, an unhandled rejection.
-- **Undo after trashing several pieces from the content list did the same**, and reloaded onto
-  a list those pieces were still missing from, with nothing to say why.
-- **Undo after deleting a comment failed silently.** The rows stayed off the screen, which is
-  true, and nothing said whether that was because the undo had been refused or because the
-  comments were gone for good.
-
-All four speak now, in the blog's own language: `restoreFailed` already existed in all eleven.
-Two of them — the device list and the editor's undo — are held by tests that were watched
-failing against the old code first; the other two share their branch and are covered on the
-happy path by the tour.
-
-### One rule for a URL, with three readers instead of two spellings
-
-The editor refused `javascript:` in a pasted link with a pattern that reads the whitespace
-BEFORE the scheme and nothing inside it, so `java<tab>script:` — which a browser runs, because
-it drops the tab — was called clean and kept in the post's source. The published page was
-never reachable: its own `safeHref` strips every control character and then matches, and
-rewrites all three executing schemes to `#`. Two spellings of one rule is the fault; the
-editor uses the engine's function now.
-
-The same drift had started on the IMAGE side. The scheme guard for a picture's address lived
-in `render/figures.ts` as its only copy, and the editor had none — it put a stored draft's
-picture straight into an `<img src>`. Both guards live in `md/html-rules.ts` now, next to each
-other, and the one place they differ is written down: `data:` is refused for a link and kept
-for a picture, because `data:image/png;base64,…` is a real picture and blocking it would break
-real posts to prevent nothing.
-
-Two more from the same pass, both found by CodeQL:
-
-* **The preview link dropped the slug into a URL unescaped**, three lines below the same value
-  going through `encodeURIComponent` for the request that fetches the token. A slug carrying
-  `?` or `#` would have cut the URL short and opened the wrong page with no key.
-* Three CodeQL alerts are recorded as examined rather than fixed, each with its reason on the
-  alert itself: the gallery's column count is a `number` and cannot carry a quote; a table
-  cell holding a backslash next to a pipe has no spelling in GFM at all, which
-  `round-trip.test.ts` measures; and an `<img src>` executes no scheme in any browser, so the
-  guard added above is there to keep one rule rather than to quiet an analyser.
-
-### Code blocks: 346 languages instead of 21, and a named fence is no longer reinterpreted
-
-- **A grammar loads when a fence asks for one.** The highlighter used to hand twenty-one
-  language names to Shiki at startup, which is the wrong shape for software other people
-  install: it decided for every blog on earth which twenty-one languages are worth
-  colouring, and charged every one of them for all twenty-one. Measured on the shipped path,
-  one process each: a blog that writes bash paid **41.5 MB of heap and 40 grammars in
-  memory** and now pays **2.6 MB**, with the first coloured block arriving in 29ms rather
-  than about 75.
-- **Any of the 346 languages Shiki ships can be named now**, under any of the 104 spellings it
-  answers to, read out of the bundle rather than typed here. Kotlin, Zig, Dockerfile, TOML,
-  Lua, Nix, Haskell and three hundred others go from a plain block to a coloured one.
-- **`ruby` and `elixir` were published COLOURED AS PYTHON.** A fence naming a language the
-  hand-list did not carry fell through to the guesser, whose Python rule fires on a line
-  opening `def ` or `class `. The comment three lines above it had said since the port that a
-  named fence is obeyed right or wrong; it is now true. A name nobody has a grammar for is
-  left plain and never guessed at.
-- **A transcript is not a script.** `console` is Shiki's own alias for the shell SESSION
-  grammar and `terminal` now points at it too. Measured on a paste of two commands and their
-  replies: through the shell script grammar the line `added 42 packages in 3s` came back in
-  five colours, because program output was being read as code; it comes back in one.
-- **44 of 56 shapes are byte-identical** to the build before this, captured before and diffed
-  after: every one of the old twenty-one, every working alias, and every fence that named
-  nothing or named nonsense. The twelve that moved are the twelve listed above.
-- **Upgrading re-highlights each code block once.** Every spelling of a language now resolves
-  to the one id Shiki files its grammar under, so `bash`, `sh`, `zsh` and `shell` stop being
-  four cache rows of identical HTML. Existing rows go inert rather than wrong, which is what
-  the cache was built for.
-
-## 2026-09-16 — Quire Ink 2.2.10-beta.5
-
-The fifth pre-release before 2.2.10, and the same rule as the four before it: its Docker tag
-is `2.2.10-beta.5` and nothing else, so `latest` and `2.2` still point at 2.2.9 and nobody
-gets a beta by accident. It runs the demo and the author's blog at manhhung.me.
-
-This one is the admin. It was a React application that arrived as an empty page and then
-asked the server what to put in it; it is server-rendered HTML now, with behaviour added as
-islands of hand-written JavaScript. The framework left with the wrapper around the editor and
-six other libraries. Sixty-five commits.
+Two things carried this release. The first is subtraction: **twenty-two declared packages
+left and twelve arrived**, among them React and its DOM renderer, the seven `@tiptap/*`
+packages wrapping the editor, `marked`, and the Tailwind CLI. Declared dependencies went from
+32 to 22, the lockfile from 360 resolved packages to 221, and a clean install from 194 MB on
+disk to 138 MB. What replaced them is code in this repository that the tests own. The second
+is the pen: the marks the author writes are now marks a reader can write too, kept without an
+account, and the same hand draws both.
 
 ### The admin is pages again (ADR 0054)
+
+It was a React application that arrived as an empty page and then asked the server what to
+put in it. It is server-rendered HTML now, with behaviour added as small islands of
+hand-written JavaScript.
 
 - **A screen arrives finished.** Time to the heading being on screen, old build and new
   running side by side on one seeded database at 500 KB/s: activity log 1,038ms to 285ms,
   help 1,019ms to 296ms, trash 953ms to 293ms, comments 957ms to 326ms, dashboard 940ms to
   336ms. What the browser must have before the first frame went from 297 KB to 22 KB.
-- **Over the wire, cold cache, same seeded blog, measured on the finished release:** opening
-  the admin is 14 requests carrying 14.8 KB of JavaScript, where it was 30 requests and
-  141.3 KB. The write list is 17 requests and 19.8 KB, where it was 29 and 135.3. The editor
-  page is 27 requests and 220.1 KB, where it was 35 and 401.2. The whole page, everything but
-  the blog's own pictures, went 265.8 KB to 159.9 on the admin and 561.8 to 393.9 on the
-  editor.
+- **Over the wire, cold cache, same seeded blog:** opening the admin is 14 requests carrying
+  14.8 KB of JavaScript, where it was 30 requests and 141.3 KB. The write list is 17 requests
+  and 19.8 KB, where it was 29 and 135.3. The editor page is 27 requests and 220.1 KB, where
+  it was 35 and 401.2.
 - **191 `.tsx` files and 25,713 lines of them are gone**, and there is no `.tsx` file left in
   the tree.
 - **The admin stopped flashing light before going dark.** Its boot script was inline, and an
@@ -211,8 +38,7 @@ six other libraries. Sixty-five commits.
   post you had already opened was 12ms and is 107ms. Opening the first one went 346ms to
   107ms.
 - **Settings is one page with all seven tabs drawn**: 244 controls, 22 cards, 112 search
-  rows, 554 KB of markup and 49 KB compressed.
-- **The tab is in the address** on Settings, Trash, Newsletter and Media, and the
+  rows. The tab is in the address on Settings, Trash, Newsletter and Media, and the
   conversation is in the address on the assistant.
 
 ### The editor stands on ProseMirror directly
@@ -221,104 +47,20 @@ six other libraries. Sixty-five commits.
   type went from 394, 396 and 402ms to 106, 107 and 108ms; the editor's JavaScript from
   1,028 KB to 524 KB, 325 to 167 compressed; plugins mounted per editor from 102 to 15.
 - **45 corpus fixtures produce byte-identical Markdown through both editors**, and the schema
-  was compared against a running Tiptap editor across 310 assertions before the removal.
-- Three copies of `prosemirror-view` were riding in the editor chunk. There is one.
+  was compared against a running Tiptap editor across 310 assertions before the removal. That
+  was the condition for doing it at all.
+- **Find and replace, in both views.** `Mod-f` raises a strip under the action line, and
+  `Mod-Shift-f` raises it with replace open. One view is a document whose hits are positions
+  and the other a text box holding a string, and nobody should have to notice which they are
+  in before pressing a key. Nothing enters the document, so looking through a piece is not an
+  edit and there is nothing to undo.
+- **The editor stopped working between sentences.** Every edit armed a 400ms timer that
+  serialized the whole document, which is shorter than the pause a writer takes between two
+  sentences: 126ms of frozen editor, five times in six seconds of ordinary typing, and
+  nothing read what it produced. A save on an 18,000 word draft carrying 2,159 marks went
+  from 144ms to 7ms.
 
-### Six more libraries out
-
-- `nodemailer`, `fflate`, `qrcode-generator`, `fast-xml-parser`, `turndown` with its GFM
-  plugin, and the Tailwind CLI. Declared packages went from 31 to 22, the lockfile from 360
-  resolved packages to 221, and a clean install from 194 MB on disk to 138 MB.
-- **Each was proved against what it replaced.** The QR encoder payload by payload, every
-  length from 1 to 2331 bytes, 2331 of 2331 identical. The utility stylesheet block by block,
-  186 of 188 byte-identical, and the two that differ were a fault in the generated one. The
-  importer on the golden corpus: of 45 fixtures 27 agreed, 15 came back right here and wrong
-  there, and none the other way round.
-- **Imports carry more of the original.** `<mark>` arrives as a highlight and `<u>` as an
-  underline instead of arriving flat, a lazy-loaded image is collected instead of a grey
-  placeholder, and a ZIP written on Windows no longer turns Vietnamese filenames into
-  mojibake.
-
-### New
-
-- **`SMTP_OFF`.** One line in `.env` and the process sends nothing: no newsletter, no
-  confirmation, no comment notice. Any value other than `0`, `false`, `no` or empty means
-  off, so a typo stops the mail rather than sending it, and the subscribe form comes off the
-  reader's page with it.
-- **The publish date can be typed.** Reaching next March took nine clicks and correcting a
-  year took twelve. The day and month order comes from the admin's language rather than the
-  machine's, and the 31st of February is refused rather than moved.
-- **Analytics sends the whole index in the first response**, all forty-one pieces rather than
-  ten and a request for the rest.
-- **The media picker is one overlay instead of six**, with `role="dialog"`, Escape, and focus
-  put back where it came from.
-- **The trash is one line per item.** Every row used to carry the words Restore and Delete
-  permanently, 23% of the row's width, forty times over. The list went from 650px to 570px
-  and every row is 57px.
-
-### Fixed
-
-- **Deleting a backup archive asked nothing.** It unlinked the file and said "Moved to
-  Trash", and there is no trash for a backup.
-- **A save that did not mention the font deleted the font**, so changing the blog's title on
-  one tab erased an uploaded typeface. Editing one field of one menu row wiped the whole
-  menu, and the same shape cost the featured list every slug before the one touched.
-- **Three credential cards said a key was saved and had sent nothing.** Cloudflare, off-site
-  storage and the model provider each posted an empty object, read `ok: true` off it and
-  turned the lamp green.
-- **Twenty behaviours in all**, the three cards above among them, were drawn and wired to
-  nothing, found by comparing every `data-*` hook the admin draws against every hook an
-  island reads: minting, copying and revoking an MCP
-  token, all four importers, adding a redirect, clearing the cache, editing the header menu,
-  the featured list, the front page rows and the footer marks, uploading a custom font, and
-  the off-site storage test. `check:admin-wired` now holds all 627 hooks to having a reader.
-- **The Markdown view left an empty sheet on the way back**, with the document intact in an
-  editor nobody could see. That had been on production for three commits.
-- **The formatting strip scrolled off screen and never came back**, and a comment's delete
-  key was invisible on a phone while still being announced by a screen reader.
-- **Eleven keystroke faults in the writing surface**, found by driving the old build
-  character by character: a typed URL corrupted by one character, a checklist converting the
-  whole list, a rule or a formula leaving the node selected so the next character replaced
-  it, Tab in the last table cell leaving the editor, a cleared nested bullet reopening as a
-  heading. The editor could also save Markdown it could not reopen; both builds did that.
-- **A formula could be read and never corrected**, a gallery lied about its own width, and a
-  highlight could not run across an inline code span, so the editor disagreed with the
-  reader's page and a save changed what readers saw.
-- **Dates printed in the machine's language, not the admin's.** A Vietnamese admin read
-  "Sep 14, 2026, 7:59 AM" one line above "14 thg 9, 2026, 07:59", and a post scheduled for
-  02:30 from New York printed back as 03:30.
-- **The SMTP card said "Loading..." for ever**, so every stored SMTP field was invisible on
-  the screen whose job is showing them, and every `<select>` in Settings had lost its chevron.
-- **An emptied number field sent zero**, setting posts per page to none and the upload limit
-  to zero bytes; a value under a field's floor was rewritten in silence while the screen said
-  "Settings saved"; and the palette switch failed towards on, turning palettes back on that
-  the owner had switched off.
-- **Reloading the assistant lost the conversation you were reading**, and switching chats
-  mid-answer could deliver a verdict about the conversation you had just left.
-- **The last seven `:has()` rules left the admin.** On another site that selector took a
-  page from 0.75s to 4.19s and crashed WebKit's render process.
-- **On a phone a field was 0.86px taller than the key beside it** on every screen that pairs
-  the two, and a chosen tab in a segmented strip was a square block floating in a rounded
-  groove.
-- 53 strings nobody could reach are out of all eleven languages.
-
-### Guards
-
-- Three more in `check:all`, twelve now: `check:deps` (a dependency is a decision),
-  `check:admin-css` (the admin's stylesheet against the markup that uses it) and
-  `check:admin-wired` (every `data-*` the admin draws against every one an island reads).
-- 3,623 tests and 211 tour flows on the release commit.
-
-## 2026-09-14 — Quire Ink 2.2.10-beta.4
-
-The fourth pre-release before 2.2.10, and the same rule as the three before it: its Docker tag
-is `2.2.10-beta.4` and nothing else, so `latest` and `2.2` still point at 2.2.9 and nobody
-gets a beta by accident. It runs the demo and the author's blog at manhhung.me.
-
-This one is the Markdown. Four libraries used to answer the same question here and all four
-are gone. Thirty-nine commits.
-
-### One Markdown engine of our own
+### One Markdown engine of our own (ADR 0052)
 
 - **`marked`, `markdown-it`, `tiptap-markdown` and `prosemirror-markdown` are out.** One
   engine in `src/md` renders the reader's page, opens a post in the editor, saves it back,
@@ -330,485 +72,283 @@ are gone. Thirty-nine commits.
   equality, a ladder of rewrites that are provably invisible, and a DOM walk comparing the
   trees node by node. The comparison found a hole nobody had noticed: a `javascript:`
   destination published as a working link.
-- **A save on a long draft went from 144ms to 7ms**, measured on an 18,000 word piece
-  carrying 2,159 pen marks.
 - **The engine has no dependencies.** Its own suites pass with `node_modules` deleted, and
   `md/boundary.test.ts` holds it to one import from the rest of the tree.
 - **A hostile paste can no longer stall the process.** Three shapes were quadratic or worse:
   4,000 unclosed link brackets went from 215ms to 2.2ms, a paragraph of 2,000 deepening
-  indents from 11,817ms to 69ms, and a run of 20,000 backslashes from 1,767ms to 1.7ms. The
-  last two were one regular expression and one string copy, at 98.5% and 99.3% of the
-  engine's whole running time.
-
-### Find and replace in the writing surface
-
-- **`Mod-f` raises a strip under the action line with the find field alone**; `Mod-Shift-f`
-  raises the same strip with replace open, and a chevron at its head opens that field for a
-  hand that came in through the first chord.
-- **It works in both views.** One is a document whose hits are positions and the other is a
-  text box holding a string, and nobody should have to notice which they are in before
-  pressing a key.
-- Nothing enters the document: the hits are drawn beside it, so looking through a piece is
-  not an edit and there is nothing to undo.
-
-### The writer is dealt the same forty pens the reader is
-
-- **Every stroke in the editor came out of one fallback.** The published page hashes each
-  highlight, underline and ring into one of forty variants with its own grip and die; nothing
-  in the admin had ever written that attribute. 38 of 38 strokes now match the published page
-  on the document it was measured on.
-- **The stroke under the cursor keeps the pen it was dealt**, because the variant is a hash
-  of the words and re-dealing on every keystroke would change the grip under the hands. It
-  settles when the caret leaves.
-- Cost: 0.021ms per keystroke at 38 strokes, 0.0086ms on 600 paragraphs with no mark in them.
-
-### The editor stops working between sentences
-
-- **Every edit armed a 400ms timer that serialized the whole document.** That is shorter than
-  the pause a writer takes between two sentences, so the stall landed inside each one: 126ms
-  of frozen editor, five times in six seconds of ordinary typing. Nothing read what it
-  produced.
-- **A text node stopped reading the whole document back.** The repair that keeps `[^1]` and
-  `[!NOTE]` unescaped re-read everything written so far, once per text node, and a mark
-  boundary starts a new one: 9,161 nodes and 118ms of a 144ms serialize on that draft.
-- **The Markdown switch keeps the line you were in the middle of.** It kept a pixel offset
-  between two views of different heights, so 85% of the way down the writing arrived as 66%
-  of the way down the source, and the source then opened with its caret at the top.
-
-### Backups
-
-- **The rendered-page cache stopped riding along in every archive.** On the author's blog the
-  database was 538 MB, of which `render_cache` was 530.3 MB: 98.5% of every backup was a file
-  the app rebuilds from the Markdown beside it.
-- **The download streams to disk** instead of being pulled through the tab's memory, which is
-  what made a 262 MB archive impossible to take away.
-
-### Book mode
-
-- **The page turns instead of blinking.** The spread used to fade to nothing, jump, and fade
-  back, 150ms each way. The flow slides now and the gutter holds still, because the spine is
-  drawn on the window rather than on the pages.
-- **A heading's air is inside its own line box** rather than all in its margins: 50px above
-  the words and 18.7px below, in three lines of the grid rather than four. The paragraph
-  indent went to 2em, because on a paged column it is the only thing saying a paragraph has
-  started.
-
-### Fixed
-
-- **A picture comes out of the paragraph Markdown wrote it in.** Markdown has one shape for a
-  picture and it is inline, so a picture on its own line was a block node inside a paragraph:
-  ProseMirror keeps a text position alive beside it with a separator image and a trailing
-  line break, which is 46 pixels of empty line under every picture. On the reader's page the
-  same shape put a `<figure>` inside a `<p>`, 43 times across 20 posts.
-- **The pen's underline clears the feet of the letters.** In the editor it was drawn through
-  the middle of them: the fallback it used sat at 0.94em while the grips it stood in for had
-  moved to 1.05 to 1.09em, and nothing compared the two.
-- **The source-code look draws no rule under the header and none over the footer**, and its
-  footer takes the 3rem the rest of the product gives it. It was 0.6rem, which left the
-  copyright line 9.6 pixels off the bottom of the page.
-- **A sub-heading's number in the contents index fits.** The pill was 30px wide and `2.10`
-  needs 51.8px, so the tenth sub-heading of a section onwards lost its last digit. It sizes
-  itself now, and the rail's overhang that was meant to make room for it had been written
-  backwards and never applied.
-- **Six holes found in a security review of the public surface**, every one reachable without
-  credentials.
-- A picture gets the same margin above and below it again. The find strip is even, and a card
-  is no longer left mid-fade.
-
-## 2026-09-13 — Quire Ink 2.2.10-beta.3
-
-The third pre-release before 2.2.10, and the same rule as the two before it: its Docker tag
-is `2.2.10-beta.3` and nothing else, so `latest` and `2.2` still point at 2.2.9 and nobody
-gets a beta by accident. It runs the demo and the author's blog at manhhung.me.
-
-This one is a look. A published blog can wear one of four now, and which one is the last
-question setup asks. Nineteen commits.
-
-### Looks like: four dialects, one setting
-
-- **Appearance → Looks like, and the published site wears one of four**: Plain paper, Source
-  code, Newspaper or Notebook (`settings.look`). Only the published site; this admin never
-  changes. A blog that had the old IDE chrome switch on reads as Source code with nothing to
-  migrate.
-- **Newspaper is the one that touches your words.** It numbers sections, figures and tables,
-  prints the section over the headline and the date and byline under it, and sets both in a
-  second serif beside your reading face. The numbers live on the page and nowhere else: not
-  in the feed, the newsletter, a search result, or what a reader copies.
-- **Notebook draws the page as a sheet lying on a desk**, ruled at the leading your own type
-  settings use, with internal links written the way a notebook writes one and tags as hashes.
-  The ruling is drawn per paragraph: one background across the whole sheet has one fixed
-  step, and a picture is not a whole number of lines tall, so the lines drift and start
-  cutting through the text.
-- **Source code dresses the furniture and leaves the reading column alone.** Labels take a
-  `//`, every figure is bracketed, the shelf carries line numbers, and from 640px up the
-  header's icons become `[/find] [dark] [hue]`.
-- **Each look is its own stylesheet, linked only by a blog wearing it.** Plain links none.
-  The rules used to ride inside `site.css`, where every blog on earth paid 5.2 KB for
-  something that was off by default.
-- **The default chrome font is Inter**, on new installs only. It was a monospace, which gave
-  a blog nobody had touched a technical air of its own and left Source code with almost
-  nothing left to say.
-
-### A look contains no colour
-
-- **The palette is the only source of colour on this site.** Two of the looks declared their
-  own for two releases, on the argument that a newspaper and a notebook are materials. What
-  it cost was the palette menu: on those looks, choosing Mono, Sepia or Forest changed not
-  one pixel, because a look's selector outranks a palette's, and nothing said so. Four of six
-  rows were dead controls.
-- A look sets shape, type and marks. What colour they come out in belongs to the owner's
-  palette and to whatever a reader picks over it, and a test now fails on a single hex
-  anywhere in a look's stylesheet. What a look may still do is DERIVE from the tokens: the
-  notebook's desk is the page's own lightness taken down, so it follows the reader.
-
-### The six palettes become one set
-
-- **Every colour is solved for a contrast against its own paper**, so the six differ in hue
-  and in nothing else. Body text ran 10.22:1 on Sepia against 14.75:1 on Mono, and headings
-  13.83 against 18.26: the same words came out a third heavier or lighter depending on a
-  choice that should only have changed a colour. Now 12.88 to 13.08 for text and 16.92 to
-  17.10 for headings, across all six. Hue and chroma are untouched; only lightness moved.
-- **Ocean and Sci-Fi had become the same palette.** Papers at the same lightness with almost
-  no colour in either, inks three points apart, and the only thing telling them apart was a
-  link, which a page can go a screen without. Ocean is a blue page now, paper and ink alike;
-  Sci-Fi is graphite with an electric mark on it.
-- **`--c-rule` carries more than it did.** It used to draw hairlines between cards; the
-  notebook draws it under every line of every paragraph, so it is a surface. One weight for
-  all six, chosen by photographing the two extremes side by side.
-- **No existing blog moves.** Every blog stores its own copy of all six, written at install,
-  and that copy is read before these values. A fresh install gets the new set, and Reset in
-  the admin restores from it.
-
-### Setup asks what you are about to write
-
-- **A fourth first-run question, last of them**, with the four looks drawn rather than
-  described. It asks what you are about to write, which you know before you have written a
-  word, and which is the only fact the four differ on. A palette or a typeface would be the
-  other kind of question: judging a thing you have not seen, on writing you have not done.
-- It is also where the run is finished and the release recorded.
-
-### An upgrade says what it brought
-
-- **A panel in the admin, once, after an upgrade**: the version you are now on, and a link to
-  its release notes. Updating by pulling an image tells you nothing about what you got, and
-  the changelog is a file on a machine you may never open.
-- **A blog that has never been asked which look it wants is asked here**, which is every blog
-  installed before the four existed. A fresh install is stamped by setup and never meets the
-  panel for the release it was installed on.
-- It asks the server nothing and compares two strings it already has. The update check still
-  says when something newer exists; this says what the one you have IS.
-
-### A book that hyphenates, and a blog that opens like one
-
-- **Book mode hyphenates whether or not it justifies.** The rule only applied inside the
-  justified path, so the setting every blog starts on, and every phone at any setting, never
-  hyphenated at all, which is where the rag is worst. Measured on a 608px column of English:
-  the ninth-decile line ended 58.9px short of the column edge, and 34.5px with hyphens on.
-- **Book mode sets its columns on one baseline grid**, so a paragraph never breaks across a
-  column mid-line.
-- **A new blog opens like a quire**: the first-line indent and the justified column are on by
-  default. Only for a blog that has never answered the question, because a default that
-  changes is a redesign of every blog that never chose.
-
-### Fixed
-
-- **The MCP card stopped handing out a URL and a token for a switch nobody had saved.** The
-  connection URL appeared the moment the switch was flipped and the token manager under it
-  was never gated, so the working order ended at a client reading "server is currently
-  unavailable" from an endpoint that was still off.
-- **The three questions after the account were being skipped on every real install.** Where a
-  first-run owner landed was decided by whether a site address was known, and every
-  deployment path this project ships sets one in the environment.
-- **A caption belongs to its picture.** It sat 8px under the image with the text resuming one
-  line later, which is the same distance as the gap between two ordinary paragraphs, so it
-  read as the opening line of the words underneath. Reported from a phone.
-- **The write list is a list again.** A summary carried a clamp beside a display utility that
-  wins the cascade, so rows ran from 44px to 199px and five of forty-nine pieces fitted on a
-  900px screen. Ten fit now.
-- **Two marks on the header no longer read as something else.** The sun's rays were two units
-  long on a 1.8 stroke, and a round cap adds half the stroke at each end, so each ray drew as
-  a dot and eight dots round a disc is a smudge. The palette icon was a ring with two dots
-  level near the top and one below the centre, which is where a face's features go.
-- **The menu mark has three bars.** Two of unequal length is an equals sign at the size the
-  header draws it.
-- **The name on the header speaks the same dialect as the chrome around it.** It carried its
-  own font setting, so Source code wore an Inter wordmark over a monospace strapline, menu
-  and controls.
-
-## 2026-09-11 — Quire Ink 2.2.10-beta.2
-
-The second pre-release before 2.2.10, and the same rule as the first: its Docker tag is
-`2.2.10-beta.2` and nothing else, so `latest` and `2.2` still point at 2.2.9 and nobody gets
-a beta by accident. It runs the author's blog at manhhung.me and the demo.
-
-Most of it is correction rather than addition. A search in a language with tone marks was
-answering with a different word, seven analytics counts were reading the wrong rows, and the
-first-run screens asked somebody to read English before asking which language they read.
-Thirty-one commits and one decision
-([ADR 0050](./docs/decisions/0050-the-licence-opens-by-itself-after-48-months-without-a-release.md)).
-
-### The licence opens by itself if this project stops
-
-- **`LICENSE-EXCEPTION` 1.2 grants, today, a licence that takes effect on its own** the day
-  after 48 months pass with no release from the licensor
-  ([ADR 0050](./docs/decisions/0050-the-licence-opens-by-itself-after-48-months-without-a-release.md)).
-  On that day the code as it then stands is also under Apache 2.0: a changed file still has
-  to say it was changed and the copyright notices still stay, but nobody has to be reachable
-  for the last release to be improved and offered as a service. Any release resets the count.
-  It is a present grant and not a promise, because a promise needs somebody left to keep it.
-
-### A search means the accents that were typed
-
-- **A word typed with its accents is matched with them** (`src/accent.ts`). The index folds
-  diacritics so that "lap trinh" finds "lập trình", and the query was folded with it, so a
-  search for "lề" came back with every "lệ", "lê" and "lẻ" on the blog. In Vietnamese those
-  are four words. Measured on a live blog: "lề" went from 50 results to 10, "lê" from 50 to
-  6, and an unaccented "le" still finds all of them. The folded index still finds the
-  candidates and this narrows them, so there is no second index and nothing to reindex.
-- **The narrowing asks for a whole word.** A substring test was tried first and filtered
-  almost nothing, because "lê" sits inside "lên" and most Vietnamese posts carry that word.
-  Scripts that put no space between words are the exception, and are matched as a substring.
-- **The passage under a hit quotes the sentence that answered the search.** It opens where
-  the query's words sit closest together rather than on the first one of them, so searching
-  "widen the leading" no longer quotes an opening paragraph whose only claim on it was the
-  word "the". SQLite's `snippet()` is no longer asked for it, which also took 23 ms per 60
-  rows off the owner's search: it re-tokenizes every document it quotes.
-- The same rule reaches every other box that folded one way only: the write pane's title
-  filter, the highlighter under the hits, the comments queue, the trash and the command
-  palette.
-
-### The first-run questions
-
-- **The language is asked on the first screen.** It was the third screen's first field, so
-  somebody who does not read English met the claim form and a whole authenticator screen
-  before reaching it. The claim form saves the answer, so the screen after it is already in
-  the right language.
-- **The reader's pen is asked once**, with the answer it already has. It is the only switch
-  in this software that decides what other people may do on your pages, and an owner who
-  never opened Settings never learned it was there.
-- **Two answers the form expected you to know**: the username never leaves the server and is
-  not the name under your posts, and the twelve-character password rule is under the field
-  instead of only in the error after failing it.
-
-### Analytics counts the rows it means
-
-- **Read depth and dwell are measured on posts and pages, not on the lists.** A front page is
-  scrolled rather than read, and on most blogs it is the most-viewed path, so its shallow
-  short samples were the heaviest single weight on a number labelled "read depth". Each list
-  keeps its own figures.
-- **A row written before the device columns existed is left out of the facets**, rather than
-  folded into an "Unknown" that led every one of them: 129 visitors on a live blog, ahead of
-  every real device, browser and system.
-- **A leave sample follows the reader back to the tab.** The beacon sends one every time the
-  tab is hidden and again when it comes back, and the later sample now replaces the earlier
-  for the same reader and page. A second row counted the three seconds before an app switch
-  as a bounce beside the five minutes after it.
-- **The owner's exclusion expires with the day, not with the session.** A session lives
-  thirty days from its last use, and a phone on a carrier network shares its address with
-  hundreds of strangers and hands it on every few days, so a match on any live session was
-  dropping every reader behind that address for as long as the owner stayed signed in.
-- **An archive page that does not exist is not a view**, and neither is a request from
-  Google's inspection tool or its read-aloud agent. A reader arriving from Telegram is no
-  longer counted as the Telegram bot.
-- **Cốc Cốc and Naver are search, Zalo and Messenger are social**, and a referring host is
-  matched anchored, so a domain that merely ends in a known one is not mistaken for it.
-
-### A few improvements
-
-- **Reading your own published post is a button on the editor's row**, beside Preview. It was
-  a link inside the attributes panel, so looking at what a reader sees cost opening a panel
-  first. Measured: the row wraps to two lines above `lg` in the locales with the longest
-  labels.
-- **Done and Reset in the sidebar's arrange mode are two keys at the foot of the rail.** They
-  rode under the collapse row, which is a row the owner can drag, so the one control that
-  ends the mode could end up in the middle of the thing being rearranged.
-- **A kept passage decodes entities once and strips tags to a fixed point** (CodeQL 25 and
-  26). `&amp;lt;` used to come back as a `<`, and the single-pass tag strip ran before the
-  decoding, so a `&lt;script` in a quote came out as one.
-- **Both READMEs lead with what nothing else does**, and the Vietnamese one takes the same
-  spine and speed table. A release note now has a written shape, and all 37 past releases
-  were rewritten to it.
-- **Twenty-two packages move**, nodemailer to 10, three transitive ones become declared, and
-  one dead dependency goes.
-- The demo carries the posts' own pictures on its rows, five notes and an author box.
-
-## 2026-09-09 — Quire Ink 2.2.10-beta.1
-
-A pre-release, for testing before 2.2.10 proper. Its Docker tag is `2.2.10-beta.1` and
-nothing else: `latest` and `2.2` still point at 2.2.9, so nobody gets a beta by accident. It
-runs the author's own blog at manhhung.me and the demo. What it wants tested is the pen: a
-reader marking a post, keeping the marks across devices, sending a passage to a notebook of
-their own, another site linking the pen's stylesheet, and the editor drawing and squeaking as
-a mark lands. Sixteen commits, eight decisions ([ADR 0042](./docs/decisions/0042-the-pen-inks-unevenly.md)
-to [0049](./docs/decisions/0049-the-pen-answers-the-hand.md)), and three findings from the
-2.2.9 reading audit that had been waiting on the owner's answer. Report what breaks at
-[the issue tracker](https://github.com/joiha-steven/quireink/issues).
-
-### The pen is its own module, and it inks unevenly
-
-- **`src/pen/` is a module with one door** (`src/pen/index.ts`) and a test that holds its
-  boundary. The highlighter, the underline, the ring, their dies, pigments and the two
-  stylesheets moved there from the renderer, byte for byte at first (the sheet's hash did
-  not change), so everything below could be built against one seam.
-- **A die carries its physics** ([ADR 0042](./docs/decisions/0042-the-pen-inks-unevenly.md)).
-  Fibre grain as an alpha mask, edge tremor, and wet-to-dry along the stroke in a dealt
-  direction, with a faint ghost under it all because paper soaks. The deck is eighty
-  variants: forty for phrases over about twenty-eight characters, forty for a word or two,
-  and the short ones tilt harder, overshoot further and dry faster. The ring is an oval that
-  crosses itself, with a tail that comes from inside the loop. The underline sits on the
-  baseline, crossing the descenders, with a pressure envelope instead of a wobble.
-- **Three generators, three seeds.** The highlighter, the lines and the link's dashes each
-  draw from their own stream, so growing one can never move a stroke of another.
-- **Lists are marked by the pen too.** Ink dots for bullets, short dashes for the level
-  under them, and numerals set in a hand (Kalam, the ten digits and a full stop), so a list
-  in a marked-up post reads as the same hand that marked it.
-- **The sheets grew, on purpose.** `pen-marks` from 11.6 to 19.6 KB gzipped, `pen-lines`
-  from 8.5 to 15.2, and both still arrive only on a page that carries ink.
+  indents from 11,817ms to 69ms, and a run of 20,000 backslashes from 1,767ms to 1.7ms.
 
 ### The reader gets a pen
 
 - **Select words on a post and a bar offers the five inks, the underline, the ring, a note
-  and the quote** ([ADR 0043](./docs/decisions/0043-the-reader-gets-a-pen.md)). On by
-  default, with one switch under Settings → Posts to turn it off. A mark is anchored to its words,
-  never to a position: the exact words and thirty-two characters either side, the W3C
-  text-quote shape, so a typo fixed three paragraphs up moves nothing, and a sentence that
-  is gone makes the mark fail to land rather than land on the wrong words. It draws with the
-  writer's pen: the same elements, the same dies, the same two sheets, so there is one hand
-  on the page and it is the site's.
+  and the quote** (ADR 0043). On by default, with one switch under Settings, Posts. A mark is
+  anchored to its words and never to a position: the exact words and thirty-two characters
+  either side, the W3C text-quote shape, so a typo fixed three paragraphs up moves nothing,
+  and a sentence that is gone makes the mark fail to land rather than land on the wrong words.
 - **Tier one asks nothing.** Marks live in the browser's own storage under the page's path.
   Nothing is sent, and the owner cannot see them.
-- **Tier two: the marks travel by a code, not an account**
-  ([ADR 0047](./docs/decisions/0047-a-readers-marks-travel-by-a-code.md)). *Keep these*
-  offers two ways across devices: the Google sign-in commenters already have, when the owner
-  has it configured, or a notebook code in five groups of four (`mg8b-hz94-nzkf-ewg4-j9ns`)
-  for anyone who will not. The server keeps a hash of the code, or a keyed hash of the
-  signed-in address, never the address itself, and one row per page. Five hundred pages a
-  reader, 128 KB a page, kept a year past the last touch, forgotten everywhere in one click.
-  The owner sees none of it: no screen lists a reader's marks, and the API answers only to
-  the reader's own code or cookie.
+- **Tier two: the marks travel by a code, not an account** (ADR 0047). Google sign-in for
+  commenters who already have it, or a notebook code in five groups of four for anyone who
+  will not. The server keeps a hash of the code, or a keyed hash of the signed-in address,
+  never the address itself, and one row per page. Five hundred pages a reader, 128 KB a page,
+  kept a year past the last touch, forgotten everywhere in one click.
+- **The pen inks unevenly** (ADR 0042). Fibre grain as an alpha mask, edge tremor, and
+  wet-to-dry along the stroke in a dealt direction, with a faint ghost under it because paper
+  soaks. The deck is eighty variants: forty for phrases over about twenty-eight characters,
+  forty for a word or two, and the short ones tilt harder, overshoot further and dry faster.
+- **The writer is dealt the same forty pens the reader is.** Every stroke in the editor used
+  to come out of one fallback; 38 of 38 now match the published page on the document it was
+  measured on. The stroke under the cursor keeps the pen it was dealt, because the variant is
+  a hash of the words and re-dealing on every keystroke would change the grip under the hands.
+- **A mark just applied draws itself, once** (ADR 0049): 200ms for the highlighter, 160 for
+  the underline, 240 for the ring. Nothing enters the document, an existing mark never
+  replays, and the words never move. A felt tip squeaks, rendered as arithmetic like the key
+  click with no audio file, one switch, on by default.
+- **`/pen.css` is a stylesheet anyone may link** (ADR 0048). One `<link>` and a `pen` class on
+  any element on any site, and `==text==`, `++text++` and `@@word@@` draw with this blog's
+  own inks, light and dark. About 35 KB gzipped, CORS open. This is a public promise, so a
+  change to it gets a line here.
 
-### The notebook
+### The notebook, and the standards it speaks
 
-- **A note is a third kind of writing**
-  ([ADR 0044](./docs/decisions/0044-a-note-is-not-a-post.md)): its own table, its own list
-  at `/notes`, its own address under `/notes/{slug}`, its own namespace, so a note called
-  `about` and a page called `about` can both exist. A note is never in the post feed, the
-  front page, the archive or the newsletter; it is in the sitemap and in `llms.txt` under
-  its own heading. Written in the same editor, autosaved under its own kind, trashed and
-  restored like a post. In the Write list it is one more kind beside posts and pages.
+- **A note is a third kind of writing** (ADR 0044): its own table, its own list at `/notes`,
+  its own namespace, so a note called `about` and a page called `about` can both exist. Never
+  in the post feed, the front page, the archive or the newsletter; in the sitemap and in
+  `llms.txt` under its own heading.
 - **A clip is a note with three more fields**: where the passage came from, that page's
-  title, and the passage itself, as columns rather than lines of Markdown, because a later
-  step sends a Webmention to the source. A clip reads as the passage first, in the reading
-  face, then the owner's own words.
+  title, and the passage itself, as columns rather than lines of Markdown.
+- **The notebook opens a door** (ADR 0045). `/notes/clip` is a page the owner keeps from,
+  with no script. A reader's pen gains *Send to my notebook*, and a bookmarklet makes any
+  page on the web a source.
+- **IndieAuth, Micropub and Webmention** (ADR 0046). The site is an IndieAuth provider on the
+  MCP server's existing OAuth door, `/micropub` accepts a note from any Micropub client, and
+  `/webmention` receives mentions and verifies the source really links here.
 - **Agents get the same verbs**: `list_notes` `get_note` `create_note` `update_note`
-  `delete_note` `restore_note`, and `list_mentions` for what other sites have said about
-  this one and which passages readers keep most.
-- **The notebook opens a door**
-  ([ADR 0045](./docs/decisions/0045-the-notebook-opens-a-door.md)). `/notes/clip` is a page
-  the owner keeps from, with no script: it reads the source, the title, the passage and the
-  words off the query string and offers one form, private by default. A reader's pen gains
-  *Send to my notebook*, which asks once for the notebook's address and from then on opens
-  that door in a small window. A bookmarklet makes any page on the web a source.
+  `delete_note` `restore_note`, and `list_mentions`.
 
-### The notebook speaks the open standards
+### Looks like: four dialects, one setting
 
-- **IndieAuth, Micropub and Webmention**
-  ([ADR 0046](./docs/decisions/0046-the-notebook-speaks-the-open-standards.md)). The site
-  is an IndieAuth provider on the MCP server's existing OAuth door, so the owner signs in to
-  other IndieWeb sites with their own address. `/micropub` accepts a note from any Micropub
-  client, with the scope carried inside the signed code. `/webmention` receives mentions and
-  verifies the source really links here; a clip that names its source sends one. Every note
-  page carries an `h-entry`, and a clip marks its quotation with `u-quotation-of`. The head
-  of every page carries the five `rel` links a client discovers all this by.
+- **Appearance, Looks like, and the published site wears one of four**: Plain paper, Source
+  code, Newspaper or Notebook. Only the published site; the admin never changes. It is the
+  last question setup asks, because it is the one thing you know before writing a word.
+- **Newspaper is the one that touches your words.** It numbers sections, figures and tables,
+  prints the section over the headline and the date and byline under it. The numbers live on
+  the page and nowhere else: not in the feed, the newsletter, a search result, or what a
+  reader copies.
+- **Notebook draws the page as a sheet lying on a desk**, ruled at the leading your own type
+  settings use, per paragraph rather than as one background, because a picture is not a whole
+  number of lines tall and the lines would drift into the text.
+- **Each look is its own stylesheet, linked only by a blog wearing it.** Plain links none.
+  The rules used to ride inside `site.css`, where every blog paid 5.2 KB for something off by
+  default.
+- **A look contains no colour.** Two of them declared their own for two releases, and what it
+  cost was the palette menu: on those looks, choosing Mono, Sepia or Forest changed not one
+  pixel, because a look's selector outranks a palette's and nothing said so. Four of six rows
+  were dead controls. A test now fails on a single hex anywhere in a look's stylesheet.
+- **The six palettes become one set.** Every colour is solved for a contrast against its own
+  paper, so the six differ in hue and in nothing else. Body text ran 10.22:1 on Sepia against
+  14.75:1 on Mono; it is 12.88 to 13.08 across all six now, and headings 16.92 to 17.10. Hue
+  and chroma are untouched, only lightness moved. Ocean and Sci-Fi had become the same
+  palette and are two again. **No existing blog moves:** every blog stores its own copy at
+  install and that copy is read first.
+
+### Twenty-two packages out, twelve in
+
+- **Out:** `react` and `react-dom`, seven `@tiptap/*` packages and `tiptap-markdown`,
+  `marked`, `turndown` with its GFM plugin, `nodemailer`, `fflate`, `qrcode-generator`,
+  `fast-xml-parser`, the Tailwind CLI, and five `@types/*` that went with them. **In:** twelve
+  `prosemirror-*` packages, which is the editor standing on the library the wrapper wrapped.
+  Declared dependencies went from 32 to 22, the lockfile from 360 resolved packages to 221,
+  and a clean install from 194 MB on disk to 138 MB.
+- **Each was proved against what it replaced.** The QR encoder payload by payload, every
+  length from 1 to 2331 bytes, 2331 of 2331 identical. The utility stylesheet block by block,
+  186 of 188 byte-identical, and the two that differ were a fault in the generated one. The
+  importer on the golden corpus: of 45 fixtures 27 agreed, 15 came back right here and wrong
+  there, and none the other way round.
+- **Imports carry more of the original.** `<mark>` arrives as a highlight and `<u>` as an
+  underline instead of arriving flat, a lazy-loaded image is collected instead of a grey
+  placeholder, and a ZIP written on Windows no longer turns Vietnamese filenames into
+  mojibake.
+
+### What a reader downloads, measured again
+
+A default install on the demo fixture, which is what `bun run tour` seeds, so anyone with the
+repository can take these numbers again. Compressed body bytes from the origin, cold cache,
+the blog's own pictures counted separately because they are content rather than software.
+
+| | 2.2.9 | 2.2.10 |
+|:---|---:|---:|
+| Home, everything but pictures | 128 KB | **118.9 KB** |
+| A post, everything but pictures | 131 KB | **122.8 KB** |
+| A post, book mode and the reader's pen switched off | 122 KB | **114.9 KB** |
+| JavaScript on a post | 15.8 KB | 15.9 KB |
+| Fonts on a post | 73 KB | **65.3 KB** |
+| Third-party requests | 0 | 0 |
+| A page already read, second visit | 0 bytes | 0 bytes |
+
+The font row is the release's own doing and the rest follows it: a default install preloaded
+73,812 bytes of typeface, and the rule that decided which faces to preload had been written
+when the default chrome face was a monospace with no metric-matched twin. The default became
+Inter and the rule did not move with it. It is a property of the face now, and the figure is
+40,556 bytes.
+
+### A few improvements
+
+- **A search means the accents that were typed.** The index folds diacritics so that
+  "lap trinh" finds "lập trình", and the query was folded with it, so a search for "lề" came
+  back with every "lệ", "lê" and "lẻ" on the blog. In Vietnamese those are four words.
+  Measured on a live blog: "lề" went from 50 results to 10, "lê" from 50 to 6, and an
+  unaccented "le" still finds all of them. No second index and nothing to reindex.
+- **The passage under a hit quotes the sentence that answered the search**, opening where the
+  query's words sit closest together rather than on the first one of them. SQLite's
+  `snippet()` is no longer asked for it, which took 23ms per 60 rows off the owner's search.
+- **Code blocks answer to 346 languages instead of 21**, loaded on demand so a blog that
+  writes only Python ships only Python. A named fence is no longer reinterpreted: Ruby was
+  being published coloured as Python.
+- **The licence opens by itself if this project stops** (ADR 0050). `LICENSE-EXCEPTION` 1.2
+  grants, today, a licence that takes effect on its own the day after 48 months pass with no
+  release. It is a present grant and not a promise, because a promise needs somebody left to
+  keep it.
+- **An upgrade says what it brought**: a panel in the admin, once, naming the version you are
+  now on with a link to its release notes. It asks the server nothing and compares two
+  strings it already has.
+- **Setup asks the language on the first screen.** It was the third screen's first field, so
+  somebody who does not read English met the claim form and a whole authenticator screen
+  before reaching it.
+- **`SMTP_OFF`.** One line in `.env` and the process sends nothing. Any value other than `0`,
+  `false`, `no` or empty means off, so a typo stops the mail rather than sending it, and the
+  subscribe form comes off the reader's page with it.
+- **The publish date can be typed.** Reaching next March took nine clicks and correcting a
+  year took twelve. The day and month order comes from the admin's language rather than the
+  machine's, and the 31st of February is refused rather than moved.
+- **Book mode hyphenates whether or not it justifies**, sets its columns on one baseline grid,
+  and turns the page instead of blinking. A new blog opens like a quire: first-line indent
+  and a justified column, only for a blog that has never answered the question.
+- **The rendered-page cache stopped riding along in every archive.** On the author's blog the
+  database was 538 MB, of which `render_cache` was 530.3 MB: 98.5% of every backup was a file
+  the app rebuilds from the Markdown beside it. The download streams to disk, which is what
+  made a 262 MB archive impossible to take away.
+- **Analytics counts the rows it means.** Read depth and dwell are measured on posts and
+  pages rather than on the lists; a row written before the device columns existed is left out
+  of the facets instead of leading every one of them; a leave sample follows the reader back
+  to the tab; the owner's exclusion expires with the day rather than with the session.
+- **Three index changes on the analytics database**, each measured on a synthetic table built
+  from the schema: the returning-reader count 98.77ms to 4.85ms, the scroll merge on the
+  write path 1.83ms to 0.00ms, and the device facet 48.30ms to 6.00ms by REMOVING the only
+  index that column had.
+- **Setting a timezone stopped making the home page render 4.3 times slower.** Every printed
+  date built an `Intl.DateTimeFormat` to test whether the zone name was valid, threw it away,
+  then built another. `formatDate` went from 76.7 microseconds to 0.68, and 800 printings
+  across ten languages, eight zones and five dates come back byte for byte.
 - **Nine names no post can take**: `admin` `login` `micropub` `notes` `og` `search` `setup`
-  `uploads` `webmention`, measured by a test that proves each one really is shadowed by a
-  route.
+  `uploads` `webmention`, each proved shadowed by a route.
 
-### The pen is a stylesheet anyone may link
+### Fixed
 
-- **`/pen.css`** ([ADR 0048](./docs/decisions/0048-the-pen-is-a-stylesheet-anyone-may-link.md)).
-  One `<link>` and a `pen` class on any element, on any site, and `==text==`,
-  `++text++` and `@@word@@` written as the same `<mark>` and `<u>` elements draw with this
-  blog's own inks, light and dark. About 35 KB gzipped, cached an hour with a day of
-  stale-while-revalidate, an ETag so a second visit costs no bytes, CORS open. This is a
-  public promise, so a change to it gets a line here.
+- **One body, two reading times.** The published page said 14 minutes and the writing sheet
+  said 13, because the editor carried its own word counter at 220 words a minute against the
+  page's 200. Fixing it found a second fault underneath: the plain-text pass stripped a `*`
+  bullet and not a `-` one, so a list written with hyphens counted one word per bullet, in the
+  excerpt, the meta description, the OG card and the RSS summary as well as the count.
+- **A save that did not mention the font deleted the font**, so changing the blog's title on
+  one tab erased an uploaded typeface. Editing one field of one menu row wiped the whole
+  menu, and the same shape cost the featured list every slug before the one touched.
+- **Three credential cards said a key was saved and had sent nothing.** Cloudflare, off-site
+  storage and the model provider each posted an empty object, read `ok: true` off it and
+  turned the lamp green.
+- **Twenty behaviours in all**, the three cards above among them, were drawn and wired to
+  nothing, found by comparing every `data-*` hook the admin draws against every hook an island
+  reads: minting, copying and revoking an MCP token, all four importers, adding a redirect,
+  clearing the cache, editing the header menu, the featured list, the front page rows and the
+  footer marks, uploading a custom font, and the off-site storage test.
+- **Four buttons answered a refusal with silence or with the wrong screen.** Ending the device
+  you are signed in on sent you to the sign-in page whether or not it worked; undo after
+  trashing a piece reloaded the page on any answer, and the reload takes the toast holding the
+  undo with it; the same for undo on several pieces; undo after deleting a comment said
+  nothing at all.
+- **Deleting a backup archive asked nothing.** It unlinked the file and said "Moved to Trash",
+  and there is no trash for a backup.
+- **Eleven keystroke faults in the writing surface**, found by driving the old build character
+  by character: a typed URL corrupted by one character, a checklist converting the whole list,
+  a rule or a formula leaving the node selected so the next character replaced it, Tab in the
+  last table cell leaving the editor, a cleared nested bullet reopening as a heading. The
+  editor could also save Markdown it could not reopen.
+- **A picture comes out of the paragraph Markdown wrote it in.** Markdown has one shape for a
+  picture and it is inline, so a picture on its own line was a block node inside a paragraph:
+  46 pixels of empty line under every picture in the editor, and a `<figure>` inside a `<p>`
+  on the reader's page, 43 times across 20 posts.
+- **The Markdown view left an empty sheet on the way back**, with the document intact in an
+  editor nobody could see. That had been on production for three commits.
+- **Dates printed in the machine's language, not the admin's.** A Vietnamese admin read
+  "Sep 14, 2026, 7:59 AM" one line above "14 thg 9, 2026, 07:59", and a post scheduled for
+  02:30 from New York printed back as 03:30.
+- **An emptied number field sent zero**, setting posts per page to none and the upload limit
+  to zero bytes; a value under a field's floor was rewritten in silence while the screen said
+  "Settings saved"; and the palette switch failed towards on, turning palettes back on that
+  the owner had switched off.
+- **The MCP card handed out a URL and a token for a switch nobody had saved**, so the working
+  order ended at a client reading "server is currently unavailable" from an endpoint that was
+  still off.
+- **The three questions after the account were being skipped on every real install**, because
+  where a first-run owner landed was decided by whether a site address was known, and every
+  deployment path this project ships sets one.
+- **`/page/1` answered a 301 with no `Cache-Control` and no security headers**, because the
+  redirect was registered above the middleware that adds them. A 301 with no freshness is held
+  hard by browsers, and this one's destination is a setting.
+- **Filtering the activity log to nothing showed a blank panel**, and a settings field's named
+  refusal never became visible: both islands looked for markup no screen has ever drawn.
+- **`getPage` and `getNote` selected the autosave blob into the public render path.**
+- **The write list is a list again.** A summary carried a clamp beside a display utility that
+  wins the cascade, so rows ran from 44px to 199px and five of forty-nine pieces fitted on a
+  900px screen. Ten fit now.
+- **The last seven `:has()` rules left the admin.** On another site that selector took a page
+  from 0.75s to 4.19s and crashed WebKit's render process.
+- **Six holes found in a security review of the public surface**, every one reachable without
+  credentials. A kept passage decodes entities once and strips tags to a fixed point, where
+  `&amp;lt;` used to come back as a `<`.
+- **The contents stand under the title on a tablet.** The rail had a gutter above 1272px and a
+  drawer below 60rem, and an iPad on its side at 1024 fell in the hole between them: no index,
+  and a menu button opening a drawer over the article.
+- **A caption belongs to its picture**, the pen's underline clears the feet of the letters, a
+  sub-heading's number in the contents index fits, the formatting strip comes back after
+  scrolling, and the header's name speaks the same dialect as the chrome around it.
+- 53 strings nobody could reach are out of all eleven languages.
 
-### The editor answers the hand
+### Guards
 
-- **A mark just applied draws itself, once**
-  ([ADR 0049](./docs/decisions/0049-the-pen-answers-the-hand.md)): 200 ms for the
-  highlighter, 160 for the underline, 240 for the ring. Nothing enters the document: the
-  transaction that added the mark is noticed after the fact and the elements it became wear
-  a class for a beat. An existing mark never replays, a document opening full of marks does
-  not sweep, and the words never move. The two motion gates zero it like every animation.
-- **A felt tip squeaks.** Rendered as arithmetic like the key click, no audio file: noise
-  through a resonant band-pass whose centre glides, three takes a gesture. The highlighter
-  rises, the underline is short and flat, the ring goes up and comes down. One switch,
-  Settings → Account → Motion → *pen squeak*, on by default and heard only while an
-  instrument is chosen and the key volume is above zero; held at 0.45 of a key.
+- **Twelve static guards in `check:all`**, three of them new this release: `check:deps` (a
+  dependency is a decision), `check:admin-css` (the admin's stylesheet against the markup that
+  uses it) and `check:admin-wired` (every `data-*` the admin draws against every one an island
+  reads, in both directions: running it the other way found two shipped faults).
+- **3,669 tests and 211 browser tour flows** on the release commit, plus a restore check that
+  opens the archive the tour built: `integrity_check` on both databases, no table with fewer
+  rows than before the snapshot, every upload byte-identical.
+- The code scanning dashboard is at zero, one alert fixed and three recorded as examined with
+  the reason on each.
 
-### The Write screen
+### What 2.2.10 does not do
 
-- **Two questions on two rows.** Kind and status shared one segmented row of six since
-  Notes joined it, and six segments in a 288px column broke their labels over two lines in
-  every language. Now a kind row of four words on a hairline (All · Posts · Pages · Notes,
-  measured to one line in all eleven languages) and two status lamps under it, the amber
-  and green each row already wears, beside the sort. The two stack: the drafts of posts is
-  now a question the list can answer. Five languages' sort labels lost a word to fit.
-- **The sheet beside the list takes its width.** It had been 375px wide in a 1440px window
-  since 2.2.9's entrance animation wrapped it in a box with no `flex-1`.
-- **The pane follows a save.** A first save put the new piece nowhere with no row selected,
-  and a rename left the row under its old name, because a save deliberately bumps no refresh
-  epoch (the editor would remount). The pane now refetches only when something its row shows
-  changed, and the selected row is read from the address bar, which every save syncs.
-
-### The reading site
-
-- **The contents stand under the title on a tablet.** The rail had two states, a gutter
-  above a breakpoint computed from the column (1272px for the default) and a drawer below
-  60rem, and an iPad on its side at 1024 fell in the hole between them: no index, and a menu
-  button opening a drawer over the article. In that range the rail is now a band under the
-  title: the menu and the index as wrapped rows on a hairline, the index folding on its
-  heading with no script. Above the breakpoint nothing changed.
-- **A phone shows no grid button.** At 390px it dropped the excerpts and kept the one
-  column. Under 640px it is not offered; a choice made on a laptop still travels.
-- **A newspaper row ends on a full line.** A three-column row on a two-column screen (641
-  to 900px) ended on its third card alone beside a hole. That card now takes the whole line,
-  sideways when it has a picture.
-
-### Under the hood
-
-- **CI was red for a day and the pen was not why.** A test wrote twenty thousand rows one
-  autocommit at a time and took nine seconds on the runner; it writes them in one
-  transaction now. `bun audit` named three advisories (nodemailer, hono, sharp), all bumped,
-  with an override for the hono nested under the MCP SDK; `bun audit` is clean.
-- **The browser tour sets its viewport over the protocol.** `--window-size` alone gives a
-  page 900 tall in chrome-headless-shell and 757 tall in full Chrome, which made one flow
-  pass on CI and fail on a laptop. 109 flows, all green on both.
-- **The update check understands a pre-release.** `2.2.10-beta.1` compares as behind
-  its own final number, so the day 2.2.10 is announced every beta hears about it, and it
-  never reads a beta as ahead of a release it is not.
-- New tables `notes` (migration 012), `webmentions` (013), `reader_marks` and
-  `reader_keys` (014); a new secret name `reader-marks`; the `readerPen` feature switch;
-  `motion.penSqueak`.
-
-### What this pre-release does not do
-
-- **It is a beta.** `latest` stays 2.2.9. Install it by naming the tag, and expect a
-  2.2.10 that may still move things.
-- **Two devices marking the same page at once overwrite each other**: the last save wins,
-  by design for now ([ADR 0047](./docs/decisions/0047-a-readers-marks-travel-by-a-code.md)).
-- **Nothing in the admin shows which passages readers keep most**; only the `list_mentions`
-  MCP tool answers that, and readers are not shown it either.
-- **Webmention has a rate limit and source verification but no spam judgement**; the
-  comment gate is not wired to it yet.
-- **The squeak was measured, not listened to** by anyone but its author; the Google
-  round trip of *Keep these* was measured to the redirect and not clicked through by hand;
-  the paint cost of a page carrying hundreds of reader marks on a slow phone is unmeasured.
-- The Help screens are still English only, a few counts still read "1 words", and the
-  standing limits hold: a NAS and a Kubernetes cluster get no Caddy, the Motion switch is
-  the owner's rather than per-reader, and an install that rewrites its own HTML with nginx
-  `sub_filter` loses the origin's compression and validator.
+- **There is no multi-user mode.** One blog, one owner, one process. Comments have accounts
+  where the writing side does not.
+- **A NAS and a Kubernetes cluster get no Caddy**, and that is deliberate: a NAS already holds
+  ports 80 and 443 behind its own certificate UI, and a cluster terminates TLS at its ingress.
+- **Two devices marking the same page at once overwrite each other**, last save wins
+  (ADR 0047). **Nothing in the admin shows which passages readers keep most**; only the
+  `list_mentions` MCP tool answers that, and readers are not shown it either.
+- **Webmention verifies its source and rate-limits, but has no spam judgement**: the comment
+  gate is not wired to it.
+- **Typing straight after a link puts the characters inside it**, found and left alone on
+  purpose, pinned by a test so it cannot drift without somebody deciding.
+- **There are four looks and no fifth**, a look is site-wide and dresses the published site
+  only, and going further is still custom CSS.
+- **The STARTTLS upgrade is proved against a real relay at deploy time and nowhere else**,
+  since Bun cannot turn an open socket into a TLS one on the server side.
+- **The Help screens are still English only**, a few counts still read "1 words", and 26
+  `Etc/GMT` timezones left the list.
+- **The Motion switch is the owner's rather than per-reader**; an install that rewrites its
+  own HTML with nginx `sub_filter` loses the origin's compression and validator; and an origin
+  with no CDN makes a reader on the far side of the planet pay a round trip that saved bytes
+  cannot buy back.
 
 ## 2026-09-07 — Quire Ink 2.2.9
 
