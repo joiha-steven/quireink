@@ -87,8 +87,16 @@ export function registerTermRoutes(app: Hono): void {
         empty: kind === 'category' ? s.emptyCategory : s.emptyTag,
       })
       if (!built) return null
+      // Page two onwards is its OWN document: it says its number in the tab and names
+      // itself as the canonical. Both used to read as page one -- which asks a search
+      // engine to fold the deeper pages away, taking with them the posts that appear
+      // nowhere else, and gives a reader two tabs with one title. The home pager has done
+      // this since the word for "page" moved into the locale table; the archives were
+      // simply never brought along.
+      const paged = page > 1
+      const numbered = s.pagerPage.replace('{n}', String(page))
       return listingPage({
-        title: `${name} · ${settings.title}`,
+        title: paged ? `${name} · ${settings.title} · ${numbered}` : `${name} · ${settings.title}`,
         // Its own sentence. Every term page used to inherit the site description, so a
         // hundred tag pages shipped one identical snippet and Google had nothing to tell
         // them apart with.
@@ -96,7 +104,7 @@ export function registerTermRoutes(app: Hono): void {
         body: built.body,
         css: built.css,
         noindex: built.noindex,
-        canonicalPath: `/${kind}/${slug}`,
+        canonicalPath: paged ? `/${kind}/${slug}/page/${page}` : `/${kind}/${slug}`,
         cardTitle: name,
         // The archive's own URL is the row to mark in the rail.
         activeHref: `/${kind}/${slug}`,

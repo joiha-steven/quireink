@@ -156,4 +156,23 @@ describe('a page and its address agree', () => {
     // ...and the slug still redirects here, which is what made the old canonical a lie.
     expect((await get('/about')).status).toBe(301)
   })
+  it('lets page two of a term archive own its own address and say its number', async () => {
+    // The homepage has done both since the pager was added; a category and a tag did
+    // neither. Page two named page ONE as its canonical, which asks Google to fold it away
+    // and take the posts that only appear on it with it, and it wore page one's title, so
+    // two tabs and two search results read identically.
+    await saveSettings({ siteUrl: 'https://example.com', postsPerPage: 2, title: 'Quire' })
+    for (let i = 0; i < 5; i++) {
+      await savePost({ title: `Filed ${i}`, content: 'x', status: 'published', date: PAST, tags: ['craft'] })
+    }
+    clearCache()
+    const html = await (await get('/tag/craft/page/2')).text()
+    expect(html).toContain('<link rel="canonical" href="https://example.com/tag/craft/page/2">')
+    expect(html).toContain('<title>craft · Quire · Page 2</title>')
+    // Page one keeps its own, unnumbered.
+    const one = await (await get('/tag/craft')).text()
+    expect(one).toContain('<link rel="canonical" href="https://example.com/tag/craft">')
+    expect(one).toContain('<title>craft · Quire</title>')
+  })
 })
+
