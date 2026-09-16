@@ -142,10 +142,11 @@ Two more from the same pass, both found by CodeQL:
 * **The preview link dropped the slug into a URL unescaped**, three lines below the same value
   going through `encodeURIComponent` for the request that fetches the token. A slug carrying
   `?` or `#` would have cut the URL short and opened the wrong page with no key.
-* The remaining two CodeQL alerts are recorded as examined rather than fixed, with the reason
-  on the alert: the gallery's column count is a number and cannot carry a quote, and a table
-  cell holding a backslash next to a pipe has no spelling in GFM at all — `round-trip.test.ts`
-  measures what the engine writes and reads back.
+* Three CodeQL alerts are recorded as examined rather than fixed, each with its reason on the
+  alert itself: the gallery's column count is a `number` and cannot carry a quote; a table
+  cell holding a backslash next to a pipe has no spelling in GFM at all, which
+  `round-trip.test.ts` measures; and an `<img src>` executes no scheme in any browser, so the
+  guard added above is there to keep one rule rather than to quiet an analyser.
 
 ### Code blocks: 346 languages instead of 21, and a named fence is no longer reinterpreted
 

@@ -241,7 +241,11 @@ export function wireFields(
         // string and this line puts it straight into an `<img src>`; the published page has
         // scheme-checked an image address since 2026-09-04 and this side never did. No
         // browser executes a `javascript:` URL in `src`, so this closes a disagreement rather
-        // than a hole — and the disagreement is the thing that drifts (CodeQL alert 44).
+        // than a hole — and the disagreement is the thing that drifts.
+        //
+        // CodeQL alert 44 stands on this line either way and is dismissed with that reason:
+        // it reads the assignment as a DOM sink and cannot see a custom guard. The guard is
+        // here because the rule should be the same on both sides, not to quiet the analyser.
         const url = safeImageSrc(String(next[key] ?? ''))
         const shot = box.querySelector<HTMLImageElement>('[data-picture-shot]')
         const empty = box.querySelector<HTMLElement>('[data-picture-empty]')
