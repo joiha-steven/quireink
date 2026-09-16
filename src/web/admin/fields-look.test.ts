@@ -45,19 +45,23 @@ describe('a slider', () => {
 describe('a card title with a lamp', () => {
   const html = panelCard({ title: 'Backups', lampHtml: lamp({ state: 'good' }), body: '' })
 
-  it('wraps the lamp in a flex box of its own', () => {
-    // ⚠️ THIS IS A HEIGHT, not a class preference. Without `flex` that wrapper is a block with
-    // an inline-block inside it, so it gets a LINE BOX — 24px of it at this type size, for an
-    // 8px mark — and 7px of offset plus 24px makes the title 31px where it should be 24. Every
-    // card WITH a lamp then wears a header 7px taller than every card without one, which is the
-    // kind of unevenness that reads as carelessness across a screen holding twenty-two cards.
-    expect(html).toContain('class="mt-[7px] flex shrink-0"')
-  })
-
-  it('still puts the mark before the words', () => {
-    const mark = html.indexOf('mt-[7px]')
+  it('puts the mark at the END of the row, so every title starts at the same x', () => {
+    // A lamp beside the name pushes that name right by the mark plus its gap, and only the
+    // cards that have a state to report carry one. Measured on the account tab before this
+    // moved: "Admin này" began at x=869 while the card beside it began at 851, on a screen
+    // whose titles are read down their left edge.
+    const mark = html.indexOf('data-lamp') > -1 ? html.indexOf('data-lamp') : html.indexOf('rounded-full')
     const words = html.indexOf('Backups')
     expect(mark).toBeGreaterThan(-1)
-    expect(mark).toBeLessThan(words)
+    expect(mark).toBeGreaterThan(words)
+  })
+
+  it('keeps the mark in a flex box, so a header with one is no taller than a header without', () => {
+    // ⚠️ THIS IS A HEIGHT, not a class preference. An inline-block on its own gets a LINE BOX —
+    // 24px of it at this type size, for an 8px mark — and a card with a lamp then wears a
+    // header taller than every card without one. The row is `items-center`, and the lamp's own
+    // wrapper is a flex box, so the mark contributes its 8px and nothing else.
+    expect(html).toContain('<span class="flex items-center gap-3">')
+    expect(html).not.toContain('mt-[7px]')
   })
 })

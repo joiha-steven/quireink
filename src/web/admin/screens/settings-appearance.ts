@@ -345,7 +345,10 @@ export function appearanceTab(t: AdminStrings, s: SiteSettings, view: Appearance
     + panelCard({
       title: t.cardFont,
       body: fonts(t, s)
-        + `<div class="mt-4 border-t border-neutral-200 pt-4 dark:border-neutral-800">`
+        // The same step every other ruled division in a card takes (`group` in fields.ts):
+        // 24 above the rule, 20 below it. At mt-4/pt-4 this one sat 16/16, which is the only
+        // division on the settings screens that did.
+        + `<div class="mt-6 border-t border-neutral-200 pt-5 dark:border-neutral-800">`
         + fontUpload(t, s) + `</div>`,
     })
     + panelCard({

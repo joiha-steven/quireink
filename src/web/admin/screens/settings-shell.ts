@@ -147,7 +147,10 @@ export function panel(k: Tab, t: AdminStrings, body: string, open: Tab): string 
   // Its OWN id, so its tab can point at it: seven panels are seven panels, and one
   // `aria-controls` aimed at the box holding all of them would call the stack one panel.
   return `<div id="${PANEL_ID}-${escapeAttr(k)}" data-settings-panel="${escapeAttr(k)}"`
-    + ` class="admin-enter p-5" role="tabpanel"`
+    // p-4, the same 16px the tab row above it pads by. At p-5 the panel's content began at
+    // x=277 while the tab strip began at 273 and the search field ended at 1375 against the
+    // grid's 1371: four pixels of disagreement down both edges of the one sheet.
+    + ` class="admin-enter p-4" role="tabpanel"`
     + ` aria-label="${escapeAttr(tabLabel(t, k))}" tabindex="-1"${k === open ? '' : ' hidden'}>`
     + notesRow(t, k, true) + body + `</div>`
 }

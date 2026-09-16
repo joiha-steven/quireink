@@ -106,7 +106,7 @@ export function typeScale(t: AdminStrings, s: SiteSettings): string {
   // width the note wrapped to two lines while the key floated against its first — so the one
   // control on the card sat on no line of its own. The card header owns it now, which is the
   // same rail the palette's reset sits on.
-  return `<div class="space-y-4">`
+  return `<div class="space-y-5">`
     + `<p class="${READING} ${NOTE_TEXT}">${escapeHtml(t.typographyHint)}</p>`
     + `<div class="overflow-x-auto">`
     + `<table class="w-full border-separate border-spacing-y-1 text-sm">`

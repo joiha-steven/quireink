@@ -135,7 +135,7 @@ export function siteCard(t: AdminStrings, s: SiteSettings): string {
     body: group({ title: t.tabServer, first: true, body: crawlers(t, s) })
       + group({
         title: t.cardCustomCode, note: t.customCodeNote,
-        body: `<div class="space-y-4">`
+        body: `<div class="space-y-5">`
           + snippetBox(t, {
             k: 'customHead', value: s.customHead, label: t.customHeadLabel,
             note: t.customHeadHint, placeholder: SCRIPT_PH, lang: s.language,
@@ -199,7 +199,7 @@ export function redirectsCard(t: AdminStrings, rows: Redirect[]): string {
     + `<template data-redirect-row>${redirectRow(t)}</template></div>`
   return panelCard({
     title: t.redirectsTitle,
-    body: `<div class="space-y-4">`
+    body: `<div class="space-y-5">`
       + `<p class="${NOTE_TEXT}">${escapeHtml(t.redirectsHint)}</p>`
       + list
       + pairGrid(
@@ -241,7 +241,7 @@ export function importCard(t: AdminStrings): string {
   const accept = '.xml,.json,.zip,text/xml,application/xml,application/json,application/zip'
   return panelCard({
     title: t.cardImport,
-    body: `<div class="space-y-4">`
+    body: `<div class="space-y-5">`
       + `<p class="${NOTE_TEXT}">${escapeHtml(t.importHelp)}</p>`
       + `<input type="file" hidden data-import-file accept="${accept}">`
       + `<div class="rounded-lg border border-dashed border-neutral-300 bg-neutral-50/60 p-4 dark:border-neutral-700 dark:bg-neutral-900/50">`

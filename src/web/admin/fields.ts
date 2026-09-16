@@ -259,8 +259,9 @@ export function textControl(f: {
  * edges, its title on a ruled header row. A card floating on the canvas keeps the sheet
  * register; a box in a box does not.
  *
- * `lampHtml` takes the position beside the name, and ONE mark may. A second one there — a group
- * marker beside a state marker — shipped once and read as two unrelated things.
+ * `lampHtml` rides at the END of the header row, with the actions, so that every card's title
+ * starts at the same x whether or not that card has a state to report. ONE mark may: a group
+ * marker beside a state marker shipped once and read as two unrelated things.
  */
 export function panelCard(c: {
   title?: string
@@ -273,25 +274,19 @@ export function panelCard(c: {
   attrs?: string
 }): string {
   const name = c.titleHtml || (c.title ? escapeHtml(c.title) : '')
-  // `flex`, and it is the whole fix: a lamp is an inline-block, so inside an ordinary span it
-  // sits on the text baseline of the title's line box, about 15px below where an 8px mark
-  // belongs, and the row reads visibly out of true. A flex wrapper has no baseline to sit on,
-  // so the 7px offset below is the only thing positioning it.
-  //
-  // ⚠️ `flex` ON THE LAMP'S OWN WRAPPER TOO, and it is not decoration. Without it that wrapper
-  // is a block with an inline-block inside, so it gets a LINE BOX — 24px of it at this type
-  // size, for an 8px mark — and 7px + 24px makes the title 31px where it should be 24. Every
-  // card with a lamp then wears a header 7px taller than every card without one. Measured
-  // 2026-09-15 against the React build, which had `flex shrink-0` here and lost it in the port.
-  const titled = name
-    ? (c.lampHtml
-      ? `<h2 class="${SECTION}"><span class="flex items-start gap-2.5">`
-        + `<span class="mt-[7px] flex shrink-0">${c.lampHtml}</span><span>${name}</span></span></h2>`
-      : `<h2 class="${SECTION}">${name}</h2>`)
+  // THE LAMP SITS AT THE END OF THE ROW, not before the name. Beside the name it pushed the
+  // title right by the mark plus its gap, so on a screen where one card reports a state and
+  // the others do not, one title stood 18px in from every other: measured on the account tab,
+  // "Admin này" started at x=869 where "Bảo mật" beside it started at 851. A column of titles
+  // is read down its left edge, and a mark that only some cards carry cannot be what sets it.
+  // At the row's end it lines up with the other ends instead, which is a column of its own.
+  const titled = name ? `<h2 class="${SECTION}">${name}</h2>` : ''
+  const trailing = c.lampHtml || c.actions
+    ? `<span class="flex items-center gap-3">${c.lampHtml ?? ''}${c.actions ?? ''}</span>`
     : ''
-  const header = titled || c.actions
+  const header = titled || trailing
     ? `<div class="flex items-center justify-between gap-3 border-b border-neutral-100 px-4 py-2.5`
-      + ` dark:border-neutral-800">${titled}${c.actions ?? ''}</div>`
+      + ` dark:border-neutral-800">${titled}${trailing}</div>`
     : ''
   return `<section class="rounded-lg border border-neutral-100 dark:border-neutral-800`
     + `${c.className ? ` ${c.className}` : ''}"${c.attrs ? ` ${c.attrs}` : ''}>`
