@@ -131,10 +131,12 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   // Every ink empty: the built-ins are measured values (ADR 0018) and belong in the code
   // where they can still be corrected, not copied into every install's database.
   inks: { ...DEFAULT_INKS },
-  // 60, on a scale rebuilt on 2026-08-25 to be much louder than the one before it: measured
-  // A-weighted, a letter here is about four times the amplitude of the OLD scale's maximum,
-  // and the slider still has forty points left above it.
-  motion: { enabled: true, keys: 'woody', keyVolume: 60, penSqueak: true },
+  // 10 on a scale rebuilt on 2026-08-25 to be much louder than the one before it: a letter at
+  // 60 measures about four times the amplitude of the OLD scale's maximum, which is a room
+  // filled with typing for anybody who writes with the sound on and does not go looking for
+  // the slider. The sound is a flourish, and a flourish that arrives loud gets switched off
+  // rather than turned down, so it now arrives quiet with ninety points of room above it.
+  motion: { enabled: true, keys: 'woody', keyVolume: 10, penSqueak: true },
   // On, because a blog that is fast for readers is the default. The switch exists for the
   // hour you are changing the look and want to see it, not for permanent use.
   cache: { enabled: true },
